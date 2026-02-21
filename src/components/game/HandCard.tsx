@@ -31,6 +31,7 @@ export default function HandCard({
 
   return (
     <div
+      data-instance-id={cardInstance.instanceId}
       draggable={canPlay}
       onDragStart={handleDragStart}
       onClick={canPlay ? onClick : undefined}

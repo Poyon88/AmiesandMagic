@@ -8,6 +8,8 @@ interface HeroPortraitProps {
   isOpponent: boolean;
   isValidTarget?: boolean;
   onClick?: () => void;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
 }
 
 export default function HeroPortrait({
@@ -15,12 +17,17 @@ export default function HeroPortrait({
   isOpponent,
   isValidTarget = false,
   onClick,
+  onMouseEnter,
+  onMouseLeave,
 }: HeroPortraitProps) {
   const hpPercentage = Math.max(0, (hero.hp / HERO_MAX_HP) * 100);
 
   return (
     <div
+      data-target-id={isOpponent ? "enemy_hero" : "friendly_hero"}
       onClick={onClick}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
       className={`
         relative w-20 h-24 rounded-xl flex flex-col items-center justify-center
         ${isOpponent ? "bg-accent/20 border-accent/40" : "bg-mana-blue/20 border-mana-blue/40"}

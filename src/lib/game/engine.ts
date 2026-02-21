@@ -248,6 +248,10 @@ export function playCard(
         action.targetInstanceId
       );
     }
+    // Clean up creatures killed by the spell
+    cleanDeadCreatures(player);
+    cleanDeadCreatures(opponent);
+
     // Spell goes to graveyard
     player.graveyard.push(cardInstance);
   }

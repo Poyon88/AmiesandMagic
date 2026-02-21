@@ -9,6 +9,8 @@ interface BoardCreatureProps {
   isSelected?: boolean;
   isValidTarget?: boolean;
   onClick?: () => void;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
 }
 
 export default function BoardCreature({
@@ -18,6 +20,8 @@ export default function BoardCreature({
   isSelected = false,
   isValidTarget = false,
   onClick,
+  onMouseEnter,
+  onMouseLeave,
 }: BoardCreatureProps) {
   const hasCharge = creature.card.keywords.includes("charge");
   const hasTaunt = creature.card.keywords.includes("taunt");
@@ -26,7 +30,10 @@ export default function BoardCreature({
 
   return (
     <div
+      data-instance-id={creature.instanceId}
       onClick={onClick}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
       className={`
         relative w-16 h-20 rounded-lg border-2 flex flex-col items-center justify-between p-1
         transition-all cursor-pointer

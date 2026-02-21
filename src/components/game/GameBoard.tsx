@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, type DragEvent } from "react";
+import { useState, useCallback, useEffect, type DragEvent } from "react";
 import { useGameStore } from "@/lib/store/gameStore";
 import { canPlayCard, canAttack } from "@/lib/game/engine";
 import HeroPortrait from "./HeroPortrait";
@@ -9,6 +9,7 @@ import BoardCreature from "./BoardCreature";
 import HandCard from "./HandCard";
 import GraveyardOverlay from "./GraveyardOverlay";
 import TurnTimer from "./TurnTimer";
+import TargetingArrow from "./TargetingArrow";
 import type { GameAction } from "@/lib/game/types";
 
 interface GameBoardProps {
@@ -38,6 +39,12 @@ export default function GameBoard({ onAction }: GameBoardProps) {
     "my" | "opponent" | null
   >(null);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [hoveredTargetId, setHoveredTargetId] = useState<string | null>(null);
+
+  // Clear hover when targeting ends
+  useEffect(() => {
+    if (targetingMode === "none") setHoveredTargetId(null);
+  }, [targetingMode]);
 
   const myPlayer = getMyPlayerState();
   const opponent = getOpponentPlayerState();
@@ -215,6 +222,16 @@ export default function GameBoard({ onAction }: GameBoardProps) {
                 ? () => handleSelectTarget("enemy_hero")
                 : undefined
             }
+            onMouseEnter={
+              validTargets.includes("enemy_hero")
+                ? () => setHoveredTargetId("enemy_hero")
+                : undefined
+            }
+            onMouseLeave={
+              validTargets.includes("enemy_hero")
+                ? () => setHoveredTargetId(null)
+                : undefined
+            }
           />
         </div>
 
@@ -252,6 +269,16 @@ export default function GameBoard({ onAction }: GameBoardProps) {
                 onClick={
                   validTargets.includes(creature.instanceId)
                     ? () => handleSelectTarget(creature.instanceId)
+                    : undefined
+                }
+                onMouseEnter={
+                  validTargets.includes(creature.instanceId)
+                    ? () => setHoveredTargetId(creature.instanceId)
+                    : undefined
+                }
+                onMouseLeave={
+                  validTargets.includes(creature.instanceId)
+                    ? () => setHoveredTargetId(null)
                     : undefined
                 }
               />
@@ -335,6 +362,16 @@ export default function GameBoard({ onAction }: GameBoardProps) {
                       ? () => handleSelectAttacker(creature.instanceId)
                       : undefined
                   }
+                  onMouseEnter={
+                    validTargets.includes(creature.instanceId)
+                      ? () => setHoveredTargetId(creature.instanceId)
+                      : undefined
+                  }
+                  onMouseLeave={
+                    validTargets.includes(creature.instanceId)
+                      ? () => setHoveredTargetId(null)
+                      : undefined
+                  }
                 />
               );
             })
@@ -370,6 +407,16 @@ export default function GameBoard({ onAction }: GameBoardProps) {
               onClick={
                 validTargets.includes("friendly_hero")
                   ? () => handleSelectTarget("friendly_hero")
+                  : undefined
+              }
+              onMouseEnter={
+                validTargets.includes("friendly_hero")
+                  ? () => setHoveredTargetId("friendly_hero")
+                  : undefined
+              }
+              onMouseLeave={
+                validTargets.includes("friendly_hero")
+                  ? () => setHoveredTargetId(null)
                   : undefined
               }
             />
@@ -408,6 +455,13 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           })}
         </div>
       </div>
+
+      {/* Targeting arrow overlay */}
+      <TargetingArrow
+        targetingMode={targetingMode}
+        sourceInstanceId={selectedAttackerInstanceId ?? selectedCardInstanceId}
+        hoveredTargetId={hoveredTargetId}
+      />
     </div>
   );
 }
