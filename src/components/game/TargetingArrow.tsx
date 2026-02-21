@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 interface TargetingArrowProps {
   targetingMode: "none" | "attack" | "spell";
@@ -30,6 +31,7 @@ export default function TargetingArrow({
   const glowPathRef = useRef<SVGPathElement>(null);
   const arrowheadRef = useRef<SVGPolygonElement>(null);
   const rafId = useRef<number>(0);
+  const [mounted, setMounted] = useState(false);
 
   // Keep props in refs so the rAF loop always reads the latest values
   const sourceIdRef = useRef(sourceInstanceId);
@@ -40,6 +42,10 @@ export default function TargetingArrow({
   modeRef.current = targetingMode;
 
   const isActive = targetingMode !== "none" && sourceInstanceId !== null;
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Mouse tracking
   useEffect(() => {
@@ -101,7 +107,7 @@ export default function TargetingArrow({
         `translate(${end.x}, ${end.y}) rotate(${angle})`
       );
 
-      // Update stroke color live (attack vs spell can change)
+      // Update stroke color live (attack vs spell)
       const color = modeRef.current === "attack" ? "#ef4444" : "#a855f7";
       pathRef.current.setAttribute("stroke", color);
       glowPathRef.current.setAttribute("stroke", color);
@@ -114,31 +120,29 @@ export default function TargetingArrow({
     return () => cancelAnimationFrame(rafId.current);
   }, [isActive]);
 
-  if (!isActive) return null;
+  if (!isActive || !mounted) return null;
 
-  return (
+  return createPortal(
     <svg
-      className="fixed inset-0 w-full h-full z-40 pointer-events-none"
-      style={{ overflow: "visible" }}
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+        pointerEvents: "none",
+        zIndex: 9999,
+        overflow: "visible",
+      }}
     >
-      <defs>
-        <filter id="arrow-glow">
-          <feGaussianBlur stdDeviation="4" result="blur" />
-          <feMerge>
-            <feMergeNode in="blur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-      </defs>
-
-      {/* Glow layer */}
+      {/* Glow layer — simple wide stroke, no filter */}
       <path
         ref={glowPathRef}
         fill="none"
         strokeWidth={10}
-        strokeOpacity={0.2}
+        strokeOpacity={0.25}
         strokeLinecap="round"
-        filter="url(#arrow-glow)"
+        pointerEvents="none"
       />
 
       {/* Main arrow path */}
@@ -148,13 +152,16 @@ export default function TargetingArrow({
         strokeWidth={3}
         strokeLinecap="round"
         strokeDasharray="10 5"
+        pointerEvents="none"
       />
 
       {/* Arrowhead */}
       <polygon
         ref={arrowheadRef}
         points="0,-8 18,0 0,8"
+        pointerEvents="none"
       />
-    </svg>
+    </svg>,
+    document.body
   );
 }
