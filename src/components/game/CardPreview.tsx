@@ -17,11 +17,12 @@ export default function CardPreview({ cardInstance, anchorRef, position = "above
 
   useEffect(() => setMounted(true), []);
 
+  const previewW = 220;
+  const previewH = 330;
+
   useEffect(() => {
     if (!anchorRef.current) return;
     const rect = anchorRef.current.getBoundingClientRect();
-    const previewW = 220;
-    const previewH = 320;
 
     let left = rect.left + rect.width / 2 - previewW / 2;
     let top: number;
@@ -53,14 +54,15 @@ export default function CardPreview({ cardInstance, anchorRef, position = "above
         position: "fixed",
         left: coords.left,
         top: coords.top,
-        width: 220,
+        width: previewW,
+        height: previewH,
         zIndex: 9999,
         pointerEvents: "none",
       }}
     >
       <div
         className={`
-          w-full rounded-xl border-2 flex flex-col overflow-hidden shadow-2xl
+          w-full h-full rounded-xl border-2 flex flex-col overflow-hidden shadow-2xl
           ${isCreature ? "bg-card-bg border-card-border" : "bg-purple-900/80 border-purple-500/40"}
         `}
       >
