@@ -86,21 +86,67 @@ function detectDamageEvents(
       events.push({
         targetId: heroId,
         amount: oldPlayer.hero.hp - newPlayer.hero.hp,
+        type: "damage",
         ...pos,
       });
     }
 
-    // Creature damage — check old board creatures
+    // Hero heal
+    if (newPlayer.hero.hp > oldPlayer.hero.hp) {
+      const pos = getElementCenter(heroId);
+      events.push({
+        targetId: heroId,
+        amount: newPlayer.hero.hp - oldPlayer.hero.hp,
+        type: "heal",
+        ...pos,
+      });
+    }
+
+    // Creature changes — check old board creatures
     for (const oldCreature of oldPlayer.board) {
       const newCreature = newPlayer.board.find(
         (c) => c.instanceId === oldCreature.instanceId
       );
-      const newHp = newCreature?.currentHealth ?? 0;
-      if (newHp < oldCreature.currentHealth) {
+      if (!newCreature) continue;
+
+      // Damage
+      if (newCreature.currentHealth < oldCreature.currentHealth) {
         const pos = getElementCenter(oldCreature.instanceId);
         events.push({
           targetId: oldCreature.instanceId,
-          amount: oldCreature.currentHealth - newHp,
+          amount: oldCreature.currentHealth - newCreature.currentHealth,
+          type: "damage",
+          ...pos,
+        });
+      }
+
+      // Heal
+      if (
+        newCreature.currentHealth > oldCreature.currentHealth &&
+        newCreature.currentAttack === oldCreature.currentAttack
+      ) {
+        const pos = getElementCenter(oldCreature.instanceId);
+        events.push({
+          targetId: oldCreature.instanceId,
+          amount: newCreature.currentHealth - oldCreature.currentHealth,
+          type: "heal",
+          ...pos,
+        });
+      }
+
+      // Buff (attack or health increase from buff spells)
+      const atkDiff = newCreature.currentAttack - oldCreature.currentAttack;
+      const hpDiff = newCreature.maxHealth - oldCreature.maxHealth;
+      if (atkDiff > 0 || hpDiff > 0) {
+        const pos = getElementCenter(oldCreature.instanceId);
+        const parts: string[] = [];
+        if (atkDiff > 0) parts.push(`+${atkDiff}`);
+        if (hpDiff > 0) parts.push(`+${hpDiff}`);
+        events.push({
+          targetId: oldCreature.instanceId,
+          amount: atkDiff + hpDiff,
+          type: "buff",
+          label: parts.join("/"),
           ...pos,
         });
       }

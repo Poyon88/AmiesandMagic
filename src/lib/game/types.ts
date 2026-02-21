@@ -112,10 +112,14 @@ export interface MulliganAction {
 
 export type GameAction = PlayCardAction | AttackAction | EndTurnAction | MulliganAction;
 
-// Damage event for animations
+// Combat event for animations
+export type CombatEventType = "damage" | "heal" | "buff";
+
 export interface DamageEvent {
   targetId: string; // creature instanceId or "enemy_hero" / "friendly_hero"
   amount: number;
+  type: CombatEventType;
+  label?: string; // custom label like "+2/+3" for buffs
   x: number; // viewport x (center of target element)
   y: number; // viewport y (center of target element)
 }

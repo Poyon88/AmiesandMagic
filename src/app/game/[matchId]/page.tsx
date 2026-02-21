@@ -8,19 +8,30 @@ import { applyAction } from "@/lib/game/engine";
 import GameBoard from "@/components/game/GameBoard";
 import type { Card, GameAction } from "@/lib/game/types";
 
+interface MatchData {
+  player1_id: string;
+  player2_id: string;
+  player1_deck_id: number;
+  player2_deck_id: number;
+}
+
 export default function GamePage() {
   const { matchId } = useParams<{ matchId: string }>();
   const supabase = createClient();
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [phase, setPhase] = useState<"loading" | "waiting" | "playing">("loading");
   const [error, setError] = useState("");
+  const matchDataRef = useRef<{
+    match: MatchData;
+    p1Cards: { card: Card; quantity: number }[];
+    p2Cards: { card: Card; quantity: number }[];
+  } | null>(null);
+  const gameInitializedRef = useRef(false);
 
   const {
-    gameState,
     setGameState,
     setLocalPlayerId,
     initGame,
-    localPlayerId,
   } = useGameStore();
 
   // Initialize match
@@ -81,22 +92,10 @@ export default function GamePage() {
             quantity: dc.quantity,
           }));
 
-        // Deterministic seed from matchId — same on both clients
-        const seed = parseInt(matchId.replace(/-/g, "").slice(0, 8), 16);
+        // Store match data for later initialization
+        matchDataRef.current = { match, p1Cards, p2Cards };
 
-        const firstPlayer: 0 | 1 = seed % 2 === 0 ? 0 : 1;
-
-        // Initialize game with deterministic seed
-        initGame(
-          match.player1_id,
-          match.player2_id,
-          p1Cards,
-          p2Cards,
-          firstPlayer,
-          seed
-        );
-
-        // Join realtime channel
+        // Join realtime channel with presence
         const channel = supabase.channel(`match:${matchId}`, {
           config: { broadcast: { self: false } },
         });
@@ -110,10 +109,29 @@ export default function GamePage() {
               store.setGameState(newState);
             }
           })
-          .subscribe();
+          .on("presence", { event: "sync" }, () => {
+            const state = channel.presenceState();
+            const playerCount = Object.keys(state).length;
+
+            if (playerCount >= 2 && !gameInitializedRef.current && matchDataRef.current) {
+              gameInitializedRef.current = true;
+              const { match: m, p1Cards: p1, p2Cards: p2 } = matchDataRef.current;
+
+              const seed = parseInt(matchId.replace(/-/g, "").slice(0, 8), 16);
+              const firstPlayer: 0 | 1 = seed % 2 === 0 ? 0 : 1;
+
+              initGame(m.player1_id, m.player2_id, p1, p2, firstPlayer, seed);
+              setPhase("playing");
+            }
+          })
+          .subscribe(async (status) => {
+            if (status === "SUBSCRIBED") {
+              await channel.track({ user_id: user.id });
+            }
+          });
 
         channelRef.current = channel;
-        setLoading(false);
+        setPhase("waiting");
       } catch (err) {
         if (!cancelled) {
           setError("Failed to load match");
@@ -175,12 +193,14 @@ export default function GamePage() {
     );
   }
 
-  if (loading) {
+  if (phase === "loading" || phase === "waiting") {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="text-4xl mb-4 animate-bounce">⚔️</div>
-          <p className="text-foreground/50">Loading match...</p>
+          <p className="text-foreground/50">
+            {phase === "loading" ? "Loading match..." : "Waiting for opponent..."}
+          </p>
         </div>
       </div>
     );

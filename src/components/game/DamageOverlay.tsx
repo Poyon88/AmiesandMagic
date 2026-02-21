@@ -26,7 +26,7 @@ export default function DamageOverlay({ events }: DamageOverlayProps) {
     >
       <AnimatePresence>
         {events.map((evt) => (
-          <DamagePopup key={evt.targetId + "-" + evt.amount + "-" + Math.random()} event={evt} />
+          <EventPopup key={evt.targetId + "-" + evt.type + "-" + Math.random()} event={evt} />
         ))}
       </AnimatePresence>
     </div>,
@@ -34,8 +34,33 @@ export default function DamageOverlay({ events }: DamageOverlayProps) {
   );
 }
 
-function DamagePopup({ event }: { event: DamageEvent }) {
-  if (event.x < -9000) return null; // no position found
+const config = {
+  damage: {
+    flashColor: "rgba(239, 68, 68, 0.4)",
+    particleColor: "#fb923c",
+    textColor: "#ef4444",
+    format: (evt: DamageEvent) => `-${evt.amount}`,
+  },
+  heal: {
+    flashColor: "rgba(34, 197, 94, 0.4)",
+    particleColor: "#4ade80",
+    textColor: "#22c55e",
+    format: (evt: DamageEvent) => `+${evt.amount}`,
+  },
+  buff: {
+    flashColor: "rgba(250, 204, 21, 0.4)",
+    particleColor: "#fbbf24",
+    textColor: "#eab308",
+    format: (evt: DamageEvent) => evt.label ?? `+${evt.amount}`,
+  },
+};
+
+function EventPopup({ event }: { event: DamageEvent }) {
+  if (event.x < -9000) return null;
+
+  const type = event.type ?? "damage";
+  const { flashColor, particleColor, textColor, format } = config[type];
+  const isPositive = type === "heal" || type === "buff";
 
   return (
     <motion.div
@@ -50,7 +75,7 @@ function DamagePopup({ event }: { event: DamageEvent }) {
       animate={{ opacity: 0 }}
       transition={{ duration: 2.9, ease: "easeOut" }}
     >
-      {/* Red flash circle */}
+      {/* Flash circle */}
       <motion.div
         style={{
           position: "absolute",
@@ -59,7 +84,7 @@ function DamagePopup({ event }: { event: DamageEvent }) {
           width: 60,
           height: 60,
           borderRadius: "50%",
-          background: "rgba(239, 68, 68, 0.4)",
+          background: flashColor,
           pointerEvents: "none",
         }}
         initial={{ scale: 0.5, opacity: 1 }}
@@ -67,32 +92,60 @@ function DamagePopup({ event }: { event: DamageEvent }) {
         transition={{ duration: 0.6 }}
       />
 
-      {/* Burst particles */}
-      {[...Array(6)].map((_, i) => {
-        const angle = (i / 6) * Math.PI * 2;
-        const dx = Math.cos(angle) * 24;
-        const dy = Math.sin(angle) * 24;
-        return (
-          <motion.div
-            key={i}
-            style={{
-              position: "absolute",
-              width: 6,
-              height: 6,
-              borderRadius: "50%",
-              background: "#fb923c",
-              left: -3,
-              top: -3,
-              pointerEvents: "none",
-            }}
-            initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
-            animate={{ x: dx, y: dy, opacity: 0, scale: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-          />
-        );
-      })}
+      {/* Particles */}
+      {isPositive ? (
+        // Rising sparkles for heal/buff
+        [...Array(8)].map((_, i) => {
+          const xSpread = (Math.random() - 0.5) * 40;
+          const yEnd = -(20 + Math.random() * 30);
+          return (
+            <motion.div
+              key={i}
+              style={{
+                position: "absolute",
+                width: 5,
+                height: 5,
+                borderRadius: "50%",
+                background: particleColor,
+                left: -2.5,
+                top: -2.5,
+                boxShadow: `0 0 6px ${particleColor}`,
+                pointerEvents: "none",
+              }}
+              initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
+              animate={{ x: xSpread, y: yEnd, opacity: 0, scale: 0 }}
+              transition={{ duration: 0.8 + Math.random() * 0.4, ease: "easeOut", delay: i * 0.05 }}
+            />
+          );
+        })
+      ) : (
+        // Burst particles for damage
+        [...Array(6)].map((_, i) => {
+          const angle = (i / 6) * Math.PI * 2;
+          const dx = Math.cos(angle) * 24;
+          const dy = Math.sin(angle) * 24;
+          return (
+            <motion.div
+              key={i}
+              style={{
+                position: "absolute",
+                width: 6,
+                height: 6,
+                borderRadius: "50%",
+                background: particleColor,
+                left: -3,
+                top: -3,
+                pointerEvents: "none",
+              }}
+              initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
+              animate={{ x: dx, y: dy, opacity: 0, scale: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+            />
+          );
+        })
+      )}
 
-      {/* Damage number */}
+      {/* Number */}
       <motion.span
         style={{
           position: "absolute",
@@ -101,16 +154,16 @@ function DamagePopup({ event }: { event: DamageEvent }) {
           transform: "translate(-50%, -50%)",
           fontSize: "1.5rem",
           fontWeight: 900,
-          color: "#ef4444",
-          textShadow: "0 0 8px #ef4444, 0 1px 2px #000",
+          color: textColor,
+          textShadow: `0 0 8px ${textColor}, 0 1px 2px #000`,
           whiteSpace: "nowrap",
           pointerEvents: "none",
         }}
         initial={{ y: 0, scale: 1.5, opacity: 1 }}
-        animate={{ y: -32, scale: 1, opacity: 0 }}
+        animate={{ y: isPositive ? -36 : -32, scale: 1, opacity: 0 }}
         transition={{ duration: 2.8, ease: "easeOut" }}
       >
-        -{event.amount}
+        {format(event)}
       </motion.span>
     </motion.div>
   );
