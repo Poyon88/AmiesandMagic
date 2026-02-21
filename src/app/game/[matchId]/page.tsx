@@ -25,11 +25,14 @@ export default function GamePage() {
 
   // Initialize match
   useEffect(() => {
+    let cancelled = false;
+
     async function loadMatch() {
       try {
         const {
           data: { user },
         } = await supabase.auth.getUser();
+        if (cancelled) return;
         if (!user) {
           setError("Not authenticated");
           return;
@@ -44,6 +47,7 @@ export default function GamePage() {
           .eq("id", matchId)
           .single();
 
+        if (cancelled) return;
         if (matchError || !match) {
           setError("Match not found");
           return;
@@ -61,20 +65,26 @@ export default function GamePage() {
             .eq("deck_id", match.player2_deck_id),
         ]);
 
-        const p1Cards = (p1DeckCards.data ?? []).map((dc) => ({
-          card: dc.cards as unknown as Card,
-          quantity: dc.quantity,
-        }));
-        const p2Cards = (p2DeckCards.data ?? []).map((dc) => ({
-          card: dc.cards as unknown as Card,
-          quantity: dc.quantity,
-        }));
+        if (cancelled) return;
 
-        // Determine first player (use match id as seed for consistency)
-        const firstPlayer: 0 | 1 =
-          parseInt(matchId.replace(/-/g, "").slice(0, 8), 16) % 2 === 0
-            ? 0
-            : 1;
+        // Sort by card_id to guarantee identical ordering on both clients
+        const p1Cards = (p1DeckCards.data ?? [])
+          .sort((a, b) => a.card_id - b.card_id)
+          .map((dc) => ({
+            card: dc.cards as unknown as Card,
+            quantity: dc.quantity,
+          }));
+        const p2Cards = (p2DeckCards.data ?? [])
+          .sort((a, b) => a.card_id - b.card_id)
+          .map((dc) => ({
+            card: dc.cards as unknown as Card,
+            quantity: dc.quantity,
+          }));
+
+        // Deterministic seed from matchId — same on both clients
+        const seed = parseInt(matchId.replace(/-/g, "").slice(0, 8), 16);
+
+        const firstPlayer: 0 | 1 = seed % 2 === 0 ? 0 : 1;
 
         // Initialize game with deterministic seed
         initGame(
@@ -82,7 +92,8 @@ export default function GamePage() {
           match.player2_id,
           p1Cards,
           p2Cards,
-          firstPlayer
+          firstPlayer,
+          seed
         );
 
         // Join realtime channel
@@ -104,15 +115,21 @@ export default function GamePage() {
         channelRef.current = channel;
         setLoading(false);
       } catch (err) {
-        setError("Failed to load match");
-        console.error(err);
+        if (!cancelled) {
+          setError("Failed to load match");
+          console.error(err);
+        }
       }
     }
 
     loadMatch();
 
     return () => {
-      channelRef.current?.unsubscribe();
+      cancelled = true;
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
     };
   }, [matchId]); // eslint-disable-line react-hooks/exhaustive-deps
 

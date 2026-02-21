@@ -25,7 +25,8 @@ interface GameStore {
     player2Id: string,
     player1Cards: { card: Card; quantity: number }[],
     player2Cards: { card: Card; quantity: number }[],
-    firstPlayerIndex?: 0 | 1
+    firstPlayerIndex?: 0 | 1,
+    seed?: number
   ) => void;
   setGameState: (state: GameState) => void;
   setLocalPlayerId: (id: string) => void;
@@ -57,13 +58,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
   validTargets: [],
   targetingMode: "none",
 
-  initGame: (player1Id, player2Id, player1Cards, player2Cards, firstPlayerIndex) => {
+  initGame: (player1Id, player2Id, player1Cards, player2Cards, firstPlayerIndex, seed) => {
     const state = initializeGame(
       player1Id,
       player2Id,
       player1Cards,
       player2Cards,
-      firstPlayerIndex
+      firstPlayerIndex,
+      seed
     );
     set({ gameState: state });
   },

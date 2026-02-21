@@ -17,12 +17,31 @@ import {
 } from "./constants";
 
 // ============================================================
+// SEEDED PRNG (mulberry32) — deterministic across clients
+// ============================================================
+
+function createRNG(seed: number): () => number {
+  let s = seed | 0;
+  return function () {
+    s = (s + 0x6d2b79f5) | 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+let rng: () => number = Math.random;
+
+export function initRNG(seed: number) {
+  rng = createRNG(seed);
+}
+
+// ============================================================
 // INITIALIZATION
 // ============================================================
 
 function generateInstanceId(): string {
-  // Simple unique id generator
-  return Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+  return rng().toString(36).substring(2, 10) + rng().toString(36).substring(2, 10);
 }
 
 function createCardInstance(card: Card): CardInstance {
@@ -41,7 +60,7 @@ function createCardInstance(card: Card): CardInstance {
 function shuffleArray<T>(array: T[]): T[] {
   const shuffled = [...array];
   for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(rng() * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
   return shuffled;
@@ -67,8 +86,12 @@ export function initializeGame(
   player2Id: string,
   player1Cards: { card: Card; quantity: number }[],
   player2Cards: { card: Card; quantity: number }[],
-  firstPlayerIndex: 0 | 1 = Math.random() < 0.5 ? 0 : 1
+  firstPlayerIndex: 0 | 1 = 0,
+  seed?: number
 ): GameState {
+  if (seed !== undefined) {
+    initRNG(seed);
+  }
   const p1Deck = createDeckInstances(player1Cards);
   const p2Deck = createDeckInstances(player2Cards);
 
