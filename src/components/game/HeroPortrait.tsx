@@ -1,0 +1,59 @@
+"use client";
+
+import type { HeroState } from "@/lib/game/types";
+import { HERO_MAX_HP } from "@/lib/game/constants";
+
+interface HeroPortraitProps {
+  hero: HeroState;
+  isOpponent: boolean;
+  isValidTarget?: boolean;
+  onClick?: () => void;
+}
+
+export default function HeroPortrait({
+  hero,
+  isOpponent,
+  isValidTarget = false,
+  onClick,
+}: HeroPortraitProps) {
+  const hpPercentage = Math.max(0, (hero.hp / HERO_MAX_HP) * 100);
+
+  return (
+    <div
+      onClick={onClick}
+      className={`
+        relative w-20 h-24 rounded-xl flex flex-col items-center justify-center
+        ${isOpponent ? "bg-accent/20 border-accent/40" : "bg-mana-blue/20 border-mana-blue/40"}
+        border-2 transition-all
+        ${isValidTarget ? "ring-2 ring-attack-yellow animate-pulse cursor-pointer hover:scale-105" : ""}
+        ${onClick && !isValidTarget ? "cursor-pointer hover:scale-105" : ""}
+      `}
+    >
+      {/* Hero icon */}
+      <div className="text-3xl mb-1">{isOpponent ? "👹" : "🛡️"}</div>
+
+      {/* HP bar */}
+      <div className="w-14 h-1.5 bg-background/50 rounded-full overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all ${
+            hpPercentage > 50
+              ? "bg-success"
+              : hpPercentage > 25
+              ? "bg-attack-yellow"
+              : "bg-accent"
+          }`}
+          style={{ width: `${hpPercentage}%` }}
+        />
+      </div>
+
+      {/* HP text */}
+      <div
+        className={`text-sm font-bold mt-0.5 ${
+          hero.hp <= 10 ? "text-accent" : "text-foreground"
+        }`}
+      >
+        {hero.hp}
+      </div>
+    </div>
+  );
+}

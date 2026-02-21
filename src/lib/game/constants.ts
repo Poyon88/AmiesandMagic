@@ -1,0 +1,10 @@
+// Game constants from PRD
+export const HERO_MAX_HP = 30;
+export const DECK_SIZE = 50;
+export const STARTING_HAND_SIZE = 4;
+export const MAX_HAND_SIZE = 8;
+export const MAX_BOARD_SIZE = 8;
+export const MAX_MANA = 10;
+export const STARTING_MANA = 0;
+export const CARDS_DRAWN_PER_TURN = 1;
+export const TURN_TIMER_SECONDS = 90;
