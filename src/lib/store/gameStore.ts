@@ -34,12 +34,13 @@ interface GameStore {
 
   // Game actions
   dispatchAction: (action: GameAction) => GameAction | null;
-  playCardDirect: (instanceId: string) => GameAction | null;
+  playCardDirect: (instanceId: string, boardPosition?: number) => GameAction | null;
   selectCardInHand: (instanceId: string) => GameAction | null;
   selectAttacker: (instanceId: string) => void;
   selectTarget: (targetId: string) => void;
   clearSelection: () => void;
   clearDamageEvents: () => void;
+  confirmMulligan: (selectedInstanceIds: string[]) => GameAction | null;
 
   // Queries
   isMyTurn: () => boolean;
@@ -151,13 +152,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
     return action;
   },
 
-  playCardDirect: (instanceId) => {
+  playCardDirect: (instanceId, boardPosition) => {
     const { gameState } = get();
     if (!gameState) return null;
     if (!canPlayCard(gameState, instanceId)) return null;
     return get().dispatchAction({
       type: "play_card",
       cardInstanceId: instanceId,
+      boardPosition,
     });
   },
 
@@ -238,6 +240,41 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   clearDamageEvents: () => {
     set({ damageEvents: [] });
+  },
+
+  confirmMulligan: (selectedInstanceIds) => {
+    const { gameState, localPlayerId } = get();
+    if (!gameState || !localPlayerId || gameState.phase !== "mulligan") return null;
+
+    const playerIndex = gameState.players.findIndex((p) => p.id === localPlayerId);
+    if (playerIndex === -1) return null;
+
+    // Swap cards locally (private — not shared with opponent)
+    if (selectedInstanceIds.length > 0) {
+      const player = gameState.players[playerIndex];
+      const kept = player.hand.filter((c) => !selectedInstanceIds.includes(c.instanceId));
+      const replaced = player.hand.filter((c) => selectedInstanceIds.includes(c.instanceId));
+
+      // Shuffle replaced cards back into the deck
+      const newDeck = [...player.deck, ...replaced];
+      for (let i = newDeck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [newDeck[i], newDeck[j]] = [newDeck[j], newDeck[i]];
+      }
+
+      // Draw the same number of cards
+      const drawn = newDeck.splice(0, replaced.length);
+      const newHand = [...kept, ...drawn];
+
+      // Update player state directly (before dispatching the action)
+      const updatedState = JSON.parse(JSON.stringify(gameState)) as GameState;
+      updatedState.players[playerIndex].hand = newHand;
+      updatedState.players[playerIndex].deck = newDeck;
+      set({ gameState: updatedState });
+    }
+
+    // Dispatch the mulligan action (marks player as ready, transitions phase if both ready)
+    return get().dispatchAction({ type: "mulligan", playerId: localPlayerId });
   },
 
   isMyTurn: () => {

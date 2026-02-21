@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, type DragEvent } from "react";
+import { useState, useCallback, useEffect, useRef, Fragment, type DragEvent } from "react";
 import { useGameStore } from "@/lib/store/gameStore";
 import { canPlayCard, canAttack } from "@/lib/game/engine";
 import HeroPortrait from "./HeroPortrait";
@@ -11,6 +11,7 @@ import GraveyardOverlay from "./GraveyardOverlay";
 import TurnTimer from "./TurnTimer";
 import TargetingArrow from "./TargetingArrow";
 import DamageOverlay from "./DamageOverlay";
+import MulliganOverlay from "./MulliganOverlay";
 import type { GameAction, DamageEvent } from "@/lib/game/types";
 
 interface GameBoardProps {
@@ -33,6 +34,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
     clearSelection,
     damageEvents,
     clearDamageEvents,
+    confirmMulligan,
     isMyTurn,
     getMyPlayerState,
     getOpponentPlayerState,
@@ -42,7 +44,9 @@ export default function GameBoard({ onAction }: GameBoardProps) {
     "my" | "opponent" | null
   >(null);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [dropIndex, setDropIndex] = useState<number | null>(null);
   const [hoveredTargetId, setHoveredTargetId] = useState<string | null>(null);
+  const myBoardRef = useRef<HTMLDivElement>(null);
 
   // Clear hover when targeting ends
   useEffect(() => {
@@ -77,30 +81,55 @@ export default function GameBoard({ onAction }: GameBoardProps) {
     broadcast(dispatchAction({ type: "end_turn" }));
   }, [dispatchAction, broadcast]);
 
-  // Click to play a card from hand
-  const handlePlayCard = useCallback(
-    (instanceId: string) => {
-      if (!myTurn || !gameState) return;
-      const action = selectCardInHand(instanceId);
-      broadcast(action); // broadcast if played immediately, null if entering targeting mode
+  const handleMulliganConfirm = useCallback(
+    (selectedIds: string[]) => {
+      const action = confirmMulligan(selectedIds);
+      broadcast(action);
     },
-    [myTurn, gameState, selectCardInHand, broadcast]
+    [confirmMulligan, broadcast]
+  );
+
+  // Compute insertion index from cursor X relative to existing board creatures
+  const computeDropIndex = useCallback(
+    (clientX: number): number => {
+      if (!myBoardRef.current) return 0;
+      const creatures = myBoardRef.current.querySelectorAll("[data-instance-id]");
+      if (creatures.length === 0) return 0;
+
+      for (let i = 0; i < creatures.length; i++) {
+        const rect = creatures[i].getBoundingClientRect();
+        const center = rect.left + rect.width / 2;
+        if (clientX < center) return i;
+      }
+      return creatures.length;
+    },
+    []
   );
 
   // Drag & drop: card dropped onto the board
   const handleDropOnBoard = useCallback(
     (e: DragEvent<HTMLDivElement>) => {
       e.preventDefault();
+      const idx = dropIndex;
       setIsDragOver(false);
+      setDropIndex(null);
       if (!myTurn || !gameState) return;
 
       const cardInstanceId = e.dataTransfer.getData("cardInstanceId");
       if (!cardInstanceId) return;
 
-      const action = playCardDirect(cardInstanceId);
-      broadcast(action);
+      const cardType = e.dataTransfer.getData("cardType");
+      if (cardType === "spell") {
+        // Spells go through selectCardInHand (handles targeting vs direct play)
+        const action = selectCardInHand(cardInstanceId);
+        broadcast(action);
+      } else {
+        // Creatures are placed at the drop position
+        const action = playCardDirect(cardInstanceId, idx ?? undefined);
+        broadcast(action);
+      }
     },
-    [myTurn, gameState, playCardDirect, broadcast]
+    [myTurn, gameState, playCardDirect, selectCardInHand, broadcast, dropIndex]
   );
 
   const handleDragOver = useCallback(
@@ -109,12 +138,14 @@ export default function GameBoard({ onAction }: GameBoardProps) {
       e.preventDefault();
       e.dataTransfer.dropEffect = "move";
       setIsDragOver(true);
+      setDropIndex(computeDropIndex(e.clientX));
     },
-    [myTurn]
+    [myTurn, computeDropIndex]
   );
 
   const handleDragLeave = useCallback(() => {
     setIsDragOver(false);
+    setDropIndex(null);
   }, []);
 
   const handleSelectAttacker = useCallback(
@@ -164,6 +195,9 @@ export default function GameBoard({ onAction }: GameBoardProps) {
 
   const isFinished = gameState.phase === "finished";
   const isWinner = gameState.winner === localPlayerId;
+  const isMulligan = gameState.phase === "mulligan";
+  const myPlayerIndex = gameState.players.findIndex((p) => p.id === localPlayerId);
+  const myMulliganDone = myPlayerIndex !== -1 && gameState.mulliganReady[myPlayerIndex];
 
   return (
     <div
@@ -172,6 +206,15 @@ export default function GameBoard({ onAction }: GameBoardProps) {
         if (e.target === e.currentTarget) clearSelection();
       }}
     >
+      {/* Mulligan overlay */}
+      {isMulligan && (
+        <MulliganOverlay
+          hand={myPlayer.hand}
+          onConfirm={handleMulliganConfirm}
+          waitingForOpponent={myMulliganDone}
+        />
+      )}
+
       {/* Graveyard overlay */}
       {graveyardView && (
         <GraveyardOverlay
@@ -336,13 +379,13 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           <div className="flex-1 border-t border-card-border/30" />
         </div>
 
-        {/* My board — DROP ZONE */}
+        {/* My board — DROP ZONE (entire lower half) */}
         <div
           onDrop={handleDropOnBoard}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           className={`
-            flex justify-center gap-2 mt-6 min-h-[100px] rounded-xl transition-all
+            flex-1 flex items-center justify-center rounded-xl transition-all
             ${
               isDragOver
                 ? "bg-success/10 border-2 border-dashed border-success/50"
@@ -350,50 +393,61 @@ export default function GameBoard({ onAction }: GameBoardProps) {
             }
           `}
         >
+          <div ref={myBoardRef} className="flex justify-center gap-2 min-h-[100px] items-center">
           {myPlayer.board.length === 0 && !isDragOver ? (
             <div className="text-foreground/10 text-sm self-center">
-              Drag or click cards to play them here
+              Drag cards to play them here
             </div>
           ) : myPlayer.board.length === 0 && isDragOver ? (
             <div className="text-success/50 text-sm self-center font-medium">
               Drop to play creature
             </div>
           ) : (
-            myPlayer.board.map((creature) => {
-              const canAtt =
-                myTurn && canAttack(gameState, creature.instanceId);
-              return (
-                <BoardCreature
-                  key={creature.instanceId}
-                  creature={creature}
-                  isOwn={true}
-                  canAttack={canAtt}
-                  isSelected={
-                    selectedAttackerInstanceId === creature.instanceId
-                  }
-                  isValidTarget={validTargets.includes(creature.instanceId)}
-                  damageAmount={getDamage(creature.instanceId)}
-                  onClick={
-                    validTargets.includes(creature.instanceId)
-                      ? () => handleSelectTarget(creature.instanceId)
-                      : canAtt
-                      ? () => handleSelectAttacker(creature.instanceId)
-                      : undefined
-                  }
-                  onMouseEnter={
-                    validTargets.includes(creature.instanceId)
-                      ? () => setHoveredTargetId(creature.instanceId)
-                      : undefined
-                  }
-                  onMouseLeave={
-                    validTargets.includes(creature.instanceId)
-                      ? () => setHoveredTargetId(null)
-                      : undefined
-                  }
-                />
-              );
-            })
+            <>
+              {myPlayer.board.map((creature, i) => {
+                const canAtt =
+                  myTurn && canAttack(gameState, creature.instanceId);
+                return (
+                  <Fragment key={creature.instanceId}>
+                    {isDragOver && dropIndex === i && (
+                      <div className="w-1 h-20 rounded-full bg-success shadow-[0_0_8px_rgba(34,197,94,0.6)] shrink-0" />
+                    )}
+                    <BoardCreature
+                      creature={creature}
+                      isOwn={true}
+                      canAttack={canAtt}
+                      isSelected={
+                        selectedAttackerInstanceId === creature.instanceId
+                      }
+                      isValidTarget={validTargets.includes(creature.instanceId)}
+                      damageAmount={getDamage(creature.instanceId)}
+                      onClick={
+                        validTargets.includes(creature.instanceId)
+                          ? () => handleSelectTarget(creature.instanceId)
+                          : canAtt
+                          ? () => handleSelectAttacker(creature.instanceId)
+                          : undefined
+                      }
+                      onMouseEnter={
+                        validTargets.includes(creature.instanceId)
+                          ? () => setHoveredTargetId(creature.instanceId)
+                          : undefined
+                      }
+                      onMouseLeave={
+                        validTargets.includes(creature.instanceId)
+                          ? () => setHoveredTargetId(null)
+                          : undefined
+                      }
+                    />
+                  </Fragment>
+                );
+              })}
+              {isDragOver && dropIndex === myPlayer.board.length && (
+                <div className="w-1 h-20 rounded-full bg-success shadow-[0_0_8px_rgba(34,197,94,0.6)] shrink-0" />
+              )}
+            </>
           )}
+          </div>
         </div>
       </div>
 
@@ -468,7 +522,6 @@ export default function GameBoard({ onAction }: GameBoardProps) {
                 isSelected={
                   selectedCardInstanceId === cardInstance.instanceId
                 }
-                onClick={() => handlePlayCard(cardInstance.instanceId)}
               />
             );
           })}

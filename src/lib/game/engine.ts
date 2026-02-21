@@ -5,6 +5,7 @@ import type {
   PlayerState,
   PlayCardAction,
   AttackAction,
+  MulliganAction,
   GameAction,
   SpellEffect,
 } from "./types";
@@ -127,13 +128,13 @@ export function initializeGame(
     players: [player1, player2],
     currentPlayerIndex: firstPlayerIndex,
     turnNumber: 0,
-    phase: "playing",
+    phase: "mulligan",
     winner: null,
     lastAction: null,
+    mulliganReady: [false, false],
   };
 
-  // Start the first turn
-  return startTurn(state);
+  return state;
 }
 
 // ============================================================
@@ -236,7 +237,8 @@ export function playCard(
     // Place on board
     cardInstance.hasSummoningSickness = !card.keywords.includes("charge");
     cardInstance.hasAttacked = false;
-    player.board.push(cardInstance);
+    const pos = action.boardPosition ?? player.board.length;
+    player.board.splice(pos, 0, cardInstance);
   } else if (card.card_type === "spell") {
     // Resolve spell effect
     if (card.spell_effect) {
@@ -416,6 +418,12 @@ function resolveSpellEffect(
       }
       break;
     }
+
+    case "gain_mana": {
+      const amount = effect.amount ?? 1;
+      caster.mana += amount;
+      break;
+    }
   }
 }
 
@@ -540,8 +548,46 @@ function checkWinCondition(state: GameState) {
   }
 }
 
+export function applyMulligan(
+  state: GameState,
+  action: MulliganAction
+): GameState {
+  const newState = deepClone(state);
+  const playerIndex = newState.players.findIndex(
+    (p) => p.id === action.playerId
+  );
+  if (playerIndex === -1) return state;
+
+  newState.mulliganReady[playerIndex] = true;
+
+  // If both players are ready, transition to playing phase
+  if (newState.mulliganReady[0] && newState.mulliganReady[1]) {
+    // Give "Mana Spark" to the player who goes second (compensation)
+    const secondPlayerIndex = newState.currentPlayerIndex === 0 ? 1 : 0;
+    const manaSpark: Card = {
+      id: -1,
+      name: "Mana Spark",
+      mana_cost: 0,
+      card_type: "spell",
+      attack: null,
+      health: null,
+      effect_text: "Gain 1 mana this turn",
+      keywords: [],
+      spell_effect: { type: "gain_mana", amount: 1 },
+    };
+    newState.players[secondPlayerIndex].hand.push(createCardInstance(manaSpark));
+
+    newState.phase = "playing";
+    return startTurn(newState);
+  }
+
+  return newState;
+}
+
 export function applyAction(state: GameState, action: GameAction): GameState {
   switch (action.type) {
+    case "mulligan":
+      return applyMulligan(state, action);
     case "play_card":
       return playCard(state, action);
     case "attack":

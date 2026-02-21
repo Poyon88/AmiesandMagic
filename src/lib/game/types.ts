@@ -23,7 +23,8 @@ export interface SpellEffect {
     | "buff"
     | "draw_cards"
     | "resurrect"
-    | "grant_keyword";
+    | "grant_keyword"
+    | "gain_mana";
   amount?: number;
   attack?: number;
   health?: number;
@@ -81,6 +82,7 @@ export interface GameState {
   phase: GamePhase;
   winner: string | null; // player id
   lastAction: GameAction | null;
+  mulliganReady: [boolean, boolean];
 }
 
 export type GameActionType = "play_card" | "attack" | "end_turn" | "spell_target";
@@ -102,7 +104,12 @@ export interface EndTurnAction {
   type: "end_turn";
 }
 
-export type GameAction = PlayCardAction | AttackAction | EndTurnAction;
+export interface MulliganAction {
+  type: "mulligan";
+  playerId: string;
+}
+
+export type GameAction = PlayCardAction | AttackAction | EndTurnAction | MulliganAction;
 
 // Damage event for animations
 export interface DamageEvent {
