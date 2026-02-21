@@ -107,6 +107,7 @@ export interface EndTurnAction {
 export interface MulliganAction {
   type: "mulligan";
   playerId: string;
+  replacedInstanceIds: string[];
 }
 
 export type GameAction = PlayCardAction | AttackAction | EndTurnAction | MulliganAction;

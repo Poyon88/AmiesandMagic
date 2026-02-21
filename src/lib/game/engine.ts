@@ -558,10 +558,33 @@ export function applyMulligan(
   );
   if (playerIndex === -1) return state;
 
+  // Perform the mulligan swap deterministically
+  if (action.replacedInstanceIds && action.replacedInstanceIds.length > 0) {
+    const player = newState.players[playerIndex];
+    const kept = player.hand.filter(
+      (c) => !action.replacedInstanceIds.includes(c.instanceId)
+    );
+    const replaced = player.hand.filter(
+      (c) => action.replacedInstanceIds.includes(c.instanceId)
+    );
+
+    // Draw replacement cards from top of deck
+    const drawn = player.deck.splice(0, replaced.length);
+
+    // Put replaced cards at bottom of deck
+    player.deck.push(...replaced);
+
+    player.hand = [...kept, ...drawn];
+  }
+
   newState.mulliganReady[playerIndex] = true;
 
   // If both players are ready, transition to playing phase
   if (newState.mulliganReady[0] && newState.mulliganReady[1]) {
+    // Reshuffle both decks after mulligan (deterministic via seeded RNG)
+    newState.players[0].deck = shuffleArray(newState.players[0].deck);
+    newState.players[1].deck = shuffleArray(newState.players[1].deck);
+
     // Give "Mana Spark" to the player who goes second (compensation)
     const secondPlayerIndex = newState.currentPlayerIndex === 0 ? 1 : 0;
     const manaSpark: Card = {

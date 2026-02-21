@@ -249,32 +249,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const playerIndex = gameState.players.findIndex((p) => p.id === localPlayerId);
     if (playerIndex === -1) return null;
 
-    // Swap cards locally (private — not shared with opponent)
-    if (selectedInstanceIds.length > 0) {
-      const player = gameState.players[playerIndex];
-      const kept = player.hand.filter((c) => !selectedInstanceIds.includes(c.instanceId));
-      const replaced = player.hand.filter((c) => selectedInstanceIds.includes(c.instanceId));
-
-      // Shuffle replaced cards back into the deck
-      const newDeck = [...player.deck, ...replaced];
-      for (let i = newDeck.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [newDeck[i], newDeck[j]] = [newDeck[j], newDeck[i]];
-      }
-
-      // Draw the same number of cards
-      const drawn = newDeck.splice(0, replaced.length);
-      const newHand = [...kept, ...drawn];
-
-      // Update player state directly (before dispatching the action)
-      const updatedState = JSON.parse(JSON.stringify(gameState)) as GameState;
-      updatedState.players[playerIndex].hand = newHand;
-      updatedState.players[playerIndex].deck = newDeck;
-      set({ gameState: updatedState });
-    }
-
-    // Dispatch the mulligan action (marks player as ready, transitions phase if both ready)
-    return get().dispatchAction({ type: "mulligan", playerId: localPlayerId });
+    // Dispatch the mulligan action with replaced card IDs
+    // The engine handles the swap deterministically so both clients stay in sync
+    return get().dispatchAction({
+      type: "mulligan",
+      playerId: localPlayerId,
+      replacedInstanceIds: selectedInstanceIds,
+    });
   },
 
   isMyTurn: () => {

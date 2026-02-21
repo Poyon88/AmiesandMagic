@@ -46,12 +46,13 @@ export default function BoardCreature({
       className={`
         relative w-16 h-20 rounded-lg border-2 flex flex-col items-center justify-between p-1
         transition-[border-color,box-shadow,transform] cursor-pointer
+        ${isOwn ? "origin-bottom" : "origin-top"} hover:scale-[3] hover:z-50
         ${isSelected ? "border-attack-yellow scale-110 shadow-lg shadow-attack-yellow/30 z-10" : ""}
         ${isValidTarget ? "border-accent ring-2 ring-accent/50 animate-pulse" : ""}
         ${canAttack && !isSelected ? "border-success/60 hover:border-success" : ""}
         ${!isSelected && !isValidTarget && !canAttack ? "border-card-border" : ""}
         ${hasTaunt ? "ring-1 ring-blue-400/50" : ""}
-        ${isOwn ? "bg-card-bg hover:scale-105" : "bg-card-bg/80 hover:scale-105"}
+        ${isOwn ? "bg-card-bg" : "bg-card-bg/80"}
       `}
       title={`${creature.card.name} (${creature.currentAttack}/${creature.currentHealth})`}
     >

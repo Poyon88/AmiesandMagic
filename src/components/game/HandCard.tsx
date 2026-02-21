@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { CardInstance } from "@/lib/game/types";
 import type { DragEvent } from "react";
 
@@ -18,15 +19,21 @@ export default function HandCard({
 }: HandCardProps) {
   const card = cardInstance.card;
   const isCreature = card.card_type === "creature";
+  const [isDragging, setIsDragging] = useState(false);
 
   function handleDragStart(e: DragEvent<HTMLDivElement>) {
     if (!canPlay) {
       e.preventDefault();
       return;
     }
+    setIsDragging(true);
     e.dataTransfer.setData("cardInstanceId", cardInstance.instanceId);
     e.dataTransfer.setData("cardType", card.card_type);
     e.dataTransfer.effectAllowed = "move";
+  }
+
+  function handleDragEnd() {
+    setIsDragging(false);
   }
 
   return (
@@ -34,12 +41,14 @@ export default function HandCard({
       data-instance-id={cardInstance.instanceId}
       draggable={canPlay}
       onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
       onClick={canPlay ? onClick : undefined}
       className={`
         relative w-24 h-36 rounded-lg border-2 flex flex-col overflow-hidden
         transition-all origin-bottom
-        ${canPlay ? "cursor-grab active:cursor-grabbing hover:-translate-y-4 hover:scale-110 hover:z-20" : "opacity-50 cursor-not-allowed"}
-        ${isSelected ? "border-primary -translate-y-4 scale-110 z-20 shadow-lg shadow-primary/30" : "border-card-border"}
+        hover:-translate-y-8 hover:scale-[3] hover:z-50
+        ${isDragging ? "opacity-50 !scale-100 !translate-y-0 !z-auto" : canPlay ? "cursor-grab active:cursor-grabbing" : "opacity-50 cursor-not-allowed"}
+        ${!isDragging && isSelected ? "border-primary -translate-y-8 scale-[3] z-50 shadow-lg shadow-primary/30" : "border-card-border"}
         ${isCreature ? "bg-card-bg" : "bg-purple-900/50"}
       `}
     >

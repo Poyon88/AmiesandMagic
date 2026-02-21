@@ -522,6 +522,10 @@ export default function GameBoard({ onAction }: GameBoardProps) {
                 isSelected={
                   selectedCardInstanceId === cardInstance.instanceId
                 }
+                onClick={() => {
+                  const action = selectCardInHand(cardInstance.instanceId);
+                  broadcast(action);
+                }}
               />
             );
           })}
