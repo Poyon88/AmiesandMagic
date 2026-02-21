@@ -10,7 +10,8 @@ import HandCard from "./HandCard";
 import GraveyardOverlay from "./GraveyardOverlay";
 import TurnTimer from "./TurnTimer";
 import TargetingArrow from "./TargetingArrow";
-import type { GameAction } from "@/lib/game/types";
+import DamageOverlay from "./DamageOverlay";
+import type { GameAction, DamageEvent } from "@/lib/game/types";
 
 interface GameBoardProps {
   onAction?: (action: GameAction) => void;
@@ -30,6 +31,8 @@ export default function GameBoard({ onAction }: GameBoardProps) {
     selectAttacker,
     selectTarget,
     clearSelection,
+    damageEvents,
+    clearDamageEvents,
     isMyTurn,
     getMyPlayerState,
     getOpponentPlayerState,
@@ -45,6 +48,18 @@ export default function GameBoard({ onAction }: GameBoardProps) {
   useEffect(() => {
     if (targetingMode === "none") setHoveredTargetId(null);
   }, [targetingMode]);
+
+  // Auto-clear damage events after animation
+  useEffect(() => {
+    if (damageEvents.length === 0) return;
+    const timer = setTimeout(clearDamageEvents, 2900);
+    return () => clearTimeout(timer);
+  }, [damageEvents, clearDamageEvents]);
+
+  function getDamage(targetId: string): number | null {
+    const evt = damageEvents.find((e: DamageEvent) => e.targetId === targetId);
+    return evt ? evt.amount : null;
+  }
 
   const myPlayer = getMyPlayerState();
   const opponent = getOpponentPlayerState();
@@ -217,6 +232,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
             hero={opponent.hero}
             isOpponent={true}
             isValidTarget={validTargets.includes("enemy_hero")}
+            damageAmount={getDamage("enemy_hero")}
             onClick={
               validTargets.includes("enemy_hero")
                 ? () => handleSelectTarget("enemy_hero")
@@ -266,6 +282,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
                 creature={creature}
                 isOwn={false}
                 isValidTarget={validTargets.includes(creature.instanceId)}
+                damageAmount={getDamage(creature.instanceId)}
                 onClick={
                   validTargets.includes(creature.instanceId)
                     ? () => handleSelectTarget(creature.instanceId)
@@ -355,6 +372,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
                     selectedAttackerInstanceId === creature.instanceId
                   }
                   isValidTarget={validTargets.includes(creature.instanceId)}
+                  damageAmount={getDamage(creature.instanceId)}
                   onClick={
                     validTargets.includes(creature.instanceId)
                       ? () => handleSelectTarget(creature.instanceId)
@@ -404,6 +422,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
               hero={myPlayer.hero}
               isOpponent={false}
               isValidTarget={validTargets.includes("friendly_hero")}
+              damageAmount={getDamage("friendly_hero")}
               onClick={
                 validTargets.includes("friendly_hero")
                   ? () => handleSelectTarget("friendly_hero")
@@ -455,6 +474,9 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           })}
         </div>
       </div>
+
+      {/* Damage animation overlay */}
+      <DamageOverlay events={damageEvents} />
 
       {/* Targeting arrow overlay */}
       <TargetingArrow

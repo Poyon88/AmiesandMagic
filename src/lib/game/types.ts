@@ -104,6 +104,14 @@ export interface EndTurnAction {
 
 export type GameAction = PlayCardAction | AttackAction | EndTurnAction;
 
+// Damage event for animations
+export interface DamageEvent {
+  targetId: string; // creature instanceId or "enemy_hero" / "friendly_hero"
+  amount: number;
+  x: number; // viewport x (center of target element)
+  y: number; // viewport y (center of target element)
+}
+
 // Match data from database
 export interface Match {
   id: string;

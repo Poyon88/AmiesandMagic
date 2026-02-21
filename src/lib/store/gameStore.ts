@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { GameState, GameAction, Card } from "@/lib/game/types";
+import type { GameState, GameAction, Card, DamageEvent } from "@/lib/game/types";
 import {
   initializeGame,
   applyAction,
@@ -18,6 +18,7 @@ interface GameStore {
   selectedAttackerInstanceId: string | null;
   validTargets: string[];
   targetingMode: "none" | "attack" | "spell";
+  damageEvents: DamageEvent[];
 
   // Actions
   initGame: (
@@ -38,6 +39,7 @@ interface GameStore {
   selectAttacker: (instanceId: string) => void;
   selectTarget: (targetId: string) => void;
   clearSelection: () => void;
+  clearDamageEvents: () => void;
 
   // Queries
   isMyTurn: () => boolean;
@@ -50,6 +52,63 @@ function getPlayerState(state: GameState, playerId: string) {
   return idx !== -1 ? state.players[idx] : null;
 }
 
+function getElementCenter(targetId: string): { x: number; y: number } {
+  let el: Element | null = null;
+  if (targetId === "enemy_hero" || targetId === "friendly_hero") {
+    el = document.querySelector(`[data-target-id="${targetId}"]`);
+  } else {
+    el = document.querySelector(`[data-instance-id="${targetId}"]`);
+  }
+  if (el) {
+    const rect = el.getBoundingClientRect();
+    return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+  }
+  return { x: -9999, y: -9999 };
+}
+
+function detectDamageEvents(
+  oldState: GameState,
+  newState: GameState,
+  localPlayerId: string | null
+): DamageEvent[] {
+  const events: DamageEvent[] = [];
+
+  for (let i = 0; i < 2; i++) {
+    const oldPlayer = oldState.players[i];
+    const newPlayer = newState.players[i];
+    const isLocal = oldPlayer.id === localPlayerId;
+    const heroId = isLocal ? "friendly_hero" : "enemy_hero";
+
+    // Hero damage
+    if (newPlayer.hero.hp < oldPlayer.hero.hp) {
+      const pos = getElementCenter(heroId);
+      events.push({
+        targetId: heroId,
+        amount: oldPlayer.hero.hp - newPlayer.hero.hp,
+        ...pos,
+      });
+    }
+
+    // Creature damage — check old board creatures
+    for (const oldCreature of oldPlayer.board) {
+      const newCreature = newPlayer.board.find(
+        (c) => c.instanceId === oldCreature.instanceId
+      );
+      const newHp = newCreature?.currentHealth ?? 0;
+      if (newHp < oldCreature.currentHealth) {
+        const pos = getElementCenter(oldCreature.instanceId);
+        events.push({
+          targetId: oldCreature.instanceId,
+          amount: oldCreature.currentHealth - newHp,
+          ...pos,
+        });
+      }
+    }
+  }
+
+  return events;
+}
+
 export const useGameStore = create<GameStore>((set, get) => ({
   gameState: null,
   localPlayerId: null,
@@ -57,6 +116,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   selectedAttackerInstanceId: null,
   validTargets: [],
   targetingMode: "none",
+  damageEvents: [],
 
   initGame: (player1Id, player2Id, player1Cards, player2Cards, firstPlayerIndex, seed) => {
     const state = initializeGame(
@@ -74,16 +134,19 @@ export const useGameStore = create<GameStore>((set, get) => ({
   setLocalPlayerId: (id) => set({ localPlayerId: id }),
 
   dispatchAction: (action) => {
-    const { gameState } = get();
+    const { gameState, localPlayerId } = get();
     if (!gameState || gameState.phase === "finished") return null;
 
     const newState = applyAction(gameState, action);
+    const dmgEvents = detectDamageEvents(gameState, newState, localPlayerId);
+
     set({
       gameState: newState,
       selectedCardInstanceId: null,
       selectedAttackerInstanceId: null,
       validTargets: [],
       targetingMode: "none",
+      damageEvents: dmgEvents,
     });
     return action;
   },
@@ -171,6 +234,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
       validTargets: [],
       targetingMode: "none",
     });
+  },
+
+  clearDamageEvents: () => {
+    set({ damageEvents: [] });
   },
 
   isMyTurn: () => {

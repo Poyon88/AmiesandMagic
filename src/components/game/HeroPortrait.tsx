@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import type { HeroState } from "@/lib/game/types";
 import { HERO_MAX_HP } from "@/lib/game/constants";
 
@@ -7,6 +8,7 @@ interface HeroPortraitProps {
   hero: HeroState;
   isOpponent: boolean;
   isValidTarget?: boolean;
+  damageAmount?: number | null;
   onClick?: () => void;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
@@ -16,6 +18,7 @@ export default function HeroPortrait({
   hero,
   isOpponent,
   isValidTarget = false,
+  damageAmount = null,
   onClick,
   onMouseEnter,
   onMouseLeave,
@@ -23,15 +26,21 @@ export default function HeroPortrait({
   const hpPercentage = Math.max(0, (hero.hp / HERO_MAX_HP) * 100);
 
   return (
-    <div
+    <motion.div
       data-target-id={isOpponent ? "enemy_hero" : "friendly_hero"}
       onClick={onClick}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
+      animate={
+        damageAmount
+          ? { x: [0, -5, 5, -5, 5, 0] }
+          : { x: 0 }
+      }
+      transition={{ duration: 0.5, ease: "easeOut" }}
       className={`
         relative w-20 h-24 rounded-xl flex flex-col items-center justify-center
         ${isOpponent ? "bg-accent/20 border-accent/40" : "bg-mana-blue/20 border-mana-blue/40"}
-        border-2 transition-all
+        border-2 transition-[border-color,box-shadow,transform]
         ${isValidTarget ? "ring-2 ring-attack-yellow animate-pulse cursor-pointer hover:scale-105" : ""}
         ${onClick && !isValidTarget ? "cursor-pointer hover:scale-105" : ""}
       `}
@@ -61,6 +70,6 @@ export default function HeroPortrait({
       >
         {hero.hp}
       </div>
-    </div>
+    </motion.div>
   );
 }

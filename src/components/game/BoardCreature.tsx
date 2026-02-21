@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import type { CardInstance } from "@/lib/game/types";
 
 interface BoardCreatureProps {
@@ -8,6 +9,7 @@ interface BoardCreatureProps {
   canAttack?: boolean;
   isSelected?: boolean;
   isValidTarget?: boolean;
+  damageAmount?: number | null;
   onClick?: () => void;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
@@ -19,6 +21,7 @@ export default function BoardCreature({
   canAttack = false,
   isSelected = false,
   isValidTarget = false,
+  damageAmount = null,
   onClick,
   onMouseEnter,
   onMouseLeave,
@@ -29,14 +32,20 @@ export default function BoardCreature({
   const isDamaged = creature.currentHealth < creature.maxHealth;
 
   return (
-    <div
+    <motion.div
       data-instance-id={creature.instanceId}
       onClick={onClick}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
+      animate={
+        damageAmount
+          ? { x: [0, -4, 4, -4, 4, 0] }
+          : { x: 0 }
+      }
+      transition={{ duration: 0.5, ease: "easeOut" }}
       className={`
         relative w-16 h-20 rounded-lg border-2 flex flex-col items-center justify-between p-1
-        transition-all cursor-pointer
+        transition-[border-color,box-shadow,transform] cursor-pointer
         ${isSelected ? "border-attack-yellow scale-110 shadow-lg shadow-attack-yellow/30 z-10" : ""}
         ${isValidTarget ? "border-accent ring-2 ring-accent/50 animate-pulse" : ""}
         ${canAttack && !isSelected ? "border-success/60 hover:border-success" : ""}
@@ -93,6 +102,6 @@ export default function BoardCreature({
           {creature.currentHealth}
         </span>
       </div>
-    </div>
+    </motion.div>
   );
 }

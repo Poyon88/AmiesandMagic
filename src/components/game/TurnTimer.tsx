@@ -16,6 +16,8 @@ export default function TurnTimer({
 }: TurnTimerProps) {
   const [timeLeft, setTimeLeft] = useState(TURN_TIMER_SECONDS);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const onTimeUpRef = useRef(onTimeUp);
+  onTimeUpRef.current = onTimeUp;
 
   useEffect(() => {
     // Reset timer on turn change
@@ -30,7 +32,8 @@ export default function TurnTimer({
         setTimeLeft((prev) => {
           if (prev <= 1) {
             if (intervalRef.current) clearInterval(intervalRef.current);
-            onTimeUp();
+            // Call onTimeUp outside the state updater to avoid setState-during-render
+            setTimeout(() => onTimeUpRef.current(), 0);
             return 0;
           }
           return prev - 1;
@@ -41,7 +44,7 @@ export default function TurnTimer({
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [isMyTurn, turnNumber, onTimeUp]);
+  }, [isMyTurn, turnNumber]);
 
   const percentage = (timeLeft / TURN_TIMER_SECONDS) * 100;
   const isLow = timeLeft <= 15;
