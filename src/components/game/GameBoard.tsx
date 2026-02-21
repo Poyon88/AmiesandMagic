@@ -260,8 +260,12 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           {opponent.hand.map((_, i) => (
             <div
               key={i}
-              className="w-8 h-12 rounded bg-accent/30 border border-accent/20"
-            />
+              className="w-8 h-12 rounded-sm border border-primary/30 bg-gradient-to-br from-secondary via-card-bg to-secondary overflow-hidden flex items-center justify-center"
+            >
+              <div className="w-5 h-7 rounded-sm border border-primary/20 bg-primary/10 flex items-center justify-center">
+                <span className="text-primary/40 text-[8px] font-bold">A&amp;M</span>
+              </div>
+            </div>
           ))}
           <span className="text-xs text-foreground/30 self-center ml-1">
             {opponent.hand.length}
@@ -311,7 +315,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
       </div>
 
       {/* ============= BATTLEFIELD ============= */}
-      <div className="flex-1 flex flex-col justify-center px-8 py-4 min-h-[400px]">
+      <div className="flex-1 flex flex-col justify-center px-8 py-4 min-h-[400px] bg-[radial-gradient(ellipse_at_center,_rgba(45,45,74,0.8)_0%,_rgba(26,26,46,0.95)_70%)]">
         {/* Opponent board */}
         <div className="flex justify-center gap-2 mb-6 min-h-[88px]">
           {opponent.board.length === 0 ? (

@@ -59,12 +59,14 @@ export default function MatchmakingQueue({
       if (!pollingRef.current || matchFoundRef.current) return;
 
       try {
-        // Check if another player already created a match with us
+        // Check if another player already created a match with us (within last 2 minutes)
+        const recentCutoff = new Date(Date.now() - 2 * 60 * 1000).toISOString();
         const { data: existingMatch } = await supabase
           .from("matches")
           .select("id")
           .eq("status", "active")
           .or(`player1_id.eq.${userId},player2_id.eq.${userId}`)
+          .gte("created_at", recentCutoff)
           .order("created_at", { ascending: false })
           .limit(1)
           .single();
@@ -144,18 +146,15 @@ export default function MatchmakingQueue({
       setQueueTime((prev) => prev + 1);
     }, 1000);
 
-    // Clean any stale queue entry first
-    await supabase
-      .from("matchmaking_queue")
-      .delete()
-      .eq("user_id", userId);
-
-    // Insert into queue
+    // Upsert into queue (updates deck_id if a stale entry exists)
     const { error: insertError } = await supabase
       .from("matchmaking_queue")
-      .insert({ user_id: userId, deck_id: selectedDeckId });
+      .upsert(
+        { user_id: userId, deck_id: selectedDeckId },
+        { onConflict: "user_id" }
+      );
 
-    if (insertError && insertError.code !== "23505") {
+    if (insertError) {
       setError(insertError.message);
       setInQueue(false);
       pollingRef.current = false;

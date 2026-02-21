@@ -42,6 +42,7 @@ export interface Card {
   effect_text: string;
   keywords: Keyword[];
   spell_effect: SpellEffect | null;
+  image_url: string | null;
 }
 
 // In-game card instance (a card on the board or in hand with runtime state)

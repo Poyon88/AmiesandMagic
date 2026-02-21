@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import type { CardInstance } from "@/lib/game/types";
 import type { DragEvent } from "react";
 import CardPreview from "./CardPreview";
+import CardArt from "@/components/cards/CardArt";
 
 interface HandCardProps {
   cardInstance: CardInstance;
@@ -67,14 +68,8 @@ export default function HandCard({
           {card.mana_cost}
         </div>
 
-        {/* Art placeholder */}
-        <div
-          className={`h-[35%] flex items-center justify-center text-lg ${
-            isCreature ? "bg-card-border/40" : "bg-purple-800/30"
-          }`}
-        >
-          {isCreature ? "⚔️" : "✨"}
-        </div>
+        {/* Art */}
+        <CardArt card={card} className="h-[35%]" />
 
         {/* Name */}
         <div className="px-1 py-0.5 text-center">

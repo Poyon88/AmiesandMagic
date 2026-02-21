@@ -1,6 +1,7 @@
 "use client";
 
 import type { Card, Keyword } from "@/lib/game/types";
+import CardArt from "@/components/cards/CardArt";
 
 interface GameCardProps {
   card: Card;
@@ -72,14 +73,8 @@ export default function GameCard({
         </div>
       )}
 
-      {/* Card art area (placeholder) */}
-      <div
-        className={`h-[40%] flex items-center justify-center text-2xl ${
-          isCreature ? "bg-card-border/50" : "bg-purple-800/30"
-        }`}
-      >
-        {isCreature ? "⚔️" : "✨"}
-      </div>
+      {/* Card art */}
+      <CardArt card={card} className="h-[40%]" />
 
       {/* Card name */}
       <div className="px-2 py-1 text-center">

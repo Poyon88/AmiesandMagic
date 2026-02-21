@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { CardInstance } from "@/lib/game/types";
+import CardArt from "@/components/cards/CardArt";
 
 interface MulliganOverlayProps {
   hand: CardInstance[];
@@ -84,14 +85,8 @@ export default function MulliganOverlay({
                   {card.mana_cost}
                 </div>
 
-                {/* Art placeholder */}
-                <div
-                  className={`h-[35%] flex items-center justify-center text-xl ${
-                    isCreature ? "bg-card-border/40" : "bg-purple-800/30"
-                  }`}
-                >
-                  {isCreature ? "⚔️" : "✨"}
-                </div>
+                {/* Art */}
+                <CardArt card={card} className="h-[35%]" />
 
                 {/* Name */}
                 <div className="px-1.5 py-1 text-center">

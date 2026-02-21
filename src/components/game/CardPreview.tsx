@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { CardInstance } from "@/lib/game/types";
+import CardArt from "@/components/cards/CardArt";
 
 interface CardPreviewProps {
   cardInstance: CardInstance;
@@ -71,14 +72,8 @@ export default function CardPreview({ cardInstance, anchorRef, position = "above
           {card.mana_cost}
         </div>
 
-        {/* Art placeholder */}
-        <div
-          className={`h-28 flex items-center justify-center text-4xl ${
-            isCreature ? "bg-card-border/40" : "bg-purple-800/30"
-          }`}
-        >
-          {isCreature ? "⚔️" : "✨"}
-        </div>
+        {/* Art */}
+        <CardArt card={card} className="h-28" />
 
         {/* Name */}
         <div className="px-3 py-2 text-center border-b border-card-border/30">

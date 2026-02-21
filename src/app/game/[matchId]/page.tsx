@@ -107,6 +107,19 @@ export default function GamePage() {
             if (store.gameState) {
               const newState = applyAction(store.gameState, action);
               store.setGameState(newState);
+
+              // Also close the match from the receiving side
+              if (newState.phase === "finished" && newState.winner) {
+                supabase
+                  .from("matches")
+                  .update({
+                    status: "finished",
+                    winner_id: newState.winner,
+                    finished_at: new Date().toISOString(),
+                  })
+                  .eq("id", matchId)
+                  .then(() => {});
+              }
             }
           })
           .on("presence", { event: "sync" }, () => {

@@ -46,7 +46,11 @@ export default function HeroPortrait({
       `}
     >
       {/* Hero icon */}
-      <div className="text-3xl mb-1">{isOpponent ? "👹" : "🛡️"}</div>
+      <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-1 ${
+        isOpponent ? "bg-accent/30 border border-accent/40" : "bg-mana-blue/30 border border-mana-blue/40"
+      }`}>
+        <span className="text-xl">{isOpponent ? "👹" : "🛡️"}</span>
+      </div>
 
       {/* HP bar */}
       <div className="w-14 h-1.5 bg-background/50 rounded-full overflow-hidden">

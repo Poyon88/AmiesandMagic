@@ -597,6 +597,7 @@ export function applyMulligan(
       effect_text: "Gain 1 mana this turn",
       keywords: [],
       spell_effect: { type: "gain_mana", amount: 1 },
+      image_url: null,
     };
     newState.players[secondPlayerIndex].hand.push(createCardInstance(manaSpark));
 
