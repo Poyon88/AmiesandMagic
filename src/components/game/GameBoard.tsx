@@ -416,8 +416,8 @@ export default function GameBoard({ onAction }: GameBoardProps) {
         className="flex-1 flex flex-col overflow-hidden relative"
         style={{
           minHeight: 0,
-          backgroundImage: "url('/images/battlefield.png')",
-          backgroundSize: "contain",
+          backgroundImage: "url('/images/battlefield.jpg')",
+          backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
           backgroundColor: "#0d0d1a",
