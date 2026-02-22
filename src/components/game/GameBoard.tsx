@@ -205,6 +205,12 @@ export default function GameBoard({ onAction }: GameBoardProps) {
       onClick={(e) => {
         if (e.target === e.currentTarget) clearSelection();
       }}
+      onContextMenu={(e) => {
+        if (targetingMode !== "none") {
+          e.preventDefault();
+          clearSelection();
+        }
+      }}
     >
       {/* Mulligan overlay */}
       {isMulligan && (

@@ -56,3 +56,9 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--primary-dark);
 }
+
+/* Target pulse animation - ring glow without opacity changes */
+@keyframes pulse-ring {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.5); }
+  50% { box-shadow: 0 0 8px 4px rgba(231, 76, 60, 0.3); }
+}

@@ -41,7 +41,7 @@ export default function HeroPortrait({
         relative w-20 h-24 rounded-xl flex flex-col items-center justify-center
         ${isOpponent ? "bg-accent/20 border-accent/40" : "bg-mana-blue/20 border-mana-blue/40"}
         border-2 transition-[border-color,box-shadow,transform]
-        ${isValidTarget ? "ring-2 ring-attack-yellow animate-pulse cursor-pointer hover:scale-105" : ""}
+        ${isValidTarget ? "ring-2 ring-attack-yellow animate-[pulse-ring_1.5s_ease-in-out_infinite] cursor-pointer hover:scale-105" : ""}
         ${onClick && !isValidTarget ? "cursor-pointer hover:scale-105" : ""}
       `}
     >

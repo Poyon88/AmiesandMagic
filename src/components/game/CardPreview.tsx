@@ -57,7 +57,7 @@ export default function CardPreview({ cardInstance, anchorRef, position = "above
         top: coords.top,
         width: previewW,
         height: previewH,
-        zIndex: 9999,
+        zIndex: 10001,
         pointerEvents: "none",
       }}
     >

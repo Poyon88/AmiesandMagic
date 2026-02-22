@@ -146,13 +146,15 @@ export default function MatchmakingQueue({
       setQueueTime((prev) => prev + 1);
     }, 1000);
 
-    // Upsert into queue (updates deck_id if a stale entry exists)
+    // Clean any stale queue entry first, then insert fresh
+    await supabase
+      .from("matchmaking_queue")
+      .delete()
+      .eq("user_id", userId);
+
     const { error: insertError } = await supabase
       .from("matchmaking_queue")
-      .upsert(
-        { user_id: userId, deck_id: selectedDeckId },
-        { onConflict: "user_id" }
-      );
+      .insert({ user_id: userId, deck_id: selectedDeckId });
 
     if (insertError) {
       setError(insertError.message);

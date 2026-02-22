@@ -54,7 +54,7 @@ export default function BoardCreature({
           transition-[border-color,box-shadow] cursor-pointer
           ${isHovered ? "z-20" : ""}
           ${isSelected ? "border-attack-yellow shadow-lg shadow-attack-yellow/30 z-10" : ""}
-          ${isValidTarget ? "border-accent ring-2 ring-accent/50 animate-pulse" : ""}
+          ${isValidTarget ? "border-accent ring-2 ring-accent/50 animate-[pulse-ring_1.5s_ease-in-out_infinite]" : ""}
           ${canAttack && !isSelected ? "border-success/60 hover:border-success" : ""}
           ${!isSelected && !isValidTarget && !canAttack ? "border-card-border" : ""}
           ${hasTaunt ? "ring-1 ring-blue-400/50" : ""}
