@@ -357,36 +357,8 @@ export default function GameBoard({ onAction }: GameBoardProps) {
       </div>
 
       {/* ============= DIVIDER ============= */}
-      <div className="flex items-center gap-4 px-8 py-2">
-        <div className="flex-1 border-t border-card-border/30" />
-        <div
-          className={`px-4 py-1.5 rounded-full text-xs font-bold ${
-            myTurn
-              ? "bg-success/20 text-success border border-success/40"
-              : "bg-accent/20 text-accent border border-accent/40"
-          }`}
-        >
-          {myTurn ? "YOUR TURN" : "OPPONENT'S TURN"}
-        </div>
-
-        <TurnTimer
-          isMyTurn={myTurn}
-          onTimeUp={handleEndTurn}
-          turnNumber={gameState.turnNumber}
-        />
-
-        <button
-          onClick={handleEndTurn}
-          disabled={!myTurn}
-          className={`px-6 py-2 rounded-lg font-bold text-sm transition-all ${
-            myTurn
-              ? "bg-primary hover:bg-primary-dark text-background"
-              : "bg-card-border/30 text-foreground/30 cursor-not-allowed"
-          }`}
-        >
-          END TURN
-        </button>
-        <div className="flex-1 border-t border-card-border/30" />
+      <div className="px-8">
+        <div className="border-t border-card-border/30" />
       </div>
 
       {/* ============= PLAYER BOARD ============= */}
@@ -485,6 +457,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
 
           {/* My hero + mana */}
           <div className="flex items-center gap-4">
+            <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} />
             <HeroPortrait
               hero={myPlayer.hero}
               isOpponent={false}
@@ -506,7 +479,6 @@ export default function GameBoard({ onAction }: GameBoardProps) {
                   : undefined
               }
             />
-            <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} />
           </div>
 
           {/* Targeting mode indicator */}
@@ -543,6 +515,26 @@ export default function GameBoard({ onAction }: GameBoardProps) {
             );
           })}
         </div>
+      </div>
+
+      {/* Timer + End Turn — bottom right */}
+      <div className="fixed bottom-4 right-4 z-40 flex items-center gap-3">
+        <TurnTimer
+          isMyTurn={myTurn}
+          onTimeUp={handleEndTurn}
+          turnNumber={gameState.turnNumber}
+        />
+        <button
+          onClick={handleEndTurn}
+          disabled={!myTurn}
+          className={`px-6 py-2 rounded-lg font-bold text-sm transition-all ${
+            myTurn
+              ? "bg-primary hover:bg-primary-dark text-background"
+              : "bg-card-border/30 text-foreground/30 cursor-not-allowed"
+          }`}
+        >
+          END TURN
+        </button>
       </div>
 
       {/* Damage animation overlay */}
