@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <radialGradient id="nbg" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#2a0a2a"/>
+      <stop offset="100%" stop-color="#120612"/>
+    </radialGradient>
+  </defs>
+  <circle cx="60" cy="60" r="58" fill="url(#nbg)" stroke="#9b59b6" stroke-width="3"/>
+  <!-- Dark hood -->
+  <path d="M32 65 Q34 28 60 20 Q86 28 88 65 Q78 54 60 50 Q42 54 32 65" fill="#1a0a2a" stroke="#6a3a8a" stroke-width="1.5"/>
+  <!-- Shadow face -->
+  <ellipse cx="60" cy="64" rx="16" ry="14" fill="#3a2a3a"/>
+  <!-- Glowing eyes -->
+  <circle cx="52" cy="62" r="3" fill="#00ff88" opacity="0.9"/>
+  <circle cx="68" cy="62" r="3" fill="#00ff88" opacity="0.9"/>
+  <circle cx="52" cy="62" r="1.5" fill="#fff" opacity="0.7"/>
+  <circle cx="68" cy="62" r="1.5" fill="#fff" opacity="0.7"/>
+  <!-- Skeletal grin -->
+  <path d="M50 72 L52 70 L55 72 L58 70 L61 72 L64 70 L67 72 L70 70" fill="none" stroke="#aaa" stroke-width="1.2" stroke-linecap="round"/>
+  <!-- Skull staff -->
+  <line x1="92" y1="40" x2="86" y2="105" stroke="#666" stroke-width="3" stroke-linecap="round"/>
+  <!-- Skull on staff -->
+  <circle cx="93" cy="36" r="8" fill="#ddd" stroke="#999" stroke-width="1"/>
+  <circle cx="90" cy="34" r="2" fill="#2a0a2a"/>
+  <circle cx="96" cy="34" r="2" fill="#2a0a2a"/>
+  <path d="M90 39 L93 37 L96 39" fill="none" stroke="#2a0a2a" stroke-width="1"/>
+  <!-- Purple mist -->
+  <circle cx="40" cy="90" r="6" fill="#9b59b6" opacity="0.15"/>
+  <circle cx="55" cy="95" r="8" fill="#9b59b6" opacity="0.1"/>
+  <circle cx="75" cy="92" r="5" fill="#9b59b6" opacity="0.12"/>
+</svg>

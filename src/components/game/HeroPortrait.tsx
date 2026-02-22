@@ -3,6 +3,15 @@
 import { motion } from "framer-motion";
 import type { HeroState } from "@/lib/game/types";
 import { HERO_MAX_HP } from "@/lib/game/constants";
+import type { HeroClass } from "@/lib/game/types";
+
+const HERO_IMAGES: Record<HeroClass, string> = {
+  necromancer: "/images/heroes/necromancer.png",
+  warrior: "/images/heroes/warrior.svg",
+  mage: "/images/heroes/mage.svg",
+  priest: "/images/heroes/priest.svg",
+  ranger: "/images/heroes/ranger.png",
+};
 
 interface HeroPortraitProps {
   hero: HeroState;
@@ -38,38 +47,32 @@ export default function HeroPortrait({
       }
       transition={{ duration: 0.5, ease: "easeOut" }}
       className={`
-        relative w-20 h-24 rounded-xl flex flex-col items-center justify-center
-        ${isOpponent ? "bg-accent/20 border-accent/40" : "bg-mana-blue/20 border-mana-blue/40"}
+        relative w-20 h-24 rounded-xl overflow-hidden
+        ${isOpponent ? "border-accent/40" : "border-mana-blue/40"}
         border-2 transition-[border-color,box-shadow,transform]
         ${isValidTarget ? "ring-2 ring-attack-yellow animate-[pulse-ring_1.5s_ease-in-out_infinite] cursor-pointer hover:scale-105" : ""}
         ${onClick && !isValidTarget ? "cursor-pointer hover:scale-105" : ""}
       `}
     >
-      {/* Hero icon */}
-      <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-1 ${
-        isOpponent ? "bg-accent/30 border border-accent/40" : "bg-mana-blue/30 border border-mana-blue/40"
-      }`}>
-        <span className="text-xl">{isOpponent ? "👹" : "🛡️"}</span>
-      </div>
-
-      {/* HP bar */}
-      <div className="w-14 h-1.5 bg-background/50 rounded-full overflow-hidden">
-        <div
-          className={`h-full rounded-full transition-all ${
-            hpPercentage > 50
-              ? "bg-success"
-              : hpPercentage > 25
-              ? "bg-attack-yellow"
-              : "bg-accent"
-          }`}
-          style={{ width: `${hpPercentage}%` }}
+      {/* Hero portrait - full bleed */}
+      {hero.heroDefinition?.heroClass ? (
+        <img
+          src={HERO_IMAGES[hero.heroDefinition.heroClass]}
+          alt={hero.heroDefinition.heroClass}
+          className="absolute inset-0 w-full h-full object-cover"
         />
-      </div>
+      ) : (
+        <div className={`absolute inset-0 flex items-center justify-center ${
+          isOpponent ? "bg-accent/20" : "bg-mana-blue/20"
+        }`}>
+          <span className="text-2xl">{isOpponent ? "👹" : "🛡️"}</span>
+        </div>
+      )}
 
-      {/* HP text */}
+      {/* HP text overlay */}
       <div
-        className={`text-sm font-bold mt-0.5 ${
-          hero.hp <= 10 ? "text-accent" : "text-foreground"
+        className={`absolute bottom-0 left-0 right-0 flex items-center justify-center py-0.5 bg-black/50 text-sm font-bold ${
+          hero.hp <= 10 ? "text-accent" : "text-white"
         }`}
       >
         {hero.hp}

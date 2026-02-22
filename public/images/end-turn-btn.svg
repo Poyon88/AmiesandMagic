@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 60" width="180" height="60">
+  <defs>
+    <linearGradient id="btnGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#e8c44a"/>
+      <stop offset="50%" stop-color="#c8a84e"/>
+      <stop offset="100%" stop-color="#8a6e2f"/>
+    </linearGradient>
+    <linearGradient id="btnGradHover" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f0d45a"/>
+      <stop offset="50%" stop-color="#d4b855"/>
+      <stop offset="100%" stop-color="#9a7e3f"/>
+    </linearGradient>
+    <linearGradient id="btnGradDisabled" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#555"/>
+      <stop offset="50%" stop-color="#444"/>
+      <stop offset="100%" stop-color="#333"/>
+    </linearGradient>
+    <filter id="innerShadow">
+      <feFlood flood-color="#000" flood-opacity="0.3"/>
+      <feComposite in2="SourceAlpha" operator="in"/>
+      <feGaussianBlur stdDeviation="1.5"/>
+      <feComposite in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <!-- Outer border -->
+  <rect x="1" y="1" width="178" height="58" rx="8" ry="8" fill="#5a4320" stroke="#3a2a10" stroke-width="2"/>
+  <!-- Inner face -->
+  <rect x="4" y="4" width="172" height="52" rx="6" ry="6" fill="url(#btnGrad)" filter="url(#innerShadow)"/>
+  <!-- Top highlight -->
+  <rect x="8" y="6" width="164" height="12" rx="4" ry="4" fill="#fff" opacity="0.15"/>
+  <!-- Corner gems -->
+  <circle cx="16" cy="30" r="4" fill="#e74c3c" stroke="#a0321e" stroke-width="1"/>
+  <circle cx="164" cy="30" r="4" fill="#e74c3c" stroke="#a0321e" stroke-width="1"/>
+  <!-- Gem highlights -->
+  <circle cx="15" cy="29" r="1.5" fill="#ff8a7a" opacity="0.6"/>
+  <circle cx="163" cy="29" r="1.5" fill="#ff8a7a" opacity="0.6"/>
+</svg>

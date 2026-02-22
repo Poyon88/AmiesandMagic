@@ -649,13 +649,22 @@ export default function GameBoard({ onAction }: GameBoardProps) {
         <button
           onClick={handleEndTurn}
           disabled={!myTurn}
-          className={`px-6 py-2 rounded-lg font-bold text-sm transition-all ${
+          className={`relative w-[140px] h-[46px] transition-all ${
             myTurn
-              ? "bg-primary hover:bg-primary-dark text-background"
-              : "bg-card-border/30 text-foreground/30 cursor-not-allowed"
+              ? "hover:scale-105 hover:brightness-110 cursor-pointer"
+              : "brightness-50 saturate-0 cursor-not-allowed"
           }`}
         >
-          END TURN
+          <img
+            src="/images/end-turn-btn.svg"
+            alt=""
+            className="absolute inset-0 w-full h-full"
+          />
+          <span className={`relative z-10 font-bold text-sm tracking-wide ${
+            myTurn ? "text-[#2a1a00] drop-shadow-[0_1px_0_rgba(255,255,255,0.3)]" : "text-gray-500"
+          }`}>
+            END TURN
+          </span>
         </button>
       </div>
 
