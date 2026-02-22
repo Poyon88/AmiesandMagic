@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="600" viewBox="0 0 1920 600">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#2d2d4a" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#1a1a2e" stop-opacity="0.95"/>
+    </radialGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="40%">
+      <stop offset="0%" stop-color="#4a3f6b" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="transparent" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1920" height="600" fill="url(#bg)"/>
+  <ellipse cx="960" cy="300" rx="600" ry="200" fill="url(#glow)"/>
+  <!-- Replace this SVG with a real battlefield image (battlefield.jpg or battlefield.png) -->
+</svg>

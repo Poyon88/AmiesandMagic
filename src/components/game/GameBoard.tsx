@@ -412,11 +412,23 @@ export default function GameBoard({ onAction }: GameBoardProps) {
       </div>
 
       {/* ============= BATTLEFIELD WRAPPER ============= */}
-      <div className="flex-1 flex flex-col overflow-hidden" style={{ minHeight: 0 }}>
+      <div
+        className="flex-1 flex flex-col overflow-hidden relative"
+        style={{
+          minHeight: 0,
+          backgroundImage: "url('/images/battlefield.png')",
+          backgroundSize: "contain",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          backgroundColor: "#0d0d1a",
+        }}
+      >
+        {/* Dark overlay for readability */}
+        <div className="absolute inset-0 bg-background/40 pointer-events-none" />
 
       {/* ============= OPPONENT BOARD ============= */}
       <div
-        className="flex justify-center items-center gap-2 px-8 overflow-hidden bg-[radial-gradient(ellipse_at_center,_rgba(45,45,74,0.8)_0%,_rgba(26,26,46,0.95)_70%)]"
+        className="flex justify-center items-center gap-2 px-8 overflow-hidden relative z-10"
         style={{ flex: '1 1 0%' }}
       >
         {opponent.board.length === 0 ? (
@@ -453,10 +465,8 @@ export default function GameBoard({ onAction }: GameBoardProps) {
         )}
       </div>
 
-      {/* ============= DIVIDER ============= */}
-      <div className="px-8">
-        <div className="border-t border-card-border/30" />
-      </div>
+      {/* ============= DIVIDER (handled by battlefield image) ============= */}
+      <div className="relative z-10" />
 
       {/* ============= PLAYER BOARD ============= */}
       <div
@@ -464,8 +474,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         className={`
-          flex items-center justify-center px-8 transition-all overflow-hidden
-          bg-[radial-gradient(ellipse_at_center,_rgba(45,45,74,0.8)_0%,_rgba(26,26,46,0.95)_70%)]
+          flex items-center justify-center px-8 transition-all overflow-hidden relative z-10
           ${
             isDragOver
               ? "bg-success/10 border-2 border-dashed border-success/50"
