@@ -301,7 +301,8 @@ export default function GameBoard({ onAction }: GameBoardProps) {
 
   return (
     <div
-      className="fixed inset-0 bg-background flex flex-col select-none overflow-hidden"
+      className="fixed inset-0 flex flex-col select-none overflow-hidden"
+      style={{ backgroundColor: "#0d0d1a", backgroundImage: "url('/images/battlefield.jpg')", backgroundSize: "cover", backgroundPosition: "center" }}
       onClick={(e) => {
         if (e.target === e.currentTarget) clearSelection();
       }}
@@ -357,7 +358,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
 
       {/* ============= OPPONENT INFO BAR ============= */}
       <div
-        className="flex items-center justify-between px-6 py-3 border-b border-card-border/30"
+        className="flex items-center justify-between px-6 py-3"
         style={{
           backgroundImage: `url('${opponent.hero.heroDefinition?.race ? BANNER_IMAGES[opponent.hero.heroDefinition.race] : "/images/banners/default.svg"}')`,
           backgroundSize: "cover",
@@ -568,7 +569,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
 
       {/* ============= MY AREA ============= */}
       <div
-        className="border-t border-card-border/30"
+        className=""
         style={{
           backgroundImage: `url('${myPlayer.hero.heroDefinition?.race ? BANNER_IMAGES[myPlayer.hero.heroDefinition.race] : "/images/banners/default.svg"}')`,
           backgroundSize: "cover",
