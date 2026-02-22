@@ -423,8 +423,8 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           backgroundColor: "#0d0d1a",
         }}
       >
-        {/* Dark overlay for readability */}
-        <div className="absolute inset-0 bg-background/40 pointer-events-none" />
+        {/* Subtle overlay for readability */}
+        <div className="absolute inset-0 bg-background/10 pointer-events-none" />
 
       {/* ============= OPPONENT BOARD ============= */}
       <div
