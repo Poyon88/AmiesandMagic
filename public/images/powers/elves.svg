@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80">
+  <circle cx="40" cy="40" r="38" fill="#1a2e1a" stroke="#4CAF50" stroke-width="2.5"/>
+  <!-- Crosshair / Target icon (Steady Shot) -->
+  <circle cx="40" cy="40" r="16" fill="none" stroke="#4CAF50" stroke-width="2"/>
+  <circle cx="40" cy="40" r="8" fill="none" stroke="#4CAF50" stroke-width="1.5"/>
+  <circle cx="40" cy="40" r="2.5" fill="#4CAF50"/>
+  <!-- Crosshair lines -->
+  <line x1="40" y1="18" x2="40" y2="28" stroke="#4CAF50" stroke-width="2" stroke-linecap="round"/>
+  <line x1="40" y1="52" x2="40" y2="62" stroke="#4CAF50" stroke-width="2" stroke-linecap="round"/>
+  <line x1="18" y1="40" x2="28" y2="40" stroke="#4CAF50" stroke-width="2" stroke-linecap="round"/>
+  <line x1="52" y1="40" x2="62" y2="40" stroke="#4CAF50" stroke-width="2" stroke-linecap="round"/>
+</svg>

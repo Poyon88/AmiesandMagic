@@ -6,12 +6,12 @@ import { createClient } from "@/lib/supabase/client";
 import { useGameStore } from "@/lib/store/gameStore";
 import { applyAction } from "@/lib/game/engine";
 import GameBoard from "@/components/game/GameBoard";
-import type { Card, GameAction, HeroDefinition, HeroPowerEffect, HeroClass } from "@/lib/game/types";
+import type { Card, GameAction, HeroDefinition, HeroPowerEffect, Race } from "@/lib/game/types";
 
 interface HeroRow {
   id: number;
   name: string;
-  hero_class: string;
+  race: string;
   power_name: string;
   power_type: string;
   power_cost: number;
@@ -31,7 +31,7 @@ function mapHeroRow(row: HeroRow | null): HeroDefinition | null {
   return {
     id: row.id,
     name: row.name,
-    heroClass: row.hero_class as HeroClass,
+    race: row.race as Race,
     powerName: row.power_name,
     powerType: row.power_type as "active" | "passive",
     powerCost: row.power_cost,

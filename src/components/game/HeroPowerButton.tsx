@@ -4,12 +4,16 @@ import { useState } from "react";
 import { createPortal } from "react-dom";
 import type { HeroDefinition } from "@/lib/game/types";
 
-const CLASS_ICONS: Record<string, string> = {
-  warrior: "\u2694\uFE0F",
-  mage: "\uD83D\uDD25",
-  priest: "\u2728",
-  ranger: "\uD83C\uDFF9",
-  necromancer: "\uD83D\uDC80",
+const POWER_IMAGES: Record<string, string> = {
+  elves: "/images/powers/elves.svg",
+  dwarves: "/images/powers/dwarves.svg",
+  halflings: "/images/powers/halflings.svg",
+  humans: "/images/powers/humans.svg",
+  beastmen: "/images/powers/beastmen.svg",
+  giants: "/images/powers/giants.svg",
+  dark_elves: "/images/powers/dark_elves.svg",
+  orcs_goblins: "/images/powers/orcs_goblins.svg",
+  undead: "/images/powers/undead.svg",
 };
 
 interface HeroPowerButtonProps {
@@ -85,8 +89,12 @@ export default function HeroPowerButton({
           </span>
         )}
 
-        {/* Class icon */}
-        <span className="text-lg">{CLASS_ICONS[heroDef.heroClass] ?? "\u2B50"}</span>
+        {/* Class power icon */}
+        <img
+          src={POWER_IMAGES[heroDef.race] ?? ""}
+          alt={heroDef.powerName}
+          className="w-full h-full rounded-full object-cover"
+        />
       </div>
 
       {/* Power name — always visible */}

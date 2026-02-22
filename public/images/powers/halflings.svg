@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80">
+  <circle cx="40" cy="40" r="38" fill="#1a2e1a" stroke="#66BB6A" stroke-width="2.5"/>
+  <!-- Card / Draw icon (Lucky Draw) -->
+  <!-- Back card -->
+  <rect x="26" y="22" width="22" height="32" rx="2" fill="none" stroke="#66BB6A" stroke-width="1.5" transform="rotate(-8 37 38)"/>
+  <!-- Front card -->
+  <rect x="30" y="24" width="22" height="32" rx="2" fill="#2a4a2a" stroke="#66BB6A" stroke-width="2"/>
+  <!-- Star/luck symbol on card -->
+  <polygon points="41,32 43,37 48,37 44,40 45,45 41,42 37,45 38,40 34,37 39,37" fill="#66BB6A"/>
+  <!-- Arrow indicating draw -->
+  <path d="M54 30 L58 24 L58 34 Z" fill="#66BB6A"/>
+  <line x1="50" y1="30" x2="56" y2="30" stroke="#66BB6A" stroke-width="2"/>
+</svg>

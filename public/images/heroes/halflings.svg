@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <radialGradient id="hl-bg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#3D5C2E"/>
+      <stop offset="100%" stop-color="#0E1A08"/>
+    </radialGradient>
+    <linearGradient id="hl-border" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#7CFC00"/>
+      <stop offset="50%" stop-color="#228B22"/>
+      <stop offset="100%" stop-color="#7CFC00"/>
+    </linearGradient>
+    <radialGradient id="hl-face" cx="50%" cy="45%" r="35%">
+      <stop offset="0%" stop-color="#FFDAB9"/>
+      <stop offset="100%" stop-color="#D2A679"/>
+    </radialGradient>
+  </defs>
+  <!-- Background circle -->
+  <circle cx="60" cy="60" r="58" fill="url(#hl-bg)"/>
+  <!-- Border ring -->
+  <circle cx="60" cy="60" r="56" fill="none" stroke="url(#hl-border)" stroke-width="4"/>
+  <!-- Inner decorative ring -->
+  <circle cx="60" cy="60" r="52" fill="none" stroke="#32CD32" stroke-width="1" opacity="0.3"/>
+  <!-- Round face -->
+  <circle cx="60" cy="55" r="26" fill="url(#hl-face)"/>
+  <!-- Rosy cheeks -->
+  <circle cx="44" cy="60" r="6" fill="#FF9999" opacity="0.4"/>
+  <circle cx="76" cy="60" r="6" fill="#FF9999" opacity="0.4"/>
+  <!-- Curly hair -->
+  <circle cx="38" cy="38" r="8" fill="#8B4513"/>
+  <circle cx="48" cy="32" r="8" fill="#8B4513"/>
+  <circle cx="60" cy="30" r="8" fill="#8B4513"/>
+  <circle cx="72" cy="32" r="8" fill="#8B4513"/>
+  <circle cx="82" cy="38" r="8" fill="#8B4513"/>
+  <circle cx="35" cy="48" r="6" fill="#8B4513"/>
+  <circle cx="85" cy="48" r="6" fill="#8B4513"/>
+  <!-- Hair highlights -->
+  <circle cx="40" cy="36" r="3" fill="#A0652D" opacity="0.5"/>
+  <circle cx="55" cy="30" r="3" fill="#A0652D" opacity="0.5"/>
+  <circle cx="72" cy="30" r="3" fill="#A0652D" opacity="0.5"/>
+  <!-- Eyes - cheerful and bright -->
+  <ellipse cx="50" cy="53" rx="4" ry="4.5" fill="white"/>
+  <ellipse cx="70" cy="53" rx="4" ry="4.5" fill="white"/>
+  <circle cx="51" cy="52.5" r="2.5" fill="#228B22"/>
+  <circle cx="71" cy="52.5" r="2.5" fill="#228B22"/>
+  <circle cx="51.5" cy="51.5" r="1" fill="white"/>
+  <circle cx="71.5" cy="51.5" r="1" fill="white"/>
+  <!-- Eyebrows - cheerful arched -->
+  <path d="M44 47 Q50 44 55 47" fill="none" stroke="#6B3510" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M65 47 Q70 44 76 47" fill="none" stroke="#6B3510" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- Nose - small button -->
+  <ellipse cx="60" cy="59" rx="2.5" ry="2" fill="#D2A679"/>
+  <!-- Big cheerful smile -->
+  <path d="M48 65 Q54 74 60 74 Q66 74 72 65" fill="none" stroke="#8B4513" stroke-width="2" stroke-linecap="round"/>
+  <!-- Ears - slightly pointed and large -->
+  <path d="M34 52 Q28 48 30 42 Q32 46 36 48" fill="#FFDAB9" stroke="#D2A679" stroke-width="0.5"/>
+  <path d="M86 52 Q92 48 90 42 Q88 46 84 48" fill="#FFDAB9" stroke="#D2A679" stroke-width="0.5"/>
+  <!-- Clover motif at bottom -->
+  <g transform="translate(60, 96)">
+    <!-- Stem -->
+    <line x1="0" y1="0" x2="0" y2="14" stroke="#228B22" stroke-width="1.5"/>
+    <!-- Four leaves of clover -->
+    <ellipse cx="-5" cy="-3" rx="5" ry="6" fill="#32CD32" transform="rotate(-30 -5 -3)" opacity="0.9"/>
+    <ellipse cx="5" cy="-3" rx="5" ry="6" fill="#32CD32" transform="rotate(30 5 -3)" opacity="0.9"/>
+    <ellipse cx="-5" cy="-10" rx="5" ry="6" fill="#32CD32" transform="rotate(-15 -5 -10)" opacity="0.9"/>
+    <ellipse cx="5" cy="-10" rx="5" ry="6" fill="#32CD32" transform="rotate(15 5 -10)" opacity="0.9"/>
+    <!-- Leaf veins -->
+    <line x1="0" y1="0" x2="-6" y2="-4" stroke="#006400" stroke-width="0.5" opacity="0.5"/>
+    <line x1="0" y1="0" x2="6" y2="-4" stroke="#006400" stroke-width="0.5" opacity="0.5"/>
+    <line x1="0" y1="-6" x2="-6" y2="-12" stroke="#006400" stroke-width="0.5" opacity="0.5"/>
+    <line x1="0" y1="-6" x2="6" y2="-12" stroke="#006400" stroke-width="0.5" opacity="0.5"/>
+  </g>
+</svg>

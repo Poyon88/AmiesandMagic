@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <radialGradient id="dw-bg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#5C3D2E"/>
+      <stop offset="100%" stop-color="#1A0E08"/>
+    </radialGradient>
+    <linearGradient id="dw-border" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#CD7F32"/>
+      <stop offset="50%" stop-color="#A0522D"/>
+      <stop offset="100%" stop-color="#CD7F32"/>
+    </linearGradient>
+    <radialGradient id="dw-helmet" cx="50%" cy="40%" r="40%">
+      <stop offset="0%" stop-color="#8B7355"/>
+      <stop offset="100%" stop-color="#4A3728"/>
+    </radialGradient>
+  </defs>
+  <!-- Background circle -->
+  <circle cx="60" cy="60" r="58" fill="url(#dw-bg)"/>
+  <!-- Border ring -->
+  <circle cx="60" cy="60" r="56" fill="none" stroke="url(#dw-border)" stroke-width="4"/>
+  <!-- Inner decorative ring -->
+  <circle cx="60" cy="60" r="52" fill="none" stroke="#8B6914" stroke-width="1" opacity="0.4"/>
+  <!-- Helmet dome -->
+  <path d="M35 48 Q36 28 60 22 Q84 28 85 48 L85 52 L35 52 Z" fill="url(#dw-helmet)" stroke="#CD7F32" stroke-width="1"/>
+  <!-- Helmet band -->
+  <rect x="35" y="48" width="50" height="6" rx="1" fill="#CD7F32" opacity="0.8"/>
+  <!-- Helmet nose guard -->
+  <rect x="57" y="48" width="6" height="18" rx="1" fill="#8B7355" stroke="#CD7F32" stroke-width="0.5"/>
+  <!-- Eyes -->
+  <ellipse cx="47" cy="58" rx="5" ry="3" fill="#1A0E08"/>
+  <ellipse cx="73" cy="58" rx="5" ry="3" fill="#1A0E08"/>
+  <circle cx="48" cy="57.5" r="1.5" fill="#FFD700" opacity="0.9"/>
+  <circle cx="74" cy="57.5" r="1.5" fill="#FFD700" opacity="0.9"/>
+  <!-- Nose -->
+  <ellipse cx="60" cy="64" rx="4" ry="3" fill="#9B7653" opacity="0.6"/>
+  <!-- Beard -->
+  <path d="M38 65 Q38 60 42 62 L45 66 Q48 72 50 80 Q55 92 60 95 Q65 92 70 80 Q72 72 75 66 L78 62 Q82 60 82 65 Q84 78 75 90 Q68 100 60 102 Q52 100 45 90 Q36 78 38 65 Z" fill="#8B6914" opacity="0.9"/>
+  <!-- Beard detail lines -->
+  <path d="M45 70 Q52 85 55 95" fill="none" stroke="#A0822D" stroke-width="0.8" opacity="0.5"/>
+  <path d="M52 68 Q56 82 58 95" fill="none" stroke="#A0822D" stroke-width="0.8" opacity="0.5"/>
+  <path d="M62 68 Q64 82 62 95" fill="none" stroke="#A0822D" stroke-width="0.8" opacity="0.5"/>
+  <path d="M68 68 Q68 82 65 95" fill="none" stroke="#A0822D" stroke-width="0.8" opacity="0.5"/>
+  <path d="M75 70 Q68 85 65 95" fill="none" stroke="#A0822D" stroke-width="0.8" opacity="0.5"/>
+  <!-- Mouth in beard -->
+  <path d="M52 72 Q60 76 68 72" fill="none" stroke="#3D2B1F" stroke-width="1.5"/>
+  <!-- Crossed hammers below -->
+  <!-- Left hammer -->
+  <line x1="28" y1="105" x2="52" y2="85" stroke="#CD7F32" stroke-width="2" stroke-linecap="round"/>
+  <rect x="23" y="100" width="8" height="10" rx="1" fill="#8B7355" stroke="#CD7F32" stroke-width="0.5" transform="rotate(-40 27 105)"/>
+  <!-- Right hammer -->
+  <line x1="92" y1="105" x2="68" y2="85" stroke="#CD7F32" stroke-width="2" stroke-linecap="round"/>
+  <rect x="89" y="100" width="8" height="10" rx="1" fill="#8B7355" stroke="#CD7F32" stroke-width="0.5" transform="rotate(40 93 105)"/>
+  <!-- Helmet horns -->
+  <path d="M35 42 Q28 30 22 20" fill="none" stroke="#CD7F32" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M85 42 Q92 30 98 20" fill="none" stroke="#CD7F32" stroke-width="2.5" stroke-linecap="round"/>
+</svg>

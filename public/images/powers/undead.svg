@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80">
+  <circle cx="40" cy="40" r="38" fill="#1a0e20" stroke="#7B1FA2" stroke-width="2.5"/>
+  <!-- Skull with green glow (Soul Harvest) -->
+  <!-- Green glow behind skull -->
+  <circle cx="40" cy="38" r="20" fill="#1B5E20" opacity="0.3"/>
+  <circle cx="40" cy="38" r="14" fill="#2E7D32" opacity="0.2"/>
+  <!-- Skull shape -->
+  <path d="M28 36 Q28 20 40 18 Q52 20 52 36 Q52 44 48 46 L48 52 L32 52 L32 46 Q28 44 28 36 Z" fill="#2a1a30" stroke="#E0E0E0" stroke-width="1.5"/>
+  <!-- Eye sockets with green glow -->
+  <ellipse cx="34" cy="34" rx="4" ry="5" fill="#4CAF50" opacity="0.8"/>
+  <ellipse cx="46" cy="34" rx="4" ry="5" fill="#4CAF50" opacity="0.8"/>
+  <!-- Eye glow centers -->
+  <ellipse cx="34" cy="34" rx="2" ry="2.5" fill="#81C784"/>
+  <ellipse cx="46" cy="34" rx="2" ry="2.5" fill="#81C784"/>
+  <!-- Nose -->
+  <path d="M38 40 L40 43 L42 40" fill="none" stroke="#E0E0E0" stroke-width="1"/>
+  <!-- Teeth -->
+  <line x1="36" y1="48" x2="36" y2="52" stroke="#E0E0E0" stroke-width="1.5"/>
+  <line x1="40" y1="48" x2="40" y2="52" stroke="#E0E0E0" stroke-width="1.5"/>
+  <line x1="44" y1="48" x2="44" y2="52" stroke="#E0E0E0" stroke-width="1.5"/>
+  <!-- Soul wisps -->
+  <path d="M22 56 Q26 48 30 54" fill="none" stroke="#4CAF50" stroke-width="1" stroke-linecap="round" opacity="0.6"/>
+  <path d="M50 54 Q54 48 58 56" fill="none" stroke="#4CAF50" stroke-width="1" stroke-linecap="round" opacity="0.6"/>
+</svg>

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80">
+  <circle cx="40" cy="40" r="38" fill="#0e2e0e" stroke="#2E7D32" stroke-width="2.5"/>
+  <!-- War horn / Roar icon (War Cry) -->
+  <!-- Horn body -->
+  <path d="M22 44 L22 36 Q22 32 26 30 L44 24 Q50 22 52 26 L54 34 Q56 40 52 44 L44 48 Q38 50 26 48 Q22 48 22 44 Z" fill="#1B5E20" stroke="#4CAF50" stroke-width="2" stroke-linejoin="round"/>
+  <!-- Horn opening -->
+  <ellipse cx="52" cy="35" rx="4" ry="8" fill="none" stroke="#4CAF50" stroke-width="1.5"/>
+  <!-- Sound waves -->
+  <path d="M58 30 Q64 35 58 40" fill="none" stroke="#66BB6A" stroke-width="2" stroke-linecap="round"/>
+  <path d="M62 26 Q70 35 62 44" fill="none" stroke="#66BB6A" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+  <path d="M66 22 Q76 35 66 48" fill="none" stroke="#66BB6A" stroke-width="1" stroke-linecap="round" opacity="0.4"/>
+  <!-- Horn band -->
+  <line x1="32" y1="30" x2="30" y2="46" stroke="#4CAF50" stroke-width="1.5"/>
+</svg>

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80">
+  <circle cx="40" cy="40" r="38" fill="#1a1f2e" stroke="#5C7AA5" stroke-width="2.5"/>
+  <!-- Lightning bolt icon (Rally) -->
+  <polygon points="44,16 30,42 38,42 34,64 52,36 44,36 48,16" fill="#5C7AA5" stroke="#7BA4D4" stroke-width="1" stroke-linejoin="round"/>
+  <!-- Subtle glow -->
+  <polygon points="44,16 30,42 38,42 34,64 52,36 44,36 48,16" fill="none" stroke="#8BB4E4" stroke-width="0.5" opacity="0.5"/>
+</svg>

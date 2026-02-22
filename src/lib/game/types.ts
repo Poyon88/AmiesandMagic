@@ -58,7 +58,7 @@ export interface CardInstance {
 }
 
 // Hero power system
-export type HeroClass = "warrior" | "mage" | "priest" | "ranger" | "necromancer";
+export type Race = "elves" | "dwarves" | "halflings" | "humans" | "beastmen" | "giants" | "dark_elves" | "orcs_goblins" | "undead";
 export type HeroPowerType = "active" | "passive";
 
 export interface HeroPowerEffect {
@@ -71,7 +71,7 @@ export interface HeroPowerEffect {
 export interface HeroDefinition {
   id: number;
   name: string;
-  heroClass: HeroClass;
+  race: Race;
   powerName: string;
   powerType: HeroPowerType;
   powerCost: number;

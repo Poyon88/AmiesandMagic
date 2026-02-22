@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <radialGradient id="gi-bg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#4A4A4A"/>
+      <stop offset="100%" stop-color="#121212"/>
+    </radialGradient>
+    <linearGradient id="gi-border" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#A9A9A9"/>
+      <stop offset="50%" stop-color="#696969"/>
+      <stop offset="100%" stop-color="#A9A9A9"/>
+    </linearGradient>
+    <radialGradient id="gi-skin" cx="50%" cy="45%" r="38%">
+      <stop offset="0%" stop-color="#8B8B7A"/>
+      <stop offset="100%" stop-color="#5A5A4A"/>
+    </radialGradient>
+    <!-- Stone texture pattern -->
+    <pattern id="gi-stone" x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse">
+      <rect width="12" height="12" fill="none"/>
+      <circle cx="3" cy="3" r="1" fill="#3A3A3A" opacity="0.3"/>
+      <circle cx="9" cy="7" r="1.5" fill="#3A3A3A" opacity="0.2"/>
+      <circle cx="6" cy="11" r="0.8" fill="#4A4A4A" opacity="0.25"/>
+    </pattern>
+  </defs>
+  <!-- Background circle -->
+  <circle cx="60" cy="60" r="58" fill="url(#gi-bg)"/>
+  <!-- Stone texture overlay -->
+  <circle cx="60" cy="60" r="58" fill="url(#gi-stone)"/>
+  <!-- Border ring -->
+  <circle cx="60" cy="60" r="56" fill="none" stroke="url(#gi-border)" stroke-width="4"/>
+  <!-- Inner ring -->
+  <circle cx="60" cy="60" r="52" fill="none" stroke="#808080" stroke-width="1" opacity="0.3"/>
+  <!-- Large rough face shape -->
+  <path d="M32 45 Q30 30 42 22 Q50 18 60 16 Q70 18 78 22 Q90 30 88 45 Q90 55 88 65 Q86 78 78 86 Q70 92 60 94 Q50 92 42 86 Q34 78 32 65 Q30 55 32 45 Z" fill="url(#gi-skin)"/>
+  <!-- Stone cracks/texture on face -->
+  <path d="M42 30 L48 40 L45 52" fill="none" stroke="#4A4A3A" stroke-width="1" opacity="0.4"/>
+  <path d="M78 35 L72 48 L75 58" fill="none" stroke="#4A4A3A" stroke-width="1" opacity="0.4"/>
+  <path d="M55 20 L58 30" fill="none" stroke="#4A4A3A" stroke-width="0.8" opacity="0.3"/>
+  <!-- Heavy brow ridge -->
+  <path d="M35 46 Q45 40 55 44 L56 46 Q46 42 36 48 Z" fill="#5A5A4A"/>
+  <path d="M64 44 Q75 40 85 46 L84 48 Q74 42 64 46 Z" fill="#5A5A4A"/>
+  <!-- Deep-set eyes -->
+  <ellipse cx="46" cy="50" rx="6" ry="5" fill="#2A2A2A"/>
+  <ellipse cx="74" cy="50" rx="6" ry="5" fill="#2A2A2A"/>
+  <circle cx="46" cy="50" r="3" fill="#8B8878"/>
+  <circle cx="74" cy="50" r="3" fill="#8B8878"/>
+  <circle cx="46" cy="50" r="1.5" fill="#2A2A2A"/>
+  <circle cx="74" cy="50" r="1.5" fill="#2A2A2A"/>
+  <!-- Large bulbous nose -->
+  <path d="M54 52 Q52 58 50 64 Q54 68 60 69 Q66 68 70 64 Q68 58 66 52 Q62 56 60 56 Q58 56 54 52 Z" fill="#6B6B5A" stroke="#5A5A4A" stroke-width="0.5"/>
+  <!-- Wide mouth -->
+  <path d="M42 76 Q48 72 60 72 Q72 72 78 76" fill="none" stroke="#3A3A2A" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Lower lip -->
+  <path d="M44 78 Q52 82 60 82 Q68 82 76 78" fill="#6B6B5A" stroke="#4A4A3A" stroke-width="0.5" opacity="0.6"/>
+  <!-- Rough jaw/chin -->
+  <path d="M40 80 Q42 90 50 92 Q55 94 60 94 Q65 94 70 92 Q78 90 80 80" fill="none" stroke="#5A5A4A" stroke-width="1" opacity="0.5"/>
+  <!-- Small ears -->
+  <path d="M32 48 Q26 46 25 52 Q25 58 30 58 L32 54 Z" fill="#7A7A6A" stroke="#5A5A4A" stroke-width="0.5"/>
+  <path d="M88 48 Q94 46 95 52 Q95 58 90 58 L88 54 Z" fill="#7A7A6A" stroke="#5A5A4A" stroke-width="0.5"/>
+  <!-- Mountain/stone peaks at top (crown-like) -->
+  <path d="M30 16 L35 8 L40 14" fill="#696969" stroke="#808080" stroke-width="0.5" opacity="0.7"/>
+  <path d="M42 12 L48 4 L54 10" fill="#696969" stroke="#808080" stroke-width="0.5" opacity="0.7"/>
+  <path d="M55 9 L60 2 L65 9" fill="#808080" stroke="#A0A0A0" stroke-width="0.5" opacity="0.8"/>
+  <path d="M66 10 L72 4 L78 12" fill="#696969" stroke="#808080" stroke-width="0.5" opacity="0.7"/>
+  <path d="M80 14 L85 8 L90 16" fill="#696969" stroke="#808080" stroke-width="0.5" opacity="0.7"/>
+  <!-- Wrinkles/creases -->
+  <path d="M38 62 Q44 60 50 62" fill="none" stroke="#4A4A3A" stroke-width="0.8" opacity="0.4"/>
+  <path d="M70 62 Q76 60 82 62" fill="none" stroke="#4A4A3A" stroke-width="0.8" opacity="0.4"/>
+  <!-- Stone debris at bottom -->
+  <circle cx="35" cy="108" r="4" fill="#5A5A5A" opacity="0.5"/>
+  <circle cx="45" cy="112" r="3" fill="#4A4A4A" opacity="0.4"/>
+  <circle cx="75" cy="112" r="3" fill="#4A4A4A" opacity="0.4"/>
+  <circle cx="85" cy="108" r="4" fill="#5A5A5A" opacity="0.5"/>
+  <circle cx="60" cy="114" r="2.5" fill="#505050" opacity="0.4"/>
+</svg>

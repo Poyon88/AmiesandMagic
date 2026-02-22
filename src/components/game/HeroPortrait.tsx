@@ -2,15 +2,19 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
-import type { HeroState, HeroClass } from "@/lib/game/types";
+import type { HeroState, Race } from "@/lib/game/types";
 import { HERO_MAX_HP } from "@/lib/game/constants";
 
-const HERO_IMAGES: Record<HeroClass, string> = {
-  necromancer: "/images/heroes/necromancer.png",
-  warrior: "/images/heroes/warrior.svg",
-  mage: "/images/heroes/mage.svg",
-  priest: "/images/heroes/priest.svg",
-  ranger: "/images/heroes/ranger.png",
+const HERO_IMAGES: Record<Race, string> = {
+  elves: "/images/heroes/elves.png",
+  dwarves: "/images/heroes/dwarves.svg",
+  halflings: "/images/heroes/halflings.svg",
+  humans: "/images/heroes/humans.svg",
+  beastmen: "/images/heroes/beastmen.svg",
+  giants: "/images/heroes/giants.svg",
+  dark_elves: "/images/heroes/dark_elves.svg",
+  orcs_goblins: "/images/heroes/orcs_goblins.svg",
+  undead: "/images/heroes/undead.png",
 };
 
 interface HeroPortraitProps {
@@ -55,10 +59,10 @@ export default function HeroPortrait({
       `}
     >
       {/* Hero portrait - full bleed */}
-      {hero.heroDefinition?.heroClass ? (
+      {hero.heroDefinition?.race ? (
         <Image
-          src={HERO_IMAGES[hero.heroDefinition.heroClass]}
-          alt={hero.heroDefinition.heroClass}
+          src={HERO_IMAGES[hero.heroDefinition.race]}
+          alt={hero.heroDefinition.race}
           fill
           sizes="80px"
           quality={90}

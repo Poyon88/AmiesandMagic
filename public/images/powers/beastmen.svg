@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80">
+  <circle cx="40" cy="40" r="38" fill="#2e1a1a" stroke="#D32F2F" stroke-width="2.5"/>
+  <!-- Claw slash marks (Savage Strike) -->
+  <!-- Slash 1 -->
+  <path d="M26 22 Q30 34 28 50 Q27 56 24 60" fill="none" stroke="#D32F2F" stroke-width="3" stroke-linecap="round"/>
+  <!-- Slash 2 -->
+  <path d="M38 20 Q40 34 38 50 Q37 56 36 62" fill="none" stroke="#D32F2F" stroke-width="3" stroke-linecap="round"/>
+  <!-- Slash 3 -->
+  <path d="M50 22 Q50 34 48 50 Q47 56 48 60" fill="none" stroke="#D32F2F" stroke-width="3" stroke-linecap="round"/>
+  <!-- Claw tips -->
+  <circle cx="24" cy="60" r="1.5" fill="#FF5252"/>
+  <circle cx="36" cy="62" r="1.5" fill="#FF5252"/>
+  <circle cx="48" cy="60" r="1.5" fill="#FF5252"/>
+</svg>

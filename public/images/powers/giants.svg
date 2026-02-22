@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80">
+  <circle cx="40" cy="40" r="38" fill="#1e1e1e" stroke="#9E9E9E" stroke-width="2.5"/>
+  <!-- Fist / Stomp icon (Thunder Stomp) -->
+  <!-- Fist shape -->
+  <path d="M28 36 L28 28 Q28 24 32 24 L34 24 Q36 24 36 28 L36 30" fill="#5a5a5a" stroke="#9E9E9E" stroke-width="1.5"/>
+  <path d="M36 30 L36 26 Q36 22 40 22 L40 30" fill="#5a5a5a" stroke="#9E9E9E" stroke-width="1.5"/>
+  <path d="M40 30 L40 24 Q40 20 44 20 L44 30" fill="#5a5a5a" stroke="#9E9E9E" stroke-width="1.5"/>
+  <path d="M44 30 L44 26 Q44 22 48 22 Q52 22 52 26 L52 36" fill="#5a5a5a" stroke="#9E9E9E" stroke-width="1.5"/>
+  <rect x="28" y="30" width="24" height="14" rx="3" fill="#5a5a5a" stroke="#9E9E9E" stroke-width="1.5"/>
+  <!-- Impact lines -->
+  <line x1="30" y1="52" x2="24" y2="60" stroke="#BDBDBD" stroke-width="2" stroke-linecap="round"/>
+  <line x1="40" y1="50" x2="40" y2="62" stroke="#BDBDBD" stroke-width="2" stroke-linecap="round"/>
+  <line x1="50" y1="52" x2="56" y2="60" stroke="#BDBDBD" stroke-width="2" stroke-linecap="round"/>
+  <!-- Ground crack -->
+  <path d="M22 58 L58 58" stroke="#9E9E9E" stroke-width="1.5" stroke-dasharray="4,3"/>
+</svg>

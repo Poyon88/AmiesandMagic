@@ -10,7 +10,7 @@ import GameCard from "@/components/cards/GameCard";
 interface HeroRow {
   id: number;
   name: string;
-  hero_class: string;
+  race: string;
   power_name: string;
   power_type: string;
   power_cost: number;
@@ -31,12 +31,16 @@ interface DeckBuilderProps {
   existingDeckCards: { card_id: number; quantity: number }[];
 }
 
-const CLASS_ICONS: Record<string, string> = {
-  warrior: "\u2694\uFE0F",
-  mage: "\uD83D\uDD25",
-  priest: "\u2728",
-  ranger: "\uD83C\uDFF9",
-  necromancer: "\uD83D\uDC80",
+const RACE_ICONS: Record<string, string> = {
+  elves: "\uD83C\uDFF9",
+  dwarves: "\u2692\uFE0F",
+  halflings: "\uD83C\uDF40",
+  humans: "\u2694\uFE0F",
+  beastmen: "\uD83D\uDC3A",
+  giants: "\uD83D\uDDFB",
+  dark_elves: "\uD83D\uDD2E",
+  orcs_goblins: "\uD83D\uDDE1\uFE0F",
+  undead: "\uD83D\uDC80",
 };
 
 const KEYWORDS: Keyword[] = ["charge", "taunt", "divine_shield", "ranged"];
@@ -310,7 +314,7 @@ export default function DeckBuilder({
                   }
                 `}
               >
-                <span className="text-lg">{CLASS_ICONS[hero.hero_class] ?? "\u2B50"}</span>
+                <span className="text-lg">{RACE_ICONS[hero.race] ?? "\u2B50"}</span>
                 <span className="text-[9px] text-foreground/70 leading-tight mt-0.5 truncate w-full">
                   {hero.name.split(" ").pop()}
                 </span>

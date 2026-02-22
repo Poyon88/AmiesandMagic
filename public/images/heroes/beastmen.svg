@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <radialGradient id="bm-bg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#5C2E2E"/>
+      <stop offset="100%" stop-color="#1A0808"/>
+    </radialGradient>
+    <linearGradient id="bm-border" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#CD5C5C"/>
+      <stop offset="50%" stop-color="#8B2500"/>
+      <stop offset="100%" stop-color="#CD5C5C"/>
+    </linearGradient>
+    <radialGradient id="bm-fur" cx="50%" cy="40%" r="40%">
+      <stop offset="0%" stop-color="#8B6945"/>
+      <stop offset="100%" stop-color="#4A2E18"/>
+    </radialGradient>
+  </defs>
+  <!-- Background circle -->
+  <circle cx="60" cy="60" r="58" fill="url(#bm-bg)"/>
+  <!-- Border ring -->
+  <circle cx="60" cy="60" r="56" fill="none" stroke="url(#bm-border)" stroke-width="4"/>
+  <!-- Inner decorative ring -->
+  <circle cx="60" cy="60" r="52" fill="none" stroke="#8B2500" stroke-width="1" opacity="0.4"/>
+  <!-- Wild fur mane -->
+  <path d="M25 55 Q22 40 30 28 Q28 35 35 32 Q32 22 42 18 Q40 25 48 22 Q48 14 58 12 Q55 18 60 16 Q62 10 68 14 Q65 20 72 18 Q75 12 82 20 Q78 25 85 28 Q90 22 95 35 Q88 32 92 42 Q98 48 95 58 Q90 50 88 55 Q92 62 88 68 L85 60 Q60 48 35 60 L32 68 Q28 62 32 55 Q28 58 25 55 Z" fill="url(#bm-fur)"/>
+  <!-- Fur texture strands -->
+  <path d="M30 45 L28 38" stroke="#A0784A" stroke-width="1" opacity="0.5"/>
+  <path d="M35 38 L32 30" stroke="#A0784A" stroke-width="1" opacity="0.5"/>
+  <path d="M45 30 L42 22" stroke="#A0784A" stroke-width="1" opacity="0.5"/>
+  <path d="M55 25 L54 18" stroke="#A0784A" stroke-width="1" opacity="0.5"/>
+  <path d="M65 25 L66 18" stroke="#A0784A" stroke-width="1" opacity="0.5"/>
+  <path d="M75 30 L78 22" stroke="#A0784A" stroke-width="1" opacity="0.5"/>
+  <path d="M85 38 L88 30" stroke="#A0784A" stroke-width="1" opacity="0.5"/>
+  <path d="M90 48 L92 40" stroke="#A0784A" stroke-width="1" opacity="0.5"/>
+  <!-- Wolf/beast face -->
+  <path d="M38 58 Q40 50 60 46 Q80 50 82 58 Q82 68 78 74 Q72 82 60 85 Q48 82 42 74 Q38 68 38 58 Z" fill="#6B4E32"/>
+  <!-- Snout/muzzle -->
+  <path d="M45 68 Q48 65 60 64 Q72 65 75 68 Q75 76 68 80 Q64 82 60 82 Q56 82 52 80 Q45 76 45 68 Z" fill="#7D5E42"/>
+  <!-- Nose -->
+  <ellipse cx="60" cy="68" rx="5" ry="3.5" fill="#1A0808"/>
+  <circle cx="57" cy="67.5" r="1" fill="#3D2B1F" opacity="0.5"/>
+  <circle cx="63" cy="67.5" r="1" fill="#3D2B1F" opacity="0.5"/>
+  <!-- Eyes - fierce amber -->
+  <path d="M43 55 Q48 50 55 55 Q48 58 43 55 Z" fill="#FFD700"/>
+  <path d="M65 55 Q72 50 77 55 Q72 58 65 55 Z" fill="#FFD700"/>
+  <!-- Pupils - vertical slits -->
+  <ellipse cx="49" cy="55" rx="1.2" ry="3" fill="#1A0808"/>
+  <ellipse cx="71" cy="55" rx="1.2" ry="3" fill="#1A0808"/>
+  <!-- Eye glow -->
+  <path d="M43 55 Q48 50 55 55 Q48 58 43 55 Z" fill="#FF4500" opacity="0.15"/>
+  <path d="M65 55 Q72 50 77 55 Q72 58 65 55 Z" fill="#FF4500" opacity="0.15"/>
+  <!-- Fangs -->
+  <path d="M50 76 L48 83 L52 78 Z" fill="#F5F5DC"/>
+  <path d="M70 76 L72 83 L68 78 Z" fill="#F5F5DC"/>
+  <!-- Mouth snarl -->
+  <path d="M50 76 Q55 79 60 78 Q65 79 70 76" fill="none" stroke="#3D1F1F" stroke-width="1.5"/>
+  <!-- Brow ridges -->
+  <path d="M42 52 Q48 48 54 51" fill="none" stroke="#4A2E18" stroke-width="2" stroke-linecap="round"/>
+  <path d="M66 51 Q72 48 78 52" fill="none" stroke="#4A2E18" stroke-width="2" stroke-linecap="round"/>
+  <!-- Pointed ears -->
+  <path d="M34 52 Q26 38 28 26 Q32 36 38 44 Z" fill="#6B4E32" stroke="#4A2E18" stroke-width="0.5"/>
+  <path d="M86 52 Q94 38 92 26 Q88 36 82 44 Z" fill="#6B4E32" stroke="#4A2E18" stroke-width="0.5"/>
+  <!-- Scratch/scar marks -->
+  <line x1="38" y1="62" x2="42" y2="70" stroke="#CD5C5C" stroke-width="1" opacity="0.6"/>
+  <line x1="40" y1="61" x2="44" y2="69" stroke="#CD5C5C" stroke-width="1" opacity="0.6"/>
+  <line x1="42" y1="60" x2="46" y2="68" stroke="#CD5C5C" stroke-width="1" opacity="0.6"/>
+</svg>
