@@ -2,8 +2,9 @@
 
 import { useState, useCallback, useEffect, useRef, Fragment, type DragEvent } from "react";
 import { useGameStore } from "@/lib/store/gameStore";
-import { canPlayCard, canAttack } from "@/lib/game/engine";
+import { canPlayCard, canAttack, canUseHeroPower } from "@/lib/game/engine";
 import HeroPortrait from "./HeroPortrait";
+import HeroPowerButton from "./HeroPowerButton";
 import ManaBar from "./ManaBar";
 import BoardCreature from "./BoardCreature";
 import HandCard from "./HandCard";
@@ -35,6 +36,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
     damageEvents,
     clearDamageEvents,
     confirmMulligan,
+    activateHeroPower,
     isMyTurn,
     getMyPlayerState,
     getOpponentPlayerState,
@@ -80,6 +82,11 @@ export default function GameBoard({ onAction }: GameBoardProps) {
   const handleEndTurn = useCallback(() => {
     broadcast(dispatchAction({ type: "end_turn" }));
   }, [dispatchAction, broadcast]);
+
+  const handleActivateHeroPower = useCallback(() => {
+    const action = activateHeroPower();
+    broadcast(action);
+  }, [activateHeroPower, broadcast]);
 
   const handleMulliganConfirm = useCallback(
     (selectedIds: string[]) => {
@@ -169,6 +176,11 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           ? {
               type: "play_card" as const,
               cardInstanceId: selectedCardInstanceId,
+              targetInstanceId: targetId,
+            }
+          : targetingMode === "hero_power"
+          ? {
+              type: "hero_power" as const,
               targetInstanceId: targetId,
             }
           : null;
@@ -274,9 +286,16 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           </span>
         </div>
 
-        {/* Opponent hero + mana */}
+        {/* Opponent hero + mana + hero power */}
         <div className="flex items-center gap-4">
           <ManaBar current={opponent.mana} max={opponent.maxMana} />
+          <HeroPowerButton
+            heroDef={opponent.hero.heroDefinition}
+            isOpponent={true}
+            canUse={false}
+            isUsed={opponent.hero.heroPowerUsedThisTurn}
+            mana={opponent.mana}
+          />
           <HeroPortrait
             hero={opponent.hero}
             isOpponent={true}
@@ -437,7 +456,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
       </div>{/* end BATTLEFIELD WRAPPER */}
 
       {/* ============= MY AREA ============= */}
-      <div className="border-t border-card-border/30 overflow-hidden">
+      <div className="border-t border-card-border/30">
         {/* My hero + mana + graveyard */}
         <div className="flex items-center justify-between px-6 py-2">
           {/* My graveyard + deck */}
@@ -455,7 +474,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
             </div>
           </div>
 
-          {/* My hero + mana */}
+          {/* My hero + mana + hero power */}
           <div className="flex items-center gap-4">
             <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} />
             <HeroPortrait
@@ -479,6 +498,14 @@ export default function GameBoard({ onAction }: GameBoardProps) {
                   : undefined
               }
             />
+            <HeroPowerButton
+              heroDef={myPlayer.hero.heroDefinition}
+              isOpponent={false}
+              canUse={myTurn && !!gameState && canUseHeroPower(gameState)}
+              isUsed={myPlayer.hero.heroPowerUsedThisTurn}
+              mana={myPlayer.mana}
+              onClick={handleActivateHeroPower}
+            />
           </div>
 
           {/* Targeting mode indicator */}
@@ -495,7 +522,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
         </div>
 
         {/* My hand */}
-        <div className="flex justify-center gap-1 px-6 pb-4 pt-1">
+        <div className="flex justify-center gap-1 px-6 pb-4 pt-1 overflow-hidden">
           {myPlayer.hand.map((cardInstance) => {
             const playable =
               myTurn && canPlayCard(gameState, cardInstance.instanceId);

@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import DeckBuilder from "@/components/deck/DeckBuilder";
 
+export const dynamic = "force-dynamic";
+
 export default async function DeckBuilderPage({
   searchParams,
 }: {
@@ -14,12 +16,18 @@ export default async function DeckBuilderPage({
 
   if (!user) redirect("/login");
 
-  // Fetch all cards
-  const { data: cards } = await supabase
-    .from("cards")
-    .select("*")
-    .order("mana_cost")
-    .order("name");
+  // Fetch all cards and heroes
+  const [{ data: cards }, { data: heroes }] = await Promise.all([
+    supabase
+      .from("cards")
+      .select("*")
+      .order("mana_cost")
+      .order("name"),
+    supabase
+      .from("heroes")
+      .select("*")
+      .order("id"),
+  ]);
 
   // If editing, fetch existing deck
   const params = await searchParams;
@@ -36,7 +44,7 @@ export default async function DeckBuilderPage({
       .single();
 
     if (deck) {
-      existingDeck = deck;
+      existingDeck = { id: deck.id, name: deck.name, hero_id: deck.hero_id };
       const { data: deckCards } = await supabase
         .from("deck_cards")
         .select("card_id, quantity")
@@ -48,6 +56,7 @@ export default async function DeckBuilderPage({
   return (
     <DeckBuilder
       cards={cards ?? []}
+      heroes={heroes ?? []}
       userId={user.id}
       existingDeck={existingDeck}
       existingDeckCards={existingDeckCards}

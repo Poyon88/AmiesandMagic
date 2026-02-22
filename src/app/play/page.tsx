@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import MatchmakingQueue from "@/components/game/MatchmakingQueue";
 
+export const dynamic = "force-dynamic";
+
 export default async function PlayPage() {
   const supabase = await createClient();
   const {

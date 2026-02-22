@@ -57,9 +57,34 @@ export interface CardInstance {
   hasDivineShield: boolean;
 }
 
+// Hero power system
+export type HeroClass = "warrior" | "mage" | "priest" | "ranger" | "necromancer";
+export type HeroPowerType = "active" | "passive";
+
+export interface HeroPowerEffect {
+  type: "gain_armor" | "deal_damage" | "heal" | "buff_on_friendly_death";
+  amount?: number;
+  attack?: number;
+  target?: "any" | "any_friendly" | "enemy_hero";
+}
+
+export interface HeroDefinition {
+  id: number;
+  name: string;
+  heroClass: HeroClass;
+  powerName: string;
+  powerType: HeroPowerType;
+  powerCost: number;
+  powerEffect: HeroPowerEffect;
+  powerDescription: string;
+}
+
 export interface HeroState {
   hp: number;
   maxHp: number;
+  armor: number;
+  heroDefinition: HeroDefinition | null;
+  heroPowerUsedThisTurn: boolean;
 }
 
 export interface PlayerState {
@@ -111,7 +136,12 @@ export interface MulliganAction {
   replacedInstanceIds: string[];
 }
 
-export type GameAction = PlayCardAction | AttackAction | EndTurnAction | MulliganAction;
+export interface HeroPowerAction {
+  type: "hero_power";
+  targetInstanceId?: string;
+}
+
+export type GameAction = PlayCardAction | AttackAction | EndTurnAction | MulliganAction | HeroPowerAction;
 
 // Combat event for animations
 export type CombatEventType = "damage" | "heal" | "buff";
@@ -143,6 +173,7 @@ export interface Deck {
   id: number;
   user_id: string;
   name: string;
+  hero_id: number | null;
   created_at: string;
   updated_at: string;
 }

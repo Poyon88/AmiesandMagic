@@ -7,6 +7,17 @@ import type { Card, Keyword } from "@/lib/game/types";
 import { DECK_SIZE } from "@/lib/game/constants";
 import GameCard from "@/components/cards/GameCard";
 
+interface HeroRow {
+  id: number;
+  name: string;
+  hero_class: string;
+  power_name: string;
+  power_type: string;
+  power_cost: number;
+  power_effect: unknown;
+  power_description: string;
+}
+
 interface DeckEntry {
   card: Card;
   quantity: number;
@@ -14,10 +25,19 @@ interface DeckEntry {
 
 interface DeckBuilderProps {
   cards: Card[];
+  heroes: HeroRow[];
   userId: string;
-  existingDeck: { id: number; name: string } | null;
+  existingDeck: { id: number; name: string; hero_id: number | null } | null;
   existingDeckCards: { card_id: number; quantity: number }[];
 }
+
+const CLASS_ICONS: Record<string, string> = {
+  warrior: "\u2694\uFE0F",
+  mage: "\uD83D\uDD25",
+  priest: "\u2728",
+  ranger: "\uD83C\uDFF9",
+  necromancer: "\uD83D\uDC80",
+};
 
 const KEYWORDS: Keyword[] = ["charge", "taunt", "divine_shield", "ranged"];
 const KEYWORD_LABELS: Record<Keyword, string> = {
@@ -29,6 +49,7 @@ const KEYWORD_LABELS: Record<Keyword, string> = {
 
 export default function DeckBuilder({
   cards,
+  heroes,
   userId,
   existingDeck,
   existingDeckCards,
@@ -37,6 +58,9 @@ export default function DeckBuilder({
   const supabase = createClient();
 
   const [deckName, setDeckName] = useState(existingDeck?.name ?? "");
+  const [selectedHeroId, setSelectedHeroId] = useState<number | null>(
+    existingDeck?.hero_id ?? null
+  );
   const [deckCards, setDeckCards] = useState<Map<number, DeckEntry>>(() => {
     const map = new Map<number, DeckEntry>();
     existingDeckCards.forEach((dc) => {
@@ -110,6 +134,10 @@ export default function DeckBuilder({
       setError("Please enter a deck name");
       return;
     }
+    if (!selectedHeroId) {
+      setError("Please select a hero");
+      return;
+    }
     if (totalCards !== DECK_SIZE) {
       setError(`Deck must contain exactly ${DECK_SIZE} cards (currently ${totalCards})`);
       return;
@@ -125,7 +153,7 @@ export default function DeckBuilder({
         // Update existing deck
         await supabase
           .from("decks")
-          .update({ name: deckName.trim(), updated_at: new Date().toISOString() })
+          .update({ name: deckName.trim(), hero_id: selectedHeroId, updated_at: new Date().toISOString() })
           .eq("id", deckId);
 
         // Delete old cards and re-insert
@@ -134,7 +162,7 @@ export default function DeckBuilder({
         // Create new deck
         const { data, error } = await supabase
           .from("decks")
-          .insert({ user_id: userId, name: deckName.trim() })
+          .insert({ user_id: userId, name: deckName.trim(), hero_id: selectedHeroId })
           .select("id")
           .single();
 
@@ -266,6 +294,52 @@ export default function DeckBuilder({
 
       {/* Right: Current Deck */}
       <div className="w-80 bg-secondary border-l border-card-border flex flex-col">
+        {/* Hero selection */}
+        <div className="p-4 border-b border-card-border">
+          <h3 className="text-sm font-bold text-foreground mb-2">Choose Your Hero</h3>
+          <div className="grid grid-cols-5 gap-1.5">
+            {heroes.map((hero) => (
+              <button
+                key={hero.id}
+                onClick={() => setSelectedHeroId(hero.id)}
+                className={`
+                  relative flex flex-col items-center p-1.5 rounded-lg border-2 transition-all text-center
+                  ${selectedHeroId === hero.id
+                    ? "border-primary bg-primary/20 shadow-[0_0_8px_rgba(59,130,246,0.3)]"
+                    : "border-card-border/50 bg-background hover:border-card-border hover:bg-card-border/20"
+                  }
+                `}
+              >
+                <span className="text-lg">{CLASS_ICONS[hero.hero_class] ?? "\u2B50"}</span>
+                <span className="text-[9px] text-foreground/70 leading-tight mt-0.5 truncate w-full">
+                  {hero.name.split(" ").pop()}
+                </span>
+              </button>
+            ))}
+          </div>
+          {selectedHeroId && (() => {
+            const hero = heroes.find((h) => h.id === selectedHeroId);
+            if (!hero) return null;
+            return (
+              <div className="mt-2 p-2 bg-background rounded-lg border border-card-border/50">
+                <div className="text-xs font-bold text-foreground">{hero.name}</div>
+                <div className="text-[10px] text-primary font-medium">{hero.power_name}</div>
+                <div className="text-[10px] text-foreground/60">{hero.power_description}</div>
+                {hero.power_type === "passive" && (
+                  <span className="inline-block mt-1 px-1.5 py-0.5 bg-purple-600/20 text-purple-400 text-[9px] font-bold rounded">
+                    PASSIVE
+                  </span>
+                )}
+                {hero.power_type === "active" && (
+                  <span className="inline-block mt-1 px-1.5 py-0.5 bg-mana-blue/20 text-mana-blue text-[9px] font-bold rounded">
+                    {hero.power_cost} MANA
+                  </span>
+                )}
+              </div>
+            );
+          })()}
+        </div>
+
         {/* Deck header */}
         <div className="p-4 border-b border-card-border">
           <input

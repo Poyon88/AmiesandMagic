@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { GameState, GameAction, Card, DamageEvent } from "@/lib/game/types";
+import type { GameState, GameAction, Card, DamageEvent, HeroDefinition } from "@/lib/game/types";
 import {
   initializeGame,
   applyAction,
@@ -8,6 +8,9 @@ import {
   getValidTargets,
   needsTarget,
   getSpellTargets,
+  canUseHeroPower,
+  heroPowerNeedsTarget,
+  getHeroPowerTargets,
 } from "@/lib/game/engine";
 
 interface GameStore {
@@ -17,7 +20,7 @@ interface GameStore {
   selectedCardInstanceId: string | null;
   selectedAttackerInstanceId: string | null;
   validTargets: string[];
-  targetingMode: "none" | "attack" | "spell";
+  targetingMode: "none" | "attack" | "spell" | "hero_power";
   damageEvents: DamageEvent[];
 
   // Actions
@@ -27,7 +30,9 @@ interface GameStore {
     player1Cards: { card: Card; quantity: number }[],
     player2Cards: { card: Card; quantity: number }[],
     firstPlayerIndex?: 0 | 1,
-    seed?: number
+    seed?: number,
+    player1Hero?: HeroDefinition | null,
+    player2Hero?: HeroDefinition | null
   ) => void;
   setGameState: (state: GameState) => void;
   setLocalPlayerId: (id: string) => void;
@@ -40,6 +45,7 @@ interface GameStore {
   selectTarget: (targetId: string) => void;
   clearSelection: () => void;
   clearDamageEvents: () => void;
+  activateHeroPower: () => GameAction | null;
   confirmMulligan: (selectedInstanceIds: string[]) => GameAction | null;
 
   // Queries
@@ -98,6 +104,18 @@ function detectDamageEvents(
         targetId: heroId,
         amount: newPlayer.hero.hp - oldPlayer.hero.hp,
         type: "heal",
+        ...pos,
+      });
+    }
+
+    // Armor gain
+    if (newPlayer.hero.armor > oldPlayer.hero.armor) {
+      const pos = getElementCenter(heroId);
+      events.push({
+        targetId: heroId,
+        amount: newPlayer.hero.armor - oldPlayer.hero.armor,
+        type: "buff",
+        label: `+${newPlayer.hero.armor - oldPlayer.hero.armor} Armor`,
         ...pos,
       });
     }
@@ -165,14 +183,16 @@ export const useGameStore = create<GameStore>((set, get) => ({
   targetingMode: "none",
   damageEvents: [],
 
-  initGame: (player1Id, player2Id, player1Cards, player2Cards, firstPlayerIndex, seed) => {
+  initGame: (player1Id, player2Id, player1Cards, player2Cards, firstPlayerIndex, seed, player1Hero, player2Hero) => {
     const state = initializeGame(
       player1Id,
       player2Id,
       player1Cards,
       player2Cards,
       firstPlayerIndex,
-      seed
+      seed,
+      player1Hero,
+      player2Hero
     );
     set({ gameState: state });
   },
@@ -272,6 +292,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
         cardInstanceId: selectedCardInstanceId,
         targetInstanceId: targetId,
       });
+    } else if (targetingMode === "hero_power") {
+      get().dispatchAction({
+        type: "hero_power",
+        targetInstanceId: targetId,
+      });
     }
   },
 
@@ -286,6 +311,29 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   clearDamageEvents: () => {
     set({ damageEvents: [] });
+  },
+
+  activateHeroPower: () => {
+    const { gameState } = get();
+    if (!gameState) return null;
+    if (!canUseHeroPower(gameState)) return null;
+
+    const player = gameState.players[gameState.currentPlayerIndex];
+    const heroDef = player.hero.heroDefinition;
+    if (!heroDef) return null;
+
+    if (heroPowerNeedsTarget(heroDef)) {
+      const targets = getHeroPowerTargets(gameState, heroDef);
+      set({
+        selectedCardInstanceId: null,
+        selectedAttackerInstanceId: null,
+        validTargets: targets,
+        targetingMode: "hero_power",
+      });
+      return null;
+    } else {
+      return get().dispatchAction({ type: "hero_power" });
+    }
   },
 
   confirmMulligan: (selectedInstanceIds) => {

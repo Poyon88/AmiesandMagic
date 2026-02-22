@@ -74,6 +74,13 @@ export default function HeroPortrait({
       >
         {hero.hp}
       </div>
+
+      {/* Armor badge */}
+      {hero.armor > 0 && (
+        <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-yellow-600 border-2 border-yellow-400 flex items-center justify-center shadow-md">
+          <span className="text-[10px] font-bold text-white">{hero.armor}</span>
+        </div>
+      )}
     </motion.div>
   );
 }

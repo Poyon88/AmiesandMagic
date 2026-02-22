@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import DeckList from "@/components/deck/DeckList";
 
+export const dynamic = "force-dynamic";
+
 export default async function DecksPage() {
   const supabase = await createClient();
   const {

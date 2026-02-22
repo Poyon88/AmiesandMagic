@@ -6,13 +6,38 @@ import { createClient } from "@/lib/supabase/client";
 import { useGameStore } from "@/lib/store/gameStore";
 import { applyAction } from "@/lib/game/engine";
 import GameBoard from "@/components/game/GameBoard";
-import type { Card, GameAction } from "@/lib/game/types";
+import type { Card, GameAction, HeroDefinition, HeroPowerEffect, HeroClass } from "@/lib/game/types";
+
+interface HeroRow {
+  id: number;
+  name: string;
+  hero_class: string;
+  power_name: string;
+  power_type: string;
+  power_cost: number;
+  power_effect: HeroPowerEffect;
+  power_description: string;
+}
 
 interface MatchData {
   player1_id: string;
   player2_id: string;
   player1_deck_id: number;
   player2_deck_id: number;
+}
+
+function mapHeroRow(row: HeroRow | null): HeroDefinition | null {
+  if (!row) return null;
+  return {
+    id: row.id,
+    name: row.name,
+    heroClass: row.hero_class as HeroClass,
+    powerName: row.power_name,
+    powerType: row.power_type as "active" | "passive",
+    powerCost: row.power_cost,
+    powerEffect: row.power_effect,
+    powerDescription: row.power_description,
+  };
 }
 
 export default function GamePage() {
@@ -25,6 +50,8 @@ export default function GamePage() {
     match: MatchData;
     p1Cards: { card: Card; quantity: number }[];
     p2Cards: { card: Card; quantity: number }[];
+    p1Hero: HeroDefinition | null;
+    p2Hero: HeroDefinition | null;
   } | null>(null);
   const gameInitializedRef = useRef(false);
 
@@ -64,8 +91,8 @@ export default function GamePage() {
           return;
         }
 
-        // Fetch both player deck cards
-        const [p1DeckCards, p2DeckCards] = await Promise.all([
+        // Fetch both player deck cards and hero data
+        const [p1DeckCards, p2DeckCards, p1DeckData, p2DeckData] = await Promise.all([
           supabase
             .from("deck_cards")
             .select("card_id, quantity, cards(*)")
@@ -74,6 +101,16 @@ export default function GamePage() {
             .from("deck_cards")
             .select("card_id, quantity, cards(*)")
             .eq("deck_id", match.player2_deck_id),
+          supabase
+            .from("decks")
+            .select("hero_id, heroes(*)")
+            .eq("id", match.player1_deck_id)
+            .single(),
+          supabase
+            .from("decks")
+            .select("hero_id, heroes(*)")
+            .eq("id", match.player2_deck_id)
+            .single(),
         ]);
 
         if (cancelled) return;
@@ -92,8 +129,16 @@ export default function GamePage() {
             quantity: dc.quantity,
           }));
 
+        // Map hero data
+        const p1Hero = mapHeroRow(
+          (p1DeckData.data?.heroes as unknown as HeroRow) ?? null
+        );
+        const p2Hero = mapHeroRow(
+          (p2DeckData.data?.heroes as unknown as HeroRow) ?? null
+        );
+
         // Store match data for later initialization
-        matchDataRef.current = { match, p1Cards, p2Cards };
+        matchDataRef.current = { match, p1Cards, p2Cards, p1Hero, p2Hero };
 
         // Join realtime channel with presence
         const channel = supabase.channel(`match:${matchId}`, {
@@ -128,12 +173,12 @@ export default function GamePage() {
 
             if (playerCount >= 2 && !gameInitializedRef.current && matchDataRef.current) {
               gameInitializedRef.current = true;
-              const { match: m, p1Cards: p1, p2Cards: p2 } = matchDataRef.current;
+              const { match: m, p1Cards: p1, p2Cards: p2, p1Hero, p2Hero } = matchDataRef.current;
 
               const seed = parseInt(matchId.replace(/-/g, "").slice(0, 8), 16);
               const firstPlayer: 0 | 1 = seed % 2 === 0 ? 0 : 1;
 
-              initGame(m.player1_id, m.player2_id, p1, p2, firstPlayer, seed);
+              initGame(m.player1_id, m.player2_id, p1, p2, firstPlayer, seed, p1Hero, p2Hero);
               setPhase("playing");
             }
           })

@@ -6,8 +6,10 @@ import type {
   PlayCardAction,
   AttackAction,
   MulliganAction,
+  HeroPowerAction,
   GameAction,
   SpellEffect,
+  HeroDefinition,
 } from "./types";
 import {
   HERO_MAX_HP,
@@ -88,7 +90,9 @@ export function initializeGame(
   player1Cards: { card: Card; quantity: number }[],
   player2Cards: { card: Card; quantity: number }[],
   firstPlayerIndex: 0 | 1 = 0,
-  seed?: number
+  seed?: number,
+  player1Hero?: HeroDefinition | null,
+  player2Hero?: HeroDefinition | null
 ): GameState {
   if (seed !== undefined) {
     initRNG(seed);
@@ -102,7 +106,13 @@ export function initializeGame(
 
   const player1: PlayerState = {
     id: player1Id,
-    hero: { hp: HERO_MAX_HP, maxHp: HERO_MAX_HP },
+    hero: {
+      hp: HERO_MAX_HP,
+      maxHp: HERO_MAX_HP,
+      armor: 0,
+      heroDefinition: player1Hero ?? null,
+      heroPowerUsedThisTurn: false,
+    },
     mana: 0,
     maxMana: 0,
     hand: p1Hand,
@@ -114,7 +124,13 @@ export function initializeGame(
 
   const player2: PlayerState = {
     id: player2Id,
-    hero: { hp: HERO_MAX_HP, maxHp: HERO_MAX_HP },
+    hero: {
+      hp: HERO_MAX_HP,
+      maxHp: HERO_MAX_HP,
+      armor: 0,
+      heroDefinition: player2Hero ?? null,
+      heroPowerUsedThisTurn: false,
+    },
     mana: 0,
     maxMana: 0,
     hand: p2Hand,
@@ -163,6 +179,9 @@ export function startTurn(state: GameState): GameState {
     creature.hasSummoningSickness = false;
   }
 
+  // Reset hero power
+  player.hero.heroPowerUsedThisTurn = false;
+
   return newState;
 }
 
@@ -170,7 +189,7 @@ function drawCard(player: PlayerState): CardInstance | null {
   if (player.deck.length === 0) {
     // Fatigue damage
     player.fatigueDamage++;
-    player.hero.hp -= player.fatigueDamage;
+    dealDamageToHero(player.hero, player.fatigueDamage);
     return null;
   }
 
@@ -251,8 +270,10 @@ export function playCard(
       );
     }
     // Clean up creatures killed by the spell
-    cleanDeadCreatures(player);
-    cleanDeadCreatures(opponent);
+    const playerDead = cleanDeadCreatures(player);
+    const opponentDead = cleanDeadCreatures(opponent);
+    triggerPassiveOnCreatureDeath(player, playerDead.length);
+    triggerPassiveOnCreatureDeath(opponent, opponentDead.length);
 
     // Spell goes to graveyard
     player.graveyard.push(cardInstance);
@@ -282,20 +303,17 @@ function resolveSpellEffect(
       const amount = effect.amount ?? 0;
       switch (effect.target) {
         case "enemy_hero":
-          opponent.hero.hp -= amount;
+          dealDamageToHero(opponent.hero, amount);
           break;
         case "friendly_hero":
-          caster.hero.hp = Math.min(
-            caster.hero.maxHp,
-            caster.hero.hp - amount
-          );
+          dealDamageToHero(caster.hero, amount);
           break;
         case "any":
         case "any_creature": {
           if (targetInstanceId === "enemy_hero") {
-            opponent.hero.hp -= amount;
+            dealDamageToHero(opponent.hero, amount);
           } else if (targetInstanceId === "friendly_hero") {
-            caster.hero.hp -= amount;
+            dealDamageToHero(caster.hero, amount);
           } else if (targetInstanceId) {
             const target =
               findCreatureOnBoard(caster, targetInstanceId) ??
@@ -306,25 +324,31 @@ function resolveSpellEffect(
           }
           break;
         }
-        case "all_enemy_creatures":
+        case "all_enemy_creatures": {
           [...opponent.board].forEach((c) =>
             dealDamageToCreature(c, amount, opponent, caster)
           );
-          cleanDeadCreatures(opponent);
+          const deadOpp1 = cleanDeadCreatures(opponent);
+          triggerPassiveOnCreatureDeath(opponent, deadOpp1.length);
           break;
-        case "all_enemies":
-          opponent.hero.hp -= amount;
+        }
+        case "all_enemies": {
+          dealDamageToHero(opponent.hero, amount);
           [...opponent.board].forEach((c) =>
             dealDamageToCreature(c, amount, opponent, caster)
           );
-          cleanDeadCreatures(opponent);
+          const deadOpp2 = cleanDeadCreatures(opponent);
+          triggerPassiveOnCreatureDeath(opponent, deadOpp2.length);
           break;
-        case "all_friendly_creatures":
+        }
+        case "all_friendly_creatures": {
           [...caster.board].forEach((c) =>
             dealDamageToCreature(c, amount, caster, opponent)
           );
-          cleanDeadCreatures(caster);
+          const deadCaster = cleanDeadCreatures(caster);
+          triggerPassiveOnCreatureDeath(caster, deadCaster.length);
           break;
+        }
       }
       break;
     }
@@ -456,8 +480,8 @@ export function attack(state: GameState, action: AttackAction): GameState {
     // Attacking hero
     if (opponentTaunts.length > 0) return state; // Must attack taunt first
 
-    // Deal damage to hero
-    opponent.hero.hp -= attacker.currentAttack;
+    // Deal damage to hero (armor absorbs first)
+    dealDamageToHero(opponent.hero, attacker.currentAttack);
     attacker.hasAttacked = true;
   } else {
     // Attacking a creature
@@ -485,8 +509,10 @@ export function attack(state: GameState, action: AttackAction): GameState {
     attacker.hasAttacked = true;
 
     // Clean up dead creatures
-    cleanDeadCreatures(player);
-    cleanDeadCreatures(opponent);
+    const attackPlayerDead = cleanDeadCreatures(player);
+    const attackOpponentDead = cleanDeadCreatures(opponent);
+    triggerPassiveOnCreatureDeath(player, attackPlayerDead.length);
+    triggerPassiveOnCreatureDeath(opponent, attackOpponentDead.length);
   }
 
   newState.lastAction = action;
@@ -500,6 +526,20 @@ export function attack(state: GameState, action: AttackAction): GameState {
 // ============================================================
 // HELPERS
 // ============================================================
+
+function dealDamageToHero(hero: import("./types").HeroState, damage: number) {
+  if (damage <= 0) return;
+  if (hero.armor > 0) {
+    if (hero.armor >= damage) {
+      hero.armor -= damage;
+      return;
+    } else {
+      damage -= hero.armor;
+      hero.armor = 0;
+    }
+  }
+  hero.hp -= damage;
+}
 
 function dealDamageToCreature(
   creature: CardInstance,
@@ -517,10 +557,28 @@ function dealDamageToCreature(
   creature.currentHealth -= damage;
 }
 
-function cleanDeadCreatures(player: PlayerState) {
+function cleanDeadCreatures(player: PlayerState): CardInstance[] {
   const dead = player.board.filter((c) => c.currentHealth <= 0);
   player.board = player.board.filter((c) => c.currentHealth > 0);
   player.graveyard.push(...dead);
+  return dead;
+}
+
+function triggerPassiveOnCreatureDeath(
+  player: PlayerState,
+  deadCount: number
+) {
+  if (!player.hero.heroDefinition) return;
+  if (player.hero.heroDefinition.powerType !== "passive") return;
+  if (player.hero.heroDefinition.powerEffect.type !== "buff_on_friendly_death") return;
+  if (player.board.length === 0) return;
+
+  const atkBuff = player.hero.heroDefinition.powerEffect.attack ?? 1;
+  for (let i = 0; i < deadCount; i++) {
+    if (player.board.length === 0) break;
+    const idx = Math.floor(rng() * player.board.length);
+    player.board[idx].currentAttack += atkBuff;
+  }
 }
 
 function findCreatureOnBoard(
@@ -608,6 +666,120 @@ export function applyMulligan(
   return newState;
 }
 
+// ============================================================
+// HERO POWER
+// ============================================================
+
+export function useHeroPower(
+  state: GameState,
+  action: HeroPowerAction
+): GameState {
+  const newState = deepClone(state);
+  const player = newState.players[newState.currentPlayerIndex];
+  const opponent =
+    newState.players[newState.currentPlayerIndex === 0 ? 1 : 0];
+  const heroDef = player.hero.heroDefinition;
+
+  if (!heroDef) return state;
+  if (heroDef.powerType !== "active") return state;
+  if (player.hero.heroPowerUsedThisTurn) return state;
+  if (player.mana < heroDef.powerCost) return state;
+
+  player.mana -= heroDef.powerCost;
+  player.hero.heroPowerUsedThisTurn = true;
+
+  const effect = heroDef.powerEffect;
+  switch (effect.type) {
+    case "gain_armor":
+      player.hero.armor += effect.amount ?? 0;
+      break;
+    case "deal_damage": {
+      const amount = effect.amount ?? 0;
+      if (effect.target === "enemy_hero") {
+        dealDamageToHero(opponent.hero, amount);
+      } else if (effect.target === "any") {
+        if (action.targetInstanceId === "enemy_hero") {
+          dealDamageToHero(opponent.hero, amount);
+        } else if (action.targetInstanceId === "friendly_hero") {
+          dealDamageToHero(player.hero, amount);
+        } else if (action.targetInstanceId) {
+          const target =
+            findCreatureOnBoard(player, action.targetInstanceId) ??
+            findCreatureOnBoard(opponent, action.targetInstanceId);
+          if (target) {
+            dealDamageToCreature(target, amount, player, opponent);
+            const pDead = cleanDeadCreatures(player);
+            const oDead = cleanDeadCreatures(opponent);
+            triggerPassiveOnCreatureDeath(player, pDead.length);
+            triggerPassiveOnCreatureDeath(opponent, oDead.length);
+          }
+        }
+      }
+      break;
+    }
+    case "heal": {
+      const amount = effect.amount ?? 0;
+      if (action.targetInstanceId === "friendly_hero") {
+        player.hero.hp = Math.min(player.hero.maxHp, player.hero.hp + amount);
+      } else if (action.targetInstanceId) {
+        const target = findCreatureOnBoard(player, action.targetInstanceId);
+        if (target) {
+          target.currentHealth = Math.min(
+            target.maxHealth,
+            target.currentHealth + amount
+          );
+        }
+      }
+      break;
+    }
+  }
+
+  newState.lastAction = action;
+  checkWinCondition(newState);
+  return newState;
+}
+
+export function canUseHeroPower(state: GameState): boolean {
+  const player = state.players[state.currentPlayerIndex];
+  const heroDef = player.hero.heroDefinition;
+  if (!heroDef) return false;
+  if (heroDef.powerType !== "active") return false;
+  if (player.hero.heroPowerUsedThisTurn) return false;
+  if (player.mana < heroDef.powerCost) return false;
+  return true;
+}
+
+export function heroPowerNeedsTarget(heroDef: import("./types").HeroDefinition): boolean {
+  if (heroDef.powerType !== "active") return false;
+  const target = heroDef.powerEffect.target;
+  return target === "any" || target === "any_friendly";
+}
+
+export function getHeroPowerTargets(
+  state: GameState,
+  heroDef: import("./types").HeroDefinition
+): string[] {
+  const player = state.players[state.currentPlayerIndex];
+  const opponent = state.players[state.currentPlayerIndex === 0 ? 1 : 0];
+  const target = heroDef.powerEffect.target;
+
+  if (target === "any") {
+    return [
+      ...player.board.map((c) => c.instanceId),
+      ...opponent.board.map((c) => c.instanceId),
+      "enemy_hero",
+      "friendly_hero",
+    ];
+  }
+  if (target === "any_friendly") {
+    return [
+      ...player.board.map((c) => c.instanceId),
+      "friendly_hero",
+    ];
+  }
+  return [];
+}
+
 export function applyAction(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case "mulligan":
@@ -618,6 +790,8 @@ export function applyAction(state: GameState, action: GameAction): GameState {
       return attack(state, action);
     case "end_turn":
       return endTurn(state);
+    case "hero_power":
+      return useHeroPower(state, action);
     default:
       return state;
   }
