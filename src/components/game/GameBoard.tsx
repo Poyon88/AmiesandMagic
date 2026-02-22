@@ -21,6 +21,65 @@ interface GameBoardProps {
   onAction?: (action: GameAction) => void;
 }
 
+function animateAttackLunge(
+  attackerInstanceId: string,
+  targetId: string,
+  onImpact: () => void
+): void {
+  const attackerEl = document.querySelector(
+    `[data-instance-id="${attackerInstanceId}"]`
+  ) as HTMLElement | null;
+
+  let targetEl: Element | null = null;
+  if (targetId === "enemy_hero" || targetId === "friendly_hero") {
+    targetEl = document.querySelector(`[data-target-id="${targetId}"]`);
+  } else {
+    targetEl = document.querySelector(`[data-instance-id="${targetId}"]`);
+  }
+
+  if (!attackerEl || !targetEl) {
+    onImpact();
+    return;
+  }
+
+  const attackerRect = attackerEl.getBoundingClientRect();
+  const targetRect = targetEl.getBoundingClientRect();
+  const dx = (targetRect.left + targetRect.width / 2) - (attackerRect.left + attackerRect.width / 2);
+  const dy = (targetRect.top + targetRect.height / 2) - (attackerRect.top + attackerRect.height / 2);
+
+  const lungeX = dx * 0.6;
+  const lungeY = dy * 0.6;
+
+  const origZ = attackerEl.style.zIndex;
+  attackerEl.style.zIndex = "50";
+
+  const lunge = attackerEl.animate(
+    [
+      { transform: "translate(0, 0) scale(1)" },
+      { transform: `translate(${lungeX}px, ${lungeY}px) scale(1.1)` },
+    ],
+    { duration: 150, easing: "cubic-bezier(0.2, 0, 0.6, 1)", fill: "forwards" }
+  );
+
+  lunge.onfinish = () => {
+    onImpact();
+
+    const ret = attackerEl.animate(
+      [
+        { transform: `translate(${lungeX}px, ${lungeY}px) scale(1.1)` },
+        { transform: "translate(0, 0) scale(1)" },
+      ],
+      { duration: 200, easing: "cubic-bezier(0.4, 0, 0.2, 1)", fill: "forwards" }
+    );
+
+    ret.onfinish = () => {
+      lunge.cancel();
+      ret.cancel();
+      attackerEl.style.zIndex = origZ;
+    };
+  };
+}
+
 export default function GameBoard({ onAction }: GameBoardProps) {
   const {
     gameState,
@@ -53,6 +112,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
   const [dropIndex, setDropIndex] = useState<number | null>(null);
   const [hoveredTargetId, setHoveredTargetId] = useState<string | null>(null);
   const myBoardRef = useRef<HTMLDivElement>(null);
+  const isAnimatingAttackRef = useRef(false);
 
   // Clear hover when targeting ends
   useEffect(() => {
@@ -189,8 +249,20 @@ export default function GameBoard({ onAction }: GameBoardProps) {
             }
           : null;
 
-      selectTarget(targetId);
-      broadcast(action);
+      // Animate lunge before dispatching attack
+      if (targetingMode === "attack" && selectedAttackerInstanceId) {
+        if (isAnimatingAttackRef.current) return;
+        isAnimatingAttackRef.current = true;
+
+        animateAttackLunge(selectedAttackerInstanceId, targetId, () => {
+          selectTarget(targetId);
+          broadcast(action);
+          setTimeout(() => { isAnimatingAttackRef.current = false; }, 250);
+        });
+      } else {
+        selectTarget(targetId);
+        broadcast(action);
+      }
     },
     [
       targetingMode,

@@ -113,7 +113,7 @@ export default function BoardCreature({
         </span>
       </div>
 
-      {isHovered && createPortal(
+      {isHovered && !isSelected && createPortal(
         <CardPreview
           cardInstance={creature}
           anchorRef={creatureRef}

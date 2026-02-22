@@ -42,7 +42,7 @@ export default function HandCard({
     setIsDragging(false);
   }
 
-  const showPreview = !isDragging && (isHovered || isSelected);
+  const showPreview = !isDragging && isHovered && !isSelected;
 
   return (
     <>
