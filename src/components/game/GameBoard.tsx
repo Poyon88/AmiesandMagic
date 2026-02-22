@@ -201,7 +201,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
 
   return (
     <div
-      className="min-h-screen bg-background flex flex-col select-none"
+      className="fixed inset-0 bg-background flex flex-col select-none overflow-hidden"
       onClick={(e) => {
         if (e.target === e.currentTarget) clearSelection();
       }}
@@ -212,7 +212,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
         }
       }}
     >
-      {/* Mulligan overlay */}
+      {/* Fixed overlays — position:fixed, don't affect flex layout */}
       {isMulligan && (
         <MulliganOverlay
           hand={myPlayer.hand}
@@ -220,8 +220,6 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           waitingForOpponent={myMulliganDone}
         />
       )}
-
-      {/* Graveyard overlay */}
       {graveyardView && (
         <GraveyardOverlay
           cards={
@@ -237,8 +235,6 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           onClose={() => setGraveyardView(null)}
         />
       )}
-
-      {/* Match result overlay */}
       {isFinished && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center">
           <div className="text-center">
@@ -259,7 +255,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
         </div>
       )}
 
-      {/* ============= OPPONENT AREA ============= */}
+      {/* ============= OPPONENT INFO BAR ============= */}
       <div className="flex items-center justify-between px-6 py-3 border-b border-card-border/30">
         {/* Opponent hand (card backs) */}
         <div className="flex gap-1">
@@ -320,149 +316,156 @@ export default function GameBoard({ onAction }: GameBoardProps) {
         </div>
       </div>
 
-      {/* ============= BATTLEFIELD ============= */}
-      <div className="flex-1 flex flex-col justify-center px-8 py-4 min-h-[400px] bg-[radial-gradient(ellipse_at_center,_rgba(45,45,74,0.8)_0%,_rgba(26,26,46,0.95)_70%)]">
-        {/* Opponent board */}
-        <div className="flex justify-center gap-2 mb-6 min-h-[88px]">
-          {opponent.board.length === 0 ? (
-            <div className="text-foreground/10 text-sm self-center">
-              No creatures
-            </div>
-          ) : (
-            opponent.board.map((creature) => (
-              <BoardCreature
-                key={creature.instanceId}
-                creature={creature}
-                isOwn={false}
-                isValidTarget={validTargets.includes(creature.instanceId)}
-                damageAmount={getDamage(creature.instanceId)}
-                onClick={
-                  validTargets.includes(creature.instanceId)
-                    ? () => handleSelectTarget(creature.instanceId)
-                    : undefined
-                }
-                onMouseEnter={
-                  validTargets.includes(creature.instanceId)
-                    ? () => setHoveredTargetId(creature.instanceId)
-                    : undefined
-                }
-                onMouseLeave={
-                  validTargets.includes(creature.instanceId)
-                    ? () => setHoveredTargetId(null)
-                    : undefined
-                }
-              />
-            ))
-          )}
-        </div>
+      {/* ============= BATTLEFIELD WRAPPER ============= */}
+      <div className="flex-1 flex flex-col overflow-hidden" style={{ minHeight: 0 }}>
 
-        {/* Divider with turn indicator */}
-        <div className="flex items-center gap-4 my-2">
-          <div className="flex-1 border-t border-card-border/30" />
-          <div
-            className={`px-4 py-1.5 rounded-full text-xs font-bold ${
-              myTurn
-                ? "bg-success/20 text-success border border-success/40"
-                : "bg-accent/20 text-accent border border-accent/40"
-            }`}
-          >
-            {myTurn ? "YOUR TURN" : "OPPONENT'S TURN"}
+      {/* ============= OPPONENT BOARD ============= */}
+      <div
+        className="flex justify-center items-center gap-2 px-8 overflow-hidden bg-[radial-gradient(ellipse_at_center,_rgba(45,45,74,0.8)_0%,_rgba(26,26,46,0.95)_70%)]"
+        style={{ flex: '1 1 0%' }}
+      >
+        {opponent.board.length === 0 ? (
+          <div className="text-foreground/10 text-sm">
+            No creatures
           </div>
+        ) : (
+          opponent.board.map((creature) => (
+            <BoardCreature
+              key={creature.instanceId}
+              creature={creature}
+              isOwn={false}
+              isValidTarget={validTargets.includes(creature.instanceId)}
+              damageAmount={getDamage(creature.instanceId)}
+              onClick={
+                validTargets.includes(creature.instanceId)
+                  ? () => handleSelectTarget(creature.instanceId)
+                  : undefined
+              }
+              onMouseEnter={
+                validTargets.includes(creature.instanceId)
+                  ? () => setHoveredTargetId(creature.instanceId)
+                  : undefined
+              }
+              onMouseLeave={
+                validTargets.includes(creature.instanceId)
+                  ? () => setHoveredTargetId(null)
+                  : undefined
+              }
+            />
+          ))
+        )}
+      </div>
 
-          <TurnTimer
-            isMyTurn={myTurn}
-            onTimeUp={handleEndTurn}
-            turnNumber={gameState.turnNumber}
-          />
-
-          <button
-            onClick={handleEndTurn}
-            disabled={!myTurn}
-            className={`px-6 py-2 rounded-lg font-bold text-sm transition-all ${
-              myTurn
-                ? "bg-primary hover:bg-primary-dark text-background"
-                : "bg-card-border/30 text-foreground/30 cursor-not-allowed"
-            }`}
-          >
-            END TURN
-          </button>
-          <div className="flex-1 border-t border-card-border/30" />
-        </div>
-
-        {/* My board — DROP ZONE (entire lower half) */}
+      {/* ============= DIVIDER ============= */}
+      <div className="flex items-center gap-4 px-8 py-2">
+        <div className="flex-1 border-t border-card-border/30" />
         <div
-          onDrop={handleDropOnBoard}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          className={`
-            flex-1 flex items-center justify-center rounded-xl transition-all
-            ${
-              isDragOver
-                ? "bg-success/10 border-2 border-dashed border-success/50"
-                : "border-2 border-dashed border-transparent"
-            }
-          `}
+          className={`px-4 py-1.5 rounded-full text-xs font-bold ${
+            myTurn
+              ? "bg-success/20 text-success border border-success/40"
+              : "bg-accent/20 text-accent border border-accent/40"
+          }`}
         >
-          <div ref={myBoardRef} className="flex justify-center gap-2 min-h-[100px] items-center">
-          {myPlayer.board.length === 0 && !isDragOver ? (
-            <div className="text-foreground/10 text-sm self-center">
-              Drag cards to play them here
-            </div>
-          ) : myPlayer.board.length === 0 && isDragOver ? (
-            <div className="text-success/50 text-sm self-center font-medium">
-              Drop to play creature
-            </div>
-          ) : (
-            <>
-              {myPlayer.board.map((creature, i) => {
-                const canAtt =
-                  myTurn && canAttack(gameState, creature.instanceId);
-                return (
-                  <Fragment key={creature.instanceId}>
-                    {isDragOver && dropIndex === i && (
-                      <div className="w-1 h-20 rounded-full bg-success shadow-[0_0_8px_rgba(34,197,94,0.6)] shrink-0" />
-                    )}
-                    <BoardCreature
-                      creature={creature}
-                      isOwn={true}
-                      canAttack={canAtt}
-                      isSelected={
-                        selectedAttackerInstanceId === creature.instanceId
-                      }
-                      isValidTarget={validTargets.includes(creature.instanceId)}
-                      damageAmount={getDamage(creature.instanceId)}
-                      onClick={
-                        validTargets.includes(creature.instanceId)
-                          ? () => handleSelectTarget(creature.instanceId)
-                          : canAtt
-                          ? () => handleSelectAttacker(creature.instanceId)
-                          : undefined
-                      }
-                      onMouseEnter={
-                        validTargets.includes(creature.instanceId)
-                          ? () => setHoveredTargetId(creature.instanceId)
-                          : undefined
-                      }
-                      onMouseLeave={
-                        validTargets.includes(creature.instanceId)
-                          ? () => setHoveredTargetId(null)
-                          : undefined
-                      }
-                    />
-                  </Fragment>
-                );
-              })}
-              {isDragOver && dropIndex === myPlayer.board.length && (
-                <div className="w-1 h-20 rounded-full bg-success shadow-[0_0_8px_rgba(34,197,94,0.6)] shrink-0" />
-              )}
-            </>
-          )}
+          {myTurn ? "YOUR TURN" : "OPPONENT'S TURN"}
+        </div>
+
+        <TurnTimer
+          isMyTurn={myTurn}
+          onTimeUp={handleEndTurn}
+          turnNumber={gameState.turnNumber}
+        />
+
+        <button
+          onClick={handleEndTurn}
+          disabled={!myTurn}
+          className={`px-6 py-2 rounded-lg font-bold text-sm transition-all ${
+            myTurn
+              ? "bg-primary hover:bg-primary-dark text-background"
+              : "bg-card-border/30 text-foreground/30 cursor-not-allowed"
+          }`}
+        >
+          END TURN
+        </button>
+        <div className="flex-1 border-t border-card-border/30" />
+      </div>
+
+      {/* ============= PLAYER BOARD ============= */}
+      <div
+        onDrop={handleDropOnBoard}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        className={`
+          flex items-center justify-center px-8 transition-all overflow-hidden
+          bg-[radial-gradient(ellipse_at_center,_rgba(45,45,74,0.8)_0%,_rgba(26,26,46,0.95)_70%)]
+          ${
+            isDragOver
+              ? "bg-success/10 border-2 border-dashed border-success/50"
+              : ""
+          }
+        `}
+        style={{ flex: '1 1 0%' }}
+      >
+        <div ref={myBoardRef} className="flex justify-center gap-2 min-h-[88px] items-center">
+        {myPlayer.board.length === 0 && !isDragOver ? (
+          <div className="text-foreground/10 text-sm">
+            Drag cards to play them here
           </div>
+        ) : myPlayer.board.length === 0 && isDragOver ? (
+          <div className="text-success/50 text-sm font-medium">
+            Drop to play creature
+          </div>
+        ) : (
+          <>
+            {myPlayer.board.map((creature, i) => {
+              const canAtt =
+                myTurn && canAttack(gameState, creature.instanceId);
+              return (
+                <Fragment key={creature.instanceId}>
+                  {isDragOver && dropIndex === i && (
+                    <div className="w-1 h-20 rounded-full bg-success shadow-[0_0_8px_rgba(34,197,94,0.6)] shrink-0" />
+                  )}
+                  <BoardCreature
+                    creature={creature}
+                    isOwn={true}
+                    canAttack={canAtt}
+                    isSelected={
+                      selectedAttackerInstanceId === creature.instanceId
+                    }
+                    isValidTarget={validTargets.includes(creature.instanceId)}
+                    damageAmount={getDamage(creature.instanceId)}
+                    onClick={
+                      validTargets.includes(creature.instanceId)
+                        ? () => handleSelectTarget(creature.instanceId)
+                        : canAtt
+                        ? () => handleSelectAttacker(creature.instanceId)
+                        : undefined
+                    }
+                    onMouseEnter={
+                      validTargets.includes(creature.instanceId)
+                        ? () => setHoveredTargetId(creature.instanceId)
+                        : undefined
+                    }
+                    onMouseLeave={
+                      validTargets.includes(creature.instanceId)
+                        ? () => setHoveredTargetId(null)
+                        : undefined
+                    }
+                  />
+                </Fragment>
+              );
+            })}
+            {isDragOver && dropIndex === myPlayer.board.length && (
+              <div className="w-1 h-20 rounded-full bg-success shadow-[0_0_8px_rgba(34,197,94,0.6)] shrink-0" />
+            )}
+          </>
+        )}
         </div>
       </div>
 
+      </div>{/* end BATTLEFIELD WRAPPER */}
+
       {/* ============= MY AREA ============= */}
-      <div className="border-t border-card-border/30">
+      <div className="border-t border-card-border/30 overflow-hidden">
         {/* My hero + mana + graveyard */}
         <div className="flex items-center justify-between px-6 py-2">
           {/* My graveyard + deck */}
