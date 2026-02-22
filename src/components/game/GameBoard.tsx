@@ -15,7 +15,19 @@ import TargetingArrow from "./TargetingArrow";
 import DamageOverlay from "./DamageOverlay";
 import SpellCastOverlay from "./SpellCastOverlay";
 import MulliganOverlay from "./MulliganOverlay";
-import type { GameAction, DamageEvent } from "@/lib/game/types";
+import type { GameAction, DamageEvent, Race } from "@/lib/game/types";
+
+const BANNER_IMAGES: Record<Race, string> = {
+  elves: "/images/banners/elves.png",
+  dwarves: "/images/banners/dwarves.svg",
+  halflings: "/images/banners/halflings.svg",
+  humans: "/images/banners/humans.svg",
+  beastmen: "/images/banners/beastmen.svg",
+  giants: "/images/banners/giants.svg",
+  dark_elves: "/images/banners/dark_elves.svg",
+  orcs_goblins: "/images/banners/orcs_goblins.svg",
+  undead: "/images/banners/undead.png",
+};
 
 interface GameBoardProps {
   onAction?: (action: GameAction) => void;
@@ -344,7 +356,14 @@ export default function GameBoard({ onAction }: GameBoardProps) {
       )}
 
       {/* ============= OPPONENT INFO BAR ============= */}
-      <div className="flex items-center justify-between px-6 py-3 border-b border-card-border/30">
+      <div
+        className="flex items-center justify-between px-6 py-3 border-b border-card-border/30"
+        style={{
+          backgroundImage: `url('${opponent.hero.heroDefinition?.race ? BANNER_IMAGES[opponent.hero.heroDefinition.race] : "/images/banners/default.svg"}')`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
         {/* Opponent hand (card backs) */}
         <div className="flex gap-1">
           {opponent.hand.map((_, i) => (
@@ -548,7 +567,14 @@ export default function GameBoard({ onAction }: GameBoardProps) {
       </div>{/* end BATTLEFIELD WRAPPER */}
 
       {/* ============= MY AREA ============= */}
-      <div className="border-t border-card-border/30">
+      <div
+        className="border-t border-card-border/30"
+        style={{
+          backgroundImage: `url('${myPlayer.hero.heroDefinition?.race ? BANNER_IMAGES[myPlayer.hero.heroDefinition.race] : "/images/banners/default.svg"}')`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
         {/* My hero + mana + graveyard */}
         <div className="flex items-center justify-between px-6 py-2">
           {/* My graveyard + deck */}

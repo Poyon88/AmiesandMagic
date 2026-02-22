@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 300" width="1920" height="300">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0d2818"/>
+      <stop offset="100%" stop-color="#061210"/>
+    </linearGradient>
+    <pattern id="leaves" x="0" y="0" width="120" height="120" patternUnits="userSpaceOnUse">
+      <!-- Leaf shapes -->
+      <path d="M30,10 Q40,30 30,50 Q20,30 30,10Z" fill="#2ecc71" opacity="0.06" transform="rotate(15,30,30)"/>
+      <path d="M90,40 Q100,60 90,80 Q80,60 90,40Z" fill="#27ae60" opacity="0.05" transform="rotate(-20,90,60)"/>
+      <path d="M60,70 Q70,90 60,110 Q50,90 60,70Z" fill="#2ecc71" opacity="0.04" transform="rotate(30,60,90)"/>
+      <!-- Vine curves -->
+      <path d="M0,60 Q30,50 60,60 Q90,70 120,60" fill="none" stroke="#2ecc71" stroke-width="0.8" opacity="0.06"/>
+      <path d="M10,100 Q40,90 70,100 Q100,110 120,95" fill="none" stroke="#27ae60" stroke-width="0.5" opacity="0.05"/>
+    </pattern>
+    <linearGradient id="glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2ecc71" stop-opacity="0.05"/>
+      <stop offset="50%" stop-color="#2ecc71" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#27ae60" stop-opacity="0.04"/>
+    </linearGradient>
+  </defs>
+  <rect width="1920" height="300" fill="url(#bg)"/>
+  <rect width="1920" height="300" fill="url(#leaves)"/>
+  <rect width="1920" height="300" fill="url(#glow)"/>
+  <!-- Subtle vine border along top -->
+  <path d="M0,15 Q80,5 160,15 Q240,25 320,15 Q400,5 480,15 Q560,25 640,15 Q720,5 800,15 Q880,25 960,15 Q1040,5 1120,15 Q1200,25 1280,15 Q1360,5 1440,15 Q1520,25 1600,15 Q1680,5 1760,15 Q1840,25 1920,15" fill="none" stroke="#2ecc71" stroke-width="1" opacity="0.08"/>
+  <!-- Subtle vine border along bottom -->
+  <path d="M0,285 Q80,295 160,285 Q240,275 320,285 Q400,295 480,285 Q560,275 640,285 Q720,295 800,285 Q880,275 960,285 Q1040,295 1120,285 Q1200,275 1280,285 Q1360,295 1440,285 Q1520,275 1600,285 Q1680,295 1760,285 Q1840,275 1920,285" fill="none" stroke="#2ecc71" stroke-width="1" opacity="0.08"/>
+  <!-- Faint vignette -->
+  <rect width="1920" height="300" fill="none" stroke="#000000" stroke-width="80" stroke-opacity="0.3"/>
+</svg>

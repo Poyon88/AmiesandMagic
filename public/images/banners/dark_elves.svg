@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 300" width="1920" height="300">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1a0a2a"/>
+      <stop offset="100%" stop-color="#0d0518"/>
+    </linearGradient>
+    <pattern id="arcane" x="0" y="0" width="200" height="200" patternUnits="userSpaceOnUse">
+      <!-- Arcane circle -->
+      <circle cx="100" cy="100" r="50" fill="none" stroke="#8a2be2" stroke-width="0.5" opacity="0.07"/>
+      <circle cx="100" cy="100" r="40" fill="none" stroke="#9b30ff" stroke-width="0.3" opacity="0.05"/>
+      <!-- Inner star/pentagram hints -->
+      <path d="M100,55 L115,90 L150,90 L120,110 L130,145 L100,125 L70,145 L80,110 L50,90 L85,90 Z" fill="none" stroke="#8a2be2" stroke-width="0.4" opacity="0.06"/>
+      <!-- Rune marks -->
+      <path d="M30,30 L35,50 L25,50 Z" fill="none" stroke="#9b30ff" stroke-width="0.4" opacity="0.05"/>
+      <path d="M170,160 L175,180 L165,180 Z" fill="none" stroke="#9b30ff" stroke-width="0.4" opacity="0.04"/>
+    </pattern>
+    <pattern id="runes" x="0" y="0" width="300" height="300" patternUnits="userSpaceOnUse">
+      <!-- Floating rune symbols -->
+      <text x="50" y="80" font-family="serif" font-size="16" fill="#8a2be2" opacity="0.05" transform="rotate(-15,50,80)">&#x2625;</text>
+      <text x="200" y="150" font-family="serif" font-size="14" fill="#9b30ff" opacity="0.04" transform="rotate(20,200,150)">&#x2606;</text>
+      <text x="130" y="250" font-family="serif" font-size="18" fill="#8a2be2" opacity="0.04" transform="rotate(-5,130,250)">&#x2721;</text>
+    </pattern>
+    <radialGradient id="arcaneGlow" cx="70%" cy="40%" r="35%">
+      <stop offset="0%" stop-color="#8a2be2" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#8a2be2" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="arcaneGlow2" cx="20%" cy="70%" r="30%">
+      <stop offset="0%" stop-color="#9b30ff" stop-opacity="0.04"/>
+      <stop offset="100%" stop-color="#9b30ff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1920" height="300" fill="url(#bg)"/>
+  <rect width="1920" height="300" fill="url(#arcane)"/>
+  <rect width="1920" height="300" fill="url(#runes)"/>
+  <rect width="1920" height="300" fill="url(#arcaneGlow)"/>
+  <rect width="1920" height="300" fill="url(#arcaneGlow2)"/>
+  <!-- Subtle energy lines -->
+  <path d="M0,150 Q480,130 960,150 Q1440,170 1920,150" fill="none" stroke="#8a2be2" stroke-width="0.5" opacity="0.06"/>
+  <path d="M0,160 Q480,180 960,160 Q1440,140 1920,160" fill="none" stroke="#9b30ff" stroke-width="0.4" opacity="0.05"/>
+  <!-- Faint vignette -->
+  <rect width="1920" height="300" fill="none" stroke="#000000" stroke-width="80" stroke-opacity="0.3"/>
+</svg>

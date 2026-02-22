@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 300" width="1920" height="300">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0d1a0d"/>
+      <stop offset="100%" stop-color="#050d05"/>
+    </linearGradient>
+    <pattern id="warPaint" x="0" y="0" width="200" height="200" patternUnits="userSpaceOnUse">
+      <!-- Tribal war paint streaks -->
+      <path d="M20,20 Q30,60 25,100" fill="none" stroke="#556b2f" stroke-width="3" stroke-linecap="round" opacity="0.06"/>
+      <path d="M30,15 Q40,55 35,95" fill="none" stroke="#556b2f" stroke-width="2" stroke-linecap="round" opacity="0.05"/>
+      <path d="M120,80 Q135,120 125,160" fill="none" stroke="#6b8e23" stroke-width="2.5" stroke-linecap="round" opacity="0.05"/>
+      <path d="M130,75 Q145,115 135,155" fill="none" stroke="#6b8e23" stroke-width="1.5" stroke-linecap="round" opacity="0.04"/>
+      <!-- Tribal dots -->
+      <circle cx="70" cy="50" r="3" fill="#556b2f" opacity="0.05"/>
+      <circle cx="80" cy="55" r="3" fill="#556b2f" opacity="0.04"/>
+      <circle cx="90" cy="50" r="3" fill="#556b2f" opacity="0.05"/>
+      <!-- Tribal zigzag -->
+      <path d="M150,30 L160,50 L170,30 L180,50 L190,30" fill="none" stroke="#6b8e23" stroke-width="1.5" opacity="0.06"/>
+    </pattern>
+    <pattern id="mud" x="0" y="0" width="120" height="120" patternUnits="userSpaceOnUse">
+      <!-- Mud splatter -->
+      <circle cx="30" cy="40" r="4" fill="#3d3d00" opacity="0.04"/>
+      <circle cx="35" cy="38" r="2" fill="#3d3d00" opacity="0.03"/>
+      <circle cx="90" cy="80" r="5" fill="#3d3d00" opacity="0.03"/>
+      <circle cx="85" cy="85" r="2.5" fill="#3d3d00" opacity="0.04"/>
+    </pattern>
+    <radialGradient id="campfire" cx="50%" cy="70%" r="40%">
+      <stop offset="0%" stop-color="#6b8e23" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#6b8e23" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1920" height="300" fill="url(#bg)"/>
+  <rect width="1920" height="300" fill="url(#warPaint)"/>
+  <rect width="1920" height="300" fill="url(#mud)"/>
+  <rect width="1920" height="300" fill="url(#campfire)"/>
+  <!-- Crossed weapons silhouette, very faint -->
+  <path d="M940,130 L980,270" fill="none" stroke="#556b2f" stroke-width="2" opacity="0.05"/>
+  <path d="M980,130 L940,270" fill="none" stroke="#556b2f" stroke-width="2" opacity="0.05"/>
+  <!-- Spear tips -->
+  <path d="M935,130 L940,115 L945,130 Z" fill="#556b2f" opacity="0.05"/>
+  <path d="M975,130 L980,115 L985,130 Z" fill="#556b2f" opacity="0.05"/>
+  <!-- Faint vignette -->
+  <rect width="1920" height="300" fill="none" stroke="#000000" stroke-width="80" stroke-opacity="0.3"/>
+</svg>

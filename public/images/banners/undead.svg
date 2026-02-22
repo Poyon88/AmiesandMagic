@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 300" width="1920" height="300">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#180a20"/>
+      <stop offset="100%" stop-color="#0a0510"/>
+    </linearGradient>
+    <pattern id="bones" x="0" y="0" width="250" height="250" patternUnits="userSpaceOnUse">
+      <!-- Bone shapes -->
+      <path d="M40,50 L80,50" fill="none" stroke="#d2b48c" stroke-width="2" stroke-linecap="round" opacity="0.05"/>
+      <circle cx="38" cy="48" r="3" fill="none" stroke="#d2b48c" stroke-width="0.8" opacity="0.04"/>
+      <circle cx="38" cy="52" r="3" fill="none" stroke="#d2b48c" stroke-width="0.8" opacity="0.04"/>
+      <circle cx="82" cy="48" r="3" fill="none" stroke="#d2b48c" stroke-width="0.8" opacity="0.04"/>
+      <circle cx="82" cy="52" r="3" fill="none" stroke="#d2b48c" stroke-width="0.8" opacity="0.04"/>
+      <!-- Skull outline -->
+      <circle cx="170" cy="140" r="16" fill="none" stroke="#d2b48c" stroke-width="0.6" opacity="0.05"/>
+      <circle cx="164" cy="136" r="4" fill="none" stroke="#d2b48c" stroke-width="0.4" opacity="0.04"/>
+      <circle cx="176" cy="136" r="4" fill="none" stroke="#d2b48c" stroke-width="0.4" opacity="0.04"/>
+      <path d="M166,148 L170,152 L174,148" fill="none" stroke="#d2b48c" stroke-width="0.4" opacity="0.04"/>
+      <!-- Rib hint -->
+      <path d="M80,160 Q100,155 120,165" fill="none" stroke="#d2b48c" stroke-width="0.5" opacity="0.04"/>
+      <path d="M80,170 Q100,165 120,175" fill="none" stroke="#d2b48c" stroke-width="0.5" opacity="0.04"/>
+      <path d="M80,180 Q100,175 120,185" fill="none" stroke="#d2b48c" stroke-width="0.5" opacity="0.04"/>
+    </pattern>
+    <pattern id="mist" x="0" y="0" width="400" height="300" patternUnits="userSpaceOnUse">
+      <!-- Ghostly mist wisps -->
+      <path d="M0,200 Q100,180 200,200 Q300,220 400,200" fill="none" stroke="#9370db" stroke-width="1" opacity="0.04"/>
+      <path d="M50,250 Q150,230 250,250 Q350,270 400,250" fill="none" stroke="#8b668b" stroke-width="0.8" opacity="0.03"/>
+      <path d="M0,100 Q100,80 200,100 Q300,120 400,100" fill="none" stroke="#9370db" stroke-width="0.6" opacity="0.03"/>
+    </pattern>
+    <radialGradient id="deathGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#9370db" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#9370db" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="soulOrb" cx="75%" cy="30%" r="15%">
+      <stop offset="0%" stop-color="#9370db" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#9370db" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1920" height="300" fill="url(#bg)"/>
+  <rect width="1920" height="300" fill="url(#bones)"/>
+  <rect width="1920" height="300" fill="url(#mist)"/>
+  <rect width="1920" height="300" fill="url(#deathGlow)"/>
+  <rect width="1920" height="300" fill="url(#soulOrb)"/>
+  <!-- Ground-level bone scatter silhouette -->
+  <path d="M200,290 L215,280 L230,290" fill="none" stroke="#d2b48c" stroke-width="0.8" opacity="0.05"/>
+  <path d="M800,295 L820,285 L840,295" fill="none" stroke="#d2b48c" stroke-width="0.6" opacity="0.04"/>
+  <path d="M1400,292 L1420,282 L1440,292" fill="none" stroke="#d2b48c" stroke-width="0.7" opacity="0.04"/>
+  <!-- Faint vignette -->
+  <rect width="1920" height="300" fill="none" stroke="#000000" stroke-width="80" stroke-opacity="0.3"/>
+</svg>
