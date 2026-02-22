@@ -1,9 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
-import type { HeroState } from "@/lib/game/types";
+import Image from "next/image";
+import type { HeroState, HeroClass } from "@/lib/game/types";
 import { HERO_MAX_HP } from "@/lib/game/constants";
-import type { HeroClass } from "@/lib/game/types";
 
 const HERO_IMAGES: Record<HeroClass, string> = {
   necromancer: "/images/heroes/necromancer.png",
@@ -56,10 +56,14 @@ export default function HeroPortrait({
     >
       {/* Hero portrait - full bleed */}
       {hero.heroDefinition?.heroClass ? (
-        <img
+        <Image
           src={HERO_IMAGES[hero.heroDefinition.heroClass]}
           alt={hero.heroDefinition.heroClass}
-          className="absolute inset-0 w-full h-full object-cover"
+          fill
+          sizes="80px"
+          quality={90}
+          className="object-cover"
+          priority
         />
       ) : (
         <div className={`absolute inset-0 flex items-center justify-center ${

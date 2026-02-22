@@ -600,8 +600,8 @@ export default function GameBoard({ onAction }: GameBoardProps) {
             />
           </div>
 
-          {/* Targeting mode indicator */}
-          <div className="w-32 text-right">
+          {/* Targeting mode indicator + Timer + End Turn */}
+          <div className="flex items-center gap-3">
             {targetingMode !== "none" && (
               <button
                 onClick={clearSelection}
@@ -610,6 +610,31 @@ export default function GameBoard({ onAction }: GameBoardProps) {
                 Cancel targeting
               </button>
             )}
+            <TurnTimer
+              isMyTurn={myTurn}
+              onTimeUp={handleEndTurn}
+              turnNumber={gameState.turnNumber}
+            />
+            <button
+              onClick={handleEndTurn}
+              disabled={!myTurn}
+              className={`relative w-[140px] h-[46px] transition-all ${
+                myTurn
+                  ? "hover:scale-105 hover:brightness-110 cursor-pointer"
+                  : "brightness-50 saturate-0 cursor-not-allowed"
+              }`}
+            >
+              <img
+                src="/images/end-turn-btn.svg"
+                alt=""
+                className="absolute inset-0 w-full h-full"
+              />
+              <span className={`relative z-10 font-bold text-sm tracking-wide ${
+                myTurn ? "text-[#2a1a00] drop-shadow-[0_1px_0_rgba(255,255,255,0.3)]" : "text-gray-500"
+              }`}>
+                END TURN
+              </span>
+            </button>
           </div>
         </div>
 
@@ -639,34 +664,6 @@ export default function GameBoard({ onAction }: GameBoardProps) {
         </div>
       </div>
 
-      {/* Timer + End Turn — bottom right */}
-      <div className="fixed bottom-4 right-4 z-40 flex items-center gap-3">
-        <TurnTimer
-          isMyTurn={myTurn}
-          onTimeUp={handleEndTurn}
-          turnNumber={gameState.turnNumber}
-        />
-        <button
-          onClick={handleEndTurn}
-          disabled={!myTurn}
-          className={`relative w-[140px] h-[46px] transition-all ${
-            myTurn
-              ? "hover:scale-105 hover:brightness-110 cursor-pointer"
-              : "brightness-50 saturate-0 cursor-not-allowed"
-          }`}
-        >
-          <img
-            src="/images/end-turn-btn.svg"
-            alt=""
-            className="absolute inset-0 w-full h-full"
-          />
-          <span className={`relative z-10 font-bold text-sm tracking-wide ${
-            myTurn ? "text-[#2a1a00] drop-shadow-[0_1px_0_rgba(255,255,255,0.3)]" : "text-gray-500"
-          }`}>
-            END TURN
-          </span>
-        </button>
-      </div>
 
       {/* Damage animation overlay */}
       <DamageOverlay events={damageEvents} />
