@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef, Fragment, type DragEvent } from "react";
+import { AnimatePresence } from "framer-motion";
 import { useGameStore } from "@/lib/store/gameStore";
 import { canPlayCard, canAttack, canUseHeroPower } from "@/lib/game/engine";
 import HeroPortrait from "./HeroPortrait";
@@ -12,6 +13,7 @@ import GraveyardOverlay from "./GraveyardOverlay";
 import TurnTimer from "./TurnTimer";
 import TargetingArrow from "./TargetingArrow";
 import DamageOverlay from "./DamageOverlay";
+import SpellCastOverlay from "./SpellCastOverlay";
 import MulliganOverlay from "./MulliganOverlay";
 import type { GameAction, DamageEvent } from "@/lib/game/types";
 
@@ -35,6 +37,8 @@ export default function GameBoard({ onAction }: GameBoardProps) {
     clearSelection,
     damageEvents,
     clearDamageEvents,
+    spellCastEvent,
+    clearSpellCastEvent,
     confirmMulligan,
     activateHeroPower,
     isMyTurn,
@@ -348,30 +352,32 @@ export default function GameBoard({ onAction }: GameBoardProps) {
             No creatures
           </div>
         ) : (
-          opponent.board.map((creature) => (
-            <BoardCreature
-              key={creature.instanceId}
-              creature={creature}
-              isOwn={false}
-              isValidTarget={validTargets.includes(creature.instanceId)}
-              damageAmount={getDamage(creature.instanceId)}
-              onClick={
-                validTargets.includes(creature.instanceId)
-                  ? () => handleSelectTarget(creature.instanceId)
-                  : undefined
-              }
-              onMouseEnter={
-                validTargets.includes(creature.instanceId)
-                  ? () => setHoveredTargetId(creature.instanceId)
-                  : undefined
-              }
-              onMouseLeave={
-                validTargets.includes(creature.instanceId)
-                  ? () => setHoveredTargetId(null)
-                  : undefined
-              }
-            />
-          ))
+          <AnimatePresence>
+            {opponent.board.map((creature) => (
+              <BoardCreature
+                key={creature.instanceId}
+                creature={creature}
+                isOwn={false}
+                isValidTarget={validTargets.includes(creature.instanceId)}
+                damageAmount={getDamage(creature.instanceId)}
+                onClick={
+                  validTargets.includes(creature.instanceId)
+                    ? () => handleSelectTarget(creature.instanceId)
+                    : undefined
+                }
+                onMouseEnter={
+                  validTargets.includes(creature.instanceId)
+                    ? () => setHoveredTargetId(creature.instanceId)
+                    : undefined
+                }
+                onMouseLeave={
+                  validTargets.includes(creature.instanceId)
+                    ? () => setHoveredTargetId(null)
+                    : undefined
+                }
+              />
+            ))}
+          </AnimatePresence>
         )}
       </div>
 
@@ -407,15 +413,19 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           </div>
         ) : (
           <>
-            {myPlayer.board.map((creature, i) => {
-              const canAtt =
-                myTurn && canAttack(gameState, creature.instanceId);
-              return (
-                <Fragment key={creature.instanceId}>
-                  {isDragOver && dropIndex === i && (
-                    <div className="w-1 h-20 rounded-full bg-success shadow-[0_0_8px_rgba(34,197,94,0.6)] shrink-0" />
-                  )}
+            <AnimatePresence>
+              {myPlayer.board.flatMap((creature, i) => {
+                const canAtt =
+                  myTurn && canAttack(gameState, creature.instanceId);
+                const items = [];
+                if (isDragOver && dropIndex === i) {
+                  items.push(
+                    <div key={`drop-${i}`} className="w-1 h-20 rounded-full bg-success shadow-[0_0_8px_rgba(34,197,94,0.6)] shrink-0" />
+                  );
+                }
+                items.push(
                   <BoardCreature
+                    key={creature.instanceId}
                     creature={creature}
                     isOwn={true}
                     canAttack={canAtt}
@@ -442,9 +452,10 @@ export default function GameBoard({ onAction }: GameBoardProps) {
                         : undefined
                     }
                   />
-                </Fragment>
-              );
-            })}
+                );
+                return items;
+              })}
+            </AnimatePresence>
             {isDragOver && dropIndex === myPlayer.board.length && (
               <div className="w-1 h-20 rounded-full bg-success shadow-[0_0_8px_rgba(34,197,94,0.6)] shrink-0" />
             )}
@@ -535,6 +546,9 @@ export default function GameBoard({ onAction }: GameBoardProps) {
                   selectedCardInstanceId === cardInstance.instanceId
                 }
                 onClick={() => {
+                  // Only allow click for spells (targeting mode)
+                  // Creatures must be played via drag-and-drop
+                  if (cardInstance.card.card_type === "creature") return;
                   const action = selectCardInHand(cardInstance.instanceId);
                   broadcast(action);
                 }}
@@ -566,6 +580,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
 
       {/* Damage animation overlay */}
       <DamageOverlay events={damageEvents} />
+      <SpellCastOverlay event={spellCastEvent} onComplete={clearSpellCastEvent} />
 
       {/* Targeting arrow overlay */}
       <TargetingArrow

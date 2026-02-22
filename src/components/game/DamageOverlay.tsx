@@ -53,12 +53,143 @@ const config = {
     textColor: "#eab308",
     format: (evt: DamageEvent) => evt.label ?? `+${evt.amount}`,
   },
+  shield: {
+    flashColor: "rgba(250, 204, 21, 0.3)",
+    particleColor: "#facc15",
+    textColor: "#facc15",
+    format: () => "🛡",
+  },
 };
+
+function ShieldPopup({ event }: { event: DamageEvent }) {
+  const { particleColor } = config.shield;
+
+  return (
+    <motion.div
+      style={{
+        position: "absolute",
+        left: event.x,
+        top: event.y,
+        transform: "translate(-50%, -50%)",
+        pointerEvents: "none",
+      }}
+      initial={{ opacity: 1 }}
+      animate={{ opacity: 0 }}
+      transition={{ duration: 2.5, ease: "easeOut" }}
+    >
+      {/* Shield glow ring */}
+      <motion.div
+        style={{
+          position: "absolute",
+          left: -40,
+          top: -40,
+          width: 80,
+          height: 80,
+          borderRadius: "50%",
+          border: "3px solid rgba(250, 204, 21, 0.8)",
+          boxShadow: "0 0 20px rgba(250, 204, 21, 0.5), inset 0 0 20px rgba(250, 204, 21, 0.2)",
+          pointerEvents: "none",
+        }}
+        initial={{ scale: 0.3, opacity: 1 }}
+        animate={{ scale: 1.8, opacity: 0 }}
+        transition={{ duration: 1.2, ease: "easeOut" }}
+      />
+
+      {/* Inner shield flash */}
+      <motion.div
+        style={{
+          position: "absolute",
+          left: -30,
+          top: -30,
+          width: 60,
+          height: 60,
+          borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(250, 204, 21, 0.6) 0%, rgba(250, 204, 21, 0) 70%)",
+          pointerEvents: "none",
+        }}
+        initial={{ scale: 0.5, opacity: 1 }}
+        animate={{ scale: 2, opacity: 0 }}
+        transition={{ duration: 0.8 }}
+      />
+
+      {/* Rising sparkle particles */}
+      {[...Array(10)].map((_, i) => {
+        const angle = (i / 10) * Math.PI * 2;
+        const radius = 20 + Math.random() * 15;
+        const dx = Math.cos(angle) * radius;
+        const dy = Math.sin(angle) * radius - 10;
+        return (
+          <motion.div
+            key={i}
+            style={{
+              position: "absolute",
+              width: 4,
+              height: 4,
+              borderRadius: "50%",
+              background: particleColor,
+              left: -2,
+              top: -2,
+              boxShadow: `0 0 8px ${particleColor}`,
+              pointerEvents: "none",
+            }}
+            initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
+            animate={{ x: dx, y: dy, opacity: 0, scale: 0 }}
+            transition={{ duration: 0.8 + Math.random() * 0.4, ease: "easeOut", delay: i * 0.03 }}
+          />
+        );
+      })}
+
+      {/* Shield icon */}
+      <motion.span
+        style={{
+          position: "absolute",
+          left: "50%",
+          top: "50%",
+          transform: "translate(-50%, -50%)",
+          fontSize: "2.5rem",
+          pointerEvents: "none",
+          filter: "drop-shadow(0 0 12px rgba(250, 204, 21, 0.8))",
+        }}
+        initial={{ scale: 2, opacity: 1 }}
+        animate={{ scale: 1, opacity: 0 }}
+        transition={{ duration: 2.2, ease: "easeOut" }}
+      >
+        🛡️
+      </motion.span>
+
+      {/* Label */}
+      <motion.span
+        style={{
+          position: "absolute",
+          left: "50%",
+          top: "50%",
+          transform: "translate(-50%, -50%)",
+          fontSize: "0.75rem",
+          fontWeight: 800,
+          color: "#facc15",
+          textShadow: "0 0 8px rgba(250, 204, 21, 0.8), 0 1px 2px #000",
+          whiteSpace: "nowrap",
+          pointerEvents: "none",
+        }}
+        initial={{ y: 20, opacity: 1 }}
+        animate={{ y: -40, opacity: 0 }}
+        transition={{ duration: 2.0, ease: "easeOut", delay: 0.2 }}
+      >
+        Divine Shield
+      </motion.span>
+    </motion.div>
+  );
+}
 
 function EventPopup({ event }: { event: DamageEvent }) {
   if (event.x < -9000) return null;
 
   const type = event.type ?? "damage";
+
+  if (type === "shield") {
+    return <ShieldPopup event={event} />;
+  }
+
   const { flashColor, particleColor, textColor, format } = config[type];
   const isPositive = type === "heal" || type === "buff";
 

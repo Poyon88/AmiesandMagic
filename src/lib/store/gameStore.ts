@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { GameState, GameAction, Card, DamageEvent, HeroDefinition } from "@/lib/game/types";
+import type { GameState, GameAction, Card, CardInstance, DamageEvent, HeroDefinition } from "@/lib/game/types";
 import {
   initializeGame,
   applyAction,
@@ -13,6 +13,12 @@ import {
   getHeroPowerTargets,
 } from "@/lib/game/engine";
 
+export interface SpellCastEvent {
+  spellName: string;
+  effectText: string;
+  timestamp: number;
+}
+
 interface GameStore {
   // State
   gameState: GameState | null;
@@ -22,6 +28,7 @@ interface GameStore {
   validTargets: string[];
   targetingMode: "none" | "attack" | "spell" | "hero_power";
   damageEvents: DamageEvent[];
+  spellCastEvent: SpellCastEvent | null;
 
   // Actions
   initGame: (
@@ -45,6 +52,7 @@ interface GameStore {
   selectTarget: (targetId: string) => void;
   clearSelection: () => void;
   clearDamageEvents: () => void;
+  clearSpellCastEvent: () => void;
   activateHeroPower: () => GameAction | null;
   confirmMulligan: (selectedInstanceIds: string[]) => GameAction | null;
 
@@ -168,6 +176,18 @@ function detectDamageEvents(
           ...pos,
         });
       }
+
+      // Divine Shield gained
+      if (!oldCreature.hasDivineShield && newCreature.hasDivineShield) {
+        const pos = getElementCenter(oldCreature.instanceId);
+        events.push({
+          targetId: oldCreature.instanceId,
+          amount: 0,
+          type: "shield",
+          label: "Divine Shield",
+          ...pos,
+        });
+      }
     }
   }
 
@@ -182,6 +202,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   validTargets: [],
   targetingMode: "none",
   damageEvents: [],
+  spellCastEvent: null,
 
   initGame: (player1Id, player2Id, player1Cards, player2Cards, firstPlayerIndex, seed, player1Hero, player2Hero) => {
     const state = initializeGame(
@@ -204,17 +225,84 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const { gameState, localPlayerId } = get();
     if (!gameState || gameState.phase === "finished") return null;
 
+    // Detect spell cast before applying action
+    let spellEvent: SpellCastEvent | null = null;
+    if (action.type === "play_card") {
+      const player = gameState.players[gameState.currentPlayerIndex];
+      const cardInst = player.hand.find((c) => c.instanceId === action.cardInstanceId);
+      if (cardInst && cardInst.card.card_type === "spell") {
+        spellEvent = {
+          spellName: cardInst.card.name,
+          effectText: cardInst.card.effect_text,
+          timestamp: Date.now(),
+        };
+      }
+    }
+
     const newState = applyAction(gameState, action);
     const dmgEvents = detectDamageEvents(gameState, newState, localPlayerId);
 
-    set({
-      gameState: newState,
-      selectedCardInstanceId: null,
-      selectedAttackerInstanceId: null,
-      validTargets: [],
-      targetingMode: "none",
-      damageEvents: dmgEvents,
-    });
+    // Find creatures that died (were on old board but not on new board)
+    const deadCreatures: CardInstance[] = [];
+    for (let i = 0; i < 2; i++) {
+      const oldBoard = gameState.players[i].board;
+      const newBoard = newState.players[i].board;
+      for (const oldC of oldBoard) {
+        if (!newBoard.find((c) => c.instanceId === oldC.instanceId)) {
+          deadCreatures.push(oldC);
+        }
+      }
+    }
+
+    if (deadCreatures.length > 0) {
+      // Create intermediate state with dead creatures still on board (at 0 HP)
+      const interState = JSON.parse(JSON.stringify(newState)) as GameState;
+      for (let i = 0; i < 2; i++) {
+        const oldBoard = gameState.players[i].board;
+        const newBoard = newState.players[i].board;
+        const died = oldBoard.filter(
+          (c) => !newBoard.find((nc) => nc.instanceId === c.instanceId)
+        );
+        if (died.length > 0) {
+          // Re-insert dead creatures with 0 HP so AnimatePresence can see them
+          const deadWithZeroHp = died.map((c) => ({
+            ...c,
+            currentHealth: 0,
+          }));
+          interState.players[i].board = [
+            ...interState.players[i].board,
+            ...deadWithZeroHp,
+          ];
+        }
+      }
+
+      // First render: show dead creatures still on board (triggers damage overlay)
+      set({
+        gameState: interState,
+        selectedCardInstanceId: null,
+        selectedAttackerInstanceId: null,
+        validTargets: [],
+        targetingMode: "none",
+        damageEvents: dmgEvents,
+        ...(spellEvent ? { spellCastEvent: spellEvent } : {}),
+      });
+
+      // After a short delay, remove dead creatures (triggers exit animation)
+      setTimeout(() => {
+        set({ gameState: newState });
+      }, 1200);
+    } else {
+      set({
+        gameState: newState,
+        selectedCardInstanceId: null,
+        selectedAttackerInstanceId: null,
+        validTargets: [],
+        targetingMode: "none",
+        damageEvents: dmgEvents,
+        ...(spellEvent ? { spellCastEvent: spellEvent } : {}),
+      });
+    }
+
     return action;
   },
 
@@ -311,6 +399,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   clearDamageEvents: () => {
     set({ damageEvents: [] });
+  },
+
+  clearSpellCastEvent: () => {
+    set({ spellCastEvent: null });
   },
 
   activateHeroPower: () => {

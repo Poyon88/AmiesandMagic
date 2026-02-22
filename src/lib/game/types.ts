@@ -144,7 +144,7 @@ export interface HeroPowerAction {
 export type GameAction = PlayCardAction | AttackAction | EndTurnAction | MulliganAction | HeroPowerAction;
 
 // Combat event for animations
-export type CombatEventType = "damage" | "heal" | "buff";
+export type CombatEventType = "damage" | "heal" | "buff" | "shield";
 
 export interface DamageEvent {
   targetId: string; // creature instanceId or "enemy_hero" / "friendly_hero"
