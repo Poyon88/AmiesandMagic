@@ -53,11 +53,12 @@ export default function HeroPowerButton({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={() => setHovered(false)}
     >
-      <button
+      <div
+        role="button"
         onClick={available ? onClick : undefined}
-        disabled={!available}
+        style={{ width: 48, height: 48, borderRadius: "50%" }}
         className={`
-          relative w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all
+          relative shrink-0 border-2 flex items-center justify-center transition-all
           ${isPassive
             ? "border-purple-500/60 bg-purple-900/30 cursor-default"
             : available
@@ -86,7 +87,7 @@ export default function HeroPowerButton({
 
         {/* Class icon */}
         <span className="text-lg">{CLASS_ICONS[heroDef.heroClass] ?? "\u2B50"}</span>
-      </button>
+      </div>
 
       {/* Power name — always visible */}
       <span className="text-[9px] text-foreground/40 truncate max-w-16 text-center leading-tight">
