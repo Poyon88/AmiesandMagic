@@ -19,7 +19,7 @@ import type { GameAction, DamageEvent, Race } from "@/lib/game/types";
 
 const BANNER_IMAGES: Record<Race, string> = {
   elves: "/images/banners/elves.png",
-  dwarves: "/images/banners/dwarves.svg",
+  dwarves: "/images/banners/dwarves.png",
   halflings: "/images/banners/halflings.svg",
   humans: "/images/banners/humans.svg",
   beastmen: "/images/banners/beastmen.svg",
@@ -360,6 +360,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
       <div
         className="flex items-center justify-between px-6 py-3"
         style={{
+          backgroundColor: "#0d0d1a",
           backgroundImage: `url('${opponent.hero.heroDefinition?.race ? BANNER_IMAGES[opponent.hero.heroDefinition.race] : "/images/banners/default.svg"}')`,
           backgroundSize: "cover",
           backgroundPosition: "center",
@@ -571,6 +572,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
       <div
         className=""
         style={{
+          backgroundColor: "#0d0d1a",
           backgroundImage: `url('${myPlayer.hero.heroDefinition?.race ? BANNER_IMAGES[myPlayer.hero.heroDefinition.race] : "/images/banners/default.svg"}')`,
           backgroundSize: "cover",
           backgroundPosition: "center",
