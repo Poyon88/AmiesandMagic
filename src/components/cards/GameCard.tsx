@@ -1,7 +1,9 @@
 "use client";
 
-import type { Card, Keyword } from "@/lib/game/types";
-import CardArt from "@/components/cards/CardArt";
+import { useState } from "react";
+import Image from "next/image";
+import type { Card } from "@/lib/game/types";
+import { KEYWORD_SYMBOLS as keywordSymbols, KEYWORD_LABELS as keywordLabels } from "@/lib/game/keyword-labels";
 
 interface GameCardProps {
   card: Card;
@@ -12,20 +14,6 @@ interface GameCardProps {
   count?: number;
 }
 
-const keywordColors: Record<Keyword, string> = {
-  charge: "bg-orange-600",
-  taunt: "bg-blue-700",
-  divine_shield: "bg-yellow-600",
-  ranged: "bg-green-600",
-};
-
-const keywordLabels: Record<Keyword, string> = {
-  charge: "Charge",
-  taunt: "Taunt",
-  divine_shield: "Divine Shield",
-  ranged: "Ranged",
-};
-
 export default function GameCard({
   card,
   onClick,
@@ -34,104 +22,201 @@ export default function GameCard({
   size = "md",
   count,
 }: GameCardProps) {
-  const sizeClasses = {
-    sm: "w-32 h-44",
-    md: "w-40 h-56",
-    lg: "w-52 h-72",
-  };
+  const [hovered, setHovered] = useState(false);
 
+  const dims = {
+    sm: { w: 180, h: 252 },
+    md: { w: 260, h: 364 },
+    lg: { w: 340, h: 476 },
+  };
+  const { w, h } = dims[size];
+  const s = size === "sm" ? 0.7 : size === "md" ? 0.85 : 1;
   const isCreature = card.card_type === "creature";
+
+  const borderColor = selected ? "#c8a84e" : isCreature ? "#3d3d5c" : "#6c3483";
+  const bgGradient = isCreature
+    ? "linear-gradient(160deg, #1a1a2e, #0d0d1a)"
+    : "linear-gradient(160deg, #1a0a2a, #0d0d1a)";
+  const accentColor = isCreature ? "#74b9ff" : "#ce93d8";
 
   return (
     <div
       onClick={disabled ? undefined : onClick}
-      className={`
-        ${sizeClasses[size]}
-        relative rounded-lg border-2 overflow-hidden flex flex-col
-        ${
-          disabled
-            ? "opacity-50 cursor-not-allowed border-card-border"
-            : "cursor-pointer hover:scale-105 transition-transform"
-        }
-        ${
-          selected
-            ? "border-primary shadow-lg shadow-primary/30"
-            : "border-card-border hover:border-primary/60"
-        }
-        ${isCreature ? "bg-card-bg" : "bg-purple-900/40"}
-      `}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        width: w, height: h, borderRadius: 10 * s, position: "relative",
+        background: bgGradient,
+        border: `2px solid ${borderColor}`,
+        boxShadow: selected ? "0 0 12px #c8a84e44" : "none",
+        overflow: "hidden",
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.5 : 1,
+        transition: "all 0.2s ease",
+        transform: !disabled && hovered ? "scale(1.05)" : "none",
+      }}
     >
-      {/* Mana cost bubble */}
-      <div className="absolute top-1 left-1 w-7 h-7 rounded-full bg-mana-blue flex items-center justify-center text-white font-bold text-sm shadow-md z-10">
-        {card.mana_cost}
+      {/* ── Full-bleed art ── */}
+      <div style={{ position: "absolute", inset: 0 }}>
+        {card.image_url ? (
+          <Image
+            src={card.image_url}
+            alt={card.name}
+            fill
+            className="object-cover"
+            sizes={`${w}px`}
+          />
+        ) : (
+          <div style={{
+            width: "100%", height: "100%",
+            background: isCreature ? "linear-gradient(135deg, #1a1a2e, #2a2a4599, #1a1a2e)" : "linear-gradient(135deg, #1a0a2a, #6c348333, #1a0a2a)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <span style={{
+              fontSize: 48 * s, opacity: 0.5,
+              filter: `drop-shadow(0 0 12px ${accentColor})`,
+            }}>{isCreature ? "⚔️" : "✨"}</span>
+          </div>
+        )}
       </div>
 
-      {/* Count badge */}
+      {/* ── Vignette ── */}
+      <div style={{
+        position: "absolute", inset: 0,
+        background: "radial-gradient(ellipse at center, transparent 30%, #0d0d1add 100%)",
+        pointerEvents: "none",
+      }} />
+
+      {/* ── Mana orb ── */}
+      <div style={{
+        position: "absolute", top: 5 * s, left: 5 * s, zIndex: 2,
+        width: 24 * s, height: 24 * s, borderRadius: "50%",
+        background: "radial-gradient(circle, #1a3a6a, #0d1f3c)",
+        border: `2px solid #74b9ff`,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        fontSize: 12 * s, color: "#74b9ff", fontWeight: 700,
+        boxShadow: "0 0 6px #74b9ff55",
+      }}>{card.mana_cost}</div>
+
+      {/* ── Count badge ── */}
       {count !== undefined && (
-        <div className="absolute top-1 right-1 w-6 h-6 rounded-full bg-primary flex items-center justify-center text-background font-bold text-xs z-10">
-          x{count}
-        </div>
+        <div style={{
+          position: "absolute", top: 5 * s, right: 5 * s, zIndex: 2,
+          width: 22 * s, height: 22 * s, borderRadius: "50%",
+          background: "#c8a84e",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 10 * s, color: "#0d0d1a", fontWeight: 700,
+        }}>x{count}</div>
       )}
 
-      {/* Card art */}
-      <CardArt card={card} className="h-[40%]" />
+      {/* ── Bottom bar: name + keywords + stats ── */}
+      <div style={{
+        position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2,
+        padding: `${6 * s}px ${8 * s}px`,
+        background: "linear-gradient(0deg, #0d0d1aee 0%, #0d0d1acc 60%, transparent 100%)",
+        display: "flex", flexDirection: "column", gap: 4 * s,
+      }}>
+        {/* Card name */}
+        <div style={{
+          fontSize: 10 * s, color: "#e0e0e0", fontWeight: 700,
+          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+          fontFamily: "'Cinzel', serif",
+        }}>{card.name}</div>
 
-      {/* Card name */}
-      <div className="px-2 py-1 text-center">
-        <h3
-          className={`font-bold text-foreground leading-tight ${
-            size === "sm" ? "text-[10px]" : "text-xs"
-          }`}
-        >
-          {card.name}
-        </h3>
+        {/* Keyword symbols */}
+        {card.keywords.length > 0 && (
+          <div style={{ display: "flex", gap: 3 * s, flexWrap: "wrap" }}>
+            {card.keywords.map((kw) => (
+              <div key={kw} title={keywordLabels[kw]} style={{
+                width: 18 * s, height: 18 * s, borderRadius: 4 * s,
+                background: `${accentColor}33`, border: `1px solid ${accentColor}66`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 10 * s,
+              }}>{keywordSymbols[kw]}</div>
+            ))}
+          </div>
+        )}
+
+        {/* Stats row */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{
+            fontSize: 7 * s, color: "#ffffff44", textTransform: "uppercase",
+            letterSpacing: 1,
+          }}>{card.card_type}</span>
+
+          {isCreature && (
+            <div style={{ display: "flex", gap: 5 * s }}>
+              <div style={{
+                display: "flex", alignItems: "center", gap: 2 * s,
+                padding: `${1 * s}px ${5 * s}px`, borderRadius: 4 * s,
+                background: "#f1c40f18", border: "1px solid #f1c40f55",
+              }}>
+                <span style={{ fontSize: 12 * s, color: "#f1c40f", fontWeight: 700 }}>{card.attack}</span>
+              </div>
+              <div style={{
+                display: "flex", alignItems: "center", gap: 2 * s,
+                padding: `${1 * s}px ${5 * s}px`, borderRadius: 4 * s,
+                background: "#e74c3c18", border: "1px solid #e74c3c55",
+              }}>
+                <span style={{ fontSize: 12 * s, color: "#e74c3c", fontWeight: 700 }}>{card.health}</span>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Effect text */}
-      <div className="flex-1 px-2 overflow-hidden">
-        <p
-          className={`text-foreground/70 leading-tight ${
-            size === "sm" ? "text-[8px]" : "text-[10px]"
-          }`}
-        >
-          {card.effect_text}
-        </p>
+      {/* ── Hover overlay: effect text ── */}
+      <div style={{
+        position: "absolute", inset: 0, zIndex: 3,
+        background: "#0d0d1aee",
+        opacity: hovered ? 1 : 0,
+        transition: "opacity 0.25s ease",
+        pointerEvents: hovered ? "auto" : "none",
+        display: "flex", flexDirection: "column", justifyContent: "center",
+        padding: `${14 * s}px ${10 * s}px`,
+        gap: 8 * s,
+      }}>
+        {/* Name */}
+        <div style={{
+          fontSize: 11 * s, color: accentColor, fontWeight: 700,
+          textAlign: "center", fontFamily: "'Cinzel', serif",
+          borderBottom: `1px solid ${accentColor}44`, paddingBottom: 6 * s,
+        }}>{card.name}</div>
+
+        {/* Keywords detail */}
+        {card.keywords.length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 3 * s }}>
+            {card.keywords.map((kw) => (
+              <div key={kw} style={{ display: "flex", alignItems: "center", gap: 5 * s }}>
+                <span style={{ fontSize: 11 * s }}>{keywordSymbols[kw]}</span>
+                <span style={{ fontSize: 8 * s, color: accentColor, fontWeight: 600 }}>{keywordLabels[kw]}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Effect text */}
+        <div style={{
+          padding: `${6 * s}px`,
+          background: `${accentColor}11`, borderRadius: 4 * s,
+          border: `1px solid ${accentColor}22`,
+        }}>
+          <p style={{
+            margin: 0, fontSize: 9 * s, color: "#ccc",
+            lineHeight: 1.5, fontFamily: "'Crimson Text', serif",
+          }}>{card.effect_text}</p>
+        </div>
+
+        {/* Stats recap */}
+        <div style={{
+          display: "flex", justifyContent: "center", gap: 8 * s,
+          fontSize: 8 * s, color: "#555",
+        }}>
+          <span>💧 {card.mana_cost}</span>
+          {isCreature && <><span style={{ color: "#f1c40f" }}>⚔ {card.attack}</span><span style={{ color: "#e74c3c" }}>❤ {card.health}</span></>}
+          <span style={{ color: "#666", textTransform: "uppercase" }}>{card.card_type}</span>
+        </div>
       </div>
-
-      {/* Keywords */}
-      {card.keywords.length > 0 && (
-        <div className="px-1.5 pb-0.5 flex flex-wrap gap-0.5 justify-center">
-          {card.keywords.map((kw) => (
-            <span
-              key={kw}
-              className={`${keywordColors[kw]} text-white rounded px-1 py-0 text-[7px] font-medium`}
-            >
-              {keywordLabels[kw]}
-            </span>
-          ))}
-        </div>
-      )}
-
-      {/* Bottom stats */}
-      {isCreature && (
-        <div className="flex justify-between px-2 py-1">
-          <div className="w-6 h-6 rounded-full bg-attack-yellow flex items-center justify-center text-background font-bold text-xs">
-            {card.attack}
-          </div>
-          <div className="text-[9px] text-foreground/40 self-center uppercase">
-            {card.card_type}
-          </div>
-          <div className="w-6 h-6 rounded-full bg-health-red flex items-center justify-center text-white font-bold text-xs">
-            {card.health}
-          </div>
-        </div>
-      )}
-
-      {!isCreature && (
-        <div className="flex justify-center py-1.5">
-          <span className="text-[9px] text-purple-300/60 uppercase">Spell</span>
-        </div>
-      )}
     </div>
   );
 }

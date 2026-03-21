@@ -1,7 +1,20 @@
 // Card types matching database schema
 export type CardType = "creature" | "spell";
 
-export type Keyword = "charge" | "taunt" | "divine_shield" | "ranged";
+export type Keyword =
+  // Legacy (backward compat with existing DB)
+  | "charge" | "taunt" | "divine_shield" | "ranged"
+  // Tier 0
+  | "loyaute" | "ancre" | "resistance" | "premier_frappe" | "berserk"
+  // Tier 1
+  | "precision" | "drain_de_vie" | "esquive" | "poison" | "celerite"
+  // Tier 2
+  | "terreur" | "armure" | "commandement" | "fureur" | "double_attaque" | "invisible"
+  // Tier 3
+  | "liaison_de_vie" | "ombre" | "sacrifice" | "malefice"
+  | "indestructible" | "regeneration" | "corruption"
+  // Tier 4
+  | "pacte_de_sang" | "souffle_de_feu" | "domination" | "resurrection" | "transcendance";
 
 export type SpellTargetType =
   | "any"
@@ -43,11 +56,12 @@ export interface Card {
   keywords: Keyword[];
   spell_effect: SpellEffect | null;
   image_url: string | null;
+  faction?: string;
 }
 
 // In-game card instance (a card on the board or in hand with runtime state)
 export interface CardInstance {
-  instanceId: string; // unique per game instance
+  instanceId: string;
   card: Card;
   currentAttack: number;
   currentHealth: number;
@@ -55,6 +69,17 @@ export interface CardInstance {
   hasAttacked: boolean;
   hasSummoningSickness: boolean;
   hasDivineShield: boolean;
+  // New keyword runtime state
+  attacksRemaining: number;
+  isPoisoned: boolean;
+  hasUsedIndestructible: boolean;
+  hasUsedResurrection: boolean;
+  fureurActive: boolean;
+  fureurATKBonus: number;
+  berserkActive: boolean;
+  berserkATKBonus: number;
+  transcendanceTurns: number;
+  targetsAttackedThisTurn: string[];
 }
 
 // Hero power system
@@ -106,7 +131,7 @@ export interface GameState {
   currentPlayerIndex: 0 | 1;
   turnNumber: number;
   phase: GamePhase;
-  winner: string | null; // player id
+  winner: string | null;
   lastAction: GameAction | null;
   mulliganReady: [boolean, boolean];
 }
@@ -116,14 +141,14 @@ export type GameActionType = "play_card" | "attack" | "end_turn" | "spell_target
 export interface PlayCardAction {
   type: "play_card";
   cardInstanceId: string;
-  targetInstanceId?: string; // for targeted spells
+  targetInstanceId?: string;
   boardPosition?: number;
 }
 
 export interface AttackAction {
   type: "attack";
   attackerInstanceId: string;
-  targetInstanceId: string; // creature instanceId or 'hero' for enemy hero
+  targetInstanceId: string;
 }
 
 export interface EndTurnAction {
@@ -147,12 +172,12 @@ export type GameAction = PlayCardAction | AttackAction | EndTurnAction | Mulliga
 export type CombatEventType = "damage" | "heal" | "buff" | "shield";
 
 export interface DamageEvent {
-  targetId: string; // creature instanceId or "enemy_hero" / "friendly_hero"
+  targetId: string;
   amount: number;
   type: CombatEventType;
-  label?: string; // custom label like "+2/+3" for buffs
-  x: number; // viewport x (center of target element)
-  y: number; // viewport y (center of target element)
+  label?: string;
+  x: number;
+  y: number;
 }
 
 // Match data from database

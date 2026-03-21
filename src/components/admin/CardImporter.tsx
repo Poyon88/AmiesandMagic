@@ -29,7 +29,8 @@ interface ImportResult {
 
 // ---------- Helpers ----------
 
-const VALID_KEYWORDS: Keyword[] = ["charge", "taunt", "divine_shield", "ranged"];
+import { ALL_KEYWORDS } from "@/lib/game/keyword-labels";
+const VALID_KEYWORDS: Keyword[] = ALL_KEYWORDS;
 
 function normalizeFileName(name: string): string {
   return name

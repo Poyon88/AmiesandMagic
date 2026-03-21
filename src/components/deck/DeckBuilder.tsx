@@ -43,13 +43,8 @@ const RACE_ICONS: Record<string, string> = {
   undead: "\uD83D\uDC80",
 };
 
-const KEYWORDS: Keyword[] = ["charge", "taunt", "divine_shield", "ranged"];
-const KEYWORD_LABELS: Record<Keyword, string> = {
-  charge: "Charge",
-  taunt: "Taunt",
-  divine_shield: "Divine Shield",
-  ranged: "Ranged",
-};
+import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
+const KEYWORDS = ALL_KEYWORDS;
 
 export default function DeckBuilder({
   cards,
@@ -279,14 +274,14 @@ export default function DeckBuilder({
         </div>
 
         {/* Cards Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filteredCards.map((card) => {
             const inDeck = deckCards.get(card.id);
             return (
               <GameCard
                 key={card.id}
                 card={card}
-                size="sm"
+                size="md"
                 onClick={() => addCard(card)}
                 disabled={totalCards >= DECK_SIZE && !inDeck}
                 count={inDeck?.quantity}

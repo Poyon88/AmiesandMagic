@@ -9,13 +9,8 @@ interface CollectionViewProps {
   cards: Card[];
 }
 
-const KEYWORDS: Keyword[] = ["charge", "taunt", "divine_shield", "ranged"];
-const KEYWORD_LABELS: Record<Keyword, string> = {
-  charge: "Charge",
-  taunt: "Taunt",
-  divine_shield: "Divine Shield",
-  ranged: "Ranged",
-};
+import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
+const KEYWORDS = ALL_KEYWORDS;
 
 export default function CollectionView({ cards }: CollectionViewProps) {
   const router = useRouter();

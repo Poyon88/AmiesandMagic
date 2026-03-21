@@ -3,7 +3,6 @@
 import { useState, useCallback, useRef } from "react";
 import { generateCardStats, pickMana, pickRarityForMana, buildId } from "@/lib/card-engine/generator";
 import { RARITIES, FACTIONS, TYPES, KEYWORDS, RARITY_WEIGHTS_BY_MANA, RARITY_MAP } from "@/lib/card-engine/constants";
-import { createClient } from "@/lib/supabase/client";
 import CardVisual from "./CardVisual";
 import type { CardType, Keyword } from "@/lib/game/types";
 
@@ -157,70 +156,147 @@ export default function CardForge() {
   };
 
   const FORGE_TO_GAME_KEYWORD: Record<string, Keyword> = {
-    "Traque": "charge",
-    "Provocation": "taunt",
-    "Bouclier": "divine_shield",
-    "Vol": "ranged",
+    "Traque": "charge", "Provocation": "taunt", "Bouclier": "divine_shield", "Vol": "ranged",
+    "Loyauté": "loyaute", "Ancré": "ancre", "Résistance": "resistance",
+    "Premier Frappe": "premier_frappe", "Berserk": "berserk", "Précision": "precision",
+    "Drain de vie": "drain_de_vie", "Esquive": "esquive", "Poison": "poison",
+    "Célérité": "celerite", "Terreur": "terreur", "Armure": "armure",
+    "Commandement": "commandement", "Fureur": "fureur", "Double Attaque": "double_attaque",
+    "Invisible": "invisible", "Liaison de vie": "liaison_de_vie", "Ombre": "ombre",
+    "Sacrifice": "sacrifice", "Maléfice": "malefice", "Indestructible": "indestructible",
+    "Régénération": "regeneration", "Corruption": "corruption",
+    "Pacte de sang": "pacte_de_sang", "Souffle de feu": "souffle_de_feu",
+    "Domination": "domination", "Résurrection": "resurrection", "Transcendance": "transcendance",
   };
 
   const [saving, setSaving] = useState(false);
   const [saveResult, setSaveResult] = useState<{ ok: boolean; msg: string } | null>(null);
+  const [updateTargetId, setUpdateTargetId] = useState<number | null>(null);
+  const [updateTargetName, setUpdateTargetName] = useState<string | null>(null);
+  const [existingCards, setExistingCards] = useState<{ id: number; name: string; mana_cost: number; keywords: string[]; image_url: string | null }[]>([]);
+  const [showExistingCards, setShowExistingCards] = useState(false);
+  const [existingSearch, setExistingSearch] = useState("");
 
-  const saveToGame = useCallback(async (forgeCard: ForgeCard) => {
+  const loadExistingCards = useCallback(async () => {
+    try {
+      const res = await fetch('/api/cards/save');
+      const data = await res.json();
+      if (res.ok) {
+        setExistingCards(data);
+        setShowExistingCards(true);
+      } else {
+        setSaveResult({ ok: false, msg: data.error || "Erreur chargement cartes" });
+      }
+    } catch (err) {
+      setSaveResult({ ok: false, msg: err instanceof Error ? err.message : "Erreur réseau" });
+    }
+  }, []);
+
+  const selectUpdateTarget = (dbCard: { id: number; name: string }) => {
+    setUpdateTargetId(dbCard.id);
+    setUpdateTargetName(dbCard.name);
+    setShowExistingCards(false);
+  };
+
+  const clearUpdateTarget = () => {
+    setUpdateTargetId(null);
+    setUpdateTargetName(null);
+  };
+
+  const saveToGame = useCallback(async (forgeCard: ForgeCard, updateId?: number | null) => {
     setSaving(true);
     setSaveResult(null);
-    const supabase = createClient();
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Non authentifié");
-
-      // Map keywords
       const gameKeywords: Keyword[] = forgeCard.keywords
         .map(k => FORGE_TO_GAME_KEYWORD[k])
         .filter((k): k is Keyword => !!k);
 
-      // Upload image if exists
-      let image_url: string | null = null;
+      const kwDescs = forgeCard.keywords.map(k => `${k}: ${KEYWORDS[k]?.desc || ""}`).join(" ");
+      const effectText = [forgeCard.ability, kwDescs].filter(Boolean).join(" — ");
+
+      let imageBase64: string | null = null;
+      let imageMimeType: string | null = null;
       const blobUrl = cardImages[forgeCard.id];
       if (blobUrl) {
         const res = await fetch(blobUrl);
         const blob = await res.blob();
-        const ext = blob.type.split("/")[1] || "webp";
-        const filePath = `forge_${forgeCard.id}.${ext}`;
-        const { error: uploadErr } = await supabase.storage
-          .from("card-images")
-          .upload(filePath, blob, { upsert: true, contentType: blob.type });
-        if (uploadErr) throw new Error(`Image: ${uploadErr.message}`);
-        const { data: urlData } = supabase.storage.from("card-images").getPublicUrl(filePath);
-        image_url = urlData.publicUrl;
+        imageMimeType = blob.type;
+        imageBase64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const result = reader.result as string;
+            resolve(result.split(',')[1]);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
       }
 
-      // Build effect text with all forge keywords
-      const kwDescs = forgeCard.keywords.map(k => `${k}: ${KEYWORDS[k]?.desc || ""}`).join(" ");
-      const effectText = [forgeCard.ability, kwDescs].filter(Boolean).join(" — ");
-
-      // Insert
-      const { error: insertErr } = await supabase.from("cards").insert({
-        name: forgeCard.name,
-        mana_cost: forgeCard.mana,
-        card_type: FORGE_TO_GAME_TYPE[forgeCard.type] || "creature",
-        attack: forgeCard.attack,
-        health: forgeCard.defense,
-        effect_text: effectText,
-        keywords: gameKeywords,
-        spell_effect: null,
-        image_url,
+      const response = await fetch('/api/cards/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          card: {
+            name: forgeCard.name,
+            mana_cost: forgeCard.mana,
+            card_type: FORGE_TO_GAME_TYPE[forgeCard.type] || "creature",
+            attack: forgeCard.attack,
+            health: forgeCard.defense,
+            effect_text: effectText,
+            keywords: gameKeywords,
+            spell_effect: null,
+            faction: forgeCard.faction,
+          },
+          imageBase64,
+          imageMimeType,
+          updateId: updateId || undefined,
+        }),
       });
-      if (insertErr) throw new Error(insertErr.message);
 
-      setSaveResult({ ok: true, msg: `"${forgeCard.name}" ajoutée au jeu !` });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Erreur serveur');
+
+      const action = data.updated ? "mise à jour" : "ajoutée";
+      setSaveResult({ ok: true, msg: `"${forgeCard.name}" ${action} !` });
+      if (updateId) clearUpdateTarget();
     } catch (err) {
       setSaveResult({ ok: false, msg: err instanceof Error ? err.message : "Erreur inconnue" });
     } finally {
       setSaving(false);
     }
   }, [cardImages]);
+
+  const [generatingImage, setGeneratingImage] = useState(false);
+
+  const generateIllustration = useCallback(async (forgeCard: ForgeCard) => {
+    if (!forgeCard.illustrationPrompt) return;
+    setGeneratingImage(true);
+    setSaveResult(null);
+    try {
+      const res = await fetch('/api/cards/generate-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: forgeCard.illustrationPrompt }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erreur génération image');
+
+      // Convert base64 to blob URL for preview
+      const byteChars = atob(data.imageBase64);
+      const byteArray = new Uint8Array(byteChars.length);
+      for (let i = 0; i < byteChars.length; i++) byteArray[i] = byteChars.charCodeAt(i);
+      const blob = new Blob([byteArray], { type: data.mimeType });
+      const blobUrl = URL.createObjectURL(blob);
+
+      setCardImages(prev => ({ ...prev, [forgeCard.id]: blobUrl }));
+      setSaveResult({ ok: true, msg: `Illustration générée (${data.model})` });
+    } catch (err) {
+      setSaveResult({ ok: false, msg: err instanceof Error ? err.message : "Erreur génération" });
+    } finally {
+      setGeneratingImage(false);
+    }
+  }, []);
 
   const fac = FACTIONS[faction];
 
@@ -341,10 +417,68 @@ export default function CardForge() {
                 <div style={{ display: "flex", gap: 7 }}>
                   <Btn onClick={() => forgeCard()} label="🎲 Re-roll" color="#74b9ff" />
                   <Btn onClick={() => exportJSON([card])} label="📤 JSON" color="#55efc4" />
-                  <Btn onClick={() => saveToGame(card)} label={saving ? "⏳ …" : "💾 Sauvegarder"} color="#ffd54f" />
+                  <Btn onClick={() => saveToGame(card)} label={saving ? "⏳ …" : "💾 Nouvelle carte"} color="#ffd54f" />
+                  <Btn onClick={loadExistingCards} label="📝 Mettre à jour" color="#a29bfe" />
                 </div>
               )}
-              {saveResult && !loading && (
+              {/* Update target indicator */}
+              {updateTargetId && card && !loading && (
+                <div style={{
+                  display: "flex", alignItems: "center", gap: 8, padding: "6px 12px",
+                  borderRadius: 5, background: "#a29bfe11", border: "1px solid #a29bfe44",
+                  maxWidth: 380,
+                }}>
+                  <span style={{ fontSize: 9, color: "#a29bfe", fontFamily: "'Crimson Text',serif", flex: 1 }}>
+                    Cible : <strong>{updateTargetName}</strong> (#{updateTargetId})
+                  </span>
+                  <Btn onClick={() => saveToGame(card, updateTargetId)} label={saving ? "⏳ …" : "✅ Confirmer"} color="#55efc4" />
+                  <Btn onClick={clearUpdateTarget} label="✕" color="#ff6b6b" />
+                </div>
+              )}
+              {/* Existing cards picker modal */}
+              {showExistingCards && (
+                <div style={{
+                  maxWidth: 420, maxHeight: 300, overflowY: "auto",
+                  padding: "10px", borderRadius: 7, background: "#08081a",
+                  border: "1px solid #0f0f24",
+                }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                    <span style={{ fontSize: 8, color: "#444", letterSpacing: 1.5 }}>SÉLECTIONNER UNE CARTE À METTRE À JOUR</span>
+                    <Btn onClick={() => setShowExistingCards(false)} label="✕" color="#ff6b6b" />
+                  </div>
+                  <input
+                    type="text" placeholder="Rechercher…" value={existingSearch}
+                    onChange={e => setExistingSearch(e.target.value)}
+                    style={{
+                      width: "100%", padding: "4px 8px", marginBottom: 8, borderRadius: 4,
+                      background: "#0d0d1a", border: "1px solid #1a1a3a", color: "#ccc",
+                      fontFamily: "'Crimson Text',serif", fontSize: 11,
+                    }}
+                  />
+                  {existingCards
+                    .filter(c => c.name.toLowerCase().includes(existingSearch.toLowerCase()))
+                    .map(c => (
+                    <div key={c.id} onClick={() => selectUpdateTarget(c)} style={{
+                      padding: "5px 8px", borderRadius: 4, marginBottom: 3,
+                      background: "#0d0d1a44", border: "1px solid #1a1a3a",
+                      cursor: "pointer", transition: "all 0.15s",
+                      display: "flex", justifyContent: "space-between", alignItems: "center",
+                    }}>
+                      <div>
+                        <div style={{ fontSize: 9.5, color: "#ccc", fontWeight: 600 }}>{c.name}</div>
+                        <div style={{ fontSize: 7.5, color: "#444" }}>
+                          💧{c.mana_cost} · {c.keywords?.length || 0} keywords
+                        </div>
+                      </div>
+                      <span style={{ fontSize: 7.5, color: "#333" }}>#{c.id}</span>
+                    </div>
+                  ))}
+                  {existingCards.length === 0 && (
+                    <div style={{ fontSize: 9, color: "#333", textAlign: "center", padding: 20 }}>Aucune carte trouvée</div>
+                  )}
+                </div>
+              )}
+              {saveResult && !loading && !showExistingCards && (
                 <div style={{
                   padding: "6px 12px", borderRadius: 5, fontSize: 9,
                   background: saveResult.ok ? "#55efc411" : "#ff6b6b11",
@@ -357,12 +491,26 @@ export default function CardForge() {
               )}
               {card?.illustrationPrompt && (
                 <div style={{ maxWidth: 380, padding: "9px 12px", borderRadius: 6, background: "#08081a", border: "1px solid #0f0f24", fontFamily: "'Crimson Text',serif" }}>
-                  <div style={{ fontSize: 7.5, color: "#2a2a4a", letterSpacing: 1.5, marginBottom: 4, fontFamily: "'Cinzel',serif" }}>MIDJOURNEY PROMPT</div>
+                  <div style={{ fontSize: 7.5, color: "#2a2a4a", letterSpacing: 1.5, marginBottom: 4, fontFamily: "'Cinzel',serif" }}>ILLUSTRATION PROMPT</div>
                   <div style={{ fontSize: 10, color: "#555", lineHeight: 1.5 }}>{card.illustrationPrompt}</div>
-                  <button onClick={() => navigator.clipboard.writeText(card.illustrationPrompt)} style={{
-                    marginTop: 5, fontSize: 8.5, background: "none", border: "none",
-                    color: "#55efc4", cursor: "pointer", fontFamily: "'Cinzel',serif",
-                  }}>[copier]</button>
+                  <div style={{ display: "flex", gap: 10, marginTop: 6 }}>
+                    <button onClick={() => navigator.clipboard.writeText(card.illustrationPrompt)} style={{
+                      fontSize: 8.5, background: "none", border: "none",
+                      color: "#55efc4", cursor: "pointer", fontFamily: "'Cinzel',serif",
+                    }}>[copier]</button>
+                    <button
+                      onClick={() => generateIllustration(card)}
+                      disabled={generatingImage}
+                      style={{
+                        fontSize: 8.5, background: generatingImage ? "none" : "#a29bfe15",
+                        border: `1px solid ${generatingImage ? "#333" : "#a29bfe44"}`,
+                        borderRadius: 4, padding: "2px 8px",
+                        color: generatingImage ? "#555" : "#a29bfe", cursor: generatingImage ? "not-allowed" : "pointer",
+                        fontFamily: "'Cinzel',serif",
+                        animation: generatingImage ? "pulse 1.5s infinite" : "none",
+                      }}
+                    >{generatingImage ? "⏳ Génération…" : "🎨 Illustrer"}</button>
+                  </div>
                 </div>
               )}
             </div>
