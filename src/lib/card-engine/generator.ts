@@ -1,0 +1,157 @@
+import {
+  RARITIES, RARITY_MAP, KEYWORDS, FACTIONS,
+  STAT_COST, MANA_BUDGET_BASE,
+  MANA_WEIGHTS, RARITY_WEIGHTS_BY_MANA,
+} from './constants';
+
+// ─── UTILS ───────────────────────────────────────────────────────────────────
+
+function randInt(min: number, max: number) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+function randFloat(min: number, max: number) {
+  return Math.random() * (max - min) + min;
+}
+
+export function buildId() {
+  return `am_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+}
+
+// ─── MANA & RARITY PICKERS ───────────────────────────────────────────────────
+
+export function pickMana() {
+  let r = Math.random();
+  for (let i = 0; i < MANA_WEIGHTS.length; i++) {
+    r -= MANA_WEIGHTS[i];
+    if (r <= 0) return i + 1;
+  }
+  return 5;
+}
+
+export function pickRarityForMana(mana: number) {
+  const weights = RARITY_WEIGHTS_BY_MANA[Math.min(mana, 10) - 1];
+  let r = Math.random();
+  for (let i = 0; i < weights.length; i++) {
+    r -= weights[i];
+    if (r <= 0) return RARITIES[i].id;
+  }
+  return RARITIES[RARITIES.length - 1].id;
+}
+
+// ─── BUDGET ──────────────────────────────────────────────────────────────────
+
+function computeBudget(mana: number, rarityId: string) {
+  const r = RARITY_MAP[rarityId];
+  const base = mana * MANA_BUDGET_BASE * r.multiplier;
+  const variance = base * 0.10;
+  return Math.round(randFloat(base - variance, base + variance));
+}
+
+// ─── KEYWORDS ────────────────────────────────────────────────────────────────
+
+function getAvailableKeywords(factionId: string, rarityId: string) {
+  const faction = FACTIONS[factionId];
+  const tier = RARITY_MAP[rarityId].tier;
+  return Object.entries(KEYWORDS)
+    .filter(([id, kw]) => kw.minTier <= tier && !faction.forbiddenKeywords.includes(id))
+    .map(([id, kw]) => ({ id, ...kw, weight: faction.likelyKeywords[id] || 0.12 }));
+}
+
+function pickWeightedKeyword(available: ReturnType<typeof getAvailableKeywords>, alreadyPicked: string[]) {
+  const pool = available.filter(k => !alreadyPicked.includes(k.id));
+  if (!pool.length) return null;
+  const total = pool.reduce((s, k) => s + k.weight, 0);
+  let r = Math.random() * total;
+  for (const kw of pool) {
+    r -= kw.weight;
+    if (r <= 0) return kw;
+  }
+  return pool[pool.length - 1];
+}
+
+// ─── MAIN GENERATOR ──────────────────────────────────────────────────────────
+
+export function generateCardStats(factionId: string, type: string, rarityId: string, fixedMana: number | null = null) {
+  const faction = FACTIONS[factionId];
+  const isUnit = type === 'Unité';
+  const mana = fixedMana ?? pickMana();
+  let budget = computeBudget(mana, rarityId);
+  const totalBudget = budget;
+
+  // Keywords garantis par faction
+  const guaranteedKws = faction.guaranteedKeywords.filter(kid => {
+    const kw = KEYWORDS[kid];
+    return kw && isUnit && kw.minTier <= RARITY_MAP[rarityId].tier;
+  });
+  let keywords = [...guaranteedKws];
+
+  let attack: number | null = null, defense: number | null = null, power: number | null = null;
+
+  if (isUnit) {
+    // Stats : total fixe (vanilla test + bonus rareté), split variable
+    const RARITY_STAT_BONUS: Record<string, number> = { 'Commune': 0, 'Peu Commune': 1, 'Rare': 1, 'Épique': 2, 'Légendaire': 2 };
+    const statTotal = (mana * 2 + 1) + (RARITY_STAT_BONUS[rarityId] ?? 0);
+
+    const totalWeight = faction.statWeights.atk + faction.statWeights.def;
+    const baseAtk = statTotal * (faction.statWeights.atk / totalWeight);
+    const splitVariance = mana <= 3 ? 1 : 2;
+    const atkRaw = Math.round(baseAtk) + randInt(-splitVariance, splitVariance);
+    attack  = Math.max(1, Math.min(statTotal - 1, atkRaw));
+    defense = Math.max(1, statTotal - attack);
+
+    // Clamp dispersion ATK/DEF
+    const maxRatio = faction.statWeights.atk > 1.3 || faction.statWeights.def > 1.3 ? 3.0 : 2.5;
+    const hi = Math.max(attack, defense);
+    const lo = Math.min(attack, defense);
+    if (lo > 0 && hi / lo > maxRatio) {
+      const clamped = Math.floor(lo * maxRatio);
+      if (attack > defense) attack = clamped;
+      else defense = clamped;
+    }
+
+    // Budget keywords : indépendant des stats, croît avec le mana
+    const KW_BUDGET_CONFIG: Record<string, { base: number; factor: number }> = {
+      'Commune':     { base: 0, factor: 1.5 },
+      'Peu Commune': { base: 2, factor: 2.0 },
+      'Rare':        { base: 4, factor: 2.5 },
+      'Épique':      { base: 6, factor: 3.0 },
+      'Légendaire':  { base: 8, factor: 4.0 },
+    };
+    const kwCfg = KW_BUDGET_CONFIG[rarityId] ?? { base: 4, factor: 2.5 };
+    budget = Math.round(kwCfg.base + mana * kwCfg.factor);
+
+    // Déduire les keywords garantis
+    for (const kid of guaranteedKws) budget -= KEYWORDS[kid]?.cost || 0;
+
+    // Allocation keywords avec plafond et probabilité décroissante
+    const KW_CONFIG: Record<string, { max: number; probs: number[] }> = {
+      'Commune':     { max: 1, probs: [0.40] },
+      'Peu Commune': { max: 2, probs: [0.55, 0.25] },
+      'Rare':        { max: 2, probs: [0.65, 0.35] },
+      'Épique':      { max: 3, probs: [0.75, 0.45, 0.20] },
+      'Légendaire':  { max: 3, probs: [0.85, 0.55, 0.25] },
+    };
+    const kwConfig = KW_CONFIG[rarityId] || { max: 2, probs: [0.50, 0.25] };
+    const available = getAvailableKeywords(factionId, rarityId);
+    let attempts = 0;
+    while (keywords.length < kwConfig.max && attempts < 15) {
+      const slotProb = kwConfig.probs[keywords.length] ?? 0;
+      if (Math.random() > slotProb) break;
+      const kw = pickWeightedKeyword(available, keywords);
+      if (!kw || kw.cost > budget) break;
+      keywords.push(kw.id);
+      budget -= kw.cost;
+      attempts++;
+    }
+  } else {
+    const powerMax = Math.floor((budget * 0.6) / STAT_COST.atk);
+    power = Math.max(1, randInt(1, Math.max(1, powerMax)));
+  }
+
+  return {
+    mana, attack, defense, power,
+    keywords: [...new Set(keywords)],
+    budgetTotal: totalBudget,
+    budgetUsed: Math.round(totalBudget - budget),
+  };
+}

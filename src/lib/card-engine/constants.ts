@@ -1,0 +1,143 @@
+// ─── RARITIES ────────────────────────────────────────────────────────────────
+
+export const RARITIES = [
+  { id: "Commune",     label: "Commune",     code: "C", multiplier: 1.00, color: "#aaaaaa", glow: "#888888", tier: 0 },
+  { id: "Peu Commune", label: "Peu Commune", code: "U", multiplier: 1.05, color: "#4caf50", glow: "#43a047", tier: 1 },
+  { id: "Rare",        label: "Rare",        code: "R", multiplier: 1.10, color: "#4fc3f7", glow: "#0288d1", tier: 2 },
+  { id: "Épique",      label: "Épique",      code: "É", multiplier: 1.15, color: "#ce93d8", glow: "#8e24aa", tier: 3 },
+  { id: "Légendaire",  label: "Légendaire",  code: "L", multiplier: 1.20, color: "#ffd54f", glow: "#ffb300", tier: 4 },
+];
+
+export const RARITY_MAP = Object.fromEntries(RARITIES.map(r => [r.id, r]));
+
+// ─── KEYWORDS ────────────────────────────────────────────────────────────────
+// cost    : points de budget keywords consommés
+// se      : stat équivalent (documentation de l'impact)
+// minTier : rareté minimale (0=Commune … 4=Légendaire)
+
+export const KEYWORDS: Record<string, { cost: number; se: number; minTier: number; desc: string }> = {
+  // Tier 0 — Commune+
+  "Loyauté":          { cost:  2, se: 0.5, minTier: 0, desc: "+1 ATK pour chaque allié sur le terrain." },
+  "Ancré":            { cost:  2, se: 0.5, minTier: 0, desc: "Ne peut pas être déplacé ou exilé." },
+  "Résistance":       { cost:  5, se: 1.0, minTier: 0, desc: "Réduit les dégâts reçus de 1." },
+  "Provocation":      { cost:  5, se: 1.0, minTier: 0, desc: "Les ennemis doivent attaquer cette unité en priorité." },
+  "Traque":           { cost:  5, se: 1.0, minTier: 0, desc: "Peut attaquer dès son invocation." },
+  "Premier Frappe":   { cost:  7, se: 1.5, minTier: 0, desc: "Attaque avant les autres unités au combat." },
+  "Berserk":          { cost:  7, se: 1.5, minTier: 0, desc: "+2 ATK lorsque les PV sont inférieurs à 50%." },
+  "Bouclier":         { cost:  7, se: 1.5, minTier: 0, desc: "Absorbe une première attaque sans dégâts." },
+  // Tier 1 — Peu Commune+
+  "Précision":        { cost:  7, se: 1.5, minTier: 1, desc: "Ignore la Résistance et l'Armure." },
+  "Drain de vie":     { cost:  9, se: 2.0, minTier: 1, desc: "Soigne votre héros des dégâts infligés." },
+  "Esquive":          { cost:  9, se: 2.0, minTier: 1, desc: "30% de chance d'éviter une attaque." },
+  "Poison":           { cost:  9, se: 2.0, minTier: 1, desc: "Les unités blessées perdent 1 PV par tour." },
+  "Célérité":         { cost: 11, se: 2.5, minTier: 1, desc: "Peut attaquer deux fois par tour." },
+  // Tier 2 — Rare+
+  "Terreur":          { cost: 11, se: 2.5, minTier: 2, desc: "Les unités adverses perdent 1 ATK en présence de cette carte." },
+  "Vol":              { cost: 11, se: 2.5, minTier: 2, desc: "Ne peut être attaqué que par des unités volantes." },
+  "Armure":           { cost: 11, se: 2.5, minTier: 2, desc: "Réduit tous les dégâts reçus de 2." },
+  "Commandement":     { cost: 13, se: 3.0, minTier: 2, desc: "Les alliés de même faction gagnent +1/+1." },
+  "Fureur":           { cost: 13, se: 3.0, minTier: 2, desc: "+3 ATK pendant un tour après avoir subi des dégâts." },
+  "Double Attaque":   { cost: 16, se: 3.5, minTier: 2, desc: "Attaque deux cibles différentes par tour." },
+  "Invisible":        { cost: 16, se: 3.5, minTier: 2, desc: "Ne peut pas être ciblé par des sorts adverses." },
+  // Tier 3 — Épique+
+  "Liaison de vie":   { cost: 16, se: 3.5, minTier: 3, desc: "Partage les dégâts subis avec le héros adverse." },
+  "Ombre":            { cost: 18, se: 4.0, minTier: 3, desc: "Attaque directement le héros adverse, ignorant les blockers." },
+  "Sacrifice":        { cost: 18, se: 4.0, minTier: 3, desc: "Détruisez un allié pour doubler l'ATK pendant un tour." },
+  "Maléfice":         { cost: 18, se: 4.0, minTier: 3, desc: "À la mort, inflige 3 dégâts à tous les ennemis." },
+  "Indestructible":   { cost: 18, se: 4.0, minTier: 3, desc: "Survit à une mort avec 1 PV restant." },
+  "Régénération":     { cost: 20, se: 4.5, minTier: 3, desc: "Récupère 2 PV au début de chaque tour." },
+  "Corruption":       { cost: 20, se: 4.5, minTier: 3, desc: "Convertit une unité ennemie de ≤3 ATK à votre camp." },
+  // Tier 4 — Légendaire uniquement
+  "Pacte de sang":    { cost: 25, se: 5.5, minTier: 4, desc: "Quand cette unité meurt, invoque une copie à 0 mana." },
+  "Souffle de feu":   { cost: 25, se: 5.5, minTier: 4, desc: "Inflige 4 dégâts à toutes les unités ennemies lors de l'attaque." },
+  "Domination":       { cost: 27, se: 6.0, minTier: 4, desc: "Prend le contrôle d'une unité ennemie au hasard à son invocation." },
+  "Résurrection":     { cost: 29, se: 6.5, minTier: 4, desc: "Revient en jeu une fois après sa mort avec la moitié de ses PV." },
+  "Transcendance":    { cost: 32, se: 7.0, minTier: 4, desc: "Immunité totale aux sorts adverses pendant 2 tours." },
+};
+
+// ─── FACTIONS ────────────────────────────────────────────────────────────────
+
+export const FACTIONS: Record<string, {
+  color: string; accent: string; emoji: string; bg: string;
+  statWeights: { atk: number; def: number };
+  guaranteedKeywords: string[];
+  likelyKeywords: Record<string, number>;
+  forbiddenKeywords: string[];
+  description: string;
+}> = {
+  Nains: {
+    color: "#b87333", accent: "#ff9f43", emoji: "⚒️", bg: "#2a1a0a",
+    statWeights: { atk: 0.85, def: 1.40 },
+    guaranteedKeywords: [],
+    likelyKeywords: { "Armure": 0.70, "Résistance": 0.65, "Bouclier": 0.50, "Ancré": 0.45, "Berserk": 0.35, "Provocation": 0.40 },
+    forbiddenKeywords: ["Vol", "Invisible", "Esquive", "Ombre", "Traque"],
+    description: "Solides et résistants. Favorisent la défense et la ténacité.",
+  },
+  Elfes: {
+    color: "#3a7d44", accent: "#55efc4", emoji: "🌿", bg: "#0a1f0a",
+    statWeights: { atk: 1.10, def: 0.80 },
+    guaranteedKeywords: [],
+    likelyKeywords: { "Traque": 0.60, "Esquive": 0.55, "Précision": 0.50, "Invisible": 0.40, "Premier Frappe": 0.45, "Drain de vie": 0.30 },
+    forbiddenKeywords: ["Armure", "Ancré", "Provocation", "Berserk"],
+    description: "Agiles et furtifs. Favorisent la vitesse et l'esquive.",
+  },
+  Humains: {
+    color: "#2c5f8a", accent: "#74b9ff", emoji: "⚔️", bg: "#0a0f2a",
+    statWeights: { atk: 1.00, def: 1.00 },
+    guaranteedKeywords: [],
+    likelyKeywords: { "Commandement": 0.55, "Loyauté": 0.60, "Bouclier": 0.45, "Premier Frappe": 0.40, "Provocation": 0.35 },
+    forbiddenKeywords: ["Poison", "Corruption", "Maléfice", "Pacte de sang"],
+    description: "Équilibrés et polyvalents. Synergies de groupe.",
+  },
+  "Morts-vivants": {
+    color: "#6c3483", accent: "#a29bfe", emoji: "💀", bg: "#1a0a2a",
+    statWeights: { atk: 1.05, def: 0.95 },
+    guaranteedKeywords: [],
+    likelyKeywords: { "Poison": 0.65, "Drain de vie": 0.60, "Terreur": 0.55, "Maléfice": 0.50, "Régénération": 0.45, "Résurrection": 0.40, "Liaison de vie": 0.35 },
+    forbiddenKeywords: ["Loyauté", "Commandement", "Bouclier", "Vol"],
+    description: "Insatiables et corrompus. Résurrection et drain de vie.",
+  },
+  Démons: {
+    color: "#922b21", accent: "#ff6b6b", emoji: "🔥", bg: "#2a0a0a",
+    statWeights: { atk: 1.35, def: 0.80 },
+    guaranteedKeywords: [],
+    likelyKeywords: { "Fureur": 0.65, "Sacrifice": 0.55, "Corruption": 0.50, "Terreur": 0.50, "Ombre": 0.45, "Domination": 0.40 },
+    forbiddenKeywords: ["Loyauté", "Commandement", "Bouclier", "Ancré", "Résistance"],
+    description: "Offensifs et imprévisibles. Puissance brute au prix du risque.",
+  },
+  Dragons: {
+    color: "#8B0000", accent: "#FF4500", emoji: "🐉", bg: "#1a0505",
+    statWeights: { atk: 1.40, def: 0.90 },
+    guaranteedKeywords: ["Vol"],
+    likelyKeywords: { "Souffle de feu": 0.70, "Terreur": 0.60, "Fureur": 0.50, "Indestructible": 0.40, "Transcendance": 0.35 },
+    forbiddenKeywords: ["Ancré", "Bouclier", "Armure", "Provocation", "Loyauté"],
+    description: "Dominateurs. Vol garanti, puissance dévastatrice.",
+  },
+};
+
+export const TYPES = ["Unité", "Sort", "Artefact", "Magie"];
+
+// ─── CALIBRATION ─────────────────────────────────────────────────────────────
+
+// 1 SE ≈ 4.5 pts · ATK légèrement plus chère (valeur tempo)
+export const STAT_COST = { atk: 5, def: 4 };
+export const MANA_BUDGET_BASE = 10;
+
+// Distribution pondérée du mana — courbe en cloche penchée vers le bas
+export const MANA_WEIGHTS = [
+  0.10, 0.16, 0.18, 0.16, 0.14, 0.10, 0.07, 0.05, 0.03, 0.01
+];
+
+// Probabilités de rareté par coût de mana [C, U, R, É, L]
+export const RARITY_WEIGHTS_BY_MANA = [
+  [0.45, 0.30, 0.15, 0.07, 0.03], // 1
+  [0.45, 0.30, 0.15, 0.07, 0.03], // 2
+  [0.35, 0.28, 0.22, 0.10, 0.05], // 3
+  [0.28, 0.28, 0.25, 0.13, 0.06], // 4
+  [0.20, 0.24, 0.28, 0.18, 0.10], // 5
+  [0.15, 0.22, 0.30, 0.22, 0.11], // 6
+  [0.10, 0.17, 0.28, 0.28, 0.17], // 7
+  [0.07, 0.15, 0.27, 0.31, 0.20], // 8
+  [0.04, 0.10, 0.22, 0.36, 0.28], // 9
+  [0.03, 0.08, 0.20, 0.37, 0.32], // 10
+];
