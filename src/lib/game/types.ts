@@ -57,6 +57,7 @@ export interface Card {
   keywords: Keyword[];
   spell_effect: SpellEffect | null;
   image_url: string | null;
+  illustration_prompt?: string | null;
   faction?: string;
 }
 

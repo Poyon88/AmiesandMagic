@@ -257,7 +257,7 @@ export default function CardForge() {
   const [saveResult, setSaveResult] = useState<{ ok: boolean; msg: string } | null>(null);
   const [updateTargetId, setUpdateTargetId] = useState<number | null>(null);
   const [updateTargetName, setUpdateTargetName] = useState<string | null>(null);
-  const [existingCards, setExistingCards] = useState<{ id: number; name: string; mana_cost: number; card_type: string; attack: number | null; health: number | null; effect_text: string; flavor_text: string | null; keywords: string[]; image_url: string | null; faction: string | null }[]>([]);
+  const [existingCards, setExistingCards] = useState<{ id: number; name: string; mana_cost: number; card_type: string; attack: number | null; health: number | null; effect_text: string; flavor_text: string | null; keywords: string[]; image_url: string | null; illustration_prompt: string | null; faction: string | null }[]>([]);
   const [showExistingCards, setShowExistingCards] = useState(false);
   const [existingSearch, setExistingSearch] = useState("");
 
@@ -296,7 +296,7 @@ export default function CardForge() {
     setManualPower(1);
     setManualAbility(dbCard.effect_text || "");
     setManualFlavorText(dbCard.flavor_text || "");
-    setManualIllustrationPrompt("");
+    setManualIllustrationPrompt(dbCard.illustration_prompt || "");
     setManualKeywords((dbCard.keywords || []).map(k => GAME_TO_FORGE_KEYWORD[k] || k));
 
     // Set faction/type/rarity from card
@@ -410,6 +410,7 @@ export default function CardForge() {
             health: forgeCard.defense,
             effect_text: effectText,
             flavor_text: forgeCard.flavorText || null,
+            illustration_prompt: forgeCard.illustrationPrompt || null,
             keywords: gameKeywords,
             spell_effect: null,
             faction: forgeCard.faction,
@@ -961,6 +962,8 @@ export default function CardForge() {
                               body: JSON.stringify({
                                 factionId: faction, type, rarityId: rarity,
                                 stats: { mana: manualMana, attack: manualAttack, defense: manualDefense, power: manualPower, keywords: manualKeywords },
+                                existingName: manualName || undefined,
+                                existingAbility: manualAbility || undefined,
                               }),
                             });
                             if (res.ok) {
