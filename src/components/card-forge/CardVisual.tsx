@@ -164,7 +164,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
       {/* ── Subtle vignette over art ── */}
       <div style={{
         position: "absolute", inset: 0,
-        background: `radial-gradient(ellipse at center, transparent 40%, ${fac.bg}dd 100%)`,
+        background: `radial-gradient(ellipse at center, transparent 60%, ${fac.bg}66 100%)`,
         pointerEvents: "none",
       }} />
 

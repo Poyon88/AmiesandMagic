@@ -83,7 +83,7 @@ export default function GameCard({
       {/* ── Vignette ── */}
       <div style={{
         position: "absolute", inset: 0,
-        background: "radial-gradient(ellipse at center, transparent 30%, #0d0d1add 100%)",
+        background: "radial-gradient(ellipse at center, transparent 60%, #0d0d1a66 100%)",
         pointerEvents: "none",
       }} />
 

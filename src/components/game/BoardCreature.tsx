@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import type { CardInstance } from "@/lib/game/types";
-import CardPreview from "./CardPreview";
+import { KEYWORD_SYMBOLS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
 
 interface BoardCreatureProps {
   creature: CardInstance;
@@ -29,12 +29,23 @@ export default function BoardCreature({
   onMouseEnter,
   onMouseLeave,
 }: BoardCreatureProps) {
-  const hasCharge = creature.card.keywords.includes("charge");
-  const hasTaunt = creature.card.keywords.includes("taunt");
-  const hasRanged = creature.card.keywords.includes("ranged");
+  const card = creature.card;
   const isDamaged = creature.currentHealth < creature.maxHealth;
+  const isBuffedAtk = creature.currentAttack > (card.attack ?? 0);
+  const isBuffedHp = creature.currentHealth > (card.health ?? 0);
   const [isHovered, setIsHovered] = useState(false);
   const creatureRef = useRef<HTMLDivElement>(null);
+
+  const showOverlay = isHovered && !isSelected;
+  const W = 128;
+  const H = 176;
+  const accentColor = "#74b9ff";
+
+  // Border color based on state
+  let border = "2px solid #3d3d5c";
+  if (isSelected) border = "2px solid #f1c40f";
+  else if (isValidTarget) border = "2px solid #e74c3c";
+  else if (canAttack) border = "2px solid #2ecc71";
 
   return (
     <motion.div
@@ -52,75 +63,189 @@ export default function BoardCreature({
       }
       exit={{ opacity: 0, scale: 0, rotate: -15, filter: "brightness(2) saturate(0)", transition: { duration: 0.5, ease: "easeIn" } }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className={`
-        relative w-16 h-20 rounded-lg border-2 flex flex-col items-center justify-between p-1
-        transition-[border-color,box-shadow] cursor-pointer
-        ${isHovered ? "z-20" : ""}
-        ${isSelected ? "border-attack-yellow shadow-lg shadow-attack-yellow/30 z-10" : ""}
-        ${isValidTarget ? "border-accent ring-2 ring-accent/50 animate-[pulse-ring_1.5s_ease-in-out_infinite]" : ""}
-        ${canAttack && !isSelected ? "border-success/60 hover:border-success" : ""}
-        ${!isSelected && !isValidTarget && !canAttack ? "border-card-border" : ""}
-        ${hasTaunt ? "ring-1 ring-blue-400/50" : ""}
-        ${isOwn ? "bg-card-bg" : "bg-card-bg/80"}
-      `}
-      title={`${creature.card.name} (${creature.currentAttack}/${creature.currentHealth})`}
+      style={{
+        width: W, height: H, borderRadius: 10, position: "relative",
+        background: "linear-gradient(160deg, #1a1a2e, #0d0d1a)",
+        border,
+        boxShadow: isSelected ? "0 0 14px #f1c40f44" : isValidTarget ? "0 0 14px #e74c3c44" : "none",
+        overflow: "hidden",
+        cursor: "pointer",
+        transition: "border-color 0.2s, box-shadow 0.2s",
+        zIndex: isHovered ? 20 : isSelected ? 10 : 1,
+      }}
+      title={`${card.name} (${creature.currentAttack}/${creature.currentHealth})`}
     >
+      {/* Full-bleed art */}
+      <div style={{ position: "absolute", inset: 0 }}>
+        {card.image_url ? (
+          <Image
+            src={card.image_url}
+            alt={card.name}
+            fill
+            className="object-cover"
+            sizes={`${W}px`}
+          />
+        ) : (
+          <div style={{
+            width: "100%", height: "100%",
+            background: "linear-gradient(135deg, #1a1a2e, #2a2a4599, #1a1a2e)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <span style={{ fontSize: 40, opacity: 0.5 }}>⚔️</span>
+          </div>
+        )}
+      </div>
+
+      {/* Vignette (légère) */}
+      <div style={{
+        position: "absolute", inset: 0,
+        background: "radial-gradient(ellipse at center, transparent 60%, #0d0d1a66 100%)",
+        pointerEvents: "none",
+      }} />
+
+      {/* Summoning sickness overlay */}
+      {creature.hasSummoningSickness && isOwn && (
+        <div style={{
+          position: "absolute", inset: 0, zIndex: 1,
+          background: "rgba(0,0,0,0.3)",
+          pointerEvents: "none",
+        }} />
+      )}
+
       {/* Divine Shield indicator */}
       {creature.hasDivineShield && (
-        <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-yellow-400 flex items-center justify-center text-[8px]">
-          🛡
+        <div style={{
+          position: "absolute", top: 4, right: 4, zIndex: 3,
+          width: 18, height: 18, borderRadius: "50%",
+          background: "#f1c40f33", border: "1px solid #f1c40f88",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 10,
+        }}>🔰</div>
+      )}
+
+      {/* Taunt ring */}
+      {card.keywords.includes("taunt") && (
+        <div style={{
+          position: "absolute", inset: -1, borderRadius: 11,
+          border: "2px solid #3498db88",
+          pointerEvents: "none", zIndex: 1,
+        }} />
+      )}
+
+      {/* Valid target pulse ring */}
+      {isValidTarget && (
+        <div style={{
+          position: "absolute", inset: -2, borderRadius: 12,
+          border: "2px solid #e74c3c",
+          animation: "pulse-ring 1.5s ease-in-out infinite",
+          pointerEvents: "none", zIndex: 1,
+        }} />
+      )}
+
+      {/* Bottom bar */}
+      <div style={{
+        position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2,
+        padding: "6px 6px 5px",
+        background: "linear-gradient(0deg, #0d0d1aee 0%, #0d0d1acc 60%, transparent 100%)",
+        display: "flex", flexDirection: "column", gap: 3,
+      }}>
+        {/* Name */}
+        <div style={{
+          fontSize: 9, color: "#e0e0e0", fontWeight: 700,
+          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+          fontFamily: "'Cinzel', serif",
+        }}>{card.name}</div>
+
+        {/* Keyword symbols */}
+        {card.keywords.length > 0 && (
+          <div style={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+            {card.keywords.map((kw) => (
+              <div key={kw} style={{
+                width: 16, height: 16, borderRadius: 4,
+                background: `${accentColor}33`, border: `1px solid ${accentColor}66`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 9,
+              }}>{KEYWORD_SYMBOLS[kw] || "✦"}</div>
+            ))}
+          </div>
+        )}
+
+        {/* Stats */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{
+            padding: "1px 5px", borderRadius: 4,
+            background: isBuffedAtk ? "#2ecc7133" : "#f1c40f18",
+            border: `1px solid ${isBuffedAtk ? "#2ecc7188" : "#f1c40f55"}`,
+          }}>
+            <span style={{ fontSize: 13, color: isBuffedAtk ? "#2ecc71" : "#f1c40f", fontWeight: 700 }}>
+              {creature.currentAttack}
+            </span>
+          </div>
+          <div style={{
+            padding: "1px 5px", borderRadius: 4,
+            background: isDamaged ? "#e74c3c33" : isBuffedHp ? "#2ecc7133" : "#e74c3c18",
+            border: `1px solid ${isDamaged ? "#e74c3c88" : isBuffedHp ? "#2ecc7188" : "#e74c3c55"}`,
+          }}>
+            <span style={{ fontSize: 13, color: isDamaged ? "#e74c3c" : isBuffedHp ? "#2ecc71" : "#e74c3c", fontWeight: 700 }}>
+              {creature.currentHealth}
+            </span>
+          </div>
         </div>
-      )}
-
-      {/* Summoning sickness indicator */}
-      {creature.hasSummoningSickness && isOwn && (
-        <div className="absolute -top-1 -left-1 w-3 h-3 rounded-full bg-foreground/30" title="Summoning sickness" />
-      )}
-
-      {/* Name */}
-      <div className="text-[8px] text-foreground/80 text-center leading-tight truncate w-full">
-        {creature.card.name}
       </div>
 
-      {/* Keyword icons */}
-      <div className="flex gap-0.5 text-[8px]">
-        {hasTaunt && <span title="Taunt">🏰</span>}
-        {hasRanged && <span title="Ranged">🏹</span>}
-        {hasCharge && <span title="Charge">⚡</span>}
-      </div>
+      {/* Hover overlay */}
+      <div style={{
+        position: "absolute", inset: 0, zIndex: 4,
+        background: "#0d0d1aee",
+        opacity: showOverlay ? 1 : 0,
+        transition: "opacity 0.25s ease",
+        pointerEvents: showOverlay ? "auto" : "none",
+        display: "flex", flexDirection: "column", justifyContent: "center",
+        padding: "12px 8px",
+        gap: 6,
+      }}>
+        {/* Name */}
+        <div style={{
+          fontSize: 10, color: accentColor, fontWeight: 700,
+          textAlign: "center", fontFamily: "'Cinzel', serif",
+          borderBottom: `1px solid ${accentColor}44`, paddingBottom: 5,
+        }}>{card.name}</div>
 
-      {/* Attack / Health */}
-      <div className="flex justify-between w-full">
-        <span
-          className={`w-5 h-5 rounded text-[10px] font-bold flex items-center justify-center ${
-            creature.currentAttack > (creature.card.attack ?? 0)
-              ? "bg-green-500 text-white"
-              : "bg-attack-yellow text-background"
-          }`}
-        >
-          {creature.currentAttack}
-        </span>
-        <span
-          className={`w-5 h-5 rounded text-[10px] font-bold flex items-center justify-center ${
-            isDamaged
-              ? "bg-accent text-white"
-              : creature.currentHealth > (creature.card.health ?? 0)
-              ? "bg-green-500 text-white"
-              : "bg-health-red text-white"
-          }`}
-        >
-          {creature.currentHealth}
-        </span>
-      </div>
+        {/* Keywords detail */}
+        {card.keywords.length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+            {card.keywords.map((kw) => (
+              <div key={kw} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                <span style={{ fontSize: 10 }}>{KEYWORD_SYMBOLS[kw] || "✦"}</span>
+                <span style={{ fontSize: 8, color: accentColor, fontWeight: 600 }}>{KEYWORD_LABELS[kw] || kw}</span>
+              </div>
+            ))}
+          </div>
+        )}
 
-      {isHovered && !isSelected && createPortal(
-        <CardPreview
-          cardInstance={creature}
-          anchorRef={creatureRef}
-          position={isOwn ? "above" : "below"}
-        />,
-        document.body
-      )}
+        {/* Effect text */}
+        {card.effect_text && (
+          <div style={{
+            padding: 5,
+            background: `${accentColor}11`, borderRadius: 4,
+            border: `1px solid ${accentColor}22`,
+          }}>
+            <p style={{
+              margin: 0, fontSize: 8, color: "#ccc",
+              lineHeight: 1.4, fontFamily: "'Crimson Text', serif",
+            }}>{card.effect_text}</p>
+          </div>
+        )}
+
+        {/* Stats recap */}
+        <div style={{
+          display: "flex", justifyContent: "center", gap: 8,
+          fontSize: 8, color: "#555",
+        }}>
+          <span style={{ color: isBuffedAtk ? "#2ecc71" : "#f1c40f" }}>⚔ {creature.currentAttack}</span>
+          <span style={{ color: isDamaged ? "#e74c3c" : isBuffedHp ? "#2ecc71" : "#e74c3c" }}>❤ {creature.currentHealth}/{creature.maxHealth}</span>
+        </div>
+      </div>
     </motion.div>
   );
 }

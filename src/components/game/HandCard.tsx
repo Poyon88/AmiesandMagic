@@ -2,10 +2,10 @@
 
 import { useState, useRef } from "react";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import type { CardInstance } from "@/lib/game/types";
 import type { DragEvent } from "react";
-import CardPreview from "./CardPreview";
-import CardArt from "@/components/cards/CardArt";
+import { KEYWORD_SYMBOLS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
 
 interface HandCardProps {
   cardInstance: CardInstance;
@@ -42,15 +42,19 @@ export default function HandCard({
     setIsDragging(false);
   }
 
-  const showPreview = !isDragging && isHovered && !isSelected;
+  const showOverlay = !isDragging && isHovered && !isSelected;
+  const W = 120;
+  const H = 168;
+  const s = 0.55;
+  const accentColor = isCreature ? "#74b9ff" : "#ce93d8";
+  const borderColor = isSelected ? "#c8a84e" : isCreature ? "#3d3d5c" : "#6c3483";
 
   return (
-    <>
-      <motion.div
-        initial={{ y: 60, opacity: 0, scale: 0.7 }}
-        animate={{ y: 0, opacity: 1, scale: 1 }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
-      >
+    <motion.div
+      initial={{ y: 60, opacity: 0, scale: 0.7 }}
+      animate={{ y: 0, opacity: 1, scale: 1 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+    >
       <div
         ref={cardRef}
         data-instance-id={cardInstance.instanceId}
@@ -60,64 +64,164 @@ export default function HandCard({
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={canPlay ? onClick : undefined}
-        className={`
-          relative w-24 h-36 rounded-lg border-2 flex flex-col overflow-hidden
-          transition-all duration-200
-          ${showPreview ? "-translate-y-4 z-20" : ""}
-          ${isDragging ? "opacity-50" : canPlay ? "cursor-grab active:cursor-grabbing" : "opacity-50 cursor-not-allowed"}
-          ${isSelected ? "border-primary shadow-lg shadow-primary/30" : "border-card-border"}
-          ${isCreature ? "bg-card-bg" : "bg-purple-900/50"}
-        `}
+        style={{
+          width: W, height: H, borderRadius: 8, position: "relative",
+          background: isCreature
+            ? "linear-gradient(160deg, #1a1a2e, #0d0d1a)"
+            : "linear-gradient(160deg, #1a0a2a, #0d0d1a)",
+          border: `2px solid ${borderColor}`,
+          boxShadow: isSelected ? "0 0 12px #c8a84e44" : "none",
+          overflow: "hidden",
+          cursor: isDragging ? "grabbing" : canPlay ? "grab" : "not-allowed",
+          opacity: isDragging ? 0.5 : canPlay ? 1 : 0.5,
+          transition: "all 0.2s ease",
+          transform: showOverlay ? "translateY(-16px) scale(1.08)" : "none",
+          zIndex: showOverlay ? 20 : 1,
+        }}
       >
-        {/* Mana cost */}
-        <div className="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-mana-blue flex items-center justify-center text-white font-bold text-[10px] z-10">
-          {card.mana_cost}
+        {/* Full-bleed art */}
+        <div style={{ position: "absolute", inset: 0 }}>
+          {card.image_url ? (
+            <Image
+              src={card.image_url}
+              alt={card.name}
+              fill
+              className="object-cover"
+              sizes={`${W}px`}
+            />
+          ) : (
+            <div style={{
+              width: "100%", height: "100%",
+              background: isCreature
+                ? "linear-gradient(135deg, #1a1a2e, #2a2a4599, #1a1a2e)"
+                : "linear-gradient(135deg, #1a0a2a, #6c348333, #1a0a2a)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <span style={{ fontSize: 36, opacity: 0.5 }}>{isCreature ? "⚔️" : "✨"}</span>
+            </div>
+          )}
         </div>
 
-        {/* Art */}
-        <CardArt card={card} className="h-[35%]" />
+        {/* Vignette (légère) */}
+        <div style={{
+          position: "absolute", inset: 0,
+          background: "radial-gradient(ellipse at center, transparent 60%, #0d0d1a66 100%)",
+          pointerEvents: "none",
+        }} />
 
-        {/* Name */}
-        <div className="px-1 py-0.5 text-center">
-          <h3 className="text-[8px] font-bold text-foreground leading-tight">
-            {card.name}
-          </h3>
-        </div>
+        {/* Mana orb */}
+        <div style={{
+          position: "absolute", top: 4, left: 4, zIndex: 2,
+          width: 20, height: 20, borderRadius: "50%",
+          background: "radial-gradient(circle, #1a3a6a, #0d1f3c)",
+          border: "2px solid #74b9ff",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 10, color: "#74b9ff", fontWeight: 700,
+          boxShadow: "0 0 6px #74b9ff55",
+        }}>{card.mana_cost}</div>
 
-        {/* Effect */}
-        <div className="flex-1 px-1 overflow-hidden">
-          <p className="text-[7px] text-foreground/60 leading-tight">
-            {card.effect_text}
-          </p>
-        </div>
+        {/* Bottom bar */}
+        <div style={{
+          position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2,
+          padding: `${5 * s}px 5px 4px`,
+          background: "linear-gradient(0deg, #0d0d1aee 0%, #0d0d1acc 60%, transparent 100%)",
+          display: "flex", flexDirection: "column", gap: 2,
+        }}>
+          {/* Name */}
+          <div style={{
+            fontSize: 8, color: "#e0e0e0", fontWeight: 700,
+            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+            fontFamily: "'Cinzel', serif",
+          }}>{card.name}</div>
 
-        {/* Stats */}
-        {isCreature ? (
-          <div className="flex justify-between px-1 pb-0.5">
-            <span className="w-4 h-4 rounded bg-attack-yellow flex items-center justify-center text-background font-bold text-[9px]">
-              {card.attack}
-            </span>
-            <span className="w-4 h-4 rounded bg-health-red flex items-center justify-center text-white font-bold text-[9px]">
-              {card.health}
-            </span>
+          {/* Keyword symbols */}
+          {card.keywords.length > 0 && (
+            <div style={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+              {card.keywords.map((kw) => (
+                <div key={kw} style={{
+                  width: 14, height: 14, borderRadius: 3,
+                  background: `${accentColor}33`, border: `1px solid ${accentColor}66`,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 8,
+                }}>{KEYWORD_SYMBOLS[kw] || "✦"}</div>
+              ))}
+            </div>
+          )}
+
+          {/* Stats */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 6, color: "#ffffff44", textTransform: "uppercase" }}>{card.card_type}</span>
+            {isCreature && (
+              <div style={{ display: "flex", gap: 4 }}>
+                <div style={{
+                  padding: "1px 4px", borderRadius: 3,
+                  background: "#f1c40f18", border: "1px solid #f1c40f55",
+                }}>
+                  <span style={{ fontSize: 10, color: "#f1c40f", fontWeight: 700 }}>{card.attack}</span>
+                </div>
+                <div style={{
+                  padding: "1px 4px", borderRadius: 3,
+                  background: "#e74c3c18", border: "1px solid #e74c3c55",
+                }}>
+                  <span style={{ fontSize: 10, color: "#e74c3c", fontWeight: 700 }}>{card.health}</span>
+                </div>
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="text-center pb-0.5">
-            <span className="text-[7px] text-purple-300/60 uppercase">
-              Spell
-            </span>
+        </div>
+
+        {/* Hover overlay */}
+        <div style={{
+          position: "absolute", inset: 0, zIndex: 3,
+          background: "#0d0d1aee",
+          opacity: showOverlay ? 1 : 0,
+          transition: "opacity 0.25s ease",
+          pointerEvents: showOverlay ? "auto" : "none",
+          display: "flex", flexDirection: "column", justifyContent: "center",
+          padding: "10px 7px",
+          gap: 5,
+        }}>
+          {/* Name */}
+          <div style={{
+            fontSize: 9, color: accentColor, fontWeight: 700,
+            textAlign: "center", fontFamily: "'Cinzel', serif",
+            borderBottom: `1px solid ${accentColor}44`, paddingBottom: 4,
+          }}>{card.name}</div>
+
+          {/* Keywords detail */}
+          {card.keywords.length > 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              {card.keywords.map((kw) => (
+                <div key={kw} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                  <span style={{ fontSize: 9 }}>{KEYWORD_SYMBOLS[kw] || "✦"}</span>
+                  <span style={{ fontSize: 7, color: accentColor, fontWeight: 600 }}>{KEYWORD_LABELS[kw] || kw}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Effect text */}
+          <div style={{
+            padding: 4,
+            background: `${accentColor}11`, borderRadius: 3,
+            border: `1px solid ${accentColor}22`,
+          }}>
+            <p style={{
+              margin: 0, fontSize: 7, color: "#ccc",
+              lineHeight: 1.4, fontFamily: "'Crimson Text', serif",
+            }}>{card.effect_text}</p>
           </div>
-        )}
+
+          {/* Stats recap */}
+          <div style={{
+            display: "flex", justifyContent: "center", gap: 6,
+            fontSize: 7, color: "#555",
+          }}>
+            <span>💧 {card.mana_cost}</span>
+            {isCreature && <><span style={{ color: "#f1c40f" }}>⚔ {card.attack}</span><span style={{ color: "#e74c3c" }}>❤ {card.health}</span></>}
+          </div>
+        </div>
       </div>
-      </motion.div>
-
-      {showPreview && (
-        <CardPreview
-          cardInstance={cardInstance}
-          anchorRef={cardRef}
-          position="above"
-        />
-      )}
-    </>
+    </motion.div>
   );
 }
