@@ -222,6 +222,14 @@ export default function HandCard({
             }}>{card.effect_text}</p>
           </div>
 
+          {card.flavor_text && (
+            <p style={{
+              margin: 0, fontSize: 6, color: "#74b9ff77",
+              fontStyle: "italic", lineHeight: 1.3, fontFamily: "'Crimson Text', serif",
+              textAlign: "center",
+            }}>&ldquo;{card.flavor_text}&rdquo;</p>
+          )}
+
           {/* Stats recap */}
           <div style={{
             display: "flex", justifyContent: "center", gap: 6,

@@ -249,6 +249,14 @@ export default function BoardCreature({
           </div>
         )}
 
+        {card.flavor_text && (
+          <p style={{
+            margin: 0, fontSize: 7, color: "#74b9ff77",
+            fontStyle: "italic", lineHeight: 1.3, fontFamily: "'Crimson Text', serif",
+            textAlign: "center",
+          }}>&ldquo;{card.flavor_text}&rdquo;</p>
+        )}
+
         {/* Stats recap */}
         <div style={{
           display: "flex", justifyContent: "center", gap: 8,

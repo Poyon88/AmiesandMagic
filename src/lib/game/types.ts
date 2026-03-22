@@ -53,6 +53,7 @@ export interface Card {
   attack: number | null;
   health: number | null;
   effect_text: string;
+  flavor_text?: string | null;
   keywords: Keyword[];
   spell_effect: SpellEffect | null;
   image_url: string | null;

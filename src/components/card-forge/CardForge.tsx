@@ -257,7 +257,7 @@ export default function CardForge() {
   const [saveResult, setSaveResult] = useState<{ ok: boolean; msg: string } | null>(null);
   const [updateTargetId, setUpdateTargetId] = useState<number | null>(null);
   const [updateTargetName, setUpdateTargetName] = useState<string | null>(null);
-  const [existingCards, setExistingCards] = useState<{ id: number; name: string; mana_cost: number; card_type: string; attack: number | null; health: number | null; effect_text: string; keywords: string[]; image_url: string | null; faction: string | null }[]>([]);
+  const [existingCards, setExistingCards] = useState<{ id: number; name: string; mana_cost: number; card_type: string; attack: number | null; health: number | null; effect_text: string; flavor_text: string | null; keywords: string[]; image_url: string | null; faction: string | null }[]>([]);
   const [showExistingCards, setShowExistingCards] = useState(false);
   const [existingSearch, setExistingSearch] = useState("");
 
@@ -295,7 +295,7 @@ export default function CardForge() {
     setManualDefense(dbCard.health ?? 3);
     setManualPower(1);
     setManualAbility(dbCard.effect_text || "");
-    setManualFlavorText("");
+    setManualFlavorText(dbCard.flavor_text || "");
     setManualIllustrationPrompt("");
     setManualKeywords((dbCard.keywords || []).map(k => GAME_TO_FORGE_KEYWORD[k] || k));
 
@@ -352,8 +352,8 @@ export default function CardForge() {
       let imageBase64: string | null = null;
       let imageMimeType: string | null = null;
       const blobUrl = cardImages[forgeCard.id];
-      if (blobUrl) {
-        // Compress image via canvas before sending
+      if (blobUrl && blobUrl.startsWith("blob:")) {
+        // Local blob — compress via canvas before sending
         imageBase64 = await new Promise<string>((resolve, reject) => {
           const img = new window.Image();
           img.onload = () => {
@@ -376,6 +376,7 @@ export default function CardForge() {
         });
         imageMimeType = "image/webp";
       }
+      // If blobUrl is an external URL (e.g. Supabase), skip re-upload — image already in storage
 
       const response = await fetch('/api/cards/save', {
         method: 'POST',
@@ -388,6 +389,7 @@ export default function CardForge() {
             attack: forgeCard.attack,
             health: forgeCard.defense,
             effect_text: effectText,
+            flavor_text: forgeCard.flavorText || null,
             keywords: gameKeywords,
             spell_effect: null,
             faction: forgeCard.faction,

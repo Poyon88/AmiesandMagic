@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Image from "next/image";
 import type { Card } from "@/lib/game/types";
 import { KEYWORD_SYMBOLS as keywordSymbols, KEYWORD_LABELS as keywordLabels } from "@/lib/game/keyword-labels";
@@ -23,6 +23,8 @@ export default function GameCard({
   count,
 }: GameCardProps) {
   const [hovered, setHovered] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
+  const detailTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const dims = {
     sm: { w: 180, h: 252 },
@@ -42,8 +44,20 @@ export default function GameCard({
   return (
     <div
       onClick={disabled ? undefined : onClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseEnter={() => {
+        setHovered(true);
+        detailTimer.current = setTimeout(() => setShowDetails(true), 600);
+      }}
+      onMouseLeave={() => {
+        setHovered(false);
+        setShowDetails(false);
+        if (detailTimer.current) clearTimeout(detailTimer.current);
+      }}
+      onContextMenu={(e) => {
+        e.preventDefault();
+        setShowDetails(prev => !prev);
+        if (detailTimer.current) clearTimeout(detailTimer.current);
+      }}
       style={{
         width: w, height: h, borderRadius: 10 * s, position: "relative",
         background: bgGradient,
@@ -52,8 +66,9 @@ export default function GameCard({
         overflow: "hidden",
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.5 : 1,
-        transition: "all 0.2s ease",
-        transform: !disabled && hovered ? "scale(1.05)" : "none",
+        transition: "all 0.3s ease",
+        transform: !disabled && hovered ? "scale(1.5)" : "none",
+        zIndex: hovered ? 20 : 1,
       }}
     >
       {/* ── Full-bleed art ── */}
@@ -64,7 +79,8 @@ export default function GameCard({
             alt={card.name}
             fill
             className="object-cover"
-            sizes={`${w}px`}
+            sizes="500px"
+            quality={90}
           />
         ) : (
           <div style={{
@@ -163,9 +179,9 @@ export default function GameCard({
       <div style={{
         position: "absolute", inset: 0, zIndex: 3,
         background: "#0d0d1aee",
-        opacity: hovered ? 1 : 0,
+        opacity: showDetails ? 1 : 0,
         transition: "opacity 0.25s ease",
-        pointerEvents: hovered ? "auto" : "none",
+        pointerEvents: showDetails ? "auto" : "none",
         display: "flex", flexDirection: "column", justifyContent: "center",
         padding: `${14 * s}px ${10 * s}px`,
         gap: 8 * s,
@@ -200,6 +216,15 @@ export default function GameCard({
             lineHeight: 1.5, fontFamily: "'Crimson Text', serif",
           }}>{card.effect_text}</p>
         </div>
+
+        {/* Flavor text */}
+        {card.flavor_text && (
+          <p style={{
+            margin: 0, fontSize: 8 * s, color: `${accentColor}77`,
+            fontStyle: "italic", lineHeight: 1.4, fontFamily: "'Crimson Text', serif",
+            textAlign: "center",
+          }}>&ldquo;{card.flavor_text}&rdquo;</p>
+        )}
 
         {/* Stats recap */}
         <div style={{
