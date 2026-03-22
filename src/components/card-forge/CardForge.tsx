@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef } from "react";
-import { generateCardStats, pickMana, pickRarityForMana, buildId } from "@/lib/card-engine/generator";
+import { generateCardStats, pickMana, pickRarity, buildId } from "@/lib/card-engine/generator";
 import { RARITIES, FACTIONS, TYPES, KEYWORDS, RARITY_WEIGHTS_BY_MANA, RARITY_MAP } from "@/lib/card-engine/constants";
 import CardVisual from "./CardVisual";
 import type { CardType, Keyword } from "@/lib/game/types";
@@ -51,7 +51,7 @@ interface ForgeCard {
 function Sec({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <div style={{ fontSize: 7.5, color: "#2a2a4a", letterSpacing: 2, marginBottom: 7, textTransform: "uppercase" }}>{title}</div>
+      <div style={{ fontSize: 8, color: "#aaa", letterSpacing: 2, marginBottom: 7, textTransform: "uppercase" }}>{title}</div>
       {children}
     </div>
   );
@@ -59,8 +59,8 @@ function Sec({ title, children }: { title: string; children: React.ReactNode }) 
 
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div style={{ background: "#08081a", border: "1px solid #0f0f24", borderRadius: 7, padding: 16 }}>
-      <div style={{ fontSize: 8, color: "#333", letterSpacing: 1.5, marginBottom: 12 }}>{title}</div>
+    <div style={{ background: "#fff", border: "1px solid #e0e0e0", borderRadius: 8, padding: 18, boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+      <div style={{ fontSize: 9, color: "#999", letterSpacing: 1.5, marginBottom: 12 }}>{title}</div>
       {children}
     </div>
   );
@@ -69,9 +69,9 @@ function Panel({ title, children }: { title: string; children: React.ReactNode }
 function Btn({ onClick, label, color }: { onClick: () => void; label: string; color: string }) {
   return (
     <button onClick={onClick} style={{
-      padding: "5px 13px", borderRadius: 4, cursor: "pointer",
-      background: `${color}10`, border: `1px solid ${color}44`,
-      color, fontFamily: "'Cinzel',serif", fontSize: 9, fontWeight: 700, letterSpacing: 0.8,
+      padding: "6px 14px", borderRadius: 6, cursor: "pointer",
+      background: `${color}12`, border: `1px solid ${color}44`,
+      color, fontFamily: "'Cinzel',serif", fontSize: 9.5, fontWeight: 700, letterSpacing: 0.8,
       transition: "all 0.2s",
     }}>{label}</button>
   );
@@ -121,9 +121,8 @@ export default function CardForge() {
       if (abortRef.current) break;
       const f = pick(Object.keys(FACTIONS));
       const t = pick(TYPES);
-      const mana = pickMana();
-      const r = pickRarityForMana(mana);
-      const stats = generateCardStats(f, t, r, mana);
+      const r = pickRarity();
+      const stats = generateCardStats(f, t, r);
       let text: CardText = { name: "Inconnu", ability: "—", flavorText: "", illustrationPrompt: "" };
       try { text = await generateCardText(f, t, r, stats); } catch { /* fallback above */ }
       const c: ForgeCard = {
@@ -306,30 +305,30 @@ export default function CardForge() {
         @keyframes spin { to { transform:rotate(360deg); } }
         @keyframes fadeIn { from { opacity:0;transform:translateY(6px); } to { opacity:1;transform:none; } }
         @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.45} }
-        ::-webkit-scrollbar { width:3px; }
-        ::-webkit-scrollbar-track { background:#0d0d1a; }
-        ::-webkit-scrollbar-thumb { background:#1a1a3a; border-radius:2px; }
-        .hist-row:hover { background:rgba(255,255,255,0.03) !important; }
-        .bulk-row:hover { border-color:rgba(255,255,255,0.12) !important; }
+        ::-webkit-scrollbar { width:4px; }
+        ::-webkit-scrollbar-track { background:#f0f0f0; }
+        ::-webkit-scrollbar-thumb { background:#ccc; border-radius:2px; }
+        .hist-row:hover { background:rgba(0,0,0,0.04) !important; }
+        .bulk-row:hover { border-color:rgba(0,0,0,0.15) !important; }
       `}</style>
 
-      <div style={{ minHeight: "100vh", background: "#07070f", fontFamily: "'Cinzel',serif", color: "#ccc", display: "flex", flexDirection: "column" }}>
+      <div style={{ minHeight: "100vh", background: "#ffffff", fontFamily: "'Cinzel',serif", color: "#333", display: "flex", flexDirection: "column" }}>
 
         {/* Topbar */}
-        <div style={{ padding: "11px 20px", borderBottom: "1px solid #0f0f24", background: "linear-gradient(90deg,#0a0a1f,#07070f)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ padding: "11px 20px", borderBottom: "1px solid #e0e0e0", background: "#fafafa", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <span style={{ fontSize: 18 }}>⚗️</span>
-            <span style={{ fontSize: 15, fontWeight: 700, color: "#ffd54f", letterSpacing: 2.5 }}>CARD FORGE</span>
-            <span style={{ fontSize: 8, color: "#2a2a4a", letterSpacing: 2 }}>ARMIES & MAGIC</span>
+            <span style={{ fontSize: 15, fontWeight: 700, color: "#333", letterSpacing: 2.5 }}>CARD FORGE</span>
+            <span style={{ fontSize: 8, color: "#aaa", letterSpacing: 2 }}>ARMIES & MAGIC</span>
           </div>
           <div style={{ display: "flex", gap: 4 }}>
             {([["forge", "⚒ Forge"], ["bulk", "📦 Masse"], ["budget", "⚖ Budget"], ["schema", "📋 Schéma"]] as const).map(([t, l]) => (
               <button key={t} onClick={() => setTab(t)} style={{
-                padding: "4px 12px", borderRadius: 4, cursor: "pointer",
-                background: tab === t ? "#ffd54f15" : "transparent",
-                border: `1px solid ${tab === t ? "#ffd54f44" : "#111122"}`,
-                color: tab === t ? "#ffd54f" : "#333",
-                fontFamily: "'Cinzel',serif", fontSize: 8.5, fontWeight: 700, letterSpacing: 0.8,
+                padding: "5px 14px", borderRadius: 6, cursor: "pointer",
+                background: tab === t ? "#333" : "transparent",
+                border: `1px solid ${tab === t ? "#333" : "#ddd"}`,
+                color: tab === t ? "#fff" : "#888",
+                fontFamily: "'Cinzel',serif", fontSize: 9, fontWeight: 700, letterSpacing: 0.8,
                 transition: "all 0.2s",
               }}>{l}</button>
             ))}
@@ -341,15 +340,15 @@ export default function CardForge() {
           <div style={{ display: "flex", flex: 1 }}>
 
             {/* Controls */}
-            <div style={{ width: 235, padding: "16px 13px", borderRight: "1px solid #0f0f24", background: "#08081a", display: "flex", flexDirection: "column", gap: 16, overflowY: "auto" }}>
+            <div style={{ width: 235, padding: "16px 13px", borderRight: "1px solid #e8e8e8", background: "#fafafa", display: "flex", flexDirection: "column", gap: 16, overflowY: "auto" }}>
               <Sec title="Faction">
                 {Object.entries(FACTIONS).map(([f, fc]) => (
                   <button key={f} onClick={() => setFaction(f)} style={{
-                    padding: "5px 10px", borderRadius: 4, cursor: "pointer", width: "100%",
-                    background: faction === f ? `${fc.color}22` : "transparent",
-                    border: `1px solid ${faction === f ? fc.color + "88" : "#111122"}`,
-                    color: faction === f ? fc.accent : "#2e2e55",
-                    fontFamily: "'Cinzel',serif", fontSize: 9.5, fontWeight: faction === f ? 700 : 400,
+                    padding: "6px 10px", borderRadius: 6, cursor: "pointer", width: "100%",
+                    background: faction === f ? `${fc.color}18` : "#fff",
+                    border: `1px solid ${faction === f ? fc.color : "#e0e0e0"}`,
+                    color: faction === f ? fc.color : "#888",
+                    fontFamily: "'Cinzel',serif", fontSize: 10, fontWeight: faction === f ? 700 : 400,
                     textAlign: "left", transition: "all 0.15s", marginBottom: 3,
                     display: "flex", alignItems: "center", gap: 7,
                   }}>
@@ -359,13 +358,13 @@ export default function CardForge() {
               </Sec>
 
               <Sec title="Type">
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 3 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4 }}>
                   {TYPES.map(t => (
                     <button key={t} onClick={() => setType(t)} style={{
-                      padding: "5px 4px", borderRadius: 4, cursor: "pointer",
-                      background: type === t ? "#ffffff0f" : "transparent",
-                      border: `1px solid ${type === t ? "#44446a" : "#111122"}`,
-                      color: type === t ? "#ddd" : "#2e2e55",
+                      padding: "5px 4px", borderRadius: 6, cursor: "pointer",
+                      background: type === t ? "#333" : "#fff",
+                      border: `1px solid ${type === t ? "#333" : "#e0e0e0"}`,
+                      color: type === t ? "#fff" : "#888",
                       fontFamily: "'Cinzel',serif", fontSize: 9, transition: "all 0.15s",
                     }}>{t}</button>
                   ))}
@@ -375,27 +374,27 @@ export default function CardForge() {
               <Sec title="Rareté">
                 {RARITIES.map(r => (
                   <button key={r.id} onClick={() => setRarity(r.id)} style={{
-                    padding: "5px 10px", borderRadius: 4, cursor: "pointer", width: "100%",
-                    background: rarity === r.id ? `${r.color}15` : "transparent",
-                    border: `1px solid ${rarity === r.id ? r.color + "77" : "#111122"}`,
-                    color: rarity === r.id ? r.color : "#2e2e55",
-                    fontFamily: "'Cinzel',serif", fontSize: 9.5, fontWeight: rarity === r.id ? 700 : 400,
+                    padding: "6px 10px", borderRadius: 6, cursor: "pointer", width: "100%",
+                    background: rarity === r.id ? `${r.color}15` : "#fff",
+                    border: `1px solid ${rarity === r.id ? r.color : "#e0e0e0"}`,
+                    color: rarity === r.id ? r.color : "#888",
+                    fontFamily: "'Cinzel',serif", fontSize: 10, fontWeight: rarity === r.id ? 700 : 400,
                     textAlign: "left", transition: "all 0.15s", marginBottom: 3,
                     display: "flex", justifyContent: "space-between", alignItems: "center",
                   }}>
                     <span>{r.label}</span>
-                    <span style={{ fontSize: 7.5, opacity: 0.55 }}>×{r.multiplier.toFixed(2)}</span>
+                    <span style={{ fontSize: 7.5, opacity: 0.45 }}>×{r.multiplier.toFixed(2)}</span>
                   </button>
                 ))}
               </Sec>
 
               <button onClick={() => forgeCard()} disabled={loading} style={{
-                padding: "10px", borderRadius: 6, cursor: loading ? "not-allowed" : "pointer",
-                background: loading ? "#1a1a2a" : `linear-gradient(135deg,${fac.color},${fac.accent}77)`,
-                border: `1px solid ${loading ? "#1a1a2a" : fac.accent + "88"}`,
-                color: loading ? "#333" : "#fff",
-                fontFamily: "'Cinzel',serif", fontSize: 10.5, fontWeight: 700, letterSpacing: 2,
-                boxShadow: loading ? "none" : `0 0 16px ${fac.color}33`,
+                padding: "11px", borderRadius: 8, cursor: loading ? "not-allowed" : "pointer",
+                background: loading ? "#e0e0e0" : `linear-gradient(135deg,${fac.color},${fac.accent}dd)`,
+                border: "none",
+                color: loading ? "#999" : "#fff",
+                fontFamily: "'Cinzel',serif", fontSize: 11, fontWeight: 700, letterSpacing: 2,
+                boxShadow: loading ? "none" : `0 2px 12px ${fac.color}44`,
                 animation: loading ? "pulse 1.5s infinite" : "none",
                 transition: "all 0.3s",
               }}>
@@ -404,7 +403,7 @@ export default function CardForge() {
             </div>
 
             {/* Preview */}
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 14, padding: 28 }}>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 14, padding: 28, background: "#f5f5f5" }}>
               <div style={{ animation: card ? "fadeIn 0.35s ease" : "none" }}>
                 <CardVisual
                   card={card}
@@ -424,88 +423,88 @@ export default function CardForge() {
               {/* Update target indicator */}
               {updateTargetId && card && !loading && (
                 <div style={{
-                  display: "flex", alignItems: "center", gap: 8, padding: "6px 12px",
-                  borderRadius: 5, background: "#a29bfe11", border: "1px solid #a29bfe44",
+                  display: "flex", alignItems: "center", gap: 8, padding: "8px 14px",
+                  borderRadius: 8, background: "#f0eeff", border: "1px solid #d0c8ff",
                   maxWidth: 380,
                 }}>
-                  <span style={{ fontSize: 9, color: "#a29bfe", fontFamily: "'Crimson Text',serif", flex: 1 }}>
+                  <span style={{ fontSize: 10, color: "#6c5ce7", fontFamily: "'Crimson Text',serif", flex: 1 }}>
                     Cible : <strong>{updateTargetName}</strong> (#{updateTargetId})
                   </span>
-                  <Btn onClick={() => saveToGame(card, updateTargetId)} label={saving ? "⏳ …" : "✅ Confirmer"} color="#55efc4" />
-                  <Btn onClick={clearUpdateTarget} label="✕" color="#ff6b6b" />
+                  <Btn onClick={() => saveToGame(card, updateTargetId)} label={saving ? "⏳ …" : "✅ Confirmer"} color="#27ae60" />
+                  <Btn onClick={clearUpdateTarget} label="✕" color="#e74c3c" />
                 </div>
               )}
               {/* Existing cards picker modal */}
               {showExistingCards && (
                 <div style={{
                   maxWidth: 420, maxHeight: 300, overflowY: "auto",
-                  padding: "10px", borderRadius: 7, background: "#08081a",
-                  border: "1px solid #0f0f24",
+                  padding: "12px", borderRadius: 8, background: "#fff",
+                  border: "1px solid #e0e0e0", boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
                 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                    <span style={{ fontSize: 8, color: "#444", letterSpacing: 1.5 }}>SÉLECTIONNER UNE CARTE À METTRE À JOUR</span>
-                    <Btn onClick={() => setShowExistingCards(false)} label="✕" color="#ff6b6b" />
+                    <span style={{ fontSize: 9, color: "#888", letterSpacing: 1.5 }}>SÉLECTIONNER UNE CARTE À METTRE À JOUR</span>
+                    <Btn onClick={() => setShowExistingCards(false)} label="✕" color="#e74c3c" />
                   </div>
                   <input
                     type="text" placeholder="Rechercher…" value={existingSearch}
                     onChange={e => setExistingSearch(e.target.value)}
                     style={{
-                      width: "100%", padding: "4px 8px", marginBottom: 8, borderRadius: 4,
-                      background: "#0d0d1a", border: "1px solid #1a1a3a", color: "#ccc",
-                      fontFamily: "'Crimson Text',serif", fontSize: 11,
+                      width: "100%", padding: "6px 10px", marginBottom: 8, borderRadius: 6,
+                      background: "#f8f8f8", border: "1px solid #e0e0e0", color: "#333",
+                      fontFamily: "'Crimson Text',serif", fontSize: 12,
                     }}
                   />
                   {existingCards
                     .filter(c => c.name.toLowerCase().includes(existingSearch.toLowerCase()))
                     .map(c => (
                     <div key={c.id} onClick={() => selectUpdateTarget(c)} style={{
-                      padding: "5px 8px", borderRadius: 4, marginBottom: 3,
-                      background: "#0d0d1a44", border: "1px solid #1a1a3a",
+                      padding: "6px 10px", borderRadius: 6, marginBottom: 3,
+                      background: "#f8f8f8", border: "1px solid #e8e8e8",
                       cursor: "pointer", transition: "all 0.15s",
                       display: "flex", justifyContent: "space-between", alignItems: "center",
                     }}>
                       <div>
-                        <div style={{ fontSize: 9.5, color: "#ccc", fontWeight: 600 }}>{c.name}</div>
-                        <div style={{ fontSize: 7.5, color: "#444" }}>
+                        <div style={{ fontSize: 10, color: "#333", fontWeight: 600 }}>{c.name}</div>
+                        <div style={{ fontSize: 8, color: "#999" }}>
                           💧{c.mana_cost} · {c.keywords?.length || 0} keywords
                         </div>
                       </div>
-                      <span style={{ fontSize: 7.5, color: "#333" }}>#{c.id}</span>
+                      <span style={{ fontSize: 8, color: "#bbb" }}>#{c.id}</span>
                     </div>
                   ))}
                   {existingCards.length === 0 && (
-                    <div style={{ fontSize: 9, color: "#333", textAlign: "center", padding: 20 }}>Aucune carte trouvée</div>
+                    <div style={{ fontSize: 10, color: "#bbb", textAlign: "center", padding: 20 }}>Aucune carte trouvée</div>
                   )}
                 </div>
               )}
               {saveResult && !loading && !showExistingCards && (
                 <div style={{
-                  padding: "6px 12px", borderRadius: 5, fontSize: 9,
-                  background: saveResult.ok ? "#55efc411" : "#ff6b6b11",
-                  border: `1px solid ${saveResult.ok ? "#55efc444" : "#ff6b6b44"}`,
-                  color: saveResult.ok ? "#55efc4" : "#ff6b6b",
+                  padding: "8px 14px", borderRadius: 8, fontSize: 10,
+                  background: saveResult.ok ? "#e8f8f0" : "#fde8e8",
+                  border: `1px solid ${saveResult.ok ? "#a3e4c1" : "#f5a3a3"}`,
+                  color: saveResult.ok ? "#27ae60" : "#e74c3c",
                   fontFamily: "'Crimson Text',serif", maxWidth: 380, textAlign: "center",
                 }}>
                   {saveResult.msg}
                 </div>
               )}
               {card?.illustrationPrompt && (
-                <div style={{ maxWidth: 380, padding: "9px 12px", borderRadius: 6, background: "#08081a", border: "1px solid #0f0f24", fontFamily: "'Crimson Text',serif" }}>
-                  <div style={{ fontSize: 7.5, color: "#2a2a4a", letterSpacing: 1.5, marginBottom: 4, fontFamily: "'Cinzel',serif" }}>ILLUSTRATION PROMPT</div>
-                  <div style={{ fontSize: 10, color: "#555", lineHeight: 1.5 }}>{card.illustrationPrompt}</div>
-                  <div style={{ display: "flex", gap: 10, marginTop: 6 }}>
+                <div style={{ maxWidth: 380, padding: "10px 14px", borderRadius: 8, background: "#fff", border: "1px solid #e0e0e0", fontFamily: "'Crimson Text',serif", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+                  <div style={{ fontSize: 8, color: "#aaa", letterSpacing: 1.5, marginBottom: 4, fontFamily: "'Cinzel',serif" }}>ILLUSTRATION PROMPT</div>
+                  <div style={{ fontSize: 11, color: "#666", lineHeight: 1.5 }}>{card.illustrationPrompt}</div>
+                  <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
                     <button onClick={() => navigator.clipboard.writeText(card.illustrationPrompt)} style={{
-                      fontSize: 8.5, background: "none", border: "none",
-                      color: "#55efc4", cursor: "pointer", fontFamily: "'Cinzel',serif",
+                      fontSize: 9, background: "none", border: "none",
+                      color: "#27ae60", cursor: "pointer", fontFamily: "'Cinzel',serif",
                     }}>[copier]</button>
                     <button
                       onClick={() => generateIllustration(card)}
                       disabled={generatingImage}
                       style={{
-                        fontSize: 8.5, background: generatingImage ? "none" : "#a29bfe15",
-                        border: `1px solid ${generatingImage ? "#333" : "#a29bfe44"}`,
-                        borderRadius: 4, padding: "2px 8px",
-                        color: generatingImage ? "#555" : "#a29bfe", cursor: generatingImage ? "not-allowed" : "pointer",
+                        fontSize: 9, background: generatingImage ? "#f0f0f0" : "#f0eeff",
+                        border: `1px solid ${generatingImage ? "#ddd" : "#d0c8ff"}`,
+                        borderRadius: 6, padding: "3px 10px",
+                        color: generatingImage ? "#999" : "#6c5ce7", cursor: generatingImage ? "not-allowed" : "pointer",
                         fontFamily: "'Cinzel',serif",
                         animation: generatingImage ? "pulse 1.5s infinite" : "none",
                       }}
@@ -516,20 +515,21 @@ export default function CardForge() {
             </div>
 
             {/* History */}
-            <div style={{ width: 190, padding: "14px 10px", borderLeft: "1px solid #0f0f24", background: "#08081a", overflowY: "auto" }}>
-              <div style={{ fontSize: 7.5, color: "#2a2a4a", letterSpacing: 2, marginBottom: 10 }}>HISTORIQUE</div>
-              {history.length === 0 && <div style={{ fontSize: 9, color: "#1a1a3a", textAlign: "center", marginTop: 30 }}>Aucune carte</div>}
+            <div style={{ width: 200, padding: "14px 10px", borderLeft: "1px solid #e8e8e8", background: "#fafafa", overflowY: "auto" }}>
+              <div style={{ fontSize: 8, color: "#aaa", letterSpacing: 2, marginBottom: 10 }}>HISTORIQUE</div>
+              {history.length === 0 && <div style={{ fontSize: 10, color: "#ccc", textAlign: "center", marginTop: 30 }}>Aucune carte</div>}
               {history.map(c => {
                 const f = FACTIONS[c.faction] || FACTIONS.Humains;
                 const r = RARITY_MAP[c.rarity];
                 return (
                   <div key={c.id} className="hist-row" onClick={() => setCard(c)} style={{
-                    padding: "6px 8px", borderRadius: 4, marginBottom: 4,
-                    background: `${f.color}08`, border: `1px solid ${r.color}22`,
+                    padding: "7px 9px", borderRadius: 6, marginBottom: 4,
+                    background: "#fff", border: `1px solid #e8e8e8`,
+                    borderLeft: `3px solid ${r.color}`,
                     cursor: "pointer", transition: "all 0.15s",
                   }}>
-                    <div style={{ fontSize: 9, color: f.accent, fontWeight: 700, marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.name}</div>
-                    <div style={{ fontSize: 7.5, color: "#333", display: "flex", justifyContent: "space-between" }}>
+                    <div style={{ fontSize: 10, color: f.color, fontWeight: 700, marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.name}</div>
+                    <div style={{ fontSize: 8, color: "#999", display: "flex", justifyContent: "space-between" }}>
                       <span>{c.faction}</span>
                       <span style={{ color: r.color }}>{r.code} · {c.mana}💧</span>
                     </div>
@@ -543,13 +543,13 @@ export default function CardForge() {
         {/* ── BULK ── */}
         {tab === "bulk" && (
           <div style={{ flex: 1, padding: 18, display: "flex", flexDirection: "column", gap: 14 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", background: "#08081a", borderRadius: 7, border: "1px solid #0f0f24" }}>
-              <span style={{ fontSize: 9, color: "#444", letterSpacing: 1 }}>NOMBRE</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", background: "#fff", borderRadius: 8, border: "1px solid #e0e0e0" }}>
+              <span style={{ fontSize: 10, color: "#888", letterSpacing: 1 }}>NOMBRE</span>
               <input type="number" value={bulkCount} min={1} max={500}
                 onChange={e => setBulkCount(Math.max(1, Math.min(500, parseInt(e.target.value) || 1)))}
-                style={{ width: 60, padding: "3px 8px", background: "#0d0d1a", border: "1px solid #1a1a3a", borderRadius: 4, color: "#ffd54f", fontFamily: "'Cinzel',serif", fontSize: 12, textAlign: "center" }}
+                style={{ width: 60, padding: "4px 8px", background: "#f8f8f8", border: "1px solid #e0e0e0", borderRadius: 6, color: "#333", fontFamily: "'Cinzel',serif", fontSize: 13, textAlign: "center" }}
               />
-              <span style={{ fontSize: 8.5, color: "#222" }}>Tous paramètres aléatoires</span>
+              <span style={{ fontSize: 9, color: "#aaa" }}>Tous paramètres aléatoires</span>
               <div style={{ flex: 1 }} />
               {bulkProgress
                 ? <Btn onClick={() => { abortRef.current = true; setBulkProgress(null); }} label="✕ Annuler" color="#ff6b6b" />
@@ -562,10 +562,10 @@ export default function CardForge() {
 
             {bulkProgress && (
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <div style={{ flex: 1, height: 2, background: "#111122", borderRadius: 1, overflow: "hidden" }}>
-                  <div style={{ height: "100%", background: "linear-gradient(90deg,#ffd54f,#ffb300)", width: `${(bulkProgress.done / bulkProgress.total) * 100}%`, transition: "width 0.2s" }} />
+                <div style={{ flex: 1, height: 3, background: "#e8e8e8", borderRadius: 2, overflow: "hidden" }}>
+                  <div style={{ height: "100%", background: "linear-gradient(90deg,#6c5ce7,#a29bfe)", borderRadius: 2, width: `${(bulkProgress.done / bulkProgress.total) * 100}%`, transition: "width 0.2s" }} />
                 </div>
-                <span style={{ fontSize: 9, color: "#ffd54f", fontWeight: 700, whiteSpace: "nowrap" }}>{bulkProgress.done}/{bulkProgress.total}</span>
+                <span style={{ fontSize: 10, color: "#6c5ce7", fontWeight: 700, whiteSpace: "nowrap" }}>{bulkProgress.done}/{bulkProgress.total}</span>
               </div>
             )}
 
@@ -611,7 +611,7 @@ export default function CardForge() {
         {tab === "budget" && (
           <div style={{ flex: 1, padding: 22, overflowY: "auto" }}>
             <div style={{ maxWidth: 820, display: "flex", flexDirection: "column", gap: 18 }}>
-              <div style={{ fontSize: 8, color: "#2a2a4a", letterSpacing: 2 }}>SYSTÈME DE BUDGET — RÉFÉRENCE</div>
+              <div style={{ fontSize: 8, color: "#aaa", letterSpacing: 2 }}>SYSTÈME DE BUDGET — RÉFÉRENCE</div>
 
               {/* Mana-Rarity distribution */}
               <Panel title="DISTRIBUTION RARETÉ PAR COÛT DE MANA (MODE BULK)">
@@ -619,9 +619,9 @@ export default function CardForge() {
                   <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 9 }}>
                     <thead>
                       <tr>
-                        <th style={{ padding: "5px 10px", textAlign: "left", color: "#333", fontWeight: 400, borderBottom: "1px solid #111122" }}>Mana</th>
+                        <th style={{ padding: "5px 10px", textAlign: "left", color: "#333", fontWeight: 400, borderBottom: "1px solid #e0e0e0" }}>Mana</th>
                         {RARITIES.map(r => (
-                          <th key={r.id} style={{ padding: "5px 10px", textAlign: "center", color: r.color, fontWeight: 700, borderBottom: "1px solid #111122", whiteSpace: "nowrap" }}>
+                          <th key={r.id} style={{ padding: "5px 10px", textAlign: "center", color: r.color, fontWeight: 700, borderBottom: "1px solid #e0e0e0", whiteSpace: "nowrap" }}>
                             {r.code} {r.label}
                           </th>
                         ))}
@@ -629,7 +629,7 @@ export default function CardForge() {
                     </thead>
                     <tbody>
                       {RARITY_WEIGHTS_BY_MANA.map((weights, i) => (
-                        <tr key={i} style={{ borderBottom: "1px solid #0a0a1a" }}>
+                        <tr key={i} style={{ borderBottom: "1px solid #f0f0f0" }}>
                           <td style={{ padding: "5px 10px", color: "#74b9ff", fontWeight: 700 }}>{i + 1}</td>
                           {weights.map((w, j) => {
                             const rar = RARITIES[j];
@@ -743,8 +743,8 @@ export default function CardForge() {
         {tab === "schema" && (
           <div style={{ flex: 1, padding: 22, overflowY: "auto" }}>
             <div style={{ maxWidth: 660 }}>
-              <div style={{ fontSize: 8, color: "#2a2a4a", letterSpacing: 2, marginBottom: 12 }}>CARD SCHEMA — JSON</div>
-              <pre style={{ background: "#08081a", border: "1px solid #0f0f24", borderRadius: 7, padding: 18, fontSize: 11, color: "#a29bfe", lineHeight: 1.75, fontFamily: "monospace", overflow: "auto" }}>
+              <div style={{ fontSize: 8, color: "#aaa", letterSpacing: 2, marginBottom: 12 }}>CARD SCHEMA — JSON</div>
+              <pre style={{ background: "#f8f8f8", border: "1px solid #e0e0e0", borderRadius: 8, padding: 18, fontSize: 11, color: "#6c5ce7", lineHeight: 1.75, fontFamily: "monospace", overflow: "auto" }}>
 {JSON.stringify({
   id: "am_1711234567_ab12",
   name: "Forgeron de l'Abîme",

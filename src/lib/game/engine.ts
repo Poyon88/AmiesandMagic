@@ -497,11 +497,15 @@ export function attack(state: GameState, action: AttackAction): GameState {
   const effectiveTarget = hasKw(attacker, "ombre") ? "enemy_hero" : action.targetInstanceId;
 
   // Taunt check (skip for ombre)
-  const opponentTaunts = opponent.board.filter(c => hasKw(c, "taunt"));
-  if (!hasKw(attacker, "ombre") && opponentTaunts.length > 0) {
+  // Vol : ignore les taunts qui n'ont pas Vol elles-mêmes
+  const attackerFlies = hasKw(attacker, "ranged");
+  const relevantTaunts = opponent.board.filter(c =>
+    hasKw(c, "taunt") && (!attackerFlies || hasKw(c, "ranged"))
+  );
+  if (!hasKw(attacker, "ombre") && relevantTaunts.length > 0) {
     if (effectiveTarget === "enemy_hero") return state;
     const target = opponent.board.find(c => c.instanceId === effectiveTarget);
-    if (target && !hasKw(target, "taunt")) return state;
+    if (target && !relevantTaunts.includes(target)) return state;
   }
 
   // Double Attaque: must attack different targets
@@ -542,7 +546,6 @@ export function attack(state: GameState, action: AttackAction): GameState {
     }
 
     const attackerHasPrecision = hasKw(attacker, "precision");
-    const isRanged = hasKw(attacker, "ranged");
 
     // Premier Frappe: attacker deals damage first
     if (hasKw(attacker, "premier_frappe")) {
@@ -553,10 +556,9 @@ export function attack(state: GameState, action: AttackAction): GameState {
         target.isPoisoned = true;
       }
 
-      // If target survived, it retaliates (unless ranged)
-      if (target.currentHealth > 0 && !isRanged) {
+      // If target survived, it retaliates
+      if (target.currentHealth > 0) {
         dealDamageToCreature(attacker, target.currentAttack);
-        // Apply poison from target
         if (hasKw(target, "poison") && attacker.currentHealth > 0) {
           attacker.isPoisoned = true;
         }
@@ -564,9 +566,7 @@ export function attack(state: GameState, action: AttackAction): GameState {
     } else {
       // Simultaneous damage
       dealDamageToCreature(target, attackPower, attackerHasPrecision);
-      if (!isRanged) {
-        dealDamageToCreature(attacker, target.currentAttack, hasKw(target, "precision"));
-      }
+      dealDamageToCreature(attacker, target.currentAttack, hasKw(target, "precision"));
 
       // Poison application
       if (hasKw(attacker, "poison") && target.currentHealth > 0) target.isPoisoned = true;
@@ -595,7 +595,7 @@ export function attack(state: GameState, action: AttackAction): GameState {
       target.fureurATKBonus = 3;
       target.currentAttack += 3;
     }
-    if (hasKw(attacker, "fureur") && attacker.currentHealth > 0 && !attacker.fureurActive && !isRanged) {
+    if (hasKw(attacker, "fureur") && attacker.currentHealth > 0 && !attacker.fureurActive) {
       attacker.fureurActive = true;
       attacker.fureurATKBonus = 3;
       attacker.currentAttack += 3;
@@ -918,9 +918,13 @@ export function getValidTargets(state: GameState, attackerInstanceId: string): s
   // Double Attaque: filter already-attacked targets
   const excludeTargets = hasKw(attacker, "double_attaque") ? attacker.targetsAttackedThisTurn : [];
 
-  const opponentTaunts = opponent.board.filter(c => hasKw(c, "taunt"));
-  if (opponentTaunts.length > 0) {
-    return opponentTaunts
+  // Vol : ignore les taunts sans Vol
+  const attackerFlies2 = hasKw(attacker, "ranged");
+  const relevantTaunts2 = opponent.board.filter(c =>
+    hasKw(c, "taunt") && (!attackerFlies2 || hasKw(c, "ranged"))
+  );
+  if (relevantTaunts2.length > 0) {
+    return relevantTaunts2
       .map(c => c.instanceId)
       .filter(id => !excludeTargets.includes(id));
   }

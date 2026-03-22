@@ -1,7 +1,8 @@
 import {
   RARITIES, RARITY_MAP, KEYWORDS, FACTIONS,
   STAT_COST, MANA_BUDGET_BASE,
-  MANA_WEIGHTS, RARITY_WEIGHTS_BY_MANA,
+  MANA_WEIGHTS, MANA_WEIGHTS_BY_RARITY, RARITY_WEIGHTS_BY_MANA,
+  RARITY_WEIGHTS_GLOBAL,
 } from './constants';
 
 // ─── UTILS ───────────────────────────────────────────────────────────────────
@@ -19,10 +20,11 @@ export function buildId() {
 
 // ─── MANA & RARITY PICKERS ───────────────────────────────────────────────────
 
-export function pickMana() {
+export function pickMana(rarityId?: string) {
+  const weights = (rarityId && MANA_WEIGHTS_BY_RARITY[rarityId]) || MANA_WEIGHTS;
   let r = Math.random();
-  for (let i = 0; i < MANA_WEIGHTS.length; i++) {
-    r -= MANA_WEIGHTS[i];
+  for (let i = 0; i < weights.length; i++) {
+    r -= weights[i];
     if (r <= 0) return i + 1;
   }
   return 5;
@@ -33,6 +35,15 @@ export function pickRarityForMana(mana: number) {
   let r = Math.random();
   for (let i = 0; i < weights.length; i++) {
     r -= weights[i];
+    if (r <= 0) return RARITIES[i].id;
+  }
+  return RARITIES[RARITIES.length - 1].id;
+}
+
+export function pickRarity() {
+  let r = Math.random();
+  for (let i = 0; i < RARITY_WEIGHTS_GLOBAL.length; i++) {
+    r -= RARITY_WEIGHTS_GLOBAL[i];
     if (r <= 0) return RARITIES[i].id;
   }
   return RARITIES[RARITIES.length - 1].id;
@@ -74,16 +85,56 @@ function pickWeightedKeyword(available: ReturnType<typeof getAvailableKeywords>,
 export function generateCardStats(factionId: string, type: string, rarityId: string, fixedMana: number | null = null) {
   const faction = FACTIONS[factionId];
   const isUnit = type === 'Unité';
-  const mana = fixedMana ?? pickMana();
+  const mana = fixedMana ?? pickMana(rarityId);
+
+  // Sub-type stat adjustments
+  let statWeights = { ...faction.statWeights };
+  if (faction.subType && isUnit) {
+    const st = faction.subType;
+    if (factionId === "Hobbits" && mana >= st.threshold) {
+      // Hommes-arbres : très tanky, ATK modérée
+      statWeights = { atk: 0.90, def: 1.50 };
+    } else if (factionId === "Orcs & Gobelins" && mana < st.threshold) {
+      // Gobelins : très rapides, faibles
+      statWeights = { atk: 1.10, def: 0.70 };
+    }
+  }
   let budget = computeBudget(mana, rarityId);
   const totalBudget = budget;
 
-  // Keywords garantis par faction
-  const guaranteedKws = faction.guaranteedKeywords.filter(kid => {
-    const kw = KEYWORDS[kid];
-    return kw && isUnit && kw.minTier <= RARITY_MAP[rarityId].tier;
-  });
-  let keywords = [...guaranteedKws];
+  // Keywords fréquents (40% de chance chacun, remplace les garantis)
+  let keywords: string[] = [];
+  const FREQUENT_CHANCE = 0.40;
+
+  if (isUnit) {
+    // Dragons : Vol toujours garanti (ce sont des créatures volantes)
+    if (factionId === "Dragons") {
+      keywords.push("Vol");
+    }
+
+    // Faction guaranteed keywords → fréquents à 40%
+    for (const kid of faction.guaranteedKeywords) {
+      if (keywords.includes(kid)) continue; // déjà ajouté (ex: Vol Dragons)
+      const kw = KEYWORDS[kid];
+      if (kw && kw.minTier <= RARITY_MAP[rarityId].tier && Math.random() < FREQUENT_CHANCE) {
+        keywords.push(kid);
+      }
+    }
+
+    // Sub-type frequent keywords
+    if (faction.subType) {
+      const st = faction.subType;
+      if (factionId === "Hobbits" && mana >= st.threshold) {
+        if (Math.random() < FREQUENT_CHANCE) keywords.push("Provocation");
+        if (Math.random() < FREQUENT_CHANCE) keywords.push("Ancré");
+      } else if (factionId === "Orcs & Gobelins" && mana < st.threshold) {
+        if (Math.random() < FREQUENT_CHANCE) keywords.push("Traque");
+      }
+    }
+
+    // Dédupliquer
+    keywords = [...new Set(keywords)];
+  }
 
   let attack: number | null = null, defense: number | null = null, power: number | null = null;
 
@@ -92,15 +143,15 @@ export function generateCardStats(factionId: string, type: string, rarityId: str
     const RARITY_STAT_BONUS: Record<string, number> = { 'Commune': 0, 'Peu Commune': 1, 'Rare': 1, 'Épique': 2, 'Légendaire': 2 };
     const statTotal = (mana * 2 + 1) + (RARITY_STAT_BONUS[rarityId] ?? 0);
 
-    const totalWeight = faction.statWeights.atk + faction.statWeights.def;
-    const baseAtk = statTotal * (faction.statWeights.atk / totalWeight);
+    const totalWeight = statWeights.atk + statWeights.def;
+    const baseAtk = statTotal * (statWeights.atk / totalWeight);
     const splitVariance = mana <= 3 ? 1 : 2;
     const atkRaw = Math.round(baseAtk) + randInt(-splitVariance, splitVariance);
     attack  = Math.max(1, Math.min(statTotal - 1, atkRaw));
     defense = Math.max(1, statTotal - attack);
 
     // Clamp dispersion ATK/DEF
-    const maxRatio = faction.statWeights.atk > 1.3 || faction.statWeights.def > 1.3 ? 3.0 : 2.5;
+    const maxRatio = statWeights.atk > 1.3 || statWeights.def > 1.3 ? 3.0 : 2.5;
     const hi = Math.max(attack, defense);
     const lo = Math.min(attack, defense);
     if (lo > 0 && hi / lo > maxRatio) {
@@ -120,8 +171,8 @@ export function generateCardStats(factionId: string, type: string, rarityId: str
     const kwCfg = KW_BUDGET_CONFIG[rarityId] ?? { base: 4, factor: 2.5 };
     budget = Math.round(kwCfg.base + mana * kwCfg.factor);
 
-    // Déduire les keywords garantis
-    for (const kid of guaranteedKws) budget -= KEYWORDS[kid]?.cost || 0;
+    // Déduire les keywords déjà attribués (fréquents)
+    for (const kid of keywords) budget -= KEYWORDS[kid]?.cost || 0;
 
     // Allocation keywords avec plafond et probabilité décroissante
     const KW_CONFIG: Record<string, { max: number; probs: number[] }> = {

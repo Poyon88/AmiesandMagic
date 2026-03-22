@@ -33,7 +33,7 @@ export const KEYWORDS: Record<string, { cost: number; se: number; minTier: numbe
   "Célérité":         { cost: 11, se: 2.5, minTier: 1, desc: "Peut attaquer deux fois par tour." },
   // Tier 2 — Rare+
   "Terreur":          { cost: 11, se: 2.5, minTier: 2, desc: "Les unités adverses perdent 1 ATK en présence de cette carte." },
-  "Vol":              { cost: 11, se: 2.5, minTier: 2, desc: "Ne peut être attaqué que par des unités volantes." },
+  "Vol":              { cost:  7, se: 1.5, minTier: 1, desc: "Ignore les provocations adverses qui n'ont pas Vol." },
   "Armure":           { cost: 11, se: 2.5, minTier: 2, desc: "Réduit tous les dégâts reçus de 2." },
   "Commandement":     { cost: 13, se: 3.0, minTier: 2, desc: "Les alliés de même faction gagnent +1/+1." },
   "Fureur":           { cost: 13, se: 3.0, minTier: 2, desc: "+3 ATK pendant un tour après avoir subi des dégâts." },
@@ -57,6 +57,15 @@ export const KEYWORDS: Record<string, { cost: number; se: number; minTier: numbe
 
 // ─── FACTIONS ────────────────────────────────────────────────────────────────
 
+export interface FactionSubType {
+  threshold: number;       // mana >= threshold → sous-type haut
+  name?: string;           // nom du sous-type haut (ex: "Homme-arbre", "Orc")
+  emoji?: string;          // emoji du sous-type haut
+  descOverride?: string;   // description pour le prompt IA
+  lowName?: string;        // nom du sous-type bas (ex: "Gobelin")
+  lowEmoji?: string;       // emoji du sous-type bas
+}
+
 export const FACTIONS: Record<string, {
   color: string; accent: string; emoji: string; bg: string;
   statWeights: { atk: number; def: number };
@@ -64,6 +73,7 @@ export const FACTIONS: Record<string, {
   likelyKeywords: Record<string, number>;
   forbiddenKeywords: string[];
   description: string;
+  subType?: FactionSubType;
 }> = {
   Nains: {
     color: "#b87333", accent: "#ff9f43", emoji: "⚒️", bg: "#2a1a0a",
@@ -77,9 +87,9 @@ export const FACTIONS: Record<string, {
     color: "#3a7d44", accent: "#55efc4", emoji: "🌿", bg: "#0a1f0a",
     statWeights: { atk: 1.10, def: 0.80 },
     guaranteedKeywords: [],
-    likelyKeywords: { "Traque": 0.60, "Esquive": 0.55, "Précision": 0.50, "Invisible": 0.40, "Premier Frappe": 0.45, "Drain de vie": 0.30 },
+    likelyKeywords: { "Traque": 0.60, "Esquive": 0.55, "Précision": 0.50, "Invisible": 0.40, "Premier Frappe": 0.45, "Drain de vie": 0.30, "Vol": 0.20 },
     forbiddenKeywords: ["Armure", "Ancré", "Provocation", "Berserk"],
-    description: "Agiles et furtifs. Favorisent la vitesse et l'esquive.",
+    description: "Agiles et furtifs. Favorisent la vitesse et l'esquive. Aigles et faucons parmi leurs rangs.",
   },
   Humains: {
     color: "#2c5f8a", accent: "#74b9ff", emoji: "⚔️", bg: "#0a0f2a",
@@ -93,25 +103,67 @@ export const FACTIONS: Record<string, {
     color: "#6c3483", accent: "#a29bfe", emoji: "💀", bg: "#1a0a2a",
     statWeights: { atk: 1.05, def: 0.95 },
     guaranteedKeywords: [],
-    likelyKeywords: { "Poison": 0.65, "Drain de vie": 0.60, "Terreur": 0.55, "Maléfice": 0.50, "Régénération": 0.45, "Résurrection": 0.40, "Liaison de vie": 0.35 },
-    forbiddenKeywords: ["Loyauté", "Commandement", "Bouclier", "Vol"],
-    description: "Insatiables et corrompus. Résurrection et drain de vie.",
+    likelyKeywords: { "Poison": 0.65, "Drain de vie": 0.60, "Terreur": 0.55, "Maléfice": 0.50, "Régénération": 0.45, "Résurrection": 0.40, "Liaison de vie": 0.35, "Vol": 0.15 },
+    forbiddenKeywords: ["Loyauté", "Commandement", "Bouclier"],
+    description: "Insatiables et corrompus. Résurrection et drain de vie. Chauves-souris et spectres volants parmi eux.",
   },
   Démons: {
     color: "#922b21", accent: "#ff6b6b", emoji: "🔥", bg: "#2a0a0a",
     statWeights: { atk: 1.35, def: 0.80 },
     guaranteedKeywords: [],
-    likelyKeywords: { "Fureur": 0.65, "Sacrifice": 0.55, "Corruption": 0.50, "Terreur": 0.50, "Ombre": 0.45, "Domination": 0.40 },
+    likelyKeywords: { "Fureur": 0.65, "Sacrifice": 0.55, "Corruption": 0.50, "Terreur": 0.50, "Ombre": 0.45, "Domination": 0.40, "Vol": 0.20 },
     forbiddenKeywords: ["Loyauté", "Commandement", "Bouclier", "Ancré", "Résistance"],
-    description: "Offensifs et imprévisibles. Puissance brute au prix du risque.",
+    description: "Offensifs et imprévisibles. Puissance brute au prix du risque. Démons ailés et wyvernes infernales.",
   },
   Dragons: {
     color: "#8B0000", accent: "#FF4500", emoji: "🐉", bg: "#1a0505",
     statWeights: { atk: 1.40, def: 0.90 },
     guaranteedKeywords: ["Vol"],
-    likelyKeywords: { "Souffle de feu": 0.70, "Terreur": 0.60, "Fureur": 0.50, "Indestructible": 0.40, "Transcendance": 0.35 },
+    likelyKeywords: { "Vol": 0.70, "Souffle de feu": 0.70, "Terreur": 0.60, "Fureur": 0.50, "Indestructible": 0.40, "Transcendance": 0.35 },
     forbiddenKeywords: ["Ancré", "Bouclier", "Armure", "Provocation", "Loyauté"],
     description: "Dominateurs. Vol garanti, puissance dévastatrice.",
+  },
+  Hobbits: {
+    color: "#8B6914", accent: "#DAA520", emoji: "🍃", bg: "#1a1508",
+    statWeights: { atk: 0.80, def: 0.90 },
+    guaranteedKeywords: [],
+    likelyKeywords: { "Esquive": 0.65, "Loyauté": 0.60, "Traque": 0.45, "Invisible": 0.50, "Résistance": 0.35, "Ancré": 0.40 },
+    forbiddenKeywords: ["Terreur", "Corruption", "Domination", "Sacrifice", "Maléfice"],
+    description: "Petits mais rusés. Esquive et entraide. Les cartes à 6+ mana sont des Hommes-arbres : massifs, lents et protecteurs.",
+    subType: { threshold: 6, name: "Homme-arbre", emoji: "🌳", descOverride: "Homme-arbre allié des Hobbits. Colosse végétal, lent mais dévastateur et protecteur." },
+  },
+  "Hommes-bêtes": {
+    color: "#7B5B3A", accent: "#CD853F", emoji: "🐺", bg: "#1a1008",
+    statWeights: { atk: 1.20, def: 1.00 },
+    guaranteedKeywords: [],
+    likelyKeywords: { "Traque": 0.65, "Berserk": 0.60, "Fureur": 0.55, "Premier Frappe": 0.45, "Régénération": 0.40, "Esquive": 0.35, "Vol": 0.20 },
+    forbiddenKeywords: ["Armure", "Commandement", "Invisible", "Ancré"],
+    description: "Sauvages et féroces. Attaquent vite, régénèrent, entrent en rage. Aigles et griffons parmi eux.",
+  },
+  Géants: {
+    color: "#5B6C7D", accent: "#A0B0C0", emoji: "🗻", bg: "#0f1520",
+    statWeights: { atk: 1.15, def: 1.30 },
+    guaranteedKeywords: [],
+    likelyKeywords: { "Provocation": 0.65, "Résistance": 0.60, "Armure": 0.55, "Indestructible": 0.45, "Terreur": 0.40, "Ancré": 0.35 },
+    forbiddenKeywords: ["Esquive", "Invisible", "Traque", "Vol", "Célérité"],
+    description: "Colossaux et lents. Statistiques massives, résistance énorme. Difficiles à tuer.",
+  },
+  "Elfes noirs": {
+    color: "#4A0E4E", accent: "#9B59B6", emoji: "🔮", bg: "#150520",
+    statWeights: { atk: 1.15, def: 0.85 },
+    guaranteedKeywords: [],
+    likelyKeywords: { "Poison": 0.65, "Invisible": 0.55, "Ombre": 0.50, "Corruption": 0.50, "Maléfice": 0.45, "Drain de vie": 0.40, "Précision": 0.35 },
+    forbiddenKeywords: ["Loyauté", "Commandement", "Bouclier", "Provocation"],
+    description: "Sournois et venimeux. Poison, ombre et corruption. Frappent là où on ne les attend pas.",
+  },
+  "Orcs & Gobelins": {
+    color: "#4A7A2E", accent: "#7FFF00", emoji: "🗡️", bg: "#0f1a08",
+    statWeights: { atk: 1.25, def: 0.85 },
+    guaranteedKeywords: [],
+    likelyKeywords: { "Traque": 0.60, "Berserk": 0.55, "Fureur": 0.50, "Sacrifice": 0.45, "Loyauté": 0.40, "Célérité": 0.35, "Double Attaque": 0.30, "Vol": 0.15 },
+    forbiddenKeywords: ["Invisible", "Armure", "Régénération", "Transcendance"],
+    description: "Horde brutale. Gobelins (1-2 mana) : petits, rapides, sacrifiables. Orcs (3+ mana) : brutes épaisses et agressives. Wyvernes parmi leurs montures.",
+    subType: { threshold: 3, name: "Orc", emoji: "💪", lowName: "Gobelin", lowEmoji: "👺" },
   },
 };
 
@@ -124,9 +176,29 @@ export const STAT_COST = { atk: 5, def: 4 };
 export const MANA_BUDGET_BASE = 10;
 
 // Distribution pondérée du mana — courbe en cloche penchée vers le bas
+// Fallback uniquement si aucune rareté n'est spécifiée
 export const MANA_WEIGHTS = [
   0.10, 0.16, 0.18, 0.16, 0.14, 0.10, 0.07, 0.05, 0.03, 0.01
 ];
+
+// Distribution globale des raretés pour le bulk
+// Basé sur Hearthstone : ~46% C, 25% R, 15% É, 15% L
+// Adapté avec Peu Commune intercalé
+//                    C     U     R     É     L
+export const RARITY_WEIGHTS_GLOBAL = [0.35, 0.25, 0.20, 0.12, 0.08];
+
+// Distribution du mana par rareté — forge simple
+// Basé sur les données réelles d'Hearthstone (7886 cartes analysées)
+// Le mana 0 de HS est redistribué dans 1-2 (A&M commence à 1 mana)
+// Peu Commune interpolé entre Commune et Rare
+//                 1     2     3     4     5     6     7     8     9    10
+export const MANA_WEIGHTS_BY_RARITY: Record<string, number[]> = {
+  "Commune":     [0.26, 0.25, 0.22, 0.14, 0.06, 0.03, 0.02, 0.01, 0.005, 0.005],
+  "Peu Commune": [0.20, 0.23, 0.23, 0.15, 0.08, 0.05, 0.03, 0.02, 0.005, 0.005],
+  "Rare":        [0.13, 0.21, 0.24, 0.19, 0.11, 0.06, 0.03, 0.02, 0.005, 0.005],
+  "Épique":      [0.08, 0.16, 0.18, 0.16, 0.14, 0.08, 0.07, 0.05, 0.04, 0.04],
+  "Légendaire":  [0.05, 0.05, 0.11, 0.13, 0.14, 0.14, 0.14, 0.12, 0.08, 0.04],
+};
 
 // Probabilités de rareté par coût de mana [C, U, R, É, L]
 export const RARITY_WEIGHTS_BY_MANA = [

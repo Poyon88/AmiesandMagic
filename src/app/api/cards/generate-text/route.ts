@@ -8,11 +8,29 @@ export async function POST(request: Request) {
   const statsDesc = stats.attack != null
     ? `ATK ${stats.attack} / DEF ${stats.defense}. `
     : `Puissance ${stats.power}. `;
-  const facDesc = FACTIONS[factionId]?.description || '';
+  const fac = FACTIONS[factionId];
+  const facDesc = fac?.description || '';
+
+  // Determine sub-type for prompt
+  let subTypeHint = '';
+  if (fac?.subType && stats.mana) {
+    const st = fac.subType;
+    if (stats.mana >= st.threshold) {
+      const name = st.name || factionId;
+      subTypeHint = st.descOverride
+        ? `\n- Sous-type: ${name}. ${st.descOverride}`
+        : `\n- Sous-type: ${name}`;
+    } else if (st.lowName) {
+      subTypeHint = `\n- Sous-type: ${st.lowName} (petite créature rapide et sacrifiable de la faction ${factionId})`;
+    }
+  }
+
+  const hasVol = stats.keywords?.includes('Vol');
+  const volHint = hasVol ? '\n- IMPORTANT: La carte a le mot-clé Vol → la créature DOIT être volante (dragon, wyverne, aigle, faucon, griffon, chauve-souris, spectre ailé, démon ailé, etc. selon la faction)' : '';
 
   const prompt = `Tu es un game designer expert pour "Armies & Magic", un CCG médiéval-fantastique.
 Génère les textes pour cette carte :
-- Faction: ${factionId} (${facDesc})
+- Faction: ${factionId} (${facDesc})${subTypeHint}${volHint}
 - Type: ${type} | Rareté: ${rarityId} | Coût mana: ${stats.mana}
 - ${statsDesc}${kws}
 
