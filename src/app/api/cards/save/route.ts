@@ -3,6 +3,7 @@ import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 
+
 async function getAuthUser() {
   const cookieStore = await cookies();
   const supabaseAuth = createServerClient(
@@ -33,7 +34,7 @@ export async function GET() {
   const supabaseAdmin = getAdminClient();
   const { data, error } = await supabaseAdmin
     .from('cards')
-    .select('id, name, mana_cost, card_type, attack, health, keywords, image_url, faction')
+    .select('id, name, mana_cost, card_type, attack, health, effect_text, keywords, image_url, faction')
     .order('name');
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

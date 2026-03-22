@@ -161,18 +161,12 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
         </label>
       )}
 
-      {/* ── Subtle vignette over art ── */}
-      <div style={{
-        position: "absolute", inset: 0,
-        background: `radial-gradient(ellipse at center, transparent 60%, ${fac.bg}66 100%)`,
-        pointerEvents: "none",
-      }} />
 
       {/* ── Top bar: name + mana ── */}
       <div style={{
         position: "absolute", top: 0, left: 0, right: 0, zIndex: 2,
         padding: `${8 * s}px ${12 * s}px`,
-        background: `linear-gradient(180deg, ${fac.bg}ee 0%, transparent 100%)`,
+        background: `linear-gradient(180deg, ${fac.bg}aa 0%, transparent 60%)`,
         display: "flex", justifyContent: "space-between", alignItems: "center", gap: 6,
       }}>
         <span style={{
@@ -197,7 +191,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
       <div style={{
         position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2,
         padding: `${10 * s}px ${10 * s}px ${8 * s}px`,
-        background: `linear-gradient(0deg, ${fac.bg}ee 0%, ${fac.bg}cc 60%, transparent 100%)`,
+        background: `linear-gradient(0deg, ${fac.bg}dd 0%, ${fac.bg}88 40%, transparent 65%)`,
         display: "flex", flexDirection: "column", gap: 6 * s,
       }}>
         {/* Keyword symbols row */}

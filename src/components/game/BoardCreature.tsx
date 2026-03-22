@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import type { CardInstance } from "@/lib/game/types";
@@ -34,9 +34,12 @@ export default function BoardCreature({
   const isBuffedAtk = creature.currentAttack > (card.attack ?? 0);
   const isBuffedHp = creature.currentHealth > (card.health ?? 0);
   const [isHovered, setIsHovered] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
   const creatureRef = useRef<HTMLDivElement>(null);
+  const detailTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const showOverlay = isHovered && !isSelected;
+  const isZoomed = isHovered && !isSelected;
+  const showOverlay = isZoomed && showDetails;
   const W = 128;
   const H = 176;
   const accentColor = "#74b9ff";
@@ -53,13 +56,27 @@ export default function BoardCreature({
       ref={creatureRef}
       data-instance-id={creature.instanceId}
       onClick={onClick}
-      onMouseEnter={() => { setIsHovered(true); onMouseEnter?.(); }}
-      onMouseLeave={() => { setIsHovered(false); onMouseLeave?.(); }}
+      onMouseEnter={() => {
+        setIsHovered(true);
+        onMouseEnter?.();
+        detailTimer.current = setTimeout(() => setShowDetails(true), 600);
+      }}
+      onMouseLeave={() => {
+        setIsHovered(false);
+        setShowDetails(false);
+        if (detailTimer.current) clearTimeout(detailTimer.current);
+        onMouseLeave?.();
+      }}
+      onContextMenu={(e: React.MouseEvent) => {
+        e.preventDefault();
+        setShowDetails(prev => !prev);
+        if (detailTimer.current) clearTimeout(detailTimer.current);
+      }}
       initial={{ y: isOwn ? 40 : -40, opacity: 0, scale: 0.5 }}
       animate={
         damageAmount
-          ? { x: [0, -4, 4, -4, 4, 0], y: 0, opacity: 1, scale: 1 }
-          : { x: 0, y: 0, opacity: 1, scale: 1 }
+          ? { x: [0, -4, 4, -4, 4, 0], y: 0, opacity: 1, scale: isHovered && !isSelected ? 1.8 : 1 }
+          : { x: 0, y: 0, opacity: 1, scale: isHovered && !isSelected ? 1.8 : 1 }
       }
       exit={{ opacity: 0, scale: 0, rotate: -15, filter: "brightness(2) saturate(0)", transition: { duration: 0.5, ease: "easeIn" } }}
       transition={{ duration: 0.5, ease: "easeOut" }}
@@ -83,7 +100,8 @@ export default function BoardCreature({
             alt={card.name}
             fill
             className="object-cover"
-            sizes={`${W}px`}
+            sizes="300px"
+            quality={90}
           />
         ) : (
           <div style={{
@@ -96,12 +114,6 @@ export default function BoardCreature({
         )}
       </div>
 
-      {/* Vignette (légère) */}
-      <div style={{
-        position: "absolute", inset: 0,
-        background: "radial-gradient(ellipse at center, transparent 60%, #0d0d1a66 100%)",
-        pointerEvents: "none",
-      }} />
 
       {/* Summoning sickness overlay */}
       {creature.hasSummoningSickness && isOwn && (
@@ -146,7 +158,7 @@ export default function BoardCreature({
       <div style={{
         position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2,
         padding: "6px 6px 5px",
-        background: "linear-gradient(0deg, #0d0d1aee 0%, #0d0d1acc 60%, transparent 100%)",
+        background: "linear-gradient(0deg, #0d0d1add 0%, #0d0d1a88 40%, transparent 65%)",
         display: "flex", flexDirection: "column", gap: 3,
       }}>
         {/* Name */}

@@ -93,6 +93,80 @@ export default function CardForge() {
   const [cardImages, setCardImages] = useState<Record<string, string>>({});
   const abortRef = useRef(false);
 
+  // ─── MANUAL MODE ───────────────────────────────────────────────────────────
+  const [forgeMode, setForgeMode] = useState<"auto" | "manuel">("auto");
+  const [manualName, setManualName] = useState("");
+  const [manualMana, setManualMana] = useState(3);
+  const [manualAttack, setManualAttack] = useState(3);
+  const [manualDefense, setManualDefense] = useState(3);
+  const [manualPower, setManualPower] = useState(2);
+  const [manualAbility, setManualAbility] = useState("");
+  const [manualFlavorText, setManualFlavorText] = useState("");
+  const [manualIllustrationPrompt, setManualIllustrationPrompt] = useState("");
+  const [manualKeywords, setManualKeywords] = useState<string[]>([]);
+
+  const availableManualKeywords = Object.entries(KEYWORDS)
+    .filter(([id, kw]) => {
+      const tier = RARITY_MAP[rarity]?.tier ?? 0;
+      const forbidden = FACTIONS[faction]?.forbiddenKeywords ?? [];
+      return kw.minTier <= tier && !forbidden.includes(id);
+    });
+
+  const manualBudgetTotal = Math.round(manualMana * 10 * (RARITY_MAP[rarity]?.multiplier ?? 1));
+  const manualBudgetUsed = Math.round(
+    (type === "Unité" ? (manualAttack * 5 + manualDefense * 4) : manualPower * 5)
+    + manualKeywords.reduce((sum, kw) => sum + (KEYWORDS[kw]?.cost || 0), 0)
+  );
+  const budgetRatio = manualBudgetTotal > 0 ? manualBudgetUsed / manualBudgetTotal : 0;
+  const budgetColor = budgetRatio <= 0.85 ? "#27ae60" : budgetRatio <= 1.0 ? "#f39c12" : "#e74c3c";
+
+  // Live preview from manual fields — always computed so editing works in both modes
+  const manualCard: ForgeCard = {
+    id: card?.id || "manual_preview",
+    name: manualName || "Sans nom",
+    faction, type, rarity,
+    mana: manualMana,
+    attack: type === "Unité" ? manualAttack : null,
+    defense: type === "Unité" ? manualDefense : null,
+    power: type !== "Unité" ? manualPower : null,
+    keywords: manualKeywords,
+    ability: manualAbility,
+    flavorText: manualFlavorText,
+    illustrationPrompt: manualIllustrationPrompt,
+    budgetTotal: manualBudgetTotal,
+    budgetUsed: manualBudgetUsed,
+    generatedAt: card?.generatedAt || new Date().toISOString(),
+  };
+
+  const resetManualForm = useCallback(() => {
+    setManualName(""); setManualMana(3); setManualAttack(3); setManualDefense(3);
+    setManualPower(2); setManualAbility(""); setManualFlavorText("");
+    setManualIllustrationPrompt(""); setManualKeywords([]); setCard(null);
+    setEditedPrompt(null); setSaveResult(null);
+    setCardImages(prev => Object.fromEntries(Object.entries(prev).filter(([k]) => k !== "manual_preview")));
+  }, []);
+
+  const createManualCard = useCallback(() => {
+    const newCard: ForgeCard = {
+      id: buildId(),
+      name: manualName || "Sans nom",
+      faction, type, rarity,
+      mana: manualMana,
+      attack: type === "Unité" ? manualAttack : null,
+      defense: type === "Unité" ? manualDefense : null,
+      power: type !== "Unité" ? manualPower : null,
+      keywords: manualKeywords,
+      ability: manualAbility,
+      flavorText: manualFlavorText,
+      illustrationPrompt: manualIllustrationPrompt,
+      budgetTotal: manualBudgetTotal,
+      budgetUsed: manualBudgetUsed,
+      generatedAt: new Date().toISOString(),
+    };
+    setCard(newCard);
+    setHistory(h => [newCard, ...h].slice(0, 30));
+  }, [faction, type, rarity, manualName, manualMana, manualAttack, manualDefense, manualPower, manualKeywords, manualAbility, manualFlavorText, manualIllustrationPrompt, manualBudgetTotal, manualBudgetUsed]);
+
   const forgeCard = useCallback(async (f = faction, t = type, r = rarity) => {
     setLoading(true);
     const stats = generateCardStats(f, t, r);
@@ -108,6 +182,17 @@ export default function CardForge() {
     };
     setCard(newCard);
     setHistory(h => [newCard, ...h].slice(0, 30));
+    setEditedPrompt(null);
+    // Pre-fill manual fields for editing
+    setManualName(newCard.name);
+    setManualMana(newCard.mana);
+    setManualAttack(newCard.attack ?? 3);
+    setManualDefense(newCard.defense ?? 3);
+    setManualPower(newCard.power ?? 2);
+    setManualKeywords(newCard.keywords);
+    setManualAbility(newCard.ability);
+    setManualFlavorText(newCard.flavorText);
+    setManualIllustrationPrompt(newCard.illustrationPrompt);
     setLoading(false);
     return newCard;
   }, [faction, type, rarity]);
@@ -172,7 +257,7 @@ export default function CardForge() {
   const [saveResult, setSaveResult] = useState<{ ok: boolean; msg: string } | null>(null);
   const [updateTargetId, setUpdateTargetId] = useState<number | null>(null);
   const [updateTargetName, setUpdateTargetName] = useState<string | null>(null);
-  const [existingCards, setExistingCards] = useState<{ id: number; name: string; mana_cost: number; keywords: string[]; image_url: string | null }[]>([]);
+  const [existingCards, setExistingCards] = useState<{ id: number; name: string; mana_cost: number; card_type: string; attack: number | null; health: number | null; effect_text: string; keywords: string[]; image_url: string | null; faction: string | null }[]>([]);
   const [showExistingCards, setShowExistingCards] = useState(false);
   const [existingSearch, setExistingSearch] = useState("");
 
@@ -191,10 +276,60 @@ export default function CardForge() {
     }
   }, []);
 
-  const selectUpdateTarget = (dbCard: { id: number; name: string }) => {
+  const GAME_TO_FORGE_TYPE: Record<string, string> = {
+    creature: "Unité", spell: "Sort",
+  };
+  const GAME_TO_FORGE_KEYWORD: Record<string, string> = Object.fromEntries(
+    Object.entries(FORGE_TO_GAME_KEYWORD).map(([k, v]) => [v, k])
+  );
+
+  const selectUpdateTarget = (dbCard: typeof existingCards[number]) => {
     setUpdateTargetId(dbCard.id);
     setUpdateTargetName(dbCard.name);
     setShowExistingCards(false);
+
+    // Pre-fill all form fields from existing card
+    setManualName(dbCard.name);
+    setManualMana(dbCard.mana_cost);
+    setManualAttack(dbCard.attack ?? 3);
+    setManualDefense(dbCard.health ?? 3);
+    setManualPower(1);
+    setManualAbility(dbCard.effect_text || "");
+    setManualFlavorText("");
+    setManualIllustrationPrompt("");
+    setManualKeywords((dbCard.keywords || []).map(k => GAME_TO_FORGE_KEYWORD[k] || k));
+
+    // Set faction/type/rarity from card
+    if (dbCard.faction && FACTIONS[dbCard.faction]) setFaction(dbCard.faction);
+    if (dbCard.card_type) setType(GAME_TO_FORGE_TYPE[dbCard.card_type] || "Unité");
+
+    // Load existing image if available
+    if (dbCard.image_url) {
+      setCardImages(prev => ({ ...prev, [dbCard.id.toString()]: dbCard.image_url! }));
+    }
+
+    // Set a card so buttons appear
+    setCard({
+      id: dbCard.id.toString(),
+      name: dbCard.name,
+      faction: dbCard.faction || faction,
+      type: GAME_TO_FORGE_TYPE[dbCard.card_type] || "Unité",
+      rarity,
+      mana: dbCard.mana_cost,
+      attack: dbCard.attack,
+      defense: dbCard.health,
+      power: null,
+      keywords: (dbCard.keywords || []).map(k => GAME_TO_FORGE_KEYWORD[k] || k),
+      ability: dbCard.effect_text || "",
+      flavorText: "",
+      illustrationPrompt: "",
+      budgetTotal: 0,
+      budgetUsed: 0,
+      generatedAt: new Date().toISOString(),
+    });
+
+    setEditedPrompt(null);
+    setSaveResult(null);
   };
 
   const clearUpdateTarget = () => {
@@ -218,18 +353,28 @@ export default function CardForge() {
       let imageMimeType: string | null = null;
       const blobUrl = cardImages[forgeCard.id];
       if (blobUrl) {
-        const res = await fetch(blobUrl);
-        const blob = await res.blob();
-        imageMimeType = blob.type;
+        // Compress image via canvas before sending
         imageBase64 = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => {
-            const result = reader.result as string;
-            resolve(result.split(',')[1]);
+          const img = new window.Image();
+          img.onload = () => {
+            const canvas = document.createElement("canvas");
+            const maxSize = 800;
+            let w = img.width, h = img.height;
+            if (w > maxSize || h > maxSize) {
+              const ratio = Math.min(maxSize / w, maxSize / h);
+              w = Math.round(w * ratio);
+              h = Math.round(h * ratio);
+            }
+            canvas.width = w;
+            canvas.height = h;
+            canvas.getContext("2d")?.drawImage(img, 0, 0, w, h);
+            const dataUrl = canvas.toDataURL("image/webp", 0.85);
+            resolve(dataUrl.split(",")[1]);
           };
-          reader.onerror = reject;
-          reader.readAsDataURL(blob);
+          img.onerror = reject;
+          img.src = blobUrl;
         });
+        imageMimeType = "image/webp";
       }
 
       const response = await fetch('/api/cards/save', {
@@ -267,6 +412,7 @@ export default function CardForge() {
   }, [cardImages]);
 
   const [generatingImage, setGeneratingImage] = useState(false);
+  const [editedPrompt, setEditedPrompt] = useState<string | null>(null);
 
   const generateIllustration = useCallback(async (forgeCard: ForgeCard) => {
     if (!forgeCard.illustrationPrompt) return;
@@ -388,40 +534,82 @@ export default function CardForge() {
                 ))}
               </Sec>
 
-              <button onClick={() => forgeCard()} disabled={loading} style={{
-                padding: "11px", borderRadius: 8, cursor: loading ? "not-allowed" : "pointer",
-                background: loading ? "#e0e0e0" : `linear-gradient(135deg,${fac.color},${fac.accent}dd)`,
-                border: "none",
-                color: loading ? "#999" : "#fff",
-                fontFamily: "'Cinzel',serif", fontSize: 11, fontWeight: 700, letterSpacing: 2,
-                boxShadow: loading ? "none" : `0 2px 12px ${fac.color}44`,
-                animation: loading ? "pulse 1.5s infinite" : "none",
-                transition: "all 0.3s",
-              }}>
-                {loading ? "FORGE EN COURS…" : `${fac.emoji}  FORGER`}
-              </button>
+              <Sec title="Mode">
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4 }}>
+                  {(["auto", "manuel"] as const).map(m => (
+                    <button key={m} onClick={() => setForgeMode(m)} style={{
+                      padding: "5px 4px", borderRadius: 6, cursor: "pointer",
+                      background: forgeMode === m ? "#333" : "#fff",
+                      border: `1px solid ${forgeMode === m ? "#333" : "#e0e0e0"}`,
+                      color: forgeMode === m ? "#fff" : "#888",
+                      fontFamily: "'Cinzel',serif", fontSize: 9, transition: "all 0.15s",
+                      textTransform: "capitalize",
+                    }}>{m === "auto" ? "⚙ Auto" : "✏ Manuel"}</button>
+                  ))}
+                </div>
+              </Sec>
+
+              {forgeMode === "auto" && (
+                <button onClick={() => forgeCard()} disabled={loading} style={{
+                  padding: "11px", borderRadius: 8, cursor: loading ? "not-allowed" : "pointer",
+                  background: loading ? "#e0e0e0" : `linear-gradient(135deg,${fac.color},${fac.accent}dd)`,
+                  border: "none",
+                  color: loading ? "#999" : "#fff",
+                  fontFamily: "'Cinzel',serif", fontSize: 11, fontWeight: 700, letterSpacing: 2,
+                  boxShadow: loading ? "none" : `0 2px 12px ${fac.color}44`,
+                  animation: loading ? "pulse 1.5s infinite" : "none",
+                  transition: "all 0.3s",
+                }}>
+                  {loading ? "FORGE EN COURS…" : `${fac.emoji}  FORGER`}
+                </button>
+              )}
+
+              {forgeMode === "manuel" && (
+                <>
+                  <button onClick={createManualCard} style={{
+                    padding: "11px", borderRadius: 8, cursor: "pointer",
+                    background: `linear-gradient(135deg,${fac.color},${fac.accent}dd)`,
+                    border: "none", color: "#fff",
+                    fontFamily: "'Cinzel',serif", fontSize: 11, fontWeight: 700, letterSpacing: 2,
+                    boxShadow: `0 2px 12px ${fac.color}44`,
+                    transition: "all 0.3s",
+                  }}>
+                    {"✏ CRÉER"}
+                  </button>
+                  <button onClick={resetManualForm} style={{
+                    padding: "7px", borderRadius: 6, cursor: "pointer",
+                    background: "#fff", border: "1px solid #e0e0e0",
+                    color: "#999", fontFamily: "'Cinzel',serif", fontSize: 9, fontWeight: 600,
+                    transition: "all 0.2s",
+                  }}>
+                    {"🗑 RÉINITIALISER"}
+                  </button>
+                </>
+              )}
             </div>
 
             {/* Preview */}
             <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 14, padding: 28, background: "#f5f5f5" }}>
               <div style={{ animation: card ? "fadeIn 0.35s ease" : "none" }}>
                 <CardVisual
-                  card={card}
-                  loading={loading}
-                  imageUrl={card ? cardImages[card.id] || null : null}
-                  onImageChange={(url) => { if (card) setCardImages(prev => ({ ...prev, [card.id]: url })); }}
+                  card={(card || forgeMode === "manuel") ? manualCard : null}
+                  loading={forgeMode === "auto" && loading}
+                  imageUrl={cardImages[manualCard.id] || null}
+                  onImageChange={(url) => {
+                    setCardImages(prev => ({ ...prev, [manualCard.id]: url }));
+                  }}
                 />
               </div>
-              {card && !loading && (
+              {(card || (forgeMode === "manuel" && manualName)) && !loading && (
                 <div style={{ display: "flex", gap: 7 }}>
-                  <Btn onClick={() => forgeCard()} label="🎲 Re-roll" color="#74b9ff" />
-                  <Btn onClick={() => exportJSON([card])} label="📤 JSON" color="#55efc4" />
-                  <Btn onClick={() => saveToGame(card)} label={saving ? "⏳ …" : "💾 Nouvelle carte"} color="#ffd54f" />
+                  {forgeMode === "auto" && <Btn onClick={() => forgeCard()} label="🎲 Re-roll" color="#74b9ff" />}
+                  <Btn onClick={() => exportJSON([manualCard])} label="📤 JSON" color="#55efc4" />
+                  <Btn onClick={() => { if (!card) createManualCard(); saveToGame(manualCard); }} label={saving ? "⏳ …" : "💾 Nouvelle carte"} color="#ffd54f" />
                   <Btn onClick={loadExistingCards} label="📝 Mettre à jour" color="#a29bfe" />
                 </div>
               )}
               {/* Update target indicator */}
-              {updateTargetId && card && !loading && (
+              {updateTargetId && (card || (forgeMode === "manuel" && manualName)) && !loading && (
                 <div style={{
                   display: "flex", alignItems: "center", gap: 8, padding: "8px 14px",
                   borderRadius: 8, background: "#f0eeff", border: "1px solid #d0c8ff",
@@ -430,7 +618,7 @@ export default function CardForge() {
                   <span style={{ fontSize: 10, color: "#6c5ce7", fontFamily: "'Crimson Text',serif", flex: 1 }}>
                     Cible : <strong>{updateTargetName}</strong> (#{updateTargetId})
                   </span>
-                  <Btn onClick={() => saveToGame(card, updateTargetId)} label={saving ? "⏳ …" : "✅ Confirmer"} color="#27ae60" />
+                  <Btn onClick={() => saveToGame(manualCard, updateTargetId)} label={saving ? "⏳ …" : "✅ Confirmer"} color="#27ae60" />
                   <Btn onClick={clearUpdateTarget} label="✕" color="#e74c3c" />
                 </div>
               )}
@@ -463,10 +651,13 @@ export default function CardForge() {
                       cursor: "pointer", transition: "all 0.15s",
                       display: "flex", justifyContent: "space-between", alignItems: "center",
                     }}>
-                      <div>
+                      <div style={{ flex: 1 }}>
                         <div style={{ fontSize: 10, color: "#333", fontWeight: 600 }}>{c.name}</div>
                         <div style={{ fontSize: 8, color: "#999" }}>
-                          💧{c.mana_cost} · {c.keywords?.length || 0} keywords
+                          💧{c.mana_cost}
+                          {c.attack != null && <> · ⚔{c.attack} ❤{c.health}</>}
+                          {c.faction && <> · {c.faction}</>}
+                          {c.keywords?.length > 0 && <> · {c.keywords.length} kw</>}
                         </div>
                       </div>
                       <span style={{ fontSize: 8, color: "#bbb" }}>#{c.id}</span>
@@ -488,54 +679,262 @@ export default function CardForge() {
                   {saveResult.msg}
                 </div>
               )}
-              {card?.illustrationPrompt && (
-                <div style={{ maxWidth: 380, padding: "10px 14px", borderRadius: 8, background: "#fff", border: "1px solid #e0e0e0", fontFamily: "'Crimson Text',serif", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
-                  <div style={{ fontSize: 8, color: "#aaa", letterSpacing: 1.5, marginBottom: 4, fontFamily: "'Cinzel',serif" }}>ILLUSTRATION PROMPT</div>
-                  <div style={{ fontSize: 11, color: "#666", lineHeight: 1.5 }}>{card.illustrationPrompt}</div>
-                  <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
-                    <button onClick={() => navigator.clipboard.writeText(card.illustrationPrompt)} style={{
-                      fontSize: 9, background: "none", border: "none",
-                      color: "#27ae60", cursor: "pointer", fontFamily: "'Cinzel',serif",
-                    }}>[copier]</button>
-                    <button
-                      onClick={() => generateIllustration(card)}
-                      disabled={generatingImage}
-                      style={{
-                        fontSize: 9, background: generatingImage ? "#f0f0f0" : "#f0eeff",
-                        border: `1px solid ${generatingImage ? "#ddd" : "#d0c8ff"}`,
-                        borderRadius: 6, padding: "3px 10px",
-                        color: generatingImage ? "#999" : "#6c5ce7", cursor: generatingImage ? "not-allowed" : "pointer",
-                        fontFamily: "'Cinzel',serif",
-                        animation: generatingImage ? "pulse 1.5s infinite" : "none",
-                      }}
-                    >{generatingImage ? "⏳ Génération…" : "🎨 Illustrer"}</button>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* History */}
-            <div style={{ width: 200, padding: "14px 10px", borderLeft: "1px solid #e8e8e8", background: "#fafafa", overflowY: "auto" }}>
-              <div style={{ fontSize: 8, color: "#aaa", letterSpacing: 2, marginBottom: 10 }}>HISTORIQUE</div>
-              {history.length === 0 && <div style={{ fontSize: 10, color: "#ccc", textAlign: "center", marginTop: 30 }}>Aucune carte</div>}
-              {history.map(c => {
-                const f = FACTIONS[c.faction] || FACTIONS.Humains;
-                const r = RARITY_MAP[c.rarity];
+              {(card?.illustrationPrompt || manualCard.illustrationPrompt) && (() => {
+                const basePrompt = card?.illustrationPrompt || manualCard.illustrationPrompt || "";
+                const currentPrompt = editedPrompt ?? basePrompt;
                 return (
-                  <div key={c.id} className="hist-row" onClick={() => setCard(c)} style={{
-                    padding: "7px 9px", borderRadius: 6, marginBottom: 4,
-                    background: "#fff", border: `1px solid #e8e8e8`,
-                    borderLeft: `3px solid ${r.color}`,
-                    cursor: "pointer", transition: "all 0.15s",
-                  }}>
-                    <div style={{ fontSize: 10, color: f.color, fontWeight: 700, marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.name}</div>
-                    <div style={{ fontSize: 8, color: "#999", display: "flex", justifyContent: "space-between" }}>
-                      <span>{c.faction}</span>
-                      <span style={{ color: r.color }}>{r.code} · {c.mana}💧</span>
+                  <div style={{ maxWidth: 380, padding: "10px 14px", borderRadius: 8, background: "#fff", border: "1px solid #e0e0e0", fontFamily: "'Crimson Text',serif", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+                    <div style={{ fontSize: 8, color: "#aaa", letterSpacing: 1.5, marginBottom: 4, fontFamily: "'Cinzel',serif" }}>ILLUSTRATION PROMPT</div>
+                    <textarea
+                      value={currentPrompt}
+                      onChange={e => setEditedPrompt(e.target.value)}
+                      rows={4}
+                      style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #e0e0e0", background: "#f8f8f8", color: "#555", fontFamily: "'Crimson Text',serif", fontSize: 11, lineHeight: 1.5, resize: "vertical" }}
+                    />
+                    <div style={{ display: "flex", gap: 10, marginTop: 8, alignItems: "center" }}>
+                      <button onClick={() => navigator.clipboard.writeText(currentPrompt)} style={{
+                        fontSize: 9, background: "none", border: "none",
+                        color: "#27ae60", cursor: "pointer", fontFamily: "'Cinzel',serif",
+                      }}>[copier]</button>
+                      {editedPrompt !== null && editedPrompt !== basePrompt && (
+                        <button onClick={() => setEditedPrompt(null)} style={{
+                          fontSize: 9, background: "none", border: "none",
+                          color: "#e74c3c", cursor: "pointer", fontFamily: "'Cinzel',serif",
+                        }}>[reset]</button>
+                      )}
+                      <button
+                        onClick={() => {
+                          const c = card || manualCard;
+                          if (c) generateIllustration({ ...c, illustrationPrompt: currentPrompt });
+                        }}
+                        disabled={generatingImage}
+                        style={{
+                          fontSize: 9, background: generatingImage ? "#f0f0f0" : "#f0eeff",
+                          border: `1px solid ${generatingImage ? "#ddd" : "#d0c8ff"}`,
+                          borderRadius: 6, padding: "3px 10px",
+                          color: generatingImage ? "#999" : "#6c5ce7", cursor: generatingImage ? "not-allowed" : "pointer",
+                          fontFamily: "'Cinzel',serif",
+                          animation: generatingImage ? "pulse 1.5s infinite" : "none",
+                        }}
+                      >{generatingImage ? "⏳ Génération…" : "🎨 Illustrer"}</button>
                     </div>
                   </div>
                 );
-              })}
+              })()}
+            </div>
+
+            {/* Right panel: History or Edit Form */}
+            <div style={{ width: 240, padding: "14px 10px", borderLeft: "1px solid #e8e8e8", background: "#fafafa", overflowY: "auto" }}>
+
+              {forgeMode === "auto" && !card && (
+                <>
+                  <div style={{ fontSize: 8, color: "#aaa", letterSpacing: 2, marginBottom: 10 }}>HISTORIQUE</div>
+                  {history.length === 0 && <div style={{ fontSize: 10, color: "#ccc", textAlign: "center", marginTop: 30 }}>Aucune carte</div>}
+                  {history.map(c => {
+                    const f = FACTIONS[c.faction] || FACTIONS.Humains;
+                    const r = RARITY_MAP[c.rarity];
+                    return (
+                      <div key={c.id} className="hist-row" onClick={() => setCard(c)} style={{
+                        padding: "7px 9px", borderRadius: 6, marginBottom: 4,
+                        background: "#fff", border: `1px solid #e8e8e8`,
+                        borderLeft: `3px solid ${r.color}`,
+                        cursor: "pointer", transition: "all 0.15s",
+                      }}>
+                        <div style={{ fontSize: 10, color: f.color, fontWeight: 700, marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.name}</div>
+                        <div style={{ fontSize: 8, color: "#999", display: "flex", justifyContent: "space-between" }}>
+                          <span>{c.faction}</span>
+                          <span style={{ color: r.color }}>{r.code} · {c.mana}💧</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </>
+              )}
+
+              {(forgeMode === "manuel" || card) && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div style={{ fontSize: 8, color: "#aaa", letterSpacing: 2 }}>{"ÉDITION"}</div>
+                    <button onClick={loadExistingCards} style={{
+                      fontSize: 8, padding: "2px 8px", borderRadius: 4, cursor: "pointer",
+                      background: "#f0eeff", border: "1px solid #d0c8ff",
+                      color: "#6c5ce7", fontFamily: "'Cinzel',serif",
+                    }}>{"📂 Charger carte"}</button>
+                  </div>
+
+                  {/* Existing cards picker (inline in right panel) */}
+                  {showExistingCards && (
+                    <div style={{
+                      padding: "8px", borderRadius: 6, background: "#fff",
+                      border: "1px solid #e0e0e0", boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+                    }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                        <span style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>CARTES EXISTANTES</span>
+                        <button onClick={() => setShowExistingCards(false)} style={{
+                          fontSize: 8, background: "none", border: "none", color: "#e74c3c", cursor: "pointer",
+                        }}>{"✕"}</button>
+                      </div>
+                      <input
+                        type="text" placeholder="Rechercher…" value={existingSearch}
+                        onChange={e => setExistingSearch(e.target.value)}
+                        style={{
+                          width: "100%", padding: "5px 8px", marginBottom: 6, borderRadius: 5,
+                          background: "#f8f8f8", border: "1px solid #e0e0e0", color: "#333",
+                          fontFamily: "'Crimson Text',serif", fontSize: 11,
+                        }}
+                      />
+                      <div style={{ maxHeight: 200, overflowY: "auto" }}>
+                        {existingCards
+                          .filter(c => c.name.toLowerCase().includes(existingSearch.toLowerCase()))
+                          .map(c => (
+                          <div key={c.id} onClick={() => selectUpdateTarget(c)} style={{
+                            padding: "5px 8px", borderRadius: 5, marginBottom: 2,
+                            background: "#f8f8f8", border: "1px solid #eee",
+                            cursor: "pointer", transition: "all 0.15s",
+                          }}>
+                            <div style={{ fontSize: 10, color: "#333", fontWeight: 600 }}>{c.name}</div>
+                            <div style={{ fontSize: 8, color: "#999" }}>
+                              {"💧"}{c.mana_cost}
+                              {c.attack != null && <>{" · ⚔"}{c.attack}{" ❤"}{c.health}</>}
+                              {c.faction && <>{" · "}{c.faction}</>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Nom */}
+                  <div>
+                    <label style={{ fontSize: 9, color: "#666", letterSpacing: 1 }}>NOM</label>
+                    <input type="text" value={manualName} onChange={e => setManualName(e.target.value)}
+                      placeholder="Nom de la carte"
+                      style={{ width: "100%", padding: "6px 10px", borderRadius: 6, border: "1px solid #e0e0e0", background: "#fff", color: "#333", fontFamily: "'Crimson Text',serif", fontSize: 13, marginTop: 3 }}
+                    />
+                  </div>
+
+                  {/* Mana + Stats */}
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6 }}>
+                    <div>
+                      <label style={{ fontSize: 8, color: "#4a90d9", letterSpacing: 1 }}>MANA</label>
+                      <input type="number" min={1} max={10} value={manualMana} onChange={e => setManualMana(Math.max(1, Math.min(10, parseInt(e.target.value) || 1)))}
+                        style={{ width: "100%", padding: "5px 4px", borderRadius: 6, border: "1px solid #4a90d944", background: "#fff", color: "#4a90d9", fontFamily: "'Cinzel',serif", fontSize: 14, textAlign: "center", marginTop: 3 }}
+                      />
+                    </div>
+                    {type === "Unité" ? (
+                      <>
+                        <div>
+                          <label style={{ fontSize: 8, color: "#f1c40f", letterSpacing: 1 }}>ATK</label>
+                          <input type="number" min={0} max={30} value={manualAttack} onChange={e => setManualAttack(Math.max(0, parseInt(e.target.value) || 0))}
+                            style={{ width: "100%", padding: "5px 4px", borderRadius: 6, border: "1px solid #f1c40f44", background: "#fff", color: "#f1c40f", fontFamily: "'Cinzel',serif", fontSize: 14, textAlign: "center", marginTop: 3 }}
+                          />
+                        </div>
+                        <div>
+                          <label style={{ fontSize: 8, color: "#e74c3c", letterSpacing: 1 }}>DEF</label>
+                          <input type="number" min={1} max={30} value={manualDefense} onChange={e => setManualDefense(Math.max(1, parseInt(e.target.value) || 1))}
+                            style={{ width: "100%", padding: "5px 4px", borderRadius: 6, border: "1px solid #e74c3c44", background: "#fff", color: "#e74c3c", fontFamily: "'Cinzel',serif", fontSize: 14, textAlign: "center", marginTop: 3 }}
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <div style={{ gridColumn: "span 2" }}>
+                        <label style={{ fontSize: 8, color: "#9b59b6", letterSpacing: 1 }}>PUISSANCE</label>
+                        <input type="number" min={1} max={20} value={manualPower} onChange={e => setManualPower(Math.max(1, parseInt(e.target.value) || 1))}
+                          style={{ width: "100%", padding: "5px 4px", borderRadius: 6, border: "1px solid #9b59b644", background: "#fff", color: "#9b59b6", fontFamily: "'Cinzel',serif", fontSize: 14, textAlign: "center", marginTop: 3 }}
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Budget */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 9 }}>
+                    <div style={{ flex: 1, height: 4, background: "#e8e8e8", borderRadius: 2, overflow: "hidden" }}>
+                      <div style={{ height: "100%", borderRadius: 2, background: budgetColor, width: `${Math.min(120, budgetRatio * 100)}%`, transition: "width 0.2s" }} />
+                    </div>
+                    <span style={{ color: budgetColor, fontWeight: 700, fontFamily: "'Cinzel',serif" }}>{manualBudgetUsed}/{manualBudgetTotal}</span>
+                  </div>
+
+                  {/* Keywords */}
+                  <div>
+                    <label style={{ fontSize: 9, color: "#666", letterSpacing: 1 }}>KEYWORDS ({manualKeywords.length})</label>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginTop: 4 }}>
+                      {availableManualKeywords.map(([id]) => {
+                        const selected = manualKeywords.includes(id);
+                        return (
+                          <button key={id} onClick={() => setManualKeywords(prev => selected ? prev.filter(k => k !== id) : [...prev, id])}
+                            style={{
+                              padding: "3px 7px", borderRadius: 5, cursor: "pointer",
+                              background: selected ? `${fac.color}22` : "#fff",
+                              border: `1px solid ${selected ? fac.color : "#e0e0e0"}`,
+                              color: selected ? fac.color : "#999",
+                              fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: selected ? 700 : 400,
+                              transition: "all 0.15s",
+                            }}>{id}</button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Ability */}
+                  <div>
+                    <label style={{ fontSize: 9, color: "#666", letterSpacing: 1 }}>CAPACITÉ</label>
+                    <textarea value={manualAbility} onChange={e => setManualAbility(e.target.value)}
+                      placeholder="Texte de capacité…"
+                      rows={3}
+                      style={{ width: "100%", padding: "6px 10px", borderRadius: 6, border: "1px solid #e0e0e0", background: "#fff", color: "#333", fontFamily: "'Crimson Text',serif", fontSize: 12, marginTop: 3, resize: "vertical" }}
+                    />
+                  </div>
+
+                  {/* Flavor Text */}
+                  <div>
+                    <label style={{ fontSize: 9, color: "#666", letterSpacing: 1 }}>TEXTE D&apos;AMBIANCE</label>
+                    <textarea value={manualFlavorText} onChange={e => setManualFlavorText(e.target.value)}
+                      placeholder="Citation narrative…"
+                      rows={2}
+                      style={{ width: "100%", padding: "6px 10px", borderRadius: 6, border: "1px solid #e0e0e0", background: "#fff", color: "#888", fontFamily: "'Crimson Text',serif", fontSize: 11, fontStyle: "italic", marginTop: 3, resize: "vertical" }}
+                    />
+                  </div>
+
+                  {/* Illustration Prompt */}
+                  <div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <label style={{ fontSize: 9, color: "#666", letterSpacing: 1 }}>PROMPT ILLUSTRATION</label>
+                      <button
+                        onClick={async () => {
+                          try {
+                            const res = await fetch('/api/cards/generate-text', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({
+                                factionId: faction, type, rarityId: rarity,
+                                stats: { mana: manualMana, attack: manualAttack, defense: manualDefense, power: manualPower, keywords: manualKeywords },
+                              }),
+                            });
+                            if (res.ok) {
+                              const data = await res.json();
+                              if (data.illustrationPrompt) setManualIllustrationPrompt(data.illustrationPrompt);
+                              if (!manualAbility && data.ability) setManualAbility(data.ability);
+                              if (!manualFlavorText && data.flavorText) setManualFlavorText(data.flavorText);
+                              if (!manualName && data.name) setManualName(data.name);
+                            }
+                          } catch { /* silently fail */ }
+                        }}
+                        style={{
+                          fontSize: 8, padding: "2px 8px", borderRadius: 4, cursor: "pointer",
+                          background: "#f0eeff", border: "1px solid #d0c8ff",
+                          color: "#6c5ce7", fontFamily: "'Cinzel',serif",
+                        }}
+                      >{"🤖 Générer par IA"}</button>
+                    </div>
+                    <textarea value={manualIllustrationPrompt} onChange={e => setManualIllustrationPrompt(e.target.value)}
+                      placeholder="English prompt for image generation…"
+                      rows={3}
+                      style={{ width: "100%", padding: "6px 10px", borderRadius: 6, border: "1px solid #e0e0e0", background: "#fff", color: "#666", fontFamily: "'Crimson Text',serif", fontSize: 11, marginTop: 3, resize: "vertical" }}
+                    />
+                  </div>
+                </div>
+              )}
+
             </div>
           </div>
         )}

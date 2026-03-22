@@ -80,12 +80,6 @@ export default function GameCard({
         )}
       </div>
 
-      {/* ── Vignette ── */}
-      <div style={{
-        position: "absolute", inset: 0,
-        background: "radial-gradient(ellipse at center, transparent 60%, #0d0d1a66 100%)",
-        pointerEvents: "none",
-      }} />
 
       {/* ── Mana orb ── */}
       <div style={{
@@ -113,7 +107,7 @@ export default function GameCard({
       <div style={{
         position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2,
         padding: `${6 * s}px ${8 * s}px`,
-        background: "linear-gradient(0deg, #0d0d1aee 0%, #0d0d1acc 60%, transparent 100%)",
+        background: "linear-gradient(0deg, #0d0d1add 0%, #0d0d1a88 40%, transparent 65%)",
         display: "flex", flexDirection: "column", gap: 4 * s,
       }}>
         {/* Card name */}

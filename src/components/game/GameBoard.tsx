@@ -434,7 +434,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
 
       {/* ============= BATTLEFIELD WRAPPER ============= */}
       <div
-        className="flex-1 flex flex-col overflow-hidden relative"
+        className="flex-1 flex flex-col overflow-visible relative"
         style={{
           minHeight: 0,
           backgroundImage: "url('/images/battlefield.jpg')",
@@ -449,7 +449,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
 
       {/* ============= OPPONENT BOARD ============= */}
       <div
-        className="flex justify-center items-center gap-2 px-8 overflow-hidden relative z-10"
+        className="flex justify-center items-center gap-2 px-8 overflow-visible relative z-10"
         style={{ flex: '1 1 0%' }}
       >
         {opponent.board.length === 0 ? (
@@ -495,7 +495,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         className={`
-          flex items-center justify-center px-8 transition-all overflow-hidden relative z-10
+          flex items-center justify-center px-8 transition-all overflow-visible relative z-10
           ${
             isDragOver
               ? "bg-success/10 border-2 border-dashed border-success/50"
@@ -668,7 +668,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
         </div>
 
         {/* My hand */}
-        <div className="flex justify-center gap-1 px-6 pb-4 pt-1 overflow-hidden">
+        <div className="flex justify-center gap-1 px-6 pb-4 pt-1 overflow-visible relative z-30">
           {myPlayer.hand.map((cardInstance) => {
             const playable =
               myTurn && canPlayCard(gameState, cardInstance.instanceId);

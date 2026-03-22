@@ -24,7 +24,9 @@ export default function HandCard({
   const isCreature = card.card_type === "creature";
   const [isDragging, setIsDragging] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+  const detailTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   function handleDragStart(e: DragEvent<HTMLDivElement>) {
     if (!canPlay) {
@@ -42,7 +44,8 @@ export default function HandCard({
     setIsDragging(false);
   }
 
-  const showOverlay = !isDragging && isHovered && !isSelected;
+  const isZoomed = !isDragging && isHovered && !isSelected;
+  const showOverlay = isZoomed && showDetails;
   const W = 120;
   const H = 168;
   const s = 0.55;
@@ -61,8 +64,20 @@ export default function HandCard({
         draggable={canPlay}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        onMouseEnter={() => {
+          setIsHovered(true);
+          detailTimer.current = setTimeout(() => setShowDetails(true), 600);
+        }}
+        onMouseLeave={() => {
+          setIsHovered(false);
+          setShowDetails(false);
+          if (detailTimer.current) clearTimeout(detailTimer.current);
+        }}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          setShowDetails(prev => !prev);
+          if (detailTimer.current) clearTimeout(detailTimer.current);
+        }}
         onClick={canPlay ? onClick : undefined}
         style={{
           width: W, height: H, borderRadius: 8, position: "relative",
@@ -75,8 +90,8 @@ export default function HandCard({
           cursor: isDragging ? "grabbing" : canPlay ? "grab" : "not-allowed",
           opacity: isDragging ? 0.5 : canPlay ? 1 : 0.5,
           transition: "all 0.2s ease",
-          transform: showOverlay ? "translateY(-16px) scale(1.08)" : "none",
-          zIndex: showOverlay ? 20 : 1,
+          transform: isZoomed ? "translateY(-20px) scale(1.5)" : "none",
+          zIndex: isZoomed ? 50 : 1,
         }}
       >
         {/* Full-bleed art */}
@@ -87,7 +102,8 @@ export default function HandCard({
               alt={card.name}
               fill
               className="object-cover"
-              sizes={`${W}px`}
+              sizes="300px"
+              quality={90}
             />
           ) : (
             <div style={{
@@ -102,12 +118,6 @@ export default function HandCard({
           )}
         </div>
 
-        {/* Vignette (légère) */}
-        <div style={{
-          position: "absolute", inset: 0,
-          background: "radial-gradient(ellipse at center, transparent 60%, #0d0d1a66 100%)",
-          pointerEvents: "none",
-        }} />
 
         {/* Mana orb */}
         <div style={{
@@ -124,7 +134,7 @@ export default function HandCard({
         <div style={{
           position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2,
           padding: `${5 * s}px 5px 4px`,
-          background: "linear-gradient(0deg, #0d0d1aee 0%, #0d0d1acc 60%, transparent 100%)",
+          background: "linear-gradient(0deg, #0d0d1add 0%, #0d0d1a88 40%, transparent 65%)",
           display: "flex", flexDirection: "column", gap: 2,
         }}>
           {/* Name */}
