@@ -101,3 +101,30 @@ export async function POST(request: Request) {
     );
   }
 }
+
+export async function DELETE(request: Request) {
+  const user = await getAuthUser();
+  if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+
+  const supabaseAdmin = getAdminClient();
+
+  try {
+    const { id } = await request.json();
+    if (!id) return NextResponse.json({ error: 'ID requis' }, { status: 400 });
+
+    // Delete from deck_cards first (foreign key)
+    await supabaseAdmin.from('deck_cards').delete().eq('card_id', id);
+
+    // Delete the card
+    const { error } = await supabaseAdmin.from('cards').delete().eq('id', id);
+    if (error) throw new Error(error.message);
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error('[card-delete] error:', err);
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : 'Erreur inconnue' },
+      { status: 500 }
+    );
+  }
+}

@@ -337,6 +337,26 @@ export default function CardForge() {
     setUpdateTargetName(null);
   };
 
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
+
+  const deleteCard = useCallback(async (id: number) => {
+    try {
+      const res = await fetch('/api/cards/save', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setExistingCards(prev => prev.filter(c => c.id !== id));
+      setDeleteConfirmId(null);
+      if (updateTargetId === id) clearUpdateTarget();
+      setSaveResult({ ok: true, msg: "Carte supprimée" });
+    } catch (err) {
+      setSaveResult({ ok: false, msg: err instanceof Error ? err.message : "Erreur suppression" });
+    }
+  }, [updateTargetId]);
+
   const saveToGame = useCallback(async (forgeCard: ForgeCard, updateId?: number | null) => {
     setSaving(true);
     setSaveResult(null);
@@ -647,22 +667,36 @@ export default function CardForge() {
                   {existingCards
                     .filter(c => c.name.toLowerCase().includes(existingSearch.toLowerCase()))
                     .map(c => (
-                    <div key={c.id} onClick={() => selectUpdateTarget(c)} style={{
+                    <div key={c.id} style={{
                       padding: "6px 10px", borderRadius: 6, marginBottom: 3,
-                      background: "#f8f8f8", border: "1px solid #e8e8e8",
-                      cursor: "pointer", transition: "all 0.15s",
+                      background: deleteConfirmId === c.id ? "#fde8e8" : "#f8f8f8",
+                      border: `1px solid ${deleteConfirmId === c.id ? "#f5a3a3" : "#e8e8e8"}`,
+                      transition: "all 0.15s",
                       display: "flex", justifyContent: "space-between", alignItems: "center",
                     }}>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 10, color: "#333", fontWeight: 600 }}>{c.name}</div>
-                        <div style={{ fontSize: 8, color: "#999" }}>
-                          💧{c.mana_cost}
-                          {c.attack != null && <> · ⚔{c.attack} ❤{c.health}</>}
-                          {c.faction && <> · {c.faction}</>}
-                          {c.keywords?.length > 0 && <> · {c.keywords.length} kw</>}
+                      {deleteConfirmId === c.id ? (
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, width: "100%" }}>
+                          <span style={{ fontSize: 9, color: "#e74c3c", flex: 1 }}>{"Supprimer définitivement ?"}</span>
+                          <button onClick={() => deleteCard(c.id)} style={{ fontSize: 8, padding: "2px 8px", borderRadius: 4, background: "#e74c3c", border: "none", color: "#fff", cursor: "pointer", fontFamily: "'Cinzel',serif" }}>{"Oui"}</button>
+                          <button onClick={() => setDeleteConfirmId(null)} style={{ fontSize: 8, padding: "2px 8px", borderRadius: 4, background: "#fff", border: "1px solid #ddd", color: "#888", cursor: "pointer", fontFamily: "'Cinzel',serif" }}>{"Non"}</button>
                         </div>
-                      </div>
-                      <span style={{ fontSize: 8, color: "#bbb" }}>#{c.id}</span>
+                      ) : (
+                        <>
+                          <div onClick={() => selectUpdateTarget(c)} style={{ flex: 1, cursor: "pointer" }}>
+                            <div style={{ fontSize: 10, color: "#333", fontWeight: 600 }}>{c.name}</div>
+                            <div style={{ fontSize: 8, color: "#999" }}>
+                              {"💧"}{c.mana_cost}
+                              {c.attack != null && <>{" · ⚔"}{c.attack}{" ❤"}{c.health}</>}
+                              {c.faction && <>{" · "}{c.faction}</>}
+                              {c.keywords?.length > 0 && <>{" · "}{c.keywords.length}{" kw"}</>}
+                            </div>
+                          </div>
+                          <button onClick={(e) => { e.stopPropagation(); setDeleteConfirmId(c.id); }} style={{
+                            fontSize: 10, background: "none", border: "none", color: "#ccc", cursor: "pointer",
+                            padding: "2px 4px", transition: "color 0.15s",
+                          }} title="Supprimer">{"🗑"}</button>
+                        </>
+                      )}
                     </div>
                   ))}
                   {existingCards.length === 0 && (
@@ -789,17 +823,34 @@ export default function CardForge() {
                         {existingCards
                           .filter(c => c.name.toLowerCase().includes(existingSearch.toLowerCase()))
                           .map(c => (
-                          <div key={c.id} onClick={() => selectUpdateTarget(c)} style={{
+                          <div key={c.id} style={{
                             padding: "5px 8px", borderRadius: 5, marginBottom: 2,
-                            background: "#f8f8f8", border: "1px solid #eee",
-                            cursor: "pointer", transition: "all 0.15s",
+                            background: deleteConfirmId === c.id ? "#fde8e8" : "#f8f8f8",
+                            border: `1px solid ${deleteConfirmId === c.id ? "#f5a3a3" : "#eee"}`,
+                            transition: "all 0.15s",
+                            display: "flex", alignItems: "center",
                           }}>
-                            <div style={{ fontSize: 10, color: "#333", fontWeight: 600 }}>{c.name}</div>
-                            <div style={{ fontSize: 8, color: "#999" }}>
-                              {"💧"}{c.mana_cost}
-                              {c.attack != null && <>{" · ⚔"}{c.attack}{" ❤"}{c.health}</>}
-                              {c.faction && <>{" · "}{c.faction}</>}
-                            </div>
+                            {deleteConfirmId === c.id ? (
+                              <div style={{ display: "flex", alignItems: "center", gap: 6, width: "100%" }}>
+                                <span style={{ fontSize: 8, color: "#e74c3c", flex: 1 }}>{"Supprimer ?"}</span>
+                                <button onClick={() => deleteCard(c.id)} style={{ fontSize: 8, padding: "2px 6px", borderRadius: 3, background: "#e74c3c", border: "none", color: "#fff", cursor: "pointer" }}>{"Oui"}</button>
+                                <button onClick={() => setDeleteConfirmId(null)} style={{ fontSize: 8, padding: "2px 6px", borderRadius: 3, background: "#fff", border: "1px solid #ddd", color: "#888", cursor: "pointer" }}>{"Non"}</button>
+                              </div>
+                            ) : (
+                              <>
+                                <div onClick={() => selectUpdateTarget(c)} style={{ flex: 1, cursor: "pointer" }}>
+                                  <div style={{ fontSize: 10, color: "#333", fontWeight: 600 }}>{c.name}</div>
+                                  <div style={{ fontSize: 8, color: "#999" }}>
+                                    {"💧"}{c.mana_cost}
+                                    {c.attack != null && <>{" · ⚔"}{c.attack}{" ❤"}{c.health}</>}
+                                    {c.faction && <>{" · "}{c.faction}</>}
+                                  </div>
+                                </div>
+                                <button onClick={(e) => { e.stopPropagation(); setDeleteConfirmId(c.id); }} style={{
+                                  fontSize: 9, background: "none", border: "none", color: "#ccc", cursor: "pointer", padding: "2px",
+                                }} title="Supprimer">{"🗑"}</button>
+                              </>
+                            )}
                           </div>
                         ))}
                       </div>
