@@ -257,7 +257,7 @@ export default function CardForge() {
   const [saveResult, setSaveResult] = useState<{ ok: boolean; msg: string } | null>(null);
   const [updateTargetId, setUpdateTargetId] = useState<number | null>(null);
   const [updateTargetName, setUpdateTargetName] = useState<string | null>(null);
-  const [existingCards, setExistingCards] = useState<{ id: number; name: string; mana_cost: number; card_type: string; attack: number | null; health: number | null; effect_text: string; flavor_text: string | null; keywords: string[]; image_url: string | null; illustration_prompt: string | null; faction: string | null }[]>([]);
+  const [existingCards, setExistingCards] = useState<{ id: number; name: string; mana_cost: number; card_type: string; attack: number | null; health: number | null; effect_text: string; flavor_text: string | null; keywords: string[]; image_url: string | null; illustration_prompt: string | null; faction: string | null; rarity: string | null }[]>([]);
   const [showExistingCards, setShowExistingCards] = useState(false);
   const [existingSearch, setExistingSearch] = useState("");
 
@@ -366,8 +366,7 @@ export default function CardForge() {
         .map(k => FORGE_TO_GAME_KEYWORD[k])
         .filter((k): k is Keyword => !!k);
 
-      const kwDescs = forgeCard.keywords.map(k => `${k}: ${KEYWORDS[k]?.desc || ""}`).join(" ");
-      const effectText = [forgeCard.ability, kwDescs].filter(Boolean).join(" — ");
+      const effectText = forgeCard.ability || "";
 
       let imageBase64: string | null = null;
       let imageMimeType: string | null = null;
@@ -411,6 +410,7 @@ export default function CardForge() {
             effect_text: effectText,
             flavor_text: forgeCard.flavorText || null,
             illustration_prompt: forgeCard.illustrationPrompt || null,
+            rarity: forgeCard.rarity || null,
             keywords: gameKeywords,
             spell_effect: null,
             faction: forgeCard.faction,

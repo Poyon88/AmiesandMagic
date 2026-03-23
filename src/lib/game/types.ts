@@ -59,6 +59,7 @@ export interface Card {
   image_url: string | null;
   illustration_prompt?: string | null;
   faction?: string;
+  rarity?: string;
 }
 
 // In-game card instance (a card on the board or in hand with runtime state)
