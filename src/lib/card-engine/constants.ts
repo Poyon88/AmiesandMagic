@@ -66,8 +66,11 @@ export interface FactionSubType {
   lowEmoji?: string;       // emoji du sous-type bas
 }
 
+export type Alignment = "bon" | "neutre" | "maléfique";
+
 export const FACTIONS: Record<string, {
   color: string; accent: string; emoji: string; bg: string;
+  alignment: Alignment;
   statWeights: { atk: number; def: number };
   guaranteedKeywords: string[];
   likelyKeywords: Record<string, number>;
@@ -76,7 +79,7 @@ export const FACTIONS: Record<string, {
   subType?: FactionSubType;
 }> = {
   Nains: {
-    color: "#b87333", accent: "#ff9f43", emoji: "⚒️", bg: "#2a1a0a",
+    color: "#b87333", accent: "#ff9f43", emoji: "⚒️", bg: "#2a1a0a", alignment: "bon",
     statWeights: { atk: 0.85, def: 1.40 },
     guaranteedKeywords: [],
     likelyKeywords: { "Armure": 0.70, "Résistance": 0.65, "Bouclier": 0.50, "Ancré": 0.45, "Berserk": 0.35, "Provocation": 0.40 },
@@ -84,7 +87,7 @@ export const FACTIONS: Record<string, {
     description: "Solides et résistants. Favorisent la défense et la ténacité.",
   },
   Elfes: {
-    color: "#3a7d44", accent: "#55efc4", emoji: "🌿", bg: "#0a1f0a",
+    color: "#3a7d44", accent: "#55efc4", emoji: "🌿", bg: "#0a1f0a", alignment: "bon",
     statWeights: { atk: 1.10, def: 0.80 },
     guaranteedKeywords: [],
     likelyKeywords: { "Traque": 0.60, "Esquive": 0.55, "Précision": 0.50, "Invisible": 0.40, "Premier Frappe": 0.45, "Drain de vie": 0.30, "Vol": 0.20 },
@@ -92,7 +95,7 @@ export const FACTIONS: Record<string, {
     description: "Agiles et furtifs. Favorisent la vitesse et l'esquive. Aigles et faucons parmi leurs rangs.",
   },
   Humains: {
-    color: "#2c5f8a", accent: "#74b9ff", emoji: "⚔️", bg: "#0a0f2a",
+    color: "#2c5f8a", accent: "#74b9ff", emoji: "⚔️", bg: "#0a0f2a", alignment: "neutre",
     statWeights: { atk: 1.00, def: 1.00 },
     guaranteedKeywords: [],
     likelyKeywords: { "Commandement": 0.55, "Loyauté": 0.60, "Bouclier": 0.45, "Premier Frappe": 0.40, "Provocation": 0.35 },
@@ -100,7 +103,7 @@ export const FACTIONS: Record<string, {
     description: "Équilibrés et polyvalents. Synergies de groupe.",
   },
   "Morts-vivants": {
-    color: "#6c3483", accent: "#a29bfe", emoji: "💀", bg: "#1a0a2a",
+    color: "#6c3483", accent: "#a29bfe", emoji: "💀", bg: "#1a0a2a", alignment: "maléfique",
     statWeights: { atk: 1.05, def: 0.95 },
     guaranteedKeywords: [],
     likelyKeywords: { "Poison": 0.65, "Drain de vie": 0.60, "Terreur": 0.55, "Maléfice": 0.50, "Régénération": 0.45, "Résurrection": 0.40, "Liaison de vie": 0.35, "Vol": 0.15 },
@@ -108,7 +111,7 @@ export const FACTIONS: Record<string, {
     description: "Insatiables et corrompus. Résurrection et drain de vie. Chauves-souris et spectres volants parmi eux.",
   },
   Démons: {
-    color: "#922b21", accent: "#ff6b6b", emoji: "🔥", bg: "#2a0a0a",
+    color: "#922b21", accent: "#ff6b6b", emoji: "🔥", bg: "#2a0a0a", alignment: "maléfique",
     statWeights: { atk: 1.35, def: 0.80 },
     guaranteedKeywords: [],
     likelyKeywords: { "Fureur": 0.65, "Sacrifice": 0.55, "Corruption": 0.50, "Terreur": 0.50, "Ombre": 0.45, "Domination": 0.40, "Vol": 0.20 },
@@ -116,7 +119,7 @@ export const FACTIONS: Record<string, {
     description: "Offensifs et imprévisibles. Puissance brute au prix du risque. Démons ailés et wyvernes infernales.",
   },
   Dragons: {
-    color: "#8B0000", accent: "#FF4500", emoji: "🐉", bg: "#1a0505",
+    color: "#8B0000", accent: "#FF4500", emoji: "🐉", bg: "#1a0505", alignment: "neutre",
     statWeights: { atk: 1.40, def: 0.90 },
     guaranteedKeywords: ["Vol"],
     likelyKeywords: { "Vol": 0.70, "Souffle de feu": 0.70, "Terreur": 0.60, "Fureur": 0.50, "Indestructible": 0.40, "Transcendance": 0.35 },
@@ -124,7 +127,7 @@ export const FACTIONS: Record<string, {
     description: "Dominateurs. Vol garanti, puissance dévastatrice.",
   },
   Hobbits: {
-    color: "#8B6914", accent: "#DAA520", emoji: "🍃", bg: "#1a1508",
+    color: "#8B6914", accent: "#DAA520", emoji: "🍃", bg: "#1a1508", alignment: "bon",
     statWeights: { atk: 0.80, def: 0.90 },
     guaranteedKeywords: [],
     likelyKeywords: { "Esquive": 0.65, "Loyauté": 0.60, "Traque": 0.45, "Invisible": 0.50, "Résistance": 0.35, "Ancré": 0.40 },
@@ -133,7 +136,7 @@ export const FACTIONS: Record<string, {
     subType: { threshold: 6, name: "Homme-arbre", emoji: "🌳", descOverride: "Homme-arbre allié des Hobbits. Colosse végétal, lent mais dévastateur et protecteur." },
   },
   "Hommes-bêtes": {
-    color: "#7B5B3A", accent: "#CD853F", emoji: "🐺", bg: "#1a1008",
+    color: "#7B5B3A", accent: "#CD853F", emoji: "🐺", bg: "#1a1008", alignment: "neutre",
     statWeights: { atk: 1.20, def: 1.00 },
     guaranteedKeywords: [],
     likelyKeywords: { "Traque": 0.65, "Berserk": 0.60, "Fureur": 0.55, "Premier Frappe": 0.45, "Régénération": 0.40, "Esquive": 0.35, "Vol": 0.20 },
@@ -141,7 +144,7 @@ export const FACTIONS: Record<string, {
     description: "Sauvages et féroces. Attaquent vite, régénèrent, entrent en rage. Aigles et griffons parmi eux.",
   },
   Géants: {
-    color: "#5B6C7D", accent: "#A0B0C0", emoji: "🗻", bg: "#0f1520",
+    color: "#5B6C7D", accent: "#A0B0C0", emoji: "🗻", bg: "#0f1520", alignment: "neutre",
     statWeights: { atk: 1.15, def: 1.30 },
     guaranteedKeywords: [],
     likelyKeywords: { "Provocation": 0.65, "Résistance": 0.60, "Armure": 0.55, "Indestructible": 0.45, "Terreur": 0.40, "Ancré": 0.35 },
@@ -149,7 +152,7 @@ export const FACTIONS: Record<string, {
     description: "Colossaux et lents. Statistiques massives, résistance énorme. Difficiles à tuer.",
   },
   "Elfes noirs": {
-    color: "#4A0E4E", accent: "#9B59B6", emoji: "🔮", bg: "#150520",
+    color: "#4A0E4E", accent: "#9B59B6", emoji: "🔮", bg: "#150520", alignment: "maléfique",
     statWeights: { atk: 1.15, def: 0.85 },
     guaranteedKeywords: [],
     likelyKeywords: { "Poison": 0.65, "Invisible": 0.55, "Ombre": 0.50, "Corruption": 0.50, "Maléfice": 0.45, "Drain de vie": 0.40, "Précision": 0.35 },
@@ -157,7 +160,7 @@ export const FACTIONS: Record<string, {
     description: "Sournois et venimeux. Poison, ombre et corruption. Frappent là où on ne les attend pas.",
   },
   "Orcs & Gobelins": {
-    color: "#4A7A2E", accent: "#7FFF00", emoji: "🗡️", bg: "#0f1a08",
+    color: "#4A7A2E", accent: "#7FFF00", emoji: "🗡️", bg: "#0f1a08", alignment: "maléfique",
     statWeights: { atk: 1.25, def: 0.85 },
     guaranteedKeywords: [],
     likelyKeywords: { "Traque": 0.60, "Berserk": 0.55, "Fureur": 0.50, "Sacrifice": 0.45, "Loyauté": 0.40, "Célérité": 0.35, "Double Attaque": 0.30, "Vol": 0.15 },
@@ -165,9 +168,23 @@ export const FACTIONS: Record<string, {
     description: "Horde brutale. Gobelins (1-2 mana) : petits, rapides, sacrifiables. Orcs (3+ mana) : brutes épaisses et agressives. Wyvernes parmi leurs montures.",
     subType: { threshold: 3, name: "Orc", emoji: "💪", lowName: "Gobelin", lowEmoji: "👺" },
   },
+  Mercenaires: {
+    color: "#8B8B00", accent: "#D4D400", emoji: "💰", bg: "#1a1a08", alignment: "neutre",
+    statWeights: { atk: 1.05, def: 1.05 },
+    guaranteedKeywords: [],
+    likelyKeywords: { "Traque": 0.40, "Premier Frappe": 0.40, "Précision": 0.35, "Esquive": 0.30, "Berserk": 0.30, "Bouclier": 0.25, "Fureur": 0.25, "Vol": 0.15 },
+    forbiddenKeywords: ["Commandement", "Loyauté", "Domination", "Corruption"],
+    description: "Soldats de fortune sans allégeance. Polyvalents et disponibles pour tous les decks. N'entrent pas dans la limite de factions.",
+  },
 };
 
 export const TYPES = ["Unité", "Sort", "Artefact", "Magie"];
+
+export const ALIGNMENTS: { id: Alignment; label: string; emoji: string; color: string }[] = [
+  { id: "bon", label: "Bon", emoji: "✨", color: "#4caf50" },
+  { id: "neutre", label: "Neutre", emoji: "⚖️", color: "#ffd54f" },
+  { id: "maléfique", label: "Maléfique", emoji: "💀", color: "#e74c3c" },
+];
 
 // ─── CALIBRATION ─────────────────────────────────────────────────────────────
 
