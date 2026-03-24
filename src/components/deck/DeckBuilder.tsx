@@ -210,7 +210,9 @@ export default function DeckBuilder({
   function canAddCard(card: Card): string | null {
     if (totalCards >= DECK_SIZE) return "Deck plein";
     const existing = deckCards.get(card.id);
-    if (existing && existing.quantity >= 4) return "Max 4 copies";
+    // Peu Commune, Rare, Épique, Légendaire : 1 exemplaire max. Commune : 4 max.
+    const maxCopies = (card.rarity && card.rarity !== "Commune") ? 1 : 4;
+    if (existing && existing.quantity >= maxCopies) return maxCopies === 1 ? "Exemplaire unique" : "Max 4 copies";
 
     // Alignment
     if (card.faction) {
@@ -444,7 +446,7 @@ export default function DeckBuilder({
                 card={card}
                 size="md"
                 onClick={() => addCard(card)}
-                disabled={!!canAddCard(card) && !inDeck}
+                disabled={!!canAddCard(card)}
                 count={inDeck?.quantity}
               />
             );
