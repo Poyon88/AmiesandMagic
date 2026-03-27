@@ -193,15 +193,18 @@ export default function CardForge() {
     if (manualKeywords.length > 0) {
       stats.keywords = manualKeywords;
     }
-    let text: CardText = { name: "Inconnu", ability: "—", flavorText: "", illustrationPrompt: "" };
+    let text: CardText = { name: "", ability: "—", flavorText: "", illustrationPrompt: "" };
     try {
       text = await generateCardText(f, t, r, stats, race || undefined, clan || undefined);
-    } catch { /* fallback above */ }
-    // Keep manually-entered name/ability if set
+    } catch (err) {
+      console.error("[card-forge] generateCardText failed:", err);
+    }
+    // Keep manually-entered name/ability if set, use API result, or fallback
     if (manualName) text.name = manualName;
+    else if (!text.name || text.name === "Carte sans nom") text.name = `${f} ${t}`;
     if (manualAbility) text.ability = manualAbility;
     const newCard: ForgeCard = {
-      id: buildId(), name: text.name || "Inconnu",
+      id: buildId(), name: text.name || "Sans nom",
       faction: f, race, clan, cardAlignment, type: t, rarity: r, ...stats,
       ability: text.ability || "—",
       flavorText: text.flavorText || "",
@@ -251,7 +254,7 @@ export default function CardForge() {
       let text: CardText = { name: "Inconnu", ability: "—", flavorText: "", illustrationPrompt: "" };
       try { text = await generateCardText(f, t, r, stats, bulkRace || undefined, bulkClan || undefined); } catch { /* fallback above */ }
       const c: ForgeCard = {
-        id: buildId(), name: text.name || "Inconnu",
+        id: buildId(), name: text.name || "Sans nom",
         faction: f, race: bulkRace, clan: bulkClan, cardAlignment: facData?.alignment === "spéciale" ? pick(["bon","neutre","maléfique"]) : (facData?.alignment || "neutre"),
         type: t, rarity: r, ...stats,
         ability: text.ability || "—", flavorText: text.flavorText || "",
@@ -391,6 +394,7 @@ export default function CardForge() {
     // Set faction/type/rarity/race/clan from card
     if (dbCard.faction && FACTIONS[dbCard.faction]) setFaction(dbCard.faction);
     if (dbCard.card_type) setType(GAME_TO_FORGE_TYPE[dbCard.card_type] || "Unité");
+    if (dbCard.rarity) setRarity(dbCard.rarity);
     setRace(dbCard.race || "");
     setClan(dbCard.clan || "");
     setCardAlignment(dbCard.card_alignment || "neutre");
@@ -409,7 +413,7 @@ export default function CardForge() {
       clan: dbCard.clan || "",
       cardAlignment: dbCard.card_alignment || "neutre",
       type: GAME_TO_FORGE_TYPE[dbCard.card_type] || "Unité",
-      rarity,
+      rarity: dbCard.rarity || rarity,
       mana: dbCard.mana_cost,
       attack: dbCard.attack,
       defense: dbCard.health,

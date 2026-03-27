@@ -52,29 +52,55 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
   "illustrationPrompt": "Midjourney prompt (English, cinematic dark fantasy, detailed, no text in image, based on the character name and abilities)"
 }`;
 
-  try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY!,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 800,
-        messages: [{ role: 'user', content: prompt }],
-      }),
-    });
+  const maxRetries = 3;
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.ANTHROPIC_API_KEY!,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 800,
+          messages: [{ role: 'user', content: prompt }],
+        }),
+      });
 
-    const data = await response.json();
-    const raw = data.content?.find((b: { type: string; text?: string }) => b.type === 'text')?.text || '{}';
-    const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
-    return NextResponse.json(parsed);
-  } catch (err) {
-    console.error('[card-forge] generateText error:', err);
-    return NextResponse.json({
-      name: 'Carte sans nom', ability: '—', flavorText: '', illustrationPrompt: '',
-    });
+      const data = await response.json();
+
+      // Retry on overloaded
+      if (response.status === 529 || data.error?.type === 'overloaded_error') {
+        console.warn(`[card-forge] API overloaded, retry ${attempt + 1}/${maxRetries}...`);
+        await new Promise(r => setTimeout(r, 2000 * (attempt + 1)));
+        continue;
+      }
+
+      if (!response.ok) {
+        console.error('[card-forge] API error:', data.error?.message || JSON.stringify(data));
+        return NextResponse.json({
+          name: 'Carte sans nom', ability: '—', flavorText: '', illustrationPrompt: '',
+        });
+      }
+
+      const raw = data.content?.find((b: { type: string; text?: string }) => b.type === 'text')?.text || '{}';
+      let jsonStr = raw.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+      const jsonStart = jsonStr.indexOf('{');
+      if (jsonStart > 0) jsonStr = jsonStr.slice(jsonStart);
+      const parsed = JSON.parse(jsonStr);
+      return NextResponse.json(parsed);
+    } catch (err) {
+      console.error(`[card-forge] generateText error (attempt ${attempt + 1}):`, err);
+      if (attempt < maxRetries - 1) {
+        await new Promise(r => setTimeout(r, 2000 * (attempt + 1)));
+        continue;
+      }
+    }
   }
+
+  return NextResponse.json({
+    name: 'Carte sans nom', ability: '—', flavorText: '', illustrationPrompt: '',
+  });
 }
