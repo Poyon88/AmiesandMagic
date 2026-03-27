@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { KEYWORDS, FACTIONS, RARITY_MAP } from '@/lib/card-engine/constants';
+import KeywordIcon from '@/components/shared/KeywordIcon';
 
 // ─── KEYWORD → SYMBOL MAP ───────────────────────────────────────────────────
 
@@ -15,7 +16,7 @@ function toRoman(n: number): string {
   return result || "0";
 }
 
-const KEYWORD_SYMBOLS: Record<string, string> = {
+export const KEYWORD_SYMBOLS: Record<string, string> = {
   // Tier 0
   "Loyauté":          "🤝",
   "Ancré":            "⚓",
@@ -27,11 +28,11 @@ const KEYWORD_SYMBOLS: Record<string, string> = {
   "Bouclier":         "🔰",
   // Tier 1
   "Vol":              "🦅",
-  "Précision":        "🎯",
+  "Précision":        "🏹",
   "Drain de vie":     "🩸",
   "Esquive":          "💨",
   "Poison":           "☠️",
-  "Célérité":         "⚡",
+  "Célérité":         "💫",
   "Augure":           "📖",
   "Bénédiction":      "✝️",
   "Bravoure":         "🦁",
@@ -41,9 +42,9 @@ const KEYWORD_SYMBOLS: Record<string, string> = {
   "Combustion":       "🔥",
   // Tier 2
   "Terreur":          "👁️",
-  "Armure":           "🛡️",
+  "Armure":           "/icons/armure.png",
   "Commandement":     "👑",
-  "Fureur":           "🔥",
+  "Fureur":           "💢",
   "Double Attaque":   "⚔️",
   "Invisible":        "👻",
   "Canalisation":     "🔮",
@@ -54,17 +55,17 @@ const KEYWORD_SYMBOLS: Record<string, string> = {
   "Nécrophagie":      "🦴",
   "Paralysie":        "⛓️",
   "Permutation":      "🔀",
-  "Persécution X":    "🎯",
+  "Persécution X":    "🩻",
   "Ombre du passé":   "👤",
   "Profanation X":    "⚰️",
-  "Prescience X":     "🔮",
+  "Prescience X":     "🃏",
   "Suprématie":       "👊",
   "Divination":       "🔍",
   // Tier 3
-  "Liaison de vie":   "💀",
+  "Liaison de vie":   "🔗",
   "Ombre":            "🌑",
   "Sacrifice":        "💔",
-  "Maléfice":         "🔮",
+  "Maléfice":         "🕯️",
   "Indestructible":   "♾️",
   "Régénération":     "💚",
   "Corruption":       "🖤",
@@ -73,8 +74,8 @@ const KEYWORD_SYMBOLS: Record<string, string> = {
   "Mimique":          "🪞",
   "Métamorphose":     "🦎",
   "Tactique X":       "📋",
-  "Exhumation X":     "⚰️",
-  "Héritage du cimetière": "📜",
+  "Exhumation X":     "🪦",
+  "Héritage du cimetière": "🏚️",
   // Tier 4
   "Pacte de sang":    "🩸",
   "Souffle de feu X": "🐲",
@@ -89,6 +90,8 @@ const KEYWORD_SYMBOLS: Record<string, string> = {
 interface CardData {
   name: string;
   faction: string;
+  race?: string;
+  clan?: string;
   type: string;
   rarity: string;
   mana: number;
@@ -256,7 +259,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                   boxShadow: `0 0 6px ${fac.color}44`,
                   transition: "all 0.2s",
                 }}>
-                  <span>{KEYWORD_SYMBOLS[kw] || "✦"}</span>
+                  <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} />
                   {xVal != null && (
                     <span style={{
                       fontSize: 10 * s, fontWeight: 900, lineHeight: 1,
@@ -318,36 +321,46 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
       {/* ── Hover overlay: ability + flavor text ── */}
       <div style={{
         position: "absolute", inset: 0, zIndex: 3,
-        background: `${fac.bg}ee`,
+        background: `${fac.bg}f8`,
         opacity: hovered ? 1 : 0,
         transition: "opacity 0.3s ease",
         pointerEvents: hovered ? "auto" : "none",
         display: "flex", flexDirection: "column", justifyContent: "center",
-        padding: `${20 * s}px ${16 * s}px`,
-        gap: 12 * s,
+        padding: `${18 * s}px ${16 * s}px`,
+        gap: 10 * s,
+        overflowY: "auto",
       }}>
         {/* Card name */}
         <div style={{
-          fontSize: 14 * s, color: fac.accent, fontWeight: 700,
+          fontSize: 18 * s, color: fac.accent, fontWeight: 700,
           textAlign: "center", letterSpacing: 1,
-          borderBottom: `1px solid ${fac.color}44`, paddingBottom: 8 * s,
+          borderBottom: `1px solid ${fac.color}55`, paddingBottom: 8 * s,
         }}>
           {card!.name}
         </div>
 
-        {/* Keywords detail */}
+        {/* Race / Clan */}
+        {(card!.race || card!.clan) && (
+          <div style={{ display: "flex", justifyContent: "center", gap: 6 * s, fontSize: 13 * s, color: "#ddd", fontFamily: "'Crimson Text',serif" }}>
+            {card!.race && <span>{card!.race}</span>}
+            {card!.race && card!.clan && <span style={{ color: "#888" }}>·</span>}
+            {card!.clan && <span style={{ fontStyle: "italic" }}>{card!.clan}</span>}
+          </div>
+        )}
+
+        {/* Capacités detail */}
         {card!.keywords?.length > 0 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 5 * s }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 * s }}>
             {card!.keywords.map(kw => {
               const xVal = card!.keywordXValues?.[kw];
               const displayName = xVal != null ? kw.replace(/ X$/, ` ${toRoman(xVal)}`) : kw;
               const displayDesc = xVal != null ? KEYWORDS[kw]?.desc.replace(/X/g, String(xVal)) : KEYWORDS[kw]?.desc;
               return (
-                <div key={kw} style={{ display: "flex", alignItems: "flex-start", gap: 6 * s }}>
-                  <span style={{ fontSize: 12 * s, flexShrink: 0 }}>{KEYWORD_SYMBOLS[kw] || "✦"}</span>
+                <div key={kw} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
+                  <span style={{ flexShrink: 0 }}><KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={18 * s} /></span>
                   <div>
-                    <div style={{ fontSize: 9 * s, color: fac.accent, fontWeight: 700 }}>{displayName}</div>
-                    <div style={{ fontSize: 8 * s, color: "#888", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{displayDesc}</div>
+                    <div style={{ fontSize: 14 * s, color: fac.accent, fontWeight: 700 }}>{displayName}</div>
+                    <div style={{ fontSize: 12 * s, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{displayDesc}</div>
                   </div>
                 </div>
               );
@@ -356,23 +369,25 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
         )}
 
         {/* Ability text */}
+        {card!.ability && card!.ability !== "—" && (
         <div style={{
-          padding: `${8 * s}px`,
-          background: `${fac.color}11`, borderRadius: 5 * s,
-          border: `1px solid ${fac.color}22`,
+          padding: `${8 * s}px ${10 * s}px`,
+          background: `${fac.color}18`, borderRadius: 5 * s,
+          border: `1px solid ${fac.color}44`,
         }}>
           <p style={{
-            margin: 0, fontSize: 10 * s, color: "#ccc",
-            lineHeight: 1.6, fontFamily: "'Crimson Text',serif",
+            margin: 0, fontSize: 13 * s, color: "#eee",
+            lineHeight: 1.5, fontFamily: "'Crimson Text',serif",
           }}>
             {card!.ability}
           </p>
         </div>
+        )}
 
         {/* Flavor text */}
         {card!.flavorText && (
           <p style={{
-            margin: 0, fontSize: 9 * s, color: `${fac.accent}77`,
+            margin: 0, fontSize: 12 * s, color: `${fac.accent}dd`,
             fontStyle: "italic", lineHeight: 1.4, fontFamily: "'Crimson Text',serif",
             textAlign: "center",
           }}>
@@ -382,14 +397,16 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
 
         {/* Stats recap */}
         <div style={{
-          display: "flex", justifyContent: "center", gap: 10 * s, marginTop: 4 * s,
-          fontSize: 8 * s, color: "#444",
+          display: "flex", justifyContent: "center", gap: 10 * s, flexWrap: "wrap",
+          fontSize: 13 * s, color: "#ccc",
+          borderTop: `1px solid ${fac.color}33`, paddingTop: 7 * s,
         }}>
-          <span>💧 {card!.mana}</span>
-          {card!.attack != null && <span>⚔ {card!.attack}</span>}
-          {card!.defense != null && <span>🛡 {card!.defense}</span>}
-          {card!.power != null && <span>✨ {card!.power}</span>}
-          <span style={{ color: rar.color }}>{card!.rarity}</span>
+          {card!.faction && <span style={{ color: fac.accent, fontWeight: 600 }}>{card!.faction}</span>}
+          <span style={{ color: "#74b9ff" }}>💧{card!.mana}</span>
+          {card!.attack != null && <span style={{ color: "#f1c40f" }}>⚔{card!.attack}</span>}
+          {card!.defense != null && <span style={{ color: "#e74c3c" }}>❤{card!.defense}</span>}
+          {card!.power != null && <span style={{ color: fac.accent }}>✨{card!.power}</span>}
+          <span style={{ color: rar.color, fontSize: 12 * s }}>{card!.rarity}</span>
         </div>
       </div>
     </div>

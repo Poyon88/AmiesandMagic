@@ -3,7 +3,8 @@
 import { useState, useCallback, useRef } from "react";
 import { generateCardStats, pickMana, pickRarity, buildId } from "@/lib/card-engine/generator";
 import { RARITIES, FACTIONS, TYPES, KEYWORDS, RARITY_WEIGHTS_BY_MANA, RARITY_MAP, ALIGNMENTS } from "@/lib/card-engine/constants";
-import CardVisual from "./CardVisual";
+import CardVisual, { KEYWORD_SYMBOLS } from "./CardVisual";
+import KeywordIcon from "@/components/shared/KeywordIcon";
 import type { CardType, Keyword } from "@/lib/game/types";
 
 // ─── API CALL ────────────────────────────────────────────────────────────────
@@ -112,13 +113,15 @@ export default function CardForge() {
   const [manualIllustrationPrompt, setManualIllustrationPrompt] = useState("");
   const [manualKeywords, setManualKeywords] = useState<string[]>([]);
   const [keywordXValues, setKeywordXValues] = useState<Record<string, number>>({});
+  const [hoveredKw, setHoveredKw] = useState<{ id: string; rect: DOMRect } | null>(null);
 
   const availableManualKeywords = Object.entries(KEYWORDS)
     .filter(([id, kw]) => {
       const tier = RARITY_MAP[rarity]?.tier ?? 0;
       const forbidden = FACTIONS[faction]?.forbiddenKeywords ?? [];
       return kw.minTier <= tier && !forbidden.includes(id);
-    });
+    })
+    .sort(([a], [b]) => a.localeCompare(b, 'fr'));
 
   const manualBudgetTotal = Math.round(manualMana * 10 * (RARITY_MAP[rarity]?.multiplier ?? 1));
   const manualBudgetUsed = Math.round(
@@ -1065,14 +1068,20 @@ export default function CardForge() {
                   </div>
 
                   {/* Capacités */}
-                  <div>
+                  <div style={{ position: "relative" }}>
                     <label style={{ fontSize: 9, color: "#666", letterSpacing: 1 }}>CAPACITÉS ({manualKeywords.length})</label>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginTop: 4 }}>
                       {availableManualKeywords.map(([id, kw]) => {
                         const selected = manualKeywords.includes(id);
                         const isScalable = kw.scalable;
                         return (
-                          <div key={id} style={{ display: "inline-flex", alignItems: "center", gap: 2 }}>
+                          <div key={id} style={{ display: "inline-flex", alignItems: "center", gap: 2, position: "relative" }}
+                            onMouseEnter={e => {
+                              const rect = e.currentTarget.getBoundingClientRect();
+                              setHoveredKw({ id, rect });
+                            }}
+                            onMouseLeave={() => setHoveredKw(null)}
+                          >
                             <button onClick={() => {
                               setManualKeywords(prev => selected ? prev.filter(k => k !== id) : [...prev, id]);
                               if (selected && isScalable) {
@@ -1107,6 +1116,41 @@ export default function CardForge() {
                         );
                       })}
                     </div>
+                    {/* Keyword tooltip */}
+                    {hoveredKw && KEYWORDS[hoveredKw.id] && (() => {
+                      const kwDef = KEYWORDS[hoveredKw.id];
+                      const tierLabel = ["Commune+", "Peu Commune+", "Rare+", "Épique+", "Légendaire"][kwDef.minTier] || "";
+                      return (
+                        <div style={{
+                          position: "fixed",
+                          left: Math.min(hoveredKw.rect.left, window.innerWidth - 280),
+                          top: hoveredKw.rect.bottom + 6,
+                          zIndex: 9999,
+                          width: 260,
+                          padding: "10px 12px",
+                          background: "#1a1a2e",
+                          border: `1px solid ${fac.color}66`,
+                          borderRadius: 8,
+                          boxShadow: `0 4px 20px rgba(0,0,0,0.5), 0 0 8px ${fac.color}22`,
+                          pointerEvents: "none",
+                        }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+                            <KeywordIcon symbol={KEYWORD_SYMBOLS[hoveredKw.id] || "✦"} size={16} />
+                            <span style={{ fontSize: 13, color: fac.accent, fontWeight: 700, fontFamily: "'Cinzel',serif" }}>{hoveredKw.id}</span>
+                          </div>
+                          <div style={{ fontSize: 12, color: "#ddd", lineHeight: 1.5, fontFamily: "'Crimson Text',serif", marginBottom: 8 }}>
+                            {kwDef.desc}
+                          </div>
+                          <div style={{ display: "flex", gap: 8, fontSize: 10, color: "#999" }}>
+                            <span>Tier : <strong style={{ color: "#bbb" }}>{tierLabel}</strong></span>
+                            <span>Coût : <strong style={{ color: "#bbb" }}>{kwDef.cost} pts</strong>{kwDef.costPerX > 0 && <> (+{kwDef.costPerX}/X)</>}</span>
+                            <span style={{ color: kwDef.zone === "Terrain" ? "#4caf50" : kwDef.zone === "Cimetière" ? "#9b59b6" : kwDef.zone === "Main" ? "#3498db" : "#f39c12" }}>
+                              {kwDef.zone}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   {/* Ability */}

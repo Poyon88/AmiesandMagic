@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import type { CardInstance } from "@/lib/game/types";
 import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText } from "@/lib/game/keyword-labels";
+import KeywordIcon from "@/components/shared/KeywordIcon";
 import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
 
 interface BoardCreatureProps {
@@ -184,7 +185,7 @@ export default function BoardCreature({
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2,
                 fontSize: 9,
               }}>
-                <span>{KEYWORD_SYMBOLS[kw] || "✦"}</span>
+                <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={9} />
                 {x != null && <span style={{ fontSize: 7, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}` }}>{toRoman(x)}</span>}
               </div>
               );
@@ -257,7 +258,7 @@ export default function BoardCreature({
               const desc = kwDef?.desc ? (x != null ? kwDef.desc.replace(/X/g, String(x)) : kwDef.desc) : null;
               return (
               <div key={kw} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
-                <span style={{ fontSize: 10, flexShrink: 0 }}>{KEYWORD_SYMBOLS[kw] || "✦"}</span>
+                <span style={{ flexShrink: 0 }}><KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={10} /></span>
                 <div>
                   <div style={{ fontSize: 8, color: accentColor, fontWeight: 600 }}>{displayLabel}</div>
                   {desc && <div style={{ fontSize: 7, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}

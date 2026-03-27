@@ -6,6 +6,7 @@ import Image from "next/image";
 import type { CardInstance } from "@/lib/game/types";
 import type { DragEvent } from "react";
 import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText } from "@/lib/game/keyword-labels";
+import KeywordIcon from "@/components/shared/KeywordIcon";
 import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
 
 interface HandCardProps {
@@ -160,7 +161,7 @@ export default function HandCard({
                   display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1,
                   fontSize: 8,
                 }}>
-                  <span>{KEYWORD_SYMBOLS[kw] || "✦"}</span>
+                  <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={8} />
                   {x != null && <span style={{ fontSize: 6, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif" }}>{toRoman(x)}</span>}
                 </div>
                 );
@@ -232,7 +233,7 @@ export default function HandCard({
                 const desc = kwDef?.desc ? (x != null ? kwDef.desc.replace(/X/g, String(x)) : kwDef.desc) : null;
                 return (
                 <div key={kw} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
-                  <span style={{ fontSize: 9, flexShrink: 0 }}>{KEYWORD_SYMBOLS[kw] || "✦"}</span>
+                  <span style={{ flexShrink: 0 }}><KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={9} /></span>
                   <div>
                     <div style={{ fontSize: 7, color: accentColor, fontWeight: 600 }}>{displayLabel}</div>
                     {desc && <div style={{ fontSize: 6, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
