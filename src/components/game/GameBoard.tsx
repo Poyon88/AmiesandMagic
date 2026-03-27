@@ -10,6 +10,9 @@ import ManaBar from "./ManaBar";
 import BoardCreature from "./BoardCreature";
 import HandCard from "./HandCard";
 import GraveyardOverlay from "./GraveyardOverlay";
+import DivinationOverlay from "./DivinationOverlay";
+import TactiqueKeywordOverlay from "./TactiqueKeywordOverlay";
+import EffectLog from "./EffectLog";
 import TurnTimer from "./TurnTimer";
 import TargetingArrow from "./TargetingArrow";
 import DamageOverlay from "./DamageOverlay";
@@ -100,6 +103,10 @@ export default function GameBoard({ onAction }: GameBoardProps) {
     selectedCardInstanceId,
     validTargets,
     targetingMode,
+    divinationCards,
+    tactiqueAvailableKeywords,
+    tactiqueMaxSelections,
+    effectLog,
     dispatchAction,
     playCardDirect,
     selectCardInHand,
@@ -254,6 +261,12 @@ export default function GameBoard({ onAction }: GameBoardProps) {
               cardInstanceId: selectedCardInstanceId,
               targetInstanceId: targetId,
             }
+          : targetingMode === "creature" && selectedCardInstanceId
+          ? {
+              type: "play_card" as const,
+              cardInstanceId: selectedCardInstanceId,
+              targetInstanceId: targetId,
+            }
           : targetingMode === "hero_power"
           ? {
               type: "hero_power" as const,
@@ -321,7 +334,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           waitingForOpponent={myMulliganDone}
         />
       )}
-      {graveyardView && (
+      {graveyardView && targetingMode !== "graveyard" && (
         <GraveyardOverlay
           cards={
             graveyardView === "my"
@@ -330,12 +343,58 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           }
           title={
             graveyardView === "my"
-              ? "Your Graveyard"
-              : "Opponent's Graveyard"
+              ? "Votre Cimetière"
+              : "Cimetière adverse"
           }
           onClose={() => setGraveyardView(null)}
         />
       )}
+      {targetingMode === "graveyard" && (
+        <GraveyardOverlay
+          cards={myPlayer.graveyard}
+          title="Choisissez une carte"
+          onClose={clearSelection}
+          selectableInstanceIds={validTargets}
+          onSelectCard={(id) => {
+            selectTarget(id);
+            broadcast({
+              type: "play_card" as const,
+              cardInstanceId: selectedCardInstanceId!,
+              graveyardTargetInstanceId: id,
+            });
+          }}
+        />
+      )}
+      {targetingMode === "divination" && divinationCards.length > 0 && (
+        <DivinationOverlay
+          cards={divinationCards}
+          onChoose={(idx) => {
+            selectTarget(String(idx));
+            broadcast({
+              type: "play_card" as const,
+              cardInstanceId: selectedCardInstanceId!,
+              divinationChoiceIndex: idx,
+            });
+          }}
+          onCancel={clearSelection}
+        />
+      )}
+      {targetingMode === "tactique_keywords" && tactiqueAvailableKeywords.length > 0 && (
+        <TactiqueKeywordOverlay
+          keywords={tactiqueAvailableKeywords}
+          maxSelections={tactiqueMaxSelections}
+          onConfirm={(selected) => {
+            selectTarget(JSON.stringify(selected));
+            broadcast({
+              type: "play_card" as const,
+              cardInstanceId: selectedCardInstanceId!,
+              tactiqueKeywords: selected as import("@/lib/game/types").Keyword[],
+            });
+          }}
+          onCancel={clearSelection}
+        />
+      )}
+      <EffectLog entries={effectLog} />
       {isFinished && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center">
           <div className="text-center">

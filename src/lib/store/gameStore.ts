@@ -11,6 +11,11 @@ import {
   canUseHeroPower,
   heroPowerNeedsTarget,
   getHeroPowerTargets,
+  creatureNeedsTarget,
+  getCreatureTargets,
+  creatureNeedsGraveyardTarget,
+  getGraveyardTargets,
+  creatureNeedsDivination,
 } from "@/lib/game/engine";
 
 export interface SpellCastEvent {
@@ -26,7 +31,13 @@ interface GameStore {
   selectedCardInstanceId: string | null;
   selectedAttackerInstanceId: string | null;
   validTargets: string[];
-  targetingMode: "none" | "attack" | "spell" | "hero_power";
+  targetingMode: "none" | "attack" | "spell" | "creature" | "graveyard" | "divination" | "tactique_keywords" | "hero_power";
+  pendingBoardPosition: number | null;
+  divinationCards: CardInstance[];
+  tactiqueAvailableKeywords: string[];
+  tactiqueMaxSelections: number;
+  pendingTargetInstanceId: string | null;
+  effectLog: { id: string; text: string; timestamp: number }[];
   damageEvents: DamageEvent[];
   spellCastEvent: SpellCastEvent | null;
 
@@ -194,6 +205,56 @@ function detectDamageEvents(
   return events;
 }
 
+function generateEffectLog(
+  oldState: GameState,
+  newState: GameState,
+  action: GameAction
+): { id: string; text: string; timestamp: number }[] {
+  const entries: { id: string; text: string; timestamp: number }[] = [];
+  const now = Date.now();
+  let idx = 0;
+  const add = (text: string) => entries.push({ id: `${now}-${idx++}`, text, timestamp: now });
+
+  if (action.type === "play_card") {
+    const player = oldState.players[oldState.currentPlayerIndex];
+    const cardInst = player.hand.find(c => c.instanceId === action.cardInstanceId);
+    if (cardInst) add(`📥 ${cardInst.card.name} joué`);
+  }
+
+  // Detect deaths
+  for (let i = 0; i < 2; i++) {
+    const oldBoard = oldState.players[i].board;
+    const newBoard = newState.players[i].board;
+    for (const c of oldBoard) {
+      if (!newBoard.find(nc => nc.instanceId === c.instanceId)) {
+        add(`💀 ${c.card.name} détruit`);
+      }
+    }
+  }
+
+  // Detect poison ticks
+  for (let i = 0; i < 2; i++) {
+    for (const nc of newState.players[i].board) {
+      const oc = oldState.players[i].board.find(c => c.instanceId === nc.instanceId);
+      if (oc && nc.isPoisoned && nc.currentHealth < oc.currentHealth) {
+        add(`☠️ Poison : ${nc.card.name} -${oc.currentHealth - nc.currentHealth} PV`);
+      }
+    }
+  }
+
+  // Detect regen
+  for (let i = 0; i < 2; i++) {
+    for (const nc of newState.players[i].board) {
+      const oc = oldState.players[i].board.find(c => c.instanceId === nc.instanceId);
+      if (oc && nc.currentHealth > oc.currentHealth && nc.card.keywords.includes("regeneration" as import("@/lib/game/types").Keyword)) {
+        add(`💚 Régénération : ${nc.card.name} +${nc.currentHealth - oc.currentHealth} PV`);
+      }
+    }
+  }
+
+  return entries;
+}
+
 export const useGameStore = create<GameStore>((set, get) => ({
   gameState: null,
   localPlayerId: null,
@@ -201,6 +262,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
   selectedAttackerInstanceId: null,
   validTargets: [],
   targetingMode: "none",
+  pendingBoardPosition: null,
+  divinationCards: [],
+  tactiqueAvailableKeywords: [],
+  tactiqueMaxSelections: 0,
+  pendingTargetInstanceId: null,
+  effectLog: [],
   damageEvents: [],
   spellCastEvent: null,
 
@@ -241,6 +308,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     const newState = applyAction(gameState, action);
     const dmgEvents = detectDamageEvents(gameState, newState, localPlayerId);
+    const logEntries = generateEffectLog(gameState, newState, action);
 
     // Find creatures that died (were on old board but not on new board)
     const deadCreatures: CardInstance[] = [];
@@ -284,6 +352,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         validTargets: [],
         targetingMode: "none",
         damageEvents: dmgEvents,
+        effectLog: [...get().effectLog, ...logEntries].slice(-20),
         ...(spellEvent ? { spellCastEvent: spellEvent } : {}),
       });
 
@@ -299,6 +368,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         validTargets: [],
         targetingMode: "none",
         damageEvents: dmgEvents,
+        effectLog: [...get().effectLog, ...logEntries].slice(-20),
         ...(spellEvent ? { spellCastEvent: spellEvent } : {}),
       });
     }
@@ -310,6 +380,52 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const { gameState } = get();
     if (!gameState) return null;
     if (!canPlayCard(gameState, instanceId)) return null;
+
+    const player = gameState.players[gameState.currentPlayerIndex];
+    const card = player.hand.find(c => c.instanceId === instanceId);
+    if (card && creatureNeedsTarget(card.card)) {
+      const targets = getCreatureTargets(gameState, card.card);
+      if (targets.length > 0) {
+        set({
+          selectedCardInstanceId: instanceId,
+          selectedAttackerInstanceId: null,
+          validTargets: targets,
+          targetingMode: "creature",
+          pendingBoardPosition: boardPosition ?? null,
+        });
+        return null;
+      }
+    }
+
+    if (card && creatureNeedsGraveyardTarget(card.card)) {
+      const gravTargets = getGraveyardTargets(gameState, card.card);
+      if (gravTargets.length > 0) {
+        set({
+          selectedCardInstanceId: instanceId,
+          selectedAttackerInstanceId: null,
+          validTargets: gravTargets,
+          targetingMode: "graveyard",
+          pendingBoardPosition: boardPosition ?? null,
+        });
+        return null;
+      }
+    }
+
+    if (card && creatureNeedsDivination(card.card)) {
+      const deckCards = player.deck.slice(0, Math.min(3, player.deck.length));
+      if (deckCards.length > 0) {
+        set({
+          selectedCardInstanceId: instanceId,
+          selectedAttackerInstanceId: null,
+          validTargets: [],
+          targetingMode: "divination",
+          divinationCards: deckCards,
+          pendingBoardPosition: boardPosition ?? null,
+        });
+        return null;
+      }
+    }
+
     return get().dispatchAction({
       type: "play_card",
       cardInstanceId: instanceId,
@@ -327,8 +443,54 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     if (!canPlayCard(gameState, instanceId)) return null;
 
+    // Check if creature needs a target
+    if (card.card.card_type === "creature" && creatureNeedsTarget(card.card)) {
+      const targets = getCreatureTargets(gameState, card.card);
+      if (targets.length > 0) {
+        set({
+          selectedCardInstanceId: instanceId,
+          selectedAttackerInstanceId: null,
+          validTargets: targets,
+          targetingMode: "creature",
+          pendingBoardPosition: null,
+        });
+        return null;
+      }
+    }
+
+    // Check if creature needs graveyard target
+    if (card.card.card_type === "creature" && creatureNeedsGraveyardTarget(card.card)) {
+      const gravTargets = getGraveyardTargets(gameState, card.card);
+      if (gravTargets.length > 0) {
+        set({
+          selectedCardInstanceId: instanceId,
+          selectedAttackerInstanceId: null,
+          validTargets: gravTargets,
+          targetingMode: "graveyard",
+          pendingBoardPosition: null,
+        });
+        return null;
+      }
+    }
+
+    // Check if creature needs divination
+    if (card.card.card_type === "creature" && creatureNeedsDivination(card.card)) {
+      const deckCards = player.deck.slice(0, Math.min(3, player.deck.length));
+      if (deckCards.length > 0) {
+        set({
+          selectedCardInstanceId: instanceId,
+          selectedAttackerInstanceId: null,
+          validTargets: [],
+          targetingMode: "divination",
+          divinationCards: deckCards,
+          pendingBoardPosition: null,
+        });
+        return null;
+      }
+    }
+
     // Check if spell needs a target
-    if (needsTarget(card.card)) {
+    if (card.card.card_type === "spell" && needsTarget(card.card)) {
       const targets = getSpellTargets(gameState, card.card);
       set({
         selectedCardInstanceId: instanceId,
@@ -336,14 +498,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
         validTargets: targets,
         targetingMode: "spell",
       });
-      return null; // no action yet, waiting for target selection
-    } else {
-      // Play immediately (creature or auto-target spell)
-      return get().dispatchAction({
-        type: "play_card",
-        cardInstanceId: instanceId,
-      });
+      return null;
     }
+
+    // Play immediately (no targeting needed)
+    return get().dispatchAction({
+      type: "play_card",
+      cardInstanceId: instanceId,
+    });
   },
 
   selectAttacker: (instanceId) => {
@@ -380,6 +542,61 @@ export const useGameStore = create<GameStore>((set, get) => ({
         cardInstanceId: selectedCardInstanceId,
         targetInstanceId: targetId,
       });
+    } else if (targetingMode === "creature" && selectedCardInstanceId) {
+      const { pendingBoardPosition, gameState: gs } = get();
+
+      // Check if this is a Tactique creature — need second step (keyword selection)
+      if (gs) {
+        const player = gs.players[gs.currentPlayerIndex];
+        const cardInst = player.hand.find(c => c.instanceId === selectedCardInstanceId);
+        if (cardInst && cardInst.card.keywords.includes("tactique" as import("@/lib/game/types").Keyword)) {
+          const grantable = cardInst.card.keywords.filter(kw => kw !== "tactique");
+          const x = Math.max(1, Math.floor(cardInst.card.mana_cost / 3));
+          set({
+            targetingMode: "tactique_keywords",
+            pendingTargetInstanceId: targetId,
+            tactiqueAvailableKeywords: grantable,
+            tactiqueMaxSelections: Math.min(x, grantable.length),
+            validTargets: [],
+          });
+          return;
+        }
+      }
+
+      get().dispatchAction({
+        type: "play_card",
+        cardInstanceId: selectedCardInstanceId,
+        targetInstanceId: targetId,
+        boardPosition: pendingBoardPosition ?? undefined,
+      });
+    } else if (targetingMode === "tactique_keywords" && selectedCardInstanceId) {
+      // targetId is JSON-encoded keyword array from overlay
+      const { pendingBoardPosition, pendingTargetInstanceId } = get();
+      const keywords = JSON.parse(targetId) as import("@/lib/game/types").Keyword[];
+      get().dispatchAction({
+        type: "play_card",
+        cardInstanceId: selectedCardInstanceId,
+        targetInstanceId: pendingTargetInstanceId ?? undefined,
+        tactiqueKeywords: keywords,
+        boardPosition: pendingBoardPosition ?? undefined,
+      });
+    } else if (targetingMode === "graveyard" && selectedCardInstanceId) {
+      const { pendingBoardPosition } = get();
+      get().dispatchAction({
+        type: "play_card",
+        cardInstanceId: selectedCardInstanceId,
+        graveyardTargetInstanceId: targetId,
+        boardPosition: pendingBoardPosition ?? undefined,
+      });
+    } else if (targetingMode === "divination" && selectedCardInstanceId) {
+      // targetId is the index as string for divination
+      const { pendingBoardPosition } = get();
+      get().dispatchAction({
+        type: "play_card",
+        cardInstanceId: selectedCardInstanceId,
+        divinationChoiceIndex: parseInt(targetId) || 0,
+        boardPosition: pendingBoardPosition ?? undefined,
+      });
     } else if (targetingMode === "hero_power") {
       get().dispatchAction({
         type: "hero_power",
@@ -394,6 +611,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
       selectedAttackerInstanceId: null,
       validTargets: [],
       targetingMode: "none",
+      pendingBoardPosition: null,
+      divinationCards: [],
+      tactiqueAvailableKeywords: [],
+      tactiqueMaxSelections: 0,
+      pendingTargetInstanceId: null,
     });
   },
 

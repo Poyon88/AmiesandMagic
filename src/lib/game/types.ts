@@ -183,6 +183,9 @@ export interface PlayCardAction {
   cardInstanceId: string;
   targetInstanceId?: string;
   boardPosition?: number;
+  graveyardTargetInstanceId?: string;
+  divinationChoiceIndex?: number;
+  tactiqueKeywords?: Keyword[];
 }
 
 export interface AttackAction {

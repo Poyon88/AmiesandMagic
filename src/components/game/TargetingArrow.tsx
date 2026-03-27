@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 interface TargetingArrowProps {
-  targetingMode: "none" | "attack" | "spell" | "hero_power";
+  targetingMode: "none" | "attack" | "spell" | "creature" | "graveyard" | "divination" | "tactique_keywords" | "hero_power";
   sourceInstanceId: string | null;
   hoveredTargetId: string | null;
 }
@@ -108,7 +108,7 @@ export default function TargetingArrow({
       );
 
       // Update stroke color live (attack vs spell vs hero_power)
-      const color = modeRef.current === "attack" ? "#ef4444" : modeRef.current === "hero_power" ? "#eab308" : "#a855f7";
+      const color = modeRef.current === "attack" ? "#ef4444" : modeRef.current === "creature" ? "#2ecc71" : modeRef.current === "hero_power" ? "#eab308" : "#a855f7";
       pathRef.current.setAttribute("stroke", color);
       glowPathRef.current.setAttribute("stroke", color);
       arrowheadRef.current.setAttribute("fill", color);

@@ -577,7 +577,9 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       const x = Math.max(1, cardInstance.card.mana_cost - 1);
       const resurrectable = player.graveyard.filter(c => c.card.card_type === "creature" && c.card.mana_cost <= x);
       if (resurrectable.length > 0 && player.board.length < MAX_BOARD_SIZE) {
-        const target = resurrectable[resurrectable.length - 1]; // most recently dead
+        const target = (action.graveyardTargetInstanceId
+          ? resurrectable.find(c => c.instanceId === action.graveyardTargetInstanceId)
+          : resurrectable[resurrectable.length - 1]) ?? resurrectable[resurrectable.length - 1];
         player.graveyard = player.graveyard.filter(c => c !== target);
         const revived = createCardInstance(target.card);
         revived.hasSummoningSickness = true;
@@ -589,22 +591,19 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     if (hasKw(cardInstance, "heritage_du_cimetiere")) {
       const graveCreatures = player.graveyard.filter(c => c.card.card_type === "creature");
       if (graveCreatures.length > 0) {
-        // Pick the target (use action.targetInstanceId or last dead)
-        const graveTarget = action.targetInstanceId
-          ? graveCreatures.find(c => c.instanceId === action.targetInstanceId)
-          : graveCreatures[graveCreatures.length - 1];
-        if (graveTarget) {
-          const newKeywords = [...new Set([...cardInstance.card.keywords, ...graveTarget.card.keywords])];
-          cardInstance.card = { ...cardInstance.card, keywords: newKeywords };
-        }
+        const graveTarget = (action.graveyardTargetInstanceId
+          ? graveCreatures.find(c => c.instanceId === action.graveyardTargetInstanceId)
+          : graveCreatures[graveCreatures.length - 1]) ?? graveCreatures[graveCreatures.length - 1];
+        const newKeywords = [...new Set([...cardInstance.card.keywords, ...graveTarget.card.keywords])];
+        cardInstance.card = { ...cardInstance.card, keywords: newKeywords };
       }
     }
 
     // Rappel: remettre une carte du cimetière en main
     if (hasKw(cardInstance, "rappel") && player.graveyard.length > 0) {
-      const recallTarget = action.targetInstanceId
-        ? player.graveyard.find(c => c.instanceId === action.targetInstanceId)
-        : player.graveyard[player.graveyard.length - 1];
+      const recallTarget = (action.graveyardTargetInstanceId
+        ? player.graveyard.find(c => c.instanceId === action.graveyardTargetInstanceId)
+        : player.graveyard[player.graveyard.length - 1]) ?? player.graveyard[player.graveyard.length - 1];
       if (recallTarget && player.hand.length < MAX_HAND_SIZE) {
         player.graveyard = player.graveyard.filter(c => c !== recallTarget);
         const refreshed = createCardInstance(recallTarget.card);
@@ -612,14 +611,14 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       }
     }
 
-    // Divination: reveal top 3 cards, put 1 on top, 2 on bottom
+    // Divination: reveal top 3 cards, player chooses 1 to keep on top
     if (hasKw(cardInstance, "divination") && player.deck.length > 0) {
-      // AI/simplified: keep the best (highest mana cost) on top
-      const top3 = player.deck.splice(0, Math.min(3, player.deck.length));
-      top3.sort((a, b) => b.card.mana_cost - a.card.mana_cost);
-      player.deck.unshift(top3[0]); // best on top
-      for (let i = 1; i < top3.length; i++) {
-        player.deck.push(top3[i]); // rest on bottom
+      const count = Math.min(3, player.deck.length);
+      const top3 = player.deck.splice(0, count);
+      const chosenIdx = Math.min(action.divinationChoiceIndex ?? 0, top3.length - 1);
+      player.deck.unshift(top3[chosenIdx]); // chosen goes on top
+      for (let i = 0; i < top3.length; i++) {
+        if (i !== chosenIdx) player.deck.push(top3[i]); // rest on bottom
       }
     }
 
@@ -655,11 +654,14 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // Tactique X: attribue X capacités choisies à un allié (simplified: copy 1 keyword)
     if (hasKw(cardInstance, "tactique") && action.targetInstanceId) {
       const tacticTarget = player.board.find(c => c.instanceId === action.targetInstanceId && c !== cardInstance);
-      if (tacticTarget && cardInstance.card.keywords.length > 0) {
-        const grantable = cardInstance.card.keywords.filter(kw => kw !== "tactique" && !tacticTarget.card.keywords.includes(kw));
-        if (grantable.length > 0) {
-          const kwToGrant = grantable[0];
-          tacticTarget.card = { ...tacticTarget.card, keywords: [...tacticTarget.card.keywords, kwToGrant] };
+      if (tacticTarget) {
+        // Use player-chosen keywords if provided, else fallback to first grantable
+        const kwsToGrant = action.tactiqueKeywords
+          ?? cardInstance.card.keywords.filter(kw => kw !== "tactique" && !tacticTarget.card.keywords.includes(kw)).slice(0, 1);
+        for (const kw of kwsToGrant) {
+          if (!tacticTarget.card.keywords.includes(kw)) {
+            tacticTarget.card = { ...tacticTarget.card, keywords: [...tacticTarget.card.keywords, kw] };
+          }
         }
       }
     }
@@ -1361,9 +1363,85 @@ export function getValidTargets(state: GameState, attackerInstanceId: string): s
 }
 
 export function needsTarget(card: Card): boolean {
-  if (card.card_type !== "spell" || !card.spell_effect) return false;
-  const target = card.spell_effect.target;
-  return target === "any" || target === "any_creature" || target === "friendly_creature" || target === "enemy_creature";
+  if (card.card_type === "spell" && card.spell_effect) {
+    const target = card.spell_effect.target;
+    return target === "any" || target === "any_creature" || target === "friendly_creature" || target === "enemy_creature";
+  }
+  return creatureNeedsTarget(card);
+}
+
+const CREATURE_TARGETING_KEYWORDS: Keyword[] = [
+  "sacrifice", "corruption", "malediction", "paralysie",
+  "permutation", "vampirisme", "mimique", "metamorphose",
+  "benediction", "tactique",
+];
+
+export function creatureNeedsTarget(card: Card): boolean {
+  if (card.card_type !== "creature") return false;
+  return card.keywords.some(kw => CREATURE_TARGETING_KEYWORDS.includes(kw));
+}
+
+export function getCreatureTargets(state: GameState, card: Card): string[] {
+  const player = state.players[state.currentPlayerIndex];
+  const opponent = state.players[state.currentPlayerIndex === 0 ? 1 : 0];
+
+  const filterEnemyTargetable2 = (creatures: CardInstance[]) =>
+    creatures.filter(c =>
+      !hasKw(c, "invisible")
+      && !hasKw(c, "transcendance")
+      && !(hasKw(c, "ombre") && !c.ombreRevealed)
+    );
+
+  // Determine target pool based on the first targeting keyword found
+  for (const kw of card.keywords) {
+    switch (kw) {
+      case "sacrifice":
+      case "benediction":
+      case "tactique":
+        return player.board.map(c => c.instanceId);
+      case "corruption":
+      case "malediction":
+      case "paralysie":
+      case "permutation":
+      case "vampirisme":
+        return filterEnemyTargetable2(opponent.board).map(c => c.instanceId);
+      case "mimique":
+      case "metamorphose":
+        return [
+          ...player.board.map(c => c.instanceId),
+          ...filterEnemyTargetable2(opponent.board).map(c => c.instanceId),
+        ];
+    }
+  }
+  return [];
+}
+
+const GRAVEYARD_TARGETING_KEYWORDS: Keyword[] = ["rappel", "heritage_du_cimetiere", "exhumation"];
+
+export function creatureNeedsGraveyardTarget(card: Card): boolean {
+  if (card.card_type !== "creature") return false;
+  return card.keywords.some(kw => GRAVEYARD_TARGETING_KEYWORDS.includes(kw));
+}
+
+export function getGraveyardTargets(state: GameState, card: Card): string[] {
+  const player = state.players[state.currentPlayerIndex];
+  for (const kw of card.keywords) {
+    if (kw === "rappel") {
+      return player.graveyard.map(c => c.instanceId);
+    }
+    if (kw === "heritage_du_cimetiere") {
+      return player.graveyard.filter(c => c.card.card_type === "creature").map(c => c.instanceId);
+    }
+    if (kw === "exhumation") {
+      const x = Math.max(1, card.mana_cost - 1);
+      return player.graveyard.filter(c => c.card.card_type === "creature" && c.card.mana_cost <= x).map(c => c.instanceId);
+    }
+  }
+  return [];
+}
+
+export function creatureNeedsDivination(card: Card): boolean {
+  return card.card_type === "creature" && card.keywords.includes("divination" as Keyword);
 }
 
 export function getSpellTargets(state: GameState, card: Card): string[] {
