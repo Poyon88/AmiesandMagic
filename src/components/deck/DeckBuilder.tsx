@@ -80,10 +80,24 @@ export default function DeckBuilder({
   const [keywordFilter, setKeywordFilter] = useState<Keyword | null>(null);
   const [factionFilter, setFactionFilter] = useState<string | null>(null);
   const [rarityFilter, setRarityFilter] = useState<string | null>(null);
+  const [raceFilter, setRaceFilter] = useState<string | null>(null);
+  const [clanFilter, setClanFilter] = useState<string | null>(null);
 
   const factions = useMemo(() => {
     const set = new Set<string>();
     cards.forEach(c => { if (c.faction) set.add(c.faction); });
+    return Array.from(set).sort();
+  }, [cards]);
+
+  const races = useMemo(() => {
+    const set = new Set<string>();
+    cards.forEach(c => { if (c.race) set.add(c.race); });
+    return Array.from(set).sort();
+  }, [cards]);
+
+  const clans = useMemo(() => {
+    const set = new Set<string>();
+    cards.forEach(c => { if (c.clan) set.add(c.clan); });
     return Array.from(set).sort();
   }, [cards]);
 
@@ -106,9 +120,13 @@ export default function DeckBuilder({
         return false;
       if (rarityFilter !== null && card.rarity !== rarityFilter)
         return false;
+      if (raceFilter !== null && card.race !== raceFilter)
+        return false;
+      if (clanFilter !== null && card.clan !== clanFilter)
+        return false;
       return true;
     });
-  }, [cards, search, manaCostFilter, typeFilter, keywordFilter, factionFilter, rarityFilter]);
+  }, [cards, search, manaCostFilter, typeFilter, keywordFilter, factionFilter, rarityFilter, raceFilter, clanFilter]);
 
   const sortedDeckEntries = useMemo(() => {
     return Array.from(deckCards.values()).sort(
@@ -406,7 +424,7 @@ export default function DeckBuilder({
             }
             className="px-2 py-1 bg-secondary border border-card-border rounded text-xs text-foreground/70 focus:outline-none"
           >
-            <option value="">Keywords</option>
+            <option value="">Capacités</option>
             {KEYWORDS.map((kw) => (
               <option key={kw} value={kw}>
                 {KEYWORD_LABELS[kw]}
@@ -421,6 +439,26 @@ export default function DeckBuilder({
             <option value="">Factions</option>
             {factions.map((f) => (
               <option key={f} value={f}>{f}</option>
+            ))}
+          </select>
+          <select
+            value={raceFilter ?? ""}
+            onChange={(e) => setRaceFilter(e.target.value || null)}
+            className="px-2 py-1 bg-secondary border border-card-border rounded text-xs text-foreground/70 focus:outline-none"
+          >
+            <option value="">Races</option>
+            {races.map((r) => (
+              <option key={r} value={r}>{r}</option>
+            ))}
+          </select>
+          <select
+            value={clanFilter ?? ""}
+            onChange={(e) => setClanFilter(e.target.value || null)}
+            className="px-2 py-1 bg-secondary border border-card-border rounded text-xs text-foreground/70 focus:outline-none"
+          >
+            <option value="">Clans</option>
+            {clans.map((c) => (
+              <option key={c} value={c}>{c}</option>
             ))}
           </select>
           <div className="flex gap-0.5">

@@ -43,6 +43,7 @@ interface ForgeCard {
   defense: number | null;
   power: number | null;
   keywords: string[];
+  keywordXValues?: Record<string, number>;
   ability: string;
   flavorText: string;
   illustrationPrompt: string;
@@ -110,6 +111,7 @@ export default function CardForge() {
   const [manualFlavorText, setManualFlavorText] = useState("");
   const [manualIllustrationPrompt, setManualIllustrationPrompt] = useState("");
   const [manualKeywords, setManualKeywords] = useState<string[]>([]);
+  const [keywordXValues, setKeywordXValues] = useState<Record<string, number>>({});
 
   const availableManualKeywords = Object.entries(KEYWORDS)
     .filter(([id, kw]) => {
@@ -121,7 +123,12 @@ export default function CardForge() {
   const manualBudgetTotal = Math.round(manualMana * 10 * (RARITY_MAP[rarity]?.multiplier ?? 1));
   const manualBudgetUsed = Math.round(
     (type === "Unité" ? (manualAttack * 5 + manualDefense * 4) : manualPower * 5)
-    + manualKeywords.reduce((sum, kw) => sum + (KEYWORDS[kw]?.cost || 0), 0)
+    + manualKeywords.reduce((sum, kw) => {
+      const kwDef = KEYWORDS[kw];
+      if (!kwDef) return sum;
+      const x = keywordXValues[kw] ?? 1;
+      return sum + kwDef.cost + kwDef.costPerX * Math.max(0, x - 1);
+    }, 0)
   );
   const budgetRatio = manualBudgetTotal > 0 ? manualBudgetUsed / manualBudgetTotal : 0;
   const budgetColor = budgetRatio <= 0.85 ? "#27ae60" : budgetRatio <= 1.0 ? "#f39c12" : "#e74c3c";
@@ -136,6 +143,7 @@ export default function CardForge() {
     defense: type === "Unité" ? manualDefense : null,
     power: type !== "Unité" ? manualPower : null,
     keywords: manualKeywords,
+    keywordXValues,
     ability: manualAbility,
     flavorText: manualFlavorText,
     illustrationPrompt: manualIllustrationPrompt,
@@ -147,7 +155,7 @@ export default function CardForge() {
   const resetManualForm = useCallback(() => {
     setManualName(""); setManualMana(3); setManualAttack(3); setManualDefense(3);
     setManualPower(2); setManualAbility(""); setManualFlavorText("");
-    setManualIllustrationPrompt(""); setManualKeywords([]); setCard(null);
+    setManualIllustrationPrompt(""); setManualKeywords([]); setKeywordXValues({}); setCard(null);
     setEditedPrompt(null); setSaveResult(null);
     setCardImages(prev => Object.fromEntries(Object.entries(prev).filter(([k]) => k !== "manual_preview")));
   }, []);
@@ -171,13 +179,24 @@ export default function CardForge() {
     };
     setCard(newCard);
     setHistory(h => [newCard, ...h].slice(0, 30));
-  }, [faction, type, rarity, manualName, manualMana, manualAttack, manualDefense, manualPower, manualKeywords, manualAbility, manualFlavorText, manualIllustrationPrompt, manualBudgetTotal, manualBudgetUsed]);
+  }, [faction, type, rarity, manualName, manualMana, manualAttack, manualDefense, manualPower, manualKeywords, keywordXValues, manualAbility, manualFlavorText, manualIllustrationPrompt, manualBudgetTotal, manualBudgetUsed]);
 
   const forgeCard = useCallback(async (f = faction, t = type, r = rarity) => {
     setLoading(true);
-    const stats = generateCardStats(f, t, r, null, race || undefined);
+    // Use manually-set mana if changed from default, and pass race for keyword selection
+    const fixedMana = manualMana !== 3 ? manualMana : null;
+    const stats = generateCardStats(f, t, r, fixedMana, race || undefined);
+    // If manual keywords are set, override generated ones
+    if (manualKeywords.length > 0) {
+      stats.keywords = manualKeywords;
+    }
     let text: CardText = { name: "Inconnu", ability: "—", flavorText: "", illustrationPrompt: "" };
-    try { text = await generateCardText(f, t, r, stats, race || undefined, clan || undefined); } catch { /* fallback above */ }
+    try {
+      text = await generateCardText(f, t, r, stats, race || undefined, clan || undefined);
+    } catch { /* fallback above */ }
+    // Keep manually-entered name/ability if set
+    if (manualName) text.name = manualName;
+    if (manualAbility) text.ability = manualAbility;
     const newCard: ForgeCard = {
       id: buildId(), name: text.name || "Inconnu",
       faction: f, race, clan, cardAlignment, type: t, rarity: r, ...stats,
@@ -196,12 +215,20 @@ export default function CardForge() {
     setManualDefense(newCard.defense ?? 3);
     setManualPower(newCard.power ?? 2);
     setManualKeywords(newCard.keywords);
+    // Use X values from generator (budget-aware), fallback to mana/3
+    const autoXValues: Record<string, number> = { ...(stats.keywordXValues || {}) };
+    for (const kw of newCard.keywords) {
+      if (KEYWORDS[kw]?.scalable && !(kw in autoXValues)) {
+        autoXValues[kw] = Math.max(1, Math.floor(newCard.mana / 3));
+      }
+    }
+    setKeywordXValues(autoXValues);
     setManualAbility(newCard.ability);
     setManualFlavorText(newCard.flavorText);
     setManualIllustrationPrompt(newCard.illustrationPrompt);
     setLoading(false);
     return newCard;
-  }, [faction, type, rarity]);
+  }, [faction, type, rarity, race, clan, manualMana, manualName, manualAbility, manualKeywords]);
 
   const startBulk = useCallback(async () => {
     abortRef.current = false;
@@ -210,15 +237,16 @@ export default function CardForge() {
     const results: ForgeCard[] = [];
     for (let i = 0; i < bulkCount; i++) {
       if (abortRef.current) break;
-      const f = pick(Object.keys(FACTIONS));
-      const t = pick(TYPES);
-      const r = pickRarity();
-      const stats = generateCardStats(f, t, r);
-      let text: CardText = { name: "Inconnu", ability: "—", flavorText: "", illustrationPrompt: "" };
-      try { text = await generateCardText(f, t, r, stats, race || undefined, clan || undefined); } catch { /* fallback above */ }
+      // Use selected values if set, otherwise randomize
+      const f = faction || pick(Object.keys(FACTIONS));
+      const t = type || pick(TYPES);
+      const r = rarity || pickRarity();
       const facData = FACTIONS[f];
-      const bulkRace = facData?.races ? pick(facData.races) : "";
-      const bulkClan = facData?.clans ? pick(facData.clans.names) : "";
+      const bulkRace = race || (facData?.races ? pick(facData.races) : "");
+      const bulkClan = clan || (facData?.clans ? pick(facData.clans.names) : "");
+      const stats = generateCardStats(f, t, r, null, bulkRace || undefined);
+      let text: CardText = { name: "Inconnu", ability: "—", flavorText: "", illustrationPrompt: "" };
+      try { text = await generateCardText(f, t, r, stats, bulkRace || undefined, bulkClan || undefined); } catch { /* fallback above */ }
       const c: ForgeCard = {
         id: buildId(), name: text.name || "Inconnu",
         faction: f, race: bulkRace, clan: bulkClan, cardAlignment: facData?.alignment === "spéciale" ? pick(["bon","neutre","maléfique"]) : (facData?.alignment || "neutre"),
@@ -232,7 +260,7 @@ export default function CardForge() {
       setBulkProgress({ done: i + 1, total: bulkCount });
     }
     setBulkProgress(null);
-  }, [bulkCount]);
+  }, [bulkCount, faction, type, rarity, race, clan]);
 
   const exportJSON = (cards: ForgeCard[]) => {
     const blob = new Blob([JSON.stringify(cards, null, 2)], { type: "application/json" });
@@ -250,17 +278,40 @@ export default function CardForge() {
   };
 
   const FORGE_TO_GAME_KEYWORD: Record<string, Keyword> = {
+    // Legacy aliases
     "Traque": "charge", "Provocation": "taunt", "Bouclier": "divine_shield", "Vol": "ranged",
+    // Tier 0
     "Loyauté": "loyaute", "Ancré": "ancre", "Résistance": "resistance",
-    "Premier Frappe": "premier_frappe", "Berserk": "berserk", "Précision": "precision",
-    "Drain de vie": "drain_de_vie", "Esquive": "esquive", "Poison": "poison",
-    "Célérité": "celerite", "Terreur": "terreur", "Armure": "armure",
-    "Commandement": "commandement", "Fureur": "fureur", "Double Attaque": "double_attaque",
-    "Invisible": "invisible", "Liaison de vie": "liaison_de_vie", "Ombre": "ombre",
-    "Sacrifice": "sacrifice", "Maléfice": "malefice", "Indestructible": "indestructible",
-    "Régénération": "regeneration", "Corruption": "corruption",
-    "Pacte de sang": "pacte_de_sang", "Souffle de feu": "souffle_de_feu",
+    "Première Frappe": "premiere_frappe", "Berserk": "berserk",
+    // Tier 1 — Terrain
+    "Précision": "precision", "Drain de vie": "drain_de_vie", "Esquive": "esquive",
+    "Poison": "poison", "Célérité": "celerite",
+    "Augure": "augure", "Bénédiction": "benediction", "Bravoure": "bravoure",
+    "Pillage": "pillage", "Riposte X": "riposte",
+    // Tier 1 — Cimetière / Main
+    "Rappel": "rappel", "Combustion": "combustion",
+    // Tier 2 — Terrain
+    "Terreur": "terreur", "Armure": "armure", "Commandement": "commandement",
+    "Fureur": "fureur", "Double Attaque": "double_attaque", "Invisible": "invisible",
+    "Canalisation": "canalisation", "Contresort": "contresort",
+    "Convocation X": "convocation", "Malédiction": "malediction",
+    "Nécrophagie": "necrophagie", "Paralysie": "paralysie",
+    "Permutation": "permutation", "Persécution X": "persecution",
+    // Tier 2 — Cimetière / Main / Mixte
+    "Catalyse": "catalyse", "Ombre du passé": "ombre_du_passe",
+    "Profanation X": "profanation", "Prescience X": "prescience",
+    "Suprématie": "suprematie", "Divination": "divination",
+    // Tier 3
+    "Liaison de vie": "liaison_de_vie", "Ombre": "ombre",
+    "Sacrifice": "sacrifice", "Maléfice": "malefice",
+    "Indestructible": "indestructible", "Régénération": "regeneration", "Corruption": "corruption",
+    "Carnage X": "carnage", "Héritage X": "heritage", "Mimique": "mimique",
+    "Métamorphose": "metamorphose", "Tactique X": "tactique",
+    "Exhumation X": "exhumation", "Héritage du cimetière": "heritage_du_cimetiere",
+    // Tier 4
+    "Pacte de sang": "pacte_de_sang", "Souffle de feu X": "souffle_de_feu",
     "Domination": "domination", "Résurrection": "resurrection", "Transcendance": "transcendance",
+    "Vampirisme X": "vampirisme",
   };
 
   const [saving, setSaving] = useState(false);
@@ -307,7 +358,32 @@ export default function CardForge() {
     setManualAbility(dbCard.effect_text || "");
     setManualFlavorText(dbCard.flavor_text || "");
     setManualIllustrationPrompt(dbCard.illustration_prompt || "");
-    setManualKeywords((dbCard.keywords || []).map(k => GAME_TO_FORGE_KEYWORD[k] || k));
+    const forgeKws = (dbCard.keywords || []).map(k => GAME_TO_FORGE_KEYWORD[k] || k);
+    setManualKeywords(forgeKws);
+
+    // Parse X values from effect_text (format: [Keyword1 2, Keyword2 3])
+    const xMatch = (dbCard.effect_text || "").match(/\[([^\]]+)\]/);
+    if (xMatch) {
+      const parsed: Record<string, number> = {};
+      for (const part of xMatch[1].split(",")) {
+        const trimmed = part.trim();
+        const lastSpace = trimmed.lastIndexOf(" ");
+        if (lastSpace > 0) {
+          const kwName = trimmed.slice(0, lastSpace);
+          const val = parseInt(trimmed.slice(lastSpace + 1));
+          if (!isNaN(val)) {
+            // Find matching forge keyword with " X" suffix
+            const fullName = `${kwName} X`;
+            if (forgeKws.includes(fullName)) {
+              parsed[fullName] = val;
+            }
+          }
+        }
+      }
+      setKeywordXValues(parsed);
+    } else {
+      setKeywordXValues({});
+    }
 
     // Set faction/type/rarity/race/clan from card
     if (dbCard.faction && FACTIONS[dbCard.faction]) setFaction(dbCard.faction);
@@ -382,7 +458,12 @@ export default function CardForge() {
         .map(k => FORGE_TO_GAME_KEYWORD[k])
         .filter((k): k is Keyword => !!k);
 
-      const effectText = forgeCard.ability || "";
+      // Build effect text with X values appended for scalable keywords
+      const xParts = Object.entries(forgeCard.keywordXValues || {})
+        .filter(([kw]) => forgeCard.keywords.includes(kw))
+        .map(([kw, x]) => `${kw.replace(/ X$/, "")} ${x}`)
+        .join(", ");
+      const effectText = [forgeCard.ability || "", xParts ? `[${xParts}]` : ""].filter(Boolean).join(" ");
 
       let imageBase64: string | null = null;
       let imageMimeType: string | null = null;
@@ -764,7 +845,7 @@ export default function CardForge() {
                               {"💧"}{c.mana_cost}
                               {c.attack != null && <>{" · ⚔"}{c.attack}{" ❤"}{c.health}</>}
                               {c.faction && <>{" · "}{c.faction}</>}
-                              {c.keywords?.length > 0 && <>{" · "}{c.keywords.length}{" kw"}</>}
+                              {c.keywords?.length > 0 && <>{" · "}{c.keywords.length}{" cap."}</>}
                             </div>
                           </div>
                           <button onClick={(e) => { e.stopPropagation(); setDeleteConfirmId(c.id); }} style={{
@@ -983,22 +1064,46 @@ export default function CardForge() {
                     <span style={{ color: budgetColor, fontWeight: 700, fontFamily: "'Cinzel',serif" }}>{manualBudgetUsed}/{manualBudgetTotal}</span>
                   </div>
 
-                  {/* Keywords */}
+                  {/* Capacités */}
                   <div>
-                    <label style={{ fontSize: 9, color: "#666", letterSpacing: 1 }}>KEYWORDS ({manualKeywords.length})</label>
+                    <label style={{ fontSize: 9, color: "#666", letterSpacing: 1 }}>CAPACITÉS ({manualKeywords.length})</label>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginTop: 4 }}>
-                      {availableManualKeywords.map(([id]) => {
+                      {availableManualKeywords.map(([id, kw]) => {
                         const selected = manualKeywords.includes(id);
+                        const isScalable = kw.scalable;
                         return (
-                          <button key={id} onClick={() => setManualKeywords(prev => selected ? prev.filter(k => k !== id) : [...prev, id])}
-                            style={{
-                              padding: "3px 7px", borderRadius: 5, cursor: "pointer",
-                              background: selected ? `${fac.color}22` : "#fff",
-                              border: `1px solid ${selected ? fac.color : "#e0e0e0"}`,
-                              color: selected ? fac.color : "#999",
-                              fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: selected ? 700 : 400,
-                              transition: "all 0.15s",
-                            }}>{id}</button>
+                          <div key={id} style={{ display: "inline-flex", alignItems: "center", gap: 2 }}>
+                            <button onClick={() => {
+                              setManualKeywords(prev => selected ? prev.filter(k => k !== id) : [...prev, id]);
+                              if (selected && isScalable) {
+                                setKeywordXValues(prev => { const next = { ...prev }; delete next[id]; return next; });
+                              } else if (!selected && isScalable) {
+                                setKeywordXValues(prev => ({ ...prev, [id]: 1 }));
+                              }
+                            }}
+                              style={{
+                                padding: "3px 7px", borderRadius: isScalable && selected ? "5px 0 0 5px" : 5, cursor: "pointer",
+                                background: selected ? `${fac.color}22` : "#fff",
+                                border: `1px solid ${selected ? fac.color : "#e0e0e0"}`,
+                                color: selected ? fac.color : "#999",
+                                fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: selected ? 700 : 400,
+                                transition: "all 0.15s",
+                              }}>{id.replace(/ X$/, "")}{isScalable && !selected ? " X" : ""}</button>
+                            {isScalable && selected && (
+                              <input
+                                type="number" min={1} max={10}
+                                value={keywordXValues[id] ?? 1}
+                                onChange={e => setKeywordXValues(prev => ({ ...prev, [id]: Math.max(1, Math.min(10, parseInt(e.target.value) || 1)) }))}
+                                style={{
+                                  width: 32, padding: "3px 4px", borderRadius: "0 5px 5px 0",
+                                  border: `1px solid ${fac.color}`, borderLeft: "none",
+                                  background: `${fac.color}11`, color: fac.color,
+                                  fontSize: 10, fontFamily: "'Cinzel',serif", fontWeight: 700,
+                                  textAlign: "center", outline: "none",
+                                }}
+                              />
+                            )}
+                          </div>
                         );
                       })}
                     </div>
@@ -1006,9 +1111,9 @@ export default function CardForge() {
 
                   {/* Ability */}
                   <div>
-                    <label style={{ fontSize: 9, color: "#666", letterSpacing: 1 }}>CAPACITÉ</label>
+                    <label style={{ fontSize: 9, color: "#666", letterSpacing: 1 }}>POUVOIR SPÉCIFIQUE</label>
                     <textarea value={manualAbility} onChange={e => setManualAbility(e.target.value)}
-                      placeholder="Texte de capacité…"
+                      placeholder="Texte du pouvoir spécifique…"
                       rows={3}
                       style={{ width: "100%", padding: "6px 10px", borderRadius: 6, border: "1px solid #e0e0e0", background: "#fff", color: "#333", fontFamily: "'Crimson Text',serif", fontSize: 12, marginTop: 3, resize: "vertical" }}
                     />
@@ -1215,15 +1320,15 @@ export default function CardForge() {
                   ))}
                 </div>
                 <div style={{ marginTop: 8, fontSize: 8.5, color: "#333", lineHeight: 1.8 }}>
-                  L&apos;algorithme alloue d&apos;abord ATK (45% du budget restant), puis DEF (55%), puis tente d&apos;ajouter des keywords jusqu&apos;à épuisement.
+                  L&apos;algorithme alloue d&apos;abord ATK (45% du budget restant), puis DEF (55%), puis tente d&apos;ajouter des capacités jusqu&apos;à épuisement.
                   Les multiplicateurs de faction (ATK weight, DEF weight) modifient les plages de tirage.
                 </div>
               </Panel>
 
               {/* Keyword costs */}
-              <Panel title="COÛT DES KEYWORDS">
+              <Panel title="COÛT DES CAPACITÉS">
                 <div style={{ fontSize: 8, color: "#333", lineHeight: 1.9, marginBottom: 10 }}>
-                  <strong style={{ color: "#aaa" }}>1 SE (stat équivalent)</strong> = ~4.5 pts de budget = 1 point de stat vanilla que le keyword remplace.
+                  <strong style={{ color: "#aaa" }}>1 SE (stat équivalent)</strong> = ~4.5 pts de budget = 1 point de stat vanilla que la capacité remplace.
                   &nbsp;ATK coûte <strong style={{ color: "#ff6b6b" }}>5 pts</strong>, DEF coûte <strong style={{ color: "#74b9ff" }}>4 pts</strong>.
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(210px,1fr))", gap: 5 }}>

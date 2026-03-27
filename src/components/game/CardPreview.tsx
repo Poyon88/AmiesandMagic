@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { CardInstance } from "@/lib/game/types";
+import { KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText } from "@/lib/game/keyword-labels";
 import CardArt from "@/components/cards/CardArt";
 
 interface CardPreviewProps {
@@ -85,20 +86,28 @@ export default function CardPreview({ cardInstance, anchorRef, position = "above
         {/* Effect */}
         <div className="px-3 py-2 flex-1">
           <p className="text-xs text-foreground/70 leading-relaxed">
-            {card.effect_text}
+            {cleanEffectText(card.effect_text)}
           </p>
         </div>
 
         {/* Keywords */}
-        {card.keywords.length > 0 && (
+        {card.keywords.length > 0 && (() => {
+          const xVals = parseXValuesFromEffectText(card.effect_text);
+          return (
           <div className="px-3 pb-1 flex gap-1 flex-wrap">
-            {card.keywords.map((kw) => (
-              <span key={kw} className="text-[10px] px-1.5 py-0.5 rounded bg-primary/20 text-primary font-medium capitalize">
-                {kw.replace("_", " ")}
+            {card.keywords.map((kw) => {
+              const x = xVals[kw];
+              const label = KEYWORD_LABELS[kw] || kw.replace("_", " ");
+              const displayLabel = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
+              return (
+              <span key={kw} className="text-[10px] px-1.5 py-0.5 rounded bg-primary/20 text-primary font-medium">
+                {displayLabel}
               </span>
-            ))}
+              );
+            })}
           </div>
-        )}
+          );
+        })()}
 
         {/* Stats */}
         {isCreature ? (

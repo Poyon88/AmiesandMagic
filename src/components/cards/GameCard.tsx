@@ -3,7 +3,8 @@
 import { useState, useRef } from "react";
 import Image from "next/image";
 import type { Card } from "@/lib/game/types";
-import { KEYWORD_SYMBOLS as keywordSymbols, KEYWORD_LABELS as keywordLabels } from "@/lib/game/keyword-labels";
+import { KEYWORD_SYMBOLS as keywordSymbols, KEYWORD_LABELS as keywordLabels, toRoman, parseXValuesFromEffectText, cleanEffectText } from "@/lib/game/keyword-labels";
+import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
 
 interface GameCardProps {
   card: Card;
@@ -134,18 +135,30 @@ export default function GameCard({
         }}>{card.name}</div>
 
         {/* Keyword symbols */}
-        {card.keywords.length > 0 && (
+        {card.keywords.length > 0 && (() => {
+          const xVals = parseXValuesFromEffectText(card.effect_text);
+          return (
           <div style={{ display: "flex", gap: 3 * s, flexWrap: "wrap" }}>
-            {card.keywords.map((kw) => (
-              <div key={kw} title={keywordLabels[kw]} style={{
-                width: 18 * s, height: 18 * s, borderRadius: 4 * s,
+            {card.keywords.map((kw) => {
+              const x = xVals[kw];
+              const label = keywordLabels[kw] || kw;
+              const displayTitle = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
+              return (
+              <div key={kw} title={displayTitle} style={{
+                minWidth: 18 * s, height: 18 * s, borderRadius: 4 * s,
+                padding: x != null ? `0 ${3 * s}px` : 0,
                 background: `${accentColor}33`, border: `1px solid ${accentColor}66`,
-                display: "flex", alignItems: "center", justifyContent: "center",
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 * s,
                 fontSize: 10 * s,
-              }}>{keywordSymbols[kw]}</div>
-            ))}
+              }}>
+                <span>{keywordSymbols[kw]}</span>
+                {x != null && <span style={{ fontSize: 7 * s, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}` }}>{toRoman(x)}</span>}
+              </div>
+              );
+            })}
           </div>
-        )}
+          );
+        })()}
 
         {/* Stats row */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -178,49 +191,75 @@ export default function GameCard({
       {/* ── Hover overlay: effect text ── */}
       <div style={{
         position: "absolute", inset: 0, zIndex: 3,
-        background: "#0d0d1aee",
+        background: "#060612f8",
         opacity: showDetails ? 1 : 0,
         transition: "opacity 0.25s ease",
         pointerEvents: showDetails ? "auto" : "none",
         display: "flex", flexDirection: "column", justifyContent: "center",
-        padding: `${14 * s}px ${10 * s}px`,
+        padding: `${16 * s}px ${14 * s}px`,
         gap: 8 * s,
+        overflowY: "auto",
       }}>
         {/* Name */}
         <div style={{
-          fontSize: 11 * s, color: accentColor, fontWeight: 700,
+          fontSize: 18 * s, color: accentColor, fontWeight: 700,
           textAlign: "center", fontFamily: "'Cinzel', serif",
-          borderBottom: `1px solid ${accentColor}44`, paddingBottom: 6 * s,
+          borderBottom: `1px solid ${accentColor}55`, paddingBottom: 7 * s,
         }}>{card.name}</div>
 
-        {/* Keywords detail */}
-        {card.keywords.length > 0 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 3 * s }}>
-            {card.keywords.map((kw) => (
-              <div key={kw} style={{ display: "flex", alignItems: "center", gap: 5 * s }}>
-                <span style={{ fontSize: 11 * s }}>{keywordSymbols[kw]}</span>
-                <span style={{ fontSize: 8 * s, color: accentColor, fontWeight: 600 }}>{keywordLabels[kw]}</span>
-              </div>
-            ))}
+        {/* Race / Clan */}
+        {(card.race || card.clan) && (
+          <div style={{ display: "flex", justifyContent: "center", gap: 6 * s, fontSize: 13 * s, color: "#ddd", fontFamily: "'Crimson Text',serif" }}>
+            {card.race && <span>{card.race}</span>}
+            {card.race && card.clan && <span style={{ color: "#888" }}>·</span>}
+            {card.clan && <span style={{ fontStyle: "italic" }}>{card.clan}</span>}
           </div>
         )}
 
+        {/* Capacités detail */}
+        {card.keywords.length > 0 && (() => {
+          const xVals = parseXValuesFromEffectText(card.effect_text);
+          return (
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 * s }}>
+            {card.keywords.map((kw) => {
+              const x = xVals[kw];
+              const label = keywordLabels[kw] || kw;
+              const displayLabel = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
+              const forgeKey = keywordLabels[kw];
+              const kwDef = forgeKey ? keywordDefs[forgeKey] : null;
+              const desc = kwDef?.desc ? (x != null ? kwDef.desc.replace(/X/g, String(x)) : kwDef.desc) : null;
+              return (
+              <div key={kw} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
+                <span style={{ fontSize: 18 * s, flexShrink: 0 }}>{keywordSymbols[kw]}</span>
+                <div>
+                  <div style={{ fontSize: 14 * s, color: accentColor, fontWeight: 700 }}>{displayLabel}</div>
+                  {desc && <div style={{ fontSize: 12 * s, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
+                </div>
+              </div>
+              );
+            })}
+          </div>
+          );
+        })()}
+
         {/* Effect text */}
+        {cleanEffectText(card.effect_text) && (
         <div style={{
-          padding: `${6 * s}px`,
-          background: `${accentColor}11`, borderRadius: 4 * s,
-          border: `1px solid ${accentColor}22`,
+          padding: `${8 * s}px ${10 * s}px`,
+          background: `${accentColor}18`, borderRadius: 5 * s,
+          border: `1px solid ${accentColor}44`,
         }}>
           <p style={{
-            margin: 0, fontSize: 9 * s, color: "#ccc",
+            margin: 0, fontSize: 13 * s, color: "#eee",
             lineHeight: 1.5, fontFamily: "'Crimson Text', serif",
-          }}>{card.effect_text}</p>
+          }}>{cleanEffectText(card.effect_text)}</p>
         </div>
+        )}
 
         {/* Flavor text */}
         {card.flavor_text && (
           <p style={{
-            margin: 0, fontSize: 8 * s, color: `${accentColor}77`,
+            margin: 0, fontSize: 12 * s, color: `${accentColor}dd`,
             fontStyle: "italic", lineHeight: 1.4, fontFamily: "'Crimson Text', serif",
             textAlign: "center",
           }}>&ldquo;{card.flavor_text}&rdquo;</p>
@@ -228,12 +267,14 @@ export default function GameCard({
 
         {/* Stats recap */}
         <div style={{
-          display: "flex", justifyContent: "center", gap: 8 * s,
-          fontSize: 8 * s, color: "#555",
+          display: "flex", justifyContent: "center", gap: 8 * s, flexWrap: "wrap",
+          fontSize: 13 * s, color: "#ccc",
+          borderTop: `1px solid ${accentColor}33`, paddingTop: 7 * s,
         }}>
-          <span>💧 {card.mana_cost}</span>
-          {isCreature && <><span style={{ color: "#f1c40f" }}>⚔ {card.attack}</span><span style={{ color: "#e74c3c" }}>❤ {card.health}</span></>}
-          <span style={{ color: "#666", textTransform: "uppercase" }}>{card.card_type}</span>
+          {card.faction && <span style={{ color: accentColor, fontWeight: 600 }}>{card.faction}</span>}
+          <span style={{ color: "#74b9ff" }}>💧{card.mana_cost}</span>
+          {isCreature && <><span style={{ color: "#f1c40f" }}>⚔{card.attack}</span><span style={{ color: "#e74c3c" }}>❤{card.health}</span></>}
+          <span style={{ color: "#bbb", textTransform: "uppercase", fontSize: 12 * s }}>{card.card_type}</span>
         </div>
       </div>
     </div>

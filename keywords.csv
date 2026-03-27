@@ -1,33 +1,62 @@
-﻿Keyword;Tier;Min Rareté;Coût (pts);SE;Description
-Loyauté;0;Commune+;2;0.5;+1 ATK pour chaque allié sur le terrain
-Ancré;0;Commune+;2;0.5;Ne peut pas être déplacé ou exilé
-Résistance;0;Commune+;5;1.0;Réduit les dégâts reçus de 1
-Provocation;0;Commune+;5;1.0;Les ennemis doivent attaquer cette unité en priorité
-Traque;0;Commune+;5;1.0;Peut attaquer dès son invocation
-Premier Frappe;0;Commune+;7;1.5;Attaque avant les autres unités au combat
-Berserk;0;Commune+;7;1.5;+2 ATK lorsque les PV sont inférieurs à 50%
-Bouclier;0;Commune+;7;1.5;Absorbe une première attaque sans dégâts
-Vol;1;Peu Commune+;7;1.5;Ignore les provocations adverses qui n ont pas Vol
-Précision;1;Peu Commune+;7;1.5;Ignore la Résistance et l Armure
-Drain de vie;1;Peu Commune+;9;2.0;Soigne votre héros des dégâts infligés
-Esquive;1;Peu Commune+;9;2.0;30% de chance d éviter une attaque
-Poison;1;Peu Commune+;9;2.0;Les unités blessées perdent 1 PV par tour
-Célérité;1;Peu Commune+;11;2.5;Peut attaquer deux fois par tour
-Terreur;2;Rare+;11;2.5;Les unités adverses perdent 1 ATK en présence de cette carte
-Armure;2;Rare+;11;2.5;Réduit tous les dégâts reçus de 2
-Commandement;2;Rare+;13;3.0;Les alliés de même faction gagnent +1/+1
-Fureur;2;Rare+;13;3.0;+3 ATK pendant un tour après avoir subi des dégâts
-Double Attaque;2;Rare+;16;3.5;Attaque deux cibles différentes par tour
-Invisible;2;Rare+;16;3.5;Ne peut pas être ciblé par des sorts adverses
-Liaison de vie;3;Épique+;16;3.5;Partage les dégâts subis avec le héros adverse
-Ombre;3;Épique+;18;4.0;Attaque directement le héros adverse, ignorant les blockers
-Sacrifice;3;Épique+;18;4.0;Détruisez un allié pour doubler l ATK pendant un tour
-Maléfice;3;Épique+;18;4.0;À la mort, inflige 3 dégâts à tous les ennemis
-Indestructible;3;Épique+;18;4.0;Survit à une mort avec 1 PV restant
-Régénération;3;Épique+;20;4.5;Récupère 2 PV au début de chaque tour
-Corruption;3;Épique+;20;4.5;Convertit une unité ennemie de ≤3 ATK à votre camp
-Pacte de sang;4;Légendaire;25;5.5;Quand cette unité meurt, invoque une copie à 0 mana
-Souffle de feu;4;Légendaire;25;5.5;Inflige 4 dégâts à toutes les unités ennemies lors de l attaque
-Domination;4;Légendaire;27;6.0;Prend le contrôle d une unité ennemie au hasard à son invocation
-Résurrection;4;Légendaire;29;6.5;Revient en jeu une fois après sa mort avec la moitié de ses PV
-Transcendance;4;Légendaire;32;7.0;Immunité totale aux sorts adverses pendant 2 tours
+Keyword;Tier;Scalable;Zone;Description
+Loyauté;0;Non;Terrain;Invocation : +1 ATK et +1 PV pour chaque allié de même race en jeu.
+Ancré;0;Non;Terrain;Ne peut pas être déplacé ou exilé.
+Résistance;0;Non;Terrain;Réduit les dégâts reçus de 1.
+Provocation;0;Non;Terrain;Les ennemis doivent attaquer cette unité en priorité.
+Traque;0;Non;Terrain;Peut attaquer dès son invocation.
+Première Frappe;0;Non;Terrain;Lorsque cette unité attaque, inflige ses dégâts en premier ; l'unité adverse ne riposte que si elle survit.
+Berserk;0;Non;Terrain;Double son ATK si ses PV actuels sont inférieurs à sa valeur de PV originale (sur la carte).
+Bouclier;0;Non;Terrain;Absorbe une première attaque sans dégâts.
+Vol;1;Non;Terrain;Ignore les provocations adverses qui n'ont pas Vol.
+Précision;1;Non;Terrain;Ignore la Résistance, l'Armure et le Bouclier.
+Drain de vie;1;Non;Terrain;Soigne votre héros des dégâts infligés.
+Esquive;1;Non;Terrain;Évite automatiquement la première attaque reçue chaque tour.
+Poison;1;Non;Terrain;Les unités blessées perdent 1 PV par tour.
+Célérité;1;Non;Terrain;Peut attaquer deux fois par tour.
+Augure;1;Non;Terrain;Quand cette unité inflige des dégâts au héros adverse, vous piochez une carte.
+Bénédiction;1;Non;Terrain;Soigne complètement l'unité ciblée.
+Bravoure;1;Non;Terrain;Double ses dégâts (arrondi au supérieur) contre les unités ayant une ATK supérieure à la sienne.
+Pillage;1;Non;Terrain;Invocation : l'adversaire défausse une carte de son choix.
+Riposte X;1;Oui;Terrain;Quand cette unité subit des dégâts, inflige X dégâts à la source de l'attaque (unité ou héros).
+Rappel;1;Non;Cimetière;Invocation : remettez une carte ciblée de votre cimetière dans votre main.
+Combustion;1;Non;Main;Invocation : défaussez une carte de votre main, puis piochez deux cartes.
+Terreur;2;Non;Terrain;Les unités adverses perdent 1 ATK en présence de cette carte.
+Armure;2;Non;Terrain;Réduit de moitié les dégâts de combat reçus (arrondi au supérieur) ; les dégâts de sorts ne sont pas réduits.
+Commandement;2;Non;Terrain;Les alliés de même faction gagnent +1/+1.
+Fureur;2;Non;Terrain;Après avoir subi des dégâts, attaque immédiatement une unité adverse au choix.
+Double Attaque;2;Non;Terrain;En phase offensive uniquement : inflige deux fois son ATK, dont la première fois en Première Frappe.
+Invisible;2;Non;Terrain;Ne peut pas être ciblé par des sorts ni par des capacités d'unités adverses.
+Canalisation;2;Non;Terrain;Tant que cette unité est en jeu, vos sorts coûtent 1 mana de moins.
+Catalyse;2;Non;Main;Invocation : réduit de 1 le coût en mana de toutes les unités de même race dans votre main.
+Contresort;2;Non;Terrain;Invocation : annule le prochain sort adverse.
+Convocation X;2;Oui;Terrain;Invocation : crée un token X/X de même race et clan (si clan indiqué sur la carte).
+Malédiction;2;Non;Terrain;Invocation : ciblez une unité ennemie, elle est exilée à la fin du prochain tour adverse.
+Nécrophagie;2;Non;Terrain;Gagne +1 ATK et +1 PV chaque fois qu'une unité (alliée ou ennemie) meurt.
+Paralysie;2;Non;Terrain;Invocation : une unité ennemie ciblée ne peut pas attaquer lors du prochain tour adverse.
+Permutation;2;Non;Terrain;Invocation : échange les PV actuels de deux unités ciblées (une alliée et une ennemie).
+Persécution X;2;Oui;Terrain;Chaque fois que cette unité attaque, inflige X dégâts au héros adverse.
+Ombre du passé;2;Non;Cimetière;Invocation : gagne +1 ATK et +1 PV par unité de même race dans votre cimetière.
+Profanation X;2;Oui;Cimetière;Invocation : exilez jusqu'à X cartes de votre cimetière ; gagne +1 ATK et +1 PV par carte exilée.
+Prescience X;2;Oui;Main;Invocation : piochez des cartes jusqu'à avoir X cartes en main.
+Suprématie;2;Non;Main;Invocation : gagne +1 ATK et +1 PV par carte dans votre main au moment de l'invocation.
+Divination;2;Non;Mixte;Invocation : révèle les 3 premières cartes de votre pioche ; placez-en une sur le dessus et les 2 autres en dessous dans l'ordre choisi.
+Liaison de vie;3;Non;Terrain;Partage les dégâts subis avec le héros adverse.
+Ombre;3;Non;Terrain;Ne peut être ciblée ni attaquée tant qu'elle n'a pas effectué une action (attaque ou capacité).
+Sacrifice;3;Non;Terrain;Invocation : détruisez un allié pour gagner ses PV et son ATK de manière permanente.
+Maléfice;3;Non;Terrain;À la mort, inflige X dégâts à toutes les unités (alliés et ennemis), X = son ATK.
+Indestructible;3;Non;Terrain;Ne subit aucun dégât de combat.
+Régénération;3;Non;Terrain;Récupère 2 PV au début de chaque tour.
+Corruption;3;Non;Terrain;Convertit l'unité ennemie sélectionnée à votre camp jusqu'à la fin du tour ; elle gagne Traque jusqu'à la fin du tour.
+Carnage X;3;Oui;Terrain;Mort : inflige X dégâts à toutes les unités en jeu (alliées et ennemies).
+Héritage X;3;Oui;Terrain;Mort : chaque unité alliée en jeu gagne +X ATK et +X PV de manière permanente.
+Mimique;3;Non;Terrain;Invocation : copie toutes les capacités d'une unité ciblée et les attribue à cette unité de manière permanente.
+Métamorphose;3;Non;Terrain;Invocation : cette unité devient une copie exacte (ATK / PV / capacités) d'une unité ciblée.
+Tactique X;3;Oui;Terrain;Invocation : attribue X capacité(s) choisie(s) à une unité alliée ciblée de manière permanente.
+Exhumation X;3;Oui;Cimetière;Invocation : ressuscite une unité de votre cimetière dont le coût en mana est égal ou inférieur à X.
+Héritage du cimetière;3;Non;Cimetière;Invocation : attribue à cette unité les capacités d'une unité ciblée dans votre cimetière.
+Pacte de sang;4;Non;Terrain;Quand cette unité meurt, invoque deux tokens 1/1 de sa race.
+Souffle de feu X;4;Oui;Terrain;Inflige X dégâts à toutes les unités ennemies lors de l'attaque (ex : Souffle de feu 2 = 2 dégâts).
+Domination;4;Non;Terrain;Prend le contrôle d'une unité ennemie au hasard à son invocation.
+Résurrection;4;Non;Terrain;Revient en jeu après sa mort avec 1 PV ; perd la capacité Résurrection à son retour.
+Transcendance;4;Non;Terrain;Immunité totale aux sorts adverses : ne peut subir aucun dégât ni effet de sort, y compris les sorts de zone.
+Vampirisme X;4;Oui;Terrain;Invocation : vole X PV à une unité ennemie ciblée et les ajoute aux PV de cette unité.

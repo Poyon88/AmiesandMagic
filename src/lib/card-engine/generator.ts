@@ -109,6 +109,7 @@ export function generateCardStats(factionId: string, type: string, rarityId: str
 
   // Keywords fréquents (40% de chance chacun, remplace les garantis)
   let keywords: string[] = [];
+  const keywordXValues: Record<string, number> = {};
   const FREQUENT_CHANCE = 0.40;
 
   if (isUnit) {
@@ -195,8 +196,20 @@ export function generateCardStats(factionId: string, type: string, rarityId: str
       if (Math.random() > slotProb) break;
       const kw = pickWeightedKeyword(available, keywords);
       if (!kw || kw.cost > budget) break;
+
+      // Scalable: determine X based on remaining budget
+      let kwCost = kw.cost;
+      if (kw.scalable && kw.costPerX > 0) {
+        const maxAffordableX = Math.max(1, Math.floor((budget - kw.cost) / kw.costPerX) + 1);
+        const desiredX = Math.max(1, Math.floor(mana / 3));
+        const x = Math.min(maxAffordableX, desiredX);
+        kwCost = kw.cost + kw.costPerX * (x - 1);
+        keywordXValues[kw.id] = x;
+      }
+
+      if (kwCost > budget) break;
       keywords.push(kw.id);
-      budget -= kw.cost;
+      budget -= kwCost;
       attempts++;
     }
   } else {
@@ -207,6 +220,7 @@ export function generateCardStats(factionId: string, type: string, rarityId: str
   return {
     mana, attack, defense, power,
     keywords: [...new Set(keywords)],
+    keywordXValues,
     budgetTotal: totalBudget,
     budgetUsed: Math.round(totalBudget - budget),
   };

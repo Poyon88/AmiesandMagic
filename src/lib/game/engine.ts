@@ -74,14 +74,25 @@ function createCardInstance(card: Card): CardInstance {
     hasDivineShield: card.keywords.includes("divine_shield"),
     attacksRemaining: 1,
     isPoisoned: false,
-    hasUsedIndestructible: false,
     hasUsedResurrection: false,
     fureurActive: false,
     fureurATKBonus: 0,
     berserkActive: false,
     berserkATKBonus: 0,
-    transcendanceTurns: card.keywords.includes("transcendance") ? 2 : 0,
     targetsAttackedThisTurn: [],
+    esquiveUsedThisTurn: false,
+    ombreRevealed: false,
+    corruptionStolenIds: [],
+    contresortActive: false,
+    maledictionTargetId: null,
+    isParalyzed: false,
+    necrophagieATKBonus: 0,
+    necrophagiePVBonus: 0,
+    persecutionX: 0,
+    riposteX: 0,
+    carnageX: 0,
+    heritageX: 0,
+    originalOwnerId: null,
   };
 }
 
@@ -144,29 +155,28 @@ export function initializeGame(
 // ============================================================
 
 function recalculateAuras(player: PlayerState, opponent: PlayerState) {
-  // Reset ATK to base + keyword bonuses (not aura)
+  // Reset ATK to base + permanent bonuses (not auras)
   for (const c of player.board) {
     let atk = c.card.attack ?? 0;
     if (c.fureurActive) atk += c.fureurATKBonus;
-    if (c.berserkActive) atk += c.berserkATKBonus;
+    atk += c.necrophagieATKBonus;
     c.currentAttack = atk;
   }
   for (const c of opponent.board) {
     let atk = c.card.attack ?? 0;
     if (c.fureurActive) atk += c.fureurATKBonus;
-    if (c.berserkActive) atk += c.berserkATKBonus;
+    atk += c.necrophagieATKBonus;
     c.currentAttack = atk;
   }
 
-  // Loyauté: +1 ATK per ally on board
-  for (const c of player.board) {
-    if (hasKw(c, "loyaute")) {
-      c.currentAttack += Math.max(0, player.board.length - 1);
-    }
-  }
-  for (const c of opponent.board) {
-    if (hasKw(c, "loyaute")) {
-      c.currentAttack += Math.max(0, opponent.board.length - 1);
+  // Loyauté: +1 ATK et +1 PV par allié de même race en jeu
+  for (const board of [player.board, opponent.board]) {
+    for (const c of board) {
+      if (hasKw(c, "loyaute") && c.card.race) {
+        const sameRaceCount = board.filter(a => a !== c && a.card.race === c.card.race).length;
+        c.currentAttack += sameRaceCount;
+        // PV bonus handled as temporary display — not permanently added to maxHealth
+      }
     }
   }
 
@@ -180,30 +190,29 @@ function recalculateAuras(player: PlayerState, opponent: PlayerState) {
     c.currentAttack = Math.max(0, c.currentAttack - opponentTerreurCount);
   }
 
-  // Commandement: same-faction allies +1/+1
+  // Commandement: alliés de même faction gagnent +1/+1
   for (const board of [player.board, opponent.board]) {
     for (const c of board) {
-      if (hasKw(c, "commandement") && c.card.race) {
+      if (hasKw(c, "commandement") && c.card.faction) {
         for (const ally of board) {
-          if (ally !== c && ally.card.race === c.card.race) {
+          if (ally !== c && ally.card.faction === c.card.faction) {
             ally.currentAttack += 1;
-            // Health buff is tricky — only add if not already buffed
-            // We handle this as a display buff, actual maxHealth unchanged
           }
         }
       }
     }
   }
 
-  // Berserk check: +2 ATK when HP < 50% of max
+  // Berserk: double ATK si PV actuels < PV originaux (sur la carte)
   for (const board of [player.board, opponent.board]) {
     for (const c of board) {
       if (hasKw(c, "berserk")) {
-        const shouldBeActive = c.currentHealth < c.maxHealth / 2;
+        const originalHP = c.card.health ?? 1;
+        const shouldBeActive = c.currentHealth < originalHP;
         if (shouldBeActive && !c.berserkActive) {
           c.berserkActive = true;
-          c.berserkATKBonus = 2;
-          c.currentAttack += 2;
+          c.berserkATKBonus = c.currentAttack; // double = add current once more
+          c.currentAttack += c.berserkATKBonus;
         } else if (!shouldBeActive && c.berserkActive) {
           c.berserkActive = false;
           c.currentAttack -= c.berserkATKBonus;
@@ -212,6 +221,8 @@ function recalculateAuras(player: PlayerState, opponent: PlayerState) {
       }
     }
   }
+
+  // Bravoure: double dégâts contre unités à ATK supérieure (handled in combat, no aura needed)
 }
 
 // ============================================================
@@ -224,15 +235,54 @@ export function startTurn(state: GameState): GameState {
   const opponent = newState.players[newState.currentPlayerIndex === 0 ? 1 : 0];
 
   newState.turnNumber++;
+
+  // Canalisation: reduce mana cost of spells (handled at play time, not here)
+
   if (player.maxMana < MAX_MANA) player.maxMana++;
   player.mana = player.maxMana;
   drawCard(player);
+
+  // Return Corruption-stolen units to opponent at start of owner's turn
+  for (const creature of [...opponent.board]) {
+    if (creature.originalOwnerId === player.id) {
+      opponent.board = opponent.board.filter(c => c !== creature);
+      creature.hasSummoningSickness = true;
+      if (player.board.length < MAX_BOARD_SIZE) {
+        player.board.push(creature);
+      } else {
+        player.graveyard.push(creature);
+      }
+      creature.originalOwnerId = null;
+    }
+  }
+
+  // Process Malédiction: exile cursed enemy units at start of their owner's turn
+  for (const creature of [...player.board]) {
+    if (creature.maledictionTargetId) {
+      const cursed = opponent.board.find(c => c.instanceId === creature.maledictionTargetId);
+      if (cursed) {
+        opponent.board = opponent.board.filter(c => c !== cursed);
+        // Exiled — not added to graveyard
+      }
+      creature.maledictionTargetId = null;
+    }
+  }
 
   for (const creature of player.board) {
     creature.hasAttacked = false;
     creature.hasSummoningSickness = false;
     creature.attacksRemaining = maxAttacksFor(creature);
     creature.targetsAttackedThisTurn = [];
+
+    // Reset esquive for the new turn
+    creature.esquiveUsedThisTurn = false;
+
+    // Reset paralysie
+    if (creature.isParalyzed) {
+      creature.isParalyzed = false;
+      creature.attacksRemaining = 0; // can't attack this turn
+      creature.hasSummoningSickness = true;
+    }
 
     // Reset fureur
     if (creature.fureurActive) {
@@ -249,11 +299,6 @@ export function startTurn(state: GameState): GameState {
     // Poison tick: -1 HP
     if (creature.isPoisoned) {
       creature.currentHealth -= 1;
-    }
-
-    // Transcendance countdown
-    if (creature.transcendanceTurns > 0) {
-      creature.transcendanceTurns--;
     }
   }
 
@@ -304,9 +349,17 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
 
   const cardInstance = player.hand[cardIndex];
   const card = cardInstance.card;
-  if (card.mana_cost > player.mana) return state;
 
-  player.mana -= card.mana_cost;
+  // Canalisation: reduce spell cost by 1 per unit with Canalisation on board
+  let manaCost = card.mana_cost;
+  if (card.card_type === "spell") {
+    const canalisationCount = player.board.filter(c => hasKw(c, "canalisation")).length;
+    manaCost = Math.max(0, manaCost - canalisationCount);
+  }
+
+  if (manaCost > player.mana) return state;
+
+  player.mana -= manaCost;
   player.hand.splice(cardIndex, 1);
 
   if (card.card_type === "creature") {
@@ -320,20 +373,46 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
 
     // ── On-summon triggers ──
 
-    // Corruption: steal weakest enemy with ATK <= 3
-    if (hasKw(cardInstance, "corruption")) {
-      const stealable = opponent.board
-        .filter(c => c.currentAttack <= 3)
-        .sort((a, b) => a.currentAttack - b.currentAttack);
-      if (stealable.length > 0 && player.board.length < MAX_BOARD_SIZE) {
-        const stolen = stealable[0];
-        opponent.board = opponent.board.filter(c => c !== stolen);
-        stolen.hasSummoningSickness = true;
-        player.board.push(stolen);
+    // Loyauté: +1 ATK et +1 PV par allié de même race (handled in recalculateAuras for ATK, PV here)
+    if (hasKw(cardInstance, "loyaute") && cardInstance.card.race) {
+      const sameRaceCount = player.board.filter(a => a !== cardInstance && a.card.race === cardInstance.card.race).length;
+      if (sameRaceCount > 0) {
+        cardInstance.currentHealth += sameRaceCount;
+        cardInstance.maxHealth += sameRaceCount;
       }
     }
 
-    // Domination: take control of random enemy
+    // Sacrifice: détruisez un allié pour gagner ses PV et ATK permanents
+    if (hasKw(cardInstance, "sacrifice") && action.targetInstanceId) {
+      const sacrificed = player.board.find(c => c.instanceId === action.targetInstanceId && c !== cardInstance);
+      if (sacrificed) {
+        cardInstance.currentAttack += sacrificed.currentAttack;
+        cardInstance.currentHealth += sacrificed.currentHealth;
+        cardInstance.maxHealth += sacrificed.currentHealth;
+        player.board = player.board.filter(c => c !== sacrificed);
+        player.graveyard.push(sacrificed);
+        processDeathTriggers([sacrificed], player, opponent);
+      }
+    }
+
+    // Corruption: vole une unité ennemie jusqu'à fin du tour, elle gagne Traque
+    if (hasKw(cardInstance, "corruption") && opponent.board.length > 0) {
+      const targetId = action.targetInstanceId;
+      const stealTarget = targetId
+        ? opponent.board.find(c => c.instanceId === targetId)
+        : opponent.board[Math.floor(rng() * opponent.board.length)];
+      if (stealTarget && player.board.length < MAX_BOARD_SIZE) {
+        opponent.board = opponent.board.filter(c => c !== stealTarget);
+        stealTarget.originalOwnerId = opponent.id;
+        stealTarget.hasSummoningSickness = false; // Traque
+        if (!stealTarget.card.keywords.includes("charge")) {
+          stealTarget.card = { ...stealTarget.card, keywords: [...stealTarget.card.keywords, "charge"] };
+        }
+        player.board.push(stealTarget);
+      }
+    }
+
+    // Domination: take control of random enemy (permanent)
     if (hasKw(cardInstance, "domination") && opponent.board.length > 0) {
       if (player.board.length < MAX_BOARD_SIZE) {
         const idx = Math.floor(rng() * opponent.board.length);
@@ -343,9 +422,264 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       }
     }
 
+    // Pillage: adversaire défausse une carte de son choix
+    if (hasKw(cardInstance, "pillage") && opponent.hand.length > 0) {
+      const discardIdx = Math.floor(rng() * opponent.hand.length);
+      const discarded = opponent.hand.splice(discardIdx, 1)[0];
+      opponent.graveyard.push(discarded);
+    }
+
+    // Contresort: annule le prochain sort adverse
+    if (hasKw(cardInstance, "contresort")) {
+      cardInstance.contresortActive = true;
+    }
+
+    // Convocation X: crée un token X/X de même race
+    if (hasKw(cardInstance, "convocation") && player.board.length < MAX_BOARD_SIZE) {
+      const x = cardInstance.card.mana_cost; // X based on mana cost as proxy
+      const tokenCard: Card = {
+        id: -1, name: `Token ${cardInstance.card.race || ""}`.trim(),
+        mana_cost: 0, card_type: "creature",
+        attack: x, health: x,
+        effect_text: `Token ${x}/${x}`,
+        keywords: [], spell_effect: null, image_url: null,
+        race: cardInstance.card.race, faction: cardInstance.card.faction,
+        clan: cardInstance.card.clan,
+      };
+      const token = createCardInstance(tokenCard);
+      token.hasSummoningSickness = true;
+      player.board.push(token);
+    }
+
+    // Malédiction: cible une unité ennemie, exilée fin du prochain tour adverse
+    if (hasKw(cardInstance, "malediction") && action.targetInstanceId) {
+      const cursedTarget = opponent.board.find(c => c.instanceId === action.targetInstanceId);
+      if (cursedTarget) {
+        cardInstance.maledictionTargetId = cursedTarget.instanceId;
+      }
+    }
+
+    // Paralysie: une unité ennemie ne peut pas attaquer au prochain tour
+    if (hasKw(cardInstance, "paralysie") && action.targetInstanceId) {
+      const paralyzedTarget = opponent.board.find(c => c.instanceId === action.targetInstanceId);
+      if (paralyzedTarget) {
+        paralyzedTarget.isParalyzed = true;
+      }
+    }
+
+    // Permutation: échange les PV de deux unités (une alliée, une ennemie)
+    if (hasKw(cardInstance, "permutation") && action.targetInstanceId) {
+      // targetInstanceId = enemy, secondTargetInstanceId would be ally
+      // Simplified: swap HP between this unit and targeted enemy
+      const enemyTarget = opponent.board.find(c => c.instanceId === action.targetInstanceId);
+      if (enemyTarget) {
+        const tempHP = cardInstance.currentHealth;
+        const tempMaxHP = cardInstance.maxHealth;
+        cardInstance.currentHealth = enemyTarget.currentHealth;
+        cardInstance.maxHealth = enemyTarget.maxHealth;
+        enemyTarget.currentHealth = tempHP;
+        enemyTarget.maxHealth = tempMaxHP;
+      }
+    }
+
+    // Vampirisme X: vole X PV à une unité ennemie ciblée
+    if (hasKw(cardInstance, "vampirisme") && action.targetInstanceId) {
+      const x = Math.max(1, Math.floor(cardInstance.card.mana_cost / 2));
+      const vampTarget = opponent.board.find(c => c.instanceId === action.targetInstanceId);
+      if (vampTarget) {
+        const stolen = Math.min(x, vampTarget.currentHealth);
+        vampTarget.currentHealth -= stolen;
+        cardInstance.currentHealth += stolen;
+        cardInstance.maxHealth += stolen;
+        cardInstance.persecutionX = x; // reuse field for X tracking
+      }
+    }
+
+    // Mimique: copie toutes les capacités d'une unité ciblée
+    if (hasKw(cardInstance, "mimique") && action.targetInstanceId) {
+      const mimicTarget = findCreatureOnBoard(player, action.targetInstanceId) ?? findCreatureOnBoard(opponent, action.targetInstanceId);
+      if (mimicTarget) {
+        const newKeywords = [...new Set([...cardInstance.card.keywords, ...mimicTarget.card.keywords])];
+        cardInstance.card = { ...cardInstance.card, keywords: newKeywords };
+        // Copy runtime state flags
+        if (mimicTarget.hasDivineShield) cardInstance.hasDivineShield = true;
+      }
+    }
+
+    // Métamorphose: devient une copie exacte d'une unité ciblée
+    if (hasKw(cardInstance, "metamorphose") && action.targetInstanceId) {
+      const morphTarget = findCreatureOnBoard(player, action.targetInstanceId) ?? findCreatureOnBoard(opponent, action.targetInstanceId);
+      if (morphTarget) {
+        cardInstance.card = { ...morphTarget.card };
+        cardInstance.currentAttack = morphTarget.currentAttack;
+        cardInstance.currentHealth = morphTarget.currentHealth;
+        cardInstance.maxHealth = morphTarget.maxHealth;
+        cardInstance.hasDivineShield = morphTarget.hasDivineShield;
+      }
+    }
+
+    // Combustion: défaussez une carte de votre main, piochez deux
+    if (hasKw(cardInstance, "combustion") && player.hand.length > 0) {
+      const discardIdx = Math.floor(rng() * player.hand.length);
+      const discarded = player.hand.splice(discardIdx, 1)[0];
+      player.graveyard.push(discarded);
+      drawCard(player);
+      drawCard(player);
+    }
+
+    // Catalyse: réduit de 1 le coût en mana des unités de même race en main
+    if (hasKw(cardInstance, "catalyse") && cardInstance.card.race) {
+      for (const handCard of player.hand) {
+        if (handCard.card.race === cardInstance.card.race && handCard.card.card_type === "creature") {
+          handCard.card = { ...handCard.card, mana_cost: Math.max(0, handCard.card.mana_cost - 1) };
+        }
+      }
+    }
+
+    // Prescience X: piochez jusqu'à X cartes en main
+    if (hasKw(cardInstance, "prescience")) {
+      const x = Math.min(7, Math.max(3, cardInstance.card.mana_cost)); // X = mana cost capped
+      while (player.hand.length < x && player.deck.length > 0) {
+        drawCard(player);
+      }
+    }
+
+    // Suprématie: +1 ATK et +1 PV par carte en main
+    if (hasKw(cardInstance, "suprematie")) {
+      const handSize = player.hand.length;
+      cardInstance.currentAttack += handSize;
+      cardInstance.currentHealth += handSize;
+      cardInstance.maxHealth += handSize;
+    }
+
+    // Ombre du passé: +1 ATK et +1 PV par unité de même race au cimetière
+    if (hasKw(cardInstance, "ombre_du_passe") && cardInstance.card.race) {
+      const graveCount = player.graveyard.filter(c => c.card.race === cardInstance.card.race && c.card.card_type === "creature").length;
+      cardInstance.currentAttack += graveCount;
+      cardInstance.currentHealth += graveCount;
+      cardInstance.maxHealth += graveCount;
+    }
+
+    // Profanation X: exile X cartes du cimetière, +1/+1 par carte
+    if (hasKw(cardInstance, "profanation")) {
+      const x = Math.max(1, Math.floor(cardInstance.card.mana_cost / 2));
+      const toExile = Math.min(x, player.graveyard.length);
+      for (let i = 0; i < toExile; i++) {
+        player.graveyard.pop(); // exile (remove from game)
+      }
+      cardInstance.currentAttack += toExile;
+      cardInstance.currentHealth += toExile;
+      cardInstance.maxHealth += toExile;
+    }
+
+    // Exhumation X: ressuscite une unité du cimetière (mana ≤ X)
+    if (hasKw(cardInstance, "exhumation")) {
+      const x = Math.max(1, cardInstance.card.mana_cost - 1);
+      const resurrectable = player.graveyard.filter(c => c.card.card_type === "creature" && c.card.mana_cost <= x);
+      if (resurrectable.length > 0 && player.board.length < MAX_BOARD_SIZE) {
+        const target = resurrectable[resurrectable.length - 1]; // most recently dead
+        player.graveyard = player.graveyard.filter(c => c !== target);
+        const revived = createCardInstance(target.card);
+        revived.hasSummoningSickness = true;
+        player.board.push(revived);
+      }
+    }
+
+    // Héritage du cimetière: copie les capacités d'une unité du cimetière
+    if (hasKw(cardInstance, "heritage_du_cimetiere")) {
+      const graveCreatures = player.graveyard.filter(c => c.card.card_type === "creature");
+      if (graveCreatures.length > 0) {
+        // Pick the target (use action.targetInstanceId or last dead)
+        const graveTarget = action.targetInstanceId
+          ? graveCreatures.find(c => c.instanceId === action.targetInstanceId)
+          : graveCreatures[graveCreatures.length - 1];
+        if (graveTarget) {
+          const newKeywords = [...new Set([...cardInstance.card.keywords, ...graveTarget.card.keywords])];
+          cardInstance.card = { ...cardInstance.card, keywords: newKeywords };
+        }
+      }
+    }
+
+    // Rappel: remettre une carte du cimetière en main
+    if (hasKw(cardInstance, "rappel") && player.graveyard.length > 0) {
+      const recallTarget = action.targetInstanceId
+        ? player.graveyard.find(c => c.instanceId === action.targetInstanceId)
+        : player.graveyard[player.graveyard.length - 1];
+      if (recallTarget && player.hand.length < MAX_HAND_SIZE) {
+        player.graveyard = player.graveyard.filter(c => c !== recallTarget);
+        const refreshed = createCardInstance(recallTarget.card);
+        player.hand.push(refreshed);
+      }
+    }
+
+    // Divination: reveal top 3 cards, put 1 on top, 2 on bottom
+    if (hasKw(cardInstance, "divination") && player.deck.length > 0) {
+      // AI/simplified: keep the best (highest mana cost) on top
+      const top3 = player.deck.splice(0, Math.min(3, player.deck.length));
+      top3.sort((a, b) => b.card.mana_cost - a.card.mana_cost);
+      player.deck.unshift(top3[0]); // best on top
+      for (let i = 1; i < top3.length; i++) {
+        player.deck.push(top3[i]); // rest on bottom
+      }
+    }
+
+    // Bénédiction: soigne complètement une unité ciblée
+    if (hasKw(cardInstance, "benediction") && action.targetInstanceId) {
+      const healTarget = player.board.find(c => c.instanceId === action.targetInstanceId);
+      if (healTarget) {
+        healTarget.currentHealth = healTarget.maxHealth;
+        healTarget.isPoisoned = false;
+      }
+    }
+
+    // Set Persécution X value
+    if (hasKw(cardInstance, "persecution")) {
+      cardInstance.persecutionX = Math.max(1, Math.floor(cardInstance.card.mana_cost / 3));
+    }
+
+    // Set Riposte X value
+    if (hasKw(cardInstance, "riposte")) {
+      cardInstance.riposteX = Math.max(1, Math.floor(cardInstance.card.mana_cost / 3));
+    }
+
+    // Set Carnage X value
+    if (hasKw(cardInstance, "carnage")) {
+      cardInstance.carnageX = Math.max(1, Math.floor(cardInstance.card.mana_cost / 2));
+    }
+
+    // Set Héritage X value
+    if (hasKw(cardInstance, "heritage")) {
+      cardInstance.heritageX = Math.max(1, Math.floor(cardInstance.card.mana_cost / 3));
+    }
+
+    // Tactique X: attribue X capacités choisies à un allié (simplified: copy 1 keyword)
+    if (hasKw(cardInstance, "tactique") && action.targetInstanceId) {
+      const tacticTarget = player.board.find(c => c.instanceId === action.targetInstanceId && c !== cardInstance);
+      if (tacticTarget && cardInstance.card.keywords.length > 0) {
+        const grantable = cardInstance.card.keywords.filter(kw => kw !== "tactique" && !tacticTarget.card.keywords.includes(kw));
+        if (grantable.length > 0) {
+          const kwToGrant = grantable[0];
+          tacticTarget.card = { ...tacticTarget.card, keywords: [...tacticTarget.card.keywords, kwToGrant] };
+        }
+      }
+    }
+
     recalculateAuras(player, opponent);
 
   } else if (card.card_type === "spell") {
+    // Contresort: check if opponent has an active counter-spell
+    const counterUnit = opponent.board.find(c => c.contresortActive);
+    if (counterUnit) {
+      counterUnit.contresortActive = false;
+      // Spell is countered — goes to graveyard without effect
+      player.graveyard.push(cardInstance);
+      newState.lastAction = action;
+      return newState;
+    }
+
+    // Canalisation: reduce spell cost (already deducted mana above, but check for discount)
+    // Note: Canalisation discount is applied before this function, at mana check level
+
     if (card.spell_effect) {
       resolveSpellEffect(newState, card.spell_effect, player, opponent, action.targetInstanceId);
     }
@@ -391,19 +725,19 @@ function resolveSpellEffect(
             dealDamageToHero(caster.hero, amount);
           } else if (targetInstanceId) {
             const target = findCreatureOnBoard(caster, targetInstanceId) ?? findCreatureOnBoard(opponent, targetInstanceId);
-            if (target) dealDamageToCreature(target, amount);
+            if (target) dealDamageToCreature(target, amount, false, true);
           }
           break;
         }
         case "all_enemy_creatures":
-          [...opponent.board].forEach(c => dealDamageToCreature(c, amount));
+          [...opponent.board].forEach(c => dealDamageToCreature(c, amount, false, true));
           break;
         case "all_enemies":
           dealDamageToHero(opponent.hero, amount);
-          [...opponent.board].forEach(c => dealDamageToCreature(c, amount));
+          [...opponent.board].forEach(c => dealDamageToCreature(c, amount, false, true));
           break;
         case "all_friendly_creatures":
-          [...caster.board].forEach(c => dealDamageToCreature(c, amount));
+          [...caster.board].forEach(c => dealDamageToCreature(c, amount, false, true));
           break;
       }
       break;
@@ -493,32 +827,39 @@ export function attack(state: GameState, action: AttackAction): GameState {
   if (attacker.attacksRemaining <= 0) return state;
   if (attacker.hasSummoningSickness) return state;
 
-  // Ombre: always attacks hero, ignores taunts
-  const effectiveTarget = hasKw(attacker, "ombre") ? "enemy_hero" : action.targetInstanceId;
+  const effectiveTarget = action.targetInstanceId;
 
-  // Taunt check (skip for ombre)
+  // Taunt check
   // Vol : ignore les taunts qui n'ont pas Vol elles-mêmes
   const attackerFlies = hasKw(attacker, "ranged");
   const relevantTaunts = opponent.board.filter(c =>
     hasKw(c, "taunt") && (!attackerFlies || hasKw(c, "ranged"))
   );
-  if (!hasKw(attacker, "ombre") && relevantTaunts.length > 0) {
+  if (relevantTaunts.length > 0) {
     if (effectiveTarget === "enemy_hero") return state;
     const target = opponent.board.find(c => c.instanceId === effectiveTarget);
     if (target && !relevantTaunts.includes(target)) return state;
   }
 
-  // Double Attaque: must attack different targets
-  if (hasKw(attacker, "double_attaque") && attacker.targetsAttackedThisTurn.includes(effectiveTarget)) {
-    return state;
+  // Ombre: reveal stealth when attacking
+  if (hasKw(attacker, "ombre")) {
+    attacker.ombreRevealed = true;
   }
 
-  const attackPower = attacker.currentAttack;
+  let attackPower = attacker.currentAttack;
+
+  // Bravoure: double ses dégâts contre unités à ATK supérieure
+  const targetCreature = effectiveTarget !== "enemy_hero"
+    ? opponent.board.find(c => c.instanceId === effectiveTarget) : null;
+  if (hasKw(attacker, "bravoure") && targetCreature && targetCreature.currentAttack > attacker.currentAttack) {
+    attackPower = Math.ceil(attackPower * 2);
+  }
 
   if (effectiveTarget === "enemy_hero") {
-    // Souffle de feu: 4 damage to all enemy creatures
+    // Souffle de feu X: X dégâts à toutes les unités ennemies
     if (hasKw(attacker, "souffle_de_feu")) {
-      [...opponent.board].forEach(c => dealDamageToCreature(c, 4));
+      const fireX = Math.max(1, Math.floor(attacker.card.mana_cost / 2));
+      [...opponent.board].forEach(c => dealDamageToCreature(c, fireX));
     }
 
     dealDamageToHero(opponent.hero, attackPower);
@@ -526,6 +867,16 @@ export function attack(state: GameState, action: AttackAction): GameState {
     // Drain de vie: heal own hero
     if (hasKw(attacker, "drain_de_vie")) {
       player.hero.hp = Math.min(player.hero.maxHp, player.hero.hp + attackPower);
+    }
+
+    // Augure: piochez une carte quand dégâts au héros adverse
+    if (hasKw(attacker, "augure")) {
+      drawCard(player);
+    }
+
+    // Persécution X: dégâts bonus au héros adverse
+    if (hasKw(attacker, "persecution") && attacker.persecutionX > 0) {
+      dealDamageToHero(opponent.hero, attacker.persecutionX);
     }
 
     attacker.attacksRemaining--;
@@ -536,8 +887,9 @@ export function attack(state: GameState, action: AttackAction): GameState {
     const target = opponent.board.find(c => c.instanceId === effectiveTarget);
     if (!target) return state;
 
-    // Esquive: 30% chance to dodge
-    if (hasKw(target, "esquive") && rng() < 0.3) {
+    // Esquive: évite automatiquement la 1re attaque chaque tour
+    if (hasKw(target, "esquive") && !target.esquiveUsedThisTurn) {
+      target.esquiveUsedThisTurn = true;
       attacker.attacksRemaining--;
       attacker.targetsAttackedThisTurn.push(effectiveTarget);
       attacker.hasAttacked = attacker.attacksRemaining <= 0;
@@ -547,9 +899,17 @@ export function attack(state: GameState, action: AttackAction): GameState {
 
     const attackerHasPrecision = hasKw(attacker, "precision");
 
-    // Premier Frappe: attacker deals damage first
-    if (hasKw(attacker, "premier_frappe")) {
+    // Double Attaque: inflige 2x ATK, 1re fois en Première Frappe
+    // Première Frappe: attacker deals damage first
+    const hasFirstStrike = hasKw(attacker, "premiere_frappe") || hasKw(attacker, "double_attaque");
+
+    if (hasFirstStrike) {
       dealDamageToCreature(target, attackPower, attackerHasPrecision);
+
+      // Double Attaque: second hit
+      if (hasKw(attacker, "double_attaque") && target.currentHealth > 0) {
+        dealDamageToCreature(target, attackPower, attackerHasPrecision);
+      }
 
       // Apply poison from attacker
       if (hasKw(attacker, "poison") && target.currentHealth > 0) {
@@ -573,9 +933,10 @@ export function attack(state: GameState, action: AttackAction): GameState {
       if (hasKw(target, "poison") && attacker.currentHealth > 0) attacker.isPoisoned = true;
     }
 
-    // Souffle de feu: 4 damage to all OTHER enemy creatures
+    // Souffle de feu X: X dégâts à toutes les AUTRES unités ennemies
     if (hasKw(attacker, "souffle_de_feu")) {
-      opponent.board.filter(c => c !== target).forEach(c => dealDamageToCreature(c, 4));
+      const fireX = Math.max(1, Math.floor(attacker.card.mana_cost / 2));
+      opponent.board.filter(c => c !== target).forEach(c => dealDamageToCreature(c, fireX));
     }
 
     // Drain de vie: heal own hero for damage dealt
@@ -583,22 +944,33 @@ export function attack(state: GameState, action: AttackAction): GameState {
       player.hero.hp = Math.min(player.hero.maxHp, player.hero.hp + attackPower);
     }
 
-    // Liaison de vie: damage taken by target is also dealt to enemy hero
+    // Liaison de vie: damage taken shared with enemy hero
     if (hasKw(target, "liaison_de_vie")) {
-      const dmgTaken = Math.max(0, attackPower); // simplified
-      dealDamageToHero(player.hero, dmgTaken);
+      dealDamageToHero(player.hero, attackPower);
     }
 
-    // Fureur: +3 ATK for one turn after taking damage
+    // Riposte X: counter-damage to attacker
+    if (hasKw(target, "riposte") && target.riposteX > 0) {
+      dealDamageToCreature(attacker, target.riposteX);
+    }
+
+    // Fureur: après dégâts, attaque immédiatement une unité adverse au choix
+    // Simplified: gains bonus ATK for immediate counter-attack opportunity
     if (hasKw(target, "fureur") && target.currentHealth > 0 && !target.fureurActive) {
       target.fureurActive = true;
-      target.fureurATKBonus = 3;
-      target.currentAttack += 3;
+      target.fureurATKBonus = target.currentAttack; // counter-attack with full ATK
+      // Deal immediate damage to the attacker as counter
+      dealDamageToCreature(attacker, target.currentAttack);
     }
     if (hasKw(attacker, "fureur") && attacker.currentHealth > 0 && !attacker.fureurActive) {
       attacker.fureurActive = true;
-      attacker.fureurATKBonus = 3;
-      attacker.currentAttack += 3;
+      attacker.fureurATKBonus = 0; // already attacked, just flag
+    }
+
+    // Augure: if attacker hits hero (doesn't apply in creature combat)
+    // Persécution X: X dégâts au héros adverse on each attack
+    if (hasKw(attacker, "persecution") && attacker.persecutionX > 0) {
+      dealDamageToHero(opponent.hero, attacker.persecutionX);
     }
 
     attacker.attacksRemaining--;
@@ -637,11 +1009,21 @@ function dealDamageToHero(hero: import("./types").HeroState, damage: number) {
   hero.hp -= damage;
 }
 
-function dealDamageToCreature(creature: CardInstance, damage: number, ignoreDR = false) {
+function dealDamageToCreature(creature: CardInstance, damage: number, ignoreDR = false, isSpellDamage = false) {
   if (damage <= 0) return;
 
-  // Divine Shield absorbs
-  if (creature.hasDivineShield) {
+  // Transcendance: immunité totale aux sorts (y compris zone)
+  if (hasKw(creature, "transcendance") && isSpellDamage) {
+    return;
+  }
+
+  // Indestructible: ne subit aucun dégât de combat (sauf sorts)
+  if (hasKw(creature, "indestructible") && !isSpellDamage) {
+    return;
+  }
+
+  // Bouclier (Divine Shield) absorbs first hit — Précision bypasses it
+  if (creature.hasDivineShield && !ignoreDR) {
     creature.hasDivineShield = false;
     return;
   }
@@ -649,7 +1031,10 @@ function dealDamageToCreature(creature: CardInstance, damage: number, ignoreDR =
   // Damage reduction (unless attacker has Precision)
   if (!ignoreDR) {
     if (hasKw(creature, "resistance")) damage = Math.max(0, damage - 1);
-    if (hasKw(creature, "armure")) damage = Math.max(0, damage - 2);
+    // Armure: réduit de moitié les dégâts de combat (arrondi au supérieur), pas les sorts
+    if (hasKw(creature, "armure") && !isSpellDamage) {
+      damage = Math.ceil(damage / 2);
+    }
   }
 
   if (damage <= 0) return;
@@ -666,14 +1051,7 @@ function cleanDeadCreatures(player: PlayerState): CardInstance[] {
 
   for (const c of player.board) {
     if (c.currentHealth <= 0) {
-      // Indestructible: survive once with 1 HP
-      if (hasKw(c, "indestructible") && !c.hasUsedIndestructible) {
-        c.currentHealth = 1;
-        c.hasUsedIndestructible = true;
-        alive.push(c);
-      } else {
-        dead.push(c);
-      }
+      dead.push(c);
     } else {
       alive.push(c);
     }
@@ -688,17 +1066,36 @@ function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: P
   if (depth > 5 || dead.length === 0) return;
 
   for (const c of dead) {
-    // Maléfice: deal 3 damage to all enemies
+    // Maléfice: inflige X dégâts à TOUTES les unités (alliés et ennemis), X = ATK
     if (hasKw(c, "malefice")) {
-      dealDamageToHero(enemy.hero, 3);
-      [...enemy.board].forEach(e => dealDamageToCreature(e, 3));
+      const maleficeDmg = c.card.attack ?? 0;
+      dealDamageToHero(enemy.hero, maleficeDmg);
+      [...enemy.board].forEach(e => dealDamageToCreature(e, maleficeDmg, false, true));
+      [...owner.board].forEach(e => dealDamageToCreature(e, maleficeDmg, false, true));
     }
 
-    // Résurrection: return with half HP once
+    // Carnage X: inflige X dégâts à TOUTES les unités en jeu
+    if (hasKw(c, "carnage") && c.carnageX > 0) {
+      [...enemy.board].forEach(e => dealDamageToCreature(e, c.carnageX, false, true));
+      [...owner.board].forEach(e => dealDamageToCreature(e, c.carnageX, false, true));
+    }
+
+    // Héritage X: chaque allié gagne +X ATK et +X PV
+    if (hasKw(c, "heritage") && c.heritageX > 0) {
+      for (const ally of owner.board) {
+        ally.currentAttack += c.heritageX;
+        ally.currentHealth += c.heritageX;
+        ally.maxHealth += c.heritageX;
+      }
+    }
+
+    // Résurrection: revient avec 1 PV, perd Résurrection
     if (hasKw(c, "resurrection") && !c.hasUsedResurrection) {
       if (owner.board.length < MAX_BOARD_SIZE) {
-        const revived = createCardInstance(c.card);
-        revived.currentHealth = Math.max(1, Math.floor(c.maxHealth / 2));
+        const newKeywords = c.card.keywords.filter(kw => kw !== "resurrection");
+        const revivedCard = { ...c.card, keywords: newKeywords };
+        const revived = createCardInstance(revivedCard);
+        revived.currentHealth = 1;
         revived.maxHealth = c.maxHealth;
         revived.hasUsedResurrection = true;
         revived.hasSummoningSickness = true;
@@ -706,12 +1103,33 @@ function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: P
       }
     }
 
-    // Pacte de sang: summon a copy
+    // Pacte de sang: invoque deux tokens 1/1 de sa race
     if (hasKw(c, "pacte_de_sang")) {
-      if (owner.board.length < MAX_BOARD_SIZE) {
-        const copy = createCardInstance(c.card);
-        copy.hasSummoningSickness = true;
-        owner.board.push(copy);
+      for (let i = 0; i < 2 && owner.board.length < MAX_BOARD_SIZE; i++) {
+        const tokenCard: Card = {
+          id: -1, name: `Token ${c.card.race || ""}`.trim(),
+          mana_cost: 0, card_type: "creature",
+          attack: 1, health: 1,
+          effect_text: "Token 1/1",
+          keywords: [], spell_effect: null, image_url: null,
+          race: c.card.race, faction: c.card.faction,
+        };
+        const token = createCardInstance(tokenCard);
+        token.hasSummoningSickness = true;
+        owner.board.push(token);
+      }
+    }
+
+    // Nécrophagie: toutes les unités avec Nécrophagie gagnent +1/+1 quand une unité meurt
+    for (const board of [owner.board, enemy.board]) {
+      for (const unit of board) {
+        if (hasKw(unit, "necrophagie")) {
+          unit.necrophagieATKBonus += 1;
+          unit.necrophagiePVBonus += 1;
+          unit.currentAttack += 1;
+          unit.currentHealth += 1;
+          unit.maxHealth += 1;
+        }
       }
     }
   }
@@ -719,10 +1137,14 @@ function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: P
   // Trigger passive hero power on friendly death
   triggerPassiveOnCreatureDeath(owner, dead.length);
 
-  // Cascade: malefice may have killed more
-  const cascadeDead = cleanDeadCreatures(enemy);
-  if (cascadeDead.length > 0) {
-    processDeathTriggers(cascadeDead, enemy, owner, depth + 1);
+  // Cascade: malefice/carnage may have killed more
+  const ownerCascadeDead = cleanDeadCreatures(owner);
+  const enemyCascadeDead = cleanDeadCreatures(enemy);
+  if (ownerCascadeDead.length > 0) {
+    processDeathTriggers(ownerCascadeDead, owner, enemy, depth + 1);
+  }
+  if (enemyCascadeDead.length > 0) {
+    processDeathTriggers(enemyCascadeDead, enemy, owner, depth + 1);
   }
 }
 
@@ -891,7 +1313,12 @@ export function canPlayCard(state: GameState, cardInstanceId: string): boolean {
   const player = state.players[state.currentPlayerIndex];
   const card = player.hand.find(c => c.instanceId === cardInstanceId);
   if (!card) return false;
-  if (card.card.mana_cost > player.mana) return false;
+  let manaCost = card.card.mana_cost;
+  if (card.card.card_type === "spell") {
+    const canalisationCount = player.board.filter(c => hasKw(c, "canalisation")).length;
+    manaCost = Math.max(0, manaCost - canalisationCount);
+  }
+  if (manaCost > player.mana) return false;
   if (card.card.card_type === "creature" && player.board.length >= MAX_BOARD_SIZE) return false;
   return true;
 }
@@ -912,25 +1339,25 @@ export function getValidTargets(state: GameState, attackerInstanceId: string): s
   const attacker = player.board.find(c => c.instanceId === attackerInstanceId);
   if (!attacker) return [];
 
-  // Ombre: can only attack hero
-  if (hasKw(attacker, "ombre")) return ["enemy_hero"];
-
-  // Double Attaque: filter already-attacked targets
-  const excludeTargets = hasKw(attacker, "double_attaque") ? attacker.targetsAttackedThisTurn : [];
-
   // Vol : ignore les taunts sans Vol
   const attackerFlies2 = hasKw(attacker, "ranged");
   const relevantTaunts2 = opponent.board.filter(c =>
     hasKw(c, "taunt") && (!attackerFlies2 || hasKw(c, "ranged"))
   );
+
+  // Filter out Ombre (stealth) units that haven't acted yet
+  const targetableEnemies = opponent.board.filter(c =>
+    !(hasKw(c, "ombre") && !c.ombreRevealed)
+  );
+
   if (relevantTaunts2.length > 0) {
     return relevantTaunts2
-      .map(c => c.instanceId)
-      .filter(id => !excludeTargets.includes(id));
+      .filter(c => !(hasKw(c, "ombre") && !c.ombreRevealed))
+      .map(c => c.instanceId);
   }
 
-  const targets = [...opponent.board.map(c => c.instanceId), "enemy_hero"];
-  return targets.filter(id => !excludeTargets.includes(id));
+  const targets = [...targetableEnemies.map(c => c.instanceId), "enemy_hero"];
+  return targets;
 }
 
 export function needsTarget(card: Card): boolean {
@@ -944,9 +1371,13 @@ export function getSpellTargets(state: GameState, card: Card): string[] {
   const player = state.players[state.currentPlayerIndex];
   const opponent = state.players[state.currentPlayerIndex === 0 ? 1 : 0];
 
-  // Filter out invisible and transcendance creatures from enemy targeting
+  // Filter out invisible, transcendance (permanent immunity), and stealth (ombre) creatures from enemy targeting
   const filterEnemyTargetable = (creatures: CardInstance[]) =>
-    creatures.filter(c => !hasKw(c, "invisible") && c.transcendanceTurns <= 0);
+    creatures.filter(c =>
+      !hasKw(c, "invisible")
+      && !hasKw(c, "transcendance")
+      && !(hasKw(c, "ombre") && !c.ombreRevealed)
+    );
 
   switch (card.spell_effect.target) {
     case "any":

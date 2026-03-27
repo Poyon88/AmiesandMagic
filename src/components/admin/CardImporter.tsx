@@ -387,7 +387,7 @@ export default function CardImporter() {
                 <th className="text-center py-2 px-2">ATK</th>
                 <th className="text-center py-2 px-2">HP</th>
                 <th className="text-left py-2 px-2">Effect</th>
-                <th className="text-left py-2 px-2">Keywords</th>
+                <th className="text-left py-2 px-2">Capacités</th>
                 <th className="text-center py-2 px-2">Image</th>
                 <th className="text-left py-2 px-2">Status</th>
               </tr>

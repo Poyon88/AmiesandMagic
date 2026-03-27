@@ -4,7 +4,8 @@ import { useState, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import type { CardInstance } from "@/lib/game/types";
-import { KEYWORD_SYMBOLS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
+import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText } from "@/lib/game/keyword-labels";
+import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
 
 interface BoardCreatureProps {
   creature: CardInstance;
@@ -169,18 +170,28 @@ export default function BoardCreature({
         }}>{card.name}</div>
 
         {/* Keyword symbols */}
-        {card.keywords.length > 0 && (
+        {card.keywords.length > 0 && (() => {
+          const xVals = parseXValuesFromEffectText(card.effect_text);
+          return (
           <div style={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-            {card.keywords.map((kw) => (
+            {card.keywords.map((kw) => {
+              const x = xVals[kw];
+              return (
               <div key={kw} style={{
-                width: 16, height: 16, borderRadius: 4,
+                minWidth: 16, height: 16, borderRadius: 4,
+                padding: x != null ? "0 3px" : 0,
                 background: `${accentColor}33`, border: `1px solid ${accentColor}66`,
-                display: "flex", alignItems: "center", justifyContent: "center",
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2,
                 fontSize: 9,
-              }}>{KEYWORD_SYMBOLS[kw] || "✦"}</div>
-            ))}
+              }}>
+                <span>{KEYWORD_SYMBOLS[kw] || "✦"}</span>
+                {x != null && <span style={{ fontSize: 7, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}` }}>{toRoman(x)}</span>}
+              </div>
+              );
+            })}
           </div>
-        )}
+          );
+        })()}
 
         {/* Stats */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -223,17 +234,40 @@ export default function BoardCreature({
           borderBottom: `1px solid ${accentColor}44`, paddingBottom: 5,
         }}>{card.name}</div>
 
-        {/* Keywords detail */}
-        {card.keywords.length > 0 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-            {card.keywords.map((kw) => (
-              <div key={kw} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                <span style={{ fontSize: 10 }}>{KEYWORD_SYMBOLS[kw] || "✦"}</span>
-                <span style={{ fontSize: 8, color: accentColor, fontWeight: 600 }}>{KEYWORD_LABELS[kw] || kw}</span>
-              </div>
-            ))}
+        {/* Race / Clan */}
+        {(card.race || card.clan) && (
+          <div style={{ display: "flex", justifyContent: "center", gap: 4, fontSize: 7, color: "#888", fontFamily: "'Crimson Text',serif" }}>
+            {card.race && <span>{card.race}</span>}
+            {card.race && card.clan && <span style={{ color: "#555" }}>·</span>}
+            {card.clan && <span style={{ fontStyle: "italic" }}>{card.clan}</span>}
           </div>
         )}
+
+        {/* Capacités detail */}
+        {card.keywords.length > 0 && (() => {
+          const xVals = parseXValuesFromEffectText(card.effect_text);
+          return (
+          <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+            {card.keywords.map((kw) => {
+              const x = xVals[kw];
+              const label = KEYWORD_LABELS[kw] || kw;
+              const displayLabel = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
+              const forgeKey = KEYWORD_LABELS[kw];
+              const kwDef = forgeKey ? keywordDefs[forgeKey] : null;
+              const desc = kwDef?.desc ? (x != null ? kwDef.desc.replace(/X/g, String(x)) : kwDef.desc) : null;
+              return (
+              <div key={kw} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
+                <span style={{ fontSize: 10, flexShrink: 0 }}>{KEYWORD_SYMBOLS[kw] || "✦"}</span>
+                <div>
+                  <div style={{ fontSize: 8, color: accentColor, fontWeight: 600 }}>{displayLabel}</div>
+                  {desc && <div style={{ fontSize: 7, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
+                </div>
+              </div>
+              );
+            })}
+          </div>
+          );
+        })()}
 
         {/* Effect text */}
         {card.effect_text && (
@@ -245,7 +279,7 @@ export default function BoardCreature({
             <p style={{
               margin: 0, fontSize: 8, color: "#ccc",
               lineHeight: 1.4, fontFamily: "'Crimson Text', serif",
-            }}>{card.effect_text}</p>
+            }}>{cleanEffectText(card.effect_text)}</p>
           </div>
         )}
 

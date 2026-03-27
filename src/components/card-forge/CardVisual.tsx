@@ -5,39 +5,83 @@ import { KEYWORDS, FACTIONS, RARITY_MAP } from '@/lib/card-engine/constants';
 
 // ─── KEYWORD → SYMBOL MAP ───────────────────────────────────────────────────
 
+function toRoman(n: number): string {
+  const vals = [10, 9, 5, 4, 1];
+  const syms = ["X", "IX", "V", "IV", "I"];
+  let result = "";
+  for (let i = 0; i < vals.length; i++) {
+    while (n >= vals[i]) { result += syms[i]; n -= vals[i]; }
+  }
+  return result || "0";
+}
+
 const KEYWORD_SYMBOLS: Record<string, string> = {
-  "Loyauté":        "🤝",
-  "Ancré":          "⚓",
-  "Résistance":     "🛡️",
-  "Provocation":    "🎯",
-  "Traque":         "⚡",
-  "Premier Frappe": "🗡️",
-  "Berserk":        "😤",
-  "Bouclier":       "🔰",
-  "Précision":      "🎯",
-  "Drain de vie":   "🩸",
-  "Esquive":        "💨",
-  "Poison":         "☠️",
-  "Célérité":       "⚡",
-  "Terreur":        "👁️",
-  "Vol":            "🦅",
-  "Armure":         "🛡️",
-  "Commandement":   "👑",
-  "Fureur":         "🔥",
-  "Double Attaque": "⚔️",
-  "Invisible":      "👻",
-  "Liaison de vie": "💀",
-  "Ombre":          "🌑",
-  "Sacrifice":      "💔",
-  "Maléfice":       "🔮",
-  "Indestructible": "♾️",
-  "Régénération":   "💚",
-  "Corruption":     "🖤",
-  "Pacte de sang":  "🩸",
-  "Souffle de feu": "🐲",
-  "Domination":     "👁️‍🗨️",
-  "Résurrection":   "✨",
-  "Transcendance":  "🌟",
+  // Tier 0
+  "Loyauté":          "🤝",
+  "Ancré":            "⚓",
+  "Résistance":       "🛡️",
+  "Provocation":      "🎯",
+  "Traque":           "⚡",
+  "Première Frappe":  "🗡️",
+  "Berserk":          "😤",
+  "Bouclier":         "🔰",
+  // Tier 1
+  "Vol":              "🦅",
+  "Précision":        "🎯",
+  "Drain de vie":     "🩸",
+  "Esquive":          "💨",
+  "Poison":           "☠️",
+  "Célérité":         "⚡",
+  "Augure":           "📖",
+  "Bénédiction":      "✝️",
+  "Bravoure":         "🦁",
+  "Pillage":          "💰",
+  "Riposte X":        "↩️",
+  "Rappel":           "🔄",
+  "Combustion":       "🔥",
+  // Tier 2
+  "Terreur":          "👁️",
+  "Armure":           "🛡️",
+  "Commandement":     "👑",
+  "Fureur":           "🔥",
+  "Double Attaque":   "⚔️",
+  "Invisible":        "👻",
+  "Canalisation":     "🔮",
+  "Catalyse":         "⚗️",
+  "Contresort":       "🚫",
+  "Convocation X":    "📣",
+  "Malédiction":      "💀",
+  "Nécrophagie":      "🦴",
+  "Paralysie":        "⛓️",
+  "Permutation":      "🔀",
+  "Persécution X":    "🎯",
+  "Ombre du passé":   "👤",
+  "Profanation X":    "⚰️",
+  "Prescience X":     "🔮",
+  "Suprématie":       "👊",
+  "Divination":       "🔍",
+  // Tier 3
+  "Liaison de vie":   "💀",
+  "Ombre":            "🌑",
+  "Sacrifice":        "💔",
+  "Maléfice":         "🔮",
+  "Indestructible":   "♾️",
+  "Régénération":     "💚",
+  "Corruption":       "🖤",
+  "Carnage X":        "💥",
+  "Héritage X":       "📜",
+  "Mimique":          "🪞",
+  "Métamorphose":     "🦎",
+  "Tactique X":       "📋",
+  "Exhumation X":     "⚰️",
+  "Héritage du cimetière": "📜",
+  // Tier 4
+  "Pacte de sang":    "🩸",
+  "Souffle de feu X": "🐲",
+  "Domination":       "👁️‍🗨️",
+  "Résurrection":     "✨",
+  "Transcendance":    "🌟",
+  "Vampirisme X":     "🧛",
 };
 
 // ─── TYPES ───────────────────────────────────────────────────────────────────
@@ -52,6 +96,7 @@ interface CardData {
   defense: number | null;
   power: number | null;
   keywords: string[];
+  keywordXValues?: Record<string, number>;
   ability: string;
   flavorText: string;
   budgetUsed: number;
@@ -197,18 +242,31 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
         {/* Keyword symbols row */}
         {card!.keywords?.length > 0 && (
           <div style={{ display: "flex", gap: 4 * s, flexWrap: "wrap" }}>
-            {card!.keywords.map(kw => (
-              <div key={kw} title={`${kw}: ${KEYWORDS[kw]?.desc}`} style={{
-                width: 24 * s, height: 24 * s, borderRadius: 6 * s,
-                background: `${fac.color}33`, border: `1px solid ${fac.color}88`,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 13 * s, cursor: "default",
-                boxShadow: `0 0 6px ${fac.color}44`,
-                transition: "all 0.2s",
-              }}>
-                {KEYWORD_SYMBOLS[kw] || "✦"}
-              </div>
-            ))}
+            {card!.keywords.map(kw => {
+              const xVal = card!.keywordXValues?.[kw];
+              const displayName = xVal != null ? kw.replace(/ X$/, ` ${toRoman(xVal)}`) : kw;
+              const displayDesc = xVal != null ? KEYWORDS[kw]?.desc.replace(/X/g, String(xVal)) : KEYWORDS[kw]?.desc;
+              return (
+                <div key={kw} title={`${displayName}: ${displayDesc}`} style={{
+                  minWidth: 24 * s, height: 24 * s, borderRadius: 6 * s,
+                  padding: `0 ${xVal != null ? 5 * s : 0}px`,
+                  background: `${fac.color}33`, border: `1px solid ${fac.color}88`,
+                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 3 * s,
+                  fontSize: 13 * s, cursor: "default",
+                  boxShadow: `0 0 6px ${fac.color}44`,
+                  transition: "all 0.2s",
+                }}>
+                  <span>{KEYWORD_SYMBOLS[kw] || "✦"}</span>
+                  {xVal != null && (
+                    <span style={{
+                      fontSize: 10 * s, fontWeight: 900, lineHeight: 1,
+                      color: "#fff", fontFamily: "'Cinzel',serif",
+                      textShadow: `0 0 4px ${fac.accent}`,
+                    }}>{toRoman(xVal)}</span>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
 
@@ -280,15 +338,20 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
         {/* Keywords detail */}
         {card!.keywords?.length > 0 && (
           <div style={{ display: "flex", flexDirection: "column", gap: 5 * s }}>
-            {card!.keywords.map(kw => (
-              <div key={kw} style={{ display: "flex", alignItems: "flex-start", gap: 6 * s }}>
-                <span style={{ fontSize: 12 * s, flexShrink: 0 }}>{KEYWORD_SYMBOLS[kw] || "✦"}</span>
-                <div>
-                  <div style={{ fontSize: 9 * s, color: fac.accent, fontWeight: 700 }}>{kw}</div>
-                  <div style={{ fontSize: 8 * s, color: "#888", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{KEYWORDS[kw]?.desc}</div>
+            {card!.keywords.map(kw => {
+              const xVal = card!.keywordXValues?.[kw];
+              const displayName = xVal != null ? kw.replace(/ X$/, ` ${toRoman(xVal)}`) : kw;
+              const displayDesc = xVal != null ? KEYWORDS[kw]?.desc.replace(/X/g, String(xVal)) : KEYWORDS[kw]?.desc;
+              return (
+                <div key={kw} style={{ display: "flex", alignItems: "flex-start", gap: 6 * s }}>
+                  <span style={{ fontSize: 12 * s, flexShrink: 0 }}>{KEYWORD_SYMBOLS[kw] || "✦"}</span>
+                  <div>
+                    <div style={{ fontSize: 9 * s, color: fac.accent, fontWeight: 700 }}>{displayName}</div>
+                    <div style={{ fontSize: 8 * s, color: "#888", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{displayDesc}</div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 

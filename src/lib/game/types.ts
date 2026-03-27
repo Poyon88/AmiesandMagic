@@ -5,16 +5,27 @@ export type Keyword =
   // Legacy (backward compat with existing DB)
   | "charge" | "taunt" | "divine_shield" | "ranged"
   // Tier 0
-  | "loyaute" | "ancre" | "resistance" | "premier_frappe" | "berserk"
-  // Tier 1
-  | "precision" | "drain_de_vie" | "esquive" | "poison" | "celerite"
-  // Tier 2
+  | "loyaute" | "ancre" | "resistance" | "premiere_frappe" | "berserk"
+  // Tier 1 — Terrain
+  | "vol" | "precision" | "drain_de_vie" | "esquive" | "poison" | "celerite"
+  | "augure" | "benediction" | "bravoure" | "pillage" | "riposte"
+  // Tier 1 — Cimetière / Main
+  | "rappel" | "combustion"
+  // Tier 2 — Terrain
   | "terreur" | "armure" | "commandement" | "fureur" | "double_attaque" | "invisible"
-  // Tier 3
+  | "canalisation" | "contresort" | "convocation" | "malediction" | "necrophagie"
+  | "paralysie" | "permutation" | "persecution"
+  // Tier 2 — Cimetière / Main / Mixte
+  | "catalyse" | "ombre_du_passe" | "profanation" | "prescience" | "suprematie" | "divination"
+  // Tier 3 — Terrain
   | "liaison_de_vie" | "ombre" | "sacrifice" | "malefice"
   | "indestructible" | "regeneration" | "corruption"
+  | "carnage" | "heritage" | "mimique" | "metamorphose" | "tactique"
+  // Tier 3 — Cimetière
+  | "exhumation" | "heritage_du_cimetiere"
   // Tier 4
-  | "pacte_de_sang" | "souffle_de_feu" | "domination" | "resurrection" | "transcendance";
+  | "pacte_de_sang" | "souffle_de_feu" | "domination" | "resurrection" | "transcendance"
+  | "vampirisme";
 
 export type SpellTargetType =
   | "any"
@@ -75,17 +86,40 @@ export interface CardInstance {
   hasAttacked: boolean;
   hasSummoningSickness: boolean;
   hasDivineShield: boolean;
-  // New keyword runtime state
+  // Keyword runtime state
   attacksRemaining: number;
   isPoisoned: boolean;
-  hasUsedIndestructible: boolean;
   hasUsedResurrection: boolean;
   fureurActive: boolean;
   fureurATKBonus: number;
   berserkActive: boolean;
   berserkATKBonus: number;
-  transcendanceTurns: number;
   targetsAttackedThisTurn: string[];
+  // Esquive: auto-dodge first attack each turn (reset at turn start)
+  esquiveUsedThisTurn: boolean;
+  // Ombre: stealth — untargetable until unit acts (attack or ability)
+  ombreRevealed: boolean;
+  // Corruption: IDs of units stolen (returned at end of turn)
+  corruptionStolenIds: string[];
+  // Contresort: active counter-spell shield on the player
+  contresortActive: boolean;
+  // Malédiction: instanceId of cursed enemy (exiled next turn)
+  maledictionTargetId: string | null;
+  // Paralysie: is this unit paralyzed (can't attack next turn)
+  isParalyzed: boolean;
+  // Nécrophagie: permanent buff tracker
+  necrophagieATKBonus: number;
+  necrophagiePVBonus: number;
+  // Persécution X: damage to hero on attack
+  persecutionX: number;
+  // Riposte X: counter-damage
+  riposteX: number;
+  // Carnage X: death AoE
+  carnageX: number;
+  // Héritage X: death buff to allies
+  heritageX: number;
+  // Owner tracking (for Corruption end-of-turn return)
+  originalOwnerId: string | null;
 }
 
 // Hero power system

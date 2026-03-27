@@ -3,7 +3,8 @@
 import { useState, useRef } from "react";
 import Image from "next/image";
 import type { CardInstance } from "@/lib/game/types";
-import { KEYWORD_SYMBOLS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
+import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText } from "@/lib/game/keyword-labels";
+import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
 
 interface MulliganOverlayProps {
   hand: CardInstance[];
@@ -130,18 +131,30 @@ function MulliganCard({
         }}>{card.name}</div>
 
         {/* Keyword symbols */}
-        {card.keywords.length > 0 && (
+        {card.keywords.length > 0 && (() => {
+          const xVals = parseXValuesFromEffectText(card.effect_text);
+          return (
           <div style={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
-            {card.keywords.map((kw) => (
-              <div key={kw} title={KEYWORD_LABELS[kw]} style={{
-                width: 20, height: 20, borderRadius: 5,
+            {card.keywords.map((kw) => {
+              const x = xVals[kw];
+              const label = KEYWORD_LABELS[kw] || kw;
+              const displayTitle = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
+              return (
+              <div key={kw} title={displayTitle} style={{
+                minWidth: 20, height: 20, borderRadius: 5,
+                padding: x != null ? "0 3px" : 0,
                 background: `${accentColor}33`, border: `1px solid ${accentColor}66`,
-                display: "flex", alignItems: "center", justifyContent: "center",
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2,
                 fontSize: 11,
-              }}>{KEYWORD_SYMBOLS[kw] || "✦"}</div>
-            ))}
+              }}>
+                <span>{KEYWORD_SYMBOLS[kw] || "✦"}</span>
+                {x != null && <span style={{ fontSize: 8, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}` }}>{toRoman(x)}</span>}
+              </div>
+              );
+            })}
           </div>
-        )}
+          );
+        })()}
 
         {/* Stats */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -182,16 +195,39 @@ function MulliganCard({
           borderBottom: `1px solid ${accentColor}44`, paddingBottom: 6,
         }}>{card.name}</div>
 
-        {card.keywords.length > 0 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            {card.keywords.map((kw) => (
-              <div key={kw} style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                <span style={{ fontSize: 12 }}>{KEYWORD_SYMBOLS[kw] || "✦"}</span>
-                <span style={{ fontSize: 10, color: accentColor, fontWeight: 600 }}>{KEYWORD_LABELS[kw] || kw}</span>
-              </div>
-            ))}
+        {/* Race / Clan */}
+        {(card.race || card.clan) && (
+          <div style={{ display: "flex", justifyContent: "center", gap: 5, fontSize: 9, color: "#888", fontFamily: "'Crimson Text',serif" }}>
+            {card.race && <span>{card.race}</span>}
+            {card.race && card.clan && <span style={{ color: "#555" }}>·</span>}
+            {card.clan && <span style={{ fontStyle: "italic" }}>{card.clan}</span>}
           </div>
         )}
+
+        {card.keywords.length > 0 && (() => {
+          const xVals = parseXValuesFromEffectText(card.effect_text);
+          return (
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            {card.keywords.map((kw) => {
+              const x = xVals[kw];
+              const label = KEYWORD_LABELS[kw] || kw;
+              const displayLabel = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
+              const forgeKey = KEYWORD_LABELS[kw];
+              const kwDef = forgeKey ? keywordDefs[forgeKey] : null;
+              const desc = kwDef?.desc ? (x != null ? kwDef.desc.replace(/X/g, String(x)) : kwDef.desc) : null;
+              return (
+              <div key={kw} style={{ display: "flex", alignItems: "flex-start", gap: 5 }}>
+                <span style={{ fontSize: 12, flexShrink: 0 }}>{KEYWORD_SYMBOLS[kw] || "✦"}</span>
+                <div>
+                  <div style={{ fontSize: 10, color: accentColor, fontWeight: 600 }}>{displayLabel}</div>
+                  {desc && <div style={{ fontSize: 8, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
+                </div>
+              </div>
+              );
+            })}
+          </div>
+          );
+        })()}
 
         {card.effect_text && (
           <div style={{
@@ -201,7 +237,7 @@ function MulliganCard({
             <p style={{
               margin: 0, fontSize: 10, color: "#ccc",
               lineHeight: 1.5, fontFamily: "'Crimson Text', serif",
-            }}>{card.effect_text}</p>
+            }}>{cleanEffectText(card.effect_text)}</p>
           </div>
         )}
 

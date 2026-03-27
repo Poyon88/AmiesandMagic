@@ -29,11 +29,25 @@ export default function CollectionView({ cards }: CollectionViewProps) {
   const [keywordFilter, setKeywordFilter] = useState<Keyword | null>(null);
   const [factionFilter, setFactionFilter] = useState<string | null>(null);
   const [rarityFilter, setRarityFilter] = useState<string | null>(null);
+  const [raceFilter, setRaceFilter] = useState<string | null>(null);
+  const [clanFilter, setClanFilter] = useState<string | null>(null);
 
-  // Extract unique factions from cards
+  // Extract unique factions, races, clans from cards
   const factions = useMemo(() => {
     const set = new Set<string>();
     cards.forEach(c => { if (c.faction) set.add(c.faction); });
+    return Array.from(set).sort();
+  }, [cards]);
+
+  const races = useMemo(() => {
+    const set = new Set<string>();
+    cards.forEach(c => { if (c.race) set.add(c.race); });
+    return Array.from(set).sort();
+  }, [cards]);
+
+  const clans = useMemo(() => {
+    const set = new Set<string>();
+    cards.forEach(c => { if (c.clan) set.add(c.clan); });
     return Array.from(set).sort();
   }, [cards]);
 
@@ -50,9 +64,13 @@ export default function CollectionView({ cards }: CollectionViewProps) {
         return false;
       if (rarityFilter !== null && card.rarity !== rarityFilter)
         return false;
+      if (raceFilter !== null && card.race !== raceFilter)
+        return false;
+      if (clanFilter !== null && card.clan !== clanFilter)
+        return false;
       return true;
     });
-  }, [cards, search, manaCostFilter, typeFilter, keywordFilter, factionFilter, rarityFilter]);
+  }, [cards, search, manaCostFilter, typeFilter, keywordFilter, factionFilter, rarityFilter, raceFilter, clanFilter]);
 
   function resetFilters() {
     setSearch("");
@@ -61,10 +79,12 @@ export default function CollectionView({ cards }: CollectionViewProps) {
     setKeywordFilter(null);
     setFactionFilter(null);
     setRarityFilter(null);
+    setRaceFilter(null);
+    setClanFilter(null);
   }
 
   const hasActiveFilters =
-    search || manaCostFilter !== null || typeFilter !== null || keywordFilter !== null || factionFilter !== null || rarityFilter !== null;
+    search || manaCostFilter !== null || typeFilter !== null || keywordFilter !== null || factionFilter !== null || rarityFilter !== null || raceFilter !== null || clanFilter !== null;
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -199,7 +219,7 @@ export default function CollectionView({ cards }: CollectionViewProps) {
 
           {/* Keyword filter */}
           <div className="flex items-center gap-1">
-            <span className="text-foreground/50 text-sm mr-1">Keyword:</span>
+            <span className="text-foreground/50 text-sm mr-1">Capacité:</span>
             <select
               value={keywordFilter ?? ""}
               onChange={(e) =>
@@ -207,11 +227,41 @@ export default function CollectionView({ cards }: CollectionViewProps) {
               }
               className="px-3 py-1.5 bg-background border border-card-border rounded-lg text-foreground/70 text-sm focus:outline-none focus:border-primary"
             >
-              <option value="">Tous</option>
+              <option value="">Toutes</option>
               {KEYWORDS.map((kw) => (
                 <option key={kw} value={kw}>
                   {KEYWORD_LABELS[kw]}
                 </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Race filter */}
+          <div className="flex items-center gap-1">
+            <span className="text-foreground/50 text-sm mr-1">Race:</span>
+            <select
+              value={raceFilter ?? ""}
+              onChange={(e) => setRaceFilter(e.target.value || null)}
+              className="px-3 py-1.5 bg-background border border-card-border rounded-lg text-foreground/70 text-sm focus:outline-none focus:border-primary"
+            >
+              <option value="">Toutes</option>
+              {races.map((r) => (
+                <option key={r} value={r}>{r}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Clan filter */}
+          <div className="flex items-center gap-1">
+            <span className="text-foreground/50 text-sm mr-1">Clan:</span>
+            <select
+              value={clanFilter ?? ""}
+              onChange={(e) => setClanFilter(e.target.value || null)}
+              className="px-3 py-1.5 bg-background border border-card-border rounded-lg text-foreground/70 text-sm focus:outline-none focus:border-primary"
+            >
+              <option value="">Tous</option>
+              {clans.map((c) => (
+                <option key={c} value={c}>{c}</option>
               ))}
             </select>
           </div>
