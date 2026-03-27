@@ -1,0 +1,33 @@
+﻿Keyword;Tier;Min Rareté;Coût (pts);SE;Description
+Loyauté;0;Commune+;2;0.5;+1 ATK pour chaque allié sur le terrain
+Ancré;0;Commune+;2;0.5;Ne peut pas être déplacé ou exilé
+Résistance;0;Commune+;5;1.0;Réduit les dégâts reçus de 1
+Provocation;0;Commune+;5;1.0;Les ennemis doivent attaquer cette unité en priorité
+Traque;0;Commune+;5;1.0;Peut attaquer dès son invocation
+Premier Frappe;0;Commune+;7;1.5;Attaque avant les autres unités au combat
+Berserk;0;Commune+;7;1.5;+2 ATK lorsque les PV sont inférieurs à 50%
+Bouclier;0;Commune+;7;1.5;Absorbe une première attaque sans dégâts
+Vol;1;Peu Commune+;7;1.5;Ignore les provocations adverses qui n ont pas Vol
+Précision;1;Peu Commune+;7;1.5;Ignore la Résistance et l Armure
+Drain de vie;1;Peu Commune+;9;2.0;Soigne votre héros des dégâts infligés
+Esquive;1;Peu Commune+;9;2.0;30% de chance d éviter une attaque
+Poison;1;Peu Commune+;9;2.0;Les unités blessées perdent 1 PV par tour
+Célérité;1;Peu Commune+;11;2.5;Peut attaquer deux fois par tour
+Terreur;2;Rare+;11;2.5;Les unités adverses perdent 1 ATK en présence de cette carte
+Armure;2;Rare+;11;2.5;Réduit tous les dégâts reçus de 2
+Commandement;2;Rare+;13;3.0;Les alliés de même faction gagnent +1/+1
+Fureur;2;Rare+;13;3.0;+3 ATK pendant un tour après avoir subi des dégâts
+Double Attaque;2;Rare+;16;3.5;Attaque deux cibles différentes par tour
+Invisible;2;Rare+;16;3.5;Ne peut pas être ciblé par des sorts adverses
+Liaison de vie;3;Épique+;16;3.5;Partage les dégâts subis avec le héros adverse
+Ombre;3;Épique+;18;4.0;Attaque directement le héros adverse, ignorant les blockers
+Sacrifice;3;Épique+;18;4.0;Détruisez un allié pour doubler l ATK pendant un tour
+Maléfice;3;Épique+;18;4.0;À la mort, inflige 3 dégâts à tous les ennemis
+Indestructible;3;Épique+;18;4.0;Survit à une mort avec 1 PV restant
+Régénération;3;Épique+;20;4.5;Récupère 2 PV au début de chaque tour
+Corruption;3;Épique+;20;4.5;Convertit une unité ennemie de ≤3 ATK à votre camp
+Pacte de sang;4;Légendaire;25;5.5;Quand cette unité meurt, invoque une copie à 0 mana
+Souffle de feu;4;Légendaire;25;5.5;Inflige 4 dégâts à toutes les unités ennemies lors de l attaque
+Domination;4;Légendaire;27;6.0;Prend le contrôle d une unité ennemie au hasard à son invocation
+Résurrection;4;Légendaire;29;6.5;Revient en jeu une fois après sa mort avec la moitié de ses PV
+Transcendance;4;Légendaire;32;7.0;Immunité totale aux sorts adverses pendant 2 tours

@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef } from "react";
 import { generateCardStats, pickMana, pickRarity, buildId } from "@/lib/card-engine/generator";
-import { RARITIES, FACTIONS, TYPES, KEYWORDS, RARITY_WEIGHTS_BY_MANA, RARITY_MAP } from "@/lib/card-engine/constants";
+import { RARITIES, FACTIONS, TYPES, KEYWORDS, RARITY_WEIGHTS_BY_MANA, RARITY_MAP, ALIGNMENTS } from "@/lib/card-engine/constants";
 import CardVisual from "./CardVisual";
 import type { CardType, Keyword } from "@/lib/game/types";
 
@@ -15,11 +15,11 @@ interface CardText {
   illustrationPrompt: string;
 }
 
-async function generateCardText(factionId: string, type: string, rarityId: string, stats: ReturnType<typeof generateCardStats>): Promise<CardText> {
+async function generateCardText(factionId: string, type: string, rarityId: string, stats: ReturnType<typeof generateCardStats>, raceId?: string, clanId?: string): Promise<CardText> {
   const response = await fetch('/api/cards/generate-text', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ factionId, type, rarityId, stats }),
+    body: JSON.stringify({ factionId, type, rarityId, stats, raceId, clanId }),
   });
   if (!response.ok) return { name: 'Inconnu', ability: '—', flavorText: '', illustrationPrompt: '' };
   return response.json();
@@ -33,6 +33,9 @@ interface ForgeCard {
   id: string;
   name: string;
   faction: string;
+  race: string;
+  clan: string;
+  cardAlignment: string;
   type: string;
   rarity: string;
   mana: number;
@@ -80,7 +83,10 @@ function Btn({ onClick, label, color }: { onClick: () => void; label: string; co
 // ─── MAIN COMPONENT ──────────────────────────────────────────────────────────
 
 export default function CardForge() {
-  const [faction, setFaction] = useState("Nains");
+  const [faction, setFaction] = useState("Elfes");
+  const [race, setRace] = useState("");
+  const [clan, setClan] = useState("");
+  const [cardAlignment, setCardAlignment] = useState<string>("neutre");
   const [type, setType] = useState("Unité");
   const [rarity, setRarity] = useState("Rare");
   const [card, setCard] = useState<ForgeCard | null>(null);
@@ -124,7 +130,7 @@ export default function CardForge() {
   const manualCard: ForgeCard = {
     id: card?.id || "manual_preview",
     name: manualName || "Sans nom",
-    faction, type, rarity,
+    faction, race, clan, cardAlignment, type, rarity,
     mana: manualMana,
     attack: type === "Unité" ? manualAttack : null,
     defense: type === "Unité" ? manualDefense : null,
@@ -150,7 +156,7 @@ export default function CardForge() {
     const newCard: ForgeCard = {
       id: buildId(),
       name: manualName || "Sans nom",
-      faction, type, rarity,
+      faction, race, clan, cardAlignment, type, rarity,
       mana: manualMana,
       attack: type === "Unité" ? manualAttack : null,
       defense: type === "Unité" ? manualDefense : null,
@@ -169,12 +175,12 @@ export default function CardForge() {
 
   const forgeCard = useCallback(async (f = faction, t = type, r = rarity) => {
     setLoading(true);
-    const stats = generateCardStats(f, t, r);
+    const stats = generateCardStats(f, t, r, null, race || undefined);
     let text: CardText = { name: "Inconnu", ability: "—", flavorText: "", illustrationPrompt: "" };
-    try { text = await generateCardText(f, t, r, stats); } catch { /* fallback above */ }
+    try { text = await generateCardText(f, t, r, stats, race || undefined, clan || undefined); } catch { /* fallback above */ }
     const newCard: ForgeCard = {
       id: buildId(), name: text.name || "Inconnu",
-      faction: f, type: t, rarity: r, ...stats,
+      faction: f, race, clan, cardAlignment, type: t, rarity: r, ...stats,
       ability: text.ability || "—",
       flavorText: text.flavorText || "",
       illustrationPrompt: text.illustrationPrompt || "",
@@ -209,10 +215,14 @@ export default function CardForge() {
       const r = pickRarity();
       const stats = generateCardStats(f, t, r);
       let text: CardText = { name: "Inconnu", ability: "—", flavorText: "", illustrationPrompt: "" };
-      try { text = await generateCardText(f, t, r, stats); } catch { /* fallback above */ }
+      try { text = await generateCardText(f, t, r, stats, race || undefined, clan || undefined); } catch { /* fallback above */ }
+      const facData = FACTIONS[f];
+      const bulkRace = facData?.races ? pick(facData.races) : "";
+      const bulkClan = facData?.clans ? pick(facData.clans.names) : "";
       const c: ForgeCard = {
         id: buildId(), name: text.name || "Inconnu",
-        faction: f, type: t, rarity: r, ...stats,
+        faction: f, race: bulkRace, clan: bulkClan, cardAlignment: facData?.alignment === "spéciale" ? pick(["bon","neutre","maléfique"]) : (facData?.alignment || "neutre"),
+        type: t, rarity: r, ...stats,
         ability: text.ability || "—", flavorText: text.flavorText || "",
         illustrationPrompt: text.illustrationPrompt || "",
         generatedAt: new Date().toISOString(),
@@ -257,7 +267,7 @@ export default function CardForge() {
   const [saveResult, setSaveResult] = useState<{ ok: boolean; msg: string } | null>(null);
   const [updateTargetId, setUpdateTargetId] = useState<number | null>(null);
   const [updateTargetName, setUpdateTargetName] = useState<string | null>(null);
-  const [existingCards, setExistingCards] = useState<{ id: number; name: string; mana_cost: number; card_type: string; attack: number | null; health: number | null; effect_text: string; flavor_text: string | null; keywords: string[]; image_url: string | null; illustration_prompt: string | null; faction: string | null; rarity: string | null }[]>([]);
+  const [existingCards, setExistingCards] = useState<{ id: number; name: string; mana_cost: number; card_type: string; attack: number | null; health: number | null; effect_text: string; flavor_text: string | null; keywords: string[]; image_url: string | null; illustration_prompt: string | null; faction: string | null; race: string | null; clan: string | null; rarity: string | null; card_alignment: string | null }[]>([]);
   const [showExistingCards, setShowExistingCards] = useState(false);
   const [existingSearch, setExistingSearch] = useState("");
 
@@ -299,9 +309,12 @@ export default function CardForge() {
     setManualIllustrationPrompt(dbCard.illustration_prompt || "");
     setManualKeywords((dbCard.keywords || []).map(k => GAME_TO_FORGE_KEYWORD[k] || k));
 
-    // Set faction/type/rarity from card
+    // Set faction/type/rarity/race/clan from card
     if (dbCard.faction && FACTIONS[dbCard.faction]) setFaction(dbCard.faction);
     if (dbCard.card_type) setType(GAME_TO_FORGE_TYPE[dbCard.card_type] || "Unité");
+    setRace(dbCard.race || "");
+    setClan(dbCard.clan || "");
+    setCardAlignment(dbCard.card_alignment || "neutre");
 
     // Load existing image if available
     if (dbCard.image_url) {
@@ -313,6 +326,9 @@ export default function CardForge() {
       id: dbCard.id.toString(),
       name: dbCard.name,
       faction: dbCard.faction || faction,
+      race: dbCard.race || "",
+      clan: dbCard.clan || "",
+      cardAlignment: dbCard.card_alignment || "neutre",
       type: GAME_TO_FORGE_TYPE[dbCard.card_type] || "Unité",
       rarity,
       mana: dbCard.mana_cost,
@@ -414,6 +430,9 @@ export default function CardForge() {
             keywords: gameKeywords,
             spell_effect: null,
             faction: forgeCard.faction,
+            race: forgeCard.race || null,
+            clan: forgeCard.clan || null,
+            card_alignment: forgeCard.cardAlignment || null,
           },
           imageBase64,
           imageMimeType,
@@ -525,6 +544,62 @@ export default function CardForge() {
                   </button>
                 ))}
               </Sec>
+
+              {/* Race selector */}
+              {FACTIONS[faction]?.races && (
+                <Sec title="Race">
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
+                    {FACTIONS[faction].races.map(r => (
+                      <button key={r} onClick={() => { setRace(r); setClan(""); }} style={{
+                        padding: "4px 8px", borderRadius: 5, cursor: "pointer",
+                        background: race === r ? `${fac.color}22` : "#fff",
+                        border: `1px solid ${race === r ? fac.color : "#e0e0e0"}`,
+                        color: race === r ? fac.color : "#888",
+                        fontFamily: "'Cinzel',serif", fontSize: 9, fontWeight: race === r ? 700 : 400,
+                        transition: "all 0.15s",
+                      }}>{r}</button>
+                    ))}
+                  </div>
+                </Sec>
+              )}
+
+              {/* Clan selector */}
+              {FACTIONS[faction]?.clans && (FACTIONS[faction].clans!.appliesTo === "all" || FACTIONS[faction].clans!.appliesTo === race) && (
+                <Sec title="Clan">
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
+                    {FACTIONS[faction].clans!.names.map(c => (
+                      <button key={c} onClick={() => setClan(clan === c ? "" : c)} style={{
+                        padding: "4px 8px", borderRadius: 5, cursor: "pointer",
+                        background: clan === c ? `${fac.color}22` : "#fff",
+                        border: `1px solid ${clan === c ? fac.color : "#e0e0e0"}`,
+                        color: clan === c ? fac.color : "#888",
+                        fontFamily: "'Cinzel',serif", fontSize: 9, fontWeight: clan === c ? 700 : 400,
+                        transition: "all 0.15s",
+                      }}>{c}</button>
+                    ))}
+                  </div>
+                </Sec>
+              )}
+
+              {/* Mercenaires alignment selector */}
+              {faction === "Mercenaires" && (
+                <Sec title="Alignement">
+                  <div style={{ display: "flex", gap: 3 }}>
+                    {(["bon", "neutre", "maléfique"] as const).map(a => {
+                      const al = ALIGNMENTS.find(x => x.id === a);
+                      return (
+                        <button key={a} onClick={() => setCardAlignment(a)} style={{
+                          padding: "4px 8px", borderRadius: 5, cursor: "pointer", flex: 1,
+                          background: cardAlignment === a ? `${al?.color}22` : "#fff",
+                          border: `1px solid ${cardAlignment === a ? al?.color : "#e0e0e0"}`,
+                          color: cardAlignment === a ? al?.color : "#888",
+                          fontFamily: "'Cinzel',serif", fontSize: 9, fontWeight: cardAlignment === a ? 700 : 400,
+                        }}>{al?.emoji} {al?.label}</button>
+                      );
+                    })}
+                  </div>
+                </Sec>
+              )}
 
               <Sec title="Type">
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4 }}>

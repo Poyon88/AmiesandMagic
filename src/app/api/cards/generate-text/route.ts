@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { FACTIONS } from '@/lib/card-engine/constants';
 
 export async function POST(request: Request) {
-  const { factionId, type, rarityId, stats, existingName, existingAbility } = await request.json();
+  const { factionId, type, rarityId, stats, existingName, existingAbility, raceId, clanId } = await request.json();
 
   const kws = stats.keywords?.length > 0 ? `Mots-clés: ${stats.keywords.join(', ')}. ` : '';
   const statsDesc = stats.attack != null
@@ -26,7 +26,9 @@ export async function POST(request: Request) {
   }
 
   const hasVol = stats.keywords?.includes('Vol');
-  const volHint = hasVol ? '\n- IMPORTANT: La carte a le mot-clé Vol → la créature DOIT être volante (dragon, wyverne, aigle, faucon, griffon, chauve-souris, spectre ailé, démon ailé, etc. selon la faction)' : '';
+  const volHint = hasVol ? '\n- IMPORTANT: La carte a le mot-clé Vol → la créature DOIT être volante (dragon, wyverne, aigle, faucon, griffon, chauve-souris, spectre ailé, démon ailé, etc. selon la race)' : '';
+  const raceHint = raceId ? `\n- Race: ${raceId}. La créature doit correspondre visuellement à cette race.` : '';
+  const clanHint = clanId ? `\n- Clan: ${clanId}. Le style, l'environnement et l'ambiance doivent refléter ce clan.` : '';
 
   // Build context from existing card data if provided
   const existingHint = existingName || existingAbility
@@ -35,7 +37,7 @@ export async function POST(request: Request) {
 
   const prompt = `Tu es un game designer expert pour "Armies & Magic", un CCG médiéval-fantastique.
 Génère les textes pour cette carte :
-- Faction: ${factionId} (${facDesc})${subTypeHint}${volHint}${existingHint}
+- Faction: ${factionId} (${facDesc})${raceHint}${clanHint}${subTypeHint}${volHint}${existingHint}
 - Type: ${type} | Rareté: ${rarityId} | Coût mana: ${stats.mana}
 - ${statsDesc}${kws}
 ${existingName ? `Le nom "${existingName}" est déjà choisi — garde-le tel quel.` : ''}

@@ -60,12 +60,13 @@ function computeBudget(mana: number, rarityId: string) {
 
 // ─── KEYWORDS ────────────────────────────────────────────────────────────────
 
-function getAvailableKeywords(factionId: string, rarityId: string) {
+function getAvailableKeywords(factionId: string, rarityId: string, raceId?: string) {
   const faction = FACTIONS[factionId];
   const tier = RARITY_MAP[rarityId].tier;
+  const raceKws: Record<string, number> | undefined = raceId ? faction.raceProfiles?.[raceId]?.likelyKeywords : undefined;
   return Object.entries(KEYWORDS)
     .filter(([id, kw]) => kw.minTier <= tier && !faction.forbiddenKeywords.includes(id))
-    .map(([id, kw]) => ({ id, ...kw, weight: faction.likelyKeywords[id] || 0.12 }));
+    .map(([id, kw]) => ({ id, ...kw, weight: (raceKws ? raceKws[id] : undefined) ?? faction.likelyKeywords[id] ?? 0.12 }));
 }
 
 function pickWeightedKeyword(available: ReturnType<typeof getAvailableKeywords>, alreadyPicked: string[]) {
@@ -82,20 +83,24 @@ function pickWeightedKeyword(available: ReturnType<typeof getAvailableKeywords>,
 
 // ─── MAIN GENERATOR ──────────────────────────────────────────────────────────
 
-export function generateCardStats(factionId: string, type: string, rarityId: string, fixedMana: number | null = null) {
+export function generateCardStats(factionId: string, type: string, rarityId: string, fixedMana: number | null = null, raceId?: string) {
   const faction = FACTIONS[factionId];
   const isUnit = type === 'Unité';
   const mana = fixedMana ?? pickMana(rarityId);
 
-  // Sub-type stat adjustments
+  // Race-specific stat adjustments
   let statWeights = { ...faction.statWeights };
+  const raceProfile = raceId && faction.raceProfiles?.[raceId];
+  if (raceProfile) {
+    statWeights = { ...raceProfile.statWeights };
+  }
+
+  // Sub-type stat adjustments (mana-based)
   if (faction.subType && isUnit) {
     const st = faction.subType;
-    if (factionId === "Hobbits" && mana >= st.threshold) {
-      // Hommes-arbres : très tanky, ATK modérée
+    if (factionId === "Hobbits" && mana >= st.threshold && !raceProfile) {
       statWeights = { atk: 0.90, def: 1.50 };
-    } else if (factionId === "Orcs & Gobelins" && mana < st.threshold) {
-      // Gobelins : très rapides, faibles
+    } else if (factionId === "Orcs" && mana < st.threshold && !raceProfile) {
       statWeights = { atk: 1.10, def: 0.70 };
     }
   }
@@ -107,8 +112,8 @@ export function generateCardStats(factionId: string, type: string, rarityId: str
   const FREQUENT_CHANCE = 0.40;
 
   if (isUnit) {
-    // Dragons : Vol toujours garanti (ce sont des créatures volantes)
-    if (factionId === "Dragons") {
+    // Dragons et Aigles Géants : Vol toujours garanti
+    if (raceId === "Dragons" || raceId === "Aigles Géants" || raceId === "Air/Tempête") {
       keywords.push("Vol");
     }
 
@@ -127,7 +132,7 @@ export function generateCardStats(factionId: string, type: string, rarityId: str
       if (factionId === "Hobbits" && mana >= st.threshold) {
         if (Math.random() < FREQUENT_CHANCE) keywords.push("Provocation");
         if (Math.random() < FREQUENT_CHANCE) keywords.push("Ancré");
-      } else if (factionId === "Orcs & Gobelins" && mana < st.threshold) {
+      } else if (factionId === "Orcs" && mana < st.threshold) {
         if (Math.random() < FREQUENT_CHANCE) keywords.push("Traque");
       }
     }
@@ -183,7 +188,7 @@ export function generateCardStats(factionId: string, type: string, rarityId: str
       'Légendaire':  { max: 3, probs: [0.85, 0.55, 0.25] },
     };
     const kwConfig = KW_CONFIG[rarityId] || { max: 2, probs: [0.50, 0.25] };
-    const available = getAvailableKeywords(factionId, rarityId);
+    const available = getAvailableKeywords(factionId, rarityId, raceId);
     let attempts = 0;
     while (keywords.length < kwConfig.max && attempts < 15) {
       const slotProb = kwConfig.probs[keywords.length] ?? 0;

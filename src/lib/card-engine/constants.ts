@@ -66,115 +66,148 @@ export interface FactionSubType {
   lowEmoji?: string;       // emoji du sous-type bas
 }
 
-export type Alignment = "bon" | "neutre" | "maléfique";
+export type Alignment = "bon" | "neutre" | "maléfique" | "spéciale";
+
+export interface FactionClan {
+  names: string[];
+  appliesTo: string | "all"; // race name or "all" for transversal clans
+}
 
 export const FACTIONS: Record<string, {
   color: string; accent: string; emoji: string; bg: string;
   alignment: Alignment;
+  races: string[];
+  clans?: FactionClan;
   statWeights: { atk: number; def: number };
   guaranteedKeywords: string[];
   likelyKeywords: Record<string, number>;
   forbiddenKeywords: string[];
   description: string;
   subType?: FactionSubType;
+  raceProfiles?: Record<string, { statWeights: { atk: number; def: number }; likelyKeywords?: Record<string, number> }>;
 }> = {
+  Elfes: {
+    color: "#3a7d44", accent: "#55efc4", emoji: "🌿", bg: "#0a1f0a", alignment: "bon",
+    races: ["Elfes", "Aigles Géants"],
+    clans: { names: ["Sylvains", "Hauts-Elfes", "Elfes des Mers"], appliesTo: "Elfes" },
+    statWeights: { atk: 1.10, def: 0.80 },
+    guaranteedKeywords: [],
+    likelyKeywords: { "Traque": 0.60, "Esquive": 0.55, "Précision": 0.50, "Invisible": 0.40, "Premier Frappe": 0.45, "Drain de vie": 0.30, "Vol": 0.20 },
+    forbiddenKeywords: ["Armure", "Ancré", "Provocation", "Berserk"],
+    description: "Agiles et furtifs. Favorisent la vitesse et l'esquive. Aigles géants parmi leurs rangs.",
+    raceProfiles: {
+      "Aigles Géants": { statWeights: { atk: 1.20, def: 0.70 }, likelyKeywords: { "Vol": 0.90, "Traque": 0.60, "Premier Frappe": 0.50 } },
+    },
+  },
   Nains: {
     color: "#b87333", accent: "#ff9f43", emoji: "⚒️", bg: "#2a1a0a", alignment: "bon",
+    races: ["Nains", "Golems"],
+    clans: { names: ["Montagnes", "Collines", "Lave"], appliesTo: "Nains" },
     statWeights: { atk: 0.85, def: 1.40 },
     guaranteedKeywords: [],
     likelyKeywords: { "Armure": 0.70, "Résistance": 0.65, "Bouclier": 0.50, "Ancré": 0.45, "Berserk": 0.35, "Provocation": 0.40 },
     forbiddenKeywords: ["Vol", "Invisible", "Esquive", "Ombre", "Traque"],
     description: "Solides et résistants. Favorisent la défense et la ténacité.",
+    raceProfiles: {
+      "Golems": { statWeights: { atk: 0.90, def: 1.60 }, likelyKeywords: { "Ancré": 0.80, "Armure": 0.75, "Provocation": 0.60, "Indestructible": 0.30 } },
+    },
   },
-  Elfes: {
-    color: "#3a7d44", accent: "#55efc4", emoji: "🌿", bg: "#0a1f0a", alignment: "bon",
-    statWeights: { atk: 1.10, def: 0.80 },
+  Hobbits: {
+    color: "#8B6914", accent: "#DAA520", emoji: "🍃", bg: "#1a1508", alignment: "bon",
+    races: ["Hobbits", "Hommes-Arbres"],
+    clans: { names: ["Plaines", "Rivièrains", "Landes"], appliesTo: "Hobbits" },
+    statWeights: { atk: 0.80, def: 0.90 },
     guaranteedKeywords: [],
-    likelyKeywords: { "Traque": 0.60, "Esquive": 0.55, "Précision": 0.50, "Invisible": 0.40, "Premier Frappe": 0.45, "Drain de vie": 0.30, "Vol": 0.20 },
-    forbiddenKeywords: ["Armure", "Ancré", "Provocation", "Berserk"],
-    description: "Agiles et furtifs. Favorisent la vitesse et l'esquive. Aigles et faucons parmi leurs rangs.",
+    likelyKeywords: { "Esquive": 0.65, "Loyauté": 0.60, "Traque": 0.45, "Invisible": 0.50, "Résistance": 0.35, "Ancré": 0.40 },
+    forbiddenKeywords: ["Terreur", "Corruption", "Domination", "Sacrifice", "Maléfice"],
+    description: "Petits mais rusés. Esquive et entraide.",
+    subType: { threshold: 6, name: "Homme-Arbre", emoji: "🌳", descOverride: "Homme-arbre allié des Hobbits. Colosse végétal, lent mais dévastateur et protecteur." },
+    raceProfiles: {
+      "Hommes-Arbres": { statWeights: { atk: 0.90, def: 1.50 }, likelyKeywords: { "Provocation": 0.60, "Ancré": 0.55, "Régénération": 0.40 } },
+    },
   },
   Humains: {
     color: "#2c5f8a", accent: "#74b9ff", emoji: "⚔️", bg: "#0a0f2a", alignment: "neutre",
+    races: ["Humains"],
+    clans: { names: ["Nordiques", "Orientaux", "Templiers"], appliesTo: "all" },
     statWeights: { atk: 1.00, def: 1.00 },
     guaranteedKeywords: [],
     likelyKeywords: { "Commandement": 0.55, "Loyauté": 0.60, "Bouclier": 0.45, "Premier Frappe": 0.40, "Provocation": 0.35 },
     forbiddenKeywords: ["Poison", "Corruption", "Maléfice", "Pacte de sang"],
     description: "Équilibrés et polyvalents. Synergies de groupe.",
   },
-  "Morts-vivants": {
-    color: "#6c3483", accent: "#a29bfe", emoji: "💀", bg: "#1a0a2a", alignment: "maléfique",
-    statWeights: { atk: 1.05, def: 0.95 },
-    guaranteedKeywords: [],
-    likelyKeywords: { "Poison": 0.65, "Drain de vie": 0.60, "Terreur": 0.55, "Maléfice": 0.50, "Régénération": 0.45, "Résurrection": 0.40, "Liaison de vie": 0.35, "Vol": 0.15 },
-    forbiddenKeywords: ["Loyauté", "Commandement", "Bouclier"],
-    description: "Insatiables et corrompus. Résurrection et drain de vie. Chauves-souris et spectres volants parmi eux.",
-  },
-  Démons: {
-    color: "#922b21", accent: "#ff6b6b", emoji: "🔥", bg: "#2a0a0a", alignment: "maléfique",
-    statWeights: { atk: 1.35, def: 0.80 },
-    guaranteedKeywords: [],
-    likelyKeywords: { "Fureur": 0.65, "Sacrifice": 0.55, "Corruption": 0.50, "Terreur": 0.50, "Ombre": 0.45, "Domination": 0.40, "Vol": 0.20 },
-    forbiddenKeywords: ["Loyauté", "Commandement", "Bouclier", "Ancré", "Résistance"],
-    description: "Offensifs et imprévisibles. Puissance brute au prix du risque. Démons ailés et wyvernes infernales.",
-  },
-  Dragons: {
-    color: "#8B0000", accent: "#FF4500", emoji: "🐉", bg: "#1a0505", alignment: "neutre",
-    statWeights: { atk: 1.40, def: 0.90 },
-    guaranteedKeywords: ["Vol"],
-    likelyKeywords: { "Vol": 0.70, "Souffle de feu": 0.70, "Terreur": 0.60, "Fureur": 0.50, "Indestructible": 0.40, "Transcendance": 0.35 },
-    forbiddenKeywords: ["Ancré", "Bouclier", "Armure", "Provocation", "Loyauté"],
-    description: "Dominateurs. Vol garanti, puissance dévastatrice.",
-  },
-  Hobbits: {
-    color: "#8B6914", accent: "#DAA520", emoji: "🍃", bg: "#1a1508", alignment: "bon",
-    statWeights: { atk: 0.80, def: 0.90 },
-    guaranteedKeywords: [],
-    likelyKeywords: { "Esquive": 0.65, "Loyauté": 0.60, "Traque": 0.45, "Invisible": 0.50, "Résistance": 0.35, "Ancré": 0.40 },
-    forbiddenKeywords: ["Terreur", "Corruption", "Domination", "Sacrifice", "Maléfice"],
-    description: "Petits mais rusés. Esquive et entraide. Les cartes à 6+ mana sont des Hommes-arbres : massifs, lents et protecteurs.",
-    subType: { threshold: 6, name: "Homme-arbre", emoji: "🌳", descOverride: "Homme-arbre allié des Hobbits. Colosse végétal, lent mais dévastateur et protecteur." },
-  },
-  "Hommes-bêtes": {
+  "Hommes-Bêtes": {
     color: "#7B5B3A", accent: "#CD853F", emoji: "🐺", bg: "#1a1008", alignment: "neutre",
+    races: ["Hommes-Loups", "Hommes-Ours", "Hommes-Félins", "Centaures"],
+    clans: { names: ["Forêt", "Toundra", "Savane"], appliesTo: "all" },
     statWeights: { atk: 1.20, def: 1.00 },
     guaranteedKeywords: [],
     likelyKeywords: { "Traque": 0.65, "Berserk": 0.60, "Fureur": 0.55, "Premier Frappe": 0.45, "Régénération": 0.40, "Esquive": 0.35, "Vol": 0.20 },
     forbiddenKeywords: ["Armure", "Commandement", "Invisible", "Ancré"],
-    description: "Sauvages et féroces. Attaquent vite, régénèrent, entrent en rage. Aigles et griffons parmi eux.",
+    description: "Sauvages et féroces. Attaquent vite, régénèrent, entrent en rage.",
   },
-  Géants: {
-    color: "#5B6C7D", accent: "#A0B0C0", emoji: "🗻", bg: "#0f1520", alignment: "neutre",
-    statWeights: { atk: 1.15, def: 1.30 },
+  "Élémentaires": {
+    color: "#E67E22", accent: "#F39C12", emoji: "🌀", bg: "#1a1008", alignment: "neutre",
+    races: ["Feu", "Terre", "Eau", "Air/Tempête"],
+    statWeights: { atk: 1.10, def: 1.10 },
     guaranteedKeywords: [],
-    likelyKeywords: { "Provocation": 0.65, "Résistance": 0.60, "Armure": 0.55, "Indestructible": 0.45, "Terreur": 0.40, "Ancré": 0.35 },
-    forbiddenKeywords: ["Esquive", "Invisible", "Traque", "Vol", "Célérité"],
-    description: "Colossaux et lents. Statistiques massives, résistance énorme. Difficiles à tuer.",
-  },
-  "Elfes noirs": {
-    color: "#4A0E4E", accent: "#9B59B6", emoji: "🔮", bg: "#150520", alignment: "maléfique",
-    statWeights: { atk: 1.15, def: 0.85 },
-    guaranteedKeywords: [],
-    likelyKeywords: { "Poison": 0.65, "Invisible": 0.55, "Ombre": 0.50, "Corruption": 0.50, "Maléfice": 0.45, "Drain de vie": 0.40, "Précision": 0.35 },
-    forbiddenKeywords: ["Loyauté", "Commandement", "Bouclier", "Provocation"],
-    description: "Sournois et venimeux. Poison, ombre et corruption. Frappent là où on ne les attend pas.",
-  },
-  "Orcs & Gobelins": {
-    color: "#4A7A2E", accent: "#7FFF00", emoji: "🗡️", bg: "#0f1a08", alignment: "maléfique",
-    statWeights: { atk: 1.25, def: 0.85 },
-    guaranteedKeywords: [],
-    likelyKeywords: { "Traque": 0.60, "Berserk": 0.55, "Fureur": 0.50, "Sacrifice": 0.45, "Loyauté": 0.40, "Célérité": 0.35, "Double Attaque": 0.30, "Vol": 0.15 },
-    forbiddenKeywords: ["Invisible", "Armure", "Régénération", "Transcendance"],
-    description: "Horde brutale. Gobelins (1-2 mana) : petits, rapides, sacrifiables. Orcs (3+ mana) : brutes épaisses et agressives. Wyvernes parmi leurs montures.",
-    subType: { threshold: 3, name: "Orc", emoji: "💪", lowName: "Gobelin", lowEmoji: "👺" },
+    likelyKeywords: { "Fureur": 0.40, "Résistance": 0.40, "Régénération": 0.35, "Esquive": 0.35 },
+    forbiddenKeywords: ["Loyauté", "Commandement", "Bouclier"],
+    description: "Forces primordiales de la nature. Chaque élément a son propre style de combat.",
+    raceProfiles: {
+      "Feu": { statWeights: { atk: 1.40, def: 0.75 }, likelyKeywords: { "Fureur": 0.70, "Souffle de feu": 0.60, "Berserk": 0.50, "Sacrifice": 0.35 } },
+      "Terre": { statWeights: { atk: 0.85, def: 1.50 }, likelyKeywords: { "Provocation": 0.70, "Armure": 0.65, "Ancré": 0.60, "Résistance": 0.55, "Indestructible": 0.30 } },
+      "Eau": { statWeights: { atk: 0.90, def: 1.10 }, likelyKeywords: { "Régénération": 0.65, "Drain de vie": 0.55, "Esquive": 0.50, "Résistance": 0.40 } },
+      "Air/Tempête": { statWeights: { atk: 1.15, def: 0.85 }, likelyKeywords: { "Vol": 0.80, "Traque": 0.65, "Célérité": 0.50, "Esquive": 0.45, "Premier Frappe": 0.40 } },
+    },
   },
   Mercenaires: {
-    color: "#8B8B00", accent: "#D4D400", emoji: "💰", bg: "#1a1a08", alignment: "neutre",
+    color: "#8B8B00", accent: "#D4D400", emoji: "💰", bg: "#1a1a08", alignment: "spéciale",
+    races: ["Géants", "Ogres", "Dragons"],
     statWeights: { atk: 1.05, def: 1.05 },
     guaranteedKeywords: [],
     likelyKeywords: { "Traque": 0.40, "Premier Frappe": 0.40, "Précision": 0.35, "Esquive": 0.30, "Berserk": 0.30, "Bouclier": 0.25, "Fureur": 0.25, "Vol": 0.15 },
     forbiddenKeywords: ["Commandement", "Loyauté", "Domination", "Corruption"],
-    description: "Soldats de fortune sans allégeance. Polyvalents et disponibles pour tous les decks. N'entrent pas dans la limite de factions.",
+    description: "Soldats de fortune sans allégeance. Polyvalents et disponibles pour tous les decks.",
+    raceProfiles: {
+      "Géants": { statWeights: { atk: 1.15, def: 1.30 }, likelyKeywords: { "Provocation": 0.65, "Résistance": 0.60, "Armure": 0.55, "Indestructible": 0.45, "Terreur": 0.40 } },
+      "Ogres": { statWeights: { atk: 1.25, def: 1.10 }, likelyKeywords: { "Berserk": 0.55, "Fureur": 0.50, "Provocation": 0.40, "Résistance": 0.35 } },
+      "Dragons": { statWeights: { atk: 1.40, def: 0.90 }, likelyKeywords: { "Vol": 0.90, "Souffle de feu": 0.70, "Terreur": 0.60, "Fureur": 0.50, "Indestructible": 0.40, "Transcendance": 0.35 } },
+    },
+  },
+  Orcs: {
+    color: "#4A7A2E", accent: "#7FFF00", emoji: "🗡️", bg: "#0f1a08", alignment: "maléfique",
+    races: ["Orcs", "Gobelins", "Trolls", "Wargs"],
+    clans: { names: ["Plaines", "Marais", "Montagnes"], appliesTo: "all" },
+    statWeights: { atk: 1.25, def: 0.85 },
+    guaranteedKeywords: [],
+    likelyKeywords: { "Traque": 0.60, "Berserk": 0.55, "Fureur": 0.50, "Sacrifice": 0.45, "Loyauté": 0.40, "Célérité": 0.35, "Double Attaque": 0.30, "Vol": 0.15 },
+    forbiddenKeywords: ["Invisible", "Armure", "Régénération", "Transcendance"],
+    description: "Horde brutale. Gobelins rapides et sacrifiables. Orcs brutes et agressifs. Trolls résistants. Wargs rapides.",
+    subType: { threshold: 3, name: "Orc", emoji: "💪", lowName: "Gobelin", lowEmoji: "👺" },
+  },
+  "Morts-Vivants": {
+    color: "#6c3483", accent: "#a29bfe", emoji: "💀", bg: "#1a0a2a", alignment: "maléfique",
+    races: ["Squelettes", "Zombies", "Spectres", "Vampires", "Lich", "Banshees"],
+    statWeights: { atk: 1.05, def: 0.95 },
+    guaranteedKeywords: [],
+    likelyKeywords: { "Poison": 0.65, "Drain de vie": 0.60, "Terreur": 0.55, "Maléfice": 0.50, "Régénération": 0.45, "Résurrection": 0.40, "Liaison de vie": 0.35, "Vol": 0.15 },
+    forbiddenKeywords: ["Loyauté", "Commandement", "Bouclier"],
+    description: "Insatiables et corrompus. Résurrection et drain de vie.",
+  },
+  "Elfes Noirs": {
+    color: "#4A0E4E", accent: "#9B59B6", emoji: "🔮", bg: "#150520", alignment: "maléfique",
+    races: ["Elfes Corrompus", "Araignées Géantes", "Démons"],
+    clans: { names: ["Abysses souterrains", "Forêt maudite", "Cités de cendres"], appliesTo: "all" },
+    statWeights: { atk: 1.15, def: 0.85 },
+    guaranteedKeywords: [],
+    likelyKeywords: { "Poison": 0.65, "Invisible": 0.55, "Ombre": 0.50, "Corruption": 0.50, "Maléfice": 0.45, "Drain de vie": 0.40, "Précision": 0.35 },
+    forbiddenKeywords: ["Loyauté", "Commandement", "Bouclier", "Provocation"],
+    description: "Sournois et venimeux. Poison, ombre et corruption.",
+    raceProfiles: {
+      "Démons": { statWeights: { atk: 1.35, def: 0.80 }, likelyKeywords: { "Fureur": 0.65, "Sacrifice": 0.55, "Terreur": 0.50, "Ombre": 0.45, "Vol": 0.30 } },
+      "Araignées Géantes": { statWeights: { atk: 1.10, def: 0.90 }, likelyKeywords: { "Poison": 0.75, "Esquive": 0.50, "Invisible": 0.45 } },
+    },
   },
 };
 
@@ -184,6 +217,7 @@ export const ALIGNMENTS: { id: Alignment; label: string; emoji: string; color: s
   { id: "bon", label: "Bon", emoji: "✨", color: "#4caf50" },
   { id: "neutre", label: "Neutre", emoji: "⚖️", color: "#ffd54f" },
   { id: "maléfique", label: "Maléfique", emoji: "💀", color: "#e74c3c" },
+  { id: "spéciale", label: "Spéciale", emoji: "💰", color: "#D4D400" },
 ];
 
 // ─── CALIBRATION ─────────────────────────────────────────────────────────────

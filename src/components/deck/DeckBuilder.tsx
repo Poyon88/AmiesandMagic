@@ -195,7 +195,11 @@ export default function DeckBuilder({
         allFactions.add(card.faction);
         if (card.faction !== "Mercenaires") factionSet.add(card.faction);
         const fac = FACTIONS[card.faction];
-        if (fac) alignmentSet.add(fac.alignment);
+        if (card.faction === "Mercenaires" && card.card_alignment) {
+          alignmentSet.add(card.card_alignment as Alignment);
+        } else if (fac && fac.alignment !== "spéciale") {
+          alignmentSet.add(fac.alignment);
+        }
       }
     });
 
@@ -216,7 +220,7 @@ export default function DeckBuilder({
 
     // Alignment
     if (card.faction) {
-      const a = FACTIONS[card.faction]?.alignment;
+      const a = card.faction === "Mercenaires" ? card.card_alignment : FACTIONS[card.faction]?.alignment;
       if (a === "bon" && deckStats.alignments.has("maléfique")) return "Conflit d'alignement";
       if (a === "maléfique" && deckStats.alignments.has("bon")) return "Conflit d'alignement";
     }

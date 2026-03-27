@@ -183,9 +183,9 @@ function recalculateAuras(player: PlayerState, opponent: PlayerState) {
   // Commandement: same-faction allies +1/+1
   for (const board of [player.board, opponent.board]) {
     for (const c of board) {
-      if (hasKw(c, "commandement") && c.card.faction) {
+      if (hasKw(c, "commandement") && c.card.race) {
         for (const ally of board) {
-          if (ally !== c && ally.card.faction === c.card.faction) {
+          if (ally !== c && ally.card.race === c.card.race) {
             ally.currentAttack += 1;
             // Health buff is tricky — only add if not already buffed
             // We handle this as a display buff, actual maxHealth unchanged
