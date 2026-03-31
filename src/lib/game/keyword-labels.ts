@@ -57,6 +57,8 @@ export const ALL_KEYWORDS: Keyword[] = [
   "indestructible", "regeneration", "corruption",
   "carnage", "heritage", "mimique", "metamorphose", "tactique",
   "exhumation", "heritage_du_cimetiere",
+  "traque_du_destin", "sang_mele", "fierte_du_clan", "solidarite",
+  "cycle_eternel", "martyr", "instinct_de_meute", "totem", "appel_du_clan", "rassemblement",
   "pacte_de_sang", "souffle_de_feu", "domination", "resurrection", "transcendance",
   "vampirisme",
 ];
@@ -84,6 +86,11 @@ export const KEYWORD_LABELS: Record<Keyword, string> = {
   pacte_de_sang: "Pacte de sang", souffle_de_feu: "Souffle de feu X", domination: "Domination",
   resurrection: "Résurrection", transcendance: "Transcendance",
   vampirisme: "Vampirisme X",
+  traque_du_destin: "Traque du destin X", sang_mele: "Sang mêlé",
+  fierte_du_clan: "Fierté du clan", solidarite: "Solidarité X",
+  cycle_eternel: "Cycle éternel", martyr: "Martyr",
+  instinct_de_meute: "Instinct de meute X", totem: "Totem",
+  appel_du_clan: "Appel du clan X", rassemblement: "Rassemblement X",
 };
 
 export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
@@ -109,4 +116,9 @@ export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
   pacte_de_sang: "🩸", souffle_de_feu: "🐲", domination: "👁️‍🗨️",
   resurrection: "✨", transcendance: "🌟",
   vampirisme: "🧛",
+  traque_du_destin: "🔮", sang_mele: "🧬",
+  fierte_du_clan: "🏰", solidarite: "🤜",
+  cycle_eternel: "♻️", martyr: "⚱️",
+  instinct_de_meute: "🐺", totem: "🗿",
+  appel_du_clan: "📯", rassemblement: "🏴",
 };

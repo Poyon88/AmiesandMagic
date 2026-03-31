@@ -136,7 +136,7 @@ export default function DeckBuilder({
 
   // ── Slot system ──
   const RARITY_HIERARCHY = ["Légendaire", "Épique", "Rare", "Peu Commune", "Commune"] as const;
-  const SLOT_COUNTS: Record<string, number> = { "Légendaire": 1, "Épique": 2, "Rare": 4, "Peu Commune": 8, "Commune": 35 };
+  const SLOT_COUNTS: Record<string, number> = { "Légendaire": 2, "Épique": 4, "Rare": 8, "Peu Commune": 12, "Commune": 24 };
   const RARITY_COLORS: Record<string, string> = { "Légendaire": "#ffd54f", "Épique": "#ce93d8", "Rare": "#4fc3f7", "Peu Commune": "#4caf50", "Commune": "#aaaaaa" };
   const RARITY_EMOJI: Record<string, string> = { "Légendaire": "🟡", "Épique": "🟣", "Rare": "🔵", "Peu Commune": "🟢", "Commune": "⚪" };
 

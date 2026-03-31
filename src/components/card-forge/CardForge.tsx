@@ -318,6 +318,12 @@ export default function CardForge() {
     "Pacte de sang": "pacte_de_sang", "Souffle de feu X": "souffle_de_feu",
     "Domination": "domination", "Résurrection": "resurrection", "Transcendance": "transcendance",
     "Vampirisme X": "vampirisme",
+    // Deck / Race / Clan
+    "Traque du destin X": "traque_du_destin", "Sang mêlé": "sang_mele",
+    "Fierté du clan": "fierte_du_clan", "Solidarité X": "solidarite",
+    "Cycle éternel": "cycle_eternel", "Martyr": "martyr",
+    "Instinct de meute X": "instinct_de_meute", "Totem": "totem",
+    "Appel du clan X": "appel_du_clan", "Rassemblement X": "rassemblement",
   };
 
   const [saving, setSaving] = useState(false);

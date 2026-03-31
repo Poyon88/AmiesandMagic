@@ -83,6 +83,17 @@ export const KEYWORD_SYMBOLS: Record<string, string> = {
   "Résurrection":     "✨",
   "Transcendance":    "🌟",
   "Vampirisme X":     "🧛",
+  // Deck / Race / Clan
+  "Traque du destin X": "🔮",
+  "Cycle éternel":    "♻️",
+  "Sang mêlé":        "🧬",
+  "Martyr":           "⚱️",
+  "Instinct de meute X": "🐺",
+  "Totem":            "🗿",
+  "Fierté du clan":   "🏰",
+  "Appel du clan X":  "📯",
+  "Solidarité X":     "🤜",
+  "Rassemblement X":  "🏴",
 };
 
 // ─── TYPES ───────────────────────────────────────────────────────────────────

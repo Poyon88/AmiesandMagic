@@ -23,6 +23,10 @@ export type Keyword =
   | "carnage" | "heritage" | "mimique" | "metamorphose" | "tactique"
   // Tier 3 — Cimetière
   | "exhumation" | "heritage_du_cimetiere"
+  // Tier 2 — Deck / Race / Clan
+  | "traque_du_destin" | "sang_mele" | "fierte_du_clan" | "solidarite"
+  // Tier 3 — Deck / Race / Clan / Mixte
+  | "cycle_eternel" | "martyr" | "instinct_de_meute" | "totem" | "appel_du_clan" | "rassemblement"
   // Tier 4
   | "pacte_de_sang" | "souffle_de_feu" | "domination" | "resurrection" | "transcendance"
   | "vampirisme";
@@ -118,6 +122,10 @@ export interface CardInstance {
   carnageX: number;
   // Héritage X: death buff to allies
   heritageX: number;
+  // Instinct de meute X: buff when same-clan ally dies this turn
+  instinctDeMeuteX: number;
+  // Cycle éternel: flag for auto-play when drawn
+  cycleEternelAutoPlay: boolean;
   // Owner tracking (for Corruption end-of-turn return)
   originalOwnerId: string | null;
 }

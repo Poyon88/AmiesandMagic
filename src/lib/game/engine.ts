@@ -92,6 +92,8 @@ function createCardInstance(card: Card): CardInstance {
     riposteX: 0,
     carnageX: 0,
     heritageX: 0,
+    instinctDeMeuteX: 0,
+    cycleEternelAutoPlay: false,
     originalOwnerId: null,
   };
 }
@@ -222,6 +224,31 @@ function recalculateAuras(player: PlayerState, opponent: PlayerState) {
     }
   }
 
+  // Sang mêlé: +1 ATK et +1 PV par type de race différent parmi vos alliés
+  for (const board of [player.board, opponent.board]) {
+    for (const c of board) {
+      if (hasKw(c, "sang_mele")) {
+        const uniqueRaces = new Set(board.filter(a => a !== c && a.card.race).map(a => a.card.race));
+        c.currentAttack += uniqueRaces.size;
+      }
+    }
+  }
+
+  // Totem: gagne les capacités de toutes les unités de même race alliées
+  for (const board of [player.board, opponent.board]) {
+    for (const c of board) {
+      if (hasKw(c, "totem") && c.card.race) {
+        const sameRaceKeywords = board
+          .filter(a => a !== c && a.card.race === c.card.race)
+          .flatMap(a => a.card.keywords);
+        const newKeywords = [...new Set([...c.card.keywords, ...sameRaceKeywords])];
+        if (newKeywords.length !== c.card.keywords.length) {
+          c.card = { ...c.card, keywords: newKeywords };
+        }
+      }
+    }
+  }
+
   // Bravoure: double dégâts contre unités à ATK supérieure (handled in combat, no aura needed)
 }
 
@@ -320,6 +347,13 @@ function drawCard(player: PlayerState): CardInstance | null {
     return null;
   }
   const card = player.deck.shift()!;
+  // Cycle éternel: auto-play if flagged
+  if (card.cycleEternelAutoPlay && card.card.card_type === "creature" && player.board.length < MAX_BOARD_SIZE) {
+    card.cycleEternelAutoPlay = false;
+    card.hasSummoningSickness = true;
+    player.board.push(card);
+    return card;
+  }
   if (player.hand.length >= MAX_HAND_SIZE) {
     player.graveyard.push(card);
     return null;
@@ -629,6 +663,83 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
         healTarget.currentHealth = healTarget.maxHealth;
         healTarget.isPoisoned = false;
       }
+    }
+
+    // Traque du destin X: révèle X premières cartes du deck, prend 1 en main, reste en dessous aléatoire
+    if (hasKw(cardInstance, "traque_du_destin") && player.deck.length > 0) {
+      const x = Math.max(1, Math.floor(cardInstance.card.mana_cost / 2));
+      const count = Math.min(x, player.deck.length);
+      const revealed = player.deck.splice(0, count);
+      if (revealed.length > 0 && player.hand.length < MAX_HAND_SIZE) {
+        // Pick the first one (simplified — ideally player chooses)
+        const chosenIdx = 0;
+        player.hand.push(revealed[chosenIdx]);
+        revealed.splice(chosenIdx, 1);
+        // Shuffle the rest to bottom
+        shuffleArray(revealed);
+        player.deck.push(...revealed);
+      }
+    }
+
+    // Sang mêlé: +1 ATK et +1 PV par type de race différent (on-summon permanent PV)
+    if (hasKw(cardInstance, "sang_mele")) {
+      const uniqueRaces = new Set(player.board.filter(a => a !== cardInstance && a.card.race).map(a => a.card.race));
+      if (uniqueRaces.size > 0) {
+        cardInstance.currentHealth += uniqueRaces.size;
+        cardInstance.maxHealth += uniqueRaces.size;
+      }
+    }
+
+    // Fierté du clan: handled as an aura — units of same clan summoned get +1/+1
+    // Check if existing allies with Fierté du clan buff the newly summoned unit
+    if (cardInstance.card.clan) {
+      for (const ally of player.board) {
+        if (ally !== cardInstance && hasKw(ally, "fierte_du_clan") && ally.card.clan === cardInstance.card.clan) {
+          cardInstance.currentAttack += 1;
+          cardInstance.currentHealth += 1;
+          cardInstance.maxHealth += 1;
+        }
+      }
+    }
+
+    // Solidarité X: piochez X cartes si 2+ alliés de même clan
+    if (hasKw(cardInstance, "solidarite") && cardInstance.card.clan) {
+      const sameClanCount = player.board.filter(a => a !== cardInstance && a.card.clan === cardInstance.card.clan).length;
+      if (sameClanCount >= 2) {
+        const x = Math.max(1, Math.floor(cardInstance.card.mana_cost / 3));
+        for (let i = 0; i < x; i++) drawCard(player);
+      }
+    }
+
+    // Appel du clan X: met en jeu la première unité de même clan (coût ≤ X) depuis le deck
+    if (hasKw(cardInstance, "appel_du_clan") && cardInstance.card.clan && player.board.length < MAX_BOARD_SIZE) {
+      const x = Math.max(1, cardInstance.card.mana_cost - 1);
+      const idx = player.deck.findIndex(c => c.card.clan === cardInstance.card.clan && c.card.card_type === "creature" && c.card.mana_cost <= x);
+      if (idx >= 0) {
+        const [called] = player.deck.splice(idx, 1);
+        const calledInstance = createCardInstance(called.card);
+        calledInstance.hasSummoningSickness = true;
+        player.board.push(calledInstance);
+      }
+    }
+
+    // Rassemblement X: révèle X premières cartes du deck, unités de même race en main, reste défaussé
+    if (hasKw(cardInstance, "rassemblement") && cardInstance.card.race && player.deck.length > 0) {
+      const x = Math.max(1, Math.floor(cardInstance.card.mana_cost / 2));
+      const count = Math.min(x, player.deck.length);
+      const revealed = player.deck.splice(0, count);
+      for (const c of revealed) {
+        if (c.card.race === cardInstance.card.race && c.card.card_type === "creature" && player.hand.length < MAX_HAND_SIZE) {
+          player.hand.push(c);
+        } else {
+          player.graveyard.push(c);
+        }
+      }
+    }
+
+    // Set Instinct de meute X value
+    if (hasKw(cardInstance, "instinct_de_meute")) {
+      cardInstance.instinctDeMeuteX = Math.max(1, Math.floor(cardInstance.card.mana_cost / 3));
     }
 
     // Set Persécution X value
@@ -1119,6 +1230,37 @@ function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: P
         const token = createCardInstance(tokenCard);
         token.hasSummoningSickness = true;
         owner.board.push(token);
+      }
+    }
+
+    // Martyr: toutes les unités de même race gagnent +1/+1 permanent
+    if (hasKw(c, "martyr") && c.card.race) {
+      for (const ally of owner.board) {
+        if (ally.card.race === c.card.race) {
+          ally.currentAttack += 1;
+          ally.currentHealth += 1;
+          ally.maxHealth += 1;
+        }
+      }
+    }
+
+    // Cycle éternel: ajoute une copie dans le deck, marquée pour auto-play
+    if (hasKw(c, "cycle_eternel")) {
+      const copyInstance = createCardInstance({ ...c.card });
+      copyInstance.cycleEternelAutoPlay = true;
+      // Insert at random position in deck
+      const insertIdx = Math.floor(rng() * (owner.deck.length + 1));
+      owner.deck.splice(insertIdx, 0, copyInstance);
+    }
+
+    // Instinct de meute: buff same-clan allies with this keyword when a same-clan ally dies
+    if (c.card.clan) {
+      for (const unit of owner.board) {
+        if (hasKw(unit, "instinct_de_meute") && unit.card.clan === c.card.clan && unit.instinctDeMeuteX > 0) {
+          unit.currentAttack += unit.instinctDeMeuteX;
+          unit.currentHealth += unit.instinctDeMeuteX;
+          unit.maxHealth += unit.instinctDeMeuteX;
+        }
       }
     }
 

@@ -17,7 +17,7 @@ export const RARITY_MAP = Object.fromEntries(RARITIES.map(r => [r.id, r]));
 // scalable: la capacité a un paramètre X variable
 // zone    : zone d'interaction (Terrain, Cimetière, Main, Mixte)
 
-export type KeywordZone = "Terrain" | "Cimetière" | "Main" | "Mixte";
+export type KeywordZone = "Terrain" | "Cimetière" | "Main" | "Mixte" | "Deck" | "Race" | "Clan";
 
 export const KEYWORDS: Record<string, { cost: number; costPerX: number; se: number; minTier: number; scalable: boolean; zone: KeywordZone; desc: string }> = {
   // ── Tier 0 — Commune+ ─────────────────────────────────────────────────────
@@ -86,6 +86,17 @@ export const KEYWORDS: Record<string, { cost: number; costPerX: number; se: numb
   "Résurrection":       { cost: 29, costPerX: 0, se: 6.5, minTier: 4, scalable: false, zone: "Terrain", desc: "Revient en jeu après sa mort avec 1 PV ; perd la capacité Résurrection à son retour." },
   "Transcendance":      { cost: 32, costPerX: 0, se: 7.0, minTier: 4, scalable: false, zone: "Terrain", desc: "Immunité totale aux sorts adverses : ne peut subir aucun dégât ni effet de sort, y compris les sorts de zone." },
   "Vampirisme X":       { cost: 20, costPerX: 5, se: 5.5, minTier: 4, scalable: true,  zone: "Terrain", desc: "Invocation : vole X PV à une unité ennemie ciblée et les ajoute aux PV de cette unité." },
+  // ── Deck / Race / Clan ────────────────────────────────────────────────────
+  "Traque du destin X": { cost: 11, costPerX: 4, se: 3.0, minTier: 2, scalable: true,  zone: "Deck", desc: "Invocation : révèle les X premières cartes de votre deck, prenez-en une en main et placez les autres en dessous dans un ordre aléatoire." },
+  "Cycle éternel":      { cost: 18, costPerX: 0, se: 4.0, minTier: 3, scalable: false, zone: "Deck", desc: "Mort : ajoutez une copie de cette carte dans votre deck ; si elle est piochée, mettez-la directement en jeu." },
+  "Sang mêlé":          { cost: 11, costPerX: 0, se: 2.5, minTier: 2, scalable: false, zone: "Race", desc: "Gagne +1 ATK et +1 PV pour chaque type de race différent parmi vos alliés en jeu." },
+  "Martyr":             { cost: 18, costPerX: 0, se: 4.0, minTier: 3, scalable: false, zone: "Race", desc: "Mort : toutes vos unités de même race en jeu gagnent +1/+1 permanent." },
+  "Instinct de meute X": { cost: 14, costPerX: 5, se: 4.0, minTier: 3, scalable: true,  zone: "Race", desc: "Gagne +X ATK et +X PV si une unité alliée de même clan est morte ce tour." },
+  "Totem":              { cost: 25, costPerX: 0, se: 5.5, minTier: 4, scalable: false, zone: "Race", desc: "Cette unité gagne les capacités de toutes les unités de même race alliées en jeu." },
+  "Fierté du clan":     { cost: 13, costPerX: 0, se: 3.0, minTier: 2, scalable: false, zone: "Clan", desc: "Tant que cette unité est en jeu, les unités de même clan invoquées arrivent avec +1/+1." },
+  "Appel du clan X":    { cost: 16, costPerX: 5, se: 4.5, minTier: 3, scalable: true,  zone: "Clan", desc: "Invocation : mettez en jeu gratuitement la première unité de même clan avec un coût inférieur ou égal à X depuis le dessus de votre deck." },
+  "Solidarité X":       { cost:  9, costPerX: 4, se: 2.5, minTier: 2, scalable: true,  zone: "Clan", desc: "Invocation : piochez X cartes si vous contrôlez 2 autres unités de même clan." },
+  "Rassemblement X":    { cost: 14, costPerX: 4, se: 4.0, minTier: 3, scalable: true,  zone: "Mixte", desc: "Invocation : révèle les X premières cartes du deck ; ajoutez à votre main toutes les unités de même race et défaussez le reste." },
 };
 
 // ─── FACTIONS ────────────────────────────────────────────────────────────────
