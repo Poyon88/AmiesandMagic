@@ -5,7 +5,7 @@ import { generateCardStats, pickMana, pickRarity, buildId } from "@/lib/card-eng
 import { RARITIES, FACTIONS, TYPES, KEYWORDS, RARITY_WEIGHTS_BY_MANA, RARITY_MAP, ALIGNMENTS } from "@/lib/card-engine/constants";
 import CardVisual, { KEYWORD_SYMBOLS } from "./CardVisual";
 import KeywordIcon from "@/components/shared/KeywordIcon";
-import type { CardType, Keyword } from "@/lib/game/types";
+import type { CardType, Keyword, SpellEffect, SpellTargetType } from "@/lib/game/types";
 
 // ─── API CALL ────────────────────────────────────────────────────────────────
 
@@ -115,6 +115,54 @@ export default function CardForge() {
   const [keywordXValues, setKeywordXValues] = useState<Record<string, number>>({});
   const [hoveredKw, setHoveredKw] = useState<{ id: string; rect: DOMRect } | null>(null);
 
+  // ─── SPELL EFFECT BUILDER ──────────────────────────────────────────────────
+  const [spellEffectType, setSpellEffectType] = useState<SpellEffect["type"]>("deal_damage");
+  const [spellEffectTarget, setSpellEffectTarget] = useState<SpellTargetType>("enemy_creature");
+  const [spellEffectKeyword, setSpellEffectKeyword] = useState<Keyword>("charge");
+  const [spellBuffAttack, setSpellBuffAttack] = useState(1);
+  const [spellBuffHealth, setSpellBuffHealth] = useState(1);
+
+  const SPELL_EFFECT_LABELS: Record<SpellEffect["type"], string> = {
+    deal_damage: "Dégâts", heal: "Soin", buff: "Buff",
+    draw_cards: "Pioche", resurrect: "Résurrection",
+    grant_keyword: "Mot-clé", gain_mana: "Mana",
+  };
+
+  const SPELL_TARGET_LABELS: Record<SpellTargetType, string> = {
+    any: "N'importe qui", any_creature: "Créature",
+    enemy_hero: "Héros ennemi", friendly_hero: "Héros allié",
+    friendly_creature: "Créature alliée", enemy_creature: "Créature ennemie",
+    all_enemy_creatures: "Toutes créa. ennemies", all_enemies: "Tous ennemis",
+    all_friendly_creatures: "Toutes créa. alliées",
+    friendly_graveyard: "Cimetière → main", friendly_graveyard_to_board: "Cimetière → terrain",
+  };
+
+  const spellTargetsForType = (t: SpellEffect["type"]): SpellTargetType[] => {
+    switch (t) {
+      case "deal_damage": return ["enemy_creature", "enemy_hero", "any", "any_creature", "all_enemy_creatures", "all_enemies"];
+      case "heal": return ["friendly_hero", "friendly_creature", "any", "any_creature", "all_friendly_creatures"];
+      case "buff": return ["friendly_creature", "any_creature"];
+      case "grant_keyword": return ["friendly_creature", "any_creature"];
+      case "resurrect": return ["friendly_graveyard", "friendly_graveyard_to_board"];
+      case "draw_cards": case "gain_mana": return [];
+      default: return [];
+    }
+  };
+
+  function buildSpellEffect(): SpellEffect | null {
+    if (type === "Unité") return null;
+    const targets = spellTargetsForType(spellEffectType);
+    const target = targets.length > 0 ? spellEffectTarget : undefined;
+    switch (spellEffectType) {
+      case "buff":
+        return { type: "buff", attack: spellBuffAttack, health: spellBuffHealth, target };
+      case "grant_keyword":
+        return { type: "grant_keyword", keyword: spellEffectKeyword, target };
+      default:
+        return { type: spellEffectType, amount: manualPower, target };
+    }
+  }
+
   const availableManualKeywords = Object.entries(KEYWORDS)
     .filter(([id, kw]) => {
       const tier = RARITY_MAP[rarity]?.tier ?? 0;
@@ -160,6 +208,8 @@ export default function CardForge() {
     setManualPower(2); setManualAbility(""); setManualFlavorText("");
     setManualIllustrationPrompt(""); setManualKeywords([]); setKeywordXValues({}); setCard(null);
     setEditedPrompt(null); setSaveResult(null);
+    setSpellEffectType("deal_damage"); setSpellEffectTarget("enemy_creature");
+    setSpellEffectKeyword("charge"); setSpellBuffAttack(1); setSpellBuffHealth(1);
     setCardImages(prev => Object.fromEntries(Object.entries(prev).filter(([k]) => k !== "manual_preview")));
   }, []);
 
@@ -330,7 +380,7 @@ export default function CardForge() {
   const [saveResult, setSaveResult] = useState<{ ok: boolean; msg: string } | null>(null);
   const [updateTargetId, setUpdateTargetId] = useState<number | null>(null);
   const [updateTargetName, setUpdateTargetName] = useState<string | null>(null);
-  const [existingCards, setExistingCards] = useState<{ id: number; name: string; mana_cost: number; card_type: string; attack: number | null; health: number | null; effect_text: string; flavor_text: string | null; keywords: string[]; image_url: string | null; illustration_prompt: string | null; faction: string | null; race: string | null; clan: string | null; rarity: string | null; card_alignment: string | null }[]>([]);
+  const [existingCards, setExistingCards] = useState<{ id: number; name: string; mana_cost: number; card_type: string; attack: number | null; health: number | null; effect_text: string; flavor_text: string | null; keywords: string[]; image_url: string | null; illustration_prompt: string | null; faction: string | null; race: string | null; clan: string | null; rarity: string | null; card_alignment: string | null; spell_effect: SpellEffect | null }[]>([]);
   const [showExistingCards, setShowExistingCards] = useState(false);
   const [existingSearch, setExistingSearch] = useState("");
 
@@ -366,7 +416,7 @@ export default function CardForge() {
     setManualMana(dbCard.mana_cost);
     setManualAttack(dbCard.attack ?? 3);
     setManualDefense(dbCard.health ?? 3);
-    setManualPower(1);
+    setManualPower(dbCard.spell_effect?.amount ?? 1);
     setManualAbility(dbCard.effect_text || "");
     setManualFlavorText(dbCard.flavor_text || "");
     setManualIllustrationPrompt(dbCard.illustration_prompt || "");
@@ -404,6 +454,18 @@ export default function CardForge() {
     setRace(dbCard.race || "");
     setClan(dbCard.clan || "");
     setCardAlignment(dbCard.card_alignment || "neutre");
+
+    // Load spell effect for editing
+    if (dbCard.spell_effect) {
+      setSpellEffectType(dbCard.spell_effect.type);
+      setSpellEffectTarget(dbCard.spell_effect.target || "enemy_creature");
+      setSpellBuffAttack(dbCard.spell_effect.attack ?? 1);
+      setSpellBuffHealth(dbCard.spell_effect.health ?? 1);
+      setSpellEffectKeyword(dbCard.spell_effect.keyword || "charge");
+    } else {
+      setSpellEffectType("deal_damage"); setSpellEffectTarget("enemy_creature");
+      setSpellBuffAttack(1); setSpellBuffHealth(1); setSpellEffectKeyword("charge");
+    }
 
     // Load existing image if available
     if (dbCard.image_url) {
@@ -522,7 +584,7 @@ export default function CardForge() {
             illustration_prompt: forgeCard.illustrationPrompt || null,
             rarity: forgeCard.rarity || null,
             keywords: gameKeywords,
-            spell_effect: null,
+            spell_effect: buildSpellEffect(),
             faction: forgeCard.faction,
             race: forgeCard.race || null,
             clan: forgeCard.clan || null,
@@ -1061,13 +1123,90 @@ export default function CardForge() {
                       </>
                     ) : (
                       <div style={{ gridColumn: "span 2" }}>
-                        <label style={{ fontSize: 8, color: "#9b59b6", letterSpacing: 1 }}>PUISSANCE</label>
+                        <label style={{ fontSize: 8, color: "#9b59b6", letterSpacing: 1 }}>
+                          {spellEffectType === "buff" ? "PUISSANCE (non utilisé pour buff)" : spellEffectType === "grant_keyword" ? "PUISSANCE (non utilisé)" : "PUISSANCE = MONTANT"}
+                        </label>
                         <input type="number" min={1} max={20} value={manualPower} onChange={e => setManualPower(Math.max(1, parseInt(e.target.value) || 1))}
                           style={{ width: "100%", padding: "5px 4px", borderRadius: 6, border: "1px solid #9b59b644", background: "#fff", color: "#9b59b6", fontFamily: "'Cinzel',serif", fontSize: 14, textAlign: "center", marginTop: 3 }}
                         />
                       </div>
                     )}
                   </div>
+
+                  {/* Spell Effect Builder */}
+                  {type !== "Unité" && (
+                    <div style={{ border: "1px solid #9b59b633", borderRadius: 8, padding: 8, background: "#f9f0ff" }}>
+                      <label style={{ fontSize: 9, color: "#9b59b6", letterSpacing: 1, fontWeight: 700 }}>EFFET DU SORT</label>
+
+                      {/* Effect type selector */}
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginTop: 5 }}>
+                        {(Object.entries(SPELL_EFFECT_LABELS) as [SpellEffect["type"], string][]).map(([val, label]) => (
+                          <button key={val} onClick={() => {
+                            setSpellEffectType(val);
+                            const targets = spellTargetsForType(val);
+                            if (targets.length > 0 && !targets.includes(spellEffectTarget)) setSpellEffectTarget(targets[0]);
+                          }}
+                            style={{
+                              padding: "3px 7px", borderRadius: 5, cursor: "pointer", fontSize: 9,
+                              fontFamily: "'Cinzel',serif", fontWeight: spellEffectType === val ? 700 : 400,
+                              background: spellEffectType === val ? "#9b59b622" : "#fff",
+                              border: `1px solid ${spellEffectType === val ? "#9b59b6" : "#e0e0e0"}`,
+                              color: spellEffectType === val ? "#9b59b6" : "#999",
+                            }}
+                          >{label}</button>
+                        ))}
+                      </div>
+
+                      {/* Target selector */}
+                      {spellTargetsForType(spellEffectType).length > 0 && (
+                        <div style={{ marginTop: 6 }}>
+                          <label style={{ fontSize: 8, color: "#666", letterSpacing: 1 }}>CIBLE</label>
+                          <select value={spellEffectTarget} onChange={e => setSpellEffectTarget(e.target.value as SpellTargetType)}
+                            style={{ width: "100%", padding: "4px 6px", borderRadius: 5, border: "1px solid #9b59b644", background: "#fff", color: "#333", fontSize: 10, fontFamily: "'Cinzel',serif", marginTop: 2 }}
+                          >
+                            {spellTargetsForType(spellEffectType).map(t => (
+                              <option key={t} value={t}>{SPELL_TARGET_LABELS[t]}</option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+
+                      {/* Conditional fields */}
+                      {spellEffectType === "buff" && (
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginTop: 6 }}>
+                          <div>
+                            <label style={{ fontSize: 8, color: "#f1c40f", letterSpacing: 1 }}>+ATK</label>
+                            <input type="number" min={0} max={20} value={spellBuffAttack} onChange={e => setSpellBuffAttack(Math.max(0, parseInt(e.target.value) || 0))}
+                              style={{ width: "100%", padding: "4px", borderRadius: 5, border: "1px solid #f1c40f44", background: "#fff", color: "#f1c40f", fontFamily: "'Cinzel',serif", fontSize: 12, textAlign: "center" }}
+                            />
+                          </div>
+                          <div>
+                            <label style={{ fontSize: 8, color: "#e74c3c", letterSpacing: 1 }}>+PV</label>
+                            <input type="number" min={0} max={20} value={spellBuffHealth} onChange={e => setSpellBuffHealth(Math.max(0, parseInt(e.target.value) || 0))}
+                              style={{ width: "100%", padding: "4px", borderRadius: 5, border: "1px solid #e74c3c44", background: "#fff", color: "#e74c3c", fontFamily: "'Cinzel',serif", fontSize: 12, textAlign: "center" }}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {spellEffectType === "grant_keyword" && (
+                        <div style={{ marginTop: 6 }}>
+                          <label style={{ fontSize: 8, color: "#666", letterSpacing: 1 }}>MOT-CLÉ À ACCORDER</label>
+                          <select value={spellEffectKeyword} onChange={e => setSpellEffectKeyword(e.target.value as Keyword)}
+                            style={{ width: "100%", padding: "4px 6px", borderRadius: 5, border: "1px solid #9b59b644", background: "#fff", color: "#333", fontSize: 10, fontFamily: "'Cinzel',serif", marginTop: 2 }}
+                          >
+                            {availableManualKeywords.map(([id]) => (
+                              <option key={id} value={FORGE_TO_GAME_KEYWORD[id] || id}>{id}</option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+
+                      {spellTargetsForType(spellEffectType).length === 0 && (
+                        <div style={{ fontSize: 8, color: "#999", marginTop: 4, fontStyle: "italic" }}>Cible automatique (le lanceur)</div>
+                      )}
+                    </div>
+                  )}
 
                   {/* Budget */}
                   <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 9 }}>

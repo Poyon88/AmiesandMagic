@@ -869,11 +869,15 @@ function resolveSpellEffect(
     }
     case "buff": {
       if (targetInstanceId) {
-        const target = findCreatureOnBoard(caster, targetInstanceId);
+        const target = findCreatureOnBoard(caster, targetInstanceId) ?? findCreatureOnBoard(opponent, targetInstanceId);
         if (target) {
-          target.currentAttack += effect.attack ?? 0;
-          target.currentHealth += effect.health ?? 0;
-          target.maxHealth += effect.health ?? 0;
+          const atkBuff = effect.attack ?? 0;
+          const hpBuff = effect.health ?? 0;
+          // Apply buff to base stats so recalculateAuras doesn't erase ATK bonus
+          target.card = { ...target.card, attack: (target.card.attack ?? 0) + atkBuff, health: (target.card.health ?? 0) + hpBuff };
+          target.currentAttack += atkBuff;
+          target.currentHealth += hpBuff;
+          target.maxHealth += hpBuff;
         }
       }
       break;

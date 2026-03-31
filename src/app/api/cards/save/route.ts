@@ -34,7 +34,7 @@ export async function GET() {
   const supabaseAdmin = getAdminClient();
   const { data, error } = await supabaseAdmin
     .from('cards')
-    .select('id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, keywords, image_url, illustration_prompt, faction, race, clan, rarity, card_alignment')
+    .select('id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, keywords, spell_effect, image_url, illustration_prompt, faction, race, clan, rarity, card_alignment')
     .order('name');
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
