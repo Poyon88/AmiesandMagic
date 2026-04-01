@@ -1305,35 +1305,36 @@ export default function CardForge() {
                         })}
                       </div>
 
+                      {/* Token list for invocation_multiple spell keyword */}
+                      {spellKeywords.some(k => k.id === "invocation_multiple") && (
+                        <div style={{ marginTop: 6, border: "1px solid #9b59b633", borderRadius: 6, padding: 8, background: "#f0e8ff" }}>
+                          <label style={{ fontSize: 8, color: "#9b59b6", letterSpacing: 1, fontWeight: 700 }}>TOKENS A INVOQUER</label>
+                          {convocationTokens.map((tok, idx) => (
+                            <div key={idx} style={{ display: "flex", gap: 4, alignItems: "center", marginTop: 4 }}>
+                              <select value={tok.race} onChange={e => setConvocationTokens(prev => prev.map((t, i) => i === idx ? { ...t, race: e.target.value } : t))}
+                                style={{ flex: 1, padding: "2px 4px", borderRadius: 4, border: "1px solid #9b59b644", fontSize: 9, fontFamily: "'Cinzel',serif" }}>
+                                <option value="">Race</option>
+                                {allRaces.map(r => <option key={r} value={r}>{r}</option>)}
+                              </select>
+                              <input type="number" min={1} max={20} value={tok.attack} onChange={e => setConvocationTokens(prev => prev.map((t, i) => i === idx ? { ...t, attack: Math.max(1, parseInt(e.target.value) || 1) } : t))}
+                                style={{ width: 32, padding: "2px", borderRadius: 4, border: "1px solid #f1c40f44", fontSize: 10, textAlign: "center", color: "#f1c40f", fontFamily: "'Cinzel',serif" }} title="ATK" />
+                              <span style={{ fontSize: 8, color: "#999" }}>/</span>
+                              <input type="number" min={1} max={20} value={tok.health} onChange={e => setConvocationTokens(prev => prev.map((t, i) => i === idx ? { ...t, health: Math.max(1, parseInt(e.target.value) || 1) } : t))}
+                                style={{ width: 32, padding: "2px", borderRadius: 4, border: "1px solid #e74c3c44", fontSize: 10, textAlign: "center", color: "#e74c3c", fontFamily: "'Cinzel',serif" }} title="DEF" />
+                              <button onClick={() => setConvocationTokens(prev => prev.filter((_, i) => i !== idx))}
+                                style={{ padding: "1px 5px", borderRadius: 3, border: "1px solid #f5a3a3", background: "#fde8e8", color: "#e74c3c", fontSize: 8, cursor: "pointer" }}>x</button>
+                            </div>
+                          ))}
+                          <button onClick={() => setConvocationTokens(prev => [...prev, { race: "", attack: 1, health: 1 }])}
+                            style={{ marginTop: 4, padding: "2px 8px", borderRadius: 4, border: "1px solid #9b59b644", background: "#fff", color: "#9b59b6", fontSize: 8, cursor: "pointer", fontFamily: "'Cinzel',serif" }}>
+                            + Ajouter un token
+                          </button>
+                        </div>
+                      )}
+
                       {/* Composable Effects (JSON editor for now — full tree builder in future iteration) */}
                       <div style={{ marginTop: 8 }}>
                         <details>
-                        {/* Token list for invocation_multiple spell keyword */}
-                        {spellKeywords.some(k => k.id === "invocation_multiple") && (
-                          <div style={{ marginTop: 6, border: "1px solid #9b59b633", borderRadius: 6, padding: 8, background: "#f0e8ff" }}>
-                            <label style={{ fontSize: 8, color: "#9b59b6", letterSpacing: 1, fontWeight: 700 }}>TOKENS A INVOQUER</label>
-                            {convocationTokens.map((tok, idx) => (
-                              <div key={idx} style={{ display: "flex", gap: 4, alignItems: "center", marginTop: 4 }}>
-                                <select value={tok.race} onChange={e => setConvocationTokens(prev => prev.map((t, i) => i === idx ? { ...t, race: e.target.value } : t))}
-                                  style={{ flex: 1, padding: "2px 4px", borderRadius: 4, border: "1px solid #9b59b644", fontSize: 9, fontFamily: "'Cinzel',serif" }}>
-                                  <option value="">Race</option>
-                                  {allRaces.map(r => <option key={r} value={r}>{r}</option>)}
-                                </select>
-                                <input type="number" min={1} max={20} value={tok.attack} onChange={e => setConvocationTokens(prev => prev.map((t, i) => i === idx ? { ...t, attack: Math.max(1, parseInt(e.target.value) || 1) } : t))}
-                                  style={{ width: 32, padding: "2px", borderRadius: 4, border: "1px solid #f1c40f44", fontSize: 10, textAlign: "center", color: "#f1c40f", fontFamily: "'Cinzel',serif" }} title="ATK" />
-                                <span style={{ fontSize: 8, color: "#999" }}>/</span>
-                                <input type="number" min={1} max={20} value={tok.health} onChange={e => setConvocationTokens(prev => prev.map((t, i) => i === idx ? { ...t, health: Math.max(1, parseInt(e.target.value) || 1) } : t))}
-                                  style={{ width: 32, padding: "2px", borderRadius: 4, border: "1px solid #e74c3c44", fontSize: 10, textAlign: "center", color: "#e74c3c", fontFamily: "'Cinzel',serif" }} title="DEF" />
-                                <button onClick={() => setConvocationTokens(prev => prev.filter((_, i) => i !== idx))}
-                                  style={{ padding: "1px 5px", borderRadius: 3, border: "1px solid #f5a3a3", background: "#fde8e8", color: "#e74c3c", fontSize: 8, cursor: "pointer" }}>x</button>
-                              </div>
-                            ))}
-                            <button onClick={() => setConvocationTokens(prev => [...prev, { race: "", attack: 1, health: 1 }])}
-                              style={{ marginTop: 4, padding: "2px 8px", borderRadius: 4, border: "1px solid #9b59b644", background: "#fff", color: "#9b59b6", fontSize: 8, cursor: "pointer", fontFamily: "'Cinzel',serif" }}>
-                              + Ajouter un token
-                            </button>
-                          </div>
-                        )}
                           <summary style={{ fontSize: 8, color: "#666", letterSpacing: 1, cursor: "pointer" }}>EFFETS COMPOSABLES (avancé)</summary>
                           <textarea
                             value={spellEffectsData ? JSON.stringify(spellEffectsData, null, 2) : ""}
