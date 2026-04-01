@@ -24,6 +24,7 @@ import type {
   TokenTemplate,
 } from "./types";
 import { SPELL_KEYWORDS } from "./spell-keywords";
+import { parseXValuesFromEffectText } from "./keyword-labels";
 import {
   HERO_MAX_HP,
   STARTING_HAND_SIZE,
@@ -99,6 +100,8 @@ function createCardInstance(card: Card): CardInstance {
     contresortActive: false,
     maledictionTargetId: null,
     isParalyzed: false,
+    loyauteATKBonus: 0,
+    loyautePVBonus: 0,
     necrophagieATKBonus: 0,
     necrophagiePVBonus: 0,
     persecutionX: 0,
@@ -186,12 +189,14 @@ function recalculateAuras(player: PlayerState, opponent: PlayerState) {
   // Reset ATK to base + permanent bonuses (not auras)
   for (const c of player.board) {
     let atk = c.card.attack ?? 0;
+    atk += c.loyauteATKBonus;
     if (c.fureurActive) atk += c.fureurATKBonus;
     atk += c.necrophagieATKBonus;
     c.currentAttack = atk;
   }
   for (const c of opponent.board) {
     let atk = c.card.attack ?? 0;
+    atk += c.loyauteATKBonus;
     if (c.fureurActive) atk += c.fureurATKBonus;
     atk += c.necrophagieATKBonus;
     c.currentAttack = atk;
@@ -428,8 +433,8 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     if (hasKw(cardInstance, "loyaute") && cardInstance.card.race) {
       const sameRaceCount = player.board.filter(a => a !== cardInstance && a.card.race === cardInstance.card.race).length;
       if (sameRaceCount > 0) {
-        cardInstance.card = { ...cardInstance.card, attack: (cardInstance.card.attack ?? 0) + sameRaceCount };
-        cardInstance.currentAttack += sameRaceCount;
+        cardInstance.loyauteATKBonus = sameRaceCount;
+        cardInstance.loyautePVBonus = sameRaceCount;
         cardInstance.currentHealth += sameRaceCount;
         cardInstance.maxHealth += sameRaceCount;
       }
@@ -487,22 +492,43 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       cardInstance.contresortActive = true;
     }
 
-    // Convocation X: crée un token X/X de même race
+    // Convocation X: crée un token X/X de la race indiquée
     if (hasKw(cardInstance, "convocation") && player.board.length < MAX_BOARD_SIZE) {
-      const x = cardInstance.card.mana_cost; // X based on mana cost as proxy
+      const xValues = parseXValuesFromEffectText(cardInstance.card.effect_text);
+      const x = xValues["convocation"] || Math.max(1, cardInstance.card.mana_cost);
+      const tokenRace = cardInstance.card.convocation_race || cardInstance.card.race;
       let tokenCard: Card = {
-        id: -1, name: `Token ${cardInstance.card.race || ""}`.trim(),
+        id: -1, name: `Token ${tokenRace || ""}`.trim(),
         mana_cost: 0, card_type: "creature",
         attack: x, health: x,
         effect_text: `Token ${x}/${x}`,
         keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
-        race: cardInstance.card.race, faction: cardInstance.card.faction,
+        race: tokenRace, faction: cardInstance.card.faction,
         clan: cardInstance.card.clan,
       };
       tokenCard = applyTokenTemplate(tokenCard);
       const token = createCardInstance(tokenCard);
       token.hasSummoningSickness = true;
       player.board.push(token);
+    }
+
+    // Convocations multiples : crée plusieurs tokens de races/stats différentes
+    if (hasKw(cardInstance, "convocations_multiples") && card.convocation_tokens?.length) {
+      for (const tokenDef of card.convocation_tokens) {
+        if (player.board.length >= MAX_BOARD_SIZE) break;
+        let tokenCard: Card = {
+          id: -1, name: `Token ${tokenDef.race || ""}`.trim(),
+          mana_cost: 0, card_type: "creature",
+          attack: tokenDef.attack, health: tokenDef.health,
+          effect_text: `Token ${tokenDef.attack}/${tokenDef.health}`,
+          keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
+          race: tokenDef.race, faction: cardInstance.card.faction,
+        };
+        tokenCard = applyTokenTemplate(tokenCard);
+        const token = createCardInstance(tokenCard);
+        token.hasSummoningSickness = true;
+        player.board.push(token);
+      }
     }
 
     // Malédiction: cible une unité ennemie, exilée fin du prochain tour adverse
@@ -513,13 +539,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       }
     }
 
-    // Paralysie: une unité ennemie ne peut pas attaquer au prochain tour
-    if (hasKw(cardInstance, "paralysie") && action.targetInstanceId) {
-      const paralyzedTarget = opponent.board.find(c => c.instanceId === action.targetInstanceId);
-      if (paralyzedTarget) {
-        paralyzedTarget.isParalyzed = true;
-      }
-    }
+    // Paralysie: now a combat effect (applied when dealing damage, like poison)
 
     // Permutation: échange les PV de deux unités (une alliée, une ennemie)
     if (hasKw(cardInstance, "permutation") && action.targetInstanceId) {
@@ -818,7 +838,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     }
 
     const ctx: SpellResolutionContext = {
-      state: newState, caster: player, opponent, targetMap, results: {},
+      state: newState, caster: player, opponent, card, targetMap, results: {},
     };
 
     // Phase 1: Resolve spell keywords
@@ -1107,6 +1127,25 @@ function resolveSpellKeywords(
             effect_text: `Token ${kw.attack ?? 1}/${kw.health ?? 1}`,
             keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
             race: kw.race,
+          };
+          tokenCard = applyTokenTemplate(tokenCard);
+          const token = createCardInstance(tokenCard);
+          token.hasSummoningSickness = true;
+          ctx.caster.board.push(token);
+        }
+        break;
+      }
+      case "invocation_multiple": {
+        const tokenDefs = ctx.card.convocation_tokens ?? [];
+        for (const tokenDef of tokenDefs) {
+          if (ctx.caster.board.length >= MAX_BOARD_SIZE) break;
+          let tokenCard: Card = {
+            id: -1, name: `Token ${tokenDef.race || ""}`.trim(),
+            mana_cost: 0, card_type: "creature",
+            attack: tokenDef.attack, health: tokenDef.health,
+            effect_text: `Token ${tokenDef.attack}/${tokenDef.health}`,
+            keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
+            race: tokenDef.race,
           };
           tokenCard = applyTokenTemplate(tokenCard);
           const token = createCardInstance(tokenCard);
@@ -1570,12 +1609,19 @@ export function attack(state: GameState, action: AttackAction): GameState {
       if (hasKw(attacker, "poison") && target.currentHealth > 0) {
         target.isPoisoned = true;
       }
+      // Apply paralysie from attacker
+      if (hasKw(attacker, "paralysie") && target.currentHealth > 0) {
+        target.isParalyzed = true;
+      }
 
       // If target survived, it retaliates
       if (target.currentHealth > 0) {
         dealDamageToCreature(attacker, target.currentAttack);
         if (hasKw(target, "poison") && attacker.currentHealth > 0) {
           attacker.isPoisoned = true;
+        }
+        if (hasKw(target, "paralysie") && attacker.currentHealth > 0) {
+          attacker.isParalyzed = true;
         }
       }
     } else {
@@ -1586,6 +1632,9 @@ export function attack(state: GameState, action: AttackAction): GameState {
       // Poison application
       if (hasKw(attacker, "poison") && target.currentHealth > 0) target.isPoisoned = true;
       if (hasKw(target, "poison") && attacker.currentHealth > 0) attacker.isPoisoned = true;
+      // Paralysie application
+      if (hasKw(attacker, "paralysie") && target.currentHealth > 0) target.isParalyzed = true;
+      if (hasKw(target, "paralysie") && attacker.currentHealth > 0) attacker.isParalyzed = true;
     }
 
     // Souffle de feu X: X dégâts à toutes les AUTRES unités ennemies
@@ -2072,7 +2121,7 @@ export function needsTarget(card: Card): boolean {
 }
 
 const CREATURE_TARGETING_KEYWORDS: Keyword[] = [
-  "sacrifice", "corruption", "malediction", "paralysie",
+  "sacrifice", "corruption", "malediction",
   "permutation", "vampirisme", "mimique", "metamorphose",
   "benediction", "tactique",
 ];
@@ -2102,7 +2151,6 @@ export function getCreatureTargets(state: GameState, card: Card): string[] {
         return player.board.map(c => c.instanceId);
       case "corruption":
       case "malediction":
-      case "paralysie":
       case "permutation":
       case "vampirisme":
         return filterEnemyTargetable2(opponent.board).map(c => c.instanceId);

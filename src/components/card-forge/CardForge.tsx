@@ -53,6 +53,9 @@ interface ForgeCard {
   budgetTotal: number;
   budgetUsed: number;
   generatedAt: string;
+  convocationRace?: string;
+  convocationTokenName?: string;
+  convocationTokens?: {race: string; attack: number; health: number}[];
 }
 
 function Sec({ title, children }: { title: string; children: React.ReactNode }) {
@@ -129,6 +132,8 @@ export default function CardForge() {
   const [manualKeywords, setManualKeywords] = useState<string[]>([]);
   const [keywordXValues, setKeywordXValues] = useState<Record<string, number>>({});
   const [hoveredKw, setHoveredKw] = useState<{ id: string; rect: DOMRect } | null>(null);
+  const [convocationRace, setConvocationRace] = useState("");
+  const [convocationTokens, setConvocationTokens] = useState<{race: string; attack: number; health: number}[]>([]);
 
   // ─── NEW SPELL SYSTEM ──────────────────────────────────────────────────────
   const [spellKeywords, setSpellKeywords] = useState<SpellKeywordInstance[]>([]);
@@ -189,6 +194,9 @@ export default function CardForge() {
     budgetTotal: manualBudgetTotal,
     budgetUsed: manualBudgetUsed,
     generatedAt: card?.generatedAt || new Date().toISOString(),
+    convocationRace: convocationRace || undefined,
+    convocationTokenName: tokenTemplates.find(t => t.race === convocationRace)?.name || convocationRace || undefined,
+    convocationTokens: convocationTokens.length > 0 ? convocationTokens : undefined,
   };
 
   // All races from all factions
@@ -281,7 +289,7 @@ export default function CardForge() {
     setManualPower(2); setManualAbility(""); setManualFlavorText("");
     setManualIllustrationPrompt(""); setManualKeywords([]); setKeywordXValues({}); setCard(null);
     setEditedPrompt(null); setSaveResult(null);
-    setSpellKeywords([]); setSpellEffectsData(null);
+    setSpellKeywords([]); setSpellEffectsData(null); setConvocationRace(""); setConvocationTokens([]);
     setCardImages(prev => Object.fromEntries(Object.entries(prev).filter(([k]) => k !== "manual_preview")));
   }, []);
 
@@ -407,7 +415,7 @@ export default function CardForge() {
 
   const FORGE_TO_GAME_KEYWORD: Record<string, Keyword> = {
     // Legacy aliases
-    "Raid": "raid", "Traque": "charge", "Provocation": "taunt", "Bouclier": "divine_shield", "Vol": "ranged",
+    "Raid": "raid", "Convocations multiples": "convocations_multiples", "Traque": "charge", "Provocation": "taunt", "Bouclier": "divine_shield", "Vol": "ranged",
     // Tier 0
     "Loyauté": "loyaute", "Ancré": "ancre", "Résistance": "resistance",
     "Première Frappe": "premiere_frappe", "Berserk": "berserk",
@@ -452,7 +460,7 @@ export default function CardForge() {
   const [saveResult, setSaveResult] = useState<{ ok: boolean; msg: string } | null>(null);
   const [updateTargetId, setUpdateTargetId] = useState<number | null>(null);
   const [updateTargetName, setUpdateTargetName] = useState<string | null>(null);
-  const [existingCards, setExistingCards] = useState<{ id: number; name: string; mana_cost: number; card_type: string; attack: number | null; health: number | null; effect_text: string; flavor_text: string | null; keywords: string[]; image_url: string | null; illustration_prompt: string | null; faction: string | null; race: string | null; clan: string | null; rarity: string | null; card_alignment: string | null; spell_keywords: SpellKeywordInstance[] | null; spell_effects: SpellComposableEffects | null }[]>([]);
+  const [existingCards, setExistingCards] = useState<{ id: number; name: string; mana_cost: number; card_type: string; attack: number | null; health: number | null; effect_text: string; flavor_text: string | null; keywords: string[]; image_url: string | null; illustration_prompt: string | null; faction: string | null; race: string | null; clan: string | null; rarity: string | null; card_alignment: string | null; spell_keywords: SpellKeywordInstance[] | null; spell_effects: SpellComposableEffects | null; convocation_race: string | null }[]>([]);
   const [showExistingCards, setShowExistingCards] = useState(false);
   const [existingSearch, setExistingSearch] = useState("");
 
@@ -530,6 +538,8 @@ export default function CardForge() {
     // Load spell data for editing
     setSpellKeywords(dbCard.spell_keywords ?? []);
     setSpellEffectsData(dbCard.spell_effects ?? null);
+    setConvocationRace(dbCard.convocation_race || "");
+    setConvocationTokens((dbCard as { convocation_tokens?: {race: string; attack: number; health: number}[] | null }).convocation_tokens ?? []);
 
     // Load existing image if available
     if (dbCard.image_url) {
@@ -653,6 +663,8 @@ export default function CardForge() {
             race: forgeCard.race || null,
             clan: forgeCard.clan || null,
             card_alignment: forgeCard.cardAlignment || null,
+            convocation_race: convocationRace || null,
+            convocation_tokens: convocationTokens.length > 0 ? convocationTokens : null,
           },
           imageBase64,
           imageMimeType,
@@ -671,7 +683,7 @@ export default function CardForge() {
     } finally {
       setSaving(false);
     }
-  }, [cardImages, type, spellKeywords, spellEffectsData]);
+  }, [cardImages, type, spellKeywords, spellEffectsData, convocationRace, convocationTokens]);
 
   const [generatingImage, setGeneratingImage] = useState(false);
   const [editedPrompt, setEditedPrompt] = useState<string | null>(null);
@@ -1285,6 +1297,9 @@ export default function CardForge() {
                                   </select>
                                 </div>
                               )}
+                              {kw.id === "invocation_multiple" && (
+                                <div style={{ fontSize: 8, color: "#9b59b6", marginTop: 2 }}>Config dans "Tokens à invoquer" ci-dessous</div>
+                              )}
                             </div>
                           );
                         })}
@@ -1293,6 +1308,32 @@ export default function CardForge() {
                       {/* Composable Effects (JSON editor for now — full tree builder in future iteration) */}
                       <div style={{ marginTop: 8 }}>
                         <details>
+                        {/* Token list for invocation_multiple spell keyword */}
+                        {spellKeywords.some(k => k.id === "invocation_multiple") && (
+                          <div style={{ marginTop: 6, border: "1px solid #9b59b633", borderRadius: 6, padding: 8, background: "#f0e8ff" }}>
+                            <label style={{ fontSize: 8, color: "#9b59b6", letterSpacing: 1, fontWeight: 700 }}>TOKENS A INVOQUER</label>
+                            {convocationTokens.map((tok, idx) => (
+                              <div key={idx} style={{ display: "flex", gap: 4, alignItems: "center", marginTop: 4 }}>
+                                <select value={tok.race} onChange={e => setConvocationTokens(prev => prev.map((t, i) => i === idx ? { ...t, race: e.target.value } : t))}
+                                  style={{ flex: 1, padding: "2px 4px", borderRadius: 4, border: "1px solid #9b59b644", fontSize: 9, fontFamily: "'Cinzel',serif" }}>
+                                  <option value="">Race</option>
+                                  {allRaces.map(r => <option key={r} value={r}>{r}</option>)}
+                                </select>
+                                <input type="number" min={1} max={20} value={tok.attack} onChange={e => setConvocationTokens(prev => prev.map((t, i) => i === idx ? { ...t, attack: Math.max(1, parseInt(e.target.value) || 1) } : t))}
+                                  style={{ width: 32, padding: "2px", borderRadius: 4, border: "1px solid #f1c40f44", fontSize: 10, textAlign: "center", color: "#f1c40f", fontFamily: "'Cinzel',serif" }} title="ATK" />
+                                <span style={{ fontSize: 8, color: "#999" }}>/</span>
+                                <input type="number" min={1} max={20} value={tok.health} onChange={e => setConvocationTokens(prev => prev.map((t, i) => i === idx ? { ...t, health: Math.max(1, parseInt(e.target.value) || 1) } : t))}
+                                  style={{ width: 32, padding: "2px", borderRadius: 4, border: "1px solid #e74c3c44", fontSize: 10, textAlign: "center", color: "#e74c3c", fontFamily: "'Cinzel',serif" }} title="DEF" />
+                                <button onClick={() => setConvocationTokens(prev => prev.filter((_, i) => i !== idx))}
+                                  style={{ padding: "1px 5px", borderRadius: 3, border: "1px solid #f5a3a3", background: "#fde8e8", color: "#e74c3c", fontSize: 8, cursor: "pointer" }}>x</button>
+                              </div>
+                            ))}
+                            <button onClick={() => setConvocationTokens(prev => [...prev, { race: "", attack: 1, health: 1 }])}
+                              style={{ marginTop: 4, padding: "2px 8px", borderRadius: 4, border: "1px solid #9b59b644", background: "#fff", color: "#9b59b6", fontSize: 8, cursor: "pointer", fontFamily: "'Cinzel',serif" }}>
+                              + Ajouter un token
+                            </button>
+                          </div>
+                        )}
                           <summary style={{ fontSize: 8, color: "#666", letterSpacing: 1, cursor: "pointer" }}>EFFETS COMPOSABLES (avancé)</summary>
                           <textarea
                             value={spellEffectsData ? JSON.stringify(spellEffectsData, null, 2) : ""}
@@ -1378,6 +1419,44 @@ export default function CardForge() {
                         );
                       })}
                     </div>
+                    {/* Convocation race selector */}
+                    {manualKeywords.includes("Convocation X") && (
+                      <div style={{ marginTop: 6, display: "flex", alignItems: "center", gap: 6 }}>
+                        <label style={{ fontSize: 8, color: "#f1c40f", letterSpacing: 1, fontWeight: 700 }}>RACE DU TOKEN</label>
+                        <select value={convocationRace} onChange={e => setConvocationRace(e.target.value)}
+                          style={{ padding: "3px 6px", borderRadius: 5, border: `1px solid ${convocationRace ? "#f1c40f44" : "#e74c3c"}`, fontSize: 9, fontFamily: "'Cinzel',serif", color: convocationRace ? "#f1c40f" : "#e74c3c", background: "#fff" }}>
+                          <option value="">-- Choisir une race --</option>
+                          {allRaces.map(r => <option key={r} value={r}>{r}</option>)}
+                        </select>
+                        {!convocationRace && <span style={{ fontSize: 8, color: "#e74c3c" }}>Requis</span>}
+                      </div>
+                    )}
+                    {/* Convocations multiples — token list editor */}
+                    {manualKeywords.includes("Convocations multiples") && (
+                      <div style={{ marginTop: 6, border: "1px solid #9b59b633", borderRadius: 6, padding: 8, background: "#f9f0ff" }}>
+                        <label style={{ fontSize: 8, color: "#9b59b6", letterSpacing: 1, fontWeight: 700 }}>TOKENS A INVOQUER</label>
+                        {convocationTokens.map((tok, idx) => (
+                          <div key={idx} style={{ display: "flex", gap: 4, alignItems: "center", marginTop: 4 }}>
+                            <select value={tok.race} onChange={e => setConvocationTokens(prev => prev.map((t, i) => i === idx ? { ...t, race: e.target.value } : t))}
+                              style={{ flex: 1, padding: "2px 4px", borderRadius: 4, border: "1px solid #9b59b644", fontSize: 9, fontFamily: "'Cinzel',serif" }}>
+                              <option value="">Race</option>
+                              {allRaces.map(r => <option key={r} value={r}>{r}</option>)}
+                            </select>
+                            <input type="number" min={1} max={20} value={tok.attack} onChange={e => setConvocationTokens(prev => prev.map((t, i) => i === idx ? { ...t, attack: Math.max(1, parseInt(e.target.value) || 1) } : t))}
+                              style={{ width: 32, padding: "2px", borderRadius: 4, border: "1px solid #f1c40f44", fontSize: 10, textAlign: "center", color: "#f1c40f", fontFamily: "'Cinzel',serif" }} title="ATK" />
+                            <span style={{ fontSize: 8, color: "#999" }}>/</span>
+                            <input type="number" min={1} max={20} value={tok.health} onChange={e => setConvocationTokens(prev => prev.map((t, i) => i === idx ? { ...t, health: Math.max(1, parseInt(e.target.value) || 1) } : t))}
+                              style={{ width: 32, padding: "2px", borderRadius: 4, border: "1px solid #e74c3c44", fontSize: 10, textAlign: "center", color: "#e74c3c", fontFamily: "'Cinzel',serif" }} title="DEF" />
+                            <button onClick={() => setConvocationTokens(prev => prev.filter((_, i) => i !== idx))}
+                              style={{ padding: "1px 5px", borderRadius: 3, border: "1px solid #f5a3a3", background: "#fde8e8", color: "#e74c3c", fontSize: 8, cursor: "pointer" }}>x</button>
+                          </div>
+                        ))}
+                        <button onClick={() => setConvocationTokens(prev => [...prev, { race: "", attack: 1, health: 1 }])}
+                          style={{ marginTop: 4, padding: "2px 8px", borderRadius: 4, border: "1px solid #9b59b644", background: "#fff", color: "#9b59b6", fontSize: 8, cursor: "pointer", fontFamily: "'Cinzel',serif" }}>
+                          + Ajouter un token
+                        </button>
+                      </div>
+                    )}
                     {/* Keyword tooltip */}
                     {hoveredKw && KEYWORDS[hoveredKw.id] && (() => {
                       const kwDef = KEYWORDS[hoveredKw.id];

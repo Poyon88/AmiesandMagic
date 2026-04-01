@@ -34,7 +34,7 @@ export async function GET() {
   const supabaseAdmin = getAdminClient();
   const { data, error } = await supabaseAdmin
     .from('cards')
-    .select('id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, keywords, spell_keywords, spell_effects, image_url, illustration_prompt, faction, race, clan, rarity, card_alignment')
+    .select('id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, keywords, spell_keywords, spell_effects, image_url, illustration_prompt, faction, race, clan, rarity, card_alignment, convocation_race, convocation_tokens')
     .order('name');
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -79,6 +79,8 @@ export async function POST(request: Request) {
       faction: card.faction || null,
       race: card.race || null,
       clan: card.clan || null,
+      convocation_race: card.convocation_race || null,
+      convocation_tokens: card.convocation_tokens || null,
       rarity: card.rarity || null,
       card_alignment: card.card_alignment || null,
     };

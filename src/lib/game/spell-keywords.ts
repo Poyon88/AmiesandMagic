@@ -87,6 +87,13 @@ export const SPELL_KEYWORDS: Record<SpellKeywordId, SpellKeywordDef> = {
     params: ["amount"],
     needsTarget: false,
   },
+  invocation_multiple: {
+    label: "Invocation multiple",
+    symbol: "📣📣",
+    desc: "Crée plusieurs tokens selon la configuration de la carte",
+    params: [],
+    needsTarget: false,
+  },
   afflux: {
     label: "Afflux X",
     symbol: "💎",

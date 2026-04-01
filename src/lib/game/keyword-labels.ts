@@ -46,6 +46,7 @@ export function parseXValuesFromEffectText(effectText: string | null | undefined
 export const ALL_KEYWORDS: Keyword[] = [
   "charge", "taunt", "divine_shield", "ranged",
   "raid", "loyaute", "ancre", "resistance", "premiere_frappe", "berserk",
+  "convocations_multiples",
   "vol", "precision", "drain_de_vie", "esquive", "poison", "celerite",
   "augure", "benediction", "bravoure", "pillage", "riposte",
   "rappel", "combustion",
@@ -65,7 +66,7 @@ export const ALL_KEYWORDS: Keyword[] = [
 
 export const KEYWORD_LABELS: Record<Keyword, string> = {
   charge: "Traque", taunt: "Provocation", divine_shield: "Bouclier", ranged: "Vol",
-  raid: "Raid", loyaute: "Loyauté", ancre: "Ancré", resistance: "Résistance", premiere_frappe: "Première Frappe",
+  raid: "Raid", convocations_multiples: "Convocations multiples", loyaute: "Loyauté", ancre: "Ancré", resistance: "Résistance", premiere_frappe: "Première Frappe",
   berserk: "Berserk", vol: "Vol", precision: "Précision", drain_de_vie: "Drain de vie", esquive: "Esquive",
   poison: "Poison", celerite: "Célérité",
   augure: "Augure", benediction: "Bénédiction", bravoure: "Bravoure",
@@ -95,7 +96,7 @@ export const KEYWORD_LABELS: Record<Keyword, string> = {
 
 export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
   charge: "⚡", taunt: "🎯", divine_shield: "🔰", ranged: "🦅",
-  raid: "⚔️", loyaute: "🤝", ancre: "⚓", resistance: "🛡️", premiere_frappe: "🗡️",
+  raid: "⚔️", convocations_multiples: "📣📣", loyaute: "🤝", ancre: "⚓", resistance: "🛡️", premiere_frappe: "🗡️",
   berserk: "😤", vol: "🦅", precision: "🏹", drain_de_vie: "🩸", esquive: "💨",
   poison: "☠️", celerite: "💫",
   augure: "📖", benediction: "✝️", bravoure: "🦁",

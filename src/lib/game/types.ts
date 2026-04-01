@@ -6,6 +6,7 @@ export type Keyword =
   | "charge" | "taunt" | "divine_shield" | "ranged"
   // Tier 0
   | "raid" | "loyaute" | "ancre" | "resistance" | "premiere_frappe" | "berserk"
+  | "convocations_multiples"
   // Tier 1 — Terrain
   | "vol" | "precision" | "drain_de_vie" | "esquive" | "poison" | "celerite"
   | "augure" | "benediction" | "bravoure" | "pillage" | "riposte"
@@ -78,7 +79,8 @@ export type SpellKeywordId =
   | "guerison"
   | "invocation"
   | "inspiration"
-  | "afflux";
+  | "afflux"
+  | "invocation_multiple";
 
 export interface SpellKeywordInstance {
   id: SpellKeywordId;
@@ -86,6 +88,14 @@ export interface SpellKeywordInstance {
   attack?: number;   // for renforcement, invocation
   health?: number;   // for renforcement, invocation
   race?: string;     // for invocation (token race)
+}
+
+// --- Convocation tokens config ---
+
+export interface ConvocationTokenDef {
+  race?: string;
+  attack: number;
+  health: number;
 }
 
 // --- Token templates ---
@@ -187,8 +197,9 @@ export interface SpellResolutionContext {
   state: GameState;
   caster: PlayerState;
   opponent: PlayerState;
-  targetMap: Record<string, string>;   // slot -> instanceId
-  results: Record<string, boolean>;    // e.g. "target_destroyed", "target_0_destroyed"
+  card: Card;                          // the spell card being played
+  targetMap: Record<string, string>;
+  results: Record<string, boolean>;
 }
 
 export interface Card {
@@ -211,6 +222,8 @@ export interface Card {
   clan?: string;
   rarity?: string;
   card_alignment?: string;
+  convocation_race?: string | null;
+  convocation_tokens?: ConvocationTokenDef[] | null;
 }
 
 // In-game card instance (a card on the board or in hand with runtime state)
@@ -244,6 +257,9 @@ export interface CardInstance {
   maledictionTargetId: string | null;
   // Paralysie: is this unit paralyzed (can't attack next turn)
   isParalyzed: boolean;
+  // Loyauté: permanent on-summon bonus
+  loyauteATKBonus: number;
+  loyautePVBonus: number;
   // Nécrophagie: permanent buff tracker
   necrophagieATKBonus: number;
   necrophagiePVBonus: number;
@@ -329,6 +345,7 @@ export interface PlayCardAction {
   graveyardTargetInstanceId?: string;
   divinationChoiceIndex?: number;
   tactiqueKeywords?: Keyword[];
+  convocationRace?: string;  // chosen race for token
 }
 
 export interface AttackAction {

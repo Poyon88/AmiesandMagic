@@ -114,6 +114,9 @@ interface CardData {
   ability: string;
   flavorText: string;
   budgetUsed: number;
+  convocationRace?: string;
+  convocationTokenName?: string;
+  convocationTokens?: {race: string; attack: number; health: number}[];
   budgetTotal: number;
 }
 
@@ -259,7 +262,15 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
             {card!.keywords.map(kw => {
               const xVal = card!.keywordXValues?.[kw];
               const displayName = xVal != null ? kw.replace(/ X$/, ` ${toRoman(xVal)}`) : kw;
-              const displayDesc = xVal != null ? KEYWORDS[kw]?.desc.replace(/X/g, String(xVal)) : KEYWORDS[kw]?.desc;
+              let displayDesc = xVal != null ? KEYWORDS[kw]?.desc.replace(/X/g, String(xVal)) : KEYWORDS[kw]?.desc;
+              if (kw === "Convocation X" && card!.convocationRace) {
+                const tokenLabel = card!.convocationTokenName || card!.convocationRace;
+                displayDesc = `Invocation : crée un token ${tokenLabel} ${xVal ?? "X"}/${xVal ?? "X"}.`;
+              }
+              if (kw === "Convocations multiples" && card!.convocationTokens?.length) {
+                const parts = card!.convocationTokens.map(t => `${t.race || "Token"} ${t.attack}/${t.health}`);
+                displayDesc = `Invocation : crée ${parts.join(", ")}.`;
+              }
               return (
                 <div key={kw} title={`${displayName}: ${displayDesc}`} style={{
                   minWidth: 24 * s, height: 24 * s, borderRadius: 6 * s,
@@ -365,7 +376,15 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
             {card!.keywords.map(kw => {
               const xVal = card!.keywordXValues?.[kw];
               const displayName = xVal != null ? kw.replace(/ X$/, ` ${toRoman(xVal)}`) : kw;
-              const displayDesc = xVal != null ? KEYWORDS[kw]?.desc.replace(/X/g, String(xVal)) : KEYWORDS[kw]?.desc;
+              let displayDesc = xVal != null ? KEYWORDS[kw]?.desc.replace(/X/g, String(xVal)) : KEYWORDS[kw]?.desc;
+              if (kw === "Convocation X" && card!.convocationRace) {
+                const tokenLabel = card!.convocationTokenName || card!.convocationRace;
+                displayDesc = `Invocation : crée un token ${tokenLabel} ${xVal ?? "X"}/${xVal ?? "X"}.`;
+              }
+              if (kw === "Convocations multiples" && card!.convocationTokens?.length) {
+                const parts = card!.convocationTokens.map(t => `${t.race || "Token"} ${t.attack}/${t.health}`);
+                displayDesc = `Invocation : crée ${parts.join(", ")}.`;
+              }
               return (
                 <div key={kw} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
                   <span style={{ flexShrink: 0 }}><KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={18 * s} /></span>

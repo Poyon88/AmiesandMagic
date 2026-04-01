@@ -250,51 +250,24 @@ export default function GameBoard({ onAction }: GameBoardProps) {
 
   const handleSelectTarget = useCallback(
     (targetId: string) => {
-      const action =
-        targetingMode === "attack" && selectedAttackerInstanceId
-          ? {
-              type: "attack" as const,
-              attackerInstanceId: selectedAttackerInstanceId,
-              targetInstanceId: targetId,
-            }
-          : targetingMode === "spell" && selectedCardInstanceId
-          ? {
-              type: "play_card" as const,
-              cardInstanceId: selectedCardInstanceId,
-              targetInstanceId: targetId,
-            }
-          : targetingMode === "creature" && selectedCardInstanceId
-          ? {
-              type: "play_card" as const,
-              cardInstanceId: selectedCardInstanceId,
-              targetInstanceId: targetId,
-            }
-          : targetingMode === "hero_power"
-          ? {
-              type: "hero_power" as const,
-              targetInstanceId: targetId,
-            }
-          : null;
-
       // Animate lunge before dispatching attack
       if (targetingMode === "attack" && selectedAttackerInstanceId) {
         if (isAnimatingAttackRef.current) return;
         isAnimatingAttackRef.current = true;
 
         animateAttackLunge(selectedAttackerInstanceId, targetId, () => {
-          selectTarget(targetId);
-          broadcast(action);
+          const action = selectTarget(targetId);
+          if (action) broadcast(action);
           setTimeout(() => { isAnimatingAttackRef.current = false; }, 250);
         });
       } else {
-        selectTarget(targetId);
-        broadcast(action);
+        const action = selectTarget(targetId);
+        if (action) broadcast(action);
       }
     },
     [
       targetingMode,
       selectedAttackerInstanceId,
-      selectedCardInstanceId,
       selectTarget,
       broadcast,
     ]
@@ -371,12 +344,8 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           onClose={clearSelection}
           selectableInstanceIds={validTargets}
           onSelectCard={(id) => {
-            selectTarget(id);
-            broadcast({
-              type: "play_card" as const,
-              cardInstanceId: selectedCardInstanceId!,
-              graveyardTargetInstanceId: id,
-            });
+            const action = selectTarget(id);
+            if (action) broadcast(action);
           }}
         />
       )}
@@ -384,12 +353,8 @@ export default function GameBoard({ onAction }: GameBoardProps) {
         <DivinationOverlay
           cards={divinationCards}
           onChoose={(idx) => {
-            selectTarget(String(idx));
-            broadcast({
-              type: "play_card" as const,
-              cardInstanceId: selectedCardInstanceId!,
-              divinationChoiceIndex: idx,
-            });
+            const action = selectTarget(String(idx));
+            if (action) broadcast(action);
           }}
           onCancel={clearSelection}
         />
@@ -399,12 +364,8 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           keywords={tactiqueAvailableKeywords}
           maxSelections={tactiqueMaxSelections}
           onConfirm={(selected) => {
-            selectTarget(JSON.stringify(selected));
-            broadcast({
-              type: "play_card" as const,
-              cardInstanceId: selectedCardInstanceId!,
-              tactiqueKeywords: selected as import("@/lib/game/types").Keyword[],
-            });
+            const action = selectTarget(JSON.stringify(selected));
+            if (action) broadcast(action);
           }}
           onCancel={clearSelection}
         />

@@ -67,7 +67,7 @@ interface GameStore {
   playCardDirect: (instanceId: string, boardPosition?: number) => GameAction | null;
   selectCardInHand: (instanceId: string) => GameAction | null;
   selectAttacker: (instanceId: string) => void;
-  selectTarget: (targetId: string) => void;
+  selectTarget: (targetId: string) => GameAction | null;
   clearSelection: () => void;
   clearDamageEvents: () => void;
   clearSpellCastEvent: () => void;
@@ -576,7 +576,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     } = get();
 
     if (targetingMode === "attack" && selectedAttackerInstanceId) {
-      get().dispatchAction({
+      return get().dispatchAction({
         type: "attack",
         attackerInstanceId: selectedAttackerInstanceId,
         targetInstanceId: targetId,
@@ -584,7 +584,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     } else if (targetingMode === "spell" && selectedCardInstanceId) {
       const { spellTargetSlots } = get();
       const slot = spellTargetSlots[0]?.slot ?? "target_0";
-      get().dispatchAction({
+      return get().dispatchAction({
         type: "play_card",
         cardInstanceId: selectedCardInstanceId,
         targetMap: { [slot]: targetId },
@@ -596,14 +596,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
       const nextIndex = currentTargetSlotIndex + 1;
 
       if (nextIndex >= spellTargetSlots.length) {
-        // All targets collected — dispatch
-        get().dispatchAction({
+        return get().dispatchAction({
           type: "play_card",
           cardInstanceId: selectedCardInstanceId,
           targetMap: newMap,
         });
       } else {
-        // Advance to next slot
         const nextSlot = spellTargetSlots[nextIndex];
         const card = gs?.players[gs.currentPlayerIndex].hand.find(c => c.instanceId === selectedCardInstanceId);
         const nextTargets = card ? getSpellTargets(gs!, card.card, nextSlot.type) : [];
@@ -612,11 +610,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
           currentTargetSlotIndex: nextIndex,
           collectedTargetMap: newMap,
         });
+        return null; // not dispatched yet, still collecting targets
       }
     } else if (targetingMode === "creature" && selectedCardInstanceId) {
       const { pendingBoardPosition, gameState: gs } = get();
 
-      // Check if this is a Tactique creature — need second step (keyword selection)
       if (gs) {
         const player = gs.players[gs.currentPlayerIndex];
         const cardInst = player.hand.find(c => c.instanceId === selectedCardInstanceId);
@@ -630,21 +628,20 @@ export const useGameStore = create<GameStore>((set, get) => ({
             tactiqueMaxSelections: Math.min(x, grantable.length),
             validTargets: [],
           });
-          return;
+          return null; // waiting for keyword selection
         }
       }
 
-      get().dispatchAction({
+      return get().dispatchAction({
         type: "play_card",
         cardInstanceId: selectedCardInstanceId,
         targetInstanceId: targetId,
         boardPosition: pendingBoardPosition ?? undefined,
       });
     } else if (targetingMode === "tactique_keywords" && selectedCardInstanceId) {
-      // targetId is JSON-encoded keyword array from overlay
       const { pendingBoardPosition, pendingTargetInstanceId } = get();
       const keywords = JSON.parse(targetId) as import("@/lib/game/types").Keyword[];
-      get().dispatchAction({
+      return get().dispatchAction({
         type: "play_card",
         cardInstanceId: selectedCardInstanceId,
         targetInstanceId: pendingTargetInstanceId ?? undefined,
@@ -653,27 +650,27 @@ export const useGameStore = create<GameStore>((set, get) => ({
       });
     } else if (targetingMode === "graveyard" && selectedCardInstanceId) {
       const { pendingBoardPosition } = get();
-      get().dispatchAction({
+      return get().dispatchAction({
         type: "play_card",
         cardInstanceId: selectedCardInstanceId,
         graveyardTargetInstanceId: targetId,
         boardPosition: pendingBoardPosition ?? undefined,
       });
     } else if (targetingMode === "divination" && selectedCardInstanceId) {
-      // targetId is the index as string for divination
       const { pendingBoardPosition } = get();
-      get().dispatchAction({
+      return get().dispatchAction({
         type: "play_card",
         cardInstanceId: selectedCardInstanceId,
         divinationChoiceIndex: parseInt(targetId) || 0,
         boardPosition: pendingBoardPosition ?? undefined,
       });
     } else if (targetingMode === "hero_power") {
-      get().dispatchAction({
+      return get().dispatchAction({
         type: "hero_power",
         targetInstanceId: targetId,
       });
     }
+    return null;
   },
 
   clearSelection: () => {
