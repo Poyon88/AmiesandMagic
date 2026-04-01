@@ -110,7 +110,7 @@ export default function HandCard({
               alt={card.name}
               fill
               className="object-cover"
-              sizes="300px"
+              sizes="(min-resolution: 2dppx) 600px, 300px"
               quality={90}
             />
           ) : (

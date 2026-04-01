@@ -1519,9 +1519,12 @@ export function attack(state: GameState, action: AttackAction): GameState {
   const attacker = player.board.find(c => c.instanceId === action.attackerInstanceId);
   if (!attacker) return state;
   if (attacker.attacksRemaining <= 0) return state;
-  if (attacker.hasSummoningSickness) return state;
+  if (attacker.hasSummoningSickness && !hasKw(attacker, "raid")) return state;
 
   const effectiveTarget = action.targetInstanceId;
+
+  // Raid with summoning sickness: can only target creatures, not hero
+  if (attacker.hasSummoningSickness && hasKw(attacker, "raid") && effectiveTarget === "enemy_hero") return state;
 
   // Taunt check
   // Vol : ignore les taunts qui n'ont pas Vol elles-mêmes

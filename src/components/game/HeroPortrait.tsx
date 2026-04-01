@@ -64,7 +64,7 @@ export default function HeroPortrait({
           src={HERO_IMAGES[hero.heroDefinition.race]}
           alt={hero.heroDefinition.race}
           fill
-          sizes="80px"
+          sizes="(min-resolution: 2dppx) 160px, 80px"
           quality={90}
           className="object-cover"
           priority

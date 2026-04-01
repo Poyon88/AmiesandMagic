@@ -81,7 +81,7 @@ export default function GameCard({
             alt={card.name}
             fill
             className="object-cover"
-            sizes="500px"
+            sizes="(min-resolution: 2dppx) 750px, 500px"
             quality={90}
           />
         ) : (

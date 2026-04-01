@@ -17,7 +17,8 @@ export default function CardArt({ card, className = "" }: CardArtProps) {
           alt={card.name}
           fill
           className="object-cover"
-          sizes="220px"
+          sizes="(min-resolution: 2dppx) 440px, 220px"
+          quality={90}
         />
       </div>
     );
