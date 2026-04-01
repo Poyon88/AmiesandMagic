@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { GameState, GameAction, Card, CardInstance, DamageEvent, HeroDefinition } from "@/lib/game/types";
+import type { GameState, GameAction, Card, CardInstance, DamageEvent, HeroDefinition, SpellTargetSlot, SpellTargetType } from "@/lib/game/types";
 import {
   initializeGame,
   applyAction,
@@ -8,6 +8,7 @@ import {
   getValidTargets,
   needsTarget,
   getSpellTargets,
+  getSpellTargetSlots,
   canUseHeroPower,
   heroPowerNeedsTarget,
   getHeroPowerTargets,
@@ -31,12 +32,16 @@ interface GameStore {
   selectedCardInstanceId: string | null;
   selectedAttackerInstanceId: string | null;
   validTargets: string[];
-  targetingMode: "none" | "attack" | "spell" | "creature" | "graveyard" | "divination" | "tactique_keywords" | "hero_power";
+  targetingMode: "none" | "attack" | "spell" | "spell_multi" | "creature" | "graveyard" | "divination" | "tactique_keywords" | "hero_power";
   pendingBoardPosition: number | null;
   divinationCards: CardInstance[];
   tactiqueAvailableKeywords: string[];
   tactiqueMaxSelections: number;
   pendingTargetInstanceId: string | null;
+  // Multi-target spell state
+  spellTargetSlots: SpellTargetSlot[];
+  currentTargetSlotIndex: number;
+  collectedTargetMap: Record<string, string>;
   effectLog: { id: string; text: string; timestamp: number }[];
   damageEvents: DamageEvent[];
   spellCastEvent: SpellCastEvent | null;
@@ -267,6 +272,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
   tactiqueAvailableKeywords: [],
   tactiqueMaxSelections: 0,
   pendingTargetInstanceId: null,
+  spellTargetSlots: [],
+  currentTargetSlotIndex: 0,
+  collectedTargetMap: {},
   effectLog: [],
   damageEvents: [],
   spellCastEvent: null,
@@ -489,14 +497,45 @@ export const useGameStore = create<GameStore>((set, get) => ({
       }
     }
 
-    // Check if spell needs a target
+    // Check if spell needs a target (new multi-target system)
     if (card.card.card_type === "spell" && needsTarget(card.card)) {
-      const targets = getSpellTargets(gameState, card.card);
+      const slots = getSpellTargetSlots(card.card);
+      const selectableSlots = slots.filter(s =>
+        s.type === "any" || s.type === "any_creature"
+        || s.type === "friendly_creature" || s.type === "enemy_creature"
+      );
+
+      if (selectableSlots.length === 0) {
+        // No player selection needed — play directly
+        return get().dispatchAction({ type: "play_card", cardInstanceId: instanceId });
+      }
+
+      const firstSlot = selectableSlots[0];
+      const targets = getSpellTargets(gameState, card.card, firstSlot.type);
+
+      if (selectableSlots.length === 1) {
+        // Single target — simple flow
+        set({
+          selectedCardInstanceId: instanceId,
+          selectedAttackerInstanceId: null,
+          validTargets: targets,
+          targetingMode: "spell",
+          spellTargetSlots: selectableSlots,
+          currentTargetSlotIndex: 0,
+          collectedTargetMap: {},
+        });
+        return null;
+      }
+
+      // Multi-target — sequential selection
       set({
         selectedCardInstanceId: instanceId,
         selectedAttackerInstanceId: null,
         validTargets: targets,
-        targetingMode: "spell",
+        targetingMode: "spell_multi",
+        spellTargetSlots: selectableSlots,
+        currentTargetSlotIndex: 0,
+        collectedTargetMap: {},
       });
       return null;
     }
@@ -537,11 +576,37 @@ export const useGameStore = create<GameStore>((set, get) => ({
         targetInstanceId: targetId,
       });
     } else if (targetingMode === "spell" && selectedCardInstanceId) {
+      const { spellTargetSlots } = get();
+      const slot = spellTargetSlots[0]?.slot ?? "target_0";
       get().dispatchAction({
         type: "play_card",
         cardInstanceId: selectedCardInstanceId,
-        targetInstanceId: targetId,
+        targetMap: { [slot]: targetId },
       });
+    } else if (targetingMode === "spell_multi" && selectedCardInstanceId) {
+      const { spellTargetSlots, currentTargetSlotIndex, collectedTargetMap, gameState: gs } = get();
+      const currentSlot = spellTargetSlots[currentTargetSlotIndex];
+      const newMap = { ...collectedTargetMap, [currentSlot.slot]: targetId };
+      const nextIndex = currentTargetSlotIndex + 1;
+
+      if (nextIndex >= spellTargetSlots.length) {
+        // All targets collected — dispatch
+        get().dispatchAction({
+          type: "play_card",
+          cardInstanceId: selectedCardInstanceId,
+          targetMap: newMap,
+        });
+      } else {
+        // Advance to next slot
+        const nextSlot = spellTargetSlots[nextIndex];
+        const card = gs?.players[gs.currentPlayerIndex].hand.find(c => c.instanceId === selectedCardInstanceId);
+        const nextTargets = card ? getSpellTargets(gs!, card.card, nextSlot.type) : [];
+        set({
+          validTargets: nextTargets,
+          currentTargetSlotIndex: nextIndex,
+          collectedTargetMap: newMap,
+        });
+      }
     } else if (targetingMode === "creature" && selectedCardInstanceId) {
       const { pendingBoardPosition, gameState: gs } = get();
 
@@ -616,6 +681,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
       tactiqueAvailableKeywords: [],
       tactiqueMaxSelections: 0,
       pendingTargetInstanceId: null,
+      spellTargetSlots: [],
+      currentTargetSlotIndex: 0,
+      collectedTargetMap: {},
     });
   },
 

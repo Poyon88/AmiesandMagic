@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useRef, Fragment, type DragEvent } from "react";
 import { AnimatePresence } from "framer-motion";
 import { useGameStore } from "@/lib/store/gameStore";
-import { canPlayCard, canAttack, canUseHeroPower } from "@/lib/game/engine";
+import { canPlayCard, canAttack, canUseHeroPower, getSpellTargets } from "@/lib/game/engine";
 import HeroPortrait from "./HeroPortrait";
 import HeroPowerButton from "./HeroPowerButton";
 import ManaBar from "./ManaBar";
@@ -117,6 +117,8 @@ export default function GameBoard({ onAction }: GameBoardProps) {
     clearDamageEvents,
     spellCastEvent,
     clearSpellCastEvent,
+    spellTargetSlots,
+    currentTargetSlotIndex,
     confirmMulligan,
     activateHeroPower,
     isMyTurn,
@@ -320,7 +322,20 @@ export default function GameBoard({ onAction }: GameBoardProps) {
         if (e.target === e.currentTarget) clearSelection();
       }}
       onContextMenu={(e) => {
-        if (targetingMode !== "none") {
+        if (targetingMode === "spell_multi" && currentTargetSlotIndex > 0) {
+          // Go back one step in multi-target
+          e.preventDefault();
+          const prevSlot = spellTargetSlots[currentTargetSlotIndex - 1];
+          const prevMap = { ...useGameStore.getState().collectedTargetMap };
+          delete prevMap[prevSlot.slot];
+          const card = gameState?.players[gameState.currentPlayerIndex].hand.find(c => c.instanceId === selectedCardInstanceId);
+          const prevTargets = card && gameState ? getSpellTargets(gameState, card.card, prevSlot.type) : [];
+          useGameStore.setState({
+            currentTargetSlotIndex: currentTargetSlotIndex - 1,
+            collectedTargetMap: prevMap,
+            validTargets: prevTargets,
+          });
+        } else if (targetingMode !== "none") {
           e.preventDefault();
           clearSelection();
         }
@@ -752,6 +767,18 @@ export default function GameBoard({ onAction }: GameBoardProps) {
         </div>
       </div>
 
+
+      {/* Multi-target spell banner */}
+      {targetingMode === "spell_multi" && spellTargetSlots.length > 0 && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-purple-900/90 border border-purple-500 rounded-lg px-6 py-3 text-center backdrop-blur-sm">
+          <p className="text-purple-200 text-sm">
+            Cible {currentTargetSlotIndex + 1}/{spellTargetSlots.length}
+          </p>
+          <p className="text-white font-bold">
+            {spellTargetSlots[currentTargetSlotIndex]?.label ?? "Choisissez une cible"}
+          </p>
+        </div>
+      )}
 
       {/* Damage animation overlay */}
       <DamageOverlay events={damageEvents} />

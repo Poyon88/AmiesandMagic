@@ -34,7 +34,7 @@ export async function GET() {
   const supabaseAdmin = getAdminClient();
   const { data, error } = await supabaseAdmin
     .from('cards')
-    .select('id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, keywords, spell_effect, image_url, illustration_prompt, faction, race, clan, rarity, card_alignment')
+    .select('id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, keywords, spell_keywords, spell_effects, image_url, illustration_prompt, faction, race, clan, rarity, card_alignment')
     .order('name');
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -74,7 +74,8 @@ export async function POST(request: Request) {
       flavor_text: card.flavor_text || null,
       illustration_prompt: card.illustration_prompt || null,
       keywords: card.keywords,
-      spell_effect: card.spell_effect,
+      spell_keywords: card.spell_keywords || null,
+      spell_effects: card.spell_effects || null,
       faction: card.faction || null,
       race: card.race || null,
       clan: card.clan || null,

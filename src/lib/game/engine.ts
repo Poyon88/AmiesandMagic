@@ -11,7 +11,18 @@ import type {
   SpellEffect,
   HeroDefinition,
   Keyword,
+  SpellKeywordInstance,
+  SpellEffectNode,
+  AtomicEffect,
+  SpellCondition,
+  SimpleCondition,
+  CompoundCondition,
+  ConditionalEffectNode,
+  SpellResolutionContext,
+  SpellTargetSlot,
+  SpellTargetType,
 } from "./types";
+import { SPELL_KEYWORDS } from "./spell-keywords";
 import {
   HERO_MAX_HP,
   STARTING_HAND_SIZE,
@@ -476,7 +487,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
         mana_cost: 0, card_type: "creature",
         attack: x, health: x,
         effect_text: `Token ${x}/${x}`,
-        keywords: [], spell_effect: null, image_url: null,
+        keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
         race: cardInstance.card.race, faction: cardInstance.card.faction,
         clan: cardInstance.card.clan,
       };
@@ -790,12 +801,59 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       return newState;
     }
 
-    // Canalisation: reduce spell cost (already deducted mana above, but check for discount)
-    // Note: Canalisation discount is applied before this function, at mana check level
+    // Build target map from action
+    const targetMap: Record<string, string> = { ...(action.targetMap ?? {}) };
+    // Backward compat: single targetInstanceId → target_0
+    if (action.targetInstanceId && !action.targetMap) {
+      targetMap["target_0"] = action.targetInstanceId;
+    }
 
-    if (card.spell_effect) {
+    const ctx: SpellResolutionContext = {
+      state: newState, caster: player, opponent, targetMap, results: {},
+    };
+
+    // Phase 1: Resolve spell keywords
+    if (card.spell_keywords?.length) {
+      resolveSpellKeywords(ctx, card.spell_keywords);
+      // Intermediate death processing to detect target_destroyed
+      const pDead = cleanDeadCreatures(player);
+      const oDead = cleanDeadCreatures(opponent);
+      for (const [slot, instanceId] of Object.entries(targetMap)) {
+        if ([...pDead, ...oDead].some(c => c.instanceId === instanceId)) {
+          ctx.results[`${slot}_destroyed`] = true;
+          ctx.results["target_destroyed"] = true;
+        }
+      }
+      processDeathTriggers(pDead, player, opponent);
+      processDeathTriggers(oDead, opponent, player);
+    }
+
+    // Phase 2: Resolve composable effects
+    if (card.spell_effects?.effects?.length) {
+      resolveComposableEffects(ctx, card.spell_effects.effects);
+    }
+
+    // Phase 3: Grant creature keywords from spell to first target
+    if (card.keywords.length > 0) {
+      const firstTargetId = targetMap["kw_0"] ?? targetMap["target_0"];
+      if (firstTargetId && firstTargetId !== "enemy_hero" && firstTargetId !== "friendly_hero") {
+        const target = findCreatureOnBoard(player, firstTargetId) ?? findCreatureOnBoard(opponent, firstTargetId);
+        if (target) {
+          for (const kw of card.keywords) {
+            if (kw === "divine_shield") target.hasDivineShield = true;
+            if (!target.card.keywords.includes(kw)) {
+              target.card = { ...target.card, keywords: [...target.card.keywords, kw] };
+            }
+          }
+        }
+      }
+    }
+
+    // Legacy fallback for old spell_effect (temporary)
+    if (card.spell_effect && !card.spell_keywords?.length && !card.spell_effects?.effects?.length) {
       resolveSpellEffect(newState, card.spell_effect, player, opponent, action.targetInstanceId);
     }
+
     const playerDead = cleanDeadCreatures(player);
     const opponentDead = cleanDeadCreatures(opponent);
     processDeathTriggers(playerDead, player, opponent);
@@ -928,6 +986,473 @@ function resolveSpellEffect(
       break;
     }
   }
+}
+
+// ============================================================
+// NEW SPELL SYSTEM — SPELL KEYWORD RESOLUTION
+// ============================================================
+
+function resolveSpellKeywords(
+  ctx: SpellResolutionContext,
+  keywords: SpellKeywordInstance[]
+): void {
+  for (let i = 0; i < keywords.length; i++) {
+    const kw = keywords[i];
+    const def = SPELL_KEYWORDS[kw.id];
+    // Resolve target: use keyword's implicit slot or first target slot
+    const slot = def.needsTarget ? `kw_${i}` : undefined;
+    const targetId = slot ? (ctx.targetMap[slot] ?? ctx.targetMap["target_0"]) : undefined;
+
+    switch (kw.id) {
+      case "impact": {
+        const amount = kw.amount ?? 0;
+        if (targetId === "enemy_hero") {
+          dealDamageToHero(ctx.opponent.hero, amount);
+        } else if (targetId === "friendly_hero") {
+          dealDamageToHero(ctx.caster.hero, amount);
+        } else if (targetId) {
+          const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
+          if (target) dealDamageToCreature(target, amount, false, true);
+        }
+        break;
+      }
+      case "deferlement": {
+        const amount = kw.amount ?? 0;
+        dealDamageToHero(ctx.opponent.hero, amount);
+        [...ctx.opponent.board].forEach(c => dealDamageToCreature(c, amount, false, true));
+        break;
+      }
+      case "siphon": {
+        const amount = kw.amount ?? 0;
+        if (targetId && targetId !== "enemy_hero" && targetId !== "friendly_hero") {
+          const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
+          if (target) dealDamageToCreature(target, amount, false, true);
+        } else if (targetId === "enemy_hero") {
+          dealDamageToHero(ctx.opponent.hero, amount);
+        }
+        ctx.caster.hero.hp = Math.min(ctx.caster.hero.maxHp, ctx.caster.hero.hp + amount);
+        break;
+      }
+      case "entrave": {
+        if (targetId) {
+          const target = findCreatureOnBoard(ctx.opponent, targetId);
+          if (target) target.isParalyzed = true;
+        }
+        break;
+      }
+      case "execution": {
+        if (targetId) {
+          const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
+          if (target) target.currentHealth = 0;
+        }
+        break;
+      }
+      case "silence": {
+        if (targetId) {
+          const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
+          if (target) {
+            target.card = { ...target.card, keywords: [] };
+            target.hasDivineShield = false;
+            target.contresortActive = false;
+            target.isParalyzed = false;
+            target.fureurActive = false;
+            target.fureurATKBonus = 0;
+            target.berserkActive = false;
+            target.berserkATKBonus = 0;
+          }
+        }
+        break;
+      }
+      case "renforcement": {
+        if (targetId) {
+          const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
+          if (target) {
+            const atkBuff = kw.attack ?? 0;
+            const hpBuff = kw.health ?? 0;
+            target.card = { ...target.card, attack: (target.card.attack ?? 0) + atkBuff, health: (target.card.health ?? 0) + hpBuff };
+            target.currentAttack += atkBuff;
+            target.currentHealth += hpBuff;
+            target.maxHealth += hpBuff;
+          }
+        }
+        break;
+      }
+      case "guerison": {
+        const amount = kw.amount ?? 0;
+        if (targetId === "enemy_hero") {
+          ctx.opponent.hero.hp = Math.min(ctx.opponent.hero.maxHp, ctx.opponent.hero.hp + amount);
+        } else if (targetId === "friendly_hero") {
+          ctx.caster.hero.hp = Math.min(ctx.caster.hero.maxHp, ctx.caster.hero.hp + amount);
+        } else if (targetId) {
+          const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
+          if (target) target.currentHealth = Math.min(target.maxHealth, target.currentHealth + amount);
+        }
+        break;
+      }
+      case "invocation": {
+        if (ctx.caster.board.length < MAX_BOARD_SIZE) {
+          const tokenCard: Card = {
+            id: -1, name: "Token",
+            mana_cost: 0, card_type: "creature",
+            attack: kw.attack ?? 1, health: kw.health ?? 1,
+            effect_text: `Token ${kw.attack ?? 1}/${kw.health ?? 1}`,
+            keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
+          };
+          const token = createCardInstance(tokenCard);
+          token.hasSummoningSickness = true;
+          ctx.caster.board.push(token);
+        }
+        break;
+      }
+      case "inspiration": {
+        const amount = kw.amount ?? 1;
+        for (let j = 0; j < amount; j++) drawCard(ctx.caster);
+        break;
+      }
+      case "afflux": {
+        ctx.caster.mana += kw.amount ?? 1;
+        break;
+      }
+    }
+  }
+}
+
+// ============================================================
+// NEW SPELL SYSTEM — COMPOSABLE EFFECTS RESOLUTION
+// ============================================================
+
+function isConditionalNode(node: SpellEffectNode): node is ConditionalEffectNode {
+  return "condition" in node;
+}
+
+function resolveComposableEffects(
+  ctx: SpellResolutionContext,
+  effects: SpellEffectNode[]
+): void {
+  for (const node of effects) {
+    if (isConditionalNode(node)) {
+      if (evaluateCondition(ctx, node.condition)) {
+        resolveComposableEffects(ctx, node.then);
+      } else if (node.else) {
+        resolveComposableEffects(ctx, node.else);
+      }
+    } else {
+      resolveAtomicEffect(ctx, node);
+    }
+  }
+}
+
+function evaluateCondition(ctx: SpellResolutionContext, cond: SpellCondition): boolean {
+  // Compound condition
+  if ("op" in cond) {
+    const compound = cond as CompoundCondition;
+    switch (compound.op) {
+      case "AND":
+        return compound.conditions.every(c => evaluateCondition(ctx, c));
+      case "OR":
+        return compound.conditions.some(c => evaluateCondition(ctx, c));
+      case "NOT":
+        return compound.conditions.length > 0 ? !evaluateCondition(ctx, compound.conditions[0]) : true;
+    }
+  }
+
+  // Simple condition
+  const simple = cond as SimpleCondition;
+  const comparator = simple.comparator ?? ">=";
+  const numVal = typeof simple.value === "number" ? simple.value : parseInt(simple.value as string) || 0;
+
+  function compare(actual: number): boolean {
+    switch (comparator) {
+      case ">=": return actual >= numVal;
+      case "<=": return actual <= numVal;
+      case "==": return actual === numVal;
+      case ">": return actual > numVal;
+      default: return false;
+    }
+  }
+
+  switch (simple.type) {
+    case "target_destroyed": {
+      if (simple.target_slot) {
+        return !!ctx.results[`${simple.target_slot}_destroyed`];
+      }
+      return !!ctx.results["target_destroyed"];
+    }
+    case "board_count": {
+      const side = simple.side === "enemy" ? ctx.opponent : ctx.caster;
+      return compare(side.board.length);
+    }
+    case "hand_count": {
+      const side = simple.side === "enemy" ? ctx.opponent : ctx.caster;
+      return compare(side.hand.length);
+    }
+    case "hero_hp_below": {
+      const side = simple.side === "enemy" ? ctx.opponent : ctx.caster;
+      return side.hero.hp < numVal;
+    }
+    case "race_match": {
+      if (!simple.target_slot) return false;
+      const targetId = ctx.targetMap[simple.target_slot];
+      if (!targetId) return false;
+      const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
+      return target?.card.race === (simple.value as string);
+    }
+    case "faction_match": {
+      if (!simple.target_slot) return false;
+      const targetId = ctx.targetMap[simple.target_slot];
+      if (!targetId) return false;
+      const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
+      return target?.card.faction === (simple.value as string);
+    }
+    case "graveyard_count": {
+      const side = simple.side === "enemy" ? ctx.opponent : ctx.caster;
+      return compare(side.graveyard.length);
+    }
+    case "mana_remaining": {
+      return compare(ctx.caster.mana);
+    }
+    case "has_keyword": {
+      if (!simple.target_slot) return false;
+      const targetId = ctx.targetMap[simple.target_slot];
+      if (!targetId) return false;
+      const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
+      return target?.card.keywords.includes(simple.value as Keyword) ?? false;
+    }
+    default:
+      return false;
+  }
+}
+
+function resolveAtomicEffect(ctx: SpellResolutionContext, effect: AtomicEffect): void {
+  const targetId = effect.target_slot ? ctx.targetMap[effect.target_slot] : undefined;
+
+  switch (effect.type) {
+    case "deal_damage": {
+      const amount = effect.amount ?? 0;
+      if (targetId === "enemy_hero") {
+        dealDamageToHero(ctx.opponent.hero, amount);
+      } else if (targetId === "friendly_hero") {
+        dealDamageToHero(ctx.caster.hero, amount);
+      } else if (targetId) {
+        const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
+        if (target) dealDamageToCreature(target, amount, false, true);
+      }
+      break;
+    }
+    case "heal": {
+      const amount = effect.amount ?? 0;
+      if (targetId === "friendly_hero") {
+        ctx.caster.hero.hp = Math.min(ctx.caster.hero.maxHp, ctx.caster.hero.hp + amount);
+      } else if (targetId === "enemy_hero") {
+        ctx.opponent.hero.hp = Math.min(ctx.opponent.hero.maxHp, ctx.opponent.hero.hp + amount);
+      } else if (targetId) {
+        const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
+        if (target) target.currentHealth = Math.min(target.maxHealth, target.currentHealth + amount);
+      }
+      break;
+    }
+    case "buff": {
+      if (targetId) {
+        const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
+        if (target) {
+          const atkBuff = effect.attack ?? 0;
+          const hpBuff = effect.health ?? 0;
+          target.card = { ...target.card, attack: (target.card.attack ?? 0) + atkBuff, health: (target.card.health ?? 0) + hpBuff };
+          target.currentAttack += atkBuff;
+          target.currentHealth += hpBuff;
+          target.maxHealth += hpBuff;
+        }
+      }
+      break;
+    }
+    case "debuff": {
+      if (targetId) {
+        const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
+        if (target) {
+          const atkDebuff = effect.attack ?? 0;
+          const hpDebuff = effect.health ?? 0;
+          target.card = { ...target.card, attack: Math.max(0, (target.card.attack ?? 0) - atkDebuff), health: Math.max(1, (target.card.health ?? 0) - hpDebuff) };
+          target.currentAttack = Math.max(0, target.currentAttack - atkDebuff);
+          target.currentHealth = Math.max(1, target.currentHealth - hpDebuff);
+          target.maxHealth = Math.max(1, target.maxHealth - hpDebuff);
+        }
+      }
+      break;
+    }
+    case "draw_cards": {
+      const amount = effect.amount ?? 1;
+      for (let i = 0; i < amount; i++) drawCard(ctx.caster);
+      break;
+    }
+    case "discard": {
+      const amount = effect.amount ?? 1;
+      for (let i = 0; i < amount && ctx.opponent.hand.length > 0; i++) {
+        const idx = Math.floor(rng() * ctx.opponent.hand.length);
+        const discarded = ctx.opponent.hand.splice(idx, 1)[0];
+        ctx.opponent.graveyard.push(discarded);
+      }
+      break;
+    }
+    case "grant_keyword": {
+      if (targetId && effect.keyword) {
+        const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
+        if (target) {
+          if (effect.keyword === "divine_shield") target.hasDivineShield = true;
+          if (!target.card.keywords.includes(effect.keyword)) {
+            target.card = { ...target.card, keywords: [...target.card.keywords, effect.keyword] };
+          }
+        }
+      }
+      break;
+    }
+    case "remove_keyword": {
+      if (targetId && effect.keyword) {
+        const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
+        if (target) {
+          target.card = { ...target.card, keywords: target.card.keywords.filter(k => k !== effect.keyword) };
+          if (effect.keyword === "divine_shield") target.hasDivineShield = false;
+        }
+      }
+      break;
+    }
+    case "summon_token": {
+      if (ctx.caster.board.length < MAX_BOARD_SIZE) {
+        const tokenCard: Card = {
+          id: -1, name: "Token",
+          mana_cost: 0, card_type: "creature",
+          attack: effect.attack ?? 1, health: effect.health ?? 1,
+          effect_text: `Token ${effect.attack ?? 1}/${effect.health ?? 1}`,
+          keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
+        };
+        const token = createCardInstance(tokenCard);
+        token.hasSummoningSickness = true;
+        ctx.caster.board.push(token);
+      }
+      break;
+    }
+    case "resurrect": {
+      const amount = effect.amount ?? 1;
+      const deadCreatures = ctx.caster.graveyard.filter(c => c.card.card_type === "creature");
+      const shuffled = shuffleArray(deadCreatures);
+      const toResurrect = shuffled.slice(0, amount);
+      for (const creature of toResurrect) {
+        const idx = ctx.caster.graveyard.indexOf(creature);
+        if (idx !== -1) ctx.caster.graveyard.splice(idx, 1);
+        creature.currentAttack = creature.card.attack ?? 0;
+        creature.currentHealth = creature.card.health ?? 1;
+        creature.maxHealth = creature.card.health ?? 1;
+        creature.hasSummoningSickness = true;
+        creature.instanceId = generateInstanceId();
+        if (ctx.caster.board.length < MAX_BOARD_SIZE) ctx.caster.board.push(creature);
+      }
+      break;
+    }
+    case "gain_mana": {
+      ctx.caster.mana += effect.amount ?? 1;
+      break;
+    }
+    case "paralyze": {
+      if (targetId) {
+        const target = findCreatureOnBoard(ctx.opponent, targetId);
+        if (target) target.isParalyzed = true;
+      }
+      break;
+    }
+    case "destroy": {
+      if (targetId) {
+        const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
+        if (target) target.currentHealth = 0;
+      }
+      break;
+    }
+    case "steal": {
+      if (targetId) {
+        const target = findCreatureOnBoard(ctx.opponent, targetId);
+        if (target && ctx.caster.board.length < MAX_BOARD_SIZE) {
+          const idx = ctx.opponent.board.indexOf(target);
+          if (idx !== -1) {
+            ctx.opponent.board.splice(idx, 1);
+            target.originalOwnerId = ctx.opponent.id;
+            target.hasSummoningSickness = false;
+            ctx.caster.board.push(target);
+          }
+        }
+      }
+      break;
+    }
+    case "transform": {
+      if (targetId) {
+        const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
+        if (target) {
+          target.currentAttack = effect.attack ?? target.currentAttack;
+          target.currentHealth = effect.health ?? target.currentHealth;
+          target.maxHealth = effect.health ?? target.maxHealth;
+          target.card = {
+            ...target.card,
+            attack: effect.attack ?? target.card.attack,
+            health: effect.health ?? target.card.health,
+            keywords: [],
+          };
+          target.hasDivineShield = false;
+        }
+      }
+      break;
+    }
+    case "bounce": {
+      if (targetId) {
+        const ownerIsPlayer = !!findCreatureOnBoard(ctx.caster, targetId);
+        const owner = ownerIsPlayer ? ctx.caster : ctx.opponent;
+        const target = findCreatureOnBoard(owner, targetId);
+        if (target) {
+          const idx = owner.board.indexOf(target);
+          if (idx !== -1) {
+            owner.board.splice(idx, 1);
+            // Reset to fresh card instance in hand
+            target.currentAttack = target.card.attack ?? 0;
+            target.currentHealth = target.card.health ?? 1;
+            target.maxHealth = target.card.health ?? 1;
+            target.hasSummoningSickness = true;
+            if (owner.hand.length < MAX_HAND_SIZE) {
+              owner.hand.push(target);
+            } else {
+              owner.graveyard.push(target);
+            }
+          }
+        }
+      }
+      break;
+    }
+  }
+}
+
+// ============================================================
+// NEW SPELL SYSTEM — TARGETING
+// ============================================================
+
+function requiresPlayerSelection(targetType: SpellTargetType): boolean {
+  return targetType === "any" || targetType === "any_creature"
+    || targetType === "friendly_creature" || targetType === "enemy_creature";
+}
+
+export function getSpellTargetSlots(card: Card): SpellTargetSlot[] {
+  const slots: SpellTargetSlot[] = [];
+
+  // From spell keywords
+  if (card.spell_keywords) {
+    card.spell_keywords.forEach((kw, i) => {
+      const def = SPELL_KEYWORDS[kw.id];
+      if (def.needsTarget && def.targetType) {
+        slots.push({ slot: `kw_${i}`, type: def.targetType, label: def.label });
+      }
+    });
+  }
+
+  // From composable effects
+  if (card.spell_effects?.targets) {
+    slots.push(...card.spell_effects.targets);
+  }
+
+  return slots;
 }
 
 // ============================================================
@@ -1228,7 +1753,7 @@ function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: P
           mana_cost: 0, card_type: "creature",
           attack: 1, health: 1,
           effect_text: "Token 1/1",
-          keywords: [], spell_effect: null, image_url: null,
+          keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
           race: c.card.race, faction: c.card.faction,
         };
         const token = createCardInstance(tokenCard);
@@ -1428,7 +1953,10 @@ export function applyMulligan(state: GameState, action: MulliganAction): GameSta
     const manaSpark: Card = {
       id: -1, name: "Mana Spark", mana_cost: 0, card_type: "spell",
       attack: null, health: null, effect_text: "Gain 1 mana this turn",
-      keywords: [], spell_effect: { type: "gain_mana", amount: 1 }, image_url: null,
+      keywords: [],
+      spell_keywords: [{ id: "afflux", amount: 1 }],
+      spell_effects: null,
+      image_url: null,
     };
     newState.players[secondPlayerIndex].hand.push(createCardInstance(manaSpark));
     newState.phase = "playing";
@@ -1509,9 +2037,16 @@ export function getValidTargets(state: GameState, attackerInstanceId: string): s
 }
 
 export function needsTarget(card: Card): boolean {
-  if (card.card_type === "spell" && card.spell_effect) {
-    const target = card.spell_effect.target;
-    return target === "any" || target === "any_creature" || target === "friendly_creature" || target === "enemy_creature";
+  if (card.card_type === "spell") {
+    // New system
+    const slots = getSpellTargetSlots(card);
+    if (slots.some(s => requiresPlayerSelection(s.type))) return true;
+    // Legacy fallback
+    if (card.spell_effect) {
+      const target = card.spell_effect.target;
+      return target === "any" || target === "any_creature" || target === "friendly_creature" || target === "enemy_creature";
+    }
+    return false;
   }
   return creatureNeedsTarget(card);
 }
@@ -1590,12 +2125,10 @@ export function creatureNeedsDivination(card: Card): boolean {
   return card.card_type === "creature" && card.keywords.includes("divination" as Keyword);
 }
 
-export function getSpellTargets(state: GameState, card: Card): string[] {
-  if (!card.spell_effect) return [];
+export function getSpellTargets(state: GameState, card: Card, slotType?: SpellTargetType): string[] {
   const player = state.players[state.currentPlayerIndex];
   const opponent = state.players[state.currentPlayerIndex === 0 ? 1 : 0];
 
-  // Filter out invisible, transcendance (permanent immunity), and stealth (ombre) creatures from enemy targeting
   const filterEnemyTargetable = (creatures: CardInstance[]) =>
     creatures.filter(c =>
       !hasKw(c, "invisible")
@@ -1603,7 +2136,14 @@ export function getSpellTargets(state: GameState, card: Card): string[] {
       && !(hasKw(c, "ombre") && !c.ombreRevealed)
     );
 
-  switch (card.spell_effect.target) {
+  // Determine target type: explicit param > first slot from new system > legacy
+  const targetType = slotType
+    ?? getSpellTargetSlots(card)[0]?.type
+    ?? card.spell_effect?.target;
+
+  if (!targetType) return [];
+
+  switch (targetType) {
     case "any":
       return [
         ...player.board.map(c => c.instanceId),

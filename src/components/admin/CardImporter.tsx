@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import type { CardType, Keyword, SpellEffect } from "@/lib/game/types";
+import type { CardType, Keyword, SpellKeywordInstance, SpellComposableEffects } from "@/lib/game/types";
 
 // ---------- Types ----------
 
@@ -15,7 +15,8 @@ interface ParsedCard {
   health: number | null;
   effect_text: string;
   keywords: Keyword[];
-  spell_effect: SpellEffect | null;
+  spell_keywords: SpellKeywordInstance[] | null;
+  spell_effects: SpellComposableEffects | null;
   imageFile: File | null;
   errors: string[];
 }
@@ -106,11 +107,20 @@ function parseCsv(text: string, imageFiles: Map<string, File>): ParsedCard[] {
     const keywords = keywordsRaw
       ? (keywordsRaw.split("|").map((k) => k.trim()).filter(Boolean) as Keyword[])
       : [];
-    let spell_effect: SpellEffect | null = null;
-    const spellRaw = cols[7] ?? "";
-    if (spellRaw) {
+    let spell_keywords: SpellKeywordInstance[] | null = null;
+    let spell_effects: SpellComposableEffects | null = null;
+    const spellKwRaw = cols[7] ?? "";
+    if (spellKwRaw) {
       try {
-        spell_effect = JSON.parse(spellRaw);
+        spell_keywords = JSON.parse(spellKwRaw);
+      } catch {
+        // will be caught by validation
+      }
+    }
+    const spellEffRaw = cols[8] ?? "";
+    if (spellEffRaw) {
+      try {
+        spell_effects = JSON.parse(spellEffRaw);
       } catch {
         // will be caught by validation
       }
@@ -127,7 +137,8 @@ function parseCsv(text: string, imageFiles: Map<string, File>): ParsedCard[] {
       health,
       effect_text,
       keywords,
-      spell_effect,
+      spell_keywords,
+      spell_effects,
       imageFile,
       errors: [],
     };
@@ -315,7 +326,8 @@ export default function CardImporter() {
           health: card.health,
           effect_text: card.effect_text,
           keywords: card.keywords,
-          spell_effect: card.spell_effect,
+          spell_keywords: card.spell_keywords,
+          spell_effects: card.spell_effects,
           image_url,
         });
 

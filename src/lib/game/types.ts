@@ -44,6 +44,7 @@ export type SpellTargetType =
   | "friendly_graveyard"
   | "friendly_graveyard_to_board";
 
+// Legacy — kept temporarily for migration; will be removed
 export interface SpellEffect {
   type:
     | "deal_damage"
@@ -60,6 +61,124 @@ export interface SpellEffect {
   target?: SpellTargetType;
 }
 
+// ============================================================
+// NEW SPELL SYSTEM
+// ============================================================
+
+// --- Spell Keywords (predefined effects) ---
+
+export type SpellKeywordId =
+  | "impact"
+  | "deferlement"
+  | "siphon"
+  | "entrave"
+  | "execution"
+  | "silence"
+  | "renforcement"
+  | "guerison"
+  | "invocation"
+  | "inspiration"
+  | "afflux";
+
+export interface SpellKeywordInstance {
+  id: SpellKeywordId;
+  amount?: number;   // X value for impact, deferlement, siphon, guerison, inspiration, afflux
+  attack?: number;   // for renforcement, invocation
+  health?: number;   // for renforcement, invocation
+}
+
+// --- Multi-target system ---
+
+export interface SpellTargetSlot {
+  slot: string;            // "target_0", "target_1", "kw_0", etc.
+  type: SpellTargetType;
+  label?: string;          // UI hint, e.g. "Créature à détruire"
+}
+
+// --- Composable effects ---
+
+export type AtomicEffectType =
+  | "deal_damage"
+  | "heal"
+  | "buff"
+  | "debuff"
+  | "draw_cards"
+  | "discard"
+  | "grant_keyword"
+  | "remove_keyword"
+  | "summon_token"
+  | "resurrect"
+  | "gain_mana"
+  | "paralyze"
+  | "destroy"
+  | "steal"
+  | "transform"
+  | "bounce";
+
+export interface AtomicEffect {
+  type: AtomicEffectType;
+  target_slot?: string;    // references SpellTargetSlot.slot
+  amount?: number;
+  attack?: number;
+  health?: number;
+  keyword?: Keyword;
+}
+
+// --- Condition system ---
+
+export type ConditionType =
+  | "target_destroyed"
+  | "board_count"
+  | "hand_count"
+  | "hero_hp_below"
+  | "race_match"
+  | "faction_match"
+  | "graveyard_count"
+  | "mana_remaining"
+  | "has_keyword";
+
+export interface SimpleCondition {
+  type: ConditionType;
+  target_slot?: string;
+  comparator?: ">=" | "<=" | "==" | ">";
+  value?: number | string;
+  side?: "allied" | "enemy";
+}
+
+export interface CompoundCondition {
+  op: "AND" | "OR" | "NOT";
+  conditions: SpellCondition[];
+}
+
+export type SpellCondition = SimpleCondition | CompoundCondition;
+
+// --- Effect tree (if/then/else) ---
+
+export interface ConditionalEffectNode {
+  condition: SpellCondition;
+  then: SpellEffectNode[];
+  else?: SpellEffectNode[];
+}
+
+export type SpellEffectNode = AtomicEffect | ConditionalEffectNode;
+
+// --- Top-level composable structure ---
+
+export interface SpellComposableEffects {
+  targets: SpellTargetSlot[];
+  effects: SpellEffectNode[];
+}
+
+// --- Spell resolution context (engine internal) ---
+
+export interface SpellResolutionContext {
+  state: GameState;
+  caster: PlayerState;
+  opponent: PlayerState;
+  targetMap: Record<string, string>;   // slot -> instanceId
+  results: Record<string, boolean>;    // e.g. "target_destroyed", "target_0_destroyed"
+}
+
 export interface Card {
   id: number;
   name: string;
@@ -70,7 +189,9 @@ export interface Card {
   effect_text: string;
   flavor_text?: string | null;
   keywords: Keyword[];
-  spell_effect: SpellEffect | null;
+  spell_effect?: SpellEffect | null;          // Legacy — will be removed
+  spell_keywords: SpellKeywordInstance[] | null;
+  spell_effects: SpellComposableEffects | null;
   image_url: string | null;
   illustration_prompt?: string | null;
   faction?: string;
@@ -190,6 +311,7 @@ export interface PlayCardAction {
   type: "play_card";
   cardInstanceId: string;
   targetInstanceId?: string;
+  targetMap?: Record<string, string>;  // multi-target: slot -> instanceId
   boardPosition?: number;
   graveyardTargetInstanceId?: string;
   divinationChoiceIndex?: number;
