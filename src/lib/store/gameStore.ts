@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { GameState, GameAction, Card, CardInstance, DamageEvent, HeroDefinition, SpellTargetSlot, SpellTargetType } from "@/lib/game/types";
+import type { GameState, GameAction, Card, CardInstance, DamageEvent, HeroDefinition, SpellTargetSlot, SpellTargetType, TokenTemplate } from "@/lib/game/types";
 import {
   initializeGame,
   applyAction,
@@ -42,6 +42,7 @@ interface GameStore {
   spellTargetSlots: SpellTargetSlot[];
   currentTargetSlotIndex: number;
   collectedTargetMap: Record<string, string>;
+  tokenTemplates: TokenTemplate[];
   effectLog: { id: string; text: string; timestamp: number }[];
   damageEvents: DamageEvent[];
   spellCastEvent: SpellCastEvent | null;
@@ -59,6 +60,7 @@ interface GameStore {
   ) => void;
   setGameState: (state: GameState) => void;
   setLocalPlayerId: (id: string) => void;
+  setTokenTemplates: (templates: TokenTemplate[]) => void;
 
   // Game actions
   dispatchAction: (action: GameAction) => GameAction | null;
@@ -275,6 +277,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   spellTargetSlots: [],
   currentTargetSlotIndex: 0,
   collectedTargetMap: {},
+  tokenTemplates: [],
   effectLog: [],
   damageEvents: [],
   spellCastEvent: null,
@@ -295,6 +298,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   setGameState: (state) => set({ gameState: state }),
   setLocalPlayerId: (id) => set({ localPlayerId: id }),
+  setTokenTemplates: (templates) => set({ tokenTemplates: templates }),
 
   dispatchAction: (action) => {
     const { gameState, localPlayerId } = get();

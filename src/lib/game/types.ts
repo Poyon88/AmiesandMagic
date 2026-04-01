@@ -5,7 +5,7 @@ export type Keyword =
   // Legacy (backward compat with existing DB)
   | "charge" | "taunt" | "divine_shield" | "ranged"
   // Tier 0
-  | "loyaute" | "ancre" | "resistance" | "premiere_frappe" | "berserk"
+  | "raid" | "loyaute" | "ancre" | "resistance" | "premiere_frappe" | "berserk"
   // Tier 1 — Terrain
   | "vol" | "precision" | "drain_de_vie" | "esquive" | "poison" | "celerite"
   | "augure" | "benediction" | "bravoure" | "pillage" | "riposte"
@@ -85,6 +85,16 @@ export interface SpellKeywordInstance {
   amount?: number;   // X value for impact, deferlement, siphon, guerison, inspiration, afflux
   attack?: number;   // for renforcement, invocation
   health?: number;   // for renforcement, invocation
+  race?: string;     // for invocation (token race)
+}
+
+// --- Token templates ---
+
+export interface TokenTemplate {
+  id: number;
+  race: string;
+  name: string;
+  image_url: string | null;
 }
 
 // --- Multi-target system ---
@@ -122,6 +132,7 @@ export interface AtomicEffect {
   attack?: number;
   health?: number;
   keyword?: Keyword;
+  race?: string;           // for summon_token (token race)
 }
 
 // --- Condition system ---

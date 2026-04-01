@@ -4,6 +4,7 @@ import { useState, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import type { CardInstance } from "@/lib/game/types";
+import { useGameStore } from "@/lib/store/gameStore";
 import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText } from "@/lib/game/keyword-labels";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
@@ -32,6 +33,12 @@ export default function BoardCreature({
   onMouseLeave,
 }: BoardCreatureProps) {
   const card = creature.card;
+  const tokenTemplates = useGameStore(s => s.tokenTemplates);
+  // Resolve token template image: tokens have id === -1 and no image
+  const tokenTemplate = (card.id === -1 && !card.image_url && card.race)
+    ? tokenTemplates.find(t => t.race === card.race)
+    : null;
+  const resolvedImageUrl = card.image_url ?? tokenTemplate?.image_url ?? null;
   const isDamaged = creature.currentHealth < creature.maxHealth;
   const isBuffedAtk = creature.currentAttack > (card.attack ?? 0);
   const isBuffedHp = creature.currentHealth > (card.health ?? 0);
@@ -96,9 +103,9 @@ export default function BoardCreature({
     >
       {/* Full-bleed art */}
       <div style={{ position: "absolute", inset: 0 }}>
-        {card.image_url ? (
+        {resolvedImageUrl ? (
           <Image
-            src={card.image_url}
+            src={resolvedImageUrl}
             alt={card.name}
             fill
             className="object-cover"

@@ -182,16 +182,7 @@ function recalculateAuras(player: PlayerState, opponent: PlayerState) {
     c.currentAttack = atk;
   }
 
-  // Loyauté: +1 ATK et +1 PV par allié de même race en jeu
-  for (const board of [player.board, opponent.board]) {
-    for (const c of board) {
-      if (hasKw(c, "loyaute") && c.card.race) {
-        const sameRaceCount = board.filter(a => a !== c && a.card.race === c.card.race).length;
-        c.currentAttack += sameRaceCount;
-        // PV bonus handled as temporary display — not permanently added to maxHealth
-      }
-    }
-  }
+  // Loyauté: permanent on-summon bonus — NOT recalculated here (handled in playCard)
 
   // Terreur: enemy units -1 ATK per terreur unit
   const playerTerreurCount = player.board.filter(c => hasKw(c, "terreur")).length;
@@ -418,10 +409,12 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
 
     // ── On-summon triggers ──
 
-    // Loyauté: +1 ATK et +1 PV par allié de même race (handled in recalculateAuras for ATK, PV here)
+    // Loyauté: +1 ATK et +1 PV permanent par allié de même race (effet d'invocation)
     if (hasKw(cardInstance, "loyaute") && cardInstance.card.race) {
       const sameRaceCount = player.board.filter(a => a !== cardInstance && a.card.race === cardInstance.card.race).length;
       if (sameRaceCount > 0) {
+        cardInstance.card = { ...cardInstance.card, attack: (cardInstance.card.attack ?? 0) + sameRaceCount };
+        cardInstance.currentAttack += sameRaceCount;
         cardInstance.currentHealth += sameRaceCount;
         cardInstance.maxHealth += sameRaceCount;
       }
@@ -1092,11 +1085,12 @@ function resolveSpellKeywords(
       case "invocation": {
         if (ctx.caster.board.length < MAX_BOARD_SIZE) {
           const tokenCard: Card = {
-            id: -1, name: "Token",
+            id: -1, name: kw.race ? `Token ${kw.race}` : "Token",
             mana_cost: 0, card_type: "creature",
             attack: kw.attack ?? 1, health: kw.health ?? 1,
             effect_text: `Token ${kw.attack ?? 1}/${kw.health ?? 1}`,
             keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
+            race: kw.race,
           };
           const token = createCardInstance(tokenCard);
           token.hasSummoningSickness = true;
@@ -1318,11 +1312,12 @@ function resolveAtomicEffect(ctx: SpellResolutionContext, effect: AtomicEffect):
     case "summon_token": {
       if (ctx.caster.board.length < MAX_BOARD_SIZE) {
         const tokenCard: Card = {
-          id: -1, name: "Token",
+          id: -1, name: effect.race ? `Token ${effect.race}` : "Token",
           mana_cost: 0, card_type: "creature",
           attack: effect.attack ?? 1, health: effect.health ?? 1,
           effect_text: `Token ${effect.attack ?? 1}/${effect.health ?? 1}`,
           keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
+          race: effect.race,
         };
         const token = createCardInstance(tokenCard);
         token.hasSummoningSickness = true;
@@ -2004,7 +1999,8 @@ export function canAttack(state: GameState, attackerInstanceId: string): boolean
   const attacker = player.board.find(c => c.instanceId === attackerInstanceId);
   if (!attacker) return false;
   if (attacker.attacksRemaining <= 0) return false;
-  if (attacker.hasSummoningSickness) return false;
+  // Raid: can attack creatures even with summoning sickness
+  if (attacker.hasSummoningSickness && !hasKw(attacker, "raid")) return false;
   if (attacker.currentAttack <= 0) return false;
   return true;
 }
@@ -2032,7 +2028,10 @@ export function getValidTargets(state: GameState, attackerInstanceId: string): s
       .map(c => c.instanceId);
   }
 
-  const targets = [...targetableEnemies.map(c => c.instanceId), "enemy_hero"];
+  // Raid with summoning sickness: can only target creatures, not hero
+  const canHitHero = !(attacker.hasSummoningSickness && hasKw(attacker, "raid"));
+  const targets = [...targetableEnemies.map(c => c.instanceId)];
+  if (canHitHero) targets.push("enemy_hero");
   return targets;
 }
 

@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import type { CardInstance } from "@/lib/game/types";
+import { useGameStore } from "@/lib/store/gameStore";
 import type { DragEvent } from "react";
 import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText } from "@/lib/game/keyword-labels";
 import KeywordIcon from "@/components/shared/KeywordIcon";
@@ -23,6 +24,11 @@ export default function HandCard({
   onClick,
 }: HandCardProps) {
   const card = cardInstance.card;
+  const tokenTemplates = useGameStore(s => s.tokenTemplates);
+  const tokenTemplate = (card.id === -1 && !card.image_url && card.race)
+    ? tokenTemplates.find(t => t.race === card.race)
+    : null;
+  const resolvedImageUrl = card.image_url ?? tokenTemplate?.image_url ?? null;
   const isCreature = card.card_type === "creature";
   const [isDragging, setIsDragging] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -98,9 +104,9 @@ export default function HandCard({
       >
         {/* Full-bleed art */}
         <div style={{ position: "absolute", inset: 0 }}>
-          {card.image_url ? (
+          {resolvedImageUrl ? (
             <Image
-              src={card.image_url}
+              src={resolvedImageUrl}
               alt={card.name}
               fill
               className="object-cover"

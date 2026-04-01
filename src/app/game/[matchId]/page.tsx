@@ -92,7 +92,7 @@ export default function GamePage() {
         }
 
         // Fetch both player deck cards and hero data
-        const [p1DeckCards, p2DeckCards, p1DeckData, p2DeckData] = await Promise.all([
+        const [p1DeckCards, p2DeckCards, p1DeckData, p2DeckData, tokenTemplatesRes] = await Promise.all([
           supabase
             .from("deck_cards")
             .select("card_id, quantity, cards(*)")
@@ -111,7 +111,13 @@ export default function GamePage() {
             .select("hero_id, heroes(*)")
             .eq("id", match.player2_deck_id)
             .single(),
+          supabase
+            .from("token_templates")
+            .select("*"),
         ]);
+
+        // Store token templates
+        useGameStore.getState().setTokenTemplates(tokenTemplatesRes.data ?? []);
 
         if (cancelled) return;
 

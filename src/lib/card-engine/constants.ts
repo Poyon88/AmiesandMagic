@@ -25,6 +25,7 @@ export const KEYWORDS: Record<string, { cost: number; costPerX: number; se: numb
   "Ancré":              { cost:  2, costPerX: 0, se: 0.5, minTier: 0, scalable: false, zone: "Terrain", desc: "Ne peut pas être déplacé ou exilé." },
   "Résistance":         { cost:  5, costPerX: 0, se: 1.0, minTier: 0, scalable: false, zone: "Terrain", desc: "Réduit les dégâts reçus de 1." },
   "Provocation":        { cost:  5, costPerX: 0, se: 1.0, minTier: 0, scalable: false, zone: "Terrain", desc: "Les ennemis doivent attaquer cette unité en priorité." },
+  "Raid":               { cost:  3, costPerX: 0, se: 0.7, minTier: 0, scalable: false, zone: "Terrain", desc: "Peut attaquer une créature ennemie dès son invocation (mais pas le héros)." },
   "Traque":             { cost:  5, costPerX: 0, se: 1.0, minTier: 0, scalable: false, zone: "Terrain", desc: "Peut attaquer dès son invocation." },
   "Première Frappe":    { cost:  7, costPerX: 0, se: 1.5, minTier: 0, scalable: false, zone: "Terrain", desc: "Lorsque cette unité attaque, inflige ses dégâts en premier ; l'unité adverse ne riposte que si elle survit." },
   "Berserk":            { cost: 11, costPerX: 0, se: 2.5, minTier: 0, scalable: false, zone: "Terrain", desc: "Double son ATK si ses PV actuels sont inférieurs à sa valeur de PV originale (sur la carte)." },

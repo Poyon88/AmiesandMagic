@@ -97,6 +97,14 @@ export default function CardForge() {
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState<ForgeCard[]>([]);
   const [bulkCount, setBulkCount] = useState(20);
+  // Token templates
+  const [tokenTemplates, setTokenTemplates] = useState<{ id: number; race: string; name: string; image_url: string | null }[]>([]);
+  const [tokenRace, setTokenRace] = useState("");
+  const [tokenName, setTokenName] = useState("");
+  const [tokenImageFile, setTokenImageFile] = useState<File | null>(null);
+  const [tokenImagePreview, setTokenImagePreview] = useState<string | null>(null);
+  const [tokenSaving, setTokenSaving] = useState(false);
+  const [tokenEditId, setTokenEditId] = useState<number | null>(null);
   const [bulkProgress, setBulkProgress] = useState<{ done: number; total: number } | null>(null);
   const [bulkCards, setBulkCards] = useState<ForgeCard[]>([]);
   const [tab, setTab] = useState("forge");
@@ -177,6 +185,54 @@ export default function CardForge() {
     budgetUsed: manualBudgetUsed,
     generatedAt: card?.generatedAt || new Date().toISOString(),
   };
+
+  // All races from all factions
+  const allRaces = Object.values(FACTIONS).flatMap(f => f.races).sort();
+
+  const loadTokenTemplates = useCallback(async () => {
+    try {
+      const res = await fetch('/api/token-templates');
+      if (res.ok) setTokenTemplates(await res.json());
+    } catch { /* ignore */ }
+  }, []);
+
+  const saveTokenTemplate = useCallback(async () => {
+    if (!tokenRace || !tokenName) return;
+    setTokenSaving(true);
+    try {
+      let imageBase64: string | null = null;
+      let imageMimeType: string | null = null;
+      if (tokenImageFile) {
+        const buf = await tokenImageFile.arrayBuffer();
+        imageBase64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
+        imageMimeType = tokenImageFile.type;
+      }
+      const res = await fetch('/api/token-templates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          race: tokenRace, name: tokenName,
+          imageBase64, imageMimeType,
+          updateId: tokenEditId || undefined,
+        }),
+      });
+      if (res.ok) {
+        setTokenRace(""); setTokenName(""); setTokenImageFile(null); setTokenImagePreview(null); setTokenEditId(null);
+        loadTokenTemplates();
+      }
+    } catch { /* ignore */ } finally {
+      setTokenSaving(false);
+    }
+  }, [tokenRace, tokenName, tokenImageFile, tokenEditId, loadTokenTemplates]);
+
+  const deleteTokenTemplate = useCallback(async (id: number) => {
+    await fetch('/api/token-templates', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+    loadTokenTemplates();
+  }, [loadTokenTemplates]);
 
   const resetManualForm = useCallback(() => {
     setManualName(""); setManualMana(3); setManualAttack(3); setManualDefense(3);
@@ -309,7 +365,7 @@ export default function CardForge() {
 
   const FORGE_TO_GAME_KEYWORD: Record<string, Keyword> = {
     // Legacy aliases
-    "Traque": "charge", "Provocation": "taunt", "Bouclier": "divine_shield", "Vol": "ranged",
+    "Raid": "raid", "Traque": "charge", "Provocation": "taunt", "Bouclier": "divine_shield", "Vol": "ranged",
     // Tier 0
     "Loyauté": "loyaute", "Ancré": "ancre", "Résistance": "resistance",
     "Première Frappe": "premiere_frappe", "Berserk": "berserk",
@@ -632,7 +688,7 @@ export default function CardForge() {
             <span style={{ fontSize: 8, color: "#aaa", letterSpacing: 2 }}>ARMIES & MAGIC</span>
           </div>
           <div style={{ display: "flex", gap: 4 }}>
-            {([["forge", "⚒ Forge"], ["bulk", "📦 Masse"], ["budget", "⚖ Budget"], ["schema", "📋 Schéma"]] as const).map(([t, l]) => (
+            {([["forge", "⚒ Forge"], ["tokens", "🎭 Tokens"], ["bulk", "📦 Masse"], ["budget", "⚖ Budget"], ["schema", "📋 Schéma"]] as const).map(([t, l]) => (
               <button key={t} onClick={() => setTab(t)} style={{
                 padding: "5px 14px", borderRadius: 6, cursor: "pointer",
                 background: tab === t ? "#333" : "transparent",
@@ -1175,6 +1231,18 @@ export default function CardForge() {
                                   />
                                 </div>
                               )}
+                              {kw.id === "invocation" && (
+                                <div>
+                                  <label style={{ fontSize: 7, color: "#27ae60" }}>Race</label>
+                                  <select value={kw.race ?? ""} onChange={e => {
+                                    setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, race: e.target.value || undefined } : k));
+                                  }}
+                                    style={{ padding: "2px 4px", borderRadius: 4, border: "1px solid #27ae6044", fontSize: 9, fontFamily: "'Cinzel',serif", color: "#27ae60" }}>
+                                    <option value="">Aucune</option>
+                                    {allRaces.map(r => <option key={r} value={r}>{r}</option>)}
+                                  </select>
+                                </div>
+                              )}
                             </div>
                           );
                         })}
@@ -1367,6 +1435,107 @@ export default function CardForge() {
                 </div>
               )}
 
+            </div>
+          </div>
+        )}
+
+        {/* ── TOKENS ── */}
+        {tab === "tokens" && (
+          <div style={{ flex: 1, padding: 22, overflowY: "auto" }}>
+            <div style={{ maxWidth: 700, margin: "0 auto" }}>
+              <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16, letterSpacing: 2 }}>TEMPLATES DE TOKENS</h2>
+
+              {/* New/Edit form */}
+              <div style={{ border: "1px solid #e0e0e0", borderRadius: 8, padding: 16, marginBottom: 20, background: "#fafafa" }}>
+                <div style={{ fontSize: 10, color: "#666", letterSpacing: 1, marginBottom: 8, fontWeight: 700 }}>
+                  {tokenEditId ? "MODIFIER LE TEMPLATE" : "NOUVEAU TEMPLATE"}
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  <div>
+                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>RACE</label>
+                    <select value={tokenRace} onChange={e => setTokenRace(e.target.value)}
+                      style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }}>
+                      <option value="">-- Choisir --</option>
+                      {allRaces.map(r => (
+                        <option key={r} value={r}>{r}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>NOM DU TOKEN</label>
+                    <input type="text" value={tokenName} onChange={e => setTokenName(e.target.value)}
+                      placeholder="Ex: Recrue Elfique"
+                      style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }} />
+                  </div>
+                </div>
+                <div style={{ marginTop: 10 }}>
+                  <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>IMAGE</label>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 4 }}>
+                    <input type="file" accept=".png,.jpg,.jpeg,.webp"
+                      onChange={e => {
+                        const f = e.target.files?.[0];
+                        if (f) {
+                          setTokenImageFile(f);
+                          setTokenImagePreview(URL.createObjectURL(f));
+                        }
+                      }}
+                      style={{ fontSize: 10 }} />
+                    {tokenImagePreview && (
+                      <img src={tokenImagePreview} alt="preview" style={{ width: 48, height: 48, objectFit: "cover", borderRadius: 6, border: "1px solid #ddd" }} />
+                    )}
+                  </div>
+                </div>
+                <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
+                  <button onClick={saveTokenTemplate} disabled={!tokenRace || !tokenName || tokenSaving}
+                    style={{ padding: "6px 16px", borderRadius: 6, border: "none", background: "#333", color: "#fff", fontSize: 10, fontFamily: "'Cinzel',serif", fontWeight: 700, cursor: "pointer", opacity: (!tokenRace || !tokenName || tokenSaving) ? 0.4 : 1 }}>
+                    {tokenSaving ? "..." : tokenEditId ? "Mettre a jour" : "Creer"}
+                  </button>
+                  {tokenEditId && (
+                    <button onClick={() => { setTokenEditId(null); setTokenRace(""); setTokenName(""); setTokenImageFile(null); setTokenImagePreview(null); }}
+                      style={{ padding: "6px 16px", borderRadius: 6, border: "1px solid #ddd", background: "#fff", color: "#888", fontSize: 10, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>
+                      Annuler
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* List */}
+              <div>
+                <div style={{ fontSize: 10, color: "#666", letterSpacing: 1, marginBottom: 8, fontWeight: 700 }}>
+                  TEMPLATES EXISTANTS ({tokenTemplates.length})
+                </div>
+                <button onClick={loadTokenTemplates} style={{ padding: "4px 12px", borderRadius: 5, border: "1px solid #ddd", background: "#fff", color: "#666", fontSize: 9, fontFamily: "'Cinzel',serif", cursor: "pointer", marginBottom: 10 }}>
+                  Charger / Rafraichir
+                </button>
+                {tokenTemplates.length === 0 && (
+                  <div style={{ color: "#ccc", fontSize: 11, textAlign: "center", padding: 20 }}>Aucun template</div>
+                )}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 10 }}>
+                  {tokenTemplates.map(t => (
+                    <div key={t.id} style={{ border: "1px solid #e0e0e0", borderRadius: 8, overflow: "hidden", background: "#fff" }}>
+                      {t.image_url ? (
+                        <img src={t.image_url} alt={t.name} style={{ width: "100%", height: 120, objectFit: "cover" }} />
+                      ) : (
+                        <div style={{ width: "100%", height: 120, background: "#f0f0f0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30 }}>⚔️</div>
+                      )}
+                      <div style={{ padding: 8 }}>
+                        <div style={{ fontSize: 11, fontWeight: 700 }}>{t.name}</div>
+                        <div style={{ fontSize: 9, color: "#888" }}>{t.race}</div>
+                        <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
+                          <button onClick={() => { setTokenEditId(t.id); setTokenRace(t.race); setTokenName(t.name); setTokenImagePreview(t.image_url); }}
+                            style={{ fontSize: 8, padding: "2px 8px", borderRadius: 4, border: "1px solid #ddd", background: "#fff", color: "#666", cursor: "pointer", fontFamily: "'Cinzel',serif" }}>
+                            Modifier
+                          </button>
+                          <button onClick={() => deleteTokenTemplate(t.id)}
+                            style={{ fontSize: 8, padding: "2px 8px", borderRadius: 4, border: "1px solid #f5a3a3", background: "#fde8e8", color: "#e74c3c", cursor: "pointer", fontFamily: "'Cinzel',serif" }}>
+                            Supprimer
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         )}
