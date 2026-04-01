@@ -101,10 +101,15 @@ export default function CardForge() {
   const [tokenTemplates, setTokenTemplates] = useState<{ id: number; race: string; name: string; image_url: string | null }[]>([]);
   const [tokenRace, setTokenRace] = useState("");
   const [tokenName, setTokenName] = useState("");
-  const [tokenImageFile, setTokenImageFile] = useState<File | null>(null);
+  const [tokenImageBase64, setTokenImageBase64] = useState<string | null>(null);
+  const [tokenImageMime, setTokenImageMime] = useState<string | null>(null);
   const [tokenImagePreview, setTokenImagePreview] = useState<string | null>(null);
   const [tokenSaving, setTokenSaving] = useState(false);
   const [tokenEditId, setTokenEditId] = useState<number | null>(null);
+  const [tokenKeywords, setTokenKeywords] = useState<string[]>([]);
+  const [tokenPrompt, setTokenPrompt] = useState("");
+  const [tokenGenerating, setTokenGenerating] = useState(false);
+  const [tokenMessage, setTokenMessage] = useState<{ ok: boolean; msg: string } | null>(null);
   const [bulkProgress, setBulkProgress] = useState<{ done: number; total: number } | null>(null);
   const [bulkCards, setBulkCards] = useState<ForgeCard[]>([]);
   const [tab, setTab] = useState("forge");
@@ -196,42 +201,79 @@ export default function CardForge() {
     } catch { /* ignore */ }
   }, []);
 
+  const generateTokenPrompt = useCallback(() => {
+    if (!tokenRace) return;
+    const prompt = `A summoned token creature of the ${tokenRace} race in a dark fantasy card game. Small magical warrior or beast, cinematic lighting, detailed, no text, painterly style, dark atmosphere, full body portrait centered, suitable for a collectible card game illustration.`;
+    setTokenPrompt(prompt);
+  }, [tokenRace]);
+
+  const generateTokenImage = useCallback(async () => {
+    if (!tokenPrompt) return;
+    setTokenGenerating(true);
+    setTokenMessage(null);
+    try {
+      const res = await fetch('/api/cards/generate-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: tokenPrompt }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erreur génération');
+      setTokenImageBase64(data.imageBase64);
+      setTokenImageMime(data.mimeType);
+      // Convert to blob URL for preview
+      const byteChars = atob(data.imageBase64);
+      const byteArray = new Uint8Array(byteChars.length);
+      for (let i = 0; i < byteChars.length; i++) byteArray[i] = byteChars.charCodeAt(i);
+      const blob = new Blob([byteArray], { type: data.mimeType });
+      setTokenImagePreview(URL.createObjectURL(blob));
+      setTokenMessage({ ok: true, msg: `Image générée (${data.model})` });
+    } catch (err) {
+      setTokenMessage({ ok: false, msg: err instanceof Error ? err.message : "Erreur" });
+    } finally {
+      setTokenGenerating(false);
+    }
+  }, [tokenPrompt]);
+
   const saveTokenTemplate = useCallback(async () => {
     if (!tokenRace || !tokenName) return;
     setTokenSaving(true);
+    setTokenMessage(null);
     try {
-      let imageBase64: string | null = null;
-      let imageMimeType: string | null = null;
-      if (tokenImageFile) {
-        const buf = await tokenImageFile.arrayBuffer();
-        imageBase64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
-        imageMimeType = tokenImageFile.type;
-      }
+      const gameKws = tokenKeywords.map(k => FORGE_TO_GAME_KEYWORD[k] || k).filter(Boolean);
       const res = await fetch('/api/token-templates', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           race: tokenRace, name: tokenName,
-          imageBase64, imageMimeType,
+          keywords: gameKws,
+          imageBase64: tokenImageBase64,
+          imageMimeType: tokenImageMime,
           updateId: tokenEditId || undefined,
         }),
       });
-      if (res.ok) {
-        setTokenRace(""); setTokenName(""); setTokenImageFile(null); setTokenImagePreview(null); setTokenEditId(null);
-        loadTokenTemplates();
-      }
-    } catch { /* ignore */ } finally {
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erreur serveur');
+      setTokenRace(""); setTokenName(""); setTokenKeywords([]); setTokenImageBase64(null); setTokenImageMime(null);
+      setTokenImagePreview(null); setTokenEditId(null); setTokenPrompt("");
+      setTokenMessage({ ok: true, msg: tokenEditId ? "Template mis à jour" : "Template créé" });
+      loadTokenTemplates();
+    } catch (err) {
+      setTokenMessage({ ok: false, msg: err instanceof Error ? err.message : "Erreur" });
+    } finally {
       setTokenSaving(false);
     }
-  }, [tokenRace, tokenName, tokenImageFile, tokenEditId, loadTokenTemplates]);
+  }, [tokenRace, tokenName, tokenKeywords, tokenImageBase64, tokenImageMime, tokenEditId, loadTokenTemplates]);
 
   const deleteTokenTemplate = useCallback(async (id: number) => {
-    await fetch('/api/token-templates', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id }),
-    });
-    loadTokenTemplates();
+    try {
+      await fetch('/api/token-templates', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+      loadTokenTemplates();
+    } catch { /* ignore */ }
   }, [loadTokenTemplates]);
 
   const resetManualForm = useCallback(() => {
@@ -1445,6 +1487,17 @@ export default function CardForge() {
             <div style={{ maxWidth: 700, margin: "0 auto" }}>
               <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16, letterSpacing: 2 }}>TEMPLATES DE TOKENS</h2>
 
+              {/* Status message */}
+              {tokenMessage && (
+                <div style={{
+                  padding: "8px 14px", borderRadius: 8, fontSize: 10, marginBottom: 12,
+                  background: tokenMessage.ok ? "#e8f8f0" : "#fde8e8",
+                  border: `1px solid ${tokenMessage.ok ? "#a3e4c1" : "#f5a3a3"}`,
+                  color: tokenMessage.ok ? "#27ae60" : "#e74c3c",
+                  fontFamily: "'Crimson Text',serif",
+                }}>{tokenMessage.msg}</div>
+              )}
+
               {/* New/Edit form */}
               <div style={{ border: "1px solid #e0e0e0", borderRadius: 8, padding: 16, marginBottom: 20, background: "#fafafa" }}>
                 <div style={{ fontSize: 10, color: "#666", letterSpacing: 1, marginBottom: 8, fontWeight: 700 }}>
@@ -1453,7 +1506,7 @@ export default function CardForge() {
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                   <div>
                     <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>RACE</label>
-                    <select value={tokenRace} onChange={e => setTokenRace(e.target.value)}
+                    <select value={tokenRace} onChange={e => { setTokenRace(e.target.value); if (!tokenName) setTokenName(e.target.value); }}
                       style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }}>
                       <option value="">-- Choisir --</option>
                       {allRaces.map(r => (
@@ -1468,30 +1521,86 @@ export default function CardForge() {
                       style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }} />
                   </div>
                 </div>
+
+                {/* Keywords */}
                 <div style={{ marginTop: 10 }}>
-                  <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>IMAGE</label>
+                  <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>CAPACITES DU TOKEN</label>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginTop: 4 }}>
+                    {Object.entries(KEYWORDS).filter(([, kw]) => kw.minTier <= 1).map(([kwName]) => {
+                      const active = tokenKeywords.includes(kwName);
+                      return (
+                        <button key={kwName} onClick={() => {
+                          setTokenKeywords(prev => active ? prev.filter(k => k !== kwName) : [...prev, kwName]);
+                        }}
+                          style={{
+                            padding: "2px 6px", borderRadius: 4, cursor: "pointer", fontSize: 8,
+                            fontFamily: "'Cinzel',serif", fontWeight: active ? 700 : 400,
+                            background: active ? "#33333318" : "#fff",
+                            border: `1px solid ${active ? "#333" : "#e0e0e0"}`,
+                            color: active ? "#333" : "#aaa",
+                          }}>{kwName}</button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Prompt generation */}
+                <div style={{ marginTop: 10 }}>
+                  <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>PROMPT IMAGE</label>
+                  <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
+                    <textarea value={tokenPrompt} onChange={e => setTokenPrompt(e.target.value)}
+                      placeholder="Cliquez 'Auto-prompt' pour générer, ou écrivez le vôtre..."
+                      style={{ flex: 1, minHeight: 60, padding: 6, borderRadius: 6, border: "1px solid #ddd", fontSize: 10, fontFamily: "monospace", resize: "vertical" }} />
+                  </div>
+                  <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
+                    <button onClick={generateTokenPrompt} disabled={!tokenRace}
+                      style={{ padding: "4px 12px", borderRadius: 5, border: "1px solid #ddd", background: "#fff", color: tokenRace ? "#666" : "#ccc", fontSize: 9, fontFamily: "'Cinzel',serif", cursor: tokenRace ? "pointer" : "default" }}>
+                      Auto-prompt
+                    </button>
+                    <button onClick={generateTokenImage} disabled={!tokenPrompt || tokenGenerating}
+                      style={{ padding: "4px 12px", borderRadius: 5, border: "none", background: tokenPrompt && !tokenGenerating ? "linear-gradient(135deg, #6c5ce7, #a855f7)" : "#e0e0e0", color: "#fff", fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: 700, cursor: tokenPrompt && !tokenGenerating ? "pointer" : "default" }}>
+                      {tokenGenerating ? "Génération..." : "Générer image"}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Image upload OR generated preview */}
+                <div style={{ marginTop: 10 }}>
+                  <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>OU UPLOADER UNE IMAGE</label>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 4 }}>
                     <input type="file" accept=".png,.jpg,.jpeg,.webp"
                       onChange={e => {
                         const f = e.target.files?.[0];
                         if (f) {
-                          setTokenImageFile(f);
-                          setTokenImagePreview(URL.createObjectURL(f));
+                          const reader = new FileReader();
+                          reader.onload = () => {
+                            const dataUrl = reader.result as string;
+                            setTokenImageBase64(dataUrl.split(",")[1]);
+                            setTokenImageMime(f.type);
+                            setTokenImagePreview(URL.createObjectURL(f));
+                          };
+                          reader.readAsDataURL(f);
                         }
                       }}
                       style={{ fontSize: 10 }} />
-                    {tokenImagePreview && (
-                      <img src={tokenImagePreview} alt="preview" style={{ width: 48, height: 48, objectFit: "cover", borderRadius: 6, border: "1px solid #ddd" }} />
-                    )}
                   </div>
                 </div>
+
+                {/* Preview */}
+                {tokenImagePreview && (
+                  <div style={{ marginTop: 10, textAlign: "center" }}>
+                    <img src={tokenImagePreview} alt="preview" style={{ maxWidth: 200, maxHeight: 200, objectFit: "cover", borderRadius: 8, border: "2px solid #ddd" }} />
+                  </div>
+                )}
+
+                {/* Actions */}
                 <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
                   <button onClick={saveTokenTemplate} disabled={!tokenRace || !tokenName || tokenSaving}
                     style={{ padding: "6px 16px", borderRadius: 6, border: "none", background: "#333", color: "#fff", fontSize: 10, fontFamily: "'Cinzel',serif", fontWeight: 700, cursor: "pointer", opacity: (!tokenRace || !tokenName || tokenSaving) ? 0.4 : 1 }}>
-                    {tokenSaving ? "..." : tokenEditId ? "Mettre a jour" : "Creer"}
+                    {tokenSaving ? "Sauvegarde..." : tokenEditId ? "Mettre a jour" : "Creer"}
                   </button>
                   {tokenEditId && (
-                    <button onClick={() => { setTokenEditId(null); setTokenRace(""); setTokenName(""); setTokenImageFile(null); setTokenImagePreview(null); }}
+                    <button onClick={() => { setTokenEditId(null); setTokenRace(""); setTokenName(""); setTokenImageBase64(null); setTokenImageMime(null); setTokenImagePreview(null); setTokenPrompt(""); }}
                       style={{ padding: "6px 16px", borderRadius: 6, border: "1px solid #ddd", background: "#fff", color: "#888", fontSize: 10, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>
                       Annuler
                     </button>
@@ -1501,14 +1610,16 @@ export default function CardForge() {
 
               {/* List */}
               <div>
-                <div style={{ fontSize: 10, color: "#666", letterSpacing: 1, marginBottom: 8, fontWeight: 700 }}>
-                  TEMPLATES EXISTANTS ({tokenTemplates.length})
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+                  <span style={{ fontSize: 10, color: "#666", letterSpacing: 1, fontWeight: 700 }}>
+                    TEMPLATES EXISTANTS ({tokenTemplates.length})
+                  </span>
+                  <button onClick={loadTokenTemplates} style={{ padding: "4px 12px", borderRadius: 5, border: "1px solid #ddd", background: "#fff", color: "#666", fontSize: 9, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>
+                    Charger / Rafraichir
+                  </button>
                 </div>
-                <button onClick={loadTokenTemplates} style={{ padding: "4px 12px", borderRadius: 5, border: "1px solid #ddd", background: "#fff", color: "#666", fontSize: 9, fontFamily: "'Cinzel',serif", cursor: "pointer", marginBottom: 10 }}>
-                  Charger / Rafraichir
-                </button>
                 {tokenTemplates.length === 0 && (
-                  <div style={{ color: "#ccc", fontSize: 11, textAlign: "center", padding: 20 }}>Aucun template</div>
+                  <div style={{ color: "#ccc", fontSize: 11, textAlign: "center", padding: 20 }}>Aucun template — cliquez Charger</div>
                 )}
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 10 }}>
                   {tokenTemplates.map(t => (
@@ -1522,7 +1633,7 @@ export default function CardForge() {
                         <div style={{ fontSize: 11, fontWeight: 700 }}>{t.name}</div>
                         <div style={{ fontSize: 9, color: "#888" }}>{t.race}</div>
                         <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
-                          <button onClick={() => { setTokenEditId(t.id); setTokenRace(t.race); setTokenName(t.name); setTokenImagePreview(t.image_url); }}
+                          <button onClick={() => { setTokenEditId(t.id); setTokenRace(t.race); setTokenName(t.name); setTokenKeywords((t as { keywords?: string[] }).keywords?.map(k => GAME_TO_FORGE_KEYWORD[k] || k) ?? []); setTokenImagePreview(t.image_url); setTokenImageBase64(null); setTokenImageMime(null); setTokenPrompt(""); }}
                             style={{ fontSize: 8, padding: "2px 8px", borderRadius: 4, border: "1px solid #ddd", background: "#fff", color: "#666", cursor: "pointer", fontFamily: "'Cinzel',serif" }}>
                             Modifier
                           </button>

@@ -95,6 +95,7 @@ export interface TokenTemplate {
   race: string;
   name: string;
   image_url: string | null;
+  keywords: Keyword[];
 }
 
 // --- Multi-target system ---
@@ -314,6 +315,7 @@ export interface GameState {
   winner: string | null;
   lastAction: GameAction | null;
   mulliganReady: [boolean, boolean];
+  tokenTemplates?: TokenTemplate[];
 }
 
 export type GameActionType = "play_card" | "attack" | "end_turn" | "spell_target";

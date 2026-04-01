@@ -293,6 +293,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
       player1Hero,
       player2Hero
     );
+    // Inject token templates into GameState for engine access
+    state.tokenTemplates = get().tokenTemplates;
     set({ gameState: state });
   },
 

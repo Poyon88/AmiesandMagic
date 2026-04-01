@@ -47,14 +47,15 @@ export async function POST(request: Request) {
   const supabase = getAdminClient();
 
   try {
-    const { race, name, imageBase64, imageMimeType, updateId } = await request.json();
+    const { race, name, keywords, imageBase64, imageMimeType, updateId } = await request.json();
     if (!race || !name) return NextResponse.json({ error: 'Race et nom requis' }, { status: 400 });
 
     let image_url: string | null = null;
     if (imageBase64 && imageMimeType) {
       const buffer = Buffer.from(imageBase64, 'base64');
       const ext = imageMimeType.split('/')[1] || 'webp';
-      const filePath = `token_${race.toLowerCase().replace(/\s+/g, '_')}_${Date.now()}.${ext}`;
+      const safeName = race.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '_');
+      const filePath = `token_${safeName}_${Date.now()}.${ext}`;
       const { error: uploadErr } = await supabase.storage
         .from('card-images')
         .upload(filePath, buffer, { upsert: true, contentType: imageMimeType });
@@ -63,7 +64,7 @@ export async function POST(request: Request) {
       image_url = urlData.publicUrl;
     }
 
-    const templateData: Record<string, unknown> = { race, name };
+    const templateData: Record<string, unknown> = { race, name, keywords: keywords || [] };
     if (image_url) templateData.image_url = image_url;
 
     if (updateId) {

@@ -21,6 +21,7 @@ import type {
   SpellResolutionContext,
   SpellTargetSlot,
   SpellTargetType,
+  TokenTemplate,
 } from "./types";
 import { SPELL_KEYWORDS } from "./spell-keywords";
 import {
@@ -46,6 +47,7 @@ function createRNG(seed: number): () => number {
 }
 
 let rng: () => number = Math.random;
+let currentTokenTemplates: TokenTemplate[] = [];
 
 export function initRNG(seed: number) {
   rng = createRNG(seed);
@@ -106,6 +108,19 @@ function createCardInstance(card: Card): CardInstance {
     instinctDeMeuteX: 0,
     cycleEternelAutoPlay: false,
     originalOwnerId: null,
+  };
+}
+
+function applyTokenTemplate(tokenCard: Card, templates?: TokenTemplate[]): Card {
+  const tmpls = templates ?? currentTokenTemplates;
+  if (!tmpls.length || !tokenCard.race) return tokenCard;
+  const tmpl = tmpls.find(t => t.race === tokenCard.race);
+  if (!tmpl) return tokenCard;
+  return {
+    ...tokenCard,
+    name: tmpl.name,
+    image_url: tmpl.image_url,
+    keywords: tmpl.keywords?.length ? tmpl.keywords : tokenCard.keywords,
   };
 }
 
@@ -475,7 +490,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // Convocation X: crée un token X/X de même race
     if (hasKw(cardInstance, "convocation") && player.board.length < MAX_BOARD_SIZE) {
       const x = cardInstance.card.mana_cost; // X based on mana cost as proxy
-      const tokenCard: Card = {
+      let tokenCard: Card = {
         id: -1, name: `Token ${cardInstance.card.race || ""}`.trim(),
         mana_cost: 0, card_type: "creature",
         attack: x, health: x,
@@ -484,6 +499,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
         race: cardInstance.card.race, faction: cardInstance.card.faction,
         clan: cardInstance.card.clan,
       };
+      tokenCard = applyTokenTemplate(tokenCard);
       const token = createCardInstance(tokenCard);
       token.hasSummoningSickness = true;
       player.board.push(token);
@@ -1084,7 +1100,7 @@ function resolveSpellKeywords(
       }
       case "invocation": {
         if (ctx.caster.board.length < MAX_BOARD_SIZE) {
-          const tokenCard: Card = {
+          let tokenCard: Card = {
             id: -1, name: kw.race ? `Token ${kw.race}` : "Token",
             mana_cost: 0, card_type: "creature",
             attack: kw.attack ?? 1, health: kw.health ?? 1,
@@ -1092,6 +1108,7 @@ function resolveSpellKeywords(
             keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
             race: kw.race,
           };
+          tokenCard = applyTokenTemplate(tokenCard);
           const token = createCardInstance(tokenCard);
           token.hasSummoningSickness = true;
           ctx.caster.board.push(token);
@@ -1311,7 +1328,7 @@ function resolveAtomicEffect(ctx: SpellResolutionContext, effect: AtomicEffect):
     }
     case "summon_token": {
       if (ctx.caster.board.length < MAX_BOARD_SIZE) {
-        const tokenCard: Card = {
+        let tokenCard: Card = {
           id: -1, name: effect.race ? `Token ${effect.race}` : "Token",
           mana_cost: 0, card_type: "creature",
           attack: effect.attack ?? 1, health: effect.health ?? 1,
@@ -1319,6 +1336,7 @@ function resolveAtomicEffect(ctx: SpellResolutionContext, effect: AtomicEffect):
           keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
           race: effect.race,
         };
+        tokenCard = applyTokenTemplate(tokenCard);
         const token = createCardInstance(tokenCard);
         token.hasSummoningSickness = true;
         ctx.caster.board.push(token);
@@ -1743,7 +1761,7 @@ function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: P
     // Pacte de sang: invoque deux tokens 1/1 de sa race
     if (hasKw(c, "pacte_de_sang")) {
       for (let i = 0; i < 2 && owner.board.length < MAX_BOARD_SIZE; i++) {
-        const tokenCard: Card = {
+        let tokenCard: Card = {
           id: -1, name: `Token ${c.card.race || ""}`.trim(),
           mana_cost: 0, card_type: "creature",
           attack: 1, health: 1,
@@ -1751,6 +1769,7 @@ function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: P
           keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
           race: c.card.race, faction: c.card.faction,
         };
+        tokenCard = applyTokenTemplate(tokenCard);
         const token = createCardInstance(tokenCard);
         token.hasSummoningSickness = true;
         owner.board.push(token);
@@ -1966,6 +1985,8 @@ export function applyMulligan(state: GameState, action: MulliganAction): GameSta
 // ============================================================
 
 export function applyAction(state: GameState, action: GameAction): GameState {
+  // Make token templates available to all engine functions
+  currentTokenTemplates = state.tokenTemplates ?? [];
   switch (action.type) {
     case "mulligan": return applyMulligan(state, action);
     case "play_card": return playCard(state, action);
