@@ -66,6 +66,7 @@ export const KEYWORDS: Record<string, { cost: number; costPerX: number; se: numb
   "Prescience X":       { cost:  9, costPerX: 4, se: 3.0, minTier: 2, scalable: true,  zone: "Main", desc: "Invocation : piochez des cartes jusqu'à avoir X cartes en main." },
   "Suprématie":         { cost: 13, costPerX: 0, se: 3.0, minTier: 2, scalable: false, zone: "Main", desc: "Invocation : gagne +1 ATK et +1 PV par carte dans votre main au moment de l'invocation." },
   "Divination":         { cost: 11, costPerX: 0, se: 2.5, minTier: 2, scalable: false, zone: "Mixte", desc: "Invocation : révèle les 3 premières cartes de votre pioche ; placez-en une sur le dessus et les 2 autres en dessous dans l'ordre choisi." },
+  "Sélection X":        { cost:  9, costPerX: 4, se: 2.5, minTier: 2, scalable: true,  zone: "Mixte", desc: "Invocation : révèle X cartes aléatoires de votre collection (factions du deck) ; ajoutez-en une à votre main." },
   // ── Tier 3 — Épique+ ──────────────────────────────────────────────────────
   "Liaison de vie":     { cost: 16, costPerX: 0, se: 3.5, minTier: 3, scalable: false, zone: "Terrain", desc: "Partage les dégâts subis avec le héros adverse." },
   "Ombre":              { cost: 18, costPerX: 0, se: 4.0, minTier: 3, scalable: false, zone: "Terrain", desc: "Ne peut être ciblée ni attaquée tant qu'elle n'a pas effectué une action (attaque ou capacité)." },

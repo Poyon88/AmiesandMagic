@@ -52,6 +52,7 @@ export default function GamePage() {
     p2Cards: { card: Card; quantity: number }[];
     p1Hero: HeroDefinition | null;
     p2Hero: HeroDefinition | null;
+    factionCards: Card[];
   } | null>(null);
   const gameInitializedRef = useRef(false);
 
@@ -143,8 +144,20 @@ export default function GamePage() {
           (p2DeckData.data?.heroes as unknown as HeroRow) ?? null
         );
 
+        // Load faction card pool for Sélection X keyword
+        const deckFactions = new Set(
+          [...p1Cards, ...p2Cards]
+            .map((c) => c.card.faction)
+            .filter(Boolean) as string[]
+        );
+        deckFactions.add("Mercenaires");
+        const { data: factionCards } = await supabase
+          .from("cards")
+          .select("*")
+          .in("faction", Array.from(deckFactions));
+
         // Store match data for later initialization
-        matchDataRef.current = { match, p1Cards, p2Cards, p1Hero, p2Hero };
+        matchDataRef.current = { match, p1Cards, p2Cards, p1Hero, p2Hero, factionCards: (factionCards ?? []) as unknown as Card[] };
 
         // Join realtime channel with presence
         const channel = supabase.channel(`match:${matchId}`, {
@@ -179,12 +192,12 @@ export default function GamePage() {
 
             if (playerCount >= 2 && !gameInitializedRef.current && matchDataRef.current) {
               gameInitializedRef.current = true;
-              const { match: m, p1Cards: p1, p2Cards: p2, p1Hero, p2Hero } = matchDataRef.current;
+              const { match: m, p1Cards: p1, p2Cards: p2, p1Hero, p2Hero, factionCards } = matchDataRef.current;
 
               const seed = parseInt(matchId.replace(/-/g, "").slice(0, 8), 16);
               const firstPlayer: 0 | 1 = seed % 2 === 0 ? 0 : 1;
 
-              initGame(m.player1_id, m.player2_id, p1, p2, firstPlayer, seed, p1Hero, p2Hero);
+              initGame(m.player1_id, m.player2_id, p1, p2, firstPlayer, seed, p1Hero, p2Hero, factionCards);
               setPhase("playing");
             }
           })

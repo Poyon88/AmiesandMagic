@@ -30,7 +30,9 @@ export type Keyword =
   | "cycle_eternel" | "martyr" | "instinct_de_meute" | "totem" | "appel_du_clan" | "rassemblement"
   // Tier 4
   | "pacte_de_sang" | "souffle_de_feu" | "domination" | "resurrection" | "transcendance"
-  | "vampirisme";
+  | "vampirisme"
+  // Tier 2 — Collection
+  | "selection";
 
 export type SpellTargetType =
   | "any"
@@ -82,7 +84,8 @@ export type SpellKeywordId =
   | "afflux"
   | "invocation_multiple"
   | "rappel"
-  | "exhumation";
+  | "exhumation"
+  | "selection";
 
 export interface SpellKeywordInstance {
   id: SpellKeywordId;
@@ -334,6 +337,7 @@ export interface GameState {
   lastAction: GameAction | null;
   mulliganReady: [boolean, boolean];
   tokenTemplates?: TokenTemplate[];
+  factionCardPool?: Card[];  // cards from deck factions + Mercenaires for Sélection X
 }
 
 export type GameActionType = "play_card" | "attack" | "end_turn" | "spell_target";
@@ -348,6 +352,7 @@ export interface PlayCardAction {
   divinationChoiceIndex?: number;
   tactiqueKeywords?: Keyword[];
   convocationRace?: string;  // chosen race for token
+  selectionChoiceIndex?: number;  // chosen card from selection pool
 }
 
 export interface AttackAction {

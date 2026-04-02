@@ -103,6 +103,7 @@ export const ALL_KEYWORDS: Keyword[] = [
   "cycle_eternel", "martyr", "instinct_de_meute", "totem", "appel_du_clan", "rassemblement",
   "pacte_de_sang", "souffle_de_feu", "domination", "resurrection", "transcendance",
   "vampirisme",
+  "selection",
 ];
 
 export const KEYWORD_LABELS: Record<Keyword, string> = {
@@ -133,6 +134,7 @@ export const KEYWORD_LABELS: Record<Keyword, string> = {
   cycle_eternel: "Cycle éternel", martyr: "Martyr",
   instinct_de_meute: "Instinct de meute X", totem: "Totem",
   appel_du_clan: "Appel du clan X", rassemblement: "Rassemblement X",
+  selection: "Sélection X",
 };
 
 export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
@@ -163,4 +165,5 @@ export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
   cycle_eternel: "♻️", martyr: "⚱️",
   instinct_de_meute: "🐺", totem: "🗿",
   appel_du_clan: "📯", rassemblement: "🏴",
+  selection: "🎴",
 };

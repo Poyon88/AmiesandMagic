@@ -17,6 +17,8 @@ import {
   creatureNeedsGraveyardTarget,
   getGraveyardTargets,
   creatureNeedsDivination,
+  creatureNeedsSelection,
+  getSelectionCards,
   getSpellGraveyardTargets,
 } from "@/lib/game/engine";
 
@@ -33,9 +35,10 @@ interface GameStore {
   selectedCardInstanceId: string | null;
   selectedAttackerInstanceId: string | null;
   validTargets: string[];
-  targetingMode: "none" | "attack" | "spell" | "spell_multi" | "creature" | "graveyard" | "divination" | "tactique_keywords" | "hero_power";
+  targetingMode: "none" | "attack" | "spell" | "spell_multi" | "creature" | "graveyard" | "divination" | "selection" | "tactique_keywords" | "hero_power";
   pendingBoardPosition: number | null;
   divinationCards: CardInstance[];
+  selectionCards: Card[];
   tactiqueAvailableKeywords: string[];
   tactiqueMaxSelections: number;
   pendingTargetInstanceId: string | null;
@@ -57,7 +60,8 @@ interface GameStore {
     firstPlayerIndex?: 0 | 1,
     seed?: number,
     player1Hero?: HeroDefinition | null,
-    player2Hero?: HeroDefinition | null
+    player2Hero?: HeroDefinition | null,
+    factionCardPool?: Card[],
   ) => void;
   setGameState: (state: GameState) => void;
   setLocalPlayerId: (id: string) => void;
@@ -285,6 +289,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   targetingMode: "none",
   pendingBoardPosition: null,
   divinationCards: [],
+  selectionCards: [],
   tactiqueAvailableKeywords: [],
   tactiqueMaxSelections: 0,
   pendingTargetInstanceId: null,
@@ -296,7 +301,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   damageEvents: [],
   spellCastEvent: null,
 
-  initGame: (player1Id, player2Id, player1Cards, player2Cards, firstPlayerIndex, seed, player1Hero, player2Hero) => {
+  initGame: (player1Id, player2Id, player1Cards, player2Cards, firstPlayerIndex, seed, player1Hero, player2Hero, factionCardPool) => {
     const state = initializeGame(
       player1Id,
       player2Id,
@@ -305,7 +310,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
       firstPlayerIndex,
       seed,
       player1Hero,
-      player2Hero
+      player2Hero,
+      factionCardPool,
     );
     // Inject token templates into GameState for engine access
     state.tokenTemplates = get().tokenTemplates;
@@ -517,6 +523,41 @@ export const useGameStore = create<GameStore>((set, get) => ({
       }
     }
 
+    // Check if creature needs selection
+    if (card.card.card_type === "creature" && creatureNeedsSelection(card.card)) {
+      const x = Math.max(2, Math.floor(card.card.mana_cost / 2));
+      const choices = getSelectionCards(gameState, x);
+      if (choices.length > 0) {
+        set({
+          selectedCardInstanceId: instanceId,
+          selectedAttackerInstanceId: null,
+          validTargets: [],
+          targetingMode: "selection",
+          selectionCards: choices,
+          pendingBoardPosition: null,
+        });
+        return null;
+      }
+    }
+
+    // Check if spell has selection keyword
+    if (card.card.card_type === "spell" && card.card.spell_keywords?.some(kw => kw.id === "selection")) {
+      const selKw = card.card.spell_keywords!.find(kw => kw.id === "selection")!;
+      const x = selKw.amount ?? 2;
+      const choices = getSelectionCards(gameState, x);
+      if (choices.length > 0) {
+        set({
+          selectedCardInstanceId: instanceId,
+          selectedAttackerInstanceId: null,
+          validTargets: [],
+          targetingMode: "selection",
+          selectionCards: choices,
+          pendingBoardPosition: null,
+        });
+        return null;
+      }
+    }
+
     // Check if spell needs a target (new multi-target system)
     if (card.card.card_type === "spell" && needsTarget(card.card)) {
       const slots = getSpellTargetSlots(card.card);
@@ -709,6 +750,24 @@ export const useGameStore = create<GameStore>((set, get) => ({
         type: "play_card",
         cardInstanceId: selectedCardInstanceId,
         divinationChoiceIndex: parseInt(targetId) || 0,
+        boardPosition: pendingBoardPosition ?? undefined,
+      });
+    } else if (targetingMode === "selection" && selectedCardInstanceId) {
+      const { pendingBoardPosition, gameState: gs } = get();
+      const cardInHand = gs?.players[gs.currentPlayerIndex].hand.find(c => c.instanceId === selectedCardInstanceId);
+      if (cardInHand?.card.card_type === "spell") {
+        // Spell selection: pass choice index via targetMap
+        const kwIdx = cardInHand.card.spell_keywords?.findIndex(kw => kw.id === "selection") ?? 0;
+        return get().dispatchAction({
+          type: "play_card",
+          cardInstanceId: selectedCardInstanceId,
+          targetMap: { [`selection_0`]: targetId },
+        });
+      }
+      return get().dispatchAction({
+        type: "play_card",
+        cardInstanceId: selectedCardInstanceId,
+        selectionChoiceIndex: parseInt(targetId) || 0,
         boardPosition: pendingBoardPosition ?? undefined,
       });
     } else if (targetingMode === "hero_power") {

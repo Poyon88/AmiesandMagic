@@ -11,6 +11,7 @@ import BoardCreature from "./BoardCreature";
 import HandCard from "./HandCard";
 import GraveyardOverlay from "./GraveyardOverlay";
 import DivinationOverlay from "./DivinationOverlay";
+import SelectionOverlay from "./SelectionOverlay";
 import TactiqueKeywordOverlay from "./TactiqueKeywordOverlay";
 import EffectLog from "./EffectLog";
 import TurnTimer from "./TurnTimer";
@@ -104,6 +105,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
     validTargets,
     targetingMode,
     divinationCards,
+    selectionCards,
     tactiqueAvailableKeywords,
     tactiqueMaxSelections,
     effectLog,
@@ -357,6 +359,15 @@ export default function GameBoard({ onAction }: GameBoardProps) {
             if (action) broadcast(action);
           }}
           onCancel={clearSelection}
+        />
+      )}
+      {targetingMode === "selection" && selectionCards.length > 0 && (
+        <SelectionOverlay
+          cards={selectionCards}
+          onChoose={(idx) => {
+            const action = selectTarget(String(idx));
+            if (action) broadcast(action);
+          }}
         />
       )}
       {targetingMode === "tactique_keywords" && tactiqueAvailableKeywords.length > 0 && (

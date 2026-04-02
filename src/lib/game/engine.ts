@@ -154,7 +154,8 @@ export function initializeGame(
   firstPlayerIndex: 0 | 1 = 0,
   seed?: number,
   player1Hero?: HeroDefinition | null,
-  player2Hero?: HeroDefinition | null
+  player2Hero?: HeroDefinition | null,
+  factionCardPool?: Card[],
 ): GameState {
   if (seed !== undefined) initRNG(seed);
   const p1Deck = createDeckInstances(player1Cards);
@@ -178,6 +179,7 @@ export function initializeGame(
     winner: null,
     lastAction: null,
     mulliganReady: [false, false],
+    factionCardPool: factionCardPool ?? undefined,
   };
 }
 
@@ -696,6 +698,19 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       }
     }
 
+    // Sélection X: show X random cards from faction pool, player picks one for hand
+    if (hasKw(cardInstance, "selection") && newState.factionCardPool?.length) {
+      const x = Math.max(2, Math.floor(cardInstance.card.mana_cost / 2));
+      const choices = getSelectionCards(newState, x);
+      if (choices.length > 0) {
+        const chosenIdx = Math.min(action.selectionChoiceIndex ?? 0, choices.length - 1);
+        if (player.hand.length < MAX_HAND_SIZE) {
+          const chosen = createCardInstance(choices[chosenIdx]);
+          player.hand.push(chosen);
+        }
+      }
+    }
+
     // Bénédiction: soigne complètement une unité ciblée
     if (hasKw(cardInstance, "benediction") && action.targetInstanceId) {
       const healTarget = player.board.find(c => c.instanceId === action.targetInstanceId);
@@ -1178,6 +1193,20 @@ function resolveSpellKeywords(
               ctx.caster.graveyard.splice(gravIdx, 1);
               const refreshed = createCardInstance(target.card);
               ctx.caster.hand.push(refreshed);
+            }
+          }
+        }
+        break;
+      }
+      case "selection": {
+        const x = kw.amount ?? 2;
+        if (ctx.state.factionCardPool?.length) {
+          const choices = getSelectionCards(ctx.state, x);
+          if (choices.length > 0) {
+            const chosenIdx = Math.min(ctx.targetMap["selection_0"] ? parseInt(ctx.targetMap["selection_0"]) : 0, choices.length - 1);
+            if (ctx.caster.hand.length < MAX_HAND_SIZE) {
+              const chosen = createCardInstance(choices[chosenIdx]);
+              ctx.caster.hand.push(chosen);
             }
           }
         }
@@ -2233,6 +2262,22 @@ export function getGraveyardTargets(state: GameState, card: Card): string[] {
 
 export function creatureNeedsDivination(card: Card): boolean {
   return card.card_type === "creature" && card.keywords.includes("divination" as Keyword);
+}
+
+export function creatureNeedsSelection(card: Card): boolean {
+  return card.card_type === "creature" && card.keywords.includes("selection" as Keyword);
+}
+
+export function getSelectionCards(state: GameState, x: number): Card[] {
+  const pool = state.factionCardPool;
+  if (!pool || pool.length === 0) return [];
+  const shuffled = [...pool];
+  // Fisher-Yates shuffle with seeded RNG
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled.slice(0, Math.min(x, shuffled.length));
 }
 
 export function getSpellTargets(state: GameState, card: Card, slotType?: SpellTargetType): string[] {

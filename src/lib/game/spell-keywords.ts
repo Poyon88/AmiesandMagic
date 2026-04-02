@@ -117,6 +117,13 @@ export const SPELL_KEYWORDS: Record<SpellKeywordId, SpellKeywordDef> = {
     needsTarget: true,
     targetType: "friendly_graveyard_to_board",
   },
+  selection: {
+    label: "Sélection X",
+    symbol: "🎴",
+    desc: "Choisissez une carte parmi X aléatoires de votre collection à ajouter en main",
+    params: ["amount"],
+    needsTarget: false,
+  },
 };
 
 export const ALL_SPELL_KEYWORDS: SpellKeywordId[] = Object.keys(SPELL_KEYWORDS) as SpellKeywordId[];
