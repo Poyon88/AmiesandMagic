@@ -663,7 +663,8 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
 
     // Profanation X: exile X cartes du cimetière, +1/+1 par carte
     if (hasKw(cardInstance, "profanation")) {
-      const x = Math.max(1, Math.floor(cardInstance.card.mana_cost / 2));
+      const profXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
+      const x = profXVals["profanation"] || Math.max(1, Math.floor(cardInstance.card.mana_cost / 2));
       const toExile = Math.min(x, player.graveyard.length);
       for (let i = 0; i < toExile; i++) {
         player.graveyard.pop(); // exile (remove from game)
