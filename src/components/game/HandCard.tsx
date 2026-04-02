@@ -99,7 +99,7 @@ export default function HandCard({
           cursor: isDragging ? "grabbing" : canPlay ? "grab" : "not-allowed",
           opacity: isDragging ? 0.5 : canPlay ? 1 : 0.5,
           transition: "all 0.2s ease",
-          transform: isZoomed ? "translateY(-20px) scale(1.5)" : "none",
+          transform: isZoomed ? "translateY(-40px) scale(2.25)" : "none",
           zIndex: isZoomed ? 50 : 1,
         }}
       >

@@ -84,8 +84,8 @@ export default function BoardCreature({
       initial={{ y: isOwn ? 40 : -40, opacity: 0, scale: 0.5 }}
       animate={
         damageAmount
-          ? { x: [0, -4, 4, -4, 4, 0], y: 0, opacity: 1, scale: isHovered && !isSelected ? 1.8 : 1 }
-          : { x: 0, y: 0, opacity: 1, scale: isHovered && !isSelected ? 1.8 : 1 }
+          ? { x: [0, -4, 4, -4, 4, 0], y: 0, opacity: 1, scale: isHovered && !isSelected ? 2.7 : 1 }
+          : { x: 0, y: 0, opacity: 1, scale: isHovered && !isSelected ? 2.7 : 1 }
       }
       exit={creature.isPoisoned
         ? { opacity: 0, scale: 0.3, rotate: -10, filter: "brightness(0.5) saturate(2) hue-rotate(80deg)", transition: { duration: 0.7, ease: "easeIn" } }
