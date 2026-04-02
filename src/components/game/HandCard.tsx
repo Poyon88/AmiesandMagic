@@ -7,7 +7,7 @@ import type { CardInstance } from "@/lib/game/types";
 import { useGameStore } from "@/lib/store/gameStore";
 import type { DragEvent } from "react";
 import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText } from "@/lib/game/keyword-labels";
-import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS, getSpellKeywordLabel } from "@/lib/game/spell-keywords";
+import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS, getSpellKeywordLabel, getSpellKeywordDesc } from "@/lib/game/spell-keywords";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
 
@@ -280,7 +280,27 @@ export default function HandCard({
             );
           })()}
 
+          {/* Spell keyword details */}
+          {card.spell_keywords && card.spell_keywords.length > 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              {card.spell_keywords.map((spellKw, i) => {
+                const label = getSpellKeywordLabel(spellKw);
+                const desc = getSpellKeywordDesc(spellKw, card);
+                return (
+                <div key={`sk_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
+                  <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={9} /></span>
+                  <div>
+                    <div style={{ fontSize: 7, color: accentColor, fontWeight: 600 }}>{label}</div>
+                    <div style={{ fontSize: 6, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>
+                  </div>
+                </div>
+                );
+              })}
+            </div>
+          )}
+
           {/* Effect text */}
+          {cleanEffectText(card.effect_text, card.spell_keywords) && (
           <div style={{
             padding: 4,
             background: `${accentColor}11`, borderRadius: 3,
@@ -291,6 +311,7 @@ export default function HandCard({
               lineHeight: 1.4, fontFamily: "'Crimson Text', serif",
             }}>{cleanEffectText(card.effect_text, card.spell_keywords)}</p>
           </div>
+          )}
 
           {card.flavor_text && (
             <p style={{
