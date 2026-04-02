@@ -196,6 +196,7 @@ function recalculateAuras(player: PlayerState, opponent: PlayerState) {
     atk += c.loyauteATKBonus;
     atk += c.summonBonusATK;
     if (c.fureurActive) atk += c.fureurATKBonus;
+    if (c.berserkActive) atk += c.berserkATKBonus;
     atk += c.necrophagieATKBonus;
     c.currentAttack = atk;
   }
@@ -204,6 +205,7 @@ function recalculateAuras(player: PlayerState, opponent: PlayerState) {
     atk += c.loyauteATKBonus;
     atk += c.summonBonusATK;
     if (c.fureurActive) atk += c.fureurATKBonus;
+    if (c.berserkActive) atk += c.berserkATKBonus;
     atk += c.necrophagieATKBonus;
     c.currentAttack = atk;
   }
@@ -247,8 +249,7 @@ function recalculateAuras(player: PlayerState, opponent: PlayerState) {
   for (const board of [player.board, opponent.board]) {
     for (const c of board) {
       if (hasKw(c, "berserk")) {
-        const originalHP = c.card.health ?? 1;
-        const shouldBeActive = c.currentHealth < originalHP;
+        const shouldBeActive = c.currentHealth < c.maxHealth;
         if (shouldBeActive && !c.berserkActive) {
           c.berserkActive = true;
           c.berserkATKBonus = c.currentAttack; // double = add current once more
