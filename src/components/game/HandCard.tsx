@@ -7,7 +7,7 @@ import type { CardInstance } from "@/lib/game/types";
 import { useGameStore } from "@/lib/store/gameStore";
 import type { DragEvent } from "react";
 import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText } from "@/lib/game/keyword-labels";
-import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS } from "@/lib/game/spell-keywords";
+import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS, getSpellKeywordLabel } from "@/lib/game/spell-keywords";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
 
@@ -182,10 +182,7 @@ export default function HandCard({
             <div style={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
               {card.spell_keywords.map((spellKw, i) => {
                 const def = SPELL_KEYWORDS[spellKw.id];
-                let displayTitle = def.label;
-                if (def.params.includes("attack")) displayTitle = displayTitle.replace(/X/, String(spellKw.attack ?? 0));
-                else if (def.params.includes("amount")) displayTitle = displayTitle.replace(/X/, String(spellKw.amount ?? 1));
-                if (def.params.includes("health")) displayTitle = displayTitle.replace(/Y/, String(spellKw.health ?? 0));
+                const displayTitle = getSpellKeywordLabel(spellKw);
                 const usesAtkHp = def.params.includes("attack") && def.params.includes("health");
                 const usesAmount = def.params.includes("amount");
                 const hasValue = usesAmount || usesAtkHp;

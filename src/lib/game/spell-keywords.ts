@@ -1,4 +1,4 @@
-import type { SpellKeywordId, SpellTargetType } from "./types";
+import type { SpellKeywordId, SpellKeywordInstance, SpellTargetType, Card, ConvocationTokenDef } from "./types";
 
 export interface SpellKeywordDef {
   label: string;
@@ -135,6 +135,42 @@ export const SPELL_KEYWORD_LABELS: Record<SpellKeywordId, string> = Object.fromE
 export const SPELL_KEYWORD_SYMBOLS: Record<SpellKeywordId, string> = Object.fromEntries(
   Object.entries(SPELL_KEYWORDS).map(([id, def]) => [id, def.symbol])
 ) as Record<SpellKeywordId, string>;
+
+/** Get the display description for a spell keyword, with token details for invocation_multiple */
+export function getSpellKeywordDesc(kw: SpellKeywordInstance, card?: Card | null): string {
+  const def = SPELL_KEYWORDS[kw.id];
+  let desc = def.desc;
+
+  // Replace X/Y from params
+  if (def.params.includes("attack")) desc = desc.replace(/X/g, String(kw.attack ?? 0));
+  else if (def.params.includes("amount")) desc = desc.replace(/X/g, String(kw.amount ?? 1));
+  if (def.params.includes("health")) desc = desc.replace(/Y/g, String(kw.health ?? 0));
+
+  // Override for invocation_multiple with actual token details
+  if (kw.id === "invocation_multiple" && card?.convocation_tokens?.length) {
+    const parts = card.convocation_tokens.map((t: ConvocationTokenDef) =>
+      `${t.race || "Token"} ${t.attack}/${t.health}`
+    );
+    desc = `Crée ${parts.join(", ")}`;
+  }
+
+  // Override for invocation with race
+  if (kw.id === "invocation" && kw.race) {
+    desc = `Invoque un ${kw.race} ${kw.attack ?? 1}/${kw.health ?? 1}`;
+  }
+
+  return desc;
+}
+
+/** Get the display label for a spell keyword */
+export function getSpellKeywordLabel(kw: SpellKeywordInstance): string {
+  const def = SPELL_KEYWORDS[kw.id];
+  let label = def.label;
+  if (def.params.includes("attack")) label = label.replace(/X/, String(kw.attack ?? 0));
+  else if (def.params.includes("amount")) label = label.replace(/X/, String(kw.amount ?? 1));
+  if (def.params.includes("health")) label = label.replace(/Y/, String(kw.health ?? 0));
+  return label;
+}
 
 export function spellKeywordNeedsTarget(id: SpellKeywordId): boolean {
   return SPELL_KEYWORDS[id].needsTarget;

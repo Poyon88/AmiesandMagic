@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import Image from "next/image";
 import type { Card } from "@/lib/game/types";
 import { KEYWORD_SYMBOLS as keywordSymbols, KEYWORD_LABELS as keywordLabels, toRoman, parseXValuesFromEffectText, cleanEffectText } from "@/lib/game/keyword-labels";
-import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS } from "@/lib/game/spell-keywords";
+import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS, getSpellKeywordDesc, getSpellKeywordLabel } from "@/lib/game/spell-keywords";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
 
@@ -167,10 +167,7 @@ export default function GameCard({
           <div style={{ display: "flex", gap: 3 * s, flexWrap: "wrap" }}>
             {card.spell_keywords.map((spellKw, i) => {
               const def = SPELL_KEYWORDS[spellKw.id];
-              let displayTitle = def.label;
-              if (def.params.includes("attack")) displayTitle = displayTitle.replace(/X/, String(spellKw.attack ?? 0));
-              else if (def.params.includes("amount")) displayTitle = displayTitle.replace(/X/, String(spellKw.amount ?? 1));
-              if (def.params.includes("health")) displayTitle = displayTitle.replace(/Y/, String(spellKw.health ?? 0));
+              const displayTitle = getSpellKeywordLabel(spellKw);
               const usesAtkHp = def.params.includes("attack") && def.params.includes("health");
               const usesAmount = def.params.includes("amount");
               const hasValue = usesAmount || usesAtkHp;
@@ -279,15 +276,8 @@ export default function GameCard({
         {card.spell_keywords && card.spell_keywords.length > 0 && (
           <div style={{ display: "flex", flexDirection: "column", gap: 6 * s }}>
             {card.spell_keywords.map((spellKw, i) => {
-              const def = SPELL_KEYWORDS[spellKw.id];
-              let label = def.label;
-              if (def.params.includes("attack")) label = label.replace(/X/, String(spellKw.attack ?? 0));
-              else if (def.params.includes("amount")) label = label.replace(/X/, String(spellKw.amount ?? 1));
-              if (def.params.includes("health")) label = label.replace(/Y/, String(spellKw.health ?? 0));
-              let desc = def.desc;
-              if (def.params.includes("attack")) desc = desc.replace(/X/g, String(spellKw.attack ?? 0));
-              else if (def.params.includes("amount")) desc = desc.replace(/X/g, String(spellKw.amount ?? 1));
-              if (def.params.includes("health")) desc = desc.replace(/Y/g, String(spellKw.health ?? 0));
+              const label = getSpellKeywordLabel(spellKw);
+              const desc = getSpellKeywordDesc(spellKw, card);
               return (
               <div key={`sk_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
                 <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={18 * s} /></span>

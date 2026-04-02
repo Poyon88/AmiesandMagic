@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { CardInstance } from "@/lib/game/types";
 import { KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText } from "@/lib/game/keyword-labels";
-import { SPELL_KEYWORDS, SPELL_KEYWORD_LABELS } from "@/lib/game/spell-keywords";
+import { SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, getSpellKeywordLabel } from "@/lib/game/spell-keywords";
 import CardArt from "@/components/cards/CardArt";
 
 interface CardPreviewProps {
@@ -114,11 +114,7 @@ export default function CardPreview({ cardInstance, anchorRef, position = "above
         {card.spell_keywords && card.spell_keywords.length > 0 && (
           <div className="px-3 pb-1 flex gap-1 flex-wrap">
             {card.spell_keywords.map((spellKw, i) => {
-              const def = SPELL_KEYWORDS[spellKw.id];
-              let displayLabel = def.label;
-              if (def.params.includes("attack")) displayLabel = displayLabel.replace(/X/, String(spellKw.attack ?? 0));
-              else if (def.params.includes("amount")) displayLabel = displayLabel.replace(/X/, String(spellKw.amount ?? 1));
-              if (def.params.includes("health")) displayLabel = displayLabel.replace(/Y/, String(spellKw.health ?? 0));
+              const displayLabel = getSpellKeywordLabel(spellKw);
               return (
               <span key={`sk_${i}`} className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 font-medium">
                 {displayLabel}

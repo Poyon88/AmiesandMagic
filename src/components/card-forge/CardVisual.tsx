@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { KEYWORDS, FACTIONS, RARITY_MAP } from '@/lib/card-engine/constants';
 import KeywordIcon from '@/components/shared/KeywordIcon';
-import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS } from '@/lib/game/spell-keywords';
+import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS, getSpellKeywordDesc, getSpellKeywordLabel } from '@/lib/game/spell-keywords';
 import type { SpellKeywordInstance } from '@/lib/game/types';
 
 // ─── KEYWORD → SYMBOL MAP ───────────────────────────────────────────────────
@@ -304,11 +304,9 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
           <div style={{ display: "flex", gap: 4 * s, flexWrap: "wrap" }}>
             {card!.spellKeywords.map((spellKw, i) => {
               const def = SPELL_KEYWORDS[spellKw.id];
-              let label = def.label;
-              let desc = def.desc;
-              if (def.params.includes("attack")) { label = label.replace(/X/, String(spellKw.attack ?? 0)); desc = desc.replace(/X/g, String(spellKw.attack ?? 0)); }
-              else if (def.params.includes("amount")) { label = label.replace(/X/, String(spellKw.amount ?? 1)); desc = desc.replace(/X/g, String(spellKw.amount ?? 1)); }
-              if (def.params.includes("health")) { label = label.replace(/Y/, String(spellKw.health ?? 0)); desc = desc.replace(/Y/g, String(spellKw.health ?? 0)); }
+              const fakeCard = { convocation_tokens: card!.convocationTokens?.map(t => ({ race: t.race, attack: t.attack, health: t.health })) } as import("@/lib/game/types").Card;
+              const label = getSpellKeywordLabel(spellKw);
+              const desc = getSpellKeywordDesc(spellKw, fakeCard);
               const usesAtkHp = def.params.includes("attack") && def.params.includes("health");
               const usesAmount = def.params.includes("amount");
               const hasValue = usesAmount || usesAtkHp;
@@ -466,11 +464,9 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
           <div style={{ display: "flex", flexDirection: "column", gap: 6 * s }}>
             {card!.spellKeywords.map((spellKw, i) => {
               const def = SPELL_KEYWORDS[spellKw.id];
-              let label = def.label;
-              let desc = def.desc;
-              if (def.params.includes("attack")) { label = label.replace(/X/, String(spellKw.attack ?? 0)); desc = desc.replace(/X/g, String(spellKw.attack ?? 0)); }
-              else if (def.params.includes("amount")) { label = label.replace(/X/, String(spellKw.amount ?? 1)); desc = desc.replace(/X/g, String(spellKw.amount ?? 1)); }
-              if (def.params.includes("health")) { label = label.replace(/Y/, String(spellKw.health ?? 0)); desc = desc.replace(/Y/g, String(spellKw.health ?? 0)); }
+              const fakeCard = { convocation_tokens: card!.convocationTokens?.map(t => ({ race: t.race, attack: t.attack, health: t.health })) } as import("@/lib/game/types").Card;
+              const label = getSpellKeywordLabel(spellKw);
+              const desc = getSpellKeywordDesc(spellKw, fakeCard);
               return (
                 <div key={`sk_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
                   <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={18 * s} /></span>
