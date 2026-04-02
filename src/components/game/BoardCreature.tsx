@@ -168,6 +168,16 @@ export default function BoardCreature({
         }}>🔰</div>
       )}
 
+      {/* Paralyzed overlay */}
+      {creature.isParalyzed && (
+        <div style={{
+          position: "absolute", inset: 0, zIndex: 1,
+          background: "rgba(139, 92, 246, 0.15)",
+          pointerEvents: "none",
+          animation: "paralyze-pulse 2s ease-in-out infinite",
+        }} />
+      )}
+
       {/* Paralyzed indicator */}
       {creature.isParalyzed && (
         <div style={{
