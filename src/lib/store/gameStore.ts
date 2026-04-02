@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { GameState, GameAction, Card, CardInstance, DamageEvent, HeroDefinition, SpellTargetSlot, SpellTargetType, TokenTemplate } from "@/lib/game/types";
+import { parseXValuesFromEffectText } from "@/lib/game/keyword-labels";
 import {
   initializeGame,
   applyAction,
@@ -463,7 +464,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }
 
     if (card && creatureNeedsSelection(card.card)) {
-      const x = Math.max(2, Math.floor(card.card.mana_cost / 2));
+      const selXVals = parseXValuesFromEffectText(card.card.effect_text);
+      const x = selXVals["selection"] || Math.max(2, Math.floor(card.card.mana_cost / 2));
       const choices = getSelectionCards(gameState, x);
       if (choices.length > 0) {
         set({
@@ -543,7 +545,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     // Check if creature needs selection
     if (card.card.card_type === "creature" && creatureNeedsSelection(card.card)) {
-      const x = Math.max(2, Math.floor(card.card.mana_cost / 2));
+      const selXVals = parseXValuesFromEffectText(card.card.effect_text);
+      const x = selXVals["selection"] || Math.max(2, Math.floor(card.card.mana_cost / 2));
       const choices = getSelectionCards(gameState, x);
       if (choices.length > 0) {
         set({

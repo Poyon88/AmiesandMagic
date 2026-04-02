@@ -714,7 +714,8 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
 
     // Sélection X: show X random cards from faction pool, player picks one for hand
     if (hasKw(cardInstance, "selection") && newState.factionCardPool?.length) {
-      const x = Math.max(2, Math.floor(cardInstance.card.mana_cost / 2));
+      const selXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
+      const x = selXVals["selection"] || Math.max(2, Math.floor(cardInstance.card.mana_cost / 2));
       const choices = getSelectionCards(newState, x);
       if (choices.length > 0) {
         const chosenIdx = Math.min(action.selectionChoiceIndex ?? 0, choices.length - 1);
