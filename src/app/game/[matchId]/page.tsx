@@ -151,10 +151,16 @@ export default function GamePage() {
             .filter(Boolean) as string[]
         );
         deckFactions.add("Mercenaires");
-        const { data: factionCards } = await supabase
-          .from("cards")
-          .select("*")
-          .in("faction", Array.from(deckFactions));
+        const [factionCardsRes, manaSparkRes] = await Promise.all([
+          supabase.from("cards").select("*").in("faction", Array.from(deckFactions)),
+          supabase.from("cards").select("*").eq("name", "Mana Spark").eq("card_type", "spell").limit(1),
+        ]);
+        const factionCards = factionCardsRes.data ?? [];
+        // Ensure Mana Spark is in the pool (may not be if Humains not in deck factions)
+        const manaSpark = manaSparkRes.data?.[0];
+        if (manaSpark && !factionCards.find((c: { id: number }) => c.id === manaSpark.id)) {
+          factionCards.push(manaSpark);
+        }
 
         // Store match data for later initialization
         matchDataRef.current = { match, p1Cards, p2Cards, p1Hero, p2Hero, factionCards: (factionCards ?? []) as unknown as Card[] };

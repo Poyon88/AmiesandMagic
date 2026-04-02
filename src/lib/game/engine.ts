@@ -2116,7 +2116,9 @@ export function applyMulligan(state: GameState, action: MulliganAction): GameSta
     newState.players[1].deck = shuffleArray(newState.players[1].deck);
 
     const secondPlayerIndex = newState.currentPlayerIndex === 0 ? 1 : 0;
-    const manaSpark: Card = {
+    // Use Mana Spark from factionCardPool if available, otherwise fallback
+    const poolManaSpark = newState.factionCardPool?.find(c => c.name === "Mana Spark" && c.card_type === "spell");
+    const manaSpark: Card = poolManaSpark ?? {
       id: -1, name: "Mana Spark", mana_cost: 0, card_type: "spell",
       attack: null, health: null, effect_text: "Gain 1 mana this turn",
       keywords: [],
