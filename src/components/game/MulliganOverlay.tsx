@@ -164,9 +164,9 @@ function MulliganCard({
             {card.spell_keywords.map((spellKw, i) => {
               const def = SPELL_KEYWORDS[spellKw.id];
               let displayTitle = def.label;
-              if (spellKw.attack != null) displayTitle = displayTitle.replace(/X/, String(spellKw.attack));
-              else if (spellKw.amount != null) displayTitle = displayTitle.replace(/X/, String(spellKw.amount));
-              if (spellKw.health != null) displayTitle = displayTitle.replace(/Y/, String(spellKw.health));
+              if (def.params.includes("attack")) displayTitle = displayTitle.replace(/X/, String(spellKw.attack ?? 0));
+              else if (def.params.includes("amount")) displayTitle = displayTitle.replace(/X/, String(spellKw.amount ?? 1));
+              if (def.params.includes("health")) displayTitle = displayTitle.replace(/Y/, String(spellKw.health ?? 0));
               const usesAtkHp = def.params.includes("attack") && def.params.includes("health");
               const usesAmount = def.params.includes("amount");
               const hasValue = usesAmount || usesAtkHp;

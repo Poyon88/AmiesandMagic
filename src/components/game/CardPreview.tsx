@@ -116,9 +116,9 @@ export default function CardPreview({ cardInstance, anchorRef, position = "above
             {card.spell_keywords.map((spellKw, i) => {
               const def = SPELL_KEYWORDS[spellKw.id];
               let displayLabel = def.label;
-              if (spellKw.attack != null) displayLabel = displayLabel.replace(/X/, String(spellKw.attack));
-              else if (spellKw.amount != null) displayLabel = displayLabel.replace(/X/, String(spellKw.amount));
-              if (spellKw.health != null) displayLabel = displayLabel.replace(/Y/, String(spellKw.health));
+              if (def.params.includes("attack")) displayLabel = displayLabel.replace(/X/, String(spellKw.attack ?? 0));
+              else if (def.params.includes("amount")) displayLabel = displayLabel.replace(/X/, String(spellKw.amount ?? 1));
+              if (def.params.includes("health")) displayLabel = displayLabel.replace(/Y/, String(spellKw.health ?? 0));
               return (
               <span key={`sk_${i}`} className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 font-medium">
                 {displayLabel}

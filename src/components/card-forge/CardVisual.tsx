@@ -305,9 +305,9 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
               const def = SPELL_KEYWORDS[spellKw.id];
               let label = def.label;
               let desc = def.desc;
-              if (spellKw.attack != null) { label = label.replace(/X/, String(spellKw.attack)); desc = desc.replace(/X/g, String(spellKw.attack)); }
-              else if (spellKw.amount != null) { label = label.replace(/X/, String(spellKw.amount)); desc = desc.replace(/X/g, String(spellKw.amount)); }
-              if (spellKw.health != null) { label = label.replace(/Y/, String(spellKw.health)); desc = desc.replace(/Y/g, String(spellKw.health)); }
+              if (def.params.includes("attack")) { label = label.replace(/X/, String(spellKw.attack ?? 0)); desc = desc.replace(/X/g, String(spellKw.attack ?? 0)); }
+              else if (def.params.includes("amount")) { label = label.replace(/X/, String(spellKw.amount ?? 1)); desc = desc.replace(/X/g, String(spellKw.amount ?? 1)); }
+              if (def.params.includes("health")) { label = label.replace(/Y/, String(spellKw.health ?? 0)); desc = desc.replace(/Y/g, String(spellKw.health ?? 0)); }
               const usesAtkHp = def.params.includes("attack") && def.params.includes("health");
               const usesAmount = def.params.includes("amount");
               const hasValue = usesAmount || usesAtkHp;
@@ -448,9 +448,9 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
               const def = SPELL_KEYWORDS[spellKw.id];
               let label = def.label;
               let desc = def.desc;
-              if (spellKw.attack != null) { label = label.replace(/X/, String(spellKw.attack)); desc = desc.replace(/X/g, String(spellKw.attack)); }
-              else if (spellKw.amount != null) { label = label.replace(/X/, String(spellKw.amount)); desc = desc.replace(/X/g, String(spellKw.amount)); }
-              if (spellKw.health != null) { label = label.replace(/Y/, String(spellKw.health)); desc = desc.replace(/Y/g, String(spellKw.health)); }
+              if (def.params.includes("attack")) { label = label.replace(/X/, String(spellKw.attack ?? 0)); desc = desc.replace(/X/g, String(spellKw.attack ?? 0)); }
+              else if (def.params.includes("amount")) { label = label.replace(/X/, String(spellKw.amount ?? 1)); desc = desc.replace(/X/g, String(spellKw.amount ?? 1)); }
+              if (def.params.includes("health")) { label = label.replace(/Y/, String(spellKw.health ?? 0)); desc = desc.replace(/Y/g, String(spellKw.health ?? 0)); }
               return (
                 <div key={`sk_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
                   <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={18 * s} /></span>
