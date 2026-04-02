@@ -460,6 +460,22 @@ export const useGameStore = create<GameStore>((set, get) => ({
       }
     }
 
+    if (card && creatureNeedsSelection(card.card)) {
+      const x = Math.max(2, Math.floor(card.card.mana_cost / 2));
+      const choices = getSelectionCards(gameState, x);
+      if (choices.length > 0) {
+        set({
+          selectedCardInstanceId: instanceId,
+          selectedAttackerInstanceId: null,
+          validTargets: [],
+          targetingMode: "selection",
+          selectionCards: choices,
+          pendingBoardPosition: boardPosition ?? null,
+        });
+        return null;
+      }
+    }
+
     return get().dispatchAction({
       type: "play_card",
       cardInstanceId: instanceId,

@@ -2268,13 +2268,24 @@ export function creatureNeedsSelection(card: Card): boolean {
   return card.card_type === "creature" && card.keywords.includes("selection" as Keyword);
 }
 
+/** Get X deterministic random cards from the faction pool.
+ *  Uses a simple hash based on turnNumber + currentPlayerIndex + pool size
+ *  to ensure both clients generate the same selection without advancing the seeded RNG.
+ *  The engine version (called during action resolution) uses the seeded RNG instead.
+ */
 export function getSelectionCards(state: GameState, x: number): Card[] {
   const pool = state.factionCardPool;
   if (!pool || pool.length === 0) return [];
+  // Deterministic seed based on game state
+  const seed = state.turnNumber * 1000 + state.currentPlayerIndex * 100 + pool.length;
+  let hash = seed;
+  const pseudoRng = () => {
+    hash = (hash * 16807 + 12345) & 0x7fffffff;
+    return (hash & 0xfffffff) / 0x10000000;
+  };
   const shuffled = [...pool];
-  // Fisher-Yates shuffle with seeded RNG
   for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1));
+    const j = Math.floor(pseudoRng() * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
   return shuffled.slice(0, Math.min(x, shuffled.length));
