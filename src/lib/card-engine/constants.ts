@@ -62,7 +62,7 @@ export const KEYWORDS: Record<string, { cost: number; costPerX: number; se: numb
   "Permutation":        { cost: 16, costPerX: 0, se: 3.5, minTier: 2, scalable: false, zone: "Terrain", desc: "Invocation : échange les PV actuels de deux unités ciblées (une alliée et une ennemie)." },
   "Persécution X":      { cost:  8, costPerX: 5, se: 3.0, minTier: 2, scalable: true,  zone: "Terrain", desc: "Chaque fois que cette unité attaque, inflige X dégâts au héros adverse." },
   "Ombre du passé":     { cost: 11, costPerX: 0, se: 2.5, minTier: 2, scalable: false, zone: "Cimetière", desc: "Invocation : gagne +1 ATK et +1 PV par unité de même race dans votre cimetière." },
-  "Profanation X":      { cost:  7, costPerX: 3, se: 2.5, minTier: 2, scalable: true,  zone: "Cimetière", desc: "Invocation : exilez jusqu'à X cartes de votre cimetière ; gagne +1 ATK et +1 PV par carte exilée." },
+  "Profanation X":      { cost:  7, costPerX: 3, se: 2.5, minTier: 2, scalable: true,  zone: "Cimetière", desc: "Invocation : exile les X dernières cartes de votre cimetière pour accorder jusqu'à +X/+X à l'unité." },
   "Prescience X":       { cost:  9, costPerX: 4, se: 3.0, minTier: 2, scalable: true,  zone: "Main", desc: "Invocation : piochez des cartes jusqu'à avoir X cartes en main." },
   "Suprématie":         { cost: 13, costPerX: 0, se: 3.0, minTier: 2, scalable: false, zone: "Main", desc: "Invocation : gagne +1 ATK et +1 PV par carte dans votre main au moment de l'invocation." },
   "Divination":         { cost: 11, costPerX: 0, se: 2.5, minTier: 2, scalable: false, zone: "Mixte", desc: "Invocation : révèle les 3 premières cartes de votre pioche ; placez-en une sur le dessus et les 2 autres en dessous dans l'ordre choisi." },
