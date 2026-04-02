@@ -819,6 +819,12 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
 
     recalculateAuras(player, opponent);
 
+    // Clean creatures killed by on-summon effects (vampirisme, corruption, etc.)
+    const summonDead = cleanDeadCreatures(player);
+    const summonDeadOpp = cleanDeadCreatures(opponent);
+    processDeathTriggers(summonDead, player, opponent);
+    processDeathTriggers(summonDeadOpp, opponent, player);
+
   } else if (card.card_type === "spell") {
     // Contresort: check if opponent has an active counter-spell
     const counterUnit = opponent.board.find(c => c.contresortActive);
