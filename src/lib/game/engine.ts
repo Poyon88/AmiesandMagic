@@ -96,6 +96,7 @@ function createCardInstance(card: Card): CardInstance {
     targetsAttackedThisTurn: [],
     esquiveUsedThisTurn: false,
     summonBonusATK: 0,
+    auraHealthBonus: 0,
     ombreRevealed: false,
     corruptionStolenIds: [],
     contresortActive: false,
@@ -221,13 +222,23 @@ function recalculateAuras(player: PlayerState, opponent: PlayerState) {
 
   // Commandement: alliés de même faction gagnent +1/+1
   for (const board of [player.board, opponent.board]) {
-    for (const c of board) {
-      if (hasKw(c, "commandement") && c.card.faction) {
-        for (const ally of board) {
-          if (ally !== c && ally.card.faction === c.card.faction) {
-            ally.currentAttack += 1;
-          }
+    // Calculate new aura health bonus for each creature
+    for (const ally of board) {
+      let newAuraHP = 0;
+      for (const c of board) {
+        if (c !== ally && hasKw(c, "commandement") && c.card.faction && ally.card.faction === c.card.faction) {
+          ally.currentAttack += 1;
+          newAuraHP += 1;
         }
+      }
+      // Adjust HP based on change in aura bonus
+      const oldAuraHP = ally.auraHealthBonus;
+      if (newAuraHP !== oldAuraHP) {
+        const diff = newAuraHP - oldAuraHP;
+        ally.maxHealth += diff;
+        ally.currentHealth += diff;
+        if (ally.currentHealth < 1 && newAuraHP < oldAuraHP) ally.currentHealth = 1; // don't kill via aura removal
+        ally.auraHealthBonus = newAuraHP;
       }
     }
   }

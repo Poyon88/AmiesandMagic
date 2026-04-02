@@ -267,6 +267,8 @@ export interface CardInstance {
   loyautePVBonus: number;
   // Generic permanent on-summon ATK bonus (profanation, sacrifice, suprématie, ombre_du_passe, vampirisme)
   summonBonusATK: number;
+  // Aura health bonus (commandement) — tracked to adjust HP when aura changes
+  auraHealthBonus: number;
   // Nécrophagie: permanent buff tracker
   necrophagieATKBonus: number;
   necrophagiePVBonus: number;
