@@ -456,6 +456,7 @@ export default function CardForge() {
     "Cycle éternel": "cycle_eternel", "Martyr": "martyr",
     "Instinct de meute X": "instinct_de_meute", "Totem": "totem",
     "Appel du clan X": "appel_du_clan", "Rassemblement X": "rassemblement",
+    "Sélection X": "selection",
   };
 
   const [saving, setSaving] = useState(false);
