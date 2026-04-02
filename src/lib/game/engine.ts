@@ -95,6 +95,7 @@ function createCardInstance(card: Card): CardInstance {
     berserkATKBonus: 0,
     targetsAttackedThisTurn: [],
     esquiveUsedThisTurn: false,
+    summonBonusATK: 0,
     ombreRevealed: false,
     corruptionStolenIds: [],
     contresortActive: false,
@@ -192,6 +193,7 @@ function recalculateAuras(player: PlayerState, opponent: PlayerState) {
   for (const c of player.board) {
     let atk = c.card.attack ?? 0;
     atk += c.loyauteATKBonus;
+    atk += c.summonBonusATK;
     if (c.fureurActive) atk += c.fureurATKBonus;
     atk += c.necrophagieATKBonus;
     c.currentAttack = atk;
@@ -199,6 +201,7 @@ function recalculateAuras(player: PlayerState, opponent: PlayerState) {
   for (const c of opponent.board) {
     let atk = c.card.attack ?? 0;
     atk += c.loyauteATKBonus;
+    atk += c.summonBonusATK;
     if (c.fureurActive) atk += c.fureurATKBonus;
     atk += c.necrophagieATKBonus;
     c.currentAttack = atk;
@@ -453,6 +456,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     if (hasKw(cardInstance, "sacrifice") && action.targetInstanceId) {
       const sacrificed = player.board.find(c => c.instanceId === action.targetInstanceId && c !== cardInstance);
       if (sacrificed) {
+        cardInstance.summonBonusATK += sacrificed.currentAttack;
         cardInstance.currentAttack += sacrificed.currentAttack;
         cardInstance.currentHealth += sacrificed.currentHealth;
         cardInstance.maxHealth += sacrificed.currentHealth;
@@ -630,6 +634,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // Suprématie: +1 ATK et +1 PV par carte en main
     if (hasKw(cardInstance, "suprematie")) {
       const handSize = player.hand.length;
+      cardInstance.summonBonusATK += handSize;
       cardInstance.currentAttack += handSize;
       cardInstance.currentHealth += handSize;
       cardInstance.maxHealth += handSize;
@@ -638,6 +643,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // Ombre du passé: +1 ATK et +1 PV par unité de même race au cimetière
     if (hasKw(cardInstance, "ombre_du_passe") && cardInstance.card.race) {
       const graveCount = player.graveyard.filter(c => c.card.race === cardInstance.card.race && c.card.card_type === "creature").length;
+      cardInstance.summonBonusATK += graveCount;
       cardInstance.currentAttack += graveCount;
       cardInstance.currentHealth += graveCount;
       cardInstance.maxHealth += graveCount;
@@ -650,6 +656,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       for (let i = 0; i < toExile; i++) {
         player.graveyard.pop(); // exile (remove from game)
       }
+      cardInstance.summonBonusATK += toExile;
       cardInstance.currentAttack += toExile;
       cardInstance.currentHealth += toExile;
       cardInstance.maxHealth += toExile;
@@ -757,6 +764,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     if (cardInstance.card.clan) {
       for (const ally of player.board) {
         if (ally !== cardInstance && hasKw(ally, "fierte_du_clan") && ally.card.clan === cardInstance.card.clan) {
+          cardInstance.summonBonusATK += 1;
           cardInstance.currentAttack += 1;
           cardInstance.currentHealth += 1;
           cardInstance.maxHealth += 1;

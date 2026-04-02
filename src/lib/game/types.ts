@@ -265,6 +265,8 @@ export interface CardInstance {
   // Loyauté: permanent on-summon bonus
   loyauteATKBonus: number;
   loyautePVBonus: number;
+  // Generic permanent on-summon ATK bonus (profanation, sacrifice, suprématie, ombre_du_passe, vampirisme)
+  summonBonusATK: number;
   // Nécrophagie: permanent buff tracker
   necrophagieATKBonus: number;
   necrophagiePVBonus: number;
