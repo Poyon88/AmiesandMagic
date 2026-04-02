@@ -1742,7 +1742,7 @@ export function attack(state: GameState, action: AttackAction): GameState {
     }
 
     // Drain de vie (defender): heal opponent hero for counter-damage dealt
-    if (hasKw(target, "drain_de_vie") && target.currentHealth > 0) {
+    if (hasKw(target, "drain_de_vie")) {
       opponent.hero.hp = Math.min(opponent.hero.maxHp, opponent.hero.hp + target.currentAttack);
     }
 
