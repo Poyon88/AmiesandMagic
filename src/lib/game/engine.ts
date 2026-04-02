@@ -2298,9 +2298,18 @@ export function creatureNeedsSelection(card: Card): boolean {
 export function getSelectionCards(state: GameState, x: number): Card[] {
   const pool = state.factionCardPool;
   if (!pool || pool.length === 0) return [];
-  // Deterministic seed based on game state — varies each time within a turn
-  // because hand/board/deck/graveyard sizes change after each card played
+
+  // Filter pool to only factions present in the current player's deck + Mercenaires
   const player = state.players[state.currentPlayerIndex];
+  const playerFactions = new Set<string>();
+  playerFactions.add("Mercenaires");
+  for (const c of [...player.hand, ...player.board, ...player.deck, ...player.graveyard]) {
+    if (c.card.faction && c.card.faction !== "Mercenaires") playerFactions.add(c.card.faction);
+  }
+  const filtered = pool.filter(c => c.faction && playerFactions.has(c.faction));
+  if (filtered.length === 0) return [];
+
+  // Deterministic seed based on game state — varies each time within a turn
   const entropy = player.hand.length * 7 + player.board.length * 13 + player.deck.length * 3 + player.graveyard.length * 17 + player.mana * 11;
   const seed = state.turnNumber * 1000 + state.currentPlayerIndex * 100 + entropy;
   let hash = seed;
@@ -2308,7 +2317,7 @@ export function getSelectionCards(state: GameState, x: number): Card[] {
     hash = (hash * 16807 + 12345) & 0x7fffffff;
     return (hash & 0xfffffff) / 0x10000000;
   };
-  const shuffled = [...pool];
+  const shuffled = [...filtered];
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(pseudoRng() * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
