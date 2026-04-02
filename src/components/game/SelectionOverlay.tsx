@@ -6,7 +6,7 @@ import GameCard from "@/components/cards/GameCard";
 
 interface SelectionOverlayProps {
   cards: Card[];
-  onChoose: (index: number) => void;
+  onChoose: (cardId: number) => void;
 }
 
 export default function SelectionOverlay({ cards, onChoose }: SelectionOverlayProps) {
@@ -32,7 +32,7 @@ export default function SelectionOverlay({ cards, onChoose }: SelectionOverlayPr
           {cards.map((card, i) => (
             <div
               key={`${card.id}-${i}`}
-              onClick={() => onChoose(i)}
+              onClick={() => onChoose(card.id)}
               onMouseEnter={() => setHoveredIndex(i)}
               onMouseLeave={() => setHoveredIndex(null)}
               style={{

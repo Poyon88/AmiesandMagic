@@ -364,8 +364,8 @@ export default function GameBoard({ onAction }: GameBoardProps) {
       {targetingMode === "selection" && selectionCards.length > 0 && (
         <SelectionOverlay
           cards={selectionCards}
-          onChoose={(idx) => {
-            const action = selectTarget(String(idx));
+          onChoose={(cardId) => {
+            const action = selectTarget(String(cardId));
             if (action) broadcast(action);
           }}
         />

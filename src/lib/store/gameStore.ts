@@ -776,19 +776,19 @@ export const useGameStore = create<GameStore>((set, get) => ({
     } else if (targetingMode === "selection" && selectedCardInstanceId) {
       const { pendingBoardPosition, gameState: gs } = get();
       const cardInHand = gs?.players[gs.currentPlayerIndex].hand.find(c => c.instanceId === selectedCardInstanceId);
+      const cardId = parseInt(targetId) || 0;
       if (cardInHand?.card.card_type === "spell") {
-        // Spell selection: pass choice index via targetMap
-        const kwIdx = cardInHand.card.spell_keywords?.findIndex(kw => kw.id === "selection") ?? 0;
+        // Spell selection: pass card ID via targetMap
         return get().dispatchAction({
           type: "play_card",
           cardInstanceId: selectedCardInstanceId,
-          targetMap: { [`selection_0`]: targetId },
+          targetMap: { selection_0: String(cardId) },
         });
       }
       return get().dispatchAction({
         type: "play_card",
         cardInstanceId: selectedCardInstanceId,
-        selectionChoiceIndex: parseInt(targetId) || 0,
+        selectionCardId: cardId,
         boardPosition: pendingBoardPosition ?? undefined,
       });
     } else if (targetingMode === "hero_power") {

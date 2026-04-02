@@ -724,17 +724,12 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       }
     }
 
-    // Sélection X: show X random cards from faction pool, player picks one for hand
-    if (hasKw(cardInstance, "selection") && newState.factionCardPool?.length) {
-      const selXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
-      const x = selXVals["selection"] || Math.max(2, Math.floor(cardInstance.card.mana_cost / 2));
-      const choices = getSelectionCards(newState, x);
-      if (choices.length > 0) {
-        const chosenIdx = Math.min(action.selectionChoiceIndex ?? 0, choices.length - 1);
-        if (player.hand.length < MAX_HAND_SIZE) {
-          const chosen = createCardInstance(choices[chosenIdx]);
-          player.hand.push(chosen);
-        }
+    // Sélection X: player picks a card from faction pool by ID
+    if (hasKw(cardInstance, "selection") && action.selectionCardId != null && newState.factionCardPool?.length) {
+      const chosenCard = newState.factionCardPool.find(c => c.id === action.selectionCardId);
+      if (chosenCard && player.hand.length < MAX_HAND_SIZE) {
+        const chosen = createCardInstance(chosenCard);
+        player.hand.push(chosen);
       }
     }
 
@@ -1227,15 +1222,12 @@ function resolveSpellKeywords(
         break;
       }
       case "selection": {
-        const x = kw.amount ?? 2;
-        if (ctx.state.factionCardPool?.length) {
-          const choices = getSelectionCards(ctx.state, x);
-          if (choices.length > 0) {
-            const chosenIdx = Math.min(ctx.targetMap["selection_0"] ? parseInt(ctx.targetMap["selection_0"]) : 0, choices.length - 1);
-            if (ctx.caster.hand.length < MAX_HAND_SIZE) {
-              const chosen = createCardInstance(choices[chosenIdx]);
-              ctx.caster.hand.push(chosen);
-            }
+        const selCardId = ctx.targetMap["selection_0"] ? parseInt(ctx.targetMap["selection_0"]) : null;
+        if (selCardId != null && ctx.state.factionCardPool?.length) {
+          const chosenCard = ctx.state.factionCardPool.find(c => c.id === selCardId);
+          if (chosenCard && ctx.caster.hand.length < MAX_HAND_SIZE) {
+            const chosen = createCardInstance(chosenCard);
+            ctx.caster.hand.push(chosen);
           }
         }
         break;

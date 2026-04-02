@@ -356,7 +356,7 @@ export interface PlayCardAction {
   divinationChoiceIndex?: number;
   tactiqueKeywords?: Keyword[];
   convocationRace?: string;  // chosen race for token
-  selectionChoiceIndex?: number;  // chosen card from selection pool
+  selectionCardId?: number;  // chosen card ID from faction pool
 }
 
 export interface AttackAction {
