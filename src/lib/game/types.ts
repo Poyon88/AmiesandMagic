@@ -374,7 +374,7 @@ export interface HeroPowerAction {
 export type GameAction = PlayCardAction | AttackAction | EndTurnAction | MulliganAction | HeroPowerAction;
 
 // Combat event for animations
-export type CombatEventType = "damage" | "heal" | "buff" | "shield";
+export type CombatEventType = "damage" | "heal" | "buff" | "shield" | "poison";
 
 export interface DamageEvent {
   targetId: string;

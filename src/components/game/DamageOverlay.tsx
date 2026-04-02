@@ -59,6 +59,12 @@ const config = {
     textColor: "#facc15",
     format: () => "🛡",
   },
+  poison: {
+    flashColor: "rgba(34, 197, 94, 0.4)",
+    particleColor: "#22c55e",
+    textColor: "#22c55e",
+    format: (evt: DamageEvent) => evt.label ?? `☠ -${evt.amount}`,
+  },
 };
 
 function ShieldPopup({ event }: { event: DamageEvent }) {
@@ -181,6 +187,88 @@ function ShieldPopup({ event }: { event: DamageEvent }) {
   );
 }
 
+function PoisonPopup({ event }: { event: DamageEvent }) {
+  const { particleColor, textColor, format } = config.poison;
+
+  return (
+    <motion.div
+      style={{
+        position: "absolute",
+        left: event.x,
+        top: event.y,
+        transform: "translate(-50%, -50%)",
+        pointerEvents: "none",
+      }}
+      initial={{ opacity: 1 }}
+      animate={{ opacity: 0 }}
+      transition={{ duration: 2.5, ease: "easeOut" }}
+    >
+      {/* Poison cloud */}
+      <motion.div
+        style={{
+          position: "absolute",
+          left: -35,
+          top: -35,
+          width: 70,
+          height: 70,
+          borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(34, 197, 94, 0.5) 0%, rgba(34, 197, 94, 0) 70%)",
+          pointerEvents: "none",
+        }}
+        initial={{ scale: 0.5, opacity: 1 }}
+        animate={{ scale: 2, opacity: 0 }}
+        transition={{ duration: 1.2, ease: "easeOut" }}
+      />
+
+      {/* Dripping particles */}
+      {[...Array(8)].map((_, i) => {
+        const xSpread = (Math.random() - 0.5) * 30;
+        const yEnd = 20 + Math.random() * 30;
+        return (
+          <motion.div
+            key={i}
+            style={{
+              position: "absolute",
+              width: 5,
+              height: 8,
+              borderRadius: "50%",
+              background: particleColor,
+              left: -2.5,
+              top: -4,
+              boxShadow: `0 0 6px ${particleColor}`,
+              pointerEvents: "none",
+            }}
+            initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
+            animate={{ x: xSpread, y: yEnd, opacity: 0, scale: 0.5 }}
+            transition={{ duration: 0.8 + Math.random() * 0.4, ease: "easeIn", delay: i * 0.05 }}
+          />
+        );
+      })}
+
+      {/* Text */}
+      <motion.span
+        style={{
+          position: "absolute",
+          left: "50%",
+          top: "50%",
+          transform: "translate(-50%, -50%)",
+          fontSize: "1.5rem",
+          fontWeight: 900,
+          color: textColor,
+          textShadow: `0 0 8px ${textColor}, 0 1px 2px #000`,
+          whiteSpace: "nowrap",
+          pointerEvents: "none",
+        }}
+        initial={{ y: 0, scale: 1.5, opacity: 1 }}
+        animate={{ y: -32, scale: 1, opacity: 0 }}
+        transition={{ duration: 2.4, ease: "easeOut" }}
+      >
+        {format(event)}
+      </motion.span>
+    </motion.div>
+  );
+}
+
 function EventPopup({ event }: { event: DamageEvent }) {
   if (event.x < -9000) return null;
 
@@ -188,6 +276,10 @@ function EventPopup({ event }: { event: DamageEvent }) {
 
   if (type === "shield") {
     return <ShieldPopup event={event} />;
+  }
+
+  if (type === "poison") {
+    return <PoisonPopup event={event} />;
   }
 
   const { flashColor, particleColor, textColor, format } = config[type];

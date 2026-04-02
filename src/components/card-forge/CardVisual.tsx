@@ -105,6 +105,7 @@ interface CardData {
   faction: string;
   race?: string;
   clan?: string;
+  cardAlignment?: string;
   type: string;
   rarity: string;
   mana: number;
@@ -343,6 +344,17 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
           {/* Faction · Type */}
           <div style={{ display: "flex", alignItems: "center", gap: 6 * s }}>
             <span style={{ fontSize: 7.5 * s, color: `${fac.accent}aa` }}>{card!.faction}</span>
+            {card!.cardAlignment && card!.cardAlignment !== "spéciale" && fac.alignment === "spéciale" && (() => {
+              const alColors: Record<string, string> = { bon: "#4caf50", neutre: "#ffd54f", maléfique: "#e74c3c" };
+              const alEmojis: Record<string, string> = { bon: "✨", neutre: "⚖️", maléfique: "💀" };
+              const col = alColors[card!.cardAlignment!] || fac.accent;
+              return (
+                <>
+                  <span style={{ fontSize: 6 * s, color: "#333" }}>·</span>
+                  <span style={{ fontSize: 7 * s, color: col }}>{alEmojis[card!.cardAlignment!] || ""} {card!.cardAlignment}</span>
+                </>
+              );
+            })()}
             <span style={{ fontSize: 6 * s, color: "#333" }}>·</span>
             <span style={{ fontSize: 7 * s, color: rar.color, border: `1px solid ${rar.color}44`, padding: `${1 * s}px ${4 * s}px`, borderRadius: 3 * s }}>{rar.code}</span>
           </div>
@@ -404,12 +416,20 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
           {card!.name}
         </div>
 
-        {/* Race / Clan */}
-        {(card!.race || card!.clan) && (
+        {/* Race / Clan / Alignment */}
+        {(card!.race || card!.clan || (card!.cardAlignment && card!.cardAlignment !== "spéciale" && fac.alignment === "spéciale")) && (
           <div style={{ display: "flex", justifyContent: "center", gap: 6 * s, fontSize: 13 * s, color: "#ddd", fontFamily: "'Crimson Text',serif" }}>
             {card!.race && <span>{card!.race}</span>}
             {card!.race && card!.clan && <span style={{ color: "#888" }}>·</span>}
             {card!.clan && <span style={{ fontStyle: "italic" }}>{card!.clan}</span>}
+            {card!.cardAlignment && card!.cardAlignment !== "spéciale" && fac.alignment === "spéciale" && (
+              <>
+                {(card!.race || card!.clan) && <span style={{ color: "#888" }}>·</span>}
+                <span style={{ color: { bon: "#4caf50", neutre: "#ffd54f", maléfique: "#e74c3c" }[card!.cardAlignment] || "#ddd" }}>
+                  {{ bon: "✨", neutre: "⚖️", maléfique: "💀" }[card!.cardAlignment] || ""} {card!.cardAlignment}
+                </span>
+              </>
+            )}
           </div>
         )}
 

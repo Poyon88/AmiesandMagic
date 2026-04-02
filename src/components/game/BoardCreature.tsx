@@ -87,7 +87,10 @@ export default function BoardCreature({
           ? { x: [0, -4, 4, -4, 4, 0], y: 0, opacity: 1, scale: isHovered && !isSelected ? 1.8 : 1 }
           : { x: 0, y: 0, opacity: 1, scale: isHovered && !isSelected ? 1.8 : 1 }
       }
-      exit={{ opacity: 0, scale: 0, rotate: -15, filter: "brightness(2) saturate(0)", transition: { duration: 0.5, ease: "easeIn" } }}
+      exit={creature.isPoisoned
+        ? { opacity: 0, scale: 0.3, rotate: -10, filter: "brightness(0.5) saturate(2) hue-rotate(80deg)", transition: { duration: 0.7, ease: "easeIn" } }
+        : { opacity: 0, scale: 0, rotate: -15, filter: "brightness(2) saturate(0)", transition: { duration: 0.5, ease: "easeIn" } }
+      }
       transition={{ duration: 0.5, ease: "easeOut" }}
       style={{
         width: W, height: H, borderRadius: 10, position: "relative",
@@ -131,6 +134,27 @@ export default function BoardCreature({
           background: "rgba(0,0,0,0.3)",
           pointerEvents: "none",
         }} />
+      )}
+
+      {/* Poison overlay */}
+      {creature.isPoisoned && (
+        <div style={{
+          position: "absolute", inset: 0, zIndex: 1,
+          background: "rgba(34, 197, 94, 0.15)",
+          pointerEvents: "none",
+          animation: "poison-pulse 2s ease-in-out infinite",
+        }} />
+      )}
+
+      {/* Poison indicator */}
+      {creature.isPoisoned && (
+        <div style={{
+          position: "absolute", top: 4, left: 4, zIndex: 3,
+          width: 18, height: 18, borderRadius: "50%",
+          background: "#22c55e33", border: "1px solid #22c55e88",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 10,
+        }}>☠️</div>
       )}
 
       {/* Divine Shield indicator */}

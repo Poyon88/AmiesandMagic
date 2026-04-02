@@ -154,13 +154,14 @@ function detectDamageEvents(
       );
       if (!newCreature) continue;
 
-      // Damage
+      // Damage (poison tick or regular)
       if (newCreature.currentHealth < oldCreature.currentHealth) {
         const pos = getElementCenter(oldCreature.instanceId);
+        const isPoisonTick = oldCreature.isPoisoned && (oldCreature.currentHealth - newCreature.currentHealth) === 1;
         events.push({
           targetId: oldCreature.instanceId,
           amount: oldCreature.currentHealth - newCreature.currentHealth,
-          type: "damage",
+          type: isPoisonTick ? "poison" : "damage",
           ...pos,
         });
       }
@@ -192,6 +193,18 @@ function detectDamageEvents(
           amount: atkDiff + hpDiff,
           type: "buff",
           label: parts.join("/"),
+          ...pos,
+        });
+      }
+
+      // Poisoned
+      if (!oldCreature.isPoisoned && newCreature.isPoisoned) {
+        const pos = getElementCenter(oldCreature.instanceId);
+        events.push({
+          targetId: oldCreature.instanceId,
+          amount: 0,
+          type: "poison",
+          label: "☠️ Poison",
           ...pos,
         });
       }
