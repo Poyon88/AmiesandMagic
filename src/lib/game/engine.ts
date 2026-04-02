@@ -583,7 +583,8 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
 
     // Vampirisme X: vole X PV à une unité ennemie ciblée
     if (hasKw(cardInstance, "vampirisme") && action.targetInstanceId) {
-      const x = Math.max(1, Math.floor(cardInstance.card.mana_cost / 2));
+      const vampXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
+      const x = vampXVals["vampirisme"] || Math.max(1, Math.floor(cardInstance.card.mana_cost / 2));
       const vampTarget = opponent.board.find(c => c.instanceId === action.targetInstanceId);
       if (vampTarget) {
         const stolen = Math.min(x, vampTarget.currentHealth);
@@ -745,7 +746,8 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
 
     // Traque du destin X: révèle X premières cartes du deck, prend 1 en main, reste en dessous aléatoire
     if (hasKw(cardInstance, "traque_du_destin") && player.deck.length > 0) {
-      const x = Math.max(1, Math.floor(cardInstance.card.mana_cost / 2));
+      const tdXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
+      const x = tdXVals["traque_du_destin"] || Math.max(1, Math.floor(cardInstance.card.mana_cost / 2));
       const count = Math.min(x, player.deck.length);
       const revealed = player.deck.splice(0, count);
       if (revealed.length > 0 && player.hand.length < MAX_HAND_SIZE) {
@@ -785,14 +787,16 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     if (hasKw(cardInstance, "solidarite") && cardInstance.card.clan) {
       const sameClanCount = player.board.filter(a => a !== cardInstance && a.card.clan === cardInstance.card.clan).length;
       if (sameClanCount >= 2) {
-        const x = Math.max(1, Math.floor(cardInstance.card.mana_cost / 3));
+        const solXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
+        const x = solXVals["solidarite"] || Math.max(1, Math.floor(cardInstance.card.mana_cost / 3));
         for (let i = 0; i < x; i++) drawCard(player);
       }
     }
 
     // Appel du clan X: met en jeu la première unité de même clan (coût ≤ X) depuis le deck
     if (hasKw(cardInstance, "appel_du_clan") && cardInstance.card.clan && player.board.length < MAX_BOARD_SIZE) {
-      const x = Math.max(1, cardInstance.card.mana_cost - 1);
+      const adcXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
+      const x = adcXVals["appel_du_clan"] || Math.max(1, cardInstance.card.mana_cost - 1);
       const idx = player.deck.findIndex(c => c.card.clan === cardInstance.card.clan && c.card.card_type === "creature" && c.card.mana_cost <= x);
       if (idx >= 0) {
         const [called] = player.deck.splice(idx, 1);
@@ -804,7 +808,8 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
 
     // Rassemblement X: révèle X premières cartes du deck, unités de même race en main, reste défaussé
     if (hasKw(cardInstance, "rassemblement") && cardInstance.card.race && player.deck.length > 0) {
-      const x = Math.max(1, Math.floor(cardInstance.card.mana_cost / 2));
+      const rasXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
+      const x = rasXVals["rassemblement"] || Math.max(1, Math.floor(cardInstance.card.mana_cost / 2));
       const count = Math.min(x, player.deck.length);
       const revealed = player.deck.splice(0, count);
       for (const c of revealed) {
@@ -818,27 +823,32 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
 
     // Set Instinct de meute X value
     if (hasKw(cardInstance, "instinct_de_meute")) {
-      cardInstance.instinctDeMeuteX = Math.max(1, Math.floor(cardInstance.card.mana_cost / 3));
+      const imXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
+      cardInstance.instinctDeMeuteX = imXVals["instinct_de_meute"] || Math.max(1, Math.floor(cardInstance.card.mana_cost / 3));
     }
 
     // Set Persécution X value
     if (hasKw(cardInstance, "persecution")) {
-      cardInstance.persecutionX = Math.max(1, Math.floor(cardInstance.card.mana_cost / 3));
+      const persXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
+      cardInstance.persecutionX = persXVals["persecution"] || Math.max(1, Math.floor(cardInstance.card.mana_cost / 3));
     }
 
     // Set Riposte X value
     if (hasKw(cardInstance, "riposte")) {
-      cardInstance.riposteX = Math.max(1, Math.floor(cardInstance.card.mana_cost / 3));
+      const ripXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
+      cardInstance.riposteX = ripXVals["riposte"] || Math.max(1, Math.floor(cardInstance.card.mana_cost / 3));
     }
 
     // Set Carnage X value
     if (hasKw(cardInstance, "carnage")) {
-      cardInstance.carnageX = Math.max(1, Math.floor(cardInstance.card.mana_cost / 2));
+      const carnXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
+      cardInstance.carnageX = carnXVals["carnage"] || Math.max(1, Math.floor(cardInstance.card.mana_cost / 2));
     }
 
     // Set Héritage X value
     if (hasKw(cardInstance, "heritage")) {
-      cardInstance.heritageX = Math.max(1, Math.floor(cardInstance.card.mana_cost / 3));
+      const herXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
+      cardInstance.heritageX = herXVals["heritage"] || Math.max(1, Math.floor(cardInstance.card.mana_cost / 3));
     }
 
     // Tactique X: attribue X capacités choisies à un allié (simplified: copy 1 keyword)
@@ -1646,7 +1656,8 @@ export function attack(state: GameState, action: AttackAction): GameState {
   if (effectiveTarget === "enemy_hero") {
     // Souffle de feu X: X dégâts à toutes les unités ennemies
     if (hasKw(attacker, "souffle_de_feu")) {
-      const fireX = Math.max(1, Math.floor(attacker.card.mana_cost / 2));
+      const fireXVals = parseXValuesFromEffectText(attacker.card.effect_text);
+      const fireX = fireXVals["souffle_de_feu"] || Math.max(1, Math.floor(attacker.card.mana_cost / 2));
       [...opponent.board].forEach(c => dealDamageToCreature(c, fireX));
     }
 
@@ -1733,7 +1744,8 @@ export function attack(state: GameState, action: AttackAction): GameState {
 
     // Souffle de feu X: X dégâts à toutes les AUTRES unités ennemies
     if (hasKw(attacker, "souffle_de_feu")) {
-      const fireX = Math.max(1, Math.floor(attacker.card.mana_cost / 2));
+      const fireXVals = parseXValuesFromEffectText(attacker.card.effect_text);
+      const fireX = fireXVals["souffle_de_feu"] || Math.max(1, Math.floor(attacker.card.mana_cost / 2));
       opponent.board.filter(c => c !== target).forEach(c => dealDamageToCreature(c, fireX));
     }
 
