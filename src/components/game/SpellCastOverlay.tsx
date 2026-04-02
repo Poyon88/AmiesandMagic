@@ -22,6 +22,13 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
 
   if (!mounted) return null;
 
+  const countered = event?.countered ?? false;
+  const color = countered ? "239, 68, 68" : "168, 85, 247"; // red vs purple
+  const hexColor = countered ? "#ef4444" : "#a855f7";
+  const lightColor = countered ? "#fca5a5" : "#c084fc";
+  const textColor = countered ? "#fecaca" : "#e9d5ff";
+  const subTextColor = countered ? "#f87171" : "#c4b5fd";
+
   return createPortal(
     <AnimatePresence>
       {event && (
@@ -46,7 +53,7 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
             style={{
               position: "absolute",
               inset: 0,
-              background: "radial-gradient(ellipse at center, rgba(168, 85, 247, 0.25) 0%, transparent 70%)",
+              background: `radial-gradient(ellipse at center, rgba(${color}, 0.25) 0%, transparent 70%)`,
             }}
             initial={{ opacity: 0 }}
             animate={{ opacity: [0, 1, 0.6, 0] }}
@@ -60,8 +67,8 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
               width: 200,
               height: 200,
               borderRadius: "50%",
-              background: "radial-gradient(circle, rgba(168, 85, 247, 0.6) 0%, rgba(139, 92, 246, 0.3) 40%, transparent 70%)",
-              boxShadow: "0 0 60px 20px rgba(168, 85, 247, 0.3)",
+              background: `radial-gradient(circle, rgba(${color}, 0.6) 0%, rgba(${color}, 0.3) 40%, transparent 70%)`,
+              boxShadow: `0 0 60px 20px rgba(${color}, 0.3)`,
             }}
             initial={{ scale: 0.2, opacity: 0 }}
             animate={{ scale: [0.2, 1.5, 2], opacity: [0, 1, 0] }}
@@ -75,8 +82,8 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
               width: 120,
               height: 120,
               borderRadius: "50%",
-              border: "2px solid rgba(168, 85, 247, 0.8)",
-              boxShadow: "0 0 20px rgba(168, 85, 247, 0.4), inset 0 0 20px rgba(168, 85, 247, 0.2)",
+              border: `2px solid rgba(${color}, 0.8)`,
+              boxShadow: `0 0 20px rgba(${color}, 0.4), inset 0 0 20px rgba(${color}, 0.2)`,
             }}
             initial={{ scale: 0.3, opacity: 1 }}
             animate={{ scale: 3, opacity: 0 }}
@@ -90,7 +97,7 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
               width: 80,
               height: 80,
               borderRadius: "50%",
-              border: "1px solid rgba(192, 132, 252, 0.6)",
+              border: `1px solid ${lightColor}99`,
             }}
             initial={{ scale: 0.5, opacity: 1 }}
             animate={{ scale: 4, opacity: 0 }}
@@ -111,8 +118,8 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
                   width: 6,
                   height: 6,
                   borderRadius: "50%",
-                  background: "#c084fc",
-                  boxShadow: "0 0 10px #a855f7, 0 0 20px #a855f7",
+                  background: lightColor,
+                  boxShadow: `0 0 10px ${hexColor}, 0 0 20px ${hexColor}`,
                 }}
                 initial={{ x: 0, y: 0, opacity: 0, scale: 0 }}
                 animate={{ x: dx, y: dy, opacity: [0, 1, 0], scale: [0, 1.5, 0] }}
@@ -131,27 +138,40 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
             animate={{ scale: [0.5, 1.1, 1], opacity: [0, 1, 1, 0], y: [10, 0, 0, -20] }}
             transition={{ duration: 2, times: [0, 0.15, 0.6, 1], ease: "easeOut" }}
           >
+            {countered && (
+              <div
+                style={{
+                  fontSize: "2.5rem",
+                  marginBottom: 8,
+                  filter: `drop-shadow(0 0 12px ${hexColor})`,
+                }}
+              >
+                🚫
+              </div>
+            )}
             <div
               style={{
                 fontSize: "1.75rem",
                 fontWeight: 800,
-                color: "#e9d5ff",
-                textShadow: "0 0 20px rgba(168, 85, 247, 0.9), 0 0 40px rgba(168, 85, 247, 0.5), 0 2px 4px rgba(0,0,0,0.8)",
+                color: textColor,
+                textShadow: `0 0 20px rgba(${color}, 0.9), 0 0 40px rgba(${color}, 0.5), 0 2px 4px rgba(0,0,0,0.8)`,
                 letterSpacing: "0.05em",
+                textDecoration: countered ? "line-through" : "none",
               }}
             >
               {event.spellName}
             </div>
             <div
               style={{
-                fontSize: "0.75rem",
-                color: "#c4b5fd",
-                textShadow: "0 0 10px rgba(168, 85, 247, 0.6), 0 1px 2px rgba(0,0,0,0.8)",
+                fontSize: countered ? "1rem" : "0.75rem",
+                fontWeight: countered ? 700 : 400,
+                color: subTextColor,
+                textShadow: `0 0 10px rgba(${color}, 0.6), 0 1px 2px rgba(0,0,0,0.8)`,
                 marginTop: 4,
                 maxWidth: 300,
               }}
             >
-              {event.effectText}
+              {countered ? "🛡️ Contresort !" : event.effectText}
             </div>
           </motion.div>
         </motion.div>

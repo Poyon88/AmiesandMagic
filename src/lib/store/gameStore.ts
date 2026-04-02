@@ -27,6 +27,7 @@ export interface SpellCastEvent {
   spellName: string;
   effectText: string;
   timestamp: number;
+  countered?: boolean;
 }
 
 interface GameStore {
@@ -344,6 +345,18 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const newState = applyAction(gameState, action);
     const dmgEvents = detectDamageEvents(gameState, newState, localPlayerId);
     const logEntries = generateEffectLog(gameState, newState, action);
+
+    // Detect if a spell was countered (contresort)
+    if (spellEvent && action.type === "play_card") {
+      const opponentIdx = gameState.currentPlayerIndex === 0 ? 1 : 0;
+      const oldOpponent = gameState.players[opponentIdx];
+      const hadCounter = oldOpponent.board.some(c => c.contresortActive);
+      const newOpponent = newState.players[opponentIdx];
+      const stillHasCounter = newOpponent.board.some(c => c.contresortActive);
+      if (hadCounter && !stillHasCounter) {
+        spellEvent = { ...spellEvent, countered: true, effectText: "Contré !" };
+      }
+    }
 
     // Find creatures that died (were on old board but not on new board)
     const deadCreatures: CardInstance[] = [];
