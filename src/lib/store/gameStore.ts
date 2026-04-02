@@ -358,7 +358,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     if (deadCreatures.length > 0) {
       // Create intermediate state with dead creatures still on board (at 0 HP)
-      const interState = JSON.parse(JSON.stringify(newState)) as GameState;
+      const { factionCardPool: _pool, ...stateWithoutPool } = newState;
+      const interState = JSON.parse(JSON.stringify(stateWithoutPool)) as GameState;
+      interState.factionCardPool = _pool;
       for (let i = 0; i < 2; i++) {
         const oldBoard = gameState.players[i].board;
         const newBoard = newState.players[i].board;

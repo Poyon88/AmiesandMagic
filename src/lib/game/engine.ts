@@ -281,7 +281,9 @@ function recalculateAuras(player: PlayerState, opponent: PlayerState) {
 // ============================================================
 
 export function startTurn(state: GameState): GameState {
-  const newState = deepClone(state);
+  const pool = state.factionCardPool;
+  const newState = deepClone({ ...state, factionCardPool: undefined } as GameState);
+  newState.factionCardPool = pool;
   const player = newState.players[newState.currentPlayerIndex];
   const opponent = newState.players[newState.currentPlayerIndex === 0 ? 1 : 0];
 
@@ -387,7 +389,9 @@ function drawCard(player: PlayerState): CardInstance | null {
 }
 
 export function endTurn(state: GameState): GameState {
-  const newState = deepClone(state);
+  const pool = state.factionCardPool;
+  const newState = deepClone({ ...state, factionCardPool: undefined } as GameState);
+  newState.factionCardPool = pool;
   newState.currentPlayerIndex = newState.currentPlayerIndex === 0 ? 1 : 0;
   newState.lastAction = { type: "end_turn" };
   return startTurn(newState);
@@ -398,7 +402,10 @@ export function endTurn(state: GameState): GameState {
 // ============================================================
 
 export function playCard(state: GameState, action: PlayCardAction): GameState {
-  const newState = deepClone(state);
+  // Exclude factionCardPool from deep clone for performance (it's read-only)
+  const pool = state.factionCardPool;
+  const newState = deepClone({ ...state, factionCardPool: undefined } as GameState);
+  newState.factionCardPool = pool;
   const player = newState.players[newState.currentPlayerIndex];
   const opponent = newState.players[newState.currentPlayerIndex === 0 ? 1 : 0];
 
@@ -1580,7 +1587,9 @@ export function getSpellTargetSlots(card: Card): SpellTargetSlot[] {
 // ============================================================
 
 export function attack(state: GameState, action: AttackAction): GameState {
-  const newState = deepClone(state);
+  const pool = state.factionCardPool;
+  const newState = deepClone({ ...state, factionCardPool: undefined } as GameState);
+  newState.factionCardPool = pool;
   const player = newState.players[newState.currentPlayerIndex];
   const opponent = newState.players[newState.currentPlayerIndex === 0 ? 1 : 0];
 
@@ -1974,7 +1983,9 @@ function triggerPassiveOnCreatureDeath(player: PlayerState, deadCount: number) {
 // ============================================================
 
 export function useHeroPower(state: GameState, action: HeroPowerAction): GameState {
-  const newState = deepClone(state);
+  const pool = state.factionCardPool;
+  const newState = deepClone({ ...state, factionCardPool: undefined } as GameState);
+  newState.factionCardPool = pool;
   const player = newState.players[newState.currentPlayerIndex];
   const opponent = newState.players[newState.currentPlayerIndex === 0 ? 1 : 0];
   const heroDef = player.hero.heroDefinition;
@@ -2064,7 +2075,9 @@ export function getHeroPowerTargets(state: GameState, heroDef: HeroDefinition): 
 // ============================================================
 
 export function applyMulligan(state: GameState, action: MulliganAction): GameState {
-  const newState = deepClone(state);
+  const pool = state.factionCardPool;
+  const newState = deepClone({ ...state, factionCardPool: undefined } as GameState);
+  newState.factionCardPool = pool;
   const playerIndex = newState.players.findIndex(p => p.id === action.playerId);
   if (playerIndex === -1) return state;
 
