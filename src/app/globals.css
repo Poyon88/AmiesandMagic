@@ -68,3 +68,15 @@ body {
   0%, 100% { background: rgba(34, 197, 94, 0.08); }
   50% { background: rgba(34, 197, 94, 0.2); }
 }
+
+/* Ombre (stealth) pulse overlay */
+@keyframes ombre-pulse {
+  0%, 100% { background: rgba(30, 30, 60, 0.15); }
+  50% { background: rgba(30, 30, 60, 0.35); }
+}
+
+/* Berserk rage ring pulse */
+@keyframes berserk-pulse {
+  0%, 100% { border-color: rgba(239, 68, 68, 0.3); box-shadow: 0 0 4px rgba(239, 68, 68, 0.2); }
+  50% { border-color: rgba(239, 68, 68, 0.7); box-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
+}

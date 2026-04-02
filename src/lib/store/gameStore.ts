@@ -226,6 +226,63 @@ function detectDamageEvents(
           ...pos,
         });
       }
+
+      // Paralyzed
+      if (!oldCreature.isParalyzed && newCreature.isParalyzed) {
+        const pos = getElementCenter(oldCreature.instanceId);
+        events.push({
+          targetId: oldCreature.instanceId,
+          amount: 0,
+          type: "paralyze",
+          label: "⛓️ Paralysie",
+          ...pos,
+        });
+      }
+    }
+
+    // Detect new creatures on board (resurrection, exhumation, convocation)
+    for (const newCreature of newPlayer.board) {
+      const existed = oldPlayer.board.find(c => c.instanceId === newCreature.instanceId);
+      if (!existed && newCreature.hasUsedResurrection) {
+        const pos = getElementCenter(newCreature.instanceId);
+        events.push({
+          targetId: newCreature.instanceId,
+          amount: 0,
+          type: "resurrect",
+          label: "✨ Résurrection",
+          ...pos,
+        });
+      }
+    }
+  }
+
+  // Detect esquive (dodge): attacker's attacksRemaining decreased but no damage dealt to target
+  if (newState.lastAction?.type === "attack") {
+    const action = newState.lastAction;
+    const targetId = action.targetInstanceId;
+    if (targetId && targetId !== "enemy_hero") {
+      const attackerPlayerIdx = oldState.currentPlayerIndex;
+      const defenderPlayerIdx = attackerPlayerIdx === 0 ? 1 : 0;
+      const oldTarget = oldState.players[defenderPlayerIdx].board.find(c => c.instanceId === targetId);
+      const newTarget = newState.players[defenderPlayerIdx].board.find(c => c.instanceId === targetId);
+      if (oldTarget && newTarget && oldTarget.currentHealth === newTarget.currentHealth) {
+        // Target took no damage — check if attacker used an attack
+        const oldAttacker = oldState.players[attackerPlayerIdx].board.find(c => c.instanceId === action.attackerInstanceId);
+        const newAttacker = newState.players[attackerPlayerIdx].board.find(c => c.instanceId === action.attackerInstanceId);
+        if (oldAttacker && newAttacker && oldAttacker.attacksRemaining > newAttacker.attacksRemaining) {
+          // Attack happened but target took no damage = esquive
+          if (oldTarget.esquiveUsedThisTurn === false && newTarget.esquiveUsedThisTurn === true) {
+            const pos = getElementCenter(targetId);
+            events.push({
+              targetId,
+              amount: 0,
+              type: "dodge",
+              label: "💨 Esquive !",
+              ...pos,
+            });
+          }
+        }
+      }
     }
   }
 

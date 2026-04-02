@@ -168,6 +168,48 @@ export default function BoardCreature({
         }}>🔰</div>
       )}
 
+      {/* Paralyzed indicator */}
+      {creature.isParalyzed && (
+        <div style={{
+          position: "absolute", top: creature.isPoisoned ? 26 : 4, left: 4, zIndex: 3,
+          width: 18, height: 18, borderRadius: "50%",
+          background: "#8b5cf633", border: "1px solid #8b5cf688",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 10,
+        }}>⛓️</div>
+      )}
+
+      {/* Contresort active indicator */}
+      {creature.contresortActive && (
+        <div style={{
+          position: "absolute", top: creature.hasDivineShield ? 26 : 4, right: 4, zIndex: 3,
+          width: 18, height: 18, borderRadius: "50%",
+          background: "#3b82f633", border: "1px solid #3b82f688",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 10,
+        }}>🚫</div>
+      )}
+
+      {/* Ombre (stealth) indicator */}
+      {card.keywords.includes("ombre" as import("@/lib/game/types").Keyword) && !creature.ombreRevealed && (
+        <div style={{
+          position: "absolute", inset: 0, zIndex: 1,
+          background: "rgba(30, 30, 60, 0.25)",
+          pointerEvents: "none",
+          animation: "ombre-pulse 3s ease-in-out infinite",
+        }} />
+      )}
+
+      {/* Berserk active indicator */}
+      {creature.berserkActive && (
+        <div style={{
+          position: "absolute", inset: -1, borderRadius: 11,
+          border: "2px solid #ef444488",
+          pointerEvents: "none", zIndex: 1,
+          animation: "berserk-pulse 1s ease-in-out infinite",
+        }} />
+      )}
+
       {/* Taunt ring */}
       {card.keywords.includes("taunt") && (
         <div style={{

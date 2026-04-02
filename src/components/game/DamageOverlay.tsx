@@ -65,6 +65,30 @@ const config = {
     textColor: "#22c55e",
     format: (evt: DamageEvent) => evt.label ?? `☠ -${evt.amount}`,
   },
+  dodge: {
+    flashColor: "rgba(147, 197, 253, 0.3)",
+    particleColor: "#93c5fd",
+    textColor: "#93c5fd",
+    format: (evt: DamageEvent) => evt.label ?? "💨 Esquive !",
+  },
+  paralyze: {
+    flashColor: "rgba(139, 92, 246, 0.4)",
+    particleColor: "#a78bfa",
+    textColor: "#8b5cf6",
+    format: (evt: DamageEvent) => evt.label ?? "⛓️ Paralysie",
+  },
+  resurrect: {
+    flashColor: "rgba(250, 204, 21, 0.4)",
+    particleColor: "#fde68a",
+    textColor: "#fbbf24",
+    format: (evt: DamageEvent) => evt.label ?? "✨ Résurrection",
+  },
+  transform: {
+    flashColor: "rgba(168, 85, 247, 0.4)",
+    particleColor: "#c084fc",
+    textColor: "#a855f7",
+    format: (evt: DamageEvent) => evt.label ?? "🔮 Transformation",
+  },
 };
 
 function ShieldPopup({ event }: { event: DamageEvent }) {
@@ -283,7 +307,7 @@ function EventPopup({ event }: { event: DamageEvent }) {
   }
 
   const { flashColor, particleColor, textColor, format } = config[type];
-  const isPositive = type === "heal" || type === "buff";
+  const isPositive = type === "heal" || type === "buff" || type === "dodge" || type === "paralyze" || type === "resurrect" || type === "transform";
 
   return (
     <motion.div
