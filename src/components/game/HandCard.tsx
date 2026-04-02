@@ -7,6 +7,7 @@ import type { CardInstance } from "@/lib/game/types";
 import { useGameStore } from "@/lib/store/gameStore";
 import type { DragEvent } from "react";
 import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText } from "@/lib/game/keyword-labels";
+import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS } from "@/lib/game/spell-keywords";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
 
@@ -175,6 +176,37 @@ export default function HandCard({
             </div>
             );
           })()}
+
+          {/* Spell keyword symbols */}
+          {card.spell_keywords && card.spell_keywords.length > 0 && (
+            <div style={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+              {card.spell_keywords.map((spellKw, i) => {
+                const def = SPELL_KEYWORDS[spellKw.id];
+                let displayTitle = def.label;
+                if (spellKw.attack != null) displayTitle = displayTitle.replace(/X/, String(spellKw.attack));
+                else if (spellKw.amount != null) displayTitle = displayTitle.replace(/X/, String(spellKw.amount));
+                if (spellKw.health != null) displayTitle = displayTitle.replace(/Y/, String(spellKw.health));
+                const usesAtkHp = def.params.includes("attack") && def.params.includes("health");
+                const usesAmount = def.params.includes("amount");
+                const hasValue = usesAmount || usesAtkHp;
+                const valueText = usesAtkHp
+                  ? `+${spellKw.attack ?? 0}/+${spellKw.health ?? 0}`
+                  : usesAmount ? toRoman(spellKw.amount ?? 1) : null;
+                return (
+                <div key={`sk_${i}`} title={displayTitle} style={{
+                  minWidth: 14, height: 14, borderRadius: 3,
+                  padding: hasValue ? "0 2px" : 0,
+                  background: `${accentColor}33`, border: `1px solid ${accentColor}66`,
+                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1,
+                  fontSize: 8,
+                }}>
+                  <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={8} />
+                  {valueText && <span style={{ fontSize: 6, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif" }}>{valueText}</span>}
+                </div>
+                );
+              })}
+            </div>
+          )}
 
           {/* Stats */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>

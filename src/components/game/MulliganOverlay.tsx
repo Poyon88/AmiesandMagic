@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import Image from "next/image";
 import type { CardInstance } from "@/lib/game/types";
 import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText } from "@/lib/game/keyword-labels";
+import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS } from "@/lib/game/spell-keywords";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
 
@@ -156,6 +157,37 @@ function MulliganCard({
           </div>
           );
         })()}
+
+        {/* Spell keyword symbols */}
+        {card.spell_keywords && card.spell_keywords.length > 0 && (
+          <div style={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
+            {card.spell_keywords.map((spellKw, i) => {
+              const def = SPELL_KEYWORDS[spellKw.id];
+              let displayTitle = def.label;
+              if (spellKw.attack != null) displayTitle = displayTitle.replace(/X/, String(spellKw.attack));
+              else if (spellKw.amount != null) displayTitle = displayTitle.replace(/X/, String(spellKw.amount));
+              if (spellKw.health != null) displayTitle = displayTitle.replace(/Y/, String(spellKw.health));
+              const usesAtkHp = def.params.includes("attack") && def.params.includes("health");
+              const usesAmount = def.params.includes("amount");
+              const hasValue = usesAmount || usesAtkHp;
+              const valueText = usesAtkHp
+                ? `+${spellKw.attack ?? 0}/+${spellKw.health ?? 0}`
+                : usesAmount ? toRoman(spellKw.amount ?? 1) : null;
+              return (
+              <div key={`sk_${i}`} title={displayTitle} style={{
+                minWidth: 20, height: 20, borderRadius: 5,
+                padding: hasValue ? "0 3px" : 0,
+                background: `${accentColor}33`, border: `1px solid ${accentColor}66`,
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2,
+                fontSize: 11,
+              }}>
+                <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={11} />
+                {valueText && <span style={{ fontSize: 8, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}` }}>{toRoman(spellKw.amount!)}</span>}
+              </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* Stats */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>

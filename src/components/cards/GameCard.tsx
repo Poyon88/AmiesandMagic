@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import Image from "next/image";
 import type { Card } from "@/lib/game/types";
 import { KEYWORD_SYMBOLS as keywordSymbols, KEYWORD_LABELS as keywordLabels, toRoman, parseXValuesFromEffectText, cleanEffectText } from "@/lib/game/keyword-labels";
+import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS } from "@/lib/game/spell-keywords";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
 
@@ -161,6 +162,37 @@ export default function GameCard({
           );
         })()}
 
+        {/* Spell keyword symbols */}
+        {card.spell_keywords && card.spell_keywords.length > 0 && (
+          <div style={{ display: "flex", gap: 3 * s, flexWrap: "wrap" }}>
+            {card.spell_keywords.map((spellKw, i) => {
+              const def = SPELL_KEYWORDS[spellKw.id];
+              let displayTitle = def.label;
+              if (spellKw.attack != null) displayTitle = displayTitle.replace(/X/, String(spellKw.attack));
+              else if (spellKw.amount != null) displayTitle = displayTitle.replace(/X/, String(spellKw.amount));
+              if (spellKw.health != null) displayTitle = displayTitle.replace(/Y/, String(spellKw.health));
+              const usesAtkHp = def.params.includes("attack") && def.params.includes("health");
+              const usesAmount = def.params.includes("amount");
+              const hasValue = usesAmount || usesAtkHp;
+              const valueText = usesAtkHp
+                ? `+${spellKw.attack ?? 0}/+${spellKw.health ?? 0}`
+                : usesAmount ? toRoman(spellKw.amount ?? 1) : null;
+              return (
+              <div key={`sk_${i}`} title={displayTitle} style={{
+                minWidth: 18 * s, height: 18 * s, borderRadius: 4 * s,
+                padding: hasValue ? `0 ${3 * s}px` : 0,
+                background: `${accentColor}33`, border: `1px solid ${accentColor}66`,
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 * s,
+                fontSize: 10 * s,
+              }}>
+                <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={10 * s} />
+                {valueText && <span style={{ fontSize: 7 * s, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}` }}>{valueText}</span>}
+              </div>
+              );
+            })}
+          </div>
+        )}
+
         {/* Stats row */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <span style={{
@@ -242,6 +274,32 @@ export default function GameCard({
           </div>
           );
         })()}
+
+        {/* Spell keyword details */}
+        {card.spell_keywords && card.spell_keywords.length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 * s }}>
+            {card.spell_keywords.map((spellKw, i) => {
+              const def = SPELL_KEYWORDS[spellKw.id];
+              let label = def.label;
+              if (spellKw.attack != null) label = label.replace(/X/, String(spellKw.attack));
+              else if (spellKw.amount != null) label = label.replace(/X/, String(spellKw.amount));
+              if (spellKw.health != null) label = label.replace(/Y/, String(spellKw.health));
+              let desc = def.desc;
+              if (spellKw.attack != null) desc = desc.replace(/X/g, String(spellKw.attack));
+              else if (spellKw.amount != null) desc = desc.replace(/X/g, String(spellKw.amount));
+              if (spellKw.health != null) desc = desc.replace(/Y/g, String(spellKw.health));
+              return (
+              <div key={`sk_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
+                <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={18 * s} /></span>
+                <div>
+                  <div style={{ fontSize: 14 * s, color: accentColor, fontWeight: 700 }}>{label}</div>
+                  <div style={{ fontSize: 12 * s, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>
+                </div>
+              </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* Effect text */}
         {cleanEffectText(card.effect_text) && (

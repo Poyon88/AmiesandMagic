@@ -56,6 +56,7 @@ interface ForgeCard {
   convocationRace?: string;
   convocationTokenName?: string;
   convocationTokens?: {race: string; attack: number; health: number}[];
+  spellKeywords?: SpellKeywordInstance[];
 }
 
 function Sec({ title, children }: { title: string; children: React.ReactNode }) {
@@ -197,6 +198,7 @@ export default function CardForge() {
     convocationRace: convocationRace || undefined,
     convocationTokenName: tokenTemplates.find(t => t.race === convocationRace)?.name || convocationRace || undefined,
     convocationTokens: convocationTokens.length > 0 ? convocationTokens : undefined,
+    spellKeywords: type !== "Unité" && spellKeywords.length > 0 ? spellKeywords : undefined,
   };
 
   // All races from all factions
@@ -1226,7 +1228,11 @@ export default function CardForge() {
                                 if (active) {
                                   setSpellKeywords(prev => prev.filter(k => k.id !== kwId));
                                 } else {
-                                  setSpellKeywords(prev => [...prev, { id: kwId, amount: 1, attack: 1, health: 1 }]);
+                                  const init: SpellKeywordInstance = { id: kwId };
+                                  if (def.params.includes("amount")) init.amount = 1;
+                                  if (def.params.includes("attack")) init.attack = 1;
+                                  if (def.params.includes("health")) init.health = 1;
+                                  setSpellKeywords(prev => [...prev, init]);
                                 }
                               }}
                                 title={def.desc}

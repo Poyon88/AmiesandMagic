@@ -80,7 +80,9 @@ export type SpellKeywordId =
   | "invocation"
   | "inspiration"
   | "afflux"
-  | "invocation_multiple";
+  | "invocation_multiple"
+  | "rappel"
+  | "exhumation";
 
 export interface SpellKeywordInstance {
   id: SpellKeywordId;

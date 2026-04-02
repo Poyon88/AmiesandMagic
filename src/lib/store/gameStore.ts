@@ -17,6 +17,7 @@ import {
   creatureNeedsGraveyardTarget,
   getGraveyardTargets,
   creatureNeedsDivination,
+  getSpellGraveyardTargets,
 } from "@/lib/game/engine";
 
 export interface SpellCastEvent {
@@ -509,6 +510,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       const selectableSlots = slots.filter(s =>
         s.type === "any" || s.type === "any_creature"
         || s.type === "friendly_creature" || s.type === "enemy_creature"
+        || s.type === "friendly_graveyard" || s.type === "friendly_graveyard_to_board"
       );
 
       if (selectableSlots.length === 0) {
@@ -517,6 +519,27 @@ export const useGameStore = create<GameStore>((set, get) => ({
       }
 
       const firstSlot = selectableSlots[0];
+
+      // Graveyard-targeting spell keywords
+      if (firstSlot.type === "friendly_graveyard" || firstSlot.type === "friendly_graveyard_to_board") {
+        const kwIndex = parseInt(firstSlot.slot.replace("kw_", ""));
+        const gravTargets = getSpellGraveyardTargets(gameState, card.card, kwIndex);
+        if (gravTargets.length > 0) {
+          set({
+            selectedCardInstanceId: instanceId,
+            selectedAttackerInstanceId: null,
+            validTargets: gravTargets,
+            targetingMode: "graveyard",
+            spellTargetSlots: selectableSlots,
+            currentTargetSlotIndex: 0,
+            collectedTargetMap: {},
+          });
+          return null;
+        }
+        // No valid graveyard targets — play without effect
+        return get().dispatchAction({ type: "play_card", cardInstanceId: instanceId });
+      }
+
       const targets = getSpellTargets(gameState, card.card, firstSlot.type);
 
       if (selectableSlots.length === 1) {
@@ -649,7 +672,18 @@ export const useGameStore = create<GameStore>((set, get) => ({
         boardPosition: pendingBoardPosition ?? undefined,
       });
     } else if (targetingMode === "graveyard" && selectedCardInstanceId) {
-      const { pendingBoardPosition } = get();
+      const { pendingBoardPosition, spellTargetSlots, gameState: gs } = get();
+      // Check if this is a spell graveyard targeting
+      const cardInHand = gs?.players[gs.currentPlayerIndex].hand.find(c => c.instanceId === selectedCardInstanceId);
+      if (cardInHand?.card.card_type === "spell" && spellTargetSlots.length > 0) {
+        const slot = spellTargetSlots[0]?.slot ?? "kw_0";
+        return get().dispatchAction({
+          type: "play_card",
+          cardInstanceId: selectedCardInstanceId,
+          targetMap: { [slot]: targetId },
+        });
+      }
+      // Creature graveyard targeting (existing behavior)
       return get().dispatchAction({
         type: "play_card",
         cardInstanceId: selectedCardInstanceId,

@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { KEYWORDS, FACTIONS, RARITY_MAP } from '@/lib/card-engine/constants';
 import KeywordIcon from '@/components/shared/KeywordIcon';
+import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS } from '@/lib/game/spell-keywords';
+import type { SpellKeywordInstance } from '@/lib/game/types';
 
 // ─── KEYWORD → SYMBOL MAP ───────────────────────────────────────────────────
 
@@ -117,6 +119,7 @@ interface CardData {
   convocationRace?: string;
   convocationTokenName?: string;
   convocationTokens?: {race: string; attack: number; health: number}[];
+  spellKeywords?: SpellKeywordInstance[];
   budgetTotal: number;
 }
 
@@ -295,6 +298,46 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
           </div>
         )}
 
+        {/* Spell keyword symbols row */}
+        {card!.spellKeywords && card!.spellKeywords.length > 0 && (
+          <div style={{ display: "flex", gap: 4 * s, flexWrap: "wrap" }}>
+            {card!.spellKeywords.map((spellKw, i) => {
+              const def = SPELL_KEYWORDS[spellKw.id];
+              let label = def.label;
+              let desc = def.desc;
+              if (spellKw.attack != null) { label = label.replace(/X/, String(spellKw.attack)); desc = desc.replace(/X/g, String(spellKw.attack)); }
+              else if (spellKw.amount != null) { label = label.replace(/X/, String(spellKw.amount)); desc = desc.replace(/X/g, String(spellKw.amount)); }
+              if (spellKw.health != null) { label = label.replace(/Y/, String(spellKw.health)); desc = desc.replace(/Y/g, String(spellKw.health)); }
+              const usesAtkHp = def.params.includes("attack") && def.params.includes("health");
+              const usesAmount = def.params.includes("amount");
+              const hasValue = usesAmount || usesAtkHp;
+              const valueText = usesAtkHp
+                ? `+${spellKw.attack ?? 0}/+${spellKw.health ?? 0}`
+                : usesAmount ? toRoman(spellKw.amount ?? 1) : null;
+              return (
+                <div key={`sk_${i}`} title={`${label}: ${desc}`} style={{
+                  minWidth: 24 * s, height: 24 * s, borderRadius: 6 * s,
+                  padding: `0 ${hasValue ? 5 * s : 0}px`,
+                  background: `${fac.color}33`, border: `1px solid ${fac.color}88`,
+                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 3 * s,
+                  fontSize: 13 * s, cursor: "default",
+                  boxShadow: `0 0 6px ${fac.color}44`,
+                  transition: "all 0.2s",
+                }}>
+                  <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} />
+                  {valueText && (
+                    <span style={{
+                      fontSize: 10 * s, fontWeight: 900, lineHeight: 1,
+                      color: "#fff", fontFamily: "'Cinzel',serif",
+                      textShadow: `0 0 4px ${fac.accent}`,
+                    }}>{valueText}</span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
         {/* Stats + rarity row */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           {/* Faction · Type */}
@@ -391,6 +434,29 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                   <div>
                     <div style={{ fontSize: 14 * s, color: fac.accent, fontWeight: 700 }}>{displayName}</div>
                     <div style={{ fontSize: 12 * s, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{displayDesc}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Spell keyword details */}
+        {card!.spellKeywords && card!.spellKeywords.length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 * s }}>
+            {card!.spellKeywords.map((spellKw, i) => {
+              const def = SPELL_KEYWORDS[spellKw.id];
+              let label = def.label;
+              let desc = def.desc;
+              if (spellKw.attack != null) { label = label.replace(/X/, String(spellKw.attack)); desc = desc.replace(/X/g, String(spellKw.attack)); }
+              else if (spellKw.amount != null) { label = label.replace(/X/, String(spellKw.amount)); desc = desc.replace(/X/g, String(spellKw.amount)); }
+              if (spellKw.health != null) { label = label.replace(/Y/, String(spellKw.health)); desc = desc.replace(/Y/g, String(spellKw.health)); }
+              return (
+                <div key={`sk_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
+                  <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={18 * s} /></span>
+                  <div>
+                    <div style={{ fontSize: 14 * s, color: fac.accent, fontWeight: 700 }}>{label}</div>
+                    <div style={{ fontSize: 12 * s, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>
                   </div>
                 </div>
               );

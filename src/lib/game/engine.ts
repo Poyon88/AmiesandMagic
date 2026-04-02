@@ -1163,6 +1163,38 @@ function resolveSpellKeywords(
         ctx.caster.mana += kw.amount ?? 1;
         break;
       }
+      case "rappel": {
+        if (targetId) {
+          const gravIdx = ctx.caster.graveyard.findIndex(c => c.instanceId === targetId);
+          if (gravIdx !== -1) {
+            const target = ctx.caster.graveyard[gravIdx];
+            if (target.card.card_type === "creature" && ctx.caster.hand.length < MAX_HAND_SIZE) {
+              ctx.caster.graveyard.splice(gravIdx, 1);
+              const refreshed = createCardInstance(target.card);
+              ctx.caster.hand.push(refreshed);
+            }
+          }
+        }
+        break;
+      }
+      case "exhumation": {
+        const maxCost = kw.amount ?? 1;
+        if (targetId) {
+          const gravIdx = ctx.caster.graveyard.findIndex(c => c.instanceId === targetId);
+          if (gravIdx !== -1) {
+            const target = ctx.caster.graveyard[gravIdx];
+            if (target.card.card_type === "creature"
+                && target.card.mana_cost <= maxCost
+                && ctx.caster.board.length < MAX_BOARD_SIZE) {
+              ctx.caster.graveyard.splice(gravIdx, 1);
+              const revived = createCardInstance(target.card);
+              revived.hasSummoningSickness = true;
+              ctx.caster.board.push(revived);
+            }
+          }
+        }
+        break;
+      }
     }
   }
 }
@@ -1483,7 +1515,8 @@ function resolveAtomicEffect(ctx: SpellResolutionContext, effect: AtomicEffect):
 
 function requiresPlayerSelection(targetType: SpellTargetType): boolean {
   return targetType === "any" || targetType === "any_creature"
-    || targetType === "friendly_creature" || targetType === "enemy_creature";
+    || targetType === "friendly_creature" || targetType === "enemy_creature"
+    || targetType === "friendly_graveyard" || targetType === "friendly_graveyard_to_board";
 }
 
 export function getSpellTargetSlots(card: Card): SpellTargetSlot[] {
@@ -2230,9 +2263,37 @@ export function getSpellTargets(state: GameState, card: Card, slotType?: SpellTa
       return player.board.map(c => c.instanceId);
     case "enemy_creature":
       return filterEnemyTargetable(opponent.board).map(c => c.instanceId);
+    case "friendly_graveyard":
+      return player.graveyard
+        .filter(c => c.card.card_type === "creature")
+        .map(c => c.instanceId);
+    case "friendly_graveyard_to_board":
+      return player.graveyard
+        .filter(c => c.card.card_type === "creature")
+        .map(c => c.instanceId);
     default:
       return [];
   }
+}
+
+export function getSpellGraveyardTargets(state: GameState, card: Card, slotIndex: number): string[] {
+  if (card.card_type !== "spell" || !card.spell_keywords) return [];
+  const player = state.players[state.currentPlayerIndex];
+  const kw = card.spell_keywords[slotIndex];
+  if (!kw) return [];
+
+  if (kw.id === "rappel") {
+    return player.graveyard
+      .filter(c => c.card.card_type === "creature")
+      .map(c => c.instanceId);
+  }
+  if (kw.id === "exhumation") {
+    const maxCost = kw.amount ?? 1;
+    return player.graveyard
+      .filter(c => c.card.card_type === "creature" && c.card.mana_cost <= maxCost)
+      .map(c => c.instanceId);
+  }
+  return [];
 }
 
 // ============================================================

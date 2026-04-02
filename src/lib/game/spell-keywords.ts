@@ -101,6 +101,22 @@ export const SPELL_KEYWORDS: Record<SpellKeywordId, SpellKeywordDef> = {
     params: ["amount"],
     needsTarget: false,
   },
+  rappel: {
+    label: "Rappel",
+    symbol: "🪦",
+    desc: "Renvoie une créature de votre cimetière dans votre main",
+    params: [],
+    needsTarget: true,
+    targetType: "friendly_graveyard",
+  },
+  exhumation: {
+    label: "Exhumation X",
+    symbol: "⚰️",
+    desc: "Ressuscite une créature (coût ≤ X) de votre cimetière sur le terrain",
+    params: ["amount"],
+    needsTarget: true,
+    targetType: "friendly_graveyard_to_board",
+  },
 };
 
 export const ALL_SPELL_KEYWORDS: SpellKeywordId[] = Object.keys(SPELL_KEYWORDS) as SpellKeywordId[];
