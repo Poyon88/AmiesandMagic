@@ -302,7 +302,7 @@ export default function GameCard({
         )}
 
         {/* Effect text */}
-        {cleanEffectText(card.effect_text) && (
+        {cleanEffectText(card.effect_text, card.spell_keywords) && (
         <div style={{
           padding: `${8 * s}px ${10 * s}px`,
           background: `${accentColor}18`, borderRadius: 5 * s,
@@ -311,7 +311,7 @@ export default function GameCard({
           <p style={{
             margin: 0, fontSize: 13 * s, color: "#eee",
             lineHeight: 1.5, fontFamily: "'Crimson Text', serif",
-          }}>{cleanEffectText(card.effect_text)}</p>
+          }}>{cleanEffectText(card.effect_text, card.spell_keywords)}</p>
         </div>
         )}
 

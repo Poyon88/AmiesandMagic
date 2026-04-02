@@ -292,7 +292,7 @@ export default function HandCard({
             <p style={{
               margin: 0, fontSize: 7, color: "#ccc",
               lineHeight: 1.4, fontFamily: "'Crimson Text', serif",
-            }}>{cleanEffectText(card.effect_text)}</p>
+            }}>{cleanEffectText(card.effect_text, card.spell_keywords)}</p>
           </div>
 
           {card.flavor_text && (

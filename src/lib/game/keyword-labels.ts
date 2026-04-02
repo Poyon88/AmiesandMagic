@@ -1,4 +1,5 @@
-import type { Keyword } from "./types";
+import type { Keyword, SpellKeywordInstance } from "./types";
+import { SPELL_KEYWORDS } from "./spell-keywords";
 
 /** Convert an integer to Roman numerals (1–10) */
 export function toRoman(n: number): string {
@@ -15,10 +16,50 @@ export function toRoman(n: number): string {
  * Parse X values from effect_text bracket notation: "[Persécution 1, Souffle de feu 2]"
  * Returns a map from game keyword id to X value, e.g. { "persecution": 1, "souffle_de_feu": 2 }
  */
-/** Strip the bracket notation [Keyword1 X, ...] from effect_text for display */
-export function cleanEffectText(effectText: string | null | undefined): string {
+/** Strip the bracket notation [Keyword1 X, ...] from effect_text for display,
+ *  replacing X/Y placeholders with actual values from brackets and spell keywords */
+export function cleanEffectText(
+  effectText: string | null | undefined,
+  spellKeywords?: SpellKeywordInstance[] | null,
+): string {
   if (!effectText) return "";
-  return effectText.replace(/\s*\[[^\]]*\]\s*/g, "").trim();
+
+  // Extract values from bracket notation before removing it
+  const match = effectText.match(/\[([^\]]+)\]/);
+  let result = effectText.replace(/\s*\[[^\]]*\]\s*/g, "").trim();
+
+  if (match) {
+    // Parse bracket values and build a single replacement value
+    // Brackets like "[Impact 3]" or "[Persécution 2, Souffle de feu 1]"
+    const parts = match[1].split(",").map(p => p.trim());
+    for (const part of parts) {
+      const lastSpace = part.lastIndexOf(" ");
+      if (lastSpace > 0) {
+        const val = parseInt(part.slice(lastSpace + 1));
+        if (!isNaN(val)) {
+          // Replace first remaining X with this value
+          result = result.replace(/\bX\b/, String(val));
+        }
+      }
+    }
+  }
+
+  // Replace from spell keywords if provided
+  if (spellKeywords) {
+    for (const kw of spellKeywords) {
+      const def = SPELL_KEYWORDS[kw.id];
+      if (def.params.includes("attack") && kw.attack != null) {
+        result = result.replace(/\bX\b/, String(kw.attack));
+      } else if (def.params.includes("amount") && kw.amount != null) {
+        result = result.replace(/\bX\b/, String(kw.amount));
+      }
+      if (def.params.includes("health") && kw.health != null) {
+        result = result.replace(/\bY\b/, String(kw.health));
+      }
+    }
+  }
+
+  return result;
 }
 
 export function parseXValuesFromEffectText(effectText: string | null | undefined): Record<Keyword, number> {

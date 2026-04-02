@@ -270,7 +270,7 @@ function MulliganCard({
             <p style={{
               margin: 0, fontSize: 10, color: "#ccc",
               lineHeight: 1.5, fontFamily: "'Crimson Text', serif",
-            }}>{cleanEffectText(card.effect_text)}</p>
+            }}>{cleanEffectText(card.effect_text, card.spell_keywords)}</p>
           </div>
         )}
 

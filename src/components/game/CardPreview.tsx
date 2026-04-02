@@ -87,7 +87,7 @@ export default function CardPreview({ cardInstance, anchorRef, position = "above
         {/* Effect */}
         <div className="px-3 py-2 flex-1">
           <p className="text-xs text-foreground/70 leading-relaxed">
-            {cleanEffectText(card.effect_text)}
+            {cleanEffectText(card.effect_text, card.spell_keywords)}
           </p>
         </div>
 

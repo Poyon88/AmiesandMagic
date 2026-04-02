@@ -465,20 +465,39 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
         )}
 
         {/* Ability text */}
-        {card!.ability && card!.ability !== "—" && (
-        <div style={{
-          padding: `${8 * s}px ${10 * s}px`,
-          background: `${fac.color}18`, borderRadius: 5 * s,
-          border: `1px solid ${fac.color}44`,
-        }}>
-          <p style={{
-            margin: 0, fontSize: 13 * s, color: "#eee",
-            lineHeight: 1.5, fontFamily: "'Crimson Text',serif",
+        {card!.ability && card!.ability !== "—" && (() => {
+          let abilityText = card!.ability;
+          // Replace X/Y from creature keyword values
+          if (card!.keywordXValues) {
+            const vals = Object.values(card!.keywordXValues);
+            for (const v of vals) {
+              abilityText = abilityText.replace(/\bX\b/, String(v));
+            }
+          }
+          // Replace X/Y from spell keyword values
+          if (card!.spellKeywords) {
+            for (const kw of card!.spellKeywords) {
+              const skDef = SPELL_KEYWORDS[kw.id];
+              if (skDef.params.includes("attack") && kw.attack != null) abilityText = abilityText.replace(/\bX\b/, String(kw.attack));
+              else if (skDef.params.includes("amount") && kw.amount != null) abilityText = abilityText.replace(/\bX\b/, String(kw.amount));
+              if (skDef.params.includes("health") && kw.health != null) abilityText = abilityText.replace(/\bY\b/, String(kw.health));
+            }
+          }
+          return (
+          <div style={{
+            padding: `${8 * s}px ${10 * s}px`,
+            background: `${fac.color}18`, borderRadius: 5 * s,
+            border: `1px solid ${fac.color}44`,
           }}>
-            {card!.ability}
-          </p>
-        </div>
-        )}
+            <p style={{
+              margin: 0, fontSize: 13 * s, color: "#eee",
+              lineHeight: 1.5, fontFamily: "'Crimson Text',serif",
+            }}>
+              {abilityText}
+            </p>
+          </div>
+          );
+        })()}
 
         {/* Flavor text */}
         {card!.flavorText && (
