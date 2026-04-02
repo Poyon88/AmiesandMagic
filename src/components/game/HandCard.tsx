@@ -234,9 +234,10 @@ export default function HandCard({
           opacity: showOverlay ? 1 : 0,
           transition: "opacity 0.25s ease",
           pointerEvents: showOverlay ? "auto" : "none",
-          display: "flex", flexDirection: "column", justifyContent: "center",
+          display: "flex", flexDirection: "column", justifyContent: "flex-start",
           padding: "10px 7px",
           gap: 5,
+          overflowY: "auto",
         }}>
           {/* Name */}
           <div style={{
