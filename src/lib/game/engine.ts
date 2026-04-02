@@ -1741,6 +1741,11 @@ export function attack(state: GameState, action: AttackAction): GameState {
       player.hero.hp = Math.min(player.hero.maxHp, player.hero.hp + attackPower);
     }
 
+    // Drain de vie (defender): heal opponent hero for counter-damage dealt
+    if (hasKw(target, "drain_de_vie") && target.currentHealth > 0) {
+      opponent.hero.hp = Math.min(opponent.hero.maxHp, opponent.hero.hp + target.currentAttack);
+    }
+
     // Liaison de vie: damage taken shared with enemy hero
     if (hasKw(target, "liaison_de_vie")) {
       dealDamageToHero(player.hero, attackPower);
