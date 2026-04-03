@@ -66,10 +66,11 @@ export default function HandCard({
       initial={{ y: 60, opacity: 0, scale: 0.7 }}
       animate={{ y: 0, opacity: 1, scale: 1 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
+      data-instance-id={cardInstance.instanceId}
+      style={{ width: W, height: H, position: "relative" }}
     >
       <div
         ref={cardRef}
-        data-instance-id={cardInstance.instanceId}
         draggable={canPlay}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
@@ -89,7 +90,11 @@ export default function HandCard({
         }}
         onClick={canPlay ? onClick : undefined}
         style={{
-          width: W, height: H, borderRadius: 8, position: "relative",
+          width: W, height: H, borderRadius: 8,
+          position: isZoomed ? "absolute" : "relative",
+          bottom: isZoomed ? 0 : undefined,
+          left: isZoomed ? "50%" : undefined,
+          transformOrigin: "bottom center",
           background: isCreature
             ? "linear-gradient(160deg, #1a1a2e, #0d0d1a)"
             : "linear-gradient(160deg, #1a0a2a, #0d0d1a)",
@@ -98,8 +103,9 @@ export default function HandCard({
           overflow: "hidden",
           cursor: isDragging ? "grabbing" : canPlay ? "grab" : "not-allowed",
           opacity: isDragging ? 0.5 : canPlay ? 1 : 0.5,
-          transition: "all 0.2s ease",
-          transform: isZoomed ? "translateY(-100px) scale(2.25)" : "none",
+          transition: "border-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease",
+          transform: isZoomed ? "translateX(-50%)" : "none",
+          zoom: isZoomed ? 2.25 : 1,
           zIndex: isZoomed ? 50 : 1,
         }}
       >
@@ -230,7 +236,7 @@ export default function HandCard({
         {/* Hover overlay */}
         <div style={{
           position: "absolute", inset: 0, zIndex: 3,
-          background: "#0d0d1aee",
+          background: "#0d0d1a",
           opacity: showOverlay ? 1 : 0,
           transition: "opacity 0.25s ease",
           pointerEvents: showOverlay ? "auto" : "none",

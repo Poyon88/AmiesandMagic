@@ -18,6 +18,7 @@ import TurnTimer from "./TurnTimer";
 import TargetingArrow from "./TargetingArrow";
 import DamageOverlay from "./DamageOverlay";
 import SpellCastOverlay from "./SpellCastOverlay";
+import FireBreathOverlay from "./FireBreathOverlay";
 import MulliganOverlay from "./MulliganOverlay";
 import type { GameAction, DamageEvent, Race } from "@/lib/game/types";
 
@@ -119,6 +120,8 @@ export default function GameBoard({ onAction }: GameBoardProps) {
     clearDamageEvents,
     spellCastEvent,
     clearSpellCastEvent,
+    fireBreathEvent,
+    clearFireBreathEvent,
     spellTargetSlots,
     currentTargetSlotIndex,
     confirmMulligan,
@@ -755,6 +758,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
       {/* Damage animation overlay */}
       <DamageOverlay events={damageEvents} />
       <SpellCastOverlay event={spellCastEvent} onComplete={clearSpellCastEvent} />
+      <FireBreathOverlay event={fireBreathEvent} onComplete={clearFireBreathEvent} />
 
       {/* Targeting arrow overlay */}
       <TargetingArrow

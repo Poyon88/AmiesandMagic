@@ -47,7 +47,7 @@ export default function BoardCreature({
   const creatureRef = useRef<HTMLDivElement>(null);
   const detailTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const isZoomed = isHovered && !isSelected;
+  const isZoomed = isHovered && !isSelected && !isValidTarget && !canAttack;
   const showOverlay = isZoomed && showDetails;
   const W = 128;
   const H = 176;
@@ -62,8 +62,22 @@ export default function BoardCreature({
   return (
     <motion.div
       layout
-      ref={creatureRef}
       data-instance-id={creature.instanceId}
+      style={{ width: W, height: H, position: "relative", zIndex: isZoomed ? 20 : isSelected ? 10 : 1 }}
+      initial={{ y: isOwn ? 40 : -40, opacity: 0, scale: 0.5 }}
+      animate={
+        damageAmount
+          ? { x: [0, -4, 4, -4, 4, 0], y: 0, opacity: 1, scale: 1 }
+          : { x: 0, y: 0, opacity: 1, scale: 1 }
+      }
+      exit={creature.isPoisoned
+        ? { opacity: 0, scale: 0.3, rotate: -10, filter: "brightness(0.5) saturate(2) hue-rotate(80deg)", transition: { duration: 0.7, ease: "easeIn" } }
+        : { opacity: 0, scale: 0, rotate: -15, filter: "brightness(2) saturate(0)", transition: { duration: 0.5, ease: "easeIn" } }
+      }
+      transition={{ duration: 0.5, ease: "easeOut" }}
+    >
+    <div
+      ref={creatureRef}
       onClick={onClick}
       onMouseEnter={() => {
         setIsHovered(true);
@@ -81,26 +95,21 @@ export default function BoardCreature({
         setShowDetails(prev => !prev);
         if (detailTimer.current) clearTimeout(detailTimer.current);
       }}
-      initial={{ y: isOwn ? 40 : -40, opacity: 0, scale: 0.5 }}
-      animate={
-        damageAmount
-          ? { x: [0, -4, 4, -4, 4, 0], y: 0, opacity: 1, scale: isHovered && !isSelected ? 2.7 : 1 }
-          : { x: 0, y: 0, opacity: 1, scale: isHovered && !isSelected ? 2.7 : 1 }
-      }
-      exit={creature.isPoisoned
-        ? { opacity: 0, scale: 0.3, rotate: -10, filter: "brightness(0.5) saturate(2) hue-rotate(80deg)", transition: { duration: 0.7, ease: "easeIn" } }
-        : { opacity: 0, scale: 0, rotate: -15, filter: "brightness(2) saturate(0)", transition: { duration: 0.5, ease: "easeIn" } }
-      }
-      transition={{ duration: 0.5, ease: "easeOut" }}
       style={{
-        width: W, height: H, borderRadius: 10, position: "relative",
+        width: W, height: H, borderRadius: 10,
+        position: isZoomed ? "absolute" : "relative",
+        left: isZoomed ? "50%" : undefined,
+        bottom: isOwn && isZoomed ? 0 : undefined,
+        top: !isOwn && isZoomed ? 0 : undefined,
+        transformOrigin: isOwn ? "bottom center" : "top center",
+        transform: isZoomed ? "translateX(-50%)" : "none",
+        zoom: isZoomed ? 2.7 : 1,
         background: "linear-gradient(160deg, #1a1a2e, #0d0d1a)",
         border,
         boxShadow: isSelected ? "0 0 14px #f1c40f44" : isValidTarget ? "0 0 14px #e74c3c44" : "none",
         overflow: "hidden",
         cursor: "pointer",
         transition: "border-color 0.2s, box-shadow 0.2s",
-        zIndex: isHovered ? 20 : isSelected ? 10 : 1,
       }}
       title={`${card.name} (${creature.currentAttack}/${creature.currentHealth})`}
     >
@@ -303,7 +312,7 @@ export default function BoardCreature({
       {/* Hover overlay */}
       <div style={{
         position: "absolute", inset: 0, zIndex: 4,
-        background: "#0d0d1aee",
+        background: "#0d0d1a",
         opacity: showOverlay ? 1 : 0,
         transition: "opacity 0.25s ease",
         pointerEvents: showOverlay ? "auto" : "none",
@@ -384,6 +393,7 @@ export default function BoardCreature({
           <span style={{ color: isDamaged ? "#e74c3c" : isBuffedHp ? "#2ecc71" : "#e74c3c" }}>❤ {creature.currentHealth}/{creature.maxHealth}</span>
         </div>
       </div>
+    </div>
     </motion.div>
   );
 }

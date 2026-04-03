@@ -30,6 +30,11 @@ export interface SpellCastEvent {
   countered?: boolean;
 }
 
+export interface FireBreathEvent {
+  attackerInstanceId: string;
+  timestamp: number;
+}
+
 interface GameStore {
   // State
   gameState: GameState | null;
@@ -52,6 +57,7 @@ interface GameStore {
   effectLog: { id: string; text: string; timestamp: number }[];
   damageEvents: DamageEvent[];
   spellCastEvent: SpellCastEvent | null;
+  fireBreathEvent: FireBreathEvent | null;
 
   // Actions
   initGame: (
@@ -78,6 +84,7 @@ interface GameStore {
   clearSelection: () => void;
   clearDamageEvents: () => void;
   clearSpellCastEvent: () => void;
+  clearFireBreathEvent: () => void;
   activateHeroPower: () => GameAction | null;
   confirmMulligan: (selectedInstanceIds: string[]) => GameAction | null;
 
@@ -359,6 +366,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   effectLog: [],
   damageEvents: [],
   spellCastEvent: null,
+  fireBreathEvent: null,
 
   initGame: (player1Id, player2Id, player1Cards, player2Cards, firstPlayerIndex, seed, player1Hero, player2Hero, factionCardPool) => {
     const state = initializeGame(
@@ -394,6 +402,19 @@ export const useGameStore = create<GameStore>((set, get) => ({
         spellEvent = {
           spellName: cardInst.card.name,
           effectText: cardInst.card.effect_text,
+          timestamp: Date.now(),
+        };
+      }
+    }
+
+    // Detect fire breath before applying action
+    let fireEvent: FireBreathEvent | null = null;
+    if (action.type === "attack" && action.attackerInstanceId) {
+      const player = gameState.players[gameState.currentPlayerIndex];
+      const attacker = player.board.find((c) => c.instanceId === action.attackerInstanceId);
+      if (attacker && attacker.card.keywords.includes("souffle_de_feu" as import("@/lib/game/types").Keyword)) {
+        fireEvent = {
+          attackerInstanceId: action.attackerInstanceId,
           timestamp: Date.now(),
         };
       }
@@ -461,6 +482,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         damageEvents: dmgEvents,
         effectLog: [...get().effectLog, ...logEntries].slice(-20),
         ...(spellEvent ? { spellCastEvent: spellEvent } : {}),
+        ...(fireEvent ? { fireBreathEvent: fireEvent } : {}),
       });
 
       // After a short delay, remove dead creatures (triggers exit animation)
@@ -477,6 +499,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         damageEvents: dmgEvents,
         effectLog: [...get().effectLog, ...logEntries].slice(-20),
         ...(spellEvent ? { spellCastEvent: spellEvent } : {}),
+        ...(fireEvent ? { fireBreathEvent: fireEvent } : {}),
       });
     }
 
@@ -893,6 +916,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   clearSpellCastEvent: () => {
     set({ spellCastEvent: null });
+  },
+
+  clearFireBreathEvent: () => {
+    set({ fireBreathEvent: null });
   },
 
   activateHeroPower: () => {

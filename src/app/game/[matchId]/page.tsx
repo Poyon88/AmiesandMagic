@@ -175,6 +175,23 @@ export default function GamePage() {
             const action = payload.payload as GameAction;
             const store = useGameStore.getState();
             if (store.gameState) {
+              // Detect fire breath from opponent's attack
+              if (action.type === "attack" && action.attackerInstanceId) {
+                const currentPlayer = store.gameState.players[store.gameState.currentPlayerIndex];
+                const attacker = currentPlayer.board.find((c) => c.instanceId === action.attackerInstanceId);
+                if (attacker && attacker.card.keywords.includes("souffle_de_feu" as import("@/lib/game/types").Keyword)) {
+                  store.clearFireBreathEvent();
+                  setTimeout(() => {
+                    useGameStore.setState({
+                      fireBreathEvent: {
+                        attackerInstanceId: action.attackerInstanceId!,
+                        timestamp: Date.now(),
+                      },
+                    });
+                  }, 0);
+                }
+              }
+
               const newState = applyAction(store.gameState, action);
               store.setGameState(newState);
 
