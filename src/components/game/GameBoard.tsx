@@ -763,7 +763,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
       {/* Targeting arrow overlay */}
       <TargetingArrow
         targetingMode={targetingMode}
-        sourceInstanceId={selectedAttackerInstanceId ?? selectedCardInstanceId}
+        sourceInstanceId={selectedAttackerInstanceId ?? selectedCardInstanceId ?? (targetingMode === "hero_power" ? "hero_power" : null)}
         hoveredTargetId={hoveredTargetId}
       />
     </div>

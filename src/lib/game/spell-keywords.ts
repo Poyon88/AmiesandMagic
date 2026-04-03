@@ -74,9 +74,9 @@ export const SPELL_KEYWORDS: Record<SpellKeywordId, SpellKeywordDef> = {
     targetType: "any",
   },
   invocation: {
-    label: "Invocation X/X",
+    label: "Invocation X/Y",
     symbol: "📣",
-    desc: "Invoque un token X/X",
+    desc: "Invoque un token X/Y",
     params: ["attack", "health"],
     needsTarget: false,
   },

@@ -25,7 +25,17 @@ export default function HandCard({
   onClick,
 }: HandCardProps) {
   const card = cardInstance.card;
+  const gameState = useGameStore(s => s.gameState);
   const tokenTemplates = useGameStore(s => s.tokenTemplates);
+
+  // Compute effective mana cost (accounting for Canalisation)
+  let effectiveManaCost = card.mana_cost;
+  if (card.card_type === "spell" && gameState) {
+    const player = gameState.players[gameState.currentPlayerIndex];
+    const canalisationCount = player.board.filter(c => c.card.keywords.includes("canalisation" as import("@/lib/game/types").Keyword)).length;
+    effectiveManaCost = Math.max(0, effectiveManaCost - canalisationCount);
+  }
+  const isCostReduced = effectiveManaCost < card.mana_cost;
   const tokenTemplate = (card.id === -1 && !card.image_url && card.race)
     ? tokenTemplates.find(t => t.race === card.race)
     : null;
@@ -138,12 +148,12 @@ export default function HandCard({
         <div style={{
           position: "absolute", top: 4, left: 4, zIndex: 2,
           width: 20, height: 20, borderRadius: "50%",
-          background: "radial-gradient(circle, #1a3a6a, #0d1f3c)",
-          border: "2px solid #74b9ff",
+          background: isCostReduced ? "radial-gradient(circle, #1a6a3a, #0d3c1f)" : "radial-gradient(circle, #1a3a6a, #0d1f3c)",
+          border: `2px solid ${isCostReduced ? "#2ecc71" : "#74b9ff"}`,
           display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 10, color: "#74b9ff", fontWeight: 700,
-          boxShadow: "0 0 6px #74b9ff55",
-        }}>{card.mana_cost}</div>
+          fontSize: 10, color: isCostReduced ? "#2ecc71" : "#74b9ff", fontWeight: 700,
+          boxShadow: isCostReduced ? "0 0 6px #2ecc7155" : "0 0 6px #74b9ff55",
+        }}>{effectiveManaCost}</div>
 
         {/* Bottom bar */}
         <div style={{
@@ -333,7 +343,7 @@ export default function HandCard({
             display: "flex", justifyContent: "center", gap: 6,
             fontSize: 7, color: "#555",
           }}>
-            <span>💧 {card.mana_cost}</span>
+            <span style={isCostReduced ? { color: "#2ecc71" } : undefined}>💧 {effectiveManaCost}</span>
             {isCreature && <><span style={{ color: "#f1c40f" }}>⚔ {card.attack}</span><span style={{ color: "#e74c3c" }}>❤ {card.health}</span></>}
           </div>
         </div>

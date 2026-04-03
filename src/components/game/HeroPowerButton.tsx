@@ -59,6 +59,7 @@ export default function HeroPowerButton({
     >
       <div
         role="button"
+        data-target-id={isOpponent ? undefined : "hero_power"}
         onClick={available ? onClick : undefined}
         style={{ width: 48, height: 48, borderRadius: "50%" }}
         className={`
