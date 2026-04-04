@@ -479,6 +479,7 @@ export default function CardForge() {
     "Instinct de meute X": "instinct_de_meute", "Totem": "totem",
     "Appel du clan X": "appel_du_clan", "Rassemblement X": "rassemblement",
     "Sélection X": "selection",
+    "Lycanthropie X": "lycanthropie",
   };
 
   const [saving, setSaving] = useState(false);

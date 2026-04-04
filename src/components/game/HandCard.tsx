@@ -159,7 +159,7 @@ export default function HandCard({
         <div style={{
           position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2,
           padding: `${5 * s}px 5px 4px`,
-          background: "linear-gradient(0deg, #0d0d1add 0%, #0d0d1a88 40%, transparent 65%)",
+          background: "linear-gradient(0deg, #0d0d1aee 0%, #0d0d1aaa 30%, transparent 50%)",
           display: "flex", flexDirection: "column", gap: 2,
         }}>
           {/* Name */}
