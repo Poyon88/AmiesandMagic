@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import type { Card, Keyword } from "@/lib/game/types";
+import type { Card, Keyword, CardSet } from "@/lib/game/types";
 import { DECK_SIZE } from "@/lib/game/constants";
 import { FACTIONS, ALIGNMENTS } from "@/lib/card-engine/constants";
 import type { Alignment } from "@/lib/card-engine/constants";
@@ -31,6 +31,7 @@ interface DeckBuilderProps {
   userId: string;
   existingDeck: { id: number; name: string; hero_id: number | null } | null;
   existingDeckCards: { card_id: number; quantity: number }[];
+  sets: CardSet[];
 }
 
 const RACE_ICONS: Record<string, string> = {
@@ -54,6 +55,7 @@ export default function DeckBuilder({
   userId,
   existingDeck,
   existingDeckCards,
+  sets,
 }: DeckBuilderProps) {
   const router = useRouter();
   const supabase = createClient();
@@ -82,6 +84,8 @@ export default function DeckBuilder({
   const [rarityFilter, setRarityFilter] = useState<string | null>(null);
   const [raceFilter, setRaceFilter] = useState<string | null>(null);
   const [clanFilter, setClanFilter] = useState<string | null>(null);
+  const [filterSet, setFilterSet] = useState("");
+  const [filterYear, setFilterYear] = useState("");
 
   const factions = useMemo(() => {
     const set = new Set<string>();
@@ -99,6 +103,10 @@ export default function DeckBuilder({
     const set = new Set<string>();
     cards.forEach(c => { if (c.clan) set.add(c.clan); });
     return Array.from(set).sort();
+  }, [cards]);
+
+  const years = useMemo(() => {
+    return [...new Set(cards.filter(c => c.card_year).map(c => String(c.card_year)))].sort();
   }, [cards]);
 
   const totalCards = useMemo(() => {
@@ -124,9 +132,13 @@ export default function DeckBuilder({
         return false;
       if (clanFilter !== null && card.clan !== clanFilter)
         return false;
+      if (filterSet && card.set_id !== parseInt(filterSet))
+        return false;
+      if (filterYear && String(card.card_year) !== filterYear)
+        return false;
       return true;
     });
-  }, [cards, search, manaCostFilter, typeFilter, keywordFilter, factionFilter, rarityFilter, raceFilter, clanFilter]);
+  }, [cards, search, manaCostFilter, typeFilter, keywordFilter, factionFilter, rarityFilter, raceFilter, clanFilter, filterSet, filterYear]);
 
   const sortedDeckEntries = useMemo(() => {
     return Array.from(deckCards.values()).sort(
@@ -459,6 +471,26 @@ export default function DeckBuilder({
             <option value="">Clans</option>
             {clans.map((c) => (
               <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+          <select
+            value={filterSet}
+            onChange={(e) => setFilterSet(e.target.value)}
+            className="px-2 py-1 bg-secondary border border-card-border rounded text-xs text-foreground/70 focus:outline-none"
+          >
+            <option value="">Sets</option>
+            {sets.map((s) => (
+              <option key={s.id} value={String(s.id)}>{s.icon} {s.name}</option>
+            ))}
+          </select>
+          <select
+            value={filterYear}
+            onChange={(e) => setFilterYear(e.target.value)}
+            className="px-2 py-1 bg-secondary border border-card-border rounded text-xs text-foreground/70 focus:outline-none"
+          >
+            <option value="">Année</option>
+            {years.map((y) => (
+              <option key={y} value={y}>{y}</option>
             ))}
           </select>
           <div className="flex gap-0.5">

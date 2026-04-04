@@ -336,6 +336,13 @@ export default function BoardCreature({
           </div>
         )}
 
+        {/* Year */}
+        {card.card_year && (
+          <div style={{ textAlign: "center", fontSize: 7, color: "#888", fontFamily: "'Crimson Text',serif" }}>
+            📅 {card.card_year}
+          </div>
+        )}
+
         {/* Capacités detail */}
         {card.keywords.length > 0 && (() => {
           const xVals = parseXValuesFromEffectText(card.effect_text);

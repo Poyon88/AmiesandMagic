@@ -5,7 +5,7 @@ import { generateCardStats, pickMana, pickRarity, buildId } from "@/lib/card-eng
 import { RARITIES, FACTIONS, TYPES, KEYWORDS, RARITY_WEIGHTS_BY_MANA, RARITY_MAP, ALIGNMENTS } from "@/lib/card-engine/constants";
 import CardVisual, { KEYWORD_SYMBOLS } from "./CardVisual";
 import KeywordIcon from "@/components/shared/KeywordIcon";
-import type { CardType, Keyword, SpellEffect, SpellTargetType, SpellKeywordInstance, SpellComposableEffects, SpellEffectNode, SpellTargetSlot, AtomicEffectType, SpellCondition, AtomicEffect, ConditionalEffectNode } from "@/lib/game/types";
+import type { CardType, Keyword, SpellEffect, SpellTargetType, SpellKeywordInstance, SpellComposableEffects, SpellEffectNode, SpellTargetSlot, AtomicEffectType, SpellCondition, AtomicEffect, ConditionalEffectNode, CardSet } from "@/lib/game/types";
 import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
 import type { SpellKeywordId } from "@/lib/game/types";
 
@@ -56,6 +56,10 @@ interface ForgeCard {
   convocationRace?: string;
   convocationTokenName?: string;
   convocationTokens?: {race: string; attack: number; health: number}[];
+  lycanthropieRace?: string;
+  setName?: string;
+  setIcon?: string;
+  cardYear?: number;
   spellKeywords?: SpellKeywordInstance[];
 }
 
@@ -135,6 +139,13 @@ export default function CardForge() {
   const [hoveredKw, setHoveredKw] = useState<{ id: string; rect: DOMRect } | null>(null);
   const [convocationRace, setConvocationRace] = useState("");
   const [convocationTokens, setConvocationTokens] = useState<{race: string; attack: number; health: number}[]>([]);
+  const [lycanthropieRace, setLycanthropieRace] = useState("");
+  const [cardSetId, setCardSetId] = useState<number | null>(null);
+  const [cardYear, setCardYear] = useState<number | null>(null);
+  const [sets, setSets] = useState<CardSet[]>([]);
+  const [newSetName, setNewSetName] = useState("");
+  const [newSetCode, setNewSetCode] = useState("");
+  const [newSetIcon, setNewSetIcon] = useState("⚔️");
 
   // ─── NEW SPELL SYSTEM ──────────────────────────────────────────────────────
   const [spellKeywords, setSpellKeywords] = useState<SpellKeywordInstance[]>([]);
@@ -198,6 +209,10 @@ export default function CardForge() {
     convocationRace: convocationRace || undefined,
     convocationTokenName: tokenTemplates.find(t => t.race === convocationRace)?.name || convocationRace || undefined,
     convocationTokens: convocationTokens.length > 0 ? convocationTokens : undefined,
+    lycanthropieRace: lycanthropieRace || undefined,
+    setName: cardSetId ? sets.find(s => s.id === cardSetId)?.name : undefined,
+    setIcon: cardSetId ? sets.find(s => s.id === cardSetId)?.icon : undefined,
+    cardYear: cardYear || undefined,
     spellKeywords: type !== "Unité" && spellKeywords.length > 0 ? spellKeywords : undefined,
   };
 
@@ -208,6 +223,13 @@ export default function CardForge() {
     try {
       const res = await fetch('/api/token-templates');
       if (res.ok) setTokenTemplates(await res.json());
+    } catch { /* ignore */ }
+  }, []);
+
+  const loadSets = useCallback(async () => {
+    try {
+      const res = await fetch('/api/sets');
+      if (res.ok) setSets(await res.json());
     } catch { /* ignore */ }
   }, []);
 
@@ -469,6 +491,7 @@ export default function CardForge() {
 
   const loadExistingCards = useCallback(async () => {
     try {
+      loadSets();
       const res = await fetch('/api/cards/save');
       const data = await res.json();
       if (res.ok) {
@@ -543,6 +566,9 @@ export default function CardForge() {
     setSpellEffectsData(dbCard.spell_effects ?? null);
     setConvocationRace(dbCard.convocation_race || "");
     setConvocationTokens((dbCard as { convocation_tokens?: {race: string; attack: number; health: number}[] | null }).convocation_tokens ?? []);
+    setLycanthropieRace((dbCard as { lycanthropie_race?: string | null }).lycanthropie_race || "");
+    setCardSetId((dbCard as { set_id?: number | null }).set_id || null);
+    setCardYear((dbCard as { card_year?: number | null }).card_year || null);
 
     // Load existing image if available
     if (dbCard.image_url) {
@@ -668,6 +694,9 @@ export default function CardForge() {
             card_alignment: forgeCard.cardAlignment || null,
             convocation_race: convocationRace || null,
             convocation_tokens: convocationTokens.length > 0 ? convocationTokens : null,
+            lycanthropie_race: lycanthropieRace || null,
+            set_id: cardSetId || null,
+            card_year: cardYear || null,
           },
           imageBase64,
           imageMimeType,
@@ -745,8 +774,8 @@ export default function CardForge() {
             <span style={{ fontSize: 8, color: "#aaa", letterSpacing: 2 }}>ARMIES & MAGIC</span>
           </div>
           <div style={{ display: "flex", gap: 4 }}>
-            {([["forge", "⚒ Forge"], ["tokens", "🎭 Tokens"], ["bulk", "📦 Masse"], ["budget", "⚖ Budget"], ["schema", "📋 Schéma"]] as const).map(([t, l]) => (
-              <button key={t} onClick={() => setTab(t)} style={{
+            {([["forge", "⚒ Forge"], ["tokens", "🎭 Tokens"], ["sets", "📦 Sets"], ["bulk", "📦 Masse"], ["budget", "⚖ Budget"], ["schema", "📋 Schéma"]] as const).map(([t, l]) => (
+              <button key={t} onClick={() => { setTab(t); if (t === "sets") loadSets(); }} style={{
                 padding: "5px 14px", borderRadius: 6, cursor: "pointer",
                 background: tab === t ? "#333" : "transparent",
                 border: `1px solid ${tab === t ? "#333" : "#ddd"}`,
@@ -865,6 +894,21 @@ export default function CardForge() {
                     <span style={{ fontSize: 7.5, opacity: 0.45 }}>×{r.multiplier.toFixed(2)}</span>
                   </button>
                 ))}
+              </Sec>
+
+              <Sec title="Set / Année">
+                <select value={cardSetId ?? ""} onChange={e => { const v = e.target.value; setCardSetId(v ? parseInt(v) : null); if (v) setCardYear(null); }}
+                  style={{ width: "100%", padding: "5px 8px", borderRadius: 5, border: "1px solid #e0e0e0", fontSize: 10, fontFamily: "'Cinzel',serif", marginBottom: 4 }}>
+                  <option value="">— Aucun set —</option>
+                  {sets.map(s => <option key={s.id} value={s.id}>{s.icon} {s.name} ({s.code})</option>)}
+                </select>
+                <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                  <span style={{ fontSize: 8, color: "#888" }}>OU Année :</span>
+                  <input type="number" min={2020} max={2040} value={cardYear ?? ""} placeholder="ex: 2026"
+                    onChange={e => { const v = e.target.value ? parseInt(e.target.value) : null; setCardYear(v); if (v) setCardSetId(null); }}
+                    disabled={!!cardSetId}
+                    style={{ width: 60, padding: "3px 6px", borderRadius: 4, border: "1px solid #e0e0e0", fontSize: 10, fontFamily: "'Cinzel',serif", opacity: cardSetId ? 0.4 : 1 }} />
+                </div>
               </Sec>
 
               <Sec title="Mode">
@@ -1439,6 +1483,18 @@ export default function CardForge() {
                         {!convocationRace && <span style={{ fontSize: 8, color: "#e74c3c" }}>Requis</span>}
                       </div>
                     )}
+                    {/* Lycanthropie race selector */}
+                    {manualKeywords.includes("Lycanthropie X") && (
+                      <div style={{ marginTop: 6, display: "flex", alignItems: "center", gap: 6 }}>
+                        <label style={{ fontSize: 8, color: "#8b5cf6", letterSpacing: 1, fontWeight: 700 }}>🐺 RACE LYCANTHROPE</label>
+                        <select value={lycanthropieRace} onChange={e => setLycanthropieRace(e.target.value)}
+                          style={{ padding: "3px 6px", borderRadius: 5, border: `1px solid ${lycanthropieRace ? "#8b5cf644" : "#e74c3c"}`, fontSize: 9, fontFamily: "'Cinzel',serif", color: lycanthropieRace ? "#8b5cf6" : "#e74c3c", background: "#fff" }}>
+                          <option value="">-- Choisir une race --</option>
+                          {allRaces.map(r => <option key={r} value={r}>{r}</option>)}
+                        </select>
+                        {!lycanthropieRace && <span style={{ fontSize: 8, color: "#e74c3c" }}>Requis</span>}
+                      </div>
+                    )}
                     {/* Convocations multiples — token list editor */}
                     {manualKeywords.includes("Convocations multiples") && (
                       <div style={{ marginTop: 6, border: "1px solid #9b59b633", borderRadius: 6, padding: 8, background: "#f9f0ff" }}>
@@ -1734,6 +1790,57 @@ export default function CardForge() {
                   ))}
                 </div>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── SETS ── */}
+        {tab === "sets" && (
+          <div style={{ flex: 1, padding: 18, display: "flex", flexDirection: "column", gap: 14, overflowY: "auto" }}>
+            <div style={{ background: "#fff", borderRadius: 8, border: "1px solid #e0e0e0", padding: 16 }}>
+              <h3 style={{ fontSize: 11, fontFamily: "'Cinzel',serif", fontWeight: 700, color: "#333", marginBottom: 12, letterSpacing: 1 }}>
+                CRÉER UN SET
+              </h3>
+              <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                <input value={newSetName} onChange={e => setNewSetName(e.target.value)} placeholder="Nom (ex: Set de Base)"
+                  style={{ flex: 2, padding: "6px 10px", borderRadius: 5, border: "1px solid #e0e0e0", fontSize: 11, fontFamily: "'Cinzel',serif" }} />
+                <input value={newSetCode} onChange={e => setNewSetCode(e.target.value.toUpperCase())} placeholder="Code (ex: BASE)" maxLength={8}
+                  style={{ width: 80, padding: "6px 10px", borderRadius: 5, border: "1px solid #e0e0e0", fontSize: 11, fontFamily: "'Cinzel',serif", textTransform: "uppercase" }} />
+                <input value={newSetIcon} onChange={e => setNewSetIcon(e.target.value)} placeholder="Icône"
+                  style={{ width: 40, padding: "6px", borderRadius: 5, border: "1px solid #e0e0e0", fontSize: 14, textAlign: "center" }} />
+                <button onClick={async () => {
+                  if (!newSetName || !newSetCode) return;
+                  const res = await fetch('/api/sets', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newSetName, code: newSetCode, icon: newSetIcon }) });
+                  if (res.ok) { setNewSetName(""); setNewSetCode(""); setNewSetIcon("⚔️"); loadSets(); }
+                }} disabled={!newSetName || !newSetCode}
+                  style={{ padding: "6px 16px", borderRadius: 6, border: "none", background: "#333", color: "#fff", fontSize: 10, fontFamily: "'Cinzel',serif", fontWeight: 700, cursor: "pointer", opacity: (!newSetName || !newSetCode) ? 0.4 : 1 }}>
+                  Créer
+                </button>
+              </div>
+            </div>
+
+            <div style={{ background: "#fff", borderRadius: 8, border: "1px solid #e0e0e0", padding: 16 }}>
+              <h3 style={{ fontSize: 11, fontFamily: "'Cinzel',serif", fontWeight: 700, color: "#333", marginBottom: 12, letterSpacing: 1 }}>
+                SETS EXISTANTS ({sets.length})
+              </h3>
+              {sets.length === 0 && <p style={{ fontSize: 10, color: "#aaa" }}>Aucun set créé</p>}
+              {sets.map(s => (
+                <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: "1px solid #f0f0f0" }}>
+                  <span style={{ fontSize: 18 }}>{s.icon}</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, fontFamily: "'Cinzel',serif" }}>{s.name}</div>
+                    <div style={{ fontSize: 9, color: "#888" }}>{s.code}</div>
+                  </div>
+                  <button onClick={async () => {
+                    const res = await fetch('/api/sets', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: s.id }) });
+                    const data = await res.json();
+                    if (res.ok) loadSets();
+                    else alert(data.error || "Erreur");
+                  }} style={{ fontSize: 8, padding: "3px 10px", borderRadius: 4, border: "1px solid #f5a3a3", background: "#fde8e8", color: "#e74c3c", cursor: "pointer", fontFamily: "'Cinzel',serif" }}>
+                    Supprimer
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
         )}

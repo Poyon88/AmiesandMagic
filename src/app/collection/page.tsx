@@ -10,11 +10,17 @@ export default async function CollectionPage() {
 
   if (!user) redirect("/login");
 
-  const { data: cards } = await supabase
-    .from("cards")
-    .select("*")
-    .order("mana_cost")
-    .order("name");
+  const [{ data: cards }, { data: sets }] = await Promise.all([
+    supabase
+      .from("cards")
+      .select("*")
+      .order("mana_cost")
+      .order("name"),
+    supabase
+      .from("sets")
+      .select("*")
+      .order("name"),
+  ]);
 
-  return <CollectionView cards={cards ?? []} />;
+  return <CollectionView cards={cards ?? []} sets={sets ?? []} />;
 }

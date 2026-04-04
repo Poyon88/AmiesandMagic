@@ -16,8 +16,8 @@ export default async function DeckBuilderPage({
 
   if (!user) redirect("/login");
 
-  // Fetch all cards and heroes
-  const [{ data: cards }, { data: heroes }] = await Promise.all([
+  // Fetch all cards, heroes, and sets
+  const [{ data: cards }, { data: heroes }, { data: sets }] = await Promise.all([
     supabase
       .from("cards")
       .select("*")
@@ -27,6 +27,10 @@ export default async function DeckBuilderPage({
       .from("heroes")
       .select("*")
       .order("id"),
+    supabase
+      .from("sets")
+      .select("*")
+      .order("name"),
   ]);
 
   // If editing, fetch existing deck
@@ -60,6 +64,7 @@ export default async function DeckBuilderPage({
       userId={user.id}
       existingDeck={existingDeck}
       existingDeckCards={existingDeckCards}
+      sets={sets ?? []}
     />
   );
 }

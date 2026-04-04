@@ -120,6 +120,10 @@ interface CardData {
   convocationRace?: string;
   convocationTokenName?: string;
   convocationTokens?: {race: string; attack: number; health: number}[];
+  lycanthropieRace?: string;
+  setName?: string;
+  setIcon?: string;
+  cardYear?: number;
   spellKeywords?: SpellKeywordInstance[];
   budgetTotal: number;
 }
@@ -274,6 +278,9 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
               if (kw === "Convocations multiples" && card!.convocationTokens?.length) {
                 const parts = card!.convocationTokens.map(t => `${t.race || "Token"} ${t.attack}/${t.health}`);
                 displayDesc = `Invocation : crée ${parts.join(", ")}.`;
+              }
+              if (kw === "Lycanthropie X" && card!.lycanthropieRace) {
+                displayDesc = `Début de tour : se transforme en ${card!.lycanthropieRace} ${xVal ?? "X"}/${xVal ?? "X"} avec Traque.`;
               }
               return (
                 <div key={kw} title={`${displayName}: ${displayDesc}`} style={{
@@ -431,6 +438,13 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
           </div>
         )}
 
+        {/* Set / Year */}
+        {(card!.setName || card!.cardYear) && (
+          <div style={{ textAlign: "center", fontSize: 11 * s, color: "#aaa", fontFamily: "'Crimson Text',serif" }}>
+            {card!.setName ? `${card!.setIcon || "📦"} ${card!.setName}` : `📅 ${card!.cardYear}`}
+          </div>
+        )}
+
         {/* Capacités detail */}
         {card!.keywords?.length > 0 && (
           <div style={{ display: "flex", flexDirection: "column", gap: 6 * s }}>
@@ -445,6 +459,9 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
               if (kw === "Convocations multiples" && card!.convocationTokens?.length) {
                 const parts = card!.convocationTokens.map(t => `${t.race || "Token"} ${t.attack}/${t.health}`);
                 displayDesc = `Invocation : crée ${parts.join(", ")}.`;
+              }
+              if (kw === "Lycanthropie X" && card!.lycanthropieRace) {
+                displayDesc = `Début de tour : se transforme en ${card!.lycanthropieRace} ${xVal ?? "X"}/${xVal ?? "X"} avec Traque.`;
               }
               return (
                 <div key={kw} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>

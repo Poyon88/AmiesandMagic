@@ -2,11 +2,12 @@
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import type { Card, Keyword } from "@/lib/game/types";
+import type { Card, Keyword, CardSet } from "@/lib/game/types";
 import GameCard from "./GameCard";
 
 interface CollectionViewProps {
   cards: Card[];
+  sets: CardSet[];
 }
 
 import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
@@ -21,7 +22,7 @@ const RARITY_COLORS: Record<string, string> = {
   "Légendaire": "#ffd54f",
 };
 
-export default function CollectionView({ cards }: CollectionViewProps) {
+export default function CollectionView({ cards, sets }: CollectionViewProps) {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [manaCostFilter, setManaCostFilter] = useState<number | null>(null);
@@ -31,6 +32,8 @@ export default function CollectionView({ cards }: CollectionViewProps) {
   const [rarityFilter, setRarityFilter] = useState<string | null>(null);
   const [raceFilter, setRaceFilter] = useState<string | null>(null);
   const [clanFilter, setClanFilter] = useState<string | null>(null);
+  const [filterSet, setFilterSet] = useState("");
+  const [filterYear, setFilterYear] = useState("");
 
   // Extract unique factions, races, clans from cards
   const factions = useMemo(() => {
@@ -51,6 +54,10 @@ export default function CollectionView({ cards }: CollectionViewProps) {
     return Array.from(set).sort();
   }, [cards]);
 
+  const years = useMemo(() => {
+    return [...new Set(cards.filter(c => c.card_year).map(c => String(c.card_year)))].sort();
+  }, [cards]);
+
   const filteredCards = useMemo(() => {
     return cards.filter((card) => {
       if (search && !card.name.toLowerCase().includes(search.toLowerCase()))
@@ -68,9 +75,13 @@ export default function CollectionView({ cards }: CollectionViewProps) {
         return false;
       if (clanFilter !== null && card.clan !== clanFilter)
         return false;
+      if (filterSet && card.set_id !== parseInt(filterSet))
+        return false;
+      if (filterYear && String(card.card_year) !== filterYear)
+        return false;
       return true;
     });
-  }, [cards, search, manaCostFilter, typeFilter, keywordFilter, factionFilter, rarityFilter, raceFilter, clanFilter]);
+  }, [cards, search, manaCostFilter, typeFilter, keywordFilter, factionFilter, rarityFilter, raceFilter, clanFilter, filterSet, filterYear]);
 
   function resetFilters() {
     setSearch("");
@@ -81,10 +92,12 @@ export default function CollectionView({ cards }: CollectionViewProps) {
     setRarityFilter(null);
     setRaceFilter(null);
     setClanFilter(null);
+    setFilterSet("");
+    setFilterYear("");
   }
 
   const hasActiveFilters =
-    search || manaCostFilter !== null || typeFilter !== null || keywordFilter !== null || factionFilter !== null || rarityFilter !== null || raceFilter !== null || clanFilter !== null;
+    search || manaCostFilter !== null || typeFilter !== null || keywordFilter !== null || factionFilter !== null || rarityFilter !== null || raceFilter !== null || clanFilter !== null || filterSet !== "" || filterYear !== "";
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -262,6 +275,36 @@ export default function CollectionView({ cards }: CollectionViewProps) {
               <option value="">Tous</option>
               {clans.map((c) => (
                 <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Set filter */}
+          <div className="flex items-center gap-1">
+            <span className="text-foreground/50 text-sm mr-1">Set:</span>
+            <select
+              value={filterSet}
+              onChange={(e) => setFilterSet(e.target.value)}
+              className="px-3 py-1.5 bg-background border border-card-border rounded-lg text-foreground/70 text-sm focus:outline-none focus:border-primary"
+            >
+              <option value="">Tous</option>
+              {sets.map((s) => (
+                <option key={s.id} value={String(s.id)}>{s.icon} {s.name}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Year filter */}
+          <div className="flex items-center gap-1">
+            <span className="text-foreground/50 text-sm mr-1">Année:</span>
+            <select
+              value={filterYear}
+              onChange={(e) => setFilterYear(e.target.value)}
+              className="px-3 py-1.5 bg-background border border-card-border rounded-lg text-foreground/70 text-sm focus:outline-none focus:border-primary"
+            >
+              <option value="">Toutes</option>
+              {years.map((y) => (
+                <option key={y} value={y}>{y}</option>
               ))}
             </select>
           </div>

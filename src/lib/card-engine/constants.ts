@@ -55,6 +55,7 @@ export const KEYWORDS: Record<string, { cost: number; costPerX: number; se: numb
   "Catalyse":           { cost: 11, costPerX: 0, se: 2.5, minTier: 2, scalable: false, zone: "Main", desc: "Invocation : réduit de 1 le coût en mana de toutes les unités de même race dans votre main." },
   "Contresort":         { cost: 13, costPerX: 0, se: 3.0, minTier: 2, scalable: false, zone: "Terrain", desc: "Invocation : annule le prochain sort adverse." },
   "Convocation X":      { cost:  8, costPerX: 5, se: 3.0, minTier: 2, scalable: true,  zone: "Terrain", desc: "Invocation : crée un token X/X de la race indiquée." },
+  "Lycanthropie X":     { cost: 12, costPerX: 5, se: 3.5, minTier: 2, scalable: true,  zone: "Terrain", desc: "Début de tour : se transforme en un token X/X avec Traque." },
   "Convocations multiples": { cost: 12, costPerX: 0, se: 4.0, minTier: 2, scalable: false, zone: "Terrain", desc: "Invocation : crée plusieurs tokens selon la configuration." },
   "Malédiction":        { cost: 16, costPerX: 0, se: 3.5, minTier: 2, scalable: false, zone: "Terrain", desc: "Invocation : ciblez une unité ennemie, elle est exilée à la fin du prochain tour adverse." },
   "Nécrophagie":        { cost: 18, costPerX: 0, se: 4.0, minTier: 2, scalable: false, zone: "Terrain", desc: "Gagne +1 ATK et +1 PV chaque fois qu'une unité (alliée ou ennemie) meurt." },
@@ -216,7 +217,7 @@ export const FACTIONS: Record<string, {
   },
   Mercenaires: {
     color: "#8B8B00", accent: "#D4D400", emoji: "💰", bg: "#1a1a08", alignment: "spéciale",
-    races: ["Géants", "Ogres", "Dragons", "Chiens", "Phoenix", "Anges"],
+    races: ["Géants", "Ogres", "Dragons", "Chiens", "Phoenix", "Anges", "Ours", "Loups"],
     statWeights: { atk: 1.05, def: 1.05 },
     guaranteedKeywords: [],
     likelyKeywords: { "Traque": 0.40, "Première Frappe": 0.40, "Précision": 0.35, "Esquive": 0.30, "Berserk": 0.30, "Bouclier": 0.25, "Fureur": 0.25, "Vol": 0.15,
@@ -230,6 +231,8 @@ export const FACTIONS: Record<string, {
       "Chiens": { statWeights: { atk: 1.10, def: 0.80 }, likelyKeywords: { "Raid": 0.70, "Traque": 0.55, "Instinct de meute X": 0.60, "Loyauté": 0.50, "Esquive": 0.40, "Berserk": 0.35, "Première Frappe": 0.30 } },
       "Phoenix": { statWeights: { atk: 1.20, def: 0.95 }, likelyKeywords: { "Vol": 0.80, "Résurrection": 0.70, "Souffle de feu X": 0.55, "Régénération": 0.50, "Bouclier": 0.40, "Berserk": 0.35, "Fureur": 0.30, "Cycle éternel": 0.45 } },
       "Anges": { statWeights: { atk: 1.10, def: 1.15 }, likelyKeywords: { "Vol": 0.85, "Bouclier": 0.60, "Bénédiction": 0.55, "Commandement": 0.50, "Première Frappe": 0.45, "Drain de vie": 0.40, "Provocation": 0.35, "Résistance": 0.30 } },
+      "Ours": { statWeights: { atk: 1.20, def: 1.25 }, likelyKeywords: { "Provocation": 0.55, "Berserk": 0.50, "Résistance": 0.45, "Fureur": 0.40, "Régénération": 0.35, "Lycanthropie X": 0.45 } },
+      "Loups": { statWeights: { atk: 1.15, def: 0.90 }, likelyKeywords: { "Traque": 0.60, "Raid": 0.55, "Instinct de meute X": 0.50, "Esquive": 0.40, "Berserk": 0.35, "Lycanthropie X": 0.45 } },
     },
   },
   Orcs: {

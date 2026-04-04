@@ -113,6 +113,7 @@ function createCardInstance(card: Card): CardInstance {
     instinctDeMeuteX: 0,
     cycleEternelAutoPlay: false,
     originalOwnerId: null,
+    hasTransformedLycanthropie: false,
   };
 }
 
@@ -357,6 +358,39 @@ export function startTurn(state: GameState): GameState {
       creature.currentAttack -= creature.fureurATKBonus;
       creature.fureurActive = false;
       creature.fureurATKBonus = 0;
+    }
+
+    // Lycanthropie X: permanent transformation into X/X token with Traque
+    if (hasKw(creature, "lycanthropie") && !creature.hasTransformedLycanthropie) {
+      creature.hasTransformedLycanthropie = true;
+      const xVals = parseXValuesFromEffectText(creature.card.effect_text);
+      const x = xVals["lycanthropie"] || Math.max(1, Math.floor(creature.card.mana_cost / 2));
+      const tokenRace = creature.card.lycanthropie_race || creature.card.race;
+      // Keep original keywords except lycanthropie, add charge (Traque)
+      const newKeywords = creature.card.keywords.filter(kw => kw !== "lycanthropie");
+      if (!newKeywords.includes("charge")) newKeywords.push("charge");
+      let tokenCard: Card = {
+        id: -1,
+        name: `${tokenRace || creature.card.name}`,
+        mana_cost: creature.card.mana_cost,
+        card_type: "creature",
+        attack: x,
+        health: x,
+        effect_text: `Lycanthropie ${x}/${x}`,
+        keywords: newKeywords,
+        spell_keywords: null,
+        spell_effects: null,
+        image_url: null,
+        race: tokenRace,
+        faction: creature.card.faction,
+        clan: creature.card.clan,
+      };
+      tokenCard = applyTokenTemplate(tokenCard);
+      creature.card = tokenCard;
+      creature.currentAttack = x + creature.summonBonusATK + creature.necrophagieATKBonus + creature.loyauteATKBonus + creature.auraHealthBonus;
+      creature.currentHealth = x + creature.necrophagiePVBonus + creature.loyautePVBonus;
+      creature.maxHealth = x + creature.necrophagiePVBonus + creature.loyautePVBonus;
+      creature.hasSummoningSickness = false; // Traque
     }
 
     // Régénération: +2 HP at start of turn

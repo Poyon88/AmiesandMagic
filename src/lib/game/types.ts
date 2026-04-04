@@ -25,7 +25,7 @@ export type Keyword =
   // Tier 3 — Cimetière
   | "exhumation" | "heritage_du_cimetiere"
   // Tier 2 — Deck / Race / Clan
-  | "traque_du_destin" | "sang_mele" | "fierte_du_clan" | "solidarite"
+  | "traque_du_destin" | "sang_mele" | "fierte_du_clan" | "solidarite" | "lycanthropie"
   // Tier 3 — Deck / Race / Clan / Mixte
   | "cycle_eternel" | "martyr" | "instinct_de_meute" | "totem" | "appel_du_clan" | "rassemblement"
   // Tier 4
@@ -229,6 +229,16 @@ export interface Card {
   card_alignment?: string;
   convocation_race?: string | null;
   convocation_tokens?: ConvocationTokenDef[] | null;
+  lycanthropie_race?: string | null;
+  set_id?: number | null;
+  card_year?: number | null;
+}
+
+export interface CardSet {
+  id: number;
+  name: string;
+  code: string;
+  icon: string;
 }
 
 // In-game card instance (a card on the board or in hand with runtime state)
@@ -286,6 +296,8 @@ export interface CardInstance {
   cycleEternelAutoPlay: boolean;
   // Owner tracking (for Corruption end-of-turn return)
   originalOwnerId: string | null;
+  // Lycanthropie: has already transformed
+  hasTransformedLycanthropie: boolean;
 }
 
 // Hero power system
