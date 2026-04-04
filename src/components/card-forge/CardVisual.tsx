@@ -124,6 +124,7 @@ interface CardData {
   setName?: string;
   setIcon?: string;
   cardYear?: number;
+  cardMonth?: number;
   spellKeywords?: SpellKeywordInstance[];
   budgetTotal: number;
 }
@@ -441,7 +442,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
         {/* Set / Year */}
         {(card!.setName || card!.cardYear) && (
           <div style={{ textAlign: "center", fontSize: 11 * s, color: "#aaa", fontFamily: "'Crimson Text',serif" }}>
-            {card!.setName ? `${card!.setIcon || "📦"} ${card!.setName}` : `📅 ${card!.cardYear}`}
+            {card!.setName ? `${card!.setIcon || "📦"} ${card!.setName}` : `📅 ${card!.cardMonth ? ["Jan","Fév","Mar","Avr","Mai","Juin","Juil","Aoû","Sep","Oct","Nov","Déc"][card!.cardMonth - 1] + " " : ""}${card!.cardYear}`}
           </div>
         )}
 

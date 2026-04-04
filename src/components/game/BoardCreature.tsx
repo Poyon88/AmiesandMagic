@@ -47,7 +47,7 @@ export default function BoardCreature({
   const creatureRef = useRef<HTMLDivElement>(null);
   const detailTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const isZoomed = isHovered && !isSelected && !isValidTarget && !canAttack;
+  const isZoomed = isHovered && !isSelected && !isValidTarget;
   const showOverlay = isZoomed && showDetails;
   const W = 128;
   const H = 176;

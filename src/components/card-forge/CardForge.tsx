@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { generateCardStats, pickMana, pickRarity, buildId } from "@/lib/card-engine/generator";
 import { RARITIES, FACTIONS, TYPES, KEYWORDS, RARITY_WEIGHTS_BY_MANA, RARITY_MAP, ALIGNMENTS } from "@/lib/card-engine/constants";
 import CardVisual, { KEYWORD_SYMBOLS } from "./CardVisual";
@@ -60,6 +60,7 @@ interface ForgeCard {
   setName?: string;
   setIcon?: string;
   cardYear?: number;
+  cardMonth?: number;
   spellKeywords?: SpellKeywordInstance[];
 }
 
@@ -142,6 +143,7 @@ export default function CardForge() {
   const [lycanthropieRace, setLycanthropieRace] = useState("");
   const [cardSetId, setCardSetId] = useState<number | null>(null);
   const [cardYear, setCardYear] = useState<number | null>(null);
+  const [cardMonth, setCardMonth] = useState<number | null>(null);
   const [sets, setSets] = useState<CardSet[]>([]);
   const [newSetName, setNewSetName] = useState("");
   const [newSetCode, setNewSetCode] = useState("");
@@ -213,6 +215,7 @@ export default function CardForge() {
     setName: cardSetId ? sets.find(s => s.id === cardSetId)?.name : undefined,
     setIcon: cardSetId ? sets.find(s => s.id === cardSetId)?.icon : undefined,
     cardYear: cardYear || undefined,
+    cardMonth: cardMonth || undefined,
     spellKeywords: type !== "Unité" && spellKeywords.length > 0 ? spellKeywords : undefined,
   };
 
@@ -232,6 +235,8 @@ export default function CardForge() {
       if (res.ok) setSets(await res.json());
     } catch { /* ignore */ }
   }, []);
+
+  useEffect(() => { loadSets(); }, [loadSets]);
 
   const generateTokenPrompt = useCallback(() => {
     if (!tokenRace) return;
@@ -524,7 +529,7 @@ export default function CardForge() {
     setManualAttack(dbCard.attack ?? 3);
     setManualDefense(dbCard.health ?? 3);
     setManualPower(dbCard.spell_keywords?.[0]?.amount ?? 1);
-    setManualAbility(dbCard.effect_text || "");
+    setManualAbility((dbCard.effect_text || "").replace(/\s*\[[^\]]*\]\s*$/, "").trim());
     setManualFlavorText(dbCard.flavor_text || "");
     setManualIllustrationPrompt(dbCard.illustration_prompt || "");
     const forgeKws = (dbCard.keywords || []).map(k => GAME_TO_FORGE_KEYWORD[k] || k);
@@ -570,6 +575,7 @@ export default function CardForge() {
     setLycanthropieRace((dbCard as { lycanthropie_race?: string | null }).lycanthropie_race || "");
     setCardSetId((dbCard as { set_id?: number | null }).set_id || null);
     setCardYear((dbCard as { card_year?: number | null }).card_year || null);
+    setCardMonth((dbCard as { card_month?: number | null }).card_month || null);
 
     // Load existing image if available
     if (dbCard.image_url) {
@@ -698,6 +704,7 @@ export default function CardForge() {
             lycanthropie_race: lycanthropieRace || null,
             set_id: cardSetId || null,
             card_year: cardYear || null,
+            card_month: cardMonth || null,
           },
           imageBase64,
           imageMimeType,
@@ -898,13 +905,21 @@ export default function CardForge() {
               </Sec>
 
               <Sec title="Set / Année">
-                <select value={cardSetId ?? ""} onChange={e => { const v = e.target.value; setCardSetId(v ? parseInt(v) : null); if (v) setCardYear(null); }}
+                <select value={cardSetId ?? ""} onChange={e => { const v = e.target.value; setCardSetId(v ? parseInt(v) : null); if (v) { setCardYear(null); setCardMonth(null); } }}
                   style={{ width: "100%", padding: "5px 8px", borderRadius: 5, border: "1px solid #e0e0e0", fontSize: 10, fontFamily: "'Cinzel',serif", marginBottom: 4 }}>
                   <option value="">— Aucun set —</option>
                   {sets.map(s => <option key={s.id} value={s.id}>{s.icon} {s.name} ({s.code})</option>)}
                 </select>
                 <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                  <span style={{ fontSize: 8, color: "#888" }}>OU Année :</span>
+                  <span style={{ fontSize: 8, color: "#888" }}>OU Mois/Année :</span>
+                  <select value={cardMonth ?? ""} onChange={e => { const v = e.target.value ? parseInt(e.target.value) : null; setCardMonth(v); if (v && !cardYear) setCardYear(new Date().getFullYear()); if (v) setCardSetId(null); }}
+                    disabled={!!cardSetId}
+                    style={{ width: 70, padding: "3px 6px", borderRadius: 4, border: "1px solid #e0e0e0", fontSize: 10, fontFamily: "'Cinzel',serif", opacity: cardSetId ? 0.4 : 1 }}>
+                    <option value="">Mois</option>
+                    {["Jan","Fév","Mar","Avr","Mai","Juin","Juil","Aoû","Sep","Oct","Nov","Déc"].map((m, i) => (
+                      <option key={i + 1} value={i + 1}>{m}</option>
+                    ))}
+                  </select>
                   <input type="number" min={2020} max={2040} value={cardYear ?? ""} placeholder="ex: 2026"
                     onChange={e => { const v = e.target.value ? parseInt(e.target.value) : null; setCardYear(v); if (v) setCardSetId(null); }}
                     disabled={!!cardSetId}

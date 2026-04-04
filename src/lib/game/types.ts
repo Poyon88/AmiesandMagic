@@ -232,6 +232,7 @@ export interface Card {
   lycanthropie_race?: string | null;
   set_id?: number | null;
   card_year?: number | null;
+  card_month?: number | null;
 }
 
 export interface CardSet {

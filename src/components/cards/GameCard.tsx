@@ -246,10 +246,10 @@ export default function GameCard({
           </div>
         )}
 
-        {/* Year */}
-        {card.card_year && (
+        {/* Month / Year (for cards without a set) */}
+        {card.card_year && !card.set_id && (
           <div style={{ textAlign: "center", fontSize: 13 * s, color: "#888", fontFamily: "'Crimson Text',serif" }}>
-            📅 {card.card_year}
+            📅 {card.card_month ? ["Jan","Fév","Mar","Avr","Mai","Juin","Juil","Aoû","Sep","Oct","Nov","Déc"][card.card_month - 1] + " " : ""}{card.card_year}
           </div>
         )}
 

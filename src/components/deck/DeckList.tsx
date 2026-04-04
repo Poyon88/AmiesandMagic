@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { DECK_SIZE } from "@/lib/game/constants";
 
 interface DeckWithCount {
@@ -14,13 +13,24 @@ interface DeckWithCount {
 
 export default function DeckList({ decks }: { decks: DeckWithCount[] }) {
   const router = useRouter();
-  const supabase = createClient();
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
   async function handleDelete(deckId: number) {
     setDeletingId(deckId);
-    await supabase.from("decks").delete().eq("id", deckId);
+    try {
+      const res = await fetch("/api/decks", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: deckId }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        console.error("Delete failed:", data.error);
+      }
+    } catch (err) {
+      console.error("Delete error:", err);
+    }
     setConfirmDeleteId(null);
     setDeletingId(null);
     router.refresh();

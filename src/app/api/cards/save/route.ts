@@ -34,7 +34,7 @@ export async function GET() {
   const supabaseAdmin = getAdminClient();
   const { data, error } = await supabaseAdmin
     .from('cards')
-    .select('id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, keywords, spell_keywords, spell_effects, image_url, illustration_prompt, faction, race, clan, rarity, card_alignment, convocation_race, convocation_tokens, lycanthropie_race, set_id, card_year')
+    .select('id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, keywords, spell_keywords, spell_effects, image_url, illustration_prompt, faction, race, clan, rarity, card_alignment, convocation_race, convocation_tokens, lycanthropie_race, set_id, card_year, card_month')
     .order('name');
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -84,6 +84,7 @@ export async function POST(request: Request) {
       lycanthropie_race: card.lycanthropie_race || null,
       set_id: card.set_id || null,
       card_year: card.card_year || null,
+      card_month: card.card_month || null,
       rarity: card.rarity || null,
       card_alignment: card.card_alignment || null,
     };

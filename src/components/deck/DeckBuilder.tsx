@@ -148,13 +148,51 @@ export default function DeckBuilder({
 
   // ── Slot system ──
   const RARITY_HIERARCHY = ["Légendaire", "Épique", "Rare", "Peu Commune", "Commune"] as const;
-  const SLOT_COUNTS: Record<string, number> = { "Légendaire": 2, "Épique": 4, "Rare": 8, "Peu Commune": 12, "Commune": 24 };
+  const SLOT_COUNTS_MONO: Record<string, number> = { "Légendaire": 2, "Épique": 4, "Rare": 6, "Peu Commune": 8, "Commune": 30 };
+  const SLOT_COUNTS_BI: Record<string, number> = { "Légendaire": 1, "Épique": 2, "Rare": 6, "Peu Commune": 8, "Commune": 31 };
+  const MAX_MERCENAIRES_MONO = 4;
+  const MAX_MERCENAIRES_BI = 2;
   const RARITY_COLORS: Record<string, string> = { "Légendaire": "#ffd54f", "Épique": "#ce93d8", "Rare": "#4fc3f7", "Peu Commune": "#4caf50", "Commune": "#aaaaaa" };
   const RARITY_EMOJI: Record<string, string> = { "Légendaire": "🟡", "Épique": "🟣", "Rare": "🔵", "Peu Commune": "🟢", "Commune": "⚪" };
 
   function rarityIndex(r: string): number {
     return RARITY_HIERARCHY.indexOf(r as typeof RARITY_HIERARCHY[number]);
   }
+
+  // Deck restrictions (alignment + faction + mercenaires)
+  const deckStats = useMemo(() => {
+    const factionSet = new Set<string>();
+    const allFactions = new Set<string>();
+    const alignmentSet = new Set<Alignment>();
+    let mercenairesCount = 0;
+
+    deckCards.forEach(({ card, quantity }) => {
+      if (card.faction) {
+        allFactions.add(card.faction);
+        if (card.faction === "Mercenaires") {
+          mercenairesCount += quantity;
+          if (card.card_alignment) alignmentSet.add(card.card_alignment as Alignment);
+        } else {
+          factionSet.add(card.faction);
+          const fac = FACTIONS[card.faction];
+          if (fac && fac.alignment !== "spéciale") alignmentSet.add(fac.alignment);
+        }
+      }
+    });
+
+    const isMono = factionSet.size <= 1;
+    const maxMercenaires = isMono ? MAX_MERCENAIRES_MONO : MAX_MERCENAIRES_BI;
+
+    const alignmentConflict = alignmentSet.has("bon") && alignmentSet.has("maléfique");
+    const violations: string[] = [];
+    if (alignmentConflict) violations.push("Alignement Bon et Maléfique incompatibles");
+    if (factionSet.size > 2) violations.push(`Max 2 factions (actuellement ${factionSet.size})`);
+    if (mercenairesCount > maxMercenaires) violations.push(`Max ${maxMercenaires} Mercenaires (actuellement ${mercenairesCount})`);
+
+    return { factions: factionSet, allFactions, alignments: alignmentSet, violations, alignmentConflict, isMono, mercenairesCount, maxMercenaires };
+  }, [deckCards]);
+
+  const SLOT_COUNTS = deckStats.isMono ? SLOT_COUNTS_MONO : SLOT_COUNTS_BI;
 
   // Allocate all deck cards to slots (greedy: highest rarity cards fill their own tier first)
   const slotAllocation = useMemo(() => {
@@ -178,7 +216,6 @@ export default function DeckBuilder({
       for (let i = cardRarIdx; i >= 0; i--) {
         const tier = RARITY_HIERARCHY[i];
         if (slots[tier].length < SLOT_COUNTS[tier]) {
-          // Check if already has this card — increment quantity
           const existing = slots[tier].find(e => e.card.id === card.id);
           if (existing) {
             existing.quantity++;
@@ -204,7 +241,7 @@ export default function DeckBuilder({
     }
 
     return slots;
-  }, [deckCards]);
+  }, [deckCards, SLOT_COUNTS]);
 
   const slotCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -213,33 +250,6 @@ export default function DeckBuilder({
     }
     return counts;
   }, [slotAllocation]);
-
-  // Deck restrictions (alignment + faction only, rarity handled by slots)
-  const deckStats = useMemo(() => {
-    const factionSet = new Set<string>();
-    const allFactions = new Set<string>();
-    const alignmentSet = new Set<Alignment>();
-
-    deckCards.forEach(({ card }) => {
-      if (card.faction) {
-        allFactions.add(card.faction);
-        if (card.faction !== "Mercenaires") factionSet.add(card.faction);
-        const fac = FACTIONS[card.faction];
-        if (card.faction === "Mercenaires" && card.card_alignment) {
-          alignmentSet.add(card.card_alignment as Alignment);
-        } else if (fac && fac.alignment !== "spéciale") {
-          alignmentSet.add(fac.alignment);
-        }
-      }
-    });
-
-    const alignmentConflict = alignmentSet.has("bon") && alignmentSet.has("maléfique");
-    const violations: string[] = [];
-    if (alignmentConflict) violations.push("Alignement Bon et Maléfique incompatibles");
-    if (factionSet.size > 2) violations.push(`Max 2 factions (actuellement ${factionSet.size})`);
-
-    return { factions: factionSet, allFactions, alignments: alignmentSet, violations, alignmentConflict };
-  }, [deckCards]);
 
   function canAddCard(card: Card): string | null {
     if (totalCards >= DECK_SIZE) return "Deck plein";
@@ -257,6 +267,9 @@ export default function DeckBuilder({
 
     // Faction limit
     if (card.faction && card.faction !== "Mercenaires" && !deckStats.factions.has(card.faction) && deckStats.factions.size >= 2) return "Max 2 factions";
+
+    // Mercenaires limit
+    if (card.faction === "Mercenaires" && deckStats.mercenairesCount >= deckStats.maxMercenaires) return `Max ${deckStats.maxMercenaires} Mercenaires`;
 
     // Slot availability: check if there's a slot for this card's rarity (or higher)
     const cardRarIdx = rarityIndex(card.rarity || "Commune");
@@ -625,13 +638,17 @@ export default function DeckBuilder({
 
         {/* Deck restrictions info */}
         <div className="px-4 py-2 border-b border-card-border/30">
-          <div className="flex flex-wrap gap-1.5 text-[10px]">
+          <div className="flex flex-wrap gap-1.5 text-[10px] items-center">
+            <span className="px-1.5 py-0.5 rounded font-bold" style={{ background: deckStats.isMono ? "#4caf5022" : "#4fc3f722", color: deckStats.isMono ? "#4caf50" : "#4fc3f7" }}>
+              {deckStats.isMono ? "Mono-faction" : "Bi-faction"}
+            </span>
             <span className="text-foreground/40">Factions: {deckStats.factions.size}/2</span>
             {Array.from(deckStats.allFactions).map(f => {
               const fac = FACTIONS[f];
               const align = ALIGNMENTS.find(a => a.id === fac?.alignment);
               return <span key={f} style={{ color: fac?.color }}>{fac?.emoji} {f} <span style={{ color: align?.color }}>{align?.emoji}</span></span>;
             })}
+            <span className="text-foreground/40">| Mercenaires: {deckStats.mercenairesCount}/{deckStats.maxMercenaires}</span>
           </div>
           {deckStats.violations.length > 0 && (
             <div className="mt-1.5">
