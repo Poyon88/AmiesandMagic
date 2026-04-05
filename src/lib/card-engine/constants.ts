@@ -136,7 +136,7 @@ export const FACTIONS: Record<string, {
 }> = {
   Elfes: {
     color: "#3a7d44", accent: "#55efc4", emoji: "🌿", bg: "#0a1f0a", alignment: "bon",
-    races: ["Elfes", "Aigles Géants"],
+    races: ["Elfes", "Aigles Géants", "Fées"],
     clans: { names: ["Sylvains", "Hauts-Elfes", "Elfes des Mers"], appliesTo: "Elfes" },
     statWeights: { atk: 1.10, def: 0.80 },
     guaranteedKeywords: [],
@@ -146,6 +146,7 @@ export const FACTIONS: Record<string, {
     description: "Agiles et furtifs. Favorisent la vitesse et l'esquive. Aigles géants parmi leurs rangs.",
     raceProfiles: {
       "Aigles Géants": { statWeights: { atk: 1.20, def: 0.70 }, likelyKeywords: { "Vol": 0.90, "Traque": 0.60, "Première Frappe": 0.50, "Augure": 0.40 } },
+      "Fées": { statWeights: { atk: 0.75, def: 0.65 }, likelyKeywords: { "Vol": 0.85, "Invisible": 0.70, "Esquive": 0.65, "Augure": 0.55, "Divination": 0.50, "Canalisation": 0.60, "Drain de vie": 0.45, "Contresort": 0.40, "Héritage X": 0.35 } },
     },
   },
   Nains: {

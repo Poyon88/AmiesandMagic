@@ -845,7 +845,7 @@ export default function CardForge() {
                 <Sec title="Race">
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
                     {FACTIONS[faction].races.map(r => (
-                      <button key={r} onClick={() => { setRace(r); setClan(""); }} style={{
+                      <button key={r} onClick={() => { setRace(race === r ? "" : r); setClan(""); }} style={{
                         padding: "4px 8px", borderRadius: 5, cursor: "pointer",
                         background: race === r ? `${fac.color}22` : "#fff",
                         border: `1px solid ${race === r ? fac.color : "#e0e0e0"}`,
