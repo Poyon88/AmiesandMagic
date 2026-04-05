@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import type { Card, Keyword, CardSet } from "@/lib/game/types";
+import type { Card, Keyword, CardSet, GameFormat, FormatSet } from "@/lib/game/types";
+import { getFormatFilter } from "@/lib/game/format-legality";
 import { DECK_SIZE } from "@/lib/game/constants";
 import { FACTIONS, ALIGNMENTS } from "@/lib/card-engine/constants";
 import type { Alignment } from "@/lib/card-engine/constants";
@@ -29,9 +30,11 @@ interface DeckBuilderProps {
   cards: Card[];
   heroes: HeroRow[];
   userId: string;
-  existingDeck: { id: number; name: string; hero_id: number | null } | null;
+  existingDeck: { id: number; name: string; hero_id: number | null; format_id: number | null } | null;
   existingDeckCards: { card_id: number; quantity: number }[];
   sets: CardSet[];
+  formats: GameFormat[];
+  formatSets: FormatSet[];
 }
 
 const RACE_ICONS: Record<string, string> = {
@@ -56,6 +59,8 @@ export default function DeckBuilder({
   existingDeck,
   existingDeckCards,
   sets,
+  formats,
+  formatSets,
 }: DeckBuilderProps) {
   const router = useRouter();
   const supabase = createClient();
@@ -72,6 +77,9 @@ export default function DeckBuilder({
     });
     return map;
   });
+  const [selectedFormatId, setSelectedFormatId] = useState<number | null>(
+    existingDeck?.format_id ?? null
+  );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -115,8 +123,19 @@ export default function DeckBuilder({
     return total;
   }, [deckCards]);
 
+  const selectedFormat = useMemo(() => {
+    if (!selectedFormatId) return null;
+    return formats.find(f => f.id === selectedFormatId) ?? null;
+  }, [selectedFormatId, formats]);
+
+  const formatPredicate = useMemo(() => {
+    if (!selectedFormat) return null;
+    return getFormatFilter(selectedFormat, sets, formatSets);
+  }, [selectedFormat, sets, formatSets]);
+
   const filteredCards = useMemo(() => {
     return cards.filter((card) => {
+      if (formatPredicate && !formatPredicate(card)) return false;
       if (search && !card.name.toLowerCase().includes(search.toLowerCase()))
         return false;
       if (manaCostFilter !== null && card.mana_cost !== manaCostFilter)
@@ -138,7 +157,7 @@ export default function DeckBuilder({
         return false;
       return true;
     });
-  }, [cards, search, manaCostFilter, typeFilter, keywordFilter, factionFilter, rarityFilter, raceFilter, clanFilter, filterSet, filterYear]);
+  }, [cards, formatPredicate, search, manaCostFilter, typeFilter, keywordFilter, factionFilter, rarityFilter, raceFilter, clanFilter, filterSet, filterYear]);
 
   const sortedDeckEntries = useMemo(() => {
     return Array.from(deckCards.values()).sort(
@@ -314,6 +333,10 @@ export default function DeckBuilder({
       setError("Please enter a deck name");
       return;
     }
+    if (!selectedFormatId) {
+      setError("Veuillez sélectionner un format");
+      return;
+    }
     if (!selectedHeroId) {
       setError("Please select a hero");
       return;
@@ -337,7 +360,7 @@ export default function DeckBuilder({
         // Update existing deck
         await supabase
           .from("decks")
-          .update({ name: deckName.trim(), hero_id: selectedHeroId, updated_at: new Date().toISOString() })
+          .update({ name: deckName.trim(), hero_id: selectedHeroId, format_id: selectedFormatId, updated_at: new Date().toISOString() })
           .eq("id", deckId);
 
         // Delete old cards and re-insert
@@ -346,7 +369,7 @@ export default function DeckBuilder({
         // Create new deck
         const { data, error } = await supabase
           .from("decks")
-          .insert({ user_id: userId, name: deckName.trim(), hero_id: selectedHeroId })
+          .insert({ user_id: userId, name: deckName.trim(), hero_id: selectedHeroId, format_id: selectedFormatId })
           .select("id")
           .single();
 
@@ -598,6 +621,16 @@ export default function DeckBuilder({
             placeholder="Deck name..."
             className="w-full px-3 py-2 bg-background border border-card-border rounded-lg text-foreground focus:outline-none focus:border-primary mb-3"
           />
+          <select
+            value={selectedFormatId ?? ""}
+            onChange={(e) => setSelectedFormatId(e.target.value ? parseInt(e.target.value) : null)}
+            className="w-full px-3 py-2 bg-background border border-card-border rounded-lg text-foreground/70 text-sm focus:outline-none focus:border-primary mb-3"
+          >
+            <option value="">Choisir un format...</option>
+            {formats.map((f) => (
+              <option key={f.id} value={f.id}>{f.name}</option>
+            ))}
+          </select>
           <div className="flex items-center justify-between">
             <span
               className={`font-bold text-lg ${

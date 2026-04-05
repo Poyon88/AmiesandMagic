@@ -2,12 +2,15 @@
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import type { Card, Keyword, CardSet } from "@/lib/game/types";
+import type { Card, Keyword, CardSet, GameFormat, FormatSet } from "@/lib/game/types";
+import { getFormatFilter } from "@/lib/game/format-legality";
 import GameCard from "./GameCard";
 
 interface CollectionViewProps {
   cards: Card[];
   sets: CardSet[];
+  formats: GameFormat[];
+  formatSets: FormatSet[];
 }
 
 import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
@@ -22,7 +25,7 @@ const RARITY_COLORS: Record<string, string> = {
   "Légendaire": "#ffd54f",
 };
 
-export default function CollectionView({ cards, sets }: CollectionViewProps) {
+export default function CollectionView({ cards, sets, formats, formatSets }: CollectionViewProps) {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [manaCostFilter, setManaCostFilter] = useState<number | null>(null);
@@ -34,6 +37,7 @@ export default function CollectionView({ cards, sets }: CollectionViewProps) {
   const [clanFilter, setClanFilter] = useState<string | null>(null);
   const [filterSet, setFilterSet] = useState("");
   const [filterYear, setFilterYear] = useState("");
+  const [formatFilter, setFormatFilter] = useState<string>("");
 
   // Extract unique factions, races, clans from cards
   const factions = useMemo(() => {
@@ -58,8 +62,19 @@ export default function CollectionView({ cards, sets }: CollectionViewProps) {
     return [...new Set(cards.filter(c => c.card_year).map(c => String(c.card_year)))].sort();
   }, [cards]);
 
+  const selectedFormat = useMemo(() => {
+    if (!formatFilter) return null;
+    return formats.find(f => String(f.id) === formatFilter) ?? null;
+  }, [formatFilter, formats]);
+
+  const formatPredicate = useMemo(() => {
+    if (!selectedFormat) return null;
+    return getFormatFilter(selectedFormat, sets, formatSets);
+  }, [selectedFormat, sets, formatSets]);
+
   const filteredCards = useMemo(() => {
     return cards.filter((card) => {
+      if (formatPredicate && !formatPredicate(card)) return false;
       if (search && !card.name.toLowerCase().includes(search.toLowerCase()))
         return false;
       if (manaCostFilter !== null && card.mana_cost !== manaCostFilter)
@@ -81,7 +96,7 @@ export default function CollectionView({ cards, sets }: CollectionViewProps) {
         return false;
       return true;
     });
-  }, [cards, search, manaCostFilter, typeFilter, keywordFilter, factionFilter, rarityFilter, raceFilter, clanFilter, filterSet, filterYear]);
+  }, [cards, formatPredicate, search, manaCostFilter, typeFilter, keywordFilter, factionFilter, rarityFilter, raceFilter, clanFilter, filterSet, filterYear]);
 
   function resetFilters() {
     setSearch("");
@@ -94,10 +109,11 @@ export default function CollectionView({ cards, sets }: CollectionViewProps) {
     setClanFilter(null);
     setFilterSet("");
     setFilterYear("");
+    setFormatFilter("");
   }
 
   const hasActiveFilters =
-    search || manaCostFilter !== null || typeFilter !== null || keywordFilter !== null || factionFilter !== null || rarityFilter !== null || raceFilter !== null || clanFilter !== null || filterSet !== "" || filterYear !== "";
+    search || manaCostFilter !== null || typeFilter !== null || keywordFilter !== null || factionFilter !== null || rarityFilter !== null || raceFilter !== null || clanFilter !== null || filterSet !== "" || filterYear !== "" || formatFilter !== "";
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -275,6 +291,21 @@ export default function CollectionView({ cards, sets }: CollectionViewProps) {
               <option value="">Tous</option>
               {clans.map((c) => (
                 <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Format filter */}
+          <div className="flex items-center gap-1">
+            <span className="text-foreground/50 text-sm mr-1">Format:</span>
+            <select
+              value={formatFilter}
+              onChange={(e) => setFormatFilter(e.target.value)}
+              className="px-3 py-1.5 bg-background border border-card-border rounded-lg text-foreground/70 text-sm focus:outline-none focus:border-primary"
+            >
+              <option value="">Tous</option>
+              {formats.map((f) => (
+                <option key={f.id} value={String(f.id)}>{f.name}</option>
               ))}
             </select>
           </div>

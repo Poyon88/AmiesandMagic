@@ -5,7 +5,7 @@ import { generateCardStats, pickMana, pickRarity, buildId } from "@/lib/card-eng
 import { RARITIES, FACTIONS, TYPES, KEYWORDS, RARITY_WEIGHTS_BY_MANA, RARITY_MAP, ALIGNMENTS } from "@/lib/card-engine/constants";
 import CardVisual, { KEYWORD_SYMBOLS } from "./CardVisual";
 import KeywordIcon from "@/components/shared/KeywordIcon";
-import type { CardType, Keyword, SpellEffect, SpellTargetType, SpellKeywordInstance, SpellComposableEffects, SpellEffectNode, SpellTargetSlot, AtomicEffectType, SpellCondition, AtomicEffect, ConditionalEffectNode, CardSet } from "@/lib/game/types";
+import type { CardType, Keyword, SpellEffect, SpellTargetType, SpellKeywordInstance, SpellComposableEffects, SpellEffectNode, SpellTargetSlot, AtomicEffectType, SpellCondition, AtomicEffect, ConditionalEffectNode, CardSet, GameFormat } from "@/lib/game/types";
 import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
 import type { SpellKeywordId } from "@/lib/game/types";
 
@@ -148,6 +148,10 @@ export default function CardForge() {
   const [newSetName, setNewSetName] = useState("");
   const [newSetCode, setNewSetCode] = useState("");
   const [newSetIcon, setNewSetIcon] = useState("⚔️");
+  const [newSetReleasedAt, setNewSetReleasedAt] = useState("");
+  const [formats, setFormats] = useState<GameFormat[]>([]);
+  const [variableSetIds, setVariableSetIds] = useState<number[]>([]);
+  const [savingFormats, setSavingFormats] = useState(false);
 
   // ─── NEW SPELL SYSTEM ──────────────────────────────────────────────────────
   const [spellKeywords, setSpellKeywords] = useState<SpellKeywordInstance[]>([]);
@@ -237,6 +241,25 @@ export default function CardForge() {
   }, []);
 
   useEffect(() => { loadSets(); }, [loadSets]);
+
+  const loadFormats = useCallback(async () => {
+    try {
+      const [fmtRes, setsRes] = await Promise.all([
+        fetch('/api/formats'),
+        fetch('/api/sets'),
+      ]);
+      if (fmtRes.ok) {
+        const fmtData = await fmtRes.json();
+        setFormats(Array.isArray(fmtData) ? fmtData : []);
+        const variableFormat = (Array.isArray(fmtData) ? fmtData : []).find((f: GameFormat) => f.code === 'variable');
+        if (variableFormat) {
+          const vsRes = await fetch(`/api/formats/${variableFormat.id}/sets`);
+          if (vsRes.ok) setVariableSetIds(await vsRes.json());
+        }
+      }
+      if (setsRes.ok) setSets(await setsRes.json());
+    } catch { /* ignore */ }
+  }, []);
 
   const generateTokenPrompt = useCallback(() => {
     if (!tokenRace) return;
@@ -723,7 +746,7 @@ export default function CardForge() {
     } finally {
       setSaving(false);
     }
-  }, [cardImages, type, spellKeywords, spellEffectsData, convocationRace, convocationTokens]);
+  }, [cardImages, type, spellKeywords, spellEffectsData, convocationRace, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieRace]);
 
   const [generatingImage, setGeneratingImage] = useState(false);
   const [editedPrompt, setEditedPrompt] = useState<string | null>(null);
@@ -782,8 +805,8 @@ export default function CardForge() {
             <span style={{ fontSize: 8, color: "#aaa", letterSpacing: 2 }}>ARMIES & MAGIC</span>
           </div>
           <div style={{ display: "flex", gap: 4 }}>
-            {([["forge", "⚒ Forge"], ["tokens", "🎭 Tokens"], ["sets", "📦 Sets"], ["bulk", "📦 Masse"], ["budget", "⚖ Budget"], ["schema", "📋 Schéma"]] as const).map(([t, l]) => (
-              <button key={t} onClick={() => { setTab(t); if (t === "sets") loadSets(); }} style={{
+            {([["forge", "⚒ Forge"], ["tokens", "🎭 Tokens"], ["sets", "📦 Sets"], ["formats", "🎮 Formats"], ["bulk", "📦 Masse"], ["budget", "⚖ Budget"], ["schema", "📋 Schéma"]] as const).map(([t, l]) => (
+              <button key={t} onClick={() => { setTab(t); if (t === "sets") loadSets(); if (t === "formats") loadFormats(); }} style={{
                 padding: "5px 14px", borderRadius: 6, cursor: "pointer",
                 background: tab === t ? "#333" : "transparent",
                 border: `1px solid ${tab === t ? "#333" : "#ddd"}`,
@@ -1824,10 +1847,12 @@ export default function CardForge() {
                   style={{ width: 80, padding: "6px 10px", borderRadius: 5, border: "1px solid #e0e0e0", fontSize: 11, fontFamily: "'Cinzel',serif", textTransform: "uppercase" }} />
                 <input value={newSetIcon} onChange={e => setNewSetIcon(e.target.value)} placeholder="Icône"
                   style={{ width: 40, padding: "6px", borderRadius: 5, border: "1px solid #e0e0e0", fontSize: 14, textAlign: "center" }} />
+                <input type="date" value={newSetReleasedAt} onChange={e => setNewSetReleasedAt(e.target.value)} title="Date de sortie"
+                  style={{ padding: "6px 10px", borderRadius: 5, border: "1px solid #e0e0e0", fontSize: 11, fontFamily: "'Cinzel',serif" }} />
                 <button onClick={async () => {
                   if (!newSetName || !newSetCode) return;
-                  const res = await fetch('/api/sets', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newSetName, code: newSetCode, icon: newSetIcon }) });
-                  if (res.ok) { setNewSetName(""); setNewSetCode(""); setNewSetIcon("⚔️"); loadSets(); }
+                  const res = await fetch('/api/sets', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newSetName, code: newSetCode, icon: newSetIcon, released_at: newSetReleasedAt || null }) });
+                  if (res.ok) { setNewSetName(""); setNewSetCode(""); setNewSetIcon("⚔️"); setNewSetReleasedAt(""); loadSets(); }
                 }} disabled={!newSetName || !newSetCode}
                   style={{ padding: "6px 16px", borderRadius: 6, border: "none", background: "#333", color: "#fff", fontSize: 10, fontFamily: "'Cinzel',serif", fontWeight: 700, cursor: "pointer", opacity: (!newSetName || !newSetCode) ? 0.4 : 1 }}>
                   Créer
@@ -1845,7 +1870,7 @@ export default function CardForge() {
                   <span style={{ fontSize: 18 }}>{s.icon}</span>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 11, fontWeight: 700, fontFamily: "'Cinzel',serif" }}>{s.name}</div>
-                    <div style={{ fontSize: 9, color: "#888" }}>{s.code}</div>
+                    <div style={{ fontSize: 9, color: "#888" }}>{s.code}{s.released_at ? ` — ${s.released_at}` : ''}</div>
                   </div>
                   <button onClick={async () => {
                     const res = await fetch('/api/sets', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: s.id }) });
@@ -1858,6 +1883,98 @@ export default function CardForge() {
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* ── FORMATS ── */}
+        {tab === "formats" && (
+          <div style={{ flex: 1, padding: 18, display: "flex", flexDirection: "column", gap: 14, overflowY: "auto" }}>
+            {formats.length === 0 && (
+              <div style={{ background: "#fff", borderRadius: 8, border: "1px solid #e0e0e0", padding: 16, textAlign: "center" }}>
+                <p style={{ fontSize: 10, color: "#aaa" }}>Aucun format trouvé. Vérifiez que la table &quot;formats&quot; est créée et peuplée.</p>
+              </div>
+            )}
+            {formats.map(fmt => (
+              <div key={fmt.id} style={{ background: "#fff", borderRadius: 8, border: "1px solid #e0e0e0", padding: 16 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                  <h3 style={{ fontSize: 12, fontFamily: "'Cinzel',serif", fontWeight: 700, color: "#333", letterSpacing: 1, margin: 0 }}>
+                    {fmt.name}
+                  </h3>
+                  <span style={{
+                    fontSize: 8, padding: "2px 8px", borderRadius: 4, fontFamily: "'Cinzel',serif", fontWeight: 700,
+                    background: fmt.is_active ? "#e8f5e9" : "#fde8e8",
+                    color: fmt.is_active ? "#2e7d32" : "#e74c3c",
+                    border: `1px solid ${fmt.is_active ? "#a5d6a7" : "#f5a3a3"}`,
+                  }}>
+                    {fmt.is_active ? "Actif" : "Inactif"}
+                  </span>
+                </div>
+                {fmt.description && <p style={{ fontSize: 9, color: "#888", marginBottom: 8 }}>{fmt.description}</p>}
+
+                {fmt.code === "standard" && (
+                  <div style={{ fontSize: 9, color: "#666", lineHeight: 1.8 }}>
+                    <div><strong>Set de base :</strong> {sets.find(s => s.code === "BASE") ? `${sets.find(s => s.code === "BASE")!.icon} ${sets.find(s => s.code === "BASE")!.name}` : "Non trouvé"}</div>
+                    <div><strong>2 dernières extensions :</strong> {
+                      sets.filter(s => s.code !== "BASE" && s.released_at)
+                        .sort((a, b) => new Date(b.released_at!).getTime() - new Date(a.released_at!).getTime())
+                        .slice(0, 2)
+                        .map(s => `${s.icon} ${s.name}`).join(", ") || "Aucune"
+                    }</div>
+                    <div>+ Cartes sans extension de moins de 2 ans</div>
+                  </div>
+                )}
+
+                {fmt.code === "etendu" && (
+                  <p style={{ fontSize: 9, color: "#666" }}>Toutes les cartes sont jouables.</p>
+                )}
+
+                {fmt.code === "basique" && (
+                  <p style={{ fontSize: 9, color: "#666" }}>Mêmes règles que Standard, uniquement rareté <strong>Commune</strong>.</p>
+                )}
+
+                {fmt.code === "variable" && (
+                  <div>
+                    <p style={{ fontSize: 9, color: "#888", marginBottom: 8 }}>Extensions incluses (+ set de base + cartes sans extension &lt; 2 ans) :</p>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
+                      {sets.filter(s => s.code !== "BASE").map(s => {
+                        const isSelected = variableSetIds.includes(s.id);
+                        return (
+                          <button key={s.id} onClick={() => setVariableSetIds(prev => isSelected ? prev.filter(id => id !== s.id) : [...prev, s.id])}
+                            style={{
+                              padding: "4px 10px", borderRadius: 5, cursor: "pointer", fontSize: 9, fontFamily: "'Cinzel',serif", transition: "all 0.15s",
+                              border: `1px solid ${isSelected ? "#4caf50" : "#e0e0e0"}`,
+                              background: isSelected ? "#e8f5e9" : "#fafafa",
+                              color: isSelected ? "#2e7d32" : "#666",
+                              fontWeight: isSelected ? 700 : 400,
+                            }}>
+                            {s.icon} {s.name}
+                          </button>
+                        );
+                      })}
+                      {sets.filter(s => s.code !== "BASE").length === 0 && <span style={{ fontSize: 9, color: "#aaa" }}>Aucune extension</span>}
+                    </div>
+                    <button onClick={async () => {
+                      setSavingFormats(true);
+                      try {
+                        await fetch(`/api/formats/${fmt.id}/sets`, {
+                          method: "PUT",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ set_ids: variableSetIds }),
+                        });
+                      } catch { /* ignore */ }
+                      setSavingFormats(false);
+                    }} disabled={savingFormats}
+                      style={{
+                        padding: "5px 16px", borderRadius: 6, border: "none", background: "#333", color: "#fff",
+                        fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: 700, cursor: savingFormats ? "wait" : "pointer",
+                        opacity: savingFormats ? 0.5 : 1,
+                      }}>
+                      {savingFormats ? "Sauvegarde..." : "Sauvegarder"}
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         )}
 

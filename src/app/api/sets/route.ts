@@ -33,7 +33,7 @@ export async function GET() {
   const supabase = getAdminClient();
   const { data, error } = await supabase
     .from('sets')
-    .select('id, name, code, icon')
+    .select('*')
     .order('name');
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -47,10 +47,10 @@ export async function POST(request: Request) {
   const supabase = getAdminClient();
 
   try {
-    const { name, code, icon } = await request.json();
+    const { name, code, icon, released_at } = await request.json();
     if (!name || !code) return NextResponse.json({ error: 'Nom et code requis' }, { status: 400 });
 
-    const { error } = await supabase.from('sets').insert({ name, code: code.toUpperCase(), icon: icon || '⚔️' });
+    const { error } = await supabase.from('sets').insert({ name, code: code.toUpperCase(), icon: icon || '⚔️', released_at: released_at || null });
     if (error) throw new Error(error.message);
 
     return NextResponse.json({ success: true });
@@ -69,10 +69,10 @@ export async function PUT(request: Request) {
   const supabase = getAdminClient();
 
   try {
-    const { id, name, code, icon } = await request.json();
+    const { id, name, code, icon, released_at } = await request.json();
     if (!id) return NextResponse.json({ error: 'ID requis' }, { status: 400 });
 
-    const { error } = await supabase.from('sets').update({ name, code: code?.toUpperCase(), icon }).eq('id', id);
+    const { error } = await supabase.from('sets').update({ name, code: code?.toUpperCase(), icon, released_at: released_at ?? null }).eq('id', id);
     if (error) throw new Error(error.message);
 
     return NextResponse.json({ success: true });

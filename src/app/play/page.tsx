@@ -12,17 +12,24 @@ export default async function PlayPage() {
 
   if (!user) redirect("/login");
 
-  // Fetch user's valid decks (50 cards)
-  const { data: decks } = await supabase
-    .from("decks")
-    .select(
+  // Fetch user's valid decks (50 cards) and formats
+  const [{ data: decks }, { data: formats }] = await Promise.all([
+    supabase
+      .from("decks")
+      .select(
+        `
+        *,
+        deck_cards (quantity)
       `
-      *,
-      deck_cards (quantity)
-    `
-    )
-    .eq("user_id", user.id)
-    .order("updated_at", { ascending: false });
+      )
+      .eq("user_id", user.id)
+      .order("updated_at", { ascending: false }),
+    supabase
+      .from("formats")
+      .select("*")
+      .eq("is_active", true)
+      .order("id"),
+  ]);
 
   const validDecks = (decks ?? [])
     .map((deck) => ({
@@ -34,5 +41,5 @@ export default async function PlayPage() {
     }))
     .filter((deck) => deck.cardCount === 50);
 
-  return <MatchmakingQueue userId={user.id} validDecks={validDecks} />;
+  return <MatchmakingQueue userId={user.id} validDecks={validDecks} formats={formats ?? []} />;
 }

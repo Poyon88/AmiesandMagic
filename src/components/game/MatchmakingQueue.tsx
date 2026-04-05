@@ -3,24 +3,32 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import type { GameFormat } from "@/lib/game/types";
 
 interface ValidDeck {
   id: number;
   name: string;
   cardCount: number;
+  format_id?: number | null;
 }
 
 export default function MatchmakingQueue({
   userId,
   validDecks,
+  formats,
 }: {
   userId: string;
   validDecks: ValidDeck[];
+  formats: GameFormat[];
 }) {
   const router = useRouter();
   const supabase = createClient();
+  const [selectedFormatId, setSelectedFormatId] = useState<number | null>(
+    formats.find(f => f.code === 'standard')?.id ?? formats[0]?.id ?? null
+  );
+  const formatDecks = validDecks.filter(d => !selectedFormatId || d.format_id === selectedFormatId);
   const [selectedDeckId, setSelectedDeckId] = useState<number | null>(
-    validDecks[0]?.id ?? null
+    formatDecks[0]?.id ?? null
   );
   const [inQueue, setInQueue] = useState(false);
   const [queueTime, setQueueTime] = useState(0);
@@ -82,13 +90,17 @@ export default function MatchmakingQueue({
           return;
         }
 
-        // Look for an opponent in the queue
-        const { data: queueEntries } = await supabase
+        // Look for an opponent in the queue (same format)
+        let query = supabase
           .from("matchmaking_queue")
           .select("*")
           .neq("user_id", userId)
           .order("joined_at")
           .limit(1);
+        if (selectedFormatId) {
+          query = query.eq("format_id", selectedFormatId);
+        }
+        const { data: queueEntries } = await query;
 
         if (queueEntries && queueEntries.length > 0 && pollingRef.current) {
           const opponent = queueEntries[0];
@@ -126,7 +138,7 @@ export default function MatchmakingQueue({
         pollTimeoutRef.current = setTimeout(() => pollForMatch(deckId), 2000);
       }
     },
-    [userId, supabase, navigateToMatch]
+    [userId, supabase, navigateToMatch, selectedFormatId]
   );
 
   async function joinQueue() {
@@ -154,7 +166,7 @@ export default function MatchmakingQueue({
 
     const { error: insertError } = await supabase
       .from("matchmaking_queue")
-      .insert({ user_id: userId, deck_id: selectedDeckId });
+      .insert({ user_id: userId, deck_id: selectedDeckId, format_id: selectedFormatId });
 
     if (insertError) {
       setError(insertError.message);
@@ -214,11 +226,43 @@ export default function MatchmakingQueue({
               </div>
             ) : (
               <>
+                {formats.length > 0 && (
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-foreground/70 mb-2">
+                      Format :
+                    </label>
+                    <div className="flex gap-2 flex-wrap">
+                      {formats.map((f) => (
+                        <button
+                          key={f.id}
+                          onClick={() => {
+                            setSelectedFormatId(f.id);
+                            const firstDeck = validDecks.find(d => d.format_id === f.id);
+                            setSelectedDeckId(firstDeck?.id ?? null);
+                          }}
+                          className={`px-4 py-2 rounded-lg border-2 text-sm font-medium transition-colors ${
+                            selectedFormatId === f.id
+                              ? "border-primary bg-primary/10 text-primary"
+                              : "border-card-border bg-background text-foreground/60 hover:border-primary/40"
+                          }`}
+                        >
+                          {f.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <label className="block text-sm font-medium text-foreground/70 mb-2">
                   Select your deck:
                 </label>
+                {formatDecks.length === 0 && selectedFormatId && (
+                  <p className="text-foreground/50 text-sm mb-4">
+                    Aucun deck pour ce format. Créez-en un dans le deck builder.
+                  </p>
+                )}
                 <div className="space-y-2 mb-6">
-                  {validDecks.map((deck) => (
+                  {formatDecks.map((deck) => (
                     <button
                       key={deck.id}
                       onClick={() => setSelectedDeckId(deck.id)}

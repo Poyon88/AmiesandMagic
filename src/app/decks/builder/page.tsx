@@ -16,8 +16,8 @@ export default async function DeckBuilderPage({
 
   if (!user) redirect("/login");
 
-  // Fetch all cards, heroes, and sets
-  const [{ data: cards }, { data: heroes }, { data: sets }] = await Promise.all([
+  // Fetch all cards, heroes, sets, formats, and format_sets
+  const [{ data: cards }, { data: heroes }, { data: sets }, { data: formats }, { data: formatSets }] = await Promise.all([
     supabase
       .from("cards")
       .select("*")
@@ -31,6 +31,14 @@ export default async function DeckBuilderPage({
       .from("sets")
       .select("*")
       .order("name"),
+    supabase
+      .from("formats")
+      .select("*")
+      .eq("is_active", true)
+      .order("id"),
+    supabase
+      .from("format_sets")
+      .select("format_id, set_id"),
   ]);
 
   // If editing, fetch existing deck
@@ -48,7 +56,7 @@ export default async function DeckBuilderPage({
       .single();
 
     if (deck) {
-      existingDeck = { id: deck.id, name: deck.name, hero_id: deck.hero_id };
+      existingDeck = { id: deck.id, name: deck.name, hero_id: deck.hero_id, format_id: deck.format_id ?? null };
       const { data: deckCards } = await supabase
         .from("deck_cards")
         .select("card_id, quantity")
@@ -65,6 +73,8 @@ export default async function DeckBuilderPage({
       existingDeck={existingDeck}
       existingDeckCards={existingDeckCards}
       sets={sets ?? []}
+      formats={formats ?? []}
+      formatSets={formatSets ?? []}
     />
   );
 }

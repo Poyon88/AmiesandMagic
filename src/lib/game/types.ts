@@ -240,6 +240,22 @@ export interface CardSet {
   name: string;
   code: string;
   icon: string;
+  released_at?: string | null;
+}
+
+export type FormatCode = 'standard' | 'etendu' | 'variable' | 'basique';
+
+export interface GameFormat {
+  id: number;
+  code: FormatCode;
+  name: string;
+  description?: string | null;
+  is_active: boolean;
+}
+
+export interface FormatSet {
+  format_id: number;
+  set_id: number;
 }
 
 // In-game card instance (a card on the board or in hand with runtime state)
