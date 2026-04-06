@@ -26,7 +26,7 @@ export async function POST(request: Request) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            contents: [{ parts: [{ text: `Generate an image: ${prompt}` }] }],
+            contents: [{ parts: [{ text: `Generate an image with absolutely no text, no letters, no words, no writing, no captions, no labels, no watermarks anywhere in the image. The image must contain zero readable characters. Description: ${prompt}` }] }],
             generationConfig: { responseModalities: ['IMAGE', 'TEXT'] },
           }),
         }

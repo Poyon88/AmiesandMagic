@@ -263,9 +263,51 @@ export default function CardForge() {
 
   const generateTokenPrompt = useCallback(() => {
     if (!tokenRace) return;
-    const prompt = `A summoned token creature of the ${tokenRace} race in a dark fantasy card game. Small magical warrior or beast, cinematic lighting, detailed, no text, painterly style, dark atmosphere, full body portrait centered, suitable for a collectible card game illustration.`;
+    const tokenVisualDescriptions: Record<string, string> = {
+      "Elfes": "an elven warrior with pointed ears, elegant features, flowing hair, light armor with nature motifs",
+      "Aigles Géants": "a massive giant eagle with piercing eyes, powerful wingspan, golden-brown plumage, sharp talons",
+      "Fées": "a luminous fairy with translucent butterfly wings, glowing aura, ethereal and delicate",
+      "Nains": "a stout dwarven warrior with thick beard, heavy plate armor, runes engraved on equipment",
+      "Golems": "a stone or metal construct with glowing runes carved into its body, hulking and mechanical",
+      "Hobbits": "a halfling with bare hairy feet, round cheerful face, simple rustic clothing",
+      "Hommes-Arbres": "a towering treant made of living wood, bark skin, branch limbs, leaves as hair, mossy and ancient",
+      "Humains": "a human warrior in medieval armor, realistic proportions, heraldic symbols on shield",
+      "Hommes-Loups": "a werewolf humanoid with wolf head, fur-covered muscular body, feral eyes, claws and fangs",
+      "Hommes-Ours": "a werebear humanoid, massive bear-headed figure, thick fur, enormous claws, towering",
+      "Hommes-Félins": "a feline humanoid with panther features, lithe and agile body, slit pupils, sleek fur",
+      "Centaures": "a centaur, a single creature with a human head, human chest and human arms on top, and four horse legs below with hooves, no separate horse head, wielding spear or bow, wild hair, tribal war paint",
+      "Feu": "a fire elemental, body made of living flames, molten core, embers floating around",
+      "Terre": "an earth elemental, body of rock and stone, crystal growths, moss patches, heavy and immovable",
+      "Eau": "a water elemental, body of flowing translucent water, whirlpool core, droplets suspended in air",
+      "Air/Tempête": "a storm elemental, body of swirling wind and lightning, crackling electricity, semi-transparent",
+      "Géants": "a towering giant humanoid, crude armor, massive club, standing several stories tall",
+      "Ogres": "a large brutish ogre, ugly face, thick skin, crude leather armor, wielding a club",
+      "Dragons": "a magnificent dragon with scales, massive wings, long tail, breathing fire, serpentine neck",
+      "Chiens": "a large war hound, battle-scarred, armored barding, fierce and loyal, muscular",
+      "Phoenix": "a majestic phoenix bird engulfed in sacred flames, radiant feathers of gold and crimson",
+      "Anges": "a celestial angelic being with luminous feathered wings, divine armor, halo of light",
+      "Ours": "a massive bear, thick fur, powerful claws, intimidating presence, standing on hind legs",
+      "Loups": "a fierce wolf, larger than normal, piercing eyes, thick fur, fangs bared, wild and untamed",
+      "Orcs": "a green-skinned muscular orc, tusks, brutal heavy armor, scarred face, savage and menacing",
+      "Gobelins": "a green goblin, pointy ears, sharp teeth, ragged clothing, sneaky and mischievous",
+      "Trolls": "a huge troll with regenerating flesh, long arms, hunched posture, warty skin",
+      "Wargs": "a giant wolf-like warg beast, dark matted fur, red eyes, razor fangs",
+      "Squelettes": "an animated skeleton warrior, hollow eye sockets with ghostly glow, rusted ancient armor",
+      "Zombies": "a shambling undead corpse, rotting flesh, torn clothing, decayed and horrifying",
+      "Spectres": "a ghostly translucent specter, floating ethereal form, glowing eyes, trailing wisps of ectoplasm",
+      "Vampires": "an elegant vampire lord, pale skin, red eyes, aristocratic dark clothing, fangs",
+      "Lich": "a skeletal undead sorcerer in ornate robes, glowing phylactery, crown of dark magic",
+      "Banshees": "a wailing ghostly female spirit, flowing spectral hair, mouth open in eternal scream",
+      "Elfes Corrompus": "a dark elf with ashen skin, white hair, cruel features, spiked dark armor, malevolent aura",
+      "Araignées Géantes": "an enormous spider with dark chitin, multiple glowing eyes, venomous dripping fangs",
+      "Démons": "a demonic creature with horns, bat-like wings, cloven hooves, infernal flames",
+    };
+    const visual = tokenVisualDescriptions[tokenRace] || `a ${tokenRace} creature`;
+    const nameHint = tokenName ? ` named "${tokenName}"` : '';
+    const kwHint = tokenKeywords.length > 0 ? ` Abilities: ${tokenKeywords.join(', ')}.` : '';
+    const prompt = `${visual}${nameHint}.${kwHint} Cinematic lighting, highly detailed, painterly style, dark fantasy atmosphere, full body portrait centered on a plain dark background. Square format. Absolutely no text, no letters, no words, no symbols, no writing, no borders, no frames, no card layout, no UI elements anywhere in the image.`;
     setTokenPrompt(prompt);
-  }, [tokenRace]);
+  }, [tokenRace, tokenName, tokenKeywords]);
 
   const generateTokenImage = useCallback(async () => {
     if (!tokenPrompt) return;
