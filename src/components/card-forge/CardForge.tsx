@@ -1632,6 +1632,8 @@ export default function CardForge() {
                                 stats: { mana: manualMana, attack: manualAttack, defense: manualDefense, power: manualPower, keywords: manualKeywords },
                                 existingName: manualName || undefined,
                                 existingAbility: manualAbility || undefined,
+                                raceId: race || undefined,
+                                clanId: clan || undefined,
                               }),
                             });
                             if (res.ok) {
