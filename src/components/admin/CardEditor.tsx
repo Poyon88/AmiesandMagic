@@ -118,7 +118,7 @@ export default function CardEditor() {
       if (filterSet && card.set_id !== parseInt(filterSet)) return false;
       if (filterYear && String(card.card_year) !== filterYear) return false;
       return true;
-    });
+    }).sort((a, b) => a.mana_cost - b.mana_cost || a.name.localeCompare(b.name, "fr"));
   }, [cards, search, manaCostFilter, typeFilter, keywordFilter, factionFilter, rarityFilter, raceFilter, clanFilter, filterSet, filterYear]);
 
   // Select card for editing
