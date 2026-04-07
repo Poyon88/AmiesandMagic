@@ -457,5 +457,14 @@ export interface DeckCard {
 export interface Profile {
   id: string;
   username: string;
+  role: string;
+  created_at: string;
+}
+
+// User collection entry
+export interface UserCollectionEntry {
+  id: number;
+  user_id: string;
+  card_id: number;
   created_at: string;
 }

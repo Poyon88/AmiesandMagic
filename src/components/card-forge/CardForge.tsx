@@ -731,6 +731,16 @@ export default function CardForge() {
               textDecoration: "none",
               display: "flex", alignItems: "center",
             }}>🗺 Plateaux</a>
+            <a href="/admin/collections" style={{
+              padding: "5px 14px", borderRadius: 6, cursor: "pointer",
+              background: "transparent",
+              border: "1px solid #ddd",
+              color: "#888",
+              fontFamily: "'Cinzel',serif", fontSize: 9, fontWeight: 700, letterSpacing: 0.8,
+              transition: "all 0.2s",
+              textDecoration: "none",
+              display: "flex", alignItems: "center",
+            }}>📚 Collections</a>
           </div>
         </div>
 

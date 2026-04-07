@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import CollectionView from "@/components/cards/CollectionView";
 
+export const dynamic = "force-dynamic";
+
 export default async function CollectionPage() {
   const supabase = await createClient();
   const {
@@ -10,7 +12,7 @@ export default async function CollectionPage() {
 
   if (!user) redirect("/login");
 
-  const [{ data: cards }, { data: sets }, { data: formats }, { data: formatSets }] = await Promise.all([
+  const [{ data: cards }, { data: sets }, { data: formats }, { data: formatSets }, { data: profile }, { data: userCollection }] = await Promise.all([
     supabase
       .from("cards")
       .select("*")
@@ -28,7 +30,30 @@ export default async function CollectionPage() {
     supabase
       .from("format_sets")
       .select("format_id, set_id"),
+    supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single(),
+    supabase
+      .from("user_collections")
+      .select("card_id")
+      .eq("user_id", user.id),
   ]);
 
-  return <CollectionView cards={cards ?? []} sets={sets ?? []} formats={formats ?? []} formatSets={formatSets ?? []} />;
+  const isTester = profile?.role === "testeur";
+  const collectedCardIds = (userCollection ?? []).map(r => r.card_id);
+
+  console.log("[Collection] user:", user.id, "profile:", profile, "isTester:", isTester, "collectedCardIds:", collectedCardIds.length, "totalCards:", cards?.length);
+
+  return (
+    <CollectionView
+      cards={cards ?? []}
+      sets={sets ?? []}
+      formats={formats ?? []}
+      formatSets={formatSets ?? []}
+      collectedCardIds={collectedCardIds}
+      isTester={isTester}
+    />
+  );
 }

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import type { Card, Keyword, CardSet, GameFormat, FormatSet } from "@/lib/game/types";
 import { getFormatFilter } from "@/lib/game/format-legality";
+import { isCardOwned } from "@/lib/game/collection";
 import GameCard from "./GameCard";
 
 interface CollectionViewProps {
@@ -11,6 +12,8 @@ interface CollectionViewProps {
   sets: CardSet[];
   formats: GameFormat[];
   formatSets: FormatSet[];
+  collectedCardIds: number[];
+  isTester: boolean;
 }
 
 import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
@@ -25,7 +28,8 @@ const RARITY_COLORS: Record<string, string> = {
   "Légendaire": "#ffd54f",
 };
 
-export default function CollectionView({ cards, sets, formats, formatSets }: CollectionViewProps) {
+export default function CollectionView({ cards, sets, formats, formatSets, collectedCardIds, isTester }: CollectionViewProps) {
+  const ownedSet = useMemo(() => new Set(collectedCardIds), [collectedCardIds]);
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [manaCostFilter, setManaCostFilter] = useState<number | null>(null);
@@ -74,6 +78,7 @@ export default function CollectionView({ cards, sets, formats, formatSets }: Col
 
   const filteredCards = useMemo(() => {
     return cards.filter((card) => {
+      if (!isCardOwned(card, ownedSet, isTester)) return false;
       if (formatPredicate && !formatPredicate(card)) return false;
       if (search && !card.name.toLowerCase().includes(search.toLowerCase()))
         return false;
@@ -96,7 +101,7 @@ export default function CollectionView({ cards, sets, formats, formatSets }: Col
         return false;
       return true;
     });
-  }, [cards, formatPredicate, search, manaCostFilter, typeFilter, keywordFilter, factionFilter, rarityFilter, raceFilter, clanFilter, filterSet, filterYear]);
+  }, [cards, ownedSet, isTester, formatPredicate, search, manaCostFilter, typeFilter, keywordFilter, factionFilter, rarityFilter, raceFilter, clanFilter, filterSet, filterYear]);
 
   function resetFilters() {
     setSearch("");

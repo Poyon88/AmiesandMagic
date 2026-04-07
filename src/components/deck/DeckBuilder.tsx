@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { Card, Keyword, CardSet, GameFormat, FormatSet } from "@/lib/game/types";
 import { getFormatFilter } from "@/lib/game/format-legality";
+import { isCardOwned } from "@/lib/game/collection";
 import { DECK_SIZE } from "@/lib/game/constants";
 import { FACTIONS, ALIGNMENTS } from "@/lib/card-engine/constants";
 import type { Alignment } from "@/lib/card-engine/constants";
@@ -35,6 +36,8 @@ interface DeckBuilderProps {
   sets: CardSet[];
   formats: GameFormat[];
   formatSets: FormatSet[];
+  collectedCardIds: number[];
+  isTester: boolean;
 }
 
 const RACE_ICONS: Record<string, string> = {
@@ -61,9 +64,12 @@ export default function DeckBuilder({
   sets,
   formats,
   formatSets,
+  collectedCardIds,
+  isTester,
 }: DeckBuilderProps) {
   const router = useRouter();
   const supabase = createClient();
+  const ownedSet = useMemo(() => new Set(collectedCardIds), [collectedCardIds]);
 
   const [deckName, setDeckName] = useState(existingDeck?.name ?? "");
   const [selectedHeroId, setSelectedHeroId] = useState<number | null>(
@@ -271,6 +277,7 @@ export default function DeckBuilder({
   }, [slotAllocation]);
 
   function canAddCard(card: Card): string | null {
+    if (!isCardOwned(card, ownedSet, isTester)) return "Carte non possédée";
     if (totalCards >= DECK_SIZE) return "Deck plein";
     const existing = deckCards.get(card.id);
     // Peu Commune, Rare, Épique, Légendaire : 1 exemplaire max. Commune : 4 max.
@@ -348,6 +355,16 @@ export default function DeckBuilder({
     if (deckStats.violations.length > 0) {
       setError(deckStats.violations.join(", "));
       return;
+    }
+
+    // Verify ownership of collectible cards
+    if (!isTester) {
+      const unownedCards = Array.from(deckCards.values())
+        .filter(({ card }) => card.set_id == null && !ownedSet.has(card.id));
+      if (unownedCards.length > 0) {
+        setError("Le deck contient des cartes non possédées");
+        return;
+      }
     }
 
     setSaving(true);
