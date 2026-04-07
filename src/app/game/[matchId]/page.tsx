@@ -93,7 +93,7 @@ export default function GamePage() {
         }
 
         // Fetch both player deck cards and hero data
-        const [p1DeckCards, p2DeckCards, p1DeckData, p2DeckData, tokenTemplatesRes] = await Promise.all([
+        const [p1DeckCards, p2DeckCards, p1DeckData, p2DeckData, tokenTemplatesRes, boardsRes] = await Promise.all([
           supabase
             .from("deck_cards")
             .select("card_id, quantity, cards(*)")
@@ -115,6 +115,10 @@ export default function GamePage() {
           supabase
             .from("token_templates")
             .select("*"),
+          supabase
+            .from("game_boards")
+            .select("id, name, image_url")
+            .eq("is_active", true),
         ]);
 
         // Store token templates
@@ -160,6 +164,14 @@ export default function GamePage() {
         const manaSpark = manaSparkRes.data?.[0];
         if (manaSpark && !factionCards.find((c: { id: number }) => c.id === manaSpark.id)) {
           factionCards.push(manaSpark);
+        }
+
+        // Select board deterministically using match seed
+        const activeBoards = boardsRes.data ?? [];
+        if (activeBoards.length > 0) {
+          const boardSeed = parseInt(matchId.replace(/-/g, "").slice(0, 8), 16);
+          const selectedBoard = activeBoards[boardSeed % activeBoards.length];
+          useGameStore.getState().setBoardImageUrl(selectedBoard.image_url);
         }
 
         // Store match data for later initialization

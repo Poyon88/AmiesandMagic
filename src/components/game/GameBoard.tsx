@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef, Fragment, type DragEvent } from "react";
+import { useState, useCallback, useEffect, useRef, type DragEvent } from "react";
 import { AnimatePresence } from "framer-motion";
 import { useGameStore } from "@/lib/store/gameStore";
 import { canPlayCard, canAttack, canUseHeroPower, getSpellTargets } from "@/lib/game/engine";
@@ -20,19 +20,7 @@ import DamageOverlay from "./DamageOverlay";
 import SpellCastOverlay from "./SpellCastOverlay";
 import FireBreathOverlay from "./FireBreathOverlay";
 import MulliganOverlay from "./MulliganOverlay";
-import type { GameAction, DamageEvent, Race } from "@/lib/game/types";
-
-const BANNER_IMAGES: Record<Race, string> = {
-  elves: "/images/banners/elves.png",
-  dwarves: "/images/banners/dwarves.png",
-  halflings: "/images/banners/halflings.svg",
-  humans: "/images/banners/humans.svg",
-  beastmen: "/images/banners/beastmen.svg",
-  giants: "/images/banners/giants.svg",
-  dark_elves: "/images/banners/dark_elves.svg",
-  orcs_goblins: "/images/banners/orcs_goblins.svg",
-  undead: "/images/banners/undead.png",
-};
+import type { GameAction, DamageEvent } from "@/lib/game/types";
 
 interface GameBoardProps {
   onAction?: (action: GameAction) => void;
@@ -157,6 +145,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
     return evt ? evt.amount : null;
   }
 
+  const boardImageUrl = useGameStore((s) => s.boardImageUrl);
   const myPlayer = getMyPlayerState();
   const opponent = getOpponentPlayerState();
   const myTurn = isMyTurn();
@@ -294,14 +283,13 @@ export default function GameBoard({ onAction }: GameBoardProps) {
 
   return (
     <div
-      className="fixed inset-0 flex flex-col select-none overflow-hidden"
-      style={{ backgroundColor: "#0d0d1a", backgroundImage: "url('/images/battlefield.jpg')", backgroundSize: "cover", backgroundPosition: "center" }}
+      className="fixed inset-0 select-none"
+      style={{ backgroundColor: "#0d0d1a" }}
       onClick={(e) => {
         if (e.target === e.currentTarget) clearSelection();
       }}
       onContextMenu={(e) => {
         if (targetingMode === "spell_multi" && currentTargetSlotIndex > 0) {
-          // Go back one step in multi-target
           e.preventDefault();
           const prevSlot = spellTargetSlots[currentTargetSlotIndex - 1];
           const prevMap = { ...useGameStore.getState().collectedTargetMap };
@@ -319,7 +307,311 @@ export default function GameBoard({ onAction }: GameBoardProps) {
         }
       }}
     >
-      {/* Fixed overlays — position:fixed, don't affect flex layout */}
+      {/* 16:9 board container */}
+      <div
+        className="absolute inset-0 m-auto overflow-visible"
+        style={{
+          aspectRatio: "16/9",
+          maxWidth: "100vw",
+          maxHeight: "100vh",
+          width: "100%",
+          height: "100%",
+          backgroundImage: `url('${boardImageUrl || "/images/battlefield.jpg"}')`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          position: "relative",
+        }}
+      >
+        {/* Subtle overlay for readability */}
+        <div className="absolute inset-0 bg-background/10 pointer-events-none z-0" />
+
+        {/* ============= OPPONENT HAND (card backs) ============= */}
+        <div className="absolute top-[1%] left-[2%] z-20 flex items-center gap-1">
+          {opponent.hand.map((_, i) => (
+            <div
+              key={i}
+              className="w-8 h-12 rounded-sm border border-primary/30 bg-gradient-to-br from-secondary via-card-bg to-secondary overflow-hidden flex items-center justify-center"
+            >
+              <div className="w-5 h-7 rounded-sm border border-primary/20 bg-primary/10 flex items-center justify-center">
+                <span className="text-primary/40 text-[8px] font-bold">A&amp;M</span>
+              </div>
+            </div>
+          ))}
+          <span className="text-xs text-foreground/30 self-center ml-1">
+            {opponent.hand.length}
+          </span>
+        </div>
+
+        {/* ============= OPPONENT HERO + MANA + HERO POWER ============= */}
+        <div className="absolute top-[1%] left-1/2 -translate-x-1/2 z-20 flex items-center gap-4">
+          <ManaBar current={opponent.mana} max={opponent.maxMana} />
+          <HeroPowerButton
+            heroDef={opponent.hero.heroDefinition}
+            isOpponent={true}
+            canUse={false}
+            isUsed={opponent.hero.heroPowerUsedThisTurn}
+            mana={opponent.mana}
+          />
+          <HeroPortrait
+            hero={opponent.hero}
+            isOpponent={true}
+            isValidTarget={validTargets.includes("enemy_hero")}
+            damageAmount={getDamage("enemy_hero")}
+            onClick={
+              validTargets.includes("enemy_hero")
+                ? () => handleSelectTarget("enemy_hero")
+                : undefined
+            }
+            onMouseEnter={
+              validTargets.includes("enemy_hero")
+                ? () => setHoveredTargetId("enemy_hero")
+                : undefined
+            }
+            onMouseLeave={
+              validTargets.includes("enemy_hero")
+                ? () => setHoveredTargetId(null)
+                : undefined
+            }
+          />
+        </div>
+
+        {/* ============= OPPONENT GRAVEYARD + DECK ============= */}
+        <div className="absolute top-[2%] right-[2%] z-20 flex items-center gap-3">
+          <button
+            onClick={() => setGraveyardView("opponent")}
+            className="flex flex-col items-center text-foreground/40 hover:text-foreground/60 transition-colors"
+          >
+            <span className="text-lg">💀</span>
+            <span className="text-[10px]">{opponent.graveyard.length}</span>
+          </button>
+          <div className="flex flex-col items-center text-foreground/30">
+            <span className="text-lg">📚</span>
+            <span className="text-[10px]">{opponent.deck.length}</span>
+          </div>
+        </div>
+
+        {/* ============= OPPONENT BOARD (creatures) ============= */}
+        <div
+          className="absolute top-[14%] left-0 right-0 h-[24%] flex justify-center items-center gap-2 px-8 overflow-visible z-10"
+        >
+          {opponent.board.length === 0 ? (
+            <div className="text-foreground/10 text-sm">
+              No creatures
+            </div>
+          ) : (
+            <AnimatePresence>
+              {opponent.board.map((creature) => (
+                <BoardCreature
+                  key={creature.instanceId}
+                  creature={creature}
+                  isOwn={false}
+                  isValidTarget={validTargets.includes(creature.instanceId)}
+                  damageAmount={getDamage(creature.instanceId)}
+                  onClick={
+                    validTargets.includes(creature.instanceId)
+                      ? () => handleSelectTarget(creature.instanceId)
+                      : undefined
+                  }
+                  onMouseEnter={
+                    validTargets.includes(creature.instanceId)
+                      ? () => setHoveredTargetId(creature.instanceId)
+                      : undefined
+                  }
+                  onMouseLeave={
+                    validTargets.includes(creature.instanceId)
+                      ? () => setHoveredTargetId(null)
+                      : undefined
+                  }
+                />
+              ))}
+            </AnimatePresence>
+          )}
+        </div>
+
+        {/* ============= PLAYER BOARD (creatures + drop zone) ============= */}
+        <div
+          onDrop={handleDropOnBoard}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          className={`
+            absolute top-[42%] left-0 right-0 h-[24%] flex items-center justify-center px-8 transition-all overflow-visible z-10
+            ${isDragOver ? "bg-success/10 border-2 border-dashed border-success/50" : ""}
+          `}
+        >
+          <div ref={myBoardRef} className="flex justify-center gap-2 min-h-[88px] items-center">
+          {myPlayer.board.length === 0 && !isDragOver ? (
+            <div className="text-foreground/10 text-sm">
+              Drag cards to play them here
+            </div>
+          ) : myPlayer.board.length === 0 && isDragOver ? (
+            <div className="text-success/50 text-sm font-medium">
+              Drop to play creature
+            </div>
+          ) : (
+            <>
+              <AnimatePresence>
+                {myPlayer.board.flatMap((creature, i) => {
+                  const canAtt =
+                    myTurn && canAttack(gameState, creature.instanceId);
+                  const items = [];
+                  if (isDragOver && dropIndex === i) {
+                    items.push(
+                      <div key={`drop-${i}`} className="w-1 h-20 rounded-full bg-success shadow-[0_0_8px_rgba(34,197,94,0.6)] shrink-0" />
+                    );
+                  }
+                  items.push(
+                    <BoardCreature
+                      key={creature.instanceId}
+                      creature={creature}
+                      isOwn={true}
+                      canAttack={canAtt}
+                      isSelected={
+                        selectedAttackerInstanceId === creature.instanceId
+                      }
+                      isValidTarget={validTargets.includes(creature.instanceId)}
+                      damageAmount={getDamage(creature.instanceId)}
+                      onClick={
+                        validTargets.includes(creature.instanceId)
+                          ? () => handleSelectTarget(creature.instanceId)
+                          : canAtt
+                          ? () => handleSelectAttacker(creature.instanceId)
+                          : undefined
+                      }
+                      onMouseEnter={
+                        validTargets.includes(creature.instanceId)
+                          ? () => setHoveredTargetId(creature.instanceId)
+                          : undefined
+                      }
+                      onMouseLeave={
+                        validTargets.includes(creature.instanceId)
+                          ? () => setHoveredTargetId(null)
+                          : undefined
+                      }
+                    />
+                  );
+                  return items;
+                })}
+              </AnimatePresence>
+              {isDragOver && dropIndex === myPlayer.board.length && (
+                <div className="w-1 h-20 rounded-full bg-success shadow-[0_0_8px_rgba(34,197,94,0.6)] shrink-0" />
+              )}
+            </>
+          )}
+          </div>
+        </div>
+
+        {/* ============= PLAYER GRAVEYARD + DECK ============= */}
+        <div className="absolute bottom-[18%] left-[2%] z-20 flex items-center gap-3">
+          <button
+            onClick={() => setGraveyardView("my")}
+            className="flex flex-col items-center text-foreground/40 hover:text-foreground/60 transition-colors"
+          >
+            <span className="text-lg">💀</span>
+            <span className="text-[10px]">{myPlayer.graveyard.length}</span>
+          </button>
+          <div className="flex flex-col items-center text-foreground/30">
+            <span className="text-lg">📚</span>
+            <span className="text-[10px]">{myPlayer.deck.length}</span>
+          </div>
+        </div>
+
+        {/* ============= PLAYER HERO + MANA + HERO POWER ============= */}
+        <div className="absolute bottom-[16%] left-1/2 -translate-x-1/2 z-20 flex items-center gap-4">
+          <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} />
+          <HeroPortrait
+            hero={myPlayer.hero}
+            isOpponent={false}
+            isValidTarget={validTargets.includes("friendly_hero")}
+            damageAmount={getDamage("friendly_hero")}
+            onClick={
+              validTargets.includes("friendly_hero")
+                ? () => handleSelectTarget("friendly_hero")
+                : undefined
+            }
+            onMouseEnter={
+              validTargets.includes("friendly_hero")
+                ? () => setHoveredTargetId("friendly_hero")
+                : undefined
+            }
+            onMouseLeave={
+              validTargets.includes("friendly_hero")
+                ? () => setHoveredTargetId(null)
+                : undefined
+            }
+          />
+          <HeroPowerButton
+            heroDef={myPlayer.hero.heroDefinition}
+            isOpponent={false}
+            canUse={myTurn && !!gameState && canUseHeroPower(gameState)}
+            isUsed={myPlayer.hero.heroPowerUsedThisTurn}
+            mana={myPlayer.mana}
+            onClick={handleActivateHeroPower}
+          />
+        </div>
+
+        {/* ============= END TURN + TIMER + CANCEL ============= */}
+        <div className="absolute right-[2%] top-[44%] -translate-y-1/2 z-20 flex flex-col items-center gap-3">
+          {targetingMode !== "none" && (
+            <button
+              onClick={clearSelection}
+              className="text-xs text-accent hover:text-accent/80 transition-colors bg-black/50 px-3 py-1 rounded"
+            >
+              Cancel targeting
+            </button>
+          )}
+          <TurnTimer
+            isMyTurn={myTurn}
+            onTimeUp={handleEndTurn}
+            turnNumber={gameState.turnNumber}
+          />
+          <button
+            onClick={handleEndTurn}
+            disabled={!myTurn}
+            className={`relative w-[140px] h-[46px] transition-all ${
+              myTurn
+                ? "hover:scale-105 hover:brightness-110 cursor-pointer"
+                : "brightness-50 saturate-0 cursor-not-allowed"
+            }`}
+          >
+            <img
+              src="/images/end-turn-btn.svg"
+              alt=""
+              className="absolute inset-0 w-full h-full"
+            />
+            <span className={`relative z-10 font-bold text-sm tracking-wide ${
+              myTurn ? "text-[#2a1a00] drop-shadow-[0_1px_0_rgba(255,255,255,0.3)]" : "text-gray-500"
+            }`}>
+              END TURN
+            </span>
+          </button>
+        </div>
+
+      </div>{/* end 16:9 board container */}
+
+      {/* ============= PLAYER HAND (outside board container for overflow) ============= */}
+      <div className="fixed bottom-0 left-0 right-0 flex justify-center gap-1 px-6 pb-4 pt-1 overflow-visible z-30">
+        {myPlayer.hand.map((cardInstance) => {
+          const playable =
+            myTurn && canPlayCard(gameState, cardInstance.instanceId);
+          return (
+            <HandCard
+              key={cardInstance.instanceId}
+              cardInstance={cardInstance}
+              canPlay={playable}
+              isSelected={
+                selectedCardInstanceId === cardInstance.instanceId
+              }
+              onClick={() => {
+                if (cardInstance.card.card_type === "creature") return;
+                const action = selectCardInHand(cardInstance.instanceId);
+                broadcast(action);
+              }}
+            />
+          );
+        })}
+      </div>
+
+      {/* ============= FIXED OVERLAYS ============= */}
       {isMulligan && (
         <MulliganOverlay
           hand={myPlayer.hand}
@@ -404,344 +696,6 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           </div>
         </div>
       )}
-
-      {/* ============= OPPONENT INFO BAR ============= */}
-      <div
-        className="flex items-center justify-between px-6 py-3"
-        style={{
-          backgroundColor: "#0d0d1a",
-          backgroundImage: `url('${opponent.hero.heroDefinition?.race ? BANNER_IMAGES[opponent.hero.heroDefinition.race] : "/images/banners/default.svg"}')`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      >
-        {/* Opponent hand (card backs) */}
-        <div className="flex gap-1">
-          {opponent.hand.map((_, i) => (
-            <div
-              key={i}
-              className="w-8 h-12 rounded-sm border border-primary/30 bg-gradient-to-br from-secondary via-card-bg to-secondary overflow-hidden flex items-center justify-center"
-            >
-              <div className="w-5 h-7 rounded-sm border border-primary/20 bg-primary/10 flex items-center justify-center">
-                <span className="text-primary/40 text-[8px] font-bold">A&amp;M</span>
-              </div>
-            </div>
-          ))}
-          <span className="text-xs text-foreground/30 self-center ml-1">
-            {opponent.hand.length}
-          </span>
-        </div>
-
-        {/* Opponent hero + mana + hero power */}
-        <div className="flex items-center gap-4">
-          <ManaBar current={opponent.mana} max={opponent.maxMana} />
-          <HeroPowerButton
-            heroDef={opponent.hero.heroDefinition}
-            isOpponent={true}
-            canUse={false}
-            isUsed={opponent.hero.heroPowerUsedThisTurn}
-            mana={opponent.mana}
-          />
-          <HeroPortrait
-            hero={opponent.hero}
-            isOpponent={true}
-            isValidTarget={validTargets.includes("enemy_hero")}
-            damageAmount={getDamage("enemy_hero")}
-            onClick={
-              validTargets.includes("enemy_hero")
-                ? () => handleSelectTarget("enemy_hero")
-                : undefined
-            }
-            onMouseEnter={
-              validTargets.includes("enemy_hero")
-                ? () => setHoveredTargetId("enemy_hero")
-                : undefined
-            }
-            onMouseLeave={
-              validTargets.includes("enemy_hero")
-                ? () => setHoveredTargetId(null)
-                : undefined
-            }
-          />
-        </div>
-
-        {/* Opponent graveyard + deck */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setGraveyardView("opponent")}
-            className="flex flex-col items-center text-foreground/40 hover:text-foreground/60 transition-colors"
-          >
-            <span className="text-lg">💀</span>
-            <span className="text-[10px]">{opponent.graveyard.length}</span>
-          </button>
-          <div className="flex flex-col items-center text-foreground/30">
-            <span className="text-lg">📚</span>
-            <span className="text-[10px]">{opponent.deck.length}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* ============= BATTLEFIELD WRAPPER ============= */}
-      <div
-        className="flex-1 flex flex-col overflow-visible relative"
-        style={{
-          minHeight: 0,
-          backgroundImage: "url('/images/battlefield.jpg')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-          backgroundColor: "#0d0d1a",
-        }}
-      >
-        {/* Subtle overlay for readability */}
-        <div className="absolute inset-0 bg-background/10 pointer-events-none" />
-
-      {/* ============= OPPONENT BOARD ============= */}
-      <div
-        className="flex justify-center items-center gap-2 px-8 overflow-visible relative z-10"
-        style={{ flex: '1 1 0%' }}
-      >
-        {opponent.board.length === 0 ? (
-          <div className="text-foreground/10 text-sm">
-            No creatures
-          </div>
-        ) : (
-          <AnimatePresence>
-            {opponent.board.map((creature) => (
-              <BoardCreature
-                key={creature.instanceId}
-                creature={creature}
-                isOwn={false}
-                isValidTarget={validTargets.includes(creature.instanceId)}
-                damageAmount={getDamage(creature.instanceId)}
-                onClick={
-                  validTargets.includes(creature.instanceId)
-                    ? () => handleSelectTarget(creature.instanceId)
-                    : undefined
-                }
-                onMouseEnter={
-                  validTargets.includes(creature.instanceId)
-                    ? () => setHoveredTargetId(creature.instanceId)
-                    : undefined
-                }
-                onMouseLeave={
-                  validTargets.includes(creature.instanceId)
-                    ? () => setHoveredTargetId(null)
-                    : undefined
-                }
-              />
-            ))}
-          </AnimatePresence>
-        )}
-      </div>
-
-      {/* ============= DIVIDER (handled by battlefield image) ============= */}
-      <div className="relative z-10" />
-
-      {/* ============= PLAYER BOARD ============= */}
-      <div
-        onDrop={handleDropOnBoard}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        className={`
-          flex items-center justify-center px-8 transition-all overflow-visible relative z-10
-          ${
-            isDragOver
-              ? "bg-success/10 border-2 border-dashed border-success/50"
-              : ""
-          }
-        `}
-        style={{ flex: '1 1 0%' }}
-      >
-        <div ref={myBoardRef} className="flex justify-center gap-2 min-h-[88px] items-center">
-        {myPlayer.board.length === 0 && !isDragOver ? (
-          <div className="text-foreground/10 text-sm">
-            Drag cards to play them here
-          </div>
-        ) : myPlayer.board.length === 0 && isDragOver ? (
-          <div className="text-success/50 text-sm font-medium">
-            Drop to play creature
-          </div>
-        ) : (
-          <>
-            <AnimatePresence>
-              {myPlayer.board.flatMap((creature, i) => {
-                const canAtt =
-                  myTurn && canAttack(gameState, creature.instanceId);
-                const items = [];
-                if (isDragOver && dropIndex === i) {
-                  items.push(
-                    <div key={`drop-${i}`} className="w-1 h-20 rounded-full bg-success shadow-[0_0_8px_rgba(34,197,94,0.6)] shrink-0" />
-                  );
-                }
-                items.push(
-                  <BoardCreature
-                    key={creature.instanceId}
-                    creature={creature}
-                    isOwn={true}
-                    canAttack={canAtt}
-                    isSelected={
-                      selectedAttackerInstanceId === creature.instanceId
-                    }
-                    isValidTarget={validTargets.includes(creature.instanceId)}
-                    damageAmount={getDamage(creature.instanceId)}
-                    onClick={
-                      validTargets.includes(creature.instanceId)
-                        ? () => handleSelectTarget(creature.instanceId)
-                        : canAtt
-                        ? () => handleSelectAttacker(creature.instanceId)
-                        : undefined
-                    }
-                    onMouseEnter={
-                      validTargets.includes(creature.instanceId)
-                        ? () => setHoveredTargetId(creature.instanceId)
-                        : undefined
-                    }
-                    onMouseLeave={
-                      validTargets.includes(creature.instanceId)
-                        ? () => setHoveredTargetId(null)
-                        : undefined
-                    }
-                  />
-                );
-                return items;
-              })}
-            </AnimatePresence>
-            {isDragOver && dropIndex === myPlayer.board.length && (
-              <div className="w-1 h-20 rounded-full bg-success shadow-[0_0_8px_rgba(34,197,94,0.6)] shrink-0" />
-            )}
-          </>
-        )}
-        </div>
-      </div>
-
-      </div>{/* end BATTLEFIELD WRAPPER */}
-
-      {/* ============= MY AREA ============= */}
-      <div
-        className=""
-        style={{
-          backgroundColor: "#0d0d1a",
-          backgroundImage: `url('${myPlayer.hero.heroDefinition?.race ? BANNER_IMAGES[myPlayer.hero.heroDefinition.race] : "/images/banners/default.svg"}')`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      >
-        {/* My hero + mana + graveyard */}
-        <div className="flex items-center justify-between px-6 py-2">
-          {/* My graveyard + deck */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setGraveyardView("my")}
-              className="flex flex-col items-center text-foreground/40 hover:text-foreground/60 transition-colors"
-            >
-              <span className="text-lg">💀</span>
-              <span className="text-[10px]">{myPlayer.graveyard.length}</span>
-            </button>
-            <div className="flex flex-col items-center text-foreground/30">
-              <span className="text-lg">📚</span>
-              <span className="text-[10px]">{myPlayer.deck.length}</span>
-            </div>
-          </div>
-
-          {/* My hero + mana + hero power */}
-          <div className="flex items-center gap-4">
-            <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} />
-            <HeroPortrait
-              hero={myPlayer.hero}
-              isOpponent={false}
-              isValidTarget={validTargets.includes("friendly_hero")}
-              damageAmount={getDamage("friendly_hero")}
-              onClick={
-                validTargets.includes("friendly_hero")
-                  ? () => handleSelectTarget("friendly_hero")
-                  : undefined
-              }
-              onMouseEnter={
-                validTargets.includes("friendly_hero")
-                  ? () => setHoveredTargetId("friendly_hero")
-                  : undefined
-              }
-              onMouseLeave={
-                validTargets.includes("friendly_hero")
-                  ? () => setHoveredTargetId(null)
-                  : undefined
-              }
-            />
-            <HeroPowerButton
-              heroDef={myPlayer.hero.heroDefinition}
-              isOpponent={false}
-              canUse={myTurn && !!gameState && canUseHeroPower(gameState)}
-              isUsed={myPlayer.hero.heroPowerUsedThisTurn}
-              mana={myPlayer.mana}
-              onClick={handleActivateHeroPower}
-            />
-          </div>
-
-          {/* Targeting mode indicator + Timer + End Turn */}
-          <div className="flex items-center gap-3">
-            {targetingMode !== "none" && (
-              <button
-                onClick={clearSelection}
-                className="text-xs text-accent hover:text-accent/80 transition-colors"
-              >
-                Cancel targeting
-              </button>
-            )}
-            <TurnTimer
-              isMyTurn={myTurn}
-              onTimeUp={handleEndTurn}
-              turnNumber={gameState.turnNumber}
-            />
-            <button
-              onClick={handleEndTurn}
-              disabled={!myTurn}
-              className={`relative w-[140px] h-[46px] transition-all ${
-                myTurn
-                  ? "hover:scale-105 hover:brightness-110 cursor-pointer"
-                  : "brightness-50 saturate-0 cursor-not-allowed"
-              }`}
-            >
-              <img
-                src="/images/end-turn-btn.svg"
-                alt=""
-                className="absolute inset-0 w-full h-full"
-              />
-              <span className={`relative z-10 font-bold text-sm tracking-wide ${
-                myTurn ? "text-[#2a1a00] drop-shadow-[0_1px_0_rgba(255,255,255,0.3)]" : "text-gray-500"
-              }`}>
-                END TURN
-              </span>
-            </button>
-          </div>
-        </div>
-
-        {/* My hand */}
-        <div className="flex justify-center gap-1 px-6 pb-4 pt-1 overflow-visible relative z-30">
-          {myPlayer.hand.map((cardInstance) => {
-            const playable =
-              myTurn && canPlayCard(gameState, cardInstance.instanceId);
-            return (
-              <HandCard
-                key={cardInstance.instanceId}
-                cardInstance={cardInstance}
-                canPlay={playable}
-                isSelected={
-                  selectedCardInstanceId === cardInstance.instanceId
-                }
-                onClick={() => {
-                  // Only allow click for spells (targeting mode)
-                  // Creatures must be played via drag-and-drop
-                  if (cardInstance.card.card_type === "creature") return;
-                  const action = selectCardInHand(cardInstance.instanceId);
-                  broadcast(action);
-                }}
-              />
-            );
-          })}
-        </div>
-      </div>
-
 
       {/* Multi-target spell banner */}
       {targetingMode === "spell_multi" && spellTargetSlots.length > 0 && (

@@ -58,6 +58,7 @@ interface GameStore {
   damageEvents: DamageEvent[];
   spellCastEvent: SpellCastEvent | null;
   fireBreathEvent: FireBreathEvent | null;
+  boardImageUrl: string | null;
 
   // Actions
   initGame: (
@@ -74,6 +75,7 @@ interface GameStore {
   setGameState: (state: GameState) => void;
   setLocalPlayerId: (id: string) => void;
   setTokenTemplates: (templates: TokenTemplate[]) => void;
+  setBoardImageUrl: (url: string | null) => void;
 
   // Game actions
   dispatchAction: (action: GameAction) => GameAction | null;
@@ -367,6 +369,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   damageEvents: [],
   spellCastEvent: null,
   fireBreathEvent: null,
+  boardImageUrl: null,
 
   initGame: (player1Id, player2Id, player1Cards, player2Cards, firstPlayerIndex, seed, player1Hero, player2Hero, factionCardPool) => {
     const state = initializeGame(
@@ -388,6 +391,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   setGameState: (state) => set({ gameState: state }),
   setLocalPlayerId: (id) => set({ localPlayerId: id }),
   setTokenTemplates: (templates) => set({ tokenTemplates: templates }),
+  setBoardImageUrl: (url) => set({ boardImageUrl: url }),
 
   dispatchAction: (action) => {
     const { gameState, localPlayerId } = get();
