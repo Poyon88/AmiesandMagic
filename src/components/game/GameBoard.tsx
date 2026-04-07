@@ -392,7 +392,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
 
         {/* ============= OPPONENT BOARD (creatures) ============= */}
         <div
-          className="absolute top-[14%] left-0 right-0 h-[24%] flex justify-center items-center gap-2 px-8 overflow-visible z-10"
+          className="absolute top-[14%] left-0 right-0 h-[24%] flex justify-center items-center gap-2 px-8 overflow-visible"
         >
           {opponent.board.length === 0 ? (
             <div className="text-foreground/10 text-sm">
@@ -434,7 +434,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           className={`
-            absolute top-[42%] left-0 right-0 h-[24%] flex items-center justify-center px-8 transition-all overflow-visible z-10
+            absolute top-[42%] left-0 right-0 h-[24%] flex items-center justify-center px-8 transition-all overflow-visible
             ${isDragOver ? "bg-success/10 border-2 border-dashed border-success/50" : ""}
           `}
         >
@@ -586,30 +586,29 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           </button>
         </div>
 
+        {/* ============= PLAYER HAND ============= */}
+        <div className="absolute bottom-0 left-0 right-0 flex justify-center gap-1 px-6 pb-4 pt-1 overflow-visible z-30">
+          {myPlayer.hand.map((cardInstance) => {
+            const playable =
+              myTurn && canPlayCard(gameState, cardInstance.instanceId);
+            return (
+              <HandCard
+                key={cardInstance.instanceId}
+                cardInstance={cardInstance}
+                canPlay={playable}
+                isSelected={
+                  selectedCardInstanceId === cardInstance.instanceId
+                }
+                onClick={() => {
+                  if (cardInstance.card.card_type === "creature") return;
+                  const action = selectCardInHand(cardInstance.instanceId);
+                  broadcast(action);
+                }}
+              />
+            );
+          })}
+        </div>
       </div>{/* end 16:9 board container */}
-
-      {/* ============= PLAYER HAND (outside board container for overflow) ============= */}
-      <div className="fixed bottom-0 left-0 right-0 flex justify-center gap-1 px-6 pb-4 pt-1 overflow-visible z-30">
-        {myPlayer.hand.map((cardInstance) => {
-          const playable =
-            myTurn && canPlayCard(gameState, cardInstance.instanceId);
-          return (
-            <HandCard
-              key={cardInstance.instanceId}
-              cardInstance={cardInstance}
-              canPlay={playable}
-              isSelected={
-                selectedCardInstanceId === cardInstance.instanceId
-              }
-              onClick={() => {
-                if (cardInstance.card.card_type === "creature") return;
-                const action = selectCardInHand(cardInstance.instanceId);
-                broadcast(action);
-              }}
-            />
-          );
-        })}
-      </div>
 
       {/* ============= FIXED OVERLAYS ============= */}
       {isMulligan && (

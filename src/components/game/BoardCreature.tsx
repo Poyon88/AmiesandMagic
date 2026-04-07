@@ -74,7 +74,7 @@ export default function BoardCreature({
 
   const exitStyle = !isPresent && posRef.current
     ? { width: W, height: H, position: "fixed" as const, left: posRef.current.left, top: posRef.current.top, zIndex: 50, pointerEvents: "none" as const }
-    : { width: W, height: H, position: "relative" as const, zIndex: isZoomed ? 20 : isSelected ? 10 : 1 };
+    : { width: W, height: H, position: "relative" as const, zIndex: isZoomed ? 100 : isSelected ? 10 : 1 };
 
   return (
     <motion.div
