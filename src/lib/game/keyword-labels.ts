@@ -108,7 +108,7 @@ export const ALL_KEYWORDS: Keyword[] = [
 
 export const KEYWORD_LABELS: Record<Keyword, string> = {
   charge: "Traque", taunt: "Provocation", divine_shield: "Bouclier", ranged: "Vol",
-  raid: "Raid", convocations_multiples: "Convocations multiples", loyaute: "Loyauté", ancre: "Ancré", resistance: "Résistance", premiere_frappe: "Première Frappe",
+  raid: "Raid", convocations_multiples: "Convocations multiples", loyaute: "Loyauté", ancre: "Ancré", resistance: "Résistance X", premiere_frappe: "Première Frappe",
   berserk: "Berserk", vol: "Vol", precision: "Précision", drain_de_vie: "Drain de vie", esquive: "Esquive",
   poison: "Poison", celerite: "Célérité",
   augure: "Augure", benediction: "Bénédiction", bravoure: "Bravoure",

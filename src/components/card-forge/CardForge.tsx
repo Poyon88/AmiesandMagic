@@ -8,6 +8,7 @@ import KeywordIcon from "@/components/shared/KeywordIcon";
 import type { CardType, Keyword, SpellEffect, SpellTargetType, SpellKeywordInstance, SpellComposableEffects, SpellEffectNode, SpellTargetSlot, AtomicEffectType, SpellCondition, AtomicEffect, ConditionalEffectNode, CardSet, GameFormat } from "@/lib/game/types";
 import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
 import type { SpellKeywordId } from "@/lib/game/types";
+import CardEditor from "@/components/admin/CardEditor";
 
 // ─── API CALL ────────────────────────────────────────────────────────────────
 
@@ -511,7 +512,7 @@ export default function CardForge() {
     // Legacy aliases
     "Raid": "raid", "Convocations multiples": "convocations_multiples", "Traque": "charge", "Provocation": "taunt", "Bouclier": "divine_shield", "Vol": "ranged",
     // Tier 0
-    "Loyauté": "loyaute", "Ancré": "ancre", "Résistance": "resistance",
+    "Loyauté": "loyaute", "Ancré": "ancre", "Résistance X": "resistance",
     "Première Frappe": "premiere_frappe", "Berserk": "berserk",
     // Tier 1 — Terrain
     "Précision": "precision", "Drain de vie": "drain_de_vie", "Esquive": "esquive",
@@ -554,27 +555,7 @@ export default function CardForge() {
 
   const [saving, setSaving] = useState(false);
   const [saveResult, setSaveResult] = useState<{ ok: boolean; msg: string } | null>(null);
-  const [updateTargetId, setUpdateTargetId] = useState<number | null>(null);
-  const [updateTargetName, setUpdateTargetName] = useState<string | null>(null);
-  const [existingCards, setExistingCards] = useState<{ id: number; name: string; mana_cost: number; card_type: string; attack: number | null; health: number | null; effect_text: string; flavor_text: string | null; keywords: string[]; image_url: string | null; illustration_prompt: string | null; faction: string | null; race: string | null; clan: string | null; rarity: string | null; card_alignment: string | null; spell_keywords: SpellKeywordInstance[] | null; spell_effects: SpellComposableEffects | null; convocation_race: string | null }[]>([]);
-  const [showExistingCards, setShowExistingCards] = useState(false);
-  const [existingSearch, setExistingSearch] = useState("");
 
-  const loadExistingCards = useCallback(async () => {
-    try {
-      loadSets();
-      const res = await fetch('/api/cards/save');
-      const data = await res.json();
-      if (res.ok) {
-        setExistingCards(data);
-        setShowExistingCards(true);
-      } else {
-        setSaveResult({ ok: false, msg: data.error || "Erreur chargement cartes" });
-      }
-    } catch (err) {
-      setSaveResult({ ok: false, msg: err instanceof Error ? err.message : "Erreur réseau" });
-    }
-  }, []);
 
   const GAME_TO_FORGE_TYPE: Record<string, string> = {
     creature: "Unité", spell: "Sort",
@@ -583,123 +564,8 @@ export default function CardForge() {
     Object.entries(FORGE_TO_GAME_KEYWORD).map(([k, v]) => [v, k])
   );
 
-  const selectUpdateTarget = (dbCard: typeof existingCards[number]) => {
-    setUpdateTargetId(dbCard.id);
-    setUpdateTargetName(dbCard.name);
-    setShowExistingCards(false);
 
-    // Pre-fill all form fields from existing card
-    setManualName(dbCard.name);
-    setManualMana(dbCard.mana_cost);
-    setManualAttack(dbCard.attack ?? 3);
-    setManualDefense(dbCard.health ?? 3);
-    setManualPower(dbCard.spell_keywords?.[0]?.amount ?? 1);
-    setManualAbility((dbCard.effect_text || "").replace(/\s*\[[^\]]*\]\s*$/, "").trim());
-    setManualFlavorText(dbCard.flavor_text || "");
-    setManualIllustrationPrompt(dbCard.illustration_prompt || "");
-    const forgeKws = (dbCard.keywords || []).map(k => GAME_TO_FORGE_KEYWORD[k] || k);
-    setManualKeywords(forgeKws);
-
-    // Parse X values from effect_text (format: [Keyword1 2, Keyword2 3])
-    const xMatch = (dbCard.effect_text || "").match(/\[([^\]]+)\]/);
-    if (xMatch) {
-      const parsed: Record<string, number> = {};
-      for (const part of xMatch[1].split(",")) {
-        const trimmed = part.trim();
-        const lastSpace = trimmed.lastIndexOf(" ");
-        if (lastSpace > 0) {
-          const kwName = trimmed.slice(0, lastSpace);
-          const val = parseInt(trimmed.slice(lastSpace + 1));
-          if (!isNaN(val)) {
-            // Find matching forge keyword with " X" suffix
-            const fullName = `${kwName} X`;
-            if (forgeKws.includes(fullName)) {
-              parsed[fullName] = val;
-            }
-          }
-        }
-      }
-      setKeywordXValues(parsed);
-    } else {
-      setKeywordXValues({});
-    }
-
-    // Set faction/type/rarity/race/clan from card
-    if (dbCard.faction && FACTIONS[dbCard.faction]) setFaction(dbCard.faction);
-    if (dbCard.card_type) setType(GAME_TO_FORGE_TYPE[dbCard.card_type] || "Unité");
-    if (dbCard.rarity) setRarity(dbCard.rarity);
-    setRace(dbCard.race || "");
-    setClan(dbCard.clan || "");
-    setCardAlignment(dbCard.card_alignment || "neutre");
-
-    // Load spell data for editing
-    setSpellKeywords(dbCard.spell_keywords ?? []);
-    setSpellEffectsData(dbCard.spell_effects ?? null);
-    setConvocationRace(dbCard.convocation_race || "");
-    setConvocationTokens((dbCard as { convocation_tokens?: {race: string; attack: number; health: number}[] | null }).convocation_tokens ?? []);
-    setLycanthropieRace((dbCard as { lycanthropie_race?: string | null }).lycanthropie_race || "");
-    setCardSetId((dbCard as { set_id?: number | null }).set_id || null);
-    setCardYear((dbCard as { card_year?: number | null }).card_year || null);
-    setCardMonth((dbCard as { card_month?: number | null }).card_month || null);
-
-    // Load existing image if available
-    if (dbCard.image_url) {
-      setCardImages(prev => ({ ...prev, [dbCard.id.toString()]: dbCard.image_url! }));
-    }
-
-    // Set a card so buttons appear
-    setCard({
-      id: dbCard.id.toString(),
-      name: dbCard.name,
-      faction: dbCard.faction || faction,
-      race: dbCard.race || "",
-      clan: dbCard.clan || "",
-      cardAlignment: dbCard.card_alignment || "neutre",
-      type: GAME_TO_FORGE_TYPE[dbCard.card_type] || "Unité",
-      rarity: dbCard.rarity || rarity,
-      mana: dbCard.mana_cost,
-      attack: dbCard.attack,
-      defense: dbCard.health,
-      power: null,
-      keywords: (dbCard.keywords || []).map(k => GAME_TO_FORGE_KEYWORD[k] || k),
-      ability: dbCard.effect_text || "",
-      flavorText: "",
-      illustrationPrompt: "",
-      budgetTotal: 0,
-      budgetUsed: 0,
-      generatedAt: new Date().toISOString(),
-    });
-
-    setEditedPrompt(null);
-    setSaveResult(null);
-  };
-
-  const clearUpdateTarget = () => {
-    setUpdateTargetId(null);
-    setUpdateTargetName(null);
-  };
-
-  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
-
-  const deleteCard = useCallback(async (id: number) => {
-    try {
-      const res = await fetch('/api/cards/save', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      setExistingCards(prev => prev.filter(c => c.id !== id));
-      setDeleteConfirmId(null);
-      if (updateTargetId === id) clearUpdateTarget();
-      setSaveResult({ ok: true, msg: "Carte supprimée" });
-    } catch (err) {
-      setSaveResult({ ok: false, msg: err instanceof Error ? err.message : "Erreur suppression" });
-    }
-  }, [updateTargetId]);
-
-  const saveToGame = useCallback(async (forgeCard: ForgeCard, updateId?: number | null) => {
+  const saveToGame = useCallback(async (forgeCard: ForgeCard) => {
     setSaving(true);
     setSaveResult(null);
 
@@ -773,16 +639,14 @@ export default function CardForge() {
           },
           imageBase64,
           imageMimeType,
-          updateId: updateId || undefined,
+          updateId: undefined,
         }),
       });
 
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Erreur serveur');
 
-      const action = data.updated ? "mise à jour" : "ajoutée";
-      setSaveResult({ ok: true, msg: `"${forgeCard.name}" ${action} !` });
-      if (updateId) clearUpdateTarget();
+      setSaveResult({ ok: true, msg: `"${forgeCard.name}" ajoutée !` });
     } catch (err) {
       setSaveResult({ ok: false, msg: err instanceof Error ? err.message : "Erreur inconnue" });
     } finally {
@@ -847,7 +711,7 @@ export default function CardForge() {
             <span style={{ fontSize: 8, color: "#aaa", letterSpacing: 2 }}>ARMIES & MAGIC</span>
           </div>
           <div style={{ display: "flex", gap: 4 }}>
-            {([["forge", "⚒ Forge"], ["tokens", "🎭 Tokens"], ["sets", "📦 Sets"], ["formats", "🎮 Formats"], ["bulk", "📦 Masse"], ["budget", "⚖ Budget"], ["schema", "📋 Schéma"]] as const).map(([t, l]) => (
+            {([["forge", "⚒ Forge"], ["edition", "✏ Édition"], ["tokens", "🎭 Tokens"], ["sets", "📦 Sets"], ["formats", "🎮 Formats"], ["bulk", "📦 Masse"], ["budget", "⚖ Budget"], ["schema", "📋 Schéma"]] as const).map(([t, l]) => (
               <button key={t} onClick={() => { setTab(t); if (t === "sets") loadSets(); if (t === "formats") loadFormats(); }} style={{
                 padding: "5px 14px", borderRadius: 6, cursor: "pointer",
                 background: tab === t ? "#333" : "transparent",
@@ -1073,84 +937,9 @@ export default function CardForge() {
                   {forgeMode === "auto" && <Btn onClick={() => forgeCard()} label="🎲 Re-roll" color="#74b9ff" />}
                   <Btn onClick={() => exportJSON([manualCard])} label="📤 JSON" color="#55efc4" />
                   <Btn onClick={() => { if (!card) createManualCard(); saveToGame(manualCard); }} label={saving ? "⏳ …" : "💾 Nouvelle carte"} color="#ffd54f" />
-                  <Btn onClick={loadExistingCards} label="📝 Mettre à jour" color="#a29bfe" />
                 </div>
               )}
-              {/* Update target indicator */}
-              {updateTargetId && (card || (forgeMode === "manuel" && manualName)) && !loading && (
-                <div style={{
-                  display: "flex", alignItems: "center", gap: 8, padding: "8px 14px",
-                  borderRadius: 8, background: "#f0eeff", border: "1px solid #d0c8ff",
-                  maxWidth: 380,
-                }}>
-                  <span style={{ fontSize: 10, color: "#6c5ce7", fontFamily: "'Crimson Text',serif", flex: 1 }}>
-                    Cible : <strong>{updateTargetName}</strong> (#{updateTargetId})
-                  </span>
-                  <Btn onClick={() => saveToGame(manualCard, updateTargetId)} label={saving ? "⏳ …" : "✅ Confirmer"} color="#27ae60" />
-                  <Btn onClick={clearUpdateTarget} label="✕" color="#e74c3c" />
-                </div>
-              )}
-              {/* Existing cards picker modal */}
-              {showExistingCards && (
-                <div style={{
-                  maxWidth: 420, maxHeight: 300, overflowY: "auto",
-                  padding: "12px", borderRadius: 8, background: "#fff",
-                  border: "1px solid #e0e0e0", boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
-                }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                    <span style={{ fontSize: 9, color: "#888", letterSpacing: 1.5 }}>SÉLECTIONNER UNE CARTE À METTRE À JOUR</span>
-                    <Btn onClick={() => setShowExistingCards(false)} label="✕" color="#e74c3c" />
-                  </div>
-                  <input
-                    type="text" placeholder="Rechercher…" value={existingSearch}
-                    onChange={e => setExistingSearch(e.target.value)}
-                    style={{
-                      width: "100%", padding: "6px 10px", marginBottom: 8, borderRadius: 6,
-                      background: "#f8f8f8", border: "1px solid #e0e0e0", color: "#333",
-                      fontFamily: "'Crimson Text',serif", fontSize: 12,
-                    }}
-                  />
-                  {existingCards
-                    .filter(c => c.name.toLowerCase().includes(existingSearch.toLowerCase()))
-                    .map(c => (
-                    <div key={c.id} style={{
-                      padding: "6px 10px", borderRadius: 6, marginBottom: 3,
-                      background: deleteConfirmId === c.id ? "#fde8e8" : "#f8f8f8",
-                      border: `1px solid ${deleteConfirmId === c.id ? "#f5a3a3" : "#e8e8e8"}`,
-                      transition: "all 0.15s",
-                      display: "flex", justifyContent: "space-between", alignItems: "center",
-                    }}>
-                      {deleteConfirmId === c.id ? (
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, width: "100%" }}>
-                          <span style={{ fontSize: 9, color: "#e74c3c", flex: 1 }}>{"Supprimer définitivement ?"}</span>
-                          <button onClick={() => deleteCard(c.id)} style={{ fontSize: 8, padding: "2px 8px", borderRadius: 4, background: "#e74c3c", border: "none", color: "#fff", cursor: "pointer", fontFamily: "'Cinzel',serif" }}>{"Oui"}</button>
-                          <button onClick={() => setDeleteConfirmId(null)} style={{ fontSize: 8, padding: "2px 8px", borderRadius: 4, background: "#fff", border: "1px solid #ddd", color: "#888", cursor: "pointer", fontFamily: "'Cinzel',serif" }}>{"Non"}</button>
-                        </div>
-                      ) : (
-                        <>
-                          <div onClick={() => selectUpdateTarget(c)} style={{ flex: 1, cursor: "pointer" }}>
-                            <div style={{ fontSize: 10, color: "#333", fontWeight: 600 }}>{c.name}</div>
-                            <div style={{ fontSize: 8, color: "#999" }}>
-                              {"💧"}{c.mana_cost}
-                              {c.attack != null && <>{" · ⚔"}{c.attack}{" ❤"}{c.health}</>}
-                              {c.faction && <>{" · "}{c.faction}</>}
-                              {c.keywords?.length > 0 && <>{" · "}{c.keywords.length}{" cap."}</>}
-                            </div>
-                          </div>
-                          <button onClick={(e) => { e.stopPropagation(); setDeleteConfirmId(c.id); }} style={{
-                            fontSize: 10, background: "none", border: "none", color: "#ccc", cursor: "pointer",
-                            padding: "2px 4px", transition: "color 0.15s",
-                          }} title="Supprimer">{"🗑"}</button>
-                        </>
-                      )}
-                    </div>
-                  ))}
-                  {existingCards.length === 0 && (
-                    <div style={{ fontSize: 10, color: "#bbb", textAlign: "center", padding: 20 }}>Aucune carte trouvée</div>
-                  )}
-                </div>
-              )}
-              {saveResult && !loading && !showExistingCards && (
+              {saveResult && !loading && (
                 <div style={{
                   padding: "8px 14px", borderRadius: 8, fontSize: 10,
                   background: saveResult.ok ? "#e8f8f0" : "#fde8e8",
@@ -1235,73 +1024,7 @@ export default function CardForge() {
 
               {(forgeMode === "manuel" || card) && (
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <div style={{ fontSize: 8, color: "#aaa", letterSpacing: 2 }}>{"ÉDITION"}</div>
-                    <button onClick={loadExistingCards} style={{
-                      fontSize: 8, padding: "2px 8px", borderRadius: 4, cursor: "pointer",
-                      background: "#f0eeff", border: "1px solid #d0c8ff",
-                      color: "#6c5ce7", fontFamily: "'Cinzel',serif",
-                    }}>{"📂 Charger carte"}</button>
-                  </div>
-
-                  {/* Existing cards picker (inline in right panel) */}
-                  {showExistingCards && (
-                    <div style={{
-                      padding: "8px", borderRadius: 6, background: "#fff",
-                      border: "1px solid #e0e0e0", boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-                    }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                        <span style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>CARTES EXISTANTES</span>
-                        <button onClick={() => setShowExistingCards(false)} style={{
-                          fontSize: 8, background: "none", border: "none", color: "#e74c3c", cursor: "pointer",
-                        }}>{"✕"}</button>
-                      </div>
-                      <input
-                        type="text" placeholder="Rechercher…" value={existingSearch}
-                        onChange={e => setExistingSearch(e.target.value)}
-                        style={{
-                          width: "100%", padding: "5px 8px", marginBottom: 6, borderRadius: 5,
-                          background: "#f8f8f8", border: "1px solid #e0e0e0", color: "#333",
-                          fontFamily: "'Crimson Text',serif", fontSize: 11,
-                        }}
-                      />
-                      <div style={{ maxHeight: 200, overflowY: "auto" }}>
-                        {existingCards
-                          .filter(c => c.name.toLowerCase().includes(existingSearch.toLowerCase()))
-                          .map(c => (
-                          <div key={c.id} style={{
-                            padding: "5px 8px", borderRadius: 5, marginBottom: 2,
-                            background: deleteConfirmId === c.id ? "#fde8e8" : "#f8f8f8",
-                            border: `1px solid ${deleteConfirmId === c.id ? "#f5a3a3" : "#eee"}`,
-                            transition: "all 0.15s",
-                            display: "flex", alignItems: "center",
-                          }}>
-                            {deleteConfirmId === c.id ? (
-                              <div style={{ display: "flex", alignItems: "center", gap: 6, width: "100%" }}>
-                                <span style={{ fontSize: 8, color: "#e74c3c", flex: 1 }}>{"Supprimer ?"}</span>
-                                <button onClick={() => deleteCard(c.id)} style={{ fontSize: 8, padding: "2px 6px", borderRadius: 3, background: "#e74c3c", border: "none", color: "#fff", cursor: "pointer" }}>{"Oui"}</button>
-                                <button onClick={() => setDeleteConfirmId(null)} style={{ fontSize: 8, padding: "2px 6px", borderRadius: 3, background: "#fff", border: "1px solid #ddd", color: "#888", cursor: "pointer" }}>{"Non"}</button>
-                              </div>
-                            ) : (
-                              <>
-                                <div onClick={() => selectUpdateTarget(c)} style={{ flex: 1, cursor: "pointer" }}>
-                                  <div style={{ fontSize: 10, color: "#333", fontWeight: 600 }}>{c.name}</div>
-                                  <div style={{ fontSize: 8, color: "#999" }}>
-                                    {"💧"}{c.mana_cost}
-                                    {c.attack != null && <>{" · ⚔"}{c.attack}{" ❤"}{c.health}</>}
-                                    {c.faction && <>{" · "}{c.faction}</>}
-                                  </div>
-                                </div>
-                                <button onClick={(e) => { e.stopPropagation(); setDeleteConfirmId(c.id); }} style={{
-                                  fontSize: 9, background: "none", border: "none", color: "#ccc", cursor: "pointer", padding: "2px",
-                                }} title="Supprimer">{"🗑"}</button>
-                              </>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                  <div style={{ fontSize: 8, color: "#aaa", letterSpacing: 2 }}>{"ÉDITION"}</div>
 
                   {/* Nom */}
                   <div>
@@ -1714,6 +1437,13 @@ export default function CardForge() {
               )}
 
             </div>
+          </div>
+        )}
+
+        {/* ── ÉDITION ── */}
+        {tab === "edition" && (
+          <div style={{ flex: 1, overflow: "hidden" }}>
+            <CardEditor />
           </div>
         )}
 
@@ -2247,7 +1977,7 @@ export default function CardForge() {
   attack: "int (Unité) | null",
   defense: "int (Unité) | null",
   power: "int (Sort/Magie) | null",
-  keywords: ["Armure", "Résistance"],
+  keywords: ["Armure", "Résistance X"],
   ability: "Texte de capacité (IA)",
   flavorText: "Texte narratif (IA)",
   illustrationPrompt: "Midjourney prompt EN (IA)",

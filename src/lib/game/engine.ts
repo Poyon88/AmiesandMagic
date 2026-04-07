@@ -1879,7 +1879,11 @@ function dealDamageToCreature(creature: CardInstance, damage: number, ignoreDR =
 
   // Damage reduction (unless attacker has Precision)
   if (!ignoreDR) {
-    if (hasKw(creature, "resistance")) damage = Math.max(0, damage - 1);
+    if (hasKw(creature, "resistance")) {
+      const resXVals = parseXValuesFromEffectText(creature.card.effect_text);
+      const resAmount = resXVals["resistance"] ?? 1;
+      damage = Math.max(1, damage - resAmount);
+    }
     // Armure: réduit de moitié les dégâts de combat (arrondi au supérieur), pas les sorts
     if (hasKw(creature, "armure") && !isSpellDamage) {
       damage = Math.ceil(damage / 2);

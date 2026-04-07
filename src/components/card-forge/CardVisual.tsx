@@ -22,7 +22,7 @@ export const KEYWORD_SYMBOLS: Record<string, string> = {
   // Tier 0
   "Loyauté":          "🤝",
   "Ancré":            "⚓",
-  "Résistance":       "🛡️",
+  "Résistance X":     "🛡️",
   "Provocation":      "🎯",
   "Traque":           "⚡",
   "Première Frappe":  "🗡️",
