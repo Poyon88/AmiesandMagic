@@ -126,6 +126,54 @@ export default function CardForge() {
   const [cardImages, setCardImages] = useState<Record<string, string>>({});
   const abortRef = useRef(false);
 
+  // ─── PRINTS (séries limitées) ──────────────────────────────────────────────
+  const [printsCards, setPrintsCards] = useState<{ id: number; name: string; mana_cost: number; rarity: string | null; card_year: number | null; card_month: number | null; set_id: number | null }[]>([]);
+  const [printsProfiles, setPrintsProfiles] = useState<{ id: string; username: string }[]>([]);
+  const [selectedPrintCard, setSelectedPrintCard] = useState<{ id: number; name: string; rarity: string | null } | null>(null);
+  const [printsList, setPrintsList] = useState<{ id: number; print_number: number; max_prints: number; owner_id: string | null; owner_username: string | null; is_tradeable: boolean }[]>([]);
+  const [printsLoading, setPrintsLoading] = useState(false);
+  const [printsSearch, setPrintsSearch] = useState("");
+
+  async function loadPrintsData() {
+    const [cardsRes, profRes] = await Promise.all([
+      fetch("/api/cards/save"),
+      fetch("/api/collections/role"),
+    ]);
+    const cardsData = await cardsRes.json();
+    const profData = await profRes.json();
+    setPrintsCards(Array.isArray(cardsData) ? cardsData.filter((c: { set_id: number | null; card_year: number | null }) => c.set_id == null && c.card_year) : []);
+    setPrintsProfiles(Array.isArray(profData) ? profData : []);
+  }
+
+  async function loadPrintsList(cardId: number) {
+    setPrintsLoading(true);
+    try {
+      const res = await fetch(`/api/card-prints?cardId=${cardId}`);
+      const data = await res.json();
+      setPrintsList(Array.isArray(data) ? data : []);
+    } finally {
+      setPrintsLoading(false);
+    }
+  }
+
+  async function assignPrint(printId: number, ownerId: string | null) {
+    await fetch("/api/card-prints", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ printId, ownerId }),
+    });
+    if (selectedPrintCard) loadPrintsList(selectedPrintCard.id);
+  }
+
+  async function togglePrintTradeable(printId: number, current: boolean) {
+    await fetch("/api/card-prints", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ printId, isTradeable: !current }),
+    });
+    if (selectedPrintCard) loadPrintsList(selectedPrintCard.id);
+  }
+
   // ─── MANUAL MODE ───────────────────────────────────────────────────────────
   const [forgeMode, setForgeMode] = useState<"auto" | "manuel">("auto");
   const [manualName, setManualName] = useState("");
@@ -706,13 +754,23 @@ export default function CardForge() {
         {/* Topbar */}
         <div style={{ padding: "11px 20px", borderBottom: "1px solid #e0e0e0", background: "#fafafa", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <a href="/" style={{
+              padding: "5px 12px", borderRadius: 6, cursor: "pointer",
+              background: "transparent",
+              border: "1px solid #ddd",
+              color: "#888",
+              fontFamily: "'Cinzel',serif", fontSize: 9, fontWeight: 700, letterSpacing: 0.8,
+              transition: "all 0.2s",
+              textDecoration: "none",
+              display: "flex", alignItems: "center", gap: 4,
+            }}>← Menu</a>
             <span style={{ fontSize: 18 }}>⚗️</span>
             <span style={{ fontSize: 15, fontWeight: 700, color: "#333", letterSpacing: 2.5 }}>CARD FORGE</span>
             <span style={{ fontSize: 8, color: "#aaa", letterSpacing: 2 }}>ARMIES & MAGIC</span>
           </div>
           <div style={{ display: "flex", gap: 4 }}>
-            {([["forge", "⚒ Forge"], ["edition", "✏ Édition"], ["tokens", "🎭 Tokens"], ["sets", "📦 Sets"], ["formats", "🎮 Formats"], ["bulk", "📦 Masse"], ["budget", "⚖ Budget"], ["schema", "📋 Schéma"]] as const).map(([t, l]) => (
-              <button key={t} onClick={() => { setTab(t); if (t === "sets") loadSets(); if (t === "formats") loadFormats(); }} style={{
+            {([["forge", "⚒ Forge"], ["edition", "✏ Édition"], ["tokens", "🎭 Tokens"], ["sets", "📦 Sets"], ["formats", "🎮 Formats"], ["bulk", "📦 Masse"], ["budget", "⚖ Budget"], ["schema", "📋 Schéma"], ["prints", "🏷 Séries"]] as const).map(([t, l]) => (
+              <button key={t} onClick={() => { setTab(t); if (t === "sets") loadSets(); if (t === "formats") loadFormats(); if (t === "prints") loadPrintsData(); }} style={{
                 padding: "5px 14px", borderRadius: 6, cursor: "pointer",
                 background: tab === t ? "#333" : "transparent",
                 border: `1px solid ${tab === t ? "#333" : "#ddd"}`,
@@ -1997,6 +2055,122 @@ export default function CardForge() {
 }, null, 2)}
               </pre>
             </div>
+          </div>
+        )}
+
+        {/* ── PRINTS (Séries Limitées) ── */}
+        {tab === "prints" && (
+          <div style={{ flex: 1, padding: 22, overflowY: "auto" }}>
+            <div style={{ fontSize: 8, color: "#aaa", letterSpacing: 2, marginBottom: 16 }}>SÉRIES LIMITÉES — ATTRIBUTION</div>
+
+            {printsCards.length === 0 ? (
+              <div style={{ color: "#aaa", fontSize: 12, textAlign: "center", marginTop: 40 }}>Aucune carte forgée avec date en base.</div>
+            ) : (
+              <div style={{ display: "grid", gridTemplateColumns: "300px 1fr", gap: 20, maxWidth: 1000 }}>
+                {/* Left: card list */}
+                <div>
+                  <input
+                    type="text"
+                    value={printsSearch}
+                    onChange={(e) => setPrintsSearch(e.target.value)}
+                    placeholder="Rechercher..."
+                    style={{ width: "100%", padding: "6px 10px", borderRadius: 6, border: "1px solid #e0e0e0", fontSize: 11, marginBottom: 8, fontFamily: "'Cinzel',serif" }}
+                  />
+                  <div style={{ background: "#fafafa", borderRadius: 8, border: "1px solid #e0e0e0", maxHeight: 500, overflowY: "auto" }}>
+                    {printsCards
+                      .filter(c => !printsSearch || c.name.toLowerCase().includes(printsSearch.toLowerCase()))
+                      .map(c => (
+                        <div
+                          key={c.id}
+                          onClick={() => { setSelectedPrintCard({ id: c.id, name: c.name, rarity: c.rarity }); loadPrintsList(c.id); }}
+                          style={{
+                            padding: "7px 10px", cursor: "pointer", fontSize: 11,
+                            borderBottom: "1px solid #eee", fontFamily: "'Cinzel',serif",
+                            background: selectedPrintCard?.id === c.id ? "#ffd70018" : "transparent",
+                            borderLeft: selectedPrintCard?.id === c.id ? "3px solid #ffd700" : "3px solid transparent",
+                            display: "flex", justifyContent: "space-between", alignItems: "center",
+                          }}
+                        >
+                          <span>
+                            <span style={{ color: "#4fc3f7", fontWeight: 700, marginRight: 6 }}>{c.mana_cost}</span>
+                            {c.name}
+                            {c.rarity && <span style={{ color: "#aaa", marginLeft: 6 }}>({c.rarity})</span>}
+                          </span>
+                          <span style={{ fontSize: 9, color: "#bbb" }}>{c.card_year}/{String(c.card_month).padStart(2, "0")}</span>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+
+                {/* Right: prints detail */}
+                <div>
+                  {!selectedPrintCard ? (
+                    <div style={{ padding: 40, textAlign: "center", color: "#bbb", fontSize: 11, background: "#fafafa", borderRadius: 8, border: "1px solid #e0e0e0" }}>
+                      Sélectionner une carte pour voir ses exemplaires
+                    </div>
+                  ) : printsLoading ? (
+                    <div style={{ padding: 20, color: "#aaa", fontSize: 11 }}>Chargement...</div>
+                  ) : (
+                    <div style={{ background: "#fafafa", borderRadius: 8, border: "1px solid #e0e0e0", padding: 14 }}>
+                      <div style={{ marginBottom: 12 }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, fontFamily: "'Cinzel',serif" }}>{selectedPrintCard.name}</div>
+                        <div style={{ fontSize: 10, color: "#888" }}>
+                          {selectedPrintCard.rarity} — {printsList.length} exemplaires — {printsList.filter(p => p.owner_id).length} attribués, {printsList.filter(p => !p.owner_id).length} disponibles
+                        </div>
+                      </div>
+
+                      <div style={{ maxHeight: 440, overflowY: "auto" }}>
+                        <table style={{ width: "100%", fontSize: 11, borderCollapse: "collapse", fontFamily: "'Cinzel',serif" }}>
+                          <thead>
+                            <tr style={{ borderBottom: "2px solid #e0e0e0", textAlign: "left" }}>
+                              <th style={{ padding: "5px 8px", fontWeight: 700, fontSize: 9, letterSpacing: 0.5 }}>#</th>
+                              <th style={{ padding: "5px 8px", fontWeight: 700, fontSize: 9, letterSpacing: 0.5 }}>PROPRIÉTAIRE</th>
+                              <th style={{ padding: "5px 8px", fontWeight: 700, fontSize: 9, letterSpacing: 0.5 }}>ÉCHANGEABLE</th>
+                              <th style={{ padding: "5px 8px", fontWeight: 700, fontSize: 9, letterSpacing: 0.5 }}>ACTIONS</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {printsList.map(p => (
+                              <tr key={p.id} style={{ borderBottom: "1px solid #eee" }}>
+                                <td style={{ padding: "5px 8px", fontWeight: 700, color: "#ffd700" }}>#{p.print_number}/{p.max_prints}</td>
+                                <td style={{ padding: "5px 8px" }}>
+                                  {p.owner_username
+                                    ? <span style={{ color: "#27ae60", fontWeight: 600 }}>{p.owner_username}</span>
+                                    : <span style={{ color: "#ccc" }}>— disponible —</span>}
+                                </td>
+                                <td style={{ padding: "5px 8px" }}>
+                                  <button onClick={() => togglePrintTradeable(p.id, p.is_tradeable)} style={{
+                                    padding: "2px 8px", borderRadius: 4, border: "none", fontSize: 9, fontWeight: 700, cursor: "pointer",
+                                    background: p.is_tradeable ? "#27ae6022" : "#e74c3c22",
+                                    color: p.is_tradeable ? "#27ae60" : "#e74c3c",
+                                  }}>{p.is_tradeable ? "Oui" : "Non"}</button>
+                                </td>
+                                <td style={{ padding: "5px 8px" }}>
+                                  {p.owner_id ? (
+                                    <button onClick={() => assignPrint(p.id, null)} style={{
+                                      padding: "3px 10px", borderRadius: 5, border: "none", background: "#e74c3c22", color: "#e74c3c", fontSize: 9, fontWeight: 700, cursor: "pointer",
+                                    }}>Retirer</button>
+                                  ) : (
+                                    <select value="" onChange={(e) => { if (e.target.value) assignPrint(p.id, e.target.value); }} style={{
+                                      padding: "3px 6px", borderRadius: 5, border: "1px solid #ddd", fontSize: 9, fontFamily: "'Cinzel',serif",
+                                    }}>
+                                      <option value="">Attribuer à...</option>
+                                      {printsProfiles.map(prof => (
+                                        <option key={prof.id} value={prof.id}>{prof.username}</option>
+                                      ))}
+                                    </select>
+                                  )}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )}
 

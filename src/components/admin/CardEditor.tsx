@@ -65,6 +65,7 @@ export default function CardEditor() {
   const [clanFilter, setClanFilter] = useState<string | null>(null);
   const [filterSet, setFilterSet] = useState("");
   const [filterYear, setFilterYear] = useState("");
+  const [filterMonth, setFilterMonth] = useState("");
 
   // View
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -117,9 +118,10 @@ export default function CardEditor() {
       if (clanFilter !== null && card.clan !== clanFilter) return false;
       if (filterSet && card.set_id !== parseInt(filterSet)) return false;
       if (filterYear && String(card.card_year) !== filterYear) return false;
+      if (filterMonth && String(card.card_month) !== filterMonth) return false;
       return true;
     }).sort((a, b) => a.mana_cost - b.mana_cost || a.name.localeCompare(b.name, "fr"));
-  }, [cards, search, manaCostFilter, typeFilter, keywordFilter, factionFilter, rarityFilter, raceFilter, clanFilter, filterSet, filterYear]);
+  }, [cards, search, manaCostFilter, typeFilter, keywordFilter, factionFilter, rarityFilter, raceFilter, clanFilter, filterSet, filterYear, filterMonth]);
 
   // Select card for editing
   const selectCard = useCallback((card: DbCard) => {
@@ -307,7 +309,7 @@ export default function CardEditor() {
   const clearFilters = () => {
     setSearch(""); setManaCostFilter(null); setTypeFilter(null); setKeywordFilter(null);
     setFactionFilter(null); setRarityFilter(null); setRaceFilter(null); setClanFilter(null);
-    setFilterSet(""); setFilterYear("");
+    setFilterSet(""); setFilterYear(""); setFilterMonth("");
   };
 
   if (loading) {
@@ -376,6 +378,14 @@ export default function CardEditor() {
         <select value={filterYear} onChange={e => setFilterYear(e.target.value)} style={{ ...S.select, width: 80 }}>
           <option value="">Année...</option>
           {years.map(y => <option key={y} value={y}>{y}</option>)}
+        </select>
+
+        {/* Month */}
+        <select value={filterMonth} onChange={e => setFilterMonth(e.target.value)} style={{ ...S.select, width: 70 }}>
+          <option value="">Mois...</option>
+          {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
+            <option key={m} value={m}>{String(m).padStart(2, "0")}</option>
+          ))}
         </select>
 
         {/* Rarity */}

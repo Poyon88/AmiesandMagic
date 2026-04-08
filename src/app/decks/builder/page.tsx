@@ -17,7 +17,7 @@ export default async function DeckBuilderPage({
   if (!user) redirect("/login");
 
   // Fetch all cards, heroes, sets, formats, format_sets, profile, and collection
-  const [{ data: cards }, { data: heroes }, { data: sets }, { data: formats }, { data: formatSets }, { data: profile }, { data: userCollection }] = await Promise.all([
+  const [{ data: cards }, { data: heroes }, { data: sets }, { data: formats }, { data: formatSets }, { data: profile }, { data: userCollection }, { data: ownedPrints }] = await Promise.all([
     supabase
       .from("cards")
       .select("*")
@@ -48,10 +48,18 @@ export default async function DeckBuilderPage({
       .from("user_collections")
       .select("card_id")
       .eq("user_id", user.id),
+    supabase
+      .from("card_prints")
+      .select("card_id")
+      .eq("owner_id", user.id),
   ]);
 
   const isTester = profile?.role === "testeur";
-  const collectedCardIds = (userCollection ?? []).map(r => r.card_id);
+  const printCardIds = (ownedPrints ?? []).map(r => r.card_id);
+  const collectedCardIds = [...new Set([
+    ...(userCollection ?? []).map(r => r.card_id),
+    ...printCardIds,
+  ])];
 
   // If editing, fetch existing deck
   const params = await searchParams;

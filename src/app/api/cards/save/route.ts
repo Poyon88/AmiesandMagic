@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
+import { LIMITED_PRINT_COUNTS } from '@/lib/card-engine/constants';
 
 
 async function getAuthUser() {
@@ -101,8 +102,25 @@ export async function POST(request: Request) {
     } else {
       // Insert new card
       if (!image_url) cardData.image_url = null;
-      const { error: insertErr } = await supabaseAdmin.from('cards').insert(cardData);
+      const { data: inserted, error: insertErr } = await supabaseAdmin
+        .from('cards')
+        .insert(cardData)
+        .select('id')
+        .single();
       if (insertErr) throw new Error(insertErr.message);
+
+      // Generate limited prints for forged cards with date
+      const printCount = card.rarity ? LIMITED_PRINT_COUNTS[card.rarity] : undefined;
+      if (!card.set_id && card.card_year && printCount && inserted) {
+        const prints = Array.from({ length: printCount }, (_, i) => ({
+          card_id: inserted.id,
+          print_number: i + 1,
+          max_prints: printCount,
+        }));
+        const { error: printErr } = await supabaseAdmin.from('card_prints').insert(prints);
+        if (printErr) console.error('[card-save] prints error:', printErr.message);
+      }
+
       return NextResponse.json({ success: true, name: card.name, updated: false });
     }
   } catch (err) {

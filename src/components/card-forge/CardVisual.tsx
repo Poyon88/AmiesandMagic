@@ -127,6 +127,8 @@ interface CardData {
   cardMonth?: number;
   spellKeywords?: SpellKeywordInstance[];
   budgetTotal: number;
+  printNumber?: number;
+  maxPrints?: number;
 }
 
 // ─── COMPONENT ───────────────────────────────────────────────────────────────
@@ -556,6 +558,11 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
           {card!.defense != null && <span style={{ color: "#e74c3c" }}>❤{card!.defense}</span>}
           {card!.power != null && <span style={{ color: fac.accent }}>✨{card!.power}</span>}
           <span style={{ color: rar.color, fontSize: 12 * s }}>{card!.rarity}</span>
+          {card!.printNumber && card!.maxPrints && (
+            <span style={{ color: "#ffd700", fontSize: 10 * s, fontWeight: 700, letterSpacing: 0.5 }}>
+              #{card!.printNumber}/{card!.maxPrints}
+            </span>
+          )}
         </div>
       </div>
     </div>

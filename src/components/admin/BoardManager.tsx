@@ -109,9 +109,18 @@ export default function BoardManager() {
 
   return (
     <div style={{ maxWidth: 700, margin: "0 auto", padding: "30px 20px" }}>
-      <h1 style={{ fontSize: 18, fontFamily: "'Cinzel',serif", fontWeight: 700, color: "#333", marginBottom: 24, letterSpacing: 1 }}>
-        Gestion des Plateaux
-      </h1>
+      <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
+        <a href="/" style={{
+          padding: "5px 12px", borderRadius: 6, cursor: "pointer",
+          background: "transparent", border: "1px solid #ddd", color: "#888",
+          fontFamily: "'Cinzel',serif", fontSize: 9, fontWeight: 700, letterSpacing: 0.8,
+          textDecoration: "none", display: "flex", alignItems: "center", gap: 4,
+          transition: "all 0.2s",
+        }}>← Menu</a>
+        <h1 style={{ fontSize: 18, fontFamily: "'Cinzel',serif", fontWeight: 700, color: "#333", letterSpacing: 1, margin: 0 }}>
+          Gestion des Plateaux
+        </h1>
+      </div>
 
       {/* Add new board */}
       <div style={{ ...STYLE.card, marginBottom: 24 }}>

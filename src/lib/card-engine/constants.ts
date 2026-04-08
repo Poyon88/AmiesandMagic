@@ -10,6 +10,14 @@ export const RARITIES = [
 
 export const RARITY_MAP = Object.fromEntries(RARITIES.map(r => [r.id, r]));
 
+// Nombre d'exemplaires par rareté pour les séries limitées (cartes forgées avec date)
+export const LIMITED_PRINT_COUNTS: Record<string, number> = {
+  "Légendaire": 1,
+  "Épique": 10,
+  "Rare": 100,
+  "Peu Commune": 1000,
+};
+
 // ─── KEYWORDS ────────────────────────────────────────────────────────────────
 // cost    : points de budget keywords consommés
 // se      : stat équivalent (documentation de l'impact)

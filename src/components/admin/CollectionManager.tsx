@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 
 interface ProfileRow {
   id: string;
@@ -17,6 +17,19 @@ interface CardRow {
   race: string | null;
   card_type: string;
   set_id: number | null;
+  card_year: number | null;
+  card_month: number | null;
+}
+
+interface PrintRow {
+  id: number;
+  card_id: number;
+  print_number: number;
+  max_prints: number;
+  owner_id: string | null;
+  owner_username: string | null;
+  is_tradeable: boolean;
+  assigned_at: string | null;
 }
 
 interface CollectionManagerProps {
@@ -31,14 +44,28 @@ export default function CollectionManager({ profiles, allCards }: CollectionMana
   const [search, setSearch] = useState("");
   const [profileList, setProfileList] = useState(profiles);
 
-  // Only collectible cards (no set)
-  const collectibleCards = useMemo(() => allCards.filter(c => c.set_id == null), [allCards]);
+  // Limited prints state
+  const [selectedLimitedCard, setSelectedLimitedCard] = useState<CardRow | null>(null);
+  const [prints, setPrints] = useState<PrintRow[]>([]);
+  const [printsLoading, setPrintsLoading] = useState(false);
+  const [limitedSearch, setLimitedSearch] = useState("");
+
+  // Regular collectible cards (no set, no date = not limited)
+  const collectibleCards = useMemo(() => allCards.filter(c => c.set_id == null && !c.card_year), [allCards]);
+  // Limited series cards (no set, with date)
+  const limitedCards = useMemo(() => allCards.filter(c => c.set_id == null && c.card_year), [allCards]);
 
   const filteredCards = useMemo(() => {
     if (!search) return collectibleCards;
     const q = search.toLowerCase();
     return collectibleCards.filter(c => c.name.toLowerCase().includes(q));
   }, [collectibleCards, search]);
+
+  const filteredLimitedCards = useMemo(() => {
+    if (!limitedSearch) return limitedCards;
+    const q = limitedSearch.toLowerCase();
+    return limitedCards.filter(c => c.name.toLowerCase().includes(q));
+  }, [limitedCards, limitedSearch]);
 
   const ownedCards = useMemo(() => filteredCards.filter(c => collectedCardIds.has(c.id)), [filteredCards, collectedCardIds]);
   const unownedCards = useMemo(() => filteredCards.filter(c => !collectedCardIds.has(c.id)), [filteredCards, collectedCardIds]);
@@ -97,11 +124,51 @@ export default function CollectionManager({ profiles, allCards }: CollectionMana
     setProfileList(prev => prev.map(p => p.id === selectedUserId ? { ...p, role: newRole } : p));
   }
 
+  const loadPrints = useCallback(async (cardId: number) => {
+    setPrintsLoading(true);
+    try {
+      const res = await fetch(`/api/card-prints?cardId=${cardId}`);
+      const data = await res.json();
+      setPrints(Array.isArray(data) ? data : []);
+    } finally {
+      setPrintsLoading(false);
+    }
+  }, []);
+
+  async function assignPrint(printId: number, ownerId: string | null) {
+    await fetch("/api/card-prints", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ printId, ownerId }),
+    });
+    if (selectedLimitedCard) loadPrints(selectedLimitedCard.id);
+  }
+
+  async function toggleTradeable(printId: number, current: boolean) {
+    await fetch("/api/card-prints", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ printId, isTradeable: !current }),
+    });
+    if (selectedLimitedCard) loadPrints(selectedLimitedCard.id);
+  }
+
   const selectedProfile = profileList.find(p => p.id === selectedUserId);
+  const assignedCount = prints.filter(p => p.owner_id).length;
+  const availableCount = prints.length - assignedCount;
 
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: 24 }}>
-      <h1 style={{ fontSize: 24, fontWeight: "bold", marginBottom: 24 }}>Gestion des Collections</h1>
+      <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
+        <a href="/" style={{
+          padding: "5px 12px", borderRadius: 6, cursor: "pointer",
+          background: "transparent", border: "1px solid #ddd", color: "#888",
+          fontFamily: "'Cinzel',serif", fontSize: 9, fontWeight: 700, letterSpacing: 0.8,
+          textDecoration: "none", display: "flex", alignItems: "center", gap: 4,
+          transition: "all 0.2s",
+        }}>← Menu</a>
+        <h1 style={{ fontSize: 24, fontWeight: "bold", margin: 0 }}>Gestion des Collections</h1>
+      </div>
 
       {/* Player selector */}
       <div style={{ display: "flex", gap: 16, alignItems: "center", marginBottom: 24 }}>
@@ -144,6 +211,7 @@ export default function CollectionManager({ profiles, allCards }: CollectionMana
 
       {selectedUserId && !loading && (
         <>
+          {/* ── REGULAR COLLECTION ── */}
           {collectibleCards.length === 0 ? (
             <p style={{ color: "#888" }}>Aucune carte collectible (set_id = NULL) en base.</p>
           ) : (
@@ -243,6 +311,135 @@ export default function CollectionManager({ profiles, allCards }: CollectionMana
                 </div>
               </div>
             </>
+          )}
+
+          {/* ── LIMITED SERIES ── */}
+          {limitedCards.length > 0 && (
+            <div style={{ marginTop: 40 }}>
+              <h2 style={{ fontSize: 20, fontWeight: "bold", marginBottom: 16, color: "#ffd700", textShadow: "0 1px 2px rgba(0,0,0,0.2)" }}>
+                Séries Limitées ({limitedCards.length} cartes)
+              </h2>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 24 }}>
+                {/* Left: card list */}
+                <div>
+                  <input
+                    type="text"
+                    value={limitedSearch}
+                    onChange={(e) => setLimitedSearch(e.target.value)}
+                    placeholder="Rechercher une carte limitée..."
+                    style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #ccc", fontSize: 14, width: "100%", marginBottom: 12 }}
+                  />
+                  <div style={{ background: "white", borderRadius: 12, border: "1px solid #e0e0e0", maxHeight: 500, overflowY: "auto" }}>
+                    {filteredLimitedCards.map(card => (
+                      <div
+                        key={card.id}
+                        onClick={() => { setSelectedLimitedCard(card); loadPrints(card.id); }}
+                        style={{
+                          display: "flex", alignItems: "center", justifyContent: "space-between",
+                          padding: "8px 12px", borderBottom: "1px solid #f0f0f0", cursor: "pointer",
+                          background: selectedLimitedCard?.id === card.id ? "#ffd70015" : "transparent",
+                          borderLeft: selectedLimitedCard?.id === card.id ? "3px solid #ffd700" : "3px solid transparent",
+                        }}
+                      >
+                        <div>
+                          <span style={{ fontSize: 12, color: "#4fc3f7", fontWeight: "bold", marginRight: 8 }}>{card.mana_cost}</span>
+                          <span style={{ fontSize: 13 }}>{card.name}</span>
+                          {card.rarity && (
+                            <span style={{ fontSize: 11, color: "#888", marginLeft: 8 }}>({card.rarity})</span>
+                          )}
+                        </div>
+                        <span style={{ fontSize: 10, color: "#aaa" }}>{card.card_year}/{String(card.card_month).padStart(2, "0")}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Right: prints detail */}
+                <div>
+                  {!selectedLimitedCard ? (
+                    <div style={{ padding: 40, textAlign: "center", color: "#aaa", background: "white", borderRadius: 12, border: "1px solid #e0e0e0" }}>
+                      Sélectionner une carte limitée pour voir ses exemplaires
+                    </div>
+                  ) : printsLoading ? (
+                    <p>Chargement des exemplaires...</p>
+                  ) : (
+                    <div style={{ background: "white", borderRadius: 12, border: "1px solid #e0e0e0", padding: 16 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                        <div>
+                          <h3 style={{ fontSize: 16, fontWeight: "bold", margin: 0 }}>{selectedLimitedCard.name}</h3>
+                          <span style={{ fontSize: 12, color: "#888" }}>
+                            {selectedLimitedCard.rarity} — {prints.length} exemplaires — {assignedCount} attribués, {availableCount} disponibles
+                          </span>
+                        </div>
+                      </div>
+
+                      <div style={{ maxHeight: 420, overflowY: "auto" }}>
+                        <table style={{ width: "100%", fontSize: 12, borderCollapse: "collapse" }}>
+                          <thead>
+                            <tr style={{ borderBottom: "2px solid #e0e0e0", textAlign: "left" }}>
+                              <th style={{ padding: "6px 8px", fontWeight: 700 }}>#</th>
+                              <th style={{ padding: "6px 8px", fontWeight: 700 }}>Propriétaire</th>
+                              <th style={{ padding: "6px 8px", fontWeight: 700 }}>Échangeable</th>
+                              <th style={{ padding: "6px 8px", fontWeight: 700 }}>Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {prints.map(p => (
+                              <tr key={p.id} style={{ borderBottom: "1px solid #f0f0f0" }}>
+                                <td style={{ padding: "6px 8px", fontWeight: 700, color: "#ffd700" }}>
+                                  #{p.print_number}/{p.max_prints}
+                                </td>
+                                <td style={{ padding: "6px 8px" }}>
+                                  {p.owner_username ? (
+                                    <span style={{ color: "#27ae60", fontWeight: 600 }}>{p.owner_username}</span>
+                                  ) : (
+                                    <span style={{ color: "#aaa" }}>— disponible —</span>
+                                  )}
+                                </td>
+                                <td style={{ padding: "6px 8px" }}>
+                                  <button
+                                    onClick={() => toggleTradeable(p.id, p.is_tradeable)}
+                                    style={{
+                                      padding: "2px 8px", borderRadius: 4, border: "none", fontSize: 10, fontWeight: 700, cursor: "pointer",
+                                      background: p.is_tradeable ? "#27ae6022" : "#e74c3c22",
+                                      color: p.is_tradeable ? "#27ae60" : "#e74c3c",
+                                    }}
+                                  >
+                                    {p.is_tradeable ? "Oui" : "Non"}
+                                  </button>
+                                </td>
+                                <td style={{ padding: "6px 8px" }}>
+                                  {p.owner_id ? (
+                                    <button
+                                      onClick={() => assignPrint(p.id, null)}
+                                      style={{ padding: "3px 10px", borderRadius: 5, border: "none", background: "#e74c3c22", color: "#e74c3c", fontSize: 10, fontWeight: 700, cursor: "pointer" }}
+                                    >
+                                      Retirer
+                                    </button>
+                                  ) : (
+                                    <select
+                                      value=""
+                                      onChange={(e) => { if (e.target.value) assignPrint(p.id, e.target.value); }}
+                                      style={{ padding: "3px 6px", borderRadius: 5, border: "1px solid #ddd", fontSize: 10 }}
+                                    >
+                                      <option value="">Attribuer à...</option>
+                                      {profileList.map(prof => (
+                                        <option key={prof.id} value={prof.id}>{prof.username}</option>
+                                      ))}
+                                    </select>
+                                  )}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           )}
         </>
       )}

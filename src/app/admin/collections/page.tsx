@@ -15,7 +15,7 @@ export default async function CollectionsPage() {
   // Fetch profiles and collectible cards (set_id is null)
   const [{ data: profiles }, { data: cards }] = await Promise.all([
     supabase.from("profiles").select("id, username, role").order("username"),
-    supabase.from("cards").select("id, name, mana_cost, rarity, faction, race, card_type, set_id").order("name"),
+    supabase.from("cards").select("id, name, mana_cost, rarity, faction, race, card_type, set_id, card_year, card_month").order("name"),
   ]);
 
   return (

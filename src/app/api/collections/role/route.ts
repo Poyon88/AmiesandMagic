@@ -26,6 +26,21 @@ function getAdminClient() {
   );
 }
 
+// GET /api/collections/role — list all profiles
+export async function GET() {
+  const user = await getAuthUser();
+  if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+
+  const supabase = getAdminClient();
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, username, role')
+    .order('username');
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json(data);
+}
+
 // POST /api/collections/role — { userId, role }
 export async function POST(request: Request) {
   const user = await getAuthUser();
