@@ -6,7 +6,7 @@ import type { Card } from "@/lib/game/types";
 import { KEYWORD_SYMBOLS as keywordSymbols, KEYWORD_LABELS as keywordLabels, toRoman, parseXValuesFromEffectText, cleanEffectText } from "@/lib/game/keyword-labels";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS, getSpellKeywordDesc, getSpellKeywordLabel } from "@/lib/game/spell-keywords";
 import KeywordIcon from "@/components/shared/KeywordIcon";
-import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
+import { KEYWORDS as keywordDefs, LIMITED_PRINT_COUNTS } from "@/lib/card-engine/constants";
 
 interface GameCardProps {
   card: Card;
@@ -15,6 +15,8 @@ interface GameCardProps {
   selected?: boolean;
   size?: "sm" | "md" | "lg";
   count?: number;
+  printNumber?: number;
+  maxPrints?: number;
 }
 
 export default function GameCard({
@@ -24,6 +26,8 @@ export default function GameCard({
   selected = false,
   size = "md",
   count,
+  printNumber,
+  maxPrints,
 }: GameCardProps) {
   const [hovered, setHovered] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
@@ -196,6 +200,16 @@ export default function GameCard({
             fontSize: 7 * s, color: "#ffffff44", textTransform: "uppercase",
             letterSpacing: 1,
           }}>{card.card_type}</span>
+
+          {(() => {
+            const mp = maxPrints || (!card.set_id && card.card_year && card.rarity ? LIMITED_PRINT_COUNTS[card.rarity] : undefined);
+            return mp ? (
+              <span style={{
+                fontSize: 7 * s, color: "#ffffff66", fontFamily: "'Cinzel',serif",
+                letterSpacing: 0.5,
+              }}>{printNumber ? `#${printNumber}/` : ""}{mp} ex.</span>
+            ) : null;
+          })()}
 
           {isCreature && (
             <div style={{ display: "flex", gap: 5 * s }}>
