@@ -2,12 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import GoldBalance from "@/components/shared/GoldBalance";
 
 interface MainMenuProps {
   username: string;
+  goldBalance: number;
 }
 
-export default function MainMenu({ username }: MainMenuProps) {
+export default function MainMenu({ username, goldBalance }: MainMenuProps) {
   const router = useRouter();
   const supabase = createClient();
 
@@ -45,6 +47,9 @@ export default function MainMenu({ username }: MainMenuProps) {
         <span className="text-foreground/60 text-sm">
           Welcome, <span className="text-primary font-medium">{username}</span>
         </span>
+        <div className="px-3 py-1 bg-secondary border border-card-border rounded-lg">
+          <GoldBalance amount={goldBalance} size="sm" />
+        </div>
         <button
           onClick={handleLogout}
           className="px-4 py-1.5 text-sm bg-secondary border border-card-border rounded-lg text-foreground/60 hover:text-foreground hover:border-primary/40 transition-colors"

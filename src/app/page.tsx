@@ -10,11 +10,15 @@ export default async function HomePage() {
 
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single();
+  const [{ data: profile }, { data: wallet }] = await Promise.all([
+    supabase.from("profiles").select("*").eq("id", user.id).single(),
+    supabase.from("wallets").select("balance").eq("user_id", user.id).single(),
+  ]);
 
-  return <MainMenu username={profile?.username ?? "Player"} />;
+  return (
+    <MainMenu
+      username={profile?.username ?? "Player"}
+      goldBalance={wallet?.balance ?? 0}
+    />
+  );
 }
