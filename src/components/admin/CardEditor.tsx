@@ -78,6 +78,8 @@ export default function CardEditor() {
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
   const [newImageFile, setNewImageFile] = useState<{ base64: string; mimeType: string } | null>(null);
   const [newImagePreview, setNewImagePreview] = useState<string | null>(null);
+  const [generatingPrints, setGeneratingPrints] = useState(false);
+  const [printsResult, setPrintsResult] = useState<{ ok: boolean; msg: string } | null>(null);
 
   // Load data
   const loadData = useCallback(async () => {
@@ -294,6 +296,44 @@ export default function CardEditor() {
     }
   }, [selectedCard]);
 
+  // Generate prints for a single card
+  const handleGeneratePrints = useCallback(async (cardId: number) => {
+    setGeneratingPrints(true);
+    setPrintsResult(null);
+    try {
+      const res = await fetch("/api/card-prints/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cardId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setPrintsResult({ ok: true, msg: data.message });
+    } catch (err) {
+      setPrintsResult({ ok: false, msg: err instanceof Error ? err.message : "Erreur" });
+    }
+    setGeneratingPrints(false);
+  }, []);
+
+  // Batch generate prints for all eligible cards
+  const handleBatchGeneratePrints = useCallback(async () => {
+    setGeneratingPrints(true);
+    setPrintsResult(null);
+    try {
+      const res = await fetch("/api/card-prints/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ batch: true }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setPrintsResult({ ok: true, msg: data.message });
+    } catch (err) {
+      setPrintsResult({ ok: false, msg: err instanceof Error ? err.message : "Erreur" });
+    }
+    setGeneratingPrints(false);
+  }, []);
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -404,6 +444,12 @@ export default function CardEditor() {
             {viewMode === "grid" ? "Liste" : "Grille"}
           </button>
           <button onClick={clearFilters} style={S.filterBtn(false)}>Reset</button>
+          <button onClick={handleBatchGeneratePrints} disabled={generatingPrints} style={{ ...S.filterBtn(false), background: "#e8f5e9", borderColor: "#a5d6a7", color: "#2e7d32", opacity: generatingPrints ? 0.5 : 1 }}>
+            {generatingPrints ? "..." : "Générer exemplaires manquants"}
+          </button>
+          {printsResult && !selectedCard && (
+            <span style={{ fontSize: 9, color: printsResult.ok ? "#2e7d32" : "#c62828", fontFamily: "'Cinzel',serif" }}>{printsResult.msg}</span>
+          )}
         </div>
       </div>
 
@@ -567,7 +613,7 @@ export default function CardEditor() {
             <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
               <div style={{ flex: 2 }}>
                 <div style={S.label}>Set</div>
-                <select value={(editFields.set_id as number) || ""} onChange={e => updateField("set_id", e.target.value ? parseInt(e.target.value) : null)} style={S.select}>
+                <select value={(editFields.set_id as number) || ""} onChange={e => { const v = e.target.value ? parseInt(e.target.value) : null; updateField("set_id", v); if (v) { updateField("card_year", null); updateField("card_month", null); } }} style={S.select}>
                   <option value="">—</option>
                   {sets.map(s => <option key={s.id} value={s.id}>{s.icon} {s.name}</option>)}
                 </select>
@@ -581,6 +627,22 @@ export default function CardEditor() {
                 <input type="number" min={1} max={12} value={(editFields.card_month as number) || ""} onChange={e => updateField("card_month", e.target.value ? parseInt(e.target.value) : null)} style={S.input} />
               </div>
             </div>
+
+            {/* Generate prints button */}
+            {!editFields.set_id && !!(editFields.card_year) && !!(editFields.rarity) && (
+              <div style={{ marginBottom: 8, display: "flex", alignItems: "center", gap: 8 }}>
+                <button
+                  onClick={() => selectedCard && handleGeneratePrints(selectedCard.id)}
+                  disabled={generatingPrints}
+                  style={{ ...S.btn("#2e7d32"), fontSize: 9, padding: "4px 12px", opacity: generatingPrints ? 0.5 : 1 }}
+                >
+                  {generatingPrints ? "..." : "Générer / Régénérer exemplaires"}
+                </button>
+                {printsResult && (
+                  <span style={{ fontSize: 9, color: printsResult.ok ? "#2e7d32" : "#c62828", fontFamily: "'Cinzel',serif" }}>{printsResult.msg}</span>
+                )}
+              </div>
+            )}
 
             {/* Keywords */}
             <div style={{ marginBottom: 8 }}>
