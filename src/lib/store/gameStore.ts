@@ -424,9 +424,60 @@ export const useGameStore = create<GameStore>((set, get) => ({
       }
     }
 
+    // Capture spell history length before action to detect recasts
+    const playerIdx = gameState.currentPlayerIndex;
+    const oldHistoryLen = gameState.players[playerIdx].spellHistory?.length ?? 0;
+
+    // Detect if this card has "relancer" (spell keyword or creature keyword)
+    let isRelancerCard = false;
+    if (action.type === "play_card") {
+      const player = gameState.players[playerIdx];
+      const cardInst = player.hand.find((c) => c.instanceId === action.cardInstanceId);
+      if (cardInst) {
+        isRelancerCard = !!(
+          cardInst.card.spell_keywords?.some(kw => kw.id === "relancer") ||
+          cardInst.card.keywords.includes("relancer" as import("@/lib/game/types").Keyword)
+        );
+      }
+    }
+
     const newState = applyAction(gameState, action);
     const dmgEvents = detectDamageEvents(gameState, newState, localPlayerId);
     const logEntries = generateEffectLog(gameState, newState, action);
+
+    // Detect recast spells by comparing spell history
+    const newHistoryLen = newState.players[playerIdx].spellHistory?.length ?? 0;
+    const recastSpells: SpellCastEvent[] = [];
+    if (isRelancerCard && newHistoryLen > oldHistoryLen) {
+      // New spells were added to history during recast — but actually recasts don't add to history
+      // Instead, use the old history to find which spells were replayed
+    }
+    // For recast: the spells replayed are the last X from the OLD history
+    if (isRelancerCard) {
+      const oldHistory = gameState.players[playerIdx].spellHistory ?? [];
+      if (action.type === "play_card") {
+        const player = gameState.players[playerIdx];
+        const cardInst = player.hand.find((c) => c.instanceId === action.cardInstanceId);
+        if (cardInst) {
+          // Get X value
+          const spellKw = cardInst.card.spell_keywords?.find(kw => kw.id === "relancer");
+          let x = spellKw?.amount ?? 1;
+          if (!spellKw && cardInst.card.keywords.includes("relancer" as import("@/lib/game/types").Keyword)) {
+            // Creature keyword — extract X from effect text
+            const match = cardInst.card.effect_text.match(/Relancer\s+(\d+)/i);
+            x = match ? parseInt(match[1]) : 1;
+          }
+          const replayed = oldHistory.slice(-x).reverse();
+          for (const entry of replayed) {
+            recastSpells.push({
+              spellName: `♻️ ${entry.card.name}`,
+              effectText: entry.card.effect_text,
+              timestamp: Date.now(),
+            });
+          }
+        }
+      }
+    }
 
     // Detect if a spell was countered (contresort)
     if (spellEvent && action.type === "play_card") {
@@ -505,6 +556,16 @@ export const useGameStore = create<GameStore>((set, get) => ({
         ...(spellEvent ? { spellCastEvent: spellEvent } : {}),
         ...(fireEvent ? { fireBreathEvent: fireEvent } : {}),
       });
+    }
+
+    // Schedule staggered recast spell animations
+    if (recastSpells.length > 0) {
+      const RECAST_DELAY = 2200; // ms between each recast animation
+      for (let i = 0; i < recastSpells.length; i++) {
+        setTimeout(() => {
+          set({ spellCastEvent: recastSpells[i] });
+        }, RECAST_DELAY * (i + 1));
+      }
     }
 
     return action;
