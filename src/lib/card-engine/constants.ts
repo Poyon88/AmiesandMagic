@@ -109,6 +109,7 @@ export const KEYWORDS: Record<string, { cost: number; costPerX: number; se: numb
   "Appel du clan X":    { cost: 16, costPerX: 5, se: 4.5, minTier: 3, scalable: true,  zone: "Clan", desc: "Invocation : mettez en jeu gratuitement la première unité de même clan avec un coût inférieur ou égal à X depuis le dessus de votre deck." },
   "Solidarité X":       { cost:  9, costPerX: 4, se: 2.5, minTier: 2, scalable: true,  zone: "Clan", desc: "Invocation : piochez X cartes si vous contrôlez 2 autres unités de même clan." },
   "Rassemblement X":    { cost: 14, costPerX: 4, se: 4.0, minTier: 3, scalable: true,  zone: "Mixte", desc: "Invocation : révèle les X premières cartes du deck ; ajoutez à votre main toutes les unités de même race et défaussez le reste." },
+  "Relancer X":         { cost: 12, costPerX: 8, se: 5.0, minTier: 3, scalable: true,  zone: "Terrain", desc: "Invocation : rejoue les X derniers sorts lancés avec des cibles aléatoires." },
 };
 
 // ─── FACTIONS ────────────────────────────────────────────────────────────────

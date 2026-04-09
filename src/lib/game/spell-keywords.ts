@@ -124,6 +124,13 @@ export const SPELL_KEYWORDS: Record<SpellKeywordId, SpellKeywordDef> = {
     params: ["amount"],
     needsTarget: false,
   },
+  relancer: {
+    label: "Relancer X",
+    symbol: "♻️",
+    desc: "Rejoue les X derniers sorts lancés avec des cibles aléatoires",
+    params: ["amount"],
+    needsTarget: false,
+  },
 };
 
 export const ALL_SPELL_KEYWORDS: SpellKeywordId[] = Object.keys(SPELL_KEYWORDS) as SpellKeywordId[];

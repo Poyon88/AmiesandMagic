@@ -104,6 +104,7 @@ export const ALL_KEYWORDS: Keyword[] = [
   "pacte_de_sang", "souffle_de_feu", "domination", "resurrection", "transcendance",
   "vampirisme",
   "selection",
+  "relancer",
 ];
 
 export const KEYWORD_LABELS: Record<Keyword, string> = {
@@ -136,6 +137,7 @@ export const KEYWORD_LABELS: Record<Keyword, string> = {
   appel_du_clan: "Appel du clan X", rassemblement: "Rassemblement X",
   selection: "Sélection X",
   lycanthropie: "Lycanthropie X",
+  relancer: "Relancer X",
 };
 
 export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
@@ -168,4 +170,5 @@ export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
   appel_du_clan: "📯", rassemblement: "🏴",
   selection: "🎴",
   lycanthropie: "🐺",
+  relancer: "🔁",
 };

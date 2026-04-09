@@ -171,6 +171,7 @@ export function initializeGame(
     hero: { hp: HERO_MAX_HP, maxHp: HERO_MAX_HP, armor: 0, heroDefinition: hero ?? null, heroPowerUsedThisTurn: false },
     mana: 0, maxMana: 0,
     hand, board: [], deck, graveyard: [],
+    spellHistory: [],
     fatigueDamage: 0,
   });
 
@@ -900,6 +901,13 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       }
     }
 
+    // Relancer X: rejoue les X derniers sorts lancés
+    if (hasKw(cardInstance, "relancer")) {
+      const relXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
+      const x = relXVals["relancer"] || 1;
+      recastSpells(newState, player, opponent, x);
+    }
+
     recalculateAuras(player, opponent);
 
     // Clean creatures killed by on-summon effects (vampirisme, corruption, etc.)
@@ -924,6 +932,12 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // Backward compat: single targetInstanceId → target_0
     if (action.targetInstanceId && !action.targetMap) {
       targetMap["target_0"] = action.targetInstanceId;
+    }
+
+    // Track spell in history (exclude spells with "relancer" to prevent loops)
+    const hasRelancer = card.spell_keywords?.some(kw => kw.id === "relancer") ?? false;
+    if (!hasRelancer) {
+      player.spellHistory.push({ card, targetMap: { ...targetMap } });
     }
 
     const ctx: SpellResolutionContext = {
@@ -1103,6 +1117,127 @@ function resolveSpellEffect(
       caster.mana += effect.amount ?? 1;
       break;
     }
+  }
+}
+
+// ============================================================
+// RECAST — pick random valid target for a spell keyword
+// ============================================================
+
+function pickRandomTarget(
+  player: PlayerState,
+  opponent: PlayerState,
+  targetType: SpellTargetType | undefined
+): string | undefined {
+  if (!targetType) return undefined;
+  const candidates: string[] = [];
+  switch (targetType) {
+    case "any":
+      candidates.push("enemy_hero", "friendly_hero");
+      opponent.board.forEach(c => candidates.push(c.instanceId));
+      player.board.forEach(c => candidates.push(c.instanceId));
+      break;
+    case "any_creature":
+      opponent.board.forEach(c => candidates.push(c.instanceId));
+      player.board.forEach(c => candidates.push(c.instanceId));
+      break;
+    case "enemy_hero":
+      candidates.push("enemy_hero");
+      break;
+    case "friendly_hero":
+      candidates.push("friendly_hero");
+      break;
+    case "enemy_creature":
+      opponent.board.forEach(c => candidates.push(c.instanceId));
+      break;
+    case "friendly_creature":
+      player.board.forEach(c => candidates.push(c.instanceId));
+      break;
+    case "all_enemy_creatures":
+    case "all_enemies":
+    case "all_friendly_creatures":
+      return undefined; // AoE — no target needed
+    case "friendly_graveyard":
+    case "friendly_graveyard_to_board":
+      player.graveyard
+        .filter(c => c.card.card_type === "creature")
+        .forEach(c => candidates.push(c.instanceId));
+      break;
+  }
+  if (candidates.length === 0) return undefined;
+  return candidates[Math.floor(Math.random() * candidates.length)];
+}
+
+function recastSpells(
+  state: GameState,
+  player: PlayerState,
+  opponent: PlayerState,
+  amount: number
+): void {
+  const history = player.spellHistory;
+  const toRecast = history.slice(-amount).reverse(); // most recent first
+
+  for (const entry of toRecast) {
+    const card = entry.card;
+
+    // Skip spells that themselves have relancer (safety)
+    if (card.spell_keywords?.some(kw => kw.id === "relancer")) continue;
+
+    // Build random target map
+    const targetMap: Record<string, string> = {};
+    if (card.spell_keywords?.length) {
+      for (let i = 0; i < card.spell_keywords.length; i++) {
+        const kw = card.spell_keywords[i];
+        const def = SPELL_KEYWORDS[kw.id];
+        if (def.needsTarget) {
+          const target = pickRandomTarget(player, opponent, def.targetType);
+          if (target) targetMap[`kw_${i}`] = target;
+        }
+      }
+    }
+    // Also set target_0 for composable effects / legacy
+    if (card.spell_effects?.targets?.length) {
+      for (const slot of card.spell_effects.targets) {
+        const target = pickRandomTarget(player, opponent, slot.type as SpellTargetType);
+        if (target) targetMap[slot.slot] = target;
+      }
+    }
+    if (!targetMap["target_0"]) {
+      const fallback = pickRandomTarget(player, opponent, "any");
+      if (fallback) targetMap["target_0"] = fallback;
+    }
+
+    const ctx: SpellResolutionContext = {
+      state, caster: player, opponent, card, targetMap, results: {},
+    };
+
+    // Resolve spell keywords
+    if (card.spell_keywords?.length) {
+      resolveSpellKeywords(ctx, card.spell_keywords);
+      const pDead = cleanDeadCreatures(player);
+      const oDead = cleanDeadCreatures(opponent);
+      for (const [slot, instanceId] of Object.entries(targetMap)) {
+        if ([...pDead, ...oDead].some(c => c.instanceId === instanceId)) {
+          ctx.results[`${slot}_destroyed`] = true;
+          ctx.results["target_destroyed"] = true;
+        }
+      }
+      processDeathTriggers(pDead, player, opponent);
+      processDeathTriggers(oDead, opponent, player);
+    }
+
+    // Resolve composable effects
+    if (card.spell_effects?.effects?.length) {
+      resolveComposableEffects(ctx, card.spell_effects.effects);
+    }
+
+    // Clean up deaths
+    const pDead = cleanDeadCreatures(player);
+    const oDead = cleanDeadCreatures(opponent);
+    processDeathTriggers(pDead, player, opponent);
+    processDeathTriggers(oDead, opponent, player);
+
+    recalculateAuras(player, opponent);
   }
 }
 
@@ -1293,6 +1428,11 @@ function resolveSpellKeywords(
             }
           }
         }
+        break;
+      }
+      case "relancer": {
+        const amount = kw.amount ?? 1;
+        recastSpells(ctx.state, ctx.caster, ctx.opponent, amount);
         break;
       }
     }

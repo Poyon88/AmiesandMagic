@@ -32,7 +32,9 @@ export type Keyword =
   | "pacte_de_sang" | "souffle_de_feu" | "domination" | "resurrection" | "transcendance"
   | "vampirisme"
   // Tier 2 — Collection
-  | "selection";
+  | "selection"
+  // Tier 3 — Relancer
+  | "relancer";
 
 export type SpellTargetType =
   | "any"
@@ -85,7 +87,8 @@ export type SpellKeywordId =
   | "invocation_multiple"
   | "rappel"
   | "exhumation"
-  | "selection";
+  | "selection"
+  | "relancer";
 
 export interface SpellKeywordInstance {
   id: SpellKeywordId;
@@ -356,6 +359,7 @@ export interface PlayerState {
   board: CardInstance[];
   deck: CardInstance[];
   graveyard: CardInstance[];
+  spellHistory: { card: Card; targetMap: Record<string, string> }[];
   fatigueDamage: number;
 }
 
