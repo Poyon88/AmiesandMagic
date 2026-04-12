@@ -63,6 +63,7 @@ interface GameStore {
   boardTenseMusicUrl: string | null;
   boardVictoryMusicUrl: string | null;
   boardDefeatMusicUrl: string | null;
+  lastSfxEvents: { type: string; cardSfxUrl?: string }[];
 
   // Actions
   initGame: (
@@ -382,6 +383,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   boardTenseMusicUrl: null,
   boardVictoryMusicUrl: null,
   boardDefeatMusicUrl: null,
+  lastSfxEvents: [],
 
   initGame: (player1Id, player2Id, player1Cards, player2Cards, firstPlayerIndex, seed, player1Hero, player2Hero, factionCardPool) => {
     const state = initializeGame(
@@ -519,6 +521,59 @@ export const useGameStore = create<GameStore>((set, get) => ({
       }
     }
 
+    // Build SFX events
+    const sfxEvents: { type: string; cardSfxUrl?: string }[] = [];
+
+    if (action.type === "play_card") {
+      const player = gameState.players[gameState.currentPlayerIndex];
+      const cardInst = player.hand.find((c) => c.instanceId === action.cardInstanceId);
+      if (cardInst) {
+        if (cardInst.card.card_type === "spell") {
+          sfxEvents.push({ type: "spell_cast" });
+        } else {
+          sfxEvents.push({ type: "play_card", cardSfxUrl: cardInst.card.sfx_play_url ?? undefined });
+        }
+      }
+    } else if (action.type === "attack") {
+      sfxEvents.push({ type: "attack" });
+    } else if (action.type === "end_turn") {
+      sfxEvents.push({ type: "end_turn" });
+    } else if (action.type === "hero_power") {
+      sfxEvents.push({ type: "hero_power" });
+    }
+
+    // SFX from damage events (deduplicate by type)
+    const dmgSfxSeen = new Set<string>();
+    for (const de of dmgEvents) {
+      const sfxType = de.type === "shield" ? "divine_shield" : de.type;
+      if (["damage", "heal", "buff", "debuff", "divine_shield", "poison", "dodge", "paralyze", "resurrect"].includes(sfxType) && !dmgSfxSeen.has(sfxType)) {
+        dmgSfxSeen.add(sfxType);
+        sfxEvents.push({ type: sfxType });
+      }
+    }
+
+    // SFX from dead creatures
+    for (const dead of deadCreatures) {
+      sfxEvents.push({ type: "creature_death", cardSfxUrl: dead.card.sfx_death_url ?? undefined });
+    }
+
+    // SFX from spell countered
+    if (spellEvent?.countered) {
+      sfxEvents.push({ type: "counter_spell" });
+    }
+
+    // SFX from fire breath
+    if (fireEvent) {
+      sfxEvents.push({ type: "fire_breath" });
+    }
+
+    // SFX from card draw (new cards in hand)
+    const oldHandSize = gameState.players.reduce((s, p) => s + p.hand.length, 0);
+    const newHandSize = newState.players.reduce((s, p) => s + p.hand.length, 0);
+    if (newHandSize > oldHandSize) {
+      sfxEvents.push({ type: "draw_card" });
+    }
+
     if (deadCreatures.length > 0) {
       // Create intermediate state with dead creatures still on board (at 0 HP)
       const { factionCardPool: _pool, ...stateWithoutPool } = newState;
@@ -551,6 +606,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         validTargets: [],
         targetingMode: "none",
         damageEvents: dmgEvents,
+        lastSfxEvents: sfxEvents,
         effectLog: [...get().effectLog, ...logEntries].slice(-20),
         ...(spellEvent ? { spellCastEvent: spellEvent } : {}),
         ...(fireEvent ? { fireBreathEvent: fireEvent } : {}),
@@ -568,6 +624,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         validTargets: [],
         targetingMode: "none",
         damageEvents: dmgEvents,
+        lastSfxEvents: sfxEvents,
         effectLog: [...get().effectLog, ...logEntries].slice(-20),
         ...(spellEvent ? { spellCastEvent: spellEvent } : {}),
         ...(fireEvent ? { fireBreathEvent: fireEvent } : {}),

@@ -29,6 +29,10 @@ interface AudioStore {
   victoryTrackUrl: string | null;
   defeatTrackUrl: string | null;
 
+  // Standard SFX URLs (fetched once)
+  standardSfxUrls: Record<string, string>;
+  setStandardSfxUrls: (urls: Record<string, string>) => void;
+
   // Actions
   setMusicContext: (ctx: MusicContext | null, trackUrl?: string) => void;
   setUserHasInteracted: () => void;
@@ -64,6 +68,10 @@ export const useAudioStore = create<AudioStore>()(
       musicContext: null,
       currentTrackUrl: null,
       userHasInteracted: false,
+
+      // Standard SFX
+      standardSfxUrls: {},
+      setStandardSfxUrls: (urls) => set({ standardSfxUrls: urls }),
 
       // Context tracks
       menuTrackUrl: null,

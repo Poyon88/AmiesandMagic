@@ -8,7 +8,7 @@ interface SettingsModalProps {
 }
 
 export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
-  const { settings, setMusicVolume, toggleMusicMute } = useAudioStore();
+  const { settings, setMusicVolume, toggleMusicMute, setSfxVolume, toggleSfxMute } = useAudioStore();
 
   if (!isOpen) return null;
 
@@ -98,22 +98,45 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           </div>
         </div>
 
-        {/* SFX placeholder */}
-        <div style={{ opacity: 0.35 }}>
+        {/* SFX Volume */}
+        <div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
             <label style={{ fontSize: 12, letterSpacing: 0.5 }}>
               Effets sonores
             </label>
-            <span style={{ fontSize: 9, color: "#888", fontStyle: "italic" }}>Bientôt</span>
+            <button
+              onClick={toggleSfxMute}
+              style={{
+                background: settings.sfxMuted ? "#e74c3c33" : "#2e7d3233",
+                border: `1px solid ${settings.sfxMuted ? "#e74c3c66" : "#2e7d3266"}`,
+                color: settings.sfxMuted ? "#e74c3c" : "#2e7d32",
+                borderRadius: 4,
+                padding: "2px 10px",
+                fontSize: 9,
+                fontFamily: "'Cinzel', serif",
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+            >
+              {settings.sfxMuted ? "Muet" : "Actif"}
+            </button>
           </div>
           <input
             type="range"
             min={0}
             max={100}
-            value={50}
-            disabled
-            style={{ width: "100%", accentColor: "#4a90d9" }}
+            value={Math.round(settings.sfxVolume * 100)}
+            onChange={(e) => setSfxVolume(Number(e.target.value) / 100)}
+            disabled={settings.sfxMuted}
+            style={{
+              width: "100%",
+              accentColor: "#4a90d9",
+              opacity: settings.sfxMuted ? 0.4 : 1,
+            }}
           />
+          <div style={{ textAlign: "right", fontSize: 10, color: "#888" }}>
+            {Math.round(settings.sfxVolume * 100)}%
+          </div>
         </div>
       </div>
     </div>

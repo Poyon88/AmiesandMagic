@@ -22,6 +22,7 @@ import FireBreathOverlay from "./FireBreathOverlay";
 import MulliganOverlay from "./MulliganOverlay";
 import type { GameAction, DamageEvent } from "@/lib/game/types";
 import useGameMusic from "@/hooks/useGameMusic";
+import useGameSfx from "@/hooks/useGameSfx";
 
 interface GameBoardProps {
   onAction?: (action: GameAction) => void;
@@ -88,6 +89,7 @@ function animateAttackLunge(
 
 export default function GameBoard({ onAction }: GameBoardProps) {
   useGameMusic();
+  useGameSfx();
 
   const {
     gameState,

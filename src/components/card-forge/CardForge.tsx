@@ -602,6 +602,8 @@ export default function CardForge() {
   };
 
   const [saving, setSaving] = useState(false);
+  const [sfxPlayFile, setSfxPlayFile] = useState<{ base64: string; mimeType: string } | null>(null);
+  const [sfxDeathFile, setSfxDeathFile] = useState<{ base64: string; mimeType: string } | null>(null);
   const [saveResult, setSaveResult] = useState<{ ok: boolean; msg: string } | null>(null);
 
 
@@ -688,6 +690,10 @@ export default function CardForge() {
           imageBase64,
           imageMimeType,
           updateId: undefined,
+          sfxPlayBase64: sfxPlayFile?.base64 || null,
+          sfxPlayMimeType: sfxPlayFile?.mimeType || null,
+          sfxDeathBase64: sfxDeathFile?.base64 || null,
+          sfxDeathMimeType: sfxDeathFile?.mimeType || null,
         }),
       });
 
@@ -700,7 +706,7 @@ export default function CardForge() {
     } finally {
       setSaving(false);
     }
-  }, [cardImages, type, spellKeywords, spellEffectsData, convocationRace, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieRace]);
+  }, [cardImages, type, spellKeywords, spellEffectsData, convocationRace, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieRace, sfxPlayFile, sfxDeathFile]);
 
   const [generatingImage, setGeneratingImage] = useState(false);
   const [editedPrompt, setEditedPrompt] = useState<string | null>(null);
@@ -1000,6 +1006,47 @@ export default function CardForge() {
                   }}
                 />
               </div>
+              {/* SFX par carte */}
+              {(card || (forgeMode === "manuel" && manualName)) && !loading && (
+                <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                  <div style={{ flex: 1, minWidth: 140 }}>
+                    <label style={{ fontSize: 9, color: "#888", fontFamily: "'Cinzel',serif" }}>Son d&apos;invocation</label>
+                    <input
+                      type="file"
+                      accept="audio/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                          const result = reader.result as string;
+                          setSfxPlayFile({ base64: result.split(",")[1], mimeType: file.type });
+                        };
+                        reader.readAsDataURL(file);
+                      }}
+                      style={{ width: "100%", fontSize: 9, marginTop: 2 }}
+                    />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 140 }}>
+                    <label style={{ fontSize: 9, color: "#888", fontFamily: "'Cinzel',serif" }}>Son de mort</label>
+                    <input
+                      type="file"
+                      accept="audio/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                          const result = reader.result as string;
+                          setSfxDeathFile({ base64: result.split(",")[1], mimeType: file.type });
+                        };
+                        reader.readAsDataURL(file);
+                      }}
+                      style={{ width: "100%", fontSize: 9, marginTop: 2 }}
+                    />
+                  </div>
+                </div>
+              )}
               {(card || (forgeMode === "manuel" && manualName)) && !loading && (
                 <div style={{ display: "flex", gap: 7 }}>
                   {forgeMode === "auto" && <Btn onClick={() => forgeCard()} label="🎲 Re-roll" color="#74b9ff" />}

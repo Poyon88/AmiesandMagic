@@ -236,6 +236,8 @@ export interface Card {
   set_id?: number | null;
   card_year?: number | null;
   card_month?: number | null;
+  sfx_play_url?: string | null;
+  sfx_death_url?: string | null;
 }
 
 export interface CardSet {

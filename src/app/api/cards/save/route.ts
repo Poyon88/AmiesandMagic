@@ -35,7 +35,7 @@ export async function GET() {
   const supabaseAdmin = getAdminClient();
   const { data, error } = await supabaseAdmin
     .from('cards')
-    .select('id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, keywords, spell_keywords, spell_effects, image_url, illustration_prompt, faction, race, clan, rarity, card_alignment, convocation_race, convocation_tokens, lycanthropie_race, set_id, card_year, card_month')
+    .select('id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, keywords, spell_keywords, spell_effects, image_url, illustration_prompt, faction, race, clan, rarity, card_alignment, convocation_race, convocation_tokens, lycanthropie_race, set_id, card_year, card_month, sfx_play_url, sfx_death_url')
     .order('name');
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
   const supabaseAdmin = getAdminClient();
 
   try {
-    const { card, imageBase64, imageMimeType, updateId } = await request.json();
+    const { card, imageBase64, imageMimeType, updateId, sfxPlayBase64, sfxPlayMimeType, sfxDeathBase64, sfxDeathMimeType } = await request.json();
 
     // Upload image if provided
     let image_url: string | null = null;
@@ -90,6 +90,26 @@ export async function POST(request: Request) {
       card_alignment: card.card_alignment || null,
     };
     if (image_url) cardData.image_url = image_url;
+
+    // Upload SFX files if provided
+    for (const [base64Key, mimeKey, urlKey] of [
+      ['sfxPlayBase64', 'sfxPlayMimeType', 'sfx_play_url'],
+      ['sfxDeathBase64', 'sfxDeathMimeType', 'sfx_death_url'],
+    ] as const) {
+      const b64 = base64Key === 'sfxPlayBase64' ? sfxPlayBase64 : sfxDeathBase64;
+      const mime = mimeKey === 'sfxPlayMimeType' ? sfxPlayMimeType : sfxDeathMimeType;
+      if (b64 && mime) {
+        const buf = Buffer.from(b64, 'base64');
+        const ext = mime.split('/')[1]?.replace('mpeg', 'mp3') || 'mp3';
+        const sfxPath = `cards/${urlKey}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}.${ext}`;
+        const { error: sfxErr } = await supabaseAdmin.storage
+          .from('sfx-tracks')
+          .upload(sfxPath, buf, { upsert: true, contentType: mime });
+        if (sfxErr) throw new Error(`SFX upload: ${sfxErr.message}`);
+        const { data: sfxUrl } = supabaseAdmin.storage.from('sfx-tracks').getPublicUrl(sfxPath);
+        cardData[urlKey] = sfxUrl.publicUrl;
+      }
+    }
 
     if (updateId) {
       // Update existing card

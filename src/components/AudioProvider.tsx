@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { useAudioStore } from "@/lib/store/audioStore";
 import AudioEngine from "@/lib/audio/AudioEngine";
+import SfxEngine from "@/lib/audio/SfxEngine";
 
 const GAME_ROUTE_PREFIX = "/game/";
 const SILENT_PREFIXES = ["/admin", "/card-forge"];
@@ -25,6 +26,7 @@ export default function AudioProvider() {
     setMusicContext,
     setUserHasInteracted,
     setContextTracks,
+    setStandardSfxUrls,
   } = useAudioStore();
 
   // Load context tracks once
@@ -46,6 +48,29 @@ export default function AudioProvider() {
       })
       .catch(() => {});
   }, [setContextTracks]);
+
+  // Load standard SFX once
+  useEffect(() => {
+    fetch("/api/sfx")
+      .then((res) => res.json())
+      .then((data) => {
+        if (!Array.isArray(data)) return;
+        const urls: Record<string, string> = {};
+        for (const t of data) {
+          urls[t.event_type] = t.file_url;
+        }
+        setStandardSfxUrls(urls);
+        SfxEngine.getInstance().preload(Object.values(urls));
+      })
+      .catch(() => {});
+  }, [setStandardSfxUrls]);
+
+  // Sync SFX volume/mute
+  useEffect(() => {
+    const engine = SfxEngine.getInstance();
+    engine.setVolume(settings.sfxVolume);
+    engine.setMuted(settings.sfxMuted);
+  }, [settings.sfxVolume, settings.sfxMuted]);
 
   // Listen for first user interaction to unlock audio
   useEffect(() => {
