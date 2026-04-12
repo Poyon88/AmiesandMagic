@@ -1,5 +1,7 @@
 import { create } from "zustand";
 import type { GameState, GameAction, Card, CardInstance, DamageEvent, HeroDefinition, SpellTargetSlot, SpellTargetType, TokenTemplate } from "@/lib/game/types";
+import { useAudioStore } from "./audioStore";
+import SfxEngine from "@/lib/audio/SfxEngine";
 import { parseXValuesFromEffectText } from "@/lib/game/keyword-labels";
 import {
   initializeGame,
@@ -574,6 +576,18 @@ export const useGameStore = create<GameStore>((set, get) => ({
       sfxEvents.push({ type: "draw_card" });
     }
 
+    // Play SFX immediately (no React render cycle delay)
+    if (sfxEvents.length > 0 && typeof window !== "undefined") {
+      const audioState = useAudioStore.getState();
+      if (audioState.userHasInteracted && !audioState.settings.sfxMuted) {
+        const engine = SfxEngine.getInstance();
+        for (const event of sfxEvents) {
+          const url = event.cardSfxUrl || audioState.standardSfxUrls[event.type];
+          if (url) engine.play(url);
+        }
+      }
+    }
+
     if (deadCreatures.length > 0) {
       // Create intermediate state with dead creatures still on board (at 0 HP)
       const { factionCardPool: _pool, ...stateWithoutPool } = newState;
@@ -615,7 +629,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       // After a short delay, remove dead creatures (triggers exit animation)
       setTimeout(() => {
         set({ gameState: newState });
-      }, 1200);
+      }, 1800);
     } else {
       set({
         gameState: newState,

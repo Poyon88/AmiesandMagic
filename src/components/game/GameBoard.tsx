@@ -22,7 +22,6 @@ import FireBreathOverlay from "./FireBreathOverlay";
 import MulliganOverlay from "./MulliganOverlay";
 import type { GameAction, DamageEvent } from "@/lib/game/types";
 import useGameMusic from "@/hooks/useGameMusic";
-import useGameSfx from "@/hooks/useGameSfx";
 
 interface GameBoardProps {
   onAction?: (action: GameAction) => void;
@@ -65,7 +64,7 @@ function animateAttackLunge(
       { transform: "translate(0, 0) scale(1)" },
       { transform: `translate(${lungeX}px, ${lungeY}px) scale(1.1)` },
     ],
-    { duration: 150, easing: "cubic-bezier(0.2, 0, 0.6, 1)", fill: "forwards" }
+    { duration: 300, easing: "cubic-bezier(0.2, 0, 0.6, 1)", fill: "forwards" }
   );
 
   lunge.onfinish = () => {
@@ -76,7 +75,7 @@ function animateAttackLunge(
         { transform: `translate(${lungeX}px, ${lungeY}px) scale(1.1)` },
         { transform: "translate(0, 0) scale(1)" },
       ],
-      { duration: 200, easing: "cubic-bezier(0.4, 0, 0.2, 1)", fill: "forwards" }
+      { duration: 350, easing: "cubic-bezier(0.4, 0, 0.2, 1)", fill: "forwards" }
     );
 
     ret.onfinish = () => {
@@ -89,7 +88,6 @@ function animateAttackLunge(
 
 export default function GameBoard({ onAction }: GameBoardProps) {
   useGameMusic();
-  useGameSfx();
 
   const {
     gameState,
