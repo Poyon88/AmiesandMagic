@@ -15,11 +15,10 @@ export default function useGameMusic() {
   const boardVictoryMusicUrl = useGameStore((s) => s.boardVictoryMusicUrl);
   const boardDefeatMusicUrl = useGameStore((s) => s.boardDefeatMusicUrl);
 
-  const myHeroHp = useGameStore((s) => {
+  const lowestHeroHp = useGameStore((s) => {
     const gs = s.gameState;
-    if (!gs || !s.localPlayerId) return 30;
-    const me = gs.players.find((p) => p.id === s.localPlayerId);
-    return me?.hero.hp ?? 30;
+    if (!gs) return 30;
+    return Math.min(...gs.players.map((p) => p.hero.hp));
   });
 
   const setMusicContext = useAudioStore((s) => s.setMusicContext);
@@ -40,7 +39,7 @@ export default function useGameMusic() {
       url = (won ? boardVictoryMusicUrl : boardDefeatMusicUrl)
         ?? (won ? victoryTrackUrl : defeatTrackUrl)
         ?? undefined;
-    } else if ((phase === "playing" || phase === "mulligan") && myHeroHp <= LOW_HP_THRESHOLD) {
+    } else if ((phase === "playing" || phase === "mulligan") && lowestHeroHp <= LOW_HP_THRESHOLD) {
       ctx = "tense";
       url = boardTenseMusicUrl ?? tenseTrackUrl ?? undefined;
     } else if (phase === "playing" || phase === "mulligan") {
@@ -55,7 +54,7 @@ export default function useGameMusic() {
       setMusicContext(ctx, url);
     }
   }, [
-    phase, winner, localPlayerId, myHeroHp,
+    phase, winner, localPlayerId, lowestHeroHp,
     boardMusicUrl, boardTenseMusicUrl, boardVictoryMusicUrl, boardDefeatMusicUrl,
     tenseTrackUrl, victoryTrackUrl, defeatTrackUrl,
     setMusicContext,

@@ -106,13 +106,13 @@ export default function AudioProvider() {
         url = currentTrackUrl;
         break;
       case "tense":
-        url = tenseTrackUrl;
+        url = currentTrackUrl ?? tenseTrackUrl;
         break;
       case "victory":
-        url = victoryTrackUrl;
+        url = currentTrackUrl ?? victoryTrackUrl;
         break;
       case "defeat":
-        url = defeatTrackUrl;
+        url = currentTrackUrl ?? defeatTrackUrl;
         break;
     }
 
