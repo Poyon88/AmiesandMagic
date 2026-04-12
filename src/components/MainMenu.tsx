@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import GoldBalance from "@/components/shared/GoldBalance";
+import SettingsModal from "@/components/shared/SettingsModal";
 
 interface MainMenuProps {
   username: string;
@@ -12,6 +14,7 @@ interface MainMenuProps {
 export default function MainMenu({ username, goldBalance }: MainMenuProps) {
   const router = useRouter();
   const supabase = createClient();
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   async function handleLogout() {
     await supabase.auth.signOut();
@@ -51,6 +54,13 @@ export default function MainMenu({ username, goldBalance }: MainMenuProps) {
           <GoldBalance amount={goldBalance} size="sm" />
         </div>
         <button
+          onClick={() => setSettingsOpen(true)}
+          className="px-3 py-1.5 text-sm bg-secondary border border-card-border rounded-lg text-foreground/60 hover:text-foreground hover:border-primary/40 transition-colors"
+          title="Réglages"
+        >
+          ⚙
+        </button>
+        <button
           onClick={handleLogout}
           className="px-4 py-1.5 text-sm bg-secondary border border-card-border rounded-lg text-foreground/60 hover:text-foreground hover:border-primary/40 transition-colors"
         >
@@ -83,6 +93,8 @@ export default function MainMenu({ username, goldBalance }: MainMenuProps) {
           </button>
         ))}
       </div>
+
+      <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   );
 }

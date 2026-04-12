@@ -59,6 +59,10 @@ interface GameStore {
   spellCastEvent: SpellCastEvent | null;
   fireBreathEvent: FireBreathEvent | null;
   boardImageUrl: string | null;
+  boardMusicUrl: string | null;
+  boardTenseMusicUrl: string | null;
+  boardVictoryMusicUrl: string | null;
+  boardDefeatMusicUrl: string | null;
 
   // Actions
   initGame: (
@@ -76,6 +80,10 @@ interface GameStore {
   setLocalPlayerId: (id: string) => void;
   setTokenTemplates: (templates: TokenTemplate[]) => void;
   setBoardImageUrl: (url: string | null) => void;
+  setBoardMusicUrl: (url: string | null) => void;
+  setBoardTenseMusicUrl: (url: string | null) => void;
+  setBoardVictoryMusicUrl: (url: string | null) => void;
+  setBoardDefeatMusicUrl: (url: string | null) => void;
 
   // Game actions
   dispatchAction: (action: GameAction) => GameAction | null;
@@ -370,6 +378,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
   spellCastEvent: null,
   fireBreathEvent: null,
   boardImageUrl: null,
+  boardMusicUrl: null,
+  boardTenseMusicUrl: null,
+  boardVictoryMusicUrl: null,
+  boardDefeatMusicUrl: null,
 
   initGame: (player1Id, player2Id, player1Cards, player2Cards, firstPlayerIndex, seed, player1Hero, player2Hero, factionCardPool) => {
     const state = initializeGame(
@@ -392,6 +404,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
   setLocalPlayerId: (id) => set({ localPlayerId: id }),
   setTokenTemplates: (templates) => set({ tokenTemplates: templates }),
   setBoardImageUrl: (url) => set({ boardImageUrl: url }),
+  setBoardMusicUrl: (url: string | null) => set({ boardMusicUrl: url }),
+  setBoardTenseMusicUrl: (url: string | null) => set({ boardTenseMusicUrl: url }),
+  setBoardVictoryMusicUrl: (url: string | null) => set({ boardVictoryMusicUrl: url }),
+  setBoardDefeatMusicUrl: (url: string | null) => set({ boardDefeatMusicUrl: url }),
 
   dispatchAction: (action) => {
     const { gameState, localPlayerId } = get();

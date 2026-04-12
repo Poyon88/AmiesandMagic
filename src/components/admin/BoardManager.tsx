@@ -2,11 +2,22 @@
 
 import { useState, useEffect, useCallback } from "react";
 
+interface MusicTrack {
+  id: number;
+  name: string;
+  category: string;
+  file_url: string;
+}
+
 interface GameBoard {
   id: number;
   name: string;
   image_url: string;
   is_active: boolean;
+  music_track_id: number | null;
+  tense_track_id: number | null;
+  victory_track_id: number | null;
+  defeat_track_id: number | null;
   created_at: string;
 }
 
@@ -25,6 +36,8 @@ export default function BoardManager() {
   const [newName, setNewName] = useState("");
   const [newImage, setNewImage] = useState<{ base64: string; mimeType: string } | null>(null);
   const [newImagePreview, setNewImagePreview] = useState<string | null>(null);
+  const [newMusicTrackId, setNewMusicTrackId] = useState<number | null>(null);
+  const [musicTracks, setMusicTracks] = useState<MusicTrack[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const loadBoards = useCallback(async () => {
@@ -39,7 +52,17 @@ export default function BoardManager() {
     setLoading(false);
   }, []);
 
-  useEffect(() => { loadBoards(); }, [loadBoards]);
+  const loadMusicTracks = useCallback(async () => {
+    try {
+      const res = await fetch("/api/music");
+      const data = await res.json();
+      setMusicTracks(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Erreur chargement musiques:", err);
+    }
+  }, []);
+
+  useEffect(() => { loadBoards(); loadMusicTracks(); }, [loadBoards, loadMusicTracks]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -79,7 +102,7 @@ export default function BoardManager() {
       const res = await fetch("/api/boards", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newName.trim(), imageBase64: newImage.base64, imageMimeType: newImage.mimeType }),
+        body: JSON.stringify({ name: newName.trim(), imageBase64: newImage.base64, imageMimeType: newImage.mimeType, music_track_id: newMusicTrackId }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -90,6 +113,7 @@ export default function BoardManager() {
       setNewName("");
       setNewImage(null);
       setNewImagePreview(null);
+      setNewMusicTrackId(null);
       await loadBoards();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur réseau");
@@ -171,6 +195,19 @@ export default function BoardManager() {
               style={{ width: "100%", fontSize: 10, marginTop: 4 }}
             />
           </div>
+          <div style={{ minWidth: 140 }}>
+            <label style={STYLE.label}>Musique</label>
+            <select
+              value={newMusicTrackId ?? ""}
+              onChange={(e) => setNewMusicTrackId(e.target.value ? Number(e.target.value) : null)}
+              style={{ width: "100%", padding: "6px 10px", borderRadius: 5, border: "1px solid #e0e0e0", fontSize: 12, marginTop: 4 }}
+            >
+              <option value="">Aucune</option>
+              {musicTracks.map((t) => (
+                <option key={t.id} value={t.id}>{t.name}</option>
+              ))}
+            </select>
+          </div>
           <button
             onClick={handleAdd}
             disabled={saving || !newName.trim() || !newImage}
@@ -212,9 +249,39 @@ export default function BoardManager() {
                   {board.is_active ? "Actif" : "Inactif"}
                 </span>
               </div>
-              <p style={{ fontSize: 9, color: "#aaa", marginBottom: 10 }}>
+              <p style={{ fontSize: 9, color: "#aaa", marginBottom: 6 }}>
                 Ajouté le {new Date(board.created_at).toLocaleDateString("fr-FR")}
               </p>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 12px", marginBottom: 10 }}>
+                {([
+                  { key: "music_track_id", label: "Plateau", category: "board" },
+                  { key: "tense_track_id", label: "Tension", category: "tense" },
+                  { key: "victory_track_id", label: "Victoire", category: "victory" },
+                  { key: "defeat_track_id", label: "Défaite", category: "defeat" },
+                ] as const).map(({ key, label, category }) => (
+                  <div key={key} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <span style={{ ...STYLE.label, marginTop: 0, minWidth: 50 }}>{label} :</span>
+                    <select
+                      value={board[key] ?? ""}
+                      onChange={async (e) => {
+                        const value = e.target.value ? Number(e.target.value) : null;
+                        await fetch("/api/boards", {
+                          method: "PUT",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ id: board.id, [key]: value }),
+                        });
+                        await loadBoards();
+                      }}
+                      style={{ flex: 1, padding: "3px 8px", borderRadius: 4, border: "1px solid #e0e0e0", fontSize: 11 }}
+                    >
+                      <option value="">Aucune</option>
+                      {musicTracks.filter((t) => t.category === category).map((t) => (
+                        <option key={t.id} value={t.id}>{t.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                ))}
+              </div>
               <div style={{ display: "flex", gap: 8 }}>
                 <button
                   onClick={() => handleToggleActive(board)}

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Cinzel, Crimson_Text } from "next/font/google";
 import "./globals.css";
+import AudioProvider from "@/components/AudioProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -47,6 +48,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <AudioProvider />
         {children}
       </body>
     </html>

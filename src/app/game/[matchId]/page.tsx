@@ -117,7 +117,7 @@ export default function GamePage() {
             .select("*"),
           supabase
             .from("game_boards")
-            .select("id, name, image_url")
+            .select("id, name, image_url, music_tracks:music_track_id(file_url), tense_track:tense_track_id(file_url), victory_track:victory_track_id(file_url), defeat_track:defeat_track_id(file_url)")
             .eq("is_active", true),
         ]);
 
@@ -172,6 +172,16 @@ export default function GamePage() {
           const boardSeed = parseInt(matchId.replace(/-/g, "").slice(0, 8), 16);
           const selectedBoard = activeBoards[boardSeed % activeBoards.length];
           useGameStore.getState().setBoardImageUrl(selectedBoard.image_url);
+          const board = selectedBoard as Record<string, unknown>;
+          const musicData = board.music_tracks as { file_url: string } | null;
+          const tenseData = board.tense_track as { file_url: string } | null;
+          const victoryData = board.victory_track as { file_url: string } | null;
+          const defeatData = board.defeat_track as { file_url: string } | null;
+          const store = useGameStore.getState();
+          if (musicData?.file_url) store.setBoardMusicUrl(musicData.file_url);
+          if (tenseData?.file_url) store.setBoardTenseMusicUrl(tenseData.file_url);
+          if (victoryData?.file_url) store.setBoardVictoryMusicUrl(victoryData.file_url);
+          if (defeatData?.file_url) store.setBoardDefeatMusicUrl(defeatData.file_url);
         }
 
         // Store match data for later initialization
