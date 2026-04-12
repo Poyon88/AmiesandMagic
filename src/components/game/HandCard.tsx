@@ -112,7 +112,7 @@ export default function HandCard({
           boxShadow: isSelected ? "0 0 12px #c8a84e44" : "none",
           overflow: "hidden",
           cursor: isDragging ? "grabbing" : canPlay ? "grab" : "not-allowed",
-          opacity: isDragging ? 0.5 : canPlay ? 1 : 0.5,
+          opacity: isDragging ? 0.5 : canPlay ? 1 : 0.75,
           transition: "border-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease",
           transform: isZoomed ? "translateX(-50%)" : "none",
           zoom: isZoomed ? 2.25 : 1,

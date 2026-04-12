@@ -25,6 +25,7 @@ export default function BoardManager() {
   const [newName, setNewName] = useState("");
   const [newImage, setNewImage] = useState<{ base64: string; mimeType: string } | null>(null);
   const [newImagePreview, setNewImagePreview] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const loadBoards = useCallback(async () => {
     setLoading(true);
@@ -43,30 +44,55 @@ export default function BoardManager() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      const base64 = result.split(",")[1];
-      setNewImage({ base64, mimeType: file.type });
-      setNewImagePreview(result);
+
+    const img = new window.Image();
+    img.onload = () => {
+      const MAX_WIDTH = 1920;
+      const MAX_HEIGHT = 1080;
+      let { width, height } = img;
+
+      if (width > MAX_WIDTH || height > MAX_HEIGHT) {
+        const ratio = Math.min(MAX_WIDTH / width, MAX_HEIGHT / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d")!;
+      ctx.drawImage(img, 0, 0, width, height);
+
+      const dataUrl = canvas.toDataURL("image/webp", 0.85);
+      const base64 = dataUrl.split(",")[1];
+      setNewImage({ base64, mimeType: "image/webp" });
+      setNewImagePreview(dataUrl);
     };
-    reader.readAsDataURL(file);
+    img.src = URL.createObjectURL(file);
   };
 
   const handleAdd = async () => {
     if (!newName.trim() || !newImage) return;
     setSaving(true);
+    setError(null);
     try {
-      await fetch("/api/boards", {
+      const res = await fetch("/api/boards", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: newName.trim(), imageBase64: newImage.base64, imageMimeType: newImage.mimeType }),
       });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || `Erreur ${res.status}`);
+        setSaving(false);
+        return;
+      }
       setNewName("");
       setNewImage(null);
       setNewImagePreview(null);
       await loadBoards();
     } catch (err) {
+      setError(err instanceof Error ? err.message : "Erreur réseau");
       console.error("Erreur ajout:", err);
     }
     setSaving(false);
@@ -153,6 +179,11 @@ export default function BoardManager() {
             {saving ? "Envoi..." : "Ajouter"}
           </button>
         </div>
+        {error && (
+          <div style={{ marginTop: 12, padding: "8px 12px", borderRadius: 6, background: "#fde8e8", border: "1px solid #f5a3a3", color: "#e74c3c", fontSize: 11 }}>
+            {error}
+          </div>
+        )}
         {newImagePreview && (
           <div style={{ marginTop: 12 }}>
             <img src={newImagePreview} alt="Aperçu" style={{ width: "100%", maxHeight: 200, objectFit: "cover", borderRadius: 6, border: "1px solid #e0e0e0" }} />
