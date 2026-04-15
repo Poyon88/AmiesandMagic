@@ -7,7 +7,11 @@ export type TransactionType =
   | 'shop_booster'
   | 'shop_card'
   | 'shop_cosmetic'
-  | 'refund';
+  | 'refund'
+  | 'auction_escrow'
+  | 'auction_refund'
+  | 'auction_sale'
+  | 'auction_commission';
 
 export interface Wallet {
   user_id: string;

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import GoldBalance from "@/components/shared/GoldBalance";
+import NotificationBell from "@/components/shared/NotificationBell";
 import SettingsModal from "@/components/shared/SettingsModal";
 
 interface MainMenuProps {
@@ -41,6 +42,12 @@ export default function MainMenu({ username, goldBalance }: MainMenuProps) {
       href: "/collection",
       color: "bg-mana-blue hover:bg-mana-blue/80",
     },
+    {
+      label: "Enchères",
+      description: "Achetez et vendez des cartes",
+      href: "/auction",
+      color: "bg-amber-600 hover:bg-amber-500",
+    },
   ];
 
   return (
@@ -53,6 +60,7 @@ export default function MainMenu({ username, goldBalance }: MainMenuProps) {
         <div className="px-3 py-1 bg-secondary border border-card-border rounded-lg">
           <GoldBalance amount={goldBalance} size="sm" />
         </div>
+        <NotificationBell />
         <button
           onClick={() => setSettingsOpen(true)}
           className="px-3 py-1.5 text-sm bg-secondary border border-card-border rounded-lg text-foreground/60 hover:text-foreground hover:border-primary/40 transition-colors"
