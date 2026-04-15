@@ -13,7 +13,7 @@ export default async function CardForgePage() {
   if (!user) redirect("/login");
 
   return (
-    <div style={{ height: "100vh", overflow: "hidden" }}>
+    <div style={{ height: "100%", overflow: "hidden" }}>
       <CardForge />
     </div>
   );

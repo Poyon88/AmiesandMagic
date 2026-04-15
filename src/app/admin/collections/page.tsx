@@ -19,7 +19,7 @@ export default async function CollectionsPage() {
   ]);
 
   return (
-    <div style={{ height: "100vh", overflow: "auto", background: "#f5f5f5" }}>
+    <div style={{ height: "100%", overflow: "auto", background: "#f5f5f5" }}>
       <CollectionManager
         profiles={profiles ?? []}
         allCards={cards ?? []}

@@ -13,7 +13,7 @@ export default async function MusicPage() {
   if (!user) redirect("/login");
 
   return (
-    <div style={{ height: "100vh", overflow: "auto", background: "#f5f5f5" }}>
+    <div style={{ height: "100%", overflow: "auto", background: "#f5f5f5" }}>
       <MusicManager />
     </div>
   );

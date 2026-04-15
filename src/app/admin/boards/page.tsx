@@ -13,7 +13,7 @@ export default async function BoardsPage() {
   if (!user) redirect("/login");
 
   return (
-    <div style={{ height: "100vh", overflow: "auto", background: "#f5f5f5" }}>
+    <div style={{ height: "100%", overflow: "auto", background: "#f5f5f5" }}>
       <BoardManager />
     </div>
   );
