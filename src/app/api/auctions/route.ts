@@ -67,9 +67,8 @@ export async function GET(request: Request) {
       *,
       items:auction_items(
         *,
-        card:cards(id, name, mana_cost, card_type, attack, health, rarity, faction, race, clan)
-      ),
-      seller:profiles!auctions_seller_id_fkey(username)
+        card:cards(*)
+      )
     `, { count: 'exact' })
     .eq('status', status);
 
@@ -125,10 +124,16 @@ export async function GET(request: Request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
+  // Fetch seller usernames
+  const sellerIds = [...new Set((data ?? []).map(a => a.seller_id))];
+  const { data: profiles } = sellerIds.length
+    ? await supabase.from('profiles').select('id, username').in('id', sellerIds)
+    : { data: [] };
+  const usernameMap = new Map((profiles ?? []).map(p => [p.id, p.username]));
+
   const auctions = (data ?? []).map(a => ({
     ...a,
-    seller_username: a.seller?.username ?? null,
-    seller: undefined,
+    seller_username: usernameMap.get(a.seller_id) ?? null,
   }));
 
   return NextResponse.json({ auctions, total: count ?? 0, page, limit });

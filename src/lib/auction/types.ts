@@ -54,18 +54,7 @@ export interface AuctionItem {
 }
 
 export interface AuctionItemWithCard extends AuctionItem {
-  card: {
-    id: number;
-    name: string;
-    mana_cost: number;
-    card_type: string;
-    attack: number | null;
-    health: number | null;
-    rarity: string;
-    faction: string;
-    race: string;
-    clan: string | null;
-  };
+  card: import("@/lib/game/types").Card;
 }
 
 export interface AuctionBid {

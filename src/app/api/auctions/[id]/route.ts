@@ -54,9 +54,8 @@ export async function GET(
       *,
       items:auction_items(
         *,
-        card:cards(id, name, mana_cost, card_type, attack, health, rarity, faction, race, clan)
-      ),
-      seller:profiles!auctions_seller_id_fkey(username)
+        card:cards(*)
+      )
     `)
     .eq('id', id)
     .single();
@@ -64,21 +63,33 @@ export async function GET(
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   if (!data) return NextResponse.json({ error: 'Enchère introuvable' }, { status: 404 });
 
-  // Fetch bids with bidder usernames
+  // Fetch seller username
+  const { data: sellerProfile } = await supabase
+    .from('profiles')
+    .select('username')
+    .eq('id', data.seller_id)
+    .single();
+
+  // Fetch bids
   const { data: bids } = await supabase
     .from('auction_bids')
-    .select('*, bidder:profiles!auction_bids_bidder_id_fkey(username)')
+    .select('*')
     .eq('auction_id', id)
     .order('created_at', { ascending: false });
 
+  // Fetch bidder usernames
+  const bidderIds = [...new Set((bids ?? []).map(b => b.bidder_id))];
+  const { data: bidderProfiles } = bidderIds.length
+    ? await supabase.from('profiles').select('id, username').in('id', bidderIds)
+    : { data: [] };
+  const bidderMap = new Map((bidderProfiles ?? []).map(p => [p.id, p.username]));
+
   const result = {
     ...data,
-    seller_username: data.seller?.username ?? null,
-    seller: undefined,
+    seller_username: sellerProfile?.username ?? null,
     bids: (bids ?? []).map(b => ({
       ...b,
-      bidder_username: b.bidder?.username ?? null,
-      bidder: undefined,
+      bidder_username: bidderMap.get(b.bidder_id) ?? null,
     })),
   };
 

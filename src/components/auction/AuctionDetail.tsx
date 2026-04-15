@@ -3,14 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import type { AuctionWithDetails, AuctionBid } from "@/lib/auction/types";
-
-const RARITY_COLORS: Record<string, string> = {
-  "Commune": "#aaaaaa",
-  "Peu Commune": "#4caf50",
-  "Rare": "#4fc3f7",
-  "Épique": "#ce93d8",
-  "Légendaire": "#ffd54f",
-};
+import GameCard from "@/components/cards/GameCard";
 
 function useCountdown(endDate: string) {
   const [timeLeft, setTimeLeft] = useState("");
@@ -148,46 +141,12 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
             {auction.items.length > 1 ? "Lot de cartes" : auction.items[0]?.card?.name ?? "Carte"}
           </h2>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
             {auction.items.map((item) => (
-              <div
-                key={item.id}
-                style={{
-                  background: "#2a2a45",
-                  border: "1px solid #3d3d5c",
-                  borderRadius: 10,
-                  padding: 14,
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <div>
-                  <div style={{ fontSize: 15, fontWeight: 600, color: "#e0e0e0" }}>
-                    {item.card?.name ?? `Carte #${item.card_id}`}
-                    {item.quantity > 1 && (
-                      <span style={{ fontSize: 12, color: "#c8a84e", marginLeft: 6 }}>x{item.quantity}</span>
-                    )}
-                  </div>
-                  <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
-                    {item.card?.rarity && (
-                      <span style={{ fontSize: 11, color: RARITY_COLORS[item.card.rarity] ?? "#999" }}>
-                        {item.card.rarity}
-                      </span>
-                    )}
-                    {item.card?.faction && (
-                      <span style={{ fontSize: 11, color: "#999" }}>{item.card.faction}</span>
-                    )}
-                    {item.card?.mana_cost !== undefined && (
-                      <span style={{ fontSize: 11, color: "#4a90d9" }}>Mana: {item.card.mana_cost}</span>
-                    )}
-                  </div>
-                  {item.card?.card_type === "creature" && (
-                    <div style={{ fontSize: 11, color: "#999", marginTop: 2 }}>
-                      ATK: {item.card.attack} / PV: {item.card.health}
-                    </div>
-                  )}
-                </div>
+              <div key={item.id} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+                {item.card && (
+                  <GameCard card={item.card} size="md" count={item.quantity > 1 ? item.quantity : undefined} />
+                )}
                 <div style={{ fontSize: 11, color: "#666" }}>
                   {item.source_type === "print" ? "Édition limitée" : item.source_type === "admin" ? "Système" : "Collection"}
                 </div>
