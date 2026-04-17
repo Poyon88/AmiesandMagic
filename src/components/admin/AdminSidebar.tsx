@@ -15,6 +15,7 @@ const menuItems = [
   { label: "Enchères", href: "/admin/auctions", icon: "\uD83D\uDD28" },
   { label: "Showcase", href: "/admin/showcase", icon: "\uD83C\uDFAD" },
   { label: "Icônes", href: "/admin/keyword-icons", icon: "\uD83C\uDFA8" },
+  { label: "Joueurs", href: "/admin/players", icon: "\uD83D\uDC65" },
 ];
 
 export default function AdminSidebar() {
