@@ -13,6 +13,7 @@ const menuItems = [
   { label: "Musiques", href: "/admin/music", icon: "\uD83C\uDFB5" },
   { label: "Bruitages", href: "/admin/sfx", icon: "\uD83D\uDD0A" },
   { label: "Enchères", href: "/admin/auctions", icon: "\uD83D\uDD28" },
+  { label: "Showcase", href: "/admin/showcase", icon: "\uD83C\uDFAD" },
 ];
 
 export default function AdminSidebar() {
