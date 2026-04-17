@@ -145,7 +145,7 @@ export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
   raid: "⚔️", convocations_multiples: "📣📣", loyaute: "🤝", ancre: "⚓", resistance: "🛡️", premiere_frappe: "🗡️",
   berserk: "😤", vol: "🦅", precision: "🏹", drain_de_vie: "🩸", esquive: "💨",
   poison: "☠️", celerite: "💫",
-  augure: "📖", benediction: "✝️", bravoure: "🦁",
+  augure: "/icons/augure.png", benediction: "✝️", bravoure: "🦁",
   pillage: "💰", riposte: "↩️",
   rappel: "🔄", combustion: "🔥",
   terreur: "👁️", armure: "/icons/armure.png",

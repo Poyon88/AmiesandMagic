@@ -160,7 +160,7 @@ export default function GameCard({
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 * s,
                 fontSize: 10 * s,
               }}>
-                <KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={14 * s} />
+                <KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={14 * s} keyword={kw} />
                 {x != null && <span style={{ fontSize: 10 * s, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}` }}>{toRoman(x)}</span>}
               </div>
               );
@@ -185,7 +185,7 @@ export default function GameCard({
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 * s,
                 fontSize: 10 * s,
               }}>
-                <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={14 * s} />
+                <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={14 * s} keyword={`spell_${spellKw.id}`} />
                 {valueText && <span style={{ fontSize: 10 * s, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}` }}>{valueText}</span>}
               </div>
               );
@@ -274,7 +274,7 @@ export default function GameCard({
               const desc = kwDef?.desc ? (x != null ? kwDef.desc.replace(/X/g, String(x)) : kwDef.desc) : null;
               return (
               <div key={kw} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
-                <span style={{ flexShrink: 0 }}><KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={18 * s} /></span>
+                <span style={{ flexShrink: 0 }}><KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={18 * s} keyword={kw} /></span>
                 <div>
                   <div style={{ fontSize: 14 * s, color: accentColor, fontWeight: 700 }}>{displayLabel}</div>
                   {desc && <div style={{ fontSize: 12 * s, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
@@ -294,7 +294,7 @@ export default function GameCard({
               const desc = getSpellKeywordDesc(spellKw, card);
               return (
               <div key={`sk_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
-                <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={18 * s} /></span>
+                <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={18 * s} keyword={`spell_${spellKw.id}`} /></span>
                 <div>
                   <div style={{ fontSize: 14 * s, color: accentColor, fontWeight: 700 }}>{label}</div>
                   <div style={{ fontSize: 12 * s, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>

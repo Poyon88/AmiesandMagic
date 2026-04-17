@@ -14,6 +14,7 @@ const menuItems = [
   { label: "Bruitages", href: "/admin/sfx", icon: "\uD83D\uDD0A" },
   { label: "Enchères", href: "/admin/auctions", icon: "\uD83D\uDD28" },
   { label: "Showcase", href: "/admin/showcase", icon: "\uD83C\uDFAD" },
+  { label: "Icônes", href: "/admin/keyword-icons", icon: "\uD83C\uDFA8" },
 ];
 
 export default function AdminSidebar() {
