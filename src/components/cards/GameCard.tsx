@@ -217,9 +217,10 @@ export default function GameCard({
           const mp = maxPrints || (!card.set_id && card.card_year && card.rarity ? LIMITED_PRINT_COUNTS[card.rarity] : undefined);
           return mp ? (
             <span style={{
-              fontSize: 7 * s, color: "#ffffff66", fontFamily: "'Cinzel',serif",
+              fontSize: 9 * s, color: "#ffffff", fontWeight: 600, fontFamily: "'Cinzel',serif",
               letterSpacing: 0.5,
-            }}>{printNumber ? `#${printNumber}/` : ""}{mp} ex.</span>
+              textShadow: "0 1px 3px rgba(0,0,0,0.8)",
+            }}>{printNumber ? `${printNumber}/${mp}` : `/${mp}`}</span>
           ) : null;
         })()}
       </div>
