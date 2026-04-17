@@ -554,8 +554,8 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
         }}>
           {card!.faction && <span style={{ color: fac.accent, fontWeight: 600 }}>{card!.faction}</span>}
           <span style={{ color: "#74b9ff" }}>💧{card!.mana}</span>
-          {card!.attack != null && <span style={{ color: "#f1c40f" }}>⚔{card!.attack}</span>}
-          {card!.defense != null && <span style={{ color: "#e74c3c" }}>❤{card!.defense}</span>}
+          {card!.attack != null && <span style={{ color: "#e74c3c" }}>⚔{card!.attack}</span>}
+          {card!.defense != null && <span style={{ color: "#f1c40f" }}>❤{card!.defense}</span>}
           {card!.power != null && <span style={{ color: fac.accent }}>✨{card!.power}</span>}
           <span style={{ color: rar.color, fontSize: 12 * s }}>{card!.rarity}</span>
           {card!.printNumber && card!.maxPrints && (

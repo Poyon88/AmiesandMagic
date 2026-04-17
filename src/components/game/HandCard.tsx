@@ -228,15 +228,15 @@ export default function HandCard({
               <div style={{ display: "flex", gap: 4 }}>
                 <div style={{
                   padding: "1px 4px", borderRadius: 3,
-                  background: "#f1c40f18", border: "1px solid #f1c40f55",
+                  background: "#e74c3c18", border: "1px solid #e74c3c55",
                 }}>
-                  <span style={{ fontSize: 10, color: "#f1c40f", fontWeight: 700 }}>{card.attack}</span>
+                  <span style={{ fontSize: 10, color: "#e74c3c", fontWeight: 700 }}>{card.attack}</span>
                 </div>
                 <div style={{
                   padding: "1px 4px", borderRadius: 3,
-                  background: "#e74c3c18", border: "1px solid #e74c3c55",
+                  background: "#f1c40f18", border: "1px solid #f1c40f55",
                 }}>
-                  <span style={{ fontSize: 10, color: "#e74c3c", fontWeight: 700 }}>{card.health}</span>
+                  <span style={{ fontSize: 10, color: "#f1c40f", fontWeight: 700 }}>{card.health}</span>
                 </div>
               </div>
             )}
@@ -246,7 +246,9 @@ export default function HandCard({
         {/* Hover overlay */}
         <div style={{
           position: "absolute", inset: 0, zIndex: 3,
-          background: "#0d0d1a",
+          background: "#0d0d1ab3",
+          backdropFilter: "blur(2px)",
+          WebkitBackdropFilter: "blur(2px)",
           opacity: showOverlay ? 1 : 0,
           transition: "opacity 0.25s ease",
           pointerEvents: showOverlay ? "auto" : "none",
@@ -351,7 +353,7 @@ export default function HandCard({
             fontSize: 7, color: "#555",
           }}>
             <span style={isCostReduced ? { color: "#2ecc71" } : undefined}>💧 {effectiveManaCost}</span>
-            {isCreature && <><span style={{ color: "#f1c40f" }}>⚔ {card.attack}</span><span style={{ color: "#e74c3c" }}>❤ {card.health}</span></>}
+            {isCreature && <><span style={{ color: "#e74c3c" }}>⚔ {card.attack}</span><span style={{ color: "#f1c40f" }}>❤ {card.health}</span></>}
           </div>
         </div>
       </div>

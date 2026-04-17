@@ -53,7 +53,7 @@ const RACE_ICONS: Record<string, string> = {
 };
 
 import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
-const KEYWORDS = ALL_KEYWORDS;
+const KEYWORDS = [...ALL_KEYWORDS].sort((a, b) => KEYWORD_LABELS[a].localeCompare(KEYWORD_LABELS[b], "fr"));
 
 export default function DeckBuilder({
   cards,

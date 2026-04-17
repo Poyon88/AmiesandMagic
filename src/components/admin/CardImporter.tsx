@@ -429,10 +429,10 @@ export default function CardImporter() {
                       {card.card_type}
                     </span>
                   </td>
-                  <td className="py-2 px-2 text-center text-attack-yellow">
+                  <td className="py-2 px-2 text-center text-attack-red">
                     {card.attack ?? "-"}
                   </td>
-                  <td className="py-2 px-2 text-center text-health-red">
+                  <td className="py-2 px-2 text-center text-health-yellow">
                     {card.health ?? "-"}
                   </td>
                   <td className="py-2 px-2 text-foreground/70 max-w-48 truncate">

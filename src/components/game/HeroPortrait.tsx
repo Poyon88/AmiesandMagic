@@ -64,7 +64,7 @@ export default function HeroPortrait({
           relative w-20 h-24 rounded-xl overflow-hidden
           ${isOpponent ? "border-accent/40" : "border-mana-blue/40"}
           border-2 transition-[border-color,box-shadow,transform]
-          ${isValidTarget ? "ring-2 ring-attack-yellow animate-[pulse-ring_1.5s_ease-in-out_infinite] cursor-pointer hover:scale-105" : ""}
+          ${isValidTarget ? "ring-2 ring-attack-red animate-[pulse-ring_1.5s_ease-in-out_infinite] cursor-pointer hover:scale-105" : ""}
           ${onClick && !isValidTarget ? "cursor-pointer hover:scale-105" : ""}
         `}
       >

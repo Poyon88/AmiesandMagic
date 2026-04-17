@@ -71,7 +71,8 @@ export default function KeywordIconManager() {
     }
   }
 
-  const allKeywords = Object.entries(KEYWORD_LABELS) as [Keyword, string][];
+  const allKeywords = (Object.entries(KEYWORD_LABELS) as [Keyword, string][])
+    .sort((a, b) => a[1].localeCompare(b[1], "fr"));
   const filtered = search
     ? allKeywords.filter(([, label]) => label.toLowerCase().includes(search.toLowerCase()))
     : allKeywords;

@@ -127,7 +127,7 @@ export default function CardPreview({ cardInstance, anchorRef, position = "above
         {/* Stats */}
         {isCreature ? (
           <div className="flex justify-between px-3 py-2">
-            <span className="w-9 h-9 rounded-lg bg-attack-yellow flex items-center justify-center text-background font-bold text-lg">
+            <span className="w-9 h-9 rounded-lg bg-attack-red flex items-center justify-center text-background font-bold text-lg">
               {cardInstance.currentAttack}
             </span>
             <span
@@ -136,7 +136,7 @@ export default function CardPreview({ cardInstance, anchorRef, position = "above
                   ? "bg-accent"
                   : cardInstance.currentHealth > (card.health ?? 0)
                   ? "bg-green-500"
-                  : "bg-health-red"
+                  : "bg-health-yellow"
               }`}
             >
               {cardInstance.currentHealth}

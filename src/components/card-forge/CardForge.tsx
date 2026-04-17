@@ -1161,15 +1161,15 @@ export default function CardForge() {
                     {type === "Unité" ? (
                       <>
                         <div>
-                          <label style={{ fontSize: 8, color: "#f1c40f", letterSpacing: 1 }}>ATK</label>
+                          <label style={{ fontSize: 8, color: "#e74c3c", letterSpacing: 1 }}>ATK</label>
                           <input type="number" min={0} max={30} value={manualAttack} onChange={e => setManualAttack(Math.max(0, parseInt(e.target.value) || 0))}
-                            style={{ width: "100%", padding: "5px 4px", borderRadius: 6, border: "1px solid #f1c40f44", background: "#fff", color: "#f1c40f", fontFamily: "'Cinzel',serif", fontSize: 14, textAlign: "center", marginTop: 3 }}
+                            style={{ width: "100%", padding: "5px 4px", borderRadius: 6, border: "1px solid #e74c3c44", background: "#fff", color: "#e74c3c", fontFamily: "'Cinzel',serif", fontSize: 14, textAlign: "center", marginTop: 3 }}
                           />
                         </div>
                         <div>
-                          <label style={{ fontSize: 8, color: "#e74c3c", letterSpacing: 1 }}>DEF</label>
+                          <label style={{ fontSize: 8, color: "#f1c40f", letterSpacing: 1 }}>DEF</label>
                           <input type="number" min={1} max={30} value={manualDefense} onChange={e => setManualDefense(Math.max(1, parseInt(e.target.value) || 1))}
-                            style={{ width: "100%", padding: "5px 4px", borderRadius: 6, border: "1px solid #e74c3c44", background: "#fff", color: "#e74c3c", fontFamily: "'Cinzel',serif", fontSize: 14, textAlign: "center", marginTop: 3 }}
+                            style={{ width: "100%", padding: "5px 4px", borderRadius: 6, border: "1px solid #f1c40f44", background: "#fff", color: "#f1c40f", fontFamily: "'Cinzel',serif", fontSize: 14, textAlign: "center", marginTop: 3 }}
                           />
                         </div>
                       </>
@@ -1243,25 +1243,25 @@ export default function CardForge() {
                               )}
                               {def.params.includes("attack") && (
                                 <div>
-                                  <label style={{ fontSize: 7, color: "#f1c40f" }}>ATK</label>
+                                  <label style={{ fontSize: 7, color: "#e74c3c" }}>ATK</label>
                                   <input type="number" min={0} max={20} value={kw.attack ?? 1}
                                     onChange={e => {
                                       const val = Math.max(0, parseInt(e.target.value) || 0);
                                       setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, attack: val } : k));
                                     }}
-                                    style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: "1px solid #f1c40f44", fontSize: 11, textAlign: "center", fontFamily: "'Cinzel',serif", color: "#f1c40f" }}
+                                    style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: "1px solid #e74c3c44", fontSize: 11, textAlign: "center", fontFamily: "'Cinzel',serif", color: "#e74c3c" }}
                                   />
                                 </div>
                               )}
                               {def.params.includes("health") && (
                                 <div>
-                                  <label style={{ fontSize: 7, color: "#e74c3c" }}>PV</label>
+                                  <label style={{ fontSize: 7, color: "#f1c40f" }}>PV</label>
                                   <input type="number" min={0} max={20} value={kw.health ?? 1}
                                     onChange={e => {
                                       const val = Math.max(0, parseInt(e.target.value) || 0);
                                       setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, health: val } : k));
                                     }}
-                                    style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: "1px solid #e74c3c44", fontSize: 11, textAlign: "center", fontFamily: "'Cinzel',serif", color: "#e74c3c" }}
+                                    style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: "1px solid #f1c40f44", fontSize: 11, textAlign: "center", fontFamily: "'Cinzel',serif", color: "#f1c40f" }}
                                   />
                                 </div>
                               )}
@@ -1297,10 +1297,10 @@ export default function CardForge() {
                                 {allRaces.map(r => <option key={r} value={r}>{r}</option>)}
                               </select>
                               <input type="number" min={1} max={20} value={tok.attack} onChange={e => setConvocationTokens(prev => prev.map((t, i) => i === idx ? { ...t, attack: Math.max(1, parseInt(e.target.value) || 1) } : t))}
-                                style={{ width: 32, padding: "2px", borderRadius: 4, border: "1px solid #f1c40f44", fontSize: 10, textAlign: "center", color: "#f1c40f", fontFamily: "'Cinzel',serif" }} title="ATK" />
+                                style={{ width: 32, padding: "2px", borderRadius: 4, border: "1px solid #e74c3c44", fontSize: 10, textAlign: "center", color: "#e74c3c", fontFamily: "'Cinzel',serif" }} title="ATK" />
                               <span style={{ fontSize: 8, color: "#999" }}>/</span>
                               <input type="number" min={1} max={20} value={tok.health} onChange={e => setConvocationTokens(prev => prev.map((t, i) => i === idx ? { ...t, health: Math.max(1, parseInt(e.target.value) || 1) } : t))}
-                                style={{ width: 32, padding: "2px", borderRadius: 4, border: "1px solid #e74c3c44", fontSize: 10, textAlign: "center", color: "#e74c3c", fontFamily: "'Cinzel',serif" }} title="DEF" />
+                                style={{ width: 32, padding: "2px", borderRadius: 4, border: "1px solid #f1c40f44", fontSize: 10, textAlign: "center", color: "#f1c40f", fontFamily: "'Cinzel',serif" }} title="DEF" />
                               <button onClick={() => setConvocationTokens(prev => prev.filter((_, i) => i !== idx))}
                                 style={{ padding: "1px 5px", borderRadius: 3, border: "1px solid #f5a3a3", background: "#fde8e8", color: "#e74c3c", fontSize: 8, cursor: "pointer" }}>x</button>
                             </div>
@@ -1436,10 +1436,10 @@ export default function CardForge() {
                               {allRaces.map(r => <option key={r} value={r}>{r}</option>)}
                             </select>
                             <input type="number" min={1} max={20} value={tok.attack} onChange={e => setConvocationTokens(prev => prev.map((t, i) => i === idx ? { ...t, attack: Math.max(1, parseInt(e.target.value) || 1) } : t))}
-                              style={{ width: 32, padding: "2px", borderRadius: 4, border: "1px solid #f1c40f44", fontSize: 10, textAlign: "center", color: "#f1c40f", fontFamily: "'Cinzel',serif" }} title="ATK" />
+                              style={{ width: 32, padding: "2px", borderRadius: 4, border: "1px solid #e74c3c44", fontSize: 10, textAlign: "center", color: "#e74c3c", fontFamily: "'Cinzel',serif" }} title="ATK" />
                             <span style={{ fontSize: 8, color: "#999" }}>/</span>
                             <input type="number" min={1} max={20} value={tok.health} onChange={e => setConvocationTokens(prev => prev.map((t, i) => i === idx ? { ...t, health: Math.max(1, parseInt(e.target.value) || 1) } : t))}
-                              style={{ width: 32, padding: "2px", borderRadius: 4, border: "1px solid #e74c3c44", fontSize: 10, textAlign: "center", color: "#e74c3c", fontFamily: "'Cinzel',serif" }} title="DEF" />
+                              style={{ width: 32, padding: "2px", borderRadius: 4, border: "1px solid #f1c40f44", fontSize: 10, textAlign: "center", color: "#f1c40f", fontFamily: "'Cinzel',serif" }} title="DEF" />
                             <button onClick={() => setConvocationTokens(prev => prev.filter((_, i) => i !== idx))}
                               style={{ padding: "1px 5px", borderRadius: 3, border: "1px solid #f5a3a3", background: "#fde8e8", color: "#e74c3c", fontSize: 8, cursor: "pointer" }}>x</button>
                           </div>

@@ -307,19 +307,19 @@ export default function BoardCreature({
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{
             padding: "1px 5px", borderRadius: 4,
-            background: isBuffedAtk ? "#2ecc7133" : "#f1c40f18",
-            border: `1px solid ${isBuffedAtk ? "#2ecc7188" : "#f1c40f55"}`,
+            background: isBuffedAtk ? "#2ecc7133" : "#e74c3c18",
+            border: `1px solid ${isBuffedAtk ? "#2ecc7188" : "#e74c3c55"}`,
           }}>
-            <span style={{ fontSize: 13, color: isBuffedAtk ? "#2ecc71" : "#f1c40f", fontWeight: 700 }}>
+            <span style={{ fontSize: 13, color: isBuffedAtk ? "#2ecc71" : "#e74c3c", fontWeight: 700 }}>
               {creature.currentAttack}
             </span>
           </div>
           <div style={{
             padding: "1px 5px", borderRadius: 4,
-            background: isDamaged ? "#e74c3c33" : isBuffedHp ? "#2ecc7133" : "#e74c3c18",
-            border: `1px solid ${isDamaged ? "#e74c3c88" : isBuffedHp ? "#2ecc7188" : "#e74c3c55"}`,
+            background: isDamaged ? "#e74c3c33" : isBuffedHp ? "#2ecc7133" : "#f1c40f18",
+            border: `1px solid ${isDamaged ? "#e74c3c88" : isBuffedHp ? "#2ecc7188" : "#f1c40f55"}`,
           }}>
-            <span style={{ fontSize: 13, color: isDamaged ? "#e74c3c" : isBuffedHp ? "#2ecc71" : "#e74c3c", fontWeight: 700 }}>
+            <span style={{ fontSize: 13, color: isDamaged ? "#e74c3c" : isBuffedHp ? "#2ecc71" : "#f1c40f", fontWeight: 700 }}>
               {creature.currentHealth}
             </span>
           </div>
@@ -329,7 +329,9 @@ export default function BoardCreature({
       {/* Hover overlay */}
       <div style={{
         position: "absolute", inset: 0, zIndex: 4,
-        background: "#0d0d1a",
+        background: "#0d0d1ab3",
+        backdropFilter: "blur(2px)",
+        WebkitBackdropFilter: "blur(2px)",
         opacity: showOverlay ? 1 : 0,
         transition: "opacity 0.25s ease",
         pointerEvents: showOverlay ? "auto" : "none",
@@ -413,8 +415,8 @@ export default function BoardCreature({
           display: "flex", justifyContent: "center", gap: 8,
           fontSize: 8, color: "#555",
         }}>
-          <span style={{ color: isBuffedAtk ? "#2ecc71" : "#f1c40f" }}>⚔ {creature.currentAttack}</span>
-          <span style={{ color: isDamaged ? "#e74c3c" : isBuffedHp ? "#2ecc71" : "#e74c3c" }}>❤ {creature.currentHealth}/{creature.maxHealth}</span>
+          <span style={{ color: isBuffedAtk ? "#2ecc71" : "#e74c3c" }}>⚔ {creature.currentAttack}</span>
+          <span style={{ color: isDamaged ? "#e74c3c" : isBuffedHp ? "#2ecc71" : "#f1c40f" }}>❤ {creature.currentHealth}/{creature.maxHealth}</span>
         </div>
       </div>
     </div>

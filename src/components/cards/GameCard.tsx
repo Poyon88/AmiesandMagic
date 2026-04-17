@@ -197,16 +197,16 @@ export default function GameCard({
               <div style={{
                 display: "flex", alignItems: "center",
                 padding: `${1 * s}px ${6 * s}px`, borderRadius: 5 * s,
-                background: "#f1c40f18", border: "1px solid #f1c40f55",
+                background: "#e74c3c18", border: "1px solid #e74c3c55",
               }}>
-                <span style={{ fontSize: 17 * s, color: "#f1c40f", fontWeight: 700 }}>{card.attack}</span>
+                <span style={{ fontSize: 17 * s, color: "#e74c3c", fontWeight: 700 }}>{card.attack}</span>
               </div>
               <div style={{
                 display: "flex", alignItems: "center",
                 padding: `${1 * s}px ${6 * s}px`, borderRadius: 5 * s,
-                background: "#e74c3c18", border: "1px solid #e74c3c55",
+                background: "#f1c40f18", border: "1px solid #f1c40f55",
               }}>
-                <span style={{ fontSize: 17 * s, color: "#e74c3c", fontWeight: 700 }}>{card.health}</span>
+                <span style={{ fontSize: 17 * s, color: "#f1c40f", fontWeight: 700 }}>{card.health}</span>
               </div>
             </div>
           )}
@@ -228,7 +228,9 @@ export default function GameCard({
       {/* ── Hover overlay: effect text ── */}
       <div style={{
         position: "absolute", inset: 0, zIndex: 3,
-        background: "#060612f8",
+        background: "#060612b3",
+        backdropFilter: "blur(2px)",
+        WebkitBackdropFilter: "blur(2px)",
         opacity: showDetails ? 1 : 0,
         transition: "opacity 0.25s ease",
         pointerEvents: showDetails ? "auto" : "none",
@@ -336,7 +338,7 @@ export default function GameCard({
         }}>
           {card.faction && <span style={{ color: accentColor, fontWeight: 600 }}>{card.faction}</span>}
           <span style={{ color: "#74b9ff" }}>💧{card.mana_cost}</span>
-          {isCreature && <><span style={{ color: "#f1c40f" }}>⚔{card.attack}</span><span style={{ color: "#e74c3c" }}>❤{card.health}</span></>}
+          {isCreature && <><span style={{ color: "#e74c3c" }}>⚔{card.attack}</span><span style={{ color: "#f1c40f" }}>❤{card.health}</span></>}
         </div>
       </div>
     </div>

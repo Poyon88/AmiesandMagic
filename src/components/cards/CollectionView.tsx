@@ -25,7 +25,7 @@ interface CollectionViewProps {
 }
 
 import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
-const KEYWORDS = ALL_KEYWORDS;
+const KEYWORDS = [...ALL_KEYWORDS].sort((a, b) => KEYWORD_LABELS[a].localeCompare(KEYWORD_LABELS[b], "fr"));
 
 const RARITIES = ["Commune", "Peu Commune", "Rare", "Épique", "Légendaire"];
 const RARITY_COLORS: Record<string, string> = {
@@ -396,12 +396,12 @@ export default function CollectionView({ cards, sets, formats, formatSets, colle
           Aucune carte ne correspond à vos filtres
         </div>
       ) : (
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-5 justify-items-center">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 justify-items-center">
           {displayItems.map((item) => (
             <GameCard
               key={item.key}
               card={item.card}
-              size="sm"
+              size="md"
               printNumber={item.printNumber}
               maxPrints={item.maxPrints}
             />
