@@ -27,11 +27,18 @@ const DURATION_LABELS: Record<number, string> = {
   1440: "24 heures",
 };
 
-interface AuctionManagerProps {
-  cards: CardRow[];
+interface PrintInfo {
+  print_id: number;
+  print_number: number;
+  max_prints: number;
 }
 
-export default function AuctionManager({ cards }: AuctionManagerProps) {
+interface AuctionManagerProps {
+  cards: CardRow[];
+  firstAvailablePrint: Record<number, PrintInfo>;
+}
+
+export default function AuctionManager({ cards, firstAvailablePrint }: AuctionManagerProps) {
   const [settings, setSettings] = useState<AuctionSettings | null>(null);
   const [auctions, setAuctions] = useState<AuctionWithDetails[]>([]);
   const [total, setTotal] = useState(0);
@@ -115,11 +122,23 @@ export default function AuctionManager({ cards }: AuctionManagerProps) {
 
     setCreateLoading(true);
     setMessage(null);
-    const items = Array.from(selectedCardIds).map((card_id) => ({
-      card_id,
-      source_type: "admin" as const,
-      quantity: 1,
-    }));
+    // Use available prints when possible, fallback to admin source
+    const items = Array.from(selectedCardIds).map((card_id) => {
+      const print = firstAvailablePrint[card_id];
+      if (print) {
+        return {
+          card_id,
+          source_type: "print" as const,
+          source_id: print.print_id,
+          quantity: 1,
+        };
+      }
+      return {
+        card_id,
+        source_type: "admin" as const,
+        quantity: 1,
+      };
+    });
 
     const res = await fetch("/api/auctions", {
       method: "POST",
@@ -385,6 +404,15 @@ export default function AuctionManager({ cards }: AuctionManagerProps) {
                           <span style={{ color: "#999", marginLeft: 8, fontSize: 11 }}>
                             {card.rarity} — {card.faction} — {card.card_type === "creature" ? "Créature" : "Sort"} — Mana: {card.mana_cost}
                           </span>
+                          {firstAvailablePrint[card.id] ? (
+                            <span style={{ color: "#2196f3", marginLeft: 8, fontSize: 11, fontWeight: 600 }}>
+                              Exemplaire #{firstAvailablePrint[card.id].print_number}/{firstAvailablePrint[card.id].max_prints}
+                            </span>
+                          ) : (
+                            <span style={{ color: "#e74c3c", marginLeft: 8, fontSize: 11 }}>
+                              Aucun exemplaire disponible
+                            </span>
+                          )}
                         </div>
                         <div
                           style={{

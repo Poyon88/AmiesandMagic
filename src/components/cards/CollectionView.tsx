@@ -7,6 +7,13 @@ import { getFormatFilter } from "@/lib/game/format-legality";
 import { isCardOwned } from "@/lib/game/collection";
 import GameCard from "./GameCard";
 
+interface OwnedPrint {
+  id: number;
+  card_id: number;
+  print_number: number;
+  max_prints: number;
+}
+
 interface CollectionViewProps {
   cards: Card[];
   sets: CardSet[];
@@ -14,6 +21,7 @@ interface CollectionViewProps {
   formatSets: FormatSet[];
   collectedCardIds: number[];
   isTester: boolean;
+  ownedPrints?: OwnedPrint[];
 }
 
 import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
@@ -28,7 +36,7 @@ const RARITY_COLORS: Record<string, string> = {
   "Légendaire": "#ffd54f",
 };
 
-export default function CollectionView({ cards, sets, formats, formatSets, collectedCardIds, isTester }: CollectionViewProps) {
+export default function CollectionView({ cards, sets, formats, formatSets, collectedCardIds, isTester, ownedPrints = [] }: CollectionViewProps) {
   const ownedSet = useMemo(() => new Set(collectedCardIds), [collectedCardIds]);
   const router = useRouter();
   const [search, setSearch] = useState("");
@@ -76,6 +84,19 @@ export default function CollectionView({ cards, sets, formats, formatSets, colle
     return getFormatFilter(selectedFormat, sets, formatSets);
   }, [selectedFormat, sets, formatSets]);
 
+  // Build a map of prints per card_id for normal players
+  const printsByCard = useMemo(() => {
+    const map = new Map<number, OwnedPrint[]>();
+    for (const p of ownedPrints) {
+      const list = map.get(p.card_id) ?? [];
+      list.push(p);
+      map.set(p.card_id, list);
+    }
+    return map;
+  }, [ownedPrints]);
+
+  const isNormalPlayer = !isTester && ownedPrints.length > 0;
+
   const filteredCards = useMemo(() => {
     return cards.filter((card) => {
       if (!isCardOwned(card, ownedSet, isTester)) return false;
@@ -103,6 +124,28 @@ export default function CollectionView({ cards, sets, formats, formatSets, colle
     });
   }, [cards, ownedSet, isTester, formatPredicate, search, manaCostFilter, typeFilter, keywordFilter, factionFilter, rarityFilter, raceFilter, clanFilter, filterSet, filterYear]);
 
+  // For normal players: expand cards to show each print separately
+  const displayItems = useMemo(() => {
+    if (!isNormalPlayer) {
+      // Admin/testeur: one card each, no print numbers
+      return filteredCards.map(card => ({ card, printNumber: undefined as number | undefined, maxPrints: undefined as number | undefined, key: `card-${card.id}` }));
+    }
+    const items: { card: Card; printNumber: number | undefined; maxPrints: number | undefined; key: string }[] = [];
+    for (const card of filteredCards) {
+      const prints = printsByCard.get(card.id);
+      if (prints && prints.length > 0) {
+        // Show each print as a separate card
+        for (const p of prints) {
+          items.push({ card, printNumber: p.print_number, maxPrints: p.max_prints, key: `print-${p.id}` });
+        }
+      } else {
+        // Card from user_collections (no prints) — show once without number
+        items.push({ card, printNumber: undefined, maxPrints: undefined, key: `card-${card.id}` });
+      }
+    }
+    return items;
+  }, [filteredCards, isNormalPlayer, printsByCard]);
+
   function resetFilters() {
     setSearch("");
     setManaCostFilter(null);
@@ -127,7 +170,7 @@ export default function CollectionView({ cards, sets, formats, formatSets, colle
         <div>
           <h1 className="text-3xl font-bold text-primary">Card Collection</h1>
           <p className="text-foreground/50 text-sm mt-1">
-            {filteredCards.length} of {cards.length} cards
+            {displayItems.length} carte{displayItems.length > 1 ? "s" : ""}{isNormalPlayer ? "" : ` sur ${cards.length}`}
           </p>
         </div>
         <button
@@ -348,14 +391,20 @@ export default function CollectionView({ cards, sets, formats, formatSets, colle
       </div>
 
       {/* Card Grid */}
-      {filteredCards.length === 0 ? (
+      {displayItems.length === 0 ? (
         <div className="text-center py-20 text-foreground/40">
-          No cards match your filters
+          Aucune carte ne correspond à vos filtres
         </div>
       ) : (
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-5 justify-items-center">
-          {filteredCards.map((card) => (
-            <GameCard key={card.id} card={card} size="sm" />
+          {displayItems.map((item) => (
+            <GameCard
+              key={item.key}
+              card={item.card}
+              size="sm"
+              printNumber={item.printNumber}
+              maxPrints={item.maxPrints}
+            />
           ))}
         </div>
       )}

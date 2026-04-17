@@ -249,7 +249,12 @@ BEGIN
 
   IF v_auction.current_bidder_id IS NOT NULL THEN
     -- === SOLD ===
-    v_commission := FLOOR(v_auction.current_bid * v_auction.commission_rate / 100);
+    -- Commission: 1 or for sales 10-20, percentage-based above 20, 0 below 10
+    IF v_auction.current_bid >= 10 AND v_auction.current_bid <= 20 THEN
+      v_commission := 1;
+    ELSE
+      v_commission := FLOOR(v_auction.current_bid * v_auction.commission_rate / 100);
+    END IF;
     v_seller_payout := v_auction.current_bid - v_commission;
 
     -- Pay seller (skip if admin seller)

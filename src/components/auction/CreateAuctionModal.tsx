@@ -42,53 +42,26 @@ export default function CreateAuctionModal({ userId, settings, onClose, onCreate
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
 
-  // Fetch user's collection and owned prints
+  // Fetch user's sellable cards
   useEffect(() => {
     async function load() {
-      const [collRes, printsRes] = await Promise.all([
-        fetch(`/api/collections?userId=${userId}`),
-        fetch(`/api/card-prints?ownerId=${userId}`),
-      ]);
+      const res = await fetch("/api/auctions/my-cards");
+      const data = await res.json();
 
-      const collData = await collRes.json();
-      const printsData = await printsRes.json();
+      const items: CardOption[] = (data.items ?? []).map((item: Record<string, unknown>) => ({
+        id: item.card_id as number,
+        name: item.name as string,
+        rarity: item.rarity as string,
+        faction: item.faction as string,
+        card_type: item.card_type as string,
+        mana_cost: item.mana_cost as number,
+        source_type: item.source_type as "collection" | "print",
+        source_id: item.source_id as number | undefined,
+        print_number: item.print_number as number | undefined,
+        max_prints: item.max_prints as number | undefined,
+      }));
 
-      // Fetch card details for collection cards
-      const cardIds: number[] = collData.cardIds ?? [];
-      let cardDetails: CardOption[] = [];
-
-      if (cardIds.length > 0) {
-        // We need to get card details — fetch all cards and filter
-        const cardsRes = await fetch(`/api/cards?ids=${cardIds.join(",")}`);
-        const cardsData = await cardsRes.json();
-        cardDetails = (cardsData.cards ?? []).map((c: Record<string, unknown>) => ({
-          id: c.id,
-          name: c.name,
-          rarity: c.rarity,
-          faction: c.faction,
-          card_type: c.card_type,
-          mana_cost: c.mana_cost,
-          source_type: "collection" as const,
-        }));
-      }
-
-      // Add prints
-      const printCards: CardOption[] = (printsData.prints ?? [])
-        .filter((p: Record<string, unknown>) => p.is_tradeable)
-        .map((p: Record<string, unknown>) => ({
-          id: p.card_id,
-          name: p.card_name ?? `Carte #${p.card_id}`,
-          rarity: p.rarity ?? "",
-          faction: p.faction ?? "",
-          card_type: p.card_type ?? "",
-          mana_cost: p.mana_cost ?? 0,
-          source_type: "print" as const,
-          source_id: p.id,
-          print_number: p.print_number,
-          max_prints: p.max_prints,
-        }));
-
-      setCards([...cardDetails, ...printCards]);
+      setCards(items);
       setLoading(false);
     }
     load();

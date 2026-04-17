@@ -18,9 +18,28 @@ export default async function AdminAuctionsPage() {
     .neq("rarity", "Commune")
     .order("name");
 
+  // Fetch first unassigned print for each card
+  const { data: availablePrints } = await supabase
+    .from("card_prints")
+    .select("id, card_id, print_number, max_prints, owner_id")
+    .is("owner_id", null)
+    .order("print_number", { ascending: true });
+
+  // Build a map: card_id -> first available print
+  const firstAvailablePrint: Record<number, { print_id: number; print_number: number; max_prints: number }> = {};
+  for (const print of availablePrints ?? []) {
+    if (!firstAvailablePrint[print.card_id]) {
+      firstAvailablePrint[print.card_id] = {
+        print_id: print.id,
+        print_number: print.print_number,
+        max_prints: print.max_prints,
+      };
+    }
+  }
+
   return (
     <div style={{ height: "100%", overflow: "auto", background: "#f5f5f5" }}>
-      <AuctionManager cards={cards ?? []} />
+      <AuctionManager cards={cards ?? []} firstAvailablePrint={firstAvailablePrint} />
     </div>
   );
 }

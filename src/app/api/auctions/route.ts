@@ -185,7 +185,7 @@ export async function POST(request: Request) {
   }
 
   const isAdmin = profile?.role === 'admin';
-  const sellerType = isAdmin && items.some(i => i.source_type === 'admin') ? 'admin' : 'player';
+  const sellerType = isAdmin ? 'admin' : 'player';
 
   // Validate ownership and escrow items
   for (const item of items) {
@@ -207,10 +207,17 @@ export async function POST(request: Request) {
         .eq('id', item.source_id)
         .single();
 
-      if (!print || print.owner_id !== user.id) {
+      if (!print) {
+        return NextResponse.json({ error: `Print introuvable` }, { status: 400 });
+      }
+      // Admin can sell unassigned prints (owner_id is null), players must own it
+      if (!isAdmin && print.owner_id !== user.id) {
         return NextResponse.json({ error: `Vous ne possédez pas ce print` }, { status: 400 });
       }
-      if (!print.is_tradeable) {
+      if (print.owner_id && print.owner_id !== user.id && !isAdmin) {
+        return NextResponse.json({ error: `Ce print appartient à un autre joueur` }, { status: 400 });
+      }
+      if (!print.is_tradeable && print.owner_id) {
         return NextResponse.json({ error: `Ce print n'est pas échangeable` }, { status: 400 });
       }
     } else if (item.source_type === 'admin') {

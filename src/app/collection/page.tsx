@@ -41,18 +41,18 @@ export default async function CollectionPage() {
       .eq("user_id", user.id),
     supabase
       .from("card_prints")
-      .select("card_id")
-      .eq("owner_id", user.id),
+      .select("id, card_id, print_number, max_prints")
+      .eq("owner_id", user.id)
+      .order("print_number"),
   ]);
 
-  const isTester = profile?.role === "testeur";
+  const role = profile?.role ?? "player";
+  const isSpecialRole = role === "testeur" || role === "admin";
   const printCardIds = (ownedPrints ?? []).map(r => r.card_id);
   const collectedCardIds = [...new Set([
     ...(userCollection ?? []).map(r => r.card_id),
     ...printCardIds,
   ])];
-
-  console.log("[Collection] user:", user.id, "profile:", profile, "isTester:", isTester, "collectedCardIds:", collectedCardIds.length, "totalCards:", cards?.length);
 
   return (
     <CollectionView
@@ -61,7 +61,13 @@ export default async function CollectionPage() {
       formats={formats ?? []}
       formatSets={formatSets ?? []}
       collectedCardIds={collectedCardIds}
-      isTester={isTester}
+      isTester={isSpecialRole}
+      ownedPrints={isSpecialRole ? [] : (ownedPrints ?? []).map(p => ({
+        id: p.id,
+        card_id: p.card_id,
+        print_number: p.print_number,
+        max_prints: p.max_prints,
+      }))}
     />
   );
 }
