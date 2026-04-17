@@ -17,6 +17,7 @@ interface GameCardProps {
   count?: number;
   printNumber?: number;
   maxPrints?: number;
+  disableHoverZoom?: boolean;
 }
 
 export default function GameCard({
@@ -28,6 +29,7 @@ export default function GameCard({
   count,
   printNumber,
   maxPrints,
+  disableHoverZoom = false,
 }: GameCardProps) {
   const [hovered, setHovered] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
@@ -74,8 +76,8 @@ export default function GameCard({
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.5 : 1,
         transition: "all 0.3s ease",
-        transform: !disabled && hovered ? "scale(1.5)" : "none",
-        zIndex: hovered ? 20 : 1,
+        transform: !disabled && !disableHoverZoom && hovered ? "scale(1.5)" : "none",
+        zIndex: !disableHoverZoom && hovered ? 20 : 1,
       }}
     >
       {/* ── Full-bleed art ── */}
@@ -86,8 +88,8 @@ export default function GameCard({
             alt={card.name}
             fill
             className="object-cover"
-            sizes="(min-resolution: 2dppx) 750px, 500px"
-            quality={90}
+            sizes="(min-resolution: 2dppx) 1024px, 750px"
+            quality={95}
           />
         ) : (
           <div style={{
@@ -107,11 +109,12 @@ export default function GameCard({
       {/* ── Mana orb ── */}
       <div style={{
         position: "absolute", top: 5 * s, left: 5 * s, zIndex: 2,
-        width: 24 * s, height: 24 * s, borderRadius: "50%",
+        width: 27 * s, height: 27 * s, borderRadius: "50%",
         background: "radial-gradient(circle, #1a3a6a, #0d1f3c)",
-        border: `2px solid #74b9ff`,
-        display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: 12 * s, color: "#74b9ff", fontWeight: 700,
+        outline: `2px solid #74b9ff`,
+        fontSize: 17 * s, color: "#74b9ff", fontWeight: 700,
+        lineHeight: `${27 * s}px`,
+        textAlign: "center",
         boxShadow: "0 0 6px #74b9ff55",
       }}>{card.mana_cost}</div>
 
@@ -135,41 +138,37 @@ export default function GameCard({
       }}>
         {/* Card name */}
         <div style={{
-          fontSize: 10 * s, color: "#e0e0e0", fontWeight: 700,
+          fontSize: 13 * s, color: "#e0e0e0", fontWeight: 700,
           overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
           fontFamily: "'Cinzel', serif",
         }}>{card.name}</div>
 
-        {/* Keyword symbols */}
-        {card.keywords.length > 0 && (() => {
-          const xVals = parseXValuesFromEffectText(card.effect_text);
-          return (
-          <div style={{ display: "flex", gap: 3 * s, flexWrap: "wrap" }}>
-            {card.keywords.map((kw) => {
+        {/* Keywords + Stats — single row */}
+        <div style={{ display: "flex", alignItems: "center", gap: 4 * s, flexWrap: "wrap" }}>
+          {/* Keyword symbols */}
+          {card.keywords.length > 0 && (() => {
+            const xVals = parseXValuesFromEffectText(card.effect_text);
+            return card.keywords.map((kw) => {
               const x = xVals[kw];
               const label = keywordLabels[kw] || kw;
               const displayTitle = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
               return (
               <div key={kw} title={displayTitle} style={{
-                minWidth: 18 * s, height: 18 * s, borderRadius: 4 * s,
-                padding: x != null ? `0 ${3 * s}px` : 0,
+                minWidth: 25 * s, height: 25 * s, borderRadius: 4 * s,
+                padding: x != null ? `0 ${4 * s}px` : 0,
                 background: `${accentColor}33`, border: `1px solid ${accentColor}66`,
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 * s,
                 fontSize: 10 * s,
               }}>
-                <KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={10 * s} />
-                {x != null && <span style={{ fontSize: 7 * s, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}` }}>{toRoman(x)}</span>}
+                <KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={14 * s} />
+                {x != null && <span style={{ fontSize: 10 * s, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}` }}>{toRoman(x)}</span>}
               </div>
               );
-            })}
-          </div>
-          );
-        })()}
+            });
+          })()}
 
-        {/* Spell keyword symbols */}
-        {card.spell_keywords && card.spell_keywords.length > 0 && (
-          <div style={{ display: "flex", gap: 3 * s, flexWrap: "wrap" }}>
-            {card.spell_keywords.map((spellKw, i) => {
+          {/* Spell keyword symbols */}
+          {card.spell_keywords && card.spell_keywords.length > 0 && card.spell_keywords.map((spellKw, i) => {
               const def = SPELL_KEYWORDS[spellKw.id];
               const displayTitle = getSpellKeywordLabel(spellKw);
               const usesAtkHp = def.params.includes("attack") && def.params.includes("health");
@@ -180,56 +179,49 @@ export default function GameCard({
                 : usesAmount ? toRoman(spellKw.amount ?? 1) : null;
               return (
               <div key={`sk_${i}`} title={displayTitle} style={{
-                minWidth: 18 * s, height: 18 * s, borderRadius: 4 * s,
-                padding: hasValue ? `0 ${3 * s}px` : 0,
+                minWidth: 25 * s, height: 25 * s, borderRadius: 4 * s,
+                padding: hasValue ? `0 ${4 * s}px` : 0,
                 background: `${accentColor}33`, border: `1px solid ${accentColor}66`,
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 * s,
                 fontSize: 10 * s,
               }}>
-                <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={10 * s} />
-                {valueText && <span style={{ fontSize: 7 * s, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}` }}>{valueText}</span>}
+                <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={14 * s} />
+                {valueText && <span style={{ fontSize: 10 * s, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}` }}>{valueText}</span>}
               </div>
               );
-            })}
-          </div>
-        )}
+          })}
 
-        {/* Stats row */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{
-            fontSize: 7 * s, color: "#ffffff44", textTransform: "uppercase",
-            letterSpacing: 1,
-          }}>{card.card_type}</span>
-
-          {(() => {
-            const mp = maxPrints || (!card.set_id && card.card_year && card.rarity ? LIMITED_PRINT_COUNTS[card.rarity] : undefined);
-            return mp ? (
-              <span style={{
-                fontSize: 7 * s, color: "#ffffff66", fontFamily: "'Cinzel',serif",
-                letterSpacing: 0.5,
-              }}>{printNumber ? `#${printNumber}/` : ""}{mp} ex.</span>
-            ) : null;
-          })()}
-
+          {/* Stats — pushed to right */}
           {isCreature && (
-            <div style={{ display: "flex", gap: 5 * s }}>
+            <div style={{ display: "flex", gap: 6 * s, marginLeft: "auto" }}>
               <div style={{
-                display: "flex", alignItems: "center", gap: 2 * s,
-                padding: `${1 * s}px ${5 * s}px`, borderRadius: 4 * s,
+                display: "flex", alignItems: "center",
+                padding: `${1 * s}px ${6 * s}px`, borderRadius: 5 * s,
                 background: "#f1c40f18", border: "1px solid #f1c40f55",
               }}>
-                <span style={{ fontSize: 12 * s, color: "#f1c40f", fontWeight: 700 }}>{card.attack}</span>
+                <span style={{ fontSize: 17 * s, color: "#f1c40f", fontWeight: 700 }}>{card.attack}</span>
               </div>
               <div style={{
-                display: "flex", alignItems: "center", gap: 2 * s,
-                padding: `${1 * s}px ${5 * s}px`, borderRadius: 4 * s,
+                display: "flex", alignItems: "center",
+                padding: `${1 * s}px ${6 * s}px`, borderRadius: 5 * s,
                 background: "#e74c3c18", border: "1px solid #e74c3c55",
               }}>
-                <span style={{ fontSize: 12 * s, color: "#e74c3c", fontWeight: 700 }}>{card.health}</span>
+                <span style={{ fontSize: 17 * s, color: "#e74c3c", fontWeight: 700 }}>{card.health}</span>
               </div>
             </div>
           )}
         </div>
+
+        {/* Print number */}
+        {(() => {
+          const mp = maxPrints || (!card.set_id && card.card_year && card.rarity ? LIMITED_PRINT_COUNTS[card.rarity] : undefined);
+          return mp ? (
+            <span style={{
+              fontSize: 7 * s, color: "#ffffff66", fontFamily: "'Cinzel',serif",
+              letterSpacing: 0.5,
+            }}>{printNumber ? `#${printNumber}/` : ""}{mp} ex.</span>
+          ) : null;
+        })()}
       </div>
 
       {/* ── Hover overlay: effect text ── */}
@@ -344,7 +336,6 @@ export default function GameCard({
           {card.faction && <span style={{ color: accentColor, fontWeight: 600 }}>{card.faction}</span>}
           <span style={{ color: "#74b9ff" }}>💧{card.mana_cost}</span>
           {isCreature && <><span style={{ color: "#f1c40f" }}>⚔{card.attack}</span><span style={{ color: "#e74c3c" }}>❤{card.health}</span></>}
-          <span style={{ color: "#bbb", textTransform: "uppercase", fontSize: 12 * s }}>{card.card_type}</span>
         </div>
       </div>
     </div>

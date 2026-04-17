@@ -57,7 +57,7 @@ export default function AuctionCard({ auction }: AuctionCardProps) {
       }}
     >
       {/* Game card visual */}
-      <div style={{ position: "relative" }}>
+      <div style={{ position: "relative", width: 180, height: 252, flexShrink: 0 }}>
         {mainCard && (
           <GameCard card={mainCard} size="sm" />
         )}
