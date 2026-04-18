@@ -247,6 +247,18 @@ function detectDamageEvents(
         });
       }
 
+      // Divine Shield broken (absorbed damage)
+      if (oldCreature.hasDivineShield && !newCreature.hasDivineShield) {
+        const pos = getElementCenter(oldCreature.instanceId);
+        events.push({
+          targetId: oldCreature.instanceId,
+          amount: 0,
+          type: "shield",
+          label: "Bouclier brisé",
+          ...pos,
+        });
+      }
+
       // Paralyzed
       if (!oldCreature.isParalyzed && newCreature.isParalyzed) {
         const pos = getElementCenter(oldCreature.instanceId);
@@ -557,6 +569,26 @@ export const useGameStore = create<GameStore>((set, get) => ({
     // SFX from dead creatures
     for (const dead of deadCreatures) {
       sfxEvents.push({ type: "creature_death", cardSfxUrl: dead.card.sfx_death_url ?? undefined });
+    }
+
+    // SFX from summoned creatures — any creature that appeared on a board and
+    // wasn't the card directly played. Covers Convocation X, Convocations
+    // multiples, Résurrection, spell-summons, etc. Deduped: one SFX per action.
+    const playedInstanceId =
+      action.type === "play_card" ? action.cardInstanceId : null;
+    let summonedTotal = 0;
+    for (let i = 0; i < 2; i++) {
+      const oldBoard = gameState.players[i].board;
+      const newBoard = newState.players[i].board;
+      for (const nc of newBoard) {
+        if (nc.instanceId === playedInstanceId) continue;
+        if (!oldBoard.find((c) => c.instanceId === nc.instanceId)) {
+          summonedTotal++;
+        }
+      }
+    }
+    if (summonedTotal > 0) {
+      sfxEvents.push({ type: "summon" });
     }
 
     // SFX from spell countered

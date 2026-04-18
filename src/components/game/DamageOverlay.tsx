@@ -205,7 +205,7 @@ function ShieldPopup({ event }: { event: DamageEvent }) {
         animate={{ y: -40, opacity: 0 }}
         transition={{ duration: 2.0, ease: "easeOut", delay: 0.2 }}
       >
-        Divine Shield
+        {event.label ?? "Divine Shield"}
       </motion.span>
     </motion.div>
   );

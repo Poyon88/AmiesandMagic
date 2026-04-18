@@ -35,7 +35,7 @@ export default function AudioProvider() {
     if (contextTracksLoadedRef.current) return;
     contextTracksLoadedRef.current = true;
 
-    fetch("/api/music?category=menu,tense,victory,defeat")
+    fetch("/api/music?category=menu,tense,victory,defeat", { cache: "no-store" })
       .then((res) => res.json())
       .then((data) => {
         if (!Array.isArray(data)) return;
@@ -52,7 +52,7 @@ export default function AudioProvider() {
 
   // Load standard SFX once
   useEffect(() => {
-    fetch("/api/sfx")
+    fetch("/api/sfx", { cache: "no-store" })
       .then((res) => res.json())
       .then((data) => {
         if (!Array.isArray(data)) return;

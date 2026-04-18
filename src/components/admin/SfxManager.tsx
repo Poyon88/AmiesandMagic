@@ -29,6 +29,7 @@ const EVENT_TYPES = [
   { value: "fire_breath", label: "Souffle de feu" },
   { value: "buff", label: "Buff" },
   { value: "debuff", label: "Debuff" },
+  { value: "summon", label: "Invocation" },
 ];
 
 const STYLE = {
