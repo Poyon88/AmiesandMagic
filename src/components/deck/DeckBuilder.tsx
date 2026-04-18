@@ -27,17 +27,35 @@ interface DeckEntry {
   quantity: number;
 }
 
+interface BoardRow {
+  id: number;
+  name: string;
+  image_url: string;
+  rarity: string | null;
+  max_prints: number | null;
+  is_default: boolean;
+}
+
+interface OwnedBoardPrint {
+  id: number;
+  board_id: number;
+  print_number: number;
+  max_prints: number;
+}
+
 interface DeckBuilderProps {
   cards: Card[];
   heroes: HeroRow[];
   userId: string;
-  existingDeck: { id: number; name: string; hero_id: number | null; format_id: number | null } | null;
+  existingDeck: { id: number; name: string; hero_id: number | null; format_id: number | null; board_id: number | null } | null;
   existingDeckCards: { card_id: number; quantity: number }[];
   sets: CardSet[];
   formats: GameFormat[];
   formatSets: FormatSet[];
   collectedCardIds: number[];
   isTester: boolean;
+  boards: BoardRow[];
+  ownedBoardPrints: OwnedBoardPrint[];
 }
 
 const RACE_ICONS: Record<string, string> = {
@@ -66,6 +84,8 @@ export default function DeckBuilder({
   formatSets,
   collectedCardIds,
   isTester,
+  boards,
+  ownedBoardPrints,
 }: DeckBuilderProps) {
   const router = useRouter();
   const supabase = createClient();
@@ -86,6 +106,17 @@ export default function DeckBuilder({
   const [selectedFormatId, setSelectedFormatId] = useState<number | null>(
     existingDeck?.format_id ?? null
   );
+  const defaultBoardId = useMemo(() => boards.find((b) => b.is_default)?.id ?? null, [boards]);
+  const [selectedBoardId, setSelectedBoardId] = useState<number | null>(
+    existingDeck?.board_id ?? defaultBoardId
+  );
+  const [boardPickerOpen, setBoardPickerOpen] = useState(false);
+  const ownedBoardIds = useMemo(() => new Set(ownedBoardPrints.map((p) => p.board_id)), [ownedBoardPrints]);
+  const accessibleBoards = useMemo(
+    () => boards.filter((b) => (b.rarity ?? "Commune") === "Commune" || ownedBoardIds.has(b.id)),
+    [boards, ownedBoardIds],
+  );
+  const selectedBoard = useMemo(() => boards.find((b) => b.id === selectedBoardId) ?? null, [boards, selectedBoardId]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -377,7 +408,7 @@ export default function DeckBuilder({
         // Update existing deck
         await supabase
           .from("decks")
-          .update({ name: deckName.trim(), hero_id: selectedHeroId, format_id: selectedFormatId, updated_at: new Date().toISOString() })
+          .update({ name: deckName.trim(), hero_id: selectedHeroId, format_id: selectedFormatId, board_id: selectedBoardId, updated_at: new Date().toISOString() })
           .eq("id", deckId);
 
         // Delete old cards and re-insert
@@ -386,7 +417,7 @@ export default function DeckBuilder({
         // Create new deck
         const { data, error } = await supabase
           .from("decks")
-          .insert({ user_id: userId, name: deckName.trim(), hero_id: selectedHeroId, format_id: selectedFormatId })
+          .insert({ user_id: userId, name: deckName.trim(), hero_id: selectedHeroId, format_id: selectedFormatId, board_id: selectedBoardId })
           .select("id")
           .single();
 
@@ -629,6 +660,44 @@ export default function DeckBuilder({
           })()}
         </div>
 
+        {/* Board selection */}
+        <div className="p-4 border-b border-card-border">
+          <h3 className="text-sm font-bold text-foreground mb-2">Plateau</h3>
+          {selectedBoard ? (
+            <div className="rounded-lg overflow-hidden border border-card-border/50 bg-background">
+              <div
+                className="relative w-full h-20"
+                style={{
+                  backgroundImage: `url('${selectedBoard.image_url}')`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+                <div className="absolute bottom-1 left-2 right-2 flex items-end justify-between">
+                  <div>
+                    <div className="text-xs font-bold text-foreground drop-shadow">{selectedBoard.name}</div>
+                    <div className="text-[9px] text-foreground/70">{selectedBoard.rarity ?? "Commune"}</div>
+                  </div>
+                  <button
+                    onClick={() => setBoardPickerOpen(true)}
+                    className="text-[9px] px-2 py-0.5 bg-primary/80 hover:bg-primary text-background font-bold rounded"
+                  >
+                    Changer
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => setBoardPickerOpen(true)}
+              className="w-full py-2 bg-background border border-dashed border-card-border rounded-lg text-xs text-foreground/60 hover:border-primary/50 hover:text-foreground"
+            >
+              Choisir un plateau
+            </button>
+          )}
+        </div>
+
         {/* Deck header */}
         <div className="p-4 border-b border-card-border">
           <input
@@ -796,6 +865,70 @@ export default function DeckBuilder({
           </button>
         </div>
       </div>
+
+      {/* Board picker modal */}
+      {boardPickerOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-6"
+          onClick={() => setBoardPickerOpen(false)}
+        >
+          <div
+            className="bg-secondary border border-card-border rounded-xl w-full max-w-4xl max-h-[80vh] overflow-hidden flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-4 border-b border-card-border flex items-center justify-between">
+              <h3 className="text-lg font-bold text-foreground">Choisir un plateau</h3>
+              <button
+                onClick={() => setBoardPickerOpen(false)}
+                className="text-foreground/60 hover:text-foreground text-xl leading-none px-2"
+              >×</button>
+            </div>
+            <div className="overflow-y-auto p-4 grid grid-cols-2 md:grid-cols-3 gap-3">
+              {accessibleBoards.length === 0 ? (
+                <div className="col-span-full text-center text-foreground/50 py-10 text-sm">
+                  Aucun plateau disponible.
+                </div>
+              ) : accessibleBoards.map((b) => {
+                const isCommon = (b.rarity ?? "Commune") === "Commune";
+                const prints = ownedBoardPrints.filter((p) => p.board_id === b.id);
+                const selected = selectedBoardId === b.id;
+                return (
+                  <button
+                    key={b.id}
+                    onClick={() => {
+                      setSelectedBoardId(b.id);
+                      setBoardPickerOpen(false);
+                    }}
+                    className={`relative rounded-lg overflow-hidden border-2 transition-all text-left ${
+                      selected ? "border-primary shadow-[0_0_10px_rgba(200,168,78,0.4)]" : "border-card-border/50 hover:border-primary/40"
+                    }`}
+                  >
+                    <div
+                      className="w-full h-28"
+                      style={{
+                        backgroundImage: `url('${b.image_url}')`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                      }}
+                    />
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background via-background/70 to-transparent p-2">
+                      <div className="text-xs font-bold text-foreground">{b.name}</div>
+                      <div className="text-[10px] text-foreground/70 flex items-center gap-2">
+                        <span>{b.rarity ?? "Commune"}</span>
+                        {!isCommon && prints.length > 0 && (
+                          <span className="text-primary">
+                            {prints.map((p) => `${p.print_number}/${p.max_prints}`).join(", ")}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

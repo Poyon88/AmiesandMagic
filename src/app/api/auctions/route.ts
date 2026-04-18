@@ -60,14 +60,15 @@ export async function GET(request: Request) {
     }
   }
 
-  // Build query for auctions with items and card details
+  // Build query for auctions with items + card/board details
   let query = supabase
     .from('auctions')
     .select(`
       *,
       items:auction_items(
         *,
-        card:cards(*)
+        card:cards(*),
+        board:game_boards(id, name, image_url, rarity, max_prints)
       )
     `, { count: 'exact' })
     .eq('status', status);
@@ -190,6 +191,7 @@ export async function POST(request: Request) {
   // Validate ownership and escrow items
   for (const item of items) {
     if (item.source_type === 'collection') {
+      if (!item.card_id) return NextResponse.json({ error: 'card_id requis' }, { status: 400 });
       const { data: owned } = await supabase
         .from('user_collections')
         .select('card_id')
@@ -210,7 +212,6 @@ export async function POST(request: Request) {
       if (!print) {
         return NextResponse.json({ error: `Print introuvable` }, { status: 400 });
       }
-      // Admin can sell unassigned prints (owner_id is null), players must own it
       if (!isAdmin && print.owner_id !== user.id) {
         return NextResponse.json({ error: `Vous ne possédez pas ce print` }, { status: 400 });
       }
@@ -219,6 +220,31 @@ export async function POST(request: Request) {
       }
       if (!print.is_tradeable && print.owner_id) {
         return NextResponse.json({ error: `Ce print n'est pas échangeable` }, { status: 400 });
+      }
+    } else if (item.source_type === 'board_print') {
+      if (!item.source_id || !item.board_id) {
+        return NextResponse.json({ error: 'board_id et source_id requis pour un plateau' }, { status: 400 });
+      }
+      const { data: bp } = await supabase
+        .from('user_board_prints')
+        .select('id, board_id, owner_id, is_tradeable')
+        .eq('id', item.source_id)
+        .single();
+
+      if (!bp) {
+        return NextResponse.json({ error: `Print de plateau introuvable` }, { status: 400 });
+      }
+      if (bp.board_id !== item.board_id) {
+        return NextResponse.json({ error: `Incohérence entre board_id et source_id` }, { status: 400 });
+      }
+      if (!isAdmin && bp.owner_id !== user.id) {
+        return NextResponse.json({ error: `Vous ne possédez pas ce plateau` }, { status: 400 });
+      }
+      if (bp.owner_id && bp.owner_id !== user.id && !isAdmin) {
+        return NextResponse.json({ error: `Ce plateau appartient à un autre joueur` }, { status: 400 });
+      }
+      if (!bp.is_tradeable && bp.owner_id) {
+        return NextResponse.json({ error: `Ce plateau n'est pas échangeable` }, { status: 400 });
       }
     } else if (item.source_type === 'admin') {
       if (!isAdmin) {
@@ -249,13 +275,13 @@ export async function POST(request: Request) {
   for (const item of items) {
     await supabase.from('auction_items').insert({
       auction_id: auction.id,
-      card_id: item.card_id,
+      card_id: item.card_id ?? null,
+      board_id: item.board_id ?? null,
       source_type: item.source_type,
       source_id: item.source_id ?? null,
       quantity: item.quantity,
     });
 
-    // Escrow: remove from seller's ownership
     if (item.source_type === 'collection') {
       await supabase
         .from('user_collections')
@@ -265,6 +291,11 @@ export async function POST(request: Request) {
     } else if (item.source_type === 'print') {
       await supabase
         .from('card_prints')
+        .update({ owner_id: null })
+        .eq('id', item.source_id);
+    } else if (item.source_type === 'board_print') {
+      await supabase
+        .from('user_board_prints')
         .update({ owner_id: null })
         .eq('id', item.source_id);
     }

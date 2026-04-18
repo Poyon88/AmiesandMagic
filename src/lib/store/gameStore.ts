@@ -61,7 +61,7 @@ interface GameStore {
   spellCastEvent: SpellCastEvent | null;
   fireBreathEvent: FireBreathEvent | null;
   boardImageUrl: string | null;
-  boardMusicUrl: string | null;
+  boardMusicUrls: string[];
   boardTenseMusicUrl: string | null;
   boardVictoryMusicUrl: string | null;
   boardDefeatMusicUrl: string | null;
@@ -83,7 +83,7 @@ interface GameStore {
   setLocalPlayerId: (id: string) => void;
   setTokenTemplates: (templates: TokenTemplate[]) => void;
   setBoardImageUrl: (url: string | null) => void;
-  setBoardMusicUrl: (url: string | null) => void;
+  setBoardMusicUrls: (urls: string[]) => void;
   setBoardTenseMusicUrl: (url: string | null) => void;
   setBoardVictoryMusicUrl: (url: string | null) => void;
   setBoardDefeatMusicUrl: (url: string | null) => void;
@@ -381,7 +381,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   spellCastEvent: null,
   fireBreathEvent: null,
   boardImageUrl: null,
-  boardMusicUrl: null,
+  boardMusicUrls: [],
   boardTenseMusicUrl: null,
   boardVictoryMusicUrl: null,
   boardDefeatMusicUrl: null,
@@ -408,7 +408,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   setLocalPlayerId: (id) => set({ localPlayerId: id }),
   setTokenTemplates: (templates) => set({ tokenTemplates: templates }),
   setBoardImageUrl: (url) => set({ boardImageUrl: url }),
-  setBoardMusicUrl: (url: string | null) => set({ boardMusicUrl: url }),
+  setBoardMusicUrls: (urls: string[]) => set({ boardMusicUrls: urls }),
   setBoardTenseMusicUrl: (url: string | null) => set({ boardTenseMusicUrl: url }),
   setBoardVictoryMusicUrl: (url: string | null) => set({ boardVictoryMusicUrl: url }),
   setBoardDefeatMusicUrl: (url: string | null) => set({ boardDefeatMusicUrl: url }),

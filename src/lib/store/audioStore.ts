@@ -21,6 +21,7 @@ interface AudioStore {
   // Playback state (not persisted)
   musicContext: MusicContext | null;
   currentTrackUrl: string | null;
+  currentPlaylistUrls: string[];
   userHasInteracted: boolean;
 
   // Context track URLs (fetched once)
@@ -34,7 +35,7 @@ interface AudioStore {
   setStandardSfxUrls: (urls: Record<string, string>) => void;
 
   // Actions
-  setMusicContext: (ctx: MusicContext | null, trackUrl?: string) => void;
+  setMusicContext: (ctx: MusicContext | null, trackUrl?: string, playlistUrls?: string[]) => void;
   setUserHasInteracted: () => void;
   setContextTracks: (tracks: {
     menu?: string;
@@ -67,6 +68,7 @@ export const useAudioStore = create<AudioStore>()(
       // Playback state
       musicContext: null,
       currentTrackUrl: null,
+      currentPlaylistUrls: [],
       userHasInteracted: false,
 
       // Standard SFX
@@ -79,8 +81,12 @@ export const useAudioStore = create<AudioStore>()(
       victoryTrackUrl: null,
       defeatTrackUrl: null,
 
-      setMusicContext: (ctx, trackUrl) =>
-        set({ musicContext: ctx, currentTrackUrl: trackUrl ?? null }),
+      setMusicContext: (ctx, trackUrl, playlistUrls) =>
+        set({
+          musicContext: ctx,
+          currentTrackUrl: trackUrl ?? null,
+          currentPlaylistUrls: playlistUrls ?? [],
+        }),
       setUserHasInteracted: () => set({ userHasInteracted: true }),
       setContextTracks: (tracks) =>
         set({

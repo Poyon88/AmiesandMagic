@@ -62,7 +62,8 @@ export async function GET(request: Request) {
       *,
       items:auction_items(
         *,
-        card:cards(id, name, rarity, faction)
+        card:cards(id, name, rarity, faction),
+        board:game_boards(id, name, image_url, rarity)
       )
     `, { count: 'exact' });
 
@@ -138,6 +139,11 @@ export async function DELETE(request: Request) {
     } else if (item.source_type === 'print') {
       await supabase
         .from('card_prints')
+        .update({ owner_id: auction.seller_id, assigned_at: new Date().toISOString() })
+        .eq('id', item.source_id);
+    } else if (item.source_type === 'board_print') {
+      await supabase
+        .from('user_board_prints')
         .update({ owner_id: auction.seller_id, assigned_at: new Date().toISOString() })
         .eq('id', item.source_id);
     }

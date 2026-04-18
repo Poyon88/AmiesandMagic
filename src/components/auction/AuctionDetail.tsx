@@ -138,17 +138,38 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
         {/* Left: items */}
         <div>
           <h2 style={{ fontSize: 20, fontWeight: 700, color: "#c8a84e", margin: "0 0 16px", fontFamily: "var(--font-cinzel), serif" }}>
-            {auction.items.length > 1 ? "Lot de cartes" : auction.items[0]?.card?.name ?? "Carte"}
+            {auction.items.length > 1
+              ? "Lot"
+              : auction.items[0]?.card?.name ?? auction.items[0]?.board?.name ?? "Objet"}
           </h2>
 
           <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
             {auction.items.map((item) => (
               <div key={item.id} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-                {item.card && (
+                {item.card ? (
                   <GameCard card={item.card} size="md" count={item.quantity > 1 ? item.quantity : undefined} />
-                )}
+                ) : item.board ? (
+                  <div style={{
+                    width: 260, height: 146, borderRadius: 10, overflow: "hidden",
+                    backgroundImage: `url('${item.board.image_url}')`,
+                    backgroundSize: "cover", backgroundPosition: "center",
+                    border: "2px solid #3d3d5c", position: "relative",
+                  }}>
+                    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(0deg, rgba(0,0,0,0.85), transparent 55%)" }} />
+                    <div style={{ position: "absolute", bottom: 8, left: 10, right: 10 }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>{item.board.name}</div>
+                      <div style={{ fontSize: 11, color: "#ddd" }}>
+                        {item.board.rarity ?? "Commune"}
+                        {item.board.max_prints ? ` · ${item.board.max_prints} ex.` : ""}
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
                 <div style={{ fontSize: 11, color: "#666" }}>
-                  {item.source_type === "print" ? "Édition limitée" : item.source_type === "admin" ? "Système" : "Collection"}
+                  {item.source_type === "print" ? "Édition limitée"
+                    : item.source_type === "board_print" ? "Plateau limité"
+                    : item.source_type === "admin" ? "Système"
+                    : "Collection"}
                 </div>
               </div>
             ))}

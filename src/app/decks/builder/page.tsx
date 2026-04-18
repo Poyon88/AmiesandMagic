@@ -16,8 +16,8 @@ export default async function DeckBuilderPage({
 
   if (!user) redirect("/login");
 
-  // Fetch all cards, heroes, sets, formats, format_sets, profile, and collection
-  const [{ data: cards }, { data: heroes }, { data: sets }, { data: formats }, { data: formatSets }, { data: profile }, { data: userCollection }, { data: ownedPrints }] = await Promise.all([
+  // Fetch all cards, heroes, sets, formats, format_sets, profile, collection, and boards
+  const [{ data: cards }, { data: heroes }, { data: sets }, { data: formats }, { data: formatSets }, { data: profile }, { data: userCollection }, { data: ownedPrints }, { data: allBoards }, { data: ownedBoardPrints }] = await Promise.all([
     supabase
       .from("cards")
       .select("*")
@@ -52,6 +52,14 @@ export default async function DeckBuilderPage({
       .from("card_prints")
       .select("card_id")
       .eq("owner_id", user.id),
+    supabase
+      .from("game_boards")
+      .select("id, name, image_url, rarity, max_prints, is_default")
+      .eq("is_active", true),
+    supabase
+      .from("user_board_prints")
+      .select("id, board_id, print_number, max_prints")
+      .eq("owner_id", user.id),
   ]);
 
   const isTester = profile?.role === "testeur";
@@ -76,7 +84,7 @@ export default async function DeckBuilderPage({
       .single();
 
     if (deck) {
-      existingDeck = { id: deck.id, name: deck.name, hero_id: deck.hero_id, format_id: deck.format_id ?? null };
+      existingDeck = { id: deck.id, name: deck.name, hero_id: deck.hero_id, format_id: deck.format_id ?? null, board_id: deck.board_id ?? null };
       const { data: deckCards } = await supabase
         .from("deck_cards")
         .select("card_id, quantity")
@@ -97,6 +105,8 @@ export default async function DeckBuilderPage({
       formatSets={formatSets ?? []}
       collectedCardIds={collectedCardIds}
       isTester={isTester}
+      boards={allBoards ?? []}
+      ownedBoardPrints={ownedBoardPrints ?? []}
     />
   );
 }

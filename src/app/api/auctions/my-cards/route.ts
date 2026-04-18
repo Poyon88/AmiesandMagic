@@ -41,6 +41,14 @@ export async function GET() {
     .eq('is_tradeable', true)
     .order('print_number');
 
+  // Fetch owned board prints with board details
+  const { data: boardPrints } = await supabase
+    .from('user_board_prints')
+    .select('id, board_id, print_number, max_prints, is_tradeable, game_boards(id, name, image_url, rarity, max_prints)')
+    .eq('owner_id', user.id)
+    .eq('is_tradeable', true)
+    .order('print_number');
+
   // Fetch user_collections card IDs
   const { data: collections } = await supabase
     .from('user_collections')
@@ -92,6 +100,23 @@ export async function GET() {
       card_type: card.card_type,
       mana_cost: card.mana_cost,
       source_type: 'collection',
+    });
+  }
+
+  // Add board prints (limited only; commons aren't tradable)
+  for (const bp of boardPrints ?? []) {
+    const board = bp.game_boards as unknown as { id: number; name: string; image_url: string; rarity: string | null } | null;
+    if (!board) continue;
+    items.push({
+      board_id: bp.board_id,
+      name: board.name,
+      rarity: board.rarity,
+      image_url: board.image_url,
+      kind: 'board',
+      source_type: 'board_print',
+      source_id: bp.id,
+      print_number: bp.print_number,
+      max_prints: bp.max_prints,
     });
   }
 

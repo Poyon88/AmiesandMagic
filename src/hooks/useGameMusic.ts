@@ -10,7 +10,7 @@ export default function useGameMusic() {
   const phase = useGameStore((s) => s.gameState?.phase);
   const winner = useGameStore((s) => s.gameState?.winner);
   const localPlayerId = useGameStore((s) => s.localPlayerId);
-  const boardMusicUrl = useGameStore((s) => s.boardMusicUrl);
+  const boardMusicUrls = useGameStore((s) => s.boardMusicUrls);
   const boardTenseMusicUrl = useGameStore((s) => s.boardTenseMusicUrl);
   const boardVictoryMusicUrl = useGameStore((s) => s.boardVictoryMusicUrl);
   const boardDefeatMusicUrl = useGameStore((s) => s.boardDefeatMusicUrl);
@@ -31,11 +31,11 @@ export default function useGameMusic() {
   useEffect(() => {
     let ctx: Parameters<typeof setMusicContext>[0] = null;
     let url: string | undefined;
+    let playlist: string[] | undefined;
 
     if (phase === "finished") {
       const won = winner === localPlayerId;
       ctx = won ? "victory" : "defeat";
-      // Per-board track takes priority, fallback to global
       url = (won ? boardVictoryMusicUrl : boardDefeatMusicUrl)
         ?? (won ? victoryTrackUrl : defeatTrackUrl)
         ?? undefined;
@@ -44,18 +44,18 @@ export default function useGameMusic() {
       url = boardTenseMusicUrl ?? tenseTrackUrl ?? undefined;
     } else if (phase === "playing" || phase === "mulligan") {
       ctx = "board";
-      url = boardMusicUrl ?? undefined;
+      playlist = boardMusicUrls;
+      url = boardMusicUrls[0];
     }
 
-    // Avoid redundant updates
-    const key = `${ctx}:${url ?? ""}`;
+    const key = `${ctx}:${url ?? ""}:${(playlist ?? []).join(",")}`;
     if (key !== prevContextRef.current && ctx) {
       prevContextRef.current = key;
-      setMusicContext(ctx, url);
+      setMusicContext(ctx, url, playlist);
     }
   }, [
     phase, winner, localPlayerId, lowestHeroHp,
-    boardMusicUrl, boardTenseMusicUrl, boardVictoryMusicUrl, boardDefeatMusicUrl,
+    boardMusicUrls, boardTenseMusicUrl, boardVictoryMusicUrl, boardDefeatMusicUrl,
     tenseTrackUrl, victoryTrackUrl, defeatTrackUrl,
     setMusicContext,
   ]);

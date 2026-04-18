@@ -43,6 +43,12 @@ export default function MainMenu({ username, goldBalance }: MainMenuProps) {
       color: "bg-mana-blue hover:bg-mana-blue/80",
     },
     {
+      label: "Mes Plateaux",
+      description: "Plateaux de jeu possédés",
+      href: "/boards",
+      color: "bg-emerald-600 hover:bg-emerald-500",
+    },
+    {
       label: "Enchères",
       description: "Achetez et vendez des cartes",
       href: "/auction",

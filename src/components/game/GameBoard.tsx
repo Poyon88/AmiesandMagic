@@ -20,6 +20,7 @@ import DamageOverlay from "./DamageOverlay";
 import SpellCastOverlay from "./SpellCastOverlay";
 import FireBreathOverlay from "./FireBreathOverlay";
 import MulliganOverlay from "./MulliganOverlay";
+import SettingsModal from "@/components/shared/SettingsModal";
 import type { GameAction, DamageEvent } from "@/lib/game/types";
 import useGameMusic from "@/hooks/useGameMusic";
 
@@ -128,6 +129,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const [dropIndex, setDropIndex] = useState<number | null>(null);
   const [hoveredTargetId, setHoveredTargetId] = useState<string | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const myBoardRef = useRef<HTMLDivElement>(null);
   const isAnimatingAttackRef = useRef(false);
 
@@ -327,6 +329,15 @@ export default function GameBoard({ onAction }: GameBoardProps) {
       >
         {/* Subtle overlay for readability */}
         <div className="absolute inset-0 bg-background/10 pointer-events-none z-0" />
+
+        {/* ============= SETTINGS BUTTON ============= */}
+        <button
+          onClick={() => setSettingsOpen(true)}
+          className="absolute top-[1%] right-[2%] z-30 w-9 h-9 flex items-center justify-center text-base bg-secondary/80 border border-card-border rounded-lg text-foreground/70 hover:text-foreground hover:border-primary/40 transition-colors backdrop-blur-sm"
+          title="Réglages"
+        >
+          ⚙
+        </button>
 
         {/* ============= OPPONENT HAND (card backs) ============= */}
         <div className="absolute top-[1%] left-[2%] z-20 flex items-center gap-1">
@@ -722,6 +733,8 @@ export default function GameBoard({ onAction }: GameBoardProps) {
         sourceInstanceId={selectedAttackerInstanceId ?? selectedCardInstanceId ?? (targetingMode === "hero_power" ? "hero_power" : null)}
         hoveredTargetId={hoveredTargetId}
       />
+
+      <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   );
 }

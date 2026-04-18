@@ -39,8 +39,11 @@ export default function AuctionCard({ auction }: AuctionCardProps) {
   const timeLeft = useCountdown(auction.ends_at);
   const isExpired = timeLeft === "Terminée";
 
-  const mainCard = auction.items?.[0]?.card;
+  const mainItem = auction.items?.[0];
+  const mainCard = mainItem?.card ?? null;
+  const mainBoard = mainItem?.board ?? null;
   const itemCount = auction.items?.length ?? 0;
+  const itemName = mainCard?.name ?? mainBoard?.name ?? "Objet inconnu";
 
   return (
     <div
@@ -56,11 +59,26 @@ export default function AuctionCard({ auction }: AuctionCardProps) {
         gap: 12,
       }}
     >
-      {/* Game card visual */}
+      {/* Item visual */}
       <div style={{ position: "relative", width: 180, height: 252, flexShrink: 0 }}>
-        {mainCard && (
+        {mainCard ? (
           <GameCard card={mainCard} size="sm" />
-        )}
+        ) : mainBoard ? (
+          <div
+            style={{
+              width: "100%", height: "100%", borderRadius: 10,
+              backgroundImage: `url('${mainBoard.image_url}')`,
+              backgroundSize: "cover", backgroundPosition: "center",
+              border: "2px solid #3d3d5c", position: "relative", overflow: "hidden",
+            }}
+          >
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(0deg, rgba(0,0,0,0.85), transparent 50%)" }} />
+            <div style={{ position: "absolute", bottom: 8, left: 8, right: 8 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{mainBoard.name}</div>
+              <div style={{ fontSize: 10, color: "#ccc" }}>{mainBoard.rarity ?? "Commune"} · Plateau</div>
+            </div>
+          </div>
+        ) : null}
         {itemCount > 1 && (
           <div
             style={{
@@ -76,7 +94,7 @@ export default function AuctionCard({ auction }: AuctionCardProps) {
               zIndex: 25,
             }}
           >
-            +{itemCount - 1} carte{itemCount > 2 ? "s" : ""}
+            +{itemCount - 1} objet{itemCount > 2 ? "s" : ""}
           </div>
         )}
       </div>
@@ -89,7 +107,7 @@ export default function AuctionCard({ auction }: AuctionCardProps) {
         {/* Time remaining */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
           <div style={{ fontSize: 13, color: "#e0e0e0", fontWeight: 600 }}>
-            {mainCard?.name ?? "Carte inconnue"}
+            {itemName}
           </div>
           <div
             style={{

@@ -93,7 +93,7 @@ export default function GamePage() {
         }
 
         // Fetch both player deck cards and hero data
-        const [p1DeckCards, p2DeckCards, p1DeckData, p2DeckData, tokenTemplatesRes, boardsRes] = await Promise.all([
+        const [p1DeckCards, p2DeckCards, p1DeckData, p2DeckData, tokenTemplatesRes, defaultBoardRes] = await Promise.all([
           supabase
             .from("deck_cards")
             .select("card_id, quantity, cards(*)")
@@ -104,12 +104,12 @@ export default function GamePage() {
             .eq("deck_id", match.player2_deck_id),
           supabase
             .from("decks")
-            .select("hero_id, heroes(*)")
+            .select("hero_id, board_id, heroes(*)")
             .eq("id", match.player1_deck_id)
             .single(),
           supabase
             .from("decks")
-            .select("hero_id, heroes(*)")
+            .select("hero_id, board_id, heroes(*)")
             .eq("id", match.player2_deck_id)
             .single(),
           supabase
@@ -117,8 +117,10 @@ export default function GamePage() {
             .select("*"),
           supabase
             .from("game_boards")
-            .select("id, name, image_url, music_tracks:music_track_id(file_url), tense_track:tense_track_id(file_url), victory_track:victory_track_id(file_url), defeat_track:defeat_track_id(file_url)")
-            .eq("is_active", true),
+            .select("id")
+            .eq("is_default", true)
+            .eq("is_active", true)
+            .maybeSingle(),
         ]);
 
         // Store token templates
@@ -166,22 +168,43 @@ export default function GamePage() {
           factionCards.push(manaSpark);
         }
 
-        // Select board deterministically using match seed
-        const activeBoards = boardsRes.data ?? [];
-        if (activeBoards.length > 0) {
-          const boardSeed = parseInt(matchId.replace(/-/g, "").slice(0, 8), 16);
-          const selectedBoard = activeBoards[boardSeed % activeBoards.length];
-          useGameStore.getState().setBoardImageUrl(selectedBoard.image_url);
-          const board = selectedBoard as Record<string, unknown>;
-          const musicData = board.music_tracks as { file_url: string } | null;
-          const tenseData = board.tense_track as { file_url: string } | null;
-          const victoryData = board.victory_track as { file_url: string } | null;
-          const defeatData = board.defeat_track as { file_url: string } | null;
-          const store = useGameStore.getState();
-          if (musicData?.file_url) store.setBoardMusicUrl(musicData.file_url);
-          if (tenseData?.file_url) store.setBoardTenseMusicUrl(tenseData.file_url);
-          if (victoryData?.file_url) store.setBoardVictoryMusicUrl(victoryData.file_url);
-          if (defeatData?.file_url) store.setBoardDefeatMusicUrl(defeatData.file_url);
+        // Determine which board the match uses: the second player's deck board,
+        // falling back to the admin-chosen default board.
+        const seed = parseInt(matchId.replace(/-/g, "").slice(0, 8), 16);
+        const firstPlayerIdx: 0 | 1 = seed % 2 === 0 ? 0 : 1;
+        const secondPlayerIdx = firstPlayerIdx === 0 ? 1 : 0;
+        const secondPlayerDeck = [p1DeckData.data, p2DeckData.data][secondPlayerIdx] as
+          | { board_id: number | null }
+          | null;
+        const targetBoardId =
+          secondPlayerDeck?.board_id ?? defaultBoardRes.data?.id ?? null;
+
+        if (targetBoardId) {
+          const { data: boardRow } = await supabase
+            .from("game_boards")
+            .select("id, name, image_url, music_tracks:music_track_id(file_url), tense_track:tense_track_id(file_url), victory_track:victory_track_id(file_url), defeat_track:defeat_track_id(file_url), game_board_music_tracks(music_tracks(file_url))")
+            .eq("id", targetBoardId)
+            .maybeSingle();
+          if (boardRow) {
+            useGameStore.getState().setBoardImageUrl(boardRow.image_url);
+            const board = boardRow as Record<string, unknown>;
+            const musicData = board.music_tracks as { file_url: string } | null;
+            const tenseData = board.tense_track as { file_url: string } | null;
+            const victoryData = board.victory_track as { file_url: string } | null;
+            const defeatData = board.defeat_track as { file_url: string } | null;
+            const playlistRows = (board.game_board_music_tracks as { music_tracks: { file_url: string } | null }[] | null) ?? [];
+            const playlistUrls = playlistRows
+              .map((r) => r.music_tracks?.file_url)
+              .filter((u): u is string => !!u);
+            if (musicData?.file_url && !playlistUrls.includes(musicData.file_url)) {
+              playlistUrls.push(musicData.file_url);
+            }
+            const store = useGameStore.getState();
+            store.setBoardMusicUrls(playlistUrls);
+            if (tenseData?.file_url) store.setBoardTenseMusicUrl(tenseData.file_url);
+            if (victoryData?.file_url) store.setBoardVictoryMusicUrl(victoryData.file_url);
+            if (defeatData?.file_url) store.setBoardDefeatMusicUrl(defeatData.file_url);
+          }
         }
 
         // Store match data for later initialization

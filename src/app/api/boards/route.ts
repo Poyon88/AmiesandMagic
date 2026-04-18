@@ -33,7 +33,7 @@ export async function GET() {
   const supabase = getAdminClient();
   const { data, error } = await supabase
     .from('game_boards')
-    .select('*, music_tracks:music_track_id(id, name, file_url), tense_track:tense_track_id(id, name, file_url), victory_track:victory_track_id(id, name, file_url), defeat_track:defeat_track_id(id, name, file_url)')
+    .select('*, music_tracks:music_track_id(id, name, file_url), tense_track:tense_track_id(id, name, file_url), victory_track:victory_track_id(id, name, file_url), defeat_track:defeat_track_id(id, name, file_url), game_board_music_tracks(track_id, music_tracks(id, name, file_url))')
     .order('created_at', { ascending: false });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
   const supabase = getAdminClient();
 
   try {
-    const { name, imageBase64, imageMimeType, music_track_id, tense_track_id, victory_track_id, defeat_track_id } = await request.json();
+    const { name, imageBase64, imageMimeType, music_track_id, tense_track_id, victory_track_id, defeat_track_id, rarity, max_prints, is_default } = await request.json();
     if (!name || !imageBase64 || !imageMimeType) {
       return NextResponse.json({ error: 'Nom et image requis' }, { status: 400 });
     }
@@ -69,9 +69,26 @@ export async function POST(request: Request) {
     if (tense_track_id != null) insertData.tense_track_id = tense_track_id;
     if (victory_track_id != null) insertData.victory_track_id = victory_track_id;
     if (defeat_track_id != null) insertData.defeat_track_id = defeat_track_id;
+    if (rarity != null) insertData.rarity = rarity;
+    if (max_prints != null) insertData.max_prints = max_prints;
+    if (is_default === true) {
+      // Only one default allowed — clear any previous one.
+      await supabase.from('game_boards').update({ is_default: false }).eq('is_default', true);
+      insertData.is_default = true;
+    }
 
-    const { error } = await supabase.from('game_boards').insert(insertData);
+    const { data: inserted, error } = await supabase
+      .from('game_boards')
+      .insert(insertData)
+      .select('id')
+      .single();
     if (error) throw new Error(error.message);
+
+    // Mirror the legacy single-track pick into the playlist join table so the
+    // new board starts with a consistent playlist membership.
+    if (inserted?.id && music_track_id != null) {
+      await supabase.from('game_board_music_tracks').insert({ board_id: inserted.id, track_id: music_track_id });
+    }
 
     return NextResponse.json({ success: true });
   } catch (err) {
@@ -89,7 +106,7 @@ export async function PUT(request: Request) {
   const supabase = getAdminClient();
 
   try {
-    const { id, name, is_active, music_track_id, tense_track_id, victory_track_id, defeat_track_id, imageBase64, imageMimeType } = await request.json();
+    const { id, name, is_active, music_track_id, music_track_ids, tense_track_id, victory_track_id, defeat_track_id, imageBase64, imageMimeType, rarity, max_prints, is_default } = await request.json();
     if (!id) return NextResponse.json({ error: 'ID requis' }, { status: 400 });
 
     const updates: Record<string, unknown> = {};
@@ -99,6 +116,16 @@ export async function PUT(request: Request) {
     if (tense_track_id !== undefined) updates.tense_track_id = tense_track_id;
     if (victory_track_id !== undefined) updates.victory_track_id = victory_track_id;
     if (defeat_track_id !== undefined) updates.defeat_track_id = defeat_track_id;
+    if (rarity !== undefined) updates.rarity = rarity;
+    if (max_prints !== undefined) updates.max_prints = max_prints;
+
+    if (is_default === true) {
+      // Clear any other default before setting this one (partial unique index).
+      await supabase.from('game_boards').update({ is_default: false }).eq('is_default', true).neq('id', id);
+      updates.is_default = true;
+    } else if (is_default === false) {
+      updates.is_default = false;
+    }
 
     if (imageBase64 && imageMimeType) {
       const buffer = Buffer.from(imageBase64, 'base64');
@@ -114,8 +141,25 @@ export async function PUT(request: Request) {
       updates.image_url = urlData.publicUrl;
     }
 
-    const { error } = await supabase.from('game_boards').update(updates).eq('id', id);
-    if (error) throw new Error(error.message);
+    if (Object.keys(updates).length > 0) {
+      const { error } = await supabase.from('game_boards').update(updates).eq('id', id);
+      if (error) throw new Error(error.message);
+    }
+
+    // Replace playlist membership when the caller passed music_track_ids.
+    if (Array.isArray(music_track_ids)) {
+      const { error: delErr } = await supabase.from('game_board_music_tracks').delete().eq('board_id', id);
+      if (delErr) throw new Error(delErr.message);
+      if (music_track_ids.length > 0) {
+        const rows = music_track_ids
+          .filter((tid: unknown) => typeof tid === 'number')
+          .map((tid: number) => ({ board_id: id, track_id: tid }));
+        if (rows.length > 0) {
+          const { error: insErr } = await supabase.from('game_board_music_tracks').insert(rows);
+          if (insErr) throw new Error(insErr.message);
+        }
+      }
+    }
 
     return NextResponse.json({ success: true });
   } catch (err) {

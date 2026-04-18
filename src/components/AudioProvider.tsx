@@ -18,6 +18,7 @@ export default function AudioProvider() {
     settings,
     musicContext,
     currentTrackUrl,
+    currentPlaylistUrls,
     userHasInteracted,
     menuTrackUrl,
     tenseTrackUrl,
@@ -141,6 +142,13 @@ export default function AudioProvider() {
         break;
     }
 
+    // Board context: if multiple tracks are configured, play them as a shuffled
+    // playlist; otherwise fall back to the single-track path below.
+    if (musicContext === "board" && currentPlaylistUrls.length > 1) {
+      engine.playPlaylist(currentPlaylistUrls);
+      return;
+    }
+
     if (!url) {
       return;
     }
@@ -151,6 +159,7 @@ export default function AudioProvider() {
     userHasInteracted,
     musicContext,
     currentTrackUrl,
+    currentPlaylistUrls,
     menuTrackUrl,
     tenseTrackUrl,
     victoryTrackUrl,

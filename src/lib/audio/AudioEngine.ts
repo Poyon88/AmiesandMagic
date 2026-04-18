@@ -16,6 +16,8 @@ class AudioEngine {
   private _volume = 0.5;
   private _muted = false;
   private _currentUrl = "";
+  private _playlist: string[] = [];
+  private _playlistHandler: (() => void) | null = null;
 
   private constructor() {
     this.activeElement = this.createElement();
@@ -43,6 +45,7 @@ class AudioEngine {
    * Play a music track. If something is already playing, crossfade to it.
    */
   playMusic(url: string, options?: { loop?: boolean; fadeIn?: boolean }) {
+    this.clearPlaylist();
     const loop = options?.loop ?? true;
 
     // Already playing this track
@@ -61,6 +64,87 @@ class AudioEngine {
     this.activeElement.play().catch((err) => {
       console.warn("[AudioEngine] play blocked:", err.message);
     });
+  }
+
+  /**
+   * Play a random track from a playlist; on end, pick another random one
+   * (avoiding immediate repetition when more than one track is available).
+   * Crossfades between tracks.
+   */
+  playPlaylist(urls: string[]) {
+    const unique = urls.filter(Boolean);
+    if (unique.length === 0) {
+      this.clearPlaylist();
+      this.stopMusic();
+      return;
+    }
+    if (unique.length === 1) {
+      this._playlist = unique;
+      this.clearPlaylistHandler();
+      this.playMusic(unique[0], { loop: true });
+      this._playlist = unique;
+      return;
+    }
+
+    const same =
+      this._playlist.length === unique.length &&
+      this._playlist.every((u, i) => u === unique[i]);
+    if (same && !this.activeElement.paused) return;
+
+    this._playlist = unique;
+    const first = this.pickNext();
+    this.playOneFromPlaylist(first, !this.activeElement.paused);
+  }
+
+  private pickNext(): string {
+    const list = this._playlist;
+    if (list.length <= 1) return list[0] ?? "";
+    const remaining = list.filter((u) => u !== this._currentUrl);
+    const pool = remaining.length > 0 ? remaining : list;
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
+  private playOneFromPlaylist(url: string, crossfade: boolean) {
+    this.clearPlaylistHandler();
+    this._currentUrl = url;
+
+    const onEnded = () => {
+      if (this._playlist.length === 0) return;
+      const next = this.pickNext();
+      this.playOneFromPlaylist(next, true);
+    };
+
+    if (crossfade) {
+      // Attach the 'ended' listener to nextElement BEFORE crossfade; after the
+      // swap inside crossfadeTo this becomes activeElement, so the listener
+      // travels with the audio without needing a setTimeout.
+      this.nextElement.addEventListener("ended", onEnded);
+      this._playlistHandler = onEnded;
+      this.crossfadeTo(url, false);
+    } else {
+      this.stopFade();
+      this.activeElement.src = url;
+      this.activeElement.loop = false;
+      this.applyVolume(this.activeElement);
+      this.activeElement.play().catch((err) => {
+        console.warn("[AudioEngine] play blocked:", err.message);
+      });
+      this.activeElement.addEventListener("ended", onEnded);
+      this._playlistHandler = onEnded;
+    }
+  }
+
+  private clearPlaylistHandler() {
+    if (this._playlistHandler) {
+      this.activeElement.removeEventListener("ended", this._playlistHandler);
+      this.nextElement.removeEventListener("ended", this._playlistHandler);
+      this._playlistHandler = null;
+    }
+  }
+
+  private clearPlaylist() {
+    this._playlist = [];
+    this.clearPlaylistHandler();
   }
 
   /**
@@ -104,6 +188,7 @@ class AudioEngine {
    * Stop current music with optional fade out.
    */
   stopMusic(fadeOut = true) {
+    this.clearPlaylist();
     this.stopFade();
 
     if (!fadeOut || this.activeElement.paused) {
