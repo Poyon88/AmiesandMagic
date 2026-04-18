@@ -596,19 +596,21 @@ export const useGameStore = create<GameStore>((set, get) => ({
       for (let i = 0; i < 2; i++) {
         const oldBoard = gameState.players[i].board;
         const newBoard = newState.players[i].board;
-        const died = oldBoard.filter(
-          (c) => !newBoard.find((nc) => nc.instanceId === c.instanceId)
+        const deadIds = new Set(
+          oldBoard
+            .filter((c) => !newBoard.find((nc) => nc.instanceId === c.instanceId))
+            .map((c) => c.instanceId),
         );
-        if (died.length > 0) {
-          // Re-insert dead creatures with 0 HP so AnimatePresence can see them
-          const deadWithZeroHp = died.map((c) => ({
-            ...c,
-            currentHealth: 0,
-          }));
-          interState.players[i].board = [
-            ...interState.players[i].board,
-            ...deadWithZeroHp,
-          ];
+        if (deadIds.size > 0) {
+          // Rebuild board in the OLD order, so dead creatures stay at their original
+          // slot (with 0 HP) — prevents a visible shift before AnimatePresence's exit.
+          interState.players[i].board = oldBoard.map((c) => {
+            if (deadIds.has(c.instanceId)) {
+              return { ...c, currentHealth: 0 };
+            }
+            const updated = newBoard.find((nc) => nc.instanceId === c.instanceId);
+            return updated ?? c;
+          });
         }
       }
 

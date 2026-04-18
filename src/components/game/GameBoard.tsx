@@ -402,7 +402,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
               No creatures
             </div>
           ) : (
-            <AnimatePresence>
+            <AnimatePresence mode="popLayout">
               {opponent.board.map((creature) => (
                 <BoardCreature
                   key={creature.instanceId}
@@ -452,7 +452,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
             </div>
           ) : (
             <>
-              <AnimatePresence>
+              <AnimatePresence mode="popLayout">
                 {myPlayer.board.flatMap((creature, i) => {
                   const canAtt =
                     myTurn && canAttack(gameState, creature.instanceId);

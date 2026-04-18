@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef, useCallback, useLayoutEffect } from "react";
-import { motion, useIsPresent } from "framer-motion";
+import { useState, useRef, useCallback } from "react";
+import { motion } from "framer-motion";
 import Image from "next/image";
 import type { CardInstance } from "@/lib/game/types";
 import { useGameStore } from "@/lib/store/gameStore";
@@ -54,33 +54,16 @@ export default function BoardCreature({
   const H = 176;
   const accentColor = "#74b9ff";
 
-  // Border color based on state
-  const isPresent = useIsPresent();
-  const posRef = useRef<{ left: number; top: number } | null>(null);
-  const wrapperRef = useRef<HTMLDivElement>(null);
-
-  // Capture position just before the element exits
-  useLayoutEffect(() => {
-    if (!isPresent && wrapperRef.current && !posRef.current) {
-      const rect = wrapperRef.current.getBoundingClientRect();
-      posRef.current = { left: rect.left, top: rect.top };
-    }
-  }, [isPresent]);
-
   let border = "2px solid #3d3d5c";
   if (isSelected) border = "2px solid #f1c40f";
   else if (isValidTarget) border = "2px solid #e74c3c";
   else if (canAttack) border = "2px solid #2ecc71";
 
-  const exitStyle = !isPresent && posRef.current
-    ? { width: W, height: H, position: "fixed" as const, left: posRef.current.left, top: posRef.current.top, zIndex: 50, pointerEvents: "none" as const }
-    : { width: W, height: H, position: "relative" as const, zIndex: isZoomed ? 100 : isSelected ? 10 : 1 };
-
   return (
     <motion.div
-      ref={wrapperRef}
+      layout
       data-instance-id={creature.instanceId}
-      style={exitStyle}
+      style={{ width: W, height: H, position: "relative", zIndex: isZoomed ? 100 : isSelected ? 10 : 1 }}
       initial={{ y: isOwn ? 40 : -40, opacity: 0, scale: 0.5 }}
       animate={
         damageAmount
