@@ -68,7 +68,6 @@ export default function HandCard({
   const showOverlay = isZoomed && showDetails;
   const W = 120;
   const H = 168;
-  const s = 0.55;
   const accentColor = isCreature ? "#74b9ff" : "#ce93d8";
   const borderColor = isSelected ? "#c8a84e" : isCreature ? "#3d3d5c" : "#6c3483";
   const iconOverrides = useKeywordIconStore((st) => st.overrides);
@@ -149,34 +148,33 @@ export default function HandCard({
         {/* Mana orb */}
         <div style={{
           position: "absolute", top: 4, left: 4, zIndex: 2,
-          width: 20, height: 20, borderRadius: "50%",
+          width: 22, height: 22, borderRadius: "50%",
           background: isCostReduced ? "radial-gradient(circle, #1a6a3a, #0d3c1f)" : "radial-gradient(circle, #1a3a6a, #0d1f3c)",
-          border: `2px solid ${isCostReduced ? "#2ecc71" : "#74b9ff"}`,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 10, color: isCostReduced ? "#2ecc71" : "#74b9ff", fontWeight: 700,
+          outline: `2px solid ${isCostReduced ? "#2ecc71" : "#74b9ff"}`,
+          fontSize: 13, color: isCostReduced ? "#2ecc71" : "#74b9ff", fontWeight: 700,
+          lineHeight: "22px", textAlign: "center",
           boxShadow: isCostReduced ? "0 0 6px #2ecc7155" : "0 0 6px #74b9ff55",
         }}>{effectiveManaCost}</div>
 
         {/* Bottom bar */}
         <div style={{
           position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2,
-          padding: `${5 * s}px 5px 4px`,
-          background: "linear-gradient(0deg, #0d0d1aee 0%, #0d0d1aaa 30%, transparent 50%)",
-          display: "flex", flexDirection: "column", gap: 2,
+          padding: "5px 6px 4px",
+          background: "linear-gradient(0deg, #0d0d1add 0%, #0d0d1a88 40%, transparent 65%)",
+          display: "flex", flexDirection: "column", gap: 3,
         }}>
           {/* Name */}
           <div style={{
-            fontSize: 8, color: "#e0e0e0", fontWeight: 700,
+            fontSize: 10, color: "#e0e0e0", fontWeight: 700,
             overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
             fontFamily: "'Cinzel', serif",
           }}>{card.name}</div>
 
-          {/* Keyword symbols */}
-          {card.keywords.length > 0 && (() => {
-            const xVals = parseXValuesFromEffectText(card.effect_text);
-            return (
-            <div style={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-              {card.keywords.map((kw) => {
+          {/* Keywords + Stats — single row */}
+          <div style={{ display: "flex", alignItems: "center", gap: 3, flexWrap: "wrap" }}>
+            {card.keywords.length > 0 && (() => {
+              const xVals = parseXValuesFromEffectText(card.effect_text);
+              return card.keywords.map((kw) => {
                 const x = xVals[kw];
                 const hasImg = !!iconOverrides[kw];
                 return (
@@ -195,65 +193,59 @@ export default function HandCard({
                   ) : (
                     <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={16} keyword={kw} />
                   )}
-                  {x != null && <span style={{ fontSize: 6, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif" }}>{toRoman(x)}</span>}
+                  {x != null && <span style={{ fontSize: 8, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}` }}>{toRoman(x)}</span>}
                 </div>
                 );
-              })}
-            </div>
-            );
-          })()}
+              });
+            })()}
 
-          {/* Spell keyword symbols */}
-          {card.spell_keywords && card.spell_keywords.length > 0 && (
-            <div style={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-              {card.spell_keywords.map((spellKw, i) => {
-                const def = SPELL_KEYWORDS[spellKw.id];
-                const displayTitle = getSpellKeywordLabel(spellKw);
-                const usesAtkHp = def.params.includes("attack") && def.params.includes("health");
-                const usesAmount = def.params.includes("amount");
-                const hasValue = usesAmount || usesAtkHp;
-                const valueText = usesAtkHp
-                  ? `+${spellKw.attack ?? 0}/+${spellKw.health ?? 0}`
-                  : usesAmount ? toRoman(spellKw.amount ?? 1) : null;
-                return (
-                <div key={`sk_${i}`} title={displayTitle} style={{
-                  minWidth: 28, height: 28, borderRadius: 3,
-                  padding: hasValue ? "0 2px" : 0,
-                  background: (() => { const k = `spell_${spellKw.id}`; return iconOverrides[k] ? "transparent" : `${accentColor}33`; })(),
-                  border: (() => { const k = `spell_${spellKw.id}`; return iconOverrides[k] ? "none" : `1px solid ${accentColor}66`; })(),
-                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1,
-                  fontSize: 8, overflow: "hidden",
-                }}>
-                  {iconOverrides[`spell_${spellKw.id}`] ? (
-                    <div style={{ width: 28, height: 28, flexShrink: 0 }}>
-                      <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={16} keyword={`spell_${spellKw.id}`} fill />
-                    </div>
-                  ) : (
-                    <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={16} keyword={`spell_${spellKw.id}`} />
-                  )}
-                  {valueText && <span style={{ fontSize: 6, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif" }}>{valueText}</span>}
-                </div>
-                );
-              })}
-            </div>
-          )}
+            {card.spell_keywords && card.spell_keywords.length > 0 && card.spell_keywords.map((spellKw, i) => {
+              const def = SPELL_KEYWORDS[spellKw.id];
+              const displayTitle = getSpellKeywordLabel(spellKw);
+              const usesAtkHp = def.params.includes("attack") && def.params.includes("health");
+              const usesAmount = def.params.includes("amount");
+              const hasValue = usesAmount || usesAtkHp;
+              const valueText = usesAtkHp
+                ? `+${spellKw.attack ?? 0}/+${spellKw.health ?? 0}`
+                : usesAmount ? toRoman(spellKw.amount ?? 1) : null;
+              const spellKey = `spell_${spellKw.id}`;
+              const hasImg = !!iconOverrides[spellKey];
+              return (
+              <div key={`sk_${i}`} title={displayTitle} style={{
+                minWidth: 28, height: 28, borderRadius: 3,
+                padding: hasValue ? "0 2px" : 0,
+                background: hasImg ? "transparent" : `${accentColor}33`,
+                border: hasImg ? "none" : `1px solid ${accentColor}66`,
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1,
+                fontSize: 8, overflow: "hidden",
+              }}>
+                {hasImg ? (
+                  <div style={{ width: 28, height: 28, flexShrink: 0 }}>
+                    <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={16} keyword={spellKey} fill />
+                  </div>
+                ) : (
+                  <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={16} keyword={spellKey} />
+                )}
+                {valueText && <span style={{ fontSize: 8, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}` }}>{valueText}</span>}
+              </div>
+              );
+            })}
 
-          {/* Stats */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontSize: 6, color: "#ffffff44", textTransform: "uppercase" }}>{card.card_type}</span>
             {isCreature && (
-              <div style={{ display: "flex", gap: 4 }}>
+              <div style={{ display: "flex", gap: 4, marginLeft: "auto" }}>
                 <div style={{
-                  padding: "1px 4px", borderRadius: 3,
+                  display: "flex", alignItems: "center",
+                  padding: "1px 5px", borderRadius: 4,
                   background: "#e74c3c18", border: "1px solid #e74c3c55",
                 }}>
-                  <span style={{ fontSize: 10, color: "#e74c3c", fontWeight: 700 }}>{card.attack}</span>
+                  <span style={{ fontSize: 13, color: "#e74c3c", fontWeight: 700 }}>{card.attack}</span>
                 </div>
                 <div style={{
-                  padding: "1px 4px", borderRadius: 3,
+                  display: "flex", alignItems: "center",
+                  padding: "1px 5px", borderRadius: 4,
                   background: "#f1c40f18", border: "1px solid #f1c40f55",
                 }}>
-                  <span style={{ fontSize: 10, color: "#f1c40f", fontWeight: 700 }}>{card.health}</span>
+                  <span style={{ fontSize: 13, color: "#f1c40f", fontWeight: 700 }}>{card.health}</span>
                 </div>
               </div>
             )}
@@ -311,7 +303,7 @@ export default function HandCard({
                 const desc = kwDef?.desc ? (x != null ? kwDef.desc.replace(/X/g, String(x)) : kwDef.desc) : null;
                 return (
                 <div key={kw} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
-                  <span style={{ flexShrink: 0 }}><KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={9} /></span>
+                  <span style={{ flexShrink: 0 }}><KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={9} keyword={kw} /></span>
                   <div>
                     <div style={{ fontSize: 7, color: accentColor, fontWeight: 600 }}>{displayLabel}</div>
                     {desc && <div style={{ fontSize: 6, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
@@ -331,7 +323,7 @@ export default function HandCard({
                 const desc = getSpellKeywordDesc(spellKw, card);
                 return (
                 <div key={`sk_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
-                  <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={9} /></span>
+                  <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={9} keyword={`spell_${spellKw.id}`} /></span>
                   <div>
                     <div style={{ fontSize: 7, color: accentColor, fontWeight: 600 }}>{label}</div>
                     <div style={{ fontSize: 6, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>

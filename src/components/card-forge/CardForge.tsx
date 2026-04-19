@@ -340,7 +340,7 @@ export default function CardForge() {
           imageBase64: variant.base64,
           imageMimeType: variant.mime,
           keyword_type: kwTypeForm,
-          keyword: kwSelected,
+          keyword: kwTypeForm === "spell" ? `spell_${kwSelected}` : kwSelected,
           style: "simple",
           prompt: kwPrompt,
         }),
@@ -392,7 +392,11 @@ export default function CardForge() {
   const cbFactionRaces = cbFactionDef?.races
     ?? Object.values(FACTIONS).flatMap((f) => f.races).sort();
   const cbFactionClans: string[] =
-    cbFactionDef?.clans && (cbFactionDef.clans.appliesTo === cbRace || !cbFactionDef.clans.appliesTo)
+    cbFactionDef?.clans && (
+      cbFactionDef.clans.appliesTo === "all"
+      || cbFactionDef.clans.appliesTo === cbRace
+      || !cbFactionDef.clans.appliesTo
+    )
       ? cbFactionDef.clans.names
       : [];
 
@@ -2424,7 +2428,7 @@ export default function CardForge() {
                       {creatureKeywordOptions.map(opt => <option key={`c-${opt.id}`} value={opt.id}>{opt.label}</option>)}
                     </optgroup>
                     <optgroup label="Sort">
-                      {spellKeywordOptions.map(opt => <option key={`s-${opt.id}`} value={opt.id}>{opt.label}</option>)}
+                      {spellKeywordOptions.map(opt => <option key={`s-${opt.id}`} value={`spell_${opt.id}`}>{opt.label}</option>)}
                     </optgroup>
                   </select>
                   <button type="button" onClick={loadKwAssets}
@@ -2439,10 +2443,13 @@ export default function CardForge() {
                 ) : (
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 12 }}>
                     {kwAssets.map((a) => {
+                      const rawKey = a.keyword_type === "spell" && a.keyword.startsWith("spell_")
+                        ? a.keyword.slice(6)
+                        : a.keyword;
                       const label =
                         a.keyword_type === "creature"
-                          ? KEYWORD_LABELS[a.keyword] ?? a.keyword
-                          : SPELL_KEYWORD_LABELS[a.keyword as SpellKeywordId] ?? a.keyword;
+                          ? KEYWORD_LABELS[rawKey] ?? rawKey
+                          : SPELL_KEYWORD_LABELS[rawKey as SpellKeywordId] ?? rawKey;
                       return (
                         <div key={a.id} style={{
                           border: `2px solid ${a.is_active ? "#27ae60" : "#e0e0e0"}`,

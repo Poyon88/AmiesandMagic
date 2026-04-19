@@ -254,22 +254,21 @@ export default function BoardCreature({
       <div style={{
         position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2,
         padding: "6px 6px 5px",
-        background: "linear-gradient(0deg, #0d0d1aee 0%, #0d0d1aaa 30%, transparent 50%)",
+        background: "linear-gradient(0deg, #0d0d1add 0%, #0d0d1a88 40%, transparent 65%)",
         display: "flex", flexDirection: "column", gap: 3,
       }}>
         {/* Name */}
         <div style={{
-          fontSize: 9, color: "#e0e0e0", fontWeight: 700,
+          fontSize: 10, color: "#e0e0e0", fontWeight: 700,
           overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
           fontFamily: "'Cinzel', serif",
         }}>{card.name}</div>
 
-        {/* Keyword symbols */}
-        {card.keywords.length > 0 && (() => {
-          const xVals = parseXValuesFromEffectText(card.effect_text);
-          return (
-          <div style={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-            {card.keywords.map((kw) => {
+        {/* Keywords + Stats — single row */}
+        <div style={{ display: "flex", alignItems: "center", gap: 3, flexWrap: "wrap" }}>
+          {card.keywords.length > 0 && (() => {
+            const xVals = parseXValuesFromEffectText(card.effect_text);
+            return card.keywords.map((kw) => {
               const x = xVals[kw];
               const hasImg = !!iconOverrides[kw];
               return (
@@ -288,33 +287,33 @@ export default function BoardCreature({
                 ) : (
                   <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={18} keyword={kw} />
                 )}
-                {x != null && <span style={{ fontSize: 7, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}` }}>{toRoman(x)}</span>}
+                {x != null && <span style={{ fontSize: 9, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}` }}>{toRoman(x)}</span>}
               </div>
               );
-            })}
-          </div>
-          );
-        })()}
+            });
+          })()}
 
-        {/* Stats */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div style={{
-            padding: "1px 5px", borderRadius: 4,
-            background: isBuffedAtk ? "#2ecc7133" : "#e74c3c18",
-            border: `1px solid ${isBuffedAtk ? "#2ecc7188" : "#e74c3c55"}`,
-          }}>
-            <span style={{ fontSize: 13, color: isBuffedAtk ? "#2ecc71" : "#e74c3c", fontWeight: 700 }}>
-              {creature.currentAttack}
-            </span>
-          </div>
-          <div style={{
-            padding: "1px 5px", borderRadius: 4,
-            background: isDamaged ? "#e74c3c33" : isBuffedHp ? "#2ecc7133" : "#f1c40f18",
-            border: `1px solid ${isDamaged ? "#e74c3c88" : isBuffedHp ? "#2ecc7188" : "#f1c40f55"}`,
-          }}>
-            <span style={{ fontSize: 13, color: isDamaged ? "#e74c3c" : isBuffedHp ? "#2ecc71" : "#f1c40f", fontWeight: 700 }}>
-              {creature.currentHealth}
-            </span>
+          <div style={{ display: "flex", gap: 4, marginLeft: "auto" }}>
+            <div style={{
+              display: "flex", alignItems: "center",
+              padding: "1px 5px", borderRadius: 4,
+              background: isBuffedAtk ? "#2ecc7133" : "#e74c3c18",
+              border: `1px solid ${isBuffedAtk ? "#2ecc7188" : "#e74c3c55"}`,
+            }}>
+              <span style={{ fontSize: 14, color: isBuffedAtk ? "#2ecc71" : "#e74c3c", fontWeight: 700 }}>
+                {creature.currentAttack}
+              </span>
+            </div>
+            <div style={{
+              display: "flex", alignItems: "center",
+              padding: "1px 5px", borderRadius: 4,
+              background: isDamaged ? "#e74c3c33" : isBuffedHp ? "#2ecc7133" : "#f1c40f18",
+              border: `1px solid ${isDamaged ? "#e74c3c88" : isBuffedHp ? "#2ecc7188" : "#f1c40f55"}`,
+            }}>
+              <span style={{ fontSize: 14, color: isDamaged ? "#e74c3c" : isBuffedHp ? "#2ecc71" : "#f1c40f", fontWeight: 700 }}>
+                {creature.currentHealth}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -369,7 +368,7 @@ export default function BoardCreature({
               const desc = kwDef?.desc ? (x != null ? kwDef.desc.replace(/X/g, String(x)) : kwDef.desc) : null;
               return (
               <div key={kw} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
-                <span style={{ flexShrink: 0 }}><KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={10} /></span>
+                <span style={{ flexShrink: 0 }}><KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={10} keyword={kw} /></span>
                 <div>
                   <div style={{ fontSize: 8, color: accentColor, fontWeight: 600 }}>{displayLabel}</div>
                   {desc && <div style={{ fontSize: 7, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
