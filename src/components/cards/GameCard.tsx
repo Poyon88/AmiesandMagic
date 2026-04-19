@@ -6,6 +6,7 @@ import type { Card } from "@/lib/game/types";
 import { KEYWORD_SYMBOLS as keywordSymbols, KEYWORD_LABELS as keywordLabels, toRoman, parseXValuesFromEffectText, cleanEffectText } from "@/lib/game/keyword-labels";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS, getSpellKeywordDesc, getSpellKeywordLabel } from "@/lib/game/spell-keywords";
 import KeywordIcon from "@/components/shared/KeywordIcon";
+import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { KEYWORDS as keywordDefs, LIMITED_PRINT_COUNTS } from "@/lib/card-engine/constants";
 
 interface GameCardProps {
@@ -49,6 +50,7 @@ export default function GameCard({
     ? "linear-gradient(160deg, #1a1a2e, #0d0d1a)"
     : "linear-gradient(160deg, #1a0a2a, #0d0d1a)";
   const accentColor = isCreature ? "#74b9ff" : "#ce93d8";
+  const iconOverrides = useKeywordIconStore((st) => st.overrides);
 
   return (
     <div
@@ -152,15 +154,23 @@ export default function GameCard({
               const x = xVals[kw];
               const label = keywordLabels[kw] || kw;
               const displayTitle = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
+              const hasImg = !!iconOverrides[kw];
               return (
               <div key={kw} title={displayTitle} style={{
-                minWidth: 25 * s, height: 25 * s, borderRadius: 4 * s,
+                minWidth: 50 * s, height: 50 * s, borderRadius: 4 * s,
                 padding: x != null ? `0 ${4 * s}px` : 0,
-                background: `${accentColor}33`, border: `1px solid ${accentColor}66`,
+                background: hasImg ? "transparent" : `${accentColor}33`,
+                border: hasImg ? "none" : `1px solid ${accentColor}66`,
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 * s,
-                fontSize: 10 * s,
+                fontSize: 10 * s, overflow: "hidden",
               }}>
-                <KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={14 * s} keyword={kw} />
+                {hasImg ? (
+                  <div style={{ width: 50 * s, height: 50 * s, flexShrink: 0 }}>
+                    <KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={28 * s} keyword={kw} fill />
+                  </div>
+                ) : (
+                  <KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={28 * s} keyword={kw} />
+                )}
                 {x != null && <span style={{ fontSize: 10 * s, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}` }}>{toRoman(x)}</span>}
               </div>
               );
@@ -177,15 +187,24 @@ export default function GameCard({
               const valueText = usesAtkHp
                 ? `+${spellKw.attack ?? 0}/+${spellKw.health ?? 0}`
                 : usesAmount ? toRoman(spellKw.amount ?? 1) : null;
+              const spellKey = `spell_${spellKw.id}`;
+              const hasImg = !!iconOverrides[spellKey];
               return (
               <div key={`sk_${i}`} title={displayTitle} style={{
-                minWidth: 25 * s, height: 25 * s, borderRadius: 4 * s,
+                minWidth: 50 * s, height: 50 * s, borderRadius: 4 * s,
                 padding: hasValue ? `0 ${4 * s}px` : 0,
-                background: `${accentColor}33`, border: `1px solid ${accentColor}66`,
+                background: hasImg ? "transparent" : `${accentColor}33`,
+                border: hasImg ? "none" : `1px solid ${accentColor}66`,
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 * s,
-                fontSize: 10 * s,
+                fontSize: 10 * s, overflow: "hidden",
               }}>
-                <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={14 * s} keyword={`spell_${spellKw.id}`} />
+                {hasImg ? (
+                  <div style={{ width: 50 * s, height: 50 * s, flexShrink: 0 }}>
+                    <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={28 * s} keyword={spellKey} fill />
+                  </div>
+                ) : (
+                  <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={28 * s} keyword={spellKey} />
+                )}
                 {valueText && <span style={{ fontSize: 10 * s, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}` }}>{valueText}</span>}
               </div>
               );

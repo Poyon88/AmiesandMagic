@@ -7,6 +7,7 @@ import type { CardInstance } from "@/lib/game/types";
 import { useGameStore } from "@/lib/store/gameStore";
 import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText } from "@/lib/game/keyword-labels";
 import KeywordIcon from "@/components/shared/KeywordIcon";
+import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
 
 interface BoardCreatureProps {
@@ -53,6 +54,7 @@ export default function BoardCreature({
   const W = 128;
   const H = 176;
   const accentColor = "#74b9ff";
+  const iconOverrides = useKeywordIconStore((st) => st.overrides);
 
   let border = "2px solid #3d3d5c";
   if (isSelected) border = "2px solid #f1c40f";
@@ -269,15 +271,23 @@ export default function BoardCreature({
           <div style={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
             {card.keywords.map((kw) => {
               const x = xVals[kw];
+              const hasImg = !!iconOverrides[kw];
               return (
               <div key={kw} style={{
-                minWidth: 16, height: 16, borderRadius: 4,
+                minWidth: 32, height: 32, borderRadius: 4,
                 padding: x != null ? "0 3px" : 0,
-                background: `${accentColor}33`, border: `1px solid ${accentColor}66`,
+                background: hasImg ? "transparent" : `${accentColor}33`,
+                border: hasImg ? "none" : `1px solid ${accentColor}66`,
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2,
-                fontSize: 9,
+                fontSize: 9, overflow: "hidden",
               }}>
-                <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={9} />
+                {hasImg ? (
+                  <div style={{ width: 32, height: 32, flexShrink: 0 }}>
+                    <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={18} keyword={kw} fill />
+                  </div>
+                ) : (
+                  <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={18} keyword={kw} />
+                )}
                 {x != null && <span style={{ fontSize: 7, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}` }}>{toRoman(x)}</span>}
               </div>
               );

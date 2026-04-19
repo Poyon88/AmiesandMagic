@@ -7,6 +7,7 @@ import CardVisual, { KEYWORD_SYMBOLS } from "./CardVisual";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import type { CardType, Keyword, SpellEffect, SpellTargetType, SpellKeywordInstance, SpellComposableEffects, SpellEffectNode, SpellTargetSlot, AtomicEffectType, SpellCondition, AtomicEffect, ConditionalEffectNode, CardSet, GameFormat } from "@/lib/game/types";
 import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
+import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
 import type { SpellKeywordId } from "@/lib/game/types";
 import CardEditor from "@/components/admin/CardEditor";
 
@@ -142,6 +143,243 @@ export default function CardForge() {
   const [cbGenerating, setCbGenerating] = useState(false);
   const [cbSaving, setCbSaving] = useState(false);
   const [cbMessage, setCbMessage] = useState<{ ok: boolean; msg: string } | null>(null);
+
+  // ─── KEYWORD ICONS (générateur) ───────────────────────────────────────────
+  type KwAsset = {
+    id: number;
+    name: string;
+    icon_url: string;
+    keyword_type: "creature" | "spell";
+    keyword: string;
+    style: string | null;
+    prompt: string | null;
+    created_at: string;
+    is_active: boolean;
+  };
+  type KwVariation = { base64: string; mime: string; url: string };
+  const [kwAssets, setKwAssets] = useState<KwAsset[]>([]);
+  const [kwTypeForm, setKwTypeForm] = useState<"creature" | "spell">("creature");
+  const [kwSelected, setKwSelected] = useState<string>("");
+  const [kwInstructions, setKwInstructions] = useState("");
+  const [kwPrompt, setKwPrompt] = useState("");
+  const [kwName, setKwName] = useState("");
+  const [kwVariations, setKwVariations] = useState<KwVariation[]>([]);
+  const [kwSelectedIdx, setKwSelectedIdx] = useState<number | null>(null);
+  const [kwGenerating, setKwGenerating] = useState(false);
+  const [kwSaving, setKwSaving] = useState(false);
+  const [kwMessage, setKwMessage] = useState<{ ok: boolean; msg: string } | null>(null);
+  const [kwGalleryFilter, setKwGalleryFilter] = useState<string>("");
+
+  // Creature keyword IDs + FR labels (e.g., { id: "divine_shield", label: "Bouclier" }).
+  const creatureKeywordOptions = ALL_KEYWORDS.map((id) => ({ id, label: KEYWORD_LABELS[id] ?? id }))
+    .sort((a, b) => a.label.localeCompare(b.label, "fr"));
+  const spellKeywordOptions = ALL_SPELL_KEYWORDS.map((id) => ({ id, label: SPELL_KEYWORD_LABELS[id] ?? id }))
+    .sort((a, b) => a.label.localeCompare(b.label, "fr"));
+
+  async function loadKwAssets() {
+    const res = await fetch(`/api/keyword-icon-assets${kwGalleryFilter ? `?keyword=${encodeURIComponent(kwGalleryFilter)}` : ""}`);
+    const data = await res.json();
+    setKwAssets(Array.isArray(data?.assets) ? data.assets : []);
+  }
+
+  function kwKeywordDesc(type: "creature" | "spell", id: string): string {
+    if (type === "creature") {
+      const forgeKey = KEYWORD_LABELS[id];
+      const def = forgeKey ? KEYWORDS[forgeKey] : null;
+      return def?.desc ?? "";
+    }
+    const def = SPELL_KEYWORDS[id as SpellKeywordId];
+    return def?.desc ?? "";
+  }
+
+  function generateKeywordIconPrompt() {
+    if (!kwSelected) return;
+    const label =
+      kwTypeForm === "creature"
+        ? KEYWORD_LABELS[kwSelected] ?? kwSelected
+        : SPELL_KEYWORD_LABELS[kwSelected as SpellKeywordId] ?? kwSelected;
+    const desc = kwKeywordDesc(kwTypeForm, kwSelected);
+
+    const parts: string[] = [];
+    parts.push(
+      "Single pure-white silhouette icon, centered on a completely flat pure-black background (hex #000000, uniform, no gradients, no texture, no vignette).",
+      "Style: emoji-like pictogram — clean vector silhouette, very simple shapes, strong bold outline, almost no internal detail. Same kind of readability as the small Hearthstone attack/shield stat icons.",
+      "CRITICAL SIZING: the silhouette must be LARGE and fill 85–95% of the image canvas. Minimal negative space around the subject. The shape should nearly touch all four edges of the square.",
+      "The silhouette must be pure white (#FFFFFF) or very light silver. No colored details, no highlights, no shading other than what is required for a crisp silhouette.",
+      "NO frame, NO border, NO medallion, NO baroque ornamentation, NO gold trim, NO filigree, NO glow, NO sparkles around the subject, NO particles — pure black around the silhouette is mandatory.",
+      "The icon must remain perfectly readable at 24–32 pixels. No fine lines, no tiny ornaments, no painterly rendering — just a strong iconic shape.",
+      "1:1 square, centered, symmetric whenever possible.",
+    );
+    parts.push(`Subject: a simple iconic symbol that clearly represents the keyword "${label}" from a fantasy card game.`);
+    if (desc) parts.push(`Meaning of the keyword (for inspiration only, do NOT depict literally): ${desc}`);
+    parts.push(
+      kwTypeForm === "spell"
+        ? "Since this is a SPELL keyword, favor very simple arcane motifs (a single rune shape, a small arcane circle, an elemental glyph)."
+        : "Since this is a CREATURE keyword, favor very simple martial or body-state motifs (sword, shield, wings, fang, heart, etc.).",
+    );
+    if (kwInstructions.trim()) parts.push(`Extra admin guidance: ${kwInstructions.trim()}`);
+    parts.push(
+      "Absolutely NO TEXT, no letters, no words, no numbers, no watermark.",
+      "No characters, no faces, no full creature bodies with detailed anatomy — just a stylized silhouette.",
+    );
+    setKwPrompt(parts.join(" "));
+    if (!kwName.trim()) {
+      setKwName(label);
+    }
+  }
+
+  // Converts a "white silhouette on dark background" image into a PNG with a
+  // transparent background by mapping pixel luminance to alpha, and pushing
+  // the silhouette to pure white for a crisp emoji-like look.
+  async function silhouetteToTransparentPng(srcUrl: string, maxDim = 512): Promise<KwVariation> {
+    return new Promise<KwVariation>((resolve, reject) => {
+      const img = new window.Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxDim || height > maxDim) {
+          const ratio = Math.min(maxDim / width, maxDim / height);
+          width = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d")!;
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
+        ctx.drawImage(img, 0, 0, width, height);
+        const data = ctx.getImageData(0, 0, width, height);
+        const px = data.data;
+        const FLOOR = 28;
+        for (let i = 0; i < px.length; i += 4) {
+          const r = px[i], g = px[i + 1], b = px[i + 2];
+          const maxC = r > g ? (r > b ? r : b) : (g > b ? g : b);
+          const alpha = maxC < FLOOR ? 0 : maxC;
+          px[i] = 255;
+          px[i + 1] = 255;
+          px[i + 2] = 255;
+          px[i + 3] = alpha;
+        }
+        ctx.putImageData(data, 0, 0);
+        const dataUrl = canvas.toDataURL("image/png");
+        const base64 = dataUrl.split(",")[1];
+        resolve({ base64, mime: "image/png", url: dataUrl });
+      };
+      img.onerror = reject;
+      img.src = srcUrl;
+    });
+  }
+
+  function handleKwFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const variant = await silhouetteToTransparentPng(reader.result as string);
+        setKwVariations([variant]);
+        setKwSelectedIdx(0);
+      } catch {
+        setKwMessage({ ok: false, msg: "Impossible de charger l'image." });
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function generateKeywordIconImage() {
+    if (!kwPrompt) return;
+    setKwGenerating(true);
+    setKwMessage(null);
+    setKwVariations([]);
+    setKwSelectedIdx(null);
+
+    const callOnce = async (): Promise<KwVariation | { error: string }> => {
+      try {
+        const res = await fetch("/api/cards/generate-image", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: kwPrompt }),
+        });
+        const data = await res.json();
+        if (!res.ok || data.error) return { error: data.error ?? `Erreur ${res.status}` };
+        const mime = data.mimeType ?? "image/png";
+        const rawUrl = `data:${mime};base64,${data.imageBase64}`;
+        return await silhouetteToTransparentPng(rawUrl);
+      } catch (err) {
+        return { error: err instanceof Error ? err.message : "Erreur réseau" };
+      }
+    };
+
+    const results = await Promise.all([callOnce(), callOnce(), callOnce()]);
+    const ok = results.filter((r): r is KwVariation => "base64" in r);
+    if (ok.length === 0) {
+      const firstErr = results.find((r) => "error" in r) as { error: string } | undefined;
+      setKwMessage({ ok: false, msg: firstErr?.error ?? "Aucune image générée." });
+    } else {
+      setKwVariations(ok);
+      if (ok.length < 3) {
+        setKwMessage({ ok: false, msg: `${3 - ok.length} variante(s) ont échoué.` });
+      }
+    }
+    setKwGenerating(false);
+  }
+
+  async function saveKeywordIcon() {
+    if (!kwName.trim() || !kwSelected || kwSelectedIdx === null) return;
+    const variant = kwVariations[kwSelectedIdx];
+    if (!variant) return;
+    setKwSaving(true);
+    setKwMessage(null);
+    try {
+      const res = await fetch("/api/keyword-icon-assets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: kwName.trim(),
+          imageBase64: variant.base64,
+          imageMimeType: variant.mime,
+          keyword_type: kwTypeForm,
+          keyword: kwSelected,
+          style: "simple",
+          prompt: kwPrompt,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        setKwMessage({ ok: false, msg: data.error ?? `Erreur ${res.status}` });
+      } else {
+        setKwMessage({ ok: true, msg: `Icône "${kwName.trim()}" enregistrée.` });
+        setKwVariations([]);
+        setKwSelectedIdx(null);
+        setKwName("");
+        setKwPrompt("");
+        await loadKwAssets();
+      }
+    } catch (err) {
+      setKwMessage({ ok: false, msg: err instanceof Error ? err.message : "Erreur réseau" });
+    }
+    setKwSaving(false);
+  }
+
+  async function activateKwAsset(id: number) {
+    await fetch("/api/keyword-icon-assets", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+    await loadKwAssets();
+  }
+
+  async function deleteKwAsset(id: number, name: string) {
+    if (!confirm(`Supprimer l'icône "${name}" ?`)) return;
+    await fetch("/api/keyword-icon-assets", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+    await loadKwAssets();
+  }
 
   const CB_DEFAULT_MAX_PRINTS: Record<string, number> = {
     "Légendaire": 1,
@@ -940,8 +1178,8 @@ export default function CardForge() {
             <span style={{ fontSize: 8, color: "#aaa", letterSpacing: 2 }}>ARMIES & MAGIC</span>
           </div>
           <div style={{ display: "flex", gap: 4 }}>
-            {([["forge", "⚒ Forge"], ["edition", "✏ Édition"], ["tokens", "🎭 Tokens"], ["card-backs", "🎴 Dos"], ["sets", "📦 Sets"], ["formats", "🎮 Formats"], ["bulk", "📦 Masse"], ["budget", "⚖ Budget"], ["schema", "📋 Schéma"], ["prints", "🏷 Séries"]] as const).map(([t, l]) => (
-              <button key={t} onClick={() => { setTab(t); if (t === "sets") loadSets(); if (t === "formats") loadFormats(); if (t === "prints") loadPrintsData(); }} style={{
+            {([["forge", "⚒ Forge"], ["edition", "✏ Édition"], ["tokens", "🎭 Tokens"], ["card-backs", "🎴 Dos"], ["kw-icons", "🪄 Icônes"], ["sets", "📦 Sets"], ["formats", "🎮 Formats"], ["bulk", "📦 Masse"], ["budget", "⚖ Budget"], ["schema", "📋 Schéma"], ["prints", "🏷 Séries"]] as const).map(([t, l]) => (
+              <button key={t} onClick={() => { setTab(t); if (t === "sets") loadSets(); if (t === "formats") loadFormats(); if (t === "prints") loadPrintsData(); if (t === "kw-icons") loadKwAssets(); }} style={{
                 padding: "5px 14px", borderRadius: 6, cursor: "pointer",
                 background: tab === t ? "#333" : "transparent",
                 border: `1px solid ${tab === t ? "#333" : "#ddd"}`,
@@ -2044,6 +2282,202 @@ export default function CardForge() {
                     {cbSaving ? "Enregistrement…" : "Enregistrer le dos"}
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── KEYWORD ICONS ── */}
+        {tab === "kw-icons" && (
+          <div style={{ flex: 1, padding: 22, overflowY: "auto" }}>
+            <div style={{ maxWidth: 900, margin: "0 auto" }}>
+              <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16, letterSpacing: 2 }}>GÉNÉRER UNE ICÔNE DE CAPACITÉ</h2>
+
+              {kwMessage && (
+                <div style={{
+                  padding: "8px 14px", borderRadius: 8, fontSize: 10, marginBottom: 12,
+                  background: kwMessage.ok ? "#e8f8f0" : "#fde8e8",
+                  border: `1px solid ${kwMessage.ok ? "#a3e4c1" : "#f5a3a3"}`,
+                  color: kwMessage.ok ? "#27ae60" : "#e74c3c",
+                  fontFamily: "'Crimson Text',serif",
+                }}>{kwMessage.msg}</div>
+              )}
+
+              <div style={{ border: "1px solid #e0e0e0", borderRadius: 8, padding: 16, background: "#fafafa" }}>
+                <div style={{ fontSize: 10, color: "#666", letterSpacing: 1, marginBottom: 10, fontWeight: 700 }}>
+                  PARAMÈTRES
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+                  <div>
+                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>TYPE</label>
+                    <select value={kwTypeForm} onChange={e => { setKwTypeForm(e.target.value as "creature" | "spell"); setKwSelected(""); }}
+                      style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }}>
+                      <option value="creature">Créature</option>
+                      <option value="spell">Sort</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>CAPACITÉ</label>
+                    <select value={kwSelected} onChange={e => setKwSelected(e.target.value)}
+                      style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }}>
+                      <option value="">-- Choisir --</option>
+                      {(kwTypeForm === "creature" ? creatureKeywordOptions : spellKeywordOptions).map(opt => (
+                        <option key={opt.id} value={opt.id}>{opt.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>NOM DE L&apos;ICÔNE</label>
+                    <input type="text" value={kwName} onChange={e => setKwName(e.target.value)}
+                      placeholder="Ex: Bouclier v2"
+                      style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }} />
+                  </div>
+                  <div style={{ gridColumn: "span 3" }}>
+                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>INSTRUCTIONS SUPPLÉMENTAIRES (optionnel)</label>
+                    <textarea value={kwInstructions} onChange={e => setKwInstructions(e.target.value)}
+                      placeholder="Ex: privilégier un éclair, un crâne stylisé..."
+                      style={{ width: "100%", minHeight: 36, padding: 6, borderRadius: 6, border: "1px solid #ddd", fontSize: 10, fontFamily: "'Crimson Text',serif", marginTop: 4, resize: "vertical" }} />
+                  </div>
+                </div>
+
+                {/* Prompt */}
+                <div style={{ marginTop: 12 }}>
+                  <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>PROMPT IMAGE</label>
+                  <textarea value={kwPrompt} onChange={e => setKwPrompt(e.target.value)}
+                    placeholder="Cliquez 'Auto-prompt' pour générer, ou écrivez le vôtre..."
+                    style={{ width: "100%", minHeight: 70, padding: 6, borderRadius: 6, border: "1px solid #ddd", fontSize: 9.5, fontFamily: "monospace", marginTop: 4, resize: "vertical" }} />
+                  <div style={{ display: "flex", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
+                    <button type="button" onClick={generateKeywordIconPrompt} disabled={!kwSelected}
+                      style={{ padding: "4px 12px", borderRadius: 5, border: "1px solid #ddd", background: "#fff", color: kwSelected ? "#666" : "#ccc", fontSize: 9, fontFamily: "'Cinzel',serif", cursor: kwSelected ? "pointer" : "default" }}>
+                      Auto-prompt
+                    </button>
+                    <button type="button" onClick={generateKeywordIconImage} disabled={!kwPrompt || kwGenerating}
+                      style={{ padding: "4px 12px", borderRadius: 5, border: "none", background: kwPrompt && !kwGenerating ? "linear-gradient(135deg, #6c5ce7, #a855f7)" : "#e0e0e0", color: "#fff", fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: 700, cursor: kwPrompt && !kwGenerating ? "pointer" : "default" }}>
+                      {kwGenerating ? "Génération…" : kwVariations.length > 0 ? "Relancer 3 variantes" : "Générer 3 variantes"}
+                    </button>
+                    <label style={{ padding: "4px 12px", borderRadius: 5, border: "1px solid #ddd", background: "#fff", color: "#666", fontSize: 9, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>
+                      Upload manuel
+                      <input type="file" accept="image/*" onChange={handleKwFileChange} style={{ display: "none" }} />
+                    </label>
+                  </div>
+                </div>
+
+                {/* 3 variations preview — checker bg reveals transparency */}
+                <div style={{ marginTop: 14 }}>
+                  <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>VARIANTES (cliquez pour sélectionner)</label>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginTop: 6 }}>
+                    {[0, 1, 2].map((i) => {
+                      const v = kwVariations[i];
+                      const isSelected = kwSelectedIdx === i;
+                      const checkerBg = "repeating-conic-gradient(#d9d9d9 0% 25%, #fff 0% 50%) 50% / 16px 16px";
+                      return (
+                        <button key={i} type="button" disabled={!v} onClick={() => v && setKwSelectedIdx(i)}
+                          style={{
+                            width: "100%", aspectRatio: "1/1", borderRadius: 10, overflow: "hidden",
+                            border: isSelected ? "3px solid #27ae60" : "2px dashed #ddd",
+                            background: v ? checkerBg : "#fafafa",
+                            padding: 0, cursor: v ? "pointer" : "default",
+                            boxShadow: isSelected ? "0 0 14px rgba(39,174,96,0.5)" : "none",
+                            position: "relative",
+                          }}>
+                          {v ? (
+                            <>
+                              <img src={v.url} alt={`Variante ${i + 1}`} style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }} />
+                              {isSelected && (
+                                <div style={{ position: "absolute", top: 4, right: 6, background: "#27ae60", color: "#fff", borderRadius: 12, padding: "1px 8px", fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: 700 }}>
+                                  ✓
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            <span style={{ fontSize: 10, color: "#bbb", fontFamily: "'Cinzel',serif" }}>
+                              {kwGenerating ? "…" : `Variante ${i + 1}`}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div style={{ marginTop: 14, display: "flex", justifyContent: "flex-end" }}>
+                  <button type="button" onClick={saveKeywordIcon} disabled={!kwName.trim() || !kwSelected || kwSelectedIdx === null || kwSaving}
+                    style={{
+                      padding: "10px 18px", borderRadius: 6, border: "none",
+                      background: (!kwName.trim() || !kwSelected || kwSelectedIdx === null || kwSaving) ? "#e0e0e0" : "linear-gradient(135deg, #27ae60, #2ecc71)",
+                      color: "#fff", fontSize: 10, fontFamily: "'Cinzel',serif", fontWeight: 700, letterSpacing: 1,
+                      cursor: (!kwName.trim() || !kwSelected || kwSelectedIdx === null || kwSaving) ? "default" : "pointer",
+                    }}>
+                    {kwSaving ? "Enregistrement…" : "Enregistrer la variante sélectionnée"}
+                  </button>
+                </div>
+              </div>
+
+              {/* Gallery */}
+              <div style={{ marginTop: 28 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                  <h3 style={{ fontSize: 12, fontFamily: "'Cinzel',serif", fontWeight: 700, letterSpacing: 2, margin: 0 }}>GALERIE</h3>
+                  <select value={kwGalleryFilter} onChange={e => { setKwGalleryFilter(e.target.value); }} onBlur={loadKwAssets}
+                    style={{ padding: "4px 8px", borderRadius: 5, border: "1px solid #ddd", fontSize: 10, fontFamily: "'Cinzel',serif" }}>
+                    <option value="">Toutes les capacités</option>
+                    <optgroup label="Créature">
+                      {creatureKeywordOptions.map(opt => <option key={`c-${opt.id}`} value={opt.id}>{opt.label}</option>)}
+                    </optgroup>
+                    <optgroup label="Sort">
+                      {spellKeywordOptions.map(opt => <option key={`s-${opt.id}`} value={opt.id}>{opt.label}</option>)}
+                    </optgroup>
+                  </select>
+                  <button type="button" onClick={loadKwAssets}
+                    style={{ padding: "4px 10px", borderRadius: 5, border: "1px solid #ddd", background: "#fff", color: "#666", fontSize: 9, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>
+                    Rafraîchir
+                  </button>
+                </div>
+                {kwAssets.length === 0 ? (
+                  <div style={{ padding: 24, textAlign: "center", color: "#aaa", fontSize: 11, fontFamily: "'Crimson Text',serif", background: "#fff", border: "1px solid #eee", borderRadius: 8 }}>
+                    Aucune icône. Commence par en générer une ci-dessus.
+                  </div>
+                ) : (
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 12 }}>
+                    {kwAssets.map((a) => {
+                      const label =
+                        a.keyword_type === "creature"
+                          ? KEYWORD_LABELS[a.keyword] ?? a.keyword
+                          : SPELL_KEYWORD_LABELS[a.keyword as SpellKeywordId] ?? a.keyword;
+                      return (
+                        <div key={a.id} style={{
+                          border: `2px solid ${a.is_active ? "#27ae60" : "#e0e0e0"}`,
+                          borderRadius: 10, background: "#fff", overflow: "hidden",
+                          boxShadow: a.is_active ? "0 0 10px rgba(39,174,96,0.35)" : "none",
+                        }}>
+                          <div style={{ width: "100%", aspectRatio: "1/1", overflow: "hidden", background: "repeating-conic-gradient(#d9d9d9 0% 25%, #fff 0% 50%) 50% / 14px 14px" }}>
+                            <img src={a.icon_url} alt={a.name} style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }} />
+                          </div>
+                          <div style={{ padding: "8px 10px" }}>
+                            <div style={{ fontSize: 10, fontWeight: 700, color: "#333", fontFamily: "'Cinzel',serif", marginBottom: 2 }}>
+                              {a.is_active && <span style={{ color: "#27ae60" }}>★ </span>}{a.name}
+                            </div>
+                            <div style={{ fontSize: 9, color: "#777", marginBottom: 6 }}>
+                              {a.keyword_type === "creature" ? "Créature" : "Sort"} · {label}
+                            </div>
+                            <div style={{ display: "flex", gap: 4 }}>
+                              <button type="button" onClick={() => activateKwAsset(a.id)} disabled={a.is_active}
+                                style={{
+                                  flex: 1, padding: "3px 6px", borderRadius: 4, border: "none", fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: 700, cursor: a.is_active ? "default" : "pointer",
+                                  background: a.is_active ? "#e0e0e0" : "#27ae60", color: a.is_active ? "#888" : "#fff",
+                                }}>
+                                {a.is_active ? "Active" : "Activer"}
+                              </button>
+                              <button type="button" onClick={() => deleteKwAsset(a.id, a.name)}
+                                style={{ padding: "3px 8px", borderRadius: 4, border: "none", background: "#e74c3c22", color: "#e74c3c", fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: 700, cursor: "pointer" }}>
+                                ×
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
           </div>

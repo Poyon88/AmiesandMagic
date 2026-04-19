@@ -9,6 +9,7 @@ import type { DragEvent } from "react";
 import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText } from "@/lib/game/keyword-labels";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS, getSpellKeywordLabel, getSpellKeywordDesc } from "@/lib/game/spell-keywords";
 import KeywordIcon from "@/components/shared/KeywordIcon";
+import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
 
 interface HandCardProps {
@@ -70,6 +71,7 @@ export default function HandCard({
   const s = 0.55;
   const accentColor = isCreature ? "#74b9ff" : "#ce93d8";
   const borderColor = isSelected ? "#c8a84e" : isCreature ? "#3d3d5c" : "#6c3483";
+  const iconOverrides = useKeywordIconStore((st) => st.overrides);
 
   return (
     <motion.div
@@ -176,15 +178,23 @@ export default function HandCard({
             <div style={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
               {card.keywords.map((kw) => {
                 const x = xVals[kw];
+                const hasImg = !!iconOverrides[kw];
                 return (
                 <div key={kw} style={{
-                  minWidth: 14, height: 14, borderRadius: 3,
+                  minWidth: 28, height: 28, borderRadius: 3,
                   padding: x != null ? "0 2px" : 0,
-                  background: `${accentColor}33`, border: `1px solid ${accentColor}66`,
+                  background: hasImg ? "transparent" : `${accentColor}33`,
+                  border: hasImg ? "none" : `1px solid ${accentColor}66`,
                   display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1,
-                  fontSize: 8,
+                  fontSize: 8, overflow: "hidden",
                 }}>
-                  <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={8} />
+                  {hasImg ? (
+                    <div style={{ width: 28, height: 28, flexShrink: 0 }}>
+                      <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={16} keyword={kw} fill />
+                    </div>
+                  ) : (
+                    <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={16} keyword={kw} />
+                  )}
                   {x != null && <span style={{ fontSize: 6, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif" }}>{toRoman(x)}</span>}
                 </div>
                 );
@@ -207,13 +217,20 @@ export default function HandCard({
                   : usesAmount ? toRoman(spellKw.amount ?? 1) : null;
                 return (
                 <div key={`sk_${i}`} title={displayTitle} style={{
-                  minWidth: 14, height: 14, borderRadius: 3,
+                  minWidth: 28, height: 28, borderRadius: 3,
                   padding: hasValue ? "0 2px" : 0,
-                  background: `${accentColor}33`, border: `1px solid ${accentColor}66`,
+                  background: (() => { const k = `spell_${spellKw.id}`; return iconOverrides[k] ? "transparent" : `${accentColor}33`; })(),
+                  border: (() => { const k = `spell_${spellKw.id}`; return iconOverrides[k] ? "none" : `1px solid ${accentColor}66`; })(),
                   display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1,
-                  fontSize: 8,
+                  fontSize: 8, overflow: "hidden",
                 }}>
-                  <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={8} />
+                  {iconOverrides[`spell_${spellKw.id}`] ? (
+                    <div style={{ width: 28, height: 28, flexShrink: 0 }}>
+                      <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={16} keyword={`spell_${spellKw.id}`} fill />
+                    </div>
+                  ) : (
+                    <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={16} keyword={`spell_${spellKw.id}`} />
+                  )}
                   {valueText && <span style={{ fontSize: 6, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif" }}>{valueText}</span>}
                 </div>
                 );
