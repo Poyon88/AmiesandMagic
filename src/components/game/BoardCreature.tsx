@@ -63,7 +63,7 @@ export default function BoardCreature({
     <motion.div
       layout
       data-instance-id={creature.instanceId}
-      style={{ width: W, height: H, position: "relative", zIndex: isZoomed ? 100 : isSelected ? 10 : 1 }}
+      style={{ width: W, height: H, position: "relative", zIndex: isZoomed ? 100 : isSelected ? 10 : 1, zoom: 1.225 }}
       initial={{ y: isOwn ? 40 : -40, opacity: 0, scale: 0.5 }}
       animate={
         damageAmount
@@ -71,8 +71,8 @@ export default function BoardCreature({
           : { x: 0, y: 0, opacity: 1, scale: 1 }
       }
       exit={creature.isPoisoned
-        ? { opacity: 0, scale: 0.3, rotate: -10, filter: "brightness(0.5) saturate(2) hue-rotate(80deg)", transition: { duration: 0.7, ease: "easeIn" } }
-        : { opacity: 0, scale: 0, rotate: -15, filter: "brightness(2) saturate(0)", transition: { duration: 0.5, ease: "easeIn" } }
+        ? { opacity: 0, scale: 0.3, rotate: -10, filter: "brightness(0.5) saturate(2) hue-rotate(80deg)", transition: { duration: 1.0, ease: "easeIn" } }
+        : { opacity: 0, scale: 0, rotate: -15, filter: "brightness(2) saturate(0)", transition: { duration: 1.0, ease: "easeIn" } }
       }
       transition={{ duration: 0.5, ease: "easeOut" }}
     >
@@ -103,7 +103,7 @@ export default function BoardCreature({
         top: !isOwn && isZoomed ? 0 : undefined,
         transformOrigin: isOwn ? "bottom center" : "top center",
         transform: isZoomed ? "translateX(-50%)" : "none",
-        zoom: isZoomed ? 2.7 : 1,
+        zoom: isZoomed ? 1.55 : 1,
         background: "linear-gradient(160deg, #1a1a2e, #0d0d1a)",
         border,
         boxShadow: isSelected ? "0 0 14px #f1c40f44" : isValidTarget ? "0 0 14px #e74c3c44" : "none",

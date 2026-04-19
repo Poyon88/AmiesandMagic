@@ -30,10 +30,20 @@ export interface SpellCastEvent {
   effectText: string;
   timestamp: number;
   countered?: boolean;
+  card?: Card | null;
+  targetIds?: string[];
 }
 
 export interface FireBreathEvent {
   attackerInstanceId: string;
+  timestamp: number;
+}
+
+export interface HeroPowerCastEvent {
+  heroName: string;
+  race: string;
+  powerName: string;
+  powerDescription: string;
   timestamp: number;
 }
 
@@ -60,12 +70,16 @@ interface GameStore {
   damageEvents: DamageEvent[];
   spellCastEvent: SpellCastEvent | null;
   fireBreathEvent: FireBreathEvent | null;
+  heroPowerCastEvent: HeroPowerCastEvent | null;
   boardImageUrl: string | null;
   boardMusicUrls: string[];
   boardTenseMusicUrl: string | null;
   boardVictoryMusicUrl: string | null;
   boardDefeatMusicUrl: string | null;
   lastSfxEvents: { type: string; cardSfxUrl?: string }[];
+  // Animation orchestration
+  isAnimating: boolean;
+  pendingIncomingActions: GameAction[];
 
   // Actions
   initGame: (
@@ -98,6 +112,7 @@ interface GameStore {
   clearDamageEvents: () => void;
   clearSpellCastEvent: () => void;
   clearFireBreathEvent: () => void;
+  clearHeroPowerCastEvent: () => void;
   activateHeroPower: () => GameAction | null;
   confirmMulligan: (selectedInstanceIds: string[]) => GameAction | null;
 
@@ -392,6 +407,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
   damageEvents: [],
   spellCastEvent: null,
   fireBreathEvent: null,
+  heroPowerCastEvent: null,
+  isAnimating: false,
+  pendingIncomingActions: [],
   boardImageUrl: null,
   boardMusicUrls: [],
   boardTenseMusicUrl: null,
@@ -426,8 +444,15 @@ export const useGameStore = create<GameStore>((set, get) => ({
   setBoardDefeatMusicUrl: (url: string | null) => set({ boardDefeatMusicUrl: url }),
 
   dispatchAction: (action) => {
-    const { gameState, localPlayerId } = get();
+    const { gameState, localPlayerId, isAnimating } = get();
     if (!gameState || gameState.phase === "finished") return null;
+
+    // If a previous action's animation sequence is still playing, queue the
+    // incoming action — the unlock step drains the queue in order.
+    if (isAnimating) {
+      set((s) => ({ pendingIncomingActions: [...s.pendingIncomingActions, action] }));
+      return action;
+    }
 
     // Detect spell cast before applying action
     let spellEvent: SpellCastEvent | null = null;
@@ -435,9 +460,37 @@ export const useGameStore = create<GameStore>((set, get) => ({
       const player = gameState.players[gameState.currentPlayerIndex];
       const cardInst = player.hand.find((c) => c.instanceId === action.cardInstanceId);
       if (cardInst && cardInst.card.card_type === "spell") {
+        // Collect every target this cast references so the overlay can draw
+        // arrows from the spell card to each target on the board.
+        const tgts: string[] = [];
+        if (action.targetInstanceId) tgts.push(action.targetInstanceId);
+        if (action.graveyardTargetInstanceId) tgts.push(action.graveyardTargetInstanceId);
+        if (action.targetMap) {
+          for (const v of Object.values(action.targetMap)) {
+            if (v && !tgts.includes(v)) tgts.push(v);
+          }
+        }
         spellEvent = {
           spellName: cardInst.card.name,
           effectText: cardInst.card.effect_text,
+          timestamp: Date.now(),
+          card: cardInst.card,
+          targetIds: tgts,
+        };
+      }
+    }
+
+    // Detect hero power cast before applying action
+    let heroPowerEvent: HeroPowerCastEvent | null = null;
+    if (action.type === "hero_power") {
+      const player = gameState.players[gameState.currentPlayerIndex];
+      const heroDef = player.hero.heroDefinition;
+      if (heroDef) {
+        heroPowerEvent = {
+          heroName: heroDef.name,
+          race: heroDef.race,
+          powerName: heroDef.powerName,
+          powerDescription: heroDef.powerDescription,
           timestamp: Date.now(),
         };
       }
@@ -505,6 +558,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
               spellName: `♻️ ${entry.card.name}`,
               effectText: entry.card.effect_text,
               timestamp: Date.now(),
+              card: entry.card,
             });
           }
         }
@@ -608,86 +662,230 @@ export const useGameStore = create<GameStore>((set, get) => ({
       sfxEvents.push({ type: "draw_card" });
     }
 
-    // Play SFX immediately (no React render cycle delay)
-    if (sfxEvents.length > 0 && typeof window !== "undefined") {
+    // ============================================================
+    // Sequenced animation pipeline
+    // Order: overlay → impacts → deaths → triggered summons → final
+    // Local + remote actions queue behind each other via isAnimating.
+    // ============================================================
+
+    // Bucket SFX by phase so each sound fires at the right moment.
+    type SfxEvt = { type: string; cardSfxUrl?: string };
+    const overlaySfx: SfxEvt[] = [];
+    const impactSfx: SfxEvt[] = [];
+    const deathSfx: SfxEvt[] = [];
+    const summonSfx: SfxEvt[] = [];
+    for (const evt of sfxEvents) {
+      if (["spell_cast", "hero_power", "attack", "end_turn", "play_card", "draw_card", "counter_spell", "fire_breath"].includes(evt.type)) {
+        overlaySfx.push(evt);
+      } else if (["damage", "heal", "buff", "debuff", "divine_shield", "poison", "dodge", "paralyze"].includes(evt.type)) {
+        impactSfx.push(evt);
+      } else if (evt.type === "creature_death") {
+        deathSfx.push(evt);
+      } else if (evt.type === "summon" || evt.type === "resurrect") {
+        summonSfx.push(evt);
+      } else {
+        overlaySfx.push(evt);
+      }
+    }
+
+    const playSfxBatch = (events: SfxEvt[]) => {
+      if (events.length === 0 || typeof window === "undefined") return;
       const audioState = useAudioStore.getState();
-      if (audioState.userHasInteracted && !audioState.settings.sfxMuted) {
-        const engine = SfxEngine.getInstance();
-        for (const event of sfxEvents) {
-          const url = event.cardSfxUrl || audioState.standardSfxUrls[event.type];
-          if (url) engine.play(url);
+      if (!audioState.userHasInteracted || audioState.settings.sfxMuted) return;
+      const engine = SfxEngine.getInstance();
+      for (const evt of events) {
+        const url = evt.cardSfxUrl || audioState.standardSfxUrls[evt.type];
+        if (url) engine.play(url);
+      }
+    };
+
+    // Identify what kind of visible events this action produces.
+    const hasOverlay = !!spellEvent || !!heroPowerEvent || !!fireEvent;
+    const hasImpacts = dmgEvents.length > 0;
+    const hasDeaths = deadCreatures.length > 0;
+
+    const playedId = action.type === "play_card" ? action.cardInstanceId : null;
+    const newCreatureIds = new Set<string>();
+    for (let i = 0; i < 2; i++) {
+      for (const nc of newState.players[i].board) {
+        if (nc.instanceId === playedId) continue;
+        if (!gameState.players[i].board.find((c) => c.instanceId === nc.instanceId)) {
+          newCreatureIds.add(nc.instanceId);
+        }
+      }
+    }
+    const hasSummons = newCreatureIds.size > 0;
+    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons;
+
+    // Deep clone helper — factionCardPool carries non-serialisable refs, keep it aside.
+    const cloneState = (state: GameState): GameState => {
+      const { factionCardPool, ...rest } = state;
+      const cloned = JSON.parse(JSON.stringify(rest)) as GameState;
+      cloned.factionCardPool = factionCardPool;
+      return cloned;
+    };
+
+    // Impact state: HP reduced (same values as newState), dead creatures still
+    // shown at 0 HP on their original slot, freshly summoned creatures NOT yet
+    // on the board so they enter later with their own animation.
+    const impactState = cloneState(newState);
+    for (let i = 0; i < 2; i++) {
+      const oldBoard = gameState.players[i].board;
+      const newBoard = newState.players[i].board;
+      const deadIds = new Set(
+        oldBoard
+          .filter((c) => !newBoard.find((nc) => nc.instanceId === c.instanceId))
+          .map((c) => c.instanceId),
+      );
+      impactState.players[i].board = oldBoard.map((c) => {
+        if (deadIds.has(c.instanceId)) {
+          return { ...c, currentHealth: 0 };
+        }
+        const updated = newBoard.find((nc) => nc.instanceId === c.instanceId);
+        return updated ?? c;
+      });
+      // Also append any freshly-played creature (the one the user just cast) so
+      // the hand→board animation still works. We exclude newCreatureIds
+      // (resurrections / convocations) which belong to a later phase.
+      for (const nc of newBoard) {
+        if (nc.instanceId === playedId && !impactState.players[i].board.find((c) => c.instanceId === nc.instanceId)) {
+          impactState.players[i].board.push(nc);
         }
       }
     }
 
-    if (deadCreatures.length > 0) {
-      // Create intermediate state with dead creatures still on board (at 0 HP)
-      const { factionCardPool: _pool, ...stateWithoutPool } = newState;
-      const interState = JSON.parse(JSON.stringify(stateWithoutPool)) as GameState;
-      interState.factionCardPool = _pool;
-      for (let i = 0; i < 2; i++) {
-        const oldBoard = gameState.players[i].board;
-        const newBoard = newState.players[i].board;
-        const deadIds = new Set(
-          oldBoard
-            .filter((c) => !newBoard.find((nc) => nc.instanceId === c.instanceId))
-            .map((c) => c.instanceId),
-        );
-        if (deadIds.size > 0) {
-          // Rebuild board in the OLD order, so dead creatures stay at their original
-          // slot (with 0 HP) — prevents a visible shift before AnimatePresence's exit.
-          interState.players[i].board = oldBoard.map((c) => {
-            if (deadIds.has(c.instanceId)) {
-              return { ...c, currentHealth: 0 };
-            }
-            const updated = newBoard.find((nc) => nc.instanceId === c.instanceId);
-            return updated ?? c;
-          });
-        }
-      }
+    // Post-death state: like newState but without the to-be-summoned creatures.
+    const postDeathState = cloneState(newState);
+    for (let i = 0; i < 2; i++) {
+      postDeathState.players[i].board = newState.players[i].board.filter(
+        (c) => !newCreatureIds.has(c.instanceId),
+      );
+    }
 
-      // First render: show dead creatures still on board (triggers damage overlay)
-      set({
-        gameState: interState,
-        selectedCardInstanceId: null,
-        selectedAttackerInstanceId: null,
-        validTargets: [],
-        targetingMode: "none",
-        damageEvents: dmgEvents,
-        lastSfxEvents: sfxEvents,
-        effectLog: [...get().effectLog, ...logEntries].slice(-20),
-        ...(spellEvent ? { spellCastEvent: spellEvent } : {}),
-        ...(fireEvent ? { fireBreathEvent: fireEvent } : {}),
-      });
-
-      // After a short delay, remove dead creatures (triggers exit animation)
-      setTimeout(() => {
-        set({ gameState: newState });
-      }, 1800);
-    } else {
+    // Fast path: trivial action (no visible effects) — commit immediately.
+    if (!hasAnything) {
       set({
         gameState: newState,
         selectedCardInstanceId: null,
         selectedAttackerInstanceId: null,
         validTargets: [],
         targetingMode: "none",
-        damageEvents: dmgEvents,
+        damageEvents: [],
         lastSfxEvents: sfxEvents,
         effectLog: [...get().effectLog, ...logEntries].slice(-20),
-        ...(spellEvent ? { spellCastEvent: spellEvent } : {}),
-        ...(fireEvent ? { fireBreathEvent: fireEvent } : {}),
       });
+      playSfxBatch(sfxEvents);
+      return action;
     }
 
-    // Schedule staggered recast spell animations
-    if (recastSpells.length > 0) {
-      const RECAST_DELAY = 2200; // ms between each recast animation
-      for (let i = 0; i < recastSpells.length; i++) {
-        setTimeout(() => {
-          set({ spellCastEvent: recastSpells[i] });
-        }, RECAST_DELAY * (i + 1));
+    // Lock the UI while the sequence plays.
+    set({
+      isAnimating: true,
+      selectedCardInstanceId: null,
+      selectedAttackerInstanceId: null,
+      validTargets: [],
+      targetingMode: "none",
+    });
+
+    // --- Phase timings ---
+    const OVERLAY_PRE_IMPACT_MS = 1800; // overlay → impact start
+    const IMPACT_MS = 1200;
+    const DEATH_MS = 1000;
+    const SUMMON_MS = 1400;
+    const RECAST_GAP_MS = 1800;
+
+    // --- Phase handlers ---
+    const phaseOverlay = () => {
+      set((s) => ({
+        effectLog: [...s.effectLog, ...logEntries].slice(-20),
+        ...(spellEvent ? { spellCastEvent: spellEvent } : {}),
+        ...(fireEvent ? { fireBreathEvent: fireEvent } : {}),
+        ...(heroPowerEvent ? { heroPowerCastEvent: heroPowerEvent } : {}),
+      }));
+      playSfxBatch(overlaySfx);
+    };
+
+    // Cascade: if multiple targets are hit by the same action, stagger their
+    // floating popups by 200ms each so the player can read each one.
+    const STAGGER_MS = 200;
+    const targetOrder = new Map<string, number>();
+    for (const ev of dmgEvents) {
+      if (!targetOrder.has(ev.targetId)) {
+        targetOrder.set(ev.targetId, targetOrder.size);
       }
     }
+    const staggeredDmgEvents = dmgEvents.map((ev) => ({
+      ...ev,
+      delayMs: (targetOrder.get(ev.targetId) ?? 0) * STAGGER_MS,
+    }));
+
+    const phaseImpacts = () => {
+      set({
+        gameState: impactState,
+        damageEvents: staggeredDmgEvents,
+        lastSfxEvents: impactSfx,
+      });
+      playSfxBatch(impactSfx);
+    };
+
+    const phaseDeaths = () => {
+      set({ gameState: postDeathState });
+      playSfxBatch(deathSfx);
+    };
+
+    const phaseSummons = () => {
+      set({ gameState: newState });
+      playSfxBatch(summonSfx);
+    };
+
+    const phaseFinalize = () => {
+      // Make sure the very final state is applied (in case we skipped summons).
+      set({ gameState: newState });
+    };
+
+    const phaseUnlock = () => {
+      set({ isAnimating: false });
+      const queued = get().pendingIncomingActions;
+      if (queued.length > 0) {
+        set({ pendingIncomingActions: queued.slice(1) });
+        get().dispatchAction(queued[0]);
+      }
+    };
+
+    // --- Schedule the sequence ---
+    let cursor = 0;
+    // Phase A (Overlay) — synchronous, already fires at t=0.
+    phaseOverlay();
+    if (hasOverlay) cursor += OVERLAY_PRE_IMPACT_MS;
+
+    // Phase B (Impacts) — always run if there's anything beyond the overlay.
+    setTimeout(phaseImpacts, cursor);
+    cursor += IMPACT_MS;
+
+    if (hasDeaths) {
+      setTimeout(phaseDeaths, cursor);
+      cursor += DEATH_MS;
+    }
+
+    if (hasSummons) {
+      setTimeout(phaseSummons, cursor);
+      cursor += SUMMON_MS;
+    } else {
+      // Still ensure final state lands (e.g., faction pool updates).
+      setTimeout(phaseFinalize, cursor);
+      cursor += 50;
+    }
+
+    // Recast spells ride the tail of the sequence.
+    if (recastSpells.length > 0) {
+      for (let i = 0; i < recastSpells.length; i++) {
+        const recast = recastSpells[i];
+        setTimeout(() => set({ spellCastEvent: recast }), cursor);
+        cursor += RECAST_GAP_MS;
+      }
+    }
+
+    setTimeout(phaseUnlock, cursor);
 
     return action;
   },
@@ -1106,6 +1304,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   clearFireBreathEvent: () => {
     set({ fireBreathEvent: null });
+  },
+
+  clearHeroPowerCastEvent: () => {
+    set({ heroPowerCastEvent: null });
   },
 
   activateHeroPower: () => {

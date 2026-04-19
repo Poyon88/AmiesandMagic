@@ -427,6 +427,7 @@ export interface DamageEvent {
   label?: string;
   x: number;
   y: number;
+  delayMs?: number; // stagger delay when multiple targets share one action
 }
 
 // Match data from database

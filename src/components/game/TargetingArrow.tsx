@@ -139,7 +139,7 @@ export default function TargetingArrow({
       <path
         ref={glowPathRef}
         fill="none"
-        strokeWidth={10}
+        strokeWidth={20}
         strokeOpacity={0.25}
         strokeLinecap="round"
         pointerEvents="none"
@@ -149,16 +149,16 @@ export default function TargetingArrow({
       <path
         ref={pathRef}
         fill="none"
-        strokeWidth={3}
+        strokeWidth={6}
         strokeLinecap="round"
-        strokeDasharray="10 5"
+        strokeDasharray="20 10"
         pointerEvents="none"
       />
 
       {/* Arrowhead */}
       <polygon
         ref={arrowheadRef}
-        points="0,-8 18,0 0,8"
+        points="0,-16 36,0 0,16"
         pointerEvents="none"
       />
     </svg>,

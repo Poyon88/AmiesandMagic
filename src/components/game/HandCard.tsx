@@ -77,7 +77,7 @@ export default function HandCard({
       animate={{ y: 0, opacity: 1, scale: 1 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
       data-instance-id={cardInstance.instanceId}
-      style={{ width: W, height: H, position: "relative" }}
+      style={{ width: W, height: H, position: "relative", zoom: 1.225 }}
     >
       <div
         ref={cardRef}
@@ -115,7 +115,7 @@ export default function HandCard({
           opacity: isDragging ? 0.5 : canPlay ? 1 : 0.75,
           transition: "border-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease",
           transform: isZoomed ? "translateX(-50%)" : "none",
-          zoom: isZoomed ? 2.25 : 1,
+          zoom: isZoomed ? 1.3 : 1,
           zIndex: isZoomed ? 50 : 1,
         }}
       >

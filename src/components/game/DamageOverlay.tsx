@@ -9,6 +9,16 @@ interface DamageOverlayProps {
   events: DamageEvent[];
 }
 
+function DelayedPopup({ delay, children }: { delay: number; children: React.ReactNode }) {
+  const [show, setShow] = useState(delay <= 0);
+  useEffect(() => {
+    if (delay <= 0) return;
+    const timer = setTimeout(() => setShow(true), delay);
+    return () => clearTimeout(timer);
+  }, [delay]);
+  return show ? <>{children}</> : null;
+}
+
 export default function DamageOverlay({ events }: DamageOverlayProps) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -25,9 +35,14 @@ export default function DamageOverlay({ events }: DamageOverlayProps) {
       }}
     >
       <AnimatePresence>
-        {events.map((evt) => (
-          <EventPopup key={evt.targetId + "-" + evt.type + "-" + Math.random()} event={evt} />
-        ))}
+        {events.map((evt) => {
+          const key = evt.targetId + "-" + evt.type + "-" + Math.random();
+          return (
+            <DelayedPopup key={key} delay={evt.delayMs ?? 0}>
+              <EventPopup event={evt} />
+            </DelayedPopup>
+          );
+        })}
       </AnimatePresence>
     </div>,
     document.body
@@ -293,6 +308,141 @@ function PoisonPopup({ event }: { event: DamageEvent }) {
   );
 }
 
+function DamagePopup({ event }: { event: DamageEvent }) {
+  const { flashColor, particleColor, textColor, format } = config.damage;
+
+  return (
+    <motion.div
+      style={{
+        position: "absolute",
+        left: event.x,
+        top: event.y,
+        transform: "translate(-50%, -50%)",
+        pointerEvents: "none",
+      }}
+      initial={{ opacity: 1 }}
+      animate={{ opacity: 0 }}
+      transition={{ duration: 4.0, ease: "easeOut" }}
+    >
+      {/* Expanding shockwave ring */}
+      <motion.div
+        style={{
+          position: "absolute",
+          left: -50,
+          top: -50,
+          width: 100,
+          height: 100,
+          borderRadius: "50%",
+          border: `3px solid ${textColor}`,
+          boxShadow: `0 0 28px ${textColor}aa, inset 0 0 18px ${textColor}66`,
+          pointerEvents: "none",
+        }}
+        initial={{ scale: 0.2, opacity: 1 }}
+        animate={{ scale: 3.2, opacity: 0 }}
+        transition={{ duration: 1.4, ease: "easeOut" }}
+      />
+
+      {/* Inner radial flash */}
+      <motion.div
+        style={{
+          position: "absolute",
+          left: -55,
+          top: -55,
+          width: 110,
+          height: 110,
+          borderRadius: "50%",
+          background: `radial-gradient(circle, ${flashColor} 0%, rgba(0,0,0,0) 70%)`,
+          pointerEvents: "none",
+        }}
+        initial={{ scale: 0.4, opacity: 1 }}
+        animate={{ scale: 2, opacity: 0 }}
+        transition={{ duration: 1.0 }}
+      />
+
+      {/* Impact slash cross */}
+      {[0, 90].map((rot) => (
+        <motion.div
+          key={rot}
+          style={{
+            position: "absolute",
+            left: -50,
+            top: -2,
+            width: 100,
+            height: 4,
+            borderRadius: 2,
+            background: `linear-gradient(90deg, transparent 0%, ${textColor} 50%, transparent 100%)`,
+            boxShadow: `0 0 12px ${textColor}`,
+            transform: `rotate(${rot}deg)`,
+            pointerEvents: "none",
+          }}
+          initial={{ scaleX: 0, opacity: 1 }}
+          animate={{ scaleX: 1.4, opacity: 0 }}
+          transition={{ duration: 0.55, ease: "easeOut" }}
+        />
+      ))}
+
+      {/* Debris particles — 14, longer distance */}
+      {[...Array(14)].map((_, i) => {
+        const angle = (i / 14) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
+        const dist = 40 + Math.random() * 40;
+        const dx = Math.cos(angle) * dist;
+        const dy = Math.sin(angle) * dist;
+        return (
+          <motion.div
+            key={i}
+            style={{
+              position: "absolute",
+              width: 7,
+              height: 7,
+              borderRadius: "50%",
+              background: particleColor,
+              boxShadow: `0 0 8px ${particleColor}`,
+              left: -3.5,
+              top: -3.5,
+              pointerEvents: "none",
+            }}
+            initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
+            animate={{ x: dx, y: dy, opacity: 0, scale: 0 }}
+            transition={{ duration: 1.2 + Math.random() * 0.6, ease: [0.2, 0.6, 0.3, 1], delay: i * 0.015 }}
+          />
+        );
+      })}
+
+      {/* Damage number — bounce in, linger, drift up */}
+      <motion.span
+        style={{
+          position: "absolute",
+          left: "50%",
+          top: "50%",
+          transform: "translate(-50%, -50%)",
+          fontSize: "2.4rem",
+          fontWeight: 900,
+          color: textColor,
+          textShadow: `0 0 14px ${textColor}, 0 0 24px ${textColor}aa, 0 2px 3px #000`,
+          fontFamily: "'Cinzel', serif",
+          whiteSpace: "nowrap",
+          pointerEvents: "none",
+          letterSpacing: "0.02em",
+        }}
+        initial={{ y: 10, scale: 0.2, opacity: 0, rotate: -12 }}
+        animate={{
+          y: [10, -6, -6, -52],
+          scale: [0.2, 1.9, 1.6, 1.2],
+          opacity: [0, 1, 1, 0],
+          rotate: [-12, 4, 0, 0],
+        }}
+        transition={{
+          duration: 3.5,
+          times: [0, 0.12, 0.75, 1],
+          ease: ["backOut", "easeOut", "easeIn"],
+        }}
+      >
+        {format(event)}
+      </motion.span>
+    </motion.div>
+  );
+}
+
 function EventPopup({ event }: { event: DamageEvent }) {
   if (event.x < -9000) return null;
 
@@ -304,6 +454,10 @@ function EventPopup({ event }: { event: DamageEvent }) {
 
   if (type === "poison") {
     return <PoisonPopup event={event} />;
+  }
+
+  if (type === "damage") {
+    return <DamagePopup event={event} />;
   }
 
   const { flashColor, particleColor, textColor, format } = config[type];

@@ -19,6 +19,7 @@ import TargetingArrow from "./TargetingArrow";
 import DamageOverlay from "./DamageOverlay";
 import SpellCastOverlay from "./SpellCastOverlay";
 import FireBreathOverlay from "./FireBreathOverlay";
+import HeroPowerOverlay from "./HeroPowerOverlay";
 import MulliganOverlay from "./MulliganOverlay";
 import SettingsModal from "@/components/shared/SettingsModal";
 import type { GameAction, DamageEvent } from "@/lib/game/types";
@@ -114,6 +115,9 @@ export default function GameBoard({ onAction }: GameBoardProps) {
     clearSpellCastEvent,
     fireBreathEvent,
     clearFireBreathEvent,
+    heroPowerCastEvent,
+    clearHeroPowerCastEvent,
+    isAnimating,
     spellTargetSlots,
     currentTargetSlotIndex,
     confirmMulligan,
@@ -153,7 +157,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
   const boardImageUrl = useGameStore((s) => s.boardImageUrl);
   const myPlayer = getMyPlayerState();
   const opponent = getOpponentPlayerState();
-  const myTurn = isMyTurn();
+  const myTurn = isMyTurn() && !isAnimating;
 
   // Broadcast helper
   const broadcast = useCallback(
@@ -447,10 +451,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           onDrop={handleDropOnBoard}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
-          className={`
-            absolute top-[42%] left-0 right-0 h-[24%] flex items-center justify-center px-8 transition-all overflow-visible
-            ${isDragOver ? "bg-success/10 border-2 border-dashed border-success/50" : ""}
-          `}
+          className="absolute top-[42%] left-0 right-0 h-[24%] flex items-center justify-center px-8 transition-all overflow-visible"
         >
           <div ref={myBoardRef} className="flex justify-center gap-2 min-h-[88px] items-center">
           {myPlayer.board.length === 0 && !isDragOver ? (
@@ -726,6 +727,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
       <DamageOverlay events={damageEvents} />
       <SpellCastOverlay event={spellCastEvent} onComplete={clearSpellCastEvent} />
       <FireBreathOverlay event={fireBreathEvent} onComplete={clearFireBreathEvent} />
+      <HeroPowerOverlay event={heroPowerCastEvent} onComplete={clearHeroPowerCastEvent} />
 
       {/* Targeting arrow overlay */}
       <TargetingArrow
