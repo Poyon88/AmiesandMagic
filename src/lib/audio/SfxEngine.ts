@@ -27,8 +27,8 @@ class SfxEngine {
     return SfxEngine.instance;
   }
 
-  play(url: string) {
-    if (this._muted || this._volume <= 0 || !url) return;
+  play(url: string): HTMLAudioElement | null {
+    if (this._muted || this._volume <= 0 || !url) return null;
 
     // Try to use a preloaded element (clone it for concurrent playback)
     const preloaded = this.preloaded.get(url);
@@ -36,7 +36,7 @@ class SfxEngine {
       const clone = preloaded.cloneNode(true) as HTMLAudioElement;
       clone.volume = this._volume;
       clone.play().catch(() => {});
-      return;
+      return clone;
     }
 
     // Find an idle element in the pool
@@ -57,6 +57,16 @@ class SfxEngine {
     el.src = url;
     el.volume = this._volume;
     el.play().catch(() => {});
+    return el;
+  }
+
+  /** Stop and reset a tracked SFX audio element returned by `play()`. */
+  stop(el: HTMLAudioElement | null | undefined) {
+    if (!el) return;
+    try {
+      el.pause();
+      el.currentTime = 0;
+    } catch { /* ignore */ }
   }
 
   preload(urls: string[]) {

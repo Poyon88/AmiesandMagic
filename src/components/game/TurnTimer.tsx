@@ -25,12 +25,17 @@ export default function TurnTimer({
   onTimeUpRef.current = onTimeUp;
 
   const hasFiredWarningRef = useRef(false);
+  const warningAudioRef = useRef<HTMLAudioElement | null>(null);
 
   // Reset only when the actual turn changes.
   useEffect(() => {
     setTimeLeft(TURN_TIMER_SECONDS);
     AudioEngine.getInstance().resume();
     hasFiredWarningRef.current = false;
+    // Cut off the previous turn's warning sound if it was still playing
+    // (e.g. the player ended the turn manually before the clip ended).
+    SfxEngine.getInstance().stop(warningAudioRef.current);
+    warningAudioRef.current = null;
   }, [turnNumber]);
 
   // Start / pause the interval whenever the timer is allowed to tick. The
@@ -69,7 +74,7 @@ export default function TurnTimer({
     const audio = useAudioStore.getState();
     const url = audio.standardSfxUrls["timer_warning"];
     if (url && audio.userHasInteracted && !audio.settings.sfxMuted) {
-      SfxEngine.getInstance().play(url);
+      warningAudioRef.current = SfxEngine.getInstance().play(url);
     }
     AudioEngine.getInstance().pause();
   }, [timeLeft, isMyTurn]);
