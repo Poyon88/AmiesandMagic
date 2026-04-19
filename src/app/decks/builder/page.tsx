@@ -17,7 +17,7 @@ export default async function DeckBuilderPage({
   if (!user) redirect("/login");
 
   // Fetch all cards, heroes, sets, formats, format_sets, profile, collection, and boards
-  const [{ data: cards }, { data: heroes }, { data: sets }, { data: formats }, { data: formatSets }, { data: profile }, { data: userCollection }, { data: ownedPrints }, { data: allBoards }, { data: ownedBoardPrints }] = await Promise.all([
+  const [{ data: cards }, { data: heroes }, { data: sets }, { data: formats }, { data: formatSets }, { data: profile }, { data: userCollection }, { data: ownedPrints }, { data: allBoards }, { data: ownedBoardPrints }, { data: allCardBacks }, { data: ownedCardBackPrints }] = await Promise.all([
     supabase
       .from("cards")
       .select("*")
@@ -60,6 +60,14 @@ export default async function DeckBuilderPage({
       .from("user_board_prints")
       .select("id, board_id, print_number, max_prints")
       .eq("owner_id", user.id),
+    supabase
+      .from("card_backs")
+      .select("id, name, image_url, rarity, max_prints, is_default")
+      .eq("is_active", true),
+    supabase
+      .from("user_card_back_prints")
+      .select("id, card_back_id, print_number, max_prints")
+      .eq("owner_id", user.id),
   ]);
 
   const isTester = profile?.role === "testeur";
@@ -84,7 +92,7 @@ export default async function DeckBuilderPage({
       .single();
 
     if (deck) {
-      existingDeck = { id: deck.id, name: deck.name, hero_id: deck.hero_id, format_id: deck.format_id ?? null, board_id: deck.board_id ?? null };
+      existingDeck = { id: deck.id, name: deck.name, hero_id: deck.hero_id, format_id: deck.format_id ?? null, board_id: deck.board_id ?? null, card_back_id: deck.card_back_id ?? null };
       const { data: deckCards } = await supabase
         .from("deck_cards")
         .select("card_id, quantity")
@@ -107,6 +115,8 @@ export default async function DeckBuilderPage({
       isTester={isTester}
       boards={allBoards ?? []}
       ownedBoardPrints={ownedBoardPrints ?? []}
+      cardBacks={allCardBacks ?? []}
+      ownedCardBackPrints={ownedCardBackPrints ?? []}
     />
   );
 }

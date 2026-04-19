@@ -49,6 +49,12 @@ export default function MainMenu({ username, goldBalance }: MainMenuProps) {
       color: "bg-emerald-600 hover:bg-emerald-500",
     },
     {
+      label: "Mes Dos",
+      description: "Dos de cartes possédés",
+      href: "/card-backs",
+      color: "bg-purple-600 hover:bg-purple-500",
+    },
+    {
       label: "Enchères",
       description: "Achetez et vendez des cartes",
       href: "/auction",

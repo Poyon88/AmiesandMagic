@@ -55,7 +55,8 @@ export async function GET(
       items:auction_items(
         *,
         card:cards(*),
-        board:game_boards(id, name, image_url, rarity, max_prints)
+        board:game_boards(id, name, image_url, rarity, max_prints),
+        card_back:card_backs(id, name, image_url, rarity, max_prints)
       )
     `)
     .eq('id', id)
@@ -133,6 +134,11 @@ export async function DELETE(
     } else if (item.source_type === 'board_print') {
       await supabase
         .from('user_board_prints')
+        .update({ owner_id: user.id, assigned_at: new Date().toISOString() })
+        .eq('id', item.source_id);
+    } else if (item.source_type === 'card_back_print') {
+      await supabase
+        .from('user_card_back_prints')
         .update({ owner_id: user.id, assigned_at: new Date().toISOString() })
         .eq('id', item.source_id);
     }

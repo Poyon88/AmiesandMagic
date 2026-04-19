@@ -30,6 +30,7 @@ const EVENT_TYPES = [
   { value: "buff", label: "Buff" },
   { value: "debuff", label: "Debuff" },
   { value: "summon", label: "Invocation" },
+  { value: "timer_warning", label: "Timer — alerte 15s" },
 ];
 
 const STYLE = {

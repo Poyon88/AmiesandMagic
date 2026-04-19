@@ -49,6 +49,14 @@ export async function GET() {
     .eq('is_tradeable', true)
     .order('print_number');
 
+  // Fetch owned card-back prints with card back details
+  const { data: cardBackPrints } = await supabase
+    .from('user_card_back_prints')
+    .select('id, card_back_id, print_number, max_prints, is_tradeable, card_backs(id, name, image_url, rarity, max_prints)')
+    .eq('owner_id', user.id)
+    .eq('is_tradeable', true)
+    .order('print_number');
+
   // Fetch user_collections card IDs
   const { data: collections } = await supabase
     .from('user_collections')
@@ -117,6 +125,23 @@ export async function GET() {
       source_id: bp.id,
       print_number: bp.print_number,
       max_prints: bp.max_prints,
+    });
+  }
+
+  // Add card-back prints (limited only)
+  for (const cbp of cardBackPrints ?? []) {
+    const cb = cbp.card_backs as unknown as { id: number; name: string; image_url: string; rarity: string | null } | null;
+    if (!cb) continue;
+    items.push({
+      card_back_id: cbp.card_back_id,
+      name: cb.name,
+      rarity: cb.rarity,
+      image_url: cb.image_url,
+      kind: 'card_back',
+      source_type: 'card_back_print',
+      source_id: cbp.id,
+      print_number: cbp.print_number,
+      max_prints: cbp.max_prints,
     });
   }
 

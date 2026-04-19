@@ -77,7 +77,7 @@ export default function MatchmakingQueue({
           .gte("created_at", recentCutoff)
           .order("created_at", { ascending: false })
           .limit(1)
-          .single();
+          .maybeSingle();
 
         if (existingMatch) {
           // We were already matched by the other player

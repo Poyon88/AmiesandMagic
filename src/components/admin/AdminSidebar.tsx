@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 const menuItems = [
   { label: "Card Forge", href: "/admin/card-forge", icon: "\u2694\uFE0F" },
   { label: "Plateaux", href: "/admin/boards", icon: "\uD83D\uDDFA\uFE0F" },
+  { label: "Dos de cartes", href: "/admin/card-backs", icon: "\uD83C\uDFB4" },
   { label: "Collections", href: "/admin/collections", icon: "\uD83D\uDCE6" },
   { label: "Formats", href: "/admin/formats", icon: "\uD83D\uDCCB" },
   { label: "Import", href: "/admin/import", icon: "\uD83D\uDCE5" },

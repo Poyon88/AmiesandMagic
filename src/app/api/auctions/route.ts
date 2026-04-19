@@ -60,7 +60,7 @@ export async function GET(request: Request) {
     }
   }
 
-  // Build query for auctions with items + card/board details
+  // Build query for auctions with items + card/board/card_back details
   let query = supabase
     .from('auctions')
     .select(`
@@ -68,7 +68,8 @@ export async function GET(request: Request) {
       items:auction_items(
         *,
         card:cards(*),
-        board:game_boards(id, name, image_url, rarity, max_prints)
+        board:game_boards(id, name, image_url, rarity, max_prints),
+        card_back:card_backs(id, name, image_url, rarity, max_prints)
       )
     `, { count: 'exact' })
     .eq('status', status);
@@ -246,6 +247,31 @@ export async function POST(request: Request) {
       if (!bp.is_tradeable && bp.owner_id) {
         return NextResponse.json({ error: `Ce plateau n'est pas échangeable` }, { status: 400 });
       }
+    } else if (item.source_type === 'card_back_print') {
+      if (!item.source_id || !item.card_back_id) {
+        return NextResponse.json({ error: 'card_back_id et source_id requis pour un dos' }, { status: 400 });
+      }
+      const { data: cbp } = await supabase
+        .from('user_card_back_prints')
+        .select('id, card_back_id, owner_id, is_tradeable')
+        .eq('id', item.source_id)
+        .single();
+
+      if (!cbp) {
+        return NextResponse.json({ error: `Print de dos introuvable` }, { status: 400 });
+      }
+      if (cbp.card_back_id !== item.card_back_id) {
+        return NextResponse.json({ error: `Incohérence entre card_back_id et source_id` }, { status: 400 });
+      }
+      if (!isAdmin && cbp.owner_id !== user.id) {
+        return NextResponse.json({ error: `Vous ne possédez pas ce dos` }, { status: 400 });
+      }
+      if (cbp.owner_id && cbp.owner_id !== user.id && !isAdmin) {
+        return NextResponse.json({ error: `Ce dos appartient à un autre joueur` }, { status: 400 });
+      }
+      if (!cbp.is_tradeable && cbp.owner_id) {
+        return NextResponse.json({ error: `Ce dos n'est pas échangeable` }, { status: 400 });
+      }
     } else if (item.source_type === 'admin') {
       if (!isAdmin) {
         return NextResponse.json({ error: 'Seuls les admins peuvent lister des cartes système' }, { status: 403 });
@@ -277,6 +303,7 @@ export async function POST(request: Request) {
       auction_id: auction.id,
       card_id: item.card_id ?? null,
       board_id: item.board_id ?? null,
+      card_back_id: item.card_back_id ?? null,
       source_type: item.source_type,
       source_id: item.source_id ?? null,
       quantity: item.quantity,
@@ -296,6 +323,11 @@ export async function POST(request: Request) {
     } else if (item.source_type === 'board_print') {
       await supabase
         .from('user_board_prints')
+        .update({ owner_id: null })
+        .eq('id', item.source_id);
+    } else if (item.source_type === 'card_back_print') {
+      await supabase
+        .from('user_card_back_prints')
         .update({ owner_id: null })
         .eq('id', item.source_id);
     }

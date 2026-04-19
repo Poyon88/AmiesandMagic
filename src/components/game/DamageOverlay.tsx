@@ -35,8 +35,12 @@ export default function DamageOverlay({ events }: DamageOverlayProps) {
       }}
     >
       <AnimatePresence>
-        {events.map((evt) => {
-          const key = evt.targetId + "-" + evt.type + "-" + Math.random();
+        {events.map((evt, i) => {
+          // Stable key per event: including amount + delay + index keeps each
+          // popup identifiable across re-renders (a changing key would make
+          // AnimatePresence unmount + remount the popup every render, which
+          // caused the animation to play twice).
+          const key = `${i}-${evt.targetId}-${evt.type}-${evt.amount}-${evt.delayMs ?? 0}`;
           return (
             <DelayedPopup key={key} delay={evt.delayMs ?? 0}>
               <EventPopup event={evt} />

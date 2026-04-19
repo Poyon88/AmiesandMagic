@@ -13,10 +13,11 @@ export default async function CollectionsPage() {
   if (!user) redirect("/login");
 
   // Fetch profiles, collectible cards, and boards
-  const [{ data: profiles }, { data: cards }, { data: boards }] = await Promise.all([
+  const [{ data: profiles }, { data: cards }, { data: boards }, { data: cardBacks }] = await Promise.all([
     supabase.from("profiles").select("id, username, role").order("username"),
     supabase.from("cards").select("id, name, mana_cost, rarity, faction, race, card_type, set_id, card_year, card_month").order("name"),
     supabase.from("game_boards").select("id, name, rarity, max_prints, is_default, is_active").order("name"),
+    supabase.from("card_backs").select("id, name, rarity, max_prints, is_default, is_active").order("name"),
   ]);
 
   return (
@@ -25,6 +26,7 @@ export default async function CollectionsPage() {
         profiles={profiles ?? []}
         allCards={cards ?? []}
         allBoards={boards ?? []}
+        allCardBacks={cardBacks ?? []}
       />
     </div>
   );

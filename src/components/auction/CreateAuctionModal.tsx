@@ -4,14 +4,14 @@ import { useState, useEffect } from "react";
 import type { AuctionSettings } from "@/lib/auction/types";
 
 interface CardOption {
-  kind: "card" | "board";
-  id: number; // card_id for cards, board_id for boards
+  kind: "card" | "board" | "card_back";
+  id: number; // card_id | board_id | card_back_id
   name: string;
   rarity: string;
   faction: string | null;
   card_type: string | null;
   mana_cost: number | null;
-  source_type: "collection" | "print" | "board_print";
+  source_type: "collection" | "print" | "board_print" | "card_back_print";
   source_id?: number;
   print_number?: number;
   max_prints?: number;
@@ -51,15 +51,18 @@ export default function CreateAuctionModal({ userId, settings, onClose, onCreate
 
       const items: CardOption[] = (data.items ?? []).map((item: Record<string, unknown>) => {
         const isBoard = item.kind === "board" || item.source_type === "board_print";
+        const isCardBack = item.kind === "card_back" || item.source_type === "card_back_print";
+        const kind: CardOption["kind"] = isCardBack ? "card_back" : isBoard ? "board" : "card";
+        const id = (isCardBack ? item.card_back_id : isBoard ? item.board_id : item.card_id) as number;
         return {
-          kind: isBoard ? "board" : "card",
-          id: (isBoard ? item.board_id : item.card_id) as number,
+          kind,
+          id,
           name: item.name as string,
           rarity: item.rarity as string,
           faction: (item.faction as string | null) ?? null,
           card_type: (item.card_type as string | null) ?? null,
           mana_cost: (item.mana_cost as number | null) ?? null,
-          source_type: item.source_type as "collection" | "print" | "board_print",
+          source_type: item.source_type as CardOption["source_type"],
           source_id: item.source_id as number | undefined,
           print_number: item.print_number as number | undefined,
           max_prints: item.max_prints as number | undefined,
@@ -82,6 +85,7 @@ export default function CreateAuctionModal({ userId, settings, onClose, onCreate
   function cardKey(c: CardOption) {
     if (c.source_type === "print") return `print-${c.source_id}`;
     if (c.source_type === "board_print") return `bprint-${c.source_id}`;
+    if (c.source_type === "card_back_print") return `cbprint-${c.source_id}`;
     return `coll-${c.id}`;
   }
 
@@ -108,6 +112,7 @@ export default function CreateAuctionModal({ userId, settings, onClose, onCreate
     const items = selectedCards.map((c) => ({
       card_id: c.kind === "card" ? c.id : null,
       board_id: c.kind === "board" ? c.id : null,
+      card_back_id: c.kind === "card_back" ? c.id : null,
       source_type: c.source_type,
       source_id: c.source_id,
       quantity: 1,
@@ -229,9 +234,12 @@ export default function CreateAuctionModal({ userId, settings, onClose, onCreate
                       <div>
                         <span style={{ color: "#e0e0e0", fontWeight: 500 }}>{card.name}</span>
                         <span style={{ color: "#999", marginLeft: 8, fontSize: 11 }}>
-                          {card.rarity}{card.kind === "board" ? " · Plateau" : card.faction ? ` — ${card.faction}` : ""}
+                          {card.rarity}
+                          {card.kind === "board" ? " · Plateau"
+                            : card.kind === "card_back" ? " · Dos"
+                            : card.faction ? ` — ${card.faction}` : ""}
                         </span>
-                        {(card.source_type === "print" || card.source_type === "board_print") && (
+                        {(card.source_type === "print" || card.source_type === "board_print" || card.source_type === "card_back_print") && (
                           <span style={{ color: "#c8a84e", marginLeft: 6, fontSize: 11 }}>
                             #{card.print_number}/{card.max_prints}
                           </span>

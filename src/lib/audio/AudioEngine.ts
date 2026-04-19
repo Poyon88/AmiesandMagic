@@ -231,6 +231,24 @@ class AudioEngine {
     return !this.activeElement.paused;
   }
 
+  /**
+   * Temporarily pause the current track (source kept intact). `resume()` will
+   * continue where we left off. No fade — meant for short dramatic silences.
+   */
+  pause() {
+    this.stopFade();
+    this.activeElement.pause();
+  }
+
+  /**
+   * Resume a paused track. Does nothing if no track is loaded.
+   */
+  resume() {
+    if (!this.activeElement.src) return;
+    this.applyVolume(this.activeElement);
+    this.activeElement.play().catch(() => {});
+  }
+
   get currentSrc(): string {
     return this.activeElement.src;
   }

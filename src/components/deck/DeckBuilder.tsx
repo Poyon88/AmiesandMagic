@@ -43,11 +43,27 @@ interface OwnedBoardPrint {
   max_prints: number;
 }
 
+interface CardBackRow {
+  id: number;
+  name: string;
+  image_url: string;
+  rarity: string | null;
+  max_prints: number | null;
+  is_default: boolean;
+}
+
+interface OwnedCardBackPrint {
+  id: number;
+  card_back_id: number;
+  print_number: number;
+  max_prints: number;
+}
+
 interface DeckBuilderProps {
   cards: Card[];
   heroes: HeroRow[];
   userId: string;
-  existingDeck: { id: number; name: string; hero_id: number | null; format_id: number | null; board_id: number | null } | null;
+  existingDeck: { id: number; name: string; hero_id: number | null; format_id: number | null; board_id: number | null; card_back_id: number | null } | null;
   existingDeckCards: { card_id: number; quantity: number }[];
   sets: CardSet[];
   formats: GameFormat[];
@@ -56,6 +72,8 @@ interface DeckBuilderProps {
   isTester: boolean;
   boards: BoardRow[];
   ownedBoardPrints: OwnedBoardPrint[];
+  cardBacks: CardBackRow[];
+  ownedCardBackPrints: OwnedCardBackPrint[];
 }
 
 const RACE_ICONS: Record<string, string> = {
@@ -86,6 +104,8 @@ export default function DeckBuilder({
   isTester,
   boards,
   ownedBoardPrints,
+  cardBacks,
+  ownedCardBackPrints,
 }: DeckBuilderProps) {
   const router = useRouter();
   const supabase = createClient();
@@ -117,6 +137,18 @@ export default function DeckBuilder({
     [boards, ownedBoardIds],
   );
   const selectedBoard = useMemo(() => boards.find((b) => b.id === selectedBoardId) ?? null, [boards, selectedBoardId]);
+
+  const defaultCardBackId = useMemo(() => cardBacks.find((cb) => cb.is_default)?.id ?? null, [cardBacks]);
+  const [selectedCardBackId, setSelectedCardBackId] = useState<number | null>(
+    existingDeck?.card_back_id ?? defaultCardBackId
+  );
+  const [cardBackPickerOpen, setCardBackPickerOpen] = useState(false);
+  const ownedCardBackIds = useMemo(() => new Set(ownedCardBackPrints.map((p) => p.card_back_id)), [ownedCardBackPrints]);
+  const accessibleCardBacks = useMemo(
+    () => cardBacks.filter((cb) => (cb.rarity ?? "Commune") === "Commune" || ownedCardBackIds.has(cb.id)),
+    [cardBacks, ownedCardBackIds],
+  );
+  const selectedCardBack = useMemo(() => cardBacks.find((cb) => cb.id === selectedCardBackId) ?? null, [cardBacks, selectedCardBackId]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -408,7 +440,7 @@ export default function DeckBuilder({
         // Update existing deck
         await supabase
           .from("decks")
-          .update({ name: deckName.trim(), hero_id: selectedHeroId, format_id: selectedFormatId, board_id: selectedBoardId, updated_at: new Date().toISOString() })
+          .update({ name: deckName.trim(), hero_id: selectedHeroId, format_id: selectedFormatId, board_id: selectedBoardId, card_back_id: selectedCardBackId, updated_at: new Date().toISOString() })
           .eq("id", deckId);
 
         // Delete old cards and re-insert
@@ -417,7 +449,7 @@ export default function DeckBuilder({
         // Create new deck
         const { data, error } = await supabase
           .from("decks")
-          .insert({ user_id: userId, name: deckName.trim(), hero_id: selectedHeroId, format_id: selectedFormatId, board_id: selectedBoardId })
+          .insert({ user_id: userId, name: deckName.trim(), hero_id: selectedHeroId, format_id: selectedFormatId, board_id: selectedBoardId, card_back_id: selectedCardBackId })
           .select("id")
           .single();
 
@@ -698,6 +730,42 @@ export default function DeckBuilder({
           )}
         </div>
 
+        {/* Card back selection */}
+        <div className="p-4 border-b border-card-border">
+          <h3 className="text-sm font-bold text-foreground mb-2">Dos de carte</h3>
+          {selectedCardBack ? (
+            <div className="rounded-lg overflow-hidden border border-card-border/50 bg-background flex items-stretch">
+              <div
+                className="w-14 h-20 shrink-0"
+                style={{
+                  backgroundImage: `url('${selectedCardBack.image_url}')`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                }}
+              />
+              <div className="flex-1 flex items-center justify-between px-3">
+                <div>
+                  <div className="text-xs font-bold text-foreground">{selectedCardBack.name}</div>
+                  <div className="text-[9px] text-foreground/70">{selectedCardBack.rarity ?? "Commune"}</div>
+                </div>
+                <button
+                  onClick={() => setCardBackPickerOpen(true)}
+                  className="text-[9px] px-2 py-0.5 bg-primary/80 hover:bg-primary text-background font-bold rounded"
+                >
+                  Changer
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => setCardBackPickerOpen(true)}
+              className="w-full py-2 bg-background border border-dashed border-card-border rounded-lg text-xs text-foreground/60 hover:border-primary/50 hover:text-foreground"
+            >
+              Choisir un dos
+            </button>
+          )}
+        </div>
+
         {/* Deck header */}
         <div className="p-4 border-b border-card-border">
           <input
@@ -915,6 +983,70 @@ export default function DeckBuilder({
                       <div className="text-xs font-bold text-foreground">{b.name}</div>
                       <div className="text-[10px] text-foreground/70 flex items-center gap-2">
                         <span>{b.rarity ?? "Commune"}</span>
+                        {!isCommon && prints.length > 0 && (
+                          <span className="text-primary">
+                            {prints.map((p) => `${p.print_number}/${p.max_prints}`).join(", ")}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Card back picker modal */}
+      {cardBackPickerOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-6"
+          onClick={() => setCardBackPickerOpen(false)}
+        >
+          <div
+            className="bg-secondary border border-card-border rounded-xl w-full max-w-4xl max-h-[80vh] overflow-hidden flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-4 border-b border-card-border flex items-center justify-between">
+              <h3 className="text-lg font-bold text-foreground">Choisir un dos</h3>
+              <button
+                onClick={() => setCardBackPickerOpen(false)}
+                className="text-foreground/60 hover:text-foreground text-xl leading-none px-2"
+              >×</button>
+            </div>
+            <div className="overflow-y-auto p-4 grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+              {accessibleCardBacks.length === 0 ? (
+                <div className="col-span-full text-center text-foreground/50 py-10 text-sm">
+                  Aucun dos disponible.
+                </div>
+              ) : accessibleCardBacks.map((cb) => {
+                const isCommon = (cb.rarity ?? "Commune") === "Commune";
+                const prints = ownedCardBackPrints.filter((p) => p.card_back_id === cb.id);
+                const selected = selectedCardBackId === cb.id;
+                return (
+                  <button
+                    key={cb.id}
+                    onClick={() => {
+                      setSelectedCardBackId(cb.id);
+                      setCardBackPickerOpen(false);
+                    }}
+                    className={`relative rounded-lg overflow-hidden border-2 transition-all text-left aspect-[3/4] ${
+                      selected ? "border-primary shadow-[0_0_10px_rgba(200,168,78,0.4)]" : "border-card-border/50 hover:border-primary/40"
+                    }`}
+                  >
+                    <div
+                      className="absolute inset-0"
+                      style={{
+                        backgroundImage: `url('${cb.image_url}')`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                      }}
+                    />
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background via-background/70 to-transparent p-2">
+                      <div className="text-xs font-bold text-foreground">{cb.name}</div>
+                      <div className="text-[10px] text-foreground/70 flex items-center gap-2">
+                        <span>{cb.rarity ?? "Commune"}</span>
                         {!isCommon && prints.length > 0 && (
                           <span className="text-primary">
                             {prints.map((p) => `${p.print_number}/${p.max_prints}`).join(", ")}

@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useGameStore } from "@/lib/store/gameStore";
+import { useAudioStore } from "@/lib/store/audioStore";
+import SfxEngine from "@/lib/audio/SfxEngine";
 import GameBoard from "@/components/game/GameBoard";
 import type { Card, GameAction, HeroDefinition, HeroPowerEffect, Race } from "@/lib/game/types";
 
@@ -43,6 +45,22 @@ export default function GamePage() {
   const { matchId } = useParams<{ matchId: string }>();
   const supabase = createClient();
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+
+  // Re-fetch the SFX catalog on game page mount so recently admin-uploaded
+  // sound effects (summon, timer_warning, …) are picked up without requiring
+  // a full app reload.
+  useEffect(() => {
+    fetch("/api/sfx", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((data) => {
+        if (!Array.isArray(data)) return;
+        const urls: Record<string, string> = {};
+        for (const t of data) urls[t.event_type] = t.file_url;
+        useAudioStore.getState().setStandardSfxUrls(urls);
+        SfxEngine.getInstance().preload(Object.values(urls));
+      })
+      .catch(() => {});
+  }, []);
   const [phase, setPhase] = useState<"loading" | "waiting" | "playing">("loading");
   const [error, setError] = useState("");
   const matchDataRef = useRef<{
@@ -103,12 +121,12 @@ export default function GamePage() {
             .eq("deck_id", match.player2_deck_id),
           supabase
             .from("decks")
-            .select("hero_id, board_id, heroes(*)")
+            .select("hero_id, board_id, card_back_id, heroes(*), card_back:card_back_id(image_url)")
             .eq("id", match.player1_deck_id)
             .single(),
           supabase
             .from("decks")
-            .select("hero_id, board_id, heroes(*)")
+            .select("hero_id, board_id, card_back_id, heroes(*), card_back:card_back_id(image_url)")
             .eq("id", match.player2_deck_id)
             .single(),
           supabase
@@ -206,6 +224,26 @@ export default function GamePage() {
           }
         }
 
+        // Card backs — extract each deck's chosen card back and assign to local vs opponent.
+        const p1CardBack = (p1DeckData.data as { card_back: { image_url: string } | null } | null)?.card_back;
+        const p2CardBack = (p2DeckData.data as { card_back: { image_url: string } | null } | null)?.card_back;
+        const localIsP1 = user.id === match.player1_id;
+        const myBackUrl = (localIsP1 ? p1CardBack : p2CardBack)?.image_url ?? null;
+        const oppBackUrl = (localIsP1 ? p2CardBack : p1CardBack)?.image_url ?? null;
+        // Fallback: default card back if a deck has none configured.
+        let fallbackBackUrl: string | null = null;
+        if (!myBackUrl || !oppBackUrl) {
+          const { data: def } = await supabase
+            .from("card_backs")
+            .select("image_url")
+            .eq("is_default", true)
+            .eq("is_active", true)
+            .maybeSingle();
+          fallbackBackUrl = def?.image_url ?? null;
+        }
+        useGameStore.getState().setMyCardBackUrl(myBackUrl ?? fallbackBackUrl);
+        useGameStore.getState().setOpponentCardBackUrl(oppBackUrl ?? fallbackBackUrl);
+
         // Store match data for later initialization
         matchDataRef.current = { match, p1Cards, p2Cards, p1Hero, p2Hero, factionCards: (factionCards ?? []) as unknown as Card[] };
 
@@ -219,11 +257,18 @@ export default function GamePage() {
             const action = payload.payload as GameAction;
             const store = useGameStore.getState();
             if (store.gameState) {
-              // Route the incoming action through dispatchAction so SFX,
+              // Route incoming actions through the animation pipeline so SFX,
               // damage events, spell/fire-breath overlays and death animations
-              // all fire on the receiving side. We intentionally do NOT
-              // re-broadcast — dispatchAction only mutates local state.
-              store.dispatchAction(action);
+              // all fire on the receiving side. If we're still playing the
+              // previous action's sequence, queue this one — the unlock step
+              // drains it in order.
+              if (store.isAnimating) {
+                useGameStore.setState((s) => ({
+                  pendingIncomingActions: [...s.pendingIncomingActions, action],
+                }));
+              } else {
+                store.dispatchAction(action);
+              }
 
               const newState = useGameStore.getState().gameState;
               if (newState?.phase === "finished" && newState.winner) {

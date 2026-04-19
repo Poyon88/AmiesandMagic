@@ -2,6 +2,11 @@
 
 import { useState, useEffect, useRef } from "react";
 import { TURN_TIMER_SECONDS } from "@/lib/game/constants";
+import { useAudioStore } from "@/lib/store/audioStore";
+import SfxEngine from "@/lib/audio/SfxEngine";
+import AudioEngine from "@/lib/audio/AudioEngine";
+
+const WARNING_THRESHOLD = 15;
 
 interface TurnTimerProps {
   isMyTurn: boolean;
@@ -19,35 +24,58 @@ export default function TurnTimer({
   const onTimeUpRef = useRef(onTimeUp);
   onTimeUpRef.current = onTimeUp;
 
-  useEffect(() => {
-    // Reset timer on turn change
-    setTimeLeft(TURN_TIMER_SECONDS);
+  const hasFiredWarningRef = useRef(false);
 
+  // Reset only when the actual turn changes.
+  useEffect(() => {
+    setTimeLeft(TURN_TIMER_SECONDS);
+    AudioEngine.getInstance().resume();
+    hasFiredWarningRef.current = false;
+  }, [turnNumber]);
+
+  // Start / pause the interval whenever the timer is allowed to tick. The
+  // setter is kept pure so React strict mode's double-invoke doesn't multiply
+  // side effects — those live in a dedicated effect below.
+  useEffect(() => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
+      intervalRef.current = null;
     }
+    if (!isMyTurn) return;
 
-    if (isMyTurn) {
-      intervalRef.current = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            if (intervalRef.current) clearInterval(intervalRef.current);
-            // Call onTimeUp outside the state updater to avoid setState-during-render
-            setTimeout(() => onTimeUpRef.current(), 0);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
+    intervalRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          if (intervalRef.current) clearInterval(intervalRef.current);
+          setTimeout(() => onTimeUpRef.current(), 0);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [isMyTurn, turnNumber]);
+  }, [isMyTurn]);
+
+  // Fire the 15-second warning SFX + pause the music exactly once per turn,
+  // the first time the countdown crosses the threshold.
+  useEffect(() => {
+    if (!isMyTurn) return;
+    if (hasFiredWarningRef.current) return;
+    if (timeLeft > WARNING_THRESHOLD) return;
+    hasFiredWarningRef.current = true;
+    const audio = useAudioStore.getState();
+    const url = audio.standardSfxUrls["timer_warning"];
+    if (url && audio.userHasInteracted && !audio.settings.sfxMuted) {
+      SfxEngine.getInstance().play(url);
+    }
+    AudioEngine.getInstance().pause();
+  }, [timeLeft, isMyTurn]);
 
   const percentage = (timeLeft / TURN_TIMER_SECONDS) * 100;
-  const isLow = timeLeft <= 15;
+  const isLow = timeLeft <= WARNING_THRESHOLD;
 
   return (
     <div className="flex flex-col items-center gap-1">

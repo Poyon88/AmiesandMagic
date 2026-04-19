@@ -140,7 +140,10 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
           <h2 style={{ fontSize: 20, fontWeight: 700, color: "#c8a84e", margin: "0 0 16px", fontFamily: "var(--font-cinzel), serif" }}>
             {auction.items.length > 1
               ? "Lot"
-              : auction.items[0]?.card?.name ?? auction.items[0]?.board?.name ?? "Objet"}
+              : auction.items[0]?.card?.name
+                ?? auction.items[0]?.board?.name
+                ?? auction.items[0]?.card_back?.name
+                ?? "Objet"}
           </h2>
 
           <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
@@ -164,10 +167,27 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
                       </div>
                     </div>
                   </div>
+                ) : item.card_back ? (
+                  <div style={{
+                    width: 180, height: 240, borderRadius: 10, overflow: "hidden",
+                    backgroundImage: `url('${item.card_back.image_url}')`,
+                    backgroundSize: "cover", backgroundPosition: "center",
+                    border: "2px solid #8b5cf6", position: "relative",
+                  }}>
+                    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(0deg, rgba(0,0,0,0.85), transparent 55%)" }} />
+                    <div style={{ position: "absolute", bottom: 8, left: 10, right: 10 }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>{item.card_back.name}</div>
+                      <div style={{ fontSize: 11, color: "#ddd" }}>
+                        {item.card_back.rarity ?? "Commune"}
+                        {item.card_back.max_prints ? ` · ${item.card_back.max_prints} ex.` : ""}
+                      </div>
+                    </div>
+                  </div>
                 ) : null}
                 <div style={{ fontSize: 11, color: "#666" }}>
                   {item.source_type === "print" ? "Édition limitée"
                     : item.source_type === "board_print" ? "Plateau limité"
+                    : item.source_type === "card_back_print" ? "Dos limité"
                     : item.source_type === "admin" ? "Système"
                     : "Collection"}
                 </div>

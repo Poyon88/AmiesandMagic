@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef, type DragEvent } from "react";
+import Image from "next/image";
 import { AnimatePresence } from "framer-motion";
 import { useGameStore } from "@/lib/store/gameStore";
 import { canPlayCard, canAttack, canUseHeroPower, getSpellTargets } from "@/lib/game/engine";
@@ -20,6 +21,7 @@ import DamageOverlay from "./DamageOverlay";
 import SpellCastOverlay from "./SpellCastOverlay";
 import FireBreathOverlay from "./FireBreathOverlay";
 import HeroPowerOverlay from "./HeroPowerOverlay";
+import GraveyardAffectOverlay from "./GraveyardAffectOverlay";
 import MulliganOverlay from "./MulliganOverlay";
 import SettingsModal from "@/components/shared/SettingsModal";
 import type { GameAction, DamageEvent } from "@/lib/game/types";
@@ -29,64 +31,6 @@ interface GameBoardProps {
   onAction?: (action: GameAction) => void;
 }
 
-function animateAttackLunge(
-  attackerInstanceId: string,
-  targetId: string,
-  onImpact: () => void
-): void {
-  const attackerEl = document.querySelector(
-    `[data-instance-id="${attackerInstanceId}"]`
-  ) as HTMLElement | null;
-
-  let targetEl: Element | null = null;
-  if (targetId === "enemy_hero" || targetId === "friendly_hero") {
-    targetEl = document.querySelector(`[data-target-id="${targetId}"]`);
-  } else {
-    targetEl = document.querySelector(`[data-instance-id="${targetId}"]`);
-  }
-
-  if (!attackerEl || !targetEl) {
-    onImpact();
-    return;
-  }
-
-  const attackerRect = attackerEl.getBoundingClientRect();
-  const targetRect = targetEl.getBoundingClientRect();
-  const dx = (targetRect.left + targetRect.width / 2) - (attackerRect.left + attackerRect.width / 2);
-  const dy = (targetRect.top + targetRect.height / 2) - (attackerRect.top + attackerRect.height / 2);
-
-  const lungeX = dx * 0.6;
-  const lungeY = dy * 0.6;
-
-  const origZ = attackerEl.style.zIndex;
-  attackerEl.style.zIndex = "50";
-
-  const lunge = attackerEl.animate(
-    [
-      { transform: "translate(0, 0) scale(1)" },
-      { transform: `translate(${lungeX}px, ${lungeY}px) scale(1.1)` },
-    ],
-    { duration: 300, easing: "cubic-bezier(0.2, 0, 0.6, 1)", fill: "forwards" }
-  );
-
-  lunge.onfinish = () => {
-    onImpact();
-
-    const ret = attackerEl.animate(
-      [
-        { transform: `translate(${lungeX}px, ${lungeY}px) scale(1.1)` },
-        { transform: "translate(0, 0) scale(1)" },
-      ],
-      { duration: 350, easing: "cubic-bezier(0.4, 0, 0.2, 1)", fill: "forwards" }
-    );
-
-    ret.onfinish = () => {
-      lunge.cancel();
-      ret.cancel();
-      attackerEl.style.zIndex = origZ;
-    };
-  };
-}
 
 export default function GameBoard({ onAction }: GameBoardProps) {
   useGameMusic();
@@ -117,6 +61,8 @@ export default function GameBoard({ onAction }: GameBoardProps) {
     clearFireBreathEvent,
     heroPowerCastEvent,
     clearHeroPowerCastEvent,
+    graveyardAffectEvent,
+    clearGraveyardAffectEvent,
     isAnimating,
     spellTargetSlots,
     currentTargetSlotIndex,
@@ -135,8 +81,6 @@ export default function GameBoard({ onAction }: GameBoardProps) {
   const [hoveredTargetId, setHoveredTargetId] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const myBoardRef = useRef<HTMLDivElement>(null);
-  const isAnimatingAttackRef = useRef(false);
-
   // Clear hover when targeting ends
   useEffect(() => {
     if (targetingMode === "none") setHoveredTargetId(null);
@@ -155,6 +99,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
   }
 
   const boardImageUrl = useGameStore((s) => s.boardImageUrl);
+  const opponentCardBackUrl = useGameStore((s) => s.opponentCardBackUrl);
   const myPlayer = getMyPlayerState();
   const opponent = getOpponentPlayerState();
   const myTurn = isMyTurn() && !isAnimating;
@@ -168,6 +113,11 @@ export default function GameBoard({ onAction }: GameBoardProps) {
   );
 
   const handleEndTurn = useCallback(() => {
+    // Guard: read the live state (not React's closure) so we never double-fire
+    // end_turn (timer expiring + user clicking, or drain dispatch races).
+    const s = useGameStore.getState();
+    if (!s.gameState || s.isAnimating) return;
+    if (s.gameState.players[s.gameState.currentPlayerIndex].id !== s.localPlayerId) return;
     broadcast(dispatchAction({ type: "end_turn" }));
   }, [dispatchAction, broadcast]);
 
@@ -253,27 +203,12 @@ export default function GameBoard({ onAction }: GameBoardProps) {
 
   const handleSelectTarget = useCallback(
     (targetId: string) => {
-      // Animate lunge before dispatching attack
-      if (targetingMode === "attack" && selectedAttackerInstanceId) {
-        if (isAnimatingAttackRef.current) return;
-        isAnimatingAttackRef.current = true;
-
-        animateAttackLunge(selectedAttackerInstanceId, targetId, () => {
-          const action = selectTarget(targetId);
-          if (action) broadcast(action);
-          setTimeout(() => { isAnimatingAttackRef.current = false; }, 250);
-        });
-      } else {
-        const action = selectTarget(targetId);
-        if (action) broadcast(action);
-      }
+      // The lunge animation is now triggered inside dispatchAction's overlay
+      // phase, so it plays for both the attacker and the passive opponent.
+      const action = selectTarget(targetId);
+      if (action) broadcast(action);
     },
-    [
-      targetingMode,
-      selectedAttackerInstanceId,
-      selectTarget,
-      broadcast,
-    ]
+    [selectTarget, broadcast]
   );
 
   if (!gameState || !myPlayer || !opponent) {
@@ -348,11 +283,26 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           {opponent.hand.map((_, i) => (
             <div
               key={i}
-              className="w-8 h-12 rounded-sm border border-primary/30 bg-gradient-to-br from-secondary via-card-bg to-secondary overflow-hidden flex items-center justify-center"
+              className="relative w-24 h-36 rounded border border-primary/30 overflow-hidden"
             >
-              <div className="w-5 h-7 rounded-sm border border-primary/20 bg-primary/10 flex items-center justify-center">
-                <span className="text-primary/40 text-[8px] font-bold">A&amp;M</span>
-              </div>
+              {opponentCardBackUrl ? (
+                <Image
+                  src={opponentCardBackUrl}
+                  alt=""
+                  fill
+                  sizes="(min-resolution: 2dppx) 256px, 128px"
+                  className="object-cover"
+                  quality={95}
+                  unoptimized={false}
+                  draggable={false}
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-secondary via-card-bg to-secondary flex items-center justify-center">
+                  <div className="w-14 h-20 rounded border border-primary/20 bg-primary/10 flex items-center justify-center">
+                    <span className="text-primary/40 text-lg font-bold">A&amp;M</span>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
           <span className="text-xs text-foreground/30 self-center ml-1">
@@ -728,6 +678,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
       <SpellCastOverlay event={spellCastEvent} onComplete={clearSpellCastEvent} />
       <FireBreathOverlay event={fireBreathEvent} onComplete={clearFireBreathEvent} />
       <HeroPowerOverlay event={heroPowerCastEvent} onComplete={clearHeroPowerCastEvent} />
+      <GraveyardAffectOverlay event={graveyardAffectEvent} onComplete={clearGraveyardAffectEvent} />
 
       {/* Targeting arrow overlay */}
       <TargetingArrow

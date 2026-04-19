@@ -2,6 +2,7 @@ import { create } from "zustand";
 import type { GameState, GameAction, Card, CardInstance, DamageEvent, HeroDefinition, SpellTargetSlot, SpellTargetType, TokenTemplate } from "@/lib/game/types";
 import { useAudioStore } from "./audioStore";
 import SfxEngine from "@/lib/audio/SfxEngine";
+import { playAttackLunge } from "@/lib/game/animations";
 import { parseXValuesFromEffectText } from "@/lib/game/keyword-labels";
 import {
   initializeGame,
@@ -47,6 +48,11 @@ export interface HeroPowerCastEvent {
   timestamp: number;
 }
 
+export interface GraveyardAffectEvent {
+  cards: Card[];
+  timestamp: number;
+}
+
 interface GameStore {
   // State
   gameState: GameState | null;
@@ -71,7 +77,10 @@ interface GameStore {
   spellCastEvent: SpellCastEvent | null;
   fireBreathEvent: FireBreathEvent | null;
   heroPowerCastEvent: HeroPowerCastEvent | null;
+  graveyardAffectEvent: GraveyardAffectEvent | null;
   boardImageUrl: string | null;
+  myCardBackUrl: string | null;
+  opponentCardBackUrl: string | null;
   boardMusicUrls: string[];
   boardTenseMusicUrl: string | null;
   boardVictoryMusicUrl: string | null;
@@ -97,6 +106,8 @@ interface GameStore {
   setLocalPlayerId: (id: string) => void;
   setTokenTemplates: (templates: TokenTemplate[]) => void;
   setBoardImageUrl: (url: string | null) => void;
+  setMyCardBackUrl: (url: string | null) => void;
+  setOpponentCardBackUrl: (url: string | null) => void;
   setBoardMusicUrls: (urls: string[]) => void;
   setBoardTenseMusicUrl: (url: string | null) => void;
   setBoardVictoryMusicUrl: (url: string | null) => void;
@@ -113,6 +124,7 @@ interface GameStore {
   clearSpellCastEvent: () => void;
   clearFireBreathEvent: () => void;
   clearHeroPowerCastEvent: () => void;
+  clearGraveyardAffectEvent: () => void;
   activateHeroPower: () => GameAction | null;
   confirmMulligan: (selectedInstanceIds: string[]) => GameAction | null;
 
@@ -408,9 +420,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
   spellCastEvent: null,
   fireBreathEvent: null,
   heroPowerCastEvent: null,
+  graveyardAffectEvent: null,
   isAnimating: false,
   pendingIncomingActions: [],
   boardImageUrl: null,
+  myCardBackUrl: null,
+  opponentCardBackUrl: null,
   boardMusicUrls: [],
   boardTenseMusicUrl: null,
   boardVictoryMusicUrl: null,
@@ -438,6 +453,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
   setLocalPlayerId: (id) => set({ localPlayerId: id }),
   setTokenTemplates: (templates) => set({ tokenTemplates: templates }),
   setBoardImageUrl: (url) => set({ boardImageUrl: url }),
+  setMyCardBackUrl: (url) => set({ myCardBackUrl: url }),
+  setOpponentCardBackUrl: (url) => set({ opponentCardBackUrl: url }),
   setBoardMusicUrls: (urls: string[]) => set({ boardMusicUrls: urls }),
   setBoardTenseMusicUrl: (url: string | null) => set({ boardTenseMusicUrl: url }),
   setBoardVictoryMusicUrl: (url: string | null) => set({ boardVictoryMusicUrl: url }),
@@ -447,11 +464,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const { gameState, localPlayerId, isAnimating } = get();
     if (!gameState || gameState.phase === "finished") return null;
 
-    // If a previous action's animation sequence is still playing, queue the
-    // incoming action — the unlock step drains the queue in order.
+    // If the animation pipeline is still playing a previous action, drop this
+    // one silently — the UI lock (myTurn && !isAnimating) normally prevents
+    // local clicks from getting here, and the page.tsx broadcast handler
+    // enqueues remote actions via pendingIncomingActions directly.
     if (isAnimating) {
-      set((s) => ({ pendingIncomingActions: [...s.pendingIncomingActions, action] }));
-      return action;
+      return null;
     }
 
     // Detect spell cast before applying action
@@ -674,8 +692,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const impactSfx: SfxEvt[] = [];
     const deathSfx: SfxEvt[] = [];
     const summonSfx: SfxEvt[] = [];
+    const drawSfx: SfxEvt[] = [];
     for (const evt of sfxEvents) {
-      if (["spell_cast", "hero_power", "attack", "end_turn", "play_card", "draw_card", "counter_spell", "fire_breath"].includes(evt.type)) {
+      if (evt.type === "draw_card") {
+        drawSfx.push(evt);
+      } else if (["spell_cast", "hero_power", "attack", "end_turn", "play_card", "counter_spell", "fire_breath"].includes(evt.type)) {
         overlaySfx.push(evt);
       } else if (["damage", "heal", "buff", "debuff", "divine_shield", "poison", "dodge", "paralyze"].includes(evt.type)) {
         impactSfx.push(evt);
@@ -701,6 +722,25 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     // Identify what kind of visible events this action produces.
     const hasOverlay = !!spellEvent || !!heroPowerEvent || !!fireEvent;
+    const isAttack = action.type === "attack";
+
+    // Detect cards that left the graveyard (exiled, reanimated, sacrificed…).
+    // Shown to both players so they see which cards from the graveyard were
+    // affected (Profanation, Exhumation, Résurrection, Nécrophagie…).
+    const graveyardRemoved: Card[] = [];
+    for (let i = 0; i < 2; i++) {
+      const oldGY = gameState.players[i].graveyard;
+      const newGY = newState.players[i].graveyard;
+      for (const oldC of oldGY) {
+        if (!newGY.find((c) => c.instanceId === oldC.instanceId)) {
+          graveyardRemoved.push(oldC.card);
+        }
+      }
+    }
+    const graveyardAffectEvent: GraveyardAffectEvent | null =
+      graveyardRemoved.length > 0
+        ? { cards: graveyardRemoved, timestamp: Date.now() }
+        : null;
     const hasImpacts = dmgEvents.length > 0;
     const hasDeaths = deadCreatures.length > 0;
 
@@ -715,7 +755,16 @@ export const useGameStore = create<GameStore>((set, get) => ({
       }
     }
     const hasSummons = newCreatureIds.size > 0;
-    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons;
+
+    // How many cards each player drew this action — we hold them out of the
+    // hand until the final "draw" phase so the animation is clearly separated.
+    const drawnCounts: [number, number] = [
+      Math.max(0, newState.players[0].hand.length - gameState.players[0].hand.length),
+      Math.max(0, newState.players[1].hand.length - gameState.players[1].hand.length),
+    ];
+    const hasDraws = drawnCounts[0] + drawnCounts[1] > 0;
+
+    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent;
 
     // Deep clone helper — factionCardPool carries non-serialisable refs, keep it aside.
     const cloneState = (state: GameState): GameState => {
@@ -725,9 +774,36 @@ export const useGameStore = create<GameStore>((set, get) => ({
       return cloned;
     };
 
+    // Death-triggered buffs we need to defer visually (Nécrophagie, …).
+    // For each surviving creature, compute the delta in nécrophagie bonus gained
+    // during this action. We subtract it from the impact/post-death snapshots
+    // so the +1/+1 buff only appears AFTER the dead creatures are removed.
+    const necroDeltas = new Map<string, number>();
+    for (let i = 0; i < 2; i++) {
+      for (const oldC of gameState.players[i].board) {
+        const newC = newState.players[i].board.find((c) => c.instanceId === oldC.instanceId);
+        if (!newC) continue;
+        const delta = (newC.necrophagieATKBonus ?? 0) - (oldC.necrophagieATKBonus ?? 0);
+        if (delta > 0) necroDeltas.set(oldC.instanceId, delta);
+      }
+    }
+    const rewindNecro = <T extends { instanceId: string; currentAttack: number; currentHealth: number; maxHealth: number; necrophagieATKBonus?: number; necrophagiePVBonus?: number }>(c: T): T => {
+      const delta = necroDeltas.get(c.instanceId);
+      if (!delta || delta <= 0) return c;
+      return {
+        ...c,
+        necrophagieATKBonus: Math.max(0, (c.necrophagieATKBonus ?? 0) - delta),
+        necrophagiePVBonus: Math.max(0, (c.necrophagiePVBonus ?? 0) - delta),
+        currentAttack: Math.max(0, c.currentAttack - delta),
+        currentHealth: Math.max(0, c.currentHealth - delta),
+        maxHealth: Math.max(0, c.maxHealth - delta),
+      };
+    };
+
     // Impact state: HP reduced (same values as newState), dead creatures still
     // shown at 0 HP on their original slot, freshly summoned creatures NOT yet
-    // on the board so they enter later with their own animation.
+    // on the board so they enter later with their own animation. Nécrophagie
+    // buffs are rewound so they only appear after the death animation.
     const impactState = cloneState(newState);
     for (let i = 0; i < 2; i++) {
       const oldBoard = gameState.players[i].board;
@@ -742,25 +818,45 @@ export const useGameStore = create<GameStore>((set, get) => ({
           return { ...c, currentHealth: 0 };
         }
         const updated = newBoard.find((nc) => nc.instanceId === c.instanceId);
-        return updated ?? c;
+        return rewindNecro(updated ?? c);
       });
       // Also append any freshly-played creature (the one the user just cast) so
       // the hand→board animation still works. We exclude newCreatureIds
       // (resurrections / convocations) which belong to a later phase.
       for (const nc of newBoard) {
         if (nc.instanceId === playedId && !impactState.players[i].board.find((c) => c.instanceId === nc.instanceId)) {
-          impactState.players[i].board.push(nc);
+          impactState.players[i].board.push(rewindNecro(nc));
         }
       }
     }
 
-    // Post-death state: like newState but without the to-be-summoned creatures.
+    // Post-death state: dead creatures gone, new summons still absent, buffs
+    // still rewound — the Nécrophagie +1/+1 lands in the final phase.
     const postDeathState = cloneState(newState);
     for (let i = 0; i < 2; i++) {
-      postDeathState.players[i].board = newState.players[i].board.filter(
-        (c) => !newCreatureIds.has(c.instanceId),
-      );
+      postDeathState.players[i].board = newState.players[i].board
+        .filter((c) => !newCreatureIds.has(c.instanceId))
+        .map((c) => rewindNecro(c));
     }
+
+    // Trim drawn cards from every intermediate state so they only appear in
+    // the dedicated draw phase. Engine pushes drawn cards to the end of the
+    // hand, so we slice the tail.
+    const trimDrawsFromHand = (state: GameState) => {
+      for (let i = 0; i < 2; i++) {
+        if (drawnCounts[i] > 0) {
+          const h = state.players[i].hand;
+          state.players[i].hand = h.slice(0, Math.max(0, h.length - drawnCounts[i]));
+        }
+      }
+    };
+    trimDrawsFromHand(impactState);
+    trimDrawsFromHand(postDeathState);
+
+    // Pre-draw state: dead + summons already resolved, buffs applied, but the
+    // newly-drawn cards are still held back.
+    const preDrawState = cloneState(newState);
+    trimDrawsFromHand(preDrawState);
 
     // Fast path: trivial action (no visible effects) — commit immediately.
     if (!hasAnything) {
@@ -788,8 +884,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
     });
 
     // --- Phase timings ---
-    const OVERLAY_PRE_IMPACT_MS = 1800; // overlay → impact start
+    const OVERLAY_PRE_IMPACT_MS = 1800; // spell / hero-power → impact start
+    const ATTACK_LUNGE_PRE_IMPACT_MS = 700; // lunge (~650ms) + short buffer
     const IMPACT_MS = 1200;
+    const DRAW_MS = 1000;
     const DEATH_MS = 1000;
     const SUMMON_MS = 1400;
     const RECAST_GAP_MS = 1800;
@@ -803,27 +901,44 @@ export const useGameStore = create<GameStore>((set, get) => ({
         ...(heroPowerEvent ? { heroPowerCastEvent: heroPowerEvent } : {}),
       }));
       playSfxBatch(overlaySfx);
+      // Attack lunge plays on BOTH the active and passive client, since this
+      // runs inside dispatchAction which remote broadcasts go through too.
+      if (isAttack && action.type === "attack") {
+        playAttackLunge(action.attackerInstanceId, action.targetInstanceId);
+      }
     };
 
     // Cascade: if multiple targets are hit by the same action, stagger their
     // floating popups by 200ms each so the player can read each one.
     const STAGGER_MS = 200;
-    const targetOrder = new Map<string, number>();
-    for (const ev of dmgEvents) {
-      if (!targetOrder.has(ev.targetId)) {
-        targetOrder.set(ev.targetId, targetOrder.size);
+    // Split damage events into impact (direct dégâts/heal/shield/…) and
+    // deferred buffs triggered by deaths (Nécrophagie) — the latter must wait
+    // until the creatures have actually left for the graveyard.
+    const deferredBuffEvents = dmgEvents.filter(
+      (ev) => ev.type === "buff" && necroDeltas.has(ev.targetId),
+    );
+    const impactOnlyEvents = dmgEvents.filter(
+      (ev) => !(ev.type === "buff" && necroDeltas.has(ev.targetId)),
+    );
+    const staggerByTarget = (events: typeof dmgEvents) => {
+      const order = new Map<string, number>();
+      for (const ev of events) {
+        if (!order.has(ev.targetId)) order.set(ev.targetId, order.size);
       }
-    }
-    const staggeredDmgEvents = dmgEvents.map((ev) => ({
-      ...ev,
-      delayMs: (targetOrder.get(ev.targetId) ?? 0) * STAGGER_MS,
-    }));
+      return events.map((ev) => ({
+        ...ev,
+        delayMs: (order.get(ev.targetId) ?? 0) * STAGGER_MS,
+      }));
+    };
+    const staggeredDmgEvents = staggerByTarget(impactOnlyEvents);
+    const staggeredTriggerEvents = staggerByTarget(deferredBuffEvents);
 
     const phaseImpacts = () => {
       set({
         gameState: impactState,
         damageEvents: staggeredDmgEvents,
         lastSfxEvents: impactSfx,
+        ...(graveyardAffectEvent ? { graveyardAffectEvent } : {}),
       });
       playSfxBatch(impactSfx);
     };
@@ -834,13 +949,24 @@ export const useGameStore = create<GameStore>((set, get) => ({
     };
 
     const phaseSummons = () => {
-      set({ gameState: newState });
+      set({
+        gameState: preDrawState,
+        ...(staggeredTriggerEvents.length > 0 ? { damageEvents: staggeredTriggerEvents } : {}),
+      });
       playSfxBatch(summonSfx);
     };
 
-    const phaseFinalize = () => {
-      // Make sure the very final state is applied (in case we skipped summons).
+    const phaseDraws = () => {
       set({ gameState: newState });
+      playSfxBatch(drawSfx);
+    };
+
+    const phaseFinalize = () => {
+      // Landing state when we skipped summons+draws.
+      set({
+        gameState: preDrawState,
+        ...(staggeredTriggerEvents.length > 0 ? { damageEvents: staggeredTriggerEvents } : {}),
+      });
     };
 
     const phaseUnlock = () => {
@@ -857,6 +983,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     // Phase A (Overlay) — synchronous, already fires at t=0.
     phaseOverlay();
     if (hasOverlay) cursor += OVERLAY_PRE_IMPACT_MS;
+    else if (isAttack) cursor += ATTACK_LUNGE_PRE_IMPACT_MS;
 
     // Phase B (Impacts) — always run if there's anything beyond the overlay.
     setTimeout(phaseImpacts, cursor);
@@ -870,10 +997,21 @@ export const useGameStore = create<GameStore>((set, get) => ({
     if (hasSummons) {
       setTimeout(phaseSummons, cursor);
       cursor += SUMMON_MS;
-    } else {
-      // Still ensure final state lands (e.g., faction pool updates).
+    } else if (!hasDraws) {
+      // No summons and no draws — commit the pre-draw state (= final state)
+      // so faction pool and buff deltas land.
       setTimeout(phaseFinalize, cursor);
       cursor += 50;
+    } else {
+      // Draws but no summons: still need to land on preDrawState first so the
+      // draw phase has a correct pre-state.
+      setTimeout(phaseFinalize, cursor);
+      cursor += 50;
+    }
+
+    if (hasDraws) {
+      setTimeout(phaseDraws, cursor);
+      cursor += DRAW_MS;
     }
 
     // Recast spells ride the tail of the sequence.
@@ -1308,6 +1446,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   clearHeroPowerCastEvent: () => {
     set({ heroPowerCastEvent: null });
+  },
+
+  clearGraveyardAffectEvent: () => {
+    set({ graveyardAffectEvent: null });
   },
 
   activateHeroPower: () => {

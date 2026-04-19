@@ -42,8 +42,9 @@ export default function AuctionCard({ auction }: AuctionCardProps) {
   const mainItem = auction.items?.[0];
   const mainCard = mainItem?.card ?? null;
   const mainBoard = mainItem?.board ?? null;
+  const mainCardBack = mainItem?.card_back ?? null;
   const itemCount = auction.items?.length ?? 0;
-  const itemName = mainCard?.name ?? mainBoard?.name ?? "Objet inconnu";
+  const itemName = mainCard?.name ?? mainBoard?.name ?? mainCardBack?.name ?? "Objet inconnu";
 
   return (
     <div
@@ -76,6 +77,21 @@ export default function AuctionCard({ auction }: AuctionCardProps) {
             <div style={{ position: "absolute", bottom: 8, left: 8, right: 8 }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{mainBoard.name}</div>
               <div style={{ fontSize: 10, color: "#ccc" }}>{mainBoard.rarity ?? "Commune"} · Plateau</div>
+            </div>
+          </div>
+        ) : mainCardBack ? (
+          <div
+            style={{
+              width: "100%", height: "100%", borderRadius: 10,
+              backgroundImage: `url('${mainCardBack.image_url}')`,
+              backgroundSize: "cover", backgroundPosition: "center",
+              border: "2px solid #8b5cf6", position: "relative", overflow: "hidden",
+            }}
+          >
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(0deg, rgba(0,0,0,0.85), transparent 50%)" }} />
+            <div style={{ position: "absolute", bottom: 8, left: 8, right: 8 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{mainCardBack.name}</div>
+              <div style={{ fontSize: 10, color: "#ccc" }}>{mainCardBack.rarity ?? "Commune"} · Dos</div>
             </div>
           </div>
         ) : null}

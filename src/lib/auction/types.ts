@@ -1,6 +1,6 @@
 export type AuctionStatus = 'active' | 'ended_sold' | 'ended_unsold' | 'cancelled';
 export type SellerType = 'player' | 'admin';
-export type ItemSourceType = 'collection' | 'print' | 'admin' | 'board_print';
+export type ItemSourceType = 'collection' | 'print' | 'admin' | 'board_print' | 'card_back_print';
 export type NotificationType =
   | 'auction_outbid'
   | 'auction_won'
@@ -48,6 +48,7 @@ export interface AuctionItem {
   auction_id: string;
   card_id: number | null;
   board_id: number | null;
+  card_back_id: number | null;
   source_type: ItemSourceType;
   source_id: number | null;
   quantity: number;
@@ -62,9 +63,18 @@ export interface AuctionBoardSummary {
   max_prints: number | null;
 }
 
+export interface AuctionCardBackSummary {
+  id: number;
+  name: string;
+  image_url: string;
+  rarity: string | null;
+  max_prints: number | null;
+}
+
 export interface AuctionItemWithCard extends AuctionItem {
   card: import("@/lib/game/types").Card | null;
   board?: AuctionBoardSummary | null;
+  card_back?: AuctionCardBackSummary | null;
   print_number?: number | null;
 }
 
@@ -107,6 +117,7 @@ export interface CreateAuctionPayload {
   items: {
     card_id?: number | null;
     board_id?: number | null;
+    card_back_id?: number | null;
     source_type: ItemSourceType;
     source_id?: number;
     quantity: number;

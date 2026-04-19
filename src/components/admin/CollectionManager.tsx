@@ -52,13 +52,34 @@ interface BoardPrintRow {
   assigned_at: string | null;
 }
 
+interface CardBackRow {
+  id: number;
+  name: string;
+  rarity: string | null;
+  max_prints: number | null;
+  is_default: boolean;
+  is_active: boolean;
+}
+
+interface CardBackPrintRow {
+  id: number;
+  card_back_id: number;
+  print_number: number;
+  max_prints: number;
+  owner_id: string | null;
+  owner_username: string | null;
+  is_tradeable: boolean;
+  assigned_at: string | null;
+}
+
 interface CollectionManagerProps {
   profiles: ProfileRow[];
   allCards: CardRow[];
   allBoards: BoardRow[];
+  allCardBacks: CardBackRow[];
 }
 
-export default function CollectionManager({ profiles, allCards, allBoards }: CollectionManagerProps) {
+export default function CollectionManager({ profiles, allCards, allBoards, allCardBacks }: CollectionManagerProps) {
   const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [collectedCardIds, setCollectedCardIds] = useState<Set<number>>(new Set());
   const [loading, setLoading] = useState(false);
@@ -82,6 +103,18 @@ export default function CollectionManager({ profiles, allCards, allBoards }: Col
     const q = boardSearch.toLowerCase();
     return limitedBoards.filter((b) => b.name.toLowerCase().includes(q));
   }, [limitedBoards, boardSearch]);
+
+  // Card back prints state
+  const [selectedCardBack, setSelectedCardBack] = useState<CardBackRow | null>(null);
+  const [cardBackPrints, setCardBackPrints] = useState<CardBackPrintRow[]>([]);
+  const [cardBackPrintsLoading, setCardBackPrintsLoading] = useState(false);
+  const [cardBackSearch, setCardBackSearch] = useState("");
+  const limitedCardBacks = useMemo(() => allCardBacks.filter((cb) => (cb.rarity ?? "Commune") !== "Commune"), [allCardBacks]);
+  const filteredLimitedCardBacks = useMemo(() => {
+    if (!cardBackSearch) return limitedCardBacks;
+    const q = cardBackSearch.toLowerCase();
+    return limitedCardBacks.filter((cb) => cb.name.toLowerCase().includes(q));
+  }, [limitedCardBacks, cardBackSearch]);
 
   // Regular collectible cards (no set, no date = not limited)
   const collectibleCards = useMemo(() => allCards.filter(c => c.set_id == null && !c.card_year), [allCards]);
@@ -217,6 +250,38 @@ export default function CollectionManager({ profiles, allCards, allBoards }: Col
 
   const assignedBoardCount = boardPrints.filter((p) => p.owner_id).length;
   const availableBoardCount = boardPrints.length - assignedBoardCount;
+
+  const loadCardBackPrints = useCallback(async (cardBackId: number) => {
+    setCardBackPrintsLoading(true);
+    try {
+      const res = await fetch(`/api/card-back-prints?cardBackId=${cardBackId}`);
+      const data = await res.json();
+      setCardBackPrints(Array.isArray(data) ? data : []);
+    } finally {
+      setCardBackPrintsLoading(false);
+    }
+  }, []);
+
+  async function assignCardBackPrint(printId: number, ownerId: string | null) {
+    await fetch("/api/card-back-prints", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ printId, ownerId }),
+    });
+    if (selectedCardBack) loadCardBackPrints(selectedCardBack.id);
+  }
+
+  async function toggleCardBackTradeable(printId: number, current: boolean) {
+    await fetch("/api/card-back-prints", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ printId, isTradeable: !current }),
+    });
+    if (selectedCardBack) loadCardBackPrints(selectedCardBack.id);
+  }
+
+  const assignedCardBackCount = cardBackPrints.filter((p) => p.owner_id).length;
+  const availableCardBackCount = cardBackPrints.length - assignedCardBackCount;
 
   const selectedProfile = profileList.find(p => p.id === selectedUserId);
   const assignedCount = prints.filter(p => p.owner_id).length;
@@ -617,6 +682,136 @@ export default function CollectionManager({ profiles, allCards, allBoards }: Col
                                       <select
                                         value=""
                                         onChange={(e) => { if (e.target.value) assignBoardPrint(p.id, e.target.value); }}
+                                        style={{ padding: "3px 6px", borderRadius: 5, border: "1px solid #ddd", fontSize: 10 }}
+                                      >
+                                        <option value="">Attribuer à...</option>
+                                        {profileList.map((prof) => (
+                                          <option key={prof.id} value={prof.id}>{prof.username}</option>
+                                        ))}
+                                      </select>
+                                    )}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── LIMITED CARD BACKS ── */}
+          {limitedCardBacks.length > 0 && (
+            <div style={{ marginTop: 40 }}>
+              <h2 style={{ fontSize: 20, fontWeight: "bold", marginBottom: 16, color: "#8b5cf6", textShadow: "0 1px 2px rgba(0,0,0,0.2)" }}>
+                Dos de cartes limités ({limitedCardBacks.length})
+              </h2>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 24 }}>
+                <div>
+                  <input
+                    type="text"
+                    value={cardBackSearch}
+                    onChange={(e) => setCardBackSearch(e.target.value)}
+                    placeholder="Rechercher un dos limité..."
+                    style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #ccc", fontSize: 14, width: "100%", marginBottom: 12 }}
+                  />
+                  <div style={{ background: "white", borderRadius: 12, border: "1px solid #e0e0e0", maxHeight: 500, overflowY: "auto" }}>
+                    {filteredLimitedCardBacks.map((cb) => (
+                      <div
+                        key={cb.id}
+                        onClick={() => { setSelectedCardBack(cb); loadCardBackPrints(cb.id); }}
+                        style={{
+                          display: "flex", alignItems: "center", justifyContent: "space-between",
+                          padding: "8px 12px", borderBottom: "1px solid #f0f0f0", cursor: "pointer",
+                          background: selectedCardBack?.id === cb.id ? "#8b5cf615" : "transparent",
+                          borderLeft: selectedCardBack?.id === cb.id ? "3px solid #8b5cf6" : "3px solid transparent",
+                        }}
+                      >
+                        <div>
+                          <span style={{ fontSize: 13, fontWeight: 600 }}>{cb.name}</span>
+                          <span style={{ fontSize: 11, color: "#888", marginLeft: 8 }}>({cb.rarity})</span>
+                        </div>
+                        <span style={{ fontSize: 10, color: "#aaa" }}>{cb.max_prints ?? "?"} ex.</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  {!selectedCardBack ? (
+                    <div style={{ padding: 40, textAlign: "center", color: "#aaa", background: "white", borderRadius: 12, border: "1px solid #e0e0e0" }}>
+                      Sélectionner un dos limité pour voir ses exemplaires
+                    </div>
+                  ) : cardBackPrintsLoading ? (
+                    <p>Chargement des exemplaires...</p>
+                  ) : (
+                    <div style={{ background: "white", borderRadius: 12, border: "1px solid #e0e0e0", padding: 16 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                        <div>
+                          <h3 style={{ fontSize: 16, fontWeight: "bold", margin: 0 }}>{selectedCardBack.name}</h3>
+                          <span style={{ fontSize: 12, color: "#888" }}>
+                            {selectedCardBack.rarity} — {cardBackPrints.length} exemplaires — {assignedCardBackCount} attribués, {availableCardBackCount} disponibles
+                          </span>
+                        </div>
+                      </div>
+
+                      {cardBackPrints.length === 0 ? (
+                        <div style={{ padding: 24, textAlign: "center", color: "#aaa", fontStyle: "italic", fontSize: 12 }}>
+                          Aucun exemplaire généré. Utilise le bouton "Générer les exemplaires" dans /admin/card-backs.
+                        </div>
+                      ) : (
+                        <div style={{ maxHeight: 420, overflowY: "auto" }}>
+                          <table style={{ width: "100%", fontSize: 12, borderCollapse: "collapse" }}>
+                            <thead>
+                              <tr style={{ borderBottom: "2px solid #e0e0e0", textAlign: "left" }}>
+                                <th style={{ padding: "6px 8px", fontWeight: 700 }}>#</th>
+                                <th style={{ padding: "6px 8px", fontWeight: 700 }}>Propriétaire</th>
+                                <th style={{ padding: "6px 8px", fontWeight: 700 }}>Échangeable</th>
+                                <th style={{ padding: "6px 8px", fontWeight: 700 }}>Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {cardBackPrints.map((p) => (
+                                <tr key={p.id} style={{ borderBottom: "1px solid #f0f0f0" }}>
+                                  <td style={{ padding: "6px 8px", fontWeight: 700, color: "#8b5cf6" }}>
+                                    #{p.print_number}/{p.max_prints}
+                                  </td>
+                                  <td style={{ padding: "6px 8px" }}>
+                                    {p.owner_username ? (
+                                      <span style={{ color: "#27ae60", fontWeight: 600 }}>{p.owner_username}</span>
+                                    ) : (
+                                      <span style={{ color: "#aaa" }}>— disponible —</span>
+                                    )}
+                                  </td>
+                                  <td style={{ padding: "6px 8px" }}>
+                                    <button
+                                      onClick={() => toggleCardBackTradeable(p.id, p.is_tradeable)}
+                                      style={{
+                                        padding: "2px 8px", borderRadius: 4, border: "none", fontSize: 10, fontWeight: 700, cursor: "pointer",
+                                        background: p.is_tradeable ? "#27ae6022" : "#e74c3c22",
+                                        color: p.is_tradeable ? "#27ae60" : "#e74c3c",
+                                      }}
+                                    >
+                                      {p.is_tradeable ? "Oui" : "Non"}
+                                    </button>
+                                  </td>
+                                  <td style={{ padding: "6px 8px" }}>
+                                    {p.owner_id ? (
+                                      <button
+                                        onClick={() => assignCardBackPrint(p.id, null)}
+                                        style={{ padding: "3px 10px", borderRadius: 5, border: "none", background: "#e74c3c22", color: "#e74c3c", fontSize: 10, fontWeight: 700, cursor: "pointer" }}
+                                      >
+                                        Retirer
+                                      </button>
+                                    ) : (
+                                      <select
+                                        value=""
+                                        onChange={(e) => { if (e.target.value) assignCardBackPrint(p.id, e.target.value); }}
                                         style={{ padding: "3px 6px", borderRadius: 5, border: "1px solid #ddd", fontSize: 10 }}
                                       >
                                         <option value="">Attribuer à...</option>
