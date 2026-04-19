@@ -225,6 +225,14 @@ export default function GameBoard({ onAction }: GameBoardProps) {
   const myPlayerIndex = gameState.players.findIndex((p) => p.id === localPlayerId);
   const myMulliganDone = myPlayerIndex !== -1 && gameState.mulliganReady[myPlayerIndex];
 
+  // Keep the mulligan overlay mounted past the mulligan phase transition so
+  // the local reveal animation (including replacements) can finish even if
+  // the opponent confirms quickly.
+  const [mulliganOverlayRequired, setMulliganOverlayRequired] = useState(false);
+  useEffect(() => {
+    if (isMulligan) setMulliganOverlayRequired(true);
+  }, [isMulligan]);
+
   return (
     <div
       className="fixed inset-0 select-none"
@@ -283,14 +291,14 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           {opponent.hand.map((_, i) => (
             <div
               key={i}
-              className="relative w-24 h-36 rounded overflow-hidden"
+              className="relative w-32 h-48 rounded overflow-hidden"
             >
               {opponentCardBackUrl ? (
                 <Image
                   src={opponentCardBackUrl}
                   alt=""
                   fill
-                  sizes="(min-resolution: 3dppx) 576px, (min-resolution: 2dppx) 384px, 192px"
+                  sizes="(min-resolution: 3dppx) 768px, (min-resolution: 2dppx) 512px, 256px"
                   className="object-cover"
                   quality={100}
                   unoptimized
@@ -299,8 +307,8 @@ export default function GameBoard({ onAction }: GameBoardProps) {
                 />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-secondary via-card-bg to-secondary flex items-center justify-center">
-                  <div className="w-14 h-20 rounded border border-primary/20 bg-primary/10 flex items-center justify-center">
-                    <span className="text-primary/40 text-lg font-bold">A&amp;M</span>
+                  <div className="w-20 h-28 rounded border border-primary/20 bg-primary/10 flex items-center justify-center">
+                    <span className="text-primary/40 text-xl font-bold">A&amp;M</span>
                   </div>
                 </div>
               )}
@@ -577,11 +585,12 @@ export default function GameBoard({ onAction }: GameBoardProps) {
       </div>{/* end 16:9 board container */}
 
       {/* ============= FIXED OVERLAYS ============= */}
-      {isMulligan && (
+      {mulliganOverlayRequired && (
         <MulliganOverlay
           hand={myPlayer.hand}
           onConfirm={handleMulliganConfirm}
           waitingForOpponent={myMulliganDone}
+          onRevealComplete={() => setMulliganOverlayRequired(false)}
         />
       )}
       {graveyardView && targetingMode !== "graveyard" && (

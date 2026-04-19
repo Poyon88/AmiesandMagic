@@ -1,27 +1,51 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import type { CardInstance } from "@/lib/game/types";
 import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText } from "@/lib/game/keyword-labels";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS, getSpellKeywordLabel } from "@/lib/game/spell-keywords";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
+import { useGameStore } from "@/lib/store/gameStore";
+import { useAudioStore } from "@/lib/store/audioStore";
+import SfxEngine from "@/lib/audio/SfxEngine";
+
+function playStandardSfx(eventType: string) {
+  if (typeof window === "undefined") return;
+  const audio = useAudioStore.getState();
+  if (!audio.userHasInteracted || audio.settings.sfxMuted) return;
+  const url = audio.standardSfxUrls[eventType];
+  if (url) SfxEngine.getInstance().play(url);
+}
 
 interface MulliganOverlayProps {
   hand: CardInstance[];
   onConfirm: (selectedInstanceIds: string[]) => void;
   waitingForOpponent: boolean;
+  onRevealComplete?: () => void;
 }
+
+const REVEAL_DELAY_MS = 2000; // time the card backs stay visible before flipping
+const FLIP_DURATION_MS = 900;
+const FLIP_STAGGER_MS = 800; // latency between one card starting its flip and the next
+const REPLACEMENT_PRE_FLIP_MS = 1500; // pause after confirm before the new backs start flipping
+const POST_REVEAL_HOLD_MS = 5000; // beat after the last card is revealed before the game starts
 
 function MulliganCard({
   cardInstance,
   isSelected,
   onToggle,
+  revealed,
+  cardBackUrl,
+  interactable,
 }: {
   cardInstance: CardInstance;
   isSelected: boolean;
   onToggle: () => void;
+  revealed: boolean;
+  cardBackUrl: string | null;
+  interactable: boolean;
 }) {
   const card = cardInstance.card;
   const isCreature = card.card_type === "creature";
@@ -29,6 +53,20 @@ function MulliganCard({
   const [showDetails, setShowDetails] = useState(false);
   const detailTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const accentColor = isCreature ? "#74b9ff" : "#ce93d8";
+
+  // A card accepts clicks only after its flip has fully played AND the
+  // overlay's selection phase is active. This prevents the user from toggling
+  // a still-hidden card or from toggling after confirm.
+  const [flipPlayed, setFlipPlayed] = useState(false);
+  useEffect(() => {
+    if (!revealed) {
+      setFlipPlayed(false);
+      return;
+    }
+    const timer = setTimeout(() => setFlipPlayed(true), FLIP_DURATION_MS);
+    return () => clearTimeout(timer);
+  }, [revealed]);
+  const readyForInput = flipPlayed && interactable;
 
   const W = 200;
   const H = 280;
@@ -61,10 +99,12 @@ function MulliganCard({
         border: `2px solid ${isSelected ? "#e74c3c" : isHovered ? "#c8a84e" : "#3d3d5c"}`,
         boxShadow: isSelected ? "0 0 20px #e74c3c44" : isHovered ? "0 0 12px #c8a84e44" : "none",
         overflow: "hidden",
-        cursor: "pointer",
+        cursor: readyForInput ? "pointer" : "default",
         transition: "all 0.25s ease",
         transform: isSelected ? "scale(0.92)" : isHovered ? "scale(1.05)" : "none",
         opacity: isSelected ? 0.7 : 1,
+        perspective: 1200,
+        pointerEvents: readyForInput ? "auto" : "none",
       }}
     >
       {/* Full-bleed art */}
@@ -289,6 +329,51 @@ function MulliganCard({
           {isCreature && <><span style={{ color: "#e74c3c" }}>{"⚔"} {card.attack}</span><span style={{ color: "#f1c40f" }}>{"❤"} {card.health}</span></>}
         </div>
       </div>
+
+      {/* Card back face — flips away to reveal the card underneath */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          zIndex: 30,
+          backfaceVisibility: "hidden",
+          WebkitBackfaceVisibility: "hidden",
+          transformOrigin: "center center",
+          transform: revealed ? "rotateY(180deg)" : "rotateY(0deg)",
+          transition: `transform ${FLIP_DURATION_MS}ms ease`,
+          borderRadius: 12,
+          overflow: "hidden",
+          background: cardBackUrl
+            ? "transparent"
+            : "linear-gradient(160deg, #1a0a2a, #0d0d1a)",
+        }}
+      >
+        {cardBackUrl ? (
+          <img
+            src={cardBackUrl}
+            alt=""
+            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+            draggable={false}
+          />
+        ) : (
+          <div
+            style={{
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "rgba(200,168,78,0.35)",
+              fontFamily: "'Cinzel', serif",
+              fontWeight: 700,
+              fontSize: 28,
+              letterSpacing: 3,
+            }}
+          >
+            A&amp;M
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -297,10 +382,83 @@ export default function MulliganOverlay({
   hand,
   onConfirm,
   waitingForOpponent,
+  onRevealComplete,
 }: MulliganOverlayProps) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [revealedIds, setRevealedIds] = useState<Set<string>>(new Set());
+  const [phase, setPhase] = useState<"initial" | "selecting" | "replacing" | "complete">("initial");
+  const myCardBackUrl = useGameStore((s) => s.myCardBackUrl);
+  const kickedOffInitialRef = useRef(false);
+  const kickedOffReplacementRef = useRef(false);
+  const handRef = useRef(hand);
+  handRef.current = hand;
+  // Cap the mulligan UI to the hand size we started with. The engine adds
+  // a Mana Spark to the 2nd player's hand as soon as both mulligans are
+  // confirmed — we don't want that bonus card to appear as a 5th tile
+  // during the reveal animation.
+  const mulliganHandSizeRef = useRef(hand.length);
+  const displayedHand = hand.slice(0, mulliganHandSizeRef.current);
+
+  // Initial reveal — staggered flips, one card at a time, after the reveal
+  // delay. Fires exactly once. We deliberately do NOT return a cleanup
+  // function: parent re-renders (e.g. a new `hand` reference) would otherwise
+  // cancel the pending timers before they fire.
+  useEffect(() => {
+    if (waitingForOpponent) return;
+    if (kickedOffInitialRef.current) return;
+    if (phase !== "initial") return;
+    if (hand.length === 0) return;
+    kickedOffInitialRef.current = true;
+    const ids = handRef.current.slice(0, mulliganHandSizeRef.current).map((c) => c.instanceId);
+    setTimeout(() => {
+      ids.forEach((id, i) => {
+        setTimeout(() => {
+          setRevealedIds((prev) => {
+            const next = new Set(prev);
+            next.add(id);
+            return next;
+          });
+          playStandardSfx("mulligan_flip");
+          if (i === ids.length - 1) {
+            // Wait for the last flip to finish before opening selection.
+            setTimeout(() => setPhase("selecting"), FLIP_DURATION_MS);
+          }
+        }, i * FLIP_STAGGER_MS);
+      });
+    }, REVEAL_DELAY_MS);
+  }, [phase, waitingForOpponent, hand.length]);
+
+  // Replacement reveal — triggers once the hand prop contains cards we haven't
+  // seen before (i.e. the engine resolved the mulligan swap).
+  useEffect(() => {
+    if (phase !== "replacing") return;
+    if (kickedOffReplacementRef.current) return;
+    const newCards = hand
+      .slice(0, mulliganHandSizeRef.current)
+      .filter((c) => !revealedIds.has(c.instanceId));
+    if (newCards.length === 0) return; // hand hasn't refreshed yet
+    kickedOffReplacementRef.current = true;
+    setTimeout(() => {
+      newCards.forEach((c, i) => {
+        setTimeout(() => {
+          setRevealedIds((prev) => {
+            const next = new Set(prev);
+            next.add(c.instanceId);
+            return next;
+          });
+          playStandardSfx("mulligan_flip");
+          if (i === newCards.length - 1) {
+            // After the last replacement card flips, hold on the revealed
+            // hand for a few seconds before signalling the parent to unmount.
+            setTimeout(() => setPhase("complete"), FLIP_DURATION_MS + POST_REVEAL_HOLD_MS);
+          }
+        }, i * FLIP_STAGGER_MS);
+      });
+    }, REPLACEMENT_PRE_FLIP_MS);
+  }, [phase, hand, revealedIds]);
 
   function toggleCard(instanceId: string) {
+    if (phase !== "selecting") return;
     setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(instanceId)) {
@@ -310,9 +468,34 @@ export default function MulliganOverlay({
       }
       return next;
     });
+    playStandardSfx("mulligan_pick");
   }
 
-  if (waitingForOpponent) {
+  function handleConfirmClick() {
+    if (phase !== "selecting") return;
+    const hasReplacements = selected.size > 0;
+    onConfirm(Array.from(selected));
+    if (hasReplacements) {
+      // We'll flip in the replacements once the hand prop updates.
+      setPhase("replacing");
+    } else {
+      // Nothing to flip — still give the player a beat to read the hand.
+      setTimeout(() => setPhase("complete"), POST_REVEAL_HOLD_MS);
+    }
+  }
+
+  // Signal the parent as soon as the local animation is finished so it can
+  // safely unmount the overlay (the game phase may have already flipped to
+  // "playing" while we were still running the replacement reveal).
+  useEffect(() => {
+    if (phase !== "complete") return;
+    onRevealComplete?.();
+  }, [phase, onRevealComplete]);
+
+  // Only show the waiting screen once the local reveal animation (initial +
+  // replacement) has finished. Otherwise the player loses the flip
+  // animation the moment they confirm the mulligan.
+  if (waitingForOpponent && phase === "complete") {
     return (
       <div className="fixed inset-0 bg-black/85 z-50 flex items-center justify-center">
         <div className="text-center">
@@ -334,21 +517,33 @@ export default function MulliganOverlay({
         </p>
 
         <div className="flex justify-center gap-5 mb-10">
-          {hand.map((cardInstance) => (
+          {displayedHand.map((cardInstance) => (
             <MulliganCard
               key={cardInstance.instanceId}
               cardInstance={cardInstance}
               isSelected={selected.has(cardInstance.instanceId)}
               onToggle={() => toggleCard(cardInstance.instanceId)}
+              revealed={revealedIds.has(cardInstance.instanceId)}
+              cardBackUrl={myCardBackUrl}
+              interactable={phase === "selecting"}
             />
           ))}
         </div>
 
         <button
-          onClick={() => onConfirm(Array.from(selected))}
-          className="px-8 py-3 bg-primary hover:bg-primary-dark text-background font-bold rounded-xl text-lg transition-colors"
+          onClick={handleConfirmClick}
+          disabled={phase !== "selecting"}
+          className="px-8 py-3 bg-primary hover:bg-primary-dark text-background font-bold rounded-xl text-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {selected.size === 0 ? "Garder tout" : `Remplacer ${selected.size} carte${selected.size > 1 ? "s" : ""}`}
+          {phase === "initial"
+            ? "Révélation en cours..."
+            : phase === "replacing"
+            ? "Remplacement en cours..."
+            : phase === "complete"
+            ? "Préparation..."
+            : selected.size === 0
+            ? "Garder tout"
+            : `Remplacer ${selected.size} carte${selected.size > 1 ? "s" : ""}`}
         </button>
       </div>
     </div>

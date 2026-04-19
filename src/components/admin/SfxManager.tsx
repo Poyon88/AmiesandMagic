@@ -31,6 +31,8 @@ const EVENT_TYPES = [
   { value: "debuff", label: "Debuff" },
   { value: "summon", label: "Invocation" },
   { value: "timer_warning", label: "Timer — alerte 15s" },
+  { value: "mulligan_flip", label: "Mulligan — retournement de carte" },
+  { value: "mulligan_pick", label: "Mulligan — sélection de carte" },
 ];
 
 const STYLE = {
