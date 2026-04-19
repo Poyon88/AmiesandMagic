@@ -157,14 +157,16 @@ export default function CardForge() {
     is_active: boolean;
   };
   type KwVariation = { base64: string; mime: string; url: string };
+  type KwColorMode = "white" | "colored";
   const [kwAssets, setKwAssets] = useState<KwAsset[]>([]);
   const [kwTypeForm, setKwTypeForm] = useState<"creature" | "spell">("creature");
   const [kwSelected, setKwSelected] = useState<string>("");
+  const [kwColorMode, setKwColorMode] = useState<KwColorMode>("white");
   const [kwInstructions, setKwInstructions] = useState("");
   const [kwPrompt, setKwPrompt] = useState("");
   const [kwName, setKwName] = useState("");
   const [kwVariations, setKwVariations] = useState<KwVariation[]>([]);
-  const [kwSelectedIdx, setKwSelectedIdx] = useState<number | null>(null);
+  const [kwSelectedIdxs, setKwSelectedIdxs] = useState<number[]>([]);
   const [kwGenerating, setKwGenerating] = useState(false);
   const [kwSaving, setKwSaving] = useState(false);
   const [kwMessage, setKwMessage] = useState<{ ok: boolean; msg: string } | null>(null);
@@ -201,13 +203,25 @@ export default function CardForge() {
     const desc = kwKeywordDesc(kwTypeForm, kwSelected);
 
     const parts: string[] = [];
+    if (kwColorMode === "white") {
+      parts.push(
+        "Single pure-white silhouette icon, centered on a completely flat pure-black background (hex #000000, uniform, no gradients, no texture, no vignette). The pure black background is mandatory — it will be keyed out to produce a transparent PNG.",
+        "Style: emoji-like pictogram — clean vector silhouette, very simple shapes, strong bold outline, almost no internal detail. Same kind of readability as the small Hearthstone attack/shield stat icons.",
+        "CRITICAL SIZING: the silhouette must be LARGE and fill 85–95% of the image canvas. Minimal negative space around the subject. The shape should nearly touch all four edges of the square.",
+        "The silhouette must be pure white (#FFFFFF) or very light silver. No colored details, no highlights, no shading other than what is required for a crisp silhouette.",
+      );
+    } else {
+      parts.push(
+        "Single colored silhouette icon, centered on a completely flat pure-black background (hex #000000, uniform, no gradients, no texture, no vignette). The pure black background is mandatory — it will be keyed out to produce a transparent PNG.",
+        "Style: emoji-like pictogram — clean vector silhouette, simple bold shapes, strong readable outline, limited internal detail. Same kind of readability as the small Hearthstone ability icons.",
+        "CRITICAL SIZING: the silhouette must be LARGE and fill 85–95% of the image canvas. Minimal negative space around the subject. The shape should nearly touch all four edges of the square.",
+        "Palette: free artistic choice — pick whatever colors best fit the keyword's theme. The only constraint is that every colored pixel of the silhouette must be distinctly brighter than pure black so it survives the background keying (avoid pure near-black colors inside the silhouette itself).",
+        "Simple flat shading only: 1–3 tonal steps per colored area, crisp edges, no painterly render, no photorealistic texture, no small gradients.",
+      );
+    }
     parts.push(
-      "Single pure-white silhouette icon, centered on a completely flat pure-black background (hex #000000, uniform, no gradients, no texture, no vignette).",
-      "Style: emoji-like pictogram — clean vector silhouette, very simple shapes, strong bold outline, almost no internal detail. Same kind of readability as the small Hearthstone attack/shield stat icons.",
-      "CRITICAL SIZING: the silhouette must be LARGE and fill 85–95% of the image canvas. Minimal negative space around the subject. The shape should nearly touch all four edges of the square.",
-      "The silhouette must be pure white (#FFFFFF) or very light silver. No colored details, no highlights, no shading other than what is required for a crisp silhouette.",
       "NO frame, NO border, NO medallion, NO baroque ornamentation, NO gold trim, NO filigree, NO glow, NO sparkles around the subject, NO particles — pure black around the silhouette is mandatory.",
-      "The icon must remain perfectly readable at 24–32 pixels. No fine lines, no tiny ornaments, no painterly rendering — just a strong iconic shape.",
+      "The icon must remain perfectly readable at 24–32 pixels. No fine lines, no tiny ornaments.",
       "1:1 square, centered, symmetric whenever possible.",
     );
     parts.push(`Subject: a simple iconic symbol that clearly represents the keyword "${label}" from a fantasy card game.`);
@@ -228,10 +242,15 @@ export default function CardForge() {
     }
   }
 
-  // Converts a "white silhouette on dark background" image into a PNG with a
-  // transparent background by mapping pixel luminance to alpha, and pushing
-  // the silhouette to pure white for a crisp emoji-like look.
-  async function silhouetteToTransparentPng(srcUrl: string, maxDim = 512): Promise<KwVariation> {
+  // Converts a "silhouette on pure-black background" image into a PNG with a
+  // transparent background. Keys out the black background via a brightness
+  // threshold + ramp so edges stay anti-aliased. In "white" mode, every
+  // visible pixel is also forced to pure white for a crisp emoji-like look.
+  async function silhouetteToTransparentPng(
+    srcUrl: string,
+    mode: KwColorMode = "white",
+    maxDim = 512,
+  ): Promise<KwVariation> {
     return new Promise<KwVariation>((resolve, reject) => {
       const img = new window.Image();
       img.crossOrigin = "anonymous";
@@ -251,14 +270,20 @@ export default function CardForge() {
         ctx.drawImage(img, 0, 0, width, height);
         const data = ctx.getImageData(0, 0, width, height);
         const px = data.data;
-        const FLOOR = 28;
+        const FLOOR = 20;
+        const FULL_OPAQUE = 70;
         for (let i = 0; i < px.length; i += 4) {
           const r = px[i], g = px[i + 1], b = px[i + 2];
           const maxC = r > g ? (r > b ? r : b) : (g > b ? g : b);
-          const alpha = maxC < FLOOR ? 0 : maxC;
-          px[i] = 255;
-          px[i + 1] = 255;
-          px[i + 2] = 255;
+          let alpha: number;
+          if (maxC <= FLOOR) alpha = 0;
+          else if (maxC >= FULL_OPAQUE) alpha = 255;
+          else alpha = Math.round(((maxC - FLOOR) / (FULL_OPAQUE - FLOOR)) * 255);
+          if (mode === "white") {
+            px[i] = 255;
+            px[i + 1] = 255;
+            px[i + 2] = 255;
+          }
           px[i + 3] = alpha;
         }
         ctx.putImageData(data, 0, 0);
@@ -277,9 +302,9 @@ export default function CardForge() {
     const reader = new FileReader();
     reader.onload = async () => {
       try {
-        const variant = await silhouetteToTransparentPng(reader.result as string);
+        const variant = await silhouetteToTransparentPng(reader.result as string, kwColorMode);
         setKwVariations([variant]);
-        setKwSelectedIdx(0);
+        setKwSelectedIdxs([0]);
       } catch {
         setKwMessage({ ok: false, msg: "Impossible de charger l'image." });
       }
@@ -292,7 +317,7 @@ export default function CardForge() {
     setKwGenerating(true);
     setKwMessage(null);
     setKwVariations([]);
-    setKwSelectedIdx(null);
+    setKwSelectedIdxs([]);
 
     const callOnce = async (): Promise<KwVariation | { error: string }> => {
       try {
@@ -305,7 +330,7 @@ export default function CardForge() {
         if (!res.ok || data.error) return { error: data.error ?? `Erreur ${res.status}` };
         const mime = data.mimeType ?? "image/png";
         const rawUrl = `data:${mime};base64,${data.imageBase64}`;
-        return await silhouetteToTransparentPng(rawUrl);
+        return await silhouetteToTransparentPng(rawUrl, kwColorMode);
       } catch (err) {
         return { error: err instanceof Error ? err.message : "Erreur réseau" };
       }
@@ -326,38 +351,57 @@ export default function CardForge() {
   }
 
   async function saveKeywordIcon() {
-    if (!kwName.trim() || !kwSelected || kwSelectedIdx === null) return;
-    const variant = kwVariations[kwSelectedIdx];
-    if (!variant) return;
+    if (!kwName.trim() || !kwSelected || kwSelectedIdxs.length === 0) return;
+    const picks = kwSelectedIdxs
+      .map((i) => kwVariations[i])
+      .filter((v): v is KwVariation => !!v);
+    if (picks.length === 0) return;
     setKwSaving(true);
     setKwMessage(null);
-    try {
-      const res = await fetch("/api/keyword-icon-assets", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: kwName.trim(),
-          imageBase64: variant.base64,
-          imageMimeType: variant.mime,
-          keyword_type: kwTypeForm,
-          keyword: kwTypeForm === "spell" ? `spell_${kwSelected}` : kwSelected,
-          style: "simple",
-          prompt: kwPrompt,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok || data.error) {
-        setKwMessage({ ok: false, msg: data.error ?? `Erreur ${res.status}` });
-      } else {
-        setKwMessage({ ok: true, msg: `Icône "${kwName.trim()}" enregistrée.` });
-        setKwVariations([]);
-        setKwSelectedIdx(null);
-        setKwName("");
-        setKwPrompt("");
-        await loadKwAssets();
+    const baseName = kwName.trim();
+    const multi = picks.length > 1;
+    const keywordKey = kwTypeForm === "spell" ? `spell_${kwSelected}` : kwSelected;
+    let ok = 0;
+    let firstError: string | null = null;
+    for (let idx = 0; idx < picks.length; idx++) {
+      const variant = picks[idx];
+      const name = multi ? `${baseName} #${idx + 1}` : baseName;
+      try {
+        const res = await fetch("/api/keyword-icon-assets", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name,
+            imageBase64: variant.base64,
+            imageMimeType: variant.mime,
+            keyword_type: kwTypeForm,
+            keyword: keywordKey,
+            style: "simple",
+            prompt: kwPrompt,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok || data.error) {
+          if (!firstError) firstError = data.error ?? `Erreur ${res.status}`;
+        } else {
+          ok++;
+        }
+      } catch (err) {
+        if (!firstError) firstError = err instanceof Error ? err.message : "Erreur réseau";
       }
-    } catch (err) {
-      setKwMessage({ ok: false, msg: err instanceof Error ? err.message : "Erreur réseau" });
+    }
+    if (ok > 0 && !firstError) {
+      setKwMessage({ ok: true, msg: multi ? `${ok} icônes enregistrées.` : `Icône "${baseName}" enregistrée.` });
+      setKwVariations([]);
+      setKwSelectedIdxs([]);
+      setKwName("");
+      setKwPrompt("");
+      await loadKwAssets();
+    } else if (ok > 0) {
+      setKwMessage({ ok: false, msg: `${ok} icône(s) enregistrée(s), mais erreur sur les autres : ${firstError}` });
+      await loadKwAssets();
+    } else {
+      setKwMessage({ ok: false, msg: firstError ?? "Erreur inconnue" });
     }
     setKwSaving(false);
   }
@@ -2337,6 +2381,26 @@ export default function CardForge() {
                       style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }} />
                   </div>
                   <div style={{ gridColumn: "span 3" }}>
+                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>STYLE</label>
+                    <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
+                      {([
+                        ["white", "Blanc pur"],
+                        ["colored", "Coloré"],
+                      ] as const).map(([val, label]) => (
+                        <button key={val} type="button" onClick={() => setKwColorMode(val)}
+                          style={{
+                            flex: 1, padding: "6px 10px", borderRadius: 5, cursor: "pointer", fontSize: 10,
+                            fontFamily: "'Cinzel',serif", fontWeight: kwColorMode === val ? 700 : 400,
+                            background: kwColorMode === val ? "#33333318" : "#fff",
+                            border: `1px solid ${kwColorMode === val ? "#333" : "#e0e0e0"}`,
+                            color: kwColorMode === val ? "#333" : "#999",
+                          }}>
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div style={{ gridColumn: "span 3" }}>
                     <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>INSTRUCTIONS SUPPLÉMENTAIRES (optionnel)</label>
                     <textarea value={kwInstructions} onChange={e => setKwInstructions(e.target.value)}
                       placeholder="Ex: privilégier un éclair, un crâne stylisé..."
@@ -2366,16 +2430,22 @@ export default function CardForge() {
                   </div>
                 </div>
 
-                {/* 3 variations preview — checker bg reveals transparency */}
+                {/* 3 variations preview — checker bg reveals transparency. Click to toggle. */}
                 <div style={{ marginTop: 14 }}>
-                  <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>VARIANTES (cliquez pour sélectionner)</label>
+                  <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>
+                    VARIANTES (cliquez pour cocher celles à sauvegarder — plusieurs possibles)
+                  </label>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginTop: 6 }}>
                     {[0, 1, 2].map((i) => {
                       const v = kwVariations[i];
-                      const isSelected = kwSelectedIdx === i;
+                      const isSelected = kwSelectedIdxs.includes(i);
                       const checkerBg = "repeating-conic-gradient(#d9d9d9 0% 25%, #fff 0% 50%) 50% / 16px 16px";
+                      const toggle = () => {
+                        if (!v) return;
+                        setKwSelectedIdxs((prev) => prev.includes(i) ? prev.filter((j) => j !== i) : [...prev, i]);
+                      };
                       return (
-                        <button key={i} type="button" disabled={!v} onClick={() => v && setKwSelectedIdx(i)}
+                        <button key={i} type="button" disabled={!v} onClick={toggle}
                           style={{
                             width: "100%", aspectRatio: "1/1", borderRadius: 10, overflow: "hidden",
                             border: isSelected ? "3px solid #27ae60" : "2px dashed #ddd",
@@ -2405,15 +2475,26 @@ export default function CardForge() {
                 </div>
 
                 <div style={{ marginTop: 14, display: "flex", justifyContent: "flex-end" }}>
-                  <button type="button" onClick={saveKeywordIcon} disabled={!kwName.trim() || !kwSelected || kwSelectedIdx === null || kwSaving}
-                    style={{
-                      padding: "10px 18px", borderRadius: 6, border: "none",
-                      background: (!kwName.trim() || !kwSelected || kwSelectedIdx === null || kwSaving) ? "#e0e0e0" : "linear-gradient(135deg, #27ae60, #2ecc71)",
-                      color: "#fff", fontSize: 10, fontFamily: "'Cinzel',serif", fontWeight: 700, letterSpacing: 1,
-                      cursor: (!kwName.trim() || !kwSelected || kwSelectedIdx === null || kwSaving) ? "default" : "pointer",
-                    }}>
-                    {kwSaving ? "Enregistrement…" : "Enregistrer la variante sélectionnée"}
-                  </button>
+                  {(() => {
+                    const disabled = !kwName.trim() || !kwSelected || kwSelectedIdxs.length === 0 || kwSaving;
+                    const count = kwSelectedIdxs.length;
+                    const label = kwSaving
+                      ? "Enregistrement…"
+                      : count <= 1
+                        ? "Enregistrer la variante sélectionnée"
+                        : `Enregistrer les ${count} variantes sélectionnées`;
+                    return (
+                      <button type="button" onClick={saveKeywordIcon} disabled={disabled}
+                        style={{
+                          padding: "10px 18px", borderRadius: 6, border: "none",
+                          background: disabled ? "#e0e0e0" : "linear-gradient(135deg, #27ae60, #2ecc71)",
+                          color: "#fff", fontSize: 10, fontFamily: "'Cinzel',serif", fontWeight: 700, letterSpacing: 1,
+                          cursor: disabled ? "default" : "pointer",
+                        }}>
+                        {label}
+                      </button>
+                    );
+                  })()}
                 </div>
               </div>
 
