@@ -126,6 +126,171 @@ export default function CardForge() {
   const [cardImages, setCardImages] = useState<Record<string, string>>({});
   const abortRef = useRef(false);
 
+  // ─── CARD BACKS (dos de cartes) ───────────────────────────────────────────
+  const [cbName, setCbName] = useState("");
+  const [cbFaction, setCbFaction] = useState<string>("");
+  const [cbRace, setCbRace] = useState<string>("");
+  const [cbClan, setCbClan] = useState<string>("");
+  const [cbInstructions, setCbInstructions] = useState("");
+  const [cbRarity, setCbRarity] = useState<string>("Commune");
+  const [cbMaxPrints, setCbMaxPrints] = useState<number | null>(null);
+  const [cbIsDefault, setCbIsDefault] = useState(false);
+  const [cbPrompt, setCbPrompt] = useState("");
+  const [cbImageBase64, setCbImageBase64] = useState<string | null>(null);
+  const [cbImageMime, setCbImageMime] = useState<string | null>(null);
+  const [cbImagePreview, setCbImagePreview] = useState<string | null>(null);
+  const [cbGenerating, setCbGenerating] = useState(false);
+  const [cbSaving, setCbSaving] = useState(false);
+  const [cbMessage, setCbMessage] = useState<{ ok: boolean; msg: string } | null>(null);
+
+  const CB_DEFAULT_MAX_PRINTS: Record<string, number> = {
+    "Légendaire": 1,
+    "Épique": 10,
+    "Rare": 100,
+    "Peu Commune": 1000,
+  };
+
+  const cbFactionDef = cbFaction ? FACTIONS[cbFaction as keyof typeof FACTIONS] : null;
+  const cbFactionRaces = cbFactionDef?.races
+    ?? Object.values(FACTIONS).flatMap((f) => f.races).sort();
+  const cbFactionClans: string[] =
+    cbFactionDef?.clans && (cbFactionDef.clans.appliesTo === cbRace || !cbFactionDef.clans.appliesTo)
+      ? cbFactionDef.clans.names
+      : [];
+
+  function generateCardBackPrompt() {
+    const factionDef = cbFaction ? FACTIONS[cbFaction as keyof typeof FACTIONS] : null;
+    const factionName = factionDef?.label ?? cbFaction;
+    const factionAlign = factionDef?.alignment ?? null;
+
+    const parts: string[] = [];
+    parts.push(
+      "An ornate fantasy card back design in the exact style of classic Hearthstone card backs.",
+      "Portrait 2.5:3.5 aspect ratio, vertically symmetrical, highly detailed digital painting.",
+      "FULL-BLEED design: the ornamentation and artwork extend all the way to every edge of the image, there is NO outer black frame, NO black outline, NO rounded black border, NO dark rectangle around the design, NO letterboxing, NO padding, NO margin — the decorative pattern touches the top, bottom, left and right edges of the canvas.",
+      "Large ornate border / frame filling the whole card edges, with intricate filigree, gold trim and baroque flourishes. The frame itself IS the edge of the image — do not paint another frame around it.",
+      "Central large medallion / sigil / heraldic crest in the middle of the card, glowing with magical light.",
+      "Rich jewel tones, deep contrast, subtle volumetric glow, polished AAA trading-card-game quality.",
+    );
+
+    if (factionName) {
+      parts.push(`Thematic faction: ${factionName}.`);
+    }
+    if (factionAlign) {
+      const alignDesc: Record<string, string> = {
+        bon: "luminous, noble, heroic atmosphere, warm gold and ivory palette",
+        neutre: "balanced mystical atmosphere, silver and azure palette",
+        "maléfique": "dark, ominous, corrupted atmosphere, crimson, black and purple palette, gothic motifs",
+        "spéciale": "opulent treasure-hunter aesthetic, deep gold and emerald palette",
+      };
+      if (alignDesc[factionAlign]) parts.push(alignDesc[factionAlign] + ".");
+    }
+    if (cbRace) {
+      parts.push(`Central emblem themed around ${cbRace}: incorporate iconic silhouette, weapons or natural elements of that race into the crest.`);
+    }
+    if (cbClan) {
+      parts.push(`Subtle decorative motif hinting at the "${cbClan}" clan woven into the frame.`);
+    }
+    if (cbInstructions.trim()) {
+      parts.push(`Additional requirements from the artist: ${cbInstructions.trim()}`);
+    }
+
+    parts.push(
+      "No characters in the foreground, no figures, no portraits — only the ornamental back design.",
+      "Absolutely NO TEXT, no letters, no words, no numbers, no watermark, no logo, no signature.",
+      "Strictly centered, perfectly symmetrical, tileable-looking decorative design.",
+      "IMPORTANT: edge-to-edge bleed. The generated image must NOT contain any black border, black frame, dark rectangle or letterbox around the artwork. Every corner pixel of the image must be part of the ornamental design, not solid black.",
+    );
+    setCbPrompt(parts.join(" "));
+  }
+
+  function handleCardBackFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const img = new window.Image();
+    img.onload = () => {
+      const MAX_DIM = 1600;
+      let { width, height } = img;
+      if (width > MAX_DIM || height > MAX_DIM) {
+        const ratio = Math.min(MAX_DIM / width, MAX_DIM / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d")!;
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+      ctx.drawImage(img, 0, 0, width, height);
+      const dataUrl = canvas.toDataURL("image/webp", 0.95);
+      const base64 = dataUrl.split(",")[1];
+      setCbImageBase64(base64);
+      setCbImageMime("image/webp");
+      setCbImagePreview(dataUrl);
+    };
+    img.src = URL.createObjectURL(file);
+  }
+
+  async function generateCardBackImage() {
+    if (!cbPrompt) return;
+    setCbGenerating(true);
+    setCbMessage(null);
+    try {
+      const res = await fetch("/api/cards/generate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: cbPrompt }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        setCbMessage({ ok: false, msg: data.error ?? `Erreur ${res.status}` });
+      } else {
+        setCbImageBase64(data.imageBase64);
+        setCbImageMime(data.mimeType ?? "image/png");
+        setCbImagePreview(`data:${data.mimeType ?? "image/png"};base64,${data.imageBase64}`);
+      }
+    } catch (err) {
+      setCbMessage({ ok: false, msg: err instanceof Error ? err.message : "Erreur réseau" });
+    }
+    setCbGenerating(false);
+  }
+
+  async function saveCardBack() {
+    if (!cbName.trim() || !cbImageBase64 || !cbImageMime) return;
+    setCbSaving(true);
+    setCbMessage(null);
+    try {
+      const effectiveMax = cbRarity === "Commune" ? null : (cbMaxPrints ?? CB_DEFAULT_MAX_PRINTS[cbRarity] ?? null);
+      const res = await fetch("/api/card-backs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: cbName.trim(),
+          imageBase64: cbImageBase64,
+          imageMimeType: cbImageMime,
+          rarity: cbRarity,
+          max_prints: effectiveMax,
+          is_default: cbIsDefault,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        setCbMessage({ ok: false, msg: data.error ?? `Erreur ${res.status}` });
+      } else {
+        setCbMessage({ ok: true, msg: `Dos "${cbName.trim()}" enregistré.` });
+        setCbName("");
+        setCbImageBase64(null);
+        setCbImageMime(null);
+        setCbImagePreview(null);
+        setCbPrompt("");
+      }
+    } catch (err) {
+      setCbMessage({ ok: false, msg: err instanceof Error ? err.message : "Erreur réseau" });
+    }
+    setCbSaving(false);
+  }
+
   // ─── PRINTS (séries limitées) ──────────────────────────────────────────────
   const [printsCards, setPrintsCards] = useState<{ id: number; name: string; mana_cost: number; rarity: string | null; card_year: number | null; card_month: number | null; set_id: number | null }[]>([]);
   const [printsProfiles, setPrintsProfiles] = useState<{ id: string; username: string }[]>([]);
@@ -775,7 +940,7 @@ export default function CardForge() {
             <span style={{ fontSize: 8, color: "#aaa", letterSpacing: 2 }}>ARMIES & MAGIC</span>
           </div>
           <div style={{ display: "flex", gap: 4 }}>
-            {([["forge", "⚒ Forge"], ["edition", "✏ Édition"], ["tokens", "🎭 Tokens"], ["sets", "📦 Sets"], ["formats", "🎮 Formats"], ["bulk", "📦 Masse"], ["budget", "⚖ Budget"], ["schema", "📋 Schéma"], ["prints", "🏷 Séries"]] as const).map(([t, l]) => (
+            {([["forge", "⚒ Forge"], ["edition", "✏ Édition"], ["tokens", "🎭 Tokens"], ["card-backs", "🎴 Dos"], ["sets", "📦 Sets"], ["formats", "🎮 Formats"], ["bulk", "📦 Masse"], ["budget", "⚖ Budget"], ["schema", "📋 Schéma"], ["prints", "🏷 Séries"]] as const).map(([t, l]) => (
               <button key={t} onClick={() => { setTab(t); if (t === "sets") loadSets(); if (t === "formats") loadFormats(); if (t === "prints") loadPrintsData(); }} style={{
                 padding: "5px 14px", borderRadius: 6, cursor: "pointer",
                 background: tab === t ? "#333" : "transparent",
@@ -1726,6 +1891,158 @@ export default function CardForge() {
                       </div>
                     </div>
                   ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── CARD BACKS ── */}
+        {tab === "card-backs" && (
+          <div style={{ flex: 1, padding: 22, overflowY: "auto" }}>
+            <div style={{ maxWidth: 780, margin: "0 auto" }}>
+              <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16, letterSpacing: 2 }}>GÉNÉRER UN DOS DE CARTE</h2>
+
+              {cbMessage && (
+                <div style={{
+                  padding: "8px 14px", borderRadius: 8, fontSize: 10, marginBottom: 12,
+                  background: cbMessage.ok ? "#e8f8f0" : "#fde8e8",
+                  border: `1px solid ${cbMessage.ok ? "#a3e4c1" : "#f5a3a3"}`,
+                  color: cbMessage.ok ? "#27ae60" : "#e74c3c",
+                  fontFamily: "'Crimson Text',serif",
+                }}>{cbMessage.msg}</div>
+              )}
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 18 }}>
+                {/* Left: form */}
+                <div style={{ border: "1px solid #e0e0e0", borderRadius: 8, padding: 16, background: "#fafafa" }}>
+                  <div style={{ fontSize: 10, color: "#666", letterSpacing: 1, marginBottom: 10, fontWeight: 700 }}>
+                    MÉTADONNÉES
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                    <div style={{ gridColumn: "span 2" }}>
+                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>NOM</label>
+                      <input type="text" value={cbName} onChange={e => setCbName(e.target.value)}
+                        placeholder="Ex: Gardien des Bois-Anciens"
+                        style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }} />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>FACTION</label>
+                      <select value={cbFaction} onChange={e => { setCbFaction(e.target.value); setCbRace(""); setCbClan(""); }}
+                        style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }}>
+                        <option value="">-- Aucune --</option>
+                        {Object.entries(FACTIONS).map(([id, f]) => (
+                          <option key={id} value={id}>{f.emoji} {f.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>RACE</label>
+                      <select value={cbRace} onChange={e => { setCbRace(e.target.value); setCbClan(""); }}
+                        style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }}>
+                        <option value="">-- Aucune --</option>
+                        {cbFactionRaces.map(r => <option key={r} value={r}>{r}</option>)}
+                      </select>
+                    </div>
+                    {cbFactionClans.length > 0 && (
+                      <div style={{ gridColumn: "span 2" }}>
+                        <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>CLAN</label>
+                        <select value={cbClan} onChange={e => setCbClan(e.target.value)}
+                          style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }}>
+                          <option value="">-- Aucun --</option>
+                          {cbFactionClans.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                      </div>
+                    )}
+                    <div>
+                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>RARETÉ</label>
+                      <select value={cbRarity} onChange={e => {
+                        const r = e.target.value;
+                        setCbRarity(r);
+                        setCbMaxPrints(r === "Commune" ? null : (CB_DEFAULT_MAX_PRINTS[r] ?? null));
+                        if (r !== "Commune") setCbIsDefault(false);
+                      }}
+                        style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }}>
+                        {["Commune", "Peu Commune", "Rare", "Épique", "Légendaire"].map(r => <option key={r} value={r}>{r}</option>)}
+                      </select>
+                    </div>
+                    {cbRarity !== "Commune" && (
+                      <div>
+                        <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>EXEMPLAIRES</label>
+                        <input type="number" min={1} value={cbMaxPrints ?? ""}
+                          onChange={e => setCbMaxPrints(e.target.value ? Number(e.target.value) : null)}
+                          style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }} />
+                      </div>
+                    )}
+                    {cbRarity === "Commune" && (
+                      <div style={{ display: "flex", alignItems: "center", paddingTop: 18 }}>
+                        <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 10, color: "#333", cursor: "pointer" }}>
+                          <input type="checkbox" checked={cbIsDefault} onChange={e => setCbIsDefault(e.target.checked)} />
+                          Par défaut
+                        </label>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Instructions additionnelles */}
+                  <div style={{ marginTop: 12 }}>
+                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>INSTRUCTIONS SUPPLÉMENTAIRES</label>
+                    <textarea value={cbInstructions} onChange={e => setCbInstructions(e.target.value)}
+                      placeholder="Ex: runes dorées, plumes, miroir poli, dragon enroulé..."
+                      style={{ width: "100%", minHeight: 50, padding: 6, borderRadius: 6, border: "1px solid #ddd", fontSize: 10, fontFamily: "'Crimson Text',serif", marginTop: 4, resize: "vertical" }} />
+                  </div>
+
+                  {/* Prompt */}
+                  <div style={{ marginTop: 12 }}>
+                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>PROMPT IMAGE</label>
+                    <textarea value={cbPrompt} onChange={e => setCbPrompt(e.target.value)}
+                      placeholder="Cliquez 'Auto-prompt' pour générer, ou écrivez le vôtre..."
+                      style={{ width: "100%", minHeight: 90, padding: 6, borderRadius: 6, border: "1px solid #ddd", fontSize: 9.5, fontFamily: "monospace", marginTop: 4, resize: "vertical" }} />
+                    <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
+                      <button onClick={generateCardBackPrompt}
+                        style={{ padding: "4px 12px", borderRadius: 5, border: "1px solid #ddd", background: "#fff", color: "#666", fontSize: 9, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>
+                        Auto-prompt
+                      </button>
+                      <button onClick={generateCardBackImage} disabled={!cbPrompt || cbGenerating}
+                        style={{ padding: "4px 12px", borderRadius: 5, border: "none", background: cbPrompt && !cbGenerating ? "linear-gradient(135deg, #6c5ce7, #a855f7)" : "#e0e0e0", color: "#fff", fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: 700, cursor: cbPrompt && !cbGenerating ? "pointer" : "default" }}>
+                        {cbGenerating ? "Génération..." : "Générer image"}
+                      </button>
+                      <label style={{ padding: "4px 12px", borderRadius: 5, border: "1px solid #ddd", background: "#fff", color: "#666", fontSize: 9, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>
+                        Upload manuel
+                        <input type="file" accept="image/*" onChange={handleCardBackFileChange} style={{ display: "none" }} />
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right: preview + save */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {cbImagePreview ? (
+                    <div style={{ width: "100%", aspectRatio: "2.5/3.5", borderRadius: 10, overflow: "hidden" }}>
+                      <img
+                        src={cbImagePreview}
+                        alt="Aperçu du dos"
+                        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                      />
+                    </div>
+                  ) : (
+                    <div style={{
+                      width: "100%", aspectRatio: "2.5/3.5", borderRadius: 10,
+                      border: "2px dashed #ddd", background: "#fafafa",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                    }}>
+                      <span style={{ fontSize: 10, color: "#bbb", fontFamily: "'Cinzel',serif" }}>Aperçu du dos</span>
+                    </div>
+                  )}
+                  <button onClick={saveCardBack} disabled={!cbName.trim() || !cbImageBase64 || cbSaving}
+                    style={{
+                      padding: "10px 14px", borderRadius: 6, border: "none",
+                      background: (!cbName.trim() || !cbImageBase64 || cbSaving) ? "#e0e0e0" : "linear-gradient(135deg, #27ae60, #2ecc71)",
+                      color: "#fff", fontSize: 10, fontFamily: "'Cinzel',serif", fontWeight: 700, letterSpacing: 1,
+                      cursor: (!cbName.trim() || !cbImageBase64 || cbSaving) ? "default" : "pointer",
+                    }}>
+                    {cbSaving ? "Enregistrement…" : "Enregistrer le dos"}
+                  </button>
                 </div>
               </div>
             </div>

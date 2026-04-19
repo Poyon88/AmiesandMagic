@@ -283,18 +283,19 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           {opponent.hand.map((_, i) => (
             <div
               key={i}
-              className="relative w-24 h-36 rounded border border-primary/30 overflow-hidden"
+              className="relative w-24 h-36 rounded overflow-hidden"
             >
               {opponentCardBackUrl ? (
                 <Image
                   src={opponentCardBackUrl}
                   alt=""
                   fill
-                  sizes="(min-resolution: 2dppx) 256px, 128px"
+                  sizes="(min-resolution: 3dppx) 576px, (min-resolution: 2dppx) 384px, 192px"
                   className="object-cover"
-                  quality={95}
-                  unoptimized={false}
+                  quality={100}
+                  unoptimized
                   draggable={false}
+                  style={{ imageRendering: "auto" }}
                 />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-secondary via-card-bg to-secondary flex items-center justify-center">
@@ -481,7 +482,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
         </div>
 
         {/* ============= PLAYER HERO + MANA + HERO POWER ============= */}
-        <div className="absolute bottom-[16%] left-1/2 -translate-x-1/2 z-20 flex items-center gap-4">
+        <div className="absolute bottom-[16%] left-1/2 -translate-x-1/2 z-40 flex items-center gap-4">
           <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} />
           <HeroPortrait
             hero={myPlayer.hero}
