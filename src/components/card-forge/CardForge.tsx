@@ -157,12 +157,15 @@ export default function CardForge() {
     is_active: boolean;
   };
   type KwVariation = { base64: string; mime: string; url: string };
-  type KwColorMode = "white" | "colored";
+  type KwColorMode = "white" | "grey" | "colored" | "sculpture";
   const [kwAssets, setKwAssets] = useState<KwAsset[]>([]);
   const [kwTypeForm, setKwTypeForm] = useState<"creature" | "spell">("creature");
   const [kwSelected, setKwSelected] = useState<string>("");
   const [kwColorMode, setKwColorMode] = useState<KwColorMode>("white");
   const [kwInstructions, setKwInstructions] = useState("");
+  const [kwRefImageBase64, setKwRefImageBase64] = useState<string | null>(null);
+  const [kwRefImageMime, setKwRefImageMime] = useState<string | null>(null);
+  const [kwRefImagePreview, setKwRefImagePreview] = useState<string | null>(null);
   const [kwPrompt, setKwPrompt] = useState("");
   const [kwName, setKwName] = useState("");
   const [kwVariations, setKwVariations] = useState<KwVariation[]>([]);
@@ -210,6 +213,21 @@ export default function CardForge() {
         "CRITICAL SIZING: the silhouette must be LARGE and fill 85–95% of the image canvas. Minimal negative space around the subject. The shape should nearly touch all four edges of the square.",
         "The silhouette must be pure white (#FFFFFF) or very light silver. No colored details, no highlights, no shading other than what is required for a crisp silhouette.",
       );
+    } else if (kwColorMode === "grey") {
+      parts.push(
+        "Single pure-grey silhouette icon, centered on a completely flat pure-black background (hex #000000, uniform, no gradients, no texture, no vignette). The pure black background is mandatory — it will be keyed out to produce a transparent PNG.",
+        "Style: emoji-like pictogram — clean vector silhouette, very simple shapes, strong bold outline, almost no internal detail. Same kind of readability as the small Hearthstone attack/shield stat icons.",
+        "CRITICAL SIZING: the silhouette must be LARGE and fill 85–95% of the image canvas. Minimal negative space around the subject. The shape should nearly touch all four edges of the square.",
+        "The silhouette must be a uniform medium-light grey (around hex #A8A8A8 / value 165–185), fully desaturated (no hue tint). No colored details, no highlights; any internal shading must stay within a narrow grey range clearly brighter than pure black so the background keying works.",
+      );
+    } else if (kwColorMode === "sculpture") {
+      parts.push(
+        "A single carved monochrome sculpture of the subject, photographed on a completely flat pure-black background (hex #000000, uniform, no gradients, no texture, no vignette). The pure black background is mandatory — it will be keyed out to produce a transparent PNG.",
+        "Material: polished pale stone / marble / alabaster / weathered bone / light bronze — choose ONE material and commit to it. Monochromatic: the entire sculpture is rendered in tonal variations of that single material color. No vivid colors, no paint, no rainbow tint.",
+        "Style: detailed 3D bas-relief or fully carved statue, volumetric lighting, soft directional key light revealing form, subtle self-shadows. Unlike the flat-icon modes, fine carved detail IS allowed (drapery folds, chiseled edges, muscle definition, feather or scale texture), as long as the silhouette remains readable.",
+        "CRITICAL SIZING: the sculpture must fill 85–95% of the image canvas. Minimal negative space around the subject.",
+        "Lighting must stay OFF the background: no cast shadow on the ground, no light bloom, no fog, no atmospheric haze — the sculpture appears to float on pure black. Every visible pixel of the sculpture must be distinctly brighter than pure black so it survives the background keying.",
+      );
     } else {
       parts.push(
         "Single colored silhouette icon, centered on a completely flat pure-black background (hex #000000, uniform, no gradients, no texture, no vignette). The pure black background is mandatory — it will be keyed out to produce a transparent PNG.",
@@ -219,19 +237,36 @@ export default function CardForge() {
         "Simple flat shading only: 1–3 tonal steps per colored area, crisp edges, no painterly render, no photorealistic texture, no small gradients.",
       );
     }
-    parts.push(
-      "NO frame, NO border, NO medallion, NO baroque ornamentation, NO gold trim, NO filigree, NO glow, NO sparkles around the subject, NO particles — pure black around the silhouette is mandatory.",
-      "The icon must remain perfectly readable at 24–32 pixels. No fine lines, no tiny ornaments.",
-      "1:1 square, centered, symmetric whenever possible.",
-    );
-    parts.push(`Subject: a simple iconic symbol that clearly represents the keyword "${label}" from a fantasy card game.`);
-    if (desc) parts.push(`Meaning of the keyword (for inspiration only, do NOT depict literally): ${desc}`);
-    parts.push(
-      kwTypeForm === "spell"
-        ? "Since this is a SPELL keyword, favor very simple arcane motifs (a single rune shape, a small arcane circle, an elemental glyph)."
-        : "Since this is a CREATURE keyword, favor very simple martial or body-state motifs (sword, shield, wings, fang, heart, etc.).",
-    );
-    if (kwInstructions.trim()) parts.push(`Extra admin guidance: ${kwInstructions.trim()}`);
+    if (kwColorMode === "sculpture") {
+      parts.push(
+        "NO ornamental frame around the sculpture, NO gold trim, NO filigree, NO glow, NO particles. The edge of the canvas is pure black.",
+        "1:1 square, centered composition, subject framed as if photographed head-on or from a slight three-quarter angle.",
+      );
+    } else {
+      parts.push(
+        "NO frame, NO border, NO medallion, NO baroque ornamentation, NO gold trim, NO filigree, NO glow, NO sparkles around the subject, NO particles — pure black around the silhouette is mandatory.",
+        "The icon must remain perfectly readable at 24–32 pixels. No fine lines, no tiny ornaments.",
+        "1:1 square, centered, symmetric whenever possible.",
+      );
+    }
+    // Subject block: custom admin instructions, when present, replace the
+    // default "keyword + meaning + creature/spell motif hint" trio literally.
+    if (kwInstructions.trim()) {
+      parts.push(`Subject: ${kwInstructions.trim()}`);
+    } else {
+      parts.push(`Subject: a simple iconic symbol that clearly represents the keyword "${label}" from a fantasy card game.`);
+      if (desc) parts.push(`Meaning of the keyword (for inspiration only, do NOT depict literally): ${desc}`);
+      parts.push(
+        kwTypeForm === "spell"
+          ? "Since this is a SPELL keyword, favor very simple arcane motifs (a single rune shape, a small arcane circle, an elemental glyph)."
+          : "Since this is a CREATURE keyword, favor very simple martial or body-state motifs (sword, shield, wings, fang, heart, etc.).",
+      );
+    }
+    if (kwRefImageBase64) {
+      parts.push(
+        "A reference image is attached. Use ONLY its subject matter / pose / composition as visual inspiration for WHAT to depict. IGNORE its colors, lighting, background, artistic style, level of detail — the output MUST follow every rendering constraint stated above (background color, silhouette style, palette, sizing, no frame, no text). Do NOT copy the reference literally; re-interpret it within the required style.",
+      );
+    }
     parts.push(
       "Absolutely NO TEXT, no letters, no words, no numbers, no watermark.",
       "No characters, no faces, no full creature bodies with detailed anatomy — just a stylized silhouette.",
@@ -283,7 +318,12 @@ export default function CardForge() {
             px[i] = 255;
             px[i + 1] = 255;
             px[i + 2] = 255;
+          } else if (mode === "grey") {
+            px[i] = 168;
+            px[i + 1] = 168;
+            px[i + 2] = 168;
           }
+          // "colored" and "sculpture" preserve the source RGB channels.
           px[i + 3] = alpha;
         }
         ctx.putImageData(data, 0, 0);
@@ -294,6 +334,44 @@ export default function CardForge() {
       img.onerror = reject;
       img.src = srcUrl;
     });
+  }
+
+  // Downsize + encode a reference image so Gemini stays fast and the payload
+  // doesn't bloat. The reference is used only as visual inspiration — we don't
+  // need to ship a full-res file.
+  function handleKwRefImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const img = new window.Image();
+    img.onload = () => {
+      const MAX_DIM = 768;
+      let { width, height } = img;
+      if (width > MAX_DIM || height > MAX_DIM) {
+        const ratio = Math.min(MAX_DIM / width, MAX_DIM / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d")!;
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+      ctx.drawImage(img, 0, 0, width, height);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+      const base64 = dataUrl.split(",")[1];
+      setKwRefImageBase64(base64);
+      setKwRefImageMime("image/jpeg");
+      setKwRefImagePreview(dataUrl);
+    };
+    img.onerror = () => setKwMessage({ ok: false, msg: "Impossible de lire l'image de référence." });
+    img.src = URL.createObjectURL(file);
+  }
+
+  function clearKwRefImage() {
+    setKwRefImageBase64(null);
+    setKwRefImageMime(null);
+    setKwRefImagePreview(null);
   }
 
   function handleKwFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -324,7 +402,12 @@ export default function CardForge() {
         const res = await fetch("/api/cards/generate-image", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt: kwPrompt }),
+          body: JSON.stringify({
+            prompt: kwPrompt,
+            ...(kwRefImageBase64 && kwRefImageMime
+              ? { referenceImageBase64: kwRefImageBase64, referenceImageMimeType: kwRefImageMime }
+              : {}),
+          }),
         });
         const data = await res.json();
         if (!res.ok || data.error) return { error: data.error ?? `Erreur ${res.status}` };
@@ -396,6 +479,7 @@ export default function CardForge() {
       setKwSelectedIdxs([]);
       setKwName("");
       setKwPrompt("");
+      clearKwRefImage();
       await loadKwAssets();
     } else if (ok > 0) {
       setKwMessage({ ok: false, msg: `${ok} icône(s) enregistrée(s), mais erreur sur les autres : ${firstError}` });
@@ -2382,14 +2466,16 @@ export default function CardForge() {
                   </div>
                   <div style={{ gridColumn: "span 3" }}>
                     <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>STYLE</label>
-                    <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
+                    <div style={{ display: "flex", gap: 6, marginTop: 4, flexWrap: "wrap" }}>
                       {([
                         ["white", "Blanc pur"],
+                        ["grey", "Gris pur"],
                         ["colored", "Coloré"],
+                        ["sculpture", "Sculpture"],
                       ] as const).map(([val, label]) => (
                         <button key={val} type="button" onClick={() => setKwColorMode(val)}
                           style={{
-                            flex: 1, padding: "6px 10px", borderRadius: 5, cursor: "pointer", fontSize: 10,
+                            flex: "1 1 0", padding: "6px 10px", borderRadius: 5, cursor: "pointer", fontSize: 10,
                             fontFamily: "'Cinzel',serif", fontWeight: kwColorMode === val ? 700 : 400,
                             background: kwColorMode === val ? "#33333318" : "#fff",
                             border: `1px solid ${kwColorMode === val ? "#333" : "#e0e0e0"}`,
@@ -2405,6 +2491,40 @@ export default function CardForge() {
                     <textarea value={kwInstructions} onChange={e => setKwInstructions(e.target.value)}
                       placeholder="Ex: privilégier un éclair, un crâne stylisé..."
                       style={{ width: "100%", minHeight: 36, padding: 6, borderRadius: 6, border: "1px solid #ddd", fontSize: 10, fontFamily: "'Crimson Text',serif", marginTop: 4, resize: "vertical" }} />
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
+                      {kwRefImagePreview ? (
+                        <div style={{
+                          width: 72, height: 72, borderRadius: 6, overflow: "hidden",
+                          border: "1px solid #27ae60", flexShrink: 0, position: "relative",
+                        }}>
+                          <img src={kwRefImagePreview} alt="Référence" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                        </div>
+                      ) : (
+                        <div style={{
+                          width: 72, height: 72, borderRadius: 6, border: "2px dashed #ddd",
+                          background: "#fafafa", display: "flex", alignItems: "center", justifyContent: "center",
+                          fontSize: 9, color: "#bbb", fontFamily: "'Cinzel',serif", flexShrink: 0, textAlign: "center", padding: 4,
+                        }}>Aucune réf.</div>
+                      )}
+                      <div style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
+                        <span style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>IMAGE DE RÉFÉRENCE (optionnel)</span>
+                        <span style={{ fontSize: 9, color: "#777", fontFamily: "'Crimson Text',serif", lineHeight: 1.3 }}>
+                          Sert d&apos;inspiration visuelle au sujet uniquement ; toutes les contraintes de style (fond, silhouette, palette…) sont conservées.
+                        </span>
+                        <div style={{ display: "flex", gap: 6, marginTop: 2 }}>
+                          <label style={{ padding: "4px 10px", borderRadius: 5, border: "1px solid #ddd", background: "#fff", color: "#666", fontSize: 9, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>
+                            {kwRefImagePreview ? "Remplacer" : "Choisir une image"}
+                            <input type="file" accept="image/*" onChange={handleKwRefImageChange} style={{ display: "none" }} />
+                          </label>
+                          {kwRefImagePreview && (
+                            <button type="button" onClick={clearKwRefImage}
+                              style={{ padding: "4px 10px", borderRadius: 5, border: "1px solid #e74c3c55", background: "#e74c3c11", color: "#e74c3c", fontSize: 9, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>
+                              Retirer
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 

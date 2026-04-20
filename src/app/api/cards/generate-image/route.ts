@@ -7,7 +7,7 @@ const IMAGE_MODELS = [
 ];
 
 export async function POST(request: Request) {
-  const { prompt } = await request.json();
+  const { prompt, referenceImageBase64, referenceImageMimeType } = await request.json();
   if (!prompt) {
     return NextResponse.json({ error: 'Prompt requis' }, { status: 400 });
   }
@@ -15,6 +15,21 @@ export async function POST(request: Request) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return NextResponse.json({ error: 'GEMINI_API_KEY non configurée' }, { status: 500 });
+  }
+
+  // Build the multimodal parts: text prompt + optional reference image.
+  const promptText = `Generate an image with absolutely no text, no letters, no words, no writing, no captions, no labels, no watermarks anywhere in the image. The image must contain zero readable characters. Description: ${prompt}`;
+  const requestParts: Array<
+    | { text: string }
+    | { inline_data: { mime_type: string; data: string } }
+  > = [{ text: promptText }];
+  if (referenceImageBase64 && referenceImageMimeType) {
+    requestParts.push({
+      inline_data: {
+        mime_type: referenceImageMimeType,
+        data: referenceImageBase64,
+      },
+    });
   }
 
   // Try models in order until one works
@@ -26,7 +41,7 @@ export async function POST(request: Request) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            contents: [{ parts: [{ text: `Generate an image with absolutely no text, no letters, no words, no writing, no captions, no labels, no watermarks anywhere in the image. The image must contain zero readable characters. Description: ${prompt}` }] }],
+            contents: [{ parts: requestParts }],
             generationConfig: { responseModalities: ['IMAGE', 'TEXT'] },
           }),
         }
