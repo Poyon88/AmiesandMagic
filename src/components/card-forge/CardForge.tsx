@@ -537,9 +537,9 @@ export default function CardForge() {
     parts.push(
       "An ornate fantasy card back design in the exact style of classic Hearthstone card backs.",
       "Portrait 2.5:3.5 aspect ratio, vertically symmetrical, highly detailed digital painting.",
-      "FULL-BLEED design: the ornamentation and artwork extend all the way to every edge of the image, there is NO outer black frame, NO black outline, NO rounded black border, NO dark rectangle around the design, NO letterboxing, NO padding, NO margin — the decorative pattern touches the top, bottom, left and right edges of the canvas.",
-      "Large ornate border / frame filling the whole card edges, with intricate filigree, gold trim and baroque flourishes. The frame itself IS the edge of the image — do not paint another frame around it.",
-      "Central large medallion / sigil / heraldic crest in the middle of the card, glowing with magical light.",
+      "MANDATORY RECTANGULAR BORDER: the artwork MUST include a clearly defined ornamental RECTANGULAR rim running continuously along all four edges of the canvas — top, bottom, left, and right — with crisp, unambiguous visible trim (for example a continuous band of gold filigree, studded rivets, stone molding, or engraved scrollwork). This rim must form a closed rectangle so the card back reads as a framed card, not an open illustration.",
+      "FULL-BLEED: the ornamental rim and its decoration extend exactly to the pixel edges of the image. There is NO outer black frame, NO black outline, NO rounded black border, NO dark rectangle around the design, NO letterboxing, NO padding, NO margin. Every corner pixel of the image is part of the ornamental rim.",
+      "Inside the rim, fill the interior with rich baroque filigree, gold trim, intricate scrollwork and a large central heraldic medallion / sigil / crest glowing with magical light.",
       "Rich jewel tones, deep contrast, subtle volumetric glow, polished AAA trading-card-game quality.",
     );
 
@@ -569,7 +569,7 @@ export default function CardForge() {
       "No characters in the foreground, no figures, no portraits — only the ornamental back design.",
       "Absolutely NO TEXT, no letters, no words, no numbers, no watermark, no logo, no signature.",
       "Strictly centered, perfectly symmetrical, tileable-looking decorative design.",
-      "IMPORTANT: edge-to-edge bleed. The generated image must NOT contain any black border, black frame, dark rectangle or letterbox around the artwork. Every corner pixel of the image must be part of the ornamental design, not solid black.",
+      "FINAL REMINDER: the image must simultaneously (a) show a clearly visible closed rectangular ornamental rim along the four edges so the card has a proper frame, AND (b) be fully full-bleed with NO black letterbox / NO padding / NO dark rectangle outside that rim. The ornamental rim IS the outer edge of the image.",
     );
     setCbPrompt(parts.join(" "));
   }

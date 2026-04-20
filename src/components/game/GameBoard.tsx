@@ -26,6 +26,8 @@ import MulliganOverlay from "./MulliganOverlay";
 import SettingsModal from "@/components/shared/SettingsModal";
 import type { GameAction, DamageEvent } from "@/lib/game/types";
 import useGameMusic from "@/hooks/useGameMusic";
+import { useAudioStore } from "@/lib/store/audioStore";
+import SfxEngine from "@/lib/audio/SfxEngine";
 
 interface GameBoardProps {
   onAction?: (action: GameAction) => void;
@@ -286,13 +288,10 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           ⚙
         </button>
 
-        {/* ============= OPPONENT HAND (card backs) ============= */}
-        <div className="absolute top-[1%] left-[2%] z-20 flex items-center gap-1">
-          {opponent.hand.map((_, i) => (
-            <div
-              key={i}
-              className="relative w-32 h-48 rounded overflow-hidden"
-            >
+        {/* ============= OPPONENT HAND (single card back + count) ============= */}
+        {opponent.hand.length > 0 && (
+          <div className="absolute top-[1%] left-[2%] z-20 flex items-center gap-3">
+            <div className="relative w-32 aspect-[5/7] rounded overflow-hidden">
               {opponentCardBackUrl ? (
                 <Image
                   src={opponentCardBackUrl}
@@ -312,12 +311,12 @@ export default function GameBoard({ onAction }: GameBoardProps) {
                   </div>
                 </div>
               )}
+              <div className="absolute -bottom-2 -right-2 min-w-[32px] h-8 px-2 rounded-full bg-background/90 border-2 border-primary/60 flex items-center justify-center text-foreground font-bold text-sm shadow-lg">
+                {opponent.hand.length}
+              </div>
             </div>
-          ))}
-          <span className="text-xs text-foreground/30 self-center ml-1">
-            {opponent.hand.length}
-          </span>
-        </div>
+          </div>
+        )}
 
         {/* ============= OPPONENT HERO + MANA + HERO POWER ============= */}
         <div className="absolute top-[1%] left-1/2 -translate-x-1/2 z-20 flex items-center gap-4">
@@ -590,7 +589,17 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           hand={myPlayer.hand}
           onConfirm={handleMulliganConfirm}
           waitingForOpponent={myMulliganDone}
-          onRevealComplete={() => setMulliganOverlayRequired(false)}
+          onRevealComplete={() => {
+            setMulliganOverlayRequired(false);
+            // The mulligan pipeline skipped draw_card on purpose; fire it now
+            // so the turn-start draw (and the Mana Spark for the 2nd player)
+            // has audible feedback at the exact moment they become visible.
+            const audio = useAudioStore.getState();
+            const url = audio.standardSfxUrls["draw_card"];
+            if (url && audio.userHasInteracted && !audio.settings.sfxMuted) {
+              SfxEngine.getInstance().play(url);
+            }
+          }}
         />
       )}
       {graveyardView && targetingMode !== "graveyard" && (

@@ -1031,7 +1031,7 @@ export default function DeckBuilder({
                       setSelectedCardBackId(cb.id);
                       setCardBackPickerOpen(false);
                     }}
-                    className={`relative rounded-lg overflow-hidden border-2 transition-all text-left aspect-[3/4] ${
+                    className={`relative rounded-lg overflow-hidden border-2 transition-all text-left aspect-[5/7] ${
                       selected ? "border-primary shadow-[0_0_10px_rgba(200,168,78,0.4)]" : "border-card-border/50 hover:border-primary/40"
                     }`}
                   >

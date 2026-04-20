@@ -673,10 +673,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
       sfxEvents.push({ type: "fire_breath" });
     }
 
-    // SFX from card draw (new cards in hand)
+    // SFX from card draw (new cards in hand). The mulligan action is the one
+    // exception: its pipeline fires ~1250ms after confirm, while the mulligan
+    // overlay is still flipping cards and masking its own audio. The Mana
+    // Spark / turn-start draw become visible only once the overlay unmounts,
+    // so GameBoard replays the draw SFX from onRevealComplete instead.
     const oldHandSize = gameState.players.reduce((s, p) => s + p.hand.length, 0);
     const newHandSize = newState.players.reduce((s, p) => s + p.hand.length, 0);
-    if (newHandSize > oldHandSize) {
+    if (newHandSize > oldHandSize && action.type !== "mulligan") {
       sfxEvents.push({ type: "draw_card" });
     }
 

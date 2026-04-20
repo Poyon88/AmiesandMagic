@@ -169,7 +169,7 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
                   </div>
                 ) : item.card_back ? (
                   <div style={{
-                    width: 180, height: 240, borderRadius: 10, overflow: "hidden",
+                    width: 180, height: 252, borderRadius: 10, overflow: "hidden",
                     backgroundImage: `url('${item.card_back.image_url}')`,
                     backgroundSize: "cover", backgroundPosition: "center",
                     border: "2px solid #8b5cf6", position: "relative",

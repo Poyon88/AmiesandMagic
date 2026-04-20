@@ -148,7 +148,9 @@ class AudioEngine {
   }
 
   /**
-   * Crossfade from current track to a new one.
+   * Crossfade from current track to a new one. The target volume is
+   * re-evaluated on every tick so changes to `_muted` / `_volume` during the
+   * fade are honored immediately.
    */
   crossfadeTo(url: string, loop = true) {
     this.stopFade();
@@ -161,15 +163,15 @@ class AudioEngine {
     this.nextElement.play().catch(() => {});
 
     const steps = CROSSFADE_MS / FADE_INTERVAL_MS;
-    const fadeOutStep = this.activeElement.volume / steps;
-    const fadeInTarget = this._muted ? 0 : this._volume;
-    const fadeInStep = fadeInTarget / steps;
+    const outStartVolume = this.activeElement.volume;
     let step = 0;
 
     this.fadeTimer = setInterval(() => {
       step++;
-      this.activeElement.volume = Math.max(0, this.activeElement.volume - fadeOutStep);
-      this.nextElement.volume = Math.min(fadeInTarget, this.nextElement.volume + fadeInStep);
+      const progress = Math.min(1, step / steps);
+      const target = this._muted ? 0 : this._volume;
+      this.activeElement.volume = Math.max(0, outStartVolume * (1 - progress));
+      this.nextElement.volume = target * progress;
 
       if (step >= steps) {
         this.stopFade();
@@ -180,6 +182,8 @@ class AudioEngine {
         const tmp = this.activeElement;
         this.activeElement = this.nextElement;
         this.nextElement = tmp;
+        // Lock-in the exact post-fade volume on the new active element.
+        this.applyVolume(this.activeElement);
       }
     }, FADE_INTERVAL_MS);
   }
@@ -215,16 +219,18 @@ class AudioEngine {
 
   setVolume(volume: number) {
     this._volume = Math.max(0, Math.min(1, volume));
-    if (!this.activeElement.paused) {
-      this.applyVolume(this.activeElement);
-    }
+    // During a crossfade the tick loop handles volumes itself; outside of it
+    // we still want live-applied volume on whichever element is audible.
+    if (this.fadeTimer) return;
+    this.applyVolume(this.activeElement);
+    this.applyVolume(this.nextElement);
   }
 
   setMuted(muted: boolean) {
     this._muted = muted;
-    if (!this.activeElement.paused) {
-      this.applyVolume(this.activeElement);
-    }
+    if (this.fadeTimer) return;
+    this.applyVolume(this.activeElement);
+    this.applyVolume(this.nextElement);
   }
 
   get isPlaying(): boolean {

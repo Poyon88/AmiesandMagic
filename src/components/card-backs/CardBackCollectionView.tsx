@@ -136,7 +136,7 @@ export default function CardBackCollectionView({ cardBacks, ownedPrints }: Props
             return (
               <div
                 key={key}
-                className="relative rounded-xl overflow-hidden border-2 aspect-[3/4]"
+                className="relative rounded-xl overflow-hidden border-2 aspect-[5/7]"
                 style={{ borderColor: owned ? color : "#444" }}
               >
                 <div
