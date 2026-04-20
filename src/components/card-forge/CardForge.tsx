@@ -144,6 +144,49 @@ export default function CardForge() {
   const [cbSaving, setCbSaving] = useState(false);
   const [cbMessage, setCbMessage] = useState<{ ok: boolean; msg: string } | null>(null);
 
+  // ─── GAME BOARDS (générateur) ─────────────────────────────────────────────
+  const BD_DEFAULT_MAX_PRINTS: Record<string, number> = {
+    "Légendaire": 1,
+    "Épique": 10,
+    "Rare": 100,
+    "Peu Commune": 1000,
+  };
+  const BOARD_ENV_PRESETS: { id: string; label: string; hints: string }[] = [
+    { id: "tavern",      label: "Taverne",              hints: "cosy wooden tavern, mugs, barrels, hearth fire, warm amber light" },
+    { id: "sanctum",     label: "Sanctuaire arcanique", hints: "ornate magical sanctum, runes, floating tomes, crystal sconces, violet light" },
+    { id: "frozen",      label: "Trône gelé",           hints: "frozen throne hall, ice pillars, glacial blue, frosted banners" },
+    { id: "grove",       label: "Bosquet druidique",    hints: "ancient druidic grove, mossy stones, vines, pollen motes, verdant palette" },
+    { id: "desert",      label: "Ruines désertiques",   hints: "sunken desert ruins, sandstone, broken columns, ochre palette" },
+    { id: "gothic",      label: "Donjon gothique",      hints: "gothic dungeon, chains, gargoyles, candelabra, crimson and iron" },
+    { id: "enchanted",   label: "Forêt enchantée",      hints: "enchanted forest, bioluminescent fungi, fireflies, emerald and gold" },
+    { id: "celestial",   label: "Cité céleste",         hints: "celestial city, marble terraces, cloud seas, gold and ivory" },
+    { id: "battlefield", label: "Champ de bataille",    hints: "muddy battlefield, broken pikes, banners, smoke, iron and blood palette" },
+    { id: "ship",        label: "Cale de navire",       hints: "ship hold, oak ribs, crates, lantern light, salt and rope" },
+    { id: "dwarven",     label: "Montagne naine",       hints: "dwarven forge hall, carved runes, molten channels, bronze and ember" },
+    { id: "haunted",     label: "Cimetière hanté",      hints: "haunted graveyard, mist, crooked headstones, ghostlight, violet and grey" },
+    { id: "crystal",     label: "Caverne cristalline",  hints: "crystal cavern, prismatic shards, refracted light, cyan and lilac" },
+    { id: "volcanic",    label: "Forge volcanique",     hints: "volcanic forge, obsidian, lava rivers, red and black palette" },
+  ];
+  type BdVariation = { base64: string; mime: string; url: string };
+
+  const [bdName, setBdName] = useState("");
+  const [bdEnvPreset, setBdEnvPreset] = useState<string>("tavern");
+  const [bdFaction, setBdFaction] = useState<string>("");
+  const [bdInstructions, setBdInstructions] = useState("");
+  const [bdRarity, setBdRarity] = useState<string>("Commune");
+  const [bdMaxPrints, setBdMaxPrints] = useState<number | null>(null);
+  const [bdIsDefault, setBdIsDefault] = useState(false);
+  const [bdVariantMode, setBdVariantMode] = useState<1 | 3>(1);
+  const [bdRefImageBase64, setBdRefImageBase64] = useState<string | null>(null);
+  const [bdRefImageMime, setBdRefImageMime] = useState<string | null>(null);
+  const [bdRefImagePreview, setBdRefImagePreview] = useState<string | null>(null);
+  const [bdPrompt, setBdPrompt] = useState("");
+  const [bdVariations, setBdVariations] = useState<BdVariation[]>([]);
+  const [bdSelectedIdxs, setBdSelectedIdxs] = useState<number[]>([]);
+  const [bdGenerating, setBdGenerating] = useState(false);
+  const [bdSaving, setBdSaving] = useState(false);
+  const [bdMessage, setBdMessage] = useState<{ ok: boolean; msg: string } | null>(null);
+
   // ─── KEYWORD ICONS (générateur) ───────────────────────────────────────────
   type KwAsset = {
     id: number;
@@ -659,6 +702,200 @@ export default function CardForge() {
       setCbMessage({ ok: false, msg: err instanceof Error ? err.message : "Erreur réseau" });
     }
     setCbSaving(false);
+  }
+
+  // ─── GAME BOARDS — prompt + reference + generation + save ─────────────────
+  function generateBoardPrompt() {
+    const preset = BOARD_ENV_PRESETS.find((p) => p.id === bdEnvPreset) ?? BOARD_ENV_PRESETS[0];
+    const factionDef = bdFaction ? FACTIONS[bdFaction as keyof typeof FACTIONS] : null;
+    const factionName = factionDef?.label ?? bdFaction;
+    const factionAlign = factionDef?.alignment ?? null;
+    const alignDesc: Record<string, string> = {
+      bon: "luminous, noble, heroic atmosphere, warm gold and ivory accents",
+      neutre: "balanced mystical atmosphere, silver and azure accents",
+      "maléfique": "dark, ominous, corrupted atmosphere, crimson, black and purple accents, gothic motifs",
+      "spéciale": "opulent treasure-hunter aesthetic, deep gold and emerald accents",
+    };
+
+    const parts: string[] = [];
+    // Common composition rules — always emitted.
+    parts.push(
+      "A Hearthstone-style fantasy game board viewed from a slight top-down 3/4 perspective, like a polished wooden / stone play surface tilted gently toward the viewer.",
+      "16:9 cinematic widescreen framing. Two perfectly symmetric halves separated by a clear central ornamental divider running horizontally across the middle — the upper half mirrors the lower half (player vs opponent zones).",
+      "Ornate rectangular outer frame with continuous baroque filigree along all four edges, full-bleed (the frame IS the edge of the image — NO black letterbox, NO padding outside the frame).",
+      "Thematic props flanking each side of the play area (candles, books, weapons, tools, trinkets appropriate to the scene). Rich volumetric lighting, deep contrast, polished AAA trading-card-game board quality.",
+    );
+
+    // Subject block: custom instructions replace the preset/faction hints if
+    // provided, matching the keyword-icon forge behavior.
+    if (bdInstructions.trim()) {
+      parts.push(`Subject: ${bdInstructions.trim()}`);
+    } else {
+      parts.push(`Subject: ${preset.hints}.`);
+      if (factionName) {
+        parts.push(`Thematic faction: ${factionName}${factionAlign && alignDesc[factionAlign] ? `, ${alignDesc[factionAlign]}` : ""}.`);
+      }
+    }
+
+    if (bdRefImageBase64) {
+      parts.push(
+        "A reference image is attached. Use ONLY its subject / mood / palette as inspiration. Do NOT copy its composition literally — the output MUST still follow every composition rule stated above (top-down 3/4, symmetric halves, central divider, ornate rectangular frame, 16:9, full-bleed).",
+      );
+    }
+
+    // Negative rules.
+    parts.push(
+      "No characters in the foreground, no figures, no portraits, no playing cards, no UI elements, no game overlays.",
+      "Absolutely NO TEXT, no letters, no words, no numbers, no watermark, no logo, no signature.",
+      "Strictly symmetric between the two horizontal halves and between left and right sides.",
+    );
+
+    setBdPrompt(parts.join(" "));
+    if (!bdName.trim()) setBdName(preset.label);
+  }
+
+  function handleBoardRefImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const img = new window.Image();
+    img.onload = () => {
+      const MAX_DIM = 768;
+      let { width, height } = img;
+      if (width > MAX_DIM || height > MAX_DIM) {
+        const ratio = Math.min(MAX_DIM / width, MAX_DIM / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d")!;
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+      ctx.drawImage(img, 0, 0, width, height);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+      const base64 = dataUrl.split(",")[1];
+      setBdRefImageBase64(base64);
+      setBdRefImageMime("image/jpeg");
+      setBdRefImagePreview(dataUrl);
+    };
+    img.onerror = () => setBdMessage({ ok: false, msg: "Impossible de lire l'image de référence." });
+    img.src = URL.createObjectURL(file);
+  }
+
+  function clearBoardRefImage() {
+    setBdRefImageBase64(null);
+    setBdRefImageMime(null);
+    setBdRefImagePreview(null);
+  }
+
+  async function generateBoardImage() {
+    if (!bdPrompt) return;
+    setBdGenerating(true);
+    setBdMessage(null);
+    setBdVariations([]);
+    setBdSelectedIdxs([]);
+
+    const callOnce = async (): Promise<BdVariation | { error: string }> => {
+      try {
+        const res = await fetch("/api/cards/generate-image", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            prompt: bdPrompt,
+            ...(bdRefImageBase64 && bdRefImageMime
+              ? { referenceImageBase64: bdRefImageBase64, referenceImageMimeType: bdRefImageMime }
+              : {}),
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok || data.error) return { error: data.error ?? `Erreur ${res.status}` };
+        const mime = data.mimeType ?? "image/png";
+        return {
+          base64: data.imageBase64,
+          mime,
+          url: `data:${mime};base64,${data.imageBase64}`,
+        };
+      } catch (err) {
+        return { error: err instanceof Error ? err.message : "Erreur réseau" };
+      }
+    };
+
+    const calls = bdVariantMode === 3
+      ? [callOnce(), callOnce(), callOnce()]
+      : [callOnce()];
+    const results = await Promise.all(calls);
+    const ok = results.filter((r): r is BdVariation => "base64" in r);
+    if (ok.length === 0) {
+      const firstErr = results.find((r) => "error" in r) as { error: string } | undefined;
+      setBdMessage({ ok: false, msg: firstErr?.error ?? "Aucune image générée." });
+    } else {
+      setBdVariations(ok);
+      // Auto-pick the single variant so admin can save in one click.
+      if (bdVariantMode === 1) setBdSelectedIdxs([0]);
+      if (ok.length < bdVariantMode) {
+        setBdMessage({ ok: false, msg: `${bdVariantMode - ok.length} variante(s) ont échoué.` });
+      }
+    }
+    setBdGenerating(false);
+  }
+
+  async function saveBoard() {
+    if (!bdName.trim() || bdSelectedIdxs.length === 0) return;
+    const picks = bdSelectedIdxs
+      .map((i) => bdVariations[i])
+      .filter((v): v is BdVariation => !!v);
+    if (picks.length === 0) return;
+    setBdSaving(true);
+    setBdMessage(null);
+    const baseName = bdName.trim();
+    const multi = picks.length > 1;
+    const effectiveMax = bdRarity === "Commune" ? null : (bdMaxPrints ?? BD_DEFAULT_MAX_PRINTS[bdRarity] ?? null);
+    let ok = 0;
+    let firstError: string | null = null;
+    for (let idx = 0; idx < picks.length; idx++) {
+      const variant = picks[idx];
+      const name = multi ? `${baseName} #${idx + 1}` : baseName;
+      // Only the first picked variant may claim the default slot — otherwise
+      // the server clears and re-assigns default N times, leaving the last
+      // POST as the winner instead of the first.
+      const isDefault = bdIsDefault && idx === 0;
+      try {
+        const res = await fetch("/api/boards", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name,
+            imageBase64: variant.base64,
+            imageMimeType: variant.mime,
+            rarity: bdRarity,
+            max_prints: effectiveMax,
+            is_default: isDefault,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok || data.error) {
+          if (!firstError) firstError = data.error ?? `Erreur ${res.status}`;
+        } else {
+          ok++;
+        }
+      } catch (err) {
+        if (!firstError) firstError = err instanceof Error ? err.message : "Erreur réseau";
+      }
+    }
+    if (ok > 0 && !firstError) {
+      setBdMessage({ ok: true, msg: multi ? `${ok} plateaux enregistrés.` : `Plateau "${baseName}" enregistré.` });
+      setBdName("");
+      setBdVariations([]);
+      setBdSelectedIdxs([]);
+      setBdPrompt("");
+      clearBoardRefImage();
+    } else if (ok > 0) {
+      setBdMessage({ ok: false, msg: `${ok} plateau(x) enregistré(s), mais erreur sur les autres : ${firstError}` });
+    } else {
+      setBdMessage({ ok: false, msg: firstError ?? "Erreur inconnue" });
+    }
+    setBdSaving(false);
   }
 
   // ─── PRINTS (séries limitées) ──────────────────────────────────────────────
@@ -1310,7 +1547,7 @@ export default function CardForge() {
             <span style={{ fontSize: 8, color: "#aaa", letterSpacing: 2 }}>ARMIES & MAGIC</span>
           </div>
           <div style={{ display: "flex", gap: 4 }}>
-            {([["forge", "⚒ Forge"], ["edition", "✏ Édition"], ["tokens", "🎭 Tokens"], ["card-backs", "🎴 Dos"], ["kw-icons", "🪄 Icônes"], ["sets", "📦 Sets"], ["formats", "🎮 Formats"], ["bulk", "📦 Masse"], ["budget", "⚖ Budget"], ["schema", "📋 Schéma"], ["prints", "🏷 Séries"]] as const).map(([t, l]) => (
+            {([["forge", "⚒ Forge"], ["edition", "✏ Édition"], ["tokens", "🎭 Tokens"], ["card-backs", "🎴 Dos"], ["boards", "🗺 Plateaux"], ["kw-icons", "🪄 Icônes"], ["sets", "📦 Sets"], ["formats", "🎮 Formats"], ["bulk", "📦 Masse"], ["budget", "⚖ Budget"], ["schema", "📋 Schéma"], ["prints", "🏷 Séries"]] as const).map(([t, l]) => (
               <button key={t} onClick={() => { setTab(t); if (t === "sets") loadSets(); if (t === "formats") loadFormats(); if (t === "prints") loadPrintsData(); if (t === "kw-icons") loadKwAssets(); }} style={{
                 padding: "5px 14px", borderRadius: 6, cursor: "pointer",
                 background: tab === t ? "#333" : "transparent",
@@ -2413,6 +2650,232 @@ export default function CardForge() {
                     }}>
                     {cbSaving ? "Enregistrement…" : "Enregistrer le dos"}
                   </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── GAME BOARDS ── */}
+        {tab === "boards" && (
+          <div style={{ flex: 1, padding: 22, overflowY: "auto" }}>
+            <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+              <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16, letterSpacing: 2 }}>GÉNÉRER UN PLATEAU DE JEU</h2>
+
+              {bdMessage && (
+                <div style={{
+                  padding: "8px 14px", borderRadius: 8, fontSize: 10, marginBottom: 12,
+                  background: bdMessage.ok ? "#e8f8f0" : "#fde8e8",
+                  border: `1px solid ${bdMessage.ok ? "#a3e4c1" : "#f5a3a3"}`,
+                  color: bdMessage.ok ? "#27ae60" : "#e74c3c",
+                  fontFamily: "'Crimson Text',serif",
+                }}>{bdMessage.msg}</div>
+              )}
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 420px", gap: 18 }}>
+                {/* LEFT — form */}
+                <div style={{ border: "1px solid #e0e0e0", borderRadius: 8, padding: 16, background: "#fafafa" }}>
+                  <div style={{ fontSize: 10, color: "#666", letterSpacing: 1, marginBottom: 10, fontWeight: 700 }}>
+                    MÉTADONNÉES
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+                    <div style={{ gridColumn: "span 3" }}>
+                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>NOM</label>
+                      <input type="text" value={bdName} onChange={e => setBdName(e.target.value)}
+                        placeholder="Ex: Taverne du Dragon Endormi"
+                        style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }} />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>ENVIRONNEMENT</label>
+                      <select value={bdEnvPreset} onChange={e => setBdEnvPreset(e.target.value)}
+                        style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }}>
+                        {BOARD_ENV_PRESETS.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>FACTION (optionnel)</label>
+                      <select value={bdFaction} onChange={e => setBdFaction(e.target.value)}
+                        style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }}>
+                        <option value="">-- Aucune --</option>
+                        {Object.entries(FACTIONS).map(([id, def]) => (
+                          <option key={id} value={id}>{def.label ?? id}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>RARETÉ</label>
+                      <select value={bdRarity} onChange={e => {
+                        const r = e.target.value;
+                        setBdRarity(r);
+                        setBdMaxPrints(r === "Commune" ? null : (BD_DEFAULT_MAX_PRINTS[r] ?? null));
+                        if (r !== "Commune") setBdIsDefault(false);
+                      }}
+                        style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }}>
+                        <option value="Commune">Commune</option>
+                        <option value="Peu Commune">Peu Commune</option>
+                        <option value="Rare">Rare</option>
+                        <option value="Épique">Épique</option>
+                        <option value="Légendaire">Légendaire</option>
+                      </select>
+                    </div>
+                    {bdRarity !== "Commune" ? (
+                      <div style={{ gridColumn: "span 3" }}>
+                        <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>EXEMPLAIRES</label>
+                        <input type="number" value={bdMaxPrints ?? ""} onChange={e => setBdMaxPrints(e.target.value ? parseInt(e.target.value) : null)}
+                          placeholder={String(BD_DEFAULT_MAX_PRINTS[bdRarity] ?? "")}
+                          style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }} />
+                      </div>
+                    ) : (
+                      <div style={{ gridColumn: "span 3", display: "flex", alignItems: "center", gap: 8 }}>
+                        <input type="checkbox" id="bdIsDefault" checked={bdIsDefault} onChange={e => setBdIsDefault(e.target.checked)} />
+                        <label htmlFor="bdIsDefault" style={{ fontSize: 10, color: "#555", fontFamily: "'Cinzel',serif", cursor: "pointer" }}>
+                          Plateau par défaut (utilisé quand le deck n'en spécifie pas)
+                        </label>
+                      </div>
+                    )}
+                    <div style={{ gridColumn: "span 3" }}>
+                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>MODE DE GÉNÉRATION</label>
+                      <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
+                        {([[1, "1 variante"], [3, "3 variantes"]] as const).map(([val, label]) => (
+                          <button key={val} type="button" onClick={() => setBdVariantMode(val)}
+                            style={{
+                              flex: 1, padding: "6px 10px", borderRadius: 5, cursor: "pointer", fontSize: 10,
+                              fontFamily: "'Cinzel',serif", fontWeight: bdVariantMode === val ? 700 : 400,
+                              background: bdVariantMode === val ? "#33333318" : "#fff",
+                              border: `1px solid ${bdVariantMode === val ? "#333" : "#e0e0e0"}`,
+                              color: bdVariantMode === val ? "#333" : "#999",
+                            }}>
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div style={{ gridColumn: "span 3" }}>
+                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>INSTRUCTIONS SUPPLÉMENTAIRES (optionnel)</label>
+                      <textarea value={bdInstructions} onChange={e => setBdInstructions(e.target.value)}
+                        placeholder="Ex: ambiance cyberpunk avec néons violets, pluie battante, réflexions sur sol métallique…"
+                        style={{ width: "100%", minHeight: 44, padding: 6, borderRadius: 6, border: "1px solid #ddd", fontSize: 10, fontFamily: "'Crimson Text',serif", marginTop: 4, resize: "vertical" }} />
+                      <div style={{ fontSize: 9, color: "#888", marginTop: 3, fontStyle: "italic" }}>
+                        Remplace le bloc sujet/environnement du prompt si rempli. Les règles de composition (Hearthstone, 16:9, symétrie, cadre) restent toujours appliquées.
+                      </div>
+                    </div>
+
+                    {/* Reference image */}
+                    <div style={{ gridColumn: "span 3", display: "flex", alignItems: "center", gap: 10, marginTop: 6 }}>
+                      {bdRefImagePreview ? (
+                        <div style={{ width: 72, height: 72, borderRadius: 6, overflow: "hidden", border: "1px solid #27ae60", flexShrink: 0 }}>
+                          <img src={bdRefImagePreview} alt="Référence" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                        </div>
+                      ) : (
+                        <div style={{ width: 72, height: 72, borderRadius: 6, border: "2px dashed #ddd", background: "#fafafa", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: "#bbb", fontFamily: "'Cinzel',serif", flexShrink: 0, textAlign: "center", padding: 4 }}>Aucune réf.</div>
+                      )}
+                      <div style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
+                        <span style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>IMAGE DE RÉFÉRENCE (optionnel)</span>
+                        <span style={{ fontSize: 9, color: "#777", fontFamily: "'Crimson Text',serif", lineHeight: 1.3 }}>
+                          Sert d&apos;inspiration visuelle (sujet / palette / mood). Les règles de composition restent prioritaires.
+                        </span>
+                        <div style={{ display: "flex", gap: 6, marginTop: 2 }}>
+                          <label style={{ padding: "4px 10px", borderRadius: 5, border: "1px solid #ddd", background: "#fff", color: "#666", fontSize: 9, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>
+                            {bdRefImagePreview ? "Remplacer" : "Choisir une image"}
+                            <input type="file" accept="image/*" onChange={handleBoardRefImageChange} style={{ display: "none" }} />
+                          </label>
+                          {bdRefImagePreview && (
+                            <button type="button" onClick={clearBoardRefImage}
+                              style={{ padding: "4px 10px", borderRadius: 5, border: "1px solid #e74c3c55", background: "#e74c3c11", color: "#e74c3c", fontSize: 9, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>
+                              Retirer
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Prompt */}
+                  <div style={{ marginTop: 12 }}>
+                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>PROMPT IMAGE</label>
+                    <textarea value={bdPrompt} onChange={e => setBdPrompt(e.target.value)}
+                      placeholder="Cliquez 'Auto-prompt' pour générer, ou écrivez le vôtre..."
+                      style={{ width: "100%", minHeight: 90, padding: 6, borderRadius: 6, border: "1px solid #ddd", fontSize: 9.5, fontFamily: "monospace", marginTop: 4, resize: "vertical" }} />
+                    <div style={{ display: "flex", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
+                      <button type="button" onClick={generateBoardPrompt}
+                        style={{ padding: "4px 12px", borderRadius: 5, border: "1px solid #ddd", background: "#fff", color: "#666", fontSize: 9, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>
+                        Auto-prompt
+                      </button>
+                      <button type="button" onClick={generateBoardImage} disabled={!bdPrompt || bdGenerating}
+                        style={{ padding: "4px 12px", borderRadius: 5, border: "none", background: bdPrompt && !bdGenerating ? "linear-gradient(135deg, #6c5ce7, #a855f7)" : "#e0e0e0", color: "#fff", fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: 700, cursor: bdPrompt && !bdGenerating ? "pointer" : "default" }}>
+                        {bdGenerating ? "Génération…" : bdVariations.length > 0 ? `Relancer ${bdVariantMode} variante(s)` : `Générer ${bdVariantMode} variante(s)`}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* RIGHT — variants + save */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  <div style={{ fontSize: 10, color: "#666", letterSpacing: 1, fontWeight: 700 }}>
+                    {bdVariantMode === 1 ? "APERÇU" : "VARIANTES (cliquez pour cocher — plusieurs possibles)"}
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 10 }}>
+                    {Array.from({ length: bdVariantMode }).map((_, i) => {
+                      const v = bdVariations[i];
+                      const isSelected = bdSelectedIdxs.includes(i);
+                      const checkerBg = "repeating-conic-gradient(#d9d9d9 0% 25%, #fff 0% 50%) 50% / 16px 16px";
+                      const toggle = () => {
+                        if (!v) return;
+                        setBdSelectedIdxs((prev) => prev.includes(i) ? prev.filter((j) => j !== i) : [...prev, i]);
+                      };
+                      return (
+                        <button key={i} type="button" disabled={!v} onClick={toggle}
+                          style={{
+                            width: "100%", aspectRatio: "16/9", borderRadius: 10, overflow: "hidden",
+                            border: isSelected ? "3px solid #27ae60" : "2px dashed #ddd",
+                            background: v ? checkerBg : "#fafafa",
+                            padding: 0, cursor: v ? "pointer" : "default",
+                            boxShadow: isSelected ? "0 0 14px rgba(39,174,96,0.5)" : "none",
+                            position: "relative",
+                          }}>
+                          {v ? (
+                            <>
+                              <img src={v.url} alt={`Variante ${i + 1}`} style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }} />
+                              {isSelected && (
+                                <div style={{ position: "absolute", top: 6, right: 8, background: "#27ae60", color: "#fff", borderRadius: 12, padding: "1px 8px", fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: 700 }}>
+                                  ✓
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            <span style={{ fontSize: 10, color: "#bbb", fontFamily: "'Cinzel',serif" }}>
+                              {bdGenerating ? "…" : `Variante ${i + 1}`}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {(() => {
+                    const disabled = !bdName.trim() || bdSelectedIdxs.length === 0 || bdSaving;
+                    const count = bdSelectedIdxs.length;
+                    const label = bdSaving
+                      ? "Enregistrement…"
+                      : count <= 1
+                        ? "Enregistrer le plateau"
+                        : `Enregistrer les ${count} plateaux sélectionnés`;
+                    return (
+                      <button type="button" onClick={saveBoard} disabled={disabled}
+                        style={{
+                          padding: "10px 14px", borderRadius: 6, border: "none",
+                          background: disabled ? "#e0e0e0" : "linear-gradient(135deg, #27ae60, #2ecc71)",
+                          color: "#fff", fontSize: 10, fontFamily: "'Cinzel',serif", fontWeight: 700, letterSpacing: 1,
+                          cursor: disabled ? "default" : "pointer",
+                        }}>
+                        {label}
+                      </button>
+                    );
+                  })()}
+
+                  <div style={{ fontSize: 9, color: "#888", fontStyle: "italic", lineHeight: 1.4 }}>
+                    Musique, activation (is_active), génération des exemplaires et suppression se configurent dans <span style={{ fontFamily: "monospace" }}>/admin/boards</span>.
+                  </div>
                 </div>
               </div>
             </div>
