@@ -6,6 +6,7 @@ import type { Card, Keyword, CardSet, GameFormat, FormatSet } from "@/lib/game/t
 import { getFormatFilter } from "@/lib/game/format-legality";
 import { isCardOwned } from "@/lib/game/collection";
 import GameCard from "./GameCard";
+import ExpertCardFrame from "./ExpertCardFrame";
 
 interface OwnedPrint {
   id: number;
@@ -45,6 +46,7 @@ export default function CollectionView({ cards, sets, formats, formatSets, colle
   const [keywordFilter, setKeywordFilter] = useState<Keyword | null>(null);
   const [factionFilter, setFactionFilter] = useState<string | null>(null);
   const [rarityFilter, setRarityFilter] = useState<string | null>(null);
+  const [expertOnly, setExpertOnly] = useState(false);
   const [raceFilter, setRaceFilter] = useState<string | null>(null);
   const [clanFilter, setClanFilter] = useState<string | null>(null);
   const [filterSet, setFilterSet] = useState("");
@@ -112,6 +114,8 @@ export default function CollectionView({ cards, sets, formats, formatSets, colle
         return false;
       if (rarityFilter !== null && card.rarity !== rarityFilter)
         return false;
+      if (expertOnly && (card.rarity ?? "Commune") === "Commune")
+        return false;
       if (raceFilter !== null && card.race !== raceFilter)
         return false;
       if (clanFilter !== null && card.clan !== clanFilter)
@@ -122,7 +126,7 @@ export default function CollectionView({ cards, sets, formats, formatSets, colle
         return false;
       return true;
     });
-  }, [cards, ownedSet, isTester, formatPredicate, search, manaCostFilter, typeFilter, keywordFilter, factionFilter, rarityFilter, raceFilter, clanFilter, filterSet, filterYear]);
+  }, [cards, ownedSet, isTester, formatPredicate, search, manaCostFilter, typeFilter, keywordFilter, factionFilter, rarityFilter, expertOnly, raceFilter, clanFilter, filterSet, filterYear]);
 
   // For normal players: expand cards to show each print separately
   const displayItems = useMemo(() => {
@@ -153,6 +157,7 @@ export default function CollectionView({ cards, sets, formats, formatSets, colle
     setKeywordFilter(null);
     setFactionFilter(null);
     setRarityFilter(null);
+    setExpertOnly(false);
     setRaceFilter(null);
     setClanFilter(null);
     setFilterSet("");
@@ -161,7 +166,7 @@ export default function CollectionView({ cards, sets, formats, formatSets, colle
   }
 
   const hasActiveFilters =
-    search || manaCostFilter !== null || typeFilter !== null || keywordFilter !== null || factionFilter !== null || rarityFilter !== null || raceFilter !== null || clanFilter !== null || filterSet !== "" || filterYear !== "" || formatFilter !== "";
+    search || manaCostFilter !== null || typeFilter !== null || keywordFilter !== null || factionFilter !== null || rarityFilter !== null || expertOnly || raceFilter !== null || clanFilter !== null || filterSet !== "" || filterYear !== "" || formatFilter !== "";
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -294,6 +299,19 @@ export default function CollectionView({ cards, sets, formats, formatSets, colle
             </div>
           </div>
 
+          {/* Expert mode filter — shows only non-Commune cards */}
+          <button
+            onClick={() => setExpertOnly((v) => !v)}
+            title="Afficher uniquement les cartes expertes (non-communes)"
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+              expertOnly
+                ? "border border-primary text-primary bg-primary/10"
+                : "bg-background border border-card-border text-foreground/50 hover:border-primary/50"
+            }`}
+          >
+            Expert uniquement
+          </button>
+
           {/* Keyword filter */}
           <div className="flex items-center gap-1">
             <span className="text-foreground/50 text-sm mr-1">Capacité:</span>
@@ -397,15 +415,32 @@ export default function CollectionView({ cards, sets, formats, formatSets, colle
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 justify-items-center">
-          {displayItems.map((item) => (
-            <GameCard
-              key={item.key}
-              card={item.card}
-              size="md"
-              printNumber={item.printNumber}
-              maxPrints={item.maxPrints}
-            />
-          ))}
+          {displayItems.map((item) => {
+            const rarity = item.card.rarity ?? "Commune";
+            const isExpert = rarity !== "Commune";
+            if (isExpert) {
+              return (
+                <ExpertCardFrame key={item.key} rarity={rarity}>
+                  <GameCard
+                    card={item.card}
+                    size="md"
+                    printNumber={item.printNumber}
+                    maxPrints={item.maxPrints}
+                    disableHoverZoom
+                  />
+                </ExpertCardFrame>
+              );
+            }
+            return (
+              <GameCard
+                key={item.key}
+                card={item.card}
+                size="md"
+                printNumber={item.printNumber}
+                maxPrints={item.maxPrints}
+              />
+            );
+          })}
         </div>
       )}
     </div>

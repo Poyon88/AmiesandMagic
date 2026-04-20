@@ -159,6 +159,7 @@ export default function DeckBuilder({
   const [keywordFilter, setKeywordFilter] = useState<Keyword | null>(null);
   const [factionFilter, setFactionFilter] = useState<string | null>(null);
   const [rarityFilter, setRarityFilter] = useState<string | null>(null);
+  const [expertOnly, setExpertOnly] = useState(false);
   const [raceFilter, setRaceFilter] = useState<string | null>(null);
   const [clanFilter, setClanFilter] = useState<string | null>(null);
   const [filterSet, setFilterSet] = useState("");
@@ -216,6 +217,8 @@ export default function DeckBuilder({
         return false;
       if (rarityFilter !== null && card.rarity !== rarityFilter)
         return false;
+      if (expertOnly && (card.rarity ?? "Commune") === "Commune")
+        return false;
       if (raceFilter !== null && card.race !== raceFilter)
         return false;
       if (clanFilter !== null && card.clan !== clanFilter)
@@ -226,7 +229,7 @@ export default function DeckBuilder({
         return false;
       return true;
     });
-  }, [cards, formatPredicate, search, manaCostFilter, typeFilter, keywordFilter, factionFilter, rarityFilter, raceFilter, clanFilter, filterSet, filterYear]);
+  }, [cards, formatPredicate, search, manaCostFilter, typeFilter, keywordFilter, factionFilter, rarityFilter, expertOnly, raceFilter, clanFilter, filterSet, filterYear]);
 
   const sortedDeckEntries = useMemo(() => {
     return Array.from(deckCards.values()).sort(
@@ -624,6 +627,17 @@ export default function DeckBuilder({
               </button>
             ))}
           </div>
+          <button
+            onClick={() => setExpertOnly((v) => !v)}
+            title="Afficher uniquement les cartes expertes (non-communes)"
+            className={`px-2 py-1 rounded text-[10px] font-bold transition-colors ${
+              expertOnly
+                ? "border border-primary text-primary bg-primary/10"
+                : "bg-secondary border border-card-border text-foreground/50 hover:border-primary/50"
+            }`}
+          >
+            Expert
+          </button>
         </div>
 
         {/* Cards Grid */}
