@@ -721,7 +721,8 @@ export default function CardForge() {
     // Common composition rules — always emitted.
     parts.push(
       "A Hearthstone-style fantasy game board viewed from a slight top-down 3/4 perspective, like a polished wooden / stone play surface tilted gently toward the viewer.",
-      "16:9 cinematic widescreen framing. Two perfectly symmetric halves separated by a clear central ornamental divider running horizontally across the middle — the upper half mirrors the lower half (player vs opponent zones).",
+      "16:9 cinematic widescreen framing (aspect ratio exactly 1.778:1, horizontal). Render at the model's HIGHEST available resolution — ultra-sharp, crisp contours, photoreal detail, no blur, no soft focus, no motion blur, no depth-of-field haze. Every prop and every texture must remain readable when the image is displayed at 1080p or 1440p on a widescreen monitor.",
+      "Two perfectly symmetric halves separated by a clear central ornamental divider running horizontally across the middle — the upper half mirrors the lower half (player vs opponent zones).",
       "Ornate rectangular outer frame with continuous baroque filigree along all four edges, full-bleed (the frame IS the edge of the image — NO black letterbox, NO padding outside the frame).",
       "Thematic props flanking each side of the play area (candles, books, weapons, tools, trinkets appropriate to the scene). Rich volumetric lighting, deep contrast, polished AAA trading-card-game board quality.",
     );
@@ -803,6 +804,11 @@ export default function CardForge() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             prompt: bdPrompt,
+            // Boards are rendered full-screen in-game → request Imagen 4 Ultra
+            // 2K when no reference is attached (API falls back to Gemini
+            // automatically if Imagen fails or a reference image is present).
+            highRes: true,
+            aspectRatio: "16:9",
             ...(bdRefImageBase64 && bdRefImageMime
               ? { referenceImageBase64: bdRefImageBase64, referenceImageMimeType: bdRefImageMime }
               : {}),

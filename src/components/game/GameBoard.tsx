@@ -270,12 +270,25 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           maxHeight: "100vh",
           width: "100%",
           height: "100%",
-          backgroundImage: `url('${boardImageUrl || "/images/battlefield.jpg"}')`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
           position: "relative",
         }}
       >
+        {/* Board artwork — next/image pipeline respects DPR and serves the
+            sharpest variant the source allows. Gemini outputs ~1024px native
+            so we request a generous sizes hint and max quality. */}
+        <Image
+          src={boardImageUrl || "/images/battlefield.jpg"}
+          alt=""
+          fill
+          priority
+          className="object-cover select-none pointer-events-none"
+          sizes="(min-resolution: 2dppx) 100vw, 100vw"
+          quality={100}
+          unoptimized
+          draggable={false}
+          style={{ zIndex: -1, imageRendering: "auto" }}
+        />
+
         {/* Subtle overlay for readability */}
         <div className="absolute inset-0 bg-background/10 pointer-events-none z-0" />
 
