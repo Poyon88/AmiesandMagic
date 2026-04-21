@@ -167,9 +167,36 @@ export default function CardForge() {
     { id: "crystal",     label: "Caverne cristalline",  hints: "crystal cavern, prismatic shards, refracted light, cyan and lilac" },
     { id: "volcanic",    label: "Forge volcanique",     hints: "volcanic forge, obsidian, lava rivers, red and black palette" },
   ];
+  const BOARD_STYLES = {
+    classic: {
+      label: "Classique (Hearthstone)",
+      compositionRules: [
+        "A Hearthstone-style fantasy game board viewed from a slight top-down 3/4 perspective, like a polished wooden / stone play surface tilted gently toward the viewer.",
+        "16:9 cinematic widescreen framing (aspect ratio exactly 1.778:1, horizontal). Render at the model's HIGHEST available resolution — ultra-sharp, crisp contours, photoreal detail, no blur, no soft focus, no motion blur, no depth-of-field haze. Every prop and every texture must remain readable when the image is displayed at 1080p or 1440p on a widescreen monitor.",
+        "Two perfectly symmetric halves separated by a clear central ornamental divider running horizontally across the middle — the upper half mirrors the lower half (player vs opponent zones).",
+        "Ornate rectangular outer frame with continuous baroque filigree along all four edges, full-bleed (the frame IS the edge of the image — NO black letterbox, NO padding outside the frame).",
+        "Thematic props flanking each side of the play area (candles, books, weapons, tools, trinkets appropriate to the scene). Rich volumetric lighting, deep contrast, polished AAA trading-card-game board quality.",
+      ],
+    },
+    minimal: {
+      label: "Minimal (figurines 3D)",
+      compositionRules: [
+        "A minimalist fantasy game board viewed from a slight top-down 3/4 perspective, like a clean, uncluttered play surface tilted gently toward the viewer.",
+        "16:9 cinematic widescreen framing (aspect ratio exactly 1.778:1, horizontal). Render at the model's HIGHEST available resolution — ultra-sharp, crisp contours, every edge readable at 1440p.",
+        "CRITICAL LAYOUT RULE — the CENTRAL 60% of the frame (horizontally and vertically) MUST be an empty, uniform, flat play surface. Allowed surfaces: polished stone, smooth planked wood, worn parchment, drifting low mist, brushed metal, fine sand. NO decorative props, NO objects, NO creatures, NO ornaments, NO runes, NO emblems, NO text inside this central play area. The surface must read as a clean stage where miniature figurines could be placed and remain highly legible.",
+        "All decorative richness lives on the OUTER BORDERS only: two vertical side panels (left ~18% of width, right ~18% of width) carry ornate baroque filigree plus thematic props (candles, books, weapons, banners, trinkets) appropriate to the scene; a top band (~12% of height) and a bottom band (~12% of height) carry matching filigree and subtler props.",
+        "A single subtle horizontal line may mark the midline between the two player halves, but NO ornate central divider, NO medallion, NO central emblem, NO central crest.",
+        "Ornate rectangular outer frame with continuous baroque filigree along all four edges, full-bleed (the frame IS the edge of the image — NO black letterbox).",
+        "Rich volumetric lighting on the side panels; the central play surface is evenly lit and calm to preserve miniature readability.",
+      ],
+    },
+  } as const;
+  type BoardStyleId = keyof typeof BOARD_STYLES;
+
   type BdVariation = { base64: string; mime: string; url: string };
 
   const [bdName, setBdName] = useState("");
+  const [bdStyle, setBdStyle] = useState<BoardStyleId>("classic");
   const [bdEnvPreset, setBdEnvPreset] = useState<string>("tavern");
   const [bdFaction, setBdFaction] = useState<string>("");
   const [bdInstructions, setBdInstructions] = useState("");
@@ -718,14 +745,9 @@ export default function CardForge() {
     };
 
     const parts: string[] = [];
-    // Common composition rules — always emitted.
-    parts.push(
-      "A Hearthstone-style fantasy game board viewed from a slight top-down 3/4 perspective, like a polished wooden / stone play surface tilted gently toward the viewer.",
-      "16:9 cinematic widescreen framing (aspect ratio exactly 1.778:1, horizontal). Render at the model's HIGHEST available resolution — ultra-sharp, crisp contours, photoreal detail, no blur, no soft focus, no motion blur, no depth-of-field haze. Every prop and every texture must remain readable when the image is displayed at 1080p or 1440p on a widescreen monitor.",
-      "Two perfectly symmetric halves separated by a clear central ornamental divider running horizontally across the middle — the upper half mirrors the lower half (player vs opponent zones).",
-      "Ornate rectangular outer frame with continuous baroque filigree along all four edges, full-bleed (the frame IS the edge of the image — NO black letterbox, NO padding outside the frame).",
-      "Thematic props flanking each side of the play area (candles, books, weapons, tools, trinkets appropriate to the scene). Rich volumetric lighting, deep contrast, polished AAA trading-card-game board quality.",
-    );
+    // Composition rules depend on the selected style (classic / minimal).
+    const style = BOARD_STYLES[bdStyle];
+    parts.push(...style.compositionRules);
 
     // Subject block: custom instructions replace the preset/faction hints if
     // provided, matching the keyword-icon forge behavior.
@@ -739,8 +761,11 @@ export default function CardForge() {
     }
 
     if (bdRefImageBase64) {
+      const refReminder = bdStyle === "minimal"
+        ? "top-down 3/4, empty central play area, decoration only on outer borders, ornate rectangular frame, 16:9, full-bleed"
+        : "top-down 3/4, symmetric halves, central divider, ornate rectangular frame, 16:9, full-bleed";
       parts.push(
-        "A reference image is attached. Use ONLY its subject / mood / palette as inspiration. Do NOT copy its composition literally — the output MUST still follow every composition rule stated above (top-down 3/4, symmetric halves, central divider, ornate rectangular frame, 16:9, full-bleed).",
+        `A reference image is attached. Use ONLY its subject / mood / palette as inspiration. Do NOT copy its composition literally — the output MUST still follow every composition rule stated above (${refReminder}).`,
       );
     }
 
@@ -2690,6 +2715,20 @@ export default function CardForge() {
                       <input type="text" value={bdName} onChange={e => setBdName(e.target.value)}
                         placeholder="Ex: Taverne du Dragon Endormi"
                         style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }} />
+                    </div>
+                    <div style={{ gridColumn: "span 3" }}>
+                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>STYLE DE COMPOSITION</label>
+                      <select value={bdStyle} onChange={e => setBdStyle(e.target.value as BoardStyleId)}
+                        style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }}>
+                        {Object.entries(BOARD_STYLES).map(([id, def]) => (
+                          <option key={id} value={id}>{def.label}</option>
+                        ))}
+                      </select>
+                      <div style={{ fontSize: 9, color: "#888", marginTop: 3, fontStyle: "italic" }}>
+                        {bdStyle === "minimal"
+                          ? "Centre du plateau laissé vide (surface plate), décoration sur les bords. Pensé pour figurines 3D."
+                          : "Composition Hearthstone : props thématiques partout, divider central orné."}
+                      </div>
                     </div>
                     <div>
                       <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>ENVIRONNEMENT</label>
