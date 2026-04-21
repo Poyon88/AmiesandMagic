@@ -1,8 +1,31 @@
 "use client";
 
-import { Suspense, useMemo, useState, useEffect, Component, type ReactNode } from "react";
-import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Stage, useGLTF } from "@react-three/drei";
+import { Suspense, useMemo, useRef, useState, useEffect, Component, type ReactNode } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { OrbitControls, Sparkles, Stage, useGLTF } from "@react-three/drei";
+import { Color, Group, Mesh, MeshStandardMaterial } from "three";
+
+// ─── Effect types ─────────────────────────────────────────────────────────
+
+type Effect = "idle" | "attack" | "damage" | "death" | "heal" | "buff";
+
+const EFFECT_LABELS: Record<Effect, { label: string; emoji: string; tone: string }> = {
+  idle: { label: "Idle", emoji: "🧍", tone: "border-card-border text-foreground/60" },
+  attack: { label: "Attaque", emoji: "⚔️", tone: "border-amber-500/50 text-amber-300 hover:bg-amber-500/10" },
+  damage: { label: "Dégâts", emoji: "💥", tone: "border-red-500/50 text-red-300 hover:bg-red-500/10" },
+  death: { label: "Mort", emoji: "💀", tone: "border-zinc-500/50 text-zinc-300 hover:bg-zinc-500/10" },
+  heal: { label: "Soin", emoji: "✨", tone: "border-emerald-500/50 text-emerald-300 hover:bg-emerald-500/10" },
+  buff: { label: "Buff", emoji: "👑", tone: "border-yellow-400/60 text-yellow-300 hover:bg-yellow-400/10" },
+};
+
+const EFFECT_DURATION: Record<Effect, number> = {
+  idle: 0,
+  attack: 0.55,
+  damage: 0.45,
+  death: 1.2,
+  heal: 1.4,
+  buff: Infinity,
+};
 
 class ModelErrorBoundary extends Component<
   { onReset: () => void; children: ReactNode },
@@ -46,9 +69,147 @@ type CardRow = {
   rarity: string | null;
 };
 
-function FigurineModel({ url }: { url: string }) {
+interface FigurineModelProps {
+  url: string;
+  effect: Effect;
+  effectKey: number;
+  onEffectEnd: () => void;
+}
+
+const TINT_RED = new Color(1.0, 0.2, 0.2);
+const TINT_GREEN = new Color(0.2, 1.0, 0.4);
+const TINT_GOLD = new Color(1.0, 0.85, 0.3);
+
+function FigurineModel({ url, effect, effectKey, onEffectEnd }: FigurineModelProps) {
   const gltf = useGLTF(url);
-  return <primitive object={gltf.scene} />;
+  const groupRef = useRef<Group>(null);
+  const startRef = useRef<number>(0);
+  const endNotified = useRef(false);
+  const cachedMats = useRef<{ mat: MeshStandardMaterial; orig: Color }[]>([]);
+
+  // Cache materials on load
+  useEffect(() => {
+    const cache: { mat: MeshStandardMaterial; orig: Color }[] = [];
+    gltf.scene.traverse((obj) => {
+      const mesh = obj as Mesh;
+      if (!mesh.isMesh) return;
+      const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+      for (const m of mats) {
+        if (m && "emissive" in m) {
+          const sm = m as MeshStandardMaterial;
+          cache.push({ mat: sm, orig: sm.emissive.clone() });
+        }
+      }
+    });
+    cachedMats.current = cache;
+    return () => {
+      for (const c of cache) c.mat.emissive.copy(c.orig);
+    };
+  }, [gltf.scene]);
+
+  // Reset timer on each effect trigger
+  useEffect(() => {
+    startRef.current = performance.now();
+    endNotified.current = false;
+  }, [effectKey]);
+
+  // Helpers
+  function resetTint() {
+    for (const c of cachedMats.current) c.mat.emissive.copy(c.orig);
+  }
+  function setTint(color: Color, k: number) {
+    for (const c of cachedMats.current) {
+      c.mat.emissive.copy(c.orig).lerp(color, Math.min(1, Math.max(0, k)));
+    }
+  }
+
+  useFrame(() => {
+    const g = groupRef.current;
+    if (!g) return;
+    const t = (performance.now() - startRef.current) / 1000;
+
+    // Reset baseline each frame (except death, which is absorbing)
+    if (effect !== "death") {
+      g.position.set(0, 0, 0);
+      g.rotation.set(0, 0, 0);
+      g.scale.set(1, 1, 1);
+    }
+
+    switch (effect) {
+      case "attack": {
+        const d = EFFECT_DURATION.attack;
+        if (t < d) {
+          const p = t / d;
+          const lunge = Math.sin(p * Math.PI);
+          g.position.z = lunge * 0.45;
+          g.rotation.x = -lunge * 0.18;
+        } else if (!endNotified.current) {
+          endNotified.current = true;
+          onEffectEnd();
+        }
+        resetTint();
+        break;
+      }
+      case "damage": {
+        const d = EFFECT_DURATION.damage;
+        if (t < d) {
+          const decay = 1 - t / d;
+          g.position.x = Math.sin(t * 50) * 0.08 * decay;
+          setTint(TINT_RED, 0.8 * decay);
+        } else {
+          resetTint();
+          if (!endNotified.current) { endNotified.current = true; onEffectEnd(); }
+        }
+        break;
+      }
+      case "death": {
+        const d = EFFECT_DURATION.death;
+        const p = Math.min(1, t / d);
+        g.rotation.z = p * Math.PI * 0.5;
+        g.position.y = -p * 0.6;
+        const s = 1 - p * 0.6;
+        g.scale.set(s, s, s);
+        setTint(new Color(0.1, 0.1, 0.15), p * 0.5);
+        // Stay in dead pose — user must pick another effect to revive.
+        break;
+      }
+      case "heal": {
+        const d = EFFECT_DURATION.heal;
+        if (t < d) {
+          const p = t / d;
+          const pulse = 1 + Math.sin(p * Math.PI * 3) * 0.04 * (1 - p);
+          g.scale.set(pulse, pulse, pulse);
+          setTint(TINT_GREEN, 0.5 * (1 - p));
+        } else {
+          resetTint();
+          if (!endNotified.current) { endNotified.current = true; onEffectEnd(); }
+        }
+        break;
+      }
+      case "buff": {
+        const pulse = 1 + Math.sin(t * 3) * 0.03;
+        g.scale.set(pulse, pulse, pulse);
+        setTint(TINT_GOLD, 0.25 + Math.sin(t * 3) * 0.12);
+        break;
+      }
+      case "idle":
+      default:
+        resetTint();
+        break;
+    }
+  });
+
+  return (
+    <group ref={groupRef}>
+      <primitive object={gltf.scene} />
+      {effect === "heal" && (
+        <Sparkles count={40} size={3} scale={[2, 2.5, 2]} speed={0.6} color="#4ade80" />
+      )}
+      {effect === "buff" && (
+        <Sparkles count={30} size={2.5} scale={[2, 2.5, 2]} speed={0.4} color="#fbbf24" />
+      )}
+    </group>
+  );
 }
 
 interface FigurineTestViewProps {
@@ -62,6 +223,16 @@ export default function FigurineTestView({ cards }: FigurineTestViewProps) {
   const [glbSourceLabel, setGlbSourceLabel] = useState<string | null>(null);
   const [urlInput, setUrlInput] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [effect, setEffect] = useState<Effect>("idle");
+  const [effectKey, setEffectKey] = useState(0);
+  const [autoRotate, setAutoRotate] = useState(true);
+
+  function triggerEffect(next: Effect) {
+    setEffect(next);
+    setEffectKey((k) => k + 1);
+    // For persistent effects (buff), stay. For timed effects, auto-return to idle
+    // is handled via onEffectEnd inside FigurineModel.
+  }
 
   // Revoke blob URLs on unmount or when replaced to avoid memory leaks.
   useEffect(() => {
@@ -248,6 +419,41 @@ export default function FigurineTestView({ cards }: FigurineTestViewProps) {
               </div>
             )}
 
+            {/* Effects toolbar (visible once a model is loaded) */}
+            {glbUrl && (
+              <div className="flex flex-wrap items-center gap-2 border border-card-border rounded-lg p-3 bg-secondary/30">
+                <span className="text-[11px] uppercase tracking-wider text-foreground/50 mr-1">
+                  Situations de jeu
+                </span>
+                {(["idle", "attack", "damage", "heal", "buff", "death"] as Effect[]).map((fx) => {
+                  const meta = EFFECT_LABELS[fx];
+                  const active = effect === fx;
+                  return (
+                    <button
+                      key={fx}
+                      onClick={() => triggerEffect(fx)}
+                      className={`px-3 py-1.5 rounded text-xs font-semibold border transition-colors ${
+                        active
+                          ? "border-primary bg-primary/15 text-primary"
+                          : meta.tone + " bg-transparent"
+                      }`}
+                    >
+                      {meta.emoji} {meta.label}
+                    </button>
+                  );
+                })}
+                <label className="ml-auto flex items-center gap-1.5 text-[11px] text-foreground/60 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={autoRotate}
+                    onChange={(e) => setAutoRotate(e.target.checked)}
+                    className="accent-primary"
+                  />
+                  Auto-rotate
+                </label>
+              </div>
+            )}
+
             {/* 3D viewer */}
             <div className="w-full h-[560px] rounded-xl overflow-hidden border border-card-border bg-[#101018]">
               {glbUrl ? (
@@ -265,9 +471,19 @@ export default function FigurineTestView({ cards }: FigurineTestViewProps) {
                   >
                     <Suspense fallback={null}>
                       <Stage environment="studio" intensity={0.6} shadows="contact">
-                        <FigurineModel url={glbUrl} />
+                        <FigurineModel
+                          url={glbUrl}
+                          effect={effect}
+                          effectKey={effectKey}
+                          onEffectEnd={() => setEffect("idle")}
+                        />
                       </Stage>
-                      <OrbitControls makeDefault enablePan={false} autoRotate autoRotateSpeed={0.6} />
+                      <OrbitControls
+                        makeDefault
+                        enablePan={false}
+                        autoRotate={autoRotate}
+                        autoRotateSpeed={0.6}
+                      />
                     </Suspense>
                   </Canvas>
                 </ModelErrorBoundary>
