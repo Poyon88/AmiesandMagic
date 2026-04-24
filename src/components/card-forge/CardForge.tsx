@@ -143,6 +143,11 @@ export default function CardForge() {
   const [cbGenerating, setCbGenerating] = useState(false);
   const [cbSaving, setCbSaving] = useState(false);
   const [cbMessage, setCbMessage] = useState<{ ok: boolean; msg: string } | null>(null);
+  // Multi-variant mode: generate 1 or 3 candidates in parallel, admin picks.
+  type CbVariation = { base64: string; mime: string; url: string };
+  const [cbVariantMode, setCbVariantMode] = useState<1 | 3>(1);
+  const [cbVariations, setCbVariations] = useState<CbVariation[]>([]);
+  const [cbSelectedIdxs, setCbSelectedIdxs] = useState<number[]>([]);
 
   // ─── GAME BOARDS (générateur) ─────────────────────────────────────────────
   const BD_DEFAULT_MAX_PRINTS: Record<string, number> = {
@@ -188,6 +193,17 @@ export default function CardForge() {
         "A single subtle horizontal line may mark the midline between the two player halves, but NO ornate central divider, NO medallion, NO central emblem, NO central crest.",
         "Ornate rectangular outer frame with continuous baroque filigree along all four edges, full-bleed (the frame IS the edge of the image — NO black letterbox).",
         "Rich volumetric lighting on the side panels; the central play surface is evenly lit and calm to preserve miniature readability.",
+      ],
+    },
+    surface: {
+      label: "Surface pure (terrain seul)",
+      compositionRules: [
+        "A pure natural terrain surface viewed from a slight top-down 3/4 perspective, completely filling the frame edge-to-edge.",
+        "16:9 cinematic widescreen framing (aspect ratio exactly 1.778:1, horizontal). Render at the model's HIGHEST available resolution — ultra-sharp, crisp contours, every pixel readable at 1440p.",
+        "CRITICAL LAYOUT RULE — the ENTIRE frame is a single uniform natural ground/terrain texture that matches the subject theme (e.g. lush grass, fresh snow, desert sand, cracked earth, mossy stone, shallow water, volcanic ash, forest floor, frozen tundra). NO decorative frame, NO borders, NO ornaments, NO baroque filigree, NO props, NO objects, NO buildings, NO structures, NO characters, NO creatures, NO banners, NO weapons, NO runes, NO emblems, NO crests, NO text, NO UI, NO central divider, NO medallions. JUST the ground.",
+        "Subtle natural variation is welcome and encouraged: tufts of taller grass, small wildflowers, scattered pebbles, footprints in snow, patches of ice, dune ripples, leaves, twigs, light moss, cracks in stone — but they MUST blend into the surface, never forming a decorative arrangement or drawing attention away from the flat play area.",
+        "Even, diffuse ambient lighting consistent with the environment's mood (warm midday sun, cold overcast sky, blue moonlight…). NO harsh shadows, NO rim light, NO dramatic spotlights — the whole surface must feel uniformly lit so miniature figurines placed on top remain highly legible.",
+        "Keep the overall tone and palette coherent with the subject; the terrain is the entire star of the composition.",
       ],
     },
   } as const;
@@ -606,9 +622,10 @@ export default function CardForge() {
     const parts: string[] = [];
     parts.push(
       "An ornate fantasy card back design in the exact style of classic Hearthstone card backs.",
-      "Portrait 2.5:3.5 aspect ratio, vertically symmetrical, highly detailed digital painting.",
-      "MANDATORY RECTANGULAR BORDER: the artwork MUST include a clearly defined ornamental RECTANGULAR rim running continuously along all four edges of the canvas — top, bottom, left, and right — with crisp, unambiguous visible trim (for example a continuous band of gold filigree, studded rivets, stone molding, or engraved scrollwork). This rim must form a closed rectangle so the card back reads as a framed card, not an open illustration.",
-      "FULL-BLEED: the ornamental rim and its decoration extend exactly to the pixel edges of the image. There is NO outer black frame, NO black outline, NO rounded black border, NO dark rectangle around the design, NO letterboxing, NO padding, NO margin. Every corner pixel of the image is part of the ornamental rim.",
+      "Portrait 3:4 aspect ratio (matches standard playing card proportions), vertically symmetrical, highly detailed digital painting.",
+      "MANDATORY RECTANGULAR BORDER: the artwork MUST include a clearly defined ornamental RECTANGULAR rim running continuously along all four edges — top, bottom, left, and right — with crisp, unambiguous visible trim (for example a continuous band of gold filigree, studded rivets, stone molding, or engraved scrollwork). This rim must form a closed rectangle so the card back reads as a framed card, not an open illustration.",
+      "FRAME SAFETY MARGIN: keep the ENTIRE ornamental frame (including corner ornaments, cresting peaks, bottom finials) fully visible within the canvas. No part of the frame may overflow past the image edges. Leave a small outer margin of ~2% around the frame — this margin should be filled by the same frame material/palette as the rim, not by a separate dark border, letterbox or solid colour strip.",
+      "NO OUTER LETTERBOX: absolutely no black outer frame, no dark rectangle, no solid-colour padding surrounding the design. The 2% margin is a natural continuation of the ornamental material, not a distinct box.",
       "Inside the rim, fill the interior with rich baroque filigree, gold trim, intricate scrollwork and a large central heraldic medallion / sigil / crest glowing with magical light.",
       "Rich jewel tones, deep contrast, subtle volumetric glow, polished AAA trading-card-game quality.",
     );
@@ -672,61 +689,248 @@ export default function CardForge() {
     img.src = URL.createObjectURL(file);
   }
 
+  // Crops a given % off every edge of a base64 image and returns a fresh
+  // base64 WebP. Used to clean up the thin dark strip that AI models
+  // occasionally paint along the canvas edges even when the prompt forbids
+  // any black letterbox (the "full-bleed" instruction is fuzzy for diffusion
+  // models on portrait aspects).
+  async function cropImageEdges(
+    base64: string,
+    mime: string,
+    percent: number,
+  ): Promise<{ base64: string; mime: string }> {
+    return new Promise((resolve, reject) => {
+      const img = new window.Image();
+      img.onload = () => {
+        try {
+          const cropPx = Math.round(Math.min(img.width, img.height) * percent);
+          const w = img.width - cropPx * 2;
+          const h = img.height - cropPx * 2;
+          if (w <= 0 || h <= 0) {
+            resolve({ base64, mime });
+            return;
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext("2d")!;
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = "high";
+          ctx.drawImage(img, cropPx, cropPx, w, h, 0, 0, w, h);
+          const dataUrl = canvas.toDataURL("image/webp", 0.95);
+          resolve({ base64: dataUrl.split(",")[1], mime: "image/webp" });
+        } catch (err) {
+          reject(err);
+        }
+      };
+      img.onerror = () => resolve({ base64, mime });
+      img.src = `data:${mime};base64,${base64}`;
+    });
+  }
+
+  // Crops a base64 image to an exact target aspect ratio (width / height).
+  // Trims evenly from whichever pair of opposite edges is "too long".
+  // Used so the card-back artwork saved to Storage already matches the
+  // in-game 5:7 card slot — no further cover-crop in the UI means what we
+  // see in the forge preview is exactly what appears in the hand.
+  async function cropImageToAspect(
+    base64: string,
+    mime: string,
+    targetRatio: number,
+  ): Promise<{ base64: string; mime: string }> {
+    return new Promise((resolve, reject) => {
+      const img = new window.Image();
+      img.onload = () => {
+        try {
+          const currentRatio = img.width / img.height;
+          let sx = 0, sy = 0, sw = img.width, sh = img.height;
+          if (currentRatio > targetRatio) {
+            // too wide → trim horizontally
+            sw = Math.round(img.height * targetRatio);
+            sx = Math.round((img.width - sw) / 2);
+          } else if (currentRatio < targetRatio) {
+            // too tall → trim vertically
+            sh = Math.round(img.width / targetRatio);
+            sy = Math.round((img.height - sh) / 2);
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = sw;
+          canvas.height = sh;
+          const ctx = canvas.getContext("2d")!;
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = "high";
+          ctx.drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh);
+          const dataUrl = canvas.toDataURL("image/webp", 0.95);
+          resolve({ base64: dataUrl.split(",")[1], mime: "image/webp" });
+        } catch (err) {
+          reject(err);
+        }
+      };
+      img.onerror = () => resolve({ base64, mime });
+      img.src = `data:${mime};base64,${base64}`;
+    });
+  }
+
+  // Card ratio used in-game (matches Tailwind aspect-[5/7] on GameCard /
+  // HandCard / deck/hand previews).
+  const CARD_BACK_RATIO = 5 / 7;
+
   async function generateCardBackImage() {
     if (!cbPrompt) return;
     setCbGenerating(true);
     setCbMessage(null);
-    try {
-      const res = await fetch("/api/cards/generate-image", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: cbPrompt }),
-      });
-      const data = await res.json();
-      if (!res.ok || data.error) {
-        setCbMessage({ ok: false, msg: data.error ?? `Erreur ${res.status}` });
-      } else {
-        setCbImageBase64(data.imageBase64);
-        setCbImageMime(data.mimeType ?? "image/png");
-        setCbImagePreview(`data:${data.mimeType ?? "image/png"};base64,${data.imageBase64}`);
+    setCbVariations([]);
+    setCbSelectedIdxs([]);
+    // Also clear the single-image state so the preview panel shows the fresh
+    // variation grid instead of a stale single render.
+    setCbImageBase64(null);
+    setCbImageMime(null);
+    setCbImagePreview(null);
+
+    const callOnce = async (): Promise<CbVariation | { error: string }> => {
+      try {
+        const res = await fetch("/api/cards/generate-image", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            prompt: cbPrompt,
+            aspectRatio: "3:4",
+            highRes: true,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok || data.error) return { error: data.error ?? `Erreur ${res.status}` };
+        // Post-process pipeline — identical per variant:
+        //   1) Strip a 3% border to remove AI-painted letterbox artifacts.
+        //   2) Crop to the exact in-game 5:7 card ratio so preview == render.
+        const cleaned = await cropImageEdges(
+          data.imageBase64,
+          data.mimeType ?? "image/png",
+          0.03,
+        );
+        const framed = await cropImageToAspect(cleaned.base64, cleaned.mime, CARD_BACK_RATIO);
+        return {
+          base64: framed.base64,
+          mime: framed.mime,
+          url: `data:${framed.mime};base64,${framed.base64}`,
+        };
+      } catch (err) {
+        return { error: err instanceof Error ? err.message : "Erreur réseau" };
       }
-    } catch (err) {
-      setCbMessage({ ok: false, msg: err instanceof Error ? err.message : "Erreur réseau" });
+    };
+
+    const calls = cbVariantMode === 3 ? [callOnce(), callOnce(), callOnce()] : [callOnce()];
+    const results = await Promise.all(calls);
+    const ok = results.filter((r): r is CbVariation => "base64" in r);
+
+    if (ok.length === 0) {
+      const firstErr = results.find((r) => "error" in r) as { error: string } | undefined;
+      setCbMessage({ ok: false, msg: firstErr?.error ?? "Aucune image générée." });
+    } else {
+      setCbVariations(ok);
+      // Auto-pick the single variant so the admin can save in one click.
+      if (cbVariantMode === 1) {
+        setCbSelectedIdxs([0]);
+        setCbImageBase64(ok[0].base64);
+        setCbImageMime(ok[0].mime);
+        setCbImagePreview(ok[0].url);
+      }
+      if (ok.length < cbVariantMode) {
+        setCbMessage({ ok: false, msg: `${cbVariantMode - ok.length} variante(s) ont échoué.` });
+      }
     }
     setCbGenerating(false);
   }
 
-  async function saveCardBack() {
-    if (!cbName.trim() || !cbImageBase64 || !cbImageMime) return;
-    setCbSaving(true);
-    setCbMessage(null);
-    try {
-      const effectiveMax = cbRarity === "Commune" ? null : (cbMaxPrints ?? CB_DEFAULT_MAX_PRINTS[cbRarity] ?? null);
-      const res = await fetch("/api/card-backs", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: cbName.trim(),
-          imageBase64: cbImageBase64,
-          imageMimeType: cbImageMime,
-          rarity: cbRarity,
-          max_prints: effectiveMax,
-          is_default: cbIsDefault,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok || data.error) {
-        setCbMessage({ ok: false, msg: data.error ?? `Erreur ${res.status}` });
+  // Toggle selection of a variant (multi-select). Also sync the single
+  // preview state so the "Rogner davantage" button and saved payload keep
+  // working against the last clicked variant.
+  function toggleCbSelection(idx: number) {
+    setCbSelectedIdxs((prev) => {
+      const has = prev.includes(idx);
+      const next = has ? prev.filter((i) => i !== idx) : [...prev, idx];
+      const focus = has ? next[next.length - 1] : idx;
+      if (focus !== undefined) {
+        const v = cbVariations[focus];
+        if (v) {
+          setCbImageBase64(v.base64);
+          setCbImageMime(v.mime);
+          setCbImagePreview(v.url);
+        }
       } else {
-        setCbMessage({ ok: true, msg: `Dos "${cbName.trim()}" enregistré.` });
-        setCbName("");
         setCbImageBase64(null);
         setCbImageMime(null);
         setCbImagePreview(null);
-        setCbPrompt("");
       }
-    } catch (err) {
-      setCbMessage({ ok: false, msg: err instanceof Error ? err.message : "Erreur réseau" });
+      return next;
+    });
+  }
+
+  async function saveCardBack() {
+    if (!cbName.trim()) return;
+    // Determine what to save: either the selected multi-variants, or the
+    // single active preview (manual upload / legacy single-gen path).
+    const picks: { base64: string; mime: string }[] = [];
+    if (cbVariations.length > 0 && cbSelectedIdxs.length > 0) {
+      for (const i of cbSelectedIdxs) {
+        const v = cbVariations[i];
+        if (v) picks.push({ base64: v.base64, mime: v.mime });
+      }
+    } else if (cbImageBase64 && cbImageMime) {
+      picks.push({ base64: cbImageBase64, mime: cbImageMime });
+    }
+    if (picks.length === 0) return;
+
+    setCbSaving(true);
+    setCbMessage(null);
+    const baseName = cbName.trim();
+    const multi = picks.length > 1;
+    const effectiveMax = cbRarity === "Commune" ? null : (cbMaxPrints ?? CB_DEFAULT_MAX_PRINTS[cbRarity] ?? null);
+    let ok = 0;
+    let firstError: string | null = null;
+    for (let idx = 0; idx < picks.length; idx++) {
+      const p = picks[idx];
+      const variantName = multi ? `${baseName} #${idx + 1}` : baseName;
+      // Only the first saved variant may claim the default slot, mirroring
+      // the boards-save logic so we don't clear-and-reassign N times.
+      const isDefault = cbIsDefault && idx === 0;
+      try {
+        const res = await fetch("/api/card-backs", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: variantName,
+            imageBase64: p.base64,
+            imageMimeType: p.mime,
+            rarity: cbRarity,
+            max_prints: effectiveMax,
+            is_default: isDefault,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok || data.error) {
+          if (!firstError) firstError = data.error ?? `Erreur ${res.status}`;
+        } else {
+          ok++;
+        }
+      } catch (err) {
+        if (!firstError) firstError = err instanceof Error ? err.message : "Erreur réseau";
+      }
+    }
+
+    if (ok > 0 && !firstError) {
+      setCbMessage({ ok: true, msg: multi ? `${ok} dos enregistrés.` : `Dos "${baseName}" enregistré.` });
+      setCbName("");
+      setCbImageBase64(null);
+      setCbImageMime(null);
+      setCbImagePreview(null);
+      setCbPrompt("");
+      setCbVariations([]);
+      setCbSelectedIdxs([]);
+    } else if (ok > 0) {
+      setCbMessage({ ok: false, msg: `${ok} dos enregistré(s), mais erreur sur les autres : ${firstError}` });
+    } else {
+      setCbMessage({ ok: false, msg: firstError ?? "Erreur inconnue" });
     }
     setCbSaving(false);
   }
@@ -761,9 +965,12 @@ export default function CardForge() {
     }
 
     if (bdRefImageBase64) {
-      const refReminder = bdStyle === "minimal"
-        ? "top-down 3/4, empty central play area, decoration only on outer borders, ornate rectangular frame, 16:9, full-bleed"
-        : "top-down 3/4, symmetric halves, central divider, ornate rectangular frame, 16:9, full-bleed";
+      const refReminder =
+        bdStyle === "surface"
+          ? "top-down 3/4, entire frame filled with a single natural terrain texture, no frame, no props, no decoration, 16:9, full-bleed"
+          : bdStyle === "minimal"
+            ? "top-down 3/4, empty central play area, decoration only on outer borders, ornate rectangular frame, 16:9, full-bleed"
+            : "top-down 3/4, symmetric halves, central divider, ornate rectangular frame, 16:9, full-bleed";
       parts.push(
         `A reference image is attached. Use ONLY its subject / mood / palette as inspiration. Do NOT copy its composition literally — the output MUST still follow every composition rule stated above (${refReminder}).`,
       );
@@ -892,13 +1099,42 @@ export default function CardForge() {
       // POST as the winner instead of the first.
       const isDefault = bdIsDefault && idx === 0;
       try {
+        // 1. Request a signed upload URL against the board-images bucket.
+        //    This sidesteps the ~6 MB JSON body limit imposed by Netlify on
+        //    the /api/boards route — Imagen 4 Ultra 2K variants can easily
+        //    weigh 5-15 MB as base64.
+        const ext = (variant.mime.split("/")[1] ?? "webp").replace("+xml", "");
+        const urlRes = await fetch("/api/boards/upload-url", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ext }),
+        });
+        const urlData = await urlRes.json();
+        if (!urlRes.ok || !urlData?.signedUrl || !urlData?.publicUrl) {
+          if (!firstError) firstError = urlData?.error ?? "URL signée indisponible";
+          continue;
+        }
+
+        // 2. PUT the decoded bytes directly to Supabase Storage.
+        const bytes = Uint8Array.from(atob(variant.base64), (c) => c.charCodeAt(0));
+        const blob = new Blob([bytes], { type: variant.mime });
+        const putRes = await fetch(urlData.signedUrl, {
+          method: "PUT",
+          headers: { "Content-Type": variant.mime },
+          body: blob,
+        });
+        if (!putRes.ok) {
+          if (!firstError) firstError = `Upload storage échoué (${putRes.status})`;
+          continue;
+        }
+
+        // 3. Persist the board row referencing the public URL only.
         const res = await fetch("/api/boards", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             name,
-            imageBase64: variant.base64,
-            imageMimeType: variant.mime,
+            imageUrl: urlData.publicUrl,
             rarity: bdRarity,
             max_prints: effectiveMax,
             is_default: isDefault,
@@ -2705,6 +2941,25 @@ export default function CardForge() {
                     )}
                   </div>
 
+                  {/* Mode de génération (1 ou 3 variantes) */}
+                  <div style={{ marginTop: 12 }}>
+                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>MODE DE GÉNÉRATION</label>
+                    <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
+                      {([[1, "1 variante"], [3, "3 variantes"]] as const).map(([val, label]) => (
+                        <button key={val} type="button" onClick={() => setCbVariantMode(val)}
+                          style={{
+                            flex: 1, padding: "6px 10px", borderRadius: 5, cursor: "pointer", fontSize: 10,
+                            fontFamily: "'Cinzel',serif", fontWeight: cbVariantMode === val ? 700 : 400,
+                            background: cbVariantMode === val ? "#33333318" : "#fff",
+                            border: `1px solid ${cbVariantMode === val ? "#333" : "#e0e0e0"}`,
+                            color: cbVariantMode === val ? "#333" : "#999",
+                          }}>
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   {/* Instructions additionnelles */}
                   <div style={{ marginTop: 12 }}>
                     <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>INSTRUCTIONS SUPPLÉMENTAIRES</label>
@@ -2738,7 +2993,51 @@ export default function CardForge() {
 
                 {/* Right: preview + save */}
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  {cbImagePreview ? (
+                  {cbVariations.length > 1 ? (
+                    // Multi-variant grid — click to toggle selection, any
+                    // number of picks are saved when the admin hits Save.
+                    <div>
+                      <div style={{ fontSize: 9, color: "#888", letterSpacing: 1, marginBottom: 6 }}>
+                        VARIANTES ({cbSelectedIdxs.length} / {cbVariations.length} sélectionnée{cbSelectedIdxs.length > 1 ? "s" : ""})
+                      </div>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(110px, 1fr))", gap: 8 }}>
+                        {cbVariations.map((v, i) => {
+                          const selected = cbSelectedIdxs.includes(i);
+                          return (
+                            <button
+                              key={i}
+                              type="button"
+                              onClick={() => toggleCbSelection(i)}
+                              style={{
+                                position: "relative",
+                                padding: 0,
+                                borderRadius: 8,
+                                overflow: "hidden",
+                                aspectRatio: "2.5/3.5",
+                                border: selected ? "2px solid #6c5ce7" : "2px solid transparent",
+                                boxShadow: selected ? "0 0 0 1px #a855f7 inset" : "0 1px 3px rgba(0,0,0,0.08)",
+                                cursor: "pointer",
+                                background: "#f8f8f8",
+                              }}
+                            >
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={v.url} alt={`Variante ${i + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                              <div style={{
+                                position: "absolute", top: 4, right: 4,
+                                width: 18, height: 18, borderRadius: "50%",
+                                background: selected ? "#6c5ce7" : "rgba(255,255,255,0.85)",
+                                border: selected ? "2px solid #fff" : "1px solid #ccc",
+                                display: "flex", alignItems: "center", justifyContent: "center",
+                                fontSize: 10, color: selected ? "#fff" : "#999", fontWeight: 700,
+                              }}>
+                                {selected ? "✓" : i + 1}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : cbImagePreview ? (
                     <div style={{ width: "100%", aspectRatio: "2.5/3.5", borderRadius: 10, overflow: "hidden" }}>
                       <img
                         src={cbImagePreview}
@@ -2755,15 +3054,45 @@ export default function CardForge() {
                       <span style={{ fontSize: 10, color: "#bbb", fontFamily: "'Cinzel',serif" }}>Aperçu du dos</span>
                     </div>
                   )}
-                  <button onClick={saveCardBack} disabled={!cbName.trim() || !cbImageBase64 || cbSaving}
-                    style={{
-                      padding: "10px 14px", borderRadius: 6, border: "none",
-                      background: (!cbName.trim() || !cbImageBase64 || cbSaving) ? "#e0e0e0" : "linear-gradient(135deg, #27ae60, #2ecc71)",
-                      color: "#fff", fontSize: 10, fontFamily: "'Cinzel',serif", fontWeight: 700, letterSpacing: 1,
-                      cursor: (!cbName.trim() || !cbImageBase64 || cbSaving) ? "default" : "pointer",
-                    }}>
-                    {cbSaving ? "Enregistrement…" : "Enregistrer le dos"}
-                  </button>
+                  {cbImageBase64 && cbImageMime && (
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        // Additional 3% crop on each edge — chain if the AI
+                        // left a wider dark strip than the auto-crop handled.
+                        const { base64, mime } = await cropImageEdges(cbImageBase64, cbImageMime, 0.03);
+                        setCbImageBase64(base64);
+                        setCbImageMime(mime);
+                        setCbImagePreview(`data:${mime};base64,${base64}`);
+                      }}
+                      style={{
+                        padding: "6px 10px", borderRadius: 6, border: "1px dashed #bbb",
+                        background: "#fff", color: "#666", fontSize: 9,
+                        fontFamily: "'Cinzel',serif", cursor: "pointer", letterSpacing: 0.5,
+                      }}
+                    >
+                      ✂ Rogner davantage (−3% de chaque bord)
+                    </button>
+                  )}
+                  {(() => {
+                    const pickCount = cbVariations.length > 0 ? cbSelectedIdxs.length : (cbImageBase64 ? 1 : 0);
+                    const disabled = !cbName.trim() || pickCount === 0 || cbSaving;
+                    return (
+                      <button onClick={saveCardBack} disabled={disabled}
+                        style={{
+                          padding: "10px 14px", borderRadius: 6, border: "none",
+                          background: disabled ? "#e0e0e0" : "linear-gradient(135deg, #27ae60, #2ecc71)",
+                          color: "#fff", fontSize: 10, fontFamily: "'Cinzel',serif", fontWeight: 700, letterSpacing: 1,
+                          cursor: disabled ? "default" : "pointer",
+                        }}>
+                        {cbSaving
+                          ? "Enregistrement…"
+                          : pickCount > 1
+                            ? `Enregistrer ${pickCount} dos`
+                            : "Enregistrer le dos"}
+                      </button>
+                    );
+                  })()}
                 </div>
               </div>
             </div>
@@ -2808,9 +3137,11 @@ export default function CardForge() {
                         ))}
                       </select>
                       <div style={{ fontSize: 9, color: "#888", marginTop: 3, fontStyle: "italic" }}>
-                        {bdStyle === "minimal"
-                          ? "Centre du plateau laissé vide (surface plate), décoration sur les bords. Pensé pour figurines 3D."
-                          : "Composition Hearthstone : props thématiques partout, divider central orné."}
+                        {bdStyle === "surface"
+                          ? "Uniquement le terrain (herbe, neige, sable, pierre…) qui remplit tout le cadre. Aucun décor, aucune bordure — idéal pour un rendu purement ambiance."
+                          : bdStyle === "minimal"
+                            ? "Centre du plateau laissé vide (surface plate), décoration sur les bords. Pensé pour figurines 3D."
+                            : "Composition Hearthstone : props thématiques partout, divider central orné."}
                       </div>
                     </div>
                     <div>

@@ -47,22 +47,28 @@ export async function POST(request: Request) {
   const supabase = getAdminClient();
 
   try {
-    const { name, imageBase64, imageMimeType, music_track_id, tense_track_id, victory_track_id, defeat_track_id, rarity, max_prints, is_default } = await request.json();
-    if (!name || !imageBase64 || !imageMimeType) {
-      return NextResponse.json({ error: 'Nom et image requis' }, { status: 400 });
+    const { name, imageBase64, imageMimeType, imageUrl, music_track_id, tense_track_id, victory_track_id, defeat_track_id, rarity, max_prints, is_default } = await request.json();
+    if (!name) return NextResponse.json({ error: 'Nom requis' }, { status: 400 });
+
+    // Image source: either base64 upload (legacy) OR an already-hosted public
+    // URL produced by the direct /api/boards/upload-url flow. The latter
+    // bypasses the body-size limit for large Imagen renders.
+    let image_url: string;
+    if (typeof imageUrl === 'string' && imageUrl.trim()) {
+      image_url = imageUrl.trim();
+    } else if (imageBase64 && imageMimeType) {
+      const buffer = Buffer.from(imageBase64, 'base64');
+      const ext = imageMimeType.split('/')[1] || 'webp';
+      const filePath = `board_${Date.now()}_${Math.random().toString(36).slice(2, 6)}.${ext}`;
+      const { error: uploadErr } = await supabase.storage
+        .from('board-images')
+        .upload(filePath, buffer, { upsert: true, contentType: imageMimeType });
+      if (uploadErr) throw new Error(`Image: ${uploadErr.message}`);
+      const { data: urlData } = supabase.storage.from('board-images').getPublicUrl(filePath);
+      image_url = urlData.publicUrl;
+    } else {
+      return NextResponse.json({ error: 'Image requise (base64 ou URL)' }, { status: 400 });
     }
-
-    const buffer = Buffer.from(imageBase64, 'base64');
-    const ext = imageMimeType.split('/')[1] || 'webp';
-    const filePath = `board_${Date.now()}_${Math.random().toString(36).slice(2, 6)}.${ext}`;
-
-    const { error: uploadErr } = await supabase.storage
-      .from('board-images')
-      .upload(filePath, buffer, { upsert: true, contentType: imageMimeType });
-    if (uploadErr) throw new Error(`Image: ${uploadErr.message}`);
-
-    const { data: urlData } = supabase.storage.from('board-images').getPublicUrl(filePath);
-    const image_url = urlData.publicUrl;
 
     const insertData: Record<string, unknown> = { name, image_url };
     if (music_track_id != null) insertData.music_track_id = music_track_id;
