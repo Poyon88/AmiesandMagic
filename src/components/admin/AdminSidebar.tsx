@@ -4,19 +4,20 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const menuItems = [
-  { label: "Card Forge", href: "/admin/card-forge", icon: "\u2694\uFE0F" },
-  { label: "Plateaux", href: "/admin/boards", icon: "\uD83D\uDDFA\uFE0F" },
-  { label: "Dos de cartes", href: "/admin/card-backs", icon: "\uD83C\uDFB4" },
-  { label: "Collections", href: "/admin/collections", icon: "\uD83D\uDCE6" },
-  { label: "Formats", href: "/admin/formats", icon: "\uD83D\uDCCB" },
-  { label: "Import", href: "/admin/import", icon: "\uD83D\uDCE5" },
-  { label: "\u00C9conomie", href: "/admin/economy", icon: "\uD83D\uDCB0" },
-  { label: "Musiques", href: "/admin/music", icon: "\uD83C\uDFB5" },
-  { label: "Bruitages", href: "/admin/sfx", icon: "\uD83D\uDD0A" },
-  { label: "Enchères", href: "/admin/auctions", icon: "\uD83D\uDD28" },
-  { label: "Showcase", href: "/admin/showcase", icon: "\uD83C\uDFAD" },
-  { label: "Icônes", href: "/admin/keyword-icons", icon: "\uD83C\uDFA8" },
-  { label: "Joueurs", href: "/admin/players", icon: "\uD83D\uDC65" },
+  { label: "Card Forge", href: "/admin/card-forge", icon: "⚔️" },
+  { label: "Plateaux", href: "/admin/boards", icon: "🗺️" },
+  { label: "Héros", href: "/admin/heroes", icon: "🤴" },
+  { label: "Dos de cartes", href: "/admin/card-backs", icon: "🎴" },
+  { label: "Collections", href: "/admin/collections", icon: "📦" },
+  { label: "Formats", href: "/admin/formats", icon: "📋" },
+  { label: "Import", href: "/admin/import", icon: "📥" },
+  { label: "Économie", href: "/admin/economy", icon: "💰" },
+  { label: "Musiques", href: "/admin/music", icon: "🎵" },
+  { label: "Bruitages", href: "/admin/sfx", icon: "🔊" },
+  { label: "Enchères", href: "/admin/auctions", icon: "🔨" },
+  { label: "Showcase", href: "/admin/showcase", icon: "🎭" },
+  { label: "Icônes", href: "/admin/keyword-icons", icon: "🎨" },
+  { label: "Joueurs", href: "/admin/players", icon: "👥" },
 ];
 
 export default function AdminSidebar() {

@@ -4,9 +4,11 @@ import { useState, useCallback, useEffect, useRef, type DragEvent } from "react"
 import Image from "next/image";
 import { AnimatePresence } from "framer-motion";
 import { useGameStore } from "@/lib/store/gameStore";
-import { canPlayCard, canAttack, canUseHeroPower, getSpellTargets } from "@/lib/game/engine";
+import { canPlayCard, canAttack, canUseHeroPower, getSpellTargets, heroPowerNeedsTarget } from "@/lib/game/engine";
 import HeroPortrait from "./HeroPortrait";
+import Hero3DViewer from "./Hero3DViewer";
 import HeroPowerButton from "./HeroPowerButton";
+import HeroPowerDescriptionOverlay from "./HeroPowerDescriptionOverlay";
 import ManaBar from "./ManaBar";
 import BoardCreature from "./BoardCreature";
 import HandCard from "./HandCard";
@@ -24,7 +26,7 @@ import HeroPowerOverlay from "./HeroPowerOverlay";
 import GraveyardAffectOverlay from "./GraveyardAffectOverlay";
 import MulliganOverlay from "./MulliganOverlay";
 import SettingsModal from "@/components/shared/SettingsModal";
-import type { GameAction, DamageEvent } from "@/lib/game/types";
+import type { GameAction, DamageEvent, HeroDefinition } from "@/lib/game/types";
 import useGameMusic from "@/hooks/useGameMusic";
 import { useAudioStore } from "@/lib/store/audioStore";
 import SfxEngine from "@/lib/audio/SfxEngine";
@@ -82,6 +84,10 @@ export default function GameBoard({ onAction }: GameBoardProps) {
   const [dropIndex, setDropIndex] = useState<number | null>(null);
   const [hoveredTargetId, setHoveredTargetId] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [heroDescriptionDef, setHeroDescriptionDef] = useState<HeroDefinition | null>(null);
+  // Guards against the second click of a double-click on a targeted hero
+  // power instantly cancelling the targeting that the first click opened.
+  const justOpenedHeroTargetingRef = useRef<number>(0);
   const myBoardRef = useRef<HTMLDivElement>(null);
   // Clear hover when targeting ends
   useEffect(() => {
@@ -235,6 +241,63 @@ export default function GameBoard({ onAction }: GameBoardProps) {
     if (isMulligan) setMulliganOverlayRequired(true);
   }, [isMulligan]);
 
+  // ─── Hero 3D interaction handlers ──────────────────────────────────────
+  // Player's hero: click = targeted power (opens arrow), dblclick = non-targeted
+  // cast, right-click = open description modal. The power button under the
+  // figurine stays wired to the same activateHeroPower action for fallback.
+  const myHeroDef = myPlayer.hero.heroDefinition;
+  const oppHeroDef = opponent.hero.heroDefinition;
+  const heroPowerAvailable = myTurn && canUseHeroPower(gameState) && !!myHeroDef;
+  const heroPowerIsTargeted = !!myHeroDef && heroPowerNeedsTarget(myHeroDef);
+  const powerHalo: "blue" | "gold" | null =
+    heroPowerAvailable
+      ? heroPowerIsTargeted ? "blue" : "gold"
+      : null;
+
+  const handleMyHeroClick = () => {
+    // 1. Hero is being picked AS a target for another effect.
+    if (validTargets.includes("friendly_hero")) {
+      handleSelectTarget("friendly_hero");
+      return;
+    }
+    // 2. Second click of a double-click just after opening targeting — swallow.
+    const now = performance.now();
+    if (targetingMode === "hero_power" && now - justOpenedHeroTargetingRef.current < 320) {
+      return;
+    }
+    // 3. Hero power targeting already active → cancel.
+    if (targetingMode === "hero_power") {
+      clearSelection();
+      return;
+    }
+    // 4. Open targeting for a targeted power. Non-targeted powers wait for
+    //    double-click to avoid misclick casts.
+    if (heroPowerAvailable && heroPowerIsTargeted) {
+      handleActivateHeroPower();
+      justOpenedHeroTargetingRef.current = now;
+    }
+  };
+
+  const handleMyHeroDoubleClick = () => {
+    if (heroPowerAvailable && !heroPowerIsTargeted) {
+      handleActivateHeroPower();
+    }
+  };
+
+  const handleMyHeroContextMenu = () => {
+    if (myHeroDef) setHeroDescriptionDef(myHeroDef);
+  };
+
+  const handleOppHeroClick = () => {
+    if (validTargets.includes("enemy_hero")) {
+      handleSelectTarget("enemy_hero");
+    }
+  };
+
+  const handleOppHeroContextMenu = () => {
+    if (oppHeroDef) setHeroDescriptionDef(oppHeroDef);
+  };
+
   return (
     <div
       className="fixed inset-0 select-none"
@@ -303,7 +366,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
 
         {/* ============= OPPONENT HAND (single card back + count) ============= */}
         {opponent.hand.length > 0 && (
-          <div className="absolute top-[1%] left-[2%] z-20 flex items-center gap-3">
+          <div className="absolute top-[1%] right-[2%] z-20 flex items-center gap-3">
             <div className="relative w-32 aspect-[5/7] rounded overflow-hidden">
               {opponentCardBackUrl ? (
                 <Image
@@ -331,41 +394,74 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           </div>
         )}
 
-        {/* ============= OPPONENT HERO + MANA + HERO POWER ============= */}
+        {/* ============= OPPONENT MANA (center) ============= */}
         <div className="absolute top-[1%] left-1/2 -translate-x-1/2 z-20 flex items-center gap-4">
           <ManaBar current={opponent.mana} max={opponent.maxMana} />
-          <HeroPowerButton
-            heroDef={opponent.hero.heroDefinition}
-            isOpponent={true}
-            canUse={false}
-            isUsed={opponent.hero.heroPowerUsedThisTurn}
-            mana={opponent.mana}
-          />
-          <HeroPortrait
-            hero={opponent.hero}
-            isOpponent={true}
-            isValidTarget={validTargets.includes("enemy_hero")}
-            damageAmount={getDamage("enemy_hero")}
-            onClick={
-              validTargets.includes("enemy_hero")
-                ? () => handleSelectTarget("enemy_hero")
-                : undefined
-            }
-            onMouseEnter={
-              validTargets.includes("enemy_hero")
-                ? () => setHoveredTargetId("enemy_hero")
-                : undefined
-            }
-            onMouseLeave={
-              validTargets.includes("enemy_hero")
-                ? () => setHoveredTargetId(null)
-                : undefined
-            }
-          />
+          {/* When the opponent has no 3D skin, keep the legacy portrait +
+              hero-power button here for continuity. */}
+          {!opponent.hero.heroDefinition?.glbUrl && (
+            <>
+              <HeroPowerButton
+                heroDef={opponent.hero.heroDefinition}
+                isOpponent={true}
+                canUse={false}
+                isUsed={opponent.hero.heroPowerUsedThisTurn}
+                mana={opponent.mana}
+              />
+              <HeroPortrait
+                hero={opponent.hero}
+                isOpponent={true}
+                isValidTarget={validTargets.includes("enemy_hero")}
+                damageAmount={getDamage("enemy_hero")}
+                onClick={
+                  validTargets.includes("enemy_hero")
+                    ? () => handleSelectTarget("enemy_hero")
+                    : undefined
+                }
+                onMouseEnter={
+                  validTargets.includes("enemy_hero")
+                    ? () => setHoveredTargetId("enemy_hero")
+                    : undefined
+                }
+                onMouseLeave={
+                  validTargets.includes("enemy_hero")
+                    ? () => setHoveredTargetId(null)
+                    : undefined
+                }
+              />
+            </>
+          )}
         </div>
 
+        {/* ============= OPPONENT 3D HERO (top-left, mirror of player) =============
+            On smaller screens the figurine sits lower (just above the opponent
+            creature row) so it doesn't crush the hand-count / mana UI. At lg+
+            it snaps back to the top-left corner. */}
+        {opponent.hero.heroDefinition?.glbUrl && (
+          <div className="absolute left-[1%] top-[10%] lg:top-[1%] z-20 flex flex-col items-center">
+            <Hero3DViewer
+              hero={opponent.hero}
+              isOpponent={true}
+              isValidTarget={validTargets.includes("enemy_hero")}
+              damageAmount={getDamage("enemy_hero")}
+              onClick={handleOppHeroClick}
+              onContextMenu={handleOppHeroContextMenu}
+              onMouseEnter={
+                validTargets.includes("enemy_hero")
+                  ? () => setHoveredTargetId("enemy_hero")
+                  : undefined
+              }
+              onMouseLeave={
+                validTargets.includes("enemy_hero")
+                  ? () => setHoveredTargetId(null)
+                  : undefined
+              }
+            />
+          </div>
+        )}
+
         {/* ============= OPPONENT GRAVEYARD + DECK ============= */}
-        <div className="absolute top-[2%] right-[2%] z-20 flex items-center gap-3">
+        <div className="absolute top-[2%] left-[2%] z-20 flex items-center gap-3">
           <button
             onClick={() => setGraveyardView("opponent")}
             className="flex flex-col items-center text-foreground/40 hover:text-foreground/60 transition-colors"
@@ -501,39 +597,72 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           </div>
         </div>
 
-        {/* ============= PLAYER HERO + MANA + HERO POWER ============= */}
+        {/* ============= PLAYER MANA (center) ============= */}
         <div className="absolute bottom-[16%] left-1/2 -translate-x-1/2 z-40 flex items-center gap-4">
           <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} />
-          <HeroPortrait
-            hero={myPlayer.hero}
-            isOpponent={false}
-            isValidTarget={validTargets.includes("friendly_hero")}
-            damageAmount={getDamage("friendly_hero")}
-            onClick={
-              validTargets.includes("friendly_hero")
-                ? () => handleSelectTarget("friendly_hero")
-                : undefined
-            }
-            onMouseEnter={
-              validTargets.includes("friendly_hero")
-                ? () => setHoveredTargetId("friendly_hero")
-                : undefined
-            }
-            onMouseLeave={
-              validTargets.includes("friendly_hero")
-                ? () => setHoveredTargetId(null)
-                : undefined
-            }
-          />
-          <HeroPowerButton
-            heroDef={myPlayer.hero.heroDefinition}
-            isOpponent={false}
-            canUse={myTurn && !!gameState && canUseHeroPower(gameState)}
-            isUsed={myPlayer.hero.heroPowerUsedThisTurn}
-            mana={myPlayer.mana}
-            onClick={handleActivateHeroPower}
-          />
+          {/* Legacy portrait block when the player has no 3D skin. */}
+          {!myPlayer.hero.heroDefinition?.glbUrl && (
+            <>
+              <HeroPortrait
+                hero={myPlayer.hero}
+                isOpponent={false}
+                isValidTarget={validTargets.includes("friendly_hero")}
+                damageAmount={getDamage("friendly_hero")}
+                onClick={
+                  validTargets.includes("friendly_hero")
+                    ? () => handleSelectTarget("friendly_hero")
+                    : undefined
+                }
+                onMouseEnter={
+                  validTargets.includes("friendly_hero")
+                    ? () => setHoveredTargetId("friendly_hero")
+                    : undefined
+                }
+                onMouseLeave={
+                  validTargets.includes("friendly_hero")
+                    ? () => setHoveredTargetId(null)
+                    : undefined
+                }
+              />
+              <HeroPowerButton
+                heroDef={myPlayer.hero.heroDefinition}
+                isOpponent={false}
+                canUse={myTurn && !!gameState && canUseHeroPower(gameState)}
+                isUsed={myPlayer.hero.heroPowerUsedThisTurn}
+                mana={myPlayer.mana}
+                onClick={handleActivateHeroPower}
+              />
+            </>
+          )}
         </div>
+
+        {/* ============= PLAYER 3D HERO (bottom-right) =============
+            Under lg (< 1024px) the figurine floats above the hand of cards so
+            it never collides with them; at lg+ it anchors to the corner. */}
+        {myPlayer.hero.heroDefinition?.glbUrl && (
+          <div className="absolute right-[1%] bottom-[28%] lg:bottom-[1%] z-40 flex flex-col items-center">
+            <Hero3DViewer
+              hero={myPlayer.hero}
+              isOpponent={false}
+              isValidTarget={validTargets.includes("friendly_hero")}
+              damageAmount={getDamage("friendly_hero")}
+              powerReadyHalo={powerHalo}
+              onClick={handleMyHeroClick}
+              onDoubleClick={handleMyHeroDoubleClick}
+              onContextMenu={handleMyHeroContextMenu}
+              onMouseEnter={
+                validTargets.includes("friendly_hero")
+                  ? () => setHoveredTargetId("friendly_hero")
+                  : undefined
+              }
+              onMouseLeave={
+                validTargets.includes("friendly_hero")
+                  ? () => setHoveredTargetId(null)
+                  : undefined
+              }
+            />
+          </div>
+        )}
 
         {/* ============= END TURN + TIMER + CANCEL ============= */}
         <div className="absolute right-[2%] top-[44%] -translate-y-1/2 z-20 flex flex-col items-center gap-3">
@@ -720,6 +849,13 @@ export default function GameBoard({ onAction }: GameBoardProps) {
       />
 
       <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
+
+      {heroDescriptionDef && (
+        <HeroPowerDescriptionOverlay
+          heroDef={heroDescriptionDef}
+          onClose={() => setHeroDescriptionDef(null)}
+        />
+      )}
     </div>
   );
 }

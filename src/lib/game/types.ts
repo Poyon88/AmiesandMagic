@@ -342,6 +342,8 @@ export interface HeroDefinition {
   powerCost: number;
   powerEffect: HeroPowerEffect;
   powerDescription: string;
+  glbUrl?: string | null;
+  thumbnailUrl?: string | null;
 }
 
 export interface HeroState {
