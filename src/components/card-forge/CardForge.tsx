@@ -1514,15 +1514,65 @@ export default function CardForge() {
   const [generatingImage, setGeneratingImage] = useState(false);
   const [editedPrompt, setEditedPrompt] = useState<string | null>(null);
 
+  // Optional reference image for card illustration generation.
+  // Used to inspire pose / composition / mood, not to copy literally.
+  const [illusRefImageBase64, setIllusRefImageBase64] = useState<string | null>(null);
+  const [illusRefImageMime, setIllusRefImageMime] = useState<string | null>(null);
+  const [illusRefImagePreview, setIllusRefImagePreview] = useState<string | null>(null);
+
+  const handleIllusRefImageChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const img = new window.Image();
+    img.onload = () => {
+      const MAX_DIM = 768;
+      let { width, height } = img;
+      if (width > MAX_DIM || height > MAX_DIM) {
+        const ratio = Math.min(MAX_DIM / width, MAX_DIM / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d")!;
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+      ctx.drawImage(img, 0, 0, width, height);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+      const base64 = dataUrl.split(",")[1];
+      setIllusRefImageBase64(base64);
+      setIllusRefImageMime("image/jpeg");
+      setIllusRefImagePreview(dataUrl);
+    };
+    img.onerror = () => setSaveResult({ ok: false, msg: "Impossible de lire l'image de référence." });
+    img.src = URL.createObjectURL(file);
+  }, []);
+
+  const clearIllusRefImage = useCallback(() => {
+    setIllusRefImageBase64(null);
+    setIllusRefImageMime(null);
+    setIllusRefImagePreview(null);
+  }, []);
+
   const generateIllustration = useCallback(async (forgeCard: ForgeCard) => {
     if (!forgeCard.illustrationPrompt) return;
     setGeneratingImage(true);
     setSaveResult(null);
     try {
+      const hasRef = !!(illusRefImageBase64 && illusRefImageMime);
+      const promptWithRef = hasRef
+        ? `${forgeCard.illustrationPrompt}\n\nA reference image is attached. Use it as inspiration for subject, pose, composition or mood only — do NOT copy it literally. The output MUST follow the artistic direction of the prompt above (style, palette, framing).`
+        : forgeCard.illustrationPrompt;
       const res = await fetch('/api/cards/generate-image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: forgeCard.illustrationPrompt }),
+        body: JSON.stringify({
+          prompt: promptWithRef,
+          ...(hasRef
+            ? { referenceImageBase64: illusRefImageBase64, referenceImageMimeType: illusRefImageMime }
+            : {}),
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Erreur génération image');
@@ -1541,7 +1591,7 @@ export default function CardForge() {
     } finally {
       setGeneratingImage(false);
     }
-  }, []);
+  }, [illusRefImageBase64, illusRefImageMime]);
 
   const fac = FACTIONS[faction];
 
@@ -1880,6 +1930,39 @@ export default function CardForge() {
                       rows={4}
                       style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #e0e0e0", background: "#f8f8f8", color: "#555", fontFamily: "'Crimson Text',serif", fontSize: 11, lineHeight: 1.5, resize: "vertical" }}
                     />
+
+                    {/* Reference image for illustration */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
+                      {illusRefImagePreview ? (
+                        <div style={{ width: 54, height: 54, borderRadius: 6, overflow: "hidden", border: "1px solid #27ae60", flexShrink: 0 }}>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={illusRefImagePreview} alt="Référence" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                        </div>
+                      ) : (
+                        <div style={{ width: 54, height: 54, borderRadius: 6, border: "2px dashed #ddd", background: "#fafafa", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, color: "#bbb", fontFamily: "'Cinzel',serif", flexShrink: 0, textAlign: "center", padding: 2 }}>
+                          Aucune réf.
+                        </div>
+                      )}
+                      <div style={{ display: "flex", flexDirection: "column", gap: 3, flex: 1 }}>
+                        <span style={{ fontSize: 8, color: "#888", letterSpacing: 1, fontFamily: "'Cinzel',serif" }}>IMAGE DE RÉFÉRENCE (optionnel)</span>
+                        <span style={{ fontSize: 9, color: "#777", fontFamily: "'Crimson Text',serif", lineHeight: 1.3 }}>
+                          Inspire la pose / composition / mood. Le style du prompt reste prioritaire.
+                        </span>
+                        <div style={{ display: "flex", gap: 6, marginTop: 2 }}>
+                          <label style={{ padding: "3px 10px", borderRadius: 5, border: "1px solid #ddd", background: "#fff", color: "#666", fontSize: 9, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>
+                            {illusRefImagePreview ? "Remplacer" : "Choisir une image"}
+                            <input type="file" accept="image/*" onChange={handleIllusRefImageChange} style={{ display: "none" }} />
+                          </label>
+                          {illusRefImagePreview && (
+                            <button type="button" onClick={clearIllusRefImage}
+                              style={{ padding: "3px 10px", borderRadius: 5, border: "1px solid #f5a3a3", background: "#fff", color: "#e74c3c", fontSize: 9, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>
+                              Retirer
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
                     <div style={{ display: "flex", gap: 10, marginTop: 8, alignItems: "center" }}>
                       <button onClick={() => navigator.clipboard.writeText(currentPrompt)} style={{
                         fontSize: 9, background: "none", border: "none",
