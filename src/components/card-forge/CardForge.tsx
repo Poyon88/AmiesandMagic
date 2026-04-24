@@ -10,6 +10,7 @@ import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, SPELL_KEYWORD
 import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
 import type { SpellKeywordId } from "@/lib/game/types";
 import CardEditor from "@/components/admin/CardEditor";
+import { CARD_BACK_FRAMES, autoTrimDarkBorders, composeCardBack, getCardBackFrame } from "@/lib/card-back-frames";
 
 // ─── API CALL ────────────────────────────────────────────────────────────────
 
@@ -148,6 +149,16 @@ export default function CardForge() {
   const [cbVariantMode, setCbVariantMode] = useState<1 | 3>(1);
   const [cbVariations, setCbVariations] = useState<CbVariation[]>([]);
   const [cbSelectedIdxs, setCbSelectedIdxs] = useState<number[]>([]);
+  // Fixed frame overlay composited on top of the AI illustration. The AI no
+  // longer paints its own border — the SVG frame below provides a consistent
+  // rectangular rim across every card back.
+  const [cbFrameId, setCbFrameId] = useState<string>(CARD_BACK_FRAMES[0].id);
+  // Optional reference image — its subject/palette/mood guides the generation.
+  // The text prompt still runs the show; the image just narrows the AI's
+  // style space.
+  const [cbRefImageBase64, setCbRefImageBase64] = useState<string | null>(null);
+  const [cbRefImageMime, setCbRefImageMime] = useState<string | null>(null);
+  const [cbRefImagePreview, setCbRefImagePreview] = useState<string | null>(null);
 
   // ─── GAME BOARDS (générateur) ─────────────────────────────────────────────
   const BD_DEFAULT_MAX_PRINTS: Record<string, number> = {
@@ -621,13 +632,13 @@ export default function CardForge() {
 
     const parts: string[] = [];
     parts.push(
-      "An ornate fantasy card back design in the exact style of classic Hearthstone card backs.",
-      "Portrait 3:4 aspect ratio (matches standard playing card proportions), vertically symmetrical, highly detailed digital painting.",
-      "MANDATORY RECTANGULAR BORDER: the artwork MUST include a clearly defined ornamental RECTANGULAR rim running continuously along all four edges — top, bottom, left, and right — with crisp, unambiguous visible trim (for example a continuous band of gold filigree, studded rivets, stone molding, or engraved scrollwork). This rim must form a closed rectangle so the card back reads as a framed card, not an open illustration.",
-      "FRAME SAFETY MARGIN: keep the ENTIRE ornamental frame (including corner ornaments, cresting peaks, bottom finials) fully visible within the canvas. No part of the frame may overflow past the image edges. Leave a small outer margin of ~2% around the frame — this margin should be filled by the same frame material/palette as the rim, not by a separate dark border, letterbox or solid colour strip.",
-      "NO OUTER LETTERBOX: absolutely no black outer frame, no dark rectangle, no solid-colour padding surrounding the design. The 2% margin is a natural continuation of the ornamental material, not a distinct box.",
-      "Inside the rim, fill the interior with rich baroque filigree, gold trim, intricate scrollwork and a large central heraldic medallion / sigil / crest glowing with magical light.",
-      "Rich jewel tones, deep contrast, subtle volumetric glow, polished AAA trading-card-game quality.",
+      "A rich fantasy card back illustration — pure full-bleed artwork only.",
+      "Portrait 3:4 aspect ratio, vertically AND horizontally symmetrical, highly detailed digital painting.",
+      "ABSOLUTELY NO FRAME, NO BORDER, NO RECTANGULAR OUTLINE, NO ORNAMENTAL RIM, NO LETTERBOX, NO TRIM around the edges. A proper ornamental frame will be added later by a separate overlay, so painting one into the image is forbidden.",
+      "CRITICAL — BACKDROP FILLS THE ENTIRE CANVAS: the scene's background (dark stone, nebula, runic tapestry, atmospheric void, deep forest, stormy sky, etc.) MUST extend edge to edge in every direction. There MUST NOT be any lighter/brighter rectangular area nested inside the canvas; NO cream, NO ivory, NO white, NO pale, NO beige, NO off-white padding, margin, mat or passepartout surrounding the central motif. The outer pixels of the image carry the SAME dark atmospheric tones as the rest of the background — you are painting a seamless mural, not a small illustration mounted on a mat.",
+      "Central focus: a large heraldic medallion, sigil, crest, mythical silhouette or arcane glyph anchored at the exact visual center, glowing with magical light — it emerges organically from the dark backdrop, it is NOT placed inside a smaller inner frame or lighter panel.",
+      "Surround the emblem with rich baroque filigree, intertwining scrollwork, jewels, runes or elemental motifs woven directly into the dark background and extending all the way to the canvas corners — no empty negative space, no lighter ring, no transition to a paler colour at the edges.",
+      "Rich jewel tones, deep contrast, subtle volumetric glow, polished AAA trading-card-game illustration quality.",
     );
 
     if (factionName) {
@@ -652,21 +663,29 @@ export default function CardForge() {
       parts.push(`Additional requirements from the artist: ${cbInstructions.trim()}`);
     }
 
+    if (cbRefImageBase64) {
+      parts.push(
+        "A reference image is attached. Use ONLY its subject / palette / mood / style as visual inspiration. Do NOT copy its composition literally — the output MUST still follow every rule stated above (BORDERLESS full-bleed, dark atmospheric edges, no cream mat / ivory passepartout / pale margin, centered symmetrical emblem).",
+      );
+    }
     parts.push(
-      "No characters in the foreground, no figures, no portraits — only the ornamental back design.",
+      "No characters in the foreground, no figures, no portraits — only the ornamental emblem composition.",
       "Absolutely NO TEXT, no letters, no words, no numbers, no watermark, no logo, no signature.",
-      "Strictly centered, perfectly symmetrical, tileable-looking decorative design.",
-      "FINAL REMINDER: the image must simultaneously (a) show a clearly visible closed rectangular ornamental rim along the four edges so the card has a proper frame, AND (b) be fully full-bleed with NO black letterbox / NO padding / NO dark rectangle outside that rim. The ornamental rim IS the outer edge of the image.",
+      "Strictly centered, perfectly symmetrical composition filling the whole canvas.",
+      "FINAL REMINDER: this is a BORDERLESS full-bleed illustration. Any rectangular frame, ornamental rim, outer trim, letterbox, cream mat, ivory passepartout, beige padding or pale outer band is STRICTLY FORBIDDEN — the outer decorative frame is added separately by a fixed SVG overlay after generation. The edge pixels of the image must be dark atmospheric artwork, never a light-colour margin.",
     );
     setCbPrompt(parts.join(" "));
   }
 
-  function handleCardBackFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleCardBackRefImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     const img = new window.Image();
     img.onload = () => {
-      const MAX_DIM = 1600;
+      // Down-sample the reference so the Gemini multimodal payload stays
+      // light (~60 KB). Quality doesn't need to be pristine — it's just a
+      // visual style anchor for the model.
+      const MAX_DIM = 768;
       let { width, height } = img;
       if (width > MAX_DIM || height > MAX_DIM) {
         const ratio = Math.min(MAX_DIM / width, MAX_DIM / height);
@@ -680,100 +699,53 @@ export default function CardForge() {
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = "high";
       ctx.drawImage(img, 0, 0, width, height);
-      const dataUrl = canvas.toDataURL("image/webp", 0.95);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
       const base64 = dataUrl.split(",")[1];
-      setCbImageBase64(base64);
-      setCbImageMime("image/webp");
-      setCbImagePreview(dataUrl);
+      setCbRefImageBase64(base64);
+      setCbRefImageMime("image/jpeg");
+      setCbRefImagePreview(dataUrl);
     };
+    img.onerror = () => setCbMessage({ ok: false, msg: "Impossible de lire l'image de référence." });
     img.src = URL.createObjectURL(file);
   }
 
-  // Crops a given % off every edge of a base64 image and returns a fresh
-  // base64 WebP. Used to clean up the thin dark strip that AI models
-  // occasionally paint along the canvas edges even when the prompt forbids
-  // any black letterbox (the "full-bleed" instruction is fuzzy for diffusion
-  // models on portrait aspects).
-  async function cropImageEdges(
-    base64: string,
-    mime: string,
-    percent: number,
-  ): Promise<{ base64: string; mime: string }> {
-    return new Promise((resolve, reject) => {
-      const img = new window.Image();
-      img.onload = () => {
-        try {
-          const cropPx = Math.round(Math.min(img.width, img.height) * percent);
-          const w = img.width - cropPx * 2;
-          const h = img.height - cropPx * 2;
-          if (w <= 0 || h <= 0) {
-            resolve({ base64, mime });
-            return;
-          }
-          const canvas = document.createElement("canvas");
-          canvas.width = w;
-          canvas.height = h;
-          const ctx = canvas.getContext("2d")!;
-          ctx.imageSmoothingEnabled = true;
-          ctx.imageSmoothingQuality = "high";
-          ctx.drawImage(img, cropPx, cropPx, w, h, 0, 0, w, h);
-          const dataUrl = canvas.toDataURL("image/webp", 0.95);
-          resolve({ base64: dataUrl.split(",")[1], mime: "image/webp" });
-        } catch (err) {
-          reject(err);
-        }
-      };
-      img.onerror = () => resolve({ base64, mime });
-      img.src = `data:${mime};base64,${base64}`;
-    });
+  function clearCardBackRefImage() {
+    setCbRefImageBase64(null);
+    setCbRefImageMime(null);
+    setCbRefImagePreview(null);
   }
 
-  // Crops a base64 image to an exact target aspect ratio (width / height).
-  // Trims evenly from whichever pair of opposite edges is "too long".
-  // Used so the card-back artwork saved to Storage already matches the
-  // in-game 5:7 card slot — no further cover-crop in the UI means what we
-  // see in the forge preview is exactly what appears in the hand.
-  async function cropImageToAspect(
-    base64: string,
-    mime: string,
-    targetRatio: number,
-  ): Promise<{ base64: string; mime: string }> {
-    return new Promise((resolve, reject) => {
-      const img = new window.Image();
-      img.onload = () => {
-        try {
-          const currentRatio = img.width / img.height;
-          let sx = 0, sy = 0, sw = img.width, sh = img.height;
-          if (currentRatio > targetRatio) {
-            // too wide → trim horizontally
-            sw = Math.round(img.height * targetRatio);
-            sx = Math.round((img.width - sw) / 2);
-          } else if (currentRatio < targetRatio) {
-            // too tall → trim vertically
-            sh = Math.round(img.width / targetRatio);
-            sy = Math.round((img.height - sh) / 2);
-          }
-          const canvas = document.createElement("canvas");
-          canvas.width = sw;
-          canvas.height = sh;
-          const ctx = canvas.getContext("2d")!;
-          ctx.imageSmoothingEnabled = true;
-          ctx.imageSmoothingQuality = "high";
-          ctx.drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh);
-          const dataUrl = canvas.toDataURL("image/webp", 0.95);
-          resolve({ base64: dataUrl.split(",")[1], mime: "image/webp" });
-        } catch (err) {
-          reject(err);
-        }
-      };
-      img.onerror = () => resolve({ base64, mime });
-      img.src = `data:${mime};base64,${base64}`;
-    });
+  function handleCardBackFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const result = reader.result as string;
+        const mime = file.type || "image/png";
+        const base64 = result.split(",")[1];
+        // First strip any near-black / transparent matte the upload might
+        // already have — otherwise our frame's border would sit on top of
+        // another black border and the content would drift inward.
+        const trimmed = await autoTrimDarkBorders(base64, mime);
+        // Compose manually uploaded artwork into the same frame the AI
+        // path uses — preview + saved image stay consistent regardless
+        // of the source.
+        const frame = getCardBackFrame(cbFrameId);
+        const framed = await composeCardBack(trimmed.base64, trimmed.mime, frame);
+        setCbImageBase64(framed.base64);
+        setCbImageMime(framed.mime);
+        setCbImagePreview(`data:${framed.mime};base64,${framed.base64}`);
+        // Clear any prior multi-variant state so the single composed image
+        // becomes the one the admin saves.
+        setCbVariations([]);
+        setCbSelectedIdxs([]);
+      } catch (err) {
+        setCbMessage({ ok: false, msg: err instanceof Error ? err.message : "Erreur d'import" });
+      }
+    };
+    reader.readAsDataURL(file);
   }
-
-  // Card ratio used in-game (matches Tailwind aspect-[5/7] on GameCard /
-  // HandCard / deck/hand previews).
-  const CARD_BACK_RATIO = 5 / 7;
 
   async function generateCardBackImage() {
     if (!cbPrompt) return;
@@ -787,28 +759,41 @@ export default function CardForge() {
     setCbImageMime(null);
     setCbImagePreview(null);
 
+    const frame = getCardBackFrame(cbFrameId);
+
     const callOnce = async (): Promise<CbVariation | { error: string }> => {
       try {
+        const hasRef = !!(cbRefImageBase64 && cbRefImageMime);
         const res = await fetch("/api/cards/generate-image", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             prompt: cbPrompt,
+            // Generate the underlying illustration in portrait 3:4. The SVG
+            // frame will crop it into its inner 5:7-ish window below.
             aspectRatio: "3:4",
-            highRes: true,
+            // Imagen 4 Ultra doesn't accept reference images — the API
+            // gracefully falls back to Gemini multimodal when one is
+            // attached, so highRes stays on for the no-ref case.
+            highRes: !hasRef,
+            ...(hasRef
+              ? { referenceImageBase64: cbRefImageBase64, referenceImageMimeType: cbRefImageMime }
+              : {}),
           }),
         });
         const data = await res.json();
         if (!res.ok || data.error) return { error: data.error ?? `Erreur ${res.status}` };
-        // Post-process pipeline — identical per variant:
-        //   1) Strip a 3% border to remove AI-painted letterbox artifacts.
-        //   2) Crop to the exact in-game 5:7 card ratio so preview == render.
-        const cleaned = await cropImageEdges(
+        // Strip any residual near-black rim the model may have left on the
+        // illustration edges before dropping it inside the frame.
+        const trimmed = await autoTrimDarkBorders(
           data.imageBase64,
           data.mimeType ?? "image/png",
-          0.03,
         );
-        const framed = await cropImageToAspect(cleaned.base64, cleaned.mime, CARD_BACK_RATIO);
+        // Compose the raw illustration into the fixed SVG frame. The frame
+        // owns the outer border so we no longer depend on the AI painting
+        // clean edges — cover-fit + overlay guarantees every variant ends
+        // up with the same perfect rim.
+        const framed = await composeCardBack(trimmed.base64, trimmed.mime, frame);
         return {
           base64: framed.base64,
           mime: framed.mime,
@@ -2941,6 +2926,62 @@ export default function CardForge() {
                     )}
                   </div>
 
+                  {/* Cadre standard composé sur l'illustration après génération */}
+                  <div style={{ marginTop: 12 }}>
+                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>CADRE</label>
+                    <select
+                      value={cbFrameId}
+                      onChange={async (e) => {
+                        const newId = e.target.value;
+                        setCbFrameId(newId);
+                        // Recompose whatever's currently previewed against
+                        // the new frame so the admin can see the swap live.
+                        const newFrame = getCardBackFrame(newId);
+                        if (cbVariations.length > 0) {
+                          // Recompose each variation from its own existing
+                          // framed image — loses a tiny bit of quality vs
+                          // regenerating but avoids another API round-trip.
+                          const rebuilt: CbVariation[] = [];
+                          for (const v of cbVariations) {
+                            try {
+                              const r = await composeCardBack(v.base64, v.mime, newFrame);
+                              rebuilt.push({
+                                base64: r.base64,
+                                mime: r.mime,
+                                url: `data:${r.mime};base64,${r.base64}`,
+                              });
+                            } catch {
+                              rebuilt.push(v);
+                            }
+                          }
+                          setCbVariations(rebuilt);
+                          // Refresh focused preview.
+                          const idx = cbSelectedIdxs[cbSelectedIdxs.length - 1] ?? 0;
+                          const focus = rebuilt[idx];
+                          if (focus) {
+                            setCbImageBase64(focus.base64);
+                            setCbImageMime(focus.mime);
+                            setCbImagePreview(focus.url);
+                          }
+                        } else if (cbImageBase64 && cbImageMime) {
+                          try {
+                            const r = await composeCardBack(cbImageBase64, cbImageMime, newFrame);
+                            setCbImageBase64(r.base64);
+                            setCbImageMime(r.mime);
+                            setCbImagePreview(`data:${r.mime};base64,${r.base64}`);
+                          } catch { /* ignore */ }
+                        }
+                      }}
+                      style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }}>
+                      {CARD_BACK_FRAMES.map((f) => (
+                        <option key={f.id} value={f.id}>{f.label}</option>
+                      ))}
+                    </select>
+                    <div style={{ fontSize: 9, color: "#888", marginTop: 3, fontStyle: "italic" }}>
+                      Le cadre est appliqué après génération. L&apos;IA peut se concentrer sur l&apos;illustration seule — aucun cadre à dessiner.
+                    </div>
+                  </div>
+
                   {/* Mode de génération (1 ou 3 variantes) */}
                   <div style={{ marginTop: 12 }}>
                     <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>MODE DE GÉNÉRATION</label>
@@ -2966,6 +3007,38 @@ export default function CardForge() {
                     <textarea value={cbInstructions} onChange={e => setCbInstructions(e.target.value)}
                       placeholder="Ex: runes dorées, plumes, miroir poli, dragon enroulé..."
                       style={{ width: "100%", minHeight: 50, padding: 6, borderRadius: 6, border: "1px solid #ddd", fontSize: 10, fontFamily: "'Crimson Text',serif", marginTop: 4, resize: "vertical" }} />
+                  </div>
+
+                  {/* Reference image (optional) — guides the AI without replacing the prompt */}
+                  <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 10 }}>
+                    {cbRefImagePreview ? (
+                      <div style={{ width: 72, height: 72, borderRadius: 6, overflow: "hidden", border: "1px solid #27ae60", flexShrink: 0 }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={cbRefImagePreview} alt="Référence" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                      </div>
+                    ) : (
+                      <div style={{ width: 72, height: 72, borderRadius: 6, border: "2px dashed #ddd", background: "#fafafa", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: "#bbb", fontFamily: "'Cinzel',serif", flexShrink: 0, textAlign: "center", padding: 4 }}>
+                        Aucune réf.
+                      </div>
+                    )}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
+                      <span style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>IMAGE DE RÉFÉRENCE (optionnel)</span>
+                      <span style={{ fontSize: 9, color: "#777", fontFamily: "'Crimson Text',serif", lineHeight: 1.3 }}>
+                        Sert d&apos;inspiration visuelle (sujet / palette / mood). Les règles du prompt restent prioritaires.
+                      </span>
+                      <div style={{ display: "flex", gap: 6, marginTop: 2 }}>
+                        <label style={{ padding: "4px 10px", borderRadius: 5, border: "1px solid #ddd", background: "#fff", color: "#666", fontSize: 9, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>
+                          {cbRefImagePreview ? "Remplacer" : "Choisir une image"}
+                          <input type="file" accept="image/*" onChange={handleCardBackRefImageChange} style={{ display: "none" }} />
+                        </label>
+                        {cbRefImagePreview && (
+                          <button type="button" onClick={clearCardBackRefImage}
+                            style={{ padding: "4px 10px", borderRadius: 5, border: "1px solid #f5a3a3", background: "#fff", color: "#e74c3c", fontSize: 9, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>
+                            Retirer
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   </div>
 
                   {/* Prompt */}
@@ -3053,26 +3126,6 @@ export default function CardForge() {
                     }}>
                       <span style={{ fontSize: 10, color: "#bbb", fontFamily: "'Cinzel',serif" }}>Aperçu du dos</span>
                     </div>
-                  )}
-                  {cbImageBase64 && cbImageMime && (
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        // Additional 3% crop on each edge — chain if the AI
-                        // left a wider dark strip than the auto-crop handled.
-                        const { base64, mime } = await cropImageEdges(cbImageBase64, cbImageMime, 0.03);
-                        setCbImageBase64(base64);
-                        setCbImageMime(mime);
-                        setCbImagePreview(`data:${mime};base64,${base64}`);
-                      }}
-                      style={{
-                        padding: "6px 10px", borderRadius: 6, border: "1px dashed #bbb",
-                        background: "#fff", color: "#666", fontSize: 9,
-                        fontFamily: "'Cinzel',serif", cursor: "pointer", letterSpacing: 0.5,
-                      }}
-                    >
-                      ✂ Rogner davantage (−3% de chaque bord)
-                    </button>
                   )}
                   {(() => {
                     const pickCount = cbVariations.length > 0 ? cbSelectedIdxs.length : (cbImageBase64 ? 1 : 0);

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 700" preserveAspectRatio="xMidYMid meet">
+  <!-- Pure black border with uniform thickness on all four sides.
+       Outer 500x700 minus inner 455x655 window (22.5 SVG units on each side),
+       filled with evenodd so the middle stays transparent for the
+       illustration. -->
+  <path d="M0 0 H500 V700 H0 Z M22.5 22.5 H477.5 V677.5 H22.5 Z"
+        fill="#000000" fill-rule="evenodd"/>
+</svg>
