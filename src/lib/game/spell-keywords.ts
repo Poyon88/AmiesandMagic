@@ -153,10 +153,13 @@ export function getSpellKeywordDesc(kw: SpellKeywordInstance, card?: Card | null
   else if (def.params.includes("amount")) desc = desc.replace(/X/g, String(kw.amount ?? 1));
   if (def.params.includes("health")) desc = desc.replace(/Y/g, String(kw.health ?? 0));
 
-  // Override for invocation_multiple with actual token details
+  // Override for invocation_multiple with actual token details. The
+  // race / template name isn't available here without a registry lookup, so
+  // we surface the (possibly overridden) stats only — the token visual is
+  // shown when actually summoned in-game.
   if (kw.id === "invocation_multiple" && card?.convocation_tokens?.length) {
     const parts = card.convocation_tokens.map((t: ConvocationTokenDef) =>
-      `${t.race || "Token"} ${t.attack}/${t.health}`
+      `Token ${t.attack ?? "?"}/${t.health ?? "?"}`
     );
     desc = `Crée ${parts.join(", ")}`;
   }

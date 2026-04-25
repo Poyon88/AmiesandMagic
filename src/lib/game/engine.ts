@@ -117,16 +117,37 @@ function createCardInstance(card: Card): CardInstance {
   };
 }
 
-function applyTokenTemplate(tokenCard: Card, templates?: TokenTemplate[]): Card {
+// Returns the saved token template for a given id (looked up against the
+// current registry or a passed-in array). Null if missing.
+function findTokenTemplate(id: number | null | undefined, templates?: TokenTemplate[]): TokenTemplate | null {
+  if (!id) return null;
   const tmpls = templates ?? currentTokenTemplates;
-  if (!tmpls.length || !tokenCard.race) return tokenCard;
-  const tmpl = tmpls.find(t => t.race === tokenCard.race);
+  return tmpls.find(t => t.id === id) ?? null;
+}
+
+// Backwards-compat helper for legacy code paths that still spawn tokens by
+// race string (spell-keyword "invocation", atomic "summon_token", "pacte de
+// sang"). Picks the first template matching the race so the visual is at
+// least preserved; returns null if none exists.
+function findTokenTemplateByRace(race: string | null | undefined, templates?: TokenTemplate[]): TokenTemplate | null {
+  if (!race) return null;
+  const tmpls = templates ?? currentTokenTemplates;
+  return tmpls.find(t => t.race === race) ?? null;
+}
+
+// Copies the visual / race / keywords / name from a saved token template
+// onto a fresh instance Card. The instance Card keeps its own stats so the
+// caller can apply any per-use override (e.g. Convocation X formula).
+function applyTokenTemplate(tokenCard: Card, tmpl: TokenTemplate | null): Card {
   if (!tmpl) return tokenCard;
   return {
     ...tokenCard,
     name: tmpl.name,
     image_url: tmpl.image_url,
     keywords: tmpl.keywords?.length ? tmpl.keywords : tokenCard.keywords,
+    race: tmpl.race,
+    clan: tmpl.clan ?? tokenCard.clan,
+    token_id: tmpl.id,
   };
 }
 
@@ -366,13 +387,16 @@ export function startTurn(state: GameState): GameState {
       creature.hasTransformedLycanthropie = true;
       const xVals = parseXValuesFromEffectText(creature.card.effect_text);
       const x = xVals["lycanthropie"] || Math.max(1, Math.floor(creature.card.mana_cost / 2));
-      const tokenRace = creature.card.lycanthropie_race || creature.card.race;
+      const tmpl = findTokenTemplate(creature.card.lycanthropie_token_id);
+      const fallbackRace = tmpl?.race ?? creature.card.race;
       // Keep original keywords except lycanthropie, add charge (Traque)
       const newKeywords = creature.card.keywords.filter(kw => kw !== "lycanthropie");
       if (!newKeywords.includes("charge")) newKeywords.push("charge");
+      // Stat formula stays X/X (X computed above) — the token only owns the
+      // visual, name and base keywords for the transformed form.
       let tokenCard: Card = {
         id: -1,
-        name: `${tokenRace || creature.card.name}`,
+        name: `${fallbackRace || creature.card.name}`,
         mana_cost: creature.card.mana_cost,
         card_type: "creature",
         attack: x,
@@ -382,11 +406,11 @@ export function startTurn(state: GameState): GameState {
         spell_keywords: null,
         spell_effects: null,
         image_url: null,
-        race: tokenRace,
+        race: fallbackRace,
         faction: creature.card.faction,
         clan: creature.card.clan,
       };
-      tokenCard = applyTokenTemplate(tokenCard);
+      tokenCard = applyTokenTemplate(tokenCard, tmpl);
       creature.card = tokenCard;
       creature.currentAttack = x + creature.summonBonusATK + creature.necrophagieATKBonus + creature.loyauteATKBonus + creature.auraHealthBonus;
       creature.currentHealth = x + creature.necrophagiePVBonus + creature.loyautePVBonus;
@@ -552,39 +576,49 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       cardInstance.contresortActive = true;
     }
 
-    // Convocation X: crée un token X/X de la race indiquée
+    // Convocation X: crée un token X/X depuis le template choisi.
+    // Si X est absent du texte, on tombe sur les stats par défaut du token.
     if (hasKw(cardInstance, "convocation") && player.board.length < MAX_BOARD_SIZE) {
-      const xValues = parseXValuesFromEffectText(cardInstance.card.effect_text);
-      const x = xValues["convocation"] || Math.max(1, cardInstance.card.mana_cost);
-      const tokenRace = cardInstance.card.convocation_race || cardInstance.card.race;
-      let tokenCard: Card = {
-        id: -1, name: `Token ${tokenRace || ""}`.trim(),
-        mana_cost: 0, card_type: "creature",
-        attack: x, health: x,
-        effect_text: `Token ${x}/${x}`,
-        keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
-        race: tokenRace, faction: cardInstance.card.faction,
-        clan: cardInstance.card.clan,
-      };
-      tokenCard = applyTokenTemplate(tokenCard);
-      const token = createCardInstance(tokenCard);
-      token.hasSummoningSickness = true;
-      player.board.push(token);
+      const tmpl = findTokenTemplate(cardInstance.card.convocation_token_id);
+      if (tmpl) {
+        const xValues = parseXValuesFromEffectText(cardInstance.card.effect_text);
+        const xRaw = xValues["convocation"];
+        const atk = xRaw && xRaw > 0 ? xRaw : tmpl.attack;
+        const hp = xRaw && xRaw > 0 ? xRaw : tmpl.health;
+        let tokenCard: Card = {
+          id: -1, name: `Token ${tmpl.race}`.trim(),
+          mana_cost: 0, card_type: "creature",
+          attack: atk, health: hp,
+          effect_text: `Token ${atk}/${hp}`,
+          keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
+          race: tmpl.race, faction: cardInstance.card.faction,
+          clan: cardInstance.card.clan,
+        };
+        tokenCard = applyTokenTemplate(tokenCard, tmpl);
+        const token = createCardInstance(tokenCard);
+        token.hasSummoningSickness = true;
+        player.board.push(token);
+      }
     }
 
-    // Convocations multiples : crée plusieurs tokens de races/stats différentes
+    // Convocations multiples : chaque entrée pointe vers un token et peut
+    // override ses stats (attack/health). Sans override, on hérite du token.
     if (hasKw(cardInstance, "convocations_multiples") && card.convocation_tokens?.length) {
       for (const tokenDef of card.convocation_tokens) {
         if (player.board.length >= MAX_BOARD_SIZE) break;
+        const tmpl = findTokenTemplate(tokenDef.token_id);
+        if (!tmpl) continue;
+        const atk = tokenDef.attack ?? tmpl.attack;
+        const hp = tokenDef.health ?? tmpl.health;
         let tokenCard: Card = {
-          id: -1, name: `Token ${tokenDef.race || ""}`.trim(),
+          id: -1, name: `Token ${tmpl.race}`.trim(),
           mana_cost: 0, card_type: "creature",
-          attack: tokenDef.attack, health: tokenDef.health,
-          effect_text: `Token ${tokenDef.attack}/${tokenDef.health}`,
+          attack: atk, health: hp,
+          effect_text: `Token ${atk}/${hp}`,
           keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
-          race: tokenDef.race, faction: cardInstance.card.faction,
+          race: tmpl.race, faction: cardInstance.card.faction,
         };
-        tokenCard = applyTokenTemplate(tokenCard);
+        tokenCard = applyTokenTemplate(tokenCard, tmpl);
         const token = createCardInstance(tokenCard);
         token.hasSummoningSickness = true;
         player.board.push(token);
@@ -1352,7 +1386,7 @@ function resolveSpellKeywords(
             keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
             race: kw.race,
           };
-          tokenCard = applyTokenTemplate(tokenCard);
+          tokenCard = applyTokenTemplate(tokenCard, findTokenTemplateByRace(kw.race));
           const token = createCardInstance(tokenCard);
           token.hasSummoningSickness = true;
           ctx.caster.board.push(token);
@@ -1363,15 +1397,19 @@ function resolveSpellKeywords(
         const tokenDefs = ctx.card.convocation_tokens ?? [];
         for (const tokenDef of tokenDefs) {
           if (ctx.caster.board.length >= MAX_BOARD_SIZE) break;
+          const tmpl = findTokenTemplate(tokenDef.token_id);
+          if (!tmpl) continue;
+          const atk = tokenDef.attack ?? tmpl.attack;
+          const hp = tokenDef.health ?? tmpl.health;
           let tokenCard: Card = {
-            id: -1, name: `Token ${tokenDef.race || ""}`.trim(),
+            id: -1, name: `Token ${tmpl.race}`.trim(),
             mana_cost: 0, card_type: "creature",
-            attack: tokenDef.attack, health: tokenDef.health,
-            effect_text: `Token ${tokenDef.attack}/${tokenDef.health}`,
+            attack: atk, health: hp,
+            effect_text: `Token ${atk}/${hp}`,
             keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
-            race: tokenDef.race,
+            race: tmpl.race,
           };
-          tokenCard = applyTokenTemplate(tokenCard);
+          tokenCard = applyTokenTemplate(tokenCard, tmpl);
           const token = createCardInstance(tokenCard);
           token.hasSummoningSickness = true;
           ctx.caster.board.push(token);
@@ -1647,7 +1685,7 @@ function resolveAtomicEffect(ctx: SpellResolutionContext, effect: AtomicEffect):
           keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
           race: effect.race,
         };
-        tokenCard = applyTokenTemplate(tokenCard);
+        tokenCard = applyTokenTemplate(tokenCard, findTokenTemplateByRace(effect.race));
         const token = createCardInstance(tokenCard);
         token.hasSummoningSickness = true;
         ctx.caster.board.push(token);
@@ -2107,7 +2145,7 @@ function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: P
           keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
           race: c.card.race, faction: c.card.faction,
         };
-        tokenCard = applyTokenTemplate(tokenCard);
+        tokenCard = applyTokenTemplate(tokenCard, findTokenTemplateByRace(c.card.race));
         const token = createCardInstance(tokenCard);
         token.hasSummoningSickness = true;
         owner.board.push(token);
@@ -2240,6 +2278,27 @@ export function useHeroPower(state: GameState, action: HeroPowerAction): GameSta
       } else if (action.targetInstanceId) {
         const target = findCreatureOnBoard(player, action.targetInstanceId);
         if (target) target.currentHealth = Math.min(target.maxHealth, target.currentHealth + amount);
+      }
+      break;
+    }
+    case "summon_token": {
+      const tmpl = findTokenTemplate(effect.token_id);
+      if (tmpl && player.board.length < MAX_BOARD_SIZE) {
+        const atk = effect.attack ?? tmpl.attack;
+        const hp = effect.health ?? tmpl.health;
+        let tokenCard: Card = {
+          id: -1, name: `Token ${tmpl.race}`.trim(),
+          mana_cost: 0, card_type: "creature",
+          attack: atk, health: hp,
+          effect_text: `Token ${atk}/${hp}`,
+          keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
+          race: tmpl.race, faction: undefined,
+          clan: tmpl.clan ?? undefined,
+        };
+        tokenCard = applyTokenTemplate(tokenCard, tmpl);
+        const token = createCardInstance(tokenCard);
+        token.hasSummoningSickness = true;
+        player.board.push(token);
       }
       break;
     }

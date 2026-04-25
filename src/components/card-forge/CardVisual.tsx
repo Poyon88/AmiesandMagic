@@ -117,10 +117,11 @@ interface CardData {
   ability: string;
   flavorText: string;
   budgetUsed: number;
-  convocationRace?: string;
+  convocationTokenId?: number | null;
   convocationTokenName?: string;
-  convocationTokens?: {race: string; attack: number; health: number}[];
-  lycanthropieRace?: string;
+  convocationTokens?: { token_id: number; attack?: number; health?: number }[];
+  lycanthropieTokenId?: number | null;
+  lycanthropieTokenName?: string;
   setName?: string;
   setIcon?: string;
   cardYear?: number;
@@ -274,16 +275,17 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
               const xVal = card!.keywordXValues?.[kw];
               const displayName = xVal != null ? kw.replace(/ X$/, ` ${toRoman(xVal)}`) : kw;
               let displayDesc = xVal != null ? KEYWORDS[kw]?.desc.replace(/X/g, String(xVal)) : KEYWORDS[kw]?.desc;
-              if (kw === "Convocation X" && card!.convocationRace) {
-                const tokenLabel = card!.convocationTokenName || card!.convocationRace;
+              if (kw === "Convocation X" && card!.convocationTokenId) {
+                const tokenLabel = card!.convocationTokenName || "token";
                 displayDesc = `Invocation : crée un token ${tokenLabel} ${xVal ?? "X"}/${xVal ?? "X"}.`;
               }
               if (kw === "Convocations multiples" && card!.convocationTokens?.length) {
-                const parts = card!.convocationTokens.map(t => `${t.race || "Token"} ${t.attack}/${t.health}`);
+                const parts = card!.convocationTokens.map(t => `Token ${t.attack ?? "?"}/${t.health ?? "?"}`);
                 displayDesc = `Invocation : crée ${parts.join(", ")}.`;
               }
-              if (kw === "Lycanthropie X" && card!.lycanthropieRace) {
-                displayDesc = `Début de tour : se transforme en ${card!.lycanthropieRace} ${xVal ?? "X"}/${xVal ?? "X"} avec Traque.`;
+              if (kw === "Lycanthropie X" && card!.lycanthropieTokenId) {
+                const tokenLabel = card!.lycanthropieTokenName || "forme transformée";
+                displayDesc = `Début de tour : se transforme en ${tokenLabel} ${xVal ?? "X"}/${xVal ?? "X"} avec Traque.`;
               }
               return (
                 <div key={kw} title={`${displayName}: ${displayDesc}`} style={{
@@ -314,7 +316,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
           <div style={{ display: "flex", gap: 4 * s, flexWrap: "wrap" }}>
             {card!.spellKeywords.map((spellKw, i) => {
               const def = SPELL_KEYWORDS[spellKw.id];
-              const fakeCard = { convocation_tokens: card!.convocationTokens?.map(t => ({ race: t.race, attack: t.attack, health: t.health })) } as import("@/lib/game/types").Card;
+              const fakeCard = { convocation_tokens: card!.convocationTokens?.map(t => ({ token_id: t.token_id, attack: t.attack, health: t.health })) } as import("@/lib/game/types").Card;
               const label = getSpellKeywordLabel(spellKw);
               const desc = getSpellKeywordDesc(spellKw, fakeCard);
               const usesAtkHp = def.params.includes("attack") && def.params.includes("health");
@@ -455,16 +457,17 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
               const xVal = card!.keywordXValues?.[kw];
               const displayName = xVal != null ? kw.replace(/ X$/, ` ${toRoman(xVal)}`) : kw;
               let displayDesc = xVal != null ? KEYWORDS[kw]?.desc.replace(/X/g, String(xVal)) : KEYWORDS[kw]?.desc;
-              if (kw === "Convocation X" && card!.convocationRace) {
-                const tokenLabel = card!.convocationTokenName || card!.convocationRace;
+              if (kw === "Convocation X" && card!.convocationTokenId) {
+                const tokenLabel = card!.convocationTokenName || "token";
                 displayDesc = `Invocation : crée un token ${tokenLabel} ${xVal ?? "X"}/${xVal ?? "X"}.`;
               }
               if (kw === "Convocations multiples" && card!.convocationTokens?.length) {
-                const parts = card!.convocationTokens.map(t => `${t.race || "Token"} ${t.attack}/${t.health}`);
+                const parts = card!.convocationTokens.map(t => `Token ${t.attack ?? "?"}/${t.health ?? "?"}`);
                 displayDesc = `Invocation : crée ${parts.join(", ")}.`;
               }
-              if (kw === "Lycanthropie X" && card!.lycanthropieRace) {
-                displayDesc = `Début de tour : se transforme en ${card!.lycanthropieRace} ${xVal ?? "X"}/${xVal ?? "X"} avec Traque.`;
+              if (kw === "Lycanthropie X" && card!.lycanthropieTokenId) {
+                const tokenLabel = card!.lycanthropieTokenName || "forme transformée";
+                displayDesc = `Début de tour : se transforme en ${tokenLabel} ${xVal ?? "X"}/${xVal ?? "X"} avec Traque.`;
               }
               return (
                 <div key={kw} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
@@ -484,7 +487,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
           <div style={{ display: "flex", flexDirection: "column", gap: 6 * s }}>
             {card!.spellKeywords.map((spellKw, i) => {
               const def = SPELL_KEYWORDS[spellKw.id];
-              const fakeCard = { convocation_tokens: card!.convocationTokens?.map(t => ({ race: t.race, attack: t.attack, health: t.health })) } as import("@/lib/game/types").Card;
+              const fakeCard = { convocation_tokens: card!.convocationTokens?.map(t => ({ token_id: t.token_id, attack: t.attack, health: t.health })) } as import("@/lib/game/types").Card;
               const label = getSpellKeywordLabel(spellKw);
               const desc = getSpellKeywordDesc(spellKw, fakeCard);
               return (

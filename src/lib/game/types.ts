@@ -100,10 +100,12 @@ export interface SpellKeywordInstance {
 
 // --- Convocation tokens config ---
 
+// Each entry of `cards.convocation_tokens` (jsonb) — references a saved
+// token template by id and may override its base atk/def stats.
 export interface ConvocationTokenDef {
-  race?: string;
-  attack: number;
-  health: number;
+  token_id: number;
+  attack?: number;
+  health?: number;
 }
 
 // --- Token templates ---
@@ -111,7 +113,10 @@ export interface ConvocationTokenDef {
 export interface TokenTemplate {
   id: number;
   race: string;
+  clan: string | null;
   name: string;
+  attack: number;
+  health: number;
   image_url: string | null;
   keywords: Keyword[];
 }
@@ -230,9 +235,13 @@ export interface Card {
   clan?: string;
   rarity?: string;
   card_alignment?: string;
-  convocation_race?: string | null;
+  convocation_token_id?: number | null;
   convocation_tokens?: ConvocationTokenDef[] | null;
-  lycanthropie_race?: string | null;
+  lycanthropie_token_id?: number | null;
+  // Set on instance Cards spawned by the engine when a token is summoned —
+  // points to the originating token_template so renderers can fetch the
+  // visual / name without guessing by race.
+  token_id?: number | null;
   set_id?: number | null;
   card_year?: number | null;
   card_month?: number | null;
@@ -326,11 +335,22 @@ export interface CardInstance {
 export type Race = "elves" | "dwarves" | "halflings" | "humans" | "beastmen" | "giants" | "dark_elves" | "orcs_goblins" | "undead";
 export type HeroPowerType = "active" | "passive";
 
+export type HeroPowerEffectType =
+  | "gain_armor"
+  | "deal_damage"
+  | "heal"
+  | "buff_on_friendly_death"
+  | "summon_token";
+
 export interface HeroPowerEffect {
-  type: "gain_armor" | "deal_damage" | "heal" | "buff_on_friendly_death";
+  type: HeroPowerEffectType;
   amount?: number;
   attack?: number;
+  // Optional override for summon_token (otherwise inherited from the token).
+  health?: number;
   target?: "any" | "any_friendly" | "enemy_hero";
+  // FK to token_templates.id when type === "summon_token".
+  token_id?: number;
 }
 
 export interface HeroDefinition {

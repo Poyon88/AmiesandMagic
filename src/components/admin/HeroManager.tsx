@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Stage, useGLTF } from "@react-three/drei";
+import type { TokenTemplate } from "@/lib/game/types";
+import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 
 const RACES = [
   "humans", "elves", "dwarves", "halflings",
@@ -30,7 +32,7 @@ const DEFAULT_MAX_PRINTS: Record<string, number> = {
   "Peu Commune": 1000,
 };
 
-type EffectType = "gain_armor" | "deal_damage" | "heal" | "buff_on_friendly_death";
+type EffectType = "gain_armor" | "deal_damage" | "heal" | "buff_on_friendly_death" | "summon_token";
 type EffectTarget = "any" | "any_friendly" | "enemy_hero";
 
 const EFFECT_TYPE_LABELS: Record<EffectType, string> = {
@@ -38,6 +40,7 @@ const EFFECT_TYPE_LABELS: Record<EffectType, string> = {
   deal_damage: "Infliger des dégâts",
   heal: "Soigner",
   buff_on_friendly_death: "Buff à la mort d'un allié",
+  summon_token: "Invoquer un token",
 };
 
 const EFFECT_TARGET_LABELS: Record<EffectTarget, string> = {
@@ -55,8 +58,19 @@ function effectNeedsAttack(t: EffectType): boolean {
 function effectNeedsTarget(t: EffectType): boolean {
   return t === "deal_damage" || t === "heal";
 }
+function effectNeedsToken(t: EffectType): boolean {
+  return t === "summon_token";
+}
 
-function describeEffect(t: EffectType, amount: number, attack: number, target: EffectTarget): string {
+function describeEffect(
+  t: EffectType,
+  amount: number,
+  attack: number,
+  target: EffectTarget,
+  tokenLabel: string | null,
+  tokenAtk: number | null,
+  tokenHp: number | null,
+): string {
   const n = amount || 0;
   switch (t) {
     case "gain_armor":
@@ -67,6 +81,10 @@ function describeEffect(t: EffectType, amount: number, attack: number, target: E
       return `Rend ${n} PV à ${EFFECT_TARGET_LABELS[target].toLowerCase()}.`;
     case "buff_on_friendly_death":
       return `Chaque fois qu'une créature alliée meurt, une autre gagne +${attack || 0} atk (passif).`;
+    case "summon_token":
+      return tokenLabel
+        ? `Invoque ${tokenLabel} (${tokenAtk ?? "?"}/${tokenHp ?? "?"}).`
+        : "Invoque un token (à choisir ci-dessus).";
   }
 }
 
@@ -119,6 +137,18 @@ export default function HeroManager() {
   const [effectAmount, setEffectAmount] = useState<number>(2);
   const [effectAttack, setEffectAttack] = useState<number>(1);
   const [effectTarget, setEffectTarget] = useState<EffectTarget>("any");
+  const [effectTokenId, setEffectTokenId] = useState<number | null>(null);
+  const [effectTokenAtkOverride, setEffectTokenAtkOverride] = useState<number | "">("");
+  const [effectTokenHpOverride, setEffectTokenHpOverride] = useState<number | "">("");
+
+  // Token registry (reused by the cascade picker for summon_token).
+  const [tokenTemplates, setTokenTemplates] = useState<TokenTemplate[]>([]);
+  useEffect(() => {
+    fetch("/api/token-templates")
+      .then(r => r.ok ? r.json() : [])
+      .then((data) => Array.isArray(data) ? setTokenTemplates(data) : null)
+      .catch(() => { /* ignore */ });
+  }, []);
   const [powerDescription, setPowerDescription] = useState("");
   const [glbFile, setGlbFile] = useState<File | null>(null);
   const [glbPreviewUrl, setGlbPreviewUrl] = useState<string | null>(null);
@@ -205,6 +235,9 @@ export default function HeroManager() {
     setEffectAmount(2);
     setEffectAttack(1);
     setEffectTarget("any");
+    setEffectTokenId(null);
+    setEffectTokenAtkOverride("");
+    setEffectTokenHpOverride("");
     setPowerDescription("");
     if (glbPreviewUrl?.startsWith("blob:")) URL.revokeObjectURL(glbPreviewUrl);
     setGlbFile(null);
@@ -227,6 +260,11 @@ export default function HeroManager() {
     if (effectNeedsAmount(effectType)) powerEffect.amount = effectAmount;
     if (effectNeedsAttack(effectType)) powerEffect.attack = effectAttack;
     if (effectNeedsTarget(effectType)) powerEffect.target = effectTarget;
+    if (effectNeedsToken(effectType)) {
+      powerEffect.token_id = effectTokenId ?? undefined;
+      if (effectTokenAtkOverride !== "") powerEffect.attack = effectTokenAtkOverride;
+      if (effectTokenHpOverride !== "") powerEffect.health = effectTokenHpOverride;
+    }
 
     setSaving(true);
     setError(null);
@@ -465,13 +503,54 @@ export default function HeroManager() {
                 )}
               </div>
 
+              {/* Token picker — only for summon_token effect */}
+              {effectNeedsToken(effectType) && (() => {
+                const tmpl = tokenTemplates.find(t => t.id === effectTokenId) ?? null;
+                return (
+                  <div style={{ marginTop: 10, padding: 8, borderRadius: 6, background: "#fdf6ff", border: `1px solid ${effectTokenId ? "#9b59b633" : "#e74c3c"}` }}>
+                    <label style={STYLE.label}>
+                      TOKEN À INVOQUER
+                      {!effectTokenId && <span style={{ color: "#e74c3c", marginLeft: 6 }}>· Requis</span>}
+                    </label>
+                    <div style={{ marginTop: 4 }}>
+                      <TokenCascadePicker
+                        value={effectTokenId}
+                        onChange={setEffectTokenId}
+                        tokens={tokenTemplates}
+                      />
+                    </div>
+                    <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 8 }}>
+                      <span style={{ fontSize: 9, color: "#888", letterSpacing: 1 }}>OVERRIDE STATS :</span>
+                      <input type="number" min={0} max={20}
+                        value={effectTokenAtkOverride}
+                        placeholder={tmpl ? `ATK ${tmpl.attack}` : "ATK"}
+                        onChange={(e) => setEffectTokenAtkOverride(e.target.value === "" ? "" : Math.max(0, Number(e.target.value)))}
+                        style={{ width: 70, padding: "4px 8px", borderRadius: 5, border: "1px solid #e74c3c44", fontSize: 11, color: "#e74c3c", textAlign: "center", fontFamily: "'Cinzel',serif" }} />
+                      <span style={{ color: "#999" }}>/</span>
+                      <input type="number" min={1} max={20}
+                        value={effectTokenHpOverride}
+                        placeholder={tmpl ? `DEF ${tmpl.health}` : "DEF"}
+                        onChange={(e) => setEffectTokenHpOverride(e.target.value === "" ? "" : Math.max(1, Number(e.target.value)))}
+                        style={{ width: 70, padding: "4px 8px", borderRadius: 5, border: "1px solid #f1c40f44", fontSize: 11, color: "#f1c40f", textAlign: "center", fontFamily: "'Cinzel',serif" }} />
+                      <span style={{ fontSize: 9, color: "#888", fontStyle: "italic" }}>(vide = stats du token)</span>
+                    </div>
+                  </div>
+                );
+              })()}
+
               <div style={{
                 marginTop: 10, padding: "8px 10px", borderRadius: 6,
                 background: "#f4f7ff", border: "1px solid #c7dbff",
                 fontSize: 11, color: "#1e5581", fontFamily: "'Crimson Text',serif",
                 fontStyle: "italic",
               }}>
-                Aperçu : {describeEffect(effectType, effectAmount, effectAttack, effectTarget)}
+                {(() => {
+                  const tmpl = tokenTemplates.find(t => t.id === effectTokenId) ?? null;
+                  const tokenLabel = tmpl ? `${tmpl.name}` : null;
+                  const tokenAtk = effectTokenAtkOverride !== "" ? Number(effectTokenAtkOverride) : tmpl?.attack ?? null;
+                  const tokenHp = effectTokenHpOverride !== "" ? Number(effectTokenHpOverride) : tmpl?.health ?? null;
+                  return `Aperçu : ${describeEffect(effectType, effectAmount, effectAttack, effectTarget, tokenLabel, tokenAtk, tokenHp)}`;
+                })()}
               </div>
 
               <div style={{ marginTop: 8 }}>
@@ -483,7 +562,13 @@ export default function HeroManager() {
                   style={STYLE.input} />
                 <button
                   type="button"
-                  onClick={() => setPowerDescription(describeEffect(effectType, effectAmount, effectAttack, effectTarget))}
+                  onClick={() => {
+                    const tmpl = tokenTemplates.find(t => t.id === effectTokenId) ?? null;
+                    const tokenLabel = tmpl ? tmpl.name : null;
+                    const tokenAtk = effectTokenAtkOverride !== "" ? Number(effectTokenAtkOverride) : tmpl?.attack ?? null;
+                    const tokenHp = effectTokenHpOverride !== "" ? Number(effectTokenHpOverride) : tmpl?.health ?? null;
+                    setPowerDescription(describeEffect(effectType, effectAmount, effectAttack, effectTarget, tokenLabel, tokenAtk, tokenHp));
+                  }}
                   style={{
                     marginTop: 4, padding: "3px 10px", borderRadius: 4,
                     background: "transparent", border: "1px dashed #c0c0c0", color: "#666",

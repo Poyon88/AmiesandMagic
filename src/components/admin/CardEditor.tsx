@@ -4,7 +4,8 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import GameCard from "@/components/cards/GameCard";
 import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
 import { KEYWORDS as KEYWORD_DEFS } from "@/lib/card-engine/constants";
-import type { Card, Keyword, SpellKeywordInstance, SpellComposableEffects, CardSet } from "@/lib/game/types";
+import type { Card, Keyword, SpellKeywordInstance, SpellComposableEffects, CardSet, TokenTemplate } from "@/lib/game/types";
+import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 
 interface DbCard {
   id: number;
@@ -25,9 +26,9 @@ interface DbCard {
   clan: string | null;
   rarity: string | null;
   card_alignment: string | null;
-  convocation_race: string | null;
-  convocation_tokens: { race: string; attack: number; health: number }[] | null;
-  lycanthropie_race: string | null;
+  convocation_token_id: number | null;
+  convocation_tokens: { token_id: number; attack?: number; health?: number }[] | null;
+  lycanthropie_token_id: number | null;
   set_id: number | null;
   card_year: number | null;
   card_month: number | null;
@@ -50,6 +51,7 @@ export default function CardEditor() {
   // Data
   const [cards, setCards] = useState<DbCard[]>([]);
   const [sets, setSets] = useState<CardSet[]>([]);
+  const [tokenTemplates, setTokenTemplates] = useState<TokenTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [hoveredKw, setHoveredKw] = useState<Keyword | null>(null);
   const [keywordXValues, setKeywordXValues] = useState<Record<string, number>>({});
@@ -85,14 +87,17 @@ export default function CardEditor() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [cardsRes, setsRes] = await Promise.all([
+      const [cardsRes, setsRes, tokensRes] = await Promise.all([
         fetch("/api/cards/save"),
         fetch("/api/sets"),
+        fetch("/api/token-templates"),
       ]);
       const cardsData = await cardsRes.json();
       const setsData = await setsRes.json();
+      const tokensData = await tokensRes.json();
       setCards(Array.isArray(cardsData) ? cardsData : []);
       setSets(Array.isArray(setsData) ? setsData : []);
+      setTokenTemplates(Array.isArray(tokensData) ? tokensData : []);
     } catch (err) {
       console.error("Erreur chargement:", err);
     }
@@ -170,9 +175,9 @@ export default function CardEditor() {
       clan: card.clan || "",
       rarity: card.rarity || "Commune",
       card_alignment: card.card_alignment || "neutre",
-      convocation_race: card.convocation_race || "",
+      convocation_token_id: card.convocation_token_id ?? null,
       convocation_tokens: card.convocation_tokens || [],
-      lycanthropie_race: card.lycanthropie_race || "",
+      lycanthropie_token_id: card.lycanthropie_token_id ?? null,
       set_id: card.set_id,
       card_year: card.card_year,
       card_month: card.card_month,
@@ -235,9 +240,9 @@ export default function CardEditor() {
         clan: editFields.clan || null,
         rarity: editFields.rarity || null,
         card_alignment: editFields.card_alignment || null,
-        convocation_race: editFields.convocation_race || null,
+        convocation_token_id: editFields.convocation_token_id ?? null,
         convocation_tokens: (editFields.convocation_tokens as unknown[])?.length ? editFields.convocation_tokens : null,
-        lycanthropie_race: editFields.lycanthropie_race || null,
+        lycanthropie_token_id: editFields.lycanthropie_token_id ?? null,
         set_id: editFields.set_id || null,
         card_year: editFields.card_year || null,
         card_month: editFields.card_month || null,
@@ -732,19 +737,29 @@ export default function CardEditor() {
               <textarea value={(editFields.illustration_prompt as string) || ""} onChange={e => updateField("illustration_prompt", e.target.value)} style={S.textarea} />
             </div>
 
-            {/* Convocation race (if keyword present) */}
+            {/* Convocation token (if keyword present) */}
             {((editFields.keywords as string[]) || []).includes("convocation") && (
               <div style={{ marginBottom: 8 }}>
-                <div style={S.label}>Race convocation</div>
-                <input type="text" value={(editFields.convocation_race as string) || ""} onChange={e => updateField("convocation_race", e.target.value || null)} style={S.input} />
+                <div style={S.label}>Token convocation</div>
+                <TokenCascadePicker
+                  value={(editFields.convocation_token_id as number | null) ?? null}
+                  onChange={(id) => updateField("convocation_token_id", id)}
+                  tokens={tokenTemplates}
+                  compact
+                />
               </div>
             )}
 
-            {/* Lycanthropie race (if keyword present) */}
+            {/* Lycanthropie token (if keyword present) */}
             {((editFields.keywords as string[]) || []).includes("lycanthropie") && (
               <div style={{ marginBottom: 8 }}>
-                <div style={S.label}>Race lycanthropie</div>
-                <input type="text" value={(editFields.lycanthropie_race as string) || ""} onChange={e => updateField("lycanthropie_race", e.target.value || null)} style={S.input} />
+                <div style={S.label}>Token lycanthropie</div>
+                <TokenCascadePicker
+                  value={(editFields.lycanthropie_token_id as number | null) ?? null}
+                  onChange={(id) => updateField("lycanthropie_token_id", id)}
+                  tokens={tokenTemplates}
+                  compact
+                />
               </div>
             )}
 

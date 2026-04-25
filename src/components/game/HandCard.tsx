@@ -37,8 +37,10 @@ export default function HandCard({
     effectiveManaCost = Math.max(0, effectiveManaCost - canalisationCount);
   }
   const isCostReduced = effectiveManaCost < card.mana_cost;
-  const tokenTemplate = (card.id === -1 && !card.image_url && card.race)
-    ? tokenTemplates.find(t => t.race === card.race)
+  const tokenTemplate = card.id === -1 && !card.image_url
+    ? (card.token_id
+        ? tokenTemplates.find(t => t.id === card.token_id)
+        : (card.race ? tokenTemplates.find(t => t.race === card.race) : null))
     : null;
   const resolvedImageUrl = card.image_url ?? tokenTemplate?.image_url ?? null;
   const isCreature = card.card_type === "creature";

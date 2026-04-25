@@ -36,9 +36,13 @@ export default function BoardCreature({
   const card = creature.card;
   const tokenTemplates = useGameStore(s => s.tokenTemplates);
   const targetingMode = useGameStore(s => s.targetingMode);
-  // Resolve token template image: tokens have id === -1 and no image
-  const tokenTemplate = (card.id === -1 && !card.image_url && card.race)
-    ? tokenTemplates.find(t => t.race === card.race)
+  // Resolve token template image: instance cards spawned by the engine
+  // carry token_id when they originate from a saved template; fall back to
+  // race lookup for legacy spawns (spell-keyword "invocation", etc.).
+  const tokenTemplate = card.id === -1 && !card.image_url
+    ? (card.token_id
+        ? tokenTemplates.find(t => t.id === card.token_id)
+        : (card.race ? tokenTemplates.find(t => t.race === card.race) : null))
     : null;
   const resolvedImageUrl = card.image_url ?? tokenTemplate?.image_url ?? null;
   const isDamaged = creature.currentHealth < creature.maxHealth;

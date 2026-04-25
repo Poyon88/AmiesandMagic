@@ -35,7 +35,7 @@ export async function GET() {
   const supabaseAdmin = getAdminClient();
   const { data, error } = await supabaseAdmin
     .from('cards')
-    .select('id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, keywords, spell_keywords, spell_effects, image_url, illustration_prompt, faction, race, clan, rarity, card_alignment, convocation_race, convocation_tokens, lycanthropie_race, set_id, card_year, card_month, sfx_play_url, sfx_death_url')
+    .select('id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, keywords, spell_keywords, spell_effects, image_url, illustration_prompt, faction, race, clan, rarity, card_alignment, convocation_token_id, convocation_tokens, lycanthropie_token_id, set_id, card_year, card_month, sfx_play_url, sfx_death_url')
     .order('name');
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -80,9 +80,9 @@ export async function POST(request: Request) {
       faction: card.faction || null,
       race: card.race || null,
       clan: card.clan || null,
-      convocation_race: card.convocation_race || null,
+      convocation_token_id: card.convocation_token_id ?? null,
       convocation_tokens: card.convocation_tokens || null,
-      lycanthropie_race: card.lycanthropie_race || null,
+      lycanthropie_token_id: card.lycanthropie_token_id ?? null,
       set_id: card.set_id || null,
       card_year: card.card_year || null,
       card_month: card.card_month || null,

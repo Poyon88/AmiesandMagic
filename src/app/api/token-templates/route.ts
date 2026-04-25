@@ -47,8 +47,10 @@ export async function POST(request: Request) {
   const supabase = getAdminClient();
 
   try {
-    const { race, name, keywords, imageBase64, imageMimeType, updateId } = await request.json();
+    const { race, clan, name, attack, health, keywords, imageBase64, imageMimeType, updateId } = await request.json();
     if (!race || !name) return NextResponse.json({ error: 'Race et nom requis' }, { status: 400 });
+    const atk = typeof attack === 'number' && attack >= 0 ? Math.floor(attack) : 1;
+    const hp = typeof health === 'number' && health >= 1 ? Math.floor(health) : 1;
 
     let image_url: string | null = null;
     if (imageBase64 && imageMimeType) {
@@ -64,7 +66,14 @@ export async function POST(request: Request) {
       image_url = urlData.publicUrl;
     }
 
-    const templateData: Record<string, unknown> = { race, name, keywords: keywords || [] };
+    const templateData: Record<string, unknown> = {
+      race,
+      clan: typeof clan === 'string' && clan.trim() ? clan.trim() : null,
+      name,
+      attack: atk,
+      health: hp,
+      keywords: keywords || [],
+    };
     if (image_url) templateData.image_url = image_url;
 
     if (updateId) {

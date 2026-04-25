@@ -5,7 +5,8 @@ import { generateCardStats, pickMana, pickRarity, buildId } from "@/lib/card-eng
 import { RARITIES, FACTIONS, TYPES, KEYWORDS, RARITY_WEIGHTS_BY_MANA, RARITY_MAP, ALIGNMENTS } from "@/lib/card-engine/constants";
 import CardVisual, { KEYWORD_SYMBOLS } from "./CardVisual";
 import KeywordIcon from "@/components/shared/KeywordIcon";
-import type { CardType, Keyword, SpellEffect, SpellTargetType, SpellKeywordInstance, SpellComposableEffects, SpellEffectNode, SpellTargetSlot, AtomicEffectType, SpellCondition, AtomicEffect, ConditionalEffectNode, CardSet, GameFormat } from "@/lib/game/types";
+import type { CardType, Keyword, SpellEffect, SpellTargetType, SpellKeywordInstance, SpellComposableEffects, SpellEffectNode, SpellTargetSlot, AtomicEffectType, SpellCondition, AtomicEffect, ConditionalEffectNode, CardSet, GameFormat, TokenTemplate, ConvocationTokenDef } from "@/lib/game/types";
+import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
 import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
 import type { SpellKeywordId } from "@/lib/game/types";
@@ -56,10 +57,10 @@ interface ForgeCard {
   budgetTotal: number;
   budgetUsed: number;
   generatedAt: string;
-  convocationRace?: string;
+  convocationTokenId?: number | null;
   convocationTokenName?: string;
-  convocationTokens?: {race: string; attack: number; health: number}[];
-  lycanthropieRace?: string;
+  convocationTokens?: ConvocationTokenDef[];
+  lycanthropieTokenId?: number | null;
   setName?: string;
   setIcon?: string;
   cardYear?: number;
@@ -110,9 +111,12 @@ export default function CardForge() {
   const [history, setHistory] = useState<ForgeCard[]>([]);
   const [bulkCount, setBulkCount] = useState(20);
   // Token templates
-  const [tokenTemplates, setTokenTemplates] = useState<{ id: number; race: string; name: string; image_url: string | null }[]>([]);
+  const [tokenTemplates, setTokenTemplates] = useState<TokenTemplate[]>([]);
   const [tokenRace, setTokenRace] = useState("");
+  const [tokenClan, setTokenClan] = useState("");
   const [tokenName, setTokenName] = useState("");
+  const [tokenAttack, setTokenAttack] = useState<number>(1);
+  const [tokenHealth, setTokenHealth] = useState<number>(1);
   const [tokenImageBase64, setTokenImageBase64] = useState<string | null>(null);
   const [tokenImageMime, setTokenImageMime] = useState<string | null>(null);
   const [tokenImagePreview, setTokenImagePreview] = useState<string | null>(null);
@@ -152,7 +156,9 @@ export default function CardForge() {
   // Fixed frame overlay composited on top of the AI illustration. The AI no
   // longer paints its own border — the SVG frame below provides a consistent
   // rectangular rim across every card back.
-  const [cbFrameId, setCbFrameId] = useState<string>(CARD_BACK_FRAMES[0].id);
+  const [cbFrameId, setCbFrameId] = useState<string>(
+    getCardBackFrame("simple_black").id,
+  );
   // Optional reference image — its subject/palette/mood guides the generation.
   // The text prompt still runs the show; the image just narrows the AI's
   // style space.
@@ -480,6 +486,16 @@ export default function CardForge() {
         const variant = await silhouetteToTransparentPng(reader.result as string, kwColorMode);
         setKwVariations([variant]);
         setKwSelectedIdxs([0]);
+        // Auto-fill the name from the selected keyword if the admin hasn't
+        // typed one yet — otherwise the Save button stays disabled because
+        // saveKeywordIcon's gate requires a non-empty name.
+        if (kwSelected && !kwName.trim()) {
+          const label =
+            kwTypeForm === "creature"
+              ? (KEYWORD_LABELS[kwSelected as keyof typeof KEYWORD_LABELS] ?? kwSelected)
+              : (SPELL_KEYWORD_LABELS[kwSelected as SpellKeywordId] ?? kwSelected);
+          setKwName(label);
+        }
       } catch {
         setKwMessage({ ok: false, msg: "Impossible de charger l'image." });
       }
@@ -1211,9 +1227,9 @@ export default function CardForge() {
   const [manualKeywords, setManualKeywords] = useState<string[]>([]);
   const [keywordXValues, setKeywordXValues] = useState<Record<string, number>>({});
   const [hoveredKw, setHoveredKw] = useState<{ id: string; rect: DOMRect } | null>(null);
-  const [convocationRace, setConvocationRace] = useState("");
-  const [convocationTokens, setConvocationTokens] = useState<{race: string; attack: number; health: number}[]>([]);
-  const [lycanthropieRace, setLycanthropieRace] = useState("");
+  const [convocationTokenId, setConvocationTokenId] = useState<number | null>(null);
+  const [convocationTokens, setConvocationTokens] = useState<ConvocationTokenDef[]>([]);
+  const [lycanthropieTokenId, setLycanthropieTokenId] = useState<number | null>(null);
   const [cardSetId, setCardSetId] = useState<number | null>(null);
   const [cardYear, setCardYear] = useState<number | null>(null);
   const [cardMonth, setCardMonth] = useState<number | null>(null);
@@ -1285,10 +1301,10 @@ export default function CardForge() {
     budgetTotal: manualBudgetTotal,
     budgetUsed: manualBudgetUsed,
     generatedAt: card?.generatedAt || new Date().toISOString(),
-    convocationRace: convocationRace || undefined,
-    convocationTokenName: tokenTemplates.find(t => t.race === convocationRace)?.name || convocationRace || undefined,
+    convocationTokenId: convocationTokenId,
+    convocationTokenName: tokenTemplates.find(t => t.id === convocationTokenId)?.name || undefined,
     convocationTokens: convocationTokens.length > 0 ? convocationTokens : undefined,
-    lycanthropieRace: lycanthropieRace || undefined,
+    lycanthropieTokenId: lycanthropieTokenId,
     setName: cardSetId ? sets.find(s => s.id === cardSetId)?.name : undefined,
     setIcon: cardSetId ? sets.find(s => s.id === cardSetId)?.icon : undefined,
     cardYear: cardYear || undefined,
@@ -1334,6 +1350,27 @@ export default function CardForge() {
     } catch { /* ignore */ }
   }, []);
 
+  // Returns the deduplicated list of clans that can apply to a given token
+  // race. We scan every faction whose `races` array contains the race and
+  // gather their clan names if `appliesTo === race || appliesTo === "all"`.
+  const getAvailableTokenClans = useCallback((race: string): string[] => {
+    if (!race) return [];
+    const out = new Set<string>();
+    for (const fac of Object.values(FACTIONS)) {
+      const facWithClans = fac as typeof fac & {
+        races?: string[];
+        clans?: { names: string[]; appliesTo: string };
+      };
+      if (!facWithClans.races?.includes(race)) continue;
+      const clans = facWithClans.clans;
+      if (!clans) continue;
+      if (clans.appliesTo === "all" || clans.appliesTo === race) {
+        for (const n of clans.names) out.add(n);
+      }
+    }
+    return Array.from(out);
+  }, []);
+
   const generateTokenPrompt = useCallback(() => {
     if (!tokenRace) return;
     const tokenVisualDescriptions: Record<string, string> = {
@@ -1377,10 +1414,21 @@ export default function CardForge() {
     };
     const visual = tokenVisualDescriptions[tokenRace] || `a ${tokenRace} creature`;
     const nameHint = tokenName ? ` named "${tokenName}"` : '';
-    const kwHint = tokenKeywords.length > 0 ? ` Abilities: ${tokenKeywords.join(', ')}.` : '';
-    const prompt = `${visual}${nameHint}.${kwHint} Cinematic lighting, highly detailed, painterly style, dark fantasy atmosphere, full body portrait centered on a plain dark background. Square format. Absolutely no text, no letters, no words, no symbols, no writing, no borders, no frames, no card layout, no UI elements anywhere in the image.`;
+    const clanHint = tokenClan
+      ? ` Belongs to the "${tokenClan}" clan: weave subtle visual motifs of that clan (palette, ornamentation, body paint, regalia or environmental hints) into the appearance and the surrounding atmosphere.`
+      : '';
+    const kwHint = tokenKeywords.length > 0 ? ` Abilities: ${tokenKeywords.join(", ")}.` : '';
+    // Same aesthetic vocabulary as the main card illustrator (see
+    // /api/cards/generate-text route): cinematic dark fantasy, painterly,
+    // detailed character art, atmospheric environment hint, dramatic light.
+    const prompt =
+      `${visual}${nameHint}.${clanHint}${kwHint} ` +
+      "Cinematic dark fantasy character art, painterly digital painting in the style of high-end TCG illustrations (Magic: The Gathering, Hearthstone art, Legends of Runeterra). " +
+      "Dynamic three-quarter pose, evocative atmospheric environment that hints at the creature's lore (forest, ruins, battlefield, swamp, mountain, etc., chosen to fit the race), volumetric lighting, rich color palette with deep shadows and luminous highlights, fine detail in armor, fur, fabric, weapons and skin, sharp focus on the subject, painterly texture brushwork. " +
+      "Portrait composition centered on the creature, tasteful soft bokeh on the backdrop so the figure pops. " +
+      "Absolutely NO text, NO letters, NO words, NO numbers, NO symbols, NO watermark, NO border, NO frame, NO card layout, NO UI elements anywhere in the image.";
     setTokenPrompt(prompt);
-  }, [tokenRace, tokenName, tokenKeywords]);
+  }, [tokenRace, tokenClan, tokenName, tokenKeywords]);
 
   const generateTokenImage = useCallback(async () => {
     if (!tokenPrompt) return;
@@ -1390,7 +1438,13 @@ export default function CardForge() {
       const res = await fetch('/api/cards/generate-image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: tokenPrompt }),
+        body: JSON.stringify({
+          prompt: tokenPrompt,
+          // Match the main card illustrator: portrait 3:4 high-res via
+          // Imagen 4 Ultra 2K (route falls back to Gemini if needed).
+          aspectRatio: '3:4',
+          highRes: true,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Erreur génération');
@@ -1420,7 +1474,11 @@ export default function CardForge() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          race: tokenRace, name: tokenName,
+          race: tokenRace,
+          clan: tokenClan || null,
+          name: tokenName,
+          attack: tokenAttack,
+          health: tokenHealth,
           keywords: gameKws,
           imageBase64: tokenImageBase64,
           imageMimeType: tokenImageMime,
@@ -1429,7 +1487,9 @@ export default function CardForge() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Erreur serveur');
-      setTokenRace(""); setTokenName(""); setTokenKeywords([]); setTokenImageBase64(null); setTokenImageMime(null);
+      setTokenRace(""); setTokenClan(""); setTokenName(""); setTokenKeywords([]);
+      setTokenAttack(1); setTokenHealth(1);
+      setTokenImageBase64(null); setTokenImageMime(null);
       setTokenImagePreview(null); setTokenEditId(null); setTokenPrompt("");
       setTokenMessage({ ok: true, msg: tokenEditId ? "Template mis à jour" : "Template créé" });
       loadTokenTemplates();
@@ -1438,7 +1498,7 @@ export default function CardForge() {
     } finally {
       setTokenSaving(false);
     }
-  }, [tokenRace, tokenName, tokenKeywords, tokenImageBase64, tokenImageMime, tokenEditId, loadTokenTemplates]);
+  }, [tokenRace, tokenClan, tokenName, tokenAttack, tokenHealth, tokenKeywords, tokenImageBase64, tokenImageMime, tokenEditId, loadTokenTemplates]);
 
   const deleteTokenTemplate = useCallback(async (id: number) => {
     try {
@@ -1456,7 +1516,7 @@ export default function CardForge() {
     setManualPower(2); setManualAbility(""); setManualFlavorText("");
     setManualIllustrationPrompt(""); setManualKeywords([]); setKeywordXValues({}); setCard(null);
     setEditedPrompt(null); setSaveResult(null);
-    setSpellKeywords([]); setSpellEffectsData(null); setConvocationRace(""); setConvocationTokens([]);
+    setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null);
     setCardImages(prev => Object.fromEntries(Object.entries(prev).filter(([k]) => k !== "manual_preview")));
   }, []);
 
@@ -1704,9 +1764,9 @@ export default function CardForge() {
             race: forgeCard.race || null,
             clan: forgeCard.clan || null,
             card_alignment: forgeCard.cardAlignment || null,
-            convocation_race: convocationRace || null,
+            convocation_token_id: convocationTokenId,
             convocation_tokens: convocationTokens.length > 0 ? convocationTokens : null,
-            lycanthropie_race: lycanthropieRace || null,
+            lycanthropie_token_id: lycanthropieTokenId,
             set_id: cardSetId || null,
             card_year: cardYear || null,
             card_month: cardMonth || null,
@@ -1730,7 +1790,7 @@ export default function CardForge() {
     } finally {
       setSaving(false);
     }
-  }, [cardImages, type, spellKeywords, spellEffectsData, convocationRace, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieRace, sfxPlayFile, sfxDeathFile]);
+  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, sfxPlayFile, sfxDeathFile]);
 
   const [generatingImage, setGeneratingImage] = useState(false);
   const [editedPrompt, setEditedPrompt] = useState<string | null>(null);
@@ -2395,25 +2455,38 @@ export default function CardForge() {
                       {/* Token list for invocation_multiple spell keyword */}
                       {spellKeywords.some(k => k.id === "invocation_multiple") && (
                         <div style={{ marginTop: 6, border: "1px solid #9b59b633", borderRadius: 6, padding: 8, background: "#f0e8ff" }}>
-                          <label style={{ fontSize: 8, color: "#9b59b6", letterSpacing: 1, fontWeight: 700 }}>TOKENS A INVOQUER</label>
-                          {convocationTokens.map((tok, idx) => (
-                            <div key={idx} style={{ display: "flex", gap: 4, alignItems: "center", marginTop: 4 }}>
-                              <select value={tok.race} onChange={e => setConvocationTokens(prev => prev.map((t, i) => i === idx ? { ...t, race: e.target.value } : t))}
-                                style={{ flex: 1, padding: "2px 4px", borderRadius: 4, border: "1px solid #9b59b644", fontSize: 9, fontFamily: "'Cinzel',serif" }}>
-                                <option value="">Race</option>
-                                {allRaces.map(r => <option key={r} value={r}>{r}</option>)}
-                              </select>
-                              <input type="number" min={1} max={20} value={tok.attack} onChange={e => setConvocationTokens(prev => prev.map((t, i) => i === idx ? { ...t, attack: Math.max(1, parseInt(e.target.value) || 1) } : t))}
-                                style={{ width: 32, padding: "2px", borderRadius: 4, border: "1px solid #e74c3c44", fontSize: 10, textAlign: "center", color: "#e74c3c", fontFamily: "'Cinzel',serif" }} title="ATK" />
-                              <span style={{ fontSize: 8, color: "#999" }}>/</span>
-                              <input type="number" min={1} max={20} value={tok.health} onChange={e => setConvocationTokens(prev => prev.map((t, i) => i === idx ? { ...t, health: Math.max(1, parseInt(e.target.value) || 1) } : t))}
-                                style={{ width: 32, padding: "2px", borderRadius: 4, border: "1px solid #f1c40f44", fontSize: 10, textAlign: "center", color: "#f1c40f", fontFamily: "'Cinzel',serif" }} title="DEF" />
-                              <button onClick={() => setConvocationTokens(prev => prev.filter((_, i) => i !== idx))}
-                                style={{ padding: "1px 5px", borderRadius: 3, border: "1px solid #f5a3a3", background: "#fde8e8", color: "#e74c3c", fontSize: 8, cursor: "pointer" }}>x</button>
-                            </div>
-                          ))}
-                          <button onClick={() => setConvocationTokens(prev => [...prev, { race: "", attack: 1, health: 1 }])}
-                            style={{ marginTop: 4, padding: "2px 8px", borderRadius: 4, border: "1px solid #9b59b644", background: "#fff", color: "#9b59b6", fontSize: 8, cursor: "pointer", fontFamily: "'Cinzel',serif" }}>
+                          <label style={{ fontSize: 8, color: "#9b59b6", letterSpacing: 1, fontWeight: 700 }}>TOKENS À INVOQUER</label>
+                          {convocationTokens.map((tok, idx) => {
+                            const tmpl = tokenTemplates.find(t => t.id === tok.token_id);
+                            return (
+                              <div key={idx} style={{ marginTop: 6, padding: 6, borderRadius: 5, background: "#fff", border: "1px solid #9b59b622" }}>
+                                <TokenCascadePicker
+                                  value={tok.token_id ?? null}
+                                  onChange={(newId) => setConvocationTokens(prev => prev.map((t, i) => i === idx ? { ...t, token_id: newId ?? 0 } : t))}
+                                  tokens={tokenTemplates}
+                                  compact
+                                />
+                                <div style={{ display: "flex", gap: 6, alignItems: "center", marginTop: 4 }}>
+                                  <span style={{ fontSize: 8, color: "#999", letterSpacing: 1 }}>OVERRIDE :</span>
+                                  <input type="number" min={0} max={20}
+                                    value={tok.attack ?? ""}
+                                    placeholder={tmpl ? String(tmpl.attack) : "ATK"}
+                                    onChange={e => setConvocationTokens(prev => prev.map((t, i) => i === idx ? { ...t, attack: e.target.value ? Math.max(0, parseInt(e.target.value)) : undefined } : t))}
+                                    style={{ width: 36, padding: "2px", borderRadius: 4, border: "1px solid #e74c3c44", fontSize: 10, textAlign: "center", color: "#e74c3c", fontFamily: "'Cinzel',serif" }} title="ATK override" />
+                                  <span style={{ fontSize: 8, color: "#999" }}>/</span>
+                                  <input type="number" min={1} max={20}
+                                    value={tok.health ?? ""}
+                                    placeholder={tmpl ? String(tmpl.health) : "DEF"}
+                                    onChange={e => setConvocationTokens(prev => prev.map((t, i) => i === idx ? { ...t, health: e.target.value ? Math.max(1, parseInt(e.target.value)) : undefined } : t))}
+                                    style={{ width: 36, padding: "2px", borderRadius: 4, border: "1px solid #f1c40f44", fontSize: 10, textAlign: "center", color: "#f1c40f", fontFamily: "'Cinzel',serif" }} title="DEF override" />
+                                  <button onClick={() => setConvocationTokens(prev => prev.filter((_, i) => i !== idx))}
+                                    style={{ marginLeft: "auto", padding: "1px 7px", borderRadius: 3, border: "1px solid #f5a3a3", background: "#fde8e8", color: "#e74c3c", fontSize: 9, cursor: "pointer" }}>×</button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                          <button onClick={() => setConvocationTokens(prev => [...prev, { token_id: 0 }])}
+                            style={{ marginTop: 6, padding: "3px 10px", borderRadius: 4, border: "1px solid #9b59b644", background: "#fff", color: "#9b59b6", fontSize: 9, cursor: "pointer", fontFamily: "'Cinzel',serif" }}>
                             + Ajouter un token
                           </button>
                         </div>
@@ -2507,52 +2580,69 @@ export default function CardForge() {
                         );
                       })}
                     </div>
-                    {/* Convocation race selector */}
+                    {/* Convocation token selector — choose a saved token */}
                     {manualKeywords.includes("Convocation X") && (
-                      <div style={{ marginTop: 6, display: "flex", alignItems: "center", gap: 6 }}>
-                        <label style={{ fontSize: 8, color: "#f1c40f", letterSpacing: 1, fontWeight: 700 }}>RACE DU TOKEN</label>
-                        <select value={convocationRace} onChange={e => setConvocationRace(e.target.value)}
-                          style={{ padding: "3px 6px", borderRadius: 5, border: `1px solid ${convocationRace ? "#f1c40f44" : "#e74c3c"}`, fontSize: 9, fontFamily: "'Cinzel',serif", color: convocationRace ? "#f1c40f" : "#e74c3c", background: "#fff" }}>
-                          <option value="">-- Choisir une race --</option>
-                          {allRaces.map(r => <option key={r} value={r}>{r}</option>)}
-                        </select>
-                        {!convocationRace && <span style={{ fontSize: 8, color: "#e74c3c" }}>Requis</span>}
+                      <div style={{ marginTop: 6, padding: 6, borderRadius: 6, border: `1px solid ${convocationTokenId ? "#f1c40f44" : "#e74c3c"}`, background: "#fffdf3" }}>
+                        <div style={{ fontSize: 8, color: "#f1c40f", letterSpacing: 1, fontWeight: 700, marginBottom: 4 }}>
+                          TOKEN À INVOQUER {!convocationTokenId && <span style={{ color: "#e74c3c", marginLeft: 4 }}>· Requis</span>}
+                        </div>
+                        <TokenCascadePicker
+                          value={convocationTokenId}
+                          onChange={setConvocationTokenId}
+                          tokens={tokenTemplates}
+                          compact
+                        />
                       </div>
                     )}
-                    {/* Lycanthropie race selector */}
+                    {/* Lycanthropie token selector */}
                     {manualKeywords.includes("Lycanthropie X") && (
-                      <div style={{ marginTop: 6, display: "flex", alignItems: "center", gap: 6 }}>
-                        <label style={{ fontSize: 8, color: "#8b5cf6", letterSpacing: 1, fontWeight: 700 }}>🐺 RACE LYCANTHROPE</label>
-                        <select value={lycanthropieRace} onChange={e => setLycanthropieRace(e.target.value)}
-                          style={{ padding: "3px 6px", borderRadius: 5, border: `1px solid ${lycanthropieRace ? "#8b5cf644" : "#e74c3c"}`, fontSize: 9, fontFamily: "'Cinzel',serif", color: lycanthropieRace ? "#8b5cf6" : "#e74c3c", background: "#fff" }}>
-                          <option value="">-- Choisir une race --</option>
-                          {allRaces.map(r => <option key={r} value={r}>{r}</option>)}
-                        </select>
-                        {!lycanthropieRace && <span style={{ fontSize: 8, color: "#e74c3c" }}>Requis</span>}
+                      <div style={{ marginTop: 6, padding: 6, borderRadius: 6, border: `1px solid ${lycanthropieTokenId ? "#8b5cf644" : "#e74c3c"}`, background: "#faf5ff" }}>
+                        <div style={{ fontSize: 8, color: "#8b5cf6", letterSpacing: 1, fontWeight: 700, marginBottom: 4 }}>
+                          🐺 TOKEN DE TRANSFORMATION {!lycanthropieTokenId && <span style={{ color: "#e74c3c", marginLeft: 4 }}>· Requis</span>}
+                        </div>
+                        <TokenCascadePicker
+                          value={lycanthropieTokenId}
+                          onChange={setLycanthropieTokenId}
+                          tokens={tokenTemplates}
+                          compact
+                        />
                       </div>
                     )}
-                    {/* Convocations multiples — token list editor */}
+                    {/* Convocations multiples — list of token entries with optional stat overrides */}
                     {manualKeywords.includes("Convocations multiples") && (
                       <div style={{ marginTop: 6, border: "1px solid #9b59b633", borderRadius: 6, padding: 8, background: "#f9f0ff" }}>
-                        <label style={{ fontSize: 8, color: "#9b59b6", letterSpacing: 1, fontWeight: 700 }}>TOKENS A INVOQUER</label>
-                        {convocationTokens.map((tok, idx) => (
-                          <div key={idx} style={{ display: "flex", gap: 4, alignItems: "center", marginTop: 4 }}>
-                            <select value={tok.race} onChange={e => setConvocationTokens(prev => prev.map((t, i) => i === idx ? { ...t, race: e.target.value } : t))}
-                              style={{ flex: 1, padding: "2px 4px", borderRadius: 4, border: "1px solid #9b59b644", fontSize: 9, fontFamily: "'Cinzel',serif" }}>
-                              <option value="">Race</option>
-                              {allRaces.map(r => <option key={r} value={r}>{r}</option>)}
-                            </select>
-                            <input type="number" min={1} max={20} value={tok.attack} onChange={e => setConvocationTokens(prev => prev.map((t, i) => i === idx ? { ...t, attack: Math.max(1, parseInt(e.target.value) || 1) } : t))}
-                              style={{ width: 32, padding: "2px", borderRadius: 4, border: "1px solid #e74c3c44", fontSize: 10, textAlign: "center", color: "#e74c3c", fontFamily: "'Cinzel',serif" }} title="ATK" />
-                            <span style={{ fontSize: 8, color: "#999" }}>/</span>
-                            <input type="number" min={1} max={20} value={tok.health} onChange={e => setConvocationTokens(prev => prev.map((t, i) => i === idx ? { ...t, health: Math.max(1, parseInt(e.target.value) || 1) } : t))}
-                              style={{ width: 32, padding: "2px", borderRadius: 4, border: "1px solid #f1c40f44", fontSize: 10, textAlign: "center", color: "#f1c40f", fontFamily: "'Cinzel',serif" }} title="DEF" />
-                            <button onClick={() => setConvocationTokens(prev => prev.filter((_, i) => i !== idx))}
-                              style={{ padding: "1px 5px", borderRadius: 3, border: "1px solid #f5a3a3", background: "#fde8e8", color: "#e74c3c", fontSize: 8, cursor: "pointer" }}>x</button>
-                          </div>
-                        ))}
-                        <button onClick={() => setConvocationTokens(prev => [...prev, { race: "", attack: 1, health: 1 }])}
-                          style={{ marginTop: 4, padding: "2px 8px", borderRadius: 4, border: "1px solid #9b59b644", background: "#fff", color: "#9b59b6", fontSize: 8, cursor: "pointer", fontFamily: "'Cinzel',serif" }}>
+                        <label style={{ fontSize: 8, color: "#9b59b6", letterSpacing: 1, fontWeight: 700 }}>TOKENS À INVOQUER</label>
+                        {convocationTokens.map((tok, idx) => {
+                          const tmpl = tokenTemplates.find(t => t.id === tok.token_id);
+                          return (
+                            <div key={idx} style={{ marginTop: 6, padding: 6, borderRadius: 5, background: "#fff", border: "1px solid #9b59b622" }}>
+                              <TokenCascadePicker
+                                value={tok.token_id ?? null}
+                                onChange={(newId) => setConvocationTokens(prev => prev.map((t, i) => i === idx ? { ...t, token_id: newId ?? 0 } : t))}
+                                tokens={tokenTemplates}
+                                compact
+                              />
+                              <div style={{ display: "flex", gap: 6, alignItems: "center", marginTop: 4 }}>
+                                <span style={{ fontSize: 8, color: "#999", letterSpacing: 1 }}>OVERRIDE :</span>
+                                <input type="number" min={0} max={20}
+                                  value={tok.attack ?? ""}
+                                  placeholder={tmpl ? String(tmpl.attack) : "ATK"}
+                                  onChange={e => setConvocationTokens(prev => prev.map((t, i) => i === idx ? { ...t, attack: e.target.value ? Math.max(0, parseInt(e.target.value)) : undefined } : t))}
+                                  style={{ width: 36, padding: "2px", borderRadius: 4, border: "1px solid #e74c3c44", fontSize: 10, textAlign: "center", color: "#e74c3c", fontFamily: "'Cinzel',serif" }} title="ATK override" />
+                                <span style={{ fontSize: 8, color: "#999" }}>/</span>
+                                <input type="number" min={1} max={20}
+                                  value={tok.health ?? ""}
+                                  placeholder={tmpl ? String(tmpl.health) : "DEF"}
+                                  onChange={e => setConvocationTokens(prev => prev.map((t, i) => i === idx ? { ...t, health: e.target.value ? Math.max(1, parseInt(e.target.value)) : undefined } : t))}
+                                  style={{ width: 36, padding: "2px", borderRadius: 4, border: "1px solid #f1c40f44", fontSize: 10, textAlign: "center", color: "#f1c40f", fontFamily: "'Cinzel',serif" }} title="DEF override" />
+                                <button onClick={() => setConvocationTokens(prev => prev.filter((_, i) => i !== idx))}
+                                  style={{ marginLeft: "auto", padding: "1px 7px", borderRadius: 3, border: "1px solid #f5a3a3", background: "#fde8e8", color: "#e74c3c", fontSize: 9, cursor: "pointer" }}>×</button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                        <button onClick={() => setConvocationTokens(prev => [...prev, { token_id: 0 }])}
+                          style={{ marginTop: 6, padding: "3px 10px", borderRadius: 4, border: "1px solid #9b59b644", background: "#fff", color: "#9b59b6", fontSize: 9, cursor: "pointer", fontFamily: "'Cinzel',serif" }}>
                           + Ajouter un token
                         </button>
                       </div>
@@ -2691,10 +2781,17 @@ export default function CardForge() {
                 <div style={{ fontSize: 10, color: "#666", letterSpacing: 1, marginBottom: 8, fontWeight: 700 }}>
                   {tokenEditId ? "MODIFIER LE TEMPLATE" : "NOUVEAU TEMPLATE"}
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
                   <div>
                     <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>RACE</label>
-                    <select value={tokenRace} onChange={e => { setTokenRace(e.target.value); if (!tokenName) setTokenName(e.target.value); }}
+                    <select value={tokenRace} onChange={e => {
+                      const r = e.target.value;
+                      setTokenRace(r);
+                      // Reset clan when race changes — current clan may no
+                      // longer apply to the new race.
+                      setTokenClan("");
+                      if (!tokenName) setTokenName(r);
+                    }}
                       style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }}>
                       <option value="">-- Choisir --</option>
                       {allRaces.map(r => (
@@ -2702,6 +2799,30 @@ export default function CardForge() {
                       ))}
                     </select>
                   </div>
+                  {(() => {
+                    const clans = getAvailableTokenClans(tokenRace);
+                    const disabled = !tokenRace || clans.length === 0;
+                    return (
+                      <div>
+                        <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>CLAN (optionnel)</label>
+                        <select value={tokenClan} onChange={e => setTokenClan(e.target.value)}
+                          disabled={disabled}
+                          style={{
+                            width: "100%", padding: "6px 8px", borderRadius: 6,
+                            border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif",
+                            marginTop: 2,
+                            background: disabled ? "#f5f5f5" : "#fff",
+                            color: disabled ? "#bbb" : "#333",
+                            cursor: disabled ? "not-allowed" : "pointer",
+                          }}>
+                          <option value="">{disabled && tokenRace ? "Aucun clan disponible" : "-- Aucun --"}</option>
+                          {clans.map(c => (
+                            <option key={c} value={c}>{c}</option>
+                          ))}
+                        </select>
+                      </div>
+                    );
+                  })()}
                   <div>
                     <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>NOM DU TOKEN</label>
                     <input type="text" value={tokenName} onChange={e => setTokenName(e.target.value)}
@@ -2710,8 +2831,24 @@ export default function CardForge() {
                   </div>
                 </div>
 
+                {/* Stats par défaut du token (override possible par carte) */}
+                <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  <div>
+                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>ATTAQUE PAR DÉFAUT</label>
+                    <input type="number" min={0} max={20} value={tokenAttack}
+                      onChange={e => setTokenAttack(Math.max(0, parseInt(e.target.value) || 0))}
+                      style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2, color: "#e74c3c" }} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>DÉFENSE PAR DÉFAUT</label>
+                    <input type="number" min={1} max={20} value={tokenHealth}
+                      onChange={e => setTokenHealth(Math.max(1, parseInt(e.target.value) || 1))}
+                      style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2, color: "#f1c40f" }} />
+                  </div>
+                </div>
+
                 {/* Keywords */}
-                <div style={{ marginTop: 10 }}>
+                <div style={{ marginTop: 10, position: "relative" }}>
                   <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>CAPACITES DU TOKEN</label>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginTop: 4 }}>
                     {Object.entries(KEYWORDS).filter(([, kw]) => kw.minTier <= 1).map(([kwName]) => {
@@ -2720,6 +2857,11 @@ export default function CardForge() {
                         <button key={kwName} onClick={() => {
                           setTokenKeywords(prev => active ? prev.filter(k => k !== kwName) : [...prev, kwName]);
                         }}
+                          onMouseEnter={(e) => {
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            setHoveredKw({ id: kwName, rect });
+                          }}
+                          onMouseLeave={() => setHoveredKw(null)}
                           style={{
                             padding: "2px 6px", borderRadius: 4, cursor: "pointer", fontSize: 8,
                             fontFamily: "'Cinzel',serif", fontWeight: active ? 700 : 400,
@@ -2730,6 +2872,43 @@ export default function CardForge() {
                       );
                     })}
                   </div>
+                  {/* Keyword tooltip — same shape as the manual-mode forge.
+                      Rendered here too so the token tab gets the descriptions
+                      without needing the manual-mode block to be mounted. */}
+                  {hoveredKw && KEYWORDS[hoveredKw.id] && (() => {
+                    const kwDef = KEYWORDS[hoveredKw.id];
+                    const tierLabel = ["Commune+", "Peu Commune+", "Rare+", "Épique+", "Légendaire"][kwDef.minTier] || "";
+                    return (
+                      <div style={{
+                        position: "fixed",
+                        left: Math.min(hoveredKw.rect.left, window.innerWidth - 280),
+                        top: hoveredKw.rect.bottom + 6,
+                        zIndex: 9999,
+                        width: 260,
+                        padding: "10px 12px",
+                        background: "#1a1a2e",
+                        border: "1px solid rgba(200,168,78,0.4)",
+                        borderRadius: 8,
+                        boxShadow: "0 4px 20px rgba(0,0,0,0.5), 0 0 8px rgba(200,168,78,0.15)",
+                        pointerEvents: "none",
+                      }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+                          <KeywordIcon symbol={KEYWORD_SYMBOLS[hoveredKw.id] || "✦"} size={16} />
+                          <span style={{ fontSize: 13, color: "#c8a84e", fontWeight: 700, fontFamily: "'Cinzel',serif" }}>{hoveredKw.id}</span>
+                        </div>
+                        <div style={{ fontSize: 12, color: "#ddd", lineHeight: 1.5, fontFamily: "'Crimson Text',serif", marginBottom: 8 }}>
+                          {kwDef.desc}
+                        </div>
+                        <div style={{ display: "flex", gap: 8, fontSize: 10, color: "#999" }}>
+                          <span>Tier : <strong style={{ color: "#bbb" }}>{tierLabel}</strong></span>
+                          <span>Coût : <strong style={{ color: "#bbb" }}>{kwDef.cost} pts</strong>{kwDef.costPerX > 0 && <> (+{kwDef.costPerX}/X)</>}</span>
+                          <span style={{ color: kwDef.zone === "Terrain" ? "#4caf50" : kwDef.zone === "Cimetière" ? "#9b59b6" : kwDef.zone === "Main" ? "#3498db" : "#f39c12" }}>
+                            {kwDef.zone}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {/* Prompt generation */}
@@ -2819,9 +2998,16 @@ export default function CardForge() {
                       )}
                       <div style={{ padding: 8 }}>
                         <div style={{ fontSize: 11, fontWeight: 700 }}>{t.name}</div>
-                        <div style={{ fontSize: 9, color: "#888" }}>{t.race}</div>
+                        <div style={{ fontSize: 9, color: "#888" }}>
+                          {t.race}
+                          {t.clan && <> · <span style={{ color: "#a87000" }}>{t.clan}</span></>}
+                          {" · "}
+                          <span style={{ color: "#e74c3c" }}>{t.attack}</span>
+                          /
+                          <span style={{ color: "#f1c40f" }}>{t.health}</span>
+                        </div>
                         <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
-                          <button onClick={() => { setTokenEditId(t.id); setTokenRace(t.race); setTokenName(t.name); setTokenKeywords((t as { keywords?: string[] }).keywords?.map(k => GAME_TO_FORGE_KEYWORD[k] || k) ?? []); setTokenImagePreview(t.image_url); setTokenImageBase64(null); setTokenImageMime(null); setTokenPrompt(""); }}
+                          <button onClick={() => { setTokenEditId(t.id); setTokenRace(t.race); setTokenClan(t.clan ?? ""); setTokenName(t.name); setTokenAttack(t.attack ?? 1); setTokenHealth(t.health ?? 1); setTokenKeywords(t.keywords?.map(k => GAME_TO_FORGE_KEYWORD[k] || k) ?? []); setTokenImagePreview(t.image_url); setTokenImageBase64(null); setTokenImageMime(null); setTokenPrompt(""); }}
                             style={{ fontSize: 8, padding: "2px 8px", borderRadius: 4, border: "1px solid #ddd", background: "#fff", color: "#666", cursor: "pointer", fontFamily: "'Cinzel',serif" }}>
                             Modifier
                           </button>
