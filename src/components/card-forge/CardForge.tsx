@@ -9,7 +9,7 @@ import type { CardType, Keyword, SpellEffect, SpellTargetType, SpellKeywordInsta
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
 import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
-import { ABILITIES, type AbilityDef } from "@/lib/game/abilities";
+import { ABILITIES, abilityIconKeys, type AbilityDef } from "@/lib/game/abilities";
 import type { SpellKeywordId } from "@/lib/game/types";
 import CardEditor from "@/components/admin/CardEditor";
 import { CARD_BACK_FRAMES, autoTrimDarkBorders, composeCardBack, getCardBackFrame } from "@/lib/card-back-frames";
@@ -565,16 +565,12 @@ export default function CardForge() {
     const baseName = kwName.trim();
     const multi = picks.length > 1;
     // For polymorphic abilities we save once per host so existing in-game
-    // lookups (legacy keys: FR label for creature, `spell_<id>` for spell)
-    // keep finding the icon. The same image bytes are uploaded under both
-    // rows — `keyword_icon_assets` is small and dedup is cheap to skip.
-    const targets = kwSelectedAbility.applicable_to.map((host) => {
-      const keyword =
-        host === "spell"
-          ? `spell_${kwSelectedAbility.id}`
-          : kwSelectedAbility.creature?.label ?? kwSelectedAbility.label;
-      return { host, keyword };
-    });
+    // lookups keep finding the icon. Keys come from `abilityIconKeys`,
+    // which mirrors what GameCard / HandCard pass to <KeywordIcon
+    // keyword=... /> — snake_case engine id for creature (which can differ
+    // from the registry id, e.g. convocation vs invocation), `spell_<id>`
+    // for spell.
+    const targets = abilityIconKeys(kwSelectedAbility).map(({ host, key }) => ({ host, keyword: key }));
     let ok = 0;
     let firstError: string | null = null;
     for (let idx = 0; idx < picks.length; idx++) {

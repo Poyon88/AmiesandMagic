@@ -23,6 +23,12 @@ export type KeywordZone = "Terrain" | "Cimetière" | "Main" | "Mixte" | "Deck" |
 export type AbilityHost = "creature" | "spell";
 
 export interface AbilityCreatureMeta {
+  /** Override of `AbilityDef.id` for the snake_case used inside
+   *  `card.keywords[]` (and therefore the icon lookup key on the creature
+   *  side). Needed for polymorphic concepts whose creature- and spell-side
+   *  legacy ids differ — e.g. invocation/convocation,
+   *  invocation_multiple/convocations_multiples. Defaults to AbilityDef.id. */
+  id?: string;
   /** Override of `AbilityDef.label` for the creature side; defaults to it. */
   label?: string;
   /** Override of `AbilityDef.desc` for the creature side; defaults to it. */
@@ -561,6 +567,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     desc: "Crée un token sur le terrain.",
     applicable_to: ["creature", "spell"],
     creature: {
+      id: "convocation",
       label: "Convocation X",
       cost: 8, costPerX: 5, se: 3.0, minTier: 2, scalable: true, zone: "Terrain",
       desc: "Invocation : crée un token X/X de la race indiquée.",
@@ -632,6 +639,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     desc: "Crée plusieurs tokens selon la configuration de la carte.",
     applicable_to: ["creature", "spell"],
     creature: {
+      id: "convocations_multiples",
       cost: 12, costPerX: 0, se: 4.0, minTier: 2, scalable: false, zone: "Terrain",
       desc: "Invocation : crée plusieurs tokens selon la configuration.",
     },
@@ -721,3 +729,34 @@ export const SPELL_ABILITIES: AbilityDef[] = Object.values(ABILITIES)
 export const POLYMORPHIC_ABILITIES: AbilityDef[] = Object.values(ABILITIES)
   .filter((a) => a.applicable_to.length > 1)
   .sort((a, b) => a.label.localeCompare(b.label, "fr"));
+
+// ─── Icon lookup keys ──────────────────────────────────────────────────────
+//
+// In-game, GameCard / HandCard / etc. pass these keys to <KeywordIcon>:
+//  - creature side: the snake_case id stored in `card.keywords[]`
+//    (which is the engine's `Keyword` enum, not necessarily the registry id)
+//  - spell side:    `spell_${spell_keyword.id}`
+//
+// `POLYMORPHIC_ICON_KEY_FALLBACK` lets the icon store transparently resolve
+// either side to whichever sibling has an uploaded icon. Useful when an
+// admin uploaded the icon under one key only (e.g. before the registry
+// merge) — both contexts now show the same image.
+export const POLYMORPHIC_ICON_KEY_FALLBACK: Record<string, string> = (() => {
+  const out: Record<string, string> = {};
+  for (const a of Object.values(ABILITIES)) {
+    if (a.applicable_to.length < 2) continue;
+    const creatureKey = a.creature?.id ?? a.id;
+    const spellKey = `spell_${a.id}`;
+    out[creatureKey] = spellKey;
+    out[spellKey] = creatureKey;
+  }
+  return out;
+})();
+
+/** Returns the icon-store keys to write a polymorphic ability's icon under. */
+export function abilityIconKeys(a: AbilityDef): { host: AbilityHost; key: string }[] {
+  return a.applicable_to.map((host) => ({
+    host,
+    key: host === "spell" ? `spell_${a.id}` : a.creature?.id ?? a.id,
+  }));
+}

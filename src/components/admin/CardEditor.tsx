@@ -764,6 +764,56 @@ export default function CardEditor() {
               </div>
             )}
 
+            {/* Convocations multiples — applies whether the trigger is a
+                creature on_play (keyword "convocations_multiples") or a
+                spell cast (spell_keyword "invocation_multiple"). Both read
+                the same `convocation_tokens` JSONB array. */}
+            {(
+              ((editFields.keywords as string[]) || []).includes("convocations_multiples") ||
+              ((editFields.spell_keywords as SpellKeywordInstance[]) || []).some(k => k.id === "invocation_multiple")
+            ) && (() => {
+              const tokens = (editFields.convocation_tokens as { token_id: number; attack?: number; health?: number }[]) || [];
+              const setTokens = (next: typeof tokens) => updateField("convocation_tokens", next);
+              return (
+                <div style={{ marginBottom: 8, padding: 8, borderRadius: 6, border: "1px solid #9b59b633", background: "#f9f0ff" }}>
+                  <div style={{ ...S.label, color: "#9b59b6" }}>Tokens à invoquer</div>
+                  {tokens.map((tok, idx) => {
+                    const tmpl = tokenTemplates.find(t => t.id === tok.token_id);
+                    return (
+                      <div key={idx} style={{ marginTop: 6, padding: 6, borderRadius: 5, background: "#fff", border: "1px solid #9b59b622" }}>
+                        <TokenCascadePicker
+                          value={tok.token_id ?? null}
+                          onChange={(newId) => setTokens(tokens.map((t, i) => i === idx ? { ...t, token_id: newId ?? 0 } : t))}
+                          tokens={tokenTemplates}
+                          compact
+                        />
+                        <div style={{ display: "flex", gap: 6, alignItems: "center", marginTop: 4 }}>
+                          <span style={{ fontSize: 8, color: "#999", letterSpacing: 1 }}>OVERRIDE :</span>
+                          <input type="number" min={0} max={20}
+                            value={tok.attack ?? ""}
+                            placeholder={tmpl ? String(tmpl.attack) : "ATK"}
+                            onChange={e => setTokens(tokens.map((t, i) => i === idx ? { ...t, attack: e.target.value ? Math.max(0, parseInt(e.target.value)) : undefined } : t))}
+                            style={{ width: 36, padding: "2px", borderRadius: 4, border: "1px solid #e74c3c44", fontSize: 10, textAlign: "center", color: "#e74c3c", fontFamily: "'Cinzel',serif" }} title="ATK override" />
+                          <span style={{ fontSize: 8, color: "#999" }}>/</span>
+                          <input type="number" min={1} max={20}
+                            value={tok.health ?? ""}
+                            placeholder={tmpl ? String(tmpl.health) : "DEF"}
+                            onChange={e => setTokens(tokens.map((t, i) => i === idx ? { ...t, health: e.target.value ? Math.max(1, parseInt(e.target.value)) : undefined } : t))}
+                            style={{ width: 36, padding: "2px", borderRadius: 4, border: "1px solid #f1c40f44", fontSize: 10, textAlign: "center", color: "#f1c40f", fontFamily: "'Cinzel',serif" }} title="DEF override" />
+                          <button onClick={() => setTokens(tokens.filter((_, i) => i !== idx))}
+                            style={{ marginLeft: "auto", padding: "1px 7px", borderRadius: 3, border: "1px solid #f5a3a3", background: "#fde8e8", color: "#e74c3c", fontSize: 9, cursor: "pointer" }}>×</button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  <button onClick={() => setTokens([...tokens, { token_id: 0 }])}
+                    style={{ marginTop: 6, padding: "3px 10px", borderRadius: 4, border: "1px solid #9b59b644", background: "#fff", color: "#9b59b6", fontSize: 9, cursor: "pointer", fontFamily: "'Cinzel',serif" }}>
+                    + Ajouter un token
+                  </button>
+                </div>
+              );
+            })()}
+
             {/* Save result */}
             {saveResult && (
               <div style={{ padding: "6px 10px", borderRadius: 5, marginBottom: 8, fontSize: 10, fontFamily: "'Cinzel',serif",
