@@ -466,6 +466,10 @@ function EventPopup({ event }: { event: DamageEvent }) {
 
   const { flashColor, particleColor, textColor, format } = config[type];
   const isPositive = type === "heal" || type === "buff" || type === "dodge" || type === "paralyze" || type === "resurrect" || type === "transform";
+  // Buff popups (Commandement aura, Renforcement, Sang mêlé…) often fire
+  // in batches when several allies are touched at once. Slow them down so
+  // each `+1/+1` is readable instead of strobing past.
+  const slowMul = type === "buff" ? 1.7 : 1;
 
   return (
     <motion.div
@@ -478,7 +482,7 @@ function EventPopup({ event }: { event: DamageEvent }) {
       }}
       initial={{ opacity: 1 }}
       animate={{ opacity: 0 }}
-      transition={{ duration: 2.9, ease: "easeOut" }}
+      transition={{ duration: 2.9 * slowMul, ease: "easeOut" }}
     >
       {/* Flash circle */}
       <motion.div
@@ -519,7 +523,7 @@ function EventPopup({ event }: { event: DamageEvent }) {
               }}
               initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
               animate={{ x: xSpread, y: yEnd, opacity: 0, scale: 0 }}
-              transition={{ duration: 0.8 + Math.random() * 0.4, ease: "easeOut", delay: i * 0.05 }}
+              transition={{ duration: (0.8 + Math.random() * 0.4) * slowMul, ease: "easeOut", delay: i * 0.05 * slowMul }}
             />
           );
         })
@@ -566,7 +570,7 @@ function EventPopup({ event }: { event: DamageEvent }) {
         }}
         initial={{ y: 0, scale: 1.5, opacity: 1 }}
         animate={{ y: isPositive ? -36 : -32, scale: 1, opacity: 0 }}
-        transition={{ duration: 2.8, ease: "easeOut" }}
+        transition={{ duration: 2.8 * slowMul, ease: "easeOut" }}
       >
         {format(event)}
       </motion.span>

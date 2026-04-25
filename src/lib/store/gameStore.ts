@@ -53,6 +53,16 @@ export interface GraveyardAffectEvent {
   timestamp: number;
 }
 
+// A card was forcibly discarded from a player's hand to their graveyard
+// (Combustion, future "forced discard" effects). Shown in its own phase
+// between summons and draws so the player sees what was discarded *before*
+// the new cards are drawn.
+export interface DiscardFromHandEvent {
+  cards: Card[];
+  ownerPlayerId: string;
+  timestamp: number;
+}
+
 interface GameStore {
   // State
   gameState: GameState | null;
@@ -78,6 +88,7 @@ interface GameStore {
   fireBreathEvent: FireBreathEvent | null;
   heroPowerCastEvent: HeroPowerCastEvent | null;
   graveyardAffectEvent: GraveyardAffectEvent | null;
+  discardFromHandEvent: DiscardFromHandEvent | null;
   boardImageUrl: string | null;
   myCardBackUrl: string | null;
   opponentCardBackUrl: string | null;
@@ -125,6 +136,7 @@ interface GameStore {
   clearFireBreathEvent: () => void;
   clearHeroPowerCastEvent: () => void;
   clearGraveyardAffectEvent: () => void;
+  clearDiscardFromHandEvent: () => void;
   activateHeroPower: () => GameAction | null;
   confirmMulligan: (selectedInstanceIds: string[]) => GameAction | null;
 
@@ -421,6 +433,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   fireBreathEvent: null,
   heroPowerCastEvent: null,
   graveyardAffectEvent: null,
+  discardFromHandEvent: null,
   isAnimating: false,
   pendingIncomingActions: [],
   boardImageUrl: null,
@@ -745,6 +758,40 @@ export const useGameStore = create<GameStore>((set, get) => ({
       graveyardRemoved.length > 0
         ? { cards: graveyardRemoved, timestamp: Date.now() }
         : null;
+
+    // Detect cards forced from a player's hand into their graveyard during
+    // this action — Combustion ("défaussez une carte de votre main"), and
+    // any future "forced discard" effect. We exclude the card the player
+    // just played (spells move the same way but should not trigger this
+    // popup). This drives the DiscardFromHand overlay so the discarded
+    // card is visible BEFORE the new draws fill the hand.
+    const playedActionInstanceId = action.type === "play_card" ? action.cardInstanceId : null;
+    const discardedFromHand: { card: Card; ownerPlayerId: string }[] = [];
+    for (let i = 0; i < 2; i++) {
+      const oldHand = gameState.players[i].hand;
+      const newHand = newState.players[i].hand;
+      const newGY = newState.players[i].graveyard;
+      for (const oldCardInstance of oldHand) {
+        if (oldCardInstance.instanceId === playedActionInstanceId) continue;
+        const stillInHand = newHand.find((c) => c.instanceId === oldCardInstance.instanceId);
+        if (stillInHand) continue;
+        const inGraveyard = newGY.find((c) => c.instanceId === oldCardInstance.instanceId);
+        if (inGraveyard) {
+          discardedFromHand.push({
+            card: oldCardInstance.card,
+            ownerPlayerId: gameState.players[i].id,
+          });
+        }
+      }
+    }
+    const discardFromHandEvent: DiscardFromHandEvent | null =
+      discardedFromHand.length > 0
+        ? {
+            cards: discardedFromHand.map((d) => d.card),
+            ownerPlayerId: discardedFromHand[0].ownerPlayerId,
+            timestamp: Date.now(),
+          }
+        : null;
     const hasImpacts = dmgEvents.length > 0;
     const hasDeaths = deadCreatures.length > 0;
 
@@ -768,7 +815,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     ];
     const hasDraws = drawnCounts[0] + drawnCounts[1] > 0;
 
-    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent;
+    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent;
 
     // Deep clone helper — factionCardPool carries non-serialisable refs, keep it aside.
     const cloneState = (state: GameState): GameState => {
@@ -894,6 +941,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const DRAW_MS = 1000;
     const DEATH_MS = 1000;
     const SUMMON_MS = 1400;
+    const DISCARD_MS = 1800; // forced-discard popup display time
     const RECAST_GAP_MS = 1800;
 
     // --- Phase handlers ---
@@ -960,6 +1008,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
       playSfxBatch(summonSfx);
     };
 
+    const phaseDiscard = () => {
+      // Surface the forced-discard popup just before the draw phase so the
+      // player sees what was discarded by Combustion (or future similar
+      // effects) before the new cards arrive.
+      if (discardFromHandEvent) set({ discardFromHandEvent });
+    };
+
     const phaseDraws = () => {
       set({ gameState: newState });
       playSfxBatch(drawSfx);
@@ -1011,6 +1066,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
       // draw phase has a correct pre-state.
       setTimeout(phaseFinalize, cursor);
       cursor += 50;
+    }
+
+    if (discardFromHandEvent) {
+      setTimeout(phaseDiscard, cursor);
+      cursor += DISCARD_MS;
     }
 
     if (hasDraws) {
@@ -1454,6 +1514,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   clearGraveyardAffectEvent: () => {
     set({ graveyardAffectEvent: null });
+  },
+
+  clearDiscardFromHandEvent: () => {
+    set({ discardFromHandEvent: null });
   },
 
   activateHeroPower: () => {
