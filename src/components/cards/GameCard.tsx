@@ -1,8 +1,30 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
-import type { Card } from "@/lib/game/types";
+import type { Card, TokenTemplate } from "@/lib/game/types";
+
+// Module-level lazy cache so any GameCard mounted out of the in-game flow
+// (deck builder, collection, auctions, landing showcase…) can still resolve
+// token names in spell-keyword descriptions without prop drilling. The
+// fetch happens at most once per session.
+let _tokenRegistryCache: TokenTemplate[] | null = null;
+let _tokenRegistryPromise: Promise<TokenTemplate[]> | null = null;
+function loadTokenRegistry(): Promise<TokenTemplate[]> {
+  if (_tokenRegistryCache) return Promise.resolve(_tokenRegistryCache);
+  if (_tokenRegistryPromise) return _tokenRegistryPromise;
+  _tokenRegistryPromise = fetch("/api/token-templates")
+    .then((r) => (r.ok ? r.json() : []))
+    .then((data: unknown) => {
+      _tokenRegistryCache = Array.isArray(data) ? (data as TokenTemplate[]) : [];
+      return _tokenRegistryCache;
+    })
+    .catch(() => {
+      _tokenRegistryCache = [];
+      return _tokenRegistryCache;
+    });
+  return _tokenRegistryPromise;
+}
 import { KEYWORD_SYMBOLS as keywordSymbols, KEYWORD_LABELS as keywordLabels, toRoman, parseXValuesFromEffectText, cleanEffectText } from "@/lib/game/keyword-labels";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS, getSpellKeywordDesc, getSpellKeywordLabel } from "@/lib/game/spell-keywords";
 import KeywordIcon from "@/components/shared/KeywordIcon";
@@ -19,6 +41,9 @@ interface GameCardProps {
   printNumber?: number;
   maxPrints?: number;
   disableHoverZoom?: boolean;
+  /** Optional registry to resolve names/stats inside spell-keyword
+   *  descriptions (e.g. "Invocation multiple" → "crée 2 tokens X 1/1"). */
+  tokens?: TokenTemplate[];
 }
 
 export default function GameCard({
@@ -31,9 +56,20 @@ export default function GameCard({
   printNumber,
   maxPrints,
   disableHoverZoom = false,
+  tokens,
 }: GameCardProps) {
   const [hovered, setHovered] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  // Resolve the token registry: explicit prop wins, otherwise lazy-load on
+  // mount (cached module-level so subsequent GameCards reuse the same data).
+  const [autoTokens, setAutoTokens] = useState<TokenTemplate[] | null>(null);
+  useEffect(() => {
+    if (tokens || _tokenRegistryCache !== null) return;
+    let alive = true;
+    loadTokenRegistry().then((reg) => { if (alive) setAutoTokens(reg); });
+    return () => { alive = false; };
+  }, [tokens]);
+  const effectiveTokens = tokens ?? _tokenRegistryCache ?? autoTokens ?? undefined;
   const detailTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const dims = {
@@ -184,8 +220,14 @@ export default function GameCard({
               const usesAtkHp = def.params.includes("attack") && def.params.includes("health");
               const usesAmount = def.params.includes("amount");
               const hasValue = usesAmount || usesAtkHp;
+              // Renforcement is a stat buff (+X/+Y); invocation creates a
+              // token (X/Y, no plus sign). The label format in the registry
+              // tells us which convention to use.
+              const useStatBuffFormat = usesAtkHp && def.label.includes("+X");
               const valueText = usesAtkHp
-                ? `+${spellKw.attack ?? 0}/+${spellKw.health ?? 0}`
+                ? useStatBuffFormat
+                  ? `+${spellKw.attack ?? 0}/+${spellKw.health ?? 0}`
+                  : `${spellKw.attack ?? 0}/${spellKw.health ?? 0}`
                 : usesAmount ? toRoman(spellKw.amount ?? 1) : null;
               const spellKey = `spell_${spellKw.id}`;
               const hasImg = !!iconOverrides[spellKey];
@@ -195,7 +237,7 @@ export default function GameCard({
                 padding: hasValue ? `0 ${4 * s}px` : 0,
                 background: hasImg ? "transparent" : `${accentColor}33`,
                 border: hasImg ? "none" : `1px solid ${accentColor}66`,
-                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 * s,
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 0,
                 fontSize: 10 * s, overflow: "hidden",
               }}>
                 {hasImg ? (
@@ -205,7 +247,11 @@ export default function GameCard({
                 ) : (
                   <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={28 * s} keyword={spellKey} />
                 )}
-                {valueText && <span style={{ fontSize: 10 * s, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}` }}>{valueText}</span>}
+                {valueText && <span style={{
+                  fontSize: 10 * s, fontWeight: 900, color: "#fff",
+                  fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}`,
+                  marginLeft: -10 * s,
+                }}>{valueText}</span>}
               </div>
               );
           })}
@@ -312,7 +358,7 @@ export default function GameCard({
           <div style={{ display: "flex", flexDirection: "column", gap: 6 * s }}>
             {card.spell_keywords.map((spellKw, i) => {
               const label = getSpellKeywordLabel(spellKw);
-              const desc = getSpellKeywordDesc(spellKw, card);
+              const desc = getSpellKeywordDesc(spellKw, card, effectiveTokens);
               return (
               <div key={`sk_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
                 <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={18 * s} keyword={`spell_${spellKw.id}`} /></span>

@@ -19,98 +19,13 @@ export const LIMITED_PRINT_COUNTS: Record<string, number> = {
 };
 
 // ─── KEYWORDS ────────────────────────────────────────────────────────────────
-// cost    : points de budget keywords consommés
-// se      : stat équivalent (documentation de l'impact)
-// minTier : rareté minimale (0=Commune … 4=Légendaire)
-// scalable: la capacité a un paramètre X variable
-// zone    : zone d'interaction (Terrain, Cimetière, Main, Mixte)
+// Single source of truth lives in `src/lib/game/abilities.ts` (unified
+// registry shared with spell keywords). The map below is re-exported under
+// the legacy KEYWORDS name so engine code (`hasKw`, balance calc) keeps
+// working unchanged.
 
-export type KeywordZone = "Terrain" | "Cimetière" | "Main" | "Mixte" | "Deck" | "Race" | "Clan";
-
-export const KEYWORDS: Record<string, { cost: number; costPerX: number; se: number; minTier: number; scalable: boolean; zone: KeywordZone; desc: string }> = {
-  // ── Tier 0 — Commune+ ─────────────────────────────────────────────────────
-  "Loyauté":            { cost:  2, costPerX: 0, se: 0.5, minTier: 0, scalable: false, zone: "Terrain", desc: "Invocation : +1 ATK et +1 PV pour chaque allié de même race en jeu." },
-  "Ancré":              { cost:  2, costPerX: 0, se: 0.5, minTier: 0, scalable: false, zone: "Terrain", desc: "Ne peut pas être déplacé ou exilé." },
-  "Résistance X":       { cost:  5, costPerX: 3, se: 1.0, minTier: 0, scalable: true,  zone: "Terrain", desc: "Réduit les dégâts reçus de X (minimum 1 dégât)." },
-  "Provocation":        { cost:  5, costPerX: 0, se: 1.0, minTier: 0, scalable: false, zone: "Terrain", desc: "Les ennemis doivent attaquer cette unité en priorité." },
-  "Raid":               { cost:  3, costPerX: 0, se: 0.7, minTier: 0, scalable: false, zone: "Terrain", desc: "Peut attaquer une créature ennemie dès son invocation (mais pas le héros)." },
-  "Traque":             { cost:  5, costPerX: 0, se: 1.0, minTier: 0, scalable: false, zone: "Terrain", desc: "Peut attaquer dès son invocation." },
-  "Première Frappe":    { cost:  7, costPerX: 0, se: 1.5, minTier: 0, scalable: false, zone: "Terrain", desc: "Lorsque cette unité attaque, inflige ses dégâts en premier ; l'unité adverse ne riposte que si elle survit." },
-  "Berserk":            { cost: 11, costPerX: 0, se: 2.5, minTier: 0, scalable: false, zone: "Terrain", desc: "Double son ATK si ses PV actuels sont inférieurs à sa valeur de PV originale (sur la carte)." },
-  "Bouclier":           { cost:  7, costPerX: 0, se: 1.5, minTier: 0, scalable: false, zone: "Terrain", desc: "Absorbe une première attaque sans dégâts." },
-  // ── Tier 1 — Peu Commune+ ─────────────────────────────────────────────────
-  "Vol":                { cost:  7, costPerX: 0, se: 1.5, minTier: 1, scalable: false, zone: "Terrain", desc: "Ignore les provocations adverses qui n'ont pas Vol." },
-  "Précision":          { cost:  7, costPerX: 0, se: 1.5, minTier: 1, scalable: false, zone: "Terrain", desc: "Ignore la Résistance, l'Armure et le Bouclier." },
-  "Drain de vie":       { cost:  9, costPerX: 0, se: 2.0, minTier: 1, scalable: false, zone: "Terrain", desc: "Soigne votre héros des dégâts infligés." },
-  "Esquive":            { cost: 13, costPerX: 0, se: 3.0, minTier: 1, scalable: false, zone: "Terrain", desc: "Évite automatiquement la première attaque reçue chaque tour." },
-  "Poison":             { cost:  9, costPerX: 0, se: 2.0, minTier: 1, scalable: false, zone: "Terrain", desc: "Les unités blessées perdent 1 PV par tour." },
-  "Célérité":           { cost: 11, costPerX: 0, se: 2.5, minTier: 1, scalable: false, zone: "Terrain", desc: "Peut attaquer deux fois par tour." },
-  "Augure":             { cost:  7, costPerX: 0, se: 1.5, minTier: 1, scalable: false, zone: "Terrain", desc: "Quand cette unité inflige des dégâts au héros adverse, vous piochez une carte." },
-  "Bénédiction":        { cost:  9, costPerX: 0, se: 2.0, minTier: 1, scalable: false, zone: "Terrain", desc: "Soigne complètement l'unité ciblée." },
-  "Bravoure":           { cost:  9, costPerX: 0, se: 2.0, minTier: 1, scalable: false, zone: "Terrain", desc: "Double ses dégâts (arrondi au supérieur) contre les unités ayant une ATK supérieure à la sienne." },
-  "Pillage":            { cost: 13, costPerX: 0, se: 3.0, minTier: 1, scalable: false, zone: "Terrain", desc: "Invocation : l'adversaire défausse une carte de son choix." },
-  "Riposte X":          { cost:  5, costPerX: 4, se: 2.0, minTier: 1, scalable: true,  zone: "Terrain", desc: "Quand cette unité subit des dégâts, inflige X dégâts à la source de l'attaque (unité ou héros)." },
-  "Rappel":             { cost:  7, costPerX: 0, se: 1.5, minTier: 1, scalable: false, zone: "Cimetière", desc: "Invocation : remettez une carte ciblée de votre cimetière dans votre main." },
-  "Combustion":         { cost:  7, costPerX: 0, se: 1.5, minTier: 1, scalable: false, zone: "Main", desc: "Invocation : défaussez une carte de votre main, puis piochez deux cartes." },
-  // ── Tier 2 — Rare+ ────────────────────────────────────────────────────────
-  "Terreur":            { cost: 11, costPerX: 0, se: 2.5, minTier: 2, scalable: false, zone: "Terrain", desc: "Les unités adverses perdent 1 ATK en présence de cette carte." },
-  "Armure":             { cost: 11, costPerX: 0, se: 2.5, minTier: 2, scalable: false, zone: "Terrain", desc: "Réduit de moitié les dégâts de combat reçus (arrondi au supérieur) ; les dégâts de sorts ne sont pas réduits." },
-  "Commandement":       { cost: 13, costPerX: 0, se: 3.0, minTier: 2, scalable: false, zone: "Terrain", desc: "Les alliés de même faction gagnent +1/+1." },
-  "Fureur":             { cost: 13, costPerX: 0, se: 3.0, minTier: 2, scalable: false, zone: "Terrain", desc: "Après avoir subi des dégâts, attaque immédiatement une unité adverse au choix." },
-  "Double Attaque":     { cost: 16, costPerX: 0, se: 3.5, minTier: 2, scalable: false, zone: "Terrain", desc: "En phase offensive uniquement : inflige deux fois son ATK, dont la première fois en Première Frappe." },
-  "Invisible":          { cost: 16, costPerX: 0, se: 3.5, minTier: 2, scalable: false, zone: "Terrain", desc: "Ne peut pas être ciblé par des sorts ni par des capacités d'unités adverses." },
-  "Canalisation":       { cost: 13, costPerX: 0, se: 3.0, minTier: 2, scalable: false, zone: "Terrain", desc: "Tant que cette unité est en jeu, vos sorts coûtent 1 mana de moins." },
-  "Catalyse":           { cost: 11, costPerX: 0, se: 2.5, minTier: 2, scalable: false, zone: "Main", desc: "Invocation : réduit de 1 le coût en mana de toutes les unités de même race dans votre main." },
-  "Contresort":         { cost: 13, costPerX: 0, se: 3.0, minTier: 2, scalable: false, zone: "Terrain", desc: "Invocation : annule le prochain sort adverse." },
-  "Convocation X":      { cost:  8, costPerX: 5, se: 3.0, minTier: 2, scalable: true,  zone: "Terrain", desc: "Invocation : crée un token X/X de la race indiquée." },
-  "Lycanthropie X":     { cost: 12, costPerX: 5, se: 3.5, minTier: 2, scalable: true,  zone: "Terrain", desc: "Début de tour : se transforme en un token X/X avec Traque." },
-  "Convocations multiples": { cost: 12, costPerX: 0, se: 4.0, minTier: 2, scalable: false, zone: "Terrain", desc: "Invocation : crée plusieurs tokens selon la configuration." },
-  "Malédiction":        { cost: 16, costPerX: 0, se: 3.5, minTier: 2, scalable: false, zone: "Terrain", desc: "Invocation : ciblez une unité ennemie, elle est exilée à la fin du prochain tour adverse." },
-  "Nécrophagie":        { cost: 18, costPerX: 0, se: 4.0, minTier: 2, scalable: false, zone: "Terrain", desc: "Gagne +1 ATK et +1 PV chaque fois qu'une unité (alliée ou ennemie) meurt." },
-  "Paralysie":          { cost: 11, costPerX: 0, se: 2.5, minTier: 2, scalable: false, zone: "Terrain", desc: "Les unités subissant des dégâts de cette créature ne peuvent attaquer ni utiliser de capacités actives avant la fin du prochain tour de leur propriétaire." },
-  "Permutation":        { cost: 16, costPerX: 0, se: 3.5, minTier: 2, scalable: false, zone: "Terrain", desc: "Invocation : échange les PV actuels de deux unités ciblées (une alliée et une ennemie)." },
-  "Persécution X":      { cost:  8, costPerX: 5, se: 3.0, minTier: 2, scalable: true,  zone: "Terrain", desc: "Chaque fois que cette unité attaque, inflige X dégâts au héros adverse." },
-  "Ombre du passé":     { cost: 11, costPerX: 0, se: 2.5, minTier: 2, scalable: false, zone: "Cimetière", desc: "Invocation : gagne +1 ATK et +1 PV par unité de même race dans votre cimetière." },
-  "Profanation X":      { cost:  7, costPerX: 3, se: 2.5, minTier: 2, scalable: true,  zone: "Cimetière", desc: "Invocation : exile les X dernières cartes de votre cimetière pour accorder jusqu'à +X/+X à l'unité." },
-  "Prescience X":       { cost:  9, costPerX: 4, se: 3.0, minTier: 2, scalable: true,  zone: "Main", desc: "Invocation : piochez des cartes jusqu'à avoir X cartes en main." },
-  "Suprématie":         { cost: 13, costPerX: 0, se: 3.0, minTier: 2, scalable: false, zone: "Main", desc: "Invocation : gagne +1 ATK et +1 PV par carte dans votre main au moment de l'invocation." },
-  "Divination":         { cost: 11, costPerX: 0, se: 2.5, minTier: 2, scalable: false, zone: "Mixte", desc: "Invocation : révèle les 3 premières cartes de votre pioche ; placez-en une sur le dessus et les 2 autres en dessous dans l'ordre choisi." },
-  "Sélection X":        { cost:  9, costPerX: 4, se: 2.5, minTier: 2, scalable: true,  zone: "Mixte", desc: "Invocation : révèle X cartes aléatoires de votre collection (factions du deck) ; ajoutez-en une à votre main." },
-  // ── Tier 3 — Épique+ ──────────────────────────────────────────────────────
-  "Liaison de vie":     { cost: 16, costPerX: 0, se: 3.5, minTier: 3, scalable: false, zone: "Terrain", desc: "Partage les dégâts subis avec le héros adverse." },
-  "Ombre":              { cost: 18, costPerX: 0, se: 4.0, minTier: 3, scalable: false, zone: "Terrain", desc: "Ne peut être ciblée ni attaquée tant qu'elle n'a pas effectué une action (attaque ou capacité)." },
-  "Sacrifice":          { cost: 18, costPerX: 0, se: 4.0, minTier: 3, scalable: false, zone: "Terrain", desc: "Invocation : détruisez un allié pour gagner ses PV et son ATK de manière permanente." },
-  "Maléfice":           { cost: 18, costPerX: 0, se: 4.0, minTier: 3, scalable: false, zone: "Terrain", desc: "À la mort, inflige X dégâts à toutes les unités (alliés et ennemis), X = son ATK." },
-  "Indestructible":     { cost: 25, costPerX: 0, se: 5.5, minTier: 3, scalable: false, zone: "Terrain", desc: "Ne subit aucun dégât de combat." },
-  "Régénération":       { cost: 20, costPerX: 0, se: 4.5, minTier: 3, scalable: false, zone: "Terrain", desc: "Récupère 2 PV au début de chaque tour." },
-  "Corruption":         { cost: 27, costPerX: 0, se: 6.0, minTier: 4, scalable: false, zone: "Terrain", desc: "Convertit l'unité ennemie sélectionnée à votre camp jusqu'à la fin du tour ; elle gagne Traque jusqu'à la fin du tour." },
-  "Carnage X":          { cost: 12, costPerX: 5, se: 4.0, minTier: 3, scalable: true,  zone: "Terrain", desc: "Mort : inflige X dégâts à toutes les unités en jeu (alliées et ennemies)." },
-  "Héritage X":         { cost: 14, costPerX: 6, se: 4.5, minTier: 3, scalable: true,  zone: "Terrain", desc: "Mort : chaque unité alliée en jeu gagne +X ATK et +X PV de manière permanente." },
-  "Mimique":            { cost: 20, costPerX: 0, se: 4.5, minTier: 3, scalable: false, zone: "Terrain", desc: "Invocation : copie toutes les capacités d'une unité ciblée et les attribue à cette unité de manière permanente." },
-  "Métamorphose":       { cost: 20, costPerX: 0, se: 4.5, minTier: 3, scalable: false, zone: "Terrain", desc: "Invocation : cette unité devient une copie exacte (ATK / PV / capacités) d'une unité ciblée." },
-  "Tactique X":         { cost: 11, costPerX: 7, se: 4.0, minTier: 3, scalable: true,  zone: "Terrain", desc: "Invocation : attribue X capacité(s) choisie(s) à une unité alliée ciblée de manière permanente." },
-  "Exhumation X":       { cost: 14, costPerX: 4, se: 4.0, minTier: 3, scalable: true,  zone: "Cimetière", desc: "Invocation : ressuscite une unité de votre cimetière dont le coût en mana est égal ou inférieur à X." },
-  "Héritage du cimetière": { cost: 16, costPerX: 0, se: 3.5, minTier: 3, scalable: false, zone: "Cimetière", desc: "Invocation : attribue à cette unité les capacités d'une unité ciblée dans votre cimetière." },
-  // ── Tier 4 — Légendaire uniquement ─────────────────────────────────────────
-  "Pacte de sang":      { cost: 25, costPerX: 0, se: 5.5, minTier: 4, scalable: false, zone: "Terrain", desc: "Quand cette unité meurt, invoque deux tokens 1/1 de sa race." },
-  "Souffle de feu X":   { cost: 19, costPerX: 6, se: 5.5, minTier: 4, scalable: true,  zone: "Terrain", desc: "Inflige X dégâts à toutes les unités ennemies lors de l'attaque (ex : Souffle de feu 2 = 2 dégâts)." },
-  "Domination":         { cost: 27, costPerX: 0, se: 6.0, minTier: 4, scalable: false, zone: "Terrain", desc: "Prend le contrôle d'une unité ennemie au hasard à son invocation." },
-  "Résurrection":       { cost: 29, costPerX: 0, se: 6.5, minTier: 4, scalable: false, zone: "Terrain", desc: "Revient en jeu après sa mort avec 1 PV ; perd la capacité Résurrection à son retour." },
-  "Transcendance":      { cost: 32, costPerX: 0, se: 7.0, minTier: 4, scalable: false, zone: "Terrain", desc: "Immunité totale aux sorts adverses : ne peut subir aucun dégât ni effet de sort, y compris les sorts de zone." },
-  "Vampirisme X":       { cost: 20, costPerX: 5, se: 5.5, minTier: 4, scalable: true,  zone: "Terrain", desc: "Invocation : vole X PV à une unité ennemie ciblée et les ajoute aux PV de cette unité." },
-  // ── Deck / Race / Clan ────────────────────────────────────────────────────
-  "Traque du destin X": { cost: 11, costPerX: 4, se: 3.0, minTier: 2, scalable: true,  zone: "Deck", desc: "Invocation : révèle les X premières cartes de votre deck, prenez-en une en main et placez les autres en dessous dans un ordre aléatoire." },
-  "Cycle éternel":      { cost: 18, costPerX: 0, se: 4.0, minTier: 3, scalable: false, zone: "Deck", desc: "Mort : ajoutez une copie de cette carte dans votre deck ; si elle est piochée, mettez-la directement en jeu." },
-  "Sang mêlé":          { cost: 11, costPerX: 0, se: 2.5, minTier: 2, scalable: false, zone: "Race", desc: "Gagne +1 ATK et +1 PV pour chaque type de race différent parmi vos alliés en jeu." },
-  "Martyr":             { cost: 18, costPerX: 0, se: 4.0, minTier: 3, scalable: false, zone: "Race", desc: "Mort : toutes vos unités de même race en jeu gagnent +1/+1 permanent." },
-  "Instinct de meute X": { cost: 14, costPerX: 5, se: 4.0, minTier: 3, scalable: true,  zone: "Race", desc: "Gagne +X ATK et +X PV si une unité alliée de même clan est morte ce tour." },
-  "Totem":              { cost: 25, costPerX: 0, se: 5.5, minTier: 4, scalable: false, zone: "Race", desc: "Cette unité gagne les capacités de toutes les unités de même race alliées en jeu." },
-  "Fierté du clan":     { cost: 13, costPerX: 0, se: 3.0, minTier: 2, scalable: false, zone: "Clan", desc: "Tant que cette unité est en jeu, les unités de même clan invoquées arrivent avec +1/+1." },
-  "Appel du clan X":    { cost: 16, costPerX: 5, se: 4.5, minTier: 3, scalable: true,  zone: "Clan", desc: "Invocation : mettez en jeu gratuitement la première unité de même clan avec un coût inférieur ou égal à X depuis le dessus de votre deck." },
-  "Solidarité X":       { cost:  9, costPerX: 4, se: 2.5, minTier: 2, scalable: true,  zone: "Clan", desc: "Invocation : piochez X cartes si vous contrôlez 2 autres unités de même clan." },
-  "Rassemblement X":    { cost: 14, costPerX: 4, se: 4.0, minTier: 3, scalable: true,  zone: "Mixte", desc: "Invocation : révèle les X premières cartes du deck ; ajoutez à votre main toutes les unités de même race et défaussez le reste." },
-  "Relancer X":         { cost: 12, costPerX: 8, se: 5.0, minTier: 3, scalable: true,  zone: "Terrain", desc: "Invocation : rejoue les X derniers sorts lancés avec des cibles aléatoires." },
-};
+export type { KeywordZone } from "@/lib/game/abilities";
+export { KEYWORDS } from "@/lib/game/abilities";
 
 // ─── FACTIONS ────────────────────────────────────────────────────────────────
 

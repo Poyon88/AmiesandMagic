@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import type { SpellCastEvent } from "@/lib/store/gameStore";
+import { useGameStore, type SpellCastEvent } from "@/lib/store/gameStore";
 import {
   KEYWORD_SYMBOLS,
   KEYWORD_LABELS,
@@ -122,6 +122,7 @@ function SpellTargetArrows({
 export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlayProps) {
   const [mounted, setMounted] = useState(false);
   const cardRef = useRef<HTMLDivElement | null>(null);
+  const tokenTemplates = useGameStore((s) => s.tokenTemplates);
   useEffect(() => setMounted(true), []);
 
   useEffect(() => {
@@ -331,7 +332,7 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
                   <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                     {card.spell_keywords.map((spellKw, i) => {
                       const label = getSpellKeywordLabel(spellKw);
-                      const desc = getSpellKeywordDesc(spellKw, card);
+                      const desc = getSpellKeywordDesc(spellKw, card, tokenTemplates);
                       return (
                         <div key={`sk_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 6 }}>
                           <span style={{ flexShrink: 0 }}>

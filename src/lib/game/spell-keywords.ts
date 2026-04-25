@@ -1,137 +1,15 @@
-import type { SpellKeywordId, SpellKeywordInstance, SpellTargetType, Card, ConvocationTokenDef } from "./types";
+import type { SpellKeywordId, SpellKeywordInstance, SpellTargetType, Card, ConvocationTokenDef, TokenTemplate } from "./types";
+import { SPELL_KEYWORDS as ABILITIES_SPELL_KEYWORDS, type DerivedSpellKeywordDef } from "./abilities";
 
-export interface SpellKeywordDef {
-  label: string;
-  symbol: string;
-  desc: string;
-  params: ("amount" | "attack" | "health")[];
-  needsTarget: boolean;
-  targetType?: SpellTargetType;
-}
+// Single source of truth lives in `src/lib/game/abilities.ts` (unified
+// registry shared with creature keywords). The map below is re-exported
+// under the legacy SPELL_KEYWORDS name so the engine
+// (`resolveSpellKeywords`), the forge UI, and downstream tooling keep
+// working unchanged.
 
-export const SPELL_KEYWORDS: Record<SpellKeywordId, SpellKeywordDef> = {
-  impact: {
-    label: "Impact X",
-    symbol: "💥",
-    desc: "Inflige X dégâts à une cible",
-    params: ["amount"],
-    needsTarget: true,
-    targetType: "any",
-  },
-  deferlement: {
-    label: "Déferlement X",
-    symbol: "🌊",
-    desc: "Inflige X dégâts à tous les ennemis",
-    params: ["amount"],
-    needsTarget: false,
-  },
-  siphon: {
-    label: "Siphon X",
-    symbol: "🩸",
-    desc: "Inflige X dégâts à une cible et soigne votre héros du même montant",
-    params: ["amount"],
-    needsTarget: true,
-    targetType: "enemy_creature",
-  },
-  entrave: {
-    label: "Entrave",
-    symbol: "⛓️",
-    desc: "Paralyse une créature ennemie ciblée",
-    params: [],
-    needsTarget: true,
-    targetType: "enemy_creature",
-  },
-  execution: {
-    label: "Exécution",
-    symbol: "☠️",
-    desc: "Détruit une créature ciblée",
-    params: [],
-    needsTarget: true,
-    targetType: "any_creature",
-  },
-  silence: {
-    label: "Silence",
-    symbol: "🤫",
-    desc: "Retire tous les mots-clés d'une créature ciblée",
-    params: [],
-    needsTarget: true,
-    targetType: "any_creature",
-  },
-  renforcement: {
-    label: "Renforcement +X/+Y",
-    symbol: "⬆️",
-    desc: "Donne +X ATK et +Y PV à une créature alliée",
-    params: ["attack", "health"],
-    needsTarget: true,
-    targetType: "friendly_creature",
-  },
-  guerison: {
-    label: "Guérison X",
-    symbol: "💚",
-    desc: "Restaure X PV à une cible",
-    params: ["amount"],
-    needsTarget: true,
-    targetType: "any",
-  },
-  invocation: {
-    label: "Invocation X/Y",
-    symbol: "📣",
-    desc: "Invoque un token X/Y",
-    params: ["attack", "health"],
-    needsTarget: false,
-  },
-  inspiration: {
-    label: "Inspiration X",
-    symbol: "📖",
-    desc: "Piochez X cartes",
-    params: ["amount"],
-    needsTarget: false,
-  },
-  invocation_multiple: {
-    label: "Invocation multiple",
-    symbol: "📣📣",
-    desc: "Crée plusieurs tokens selon la configuration de la carte",
-    params: [],
-    needsTarget: false,
-  },
-  afflux: {
-    label: "Afflux X",
-    symbol: "💎",
-    desc: "Gagnez X mana ce tour",
-    params: ["amount"],
-    needsTarget: false,
-  },
-  rappel: {
-    label: "Rappel",
-    symbol: "🪦",
-    desc: "Renvoie une créature de votre cimetière dans votre main",
-    params: [],
-    needsTarget: true,
-    targetType: "friendly_graveyard",
-  },
-  exhumation: {
-    label: "Exhumation X",
-    symbol: "⚰️",
-    desc: "Ressuscite une créature (coût ≤ X) de votre cimetière sur le terrain",
-    params: ["amount"],
-    needsTarget: true,
-    targetType: "friendly_graveyard_to_board",
-  },
-  selection: {
-    label: "Sélection X",
-    symbol: "🎴",
-    desc: "Choisissez une carte parmi X aléatoires de votre collection à ajouter en main",
-    params: ["amount"],
-    needsTarget: false,
-  },
-  relancer: {
-    label: "Relancer X",
-    symbol: "♻️",
-    desc: "Rejoue les X derniers sorts lancés avec des cibles aléatoires",
-    params: ["amount"],
-    needsTarget: false,
-  },
-};
+export type SpellKeywordDef = DerivedSpellKeywordDef;
+export const SPELL_KEYWORDS: Record<SpellKeywordId, SpellKeywordDef> = ABILITIES_SPELL_KEYWORDS;
+export type { SpellTargetType };
 
 export const ALL_SPELL_KEYWORDS: SpellKeywordId[] = Object.keys(SPELL_KEYWORDS) as SpellKeywordId[];
 
@@ -143,8 +21,50 @@ export const SPELL_KEYWORD_SYMBOLS: Record<SpellKeywordId, string> = Object.from
   Object.entries(SPELL_KEYWORDS).map(([id, def]) => [id, def.symbol])
 ) as Record<SpellKeywordId, string>;
 
+// Renders the convocation_tokens array as a human-readable French string.
+// Groups identical entries (same token + same effective stats) so the
+// admin sees "2 tokens Goblins des Marais 1/1 et un token Orc 2/2" rather
+// than the raw list. Falls back to stats-only when the token registry is
+// not available at the call site.
+export function formatConvocationTokens(
+  tokens: ConvocationTokenDef[],
+  registry?: TokenTemplate[],
+): string {
+  if (!tokens.length) return "aucun token";
+
+  const groups = new Map<
+    string,
+    { count: number; name: string; atk: number; hp: number }
+  >();
+
+  for (const t of tokens) {
+    const tmpl = registry?.find((r) => r.id === t.token_id) ?? null;
+    const atk = t.attack ?? tmpl?.attack ?? 1;
+    const hp = t.health ?? tmpl?.health ?? 1;
+    const name = tmpl?.name ?? "Token";
+    const key = `${tmpl?.id ?? "x"}|${atk}|${hp}|${name}`;
+    const existing = groups.get(key);
+    if (existing) existing.count++;
+    else groups.set(key, { count: 1, name, atk, hp });
+  }
+
+  const parts = Array.from(groups.values()).map((g) => {
+    const noun = g.count > 1 ? "tokens" : "token";
+    const countStr = g.count === 1 ? "un" : String(g.count);
+    return `${countStr} ${noun} ${g.name} ${g.atk}/${g.hp}`;
+  });
+
+  if (parts.length === 1) return parts[0];
+  if (parts.length === 2) return `${parts[0]} et ${parts[1]}`;
+  return `${parts.slice(0, -1).join(", ")} et ${parts[parts.length - 1]}`;
+}
+
 /** Get the display description for a spell keyword, with token details for invocation_multiple */
-export function getSpellKeywordDesc(kw: SpellKeywordInstance, card?: Card | null): string {
+export function getSpellKeywordDesc(
+  kw: SpellKeywordInstance,
+  card?: Card | null,
+  tokens?: TokenTemplate[],
+): string {
   const def = SPELL_KEYWORDS[kw.id];
   let desc = def.desc;
 
@@ -153,15 +73,12 @@ export function getSpellKeywordDesc(kw: SpellKeywordInstance, card?: Card | null
   else if (def.params.includes("amount")) desc = desc.replace(/X/g, String(kw.amount ?? 1));
   if (def.params.includes("health")) desc = desc.replace(/Y/g, String(kw.health ?? 0));
 
-  // Override for invocation_multiple with actual token details. The
-  // race / template name isn't available here without a registry lookup, so
-  // we surface the (possibly overridden) stats only — the token visual is
-  // shown when actually summoned in-game.
+  // Override for invocation_multiple with actual token details. With the
+  // token registry passed in we resolve names + apply effective stats
+  // (override or template defaults). Without it, we fall back to the
+  // stats-only description.
   if (kw.id === "invocation_multiple" && card?.convocation_tokens?.length) {
-    const parts = card.convocation_tokens.map((t: ConvocationTokenDef) =>
-      `Token ${t.attack ?? "?"}/${t.health ?? "?"}`
-    );
-    desc = `Crée ${parts.join(", ")}`;
+    desc = `Crée ${formatConvocationTokens(card.convocation_tokens, tokens)}`;
   }
 
   // Override for invocation with race

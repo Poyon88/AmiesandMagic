@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Card } from "@/lib/game/types";
 import GameCard from "@/components/cards/GameCard";
+import { useGameStore } from "@/lib/store/gameStore";
 
 interface SelectionOverlayProps {
   cards: Card[];
@@ -11,6 +12,7 @@ interface SelectionOverlayProps {
 
 export default function SelectionOverlay({ cards, onChoose }: SelectionOverlayProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const tokenTemplates = useGameStore((s) => s.tokenTemplates);
 
   return (
     <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center">
@@ -44,7 +46,7 @@ export default function SelectionOverlay({ cards, onChoose }: SelectionOverlayPr
                 boxShadow: hoveredIndex === i ? "0 0 20px #a855f766" : "0 4px 12px rgba(0,0,0,0.3)",
               }}
             >
-              <GameCard card={card} size="md" />
+              <GameCard card={card} size="md" tokens={tokenTemplates} />
             </div>
           ))}
         </div>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { CardInstance } from "@/lib/game/types";
 import GameCard from "@/components/cards/GameCard";
+import { useGameStore } from "@/lib/store/gameStore";
 
 interface DivinationOverlayProps {
   cards: CardInstance[];
@@ -12,6 +13,7 @@ interface DivinationOverlayProps {
 
 export default function DivinationOverlay({ cards, onChoose, onCancel }: DivinationOverlayProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const tokenTemplates = useGameStore((s) => s.tokenTemplates);
 
   return (
     <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center">
@@ -45,7 +47,7 @@ export default function DivinationOverlay({ cards, onChoose, onCancel }: Divinat
                 boxShadow: hoveredIndex === i ? "0 0 20px #a855f766" : "0 4px 12px rgba(0,0,0,0.3)",
               }}
             >
-              <GameCard card={cardInstance.card} size="md" />
+              <GameCard card={cardInstance.card} size="md" tokens={tokenTemplates} />
             </div>
           ))}
         </div>

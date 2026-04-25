@@ -470,6 +470,7 @@ export default function CardEditor() {
                     card={card as unknown as Card}
                     size="sm"
                     selected={selectedCard?.id === card.id}
+                    tokens={tokenTemplates}
                   />
                 </div>
               ))}

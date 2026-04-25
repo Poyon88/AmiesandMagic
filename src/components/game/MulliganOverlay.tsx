@@ -207,19 +207,26 @@ function MulliganCard({
               const usesAtkHp = def.params.includes("attack") && def.params.includes("health");
               const usesAmount = def.params.includes("amount");
               const hasValue = usesAmount || usesAtkHp;
+              const useStatBuffFormat = usesAtkHp && def.label.includes("+X");
               const valueText = usesAtkHp
-                ? `+${spellKw.attack ?? 0}/+${spellKw.health ?? 0}`
+                ? useStatBuffFormat
+                  ? `+${spellKw.attack ?? 0}/+${spellKw.health ?? 0}`
+                  : `${spellKw.attack ?? 0}/${spellKw.health ?? 0}`
                 : usesAmount ? toRoman(spellKw.amount ?? 1) : null;
               return (
               <div key={`sk_${i}`} title={displayTitle} style={{
                 minWidth: 20, height: 20, borderRadius: 5,
                 padding: hasValue ? "0 3px" : 0,
                 background: `${accentColor}33`, border: `1px solid ${accentColor}66`,
-                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2,
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 0,
                 fontSize: 11,
               }}>
                 <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={11} keyword={`spell_${spellKw.id}`} />
-                {valueText && <span style={{ fontSize: 8, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}` }}>{toRoman(spellKw.amount!)}</span>}
+                {valueText && <span style={{
+                  fontSize: 8, fontWeight: 900, color: "#fff",
+                  fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}`,
+                  marginLeft: -4,
+                }}>{valueText}</span>}
               </div>
               );
             })}

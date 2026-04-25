@@ -207,8 +207,11 @@ export default function HandCard({
               const usesAtkHp = def.params.includes("attack") && def.params.includes("health");
               const usesAmount = def.params.includes("amount");
               const hasValue = usesAmount || usesAtkHp;
+              const useStatBuffFormat = usesAtkHp && def.label.includes("+X");
               const valueText = usesAtkHp
-                ? `+${spellKw.attack ?? 0}/+${spellKw.health ?? 0}`
+                ? useStatBuffFormat
+                  ? `+${spellKw.attack ?? 0}/+${spellKw.health ?? 0}`
+                  : `${spellKw.attack ?? 0}/${spellKw.health ?? 0}`
                 : usesAmount ? toRoman(spellKw.amount ?? 1) : null;
               const spellKey = `spell_${spellKw.id}`;
               const hasImg = !!iconOverrides[spellKey];
@@ -218,7 +221,7 @@ export default function HandCard({
                 padding: hasValue ? "0 2px" : 0,
                 background: hasImg ? "transparent" : `${accentColor}33`,
                 border: hasImg ? "none" : `1px solid ${accentColor}66`,
-                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1,
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 0,
                 fontSize: 8, overflow: "hidden",
               }}>
                 {hasImg ? (
@@ -228,7 +231,11 @@ export default function HandCard({
                 ) : (
                   <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={16} keyword={spellKey} />
                 )}
-                {valueText && <span style={{ fontSize: 8, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}` }}>{valueText}</span>}
+                {valueText && <span style={{
+                  fontSize: 8, fontWeight: 900, color: "#fff",
+                  fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}`,
+                  marginLeft: -6,
+                }}>{valueText}</span>}
               </div>
               );
             })}
@@ -322,7 +329,7 @@ export default function HandCard({
             <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
               {card.spell_keywords.map((spellKw, i) => {
                 const label = getSpellKeywordLabel(spellKw);
-                const desc = getSpellKeywordDesc(spellKw, card);
+                const desc = getSpellKeywordDesc(spellKw, card, tokenTemplates);
                 return (
                 <div key={`sk_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
                   <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={9} keyword={`spell_${spellKw.id}`} /></span>

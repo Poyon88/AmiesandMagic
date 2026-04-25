@@ -9,6 +9,7 @@ import type { CardType, Keyword, SpellEffect, SpellTargetType, SpellKeywordInsta
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
 import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
+import { ABILITIES, type AbilityDef } from "@/lib/game/abilities";
 import type { SpellKeywordId } from "@/lib/game/types";
 import CardEditor from "@/components/admin/CardEditor";
 import { CARD_BACK_FRAMES, autoTrimDarkBorders, composeCardBack, getCardBackFrame } from "@/lib/card-back-frames";
@@ -262,7 +263,8 @@ export default function CardForge() {
   type KwVariation = { base64: string; mime: string; url: string };
   type KwColorMode = "white" | "grey" | "colored" | "sculpture";
   const [kwAssets, setKwAssets] = useState<KwAsset[]>([]);
-  const [kwTypeForm, setKwTypeForm] = useState<"creature" | "spell">("creature");
+  // Selected ability id (matches ABILITIES key). One picker covers creature
+  // + spell + polymorphic via the ability's `applicable_to` list.
   const [kwSelected, setKwSelected] = useState<string>("");
   const [kwColorMode, setKwColorMode] = useState<KwColorMode>("white");
   const [kwInstructions, setKwInstructions] = useState("");
@@ -284,29 +286,39 @@ export default function CardForge() {
   const spellKeywordOptions = ALL_SPELL_KEYWORDS.map((id) => ({ id, label: SPELL_KEYWORD_LABELS[id] ?? id }))
     .sort((a, b) => a.label.localeCompare(b.label, "fr"));
 
+  // Unified ability options for the kw-icons picker. Each entry is one
+  // concept from the registry, regardless of host. Polymorphic abilities
+  // appear once and get a 🔀 marker; single-host ones get 👤 (creature) or
+  // 🪄 (spell). Sorted by label for the dropdown.
+  const abilityOptions: { id: string; label: string; hosts: ("creature" | "spell")[]; marker: string }[] =
+    Object.values(ABILITIES)
+      .map((a) => {
+        const isPoly = a.applicable_to.length > 1;
+        const marker = isPoly ? "🔀" : a.applicable_to[0] === "spell" ? "🪄" : "👤";
+        return { id: a.id, label: a.label, hosts: a.applicable_to, marker };
+      })
+      .sort((a, b) => a.label.localeCompare(b.label, "fr"));
+
+  const kwSelectedAbility: AbilityDef | null = kwSelected ? (ABILITIES[kwSelected] ?? null) : null;
+  // What the form will save for: derived from the selected ability's
+  // applicable_to. Polymorphic abilities save once per host below.
+  const kwTargetHosts: ("creature" | "spell")[] = kwSelectedAbility?.applicable_to ?? [];
+
   async function loadKwAssets() {
     const res = await fetch(`/api/keyword-icon-assets${kwGalleryFilter ? `?keyword=${encodeURIComponent(kwGalleryFilter)}` : ""}`);
     const data = await res.json();
     setKwAssets(Array.isArray(data?.assets) ? data.assets : []);
   }
 
-  function kwKeywordDesc(type: "creature" | "spell", id: string): string {
-    if (type === "creature") {
-      const forgeKey = KEYWORD_LABELS[id];
-      const def = forgeKey ? KEYWORDS[forgeKey] : null;
-      return def?.desc ?? "";
-    }
-    const def = SPELL_KEYWORDS[id as SpellKeywordId];
-    return def?.desc ?? "";
-  }
-
   function generateKeywordIconPrompt() {
-    if (!kwSelected) return;
-    const label =
-      kwTypeForm === "creature"
-        ? KEYWORD_LABELS[kwSelected] ?? kwSelected
-        : SPELL_KEYWORD_LABELS[kwSelected as SpellKeywordId] ?? kwSelected;
-    const desc = kwKeywordDesc(kwTypeForm, kwSelected);
+    if (!kwSelected || !kwSelectedAbility) return;
+    const label = kwSelectedAbility.label;
+    const desc = kwSelectedAbility.desc;
+    // Subject hint mirrors the original creature vs spell motif suggestion.
+    // For polymorphic abilities we lean on the creature motif since most
+    // share a body/martial visual identity.
+    const motifHost: "creature" | "spell" =
+      kwTargetHosts.includes("creature") ? "creature" : "spell";
 
     const parts: string[] = [];
     if (kwColorMode === "white") {
@@ -360,7 +372,7 @@ export default function CardForge() {
       parts.push(`Subject: a simple iconic symbol that clearly represents the keyword "${label}" from a fantasy card game.`);
       if (desc) parts.push(`Meaning of the keyword (for inspiration only, do NOT depict literally): ${desc}`);
       parts.push(
-        kwTypeForm === "spell"
+        motifHost === "spell"
           ? "Since this is a SPELL keyword, favor very simple arcane motifs (a single rune shape, a small arcane circle, an elemental glyph)."
           : "Since this is a CREATURE keyword, favor very simple martial or body-state motifs (sword, shield, wings, fang, heart, etc.).",
       );
@@ -489,12 +501,8 @@ export default function CardForge() {
         // Auto-fill the name from the selected keyword if the admin hasn't
         // typed one yet — otherwise the Save button stays disabled because
         // saveKeywordIcon's gate requires a non-empty name.
-        if (kwSelected && !kwName.trim()) {
-          const label =
-            kwTypeForm === "creature"
-              ? (KEYWORD_LABELS[kwSelected as keyof typeof KEYWORD_LABELS] ?? kwSelected)
-              : (SPELL_KEYWORD_LABELS[kwSelected as SpellKeywordId] ?? kwSelected);
-          setKwName(label);
+        if (kwSelectedAbility && !kwName.trim()) {
+          setKwName(kwSelectedAbility.label);
         }
       } catch {
         setKwMessage({ ok: false, msg: "Impossible de charger l'image." });
@@ -547,7 +555,7 @@ export default function CardForge() {
   }
 
   async function saveKeywordIcon() {
-    if (!kwName.trim() || !kwSelected || kwSelectedIdxs.length === 0) return;
+    if (!kwName.trim() || !kwSelectedAbility || kwSelectedIdxs.length === 0) return;
     const picks = kwSelectedIdxs
       .map((i) => kwVariations[i])
       .filter((v): v is KwVariation => !!v);
@@ -556,38 +564,59 @@ export default function CardForge() {
     setKwMessage(null);
     const baseName = kwName.trim();
     const multi = picks.length > 1;
-    const keywordKey = kwTypeForm === "spell" ? `spell_${kwSelected}` : kwSelected;
+    // For polymorphic abilities we save once per host so existing in-game
+    // lookups (legacy keys: FR label for creature, `spell_<id>` for spell)
+    // keep finding the icon. The same image bytes are uploaded under both
+    // rows — `keyword_icon_assets` is small and dedup is cheap to skip.
+    const targets = kwSelectedAbility.applicable_to.map((host) => {
+      const keyword =
+        host === "spell"
+          ? `spell_${kwSelectedAbility.id}`
+          : kwSelectedAbility.creature?.label ?? kwSelectedAbility.label;
+      return { host, keyword };
+    });
     let ok = 0;
     let firstError: string | null = null;
     for (let idx = 0; idx < picks.length; idx++) {
       const variant = picks[idx];
       const name = multi ? `${baseName} #${idx + 1}` : baseName;
-      try {
-        const res = await fetch("/api/keyword-icon-assets", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name,
-            imageBase64: variant.base64,
-            imageMimeType: variant.mime,
-            keyword_type: kwTypeForm,
-            keyword: keywordKey,
-            style: "simple",
-            prompt: kwPrompt,
-          }),
-        });
-        const data = await res.json();
-        if (!res.ok || data.error) {
-          if (!firstError) firstError = data.error ?? `Erreur ${res.status}`;
-        } else {
-          ok++;
+      for (const target of targets) {
+        try {
+          const res = await fetch("/api/keyword-icon-assets", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              name,
+              imageBase64: variant.base64,
+              imageMimeType: variant.mime,
+              keyword_type: target.host,
+              keyword: target.keyword,
+              style: "simple",
+              prompt: kwPrompt,
+            }),
+          });
+          const data = await res.json();
+          if (!res.ok || data.error) {
+            if (!firstError) firstError = data.error ?? `Erreur ${res.status}`;
+          } else {
+            ok++;
+          }
+        } catch (err) {
+          if (!firstError) firstError = err instanceof Error ? err.message : "Erreur réseau";
         }
-      } catch (err) {
-        if (!firstError) firstError = err instanceof Error ? err.message : "Erreur réseau";
       }
     }
     if (ok > 0 && !firstError) {
-      setKwMessage({ ok: true, msg: multi ? `${ok} icônes enregistrées.` : `Icône "${baseName}" enregistrée.` });
+      const total = picks.length * targets.length;
+      setKwMessage({
+        ok: true,
+        msg:
+          targets.length > 1
+            ? `${ok}/${total} icônes enregistrées (créature + sort).`
+            : multi
+            ? `${ok} icônes enregistrées.`
+            : `Icône "${baseName}" enregistrée.`,
+      });
       setKwVariations([]);
       setKwSelectedIdxs([]);
       setKwName("");
@@ -2138,6 +2167,7 @@ export default function CardForge() {
                   onImageChange={(url) => {
                     setCardImages(prev => ({ ...prev, [manualCard.id]: url }));
                   }}
+                  tokens={tokenTemplates}
                 />
               </div>
               {/* SFX par carte */}
@@ -3600,24 +3630,27 @@ export default function CardForge() {
                 <div style={{ fontSize: 10, color: "#666", letterSpacing: 1, marginBottom: 10, fontWeight: 700 }}>
                   PARAMÈTRES
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
-                  <div>
-                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>TYPE</label>
-                    <select value={kwTypeForm} onChange={e => { setKwTypeForm(e.target.value as "creature" | "spell"); setKwSelected(""); }}
-                      style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }}>
-                      <option value="creature">Créature</option>
-                      <option value="spell">Sort</option>
-                    </select>
-                  </div>
+                <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 10 }}>
                   <div>
                     <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>CAPACITÉ</label>
                     <select value={kwSelected} onChange={e => setKwSelected(e.target.value)}
                       style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }}>
-                      <option value="">-- Choisir --</option>
-                      {(kwTypeForm === "creature" ? creatureKeywordOptions : spellKeywordOptions).map(opt => (
-                        <option key={opt.id} value={opt.id}>{opt.label}</option>
+                      <option value="">-- Choisir une capacité --</option>
+                      {abilityOptions.map(opt => (
+                        <option key={opt.id} value={opt.id}>
+                          {opt.marker} {opt.label}
+                        </option>
                       ))}
                     </select>
+                    <div style={{ fontSize: 9, color: "#999", marginTop: 4, fontFamily: "'Crimson Text',serif" }}>
+                      {kwSelectedAbility ? (
+                        kwTargetHosts.length > 1
+                          ? "🔀 Capacité polymorphe — l'icône sera enregistrée pour la créature ET le sort."
+                          : kwTargetHosts[0] === "creature"
+                          ? "👤 Capacité de créature."
+                          : "🪄 Capacité de sort."
+                      ) : "👤 créature · 🪄 sort · 🔀 partagée"}
+                    </div>
                   </div>
                   <div>
                     <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>NOM DE L&apos;ICÔNE</label>
@@ -3625,6 +3658,7 @@ export default function CardForge() {
                       placeholder="Ex: Bouclier v2"
                       style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }} />
                   </div>
+                  <div />
                   <div style={{ gridColumn: "span 3" }}>
                     <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>STYLE</label>
                     <div style={{ display: "flex", gap: 6, marginTop: 4, flexWrap: "wrap" }}>

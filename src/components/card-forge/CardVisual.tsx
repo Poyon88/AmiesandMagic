@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { KEYWORDS, FACTIONS, RARITY_MAP } from '@/lib/card-engine/constants';
 import KeywordIcon from '@/components/shared/KeywordIcon';
-import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS, getSpellKeywordDesc, getSpellKeywordLabel } from '@/lib/game/spell-keywords';
-import type { SpellKeywordInstance } from '@/lib/game/types';
+import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS, getSpellKeywordDesc, getSpellKeywordLabel, formatConvocationTokens } from '@/lib/game/spell-keywords';
+import type { SpellKeywordInstance, TokenTemplate } from '@/lib/game/types';
 
 // ─── KEYWORD → SYMBOL MAP ───────────────────────────────────────────────────
 
@@ -134,7 +134,7 @@ interface CardData {
 
 // ─── COMPONENT ───────────────────────────────────────────────────────────────
 
-export default function CardVisual({ card, loading, compact = false, imageUrl, onImageChange }: { card: CardData | null; loading: boolean; compact?: boolean; imageUrl?: string | null; onImageChange?: (url: string) => void }) {
+export default function CardVisual({ card, loading, compact = false, imageUrl, onImageChange, tokens }: { card: CardData | null; loading: boolean; compact?: boolean; imageUrl?: string | null; onImageChange?: (url: string) => void; tokens?: TokenTemplate[] }) {
   const [hovered, setHovered] = useState(false);
   const W = compact ? 180 : 300;
   const H = compact ? 252 : 420;
@@ -280,8 +280,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                 displayDesc = `Invocation : crée un token ${tokenLabel} ${xVal ?? "X"}/${xVal ?? "X"}.`;
               }
               if (kw === "Convocations multiples" && card!.convocationTokens?.length) {
-                const parts = card!.convocationTokens.map(t => `Token ${t.attack ?? "?"}/${t.health ?? "?"}`);
-                displayDesc = `Invocation : crée ${parts.join(", ")}.`;
+                displayDesc = `Invocation : crée ${formatConvocationTokens(card!.convocationTokens, tokens)}.`;
               }
               if (kw === "Lycanthropie X" && card!.lycanthropieTokenId) {
                 const tokenLabel = card!.lycanthropieTokenName || "forme transformée";
@@ -318,19 +317,22 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
               const def = SPELL_KEYWORDS[spellKw.id];
               const fakeCard = { convocation_tokens: card!.convocationTokens?.map(t => ({ token_id: t.token_id, attack: t.attack, health: t.health })) } as import("@/lib/game/types").Card;
               const label = getSpellKeywordLabel(spellKw);
-              const desc = getSpellKeywordDesc(spellKw, fakeCard);
+              const desc = getSpellKeywordDesc(spellKw, fakeCard, tokens);
               const usesAtkHp = def.params.includes("attack") && def.params.includes("health");
               const usesAmount = def.params.includes("amount");
               const hasValue = usesAmount || usesAtkHp;
+              const useStatBuffFormat = usesAtkHp && def.label.includes("+X");
               const valueText = usesAtkHp
-                ? `+${spellKw.attack ?? 0}/+${spellKw.health ?? 0}`
+                ? useStatBuffFormat
+                  ? `+${spellKw.attack ?? 0}/+${spellKw.health ?? 0}`
+                  : `${spellKw.attack ?? 0}/${spellKw.health ?? 0}`
                 : usesAmount ? toRoman(spellKw.amount ?? 1) : null;
               return (
                 <div key={`sk_${i}`} title={`${label}: ${desc}`} style={{
                   minWidth: 24 * s, height: 24 * s, borderRadius: 6 * s,
                   padding: `0 ${hasValue ? 5 * s : 0}px`,
                   background: `${fac.color}33`, border: `1px solid ${fac.color}88`,
-                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 3 * s,
+                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 0,
                   fontSize: 13 * s, cursor: "default",
                   boxShadow: `0 0 6px ${fac.color}44`,
                   transition: "all 0.2s",
@@ -341,6 +343,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                       fontSize: 10 * s, fontWeight: 900, lineHeight: 1,
                       color: "#fff", fontFamily: "'Cinzel',serif",
                       textShadow: `0 0 4px ${fac.accent}`,
+                      marginLeft: -4 * s,
                     }}>{valueText}</span>
                   )}
                 </div>
@@ -462,8 +465,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                 displayDesc = `Invocation : crée un token ${tokenLabel} ${xVal ?? "X"}/${xVal ?? "X"}.`;
               }
               if (kw === "Convocations multiples" && card!.convocationTokens?.length) {
-                const parts = card!.convocationTokens.map(t => `Token ${t.attack ?? "?"}/${t.health ?? "?"}`);
-                displayDesc = `Invocation : crée ${parts.join(", ")}.`;
+                displayDesc = `Invocation : crée ${formatConvocationTokens(card!.convocationTokens, tokens)}.`;
               }
               if (kw === "Lycanthropie X" && card!.lycanthropieTokenId) {
                 const tokenLabel = card!.lycanthropieTokenName || "forme transformée";
@@ -489,7 +491,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
               const def = SPELL_KEYWORDS[spellKw.id];
               const fakeCard = { convocation_tokens: card!.convocationTokens?.map(t => ({ token_id: t.token_id, attack: t.attack, health: t.health })) } as import("@/lib/game/types").Card;
               const label = getSpellKeywordLabel(spellKw);
-              const desc = getSpellKeywordDesc(spellKw, fakeCard);
+              const desc = getSpellKeywordDesc(spellKw, fakeCard, tokens);
               return (
                 <div key={`sk_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
                   <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={18 * s} /></span>
