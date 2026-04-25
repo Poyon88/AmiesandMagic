@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { KEYWORDS, FACTIONS, RARITY_MAP } from '@/lib/card-engine/constants';
 import KeywordIcon from '@/components/shared/KeywordIcon';
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS, getSpellKeywordDesc, getSpellKeywordLabel, formatConvocationTokens } from '@/lib/game/spell-keywords';
+import { isCreatureKwShadowedBySpell } from '@/lib/game/abilities';
 import type { SpellKeywordInstance, TokenTemplate } from '@/lib/game/types';
 
 // ─── KEYWORD → SYMBOL MAP ───────────────────────────────────────────────────
@@ -271,7 +272,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
         {/* Keyword symbols row */}
         {card!.keywords?.length > 0 && (
           <div style={{ display: "flex", gap: 4 * s, flexWrap: "wrap" }}>
-            {card!.keywords.map(kw => {
+            {card!.keywords.filter(kw => !isCreatureKwShadowedBySpell(kw, card!.spellKeywords)).map(kw => {
               const xVal = card!.keywordXValues?.[kw];
               const displayName = xVal != null ? kw.replace(/ X$/, ` ${toRoman(xVal)}`) : kw;
               let displayDesc = xVal != null ? KEYWORDS[kw]?.desc.replace(/X/g, String(xVal)) : KEYWORDS[kw]?.desc;
@@ -456,7 +457,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
         {/* Capacités detail */}
         {card!.keywords?.length > 0 && (
           <div style={{ display: "flex", flexDirection: "column", gap: 6 * s }}>
-            {card!.keywords.map(kw => {
+            {card!.keywords.filter(kw => !isCreatureKwShadowedBySpell(kw, card!.spellKeywords)).map(kw => {
               const xVal = card!.keywordXValues?.[kw];
               const displayName = xVal != null ? kw.replace(/ X$/, ` ${toRoman(xVal)}`) : kw;
               let displayDesc = xVal != null ? KEYWORDS[kw]?.desc.replace(/X/g, String(xVal)) : KEYWORDS[kw]?.desc;

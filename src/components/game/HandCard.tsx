@@ -8,6 +8,7 @@ import { useGameStore } from "@/lib/store/gameStore";
 import type { DragEvent } from "react";
 import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText } from "@/lib/game/keyword-labels";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS, getSpellKeywordLabel, getSpellKeywordDesc } from "@/lib/game/spell-keywords";
+import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
@@ -176,7 +177,9 @@ export default function HandCard({
           <div style={{ display: "flex", alignItems: "center", gap: 3, flexWrap: "wrap" }}>
             {card.keywords.length > 0 && (() => {
               const xVals = parseXValuesFromEffectText(card.effect_text);
-              return card.keywords.map((kw) => {
+              return card.keywords
+                .filter((kw) => !isCreatureKwShadowedBySpell(kw, card.spell_keywords))
+                .map((kw) => {
                 const x = xVals[kw];
                 const hasImg = !!iconOverrides[kw];
                 return (
@@ -301,9 +304,11 @@ export default function HandCard({
           {/* Capacités detail */}
           {card.keywords.length > 0 && (() => {
             const xVals = parseXValuesFromEffectText(card.effect_text);
+            const visibleKws = card.keywords.filter((kw) => !isCreatureKwShadowedBySpell(kw, card.spell_keywords));
+            if (visibleKws.length === 0) return null;
             return (
             <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              {card.keywords.map((kw) => {
+              {visibleKws.map((kw) => {
                 const x = xVals[kw];
                 const label = KEYWORD_LABELS[kw] || kw;
                 const displayLabel = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;

@@ -251,10 +251,12 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["creature"],
     creature: { cost: 13, costPerX: 0, se: 3.0, minTier: 2, scalable: false, zone: "Terrain" },
   },
-  // NOTE: the creature-side "Convocation X" lives on the polymorphic
-  // `invocation` entry below (creature.label = "Convocation X" + spell.label
-  // = "Invocation X/Y"). This keeps a single concept for the kw-icons
-  // picker while preserving the legacy FR label in `card.keywords`.
+  convocation: {
+    id: "convocation", label: "Convocation X", symbol: "📣",
+    desc: "Invocation : crée un token X/X de la race indiquée.",
+    applicable_to: ["creature"],
+    creature: { cost: 8, costPerX: 5, se: 3.0, minTier: 2, scalable: true, zone: "Terrain" },
+  },
   lycanthropie: {
     id: "lycanthropie", label: "Lycanthropie X", symbol: "🐺",
     desc: "Début de tour : se transforme en un token X/X avec Traque.",
@@ -563,20 +565,10 @@ export const ABILITIES: Record<string, AbilityDef> = {
     },
   },
   invocation: {
-    id: "invocation", label: "Invocation", symbol: "📣",
-    desc: "Crée un token sur le terrain.",
-    applicable_to: ["creature", "spell"],
-    creature: {
-      id: "convocation",
-      label: "Convocation X",
-      cost: 8, costPerX: 5, se: 3.0, minTier: 2, scalable: true, zone: "Terrain",
-      desc: "Invocation : crée un token X/X de la race indiquée.",
-    },
-    spell: {
-      label: "Invocation X/Y",
-      desc: "Invoque un token X/Y",
-      params: ["attack", "health"], needsTarget: false,
-    },
+    id: "invocation", label: "Invocation X/Y", symbol: "📣",
+    desc: "Invoque un token X/Y",
+    applicable_to: ["spell"],
+    spell: { params: ["attack", "health"], needsTarget: false },
   },
 
   // ─── Spell-only ───────────────────────────────────────────────────────────
@@ -759,4 +751,41 @@ export function abilityIconKeys(a: AbilityDef): { host: AbilityHost; key: string
     host,
     key: host === "spell" ? `spell_${a.id}` : a.creature?.id ?? a.id,
   }));
+}
+
+// ─── Polymorphic engine-id pairs ────────────────────────────────────────────
+//
+// For each ability that lives on both sides, the snake_case id stored in
+// `card.keywords[]` (creature side) paired with the id used in
+// `card.spell_keywords[].id` (spell side). Used by render layers to dedup
+// rows when a card legacy-carries both sides of the same concept (e.g.
+// authored before the registry merge).
+export const POLYMORPHIC_PAIRS: {
+  creatureId: string;
+  creatureLabel: string;
+  spellId: string;
+}[] = Object.values(ABILITIES)
+  .filter((a) => a.applicable_to.length > 1)
+  .map((a) => ({
+    creatureId: a.creature?.id ?? a.id,
+    creatureLabel: a.creature?.label ?? a.label,
+    spellId: a.id,
+  }));
+
+/** True when `creatureKw` is the creature side of a polymorphic ability whose
+ *  spell side is also present on the same card — caller should skip the
+ *  creature row to avoid a visible duplicate.
+ *
+ *  `creatureKw` accepts either the snake_case engine id (in-game cards,
+ *  card.keywords stores ids) or the FR label (forge author state). */
+export function isCreatureKwShadowedBySpell(
+  creatureKw: string,
+  spellKws: { id: string }[] | null | undefined,
+): boolean {
+  if (!spellKws?.length) return false;
+  const pair = POLYMORPHIC_PAIRS.find(
+    (p) => p.creatureId === creatureKw || p.creatureLabel === creatureKw,
+  );
+  if (!pair) return false;
+  return spellKws.some((sk) => sk.id === pair.spellId);
 }

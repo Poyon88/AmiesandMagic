@@ -27,6 +27,7 @@ function loadTokenRegistry(): Promise<TokenTemplate[]> {
 }
 import { KEYWORD_SYMBOLS as keywordSymbols, KEYWORD_LABELS as keywordLabels, toRoman, parseXValuesFromEffectText, cleanEffectText } from "@/lib/game/keyword-labels";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS, getSpellKeywordDesc, getSpellKeywordLabel } from "@/lib/game/spell-keywords";
+import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { KEYWORDS as keywordDefs, LIMITED_PRINT_COUNTS } from "@/lib/card-engine/constants";
@@ -126,7 +127,13 @@ export default function GameCard({
             alt={card.name}
             fill
             className="object-cover"
-            sizes="(min-resolution: 2dppx) 1024px, 750px"
+            // Bumped from 1024/750 to 2048/1280 because the limited-edition
+            // 3D frame (preserve-3d in ExpertCardFrame) rasterises the
+            // wrapped art into a GPU texture sized at the layer's logical
+            // bounding box; without an oversized source srcset variant the
+            // texture is visibly soft on retina. Imagen 4 Ultra produces
+            // 2K so the larger srcset is available.
+            sizes="(min-resolution: 2dppx) 2048px, 1280px"
             quality={95}
           />
         ) : (
@@ -186,7 +193,13 @@ export default function GameCard({
           {/* Keyword symbols */}
           {card.keywords.length > 0 && (() => {
             const xVals = parseXValuesFromEffectText(card.effect_text);
-            return card.keywords.map((kw) => {
+            // Skip the creature side of a polymorphic ability when the same
+            // card also carries the spell side — avoids duplicated rows on
+            // legacy cards authored before the registry merge.
+            const visibleKws = card.keywords.filter(
+              (kw) => !isCreatureKwShadowedBySpell(kw, card.spell_keywords),
+            );
+            return visibleKws.map((kw) => {
               const x = xVals[kw];
               const label = keywordLabels[kw] || kw;
               const displayTitle = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
@@ -330,9 +343,13 @@ export default function GameCard({
         {/* Capacités detail */}
         {card.keywords.length > 0 && (() => {
           const xVals = parseXValuesFromEffectText(card.effect_text);
+          const visibleKws = card.keywords.filter(
+            (kw) => !isCreatureKwShadowedBySpell(kw, card.spell_keywords),
+          );
+          if (visibleKws.length === 0) return null;
           return (
           <div style={{ display: "flex", flexDirection: "column", gap: 6 * s }}>
-            {card.keywords.map((kw) => {
+            {visibleKws.map((kw) => {
               const x = xVals[kw];
               const label = keywordLabels[kw] || kw;
               const displayLabel = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;

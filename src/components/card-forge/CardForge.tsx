@@ -1875,6 +1875,12 @@ export default function CardForge() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt: promptWithRef,
+          // Imagen 4 Ultra 2K when no reference is attached. Imagen's
+          // :predict endpoint doesn't accept reference images, so the
+          // route falls back to Gemini multimodal automatically when one
+          // is present — keep highRes on for the no-ref case.
+          highRes: !hasRef,
+          aspectRatio: '3:4',
           ...(hasRef
             ? { referenceImageBase64: illusRefImageBase64, referenceImageMimeType: illusRefImageMime }
             : {}),

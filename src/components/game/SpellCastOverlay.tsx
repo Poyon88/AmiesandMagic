@@ -16,6 +16,7 @@ import {
   getSpellKeywordLabel,
   getSpellKeywordDesc,
 } from "@/lib/game/spell-keywords";
+import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
 
@@ -297,9 +298,12 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
                 <div style={{ flex: 1 }} />
 
                 {/* Keyword details */}
-                {card.keywords && card.keywords.length > 0 && (
+                {card.keywords && card.keywords.length > 0 && (() => {
+                  const visibleKws = card.keywords.filter((kw) => !isCreatureKwShadowedBySpell(kw, card.spell_keywords));
+                  if (visibleKws.length === 0) return null;
+                  return (
                   <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-                    {card.keywords.map((kw) => {
+                    {visibleKws.map((kw) => {
                       const x = (xVals as Record<string, number>)[kw];
                       const label = KEYWORD_LABELS[kw] || kw;
                       const displayLabel = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
@@ -325,7 +329,8 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
                       );
                     })}
                   </div>
-                )}
+                  );
+                })()}
 
                 {/* Spell keyword details */}
                 {card.spell_keywords && card.spell_keywords.length > 0 && (
