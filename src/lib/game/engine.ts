@@ -32,6 +32,7 @@ import {
   MAX_BOARD_SIZE,
   MAX_MANA,
 } from "./constants";
+import { getFactionForRace } from "@/lib/card-engine/constants";
 
 // ============================================================
 // SEEDED PRNG (mulberry32) — deterministic across clients
@@ -580,6 +581,15 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // Si X est absent du texte, on tombe sur les stats par défaut du token.
     if (hasKw(cardInstance, "convocation") && player.board.length < MAX_BOARD_SIZE) {
       const tmpl = findTokenTemplate(cardInstance.card.convocation_token_id);
+      if (!tmpl) {
+        // Surface the silent-no-spawn case so the admin can fix the data
+        // (most common cause: card was authored without picking a token in
+        // the cascade picker, so convocation_token_id is null).
+        console.warn(
+          `[engine] Convocation: pas de token spawné pour la carte "${cardInstance.card.name}" — convocation_token_id =`,
+          cardInstance.card.convocation_token_id,
+        );
+      }
       if (tmpl) {
         const xValues = parseXValuesFromEffectText(cardInstance.card.effect_text);
         const xRaw = xValues["convocation"];
@@ -591,7 +601,11 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
           attack: atk, health: hp,
           effect_text: `Token ${atk}/${hp}`,
           keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
-          race: tmpl.race, faction: cardInstance.card.faction,
+          race: tmpl.race,
+          // Token faction follows its race (each race lives in exactly one
+          // faction). Falls back to the caster's faction only when the
+          // race isn't known to FACTIONS — keeps custom races working.
+          faction: getFactionForRace(tmpl.race) ?? cardInstance.card.faction,
           clan: cardInstance.card.clan,
         };
         tokenCard = applyTokenTemplate(tokenCard, tmpl);
@@ -603,11 +617,21 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
 
     // Convocations multiples : chaque entrée pointe vers un token et peut
     // override ses stats (attack/health). Sans override, on hérite du token.
-    if (hasKw(cardInstance, "convocations_multiples") && card.convocation_tokens?.length) {
-      for (const tokenDef of card.convocation_tokens) {
+    if (hasKw(cardInstance, "convocations_multiples")) {
+      if (!card.convocation_tokens?.length) {
+        console.warn(
+          `[engine] Convocations multiples: aucun token configuré pour la carte "${card.name}" — vérifiez l'onglet Édition.`,
+        );
+      }
+      for (const tokenDef of card.convocation_tokens ?? []) {
         if (player.board.length >= MAX_BOARD_SIZE) break;
         const tmpl = findTokenTemplate(tokenDef.token_id);
-        if (!tmpl) continue;
+        if (!tmpl) {
+          console.warn(
+            `[engine] Convocations multiples: token introuvable pour token_id=${tokenDef.token_id} sur la carte "${card.name}".`,
+          );
+          continue;
+        }
         const atk = tokenDef.attack ?? tmpl.attack;
         const hp = tokenDef.health ?? tmpl.health;
         let tokenCard: Card = {
@@ -616,7 +640,8 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
           attack: atk, health: hp,
           effect_text: `Token ${atk}/${hp}`,
           keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
-          race: tmpl.race, faction: cardInstance.card.faction,
+          race: tmpl.race,
+          faction: getFactionForRace(tmpl.race) ?? cardInstance.card.faction,
         };
         tokenCard = applyTokenTemplate(tokenCard, tmpl);
         const token = createCardInstance(tokenCard);
@@ -1385,6 +1410,7 @@ function resolveSpellKeywords(
             effect_text: `Token ${kw.attack ?? 1}/${kw.health ?? 1}`,
             keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
             race: kw.race,
+            faction: getFactionForRace(kw.race) ?? ctx.card.faction,
           };
           tokenCard = applyTokenTemplate(tokenCard, findTokenTemplateByRace(kw.race));
           const token = createCardInstance(tokenCard);

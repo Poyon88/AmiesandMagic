@@ -394,51 +394,50 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           </div>
         )}
 
-        {/* ============= OPPONENT MANA (center) ============= */}
+        {/* ============= OPPONENT MANA + LEGACY PORTRAIT (center) =============
+            Skipped entirely when the opponent has a 3D hero — in that mode
+            the mana bar is rendered next to the HP under the 3D figurine,
+            and the hero portrait + power button live there too. */}
+        {!opponent.hero.heroDefinition?.glbUrl && (
         <div className="absolute top-[1%] left-1/2 -translate-x-1/2 z-20 flex items-center gap-4">
           <ManaBar current={opponent.mana} max={opponent.maxMana} />
-          {/* When the opponent has no 3D skin, keep the legacy portrait +
-              hero-power button here for continuity. */}
-          {!opponent.hero.heroDefinition?.glbUrl && (
-            <>
-              <HeroPowerButton
-                heroDef={opponent.hero.heroDefinition}
-                isOpponent={true}
-                canUse={false}
-                isUsed={opponent.hero.heroPowerUsedThisTurn}
-                mana={opponent.mana}
-              />
-              <HeroPortrait
-                hero={opponent.hero}
-                isOpponent={true}
-                isValidTarget={validTargets.includes("enemy_hero")}
-                damageAmount={getDamage("enemy_hero")}
-                onClick={
-                  validTargets.includes("enemy_hero")
-                    ? () => handleSelectTarget("enemy_hero")
-                    : undefined
-                }
-                onMouseEnter={
-                  validTargets.includes("enemy_hero")
-                    ? () => setHoveredTargetId("enemy_hero")
-                    : undefined
-                }
-                onMouseLeave={
-                  validTargets.includes("enemy_hero")
-                    ? () => setHoveredTargetId(null)
-                    : undefined
-                }
-              />
-            </>
-          )}
+          <HeroPowerButton
+            heroDef={opponent.hero.heroDefinition}
+            isOpponent={true}
+            canUse={false}
+            isUsed={opponent.hero.heroPowerUsedThisTurn}
+            mana={opponent.mana}
+          />
+          <HeroPortrait
+            hero={opponent.hero}
+            isOpponent={true}
+            isValidTarget={validTargets.includes("enemy_hero")}
+            damageAmount={getDamage("enemy_hero")}
+            onClick={
+              validTargets.includes("enemy_hero")
+                ? () => handleSelectTarget("enemy_hero")
+                : undefined
+            }
+            onMouseEnter={
+              validTargets.includes("enemy_hero")
+                ? () => setHoveredTargetId("enemy_hero")
+                : undefined
+            }
+            onMouseLeave={
+              validTargets.includes("enemy_hero")
+                ? () => setHoveredTargetId(null)
+                : undefined
+            }
+          />
         </div>
+        )}
 
         {/* ============= OPPONENT 3D HERO (top-left, mirror of player) =============
             On smaller screens the figurine sits lower (just above the opponent
             creature row) so it doesn't crush the hand-count / mana UI. At lg+
             it snaps back to the top-left corner. */}
         {opponent.hero.heroDefinition?.glbUrl && (
-          <div className="absolute left-[1%] top-[10%] lg:top-[1%] z-20 flex flex-col items-center">
+          <div className="absolute left-[1%] top-[10%] lg:top-[1%] z-20 flex flex-col items-center gap-1">
             <Hero3DViewer
               hero={opponent.hero}
               isOpponent={true}
@@ -457,6 +456,9 @@ export default function GameBoard({ onAction }: GameBoardProps) {
                   : undefined
               }
             />
+            {/* Mana orbs sit directly under the 3D hero so they read as
+                "next to the HP number" rendered inside the canvas. */}
+            <ManaBar current={opponent.mana} max={opponent.maxMana} />
           </div>
         )}
 
@@ -597,50 +599,49 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           </div>
         </div>
 
-        {/* ============= PLAYER MANA (center) ============= */}
+        {/* ============= PLAYER MANA + LEGACY PORTRAIT (center) =============
+            Skipped entirely when the player has a 3D hero — the mana bar
+            is rendered next to the HP under the figurine instead. */}
+        {!myPlayer.hero.heroDefinition?.glbUrl && (
         <div className="absolute bottom-[16%] left-1/2 -translate-x-1/2 z-40 flex items-center gap-4">
           <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} />
-          {/* Legacy portrait block when the player has no 3D skin. */}
-          {!myPlayer.hero.heroDefinition?.glbUrl && (
-            <>
-              <HeroPortrait
-                hero={myPlayer.hero}
-                isOpponent={false}
-                isValidTarget={validTargets.includes("friendly_hero")}
-                damageAmount={getDamage("friendly_hero")}
-                onClick={
-                  validTargets.includes("friendly_hero")
-                    ? () => handleSelectTarget("friendly_hero")
-                    : undefined
-                }
-                onMouseEnter={
-                  validTargets.includes("friendly_hero")
-                    ? () => setHoveredTargetId("friendly_hero")
-                    : undefined
-                }
-                onMouseLeave={
-                  validTargets.includes("friendly_hero")
-                    ? () => setHoveredTargetId(null)
-                    : undefined
-                }
-              />
-              <HeroPowerButton
-                heroDef={myPlayer.hero.heroDefinition}
-                isOpponent={false}
-                canUse={myTurn && !!gameState && canUseHeroPower(gameState)}
-                isUsed={myPlayer.hero.heroPowerUsedThisTurn}
-                mana={myPlayer.mana}
-                onClick={handleActivateHeroPower}
-              />
-            </>
-          )}
+          <HeroPortrait
+            hero={myPlayer.hero}
+            isOpponent={false}
+            isValidTarget={validTargets.includes("friendly_hero")}
+            damageAmount={getDamage("friendly_hero")}
+            onClick={
+              validTargets.includes("friendly_hero")
+                ? () => handleSelectTarget("friendly_hero")
+                : undefined
+            }
+            onMouseEnter={
+              validTargets.includes("friendly_hero")
+                ? () => setHoveredTargetId("friendly_hero")
+                : undefined
+            }
+            onMouseLeave={
+              validTargets.includes("friendly_hero")
+                ? () => setHoveredTargetId(null)
+                : undefined
+            }
+          />
+          <HeroPowerButton
+            heroDef={myPlayer.hero.heroDefinition}
+            isOpponent={false}
+            canUse={myTurn && !!gameState && canUseHeroPower(gameState)}
+            isUsed={myPlayer.hero.heroPowerUsedThisTurn}
+            mana={myPlayer.mana}
+            onClick={handleActivateHeroPower}
+          />
         </div>
+        )}
 
         {/* ============= PLAYER 3D HERO (bottom-right) =============
             Under lg (< 1024px) the figurine floats above the hand of cards so
             it never collides with them; at lg+ it anchors to the corner. */}
         {myPlayer.hero.heroDefinition?.glbUrl && (
-          <div className="absolute right-[1%] bottom-[28%] lg:bottom-[1%] z-40 flex flex-col items-center">
+          <div className="absolute right-[1%] bottom-[28%] lg:bottom-[1%] z-40 flex flex-col items-center gap-1">
             <Hero3DViewer
               hero={myPlayer.hero}
               isOpponent={false}
@@ -661,6 +662,9 @@ export default function GameBoard({ onAction }: GameBoardProps) {
                   : undefined
               }
             />
+            {/* Mana orbs directly under the 3D hero, next to the HP number
+                rendered inside the canvas. */}
+            <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} />
           </div>
         )}
 

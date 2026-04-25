@@ -1733,6 +1733,25 @@ export default function CardForge() {
         .map(k => FORGE_TO_GAME_KEYWORD[k])
         .filter((k): k is Keyword => !!k);
 
+      // Required-token validation: silently saving these without a token
+      // would produce a no-op spawn at play time (the engine logs a warn
+      // but the game UX feels broken). Block the save and explain why.
+      if (gameKeywords.includes("convocation") && !convocationTokenId) {
+        setSaveResult({ ok: false, msg: "Convocation X : sélectionnez un token dans le picker avant de sauvegarder." });
+        setSaving(false);
+        return;
+      }
+      if (gameKeywords.includes("convocations_multiples") && convocationTokens.length === 0) {
+        setSaveResult({ ok: false, msg: "Convocations multiples : ajoutez au moins un token dans la liste avant de sauvegarder." });
+        setSaving(false);
+        return;
+      }
+      if (gameKeywords.includes("lycanthropie") && !lycanthropieTokenId) {
+        setSaveResult({ ok: false, msg: "Lycanthropie X : sélectionnez un token de transformation avant de sauvegarder." });
+        setSaving(false);
+        return;
+      }
+
       // Build effect text with X values appended for scalable keywords
       const xParts = Object.entries(forgeCard.keywordXValues || {})
         .filter(([kw]) => forgeCard.keywords.includes(kw))

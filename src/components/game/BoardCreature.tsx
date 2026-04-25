@@ -54,9 +54,17 @@ export default function BoardCreature({
   const detailTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isZoomed = isHovered && !isSelected && !isValidTarget && targetingMode === "none";
+  // The overlay shows whenever `showDetails` is on AND the card is in its
+  // free-hover zoomed state. The auto-trigger of `showDetails` is gated
+  // separately in `onMouseEnter` (own creatures only, no targeting) — but
+  // right-click flips `showDetails` manually for any creature, so it
+  // remains the universal escape hatch to read enemy descriptions.
   const showOverlay = isZoomed && showDetails;
-  const W = 128;
-  const H = 176;
+  // Match HandCard's base dimensions so a creature keeps the same visual
+  // footprint when it transitions from the hand to the board (HandCard
+  // uses W=120, H=168 with the same outer zoom 1.225).
+  const W = 120;
+  const H = 168;
   const accentColor = "#74b9ff";
   const iconOverrides = useKeywordIconStore((st) => st.overrides);
 
@@ -69,7 +77,7 @@ export default function BoardCreature({
     <motion.div
       layout
       data-instance-id={creature.instanceId}
-      style={{ width: W, height: H, position: "relative", zIndex: isZoomed ? 100 : isSelected ? 10 : 1, zoom: 1.225 }}
+      style={{ width: W, height: H, position: "relative", zIndex: isZoomed ? 100 : isSelected ? 10 : 1, zoom: 1.41 }}
       initial={{ y: isOwn ? 40 : -40, opacity: 0, scale: 0.5 }}
       animate={
         damageAmount
@@ -88,7 +96,14 @@ export default function BoardCreature({
       onMouseEnter={() => {
         setIsHovered(true);
         onMouseEnter?.();
-        detailTimer.current = setTimeout(() => setShowDetails(true), 600);
+        // Auto-detail only kicks in when freely hovering own creatures.
+        // Skip it during any targeting mode (attack OR spell) and on
+        // enemy creatures, so the artwork stays visible while the player
+        // is picking a target. Right-click still toggles details
+        // manually.
+        if (isOwn && targetingMode === "none") {
+          detailTimer.current = setTimeout(() => setShowDetails(true), 600);
+        }
       }}
       onMouseLeave={() => {
         setIsHovered(false);
@@ -277,21 +292,21 @@ export default function BoardCreature({
               const hasImg = !!iconOverrides[kw];
               return (
               <div key={kw} style={{
-                minWidth: 32, height: 32, borderRadius: 4,
-                padding: x != null ? "0 3px" : 0,
+                minWidth: 28, height: 28, borderRadius: 3,
+                padding: x != null ? "0 2px" : 0,
                 background: hasImg ? "transparent" : `${accentColor}33`,
                 border: hasImg ? "none" : `1px solid ${accentColor}66`,
-                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2,
-                fontSize: 9, overflow: "hidden",
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1,
+                fontSize: 8, overflow: "hidden",
               }}>
                 {hasImg ? (
-                  <div style={{ width: 32, height: 32, flexShrink: 0 }}>
-                    <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={18} keyword={kw} fill />
+                  <div style={{ width: 28, height: 28, flexShrink: 0 }}>
+                    <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={16} keyword={kw} fill />
                   </div>
                 ) : (
-                  <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={18} keyword={kw} />
+                  <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={16} keyword={kw} />
                 )}
-                {x != null && <span style={{ fontSize: 9, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}` }}>{toRoman(x)}</span>}
+                {x != null && <span style={{ fontSize: 8, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}` }}>{toRoman(x)}</span>}
               </div>
               );
             });
@@ -322,7 +337,11 @@ export default function BoardCreature({
         </div>
       </div>
 
-      {/* Hover overlay */}
+      {/* Hover overlay — anchor content at the top so the title stays
+          visible when the description is taller than the card. With
+          `justifyContent: center` the content was being clipped at both
+          ends (the card has overflow: hidden), hiding the title on
+          long-text cards like spells with long flavor text. */}
       <div style={{
         position: "absolute", inset: 0, zIndex: 4,
         background: "#0d0d1ab3",
@@ -331,9 +350,10 @@ export default function BoardCreature({
         opacity: showOverlay ? 1 : 0,
         transition: "opacity 0.25s ease",
         pointerEvents: showOverlay ? "auto" : "none",
-        display: "flex", flexDirection: "column", justifyContent: "center",
+        display: "flex", flexDirection: "column", justifyContent: "flex-start",
         padding: "12px 8px",
         gap: 6,
+        overflowY: "auto",
       }}>
         {/* Name */}
         <div style={{

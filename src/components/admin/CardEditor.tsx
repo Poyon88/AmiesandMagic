@@ -216,6 +216,26 @@ export default function CardEditor() {
     try {
       // Rebuild effect_text with X values appended
       const activeKeywords = (editFields.keywords as string[]) || [];
+
+      // Required-token validation: matches CardForge — silently saving
+      // these without a token would leave the keyword as a no-op at play
+      // time.
+      if (activeKeywords.includes("convocation") && !editFields.convocation_token_id) {
+        setSaveResult({ ok: false, msg: "Convocation X : sélectionnez un token avant de sauvegarder." });
+        setSaving(false);
+        return;
+      }
+      if (activeKeywords.includes("convocations_multiples") && !((editFields.convocation_tokens as unknown[]) || []).length) {
+        setSaveResult({ ok: false, msg: "Convocations multiples : ajoutez au moins un token avant de sauvegarder." });
+        setSaving(false);
+        return;
+      }
+      if (activeKeywords.includes("lycanthropie") && !editFields.lycanthropie_token_id) {
+        setSaveResult({ ok: false, msg: "Lycanthropie X : sélectionnez un token de transformation avant de sauvegarder." });
+        setSaving(false);
+        return;
+      }
+
       const xParts = Object.entries(keywordXValues)
         .filter(([kw]) => activeKeywords.includes(kw))
         .map(([kw, x]) => `${KEYWORD_LABELS[kw as Keyword].replace(/ X$/, "")} ${x}`)

@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import type { TokenTemplate } from "@/lib/game/types";
+import { getFactionForRace, FACTIONS } from "@/lib/card-engine/constants";
 
 interface TokenCascadePickerProps {
   /** Currently selected token id (null = nothing picked yet). */
@@ -111,7 +112,14 @@ export default function TokenCascadePicker({
     fontFamily: "'Cinzel',serif",
   };
 
+  // Faction is implied by race (each race lives in exactly one faction).
+  // Surface it read-only so the admin sees what banner the spawned token
+  // will fly on the board.
+  const factionId = getFactionForRace(currentRace);
+  const factionDef = factionId ? FACTIONS[factionId] : null;
+
   return (
+    <div>
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1.4fr", gap: 6 }}>
       <div>
         <label style={labelStyle}>RACE</label>
@@ -157,6 +165,24 @@ export default function TokenCascadePicker({
           ))}
         </select>
       </div>
+    </div>
+    {currentRace && (
+      <div style={{
+        marginTop: 4, fontSize: 9, fontFamily: "'Crimson Text', serif",
+        color: factionDef ? factionDef.accent : "#999",
+        display: "flex", alignItems: "center", gap: 4,
+      }}>
+        <span style={{ ...labelStyle }}>FACTION :</span>
+        {factionDef ? (
+          <>
+            <span>{factionDef.emoji}</span>
+            <strong style={{ fontFamily: "'Cinzel', serif", letterSpacing: 0.5 }}>{factionId}</strong>
+          </>
+        ) : (
+          <em>aucune (race hors registre — héritera de la faction du lanceur)</em>
+        )}
+      </div>
+    )}
     </div>
   );
 }

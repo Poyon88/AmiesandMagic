@@ -81,7 +81,7 @@ export default function HandCard({
       animate={{ y: 0, opacity: 1, scale: 1 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
       data-instance-id={cardInstance.instanceId}
-      style={{ width: W, height: H, position: "relative", zoom: 1.225 }}
+      style={{ width: W, height: H, position: "relative", zoom: 1.41 }}
     >
       <div
         ref={cardRef}

@@ -199,6 +199,23 @@ export const FACTIONS: Record<string, {
   },
 };
 
+// Reverse map race → faction id, derived from FACTIONS. Each race lives in
+// exactly one faction so the lookup is unambiguous. Used for tokens, where
+// the canonical faction is implied by the chosen race rather than carried
+// as a separate stored field.
+const RACE_TO_FACTION: Record<string, string> = (() => {
+  const out: Record<string, string> = {};
+  for (const [factionId, def] of Object.entries(FACTIONS)) {
+    for (const race of def.races) out[race] = factionId;
+  }
+  return out;
+})();
+
+export function getFactionForRace(race: string | null | undefined): string | null {
+  if (!race) return null;
+  return RACE_TO_FACTION[race] ?? null;
+}
+
 export const TYPES = ["Unité", "Sort", "Artefact", "Magie"];
 
 export const ALIGNMENTS: { id: Alignment; label: string; emoji: string; color: string }[] = [
