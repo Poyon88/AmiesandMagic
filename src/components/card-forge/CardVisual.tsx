@@ -5,7 +5,18 @@ import { KEYWORDS, FACTIONS, RARITY_MAP } from '@/lib/card-engine/constants';
 import KeywordIcon from '@/components/shared/KeywordIcon';
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS, getSpellKeywordDesc, getSpellKeywordLabel, formatConvocationTokens } from '@/lib/game/spell-keywords';
 import { isCreatureKwShadowedBySpell } from '@/lib/game/abilities';
+import { KEYWORD_LABELS } from '@/lib/game/keyword-labels';
 import type { SpellKeywordInstance, TokenTemplate } from '@/lib/game/types';
+
+// Reverse of KEYWORD_LABELS: FR label → snake_case engine id. Forge state
+// stores keywords as FR labels, but the keyword-icon store is keyed by the
+// engine id (matches what GameCard / HandCard / etc. pass at runtime).
+// Without this we'd query the override map with "Bouclier" instead of
+// "divine_shield" and the preview would always fall back to the default
+// emoji even when an admin uploaded a custom icon.
+const FR_LABEL_TO_ID: Record<string, string> = Object.fromEntries(
+  Object.entries(KEYWORD_LABELS).map(([id, label]) => [label, id]),
+);
 
 // ─── KEYWORD → SYMBOL MAP ───────────────────────────────────────────────────
 
@@ -297,7 +308,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                   boxShadow: `0 0 6px ${fac.color}44`,
                   transition: "all 0.2s",
                 }}>
-                  <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} />
+                  <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} keyword={FR_LABEL_TO_ID[kw] ?? kw} />
                   {xVal != null && (
                     <span style={{
                       fontSize: 10 * s, fontWeight: 900, lineHeight: 1,
@@ -338,7 +349,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                   boxShadow: `0 0 6px ${fac.color}44`,
                   transition: "all 0.2s",
                 }}>
-                  <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} />
+                  <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} keyword={`spell_${spellKw.id}`} />
                   {valueText && (
                     <span style={{
                       fontSize: 10 * s, fontWeight: 900, lineHeight: 1,
@@ -474,7 +485,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
               }
               return (
                 <div key={kw} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
-                  <span style={{ flexShrink: 0 }}><KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={18 * s} /></span>
+                  <span style={{ flexShrink: 0 }}><KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={18 * s} keyword={FR_LABEL_TO_ID[kw] ?? kw} /></span>
                   <div>
                     <div style={{ fontSize: 14 * s, color: fac.accent, fontWeight: 700 }}>{displayName}</div>
                     <div style={{ fontSize: 12 * s, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{displayDesc}</div>
@@ -495,7 +506,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
               const desc = getSpellKeywordDesc(spellKw, fakeCard, tokens);
               return (
                 <div key={`sk_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
-                  <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={18 * s} /></span>
+                  <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={18 * s} keyword={`spell_${spellKw.id}`} /></span>
                   <div>
                     <div style={{ fontSize: 14 * s, color: fac.accent, fontWeight: 700 }}>{label}</div>
                     <div style={{ fontSize: 12 * s, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>

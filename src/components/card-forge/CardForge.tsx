@@ -1355,6 +1355,11 @@ export default function CardForge() {
   }, []);
 
   useEffect(() => { loadSets(); }, [loadSets]);
+  // Without this, the Convocation X / Convocations multiples / Lycanthropie X
+  // token cascade pickers in the manual forge would have nothing to offer
+  // until the admin first opens the Tokens tab and saved something — the
+  // picker would just show "Aucun" with all dropdowns disabled.
+  useEffect(() => { loadTokenTemplates(); }, [loadTokenTemplates]);
 
   const loadFormats = useCallback(async () => {
     try {
@@ -1546,8 +1551,9 @@ export default function CardForge() {
   }, []);
 
   const createManualCard = useCallback(() => {
+    const newId = buildId();
     const newCard: ForgeCard = {
-      id: buildId(),
+      id: newId,
       name: manualName || "Sans nom",
       faction, race, clan, cardAlignment, type, rarity,
       mana: manualMana,
@@ -1563,6 +1569,16 @@ export default function CardForge() {
       generatedAt: new Date().toISOString(),
     };
     setCard(newCard);
+    // Carry the live illustration (if any) onto the new card id. Without
+    // this the manualCard preview re-renders against the freshly-minted id,
+    // queries cardImages[newId] which is empty, and the illustration
+    // disappears from the forge after a save (the card is still saved
+    // correctly server-side, but the local preview looks broken).
+    setCardImages(prev => {
+      const previewUrl = prev["manual_preview"];
+      if (!previewUrl) return prev;
+      return { ...prev, [newId]: previewUrl };
+    });
     setHistory(h => [newCard, ...h].slice(0, 30));
   }, [faction, type, rarity, manualName, manualMana, manualAttack, manualDefense, manualPower, manualKeywords, keywordXValues, manualAbility, manualFlavorText, manualIllustrationPrompt, manualBudgetTotal, manualBudgetUsed]);
 
@@ -1748,6 +1764,17 @@ export default function CardForge() {
       }
       if (gameKeywords.includes("lycanthropie") && !lycanthropieTokenId) {
         setSaveResult({ ok: false, msg: "Lycanthropie X : sélectionnez un token de transformation avant de sauvegarder." });
+        setSaving(false);
+        return;
+      }
+      // Same guard on the spell side: a sort with `invocation_multiple`
+      // (= "Convocations multiples" in the picker) must carry the token
+      // list — without it the engine's case fires but spawns nothing.
+      if (
+        spellKeywords.some((k) => k.id === "invocation_multiple") &&
+        convocationTokens.length === 0
+      ) {
+        setSaveResult({ ok: false, msg: "Convocations multiples (sort) : ajoutez au moins un token dans la liste avant de sauvegarder." });
         setSaving(false);
         return;
       }

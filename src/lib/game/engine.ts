@@ -1421,10 +1421,20 @@ function resolveSpellKeywords(
       }
       case "invocation_multiple": {
         const tokenDefs = ctx.card.convocation_tokens ?? [];
+        if (tokenDefs.length === 0) {
+          console.warn(
+            `[engine] Spell invocation_multiple: aucun token configuré pour le sort "${ctx.card.name}" — vérifiez l'onglet Édition.`,
+          );
+        }
         for (const tokenDef of tokenDefs) {
           if (ctx.caster.board.length >= MAX_BOARD_SIZE) break;
           const tmpl = findTokenTemplate(tokenDef.token_id);
-          if (!tmpl) continue;
+          if (!tmpl) {
+            console.warn(
+              `[engine] Spell invocation_multiple: token introuvable pour token_id=${tokenDef.token_id} sur le sort "${ctx.card.name}".`,
+            );
+            continue;
+          }
           const atk = tokenDef.attack ?? tmpl.attack;
           const hp = tokenDef.health ?? tmpl.health;
           let tokenCard: Card = {
@@ -1434,6 +1444,7 @@ function resolveSpellKeywords(
             effect_text: `Token ${atk}/${hp}`,
             keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
             race: tmpl.race,
+            faction: getFactionForRace(tmpl.race) ?? ctx.card.faction,
           };
           tokenCard = applyTokenTemplate(tokenCard, tmpl);
           const token = createCardInstance(tokenCard);

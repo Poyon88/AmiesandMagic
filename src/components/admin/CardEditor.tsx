@@ -230,6 +230,16 @@ export default function CardEditor() {
         setSaving(false);
         return;
       }
+      // Spell side: same concept, `invocation_multiple` in spell_keywords.
+      const spellKws = (editFields.spell_keywords as SpellKeywordInstance[]) || [];
+      if (
+        spellKws.some((k) => k.id === "invocation_multiple") &&
+        !((editFields.convocation_tokens as unknown[]) || []).length
+      ) {
+        setSaveResult({ ok: false, msg: "Convocations multiples (sort) : ajoutez au moins un token avant de sauvegarder." });
+        setSaving(false);
+        return;
+      }
       if (activeKeywords.includes("lycanthropie") && !editFields.lycanthropie_token_id) {
         setSaveResult({ ok: false, msg: "Lycanthropie X : sélectionnez un token de transformation avant de sauvegarder." });
         setSaving(false);
