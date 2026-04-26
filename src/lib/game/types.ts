@@ -34,7 +34,9 @@ export type Keyword =
   // Tier 2 — Collection
   | "selection"
   // Tier 3 — Relancer
-  | "relancer";
+  | "relancer"
+  // Tier 2 — AoE random damage
+  | "tempete";
 
 export type SpellTargetType =
   | "any"
@@ -88,7 +90,8 @@ export type SpellKeywordId =
   | "rappel"
   | "exhumation"
   | "selection"
-  | "relancer";
+  | "relancer"
+  | "tempete";
 
 export interface SpellKeywordInstance {
   id: SpellKeywordId;

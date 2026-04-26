@@ -25,6 +25,7 @@ import FireBreathOverlay from "./FireBreathOverlay";
 import HeroPowerOverlay from "./HeroPowerOverlay";
 import GraveyardAffectOverlay from "./GraveyardAffectOverlay";
 import DiscardFromHandOverlay from "./DiscardFromHandOverlay";
+import TempeteOverlay from "./TempeteOverlay";
 import MulliganOverlay from "./MulliganOverlay";
 import SettingsModal from "@/components/shared/SettingsModal";
 import type { GameAction, DamageEvent, HeroDefinition } from "@/lib/game/types";
@@ -70,6 +71,8 @@ export default function GameBoard({ onAction }: GameBoardProps) {
     clearGraveyardAffectEvent,
     discardFromHandEvent,
     clearDiscardFromHandEvent,
+    tempeteEvent,
+    clearTempeteEvent,
     isAnimating,
     spellTargetSlots,
     currentTargetSlotIndex,
@@ -864,6 +867,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
       <HeroPowerOverlay event={heroPowerCastEvent} onComplete={clearHeroPowerCastEvent} />
       <GraveyardAffectOverlay event={graveyardAffectEvent} onComplete={clearGraveyardAffectEvent} />
       <DiscardFromHandOverlay event={discardFromHandEvent} onComplete={clearDiscardFromHandEvent} />
+      <TempeteOverlay event={tempeteEvent} onComplete={clearTempeteEvent} />
 
       {/* Targeting arrow overlay */}
       <TargetingArrow

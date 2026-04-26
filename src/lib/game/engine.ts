@@ -932,6 +932,21 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       }
     }
 
+    // Tempête X — on-play, deals X damage spread one-by-one across the
+    // currently-alive enemy creatures. Each "drop" picks a random target
+    // from the live enemies (re-evaluated per drop so dead creatures stop
+    // taking hits). Does not target the enemy hero.
+    if (hasKw(cardInstance, "tempete")) {
+      const xVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
+      const total = xVals["tempete"] || Math.max(1, Math.floor(cardInstance.card.mana_cost / 3));
+      for (let drop = 0; drop < total; drop++) {
+        const alive = opponent.board.filter((u) => u.currentHealth > 0);
+        if (alive.length === 0) break;
+        const target = alive[Math.floor(rng() * alive.length)];
+        dealDamageToCreature(target, 1, false, true);
+      }
+    }
+
     // Instinct de meute X — on-play, fires once if any same-faction ally
     // (owned by this player) joined the graveyard during the CURRENT
     // turn. Single +X/+X grant; does not stack with the number of dead
@@ -1499,6 +1514,19 @@ function resolveSpellKeywords(
       }
       case "afflux": {
         ctx.caster.mana += kw.amount ?? 1;
+        break;
+      }
+      case "tempete": {
+        // Same logic as the creature on-play side: pick a random alive
+        // enemy creature for each damage drop, no hero, re-evaluate per
+        // drop so dead targets fall out of the rotation immediately.
+        const total = kw.amount ?? 1;
+        for (let drop = 0; drop < total; drop++) {
+          const alive = ctx.opponent.board.filter((u) => u.currentHealth > 0);
+          if (alive.length === 0) break;
+          const target = alive[Math.floor(rng() * alive.length)];
+          dealDamageToCreature(target, 1, false, true);
+        }
         break;
       }
       case "rappel": {

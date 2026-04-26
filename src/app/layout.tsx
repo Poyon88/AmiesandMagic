@@ -47,6 +47,13 @@ export default function RootLayout({
     <html lang="en" className={`${cinzel.variable} ${crimsonText.variable}`}>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        // Browser extensions (Grammarly, ColorZilla…) inject attributes
+        // on <body> before React hydrates, which produces a noisy SSR
+        // hydration mismatch on every page load. Suppressing here only
+        // affects this single element (children still get full
+        // hydration checks) and is the canonical fix recommended by the
+        // React team for this scenario.
+        suppressHydrationWarning
       >
         <AudioProvider />
         {children}

@@ -40,6 +40,14 @@ export interface FireBreathEvent {
   timestamp: number;
 }
 
+// Tempête X — lightning rain animation. Driven by the per-target damage
+// events the engine emits during the resolved action; we collect those
+// here so the overlay can stagger one bolt per drop.
+export interface TempeteEvent {
+  targetIds: string[];
+  timestamp: number;
+}
+
 export interface HeroPowerCastEvent {
   heroName: string;
   race: string;
@@ -86,6 +94,7 @@ interface GameStore {
   damageEvents: DamageEvent[];
   spellCastEvent: SpellCastEvent | null;
   fireBreathEvent: FireBreathEvent | null;
+  tempeteEvent: TempeteEvent | null;
   heroPowerCastEvent: HeroPowerCastEvent | null;
   graveyardAffectEvent: GraveyardAffectEvent | null;
   discardFromHandEvent: DiscardFromHandEvent | null;
@@ -134,6 +143,7 @@ interface GameStore {
   clearDamageEvents: () => void;
   clearSpellCastEvent: () => void;
   clearFireBreathEvent: () => void;
+  clearTempeteEvent: () => void;
   clearHeroPowerCastEvent: () => void;
   clearGraveyardAffectEvent: () => void;
   clearDiscardFromHandEvent: () => void;
@@ -431,6 +441,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   damageEvents: [],
   spellCastEvent: null,
   fireBreathEvent: null,
+  tempeteEvent: null,
   heroPowerCastEvent: null,
   graveyardAffectEvent: null,
   discardFromHandEvent: null,
@@ -686,6 +697,44 @@ export const useGameStore = create<GameStore>((set, get) => ({
       sfxEvents.push({ type: "fire_breath" });
     }
 
+    // Tempête X — detect when the played card carries the keyword either
+    // creature-side (card.keywords includes "tempete") or spell-side
+    // (spell_keywords contains an entry with id "tempete"). Targets are
+    // the enemy creatures that took at least one drop, recovered from
+    // dmgEvents (the engine deals the damage one HP at a time, so an
+    // enemy hit twice still yields a single targetId entry).
+    let tempeteEvent: TempeteEvent | null = null;
+    if (action.type === "play_card") {
+      const player = gameState.players[gameState.currentPlayerIndex];
+      const playedCard = player.hand.find((c) => c.instanceId === action.cardInstanceId);
+      const carriesTempete = playedCard
+        ? playedCard.card.keywords.includes("tempete" as import("@/lib/game/types").Keyword) ||
+          (playedCard.card.spell_keywords ?? []).some((k) => k.id === "tempete")
+        : false;
+      if (carriesTempete) {
+        const opponentBoardIds = new Set(
+          gameState.players[gameState.currentPlayerIndex === 0 ? 1 : 0].board.map((c) => c.instanceId),
+        );
+        // Expand each damage event into N per-HP entries so the overlay
+        // shows ONE bolt per drop (rather than one bolt per unique
+        // target). A creature that took 3 damage gets 3 separate bolts
+        // hitting it. The actual random order chosen by the engine is
+        // not recorded, so the bolts on the same target appear in a row
+        // — sufficient for the "successively" feel without threading
+        // additional state through the engine.
+        const targetIds: string[] = [];
+        for (const ev of dmgEvents) {
+          if (ev.type !== "damage") continue;
+          if (!opponentBoardIds.has(ev.targetId)) continue;
+          const drops = Math.max(1, ev.amount ?? 1);
+          for (let i = 0; i < drops; i++) targetIds.push(ev.targetId);
+        }
+        if (targetIds.length > 0) {
+          tempeteEvent = { targetIds, timestamp: Date.now() };
+        }
+      }
+    }
+
     // SFX from card draw (new cards in hand). The mulligan action is the one
     // exception: its pipeline fires ~1250ms after confirm, while the mulligan
     // overlay is still flipping cards and masking its own audio. The Mana
@@ -815,7 +864,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     ];
     const hasDraws = drawnCounts[0] + drawnCounts[1] > 0;
 
-    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent;
+    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!tempeteEvent;
 
     // Deep clone helper — factionCardPool carries non-serialisable refs, keep it aside.
     const cloneState = (state: GameState): GameState => {
@@ -991,6 +1040,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         damageEvents: staggeredDmgEvents,
         lastSfxEvents: impactSfx,
         ...(graveyardAffectEvent ? { graveyardAffectEvent } : {}),
+        ...(tempeteEvent ? { tempeteEvent } : {}),
       });
       playSfxBatch(impactSfx);
     };
@@ -1506,6 +1556,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   clearFireBreathEvent: () => {
     set({ fireBreathEvent: null });
+  },
+
+  clearTempeteEvent: () => {
+    set({ tempeteEvent: null });
   },
 
   clearHeroPowerCastEvent: () => {

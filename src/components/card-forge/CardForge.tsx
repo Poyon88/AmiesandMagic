@@ -359,7 +359,15 @@ export default function CardForge() {
       );
     } else {
       parts.push(
-        "NO frame, NO border, NO medallion, NO baroque ornamentation, NO gold trim, NO filigree, NO glow, NO sparkles around the subject, NO particles — pure black around the silhouette is mandatory.",
+        // Hammer the no-frame rule — the AI repeatedly tries to draw a
+        // square / rounded-rectangle outline AROUND the symbol when it
+        // hears the word "icon". That outline is itself part of the
+        // silhouette pixels, so it survives the background-keying and
+        // shows up as a visible white square in-game. Be explicit that
+        // the symbol stands alone with NOTHING enclosing it.
+        "ABSOLUTE RULE — NO enclosing shape of any kind around the symbol. Forbidden: square outline, rectangular outline, rounded-rectangle outline, circle outline, badge, shield-shape, banner, plaque, cartouche, picture frame, double border, single border, hairline outline, glyph cartouche, escutcheon, button background, keycap. The symbol is a free-standing silhouette with empty pure-black space around it on all four sides.",
+        "NO frame, NO border, NO medallion, NO baroque ornamentation, NO gold trim, NO filigree, NO glow, NO sparkles around the subject, NO particles, NO scanlines, NO halo, NO drop-shadow ring — pure black around the silhouette is mandatory.",
+        "If the keyword name suggests a contained motif (e.g. \"shield\", \"crest\"), depict only the shape itself; do NOT add an extra outline or frame around it.",
         "The icon must remain perfectly readable at 24–32 pixels. No fine lines, no tiny ornaments.",
         "1:1 square, centered, symmetric whenever possible.",
       );
@@ -1724,6 +1732,7 @@ export default function CardForge() {
     "Appel du clan X": "appel_du_clan", "Rassemblement X": "rassemblement",
     "Sélection X": "selection",
     "Lycanthropie X": "lycanthropie",
+    "Tempête X": "tempete",
   };
 
   const [saving, setSaving] = useState(false);

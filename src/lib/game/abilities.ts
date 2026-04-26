@@ -364,7 +364,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   regeneration: {
     id: "regeneration", label: "Régénération", symbol: "💚",
-    desc: "Récupère 2 PV au début de chaque tour.",
+    desc: "Récupère 2 PV au début de votre tour.",
     applicable_to: ["creature"],
     creature: { cost: 20, costPerX: 0, se: 4.5, minTier: 3, scalable: false, zone: "Terrain" },
   },
@@ -636,6 +636,16 @@ export const ABILITIES: Record<string, AbilityDef> = {
       desc: "Invocation : crée plusieurs tokens selon la configuration.",
     },
     spell: { params: [], needsTarget: false },
+  },
+  tempete: {
+    id: "tempete", label: "Tempête X", symbol: "🌩️",
+    desc: "Inflige X dégâts répartis aléatoirement entre les unités ennemies.",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      cost: 10, costPerX: 4, se: 3.5, minTier: 2, scalable: true, zone: "Terrain",
+      desc: "Invocation : inflige X dégâts répartis aléatoirement entre les unités ennemies.",
+    },
+    spell: { params: ["amount"], needsTarget: false },
   },
   afflux: {
     id: "afflux", label: "Afflux X", symbol: "💎",
