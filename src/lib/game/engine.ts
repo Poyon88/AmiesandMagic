@@ -50,6 +50,10 @@ function createRNG(seed: number): () => number {
 
 let rng: () => number = Math.random;
 let currentTokenTemplates: TokenTemplate[] = [];
+// Turn number of the action being processed. Set in `applyAction` so any
+// engine helper (cleanDeadCreatures…) can stamp creatures with their death
+// turn without having to thread state through every signature.
+let currentTurnNumber = 0;
 
 export function initRNG(seed: number) {
   rng = createRNG(seed);
@@ -113,6 +117,8 @@ function createCardInstance(card: Card): CardInstance {
     carnageX: 0,
     heritageX: 0,
     instinctDeMeuteX: 0,
+    instinctDeMeuteATKBonus: 0,
+    diedOnTurn: null,
     cycleEternelAutoPlay: false,
     originalOwnerId: null,
     hasTransformedLycanthropie: false,
@@ -224,6 +230,7 @@ function recalculateAuras(player: PlayerState, opponent: PlayerState) {
     if (c.berserkActive) atk += c.berserkATKBonus;
     atk += c.necrophagieATKBonus;
     atk += c.martyrATKBonus;
+    atk += c.instinctDeMeuteATKBonus;
     c.currentAttack = atk;
   }
   for (const c of opponent.board) {
@@ -234,6 +241,7 @@ function recalculateAuras(player: PlayerState, opponent: PlayerState) {
     if (c.berserkActive) atk += c.berserkATKBonus;
     atk += c.necrophagieATKBonus;
     atk += c.martyrATKBonus;
+    atk += c.instinctDeMeuteATKBonus;
     c.currentAttack = atk;
   }
 
@@ -924,10 +932,27 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       }
     }
 
-    // Set Instinct de meute X value
+    // Instinct de meute X — on-play, fires once if any same-faction ally
+    // (owned by this player) joined the graveyard during the CURRENT
+    // turn. Single +X/+X grant; does not stack with the number of dead
+    // allies. Reads `diedOnTurn` stamped by cleanDeadCreatures.
     if (hasKw(cardInstance, "instinct_de_meute")) {
       const imXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
-      cardInstance.instinctDeMeuteX = imXVals["instinct_de_meute"] || Math.max(1, Math.floor(cardInstance.card.mana_cost / 3));
+      const x = imXVals["instinct_de_meute"] || Math.max(1, Math.floor(cardInstance.card.mana_cost / 3));
+      cardInstance.instinctDeMeuteX = x;
+      const sameFactionDiedThisTurn = cardInstance.card.faction
+        ? player.graveyard.some(
+            (g) =>
+              g.diedOnTurn === currentTurnNumber &&
+              g.card.faction === cardInstance.card.faction,
+          )
+        : false;
+      if (sameFactionDiedThisTurn) {
+        cardInstance.instinctDeMeuteATKBonus = x;
+        cardInstance.currentAttack += x;
+        cardInstance.currentHealth += x;
+        cardInstance.maxHealth += x;
+      }
     }
 
     // Set Persécution X value
@@ -2133,6 +2158,9 @@ function cleanDeadCreatures(player: PlayerState): CardInstance[] {
 
   for (const c of player.board) {
     if (c.currentHealth <= 0) {
+      // Stamp the death turn so on-play triggers like Instinct de meute
+      // can ask "did any same-faction ally die during the current turn?".
+      c.diedOnTurn = currentTurnNumber;
       dead.push(c);
     } else {
       alive.push(c);
@@ -2226,16 +2254,9 @@ function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: P
       owner.deck.splice(insertIdx, 0, copyInstance);
     }
 
-    // Instinct de meute: buff same-clan allies with this keyword when a same-clan ally dies
-    if (c.card.clan) {
-      for (const unit of owner.board) {
-        if (hasKw(unit, "instinct_de_meute") && unit.card.clan === c.card.clan && unit.instinctDeMeuteX > 0) {
-          unit.currentAttack += unit.instinctDeMeuteX;
-          unit.currentHealth += unit.instinctDeMeuteX;
-          unit.maxHealth += unit.instinctDeMeuteX;
-        }
-      }
-    }
+    // (Instinct de meute is now an on-play trigger — see playCard,
+    // resolved once at summon based on whether any same-faction ally has
+    // died this turn. The death side no longer mutates other creatures.)
 
     // Nécrophagie: toutes les unités avec Nécrophagie gagnent +1/+1 quand une unité meurt
     for (const board of [owner.board, enemy.board]) {
@@ -2444,6 +2465,7 @@ export function applyMulligan(state: GameState, action: MulliganAction): GameSta
 export function applyAction(state: GameState, action: GameAction): GameState {
   // Make token templates available to all engine functions
   currentTokenTemplates = state.tokenTemplates ?? [];
+  currentTurnNumber = state.turnNumber;
   switch (action.type) {
     case "mulligan": return applyMulligan(state, action);
     case "play_card": return playCard(state, action);

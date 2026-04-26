@@ -1,9 +1,10 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Html, Stage, useGLTF } from "@react-three/drei";
-import { Color, Group, Mesh, MeshStandardMaterial } from "three";
+import { Color, Group, Mesh, MeshStandardMaterial, Object3D } from "three";
+import { clone as cloneSkeleton } from "three/examples/jsm/utils/SkeletonUtils.js";
 import type { HeroState } from "@/lib/game/types";
 
 // ─── Props ───────────────────────────────────────────────────────────────
@@ -47,6 +48,13 @@ interface ModelProps {
 
 function HeroModel({ url, isValidTarget, isHovered, damageAmount }: ModelProps) {
   const gltf = useGLTF(url);
+  // `useGLTF` returns a cached scene shared across all consumers of the
+  // same URL. `<primitive object={scene}>` REPARENTS that scene, so when
+  // both players pick the same hero the second viewer steals the model
+  // from the first and one canvas renders empty. SkeletonUtils.clone gives
+  // each viewer its own independent copy (handles skinned meshes too —
+  // a plain `scene.clone(true)` would break rigging).
+  const scene = useMemo(() => cloneSkeleton(gltf.scene), [gltf.scene]);
   const groupRef = useRef<Group>(null);
   const cachedMats = useRef<{ mat: MeshStandardMaterial; orig: Color }[]>([]);
   const damageStart = useRef<number>(0);
@@ -54,13 +62,19 @@ function HeroModel({ url, isValidTarget, isHovered, damageAmount }: ModelProps) 
 
   useEffect(() => {
     const cache: { mat: MeshStandardMaterial; orig: Color }[] = [];
-    gltf.scene.traverse((obj) => {
+    scene.traverse((obj: Object3D) => {
       const mesh = obj as Mesh;
       if (!mesh.isMesh) return;
       const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
       for (const m of mats) {
         if (m && "emissive" in m) {
-          const sm = m as MeshStandardMaterial;
+          // SkeletonUtils.clone shares materials by default, so cloning
+          // each material once per viewer prevents emissive tints set by
+          // one Hero3DViewer from leaking to the other.
+          const sm = (m as MeshStandardMaterial).clone();
+          mesh.material = Array.isArray(mesh.material)
+            ? mesh.material.map((mm) => (mm === m ? sm : mm))
+            : sm;
           cache.push({ mat: sm, orig: sm.emissive.clone() });
         }
       }
@@ -69,7 +83,7 @@ function HeroModel({ url, isValidTarget, isHovered, damageAmount }: ModelProps) 
     return () => {
       for (const c of cache) c.mat.emissive.copy(c.orig);
     };
-  }, [gltf.scene]);
+  }, [scene]);
 
   useFrame(() => {
     const g = groupRef.current;
@@ -123,7 +137,7 @@ function HeroModel({ url, isValidTarget, isHovered, damageAmount }: ModelProps) 
 
   return (
     <group ref={groupRef}>
-      <primitive object={gltf.scene} />
+      <primitive object={scene} />
     </group>
   );
 }

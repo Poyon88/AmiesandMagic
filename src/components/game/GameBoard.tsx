@@ -594,9 +594,13 @@ export default function GameBoard({ onAction }: GameBoardProps) {
         </div>
 
         {/* ============= PLAYER GRAVEYARD + DECK =============
-            z-30 to mirror the opponent guard and keep the click reliable
-            even if a future overlay slides into this corner. */}
-        <div className="absolute bottom-[18%] left-[2%] z-30 flex items-center gap-3">
+            z-40 because the player hand row at the bottom uses
+            `absolute bottom-0 left-0 right-0 z-30` — that wrapper spans
+            the full viewport width and renders later in the DOM, so at
+            equal z-index it ate the click on the left-side graveyard
+            button (over its empty side area). Bumping to z-40 keeps the
+            click reliable. */}
+        <div className="absolute bottom-[18%] left-[2%] z-40 flex items-center gap-3">
           <button
             onClick={() => setGraveyardView("my")}
             className="flex flex-col items-center text-foreground/40 hover:text-foreground/60 transition-colors"

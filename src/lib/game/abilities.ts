@@ -476,7 +476,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   instinct_de_meute: {
     id: "instinct_de_meute", label: "Instinct de meute X", symbol: "🐺",
-    desc: "Gagne +X ATK et +X PV si une unité alliée de même clan est morte ce tour.",
+    desc: "Invocation : gagne +X ATK et +X PV si une unité alliée de même faction a rejoint le cimetière depuis le jeu ce tour.",
     applicable_to: ["creature"],
     creature: { cost: 14, costPerX: 5, se: 4.0, minTier: 3, scalable: true, zone: "Race" },
   },

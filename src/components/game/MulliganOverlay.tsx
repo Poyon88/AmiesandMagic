@@ -485,6 +485,14 @@ export default function MulliganOverlay({
 
   function handleConfirmClick() {
     if (phase !== "selecting") return;
+    // Play the global click SFX explicitly here. The mulligan overlay
+    // re-renders aggressively after this handler runs (state flips to
+    // "replacing", which can detach the button before the document-level
+    // click listener gets to fire) so we can't rely on the global hook.
+    // The button is marked `data-no-global-click-sfx` to keep the global
+    // listener from doubling the sound on the rare cases where it does
+    // catch the click first.
+    playStandardSfx("button_click");
     const hasReplacements = selected.size > 0;
     onConfirm(Array.from(selected));
     if (hasReplacements) {
@@ -545,6 +553,7 @@ export default function MulliganOverlay({
         <button
           onClick={handleConfirmClick}
           disabled={phase !== "selecting"}
+          data-no-global-click-sfx="true"
           className="px-8 py-3 bg-primary hover:bg-primary-dark text-background font-bold rounded-xl text-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {phase === "initial"

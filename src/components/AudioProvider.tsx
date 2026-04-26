@@ -92,6 +92,10 @@ export default function AudioProvider() {
       // events still bubble — skip them so the click sound doesn't
       // contradict the visual disabled state.
       if (btn.disabled) return;
+      // `data-no-global-click-sfx` lets a button opt out of the global
+      // sound (used when its onClick handler plays the SFX explicitly to
+      // avoid a double-play).
+      if (btn.dataset.noGlobalClickSfx === "true") return;
       const url = useAudioStore.getState().standardSfxUrls["button_click"];
       if (url) SfxEngine.getInstance().play(url);
     };

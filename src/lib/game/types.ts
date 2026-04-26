@@ -325,8 +325,17 @@ export interface CardInstance {
   carnageX: number;
   // Héritage X: death buff to allies
   heritageX: number;
-  // Instinct de meute X: buff when same-clan ally dies this turn
+  // Instinct de meute X: X value resolved at summon (how much the on-play
+  // trigger grants if a same-faction ally has died this turn).
   instinctDeMeuteX: number;
+  // Permanent ATK bonus once the on-play trigger fires. Tracked
+  // separately so recalculateAuras() doesn't erase it on its next pass.
+  instinctDeMeuteATKBonus: number;
+  // Turn number on which this creature was put into a graveyard (set in
+  // cleanDeadCreatures). null while the creature is still on the board /
+  // in the deck / hand. Used by triggers like Instinct de meute that
+  // need to know "did this die during the current turn?".
+  diedOnTurn: number | null;
   // Cycle éternel: flag for auto-play when drawn
   cycleEternelAutoPlay: boolean;
   // Owner tracking (for Corruption end-of-turn return)
