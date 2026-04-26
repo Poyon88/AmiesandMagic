@@ -397,41 +397,44 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           </div>
         )}
 
-        {/* ============= OPPONENT MANA + LEGACY PORTRAIT (center) =============
-            Skipped entirely when the opponent has a 3D hero — in that mode
-            the mana bar is rendered next to the HP under the 3D figurine,
-            and the hero portrait + power button live there too. */}
+        {/* ============= OPPONENT LEGACY PORTRAIT (top-left) =============
+            Mirrors the opponent 3D-hero wrapper position so the badge
+            lives in the same corner whether the opponent uses a 3D
+            figurine or the legacy portrait. Skipped when a 3D skin is
+            set (handled in the Hero3DViewer wrapper instead). */}
         {!opponent.hero.heroDefinition?.glbUrl && (
-        <div className="absolute top-[1%] left-1/2 -translate-x-1/2 z-20 flex items-center gap-4">
+        <div className="absolute left-[1%] top-[10%] lg:top-[1%] z-20 flex flex-col items-center gap-1">
+          <div className="flex items-center gap-2">
+            <HeroPortrait
+              hero={opponent.hero}
+              isOpponent={true}
+              isValidTarget={validTargets.includes("enemy_hero")}
+              damageAmount={getDamage("enemy_hero")}
+              onClick={
+                validTargets.includes("enemy_hero")
+                  ? () => handleSelectTarget("enemy_hero")
+                  : undefined
+              }
+              onMouseEnter={
+                validTargets.includes("enemy_hero")
+                  ? () => setHoveredTargetId("enemy_hero")
+                  : undefined
+              }
+              onMouseLeave={
+                validTargets.includes("enemy_hero")
+                  ? () => setHoveredTargetId(null)
+                  : undefined
+              }
+            />
+            <HeroPowerButton
+              heroDef={opponent.hero.heroDefinition}
+              isOpponent={true}
+              canUse={false}
+              isUsed={opponent.hero.heroPowerUsedThisTurn}
+              mana={opponent.mana}
+            />
+          </div>
           <ManaBar current={opponent.mana} max={opponent.maxMana} />
-          <HeroPowerButton
-            heroDef={opponent.hero.heroDefinition}
-            isOpponent={true}
-            canUse={false}
-            isUsed={opponent.hero.heroPowerUsedThisTurn}
-            mana={opponent.mana}
-          />
-          <HeroPortrait
-            hero={opponent.hero}
-            isOpponent={true}
-            isValidTarget={validTargets.includes("enemy_hero")}
-            damageAmount={getDamage("enemy_hero")}
-            onClick={
-              validTargets.includes("enemy_hero")
-                ? () => handleSelectTarget("enemy_hero")
-                : undefined
-            }
-            onMouseEnter={
-              validTargets.includes("enemy_hero")
-                ? () => setHoveredTargetId("enemy_hero")
-                : undefined
-            }
-            onMouseLeave={
-              validTargets.includes("enemy_hero")
-                ? () => setHoveredTargetId(null)
-                : undefined
-            }
-          />
         </div>
         )}
 
@@ -465,8 +468,11 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           </div>
         )}
 
-        {/* ============= OPPONENT GRAVEYARD + DECK ============= */}
-        <div className="absolute top-[2%] left-[2%] z-20 flex items-center gap-3">
+        {/* ============= OPPONENT GRAVEYARD + DECK =============
+            z-30 so the graveyard button stays clickable above the
+            opponent's 3D hero canvas — both sit in the top-left corner on
+            lg+ viewports and the canvas would otherwise eat the click. */}
+        <div className="absolute top-[2%] left-[2%] z-30 flex items-center gap-3">
           <button
             onClick={() => setGraveyardView("opponent")}
             className="flex flex-col items-center text-foreground/40 hover:text-foreground/60 transition-colors"
@@ -587,8 +593,10 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           </div>
         </div>
 
-        {/* ============= PLAYER GRAVEYARD + DECK ============= */}
-        <div className="absolute bottom-[18%] left-[2%] z-20 flex items-center gap-3">
+        {/* ============= PLAYER GRAVEYARD + DECK =============
+            z-30 to mirror the opponent guard and keep the click reliable
+            even if a future overlay slides into this corner. */}
+        <div className="absolute bottom-[18%] left-[2%] z-30 flex items-center gap-3">
           <button
             onClick={() => setGraveyardView("my")}
             className="flex flex-col items-center text-foreground/40 hover:text-foreground/60 transition-colors"
@@ -602,41 +610,45 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           </div>
         </div>
 
-        {/* ============= PLAYER MANA + LEGACY PORTRAIT (center) =============
-            Skipped entirely when the player has a 3D hero — the mana bar
-            is rendered next to the HP under the figurine instead. */}
+        {/* ============= PLAYER LEGACY PORTRAIT (bottom-right) =============
+            Mirrors the 3D-hero wrapper position so the badge lives in the
+            same corner whether the player uses a 3D figurine or the
+            legacy portrait. Skipped entirely when a 3D skin is set
+            (handled in the Hero3DViewer wrapper instead). */}
         {!myPlayer.hero.heroDefinition?.glbUrl && (
-        <div className="absolute bottom-[16%] left-1/2 -translate-x-1/2 z-40 flex items-center gap-4">
+        <div className="absolute right-[1%] bottom-[28%] lg:bottom-[1%] z-40 flex flex-col items-center gap-1">
+          <div className="flex items-center gap-2">
+            <HeroPortrait
+              hero={myPlayer.hero}
+              isOpponent={false}
+              isValidTarget={validTargets.includes("friendly_hero")}
+              damageAmount={getDamage("friendly_hero")}
+              onClick={
+                validTargets.includes("friendly_hero")
+                  ? () => handleSelectTarget("friendly_hero")
+                  : undefined
+              }
+              onMouseEnter={
+                validTargets.includes("friendly_hero")
+                  ? () => setHoveredTargetId("friendly_hero")
+                  : undefined
+              }
+              onMouseLeave={
+                validTargets.includes("friendly_hero")
+                  ? () => setHoveredTargetId(null)
+                  : undefined
+              }
+            />
+            <HeroPowerButton
+              heroDef={myPlayer.hero.heroDefinition}
+              isOpponent={false}
+              canUse={myTurn && !!gameState && canUseHeroPower(gameState)}
+              isUsed={myPlayer.hero.heroPowerUsedThisTurn}
+              mana={myPlayer.mana}
+              onClick={handleActivateHeroPower}
+            />
+          </div>
           <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} />
-          <HeroPortrait
-            hero={myPlayer.hero}
-            isOpponent={false}
-            isValidTarget={validTargets.includes("friendly_hero")}
-            damageAmount={getDamage("friendly_hero")}
-            onClick={
-              validTargets.includes("friendly_hero")
-                ? () => handleSelectTarget("friendly_hero")
-                : undefined
-            }
-            onMouseEnter={
-              validTargets.includes("friendly_hero")
-                ? () => setHoveredTargetId("friendly_hero")
-                : undefined
-            }
-            onMouseLeave={
-              validTargets.includes("friendly_hero")
-                ? () => setHoveredTargetId(null)
-                : undefined
-            }
-          />
-          <HeroPowerButton
-            heroDef={myPlayer.hero.heroDefinition}
-            isOpponent={false}
-            canUse={myTurn && !!gameState && canUseHeroPower(gameState)}
-            isUsed={myPlayer.hero.heroPowerUsedThisTurn}
-            mana={myPlayer.mana}
-            onClick={handleActivateHeroPower}
-          />
         </div>
         )}
 

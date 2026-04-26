@@ -73,6 +73,32 @@ export default function AudioProvider() {
     engine.setMuted(settings.sfxMuted);
   }, [settings.sfxVolume, settings.sfxMuted]);
 
+  // Global button-click SFX placeholder. Reserves the `button_click` event
+  // type — the listener fires on any <button> click anywhere in the app
+  // and plays whatever URL the admin uploaded under that key. While the
+  // admin hasn't uploaded anything yet, the lookup returns undefined and
+  // the listener is a silent no-op (no error, no console spam). Wire the
+  // admin SFX form to use event_type="button_click" and the sound starts
+  // playing on every button automatically.
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      const target = e.target as Element | null;
+      if (!target) return;
+      // Walk up to find a `<button>` ancestor (icons / spans inside button
+      // are common click targets). Stop at document body.
+      const btn = target.closest("button");
+      if (!btn) return;
+      // Disabled buttons don't fire onClick handlers in React but DOM
+      // events still bubble — skip them so the click sound doesn't
+      // contradict the visual disabled state.
+      if (btn.disabled) return;
+      const url = useAudioStore.getState().standardSfxUrls["button_click"];
+      if (url) SfxEngine.getInstance().play(url);
+    };
+    document.addEventListener("click", onClick);
+    return () => document.removeEventListener("click", onClick);
+  }, []);
+
   // Listen for first user interaction to unlock audio
   useEffect(() => {
     if (userHasInteracted) return;

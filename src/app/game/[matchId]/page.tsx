@@ -113,8 +113,15 @@ export default function GamePage() {
           return;
         }
 
-        // Fetch both player deck cards and hero data
-        const [p1DeckCards, p2DeckCards, p1DeckData, p2DeckData, tokenTemplatesRes, defaultBoardRes] = await Promise.all([
+        // Fetch both player deck cards and hero data.
+        // Token templates go through the `/api/token-templates` endpoint
+        // (service-role) instead of a direct Supabase read — the table has
+        // no public RLS read policy, so a client-side
+        // `supabase.from("token_templates").select("*")` returns []
+        // silently and creature spawns from Convocation X / Convocations
+        // multiples / Lycanthropie X end up looking up an empty registry
+        // at game time.
+        const [p1DeckCards, p2DeckCards, p1DeckData, p2DeckData, tokenTemplatesJson, defaultBoardRes] = await Promise.all([
           supabase
             .from("deck_cards")
             .select("card_id, quantity, cards(*)")
@@ -133,9 +140,7 @@ export default function GamePage() {
             .select("hero_id, board_id, card_back_id, heroes(*), card_back:card_back_id(image_url)")
             .eq("id", match.player2_deck_id)
             .single(),
-          supabase
-            .from("token_templates")
-            .select("*"),
+          fetch("/api/token-templates").then((r) => (r.ok ? r.json() : [])),
           supabase
             .from("game_boards")
             .select("id")
@@ -145,7 +150,7 @@ export default function GamePage() {
         ]);
 
         // Store token templates
-        useGameStore.getState().setTokenTemplates(tokenTemplatesRes.data ?? []);
+        useGameStore.getState().setTokenTemplates(Array.isArray(tokenTemplatesJson) ? tokenTemplatesJson : []);
 
         if (cancelled) return;
 

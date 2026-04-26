@@ -313,6 +313,10 @@ export interface CardInstance {
   // Nécrophagie: permanent buff tracker
   necrophagieATKBonus: number;
   necrophagiePVBonus: number;
+  // Martyr (death-trigger from same-race ally): permanent ATK bonus
+  // tracked separately from currentAttack so recalculateAuras() doesn't
+  // erase it on its next pass.
+  martyrATKBonus: number;
   // Persécution X: damage to hero on attack
   persecutionX: number;
   // Riposte X: counter-damage

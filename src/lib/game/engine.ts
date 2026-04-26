@@ -107,6 +107,7 @@ function createCardInstance(card: Card): CardInstance {
     loyautePVBonus: 0,
     necrophagieATKBonus: 0,
     necrophagiePVBonus: 0,
+    martyrATKBonus: 0,
     persecutionX: 0,
     riposteX: 0,
     carnageX: 0,
@@ -222,6 +223,7 @@ function recalculateAuras(player: PlayerState, opponent: PlayerState) {
     if (c.fureurActive) atk += c.fureurATKBonus;
     if (c.berserkActive) atk += c.berserkATKBonus;
     atk += c.necrophagieATKBonus;
+    atk += c.martyrATKBonus;
     c.currentAttack = atk;
   }
   for (const c of opponent.board) {
@@ -231,6 +233,7 @@ function recalculateAuras(player: PlayerState, opponent: PlayerState) {
     if (c.fureurActive) atk += c.fureurATKBonus;
     if (c.berserkActive) atk += c.berserkATKBonus;
     atk += c.necrophagieATKBonus;
+    atk += c.martyrATKBonus;
     c.currentAttack = atk;
   }
 
@@ -582,12 +585,18 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     if (hasKw(cardInstance, "convocation") && player.board.length < MAX_BOARD_SIZE) {
       const tmpl = findTokenTemplate(cardInstance.card.convocation_token_id);
       if (!tmpl) {
-        // Surface the silent-no-spawn case so the admin can fix the data
-        // (most common cause: card was authored without picking a token in
-        // the cascade picker, so convocation_token_id is null).
+        // Surface the silent-no-spawn case so the admin can fix the data.
+        // Two common causes:
+        //   1. card.convocation_token_id is null (forgot to pick a token)
+        //   2. id is set but the registry doesn't carry it (template was
+        //      deleted, or the engine was started with an empty
+        //      tokenTemplates array). The diagnostic below distinguishes
+        //      the two by dumping the available ids.
         console.warn(
           `[engine] Convocation: pas de token spawné pour la carte "${cardInstance.card.name}" — convocation_token_id =`,
           cardInstance.card.convocation_token_id,
+          "| registry size:", currentTokenTemplates.length,
+          "| available ids:", currentTokenTemplates.map((t) => t.id),
         );
       }
       if (tmpl) {
@@ -1421,6 +1430,11 @@ function resolveSpellKeywords(
       }
       case "invocation_multiple": {
         const tokenDefs = ctx.card.convocation_tokens ?? [];
+        console.log(
+          `[engine] Spell invocation_multiple sur "${ctx.card.name}" — convocation_tokens:`,
+          ctx.card.convocation_tokens,
+          "→ tokenDefs.length =", tokenDefs.length,
+        );
         if (tokenDefs.length === 0) {
           console.warn(
             `[engine] Spell invocation_multiple: aucun token configuré pour le sort "${ctx.card.name}" — vérifiez l'onglet Édition.`,
@@ -2189,10 +2203,13 @@ function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: P
       }
     }
 
-    // Martyr: toutes les unités de même race gagnent +1/+1 permanent
+    // Martyr: toutes les unités de même race gagnent +1/+1 permanent.
+    // ATK is tracked via martyrATKBonus so recalculateAuras() preserves it
+    // — assigning to currentAttack alone gets erased on the next pass.
     if (hasKw(c, "martyr") && c.card.race) {
       for (const ally of owner.board) {
         if (ally.card.race === c.card.race) {
+          ally.martyrATKBonus += 1;
           ally.currentAttack += 1;
           ally.currentHealth += 1;
           ally.maxHealth += 1;

@@ -33,6 +33,7 @@ const EVENT_TYPES = [
   { value: "timer_warning", label: "Timer — alerte 15s" },
   { value: "mulligan_flip", label: "Mulligan — retournement de carte" },
   { value: "mulligan_pick", label: "Mulligan — sélection de carte" },
+  { value: "button_click", label: "UI — clic sur n'importe quel bouton" },
 ];
 
 const STYLE = {
