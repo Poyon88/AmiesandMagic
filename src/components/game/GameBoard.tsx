@@ -26,6 +26,7 @@ import HeroPowerOverlay from "./HeroPowerOverlay";
 import GraveyardAffectOverlay from "./GraveyardAffectOverlay";
 import DiscardFromHandOverlay from "./DiscardFromHandOverlay";
 import TempeteOverlay from "./TempeteOverlay";
+import MtgoGraveyardTile from "./MtgoGraveyardTile";
 import MulliganOverlay from "./MulliganOverlay";
 import SettingsModal from "@/components/shared/SettingsModal";
 import type { GameAction, DamageEvent, HeroDefinition } from "@/lib/game/types";
@@ -113,6 +114,9 @@ export default function GameBoard({ onAction }: GameBoardProps) {
   }
 
   const boardImageUrl = useGameStore((s) => s.boardImageUrl);
+  const boardLayout = useGameStore((s) => s.boardLayout);
+  const boardGraveyardImageUrl = useGameStore((s) => s.boardGraveyardImageUrl);
+  const isMtgo = boardLayout === "mtgo";
   const opponentCardBackUrl = useGameStore((s) => s.opponentCardBackUrl);
   const myPlayer = getMyPlayerState();
   const opponent = getOpponentPlayerState();
@@ -407,36 +411,29 @@ export default function GameBoard({ onAction }: GameBoardProps) {
             set (handled in the Hero3DViewer wrapper instead). */}
         {!opponent.hero.heroDefinition?.glbUrl && (
         <div className="absolute left-[1%] top-[10%] lg:top-[1%] z-20 flex flex-col items-center gap-1">
-          <div className="flex items-center gap-2">
-            <HeroPortrait
-              hero={opponent.hero}
-              isOpponent={true}
-              isValidTarget={validTargets.includes("enemy_hero")}
-              damageAmount={getDamage("enemy_hero")}
-              onClick={
-                validTargets.includes("enemy_hero")
-                  ? () => handleSelectTarget("enemy_hero")
-                  : undefined
-              }
-              onMouseEnter={
-                validTargets.includes("enemy_hero")
-                  ? () => setHoveredTargetId("enemy_hero")
-                  : undefined
-              }
-              onMouseLeave={
-                validTargets.includes("enemy_hero")
-                  ? () => setHoveredTargetId(null)
-                  : undefined
-              }
-            />
-            <HeroPowerButton
-              heroDef={opponent.hero.heroDefinition}
-              isOpponent={true}
-              canUse={false}
-              isUsed={opponent.hero.heroPowerUsedThisTurn}
-              mana={opponent.mana}
-            />
-          </div>
+          {/* The visible HeroPowerButton has been removed to mirror the
+              3D-hero UX: left-click on the portrait selects the hero
+              (or activates power on own hero), right-click opens the
+              hero / power description overlay. The portrait now uses
+              the same handlers the 3D viewer wires up. */}
+          <HeroPortrait
+            hero={opponent.hero}
+            isOpponent={true}
+            isValidTarget={validTargets.includes("enemy_hero")}
+            damageAmount={getDamage("enemy_hero")}
+            onClick={handleOppHeroClick}
+            onContextMenu={handleOppHeroContextMenu}
+            onMouseEnter={
+              validTargets.includes("enemy_hero")
+                ? () => setHoveredTargetId("enemy_hero")
+                : undefined
+            }
+            onMouseLeave={
+              validTargets.includes("enemy_hero")
+                ? () => setHoveredTargetId(null)
+                : undefined
+            }
+          />
           <ManaBar current={opponent.mana} max={opponent.maxMana} />
         </div>
         )}
@@ -471,10 +468,10 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           </div>
         )}
 
-        {/* ============= OPPONENT GRAVEYARD + DECK =============
-            z-30 so the graveyard button stays clickable above the
-            opponent's 3D hero canvas — both sit in the top-left corner on
-            lg+ viewports and the canvas would otherwise eat the click. */}
+        {/* ============= OPPONENT GRAVEYARD + DECK (legacy compact icon) =============
+            Hidden in MTGO layout — the large clickable graveyard tile on
+            the top-left and the deck stack on the top-right replace it. */}
+        {!isMtgo && (
         <div className="absolute top-[2%] left-[2%] z-30 flex items-center gap-3">
           <button
             onClick={() => setGraveyardView("opponent")}
@@ -488,6 +485,21 @@ export default function GameBoard({ onAction }: GameBoardProps) {
             <span className="text-[10px]">{opponent.deck.length}</span>
           </div>
         </div>
+        )}
+
+        {/* ============= MTGO OPPONENT GRAVEYARD TILE (top-left) =============
+            Replaces the legacy compact 💀 button when the active board uses
+            the MTGO layout. Click opens the same GraveyardOverlay. */}
+        {isMtgo && (
+          <div className="absolute top-[3%] left-[1.5%] z-30">
+            <MtgoGraveyardTile
+              count={opponent.graveyard.length}
+              imageUrl={boardGraveyardImageUrl}
+              isOpponent={true}
+              onClick={() => setGraveyardView("opponent")}
+            />
+          </div>
+        )}
 
         {/* ============= OPPONENT BOARD (creatures) ============= */}
         <div
@@ -596,13 +608,9 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           </div>
         </div>
 
-        {/* ============= PLAYER GRAVEYARD + DECK =============
-            z-40 because the player hand row at the bottom uses
-            `absolute bottom-0 left-0 right-0 z-30` — that wrapper spans
-            the full viewport width and renders later in the DOM, so at
-            equal z-index it ate the click on the left-side graveyard
-            button (over its empty side area). Bumping to z-40 keeps the
-            click reliable. */}
+        {/* ============= PLAYER GRAVEYARD + DECK (legacy compact icon) =============
+            Hidden in MTGO layout for the same reason as the opponent's. */}
+        {!isMtgo && (
         <div className="absolute bottom-[18%] left-[2%] z-40 flex items-center gap-3">
           <button
             onClick={() => setGraveyardView("my")}
@@ -616,6 +624,19 @@ export default function GameBoard({ onAction }: GameBoardProps) {
             <span className="text-[10px]">{myPlayer.deck.length}</span>
           </div>
         </div>
+        )}
+
+        {/* ============= MTGO PLAYER GRAVEYARD TILE (bottom-left) ============= */}
+        {isMtgo && (
+          <div className="absolute bottom-[3%] left-[1.5%] z-40">
+            <MtgoGraveyardTile
+              count={myPlayer.graveyard.length}
+              imageUrl={boardGraveyardImageUrl}
+              isOpponent={false}
+              onClick={() => setGraveyardView("my")}
+            />
+          </div>
+        )}
 
         {/* ============= PLAYER LEGACY PORTRAIT (bottom-right) =============
             Mirrors the 3D-hero wrapper position so the badge lives in the
@@ -624,37 +645,27 @@ export default function GameBoard({ onAction }: GameBoardProps) {
             (handled in the Hero3DViewer wrapper instead). */}
         {!myPlayer.hero.heroDefinition?.glbUrl && (
         <div className="absolute right-[1%] bottom-[28%] lg:bottom-[1%] z-40 flex flex-col items-center gap-1">
-          <div className="flex items-center gap-2">
-            <HeroPortrait
-              hero={myPlayer.hero}
-              isOpponent={false}
-              isValidTarget={validTargets.includes("friendly_hero")}
-              damageAmount={getDamage("friendly_hero")}
-              onClick={
-                validTargets.includes("friendly_hero")
-                  ? () => handleSelectTarget("friendly_hero")
-                  : undefined
-              }
-              onMouseEnter={
-                validTargets.includes("friendly_hero")
-                  ? () => setHoveredTargetId("friendly_hero")
-                  : undefined
-              }
-              onMouseLeave={
-                validTargets.includes("friendly_hero")
-                  ? () => setHoveredTargetId(null)
-                  : undefined
-              }
-            />
-            <HeroPowerButton
-              heroDef={myPlayer.hero.heroDefinition}
-              isOpponent={false}
-              canUse={myTurn && !!gameState && canUseHeroPower(gameState)}
-              isUsed={myPlayer.hero.heroPowerUsedThisTurn}
-              mana={myPlayer.mana}
-              onClick={handleActivateHeroPower}
-            />
-          </div>
+          {/* HeroPowerButton hidden so the 2D hero matches the 3D-hero
+              UX: left-click on the portrait activates the power (when
+              available), right-click opens the description overlay. */}
+          <HeroPortrait
+            hero={myPlayer.hero}
+            isOpponent={false}
+            isValidTarget={validTargets.includes("friendly_hero")}
+            damageAmount={getDamage("friendly_hero")}
+            onClick={handleMyHeroClick}
+            onContextMenu={handleMyHeroContextMenu}
+            onMouseEnter={
+              validTargets.includes("friendly_hero")
+                ? () => setHoveredTargetId("friendly_hero")
+                : undefined
+            }
+            onMouseLeave={
+              validTargets.includes("friendly_hero")
+                ? () => setHoveredTargetId(null)
+                : undefined
+            }
+          />
           <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} />
         </div>
         )}
@@ -827,7 +838,11 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           onCancel={clearSelection}
         />
       )}
-      <EffectLog entries={effectLog} />
+      {/* Action history (EffectLog) hidden for now per design feedback —
+          the entries are still being logged in the store, the overlay
+          is just not rendered. Re-enable by removing the comment when
+          we revisit the feature. */}
+      {false && <EffectLog entries={effectLog} />}
       {isFinished && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center">
           <div className="text-center">

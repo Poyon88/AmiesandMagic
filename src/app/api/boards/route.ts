@@ -47,7 +47,17 @@ export async function POST(request: Request) {
   const supabase = getAdminClient();
 
   try {
-    const { name, imageBase64, imageMimeType, imageUrl, music_track_id, tense_track_id, victory_track_id, defeat_track_id, rarity, max_prints, is_default } = await request.json();
+    const {
+      name,
+      imageBase64, imageMimeType, imageUrl,
+      music_track_id, tense_track_id, victory_track_id, defeat_track_id,
+      rarity, max_prints, is_default,
+      // MTGO layout extras: optional layout id ("classic" | "mtgo") and
+      // optional graveyard image (base64 + mime). Stored in the new
+      // `layout` and `graveyard_image_url` columns added by migration.
+      layout,
+      graveyardImageBase64, graveyardImageMimeType,
+    } = await request.json();
     if (!name) return NextResponse.json({ error: 'Nom requis' }, { status: 400 });
 
     // Image source: either base64 upload (legacy) OR an already-hosted public
@@ -70,7 +80,26 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Image requise (base64 ou URL)' }, { status: 400 });
     }
 
+    // Optional graveyard image — uploaded to the same bucket as the main
+    // board image so it shares the storage / signed-URL pipeline.
+    let graveyard_image_url: string | null = null;
+    if (graveyardImageBase64 && graveyardImageMimeType) {
+      const buffer = Buffer.from(graveyardImageBase64, 'base64');
+      const ext = (graveyardImageMimeType as string).split('/')[1] || 'webp';
+      const filePath = `graveyard_${Date.now()}_${Math.random().toString(36).slice(2, 6)}.${ext}`;
+      const { error: uploadErr } = await supabase.storage
+        .from('board-images')
+        .upload(filePath, buffer, { upsert: true, contentType: graveyardImageMimeType });
+      if (uploadErr) throw new Error(`Cimetière: ${uploadErr.message}`);
+      const { data: urlData } = supabase.storage.from('board-images').getPublicUrl(filePath);
+      graveyard_image_url = urlData.publicUrl;
+    }
+
     const insertData: Record<string, unknown> = { name, image_url };
+    if (typeof layout === 'string' && (layout === 'classic' || layout === 'mtgo')) {
+      insertData.layout = layout;
+    }
+    if (graveyard_image_url) insertData.graveyard_image_url = graveyard_image_url;
     if (music_track_id != null) insertData.music_track_id = music_track_id;
     if (tense_track_id != null) insertData.tense_track_id = tense_track_id;
     if (victory_track_id != null) insertData.victory_track_id = victory_track_id;

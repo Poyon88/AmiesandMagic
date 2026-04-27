@@ -208,12 +208,14 @@ export default function GamePage() {
         if (targetBoardId) {
           const { data: boardRow } = await supabase
             .from("game_boards")
-            .select("id, name, image_url, music_tracks:music_track_id(file_url), tense_track:tense_track_id(file_url), victory_track:victory_track_id(file_url), defeat_track:defeat_track_id(file_url), game_board_music_tracks(music_tracks(file_url))")
+            .select("id, name, image_url, layout, graveyard_image_url, music_tracks:music_track_id(file_url), tense_track:tense_track_id(file_url), victory_track:victory_track_id(file_url), defeat_track:defeat_track_id(file_url), game_board_music_tracks(music_tracks(file_url))")
             .eq("id", targetBoardId)
             .maybeSingle();
           if (boardRow) {
             useGameStore.getState().setBoardImageUrl(boardRow.image_url);
             const board = boardRow as Record<string, unknown>;
+            useGameStore.getState().setBoardLayout((board.layout as string) ?? "classic");
+            useGameStore.getState().setBoardGraveyardImageUrl((board.graveyard_image_url as string | null) ?? null);
             const musicData = board.music_tracks as { file_url: string } | null;
             const tenseData = board.tense_track as { file_url: string } | null;
             const victoryData = board.victory_track as { file_url: string } | null;

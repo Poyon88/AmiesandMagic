@@ -224,6 +224,20 @@ export default function CardForge() {
         "Keep the overall tone and palette coherent with the subject; the terrain is the entire star of the composition.",
       ],
     },
+    mtgo: {
+      label: "MTGO (cimetière à gauche, héros à droite)",
+      compositionRules: [
+        "An MTG Arena / MTGO-inspired digital game board viewed from a slight top-down 3/4 perspective. Clean, restrained, AAA digital-trading-card-game look.",
+        "16:9 cinematic widescreen framing (aspect ratio exactly 1.778:1, horizontal). Render at the model's HIGHEST available resolution — ultra-sharp, crisp contours, every pixel readable at 1440p.",
+        "CRITICAL FULL-BLEED RULE — the play surface (and the side panels) MUST extend ALL THE WAY to the four edges of the canvas. Every pixel of the frame is part of the scene. NO white band, NO light band, NO empty band, NO blank strip, NO letterbox, NO padding, NO border, NO vignette, NO transparent edge anywhere — top edge, bottom edge, left edge, right edge are ALL filled by the scene material with zero margin.",
+        "CRITICAL LAYOUT RULE — the CENTRAL 92% of the WIDTH (and the FULL height) MUST be an empty, uniform, flat play surface that reads as a calm stage where cards can be placed and remain highly legible. Allowed surfaces: polished stone slab, smooth planked wood, worn parchment, brushed metal plate, fine sand, mossy flagstones — pick ONE consistent material. NO decorative props, NO objects, NO creatures, NO ornaments, NO runes, NO emblems, NO text, NO HUD elements inside this central play area. The play surface is the OVERWHELMING majority of the image and TOUCHES the top and bottom edges of the canvas.",
+        "Decoration is restricted to two MINIMAL vertical edge strips — each only ~4% of width on the LEFT and RIGHT edges. Think \"a hint of vegetation creeping in from off-screen\", NOT a side panel or a UI bezel. Allowed per side: ONE or TWO small organic silhouettes (e.g. a few leaves, a small mushroom cluster, a single lantern peeking in, a tuft of grass). Loose, asymmetric, biological — they spill onto the play surface like real-world flora at the edge of a clearing. Top and bottom of these strips fade naturally into the play surface, with no visible boundary.",
+        "ABSOLUTE — NO rectangular framed side panel, NO gold trim, NO bezel, NO ornate filigree column, NO scrolled corners, NO carved stone pillar shape, NO inset frame, NO banner mount, NO geometric border. The edge decoration is ORGANIC and IRREGULAR; it does NOT form a structured side bar. Do not enclose the play surface inside any kind of decorated rectangle.",
+        "ABSOLUTE — NO horizontal line, NO horizontal seam, NO horizontal band of light, NO carved groove, NO glowing midline, NO gradient stripe, NO material discontinuity at the middle of the image. The central play surface is a single CONTINUOUS uniform material from top edge to bottom edge. Both player halves share the exact same uninterrupted ground.",
+        "NO ornate central divider, NO medallion, NO central emblem, NO baroque filigree frame around the whole image — the MTG Arena look is clean digital chrome, not a printed playmat.",
+        "Volumetric ambient lighting biased very subtly toward the side panels; the entire central play surface is evenly lit, low-contrast, neutral so card art remains readable. NO harsh shadows, NO rim light, NO dramatic spotlights anywhere on the play surface.",
+      ],
+    },
   } as const;
   type BoardStyleId = keyof typeof BOARD_STYLES;
 
@@ -247,6 +261,13 @@ export default function CardForge() {
   const [bdGenerating, setBdGenerating] = useState(false);
   const [bdSaving, setBdSaving] = useState(false);
   const [bdMessage, setBdMessage] = useState<{ ok: boolean; msg: string } | null>(null);
+  // MTGO graveyard image — only consumed when the chosen composition
+  // style is "mtgo" (the in-game `layout` field is derived from the
+  // style at save time, so a single dropdown drives both the rendered
+  // background and the in-game UI shape).
+  const [bdGraveyardBase64, setBdGraveyardBase64] = useState<string | null>(null);
+  const [bdGraveyardMime, setBdGraveyardMime] = useState<string | null>(null);
+  const [bdGraveyardPreview, setBdGraveyardPreview] = useState<string | null>(null);
 
   // ─── KEYWORD ICONS (générateur) ───────────────────────────────────────────
   type KwAsset = {
@@ -1163,6 +1184,11 @@ export default function CardForge() {
         }
 
         // 3. Persist the board row referencing the public URL only.
+        // The in-game layout is derived from the composition style:
+        // selecting "mtgo" as the visual composition automatically enables
+        // the MTGO in-game UI (clickable graveyard tile + side panels);
+        // every other style keeps the legacy "classic" layout.
+        const layoutId = bdStyle === "mtgo" ? "mtgo" : "classic";
         const res = await fetch("/api/boards", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -1172,6 +1198,9 @@ export default function CardForge() {
             rarity: bdRarity,
             max_prints: effectiveMax,
             is_default: isDefault,
+            layout: layoutId,
+            graveyardImageBase64: layoutId === "mtgo" ? bdGraveyardBase64 ?? undefined : undefined,
+            graveyardImageMimeType: layoutId === "mtgo" ? bdGraveyardMime ?? undefined : undefined,
           }),
         });
         const data = await res.json();
@@ -3467,9 +3496,50 @@ export default function CardForge() {
                           ? "Uniquement le terrain (herbe, neige, sable, pierre…) qui remplit tout le cadre. Aucun décor, aucune bordure — idéal pour un rendu purement ambiance."
                           : bdStyle === "minimal"
                             ? "Centre du plateau laissé vide (surface plate), décoration sur les bords. Pensé pour figurines 3D."
-                            : "Composition Hearthstone : props thématiques partout, divider central orné."}
+                            : bdStyle === "mtgo"
+                              ? "Composition MTG Arena : centre épuré, décor restreint aux panneaux latéraux. En jeu : grand tile cimetière cliquable à gauche, héros + deck + mana + PV à droite (symétrie inversée pour l'adversaire). Active automatiquement le layout MTGO."
+                              : "Composition Hearthstone : props thématiques partout, divider central orné."}
                       </div>
                     </div>
+                    {bdStyle === "mtgo" && (
+                      <div style={{ gridColumn: "span 3" }}>
+                        <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>IMAGE DU CIMETIÈRE (optionnelle)</label>
+                        <input type="file" accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            const img = new window.Image();
+                            img.onload = () => {
+                              const MAX = 512;
+                              let { width, height } = img;
+                              if (width > MAX || height > MAX) {
+                                const ratio = Math.min(MAX / width, MAX / height);
+                                width = Math.round(width * ratio);
+                                height = Math.round(height * ratio);
+                              }
+                              const canvas = document.createElement("canvas");
+                              canvas.width = width;
+                              canvas.height = height;
+                              const ctx = canvas.getContext("2d")!;
+                              ctx.drawImage(img, 0, 0, width, height);
+                              const dataUrl = canvas.toDataURL("image/webp", 0.85);
+                              const base64 = dataUrl.split(",")[1];
+                              setBdGraveyardBase64(base64);
+                              setBdGraveyardMime("image/webp");
+                              setBdGraveyardPreview(dataUrl);
+                            };
+                            img.src = URL.createObjectURL(file);
+                          }}
+                          style={{ width: "100%", fontSize: 10, marginTop: 4 }} />
+                        {bdGraveyardPreview && (
+                          <img src={bdGraveyardPreview} alt="Cimetière"
+                            style={{ width: 96, height: 136, objectFit: "cover", borderRadius: 6, border: "1px solid #9b59b6", marginTop: 6 }} />
+                        )}
+                        <div style={{ fontSize: 9, color: "#888", marginTop: 3, fontStyle: "italic" }}>
+                          Image affichée comme tile cliquable du cimetière. Sans image, un cercueil par défaut sera affiché.
+                        </div>
+                      </div>
+                    )}
                     <div>
                       <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>ENVIRONNEMENT</label>
                       <select value={bdEnvPreset} onChange={e => setBdEnvPreset(e.target.value)}

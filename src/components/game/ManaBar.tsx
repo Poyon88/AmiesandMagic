@@ -7,12 +7,12 @@ interface ManaBarProps {
 
 export default function ManaBar({ current, max }: ManaBarProps) {
   return (
-    <div className="flex items-center gap-1.5">
-      <div className="flex gap-0.5">
+    <div className="flex items-center gap-3">
+      <div className="flex gap-1">
         {Array.from({ length: max }, (_, i) => (
           <div
             key={i}
-            className={`w-3 h-3 rounded-full border transition-colors ${
+            className={`w-6 h-6 rounded-full border transition-colors ${
               i < current
                 ? "bg-mana-blue border-mana-blue shadow-sm shadow-mana-blue/50"
                 : "bg-background/30 border-card-border"
@@ -20,7 +20,7 @@ export default function ManaBar({ current, max }: ManaBarProps) {
           />
         ))}
       </div>
-      <span className="text-xs font-bold text-mana-blue">
+      <span className="text-base font-bold text-mana-blue">
         {current}/{max}
       </span>
     </div>

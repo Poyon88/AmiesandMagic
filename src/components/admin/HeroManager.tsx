@@ -252,8 +252,16 @@ export default function HeroManager() {
   };
 
   const handleAdd = async () => {
-    if (!name.trim() || !glbFile) {
-      setError("Nom et modèle GLB requis");
+    if (!name.trim()) {
+      setError("Nom requis");
+      return;
+    }
+    // The hero can be authored as a 3D model (GLB) OR a 2D image
+    // (thumbnail). At least one is required so the in-game viewer has
+    // something to render — without either the player would get a
+    // faceless emoji placeholder.
+    if (!glbFile && !thumbnailBase64) {
+      setError("Modèle 3D (GLB) ou image 2D requis");
       return;
     }
     const powerEffect: Record<string, unknown> = { type: effectType };
@@ -271,31 +279,36 @@ export default function HeroManager() {
     setMessage(null);
     setUploadProgress("Préparation…");
     try {
-      // 1. Demande une URL signée pour l'upload direct dans le bucket.
-      const ext = glbFile.name.toLowerCase().endsWith(".gltf") ? "gltf" : "glb";
-      const urlRes = await fetch("/api/heroes/upload-url", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ext }),
-      });
-      const urlData = await urlRes.json();
-      if (!urlRes.ok || !urlData?.signedUrl || !urlData?.publicUrl) {
-        throw new Error(urlData?.error || "Impossible d'obtenir l'URL d'upload");
+      // 1. Si un GLB est fourni, l'uploader d'abord. Sinon (héros 2D),
+      //    on saute cette étape et on passe directement à l'insert.
+      let publicGlbUrl: string | null = null;
+      if (glbFile) {
+        const ext = glbFile.name.toLowerCase().endsWith(".gltf") ? "gltf" : "glb";
+        const urlRes = await fetch("/api/heroes/upload-url", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ext }),
+        });
+        const urlData = await urlRes.json();
+        if (!urlRes.ok || !urlData?.signedUrl || !urlData?.publicUrl) {
+          throw new Error(urlData?.error || "Impossible d'obtenir l'URL d'upload");
+        }
+
+        setUploadProgress(`Upload en cours (${(glbFile.size / (1024 * 1024)).toFixed(1)} Mo)…`);
+        const putRes = await fetch(urlData.signedUrl, {
+          method: "PUT",
+          headers: { "Content-Type": ext === "gltf" ? "model/gltf+json" : "model/gltf-binary" },
+          body: glbFile,
+        });
+        if (!putRes.ok) {
+          const txt = await putRes.text().catch(() => "");
+          throw new Error(`Upload Storage échoué (${putRes.status}) ${txt.slice(0, 200)}`);
+        }
+        publicGlbUrl = urlData.publicUrl;
       }
 
-      // 2. Upload direct PUT du fichier vers Supabase Storage.
-      setUploadProgress(`Upload en cours (${(glbFile.size / (1024 * 1024)).toFixed(1)} Mo)…`);
-      const putRes = await fetch(urlData.signedUrl, {
-        method: "PUT",
-        headers: { "Content-Type": ext === "gltf" ? "model/gltf+json" : "model/gltf-binary" },
-        body: glbFile,
-      });
-      if (!putRes.ok) {
-        const txt = await putRes.text().catch(() => "");
-        throw new Error(`Upload Storage échoué (${putRes.status}) ${txt.slice(0, 200)}`);
-      }
-
-      // 3. Insert la ligne héros en référençant l'URL publique finale.
+      // 2. Insert la ligne héros — glbUrl peut être null si le héros est
+      //    un héros 2D (l'image thumbnail prend le rôle visuel principal).
       setUploadProgress("Enregistrement…");
       const body: Record<string, unknown> = {
         name: name.trim(),
@@ -305,7 +318,7 @@ export default function HeroManager() {
         power_cost: powerCost,
         power_effect: powerEffect,
         power_description: powerDescription || null,
-        glbUrl: urlData.publicUrl,
+        glbUrl: publicGlbUrl,
         rarity,
         is_default: rarity === "Commune" ? isDefault : false,
       };
@@ -581,16 +594,24 @@ export default function HeroManager() {
             </div>
           </div>
 
-          {/* RIGHT — GLB + thumbnail + preview */}
+          {/* RIGHT — GLB + thumbnail + preview.
+              Either the GLB OR the 2D image is required (not both). When
+              only the 2D image is provided the in-game viewer falls back
+              to the legacy HeroPortrait component, which now reads the
+              uploaded thumbnail directly. */}
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             <div>
-              <label style={STYLE.label}>Modèle 3D (.glb ou .gltf, max 100 Mo)</label>
+              <label style={STYLE.label}>
+                Modèle 3D — optionnel (.glb / .gltf, max 100 Mo)
+              </label>
               <input type="file" accept=".glb,.gltf,model/gltf-binary,model/gltf+json"
                 onChange={handleGlbChange}
                 style={{ width: "100%", fontSize: 10, marginTop: 4 }} />
             </div>
             <div>
-              <label style={STYLE.label}>Miniature (optionnelle, pour le deck builder)</label>
+              <label style={STYLE.label}>
+                Image 2D — optionnel (miniature deck builder + portrait en jeu si pas de 3D)
+              </label>
               <input type="file" accept="image/*"
                 onChange={handleThumbnailChange}
                 style={{ width: "100%", fontSize: 10, marginTop: 4 }} />
@@ -598,6 +619,13 @@ export default function HeroManager() {
                 <img src={thumbnailPreview} alt="thumbnail"
                   style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 6, border: "1px solid #27ae60", marginTop: 6 }} />
               )}
+            </div>
+            <div style={{
+              fontSize: 9, color: "#888", fontFamily: "'Crimson Text',serif",
+              fontStyle: "italic", padding: "4px 8px",
+              background: "#fffbe6", borderRadius: 4, border: "1px solid #f0e0a0",
+            }}>
+              💡 L&apos;un des deux suffit : un héros 2D peut être créé avec juste une image, un héros 3D peut être créé avec juste un GLB. Les deux ensemble = miniature 2D dans le deck builder + figurine 3D en jeu.
             </div>
             <div style={{ flex: 1, minHeight: 260, border: "1px solid #e0e0e0", borderRadius: 6, background: "#101018", overflow: "hidden" }}>
               {glbPreviewUrl ? (
@@ -620,8 +648,8 @@ export default function HeroManager() {
 
         <div style={{ display: "flex", gap: 10, marginTop: 16, alignItems: "center" }}>
           <button onClick={handleAdd}
-            disabled={saving || !name.trim() || !glbFile}
-            style={{ ...STYLE.button, opacity: saving || !name.trim() || !glbFile ? 0.5 : 1 }}>
+            disabled={saving || !name.trim() || (!glbFile && !thumbnailBase64)}
+            style={{ ...STYLE.button, opacity: saving || !name.trim() || (!glbFile && !thumbnailBase64) ? 0.5 : 1 }}>
             {saving ? (uploadProgress ?? "Envoi...") : "Ajouter le héros"}
           </button>
           <button onClick={resetForm}

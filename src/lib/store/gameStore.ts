@@ -99,6 +99,15 @@ interface GameStore {
   graveyardAffectEvent: GraveyardAffectEvent | null;
   discardFromHandEvent: DiscardFromHandEvent | null;
   boardImageUrl: string | null;
+  // Layout variant carried by the active game_board. "classic" = legacy
+  // positions; "mtgo" = MTGO-inspired with a clickable graveyard tile on
+  // the left and the hero/deck/mana stack on the right (mirrored at top
+  // for the opponent).
+  boardLayout: string;
+  // Optional admin-uploaded image used as the clickable graveyard tile in
+  // layouts that surface one (mtgo). Falls back to a generic 💀 icon when
+  // null.
+  boardGraveyardImageUrl: string | null;
   myCardBackUrl: string | null;
   opponentCardBackUrl: string | null;
   boardMusicUrls: string[];
@@ -126,6 +135,8 @@ interface GameStore {
   setLocalPlayerId: (id: string) => void;
   setTokenTemplates: (templates: TokenTemplate[]) => void;
   setBoardImageUrl: (url: string | null) => void;
+  setBoardLayout: (layout: string) => void;
+  setBoardGraveyardImageUrl: (url: string | null) => void;
   setMyCardBackUrl: (url: string | null) => void;
   setOpponentCardBackUrl: (url: string | null) => void;
   setBoardMusicUrls: (urls: string[]) => void;
@@ -448,6 +459,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
   isAnimating: false,
   pendingIncomingActions: [],
   boardImageUrl: null,
+  boardLayout: "classic",
+  boardGraveyardImageUrl: null,
   myCardBackUrl: null,
   opponentCardBackUrl: null,
   boardMusicUrls: [],
@@ -477,6 +490,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
   setLocalPlayerId: (id) => set({ localPlayerId: id }),
   setTokenTemplates: (templates) => set({ tokenTemplates: templates }),
   setBoardImageUrl: (url) => set({ boardImageUrl: url }),
+  setBoardLayout: (layout) => set({ boardLayout: layout }),
+  setBoardGraveyardImageUrl: (url) => set({ boardGraveyardImageUrl: url }),
   setMyCardBackUrl: (url) => set({ myCardBackUrl: url }),
   setOpponentCardBackUrl: (url) => set({ opponentCardBackUrl: url }),
   setBoardMusicUrls: (urls: string[]) => set({ boardMusicUrls: urls }),

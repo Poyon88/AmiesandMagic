@@ -89,20 +89,28 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Race invalide' }, { status: 400 });
     }
 
-    // GLB source: either base64 upload OR an already-hosted URL (Meshy CDN).
-    let finalGlbUrl: string;
+    // GLB source (optional): either base64 upload OR an already-hosted URL.
+    let finalGlbUrl: string | null = null;
     if (typeof glbBase64 === 'string' && typeof glbMimeType === 'string') {
       finalGlbUrl = await uploadToBucket(supabase, 'hero-models', glbBase64, glbMimeType, 'hero');
     } else if (typeof glbUrl === 'string' && glbUrl.trim()) {
       finalGlbUrl = glbUrl.trim();
-    } else {
-      return NextResponse.json({ error: 'GLB requis (upload ou URL)' }, { status: 400 });
     }
 
     let finalThumbnailUrl: string | null = null;
     if (typeof thumbnailBase64 === 'string' && typeof thumbnailMimeType === 'string') {
       finalThumbnailUrl = await uploadToBucket(
         supabase, 'hero-models', thumbnailBase64, thumbnailMimeType, 'hero_thumb',
+      );
+    }
+
+    // The hero needs at least one visual: a 3D model (GLB) OR a 2D image.
+    // The in-game viewer routes on `glb_url` so without either the player
+    // ends up with a faceless emoji placeholder.
+    if (!finalGlbUrl && !finalThumbnailUrl) {
+      return NextResponse.json(
+        { error: 'Modèle 3D (GLB) ou image 2D requis' },
+        { status: 400 },
       );
     }
 
