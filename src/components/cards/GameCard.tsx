@@ -206,7 +206,7 @@ export default function GameCard({
               const hasImg = !!iconOverrides[kw];
               return (
               <div key={kw} title={displayTitle} style={{
-                minWidth: 50 * s, height: 50 * s, borderRadius: 4 * s,
+                minWidth: 40 * s, height: 40 * s, borderRadius: 4 * s,
                 padding: x != null ? `0 ${4 * s}px` : 0,
                 background: hasImg ? "transparent" : `${accentColor}33`,
                 border: hasImg ? "none" : `1px solid ${accentColor}66`,
@@ -214,11 +214,11 @@ export default function GameCard({
                 fontSize: 10 * s, overflow: "hidden",
               }}>
                 {hasImg ? (
-                  <div style={{ width: 50 * s, height: 50 * s, flexShrink: 0 }}>
-                    <KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={28 * s} keyword={kw} fill />
+                  <div style={{ width: 40 * s, height: 40 * s, flexShrink: 0 }}>
+                    <KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={22 * s} keyword={kw} fill />
                   </div>
                 ) : (
-                  <KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={28 * s} keyword={kw} />
+                  <KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={22 * s} keyword={kw} />
                 )}
                 {x != null && <span style={{ fontSize: 10 * s, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}` }}>{toRoman(x)}</span>}
               </div>
@@ -246,7 +246,7 @@ export default function GameCard({
               const hasImg = !!iconOverrides[spellKey];
               return (
               <div key={`sk_${i}`} title={displayTitle} style={{
-                minWidth: 50 * s, height: 50 * s, borderRadius: 4 * s,
+                minWidth: 40 * s, height: 40 * s, borderRadius: 4 * s,
                 padding: hasValue ? `0 ${4 * s}px` : 0,
                 background: hasImg ? "transparent" : `${accentColor}33`,
                 border: hasImg ? "none" : `1px solid ${accentColor}66`,
@@ -254,11 +254,11 @@ export default function GameCard({
                 fontSize: 10 * s, overflow: "hidden",
               }}>
                 {hasImg ? (
-                  <div style={{ width: 50 * s, height: 50 * s, flexShrink: 0 }}>
-                    <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={28 * s} keyword={spellKey} fill />
+                  <div style={{ width: 40 * s, height: 40 * s, flexShrink: 0 }}>
+                    <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={22 * s} keyword={spellKey} fill />
                   </div>
                 ) : (
-                  <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={28 * s} keyword={spellKey} />
+                  <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={22 * s} keyword={spellKey} />
                 )}
                 {valueText && <span style={{
                   fontSize: 10 * s, fontWeight: 900, color: "#fff",

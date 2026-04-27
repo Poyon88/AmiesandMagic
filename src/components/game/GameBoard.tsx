@@ -26,7 +26,7 @@ import HeroPowerOverlay from "./HeroPowerOverlay";
 import GraveyardAffectOverlay from "./GraveyardAffectOverlay";
 import DiscardFromHandOverlay from "./DiscardFromHandOverlay";
 import TempeteOverlay from "./TempeteOverlay";
-import MtgoGraveyardTile from "./MtgoGraveyardTile";
+import ArenaDeckGraveyardCluster from "./ArenaDeckGraveyardCluster";
 import MulliganOverlay from "./MulliganOverlay";
 import SettingsModal from "@/components/shared/SettingsModal";
 import type { GameAction, DamageEvent, HeroDefinition } from "@/lib/game/types";
@@ -118,6 +118,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
   const boardGraveyardImageUrl = useGameStore((s) => s.boardGraveyardImageUrl);
   const isMtgo = boardLayout === "mtgo";
   const opponentCardBackUrl = useGameStore((s) => s.opponentCardBackUrl);
+  const myCardBackUrl = useGameStore((s) => s.myCardBackUrl);
   const myPlayer = getMyPlayerState();
   const opponent = getOpponentPlayerState();
   const myTurn = isMyTurn() && !isAnimating;
@@ -365,18 +366,33 @@ export default function GameBoard({ onAction }: GameBoardProps) {
         {/* Subtle overlay for readability */}
         <div className="absolute inset-0 bg-background/10 pointer-events-none z-0" />
 
-        {/* ============= SETTINGS BUTTON ============= */}
+        {/* ============= SETTINGS BUTTON =============
+            Snaps to a slot below the opponent deck/graveyard cluster in
+            MTGO layout so the corner cluster reads cleanly; otherwise
+            stays in the top-right corner. */}
         <button
           onClick={() => setSettingsOpen(true)}
-          className="absolute top-[1%] right-[2%] z-30 w-9 h-9 flex items-center justify-center text-base bg-secondary/80 border border-card-border rounded-lg text-foreground/70 hover:text-foreground hover:border-primary/40 transition-colors backdrop-blur-sm"
+          className={`absolute z-30 w-9 h-9 flex items-center justify-center text-base bg-secondary/80 border border-card-border rounded-lg text-foreground/70 hover:text-foreground hover:border-primary/40 transition-colors backdrop-blur-sm ${
+            isMtgo ? "top-[26%] right-[2%]" : "top-[1%] right-[2%]"
+          }`}
           title="Réglages"
         >
           ⚙
         </button>
 
-        {/* ============= OPPONENT HAND (single card back + count) ============= */}
+        {/* ============= OPPONENT HAND (single card back + count) =============
+            In MTGO layout the deck+graveyard cluster occupies the top-right,
+            so the hand-back stack hugs the opponent's hero portrait at the
+            top-left — MTG Arena style. In classic layout it stays where
+            it always was. */}
         {opponent.hand.length > 0 && (
-          <div className="absolute top-[1%] right-[2%] z-20 flex items-center gap-3">
+          <div
+            className={`absolute z-20 flex items-center gap-3 ${
+              isMtgo
+                ? "top-[1%] left-[14%]"
+                : "top-[1%] right-[2%]"
+            }`}
+          >
             <div className="relative w-32 aspect-[5/7] rounded overflow-hidden">
               {opponentCardBackUrl ? (
                 <Image
@@ -487,16 +503,20 @@ export default function GameBoard({ onAction }: GameBoardProps) {
         </div>
         )}
 
-        {/* ============= MTGO OPPONENT GRAVEYARD TILE (top-left) =============
-            Replaces the legacy compact 💀 button when the active board uses
-            the MTGO layout. Click opens the same GraveyardOverlay. */}
+        {/* ============= MTGO OPPONENT DECK + GRAVEYARD CLUSTER (top-right) =============
+            MTG Arena-style cluster: opponent's pioche tile + cimetière tile
+            (showing the last-killed card face-up) sit together at top-right,
+            mirroring the player's bottom-left arrangement. The opponent's
+            hand-back stack moved to top-center to make room. */}
         {isMtgo && (
-          <div className="absolute top-[3%] left-[1.5%] z-30">
-            <MtgoGraveyardTile
-              count={opponent.graveyard.length}
-              imageUrl={boardGraveyardImageUrl}
+          <div className="absolute top-[3%] right-[1.5%] z-30">
+            <ArenaDeckGraveyardCluster
+              deckCount={opponent.deck.length}
+              cardBackUrl={opponentCardBackUrl}
+              graveyard={opponent.graveyard}
+              emptyGraveyardImageUrl={boardGraveyardImageUrl}
               isOpponent={true}
-              onClick={() => setGraveyardView("opponent")}
+              onGraveyardClick={() => setGraveyardView("opponent")}
             />
           </div>
         )}
@@ -544,7 +564,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           onDrop={handleDropOnBoard}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
-          className="absolute top-[42%] left-0 right-0 h-[24%] flex items-center justify-center px-8 transition-all overflow-visible"
+          className="absolute top-[46%] left-0 right-0 h-[24%] flex items-center justify-center px-8 transition-all overflow-visible"
         >
           <div ref={myBoardRef} className="flex justify-center gap-2 min-h-[88px] items-center">
           {myPlayer.board.length === 0 && !isDragOver ? (
@@ -626,14 +646,16 @@ export default function GameBoard({ onAction }: GameBoardProps) {
         </div>
         )}
 
-        {/* ============= MTGO PLAYER GRAVEYARD TILE (bottom-left) ============= */}
+        {/* ============= MTGO PLAYER DECK + GRAVEYARD CLUSTER (bottom-left) ============= */}
         {isMtgo && (
           <div className="absolute bottom-[3%] left-[1.5%] z-40">
-            <MtgoGraveyardTile
-              count={myPlayer.graveyard.length}
-              imageUrl={boardGraveyardImageUrl}
+            <ArenaDeckGraveyardCluster
+              deckCount={myPlayer.deck.length}
+              cardBackUrl={myCardBackUrl}
+              graveyard={myPlayer.graveyard}
+              emptyGraveyardImageUrl={boardGraveyardImageUrl}
               isOpponent={false}
-              onClick={() => setGraveyardView("my")}
+              onGraveyardClick={() => setGraveyardView("my")}
             />
           </div>
         )}

@@ -292,7 +292,7 @@ export default function BoardCreature({
               const hasImg = !!iconOverrides[kw];
               return (
               <div key={kw} style={{
-                minWidth: 28, height: 28, borderRadius: 3,
+                minWidth: 24, height: 24, borderRadius: 3,
                 padding: x != null ? "0 2px" : 0,
                 background: hasImg ? "transparent" : `${accentColor}33`,
                 border: hasImg ? "none" : `1px solid ${accentColor}66`,
@@ -300,11 +300,11 @@ export default function BoardCreature({
                 fontSize: 8, overflow: "hidden",
               }}>
                 {hasImg ? (
-                  <div style={{ width: 28, height: 28, flexShrink: 0 }}>
-                    <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={16} keyword={kw} fill />
+                  <div style={{ width: 24, height: 24, flexShrink: 0 }}>
+                    <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={14} keyword={kw} fill />
                   </div>
                 ) : (
-                  <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={16} keyword={kw} />
+                  <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={14} keyword={kw} />
                 )}
                 {x != null && <span style={{ fontSize: 8, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}` }}>{toRoman(x)}</span>}
               </div>

@@ -300,7 +300,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
               }
               return (
                 <div key={kw} title={`${displayName}: ${displayDesc}`} style={{
-                  minWidth: 24 * s, height: 24 * s, borderRadius: 6 * s,
+                  minWidth: 19 * s, height: 19 * s, borderRadius: 6 * s,
                   padding: `0 ${xVal != null ? 5 * s : 0}px`,
                   background: `${fac.color}33`, border: `1px solid ${fac.color}88`,
                   display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 3 * s,
@@ -341,7 +341,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                 : usesAmount ? toRoman(spellKw.amount ?? 1) : null;
               return (
                 <div key={`sk_${i}`} title={`${label}: ${desc}`} style={{
-                  minWidth: 24 * s, height: 24 * s, borderRadius: 6 * s,
+                  minWidth: 19 * s, height: 19 * s, borderRadius: 6 * s,
                   padding: `0 ${hasValue ? 5 * s : 0}px`,
                   background: `${fac.color}33`, border: `1px solid ${fac.color}88`,
                   display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 0,
