@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { TURN_TIMER_SECONDS } from "@/lib/game/constants";
 import { useAudioStore } from "@/lib/store/audioStore";
 import SfxEngine from "@/lib/audio/SfxEngine";
@@ -12,60 +12,81 @@ interface TurnTimerProps {
   isMyTurn: boolean;
   onTimeUp: () => void;
   turnNumber: number;
+  /** Wall-clock (`Date.now()`) ms when the current turn began. The display
+   *  is always derived from this anchor, so even if the browser throttles
+   *  our setInterval (Chrome aggressively throttles unfocused windows when
+   *  testing two clients side-by-side), the value is corrected the next
+   *  time the tick fires or the tab regains focus. */
+  turnStartedAt: number;
+}
+
+function computeTimeLeft(turnStartedAt: number): number {
+  if (!turnStartedAt) return TURN_TIMER_SECONDS;
+  const elapsed = Math.floor((Date.now() - turnStartedAt) / 1000);
+  return Math.max(0, Math.min(TURN_TIMER_SECONDS, TURN_TIMER_SECONDS - elapsed));
 }
 
 export default function TurnTimer({
   isMyTurn,
   onTimeUp,
   turnNumber,
+  turnStartedAt,
 }: TurnTimerProps) {
-  const [timeLeft, setTimeLeft] = useState(TURN_TIMER_SECONDS);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [timeLeft, setTimeLeft] = useState(() => computeTimeLeft(turnStartedAt));
   const onTimeUpRef = useRef(onTimeUp);
   onTimeUpRef.current = onTimeUp;
 
   const hasFiredWarningRef = useRef(false);
+  const hasFiredTimeUpRef = useRef(false);
   const warningAudioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Reset only when the actual turn changes.
+  // Single source of truth for "what should we display now". Wraps the
+  // setTimeLeft call and optionally fires onTimeUp when we reach zero on
+  // our own turn — kept here so that interval ticks AND focus/visibility
+  // recomputes share the exact same logic.
+  const tick = useCallback(() => {
+    const next = computeTimeLeft(turnStartedAt);
+    setTimeLeft(next);
+    if (next <= 0 && isMyTurn && !hasFiredTimeUpRef.current) {
+      hasFiredTimeUpRef.current = true;
+      setTimeout(() => onTimeUpRef.current(), 0);
+    }
+  }, [turnStartedAt, isMyTurn]);
+
+  // Reset audio + flags when the actual turn changes; recompute display
+  // from the new anchor.
   useEffect(() => {
-    setTimeLeft(TURN_TIMER_SECONDS);
     AudioEngine.getInstance().resume();
     hasFiredWarningRef.current = false;
-    // Cut off the previous turn's warning sound if it was still playing
-    // (e.g. the player ended the turn manually before the clip ended).
+    hasFiredTimeUpRef.current = false;
     SfxEngine.getInstance().stop(warningAudioRef.current);
     warningAudioRef.current = null;
-  }, [turnNumber]);
+    setTimeLeft(computeTimeLeft(turnStartedAt));
+  }, [turnNumber, turnStartedAt]);
 
-  // Start / pause the interval whenever the timer is allowed to tick. The
-  // setter is kept pure so React strict mode's double-invoke doesn't multiply
-  // side effects — those live in a dedicated effect below.
+  // 1 Hz interval ticking the display. The browser may throttle this when
+  // the window is unfocused (Chrome especially), so we don't rely on it as
+  // the only update path — visibility/focus listeners below force a
+  // recompute whenever the tab returns to the foreground.
   useEffect(() => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-    if (!isMyTurn) return;
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [tick]);
 
-    intervalRef.current = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          if (intervalRef.current) clearInterval(intervalRef.current);
-          setTimeout(() => onTimeUpRef.current(), 0);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
+  // Force-recompute when the tab/window becomes visible or refocused —
+  // covers the throttled-background-tab case.
+  useEffect(() => {
+    const handler = () => tick();
+    document.addEventListener("visibilitychange", handler);
+    window.addEventListener("focus", handler);
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      document.removeEventListener("visibilitychange", handler);
+      window.removeEventListener("focus", handler);
     };
-  }, [isMyTurn]);
+  }, [tick]);
 
   // Fire the 15-second warning SFX + pause the music exactly once per turn,
-  // the first time the countdown crosses the threshold.
+  // the first time the countdown crosses the threshold (player's turn only).
   useEffect(() => {
     if (!isMyTurn) return;
     if (hasFiredWarningRef.current) return;

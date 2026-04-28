@@ -737,6 +737,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
             isMyTurn={myTurn}
             onTimeUp={handleEndTurn}
             turnNumber={gameState.turnNumber}
+            turnStartedAt={gameState.turnStartedAt}
           />
           <button
             onClick={handleEndTurn}

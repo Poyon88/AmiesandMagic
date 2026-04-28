@@ -208,6 +208,7 @@ export function initializeGame(
     players: [makePlayer(player1Id, p1Hand, p1Deck, player1Hero), makePlayer(player2Id, p2Hand, p2Deck, player2Hero)],
     currentPlayerIndex: firstPlayerIndex,
     turnNumber: 0,
+    turnStartedAt: 0,
     phase: "mulligan",
     winner: null,
     lastAction: null,
@@ -338,6 +339,11 @@ export function startTurn(state: GameState): GameState {
   const opponent = newState.players[newState.currentPlayerIndex === 0 ? 1 : 0];
 
   newState.turnNumber++;
+  // Wall-clock anchor for the per-turn countdown timer. Both clients read
+  // this from game state so their local TurnTimer renders the same value
+  // (within their own clock skew, typically <100 ms with NTP) instead of
+  // drifting from independently-started setInterval ticks.
+  newState.turnStartedAt = Date.now();
 
   // Canalisation: reduce mana cost of spells (handled at play time, not here)
 

@@ -96,62 +96,47 @@ interface GraveyardTileProps {
 
 function GraveyardTile({ topCard, emptyImageUrl, count, isOpponent, onClick }: GraveyardTileProps) {
   return (
-    <button
-      type="button"
+    // Rendered as a <div> rather than a <button> on purpose: Chrome applies
+    // `appearance: button` user-agent styling which can promote the element
+    // to a compositor layer and downsample any images inside. The deck tile
+    // (also a <div>) renders crisply, so we mirror that exactly.
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClick();
+        }
+      }}
       data-no-global-click-sfx="true"
       title={isOpponent ? "Cimetière adverse" : "Votre cimetière"}
-      className="relative w-32 aspect-[5/7] p-0 bg-transparent border-0 cursor-pointer"
+      className="relative w-32 aspect-[5/7] cursor-pointer"
     >
       <div className="relative w-full h-full rounded overflow-hidden">
         {topCard && topCard.image_url ? (
-          <>
-            <Image
-              src={topCard.image_url}
-              alt={topCard.name}
-              fill
-              sizes="(min-resolution: 3dppx) 768px, (min-resolution: 2dppx) 512px, 256px"
-              className="object-cover"
-              quality={100}
-              unoptimized
-              draggable={false}
-            />
-            {/* Bottom dim + name overlay */}
-            <div
-              className="absolute left-0 right-0 bottom-0 text-center pointer-events-none"
-              style={{
-                padding: "22px 5px 6px",
-                background:
-                  "linear-gradient(0deg, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.55) 55%, transparent 100%)",
-              }}
-            >
-              <div
-                style={{
-                  fontFamily: "'Cinzel', serif",
-                  fontSize: 12,
-                  fontWeight: 700,
-                  color: "#fff",
-                  textShadow: "0 1px 3px rgba(0,0,0,0.95)",
-                  letterSpacing: 0.4,
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                  lineHeight: 1.1,
-                }}
-              >
-                {topCard.name}
-              </div>
-            </div>
-          </>
+          // Card art is full-resolution (≥1024px). Chrome downsamples this
+          // poorly into a 128px tile (Firefox is fine). Drop `unoptimized`
+          // so Next.js serves a 256px variant — Chrome only does a 2×
+          // downsample, which it handles cleanly.
+          <Image
+            src={topCard.image_url}
+            alt={topCard.name}
+            fill
+            sizes="256px"
+            className="object-cover"
+            quality={75}
+            draggable={false}
+          />
         ) : emptyImageUrl ? (
           <Image
             src={emptyImageUrl}
             alt=""
             fill
-            sizes="(min-resolution: 3dppx) 768px, (min-resolution: 2dppx) 512px, 256px"
+            sizes="256px"
             className="object-cover"
-            quality={100}
-            unoptimized
+            quality={75}
             draggable={false}
             style={{ opacity: 0.65 }}
           />
@@ -169,10 +154,43 @@ function GraveyardTile({ topCard, emptyImageUrl, count, isOpponent, onClick }: G
           </div>
         )}
       </div>
+      {/* Name overlay sits OUTSIDE the image clip wrapper as a positioned
+          sibling — it has no effect on the image rasterization (we tested
+          by removing it). The actual sharpness fix is letting Next.js
+          serve a 256px-sized variant on the <Image> above. */}
+      {topCard && topCard.image_url && (
+        <div
+          className="absolute left-0 right-0 bottom-0 text-center pointer-events-none overflow-hidden"
+          style={{
+            padding: "22px 5px 6px",
+            background:
+              "linear-gradient(0deg, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.55) 55%, transparent 100%)",
+            borderBottomLeftRadius: 4,
+            borderBottomRightRadius: 4,
+          }}
+        >
+          <div
+            style={{
+              fontFamily: "'Cinzel', serif",
+              fontSize: 12,
+              fontWeight: 700,
+              color: "#fff",
+              textShadow: "0 1px 3px rgba(0,0,0,0.95)",
+              letterSpacing: 0.4,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              lineHeight: 1.1,
+            }}
+          >
+            {topCard.name}
+          </div>
+        </div>
+      )}
       <FrameOverlay isOpponent={isOpponent} />
       <TopLabel label="Cimetière" isOpponent={isOpponent} />
       <CountBadge count={count} />
-    </button>
+    </div>
   );
 }
 

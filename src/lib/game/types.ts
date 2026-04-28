@@ -409,6 +409,11 @@ export interface GameState {
   players: [PlayerState, PlayerState];
   currentPlayerIndex: 0 | 1;
   turnNumber: number;
+  /** Wall-clock ms (`Date.now()`) at which the current turn began. Set by
+   *  the engine in `startTurn`, broadcast as part of game state so both
+   *  clients render the same countdown without drifting from their own
+   *  setInterval timing. Initialized to 0 until the first turn starts. */
+  turnStartedAt: number;
   phase: GamePhase;
   winner: string | null;
   lastAction: GameAction | null;
