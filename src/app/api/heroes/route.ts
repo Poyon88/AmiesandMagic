@@ -2,6 +2,32 @@ import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
+import { FACTIONS } from '@/lib/card-engine/constants';
+
+function validateFactionClan(
+  faction: unknown,
+  clan: unknown,
+): { ok: true; faction: string | null; clan: string | null } | { ok: false; error: string } {
+  let f: string | null = null;
+  if (typeof faction === 'string' && faction.trim()) {
+    if (!(faction in FACTIONS)) return { ok: false, error: 'Faction invalide' };
+    f = faction;
+  } else if (faction === null) {
+    f = null;
+  }
+  let c: string | null = null;
+  if (typeof clan === 'string' && clan.trim()) {
+    if (!f) return { ok: false, error: 'Clan sans faction' };
+    const def = FACTIONS[f];
+    if (def.clans && !def.clans.names.includes(clan)) {
+      return { ok: false, error: 'Clan invalide pour cette faction' };
+    }
+    c = clan;
+  } else if (clan === null) {
+    c = null;
+  }
+  return { ok: true, faction: f, clan: c };
+}
 
 async function getAuthUser() {
   const cookieStore = await cookies();
@@ -75,7 +101,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const {
-      name, race,
+      name, race, faction, clan,
       power_name, power_type, power_cost, power_effect, power_description,
       glbBase64, glbMimeType, glbUrl,
       thumbnailBase64, thumbnailMimeType,
@@ -88,6 +114,9 @@ export async function POST(request: Request) {
     if (typeof race !== 'string' || !ALLOWED_RACES.has(race)) {
       return NextResponse.json({ error: 'Race invalide' }, { status: 400 });
     }
+
+    const fc = validateFactionClan(faction, clan);
+    if (!fc.ok) return NextResponse.json({ error: fc.error }, { status: 400 });
 
     // GLB source (optional): either base64 upload OR an already-hosted URL.
     let finalGlbUrl: string | null = null;
@@ -117,6 +146,8 @@ export async function POST(request: Request) {
     const insert: Record<string, unknown> = {
       name: name.trim(),
       race,
+      faction: fc.faction,
+      clan: fc.clan,
       glb_url: finalGlbUrl,
       thumbnail_url: finalThumbnailUrl,
     };
@@ -164,7 +195,7 @@ export async function PUT(request: Request) {
   try {
     const body = await request.json();
     const {
-      id, name,
+      id, name, faction, clan,
       power_name, power_type, power_cost, power_effect, power_description,
       glbBase64, glbMimeType, glbUrl,
       thumbnailBase64, thumbnailMimeType,
@@ -177,6 +208,12 @@ export async function PUT(request: Request) {
 
     const updates: Record<string, unknown> = {};
     if (typeof name === 'string') updates.name = name;
+    if (faction !== undefined || clan !== undefined) {
+      const fc = validateFactionClan(faction, clan);
+      if (!fc.ok) return NextResponse.json({ error: fc.error }, { status: 400 });
+      if (faction !== undefined) updates.faction = fc.faction;
+      if (clan !== undefined) updates.clan = fc.clan;
+    }
     if (typeof power_name === 'string') updates.power_name = power_name;
     if (typeof power_type === 'string' && ALLOWED_POWER_TYPES.has(power_type)) updates.power_type = power_type;
     if (typeof power_cost === 'number') updates.power_cost = power_cost;

@@ -373,6 +373,8 @@ export interface HeroDefinition {
   id: number;
   name: string;
   race: Race;
+  faction?: string | null;
+  clan?: string | null;
   powerName: string;
   powerType: HeroPowerType;
   powerCost: number;

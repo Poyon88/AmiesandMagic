@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback, Suspense } from "react";
+import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Stage, useGLTF } from "@react-three/drei";
 import type { TokenTemplate } from "@/lib/game/types";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
+import { FACTIONS } from "@/lib/card-engine/constants";
 
 const RACES = [
   "humans", "elves", "dwarves", "halflings",
@@ -23,6 +24,22 @@ const RACE_LABELS: Record<Race, string> = {
   orcs_goblins: "Orcs & Gobelins",
   undead: "Morts-vivants",
 };
+
+// Default faction suggestion when picking a race. Editable — user can switch
+// (e.g. a "humans" hero who joins the Mercenaires faction).
+const RACE_TO_DEFAULT_FACTION: Record<Race, string> = {
+  humans: "Humains",
+  elves: "Elfes",
+  dwarves: "Nains",
+  halflings: "Hobbits",
+  beastmen: "Hommes-Bêtes",
+  giants: "Mercenaires",
+  dark_elves: "Elfes Noirs",
+  orcs_goblins: "Orcs",
+  undead: "Morts-Vivants",
+};
+
+const FACTION_IDS = Object.keys(FACTIONS);
 
 const RARITIES = ["Commune", "Peu Commune", "Rare", "Épique", "Légendaire"];
 const DEFAULT_MAX_PRINTS: Record<string, number> = {
@@ -92,6 +109,8 @@ interface HeroRow {
   id: number;
   name: string;
   race: Race;
+  faction: string | null;
+  clan: string | null;
   power_name: string | null;
   power_type: "active" | "passive" | null;
   power_cost: number | null;
@@ -130,6 +149,10 @@ export default function HeroManager() {
   // Form state
   const [name, setName] = useState("");
   const [race, setRace] = useState<Race>("humans");
+  const [faction, setFaction] = useState<string>(RACE_TO_DEFAULT_FACTION["humans"]);
+  const [clan, setClan] = useState<string>("");
+  const [generatingPortrait, setGeneratingPortrait] = useState(false);
+  const [portraitError, setPortraitError] = useState<string | null>(null);
   const [powerName, setPowerName] = useState("");
   const [powerType, setPowerType] = useState<"active" | "passive">("active");
   const [powerCost, setPowerCost] = useState<number>(2);
@@ -181,6 +204,33 @@ export default function HeroManager() {
     };
   }, [glbPreviewUrl]);
 
+  // Available clans for the currently selected faction. Some factions
+  // (Élémentaires, Mercenaires) don't define clans → empty list disables the
+  // dropdown.
+  const availableClans = useMemo<string[]>(() => {
+    if (!faction) return [];
+    return FACTIONS[faction]?.clans?.names ?? [];
+  }, [faction]);
+
+  // When the user picks a different race, suggest the canonical faction for
+  // that race. They can still override afterwards.
+  useEffect(() => {
+    setFaction((prev) => {
+      const suggested = RACE_TO_DEFAULT_FACTION[race];
+      // Only auto-switch if the previous faction was itself the default for
+      // some race — otherwise respect a manual override.
+      const wasDefault = Object.values(RACE_TO_DEFAULT_FACTION).includes(prev);
+      return wasDefault ? suggested : prev;
+    });
+  }, [race]);
+
+  // Reset clan when it's no longer valid for the selected faction.
+  useEffect(() => {
+    if (clan && !availableClans.includes(clan)) {
+      setClan("");
+    }
+  }, [availableClans, clan]);
+
   const handleGlbChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -228,6 +278,9 @@ export default function HeroManager() {
   const resetForm = () => {
     setName("");
     setRace("humans");
+    setFaction(RACE_TO_DEFAULT_FACTION["humans"]);
+    setClan("");
+    setPortraitError(null);
     setPowerName("");
     setPowerType("active");
     setPowerCost(2);
@@ -249,6 +302,37 @@ export default function HeroManager() {
     setRarity("Commune");
     setMaxPrints(null);
     setIsDefault(false);
+  };
+
+  const handleGeneratePortrait = async () => {
+    setGeneratingPortrait(true);
+    setPortraitError(null);
+    try {
+      const res = await fetch("/api/heroes/generate-portrait", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name.trim() || null,
+          race,
+          faction: faction || null,
+          clan: clan || null,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setPortraitError(data.error || `Erreur ${res.status}`);
+        return;
+      }
+      // Imagen returns PNG/WebP base64 — feed it straight into the existing
+      // thumbnail pipeline so the save-hero POST uploads it as thumbnail_url.
+      setThumbnailBase64(data.imageBase64);
+      setThumbnailMimeType(data.mimeType || "image/png");
+      setThumbnailPreview(`data:${data.mimeType || "image/png"};base64,${data.imageBase64}`);
+    } catch (err) {
+      setPortraitError(err instanceof Error ? err.message : "Erreur réseau");
+    } finally {
+      setGeneratingPortrait(false);
+    }
   };
 
   const handleAdd = async () => {
@@ -313,6 +397,8 @@ export default function HeroManager() {
       const body: Record<string, unknown> = {
         name: name.trim(),
         race,
+        faction: faction || null,
+        clan: clan || null,
         power_name: powerName || null,
         power_type: powerType,
         power_cost: powerCost,
@@ -422,6 +508,25 @@ export default function HeroManager() {
                   if (r !== "Commune") setIsDefault(false);
                 }} style={STYLE.input}>
                   {RARITIES.map(r => <option key={r} value={r}>{r}</option>)}
+                </select>
+              </div>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              <div>
+                <label style={STYLE.label}>Faction</label>
+                <select value={faction} onChange={(e) => setFaction(e.target.value)}
+                  style={STYLE.input}>
+                  <option value="">— Aucune —</option>
+                  {FACTION_IDS.map(f => <option key={f} value={f}>{f}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={STYLE.label}>Clan</label>
+                <select value={clan} onChange={(e) => setClan(e.target.value)}
+                  disabled={availableClans.length === 0}
+                  style={{ ...STYLE.input, opacity: availableClans.length === 0 ? 0.5 : 1 }}>
+                  <option value="">{availableClans.length === 0 ? "(aucun clan)" : "— Aucun —"}</option>
+                  {availableClans.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
             </div>
@@ -618,6 +723,44 @@ export default function HeroManager() {
               {thumbnailPreview && (
                 <img src={thumbnailPreview} alt="thumbnail"
                   style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 6, border: "1px solid #27ae60", marginTop: 6 }} />
+              )}
+            </div>
+            <div style={{
+              borderTop: "1px dashed #eee", paddingTop: 10, marginTop: 4,
+            }}>
+              <div style={{ fontSize: 10, color: "#888", fontFamily: "'Cinzel',serif", letterSpacing: 1, marginBottom: 6, fontWeight: 700 }}>
+                PORTRAIT IA
+              </div>
+              <div style={{ fontSize: 10, color: "#777", fontFamily: "'Crimson Text',serif", marginBottom: 6, fontStyle: "italic" }}>
+                Génère un portrait stylisé (cadre rond, halo, emblème de faction) à partir de la race, faction et clan choisis. Remplace l&apos;image 2D actuelle.
+              </div>
+              <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                <button
+                  type="button"
+                  onClick={handleGeneratePortrait}
+                  disabled={generatingPortrait}
+                  style={{
+                    ...STYLE.button,
+                    background: thumbnailBase64 ? "#1e5581" : "#8e44ad",
+                    opacity: generatingPortrait ? 0.5 : 1,
+                  }}
+                >
+                  {generatingPortrait
+                    ? "Génération… (~10-20s)"
+                    : thumbnailBase64
+                      ? "Régénérer le portrait"
+                      : "Générer le portrait"}
+                </button>
+                {thumbnailBase64 && (
+                  <span style={{ fontSize: 10, color: "#27ae60", fontFamily: "'Cinzel',serif" }}>
+                    ✓ Portrait prêt
+                  </span>
+                )}
+              </div>
+              {portraitError && (
+                <div style={{ marginTop: 8, padding: "6px 10px", borderRadius: 4, background: "#fde8e8", border: "1px solid #f5a3a3", color: "#e74c3c", fontSize: 10 }}>
+                  {portraitError}
+                </div>
               )}
             </div>
             <div style={{
