@@ -25,21 +25,19 @@ const RACE_LABELS: Record<Race, string> = {
   undead: "Morts-vivants",
 };
 
-// Default faction suggestion when picking a race. Editable — user can switch
-// (e.g. a "humans" hero who joins the Mercenaires faction).
-const RACE_TO_DEFAULT_FACTION: Record<Race, string> = {
-  humans: "Humains",
-  elves: "Elfes",
-  dwarves: "Nains",
-  halflings: "Hobbits",
-  beastmen: "Hommes-Bêtes",
-  giants: "Mercenaires",
-  dark_elves: "Elfes Noirs",
-  orcs_goblins: "Orcs",
-  undead: "Morts-Vivants",
-};
+// Sensible initial values for the form. Faction is picked first, then the
+// race dropdown shows only the races registered in FACTIONS[faction].races.
+const INITIAL_FACTION = "Humains";
+const INITIAL_RACE = "Humains";
 
 const FACTION_IDS = Object.keys(FACTIONS);
+
+// Map a race string (granular like "Aigles Géants" or legacy simplified like
+// "elves") to the user-facing label. Granular races already are the label.
+function raceDisplayLabel(r: string): string {
+  if (r in RACE_LABELS) return RACE_LABELS[r as Race];
+  return r;
+}
 
 const RARITIES = ["Commune", "Peu Commune", "Rare", "Épique", "Légendaire"];
 const DEFAULT_MAX_PRINTS: Record<string, number> = {
@@ -108,7 +106,7 @@ function describeEffect(
 interface HeroRow {
   id: number;
   name: string;
-  race: Race;
+  race: string;
   faction: string | null;
   clan: string | null;
   power_name: string | null;
@@ -148,8 +146,8 @@ export default function HeroManager() {
 
   // Form state
   const [name, setName] = useState("");
-  const [race, setRace] = useState<Race>("humans");
-  const [faction, setFaction] = useState<string>(RACE_TO_DEFAULT_FACTION["humans"]);
+  const [race, setRace] = useState<string>(INITIAL_RACE);
+  const [faction, setFaction] = useState<string>(INITIAL_FACTION);
   const [clan, setClan] = useState<string>("");
   const [generatingPortrait, setGeneratingPortrait] = useState(false);
   const [portraitError, setPortraitError] = useState<string | null>(null);
@@ -160,6 +158,16 @@ export default function HeroManager() {
   const [refImageMime, setRefImageMime] = useState<string | null>(null);
   const [refImagePreview, setRefImagePreview] = useState<string | null>(null);
   const [useReference, setUseReference] = useState(false);
+  // Power image (cast overlay illustration). Independent flow from the
+  // portrait — generated using the hero portrait as multimodal reference.
+  const [actionContext, setActionContext] = useState("");
+  const [composedPowerPrompt, setComposedPowerPrompt] = useState("");
+  const [composingPowerPrompt, setComposingPowerPrompt] = useState(false);
+  const [generatingPowerImage, setGeneratingPowerImage] = useState(false);
+  const [powerImageBase64, setPowerImageBase64] = useState<string | null>(null);
+  const [powerImageMime, setPowerImageMime] = useState<string | null>(null);
+  const [powerImagePreview, setPowerImagePreview] = useState<string | null>(null);
+  const [powerImageError, setPowerImageError] = useState<string | null>(null);
   const [powerName, setPowerName] = useState("");
   const [powerType, setPowerType] = useState<"active" | "passive">("active");
   const [powerCost, setPowerCost] = useState<number>(2);
@@ -211,6 +219,14 @@ export default function HeroManager() {
     };
   }, [glbPreviewUrl]);
 
+  // Available races derived from the selected faction. Faction is the parent
+  // category (Elfes, Hommes-Bêtes, …); race is the granular kind within it
+  // (Elfes / Aigles Géants / Fées for the Elfes faction, etc.).
+  const availableRaces = useMemo<string[]>(() => {
+    if (!faction) return [];
+    return FACTIONS[faction]?.races ?? [];
+  }, [faction]);
+
   // Available clans for the currently selected faction. Some factions
   // (Élémentaires, Mercenaires) don't define clans → empty list disables the
   // dropdown.
@@ -219,17 +235,17 @@ export default function HeroManager() {
     return FACTIONS[faction]?.clans?.names ?? [];
   }, [faction]);
 
-  // When the user picks a different race, suggest the canonical faction for
-  // that race. They can still override afterwards.
+  // When the faction changes, snap the race onto a valid value for the new
+  // faction (or empty if the user picked "Aucune").
   useEffect(() => {
-    setFaction((prev) => {
-      const suggested = RACE_TO_DEFAULT_FACTION[race];
-      // Only auto-switch if the previous faction was itself the default for
-      // some race — otherwise respect a manual override.
-      const wasDefault = Object.values(RACE_TO_DEFAULT_FACTION).includes(prev);
-      return wasDefault ? suggested : prev;
-    });
-  }, [race]);
+    if (availableRaces.length === 0) {
+      if (race !== "") setRace("");
+      return;
+    }
+    if (!availableRaces.includes(race)) {
+      setRace(availableRaces[0]);
+    }
+  }, [availableRaces, race]);
 
   // Reset clan when it's no longer valid for the selected faction.
   useEffect(() => {
@@ -284,8 +300,8 @@ export default function HeroManager() {
 
   const resetForm = () => {
     setName("");
-    setRace("humans");
-    setFaction(RACE_TO_DEFAULT_FACTION["humans"]);
+    setFaction(INITIAL_FACTION);
+    setRace(INITIAL_RACE);
     setClan("");
     setPortraitError(null);
     setExtraContext("");
@@ -294,6 +310,12 @@ export default function HeroManager() {
     setRefImageMime(null);
     setRefImagePreview(null);
     setUseReference(false);
+    setActionContext("");
+    setComposedPowerPrompt("");
+    setPowerImageBase64(null);
+    setPowerImageMime(null);
+    setPowerImagePreview(null);
+    setPowerImageError(null);
     setPowerName("");
     setPowerType("active");
     setPowerCost(2);
@@ -416,6 +438,104 @@ export default function HeroManager() {
     }
   };
 
+  const handlePowerImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const img = new window.Image();
+    img.onload = () => {
+      const MAX = 768;
+      let { width, height } = img;
+      if (width > MAX || height > MAX) {
+        const ratio = Math.min(MAX / width, MAX / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d")!;
+      ctx.drawImage(img, 0, 0, width, height);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+      const base64 = dataUrl.split(",")[1];
+      setPowerImageBase64(base64);
+      setPowerImageMime("image/jpeg");
+      setPowerImagePreview(dataUrl);
+    };
+    img.src = URL.createObjectURL(file);
+  };
+
+  const handleRemovePowerImage = () => {
+    setPowerImageBase64(null);
+    setPowerImageMime(null);
+    setPowerImagePreview(null);
+  };
+
+  const handleComposePowerPrompt = async () => {
+    setComposingPowerPrompt(true);
+    setPowerImageError(null);
+    try {
+      const res = await fetch("/api/heroes/compose-power-prompt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name.trim() || null,
+          race,
+          faction: faction || null,
+          clan: clan || null,
+          powerName: powerName.trim() || null,
+          powerDescription: powerDescription.trim() || null,
+          actionContext: actionContext.trim() || null,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setPowerImageError(data.error || `Erreur ${res.status}`);
+        return;
+      }
+      setComposedPowerPrompt(data.prompt || "");
+    } catch (err) {
+      setPowerImageError(err instanceof Error ? err.message : "Erreur réseau");
+    } finally {
+      setComposingPowerPrompt(false);
+    }
+  };
+
+  const handleGeneratePowerImage = async () => {
+    if (!composedPowerPrompt.trim()) {
+      setPowerImageError("Compose d'abord le prompt (étape 1).");
+      return;
+    }
+    if (!thumbnailBase64 || !thumbnailMimeType) {
+      setPowerImageError("Génère ou upload d'abord le portrait du héros — il sert de référence visuelle.");
+      return;
+    }
+    setGeneratingPowerImage(true);
+    setPowerImageError(null);
+    try {
+      const res = await fetch("/api/heroes/generate-power-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: composedPowerPrompt,
+          referenceImageBase64: thumbnailBase64,
+          referenceImageMimeType: thumbnailMimeType,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setPowerImageError(data.error || `Erreur ${res.status}`);
+        return;
+      }
+      setPowerImageBase64(data.imageBase64);
+      setPowerImageMime(data.mimeType || "image/png");
+      setPowerImagePreview(`data:${data.mimeType || "image/png"};base64,${data.imageBase64}`);
+    } catch (err) {
+      setPowerImageError(err instanceof Error ? err.message : "Erreur réseau");
+    } finally {
+      setGeneratingPowerImage(false);
+    }
+  };
+
   const handleAdd = async () => {
     if (!name.trim()) {
       setError("Nom requis");
@@ -493,6 +613,10 @@ export default function HeroManager() {
       if (thumbnailBase64 && thumbnailMimeType) {
         body.thumbnailBase64 = thumbnailBase64;
         body.thumbnailMimeType = thumbnailMimeType;
+      }
+      if (powerImageBase64 && powerImageMime) {
+        body.powerImageBase64 = powerImageBase64;
+        body.powerImageMimeType = powerImageMime;
       }
 
       const res = await fetch("/api/heroes", {
@@ -574,10 +698,11 @@ export default function HeroManager() {
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
               <div>
-                <label style={STYLE.label}>Race</label>
-                <select value={race} onChange={(e) => setRace(e.target.value as Race)}
+                <label style={STYLE.label}>Faction</label>
+                <select value={faction} onChange={(e) => setFaction(e.target.value)}
                   style={STYLE.input}>
-                  {RACES.map(r => <option key={r} value={r}>{RACE_LABELS[r]}</option>)}
+                  <option value="">— Aucune —</option>
+                  {FACTION_IDS.map(f => <option key={f} value={f}>{f}</option>)}
                 </select>
               </div>
               <div>
@@ -594,11 +719,12 @@ export default function HeroManager() {
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
               <div>
-                <label style={STYLE.label}>Faction</label>
-                <select value={faction} onChange={(e) => setFaction(e.target.value)}
-                  style={STYLE.input}>
-                  <option value="">— Aucune —</option>
-                  {FACTION_IDS.map(f => <option key={f} value={f}>{f}</option>)}
+                <label style={STYLE.label}>Race</label>
+                <select value={race} onChange={(e) => setRace(e.target.value)}
+                  disabled={availableRaces.length === 0}
+                  style={{ ...STYLE.input, opacity: availableRaces.length === 0 ? 0.5 : 1 }}>
+                  <option value="">{availableRaces.length === 0 ? "(choisis d'abord une faction)" : "— Aucune —"}</option>
+                  {availableRaces.map(r => <option key={r} value={r}>{r}</option>)}
                 </select>
               </div>
               <div>
@@ -621,7 +747,7 @@ export default function HeroManager() {
             ) : (
               <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#333", cursor: "pointer", marginTop: 4 }}>
                 <input type="checkbox" checked={isDefault} onChange={(e) => setIsDefault(e.target.checked)} />
-                Héros par défaut pour {RACE_LABELS[race]}
+                Héros par défaut pour {raceDisplayLabel(race)}
               </label>
             )}
 
@@ -941,6 +1067,144 @@ export default function HeroManager() {
                 </div>
               )}
             </div>
+
+            {/* ─── VISUEL DU POUVOIR (active powers only) ─── */}
+            {powerType === "active" && (
+              <div style={{
+                borderTop: "1px dashed #eee", paddingTop: 10, marginTop: 4,
+              }}>
+                <div style={{ fontSize: 10, color: "#888", fontFamily: "'Cinzel',serif", letterSpacing: 1, marginBottom: 6, fontWeight: 700 }}>
+                  VISUEL DU POUVOIR
+                </div>
+                <div style={{ fontSize: 10, color: "#777", fontFamily: "'Crimson Text',serif", marginBottom: 8, fontStyle: "italic" }}>
+                  Illustration affichée à l&apos;activation du pouvoir en jeu (animation de cast). Génération IA basée sur le portrait du héros + une description d&apos;action — ou upload direct.
+                </div>
+
+                {/* Action context */}
+                <div style={{ marginBottom: 8 }}>
+                  <label style={STYLE.label}>Action à illustrer</label>
+                  <textarea
+                    value={actionContext}
+                    onChange={(e) => setActionContext(e.target.value)}
+                    rows={3}
+                    placeholder="Ex : frappe avec son épée flamboyante, charge le bouclier en avant…"
+                    style={{ ...STYLE.input, resize: "vertical" }}
+                  />
+                </div>
+
+                {/* Direct upload alternative */}
+                <div style={{ marginBottom: 8 }}>
+                  <label style={STYLE.label}>Import direct (alternative à l&apos;IA)</label>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 4 }}>
+                    {powerImagePreview ? (
+                      <img src={powerImagePreview} alt="aperçu pouvoir"
+                        style={{ width: 54, height: 76, objectFit: "cover", borderRadius: 4, border: "1px solid #27ae60" }} />
+                    ) : (
+                      <div style={{ width: 54, height: 76, borderRadius: 4, border: "1px dashed #ccc", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: "#aaa" }}>
+                        vide
+                      </div>
+                    )}
+                    <label style={{
+                      ...STYLE.button, background: "#eee", color: "#333", cursor: "pointer",
+                      display: "inline-flex", alignItems: "center",
+                    }}>
+                      {powerImagePreview ? "Remplacer" : "Choisir"}
+                      <input type="file" accept="image/*"
+                        onChange={handlePowerImageUpload}
+                        style={{ display: "none" }} />
+                    </label>
+                    {powerImagePreview && (
+                      <button type="button" onClick={handleRemovePowerImage}
+                        style={{ ...STYLE.button, background: "#e74c3c" }}>
+                        Retirer
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div style={{ borderTop: "1px dashed #eee", paddingTop: 8, marginTop: 6 }}>
+                  <div style={{ fontSize: 9, color: "#999", fontFamily: "'Cinzel',serif", letterSpacing: 1, marginBottom: 4, fontWeight: 700 }}>
+                    GÉNÉRATION IA
+                  </div>
+                  <div style={{ fontSize: 10, color: thumbnailBase64 ? "#27ae60" : "#e67e22", fontFamily: "'Crimson Text',serif", marginBottom: 6, fontStyle: "italic" }}>
+                    {thumbnailBase64
+                      ? "✓ Le portrait du héros sera utilisé comme référence visuelle (Gemini)"
+                      : "⚠ Génère ou upload d'abord le portrait du héros — il est requis comme référence pour garder la même identité"}
+                  </div>
+
+                  <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                    <button
+                      type="button"
+                      onClick={handleComposePowerPrompt}
+                      disabled={composingPowerPrompt}
+                      style={{
+                        ...STYLE.button,
+                        background: "#8e44ad",
+                        opacity: composingPowerPrompt ? 0.5 : 1,
+                      }}
+                    >
+                      {composingPowerPrompt
+                        ? "Composition…"
+                        : composedPowerPrompt
+                          ? "1. Recomposer le prompt"
+                          : "1. Composer le prompt"}
+                    </button>
+                  </div>
+
+                  {composedPowerPrompt && (
+                    <div style={{ marginTop: 8 }}>
+                      <label style={STYLE.label}>Prompt (éditable)</label>
+                      <textarea
+                        value={composedPowerPrompt}
+                        onChange={(e) => setComposedPowerPrompt(e.target.value)}
+                        rows={6}
+                        style={{ ...STYLE.input, fontFamily: "'Crimson Text',serif", resize: "vertical" }}
+                      />
+                      <button type="button"
+                        onClick={() => navigator.clipboard.writeText(composedPowerPrompt).catch(() => null)}
+                        style={{
+                          marginTop: 4, padding: "3px 10px", borderRadius: 4,
+                          background: "transparent", border: "1px dashed #c0c0c0", color: "#666",
+                          fontSize: 9, fontFamily: "'Cinzel',serif", cursor: "pointer",
+                        }}>
+                        copier
+                      </button>
+                    </div>
+                  )}
+
+                  <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginTop: 10 }}>
+                    <button
+                      type="button"
+                      onClick={handleGeneratePowerImage}
+                      disabled={generatingPowerImage || !composedPowerPrompt.trim() || !thumbnailBase64}
+                      style={{
+                        ...STYLE.button,
+                        background: powerImageBase64 ? "#1e5581" : "#27ae60",
+                        opacity: (generatingPowerImage || !composedPowerPrompt.trim() || !thumbnailBase64) ? 0.5 : 1,
+                      }}
+                    >
+                      {generatingPowerImage
+                        ? "Génération… (~10-20s)"
+                        : powerImageBase64
+                          ? "2. Régénérer le visuel"
+                          : "2. Générer le visuel"}
+                    </button>
+                    {powerImageBase64 && (
+                      <span style={{ fontSize: 10, color: "#27ae60", fontFamily: "'Cinzel',serif" }}>
+                        ✓ Visuel prêt
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {powerImageError && (
+                  <div style={{ marginTop: 8, padding: "6px 10px", borderRadius: 4, background: "#fde8e8", border: "1px solid #f5a3a3", color: "#e74c3c", fontSize: 10 }}>
+                    {powerImageError}
+                  </div>
+                )}
+              </div>
+            )}
+
             <div style={{
               fontSize: 9, color: "#888", fontFamily: "'Crimson Text',serif",
               fontStyle: "italic", padding: "4px 8px",
@@ -1005,7 +1269,7 @@ export default function HeroManager() {
                 style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 6, border: "1px solid #e0e0e0", flexShrink: 0 }} />
             ) : (
               <div style={{ width: 80, height: 80, background: "#2a2a45", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", color: "#c8a84e", fontSize: 10, fontFamily: "'Cinzel',serif", flexShrink: 0 }}>
-                {RACE_LABELS[hero.race]}
+                {raceDisplayLabel(hero.race)}
               </div>
             )}
             <div style={{ flex: 1 }}>
@@ -1020,7 +1284,7 @@ export default function HeroManager() {
                   {hero.is_active ? "Actif" : "Inactif"}
                 </span>
                 <span style={{ ...STYLE.badge, background: "#eef4ff", color: "#1e5581", border: "1px solid #c7dbff" }}>
-                  {RACE_LABELS[hero.race]}
+                  {raceDisplayLabel(hero.race)}
                 </span>
                 {hero.is_default && (
                   <span style={{ ...STYLE.badge, background: "#fff5e0", color: "#a07000", border: "1px solid #e8d094" }}>
@@ -1062,7 +1326,7 @@ export default function HeroManager() {
                   <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 10, color: "#333", cursor: "pointer" }}>
                     <input type="checkbox" checked={hero.is_default}
                       onChange={(e) => handleUpdateField(hero, { is_default: e.target.checked })} />
-                    Défaut pour {RACE_LABELS[hero.race]}
+                    Défaut pour {raceDisplayLabel(hero.race)}
                   </label>
                 )}
               </div>

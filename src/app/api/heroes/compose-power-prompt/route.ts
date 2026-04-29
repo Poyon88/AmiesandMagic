@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import { buildHeroPortraitPrompt } from '@/lib/ai/hero-portrait-prompt';
+import { buildHeroPowerPrompt } from '@/lib/ai/hero-power-prompt';
 import { FACTIONS } from '@/lib/card-engine/constants';
 
 const LEGACY_SIMPLIFIED_RACES = new Set([
@@ -31,23 +31,22 @@ async function getAuthUser() {
   return user;
 }
 
-// Asks Claude to weave the user-provided extra context into the deterministic
-// prompt skeleton. The skeleton already pins down the composition (round
-// frame, banner, neon-cyan chroma-key background) — we only let the LLM
-// expand the character description, not restructure the scene.
-async function enrichWithLLM(basePrompt: string, extraContext: string): Promise<string> {
+async function enrichWithLLM(basePrompt: string, actionContext: string): Promise<string> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return basePrompt;
 
   const userMessage =
-    `You will receive a base image-generation prompt for a fantasy hero portrait, ` +
-    `plus extra character details from the author. Produce ONE final English prompt that:\n` +
-    `- Keeps the round metallic frame, the bottom banner with the faction emblem, and the neon cyan RGB(0,255,255) background-fill rule INTACT and unchanged.\n` +
-    `- Naturally weaves the author's extra details into the character description (face, expression, accessories, posture, mood).\n` +
-    `- Does NOT add scenery, halo, rays, architecture, or anything outside the round frame.\n` +
+    `You will receive a base image-generation prompt for a fantasy hero ACTION shot ` +
+    `(the hero performing their special power). The reference image of the hero will be ` +
+    `passed alongside this prompt to keep identity consistent.\n\n` +
+    `Author's extra action description: "${actionContext}"\n\n` +
+    `Produce ONE final English prompt that:\n` +
+    `- Keeps the 5:7 portrait composition, the full-bleed (no frame) constraint, and the ` +
+    `requirement that the character must match the reference image exactly INTACT.\n` +
+    `- Naturally weaves the author's action into the description (pose, weapon, motion lines, FX).\n` +
+    `- Makes the action read clearly as the named power being unleashed.\n` +
     `- Output: just the final prompt as plain text. No quotes, no JSON, no explanation, no markdown.\n\n` +
-    `BASE PROMPT:\n${basePrompt}\n\n` +
-    `AUTHOR'S EXTRA DETAILS:\n${extraContext}`;
+    `BASE PROMPT:\n${basePrompt}`;
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -65,7 +64,7 @@ async function enrichWithLLM(basePrompt: string, extraContext: string): Promise<
     });
     const data = await response.json();
     if (!response.ok) {
-      console.error('[compose-prompt] Anthropic error:', data.error?.message || data);
+      console.error('[compose-power-prompt] Anthropic error:', data.error?.message || data);
       return basePrompt;
     }
     const text = data.content?.find((b: { type: string; text?: string }) => b.type === 'text')?.text;
@@ -74,7 +73,7 @@ async function enrichWithLLM(basePrompt: string, extraContext: string): Promise<
     }
     return basePrompt;
   } catch (err) {
-    console.error('[compose-prompt] LLM call failed:', err);
+    console.error('[compose-power-prompt] LLM call failed:', err);
     return basePrompt;
   }
 }
@@ -88,10 +87,12 @@ export async function POST(request: Request) {
     race?: string;
     faction?: string | null;
     clan?: string | null;
-    extraContext?: string | null;
+    powerName?: string | null;
+    powerDescription?: string | null;
+    actionContext?: string | null;
   };
 
-  const { name, race, faction, clan, extraContext } = body;
+  const { name, race, faction, clan, powerName, powerDescription, actionContext } = body;
 
   if (typeof race !== 'string' || !isAllowedRace(race)) {
     return NextResponse.json({ error: 'Race invalide' }, { status: 400 });
@@ -106,32 +107,34 @@ export async function POST(request: Request) {
     }
   }
 
-  const basePrompt = buildHeroPortraitPrompt({
+  const basePrompt = buildHeroPowerPrompt({
     name: name ?? null,
     race,
     faction: faction ?? null,
     clan: clan ?? null,
-    extraContext: null, // we'll let the LLM weave it in instead of brute-concat
+    powerName: powerName ?? null,
+    powerDescription: powerDescription ?? null,
+    actionContext: null,
   });
 
-  const trimmedExtra = (extraContext ?? '').trim();
-  if (!trimmedExtra) {
+  const trimmedAction = (actionContext ?? '').trim();
+  if (!trimmedAction) {
     return NextResponse.json({ prompt: basePrompt, llmEnriched: false });
   }
 
-  const enriched = await enrichWithLLM(basePrompt, trimmedExtra);
-  // Fallback safety: if the LLM call failed and returned the base prompt,
-  // append the extra context deterministically so the user's input isn't
-  // silently dropped.
+  const enriched = await enrichWithLLM(basePrompt, trimmedAction);
   if (enriched === basePrompt) {
-    const withExtra = buildHeroPortraitPrompt({
+    // LLM unavailable — append the action deterministically as fallback.
+    const withAction = buildHeroPowerPrompt({
       name: name ?? null,
       race,
       faction: faction ?? null,
       clan: clan ?? null,
-      extraContext: trimmedExtra,
+      powerName: powerName ?? null,
+      powerDescription: powerDescription ?? null,
+      actionContext: trimmedAction,
     });
-    return NextResponse.json({ prompt: withExtra, llmEnriched: false });
+    return NextResponse.json({ prompt: withAction, llmEnriched: false });
   }
   return NextResponse.json({ prompt: enriched, llmEnriched: true });
 }

@@ -92,7 +92,7 @@ export default function HeroPowerButton({
 
         {/* Class power icon */}
         <img
-          src={POWER_IMAGES[heroDef.race] ?? ""}
+          src={POWER_IMAGES[heroDef.race] ?? POWER_IMAGES.humans}
           alt={heroDef.powerName}
           className="w-full h-full rounded-full object-cover"
         />

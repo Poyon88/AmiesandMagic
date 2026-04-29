@@ -2362,13 +2362,21 @@ export function useHeroPower(state: GameState, action: HeroPowerAction): GameSta
       const amount = effect.amount ?? 0;
       if (effect.target === "enemy_hero") {
         dealDamageToHero(opponent.hero, amount);
-      } else if (effect.target === "any") {
-        if (action.targetInstanceId === "enemy_hero") {
+      } else if (effect.target === "any" || effect.target === "any_friendly") {
+        // "any_friendly" restricts the targeting picker (see
+        // getHeroPowerTargets) to friendly creatures + friendly hero only,
+        // so we should never see enemy targets land here. We still guard the
+        // enemy_hero branch behind `target === "any"` for safety.
+        if (action.targetInstanceId === "enemy_hero" && effect.target === "any") {
           dealDamageToHero(opponent.hero, amount);
         } else if (action.targetInstanceId === "friendly_hero") {
           dealDamageToHero(player.hero, amount);
         } else if (action.targetInstanceId) {
-          const target = findCreatureOnBoard(player, action.targetInstanceId) ?? findCreatureOnBoard(opponent, action.targetInstanceId);
+          const friendly = findCreatureOnBoard(player, action.targetInstanceId);
+          const target =
+            friendly ?? (effect.target === "any"
+              ? findCreatureOnBoard(opponent, action.targetInstanceId)
+              : null);
           if (target) {
             dealDamageToCreature(target, amount);
             const pDead = cleanDeadCreatures(player);

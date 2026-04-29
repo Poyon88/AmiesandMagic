@@ -372,7 +372,11 @@ export interface HeroPowerEffect {
 export interface HeroDefinition {
   id: number;
   name: string;
-  race: Race;
+  // Race is now a free-form string holding either a legacy simplified ID
+  // ("humans", "elves", …) for existing heroes, or a granular race name
+  // pulled from FACTIONS[faction].races ("Aigles Géants", "Hommes-Loups", …)
+  // for newly-created heroes.
+  race: string;
   faction?: string | null;
   clan?: string | null;
   powerName: string;
@@ -382,6 +386,7 @@ export interface HeroDefinition {
   powerDescription: string;
   glbUrl?: string | null;
   thumbnailUrl?: string | null;
+  powerImageUrl?: string | null;
 }
 
 export interface HeroState {

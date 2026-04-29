@@ -52,10 +52,25 @@ function getAdminClient() {
   );
 }
 
-const ALLOWED_RACES = new Set([
+// Legacy simplified race IDs from the original 9-race hero system. Still
+// accepted so existing rows survive, and so heroes that don't pick a faction
+// can still default to one of these.
+const LEGACY_SIMPLIFIED_RACES = new Set([
   'elves', 'dwarves', 'halflings', 'humans', 'beastmen',
   'giants', 'dark_elves', 'orcs_goblins', 'undead',
 ]);
+
+// Set of every race string that exists anywhere in FACTIONS[*].races. The
+// HeroManager UI cascades faction → race using these values, so any race the
+// user can pick from the dropdown lives in this set.
+const FACTION_GRANULAR_RACES = new Set(
+  Object.values(FACTIONS).flatMap((f) => f.races),
+);
+
+function isAllowedRace(race: string): boolean {
+  return LEGACY_SIMPLIFIED_RACES.has(race) || FACTION_GRANULAR_RACES.has(race);
+}
+
 const ALLOWED_POWER_TYPES = new Set(['active', 'passive']);
 const ALLOWED_RARITIES = new Set(['Commune', 'Peu Commune', 'Rare', 'Épique', 'Légendaire']);
 
@@ -105,13 +120,14 @@ export async function POST(request: Request) {
       power_name, power_type, power_cost, power_effect, power_description,
       glbBase64, glbMimeType, glbUrl,
       thumbnailBase64, thumbnailMimeType,
+      powerImageBase64, powerImageMimeType,
       rarity, max_prints, is_default, is_active,
     } = body as Record<string, unknown>;
 
     if (typeof name !== 'string' || !name.trim()) {
       return NextResponse.json({ error: 'Nom requis' }, { status: 400 });
     }
-    if (typeof race !== 'string' || !ALLOWED_RACES.has(race)) {
+    if (typeof race !== 'string' || !isAllowedRace(race)) {
       return NextResponse.json({ error: 'Race invalide' }, { status: 400 });
     }
 
@@ -133,6 +149,13 @@ export async function POST(request: Request) {
       );
     }
 
+    let finalPowerImageUrl: string | null = null;
+    if (typeof powerImageBase64 === 'string' && typeof powerImageMimeType === 'string') {
+      finalPowerImageUrl = await uploadToBucket(
+        supabase, 'hero-models', powerImageBase64, powerImageMimeType, 'power_image',
+      );
+    }
+
     // The hero needs at least one visual: a 3D model (GLB) OR a 2D image.
     // The in-game viewer routes on `glb_url` so without either the player
     // ends up with a faceless emoji placeholder.
@@ -150,6 +173,7 @@ export async function POST(request: Request) {
       clan: fc.clan,
       glb_url: finalGlbUrl,
       thumbnail_url: finalThumbnailUrl,
+      power_image_url: finalPowerImageUrl,
     };
 
     if (typeof power_name === 'string') insert.power_name = power_name;
@@ -199,6 +223,7 @@ export async function PUT(request: Request) {
       power_name, power_type, power_cost, power_effect, power_description,
       glbBase64, glbMimeType, glbUrl,
       thumbnailBase64, thumbnailMimeType,
+      powerImageBase64, powerImageMimeType,
       rarity, max_prints, is_default, is_active,
     } = body as Record<string, unknown>;
 
@@ -234,6 +259,12 @@ export async function PUT(request: Request) {
     if (typeof thumbnailBase64 === 'string' && typeof thumbnailMimeType === 'string') {
       updates.thumbnail_url = await uploadToBucket(
         supabase, 'hero-models', thumbnailBase64, thumbnailMimeType, 'hero_thumb',
+      );
+    }
+
+    if (typeof powerImageBase64 === 'string' && typeof powerImageMimeType === 'string') {
+      updates.power_image_url = await uploadToBucket(
+        supabase, 'hero-models', powerImageBase64, powerImageMimeType, 'power_image',
       );
     }
 

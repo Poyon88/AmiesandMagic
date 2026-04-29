@@ -42,7 +42,8 @@ export default function HeroPowerOverlay({ event, onComplete }: HeroPowerOverlay
   const lightColor = "#fde047";
   const accentColor = "#fcd34d";
 
-  const imageUrl = event ? HERO_IMAGES[event.race] : null;
+  // Per-hero power illustration wins over the race-generic fallback.
+  const imageUrl = event ? (event.powerImageUrl ?? HERO_IMAGES[event.race] ?? null) : null;
 
   return createPortal(
     <AnimatePresence>

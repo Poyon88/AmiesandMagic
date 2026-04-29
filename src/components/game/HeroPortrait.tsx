@@ -2,10 +2,10 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
-import type { HeroState, Race } from "@/lib/game/types";
+import type { HeroState } from "@/lib/game/types";
 import { HERO_MAX_HP } from "@/lib/game/constants";
 
-const HERO_IMAGES: Record<Race, string> = {
+const HERO_IMAGES: Record<string, string> = {
   elves: "/images/heroes/elves.png",
   dwarves: "/images/heroes/dwarves.svg",
   halflings: "/images/heroes/halflings.svg",
@@ -16,6 +16,10 @@ const HERO_IMAGES: Record<Race, string> = {
   orcs_goblins: "/images/heroes/orcs_goblins.svg",
   undead: "/images/heroes/undead.png",
 };
+// Granular races (e.g. "Aigles Géants", "Hommes-Loups") don't have a
+// dedicated portrait file — the hero is expected to ship its own
+// thumbnailUrl. Falls back to the humans portrait so the layout never breaks.
+const HERO_IMAGE_FALLBACK = HERO_IMAGES.humans;
 
 interface HeroPortraitProps {
   hero: HeroState;
@@ -23,6 +27,10 @@ interface HeroPortraitProps {
   isValidTarget?: boolean;
   damageAmount?: number | null;
   onClick?: () => void;
+  // Double-click → activates non-targeted hero powers (e.g. gain_armor,
+  // deal_damage with target=enemy_hero). Mirrors the 3D hero UX so 2D heroes
+  // aren't stuck waiting for a targeting prompt that never opens.
+  onDoubleClick?: () => void;
   // Right-click → opens the hero / power description overlay (same UX
   // as the 3D hero). Default browser context menu is suppressed.
   onContextMenu?: () => void;
@@ -36,6 +44,7 @@ export default function HeroPortrait({
   isValidTarget = false,
   damageAmount = null,
   onClick,
+  onDoubleClick,
   onContextMenu,
   onMouseEnter,
   onMouseLeave,
@@ -65,6 +74,7 @@ export default function HeroPortrait({
       <motion.div
         data-target-id={isOpponent ? "enemy_hero" : "friendly_hero"}
         onClick={onClick}
+        onDoubleClick={onDoubleClick}
         onContextMenu={(e) => {
           if (!onContextMenu) return;
           e.preventDefault();
@@ -102,7 +112,7 @@ export default function HeroPortrait({
           />
         ) : hero.heroDefinition?.race ? (
           <Image
-            src={HERO_IMAGES[hero.heroDefinition.race]}
+            src={HERO_IMAGES[hero.heroDefinition.race] ?? HERO_IMAGE_FALLBACK}
             alt={hero.heroDefinition.race}
             fill
             sizes="(min-resolution: 2dppx) 320px, 160px"
@@ -120,8 +130,8 @@ export default function HeroPortrait({
 
         {/* Armor badge */}
         {hero.armor > 0 && (
-          <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-yellow-600 border-2 border-yellow-400 flex items-center justify-center shadow-md">
-            <span className="text-[10px] font-bold text-white">{hero.armor}</span>
+          <div className="absolute bottom-1.5 right-1.5 w-[42px] h-[42px] rounded-full bg-yellow-600 border-[3px] border-yellow-400 flex items-center justify-center shadow-lg">
+            <span className="text-[18px] font-bold text-white leading-none">{hero.armor}</span>
           </div>
         )}
       </motion.div>

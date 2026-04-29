@@ -264,8 +264,8 @@ export default function Hero3DViewer({
 
       {/* Armor badge — DOM overlay in the bottom-right corner */}
       {hero.armor > 0 && (
-        <div className="absolute bottom-3 right-3 w-7 h-7 rounded-full bg-yellow-600 border-2 border-yellow-400 flex items-center justify-center shadow-md z-10">
-          <span className="text-[11px] font-bold text-white">{hero.armor}</span>
+        <div className="absolute bottom-3 right-3 w-[50px] h-[50px] rounded-full bg-yellow-600 border-[3px] border-yellow-400 flex items-center justify-center shadow-lg z-10">
+          <span className="text-[20px] font-bold text-white leading-none">{hero.armor}</span>
         </div>
       )}
 

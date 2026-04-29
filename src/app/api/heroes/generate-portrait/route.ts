@@ -2,14 +2,20 @@ import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { generateImage, GenerateImageError } from '@/lib/ai/generate-image';
-import { buildHeroPortraitPrompt, type HeroRaceId } from '@/lib/ai/hero-portrait-prompt';
+import { buildHeroPortraitPrompt } from '@/lib/ai/hero-portrait-prompt';
 import { chromaKeyToPng } from '@/lib/ai/chroma-key';
 import { FACTIONS } from '@/lib/card-engine/constants';
 
-const ALLOWED_RACES: ReadonlySet<HeroRaceId> = new Set([
+const LEGACY_SIMPLIFIED_RACES = new Set([
   'humans', 'elves', 'dwarves', 'halflings', 'beastmen',
   'giants', 'dark_elves', 'orcs_goblins', 'undead',
 ]);
+const FACTION_GRANULAR_RACES = new Set(
+  Object.values(FACTIONS).flatMap((f) => f.races),
+);
+function isAllowedRace(race: string): boolean {
+  return LEGACY_SIMPLIFIED_RACES.has(race) || FACTION_GRANULAR_RACES.has(race);
+}
 
 async function getAuthUser() {
   const cookieStore = await cookies();
@@ -56,7 +62,7 @@ export async function POST(request: Request) {
   if (typeof providedPrompt === 'string' && providedPrompt.trim()) {
     prompt = providedPrompt.trim();
   } else {
-    if (typeof race !== 'string' || !ALLOWED_RACES.has(race as HeroRaceId)) {
+    if (typeof race !== 'string' || !isAllowedRace(race)) {
       return NextResponse.json({ error: 'Race invalide' }, { status: 400 });
     }
     if (faction != null && faction !== '' && !(faction in FACTIONS)) {
@@ -70,7 +76,7 @@ export async function POST(request: Request) {
     }
     prompt = buildHeroPortraitPrompt({
       name: name ?? null,
-      race: race as HeroRaceId,
+      race,
       faction: faction ?? null,
       clan: clan ?? null,
       extraContext: extraContext ?? null,

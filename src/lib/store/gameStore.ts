@@ -53,6 +53,9 @@ export interface HeroPowerCastEvent {
   race: string;
   powerName: string;
   powerDescription: string;
+  // Per-hero illustration for the cast overlay. Falls back to the
+  // race-generic image (HERO_IMAGES[race]) in HeroPowerOverlay when null.
+  powerImageUrl?: string | null;
   timestamp: number;
 }
 
@@ -548,6 +551,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
           race: heroDef.race,
           powerName: heroDef.powerName,
           powerDescription: heroDef.powerDescription,
+          powerImageUrl: heroDef.powerImageUrl ?? null,
           timestamp: Date.now(),
         };
       }

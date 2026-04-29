@@ -676,6 +676,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
             isValidTarget={validTargets.includes("friendly_hero")}
             damageAmount={getDamage("friendly_hero")}
             onClick={handleMyHeroClick}
+            onDoubleClick={handleMyHeroDoubleClick}
             onContextMenu={handleMyHeroContextMenu}
             onMouseEnter={
               validTargets.includes("friendly_hero")
