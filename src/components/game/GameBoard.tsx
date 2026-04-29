@@ -393,7 +393,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
                 : "top-[1%] right-[2%]"
             }`}
           >
-            <div className="relative w-32 aspect-[5/7] rounded overflow-hidden">
+            <div className="relative w-32 aspect-[5/7] rounded-lg overflow-hidden">
               {opponentCardBackUrl ? (
                 <Image
                   src={opponentCardBackUrl}

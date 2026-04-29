@@ -54,11 +54,43 @@ interface DeckTileProps {
   isOpponent: boolean;
 }
 
+// Number of "ghost cards" stamped behind the front tile via box-shadow so a
+// pile reads like a pile. Bigger piles show more layers up to 3. Below 2 we
+// don't show anything — a single card isn't a stack.
+function pileDepth(count: number): number {
+  if (count <= 1) return 0;
+  if (count < 5) return 1;
+  if (count < 15) return 2;
+  return 3;
+}
+
+// Builds a layered box-shadow string that draws stacked card silhouettes
+// behind the front tile. Each step pushes a flat shadow down + right. The
+// final shadow is the regular drop shadow under the whole pile.
+function buildPileShadow(count: number, accentSoft: string): string {
+  const depth = pileDepth(count);
+  const stack: string[] = [];
+  // Render farthest layer first so it sits at the bottom of the painted
+  // shadow stack — closer layers paint over farther ones.
+  for (let step = depth; step >= 1; step--) {
+    const offset = step * 4; // px
+    const tone = 28 + step * 8; // 36 / 44 / 52 — slightly lighter the deeper
+    stack.push(`${offset}px ${offset}px 0 -1px rgb(${tone}, ${tone - 4}, ${tone + 4})`);
+    // Subtle highlight on the top edge of each ghost layer for relief.
+    stack.push(`${offset}px ${offset - 1}px 0 -1px rgba(255,255,255,0.05)`);
+  }
+  stack.push(`0 0 10px ${accentSoft}`);
+  stack.push(`${depth * 4 + 2}px ${depth * 4 + 6}px 14px rgba(0,0,0,0.55)`);
+  return stack.join(", ");
+}
+
 function DeckTile({ cardBackUrl, count, isOpponent }: DeckTileProps) {
   // Hover-preview of the card back at a larger size — same right-side anchor
   // as the graveyard preview for consistency. No right-click toggle here:
   // the back has no description side, only the art.
   const [hovered, setHovered] = useState(false);
+  const accentSoft = isOpponent ? "rgba(231, 76, 60, 0.25)" : "rgba(155, 89, 182, 0.25)";
+  const pileShadow = buildPileShadow(count, accentSoft);
 
   return (
     <div
@@ -68,7 +100,10 @@ function DeckTile({ cardBackUrl, count, isOpponent }: DeckTileProps) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <div className="relative w-full h-full rounded overflow-hidden">
+      <div
+        className="relative w-full h-full rounded-lg overflow-hidden"
+        style={{ boxShadow: pileShadow }}
+      >
         {cardBackUrl ? (
           <Image
             src={cardBackUrl}
@@ -144,6 +179,8 @@ function GraveyardTile({ topCard, emptyImageUrl, count, isOpponent, onClick }: G
   // GraveyardOverlay).
   const [hovered, setHovered] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const accentSoft = isOpponent ? "rgba(231, 76, 60, 0.25)" : "rgba(155, 89, 182, 0.25)";
+  const pileShadow = buildPileShadow(count, accentSoft);
 
   return (
     // Rendered as a <div> rather than a <button> on purpose: Chrome applies
@@ -178,7 +215,10 @@ function GraveyardTile({ topCard, emptyImageUrl, count, isOpponent, onClick }: G
       title={isOpponent ? "Cimetière adverse" : "Votre cimetière"}
       className="relative w-32 aspect-[5/7] cursor-pointer"
     >
-      <div className="relative w-full h-full rounded overflow-hidden">
+      <div
+        className="relative w-full h-full rounded-lg overflow-hidden"
+        style={{ boxShadow: pileShadow }}
+      >
         {topCard && topCard.image_url ? (
           // Card art is full-resolution (≥1024px). Chrome downsamples this
           // poorly into a 128px tile (Firefox is fine). Drop `unoptimized`
@@ -229,8 +269,8 @@ function GraveyardTile({ topCard, emptyImageUrl, count, isOpponent, onClick }: G
             padding: "22px 5px 6px",
             background:
               "linear-gradient(0deg, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.55) 55%, transparent 100%)",
-            borderBottomLeftRadius: 4,
-            borderBottomRightRadius: 4,
+            borderBottomLeftRadius: 8,
+            borderBottomRightRadius: 8,
           }}
         >
           <div
@@ -288,10 +328,10 @@ function FrameOverlay({ isOpponent }: { isOpponent: boolean }) {
   return (
     <div
       aria-hidden
-      className="absolute inset-0 rounded pointer-events-none"
+      className="absolute inset-0 rounded-lg pointer-events-none"
       style={{
         border: `2px solid ${accent}`,
-        boxShadow: `0 0 10px ${accentSoft}, 0 6px 14px rgba(0,0,0,0.5)`,
+        boxShadow: `0 0 10px ${accentSoft}`,
       }}
     />
   );
@@ -324,7 +364,7 @@ function CountBadge({ count }: { count: number }) {
 function TopLabel({ label, isOpponent }: { label: string; isOpponent: boolean }) {
   return (
     <div
-      className="absolute top-0 left-0 right-0 text-center pointer-events-none"
+      className="absolute top-0 left-0 right-0 text-center pointer-events-none rounded-t-lg overflow-hidden"
       style={{
         padding: "4px 5px 9px",
         background: "linear-gradient(180deg, rgba(0,0,0,0.7), transparent)",
