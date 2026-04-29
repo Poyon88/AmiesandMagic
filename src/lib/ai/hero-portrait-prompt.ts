@@ -19,14 +19,22 @@ export type HeroRaceId =
   | 'orcs_goblins'
   | 'undead';
 
+// Background fill color used as a chroma key. The post-processing step in
+// src/lib/ai/chroma-key.ts removes pixels close to this color. Pure neon cyan
+// is chosen because no hero faction descriptor uses anywhere near pure
+// (0, 255, 255), so chroma-keying it out won't bleed into the subject.
+const CHROMA_KEY_DESCRIPTION =
+  'a perfectly flat solid uniform pure neon cyan color, exact RGB(0, 255, 255), ' +
+  'no gradient, no shading, no checkerboard pattern, no texture, no scenery, ' +
+  'no architecture, no halo, no rays, no clouds, no decorative element';
+
 const STYLE_PREAMBLE =
   'Highly detailed digital fantasy hero portrait in painterly matte concept-art style. ' +
   'Centered character bust, head and shoulders only, facing the viewer with an intense direct gaze. ' +
   'A round ornate metallic frame surrounds the portrait, decorated with engraved filigree and small gemstones. ' +
   'A decorative metallic banner curves across the bottom, centered on a circular medallion bearing the faction emblem. ' +
-  'IMPORTANT: completely transparent background — no scenery, no environment, no architecture, no halo, no rays of light, no decorative pattern, no sky, no walls behind the character. ' +
-  'Anything outside the round metallic frame must be plain transparent (alpha 0). ' +
-  'Pure isolated subject as a clean PNG cutout, ready to be composited on top of any game UI. ' +
+  `IMPORTANT BACKGROUND RULE: every single pixel OUTSIDE the round metallic frame must be ${CHROMA_KEY_DESCRIPTION}. ` +
+  'The character, frame, and emblem must NOT use any neon cyan in their colors. ' +
   'Cinematic lighting on the character only, fine brushwork, ArtStation fantasy game art quality, 1:1 square composition.';
 
 // Physical features per race. Kept short so it doesn't drown the faction layer.
@@ -180,6 +188,7 @@ export function buildHeroPortraitPrompt(input: {
   race: HeroRaceId;
   faction?: string | null;
   clan?: string | null;
+  extraContext?: string | null;
 }): string {
   const racePart = RACE_DESCRIPTORS[input.race]
     ?? 'A fantasy heroic figure with distinctive features.';
@@ -191,10 +200,10 @@ export function buildHeroPortraitPrompt(input: {
   // warm gold, maléfique → cold/sinister, neutre → balanced).
   const alignment = input.faction ? FACTIONS[input.faction]?.alignment : null;
   const alignmentCue =
-    alignment === 'maléfique' ? 'cold sinister rim light cast on the character only, dark mood on the subject (background still fully transparent)' :
-    alignment === 'bon' ? 'warm golden noble lighting on the character only (background still fully transparent)' :
-    alignment === 'spéciale' ? 'mixed warm-and-cool enigmatic lighting on the character only (background still fully transparent)' :
-    'even balanced cinematic lighting on the character only (background still fully transparent)';
+    alignment === 'maléfique' ? 'cold sinister rim light cast on the character only, dark mood on the subject (background remains pure neon cyan)' :
+    alignment === 'bon' ? 'warm golden noble lighting on the character only (background remains pure neon cyan)' :
+    alignment === 'spéciale' ? 'mixed warm-and-cool enigmatic lighting on the character only (background remains pure neon cyan)' :
+    'even balanced cinematic lighting on the character only (background remains pure neon cyan)';
 
   const clanAccent = input.clan ? CLAN_ACCENTS[input.clan] : null;
 
@@ -204,10 +213,15 @@ export function buildHeroPortraitPrompt(input: {
     (clanAccent ? `Clan accent (${input.clan}): ${clanAccent}. ` : '') +
     `The bottom medallion of the frame must clearly display ${fd.emblem}.`;
 
+  const extraPart = input.extraContext && input.extraContext.trim()
+    ? `Additional character details requested by the author: ${input.extraContext.trim()}.`
+    : '';
+
   return [
     STYLE_PREAMBLE,
     racePart,
     factionPart,
+    extraPart,
     alignmentCue + '.',
-  ].join(' ');
+  ].filter(Boolean).join(' ');
 }

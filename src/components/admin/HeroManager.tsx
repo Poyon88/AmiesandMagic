@@ -153,6 +153,13 @@ export default function HeroManager() {
   const [clan, setClan] = useState<string>("");
   const [generatingPortrait, setGeneratingPortrait] = useState(false);
   const [portraitError, setPortraitError] = useState<string | null>(null);
+  const [extraContext, setExtraContext] = useState("");
+  const [composedPrompt, setComposedPrompt] = useState("");
+  const [composingPrompt, setComposingPrompt] = useState(false);
+  const [refImageBase64, setRefImageBase64] = useState<string | null>(null);
+  const [refImageMime, setRefImageMime] = useState<string | null>(null);
+  const [refImagePreview, setRefImagePreview] = useState<string | null>(null);
+  const [useReference, setUseReference] = useState(false);
   const [powerName, setPowerName] = useState("");
   const [powerType, setPowerType] = useState<"active" | "passive">("active");
   const [powerCost, setPowerCost] = useState<number>(2);
@@ -281,6 +288,12 @@ export default function HeroManager() {
     setFaction(RACE_TO_DEFAULT_FACTION["humans"]);
     setClan("");
     setPortraitError(null);
+    setExtraContext("");
+    setComposedPrompt("");
+    setRefImageBase64(null);
+    setRefImageMime(null);
+    setRefImagePreview(null);
+    setUseReference(false);
     setPowerName("");
     setPowerType("active");
     setPowerCost(2);
@@ -304,11 +317,45 @@ export default function HeroManager() {
     setIsDefault(false);
   };
 
-  const handleGeneratePortrait = async () => {
-    setGeneratingPortrait(true);
+  const handleRefImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const img = new window.Image();
+    img.onload = () => {
+      const MAX = 768;
+      let { width, height } = img;
+      if (width > MAX || height > MAX) {
+        const ratio = Math.min(MAX / width, MAX / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d")!;
+      ctx.drawImage(img, 0, 0, width, height);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+      const base64 = dataUrl.split(",")[1];
+      setRefImageBase64(base64);
+      setRefImageMime("image/jpeg");
+      setRefImagePreview(dataUrl);
+      setUseReference(true);
+    };
+    img.src = URL.createObjectURL(file);
+  };
+
+  const handleRemoveRefImage = () => {
+    setRefImageBase64(null);
+    setRefImageMime(null);
+    setRefImagePreview(null);
+    setUseReference(false);
+  };
+
+  const handleComposePrompt = async () => {
+    setComposingPrompt(true);
     setPortraitError(null);
     try {
-      const res = await fetch("/api/heroes/generate-portrait", {
+      const res = await fetch("/api/heroes/compose-prompt", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -316,6 +363,7 @@ export default function HeroManager() {
           race,
           faction: faction || null,
           clan: clan || null,
+          extraContext: extraContext.trim() || null,
         }),
       });
       const data = await res.json();
@@ -323,8 +371,41 @@ export default function HeroManager() {
         setPortraitError(data.error || `Erreur ${res.status}`);
         return;
       }
-      // Imagen returns PNG/WebP base64 — feed it straight into the existing
-      // thumbnail pipeline so the save-hero POST uploads it as thumbnail_url.
+      setComposedPrompt(data.prompt || "");
+    } catch (err) {
+      setPortraitError(err instanceof Error ? err.message : "Erreur réseau");
+    } finally {
+      setComposingPrompt(false);
+    }
+  };
+
+  const handleGeneratePortrait = async () => {
+    if (!composedPrompt.trim()) {
+      setPortraitError("Compose d'abord le prompt (étape 1).");
+      return;
+    }
+    setGeneratingPortrait(true);
+    setPortraitError(null);
+    try {
+      const body: Record<string, unknown> = {
+        prompt: composedPrompt,
+        race, // kept for telemetry / fallback validation
+        useReference: useReference && !!refImageBase64,
+      };
+      if (useReference && refImageBase64 && refImageMime) {
+        body.referenceImageBase64 = refImageBase64;
+        body.referenceImageMimeType = refImageMime;
+      }
+      const res = await fetch("/api/heroes/generate-portrait", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setPortraitError(data.error || `Erreur ${res.status}`);
+        return;
+      }
       setThumbnailBase64(data.imageBase64);
       setThumbnailMimeType(data.mimeType || "image/png");
       setThumbnailPreview(`data:${data.mimeType || "image/png"};base64,${data.imageBase64}`);
@@ -731,25 +812,121 @@ export default function HeroManager() {
               <div style={{ fontSize: 10, color: "#888", fontFamily: "'Cinzel',serif", letterSpacing: 1, marginBottom: 6, fontWeight: 700 }}>
                 PORTRAIT IA
               </div>
-              <div style={{ fontSize: 10, color: "#777", fontFamily: "'Crimson Text',serif", marginBottom: 6, fontStyle: "italic" }}>
-                Génère un portrait stylisé (cadre rond, halo, emblème de faction) à partir de la race, faction et clan choisis. Remplace l&apos;image 2D actuelle.
+              <div style={{ fontSize: 10, color: "#777", fontFamily: "'Crimson Text',serif", marginBottom: 8, fontStyle: "italic" }}>
+                Compose un prompt à partir de la race + faction + clan + ton contexte, puis génère l&apos;image (cadre rond, emblème, fond transparent).
               </div>
-              <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+
+              {/* Extra context */}
+              <div style={{ marginBottom: 8 }}>
+                <label style={STYLE.label}>Contexte supplémentaire (optionnel)</label>
+                <textarea
+                  value={extraContext}
+                  onChange={(e) => setExtraContext(e.target.value)}
+                  rows={3}
+                  placeholder="Ex : cicatrice sur l'œil gauche, regard mauvais, mèche grise, tient une lance brisée…"
+                  style={{ ...STYLE.input, resize: "vertical" }}
+                />
+              </div>
+
+              {/* Reference image */}
+              <div style={{ marginBottom: 8 }}>
+                <label style={STYLE.label}>Image de référence (optionnel)</label>
+                <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 4 }}>
+                  {refImagePreview ? (
+                    <img src={refImagePreview} alt="référence"
+                      style={{ width: 54, height: 54, objectFit: "cover", borderRadius: 4, border: "1px solid #27ae60" }} />
+                  ) : (
+                    <div style={{ width: 54, height: 54, borderRadius: 4, border: "1px dashed #ccc", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: "#aaa" }}>
+                      vide
+                    </div>
+                  )}
+                  <label style={{
+                    ...STYLE.button, background: "#eee", color: "#333", cursor: "pointer",
+                    display: "inline-flex", alignItems: "center",
+                  }}>
+                    {refImagePreview ? "Remplacer" : "Choisir"}
+                    <input type="file" accept="image/*"
+                      onChange={handleRefImageChange}
+                      style={{ display: "none" }} />
+                  </label>
+                  {refImagePreview && (
+                    <button type="button" onClick={handleRemoveRefImage}
+                      style={{ ...STYLE.button, background: "#e74c3c" }}>
+                      Retirer
+                    </button>
+                  )}
+                </div>
+                <label style={{
+                  display: "flex", alignItems: "center", gap: 6,
+                  fontSize: 10, color: refImageBase64 ? "#333" : "#aaa",
+                  marginTop: 6, cursor: refImageBase64 ? "pointer" : "not-allowed",
+                }}>
+                  <input type="checkbox"
+                    checked={useReference}
+                    disabled={!refImageBase64}
+                    onChange={(e) => setUseReference(e.target.checked)} />
+                  Utiliser comme référence visuelle (Gemini ~1024 px) — sinon Imagen 2K, image ignorée
+                </label>
+              </div>
+
+              {/* Step 1: compose prompt */}
+              <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginTop: 8 }}>
+                <button
+                  type="button"
+                  onClick={handleComposePrompt}
+                  disabled={composingPrompt}
+                  style={{
+                    ...STYLE.button,
+                    background: "#8e44ad",
+                    opacity: composingPrompt ? 0.5 : 1,
+                  }}
+                >
+                  {composingPrompt
+                    ? "Composition…"
+                    : composedPrompt
+                      ? "1. Recomposer le prompt"
+                      : "1. Composer le prompt"}
+                </button>
+              </div>
+
+              {composedPrompt && (
+                <div style={{ marginTop: 8 }}>
+                  <label style={STYLE.label}>Prompt (éditable)</label>
+                  <textarea
+                    value={composedPrompt}
+                    onChange={(e) => setComposedPrompt(e.target.value)}
+                    rows={6}
+                    style={{ ...STYLE.input, fontFamily: "'Crimson Text',serif", resize: "vertical" }}
+                  />
+                  <button type="button"
+                    onClick={() => navigator.clipboard.writeText(composedPrompt).catch(() => null)}
+                    style={{
+                      marginTop: 4, padding: "3px 10px", borderRadius: 4,
+                      background: "transparent", border: "1px dashed #c0c0c0", color: "#666",
+                      fontSize: 9, fontFamily: "'Cinzel',serif", cursor: "pointer",
+                    }}>
+                    copier
+                  </button>
+                </div>
+              )}
+
+              {/* Step 2: generate image */}
+              <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginTop: 10 }}>
                 <button
                   type="button"
                   onClick={handleGeneratePortrait}
-                  disabled={generatingPortrait}
+                  disabled={generatingPortrait || !composedPrompt.trim()}
                   style={{
                     ...STYLE.button,
-                    background: thumbnailBase64 ? "#1e5581" : "#8e44ad",
-                    opacity: generatingPortrait ? 0.5 : 1,
+                    background: thumbnailBase64 ? "#1e5581" : "#27ae60",
+                    opacity: (generatingPortrait || !composedPrompt.trim()) ? 0.5 : 1,
                   }}
                 >
                   {generatingPortrait
                     ? "Génération… (~10-20s)"
                     : thumbnailBase64
-                      ? "Régénérer le portrait"
-                      : "Générer le portrait"}
+                      ? "2. Régénérer l'image"
+                      : "2. Générer l'image"}
                 </button>
                 {thumbnailBase64 && (
                   <span style={{ fontSize: 10, color: "#27ae60", fontFamily: "'Cinzel',serif" }}>
@@ -757,6 +934,7 @@ export default function HeroManager() {
                   </span>
                 )}
               </div>
+
               {portraitError && (
                 <div style={{ marginTop: 8, padding: "6px 10px", borderRadius: 4, background: "#fde8e8", border: "1px solid #f5a3a3", color: "#e74c3c", fontSize: 10 }}>
                   {portraitError}
