@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import type { CardInstance } from "@/lib/game/types";
+import GameCard from "@/components/cards/GameCard";
 
 interface Props {
   deckCount: number;
@@ -53,11 +55,18 @@ interface DeckTileProps {
 }
 
 function DeckTile({ cardBackUrl, count, isOpponent }: DeckTileProps) {
+  // Hover-preview of the card back at a larger size — same right-side anchor
+  // as the graveyard preview for consistency. No right-click toggle here:
+  // the back has no description side, only the art.
+  const [hovered, setHovered] = useState(false);
+
   return (
     <div
       className="relative w-32 aspect-[5/7]"
       title={isOpponent ? "Pioche adverse" : "Votre pioche"}
       data-no-global-click-sfx="true"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
       <div className="relative w-full h-full rounded overflow-hidden">
         {cardBackUrl ? (
@@ -82,6 +91,38 @@ function DeckTile({ cardBackUrl, count, isOpponent }: DeckTileProps) {
       <FrameOverlay isOpponent={isOpponent} />
       <TopLabel label="Pioche" isOpponent={isOpponent} />
       <CountBadge count={count} />
+
+      {hovered && cardBackUrl && (
+        <div
+          style={{
+            position: "fixed",
+            right: 32,
+            top: "50%",
+            transform: "translateY(-50%)",
+            zIndex: 60,
+            pointerEvents: "none",
+            // Match GameCard size="lg" footprint (340 × 476) for visual parity
+            // with the graveyard hover preview.
+            width: 340,
+            height: 476,
+            borderRadius: 14,
+            overflow: "hidden",
+            border: "2px solid rgba(200, 168, 78, 0.6)",
+            boxShadow: "0 12px 32px rgba(0,0,0,0.6)",
+          }}
+        >
+          <Image
+            src={cardBackUrl}
+            alt=""
+            fill
+            sizes="512px"
+            className="object-cover"
+            quality={100}
+            unoptimized
+            draggable={false}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -95,6 +136,15 @@ interface GraveyardTileProps {
 }
 
 function GraveyardTile({ topCard, emptyImageUrl, count, isOpponent, onClick }: GraveyardTileProps) {
+  // Hover-preview of the top card directly on the board, before the player
+  // even opens the full graveyard modal. The preview is rendered in a fixed
+  // viewport-anchored container so it doesn't get clipped by any overflow on
+  // the surrounding board layout. Right-click toggles the preview between
+  // the card art and the description overlay (same pattern used inside
+  // GraveyardOverlay).
+  const [hovered, setHovered] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
+
   return (
     // Rendered as a <div> rather than a <button> on purpose: Chrome applies
     // `appearance: button` user-agent styling which can promote the element
@@ -103,12 +153,26 @@ function GraveyardTile({ topCard, emptyImageUrl, count, isOpponent, onClick }: G
     <div
       role="button"
       tabIndex={0}
-      onClick={onClick}
+      onClick={() => {
+        setHovered(false);
+        setShowDetails(false);
+        onClick();
+      }}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
           onClick();
         }
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => {
+        setHovered(false);
+        setShowDetails(false);
+      }}
+      onContextMenu={(e) => {
+        if (!topCard) return;
+        e.preventDefault();
+        setShowDetails((prev) => !prev);
       }}
       data-no-global-click-sfx="true"
       title={isOpponent ? "Cimetière adverse" : "Votre cimetière"}
@@ -190,6 +254,30 @@ function GraveyardTile({ topCard, emptyImageUrl, count, isOpponent, onClick }: G
       <FrameOverlay isOpponent={isOpponent} />
       <TopLabel label="Cimetière" isOpponent={isOpponent} />
       <CountBadge count={count} />
+
+      {hovered && topCard && (
+        <div
+          style={{
+            position: "fixed",
+            // Anchored to the right side of the viewport so the preview never
+            // overlaps the player's hand (centered) or covers the tile itself.
+            // Same anchor as GraveyardOverlay's preview for visual consistency.
+            right: 32,
+            top: "50%",
+            transform: "translateY(-50%)",
+            zIndex: 60,
+            pointerEvents: "none",
+            filter: "drop-shadow(0 12px 32px rgba(0,0,0,0.6))",
+          }}
+        >
+          <GameCard
+            card={topCard}
+            size="lg"
+            disableHoverZoom
+            showDetails={showDetails}
+          />
+        </div>
+      )}
     </div>
   );
 }

@@ -42,6 +42,13 @@ interface GameCardProps {
   printNumber?: number;
   maxPrints?: number;
   disableHoverZoom?: boolean;
+  /** Controlled override for the description overlay. When defined, internal
+   *  right-click toggle is bypassed and the consumer drives visibility. */
+  showDetails?: boolean;
+  /** Override for right-click. Called with the React mouse event; the consumer
+   *  is responsible for `preventDefault()`. When omitted, GameCard toggles its
+   *  internal `showDetails` state (legacy behavior). */
+  onContextMenu?: (e: React.MouseEvent) => void;
   /** Optional registry to resolve names/stats inside spell-keyword
    *  descriptions (e.g. "Invocation multiple" → "crée 2 tokens X 1/1"). */
   tokens?: TokenTemplate[];
@@ -57,10 +64,13 @@ export default function GameCard({
   printNumber,
   maxPrints,
   disableHoverZoom = false,
+  showDetails: showDetailsProp,
+  onContextMenu: onContextMenuProp,
   tokens,
 }: GameCardProps) {
   const [hovered, setHovered] = useState(false);
-  const [showDetails, setShowDetails] = useState(false);
+  const [internalShowDetails, setInternalShowDetails] = useState(false);
+  const showDetails = showDetailsProp ?? internalShowDetails;
   // Resolve the token registry: explicit prop wins, otherwise lazy-load on
   // mount (cached module-level so subsequent GameCards reuse the same data).
   const [autoTokens, setAutoTokens] = useState<TokenTemplate[] | null>(null);
@@ -94,16 +104,22 @@ export default function GameCard({
       onClick={disabled ? undefined : onClick}
       onMouseEnter={() => {
         setHovered(true);
-        detailTimer.current = setTimeout(() => setShowDetails(true), 600);
+        if (showDetailsProp === undefined) {
+          detailTimer.current = setTimeout(() => setInternalShowDetails(true), 600);
+        }
       }}
       onMouseLeave={() => {
         setHovered(false);
-        setShowDetails(false);
+        if (showDetailsProp === undefined) setInternalShowDetails(false);
         if (detailTimer.current) clearTimeout(detailTimer.current);
       }}
       onContextMenu={(e) => {
+        if (onContextMenuProp) {
+          onContextMenuProp(e);
+          return;
+        }
         e.preventDefault();
-        setShowDetails(prev => !prev);
+        setInternalShowDetails(prev => !prev);
         if (detailTimer.current) clearTimeout(detailTimer.current);
       }}
       style={{

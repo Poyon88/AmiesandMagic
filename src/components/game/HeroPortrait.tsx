@@ -49,7 +49,7 @@ export default function HeroPortrait({
           any artwork. Positioned at top-center so it reads like the HP
           number floating above the head. */}
       <div
-        className={`pointer-events-none absolute top-1 left-1/2 -translate-x-1/2 z-10 text-4xl font-black tracking-wide ${
+        className={`pointer-events-none absolute -top-5 left-1/2 -translate-x-1/2 z-10 text-4xl font-black tracking-wide ${
           hero.hp <= 10 ? "text-accent" : "text-white"
         }`}
         style={{
