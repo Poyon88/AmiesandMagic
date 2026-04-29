@@ -920,6 +920,11 @@ export default function GameBoard({ onAction }: GameBoardProps) {
       {heroDescriptionDef && (
         <HeroPowerDescriptionOverlay
           heroDef={heroDescriptionDef}
+          activationsUsed={
+            heroDescriptionDef === myHeroDef
+              ? myPlayer.hero.heroPowerActivationsUsed
+              : opponent.hero.heroPowerActivationsUsed
+          }
           onClose={() => setHeroDescriptionDef(null)}
         />
       )}

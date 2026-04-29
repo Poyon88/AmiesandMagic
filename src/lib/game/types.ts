@@ -347,46 +347,60 @@ export interface CardInstance {
   hasTransformedLycanthropie: boolean;
 }
 
-// Hero power system
+// Hero power system — V2
+//
+// A hero power is now a (mode, keyword, params) triple that reuses the
+// unified ABILITIES registry instead of an ad-hoc effect type. See plan
+// /Users/encellefabrice/.claude/plans/tender-tickling-wilkes.md for the
+// design rationale.
 export type Race = "elves" | "dwarves" | "halflings" | "humans" | "beastmen" | "giants" | "dark_elves" | "orcs_goblins" | "undead";
-export type HeroPowerType = "active" | "passive";
 
-export type HeroPowerEffectType =
-  | "gain_armor"
-  | "deal_damage"
-  | "heal"
-  | "buff_on_friendly_death"
-  | "summon_token";
+export type HeroPowerMode =
+  | "grant_keyword"   // pay cost → grant the keyword to a targeted creature
+  | "spell_trigger"   // pay cost → fire the keyword's spell-side effect once
+  | "aura";           // pay cost → activate a persistent aura (stackable)
 
 export interface HeroPowerEffect {
-  type: HeroPowerEffectType;
-  amount?: number;
-  attack?: number;
-  // Optional override for summon_token (otherwise inherited from the token).
-  health?: number;
-  target?: "any" | "any_friendly" | "enemy_hero";
-  // FK to token_templates.id when type === "summon_token".
-  token_id?: number;
+  mode: HeroPowerMode;
+  keywordId: string;  // matches an entry in ABILITIES (src/lib/game/abilities.ts)
+  // Optional numeric params for keywords that need them:
+  //   amount → Impact X, Inspiration X, Convocation X, Renforcement (X part), …
+  //   attack / health → Renforcement +X/+Y, summon_token override stats, …
+  params?: { amount?: number; attack?: number; health?: number };
+  // FK to token_templates.id when keywordId === "convocation".
+  tokenId?: number | null;
 }
 
 export interface HeroDefinition {
   id: number;
   name: string;
-  // Race is now a free-form string holding either a legacy simplified ID
-  // ("humans", "elves", …) for existing heroes, or a granular race name
-  // pulled from FACTIONS[faction].races ("Aigles Géants", "Hommes-Loups", …)
-  // for newly-created heroes.
+  // Race is a free-form string: either a legacy simplified ID ("humans",
+  // "elves", …) for existing heroes, or a granular race name pulled from
+  // FACTIONS[faction].races ("Aigles Géants", "Hommes-Loups", …) for new
+  // heroes.
   race: string;
   faction?: string | null;
   clan?: string | null;
   powerName: string;
-  powerType: HeroPowerType;
+  // Activation cost in mana. Paid every activation (mode 3 included — each
+  // payment adds another aura stack).
   powerCost: number;
   powerEffect: HeroPowerEffect;
   powerDescription: string;
+  // Max number of activations per game; null = unlimited.
+  powerUsageLimit?: number | null;
   glbUrl?: string | null;
   thumbnailUrl?: string | null;
   powerImageUrl?: string | null;
+}
+
+// One active aura instance on a hero, set when mode === "aura" is activated.
+// Stacks accumulate as the player pays the cost again (when usage limit
+// allows): same keywordId / params, just incremented count.
+export interface HeroActiveAura {
+  keywordId: string;
+  params?: { amount?: number; attack?: number; health?: number };
+  stacks: number;
 }
 
 export interface HeroState {
@@ -395,6 +409,12 @@ export interface HeroState {
   armor: number;
   heroDefinition: HeroDefinition | null;
   heroPowerUsedThisTurn: boolean;
+  // Total activations this game across all 3 modes — used to enforce
+  // powerUsageLimit on the hero definition.
+  heroPowerActivationsUsed: number;
+  // Persistent auras active on this hero (mode 3). Cleared at game start
+  // (= deck shuffle / mulligan), preserved across turns.
+  activeAuras: HeroActiveAura[];
 }
 
 export interface PlayerState {

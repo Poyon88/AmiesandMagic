@@ -6,6 +6,7 @@ import { OrbitControls, Stage, useGLTF } from "@react-three/drei";
 import type { TokenTemplate } from "@/lib/game/types";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 import { FACTIONS } from "@/lib/card-engine/constants";
+import { ABILITIES } from "@/lib/game/abilities";
 
 const RACES = [
   "humans", "elves", "dwarves", "halflings",
@@ -47,61 +48,56 @@ const DEFAULT_MAX_PRINTS: Record<string, number> = {
   "Peu Commune": 1000,
 };
 
-type EffectType = "gain_armor" | "deal_damage" | "heal" | "buff_on_friendly_death" | "summon_token";
-type EffectTarget = "any" | "any_friendly" | "enemy_hero";
+// Re-encodes a base64 image to a smaller WebP (preserves alpha, much
+// smaller than PNG). Used after AI image generation to keep the in-state
+// payload reasonable — Imagen/Gemini PNGs can hit 5+ MB which makes the
+// /api/heroes JSON body too big to ship in one request.
+async function compressBase64Image(
+  base64: string,
+  mime: string,
+  maxDim: number = 768,
+  quality: number = 0.85,
+): Promise<{ base64: string; mime: string }> {
+  return new Promise((resolve, reject) => {
+    const img = new window.Image();
+    img.onload = () => {
+      let { width, height } = img;
+      if (width > maxDim || height > maxDim) {
+        const ratio = Math.min(maxDim / width, maxDim / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        reject(new Error("Canvas 2D context unavailable"));
+        return;
+      }
+      ctx.drawImage(img, 0, 0, width, height);
+      const dataUrl = canvas.toDataURL("image/webp", quality);
+      resolve({
+        base64: dataUrl.split(",")[1],
+        mime: "image/webp",
+      });
+    };
+    img.onerror = () => reject(new Error("Image load failed"));
+    img.src = `data:${mime};base64,${base64}`;
+  });
+}
 
-const EFFECT_TYPE_LABELS: Record<EffectType, string> = {
-  gain_armor: "Gagner de l'armure",
-  deal_damage: "Infliger des dégâts",
-  heal: "Soigner",
-  buff_on_friendly_death: "Buff à la mort d'un allié",
-  summon_token: "Invoquer un token",
+// Power system V2 — see /Users/encellefabrice/.claude/plans/tender-tickling-wilkes.md
+// for the design. A hero power is (mode, keywordId, params, tokenId?).
+
+const POWER_MODE_LABELS: Record<"grant_keyword" | "spell_trigger" | "aura", string> = {
+  grant_keyword: "1. Donner la capacité à une créature ciblée",
+  spell_trigger: "2. Déclencher l'effet une fois (comme un sort)",
+  aura: "3. Activer comme aura persistante (cumulable)",
 };
 
-const EFFECT_TARGET_LABELS: Record<EffectTarget, string> = {
-  any: "N'importe quelle cible (flèche)",
-  any_friendly: "Créature/héros alliés (flèche)",
-  enemy_hero: "Héros ennemi (auto, pas de flèche)",
-};
-
-function effectNeedsAmount(t: EffectType): boolean {
-  return t === "gain_armor" || t === "deal_damage" || t === "heal";
-}
-function effectNeedsAttack(t: EffectType): boolean {
-  return t === "buff_on_friendly_death";
-}
-function effectNeedsTarget(t: EffectType): boolean {
-  return t === "deal_damage" || t === "heal";
-}
-function effectNeedsToken(t: EffectType): boolean {
-  return t === "summon_token";
-}
-
-function describeEffect(
-  t: EffectType,
-  amount: number,
-  attack: number,
-  target: EffectTarget,
-  tokenLabel: string | null,
-  tokenAtk: number | null,
-  tokenHp: number | null,
-): string {
-  const n = amount || 0;
-  switch (t) {
-    case "gain_armor":
-      return `Donne ${n} point${n > 1 ? "s" : ""} d'armure au héros.`;
-    case "deal_damage":
-      return `Inflige ${n} dégât${n > 1 ? "s" : ""} à ${EFFECT_TARGET_LABELS[target].toLowerCase()}.`;
-    case "heal":
-      return `Rend ${n} PV à ${EFFECT_TARGET_LABELS[target].toLowerCase()}.`;
-    case "buff_on_friendly_death":
-      return `Chaque fois qu'une créature alliée meurt, une autre gagne +${attack || 0} atk (passif).`;
-    case "summon_token":
-      return tokenLabel
-        ? `Invoque ${tokenLabel} (${tokenAtk ?? "?"}/${tokenHp ?? "?"}).`
-        : "Invoque un token (à choisir ci-dessus).";
-  }
-}
+// Imports below — ABILITIES is the unified registry shared with creature
+// + spell sides. We pick the picker entries from there.
 
 interface HeroRow {
   id: number;
@@ -169,15 +165,16 @@ export default function HeroManager() {
   const [powerImagePreview, setPowerImagePreview] = useState<string | null>(null);
   const [powerImageError, setPowerImageError] = useState<string | null>(null);
   const [powerName, setPowerName] = useState("");
-  const [powerType, setPowerType] = useState<"active" | "passive">("active");
   const [powerCost, setPowerCost] = useState<number>(2);
-  const [effectType, setEffectType] = useState<EffectType>("deal_damage");
-  const [effectAmount, setEffectAmount] = useState<number>(2);
-  const [effectAttack, setEffectAttack] = useState<number>(1);
-  const [effectTarget, setEffectTarget] = useState<EffectTarget>("any");
-  const [effectTokenId, setEffectTokenId] = useState<number | null>(null);
-  const [effectTokenAtkOverride, setEffectTokenAtkOverride] = useState<number | "">("");
-  const [effectTokenHpOverride, setEffectTokenHpOverride] = useState<number | "">("");
+  // V2 power system : (mode, keywordId, params).
+  const [powerMode, setPowerMode] = useState<"grant_keyword" | "spell_trigger" | "aura">("grant_keyword");
+  const [powerKeywordId, setPowerKeywordId] = useState<string>("divine_shield");
+  const [powerParamAmount, setPowerParamAmount] = useState<number>(1);
+  const [powerParamAttack, setPowerParamAttack] = useState<number>(0);
+  const [powerParamHealth, setPowerParamHealth] = useState<number>(0);
+  const [powerTokenId, setPowerTokenId] = useState<number | null>(null);
+  // null = unlimited
+  const [powerUsageLimit, setPowerUsageLimit] = useState<number | null>(null);
 
   // Token registry (reused by the cascade picker for summon_token).
   const [tokenTemplates, setTokenTemplates] = useState<TokenTemplate[]>([]);
@@ -317,15 +314,14 @@ export default function HeroManager() {
     setPowerImagePreview(null);
     setPowerImageError(null);
     setPowerName("");
-    setPowerType("active");
     setPowerCost(2);
-    setEffectType("deal_damage");
-    setEffectAmount(2);
-    setEffectAttack(1);
-    setEffectTarget("any");
-    setEffectTokenId(null);
-    setEffectTokenAtkOverride("");
-    setEffectTokenHpOverride("");
+    setPowerMode("grant_keyword");
+    setPowerKeywordId("divine_shield");
+    setPowerParamAmount(1);
+    setPowerParamAttack(0);
+    setPowerParamHealth(0);
+    setPowerTokenId(null);
+    setPowerUsageLimit(null);
     setPowerDescription("");
     if (glbPreviewUrl?.startsWith("blob:")) URL.revokeObjectURL(glbPreviewUrl);
     setGlbFile(null);
@@ -428,9 +424,16 @@ export default function HeroManager() {
         setPortraitError(data.error || `Erreur ${res.status}`);
         return;
       }
-      setThumbnailBase64(data.imageBase64);
-      setThumbnailMimeType(data.mimeType || "image/png");
-      setThumbnailPreview(`data:${data.mimeType || "image/png"};base64,${data.imageBase64}`);
+      // Re-encode the AI PNG (often 3-6 MB base64) to WebP so the eventual
+      // /api/heroes save body stays under the JSON parse ceiling.
+      const compressed = await compressBase64Image(
+        data.imageBase64,
+        data.mimeType || "image/png",
+        768,
+      );
+      setThumbnailBase64(compressed.base64);
+      setThumbnailMimeType(compressed.mime);
+      setThumbnailPreview(`data:${compressed.mime};base64,${compressed.base64}`);
     } catch (err) {
       setPortraitError(err instanceof Error ? err.message : "Erreur réseau");
     } finally {
@@ -526,9 +529,17 @@ export default function HeroManager() {
         setPowerImageError(data.error || `Erreur ${res.status}`);
         return;
       }
-      setPowerImageBase64(data.imageBase64);
-      setPowerImageMime(data.mimeType || "image/png");
-      setPowerImagePreview(`data:${data.mimeType || "image/png"};base64,${data.imageBase64}`);
+      // Re-encode to WebP at 768 px max — the cast overlay shows it at
+      // 252×350, so plenty of headroom while keeping the body small enough
+      // to ship to /api/heroes alongside the portrait base64.
+      const compressed = await compressBase64Image(
+        data.imageBase64,
+        data.mimeType || "image/png",
+        768,
+      );
+      setPowerImageBase64(compressed.base64);
+      setPowerImageMime(compressed.mime);
+      setPowerImagePreview(`data:${compressed.mime};base64,${compressed.base64}`);
     } catch (err) {
       setPowerImageError(err instanceof Error ? err.message : "Erreur réseau");
     } finally {
@@ -549,14 +560,29 @@ export default function HeroManager() {
       setError("Modèle 3D (GLB) ou image 2D requis");
       return;
     }
-    const powerEffect: Record<string, unknown> = { type: effectType };
-    if (effectNeedsAmount(effectType)) powerEffect.amount = effectAmount;
-    if (effectNeedsAttack(effectType)) powerEffect.attack = effectAttack;
-    if (effectNeedsTarget(effectType)) powerEffect.target = effectTarget;
-    if (effectNeedsToken(effectType)) {
-      powerEffect.token_id = effectTokenId ?? undefined;
-      if (effectTokenAtkOverride !== "") powerEffect.attack = effectTokenAtkOverride;
-      if (effectTokenHpOverride !== "") powerEffect.health = effectTokenHpOverride;
+    // Build the V2 power effect from the form state. Only include params
+    // that the chosen keyword actually consumes (server validates).
+    const ability = ABILITIES[powerKeywordId];
+    const wantsAmount = !!ability?.spell?.params?.includes("amount");
+    const wantsAttack = !!ability?.spell?.params?.includes("attack");
+    const wantsHealth = !!ability?.spell?.params?.includes("health");
+    const params: { amount?: number; attack?: number; health?: number } = {};
+    if (wantsAmount) params.amount = powerParamAmount;
+    if (wantsAttack) params.attack = powerParamAttack;
+    if (wantsHealth) params.health = powerParamHealth;
+    // For non-spell keywords (mode 1 or 3), still expose `amount` if the user
+    // tweaked it — it's harmless extra data and may be useful for future
+    // numeric variants (e.g. Régénération X).
+    if (!wantsAmount && !wantsAttack && !wantsHealth && powerParamAmount > 0) {
+      params.amount = powerParamAmount;
+    }
+    const powerEffect: Record<string, unknown> = {
+      mode: powerMode,
+      keywordId: powerKeywordId,
+    };
+    if (Object.keys(params).length > 0) powerEffect.params = params;
+    if (powerKeywordId === "convocation" && powerTokenId != null) {
+      powerEffect.tokenId = powerTokenId;
     }
 
     setSaving(true);
@@ -601,22 +627,28 @@ export default function HeroManager() {
         faction: faction || null,
         clan: clan || null,
         power_name: powerName || null,
-        power_type: powerType,
         power_cost: powerCost,
         power_effect: powerEffect,
+        power_usage_limit: powerUsageLimit,
         power_description: powerDescription || null,
         glbUrl: publicGlbUrl,
         rarity,
         is_default: rarity === "Commune" ? isDefault : false,
       };
       if (rarity !== "Commune") body.max_prints = maxPrints ?? DEFAULT_MAX_PRINTS[rarity] ?? null;
+      // Safety net : every base64 image that ships in this POST body is
+      // re-compressed to WebP@768 right before send. Covers the case where
+      // images were generated/uploaded before the per-handler compression
+      // was in place, and any future code path that forgets to shrink.
       if (thumbnailBase64 && thumbnailMimeType) {
-        body.thumbnailBase64 = thumbnailBase64;
-        body.thumbnailMimeType = thumbnailMimeType;
+        const t = await compressBase64Image(thumbnailBase64, thumbnailMimeType, 768);
+        body.thumbnailBase64 = t.base64;
+        body.thumbnailMimeType = t.mime;
       }
       if (powerImageBase64 && powerImageMime) {
-        body.powerImageBase64 = powerImageBase64;
-        body.powerImageMimeType = powerImageMime;
+        const p = await compressBase64Image(powerImageBase64, powerImageMime, 768);
+        body.powerImageBase64 = p.base64;
+        body.powerImageMimeType = p.mime;
       }
 
       const res = await fetch("/api/heroes", {
@@ -751,159 +783,173 @@ export default function HeroManager() {
               </label>
             )}
 
-            <div style={{ borderTop: "1px dashed #eee", paddingTop: 10, marginTop: 4 }}>
-              <div style={{ fontSize: 10, color: "#888", fontFamily: "'Cinzel',serif", letterSpacing: 1, marginBottom: 6, fontWeight: 700 }}>
-                POUVOIR HÉROÏQUE
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 8 }}>
-                <div>
-                  <label style={STYLE.label}>Nom</label>
-                  <input type="text" value={powerName} onChange={(e) => setPowerName(e.target.value)}
-                    placeholder="Ex: Flamboiement" style={STYLE.input} />
-                </div>
-                <div>
-                  <label style={STYLE.label}>Type</label>
-                  <select value={powerType} onChange={(e) => setPowerType(e.target.value as "active" | "passive")}
-                    style={STYLE.input}>
-                    <option value="active">Actif</option>
-                    <option value="passive">Passif</option>
-                  </select>
-                </div>
-                <div>
-                  <label style={STYLE.label}>Coût</label>
-                  <input type="number" min={0} max={10} value={powerCost}
-                    onChange={(e) => setPowerCost(Number(e.target.value))}
-                    style={STYLE.input} />
-                </div>
-              </div>
-              <div style={{ marginTop: 8 }}>
-                <label style={STYLE.label}>Effet</label>
-                <select
-                  value={effectType}
-                  onChange={(e) => setEffectType(e.target.value as EffectType)}
-                  style={STYLE.input}
-                >
-                  {(Object.keys(EFFECT_TYPE_LABELS) as EffectType[]).map((t) => (
-                    <option key={t} value={t}>{EFFECT_TYPE_LABELS[t]}</option>
-                  ))}
-                </select>
-              </div>
+            {/* ─── POUVOIR HÉROÏQUE V2 ─── */}
+            {(() => {
+              const ability = ABILITIES[powerKeywordId];
+              const wantsAmount = !!ability?.spell?.params?.includes("amount") || powerMode === "spell_trigger" === false ? !!ability?.spell?.params?.includes("amount") : false;
+              const ww = ability?.spell?.params ?? [];
+              const showAmount = ww.includes("amount") || powerMode === "aura"; // amount used for X scaling on auras (Commandement stacks already implicit)
+              const showAttack = ww.includes("attack");
+              const showHealth = ww.includes("health");
+              const isConvocation = powerKeywordId === "convocation";
+              // Sorted ABILITIES list, label-first, for the picker
+              const abilityEntries = Object.values(ABILITIES)
+                .map(a => ({ id: a.id, label: a.label, desc: a.desc }))
+                .sort((a, b) => a.label.localeCompare(b.label, "fr"));
+              const previewLabel = ability?.label ?? powerKeywordId;
+              const previewDesc = ability?.desc ?? "—";
+              const modeText =
+                powerMode === "grant_keyword" ? `Donne « ${previewLabel} » à une créature ciblée` :
+                powerMode === "spell_trigger" ? `Déclenche l'effet « ${previewLabel} » une fois` :
+                /* aura */                       `Active l'aura « ${previewLabel} » (cumulable)`;
+              const limitText = powerUsageLimit == null ? "illimité" : `${powerUsageLimit}× max par partie`;
+              return (
+                <div style={{ borderTop: "1px dashed #eee", paddingTop: 10, marginTop: 4 }}>
+                  <div style={{ fontSize: 10, color: "#888", fontFamily: "'Cinzel',serif", letterSpacing: 1, marginBottom: 6, fontWeight: 700 }}>
+                    POUVOIR HÉROÏQUE
+                  </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 8 }}>
-                {effectNeedsAmount(effectType) && (
-                  <div>
-                    <label style={STYLE.label}>Quantité</label>
-                    <input
-                      type="number" min={0} max={20}
-                      value={effectAmount}
-                      onChange={(e) => setEffectAmount(Number(e.target.value))}
-                      style={STYLE.input}
-                    />
+                  <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 8 }}>
+                    <div>
+                      <label style={STYLE.label}>Nom</label>
+                      <input type="text" value={powerName} onChange={(e) => setPowerName(e.target.value)}
+                        placeholder="Ex: Flamboiement" style={STYLE.input} />
+                    </div>
+                    <div>
+                      <label style={STYLE.label}>Coût mana</label>
+                      <input type="number" min={0} max={10} value={powerCost}
+                        onChange={(e) => setPowerCost(Number(e.target.value))}
+                        style={STYLE.input} />
+                    </div>
+                    <div>
+                      <label style={STYLE.label}>Limite par partie</label>
+                      <select
+                        value={powerUsageLimit == null ? "" : String(powerUsageLimit)}
+                        onChange={(e) => setPowerUsageLimit(e.target.value === "" ? null : Number(e.target.value))}
+                        style={STYLE.input}>
+                        <option value="">Illimité</option>
+                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
+                          <option key={n} value={n}>{n}× max</option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
-                )}
-                {effectNeedsAttack(effectType) && (
-                  <div>
-                    <label style={STYLE.label}>Bonus d&apos;attaque</label>
-                    <input
-                      type="number" min={0} max={10}
-                      value={effectAttack}
-                      onChange={(e) => setEffectAttack(Number(e.target.value))}
-                      style={STYLE.input}
-                    />
+
+                  <div style={{ marginTop: 10 }}>
+                    <label style={STYLE.label}>Mode d&apos;activation</label>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 4 }}>
+                      {(Object.keys(POWER_MODE_LABELS) as Array<keyof typeof POWER_MODE_LABELS>).map((m) => (
+                        <label key={m} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#333", cursor: "pointer" }}>
+                          <input
+                            type="radio"
+                            name="powerMode"
+                            value={m}
+                            checked={powerMode === m}
+                            onChange={() => setPowerMode(m)}
+                          />
+                          {POWER_MODE_LABELS[m]}
+                        </label>
+                      ))}
+                    </div>
                   </div>
-                )}
-                {effectNeedsTarget(effectType) && (
-                  <div style={{ gridColumn: effectNeedsAmount(effectType) ? "auto" : "span 2" }}>
-                    <label style={STYLE.label}>Cible</label>
+
+                  <div style={{ marginTop: 10 }}>
+                    <label style={STYLE.label}>
+                      Mot-clé{" "}
+                      <span style={{ fontStyle: "italic", color: "#aaa", textTransform: "none", letterSpacing: 0 }}>
+                        — {previewDesc}
+                      </span>
+                    </label>
                     <select
-                      value={effectTarget}
-                      onChange={(e) => setEffectTarget(e.target.value as EffectTarget)}
+                      value={powerKeywordId}
+                      onChange={(e) => setPowerKeywordId(e.target.value)}
                       style={STYLE.input}
                     >
-                      {(Object.keys(EFFECT_TARGET_LABELS) as EffectTarget[]).map((t) => (
-                        <option key={t} value={t}>{EFFECT_TARGET_LABELS[t]}</option>
+                      {abilityEntries.map(a => (
+                        <option key={a.id} value={a.id}>{a.label} ({a.id})</option>
                       ))}
                     </select>
                   </div>
-                )}
-              </div>
 
-              {/* Token picker — only for summon_token effect */}
-              {effectNeedsToken(effectType) && (() => {
-                const tmpl = tokenTemplates.find(t => t.id === effectTokenId) ?? null;
-                return (
-                  <div style={{ marginTop: 10, padding: 8, borderRadius: 6, background: "#fdf6ff", border: `1px solid ${effectTokenId ? "#9b59b633" : "#e74c3c"}` }}>
-                    <label style={STYLE.label}>
-                      TOKEN À INVOQUER
-                      {!effectTokenId && <span style={{ color: "#e74c3c", marginLeft: 6 }}>· Requis</span>}
-                    </label>
-                    <div style={{ marginTop: 4 }}>
-                      <TokenCascadePicker
-                        value={effectTokenId}
-                        onChange={setEffectTokenId}
-                        tokens={tokenTemplates}
-                      />
+                  {(showAmount || showAttack || showHealth) && (
+                    <div style={{ display: "grid", gridTemplateColumns: showAttack && showHealth ? "1fr 1fr 1fr" : "1fr 1fr", gap: 8, marginTop: 10 }}>
+                      {showAmount && (
+                        <div>
+                          <label style={STYLE.label}>Quantité (X)</label>
+                          <input type="number" min={0} max={20}
+                            value={powerParamAmount}
+                            onChange={(e) => setPowerParamAmount(Number(e.target.value))}
+                            style={STYLE.input} />
+                        </div>
+                      )}
+                      {showAttack && (
+                        <div>
+                          <label style={STYLE.label}>Attaque (+X)</label>
+                          <input type="number" min={0} max={20}
+                            value={powerParamAttack}
+                            onChange={(e) => setPowerParamAttack(Number(e.target.value))}
+                            style={STYLE.input} />
+                        </div>
+                      )}
+                      {showHealth && (
+                        <div>
+                          <label style={STYLE.label}>PV (+Y)</label>
+                          <input type="number" min={0} max={20}
+                            value={powerParamHealth}
+                            onChange={(e) => setPowerParamHealth(Number(e.target.value))}
+                            style={STYLE.input} />
+                        </div>
+                      )}
                     </div>
-                    <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 8 }}>
-                      <span style={{ fontSize: 9, color: "#888", letterSpacing: 1 }}>OVERRIDE STATS :</span>
-                      <input type="number" min={0} max={20}
-                        value={effectTokenAtkOverride}
-                        placeholder={tmpl ? `ATK ${tmpl.attack}` : "ATK"}
-                        onChange={(e) => setEffectTokenAtkOverride(e.target.value === "" ? "" : Math.max(0, Number(e.target.value)))}
-                        style={{ width: 70, padding: "4px 8px", borderRadius: 5, border: "1px solid #e74c3c44", fontSize: 11, color: "#e74c3c", textAlign: "center", fontFamily: "'Cinzel',serif" }} />
-                      <span style={{ color: "#999" }}>/</span>
-                      <input type="number" min={1} max={20}
-                        value={effectTokenHpOverride}
-                        placeholder={tmpl ? `DEF ${tmpl.health}` : "DEF"}
-                        onChange={(e) => setEffectTokenHpOverride(e.target.value === "" ? "" : Math.max(1, Number(e.target.value)))}
-                        style={{ width: 70, padding: "4px 8px", borderRadius: 5, border: "1px solid #f1c40f44", fontSize: 11, color: "#f1c40f", textAlign: "center", fontFamily: "'Cinzel',serif" }} />
-                      <span style={{ fontSize: 9, color: "#888", fontStyle: "italic" }}>(vide = stats du token)</span>
+                  )}
+
+                  {isConvocation && (
+                    <div style={{ marginTop: 10, padding: 8, borderRadius: 6, background: "#fdf6ff", border: `1px solid ${powerTokenId ? "#9b59b633" : "#e74c3c"}` }}>
+                      <label style={STYLE.label}>
+                        TOKEN À INVOQUER
+                        {!powerTokenId && <span style={{ color: "#e74c3c", marginLeft: 6 }}>· Requis</span>}
+                      </label>
+                      <div style={{ marginTop: 4 }}>
+                        <TokenCascadePicker
+                          value={powerTokenId}
+                          onChange={setPowerTokenId}
+                          tokens={tokenTemplates}
+                        />
+                      </div>
                     </div>
+                  )}
+
+                  <div style={{
+                    marginTop: 10, padding: "8px 10px", borderRadius: 6,
+                    background: "#f4f7ff", border: "1px solid #c7dbff",
+                    fontSize: 11, color: "#1e5581", fontFamily: "'Crimson Text',serif",
+                    fontStyle: "italic",
+                  }}>
+                    Aperçu : {modeText}. ({powerCost} mana, {limitText})
                   </div>
-                );
-              })()}
 
-              <div style={{
-                marginTop: 10, padding: "8px 10px", borderRadius: 6,
-                background: "#f4f7ff", border: "1px solid #c7dbff",
-                fontSize: 11, color: "#1e5581", fontFamily: "'Crimson Text',serif",
-                fontStyle: "italic",
-              }}>
-                {(() => {
-                  const tmpl = tokenTemplates.find(t => t.id === effectTokenId) ?? null;
-                  const tokenLabel = tmpl ? `${tmpl.name}` : null;
-                  const tokenAtk = effectTokenAtkOverride !== "" ? Number(effectTokenAtkOverride) : tmpl?.attack ?? null;
-                  const tokenHp = effectTokenHpOverride !== "" ? Number(effectTokenHpOverride) : tmpl?.health ?? null;
-                  return `Aperçu : ${describeEffect(effectType, effectAmount, effectAttack, effectTarget, tokenLabel, tokenAtk, tokenHp)}`;
-                })()}
-              </div>
-
-              <div style={{ marginTop: 8 }}>
-                <label style={STYLE.label}>Description (affichée au clic droit en jeu)</label>
-                <textarea value={powerDescription}
-                  onChange={(e) => setPowerDescription(e.target.value)}
-                  rows={2}
-                  placeholder="Ex: Inflige 2 dégâts à une créature ennemie."
-                  style={STYLE.input} />
-                <button
-                  type="button"
-                  onClick={() => {
-                    const tmpl = tokenTemplates.find(t => t.id === effectTokenId) ?? null;
-                    const tokenLabel = tmpl ? tmpl.name : null;
-                    const tokenAtk = effectTokenAtkOverride !== "" ? Number(effectTokenAtkOverride) : tmpl?.attack ?? null;
-                    const tokenHp = effectTokenHpOverride !== "" ? Number(effectTokenHpOverride) : tmpl?.health ?? null;
-                    setPowerDescription(describeEffect(effectType, effectAmount, effectAttack, effectTarget, tokenLabel, tokenAtk, tokenHp));
-                  }}
-                  style={{
-                    marginTop: 4, padding: "3px 10px", borderRadius: 4,
-                    background: "transparent", border: "1px dashed #c0c0c0", color: "#666",
-                    fontSize: 9, fontFamily: "'Cinzel',serif", cursor: "pointer",
-                  }}
-                >
-                  Remplir depuis l&apos;aperçu
-                </button>
-              </div>
-            </div>
+                  <div style={{ marginTop: 8 }}>
+                    <label style={STYLE.label}>Description (affichée au clic droit en jeu)</label>
+                    <textarea value={powerDescription}
+                      onChange={(e) => setPowerDescription(e.target.value)}
+                      rows={2}
+                      placeholder="Ex: Donne Bouclier divin à une créature ciblée."
+                      style={STYLE.input} />
+                    <button
+                      type="button"
+                      onClick={() => setPowerDescription(`${modeText}.`)}
+                      style={{
+                        marginTop: 4, padding: "3px 10px", borderRadius: 4,
+                        background: "transparent", border: "1px dashed #c0c0c0", color: "#666",
+                        fontSize: 9, fontFamily: "'Cinzel',serif", cursor: "pointer",
+                      }}
+                    >
+                      Remplir depuis l&apos;aperçu
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
           {/* RIGHT — GLB + thumbnail + preview.
@@ -1068,8 +1114,8 @@ export default function HeroManager() {
               )}
             </div>
 
-            {/* ─── VISUEL DU POUVOIR (active powers only) ─── */}
-            {powerType === "active" && (
+            {/* ─── VISUEL DU POUVOIR ─── */}
+            {true && (
               <div style={{
                 borderTop: "1px dashed #eee", paddingTop: 10, marginTop: 4,
               }}>

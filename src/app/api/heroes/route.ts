@@ -3,6 +3,75 @@ import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { FACTIONS } from '@/lib/card-engine/constants';
+import { ABILITIES } from '@/lib/game/abilities';
+
+const ALLOWED_POWER_MODES = new Set(['grant_keyword', 'spell_trigger', 'aura']);
+
+type PowerEffectV2 = {
+  mode: string;
+  keywordId: string;
+  params?: { amount?: number; attack?: number; health?: number };
+  tokenId?: number | null;
+};
+
+function validatePowerEffect(
+  raw: unknown,
+): { ok: true; value: PowerEffectV2 } | { ok: false; error: string } {
+  if (!raw || typeof raw !== 'object') {
+    return { ok: false, error: 'powerEffect requis (objet { mode, keywordId, … })' };
+  }
+  const obj = raw as Record<string, unknown>;
+  const mode = obj.mode;
+  const keywordId = obj.keywordId;
+  if (typeof mode !== 'string' || !ALLOWED_POWER_MODES.has(mode)) {
+    return { ok: false, error: 'powerEffect.mode doit être grant_keyword, spell_trigger ou aura' };
+  }
+  if (typeof keywordId !== 'string' || !keywordId.trim()) {
+    return { ok: false, error: 'powerEffect.keywordId requis' };
+  }
+  if (!(keywordId in ABILITIES)) {
+    return { ok: false, error: `Mot-clé "${keywordId}" introuvable dans ABILITIES` };
+  }
+  const params = obj.params as Record<string, unknown> | undefined;
+  const validated: PowerEffectV2 = { mode, keywordId };
+  if (params && typeof params === 'object') {
+    const out: { amount?: number; attack?: number; health?: number } = {};
+    if (params.amount !== undefined) {
+      if (typeof params.amount !== 'number' || params.amount < 0) {
+        return { ok: false, error: 'powerEffect.params.amount doit être un nombre ≥ 0' };
+      }
+      out.amount = params.amount;
+    }
+    if (params.attack !== undefined) {
+      if (typeof params.attack !== 'number' || params.attack < 0) {
+        return { ok: false, error: 'powerEffect.params.attack doit être un nombre ≥ 0' };
+      }
+      out.attack = params.attack;
+    }
+    if (params.health !== undefined) {
+      if (typeof params.health !== 'number' || params.health < 0) {
+        return { ok: false, error: 'powerEffect.params.health doit être un nombre ≥ 0' };
+      }
+      out.health = params.health;
+    }
+    if (Object.keys(out).length > 0) validated.params = out;
+  }
+  if (obj.tokenId !== undefined && obj.tokenId !== null) {
+    if (typeof obj.tokenId !== 'number' || !Number.isInteger(obj.tokenId)) {
+      return { ok: false, error: 'powerEffect.tokenId doit être un entier ou null' };
+    }
+    validated.tokenId = obj.tokenId;
+  }
+  return { ok: true, value: validated };
+}
+
+function validateUsageLimit(raw: unknown): { ok: true; value: number | null } | { ok: false; error: string } {
+  if (raw === null || raw === undefined) return { ok: true, value: null };
+  if (typeof raw !== 'number' || !Number.isInteger(raw) || raw < 1) {
+    return { ok: false, error: "power_usage_limit doit être null (illimité) ou un entier ≥ 1" };
+  }
+  return { ok: true, value: raw };
+}
 
 function validateFactionClan(
   faction: unknown,
@@ -71,7 +140,6 @@ function isAllowedRace(race: string): boolean {
   return LEGACY_SIMPLIFIED_RACES.has(race) || FACTION_GRANULAR_RACES.has(race);
 }
 
-const ALLOWED_POWER_TYPES = new Set(['active', 'passive']);
 const ALLOWED_RARITIES = new Set(['Commune', 'Peu Commune', 'Rare', 'Épique', 'Légendaire']);
 
 async function uploadToBucket(
@@ -117,7 +185,8 @@ export async function POST(request: Request) {
     const body = await request.json();
     const {
       name, race, faction, clan,
-      power_name, power_type, power_cost, power_effect, power_description,
+      power_name, power_cost, power_effect, power_description,
+      power_usage_limit,
       glbBase64, glbMimeType, glbUrl,
       thumbnailBase64, thumbnailMimeType,
       powerImageBase64, powerImageMimeType,
@@ -133,6 +202,12 @@ export async function POST(request: Request) {
 
     const fc = validateFactionClan(faction, clan);
     if (!fc.ok) return NextResponse.json({ error: fc.error }, { status: 400 });
+
+    const peVal = validatePowerEffect(power_effect);
+    if (!peVal.ok) return NextResponse.json({ error: peVal.error }, { status: 400 });
+
+    const ulVal = validateUsageLimit(power_usage_limit);
+    if (!ulVal.ok) return NextResponse.json({ error: ulVal.error }, { status: 400 });
 
     // GLB source (optional): either base64 upload OR an already-hosted URL.
     let finalGlbUrl: string | null = null;
@@ -177,9 +252,9 @@ export async function POST(request: Request) {
     };
 
     if (typeof power_name === 'string') insert.power_name = power_name;
-    if (typeof power_type === 'string' && ALLOWED_POWER_TYPES.has(power_type)) insert.power_type = power_type;
     if (typeof power_cost === 'number') insert.power_cost = power_cost;
-    if (power_effect !== undefined) insert.power_effect = power_effect;
+    insert.power_effect = peVal.value;
+    insert.power_usage_limit = ulVal.value;
     if (typeof power_description === 'string') insert.power_description = power_description;
 
     if (typeof rarity === 'string' && ALLOWED_RARITIES.has(rarity)) insert.rarity = rarity;
@@ -220,7 +295,8 @@ export async function PUT(request: Request) {
     const body = await request.json();
     const {
       id, name, faction, clan,
-      power_name, power_type, power_cost, power_effect, power_description,
+      power_name, power_cost, power_effect, power_description,
+      power_usage_limit,
       glbBase64, glbMimeType, glbUrl,
       thumbnailBase64, thumbnailMimeType,
       powerImageBase64, powerImageMimeType,
@@ -240,9 +316,17 @@ export async function PUT(request: Request) {
       if (clan !== undefined) updates.clan = fc.clan;
     }
     if (typeof power_name === 'string') updates.power_name = power_name;
-    if (typeof power_type === 'string' && ALLOWED_POWER_TYPES.has(power_type)) updates.power_type = power_type;
     if (typeof power_cost === 'number') updates.power_cost = power_cost;
-    if (power_effect !== undefined) updates.power_effect = power_effect;
+    if (power_effect !== undefined) {
+      const peVal = validatePowerEffect(power_effect);
+      if (!peVal.ok) return NextResponse.json({ error: peVal.error }, { status: 400 });
+      updates.power_effect = peVal.value;
+    }
+    if (power_usage_limit !== undefined) {
+      const ulVal = validateUsageLimit(power_usage_limit);
+      if (!ulVal.ok) return NextResponse.json({ error: ulVal.error }, { status: 400 });
+      updates.power_usage_limit = ulVal.value;
+    }
     if (typeof power_description === 'string') updates.power_description = power_description;
     if (typeof rarity === 'string' && ALLOWED_RARITIES.has(rarity)) updates.rarity = rarity;
     if (max_prints !== undefined) {

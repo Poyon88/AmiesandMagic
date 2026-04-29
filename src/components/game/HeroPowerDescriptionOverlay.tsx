@@ -5,11 +5,16 @@ import type { HeroDefinition } from "@/lib/game/types";
 
 interface HeroPowerDescriptionOverlayProps {
   heroDef: HeroDefinition;
+  // Number of times the power has been activated this game. Combined with
+  // heroDef.powerUsageLimit to show a "used / max" line. Optional — when
+  // omitted, only the limit (or "Illimité") is shown.
+  activationsUsed?: number;
   onClose: () => void;
 }
 
 export default function HeroPowerDescriptionOverlay({
   heroDef,
+  activationsUsed,
   onClose,
 }: HeroPowerDescriptionOverlayProps) {
   // Close on Escape
@@ -103,7 +108,13 @@ export default function HeroPowerDescriptionOverlay({
               letterSpacing: 1,
             }}
           >
-            {heroDef.powerType === "passive" ? "Passif" : "Actif"}
+            {(() => {
+              const m = heroDef.powerEffect?.mode;
+              if (m === "grant_keyword") return "Don de capacité";
+              if (m === "spell_trigger") return "Effet ponctuel";
+              if (m === "aura") return "Aura persistante";
+              return "Actif";
+            })()}
           </span>
         </div>
 
@@ -120,6 +131,27 @@ export default function HeroPowerDescriptionOverlay({
         >
           {heroDef.powerDescription || <em style={{ color: "#777" }}>Aucune description.</em>}
         </p>
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: 12,
+            fontSize: 11,
+            color: "#c8a84e",
+            fontFamily: "'Cinzel', serif",
+            letterSpacing: 0.5,
+          }}
+        >
+          {(() => {
+            const limit = heroDef.powerUsageLimit;
+            if (limit == null) return <span>Activations : illimité</span>;
+            if (activationsUsed != null) {
+              return <span>Activations : {activationsUsed} / {limit}</span>;
+            }
+            return <span>Limite : {limit}× max</span>;
+          })()}
+        </div>
 
         <button
           onClick={onClose}

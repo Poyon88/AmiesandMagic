@@ -197,7 +197,7 @@ export function initializeGame(
 
   const makePlayer = (id: string, hand: CardInstance[], deck: CardInstance[], hero?: HeroDefinition | null): PlayerState => ({
     id,
-    hero: { hp: HERO_MAX_HP, maxHp: HERO_MAX_HP, armor: 0, heroDefinition: hero ?? null, heroPowerUsedThisTurn: false },
+    hero: { hp: HERO_MAX_HP, maxHp: HERO_MAX_HP, armor: 0, heroDefinition: hero ?? null, heroPowerUsedThisTurn: false, heroPowerActivationsUsed: 0, activeAuras: [] },
     mana: 0, maxMana: 0,
     hand, board: [], deck, graveyard: [],
     spellHistory: [],
@@ -248,9 +248,21 @@ function recalculateAuras(player: PlayerState, opponent: PlayerState) {
 
   // Loyauté: permanent on-summon bonus — NOT recalculated here (handled in playCard)
 
-  // Terreur: enemy units -1 ATK per terreur unit
-  const playerTerreurCount = player.board.filter(c => hasKw(c, "terreur")).length;
-  const opponentTerreurCount = opponent.board.filter(c => hasKw(c, "terreur")).length;
+  // Hero aura stack counts (mode 3 of HeroPowerEffect V2). Folded into the
+  // creature-based aura logic below so a hero "Commandement" with N stacks
+  // behaves like N invisible Commandement units of the hero's faction.
+  const heroAuraStacks = (p: PlayerState, kwId: string): number =>
+    (p.hero.activeAuras ?? [])
+      .filter(a => a.keywordId === kwId)
+      .reduce((s, a) => s + a.stacks, 0);
+  const playerCommandementStacks = heroAuraStacks(player, "commandement");
+  const opponentCommandementStacks = heroAuraStacks(opponent, "commandement");
+  const playerTerreurStacks = heroAuraStacks(player, "terreur");
+  const opponentTerreurStacks = heroAuraStacks(opponent, "terreur");
+
+  // Terreur: enemy units -1 ATK per terreur unit (board) + per hero aura stack
+  const playerTerreurCount = player.board.filter(c => hasKw(c, "terreur")).length + playerTerreurStacks;
+  const opponentTerreurCount = opponent.board.filter(c => hasKw(c, "terreur")).length + opponentTerreurStacks;
   for (const c of opponent.board) {
     c.currentAttack = Math.max(0, c.currentAttack - playerTerreurCount);
   }
@@ -258,9 +270,14 @@ function recalculateAuras(player: PlayerState, opponent: PlayerState) {
     c.currentAttack = Math.max(0, c.currentAttack - opponentTerreurCount);
   }
 
-  // Commandement: alliés de même faction gagnent +1/+1
+  // Commandement: alliés de même faction gagnent +1/+1 (per board commandement
+  // unit + per hero aura stack of same faction).
+  const playerHeroFaction = player.hero.heroDefinition?.faction ?? null;
+  const opponentHeroFaction = opponent.hero.heroDefinition?.faction ?? null;
   for (const board of [player.board, opponent.board]) {
-    // Calculate new aura health bonus for each creature
+    const owner = board === player.board ? player : opponent;
+    const ownerHeroFaction = owner === player ? playerHeroFaction : opponentHeroFaction;
+    const ownerHeroCmdStacks = owner === player ? playerCommandementStacks : opponentCommandementStacks;
     for (const ally of board) {
       let newAuraHP = 0;
       for (const c of board) {
@@ -268,6 +285,12 @@ function recalculateAuras(player: PlayerState, opponent: PlayerState) {
           ally.currentAttack += 1;
           newAuraHP += 1;
         }
+      }
+      // Hero aura "commandement" — stacks add +stacks/+stacks to allies of
+      // the SAME faction as the hero (matches Commandement's native scope).
+      if (ownerHeroCmdStacks > 0 && ownerHeroFaction && ally.card.faction === ownerHeroFaction) {
+        ally.currentAttack += ownerHeroCmdStacks;
+        newAuraHP += ownerHeroCmdStacks;
       }
       // Adjust HP based on change in aura bonus
       const oldAuraHP = ally.auraHealthBonus;
@@ -277,6 +300,24 @@ function recalculateAuras(player: PlayerState, opponent: PlayerState) {
         ally.currentHealth += diff;
         if (ally.currentHealth < 1 && newAuraHP < oldAuraHP) ally.currentHealth = 1; // don't kill via aura removal
         ally.auraHealthBonus = newAuraHP;
+      }
+    }
+  }
+
+  // Hero auras — grant binary keywords (Bouclier divin, Vol, Provocation,
+  // Charge, …) to every friendly creature of the hero's owner. Numeric auras
+  // already handled above (commandement, terreur). Keywords with no aura
+  // semantics (Impact, Inspiration, …) are silently ignored.
+  for (const p of [player, opponent]) {
+    for (const aura of p.hero.activeAuras ?? []) {
+      if (aura.keywordId === "commandement" || aura.keywordId === "terreur") continue;
+      // Push the keyword into each ally's keywords list (no-op if already
+      // present). Existing hasKw / display logic picks it up automatically.
+      for (const ally of p.board) {
+        const list = ally.card.keywords as string[];
+        if (!list.includes(aura.keywordId)) {
+          list.push(aura.keywordId);
+        }
       }
     }
   }
@@ -2320,24 +2361,30 @@ function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: P
   }
 }
 
-function triggerPassiveOnCreatureDeath(player: PlayerState, deadCount: number) {
-  if (!player.hero.heroDefinition) return;
-  if (player.hero.heroDefinition.powerType !== "passive") return;
-  if (player.hero.heroDefinition.powerEffect.type !== "buff_on_friendly_death") return;
-  if (player.board.length === 0) return;
-
-  const atkBuff = player.hero.heroDefinition.powerEffect.attack ?? 1;
-  for (let i = 0; i < deadCount; i++) {
-    if (player.board.length === 0) break;
-    const idx = Math.floor(rng() * player.board.length);
-    player.board[idx].currentAttack += atkBuff;
-  }
+// Legacy passive trigger ("Lich Malachar"-style buff_on_friendly_death) was
+// part of the old HeroPowerEffect schema. Under the V2 system, this kind of
+// effect is expressed as mode "aura" + keyword "necrophagie" instead. The
+// stub stays as a no-op so existing call sites don't break — heroes carrying
+// the legacy shape simply do nothing on creature death.
+function triggerPassiveOnCreatureDeath(_player: PlayerState, _deadCount: number) {
+  return;
 }
 
 // ============================================================
 // HERO POWER
 // ============================================================
 
+// HeroPowerEffect V2 — see plan and src/lib/game/types.ts for the contract.
+//
+// 3 modes :
+//   - "grant_keyword" : add effect.keywordId to a target creature's keywords.
+//   - "spell_trigger" : run resolveSpellKeywords with the matching SpellKeywordInstance.
+//   - "aura"          : push a stack onto player.hero.activeAuras and let
+//                        recalculateAuras propagate the effect.
+//
+// Validations run in this order: definition exists, not already used this
+// turn, usage limit not exhausted, enough mana. All gated by silent return
+// of the unchanged input state on failure (mirrors legacy useHeroPower).
 export function useHeroPower(state: GameState, action: HeroPowerAction): GameState {
   const pool = state.factionCardPool;
   const newState = deepClone({ ...state, factionCardPool: undefined } as GameState);
@@ -2346,81 +2393,100 @@ export function useHeroPower(state: GameState, action: HeroPowerAction): GameSta
   const opponent = newState.players[newState.currentPlayerIndex === 0 ? 1 : 0];
   const heroDef = player.hero.heroDefinition;
 
-  if (!heroDef || heroDef.powerType !== "active") return state;
+  if (!heroDef) return state;
+  const effect = heroDef.powerEffect;
+  if (!effect || typeof effect.mode !== "string") return state;
   if (player.hero.heroPowerUsedThisTurn) return state;
+  const limit = heroDef.powerUsageLimit ?? null;
+  if (limit !== null && (player.hero.heroPowerActivationsUsed ?? 0) >= limit) return state;
   if (player.mana < heroDef.powerCost) return state;
 
   player.mana -= heroDef.powerCost;
   player.hero.heroPowerUsedThisTurn = true;
+  player.hero.heroPowerActivationsUsed = (player.hero.heroPowerActivationsUsed ?? 0) + 1;
 
-  const effect = heroDef.powerEffect;
-  switch (effect.type) {
-    case "gain_armor":
-      player.hero.armor += effect.amount ?? 0;
-      break;
-    case "deal_damage": {
-      const amount = effect.amount ?? 0;
-      if (effect.target === "enemy_hero") {
-        dealDamageToHero(opponent.hero, amount);
-      } else if (effect.target === "any" || effect.target === "any_friendly") {
-        // "any_friendly" restricts the targeting picker (see
-        // getHeroPowerTargets) to friendly creatures + friendly hero only,
-        // so we should never see enemy targets land here. We still guard the
-        // enemy_hero branch behind `target === "any"` for safety.
-        if (action.targetInstanceId === "enemy_hero" && effect.target === "any") {
-          dealDamageToHero(opponent.hero, amount);
-        } else if (action.targetInstanceId === "friendly_hero") {
-          dealDamageToHero(player.hero, amount);
-        } else if (action.targetInstanceId) {
-          const friendly = findCreatureOnBoard(player, action.targetInstanceId);
-          const target =
-            friendly ?? (effect.target === "any"
-              ? findCreatureOnBoard(opponent, action.targetInstanceId)
-              : null);
-          if (target) {
-            dealDamageToCreature(target, amount);
-            const pDead = cleanDeadCreatures(player);
-            const oDead = cleanDeadCreatures(opponent);
-            processDeathTriggers(pDead, player, opponent);
-            processDeathTriggers(oDead, opponent, player);
-          }
-        }
-      }
+  switch (effect.mode) {
+    case "grant_keyword": {
+      // Mode 1 : add the keyword to the targeted creature. Target can be any
+      // creature on either board (per design); heroes are not valid targets.
+      const targetId = action.targetInstanceId;
+      if (!targetId) break;
+      const target =
+        findCreatureOnBoard(player, targetId)
+        ?? findCreatureOnBoard(opponent, targetId);
+      if (!target) break;
+      const list = target.card.keywords as string[];
+      if (!list.includes(effect.keywordId)) list.push(effect.keywordId);
       break;
     }
-    case "heal": {
-      const amount = effect.amount ?? 0;
-      if (action.targetInstanceId === "friendly_hero") {
-        player.hero.hp = Math.min(player.hero.maxHp, player.hero.hp + amount);
-      } else if (action.targetInstanceId) {
-        const target = findCreatureOnBoard(player, action.targetInstanceId);
-        if (target) target.currentHealth = Math.min(target.maxHealth, target.currentHealth + amount);
+
+    case "spell_trigger": {
+      // Mode 2 : reuse the existing spell-keyword resolution path. Silent
+      // no-op if the keyword has no spell side (no SPELL_KEYWORDS entry).
+      const spellDef = SPELL_KEYWORDS[effect.keywordId as keyof typeof SPELL_KEYWORDS];
+      if (!spellDef) break;
+      const instance: SpellKeywordInstance = {
+        id: effect.keywordId as SpellKeywordInstance["id"],
+        amount: effect.params?.amount,
+        attack: effect.params?.attack,
+        health: effect.params?.health,
+      };
+      // Caller is responsible for providing a target via action.targetInstanceId
+      // when the keyword's spell side requires one (gameStore wires this
+      // through the targeting flow).
+      const targetMap: Record<string, string> = {};
+      if (action.targetInstanceId) {
+        targetMap[String(effect.keywordId)] = action.targetInstanceId;
       }
+      const ctx: SpellResolutionContext = {
+        state: newState,
+        caster: player,
+        opponent,
+        card: {
+          id: -1,
+          name: heroDef.powerName ?? "Hero power",
+          mana_cost: heroDef.powerCost,
+          card_type: "spell",
+          attack: 0,
+          health: 0,
+          effect_text: heroDef.powerDescription ?? "",
+          keywords: [],
+          spell_keywords: [instance],
+          spell_effects: null,
+          image_url: null,
+        },
+        targetMap,
+        results: {},
+      };
+      resolveSpellKeywords(ctx, [instance]);
+      // Spell-side effects can kill creatures — clean up deaths so death
+      // triggers fire and the board is consistent.
+      const pDead = cleanDeadCreatures(player);
+      const oDead = cleanDeadCreatures(opponent);
+      processDeathTriggers(pDead, player, opponent);
+      processDeathTriggers(oDead, opponent, player);
       break;
     }
-    case "summon_token": {
-      const tmpl = findTokenTemplate(effect.token_id);
-      if (tmpl && player.board.length < MAX_BOARD_SIZE) {
-        const atk = effect.attack ?? tmpl.attack;
-        const hp = effect.health ?? tmpl.health;
-        let tokenCard: Card = {
-          id: -1, name: `Token ${tmpl.race}`.trim(),
-          mana_cost: 0, card_type: "creature",
-          attack: atk, health: hp,
-          effect_text: `Token ${atk}/${hp}`,
-          keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
-          race: tmpl.race, faction: undefined,
-          clan: tmpl.clan ?? undefined,
-        };
-        tokenCard = applyTokenTemplate(tokenCard, tmpl);
-        const token = createCardInstance(tokenCard);
-        token.hasSummoningSickness = true;
-        player.board.push(token);
+
+    case "aura": {
+      // Mode 3 : record / increment a stack on the hero's active-auras list.
+      // recalculateAuras (called below) reads this list and applies effects.
+      if (!player.hero.activeAuras) player.hero.activeAuras = [];
+      const existing = player.hero.activeAuras.find(a => a.keywordId === effect.keywordId);
+      if (existing) {
+        existing.stacks += 1;
+      } else {
+        player.hero.activeAuras.push({
+          keywordId: effect.keywordId,
+          params: effect.params,
+          stacks: 1,
+        });
       }
       break;
     }
   }
 
+  recalculateAuras(player, opponent);
   newState.lastAction = action;
   checkWinCondition(newState);
   return newState;
@@ -2429,30 +2495,52 @@ export function useHeroPower(state: GameState, action: HeroPowerAction): GameSta
 export function canUseHeroPower(state: GameState): boolean {
   const player = state.players[state.currentPlayerIndex];
   const heroDef = player.hero.heroDefinition;
-  if (!heroDef || heroDef.powerType !== "active") return false;
+  if (!heroDef || !heroDef.powerEffect || typeof heroDef.powerEffect.mode !== "string") return false;
   if (player.hero.heroPowerUsedThisTurn) return false;
+  const limit = heroDef.powerUsageLimit ?? null;
+  if (limit !== null && (player.hero.heroPowerActivationsUsed ?? 0) >= limit) return false;
   if (player.mana < heroDef.powerCost) return false;
   return true;
 }
 
 export function heroPowerNeedsTarget(heroDef: HeroDefinition): boolean {
-  if (heroDef.powerType !== "active") return false;
-  const target = heroDef.powerEffect.target;
-  return target === "any" || target === "any_friendly";
+  const effect = heroDef.powerEffect;
+  if (!effect || typeof effect.mode !== "string") return false;
+  if (effect.mode === "grant_keyword") return true;
+  if (effect.mode === "spell_trigger") {
+    const spellDef = SPELL_KEYWORDS[effect.keywordId as keyof typeof SPELL_KEYWORDS];
+    return !!spellDef?.needsTarget;
+  }
+  return false; // aura → no target
 }
 
 export function getHeroPowerTargets(state: GameState, heroDef: HeroDefinition): string[] {
   const player = state.players[state.currentPlayerIndex];
   const opponent = state.players[state.currentPlayerIndex === 0 ? 1 : 0];
-  const target = heroDef.powerEffect.target;
+  const effect = heroDef.powerEffect;
+  if (!effect || typeof effect.mode !== "string") return [];
 
-  if (target === "any") {
-    return [...player.board.map(c => c.instanceId), ...opponent.board.map(c => c.instanceId), "enemy_hero", "friendly_hero"];
+  if (effect.mode === "grant_keyword") {
+    // Any creature, friendly or enemy. Heroes excluded.
+    return [...player.board.map(c => c.instanceId), ...opponent.board.map(c => c.instanceId)];
   }
-  if (target === "any_friendly") {
-    return [...player.board.map(c => c.instanceId), "friendly_hero"];
+  if (effect.mode === "spell_trigger") {
+    const spellDef = SPELL_KEYWORDS[effect.keywordId as keyof typeof SPELL_KEYWORDS];
+    if (!spellDef?.needsTarget) return [];
+    switch (spellDef.targetType) {
+      case "any":
+        return [...player.board.map(c => c.instanceId), ...opponent.board.map(c => c.instanceId), "enemy_hero", "friendly_hero"];
+      case "enemy_creature":
+        return opponent.board.map(c => c.instanceId);
+      case "friendly_creature":
+        return player.board.map(c => c.instanceId);
+      case "any_creature":
+        return [...player.board.map(c => c.instanceId), ...opponent.board.map(c => c.instanceId)];
+      default:
+        return [];
+    }
   }
-  return [];
+  return []; // aura → no target
 }
 
 // ============================================================

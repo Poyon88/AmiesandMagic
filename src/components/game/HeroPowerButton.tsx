@@ -38,9 +38,10 @@ export default function HeroPowerButton({
 
   if (!heroDef) return null;
 
-  const isPassive = heroDef.powerType === "passive";
-  const notEnoughMana = !isPassive && mana < heroDef.powerCost;
-  const available = !isOpponent && canUse && !isUsed && !notEnoughMana && !isPassive;
+  // V2 power system : every power is "active" (must pay the cost). Mode 3
+  // (aura) is also activated, just produces a persistent effect.
+  const notEnoughMana = mana < heroDef.powerCost;
+  const available = !isOpponent && canUse && !isUsed && !notEnoughMana;
 
   const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -64,9 +65,7 @@ export default function HeroPowerButton({
         style={{ width: 48, height: 48, borderRadius: "50%" }}
         className={`
           relative shrink-0 border-2 flex items-center justify-center transition-all
-          ${isPassive
-            ? "border-purple-500/60 bg-purple-900/30 cursor-default"
-            : available
+          ${available
             ? "border-primary/80 bg-primary/20 hover:bg-primary/30 hover:scale-110 cursor-pointer shadow-[0_0_8px_rgba(59,130,246,0.4)]"
             : isUsed
             ? "border-card-border/40 bg-card-border/20 opacity-50 cursor-not-allowed"
@@ -77,18 +76,9 @@ export default function HeroPowerButton({
         `}
       >
         {/* Mana cost badge */}
-        {!isPassive && (
-          <span className="absolute -top-1 -left-1 w-5 h-5 rounded-full bg-mana-blue flex items-center justify-center text-white text-[10px] font-bold shadow-sm">
-            {heroDef.powerCost}
-          </span>
-        )}
-
-        {/* Passive label */}
-        {isPassive && (
-          <span className="absolute -top-1 -left-1 px-1 rounded text-[8px] font-bold bg-purple-600 text-white">
-            AUTO
-          </span>
-        )}
+        <span className="absolute -top-1 -left-1 w-5 h-5 rounded-full bg-mana-blue flex items-center justify-center text-white text-[10px] font-bold shadow-sm">
+          {heroDef.powerCost}
+        </span>
 
         {/* Class power icon */}
         <img
@@ -119,7 +109,7 @@ export default function HeroPowerButton({
           >
             <div className="text-xs font-bold text-foreground">{heroDef.powerName}</div>
             <div className="text-[10px] text-foreground/60 mt-0.5">{heroDef.powerDescription}</div>
-            {isUsed && !isPassive && (
+            {isUsed && (
               <div className="text-[10px] text-accent mt-1 font-medium">Used this turn</div>
             )}
           </div>,
