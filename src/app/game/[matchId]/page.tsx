@@ -13,6 +13,8 @@ interface HeroRow {
   id: number;
   name: string;
   race: string;
+  faction?: string | null;
+  clan?: string | null;
   power_name: string;
   power_cost: number;
   power_effect: HeroPowerEffect;
@@ -36,6 +38,8 @@ function mapHeroRow(row: HeroRow | null): HeroDefinition | null {
     id: row.id,
     name: row.name,
     race: row.race as Race,
+    faction: row.faction ?? null,
+    clan: row.clan ?? null,
     powerName: row.power_name,
     powerCost: row.power_cost,
     powerEffect: row.power_effect,

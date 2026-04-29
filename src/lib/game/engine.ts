@@ -67,6 +67,114 @@ function hasKw(ci: CardInstance, kw: Keyword): boolean {
   return ci.card.keywords.includes(kw);
 }
 
+// Add a keyword to a creature at runtime (e.g. spell granting Bouclier
+// Divin to a target, or hero power mode 1 / 3). Mirrors any stateful flags
+// that the engine reads off CardInstance instead of card.keywords. The
+// `card` object is replaced with an immutable copy so other holders of the
+// previous reference are unaffected.
+// Some ABILITIES entries don't have a spell side but DO have an on-play
+// creature-side effect that makes sense as a hero power (mode 2 / spell
+// trigger). For those, useHeroPower simulates the on-play effect directly
+// (see resolveCreatureKeywordAsHeroPower below) and getHeroPowerTargets
+// uses this map to drive the targeting picker.
+const CREATURE_KEYWORD_HERO_POWER_TARGET: Record<
+  string,
+  "enemy_creature" | "friendly_creature" | "any_creature" | "none"
+> = {
+  corruption: "enemy_creature",
+  malediction: "enemy_creature",
+  vampirisme: "enemy_creature",
+  permutation: "enemy_creature",
+  sacrifice: "friendly_creature",
+  benediction: "friendly_creature",
+  domination: "none", // random enemy
+};
+
+function applyGrantedKeyword(creature: CardInstance, kwId: string) {
+  const list = creature.card.keywords as string[];
+  if (!list.includes(kwId)) {
+    // Cast through unknown — `keywords` is typed as Keyword[] but at runtime
+    // we accept any ABILITIES id (hero powers can grant keywords by id).
+    creature.card = {
+      ...creature.card,
+      keywords: [...list, kwId] as unknown as Keyword[],
+    };
+  }
+  if (kwId === "divine_shield") {
+    creature.hasDivineShield = true;
+  }
+  if (kwId === "charge") {
+    creature.hasSummoningSickness = false;
+  }
+}
+
+// Mode 2 fallback for creature-only keywords (corruption, malediction, …).
+// Replays the on-play effect that those keywords trigger when a creature
+// with them enters the field. Mirrors the inline logic in playCard so the
+// hero-power version behaves the same as casting a creature with the
+// keyword.
+function resolveCreatureKeywordAsHeroPower(
+  player: PlayerState,
+  opponent: PlayerState,
+  keywordId: string,
+  targetInstanceId: string | null | undefined,
+) {
+  switch (keywordId) {
+    case "corruption": {
+      // Steal an enemy creature until end of turn, give it Traque.
+      const target = targetInstanceId
+        ? opponent.board.find(c => c.instanceId === targetInstanceId)
+        : (opponent.board.length > 0 ? opponent.board[Math.floor(rng() * opponent.board.length)] : null);
+      if (!target || player.board.length >= MAX_BOARD_SIZE) break;
+      opponent.board = opponent.board.filter(c => c !== target);
+      target.originalOwnerId = opponent.id;
+      target.hasSummoningSickness = false;
+      const list = target.card.keywords as string[];
+      if (!list.includes("charge")) {
+        target.card = {
+          ...target.card,
+          keywords: [...list, "charge"] as unknown as Keyword[],
+        };
+      }
+      player.board.push(target);
+      break;
+    }
+    case "domination": {
+      // Take permanent control of a random enemy creature.
+      if (opponent.board.length === 0 || player.board.length >= MAX_BOARD_SIZE) break;
+      const idx = Math.floor(rng() * opponent.board.length);
+      const stolen = opponent.board.splice(idx, 1)[0];
+      stolen.hasSummoningSickness = true;
+      stolen.originalOwnerId = null;
+      player.board.push(stolen);
+      break;
+    }
+    case "malediction": {
+      // Reduce target enemy ATK to 0 permanently (overrides the base ATK on
+      // the card so recalculateAuras doesn't restore it on the next pass).
+      if (!targetInstanceId) break;
+      const target = opponent.board.find(c => c.instanceId === targetInstanceId);
+      if (!target) break;
+      target.card = { ...target.card, attack: 0 };
+      target.currentAttack = 0;
+      break;
+    }
+    case "sacrifice": {
+      // Destroy a friendly creature for some benefit. Heroe-power version
+      // simply removes the chosen ally (no buff applied — keep semantics
+      // simple ; the hero gets the activation cost itself as the trade).
+      if (!targetInstanceId) break;
+      const target = player.board.find(c => c.instanceId === targetInstanceId);
+      if (!target) break;
+      target.currentHealth = 0;
+      break;
+    }
+    default:
+      // Unknown / unsupported creature keyword in mode 2 → silent no-op.
+      break;
+  }
+}
+
 function maxAttacksFor(ci: CardInstance): number {
   if (hasKw(ci, "celerite") || hasKw(ci, "double_attaque")) return 2;
   return 1;
@@ -311,13 +419,8 @@ function recalculateAuras(player: PlayerState, opponent: PlayerState) {
   for (const p of [player, opponent]) {
     for (const aura of p.hero.activeAuras ?? []) {
       if (aura.keywordId === "commandement" || aura.keywordId === "terreur") continue;
-      // Push the keyword into each ally's keywords list (no-op if already
-      // present). Existing hasKw / display logic picks it up automatically.
       for (const ally of p.board) {
-        const list = ally.card.keywords as string[];
-        if (!list.includes(aura.keywordId)) {
-          list.push(aura.keywordId);
-        }
+        applyGrantedKeyword(ally, aura.keywordId);
       }
     }
   }
@@ -2415,50 +2518,51 @@ export function useHeroPower(state: GameState, action: HeroPowerAction): GameSta
         findCreatureOnBoard(player, targetId)
         ?? findCreatureOnBoard(opponent, targetId);
       if (!target) break;
-      const list = target.card.keywords as string[];
-      if (!list.includes(effect.keywordId)) list.push(effect.keywordId);
+      applyGrantedKeyword(target, effect.keywordId);
       break;
     }
 
     case "spell_trigger": {
-      // Mode 2 : reuse the existing spell-keyword resolution path. Silent
-      // no-op if the keyword has no spell side (no SPELL_KEYWORDS entry).
+      // Mode 2 : prefer the keyword's spell side (resolveSpellKeywords). If
+      // that doesn't exist, fall back to creature-only keywords that have a
+      // sensible on-play effect we can replay as a hero power (corruption,
+      // malediction, …).
       const spellDef = SPELL_KEYWORDS[effect.keywordId as keyof typeof SPELL_KEYWORDS];
-      if (!spellDef) break;
-      const instance: SpellKeywordInstance = {
-        id: effect.keywordId as SpellKeywordInstance["id"],
-        amount: effect.params?.amount,
-        attack: effect.params?.attack,
-        health: effect.params?.health,
-      };
-      // Caller is responsible for providing a target via action.targetInstanceId
-      // when the keyword's spell side requires one (gameStore wires this
-      // through the targeting flow).
-      const targetMap: Record<string, string> = {};
-      if (action.targetInstanceId) {
-        targetMap[String(effect.keywordId)] = action.targetInstanceId;
+      if (spellDef) {
+        const instance: SpellKeywordInstance = {
+          id: effect.keywordId as SpellKeywordInstance["id"],
+          amount: effect.params?.amount,
+          attack: effect.params?.attack,
+          health: effect.params?.health,
+        };
+        const targetMap: Record<string, string> = {};
+        if (action.targetInstanceId) {
+          targetMap[String(effect.keywordId)] = action.targetInstanceId;
+        }
+        const ctx: SpellResolutionContext = {
+          state: newState,
+          caster: player,
+          opponent,
+          card: {
+            id: -1,
+            name: heroDef.powerName ?? "Hero power",
+            mana_cost: heroDef.powerCost,
+            card_type: "spell",
+            attack: 0,
+            health: 0,
+            effect_text: heroDef.powerDescription ?? "",
+            keywords: [],
+            spell_keywords: [instance],
+            spell_effects: null,
+            image_url: null,
+          },
+          targetMap,
+          results: {},
+        };
+        resolveSpellKeywords(ctx, [instance]);
+      } else {
+        resolveCreatureKeywordAsHeroPower(player, opponent, effect.keywordId, action.targetInstanceId);
       }
-      const ctx: SpellResolutionContext = {
-        state: newState,
-        caster: player,
-        opponent,
-        card: {
-          id: -1,
-          name: heroDef.powerName ?? "Hero power",
-          mana_cost: heroDef.powerCost,
-          card_type: "spell",
-          attack: 0,
-          health: 0,
-          effect_text: heroDef.powerDescription ?? "",
-          keywords: [],
-          spell_keywords: [instance],
-          spell_effects: null,
-          image_url: null,
-        },
-        targetMap,
-        results: {},
-      };
-      resolveSpellKeywords(ctx, [instance]);
       // Spell-side effects can kill creatures — clean up deaths so death
       // triggers fire and the board is consistent.
       const pDead = cleanDeadCreatures(player);
@@ -2509,7 +2613,10 @@ export function heroPowerNeedsTarget(heroDef: HeroDefinition): boolean {
   if (effect.mode === "grant_keyword") return true;
   if (effect.mode === "spell_trigger") {
     const spellDef = SPELL_KEYWORDS[effect.keywordId as keyof typeof SPELL_KEYWORDS];
-    return !!spellDef?.needsTarget;
+    if (spellDef?.needsTarget) return true;
+    // Creature-only keywords with a known on-play effect (corruption, …).
+    const creatureTarget = CREATURE_KEYWORD_HERO_POWER_TARGET[effect.keywordId];
+    return creatureTarget != null && creatureTarget !== "none";
   }
   return false; // aura → no target
 }
@@ -2526,19 +2633,28 @@ export function getHeroPowerTargets(state: GameState, heroDef: HeroDefinition): 
   }
   if (effect.mode === "spell_trigger") {
     const spellDef = SPELL_KEYWORDS[effect.keywordId as keyof typeof SPELL_KEYWORDS];
-    if (!spellDef?.needsTarget) return [];
-    switch (spellDef.targetType) {
-      case "any":
-        return [...player.board.map(c => c.instanceId), ...opponent.board.map(c => c.instanceId), "enemy_hero", "friendly_hero"];
-      case "enemy_creature":
-        return opponent.board.map(c => c.instanceId);
-      case "friendly_creature":
-        return player.board.map(c => c.instanceId);
-      case "any_creature":
-        return [...player.board.map(c => c.instanceId), ...opponent.board.map(c => c.instanceId)];
-      default:
-        return [];
+    if (spellDef?.needsTarget) {
+      switch (spellDef.targetType) {
+        case "any":
+          return [...player.board.map(c => c.instanceId), ...opponent.board.map(c => c.instanceId), "enemy_hero", "friendly_hero"];
+        case "enemy_creature":
+          return opponent.board.map(c => c.instanceId);
+        case "friendly_creature":
+          return player.board.map(c => c.instanceId);
+        case "any_creature":
+          return [...player.board.map(c => c.instanceId), ...opponent.board.map(c => c.instanceId)];
+        default:
+          return [];
+      }
     }
+    // Creature-only keyword fallback (corruption / malediction / …).
+    const creatureTarget = CREATURE_KEYWORD_HERO_POWER_TARGET[effect.keywordId];
+    if (creatureTarget === "enemy_creature") return opponent.board.map(c => c.instanceId);
+    if (creatureTarget === "friendly_creature") return player.board.map(c => c.instanceId);
+    if (creatureTarget === "any_creature") {
+      return [...player.board.map(c => c.instanceId), ...opponent.board.map(c => c.instanceId)];
+    }
+    return [];
   }
   return []; // aura → no target
 }
