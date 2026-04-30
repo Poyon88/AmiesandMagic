@@ -563,17 +563,20 @@ export default function HeroManager() {
     // Build the V2 power effect from the form state. Only include params
     // that the chosen keyword actually consumes (server validates).
     const ability = ABILITIES[powerKeywordId];
-    const wantsAmount = !!ability?.spell?.params?.includes("amount");
+    const wantsAmount =
+      !!ability?.spell?.params?.includes("amount")
+      // Creature-side scalable keywords (Résistance X, Carnage X, …) also
+      // need the X value persisted.
+      || !!ability?.creature?.scalable;
     const wantsAttack = !!ability?.spell?.params?.includes("attack");
     const wantsHealth = !!ability?.spell?.params?.includes("health");
     const params: { amount?: number; attack?: number; health?: number } = {};
     if (wantsAmount) params.amount = powerParamAmount;
     if (wantsAttack) params.attack = powerParamAttack;
     if (wantsHealth) params.health = powerParamHealth;
-    // For non-spell keywords (mode 1 or 3), still expose `amount` if the user
-    // tweaked it — it's harmless extra data and may be useful for future
-    // numeric variants (e.g. Régénération X).
-    if (!wantsAmount && !wantsAttack && !wantsHealth && powerParamAmount > 0) {
+    // Mode 3 (aura) also benefits from a stack-multiplier value even on
+    // keywords that don't formally declare a scalable param.
+    if (!wantsAmount && !wantsAttack && !wantsHealth && powerMode === "aura" && powerParamAmount > 0) {
       params.amount = powerParamAmount;
     }
     const powerEffect: Record<string, unknown> = {
@@ -786,9 +789,13 @@ export default function HeroManager() {
             {/* ─── POUVOIR HÉROÏQUE V2 ─── */}
             {(() => {
               const ability = ABILITIES[powerKeywordId];
-              const wantsAmount = !!ability?.spell?.params?.includes("amount") || powerMode === "spell_trigger" === false ? !!ability?.spell?.params?.includes("amount") : false;
               const ww = ability?.spell?.params ?? [];
-              const showAmount = ww.includes("amount") || powerMode === "aura"; // amount used for X scaling on auras (Commandement stacks already implicit)
+              // Creature-side scalable keywords (Résistance X, Convocation X,
+              // Carnage X, Tactique X, Persécution X, Souffle de feu X…) expose
+              // an X parameter through `creature.scalable`. We surface a Quantité
+              // input for those too, in addition to spell-side params.
+              const isCreatureScalable = !!ability?.creature?.scalable;
+              const showAmount = ww.includes("amount") || isCreatureScalable || powerMode === "aura";
               const showAttack = ww.includes("attack");
               const showHealth = ww.includes("health");
               const isConvocation = powerKeywordId === "convocation";

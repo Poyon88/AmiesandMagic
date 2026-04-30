@@ -34,6 +34,13 @@ const STYLE_PREAMBLE =
   'two shoulders, torso bust — filling the central oval area of the composition and facing the viewer with an intense direct gaze. ' +
   'The character must be the focal point; do NOT replace them with abstract symbols, sigils, floating runes, ' +
   'kaleidoscopic patterns, mandalas, decorative-only motifs, or geometric arrangements of objects. ' +
+  // Eyes are the most expressive feature of a portrait — without an explicit
+  // rule Imagen tends to default to flat, uniform-yellow or hollow-glowing eyes
+  // on mundane races (humans, dwarves, halflings, …). Force realistic anatomy
+  // unless the per-race descriptor below mandates a supernatural variant.
+  'EYE RULE: each eye must show a distinct round iris with a single naturalistic color (blue, grey, green, hazel, brown or amber) and a clearly defined dark pupil at its center, plus a small specular highlight. ' +
+  'Avoid solid uniform yellow eyes, blank glowing orbs, sclera-only eyes, mismatched cartoonish eyes, or any unrealistic monochrome eye coloring — UNLESS the per-race descriptor explicitly mandates glowing / supernatural eyes (vampires, elementals, demons, undead, dark elves). ' +
+  'Both eyes must look at the viewer in the same direction. ' +
   'A round ornate metallic frame surrounds the portrait, decorated with engraved filigree and small gemstones — ' +
   'this frame is decoration ONLY, it must not consume the central space where the character lives. ' +
   'A decorative metallic banner curves across the bottom, centered on a circular medallion bearing the faction emblem. ' +

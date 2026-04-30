@@ -27,6 +27,10 @@ const STYLE_PREAMBLE =
   'Do NOT replace the character with abstract symbols, sigils, kaleidoscopic patterns, mandalas, or floating runes. ' +
   'The character must keep the EXACT identity of the reference image — same face, same hair, ' +
   'same skin tone, same armor and faction colors. ' +
+  // Match the portrait builder's eye rule so action shots don't drift into
+  // flat-yellow or hollow-orb eyes on mundane races.
+  'EYE RULE: each eye must show a distinct round iris with a single naturalistic color (blue, grey, green, hazel, brown or amber) and a clearly defined dark pupil with a small specular highlight. ' +
+  'Avoid uniform yellow, blank glowing or sclera-only eyes UNLESS the per-race descriptor explicitly mandates glowing / supernatural eyes. ' +
   'Body language conveys the power being unleashed. ' +
   'Atmospheric environment matching the faction mood (ruins, battlefield, mystical glade…). ' +
   'No frame, no border, no banner, no emblem cartouche, no text — just the illustration filling the canvas edge to edge.';
