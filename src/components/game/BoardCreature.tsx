@@ -286,7 +286,7 @@ export default function BoardCreature({
         {/* Keywords + Stats — single row */}
         <div style={{ display: "flex", alignItems: "center", gap: 3, flexWrap: "wrap" }}>
           {card.keywords.length > 0 && (() => {
-            const xVals = parseXValuesFromEffectText(card.effect_text);
+            const xVals = { ...creature.grantedKeywordX, ...parseXValuesFromEffectText(card.effect_text) };
             return card.keywords.map((kw) => {
               const x = xVals[kw];
               const hasImg = !!iconOverrides[kw];
@@ -380,7 +380,7 @@ export default function BoardCreature({
 
         {/* Capacités detail */}
         {card.keywords.length > 0 && (() => {
-          const xVals = parseXValuesFromEffectText(card.effect_text);
+          const xVals = { ...creature.grantedKeywordX, ...parseXValuesFromEffectText(card.effect_text) };
           return (
           <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
             {card.keywords.map((kw) => {

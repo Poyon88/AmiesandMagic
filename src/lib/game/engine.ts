@@ -90,7 +90,11 @@ const CREATURE_KEYWORD_HERO_POWER_TARGET: Record<
   domination: "none", // random enemy
 };
 
-function applyGrantedKeyword(creature: CardInstance, kwId: string) {
+function applyGrantedKeyword(
+  creature: CardInstance,
+  kwId: string,
+  params?: { amount?: number; attack?: number; health?: number },
+) {
   const list = creature.card.keywords as string[];
   if (!list.includes(kwId)) {
     // Cast through unknown — `keywords` is typed as Keyword[] but at runtime
@@ -105,6 +109,15 @@ function applyGrantedKeyword(creature: CardInstance, kwId: string) {
   }
   if (kwId === "charge") {
     creature.hasSummoningSickness = false;
+  }
+  // Mémoriser le X du keyword accordé (Résistance 2, Persécution 3, …) pour
+  // que les résolveurs et le badge UI le retrouvent — le `card.effect_text`
+  // n'est pas réécrit avec la notation [Keyword X] côté hero power.
+  if (typeof params?.amount === "number") {
+    creature.grantedKeywordX = {
+      ...creature.grantedKeywordX,
+      [kwId]: params.amount,
+    };
   }
 }
 
@@ -230,6 +243,7 @@ function createCardInstance(card: Card): CardInstance {
     cycleEternelAutoPlay: false,
     originalOwnerId: null,
     hasTransformedLycanthropie: false,
+    grantedKeywordX: {},
   };
 }
 
@@ -2313,7 +2327,8 @@ function dealDamageToCreature(creature: CardInstance, damage: number, ignoreDR =
   if (!ignoreDR) {
     if (hasKw(creature, "resistance")) {
       const resXVals = parseXValuesFromEffectText(creature.card.effect_text);
-      const resAmount = resXVals["resistance"] ?? 1;
+      const resAmount =
+        resXVals["resistance"] ?? creature.grantedKeywordX["resistance"] ?? 1;
       damage = Math.max(1, damage - resAmount);
     }
     // Armure: réduit de moitié les dégâts de combat (arrondi au supérieur), pas les sorts
@@ -2518,7 +2533,7 @@ export function useHeroPower(state: GameState, action: HeroPowerAction): GameSta
         findCreatureOnBoard(player, targetId)
         ?? findCreatureOnBoard(opponent, targetId);
       if (!target) break;
-      applyGrantedKeyword(target, effect.keywordId);
+      applyGrantedKeyword(target, effect.keywordId, effect.params);
       break;
     }
 

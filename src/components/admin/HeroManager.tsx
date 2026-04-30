@@ -7,6 +7,7 @@ import type { TokenTemplate } from "@/lib/game/types";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 import { FACTIONS } from "@/lib/card-engine/constants";
 import { ABILITIES } from "@/lib/game/abilities";
+import { autoTrimDarkBorders } from "@/lib/card-back-frames";
 
 const RACES = [
   "humans", "elves", "dwarves", "halflings",
@@ -529,12 +530,20 @@ export default function HeroManager() {
         setPowerImageError(data.error || `Erreur ${res.status}`);
         return;
       }
+      // Same trick que le card forge : Gemini renvoie souvent l'art en 5:7
+      // mais avec des bandes noires en haut/bas (letterbox). On coupe d'abord
+      // les bordures uniformes avant de réencoder, sinon le HeroPowerCastOverlay
+      // affiche le letterbox tel quel.
+      const trimmed = await autoTrimDarkBorders(
+        data.imageBase64,
+        data.mimeType || "image/png",
+      );
       // Re-encode to WebP at 768 px max — the cast overlay shows it at
       // 252×350, so plenty of headroom while keeping the body small enough
       // to ship to /api/heroes alongside the portrait base64.
       const compressed = await compressBase64Image(
-        data.imageBase64,
-        data.mimeType || "image/png",
+        trimmed.base64,
+        trimmed.mime,
         768,
       );
       setPowerImageBase64(compressed.base64);

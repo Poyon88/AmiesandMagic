@@ -345,6 +345,10 @@ export interface CardInstance {
   originalOwnerId: string | null;
   // Lycanthropie: has already transformed
   hasTransformedLycanthropie: boolean;
+  // Mots-clés accordés runtime par un pouvoir héroïque (mode grant_keyword)
+  // avec leur valeur X. Lu en fallback par le résolveur combat et le rendu
+  // du badge quand le keyword n'est pas inscrit dans card.effect_text.
+  grantedKeywordX: Record<string, number>;
 }
 
 // Hero power system — V2
