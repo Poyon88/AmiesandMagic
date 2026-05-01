@@ -713,7 +713,10 @@ export default function CardForge() {
 
   function generateCardBackPrompt() {
     const factionDef = cbFaction ? FACTIONS[cbFaction as keyof typeof FACTIONS] : null;
-    const factionName = factionDef?.label ?? cbFaction;
+    // Faction keys in the FACTIONS map (Elfes, Humains, …) are themselves
+    // the display label, so the previous `factionDef.label` was always
+    // undefined at runtime — fall through to the raw key.
+    const factionName = cbFaction;
     const factionAlign = factionDef?.alignment ?? null;
 
     const parts: string[] = [];
@@ -1010,7 +1013,7 @@ export default function CardForge() {
   function generateBoardPrompt() {
     const preset = BOARD_ENV_PRESETS.find((p) => p.id === bdEnvPreset) ?? BOARD_ENV_PRESETS[0];
     const factionDef = bdFaction ? FACTIONS[bdFaction as keyof typeof FACTIONS] : null;
-    const factionName = factionDef?.label ?? bdFaction;
+    const factionName = bdFaction;
     const factionAlign = factionDef?.alignment ?? null;
     const alignDesc: Record<string, string> = {
       bon: "luminous, noble, heroic atmosphere, warm gold and ivory accents",
@@ -3249,7 +3252,7 @@ export default function CardForge() {
                         style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }}>
                         <option value="">-- Aucune --</option>
                         {Object.entries(FACTIONS).map(([id, f]) => (
-                          <option key={id} value={id}>{f.emoji} {f.label}</option>
+                          <option key={id} value={id}>{f.emoji} {id}</option>
                         ))}
                       </select>
                     </div>
@@ -3625,8 +3628,8 @@ export default function CardForge() {
                       <select value={bdFaction} onChange={e => { setBdFaction(e.target.value); setBdRace(""); setBdClan(""); }}
                         style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }}>
                         <option value="">-- Aucune --</option>
-                        {Object.entries(FACTIONS).map(([id, def]) => (
-                          <option key={id} value={id}>{def.label ?? id}</option>
+                        {Object.entries(FACTIONS).map(([id]) => (
+                          <option key={id} value={id}>{id}</option>
                         ))}
                       </select>
                     </div>
@@ -4062,7 +4065,7 @@ export default function CardForge() {
                         : a.keyword;
                       const label =
                         a.keyword_type === "creature"
-                          ? KEYWORD_LABELS[rawKey] ?? rawKey
+                          ? KEYWORD_LABELS[rawKey as keyof typeof KEYWORD_LABELS] ?? rawKey
                           : SPELL_KEYWORD_LABELS[rawKey as SpellKeywordId] ?? rawKey;
                       return (
                         <div key={a.id} style={{
