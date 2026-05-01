@@ -206,6 +206,7 @@ function MulliganCard({
           <div style={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
             {card.spell_keywords.map((spellKw, i) => {
               const def = SPELL_KEYWORDS[spellKw.id];
+              if (!def) return null;
               const displayTitle = getSpellKeywordLabel(spellKw);
               const usesAtkHp = def.params.includes("attack") && def.params.includes("health");
               const usesAmount = def.params.includes("amount");

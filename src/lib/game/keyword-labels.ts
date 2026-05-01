@@ -48,6 +48,7 @@ export function cleanEffectText(
   if (spellKeywords) {
     for (const kw of spellKeywords) {
       const def = SPELL_KEYWORDS[kw.id];
+      if (!def) continue;
       if (def.params.includes("attack") && kw.attack != null) {
         result = result.replace(/\bX\b/, String(kw.attack));
       } else if (def.params.includes("amount") && kw.amount != null) {

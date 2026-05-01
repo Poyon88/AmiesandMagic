@@ -278,6 +278,9 @@ export default function GameCard({
           {/* Spell keyword symbols */}
           {card.spell_keywords && card.spell_keywords.length > 0 && card.spell_keywords.map((spellKw, i) => {
               const def = SPELL_KEYWORDS[spellKw.id];
+              // Skip stale ids that no longer exist in the registry — silently
+              // dropping a single icon is better than crashing the whole card.
+              if (!def) return null;
               const displayTitle = getSpellKeywordLabel(spellKw);
               const usesAtkHp = def.params.includes("attack") && def.params.includes("health");
               const usesAmount = def.params.includes("amount");

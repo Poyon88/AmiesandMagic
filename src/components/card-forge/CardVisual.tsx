@@ -332,6 +332,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
           <div style={{ display: "flex", gap: 4 * s, flexWrap: "wrap" }}>
             {card!.spellKeywords.map((spellKw, i) => {
               const def = SPELL_KEYWORDS[spellKw.id];
+              if (!def) return null;
               const fakeCard = { convocation_tokens: card!.convocationTokens?.map(t => ({ token_id: t.token_id, attack: t.attack, health: t.health })) } as import("@/lib/game/types").Card;
               const label = getSpellKeywordLabel(spellKw);
               const desc = getSpellKeywordDesc(spellKw, fakeCard, tokens);
@@ -510,6 +511,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
           <div style={{ display: "flex", flexDirection: "column", gap: 6 * s }}>
             {card!.spellKeywords.map((spellKw, i) => {
               const def = SPELL_KEYWORDS[spellKw.id];
+              if (!def) return null;
               const fakeCard = { convocation_tokens: card!.convocationTokens?.map(t => ({ token_id: t.token_id, attack: t.attack, health: t.health })) } as import("@/lib/game/types").Card;
               const label = getSpellKeywordLabel(spellKw);
               const desc = getSpellKeywordDesc(spellKw, fakeCard, tokens);
@@ -540,6 +542,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
           if (card!.spellKeywords) {
             for (const kw of card!.spellKeywords) {
               const skDef = SPELL_KEYWORDS[kw.id];
+              if (!skDef) continue;
               if (skDef.params.includes("attack") && kw.attack != null) abilityText = abilityText.replace(/\bX\b/, String(kw.attack));
               else if (skDef.params.includes("amount") && kw.amount != null) abilityText = abilityText.replace(/\bX\b/, String(kw.amount));
               if (skDef.params.includes("health") && kw.health != null) abilityText = abilityText.replace(/\bY\b/, String(kw.health));

@@ -1515,6 +1515,7 @@ function recastSpells(
       for (let i = 0; i < card.spell_keywords.length; i++) {
         const kw = card.spell_keywords[i];
         const def = SPELL_KEYWORDS[kw.id];
+        if (!def) continue;
         if (def.needsTarget) {
           const target = pickRandomTarget(player, opponent, def.targetType);
           if (target) targetMap[`kw_${i}`] = target;
@@ -1578,6 +1579,7 @@ function resolveSpellKeywords(
   for (let i = 0; i < keywords.length; i++) {
     const kw = keywords[i];
     const def = SPELL_KEYWORDS[kw.id];
+    if (!def) continue;
     // Resolve target: use keyword's implicit slot or first target slot
     const slot = def.needsTarget ? `kw_${i}` : undefined;
     const targetId = slot ? (ctx.targetMap[slot] ?? ctx.targetMap["target_0"]) : undefined;
@@ -2161,6 +2163,7 @@ export function getSpellTargetSlots(card: Card): SpellTargetSlot[] {
   if (card.spell_keywords) {
     card.spell_keywords.forEach((kw, i) => {
       const def = SPELL_KEYWORDS[kw.id];
+      if (!def) return;
       if (def.needsTarget && def.targetType) {
         slots.push({ slot: `kw_${i}`, type: def.targetType, label: def.label });
       }

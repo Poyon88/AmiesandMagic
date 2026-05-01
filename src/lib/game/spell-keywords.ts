@@ -66,6 +66,10 @@ export function getSpellKeywordDesc(
   tokens?: TokenTemplate[],
 ): string {
   const def = SPELL_KEYWORDS[kw.id];
+  // Defensive: a stale spell_keyword.id (admin renamed/removed an ability
+  // without migrating cards) would crash here on `def.desc`. Fall back to
+  // the raw id so the UI still renders.
+  if (!def) return String(kw.id);
   let desc = def.desc;
 
   // Replace X/Y from params
@@ -100,6 +104,7 @@ export function getSpellKeywordDesc(
 /** Get the display label for a spell keyword */
 export function getSpellKeywordLabel(kw: SpellKeywordInstance): string {
   const def = SPELL_KEYWORDS[kw.id];
+  if (!def) return String(kw.id);
   let label = def.label;
   if (def.params.includes("attack")) label = label.replace(/X/, String(kw.attack ?? 0));
   else if (def.params.includes("amount")) label = label.replace(/X/, String(kw.amount ?? 1));
@@ -108,9 +113,9 @@ export function getSpellKeywordLabel(kw: SpellKeywordInstance): string {
 }
 
 export function spellKeywordNeedsTarget(id: SpellKeywordId): boolean {
-  return SPELL_KEYWORDS[id].needsTarget;
+  return SPELL_KEYWORDS[id]?.needsTarget ?? false;
 }
 
 export function getSpellKeywordTargetType(id: SpellKeywordId): SpellTargetType | undefined {
-  return SPELL_KEYWORDS[id].targetType;
+  return SPELL_KEYWORDS[id]?.targetType;
 }
