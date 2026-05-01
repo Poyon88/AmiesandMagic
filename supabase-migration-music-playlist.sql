@@ -23,3 +23,15 @@ CREATE POLICY "Authenticated read game_board_music_tracks"
   ON game_board_music_tracks FOR SELECT
   TO authenticated
   USING (true);
+
+-- Same SELECT policy on music_tracks itself: PostgREST embeds require SELECT
+-- on the inner table too. Without this, `game_board_music_tracks(music_tracks(file_url))`
+-- returns rows with `music_tracks: null` for authenticated clients, and the
+-- in-game playlist silently stays empty (menu music keeps playing).
+ALTER TABLE music_tracks ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Authenticated read music_tracks" ON music_tracks;
+CREATE POLICY "Authenticated read music_tracks"
+  ON music_tracks FOR SELECT
+  TO authenticated
+  USING (true);

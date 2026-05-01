@@ -212,23 +212,36 @@ export default function GamePage() {
           secondPlayerDeck?.board_id ?? defaultBoardRes.data?.id ?? null;
 
         if (targetBoardId) {
-          const { data: boardRow } = await supabase
+          // Aliasing the directly-linked single track field to `single_music_track`
+          // (instead of the previous `music_tracks` alias) prevents a potential
+          // shadowing of the actual `music_tracks` table reference inside the
+          // embedded `game_board_music_tracks(...)` join — PostgREST resolves
+          // embed names against the schema, and reusing a table name as a
+          // top-level alias has produced inconsistent shapes in some cases.
+          const { data: boardRow, error: boardErr } = await supabase
             .from("game_boards")
-            .select("id, name, image_url, layout, graveyard_image_url, music_tracks:music_track_id(file_url), tense_track:tense_track_id(file_url), victory_track:victory_track_id(file_url), defeat_track:defeat_track_id(file_url), game_board_music_tracks(music_tracks(file_url))")
+            .select("id, name, image_url, layout, graveyard_image_url, single_music_track:music_track_id(file_url), tense_track:tense_track_id(file_url), victory_track:victory_track_id(file_url), defeat_track:defeat_track_id(file_url), game_board_music_tracks(track_id, music_tracks(file_url))")
             .eq("id", targetBoardId)
             .maybeSingle();
+          if (boardErr) console.warn("[game] board load error:", boardErr);
           if (boardRow) {
             useGameStore.getState().setBoardImageUrl(boardRow.image_url);
             const board = boardRow as Record<string, unknown>;
             useGameStore.getState().setBoardLayout((board.layout as string) ?? "classic");
             useGameStore.getState().setBoardGraveyardImageUrl((board.graveyard_image_url as string | null) ?? null);
-            const musicData = board.music_tracks as { file_url: string } | null;
+            const musicData = board.single_music_track as { file_url: string } | null;
             const tenseData = board.tense_track as { file_url: string } | null;
             const victoryData = board.victory_track as { file_url: string } | null;
             const defeatData = board.defeat_track as { file_url: string } | null;
-            const playlistRows = (board.game_board_music_tracks as { music_tracks: { file_url: string } | null }[] | null) ?? [];
+            // PostgREST can return the embedded `music_tracks` either as an
+            // object or as an array; normalize both shapes.
+            const playlistRows = (board.game_board_music_tracks as { music_tracks: { file_url: string } | { file_url: string }[] | null }[] | null) ?? [];
             const playlistUrls = playlistRows
-              .map((r) => r.music_tracks?.file_url)
+              .flatMap((r) => {
+                const mt = r.music_tracks;
+                if (!mt) return [];
+                return Array.isArray(mt) ? mt.map((m) => m.file_url) : [mt.file_url];
+              })
               .filter((u): u is string => !!u);
             if (musicData?.file_url && !playlistUrls.includes(musicData.file_url)) {
               playlistUrls.push(musicData.file_url);

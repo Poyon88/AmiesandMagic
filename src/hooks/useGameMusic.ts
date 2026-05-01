@@ -42,7 +42,12 @@ export default function useGameMusic() {
     } else if ((phase === "playing" || phase === "mulligan") && lowestHeroHp <= LOW_HP_THRESHOLD) {
       ctx = "tense";
       url = boardTenseMusicUrl ?? tenseTrackUrl ?? undefined;
-    } else if (phase === "playing" || phase === "mulligan") {
+    } else if ((phase === "playing" || phase === "mulligan") && boardMusicUrls.length > 0) {
+      // Only commit to the "board" context once we actually have at least one
+      // track. Switching with an empty playlist would call setMusicContext
+      // with url=undefined, the AudioProvider drive effect would early-return
+      // on `if (!url)`, and the menu track would keep playing while the ref
+      // was already locked on `board::` — preventing later re-trigger.
       ctx = "board";
       playlist = boardMusicUrls;
       url = boardMusicUrls[0];

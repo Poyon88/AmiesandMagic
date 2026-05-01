@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import GameCard from "@/components/cards/GameCard";
 import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
 import { KEYWORDS as KEYWORD_DEFS, FACTIONS } from "@/lib/card-engine/constants";
+import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS } from "@/lib/game/spell-keywords";
 import type { Card, Keyword, SpellKeywordInstance, SpellComposableEffects, CardSet, TokenTemplate } from "@/lib/game/types";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 
@@ -767,6 +768,127 @@ export default function CardEditor() {
                       );
                     })}
                   </div>
+                </div>
+              );
+            })()}
+
+            {/* Spell keywords (capacités de sort) — only for spells. Mirrors
+                the forge UI: pickable list + inline params (amount/X, ATK,
+                PV, race), with optional JSON editor for composable effects. */}
+            {editFields.card_type === "spell" && (() => {
+              const spellKws = (editFields.spell_keywords as SpellKeywordInstance[]) || [];
+              const setSpellKws = (next: SpellKeywordInstance[]) => updateField("spell_keywords", next);
+              const allRaces = Array.from(new Set(Object.values(FACTIONS).flatMap(f => f.races))).sort();
+              return (
+                <div style={{ marginBottom: 8, padding: 8, borderRadius: 6, border: "1px solid #9b59b633", background: "#f9f0ff" }}>
+                  <div style={{ ...S.label, color: "#9b59b6" }}>Capacités de sort ({spellKws.length})</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginTop: 4 }}>
+                    {ALL_SPELL_KEYWORDS.map(kwId => {
+                      const def = SPELL_KEYWORDS[kwId];
+                      const active = spellKws.some(k => k.id === kwId);
+                      return (
+                        <button key={kwId} onClick={() => {
+                          if (active) {
+                            setSpellKws(spellKws.filter(k => k.id !== kwId));
+                          } else {
+                            const init: SpellKeywordInstance = { id: kwId };
+                            if (def.params.includes("amount")) init.amount = 1;
+                            if (def.params.includes("attack")) init.attack = 1;
+                            if (def.params.includes("health")) init.health = 1;
+                            setSpellKws([...spellKws, init]);
+                          }
+                        }}
+                          title={def.desc}
+                          style={{
+                            padding: "2px 6px", borderRadius: 4, cursor: "pointer", fontSize: 8,
+                            fontFamily: "'Cinzel',serif", fontWeight: active ? 700 : 400,
+                            background: active ? "#9b59b622" : "#fff",
+                            border: `1px solid ${active ? "#9b59b6" : "#e0e0e0"}`,
+                            color: active ? "#9b59b6" : "#888",
+                          }}
+                        >{def.symbol} {def.label.replace(" X", "").replace(" +X/+Y", "")}</button>
+                      );
+                    })}
+                  </div>
+                  {spellKws.map((kw, idx) => {
+                    const def = SPELL_KEYWORDS[kw.id];
+                    const hasParams = def.params.length > 0 || kw.id === "invocation" || kw.id === "invocation_multiple";
+                    if (!hasParams) return null;
+                    return (
+                      <div key={`${kw.id}-${idx}`} style={{ display: "flex", gap: 6, marginTop: 5, alignItems: "center", flexWrap: "wrap" }}>
+                        <span style={{ fontSize: 9, color: "#9b59b6", fontWeight: 700, minWidth: 70 }}>
+                          {def.symbol} {SPELL_KEYWORD_LABELS[kw.id].replace(" X", "").replace(" +X/+Y", "")}
+                        </span>
+                        {def.params.includes("amount") && (
+                          <div>
+                            <label style={{ fontSize: 7, color: "#666" }}>X</label>
+                            <input type="number" min={1} max={20} value={kw.amount ?? 1}
+                              onChange={e => {
+                                const val = Math.max(1, parseInt(e.target.value) || 1);
+                                setSpellKws(spellKws.map((k, i) => i === idx ? { ...k, amount: val } : k));
+                              }}
+                              style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: "1px solid #9b59b644", fontSize: 11, textAlign: "center", fontFamily: "'Cinzel',serif" }}
+                            />
+                          </div>
+                        )}
+                        {def.params.includes("attack") && (
+                          <div>
+                            <label style={{ fontSize: 7, color: "#e74c3c" }}>ATK</label>
+                            <input type="number" min={0} max={20} value={kw.attack ?? 1}
+                              onChange={e => {
+                                const val = Math.max(0, parseInt(e.target.value) || 0);
+                                setSpellKws(spellKws.map((k, i) => i === idx ? { ...k, attack: val } : k));
+                              }}
+                              style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: "1px solid #e74c3c44", fontSize: 11, textAlign: "center", fontFamily: "'Cinzel',serif", color: "#e74c3c" }}
+                            />
+                          </div>
+                        )}
+                        {def.params.includes("health") && (
+                          <div>
+                            <label style={{ fontSize: 7, color: "#f1c40f" }}>PV</label>
+                            <input type="number" min={0} max={20} value={kw.health ?? 1}
+                              onChange={e => {
+                                const val = Math.max(0, parseInt(e.target.value) || 0);
+                                setSpellKws(spellKws.map((k, i) => i === idx ? { ...k, health: val } : k));
+                              }}
+                              style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: "1px solid #f1c40f44", fontSize: 11, textAlign: "center", fontFamily: "'Cinzel',serif", color: "#f1c40f" }}
+                            />
+                          </div>
+                        )}
+                        {kw.id === "invocation" && (
+                          <div>
+                            <label style={{ fontSize: 7, color: "#27ae60" }}>Race</label>
+                            <select value={kw.race ?? ""}
+                              onChange={e => setSpellKws(spellKws.map((k, i) => i === idx ? { ...k, race: e.target.value || undefined } : k))}
+                              style={{ padding: "2px 4px", borderRadius: 4, border: "1px solid #27ae6044", fontSize: 9, fontFamily: "'Cinzel',serif", color: "#27ae60" }}>
+                              <option value="">Aucune</option>
+                              {allRaces.map(r => <option key={r} value={r}>{r}</option>)}
+                            </select>
+                          </div>
+                        )}
+                        {kw.id === "invocation_multiple" && (
+                          <div style={{ fontSize: 8, color: "#9b59b6" }}>Config dans &quot;Tokens à invoquer&quot; ci-dessous</div>
+                        )}
+                      </div>
+                    );
+                  })}
+                  <details style={{ marginTop: 8 }}>
+                    <summary style={{ fontSize: 8, color: "#666", letterSpacing: 1, cursor: "pointer" }}>EFFETS COMPOSABLES (avancé)</summary>
+                    <textarea
+                      defaultValue={editFields.spell_effects ? JSON.stringify(editFields.spell_effects, null, 2) : ""}
+                      placeholder='{"targets":[{"slot":"target_0","type":"enemy_creature"}],"effects":[{"type":"deal_damage","target_slot":"target_0","amount":2}]}'
+                      onChange={e => {
+                        const val = e.target.value.trim();
+                        if (!val) { updateField("spell_effects", null); return; }
+                        try { updateField("spell_effects", JSON.parse(val)); } catch { /* invalid JSON, ignore */ }
+                      }}
+                      style={{
+                        width: "100%", minHeight: 80, marginTop: 4, padding: 6,
+                        borderRadius: 5, border: "1px solid #9b59b644", background: "#fff",
+                        fontFamily: "monospace", fontSize: 9, color: "#333", resize: "vertical",
+                      }}
+                    />
+                  </details>
                 </div>
               );
             })()}
