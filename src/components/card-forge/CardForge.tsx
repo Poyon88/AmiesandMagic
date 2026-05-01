@@ -1793,6 +1793,8 @@ export default function CardForge() {
     "Sélection X": "selection",
     "Lycanthropie X": "lycanthropie",
     "Tempête X": "tempete",
+    "Douleur X": "douleur",
+    "Inspiration X": "inspiration",
   };
 
   const [saving, setSaving] = useState(false);

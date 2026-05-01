@@ -60,3 +60,5 @@ Domination;4;Non;Terrain;Prend le contrôle d'une unité ennemie au hasard à so
 Résurrection;4;Non;Terrain;Revient en jeu après sa mort avec 1 PV ; perd la capacité Résurrection à son retour.
 Transcendance;4;Non;Terrain;Immunité totale aux sorts adverses : ne peut subir aucun dégât ni effet de sort, y compris les sorts de zone.
 Vampirisme X;4;Oui;Terrain;Invocation : vole X PV à une unité ennemie ciblée et les ajoute aux PV de cette unité.
+Douleur X;0;Oui;Terrain;Invocation (unité) ou Lancement (sort) : inflige X dégâts à votre héros.
+Inspiration X;2;Oui;Main;Invocation (unité) ou Lancement (sort) : piochez X cartes.

@@ -106,6 +106,8 @@ export const ALL_KEYWORDS: Keyword[] = [
   "selection",
   "relancer",
   "tempete",
+  "douleur",
+  "inspiration",
 ];
 
 export const KEYWORD_LABELS: Record<Keyword, string> = {
@@ -141,6 +143,8 @@ export const KEYWORD_LABELS: Record<Keyword, string> = {
   lycanthropie: "Lycanthropie X",
   relancer: "Relancer X",
   tempete: "Tempête X",
+  douleur: "Douleur X",
+  inspiration: "Inspiration X",
 };
 
 export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
@@ -176,4 +180,6 @@ export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
   lycanthropie: "🐺",
   relancer: "🔁",
   tempete: "🌩️",
+  douleur: "🤕",
+  inspiration: "📖",
 };

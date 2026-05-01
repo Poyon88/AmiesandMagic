@@ -36,7 +36,11 @@ export type Keyword =
   // Tier 3 — Relancer
   | "relancer"
   // Tier 2 — AoE random damage
-  | "tempete";
+  | "tempete"
+  // Drawback — self-damage on ETB / cast
+  | "douleur"
+  // Polymorphic — draw X cards
+  | "inspiration";
 
 export type SpellTargetType =
   | "any"
@@ -92,7 +96,8 @@ export type SpellKeywordId =
   | "exhumation"
   | "selection"
   | "relancer"
-  | "tempete";
+  | "tempete"
+  | "douleur";
 
 export interface SpellKeywordInstance {
   id: SpellKeywordId;

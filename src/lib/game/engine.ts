@@ -695,6 +695,23 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
 
     // ── On-summon triggers ──
 
+    // Douleur X: drawback — la créature inflige X dégâts à votre héros
+    // dès son arrivée en jeu, avant tout autre effet d'invocation. Le
+    // moteur ne s'arrête pas si l'auto-dégât est létal — checkWinCondition
+    // appelé en fin de playCard détectera la défaite.
+    if (hasKw(cardInstance, "douleur")) {
+      const douleurXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
+      const x = douleurXVals["douleur"] ?? 1;
+      dealDamageToHero(player.hero, x);
+    }
+
+    // Inspiration X: pioche X cartes à l'invocation.
+    if (hasKw(cardInstance, "inspiration")) {
+      const inspXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
+      const x = inspXVals["inspiration"] ?? 1;
+      for (let i = 0; i < x; i++) drawCard(player);
+    }
+
     // Loyauté: +1 ATK et +1 PV permanent par allié de même race (effet d'invocation)
     if (hasKw(cardInstance, "loyaute") && cardInstance.card.race) {
       const sameRaceCount = player.board.filter(a => a !== cardInstance && a.card.race === cardInstance.card.race).length;
@@ -1566,6 +1583,14 @@ function resolveSpellKeywords(
     const targetId = slot ? (ctx.targetMap[slot] ?? ctx.targetMap["target_0"]) : undefined;
 
     switch (kw.id) {
+      case "douleur": {
+        // Drawback : le sort inflige X dégâts au héros qui le lance.
+        // Atteint uniquement si le sort n'a pas été contré (le check
+        // Contresort est en amont, dans playCard avant resolveSpellKeywords).
+        const amount = kw.amount ?? 0;
+        dealDamageToHero(ctx.caster.hero, amount);
+        break;
+      }
       case "impact": {
         const amount = kw.amount ?? 0;
         if (targetId === "enemy_hero") {

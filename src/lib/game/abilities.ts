@@ -638,9 +638,16 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   inspiration: {
     id: "inspiration", label: "Inspiration X", symbol: "📖",
-    desc: "Piochez X cartes",
-    applicable_to: ["spell"],
-    spell: { params: ["amount"], needsTarget: false },
+    desc: "Piochez X cartes.",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      cost: 9, costPerX: 5, se: 2.5, minTier: 2, scalable: true, zone: "Main",
+      desc: "Invocation : piochez X cartes.",
+    },
+    spell: {
+      desc: "Piochez X cartes",
+      params: ["amount"], needsTarget: false,
+    },
   },
   invocation_multiple: {
     id: "invocation_multiple", label: "Convocations multiples", symbol: "📣📣",
@@ -662,6 +669,25 @@ export const ABILITIES: Record<string, AbilityDef> = {
       desc: "Invocation : inflige X dégâts répartis aléatoirement entre les unités ennemies.",
     },
     spell: { params: ["amount"], needsTarget: false },
+  },
+  // Premier mot-clé "drawback" du jeu : son cost et son costPerX sont
+  // négatifs pour qu'il fonctionne comme un discount budget en forge —
+  // l'auteur de carte récupère du budget en l'attachant, en échange du
+  // coût en PV au moment de l'arrivée en jeu (unité) ou du lancement
+  // (sort). Pas d'anti-letalité : checkWinCondition gère le cas du
+  // suicide par Douleur.
+  douleur: {
+    id: "douleur", label: "Douleur X", symbol: "🤕",
+    desc: "Inflige X dégâts à votre héros à l'arrivée en jeu (unité) ou au lancement (sort).",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      cost: -3, costPerX: -3, se: -1.0, minTier: 0, scalable: true, zone: "Terrain",
+      desc: "Invocation : inflige X dégâts à votre héros.",
+    },
+    spell: {
+      desc: "Au lancement, inflige X dégâts à votre héros.",
+      params: ["amount"], needsTarget: false,
+    },
   },
   afflux: {
     id: "afflux", label: "Afflux X", symbol: "💎",
