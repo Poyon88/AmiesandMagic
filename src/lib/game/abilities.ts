@@ -263,6 +263,16 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["creature"],
     creature: { cost: 8, costPerX: 5, se: 3.0, minTier: 2, scalable: true, zone: "Terrain" },
   },
+  convocation_simple: {
+    id: "convocation_simple", label: "Convocation", symbol: "📯",
+    desc: "Crée le token configuré.",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      cost: 8, costPerX: 0, se: 3.0, minTier: 2, scalable: false, zone: "Terrain",
+      desc: "Invocation : crée le token configuré.",
+    },
+    spell: { params: [], needsTarget: false },
+  },
   lycanthropie: {
     id: "lycanthropie", label: "Lycanthropie X", symbol: "🐺",
     desc: "Début de tour : se transforme en un token X/X avec Traque.",

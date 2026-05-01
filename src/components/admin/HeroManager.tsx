@@ -111,6 +111,8 @@ interface HeroRow {
   power_cost: number | null;
   power_effect: Record<string, unknown> | null;
   power_description: string | null;
+  power_usage_limit: number | null;
+  power_image_url: string | null;
   glb_url: string | null;
   thumbnail_url: string | null;
   is_active: boolean;
@@ -196,6 +198,16 @@ export default function HeroManager() {
   const [maxPrints, setMaxPrints] = useState<number | null>(null);
   const [isDefault, setIsDefault] = useState(false);
 
+  // null = mode création ; number = id du héros en cours d'édition.
+  const [editingHeroId, setEditingHeroId] = useState<number | null>(null);
+  const isEditing = editingHeroId !== null;
+  // Référence vers la ligne héros en cours d'édition — utilisée pour afficher
+  // les fichiers actuels (GLB notamment) dans le formulaire.
+  const editingHero = useMemo<HeroRow | null>(() => {
+    if (editingHeroId === null) return null;
+    return heroes.find(h => h.id === editingHeroId) ?? null;
+  }, [editingHeroId, heroes]);
+
   const loadHeroes = useCallback(async () => {
     setLoading(true);
     try {
@@ -234,8 +246,11 @@ export default function HeroManager() {
   }, [faction]);
 
   // When the faction changes, snap the race onto a valid value for the new
-  // faction (or empty if the user picked "Aucune").
+  // faction (or empty if the user picked "Aucune"). En édition la race est
+  // verrouillée — on n'écrase jamais la valeur originale, même si la faction
+  // change pour une qui ne la contient pas dans sa liste.
   useEffect(() => {
+    if (isEditing) return;
     if (availableRaces.length === 0) {
       if (race !== "") setRace("");
       return;
@@ -243,7 +258,7 @@ export default function HeroManager() {
     if (!availableRaces.includes(race)) {
       setRace(availableRaces[0]);
     }
-  }, [availableRaces, race]);
+  }, [availableRaces, race, isEditing]);
 
   // Reset clan when it's no longer valid for the selected faction.
   useEffect(() => {
@@ -334,6 +349,70 @@ export default function HeroManager() {
     setRarity("Commune");
     setMaxPrints(null);
     setIsDefault(false);
+    setEditingHeroId(null);
+    setError(null);
+    setMessage(null);
+  };
+
+  // Charge un héros existant dans le formulaire et bascule en mode édition.
+  // Les champs IA (prompts, ref images) sont remis à zéro car ils ne se
+  // transmettent pas d'un héros à l'autre. Les fichiers (GLB / thumbnail /
+  // power image) restent vides côté base64 — l'aperçu pointe sur l'URL
+  // distante existante, et le PUT n'écrasera ces fichiers que si l'utilisateur
+  // re-uploade ou régénère via IA.
+  const loadHeroIntoForm = (hero: HeroRow) => {
+    setName(hero.name ?? "");
+    setFaction(hero.faction ?? "");
+    setRace(hero.race ?? "");
+    setClan(hero.clan ?? "");
+
+    setPowerName(hero.power_name ?? "");
+    setPowerCost(typeof hero.power_cost === "number" ? hero.power_cost : 2);
+    setPowerDescription(hero.power_description ?? "");
+    const pe = (hero.power_effect ?? {}) as Record<string, unknown>;
+    const mode = pe.mode === "spell_trigger" || pe.mode === "aura" ? pe.mode : "grant_keyword";
+    setPowerMode(mode as "grant_keyword" | "spell_trigger" | "aura");
+    const kwid = typeof pe.keywordId === "string" && pe.keywordId in ABILITIES ? pe.keywordId : "divine_shield";
+    setPowerKeywordId(kwid);
+    const params = (pe.params ?? {}) as Record<string, unknown>;
+    setPowerParamAmount(typeof params.amount === "number" ? params.amount : 1);
+    setPowerParamAttack(typeof params.attack === "number" ? params.attack : 0);
+    setPowerParamHealth(typeof params.health === "number" ? params.health : 0);
+    setPowerTokenId(typeof pe.tokenId === "number" ? pe.tokenId : null);
+    setPowerUsageLimit(typeof hero.power_usage_limit === "number" ? hero.power_usage_limit : null);
+
+    setRarity(hero.rarity ?? "Commune");
+    setMaxPrints(hero.max_prints ?? null);
+    setIsDefault(!!hero.is_default);
+
+    setThumbnailBase64(null);
+    setThumbnailMimeType(null);
+    setThumbnailPreview(hero.thumbnail_url ?? null);
+    setPowerImageBase64(null);
+    setPowerImageMime(null);
+    setPowerImagePreview(hero.power_image_url ?? null);
+
+    if (glbPreviewUrl?.startsWith("blob:")) URL.revokeObjectURL(glbPreviewUrl);
+    setGlbFile(null);
+    setGlbPreviewUrl(null);
+
+    setExtraContext("");
+    setComposedPrompt("");
+    setRefImageBase64(null);
+    setRefImageMime(null);
+    setRefImagePreview(null);
+    setUseReference(false);
+    setActionContext("");
+    setComposedPowerPrompt("");
+    setPortraitError(null);
+    setPowerImageError(null);
+
+    setEditingHeroId(hero.id);
+    setError(null);
+    setMessage(null);
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   };
 
   const handleRefImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -556,16 +635,16 @@ export default function HeroManager() {
     }
   };
 
-  const handleAdd = async () => {
+  const handleSave = async () => {
     if (!name.trim()) {
       setError("Nom requis");
       return;
     }
-    // The hero can be authored as a 3D model (GLB) OR a 2D image
-    // (thumbnail). At least one is required so the in-game viewer has
-    // something to render — without either the player would get a
-    // faceless emoji placeholder.
-    if (!glbFile && !thumbnailBase64) {
+    // En création, le héros doit avoir au moins un visuel (GLB OU
+    // thumbnail) sinon l'in-game tombe sur un placeholder. En édition,
+    // le héros existant en base a déjà ces fichiers — on n'exige rien
+    // de nouveau, l'utilisateur peut juste retoucher des champs texte.
+    if (!isEditing && !glbFile && !thumbnailBase64) {
       setError("Modèle 3D (GLB) ou image 2D requis");
       return;
     }
@@ -593,7 +672,7 @@ export default function HeroManager() {
       keywordId: powerKeywordId,
     };
     if (Object.keys(params).length > 0) powerEffect.params = params;
-    if (powerKeywordId === "convocation" && powerTokenId != null) {
+    if ((powerKeywordId === "convocation" || powerKeywordId === "convocation_simple") && powerTokenId != null) {
       powerEffect.tokenId = powerTokenId;
     }
 
@@ -663,8 +742,11 @@ export default function HeroManager() {
         body.powerImageMimeType = p.mime;
       }
 
+      if (isEditing && editingHeroId !== null) {
+        body.id = editingHeroId;
+      }
       const res = await fetch("/api/heroes", {
-        method: "POST",
+        method: isEditing ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
@@ -673,7 +755,7 @@ export default function HeroManager() {
         setError(data.error || `Erreur ${res.status}`);
         return;
       }
-      setMessage(`Héros "${name.trim()}" créé`);
+      setMessage(`Héros "${name.trim()}" ${isEditing ? "modifié" : "créé"}`);
       resetForm();
       await loadHeroes();
     } catch (err) {
@@ -727,9 +809,11 @@ export default function HeroManager() {
         </h1>
       </div>
 
-      {/* Add new hero */}
+      {/* Add or edit hero */}
       <div style={STYLE.card}>
-        <h2 style={STYLE.title}>Ajouter un héros</h2>
+        <h2 style={STYLE.title}>
+          {isEditing ? `Modifier le héros : ${name || "…"}` : "Ajouter un héros"}
+        </h2>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
           {/* LEFT — metadata */}
@@ -765,11 +849,19 @@ export default function HeroManager() {
               <div>
                 <label style={STYLE.label}>Race</label>
                 <select value={race} onChange={(e) => setRace(e.target.value)}
-                  disabled={availableRaces.length === 0}
-                  style={{ ...STYLE.input, opacity: availableRaces.length === 0 ? 0.5 : 1 }}>
+                  disabled={isEditing || availableRaces.length === 0}
+                  style={{ ...STYLE.input, opacity: (isEditing || availableRaces.length === 0) ? 0.5 : 1 }}>
                   <option value="">{availableRaces.length === 0 ? "(choisis d'abord une faction)" : "— Aucune —"}</option>
                   {availableRaces.map(r => <option key={r} value={r}>{r}</option>)}
+                  {isEditing && race && !availableRaces.includes(race) && (
+                    <option value={race}>{race}</option>
+                  )}
                 </select>
+                {isEditing && (
+                  <div style={{ fontSize: 9, color: "#999", fontFamily: "'Crimson Text',serif", fontStyle: "italic", marginTop: 2 }}>
+                    Race verrouillée — supprimer et recréer pour changer.
+                  </div>
+                )}
               </div>
               <div>
                 <label style={STYLE.label}>Clan</label>
@@ -807,7 +899,7 @@ export default function HeroManager() {
               const showAmount = ww.includes("amount") || isCreatureScalable || powerMode === "aura";
               const showAttack = ww.includes("attack");
               const showHealth = ww.includes("health");
-              const isConvocation = powerKeywordId === "convocation";
+              const isConvocation = powerKeywordId === "convocation" || powerKeywordId === "convocation_simple";
               // Sorted ABILITIES list, label-first, for the picker
               const abilityEntries = Object.values(ABILITIES)
                 .map(a => ({ id: a.id, label: a.label, desc: a.desc }))
@@ -978,6 +1070,15 @@ export default function HeroManager() {
               <label style={STYLE.label}>
                 Modèle 3D — optionnel (.glb / .gltf, max 100 Mo)
               </label>
+              {isEditing && !glbFile && editingHero?.glb_url && (
+                <div style={{ marginTop: 4, padding: "6px 8px", borderRadius: 4, background: "#f4f7ff", border: "1px solid #c7dbff", fontSize: 10, color: "#1e5581", fontFamily: "'Crimson Text',serif" }}>
+                  Modèle actuel conservé.{" "}
+                  <a href={editingHero.glb_url} target="_blank" rel="noreferrer" style={{ color: "#1e5581", textDecoration: "underline" }}>
+                    Voir le GLB
+                  </a>
+                  . Sélectionne un fichier ci-dessous pour le remplacer.
+                </div>
+              )}
               <input type="file" accept=".glb,.gltf,model/gltf-binary,model/gltf+json"
                 onChange={handleGlbChange}
                 style={{ width: "100%", fontSize: 10, marginTop: 4 }} />
@@ -990,8 +1091,15 @@ export default function HeroManager() {
                 onChange={handleThumbnailChange}
                 style={{ width: "100%", fontSize: 10, marginTop: 4 }} />
               {thumbnailPreview && (
-                <img src={thumbnailPreview} alt="thumbnail"
-                  style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 6, border: "1px solid #27ae60", marginTop: 6 }} />
+                <>
+                  <img src={thumbnailPreview} alt="thumbnail"
+                    style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 6, border: "1px solid #27ae60", marginTop: 6 }} />
+                  {isEditing && !thumbnailBase64 && (
+                    <div style={{ fontSize: 9, color: "#999", fontFamily: "'Crimson Text',serif", fontStyle: "italic", marginTop: 2 }}>
+                      Image actuelle — uploader ou régénérer pour remplacer.
+                    </div>
+                  )}
+                </>
               )}
             </div>
             <div style={{
@@ -1182,6 +1290,11 @@ export default function HeroManager() {
                       </button>
                     )}
                   </div>
+                  {isEditing && powerImagePreview && !powerImageBase64 && (
+                    <div style={{ fontSize: 9, color: "#999", fontFamily: "'Crimson Text',serif", fontStyle: "italic", marginTop: 4 }}>
+                      Visuel actuel — uploader ou régénérer pour remplacer.
+                    </div>
+                  )}
                 </div>
 
                 <div style={{ borderTop: "1px dashed #eee", paddingTop: 8, marginTop: 6 }}>
@@ -1294,14 +1407,18 @@ export default function HeroManager() {
         </div>
 
         <div style={{ display: "flex", gap: 10, marginTop: 16, alignItems: "center" }}>
-          <button onClick={handleAdd}
-            disabled={saving || !name.trim() || (!glbFile && !thumbnailBase64)}
-            style={{ ...STYLE.button, opacity: saving || !name.trim() || (!glbFile && !thumbnailBase64) ? 0.5 : 1 }}>
-            {saving ? (uploadProgress ?? "Envoi...") : "Ajouter le héros"}
+          <button onClick={handleSave}
+            disabled={saving || !name.trim() || (!isEditing && !glbFile && !thumbnailBase64)}
+            style={{ ...STYLE.button, opacity: saving || !name.trim() || (!isEditing && !glbFile && !thumbnailBase64) ? 0.5 : 1 }}>
+            {saving
+              ? (uploadProgress ?? "Envoi...")
+              : isEditing
+                ? "Enregistrer les modifications"
+                : "Ajouter le héros"}
           </button>
           <button onClick={resetForm}
             style={{ ...STYLE.button, background: "transparent", color: "#888", border: "1px solid #ddd" }}>
-            Réinitialiser
+            {isEditing ? "Annuler l'édition" : "Réinitialiser"}
           </button>
         </div>
 
@@ -1324,7 +1441,12 @@ export default function HeroManager() {
 
       {/* Hero list */}
       {heroes.map((hero) => (
-        <div key={hero.id} style={STYLE.card}>
+        <div key={hero.id} style={{
+          ...STYLE.card,
+          ...(hero.id === editingHeroId
+            ? { border: "2px solid #1e5581", boxShadow: "0 0 0 2px #c7dbff" }
+            : {}),
+        }}>
           <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
             {hero.thumbnail_url ? (
               <img src={hero.thumbnail_url} alt={hero.name}
@@ -1394,6 +1516,15 @@ export default function HeroManager() {
               </div>
 
               <div style={{ display: "flex", gap: 8 }}>
+                <button
+                  onClick={() => loadHeroIntoForm(hero)}
+                  style={{
+                    ...STYLE.button,
+                    background: hero.id === editingHeroId ? "#1e5581" : "#eef4ff",
+                    color: hero.id === editingHeroId ? "#fff" : "#1e5581",
+                  }}>
+                  {hero.id === editingHeroId ? "En cours d'édition" : "Modifier"}
+                </button>
                 <button
                   onClick={() => handleUpdateField(hero, { is_active: !hero.is_active })}
                   style={{

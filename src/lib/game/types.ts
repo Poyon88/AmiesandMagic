@@ -14,7 +14,7 @@ export type Keyword =
   | "rappel" | "combustion"
   // Tier 2 — Terrain
   | "terreur" | "armure" | "commandement" | "fureur" | "double_attaque" | "invisible"
-  | "canalisation" | "contresort" | "convocation" | "malediction" | "necrophagie"
+  | "canalisation" | "contresort" | "convocation" | "convocation_simple" | "malediction" | "necrophagie"
   | "paralysie" | "permutation" | "persecution"
   // Tier 2 — Cimetière / Main / Mixte
   | "catalyse" | "ombre_du_passe" | "profanation" | "prescience" | "suprematie" | "divination"
@@ -87,6 +87,7 @@ export type SpellKeywordId =
   | "inspiration"
   | "afflux"
   | "invocation_multiple"
+  | "convocation_simple"
   | "rappel"
   | "exhumation"
   | "selection"

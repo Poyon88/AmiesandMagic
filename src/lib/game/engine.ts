@@ -803,6 +803,36 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       }
     }
 
+    // Convocation (sans X) : variante non scalable de Convocation X. Crée le
+    // token configuré (`convocation_token_id`) avec ses stats par défaut, sans
+    // formule X/X. Polymorphe : même mot-clé disponible côté sort dans
+    // resolveSpellKeywords.
+    if (hasKw(cardInstance, "convocation_simple") && player.board.length < MAX_BOARD_SIZE) {
+      const tmpl = findTokenTemplate(cardInstance.card.convocation_token_id);
+      if (!tmpl) {
+        console.warn(
+          `[engine] Convocation: pas de token spawné pour la carte "${cardInstance.card.name}" — convocation_token_id =`,
+          cardInstance.card.convocation_token_id,
+          "| registry size:", currentTokenTemplates.length,
+          "| available ids:", currentTokenTemplates.map((t) => t.id),
+        );
+      } else {
+        let tokenCard: Card = {
+          id: -1, name: `Token ${tmpl.race}`.trim(),
+          mana_cost: 0, card_type: "creature",
+          attack: tmpl.attack, health: tmpl.health,
+          effect_text: `Token ${tmpl.attack}/${tmpl.health}`,
+          keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
+          race: tmpl.race,
+          faction: getFactionForRace(tmpl.race) ?? cardInstance.card.faction,
+        };
+        tokenCard = applyTokenTemplate(tokenCard, tmpl);
+        const token = createCardInstance(tokenCard);
+        token.hasSummoningSickness = true;
+        player.board.push(token);
+      }
+    }
+
     // Convocations multiples : chaque entrée pointe vers un token et peut
     // override ses stats (attack/health). Sans override, on hérite du token.
     if (hasKw(cardInstance, "convocations_multiples")) {
@@ -1637,6 +1667,33 @@ function resolveSpellKeywords(
           token.hasSummoningSickness = true;
           ctx.caster.board.push(token);
         }
+        break;
+      }
+      case "convocation_simple": {
+        // Sort variante de Convocation X mais sans X : crée le token
+        // configuré (`card.convocation_token_id`) avec ses stats par défaut.
+        if (ctx.caster.board.length >= MAX_BOARD_SIZE) break;
+        const tmpl = findTokenTemplate(ctx.card.convocation_token_id);
+        if (!tmpl) {
+          console.warn(
+            `[engine] Spell convocation_simple: token introuvable pour le sort "${ctx.card.name}" — convocation_token_id =`,
+            ctx.card.convocation_token_id,
+          );
+          break;
+        }
+        let tokenCard: Card = {
+          id: -1, name: `Token ${tmpl.race}`.trim(),
+          mana_cost: 0, card_type: "creature",
+          attack: tmpl.attack, health: tmpl.health,
+          effect_text: `Token ${tmpl.attack}/${tmpl.health}`,
+          keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
+          race: tmpl.race,
+          faction: getFactionForRace(tmpl.race) ?? ctx.card.faction,
+        };
+        tokenCard = applyTokenTemplate(tokenCard, tmpl);
+        const token = createCardInstance(tokenCard);
+        token.hasSummoningSickness = true;
+        ctx.caster.board.push(token);
         break;
       }
       case "invocation_multiple": {
@@ -2549,6 +2606,49 @@ export function useHeroPower(state: GameState, action: HeroPowerAction): GameSta
       // that doesn't exist, fall back to creature-only keywords that have a
       // sensible on-play effect we can replay as a hero power (corruption,
       // malediction, …).
+
+      // Ni "convocation" (creature only) ni "convocation_simple" (creature+
+      // spell mais avec card.convocation_token_id, pas un tokenId hero) ne
+      // disposent d'un chemin SPELL_KEYWORDS qui consommerait le tokenId
+      // stocké sur le power_effect du héros. On gère donc les deux ici, avant
+      // le lookup générique. La seule différence : "convocation" applique le
+      // X (params.amount → token X/X) ; "convocation_simple" garde toujours
+      // les stats par défaut du token template.
+      if (effect.keywordId === "convocation" || effect.keywordId === "convocation_simple") {
+        if (!effect.tokenId) {
+          console.warn(
+            `[engine] Hero power ${effect.keywordId}: tokenId manquant sur le pouvoir de "${heroDef.name}".`,
+          );
+        } else if (player.board.length < MAX_BOARD_SIZE) {
+          const tmpl = findTokenTemplate(effect.tokenId);
+          if (!tmpl) {
+            console.warn(
+              `[engine] Hero power ${effect.keywordId}: template introuvable pour tokenId=${effect.tokenId} sur "${heroDef.name}". Available ids:`,
+              currentTokenTemplates.map(t => t.id),
+            );
+          } else {
+            const useX = effect.keywordId === "convocation";
+            const x = useX ? effect.params?.amount : undefined;
+            const atk = x && x > 0 ? x : tmpl.attack;
+            const hp = x && x > 0 ? x : tmpl.health;
+            let tokenCard: Card = {
+              id: -1, name: `Token ${tmpl.race}`.trim(),
+              mana_cost: 0, card_type: "creature",
+              attack: atk, health: hp,
+              effect_text: `Token ${atk}/${hp}`,
+              keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
+              race: tmpl.race,
+              faction: getFactionForRace(tmpl.race) ?? undefined,
+            };
+            tokenCard = applyTokenTemplate(tokenCard, tmpl);
+            const token = createCardInstance(tokenCard);
+            token.hasSummoningSickness = true;
+            player.board.push(token);
+          }
+        }
+        break;
+      }
+
       const spellDef = SPELL_KEYWORDS[effect.keywordId as keyof typeof SPELL_KEYWORDS];
       if (spellDef) {
         const instance: SpellKeywordInstance = {

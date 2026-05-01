@@ -86,6 +86,14 @@ export function getSpellKeywordDesc(
     desc = `Invoque un ${kw.race} ${kw.attack ?? 1}/${kw.health ?? 1}`;
   }
 
+  // Override for convocation_simple : compose le nom du token et ses stats
+  // par défaut depuis le registre. Sans registre/token configuré, garde la
+  // description générique du registre.
+  if (kw.id === "convocation_simple" && card?.convocation_token_id) {
+    const tmpl = tokens?.find(t => t.id === card.convocation_token_id);
+    if (tmpl) desc = `Crée un ${tmpl.name} ${tmpl.attack}/${tmpl.health}`;
+  }
+
   return desc;
 }
 

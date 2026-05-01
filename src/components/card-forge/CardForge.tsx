@@ -1826,6 +1826,11 @@ export default function CardForge() {
         setSaving(false);
         return;
       }
+      if (gameKeywords.includes("convocation_simple") && !convocationTokenId) {
+        setSaveResult({ ok: false, msg: "Convocation : sélectionnez un token dans le picker avant de sauvegarder." });
+        setSaving(false);
+        return;
+      }
       if (gameKeywords.includes("convocations_multiples") && convocationTokens.length === 0) {
         setSaveResult({ ok: false, msg: "Convocations multiples : ajoutez au moins un token dans la liste avant de sauvegarder." });
         setSaving(false);
@@ -1849,6 +1854,14 @@ export default function CardForge() {
         convocationTokens.length === 0
       ) {
         setSaveResult({ ok: false, msg: "Convocations multiples (sort) : ajoutez au moins un token dans la liste avant de sauvegarder." });
+        setSaving(false);
+        return;
+      }
+      if (
+        spellKeywords.some((k) => k.id === "convocation_simple") &&
+        !convocationTokenId
+      ) {
+        setSaveResult({ ok: false, msg: "Convocation (sort) : sélectionnez un token dans le picker avant de sauvegarder." });
         setSaving(false);
         return;
       }
@@ -2733,8 +2746,14 @@ export default function CardForge() {
                         );
                       })}
                     </div>
-                    {/* Convocation token selector — choose a saved token */}
-                    {manualKeywords.includes("Convocation X") && (
+                    {/* Convocation token selector — partagé entre Convocation X
+                        (créature, X scaling), Convocation (créature, sans X) et
+                        Convocation (sort, sans X). Champ FK unique : convocation_token_id. */}
+                    {(
+                      manualKeywords.includes("Convocation X") ||
+                      manualKeywords.includes("Convocation") ||
+                      spellKeywords.some((k) => k.id === "convocation_simple")
+                    ) && (
                       <div style={{ marginTop: 6, padding: 6, borderRadius: 6, border: `1px solid ${convocationTokenId ? "#f1c40f44" : "#e74c3c"}`, background: "#fffdf3" }}>
                         <div style={{ fontSize: 8, color: "#f1c40f", letterSpacing: 1, fontWeight: 700, marginBottom: 4 }}>
                           TOKEN À INVOQUER {!convocationTokenId && <span style={{ color: "#e74c3c", marginLeft: 4 }}>· Requis</span>}

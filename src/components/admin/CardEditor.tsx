@@ -227,6 +227,11 @@ export default function CardEditor() {
         setSaving(false);
         return;
       }
+      if (activeKeywords.includes("convocation_simple") && !editFields.convocation_token_id) {
+        setSaveResult({ ok: false, msg: "Convocation : sélectionnez un token avant de sauvegarder." });
+        setSaving(false);
+        return;
+      }
       if (activeKeywords.includes("convocations_multiples") && !((editFields.convocation_tokens as unknown[]) || []).length) {
         setSaveResult({ ok: false, msg: "Convocations multiples : ajoutez au moins un token avant de sauvegarder." });
         setSaving(false);
@@ -239,6 +244,14 @@ export default function CardEditor() {
         !((editFields.convocation_tokens as unknown[]) || []).length
       ) {
         setSaveResult({ ok: false, msg: "Convocations multiples (sort) : ajoutez au moins un token avant de sauvegarder." });
+        setSaving(false);
+        return;
+      }
+      if (
+        spellKws.some((k) => k.id === "convocation_simple") &&
+        !editFields.convocation_token_id
+      ) {
+        setSaveResult({ ok: false, msg: "Convocation (sort) : sélectionnez un token avant de sauvegarder." });
         setSaving(false);
         return;
       }
@@ -776,8 +789,12 @@ export default function CardEditor() {
               <textarea value={(editFields.illustration_prompt as string) || ""} onChange={e => updateField("illustration_prompt", e.target.value)} style={S.textarea} />
             </div>
 
-            {/* Convocation token (if keyword present) */}
-            {((editFields.keywords as string[]) || []).includes("convocation") && (
+            {/* Convocation token (creature ou sort, X ou simple) — un seul
+                champ FK partagé : `card.convocation_token_id`. */}
+            {(
+              ((editFields.keywords as string[]) || []).some(k => k === "convocation" || k === "convocation_simple") ||
+              ((editFields.spell_keywords as SpellKeywordInstance[]) || []).some(k => k.id === "convocation_simple")
+            ) && (
               <div style={{ marginBottom: 8 }}>
                 <div style={S.label}>Token convocation</div>
                 <TokenCascadePicker
