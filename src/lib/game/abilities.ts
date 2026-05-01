@@ -516,9 +516,9 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   solidarite: {
     id: "solidarite", label: "Solidarité X", symbol: "🤜",
-    desc: "Invocation : piochez X cartes si vous contrôlez 2 autres unités de même clan.",
+    desc: "Invocation : piochez X cartes si vous contrôlez 2 autres unités de même race.",
     applicable_to: ["creature"],
-    creature: { cost: 9, costPerX: 4, se: 2.5, minTier: 2, scalable: true, zone: "Clan" },
+    creature: { cost: 9, costPerX: 4, se: 2.5, minTier: 2, scalable: true, zone: "Race" },
   },
   rassemblement: {
     id: "rassemblement", label: "Rassemblement X", symbol: "🏴",

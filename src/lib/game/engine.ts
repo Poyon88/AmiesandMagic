@@ -1095,10 +1095,10 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       }
     }
 
-    // Solidarité X: piochez X cartes si 2+ alliés de même clan
-    if (hasKw(cardInstance, "solidarite") && cardInstance.card.clan) {
-      const sameClanCount = player.board.filter(a => a !== cardInstance && a.card.clan === cardInstance.card.clan).length;
-      if (sameClanCount >= 2) {
+    // Solidarité X: piochez X cartes si 2+ alliés de même race
+    if (hasKw(cardInstance, "solidarite") && cardInstance.card.race) {
+      const sameRaceCount = player.board.filter(a => a !== cardInstance && a.card.race === cardInstance.card.race).length;
+      if (sameRaceCount >= 2) {
         const solXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
         const x = solXVals["solidarite"] || Math.max(1, Math.floor(cardInstance.card.mana_cost / 3));
         for (let i = 0; i < x; i++) drawCard(player);

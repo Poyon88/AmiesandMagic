@@ -225,6 +225,31 @@ export const ALIGNMENTS: { id: Alignment; label: string; emoji: string; color: s
   { id: "spéciale", label: "Spéciale", emoji: "💰", color: "#D4D400" },
 ];
 
+// Résout l'alignement effectif d'une carte pour l'affichage du descriptif.
+// L'alignement vient TOUJOURS de la faction sauf pour Mercenaires (faction
+// "spéciale") où le champ override `card_alignment` sert à choisir parmi
+// bon/neutre/maléfique à la création de la carte.
+//
+// Note : on ignore volontairement `card_alignment` pour les cartes non-
+// Mercenaires — le CardEditor remplit ce champ par défaut à "neutre" même
+// pour des factions clairement bonnes ou maléfiques, donc s'y fier
+// donnerait des badges incohérents (Orc affiché Neutre, etc.).
+export function getEffectiveAlignment(
+  card: { faction?: string | null; card_alignment?: string | null },
+): Exclude<Alignment, "spéciale"> | null {
+  if (!card.faction) return null;
+  const fac = FACTIONS[card.faction];
+  if (!fac) return null;
+  if (fac.alignment === "spéciale") {
+    // Mercenaires : l'alignement effectif est porté par le champ card.
+    if (card.card_alignment && card.card_alignment !== "spéciale") {
+      return card.card_alignment as Exclude<Alignment, "spéciale">;
+    }
+    return null;
+  }
+  return fac.alignment;
+}
+
 // ─── CALIBRATION ─────────────────────────────────────────────────────────────
 
 // 1 SE ≈ 4.5 pts · ATK légèrement plus chère (valeur tempo)

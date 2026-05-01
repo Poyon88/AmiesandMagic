@@ -6,6 +6,7 @@ import type { CardInstance } from "@/lib/game/types";
 import { KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText } from "@/lib/game/keyword-labels";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, getSpellKeywordLabel } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
+import { ALIGNMENTS, getEffectiveAlignment } from "@/lib/card-engine/constants";
 import CardArt from "@/components/cards/CardArt";
 
 interface CardPreviewProps {
@@ -83,6 +84,17 @@ export default function CardPreview({ cardInstance, anchorRef, position = "above
           <h3 className="text-sm font-bold text-foreground leading-tight">
             {card.name}
           </h3>
+          {(() => {
+            const align = getEffectiveAlignment(card);
+            if (!align) return null;
+            const def = ALIGNMENTS.find(a => a.id === align);
+            if (!def) return null;
+            return (
+              <div className="text-[10px] mt-0.5" style={{ color: def.color, fontWeight: 600 }}>
+                {def.emoji} {def.label}
+              </div>
+            );
+          })()}
         </div>
 
         {/* Effect */}

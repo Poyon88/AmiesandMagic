@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
-import type { Card, TokenTemplate } from "@/lib/game/types";
+import type { Card, CardSet, TokenTemplate } from "@/lib/game/types";
 
 // Module-level lazy cache so any GameCard mounted out of the in-game flow
 // (deck builder, collection, auctions, landing showcase…) can still resolve
@@ -25,12 +25,33 @@ function loadTokenRegistry(): Promise<TokenTemplate[]> {
     });
   return _tokenRegistryPromise;
 }
+
+// Même pattern que tokens : cache module-level pour résoudre le nom du set
+// depuis `card.set_id` sans prop drilling. Affiché en bas-droite du
+// descriptif (overlay).
+let _setRegistryCache: CardSet[] | null = null;
+let _setRegistryPromise: Promise<CardSet[]> | null = null;
+function loadSetRegistry(): Promise<CardSet[]> {
+  if (_setRegistryCache) return Promise.resolve(_setRegistryCache);
+  if (_setRegistryPromise) return _setRegistryPromise;
+  _setRegistryPromise = fetch("/api/sets")
+    .then((r) => (r.ok ? r.json() : []))
+    .then((data: unknown) => {
+      _setRegistryCache = Array.isArray(data) ? (data as CardSet[]) : [];
+      return _setRegistryCache;
+    })
+    .catch(() => {
+      _setRegistryCache = [];
+      return _setRegistryCache;
+    });
+  return _setRegistryPromise;
+}
 import { KEYWORD_SYMBOLS as keywordSymbols, KEYWORD_LABELS as keywordLabels, toRoman, parseXValuesFromEffectText, cleanEffectText } from "@/lib/game/keyword-labels";
-import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS, getSpellKeywordDesc, getSpellKeywordLabel } from "@/lib/game/spell-keywords";
+import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS, getSpellKeywordDesc, getSpellKeywordLabel, formatConvocationTokens } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
-import { KEYWORDS as keywordDefs, LIMITED_PRINT_COUNTS } from "@/lib/card-engine/constants";
+import { KEYWORDS as keywordDefs, LIMITED_PRINT_COUNTS, ALIGNMENTS, getEffectiveAlignment } from "@/lib/card-engine/constants";
 
 interface GameCardProps {
   card: Card;
@@ -81,6 +102,18 @@ export default function GameCard({
     return () => { alive = false; };
   }, [tokens]);
   const effectiveTokens = tokens ?? _tokenRegistryCache ?? autoTokens ?? undefined;
+
+  // Set registry — chargé uniquement si la carte porte un set_id (sinon on
+  // affichera mois/année à la place dans le coin bas-droite du descriptif).
+  const [autoSets, setAutoSets] = useState<CardSet[] | null>(null);
+  useEffect(() => {
+    if (!card.set_id || _setRegistryCache !== null) return;
+    let alive = true;
+    loadSetRegistry().then((reg) => { if (alive) setAutoSets(reg); });
+    return () => { alive = false; };
+  }, [card.set_id]);
+  const effectiveSets = _setRegistryCache ?? autoSets ?? undefined;
+  const cardSet = card.set_id && effectiveSets ? effectiveSets.find(s => s.id === card.set_id) ?? null : null;
   const detailTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const dims = {
@@ -349,13 +382,6 @@ export default function GameCard({
           </div>
         )}
 
-        {/* Month / Year (for cards without a set) */}
-        {card.card_year && !card.set_id && (
-          <div style={{ textAlign: "center", fontSize: 13 * s, color: "#888", fontFamily: "'Crimson Text',serif" }}>
-            📅 {card.card_month ? ["Jan","Fév","Mar","Avr","Mai","Juin","Juil","Aoû","Sep","Oct","Nov","Déc"][card.card_month - 1] + " " : ""}{card.card_year}
-          </div>
-        )}
-
         {/* Capacités detail */}
         {card.keywords.length > 0 && (() => {
           const xVals = parseXValuesFromEffectText(card.effect_text);
@@ -371,7 +397,13 @@ export default function GameCard({
               const displayLabel = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
               const forgeKey = keywordLabels[kw];
               const kwDef = forgeKey ? keywordDefs[forgeKey] : null;
-              const desc = kwDef?.desc ? (x != null ? kwDef.desc.replace(/X/g, String(x)) : kwDef.desc) : null;
+              let desc = kwDef?.desc ? (x != null ? kwDef.desc.replace(/X/g, String(x)) : kwDef.desc) : null;
+              // Override pour Convocations multiples côté créature : reflète
+              // la liste réelle des tokens configurés (groupés). Mêmes règles
+              // que côté sort (`getSpellKeywordDesc` pour invocation_multiple).
+              if (kw === "convocations_multiples" && card.convocation_tokens?.length) {
+                desc = `Invocation : crée ${formatConvocationTokens(card.convocation_tokens, effectiveTokens)}`;
+              }
               return (
               <div key={kw} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
                 <span style={{ flexShrink: 0 }}><KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={18 * s} keyword={kw} /></span>
@@ -435,9 +467,54 @@ export default function GameCard({
           borderTop: `1px solid ${accentColor}33`, paddingTop: 7 * s,
         }}>
           {card.faction && <span style={{ color: accentColor, fontWeight: 600 }}>{card.faction}</span>}
+          {(() => {
+            const align = getEffectiveAlignment(card);
+            if (!align) return null;
+            const def = ALIGNMENTS.find(a => a.id === align);
+            if (!def) return null;
+            return (
+              <span style={{ color: def.color, fontWeight: 600 }}>
+                {def.emoji} {def.label}
+              </span>
+            );
+          })()}
           <span style={{ color: "#74b9ff" }}>💧{card.mana_cost}</span>
           {isCreature && <><span style={{ color: "#e74c3c" }}>⚔{card.attack}</span><span style={{ color: "#f1c40f" }}>❤{card.health}</span></>}
         </div>
+
+        {/* Bas-droite : nom du set, ou mois/année si pas de set, ou rien.
+            Position absolue par rapport à l'overlay (qui sert de containing
+            block puisqu'il est lui-même position: absolute). */}
+        {(() => {
+          if (cardSet) {
+            return (
+              <div style={{
+                position: "absolute", bottom: 4 * s, right: 6 * s,
+                fontSize: 9 * s, color: "#aaa",
+                fontFamily: "'Cinzel',serif", letterSpacing: 0.5,
+                textShadow: "0 1px 2px rgba(0,0,0,0.8)",
+              }}>
+                {cardSet.icon ? `${cardSet.icon} ` : ""}{cardSet.name}
+              </div>
+            );
+          }
+          if (card.card_year) {
+            const month = card.card_month
+              ? ["Jan","Fév","Mar","Avr","Mai","Juin","Juil","Aoû","Sep","Oct","Nov","Déc"][card.card_month - 1] + " "
+              : "";
+            return (
+              <div style={{
+                position: "absolute", bottom: 4 * s, right: 6 * s,
+                fontSize: 9 * s, color: "#888",
+                fontFamily: "'Crimson Text',serif",
+                textShadow: "0 1px 2px rgba(0,0,0,0.8)",
+              }}>
+                {month}{card.card_year}
+              </div>
+            );
+          }
+          return null;
+        })()}
       </div>
     </div>
   );
