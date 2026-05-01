@@ -426,7 +426,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
             figurine or the legacy portrait. Skipped when a 3D skin is
             set (handled in the Hero3DViewer wrapper instead). */}
         {!opponent.hero.heroDefinition?.glbUrl && (
-        <div className="absolute left-[1%] top-[10%] lg:top-[1%] z-20 flex flex-col items-center gap-1">
+        <div className="absolute left-[1%] top-[10%] lg:top-[3%] z-20 flex flex-col items-center gap-1">
           {/* The visible HeroPowerButton has been removed to mirror the
               3D-hero UX: left-click on the portrait selects the hero
               (or activates power on own hero), right-click opens the
@@ -459,7 +459,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
             creature row) so it doesn't crush the hand-count / mana UI. At lg+
             it snaps back to the top-left corner. */}
         {opponent.hero.heroDefinition?.glbUrl && (
-          <div className="absolute left-[1%] top-[10%] lg:top-[1%] z-20 flex flex-col items-center gap-1">
+          <div className="absolute left-[1%] top-[10%] lg:top-[3%] z-20 flex flex-col items-center gap-1">
             <Hero3DViewer
               hero={opponent.hero}
               isOpponent={true}

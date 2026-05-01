@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { FACTIONS } from '@/lib/card-engine/constants';
 import { ABILITIES } from '@/lib/game/abilities';
+import { validateFactionClan } from '@/lib/validation/faction-clan';
 
 const ALLOWED_POWER_MODES = new Set(['grant_keyword', 'spell_trigger', 'aura']);
 
@@ -71,31 +72,6 @@ function validateUsageLimit(raw: unknown): { ok: true; value: number | null } | 
     return { ok: false, error: "power_usage_limit doit être null (illimité) ou un entier ≥ 1" };
   }
   return { ok: true, value: raw };
-}
-
-function validateFactionClan(
-  faction: unknown,
-  clan: unknown,
-): { ok: true; faction: string | null; clan: string | null } | { ok: false; error: string } {
-  let f: string | null = null;
-  if (typeof faction === 'string' && faction.trim()) {
-    if (!(faction in FACTIONS)) return { ok: false, error: 'Faction invalide' };
-    f = faction;
-  } else if (faction === null) {
-    f = null;
-  }
-  let c: string | null = null;
-  if (typeof clan === 'string' && clan.trim()) {
-    if (!f) return { ok: false, error: 'Clan sans faction' };
-    const def = FACTIONS[f];
-    if (def.clans && !def.clans.names.includes(clan)) {
-      return { ok: false, error: 'Clan invalide pour cette faction' };
-    }
-    c = clan;
-  } else if (clan === null) {
-    c = null;
-  }
-  return { ok: true, faction: f, clan: c };
 }
 
 async function getAuthUser() {

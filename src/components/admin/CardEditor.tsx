@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import GameCard from "@/components/cards/GameCard";
 import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
-import { KEYWORDS as KEYWORD_DEFS } from "@/lib/card-engine/constants";
+import { KEYWORDS as KEYWORD_DEFS, FACTIONS } from "@/lib/card-engine/constants";
 import type { Card, Keyword, SpellKeywordInstance, SpellComposableEffects, CardSet, TokenTemplate } from "@/lib/game/types";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 
@@ -29,6 +29,7 @@ interface DbCard {
   convocation_token_id: number | null;
   convocation_tokens: { token_id: number; attack?: number; health?: number }[] | null;
   lycanthropie_token_id: number | null;
+  entraide_race: string | null;
   set_id: number | null;
   card_year: number | null;
   card_month: number | null;
@@ -178,6 +179,7 @@ export default function CardEditor() {
       convocation_token_id: card.convocation_token_id ?? null,
       convocation_tokens: card.convocation_tokens || [],
       lycanthropie_token_id: card.lycanthropie_token_id ?? null,
+      entraide_race: card.entraide_race || null,
       set_id: card.set_id,
       card_year: card.card_year,
       card_month: card.card_month,
@@ -245,6 +247,11 @@ export default function CardEditor() {
         setSaving(false);
         return;
       }
+      if (activeKeywords.includes("entraide") && !editFields.entraide_race) {
+        setSaveResult({ ok: false, msg: "Entraide : sélectionnez la race cible avant de sauvegarder." });
+        setSaving(false);
+        return;
+      }
 
       const xParts = Object.entries(keywordXValues)
         .filter(([kw]) => activeKeywords.includes(kw))
@@ -273,6 +280,7 @@ export default function CardEditor() {
         convocation_token_id: editFields.convocation_token_id ?? null,
         convocation_tokens: (editFields.convocation_tokens as unknown[])?.length ? editFields.convocation_tokens : null,
         lycanthropie_token_id: editFields.lycanthropie_token_id ?? null,
+        entraide_race: activeKeywords.includes("entraide") ? (editFields.entraide_race || null) : null,
         set_id: editFields.set_id || null,
         card_year: editFields.card_year || null,
         card_month: editFields.card_month || null,
@@ -791,6 +799,23 @@ export default function CardEditor() {
                   tokens={tokenTemplates}
                   compact
                 />
+              </div>
+            )}
+
+            {/* Entraide — race targeted by the cost reduction (if keyword present) */}
+            {((editFields.keywords as string[]) || []).includes("entraide") && (
+              <div style={{ marginBottom: 8 }}>
+                <div style={S.label}>🤝 Race cible (Entraide)</div>
+                <select
+                  value={(editFields.entraide_race as string) || ""}
+                  onChange={e => updateField("entraide_race", e.target.value || null)}
+                  style={S.select}
+                >
+                  <option value="">-- Choisir une race --</option>
+                  {Array.from(new Set(Object.values(FACTIONS).flatMap(f => f.races))).sort().map(r => (
+                    <option key={r} value={r}>{r}</option>
+                  ))}
+                </select>
               </div>
             )}
 

@@ -386,7 +386,11 @@ export default function BoardCreature({
             {card.keywords.map((kw) => {
               const x = xVals[kw];
               const label = KEYWORD_LABELS[kw] || kw;
-              const displayLabel = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
+              const displayLabel = x != null
+                ? label.replace(/ X$/, ` ${toRoman(x)}`)
+                : kw === "entraide" && card.entraide_race
+                  ? `${label} (${card.entraide_race})`
+                  : label;
               const forgeKey = KEYWORD_LABELS[kw];
               const kwDef = forgeKey ? keywordDefs[forgeKey] : null;
               const desc = kwDef?.desc ? (x != null ? kwDef.desc.replace(/X/g, String(x)) : kwDef.desc) : null;

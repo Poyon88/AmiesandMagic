@@ -62,6 +62,7 @@ interface ForgeCard {
   convocationTokenName?: string;
   convocationTokens?: ConvocationTokenDef[];
   lycanthropieTokenId?: number | null;
+  entraideRace?: string;
   setName?: string;
   setIcon?: string;
   cardYear?: number;
@@ -232,6 +233,7 @@ export default function CardForge() {
         "CRITICAL FULL-BLEED RULE — the play surface (and the side panels) MUST extend ALL THE WAY to the four edges of the canvas. Every pixel of the frame is part of the scene. NO white band, NO light band, NO empty band, NO blank strip, NO letterbox, NO padding, NO border, NO vignette, NO transparent edge anywhere — top edge, bottom edge, left edge, right edge are ALL filled by the scene material with zero margin.",
         "CRITICAL LAYOUT RULE — the CENTRAL 92% of the WIDTH (and the FULL height) MUST be an empty, uniform, flat play surface that reads as a calm stage where cards can be placed and remain highly legible. Allowed surfaces: polished stone slab, smooth planked wood, worn parchment, brushed metal plate, fine sand, mossy flagstones — pick ONE consistent material. NO decorative props, NO objects, NO creatures, NO ornaments, NO runes, NO emblems, NO text, NO HUD elements inside this central play area. The play surface is the OVERWHELMING majority of the image and TOUCHES the top and bottom edges of the canvas.",
         "Decoration is restricted to two MINIMAL vertical edge strips — each only ~4% of width on the LEFT and RIGHT edges. Think \"a hint of vegetation creeping in from off-screen\", NOT a side panel or a UI bezel. Allowed per side: ONE or TWO small organic silhouettes (e.g. a few leaves, a small mushroom cluster, a single lantern peeking in, a tuft of grass). Loose, asymmetric, biological — they spill onto the play surface like real-world flora at the edge of a clearing. Top and bottom of these strips fade naturally into the play surface, with no visible boundary.",
+        "HARD CAP on any horizontal top/bottom decoration — if any top or bottom decorative strip appears at all, it MUST be strictly thinner than ~3% of canvas height (an almost imperceptible sliver). NEVER a thick band, NEVER a header strip, NEVER a footer strip, NEVER a UI bar. Preferably zero top/bottom decoration; the play surface itself should reach the very top and bottom pixels of the canvas.",
         "ABSOLUTE — NO rectangular framed side panel, NO gold trim, NO bezel, NO ornate filigree column, NO scrolled corners, NO carved stone pillar shape, NO inset frame, NO banner mount, NO geometric border. The edge decoration is ORGANIC and IRREGULAR; it does NOT form a structured side bar. Do not enclose the play surface inside any kind of decorated rectangle.",
         "ABSOLUTE — NO horizontal line, NO horizontal seam, NO horizontal band of light, NO carved groove, NO glowing midline, NO gradient stripe, NO material discontinuity at the middle of the image. The central play surface is a single CONTINUOUS uniform material from top edge to bottom edge. Both player halves share the exact same uninterrupted ground.",
         "NO ornate central divider, NO medallion, NO central emblem, NO baroque filigree frame around the whole image — the MTG Arena look is clean digital chrome, not a printed playmat.",
@@ -244,9 +246,11 @@ export default function CardForge() {
   type BdVariation = { base64: string; mime: string; url: string };
 
   const [bdName, setBdName] = useState("");
-  const [bdStyle, setBdStyle] = useState<BoardStyleId>("classic");
+  const [bdStyle, setBdStyle] = useState<BoardStyleId>("mtgo");
   const [bdEnvPreset, setBdEnvPreset] = useState<string>("tavern");
   const [bdFaction, setBdFaction] = useState<string>("");
+  const [bdRace, setBdRace] = useState<string>("");
+  const [bdClan, setBdClan] = useState<string>("");
   const [bdInstructions, setBdInstructions] = useState("");
   const [bdRarity, setBdRarity] = useState<string>("Commune");
   const [bdMaxPrints, setBdMaxPrints] = useState<number | null>(null);
@@ -695,6 +699,18 @@ export default function CardForge() {
       ? cbFactionDef.clans.names
       : [];
 
+  const bdFactionDef = bdFaction ? FACTIONS[bdFaction as keyof typeof FACTIONS] : null;
+  const bdFactionRaces = bdFactionDef?.races
+    ?? Object.values(FACTIONS).flatMap((f) => f.races).sort();
+  const bdFactionClans: string[] =
+    bdFactionDef?.clans && (
+      bdFactionDef.clans.appliesTo === "all"
+      || bdFactionDef.clans.appliesTo === bdRace
+      || !bdFactionDef.clans.appliesTo
+    )
+      ? bdFactionDef.clans.names
+      : [];
+
   function generateCardBackPrompt() {
     const factionDef = cbFaction ? FACTIONS[cbFaction as keyof typeof FACTIONS] : null;
     const factionName = factionDef?.label ?? cbFaction;
@@ -1017,6 +1033,12 @@ export default function CardForge() {
       if (factionName) {
         parts.push(`Thematic faction: ${factionName}${factionAlign && alignDesc[factionAlign] ? `, ${alignDesc[factionAlign]}` : ""}.`);
       }
+      if (bdRace) {
+        parts.push(`Thematic ${bdRace} influence on the props, architecture and natural elements of the scene.`);
+      }
+      if (bdClan) {
+        parts.push(`Subtle decorative motif hinting at the "${bdClan}" clan woven into the side strips and props.`);
+      }
     }
 
     if (bdRefImageBase64) {
@@ -1201,6 +1223,9 @@ export default function CardForge() {
             layout: layoutId,
             graveyardImageBase64: layoutId === "mtgo" ? bdGraveyardBase64 ?? undefined : undefined,
             graveyardImageMimeType: layoutId === "mtgo" ? bdGraveyardMime ?? undefined : undefined,
+            faction: bdFaction || null,
+            race: bdRace || null,
+            clan: bdClan || null,
           }),
         });
         const data = await res.json();
@@ -1219,6 +1244,9 @@ export default function CardForge() {
       setBdVariations([]);
       setBdSelectedIdxs([]);
       setBdPrompt("");
+      setBdFaction("");
+      setBdRace("");
+      setBdClan("");
       clearBoardRefImage();
     } else if (ok > 0) {
       setBdMessage({ ok: false, msg: `${ok} plateau(x) enregistré(s), mais erreur sur les autres : ${firstError}` });
@@ -1292,6 +1320,7 @@ export default function CardForge() {
   const [convocationTokenId, setConvocationTokenId] = useState<number | null>(null);
   const [convocationTokens, setConvocationTokens] = useState<ConvocationTokenDef[]>([]);
   const [lycanthropieTokenId, setLycanthropieTokenId] = useState<number | null>(null);
+  const [entraideRace, setEntraideRace] = useState<string>("");
   const [cardSetId, setCardSetId] = useState<number | null>(null);
   const [cardYear, setCardYear] = useState<number | null>(null);
   const [cardMonth, setCardMonth] = useState<number | null>(null);
@@ -1367,6 +1396,7 @@ export default function CardForge() {
     convocationTokenName: tokenTemplates.find(t => t.id === convocationTokenId)?.name || undefined,
     convocationTokens: convocationTokens.length > 0 ? convocationTokens : undefined,
     lycanthropieTokenId: lycanthropieTokenId,
+    entraideRace: entraideRace || undefined,
     setName: cardSetId ? sets.find(s => s.id === cardSetId)?.name : undefined,
     setIcon: cardSetId ? sets.find(s => s.id === cardSetId)?.icon : undefined,
     cardYear: cardYear || undefined,
@@ -1583,7 +1613,7 @@ export default function CardForge() {
     setManualPower(2); setManualAbility(""); setManualFlavorText("");
     setManualIllustrationPrompt(""); setManualKeywords([]); setKeywordXValues({}); setCard(null);
     setEditedPrompt(null); setSaveResult(null);
-    setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null);
+    setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace("");
     setCardImages(prev => Object.fromEntries(Object.entries(prev).filter(([k]) => k !== "manual_preview")));
   }, []);
 
@@ -1756,6 +1786,7 @@ export default function CardForge() {
     // Deck / Race / Clan
     "Traque du destin X": "traque_du_destin", "Sang mêlé": "sang_mele",
     "Fierté du clan": "fierte_du_clan", "Solidarité X": "solidarite",
+    "Entraide (Race)": "entraide",
     "Cycle éternel": "cycle_eternel", "Martyr": "martyr",
     "Instinct de meute X": "instinct_de_meute", "Totem": "totem",
     "Appel du clan X": "appel_du_clan", "Rassemblement X": "rassemblement",
@@ -1802,6 +1833,11 @@ export default function CardForge() {
       }
       if (gameKeywords.includes("lycanthropie") && !lycanthropieTokenId) {
         setSaveResult({ ok: false, msg: "Lycanthropie X : sélectionnez un token de transformation avant de sauvegarder." });
+        setSaving(false);
+        return;
+      }
+      if (gameKeywords.includes("entraide") && !entraideRace) {
+        setSaveResult({ ok: false, msg: "Entraide (Race) : sélectionnez la race cible avant de sauvegarder." });
         setSaving(false);
         return;
       }
@@ -1876,6 +1912,7 @@ export default function CardForge() {
             convocation_token_id: convocationTokenId,
             convocation_tokens: convocationTokens.length > 0 ? convocationTokens : null,
             lycanthropie_token_id: lycanthropieTokenId,
+            entraide_race: gameKeywords.includes("entraide") ? (entraideRace || null) : null,
             set_id: cardSetId || null,
             card_year: cardYear || null,
             card_month: cardMonth || null,
@@ -1899,7 +1936,7 @@ export default function CardForge() {
     } finally {
       setSaving(false);
     }
-  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, sfxPlayFile, sfxDeathFile]);
+  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile]);
 
   const [generatingImage, setGeneratingImage] = useState(false);
   const [editedPrompt, setEditedPrompt] = useState<string | null>(null);
@@ -2722,6 +2759,21 @@ export default function CardForge() {
                           tokens={tokenTemplates}
                           compact
                         />
+                      </div>
+                    )}
+                    {/* Entraide — race targeted by the cost reduction */}
+                    {manualKeywords.includes("Entraide (Race)") && (
+                      <div style={{ marginTop: 6, padding: 6, borderRadius: 6, border: `1px solid ${entraideRace ? "#10b98144" : "#e74c3c"}`, background: "#f0fdf4" }}>
+                        <div style={{ fontSize: 8, color: "#10b981", letterSpacing: 1, fontWeight: 700, marginBottom: 4 }}>
+                          🤝 RACE CIBLE {!entraideRace && <span style={{ color: "#e74c3c", marginLeft: 4 }}>· Requise</span>}
+                        </div>
+                        <select value={entraideRace} onChange={e => setEntraideRace(e.target.value)}
+                          style={{ width: "100%", padding: "4px 8px", borderRadius: 5, border: "1px solid #10b98144", fontSize: 10, fontFamily: "'Cinzel',serif", background: "#fff" }}>
+                          <option value="">-- Choisir une race --</option>
+                          {Array.from(new Set(Object.values(FACTIONS).flatMap(f => f.races))).sort().map(r => (
+                            <option key={r} value={r}>{r}</option>
+                          ))}
+                        </select>
                       </div>
                     )}
                     {/* Convocations multiples — list of token entries with optional stat overrides */}
@@ -3549,7 +3601,7 @@ export default function CardForge() {
                     </div>
                     <div>
                       <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>FACTION (optionnel)</label>
-                      <select value={bdFaction} onChange={e => setBdFaction(e.target.value)}
+                      <select value={bdFaction} onChange={e => { setBdFaction(e.target.value); setBdRace(""); setBdClan(""); }}
                         style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }}>
                         <option value="">-- Aucune --</option>
                         {Object.entries(FACTIONS).map(([id, def]) => (
@@ -3557,6 +3609,24 @@ export default function CardForge() {
                         ))}
                       </select>
                     </div>
+                    <div>
+                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>RACE (optionnel)</label>
+                      <select value={bdRace} onChange={e => { setBdRace(e.target.value); setBdClan(""); }}
+                        style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }}>
+                        <option value="">-- Aucune --</option>
+                        {bdFactionRaces.map(r => <option key={r} value={r}>{r}</option>)}
+                      </select>
+                    </div>
+                    {bdFactionClans.length > 0 && (
+                      <div>
+                        <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>CLAN (optionnel)</label>
+                        <select value={bdClan} onChange={e => setBdClan(e.target.value)}
+                          style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }}>
+                          <option value="">-- Aucun --</option>
+                          {bdFactionClans.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                      </div>
+                    )}
                     <div>
                       <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>RARETÉ</label>
                       <select value={bdRarity} onChange={e => {

@@ -25,7 +25,7 @@ export type Keyword =
   // Tier 3 — Cimetière
   | "exhumation" | "heritage_du_cimetiere"
   // Tier 2 — Deck / Race / Clan
-  | "traque_du_destin" | "sang_mele" | "fierte_du_clan" | "solidarite" | "lycanthropie"
+  | "traque_du_destin" | "sang_mele" | "fierte_du_clan" | "solidarite" | "lycanthropie" | "entraide"
   // Tier 3 — Deck / Race / Clan / Mixte
   | "cycle_eternel" | "martyr" | "instinct_de_meute" | "totem" | "appel_du_clan" | "rassemblement"
   // Tier 4
@@ -241,6 +241,10 @@ export interface Card {
   convocation_token_id?: number | null;
   convocation_tokens?: ConvocationTokenDef[] | null;
   lycanthropie_token_id?: number | null;
+  // Entraide: race targeted by this card's "Entraide" keyword. While in hand,
+  // mana cost is reduced by 1 per allied creature whose race matches this
+  // value (recomputed dynamically). Null when the keyword isn't carried.
+  entraide_race?: string | null;
   // Set on instance Cards spawned by the engine when a token is summoned —
   // points to the originating token_template so renderers can fetch the
   // visual / name without guessing by race.

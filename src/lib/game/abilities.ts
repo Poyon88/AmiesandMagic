@@ -16,7 +16,7 @@
 // untouched — `card.keywords` still stores FR labels (TEXT[]) and
 // `card.spell_keywords` still stores snake_case ids (JSONB).
 
-import type { SpellKeywordId, SpellTargetType } from "./types";
+import type { Card, CardInstance, SpellKeywordId, SpellTargetType } from "./types";
 
 export type KeywordZone = "Terrain" | "Cimetière" | "Main" | "Mixte" | "Deck" | "Race" | "Clan";
 
@@ -242,6 +242,12 @@ export const ABILITIES: Record<string, AbilityDef> = {
   catalyse: {
     id: "catalyse", label: "Catalyse", symbol: "⚗️",
     desc: "Invocation : réduit de 1 le coût en mana de toutes les unités de même race dans votre main.",
+    applicable_to: ["creature"],
+    creature: { cost: 11, costPerX: 0, se: 2.5, minTier: 2, scalable: false, zone: "Main" },
+  },
+  entraide: {
+    id: "entraide", label: "Entraide (Race)", symbol: "🤝",
+    desc: "En main : coûte 1 mana de moins par allié de la race choisie présent en jeu (cumulable, plancher 0).",
     applicable_to: ["creature"],
     creature: { cost: 11, costPerX: 0, se: 2.5, minTier: 2, scalable: false, zone: "Main" },
   },
@@ -798,4 +804,16 @@ export function isCreatureKwShadowedBySpell(
   );
   if (!pair) return false;
   return spellKws.some((sk) => sk.id === pair.spellId);
+}
+
+/** Mana-cost reduction granted by the "Entraide" creature keyword while the
+ *  card is in hand. Counts allied creatures on the player's board whose
+ *  `race` matches the targeted race stored on the card. The card itself is
+ *  in hand (not on the board) so it can never count towards its own
+ *  reduction. */
+export function getEntraideReduction(card: Card, board: CardInstance[]): number {
+  if (!card.keywords.includes("entraide")) return 0;
+  const targetRace = card.entraide_race;
+  if (!targetRace) return 0;
+  return board.filter((c) => c.card.race === targetRace).length;
 }

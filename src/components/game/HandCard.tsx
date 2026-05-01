@@ -8,7 +8,7 @@ import { useGameStore } from "@/lib/store/gameStore";
 import type { DragEvent } from "react";
 import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText } from "@/lib/game/keyword-labels";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS, getSpellKeywordLabel, getSpellKeywordDesc } from "@/lib/game/spell-keywords";
-import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
+import { isCreatureKwShadowedBySpell, getEntraideReduction } from "@/lib/game/abilities";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
@@ -30,12 +30,19 @@ export default function HandCard({
   const gameState = useGameStore(s => s.gameState);
   const tokenTemplates = useGameStore(s => s.tokenTemplates);
 
-  // Compute effective mana cost (accounting for Canalisation)
+  // Compute effective mana cost (accounting for Canalisation on spells and
+  // Entraide on creatures — cumulable, plancher 0).
   let effectiveManaCost = card.mana_cost;
-  if (card.card_type === "spell" && gameState) {
+  if (gameState) {
     const player = gameState.players[gameState.currentPlayerIndex];
-    const canalisationCount = player.board.filter(c => c.card.keywords.includes("canalisation" as import("@/lib/game/types").Keyword)).length;
-    effectiveManaCost = Math.max(0, effectiveManaCost - canalisationCount);
+    if (card.card_type === "spell") {
+      const canalisationCount = player.board.filter(c => c.card.keywords.includes("canalisation" as import("@/lib/game/types").Keyword)).length;
+      effectiveManaCost -= canalisationCount;
+    }
+    if (card.card_type === "creature") {
+      effectiveManaCost -= getEntraideReduction(card, player.board);
+    }
+    effectiveManaCost = Math.max(0, effectiveManaCost);
   }
   const isCostReduced = effectiveManaCost < card.mana_cost;
   const tokenTemplate = card.id === -1 && !card.image_url
@@ -311,7 +318,11 @@ export default function HandCard({
               {visibleKws.map((kw) => {
                 const x = xVals[kw];
                 const label = KEYWORD_LABELS[kw] || kw;
-                const displayLabel = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
+                const displayLabel = x != null
+                  ? label.replace(/ X$/, ` ${toRoman(x)}`)
+                  : kw === "entraide" && card.entraide_race
+                    ? `${label} (${card.entraide_race})`
+                    : label;
                 const forgeKey = KEYWORD_LABELS[kw];
                 const kwDef = forgeKey ? keywordDefs[forgeKey] : null;
                 const desc = kwDef?.desc ? (x != null ? kwDef.desc.replace(/X/g, String(x)) : kwDef.desc) : null;

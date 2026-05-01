@@ -24,6 +24,7 @@ import type {
   TokenTemplate,
 } from "./types";
 import { SPELL_KEYWORDS } from "./spell-keywords";
+import { getEntraideReduction } from "./abilities";
 import { parseXValuesFromEffectText } from "./keyword-labels";
 import {
   HERO_MAX_HP,
@@ -665,11 +666,17 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
   const cardInstance = player.hand[cardIndex];
   const card = cardInstance.card;
 
-  // Canalisation: reduce spell cost by 1 per unit with Canalisation on board
+  // Canalisation: reduce spell cost by 1 per unit with Canalisation on board.
+  // Entraide: reduce creature cost by 1 per allied creature whose race
+  // matches the card's `entraide_race` (the card itself is in hand so it can
+  // never count towards its own reduction).
   let manaCost = card.mana_cost;
   if (card.card_type === "spell") {
     const canalisationCount = player.board.filter(c => hasKw(c, "canalisation")).length;
     manaCost = Math.max(0, manaCost - canalisationCount);
+  }
+  if (card.card_type === "creature") {
+    manaCost = Math.max(0, manaCost - getEntraideReduction(card, player.board));
   }
 
   if (manaCost > player.mana) return state;

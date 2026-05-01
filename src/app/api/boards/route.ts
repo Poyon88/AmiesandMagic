@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
+import { validateFactionClan, validateRace } from '@/lib/validation/faction-clan';
 
 async function getAuthUser() {
   const cookieStore = await cookies();
@@ -57,8 +58,14 @@ export async function POST(request: Request) {
       // `layout` and `graveyard_image_url` columns added by migration.
       layout,
       graveyardImageBase64, graveyardImageMimeType,
+      faction, race, clan,
     } = await request.json();
     if (!name) return NextResponse.json({ error: 'Nom requis' }, { status: 400 });
+
+    const fc = validateFactionClan(faction ?? null, clan ?? null);
+    if (!fc.ok) return NextResponse.json({ error: fc.error }, { status: 400 });
+    const rc = validateRace(race ?? null, fc.faction);
+    if (!rc.ok) return NextResponse.json({ error: rc.error }, { status: 400 });
 
     // Image source: either base64 upload (legacy) OR an already-hosted public
     // URL produced by the direct /api/boards/upload-url flow. The latter
@@ -106,6 +113,9 @@ export async function POST(request: Request) {
     if (defeat_track_id != null) insertData.defeat_track_id = defeat_track_id;
     if (rarity != null) insertData.rarity = rarity;
     if (max_prints != null) insertData.max_prints = max_prints;
+    if (fc.faction) insertData.faction = fc.faction;
+    if (rc.race) insertData.race = rc.race;
+    if (fc.clan) insertData.clan = fc.clan;
     if (is_default === true) {
       // Only one default allowed — clear any previous one.
       await supabase.from('game_boards').update({ is_default: false }).eq('is_default', true);

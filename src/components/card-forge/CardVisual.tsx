@@ -134,6 +134,7 @@ interface CardData {
   convocationTokens?: { token_id: number; attack?: number; health?: number }[];
   lycanthropieTokenId?: number | null;
   lycanthropieTokenName?: string;
+  entraideRace?: string;
   setName?: string;
   setIcon?: string;
   cardYear?: number;
@@ -285,7 +286,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
           <div style={{ display: "flex", gap: 4 * s, flexWrap: "wrap" }}>
             {card!.keywords.filter(kw => !isCreatureKwShadowedBySpell(kw, card!.spellKeywords)).map(kw => {
               const xVal = card!.keywordXValues?.[kw];
-              const displayName = xVal != null ? kw.replace(/ X$/, ` ${toRoman(xVal)}`) : kw;
+              let displayName = xVal != null ? kw.replace(/ X$/, ` ${toRoman(xVal)}`) : kw;
               let displayDesc = xVal != null ? KEYWORDS[kw]?.desc.replace(/X/g, String(xVal)) : KEYWORDS[kw]?.desc;
               if (kw === "Convocation X" && card!.convocationTokenId) {
                 const tokenLabel = card!.convocationTokenName || "token";
@@ -297,6 +298,10 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
               if (kw === "Lycanthropie X" && card!.lycanthropieTokenId) {
                 const tokenLabel = card!.lycanthropieTokenName || "forme transformée";
                 displayDesc = `Début de tour : se transforme en ${tokenLabel} ${xVal ?? "X"}/${xVal ?? "X"} avec Traque.`;
+              }
+              if (kw === "Entraide (Race)" && card!.entraideRace) {
+                displayName = `Entraide (${card!.entraideRace})`;
+                displayDesc = `En main : coûte 1 mana de moins par allié ${card!.entraideRace} présent en jeu (cumulable, plancher 0).`;
               }
               return (
                 <div key={kw} title={`${displayName}: ${displayDesc}`} style={{
@@ -470,7 +475,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
           <div style={{ display: "flex", flexDirection: "column", gap: 6 * s }}>
             {card!.keywords.filter(kw => !isCreatureKwShadowedBySpell(kw, card!.spellKeywords)).map(kw => {
               const xVal = card!.keywordXValues?.[kw];
-              const displayName = xVal != null ? kw.replace(/ X$/, ` ${toRoman(xVal)}`) : kw;
+              let displayName = xVal != null ? kw.replace(/ X$/, ` ${toRoman(xVal)}`) : kw;
               let displayDesc = xVal != null ? KEYWORDS[kw]?.desc.replace(/X/g, String(xVal)) : KEYWORDS[kw]?.desc;
               if (kw === "Convocation X" && card!.convocationTokenId) {
                 const tokenLabel = card!.convocationTokenName || "token";
@@ -482,6 +487,10 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
               if (kw === "Lycanthropie X" && card!.lycanthropieTokenId) {
                 const tokenLabel = card!.lycanthropieTokenName || "forme transformée";
                 displayDesc = `Début de tour : se transforme en ${tokenLabel} ${xVal ?? "X"}/${xVal ?? "X"} avec Traque.`;
+              }
+              if (kw === "Entraide (Race)" && card!.entraideRace) {
+                displayName = `Entraide (${card!.entraideRace})`;
+                displayDesc = `En main : coûte 1 mana de moins par allié ${card!.entraideRace} présent en jeu (cumulable, plancher 0).`;
               }
               return (
                 <div key={kw} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>

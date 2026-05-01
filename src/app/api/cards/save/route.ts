@@ -3,6 +3,7 @@ import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { LIMITED_PRINT_COUNTS } from '@/lib/card-engine/constants';
+import { validateRace } from '@/lib/validation/faction-clan';
 
 
 async function getAuthUser() {
@@ -35,7 +36,7 @@ export async function GET() {
   const supabaseAdmin = getAdminClient();
   const { data, error } = await supabaseAdmin
     .from('cards')
-    .select('id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, keywords, spell_keywords, spell_effects, image_url, illustration_prompt, faction, race, clan, rarity, card_alignment, convocation_token_id, convocation_tokens, lycanthropie_token_id, set_id, card_year, card_month, sfx_play_url, sfx_death_url')
+    .select('id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, keywords, spell_keywords, spell_effects, image_url, illustration_prompt, faction, race, clan, rarity, card_alignment, convocation_token_id, convocation_tokens, lycanthropie_token_id, entraide_race, set_id, card_year, card_month, sfx_play_url, sfx_death_url')
     .order('name');
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -50,6 +51,17 @@ export async function POST(request: Request) {
 
   try {
     const { card, imageBase64, imageMimeType, updateId, sfxPlayBase64, sfxPlayMimeType, sfxDeathBase64, sfxDeathMimeType } = await request.json();
+
+    // Entraide: when the keyword is present, the targeted race must be set
+    // and must be a known race. Other constraints (card.race / faction)
+    // don't apply — Entraide can target any race, regardless of the host
+    // card's own race.
+    const carriesEntraide = Array.isArray(card?.keywords) && card.keywords.includes('entraide');
+    if (carriesEntraide) {
+      const rc = validateRace(card.entraide_race ?? null, null);
+      if (!rc.ok) return NextResponse.json({ error: `Entraide : ${rc.error}` }, { status: 400 });
+      if (!rc.race) return NextResponse.json({ error: 'Entraide : race cible requise.' }, { status: 400 });
+    }
 
     // Upload image if provided
     let image_url: string | null = null;
@@ -83,6 +95,7 @@ export async function POST(request: Request) {
       convocation_token_id: card.convocation_token_id ?? null,
       convocation_tokens: card.convocation_tokens || null,
       lycanthropie_token_id: card.lycanthropie_token_id ?? null,
+      entraide_race: carriesEntraide ? (card.entraide_race ?? null) : null,
       set_id: card.set_id || null,
       card_year: card.card_year || null,
       card_month: card.card_month || null,
