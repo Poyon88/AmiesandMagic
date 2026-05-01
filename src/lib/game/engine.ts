@@ -2757,6 +2757,9 @@ export function canPlayCard(state: GameState, cardInstanceId: string): boolean {
     const canalisationCount = player.board.filter(c => hasKw(c, "canalisation")).length;
     manaCost = Math.max(0, manaCost - canalisationCount);
   }
+  if (card.card.card_type === "creature") {
+    manaCost = Math.max(0, manaCost - getEntraideReduction(card.card, player.board));
+  }
   if (manaCost > player.mana) return false;
   if (card.card.card_type === "creature" && player.board.length >= MAX_BOARD_SIZE) return false;
   return true;
