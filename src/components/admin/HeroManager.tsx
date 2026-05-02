@@ -588,7 +588,35 @@ export default function HeroManager() {
       setPowerImageError("Compose d'abord le prompt (étape 1).");
       return;
     }
-    if (!thumbnailBase64 || !thumbnailMimeType) {
+    // In edit mode the existing portrait lives only as a remote URL
+    // (`thumbnailPreview`) — `thumbnailBase64` stays null until the user
+    // re-uploads or regenerates. Fetch the URL and decode it to base64
+    // on the fly so the user doesn't have to regenerate the portrait
+    // just to refresh the power visual.
+    let refBase64 = thumbnailBase64;
+    let refMime = thumbnailMimeType;
+    if ((!refBase64 || !refMime) && thumbnailPreview) {
+      try {
+        const r = await fetch(thumbnailPreview);
+        if (!r.ok) throw new Error(`fetch ${r.status}`);
+        const blob = await r.blob();
+        refMime = blob.type || "image/webp";
+        refBase64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const result = reader.result as string;
+            const comma = result.indexOf(",");
+            resolve(comma >= 0 ? result.slice(comma + 1) : result);
+          };
+          reader.onerror = () => reject(reader.error);
+          reader.readAsDataURL(blob);
+        });
+      } catch (err) {
+        setPowerImageError(`Impossible de charger le portrait existant comme référence (${err instanceof Error ? err.message : "erreur réseau"}). Régénère ou re-upload le portrait.`);
+        return;
+      }
+    }
+    if (!refBase64 || !refMime) {
       setPowerImageError("Génère ou upload d'abord le portrait du héros — il sert de référence visuelle.");
       return;
     }
@@ -600,8 +628,8 @@ export default function HeroManager() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           prompt: composedPowerPrompt,
-          referenceImageBase64: thumbnailBase64,
-          referenceImageMimeType: thumbnailMimeType,
+          referenceImageBase64: refBase64,
+          referenceImageMimeType: refMime,
         }),
       });
       const data = await res.json();
@@ -1301,10 +1329,12 @@ export default function HeroManager() {
                   <div style={{ fontSize: 9, color: "#999", fontFamily: "'Cinzel',serif", letterSpacing: 1, marginBottom: 4, fontWeight: 700 }}>
                     GÉNÉRATION IA
                   </div>
-                  <div style={{ fontSize: 10, color: thumbnailBase64 ? "#27ae60" : "#e67e22", fontFamily: "'Crimson Text',serif", marginBottom: 6, fontStyle: "italic" }}>
+                  <div style={{ fontSize: 10, color: (thumbnailBase64 || thumbnailPreview) ? "#27ae60" : "#e67e22", fontFamily: "'Crimson Text',serif", marginBottom: 6, fontStyle: "italic" }}>
                     {thumbnailBase64
                       ? "✓ Le portrait du héros sera utilisé comme référence visuelle (Gemini)"
-                      : "⚠ Génère ou upload d'abord le portrait du héros — il est requis comme référence pour garder la même identité"}
+                      : thumbnailPreview
+                        ? "✓ Le portrait existant sera téléchargé et utilisé comme référence visuelle (Gemini)"
+                        : "⚠ Génère ou upload d'abord le portrait du héros — il est requis comme référence pour garder la même identité"}
                   </div>
 
                   <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
@@ -1351,11 +1381,11 @@ export default function HeroManager() {
                     <button
                       type="button"
                       onClick={handleGeneratePowerImage}
-                      disabled={generatingPowerImage || !composedPowerPrompt.trim() || !thumbnailBase64}
+                      disabled={generatingPowerImage || !composedPowerPrompt.trim() || (!thumbnailBase64 && !thumbnailPreview)}
                       style={{
                         ...STYLE.button,
                         background: powerImageBase64 ? "#1e5581" : "#27ae60",
-                        opacity: (generatingPowerImage || !composedPowerPrompt.trim() || !thumbnailBase64) ? 0.5 : 1,
+                        opacity: (generatingPowerImage || !composedPowerPrompt.trim() || (!thumbnailBase64 && !thumbnailPreview)) ? 0.5 : 1,
                       }}
                     >
                       {generatingPowerImage
