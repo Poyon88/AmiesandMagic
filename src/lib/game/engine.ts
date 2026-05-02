@@ -2356,17 +2356,25 @@ export function attack(state: GameState, action: AttackAction): GameState {
       dealDamageToCreature(attacker, target.riposteX);
     }
 
-    // Fureur: après dégâts, attaque immédiatement une unité adverse au choix
-    // Simplified: gains bonus ATK for immediate counter-attack opportunity
+    // Fureur: après avoir subi des dégâts, le créatures attaque
+    // immédiatement (sur le défenseur c'est résolu en contre-attaque
+    // automatique sur l'agresseur ; sur l'attaquant qui survit au
+    // contre-coup, on lui rend une attaque pour qu'il puisse frapper
+    // de nouveau ce même tour). Dans les deux cas la créature gagne
+    // aussi son ATK courante en bonus persistant jusqu'à son prochain
+    // tour (recalculateAuras lit `fureurATKBonus`).
     if (hasKw(target, "fureur") && target.currentHealth > 0 && !target.fureurActive) {
       target.fureurActive = true;
-      target.fureurATKBonus = target.currentAttack; // counter-attack with full ATK
-      // Deal immediate damage to the attacker as counter
+      target.fureurATKBonus = target.currentAttack;
       dealDamageToCreature(attacker, target.currentAttack);
     }
     if (hasKw(attacker, "fureur") && attacker.currentHealth > 0 && !attacker.fureurActive) {
       attacker.fureurActive = true;
-      attacker.fureurATKBonus = 0; // already attacked, just flag
+      attacker.fureurATKBonus = attacker.currentAttack;
+      // Grant an extra strike: the +1 here cancels out the
+      // `attacksRemaining--` a few lines below, so the creature
+      // effectively didn't spend its action by attacking this turn.
+      attacker.attacksRemaining++;
     }
 
     // Augure: if attacker hits hero (doesn't apply in creature combat)
