@@ -132,6 +132,7 @@ function resolveCreatureKeywordAsHeroPower(
   opponent: PlayerState,
   keywordId: string,
   targetInstanceId: string | null | undefined,
+  params?: { amount?: number; attack?: number; health?: number },
 ) {
   switch (keywordId) {
     case "corruption": {
@@ -181,6 +182,20 @@ function resolveCreatureKeywordAsHeroPower(
       const target = player.board.find(c => c.instanceId === targetInstanceId);
       if (!target) break;
       target.currentHealth = 0;
+      break;
+    }
+    case "vampirisme": {
+      // Hero-power adaptation of the creature drain : inflige X dégâts à
+      // une unité ennemie ciblée et soigne le héros lanceur de X. La
+      // version créature (`Vampirisme X`) transfère les PV à la créature
+      // qui frappe ; pour un pouvoir héroïque, le sujet naturel du soin
+      // est le héros qui active.
+      if (!targetInstanceId) break;
+      const target = opponent.board.find(c => c.instanceId === targetInstanceId);
+      if (!target) break;
+      const amount = params?.amount ?? 1;
+      dealDamageToCreature(target, amount, false, true);
+      player.hero.hp = Math.min(player.hero.maxHp, player.hero.hp + amount);
       break;
     }
     default:
@@ -2716,7 +2731,7 @@ export function useHeroPower(state: GameState, action: HeroPowerAction): GameSta
         };
         resolveSpellKeywords(ctx, [instance]);
       } else {
-        resolveCreatureKeywordAsHeroPower(player, opponent, effect.keywordId, action.targetInstanceId);
+        resolveCreatureKeywordAsHeroPower(player, opponent, effect.keywordId, action.targetInstanceId, effect.params);
       }
       // Spell-side effects can kill creatures — clean up deaths so death
       // triggers fire and the board is consistent.
