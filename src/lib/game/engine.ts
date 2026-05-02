@@ -2499,7 +2499,13 @@ function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: P
       }
     }
 
-    // Résurrection: revient avec 1 PV, perd Résurrection
+    // Résurrection: revient avec 1 PV, perd Résurrection. La créature
+    // doit transiter par le cimetière (pour les triggers Mort) puis en
+    // sortir aussitôt — donc on retire l'instance d'origine du
+    // graveyard quand la résurrection réussit, sinon on garderait à la
+    // fois la copie ressuscitée sur le board ET la dépouille au
+    // cimetière (visuellement et pour les comptages type "X morts ce
+    // tour").
     if (hasKw(c, "resurrection") && !c.hasUsedResurrection) {
       if (owner.board.length < MAX_BOARD_SIZE) {
         const newKeywords = c.card.keywords.filter(kw => kw !== "resurrection");
@@ -2510,6 +2516,7 @@ function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: P
         revived.hasUsedResurrection = true;
         revived.hasSummoningSickness = true;
         owner.board.push(revived);
+        owner.graveyard = owner.graveyard.filter(g => g !== c);
       }
     }
 
