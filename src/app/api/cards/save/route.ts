@@ -50,7 +50,38 @@ export async function POST(request: Request) {
   const supabaseAdmin = getAdminClient();
 
   try {
-    const { card, imageBase64, imageMimeType, updateId, sfxPlayBase64, sfxPlayMimeType, sfxDeathBase64, sfxDeathMimeType } = await request.json();
+    const { card, imageBase64, imageMimeType, updateId, sfxPlayBase64, sfxPlayMimeType, sfxDeathBase64, sfxDeathMimeType, partial } = await request.json();
+
+    // Partial update path: only update the fields explicitly present in
+    // `card`. Used by callers that just want to bump a couple of columns
+    // (e.g. setting `card_year` from the editor before generating
+    // prints) without forcing them to fill the entire card payload —
+    // sending an incomplete card through the full-update branch would
+    // null out everything not provided.
+    if (partial && updateId) {
+      const allowed = new Set([
+        'name', 'mana_cost', 'card_type', 'attack', 'health',
+        'effect_text', 'flavor_text', 'illustration_prompt',
+        'keywords', 'spell_keywords', 'spell_effects',
+        'faction', 'race', 'clan', 'rarity', 'card_alignment',
+        'convocation_token_id', 'convocation_tokens',
+        'lycanthropie_token_id', 'entraide_race',
+        'set_id', 'card_year', 'card_month',
+      ]);
+      const patch: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(card ?? {})) {
+        if (allowed.has(k)) patch[k] = v;
+      }
+      if (Object.keys(patch).length === 0) {
+        return NextResponse.json({ success: true, updated: true, noop: true });
+      }
+      const { error: patchErr } = await supabaseAdmin
+        .from('cards')
+        .update(patch)
+        .eq('id', updateId);
+      if (patchErr) throw new Error(patchErr.message);
+      return NextResponse.json({ success: true, updated: true });
+    }
 
     // Entraide: when the keyword is present, the targeted race must be set
     // and must be a known race. Other constraints (card.race / faction)

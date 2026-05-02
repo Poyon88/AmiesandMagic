@@ -353,11 +353,39 @@ export default function CardEditor() {
     }
   }, [selectedCard]);
 
-  // Generate prints for a single card
+  // Generate prints for a single card. Persist the current edit state
+  // first (year / month / rarity etc.) — otherwise the generate API
+  // reads stale DB values and bails out with "cette carte n'a pas
+  // d'année définie" even when the admin just typed the year in the
+  // form.
   const handleGeneratePrints = useCallback(async (cardId: number) => {
     setGeneratingPrints(true);
     setPrintsResult(null);
     try {
+      // Lightweight pre-save: we only push the print-relevant fields so
+      // we don't trip handleSave's validation gates (convocation token
+      // requirements, entraide race, etc.) that may not be relevant
+      // when the admin's only goal is to set a card_year.
+      const preSaveBody = {
+        card: {
+          card_year: editFields.card_year || null,
+          card_month: editFields.card_month || null,
+          rarity: editFields.rarity || null,
+          set_id: editFields.set_id || null,
+        },
+        updateId: cardId,
+        partial: true,
+      };
+      const saveRes = await fetch("/api/cards/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(preSaveBody),
+      });
+      if (!saveRes.ok) {
+        const saveData = await saveRes.json();
+        throw new Error(saveData.error || `Erreur sauvegarde ${saveRes.status}`);
+      }
+
       const res = await fetch("/api/card-prints/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -370,7 +398,7 @@ export default function CardEditor() {
       setPrintsResult({ ok: false, msg: err instanceof Error ? err.message : "Erreur" });
     }
     setGeneratingPrints(false);
-  }, []);
+  }, [editFields]);
 
   // Batch generate prints for all eligible cards
   const handleBatchGeneratePrints = useCallback(async () => {
