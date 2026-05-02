@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import type { CardInstance } from "@/lib/game/types";
 import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText } from "@/lib/game/keyword-labels";
-import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS, getSpellKeywordLabel } from "@/lib/game/spell-keywords";
+import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS, getSpellKeywordLabel, getSpellKeywordDesc } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
@@ -50,6 +50,7 @@ function MulliganCard({
 }) {
   const card = cardInstance.card;
   const isCreature = card.card_type === "creature";
+  const tokenTemplates = useGameStore((s) => s.tokenTemplates);
   const [isHovered, setIsHovered] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const detailTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -313,6 +314,29 @@ function MulliganCard({
           </div>
           );
         })()}
+
+        {/* Spell keyword detail rows — mirror GameCard so spell cards in
+            mulligan show what they actually do (Impact X, Déferlement…)
+            instead of just a name + flavor text. */}
+        {card.spell_keywords && card.spell_keywords.length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            {card.spell_keywords.map((spellKw, i) => {
+              const def = SPELL_KEYWORDS[spellKw.id];
+              if (!def) return null;
+              const label = getSpellKeywordLabel(spellKw);
+              const desc = getSpellKeywordDesc(spellKw, card, tokenTemplates);
+              return (
+                <div key={`sk_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 5 }}>
+                  <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={12} keyword={`spell_${spellKw.id}`} /></span>
+                  <div>
+                    <div style={{ fontSize: 10, color: accentColor, fontWeight: 600 }}>{label}</div>
+                    <div style={{ fontSize: 8, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {card.effect_text && (
           <div style={{
