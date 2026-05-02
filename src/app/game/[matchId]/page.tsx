@@ -80,6 +80,8 @@ export default function GamePage() {
     p1Hero: HeroDefinition | null;
     p2Hero: HeroDefinition | null;
     factionCards: Card[];
+    p1OwnedLimitedIds: number[];
+    p2OwnedLimitedIds: number[];
   } | null>(null);
   const gameInitializedRef = useRef(false);
 
@@ -87,6 +89,7 @@ export default function GamePage() {
     setGameState,
     setLocalPlayerId,
     initGame,
+    setOwnedLimitedCardIds,
   } = useGameStore();
 
   // Initialize match
@@ -127,7 +130,7 @@ export default function GamePage() {
         // silently and creature spawns from Convocation X / Convocations
         // multiples / Lycanthropie X end up looking up an empty registry
         // at game time.
-        const [p1DeckCards, p2DeckCards, p1DeckData, p2DeckData, tokenTemplatesJson, defaultBoardRes] = await Promise.all([
+        const [p1DeckCards, p2DeckCards, p1DeckData, p2DeckData, tokenTemplatesJson, defaultBoardRes, p1CollectionsJson, p2CollectionsJson] = await Promise.all([
           supabase
             .from("deck_cards")
             .select("card_id, quantity, cards(*)")
@@ -153,6 +156,11 @@ export default function GamePage() {
             .eq("is_default", true)
             .eq("is_active", true)
             .maybeSingle(),
+          // Owned-limited card ids for both players. RLS on card_prints
+          // hides the opponent's rows from a direct supabase read, so we
+          // proxy through /api/collections (service role).
+          fetch(`/api/collections?userId=${match.player1_id}`).then((r) => (r.ok ? r.json() : { limitedCardIds: [] })),
+          fetch(`/api/collections?userId=${match.player2_id}`).then((r) => (r.ok ? r.json() : { limitedCardIds: [] })),
         ]);
 
         // Store token templates
@@ -275,7 +283,9 @@ export default function GamePage() {
         useGameStore.getState().setOpponentCardBackUrl(oppBackUrl ?? fallbackBackUrl);
 
         // Store match data for later initialization
-        matchDataRef.current = { match, p1Cards, p2Cards, p1Hero, p2Hero, factionCards: (factionCards ?? []) as unknown as Card[] };
+        const p1OwnedLimitedIds = Array.isArray(p1CollectionsJson?.limitedCardIds) ? p1CollectionsJson.limitedCardIds : [];
+        const p2OwnedLimitedIds = Array.isArray(p2CollectionsJson?.limitedCardIds) ? p2CollectionsJson.limitedCardIds : [];
+        matchDataRef.current = { match, p1Cards, p2Cards, p1Hero, p2Hero, factionCards: (factionCards ?? []) as unknown as Card[], p1OwnedLimitedIds, p2OwnedLimitedIds };
 
         // Join realtime channel with presence
         const channel = supabase.channel(`match:${matchId}`, {
@@ -320,12 +330,13 @@ export default function GamePage() {
 
             if (playerCount >= 2 && !gameInitializedRef.current && matchDataRef.current) {
               gameInitializedRef.current = true;
-              const { match: m, p1Cards: p1, p2Cards: p2, p1Hero, p2Hero, factionCards } = matchDataRef.current;
+              const { match: m, p1Cards: p1, p2Cards: p2, p1Hero, p2Hero, factionCards, p1OwnedLimitedIds, p2OwnedLimitedIds } = matchDataRef.current;
 
               const seed = parseInt(matchId.replace(/-/g, "").slice(0, 8), 16);
               const firstPlayer: 0 | 1 = seed % 2 === 0 ? 0 : 1;
 
               initGame(m.player1_id, m.player2_id, p1, p2, firstPlayer, seed, p1Hero, p2Hero, factionCards);
+              setOwnedLimitedCardIds(p1OwnedLimitedIds, p2OwnedLimitedIds);
               setPhase("playing");
             }
           })

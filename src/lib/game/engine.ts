@@ -340,6 +340,7 @@ export function initializeGame(
     hand, board: [], deck, graveyard: [],
     spellHistory: [],
     fatigueDamage: 0,
+    ownedLimitedCardIds: [],
   });
 
   return {
@@ -1087,8 +1088,14 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       }
     }
 
-    // Sélection X: player picks a card from faction pool by ID
-    if (hasKw(cardInstance, "selection") && action.selectionCardId != null && newState.factionCardPool?.length) {
+    // Sélection X / Renfort Royal X : same picker flow, both resolve by
+    // looking up `selectionCardId` in factionCardPool. The choice menu
+    // is what differs (commons vs owned limited prints with fallback).
+    if (
+      (hasKw(cardInstance, "selection") || hasKw(cardInstance, "renfort_royal"))
+      && action.selectionCardId != null
+      && newState.factionCardPool?.length
+    ) {
       const chosenCard = newState.factionCardPool.find(c => c.id === action.selectionCardId);
       if (chosenCard && player.hand.length < MAX_HAND_SIZE) {
         const chosen = createCardInstance(chosenCard);
@@ -1830,8 +1837,14 @@ function resolveSpellKeywords(
         }
         break;
       }
-      case "selection": {
-        const selCardId = ctx.targetMap["selection_0"] ? parseInt(ctx.targetMap["selection_0"]) : null;
+      case "selection":
+      case "renfort_royal": {
+        // Both routes look up the chosen card by id in the shared
+        // factionCardPool — only the offered shortlist differs.
+        const slotKey = kw.id === "selection" ? "selection_0" : "renfort_royal_0";
+        const fallbackKey = kw.id === "selection" ? "renfort_royal_0" : "selection_0";
+        const slotVal = ctx.targetMap[slotKey] ?? ctx.targetMap[fallbackKey];
+        const selCardId = slotVal ? parseInt(slotVal) : null;
         if (selCardId != null && ctx.state.factionCardPool?.length) {
           const chosenCard = ctx.state.factionCardPool.find(c => c.id === selCardId);
           if (chosenCard && ctx.caster.hand.length < MAX_HAND_SIZE) {
@@ -3080,6 +3093,47 @@ export function creatureNeedsDivination(card: Card): boolean {
 
 export function creatureNeedsSelection(card: Card): boolean {
   return card.card_type === "creature" && card.keywords.includes("selection" as Keyword);
+}
+
+export function creatureNeedsRenfortRoyal(card: Card): boolean {
+  return card.card_type === "creature" && card.keywords.includes("renfort_royal" as Keyword);
+}
+
+const RENFORT_ROYAL_OWNERSHIP_THRESHOLD = 30;
+
+/** Renfort Royal : pioche X cartes parmi les éditions limitées que le
+ *  joueur possède réellement (au moins 30 requises). Si le seuil n'est
+ *  pas atteint, on retombe sur la liste des communes (mêmes règles que
+ *  Sélection X). Les deux clients doivent générer la même proposition,
+ *  d'où le seed déterministe basé sur l'état de jeu visible. */
+export function getRenfortRoyalCards(state: GameState, x: number): Card[] {
+  const pool = state.factionCardPool;
+  if (!pool || pool.length === 0) return [];
+  const player = state.players[state.currentPlayerIndex];
+  const ownedSet = new Set(player.ownedLimitedCardIds ?? []);
+  const ownedLimited = pool.filter(c =>
+    c.card_year != null
+    && c.set_id == null
+    && ownedSet.has(c.id),
+  );
+  if (ownedLimited.length < RENFORT_ROYAL_OWNERSHIP_THRESHOLD) {
+    return getSelectionCards(state, x);
+  }
+  // Same deterministic shuffle pattern as getSelectionCards so both
+  // clients agree without burning the seeded RNG.
+  const entropy = player.hand.length * 7 + player.board.length * 13 + player.deck.length * 3 + player.graveyard.length * 17 + player.mana * 11;
+  const seed = state.turnNumber * 1000 + state.currentPlayerIndex * 100 + entropy + 999;
+  let hash = seed;
+  const pseudoRng = () => {
+    hash = (hash * 16807 + 12345) & 0x7fffffff;
+    return (hash & 0xfffffff) / 0x10000000;
+  };
+  const shuffled = [...ownedLimited];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(pseudoRng() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled.slice(0, Math.min(x, shuffled.length));
 }
 
 /** Get X deterministic random cards from the faction pool.

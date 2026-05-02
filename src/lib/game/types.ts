@@ -33,6 +33,8 @@ export type Keyword =
   | "vampirisme"
   // Tier 2 — Collection
   | "selection"
+  // Tier 3 — Collection (limited prints, ≥30 owned)
+  | "renfort_royal"
   // Tier 3 — Relancer
   | "relancer"
   // Tier 2 — AoE random damage
@@ -95,6 +97,7 @@ export type SpellKeywordId =
   | "rappel"
   | "exhumation"
   | "selection"
+  | "renfort_royal"
   | "relancer"
   | "tempete"
   | "douleur";
@@ -442,6 +445,10 @@ export interface PlayerState {
   graveyard: CardInstance[];
   spellHistory: { card: Card; targetMap: Record<string, string> }[];
   fatigueDamage: number;
+  /** IDs of the cards this player owns through `card_prints` (limited
+   *  series). Drives the Renfort Royal pool: ≥30 owned → pick from these,
+   *  otherwise fall back to common-rarity selection. */
+  ownedLimitedCardIds: number[];
 }
 
 export type GamePhase = "mulligan" | "playing" | "finished";

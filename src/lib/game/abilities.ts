@@ -567,6 +567,19 @@ export const ABILITIES: Record<string, AbilityDef> = {
       params: ["amount"], needsTarget: false,
     },
   },
+  renfort_royal: {
+    id: "renfort_royal", label: "Renfort Royal X", symbol: "👑",
+    desc: "Choisissez une carte parmi X cartes en édition limitée que vous possédez (≥30 requises ; sinon parmi des communes).",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      cost: 14, costPerX: 5, se: 3.5, minTier: 3, scalable: true, zone: "Mixte",
+      desc: "Invocation : révèle X cartes aléatoires parmi vos éditions limitées (≥30 requises ; sinon parmi des communes) ; ajoutez-en une à votre main.",
+    },
+    spell: {
+      desc: "Choisissez une carte parmi X cartes aléatoires de vos éditions limitées (≥30 requises ; sinon parmi des communes) à ajouter en main",
+      params: ["amount"], needsTarget: false,
+    },
+  },
   relancer: {
     id: "relancer", label: "Relancer X", symbol: "🔁",
     desc: "Rejoue les X derniers sorts lancés avec des cibles aléatoires.",

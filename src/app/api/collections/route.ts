@@ -27,6 +27,11 @@ function getAdminClient() {
 }
 
 // GET /api/collections?userId=xxx
+//   → { cardIds, limitedCardIds } where limitedCardIds is the set of
+//     distinct card ids the user owns through `card_prints` (limited
+//     series). The game page (/game/[matchId]) needs the limited list
+//     for both players to feed Renfort Royal — RLS on card_prints
+//     would otherwise hide the opponent's prints from a client read.
 export async function GET(request: Request) {
   const user = await getAuthUser();
   if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
@@ -35,14 +40,19 @@ export async function GET(request: Request) {
   const userId = searchParams.get('userId') ?? user.id;
 
   const supabase = getAdminClient();
-  const { data, error } = await supabase
-    .from('user_collections')
-    .select('card_id')
-    .eq('user_id', userId);
+  const [{ data: collectionData, error: collectionErr }, { data: printsData, error: printsErr }] = await Promise.all([
+    supabase.from('user_collections').select('card_id').eq('user_id', userId),
+    supabase.from('card_prints').select('card_id').eq('owner_id', userId),
+  ]);
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (collectionErr) return NextResponse.json({ error: collectionErr.message }, { status: 500 });
+  if (printsErr) return NextResponse.json({ error: printsErr.message }, { status: 500 });
 
-  return NextResponse.json({ cardIds: (data ?? []).map(r => r.card_id) });
+  const limitedSet = new Set((printsData ?? []).map(r => r.card_id));
+  return NextResponse.json({
+    cardIds: (collectionData ?? []).map(r => r.card_id),
+    limitedCardIds: Array.from(limitedSet),
+  });
 }
 
 // POST /api/collections — { userId, cardIds }

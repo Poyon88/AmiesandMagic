@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { GameState, GameAction, Card, CardInstance, DamageEvent, HeroDefinition, SpellTargetSlot, SpellTargetType, TokenTemplate } from "@/lib/game/types";
+import type { GameState, GameAction, Card, CardInstance, DamageEvent, HeroDefinition, PlayerState, SpellTargetSlot, SpellTargetType, TokenTemplate } from "@/lib/game/types";
 import { useAudioStore } from "./audioStore";
 import SfxEngine from "@/lib/audio/SfxEngine";
 import { playAttackLunge } from "@/lib/game/animations";
@@ -23,6 +23,8 @@ import {
   creatureNeedsDivination,
   creatureNeedsSelection,
   getSelectionCards,
+  creatureNeedsRenfortRoyal,
+  getRenfortRoyalCards,
   getSpellGraveyardTargets,
 } from "@/lib/game/engine";
 
@@ -146,6 +148,10 @@ interface GameStore {
   setBoardTenseMusicUrl: (url: string | null) => void;
   setBoardVictoryMusicUrl: (url: string | null) => void;
   setBoardDefeatMusicUrl: (url: string | null) => void;
+  /** Push the per-player owned-limited-card lists onto each PlayerState
+   *  after `initGame`. Used by Renfort Royal to know which limited
+   *  prints the player can pull from. */
+  setOwnedLimitedCardIds: (player1Ids: number[], player2Ids: number[]) => void;
 
   // Game actions
   dispatchAction: (action: GameAction) => GameAction | null;
@@ -501,6 +507,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
   setBoardTenseMusicUrl: (url: string | null) => set({ boardTenseMusicUrl: url }),
   setBoardVictoryMusicUrl: (url: string | null) => set({ boardVictoryMusicUrl: url }),
   setBoardDefeatMusicUrl: (url: string | null) => set({ boardDefeatMusicUrl: url }),
+  setOwnedLimitedCardIds: (player1Ids, player2Ids) => {
+    const { gameState } = get();
+    if (!gameState) return;
+    gameState.players[0].ownedLimitedCardIds = player1Ids;
+    gameState.players[1].ownedLimitedCardIds = player2Ids;
+    set({ gameState: { ...gameState, players: [...gameState.players] as [PlayerState, PlayerState] } });
+  },
 
   dispatchAction: (action) => {
     const { gameState, localPlayerId, isAnimating } = get();
@@ -1228,6 +1241,23 @@ export const useGameStore = create<GameStore>((set, get) => ({
       }
     }
 
+    if (card && creatureNeedsRenfortRoyal(card.card)) {
+      const xVals = parseXValuesFromEffectText(card.card.effect_text);
+      const x = xVals["renfort_royal"] || Math.max(2, Math.floor(card.card.mana_cost / 2));
+      const choices = getRenfortRoyalCards(gameState, x);
+      if (choices.length > 0) {
+        set({
+          selectedCardInstanceId: instanceId,
+          selectedAttackerInstanceId: null,
+          validTargets: [],
+          targetingMode: "selection",
+          selectionCards: choices,
+          pendingBoardPosition: boardPosition ?? null,
+        });
+        return null;
+      }
+    }
+
     return get().dispatchAction({
       type: "play_card",
       cardInstanceId: instanceId,
@@ -1309,11 +1339,47 @@ export const useGameStore = create<GameStore>((set, get) => ({
       }
     }
 
+    // Check if creature needs renfort_royal
+    if (card.card.card_type === "creature" && creatureNeedsRenfortRoyal(card.card)) {
+      const xVals = parseXValuesFromEffectText(card.card.effect_text);
+      const x = xVals["renfort_royal"] || Math.max(2, Math.floor(card.card.mana_cost / 2));
+      const choices = getRenfortRoyalCards(gameState, x);
+      if (choices.length > 0) {
+        set({
+          selectedCardInstanceId: instanceId,
+          selectedAttackerInstanceId: null,
+          validTargets: [],
+          targetingMode: "selection",
+          selectionCards: choices,
+          pendingBoardPosition: null,
+        });
+        return null;
+      }
+    }
+
     // Check if spell has selection keyword
     if (card.card.card_type === "spell" && card.card.spell_keywords?.some(kw => kw.id === "selection")) {
       const selKw = card.card.spell_keywords!.find(kw => kw.id === "selection")!;
       const x = selKw.amount ?? 2;
       const choices = getSelectionCards(gameState, x);
+      if (choices.length > 0) {
+        set({
+          selectedCardInstanceId: instanceId,
+          selectedAttackerInstanceId: null,
+          validTargets: [],
+          targetingMode: "selection",
+          selectionCards: choices,
+          pendingBoardPosition: null,
+        });
+        return null;
+      }
+    }
+
+    // Check if spell has renfort_royal keyword
+    if (card.card.card_type === "spell" && card.card.spell_keywords?.some(kw => kw.id === "renfort_royal")) {
+      const rrKw = card.card.spell_keywords!.find(kw => kw.id === "renfort_royal")!;
+      const x = rrKw.amount ?? 2;
+      const choices = getRenfortRoyalCards(gameState, x);
       if (choices.length > 0) {
         set({
           selectedCardInstanceId: instanceId,
