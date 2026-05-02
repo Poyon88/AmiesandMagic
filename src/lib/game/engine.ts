@@ -560,19 +560,16 @@ export function startTurn(state: GameState): GameState {
     // Reset esquive for the new turn
     creature.esquiveUsedThisTurn = false;
 
-    // Reset paralysie
+    // Paralysie : la créature est encore paralysée pendant TOUT son
+    // tour (icône + descriptif l'affichent), elle ne peut pas attaquer.
+    // Le flag est nettoyé en fin de tour (endTurn) pour que le joueur
+    // affecté voie pourquoi sa créature reste inerte.
     if (creature.isParalyzed) {
-      creature.isParalyzed = false;
-      creature.attacksRemaining = 0; // can't attack this turn
+      creature.attacksRemaining = 0;
       creature.hasSummoningSickness = true;
     }
-
-    // Reset fureur
-    if (creature.fureurActive) {
-      creature.currentAttack -= creature.fureurATKBonus;
-      creature.fureurActive = false;
-      creature.fureurATKBonus = 0;
-    }
+    // fureurActive idem : on conserve le bonus ATK pendant le tour de
+    // l'affecté, le reset arrive en endTurn.
 
     // Lycanthropie X: permanent transformation into X/X token with Traque
     if (hasKw(creature, "lycanthropie") && !creature.hasTransformedLycanthropie) {
@@ -658,6 +655,26 @@ export function endTurn(state: GameState): GameState {
   const pool = state.factionCardPool;
   const newState = deepClone({ ...state, factionCardPool: undefined } as GameState);
   newState.factionCardPool = pool;
+
+  // Expire one-turn statuses on the OUTGOING player's creatures: they were
+  // visible (icon + statut row) during the player's whole turn so the
+  // user understood why a paralyzed creature couldn't act, and we now
+  // clear them as the turn ends. This used to happen in startTurn for
+  // the same player, which made the status pop off the moment the
+  // affected player's turn began — exactly when they were trying to
+  // diagnose what was happening.
+  const outgoing = newState.players[newState.currentPlayerIndex];
+  for (const creature of outgoing.board) {
+    if (creature.isParalyzed) {
+      creature.isParalyzed = false;
+    }
+    if (creature.fureurActive) {
+      creature.currentAttack -= creature.fureurATKBonus;
+      creature.fureurActive = false;
+      creature.fureurATKBonus = 0;
+    }
+  }
+
   newState.currentPlayerIndex = newState.currentPlayerIndex === 0 ? 1 : 0;
   newState.lastAction = { type: "end_turn" };
   return startTurn(newState);
