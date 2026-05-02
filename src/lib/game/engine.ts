@@ -195,7 +195,7 @@ function resolveCreatureKeywordAsHeroPower(
       if (!target) break;
       const amount = params?.amount ?? 1;
       dealDamageToCreature(target, amount, false, true);
-      player.hero.hp = Math.min(player.hero.maxHp, player.hero.hp + amount);
+      player.hero.hp += amount;
       break;
     }
     default:
@@ -1389,9 +1389,9 @@ function resolveSpellEffect(
     case "heal": {
       const amount = effect.amount ?? 0;
       if (effect.target === "friendly_hero") {
-        caster.hero.hp = Math.min(caster.hero.maxHp, caster.hero.hp + amount);
+        caster.hero.hp += amount;
       } else if (effect.target === "enemy_hero") {
-        opponent.hero.hp = Math.min(opponent.hero.maxHp, opponent.hero.hp + amount);
+        opponent.hero.hp += amount;
       } else if (targetInstanceId) {
         const target = findCreatureOnBoard(caster, targetInstanceId);
         if (target) target.currentHealth = Math.min(target.maxHealth, target.currentHealth + amount);
@@ -1634,7 +1634,7 @@ function resolveSpellKeywords(
         } else if (targetId === "enemy_hero") {
           dealDamageToHero(ctx.opponent.hero, amount);
         }
-        ctx.caster.hero.hp = Math.min(ctx.caster.hero.maxHp, ctx.caster.hero.hp + amount);
+        ctx.caster.hero.hp += amount;
         break;
       }
       case "entrave": {
@@ -1684,9 +1684,9 @@ function resolveSpellKeywords(
       case "guerison": {
         const amount = kw.amount ?? 0;
         if (targetId === "enemy_hero") {
-          ctx.opponent.hero.hp = Math.min(ctx.opponent.hero.maxHp, ctx.opponent.hero.hp + amount);
+          ctx.opponent.hero.hp += amount;
         } else if (targetId === "friendly_hero") {
-          ctx.caster.hero.hp = Math.min(ctx.caster.hero.maxHp, ctx.caster.hero.hp + amount);
+          ctx.caster.hero.hp += amount;
         } else if (targetId) {
           const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
           if (target) target.currentHealth = Math.min(target.maxHealth, target.currentHealth + amount);
@@ -1976,9 +1976,9 @@ function resolveAtomicEffect(ctx: SpellResolutionContext, effect: AtomicEffect):
     case "heal": {
       const amount = effect.amount ?? 0;
       if (targetId === "friendly_hero") {
-        ctx.caster.hero.hp = Math.min(ctx.caster.hero.maxHp, ctx.caster.hero.hp + amount);
+        ctx.caster.hero.hp += amount;
       } else if (targetId === "enemy_hero") {
-        ctx.opponent.hero.hp = Math.min(ctx.opponent.hero.maxHp, ctx.opponent.hero.hp + amount);
+        ctx.opponent.hero.hp += amount;
       } else if (targetId) {
         const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
         if (target) target.currentHealth = Math.min(target.maxHealth, target.currentHealth + amount);
@@ -2252,7 +2252,7 @@ export function attack(state: GameState, action: AttackAction): GameState {
 
     // Drain de vie: heal own hero
     if (hasKw(attacker, "drain_de_vie")) {
-      player.hero.hp = Math.min(player.hero.maxHp, player.hero.hp + attackPower);
+      player.hero.hp += attackPower;
     }
 
     // Augure: piochez une carte quand dégâts au héros adverse
@@ -2338,12 +2338,12 @@ export function attack(state: GameState, action: AttackAction): GameState {
 
     // Drain de vie: heal own hero for damage dealt
     if (hasKw(attacker, "drain_de_vie")) {
-      player.hero.hp = Math.min(player.hero.maxHp, player.hero.hp + attackPower);
+      player.hero.hp += attackPower;
     }
 
     // Drain de vie (defender): heal opponent hero for counter-damage dealt
     if (hasKw(target, "drain_de_vie")) {
-      opponent.hero.hp = Math.min(opponent.hero.maxHp, opponent.hero.hp + target.currentAttack);
+      opponent.hero.hp += target.currentAttack;
     }
 
     // Liaison de vie: damage taken shared with enemy hero
