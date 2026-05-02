@@ -329,6 +329,21 @@ export default function CardForge() {
   // applicable_to. Polymorphic abilities save once per host below.
   const kwTargetHosts: ("creature" | "spell")[] = kwSelectedAbility?.applicable_to ?? [];
 
+  // Auto-fill the icon name from the chosen ability so the Save button
+  // stops being silently disabled when the admin writes a custom prompt
+  // (the upload + auto-prompt flows already pre-fill the name, but the
+  // free-text → "Relancer 3 variantes" path didn't, leaving the field
+  // empty and the gate `!kwName.trim()` blocking the save).
+  useEffect(() => {
+    if (kwSelectedAbility && !kwName.trim()) {
+      setKwName(kwSelectedAbility.label);
+    }
+    // We intentionally don't depend on `kwName` so that clearing the
+    // field manually doesn't immediately re-fill it — the auto-fill
+    // only kicks in when the ability changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [kwSelectedAbility]);
+
   async function loadKwAssets() {
     const res = await fetch(`/api/keyword-icon-assets${kwGalleryFilter ? `?keyword=${encodeURIComponent(kwGalleryFilter)}` : ""}`);
     const data = await res.json();
