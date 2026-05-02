@@ -3087,14 +3087,20 @@ export function getSelectionCards(state: GameState, x: number): Card[] {
   const pool = state.factionCardPool;
   if (!pool || pool.length === 0) return [];
 
-  // Filter pool to only factions present in the current player's deck + Mercenaires
+  // Filter pool to only factions present in the current player's deck +
+  // Mercenaires, and to Commune rarity — Sélection should never offer
+  // a Rare/Épique/Légendaire as a free pick from the open pool.
   const player = state.players[state.currentPlayerIndex];
   const playerFactions = new Set<string>();
   playerFactions.add("Mercenaires");
   for (const c of [...player.hand, ...player.board, ...player.deck, ...player.graveyard]) {
     if (c.card.faction && c.card.faction !== "Mercenaires") playerFactions.add(c.card.faction);
   }
-  const filtered = pool.filter(c => c.faction && playerFactions.has(c.faction));
+  const filtered = pool.filter(c =>
+    c.faction
+    && playerFactions.has(c.faction)
+    && c.rarity === "Commune",
+  );
   if (filtered.length === 0) return [];
 
   // Deterministic seed based on game state — varies each time within a turn
