@@ -176,10 +176,24 @@ export default function BoardCreature({
         }} />
       )}
 
-      {/* Poison indicator */}
+      {/* Mana cost orb (top-left) — sized 1/2.5 of the hand-card orb (22px →
+          9px) per the design spec. Mirrors the hand-card style (blue
+          gradient, fontSize scaled accordingly) so the player can read
+          the cost on the board too. */}
+      <div style={{
+        position: "absolute", top: 3, left: 3, zIndex: 3,
+        width: 9, height: 9, borderRadius: "50%",
+        background: "radial-gradient(circle, #1a3a6a, #0d1f3c)",
+        outline: "1px solid #74b9ff",
+        fontSize: 6, color: "#74b9ff", fontWeight: 700,
+        lineHeight: "9px", textAlign: "center",
+        boxShadow: "0 0 3px #74b9ff55",
+      }}>{card.mana_cost}</div>
+
+      {/* Poison indicator (shifted below the mana orb) */}
       {creature.isPoisoned && (
         <div style={{
-          position: "absolute", top: 4, left: 4, zIndex: 3,
+          position: "absolute", top: 14, left: 4, zIndex: 3,
           width: 18, height: 18, borderRadius: "50%",
           background: "#22c55e33", border: "1px solid #22c55e88",
           display: "flex", alignItems: "center", justifyContent: "center",
@@ -208,10 +222,11 @@ export default function BoardCreature({
         }} />
       )}
 
-      {/* Paralyzed indicator */}
+      {/* Paralyzed indicator (stacked below the mana orb, then below poison
+          when poison is also active) */}
       {creature.isParalyzed && (
         <div style={{
-          position: "absolute", top: creature.isPoisoned ? 26 : 4, left: 4, zIndex: 3,
+          position: "absolute", top: creature.isPoisoned ? 36 : 14, left: 4, zIndex: 3,
           width: 18, height: 18, borderRadius: "50%",
           background: "#8b5cf633", border: "1px solid #8b5cf688",
           display: "flex", alignItems: "center", justifyContent: "center",
