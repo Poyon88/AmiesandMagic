@@ -2685,9 +2685,14 @@ export function useHeroPower(state: GameState, action: HeroPowerAction): GameSta
           attack: effect.params?.attack,
           health: effect.params?.health,
         };
+        // resolveSpellKeywords reads the target from `targetMap["kw_<i>"]`
+        // (or `target_0`), not from a key named after the keyword id. The
+        // keyword is at index 0 here since the hero power resolves a single
+        // instance. Set both for safety.
         const targetMap: Record<string, string> = {};
         if (action.targetInstanceId) {
-          targetMap[String(effect.keywordId)] = action.targetInstanceId;
+          targetMap.kw_0 = action.targetInstanceId;
+          targetMap.target_0 = action.targetInstanceId;
         }
         const ctx: SpellResolutionContext = {
           state: newState,
