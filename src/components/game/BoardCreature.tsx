@@ -393,6 +393,46 @@ export default function BoardCreature({
           </div>
         )}
 
+        {/* Statuts actifs — runtime flags that aren't on the card itself.
+            Only renders when at least one is active so it doesn't take up
+            vertical space on plain creatures. Mirrors the corner pips
+            (poison ☠️, paralysie ⛓️, bouclier 🔰, contresort 🚫, mal
+            d'invocation 💤, fureur 💢, berserk 😤, ombre 🌑) so the
+            right-click view is the single source of truth for what's
+            currently affecting the creature. */}
+        {(() => {
+          const statuses: { emoji: string; label: string; color: string }[] = [];
+          if (creature.isPoisoned) statuses.push({ emoji: "☠️", label: "Empoisonné", color: "#22c55e" });
+          if (creature.isParalyzed) statuses.push({ emoji: "⛓️", label: "Paralysé", color: "#8b5cf6" });
+          if (creature.hasDivineShield) statuses.push({ emoji: "🔰", label: "Bouclier divin", color: "#f1c40f" });
+          if (creature.contresortActive) statuses.push({ emoji: "🚫", label: "Contresort prêt", color: "#3b82f6" });
+          if (creature.hasSummoningSickness && isOwn) statuses.push({ emoji: "💤", label: "Mal d'invocation", color: "#94a3b8" });
+          if (creature.fureurActive) statuses.push({ emoji: "💢", label: "Fureur", color: "#f97316" });
+          if (creature.berserkActive) statuses.push({ emoji: "😤", label: "Berserk", color: "#dc2626" });
+          if (card.keywords.includes("ombre" as import("@/lib/game/types").Keyword) && !creature.ombreRevealed) {
+            statuses.push({ emoji: "🌑", label: "Ombre (furtif)", color: "#6b7280" });
+          }
+          if (statuses.length === 0) return null;
+          return (
+            <div style={{
+              display: "flex", flexDirection: "column", gap: 2,
+              padding: "4px 5px",
+              background: "#0d0d1aaa", borderRadius: 4,
+              border: "1px solid #ffffff14",
+            }}>
+              <div style={{ fontSize: 7, color: "#888", fontFamily: "'Cinzel',serif", letterSpacing: 0.5, textAlign: "center", marginBottom: 1 }}>
+                STATUTS
+              </div>
+              {statuses.map(s => (
+                <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 8, color: s.color, fontFamily: "'Crimson Text',serif" }}>
+                  <span style={{ fontSize: 9 }}>{s.emoji}</span>
+                  <span>{s.label}</span>
+                </div>
+              ))}
+            </div>
+          );
+        })()}
+
         {/* Capacités detail */}
         {card.keywords.length > 0 && (() => {
           const xVals = { ...creature.grantedKeywordX, ...parseXValuesFromEffectText(card.effect_text) };
