@@ -28,13 +28,19 @@ export default function HandCard({
 }: HandCardProps) {
   const card = cardInstance.card;
   const gameState = useGameStore(s => s.gameState);
+  const localPlayerId = useGameStore(s => s.localPlayerId);
   const tokenTemplates = useGameStore(s => s.tokenTemplates);
 
   // Compute effective mana cost (accounting for Canalisation on spells and
-  // Entraide on creatures — cumulable, plancher 0).
+  // Entraide on creatures — cumulable, plancher 0). Reductions must be
+  // computed against the OWNER of the hand (the local player), not the
+  // active turn — otherwise during the opponent's turn we'd be reading
+  // the opponent's board and the cost shown in our hand would silently
+  // ignore our own Entraide / Canalisation creatures.
   let effectiveManaCost = card.mana_cost;
   if (gameState) {
-    const player = gameState.players[gameState.currentPlayerIndex];
+    const player = gameState.players.find(p => p.id === localPlayerId)
+      ?? gameState.players[gameState.currentPlayerIndex];
     if (card.card_type === "spell") {
       const canalisationCount = player.board.filter(c => c.card.keywords.includes("canalisation" as import("@/lib/game/types").Keyword)).length;
       effectiveManaCost -= canalisationCount;
