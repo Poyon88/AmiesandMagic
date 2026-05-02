@@ -2232,11 +2232,15 @@ export function attack(state: GameState, action: AttackAction): GameState {
   if (attacker.hasSummoningSickness && hasKw(attacker, "raid") && effectiveTarget === "enemy_hero") return state;
 
   // Taunt check
-  // Vol : ignore les taunts qui n'ont pas Vol elles-mêmes
-  const attackerFlies = hasKw(attacker, "ranged");
-  const relevantTaunts = opponent.board.filter(c =>
-    hasKw(c, "taunt") && (!attackerFlies || hasKw(c, "ranged"))
-  );
+  // Vol : ignore TOUTES les provocations adverses, même celles portées
+  // par une créature qui a aussi Vol. Le keyword historique côté engine
+  // est `ranged` mais le registre actuel l'expose sous `vol` — on
+  // accepte les deux pour ne pas perdre le bénéfice selon la façon
+  // dont la carte a été stockée.
+  const attackerFlies = hasKw(attacker, "ranged") || hasKw(attacker, "vol");
+  const relevantTaunts = attackerFlies
+    ? []
+    : opponent.board.filter(c => hasKw(c, "taunt"));
   if (relevantTaunts.length > 0) {
     if (effectiveTarget === "enemy_hero") return state;
     const target = opponent.board.find(c => c.instanceId === effectiveTarget);
@@ -2962,11 +2966,11 @@ export function getValidTargets(state: GameState, attackerInstanceId: string): s
   const attacker = player.board.find(c => c.instanceId === attackerInstanceId);
   if (!attacker) return [];
 
-  // Vol : ignore les taunts sans Vol
-  const attackerFlies2 = hasKw(attacker, "ranged");
-  const relevantTaunts2 = opponent.board.filter(c =>
-    hasKw(c, "taunt") && (!attackerFlies2 || hasKw(c, "ranged"))
-  );
+  // Vol : ignore TOUTES les provocations adverses (cf. attackCreature).
+  const attackerFlies2 = hasKw(attacker, "ranged") || hasKw(attacker, "vol");
+  const relevantTaunts2 = attackerFlies2
+    ? []
+    : opponent.board.filter(c => hasKw(c, "taunt"));
 
   // Filter out Ombre (stealth) units that haven't acted yet
   const targetableEnemies = opponent.board.filter(c =>

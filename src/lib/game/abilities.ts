@@ -125,7 +125,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
   // ─── Creature-only — Tier 1 ───────────────────────────────────────────────
   vol: {
     id: "vol", label: "Vol", symbol: "🦅",
-    desc: "Ignore les provocations adverses qui n'ont pas Vol.",
+    desc: "Ignore les provocations adverses.",
     applicable_to: ["creature"],
     creature: { cost: 7, costPerX: 0, se: 1.5, minTier: 1, scalable: false, zone: "Terrain" },
   },
