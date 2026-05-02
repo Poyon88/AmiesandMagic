@@ -42,3 +42,10 @@ next-env.d.ts
 
 # Local Netlify folder
 .netlify
+
+# Claude Code local artefacts (per-machine skill installs + lock file)
+.claude/
+skills-lock.json
+
+# Generated docs (regenerate from generate-keywords-pdf.py if needed)
+Armies-and-Magic-Capacites.pdf
