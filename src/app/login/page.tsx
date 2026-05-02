@@ -10,9 +10,32 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
   const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
   const [loading, setLoading] = useState(false);
+  const [forgotLoading, setForgotLoading] = useState(false);
   const router = useRouter();
   const supabase = createClient();
+
+  async function handleForgotPassword() {
+    setError("");
+    setInfo("");
+    if (!email) {
+      setError("Entrez votre email avant de demander un reset.");
+      return;
+    }
+    setForgotLoading(true);
+    try {
+      const { error: resetErr } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/callback?next=/auth/reset-password`,
+      });
+      if (resetErr) throw resetErr;
+      setInfo(`Un email de réinitialisation a été envoyé à ${email}. Vérifie ta boîte (et le dossier spam).`);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Impossible d'envoyer le mail de réinitialisation.");
+    } finally {
+      setForgotLoading(false);
+    }
+  }
 
   async function handleEmailAuth(e: React.FormEvent) {
     e.preventDefault();
@@ -107,6 +130,11 @@ export default function LoginPage() {
             {error}
           </div>
         )}
+        {info && (
+          <div className="mb-4 p-3 bg-success/15 border border-success/40 rounded-lg text-success text-sm">
+            {info}
+          </div>
+        )}
 
         {/* Email/Password form */}
         <form onSubmit={handleEmailAuth} className="space-y-4">
@@ -138,9 +166,21 @@ export default function LoginPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-foreground/80 mb-1">
-              Password
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-foreground/80">
+                Password
+              </label>
+              {!isRegister && (
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
+                  disabled={forgotLoading}
+                  className="text-xs text-primary hover:underline disabled:opacity-50"
+                >
+                  {forgotLoading ? "Sending..." : "Forgot password?"}
+                </button>
+              )}
+            </div>
             <input
               type="password"
               value={password}
