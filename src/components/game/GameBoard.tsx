@@ -16,6 +16,7 @@ import GraveyardOverlay from "./GraveyardOverlay";
 import DivinationOverlay from "./DivinationOverlay";
 import SelectionOverlay from "./SelectionOverlay";
 import TactiqueKeywordOverlay from "./TactiqueKeywordOverlay";
+import CostPaymentOverlay from "./CostPaymentOverlay";
 import EffectLog from "./EffectLog";
 import TurnTimer from "./TurnTimer";
 import TargetingArrow from "./TargetingArrow";
@@ -862,6 +863,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           onCancel={clearSelection}
         />
       )}
+      <CostPaymentOverlay onConfirmedAction={broadcast} />
       {/* Action history (EffectLog) hidden for now per design feedback —
           the entries are still being logged in the store, the overlay
           is just not rendered. Re-enable by removing the comment when

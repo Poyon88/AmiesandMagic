@@ -36,6 +36,13 @@ export default function BoardCreature({
   const card = creature.card;
   const tokenTemplates = useGameStore(s => s.tokenTemplates);
   const targetingMode = useGameStore(s => s.targetingMode);
+  const selectedSacrificeIds = useGameStore(s => s.selectedSacrificeIds);
+  const toggleSacrificeSelection = useGameStore(s => s.toggleSacrificeSelection);
+
+  const isCostPaymentMode = targetingMode === "cost_payment";
+  const isSelectedForSacrifice = selectedSacrificeIds.includes(creature.instanceId);
+  // Only the player's own board creatures can be sacrificed for a cost.
+  const canSelectForSacrifice = isCostPaymentMode && isOwn;
   // Resolve token template image: instance cards spawned by the engine
   // carry token_id when they originate from a saved template; fall back to
   // race lookup for legacy spawns (spell-keyword "invocation", etc.).
@@ -69,7 +76,8 @@ export default function BoardCreature({
   const iconOverrides = useKeywordIconStore((st) => st.overrides);
 
   let border = "2px solid #3d3d5c";
-  if (isSelected) border = "2px solid #f1c40f";
+  if (isSelectedForSacrifice) border = "2px solid #a060a0";
+  else if (isSelected) border = "2px solid #f1c40f";
   else if (isValidTarget) border = "2px solid #e74c3c";
   else if (canAttack) border = "2px solid #2ecc71";
 
@@ -92,7 +100,9 @@ export default function BoardCreature({
     >
     <div
       ref={creatureRef}
-      onClick={onClick}
+      onClick={canSelectForSacrifice
+        ? () => toggleSacrificeSelection(creature.instanceId)
+        : onClick}
       onMouseEnter={() => {
         setIsHovered(true);
         onMouseEnter?.();
@@ -127,7 +137,10 @@ export default function BoardCreature({
         zoom: isZoomed ? 1.55 : 1,
         background: "linear-gradient(160deg, #1a1a2e, #0d0d1a)",
         border,
-        boxShadow: isSelected ? "0 0 14px #f1c40f44" : isValidTarget ? "0 0 14px #e74c3c44" : "none",
+        boxShadow: isSelectedForSacrifice ? "0 0 16px #a060a088"
+          : isSelected ? "0 0 14px #f1c40f44"
+          : isValidTarget ? "0 0 14px #e74c3c44"
+          : "none",
         overflow: "hidden",
         cursor: "pointer",
         transition: "border-color 0.2s, box-shadow 0.2s",
@@ -155,6 +168,18 @@ export default function BoardCreature({
           </div>
         )}
       </div>
+
+      {/* Cost-payment sacrifice marker */}
+      {isSelectedForSacrifice && (
+        <div style={{
+          position: "absolute", inset: 0, zIndex: 4,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          background: "linear-gradient(135deg, #a060a033, #00000022)",
+          pointerEvents: "none",
+        }}>
+          <span style={{ fontSize: 60, color: "#e0c0e0", filter: "drop-shadow(0 0 6px #000)" }}>☠</span>
+        </div>
+      )}
 
 
       {/* Summoning sickness overlay */}

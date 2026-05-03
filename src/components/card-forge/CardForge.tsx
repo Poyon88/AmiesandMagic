@@ -68,6 +68,10 @@ interface ForgeCard {
   cardYear?: number;
   cardMonth?: number;
   spellKeywords?: SpellKeywordInstance[];
+  // Alternative costs (cumulative with mana). 0 / undefined = inactive.
+  lifeCost?: number;
+  discardCost?: number;
+  sacrificeCost?: number;
 }
 
 function Sec({ title, children }: { title: string; children: React.ReactNode }) {
@@ -1329,6 +1333,9 @@ export default function CardForge() {
   const [manualAttack, setManualAttack] = useState(3);
   const [manualDefense, setManualDefense] = useState(3);
   const [manualPower, setManualPower] = useState(2);
+  const [manualLifeCost, setManualLifeCost] = useState(0);
+  const [manualDiscardCost, setManualDiscardCost] = useState(0);
+  const [manualSacrificeCost, setManualSacrificeCost] = useState(0);
   const [manualAbility, setManualAbility] = useState("");
   const [manualFlavorText, setManualFlavorText] = useState("");
   const [manualIllustrationPrompt, setManualIllustrationPrompt] = useState("");
@@ -1420,6 +1427,9 @@ export default function CardForge() {
     cardYear: cardYear || undefined,
     cardMonth: cardMonth || undefined,
     spellKeywords: type !== "Unité" && spellKeywords.length > 0 ? spellKeywords : undefined,
+    lifeCost: manualLifeCost || undefined,
+    discardCost: manualDiscardCost || undefined,
+    sacrificeCost: manualSacrificeCost || undefined,
   };
 
   // All races from all factions
@@ -1632,6 +1642,7 @@ export default function CardForge() {
     setManualIllustrationPrompt(""); setManualKeywords([]); setKeywordXValues({}); setCard(null);
     setEditedPrompt(null); setSaveResult(null);
     setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace("");
+    setManualLifeCost(0); setManualDiscardCost(0); setManualSacrificeCost(0);
     setCardImages(prev => Object.fromEntries(Object.entries(prev).filter(([k]) => k !== "manual_preview")));
   }, []);
 
@@ -1949,6 +1960,9 @@ export default function CardForge() {
             set_id: cardSetId || null,
             card_year: cardYear || null,
             card_month: cardMonth || null,
+            life_cost: forgeCard.lifeCost ?? 0,
+            discard_cost: forgeCard.discardCost ?? 0,
+            sacrifice_cost: forgeCard.sacrificeCost ?? 0,
           },
           imageBase64,
           imageMimeType,
@@ -2507,7 +2521,7 @@ export default function CardForge() {
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6 }}>
                     <div>
                       <label style={{ fontSize: 8, color: "#4a90d9", letterSpacing: 1 }}>MANA</label>
-                      <input type="number" min={1} max={10} value={manualMana} onChange={e => setManualMana(Math.max(1, Math.min(10, parseInt(e.target.value) || 1)))}
+                      <input type="number" min={0} max={10} value={manualMana} onChange={e => setManualMana(Math.max(0, Math.min(10, parseInt(e.target.value) || 0)))}
                         style={{ width: "100%", padding: "5px 4px", borderRadius: 6, border: "1px solid #4a90d944", background: "#fff", color: "#4a90d9", fontFamily: "'Cinzel',serif", fontSize: 14, textAlign: "center", marginTop: 3 }}
                       />
                     </div>
@@ -2536,6 +2550,28 @@ export default function CardForge() {
                         />
                       </div>
                     )}
+                  </div>
+
+                  {/* Coûts additionnels (cumulables avec mana) */}
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6 }}>
+                    <div>
+                      <label style={{ fontSize: 8, color: "#e74c3c", letterSpacing: 1 }} title="Points de vie payés par le héros à l'invocation. La carte est non-jouable si la somme tomberait à 0 PV.">♥ VIE</label>
+                      <input type="number" min={0} max={20} value={manualLifeCost} onChange={e => setManualLifeCost(Math.max(0, Math.min(20, parseInt(e.target.value) || 0)))}
+                        style={{ width: "100%", padding: "5px 4px", borderRadius: 6, border: "1px solid #e74c3c44", background: "#fff", color: "#e74c3c", fontFamily: "'Cinzel',serif", fontSize: 14, textAlign: "center", marginTop: 3 }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }} title="Nombre de cartes que le joueur doit défausser de sa main pour jouer cette carte.">🃏 DISCARD</label>
+                      <input type="number" min={0} max={5} value={manualDiscardCost} onChange={e => setManualDiscardCost(Math.max(0, Math.min(5, parseInt(e.target.value) || 0)))}
+                        style={{ width: "100%", padding: "5px 4px", borderRadius: 6, border: "1px solid #88888844", background: "#fff", color: "#555", fontFamily: "'Cinzel',serif", fontSize: 14, textAlign: "center", marginTop: 3 }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 8, color: "#a060a0", letterSpacing: 1 }} title="Nombre de créatures alliées que le joueur doit sacrifier pour jouer cette carte.">☠ SACRIFICE</label>
+                      <input type="number" min={0} max={5} value={manualSacrificeCost} onChange={e => setManualSacrificeCost(Math.max(0, Math.min(5, parseInt(e.target.value) || 0)))}
+                        style={{ width: "100%", padding: "5px 4px", borderRadius: 6, border: "1px solid #a060a044", background: "#fff", color: "#a060a0", fontFamily: "'Cinzel',serif", fontSize: 14, textAlign: "center", marginTop: 3 }}
+                      />
+                    </div>
                   </div>
 
                   {/* Spell Keywords + Composable Effects Builder */}

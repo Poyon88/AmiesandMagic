@@ -522,9 +522,16 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   rassemblement: {
     id: "rassemblement", label: "Rassemblement X", symbol: "🏴",
-    desc: "Invocation : révèle les X premières cartes du deck ; ajoutez à votre main toutes les unités de même race et défaussez le reste.",
-    applicable_to: ["creature"],
-    creature: { cost: 14, costPerX: 4, se: 4.0, minTier: 3, scalable: true, zone: "Mixte" },
+    desc: "Révèle les X premières cartes du deck ; ajoutez à votre main les unités de même race et défaussez le reste.",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      cost: 14, costPerX: 4, se: 4.0, minTier: 3, scalable: true, zone: "Mixte",
+      desc: "Invocation : révèle les X premières cartes du deck ; ajoutez à votre main toutes les unités de même race et défaussez le reste.",
+    },
+    spell: {
+      desc: "Révèle les X premières cartes de votre deck ; ajoutez à votre main les unités de la même race que ce sort et défaussez le reste.",
+      params: ["amount"], needsTarget: false,
+    },
   },
 
   // ─── Polymorphic — creature + spell ───────────────────────────────────────

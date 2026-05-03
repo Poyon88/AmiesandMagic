@@ -36,7 +36,7 @@ export async function GET() {
   const supabaseAdmin = getAdminClient();
   const { data, error } = await supabaseAdmin
     .from('cards')
-    .select('id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, keywords, spell_keywords, spell_effects, image_url, illustration_prompt, faction, race, clan, rarity, card_alignment, convocation_token_id, convocation_tokens, lycanthropie_token_id, entraide_race, set_id, card_year, card_month, sfx_play_url, sfx_death_url')
+    .select('id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, keywords, spell_keywords, spell_effects, image_url, illustration_prompt, faction, race, clan, rarity, card_alignment, convocation_token_id, convocation_tokens, lycanthropie_token_id, entraide_race, set_id, card_year, card_month, sfx_play_url, sfx_death_url, life_cost, discard_cost, sacrifice_cost')
     .order('name');
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -67,6 +67,7 @@ export async function POST(request: Request) {
         'convocation_token_id', 'convocation_tokens',
         'lycanthropie_token_id', 'entraide_race',
         'set_id', 'card_year', 'card_month',
+        'life_cost', 'discard_cost', 'sacrifice_cost',
       ]);
       const patch: Record<string, unknown> = {};
       for (const [k, v] of Object.entries(card ?? {})) {
@@ -132,6 +133,9 @@ export async function POST(request: Request) {
       card_month: card.card_month || null,
       rarity: card.rarity || null,
       card_alignment: card.card_alignment || null,
+      life_cost: card.life_cost ?? null,
+      discard_cost: card.discard_cost ?? null,
+      sacrifice_cost: card.sacrifice_cost ?? null,
     };
     if (image_url) cardData.image_url = image_url;
 

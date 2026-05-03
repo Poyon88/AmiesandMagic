@@ -143,6 +143,10 @@ interface CardData {
   budgetTotal: number;
   printNumber?: number;
   maxPrints?: number;
+  // Alternative costs displayed as side pips next to the mana orb.
+  lifeCost?: number;
+  discardCost?: number;
+  sacrificeCost?: number;
 }
 
 // ─── COMPONENT ───────────────────────────────────────────────────────────────
@@ -263,15 +267,61 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
         }}>
           {card!.name}
         </span>
-        {/* Mana orb */}
-        <div style={{
-          width: 28 * s, height: 28 * s, borderRadius: "50%", flexShrink: 0,
-          background: "radial-gradient(circle,#1a3a6a,#0d1f3c)",
-          border: `${2 * s}px solid #74b9ff`,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 13 * s, color: "#74b9ff", fontWeight: 700,
-          boxShadow: "0 0 8px #74b9ff55",
-        }}>{card!.mana}</div>
+        {/* Cost row: mana + alternative costs (life/discard/sacrifice) */}
+        <div style={{ display: "flex", flexDirection: "row", gap: 4 * s, alignItems: "center", flexShrink: 0 }}>
+          {card!.mana > 0 && (
+            <div title={`Coût en mana : ${card!.mana}`} style={{
+              width: 28 * s, height: 28 * s, borderRadius: "50%",
+              background: "radial-gradient(circle,#1a3a6a,#0d1f3c)",
+              border: `${2 * s}px solid #74b9ff`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 13 * s, color: "#74b9ff", fontWeight: 700,
+              boxShadow: "0 0 8px #74b9ff55",
+            }}>{card!.mana}</div>
+          )}
+          {card!.lifeCost && card!.lifeCost > 0 ? (
+            <div title={`Coût en vie : ${card!.lifeCost}`} style={{
+              width: 28 * s, height: 28 * s, borderRadius: "50%",
+              background: "radial-gradient(circle,#6a1a1a,#3c0d0d)",
+              border: `${2 * s}px solid #e74c3c`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 13 * s, color: "#ffb3b3", fontWeight: 700,
+              boxShadow: "0 0 8px #e74c3c66",
+              position: "relative",
+            }}>
+              <span style={{ position: "absolute", top: -2 * s, right: -2 * s, fontSize: 11 * s, filter: "drop-shadow(0 0 2px #000)" }}>♥</span>
+              {card!.lifeCost}
+            </div>
+          ) : null}
+          {card!.discardCost && card!.discardCost > 0 ? (
+            <div title={`Défaussez ${card!.discardCost} carte${card!.discardCost > 1 ? "s" : ""}`} style={{
+              width: 24 * s, height: 28 * s, borderRadius: 5 * s,
+              background: "radial-gradient(circle,#3a3a4a,#1f1f2c)",
+              border: `${2 * s}px solid #bbbbbb`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 13 * s, color: "#e0e0e0", fontWeight: 700,
+              boxShadow: "0 0 8px #00000088",
+              position: "relative",
+            }}>
+              <span style={{ position: "absolute", top: -3 * s, right: -3 * s, fontSize: 11 * s, filter: "drop-shadow(0 0 2px #000)" }}>🃏</span>
+              {card!.discardCost}
+            </div>
+          ) : null}
+          {card!.sacrificeCost && card!.sacrificeCost > 0 ? (
+            <div title={`Sacrifiez ${card!.sacrificeCost} créature${card!.sacrificeCost > 1 ? "s" : ""}`} style={{
+              width: 28 * s, height: 28 * s, borderRadius: "50%",
+              background: "radial-gradient(circle,#3a1a3a,#1f0d1f)",
+              border: `${2 * s}px solid #a060a0`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 13 * s, color: "#e0c0e0", fontWeight: 700,
+              boxShadow: "0 0 8px #a060a066",
+              position: "relative",
+            }}>
+              <span style={{ position: "absolute", top: -2 * s, right: -2 * s, fontSize: 11 * s, filter: "drop-shadow(0 0 2px #000)" }}>☠</span>
+              {card!.sacrificeCost}
+            </div>
+          ) : null}
+        </div>
       </div>
 
       {/* ── Bottom bar: stats + keywords + rarity ── */}

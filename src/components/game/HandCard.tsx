@@ -12,6 +12,7 @@ import { isCreatureKwShadowedBySpell, getEntraideReduction } from "@/lib/game/ab
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
+import CostBadges from "@/components/cards/CostBadges";
 
 interface HandCardProps {
   cardInstance: CardInstance;
@@ -30,6 +31,14 @@ export default function HandCard({
   const gameState = useGameStore(s => s.gameState);
   const localPlayerId = useGameStore(s => s.localPlayerId);
   const tokenTemplates = useGameStore(s => s.tokenTemplates);
+  const targetingMode = useGameStore(s => s.targetingMode);
+  const pendingCostCard = useGameStore(s => s.pendingCostCard);
+  const selectedDiscardIds = useGameStore(s => s.selectedDiscardIds);
+  const toggleDiscardSelection = useGameStore(s => s.toggleDiscardSelection);
+
+  const isCostPaymentMode = targetingMode === "cost_payment";
+  const isPendingCostSource = pendingCostCard?.instanceId === cardInstance.instanceId;
+  const isSelectedForDiscard = selectedDiscardIds.includes(cardInstance.instanceId);
 
   // Compute effective mana cost (accounting for Canalisation on spells and
   // Entraide on creatures — cumulable, plancher 0). Reductions must be
@@ -85,7 +94,12 @@ export default function HandCard({
   const W = 120;
   const H = 168;
   const accentColor = isCreature ? "#74b9ff" : "#ce93d8";
-  const borderColor = isSelected ? "#c8a84e" : isCreature ? "#3d3d5c" : "#6c3483";
+  // Cost-payment visuals override the normal selection styling: red border
+  // when picked for discard, gold glow on the source card being played.
+  const borderColor = isSelectedForDiscard ? "#e74c3c"
+    : (isCostPaymentMode && isPendingCostSource) ? "#c8a84e"
+    : isSelected ? "#c8a84e"
+    : isCreature ? "#3d3d5c" : "#6c3483";
   const iconOverrides = useKeywordIconStore((st) => st.overrides);
 
   return (
@@ -115,7 +129,9 @@ export default function HandCard({
           setShowDetails(prev => !prev);
           if (detailTimer.current) clearTimeout(detailTimer.current);
         }}
-        onClick={canPlay ? onClick : undefined}
+        onClick={isCostPaymentMode
+          ? (isPendingCostSource ? undefined : () => toggleDiscardSelection(cardInstance.instanceId))
+          : (canPlay ? onClick : undefined)}
         style={{
           width: W, height: H, borderRadius: 8,
           position: isZoomed ? "absolute" : "relative",
@@ -126,10 +142,15 @@ export default function HandCard({
             ? "linear-gradient(160deg, #1a1a2e, #0d0d1a)"
             : "linear-gradient(160deg, #1a0a2a, #0d0d1a)",
           border: `2px solid ${borderColor}`,
-          boxShadow: isSelected ? "0 0 12px #c8a84e44" : "none",
+          boxShadow: isSelectedForDiscard ? "0 0 14px #e74c3c88"
+            : (isCostPaymentMode && isPendingCostSource) ? "0 0 14px #c8a84e88"
+            : isSelected ? "0 0 12px #c8a84e44"
+            : "none",
           overflow: "hidden",
-          cursor: isDragging ? "grabbing" : canPlay ? "grab" : "not-allowed",
-          opacity: isDragging ? 0.5 : canPlay ? 1 : 0.75,
+          cursor: isCostPaymentMode
+            ? (isPendingCostSource ? "default" : "pointer")
+            : isDragging ? "grabbing" : canPlay ? "grab" : "not-allowed",
+          opacity: isDragging ? 0.5 : (isCostPaymentMode || canPlay) ? 1 : 0.75,
           transition: "border-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease",
           transform: isZoomed ? "translateX(-50%)" : "none",
           zoom: isZoomed ? 1.3 : 1,
@@ -161,16 +182,28 @@ export default function HandCard({
         </div>
 
 
-        {/* Mana orb */}
-        <div style={{
-          position: "absolute", top: 4, left: 4, zIndex: 2,
-          width: 22, height: 22, borderRadius: "50%",
-          background: isCostReduced ? "radial-gradient(circle, #1a6a3a, #0d3c1f)" : "radial-gradient(circle, #1a3a6a, #0d1f3c)",
-          outline: `2px solid ${isCostReduced ? "#2ecc71" : "#74b9ff"}`,
-          fontSize: 13, color: isCostReduced ? "#2ecc71" : "#74b9ff", fontWeight: 700,
-          lineHeight: "22px", textAlign: "center",
-          boxShadow: isCostReduced ? "0 0 6px #2ecc7155" : "0 0 6px #74b9ff55",
-        }}>{effectiveManaCost}</div>
+        {/* Cost badges (mana + life + discard + sacrifice) */}
+        <CostBadges card={card} size={22} effectiveManaCost={effectiveManaCost} isCostReduced={isCostReduced} />
+
+        {/* Cost-payment selection overlays */}
+        {isSelectedForDiscard && (
+          <div style={{
+            position: "absolute", inset: 0, zIndex: 4,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            background: "linear-gradient(135deg, #e74c3c33, #00000022)",
+            pointerEvents: "none",
+          }}>
+            <span style={{ fontSize: 60, color: "#e74c3c", filter: "drop-shadow(0 0 6px #000)" }}>✕</span>
+          </div>
+        )}
+        {isCostPaymentMode && isPendingCostSource && (
+          <div style={{
+            position: "absolute", top: 4, right: 4, zIndex: 4,
+            background: "#c8a84e", color: "#0d0d1a",
+            fontSize: 9, fontWeight: 700, padding: "2px 5px", borderRadius: 3,
+            pointerEvents: "none",
+          }}>EN JEU</div>
+        )}
 
         {/* Bottom bar */}
         <div style={{

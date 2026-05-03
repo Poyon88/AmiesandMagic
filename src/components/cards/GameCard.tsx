@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import type { Card, CardSet, TokenTemplate } from "@/lib/game/types";
+import CostBadges from "./CostBadges";
 
 // Module-level lazy cache so any GameCard mounted out of the in-game flow
 // (deck builder, collection, auctions, landing showcase…) can still resolve
@@ -200,17 +201,8 @@ export default function GameCard({
       </div>
 
 
-      {/* ── Mana orb ── */}
-      <div style={{
-        position: "absolute", top: 5 * s, left: 5 * s, zIndex: 2,
-        width: 27 * s, height: 27 * s, borderRadius: "50%",
-        background: "radial-gradient(circle, #1a3a6a, #0d1f3c)",
-        outline: `2px solid #74b9ff`,
-        fontSize: 17 * s, color: "#74b9ff", fontWeight: 700,
-        lineHeight: `${27 * s}px`,
-        textAlign: "center",
-        boxShadow: "0 0 6px #74b9ff55",
-      }}>{card.mana_cost}</div>
+      {/* ── Cost badges (mana + life + discard + sacrifice) ── */}
+      <CostBadges card={card} size={27 * s} />
 
       {/* ── Count badge ── */}
       {count !== undefined && (

@@ -34,6 +34,9 @@ interface DbCard {
   set_id: number | null;
   card_year: number | null;
   card_month: number | null;
+  life_cost: number | null;
+  discard_cost: number | null;
+  sacrifice_cost: number | null;
 }
 
 const S = {
@@ -184,6 +187,9 @@ export default function CardEditor() {
       set_id: card.set_id,
       card_year: card.card_year,
       card_month: card.card_month,
+      life_cost: card.life_cost ?? 0,
+      discard_cost: card.discard_cost ?? 0,
+      sacrifice_cost: card.sacrifice_cost ?? 0,
     });
     setNewImageFile(null);
     setNewImagePreview(null);
@@ -298,6 +304,9 @@ export default function CardEditor() {
         set_id: editFields.set_id || null,
         card_year: editFields.card_year || null,
         card_month: editFields.card_month || null,
+        life_cost: (editFields.life_cost as number) || 0,
+        discard_cost: (editFields.discard_cost as number) || 0,
+        sacrifice_cost: (editFields.sacrifice_cost as number) || 0,
       };
 
       const body: Record<string, unknown> = { card: cardData, updateId: selectedCard.id };
@@ -652,6 +661,22 @@ export default function CardEditor() {
                   </div>
                 </>
               )}
+            </div>
+
+            {/* Coûts additionnels (cumulables avec mana_cost) */}
+            <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+              <div style={{ flex: 1 }}>
+                <div style={S.label} title="Points de vie payés par le héros à l'invocation. La carte est non-jouable si la somme tomberait à 0 PV.">Coût ♥ Vie</div>
+                <input type="number" min={0} max={20} value={(editFields.life_cost as number) ?? 0} onChange={e => updateField("life_cost", parseInt(e.target.value) || 0)} style={S.input} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={S.label} title="Nombre de cartes que le joueur doit défausser de sa main pour jouer cette carte.">Coût 🃏 Discard</div>
+                <input type="number" min={0} max={5} value={(editFields.discard_cost as number) ?? 0} onChange={e => updateField("discard_cost", parseInt(e.target.value) || 0)} style={S.input} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={S.label} title="Nombre de créatures alliées que le joueur doit sacrifier pour jouer cette carte.">Coût ☠ Sacrifice</div>
+                <input type="number" min={0} max={5} value={(editFields.sacrifice_cost as number) ?? 0} onChange={e => updateField("sacrifice_cost", parseInt(e.target.value) || 0)} style={S.input} />
+              </div>
             </div>
 
             {/* Faction */}

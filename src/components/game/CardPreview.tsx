@@ -8,6 +8,7 @@ import { SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, getSpellKeywordLabel } from "@/li
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import { ALIGNMENTS, getEffectiveAlignment } from "@/lib/card-engine/constants";
 import CardArt from "@/components/cards/CardArt";
+import CostBadges from "@/components/cards/CostBadges";
 
 interface CardPreviewProps {
   cardInstance: CardInstance;
@@ -71,10 +72,8 @@ export default function CardPreview({ cardInstance, anchorRef, position = "above
           ${isCreature ? "bg-card-bg border-card-border" : "bg-purple-900/80 border-purple-500/40"}
         `}
       >
-        {/* Mana cost */}
-        <div className="absolute top-2 left-2 w-9 h-9 rounded-full bg-mana-blue flex items-center justify-center text-white font-bold text-lg z-10 shadow-md">
-          {card.mana_cost}
-        </div>
+        {/* Cost badges (mana + life + discard + sacrifice) */}
+        <CostBadges card={card} size={32} />
 
         {/* Art */}
         <CardArt card={card} className="h-28" />

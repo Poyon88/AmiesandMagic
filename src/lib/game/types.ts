@@ -100,7 +100,8 @@ export type SpellKeywordId =
   | "renfort_royal"
   | "relancer"
   | "tempete"
-  | "douleur";
+  | "douleur"
+  | "rassemblement";
 
 export interface SpellKeywordInstance {
   id: SpellKeywordId;
@@ -263,6 +264,11 @@ export interface Card {
   card_month?: number | null;
   sfx_play_url?: string | null;
   sfx_death_url?: string | null;
+  // Alternative costs (additional, cumulative with mana_cost). Null/0 = inactive.
+  // Not reducible by Canalisation/Entraide — those touch only mana_cost.
+  life_cost?: number | null;
+  discard_cost?: number | null;
+  sacrifice_cost?: number | null;
 }
 
 export interface CardSet {
@@ -483,6 +489,13 @@ export interface PlayCardAction {
   tactiqueKeywords?: Keyword[];
   convocationRace?: string;  // chosen race for token
   selectionCardId?: number;  // chosen card ID from faction pool
+  // Alternative-cost payments chosen by the player. discardInstanceIds picks
+  // cards from the player's hand to discard (length must equal card.discard_cost);
+  // sacrificeInstanceIds picks allied creatures to sacrifice (length must
+  // equal card.sacrifice_cost). Distinct from `targetInstanceId` used by the
+  // Sacrifice keyword to designate a buff target.
+  discardInstanceIds?: string[];
+  sacrificeInstanceIds?: string[];
 }
 
 export interface AttackAction {

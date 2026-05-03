@@ -68,6 +68,19 @@ function hasKw(ci: CardInstance, kw: Keyword): boolean {
   return ci.card.keywords.includes(kw);
 }
 
+// Alternative cost helpers — collapse null/undefined/0 to 0 so call sites can
+// stay terse. Canalisation/Entraide reductions never apply here: only mana_cost
+// is reducible by design.
+export function getLifeCost(card: Card): number {
+  return Math.max(0, card.life_cost ?? 0);
+}
+export function getDiscardCost(card: Card): number {
+  return Math.max(0, card.discard_cost ?? 0);
+}
+export function getSacrificeCost(card: Card): number {
+  return Math.max(0, card.sacrifice_cost ?? 0);
+}
+
 // Add a keyword to a creature at runtime (e.g. spell granting Bouclier
 // Divin to a target, or hero power mode 1 / 3). Mirrors any stateful flags
 // that the engine reads off CardInstance instead of card.keywords. The
@@ -714,8 +727,55 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
 
   if (manaCost > player.mana) return state;
 
+  // Alternative costs — re-validate (UI may be stale) and reject silently if
+  // the requested payment doesn't match the card's declared costs.
+  const lifeCost = getLifeCost(card);
+  const discardCost = getDiscardCost(card);
+  const sacrificeCost = getSacrificeCost(card);
+  const requestedDiscards = action.discardInstanceIds ?? [];
+  const requestedSacrifices = action.sacrificeInstanceIds ?? [];
+  if (lifeCost > 0 && player.hero.hp - lifeCost <= 0) return state;
+  if (requestedDiscards.length !== discardCost) return state;
+  if (requestedSacrifices.length !== sacrificeCost) return state;
+  // The card being played cannot be selected as its own discard cost — even
+  // though it still sits in the hand at this point.
+  if (requestedDiscards.includes(action.cardInstanceId)) return state;
+  // All chosen IDs must exist on the relevant zones.
+  for (const id of requestedDiscards) {
+    if (!player.hand.find(c => c.instanceId === id)) return state;
+  }
+  for (const id of requestedSacrifices) {
+    if (!player.board.find(c => c.instanceId === id)) return state;
+  }
+
   player.mana -= manaCost;
+  // Pay life cost directly — armor protects from damage, not voluntary
+  // self-payment. Coherent with canPlayCard's `hp - life_cost > 0` check.
+  if (lifeCost > 0) player.hero.hp -= lifeCost;
+  // Remove the played card from hand FIRST so it can never be its own discard
+  // target and so hand-size checks downstream are accurate.
   player.hand.splice(cardIndex, 1);
+  // Discard chosen hand cards.
+  for (const id of requestedDiscards) {
+    const idx = player.hand.findIndex(c => c.instanceId === id);
+    if (idx !== -1) {
+      const [discarded] = player.hand.splice(idx, 1);
+      player.graveyard.push(discarded);
+    }
+  }
+  // Sacrifice chosen board creatures, batching death triggers at the end.
+  if (requestedSacrifices.length > 0) {
+    const sacrificed: CardInstance[] = [];
+    for (const id of requestedSacrifices) {
+      const idx = player.board.findIndex(c => c.instanceId === id);
+      if (idx !== -1) {
+        const [creature] = player.board.splice(idx, 1);
+        player.graveyard.push(creature);
+        sacrificed.push(creature);
+      }
+    }
+    if (sacrificed.length > 0) processDeathTriggers(sacrificed, player, opponent);
+  }
 
   if (card.card_type === "creature") {
     if (player.board.length >= MAX_BOARD_SIZE) return state;
@@ -1877,6 +1937,25 @@ function resolveSpellKeywords(
         recastSpells(ctx.state, ctx.caster, ctx.opponent, amount);
         break;
       }
+      case "rassemblement": {
+        // Mirror the creature-side behaviour: reveal X top deck cards, keep
+        // same-race creatures (capped by hand size), discard the rest.
+        // The spell uses its host card's race — a Rassemblement spell with no
+        // race assigned is a no-op (same fail-safe as the creature side).
+        const x = kw.amount ?? 1;
+        const race = ctx.card.race;
+        if (!race || ctx.caster.deck.length === 0) break;
+        const count = Math.min(x, ctx.caster.deck.length);
+        const revealed = ctx.caster.deck.splice(0, count);
+        for (const c of revealed) {
+          if (c.card.race === race && c.card.card_type === "creature" && ctx.caster.hand.length < MAX_HAND_SIZE) {
+            ctx.caster.hand.push(c);
+          } else {
+            ctx.caster.graveyard.push(c);
+          }
+        }
+        break;
+      }
     }
   }
 }
@@ -2958,7 +3037,18 @@ export function canPlayCard(state: GameState, cardInstanceId: string): boolean {
     manaCost = Math.max(0, manaCost - getEntraideReduction(card.card, player.board));
   }
   if (manaCost > player.mana) return false;
-  if (card.card.card_type === "creature" && player.board.length >= MAX_BOARD_SIZE) return false;
+  // Alternative costs — non-reducible. Note: canPlayCard checks the raw life
+  // cost only; cumulative drains (e.g. life_cost + Douleur on the same card)
+  // can still kill the hero — coherent with Douleur's existing behaviour.
+  const lifeCost = getLifeCost(card.card);
+  if (lifeCost > 0 && player.hero.hp - lifeCost <= 0) return false;
+  const discardCost = getDiscardCost(card.card);
+  if (player.hand.length - 1 < discardCost) return false;
+  const sacrificeCost = getSacrificeCost(card.card);
+  if (player.board.length < sacrificeCost) return false;
+  // Sacrifices free up board slots, so the test compares the final board size.
+  if (card.card.card_type === "creature" &&
+      player.board.length - sacrificeCost + 1 > MAX_BOARD_SIZE) return false;
   return true;
 }
 

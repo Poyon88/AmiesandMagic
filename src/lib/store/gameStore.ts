@@ -26,6 +26,8 @@ import {
   creatureNeedsRenfortRoyal,
   getRenfortRoyalCards,
   getSpellGraveyardTargets,
+  getDiscardCost,
+  getSacrificeCost,
 } from "@/lib/game/engine";
 
 export interface SpellCastEvent {
@@ -83,7 +85,13 @@ interface GameStore {
   selectedCardInstanceId: string | null;
   selectedAttackerInstanceId: string | null;
   validTargets: string[];
-  targetingMode: "none" | "attack" | "spell" | "spell_multi" | "creature" | "graveyard" | "divination" | "selection" | "tactique_keywords" | "hero_power";
+  targetingMode: "none" | "attack" | "spell" | "spell_multi" | "creature" | "graveyard" | "divination" | "selection" | "tactique_keywords" | "hero_power" | "cost_payment";
+  // Alternative-cost payment state — set when the player tries to play a card
+  // with a discard_cost or sacrifice_cost > 0. The player picks N cards from
+  // hand and/or N creatures from board, then confirms via CostPaymentOverlay.
+  pendingCostCard: { instanceId: string; discardNeeded: number; sacrificeNeeded: number; boardPosition: number | null } | null;
+  selectedDiscardIds: string[];
+  selectedSacrificeIds: string[];
   pendingBoardPosition: number | null;
   divinationCards: CardInstance[];
   selectionCards: Card[];
@@ -167,6 +175,10 @@ interface GameStore {
   clearHeroPowerCastEvent: () => void;
   clearGraveyardAffectEvent: () => void;
   clearDiscardFromHandEvent: () => void;
+  toggleDiscardSelection: (instanceId: string) => void;
+  toggleSacrificeSelection: (instanceId: string) => void;
+  confirmCostPayment: () => GameAction | null;
+  cancelCostPayment: () => void;
   activateHeroPower: () => GameAction | null;
   confirmMulligan: (selectedInstanceIds: string[]) => GameAction | null;
 
@@ -447,6 +459,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
   selectedAttackerInstanceId: null,
   validTargets: [],
   targetingMode: "none",
+  pendingCostCard: null,
+  selectedDiscardIds: [],
+  selectedSacrificeIds: [],
   pendingBoardPosition: null,
   divinationCards: [],
   selectionCards: [],
@@ -525,6 +540,20 @@ export const useGameStore = create<GameStore>((set, get) => ({
     // enqueues remote actions via pendingIncomingActions directly.
     if (isAnimating) {
       return null;
+    }
+
+    // Merge any pending alternative-cost selections (discards / sacrifices)
+    // into the play_card action — single chokepoint so callers don't each
+    // have to remember to forward the IDs.
+    if (action.type === "play_card") {
+      const { selectedDiscardIds, selectedSacrificeIds } = get();
+      if (selectedDiscardIds.length > 0 || selectedSacrificeIds.length > 0) {
+        action = {
+          ...action,
+          discardInstanceIds: action.discardInstanceIds ?? selectedDiscardIds,
+          sacrificeInstanceIds: action.sacrificeInstanceIds ?? selectedSacrificeIds,
+        };
+      }
     }
 
     // Detect spell cast before applying action
@@ -998,6 +1027,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
         selectedAttackerInstanceId: null,
         validTargets: [],
         targetingMode: "none",
+        pendingCostCard: null,
+        selectedDiscardIds: [],
+        selectedSacrificeIds: [],
         damageEvents: [],
         lastSfxEvents: sfxEvents,
         effectLog: [...get().effectLog, ...logEntries].slice(-20),
@@ -1013,6 +1045,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
       selectedAttackerInstanceId: null,
       validTargets: [],
       targetingMode: "none",
+      pendingCostCard: null,
+      selectedDiscardIds: [],
+      selectedSacrificeIds: [],
     });
 
     // --- Phase timings ---
@@ -1181,6 +1216,23 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     const player = gameState.players[gameState.currentPlayerIndex];
     const card = player.hand.find(c => c.instanceId === instanceId);
+    // Alternative-cost gating: if the card requires discards or sacrifices,
+    // open the cost-payment flow first. Targeting (creature/graveyard/etc.)
+    // resumes after confirmCostPayment.
+    if (card) {
+      const discardNeeded = getDiscardCost(card.card);
+      const sacrificeNeeded = getSacrificeCost(card.card);
+      if (discardNeeded > 0 || sacrificeNeeded > 0) {
+        set({
+          targetingMode: "cost_payment",
+          pendingCostCard: { instanceId, discardNeeded, sacrificeNeeded, boardPosition: boardPosition ?? null },
+          selectedDiscardIds: [],
+          selectedSacrificeIds: [],
+          selectedCardInstanceId: instanceId,
+        });
+        return null;
+      }
+    }
     if (card && creatureNeedsTarget(card.card)) {
       const targets = getCreatureTargets(gameState, card.card);
       if (targets.length > 0) {
@@ -1274,6 +1326,22 @@ export const useGameStore = create<GameStore>((set, get) => ({
     if (!card) return null;
 
     if (!canPlayCard(gameState, instanceId)) return null;
+
+    // Alternative-cost gating — see playCardDirect for the same pattern.
+    {
+      const discardNeeded = getDiscardCost(card.card);
+      const sacrificeNeeded = getSacrificeCost(card.card);
+      if (discardNeeded > 0 || sacrificeNeeded > 0) {
+        set({
+          targetingMode: "cost_payment",
+          pendingCostCard: { instanceId, discardNeeded, sacrificeNeeded, boardPosition: null },
+          selectedDiscardIds: [],
+          selectedSacrificeIds: [],
+          selectedCardInstanceId: instanceId,
+        });
+        return null;
+      }
+    }
 
     // Check if creature needs a target
     if (card.card.card_type === "creature" && creatureNeedsTarget(card.card)) {
@@ -1628,6 +1696,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
       spellTargetSlots: [],
       currentTargetSlotIndex: 0,
       collectedTargetMap: {},
+      pendingCostCard: null,
+      selectedDiscardIds: [],
+      selectedSacrificeIds: [],
     });
   },
 
@@ -1657,6 +1728,188 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   clearDiscardFromHandEvent: () => {
     set({ discardFromHandEvent: null });
+  },
+
+  toggleDiscardSelection: (instanceId) => {
+    const { pendingCostCard, selectedDiscardIds } = get();
+    if (!pendingCostCard) return;
+    if (instanceId === pendingCostCard.instanceId) return; // can't discard the card being played
+    const idx = selectedDiscardIds.indexOf(instanceId);
+    if (idx !== -1) {
+      const next = [...selectedDiscardIds];
+      next.splice(idx, 1);
+      set({ selectedDiscardIds: next });
+    } else if (selectedDiscardIds.length < pendingCostCard.discardNeeded) {
+      set({ selectedDiscardIds: [...selectedDiscardIds, instanceId] });
+    }
+  },
+
+  toggleSacrificeSelection: (instanceId) => {
+    const { pendingCostCard, selectedSacrificeIds } = get();
+    if (!pendingCostCard) return;
+    const idx = selectedSacrificeIds.indexOf(instanceId);
+    if (idx !== -1) {
+      const next = [...selectedSacrificeIds];
+      next.splice(idx, 1);
+      set({ selectedSacrificeIds: next });
+    } else if (selectedSacrificeIds.length < pendingCostCard.sacrificeNeeded) {
+      set({ selectedSacrificeIds: [...selectedSacrificeIds, instanceId] });
+    }
+  },
+
+  confirmCostPayment: () => {
+    const { gameState, pendingCostCard, selectedDiscardIds, selectedSacrificeIds } = get();
+    if (!gameState || !pendingCostCard) return null;
+    if (selectedDiscardIds.length !== pendingCostCard.discardNeeded) return null;
+    if (selectedSacrificeIds.length !== pendingCostCard.sacrificeNeeded) return null;
+
+    const player = gameState.players[gameState.currentPlayerIndex];
+    const card = player.hand.find(c => c.instanceId === pendingCostCard.instanceId);
+    if (!card) {
+      get().cancelCostPayment();
+      return null;
+    }
+    const instanceId = pendingCostCard.instanceId;
+    const boardPosition = pendingCostCard.boardPosition;
+
+    // Exit cost_payment mode but KEEP the selected IDs — dispatchAction merges
+    // them automatically into any subsequent play_card action.
+    set({ targetingMode: "none", pendingCostCard: null });
+
+    // Now route through the standard targeting checks (creature/graveyard/
+    // divination/selection/spell), exactly like playCardDirect / selectCardInHand
+    // do after their canPlayCard check. Mirroring keeps the flow consistent.
+
+    if (creatureNeedsTarget(card.card)) {
+      const targets = getCreatureTargets(gameState, card.card);
+      if (targets.length > 0) {
+        set({
+          selectedCardInstanceId: instanceId,
+          selectedAttackerInstanceId: null,
+          validTargets: targets,
+          targetingMode: "creature",
+          pendingBoardPosition: boardPosition,
+        });
+        return null;
+      }
+    }
+    if (creatureNeedsGraveyardTarget(card.card)) {
+      const gravTargets = getGraveyardTargets(gameState, card.card);
+      if (gravTargets.length > 0) {
+        set({
+          selectedCardInstanceId: instanceId,
+          selectedAttackerInstanceId: null,
+          validTargets: gravTargets,
+          targetingMode: "graveyard",
+          pendingBoardPosition: boardPosition,
+        });
+        return null;
+      }
+    }
+    if (creatureNeedsDivination(card.card)) {
+      const deckCards = player.deck.slice(0, Math.min(3, player.deck.length));
+      if (deckCards.length > 0) {
+        set({
+          selectedCardInstanceId: instanceId,
+          selectedAttackerInstanceId: null,
+          validTargets: [],
+          targetingMode: "divination",
+          divinationCards: deckCards,
+          pendingBoardPosition: boardPosition,
+        });
+        return null;
+      }
+    }
+    if (creatureNeedsSelection(card.card)) {
+      const selXVals = parseXValuesFromEffectText(card.card.effect_text);
+      const x = selXVals["selection"] || Math.max(2, Math.floor(card.card.mana_cost / 2));
+      const choices = getSelectionCards(gameState, x);
+      if (choices.length > 0) {
+        set({
+          selectedCardInstanceId: instanceId,
+          selectedAttackerInstanceId: null,
+          validTargets: [],
+          targetingMode: "selection",
+          selectionCards: choices,
+          pendingBoardPosition: boardPosition,
+        });
+        return null;
+      }
+    }
+    if (creatureNeedsRenfortRoyal(card.card)) {
+      const xVals = parseXValuesFromEffectText(card.card.effect_text);
+      const x = xVals["renfort_royal"] || Math.max(2, Math.floor(card.card.mana_cost / 2));
+      const choices = getRenfortRoyalCards(gameState, x);
+      if (choices.length > 0) {
+        set({
+          selectedCardInstanceId: instanceId,
+          selectedAttackerInstanceId: null,
+          validTargets: [],
+          targetingMode: "selection",
+          selectionCards: choices,
+          pendingBoardPosition: boardPosition,
+        });
+        return null;
+      }
+    }
+
+    if (card.card.card_type === "spell" && needsTarget(card.card)) {
+      const slots = getSpellTargetSlots(card.card);
+      const selectableSlots = slots.filter(s =>
+        s.type === "any" || s.type === "any_creature"
+        || s.type === "friendly_creature" || s.type === "enemy_creature"
+        || s.type === "friendly_graveyard" || s.type === "friendly_graveyard_to_board"
+      );
+      if (selectableSlots.length > 0) {
+        const firstSlot = selectableSlots[0];
+        if (firstSlot.type === "friendly_graveyard" || firstSlot.type === "friendly_graveyard_to_board") {
+          const kwIndex = parseInt(firstSlot.slot.replace("kw_", ""));
+          const gravTargets = getSpellGraveyardTargets(gameState, card.card, kwIndex);
+          if (gravTargets.length > 0) {
+            set({
+              selectedCardInstanceId: instanceId,
+              selectedAttackerInstanceId: null,
+              validTargets: gravTargets,
+              targetingMode: "graveyard",
+              spellTargetSlots: selectableSlots,
+              currentTargetSlotIndex: 0,
+              collectedTargetMap: {},
+            });
+            return null;
+          }
+        } else {
+          const targets = getSpellTargets(gameState, card.card, firstSlot.type);
+          set({
+            selectedCardInstanceId: instanceId,
+            selectedAttackerInstanceId: null,
+            validTargets: targets,
+            targetingMode: selectableSlots.length === 1 ? "spell" : "spell_multi",
+            spellTargetSlots: selectableSlots,
+            currentTargetSlotIndex: 0,
+            collectedTargetMap: {},
+          });
+          return null;
+        }
+      }
+    }
+
+    // No additional targeting needed — dispatch directly. dispatchAction
+    // merges selectedDiscardIds/selectedSacrificeIds into the action.
+    return get().dispatchAction({
+      type: "play_card",
+      cardInstanceId: instanceId,
+      boardPosition: boardPosition ?? undefined,
+    });
+  },
+
+  cancelCostPayment: () => {
+    set({
+      targetingMode: "none",
+      pendingCostCard: null,
+      selectedDiscardIds: [],
+      selectedSacrificeIds: [],
+      selectedCardInstanceId: null,
+    });
   },
 
   activateHeroPower: () => {
