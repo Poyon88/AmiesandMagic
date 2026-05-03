@@ -237,6 +237,19 @@ export default function DeckBuilder({
     );
   }, [deckCards]);
 
+  // Mana curve : nombre de cartes par coût (0..7+). Tout ce qui coûte 7 ou
+  // plus est agrégé dans la dernière colonne pour garder la courbe compacte
+  // et lisible — au-delà de 7 il y a très peu de cartes en pratique.
+  const manaCurve = useMemo(() => {
+    const buckets = [0, 0, 0, 0, 0, 0, 0, 0]; // index 7 = 7+
+    deckCards.forEach(({ card, quantity }) => {
+      const i = Math.min(7, Math.max(0, card.mana_cost));
+      buckets[i] += quantity;
+    });
+    const max = Math.max(1, ...buckets);
+    return { buckets, max };
+  }, [deckCards]);
+
   // ── Slot system ──
   const RARITY_HIERARCHY = ["Légendaire", "Épique", "Rare", "Peu Commune", "Commune"] as const;
   const SLOT_COUNTS_MONO: Record<string, number> = { "Légendaire": 2, "Épique": 4, "Rare": 6, "Peu Commune": 8, "Commune": 30 };
@@ -809,24 +822,6 @@ export default function DeckBuilder({
             >
               {totalCards}/{DECK_SIZE}
             </span>
-            {/* Mana curve mini */}
-            <div className="flex gap-0.5 items-end h-6">
-              {Array.from({ length: 11 }, (_, cost) => {
-                const count = sortedDeckEntries
-                  .filter((e) => e.card.mana_cost === cost)
-                  .reduce((s, e) => s + e.quantity, 0);
-                const maxHeight = 24;
-                const height = count > 0 ? Math.max(4, (count / 8) * maxHeight) : 0;
-                return (
-                  <div
-                    key={cost}
-                    className="w-2 bg-mana-blue/60 rounded-t"
-                    style={{ height: `${height}px` }}
-                    title={`${cost} mana: ${count} cards`}
-                  />
-                );
-              })}
-            </div>
           </div>
           {/* Progress bar */}
           <div className="mt-2 h-1.5 bg-background rounded-full overflow-hidden">
@@ -884,6 +879,45 @@ export default function DeckBuilder({
               }`}
               style={{ width: `${Math.min(100, (totalCards / DECK_SIZE) * 100)}%` }}
             />
+          </div>
+
+          {/* Mana curve — visible en permanence pour aider le joueur à
+              équilibrer sa courbe. Cliquer sur une colonne filtre les
+              cartes affichées par coût. La dernière colonne agrège 7+. */}
+          <div className="mt-2 flex items-end justify-between gap-1 h-12">
+            {manaCurve.buckets.map((count, cost) => {
+              const isLast = cost === 7;
+              const label = isLast ? "7+" : String(cost);
+              const isFiltered = manaCostFilter === cost || (isLast && manaCostFilter !== null && manaCostFilter >= 7);
+              const height = count > 0 ? Math.max(3, (count / manaCurve.max) * 32) : 0;
+              return (
+                <button
+                  key={cost}
+                  onClick={() => setManaCostFilter(isFiltered ? null : cost)}
+                  title={`${label} mana : ${count} carte${count > 1 ? "s" : ""}`}
+                  className="flex-1 flex flex-col items-center gap-0.5 group cursor-pointer"
+                >
+                  <span className={`text-[9px] leading-none transition-colors ${
+                    count > 0 ? "text-foreground/80" : "text-transparent"
+                  }`}>
+                    {count}
+                  </span>
+                  <div className="w-full h-8 flex items-end">
+                    <div
+                      className={`w-full rounded-sm transition-all ${
+                        isFiltered ? "bg-mana-blue" : "bg-mana-blue/50 group-hover:bg-mana-blue/80"
+                      }`}
+                      style={{ height: `${height}px` }}
+                    />
+                  </div>
+                  <span className={`text-[9px] leading-none font-bold transition-colors ${
+                    isFiltered ? "text-mana-blue" : "text-foreground/50 group-hover:text-foreground/80"
+                  }`}>
+                    {label}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
