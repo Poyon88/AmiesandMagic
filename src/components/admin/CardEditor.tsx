@@ -755,11 +755,31 @@ export default function CardEditor() {
               </div>
             )}
 
-            {/* Keywords */}
+            {/* Keywords (creature side). For spells, the engine reads only
+                spell_keywords — creature-side keywords on a spell are inert
+                data. We hide the grid entirely for clean spells, and for
+                spells with stale entries we show only the active ones plus
+                a warning so the user can deactivate them and re-add via
+                "Capacités de sort". */}
+            {(() => {
+              const isSpell = editFields.card_type === "spell";
+              const activeCreatureKws = ((editFields.keywords as string[]) || []);
+              if (isSpell && activeCreatureKws.length === 0) return null;
+              const visibleKeywords = isSpell
+                ? SORTED_KEYWORDS.filter(kw => activeCreatureKws.includes(kw))
+                : SORTED_KEYWORDS;
+              return (
             <div style={{ marginBottom: 8 }}>
-              <div style={S.label}>Mots-clés ({((editFields.keywords as string[]) || []).length})</div>
+              <div style={S.label}>
+                Mots-clés ({activeCreatureKws.length})
+                {isSpell && (
+                  <span style={{ color: "#c0392b", fontWeight: 600, marginLeft: 6, fontSize: 9 }}>
+                    ⚠ Capacités de créature inactives sur un sort — désactive-les ici, puis ré-ajoute via &laquo;&nbsp;Capacités de sort&nbsp;&raquo;.
+                  </span>
+                )}
+              </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 3, position: "relative" }}>
-                {SORTED_KEYWORDS.map(kw => {
+                {visibleKeywords.map(kw => {
                   const active = ((editFields.keywords as string[]) || []).includes(kw);
                   const label = KEYWORD_LABELS[kw];
                   return (
@@ -794,6 +814,8 @@ export default function CardEditor() {
                 })}
               </div>
             </div>
+              );
+            })()}
 
             {/* X values for scalable keywords */}
             {(() => {

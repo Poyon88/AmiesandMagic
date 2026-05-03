@@ -1173,6 +1173,19 @@ export const useGameStore = create<GameStore>((set, get) => ({
     if (hasOverlay) cursor += OVERLAY_PRE_IMPACT_MS;
     else if (isAttack) cursor += ATTACK_LUNGE_PRE_IMPACT_MS;
 
+    // Recast spell overlays must appear BEFORE phaseImpacts so each
+    // recasted spell is shown casting *before* its (already-applied)
+    // damage paints. Without this re-order, recast HP changes landed at
+    // OVERLAY_PRE_IMPACT_MS while the recast spell visuals only played
+    // out at the tail of the sequence — visually disconnected.
+    if (recastSpells.length > 0) {
+      for (let i = 0; i < recastSpells.length; i++) {
+        const recast = recastSpells[i];
+        setTimeout(() => set({ spellCastEvent: recast }), cursor);
+        cursor += RECAST_GAP_MS;
+      }
+    }
+
     // Phase B (Impacts) — always run if there's anything beyond the overlay.
     setTimeout(phaseImpacts, cursor);
     cursor += IMPACT_MS;
@@ -1205,15 +1218,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
     if (hasDraws) {
       setTimeout(phaseDraws, cursor);
       cursor += DRAW_MS;
-    }
-
-    // Recast spells ride the tail of the sequence.
-    if (recastSpells.length > 0) {
-      for (let i = 0; i < recastSpells.length; i++) {
-        const recast = recastSpells[i];
-        setTimeout(() => set({ spellCastEvent: recast }), cursor);
-        cursor += RECAST_GAP_MS;
-      }
     }
 
     setTimeout(phaseUnlock, cursor);

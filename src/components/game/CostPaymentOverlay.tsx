@@ -36,9 +36,8 @@ export default function CostPaymentOverlay({ onConfirmedAction }: Props) {
   return (
     <div style={{
       position: "fixed",
-      bottom: 100,
-      left: "50%",
-      transform: "translateX(-50%)",
+      top: 80,
+      left: 24,
       zIndex: 95,
       background: "#1a1a2eee",
       border: "1px solid #c8a84e66",

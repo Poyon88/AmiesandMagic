@@ -126,6 +126,14 @@ export default function GameCard({
   const s = size === "sm" ? 0.7 : size === "md" ? 0.85 : 1;
   const isCreature = card.card_type === "creature";
 
+  // Pentagonal frame for spell cards: top edge straight, sides converge to a
+  // bottom point. The clip-path crops the rectangular bounding box to this
+  // shape; downstream paddings (bar, overlay, corner badges) are bumped so
+  // their content stays inside the polygon's full-width area.
+  const spellClipPct = 92;
+  const spellPointDepth = (1 - spellClipPct / 100) * h;
+  const spellClipPath = `polygon(0 0, 100% 0, 100% ${spellClipPct}%, 50% 100%, 0 ${spellClipPct}%)`;
+
   const borderColor = selected ? "#c8a84e" : isCreature ? "#3d3d5c" : "#6c3483";
   const bgGradient = isCreature
     ? "linear-gradient(160deg, #1a1a2e, #0d0d1a)"
@@ -157,10 +165,16 @@ export default function GameCard({
         if (detailTimer.current) clearTimeout(detailTimer.current);
       }}
       style={{
-        width: w, height: h, borderRadius: 10 * s, position: "relative",
+        width: w, height: h,
+        borderRadius: isCreature ? 10 * s : 0,
+        position: "relative",
         background: bgGradient,
-        border: `2px solid ${borderColor}`,
-        boxShadow: selected ? "0 0 12px #c8a84e44" : "none",
+        border: isCreature ? `2px solid ${borderColor}` : "none",
+        clipPath: isCreature ? undefined : spellClipPath,
+        // box-shadow is clipped by clip-path, so spells use drop-shadow
+        // (which follows the polygon outline) for the selected glow.
+        boxShadow: isCreature && selected ? "0 0 12px #c8a84e44" : "none",
+        filter: !isCreature && selected ? "drop-shadow(0 0 10px rgba(200,168,78,0.7))" : undefined,
         overflow: "hidden",
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.5 : 1,
@@ -218,7 +232,7 @@ export default function GameCard({
       {/* ── Bottom bar: name + keywords + stats ── */}
       <div style={{
         position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2,
-        padding: `${6 * s}px ${8 * s}px`,
+        padding: `${6 * s}px ${8 * s}px ${isCreature ? 6 * s : spellPointDepth + 4}px`,
         background: "linear-gradient(0deg, #0d0d1add 0%, #0d0d1a88 40%, transparent 65%)",
         display: "flex", flexDirection: "column", gap: 4 * s,
       }}>
@@ -357,7 +371,7 @@ export default function GameCard({
         transition: "opacity 0.25s ease",
         pointerEvents: showDetails ? "auto" : "none",
         display: "flex", flexDirection: "column", justifyContent: "center",
-        padding: `${16 * s}px ${14 * s}px`,
+        padding: `${16 * s}px ${14 * s}px ${isCreature ? 16 * s : 16 * s + 2 * spellPointDepth}px`,
         gap: 8 * s,
         overflowY: "auto",
       }}>
@@ -484,7 +498,9 @@ export default function GameCard({
           if (cardSet) {
             return (
               <div style={{
-                position: "absolute", bottom: 4 * s, right: 6 * s,
+                position: "absolute",
+                bottom: isCreature ? 4 * s : spellPointDepth + 4 * s,
+                right: 6 * s,
                 fontSize: 9 * s, color: "#aaa",
                 fontFamily: "'Cinzel',serif", letterSpacing: 0.5,
                 textShadow: "0 1px 2px rgba(0,0,0,0.8)",
@@ -499,7 +515,9 @@ export default function GameCard({
               : "";
             return (
               <div style={{
-                position: "absolute", bottom: 4 * s, right: 6 * s,
+                position: "absolute",
+                bottom: isCreature ? 4 * s : spellPointDepth + 4 * s,
+                right: 6 * s,
                 fontSize: 9 * s, color: "#888",
                 fontFamily: "'Crimson Text',serif",
                 textShadow: "0 1px 2px rgba(0,0,0,0.8)",
@@ -511,6 +529,28 @@ export default function GameCard({
           return null;
         })()}
       </div>
+
+      {/* Pentagonal frame outline for spell cards. Drawn after the overlay
+          (zIndex 5) so the contour stays visible even when the description
+          is open — the shape is the primary signal that this card is a spell. */}
+      {!isCreature && (
+        <svg
+          width={w} height={h}
+          viewBox={`0 0 ${w} ${h}`}
+          style={{
+            position: "absolute", top: 0, left: 0,
+            pointerEvents: "none", zIndex: 5,
+          }}
+        >
+          <polygon
+            points={`0,0 ${w},0 ${w},${h - spellPointDepth} ${w / 2},${h} 0,${h - spellPointDepth}`}
+            fill="none"
+            stroke={borderColor}
+            strokeWidth={3}
+            strokeLinejoin="miter"
+          />
+        </svg>
+      )}
     </div>
   );
 }
