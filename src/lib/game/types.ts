@@ -534,6 +534,11 @@ export interface MulliganAction {
 export interface HeroPowerAction {
   type: "hero_power";
   targetInstanceId?: string;
+  // Card chosen via the selection / renfort_royal / selection_magique
+  // overlay when the hero power's keyword routes through a picker. The
+  // engine looks the card up in factionCardPool / allSpellsPool and adds
+  // it to the caster's hand inside resolveSpellKeywords.
+  selectionCardId?: number;
 }
 
 export type GameAction = PlayCardAction | AttackAction | EndTurnAction | MulliganAction | HeroPowerAction;

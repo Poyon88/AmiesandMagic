@@ -2901,6 +2901,15 @@ export function useHeroPower(state: GameState, action: HeroPowerAction): GameSta
           targetMap.kw_0 = action.targetInstanceId;
           targetMap.target_0 = action.targetInstanceId;
         }
+        // Selection / Renfort Royal / Sélection magique : the picker stores
+        // the chosen card id in `selectionCardId` ; mirror it into every slot
+        // the resolver might read so any of the three keywords resolves.
+        if (action.selectionCardId != null) {
+          const sid = String(action.selectionCardId);
+          targetMap.selection_0 = sid;
+          targetMap.renfort_royal_0 = sid;
+          targetMap.selection_magique_0 = sid;
+        }
         const ctx: SpellResolutionContext = {
           state: newState,
           caster: player,

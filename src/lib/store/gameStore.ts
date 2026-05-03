@@ -94,6 +94,10 @@ interface GameStore {
   pendingCostCard: { instanceId: string; discardNeeded: number; sacrificeNeeded: number; boardPosition: number | null } | null;
   selectedDiscardIds: string[];
   selectedSacrificeIds: string[];
+  // True while the active selection overlay was opened by a hero power
+  // (selection / renfort_royal / selection_magique). The next selectTarget
+  // call dispatches a hero_power action instead of a play_card.
+  pendingHeroPowerSelection: boolean;
   pendingBoardPosition: number | null;
   divinationCards: CardInstance[];
   selectionCards: Card[];
@@ -465,6 +469,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   pendingCostCard: null,
   selectedDiscardIds: [],
   selectedSacrificeIds: [],
+  pendingHeroPowerSelection: false,
   pendingBoardPosition: null,
   divinationCards: [],
   selectionCards: [],
@@ -1035,6 +1040,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         pendingCostCard: null,
         selectedDiscardIds: [],
         selectedSacrificeIds: [],
+        pendingHeroPowerSelection: false,
         damageEvents: [],
         lastSfxEvents: sfxEvents,
         effectLog: [...get().effectLog, ...logEntries].slice(-20),
@@ -1053,6 +1059,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       pendingCostCard: null,
       selectedDiscardIds: [],
       selectedSacrificeIds: [],
+      pendingHeroPowerSelection: false,
     });
 
     // --- Phase timings ---
@@ -1713,6 +1720,15 @@ export const useGameStore = create<GameStore>((set, get) => ({
         divinationChoiceIndex: parseInt(targetId) || 0,
         boardPosition: pendingBoardPosition ?? undefined,
       });
+    } else if (targetingMode === "selection" && get().pendingHeroPowerSelection) {
+      // Hero power picker — dispatch a hero_power action with the chosen
+      // card id ; engine.ts mirrors it into targetMap for the selection /
+      // renfort_royal / selection_magique resolver.
+      const cardId = parseInt(targetId) || 0;
+      return get().dispatchAction({
+        type: "hero_power",
+        selectionCardId: cardId,
+      });
     } else if (targetingMode === "selection" && selectedCardInstanceId) {
       const { pendingBoardPosition, gameState: gs } = get();
       const cardInHand = gs?.players[gs.currentPlayerIndex].hand.find(c => c.instanceId === selectedCardInstanceId);
@@ -1757,6 +1773,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       pendingCostCard: null,
       selectedDiscardIds: [],
       selectedSacrificeIds: [],
+      pendingHeroPowerSelection: false,
     });
   },
 
@@ -1994,6 +2011,37 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const player = gameState.players[gameState.currentPlayerIndex];
     const heroDef = player.hero.heroDefinition;
     if (!heroDef) return null;
+
+    // Hero powers using selection / renfort_royal / selection_magique need
+    // a card-picker overlay before they can resolve — without it the engine
+    // receives no chosen card and the keyword no-ops. We open the same
+    // selection overlay used by spells/creatures and remember (via
+    // pendingHeroPowerSelection) that the upcoming dispatch is a hero
+    // power, not a play_card.
+    const effect = heroDef.powerEffect;
+    if (effect && effect.mode === "spell_trigger") {
+      const x = effect.params?.amount ?? 0;
+      let choices: Card[] | null = null;
+      if (effect.keywordId === "selection") {
+        choices = getSelectionCards(gameState, x);
+      } else if (effect.keywordId === "renfort_royal") {
+        choices = getRenfortRoyalCards(gameState, x);
+      } else if (effect.keywordId === "selection_magique") {
+        choices = getMagicalSelectionCards(gameState, x);
+      }
+      if (choices !== null) {
+        if (choices.length === 0) return null; // no candidates → power fizzles
+        set({
+          selectedCardInstanceId: null,
+          selectedAttackerInstanceId: null,
+          validTargets: [],
+          targetingMode: "selection",
+          selectionCards: choices,
+          pendingHeroPowerSelection: true,
+        });
+        return null;
+      }
+    }
 
     if (heroPowerNeedsTarget(heroDef)) {
       const targets = getHeroPowerTargets(gameState, heroDef);
