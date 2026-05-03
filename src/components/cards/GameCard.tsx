@@ -53,6 +53,7 @@ import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { KEYWORDS as keywordDefs, LIMITED_PRINT_COUNTS, ALIGNMENTS, getEffectiveAlignment } from "@/lib/card-engine/constants";
+import RarityFrame from "./RarityFrame";
 
 interface GameCardProps {
   card: Card;
@@ -141,7 +142,39 @@ export default function GameCard({
   const accentColor = isCreature ? "#74b9ff" : "#ce93d8";
   const iconOverrides = useKeywordIconStore((st) => st.overrides);
 
+  // Hover-zoom is moved to the wrapper so the rarity frame (sibling of the
+  // inner card) scales together with it. Without that, a 1.5× card would
+  // grow past a frame that stayed at its original size.
+  const isZoomed = !disabled && !disableHoverZoom && hovered;
+
   return (
+    <div
+      style={{
+        position: "relative",
+        // Explicit width/height (instead of display:inline-block sizing
+        // to content) — inline-block introduces a baseline-descent gap
+        // that pushed the inner card down inside its container in
+        // collection contexts (ExpertCardFrame). Block + explicit size
+        // mirrors the original outer div's layout exactly.
+        width: w,
+        height: h,
+        transform: isZoomed ? "scale(1.5)" : "none",
+        transformOrigin: "center",
+        transition: "transform 0.3s ease",
+        zIndex: isZoomed ? 20 : 1,
+      }}
+    >
+      {/* The wrapper sizes to the card's border-box (no border on the
+          wrapper itself), so a 4px inset gives a 4px visible ring around
+          the card. For concentric corners with the card's
+          borderRadius:10*s, the frame's borderRadius must be
+          inset + card_borderRadius = 4 + 10*s. */}
+      <RarityFrame
+        rarity={card.rarity}
+        visible={isCreature && isZoomed}
+        inset={4}
+        borderRadius={4 + 10 * s}
+      />
     <div
       onClick={disabled ? undefined : onClick}
       onMouseEnter={() => {
@@ -178,9 +211,7 @@ export default function GameCard({
         overflow: "hidden",
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.5 : 1,
-        transition: "all 0.3s ease",
-        transform: !disabled && !disableHoverZoom && hovered ? "scale(1.5)" : "none",
-        zIndex: !disableHoverZoom && hovered ? 20 : 1,
+        transition: "border-color 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease, filter 0.3s ease",
       }}
     >
       {/* ── Full-bleed art ── */}
@@ -551,6 +582,7 @@ export default function GameCard({
           />
         </svg>
       )}
+    </div>
     </div>
   );
 }

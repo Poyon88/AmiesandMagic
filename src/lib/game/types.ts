@@ -17,7 +17,7 @@ export type Keyword =
   | "canalisation" | "contresort" | "convocation" | "convocation_simple" | "malediction" | "necrophagie"
   | "paralysie" | "permutation" | "persecution"
   // Tier 2 — Cimetière / Main / Mixte
-  | "catalyse" | "ombre_du_passe" | "profanation" | "prescience" | "suprematie" | "divination"
+  | "catalyse" | "ombre_du_passe" | "profanation" | "prescience" | "suprematie" | "divination" | "savant"
   // Tier 3 — Terrain
   | "liaison_de_vie" | "ombre" | "sacrifice" | "malefice"
   | "indestructible" | "regeneration" | "corruption"

@@ -1126,6 +1126,16 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       cardInstance.maxHealth += graveCount;
     }
 
+    // Savant: +1 ATK et +1 PV par sort dans votre cimetière (X non-paramétré,
+    // dérivé de l'état au moment de l'invocation — comme Suprématie/Ombre du passé).
+    if (hasKw(cardInstance, "savant")) {
+      const spellCount = player.graveyard.filter(c => c.card.card_type === "spell").length;
+      cardInstance.summonBonusATK += spellCount;
+      cardInstance.currentAttack += spellCount;
+      cardInstance.currentHealth += spellCount;
+      cardInstance.maxHealth += spellCount;
+    }
+
     // Profanation X: exile X cartes du cimetière, +1/+1 par carte
     if (hasKw(cardInstance, "profanation")) {
       const profXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);

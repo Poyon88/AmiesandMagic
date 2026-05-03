@@ -13,6 +13,7 @@ import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
 import CostBadges from "@/components/cards/CostBadges";
+import RarityFrame from "@/components/cards/RarityFrame";
 
 interface HandCardProps {
   cardInstance: CardInstance;
@@ -148,7 +149,10 @@ export default function HandCard({
             : (isCostPaymentMode && isPendingCostSource) ? "0 0 14px #c8a84e88"
             : isSelected ? "0 0 12px #c8a84e44"
             : "none",
-          overflow: "hidden",
+          // overflow: visible so the RarityFrame (inset: -4) can extend
+          // past the card edges. The art div below now carries its own
+          // border-radius + overflow: hidden to keep the image rounded.
+          overflow: "visible",
           cursor: isCostPaymentMode
             ? (isPendingCostSource ? "default" : "pointer")
             : isDragging ? "grabbing" : canPlay ? "grab" : "not-allowed",
@@ -159,6 +163,28 @@ export default function HandCard({
           zIndex: isZoomed ? 50 : 1,
         }}
       >
+        {/* Rarity frame — fades in only on hover-zoom for non-Commune
+            creatures. Sits behind the art (DOM order = paint order) so its
+            metallic gradient is only visible as the 4-px ring around the
+            card, not over the card body. */}
+        {/* Concentric corners with the card's borderRadius:8 + border:2px
+            require inset = 4 + border = 6, and borderRadius = inset +
+            (card_radius - border) = 6 + 6 = 12. Visible ring outside the
+            card edge is 4px. */}
+        <RarityFrame
+          rarity={card.rarity}
+          visible={isZoomed && isCreature}
+          inset={6}
+          borderRadius={12}
+        />
+
+        {/* Inner clip-wrapper — replaces the inner card's overflow:hidden
+            (lifted to allow the rarity frame to escape past the card edge).
+            All card content (art, badges, bar, overlay) lives inside and
+            gets clipped to the card's rounded corners. borderRadius:6
+            matches the inner edge of the card's 2px border (8 outer − 2). */}
+        <div style={{ position: "absolute", inset: 0, borderRadius: 6, overflow: "hidden" }}>
+
         {/* Full-bleed art */}
         <div style={{ position: "absolute", inset: 0 }}>
           {resolvedImageUrl ? (
@@ -432,6 +458,7 @@ export default function HandCard({
             {isCreature && <><span style={{ color: "#e74c3c" }}>⚔ {card.attack}</span><span style={{ color: "#f1c40f" }}>❤ {card.health}</span></>}
           </div>
         </div>
+        </div>{/* close clip-wrapper */}
       </div>
     </motion.div>
   );

@@ -9,6 +9,7 @@ import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, c
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
+import RarityFrame from "@/components/cards/RarityFrame";
 
 interface BoardCreatureProps {
   creature: CardInstance;
@@ -141,12 +142,34 @@ export default function BoardCreature({
           : isSelected ? "0 0 14px #f1c40f44"
           : isValidTarget ? "0 0 14px #e74c3c44"
           : "none",
-        overflow: "hidden",
+        // overflow: visible so the RarityFrame (inset: -4) can extend
+        // past the card edges. The art div carries its own border-radius
+        // + overflow: hidden to keep the image rounded.
+        overflow: "visible",
         cursor: "pointer",
         transition: "border-color 0.2s, box-shadow 0.2s",
       }}
       title={`${card.name} (${creature.currentAttack}/${creature.currentHealth})`}
     >
+      {/* Rarity frame — fades in only on hover-zoom for non-Commune
+          creatures. Inset=6 (border 2 + 4px ring) and borderRadius=14
+          keep the frame's rounded corners concentric with the card's
+          (borderRadius 10 at the border-outer edge). Sits OUTSIDE the
+          clip-wrapper below so it can extend past the card edge. */}
+      <RarityFrame
+        rarity={card.rarity}
+        visible={isZoomed}
+        inset={6}
+        borderRadius={14}
+      />
+
+      {/* Inner clip-wrapper — replaces the inner card's overflow:hidden
+          (which we lifted to allow the rarity frame to escape). All card
+          content (art, badges, bars, overlays) lives inside and gets
+          clipped to the card's rounded corners. borderRadius:8 matches
+          the inner edge of the card's 2px border (10 outer − 2 = 8). */}
+      <div style={{ position: "absolute", inset: 0, borderRadius: 8, overflow: "hidden" }}>
+
       {/* Full-bleed art */}
       <div style={{ position: "absolute", inset: 0 }}>
         {resolvedImageUrl ? (
@@ -519,6 +542,7 @@ export default function BoardCreature({
           <span style={{ color: isDamaged ? "#e74c3c" : isBuffedHp ? "#2ecc71" : "#f1c40f" }}>❤ {creature.currentHealth}/{creature.maxHealth}</span>
         </div>
       </div>
+      </div>{/* close clip-wrapper */}
     </div>
     </motion.div>
   );

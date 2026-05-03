@@ -322,6 +322,12 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["creature"],
     creature: { cost: 11, costPerX: 0, se: 2.5, minTier: 2, scalable: false, zone: "Cimetière" },
   },
+  savant: {
+    id: "savant", label: "Savant", symbol: "📚",
+    desc: "Invocation : gagne +1 ATK et +1 PV par sort dans votre cimetière.",
+    applicable_to: ["creature"],
+    creature: { cost: 10, costPerX: 0, se: 2.5, minTier: 2, scalable: false, zone: "Cimetière" },
+  },
   profanation: {
     id: "profanation", label: "Profanation X", symbol: "⚰️",
     desc: "Invocation : exile les X dernières cartes de votre cimetière pour accorder jusqu'à +X/+X à l'unité.",
