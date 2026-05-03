@@ -645,6 +645,13 @@ export function startTurn(state: GameState): GameState {
 
   recalculateAuras(player, opponent);
 
+  // Fatigue: drawCard above can take HP ≤ 0 when the deck is empty. Without
+  // this check the game loop continues silently — the victory/defeat screen
+  // is gated by state.phase === "finished", which is only set inside
+  // checkWinCondition. Other actions (playCard / attack / hero_power)
+  // already run it at their tail; startTurn was missing.
+  checkWinCondition(newState);
+
   return newState;
 }
 

@@ -75,6 +75,11 @@ interface GameCardProps {
   /** Optional registry to resolve names/stats inside spell-keyword
    *  descriptions (e.g. "Invocation multiple" → "crée 2 tokens X 1/1"). */
   tokens?: TokenTemplate[];
+  /** Floating-preview contexts (graveyard / deck overlays) render a "large"
+   *  card with hover-zoom disabled — so the rarity frame would never appear.
+   *  Setting this to true forces the frame on regardless of hover. The
+   *  Commune / non-creature gates still apply. */
+  forceRarityFrame?: boolean;
 }
 
 export default function GameCard({
@@ -90,6 +95,7 @@ export default function GameCard({
   showDetails: showDetailsProp,
   onContextMenu: onContextMenuProp,
   tokens,
+  forceRarityFrame = false,
 }: GameCardProps) {
   const [hovered, setHovered] = useState(false);
   const [internalShowDetails, setInternalShowDetails] = useState(false);
@@ -171,7 +177,7 @@ export default function GameCard({
           inset + card_borderRadius = 4 + 10*s. */}
       <RarityFrame
         rarity={card.rarity}
-        visible={isCreature && isZoomed}
+        visible={isCreature && (isZoomed || forceRarityFrame)}
         inset={4}
         borderRadius={4 + 10 * s}
       />
@@ -393,7 +399,7 @@ export default function GameCard({
       </div>
 
       {/* ── Hover overlay: effect text ── */}
-      <div style={{
+      <div className="no-scrollbar" style={{
         position: "absolute", inset: 0, zIndex: 3,
         background: "#060612b3",
         backdropFilter: "blur(2px)",

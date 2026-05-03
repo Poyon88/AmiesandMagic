@@ -405,7 +405,7 @@ export default function BoardCreature({
           `justifyContent: center` the content was being clipped at both
           ends (the card has overflow: hidden), hiding the title on
           long-text cards like spells with long flavor text. */}
-      <div style={{
+      <div className="no-scrollbar" style={{
         position: "absolute", inset: 0, zIndex: 4,
         background: "#0d0d1ab3",
         backdropFilter: "blur(2px)",

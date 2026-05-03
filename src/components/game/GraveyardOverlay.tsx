@@ -140,6 +140,7 @@ export default function GraveyardOverlay({
             card={previewCard.card}
             size="lg"
             disableHoverZoom
+            forceRarityFrame
             showDetails={detailsForId === previewCard.instanceId}
           />
         </div>

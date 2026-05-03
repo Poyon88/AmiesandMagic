@@ -340,7 +340,7 @@ export default function HandCard({
         </div>
 
         {/* Hover overlay */}
-        <div style={{
+        <div className="no-scrollbar" style={{
           position: "absolute", inset: 0, zIndex: 3,
           background: "#0d0d1ab3",
           backdropFilter: "blur(2px)",

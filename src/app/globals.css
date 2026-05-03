@@ -86,3 +86,8 @@ body {
   0%, 100% { border-color: rgba(239, 68, 68, 0.3); box-shadow: 0 0 4px rgba(239, 68, 68, 0.2); }
   50% { border-color: rgba(239, 68, 68, 0.7); box-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
 }
+
+/* Hide scrollbar in scrollable containers (e.g. card hover overlays) —
+   scrolling still works with wheel/touch but no visible bar. */
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }

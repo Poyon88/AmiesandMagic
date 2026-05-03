@@ -314,6 +314,7 @@ function GraveyardTile({ topCard, emptyImageUrl, count, isOpponent, onClick }: G
             card={topCard}
             size="lg"
             disableHoverZoom
+            forceRarityFrame
             showDetails={showDetails}
           />
         </div>
