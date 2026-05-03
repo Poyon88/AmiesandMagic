@@ -563,27 +563,40 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   selection: {
     id: "selection", label: "Sélection X", symbol: "🎴",
-    desc: "Choisissez une carte parmi X aléatoires à ajouter en main.",
+    desc: "Choisissez une carte parmi 3 communes aléatoires de coût ≤ X (sans limite de coût si X non défini) à ajouter en main.",
     applicable_to: ["creature", "spell"],
     creature: {
       cost: 9, costPerX: 4, se: 2.5, minTier: 2, scalable: true, zone: "Mixte",
-      desc: "Invocation : révèle X cartes aléatoires de votre collection (factions du deck) ; ajoutez-en une à votre main.",
+      desc: "Invocation : révèle 3 cartes communes aléatoires de votre collection (factions du deck) de coût ≤ X ; ajoutez-en une à votre main. Sans limite de coût si X non défini.",
     },
     spell: {
-      desc: "Choisissez une carte parmi X aléatoires de votre collection à ajouter en main",
+      desc: "Choisissez une carte parmi 3 communes aléatoires de votre collection de coût ≤ X (sans limite si X non défini) à ajouter en main",
+      params: ["amount"], needsTarget: false,
+    },
+  },
+  selection_magique: {
+    id: "selection_magique", label: "Sélection magique X", symbol: "🪄",
+    desc: "Choisissez un sort parmi 3 sorts aléatoires (toutes factions) de coût ≤ X (sans limite si X non défini) à ajouter en main.",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      cost: 11, costPerX: 4, se: 3.0, minTier: 2, scalable: true, zone: "Mixte",
+      desc: "Invocation : révèle 3 sorts aléatoires (toutes factions) de coût ≤ X ; ajoutez-en un à votre main. Sans limite de coût si X non défini.",
+    },
+    spell: {
+      desc: "Choisissez un sort parmi 3 sorts aléatoires (toutes factions) de coût ≤ X (sans limite si X non défini) à ajouter en main",
       params: ["amount"], needsTarget: false,
     },
   },
   renfort_royal: {
     id: "renfort_royal", label: "Renfort Royal X", symbol: "👑",
-    desc: "Choisissez une carte parmi X cartes en édition limitée que vous possédez (≥30 requises ; sinon parmi des communes).",
+    desc: "Choisissez une carte parmi 3 éditions limitées que vous possédez (≥30 requises ; sinon parmi des communes), de coût ≤ X (sans limite si X non défini).",
     applicable_to: ["creature", "spell"],
     creature: {
       cost: 14, costPerX: 5, se: 3.5, minTier: 3, scalable: true, zone: "Mixte",
-      desc: "Invocation : révèle X cartes aléatoires parmi vos éditions limitées (≥30 requises ; sinon parmi des communes) ; ajoutez-en une à votre main.",
+      desc: "Invocation : révèle 3 cartes aléatoires parmi vos éditions limitées (≥30 requises ; sinon parmi des communes) de coût ≤ X ; ajoutez-en une à votre main. Sans limite de coût si X non défini.",
     },
     spell: {
-      desc: "Choisissez une carte parmi X cartes aléatoires de vos éditions limitées (≥30 requises ; sinon parmi des communes) à ajouter en main",
+      desc: "Choisissez une carte parmi 3 cartes aléatoires de vos éditions limitées (≥30 requises ; sinon parmi des communes) de coût ≤ X (sans limite si X non défini) à ajouter en main",
       params: ["amount"], needsTarget: false,
     },
   },
@@ -666,6 +679,19 @@ export const ABILITIES: Record<string, AbilityDef> = {
     },
     spell: {
       desc: "Piochez X cartes",
+      params: ["amount"], needsTarget: false,
+    },
+  },
+  concentration: {
+    id: "concentration", label: "Concentration X", symbol: "🎯",
+    desc: "Remplace chaque sort en main par un sort aléatoire (toutes factions) de coût en mana supérieur de X ; le coût du nouveau sort est réduit de X.",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      cost: 12, costPerX: 6, se: 3.5, minTier: 3, scalable: true, zone: "Main",
+      desc: "Invocation : remplace chaque sort en main par un sort aléatoire (toutes factions) de coût supérieur de X ; le coût du nouveau sort est réduit de X.",
+    },
+    spell: {
+      desc: "Remplace chaque sort en main par un sort aléatoire (toutes factions) de coût supérieur de X ; le coût du nouveau sort est réduit de X.",
       params: ["amount"], needsTarget: false,
     },
   },

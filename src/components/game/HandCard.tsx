@@ -46,7 +46,9 @@ export default function HandCard({
   // active turn — otherwise during the opponent's turn we'd be reading
   // the opponent's board and the cost shown in our hand would silently
   // ignore our own Entraide / Canalisation creatures.
-  let effectiveManaCost = card.mana_cost;
+  // Concentration X bakes a persistent reduction directly on the instance —
+  // applied first, before Canalisation/Entraide stack on top.
+  let effectiveManaCost = Math.max(0, card.mana_cost - (cardInstance.manaCostReduction ?? 0));
   if (gameState) {
     const player = gameState.players.find(p => p.id === localPlayerId)
       ?? gameState.players[gameState.currentPlayerIndex];

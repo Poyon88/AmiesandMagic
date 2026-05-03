@@ -25,6 +25,8 @@ import {
   getSelectionCards,
   creatureNeedsRenfortRoyal,
   getRenfortRoyalCards,
+  creatureNeedsMagicalSelection,
+  getMagicalSelectionCards,
   getSpellGraveyardTargets,
   getDiscardCost,
   getSacrificeCost,
@@ -143,6 +145,7 @@ interface GameStore {
     player1Hero?: HeroDefinition | null,
     player2Hero?: HeroDefinition | null,
     factionCardPool?: Card[],
+    allSpellsPool?: Card[],
   ) => void;
   setGameState: (state: GameState) => void;
   setLocalPlayerId: (id: string) => void;
@@ -493,7 +496,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   boardDefeatMusicUrl: null,
   lastSfxEvents: [],
 
-  initGame: (player1Id, player2Id, player1Cards, player2Cards, firstPlayerIndex, seed, player1Hero, player2Hero, factionCardPool) => {
+  initGame: (player1Id, player2Id, player1Cards, player2Cards, firstPlayerIndex, seed, player1Hero, player2Hero, factionCardPool, allSpellsPool) => {
     const state = initializeGame(
       player1Id,
       player2Id,
@@ -504,6 +507,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       player1Hero,
       player2Hero,
       factionCardPool,
+      allSpellsPool,
     );
     // Inject token templates into GameState for engine access
     state.tokenTemplates = get().tokenTemplates;
@@ -927,11 +931,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!tempeteEvent;
 
-    // Deep clone helper — factionCardPool carries non-serialisable refs, keep it aside.
+    // Deep clone helper — factionCardPool / allSpellsPool carry non-serialisable refs, keep them aside.
     const cloneState = (state: GameState): GameState => {
-      const { factionCardPool, ...rest } = state;
+      const { factionCardPool, allSpellsPool, ...rest } = state;
       const cloned = JSON.parse(JSON.stringify(rest)) as GameState;
       cloned.factionCardPool = factionCardPool;
+      cloned.allSpellsPool = allSpellsPool;
       return cloned;
     };
 
@@ -1278,7 +1283,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     if (card && creatureNeedsSelection(card.card)) {
       const selXVals = parseXValuesFromEffectText(card.card.effect_text);
-      const x = selXVals["selection"] || Math.max(2, Math.floor(card.card.mana_cost / 2));
+      const x = selXVals["selection"] ?? 0;
       const choices = getSelectionCards(gameState, x);
       if (choices.length > 0) {
         set({
@@ -1295,8 +1300,25 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     if (card && creatureNeedsRenfortRoyal(card.card)) {
       const xVals = parseXValuesFromEffectText(card.card.effect_text);
-      const x = xVals["renfort_royal"] || Math.max(2, Math.floor(card.card.mana_cost / 2));
+      const x = xVals["renfort_royal"] ?? 0;
       const choices = getRenfortRoyalCards(gameState, x);
+      if (choices.length > 0) {
+        set({
+          selectedCardInstanceId: instanceId,
+          selectedAttackerInstanceId: null,
+          validTargets: [],
+          targetingMode: "selection",
+          selectionCards: choices,
+          pendingBoardPosition: boardPosition ?? null,
+        });
+        return null;
+      }
+    }
+
+    if (card && creatureNeedsMagicalSelection(card.card)) {
+      const xVals = parseXValuesFromEffectText(card.card.effect_text);
+      const x = xVals["selection_magique"] ?? 0;
+      const choices = getMagicalSelectionCards(gameState, x);
       if (choices.length > 0) {
         set({
           selectedCardInstanceId: instanceId,
@@ -1392,7 +1414,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     // Check if creature needs selection
     if (card.card.card_type === "creature" && creatureNeedsSelection(card.card)) {
       const selXVals = parseXValuesFromEffectText(card.card.effect_text);
-      const x = selXVals["selection"] || Math.max(2, Math.floor(card.card.mana_cost / 2));
+      const x = selXVals["selection"] ?? 0;
       const choices = getSelectionCards(gameState, x);
       if (choices.length > 0) {
         set({
@@ -1410,8 +1432,26 @@ export const useGameStore = create<GameStore>((set, get) => ({
     // Check if creature needs renfort_royal
     if (card.card.card_type === "creature" && creatureNeedsRenfortRoyal(card.card)) {
       const xVals = parseXValuesFromEffectText(card.card.effect_text);
-      const x = xVals["renfort_royal"] || Math.max(2, Math.floor(card.card.mana_cost / 2));
+      const x = xVals["renfort_royal"] ?? 0;
       const choices = getRenfortRoyalCards(gameState, x);
+      if (choices.length > 0) {
+        set({
+          selectedCardInstanceId: instanceId,
+          selectedAttackerInstanceId: null,
+          validTargets: [],
+          targetingMode: "selection",
+          selectionCards: choices,
+          pendingBoardPosition: null,
+        });
+        return null;
+      }
+    }
+
+    // Check if creature needs selection_magique
+    if (card.card.card_type === "creature" && creatureNeedsMagicalSelection(card.card)) {
+      const xVals = parseXValuesFromEffectText(card.card.effect_text);
+      const x = xVals["selection_magique"] ?? 0;
+      const choices = getMagicalSelectionCards(gameState, x);
       if (choices.length > 0) {
         set({
           selectedCardInstanceId: instanceId,
@@ -1428,8 +1468,26 @@ export const useGameStore = create<GameStore>((set, get) => ({
     // Check if spell has selection keyword
     if (card.card.card_type === "spell" && card.card.spell_keywords?.some(kw => kw.id === "selection")) {
       const selKw = card.card.spell_keywords!.find(kw => kw.id === "selection")!;
-      const x = selKw.amount ?? 2;
+      const x = selKw.amount ?? 0;
       const choices = getSelectionCards(gameState, x);
+      if (choices.length > 0) {
+        set({
+          selectedCardInstanceId: instanceId,
+          selectedAttackerInstanceId: null,
+          validTargets: [],
+          targetingMode: "selection",
+          selectionCards: choices,
+          pendingBoardPosition: null,
+        });
+        return null;
+      }
+    }
+
+    // Check if spell has selection_magique keyword
+    if (card.card.card_type === "spell" && card.card.spell_keywords?.some(kw => kw.id === "selection_magique")) {
+      const smKw = card.card.spell_keywords!.find(kw => kw.id === "selection_magique")!;
+      const x = smKw.amount ?? 0;
+      const choices = getMagicalSelectionCards(gameState, x);
       if (choices.length > 0) {
         set({
           selectedCardInstanceId: instanceId,
@@ -1446,7 +1504,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     // Check if spell has renfort_royal keyword
     if (card.card.card_type === "spell" && card.card.spell_keywords?.some(kw => kw.id === "renfort_royal")) {
       const rrKw = card.card.spell_keywords!.find(kw => kw.id === "renfort_royal")!;
-      const x = rrKw.amount ?? 2;
+      const x = rrKw.amount ?? 0;
       const choices = getRenfortRoyalCards(gameState, x);
       if (choices.length > 0) {
         set({
@@ -1822,7 +1880,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }
     if (creatureNeedsSelection(card.card)) {
       const selXVals = parseXValuesFromEffectText(card.card.effect_text);
-      const x = selXVals["selection"] || Math.max(2, Math.floor(card.card.mana_cost / 2));
+      const x = selXVals["selection"] ?? 0;
       const choices = getSelectionCards(gameState, x);
       if (choices.length > 0) {
         set({
@@ -1838,8 +1896,24 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }
     if (creatureNeedsRenfortRoyal(card.card)) {
       const xVals = parseXValuesFromEffectText(card.card.effect_text);
-      const x = xVals["renfort_royal"] || Math.max(2, Math.floor(card.card.mana_cost / 2));
+      const x = xVals["renfort_royal"] ?? 0;
       const choices = getRenfortRoyalCards(gameState, x);
+      if (choices.length > 0) {
+        set({
+          selectedCardInstanceId: instanceId,
+          selectedAttackerInstanceId: null,
+          validTargets: [],
+          targetingMode: "selection",
+          selectionCards: choices,
+          pendingBoardPosition: boardPosition,
+        });
+        return null;
+      }
+    }
+    if (creatureNeedsMagicalSelection(card.card)) {
+      const xVals = parseXValuesFromEffectText(card.card.effect_text);
+      const x = xVals["selection_magique"] ?? 0;
+      const choices = getMagicalSelectionCards(gameState, x);
       if (choices.length > 0) {
         set({
           selectedCardInstanceId: instanceId,

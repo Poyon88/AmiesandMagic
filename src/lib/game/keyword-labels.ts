@@ -105,11 +105,13 @@ export const ALL_KEYWORDS: Keyword[] = [
   "pacte_de_sang", "souffle_de_feu", "domination", "resurrection", "transcendance",
   "vampirisme",
   "selection",
+  "selection_magique",
   "renfort_royal",
   "relancer",
   "tempete",
   "douleur",
   "inspiration",
+  "concentration",
 ];
 
 export const KEYWORD_LABELS: Record<Keyword, string> = {
@@ -142,12 +144,14 @@ export const KEYWORD_LABELS: Record<Keyword, string> = {
   instinct_de_meute: "Instinct de meute X", totem: "Totem",
   appel_du_clan: "Appel du clan X", rassemblement: "Rassemblement X",
   selection: "Sélection X",
+  selection_magique: "Sélection magique X",
   renfort_royal: "Renfort Royal X",
   lycanthropie: "Lycanthropie X",
   relancer: "Relancer X",
   tempete: "Tempête X",
   douleur: "Douleur X",
   inspiration: "Inspiration X",
+  concentration: "Concentration X",
 };
 
 export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
@@ -180,10 +184,12 @@ export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
   instinct_de_meute: "🐺", totem: "🗿",
   appel_du_clan: "📯", rassemblement: "🏴",
   selection: "🎴",
+  selection_magique: "🪄",
   renfort_royal: "👑",
   lycanthropie: "🐺",
   relancer: "🔁",
   tempete: "🌩️",
   douleur: "🤕",
   inspiration: "📖",
+  concentration: "🎯",
 };

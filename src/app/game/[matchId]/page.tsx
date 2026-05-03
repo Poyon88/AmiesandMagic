@@ -80,6 +80,7 @@ export default function GamePage() {
     p1Hero: HeroDefinition | null;
     p2Hero: HeroDefinition | null;
     factionCards: Card[];
+    allSpells: Card[];
     p1OwnedLimitedIds: number[];
     p2OwnedLimitedIds: number[];
   } | null>(null);
@@ -197,9 +198,12 @@ export default function GamePage() {
             .filter(Boolean) as string[]
         );
         deckFactions.add("Mercenaires");
-        const [factionCardsRes, manaSparkRes] = await Promise.all([
+        const [factionCardsRes, manaSparkRes, allSpellsRes] = await Promise.all([
           supabase.from("cards").select("*").in("faction", Array.from(deckFactions)),
           supabase.from("cards").select("*").eq("name", "Mana Spark").eq("card_type", "spell").limit(1),
+          // Concentration X: needs every spell across every faction/set, not
+          // just the deck-faction subset that factionCardPool covers.
+          supabase.from("cards").select("*").eq("card_type", "spell"),
         ]);
         const factionCards = factionCardsRes.data ?? [];
         // Ensure Mana Spark is in the pool (may not be if Humains not in deck factions)
@@ -207,6 +211,7 @@ export default function GamePage() {
         if (manaSpark && !factionCards.find((c: { id: number }) => c.id === manaSpark.id)) {
           factionCards.push(manaSpark);
         }
+        const allSpells = (allSpellsRes.data ?? []) as import("@/lib/game/types").Card[];
 
         // Determine which board the match uses: the second player's deck board,
         // falling back to the admin-chosen default board.
@@ -285,7 +290,7 @@ export default function GamePage() {
         // Store match data for later initialization
         const p1OwnedLimitedIds = Array.isArray(p1CollectionsJson?.limitedCardIds) ? p1CollectionsJson.limitedCardIds : [];
         const p2OwnedLimitedIds = Array.isArray(p2CollectionsJson?.limitedCardIds) ? p2CollectionsJson.limitedCardIds : [];
-        matchDataRef.current = { match, p1Cards, p2Cards, p1Hero, p2Hero, factionCards: (factionCards ?? []) as unknown as Card[], p1OwnedLimitedIds, p2OwnedLimitedIds };
+        matchDataRef.current = { match, p1Cards, p2Cards, p1Hero, p2Hero, factionCards: (factionCards ?? []) as unknown as Card[], allSpells, p1OwnedLimitedIds, p2OwnedLimitedIds };
 
         // Join realtime channel with presence
         const channel = supabase.channel(`match:${matchId}`, {
@@ -330,12 +335,12 @@ export default function GamePage() {
 
             if (playerCount >= 2 && !gameInitializedRef.current && matchDataRef.current) {
               gameInitializedRef.current = true;
-              const { match: m, p1Cards: p1, p2Cards: p2, p1Hero, p2Hero, factionCards, p1OwnedLimitedIds, p2OwnedLimitedIds } = matchDataRef.current;
+              const { match: m, p1Cards: p1, p2Cards: p2, p1Hero, p2Hero, factionCards, allSpells, p1OwnedLimitedIds, p2OwnedLimitedIds } = matchDataRef.current;
 
               const seed = parseInt(matchId.replace(/-/g, "").slice(0, 8), 16);
               const firstPlayer: 0 | 1 = seed % 2 === 0 ? 0 : 1;
 
-              initGame(m.player1_id, m.player2_id, p1, p2, firstPlayer, seed, p1Hero, p2Hero, factionCards);
+              initGame(m.player1_id, m.player2_id, p1, p2, firstPlayer, seed, p1Hero, p2Hero, factionCards, allSpells);
               setOwnedLimitedCardIds(p1OwnedLimitedIds, p2OwnedLimitedIds);
               setPhase("playing");
             }

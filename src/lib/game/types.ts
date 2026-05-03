@@ -33,6 +33,8 @@ export type Keyword =
   | "vampirisme"
   // Tier 2 — Collection
   | "selection"
+  // Tier 2 — Collection (spells of every faction)
+  | "selection_magique"
   // Tier 3 — Collection (limited prints, ≥30 owned)
   | "renfort_royal"
   // Tier 3 — Relancer
@@ -42,7 +44,9 @@ export type Keyword =
   // Drawback — self-damage on ETB / cast
   | "douleur"
   // Polymorphic — draw X cards
-  | "inspiration";
+  | "inspiration"
+  // Polymorphic — replace each spell in hand with a random higher-cost spell, discounted
+  | "concentration";
 
 export type SpellTargetType =
   | "any"
@@ -101,7 +105,9 @@ export type SpellKeywordId =
   | "relancer"
   | "tempete"
   | "douleur"
-  | "rassemblement";
+  | "rassemblement"
+  | "concentration"
+  | "selection_magique";
 
 export interface SpellKeywordInstance {
   id: SpellKeywordId;
@@ -368,6 +374,12 @@ export interface CardInstance {
   // avec leur valeur X. Lu en fallback par le résolveur combat et le rendu
   // du badge quand le keyword n'est pas inscrit dans card.effect_text.
   grantedKeywordX: Record<string, number>;
+  // Concentration: persistent mana_cost reduction stamped on the card when
+  // it materialises in hand as the result of a Concentration X transform.
+  // Cumulable with Canalisation / Entraide (those reduce on top of this
+  // baseline). Lives only on the instance — a fresh draw of the same card
+  // template starts at 0.
+  manaCostReduction: number;
 }
 
 // Hero power system — V2
@@ -474,6 +486,11 @@ export interface GameState {
   mulliganReady: [boolean, boolean];
   tokenTemplates?: TokenTemplate[];
   factionCardPool?: Card[];  // cards from deck factions + Mercenaires for Sélection X
+  // Global pool of all spell cards (every faction, every set). Loaded once
+  // at match start and used by Concentration X to draw a random replacement
+  // spell of higher cost. Kept separate from factionCardPool because
+  // Concentration must reach beyond the deck-faction subset.
+  allSpellsPool?: Card[];
 }
 
 export type GameActionType = "play_card" | "attack" | "end_turn" | "spell_target";
