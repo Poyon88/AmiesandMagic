@@ -346,9 +346,9 @@ export default function DeckBuilder({
     if (!isCardOwned(card, ownedSet, isTester)) return "Carte non possédée";
     if (totalCards >= DECK_SIZE) return "Deck plein";
     const existing = deckCards.get(card.id);
-    // Peu Commune, Rare, Épique, Légendaire : 1 exemplaire max. Commune : 4 max.
-    const maxCopies = (card.rarity && card.rarity !== "Commune") ? 1 : 4;
-    if (existing && existing.quantity >= maxCopies) return maxCopies === 1 ? "Exemplaire unique" : "Max 4 copies";
+    // Peu Commune, Rare, Épique, Légendaire : 1 exemplaire max. Commune : 3 max.
+    const maxCopies = (card.rarity && card.rarity !== "Commune") ? 1 : 3;
+    if (existing && existing.quantity >= maxCopies) return maxCopies === 1 ? "Exemplaire unique" : "Max 3 copies";
 
     // Alignment
     if (card.faction) {

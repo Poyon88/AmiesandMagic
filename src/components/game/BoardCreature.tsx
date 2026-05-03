@@ -141,6 +141,7 @@ export default function BoardCreature({
         boxShadow: isSelectedForSacrifice ? "0 0 16px #a060a088"
           : isSelected ? "0 0 14px #f1c40f44"
           : isValidTarget ? "0 0 14px #e74c3c44"
+          : canAttack ? "0 0 12px #2ecc7166"
           : "none",
         // overflow: visible so the RarityFrame (inset: -4) can extend
         // past the card edges. The art div carries its own border-radius
@@ -159,8 +160,8 @@ export default function BoardCreature({
       <RarityFrame
         rarity={card.rarity}
         visible={isZoomed}
-        inset={6}
-        borderRadius={14}
+        inset={3}
+        borderRadius={11}
       />
 
       {/* Inner clip-wrapper — replaces the inner card's overflow:hidden
@@ -418,6 +419,16 @@ export default function BoardCreature({
         gap: 6,
         overflowY: "auto",
       }}>
+        {/* Mal d'invocation — petit pip en haut à droite, hors flux */}
+        {creature.hasSummoningSickness && isOwn && (
+          <div title="Mal d'invocation" style={{
+            position: "absolute", top: 4, right: 4, zIndex: 1,
+            fontSize: 11, lineHeight: 1, color: "#94a3b8",
+            textShadow: "0 0 3px #000",
+            pointerEvents: "none",
+          }}>💤</div>
+        )}
+
         {/* Name */}
         <div style={{
           fontSize: 10, color: accentColor, fontWeight: 700,
@@ -434,10 +445,14 @@ export default function BoardCreature({
           </div>
         )}
 
-        {/* Year */}
+        {/* Year — affiché en bas-droit du popup, juste le nombre */}
         {card.card_year && (
-          <div style={{ textAlign: "center", fontSize: 7, color: "#888", fontFamily: "'Crimson Text',serif" }}>
-            📅 {card.card_year}
+          <div style={{
+            position: "absolute", bottom: 4, right: 6, zIndex: 1,
+            fontSize: 7, color: "#888", fontFamily: "'Crimson Text',serif",
+            pointerEvents: "none",
+          }}>
+            {card.card_year}
           </div>
         )}
 
@@ -454,7 +469,6 @@ export default function BoardCreature({
           if (creature.isParalyzed) statuses.push({ emoji: "⛓️", label: "Paralysé", color: "#8b5cf6" });
           if (creature.hasDivineShield) statuses.push({ emoji: "🔰", label: "Bouclier divin", color: "#f1c40f" });
           if (creature.contresortActive) statuses.push({ emoji: "🚫", label: "Contresort prêt", color: "#3b82f6" });
-          if (creature.hasSummoningSickness && isOwn) statuses.push({ emoji: "💤", label: "Mal d'invocation", color: "#94a3b8" });
           if (creature.fureurActive) statuses.push({ emoji: "💢", label: "Fureur", color: "#f97316" });
           if (creature.berserkActive) statuses.push({ emoji: "😤", label: "Berserk", color: "#dc2626" });
           if (card.keywords.includes("ombre" as import("@/lib/game/types").Keyword) && !creature.ombreRevealed) {
@@ -512,7 +526,7 @@ export default function BoardCreature({
         })()}
 
         {/* Effect text */}
-        {card.effect_text && (
+        {cleanEffectText(card.effect_text, card.spell_keywords) && (
           <div style={{
             padding: 5,
             background: `${accentColor}11`, borderRadius: 4,

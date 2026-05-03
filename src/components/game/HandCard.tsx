@@ -102,6 +102,7 @@ export default function HandCard({
   const borderColor = isSelectedForDiscard ? "#e74c3c"
     : (isCostPaymentMode && isPendingCostSource) ? "#c8a84e"
     : isSelected ? "#c8a84e"
+    : (canPlay && !isCostPaymentMode) ? "#2ecc71"
     : isCreature ? "#3d3d5c" : "#6c3483";
   const iconOverrides = useKeywordIconStore((st) => st.overrides);
 
@@ -148,6 +149,7 @@ export default function HandCard({
           boxShadow: isSelectedForDiscard ? "0 0 14px #e74c3c88"
             : (isCostPaymentMode && isPendingCostSource) ? "0 0 14px #c8a84e88"
             : isSelected ? "0 0 12px #c8a84e44"
+            : (canPlay && !isCostPaymentMode) ? "0 0 12px #2ecc7166"
             : "none",
           // overflow: visible so the RarityFrame (inset: -4) can extend
           // past the card edges. The art div below now carries its own
@@ -174,8 +176,8 @@ export default function HandCard({
         <RarityFrame
           rarity={card.rarity}
           visible={isZoomed && isCreature}
-          inset={6}
-          borderRadius={12}
+          inset={3}
+          borderRadius={9}
         />
 
         {/* Inner clip-wrapper — replaces the inner card's overflow:hidden
@@ -369,10 +371,14 @@ export default function HandCard({
             </div>
           )}
 
-          {/* Year */}
+          {/* Year — affiché en bas-droit du popup, juste le nombre */}
           {card.card_year && (
-            <div style={{ textAlign: "center", fontSize: 6, color: "#888", fontFamily: "'Crimson Text',serif" }}>
-              📅 {card.card_year}
+            <div style={{
+              position: "absolute", bottom: 4, right: 5, zIndex: 1,
+              fontSize: 6, color: "#888", fontFamily: "'Crimson Text',serif",
+              pointerEvents: "none",
+            }}>
+              {card.card_year}
             </div>
           )}
 
