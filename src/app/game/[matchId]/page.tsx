@@ -85,6 +85,15 @@ export default function GamePage() {
     p2OwnedLimitedIds: number[];
   } | null>(null);
   const gameInitializedRef = useRef(false);
+  // Per-match monotonic action sequence. The sender increments and tags
+  // each broadcast ; the receiver detects gaps and replays missing rows
+  // from match_actions. Both clients converge on the same lastSeq because
+  // only the active player can dispatch (UI lock) and the sender always
+  // increments by exactly 1 per dispatched action.
+  const lastSeqRef = useRef(0);
+  // Async-safe lock so concurrent broadcasts can't trigger overlapping
+  // gap-fetches that would replay the same seqs twice.
+  const inflightCatchupRef = useRef<Promise<void> | null>(null);
 
   const {
     setGameState,
@@ -299,22 +308,24 @@ export default function GamePage() {
 
         channel
           .on("broadcast", { event: "game_action" }, (payload) => {
-            const action = payload.payload as GameAction;
-            const store = useGameStore.getState();
-            if (store.gameState) {
-              // Route incoming actions through the animation pipeline so SFX,
-              // damage events, spell/fire-breath overlays and death animations
-              // all fire on the receiving side. If we're still playing the
-              // previous action's sequence, queue this one — the unlock step
-              // drains it in order.
+            // Payload shape evolved: legacy broadcasts are bare actions, the
+            // new shape is { action, seq }. Coerce both so an old client
+            // mid-upgrade doesn't break — but seq=null actions won't trigger
+            // gap recovery, they're applied as-is.
+            const raw = payload.payload as GameAction | { action: GameAction; seq: number };
+            const incomingAction: GameAction = "action" in raw ? raw.action : raw;
+            const incomingSeq: number | null = "action" in raw ? raw.seq : null;
+
+            const applyOne = (a: GameAction) => {
+              const store = useGameStore.getState();
+              if (!store.gameState) return;
               if (store.isAnimating) {
                 useGameStore.setState((s) => ({
-                  pendingIncomingActions: [...s.pendingIncomingActions, action],
+                  pendingIncomingActions: [...s.pendingIncomingActions, a],
                 }));
               } else {
-                store.dispatchAction(action);
+                store.dispatchAction(a);
               }
-
               const newState = useGameStore.getState().gameState;
               if (newState?.phase === "finished" && newState.winner) {
                 supabase
@@ -327,7 +338,59 @@ export default function GamePage() {
                   .eq("id", matchId)
                   .then(() => {});
               }
+            };
+
+            // Legacy / untracked: apply as-is, can't detect or repair gaps.
+            if (incomingSeq == null) {
+              applyOne(incomingAction);
+              return;
             }
+
+            // Already applied (duplicate, or a stale broadcast we covered
+            // via gap-fetch) — drop silently.
+            if (incomingSeq <= lastSeqRef.current) return;
+
+            // In-order : apply directly.
+            if (incomingSeq === lastSeqRef.current + 1) {
+              applyOne(incomingAction);
+              lastSeqRef.current = incomingSeq;
+              return;
+            }
+
+            // Gap detected. Fetch the missing range from the persisted log
+            // and replay in order, then apply the incoming action. Serialize
+            // catchups so two near-simultaneous broadcasts don't both fetch
+            // and double-apply.
+            const catchup = (inflightCatchupRef.current ?? Promise.resolve()).then(async () => {
+              if (incomingSeq <= lastSeqRef.current) {
+                applyOne(incomingAction);
+                if (incomingSeq > lastSeqRef.current) lastSeqRef.current = incomingSeq;
+                return;
+              }
+              const { data: missing, error: missingErr } = await supabase
+                .from("match_actions")
+                .select("seq, action")
+                .eq("match_id", matchId)
+                .gt("seq", lastSeqRef.current)
+                .lt("seq", incomingSeq)
+                .order("seq", { ascending: true });
+              if (missingErr) {
+                console.error("[match] gap fetch failed", missingErr);
+                return;
+              }
+              for (const row of missing ?? []) {
+                applyOne(row.action as GameAction);
+                lastSeqRef.current = row.seq as number;
+              }
+              applyOne(incomingAction);
+              lastSeqRef.current = incomingSeq;
+            });
+            inflightCatchupRef.current = catchup;
+            catchup.finally(() => {
+              if (inflightCatchupRef.current === catchup) {
+                inflightCatchupRef.current = null;
+              }
+            });
           })
           .on("presence", { event: "sync" }, () => {
             const state = channel.presenceState();
@@ -372,14 +435,28 @@ export default function GamePage() {
     };
   }, [matchId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Broadcast actions to opponent
+  // Broadcast actions to opponent. Each broadcast carries a per-match
+  // monotonic seq so the receiver can detect gaps and fetch missing rows
+  // from match_actions. The DB insert is fire-and-forget — broadcast
+  // latency stays unchanged ; the persisted row is only read on gap
+  // recovery.
   const handleAction = useCallback(
     (action: GameAction) => {
+      const seq = lastSeqRef.current + 1;
+      lastSeqRef.current = seq;
+
       channelRef.current?.send({
         type: "broadcast",
         event: "game_action",
-        payload: action,
+        payload: { action, seq },
       });
+
+      supabase
+        .from("match_actions")
+        .insert({ match_id: matchId, seq, action })
+        .then(({ error }) => {
+          if (error) console.error("[match] persist action failed", { seq, error });
+        });
 
       // Update match status on game end
       const store = useGameStore.getState();
