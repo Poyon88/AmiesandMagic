@@ -879,13 +879,21 @@ export const useGameStore = create<GameStore>((set, get) => ({
         : null;
 
     // Detect cards forced from a player's hand into their graveyard during
-    // this action — Combustion ("défaussez une carte de votre main"), and
-    // any future "forced discard" effect. We exclude the card the player
-    // just played (spells move the same way but should not trigger this
-    // popup). This drives the DiscardFromHand overlay so the discarded
-    // card is visible BEFORE the new draws fill the hand.
+    // this action. Two distinct cases:
+    //   • COST discard — the player paid `discard_cost` to play the card.
+    //     Logically the cost is paid BEFORE the card resolves, so the popup
+    //     must appear before the spell overlay (otherwise the discard looks
+    //     like a consequence of the spell instead of a prerequisite).
+    //   • EFFECT discard — Combustion ("défaussez une carte de votre main")
+    //     and similar spell-driven forced discards. These belong AFTER the
+    //     spell overlay since they're caused by the spell.
+    // Splitting the popup keeps each one in the right narrative beat.
     const playedActionInstanceId = action.type === "play_card" ? action.cardInstanceId : null;
-    const discardedFromHand: { card: Card; ownerPlayerId: string }[] = [];
+    const costDiscardIds = new Set<string>(
+      action.type === "play_card" ? action.discardInstanceIds ?? [] : [],
+    );
+    const costDiscardedFromHand: { card: Card; ownerPlayerId: string }[] = [];
+    const effectDiscardedFromHand: { card: Card; ownerPlayerId: string }[] = [];
     for (let i = 0; i < 2; i++) {
       const oldHand = gameState.players[i].hand;
       const newHand = newState.players[i].hand;
@@ -896,18 +904,29 @@ export const useGameStore = create<GameStore>((set, get) => ({
         if (stillInHand) continue;
         const inGraveyard = newGY.find((c) => c.instanceId === oldCardInstance.instanceId);
         if (inGraveyard) {
-          discardedFromHand.push({
+          const target = costDiscardIds.has(oldCardInstance.instanceId)
+            ? costDiscardedFromHand
+            : effectDiscardedFromHand;
+          target.push({
             card: oldCardInstance.card,
             ownerPlayerId: gameState.players[i].id,
           });
         }
       }
     }
-    const discardFromHandEvent: DiscardFromHandEvent | null =
-      discardedFromHand.length > 0
+    const costDiscardEvent: DiscardFromHandEvent | null =
+      costDiscardedFromHand.length > 0
         ? {
-            cards: discardedFromHand.map((d) => d.card),
-            ownerPlayerId: discardedFromHand[0].ownerPlayerId,
+            cards: costDiscardedFromHand.map((d) => d.card),
+            ownerPlayerId: costDiscardedFromHand[0].ownerPlayerId,
+            timestamp: Date.now(),
+          }
+        : null;
+    const discardFromHandEvent: DiscardFromHandEvent | null =
+      effectDiscardedFromHand.length > 0
+        ? {
+            cards: effectDiscardedFromHand.map((d) => d.card),
+            ownerPlayerId: effectDiscardedFromHand[0].ownerPlayerId,
             timestamp: Date.now(),
           }
         : null;
@@ -934,7 +953,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     ];
     const hasDraws = drawnCounts[0] + drawnCounts[1] > 0;
 
-    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!tempeteEvent;
+    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent;
 
     // Deep clone helper — factionCardPool / allSpellsPool carry non-serialisable refs, keep them aside.
     const cloneState = (state: GameState): GameState => {
@@ -1070,6 +1089,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const DEATH_MS = 1000;
     const SUMMON_MS = 1400;
     const DISCARD_MS = 1800; // forced-discard popup display time
+    // Cost discard runs BEFORE the spell overlay to communicate that the
+    // discard is a prerequisite, not a consequence. Shorter than DISCARD_MS
+    // so it doesn't drag the cast — the popup visually starts here and
+    // continues fading while the spell overlay flies in.
+    const COST_DISCARD_MS = 1000;
     const RECAST_GAP_MS = 1800;
 
     // --- Phase handlers ---
@@ -1144,6 +1168,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
       if (discardFromHandEvent) set({ discardFromHandEvent });
     };
 
+    const phaseCostDiscard = () => {
+      // Cost discards reuse the same popup as effect discards but fire at
+      // the very start, before the spell overlay, so the discarded card
+      // reads as a prerequisite of the cast (which it is, in the engine).
+      if (costDiscardEvent) set({ discardFromHandEvent: costDiscardEvent });
+    };
+
     const phaseDraws = () => {
       set({ gameState: newState });
       playSfxBatch(drawSfx);
@@ -1168,8 +1199,15 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     // --- Schedule the sequence ---
     let cursor = 0;
-    // Phase A (Overlay) — synchronous, already fires at t=0.
-    phaseOverlay();
+    // Phase 0 (Cost discard) — runs before the overlay so the discarded
+    // card reads as a paid prerequisite, not a consequence of the spell.
+    if (costDiscardEvent) {
+      phaseCostDiscard();
+      cursor += COST_DISCARD_MS;
+    }
+    // Phase A (Overlay) — fires at t=cursor (still 0 if no cost discard).
+    if (cursor === 0) phaseOverlay();
+    else setTimeout(phaseOverlay, cursor);
     if (hasOverlay) cursor += OVERLAY_PRE_IMPACT_MS;
     else if (isAttack) cursor += ATTACK_LUNGE_PRE_IMPACT_MS;
 
