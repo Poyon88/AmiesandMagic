@@ -91,3 +91,15 @@ body {
    scrolling still works with wheel/touch but no visible bar. */
 .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Disable iOS Safari's native long-press menu on every image. Without this,
+   a long-press on a card art (a hand-card hold or a hold-then-drag) pops the
+   "Save Image / Open Image" callout, which navigates away from the game.
+   The drag-to-board gesture and long-press-for-description are app-driven
+   and need raw touch events, not the OS callout. */
+img {
+  -webkit-touch-callout: none;
+  -webkit-user-drag: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
