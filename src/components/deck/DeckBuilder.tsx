@@ -496,9 +496,9 @@ export default function DeckBuilder({
   }
 
   return (
-    <div style={{ display: "flex", height: "100vh", overflow: "hidden" }} className="bg-background">
+    <div className="bg-background flex flex-col md:flex-row md:h-screen md:overflow-hidden">
       {/* Left: Card Collection */}
-      <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
+      <div className="flex-1 overflow-y-auto p-4 min-h-0">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-foreground">Card Collection</h2>
           <button
@@ -671,8 +671,8 @@ export default function DeckBuilder({
         </div>
       </div>
 
-      {/* Right: Current Deck (fixed) */}
-      <div style={{ width: 320, flexShrink: 0, overflow: "hidden", display: "flex", flexDirection: "column" }} className="bg-secondary border-l border-card-border">
+      {/* Right: Current Deck (fixed on desktop, stacked under collection on mobile) */}
+      <div className="bg-secondary border-t md:border-t-0 md:border-l border-card-border flex flex-col md:flex-shrink-0 md:overflow-hidden md:w-[320px] md:max-w-[320px]">
         {/* Configuration sections (héros / plateau / dos / nom / format / stats) — scrollent indépendamment, plafonnées pour libérer la place à la liste des cartes en dessous. */}
         <div style={{ flexShrink: 0, overflowY: "auto", maxHeight: "55vh" }}>
         {/* Hero selection */}

@@ -275,25 +275,27 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
                   min={auction.current_bid ? auction.current_bid + 1 : auction.starting_bid}
                   style={{
                     flex: 1,
-                    padding: "10px 12px",
+                    padding: "12px 12px",
                     background: "#1a1a2e",
                     border: "1px solid #3d3d5c",
                     borderRadius: 6,
                     color: "#e0e0e0",
                     fontSize: 16,
+                    minHeight: 44,
                   }}
                 />
                 <button
                   onClick={() => handleBid(false)}
                   disabled={bidding}
                   style={{
-                    padding: "10px 20px",
+                    padding: "12px 20px",
                     background: bidding ? "#666" : "#c8a84e",
                     border: "none",
                     borderRadius: 6,
                     color: "#1a1a2e",
                     fontWeight: 600,
                     cursor: bidding ? "default" : "pointer",
+                    minHeight: 44,
                   }}
                 >
                   {bidding ? "..." : "Enchérir"}
@@ -306,7 +308,7 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
                   disabled={bidding}
                   style={{
                     width: "100%",
-                    padding: "10px",
+                    padding: "12px",
                     background: bidding ? "#666" : "#2ecc71",
                     border: "none",
                     borderRadius: 6,
@@ -314,6 +316,7 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
                     fontWeight: 600,
                     fontSize: 14,
                     cursor: bidding ? "default" : "pointer",
+                    minHeight: 44,
                   }}
                 >
                   Achat immédiat — 🪙 {auction.buyout_price.toLocaleString("fr-FR")}

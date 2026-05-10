@@ -277,23 +277,26 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
 }
 
 const selectStyle: React.CSSProperties = {
-  padding: "8px 12px",
+  padding: "12px 12px",
   background: "#2a2a45",
   border: "1px solid #3d3d5c",
   borderRadius: 6,
   color: "#e0e0e0",
-  fontSize: 13,
+  // 16px on mobile prevents iOS Safari from auto-zooming on focus.
+  fontSize: 16,
   minWidth: 130,
+  minHeight: 44,
 };
 
 function paginationBtnStyle(disabled: boolean): React.CSSProperties {
   return {
-    padding: "8px 16px",
+    padding: "12px 16px",
     background: disabled ? "#1a1a2e" : "#2a2a45",
     border: "1px solid #3d3d5c",
     borderRadius: 6,
     color: disabled ? "#666" : "#e0e0e0",
     cursor: disabled ? "default" : "pointer",
-    fontSize: 13,
+    fontSize: 14,
+    minHeight: 44,
   };
 }
