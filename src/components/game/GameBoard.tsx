@@ -94,6 +94,15 @@ export default function GameBoard({ onAction }: GameBoardProps) {
   const [hoveredTargetId, setHoveredTargetId] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [heroDescriptionDef, setHeroDescriptionDef] = useState<HeroDefinition | null>(null);
+  // Narrow-viewport flag: triggers fanned hand overlap so 6-8 cards still fit
+  // on small landscape phones (e.g. iPhone SE landscape ≈ 667 px).
+  const [isNarrowViewport, setIsNarrowViewport] = useState(false);
+  useEffect(() => {
+    const update = () => setIsNarrowViewport(typeof window !== "undefined" && window.innerWidth < 900);
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
   // Guards against the second click of a double-click on a targeted hero
   // power instantly cancelling the targeting that the first click opened.
   const justOpenedHeroTargetingRef = useRef<number>(0);
@@ -334,6 +343,9 @@ export default function GameBoard({ onAction }: GameBoardProps) {
     }
   };
 
+  // Desktop-only shortcut. Touch devices simulate dblclick unreliably, so the
+  // mobile path for non-targeted powers is the HeroPowerButton rendered under
+  // the hero — leave both wired so each platform has a stable affordance.
   const handleMyHeroDoubleClick = () => {
     if (heroPowerAvailable && !heroPowerIsTargeted) {
       handleActivateHeroPower();
@@ -376,7 +388,15 @@ export default function GameBoard({ onAction }: GameBoardProps) {
   return (
     <div
       className="fixed inset-0 select-none"
-      style={{ backgroundColor: "#0d0d1a" }}
+      style={{
+        backgroundColor: "#0d0d1a",
+        // Pad the board against the device safe-area so fixed UI (settings,
+        // end-turn) doesn't slide under a notch / dynamic island in landscape.
+        paddingTop: "env(safe-area-inset-top)",
+        paddingBottom: "env(safe-area-inset-bottom)",
+        paddingLeft: "env(safe-area-inset-left)",
+        paddingRight: "env(safe-area-inset-right)",
+      }}
       {...boardCancelLongPress.handlers}
       onClick={(e) => {
         if (boardCancelLongPress.consume()) return;
@@ -438,7 +458,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
             stays in the top-right corner. */}
         <button
           onClick={() => setSettingsOpen(true)}
-          className={`absolute z-30 w-9 h-9 flex items-center justify-center text-base bg-secondary/80 border border-card-border rounded-lg text-foreground/70 hover:text-foreground hover:border-primary/40 transition-colors backdrop-blur-sm ${
+          className={`absolute z-30 w-11 h-11 flex items-center justify-center text-lg bg-secondary/80 border border-card-border rounded-lg text-foreground/70 hover:text-foreground hover:border-primary/40 transition-colors backdrop-blur-sm ${
             isMtgo ? "top-[26%] right-[2%]" : "top-[1%] right-[2%]"
           }`}
           title="Réglages"
@@ -796,7 +816,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           {targetingMode !== "none" && (
             <button
               onClick={clearSelection}
-              className="text-xs text-accent hover:text-accent/80 transition-colors bg-black/50 px-3 py-1 rounded"
+              className="text-sm text-accent hover:text-accent/80 transition-colors bg-black/50 px-4 py-3 rounded min-h-[44px]"
             >
               Cancel targeting
             </button>
@@ -829,8 +849,14 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           </button>
         </div>
 
-        {/* ============= PLAYER HAND ============= */}
-        <div className="absolute bottom-0 left-0 right-0 flex justify-center gap-1 px-6 pb-4 pt-1 overflow-visible z-30">
+        {/* ============= PLAYER HAND =============
+            On narrow landscape viewports we fan the cards (negative gap) so a
+            full 8-card hand still fits without horizontal overflow. The
+            zoomed-on-hover/long-press card lifts above siblings via z-index. */}
+        <div
+          className="absolute bottom-0 left-0 right-0 flex justify-center px-6 pb-4 pt-1 overflow-visible z-30"
+          style={{ gap: isNarrowViewport ? -56 : 4 }}
+        >
           {myPlayer.hand.map((cardInstance) => {
             const playable =
               myTurn && canPlayCard(gameState, cardInstance.instanceId);

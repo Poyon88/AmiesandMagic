@@ -11,6 +11,7 @@ import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
 import { useGameStore } from "@/lib/store/gameStore";
 import { useAudioStore } from "@/lib/store/audioStore";
 import SfxEngine from "@/lib/audio/SfxEngine";
+import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
 
 function playStandardSfx(eventType: string) {
   if (typeof window === "undefined") return;
@@ -72,12 +73,20 @@ function MulliganCard({
 
   const W = 200;
   const H = 280;
+  const longPress = useLongPress(() => {
+    setShowDetails(prev => !prev);
+    if (detailTimer.current) clearTimeout(detailTimer.current);
+  });
 
   return (
     <div
       role="button"
       tabIndex={0}
-      onClick={onToggle}
+      {...longPress.handlers}
+      onClick={() => {
+        if (longPress.consume()) return;
+        onToggle();
+      }}
       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onToggle(); }}
       onMouseEnter={() => {
         setIsHovered(true);
@@ -94,6 +103,7 @@ function MulliganCard({
         if (detailTimer.current) clearTimeout(detailTimer.current);
       }}
       style={{
+        ...LONG_PRESS_RESET_STYLE,
         width: W, height: H, borderRadius: 12, position: "relative",
         background: isCreature
           ? "linear-gradient(160deg, #1a1a2e, #0d0d1a)"

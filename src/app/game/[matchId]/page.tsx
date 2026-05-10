@@ -7,6 +7,7 @@ import { useGameStore } from "@/lib/store/gameStore";
 import { useAudioStore } from "@/lib/store/audioStore";
 import SfxEngine from "@/lib/audio/SfxEngine";
 import GameBoard from "@/components/game/GameBoard";
+import OrientationLock from "@/components/shared/OrientationLock";
 import type { Card, GameAction, HeroDefinition, HeroPowerEffect, Race } from "@/lib/game/types";
 
 interface HeroRow {
@@ -477,32 +478,43 @@ export default function GamePage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-accent text-lg mb-4">{error}</p>
-          <button
-            onClick={() => (window.location.href = "/")}
-            className="px-6 py-2 bg-primary text-background rounded-lg font-bold"
-          >
-            Return to Menu
-          </button>
+      <>
+        <OrientationLock />
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-accent text-lg mb-4">{error}</p>
+            <button
+              onClick={() => (window.location.href = "/")}
+              className="px-6 py-2 bg-primary text-background rounded-lg font-bold"
+            >
+              Return to Menu
+            </button>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   if (phase === "loading" || phase === "waiting") {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-4xl mb-4 animate-bounce">⚔️</div>
-          <p className="text-foreground/50">
-            {phase === "loading" ? "Loading match..." : "Waiting for opponent..."}
-          </p>
+      <>
+        <OrientationLock />
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-4xl mb-4 animate-bounce">⚔️</div>
+            <p className="text-foreground/50">
+              {phase === "loading" ? "Loading match..." : "Waiting for opponent..."}
+            </p>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
-  return <GameBoard onAction={handleAction} />;
+  return (
+    <>
+      <OrientationLock />
+      <GameBoard onAction={handleAction} />
+    </>
+  );
 }

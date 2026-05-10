@@ -3,6 +3,14 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
+// Touch devices have no continuous cursor position to anchor the arrow tail.
+// Players already see valid targets via per-component pulsing highlights
+// (BoardCreature isValidTarget, HeroPortrait ring, Hero3DViewer halo), so the
+// arrow becomes a desktop-only visual aid in tap-to-target mode.
+const isTouchDevice =
+  typeof window !== "undefined" &&
+  ("ontouchstart" in window || navigator.maxTouchPoints > 0);
+
 interface TargetingArrowProps {
   targetingMode: "none" | "attack" | "spell" | "spell_multi" | "creature" | "graveyard" | "divination" | "selection" | "tactique_keywords" | "hero_power" | "cost_payment";
   sourceInstanceId: string | null;
@@ -121,6 +129,7 @@ export default function TargetingArrow({
   }, [isActive]);
 
   if (!isActive || !mounted) return null;
+  if (isTouchDevice) return null;
 
   return createPortal(
     <svg

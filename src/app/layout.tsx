@@ -31,6 +31,9 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  // viewport-fit=cover lets us read env(safe-area-inset-*) so fixed UI
+  // (settings, end-turn) doesn't slide under the notch in landscape.
+  viewportFit: "cover",
 };
 
 export const metadata: Metadata = {

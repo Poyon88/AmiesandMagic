@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import type { CardInstance } from "@/lib/game/types";
 import GameCard from "@/components/cards/GameCard";
+import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
 
 interface Props {
   deckCount: number;
@@ -91,6 +92,9 @@ function DeckTile({ cardBackUrl, count, isOpponent }: DeckTileProps) {
   const [hovered, setHovered] = useState(false);
   const accentSoft = isOpponent ? "rgba(231, 76, 60, 0.25)" : "rgba(155, 89, 182, 0.25)";
   const pileShadow = buildPileShadow(count, accentSoft);
+  // Touch equivalent of hover: a long-press toggles the preview, a second
+  // long-press (or tap elsewhere) closes it.
+  const longPress = useLongPress(() => setHovered((p) => !p));
 
   return (
     <div
@@ -99,6 +103,13 @@ function DeckTile({ cardBackUrl, count, isOpponent }: DeckTileProps) {
       data-no-global-click-sfx="true"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      {...longPress.handlers}
+      onClick={() => {
+        // Tap-anywhere-to-close on touch — desktop uses onMouseLeave.
+        if (longPress.consume()) return;
+        if (hovered) setHovered(false);
+      }}
+      style={LONG_PRESS_RESET_STYLE}
     >
       <div
         className="relative w-full h-full rounded-lg overflow-hidden"
@@ -181,6 +192,14 @@ function GraveyardTile({ topCard, emptyImageUrl, count, isOpponent, onClick }: G
   const [showDetails, setShowDetails] = useState(false);
   const accentSoft = isOpponent ? "rgba(231, 76, 60, 0.25)" : "rgba(155, 89, 182, 0.25)";
   const pileShadow = buildPileShadow(count, accentSoft);
+  // Long-press = touch equivalent of right-click on the tile: toggles the
+  // detailed preview side instead of just showing the art. Single tap still
+  // opens the full graveyard modal via onClick.
+  const longPress = useLongPress(() => {
+    if (!topCard) return;
+    setHovered(true);
+    setShowDetails((prev) => !prev);
+  });
 
   return (
     // Rendered as a <div> rather than a <button> on purpose: Chrome applies
@@ -190,7 +209,9 @@ function GraveyardTile({ topCard, emptyImageUrl, count, isOpponent, onClick }: G
     <div
       role="button"
       tabIndex={0}
+      {...longPress.handlers}
       onClick={() => {
+        if (longPress.consume()) return;
         setHovered(false);
         setShowDetails(false);
         onClick();
@@ -214,6 +235,7 @@ function GraveyardTile({ topCard, emptyImageUrl, count, isOpponent, onClick }: G
       data-no-global-click-sfx="true"
       title={isOpponent ? "Cimetière adverse" : "Votre cimetière"}
       className="relative w-32 aspect-[5/7] cursor-pointer"
+      style={LONG_PRESS_RESET_STYLE}
     >
       <div
         className="relative w-full h-full rounded-lg overflow-hidden"

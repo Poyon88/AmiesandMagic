@@ -1,6 +1,10 @@
 "use client";
 
-import { useState, type ReactNode, type MouseEvent } from "react";
+import { useEffect, useState, type ReactNode, type MouseEvent } from "react";
+
+const isTouchDevice =
+  typeof window !== "undefined" &&
+  ("ontouchstart" in window || navigator.maxTouchPoints > 0);
 
 // Metallic gradient stops per rarity — each palette is built like a polished
 // strip: dark edge → mid tone → bright highlight → mid tone → dark edge.
@@ -41,7 +45,27 @@ export default function ExpertCardFrame({ rarity, children }: ExpertCardFramePro
   const metal = METAL_GRADIENTS[rarity] ?? METAL_GRADIENTS["Rare"];
   const glow = EDGE_GLOW[rarity] ?? EDGE_GLOW["Rare"];
 
+  // Touch fallback: no mousemove → no glossy reflection. Animate the highlight
+  // in a slow circular path so the metal still feels alive on phones/tablets.
+  // Note: we keep `hovered` false on touch so the auto-zoom stays disabled —
+  // parents drive zoom (or it's just decorative).
+  const [glossPos, setGlossPos] = useState({ mx: 50, my: 50 });
+  useEffect(() => {
+    if (!isTouchDevice) return;
+    let frame = 0;
+    const id = setInterval(() => {
+      frame = (frame + 1) % 360;
+      const rad = (frame * Math.PI) / 180;
+      setGlossPos({
+        mx: 50 + Math.cos(rad) * 35,
+        my: 50 + Math.sin(rad) * 35,
+      });
+    }, 50);
+    return () => clearInterval(id);
+  }, []);
+
   function onMove(e: MouseEvent<HTMLDivElement>) {
+    if (isTouchDevice) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const mx = ((e.clientX - rect.left) / rect.width) * 100;
     const my = ((e.clientY - rect.top) / rect.height) * 100;
@@ -49,6 +73,7 @@ export default function ExpertCardFrame({ rarity, children }: ExpertCardFramePro
   }
 
   function onLeave() {
+    if (isTouchDevice) return;
     setHover({ mx: 50, my: 50, hovered: false });
   }
 
@@ -76,15 +101,20 @@ export default function ExpertCardFrame({ rarity, children }: ExpertCardFramePro
       >
         <div style={{ position: "relative", borderRadius: 7, overflow: "hidden" }}>
           {children}
-          {/* Glossy reflection that follows the cursor. */}
+          {/* Glossy reflection: follows cursor on desktop, runs an automatic
+              circular sweep on touch devices (no cursor to track). */}
           <div
             style={{
               position: "absolute",
               inset: 0,
               borderRadius: 7,
-              background: `radial-gradient(circle at ${hover.mx}% ${hover.my}%, rgba(255,255,255,0.32), rgba(255,255,255,0) 55%)`,
+              background: `radial-gradient(circle at ${
+                isTouchDevice ? glossPos.mx : hover.mx
+              }% ${
+                isTouchDevice ? glossPos.my : hover.my
+              }%, rgba(255,255,255,0.32), rgba(255,255,255,0) 55%)`,
               mixBlendMode: "overlay",
-              opacity: hover.hovered ? 1 : 0,
+              opacity: isTouchDevice ? 0.8 : hover.hovered ? 1 : 0,
               transition: "opacity 0.2s ease-out",
               pointerEvents: "none",
             }}
