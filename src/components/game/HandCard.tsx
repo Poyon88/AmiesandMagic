@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import type { CardInstance } from "@/lib/game/types";
@@ -112,6 +113,90 @@ export default function HandCard({
     if (detailTimer.current) clearTimeout(detailTimer.current);
   });
 
+  // ─── Touch drag (HTML5 drag is mouse-only) ───────────────────────────────
+  // Same gesture as the mouse path: a finger held still triggers long-press
+  // (handled by useLongPress); a finger that moves past the threshold turns
+  // into a drag. The two are composed in the touch handlers below.
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const touchDraggingRef = useRef(false);
+  const [touchGhostPos, setTouchGhostPos] = useState<{ x: number; y: number } | null>(null);
+  const TOUCH_DRAG_THRESHOLD = 12;
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    longPress.handlers.onTouchStart(e);
+    if (!canPlay) return;
+    const t = e.touches[0];
+    if (!t) return;
+    touchStartRef.current = { x: t.clientX, y: t.clientY };
+    touchDraggingRef.current = false;
+  };
+  const handleTouchMove = (e: React.TouchEvent) => {
+    longPress.handlers.onTouchMove(e);
+    if (!touchStartRef.current) return;
+    const t = e.touches[0];
+    if (!t) return;
+    if (!touchDraggingRef.current) {
+      const dx = t.clientX - touchStartRef.current.x;
+      const dy = t.clientY - touchStartRef.current.y;
+      if (dx * dx + dy * dy > TOUCH_DRAG_THRESHOLD * TOUCH_DRAG_THRESHOLD) {
+        touchDraggingRef.current = true;
+        setIsDragging(true);
+        setIsHovered(false);
+        setShowDetails(false);
+      }
+    }
+    if (touchDraggingRef.current) {
+      setTouchGhostPos({ x: t.clientX, y: t.clientY });
+      window.dispatchEvent(
+        new CustomEvent("hand-touch-move", {
+          detail: { clientX: t.clientX, cardType: card.card_type },
+        })
+      );
+    }
+  };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    longPress.handlers.onTouchEnd(e);
+    if (touchDraggingRef.current) {
+      const t = e.changedTouches[0];
+      let droppedOnBoard = false;
+      let clientX = 0;
+      if (t) {
+        clientX = t.clientX;
+        const elem = document.elementFromPoint(t.clientX, t.clientY);
+        const board = elem?.closest('[data-droptarget="my-board"]');
+        droppedOnBoard = !!board;
+      }
+      if (droppedOnBoard) {
+        window.dispatchEvent(
+          new CustomEvent("hand-touch-drop", {
+            detail: {
+              cardInstanceId: cardInstance.instanceId,
+              cardType: card.card_type,
+              clientX,
+            },
+          })
+        );
+      } else {
+        window.dispatchEvent(new CustomEvent("hand-touch-end"));
+      }
+      touchDraggingRef.current = false;
+      setIsDragging(false);
+      setTouchGhostPos(null);
+      e.preventDefault();
+    }
+    touchStartRef.current = null;
+  };
+  const handleTouchCancel = () => {
+    longPress.handlers.onTouchCancel();
+    if (touchDraggingRef.current) {
+      window.dispatchEvent(new CustomEvent("hand-touch-end"));
+      touchDraggingRef.current = false;
+      setIsDragging(false);
+      setTouchGhostPos(null);
+    }
+    touchStartRef.current = null;
+  };
+
   return (
     <motion.div
       initial={{ y: 60, opacity: 0, scale: 0.7 }}
@@ -139,9 +224,13 @@ export default function HandCard({
           setShowDetails(prev => !prev);
           if (detailTimer.current) clearTimeout(detailTimer.current);
         }}
-        {...longPress.handlers}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchCancel}
         onClick={() => {
           if (longPress.consume()) return;
+          if (touchDraggingRef.current) return;
           if (isCostPaymentMode) {
             if (!isPendingCostSource) toggleDiscardSelection(cardInstance.instanceId);
           } else if (canPlay) {
@@ -150,6 +239,7 @@ export default function HandCard({
         }}
         style={{
           ...LONG_PRESS_RESET_STYLE,
+          touchAction: "none",
           width: W, height: H, borderRadius: 8,
           position: isZoomed ? "absolute" : "relative",
           bottom: isZoomed ? 0 : undefined,
@@ -479,6 +569,41 @@ export default function HandCard({
         </div>
         </div>{/* close clip-wrapper */}
       </div>
+      {touchGhostPos && typeof document !== "undefined" && createPortal(
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: W,
+            height: H,
+            transform: `translate(${touchGhostPos.x - W / 2}px, ${touchGhostPos.y - H / 2}px)`,
+            pointerEvents: "none",
+            zIndex: 9999,
+            borderRadius: 8,
+            border: `2px solid ${borderColor}`,
+            background: isCreature
+              ? "linear-gradient(160deg, #1a1a2e, #0d0d1a)"
+              : "linear-gradient(160deg, #1a0a2a, #0d0d1a)",
+            overflow: "hidden",
+            opacity: 0.85,
+            boxShadow: "0 8px 24px rgba(0,0,0,0.6)",
+          }}
+        >
+          {resolvedImageUrl && (
+            // Use a plain <img> in the portal — Next/Image inside a fixed
+            // overlay would need explicit sizes; this is a transient drag
+            // ghost so a regular image is simpler and good enough.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={resolvedImageUrl}
+              alt={card.name}
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          )}
+        </div>,
+        document.body
+      )}
     </motion.div>
   );
 }

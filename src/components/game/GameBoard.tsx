@@ -214,6 +214,49 @@ export default function GameBoard({ onAction }: GameBoardProps) {
     setDropIndex(null);
   }, []);
 
+  // Touch-drag bridge — HandCard's manual touch drag emits these CustomEvents
+  // because HTML5 drag events don't fire on touch devices. The drop visual
+  // (isDragOver / dropIndex) and the action dispatch mirror the HTML5 path.
+  useEffect(() => {
+    const onMove = (e: Event) => {
+      const ev = e as CustomEvent<{ clientX: number; cardType: string }>;
+      if (!myTurn) return;
+      setIsDragOver(true);
+      setDropIndex(computeDropIndex(ev.detail.clientX));
+    };
+    const onDrop = (e: Event) => {
+      const ev = e as CustomEvent<{
+        cardInstanceId: string;
+        cardType: string;
+        clientX: number;
+      }>;
+      setIsDragOver(false);
+      const idx = computeDropIndex(ev.detail.clientX);
+      setDropIndex(null);
+      if (!myTurn || !gameState) return;
+      const { cardInstanceId, cardType } = ev.detail;
+      if (cardType === "spell") {
+        const action = selectCardInHand(cardInstanceId);
+        broadcast(action);
+      } else {
+        const action = playCardDirect(cardInstanceId, idx);
+        broadcast(action);
+      }
+    };
+    const onEnd = () => {
+      setIsDragOver(false);
+      setDropIndex(null);
+    };
+    window.addEventListener("hand-touch-move", onMove);
+    window.addEventListener("hand-touch-drop", onDrop);
+    window.addEventListener("hand-touch-end", onEnd);
+    return () => {
+      window.removeEventListener("hand-touch-move", onMove);
+      window.removeEventListener("hand-touch-drop", onDrop);
+      window.removeEventListener("hand-touch-end", onEnd);
+    };
+  }, [myTurn, gameState, computeDropIndex, playCardDirect, selectCardInHand, broadcast]);
+
   const handleSelectAttacker = useCallback(
     (instanceId: string) => {
       if (!myTurn || !gameState) return;
@@ -584,6 +627,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
 
         {/* ============= PLAYER BOARD (creatures + drop zone) ============= */}
         <div
+          data-droptarget="my-board"
           onDrop={handleDropOnBoard}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
