@@ -54,6 +54,7 @@ import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { KEYWORDS as keywordDefs, LIMITED_PRINT_COUNTS, ALIGNMENTS, getEffectiveAlignment } from "@/lib/card-engine/constants";
 import RarityFrame from "./RarityFrame";
+import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
 
 interface GameCardProps {
   card: Card;
@@ -110,6 +111,19 @@ export default function GameCard({
     return () => { alive = false; };
   }, [tokens]);
   const effectiveTokens = tokens ?? _tokenRegistryCache ?? autoTokens ?? undefined;
+
+  const longPress = useLongPress(() => {
+    if (onContextMenuProp) {
+      // Mirror the right-click branch: consumer drives visibility, but we
+      // can't synthesise a React.MouseEvent — we just toggle internal state
+      // so the description still shows. Consumers that fully override
+      // onContextMenu can pass `showDetails` to force visibility.
+      setInternalShowDetails((p) => !p);
+    } else {
+      setInternalShowDetails((p) => !p);
+    }
+    if (detailTimer.current) clearTimeout(detailTimer.current);
+  });
 
   // Set registry — chargé uniquement si la carte porte un set_id (sinon on
   // affichera mois/année à la place dans le coin bas-droite du descriptif).
@@ -182,7 +196,11 @@ export default function GameCard({
         borderRadius={4 + 10 * s}
       />
     <div
-      onClick={disabled ? undefined : onClick}
+      {...longPress.handlers}
+      onClick={disabled ? undefined : () => {
+        if (longPress.consume()) return;
+        onClick?.();
+      }}
       onMouseEnter={() => {
         setHovered(true);
         if (showDetailsProp === undefined) {
@@ -204,6 +222,7 @@ export default function GameCard({
         if (detailTimer.current) clearTimeout(detailTimer.current);
       }}
       style={{
+        ...LONG_PRESS_RESET_STYLE,
         width: w, height: h,
         borderRadius: isCreature ? 10 * s : 0,
         position: "relative",

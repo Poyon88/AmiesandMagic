@@ -34,6 +34,7 @@ import type { GameAction, DamageEvent, HeroDefinition } from "@/lib/game/types";
 import useGameMusic from "@/hooks/useGameMusic";
 import { useAudioStore } from "@/lib/store/audioStore";
 import SfxEngine from "@/lib/audio/SfxEngine";
+import useLongPress from "@/hooks/useLongPress";
 
 interface GameBoardProps {
   onAction?: (action: GameAction) => void;
@@ -310,11 +311,32 @@ export default function GameBoard({ onAction }: GameBoardProps) {
     if (oppHeroDef) setHeroDescriptionDef(oppHeroDef);
   };
 
+  // Long-press equivalent of the board-level right-click: backs out of a
+  // multi-target spell slot or cancels the active targeting mode entirely.
+  const boardCancelLongPress = useLongPress(() => {
+    if (targetingMode === "spell_multi" && currentTargetSlotIndex > 0) {
+      const prevSlot = spellTargetSlots[currentTargetSlotIndex - 1];
+      const prevMap = { ...useGameStore.getState().collectedTargetMap };
+      delete prevMap[prevSlot.slot];
+      const card = gameState?.players[gameState.currentPlayerIndex].hand.find(c => c.instanceId === selectedCardInstanceId);
+      const prevTargets = card && gameState ? getSpellTargets(gameState, card.card, prevSlot.type) : [];
+      useGameStore.setState({
+        currentTargetSlotIndex: currentTargetSlotIndex - 1,
+        collectedTargetMap: prevMap,
+        validTargets: prevTargets,
+      });
+    } else if (targetingMode !== "none") {
+      clearSelection();
+    }
+  });
+
   return (
     <div
       className="fixed inset-0 select-none"
       style={{ backgroundColor: "#0d0d1a" }}
+      {...boardCancelLongPress.handlers}
       onClick={(e) => {
+        if (boardCancelLongPress.consume()) return;
         if (e.target === e.currentTarget) clearSelection();
       }}
       onContextMenu={(e) => {

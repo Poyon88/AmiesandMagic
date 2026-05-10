@@ -10,6 +10,7 @@ import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
 import RarityFrame from "@/components/cards/RarityFrame";
+import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
 
 interface BoardCreatureProps {
   creature: CardInstance;
@@ -82,6 +83,11 @@ export default function BoardCreature({
   else if (isValidTarget) border = "2px solid #e74c3c";
   else if (canAttack) border = "2px solid #2ecc71";
 
+  const longPress = useLongPress(() => {
+    setShowDetails(prev => !prev);
+    if (detailTimer.current) clearTimeout(detailTimer.current);
+  });
+
   return (
     <motion.div
       layout
@@ -101,9 +107,15 @@ export default function BoardCreature({
     >
     <div
       ref={creatureRef}
-      onClick={canSelectForSacrifice
-        ? () => toggleSacrificeSelection(creature.instanceId)
-        : onClick}
+      {...longPress.handlers}
+      onClick={() => {
+        if (longPress.consume()) return;
+        if (canSelectForSacrifice) {
+          toggleSacrificeSelection(creature.instanceId);
+        } else {
+          onClick?.();
+        }
+      }}
       onMouseEnter={() => {
         setIsHovered(true);
         onMouseEnter?.();
@@ -128,6 +140,7 @@ export default function BoardCreature({
         if (detailTimer.current) clearTimeout(detailTimer.current);
       }}
       style={{
+        ...LONG_PRESS_RESET_STYLE,
         width: W, height: H, borderRadius: 10,
         position: isZoomed ? "absolute" : "relative",
         left: isZoomed ? "50%" : undefined,

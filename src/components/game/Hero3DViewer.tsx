@@ -6,6 +6,7 @@ import { Html, Stage, useGLTF } from "@react-three/drei";
 import { Color, Group, Mesh, MeshStandardMaterial, Object3D } from "three";
 import { clone as cloneSkeleton } from "three/examples/jsm/utils/SkeletonUtils.js";
 import type { HeroState } from "@/lib/game/types";
+import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
 
 // ─── Props ───────────────────────────────────────────────────────────────
 
@@ -163,7 +164,10 @@ export default function Hero3DViewer({
 
   const interactive = !!(onClick || onDoubleClick || onContextMenu);
 
+  const longPress = useLongPress(() => onContextMenu?.());
+
   function handleClickCapture(e: React.MouseEvent) {
+    if (longPress.consume()) return;
     if (!onClick) return;
     e.stopPropagation();
     onClick();
@@ -198,6 +202,7 @@ export default function Hero3DViewer({
   return (
     <div
       data-target-id={isOpponent ? "enemy_hero" : "friendly_hero"}
+      {...longPress.handlers}
       onClick={handleClickCapture}
       onDoubleClick={handleDoubleClickCapture}
       onContextMenu={handleContextMenu}
@@ -205,6 +210,7 @@ export default function Hero3DViewer({
       onMouseLeave={handleLeave}
       className={`relative ${interactive ? "cursor-pointer" : ""}`}
       style={{
+        ...LONG_PRESS_RESET_STYLE,
         // Scales with the viewport: 40 vmin is ~40% of the smaller dimension,
         // clamped so the hero never collapses below 180px nor exceeds 440px.
         // This keeps the figurine readable on both phones and large desktops

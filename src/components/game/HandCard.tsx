@@ -14,6 +14,7 @@ import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
 import CostBadges from "@/components/cards/CostBadges";
 import RarityFrame from "@/components/cards/RarityFrame";
+import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
 
 interface HandCardProps {
   cardInstance: CardInstance;
@@ -106,6 +107,11 @@ export default function HandCard({
     : isCreature ? "#3d3d5c" : "#6c3483";
   const iconOverrides = useKeywordIconStore((st) => st.overrides);
 
+  const longPress = useLongPress(() => {
+    setShowDetails(prev => !prev);
+    if (detailTimer.current) clearTimeout(detailTimer.current);
+  });
+
   return (
     <motion.div
       initial={{ y: 60, opacity: 0, scale: 0.7 }}
@@ -133,10 +139,17 @@ export default function HandCard({
           setShowDetails(prev => !prev);
           if (detailTimer.current) clearTimeout(detailTimer.current);
         }}
-        onClick={isCostPaymentMode
-          ? (isPendingCostSource ? undefined : () => toggleDiscardSelection(cardInstance.instanceId))
-          : (canPlay ? onClick : undefined)}
+        {...longPress.handlers}
+        onClick={() => {
+          if (longPress.consume()) return;
+          if (isCostPaymentMode) {
+            if (!isPendingCostSource) toggleDiscardSelection(cardInstance.instanceId);
+          } else if (canPlay) {
+            onClick?.();
+          }
+        }}
         style={{
+          ...LONG_PRESS_RESET_STYLE,
           width: W, height: H, borderRadius: 8,
           position: isZoomed ? "absolute" : "relative",
           bottom: isZoomed ? 0 : undefined,

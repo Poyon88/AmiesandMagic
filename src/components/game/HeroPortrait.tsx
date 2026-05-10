@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import type { HeroState } from "@/lib/game/types";
 import { HERO_MAX_HP } from "@/lib/game/constants";
+import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
 
 const HERO_IMAGES: Record<string, string> = {
   elves: "/images/heroes/elves.png",
@@ -50,6 +51,7 @@ export default function HeroPortrait({
   onMouseLeave,
 }: HeroPortraitProps) {
   const hpPercentage = Math.max(0, (hero.hp / HERO_MAX_HP) * 100);
+  const longPress = useLongPress(() => onContextMenu?.());
 
   return (
     <div className="relative flex flex-col items-center">
@@ -73,7 +75,8 @@ export default function HeroPortrait({
 
       <motion.div
         data-target-id={isOpponent ? "enemy_hero" : "friendly_hero"}
-        onClick={onClick}
+        {...longPress.handlers}
+        onClick={onClick ? () => { if (longPress.consume()) return; onClick(); } : undefined}
         onDoubleClick={onDoubleClick}
         onContextMenu={(e) => {
           if (!onContextMenu) return;
@@ -88,6 +91,7 @@ export default function HeroPortrait({
             : { x: 0 }
         }
         transition={{ duration: 0.5, ease: "easeOut" }}
+        style={LONG_PRESS_RESET_STYLE}
         className={`
           relative w-40 h-48 rounded-xl overflow-hidden
           transition-[box-shadow,transform]
