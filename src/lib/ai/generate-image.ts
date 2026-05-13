@@ -45,6 +45,7 @@ async function callImagen(
   apiKey: string,
   aspectRatio: string,
   size: '1K' | '2K',
+  errorSink: string[],
 ): Promise<GenerateImageResult | null> {
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${model}:predict?key=${apiKey}`,
@@ -65,6 +66,7 @@ async function callImagen(
   );
   const data = await res.json();
   if (data.error) {
+    errorSink.push(`${model}: [${data.error.code}] ${data.error.message}`);
     if (data.error.code === 429 || data.error.message?.includes('quota')) return null;
     if (data.error.code === 400 || data.error.code === 404) return null;
     throw new Error(data.error.message);
@@ -84,6 +86,7 @@ async function callGemini(
   model: string,
   promptText: string,
   apiKey: string,
+  errorSink: string[],
   referenceImageBase64?: string,
   referenceImageMimeType?: string,
 ): Promise<GenerateImageResult | null> {
@@ -112,6 +115,7 @@ async function callGemini(
   );
   const data = await res.json();
   if (data.error) {
+    errorSink.push(`${model}: [${data.error.code}] ${data.error.message}`);
     if (data.error.code === 429 || data.error.message?.includes('quota')) return null;
     if (data.error.code === 400 || data.error.code === 404) return null;
     throw new Error(data.error.message);
@@ -140,6 +144,7 @@ export async function generateImage(opts: GenerateImageOptions): Promise<Generat
   const promptText = `Generate an image with absolutely no text, no letters, no words, no writing, no captions, no labels, no watermarks anywhere in the image. The image must contain zero readable characters. Description: ${prompt}`;
   const ratio = aspectRatio ?? '1:1';
   const hasReference = !!(referenceImageBase64 && referenceImageMimeType);
+  const errorSink: string[] = [];
 
   // Imagen path — high-res, no reference image. If a reference was attached,
   // skip Imagen entirely since its :predict endpoint doesn't accept inline
@@ -147,9 +152,10 @@ export async function generateImage(opts: GenerateImageOptions): Promise<Generat
   if (highRes && !hasReference) {
     for (const model of IMAGEN_MODELS_2K) {
       try {
-        const result = await callImagen(model, promptText, apiKey, ratio, '2K');
+        const result = await callImagen(model, promptText, apiKey, ratio, '2K', errorSink);
         if (result) return result;
       } catch (err) {
+        errorSink.push(`${model}: ${err instanceof Error ? err.message : String(err)}`);
         console.error(`[generate-image] Imagen ${model} failed:`, err);
       }
     }
@@ -162,17 +168,30 @@ export async function generateImage(opts: GenerateImageOptions): Promise<Generat
         model,
         promptText,
         apiKey,
+        errorSink,
         referenceImageBase64,
         referenceImageMimeType,
       );
       if (result) return result;
     } catch (err) {
+      errorSink.push(`${model}: ${err instanceof Error ? err.message : String(err)}`);
       console.error(`[generate-image] Gemini ${model} failed:`, err);
     }
   }
 
-  throw new GenerateImageError(
-    'Tous les modèles ont échoué. Réessayez dans quelques secondes (quota).',
-    503,
-  );
+  // Classify the failure: invalid key (401/403 or "API key not valid") vs quota
+  // (429) vs unknown model (404) vs everything else.
+  const joined = errorSink.join(' | ');
+  const looksLikeAuth = /API key not valid|API_KEY_INVALID|\b401\b|\b403\b|PERMISSION_DENIED|UNAUTHENTICATED/i.test(joined);
+  const looksLikeQuota = /\b429\b|quota|RESOURCE_EXHAUSTED/i.test(joined);
+  const looksLikeNotFound = /\b404\b|not found|NOT_FOUND/i.test(joined);
+
+  const message = looksLikeAuth
+    ? `Clé GEMINI_API_KEY invalide ou sans accès au modèle. Détails: ${joined}`
+    : looksLikeQuota
+      ? `Quota Gemini atteint. Réessaye dans quelques secondes. Détails: ${joined}`
+      : looksLikeNotFound
+        ? `Aucun modèle disponible (404). Les noms de modèles sont peut-être obsolètes. Détails: ${joined}`
+        : `Tous les modèles ont échoué. Détails: ${joined || '(aucune erreur capturée)'}`;
+  throw new GenerateImageError(message, 503);
 }
