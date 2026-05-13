@@ -1339,6 +1339,7 @@ export default function CardForge() {
   const [manualAbility, setManualAbility] = useState("");
   const [manualFlavorText, setManualFlavorText] = useState("");
   const [manualIllustrationPrompt, setManualIllustrationPrompt] = useState("");
+  const [genIllusPromptLoading, setGenIllusPromptLoading] = useState(false);
   const [manualKeywords, setManualKeywords] = useState<string[]>([]);
   const [keywordXValues, setKeywordXValues] = useState<Record<string, number>>({});
   const [hoveredKw, setHoveredKw] = useState<{ id: string; rect: DOMRect } | null>(null);
@@ -2952,7 +2953,10 @@ export default function CardForge() {
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <label style={{ fontSize: 9, color: "#666", letterSpacing: 1 }}>PROMPT ILLUSTRATION</label>
                       <button
+                        disabled={genIllusPromptLoading || !faction || !type || !rarity}
                         onClick={async () => {
+                          setGenIllusPromptLoading(true);
+                          setSaveResult(null);
                           try {
                             const res = await fetch('/api/cards/generate-text', {
                               method: 'POST',
@@ -2966,21 +2970,37 @@ export default function CardForge() {
                                 clanId: clan || undefined,
                               }),
                             });
-                            if (res.ok) {
-                              const data = await res.json();
-                              if (data.illustrationPrompt) setManualIllustrationPrompt(data.illustrationPrompt);
-                              if (!manualAbility && data.ability) setManualAbility(data.ability);
-                              if (!manualFlavorText && data.flavorText) setManualFlavorText(data.flavorText);
-                              if (!manualName && data.name) setManualName(data.name);
+                            const data = await res.json().catch(() => null);
+                            if (!res.ok) {
+                              console.error('[card-forge] generate-text HTTP error', res.status, data);
+                              setSaveResult({ ok: false, msg: `Erreur API (${res.status}) — voir console` });
+                              return;
                             }
-                          } catch { /* silently fail */ }
+                            if (!data?.illustrationPrompt) {
+                              console.warn('[card-forge] generate-text returned no illustrationPrompt', data);
+                              setSaveResult({ ok: false, msg: "L'IA n'a pas renvoyé de prompt — vérifier ANTHROPIC_API_KEY et les logs serveur" });
+                              return;
+                            }
+                            setManualIllustrationPrompt(data.illustrationPrompt);
+                            if (!manualAbility && data.ability) setManualAbility(data.ability);
+                            if (!manualFlavorText && data.flavorText) setManualFlavorText(data.flavorText);
+                            if (!manualName && data.name) setManualName(data.name);
+                            setSaveResult({ ok: true, msg: "Prompt illustration généré" });
+                          } catch (err) {
+                            console.error('[card-forge] generate-text fetch failed', err);
+                            setSaveResult({ ok: false, msg: err instanceof Error ? err.message : "Erreur réseau" });
+                          } finally {
+                            setGenIllusPromptLoading(false);
+                          }
                         }}
                         style={{
-                          fontSize: 8, padding: "2px 8px", borderRadius: 4, cursor: "pointer",
+                          fontSize: 8, padding: "2px 8px", borderRadius: 4,
+                          cursor: genIllusPromptLoading || !faction || !type || !rarity ? "not-allowed" : "pointer",
                           background: "#f0eeff", border: "1px solid #d0c8ff",
                           color: "#6c5ce7", fontFamily: "'Cinzel',serif",
+                          opacity: genIllusPromptLoading || !faction || !type || !rarity ? 0.5 : 1,
                         }}
-                      >{"🤖 Générer par IA"}</button>
+                      >{genIllusPromptLoading ? "⏳ Génération…" : "🤖 Générer par IA"}</button>
                     </div>
                     <textarea value={manualIllustrationPrompt} onChange={e => setManualIllustrationPrompt(e.target.value)}
                       placeholder="English prompt for image generation…"
