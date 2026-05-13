@@ -119,7 +119,13 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
   "illustrationPrompt": "${raceId ? `A ${raceVisualDesc} — this is a ${raceId}, NOT a ${fac?.races?.[0] || factionId}. Cinematic dark fantasy, detailed, no text in image.` : 'Midjourney prompt (English, cinematic dark fantasy, detailed, no text in image)'}"
 }`;
 
+  if (!process.env.ANTHROPIC_API_KEY) {
+    console.error('[card-forge] ANTHROPIC_API_KEY missing in environment');
+    return NextResponse.json({ error: 'ANTHROPIC_API_KEY missing on server' }, { status: 500 });
+  }
+
   const maxRetries = 3;
+  let lastErrorMessage = 'unknown error';
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -130,7 +136,7 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
           'anthropic-version': '2023-06-01',
         },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
+          model: 'claude-sonnet-4-6',
           max_tokens: 800,
           messages: [{ role: 'user', content: prompt }],
         }),
@@ -141,15 +147,15 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
       // Retry on overloaded
       if (response.status === 529 || data.error?.type === 'overloaded_error') {
         console.warn(`[card-forge] API overloaded, retry ${attempt + 1}/${maxRetries}...`);
+        lastErrorMessage = `overloaded (${response.status})`;
         await new Promise(r => setTimeout(r, 2000 * (attempt + 1)));
         continue;
       }
 
       if (!response.ok) {
-        console.error('[card-forge] API error:', data.error?.message || JSON.stringify(data));
-        return NextResponse.json({
-          name: 'Carte sans nom', ability: '—', flavorText: '', illustrationPrompt: '',
-        });
+        const errMsg = data.error?.message || JSON.stringify(data);
+        console.error('[card-forge] API error:', response.status, errMsg);
+        return NextResponse.json({ error: `Anthropic ${response.status}: ${errMsg}` }, { status: 502 });
       }
 
       const raw = data.content?.find((b: { type: string; text?: string }) => b.type === 'text')?.text || '{}';
@@ -221,6 +227,7 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
 
       return NextResponse.json(parsed);
     } catch (err) {
+      lastErrorMessage = err instanceof Error ? err.message : String(err);
       console.error(`[card-forge] generateText error (attempt ${attempt + 1}):`, err);
       if (attempt < maxRetries - 1) {
         await new Promise(r => setTimeout(r, 2000 * (attempt + 1)));
@@ -229,7 +236,5 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
     }
   }
 
-  return NextResponse.json({
-    name: 'Carte sans nom', ability: '—', flavorText: '', illustrationPrompt: '',
-  });
+  return NextResponse.json({ error: `Failed after ${maxRetries} attempts: ${lastErrorMessage}` }, { status: 502 });
 }

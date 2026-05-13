@@ -2973,7 +2973,7 @@ export default function CardForge() {
                             const data = await res.json().catch(() => null);
                             if (!res.ok) {
                               console.error('[card-forge] generate-text HTTP error', res.status, data);
-                              setSaveResult({ ok: false, msg: `Erreur API (${res.status}) — voir console` });
+                              setSaveResult({ ok: false, msg: `Erreur API (${res.status}): ${data?.error || 'voir console'}` });
                               return;
                             }
                             if (!data?.illustrationPrompt) {
