@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
@@ -9,6 +10,11 @@ interface MenuTileProps {
   description: string;
   accent: "play" | "market" | "collection" | "decks" | "cards" | "heroes" | "card_backs" | "boards";
   glyph?: ReactNode;
+  /** Optional full-bleed background image. Sits behind the accent
+   *  gradient / glow with a darkening overlay so the text stays
+   *  readable. The glyph is hidden when an image is provided to avoid
+   *  visual noise. */
+  bgImage?: string;
 }
 
 // Reusable tile for the home + collection hub. Same overall shape as
@@ -17,15 +23,20 @@ interface MenuTileProps {
 // player can identify the section at a glance. Renders as a proper
 // <Link> so middle-click / right-click / keyboard activation behave
 // like real navigation.
-export default function MenuTile({ href, label, description, accent, glyph }: MenuTileProps) {
+export default function MenuTile({ href, label, description, accent, glyph, bgImage }: MenuTileProps) {
   const accentColor = ACCENT_HEX[accent];
 
   return (
     <Link
       href={href}
-      className="group relative overflow-hidden rounded-2xl transition-all duration-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c8a84e] focus-visible:ring-offset-4 focus-visible:ring-offset-[#0a0a18]"
+      className="group block relative overflow-hidden rounded-2xl transition-all duration-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c8a84e] focus-visible:ring-offset-4 focus-visible:ring-offset-[#0a0a18] w-full"
       style={{
-        aspectRatio: "5/4",
+        // Landscape ratio so wide gameplay-style background images fit
+        // with minimal cropping. Still works for plain glyph tiles
+        // because the content is centered. `block` + `w-full` + the
+        // grid's `items-start` ensure aspect-ratio isn't overridden by
+        // grid row stretching.
+        aspectRatio: "16 / 10",
         // Distinct from the page radial-gradient so the tile reads as a
         // discrete panel. The accent color is mixed in at the top so
         // the tile category is recognisable even without the glyph.
@@ -33,19 +44,48 @@ export default function MenuTile({ href, label, description, accent, glyph }: Me
           radial-gradient(ellipse at 50% 0%, ${accentColor}33 0%, transparent 55%),
           linear-gradient(160deg, rgba(60,60,95,0.95) 0%, rgba(20,20,38,1) 100%)
         `,
-        // 2px gold border via outline-style inset (Tailwind border class
-        // was rendering too faint against the dark gradient); plus an
-        // inset reflet for a panel feel.
+        // No default border — only the four gold L-corners are visible
+        // in the resting state. The full inset gold border fades in on
+        // hover / keyboard focus (see the separate overlay below) so
+        // the active tile reads as "selected".
         boxShadow: `
-          inset 0 0 0 2px rgba(200,168,78,0.55),
-          inset 0 1px 0 rgba(200,168,78,0.25),
+          inset 0 1px 0 rgba(200,168,78,0.18),
           0 18px 40px rgba(0,0,0,0.55)
         `,
       }}
     >
-      {/* Hover border boost */}
+      {/* Optional background image — full-bleed, slightly desaturated
+          and darkened so the title + description stay legible. Sits
+          below the accent glow + corner ornaments. */}
+      {bgImage && (
+        <>
+          <Image
+            src={bgImage}
+            alt=""
+            fill
+            sizes="(max-width: 640px) 90vw, 45vw"
+            className="object-cover transition-transform duration-700 group-hover:scale-105"
+            style={{ filter: "brightness(0.55) saturate(0.9)" }}
+            aria-hidden="true"
+          />
+          {/* Dark gradient overlay focused at the bottom so the text
+              block is always readable regardless of the image content. */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(10,10,24,0.25) 0%, rgba(10,10,24,0.55) 50%, rgba(10,10,24,0.9) 100%)",
+            }}
+            aria-hidden="true"
+          />
+        </>
+      )}
+
+      {/* Full gold border — hidden by default, fades in on hover or
+          keyboard focus. The Link uses `group` + `focus-within` so
+          either pointing at it or tabbing to it surfaces the border. */}
       <div
-        className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+        className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-500 pointer-events-none"
         style={{ boxShadow: "inset 0 0 0 2px rgba(200,168,78,0.95)" }}
         aria-hidden="true"
       />
@@ -58,17 +98,19 @@ export default function MenuTile({ href, label, description, accent, glyph }: Me
         }}
       />
 
-      {/* Corner ornaments — SVG L-shapes that hug the rounded border.
-          Drawn as four absolute SVGs in the four corners so they remain
-          crisp and identical regardless of viewport. */}
-      <CornerOrnament className="absolute top-2 left-2" rotate={0} />
-      <CornerOrnament className="absolute top-2 right-2" rotate={90} />
-      <CornerOrnament className="absolute bottom-2 right-2" rotate={180} />
-      <CornerOrnament className="absolute bottom-2 left-2" rotate={270} />
+      {/* Corner ornaments — SVG L-shapes that share the tile's rounded
+          corner radius (16 px = rounded-2xl) so the ornament's outer
+          curve sits exactly on top of the gold border, blending into a
+          single visual element. Positioned at the corners (0,0) so the
+          edges align with the tile boundary. */}
+      <CornerOrnament className="absolute top-0 left-0" rotate={0} />
+      <CornerOrnament className="absolute top-0 right-0" rotate={90} />
+      <CornerOrnament className="absolute bottom-0 right-0" rotate={180} />
+      <CornerOrnament className="absolute bottom-0 left-0" rotate={270} />
 
       {/* Content */}
       <div className="relative z-[2] flex flex-col items-center justify-center h-full p-6 md:p-8 gap-3 text-center transition-transform duration-500 group-hover:scale-[1.02]">
-        {glyph && (
+        {glyph && !bgImage && (
           <div
             className="mb-1 transition-transform duration-500 group-hover:scale-110"
             style={{
@@ -104,25 +146,29 @@ export default function MenuTile({ href, label, description, accent, glyph }: Me
   );
 }
 
-/** Single gilded L-corner ornament. The `rotate` prop spins it so the
- *  same SVG path serves all four corners — keeps the four corners
- *  visually identical down to the pixel. */
+/** Single gilded L-corner ornament. Matches the tile's
+ *  `rounded-2xl` (16 px) corner radius so the ornament's outer curve
+ *  sits exactly on the tile's gold border, blending into one shape.
+ *  The `rotate` prop spins the same SVG for the four corners. */
 function CornerOrnament({ className, rotate }: { className?: string; rotate: 0 | 90 | 180 | 270 }) {
   return (
     <svg
-      width="22"
-      height="22"
-      viewBox="0 0 22 22"
+      width="28"
+      height="28"
+      viewBox="0 0 28 28"
       className={className}
-      style={{ transform: `rotate(${rotate}deg)` }}
+      style={{ transform: `rotate(${rotate}deg)`, transformOrigin: "center" }}
       aria-hidden="true"
     >
+      {/* Outer L following the rounded-2xl curve (radius 16). The tail
+          length beyond the curve (~12 px) gives the ornament its
+          characteristic L shape. */}
       <path
-        d="M 22 2 H 6 A 4 4 0 0 0 2 6 V 22"
+        d="M 28 0 H 16 A 16 16 0 0 0 0 16 V 28"
         fill="none"
         stroke="#c8a84e"
-        strokeOpacity="0.85"
-        strokeWidth="1.5"
+        strokeOpacity="0.95"
+        strokeWidth="2"
         strokeLinecap="round"
       />
     </svg>

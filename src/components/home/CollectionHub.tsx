@@ -50,8 +50,8 @@ export default function CollectionHub({ username, goldBalance }: CollectionHubPr
           />
         </div>
 
-        <nav aria-label="Sous-sections de la collection" className="max-w-5xl mx-auto">
-          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-5 md:gap-7">
+        <nav aria-label="Sous-sections de la collection" className="max-w-6xl mx-auto">
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-5 md:gap-7 items-start">
             <li>
               <MenuTile
                 href="/collection"

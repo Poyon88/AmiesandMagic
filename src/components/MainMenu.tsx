@@ -52,19 +52,15 @@ export default function MainMenu({ username, goldBalance }: MainMenuProps) {
         </div>
 
         {/* 2×2 grid (1 column on small mobile) */}
-        <nav aria-label="Sections principales" className="max-w-5xl mx-auto">
-          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-5 md:gap-7">
+        <nav aria-label="Sections principales" className="max-w-6xl mx-auto">
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-5 md:gap-7 items-start">
             <li>
               <MenuTile
                 href="/play"
                 accent="play"
                 label={t.play_label}
                 description={t.play_desc}
-                glyph={
-                  <svg width="56" height="56" viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M32 4 L32 44 M22 36 L42 36 M28 48 L36 48 L36 56 L28 56 Z M32 4 L26 12 M32 4 L38 12" />
-                  </svg>
-                }
+                bgImage="/images/home/jouez-bg.png"
               />
             </li>
             <li>
