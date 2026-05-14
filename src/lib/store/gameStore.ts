@@ -21,6 +21,8 @@ import {
   creatureNeedsGraveyardTarget,
   getGraveyardTargets,
   creatureNeedsDivination,
+  creatureNeedsTraqueDuDestin,
+  getTraqueDuDestinX,
   creatureNeedsSelection,
   getSelectionCards,
   creatureNeedsRenfortRoyal,
@@ -695,6 +697,30 @@ export const useGameStore = create<GameStore>((set, get) => {
     const dmgEvents = detectDamageEvents(gameState, newState, localPlayerId);
     const logEntries = generateEffectLog(gameState, newState, action);
 
+    // Pop Fureur strikes off the state so they only animate once. Each
+    // entry becomes a delayed attack-lunge plus a delayed damage popup on
+    // the random victim, sequenced after the main combat. The chain can
+    // be multi-step (one entry per strike) when the Fureur creature
+    // survives its first retaliation — the lunges fire one after another
+    // and each victim's damage popup is offset accordingly.
+    const rawFureurStrikes = newState.fureurStrikes ?? [];
+    if (newState.fureurStrikes) newState.fureurStrikes = undefined;
+    // Translate hero sentinels (`__hero_<idx>__`) into local-POV labels so
+    // playAttackLunge + damage events resolve to the right DOM nodes.
+    const fureurStrikes = rawFureurStrikes.map((s) => {
+      const m = /^__hero_(\d)__$/.exec(s.victimInstanceId);
+      if (!m) return s;
+      const idx = parseInt(m[1]);
+      const isLocal = newState.players[idx]?.id === localPlayerId;
+      return { ...s, victimInstanceId: isLocal ? "friendly_hero" : "enemy_hero" };
+    });
+    const FUREUR_LUNGE_GAP_MS = 700;        // gap between successive Fureur lunges
+    const FUREUR_FIRST_DELAY_MS = 800;      // gap between main lunge and first Fureur lunge
+    const FUREUR_DAMAGE_DELAY_MS = 1300;    // base delay added to victim damage popups
+    const FUREUR_PHASE_EXTRA_MS = fureurStrikes.length > 0
+      ? FUREUR_DAMAGE_DELAY_MS + (fureurStrikes.length - 1) * FUREUR_LUNGE_GAP_MS + 500
+      : 0;
+
     // Detect recast spells by comparing spell history
     const newHistoryLen = newState.players[playerIdx].spellHistory?.length ?? 0;
     const recastSpells: SpellCastEvent[] = [];
@@ -1181,6 +1207,17 @@ export const useGameStore = create<GameStore>((set, get) => {
       // runs inside dispatchAction which remote broadcasts go through too.
       if (isAttack && action.type === "attack") {
         playAttackLunge(action.attackerInstanceId, action.targetInstanceId);
+        // Fureur chain: each strike replays a lunge from the Fureur
+        // creature to its current victim, staggered so the player sees
+        // them as successive events. Multi-step chains animate
+        // sequentially (one lunge per surviving strike).
+        for (let i = 0; i < fureurStrikes.length; i++) {
+          const s = fureurStrikes[i];
+          setTimeout(
+            () => playAttackLunge(s.attackerInstanceId, s.victimInstanceId),
+            FUREUR_FIRST_DELAY_MS + i * FUREUR_LUNGE_GAP_MS,
+          );
+        }
       }
     };
 
@@ -1196,15 +1233,28 @@ export const useGameStore = create<GameStore>((set, get) => {
     const impactOnlyEvents = dmgEvents.filter(
       (ev) => !(ev.type === "buff" && necroDeltas.has(ev.targetId)),
     );
+    // Per-victim delay derived from the Fureur strike order: victim of the
+    // 1st strike shows at +DAMAGE_DELAY, victim of the 2nd at +DAMAGE_DELAY
+    // +LUNGE_GAP, etc. — matches the lunge sequencing above. If a chain
+    // happens to hit the same victim twice the combined damage popup
+    // appears at the first occurrence's time (later strikes are folded in).
+    const fureurVictimDelay = new Map<string, number>();
+    fureurStrikes.forEach((s, i) => {
+      if (!fureurVictimDelay.has(s.victimInstanceId)) {
+        fureurVictimDelay.set(s.victimInstanceId, FUREUR_DAMAGE_DELAY_MS + i * FUREUR_LUNGE_GAP_MS);
+      }
+    });
+
     const staggerByTarget = (events: typeof dmgEvents) => {
       const order = new Map<string, number>();
       for (const ev of events) {
         if (!order.has(ev.targetId)) order.set(ev.targetId, order.size);
       }
-      return events.map((ev) => ({
-        ...ev,
-        delayMs: (order.get(ev.targetId) ?? 0) * STAGGER_MS,
-      }));
+      return events.map((ev) => {
+        const base = (order.get(ev.targetId) ?? 0) * STAGGER_MS;
+        const fureurBonus = fureurVictimDelay.get(ev.targetId) ?? 0;
+        return { ...ev, delayMs: base + fureurBonus };
+      });
     };
     const staggeredDmgEvents = staggerByTarget(impactOnlyEvents);
     const staggeredTriggerEvents = staggerByTarget(deferredBuffEvents);
@@ -1300,7 +1350,7 @@ export const useGameStore = create<GameStore>((set, get) => {
 
     // Phase B (Impacts) — always run if there's anything beyond the overlay.
     setTimeout(phaseImpacts, cursor);
-    cursor += IMPACT_MS;
+    cursor += IMPACT_MS + FUREUR_PHASE_EXTRA_MS;
 
     if (hasDeaths) {
       setTimeout(phaseDeaths, cursor);
@@ -1391,6 +1441,22 @@ export const useGameStore = create<GameStore>((set, get) => {
 
     if (card && creatureNeedsDivination(card.card)) {
       const deckCards = player.deck.slice(0, Math.min(3, player.deck.length));
+      if (deckCards.length > 0) {
+        set({
+          selectedCardInstanceId: instanceId,
+          selectedAttackerInstanceId: null,
+          validTargets: [],
+          targetingMode: "divination",
+          divinationCards: deckCards,
+          pendingBoardPosition: boardPosition ?? null,
+        });
+        return null;
+      }
+    }
+
+    if (card && creatureNeedsTraqueDuDestin(card.card)) {
+      const x = getTraqueDuDestinX(card.card);
+      const deckCards = player.deck.slice(0, Math.min(x, player.deck.length));
       if (deckCards.length > 0) {
         set({
           selectedCardInstanceId: instanceId,
@@ -1521,6 +1587,24 @@ export const useGameStore = create<GameStore>((set, get) => {
     // Check if creature needs divination
     if (card.card.card_type === "creature" && creatureNeedsDivination(card.card)) {
       const deckCards = player.deck.slice(0, Math.min(3, player.deck.length));
+      if (deckCards.length > 0) {
+        set({
+          selectedCardInstanceId: instanceId,
+          selectedAttackerInstanceId: null,
+          validTargets: [],
+          targetingMode: "divination",
+          divinationCards: deckCards,
+          pendingBoardPosition: null,
+        });
+        return null;
+      }
+    }
+
+    // Check if creature needs Traque du destin pick (reuses the divination
+    // picker UI; the engine branches on the keyword).
+    if (card.card.card_type === "creature" && creatureNeedsTraqueDuDestin(card.card)) {
+      const x = getTraqueDuDestinX(card.card);
+      const deckCards = player.deck.slice(0, Math.min(x, player.deck.length));
       if (deckCards.length > 0) {
         set({
           selectedCardInstanceId: instanceId,
@@ -2023,6 +2107,21 @@ export const useGameStore = create<GameStore>((set, get) => {
     }
     if (creatureNeedsDivination(card.card)) {
       const deckCards = player.deck.slice(0, Math.min(3, player.deck.length));
+      if (deckCards.length > 0) {
+        set({
+          selectedCardInstanceId: instanceId,
+          selectedAttackerInstanceId: null,
+          validTargets: [],
+          targetingMode: "divination",
+          divinationCards: deckCards,
+          pendingBoardPosition: boardPosition,
+        });
+        return null;
+      }
+    }
+    if (creatureNeedsTraqueDuDestin(card.card)) {
+      const x = getTraqueDuDestinX(card.card);
+      const deckCards = player.deck.slice(0, Math.min(x, player.deck.length));
       if (deckCards.length > 0) {
         set({
           selectedCardInstanceId: instanceId,

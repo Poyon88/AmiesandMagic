@@ -491,6 +491,14 @@ export interface GameState {
   // spell of higher cost. Kept separate from factionCardPool because
   // Concentration must reach beyond the deck-faction subset.
   allSpellsPool?: Card[];
+  // Transient: each Fureur trigger fired during the last action is pushed
+  // here so the store can sequence a follow-up attack-lunge animation and
+  // delay the damage popups on the random victim. Cleared by the store
+  // after the animation is scheduled (one action ≠ one persisted entry).
+  fureurStrikes?: Array<{
+    attackerInstanceId: string;
+    victimInstanceId: string;
+  }>;
 }
 
 export type GameActionType = "play_card" | "attack" | "end_turn" | "spell_target";

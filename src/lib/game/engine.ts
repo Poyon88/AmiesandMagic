@@ -382,7 +382,6 @@ function recalculateAuras(player: PlayerState, opponent: PlayerState) {
     let atk = c.card.attack ?? 0;
     atk += c.loyauteATKBonus;
     atk += c.summonBonusATK;
-    if (c.fureurActive) atk += c.fureurATKBonus;
     if (c.berserkActive) atk += c.berserkATKBonus;
     atk += c.necrophagieATKBonus;
     atk += c.martyrATKBonus;
@@ -393,7 +392,6 @@ function recalculateAuras(player: PlayerState, opponent: PlayerState) {
     let atk = c.card.attack ?? 0;
     atk += c.loyauteATKBonus;
     atk += c.summonBonusATK;
-    if (c.fureurActive) atk += c.fureurATKBonus;
     if (c.berserkActive) atk += c.berserkATKBonus;
     atk += c.necrophagieATKBonus;
     atk += c.martyrATKBonus;
@@ -717,11 +715,10 @@ export function endTurn(state: GameState): GameState {
     if (creature.isParalyzed) {
       creature.isParalyzed = false;
     }
-    if (creature.fureurActive) {
-      creature.currentAttack -= creature.fureurATKBonus;
-      creature.fureurActive = false;
-      creature.fureurATKBonus = 0;
-    }
+    // Reset Fureur's trigger guard at end of turn so the creature can
+    // fire again next turn if hit. No ATK to revert — Fureur is now a
+    // pure extra-attack effect.
+    creature.fureurActive = false;
   }
 
   newState.currentPlayerIndex = newState.currentPlayerIndex === 0 ? 1 : 0;
@@ -1232,18 +1229,20 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       }
     }
 
-    // Traque du destin X: révèle X premières cartes du deck, prend 1 en main, reste en dessous aléatoire
+    // Traque du destin X: révèle X premières cartes du deck, le joueur en
+    // choisit une (action.divinationChoiceIndex — reuse of the divination
+    // picker UI), reste en dessous dans un ordre aléatoire.
     if (hasKw(cardInstance, "traque_du_destin") && player.deck.length > 0) {
-      const tdXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
-      const x = tdXVals["traque_du_destin"] || Math.max(1, Math.floor(cardInstance.card.mana_cost / 2));
+      const x = getTraqueDuDestinX(cardInstance.card);
       const count = Math.min(x, player.deck.length);
       const revealed = player.deck.splice(0, count);
       if (revealed.length > 0 && player.hand.length < MAX_HAND_SIZE) {
-        // Pick the first one (simplified — ideally player chooses)
-        const chosenIdx = 0;
+        const chosenIdx = Math.min(
+          Math.max(0, action.divinationChoiceIndex ?? 0),
+          revealed.length - 1,
+        );
         player.hand.push(revealed[chosenIdx]);
         revealed.splice(chosenIdx, 1);
-        // Shuffle the rest to bottom
         shuffleArray(revealed);
         player.deck.push(...revealed);
       }
@@ -2550,26 +2549,20 @@ export function attack(state: GameState, action: AttackAction): GameState {
       dealDamageToCreature(attacker, target.riposteX);
     }
 
-    // Fureur: après avoir subi des dégâts, le créatures attaque
-    // immédiatement (sur le défenseur c'est résolu en contre-attaque
-    // automatique sur l'agresseur ; sur l'attaquant qui survit au
-    // contre-coup, on lui rend une attaque pour qu'il puisse frapper
-    // de nouveau ce même tour). Dans les deux cas la créature gagne
-    // aussi son ATK courante en bonus persistant jusqu'à son prochain
-    // tour (recalculateAuras lit `fureurATKBonus`).
-    if (hasKw(target, "fureur") && target.currentHealth > 0 && !target.fureurActive) {
-      target.fureurActive = true;
-      target.fureurATKBonus = target.currentAttack;
-      dealDamageToCreature(attacker, target.currentAttack);
-    }
-    if (hasKw(attacker, "fureur") && attacker.currentHealth > 0 && !attacker.fureurActive) {
-      attacker.fureurActive = true;
-      attacker.fureurATKBonus = attacker.currentAttack;
-      // Grant an extra strike: the +1 here cancels out the
-      // `attacksRemaining--` a few lines below, so the creature
-      // effectively didn't spend its action by attacking this turn.
-      attacker.attacksRemaining++;
-    }
+    // Fureur: après avoir subi des dégâts en combat, la créature lance une
+    // attaque supplémentaire sur une unité adverse aléatoire (héros si plus
+    // aucune unité). C'est un vrai échange — la victime riposte aussi —
+    // pour que Fureur reste un effet risqué et pas un coup gratuit. Le
+    // flag fureurActive borne le trigger à une fois par tour (reset en
+    // endTurn). Pas de bonus d'ATK persistant : c'est Berserk qui double
+    // l'ATK quand les PV sont entamés.
+    // Defender side: chain hits enemies on the attacker's board.
+    const playerHeroIdx = newState.players.indexOf(player);
+    runFureurChain(target, player.board, player.hero, `__hero_${playerHeroIdx}__`, null, newState);
+    // Attacker side: first strike excludes the original combat target
+    // ("attaque une AUTRE créature"); subsequent strikes pick any live enemy.
+    const opponentHeroIdx = newState.players.indexOf(opponent);
+    runFureurChain(attacker, opponent.board, opponent.hero, `__hero_${opponentHeroIdx}__`, target.instanceId, newState);
 
     // Augure: if attacker hits hero (doesn't apply in creature combat)
     // Persécution X: X dégâts au héros adverse on each attack
@@ -2598,6 +2591,54 @@ export function attack(state: GameState, action: AttackAction): GameState {
 // ============================================================
 // DAMAGE HELPERS
 // ============================================================
+
+/**
+ * Resolve a Fureur trigger as a chain: while the Fureur creature is alive,
+ * strike a random live enemy, take its retaliation, and repeat. Falls back
+ * to a single hero hit (no retaliation, chain ends) when the enemy board is
+ * empty. Each strike is recorded on `state.fureurStrikes` so the store can
+ * sequence one attack-lunge per hit. `initialExcludeId` skips a creature on
+ * the first iteration only — used by the attacker side so the first Fureur
+ * strike picks a DIFFERENT unit than the one just attacked.
+ */
+function runFureurChain(
+  creature: CardInstance,
+  enemyBoard: CardInstance[],
+  enemyHero: import("./types").HeroState,
+  enemyHeroSentinel: string,
+  initialExcludeId: string | null,
+  state: GameState,
+): void {
+  if (!hasKw(creature, "fureur")) return;
+  if (creature.fureurActive) return;
+  if (creature.currentHealth <= 0) return;
+  creature.fureurActive = true;
+  const MAX_FUREUR_CHAIN = 20;
+  let iteration = 0;
+  while (creature.currentHealth > 0 && iteration < MAX_FUREUR_CHAIN) {
+    const exclude = iteration === 0 ? initialExcludeId : null;
+    const enemies = enemyBoard.filter(c => c.currentHealth > 0 && c.instanceId !== exclude);
+    if (enemies.length === 0) {
+      // Hero hit terminates the chain (no retaliation possible).
+      dealDamageToHero(enemyHero, creature.currentAttack);
+      (state.fureurStrikes ??= []).push({
+        attackerInstanceId: creature.instanceId,
+        victimInstanceId: enemyHeroSentinel,
+      });
+      break;
+    }
+    const victim = enemies[Math.floor(rng() * enemies.length)];
+    dealDamageToCreature(victim, creature.currentAttack);
+    if (creature.currentHealth > 0 && victim.currentAttack > 0) {
+      dealDamageToCreature(creature, victim.currentAttack);
+    }
+    (state.fureurStrikes ??= []).push({
+      attackerInstanceId: creature.instanceId,
+      victimInstanceId: victim.instanceId,
+    });
+    iteration++;
+  }
+}
 
 function dealDamageToHero(hero: import("./types").HeroState, damage: number) {
   if (damage <= 0) return;
@@ -3274,6 +3315,20 @@ export function getGraveyardTargets(state: GameState, card: Card): string[] {
 
 export function creatureNeedsDivination(card: Card): boolean {
   return card.card_type === "creature" && card.keywords.includes("divination" as Keyword);
+}
+
+export function creatureNeedsTraqueDuDestin(card: Card): boolean {
+  return card.card_type === "creature" && card.keywords.includes("traque_du_destin" as Keyword);
+}
+
+/** Compute X for Traque du destin from the card's effect_text bracket
+ *  notation, falling back to `floor(mana_cost / 2)` (minimum 1). Mirrors
+ *  the calculation used by the engine when resolving the on-summon trigger
+ *  so the UI shows exactly as many revealed cards as the player will
+ *  receive a choice over. */
+export function getTraqueDuDestinX(card: Card): number {
+  const xVals = parseXValuesFromEffectText(card.effect_text);
+  return xVals["traque_du_destin"] || Math.max(1, Math.floor(card.mana_cost / 2));
 }
 
 export function creatureNeedsSelection(card: Card): boolean {

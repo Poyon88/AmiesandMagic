@@ -14,6 +14,23 @@ interface DivinationOverlayProps {
 export default function DivinationOverlay({ cards, onChoose, onCancel }: DivinationOverlayProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const tokenTemplates = useGameStore((s) => s.tokenTemplates);
+  // The picker is shared between Divination (chosen card → top of deck) and
+  // Traque du destin (chosen card → hand, rest shuffled to bottom). Branch on
+  // the keyword of the card currently being summoned so the title/subtitle
+  // describe what tapping a card will actually do.
+  const isTraqueDuDestin = useGameStore((s) => {
+    const id = s.selectedCardInstanceId;
+    if (!id || !s.gameState) return false;
+    for (const p of s.gameState.players) {
+      const inst = p.hand.find((c) => c.instanceId === id);
+      if (inst) return inst.card.keywords.includes("traque_du_destin" as import("@/lib/game/types").Keyword);
+    }
+    return false;
+  });
+  const title = isTraqueDuDestin ? "🔮 Traque du destin" : "🔍 Divination";
+  const subtitle = isTraqueDuDestin
+    ? "Choisissez la carte à prendre en main. Les autres iront sous le deck."
+    : "Choisissez la carte à placer sur le dessus de votre pioche";
 
   return (
     <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center">
@@ -24,10 +41,10 @@ export default function DivinationOverlay({ cards, onChoose, onCancel }: Divinat
           fontFamily: "'Cinzel', serif", textAlign: "center",
           textShadow: "0 2px 8px rgba(0,0,0,0.5)",
         }}>
-          🔍 Divination
+          {title}
         </div>
         <p style={{ fontSize: 14, color: "#bbb", textAlign: "center", fontFamily: "'Crimson Text', serif", marginTop: -12 }}>
-          Choisissez la carte à placer sur le dessus de votre pioche
+          {subtitle}
         </p>
 
         {/* Cards */}

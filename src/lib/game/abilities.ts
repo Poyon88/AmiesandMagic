@@ -217,7 +217,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   fureur: {
     id: "fureur", label: "Fureur", symbol: "💢",
-    desc: "Après avoir subi des dégâts, attaque immédiatement une unité adverse au choix.",
+    desc: "Après avoir subi des dégâts, attaque immédiatement une unité adverse aléatoire (héros si plus aucune unité). Se déclenche au plus une fois par tour.",
     applicable_to: ["creature"],
     creature: { cost: 13, costPerX: 0, se: 3.0, minTier: 2, scalable: false, zone: "Terrain" },
   },
