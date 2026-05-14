@@ -473,7 +473,45 @@ function generateEffectLog(
   return entries;
 }
 
-export const useGameStore = create<GameStore>((set, get) => ({
+export const useGameStore = create<GameStore>((set, get) => {
+  // After on-board target collection finishes for a spell (e.g. Renforcement),
+  // check if the same spell also carries a selection-style picker
+  // (selection / selection_magique / renfort_royal). If yes, switch the UI
+  // to the selection mode and carry the collected targetMap forward so the
+  // eventual dispatch contains both halves. Returns true when a picker was
+  // opened — caller should bail instead of dispatching.
+  const openSelectionPickerIfNeeded = (
+    gs: GameState,
+    instanceId: string,
+    carriedMap: Record<string, string>,
+  ): boolean => {
+    const player = gs.players[gs.currentPlayerIndex];
+    const cardInst = player.hand.find(c => c.instanceId === instanceId);
+    if (!cardInst || cardInst.card.card_type !== "spell" || !cardInst.card.spell_keywords) return false;
+    const tryOpen = (kwId: string, getter: (x: number) => Card[]): boolean => {
+      const found = cardInst.card.spell_keywords!.find(k => k.id === kwId);
+      if (!found) return false;
+      const x = found.amount ?? 0;
+      const choices = getter(x);
+      if (choices.length === 0) return false;
+      set({
+        targetingMode: "selection",
+        selectionCards: choices,
+        validTargets: [],
+        // selectedCardInstanceId stays as-is. collectedTargetMap holds the
+        // carry forward so the selection-mode dispatch can merge it in.
+        collectedTargetMap: carriedMap,
+      });
+      return true;
+    };
+    return (
+      tryOpen("selection", (x) => getSelectionCards(gs, x)) ||
+      tryOpen("selection_magique", (x) => getMagicalSelectionCards(gs, x)) ||
+      tryOpen("renfort_royal", (x) => getRenfortRoyalCards(gs, x))
+    );
+  };
+
+  return ({
   gameState: null,
   localPlayerId: null,
   selectedCardInstanceId: null,
@@ -1550,61 +1588,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
       }
     }
 
-    // Check if spell has selection keyword
-    if (card.card.card_type === "spell" && card.card.spell_keywords?.some(kw => kw.id === "selection")) {
-      const selKw = card.card.spell_keywords!.find(kw => kw.id === "selection")!;
-      const x = selKw.amount ?? 0;
-      const choices = getSelectionCards(gameState, x);
-      if (choices.length > 0) {
-        set({
-          selectedCardInstanceId: instanceId,
-          selectedAttackerInstanceId: null,
-          validTargets: [],
-          targetingMode: "selection",
-          selectionCards: choices,
-          pendingBoardPosition: null,
-        });
-        return null;
-      }
-    }
-
-    // Check if spell has selection_magique keyword
-    if (card.card.card_type === "spell" && card.card.spell_keywords?.some(kw => kw.id === "selection_magique")) {
-      const smKw = card.card.spell_keywords!.find(kw => kw.id === "selection_magique")!;
-      const x = smKw.amount ?? 0;
-      const choices = getMagicalSelectionCards(gameState, x);
-      if (choices.length > 0) {
-        set({
-          selectedCardInstanceId: instanceId,
-          selectedAttackerInstanceId: null,
-          validTargets: [],
-          targetingMode: "selection",
-          selectionCards: choices,
-          pendingBoardPosition: null,
-        });
-        return null;
-      }
-    }
-
-    // Check if spell has renfort_royal keyword
-    if (card.card.card_type === "spell" && card.card.spell_keywords?.some(kw => kw.id === "renfort_royal")) {
-      const rrKw = card.card.spell_keywords!.find(kw => kw.id === "renfort_royal")!;
-      const x = rrKw.amount ?? 0;
-      const choices = getRenfortRoyalCards(gameState, x);
-      if (choices.length > 0) {
-        set({
-          selectedCardInstanceId: instanceId,
-          selectedAttackerInstanceId: null,
-          validTargets: [],
-          targetingMode: "selection",
-          selectionCards: choices,
-          pendingBoardPosition: null,
-        });
-        return null;
-      }
-    }
-
-    // Check if spell needs a target (new multi-target system)
+    // Check if spell needs a target (new multi-target system) — runs BEFORE
+    // the selection-style pickers below so that on a spell carrying both a
+    // needs-target keyword (e.g. Renforcement) and a card picker (e.g.
+    // Sélection magique), the target is collected first. The picker is
+    // then opened from selectTarget once all targets are in, carrying the
+    // collected targetMap into the final dispatch.
     if (card.card.card_type === "spell" && needsTarget(card.card)) {
       const slots = getSpellTargetSlots(card.card);
       const selectableSlots = slots.filter(s =>
@@ -1669,6 +1658,62 @@ export const useGameStore = create<GameStore>((set, get) => ({
       return null;
     }
 
+    // Selection-style pickers — only reachable when the spell has no
+    // needs-target keyword (the block above returned null in that case).
+    // Spells with BOTH a needs-target keyword AND a picker route here via
+    // selectTarget once targeting is done, carrying the collected map.
+
+    if (card.card.card_type === "spell" && card.card.spell_keywords?.some(kw => kw.id === "selection")) {
+      const selKw = card.card.spell_keywords!.find(kw => kw.id === "selection")!;
+      const x = selKw.amount ?? 0;
+      const choices = getSelectionCards(gameState, x);
+      if (choices.length > 0) {
+        set({
+          selectedCardInstanceId: instanceId,
+          selectedAttackerInstanceId: null,
+          validTargets: [],
+          targetingMode: "selection",
+          selectionCards: choices,
+          pendingBoardPosition: null,
+        });
+        return null;
+      }
+    }
+
+    if (card.card.card_type === "spell" && card.card.spell_keywords?.some(kw => kw.id === "selection_magique")) {
+      const smKw = card.card.spell_keywords!.find(kw => kw.id === "selection_magique")!;
+      const x = smKw.amount ?? 0;
+      const choices = getMagicalSelectionCards(gameState, x);
+      if (choices.length > 0) {
+        set({
+          selectedCardInstanceId: instanceId,
+          selectedAttackerInstanceId: null,
+          validTargets: [],
+          targetingMode: "selection",
+          selectionCards: choices,
+          pendingBoardPosition: null,
+        });
+        return null;
+      }
+    }
+
+    if (card.card.card_type === "spell" && card.card.spell_keywords?.some(kw => kw.id === "renfort_royal")) {
+      const rrKw = card.card.spell_keywords!.find(kw => kw.id === "renfort_royal")!;
+      const x = rrKw.amount ?? 0;
+      const choices = getRenfortRoyalCards(gameState, x);
+      if (choices.length > 0) {
+        set({
+          selectedCardInstanceId: instanceId,
+          selectedAttackerInstanceId: null,
+          validTargets: [],
+          targetingMode: "selection",
+          selectionCards: choices,
+          pendingBoardPosition: null,
+        });
+        return null;
+      }
+    }
+
     // Play immediately (no targeting needed)
     return get().dispatchAction({
       type: "play_card",
@@ -1705,12 +1750,19 @@ export const useGameStore = create<GameStore>((set, get) => ({
         targetInstanceId: targetId,
       });
     } else if (targetingMode === "spell" && selectedCardInstanceId) {
-      const { spellTargetSlots } = get();
+      const { spellTargetSlots, gameState: gs } = get();
       const slot = spellTargetSlots[0]?.slot ?? "target_0";
+      const collectedMap = { [slot]: targetId };
+      // Chain into a selection-style picker if the spell carries one (e.g.
+      // Souffle des Origines: Renforcement targets first, then the
+      // Sélection magique picker, with the kw_0 target carried forward).
+      if (gs && openSelectionPickerIfNeeded(gs, selectedCardInstanceId, collectedMap)) {
+        return null;
+      }
       return get().dispatchAction({
         type: "play_card",
         cardInstanceId: selectedCardInstanceId,
-        targetMap: { [slot]: targetId },
+        targetMap: collectedMap,
       });
     } else if (targetingMode === "spell_multi" && selectedCardInstanceId) {
       const { spellTargetSlots, currentTargetSlotIndex, collectedTargetMap, gameState: gs } = get();
@@ -1719,6 +1771,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
       const nextIndex = currentTargetSlotIndex + 1;
 
       if (nextIndex >= spellTargetSlots.length) {
+        if (gs && openSelectionPickerIfNeeded(gs, selectedCardInstanceId, newMap)) {
+          return null;
+        }
         return get().dispatchAction({
           type: "play_card",
           cardInstanceId: selectedCardInstanceId,
@@ -1808,15 +1863,18 @@ export const useGameStore = create<GameStore>((set, get) => ({
         selectionCardId: cardId,
       });
     } else if (targetingMode === "selection" && selectedCardInstanceId) {
-      const { pendingBoardPosition, gameState: gs } = get();
+      const { pendingBoardPosition, gameState: gs, collectedTargetMap } = get();
       const cardInHand = gs?.players[gs.currentPlayerIndex].hand.find(c => c.instanceId === selectedCardInstanceId);
       const cardId = parseInt(targetId) || 0;
       if (cardInHand?.card.card_type === "spell") {
-        // Spell selection: pass card ID via targetMap
+        // Spell selection: pass card ID via targetMap. collectedTargetMap
+        // carries any on-board targets gathered before this picker (e.g.
+        // Renforcement → Sélection magique), so they reach the engine on
+        // the same dispatch.
         return get().dispatchAction({
           type: "play_card",
           cardInstanceId: selectedCardInstanceId,
-          targetMap: { selection_0: String(cardId) },
+          targetMap: { ...collectedTargetMap, selection_0: String(cardId) },
         });
       }
       return get().dispatchAction({
@@ -2176,4 +2234,5 @@ export const useGameStore = create<GameStore>((set, get) => ({
     if (!opponentId) return null;
     return getPlayerState(gameState, opponentId);
   },
-}));
+  });
+});
