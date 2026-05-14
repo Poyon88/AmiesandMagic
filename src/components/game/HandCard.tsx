@@ -77,6 +77,10 @@ export default function HandCard({
   const [showDetails, setShowDetails] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const detailTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // True while the description was opened by a long-press (touch). Used so
+  // that the next tap dismisses the description instead of playing the
+  // card — without affecting desktop hover→click flow.
+  const detailsOpenedByTouch = useRef(false);
 
   function handleDragStart(e: DragEvent<HTMLDivElement>) {
     if (!canPlay) {
@@ -109,7 +113,17 @@ export default function HandCard({
   const iconOverrides = useKeywordIconStore((st) => st.overrides);
 
   const longPress = useLongPress(() => {
-    setShowDetails(prev => !prev);
+    // On mobile, the card is never `isHovered` (no mouseenter), so
+    // `showOverlay = isZoomed && showDetails` would stay false even with
+    // showDetails on. Force isHovered alongside showDetails so the zoom +
+    // overlay actually render. The flag below makes the next tap dismiss
+    // the panel instead of firing the play/target action.
+    setShowDetails(prev => {
+      const next = !prev;
+      setIsHovered(next);
+      detailsOpenedByTouch.current = next;
+      return next;
+    });
     if (detailTimer.current) clearTimeout(detailTimer.current);
   });
 
@@ -143,6 +157,7 @@ export default function HandCard({
         setIsDragging(true);
         setIsHovered(false);
         setShowDetails(false);
+        detailsOpenedByTouch.current = false;
       }
     }
     if (touchDraggingRef.current) {
@@ -231,6 +246,17 @@ export default function HandCard({
         onClick={() => {
           if (longPress.consume()) return;
           if (touchDraggingRef.current) return;
+          // If a long-press detail panel is currently shown (mobile flow),
+          // a tap on the card dismisses it instead of firing the primary
+          // action — so the user can preview a spell without immediately
+          // launching its targeting. Desktop hover→click still plays.
+          if (detailsOpenedByTouch.current) {
+            detailsOpenedByTouch.current = false;
+            setShowDetails(false);
+            setIsHovered(false);
+            if (detailTimer.current) clearTimeout(detailTimer.current);
+            return;
+          }
           if (isCostPaymentMode) {
             if (!isPendingCostSource) toggleDiscardSelection(cardInstance.instanceId);
           } else if (canPlay) {

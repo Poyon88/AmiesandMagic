@@ -61,6 +61,10 @@ export default function BoardCreature({
   const [showDetails, setShowDetails] = useState(false);
   const creatureRef = useRef<HTMLDivElement>(null);
   const detailTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // True while the description was opened by a long-press (touch). Used so
+  // that the next tap dismisses the description instead of firing the
+  // primary action (attack/target) — desktop hover→click unaffected.
+  const detailsOpenedByTouch = useRef(false);
 
   const isZoomed = isHovered && !isSelected && !isValidTarget && targetingMode === "none";
   // The overlay shows whenever `showDetails` is on AND the card is in its
@@ -84,7 +88,15 @@ export default function BoardCreature({
   else if (canAttack) border = "2px solid #2ecc71";
 
   const longPress = useLongPress(() => {
-    setShowDetails(prev => !prev);
+    // Touch devices never fire mouseenter, so `showOverlay = isZoomed &&
+    // showDetails` would stay false. Force isHovered so the overlay
+    // actually renders; a subsequent tap dismisses both (see onClick).
+    setShowDetails(prev => {
+      const next = !prev;
+      setIsHovered(next);
+      detailsOpenedByTouch.current = next;
+      return next;
+    });
     if (detailTimer.current) clearTimeout(detailTimer.current);
   });
 
@@ -110,6 +122,18 @@ export default function BoardCreature({
       {...longPress.handlers}
       onClick={() => {
         if (longPress.consume()) return;
+        // If a long-press detail panel is currently shown (mobile flow),
+        // a tap on the creature dismisses it instead of firing the
+        // primary action — so the user can read enemy stats/keywords
+        // without selecting it as a target. Desktop hover→click still
+        // fires the primary action.
+        if (detailsOpenedByTouch.current) {
+          detailsOpenedByTouch.current = false;
+          setShowDetails(false);
+          setIsHovered(false);
+          if (detailTimer.current) clearTimeout(detailTimer.current);
+          return;
+        }
         if (canSelectForSacrifice) {
           toggleSacrificeSelection(creature.instanceId);
         } else {
