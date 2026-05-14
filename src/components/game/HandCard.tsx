@@ -7,7 +7,7 @@ import Image from "next/image";
 import type { CardInstance } from "@/lib/game/types";
 import { useGameStore } from "@/lib/store/gameStore";
 import type { DragEvent } from "react";
-import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor } from "@/lib/game/keyword-labels";
+import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS, getSpellKeywordLabel, getSpellKeywordDesc } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell, getEntraideReduction } from "@/lib/game/abilities";
 import KeywordIcon from "@/components/shared/KeywordIcon";
@@ -443,24 +443,28 @@ export default function HandCard({
                   const { kw, x, mode } = entry;
                   const hasImg = !!iconOverrides[kw];
                   const modeColor = keywordModeColor(mode);
-                  const tint = modeColor ?? accentColor;
+                  const modeFilter = keywordModeFilter(mode);
+                  // Frame keeps the faction accent — only the icon glyph
+                  // itself is tinted by the mode, via a wrapper filter.
                   return (
                     <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{
                       minWidth: 24, height: 24, borderRadius: 3,
                       padding: x != null ? "0 2px" : 0,
-                      background: hasImg ? (modeColor ? `${modeColor}55` : "transparent") : `${tint}33`,
-                      border: hasImg ? (modeColor ? `1px solid ${modeColor}` : "none") : `1px solid ${tint}66`,
+                      background: hasImg ? "transparent" : `${accentColor}33`,
+                      border: hasImg ? "none" : `1px solid ${accentColor}66`,
                       display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1,
                       fontSize: 8, overflow: "hidden",
                     }}>
-                      {hasImg ? (
-                        <div style={{ width: 24, height: 24, flexShrink: 0 }}>
-                          <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={14} keyword={kw} fill />
-                        </div>
-                      ) : (
-                        <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={14} keyword={kw} />
-                      )}
-                      {x != null && <span style={{ fontSize: 8, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}` }}>{toRoman(x)}</span>}
+                      <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", filter: modeFilter ?? undefined, lineHeight: 0 }}>
+                        {hasImg ? (
+                          <div style={{ width: 24, height: 24, flexShrink: 0 }}>
+                            <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={14} keyword={kw} fill />
+                          </div>
+                        ) : (
+                          <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={14} keyword={kw} />
+                        )}
+                      </span>
+                      {x != null && <span style={{ fontSize: 8, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}` }}>{toRoman(x)}</span>}
                     </div>
                   );
                 });
@@ -589,9 +593,12 @@ export default function HandCard({
                 const kwDef = forgeKey ? keywordDefs[forgeKey] : null;
                 const desc = kwDef?.desc ? (x != null ? kwDef.desc.replace(/X/g, String(x)) : kwDef.desc) : null;
                 const modeColor = keywordModeColor(mode);
+                const modeFilter = keywordModeFilter(mode);
                 return (
                 <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
-                  <span style={{ flexShrink: 0 }}><KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={9} keyword={kw} /></span>
+                  <span style={{ flexShrink: 0, filter: modeFilter ?? undefined, lineHeight: 0 }}>
+                    <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={9} keyword={kw} />
+                  </span>
                   <div>
                     <div style={{ fontSize: 7, color: modeColor ?? accentColor, fontWeight: 600 }}>{displayLabel}</div>
                     {desc && <div style={{ fontSize: 6, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}

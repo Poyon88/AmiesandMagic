@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import type { CardInstance } from "@/lib/game/types";
 import { useGameStore } from "@/lib/store/gameStore";
-import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor } from "@/lib/game/keyword-labels";
+import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
@@ -129,8 +129,8 @@ export default function BoardCreature({
       initial={{ y: isOwn ? 40 : -40, opacity: 0, scale: 0.5, rotate: 0 }}
       animate={
         damageAmount
-          ? { x: [0, -4, 4, -4, 4, 0], y: 0, opacity: 1, scale: 1, rotate: creature.tapped ? 45 : 0 }
-          : { x: 0, y: 0, opacity: 1, scale: 1, rotate: creature.tapped ? 45 : 0 }
+          ? { x: [0, -4, 4, -4, 4, 0], y: 0, opacity: 1, scale: 1, rotate: 0 }
+          : { x: 0, y: 0, opacity: 1, scale: 1, rotate: 0 }
       }
       exit={creature.isPoisoned
         ? { opacity: 0, scale: 0.3, rotate: -10, filter: "brightness(0.5) saturate(2) hue-rotate(80deg)", transition: { duration: 1.0, ease: "easeIn" } }
@@ -222,6 +222,43 @@ export default function BoardCreature({
         borderRadius={11}
       />
 
+      {/* Activate (tap) button — yellow chip floating above the creature
+          when an eligible tap-mode keyword is ready to fire. Hidden while
+          the creature is engaged, has summoning sickness, or any
+          targeting / cost-payment / animation flow is in progress.
+          Rendered OUTSIDE the clip-wrapper below so its `top: -22`
+          offset isn't clipped by `overflow: hidden`. */}
+      {canActivateTap && tapInstanceIdx !== null && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            activateTap(creature.instanceId, tapInstanceIdx);
+          }}
+          style={{
+            position: "absolute",
+            top: -22,
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 15,
+            padding: "3px 10px",
+            fontSize: 9,
+            fontFamily: "'Cinzel', serif",
+            fontWeight: 700,
+            letterSpacing: 1,
+            color: "#1a1a0a",
+            background: "linear-gradient(180deg, #ffd700 0%, #d4a800 100%)",
+            border: "1px solid #8a6d00",
+            borderRadius: 12,
+            boxShadow: "0 0 10px rgba(255, 215, 0, 0.6), 0 2px 4px rgba(0,0,0,0.4)",
+            cursor: "pointer",
+            whiteSpace: "nowrap",
+          }}
+          title="Engage cette créature pour activer sa capacité tap"
+        >
+          ⟲ Activer
+        </button>
+      )}
+
       {/* Inner clip-wrapper — replaces the inner card's overflow:hidden
           (which we lifted to allow the rarity frame to escape). All card
           content (art, badges, bars, overlays) lives inside and gets
@@ -264,43 +301,19 @@ export default function BoardCreature({
       )}
 
 
-      {/* Activate (tap) button — yellow chip floating above the creature
-          when an eligible tap-mode keyword is ready to fire. Hidden while
-          the creature is engaged, has summoning sickness, or any
-          targeting / cost-payment / animation flow is in progress. */}
-      {canActivateTap && tapInstanceIdx !== null && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            activateTap(creature.instanceId, tapInstanceIdx);
-          }}
-          style={{
-            position: "absolute",
-            top: -22,
-            left: "50%",
-            transform: "translateX(-50%)",
-            zIndex: 15,
-            padding: "3px 10px",
-            fontSize: 9,
-            fontFamily: "'Cinzel', serif",
-            fontWeight: 700,
-            letterSpacing: 1,
-            color: "#1a1a0a",
-            background: "linear-gradient(180deg, #ffd700 0%, #d4a800 100%)",
-            border: "1px solid #8a6d00",
-            borderRadius: 12,
-            boxShadow: "0 0 10px rgba(255, 215, 0, 0.6), 0 2px 4px rgba(0,0,0,0.4)",
-            cursor: "pointer",
-            whiteSpace: "nowrap",
-          }}
-          title="Engage cette créature pour activer sa capacité tap"
-        >
-          ⟲ Activer
-        </button>
-      )}
-
       {/* Summoning sickness overlay */}
       {creature.hasSummoningSickness && isOwn && (
+        <div style={{
+          position: "absolute", inset: 0, zIndex: 1,
+          background: "rgba(0,0,0,0.3)",
+          pointerEvents: "none",
+        }} />
+      )}
+
+      {/* Tapped overlay — same dimming as summoning sickness so the
+          player can read "this creature is inactive this turn" at a
+          glance, regardless of why. */}
+      {creature.tapped && isOwn && !creature.hasSummoningSickness && (
         <div style={{
           position: "absolute", inset: 0, zIndex: 1,
           background: "rgba(0,0,0,0.3)",
@@ -449,23 +462,26 @@ export default function BoardCreature({
               const x = entry.x ?? grantedX[kw];
               const hasImg = !!iconOverrides[kw];
               const modeColor = keywordModeColor(mode);
+              const modeFilter = keywordModeFilter(mode);
               const tint = modeColor ?? accentColor;
               return (
               <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{
                 minWidth: 24, height: 24, borderRadius: 3,
                 padding: x != null ? "0 2px" : 0,
-                background: hasImg ? (modeColor ? `${modeColor}55` : "transparent") : `${tint}33`,
-                border: hasImg ? (modeColor ? `1px solid ${modeColor}` : "none") : `1px solid ${tint}66`,
+                background: hasImg ? "transparent" : `${accentColor}33`,
+                border: hasImg ? "none" : `1px solid ${accentColor}66`,
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1,
                 fontSize: 8, overflow: "hidden",
               }}>
-                {hasImg ? (
-                  <div style={{ width: 24, height: 24, flexShrink: 0 }}>
-                    <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={14} keyword={kw} fill />
-                  </div>
-                ) : (
-                  <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={14} keyword={kw} />
-                )}
+                <span style={{ display: "inline-flex", filter: modeFilter ?? undefined }}>
+                  {hasImg ? (
+                    <div style={{ width: 24, height: 24, flexShrink: 0 }}>
+                      <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={14} keyword={kw} fill />
+                    </div>
+                  ) : (
+                    <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={14} keyword={kw} />
+                  )}
+                </span>
                 {x != null && <span style={{ fontSize: 8, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}` }}>{toRoman(x)}</span>}
               </div>
               );
@@ -613,9 +629,10 @@ export default function BoardCreature({
               const kwDef = forgeKey ? keywordDefs[forgeKey] : null;
               const desc = kwDef?.desc ? (x != null ? kwDef.desc.replace(/X/g, String(x)) : kwDef.desc) : null;
               const modeColor = keywordModeColor(mode);
+              const modeFilter = keywordModeFilter(mode);
               return (
               <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
-                <span style={{ flexShrink: 0 }}><KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={10} keyword={kw} /></span>
+                <span style={{ flexShrink: 0, display: "inline-flex", filter: modeFilter ?? undefined }}><KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={10} keyword={kw} /></span>
                 <div>
                   <div style={{ fontSize: 8, color: modeColor ?? accentColor, fontWeight: 600 }}>{displayLabel}</div>
                   {desc && <div style={{ fontSize: 7, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}

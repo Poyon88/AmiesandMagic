@@ -11,6 +11,23 @@ export function keywordModeColor(mode: KeywordMode | undefined): string | null {
   return null;
 }
 
+/** CSS `filter` chain that flattens any emoji or image icon to a single
+ *  target colour matching the trigger mode. Built with
+ *  https://codepen.io/sosuke/pen/Pjoqqp from the hex above so the visual
+ *  output stays consistent between the two helpers. Returns null for the
+ *  default on-play mode (no filter — emoji/image kept multicolor). */
+export function keywordModeFilter(mode: KeywordMode | undefined): string | null {
+  if (mode === "death") {
+    // → #a83232 dark red
+    return "brightness(0) saturate(100%) invert(24%) sepia(50%) saturate(3253%) hue-rotate(341deg) brightness(95%) contrast(91%)";
+  }
+  if (mode === "tap") {
+    // → #d4a800 amber yellow
+    return "brightness(0) saturate(100%) invert(63%) sepia(78%) saturate(2024%) hue-rotate(11deg) brightness(89%) contrast(99%)";
+  }
+  return null;
+}
+
 export interface KeywordDisplayEntry {
   kw: Keyword;
   x?: number;
