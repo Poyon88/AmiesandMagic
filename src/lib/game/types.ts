@@ -265,12 +265,9 @@ export interface Card {
   // keyword appears here it is ALSO listed in `keywords` (icon/label
   // resolution stays driven by the string array). A keyword may appear
   // multiple times in different modes (e.g. Convocation X on-play AND
-  // Convocation X on-tap). `keywords` lists each instance separately so
-  // icon counts match; `keywordInstances` holds the per-instance metadata
-  // in the same order as `keywords` for entries that opt in (entries in
-  // keywords without a matching keywordInstances row default to mode=play
-  // with x parsed from effect_text bracket notation).
-  keywordInstances?: KeywordInstance[];
+  // Convocation X on-tap). The field uses snake_case to match the
+  // Supabase column name (`keyword_instances`) for direct row mapping.
+  keyword_instances?: KeywordInstance[] | null;
   spell_effect?: SpellEffect | null;          // Legacy — will be removed
   spell_keywords: SpellKeywordInstance[] | null;
   spell_effects: SpellComposableEffects | null;

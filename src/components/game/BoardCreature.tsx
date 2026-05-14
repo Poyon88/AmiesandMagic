@@ -53,7 +53,7 @@ export default function BoardCreature({
   // Returns the index inside `keywordInstances`; null when no eligible
   // instance is present (legacy creature, none in tap mode, etc.).
   const tapInstanceIdx = (() => {
-    const list = card.keywordInstances ?? [];
+    const list = card.keyword_instances ?? [];
     for (let i = 0; i < list.length; i++) {
       if (list[i].mode === "tap") return i;
     }

@@ -75,7 +75,7 @@ function hasKw(ci: CardInstance, kw: Keyword): boolean {
  *  cards) so existing decks still work — every legacy keyword is
  *  treated as on-play (mode=undefined). */
 function hasKwInMode(ci: CardInstance, kw: Keyword, mode: import("./types").KeywordMode | undefined): boolean {
-  const instances = ci.card.keywordInstances;
+  const instances = ci.card.keyword_instances;
   if (instances && instances.length > 0) {
     const matchedMode = instances.some(k => k.id === kw && (k.mode ?? undefined) === mode);
     if (matchedMode) return true;
@@ -101,7 +101,7 @@ function hasKwOnTap(ci: CardInstance, kw: Keyword): boolean { return hasKwInMode
  *  notation parsed from effect_text (legacy storage). Returns
  *  `defaultX` when neither source has a value. */
 function getKwX(ci: CardInstance, kw: Keyword, mode: import("./types").KeywordMode | undefined, defaultX: number): number {
-  const inst = ci.card.keywordInstances?.find(k => k.id === kw && (k.mode ?? undefined) === mode);
+  const inst = ci.card.keyword_instances?.find(k => k.id === kw && (k.mode ?? undefined) === mode);
   if (inst?.x != null) return inst.x;
   if (mode === undefined) {
     const fromText = parseXValuesFromEffectText(ci.card.effect_text)[kw];
@@ -2857,7 +2857,7 @@ function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: P
     // effect fires from the death rattle slot instead. The on-play block
     // is skipped for these instances via the hasKwOnPlay gate elsewhere,
     // so each instance fires exactly once at the right time.
-    const customDeathInstances = c.card.keywordInstances ?? [];
+    const customDeathInstances = c.card.keyword_instances ?? [];
     for (const inst of customDeathInstances) {
       if (inst.mode === "death") {
         resolveCuratedKeywordEffect(inst.id, inst.x ?? 1, c, owner, enemy);
@@ -2992,7 +2992,7 @@ export function tapActivate(state: GameState, action: TapActivateAction): GameSt
   if (!source) return state;
   if (source.tapped) return state;
   if (source.hasSummoningSickness) return state;
-  const instances = source.card.keywordInstances ?? [];
+  const instances = source.card.keyword_instances ?? [];
   const instance = instances[action.instanceIdx];
   if (!instance || instance.mode !== "tap") return state;
 
