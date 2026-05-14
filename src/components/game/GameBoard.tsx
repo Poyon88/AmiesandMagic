@@ -706,6 +706,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
                           ? () => setHoveredTargetId(null)
                           : undefined
                       }
+                      onAction={broadcast}
                     />
                   );
                   return items;

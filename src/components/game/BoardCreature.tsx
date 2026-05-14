@@ -3,7 +3,7 @@
 import { useState, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import type { CardInstance } from "@/lib/game/types";
+import type { CardInstance, GameAction } from "@/lib/game/types";
 import { useGameStore } from "@/lib/store/gameStore";
 import { tapKeywordNeedsTarget } from "@/lib/game/engine";
 import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
@@ -23,6 +23,10 @@ interface BoardCreatureProps {
   onClick?: () => void;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
+  /** Broadcast hook — when present, the action returned by
+   *  `store.activateTap` is forwarded so the opponent's client stays in
+   *  sync. Without it, tap activations stay local and desync the match. */
+  onAction?: (action: GameAction | null) => void;
 }
 
 export default function BoardCreature({
@@ -35,6 +39,7 @@ export default function BoardCreature({
   onClick,
   onMouseEnter,
   onMouseLeave,
+  onAction,
 }: BoardCreatureProps) {
   const card = creature.card;
   const tokenTemplates = useGameStore(s => s.tokenTemplates);
@@ -178,7 +183,8 @@ export default function BoardCreature({
         const instance = card.keyword_instances?.[tapInstanceIdx];
         if (!instance) return;
         if (tapKeywordNeedsTarget(instance.id)) return;
-        activateTap(creature.instanceId, tapInstanceIdx);
+        const action = activateTap(creature.instanceId, tapInstanceIdx);
+        onAction?.(action);
       }}
       onMouseEnter={() => {
         setIsHovered(true);
@@ -251,7 +257,8 @@ export default function BoardCreature({
         <button
           onClick={(e) => {
             e.stopPropagation();
-            activateTap(creature.instanceId, tapInstanceIdx);
+            const action = activateTap(creature.instanceId, tapInstanceIdx);
+            onAction?.(action);
           }}
           style={{
             position: "absolute",
