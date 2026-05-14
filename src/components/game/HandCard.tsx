@@ -7,7 +7,7 @@ import Image from "next/image";
 import type { CardInstance } from "@/lib/game/types";
 import { useGameStore } from "@/lib/store/gameStore";
 import type { DragEvent } from "react";
-import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText } from "@/lib/game/keyword-labels";
+import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor } from "@/lib/game/keyword-labels";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS, getSpellKeywordLabel, getSpellKeywordDesc } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell, getEntraideReduction } from "@/lib/game/abilities";
 import KeywordIcon from "@/components/shared/KeywordIcon";
@@ -436,33 +436,34 @@ export default function HandCard({
 
           {/* Keywords + Stats — single row */}
           <div style={{ display: "flex", alignItems: "center", gap: 3, flexWrap: "wrap" }}>
-            {card.keywords.length > 0 && (() => {
-              const xVals = parseXValuesFromEffectText(card.effect_text);
-              return card.keywords
-                .filter((kw) => !isCreatureKwShadowedBySpell(kw, card.spell_keywords))
-                .map((kw) => {
-                const x = xVals[kw];
-                const hasImg = !!iconOverrides[kw];
-                return (
-                <div key={kw} style={{
-                  minWidth: 24, height: 24, borderRadius: 3,
-                  padding: x != null ? "0 2px" : 0,
-                  background: hasImg ? "transparent" : `${accentColor}33`,
-                  border: hasImg ? "none" : `1px solid ${accentColor}66`,
-                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1,
-                  fontSize: 8, overflow: "hidden",
-                }}>
-                  {hasImg ? (
-                    <div style={{ width: 24, height: 24, flexShrink: 0 }}>
-                      <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={14} keyword={kw} fill />
+            {(card.keywords.length > 0 || (card.keyword_instances?.length ?? 0) > 0) && (() => {
+              return buildKeywordDisplayEntries(card)
+                .filter((e) => !isCreatureKwShadowedBySpell(e.kw, card.spell_keywords))
+                .map((entry, idx) => {
+                  const { kw, x, mode } = entry;
+                  const hasImg = !!iconOverrides[kw];
+                  const modeColor = keywordModeColor(mode);
+                  const tint = modeColor ?? accentColor;
+                  return (
+                    <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{
+                      minWidth: 24, height: 24, borderRadius: 3,
+                      padding: x != null ? "0 2px" : 0,
+                      background: hasImg ? (modeColor ? `${modeColor}55` : "transparent") : `${tint}33`,
+                      border: hasImg ? (modeColor ? `1px solid ${modeColor}` : "none") : `1px solid ${tint}66`,
+                      display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1,
+                      fontSize: 8, overflow: "hidden",
+                    }}>
+                      {hasImg ? (
+                        <div style={{ width: 24, height: 24, flexShrink: 0 }}>
+                          <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={14} keyword={kw} fill />
+                        </div>
+                      ) : (
+                        <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={14} keyword={kw} />
+                      )}
+                      {x != null && <span style={{ fontSize: 8, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}` }}>{toRoman(x)}</span>}
                     </div>
-                  ) : (
-                    <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={14} keyword={kw} />
-                  )}
-                  {x != null && <span style={{ fontSize: 8, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}` }}>{toRoman(x)}</span>}
-                </div>
-                );
-              });
+                  );
+                });
             })()}
 
             {card.spell_keywords && card.spell_keywords.length > 0 && card.spell_keywords.map((spellKw, i) => {
@@ -568,28 +569,31 @@ export default function HandCard({
           )}
 
           {/* Capacités detail */}
-          {card.keywords.length > 0 && (() => {
-            const xVals = parseXValuesFromEffectText(card.effect_text);
-            const visibleKws = card.keywords.filter((kw) => !isCreatureKwShadowedBySpell(kw, card.spell_keywords));
-            if (visibleKws.length === 0) return null;
+          {(card.keywords.length > 0 || (card.keyword_instances?.length ?? 0) > 0) && (() => {
+            const visible = buildKeywordDisplayEntries(card)
+              .filter((e) => !isCreatureKwShadowedBySpell(e.kw, card.spell_keywords));
+            if (visible.length === 0) return null;
             return (
             <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              {visibleKws.map((kw) => {
-                const x = xVals[kw];
+              {visible.map((entry, idx) => {
+                const { kw, x, mode } = entry;
                 const label = KEYWORD_LABELS[kw] || kw;
-                const displayLabel = x != null
+                const baseLabel = x != null
                   ? label.replace(/ X$/, ` ${toRoman(x)}`)
                   : kw === "entraide" && card.entraide_race
                     ? `${label} (${card.entraide_race})`
                     : label;
+                const modeSuffix = mode === "death" ? " · à la mort" : mode === "tap" ? " · tap" : "";
+                const displayLabel = baseLabel + modeSuffix;
                 const forgeKey = KEYWORD_LABELS[kw];
                 const kwDef = forgeKey ? keywordDefs[forgeKey] : null;
                 const desc = kwDef?.desc ? (x != null ? kwDef.desc.replace(/X/g, String(x)) : kwDef.desc) : null;
+                const modeColor = keywordModeColor(mode);
                 return (
-                <div key={kw} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
+                <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
                   <span style={{ flexShrink: 0 }}><KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={9} keyword={kw} /></span>
                   <div>
-                    <div style={{ fontSize: 7, color: accentColor, fontWeight: 600 }}>{displayLabel}</div>
+                    <div style={{ fontSize: 7, color: modeColor ?? accentColor, fontWeight: 600 }}>{displayLabel}</div>
                     {desc && <div style={{ fontSize: 6, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
                   </div>
                 </div>

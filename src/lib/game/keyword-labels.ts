@@ -1,5 +1,56 @@
-import type { Keyword, SpellKeywordInstance } from "./types";
+import type { Keyword, KeywordMode, KeywordInstance, SpellKeywordInstance } from "./types";
 import { SPELL_KEYWORDS } from "./spell-keywords";
+
+/** Color used to tint a keyword icon based on its trigger mode. Returned
+ *  values are CSS hex strings — callers compose them into background /
+ *  border / glow as appropriate. The fallback (`undefined` mode = on-play)
+ *  returns null so the existing accent-color logic keeps applying. */
+export function keywordModeColor(mode: KeywordMode | undefined): string | null {
+  if (mode === "death") return "#a83232"; // dark red
+  if (mode === "tap") return "#d4a800";   // amber yellow
+  return null;
+}
+
+export interface KeywordDisplayEntry {
+  kw: Keyword;
+  x?: number;
+  mode?: KeywordMode; // undefined = on-play
+  /** Index back into card.keyword_instances when sourced from there —
+   *  useful when the click handler needs to dispatch the right instance
+   *  (tap activation). Undefined for legacy entries derived from the
+   *  `keywords` string array only. */
+  instanceIdx?: number;
+}
+
+/** Build the per-icon display list for a creature card. Each entry maps
+ *  to ONE icon — same keyword in two modes yields two entries so the
+ *  player sees one icon per mode (e.g. Convocation X play + Convocation X
+ *  tap = 2 icons, the latter coloured yellow). Falls back to the legacy
+ *  `keywords` string array for cards without per-instance metadata. */
+export function buildKeywordDisplayEntries(
+  card: { keywords: Keyword[]; keyword_instances?: KeywordInstance[] | null; effect_text: string },
+): KeywordDisplayEntry[] {
+  const out: KeywordDisplayEntry[] = [];
+  const instances = card.keyword_instances ?? [];
+  const xFromText = parseXValuesFromEffectText(card.effect_text);
+  const idsCovered = new Set<Keyword>();
+  for (let i = 0; i < instances.length; i++) {
+    const inst = instances[i];
+    idsCovered.add(inst.id);
+    out.push({
+      kw: inst.id,
+      x: inst.x ?? (inst.mode === undefined ? xFromText[inst.id] : undefined),
+      mode: inst.mode,
+      instanceIdx: i,
+    });
+  }
+  for (const kw of card.keywords) {
+    if (!idsCovered.has(kw)) {
+      out.push({ kw, x: xFromText[kw] });
+    }
+  }
+  return out;
+}
 
 /** Convert an integer to Roman numerals (1–10) */
 export function toRoman(n: number): string {
