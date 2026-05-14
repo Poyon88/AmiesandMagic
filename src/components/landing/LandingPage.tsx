@@ -59,7 +59,7 @@ const t: Record<"fr" | "en", Dict> = {
     f1_title: "La profondeur des légendes.",
     f1_desc: "Armies & Magic unit la stratégie des TCG cultes à des mécaniques pensées pour les champions d'aujourd'hui.",
     f2_title: "Toutes les cartes. Dès la première partie.",
-    f2_desc: "Le mode classique est intégral dès l'installation. Disposez dès le début du jeu de plus de 400 cartes gratuitement, forgez le deck qui vous ressemble.",
+    f2_desc: "Le mode classique est intégral dès l'installation. Disposez gratuitement dès le début du jeu de plus de 400 cartes, forgez le deck qui vous ressemble.",
     f3_title: "Chaque deck Expert, une œuvre unique.",
     f3_desc: "Les cartes en tirage limité rendent chaque deck Expert singulier. Le quota commun garantit que seule votre stratégie décide.",
     f4_title: "L'arène mobile, enfin à la hauteur.",
@@ -714,10 +714,16 @@ function FeatureGlyph({ accent }: { accent: string }) {
   switch (accent) {
     case "sword":
       return (
-        <svg viewBox="0 0 64 64" className={common} fill="none" stroke="currentColor" strokeWidth="1.5">
-          <path d="M32 4 L32 44 M24 36 L40 36 M28 48 L36 48 L36 56 L28 56 Z M32 4 L28 10 M32 4 L36 10" strokeLinecap="round" strokeLinejoin="round" />
-          <circle cx="32" cy="32" r="26" opacity="0.15" />
-        </svg>
+        <div className="relative w-full h-full">
+          <Image
+            src="/images/landing/gameplay.png"
+            alt=""
+            fill
+            sizes="(max-width: 768px) 100vw, 50vw"
+            className="object-contain p-3 md:p-4"
+            priority={false}
+          />
+        </div>
       );
     case "cards":
       return (
