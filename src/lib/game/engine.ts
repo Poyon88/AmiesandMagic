@@ -2521,11 +2521,13 @@ export function attack(state: GameState, action: AttackAction): GameState {
       if (hasKw(target, "paralysie") && attacker.currentHealth > 0) attacker.isParalyzed = true;
     }
 
-    // Souffle de feu X: X dégâts à toutes les AUTRES unités ennemies
+    // Souffle de feu X: X dégâts à toutes les unités ennemies (cible incluse,
+    // en plus des dégâts de combat — cohérent avec le bloc "attaque héros"
+    // et avec la description abilities.ts: "toutes les unités ennemies").
     if (hasKw(attacker, "souffle_de_feu")) {
       const fireXVals = parseXValuesFromEffectText(attacker.card.effect_text);
       const fireX = fireXVals["souffle_de_feu"] || Math.max(1, Math.floor(attacker.card.mana_cost / 2));
-      opponent.board.filter(c => c !== target).forEach(c => dealDamageToCreature(c, fireX));
+      [...opponent.board].forEach(c => dealDamageToCreature(c, fireX));
     }
 
     // Drain de vie: heal own hero for damage dealt
