@@ -635,7 +635,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   deferlement: {
     id: "deferlement", label: "Déferlement X", symbol: "🌊",
-    desc: "Inflige X dégâts à tous les ennemis",
+    desc: "Inflige X dégâts à toutes les créatures ennemies",
     applicable_to: ["spell"],
     spell: { params: ["amount"], needsTarget: false },
   },

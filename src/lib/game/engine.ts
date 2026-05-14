@@ -12,6 +12,7 @@ import type {
   SpellEffect,
   HeroDefinition,
   Keyword,
+  KeywordInstance,
   SpellKeywordInstance,
   SpellEffectNode,
   AtomicEffect,
@@ -95,6 +96,27 @@ function hasKwInMode(ci: CardInstance, kw: Keyword, mode: import("./types").Keyw
 function hasKwOnPlay(ci: CardInstance, kw: Keyword): boolean { return hasKwInMode(ci, kw, undefined); }
 function hasKwOnDeath(ci: CardInstance, kw: Keyword): boolean { return hasKwInMode(ci, kw, "death"); }
 function hasKwOnTap(ci: CardInstance, kw: Keyword): boolean { return hasKwInMode(ci, kw, "tap"); }
+
+/** Merge two `keyword_instances` lists, deduping on (id, mode). Used by
+ *  copy-keyword effects (Mimique, Héritage du cimetière) so that the
+ *  copier inherits the source's tap-mode and death-mode triggers, not
+ *  just the legacy `keywords[]` strings. The first occurrence of any
+ *  (id, mode) wins so the copier's own pre-existing instances aren't
+ *  overwritten when both sides share a keyword. */
+function mergeKeywordInstances(
+  a: KeywordInstance[] | null | undefined,
+  b: KeywordInstance[] | null | undefined,
+): KeywordInstance[] | null {
+  const aArr = a ?? [];
+  const bArr = b ?? [];
+  if (aArr.length === 0 && bArr.length === 0) return null;
+  const seen = new Map<string, KeywordInstance>();
+  for (const inst of [...aArr, ...bArr]) {
+    const key = `${inst.id}::${inst.mode ?? ""}`;
+    if (!seen.has(key)) seen.set(key, inst);
+  }
+  return [...seen.values()];
+}
 
 /** Card-level (no CardInstance) mode check used by UI helpers like
  *  `creatureNeedsTarget` that operate on hand cards before they hit the
@@ -1128,7 +1150,8 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       const mimicTarget = findCreatureOnBoard(player, action.targetInstanceId) ?? findCreatureOnBoard(opponent, action.targetInstanceId);
       if (mimicTarget) {
         const newKeywords = [...new Set([...cardInstance.card.keywords, ...mimicTarget.card.keywords])];
-        cardInstance.card = { ...cardInstance.card, keywords: newKeywords };
+        const newInstances = mergeKeywordInstances(cardInstance.card.keyword_instances, mimicTarget.card.keyword_instances);
+        cardInstance.card = { ...cardInstance.card, keywords: newKeywords, keyword_instances: newInstances };
         // Copy runtime state flags
         if (mimicTarget.hasDivineShield) cardInstance.hasDivineShield = true;
       }
@@ -1237,7 +1260,8 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
           ? graveCreatures.find(c => c.instanceId === action.graveyardTargetInstanceId)
           : graveCreatures[graveCreatures.length - 1]) ?? graveCreatures[graveCreatures.length - 1];
         const newKeywords = [...new Set([...cardInstance.card.keywords, ...graveTarget.card.keywords])];
-        cardInstance.card = { ...cardInstance.card, keywords: newKeywords };
+        const newInstances = mergeKeywordInstances(cardInstance.card.keyword_instances, graveTarget.card.keyword_instances);
+        cardInstance.card = { ...cardInstance.card, keywords: newKeywords, keyword_instances: newInstances };
       }
     }
 
@@ -1825,7 +1849,6 @@ function resolveSpellKeywords(
       }
       case "deferlement": {
         const amount = kw.amount ?? 0;
-        dealDamageToHero(ctx.opponent.hero, amount);
         [...ctx.opponent.board].forEach(c => dealDamageToCreature(c, amount, false, true));
         break;
       }
@@ -3032,6 +3055,19 @@ export function tapActivate(state: GameState, action: TapActivateAction): GameSt
   newState.lastAction = action;
   checkWinCondition(newState);
   return newState;
+}
+
+/** Whether the tap-mode activation of `kw` requires a target. Mirrors
+ *  the switch in `getTapActivateTargets` but operates without a state
+ *  reference — used by UI shortcuts (double-click activates a tap kw
+ *  only when no picker is needed). */
+export function tapKeywordNeedsTarget(kw: Keyword): boolean {
+  switch (kw) {
+    case "vampirisme":
+      return true;
+    default:
+      return false;
+  }
 }
 
 /** Targets eligible for a tap-mode activation of `kw`. Returns null when

@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import type { CardInstance } from "@/lib/game/types";
 import { useGameStore } from "@/lib/store/gameStore";
+import { tapKeywordNeedsTarget } from "@/lib/game/engine";
 import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
@@ -59,13 +60,19 @@ export default function BoardCreature({
     }
     return null;
   })();
-  const canActivateTap = isOwn
+  // Base eligibility (engine-level: own + turn + not animating + not
+  // already tapped + no sickness + has a tap instance). The Activer
+  // button additionally hides during any targeting flow; the
+  // double-click shortcut intentionally ignores `targetingMode` so the
+  // single-click that selects this creature as attacker doesn't block
+  // the double-click from firing.
+  const baseEligibleForTap = isOwn
     && isMyTurn
     && !isAnimating
     && !creature.tapped
     && !creature.hasSummoningSickness
-    && tapInstanceIdx !== null
-    && targetingMode === "none";
+    && tapInstanceIdx !== null;
+  const canActivateTap = baseEligibleForTap && targetingMode === "none";
   // Resolve token template image: instance cards spawned by the engine
   // carry token_id when they originate from a saved template; fall back to
   // race lookup for legacy spawns (spell-keyword "invocation", etc.).
@@ -160,6 +167,18 @@ export default function BoardCreature({
         } else {
           onClick?.();
         }
+      }}
+      onDoubleClick={() => {
+        // Shortcut: double-clicking an own eligible creature fires the
+        // tap-mode ability when it doesn't need a target. Uses the
+        // looser `baseEligibleForTap` rather than `canActivateTap` —
+        // the preceding single click flips targetingMode to "attack",
+        // which would otherwise cancel the double-click trigger.
+        if (!baseEligibleForTap || tapInstanceIdx === null) return;
+        const instance = card.keyword_instances?.[tapInstanceIdx];
+        if (!instance) return;
+        if (tapKeywordNeedsTarget(instance.id)) return;
+        activateTap(creature.instanceId, tapInstanceIdx);
       }}
       onMouseEnter={() => {
         setIsHovered(true);
