@@ -7,17 +7,66 @@ export const metadata = {
   description: "Collectionnez, combattez, échangez. Le jeu de cartes à collectionner fantasy qui réinvente le genre.",
 };
 
+// Map race/faction values stored on heroes rows to the landing-page
+// faction key. The heroes table holds historical naming inconsistencies
+// (English lowercase legacy entries vs newer French faction labels), so
+// we accept both variants for the same landing slot.
+const FACTION_LOOKUP: Record<string, string> = {
+  "Humains": "humans",
+  "humans": "humans",
+  "Elfes": "elves",
+  "Fées": "elves",
+  "elves": "elves",
+  "Nains": "dwarves",
+  "dwarves": "dwarves",
+  "Hobbits": "halflings",
+  "halflings": "halflings",
+  "Hommes-bêtes": "beastmen",
+  "beastmen": "beastmen",
+  "Géants": "giants",
+  "giants": "giants",
+  "Élémentaires": "giants",
+  "Elémentaires": "giants",
+  "Elementaires": "giants",
+  "Élémentaire": "giants",
+  "Elementals": "giants",
+  "elementals": "giants",
+  "Elfes Noirs": "dark_elves",
+  "Elfes Corrompus": "dark_elves",
+  "dark_elves": "dark_elves",
+  "Orcs": "orcs_goblins",
+  "Orcs et Gobelins": "orcs_goblins",
+  "orcs_goblins": "orcs_goblins",
+  "Morts-Vivants": "undead",
+  "Vampires": "undead",
+  "undead": "undead",
+};
+
 export default async function Landing() {
   const supabase = await createClient();
 
-  const { data: showcaseData } = await supabase
-    .from("showcase_cards")
-    .select("card_id, sort_order, card:cards(*)")
-    .order("sort_order");
+  const [{ data: showcaseData }, { data: heroesData }] = await Promise.all([
+    supabase
+      .from("showcase_cards")
+      .select("card_id, sort_order, card:cards(*)")
+      .order("sort_order"),
+    supabase
+      .from("heroes")
+      .select("race, faction, thumbnail_url")
+      .eq("is_default", true)
+      .not("thumbnail_url", "is", null),
+  ]);
 
   const showcaseCards: Card[] = (showcaseData ?? [])
     .map(s => s.card as unknown as Card)
     .filter(Boolean);
 
-  return <LandingPage showcaseCards={showcaseCards} />;
+  const factionHeroUrls: Record<string, string> = {};
+  for (const h of heroesData ?? []) {
+    const key = FACTION_LOOKUP[h.faction ?? ""] || FACTION_LOOKUP[h.race ?? ""];
+    if (!key || !h.thumbnail_url) continue;
+    if (!factionHeroUrls[key]) factionHeroUrls[key] = h.thumbnail_url;
+  }
+
+  return <LandingPage showcaseCards={showcaseCards} factionHeroUrls={factionHeroUrls} />;
 }

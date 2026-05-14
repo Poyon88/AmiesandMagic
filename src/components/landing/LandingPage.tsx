@@ -59,7 +59,7 @@ const t: Record<"fr" | "en", Dict> = {
     f1_title: "La profondeur des légendes.",
     f1_desc: "Armies & Magic unit la stratégie des TCG cultes à des mécaniques pensées pour les champions d'aujourd'hui.",
     f2_title: "Toutes les cartes. Dès la première partie.",
-    f2_desc: "Le mode classique est intégral dès l'installation. Explorez chaque archétype, forgez le deck qui vous ressemble.",
+    f2_desc: "Le mode classique est intégral dès l'installation. Disposez dès le début du jeu de plus de 400 cartes gratuitement, forgez le deck qui vous ressemble.",
     f3_title: "Chaque deck Expert, une œuvre unique.",
     f3_desc: "Les cartes en tirage limité rendent chaque deck Expert singulier. Le quota commun garantit que seule votre stratégie décide.",
     f4_title: "L'arène mobile, enfin à la hauteur.",
@@ -78,7 +78,7 @@ const t: Record<"fr" | "en", Dict> = {
       dwarves: { name: "Nains", tagline: "Forgés dans la pierre" },
       halflings: { name: "Halflings", tagline: "Petits par la taille, grands par le cœur" },
       beastmen: { name: "Hommes-bêtes", tagline: "Fureur des terres sauvages" },
-      giants: { name: "Géants", tagline: "Les montagnes se lèvent" },
+      giants: { name: "Élémentaires", tagline: "Les éléments s'éveillent" },
       dark_elves: { name: "Elfes noirs", tagline: "Les ombres ont un nom" },
       orcs_goblins: { name: "Orcs & Gobelins", tagline: "Le cri des hordes" },
       undead: { name: "Morts-vivants", tagline: "Le silence des tombeaux s'est rompu" },
@@ -95,7 +95,7 @@ const t: Record<"fr" | "en", Dict> = {
     f1_title: "The depth of legends.",
     f1_desc: "Armies & Magic unites the strategy of iconic TCGs with mechanics built for today's champions.",
     f2_title: "Every card. From your first game.",
-    f2_desc: "Classic mode is yours in full from the very start. Explore every archetype, forge the deck that fits you.",
+    f2_desc: "Classic mode is yours in full from the very start. Over 400 cards are yours from day one — free — to forge the deck that fits you.",
     f3_title: "Every Expert deck, a singular work.",
     f3_desc: "Limited-print cards make every Expert deck unique. A shared quota ensures only your strategy decides.",
     f4_title: "Mobile, at last worthy of the stakes.",
@@ -114,7 +114,7 @@ const t: Record<"fr" | "en", Dict> = {
       dwarves: { name: "Dwarves", tagline: "Forged in stone" },
       halflings: { name: "Halflings", tagline: "Small in stature, grand in heart" },
       beastmen: { name: "Beastmen", tagline: "Fury of the wild lands" },
-      giants: { name: "Giants", tagline: "The mountains rise" },
+      giants: { name: "Elementals", tagline: "The elements awaken" },
       dark_elves: { name: "Dark Elves", tagline: "The shadows bear a name" },
       orcs_goblins: { name: "Orcs & Goblins", tagline: "The horde's cry" },
       undead: { name: "Undead", tagline: "The silence of tombs broken" },
@@ -277,9 +277,13 @@ function GoldenRule({ width = 120 }: { width?: number }) {
 
 interface LandingPageProps {
   showcaseCards: Card[];
+  /** Map faction landing key → hero thumbnail URL. When a key is
+   *  present the landing card uses the default hero portrait instead
+   *  of the generic SVG/PNG icon under `/images/heroes/*`. */
+  factionHeroUrls?: Record<string, string>;
 }
 
-export default function LandingPage({ showcaseCards }: LandingPageProps) {
+export default function LandingPage({ showcaseCards, factionHeroUrls }: LandingPageProps) {
   const router = useRouter();
   const [locale, setLocale] = useStoredLocale();
   const [scrollY, setScrollY] = useState(0);
@@ -358,6 +362,7 @@ export default function LandingPage({ showcaseCards }: LandingPageProps) {
         title={txt.factions_title}
         subtitle={txt.factions_sub}
         factionLabels={txt.factions}
+        factionHeroUrls={factionHeroUrls}
       />
 
       {/* ── Showcase cards ───────────────────────────────────────────── */}
@@ -716,28 +721,42 @@ function FeatureGlyph({ accent }: { accent: string }) {
       );
     case "cards":
       return (
-        <svg viewBox="0 0 64 64" className={common} fill="none" stroke="currentColor" strokeWidth="1.5">
-          <rect x="16" y="12" width="22" height="32" rx="2" transform="rotate(-10 27 28)" />
-          <rect x="26" y="18" width="22" height="32" rx="2" transform="rotate(8 37 34)" />
-          <circle cx="32" cy="32" r="26" opacity="0.15" />
-        </svg>
+        <div className="relative w-full h-full">
+          <Image
+            src="/images/landing/cards-grid-v2.png"
+            alt=""
+            fill
+            sizes="(max-width: 768px) 100vw, 50vw"
+            className="object-contain p-3 md:p-4"
+            priority={false}
+          />
+        </div>
       );
     case "crown":
       return (
-        <svg viewBox="0 0 64 64" className={common} fill="none" stroke="currentColor" strokeWidth="1.5">
-          <path d="M10 40 L14 18 L24 30 L32 14 L40 30 L50 18 L54 40 Z" strokeLinejoin="round" />
-          <path d="M10 46 L54 46" />
-          <circle cx="32" cy="32" r="26" opacity="0.15" />
-        </svg>
+        <div className="relative w-full h-full">
+          <Image
+            src="/images/landing/expert-decks.png"
+            alt=""
+            fill
+            sizes="(max-width: 768px) 100vw, 50vw"
+            className="object-contain p-3 md:p-4"
+            priority={false}
+          />
+        </div>
       );
     case "trophy":
       return (
-        <svg viewBox="0 0 64 64" className={common} fill="none" stroke="currentColor" strokeWidth="1.5">
-          <path d="M20 12 L44 12 L44 28 C44 36 38 42 32 42 C26 42 20 36 20 28 Z" strokeLinejoin="round" />
-          <path d="M20 18 L12 18 L12 24 C12 28 16 30 20 30 M44 18 L52 18 L52 24 C52 28 48 30 44 30" />
-          <path d="M32 42 L32 50 M24 54 L40 54" strokeLinecap="round" />
-          <circle cx="32" cy="32" r="26" opacity="0.15" />
-        </svg>
+        <div className="relative w-full h-full">
+          <Image
+            src="/images/landing/leaderboard-v2.png"
+            alt=""
+            fill
+            sizes="(max-width: 768px) 100vw, 50vw"
+            className="object-contain p-3 md:p-4"
+            priority={false}
+          />
+        </div>
       );
     default:
       return null;
@@ -750,9 +769,10 @@ interface FactionsSectionProps {
   title: string;
   subtitle: string;
   factionLabels: Dict["factions"];
+  factionHeroUrls?: Record<string, string>;
 }
 
-function FactionsSection({ title, subtitle, factionLabels }: FactionsSectionProps) {
+function FactionsSection({ title, subtitle, factionLabels, factionHeroUrls }: FactionsSectionProps) {
   return (
     <section
       className="relative px-6 md:px-10 py-24 md:py-32"
@@ -801,6 +821,7 @@ function FactionsSection({ title, subtitle, factionLabels }: FactionsSectionProp
             bannerExt={f.bannerExt}
             name={factionLabels[f.key].name}
             tagline={factionLabels[f.key].tagline}
+            heroUrl={factionHeroUrls?.[f.key]}
           />
         ))}
       </div>
@@ -815,6 +836,7 @@ function FactionCard({
   bannerExt,
   name,
   tagline,
+  heroUrl,
 }: {
   index: number;
   factionKey: FactionKey;
@@ -822,6 +844,7 @@ function FactionCard({
   bannerExt: "svg";
   name: string;
   tagline: string;
+  heroUrl?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-60px" });
@@ -871,19 +894,24 @@ function FactionCard({
         }}
       />
 
-      {/* Hero portrait */}
+      {/* Hero portrait — DB-served default hero thumbnail when available,
+          else the generic /images/heroes asset for that faction. The
+          portrait artwork carries its own frame, so we render it as-is
+          (no clipping circle / border ring) and rely on object-contain
+          + a drop-shadow for depth. */}
       <div className="relative z-[2] flex flex-col items-center justify-end h-full p-6 md:p-7 gap-3 transition-transform duration-500 group-hover:scale-[1.03]">
         <div className="flex-1 flex items-center justify-center pt-4">
           <div
-            className="relative w-[110px] h-[110px] md:w-[140px] md:h-[140px] transition-transform duration-500 group-hover:scale-110"
+            className="relative w-[220px] h-[220px] md:w-[280px] md:h-[280px] transition-transform duration-500 group-hover:scale-110"
             style={{ filter: "drop-shadow(0 10px 20px rgba(0,0,0,0.7))" }}
           >
             <Image
-              src={`/images/heroes/${factionKey}.${heroExt}`}
+              src={heroUrl ?? `/images/heroes/${factionKey}.${heroExt}`}
               alt={name}
               fill
-              sizes="140px"
+              sizes="280px"
               className="object-contain"
+              unoptimized={!!heroUrl}
             />
           </div>
         </div>
