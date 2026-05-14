@@ -1342,6 +1342,12 @@ export default function CardForge() {
   const [genIllusPromptLoading, setGenIllusPromptLoading] = useState(false);
   const [manualKeywords, setManualKeywords] = useState<string[]>([]);
   const [keywordXValues, setKeywordXValues] = useState<Record<string, number>>({});
+  // Per-keyword trigger mode override (indexed by the forge FR label).
+  // Missing entry = on-play (default). Only curated keywords accept
+  // non-play modes; the UI gates the picker accordingly. Saved into
+  // card.keyword_instances at save time so the engine can route the
+  // effect to the on-death or tap pipeline instead.
+  const [keywordModes, setKeywordModes] = useState<Record<string, "death" | "tap">>({});
   const [hoveredKw, setHoveredKw] = useState<{ id: string; rect: DOMRect } | null>(null);
   const [convocationTokenId, setConvocationTokenId] = useState<number | null>(null);
   const [convocationTokens, setConvocationTokens] = useState<ConvocationTokenDef[]>([]);
@@ -1379,6 +1385,24 @@ export default function CardForge() {
       spell_effects: spellEffectsData,
     };
   }
+
+  // FR-label → set of trigger modes that keyword can opt into beyond the
+  // default on-play. Engine-side gating in resolveCuratedKeywordEffect
+  // mirrors this list: when the admin assigns a mode, the engine routes
+  // the effect to the matching pipeline (on-death rattle or tap-activated).
+  // Keywords missing from this map can only be on-play.
+  const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<"death" | "tap">> = {
+    "Convocation X": new Set<"death" | "tap">(["death", "tap"]),
+    "Convocations multiples": new Set<"death" | "tap">(["death", "tap"]),
+    "Inspiration X": new Set<"death" | "tap">(["death", "tap"]),
+    "Pillage": new Set<"death" | "tap">(["death", "tap"]),
+    "Douleur X": new Set<"death" | "tap">(["death", "tap"]),
+    "Vampirisme X": new Set<"death" | "tap">(["death", "tap"]),
+    "Prescience X": new Set<"death" | "tap">(["tap"]),
+    "Suprématie": new Set<"death" | "tap">(["death"]),
+    "Ombre du passé": new Set<"death" | "tap">(["death"]),
+    "Savant": new Set<"death" | "tap">(["death"]),
+  };
 
   const availableManualKeywords = Object.entries(KEYWORDS)
     .filter(([id, kw]) => {
@@ -1640,7 +1664,7 @@ export default function CardForge() {
   const resetManualForm = useCallback(() => {
     setManualName(""); setManualMana(3); setManualAttack(3); setManualDefense(3);
     setManualPower(2); setManualAbility(""); setManualFlavorText("");
-    setManualIllustrationPrompt(""); setManualKeywords([]); setKeywordXValues({}); setCard(null);
+    setManualIllustrationPrompt(""); setManualKeywords([]); setKeywordXValues({}); setKeywordModes({}); setCard(null);
     setEditedPrompt(null); setSaveResult(null);
     setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace("");
     setManualLifeCost(0); setManualDiscardCost(0); setManualSacrificeCost(0);
@@ -1905,6 +1929,22 @@ export default function CardForge() {
         .join(", ");
       const effectText = [forgeCard.ability || "", xParts ? `[${xParts}]` : ""].filter(Boolean).join(" ");
 
+      // Build keyword_instances for any selected keyword that has either a
+      // non-play mode assigned OR a tracked X value. Engine reads this
+      // sidecar to route effects to the death/tap pipelines and to source
+      // per-instance X (the bracket notation in effect_text remains the
+      // legacy fallback for cards without instances).
+      const keywordInstances = forgeCard.keywords
+        .map((label) => {
+          const id = FORGE_TO_GAME_KEYWORD[label];
+          if (!id) return null;
+          const mode = keywordModes[label];
+          const x = forgeCard.keywordXValues?.[label];
+          if (!mode && x == null) return null; // pure play + no X → nothing to store
+          return { id, ...(mode ? { mode } : {}), ...(x != null ? { x } : {}) };
+        })
+        .filter(Boolean);
+
       let imageBase64: string | null = null;
       let imageMimeType: string | null = null;
       const blobUrl = cardImages[forgeCard.id];
@@ -1949,6 +1989,7 @@ export default function CardForge() {
             illustration_prompt: forgeCard.illustrationPrompt || null,
             rarity: forgeCard.rarity || null,
             keywords: gameKeywords,
+            keyword_instances: keywordInstances.length > 0 ? keywordInstances : null,
             ...buildSpellData(),
             faction: forgeCard.faction,
             race: forgeCard.race || null,
@@ -2798,6 +2839,44 @@ export default function CardForge() {
                                   textAlign: "center", outline: "none",
                                 }}
                               />
+                            )}
+                            {/* Trigger-mode picker for curated keywords —
+                                Play (default) / Death (red) / Tap (yellow).
+                                Only renders when the keyword is selected
+                                and present in CURATED_KEYWORD_MODES. */}
+                            {selected && CURATED_KEYWORD_MODES[id] && (
+                              <div style={{ display: "inline-flex", gap: 2, marginLeft: 4 }}>
+                                {(["play", "death", "tap"] as const).map(mode => {
+                                  const allowed = mode === "play" || CURATED_KEYWORD_MODES[id].has(mode);
+                                  const active = mode === "play" ? !keywordModes[id] : keywordModes[id] === mode;
+                                  const color = mode === "play" ? fac.color : mode === "death" ? "#a83232" : "#d4a800";
+                                  const label = mode === "play" ? "⚡" : mode === "death" ? "💀" : "⟲";
+                                  return (
+                                    <button
+                                      key={mode}
+                                      disabled={!allowed}
+                                      onClick={() => {
+                                        setKeywordModes(prev => {
+                                          const next = { ...prev };
+                                          if (mode === "play") delete next[id];
+                                          else next[id] = mode;
+                                          return next;
+                                        });
+                                      }}
+                                      title={mode === "play" ? "À l'invocation (défaut)" : mode === "death" ? "À la mort (deathrattle)" : "Activée par tap (engagement)"}
+                                      style={{
+                                        width: 18, height: 18, borderRadius: 3,
+                                        background: active ? color : "transparent",
+                                        border: `1px solid ${allowed ? color : "#ddd"}`,
+                                        color: active ? "#fff" : (allowed ? color : "#ccc"),
+                                        fontSize: 9, fontWeight: 700, cursor: allowed ? "pointer" : "not-allowed",
+                                        padding: 0, lineHeight: 1,
+                                        opacity: allowed ? 1 : 0.4,
+                                      }}
+                                    >{label}</button>
+                                  );
+                                })}
+                              </div>
                             )}
                           </div>
                         );
