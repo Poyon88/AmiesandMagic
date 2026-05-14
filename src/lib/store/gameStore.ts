@@ -203,6 +203,7 @@ interface GameStore {
   confirmCostPayment: () => GameAction | null;
   cancelCostPayment: () => void;
   activateHeroPower: () => GameAction | null;
+  activateTap: (sourceInstanceId: string, instanceIdx: number) => GameAction | null;
   confirmMulligan: (selectedInstanceIds: string[]) => GameAction | null;
 
   // Queries
@@ -2294,6 +2295,19 @@ export const useGameStore = create<GameStore>((set, get) => {
     } else {
       return get().dispatchAction({ type: "hero_power" });
     }
+  },
+
+  activateTap: (sourceInstanceId, instanceIdx) => {
+    // Resolve a creature's tap-mode keyword instance. The engine performs
+    // all the eligibility checks (own turn, untapped, no summoning
+    // sickness, keyword present in tap mode) — the store only forwards
+    // the action through the standard dispatch pipeline so the animation
+    // / SFX / multiplayer broadcast paths reuse existing infrastructure.
+    return get().dispatchAction({
+      type: "tap_activate",
+      sourceInstanceId,
+      instanceIdx,
+    });
   },
 
   confirmMulligan: (selectedInstanceIds) => {

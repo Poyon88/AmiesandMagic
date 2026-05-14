@@ -7,6 +7,7 @@ import type {
   AttackAction,
   MulliganAction,
   HeroPowerAction,
+  TapActivateAction,
   GameAction,
   SpellEffect,
   HeroDefinition,
@@ -66,6 +67,47 @@ export function initRNG(seed: number) {
 
 function hasKw(ci: CardInstance, kw: Keyword): boolean {
   return ci.card.keywords.includes(kw);
+}
+
+/** Mode-aware helpers: return true when the card carries at least one
+ *  KeywordInstance of `kw` in the requested mode. Falls back to the
+ *  legacy `keywords` array when `keywordInstances` is absent (older
+ *  cards) so existing decks still work — every legacy keyword is
+ *  treated as on-play (mode=undefined). */
+function hasKwInMode(ci: CardInstance, kw: Keyword, mode: import("./types").KeywordMode | undefined): boolean {
+  const instances = ci.card.keywordInstances;
+  if (instances && instances.length > 0) {
+    const matchedMode = instances.some(k => k.id === kw && (k.mode ?? undefined) === mode);
+    if (matchedMode) return true;
+    // Mode "play" (mode=undefined) also matches a legacy entry in
+    // `keywords` without a matching instance row — i.e. the keyword is
+    // present but the new metadata wasn't populated. This keeps
+    // existing data working without a forced migration.
+    if (mode === undefined && ci.card.keywords.includes(kw) && !instances.some(k => k.id === kw)) {
+      return true;
+    }
+    return false;
+  }
+  // No keywordInstances at all → legacy card, treat as on-play.
+  return mode === undefined && ci.card.keywords.includes(kw);
+}
+
+function hasKwOnPlay(ci: CardInstance, kw: Keyword): boolean { return hasKwInMode(ci, kw, undefined); }
+function hasKwOnDeath(ci: CardInstance, kw: Keyword): boolean { return hasKwInMode(ci, kw, "death"); }
+function hasKwOnTap(ci: CardInstance, kw: Keyword): boolean { return hasKwInMode(ci, kw, "tap"); }
+
+/** Look up the X value for a specific keyword/mode pair. Prefers the
+ *  KeywordInstance.x field when present, else falls back to bracket
+ *  notation parsed from effect_text (legacy storage). Returns
+ *  `defaultX` when neither source has a value. */
+function getKwX(ci: CardInstance, kw: Keyword, mode: import("./types").KeywordMode | undefined, defaultX: number): number {
+  const inst = ci.card.keywordInstances?.find(k => k.id === kw && (k.mode ?? undefined) === mode);
+  if (inst?.x != null) return inst.x;
+  if (mode === undefined) {
+    const fromText = parseXValuesFromEffectText(ci.card.effect_text)[kw];
+    if (fromText != null) return fromText;
+  }
+  return defaultX;
 }
 
 // Alternative cost helpers — collapse null/undefined/0 to 0 so call sites can
@@ -244,6 +286,7 @@ function createCardInstance(card: Card): CardInstance {
     attacksRemaining: 1,
     isPoisoned: false,
     hasUsedResurrection: false,
+    tapped: false,
     fureurActive: false,
     fureurATKBonus: 0,
     berserkActive: false,
@@ -573,6 +616,8 @@ export function startTurn(state: GameState): GameState {
     creature.hasSummoningSickness = false;
     creature.attacksRemaining = maxAttacksFor(creature);
     creature.targetsAttackedThisTurn = [];
+    // Untap at the start of OWNER's turn — MTG-strict semantics.
+    creature.tapped = false;
 
     // Reset esquive for the new turn
     creature.esquiveUsedThisTurn = false;
@@ -829,14 +874,14 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // dès son arrivée en jeu, avant tout autre effet d'invocation. Le
     // moteur ne s'arrête pas si l'auto-dégât est létal — checkWinCondition
     // appelé en fin de playCard détectera la défaite.
-    if (hasKw(cardInstance, "douleur")) {
+    if (hasKwOnPlay(cardInstance, "douleur")) {
       const douleurXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
       const x = douleurXVals["douleur"] ?? 1;
       dealDamageToHero(player.hero, x);
     }
 
     // Inspiration X: pioche X cartes à l'invocation.
-    if (hasKw(cardInstance, "inspiration")) {
+    if (hasKwOnPlay(cardInstance, "inspiration")) {
       const inspXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
       const x = inspXVals["inspiration"] ?? 1;
       for (let i = 0; i < x; i++) drawCard(player);
@@ -904,7 +949,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     }
 
     // Pillage: adversaire défausse une carte de son choix
-    if (hasKw(cardInstance, "pillage") && opponent.hand.length > 0) {
+    if (hasKwOnPlay(cardInstance, "pillage") && opponent.hand.length > 0) {
       const discardIdx = Math.floor(rng() * opponent.hand.length);
       const discarded = opponent.hand.splice(discardIdx, 1)[0];
       opponent.graveyard.push(discarded);
@@ -917,7 +962,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
 
     // Convocation X: crée un token X/X depuis le template choisi.
     // Si X est absent du texte, on tombe sur les stats par défaut du token.
-    if (hasKw(cardInstance, "convocation") && player.board.length < MAX_BOARD_SIZE) {
+    if (hasKwOnPlay(cardInstance, "convocation") && player.board.length < MAX_BOARD_SIZE) {
       const tmpl = findTokenTemplate(cardInstance.card.convocation_token_id);
       if (!tmpl) {
         // Surface the silent-no-spawn case so the admin can fix the data.
@@ -991,7 +1036,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
 
     // Convocations multiples : chaque entrée pointe vers un token et peut
     // override ses stats (attack/health). Sans override, on hérite du token.
-    if (hasKw(cardInstance, "convocations_multiples")) {
+    if (hasKwOnPlay(cardInstance, "convocations_multiples")) {
       if (!card.convocation_tokens?.length) {
         console.warn(
           `[engine] Convocations multiples: aucun token configuré pour la carte "${card.name}" — vérifiez l'onglet Édition.`,
@@ -1050,7 +1095,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     }
 
     // Vampirisme X: vole X PV à une unité ennemie ciblée
-    if (hasKw(cardInstance, "vampirisme") && action.targetInstanceId) {
+    if (hasKwOnPlay(cardInstance, "vampirisme") && action.targetInstanceId) {
       const vampXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
       const x = vampXVals["vampirisme"] || Math.max(1, Math.floor(cardInstance.card.mana_cost / 2));
       const vampTarget = opponent.board.find(c => c.instanceId === action.targetInstanceId);
@@ -1105,7 +1150,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     }
 
     // Prescience X: piochez jusqu'à X cartes en main
-    if (hasKw(cardInstance, "prescience")) {
+    if (hasKwOnPlay(cardInstance, "prescience")) {
       const x = Math.min(7, Math.max(3, cardInstance.card.mana_cost)); // X = mana cost capped
       while (player.hand.length < x && player.deck.length > 0) {
         drawCard(player);
@@ -1113,7 +1158,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     }
 
     // Suprématie: +1 ATK et +1 PV par carte en main
-    if (hasKw(cardInstance, "suprematie")) {
+    if (hasKwOnPlay(cardInstance, "suprematie")) {
       const handSize = player.hand.length;
       cardInstance.summonBonusATK += handSize;
       cardInstance.currentAttack += handSize;
@@ -1122,7 +1167,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     }
 
     // Ombre du passé: +1 ATK et +1 PV par unité de même race au cimetière
-    if (hasKw(cardInstance, "ombre_du_passe") && cardInstance.card.race) {
+    if (hasKwOnPlay(cardInstance, "ombre_du_passe") && cardInstance.card.race) {
       const graveCount = player.graveyard.filter(c => c.card.race === cardInstance.card.race && c.card.card_type === "creature").length;
       cardInstance.summonBonusATK += graveCount;
       cardInstance.currentAttack += graveCount;
@@ -1132,7 +1177,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
 
     // Savant: +1 ATK et +1 PV par sort dans votre cimetière (X non-paramétré,
     // dérivé de l'état au moment de l'invocation — comme Suprématie/Ombre du passé).
-    if (hasKw(cardInstance, "savant")) {
+    if (hasKwOnPlay(cardInstance, "savant")) {
       const spellCount = player.graveyard.filter(c => c.card.card_type === "spell").length;
       cardInstance.summonBonusATK += spellCount;
       cardInstance.currentAttack += spellCount;
@@ -2459,6 +2504,7 @@ export function attack(state: GameState, action: AttackAction): GameState {
     attacker.attacksRemaining--;
     attacker.targetsAttackedThisTurn.push(effectiveTarget);
     attacker.hasAttacked = attacker.attacksRemaining <= 0;
+    attacker.tapped = true; // MTG-strict: attacking engages the creature
 
   } else {
     const target = opponent.board.find(c => c.instanceId === effectiveTarget);
@@ -2470,6 +2516,7 @@ export function attack(state: GameState, action: AttackAction): GameState {
       attacker.attacksRemaining--;
       attacker.targetsAttackedThisTurn.push(effectiveTarget);
       attacker.hasAttacked = attacker.attacksRemaining <= 0;
+      attacker.tapped = true;
       newState.lastAction = action;
       return newState;
     }
@@ -2573,6 +2620,7 @@ export function attack(state: GameState, action: AttackAction): GameState {
     attacker.attacksRemaining--;
     attacker.targetsAttackedThisTurn.push(effectiveTarget);
     attacker.hasAttacked = attacker.attacksRemaining <= 0;
+    attacker.tapped = true;
   }
 
   // Clean dead creatures and process death triggers
@@ -2804,6 +2852,18 @@ function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: P
       owner.deck.splice(insertIdx, 0, copyInstance);
     }
 
+    // Custom on-death triggers from keywordInstances metadata. Curated
+    // keywords (see plan) can opt into mode "death" so their on-play
+    // effect fires from the death rattle slot instead. The on-play block
+    // is skipped for these instances via the hasKwOnPlay gate elsewhere,
+    // so each instance fires exactly once at the right time.
+    const customDeathInstances = c.card.keywordInstances ?? [];
+    for (const inst of customDeathInstances) {
+      if (inst.mode === "death") {
+        resolveCuratedKeywordEffect(inst.id, inst.x ?? 1, c, owner, enemy);
+      }
+    }
+
     // (Instinct de meute is now an on-play trigger — see playCard,
     // resolved once at summon based on whether any same-faction ally has
     // died this turn. The death side no longer mutates other creatures.)
@@ -2834,6 +2894,115 @@ function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: P
   if (enemyCascadeDead.length > 0) {
     processDeathTriggers(enemyCascadeDead, enemy, owner, depth + 1);
   }
+}
+
+// ============================================================
+// CURATED TRIGGER MODES (death / tap) — shared effect resolvers
+// ============================================================
+
+/** Resolve the effect of a curated keyword from a non-default trigger
+ *  context (on-death or on-tap). Mirrors the on-play implementation in
+ *  `playCard` for the supported subset — keep the two paths in sync
+ *  when extending the list. Source is the creature carrying the keyword
+ *  (already dead for on-death; still alive for on-tap). */
+function resolveCuratedKeywordEffect(
+  kw: Keyword,
+  x: number,
+  source: CardInstance,
+  owner: PlayerState,
+  opponent: PlayerState,
+): void {
+  switch (kw) {
+    case "convocation": {
+      if (owner.board.length >= MAX_BOARD_SIZE) return;
+      const tmpl = findTokenTemplate(source.card.convocation_token_id);
+      if (!tmpl) return;
+      const atk = x > 0 ? x : tmpl.attack;
+      const hp = x > 0 ? x : tmpl.health;
+      let tokenCard: Card = {
+        id: -1, name: `Token ${tmpl.race}`.trim(),
+        mana_cost: 0, card_type: "creature",
+        attack: atk, health: hp,
+        effect_text: "",
+        keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
+        race: tmpl.race,
+        faction: getFactionForRace(tmpl.race) ?? source.card.faction,
+        clan: source.card.clan,
+      };
+      tokenCard = applyTokenTemplate(tokenCard, tmpl);
+      const token = createCardInstance(tokenCard);
+      token.hasSummoningSickness = true;
+      owner.board.push(token);
+      break;
+    }
+    case "inspiration": {
+      for (let i = 0; i < x; i++) drawCard(owner);
+      break;
+    }
+    case "pillage": {
+      if (opponent.hand.length === 0) return;
+      const idx = Math.floor(rng() * opponent.hand.length);
+      const discarded = opponent.hand.splice(idx, 1)[0];
+      opponent.graveyard.push(discarded);
+      break;
+    }
+    case "douleur": {
+      // In on-play, Douleur damages the OWN hero (cost). In the new
+      // death/tap modes the trigger represents the creature lashing out,
+      // so we point it at the OPPONENT's hero — more interesting design.
+      dealDamageToHero(opponent.hero, x);
+      break;
+    }
+    case "vampirisme": {
+      // Drain X from enemy hero, heal own hero by the same amount.
+      const before = opponent.hero.hp;
+      dealDamageToHero(opponent.hero, x);
+      const dealt = before - opponent.hero.hp; // accounts for armor absorption
+      owner.hero.hp += dealt;
+      break;
+    }
+    case "prescience": {
+      // Tap-mode only per plan — draw up to X cards.
+      for (let i = 0; i < x; i++) drawCard(owner);
+      break;
+    }
+    // TODO: convocations_multiples, suprematie, ombre_du_passe, savant
+    default:
+      // No-op for keywords not yet supported in non-play modes. The
+      // Card Forge UI gates which keywords admins can put in death/tap
+      // mode, so unsupported entries shouldn't appear in practice.
+      break;
+  }
+}
+
+// ============================================================
+// TAP ACTIVATION
+// ============================================================
+
+export function tapActivate(state: GameState, action: TapActivateAction): GameState {
+  const pool = state.factionCardPool;
+  const allPool = state.allSpellsPool;
+  const newState = deepClone({ ...state, factionCardPool: undefined, allSpellsPool: undefined } as GameState);
+  newState.factionCardPool = pool;
+  newState.allSpellsPool = allPool;
+
+  const player = newState.players[newState.currentPlayerIndex];
+  const opponent = newState.players[newState.currentPlayerIndex === 0 ? 1 : 0];
+  const source = player.board.find(c => c.instanceId === action.sourceInstanceId);
+  if (!source) return state;
+  if (source.tapped) return state;
+  if (source.hasSummoningSickness) return state;
+  const instances = source.card.keywordInstances ?? [];
+  const instance = instances[action.instanceIdx];
+  if (!instance || instance.mode !== "tap") return state;
+
+  source.tapped = true;
+  resolveCuratedKeywordEffect(instance.id, instance.x ?? 1, source, player, opponent);
+
+  recalculateAuras(player, opponent);
+  newState.lastAction = action;
+  checkWinCondition(newState);
+  return newState;
 }
 
 // Legacy passive trigger ("Lich Malachar"-style buff_on_friendly_death) was
@@ -3151,6 +3320,7 @@ export function applyAction(state: GameState, action: GameAction): GameState {
     case "attack": return attack(state, action);
     case "end_turn": return endTurn(state);
     case "hero_power": return useHeroPower(state, action);
+    case "tap_activate": return tapActivate(state, action);
     default: return state;
   }
 }

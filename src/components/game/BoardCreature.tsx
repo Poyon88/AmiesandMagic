@@ -40,11 +40,32 @@ export default function BoardCreature({
   const targetingMode = useGameStore(s => s.targetingMode);
   const selectedSacrificeIds = useGameStore(s => s.selectedSacrificeIds);
   const toggleSacrificeSelection = useGameStore(s => s.toggleSacrificeSelection);
+  const activateTap = useGameStore(s => s.activateTap);
+  const isMyTurn = useGameStore(s => s.isMyTurn());
+  const isAnimating = useGameStore(s => s.isAnimating);
 
   const isCostPaymentMode = targetingMode === "cost_payment";
   const isSelectedForSacrifice = selectedSacrificeIds.includes(creature.instanceId);
   // Only the player's own board creatures can be sacrificed for a cost.
   const canSelectForSacrifice = isCostPaymentMode && isOwn;
+
+  // First tap-mode keyword instance the player can activate right now.
+  // Returns the index inside `keywordInstances`; null when no eligible
+  // instance is present (legacy creature, none in tap mode, etc.).
+  const tapInstanceIdx = (() => {
+    const list = card.keywordInstances ?? [];
+    for (let i = 0; i < list.length; i++) {
+      if (list[i].mode === "tap") return i;
+    }
+    return null;
+  })();
+  const canActivateTap = isOwn
+    && isMyTurn
+    && !isAnimating
+    && !creature.tapped
+    && !creature.hasSummoningSickness
+    && tapInstanceIdx !== null
+    && targetingMode === "none";
   // Resolve token template image: instance cards spawned by the engine
   // carry token_id when they originate from a saved template; fall back to
   // race lookup for legacy spawns (spell-keyword "invocation", etc.).
@@ -105,11 +126,11 @@ export default function BoardCreature({
       layout
       data-instance-id={creature.instanceId}
       style={{ width: W, height: H, position: "relative", zIndex: isZoomed ? 100 : isSelected ? 10 : 1, zoom: 1.41 }}
-      initial={{ y: isOwn ? 40 : -40, opacity: 0, scale: 0.5 }}
+      initial={{ y: isOwn ? 40 : -40, opacity: 0, scale: 0.5, rotate: 0 }}
       animate={
         damageAmount
-          ? { x: [0, -4, 4, -4, 4, 0], y: 0, opacity: 1, scale: 1 }
-          : { x: 0, y: 0, opacity: 1, scale: 1 }
+          ? { x: [0, -4, 4, -4, 4, 0], y: 0, opacity: 1, scale: 1, rotate: creature.tapped ? 45 : 0 }
+          : { x: 0, y: 0, opacity: 1, scale: 1, rotate: creature.tapped ? 45 : 0 }
       }
       exit={creature.isPoisoned
         ? { opacity: 0, scale: 0.3, rotate: -10, filter: "brightness(0.5) saturate(2) hue-rotate(80deg)", transition: { duration: 1.0, ease: "easeIn" } }
@@ -242,6 +263,41 @@ export default function BoardCreature({
         </div>
       )}
 
+
+      {/* Activate (tap) button — yellow chip floating above the creature
+          when an eligible tap-mode keyword is ready to fire. Hidden while
+          the creature is engaged, has summoning sickness, or any
+          targeting / cost-payment / animation flow is in progress. */}
+      {canActivateTap && tapInstanceIdx !== null && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            activateTap(creature.instanceId, tapInstanceIdx);
+          }}
+          style={{
+            position: "absolute",
+            top: -22,
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 15,
+            padding: "3px 10px",
+            fontSize: 9,
+            fontFamily: "'Cinzel', serif",
+            fontWeight: 700,
+            letterSpacing: 1,
+            color: "#1a1a0a",
+            background: "linear-gradient(180deg, #ffd700 0%, #d4a800 100%)",
+            border: "1px solid #8a6d00",
+            borderRadius: 12,
+            boxShadow: "0 0 10px rgba(255, 215, 0, 0.6), 0 2px 4px rgba(0,0,0,0.4)",
+            cursor: "pointer",
+            whiteSpace: "nowrap",
+          }}
+          title="Engage cette créature pour activer sa capacité tap"
+        >
+          ⟲ Activer
+        </button>
+      )}
 
       {/* Summoning sickness overlay */}
       {creature.hasSummoningSickness && isOwn && (

@@ -109,6 +109,22 @@ export type SpellKeywordId =
   | "concentration"
   | "selection_magique";
 
+/** Trigger mode for a creature keyword. Undefined = on-play (default,
+ *  existing behaviour). "death" = on-death rattle. "tap" = activated by
+ *  tapping the creature (MTG-strict semantics). Only a curated subset of
+ *  keywords accept non-play modes — see plan. */
+export type KeywordMode = "death" | "tap";
+
+/** Per-instance metadata for a creature keyword. Lives in
+ *  `Card.keywordInstances` alongside the string `keywords` array so each
+ *  visible icon can carry its own mode + X. Older cards without this field
+ *  default every keyword to on-play mode with X parsed from effect_text. */
+export interface KeywordInstance {
+  id: Keyword;
+  mode?: KeywordMode; // undefined ⇒ on-play
+  x?: number;
+}
+
 export interface SpellKeywordInstance {
   id: SpellKeywordId;
   amount?: number;   // X value for impact, deferlement, siphon, guerison, inspiration, afflux
@@ -244,6 +260,17 @@ export interface Card {
   effect_text: string;
   flavor_text?: string | null;
   keywords: Keyword[];
+  // Mode metadata for keywords that fire outside the default on-play trigger
+  // (death rattle or tap-activated). Optional sidecar to `keywords`: when a
+  // keyword appears here it is ALSO listed in `keywords` (icon/label
+  // resolution stays driven by the string array). A keyword may appear
+  // multiple times in different modes (e.g. Convocation X on-play AND
+  // Convocation X on-tap). `keywords` lists each instance separately so
+  // icon counts match; `keywordInstances` holds the per-instance metadata
+  // in the same order as `keywords` for entries that opt in (entries in
+  // keywords without a matching keywordInstances row default to mode=play
+  // with x parsed from effect_text bracket notation).
+  keywordInstances?: KeywordInstance[];
   spell_effect?: SpellEffect | null;          // Legacy — will be removed
   spell_keywords: SpellKeywordInstance[] | null;
   spell_effects: SpellComposableEffects | null;
@@ -314,6 +341,11 @@ export interface CardInstance {
   attacksRemaining: number;
   isPoisoned: boolean;
   hasUsedResurrection: boolean;
+  // Tap state — true while the creature is "engaged" (MTG-style 45°
+  // rotation). Set when the creature attacks OR when it tap-activates a
+  // keyword; reset in startTurn for the outgoing player. Untapped state
+  // is the only one that allows attacks and tap activations.
+  tapped: boolean;
   fureurActive: boolean;
   fureurATKBonus: number;
   berserkActive: boolean;
@@ -549,7 +581,20 @@ export interface HeroPowerAction {
   selectionCardId?: number;
 }
 
-export type GameAction = PlayCardAction | AttackAction | EndTurnAction | MulliganAction | HeroPowerAction;
+/** Activate one of the source creature's tap-mode keywords. The engine
+ *  checks the creature is on the active player's board, untapped, free of
+ *  summoning sickness, and that `instanceIdx` points at a KeywordInstance
+ *  with `mode === "tap"`. Optional targeting payload mirrors the spell
+ *  targeting flow for keywords that need to pick an opponent or ally. */
+export interface TapActivateAction {
+  type: "tap_activate";
+  sourceInstanceId: string;
+  instanceIdx: number;
+  targetInstanceId?: string;
+  targetMap?: Record<string, string>;
+}
+
+export type GameAction = PlayCardAction | AttackAction | EndTurnAction | MulliganAction | HeroPowerAction | TapActivateAction;
 
 // Combat event for animations
 export type CombatEventType = "damage" | "heal" | "buff" | "shield" | "poison" | "dodge" | "paralyze" | "resurrect" | "transform";
