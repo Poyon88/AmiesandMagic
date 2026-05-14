@@ -50,6 +50,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
     localPlayerId,
     selectedAttackerInstanceId,
     selectedCardInstanceId,
+    pendingTapSourceId,
     validTargets,
     targetingMode,
     divinationCards,
@@ -1009,7 +1010,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
       {/* Targeting arrow overlay */}
       <TargetingArrow
         targetingMode={targetingMode}
-        sourceInstanceId={selectedAttackerInstanceId ?? selectedCardInstanceId ?? (targetingMode === "hero_power" ? "hero_power" : null)}
+        sourceInstanceId={selectedAttackerInstanceId ?? selectedCardInstanceId ?? pendingTapSourceId ?? (targetingMode === "hero_power" ? "hero_power" : null)}
         hoveredTargetId={hoveredTargetId}
       />
 

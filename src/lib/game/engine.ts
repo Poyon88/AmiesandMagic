@@ -96,6 +96,21 @@ function hasKwOnPlay(ci: CardInstance, kw: Keyword): boolean { return hasKwInMod
 function hasKwOnDeath(ci: CardInstance, kw: Keyword): boolean { return hasKwInMode(ci, kw, "death"); }
 function hasKwOnTap(ci: CardInstance, kw: Keyword): boolean { return hasKwInMode(ci, kw, "tap"); }
 
+/** Card-level (no CardInstance) mode check used by UI helpers like
+ *  `creatureNeedsTarget` that operate on hand cards before they hit the
+ *  board. Mirrors `hasKwInMode(_, kw, undefined)` semantics. */
+function cardHasKwOnPlay(card: Card, kw: Keyword): boolean {
+  const instances = card.keyword_instances;
+  if (instances && instances.length > 0) {
+    const hasInstancesForKw = instances.some(k => k.id === kw);
+    const hasPlayInstance = instances.some(k => k.id === kw && (k.mode ?? undefined) === undefined);
+    if (hasPlayInstance) return true;
+    if (card.keywords.includes(kw) && !hasInstancesForKw) return true;
+    return false;
+  }
+  return card.keywords.includes(kw);
+}
+
 /** Look up the X value for a specific keyword/mode pair. Prefers the
  *  KeywordInstance.x field when present, else falls back to bracket
  *  notation parsed from effect_text (legacy storage). Returns
@@ -2439,6 +2454,8 @@ export function attack(state: GameState, action: AttackAction): GameState {
   const attacker = player.board.find(c => c.instanceId === action.attackerInstanceId);
   if (!attacker) return state;
   if (attacker.attacksRemaining <= 0) return state;
+  // Tapped via a tap-mode keyword this turn → no attack allowed.
+  if (attacker.tapped) return state;
   if (attacker.hasSummoningSickness && !hasKw(attacker, "raid")) return state;
 
   const effectiveTarget = action.targetInstanceId;
@@ -2911,6 +2928,7 @@ function resolveCuratedKeywordEffect(
   source: CardInstance,
   owner: PlayerState,
   opponent: PlayerState,
+  targetInstanceId?: string,
 ): void {
   switch (kw) {
     case "convocation": {
@@ -2954,10 +2972,21 @@ function resolveCuratedKeywordEffect(
       break;
     }
     case "vampirisme": {
-      // Drain X from enemy hero, heal own hero by the same amount.
+      // Tap mode: drain X from a chosen enemy creature (mirrors on-play).
+      // Death / no-target fallback: hit the opposing hero.
+      if (targetInstanceId) {
+        const target = opponent.board.find(c => c.instanceId === targetInstanceId);
+        if (target) {
+          const stolen = Math.min(x, target.currentHealth);
+          target.currentHealth -= stolen;
+          source.currentHealth += stolen;
+          source.maxHealth += stolen;
+          break;
+        }
+      }
       const before = opponent.hero.hp;
       dealDamageToHero(opponent.hero, x);
-      const dealt = before - opponent.hero.hp; // accounts for armor absorption
+      const dealt = before - opponent.hero.hp;
       owner.hero.hp += dealt;
       break;
     }
@@ -2997,12 +3026,30 @@ export function tapActivate(state: GameState, action: TapActivateAction): GameSt
   if (!instance || instance.mode !== "tap") return state;
 
   source.tapped = true;
-  resolveCuratedKeywordEffect(instance.id, instance.x ?? 1, source, player, opponent);
+  resolveCuratedKeywordEffect(instance.id, instance.x ?? 1, source, player, opponent, action.targetInstanceId);
 
   recalculateAuras(player, opponent);
   newState.lastAction = action;
   checkWinCondition(newState);
   return newState;
+}
+
+/** Targets eligible for a tap-mode activation of `kw`. Returns null when
+ *  the keyword doesn't need a picker (auto-resolves on activation). */
+export function getTapActivateTargets(state: GameState, kw: Keyword): string[] | null {
+  const opponent = state.players[state.currentPlayerIndex === 0 ? 1 : 0];
+  const filterTargetable = (creatures: CardInstance[]) =>
+    creatures.filter(c =>
+      !hasKw(c, "invisible")
+      && !hasKw(c, "transcendance")
+      && !(hasKw(c, "ombre") && !c.ombreRevealed)
+    );
+  switch (kw) {
+    case "vampirisme":
+      return filterTargetable(opponent.board).map(c => c.instanceId);
+    default:
+      return null;
+  }
 }
 
 // Legacy passive trigger ("Lich Malachar"-style buff_on_friendly_death) was
@@ -3363,6 +3410,9 @@ export function canAttack(state: GameState, attackerInstanceId: string): boolean
   const attacker = player.board.find(c => c.instanceId === attackerInstanceId);
   if (!attacker) return false;
   if (attacker.attacksRemaining <= 0) return false;
+  // MTG-strict: a tapped creature (tap-mode keyword fired this turn)
+  // can't also attack.
+  if (attacker.tapped) return false;
   // Raid: can attack creatures even with summoning sickness
   if (attacker.hasSummoningSickness && !hasKw(attacker, "raid")) return false;
   if (attacker.currentAttack <= 0) return false;
@@ -3422,7 +3472,10 @@ const CREATURE_TARGETING_KEYWORDS: Keyword[] = [
 
 export function creatureNeedsTarget(card: Card): boolean {
   if (card.card_type !== "creature") return false;
-  return card.keywords.some(kw => CREATURE_TARGETING_KEYWORDS.includes(kw));
+  // Only request an on-play target if the targeting keyword actually
+  // fires on play. A vampirisme entry that lives only in tap/death mode
+  // shouldn't trigger the on-summon picker.
+  return card.keywords.some(kw => CREATURE_TARGETING_KEYWORDS.includes(kw) && cardHasKwOnPlay(card, kw));
 }
 
 export function getCreatureTargets(state: GameState, card: Card): string[] {
@@ -3436,8 +3489,10 @@ export function getCreatureTargets(state: GameState, card: Card): string[] {
       && !(hasKw(c, "ombre") && !c.ombreRevealed)
     );
 
-  // Determine target pool based on the first targeting keyword found
+  // Determine target pool based on the first targeting keyword that's
+  // actually firing on play (skip ones that live only in tap/death mode).
   for (const kw of card.keywords) {
+    if (!cardHasKwOnPlay(card, kw)) continue;
     switch (kw) {
       case "sacrifice":
       case "benediction":

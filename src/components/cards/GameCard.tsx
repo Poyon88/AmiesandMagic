@@ -47,7 +47,7 @@ function loadSetRegistry(): Promise<CardSet[]> {
     });
   return _setRegistryPromise;
 }
-import { KEYWORD_SYMBOLS as keywordSymbols, KEYWORD_LABELS as keywordLabels, toRoman, parseXValuesFromEffectText, cleanEffectText } from "@/lib/game/keyword-labels";
+import { KEYWORD_SYMBOLS as keywordSymbols, KEYWORD_LABELS as keywordLabels, toRoman, parseXValuesFromEffectText, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS, getSpellKeywordDesc, getSpellKeywordLabel, formatConvocationTokens } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import KeywordIcon from "@/components/shared/KeywordIcon";
@@ -302,21 +302,23 @@ export default function GameCard({
         {/* Keywords + Stats — single row */}
         <div style={{ display: "flex", alignItems: "center", gap: 4 * s, flexWrap: "wrap" }}>
           {/* Keyword symbols */}
-          {card.keywords.length > 0 && (() => {
-            const xVals = parseXValuesFromEffectText(card.effect_text);
+          {(card.keywords.length > 0 || (card.keyword_instances?.length ?? 0) > 0) && (() => {
             // Skip the creature side of a polymorphic ability when the same
             // card also carries the spell side — avoids duplicated rows on
             // legacy cards authored before the registry merge.
-            const visibleKws = card.keywords.filter(
-              (kw) => !isCreatureKwShadowedBySpell(kw, card.spell_keywords),
-            );
-            return visibleKws.map((kw) => {
-              const x = xVals[kw];
+            const entries = buildKeywordDisplayEntries(card)
+              .filter((e) => !isCreatureKwShadowedBySpell(e.kw, card.spell_keywords));
+            return entries.map((entry, idx) => {
+              const { kw, x, mode } = entry;
               const label = keywordLabels[kw] || kw;
-              const displayTitle = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
+              const baseTitle = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
+              const modeSuffix = mode === "death" ? " · à la mort" : mode === "tap" ? " · tap" : "";
+              const displayTitle = baseTitle + modeSuffix;
               const hasImg = !!iconOverrides[kw];
+              const modeColor = keywordModeColor(mode);
+              const modeFilter = keywordModeFilter(mode);
               return (
-              <div key={kw} title={displayTitle} style={{
+              <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} title={displayTitle} style={{
                 minWidth: 40 * s, height: 40 * s, borderRadius: 4 * s,
                 padding: x != null ? `0 ${4 * s}px` : 0,
                 background: hasImg ? "transparent" : `${accentColor}33`,
@@ -324,14 +326,16 @@ export default function GameCard({
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 * s,
                 fontSize: 10 * s, overflow: "hidden",
               }}>
-                {hasImg ? (
-                  <div style={{ width: 40 * s, height: 40 * s, flexShrink: 0 }}>
-                    <KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={22 * s} keyword={kw} fill />
-                  </div>
-                ) : (
-                  <KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={22 * s} keyword={kw} />
-                )}
-                {x != null && <span style={{ fontSize: 10 * s, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}` }}>{toRoman(x)}</span>}
+                <span style={{ display: "inline-flex", filter: modeFilter ?? undefined, lineHeight: 0 }}>
+                  {hasImg ? (
+                    <div style={{ width: 40 * s, height: 40 * s, flexShrink: 0 }}>
+                      <KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={22 * s} keyword={kw} fill />
+                    </div>
+                  ) : (
+                    <KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={22 * s} keyword={kw} />
+                  )}
+                </span>
+                {x != null && <span style={{ fontSize: 10 * s, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}` }}>{toRoman(x)}</span>}
               </div>
               );
             });
@@ -448,32 +452,31 @@ export default function GameCard({
         )}
 
         {/* Capacités detail */}
-        {card.keywords.length > 0 && (() => {
-          const xVals = parseXValuesFromEffectText(card.effect_text);
-          const visibleKws = card.keywords.filter(
-            (kw) => !isCreatureKwShadowedBySpell(kw, card.spell_keywords),
-          );
-          if (visibleKws.length === 0) return null;
+        {(card.keywords.length > 0 || (card.keyword_instances?.length ?? 0) > 0) && (() => {
+          const entries = buildKeywordDisplayEntries(card)
+            .filter((e) => !isCreatureKwShadowedBySpell(e.kw, card.spell_keywords));
+          if (entries.length === 0) return null;
           return (
           <div style={{ display: "flex", flexDirection: "column", gap: 6 * s }}>
-            {visibleKws.map((kw) => {
-              const x = xVals[kw];
+            {entries.map((entry, idx) => {
+              const { kw, x, mode } = entry;
               const label = keywordLabels[kw] || kw;
-              const displayLabel = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
+              const baseLabel = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
+              const modeSuffix = mode === "death" ? " · à la mort" : mode === "tap" ? " · tap" : "";
+              const displayLabel = baseLabel + modeSuffix;
               const forgeKey = keywordLabels[kw];
               const kwDef = forgeKey ? keywordDefs[forgeKey] : null;
               let desc = kwDef?.desc ? (x != null ? kwDef.desc.replace(/X/g, String(x)) : kwDef.desc) : null;
-              // Override pour Convocations multiples côté créature : reflète
-              // la liste réelle des tokens configurés (groupés). Mêmes règles
-              // que côté sort (`getSpellKeywordDesc` pour invocation_multiple).
               if (kw === "convocations_multiples" && card.convocation_tokens?.length) {
                 desc = `Invocation : crée ${formatConvocationTokens(card.convocation_tokens, effectiveTokens)}`;
               }
+              const modeColor = keywordModeColor(mode);
+              const modeFilter = keywordModeFilter(mode);
               return (
-              <div key={kw} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
-                <span style={{ flexShrink: 0 }}><KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={18 * s} keyword={kw} /></span>
+              <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
+                <span style={{ flexShrink: 0, display: "inline-flex", filter: modeFilter ?? undefined, lineHeight: 0 }}><KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={18 * s} keyword={kw} /></span>
                 <div>
-                  <div style={{ fontSize: 14 * s, color: accentColor, fontWeight: 700 }}>{displayLabel}</div>
+                  <div style={{ fontSize: 14 * s, color: modeColor ?? accentColor, fontWeight: 700 }}>{displayLabel}</div>
                   {desc && <div style={{ fontSize: 12 * s, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
                 </div>
               </div>

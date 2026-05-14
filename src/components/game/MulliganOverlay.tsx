@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import type { CardInstance } from "@/lib/game/types";
-import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText } from "@/lib/game/keyword-labels";
+import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS, getSpellKeywordLabel, getSpellKeywordDesc } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import KeywordIcon from "@/components/shared/KeywordIcon";
@@ -185,26 +185,32 @@ function MulliganCard({
         }}>{card.name}</div>
 
         {/* Keyword symbols */}
-        {card.keywords.length > 0 && (() => {
-          const xVals = parseXValuesFromEffectText(card.effect_text);
-          const visibleKws = card.keywords.filter((kw) => !isCreatureKwShadowedBySpell(kw, card.spell_keywords));
-          if (visibleKws.length === 0) return null;
+        {(card.keywords.length > 0 || (card.keyword_instances?.length ?? 0) > 0) && (() => {
+          const entries = buildKeywordDisplayEntries(card)
+            .filter((e) => !isCreatureKwShadowedBySpell(e.kw, card.spell_keywords));
+          if (entries.length === 0) return null;
           return (
           <div style={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
-            {visibleKws.map((kw) => {
-              const x = xVals[kw];
+            {entries.map((entry, idx) => {
+              const { kw, x, mode } = entry;
               const label = KEYWORD_LABELS[kw] || kw;
-              const displayTitle = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
+              const baseTitle = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
+              const modeSuffix = mode === "death" ? " · à la mort" : mode === "tap" ? " · tap" : "";
+              const displayTitle = baseTitle + modeSuffix;
+              const modeColor = keywordModeColor(mode);
+              const modeFilter = keywordModeFilter(mode);
               return (
-              <div key={kw} title={displayTitle} style={{
+              <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} title={displayTitle} style={{
                 minWidth: 20, height: 20, borderRadius: 5,
                 padding: x != null ? "0 3px" : 0,
                 background: `${accentColor}33`, border: `1px solid ${accentColor}66`,
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2,
                 fontSize: 11,
               }}>
-                <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={11} keyword={kw} />
-                {x != null && <span style={{ fontSize: 8, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}` }}>{toRoman(x)}</span>}
+                <span style={{ display: "inline-flex", filter: modeFilter ?? undefined, lineHeight: 0 }}>
+                  <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={11} keyword={kw} />
+                </span>
+                {x != null && <span style={{ fontSize: 8, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}` }}>{toRoman(x)}</span>}
               </div>
               );
             })}
@@ -298,24 +304,28 @@ function MulliganCard({
           </div>
         )}
 
-        {card.keywords.length > 0 && (() => {
-          const xVals = parseXValuesFromEffectText(card.effect_text);
-          const visibleKws = card.keywords.filter((kw) => !isCreatureKwShadowedBySpell(kw, card.spell_keywords));
-          if (visibleKws.length === 0) return null;
+        {(card.keywords.length > 0 || (card.keyword_instances?.length ?? 0) > 0) && (() => {
+          const entries = buildKeywordDisplayEntries(card)
+            .filter((e) => !isCreatureKwShadowedBySpell(e.kw, card.spell_keywords));
+          if (entries.length === 0) return null;
           return (
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            {visibleKws.map((kw) => {
-              const x = xVals[kw];
+            {entries.map((entry, idx) => {
+              const { kw, x, mode } = entry;
               const label = KEYWORD_LABELS[kw] || kw;
-              const displayLabel = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
+              const baseLabel = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
+              const modeSuffix = mode === "death" ? " · à la mort" : mode === "tap" ? " · tap" : "";
+              const displayLabel = baseLabel + modeSuffix;
               const forgeKey = KEYWORD_LABELS[kw];
               const kwDef = forgeKey ? keywordDefs[forgeKey] : null;
               const desc = kwDef?.desc ? (x != null ? kwDef.desc.replace(/X/g, String(x)) : kwDef.desc) : null;
+              const modeColor = keywordModeColor(mode);
+              const modeFilter = keywordModeFilter(mode);
               return (
-              <div key={kw} style={{ display: "flex", alignItems: "flex-start", gap: 5 }}>
-                <span style={{ flexShrink: 0 }}><KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={12} keyword={kw} /></span>
+              <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ display: "flex", alignItems: "flex-start", gap: 5 }}>
+                <span style={{ flexShrink: 0, display: "inline-flex", filter: modeFilter ?? undefined, lineHeight: 0 }}><KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={12} keyword={kw} /></span>
                 <div>
-                  <div style={{ fontSize: 10, color: accentColor, fontWeight: 600 }}>{displayLabel}</div>
+                  <div style={{ fontSize: 10, color: modeColor ?? accentColor, fontWeight: 600 }}>{displayLabel}</div>
                   {desc && <div style={{ fontSize: 8, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
                 </div>
               </div>

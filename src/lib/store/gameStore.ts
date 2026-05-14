@@ -32,6 +32,7 @@ import {
   getSpellGraveyardTargets,
   getDiscardCost,
   getSacrificeCost,
+  getTapActivateTargets,
 } from "@/lib/game/engine";
 
 export interface SpellCastEvent {
@@ -101,7 +102,12 @@ interface GameStore {
   selectedCardInstanceId: string | null;
   selectedAttackerInstanceId: string | null;
   validTargets: string[];
-  targetingMode: "none" | "attack" | "spell" | "spell_multi" | "creature" | "graveyard" | "divination" | "selection" | "tactique_keywords" | "hero_power" | "cost_payment";
+  targetingMode: "none" | "attack" | "spell" | "spell_multi" | "creature" | "graveyard" | "divination" | "selection" | "tactique_keywords" | "hero_power" | "cost_payment" | "tap";
+  // Tap-activation targeting context — set when the player clicks Activer
+  // on a creature whose tap-mode keyword needs a target (e.g. Vampirisme).
+  // Both fields stay null outside of tap targeting.
+  pendingTapSourceId: string | null;
+  pendingTapInstanceIdx: number | null;
   // Alternative-cost payment state — set when the player tries to play a card
   // with a discard_cost or sacrifice_cost > 0. The player picks N cards from
   // hand and/or N creatures from board, then confirms via CostPaymentOverlay.
@@ -531,6 +537,8 @@ export const useGameStore = create<GameStore>((set, get) => {
   tactiqueAvailableKeywords: [],
   tactiqueMaxSelections: 0,
   pendingTargetInstanceId: null,
+  pendingTapSourceId: null,
+  pendingTapInstanceIdx: null,
   spellTargetSlots: [],
   currentTargetSlotIndex: 0,
   collectedTargetMap: {},
@@ -1159,6 +1167,8 @@ export const useGameStore = create<GameStore>((set, get) => {
         selectedDiscardIds: [],
         selectedSacrificeIds: [],
         pendingHeroPowerSelection: false,
+        pendingTapSourceId: null,
+        pendingTapInstanceIdx: null,
         damageEvents: [],
         lastSfxEvents: sfxEvents,
         effectLog: [...get().effectLog, ...logEntries].slice(-20),
@@ -1178,6 +1188,8 @@ export const useGameStore = create<GameStore>((set, get) => {
       selectedDiscardIds: [],
       selectedSacrificeIds: [],
       pendingHeroPowerSelection: false,
+      pendingTapSourceId: null,
+      pendingTapInstanceIdx: null,
     });
 
     // --- Phase timings ---
@@ -1973,6 +1985,15 @@ export const useGameStore = create<GameStore>((set, get) => {
         type: "hero_power",
         targetInstanceId: targetId,
       });
+    } else if (targetingMode === "tap") {
+      const { pendingTapSourceId, pendingTapInstanceIdx } = get();
+      if (pendingTapSourceId === null || pendingTapInstanceIdx === null) return null;
+      return get().dispatchAction({
+        type: "tap_activate",
+        sourceInstanceId: pendingTapSourceId,
+        instanceIdx: pendingTapInstanceIdx,
+        targetInstanceId: targetId,
+      });
     }
     return null;
   },
@@ -1988,6 +2009,8 @@ export const useGameStore = create<GameStore>((set, get) => {
       tactiqueAvailableKeywords: [],
       tactiqueMaxSelections: 0,
       pendingTargetInstanceId: null,
+      pendingTapSourceId: null,
+      pendingTapInstanceIdx: null,
       spellTargetSlots: [],
       currentTargetSlotIndex: 0,
       collectedTargetMap: {},
@@ -2298,11 +2321,33 @@ export const useGameStore = create<GameStore>((set, get) => {
   },
 
   activateTap: (sourceInstanceId, instanceIdx) => {
-    // Resolve a creature's tap-mode keyword instance. The engine performs
-    // all the eligibility checks (own turn, untapped, no summoning
-    // sickness, keyword present in tap mode) — the store only forwards
-    // the action through the standard dispatch pipeline so the animation
-    // / SFX / multiplayer broadcast paths reuse existing infrastructure.
+    // Resolve a creature's tap-mode keyword instance. If the keyword
+    // needs a target (e.g. Vampirisme → enemy creature), open the
+    // targeting picker; otherwise dispatch immediately. The engine
+    // re-checks eligibility (own turn, untapped, no summoning sickness,
+    // keyword present in tap mode) so race conditions can't slip a bad
+    // action through.
+    const { gameState } = get();
+    if (!gameState) return null;
+    const player = gameState.players[gameState.currentPlayerIndex];
+    const source = player.board.find(c => c.instanceId === sourceInstanceId);
+    if (!source) return null;
+    const instance = source.card.keyword_instances?.[instanceIdx];
+    if (!instance || instance.mode !== "tap") return null;
+
+    const targets = getTapActivateTargets(gameState, instance.id);
+    if (targets && targets.length > 0) {
+      set({
+        selectedCardInstanceId: null,
+        selectedAttackerInstanceId: null,
+        validTargets: targets,
+        targetingMode: "tap",
+        pendingTapSourceId: sourceInstanceId,
+        pendingTapInstanceIdx: instanceIdx,
+      });
+      return null;
+    }
+
     return get().dispatchAction({
       type: "tap_activate",
       sourceInstanceId,

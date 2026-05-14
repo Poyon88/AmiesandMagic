@@ -12,7 +12,7 @@ const isTouchDevice =
   ("ontouchstart" in window || navigator.maxTouchPoints > 0);
 
 interface TargetingArrowProps {
-  targetingMode: "none" | "attack" | "spell" | "spell_multi" | "creature" | "graveyard" | "divination" | "selection" | "tactique_keywords" | "hero_power" | "cost_payment";
+  targetingMode: "none" | "attack" | "spell" | "spell_multi" | "creature" | "graveyard" | "divination" | "selection" | "tactique_keywords" | "hero_power" | "cost_payment" | "tap";
   sourceInstanceId: string | null;
   hoveredTargetId: string | null;
 }
@@ -115,8 +115,13 @@ export default function TargetingArrow({
         `translate(${end.x}, ${end.y}) rotate(${angle})`
       );
 
-      // Update stroke color live (attack vs spell vs hero_power)
-      const color = modeRef.current === "attack" ? "#ef4444" : modeRef.current === "creature" ? "#2ecc71" : modeRef.current === "hero_power" ? "#eab308" : "#a855f7";
+      // Update stroke color live (attack vs spell vs hero_power vs tap)
+      const m = modeRef.current;
+      const color = m === "attack" ? "#ef4444"
+        : m === "creature" ? "#2ecc71"
+        : m === "hero_power" ? "#eab308"
+        : m === "tap" ? "#d4a800"
+        : "#a855f7";
       pathRef.current.setAttribute("stroke", color);
       glowPathRef.current.setAttribute("stroke", color);
       arrowheadRef.current.setAttribute("fill", color);
