@@ -81,6 +81,15 @@ export default function HandCard({
   // that the next tap dismisses the description instead of playing the
   // card — without affecting desktop hover→click flow.
   const detailsOpenedByTouch = useRef(false);
+  // Mobile double-tap-to-cast state for spells. First tap arms + shows the
+  // description; second tap (within ARM_TIMEOUT_MS) fires the cast. Drag
+  // and desktop click bypass this.
+  const armedForCast = useRef(false);
+  const armTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // True while the most recent gesture was a touch — set in handleTouchStart
+  // and read by onClick to know whether to apply the double-tap rule.
+  const lastTapWasTouch = useRef(false);
+  const ARM_TIMEOUT_MS = 5000;
 
   function handleDragStart(e: DragEvent<HTMLDivElement>) {
     if (!canPlay) {
@@ -112,19 +121,44 @@ export default function HandCard({
     : isCreature ? "#3d3d5c" : "#6c3483";
   const iconOverrides = useKeywordIconStore((st) => st.overrides);
 
+  const armForCast = () => {
+    armedForCast.current = true;
+    setShowDetails(true);
+    setIsHovered(true);
+    if (armTimer.current) clearTimeout(armTimer.current);
+    armTimer.current = setTimeout(() => {
+      armedForCast.current = false;
+      setShowDetails(false);
+      setIsHovered(false);
+    }, ARM_TIMEOUT_MS);
+  };
+
+  const disarmCast = () => {
+    armedForCast.current = false;
+    setShowDetails(false);
+    setIsHovered(false);
+    if (armTimer.current) clearTimeout(armTimer.current);
+  };
+
   const longPress = useLongPress(() => {
-    // On mobile, the card is never `isHovered` (no mouseenter), so
-    // `showOverlay = isZoomed && showDetails` would stay false even with
-    // showDetails on. Force isHovered alongside showDetails so the zoom +
-    // overlay actually render. The flag below makes the next tap dismiss
-    // the panel instead of firing the play/target action.
+    if (detailTimer.current) clearTimeout(detailTimer.current);
+    // Spells follow the double-tap UX on touch — long-press arms them so
+    // a single follow-up tap fires the cast (instead of dismissing the
+    // overlay like creatures do).
+    if (card.card_type === "spell") {
+      if (armedForCast.current) disarmCast();
+      else armForCast();
+      return;
+    }
+    // Creatures / tokens keep the original preview-then-dismiss flow.
+    // On mobile, the card is never `isHovered` (no mouseenter), so force
+    // isHovered alongside showDetails so the overlay actually renders.
     setShowDetails(prev => {
       const next = !prev;
       setIsHovered(next);
       detailsOpenedByTouch.current = next;
       return next;
     });
-    if (detailTimer.current) clearTimeout(detailTimer.current);
   });
 
   // ─── Touch drag (HTML5 drag is mouse-only) ───────────────────────────────
@@ -138,6 +172,7 @@ export default function HandCard({
 
   const handleTouchStart = (e: React.TouchEvent) => {
     longPress.handlers.onTouchStart(e);
+    lastTapWasTouch.current = true;
     if (!canPlay) return;
     const t = e.touches[0];
     if (!t) return;
@@ -158,6 +193,10 @@ export default function HandCard({
         setIsHovered(false);
         setShowDetails(false);
         detailsOpenedByTouch.current = false;
+        // Drag bypasses the double-tap rule — clear the arm so the drop
+        // fires its own cast without waiting for a second tap.
+        armedForCast.current = false;
+        if (armTimer.current) clearTimeout(armTimer.current);
       }
     }
     if (touchDraggingRef.current) {
@@ -246,10 +285,27 @@ export default function HandCard({
         onClick={() => {
           if (longPress.consume()) return;
           if (touchDraggingRef.current) return;
-          // If a long-press detail panel is currently shown (mobile flow),
-          // a tap on the card dismisses it instead of firing the primary
-          // action — so the user can preview a spell without immediately
-          // launching its targeting. Desktop hover→click still plays.
+          const isSpell = card.card_type === "spell";
+          const isFromTouch = lastTapWasTouch.current;
+          lastTapWasTouch.current = false;
+
+          // Mobile double-tap for spells: first tap arms + shows the
+          // description, second tap fires the cast. Desktop clicks (no
+          // preceding touchstart) and cost-payment / non-playable taps
+          // skip this entirely. Drag-to-board already cleared the arm
+          // in handleTouchMove, so dropped spells fire normally.
+          if (isSpell && isFromTouch && !isCostPaymentMode && canPlay) {
+            if (armedForCast.current) {
+              disarmCast();
+              onClick?.();
+              return;
+            }
+            armForCast();
+            return;
+          }
+
+          // Creatures (or non-touch spells): existing long-press preview
+          // flow — a tap dismisses the description instead of firing.
           if (detailsOpenedByTouch.current) {
             detailsOpenedByTouch.current = false;
             setShowDetails(false);
