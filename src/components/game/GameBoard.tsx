@@ -23,6 +23,7 @@ import TargetingArrow from "./TargetingArrow";
 import DamageOverlay from "./DamageOverlay";
 import SpellCastOverlay from "./SpellCastOverlay";
 import FireBreathOverlay from "./FireBreathOverlay";
+import CycleEternelOverlay from "./CycleEternelOverlay";
 import HeroPowerOverlay from "./HeroPowerOverlay";
 import GraveyardAffectOverlay from "./GraveyardAffectOverlay";
 import DiscardFromHandOverlay from "./DiscardFromHandOverlay";
@@ -68,6 +69,8 @@ export default function GameBoard({ onAction }: GameBoardProps) {
     clearSpellCastEvent,
     fireBreathEvent,
     clearFireBreathEvent,
+    cycleEternelEvent,
+    clearCycleEternelEvent,
     heroPowerCastEvent,
     clearHeroPowerCastEvent,
     graveyardAffectEvent,
@@ -582,7 +585,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
             <span className="text-lg">💀</span>
             <span className="text-[10px]">{opponent.graveyard.length}</span>
           </button>
-          <div className="flex flex-col items-center text-foreground/30">
+          <div data-cycle-deck="opponent" className="flex flex-col items-center text-foreground/30">
             <span className="text-lg">📚</span>
             <span className="text-[10px]">{opponent.deck.length}</span>
           </div>
@@ -595,7 +598,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
             mirroring the player's bottom-left arrangement. The opponent's
             hand-back stack moved to top-center to make room. */}
         {isMtgo && (
-          <div className="absolute top-[3%] right-[1.5%] z-30">
+          <div data-cycle-deck="opponent" className="absolute top-[3%] right-[1.5%] z-30">
             <ArenaDeckGraveyardCluster
               deckCount={opponent.deck.length}
               cardBackUrl={opponentCardBackUrl}
@@ -726,7 +729,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
             <span className="text-lg">💀</span>
             <span className="text-[10px]">{myPlayer.graveyard.length}</span>
           </button>
-          <div className="flex flex-col items-center text-foreground/30">
+          <div data-cycle-deck="my" className="flex flex-col items-center text-foreground/30">
             <span className="text-lg">📚</span>
             <span className="text-[10px]">{myPlayer.deck.length}</span>
           </div>
@@ -735,7 +738,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
 
         {/* ============= MTGO PLAYER DECK + GRAVEYARD CLUSTER (bottom-left) ============= */}
         {isMtgo && (
-          <div className="absolute bottom-[3%] left-[1.5%] z-40">
+          <div data-cycle-deck="my" className="absolute bottom-[3%] left-[1.5%] z-40">
             <ArenaDeckGraveyardCluster
               deckCount={myPlayer.deck.length}
               cardBackUrl={myCardBackUrl}
@@ -997,6 +1000,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
       <DamageOverlay events={damageEvents} />
       <SpellCastOverlay event={spellCastEvent} onComplete={clearSpellCastEvent} />
       <FireBreathOverlay event={fireBreathEvent} onComplete={clearFireBreathEvent} />
+      <CycleEternelOverlay event={cycleEternelEvent} onComplete={clearCycleEternelEvent} />
       <HeroPowerOverlay event={heroPowerCastEvent} onComplete={clearHeroPowerCastEvent} />
       <GraveyardAffectOverlay event={graveyardAffectEvent} onComplete={clearGraveyardAffectEvent} />
       <DiscardFromHandOverlay event={discardFromHandEvent} onComplete={clearDiscardFromHandEvent} />

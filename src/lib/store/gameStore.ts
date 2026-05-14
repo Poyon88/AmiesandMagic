@@ -46,6 +46,18 @@ export interface FireBreathEvent {
   timestamp: number;
 }
 
+// Cycle éternel — one entry per dead creature carrying the keyword. The
+// overlay shows a ghostly copy of each card flying back into its owner's
+// deck (data-cycle-deck="my" or "opponent").
+export interface CycleEternelEntry {
+  card: Card;
+  ownerIsLocal: boolean;
+}
+export interface CycleEternelEvent {
+  entries: CycleEternelEntry[];
+  timestamp: number;
+}
+
 // Tempête X — lightning rain animation. Driven by the per-target damage
 // events the engine emits during the resolved action; we collect those
 // here so the overlay can stagger one bolt per drop.
@@ -113,6 +125,7 @@ interface GameStore {
   damageEvents: DamageEvent[];
   spellCastEvent: SpellCastEvent | null;
   fireBreathEvent: FireBreathEvent | null;
+  cycleEternelEvent: CycleEternelEvent | null;
   tempeteEvent: TempeteEvent | null;
   heroPowerCastEvent: HeroPowerCastEvent | null;
   graveyardAffectEvent: GraveyardAffectEvent | null;
@@ -178,6 +191,7 @@ interface GameStore {
   clearDamageEvents: () => void;
   clearSpellCastEvent: () => void;
   clearFireBreathEvent: () => void;
+  clearCycleEternelEvent: () => void;
   clearTempeteEvent: () => void;
   clearHeroPowerCastEvent: () => void;
   clearGraveyardAffectEvent: () => void;
@@ -484,6 +498,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   damageEvents: [],
   spellCastEvent: null,
   fireBreathEvent: null,
+  cycleEternelEvent: null,
   tempeteEvent: null,
   heroPowerCastEvent: null,
   graveyardAffectEvent: null,
@@ -689,17 +704,36 @@ export const useGameStore = create<GameStore>((set, get) => ({
       }
     }
 
-    // Find creatures that died (were on old board but not on new board)
+    // Find creatures that died (were on old board but not on new board).
+    // Track owner index so cycle_eternel can fly the copy back to the right
+    // deck (data-cycle-deck="my" vs "opponent").
     const deadCreatures: CardInstance[] = [];
+    const deathOwnerIdx = new Map<string, number>();
     for (let i = 0; i < 2; i++) {
       const oldBoard = gameState.players[i].board;
       const newBoard = newState.players[i].board;
       for (const oldC of oldBoard) {
         if (!newBoard.find((c) => c.instanceId === oldC.instanceId)) {
           deadCreatures.push(oldC);
+          deathOwnerIdx.set(oldC.instanceId, i);
         }
       }
     }
+
+    // Cycle éternel — one entry per dead creature carrying the keyword. The
+    // engine has already inserted a copy at a random position in the owner's
+    // deck; the overlay just visualises the return trip.
+    const localIdx = newState.players.findIndex((p) => p.id === localPlayerId);
+    const cycleEntries: CycleEternelEntry[] = [];
+    for (const dead of deadCreatures) {
+      if (dead.card.keywords.includes("cycle_eternel" as import("@/lib/game/types").Keyword)) {
+        const ownerIdx = deathOwnerIdx.get(dead.instanceId) ?? 0;
+        cycleEntries.push({ card: dead.card, ownerIsLocal: ownerIdx === localIdx });
+      }
+    }
+    const cycleEvent: CycleEternelEvent | null = cycleEntries.length > 0
+      ? { entries: cycleEntries, timestamp: Date.now() }
+      : null;
 
     // Build SFX events
     const sfxEvents: { type: string; cardSfxUrl?: string }[] = [];
@@ -1157,6 +1191,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       set({
         gameState: preDrawState,
         ...(staggeredTriggerEvents.length > 0 ? { damageEvents: staggeredTriggerEvents } : {}),
+        ...(cycleEvent ? { cycleEternelEvent: cycleEvent } : {}),
       });
       playSfxBatch(summonSfx);
     };
@@ -1185,6 +1220,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       set({
         gameState: preDrawState,
         ...(staggeredTriggerEvents.length > 0 ? { damageEvents: staggeredTriggerEvents } : {}),
+        ...(cycleEvent ? { cycleEternelEvent: cycleEvent } : {}),
       });
     };
 
@@ -1829,6 +1865,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   clearFireBreathEvent: () => {
     set({ fireBreathEvent: null });
+  },
+
+  clearCycleEternelEvent: () => {
+    set({ cycleEternelEvent: null });
   },
 
   clearTempeteEvent: () => {
