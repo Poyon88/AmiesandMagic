@@ -1,11 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import GoldBalance from "@/components/shared/GoldBalance";
-import NotificationBell from "@/components/shared/NotificationBell";
-import SettingsModal from "@/components/shared/SettingsModal";
+import HomeHeader from "@/components/home/HomeHeader";
+import MenuTile from "@/components/home/MenuTile";
+import { useStoredLocale } from "@/lib/i18n/useLocale";
+import { homeDict } from "@/lib/i18n/homeDict";
 
 interface MainMenuProps {
   username: string;
@@ -13,108 +11,109 @@ interface MainMenuProps {
 }
 
 export default function MainMenu({ username, goldBalance }: MainMenuProps) {
-  const router = useRouter();
-  const supabase = createClient();
-  const [settingsOpen, setSettingsOpen] = useState(false);
-
-  async function handleLogout() {
-    await supabase.auth.signOut();
-    router.push("/login");
-    router.refresh();
-  }
-
-  const menuItems = [
-    {
-      label: "Play",
-      description: "Find an opponent and battle",
-      href: "/play",
-      color: "bg-accent hover:bg-accent/80",
-    },
-    {
-      label: "My Decks",
-      description: "Build and manage your decks",
-      href: "/decks",
-      color: "bg-primary hover:bg-primary-dark",
-    },
-    {
-      label: "Collection",
-      description: "Browse all available cards",
-      href: "/collection",
-      color: "bg-mana-blue hover:bg-mana-blue/80",
-    },
-    {
-      label: "Mes Plateaux",
-      description: "Plateaux de jeu possédés",
-      href: "/boards",
-      color: "bg-emerald-600 hover:bg-emerald-500",
-    },
-    {
-      label: "Mes Dos",
-      description: "Dos de cartes possédés",
-      href: "/card-backs",
-      color: "bg-purple-600 hover:bg-purple-500",
-    },
-    {
-      label: "Enchères",
-      description: "Achetez et vendez des cartes",
-      href: "/auction",
-      color: "bg-amber-600 hover:bg-amber-500",
-    },
-  ];
+  const [locale] = useStoredLocale();
+  const t = homeDict[locale];
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background">
-      {/* Header */}
-      <div className="absolute top-6 right-6 flex items-center gap-4">
-        <span className="text-foreground/60 text-sm">
-          Welcome, <span className="text-primary font-medium">{username}</span>
-        </span>
-        <div className="px-3 py-1 bg-secondary border border-card-border rounded-lg">
-          <GoldBalance amount={goldBalance} size="sm" />
-        </div>
-        <NotificationBell />
-        <button
-          onClick={() => setSettingsOpen(true)}
-          className="px-3 py-1.5 text-sm bg-secondary border border-card-border rounded-lg text-foreground/60 hover:text-foreground hover:border-primary/40 transition-colors"
-          title="Réglages"
-        >
-          ⚙
-        </button>
-        <button
-          onClick={handleLogout}
-          className="px-4 py-1.5 text-sm bg-secondary border border-card-border rounded-lg text-foreground/60 hover:text-foreground hover:border-primary/40 transition-colors"
-        >
-          Logout
-        </button>
-      </div>
+    <div className="min-h-screen bg-[#0a0a18] text-[#e0e0e0]">
+      <HomeHeader username={username} goldBalance={goldBalance} />
 
-      {/* Title */}
-      <div className="text-center mb-12">
-        <h1 className="text-5xl font-bold text-primary mb-3">
-          Armies & Magic
-        </h1>
-        <p className="text-foreground/50 text-lg">
-          A fantasy collectible card game
-        </p>
-      </div>
-
-      {/* Menu buttons */}
-      <div className="flex flex-col gap-4 w-full max-w-sm">
-        {menuItems.map((item) => (
-          <button
-            key={item.label}
-            onClick={() => router.push(item.href)}
-            className={`${item.color} text-white py-4 px-6 rounded-xl font-bold text-lg transition-all transform hover:scale-[1.02] shadow-lg`}
+      <main
+        id="main-content"
+        className="relative px-4 md:px-10 pt-28 md:pt-32 pb-16 min-h-screen"
+        style={{
+          background:
+            "radial-gradient(ellipse at 50% 35%, rgba(21,21,51,0.95) 0%, #0a0a18 75%)",
+        }}
+      >
+        {/* Title */}
+        <div className="text-center mb-10 md:mb-14">
+          <h1
+            className="font-[family-name:var(--font-cinzel),serif] font-bold text-[#c8a84e]"
+            style={{
+              fontSize: "clamp(36px, 6vw, 64px)",
+              letterSpacing: "0.06em",
+              textShadow: "0 0 32px rgba(200, 168, 78, 0.35)",
+            }}
           >
-            <div>{item.label}</div>
-            <div className="text-xs font-normal opacity-80 mt-0.5">
-              {item.description}
-            </div>
-          </button>
-        ))}
-      </div>
+            Armies &amp; Magic
+          </h1>
+          <p
+            className="font-[family-name:var(--font-crimson),serif] italic text-[#e0e0e0]/65 mt-3"
+            style={{ fontSize: "clamp(15px, 1.8vw, 20px)" }}
+          >
+            {t.home_subtitle}
+          </p>
+          <div
+            className="mx-auto mt-5 h-px w-32"
+            style={{ background: "linear-gradient(90deg, transparent, #c8a84e, transparent)" }}
+            aria-hidden="true"
+          />
+        </div>
 
-      <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
+        {/* 2×2 grid (1 column on small mobile) */}
+        <nav aria-label="Sections principales" className="max-w-5xl mx-auto">
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-5 md:gap-7">
+            <li>
+              <MenuTile
+                href="/play"
+                accent="play"
+                label={t.play_label}
+                description={t.play_desc}
+                glyph={
+                  <svg width="56" height="56" viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M32 4 L32 44 M22 36 L42 36 M28 48 L36 48 L36 56 L28 56 Z M32 4 L26 12 M32 4 L38 12" />
+                  </svg>
+                }
+              />
+            </li>
+            <li>
+              <MenuTile
+                href="/auction"
+                accent="market"
+                label={t.market_label}
+                description={t.market_desc}
+                glyph={
+                  <svg width="56" height="56" viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 22 L50 22 L48 50 L16 50 Z" />
+                    <path d="M22 22 V14 Q22 8 32 8 Q42 8 42 14 V22" />
+                    <circle cx="24" cy="32" r="2" />
+                    <circle cx="40" cy="32" r="2" />
+                  </svg>
+                }
+              />
+            </li>
+            <li>
+              <MenuTile
+                href="/collection-hub"
+                accent="collection"
+                label={t.collection_label}
+                description={t.collection_desc}
+                glyph={
+                  <svg width="56" height="56" viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="14" y="10" width="22" height="32" rx="2" transform="rotate(-10 25 26)" />
+                    <rect x="28" y="18" width="22" height="32" rx="2" transform="rotate(8 39 34)" />
+                  </svg>
+                }
+              />
+            </li>
+            <li>
+              <MenuTile
+                href="/decks"
+                accent="decks"
+                label={t.decks_label}
+                description={t.decks_desc}
+                glyph={
+                  <svg width="56" height="56" viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="18" y="12" width="28" height="40" rx="3" />
+                    <path d="M24 22 H40 M24 30 H40 M24 38 H34" />
+                  </svg>
+                }
+              />
+            </li>
+          </ul>
+        </nav>
+      </main>
     </div>
   );
 }
