@@ -1402,6 +1402,7 @@ export default function CardForge() {
     "Suprématie": new Set<"death" | "tap">(["death"]),
     "Ombre du passé": new Set<"death" | "tap">(["death"]),
     "Savant": new Set<"death" | "tap">(["death"]),
+    "Combustion": new Set<"death" | "tap">(["death", "tap"]),
   };
 
   const availableManualKeywords = Object.entries(KEYWORDS)

@@ -69,14 +69,7 @@ export default function MainMenu({ username, goldBalance }: MainMenuProps) {
                 accent="market"
                 label={t.market_label}
                 description={t.market_desc}
-                glyph={
-                  <svg width="56" height="56" viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M14 22 L50 22 L48 50 L16 50 Z" />
-                    <path d="M22 22 V14 Q22 8 32 8 Q42 8 42 14 V22" />
-                    <circle cx="24" cy="32" r="2" />
-                    <circle cx="40" cy="32" r="2" />
-                  </svg>
-                }
+                bgImage="/images/home/marche-bg.png"
               />
             </li>
             <li>
@@ -85,12 +78,7 @@ export default function MainMenu({ username, goldBalance }: MainMenuProps) {
                 accent="collection"
                 label={t.collection_label}
                 description={t.collection_desc}
-                glyph={
-                  <svg width="56" height="56" viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="14" y="10" width="22" height="32" rx="2" transform="rotate(-10 25 26)" />
-                    <rect x="28" y="18" width="22" height="32" rx="2" transform="rotate(8 39 34)" />
-                  </svg>
-                }
+                bgImage="/images/home/collection-bg-v2.png"
               />
             </li>
             <li>
@@ -99,12 +87,7 @@ export default function MainMenu({ username, goldBalance }: MainMenuProps) {
                 accent="decks"
                 label={t.decks_label}
                 description={t.decks_desc}
-                glyph={
-                  <svg width="56" height="56" viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="18" y="12" width="28" height="40" rx="3" />
-                    <path d="M24 22 H40 M24 30 H40 M24 38 H34" />
-                  </svg>
-                }
+                bgImage="/images/home/decks-bg.png"
               />
             </li>
           </ul>

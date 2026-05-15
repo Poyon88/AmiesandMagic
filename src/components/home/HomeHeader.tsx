@@ -79,10 +79,10 @@ export default function HomeHeader({ username, goldBalance, backHref, backLabel 
             </Link>
           ) : (
             <Link
-              href="/"
+              href="/landing"
               className="font-[family-name:var(--font-cinzel),serif] text-base md:text-xl font-bold tracking-wider text-[#c8a84e] truncate focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c8a84e] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a18] rounded"
               style={{ textShadow: "0 0 18px rgba(200, 168, 78, 0.3)" }}
-              aria-label="Armies & Magic — Accueil"
+              aria-label="Armies & Magic — Landing page"
             >
               Armies &amp; Magic
             </Link>

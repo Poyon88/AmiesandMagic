@@ -297,7 +297,10 @@ function resolveCreatureKeywordAsHeroPower(
 }
 
 function maxAttacksFor(ci: CardInstance): number {
-  if (hasKw(ci, "celerite") || hasKw(ci, "double_attaque")) return 2;
+  // Double Attaque inflicts damage twice WITHIN a single combat
+  // (first-strike + regular step). It does NOT grant an extra attack
+  // per turn — only Célérité does.
+  if (hasKw(ci, "celerite")) return 2;
   return 1;
 }
 
@@ -1169,8 +1172,10 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       }
     }
 
-    // Combustion: défaussez une carte de votre main, piochez deux
-    if (hasKw(cardInstance, "combustion") && player.hand.length > 0) {
+    // Combustion: défaussez une carte de votre main, piochez deux.
+    // Gated on the play-mode instance so a Combustion entry living
+    // only in tap/death mode doesn't auto-fire on summon.
+    if (hasKwOnPlay(cardInstance, "combustion") && player.hand.length > 0) {
       const discardIdx = Math.floor(rng() * player.hand.length);
       const discarded = player.hand.splice(discardIdx, 1)[0];
       player.graveyard.push(discarded);
@@ -1870,6 +1875,16 @@ function resolveSpellKeywords(
         }
         break;
       }
+      case "poison": {
+        // Spell-side Poison: tags the targeted enemy creature as
+        // poisoned. The end-of-turn tick (see startTurn) deals the
+        // recurring 1 HP damage, just like the creature-side keyword.
+        if (targetId) {
+          const target = findCreatureOnBoard(ctx.opponent, targetId);
+          if (target) target.isPoisoned = true;
+        }
+        break;
+      }
       case "execution": {
         if (targetId) {
           const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
@@ -2525,10 +2540,16 @@ export function attack(state: GameState, action: AttackAction): GameState {
     }
 
     dealDamageToHero(opponent.hero, attackPower);
+    // Double Attaque: second hit (mirrors the creature combat path).
+    if (hasKw(attacker, "double_attaque")) {
+      dealDamageToHero(opponent.hero, attackPower);
+    }
 
-    // Drain de vie: heal own hero
+    // Drain de vie: heal own hero. Doubled when paired with Double
+    // Attaque since two hits land.
     if (hasKw(attacker, "drain_de_vie")) {
-      player.hero.hp += attackPower;
+      const drained = hasKw(attacker, "double_attaque") ? attackPower * 2 : attackPower;
+      player.hero.hp += drained;
     }
 
     // Augure: piochez une carte quand dégâts au héros adverse
@@ -2563,17 +2584,15 @@ export function attack(state: GameState, action: AttackAction): GameState {
 
     const attackerHasPrecision = hasKw(attacker, "precision");
 
-    // Double Attaque: inflige 2x ATK, 1re fois en Première Frappe
-    // Première Frappe: attacker deals damage first
-    const hasFirstStrike = hasKw(attacker, "premiere_frappe") || hasKw(attacker, "double_attaque");
+    // Première Frappe: attacker deals damage first; target only
+    // retaliates if it survives. Double Attaque is NOT first-strike
+    // anymore — it just doubles the attacker's damage in normal
+    // simultaneous-exchange timing (the target still gets to riposte).
+    const hasFirstStrike = hasKw(attacker, "premiere_frappe");
+    const hasDoubleAttack = hasKw(attacker, "double_attaque");
 
     if (hasFirstStrike) {
       dealDamageToCreature(target, attackPower, attackerHasPrecision);
-
-      // Double Attaque: second hit
-      if (hasKw(attacker, "double_attaque") && target.currentHealth > 0) {
-        dealDamageToCreature(target, attackPower, attackerHasPrecision);
-      }
 
       // Apply poison from attacker
       if (hasKw(attacker, "poison") && target.currentHealth > 0) {
@@ -2595,8 +2614,10 @@ export function attack(state: GameState, action: AttackAction): GameState {
         }
       }
     } else {
-      // Simultaneous damage
-      dealDamageToCreature(target, attackPower, attackerHasPrecision);
+      // Simultaneous damage. Double Attaque doubles the attacker's
+      // damage; the retaliation is unchanged.
+      const finalAttackPower = hasDoubleAttack ? attackPower * 2 : attackPower;
+      dealDamageToCreature(target, finalAttackPower, attackerHasPrecision);
       dealDamageToCreature(attacker, target.currentAttack, hasKw(target, "precision"));
 
       // Poison application
@@ -3016,6 +3037,19 @@ function resolveCuratedKeywordEffect(
     case "prescience": {
       // Tap-mode only per plan — draw up to X cards.
       for (let i = 0; i < x; i++) drawCard(owner);
+      break;
+    }
+    case "combustion": {
+      // Discard one random card from the owner's hand and draw two.
+      // Mirrors the on-play effect; safe to fire in death mode too
+      // since the owner is still around to draw.
+      if (owner.hand.length > 0) {
+        const discardIdx = Math.floor(rng() * owner.hand.length);
+        const discarded = owner.hand.splice(discardIdx, 1)[0];
+        owner.graveyard.push(discarded);
+      }
+      drawCard(owner);
+      drawCard(owner);
       break;
     }
     // TODO: convocations_multiples, suprematie, ombre_du_passe, savant

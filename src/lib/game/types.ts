@@ -107,7 +107,8 @@ export type SpellKeywordId =
   | "douleur"
   | "rassemblement"
   | "concentration"
-  | "selection_magique";
+  | "selection_magique"
+  | "poison";
 
 /** Trigger mode for a creature keyword. Undefined = on-play (default,
  *  existing behaviour). "death" = on-death rattle. "tap" = activated by

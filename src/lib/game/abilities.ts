@@ -150,8 +150,9 @@ export const ABILITIES: Record<string, AbilityDef> = {
   poison: {
     id: "poison", label: "Poison", symbol: "☠️",
     desc: "Les unités blessées perdent 1 PV par tour.",
-    applicable_to: ["creature"],
+    applicable_to: ["creature", "spell"],
     creature: { cost: 9, costPerX: 0, se: 2.0, minTier: 1, scalable: false, zone: "Terrain" },
+    spell: { params: [], needsTarget: true, targetType: "enemy_creature" },
   },
   celerite: {
     id: "celerite", label: "Célérité", symbol: "💫",
@@ -223,7 +224,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   double_attaque: {
     id: "double_attaque", label: "Double Attaque", symbol: "⚔️",
-    desc: "En phase offensive uniquement : inflige deux fois son ATK, dont la première fois en Première Frappe.",
+    desc: "En phase offensive uniquement : inflige deux fois son ATK lors de l'attaque. L'unité ciblée riposte normalement.",
     applicable_to: ["creature"],
     creature: { cost: 16, costPerX: 0, se: 3.5, minTier: 2, scalable: false, zone: "Terrain" },
   },
