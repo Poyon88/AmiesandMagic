@@ -194,6 +194,188 @@ export default function CardForge() {
     { id: "haunted",     label: "Cimetière hanté",      hints: "haunted graveyard, mist, crooked headstones, ghostlight, violet and grey" },
     { id: "crystal",     label: "Caverne cristalline",  hints: "crystal cavern, prismatic shards, refracted light, cyan and lilac" },
     { id: "volcanic",    label: "Forge volcanique",     hints: "volcanic forge, obsidian, lava rivers, red and black palette" },
+    { id: "jungle_oubliee", label: "Jungle oubliée", hints: "overgrown forgotten jungle, toppled stone idols, hanging vines, humid mist, emerald and jade palette" },
+    { id: "banquise", label: "Banquise éternelle", hints: "endless ice floe, glacial fissures, frost mist, white and pale blue palette" },
+    { id: "marais_pestilentiel", label: "Marais pestilentiel", hints: "fetid swamp, glowing pustules, hanging moss, bubbling waters, sickly green palette" },
+    { id: "desert_dunes", label: "Désert des dunes", hints: "endless dune desert, wind-carved sands, bleached bones, amber and gold palette" },
+    { id: "port_pirate", label: "Port pirate", hints: "rowdy pirate port, moored ships, swinging lanterns, salt-soaked planks, rum amber palette" },
+    { id: "cote_maudite", label: "Côte maudite", hints: "cursed coast, broken ships, twisted driftwood, violet sky, brine and rot palette" },
+    { id: "royaume_fongique", label: "Royaume fongique", hints: "fungal underground realm, towering mushrooms, bioluminescent spores, teal and magenta palette" },
+    { id: "terres_corrompues", label: "Terres corrompues", hints: "corrupted blighted lands, cracked earth, blackened trees, sulphurous haze, purple and ash palette" },
+    { id: "sanctuaire_solaire", label: "Sanctuaire solaire", hints: "solar sanctuary, golden columns, sunbeams, blooming gardens, ivory and gold palette" },
+    { id: "iles_flottantes", label: "Îles flottantes", hints: "floating islands, suspended waterfalls, drifting clouds, sky blue and ivory palette" },
+    { id: "labyrinthe_souterrain", label: "Labyrinthe souterrain", hints: "subterranean labyrinth, branching tunnels, torch sconces, stone walls, amber and shadow palette" },
+    { id: "temple_oublie", label: "Temple oublié", hints: "forgotten jungle temple, crumbling glyphs, vines, dust motes, ochre and moss palette" },
+    { id: "vallee_titans", label: "Vallée des titans", hints: "valley of titans, colossal weathered statues, vast plains, dusk light, slate and bronze palette" },
+    { id: "necropole_antique", label: "Nécropole antique", hints: "ancient necropolis, ranks of tombs, urns, dust, bone and indigo palette" },
+    { id: "foret_maudite", label: "Forêt maudite", hints: "cursed forest, twisted black trees, red eyes in shadow, crimson mist palette" },
+    { id: "canyon_tempetes", label: "Canyon des tempêtes", hints: "storm canyon, lightning above sheer cliffs, swirling rain, slate and electric blue palette" },
+    { id: "oasis_sacree", label: "Oasis sacrée", hints: "sacred oasis, palm trees, mirror pool, golden hour, turquoise and amber palette" },
+    { id: "plateau_dragons", label: "Plateau des dragons", hints: "dragon plateau, scorched cliffs, scattered scales, red sky, ember and ash palette" },
+    { id: "catacombes_interdites", label: "Catacombes interdites", hints: "forbidden catacombs, bone-lined arches, dripping candles, sepia and bone palette" },
+    { id: "bibliotheque_infinie", label: "Bibliothèque infinie", hints: "infinite library, towering bookshelves, floating tomes, golden dust, sepia and gold palette" },
+    { id: "royaume_mecanique", label: "Royaume mécanique", hints: "clockwork mechanical realm, brass gears, steam, riveted plates, copper and verdigris palette" },
+    { id: "arene_imperiale", label: "Arène impériale", hints: "imperial arena, tiered stone seats, banners, sand pit, sunlit terracotta palette" },
+    { id: "falaises_obsidienne", label: "Falaises d'obsidienne", hints: "obsidian cliffs, glassy black stone, crashing waves, stormlight, jet and silver palette" },
+    { id: "temple_englouti", label: "Temple englouti", hints: "submerged temple, refracted shafts of light, coral, drifting silt, aquamarine and teal palette" },
+    { id: "palais_lunaire", label: "Palais lunaire", hints: "lunar palace, silvered arches, moonlight, reflecting pools, ivory and indigo palette" },
+    { id: "steppes_sauvages", label: "Steppes sauvages", hints: "wild steppes, tall grass, bone totems, vast horizon, ochre and sage palette" },
+    { id: "village_halfelin", label: "Village halfelin", hints: "halfling village, round green doors, smoking chimneys, vegetable patches, warm earth palette" },
+    { id: "tour_archimage", label: "Tour de l'archimage", hints: "archmage's tower interior, arcane diagrams, hovering crystals, candle haze, violet and gold palette" },
+    { id: "crypte_royale", label: "Crypte royale", hints: "royal crypt, ornate sarcophagi, gilded reliefs, candle smoke, marble and gold palette" },
+    { id: "decharge_gobeline", label: "Décharge gobeline", hints: "goblin junkyard, salvaged scrap towers, smoke plumes, garish banners, rust and bile palette" },
+    { id: "royaume_ombres", label: "Royaume des ombres", hints: "shadow realm, indistinct figures, charcoal mist, faint amethyst glow, ink and violet palette" },
+    { id: "fjord_nordique", label: "Fjord nordique", hints: "nordic fjord, sheer cliffs, longships, aurora glow, slate and aurora-green palette" },
+    { id: "vallee_lumineuse", label: "Vallée lumineuse", hints: "radiant valley, glowing flowers, drifting motes, sunrise warmth, gold and rose palette" },
+    { id: "cite_engloutie", label: "Cité engloutie", hints: "drowned city, half-submerged towers, sea grass, fish schools, teal and weathered stone palette" },
+    { id: "colisee_oublie", label: "Colisée oublié", hints: "forgotten colosseum, cracked tiers, ivy, broken statues, terracotta and moss palette" },
+    { id: "mines_abandonnees", label: "Mines abandonnées", hints: "abandoned mines, rotting beams, ore carts, lantern haze, sepia and ember palette" },
+    { id: "refuge_nomades", label: "Refuge des nomades", hints: "nomad refuge, painted tents, smoke, woven rugs, ochre and crimson palette" },
+    { id: "forteresse_infernale", label: "Forteresse infernale", hints: "infernal fortress, basalt walls, lava moats, brimstone glow, ember and pitch palette" },
+    { id: "jardins_suspendus", label: "Jardins suspendus", hints: "hanging gardens, terraced waterfalls, lush vines, golden hour, jade and ivory palette" },
+    { id: "portail_dimensionnel", label: "Portail dimensionnel", hints: "dimensional portal, swirling arcane vortex, levitating runes, prismatic glow, violet and cyan palette" },
+    { id: "marais_brumeux", label: "Marais brumeux", hints: "misty marsh, gnarled willows, will-o-wisps, still water, sage and pearl palette" },
+    { id: "tour_celeste", label: "Tour céleste", hints: "celestial spire, marble battlements above clouds, golden light, ivory and azure palette" },
+    { id: "plaine_anciens", label: "Plaine des anciens", hints: "plain of the ancients, weathered monoliths, tall grass, dusk wind, slate and amber palette" },
+    { id: "rivage_tempetueux", label: "Rivage tempétueux", hints: "storm-lashed shore, jagged rocks, breaking waves, dark sky, slate and foam palette" },
+    { id: "tombe_rois", label: "Tombe des rois", hints: "tomb of kings, ornate sarcophagi, regal statues, candle glow, gold and sable palette" },
+    { id: "citadelle_noire", label: "Citadelle noire", hints: "black citadel, sharp basalt spires, banners, low sky, jet and crimson palette" },
+    { id: "temple_etoiles", label: "Temple des étoiles", hints: "star temple, constellation reliefs, starlit dome, marble floor, navy and gold palette" },
+    { id: "grotte_runes", label: "Grotte aux runes", hints: "rune-marked grotto, glowing carvings, dripping water, deep blue palette" },
+    { id: "defile_geants", label: "Défilé des géants", hints: "giants' mountain pass, cyclopean ruins, scattered weapons, brisk wind, slate and bronze palette" },
+    { id: "foret_emeraude", label: "Forêt d'émeraude", hints: "emerald forest, jade leaves, dappled sun, crystal streams, vivid green palette" },
+    { id: "pics_enneiges", label: "Pics enneigés", hints: "snow-capped peaks, biting wind, ice cornices, cold light, white and steel palette" },
+    { id: "royaume_cendres", label: "Royaume des cendres", hints: "kingdom of ash, drifting embers, charred ruins, hazy red sun, ash and ember palette" },
+    { id: "campement_tribal", label: "Campement tribal", hints: "tribal encampment, painted shields, totems, bonfire, earth and crimson palette" },
+    { id: "cathedrale_sacree", label: "Cathédrale sacrée", hints: "sacred cathedral, soaring stained glass, sunbeams, polished marble, ivory and gold palette" },
+    { id: "ruines_elfiques", label: "Ruines elfiques", hints: "elven ruins, slender arches, moss-grown statues, soft light, mint and silver palette" },
+    { id: "bastion_imperial", label: "Bastion impérial", hints: "imperial bastion, gilded walls, banners, marching guards, scarlet and gold palette" },
+    { id: "archipel_perdu", label: "Archipel perdu", hints: "lost archipelago, scattered jungle isles, calm sea, drifting clouds, turquoise and emerald palette" },
+    { id: "vallee_volcanique", label: "Vallée volcanique", hints: "volcanic valley, lava flows, charred stone, smoke pillars, ember and pitch palette" },
+    { id: "prison_oubliee", label: "Prison oubliée", hints: "forgotten prison, rusted cages, broken chains, dim torchlight, iron and rust palette" },
+    { id: "noyau_cristallin", label: "Noyau cristallin", hints: "crystalline core, hovering shards, prismatic refractions, hum of energy, violet and cyan palette" },
+    { id: "observatoire_astral", label: "Observatoire astral", hints: "astral observatory, telescope, star charts, glowing orrery, indigo and silver palette" },
+    { id: "temple_chaos", label: "Temple du chaos", hints: "chaos temple, fractured masonry, twisting glyphs, lurid glow, magenta and obsidian palette" },
+    { id: "falaises_gelees", label: "Falaises gelées", hints: "frozen cliffs, hanging icicles, raw wind, dim sun, pale blue and steel palette" },
+    { id: "camp_retranche", label: "Camp retranché", hints: "entrenched camp, palisades, banners, smoke, watchfires, earth and steel palette" },
+    { id: "marecages_noirs", label: "Marécages noirs", hints: "black swamp, oily water, dead trees, miasma, jet and sickly green palette" },
+    { id: "royaume_onirique", label: "Royaume onirique", hints: "dream realm, melting architecture, pastel sky, drifting petals, lavender and rose palette" },
+    { id: "cite_automates", label: "Cité des automates", hints: "city of automatons, brass figures, steam vents, gear streets, copper and verdigris palette" },
+    { id: "pont_damnes", label: "Pont des damnés", hints: "bridge of the damned, chained skeletons, ghostlight, churning mist, ash and violet palette" },
+    { id: "jardin_spectral", label: "Jardin spectral", hints: "spectral garden, ghost flowers, drifting souls, lunar glow, pearl and indigo palette" },
+    { id: "manoir_hante", label: "Manoir hanté", hints: "haunted manor, sagging chandeliers, dust sheets, flickering candles, sepia and grey palette" },
+    { id: "desert_verre", label: "Désert de verre", hints: "glass desert, fused obsidian dunes, harsh sun, mirage shimmer, jet and amber palette" },
+    { id: "ruche_souterraine", label: "Ruche souterraine", hints: "subterranean hive, layered honeycomb chambers, glowing larvae, sickly amber palette" },
+    { id: "sanctuaire_draconique", label: "Sanctuaire draconique", hints: "draconic sanctuary, scaled reliefs, ember pits, hoarded gold, ember and brass palette" },
+    { id: "tour_brisee", label: "Tour brisée", hints: "shattered tower, exposed staircases, broken stone, sky beyond, slate and gold palette" },
+    { id: "palais_mirages", label: "Palais des mirages", hints: "mirage palace, shimmering arches, blurring sands, illusory pools, gold and ivory palette" },
+    { id: "crypte_gelee", label: "Crypte gelée", hints: "icebound crypt, frozen sarcophagi, frost runes, blue glow, ice and indigo palette" },
+    { id: "champs_morts", label: "Champs des morts", hints: "fields of the dead, half-buried weapons, crows, grey sky, ash and rust palette" },
+    { id: "foret_rouge", label: "Forêt rouge", hints: "crimson forest, red-leaved trees, falling petals, low sun, scarlet and shadow palette" },
+    { id: "bastion_tempetes", label: "Bastion des tempêtes", hints: "storm bastion, lightning-struck towers, rain-slick stone, banners snapping, slate and azure palette" },
+    { id: "temple_serpent", label: "Temple du serpent", hints: "serpent temple, coiled stone effigies, jungle vines, dim torchlight, jade and gold palette" },
+    { id: "gorges_infernales", label: "Gorges infernales", hints: "infernal gorges, lava cataracts, basalt cliffs, sulphur haze, ember and pitch palette" },
+    { id: "bibliotheque_interdite", label: "Bibliothèque interdite", hints: "forbidden library, chained tomes, candle wax, watchful gargoyles, sepia and crimson palette" },
+    { id: "ville_flottante", label: "Ville flottante", hints: "floating city, sky bridges, airship docks, drifting clouds, ivory and azure palette" },
+    { id: "port_marchand", label: "Port marchand", hints: "bustling merchant port, stacked crates, mooring ropes, lantern light, amber and teal palette" },
+    { id: "sanctuaire_oublie", label: "Sanctuaire oublié", hints: "forgotten sanctuary, faded murals, dust motes, single sunbeam, ochre and dusk palette" },
+    { id: "canyon_cristallin", label: "Canyon cristallin", hints: "crystal canyon, glittering veins, prismatic walls, cool light, cyan and lilac palette" },
+    { id: "royaume_crepuscule", label: "Royaume du crépuscule", hints: "twilight realm, perpetual dusk, silver mist, distant towers, indigo and rose palette" },
+    { id: "cavernes_abyssales", label: "Cavernes abyssales", hints: "abyssal caverns, fathomless drops, distant glow, dripping moisture, jet and teal palette" },
+    { id: "trone_imperial", label: "Trône impérial", hints: "imperial throne hall, marble columns, banners, gilded throne, scarlet and gold palette" },
+    { id: "citadelle_glaces", label: "Citadelle des glaces", hints: "ice citadel, frosted walls, frozen banners, cold sun, white and azure palette" },
+    { id: "vallee_sacree", label: "Vallée sacrée", hints: "sacred valley, glowing standing stones, soft mist, dawn light, gold and sage palette" },
+    { id: "fort_pirate", label: "Fort pirate", hints: "pirate stronghold, weathered palisade, cannons, tattered flags, brine and rust palette" },
+    { id: "marche_magique", label: "Place du marché magique", hints: "magical market square, stalls of curiosities, floating lanterns, colorful awnings, jewel-tone palette" },
+    { id: "nexus_arcanique", label: "Nexus arcanique", hints: "arcane nexus, intersecting ley lines, hovering glyphs, prismatic glow, violet and gold palette" },
+    { id: "temple_lunaire", label: "Temple lunaire", hints: "lunar temple, silvered arches, moonlit pool, soft glow, ivory and indigo palette" },
+    { id: "royaume_aquatique", label: "Royaume aquatique", hints: "underwater realm, coral architecture, light shafts, drifting kelp, aquamarine and teal palette" },
+    { id: "camp_mercenaires", label: "Camp des mercenaires", hints: "mercenary camp, mismatched banners, racks of arms, smoking braziers, earth and steel palette" },
+    { id: "donjon_abyssal", label: "Donjon abyssal", hints: "abyssal dungeon, dripping stone, chained captives, faint torchlight, jet and crimson palette" },
+    { id: "plateau_celeste", label: "Plateau céleste", hints: "celestial plateau, marble dais above clouds, sunbeams, ivory and azure palette" },
+    { id: "crypte_anciens", label: "Crypte des anciens", hints: "crypt of the ancients, dust-laden sarcophagi, faded glyphs, dim glow, bone and indigo palette" },
+    { id: "sanctuaire_primordial", label: "Sanctuaire primordial", hints: "primordial sanctuary, raw stone monoliths, mossy ground, dawn fog, jade and slate palette" },
+    { id: "terre_titans", label: "Terre des titans", hints: "titans' land, colossal footprints, broken weapons, distant figures, slate and bronze palette" },
+    { id: "ruines_maudites", label: "Ruines maudites", hints: "cursed ruins, shattered walls, glowing sigils, mist, violet and ash palette" },
+    { id: "palais_soleil", label: "Palais du soleil", hints: "sun palace, gilded domes, blooming gardens, midday light, gold and ivory palette" },
+    { id: "refuge_forestier", label: "Refuge forestier", hints: "forest refuge, log cabins, lantern light, towering pines, warm earth palette" },
+    { id: "tour_elements", label: "Tour des éléments", hints: "tower of the elements, four facing reliefs of fire/water/earth/air, swirling motes, prismatic palette" },
+    { id: "cite_runique", label: "Cité runique", hints: "runic city, glowing wall carvings, stepped streets, evening light, slate and amber palette" },
+    { id: "forteresse_celeste", label: "Forteresse céleste", hints: "celestial fortress, soaring battlements, golden banners, cloud sea below, ivory and gold palette" },
+    { id: "temple_tempete", label: "Temple de la tempête", hints: "storm temple, lightning-etched columns, rain-slick stone, distant thunder, slate and azure palette" },
+    { id: "vallee_dragons", label: "Vallée des dragons", hints: "dragon valley, scorched cliffs, gnawed bones, smoking lairs, ember and ash palette" },
+    { id: "royaume_oublie", label: "Royaume oublié", hints: "forgotten kingdom, overgrown banners, broken thrones, dust motes, sepia and moss palette" },
+    { id: "porte_neant", label: "Porte du néant", hints: "void gate, lightless aperture, cracked obelisks, faint stars, jet and pearl palette" },
+    { id: "sanctuaire_anciens", label: "Sanctuaire des anciens", hints: "ancients' sanctuary, weathered idols, drifting incense, dim sunbeam, ochre and shadow palette" },
+    { id: "royaume_givre", label: "Royaume de givre", hints: "frost kingdom, frosted spires, drifting snow, pale aurora, white and cyan palette" },
+    { id: "temple_volcan", label: "Temple du volcan", hints: "volcano temple, lava channels, basalt steps, smoking braziers, ember and obsidian palette" },
+    { id: "catacombes_royales", label: "Catacombes royales", hints: "royal catacombs, ornate burial niches, gilded reliefs, candle haze, gold and ash palette" },
+    { id: "foret_murmures", label: "Forêt des murmures", hints: "whispering forest, half-glimpsed faces in bark, drifting fog, deep green and pearl palette" },
+    { id: "ile_interdite", label: "Île interdite", hints: "forbidden isle, jagged shore, totems, swirling fog, jade and slate palette" },
+    { id: "bastion_chaos", label: "Bastion du chaos", hints: "chaos bastion, shifting masonry, mismatched banners, lurid glow, magenta and pitch palette" },
+    { id: "cite_profondeurs", label: "Cité des profondeurs", hints: "city of the depths, bioluminescent towers, kelp avenues, drifting silt, teal and violet palette" },
+    { id: "labyrinthe_maudit", label: "Labyrinthe maudit", hints: "cursed labyrinth, shifting walls, faint whispers, dim torchlight, sepia and rust palette" },
+    { id: "temple_marees", label: "Temple des marées", hints: "tidal temple, half-submerged columns, lapping waves, salt crust, teal and ivory palette" },
+    { id: "trone_ombres", label: "Trône des ombres", hints: "throne of shadows, jagged obsidian throne, swirling darkness, faint violet glow, jet and amethyst palette" },
+    { id: "citadelle_runique", label: "Citadelle runique", hints: "runic citadel, glowing wall sigils, watchtowers, evening light, slate and gold palette" },
+    { id: "royaume_sauvage", label: "Royaume sauvage", hints: "wild realm, untamed jungle, distant beasts, mist, vivid green and earth palette" },
+    { id: "arene_sanglante", label: "Arène sanglante", hints: "bloody arena, churned sand, broken weapons, baying crowd, scarlet and ochre palette" },
+    { id: "vallee_brumes", label: "Vallée des brumes", hints: "valley of mists, swirling fog, half-glimpsed peaks, hush, pearl and slate palette" },
+    { id: "sanctuaire_eternel", label: "Sanctuaire éternel", hints: "eternal sanctuary, timeless arches, drifting dust, soft sun, ivory and gold palette" },
+    { id: "palais_etoiles", label: "Palais des étoiles", hints: "palace of stars, glassy floors reflecting constellations, silver columns, navy and silver palette" },
+    { id: "grotte_oubliee", label: "Grotte oubliée", hints: "forgotten cave, mossy ledges, fossilized bones, single torch, sepia and moss palette" },
+    { id: "forteresse_cendres", label: "Forteresse des cendres", hints: "ash fortress, blackened walls, drifting embers, watch braziers, ash and ember palette" },
+    { id: "temple_destin", label: "Temple du destin", hints: "temple of fate, woven tapestries, hovering scales, candlelight, indigo and gold palette" },
+    { id: "riviere_sacree", label: "Rivière sacrée", hints: "sacred river, glittering current, shrines on banks, morning haze, jade and gold palette" },
+    { id: "royaume_perdu", label: "Royaume perdu", hints: "lost kingdom, overgrown ruins, faded banners, hush, sepia and moss palette" },
+    { id: "donjon_royal", label: "Donjon royal", hints: "royal keep, ornate stonework, banners, polished armor, scarlet and gold palette" },
+    { id: "cite_interdite", label: "Cité interdite", hints: "forbidden city, gilded gates, watchful guards, lantern-lit walls, scarlet and gold palette" },
+    { id: "temple_ames", label: "Temple des âmes", hints: "soul temple, drifting wisps, candle rows, mosaic floor, pearl and indigo palette" },
+    { id: "royaume_tempetes", label: "Royaume des tempêtes", hints: "kingdom of storms, perpetual rain, fortress isles, lightning, slate and azure palette" },
+    { id: "tour_oubliee", label: "Tour oubliée", hints: "forgotten tower, ivy-clad spire, broken battlements, twilight, slate and moss palette" },
+    { id: "vallee_crepuscule", label: "Vallée du crépuscule", hints: "twilight valley, lavender mist, silhouetted peaks, evening hush, indigo and rose palette" },
+    { id: "sanctuaire_druidique", label: "Sanctuaire druidique", hints: "druid sanctuary, ancient oak, woven branches, gentle motes, jade and gold palette" },
+    { id: "port_brumes", label: "Port des brumes", hints: "fog-bound port, ghostly ship silhouettes, lantern beams, brine, pearl and slate palette" },
+    { id: "temple_flammes", label: "Temple des flammes", hints: "flame temple, perpetual braziers, basalt arches, golden glow, ember and obsidian palette" },
+    { id: "bastion_oublie", label: "Bastion oublié", hints: "forgotten bastion, crumbling walls, faded banners, lone watchtower, sepia and slate palette" },
+    { id: "royaume_reves", label: "Royaume des rêves", hints: "realm of dreams, floating fragments, soft pastels, drifting petals, lavender and rose palette" },
+    { id: "caverne_anciens", label: "Caverne des anciens", hints: "cavern of the ancients, weathered carvings, glowing pools, hush, jade and amber palette" },
+    { id: "trone_chaos", label: "Trône du chaos", hints: "throne of chaos, shifting jagged stone, lurid sky, ember mist, magenta and pitch palette" },
+    { id: "citadelle_eternelle", label: "Citadelle éternelle", hints: "eternal citadel, gleaming marble, banners catching the sun, ivory and gold palette" },
+    { id: "foret_neant", label: "Forêt du néant", hints: "void forest, black trees, faint stars between branches, hush, jet and pearl palette" },
+    { id: "temple_glaces", label: "Temple des glaces", hints: "ice temple, frosted columns, frozen reliefs, cold glow, white and pale blue palette" },
+    { id: "vallee_ombres", label: "Vallée des ombres", hints: "valley of shadows, low silhouettes, drifting mist, dim moon, charcoal and violet palette" },
+    { id: "royaume_runes", label: "Royaume des runes", hints: "kingdom of runes, glowing carved walls, runic gates, evening sky, slate and gold palette" },
+    { id: "porte_etoiles", label: "Porte des étoiles", hints: "starlit gate, arch framing the night sky, drifting motes, navy and silver palette" },
+    { id: "sanctuaire_dragons", label: "Sanctuaire des dragons", hints: "dragon sanctuary, vaulted scaled reliefs, ember braziers, hoarded gold, brass and ember palette" },
+    { id: "palais_profondeurs", label: "Palais des profondeurs", hints: "deep palace, coral spires, drifting jellyfish, soft glow, teal and violet palette" },
+    { id: "camp_survivants", label: "Camp des survivants", hints: "survivors' camp, salvaged tents, fire pit, mismatched banners, earth and ember palette" },
+    { id: "labyrinthe_ames", label: "Labyrinthe des âmes", hints: "labyrinth of souls, swirling spirits, glowing pathways, hush, pearl and indigo palette" },
+    { id: "royaume_interdit", label: "Royaume interdit", hints: "forbidden realm, walled gates, watch braziers, faint glow, scarlet and pitch palette" },
+    { id: "temple_eclipse", label: "Temple de l'éclipse", hints: "eclipse temple, black sun mosaic, twin moons, candle rings, violet and gold palette" },
+    { id: "bastion_titans", label: "Bastion des titans", hints: "titans' bastion, cyclopean blocks, vast halls, vast scale, slate and bronze palette" },
+    { id: "tour_vide", label: "Tour du vide", hints: "void tower, endless dark interior, hovering glyphs, hush, jet and amethyst palette" },
+    { id: "cite_cendres", label: "Cité des cendres", hints: "city of ashes, drifting flakes, charred buildings, hazy sun, ash and ember palette" },
+    { id: "vallee_anciens", label: "Vallée des anciens", hints: "valley of the ancients, towering weathered statues, dawn fog, slate and moss palette" },
+    { id: "royaume_lumiere", label: "Royaume de lumière", hints: "realm of light, radiant skies, gleaming towers, soft motes, ivory and gold palette" },
+    { id: "sanctuaire_crepuscule", label: "Sanctuaire du crépuscule", hints: "twilight sanctuary, fading sun, lavender mist, candlelit arches, indigo and rose palette" },
+    { id: "temple_dieux_oublies", label: "Temple oublié des dieux", hints: "forgotten temple of gods, colossal worn idols, vines, single sunbeam, ochre and moss palette" },
+    { id: "trone_anciens", label: "Trône des anciens", hints: "throne of the ancients, weathered stone seat, runic columns, distant horizon, slate and gold palette" },
+    { id: "citadelle_infernale", label: "Citadelle infernale", hints: "infernal citadel, jagged basalt towers, lava moats, blood-red sky, ember and pitch palette" },
+    { id: "royaume_abysses", label: "Royaume des abysses", hints: "realm of abysses, fathomless drops, glowing rifts, hush, jet and teal palette" },
+    { id: "foret_eternelle", label: "Forêt éternelle", hints: "eternal forest, towering ancient trees, dappled gold, drifting motes, deep green and gold palette" },
+    { id: "porte_dimensions", label: "Porte des dimensions", hints: "dimensional gateway, fractured space, drifting fragments, prismatic glow, violet and cyan palette" },
+    { id: "temple_esprits", label: "Temple des esprits", hints: "spirit temple, drifting souls, candlelit niches, hush, pearl and indigo palette" },
+    { id: "vallee_infinie", label: "Vallée infinie", hints: "endless valley, fading horizons, drifting clouds, soft sun, ivory and azure palette" },
+    { id: "palais_imperial", label: "Palais impérial", hints: "imperial palace, gilded throne hall, banners, polished marble, scarlet and gold palette" },
+    { id: "sanctuaire_ombres", label: "Sanctuaire des ombres", hints: "shadow sanctuary, dim arches, candle pools of light, hush, charcoal and amethyst palette" },
+    { id: "royaume_flammes", label: "Royaume des flammes", hints: "realm of flames, lava plains, ember storms, burning towers, ember and obsidian palette" },
+    { id: "caverne_titans", label: "Caverne oubliée des titans", hints: "forgotten titans' cavern, giant rib bones, ancient murals, dim glow, slate and bronze palette" },
+    { id: "bastion_runique", label: "Bastion runique", hints: "runic bastion, glowing wall sigils, watch braziers, evening light, slate and gold palette" },
+    { id: "temple_anciens_rois", label: "Temple des anciens rois", hints: "temple of ancient kings, crowned stone effigies, gilded reliefs, candle haze, gold and ash palette" },
+    { id: "trone_celeste", label: "Trône céleste", hints: "celestial throne, marble dais above clouds, sunbeams, gilded throne, ivory and gold palette" },
+    { id: "cite_miracles", label: "Cité des miracles", hints: "city of miracles, gleaming spires, radiant fountains, drifting motes, ivory and gold palette" },
+    { id: "royaume_chaos_eternel", label: "Royaume du chaos éternel", hints: "realm of eternal chaos, shifting masonry, mismatched skies, lurid glow, magenta and pitch palette" },
   ];
   const BOARD_STYLES = {
     classic: {
@@ -1339,6 +1521,11 @@ export default function CardForge() {
   const [manualAbility, setManualAbility] = useState("");
   const [manualFlavorText, setManualFlavorText] = useState("");
   const [manualIllustrationPrompt, setManualIllustrationPrompt] = useState("");
+  // Free-form context the admin can write to steer image generation. Fed
+  // into the prompt-generation prompt (so it shapes the auto-built
+  // illustrationPrompt) AND appended at image-generation time (so even
+  // a hand-edited prompt receives the same guidance).
+  const [manualExtraContext, setManualExtraContext] = useState("");
   const [genIllusPromptLoading, setGenIllusPromptLoading] = useState(false);
   const [manualKeywords, setManualKeywords] = useState<string[]>([]);
   const [keywordXValues, setKeywordXValues] = useState<Record<string, number>>({});
@@ -1665,7 +1852,7 @@ export default function CardForge() {
   const resetManualForm = useCallback(() => {
     setManualName(""); setManualMana(3); setManualAttack(3); setManualDefense(3);
     setManualPower(2); setManualAbility(""); setManualFlavorText("");
-    setManualIllustrationPrompt(""); setManualKeywords([]); setKeywordXValues({}); setKeywordModes({}); setCard(null);
+    setManualIllustrationPrompt(""); setManualExtraContext(""); setManualKeywords([]); setKeywordXValues({}); setKeywordModes({}); setCard(null);
     setEditedPrompt(null); setSaveResult(null);
     setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace("");
     setManualLifeCost(0); setManualDiscardCost(0); setManualSacrificeCost(0);
@@ -2078,9 +2265,13 @@ export default function CardForge() {
     setSaveResult(null);
     try {
       const hasRef = !!(illusRefImageBase64 && illusRefImageMime);
-      const promptWithRef = hasRef
-        ? `${forgeCard.illustrationPrompt}\n\nA reference image is attached. Use it as inspiration for subject, pose, composition or mood only — do NOT copy it literally. The output MUST follow the artistic direction of the prompt above (style, palette, framing).`
+      const extra = manualExtraContext.trim();
+      const promptWithExtra = extra
+        ? `${forgeCard.illustrationPrompt}\n\nAdditional directives requested by the author (treat as constraints, integrate into the scene): ${extra}`
         : forgeCard.illustrationPrompt;
+      const promptWithRef = hasRef
+        ? `${promptWithExtra}\n\nA reference image is attached. Use it as inspiration for subject, pose, composition or mood only — do NOT copy it literally. The output MUST follow the artistic direction of the prompt above (style, palette, framing).`
+        : promptWithExtra;
       const res = await fetch('/api/cards/generate-image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -2114,7 +2305,7 @@ export default function CardForge() {
     } finally {
       setGeneratingImage(false);
     }
-  }, [illusRefImageBase64, illusRefImageMime]);
+  }, [illusRefImageBase64, illusRefImageMime, manualExtraContext]);
 
   const fac = FACTIONS[faction];
 
@@ -3028,6 +3219,18 @@ export default function CardForge() {
                     />
                   </div>
 
+                  {/* Extra context — free-form directive that influences
+                      both the AI-generated prompt and (at image-gen
+                      time) the prompt sent to the image model. */}
+                  <div>
+                    <label style={{ fontSize: 9, color: "#666", letterSpacing: 1 }}>CONTEXTE SUPPLÉMENTAIRE (optionnel)</label>
+                    <textarea value={manualExtraContext} onChange={e => setManualExtraContext(e.target.value)}
+                      placeholder="Ex : tient une épée enflammée, regard menaçant, vue de dos, brouillard rougeâtre, armure dorée…"
+                      rows={2}
+                      style={{ width: "100%", padding: "6px 10px", borderRadius: 6, border: "1px solid #e0e0e0", background: "#fff", color: "#333", fontFamily: "'Crimson Text',serif", fontSize: 11, marginTop: 3, resize: "vertical" }}
+                    />
+                  </div>
+
                   {/* Illustration Prompt */}
                   <div>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -3048,6 +3251,7 @@ export default function CardForge() {
                                 existingAbility: manualAbility || undefined,
                                 raceId: race || undefined,
                                 clanId: clan || undefined,
+                                extraContext: manualExtraContext.trim() || undefined,
                               }),
                             });
                             const data = await res.json().catch(() => null);

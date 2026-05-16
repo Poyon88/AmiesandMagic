@@ -3,7 +3,8 @@ import { FACTIONS } from '@/lib/card-engine/constants';
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const { factionId, type, rarityId, stats, existingName, existingAbility, clanId } = body;
+  const { factionId, type, rarityId, stats, existingName, existingAbility, clanId, extraContext } = body;
+  const extra = typeof extraContext === 'string' ? extraContext.trim() : '';
   // raceId can arrive as "undefined" string from JSON — normalize to real undefined
   const raceId = body.raceId && body.raceId !== 'undefined' ? body.raceId : undefined;
   console.log(`[card-forge] INPUT — factionId: ${factionId}, raceId: "${raceId}", type: ${type}`);
@@ -89,6 +90,13 @@ export async function POST(request: Request) {
     ? `\n- Nom de la carte: "${existingName || "à générer"}"\n- Capacité: "${existingAbility || "à générer"}"\nUtilise ces informations pour créer un prompt d'illustration cohérent avec le personnage/créature décrit.`
     : '';
 
+  // Free-form admin directive — fed into both the textual fields AND
+  // the illustration prompt so the AI knows the scene constraints
+  // before drafting anything.
+  const extraHint = extra
+    ? `\n- Contexte supplémentaire IMPÉRATIF (à intégrer dans l'illustration ET à refléter dans le ton / nom / capacité / lore si pertinent) : ${extra}`
+    : '';
+
   const raceVisualDesc = raceId ? (raceVisualDescriptions[raceId] || raceId) : '';
 
   // Build prompt with race as the PRIMARY subject when specified
@@ -100,7 +108,7 @@ export async function POST(request: Request) {
 Génère les textes pour cette carte :
 
 SUJET PRINCIPAL — ${creatureSubject}
-- Faction: ${factionId} (thème/ambiance uniquement)${clanHint}${subTypeHint}${volHint}${existingHint}
+- Faction: ${factionId} (thème/ambiance uniquement)${clanHint}${subTypeHint}${volHint}${existingHint}${extraHint}
 - Type: ${type} | Rareté: ${rarityId} | Coût mana: ${stats.mana}
 - ${statsDesc}${kws}
 ${existingName ? `Le nom "${existingName}" est déjà choisi — garde-le tel quel.` : ''}

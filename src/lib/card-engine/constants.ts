@@ -142,7 +142,7 @@ export const FACTIONS: Record<string, {
   },
   Mercenaires: {
     color: "#8B8B00", accent: "#D4D400", emoji: "💰", bg: "#1a1a08", alignment: "spéciale",
-    races: ["Géants", "Ogres", "Dragons", "Chiens", "Phoenix", "Anges", "Ours", "Loups"],
+    races: ["Géants", "Ogres", "Dragons", "Chiens", "Phoenix", "Anges", "Ours", "Loups", "Fauves"],
     statWeights: { atk: 1.05, def: 1.05 },
     guaranteedKeywords: [],
     likelyKeywords: { "Traque": 0.40, "Première Frappe": 0.40, "Précision": 0.35, "Esquive": 0.30, "Berserk": 0.30, "Bouclier": 0.25, "Fureur": 0.25, "Vol": 0.15,
@@ -158,6 +158,7 @@ export const FACTIONS: Record<string, {
       "Anges": { statWeights: { atk: 1.10, def: 1.15 }, likelyKeywords: { "Vol": 0.85, "Bouclier": 0.60, "Bénédiction": 0.55, "Commandement": 0.50, "Première Frappe": 0.45, "Drain de vie": 0.40, "Provocation": 0.35, "Résistance X": 0.30 } },
       "Ours": { statWeights: { atk: 1.20, def: 1.25 }, likelyKeywords: { "Provocation": 0.55, "Berserk": 0.50, "Résistance X": 0.45, "Fureur": 0.40, "Régénération": 0.35, "Lycanthropie X": 0.45 } },
       "Loups": { statWeights: { atk: 1.15, def: 0.90 }, likelyKeywords: { "Traque": 0.60, "Raid": 0.55, "Instinct de meute X": 0.50, "Esquive": 0.40, "Berserk": 0.35, "Lycanthropie X": 0.45 } },
+      "Fauves": { statWeights: { atk: 1.20, def: 0.95 }, likelyKeywords: { "Traque": 0.65, "Esquive": 0.55, "Première Frappe": 0.50, "Précision": 0.45, "Bravoure": 0.40, "Berserk": 0.35, "Raid": 0.30, "Invisible": 0.25 } },
     },
   },
   Orcs: {
