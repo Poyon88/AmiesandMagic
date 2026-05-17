@@ -2010,6 +2010,7 @@ export default function CardForge() {
     "Convocation X": "convocation", "Malédiction": "malediction",
     "Nécrophagie": "necrophagie", "Paralysie": "paralysie",
     "Permutation": "permutation", "Persécution X": "persecution",
+    "Piétinement": "pietinement",
     // Tier 2 — Cimetière / Main / Mixte
     "Catalyse": "catalyse", "Ombre du passé": "ombre_du_passe",
     "Profanation X": "profanation", "Prescience X": "prescience",

@@ -15,7 +15,7 @@ export type Keyword =
   // Tier 2 — Terrain
   | "terreur" | "armure" | "commandement" | "fureur" | "double_attaque" | "invisible"
   | "canalisation" | "contresort" | "convocation" | "convocation_simple" | "malediction" | "necrophagie"
-  | "paralysie" | "permutation" | "persecution"
+  | "paralysie" | "permutation" | "persecution" | "pietinement"
   // Tier 2 — Cimetière / Main / Mixte
   | "catalyse" | "ombre_du_passe" | "profanation" | "prescience" | "suprematie" | "divination" | "savant"
   // Tier 3 — Terrain

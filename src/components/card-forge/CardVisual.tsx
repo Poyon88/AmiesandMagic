@@ -70,6 +70,7 @@ export const KEYWORD_SYMBOLS: Record<string, string> = {
   "Paralysie":        "⛓️",
   "Permutation":      "🔀",
   "Persécution X":    "🩻",
+  "Piétinement":      "🐾",
   "Ombre du passé":   "👤",
   "Profanation X":    "⚰️",
   "Prescience X":     "🃏",

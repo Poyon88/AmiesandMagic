@@ -35,6 +35,7 @@ Nécrophagie;2;Non;Terrain;Gagne +1 ATK et +1 PV chaque fois qu'une unité (alli
 Paralysie;2;Non;Terrain;Invocation : une unité ennemie ciblée ne peut pas attaquer lors du prochain tour adverse.
 Permutation;2;Non;Terrain;Invocation : échange les PV actuels de deux unités ciblées (une alliée et une ennemie).
 Persécution X;2;Oui;Terrain;Chaque fois que cette unité attaque, inflige X dégâts au héros adverse.
+Piétinement;2;Non;Terrain;Lorsque cette unité attaque une créature, les dégâts excédentaires (au-delà des PV restants de la cible) sont infligés au héros adverse.
 Ombre du passé;2;Non;Cimetière;Invocation : gagne +1 ATK et +1 PV par unité de même race dans votre cimetière.
 Profanation X;2;Oui;Cimetière;Invocation : exilez jusqu'à X cartes de votre cimetière ; gagne +1 ATK et +1 PV par carte exilée.
 Prescience X;2;Oui;Main;Invocation : piochez des cartes jusqu'à avoir X cartes en main.

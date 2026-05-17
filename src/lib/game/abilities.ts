@@ -317,6 +317,12 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["creature"],
     creature: { cost: 8, costPerX: 5, se: 3.0, minTier: 2, scalable: true, zone: "Terrain" },
   },
+  pietinement: {
+    id: "pietinement", label: "Piétinement", symbol: "🐾",
+    desc: "Lorsque cette unité attaque une créature, les dégâts excédentaires (au-delà des PV restants de la cible) sont infligés au héros adverse.",
+    applicable_to: ["creature"],
+    creature: { cost: 10, costPerX: 0, se: 2.5, minTier: 2, scalable: false, zone: "Terrain" },
+  },
   ombre_du_passe: {
     id: "ombre_du_passe", label: "Ombre du passé", symbol: "👤",
     desc: "Invocation : gagne +1 ATK et +1 PV par unité de même race dans votre cimetière.",

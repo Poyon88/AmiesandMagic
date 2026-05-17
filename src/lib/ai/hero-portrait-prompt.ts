@@ -253,6 +253,8 @@ export const CLAN_ACCENTS: Record<string, string> = {
     'a thick wolf-fur cloak with frosted edges, braided icy-blonde hair, blue rune-painted face markings',
   Orientaux:
     'silken layered robes with dragon embroidery, ornate jade pendant, a single curved hairpin',
+  Incas:
+    'a feathered headdress with quetzal plumes, hammered-gold sun pectoral, vibrant woven mantle in red-and-ochre geometric patterns',
   // Elfes
   Sylvains:
     'a leaf-woven circlet, mossy-green hooded cape, traces of foliage and twigs in the hair',

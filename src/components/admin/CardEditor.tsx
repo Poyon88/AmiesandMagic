@@ -115,6 +115,24 @@ export default function CardEditor() {
   const factions = useMemo(() => [...new Set(cards.map(c => c.faction).filter(Boolean) as string[])].sort(), [cards]);
   const races = useMemo(() => [...new Set(cards.map(c => c.race).filter(Boolean) as string[])].sort(), [cards]);
   const clans = useMemo(() => [...new Set(cards.map(c => c.clan).filter(Boolean) as string[])].sort(), [cards]);
+  // Clans proposés dans l'édition : union des clans déjà utilisés ET des
+  // clans canoniques déclarés dans FACTIONS pour la faction sélectionnée.
+  // Sans ça, un nouveau clan (ex: "Incas") n'apparaît jamais en suggestion
+  // tant qu'aucune carte ne l'a sauvegardé, et il reste invisible à l'admin.
+  const editClans = useMemo(() => {
+    const editFaction = (typeof editFields?.faction === "string" ? editFields.faction : null) as string | null;
+    const canonical: string[] = editFaction && FACTIONS[editFaction]?.clans
+      ? FACTIONS[editFaction]!.clans!.names
+      : Object.values(FACTIONS).flatMap(f => f.clans?.names ?? []);
+    return [...new Set([...canonical, ...clans])].sort();
+  }, [clans, editFields]);
+  const editRaces = useMemo(() => {
+    const editFaction = (typeof editFields?.faction === "string" ? editFields.faction : null) as string | null;
+    const canonical: string[] = editFaction && FACTIONS[editFaction]
+      ? FACTIONS[editFaction]!.races
+      : Object.values(FACTIONS).flatMap(f => f.races);
+    return [...new Set([...canonical, ...races])].sort();
+  }, [races, editFields]);
   const years = useMemo(() => [...new Set(cards.map(c => c.card_year).filter(Boolean) as number[])].sort((a, b) => b - a), [cards]);
 
   // Filtered cards
@@ -692,13 +710,17 @@ export default function CardEditor() {
             <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
               <div style={{ flex: 1 }}>
                 <div style={S.label}>Race</div>
-                <input type="text" value={(editFields.race as string) || ""} onChange={e => updateField("race", e.target.value || null)} style={S.input} list="races-list" />
-                <datalist id="races-list">{races.map(r => <option key={r} value={r} />)}</datalist>
+                <select value={(editFields.race as string) || ""} onChange={e => updateField("race", e.target.value || null)} style={S.select}>
+                  <option value="">—</option>
+                  {editRaces.map(r => <option key={r} value={r}>{r}</option>)}
+                </select>
               </div>
               <div style={{ flex: 1 }}>
                 <div style={S.label}>Clan</div>
-                <input type="text" value={(editFields.clan as string) || ""} onChange={e => updateField("clan", e.target.value || null)} style={S.input} list="clans-list" />
-                <datalist id="clans-list">{clans.map(c => <option key={c} value={c} />)}</datalist>
+                <select value={(editFields.clan as string) || ""} onChange={e => updateField("clan", e.target.value || null)} style={S.select}>
+                  <option value="">—</option>
+                  {editClans.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
               </div>
             </div>
 

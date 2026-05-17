@@ -2591,8 +2591,20 @@ export function attack(state: GameState, action: AttackAction): GameState {
     const hasFirstStrike = hasKw(attacker, "premiere_frappe");
     const hasDoubleAttack = hasKw(attacker, "double_attaque");
 
+    // Piétinement: les dégâts excédentaires (au-delà des PV restants de la
+    // cible) sont reportés sur le héros adverse. On capture les PV avant
+    // dégâts pour calculer le surplus après que dealDamageToCreature a
+    // appliqué Bouclier / Résistance / Armure (un Bouclier absorbe tout :
+    // pas de surplus, conforme à l'esprit du keyword).
+    const attackerHasTrample = hasKw(attacker, "pietinement");
+
     if (hasFirstStrike) {
+      const targetHpBefore = target.currentHealth;
       dealDamageToCreature(target, attackPower, attackerHasPrecision);
+
+      if (attackerHasTrample && target.currentHealth < 0 && targetHpBefore > 0) {
+        dealDamageToHero(opponent.hero, -target.currentHealth);
+      }
 
       // Apply poison from attacker
       if (hasKw(attacker, "poison") && target.currentHealth > 0) {
@@ -2617,7 +2629,13 @@ export function attack(state: GameState, action: AttackAction): GameState {
       // Simultaneous damage. Double Attaque doubles the attacker's
       // damage; the retaliation is unchanged.
       const finalAttackPower = hasDoubleAttack ? attackPower * 2 : attackPower;
+      const targetHpBefore = target.currentHealth;
       dealDamageToCreature(target, finalAttackPower, attackerHasPrecision);
+
+      if (attackerHasTrample && target.currentHealth < 0 && targetHpBefore > 0) {
+        dealDamageToHero(opponent.hero, -target.currentHealth);
+      }
+
       dealDamageToCreature(attacker, target.currentAttack, hasKw(target, "precision"));
 
       // Poison application
