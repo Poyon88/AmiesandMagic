@@ -85,9 +85,16 @@ export function getSpellKeywordDesc(
     desc = `Crée ${formatConvocationTokens(card.convocation_tokens, tokens)}`;
   }
 
-  // Override for invocation with race
-  if (kw.id === "invocation" && kw.race) {
-    desc = `Invoque un ${kw.race} ${kw.attack ?? 1}/${kw.health ?? 1}`;
+  // Override for invocation — prefer the resolved token template name
+  // (multi-token-per-race safe); fall back to the raw race for legacy
+  // entries that only stored kw.race.
+  if (kw.id === "invocation") {
+    const tmpl = kw.token_id ? tokens?.find(t => t.id === kw.token_id) : null;
+    if (tmpl) {
+      desc = `Invoque un ${tmpl.name} ${kw.attack ?? tmpl.attack ?? 1}/${kw.health ?? tmpl.health ?? 1}`;
+    } else if (kw.race) {
+      desc = `Invoque un ${kw.race} ${kw.attack ?? 1}/${kw.health ?? 1}`;
+    }
   }
 
   // Override for convocation_simple : compose le nom du token et ses stats

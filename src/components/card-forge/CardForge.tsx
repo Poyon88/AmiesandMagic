@@ -2851,7 +2851,7 @@ export default function CardForge() {
                           const def = SPELL_KEYWORDS[kw.id];
                           if (def.params.length === 0) return null;
                           return (
-                            <div key={kw.id} style={{ display: "flex", gap: 6, marginTop: 4, alignItems: "center" }}>
+                            <div key={kw.id} style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 4, alignItems: "center" }}>
                               <span style={{ fontSize: 9, color: "#9b59b6", fontWeight: 700, minWidth: 70 }}>{def.symbol} {SPELL_KEYWORD_LABELS[kw.id].replace(" X", "").replace(" +X/+Y", "")}</span>
                               {def.params.includes("amount") && (
                                 <div>
@@ -2890,15 +2890,23 @@ export default function CardForge() {
                                 </div>
                               )}
                               {kw.id === "invocation" && (
-                                <div>
-                                  <label style={{ fontSize: 7, color: "#27ae60" }}>Race</label>
-                                  <select value={kw.race ?? ""} onChange={e => {
-                                    setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, race: e.target.value || undefined } : k));
-                                  }}
-                                    style={{ padding: "2px 4px", borderRadius: 4, border: "1px solid #27ae6044", fontSize: 9, fontFamily: "'Cinzel',serif", color: "#27ae60" }}>
-                                    <option value="">Aucune</option>
-                                    {allRaces.map(r => <option key={r} value={r}>{r}</option>)}
-                                  </select>
+                                <div style={{ flexBasis: "100%", marginTop: 2 }}>
+                                  <label style={{ fontSize: 7, color: "#27ae60", letterSpacing: 1, fontFamily: "'Cinzel',serif" }}>TOKEN À INVOQUER</label>
+                                  <TokenCascadePicker
+                                    value={kw.token_id ?? null}
+                                    onChange={(newId) => {
+                                      const tmpl = tokenTemplates.find(t => t.id === newId) ?? null;
+                                      setSpellKeywords(prev => prev.map((k, i) => i === idx ? {
+                                        ...k,
+                                        token_id: newId,
+                                        // Keep race in sync with picked template for legacy
+                                        // readers (e.g. older descriptions / DB rows).
+                                        race: tmpl?.race ?? undefined,
+                                      } : k));
+                                    }}
+                                    tokens={tokenTemplates}
+                                    compact
+                                  />
                                 </div>
                               )}
                               {kw.id === "invocation_multiple" && (

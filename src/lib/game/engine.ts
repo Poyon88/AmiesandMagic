@@ -1936,16 +1936,22 @@ function resolveSpellKeywords(
       }
       case "invocation": {
         if (ctx.caster.board.length < MAX_BOARD_SIZE) {
+          // Prefer id-based lookup (multi-tokens per race safe). Legacy
+          // cards saved with only `race` fall through to the race lookup
+          // which picks the first match — deterministic for single-token
+          // races, arbitrary otherwise.
+          const tmpl = findTokenTemplate(kw.token_id) ?? findTokenTemplateByRace(kw.race);
+          const resolvedRace = tmpl?.race ?? kw.race;
           let tokenCard: Card = {
-            id: -1, name: kw.race ? `Token ${kw.race}` : "Token",
+            id: -1, name: resolvedRace ? `Token ${resolvedRace}` : "Token",
             mana_cost: 0, card_type: "creature",
             attack: kw.attack ?? 1, health: kw.health ?? 1,
             effect_text: "",
             keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
-            race: kw.race,
-            faction: getFactionForRace(kw.race) ?? ctx.card.faction,
+            race: resolvedRace,
+            faction: getFactionForRace(resolvedRace) ?? ctx.card.faction,
           };
-          tokenCard = applyTokenTemplate(tokenCard, findTokenTemplateByRace(kw.race));
+          tokenCard = applyTokenTemplate(tokenCard, tmpl);
           const token = createCardInstance(tokenCard);
           token.hasSummoningSickness = true;
           ctx.caster.board.push(token);
@@ -2334,15 +2340,18 @@ function resolveAtomicEffect(ctx: SpellResolutionContext, effect: AtomicEffect):
     }
     case "summon_token": {
       if (ctx.caster.board.length < MAX_BOARD_SIZE) {
+        // Prefer id-based lookup; race lookup is legacy fallback.
+        const tmpl = findTokenTemplate(effect.tokenId) ?? findTokenTemplateByRace(effect.race);
+        const resolvedRace = tmpl?.race ?? effect.race;
         let tokenCard: Card = {
-          id: -1, name: effect.race ? `Token ${effect.race}` : "Token",
+          id: -1, name: resolvedRace ? `Token ${resolvedRace}` : "Token",
           mana_cost: 0, card_type: "creature",
           attack: effect.attack ?? 1, health: effect.health ?? 1,
           effect_text: "",
           keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
-          race: effect.race,
+          race: resolvedRace,
         };
-        tokenCard = applyTokenTemplate(tokenCard, findTokenTemplateByRace(effect.race));
+        tokenCard = applyTokenTemplate(tokenCard, tmpl);
         const token = createCardInstance(tokenCard);
         token.hasSummoningSickness = true;
         ctx.caster.board.push(token);

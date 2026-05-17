@@ -131,7 +131,8 @@ export interface SpellKeywordInstance {
   amount?: number;   // X value for impact, deferlement, siphon, guerison, inspiration, afflux
   attack?: number;   // for renforcement, invocation
   health?: number;   // for renforcement, invocation
-  race?: string;     // for invocation (token race)
+  race?: string;     // for invocation (legacy — token race, fallback when token_id absent)
+  token_id?: number | null; // for invocation — id from token_templates (preferred over race)
 }
 
 // --- Convocation tokens config ---
@@ -192,7 +193,8 @@ export interface AtomicEffect {
   attack?: number;
   health?: number;
   keyword?: Keyword;
-  race?: string;           // for summon_token (token race)
+  race?: string;           // for summon_token (legacy — token race, fallback when tokenId absent)
+  tokenId?: number | null; // for summon_token — id from token_templates (preferred over race)
 }
 
 // --- Condition system ---

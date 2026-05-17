@@ -36,9 +36,15 @@ export default function TokenCascadePicker({
   const currentRace = selected?.race ?? "";
   const currentClanKey = selected ? (selected.clan ?? NO_CLAN_KEY) : "";
 
-  // Distinct races that have at least one token.
+  // Distinct races that have at least one token, paired with the count of
+  // templates for that race. Used to flag races with multiple variants in
+  // the dropdown so the admin notices they need to pick down to the name.
   const races = useMemo(() => {
-    return Array.from(new Set(tokens.map((t) => t.race))).sort();
+    const counts = new Map<string, number>();
+    for (const t of tokens) counts.set(t.race, (counts.get(t.race) ?? 0) + 1);
+    return Array.from(counts.entries())
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => a.name.localeCompare(b.name));
   }, [tokens]);
 
   // Distinct clan keys (NULL clan represented by a sentinel) for the picked race.
@@ -131,7 +137,9 @@ export default function TokenCascadePicker({
         >
           <option value="">{races.length === 0 ? "Aucun token" : "-- Choisir --"}</option>
           {races.map((r) => (
-            <option key={r} value={r}>{r}</option>
+            <option key={r.name} value={r.name}>
+              {r.count > 1 ? `${r.name} (${r.count})` : r.name}
+            </option>
           ))}
         </select>
       </div>
