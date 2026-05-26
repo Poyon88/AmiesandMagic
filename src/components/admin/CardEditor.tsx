@@ -963,14 +963,21 @@ export default function CardEditor() {
                           </div>
                         )}
                         {kw.id === "invocation" && (
-                          <div>
-                            <label style={{ fontSize: 7, color: "#27ae60" }}>Race</label>
-                            <select value={kw.race ?? ""}
-                              onChange={e => setSpellKws(spellKws.map((k, i) => i === idx ? { ...k, race: e.target.value || undefined } : k))}
-                              style={{ padding: "2px 4px", borderRadius: 4, border: "1px solid #27ae6044", fontSize: 9, fontFamily: "'Cinzel',serif", color: "#27ae60" }}>
-                              <option value="">Aucune</option>
-                              {allRaces.map(r => <option key={r} value={r}>{r}</option>)}
-                            </select>
+                          <div style={{ flexBasis: "100%", marginTop: 2 }}>
+                            <label style={{ fontSize: 7, color: "#27ae60", letterSpacing: 1, fontFamily: "'Cinzel',serif" }}>TOKEN À INVOQUER</label>
+                            <TokenCascadePicker
+                              value={kw.token_id ?? null}
+                              onChange={(newId) => {
+                                const tmpl = tokenTemplates.find(t => t.id === newId) ?? null;
+                                setSpellKws(spellKws.map((k, i) => i === idx ? {
+                                  ...k,
+                                  token_id: newId,
+                                  race: tmpl?.race ?? undefined,
+                                } : k));
+                              }}
+                              tokens={tokenTemplates}
+                              compact
+                            />
                           </div>
                         )}
                         {kw.id === "invocation_multiple" && (

@@ -35,7 +35,7 @@ import {
   MAX_BOARD_SIZE,
   MAX_MANA,
 } from "./constants";
-import { getFactionForRace } from "@/lib/card-engine/constants";
+import { getFactionForRace, getEffectiveAlignment, FACTIONS } from "@/lib/card-engine/constants";
 
 // ============================================================
 // SEEDED PRNG (mulberry32) — deterministic across clients
@@ -3681,6 +3681,32 @@ const RENFORT_ROYAL_OWNERSHIP_THRESHOLD = 30;
 // now a mana-cost ceiling on the offered pool — see getSelectionCards.
 const SELECTION_OFFER_COUNT = 3;
 
+// Détermine l'ensemble des factions autorisées pour Sélection X /
+// Sélection magique X : factions dont l'alignement correspond à celui de la
+// source. Fallback : factions présentes dans le deck du joueur +
+// Mercenaires (comportement historique) si la source ou son alignement est
+// indéterminable.
+function factionsForSelectionAlignment(
+  source: { faction?: string | null; card_alignment?: string | null } | null,
+  player: PlayerState,
+): Set<string> {
+  const alignment = source ? getEffectiveAlignment(source) : null;
+  if (alignment) {
+    const allowed = new Set<string>();
+    for (const [factionId, def] of Object.entries(FACTIONS)) {
+      if (def.alignment === alignment) allowed.add(factionId);
+    }
+    return allowed;
+  }
+  // Fallback : deck factions + Mercenaires
+  const allowed = new Set<string>();
+  allowed.add("Mercenaires");
+  for (const c of [...player.hand, ...player.board, ...player.deck, ...player.graveyard]) {
+    if (c.card.faction && c.card.faction !== "Mercenaires") allowed.add(c.card.faction);
+  }
+  return allowed;
+}
+
 /** Renfort Royal : propose jusqu'à 3 cartes parmi les éditions limitées
  *  que le joueur possède réellement (au moins 30 requises). X agit comme
  *  un plafond sur le coût en mana (mana_cost ≤ X) ; si X ≤ 0, aucun
@@ -3688,7 +3714,11 @@ const SELECTION_OFFER_COUNT = 3;
  *  sur la liste des communes (mêmes règles que Sélection X). Les deux
  *  clients doivent générer la même proposition, d'où le seed déterministe
  *  basé sur l'état de jeu visible. */
-export function getRenfortRoyalCards(state: GameState, maxManaCost: number): Card[] {
+export function getRenfortRoyalCards(
+  state: GameState,
+  maxManaCost: number,
+  source?: { faction?: string | null; card_alignment?: string | null } | null,
+): Card[] {
   const pool = state.factionCardPool;
   if (!pool || pool.length === 0) return [];
   const player = state.players[state.currentPlayerIndex];
@@ -3699,7 +3729,7 @@ export function getRenfortRoyalCards(state: GameState, maxManaCost: number): Car
     && ownedSet.has(c.id),
   );
   if (ownedLimited.length < RENFORT_ROYAL_OWNERSHIP_THRESHOLD) {
-    return getSelectionCards(state, maxManaCost);
+    return getSelectionCards(state, maxManaCost, source);
   }
   const filtered = maxManaCost > 0
     ? ownedLimited.filter(c => c.mana_cost <= maxManaCost)
@@ -3722,27 +3752,28 @@ export function getRenfortRoyalCards(state: GameState, maxManaCost: number): Car
   return shuffled.slice(0, Math.min(SELECTION_OFFER_COUNT, shuffled.length));
 }
 
-/** Sélection : propose jusqu'à 3 cartes communes du faction pool. X agit
- *  comme un plafond sur le coût en mana (mana_cost ≤ X) ; si X ≤ 0, aucun
- *  filtre n'est appliqué. Le tirage est déterministe (seed basé sur l'état
+/** Sélection : propose jusqu'à 3 cartes communes partageant l'alignement de
+ *  la carte source (bon/neutre/maléfique) — pool élargi à toutes les
+ *  factions du même alignement pour augmenter la variété. Si `source` n'est
+ *  pas fourni ou son alignement est indéterminable, on retombe sur les
+ *  factions présentes dans le deck du joueur (comportement historique).
+ *  X agit comme un plafond sur le coût en mana (mana_cost ≤ X) ; si X ≤ 0,
+ *  aucun filtre mana. Le tirage est déterministe (seed basé sur l'état
  *  visible) pour que les deux clients voient la même proposition.
  */
-export function getSelectionCards(state: GameState, maxManaCost: number): Card[] {
+export function getSelectionCards(
+  state: GameState,
+  maxManaCost: number,
+  source?: { faction?: string | null; card_alignment?: string | null } | null,
+): Card[] {
   const pool = state.factionCardPool;
   if (!pool || pool.length === 0) return [];
 
-  // Filter pool to only factions present in the current player's deck +
-  // Mercenaires, and to Commune rarity — Sélection should never offer
-  // a Rare/Épique/Légendaire as a free pick from the open pool.
   const player = state.players[state.currentPlayerIndex];
-  const playerFactions = new Set<string>();
-  playerFactions.add("Mercenaires");
-  for (const c of [...player.hand, ...player.board, ...player.deck, ...player.graveyard]) {
-    if (c.card.faction && c.card.faction !== "Mercenaires") playerFactions.add(c.card.faction);
-  }
+  const allowedFactions = factionsForSelectionAlignment(source ?? null, player);
   const filtered = pool.filter(c =>
     c.faction
-    && playerFactions.has(c.faction)
+    && allowedFactions.has(c.faction)
     && c.rarity === "Commune"
     && (maxManaCost <= 0 || c.mana_cost <= maxManaCost),
   );
@@ -3764,21 +3795,32 @@ export function getSelectionCards(state: GameState, maxManaCost: number): Card[]
   return shuffled.slice(0, Math.min(SELECTION_OFFER_COUNT, shuffled.length));
 }
 
-/** Sélection magique : propose jusqu'à 3 sorts aléatoires de toutes les
- *  factions (lus dans state.allSpellsPool, qui est chargé une fois au
- *  démarrage du match). X agit comme un plafond sur le coût en mana
- *  (mana_cost ≤ X) ; si X ≤ 0, aucun filtre n'est appliqué. Le shuffle est
+/** Sélection magique : propose jusqu'à 3 sorts communs partageant
+ *  l'alignement de la carte source (bon/neutre/maléfique). Le pool est lu
+ *  dans state.allSpellsPool (chargé une fois au démarrage du match). Si la
+ *  source ou son alignement est indéterminable, on retombe sur les
+ *  factions du deck + Mercenaires. X agit comme un plafond sur le coût en
+ *  mana (mana_cost ≤ X) ; si X ≤ 0, aucun filtre mana. Le shuffle est
  *  déterministe (entropy +1999 pour différencier des autres tirages). */
-export function getMagicalSelectionCards(state: GameState, maxManaCost: number): Card[] {
+export function getMagicalSelectionCards(
+  state: GameState,
+  maxManaCost: number,
+  source?: { faction?: string | null; card_alignment?: string | null } | null,
+): Card[] {
   const pool = state.allSpellsPool;
   if (!pool || pool.length === 0) return [];
+
+  const player = state.players[state.currentPlayerIndex];
+  const allowedFactions = factionsForSelectionAlignment(source ?? null, player);
   const filtered = pool.filter(c =>
     c.card_type === "spell"
+    && c.faction
+    && allowedFactions.has(c.faction)
+    && c.rarity === "Commune"
     && (maxManaCost <= 0 || c.mana_cost <= maxManaCost),
   );
   if (filtered.length === 0) return [];
 
-  const player = state.players[state.currentPlayerIndex];
   const entropy = player.hand.length * 7 + player.board.length * 13 + player.deck.length * 3 + player.graveyard.length * 17 + player.mana * 11;
   const seed = state.turnNumber * 1000 + state.currentPlayerIndex * 100 + entropy + 1999;
   let hash = seed;

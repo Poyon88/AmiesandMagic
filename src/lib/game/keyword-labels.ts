@@ -215,7 +215,7 @@ export const KEYWORD_LABELS: Record<Keyword, string> = {
   appel_du_clan: "Appel du clan X", rassemblement: "Rassemblement X",
   selection: "Sélection X",
   selection_magique: "Sélection magique X",
-  renfort_royal: "Renfort Royal X",
+  renfort_royal: "Sélection Royale X",
   lycanthropie: "Lycanthropie X",
   relancer: "Relancer X",
   tempete: "Tempête X",

@@ -601,7 +601,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     },
   },
   renfort_royal: {
-    id: "renfort_royal", label: "Renfort Royal X", symbol: "👑",
+    id: "renfort_royal", label: "Sélection Royale X", symbol: "👑",
     desc: "Choisissez une carte parmi 3 éditions limitées que vous possédez (≥30 requises ; sinon parmi des communes), de coût ≤ X (sans limite si X non défini).",
     applicable_to: ["creature", "spell"],
     creature: {

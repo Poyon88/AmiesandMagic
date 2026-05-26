@@ -514,9 +514,9 @@ export const useGameStore = create<GameStore>((set, get) => {
       return true;
     };
     return (
-      tryOpen("selection", (x) => getSelectionCards(gs, x)) ||
-      tryOpen("selection_magique", (x) => getMagicalSelectionCards(gs, x)) ||
-      tryOpen("renfort_royal", (x) => getRenfortRoyalCards(gs, x))
+      tryOpen("selection", (x) => getSelectionCards(gs, x, cardInst.card)) ||
+      tryOpen("selection_magique", (x) => getMagicalSelectionCards(gs, x, cardInst.card)) ||
+      tryOpen("renfort_royal", (x) => getRenfortRoyalCards(gs, x, cardInst.card))
     );
   };
 
@@ -1508,7 +1508,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     if (card && creatureNeedsSelection(card.card)) {
       const selXVals = parseXValuesFromEffectText(card.card.effect_text);
       const x = selXVals["selection"] ?? 0;
-      const choices = getSelectionCards(gameState, x);
+      const choices = getSelectionCards(gameState, x, card.card);
       if (choices.length > 0) {
         set({
           selectedCardInstanceId: instanceId,
@@ -1525,7 +1525,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     if (card && creatureNeedsRenfortRoyal(card.card)) {
       const xVals = parseXValuesFromEffectText(card.card.effect_text);
       const x = xVals["renfort_royal"] ?? 0;
-      const choices = getRenfortRoyalCards(gameState, x);
+      const choices = getRenfortRoyalCards(gameState, x, card.card);
       if (choices.length > 0) {
         set({
           selectedCardInstanceId: instanceId,
@@ -1542,7 +1542,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     if (card && creatureNeedsMagicalSelection(card.card)) {
       const xVals = parseXValuesFromEffectText(card.card.effect_text);
       const x = xVals["selection_magique"] ?? 0;
-      const choices = getMagicalSelectionCards(gameState, x);
+      const choices = getMagicalSelectionCards(gameState, x, card.card);
       if (choices.length > 0) {
         set({
           selectedCardInstanceId: instanceId,
@@ -1657,7 +1657,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     if (card.card.card_type === "creature" && creatureNeedsSelection(card.card)) {
       const selXVals = parseXValuesFromEffectText(card.card.effect_text);
       const x = selXVals["selection"] ?? 0;
-      const choices = getSelectionCards(gameState, x);
+      const choices = getSelectionCards(gameState, x, card.card);
       if (choices.length > 0) {
         set({
           selectedCardInstanceId: instanceId,
@@ -1675,7 +1675,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     if (card.card.card_type === "creature" && creatureNeedsRenfortRoyal(card.card)) {
       const xVals = parseXValuesFromEffectText(card.card.effect_text);
       const x = xVals["renfort_royal"] ?? 0;
-      const choices = getRenfortRoyalCards(gameState, x);
+      const choices = getRenfortRoyalCards(gameState, x, card.card);
       if (choices.length > 0) {
         set({
           selectedCardInstanceId: instanceId,
@@ -1693,7 +1693,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     if (card.card.card_type === "creature" && creatureNeedsMagicalSelection(card.card)) {
       const xVals = parseXValuesFromEffectText(card.card.effect_text);
       const x = xVals["selection_magique"] ?? 0;
-      const choices = getMagicalSelectionCards(gameState, x);
+      const choices = getMagicalSelectionCards(gameState, x, card.card);
       if (choices.length > 0) {
         set({
           selectedCardInstanceId: instanceId,
@@ -1785,7 +1785,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     if (card.card.card_type === "spell" && card.card.spell_keywords?.some(kw => kw.id === "selection")) {
       const selKw = card.card.spell_keywords!.find(kw => kw.id === "selection")!;
       const x = selKw.amount ?? 0;
-      const choices = getSelectionCards(gameState, x);
+      const choices = getSelectionCards(gameState, x, card.card);
       if (choices.length > 0) {
         set({
           selectedCardInstanceId: instanceId,
@@ -1802,7 +1802,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     if (card.card.card_type === "spell" && card.card.spell_keywords?.some(kw => kw.id === "selection_magique")) {
       const smKw = card.card.spell_keywords!.find(kw => kw.id === "selection_magique")!;
       const x = smKw.amount ?? 0;
-      const choices = getMagicalSelectionCards(gameState, x);
+      const choices = getMagicalSelectionCards(gameState, x, card.card);
       if (choices.length > 0) {
         set({
           selectedCardInstanceId: instanceId,
@@ -1819,7 +1819,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     if (card.card.card_type === "spell" && card.card.spell_keywords?.some(kw => kw.id === "renfort_royal")) {
       const rrKw = card.card.spell_keywords!.find(kw => kw.id === "renfort_royal")!;
       const x = rrKw.amount ?? 0;
-      const choices = getRenfortRoyalCards(gameState, x);
+      const choices = getRenfortRoyalCards(gameState, x, card.card);
       if (choices.length > 0) {
         set({
           selectedCardInstanceId: instanceId,
@@ -2183,7 +2183,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     if (creatureNeedsSelection(card.card)) {
       const selXVals = parseXValuesFromEffectText(card.card.effect_text);
       const x = selXVals["selection"] ?? 0;
-      const choices = getSelectionCards(gameState, x);
+      const choices = getSelectionCards(gameState, x, card.card);
       if (choices.length > 0) {
         set({
           selectedCardInstanceId: instanceId,
@@ -2199,7 +2199,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     if (creatureNeedsRenfortRoyal(card.card)) {
       const xVals = parseXValuesFromEffectText(card.card.effect_text);
       const x = xVals["renfort_royal"] ?? 0;
-      const choices = getRenfortRoyalCards(gameState, x);
+      const choices = getRenfortRoyalCards(gameState, x, card.card);
       if (choices.length > 0) {
         set({
           selectedCardInstanceId: instanceId,
@@ -2215,7 +2215,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     if (creatureNeedsMagicalSelection(card.card)) {
       const xVals = parseXValuesFromEffectText(card.card.effect_text);
       const x = xVals["selection_magique"] ?? 0;
-      const choices = getMagicalSelectionCards(gameState, x);
+      const choices = getMagicalSelectionCards(gameState, x, card.card);
       if (choices.length > 0) {
         set({
           selectedCardInstanceId: instanceId,
@@ -2306,13 +2306,16 @@ export const useGameStore = create<GameStore>((set, get) => {
     const effect = heroDef.powerEffect;
     if (effect && effect.mode === "spell_trigger") {
       const x = effect.params?.amount ?? 0;
+      // Pour Sélection / Sélection magique, l'alignement est dérivé de la
+      // faction du héros (les heroes définitions portent un faction id).
+      const heroSource = { faction: heroDef.faction ?? null };
       let choices: Card[] | null = null;
       if (effect.keywordId === "selection") {
-        choices = getSelectionCards(gameState, x);
+        choices = getSelectionCards(gameState, x, heroSource);
       } else if (effect.keywordId === "renfort_royal") {
-        choices = getRenfortRoyalCards(gameState, x);
+        choices = getRenfortRoyalCards(gameState, x, heroSource);
       } else if (effect.keywordId === "selection_magique") {
-        choices = getMagicalSelectionCards(gameState, x);
+        choices = getMagicalSelectionCards(gameState, x, heroSource);
       }
       if (choices !== null) {
         if (choices.length === 0) return null; // no candidates → power fizzles
