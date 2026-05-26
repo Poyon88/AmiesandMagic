@@ -3465,8 +3465,19 @@ export function applyAction(state: GameState, action: GameAction): GameState {
     case "end_turn": return endTurn(state);
     case "hero_power": return useHeroPower(state, action);
     case "tap_activate": return tapActivate(state, action);
+    case "concede": return concede(state, action);
     default: return state;
   }
+}
+
+function concede(state: GameState, action: { playerId: string }): GameState {
+  const next = deepClone(state);
+  const conceder = next.players.findIndex((p) => p.id === action.playerId);
+  if (conceder !== -1) {
+    next.winner = next.players[conceder === 0 ? 1 : 0].id;
+  }
+  next.phase = "finished";
+  return next;
 }
 
 // ============================================================

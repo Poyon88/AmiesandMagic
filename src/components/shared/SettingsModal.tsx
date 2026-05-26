@@ -1,16 +1,43 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { useAudioStore } from "@/lib/store/audioStore";
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  /** Renders the "Concéder le match" section. Omit it (or pass undefined)
+   *  in non-game contexts (home menu, etc.). Two-click confirmation pattern
+   *  guards against fat-finger forfeits. */
+  onConcede?: () => void;
 }
 
-export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
+export default function SettingsModal({ isOpen, onClose, onConcede }: SettingsModalProps) {
   const { settings, setMusicVolume, toggleMusicMute, setSfxVolume, toggleSfxMute } = useAudioStore();
+  const [concedeArmed, setConcedeArmed] = useState(false);
+  const armTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setConcedeArmed(false);
+      if (armTimerRef.current) clearTimeout(armTimerRef.current);
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
+
+  const handleConcedeClick = () => {
+    if (!onConcede) return;
+    if (!concedeArmed) {
+      setConcedeArmed(true);
+      if (armTimerRef.current) clearTimeout(armTimerRef.current);
+      armTimerRef.current = setTimeout(() => setConcedeArmed(false), 5000);
+      return;
+    }
+    if (armTimerRef.current) clearTimeout(armTimerRef.current);
+    setConcedeArmed(false);
+    onConcede();
+  };
 
   return (
     <div
@@ -138,6 +165,47 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             {Math.round(settings.sfxVolume * 100)}%
           </div>
         </div>
+
+        {/* Concede — game contexts only. Two-click confirm: first click
+            arms (button reveals "Confirmer concession"), second click within
+            5s actually forfeits. Auto-disarms otherwise. */}
+        {onConcede && (
+          <div style={{ marginTop: 24, paddingTop: 16, borderTop: "1px solid #333" }}>
+            <button
+              onClick={handleConcedeClick}
+              style={{
+                width: "100%",
+                padding: "10px 14px",
+                borderRadius: 6,
+                border: concedeArmed
+                  ? "1px solid #e74c3c"
+                  : "1px solid #e74c3c55",
+                background: concedeArmed ? "#e74c3c" : "#e74c3c22",
+                color: concedeArmed ? "#fff" : "#e74c3c",
+                fontFamily: "'Cinzel', serif",
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: 1,
+                cursor: "pointer",
+                transition: "background 0.15s, color 0.15s, border 0.15s",
+              }}
+            >
+              {concedeArmed ? "⚠ Confirmer la concession" : "Concéder le match"}
+            </button>
+            {concedeArmed && (
+              <p style={{
+                margin: "8px 0 0",
+                fontSize: 9,
+                color: "#888",
+                textAlign: "center",
+                fontFamily: "'Cinzel', serif",
+                letterSpacing: 0.5,
+              }}>
+                Cliquez à nouveau pour confirmer · annulation auto dans 5s
+              </p>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

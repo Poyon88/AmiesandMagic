@@ -607,6 +607,28 @@ export const useGameStore = create<GameStore>((set, get) => {
     const { gameState, localPlayerId, isAnimating } = get();
     if (!gameState || gameState.phase === "finished") return null;
 
+    // Concede bypasses every guard — a forfeit must always work, even mid-
+    // animation, even on the opponent's turn. We interrupt any running
+    // animation pipeline and drop the queued remote actions so the
+    // VICTORY/DEFEAT overlay surfaces immediately on both clients.
+    if (action.type === "concede") {
+      const next = applyAction(gameState, action);
+      set({
+        gameState: next,
+        isAnimating: false,
+        pendingIncomingActions: [],
+        damageEvents: [],
+        spellCastEvent: null,
+        fireBreathEvent: null,
+        cycleEternelEvent: null,
+        heroPowerCastEvent: null,
+        graveyardAffectEvent: null,
+        discardFromHandEvent: null,
+        tempeteEvent: null,
+      });
+      return action;
+    }
+
     // If the animation pipeline is still playing a previous action, drop this
     // one silently — the UI lock (myTurn && !isAnimating) normally prevents
     // local clicks from getting here, and the page.tsx broadcast handler

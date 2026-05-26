@@ -1110,7 +1110,16 @@ export default function GameBoard({ onAction }: GameBoardProps) {
         hoveredTargetId={hoveredTargetId}
       />
 
-      <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <SettingsModal
+        isOpen={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        onConcede={() => {
+          if (!localPlayerId) return;
+          const action = dispatchAction({ type: "concede", playerId: localPlayerId });
+          if (action) broadcast(action);
+          setSettingsOpen(false);
+        }}
+      />
 
       {heroDescriptionDef && (
         <HeroPowerDescriptionOverlay

@@ -320,7 +320,13 @@ export default function GamePage() {
             const applyOne = (a: GameAction) => {
               const store = useGameStore.getState();
               if (!store.gameState) return;
-              if (store.isAnimating) {
+              if (a.type === "concede") {
+                // dispatchAction has an early branch that interrupts any
+                // ongoing animation and clears the pending queue — invoke
+                // it directly so the DEFEAT/VICTORY overlay surfaces now
+                // instead of waiting for the local anim pipeline to drain.
+                store.dispatchAction(a);
+              } else if (store.isAnimating) {
                 useGameStore.setState((s) => ({
                   pendingIncomingActions: [...s.pendingIncomingActions, a],
                 }));

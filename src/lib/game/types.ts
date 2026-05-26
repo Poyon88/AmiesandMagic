@@ -594,7 +594,12 @@ export interface TapActivateAction {
   targetMap?: Record<string, string>;
 }
 
-export type GameAction = PlayCardAction | AttackAction | EndTurnAction | MulliganAction | HeroPowerAction | TapActivateAction;
+export interface ConcedeAction {
+  type: "concede";
+  playerId: string;
+}
+
+export type GameAction = PlayCardAction | AttackAction | EndTurnAction | MulliganAction | HeroPowerAction | TapActivateAction | ConcedeAction;
 
 // Combat event for animations
 export type CombatEventType = "damage" | "heal" | "buff" | "shield" | "poison" | "dodge" | "paralyze" | "resurrect" | "transform";
