@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect, useRef, type DragEvent } from "react"
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { useGameStore } from "@/lib/store/gameStore";
-import { canPlayCard, canAttack, canUseHeroPower, getSpellTargets, heroPowerNeedsTarget } from "@/lib/game/engine";
+import { canPlayCard, canAttack, canUseHeroPower, getSpellTargets, getValidTargets, heroPowerNeedsTarget } from "@/lib/game/engine";
 import HeroPortrait from "./HeroPortrait";
 import Hero3DViewer from "./Hero3DViewer";
 import HeroPowerButton from "./HeroPowerButton";
@@ -161,6 +161,52 @@ export default function GameBoard({ onAction }: GameBoardProps) {
     const action = activateHeroPower();
     broadcast(action);
   }, [activateHeroPower, broadcast]);
+
+  // Auto-attack-all: fires each eligible creature's attack on the enemy hero,
+  // leftmost first, waiting for the previous animation to finish before the
+  // next dispatch. Sets `isAutoAttacking` to true throughout so the turn
+  // timer pauses (TurnTimer.isPaused) and the button shows its busy state.
+  const [isAutoAttacking, setIsAutoAttacking] = useState(false);
+  const handleAttackAllOnHero = useCallback(async () => {
+    if (isAutoAttacking) return;
+    setIsAutoAttacking(true);
+    try {
+      const waitForIdle = (): Promise<void> =>
+        new Promise((resolve) => {
+          if (!useGameStore.getState().isAnimating) return resolve();
+          const unsub = useGameStore.subscribe((s) => {
+            if (!s.isAnimating) {
+              unsub();
+              resolve();
+            }
+          });
+        });
+
+      while (true) {
+        const s = useGameStore.getState();
+        const gs = s.gameState;
+        if (!gs || gs.phase === "finished") break;
+        if (gs.players[gs.currentPlayerIndex].id !== s.localPlayerId) break;
+        const me = gs.players[gs.currentPlayerIndex];
+        const nextAttacker = me.board.find(
+          (c) =>
+            canAttack(gs, c.instanceId) &&
+            getValidTargets(gs, c.instanceId).includes("enemy_hero"),
+        );
+        if (!nextAttacker) break;
+        const action = s.dispatchAction({
+          type: "attack",
+          attackerInstanceId: nextAttacker.instanceId,
+          targetInstanceId: "enemy_hero",
+        });
+        if (action) broadcast(action);
+        await waitForIdle();
+        await new Promise((r) => setTimeout(r, 80));
+      }
+    } finally {
+      setIsAutoAttacking(false);
+    }
+  }, [isAutoAttacking, broadcast]);
 
   const handleMulliganConfirm = useCallback(
     (selectedIds: string[]) => {
@@ -319,6 +365,47 @@ export default function GameBoard({ onAction }: GameBoardProps) {
   const myHeroDef = myPlayer.hero.heroDefinition;
   const oppHeroDef = opponent.hero.heroDefinition;
   const heroPowerAvailable = myTurn && canUseHeroPower(gameState) && !!myHeroDef;
+
+  // Number of friendly creatures that can currently attack the enemy hero
+  // — drives the auto-attack-all button's enabled state and tooltip count.
+  const eligibleHeroAttackerCount =
+    myTurn && targetingMode === "none"
+      ? myPlayer.board.filter(
+          (c) =>
+            canAttack(gameState, c.instanceId) &&
+            getValidTargets(gameState, c.instanceId).includes("enemy_hero"),
+        ).length
+      : 0;
+  const canAutoAttack = eligibleHeroAttackerCount > 0 && !isAutoAttacking;
+
+  // Rendered above the hero portrait/3D viewer in both branches. Kept as a
+  // local node (rather than a component) so it closes over the existing
+  // canAutoAttack / eligibleHeroAttackerCount values without prop churn.
+  const allAttackButton = (
+    <button
+      onClick={handleAttackAllOnHero}
+      disabled={!canAutoAttack}
+      title={
+        canAutoAttack
+          ? `Attaquer le héros adverse avec ${eligibleHeroAttackerCount} créature${eligibleHeroAttackerCount > 1 ? "s" : ""}`
+          : isAutoAttacking
+            ? "Séquence d'attaques en cours…"
+            : "Aucune créature ne peut attaquer le héros"
+      }
+      className={`relative w-9 h-9 rounded-full flex items-center justify-center text-base transition-all border-2 ${
+        canAutoAttack
+          ? "bg-red-900/80 hover:bg-red-700 hover:scale-110 cursor-pointer border-red-500/70 shadow-[0_0_12px_rgba(239,68,68,0.5)]"
+          : "bg-gray-800/50 border-gray-600/40 cursor-not-allowed opacity-50"
+      }`}
+    >
+      <span className={isAutoAttacking ? "animate-pulse" : undefined}>⚔</span>
+      {canAutoAttack && (
+        <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center border border-red-900">
+          {eligibleHeroAttackerCount}
+        </span>
+      )}
+    </button>
+  );
   const heroPowerIsTargeted = !!myHeroDef && heroPowerNeedsTarget(myHeroDef);
   const powerHalo: "blue" | "gold" | null =
     heroPowerAvailable
@@ -764,6 +851,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
             (handled in the Hero3DViewer wrapper instead). */}
         {!myPlayer.hero.heroDefinition?.glbUrl && (
         <div className="absolute right-[1%] bottom-[28%] lg:bottom-[1%] z-40 flex flex-col items-center gap-1">
+          {allAttackButton}
           {/* HeroPowerButton hidden so the 2D hero matches the 3D-hero
               UX: left-click on the portrait activates the power (when
               available), right-click opens the description overlay. */}
@@ -795,6 +883,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
             it never collides with them; at lg+ it anchors to the corner. */}
         {myPlayer.hero.heroDefinition?.glbUrl && (
           <div className="absolute right-[1%] bottom-[28%] lg:bottom-[1%] z-40 flex flex-col items-center gap-1">
+            {allAttackButton}
             <Hero3DViewer
               hero={myPlayer.hero}
               isOpponent={false}
@@ -836,6 +925,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
             onTimeUp={handleEndTurn}
             turnNumber={gameState.turnNumber}
             turnStartedAt={gameState.turnStartedAt}
+            isPaused={isAutoAttacking}
           />
           <button
             onClick={handleEndTurn}

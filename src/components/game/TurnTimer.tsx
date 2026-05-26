@@ -18,11 +18,15 @@ interface TurnTimerProps {
    *  testing two clients side-by-side), the value is corrected the next
    *  time the tick fires or the tab regains focus. */
   turnStartedAt: number;
+  /** When true, the timer display freezes and onTimeUp will not fire. The
+   *  duration spent paused is added to an offset so the player isn't
+   *  penalised after unpause. */
+  isPaused?: boolean;
 }
 
-function computeTimeLeft(turnStartedAt: number): number {
+function computeTimeLeft(turnStartedAt: number, offsetMs = 0): number {
   if (!turnStartedAt) return TURN_TIMER_SECONDS;
-  const elapsed = Math.floor((Date.now() - turnStartedAt) / 1000);
+  const elapsed = Math.floor((Date.now() - turnStartedAt - offsetMs) / 1000);
   return Math.max(0, Math.min(TURN_TIMER_SECONDS, TURN_TIMER_SECONDS - elapsed));
 }
 
@@ -31,7 +35,10 @@ export default function TurnTimer({
   onTimeUp,
   turnNumber,
   turnStartedAt,
+  isPaused = false,
 }: TurnTimerProps) {
+  const pauseStartedAtRef = useRef<number | null>(null);
+  const pauseOffsetMsRef = useRef(0);
   const [timeLeft, setTimeLeft] = useState(() => computeTimeLeft(turnStartedAt));
   const onTimeUpRef = useRef(onTimeUp);
   onTimeUpRef.current = onTimeUp;
@@ -45,13 +52,33 @@ export default function TurnTimer({
   // our own turn — kept here so that interval ticks AND focus/visibility
   // recomputes share the exact same logic.
   const tick = useCallback(() => {
-    const next = computeTimeLeft(turnStartedAt);
+    if (isPaused) return;
+    const next = computeTimeLeft(turnStartedAt, pauseOffsetMsRef.current);
     setTimeLeft(next);
     if (next <= 0 && isMyTurn && !hasFiredTimeUpRef.current) {
       hasFiredTimeUpRef.current = true;
       setTimeout(() => onTimeUpRef.current(), 0);
     }
-  }, [turnStartedAt, isMyTurn]);
+  }, [turnStartedAt, isMyTurn, isPaused]);
+
+  // Pause tracking — when isPaused flips true we anchor the moment; when
+  // it flips false we add the elapsed pause to the offset so subsequent
+  // ticks subtract it from the wall-clock elapsed value.
+  useEffect(() => {
+    if (isPaused) {
+      pauseStartedAtRef.current = Date.now();
+    } else if (pauseStartedAtRef.current !== null) {
+      pauseOffsetMsRef.current += Date.now() - pauseStartedAtRef.current;
+      pauseStartedAtRef.current = null;
+      const recomputed = computeTimeLeft(turnStartedAt, pauseOffsetMsRef.current);
+      // Race guard: a tick that landed in the same task as the click that
+      // triggered the pause might have already latched the time-up flag.
+      // Clear it if the (offset-corrected) clock still has time, otherwise
+      // the timer would silently freeze at 0 with no auto-end-turn.
+      if (recomputed > 0) hasFiredTimeUpRef.current = false;
+      setTimeLeft(recomputed);
+    }
+  }, [isPaused, turnStartedAt]);
 
   // Reset audio + flags when the actual turn changes; recompute display
   // from the new anchor.
@@ -61,6 +88,8 @@ export default function TurnTimer({
     hasFiredTimeUpRef.current = false;
     SfxEngine.getInstance().stop(warningAudioRef.current);
     warningAudioRef.current = null;
+    pauseOffsetMsRef.current = 0;
+    pauseStartedAtRef.current = null;
     setTimeLeft(computeTimeLeft(turnStartedAt));
   }, [turnNumber, turnStartedAt]);
 
