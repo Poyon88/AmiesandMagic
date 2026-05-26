@@ -128,6 +128,16 @@ interface GameStore {
   spellTargetSlots: SpellTargetSlot[];
   currentTargetSlotIndex: number;
   collectedTargetMap: Record<string, string>;
+  // Carries the partial play_card payload from a creature's first picker
+  // (target / graveyard / divination) into a subsequent selection picker on
+  // the same creature, so a creature combining e.g. mimique + selection can
+  // resolve both halves in one dispatch. Null outside of that chain.
+  pendingCreatureChain: {
+    targetInstanceId?: string;
+    graveyardTargetInstanceId?: string;
+    divinationChoiceIndex?: number;
+    boardPosition?: number | null;
+  } | null;
   tokenTemplates: TokenTemplate[];
   effectLog: { id: string; text: string; timestamp: number }[];
   damageEvents: DamageEvent[];
@@ -520,6 +530,50 @@ export const useGameStore = create<GameStore>((set, get) => {
     );
   };
 
+  // Creature counterpart of openSelectionPickerIfNeeded. After the user
+  // resolves a creature's target / graveyard / divination picker, this
+  // checks whether the same creature ALSO carries a selection-style
+  // picker keyword and, if so, opens the second picker carrying the
+  // already-collected fields (target, graveyard target, divination index,
+  // board position) via pendingCreatureChain. The chain payload is read
+  // back in the selection-mode creature dispatch branch so the final
+  // play_card action contains every half. Returns true when a picker was
+  // opened — caller should bail instead of dispatching.
+  const openCreaturePickerIfNeeded = (
+    gs: GameState,
+    instanceId: string,
+    carried: {
+      targetInstanceId?: string;
+      graveyardTargetInstanceId?: string;
+      divinationChoiceIndex?: number;
+      boardPosition?: number | null;
+    },
+  ): boolean => {
+    const player = gs.players[gs.currentPlayerIndex];
+    const cardInst = player.hand.find(c => c.instanceId === instanceId);
+    if (!cardInst || cardInst.card.card_type !== "creature") return false;
+    const card = cardInst.card;
+    let choices: Card[] | null = null;
+    if (creatureNeedsSelection(card)) {
+      const x = parseXValuesFromEffectText(card.effect_text)["selection"] ?? 0;
+      choices = getSelectionCards(gs, x, card);
+    } else if (creatureNeedsRenfortRoyal(card)) {
+      const x = parseXValuesFromEffectText(card.effect_text)["renfort_royal"] ?? 0;
+      choices = getRenfortRoyalCards(gs, x, card);
+    } else if (creatureNeedsMagicalSelection(card)) {
+      const x = parseXValuesFromEffectText(card.effect_text)["selection_magique"] ?? 0;
+      choices = getMagicalSelectionCards(gs, x, card);
+    }
+    if (!choices || choices.length === 0) return false;
+    set({
+      targetingMode: "selection",
+      selectionCards: choices,
+      validTargets: [],
+      pendingCreatureChain: carried,
+    });
+    return true;
+  };
+
   return ({
   gameState: null,
   localPlayerId: null,
@@ -542,6 +596,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   spellTargetSlots: [],
   currentTargetSlotIndex: 0,
   collectedTargetMap: {},
+  pendingCreatureChain: null,
   tokenTemplates: [],
   effectLog: [],
   damageEvents: [],
@@ -1191,6 +1246,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         pendingHeroPowerSelection: false,
         pendingTapSourceId: null,
         pendingTapInstanceIdx: null,
+        pendingCreatureChain: null,
         damageEvents: [],
         lastSfxEvents: sfxEvents,
         effectLog: [...get().effectLog, ...logEntries].slice(-20),
@@ -1901,6 +1957,19 @@ export const useGameStore = create<GameStore>((set, get) => {
       } else {
         const nextSlot = spellTargetSlots[nextIndex];
         const card = gs?.players[gs.currentPlayerIndex].hand.find(c => c.instanceId === selectedCardInstanceId);
+        // If the next slot targets a graveyard, switch to graveyard mode
+        // so the UI surfaces the cimetière picker instead of board targets.
+        if (nextSlot.type === "friendly_graveyard" || nextSlot.type === "friendly_graveyard_to_board") {
+          const kwIndex = parseInt(nextSlot.slot.replace("kw_", ""));
+          const nextTargets = (card && gs) ? getSpellGraveyardTargets(gs, card.card, kwIndex) : [];
+          set({
+            validTargets: nextTargets,
+            currentTargetSlotIndex: nextIndex,
+            collectedTargetMap: newMap,
+            targetingMode: "graveyard",
+          });
+          return null;
+        }
         const nextTargets = card ? getSpellTargets(gs!, card.card, nextSlot.type) : [];
         set({
           validTargets: nextTargets,
@@ -1929,6 +1998,15 @@ export const useGameStore = create<GameStore>((set, get) => {
         }
       }
 
+      // Chain into a creature-side selection picker if the same creature
+      // also carries selection / selection_magique / renfort_royal.
+      if (gs && openCreaturePickerIfNeeded(gs, selectedCardInstanceId, {
+        targetInstanceId: targetId,
+        boardPosition: pendingBoardPosition,
+      })) {
+        return null;
+      }
+
       return get().dispatchAction({
         type: "play_card",
         cardInstanceId: selectedCardInstanceId,
@@ -1946,18 +2024,62 @@ export const useGameStore = create<GameStore>((set, get) => {
         boardPosition: pendingBoardPosition ?? undefined,
       });
     } else if (targetingMode === "graveyard" && selectedCardInstanceId) {
-      const { pendingBoardPosition, spellTargetSlots, gameState: gs } = get();
+      const { pendingBoardPosition, spellTargetSlots, currentTargetSlotIndex, collectedTargetMap, gameState: gs } = get();
       // Check if this is a spell graveyard targeting
       const cardInHand = gs?.players[gs.currentPlayerIndex].hand.find(c => c.instanceId === selectedCardInstanceId);
       if (cardInHand?.card.card_type === "spell" && spellTargetSlots.length > 0) {
-        const slot = spellTargetSlots[0]?.slot ?? "kw_0";
+        const currentSlot = spellTargetSlots[currentTargetSlotIndex] ?? spellTargetSlots[0];
+        const slot = currentSlot.slot ?? "kw_0";
+        const newMap = { ...collectedTargetMap, [slot]: targetId };
+        const nextIndex = currentTargetSlotIndex + 1;
+
+        // More target slots left? Transition to the next one (supports a
+        // hypothetical spell combining e.g. exhumation + rappel, or
+        // exhumation + impact). The next slot's type drives the mode.
+        if (nextIndex < spellTargetSlots.length) {
+          const nextSlot = spellTargetSlots[nextIndex];
+          if (nextSlot.type === "friendly_graveyard" || nextSlot.type === "friendly_graveyard_to_board") {
+            const kwIndex = parseInt(nextSlot.slot.replace("kw_", ""));
+            const nextTargets = gs ? getSpellGraveyardTargets(gs, cardInHand.card, kwIndex) : [];
+            set({
+              validTargets: nextTargets,
+              currentTargetSlotIndex: nextIndex,
+              collectedTargetMap: newMap,
+              // targetingMode stays "graveyard"
+            });
+          } else {
+            const nextTargets = gs ? getSpellTargets(gs, cardInHand.card, nextSlot.type) : [];
+            set({
+              validTargets: nextTargets,
+              currentTargetSlotIndex: nextIndex,
+              collectedTargetMap: newMap,
+              targetingMode: spellTargetSlots.length - nextIndex > 1 ? "spell_multi" : "spell",
+            });
+          }
+          return null;
+        }
+
+        // All target slots done — chain into a selection-style picker if
+        // the spell also carries one (e.g. Aya Marcay Quilla: Exhumation
+        // graveyard target first, then the Sélection picker, with kw_0
+        // carried forward).
+        if (gs && openSelectionPickerIfNeeded(gs, selectedCardInstanceId, newMap)) {
+          return null;
+        }
         return get().dispatchAction({
           type: "play_card",
           cardInstanceId: selectedCardInstanceId,
-          targetMap: { [slot]: targetId },
+          targetMap: newMap,
         });
       }
       // Creature graveyard targeting (existing behavior)
+      // Chain into a creature-side selection picker if applicable.
+      if (gs && openCreaturePickerIfNeeded(gs, selectedCardInstanceId, {
+        graveyardTargetInstanceId: targetId,
+        boardPosition: pendingBoardPosition,
+      })) {
+        return null;
+      }
       return get().dispatchAction({
         type: "play_card",
         cardInstanceId: selectedCardInstanceId,
@@ -1965,11 +2087,19 @@ export const useGameStore = create<GameStore>((set, get) => {
         boardPosition: pendingBoardPosition ?? undefined,
       });
     } else if (targetingMode === "divination" && selectedCardInstanceId) {
-      const { pendingBoardPosition } = get();
+      const { pendingBoardPosition, gameState: gs } = get();
+      const choiceIndex = parseInt(targetId) || 0;
+      // Chain into a creature-side selection picker if applicable.
+      if (gs && openCreaturePickerIfNeeded(gs, selectedCardInstanceId, {
+        divinationChoiceIndex: choiceIndex,
+        boardPosition: pendingBoardPosition,
+      })) {
+        return null;
+      }
       return get().dispatchAction({
         type: "play_card",
         cardInstanceId: selectedCardInstanceId,
-        divinationChoiceIndex: parseInt(targetId) || 0,
+        divinationChoiceIndex: choiceIndex,
         boardPosition: pendingBoardPosition ?? undefined,
       });
     } else if (targetingMode === "selection" && get().pendingHeroPowerSelection) {
@@ -1982,7 +2112,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         selectionCardId: cardId,
       });
     } else if (targetingMode === "selection" && selectedCardInstanceId) {
-      const { pendingBoardPosition, gameState: gs, collectedTargetMap } = get();
+      const { pendingBoardPosition, gameState: gs, collectedTargetMap, pendingCreatureChain } = get();
       const cardInHand = gs?.players[gs.currentPlayerIndex].hand.find(c => c.instanceId === selectedCardInstanceId);
       const cardId = parseInt(targetId) || 0;
       if (cardInHand?.card.card_type === "spell") {
@@ -1996,11 +2126,17 @@ export const useGameStore = create<GameStore>((set, get) => {
           targetMap: { ...collectedTargetMap, selection_0: String(cardId) },
         });
       }
+      // Creature selection: merge in pendingCreatureChain (carries the
+      // target / graveyard / divination choice from an earlier picker on
+      // the same creature, e.g. mimique + selection).
       return get().dispatchAction({
         type: "play_card",
         cardInstanceId: selectedCardInstanceId,
         selectionCardId: cardId,
-        boardPosition: pendingBoardPosition ?? undefined,
+        boardPosition: pendingCreatureChain?.boardPosition ?? pendingBoardPosition ?? undefined,
+        targetInstanceId: pendingCreatureChain?.targetInstanceId,
+        graveyardTargetInstanceId: pendingCreatureChain?.graveyardTargetInstanceId,
+        divinationChoiceIndex: pendingCreatureChain?.divinationChoiceIndex,
       });
     } else if (targetingMode === "hero_power") {
       return get().dispatchAction({
@@ -2036,6 +2172,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       spellTargetSlots: [],
       currentTargetSlotIndex: 0,
       collectedTargetMap: {},
+      pendingCreatureChain: null,
       pendingCostCard: null,
       selectedDiscardIds: [],
       selectedSacrificeIds: [],
