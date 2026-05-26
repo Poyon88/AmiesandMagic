@@ -141,7 +141,17 @@ export default function CardEditor() {
       if (search && !card.name.toLowerCase().includes(search.toLowerCase())) return false;
       if (manaCostFilter !== null && card.mana_cost !== manaCostFilter) return false;
       if (typeFilter !== null && card.card_type !== typeFilter) return false;
-      if (keywordFilter !== null && !card.keywords.includes(keywordFilter)) return false;
+      if (keywordFilter !== null) {
+        // Keywords can live in two places: the `keywords` text[] (creature
+        // keywords, plus some shared ones like renfort_royal on creatures)
+        // and `spell_keywords` jsonb[] (id-tagged spell keywords with
+        // metadata). Renfort Royal on a spell sits in the latter, so the
+        // filter must consider both lists.
+        const inKeywords = card.keywords.includes(keywordFilter);
+        const inSpellKeywords = Array.isArray(card.spell_keywords)
+          && card.spell_keywords.some((sk) => sk?.id === keywordFilter);
+        if (!inKeywords && !inSpellKeywords) return false;
+      }
       if (factionFilter !== null && card.faction !== factionFilter) return false;
       if (rarityFilter !== null && card.rarity !== rarityFilter) return false;
       if (raceFilter !== null && card.race !== raceFilter) return false;

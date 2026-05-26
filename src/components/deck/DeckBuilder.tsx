@@ -211,8 +211,15 @@ export default function DeckBuilder({
       if (manaCostFilter !== null && card.mana_cost !== manaCostFilter)
         return false;
       if (typeFilter !== null && card.card_type !== typeFilter) return false;
-      if (keywordFilter !== null && !card.keywords.includes(keywordFilter))
-        return false;
+      if (keywordFilter !== null) {
+        // Keywords live in two places: `keywords` text[] and `spell_keywords`
+        // jsonb[] (id-tagged). Renfort Royal on a spell sits in the latter,
+        // so the filter must consider both.
+        const inKeywords = card.keywords.includes(keywordFilter);
+        const inSpellKeywords = Array.isArray(card.spell_keywords)
+          && card.spell_keywords.some((sk) => sk?.id === keywordFilter);
+        if (!inKeywords && !inSpellKeywords) return false;
+      }
       if (factionFilter !== null && card.faction !== factionFilter)
         return false;
       if (rarityFilter !== null && card.rarity !== rarityFilter)
