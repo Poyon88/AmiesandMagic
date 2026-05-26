@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef, type DragEvent } from "react";
 import Image from "next/image";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useGameStore } from "@/lib/store/gameStore";
 import { canPlayCard, canAttack, canUseHeroPower, getSpellTargets, heroPowerNeedsTarget } from "@/lib/game/engine";
 import HeroPortrait from "./HeroPortrait";
@@ -36,6 +36,7 @@ import useGameMusic from "@/hooks/useGameMusic";
 import { useAudioStore } from "@/lib/store/audioStore";
 import SfxEngine from "@/lib/audio/SfxEngine";
 import useLongPress from "@/hooks/useLongPress";
+import { useScreenShake } from "@/hooks/useScreenShake";
 
 interface GameBoardProps {
   onAction?: (action: GameAction) => void;
@@ -44,6 +45,7 @@ interface GameBoardProps {
 
 export default function GameBoard({ onAction }: GameBoardProps) {
   useGameMusic();
+  const { shakeControls, isFrozen } = useScreenShake();
 
   const {
     gameState,
@@ -426,7 +428,8 @@ export default function GameBoard({ onAction }: GameBoardProps) {
       }}
     >
       {/* 16:9 board container */}
-      <div
+      <motion.div
+        animate={shakeControls}
         className="absolute inset-0 m-auto overflow-visible"
         style={{
           aspectRatio: "16/9",
@@ -435,6 +438,8 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           width: "100%",
           height: "100%",
           position: "relative",
+          filter: isFrozen ? "brightness(1.5) saturate(1.6) contrast(1.1)" : "none",
+          transition: isFrozen ? "none" : "filter 90ms ease-out",
         }}
       >
         {/* Board artwork — next/image pipeline respects DPR and serves the
@@ -882,7 +887,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
             );
           })}
         </div>
-      </div>{/* end 16:9 board container */}
+      </motion.div>{/* end 16:9 board container */}
 
       {/* ============= FIXED OVERLAYS ============= */}
       {mulliganOverlayRequired && (

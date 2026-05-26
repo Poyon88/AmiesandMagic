@@ -255,7 +255,10 @@ export default function HandCard({
     <motion.div
       initial={{ y: 60, opacity: 0, scale: 0.7 }}
       animate={{ y: 0, opacity: 1, scale: 1 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
+      transition={{
+        default: { type: "spring", stiffness: 320, damping: 20, mass: 1.1 },
+        opacity: { duration: 0.25, ease: "easeOut" },
+      }}
       data-instance-id={cardInstance.instanceId}
       style={{ width: W, height: H, position: "relative", zoom: 1.41 }}
     >

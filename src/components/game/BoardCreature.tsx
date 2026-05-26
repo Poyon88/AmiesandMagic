@@ -148,7 +148,11 @@ export default function BoardCreature({
         ? { opacity: 0, scale: 0.3, rotate: -10, filter: "brightness(0.5) saturate(2) hue-rotate(80deg)", transition: { duration: 1.0, ease: "easeIn" } }
         : { opacity: 0, scale: 0, rotate: -15, filter: "brightness(2) saturate(0)", transition: { duration: 1.0, ease: "easeIn" } }
       }
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      transition={{
+        default: { type: "spring", stiffness: 280, damping: 22, mass: 1.3 },
+        x: { duration: 0.25, ease: "easeOut" },
+        opacity: { duration: 0.3, ease: "easeOut" },
+      }}
     >
     <div
       ref={creatureRef}
