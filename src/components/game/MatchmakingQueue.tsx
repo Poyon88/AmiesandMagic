@@ -12,6 +12,14 @@ interface ValidDeck {
   format_id?: number | null;
 }
 
+// Polling cadence — realtime handles the common path (opponent matches us),
+// the poll handles the dual case (we match an opponent already in queue).
+// Kept short since the RPC is atomic so the only cost is one round-trip.
+const POLL_INTERVAL_MS = 2500;
+// Heartbeat must comfortably beat the RPC's 45s staleness cutoff so a real
+// player keeps a hot last_seen_at.
+const HEARTBEAT_INTERVAL_MS = 15000;
+
 export default function MatchmakingQueue({
   userId,
   validDecks,
@@ -34,111 +42,95 @@ export default function MatchmakingQueue({
   const [queueTime, setQueueTime] = useState(0);
   const [error, setError] = useState("");
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const pollingRef = useRef<boolean>(false);
   const pollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const heartbeatRef = useRef<NodeJS.Timeout | null>(null);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const inQueueRef = useRef<boolean>(false);
   const matchFoundRef = useRef<boolean>(false);
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      pollingRef.current = false;
-      if (timerRef.current) clearInterval(timerRef.current);
-      if (pollTimeoutRef.current) clearTimeout(pollTimeoutRef.current);
-      channelRef.current?.unsubscribe();
-    };
+  const cleanupChannel = useCallback(() => {
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current);
+      channelRef.current = null;
+    }
+  }, [supabase]);
+
+  const cleanupTimers = useCallback(() => {
+    if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+    if (pollTimeoutRef.current) { clearTimeout(pollTimeoutRef.current); pollTimeoutRef.current = null; }
+    if (heartbeatRef.current) { clearInterval(heartbeatRef.current); heartbeatRef.current = null; }
   }, []);
 
   const navigateToMatch = useCallback(
     (matchId: string) => {
-      if (matchFoundRef.current) return; // prevent double navigation
+      if (matchFoundRef.current) return;
       matchFoundRef.current = true;
-      pollingRef.current = false;
-      if (timerRef.current) clearInterval(timerRef.current);
-      if (pollTimeoutRef.current) clearTimeout(pollTimeoutRef.current);
-      channelRef.current?.unsubscribe();
+      inQueueRef.current = false;
+      cleanupTimers();
+      cleanupChannel();
       router.push(`/game/${matchId}`);
     },
-    [router]
+    [router, cleanupTimers, cleanupChannel]
   );
 
-  const pollForMatch = useCallback(
-    async (deckId: number) => {
-      if (!pollingRef.current || matchFoundRef.current) return;
-
+  // Best-effort queue cleanup on tab close. sendBeacon survives unload
+  // better than fetch, but Supabase RPC doesn't have a beacon path so we
+  // fall back to a synchronous-ish removeChannel + delete that may or may
+  // not complete. The 45s staleness window catches anything we miss.
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (!inQueueRef.current) return;
       try {
-        // Check if another player already created a match with us (within last 2 minutes)
-        const recentCutoff = new Date(Date.now() - 2 * 60 * 1000).toISOString();
-        const { data: existingMatch } = await supabase
-          .from("matches")
-          .select("id")
-          .eq("status", "active")
-          .or(`player1_id.eq.${userId},player2_id.eq.${userId}`)
-          .gte("created_at", recentCutoff)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
+        supabase.from("matchmaking_queue").delete().eq("user_id", userId).then(() => {});
+      } catch {
+        // ignore — staleness filter will collect it
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [supabase, userId]);
 
-        if (existingMatch) {
-          // We were already matched by the other player
-          // Remove ourselves from queue
-          await supabase
-            .from("matchmaking_queue")
-            .delete()
-            .eq("user_id", userId);
-          navigateToMatch(existingMatch.id);
+  // Unmount cleanup
+  useEffect(() => {
+    return () => {
+      inQueueRef.current = false;
+      cleanupTimers();
+      cleanupChannel();
+    };
+  }, [cleanupTimers, cleanupChannel]);
+
+  const pollOnce = useCallback(
+    async (deckId: number, formatId: number | null) => {
+      if (!inQueueRef.current || matchFoundRef.current) return;
+      try {
+        const { data, error: rpcError } = await supabase.rpc("find_match_or_enqueue", {
+          p_user_id: userId,
+          p_deck_id: deckId,
+          p_format_id: formatId,
+        });
+        if (rpcError) {
+          console.error("[matchmaking] rpc error", rpcError);
           return;
         }
-
-        // Look for an opponent in the queue (same format)
-        let query = supabase
-          .from("matchmaking_queue")
-          .select("*")
-          .neq("user_id", userId)
-          .order("joined_at")
-          .limit(1);
-        if (selectedFormatId) {
-          query = query.eq("format_id", selectedFormatId);
-        }
-        const { data: queueEntries } = await query;
-
-        if (queueEntries && queueEntries.length > 0 && pollingRef.current) {
-          const opponent = queueEntries[0];
-
-          // Try to create match (we are player1)
-          const { data: match, error: matchError } = await supabase
-            .from("matches")
-            .insert({
-              player1_id: userId,
-              player2_id: opponent.user_id,
-              player1_deck_id: deckId,
-              player2_deck_id: opponent.deck_id,
-              status: "active",
-            })
-            .select("id")
-            .single();
-
-          if (match && !matchError) {
-            // Remove ourselves from queue (opponent will detect the match and remove themselves)
-            await supabase
-              .from("matchmaking_queue")
-              .delete()
-              .eq("user_id", userId);
-
-            navigateToMatch(match.id);
-            return;
-          }
+        if (data) {
+          navigateToMatch(data as string);
         }
       } catch (err) {
-        console.error("Poll error:", err);
-      }
-
-      // Continue polling
-      if (pollingRef.current && !matchFoundRef.current) {
-        pollTimeoutRef.current = setTimeout(() => pollForMatch(deckId), 2000);
+        console.error("[matchmaking] poll exception", err);
       }
     },
-    [userId, supabase, navigateToMatch, selectedFormatId]
+    [userId, supabase, navigateToMatch]
+  );
+
+  const schedulePoll = useCallback(
+    (deckId: number, formatId: number | null) => {
+      if (!inQueueRef.current || matchFoundRef.current) return;
+      pollTimeoutRef.current = setTimeout(async () => {
+        await pollOnce(deckId, formatId);
+        schedulePoll(deckId, formatId);
+      }, POLL_INTERVAL_MS);
+    },
+    [pollOnce]
   );
 
   async function joinQueue() {
@@ -151,40 +143,86 @@ export default function MatchmakingQueue({
     setInQueue(true);
     setQueueTime(0);
     matchFoundRef.current = false;
-    pollingRef.current = true;
+    inQueueRef.current = true;
 
-    // Start timer
+    // Wall-clock display timer
     timerRef.current = setInterval(() => {
       setQueueTime((prev) => prev + 1);
     }, 1000);
 
-    // Clean any stale queue entry first, then insert fresh
-    await supabase
-      .from("matchmaking_queue")
-      .delete()
-      .eq("user_id", userId);
+    // Realtime subscription FIRST so we don't miss the INSERT event our
+    // opponent triggers while our initial RPC is in flight.
+    const channel = supabase.channel(`matchmaking:${userId}`);
+    const handleMatchRow = (row: { id: string; player1_id: string; player2_id: string; status: string }) => {
+      if (matchFoundRef.current) return;
+      if (row.status !== "active") return;
+      if (row.player1_id !== userId && row.player2_id !== userId) return;
+      // Best-effort: remove our queue entry. The RPC also does this on the
+      // pairing side, so this only matters when we're player2 (matched by
+      // the opponent's RPC, which deleted both queue rows already — so
+      // this is usually a no-op).
+      supabase.from("matchmaking_queue").delete().eq("user_id", userId).then(() => {});
+      navigateToMatch(row.id);
+    };
+    channel.on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "matches", filter: `player1_id=eq.${userId}` },
+      (payload) => handleMatchRow(payload.new as Parameters<typeof handleMatchRow>[0])
+    );
+    channel.on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "matches", filter: `player2_id=eq.${userId}` },
+      (payload) => handleMatchRow(payload.new as Parameters<typeof handleMatchRow>[0])
+    );
+    channelRef.current = channel;
+    await channel.subscribe();
 
-    const { error: insertError } = await supabase
-      .from("matchmaking_queue")
-      .insert({ user_id: userId, deck_id: selectedDeckId, format_id: selectedFormatId });
-
-    if (insertError) {
-      setError(insertError.message);
+    // Initial RPC: either finds an opponent and returns a match id, or
+    // upserts us into the queue and returns null.
+    try {
+      const { data, error: rpcError } = await supabase.rpc("find_match_or_enqueue", {
+        p_user_id: userId,
+        p_deck_id: selectedDeckId,
+        p_format_id: selectedFormatId,
+      });
+      if (rpcError) {
+        setError(rpcError.message);
+        setInQueue(false);
+        inQueueRef.current = false;
+        cleanupTimers();
+        cleanupChannel();
+        return;
+      }
+      if (data) {
+        navigateToMatch(data as string);
+        return;
+      }
+    } catch (err) {
+      console.error("[matchmaking] initial rpc exception", err);
+      setError("Erreur de connexion au matchmaking");
       setInQueue(false);
-      pollingRef.current = false;
-      if (timerRef.current) clearInterval(timerRef.current);
+      inQueueRef.current = false;
+      cleanupTimers();
+      cleanupChannel();
       return;
     }
 
-    // Start polling
-    pollForMatch(selectedDeckId);
+    // Heartbeat to keep our queue entry fresh past the 45s staleness cutoff.
+    heartbeatRef.current = setInterval(() => {
+      supabase.rpc("heartbeat_matchmaking", { p_user_id: userId }).then(({ error: hbErr }) => {
+        if (hbErr) console.warn("[matchmaking] heartbeat failed", hbErr);
+      });
+    }, HEARTBEAT_INTERVAL_MS);
+
+    // Backup polling — realtime should cover the "opponent matched us" path,
+    // but a poll still occasionally tries to claim someone in the queue.
+    schedulePoll(selectedDeckId, selectedFormatId);
   }
 
   async function leaveQueue() {
-    pollingRef.current = false;
-    if (timerRef.current) clearInterval(timerRef.current);
-    if (pollTimeoutRef.current) clearTimeout(pollTimeoutRef.current);
-    channelRef.current?.unsubscribe();
+    inQueueRef.current = false;
+    cleanupTimers();
+    cleanupChannel();
 
     await supabase
       .from("matchmaking_queue")
