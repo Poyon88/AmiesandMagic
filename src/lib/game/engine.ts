@@ -2574,7 +2574,9 @@ export function attack(state: GameState, action: AttackAction): GameState {
     attacker.attacksRemaining--;
     attacker.targetsAttackedThisTurn.push(effectiveTarget);
     attacker.hasAttacked = attacker.attacksRemaining <= 0;
-    attacker.tapped = true; // MTG-strict: attacking engages the creature
+    // Tap only when no attack left this turn — Célérité needs to remain
+    // untapped between its two attacks.
+    attacker.tapped = attacker.attacksRemaining <= 0;
 
   } else {
     const target = opponent.board.find(c => c.instanceId === effectiveTarget);
@@ -2586,7 +2588,7 @@ export function attack(state: GameState, action: AttackAction): GameState {
       attacker.attacksRemaining--;
       attacker.targetsAttackedThisTurn.push(effectiveTarget);
       attacker.hasAttacked = attacker.attacksRemaining <= 0;
-      attacker.tapped = true;
+      attacker.tapped = attacker.attacksRemaining <= 0;
       newState.lastAction = action;
       return newState;
     }
@@ -2708,7 +2710,7 @@ export function attack(state: GameState, action: AttackAction): GameState {
     attacker.attacksRemaining--;
     attacker.targetsAttackedThisTurn.push(effectiveTarget);
     attacker.hasAttacked = attacker.attacksRemaining <= 0;
-    attacker.tapped = true;
+    attacker.tapped = attacker.attacksRemaining <= 0;
   }
 
   // Clean dead creatures and process death triggers
