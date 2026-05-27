@@ -56,6 +56,7 @@ export default function GamePage() {
   const { matchId } = useParams<{ matchId: string }>();
   const supabase = createClient();
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const presencePollRef = useRef<NodeJS.Timeout | null>(null);
 
   // Re-fetch the SFX catalog on game page mount so recently admin-uploaded
   // sound effects (summon, timer_warning, …) are picked up without requiring
@@ -399,30 +400,54 @@ export default function GamePage() {
               }
             });
           })
-          .on("presence", { event: "sync" }, () => {
-            const state = channel.presenceState();
-            const playerCount = Object.keys(state).length;
-
-            if (playerCount >= 2 && !gameInitializedRef.current && matchDataRef.current) {
-              gameInitializedRef.current = true;
-              const { match: m, p1Cards: p1, p2Cards: p2, p1Hero, p2Hero, factionCards, allSpells, p1OwnedLimitedIds, p2OwnedLimitedIds } = matchDataRef.current;
-
-              const seed = parseInt(matchId.replace(/-/g, "").slice(0, 8), 16);
-              const firstPlayer: 0 | 1 = seed % 2 === 0 ? 0 : 1;
-
-              initGame(m.player1_id, m.player2_id, p1, p2, firstPlayer, seed, p1Hero, p2Hero, factionCards, allSpells);
-              setOwnedLimitedCardIds(p1OwnedLimitedIds, p2OwnedLimitedIds);
-              setPhase("playing");
-            }
-          })
+          .on("presence", { event: "sync" }, () => tryInit("sync"))
           .subscribe(async (status) => {
+            console.log("[match] channel status", status);
             if (status === "SUBSCRIBED") {
-              await channel.track({ user_id: user.id });
+              try {
+                const res = await channel.track({ user_id: user.id });
+                console.log("[match] presence tracked", res);
+              } catch (e) {
+                console.error("[match] presence track failed", e);
+                // Retry once after 1s — covers transient WebSocket hiccups
+                setTimeout(() => {
+                  channel.track({ user_id: user.id }).catch((e2) =>
+                    console.error("[match] presence track retry failed", e2)
+                  );
+                }, 1000);
+              }
             }
           });
 
+        // Init helper — called both by presence sync event AND the polling
+        // fallback below. Sync events can occasionally be missed (transient
+        // realtime hiccup, slow loader on one side), so we re-check every
+        // 2s while in waiting phase as a safety net.
+        function tryInit(source: "sync" | "poll") {
+          if (gameInitializedRef.current) return;
+          if (!matchDataRef.current) return;
+          const state = channel.presenceState();
+          const playerCount = Object.keys(state).length;
+          if (playerCount < 2) return;
+          console.log(`[match] init game from ${source} (players=${playerCount})`);
+          gameInitializedRef.current = true;
+          const { match: m, p1Cards: p1, p2Cards: p2, p1Hero, p2Hero, factionCards, allSpells, p1OwnedLimitedIds, p2OwnedLimitedIds } = matchDataRef.current;
+          const seed = parseInt(matchId.replace(/-/g, "").slice(0, 8), 16);
+          const firstPlayer: 0 | 1 = seed % 2 === 0 ? 0 : 1;
+          initGame(m.player1_id, m.player2_id, p1, p2, firstPlayer, seed, p1Hero, p2Hero, factionCards, allSpells);
+          setOwnedLimitedCardIds(p1OwnedLimitedIds, p2OwnedLimitedIds);
+          setPhase("playing");
+          if (presencePollRef.current) {
+            clearInterval(presencePollRef.current);
+            presencePollRef.current = null;
+          }
+        }
+
         channelRef.current = channel;
         setPhase("waiting");
+
+        // Polling fallback against missed presence sync events.
+        presencePollRef.current = setInterval(() => tryInit("poll"), 2000);
       } catch (err) {
         if (!cancelled) {
           setError("Failed to load match");
@@ -435,6 +460,10 @@ export default function GamePage() {
 
     return () => {
       cancelled = true;
+      if (presencePollRef.current) {
+        clearInterval(presencePollRef.current);
+        presencePollRef.current = null;
+      }
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current);
         channelRef.current = null;
