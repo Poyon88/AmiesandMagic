@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { CardInstance } from "@/lib/game/types";
 import GameCard from "@/components/cards/GameCard";
+import { getTokenManaCost } from "@/lib/game/abilities";
 
 interface GraveyardOverlayProps {
   cards: CardInstance[];
@@ -108,6 +109,7 @@ export default function GraveyardOverlay({
                       // modal's overflow — we use a fixed-position preview
                       // instead.
                       disableHoverZoom
+                      effectiveManaCost={getTokenManaCost(cardInstance.card)}
                       showDetails={detailsForId === id}
                       onContextMenu={(e) => {
                         e.preventDefault();
@@ -141,6 +143,7 @@ export default function GraveyardOverlay({
             size="lg"
             disableHoverZoom
             forceRarityFrame
+            effectiveManaCost={getTokenManaCost(previewCard.card)}
             showDetails={detailsForId === previewCard.instanceId}
           />
         </div>

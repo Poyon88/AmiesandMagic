@@ -912,3 +912,15 @@ export function getEntraideReduction(card: Card, board: CardInstance[]): number 
   if (!targetRace) return 0;
   return board.filter((c) => c.card.race === targetRace).length;
 }
+
+/** Base mana cost used when a card is played from the hand (and displayed in
+ *  the hand / graveyard). Tokens — cards spawned from a `token_template`,
+ *  flagged via `token_id` — have their stored `mana_cost` hard-coded to 0 by
+ *  the engine so they cost nothing while on the board. If one ever ends up
+ *  back in a hand or a graveyard (Bounce, Rappel, etc.), it can be re-cast
+ *  for `floor((attack + health) / 2)` instead. Non-token cards return their
+ *  declared `mana_cost` unchanged. */
+export function getTokenManaCost(card: Card): number {
+  if (card.token_id == null) return card.mana_cost;
+  return Math.floor(((card.attack ?? 0) + (card.health ?? 0)) / 2);
+}

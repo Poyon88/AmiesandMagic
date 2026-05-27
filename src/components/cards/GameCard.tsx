@@ -81,6 +81,11 @@ interface GameCardProps {
    *  Setting this to true forces the frame on regardless of hover. The
    *  Commune / non-creature gates still apply. */
   forceRarityFrame?: boolean;
+  /** Override for the displayed mana cost (badge + details footer). Used by
+   *  zone-specific callers — hand renderers compute it themselves; graveyard
+   *  overlays pass `getTokenManaCost(card)` so a token shows its re-cast
+   *  cost instead of the on-board 0. Omit to show `card.mana_cost`. */
+  effectiveManaCost?: number;
 }
 
 export default function GameCard({
@@ -97,7 +102,9 @@ export default function GameCard({
   onContextMenu: onContextMenuProp,
   tokens,
   forceRarityFrame = false,
+  effectiveManaCost,
 }: GameCardProps) {
+  const displayedManaCost = effectiveManaCost ?? card.mana_cost;
   const [hovered, setHovered] = useState(false);
   const [internalShowDetails, setInternalShowDetails] = useState(false);
   const showDetails = showDetailsProp ?? internalShowDetails;
@@ -272,7 +279,7 @@ export default function GameCard({
 
 
       {/* ── Cost badges (mana + life + discard + sacrifice) ── */}
-      <CostBadges card={card} size={27 * s} />
+      <CostBadges card={card} size={27 * s} effectiveManaCost={effectiveManaCost} />
 
       {/* ── Count badge ── */}
       {count !== undefined && (
@@ -546,7 +553,7 @@ export default function GameCard({
               </span>
             );
           })()}
-          <span style={{ color: "#74b9ff" }}>💧{card.mana_cost}</span>
+          <span style={{ color: "#74b9ff" }}>💧{displayedManaCost}</span>
           {isCreature && <><span style={{ color: "#e74c3c" }}>⚔{card.attack}</span><span style={{ color: "#f1c40f" }}>❤{card.health}</span></>}
         </div>
 

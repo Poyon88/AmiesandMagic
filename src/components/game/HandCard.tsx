@@ -9,7 +9,7 @@ import { useGameStore } from "@/lib/store/gameStore";
 import type { DragEvent } from "react";
 import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS, getSpellKeywordLabel, getSpellKeywordDesc } from "@/lib/game/spell-keywords";
-import { isCreatureKwShadowedBySpell, getEntraideReduction } from "@/lib/game/abilities";
+import { isCreatureKwShadowedBySpell, getEntraideReduction, getTokenManaCost } from "@/lib/game/abilities";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
@@ -51,7 +51,10 @@ export default function HandCard({
   // ignore our own Entraide / Canalisation creatures.
   // Concentration X bakes a persistent reduction directly on the instance —
   // applied first, before Canalisation/Entraide stack on top.
-  let effectiveManaCost = Math.max(0, card.mana_cost - (cardInstance.manaCostReduction ?? 0));
+  // Baseline: tokens in hand cost floor((attack+health)/2) — see
+  // getTokenManaCost — not the on-board 0.
+  const baseManaCost = getTokenManaCost(card);
+  let effectiveManaCost = Math.max(0, baseManaCost - (cardInstance.manaCostReduction ?? 0));
   if (gameState) {
     const player = gameState.players.find(p => p.id === localPlayerId)
       ?? gameState.players[gameState.currentPlayerIndex];
@@ -64,7 +67,7 @@ export default function HandCard({
     }
     effectiveManaCost = Math.max(0, effectiveManaCost);
   }
-  const isCostReduced = effectiveManaCost < card.mana_cost;
+  const isCostReduced = effectiveManaCost < baseManaCost;
   const tokenTemplate = card.id === -1 && !card.image_url
     ? (card.token_id
         ? tokenTemplates.find(t => t.id === card.token_id)

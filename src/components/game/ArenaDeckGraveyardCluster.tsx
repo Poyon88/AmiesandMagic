@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import type { CardInstance } from "@/lib/game/types";
 import GameCard from "@/components/cards/GameCard";
+import { getTokenManaCost } from "@/lib/game/abilities";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
 
 interface Props {
@@ -337,6 +338,7 @@ function GraveyardTile({ topCard, emptyImageUrl, count, isOpponent, onClick }: G
             size="lg"
             disableHoverZoom
             forceRarityFrame
+            effectiveManaCost={getTokenManaCost(topCard)}
             showDetails={showDetails}
           />
         </div>
