@@ -352,7 +352,17 @@ export default function CardEditor() {
       if (!res.ok) throw new Error(data.error);
 
       setSaveResult({ ok: true, msg: "Carte mise à jour" });
-      // Refresh cards
+      setNewImageFile(null);
+      setNewImagePreview(null);
+    } catch (err) {
+      setSaveResult({ ok: false, msg: err instanceof Error ? err.message : "Erreur" });
+      setSaving(false);
+      return;
+    }
+    // Refresh cards in a separate try so a failed list-refresh (e.g.
+    // oversized GET response) doesn't get reported as a save failure —
+    // the save above already succeeded.
+    try {
       const cardsRes = await fetch("/api/cards/save");
       const cardsData = await cardsRes.json();
       if (Array.isArray(cardsData)) {
@@ -360,10 +370,8 @@ export default function CardEditor() {
         const updated = cardsData.find((c: DbCard) => c.id === selectedCard.id);
         if (updated) setSelectedCard(updated);
       }
-      setNewImageFile(null);
-      setNewImagePreview(null);
     } catch (err) {
-      setSaveResult({ ok: false, msg: err instanceof Error ? err.message : "Erreur" });
+      console.warn("[card-save] refresh failed after successful save:", err);
     }
     setSaving(false);
   }, [selectedCard, editFields, newImageFile, keywordXValues]);
