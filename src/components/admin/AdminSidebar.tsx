@@ -18,6 +18,7 @@ const menuItems = [
   { label: "Showcase", href: "/admin/showcase", icon: "🎭" },
   { label: "Icônes", href: "/admin/keyword-icons", icon: "🎨" },
   { label: "Joueurs", href: "/admin/players", icon: "👥" },
+  { label: "Équilibrage", href: "/admin/analytics", icon: "⚖️" },
 ];
 
 export default function AdminSidebar() {
