@@ -5,7 +5,7 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Stage, useGLTF } from "@react-three/drei";
 import type { TokenTemplate } from "@/lib/game/types";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
-import { FACTIONS } from "@/lib/card-engine/constants";
+import { FACTIONS, getFactionDisplayName } from "@/lib/card-engine/constants";
 import { ABILITIES } from "@/lib/game/abilities";
 import { autoTrimDarkBorders } from "@/lib/card-back-frames";
 
@@ -858,7 +858,7 @@ export default function HeroManager() {
                 <select value={faction} onChange={(e) => setFaction(e.target.value)}
                   style={STYLE.input}>
                   <option value="">— Aucune —</option>
-                  {FACTION_IDS.map(f => <option key={f} value={f}>{f}</option>)}
+                  {FACTION_IDS.map(f => <option key={f} value={f}>{getFactionDisplayName(f)}</option>)}
                 </select>
               </div>
               <div>

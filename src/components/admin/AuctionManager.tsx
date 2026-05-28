@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import type { AuctionSettings, AuctionWithDetails } from "@/lib/auction/types";
+import { getFactionDisplayName } from "@/lib/card-engine/constants";
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   active: { label: "Active", color: "#c8a84e" },
@@ -402,7 +403,7 @@ export default function AuctionManager({ cards, firstAvailablePrint }: AuctionMa
                           <span style={{ color: "#bbb", fontSize: 11, marginRight: 6 }}>#{card.id}</span>
                           <span style={{ fontWeight: 500, color: "#333" }}>{card.name}</span>
                           <span style={{ color: "#999", marginLeft: 8, fontSize: 11 }}>
-                            {card.rarity} — {card.faction} — {card.card_type === "creature" ? "Créature" : "Sort"} — Mana: {card.mana_cost}
+                            {card.rarity} — {getFactionDisplayName(card.faction)} — {card.card_type === "creature" ? "Créature" : "Sort"} — Mana: {card.mana_cost}
                           </span>
                           {firstAvailablePrint[card.id] ? (
                             <span style={{ color: "#2196f3", marginLeft: 8, fontSize: 11, fontWeight: 600 }}>

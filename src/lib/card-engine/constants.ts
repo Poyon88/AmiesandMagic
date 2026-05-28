@@ -27,6 +27,26 @@ export const LIMITED_PRINT_COUNTS: Record<string, number> = {
 export type { KeywordZone } from "@/lib/game/abilities";
 export { KEYWORDS } from "@/lib/game/abilities";
 
+// FR-label → set of trigger modes that keyword can opt into beyond the
+// default on-play. The engine (resolveCuratedKeywordEffect) mirrors this:
+// when an admin assigns a mode, the effect is routed to the matching
+// pipeline (on-death rattle or tap-activated). Keywords missing from this
+// map can only be on-play. Shared by the Forge and the card Editor so both
+// surfaces gate the picker identically.
+export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<"death" | "tap">> = {
+  "Convocation X": new Set<"death" | "tap">(["death", "tap"]),
+  "Convocations multiples": new Set<"death" | "tap">(["death", "tap"]),
+  "Inspiration X": new Set<"death" | "tap">(["death", "tap"]),
+  "Pillage": new Set<"death" | "tap">(["death", "tap"]),
+  "Douleur X": new Set<"death" | "tap">(["death", "tap"]),
+  "Vampirisme X": new Set<"death" | "tap">(["death", "tap"]),
+  "Prescience X": new Set<"death" | "tap">(["tap"]),
+  "Suprématie": new Set<"death" | "tap">(["death"]),
+  "Ombre du passé": new Set<"death" | "tap">(["death"]),
+  "Savant": new Set<"death" | "tap">(["death"]),
+  "Combustion": new Set<"death" | "tap">(["death", "tap"]),
+};
+
 // ─── FACTIONS ────────────────────────────────────────────────────────────────
 
 export interface FactionSubType {
@@ -46,6 +66,7 @@ export interface FactionClan {
 }
 
 export const FACTIONS: Record<string, {
+  displayName: string;
   color: string; accent: string; emoji: string; bg: string;
   alignment: Alignment;
   races: string[];
@@ -59,6 +80,7 @@ export const FACTIONS: Record<string, {
   raceProfiles?: Record<string, { statWeights: { atk: number; def: number }; likelyKeywords?: Record<string, number> }>;
 }> = {
   Elfes: {
+    displayName: "L'Alliance Céleste",
     color: "#3a7d44", accent: "#55efc4", emoji: "🌿", bg: "#0a1f0a", alignment: "bon",
     races: ["Elfes", "Aigles Géants", "Fées"],
     clans: { names: ["Sylvains", "Hauts-Elfes", "Elfes des Mers"], appliesTo: "Elfes" },
@@ -74,6 +96,7 @@ export const FACTIONS: Record<string, {
     },
   },
   Nains: {
+    displayName: "La Confrérie de la Forge",
     color: "#b87333", accent: "#ff9f43", emoji: "⚒️", bg: "#2a1a0a", alignment: "bon",
     races: ["Nains", "Golems"],
     clans: { names: ["Montagnes", "Collines", "Lave"], appliesTo: "Nains" },
@@ -88,6 +111,7 @@ export const FACTIONS: Record<string, {
     },
   },
   Hobbits: {
+    displayName: "Le Pacte des Bois",
     color: "#8B6914", accent: "#DAA520", emoji: "🍃", bg: "#1a1508", alignment: "bon",
     races: ["Hobbits", "Hommes-Arbres"],
     clans: { names: ["Plaines", "Rivièrains", "Landes"], appliesTo: "Hobbits" },
@@ -103,6 +127,7 @@ export const FACTIONS: Record<string, {
     },
   },
   Humains: {
+    displayName: "Les Royaumes Libres",
     color: "#2c5f8a", accent: "#74b9ff", emoji: "⚔️", bg: "#0a0f2a", alignment: "neutre",
     races: ["Humains"],
     clans: { names: ["Nordiques", "Orientaux", "Templiers", "Amazones", "Incas"], appliesTo: "all" },
@@ -114,6 +139,7 @@ export const FACTIONS: Record<string, {
     description: "Équilibrés et polyvalents. Synergies de groupe.",
   },
   "Hommes-Bêtes": {
+    displayName: "La Meute",
     color: "#7B5B3A", accent: "#CD853F", emoji: "🐺", bg: "#1a1008", alignment: "neutre",
     races: ["Hommes-Loups", "Hommes-Ours", "Hommes-Félins", "Centaures"],
     clans: { names: ["Forêt", "Toundra", "Savane"], appliesTo: "all" },
@@ -125,6 +151,7 @@ export const FACTIONS: Record<string, {
     description: "Sauvages et féroces. Attaquent vite, régénèrent, entrent en rage.",
   },
   "Élémentaires": {
+    displayName: "Les Primordiaux",
     color: "#E67E22", accent: "#F39C12", emoji: "🌀", bg: "#1a1008", alignment: "neutre",
     races: ["Feu", "Terre", "Eau", "Air/Tempête"],
     statWeights: { atk: 1.10, def: 1.10 },
@@ -141,6 +168,7 @@ export const FACTIONS: Record<string, {
     },
   },
   Mercenaires: {
+    displayName: "Mercenaires",
     color: "#8B8B00", accent: "#D4D400", emoji: "💰", bg: "#1a1a08", alignment: "spéciale",
     races: ["Géants", "Ogres", "Dragons", "Chiens", "Phoenix", "Anges", "Ours", "Loups", "Fauves"],
     statWeights: { atk: 1.05, def: 1.05 },
@@ -162,6 +190,7 @@ export const FACTIONS: Record<string, {
     },
   },
   Orcs: {
+    displayName: "La Horde",
     color: "#4A7A2E", accent: "#7FFF00", emoji: "🗡️", bg: "#0f1a08", alignment: "maléfique",
     races: ["Orcs", "Gobelins", "Trolls", "Wargs"],
     clans: { names: ["Plaines", "Marais", "Montagnes"], appliesTo: "all" },
@@ -174,6 +203,7 @@ export const FACTIONS: Record<string, {
     subType: { threshold: 3, name: "Orc", emoji: "💪", lowName: "Gobelin", lowEmoji: "👺" },
   },
   "Morts-Vivants": {
+    displayName: "La Nécropole",
     color: "#6c3483", accent: "#a29bfe", emoji: "💀", bg: "#1a0a2a", alignment: "maléfique",
     races: ["Squelettes", "Zombies", "Spectres", "Vampires", "Lich", "Banshees"],
     statWeights: { atk: 1.05, def: 0.95 },
@@ -184,6 +214,7 @@ export const FACTIONS: Record<string, {
     description: "Insatiables et corrompus. Résurrection et drain de vie.",
   },
   "Elfes Noirs": {
+    displayName: "L'Engeance du Chaos",
     color: "#4A0E4E", accent: "#9B59B6", emoji: "🔮", bg: "#150520", alignment: "maléfique",
     races: ["Elfes Corrompus", "Araignées Géantes", "Démons"],
     clans: { names: ["Abysses souterrains", "Forêt maudite", "Cités de cendres"], appliesTo: "all" },
@@ -215,6 +246,14 @@ const RACE_TO_FACTION: Record<string, string> = (() => {
 export function getFactionForRace(race: string | null | undefined): string | null {
   if (!race) return null;
   return RACE_TO_FACTION[race] ?? null;
+}
+
+// Human-readable faction label. Internal ids (e.g. "Elfes") stay stable in code
+// and DB; this maps them to the player-facing name (e.g. "L'Alliance Céleste").
+// Falls back to the raw value for ids not in FACTIONS.
+export function getFactionDisplayName(faction: string | null | undefined): string {
+  if (!faction) return "";
+  return FACTIONS[faction]?.displayName ?? faction;
 }
 
 export const TYPES = ["Unité", "Sort", "Artefact", "Magie"];

@@ -4,6 +4,7 @@ import { Suspense, useMemo, useRef, useState, useEffect, Component, type ReactNo
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Sparkles, Stage, useGLTF } from "@react-three/drei";
 import { Color, Group, Mesh, MeshStandardMaterial } from "three";
+import { getFactionDisplayName } from "@/lib/card-engine/constants";
 
 // ─── Effect types ─────────────────────────────────────────────────────────
 
@@ -320,7 +321,7 @@ export default function FigurineTestView({ cards }: FigurineTestViewProps) {
                   <div className="flex flex-col min-w-0">
                     <span className="text-sm font-medium truncate">{c.name}</span>
                     <span className="text-[10px] text-foreground/50 truncate">
-                      {c.faction ?? "—"} · {c.race ?? "—"} · {c.rarity ?? "Commune"}
+                      {c.faction ? getFactionDisplayName(c.faction) : "—"} · {c.race ?? "—"} · {c.rarity ?? "Commune"}
                     </span>
                   </div>
                 </button>
@@ -347,7 +348,7 @@ export default function FigurineTestView({ cards }: FigurineTestViewProps) {
                   <div>
                     <h2 className="text-lg font-bold">{selected.name}</h2>
                     <p className="text-xs text-foreground/60">
-                      {selected.faction ?? "—"} · {selected.race ?? "—"} · {selected.rarity ?? "Commune"}
+                      {selected.faction ? getFactionDisplayName(selected.faction) : "—"} · {selected.race ?? "—"} · {selected.rarity ?? "Commune"}
                     </p>
                   </div>
                   <div className="text-xs text-foreground/60 leading-relaxed bg-secondary/40 border border-card-border rounded p-3">

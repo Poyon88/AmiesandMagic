@@ -1,5 +1,7 @@
 "use client";
 
+import { getFactionDisplayName } from "@/lib/card-engine/constants";
+
 interface Cell {
   faction_a: string;
   faction_b: string;
@@ -46,12 +48,12 @@ export default function MatchupHeatmap({ factions, cells }: Props) {
           <div key={`col-${f}`} style={{
             color: "#c8a84e", fontSize: 11, textAlign: "center", padding: "4px 2px",
             transform: "rotate(-30deg)", transformOrigin: "center", whiteSpace: "nowrap",
-          }}>{f}</div>
+          }}>{getFactionDisplayName(f)}</div>
         ))}
         {factions.flatMap((row) => [
           <div key={`row-${row}`} style={{
             color: "#c8a84e", fontSize: 12, padding: "4px 8px", textAlign: "right", alignSelf: "center",
-          }}>{row}</div>,
+          }}>{getFactionDisplayName(row)}</div>,
           ...factions.map((col) => {
             const c = map.get(`${row}__${col}`);
             const wr = c?.winrate_a ?? 0;
@@ -59,7 +61,7 @@ export default function MatchupHeatmap({ factions, cells }: Props) {
             return (
               <div
                 key={`${row}-${col}`}
-                title={total > 0 ? `${row} vs ${col} : ${c!.wins_a}/${total} (${(wr * 100).toFixed(1)}%)` : "Aucun matchup"}
+                title={total > 0 ? `${getFactionDisplayName(row)} vs ${getFactionDisplayName(col)} : ${c!.wins_a}/${total} (${(wr * 100).toFixed(1)}%)` : "Aucun matchup"}
                 style={{
                   background: colorFor(wr, total),
                   height: cellSize,

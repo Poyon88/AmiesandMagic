@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { getFactionDisplayName } from "@/lib/card-engine/constants";
 
 interface CardRow {
   id: number;
@@ -183,7 +184,7 @@ export default function ShowcaseManager({ cards }: ShowcaseManagerProps) {
                   >
                     {sc.card.rarity}
                   </span>
-                  <span style={{ marginLeft: 6, fontSize: 11, color: "#999" }}>{sc.card.faction}</span>
+                  <span style={{ marginLeft: 6, fontSize: 11, color: "#999" }}>{getFactionDisplayName(sc.card.faction)}</span>
                 </div>
                 <div style={{ display: "flex", gap: 4 }}>
                   <button
@@ -278,7 +279,7 @@ export default function ShowcaseManager({ cards }: ShowcaseManagerProps) {
                 >
                   {card.rarity}
                 </span>
-                <span style={{ marginLeft: 6, fontSize: 11, color: "#999" }}>{card.faction}</span>
+                <span style={{ marginLeft: 6, fontSize: 11, color: "#999" }}>{getFactionDisplayName(card.faction)}</span>
               </div>
               <button
                 onClick={() => handleAdd(card.id)}

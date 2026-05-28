@@ -5,6 +5,7 @@ import Image from "next/image";
 import HomeHeader from "@/components/home/HomeHeader";
 import { useStoredLocale } from "@/lib/i18n/useLocale";
 import { homeDict } from "@/lib/i18n/homeDict";
+import { getFactionDisplayName } from "@/lib/card-engine/constants";
 
 interface HeroesPageProps {
   username: string;
@@ -130,7 +131,7 @@ export default function HeroesPage({ username, goldBalance }: HeroesPageProps) {
                 }`}
                 aria-pressed={selectedFaction === f}
               >
-                {f}
+                {getFactionDisplayName(f)}
               </button>
             ))}
           </div>
@@ -209,7 +210,7 @@ function HeroCard({ hero, powerLabel }: { hero: HeroRow; powerLabel: string }) {
 
         {(hero.faction || hero.race) && (
           <p className="font-[family-name:var(--font-crimson),serif] italic text-[#e0e0e0]/60 text-sm">
-            {hero.faction ?? hero.race}
+            {hero.faction ? getFactionDisplayName(hero.faction) : hero.race}
           </p>
         )}
 

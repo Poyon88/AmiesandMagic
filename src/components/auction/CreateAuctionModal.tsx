@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { AuctionSettings } from "@/lib/auction/types";
+import { getFactionDisplayName } from "@/lib/card-engine/constants";
 
 interface CardOption {
   kind: "card" | "board" | "card_back";
@@ -237,7 +238,7 @@ export default function CreateAuctionModal({ userId, settings, onClose, onCreate
                           {card.rarity}
                           {card.kind === "board" ? " · Plateau"
                             : card.kind === "card_back" ? " · Dos"
-                            : card.faction ? ` — ${card.faction}` : ""}
+                            : card.faction ? ` — ${getFactionDisplayName(card.faction)}` : ""}
                         </span>
                         {(card.source_type === "print" || card.source_type === "board_print" || card.source_type === "card_back_print") && (
                           <span style={{ color: "#c8a84e", marginLeft: 6, fontSize: 11 }}>

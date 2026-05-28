@@ -18,7 +18,7 @@ import {
 } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import KeywordIcon from "@/components/shared/KeywordIcon";
-import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
+import { KEYWORDS as keywordDefs, getFactionDisplayName } from "@/lib/card-engine/constants";
 
 interface SpellCastOverlayProps {
   event: SpellCastEvent | null;
@@ -289,7 +289,7 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
               <>
                 {/* Mana + Faction */}
                 <div style={{ display: "flex", justifyContent: "center", gap: 10, fontSize: "0.7rem", color: "#ccc", textShadow: "0 1px 2px rgba(0,0,0,0.9)" }}>
-                  {card.faction && <span style={{ color: accentColor, fontWeight: 600 }}>{card.faction}</span>}
+                  {card.faction && <span style={{ color: accentColor, fontWeight: 600 }}>{getFactionDisplayName(card.faction)}</span>}
                   <span style={{ color: "#74b9ff", fontWeight: 700 }}>💧 {card.mana_cost}</span>
                   {card.rarity && <span style={{ color: "#bbb", fontStyle: "italic" }}>{card.rarity}</span>}
                 </div>

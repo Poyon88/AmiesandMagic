@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { generateCardStats, pickMana, pickRarity, buildId } from "@/lib/card-engine/generator";
-import { RARITIES, FACTIONS, TYPES, KEYWORDS, RARITY_WEIGHTS_BY_MANA, RARITY_MAP, ALIGNMENTS } from "@/lib/card-engine/constants";
+import { RARITIES, FACTIONS, TYPES, KEYWORDS, RARITY_WEIGHTS_BY_MANA, RARITY_MAP, ALIGNMENTS, CURATED_KEYWORD_MODES } from "@/lib/card-engine/constants";
 import CardVisual, { KEYWORD_SYMBOLS } from "./CardVisual";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import type { CardType, Keyword, SpellEffect, SpellTargetType, SpellKeywordInstance, SpellComposableEffects, SpellEffectNode, SpellTargetSlot, AtomicEffectType, SpellCondition, AtomicEffect, ConditionalEffectNode, CardSet, GameFormat, TokenTemplate, ConvocationTokenDef } from "@/lib/game/types";
@@ -1573,25 +1573,6 @@ export default function CardForge() {
     };
   }
 
-  // FR-label → set of trigger modes that keyword can opt into beyond the
-  // default on-play. Engine-side gating in resolveCuratedKeywordEffect
-  // mirrors this list: when the admin assigns a mode, the engine routes
-  // the effect to the matching pipeline (on-death rattle or tap-activated).
-  // Keywords missing from this map can only be on-play.
-  const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<"death" | "tap">> = {
-    "Convocation X": new Set<"death" | "tap">(["death", "tap"]),
-    "Convocations multiples": new Set<"death" | "tap">(["death", "tap"]),
-    "Inspiration X": new Set<"death" | "tap">(["death", "tap"]),
-    "Pillage": new Set<"death" | "tap">(["death", "tap"]),
-    "Douleur X": new Set<"death" | "tap">(["death", "tap"]),
-    "Vampirisme X": new Set<"death" | "tap">(["death", "tap"]),
-    "Prescience X": new Set<"death" | "tap">(["tap"]),
-    "Suprématie": new Set<"death" | "tap">(["death"]),
-    "Ombre du passé": new Set<"death" | "tap">(["death"]),
-    "Savant": new Set<"death" | "tap">(["death"]),
-    "Combustion": new Set<"death" | "tap">(["death", "tap"]),
-  };
-
   const availableManualKeywords = Object.entries(KEYWORDS)
     .filter(([id, kw]) => {
       const tier = RARITY_MAP[rarity]?.tier ?? 0;
@@ -2393,7 +2374,7 @@ export default function CardForge() {
                     textAlign: "left", transition: "all 0.15s", marginBottom: 3,
                     display: "flex", alignItems: "center", gap: 7,
                   }}>
-                    <span>{fc.emoji}</span><span style={{ flex: 1 }}>{f}</span>
+                    <span>{fc.emoji}</span><span style={{ flex: 1 }}>{fc.displayName}</span>
                   </button>
                 ))}
               </Sec>
@@ -2730,7 +2711,7 @@ export default function CardForge() {
                       }}>
                         <div style={{ fontSize: 10, color: f.color, fontWeight: 700, marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.name}</div>
                         <div style={{ fontSize: 8, color: "#999", display: "flex", justifyContent: "space-between" }}>
-                          <span>{c.faction}</span>
+                          <span>{f.displayName}</span>
                           <span style={{ color: r.color }}>{r.code} · {c.mana}💧</span>
                         </div>
                       </div>
@@ -3616,7 +3597,7 @@ export default function CardForge() {
                         style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }}>
                         <option value="">-- Aucune --</option>
                         {Object.entries(FACTIONS).map(([id, f]) => (
-                          <option key={id} value={id}>{f.emoji} {id}</option>
+                          <option key={id} value={id}>{f.emoji} {f.displayName}</option>
                         ))}
                       </select>
                     </div>
@@ -3992,8 +3973,8 @@ export default function CardForge() {
                       <select value={bdFaction} onChange={e => { setBdFaction(e.target.value); setBdRace(""); setBdClan(""); }}
                         style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }}>
                         <option value="">-- Aucune --</option>
-                        {Object.entries(FACTIONS).map(([id]) => (
-                          <option key={id} value={id}>{id}</option>
+                        {Object.entries(FACTIONS).map(([id, f]) => (
+                          <option key={id} value={id}>{f.displayName}</option>
                         ))}
                       </select>
                     </div>
@@ -4657,7 +4638,7 @@ export default function CardForge() {
                   }}>
                     <div style={{ fontSize: 9.5, color: f.accent, fontWeight: 700, marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.name}</div>
                     <div style={{ fontSize: 8, color: "#444", display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                      <span>{c.faction} · {c.type}</span>
+                      <span>{f.displayName} · {c.type}</span>
                       <span style={{ color: r.color }}>{c.rarity}</span>
                     </div>
                     <div style={{ fontSize: 8.5, color: "#3a3a5a", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>
@@ -4799,7 +4780,7 @@ export default function CardForge() {
                     <div key={f} style={{ padding: "10px 12px", borderRadius: 5, background: `${fc.color}09`, border: `1px solid ${fc.color}28` }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 5 }}>
                         <span style={{ fontSize: 15 }}>{fc.emoji}</span>
-                        <span style={{ fontSize: 10, color: fc.accent, fontWeight: 700 }}>{f}</span>
+                        <span style={{ fontSize: 10, color: fc.accent, fontWeight: 700 }}>{fc.displayName}</span>
                       </div>
                       <div style={{ fontSize: 8.5, color: "#3a3a5a", fontFamily: "'Crimson Text',serif", marginBottom: 6 }}>{fc.description}</div>
                       <div style={{ fontSize: 8, color: "#333", lineHeight: 1.8 }}>

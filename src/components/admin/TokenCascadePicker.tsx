@@ -184,7 +184,7 @@ export default function TokenCascadePicker({
         {factionDef ? (
           <>
             <span>{factionDef.emoji}</span>
-            <strong style={{ fontFamily: "'Cinzel', serif", letterSpacing: 0.5 }}>{factionId}</strong>
+            <strong style={{ fontFamily: "'Cinzel', serif", letterSpacing: 0.5 }}>{factionDef.displayName}</strong>
           </>
         ) : (
           <em>aucune (race hors registre — héritera de la faction du lanceur)</em>

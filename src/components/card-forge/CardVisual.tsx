@@ -425,7 +425,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           {/* Faction · Type */}
           <div style={{ display: "flex", alignItems: "center", gap: 6 * s }}>
-            <span style={{ fontSize: 7.5 * s, color: `${fac.accent}aa` }}>{card!.faction}</span>
+            <span style={{ fontSize: 7.5 * s, color: `${fac.accent}aa` }}>{fac.displayName}</span>
             {card!.cardAlignment && card!.cardAlignment !== "spéciale" && fac.alignment === "spéciale" && (() => {
               const alColors: Record<string, string> = { bon: "#4caf50", neutre: "#ffd54f", maléfique: "#e74c3c" };
               const alEmojis: Record<string, string> = { bon: "✨", neutre: "⚖️", maléfique: "💀" };
@@ -632,7 +632,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
           fontSize: 13 * s, color: "#ccc",
           borderTop: `1px solid ${fac.color}33`, paddingTop: 7 * s,
         }}>
-          {card!.faction && <span style={{ color: fac.accent, fontWeight: 600 }}>{card!.faction}</span>}
+          {card!.faction && <span style={{ color: fac.accent, fontWeight: 600 }}>{fac.displayName}</span>}
           <span style={{ color: "#74b9ff" }}>💧{card!.mana}</span>
           {card!.attack != null && <span style={{ color: "#e74c3c" }}>⚔{card!.attack}</span>}
           {card!.defense != null && <span style={{ color: "#f1c40f" }}>❤{card!.defense}</span>}

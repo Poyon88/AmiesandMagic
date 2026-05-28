@@ -3,9 +3,9 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import GameCard from "@/components/cards/GameCard";
 import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
-import { KEYWORDS as KEYWORD_DEFS, FACTIONS } from "@/lib/card-engine/constants";
+import { KEYWORDS as KEYWORD_DEFS, FACTIONS, getFactionDisplayName, CURATED_KEYWORD_MODES } from "@/lib/card-engine/constants";
 import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS } from "@/lib/game/spell-keywords";
-import type { Card, Keyword, SpellKeywordInstance, SpellComposableEffects, CardSet, TokenTemplate } from "@/lib/game/types";
+import type { Card, Keyword, KeywordInstance, KeywordMode, SpellKeywordInstance, SpellComposableEffects, CardSet, TokenTemplate } from "@/lib/game/types";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 
 interface DbCard {
@@ -18,6 +18,7 @@ interface DbCard {
   effect_text: string;
   flavor_text: string | null;
   keywords: string[];
+  keyword_instances: KeywordInstance[] | null;
   spell_keywords: SpellKeywordInstance[] | null;
   spell_effects: SpellComposableEffects | null;
   image_url: string | null;
@@ -60,6 +61,9 @@ export default function CardEditor() {
   const [loading, setLoading] = useState(true);
   const [hoveredKw, setHoveredKw] = useState<Keyword | null>(null);
   const [keywordXValues, setKeywordXValues] = useState<Record<string, number>>({});
+  // Per-keyword trigger mode override, keyed by game keyword id. Missing
+  // entry = on-play (default). Only curated keywords accept non-play modes.
+  const [keywordModes, setKeywordModes] = useState<Record<string, KeywordMode>>({});
 
   // Filters
   const [search, setSearch] = useState("");
@@ -186,6 +190,14 @@ export default function CardEditor() {
         }
       }
     }
+    // Trigger modes (and authoritative X) live in the keyword_instances
+    // sidecar; the effect_text bracket is the legacy fallback for X.
+    const modes: Record<string, KeywordMode> = {};
+    for (const inst of card.keyword_instances ?? []) {
+      if (inst.mode) modes[inst.id] = inst.mode;
+      if (inst.x != null) parsedX[inst.id] = inst.x;
+    }
+    setKeywordModes(modes);
     setKeywordXValues(parsedX);
 
     // Strip X suffix from effect_text for editing
@@ -233,8 +245,9 @@ export default function CardEditor() {
     const kws = (editFields.keywords as string[]) || [];
     if (kws.includes(kw)) {
       updateField("keywords", kws.filter(k => k !== kw));
-      // Remove X value if keyword is removed
+      // Remove X value and trigger mode if keyword is removed
       setKeywordXValues(prev => { const n = { ...prev }; delete n[kw]; return n; });
+      setKeywordModes(prev => { const n = { ...prev }; delete n[kw]; return n; });
     } else {
       updateField("keywords", [...kws, kw]);
       // Set default X=1 for scalable keywords
@@ -308,6 +321,18 @@ export default function CardEditor() {
       const effectTextBase = (editFields.effect_text as string) || "";
       const effectTextFull = [effectTextBase, xParts ? `[${xParts}]` : ""].filter(Boolean).join(" ");
 
+      // Sidecar carrying per-keyword trigger mode + X so the engine can route
+      // on-death / tap effects. Mirror of the Forge's builder. Without this,
+      // saving here would null out keyword_instances and reset every mode.
+      const keywordInstances = activeKeywords
+        .map((id): KeywordInstance | null => {
+          const mode = keywordModes[id];
+          const x = keywordXValues[id];
+          if (!mode && x == null) return null;
+          return { id: id as Keyword, ...(mode ? { mode } : {}), ...(x != null ? { x } : {}) };
+        })
+        .filter((k): k is KeywordInstance => k !== null);
+
       const cardData = {
         name: editFields.name,
         mana_cost: editFields.mana_cost,
@@ -318,6 +343,7 @@ export default function CardEditor() {
         flavor_text: editFields.flavor_text || null,
         illustration_prompt: editFields.illustration_prompt || null,
         keywords: editFields.keywords || [],
+        keyword_instances: keywordInstances.length > 0 ? keywordInstances : null,
         spell_keywords: (editFields.spell_keywords as SpellKeywordInstance[])?.length ? editFields.spell_keywords : null,
         spell_effects: editFields.spell_effects || null,
         faction: editFields.faction || null,
@@ -374,7 +400,7 @@ export default function CardEditor() {
       console.warn("[card-save] refresh failed after successful save:", err);
     }
     setSaving(false);
-  }, [selectedCard, editFields, newImageFile, keywordXValues]);
+  }, [selectedCard, editFields, newImageFile, keywordXValues, keywordModes]);
 
   // Delete
   const handleDelete = useCallback(async (id: number) => {
@@ -523,7 +549,7 @@ export default function CardEditor() {
         {/* Faction */}
         <select value={factionFilter || ""} onChange={e => setFactionFilter(e.target.value || null)} style={{ ...S.select, width: 110 }}>
           <option value="">Faction...</option>
-          {factions.map(f => <option key={f} value={f}>{f}</option>)}
+          {factions.map(f => <option key={f} value={f}>{getFactionDisplayName(f)}</option>)}
         </select>
 
         {/* Race */}
@@ -630,7 +656,7 @@ export default function CardEditor() {
                     <td style={{ padding: "6px 8px", color: "#4a90d9" }}>{card.mana_cost}</td>
                     <td style={{ padding: "6px 8px" }}>{card.card_type === "creature" ? "Unité" : "Sort"}</td>
                     <td style={{ padding: "6px 8px" }}>{card.card_type === "creature" ? `${card.attack}/${card.health}` : "—"}</td>
-                    <td style={{ padding: "6px 8px" }}>{card.faction || "—"}</td>
+                    <td style={{ padding: "6px 8px" }}>{card.faction ? getFactionDisplayName(card.faction) : "—"}</td>
                     <td style={{ padding: "6px 8px" }}>{card.race || "—"}</td>
                     <td style={{ padding: "6px 8px" }}>{card.rarity || "—"}</td>
                   </tr>
@@ -720,7 +746,7 @@ export default function CardEditor() {
               <div style={S.label}>Faction</div>
               <select value={(editFields.faction as string) || ""} onChange={e => updateField("faction", e.target.value || null)} style={S.select}>
                 <option value="">—</option>
-                {factions.map(f => <option key={f} value={f}>{f}</option>)}
+                {factions.map(f => <option key={f} value={f}>{getFactionDisplayName(f)}</option>)}
               </select>
             </div>
 
@@ -879,6 +905,63 @@ export default function CardEditor() {
                             onChange={e => setKeywordXValues(prev => ({ ...prev, [kw]: parseInt(e.target.value) || 1 }))}
                             style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: "1px solid #d0c8ff", fontSize: 11, textAlign: "center" }}
                           />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Trigger mode (déclenchement) for curated creature keywords —
+                ⚡ à l'arrivée (défaut) / 💀 à la mort / ⟲ activable (tap).
+                Only keywords in CURATED_KEYWORD_MODES accept non-play modes;
+                the engine routes the effect to the matching pipeline. */}
+            {editFields.card_type === "creature" && (() => {
+              const activeCurated = ((editFields.keywords as string[]) || []).filter(kw => {
+                const label = KEYWORD_LABELS[kw as Keyword];
+                return label && CURATED_KEYWORD_MODES[label];
+              });
+              if (activeCurated.length === 0) return null;
+              return (
+                <div style={{ marginBottom: 8, padding: "8px 10px", borderRadius: 6, background: "#fffaf2", border: "1px solid #f0e2c8" }}>
+                  <div style={{ ...S.label, color: "#b8860b", marginBottom: 6 }}>Déclenchement des pouvoirs</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    {activeCurated.map(kw => {
+                      const label = KEYWORD_LABELS[kw as Keyword];
+                      const allowedModes = CURATED_KEYWORD_MODES[label];
+                      return (
+                        <div key={kw} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <span style={{ fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: 600, color: "#333", flex: 1 }}>{label}</span>
+                          <div style={{ display: "inline-flex", gap: 3 }}>
+                            {(["play", "death", "tap"] as const).map(mode => {
+                              const allowed = mode === "play" || allowedModes.has(mode);
+                              const active = mode === "play" ? !keywordModes[kw] : keywordModes[kw] === mode;
+                              const color = mode === "play" ? "#333" : mode === "death" ? "#a83232" : "#d4a800";
+                              const glyph = mode === "play" ? "⚡" : mode === "death" ? "💀" : "⟲";
+                              return (
+                                <button
+                                  key={mode}
+                                  disabled={!allowed}
+                                  onClick={() => setKeywordModes(prev => {
+                                    const next = { ...prev };
+                                    if (mode === "play") delete next[kw];
+                                    else next[kw] = mode;
+                                    return next;
+                                  })}
+                                  title={mode === "play" ? "À l'arrivée en jeu (défaut)" : mode === "death" ? "À la mort (deathrattle)" : "Activable (tap / engagement)"}
+                                  style={{
+                                    width: 22, height: 22, borderRadius: 4,
+                                    background: active ? color : "transparent",
+                                    border: `1px solid ${allowed ? color : "#ddd"}`,
+                                    color: active ? "#fff" : (allowed ? color : "#ccc"),
+                                    fontSize: 11, fontWeight: 700, cursor: allowed ? "pointer" : "not-allowed",
+                                    padding: 0, lineHeight: 1, opacity: allowed ? 1 : 0.4,
+                                  }}
+                                >{glyph}</button>
+                              );
+                            })}
+                          </div>
                         </div>
                       );
                     })}

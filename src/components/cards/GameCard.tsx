@@ -52,7 +52,7 @@ import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS, getSpellKe
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
-import { KEYWORDS as keywordDefs, LIMITED_PRINT_COUNTS, ALIGNMENTS, getEffectiveAlignment } from "@/lib/card-engine/constants";
+import { KEYWORDS as keywordDefs, LIMITED_PRINT_COUNTS, ALIGNMENTS, getEffectiveAlignment, getFactionDisplayName } from "@/lib/card-engine/constants";
 import RarityFrame from "./RarityFrame";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
 
@@ -541,7 +541,7 @@ export default function GameCard({
           fontSize: 13 * s, color: "#ccc",
           borderTop: `1px solid ${accentColor}33`, paddingTop: 7 * s,
         }}>
-          {card.faction && <span style={{ color: accentColor, fontWeight: 600 }}>{card.faction}</span>}
+          {card.faction && <span style={{ color: accentColor, fontWeight: 600 }}>{getFactionDisplayName(card.faction)}</span>}
           {(() => {
             const align = getEffectiveAlignment(card);
             if (!align) return null;

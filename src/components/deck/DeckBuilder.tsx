@@ -7,7 +7,7 @@ import type { Card, Keyword, CardSet, GameFormat, FormatSet } from "@/lib/game/t
 import { getFormatFilter } from "@/lib/game/format-legality";
 import { isCardOwned } from "@/lib/game/collection";
 import { DECK_SIZE } from "@/lib/game/constants";
-import { FACTIONS, ALIGNMENTS } from "@/lib/card-engine/constants";
+import { FACTIONS, ALIGNMENTS, getFactionDisplayName } from "@/lib/card-engine/constants";
 import type { Alignment } from "@/lib/card-engine/constants";
 import GameCard from "@/components/cards/GameCard";
 
@@ -593,7 +593,7 @@ export default function DeckBuilder({
           >
             <option value="">Factions</option>
             {factions.map((f) => (
-              <option key={f} value={f}>{f}</option>
+              <option key={f} value={f}>{getFactionDisplayName(f)}</option>
             ))}
           </select>
           <select
