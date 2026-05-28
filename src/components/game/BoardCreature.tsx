@@ -6,6 +6,7 @@ import Image from "next/image";
 import type { CardInstance, GameAction } from "@/lib/game/types";
 import { useGameStore } from "@/lib/store/gameStore";
 import { tapKeywordNeedsTarget } from "@/lib/game/engine";
+import { getTokenManaCost } from "@/lib/game/abilities";
 import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
@@ -75,7 +76,7 @@ export default function BoardCreature({
     && isMyTurn
     && !isAnimating
     && !creature.tapped
-    && !creature.hasSummoningSickness
+    && (!creature.hasSummoningSickness || card.keywords.includes("charge"))
     && tapInstanceIdx !== null;
   const canActivateTap = baseEligibleForTap && targetingMode === "none";
   // Resolve token template image: instance cards spawned by the engine
@@ -373,7 +374,7 @@ export default function BoardCreature({
         fontSize: 6, color: "#74b9ff", fontWeight: 700,
         lineHeight: "9px", textAlign: "center",
         boxShadow: "0 0 3px #74b9ff55",
-      }}>{card.mana_cost}</div>
+      }}>{getTokenManaCost(card)}</div>
 
       {/* Poison indicator (shifted below the mana orb) */}
       {creature.isPoisoned && (

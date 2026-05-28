@@ -3109,7 +3109,9 @@ export function tapActivate(state: GameState, action: TapActivateAction): GameSt
   const source = player.board.find(c => c.instanceId === action.sourceInstanceId);
   if (!source) return state;
   if (source.tapped) return state;
-  if (source.hasSummoningSickness) return state;
+  // Traque (charge) autorise le pouvoir activable dès l'invocation, même si
+  // Traque est gagnée en cours de tour (où hasSummoningSickness peut rester vrai).
+  if (source.hasSummoningSickness && !hasKw(source, "charge")) return state;
   const instances = source.card.keyword_instances ?? [];
   const instance = instances[action.instanceIdx];
   if (!instance || instance.mode !== "tap") return state;

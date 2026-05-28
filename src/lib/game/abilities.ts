@@ -99,7 +99,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   charge: {
     id: "charge", label: "Traque", symbol: "⚡",
-    desc: "Peut attaquer dès son invocation.",
+    desc: "Peut attaquer et utiliser son pouvoir activable dès son invocation.",
     applicable_to: ["creature"],
     creature: { cost: 5, costPerX: 0, se: 1.0, minTier: 0, scalable: false, zone: "Terrain" },
   },
