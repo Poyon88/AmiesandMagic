@@ -154,15 +154,10 @@ export default function GameCard({
   const s = size === "sm" ? 0.7 : size === "md" ? 0.85 : 1;
   const isCreature = card.card_type === "creature";
 
-  // Card-art source tuning, derived from the rendered size. The slot is
-  // declared a touch wider than the static width to stay crisp through the
-  // 1.5× hover zoom (ExpertCardFrame uses CSS `zoom` which re-lays-out;
-  // GameCard's own hover uses transform: scale). next/image then picks the
-  // smallest deviceSize ≥ slot×DPR — md on retina lands on the 828px variant
-  // instead of the previous hard-coded ~1920px. quality must be one of
-  // next.config's `qualities: [75, 90, 100]`.
+  // `sizes` hint for the art slot (kept for the underlying <img> even though
+  // the card art is served unoptimized — see the Image below). Values track the
+  // rendered width with a little headroom for the 1.5× hover zoom.
   const artSizes = size === "sm" ? "270px" : size === "lg" ? "510px" : "390px";
-  const artQuality = size === "lg" ? 90 : 75;
 
   // Pentagonal frame for spell cards: top edge straight, sides converge to a
   // bottom point. The clip-path crops the rectangular bounding box to this
@@ -264,13 +259,15 @@ export default function GameCard({
             alt={card.name}
             fill
             className="object-cover"
-            // Source resolution scales with the rendered size (see artSizes
-            // above). The old 2048px bump existed for the preserve-3d expert
-            // frame, which has since been replaced by a 2D frame using CSS
-            // `zoom` — so the oversized source is no longer needed and only
-            // slowed loads (md cards fetched ~1920px art for a 260px slot).
             sizes={artSizes}
-            quality={artQuality}
+            // Served directly from the Supabase CDN (no Next image optimizer).
+            // Card art sources are already small webp (≤800px, ~60-150KB, the
+            // forge compresses on upload), so the optimizer added little value
+            // while its dev-time serial transform queue left many grid cards
+            // blank when 10+ images requested optimization at once. Bypassing it
+            // loads all thumbnails in parallel from the CDN — reliable in dev
+            // and prod alike. (quality is ignored when unoptimized.)
+            unoptimized
           />
         ) : (
           <div style={{
@@ -329,39 +326,39 @@ export default function GameCard({
               const label = keywordLabels[kw] || kw;
               const baseTitle = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
               const modeSuffix = mode === "death" ? " · à la mort" : mode === "tap" ? " · tap" : "";
-              // On a spell, these keywords are CONFERRED to creature(s): the
-              // grant scope tints the badge green (all allies) or white (single
-              // targeted creature).
+              // On a spell, these keywords are CONFERRED to creature(s). Scope
+              // is shown ONLY by a green glow for "all allies" (single-target =
+              // default look). The badge box stays governed solely by emoji-vs-
+              // image (like normal keywords) so custom-art icons keep their
+              // frameless look.
               const grantScope = !isCreature
                 ? (card.keyword_instances?.find((k) => k.id === kw)?.grantScope ?? "target")
                 : null;
-              const grantTint = grantScope === "all_allies" ? "green" : grantScope === "target" ? "white" : undefined;
-              const grantColor = grantScope === "all_allies" ? "#27ae60" : grantScope === "target" ? "#dfe6e9" : null;
               const grantSuffix = grantScope === "all_allies" ? " · conférée à tous les alliés" : grantScope === "target" ? " · conférée à la cible" : "";
               const displayTitle = baseTitle + modeSuffix + grantSuffix;
               const hasImg = !!iconOverrides[kw];
               const modeColor = keywordModeColor(mode);
               const modeFilter = keywordModeFilter(mode);
-              const badgeColor = grantColor ?? accentColor;
               return (
               <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} title={displayTitle} style={{
                 minWidth: 40 * s, height: 40 * s, borderRadius: 4 * s,
                 padding: x != null ? `0 ${4 * s}px` : 0,
-                background: hasImg && !grantTint ? "transparent" : `${badgeColor}33`,
-                border: hasImg && !grantTint ? "none" : `1px solid ${badgeColor}66`,
+                background: hasImg ? "transparent" : `${accentColor}33`,
+                border: hasImg ? "none" : `1px solid ${accentColor}66`,
+                boxShadow: grantScope === "all_allies" ? `0 0 ${5 * s}px #27ae60bb` : undefined,
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 * s,
                 fontSize: 10 * s, overflow: "hidden",
               }}>
-                <span style={{ display: "inline-flex", filter: grantTint ? undefined : (modeFilter ?? undefined), lineHeight: 0 }}>
+                <span style={{ display: "inline-flex", filter: modeFilter ?? undefined, lineHeight: 0 }}>
                   {hasImg ? (
                     <div style={{ width: 40 * s, height: 40 * s, flexShrink: 0 }}>
-                      <KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={22 * s} keyword={kw} fill tint={grantTint} />
+                      <KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={22 * s} keyword={kw} fill />
                     </div>
                   ) : (
-                    <KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={22 * s} keyword={kw} tint={grantTint} />
+                    <KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={22 * s} keyword={kw} />
                   )}
                 </span>
-                {x != null && <span style={{ fontSize: 10 * s, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? badgeColor}` }}>{toRoman(x)}</span>}
+                {x != null && <span style={{ fontSize: 10 * s, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}` }}>{toRoman(x)}</span>}
               </div>
               );
             });

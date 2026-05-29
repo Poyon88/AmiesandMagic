@@ -450,34 +450,32 @@ export default function HandCard({
                   const hasImg = !!iconOverrides[kw];
                   const modeColor = keywordModeColor(mode);
                   const modeFilter = keywordModeFilter(mode);
-                  // On a spell, keywords are CONFERRED — tint the badge green
-                  // (all allies) or white (single targeted creature).
+                  // On a spell, keywords are CONFERRED — scope shown only by a
+                  // green glow for "all allies" (single target = default look);
+                  // the box stays governed by emoji-vs-image like normal.
                   const grantScope = card.card_type === "spell"
                     ? (card.keyword_instances?.find((k) => k.id === kw)?.grantScope ?? "target")
                     : null;
-                  const grantTint = grantScope === "all_allies" ? "green" : grantScope === "target" ? "white" : undefined;
-                  const badgeColor = grantScope === "all_allies" ? "#27ae60" : grantScope === "target" ? "#dfe6e9" : accentColor;
-                  // Frame keeps the faction accent — only the icon glyph
-                  // itself is tinted by the mode, via a wrapper filter.
                   return (
                     <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{
                       minWidth: 24, height: 24, borderRadius: 3,
                       padding: x != null ? "0 2px" : 0,
-                      background: hasImg && !grantTint ? "transparent" : `${badgeColor}33`,
-                      border: hasImg && !grantTint ? "none" : `1px solid ${badgeColor}66`,
+                      background: hasImg ? "transparent" : `${accentColor}33`,
+                      border: hasImg ? "none" : `1px solid ${accentColor}66`,
+                      boxShadow: grantScope === "all_allies" ? "0 0 4px #27ae60bb" : undefined,
                       display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1,
                       fontSize: 8, overflow: "hidden",
                     }}>
-                      <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", filter: grantTint ? undefined : (modeFilter ?? undefined), lineHeight: 0 }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", filter: modeFilter ?? undefined, lineHeight: 0 }}>
                         {hasImg ? (
                           <div style={{ width: 24, height: 24, flexShrink: 0 }}>
-                            <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={14} keyword={kw} fill tint={grantTint} />
+                            <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={14} keyword={kw} fill />
                           </div>
                         ) : (
-                          <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={14} keyword={kw} tint={grantTint} />
+                          <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={14} keyword={kw} />
                         )}
                       </span>
-                      {x != null && <span style={{ fontSize: 8, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? badgeColor}` }}>{toRoman(x)}</span>}
+                      {x != null && <span style={{ fontSize: 8, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}` }}>{toRoman(x)}</span>}
                     </div>
                   );
                 });

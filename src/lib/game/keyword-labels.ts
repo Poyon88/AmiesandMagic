@@ -157,7 +157,12 @@ export const ALL_KEYWORDS: Keyword[] = [
   "charge", "taunt", "divine_shield", "ranged",
   "raid", "loyaute", "ancre", "resistance", "premiere_frappe", "berserk",
   "convocations_multiples",
-  "vol", "precision", "drain_de_vie", "esquive", "poison", "celerite",
+  // NOTE: "vol" is a legacy duplicate of "ranged" (both = "Vol" 🦅, treated
+  // identically in combat). The forge emits "ranged" and every card uses it
+  // (0 cards use "vol"), so "vol" is intentionally omitted from this list to
+  // avoid a duplicate "Vol" entry in keyword pickers/filters. Its label, symbol
+  // and engine handling are kept below as a harmless alias for safety.
+  "precision", "drain_de_vie", "esquive", "poison", "celerite",
   "augure", "benediction", "bravoure", "pillage", "riposte",
   "rappel", "combustion",
   "terreur", "armure", "commandement", "fureur", "double_attaque", "invisible",
