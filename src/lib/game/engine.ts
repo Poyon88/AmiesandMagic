@@ -1912,7 +1912,11 @@ function resolveSpellKeywords(
         if (targetId) {
           const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
           if (target) {
-            target.card = { ...target.card, keywords: [] };
+            // Clear BOTH the legacy keywords array AND keyword_instances — the
+            // latter is where mode-aware powers live (tap-activated abilities,
+            // on-death rattles, conferred-keyword scopes). Without this a
+            // silenced creature kept its activatable / death powers.
+            target.card = { ...target.card, keywords: [], keyword_instances: null };
             target.hasDivineShield = false;
             target.contresortActive = false;
             target.isParalyzed = false;
@@ -2435,7 +2439,10 @@ function resolveAtomicEffect(ctx: SpellResolutionContext, effect: AtomicEffect):
             ...target.card,
             attack: effect.attack ?? target.card.attack,
             health: effect.health ?? target.card.health,
+            // Strip keyword_instances too (tap/death powers, conferred scopes)
+            // so a transformed creature loses its activatable abilities.
             keywords: [],
+            keyword_instances: null,
           };
           target.hasDivineShield = false;
         }

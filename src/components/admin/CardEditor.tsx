@@ -842,19 +842,16 @@ export default function CardEditor() {
               </div>
             )}
 
-            {/* Keywords (creature side). For spells, the engine reads only
-                spell_keywords — creature-side keywords on a spell are inert
-                data. We hide the grid entirely for clean spells, and for
-                spells with stale entries we show only the active ones plus
-                a warning so the user can deactivate them and re-add via
-                "Capacités de sort". */}
+            {/* Keywords (creature side). On a SPELL these are CONFERRED to
+                creature(s) on cast (see the green note + the "Portée des
+                capacités conférées" picker below). The full keyword list is
+                shown for both creatures and spells so the admin can add any
+                ability to confer; the per-keyword scope (cible / tous alliés)
+                is chosen in the picker. */}
             {(() => {
               const isSpell = editFields.card_type === "spell";
               const activeCreatureKws = ((editFields.keywords as string[]) || []);
-              if (isSpell && activeCreatureKws.length === 0) return null;
-              const visibleKeywords = isSpell
-                ? SORTED_KEYWORDS.filter(kw => activeCreatureKws.includes(kw))
-                : SORTED_KEYWORDS;
+              const visibleKeywords = SORTED_KEYWORDS;
               return (
             <div style={{ marginBottom: 8 }}>
               <div style={S.label}>
