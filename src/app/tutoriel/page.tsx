@@ -1,0 +1,26 @@
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+import TutorialView from "@/components/tutorial/TutorialView";
+
+export const metadata = { title: "Comment jouer | Armies & Magic" };
+
+export default async function TutorielPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) redirect("/login");
+
+  const [{ data: profile }, { data: wallet }] = await Promise.all([
+    supabase.from("profiles").select("*").eq("id", user.id).single(),
+    supabase.from("wallets").select("balance").eq("user_id", user.id).single(),
+  ]);
+
+  return (
+    <TutorialView
+      username={profile?.username ?? "Player"}
+      goldBalance={wallet?.balance ?? 0}
+    />
+  );
+}
