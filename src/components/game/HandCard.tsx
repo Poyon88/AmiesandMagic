@@ -453,19 +453,19 @@ export default function HandCard({
                   const hasImg = !!iconOverrides[kw];
                   const modeColor = keywordModeColor(mode);
                   const modeFilter = keywordModeFilter(mode);
-                  // On a spell, keywords are CONFERRED — scope shown only by a
-                  // green glow for "all allies" (single target = default look);
-                  // the box stays governed by emoji-vs-image like normal.
+                  // On a spell, keywords are CONFERRED — "all allies" gets a
+                  // visible green chip behind the icon (a glow was clipped by
+                  // overflow:hidden); single target keeps the default look.
                   const grantScope = card.card_type === "spell"
                     ? (card.keyword_instances?.find((k) => k.id === kw)?.grantScope ?? "target")
                     : null;
+                  const isAllAllies = grantScope === "all_allies";
                   return (
                     <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{
                       minWidth: 24, height: 24, borderRadius: 3,
                       padding: x != null ? "0 2px" : 0,
-                      background: hasImg ? "transparent" : `${accentColor}33`,
-                      border: hasImg ? "none" : `1px solid ${accentColor}66`,
-                      boxShadow: grantScope === "all_allies" ? "0 0 4px #27ae60bb" : undefined,
+                      background: isAllAllies ? "#27ae6055" : (hasImg ? "transparent" : `${accentColor}33`),
+                      border: isAllAllies ? "1px solid #27ae60" : (hasImg ? "none" : `1px solid ${accentColor}66`),
                       display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1,
                       fontSize: 8, overflow: "hidden",
                     }}>

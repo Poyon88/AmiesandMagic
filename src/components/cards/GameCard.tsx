@@ -326,15 +326,15 @@ export default function GameCard({
               const label = keywordLabels[kw] || kw;
               const baseTitle = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
               const modeSuffix = mode === "death" ? " · à la mort" : mode === "tap" ? " · tap" : "";
-              // On a spell, these keywords are CONFERRED to creature(s). Scope
-              // is shown ONLY by a green glow for "all allies" (single-target =
-              // default look). The badge box stays governed solely by emoji-vs-
-              // image (like normal keywords) so custom-art icons keep their
-              // frameless look.
+              // On a spell, these keywords are CONFERRED to creature(s). The
+              // "all allies" scope gets a visible GREEN chip (fill + border)
+              // behind the icon — a glow alone was clipped by the card's
+              // overflow:hidden. Single-target keeps the default look.
               const grantScope = !isCreature
                 ? (card.keyword_instances?.find((k) => k.id === kw)?.grantScope ?? "target")
                 : null;
-              const grantSuffix = grantScope === "all_allies" ? " · conférée à tous les alliés" : grantScope === "target" ? " · conférée à la cible" : "";
+              const isAllAllies = grantScope === "all_allies";
+              const grantSuffix = isAllAllies ? " · conférée à tous les alliés" : grantScope === "target" ? " · conférée à la cible" : "";
               const displayTitle = baseTitle + modeSuffix + grantSuffix;
               const hasImg = !!iconOverrides[kw];
               const modeColor = keywordModeColor(mode);
@@ -343,9 +343,8 @@ export default function GameCard({
               <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} title={displayTitle} style={{
                 minWidth: 40 * s, height: 40 * s, borderRadius: 4 * s,
                 padding: x != null ? `0 ${4 * s}px` : 0,
-                background: hasImg ? "transparent" : `${accentColor}33`,
-                border: hasImg ? "none" : `1px solid ${accentColor}66`,
-                boxShadow: grantScope === "all_allies" ? `0 0 ${5 * s}px #27ae60bb` : undefined,
+                background: isAllAllies ? "#27ae6055" : (hasImg ? "transparent" : `${accentColor}33`),
+                border: isAllAllies ? `1px solid #27ae60` : (hasImg ? "none" : `1px solid ${accentColor}66`),
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 * s,
                 fontSize: 10 * s, overflow: "hidden",
               }}>
@@ -493,13 +492,22 @@ export default function GameCard({
               if (kw === "convocations_multiples" && card.convocation_tokens?.length) {
                 desc = `Invocation : crée ${formatConvocationTokens(card.convocation_tokens, effectiveTokens)}`;
               }
+              // Conferred-keyword scope on a spell: green for "all allies".
+              const grantScope = !isCreature
+                ? (card.keyword_instances?.find((k) => k.id === kw)?.grantScope ?? "target")
+                : null;
+              const scopeNote = grantScope === "all_allies"
+                ? "Conférée à toutes les unités alliées."
+                : grantScope === "target" ? "Conférée à la créature ciblée." : null;
               const modeColor = keywordModeColor(mode);
               const modeFilter = keywordModeFilter(mode);
+              const labelColor = grantScope === "all_allies" ? "#2ecc71" : (modeColor ?? accentColor);
               return (
               <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
                 <span style={{ flexShrink: 0, display: "inline-flex", filter: modeFilter ?? undefined, lineHeight: 0 }}><KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={18 * s} keyword={kw} /></span>
                 <div>
-                  <div style={{ fontSize: 14 * s, color: modeColor ?? accentColor, fontWeight: 700 }}>{displayLabel}</div>
+                  <div style={{ fontSize: 14 * s, color: labelColor, fontWeight: 700 }}>{displayLabel}</div>
+                  {scopeNote && <div style={{ fontSize: 11.5 * s, color: grantScope === "all_allies" ? "#2ecc71" : "#9fb0c0", fontStyle: "italic", fontFamily: "'Crimson Text',serif" }}>{scopeNote}</div>}
                   {desc && <div style={{ fontSize: 12 * s, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
                 </div>
               </div>
