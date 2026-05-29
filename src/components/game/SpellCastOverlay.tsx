@@ -312,13 +312,17 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
                       const desc = kwDef?.desc
                         ? (x != null ? kwDef.desc.replace(/X/g, String(x)) : kwDef.desc)
                         : null;
+                      // Conferred keyword scope: green = all allies, white = single target.
+                      const grantScope = card.keyword_instances?.find((k) => k.id === kw)?.grantScope ?? "target";
+                      const grantTint = grantScope === "all_allies" ? "green" : "white";
+                      const grantNote = grantScope === "all_allies" ? " · à tous les alliés" : " · à la créature ciblée";
                       return (
                         <div key={kw} style={{ display: "flex", alignItems: "flex-start", gap: 6 }}>
                           <span style={{ flexShrink: 0 }}>
-                            <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={16} keyword={kw} />
+                            <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={16} keyword={kw} tint={grantTint} />
                           </span>
                           <div>
-                            <div style={{ fontSize: "0.8rem", color: accentColor, fontWeight: 700, textShadow: "0 1px 2px rgba(0,0,0,0.9)" }}>{displayLabel}</div>
+                            <div style={{ fontSize: "0.8rem", color: grantScope === "all_allies" ? "#2ecc71" : accentColor, fontWeight: 700, textShadow: "0 1px 2px rgba(0,0,0,0.9)" }}>{displayLabel}<span style={{ fontSize: "0.65rem", opacity: 0.85 }}>{grantNote}</span></div>
                             {desc && (
                               <div style={{ fontSize: "0.7rem", color: "#eee", lineHeight: 1.35, fontFamily: "'Crimson Text', serif", textShadow: "0 1px 2px rgba(0,0,0,0.9)" }}>
                                 {desc}

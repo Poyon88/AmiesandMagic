@@ -124,6 +124,11 @@ export interface KeywordInstance {
   id: Keyword;
   mode?: KeywordMode; // undefined ⇒ on-play
   x?: number;
+  /** Spell-only. When a creature keyword is carried by a SPELL, the spell
+   *  CONFERS it to creature(s) on cast. `grantScope` chooses the recipients:
+   *  "target" (default) = a single chosen allied creature; "all_allies" =
+   *  every allied creature on the board at cast time. Ignored on creatures. */
+  grantScope?: "target" | "all_allies";
 }
 
 export interface SpellKeywordInstance {

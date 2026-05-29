@@ -1403,10 +1403,11 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // Tempête X — on-play, deals X damage spread one-by-one across the
     // currently-alive enemy creatures. Each "drop" picks a random target
     // from the live enemies (re-evaluated per drop so dead creatures stop
-    // taking hits). Does not target the enemy hero.
-    if (hasKw(cardInstance, "tempete")) {
-      const xVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
-      const total = xVals["tempete"] || Math.max(1, Math.floor(cardInstance.card.mana_cost / 3));
+    // taking hits). Does not target the enemy hero. Gated on hasKwOnPlay so
+    // a Tempête instance set to "death"/"tap" mode doesn't ALSO fire here at
+    // summon — it resolves from resolveCuratedKeywordEffect instead.
+    if (hasKwOnPlay(cardInstance, "tempete")) {
+      const total = getKwX(cardInstance, "tempete", undefined, Math.max(1, Math.floor(cardInstance.card.mana_cost / 3)));
       for (let drop = 0; drop < total; drop++) {
         const alive = opponent.board.filter((u) => u.currentHealth > 0);
         if (alive.length === 0) break;
@@ -1541,18 +1542,30 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       resolveComposableEffects(ctx, card.spell_effects.effects);
     }
 
-    // Phase 3: Grant creature keywords from spell to first target
+    // Phase 3: Grant creature keywords carried by the spell. Each keyword's
+    // recipients come from its keyword_instances entry:
+    //   - "all_allies" → every allied creature on the board at cast time
+    //   - "target" (default) → the single allied creature chosen via the
+    //     "grant_target" slot (falls back to the spell's primary target slot
+    //     so legacy single-target selection keeps working).
+    // X values are sourced from the instance and stored on each recipient via
+    // applyGrantedKeyword (which also handles divine_shield / charge side
+    // effects and records grantedKeywordX). Permanent — recalculateAuras never
+    // strips keywords from card.keywords.
     if (card.keywords.length > 0) {
-      const firstTargetId = targetMap["kw_0"] ?? targetMap["target_0"];
-      if (firstTargetId && firstTargetId !== "enemy_hero" && firstTargetId !== "friendly_hero") {
-        const target = findCreatureOnBoard(player, firstTargetId) ?? findCreatureOnBoard(opponent, firstTargetId);
-        if (target) {
-          for (const kw of card.keywords) {
-            if (kw === "divine_shield") target.hasDivineShield = true;
-            if (!target.card.keywords.includes(kw)) {
-              target.card = { ...target.card, keywords: [...target.card.keywords, kw] };
-            }
-          }
+      const grantTargetId = targetMap["grant_target"] ?? targetMap["kw_0"] ?? targetMap["target_0"];
+      const grantTarget =
+        grantTargetId && grantTargetId !== "enemy_hero" && grantTargetId !== "friendly_hero"
+          ? findCreatureOnBoard(player, grantTargetId)
+          : null;
+      for (const kw of card.keywords) {
+        const inst = card.keyword_instances?.find((k) => k.id === kw);
+        const scope = inst?.grantScope ?? "target";
+        const params = inst?.x != null ? { amount: inst.x } : undefined;
+        if (scope === "all_allies") {
+          for (const ally of player.board) applyGrantedKeyword(ally, kw, params);
+        } else if (grantTarget) {
+          applyGrantedKeyword(grantTarget, kw, params);
         }
       }
     }
@@ -2485,6 +2498,19 @@ export function getSpellTargetSlots(card: Card): SpellTargetSlot[] {
     slots.push(...card.spell_effects.targets);
   }
 
+  // Conferred creature keywords with single-target scope need one allied
+  // creature to receive them. A single shared slot serves every such keyword
+  // on the spell (all target-scope grants land on the same chosen ally).
+  if (card.card_type === "spell" && card.keywords?.length) {
+    const needsGrantTarget = card.keywords.some((kw) => {
+      const inst = card.keyword_instances?.find((k) => k.id === kw);
+      return (inst?.grantScope ?? "target") === "target";
+    });
+    if (needsGrantTarget) {
+      slots.push({ slot: "grant_target", type: "friendly_creature", label: "Cible du don" });
+    }
+  }
+
   return slots;
 }
 
@@ -3082,6 +3108,20 @@ function resolveCuratedKeywordEffect(
       }
       drawCard(owner);
       drawCard(owner);
+      break;
+    }
+    case "tempete": {
+      // Inflige X dégâts répartis un par un sur les créatures ennemies
+      // encore vivantes (cible recalculée à chaque goutte pour ne pas
+      // frapper les morts). Ne touche pas le héros. Identique à l'effet
+      // d'invocation, rejoué depuis le râle d'agonie (death) ou
+      // l'activation (tap).
+      for (let drop = 0; drop < x; drop++) {
+        const alive = opponent.board.filter((u) => u.currentHealth > 0);
+        if (alive.length === 0) break;
+        const target = alive[Math.floor(rng() * alive.length)];
+        dealDamageToCreature(target, 1, false, true);
+      }
       break;
     }
     // TODO: convocations_multiples, suprematie, ombre_du_passe, savant

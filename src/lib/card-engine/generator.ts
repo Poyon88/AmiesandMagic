@@ -60,13 +60,18 @@ function computeBudget(mana: number, rarityId: string) {
 
 // ─── KEYWORDS ────────────────────────────────────────────────────────────────
 
-function getAvailableKeywords(factionId: string, rarityId: string, raceId?: string) {
+function getAvailableKeywords(factionId: string, rarityId: string, raceId?: string, clanId?: string) {
   const faction = FACTIONS[factionId];
   const tier = RARITY_MAP[rarityId].tier;
-  const raceKws: Record<string, number> | undefined = raceId ? faction.raceProfiles?.[raceId]?.likelyKeywords : undefined;
+  // Profile keyword weights: prefer the race profile, then the clan profile
+  // (the Élémentaires carry their elemental playstyle on the clan), then the
+  // faction-level likelihoods.
+  const profileKws: Record<string, number> | undefined =
+    (raceId ? faction.raceProfiles?.[raceId]?.likelyKeywords : undefined)
+    ?? (clanId ? faction.clanProfiles?.[clanId]?.likelyKeywords : undefined);
   return Object.entries(KEYWORDS)
     .filter(([id, kw]) => kw.minTier <= tier && !faction.forbiddenKeywords.includes(id))
-    .map(([id, kw]) => ({ id, ...kw, weight: (raceKws ? raceKws[id] : undefined) ?? faction.likelyKeywords[id] ?? 0.12 }));
+    .map(([id, kw]) => ({ id, ...kw, weight: (profileKws ? profileKws[id] : undefined) ?? faction.likelyKeywords[id] ?? 0.12 }));
 }
 
 function pickWeightedKeyword(available: ReturnType<typeof getAvailableKeywords>, alreadyPicked: string[]) {
@@ -83,14 +88,17 @@ function pickWeightedKeyword(available: ReturnType<typeof getAvailableKeywords>,
 
 // ─── MAIN GENERATOR ──────────────────────────────────────────────────────────
 
-export function generateCardStats(factionId: string, type: string, rarityId: string, fixedMana: number | null = null, raceId?: string) {
+export function generateCardStats(factionId: string, type: string, rarityId: string, fixedMana: number | null = null, raceId?: string, clanId?: string) {
   const faction = FACTIONS[factionId];
   const isUnit = type === 'Unité';
   const mana = fixedMana ?? pickMana(rarityId);
 
-  // Race-specific stat adjustments
+  // Race-specific stat adjustments — fall back to clan profile when the
+  // faction tunes by clan instead (Élémentaires).
   let statWeights = { ...faction.statWeights };
-  const raceProfile = raceId && faction.raceProfiles?.[raceId];
+  const raceProfile = (raceId && faction.raceProfiles?.[raceId])
+    || (clanId && faction.clanProfiles?.[clanId])
+    || null;
   if (raceProfile) {
     statWeights = { ...raceProfile.statWeights };
   }
@@ -113,8 +121,9 @@ export function generateCardStats(factionId: string, type: string, rarityId: str
   const FREQUENT_CHANCE = 0.40;
 
   if (isUnit) {
-    // Dragons et Aigles Géants : Vol toujours garanti
-    if (raceId === "Dragons" || raceId === "Aigles Géants" || raceId === "Air/Tempête") {
+    // Dragons et Aigles Géants : Vol toujours garanti. Le clan Air
+    // (anciennement la race "Air/Tempête") conserve ce Vol garanti.
+    if (raceId === "Dragons" || raceId === "Aigles Géants" || clanId === "Air") {
       keywords.push("Vol");
     }
 
@@ -189,7 +198,7 @@ export function generateCardStats(factionId: string, type: string, rarityId: str
       'Légendaire':  { max: 3, probs: [0.85, 0.55, 0.25] },
     };
     const kwConfig = KW_CONFIG[rarityId] || { max: 2, probs: [0.50, 0.25] };
-    const available = getAvailableKeywords(factionId, rarityId, raceId);
+    const available = getAvailableKeywords(factionId, rarityId, raceId, clanId);
     let attempts = 0;
     while (keywords.length < kwConfig.max && attempts < 15) {
       const slotProb = kwConfig.probs[keywords.length] ?? 0;

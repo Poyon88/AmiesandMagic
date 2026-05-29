@@ -1,4 +1,4 @@
-import { FACTIONS } from '@/lib/card-engine/constants';
+import { FACTIONS, getAllClanNames } from '@/lib/card-engine/constants';
 
 export type FactionClanResult =
   | { ok: true; faction: string | null; clan: string | null }
@@ -18,8 +18,8 @@ export function validateFactionClan(
   let c: string | null = null;
   if (typeof clan === 'string' && clan.trim()) {
     if (!f) return { ok: false, error: 'Clan sans faction' };
-    const def = FACTIONS[f];
-    if (def.clans && !def.clans.names.includes(clan)) {
+    const validClans = getAllClanNames(f);
+    if (validClans.length > 0 && !validClans.includes(clan)) {
       return { ok: false, error: 'Clan invalide pour cette faction' };
     }
     c = clan;

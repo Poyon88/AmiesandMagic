@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
+import Image from "next/image";
 import GameCard from "@/components/cards/GameCard";
 import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
-import { KEYWORDS as KEYWORD_DEFS, FACTIONS, getFactionDisplayName, CURATED_KEYWORD_MODES } from "@/lib/card-engine/constants";
+import { KEYWORDS as KEYWORD_DEFS, FACTIONS, getFactionDisplayName, getAllClanNames, CURATED_KEYWORD_MODES } from "@/lib/card-engine/constants";
 import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS } from "@/lib/game/spell-keywords";
 import type { Card, Keyword, KeywordInstance, KeywordMode, SpellKeywordInstance, SpellComposableEffects, CardSet, TokenTemplate } from "@/lib/game/types";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
@@ -64,6 +65,9 @@ export default function CardEditor() {
   // Per-keyword trigger mode override, keyed by game keyword id. Missing
   // entry = on-play (default). Only curated keywords accept non-play modes.
   const [keywordModes, setKeywordModes] = useState<Record<string, KeywordMode>>({});
+  // Spell-only: per-conferred-keyword grant scope. Missing entry = "target"
+  // (single allied creature); "all_allies" = every allied creature on cast.
+  const [keywordGrantScope, setKeywordGrantScope] = useState<Record<string, "all_allies">>({});
 
   // Filters
   const [search, setSearch] = useState("");
@@ -125,9 +129,9 @@ export default function CardEditor() {
   // tant qu'aucune carte ne l'a sauvegardé, et il reste invisible à l'admin.
   const editClans = useMemo(() => {
     const editFaction = (typeof editFields?.faction === "string" ? editFields.faction : null) as string | null;
-    const canonical: string[] = editFaction && FACTIONS[editFaction]?.clans
-      ? FACTIONS[editFaction]!.clans!.names
-      : Object.values(FACTIONS).flatMap(f => f.clans?.names ?? []);
+    const canonical: string[] = editFaction
+      ? getAllClanNames(editFaction)
+      : Object.keys(FACTIONS).flatMap(getAllClanNames);
     return [...new Set([...canonical, ...clans])].sort();
   }, [clans, editFields]);
   const editRaces = useMemo(() => {
@@ -193,12 +197,15 @@ export default function CardEditor() {
     // Trigger modes (and authoritative X) live in the keyword_instances
     // sidecar; the effect_text bracket is the legacy fallback for X.
     const modes: Record<string, KeywordMode> = {};
+    const grantScopes: Record<string, "all_allies"> = {};
     for (const inst of card.keyword_instances ?? []) {
       if (inst.mode) modes[inst.id] = inst.mode;
       if (inst.x != null) parsedX[inst.id] = inst.x;
+      if (inst.grantScope === "all_allies") grantScopes[inst.id] = "all_allies";
     }
     setKeywordModes(modes);
     setKeywordXValues(parsedX);
+    setKeywordGrantScope(grantScopes);
 
     // Strip X suffix from effect_text for editing
     const cleanEffectText = (card.effect_text || "").replace(/\s*\[[^\]]*\]$/, "").trim();
@@ -324,12 +331,16 @@ export default function CardEditor() {
       // Sidecar carrying per-keyword trigger mode + X so the engine can route
       // on-death / tap effects. Mirror of the Forge's builder. Without this,
       // saving here would null out keyword_instances and reset every mode.
+      const isSpellCard = editFields.card_type === "spell";
       const keywordInstances = activeKeywords
         .map((id): KeywordInstance | null => {
           const mode = keywordModes[id];
           const x = keywordXValues[id];
-          if (!mode && x == null) return null;
-          return { id: id as Keyword, ...(mode ? { mode } : {}), ...(x != null ? { x } : {}) };
+          // On a spell, a conferred keyword set to "all_allies" must persist
+          // its scope even with no mode/X. "target" is the default → no field.
+          const grantScope = isSpellCard && keywordGrantScope[id] === "all_allies" ? "all_allies" as const : undefined;
+          if (!mode && x == null && !grantScope) return null;
+          return { id: id as Keyword, ...(mode ? { mode } : {}), ...(x != null ? { x } : {}), ...(grantScope ? { grantScope } : {}) };
         })
         .filter((k): k is KeywordInstance => k !== null);
 
@@ -400,7 +411,7 @@ export default function CardEditor() {
       console.warn("[card-save] refresh failed after successful save:", err);
     }
     setSaving(false);
-  }, [selectedCard, editFields, newImageFile, keywordXValues, keywordModes]);
+  }, [selectedCard, editFields, newImageFile, keywordXValues, keywordModes, keywordGrantScope]);
 
   // Delete
   const handleDelete = useCallback(async (id: number) => {
@@ -674,10 +685,20 @@ export default function CardEditor() {
         {/* ── EDIT PANEL ── */}
         {selectedCard && (
           <div style={{ width: 320, borderLeft: "1px solid #e0e0e0", background: "#fff", overflow: "auto", padding: "16px 14px", flexShrink: 0 }}>
-            {/* Image preview */}
+            {/* Image preview. A freshly-picked upload (newImagePreview) is a
+                local blob/data URL → render it raw (next/image can't optimise
+                those). The saved illustration is a remote Supabase URL → run it
+                through next/image so the panel fetches a ~320px-wide variant
+                (q75) instead of the full-resolution original, which was the
+                main source of slowness when selecting cards in this tab. */}
             {(newImagePreview || selectedCard.image_url) && (
-              <div style={{ marginBottom: 12, borderRadius: 6, overflow: "hidden", border: "1px solid #e0e0e0" }}>
-                <img src={newImagePreview || selectedCard.image_url!} alt="" style={{ width: "100%", height: 160, objectFit: "cover" }} />
+              <div style={{ marginBottom: 12, borderRadius: 6, overflow: "hidden", border: "1px solid #e0e0e0", position: "relative", height: 160 }}>
+                {newImagePreview ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={newImagePreview} alt="" style={{ width: "100%", height: 160, objectFit: "cover", display: "block" }} />
+                ) : (
+                  <Image src={selectedCard.image_url!} alt="" fill sizes="320px" quality={75} style={{ objectFit: "cover" }} />
+                )}
               </div>
             )}
 
@@ -839,8 +860,8 @@ export default function CardEditor() {
               <div style={S.label}>
                 Mots-clés ({activeCreatureKws.length})
                 {isSpell && (
-                  <span style={{ color: "#c0392b", fontWeight: 600, marginLeft: 6, fontSize: 9 }}>
-                    ⚠ Capacités de créature inactives sur un sort — désactive-les ici, puis ré-ajoute via &laquo;&nbsp;Capacités de sort&nbsp;&raquo;.
+                  <span style={{ color: "#27ae60", fontWeight: 600, marginLeft: 6, fontSize: 9 }}>
+                    ✦ Capacités conférées aux créatures lors du lancement — réglez la portée ci-dessous (vert = tous les alliés, gris = créature ciblée).
                   </span>
                 )}
               </div>
@@ -848,6 +869,10 @@ export default function CardEditor() {
                 {visibleKeywords.map(kw => {
                   const active = ((editFields.keywords as string[]) || []).includes(kw);
                   const label = KEYWORD_LABELS[kw];
+                  // On a spell, an active conferred keyword is tinted green when
+                  // it grants to all allies, neutral dark when single-target.
+                  const grantAll = isSpell && active && keywordGrantScope[kw] === "all_allies";
+                  const activeColor = grantAll ? "#27ae60" : "#333";
                   return (
                     <div key={kw} style={{ position: "relative", display: "inline-flex" }}
                       onMouseEnter={() => setHoveredKw(kw)}
@@ -855,8 +880,8 @@ export default function CardEditor() {
                     >
                       <button onClick={() => toggleKeyword(kw)} style={{
                         padding: "2px 6px", borderRadius: 4, fontSize: 8, fontFamily: "'Cinzel',serif", fontWeight: active ? 700 : 400,
-                        border: `1px solid ${active ? "#333" : "#e0e0e0"}`,
-                        background: active ? "#333" : "#fafafa",
+                        border: `1px solid ${active ? activeColor : "#e0e0e0"}`,
+                        background: active ? activeColor : "#fafafa",
                         color: active ? "#fff" : "#888",
                         cursor: "pointer",
                       }}>
@@ -905,6 +930,47 @@ export default function CardEditor() {
                             onChange={e => setKeywordXValues(prev => ({ ...prev, [kw]: parseInt(e.target.value) || 1 }))}
                             style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: "1px solid #d0c8ff", fontSize: 11, textAlign: "center" }}
                           />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Grant scope for conferred keywords on a SPELL — gris = créature
+                ciblée (un seul allié), vert = toutes les unités alliées. */}
+            {editFields.card_type === "spell" && (() => {
+              const active = ((editFields.keywords as string[]) || []);
+              if (active.length === 0) return null;
+              return (
+                <div style={{ marginBottom: 8, padding: "8px 10px", borderRadius: 6, background: "#f2fbf4", border: "1px solid #cdeccf" }}>
+                  <div style={{ ...S.label, color: "#27ae60", marginBottom: 6 }}>Portée des capacités conférées</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    {active.map(kw => {
+                      const label = KEYWORD_LABELS[kw as Keyword] ?? kw;
+                      const scope = keywordGrantScope[kw] === "all_allies" ? "all_allies" : "target";
+                      return (
+                        <div key={kw} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <span style={{ fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: 600, color: "#333", flex: 1 }}>{label}</span>
+                          <div style={{ display: "inline-flex", gap: 3 }}>
+                            {([["target", "Créature ciblée", "#888"], ["all_allies", "Tous alliés", "#27ae60"]] as const).map(([val, lbl, color]) => {
+                              const activeScope = scope === val;
+                              return (
+                                <button key={val} onClick={() => setKeywordGrantScope(prev => {
+                                  const next = { ...prev };
+                                  if (val === "all_allies") next[kw] = "all_allies"; else delete next[kw];
+                                  return next;
+                                })} style={{
+                                  padding: "2px 8px", borderRadius: 4, fontSize: 8, fontFamily: "'Cinzel',serif",
+                                  cursor: "pointer", fontWeight: activeScope ? 700 : 400,
+                                  border: `1px solid ${activeScope ? color : "#ddd"}`,
+                                  background: activeScope ? color : "#fff",
+                                  color: activeScope ? "#fff" : "#999",
+                                }}>{lbl}</button>
+                              );
+                            })}
+                          </div>
                         </div>
                       );
                     })}

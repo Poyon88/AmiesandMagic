@@ -114,8 +114,15 @@ export default function CardPreview({ cardInstance, anchorRef, position = "above
               const x = xVals[kw];
               const label = KEYWORD_LABELS[kw] || kw.replace("_", " ");
               const displayLabel = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
+              // On a spell, conferred keywords show their grant scope: green
+              // text = all allies, default = single targeted creature.
+              const grantAll = card.card_type === "spell"
+                && (card.keyword_instances?.find((k) => k.id === kw)?.grantScope ?? "target") === "all_allies";
               return (
-              <span key={kw} className="text-[10px] px-1.5 py-0.5 rounded bg-primary/20 text-primary font-medium">
+              <span key={kw}
+                className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${grantAll ? "" : "bg-primary/20 text-primary"}`}
+                style={grantAll ? { background: "rgba(39,174,96,0.2)", color: "#27ae60" } : undefined}
+              >
                 {displayLabel}
               </span>
               );

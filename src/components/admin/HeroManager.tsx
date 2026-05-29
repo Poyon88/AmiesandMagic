@@ -5,7 +5,7 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Stage, useGLTF } from "@react-three/drei";
 import type { TokenTemplate } from "@/lib/game/types";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
-import { FACTIONS, getFactionDisplayName } from "@/lib/card-engine/constants";
+import { FACTIONS, getFactionDisplayName, getClanNamesForRace } from "@/lib/card-engine/constants";
 import { ABILITIES } from "@/lib/game/abilities";
 import { autoTrimDarkBorders } from "@/lib/card-back-frames";
 
@@ -237,13 +237,14 @@ export default function HeroManager() {
     return FACTIONS[faction]?.races ?? [];
   }, [faction]);
 
-  // Available clans for the currently selected faction. Some factions
-  // (Élémentaires, Mercenaires) don't define clans → empty list disables the
-  // dropdown.
+  // Available clans for the selected faction AND race. Race-specific clan
+  // groups (e.g. Émeraudes for Fées, Cimes Éternelles for Aigles Géants) only
+  // surface for the matching race; transversal ("all") clans always apply.
+  // Factions without clans (Mercenaires) → empty list disables the dropdown.
   const availableClans = useMemo<string[]>(() => {
     if (!faction) return [];
-    return FACTIONS[faction]?.clans?.names ?? [];
-  }, [faction]);
+    return getClanNamesForRace(faction, race);
+  }, [faction, race]);
 
   // When the faction changes, snap the race onto a valid value for the new
   // faction (or empty if the user picked "Aucune"). En édition la race est

@@ -127,6 +127,9 @@ interface CardData {
   power: number | null;
   keywords: string[];
   keywordXValues?: Record<string, number>;
+  // Spell-only: per-conferred-keyword grant scope (FR-label keyed). Tints the
+  // keyword icon green (all allies) vs white (single targeted creature).
+  keywordGrantScope?: Record<string, "all_allies">;
   ability: string;
   flavorText: string;
   budgetUsed: number;
@@ -354,17 +357,22 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                 displayName = `Entraide (${card!.entraideRace})`;
                 displayDesc = `En main : coûte 1 mana de moins par allié ${card!.entraideRace} présent en jeu (cumulable, plancher 0).`;
               }
+              const grantScope = card!.type !== "Unité"
+                ? (card!.keywordGrantScope?.[kw] === "all_allies" ? "all_allies" : "target")
+                : null;
+              const grantTint = grantScope === "all_allies" ? "green" : grantScope === "target" ? "white" : undefined;
+              const badgeColor = grantScope === "all_allies" ? "#27ae60" : grantScope === "target" ? "#cfd8dc" : fac.color;
               return (
                 <div key={kw} title={`${displayName}: ${displayDesc}`} style={{
                   minWidth: 19 * s, height: 19 * s, borderRadius: 6 * s,
                   padding: `0 ${xVal != null ? 5 * s : 0}px`,
-                  background: `${fac.color}33`, border: `1px solid ${fac.color}88`,
+                  background: `${badgeColor}33`, border: `1px solid ${badgeColor}88`,
                   display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 3 * s,
                   fontSize: 13 * s, cursor: "default",
-                  boxShadow: `0 0 6px ${fac.color}44`,
+                  boxShadow: `0 0 6px ${badgeColor}44`,
                   transition: "all 0.2s",
                 }}>
-                  <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} keyword={FR_LABEL_TO_ID[kw] ?? kw} />
+                  <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} keyword={FR_LABEL_TO_ID[kw] ?? kw} tint={grantTint} />
                   {xVal != null && (
                     <span style={{
                       fontSize: 10 * s, fontWeight: 900, lineHeight: 1,
@@ -544,11 +552,16 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                 displayName = `Entraide (${card!.entraideRace})`;
                 displayDesc = `En main : coûte 1 mana de moins par allié ${card!.entraideRace} présent en jeu (cumulable, plancher 0).`;
               }
+              const detailScope = card!.type !== "Unité"
+                ? (card!.keywordGrantScope?.[kw] === "all_allies" ? "all_allies" : "target")
+                : null;
+              const detailTint = detailScope === "all_allies" ? "green" : detailScope === "target" ? "white" : undefined;
+              const detailNote = detailScope === "all_allies" ? " (à tous les alliés)" : detailScope === "target" ? " (à la créature ciblée)" : "";
               return (
                 <div key={kw} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
-                  <span style={{ flexShrink: 0 }}><KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={18 * s} keyword={FR_LABEL_TO_ID[kw] ?? kw} /></span>
+                  <span style={{ flexShrink: 0 }}><KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={18 * s} keyword={FR_LABEL_TO_ID[kw] ?? kw} tint={detailTint} /></span>
                   <div>
-                    <div style={{ fontSize: 14 * s, color: fac.accent, fontWeight: 700 }}>{displayName}</div>
+                    <div style={{ fontSize: 14 * s, color: detailScope === "all_allies" ? "#27ae60" : fac.accent, fontWeight: 700 }}>{displayName}{detailNote}</div>
                     <div style={{ fontSize: 12 * s, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{displayDesc}</div>
                   </div>
                 </div>

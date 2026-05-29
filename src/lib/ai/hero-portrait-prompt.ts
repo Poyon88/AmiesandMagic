@@ -90,7 +90,7 @@ export const GRANULAR_RACE_DESCRIPTORS: Record<string, string> = {
     'A humanoid earth elemental warrior — bipedal humanoid silhouette, rocky stone-textured skin, mossy beard, glowing crystal veins running across the chest and brow.',
   'Eau':
     'A humanoid water elemental warrior — bipedal humanoid silhouette, translucent flowing skin like rippling water, hair of cascading water droplets, calm deep-blue eyes.',
-  'Air/Tempête':
+  'Air':
     'A humanoid storm elemental warrior — bipedal humanoid silhouette, windswept wispy form with cloud-like hair, faint lightning veins crackling across the skin, fierce sky-blue eyes.',
   // Mercenaires faction
   'Géants':
@@ -303,8 +303,12 @@ export function buildHeroPortraitPrompt(input: {
   //    Phoenix, …).
   // 2. Legacy simplified-ID descriptor (existing 9-race system).
   // 3. Generic humanoid fallback.
+  // For factions whose physical look lives on the clan (Élémentaires: race
+  // "Élémentaire", clan = element), fall back to the clan-keyed descriptor so
+  // the elemental body still anchors the portrait.
   const racePart =
     GRANULAR_RACE_DESCRIPTORS[input.race]
+    ?? (input.clan ? GRANULAR_RACE_DESCRIPTORS[input.clan] : undefined)
     ?? (RACE_DESCRIPTORS as Record<string, string>)[input.race]
     ?? `A clearly humanoid ${input.race} fantasy hero — visible head, face, and shoulders — fitting the iconic look of that race.`;
 

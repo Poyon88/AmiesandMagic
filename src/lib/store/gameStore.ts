@@ -958,13 +958,26 @@ export const useGameStore = create<GameStore>((set, get) => {
     // dmgEvents (the engine deals the damage one HP at a time, so an
     // enemy hit twice still yields a single targetId entry).
     let tempeteEvent: TempeteEvent | null = null;
-    if (action.type === "play_card") {
-      const player = gameState.players[gameState.currentPlayerIndex];
-      const playedCard = player.hand.find((c) => c.instanceId === action.cardInstanceId);
-      const carriesTempete = playedCard
-        ? playedCard.card.keywords.includes("tempete" as import("@/lib/game/types").Keyword) ||
-          (playedCard.card.spell_keywords ?? []).some((k) => k.id === "tempete")
-        : false;
+    {
+      // Did THIS action resolve a Tempête effect? Three sources:
+      //  - play_card: creature-side keyword OR spell_keywords entry (on-play)
+      //  - tap_activate: the activated keyword instance is a "tap"-mode Tempête
+      // (Death-mode Tempête resolves during play/combat and shares the
+      // standard damage feedback, like the other curated death keywords.)
+      let carriesTempete = false;
+      if (action.type === "play_card") {
+        const player = gameState.players[gameState.currentPlayerIndex];
+        const playedCard = player.hand.find((c) => c.instanceId === action.cardInstanceId);
+        carriesTempete = playedCard
+          ? playedCard.card.keywords.includes("tempete" as import("@/lib/game/types").Keyword) ||
+            (playedCard.card.spell_keywords ?? []).some((k) => k.id === "tempete")
+          : false;
+      } else if (action.type === "tap_activate") {
+        const player = gameState.players[gameState.currentPlayerIndex];
+        const source = player.board.find((c) => c.instanceId === action.sourceInstanceId);
+        const inst = source?.card.keyword_instances?.[action.instanceIdx];
+        carriesTempete = inst?.id === "tempete" && inst?.mode === "tap";
+      }
       if (carriesTempete) {
         const opponentBoardIds = new Set(
           gameState.players[gameState.currentPlayerIndex === 0 ? 1 : 0].board.map((c) => c.instanceId),
