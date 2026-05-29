@@ -18,7 +18,9 @@ export default function CardArt({ card, className = "" }: CardArtProps) {
           fill
           className="object-cover"
           sizes="(min-resolution: 2dppx) 440px, 220px"
-          quality={90}
+          // Direct from the Supabase CDN (card-art sources are already small
+          // webp ≤800px); bypasses the Next optimizer's dev-time queue.
+          unoptimized
         />
       </div>
     );

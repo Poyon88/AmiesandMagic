@@ -128,7 +128,9 @@ function MulliganCard({
             fill
             className="object-cover"
             sizes="(min-resolution: 2dppx) 600px, 300px"
-            quality={90}
+            // Direct from the Supabase CDN (card-art sources are already small
+            // webp ≤800px); bypasses the Next optimizer's dev-time queue.
+            unoptimized
           />
         ) : (
           <div style={{

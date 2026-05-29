@@ -387,7 +387,10 @@ export default function HandCard({
               fill
               className="object-cover"
               sizes="(min-resolution: 2dppx) 600px, 300px"
-              quality={90}
+              // Served directly from the Supabase CDN — card-art sources are
+              // already small webp (≤800px) so the Next optimizer only added
+              // dev-time queueing that left cards blank when many loaded at once.
+              unoptimized
             />
           ) : (
             <div style={{
