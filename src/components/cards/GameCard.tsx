@@ -55,6 +55,7 @@ import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { KEYWORDS as keywordDefs, LIMITED_PRINT_COUNTS, ALIGNMENTS, getEffectiveAlignment, getFactionDisplayName } from "@/lib/card-engine/constants";
 import RarityFrame from "./RarityFrame";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
+import useCoarsePointer from "@/hooks/useCoarsePointer";
 
 interface GameCardProps {
   card: Card;
@@ -152,6 +153,10 @@ export default function GameCard({
   };
   const { w, h } = dims[size];
   const s = size === "sm" ? 0.7 : size === "md" ? 0.85 : 1;
+  // Touch devices have no hover-zoom: enlarge the detail-overlay text only.
+  // `so` is the overlay text scale (base `s` bumped on coarse pointers); the
+  // always-visible card body keeps using `s` so its layout is unchanged.
+  const so = s * (useCoarsePointer() ? 1.3 : 1);
   const isCreature = card.card_type === "creature";
 
   // `sizes` hint for the art slot (kept for the underlying <img> even though
@@ -459,14 +464,14 @@ export default function GameCard({
       }}>
         {/* Name */}
         <div style={{
-          fontSize: 18 * s, color: accentColor, fontWeight: 700,
+          fontSize: 18 * so, color: accentColor, fontWeight: 700,
           textAlign: "center", fontFamily: "'Cinzel', serif",
           borderBottom: `1px solid ${accentColor}55`, paddingBottom: 7 * s,
         }}>{card.name}</div>
 
         {/* Race / Clan */}
         {(card.race || card.clan) && (
-          <div style={{ display: "flex", justifyContent: "center", gap: 6 * s, fontSize: 13 * s, color: "#ddd", fontFamily: "'Crimson Text',serif" }}>
+          <div style={{ display: "flex", justifyContent: "center", gap: 6 * s, fontSize: 13 * so, color: "#ddd", fontFamily: "'Crimson Text',serif" }}>
             {card.race && <span>{card.race}</span>}
             {card.race && card.clan && <span style={{ color: "#888" }}>·</span>}
             {card.clan && <span style={{ fontStyle: "italic" }}>{card.clan}</span>}
@@ -506,9 +511,9 @@ export default function GameCard({
               <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
                 <span style={{ flexShrink: 0, display: "inline-flex", filter: modeFilter ?? undefined, lineHeight: 0 }}><KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={18 * s} keyword={kw} /></span>
                 <div>
-                  <div style={{ fontSize: 14 * s, color: labelColor, fontWeight: 700 }}>{displayLabel}</div>
-                  {scopeNote && <div style={{ fontSize: 11.5 * s, color: grantScope === "all_allies" ? "#2ecc71" : "#9fb0c0", fontStyle: "italic", fontFamily: "'Crimson Text',serif" }}>{scopeNote}</div>}
-                  {desc && <div style={{ fontSize: 12 * s, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
+                  <div style={{ fontSize: 14 * so, color: labelColor, fontWeight: 700 }}>{displayLabel}</div>
+                  {scopeNote && <div style={{ fontSize: 11.5 * so, color: grantScope === "all_allies" ? "#2ecc71" : "#9fb0c0", fontStyle: "italic", fontFamily: "'Crimson Text',serif" }}>{scopeNote}</div>}
+                  {desc && <div style={{ fontSize: 12 * so, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
                 </div>
               </div>
               );
@@ -527,8 +532,8 @@ export default function GameCard({
               <div key={`sk_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
                 <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={18 * s} keyword={`spell_${spellKw.id}`} /></span>
                 <div>
-                  <div style={{ fontSize: 14 * s, color: accentColor, fontWeight: 700 }}>{label}</div>
-                  <div style={{ fontSize: 12 * s, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>
+                  <div style={{ fontSize: 14 * so, color: accentColor, fontWeight: 700 }}>{label}</div>
+                  <div style={{ fontSize: 12 * so, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>
                 </div>
               </div>
               );
@@ -544,7 +549,7 @@ export default function GameCard({
           border: `1px solid ${accentColor}44`,
         }}>
           <p style={{
-            margin: 0, fontSize: 13 * s, color: "#eee",
+            margin: 0, fontSize: 13 * so, color: "#eee",
             lineHeight: 1.5, fontFamily: "'Crimson Text', serif",
           }}>{cleanEffectText(card.effect_text, card.spell_keywords)}</p>
         </div>
@@ -553,7 +558,7 @@ export default function GameCard({
         {/* Flavor text */}
         {card.flavor_text && (
           <p style={{
-            margin: 0, fontSize: 12 * s, color: `${accentColor}dd`,
+            margin: 0, fontSize: 12 * so, color: `${accentColor}dd`,
             fontStyle: "italic", lineHeight: 1.4, fontFamily: "'Crimson Text', serif",
             textAlign: "center",
           }}>&ldquo;{card.flavor_text}&rdquo;</p>
@@ -562,7 +567,7 @@ export default function GameCard({
         {/* Stats recap */}
         <div style={{
           display: "flex", justifyContent: "center", gap: 8 * s, flexWrap: "wrap",
-          fontSize: 13 * s, color: "#ccc",
+          fontSize: 13 * so, color: "#ccc",
           borderTop: `1px solid ${accentColor}33`, paddingTop: 7 * s,
         }}>
           {card.faction && <span style={{ color: accentColor, fontWeight: 600 }}>{getFactionDisplayName(card.faction)}</span>}
