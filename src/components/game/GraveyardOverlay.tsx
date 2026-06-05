@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { CardInstance } from "@/lib/game/types";
 import GameCard from "@/components/cards/GameCard";
 import { getTokenManaCost } from "@/lib/game/abilities";
+import useCoarsePointer from "@/hooks/useCoarsePointer";
 
 interface GraveyardOverlayProps {
   cards: CardInstance[];
@@ -22,6 +23,9 @@ export default function GraveyardOverlay({
   onSelectCard,
 }: GraveyardOverlayProps) {
   const isSelectionMode = selectableInstanceIds && selectableInstanceIds.length > 0;
+  // Touch devices have neither hover (to open the preview) nor right-click (to
+  // flip to the description). On a coarse pointer we drive everything from tap.
+  const coarse = useCoarsePointer();
 
   // Hovered card → drives the floating preview. The preview is rendered in
   // position: fixed at viewport scope so the modal's overflow-y-auto doesn't
@@ -60,10 +64,12 @@ export default function GraveyardOverlay({
           </div>
         )}
 
-        {/* Hint about right-click toggle (skip in selection mode to avoid noise) */}
+        {/* Hint — adapt to the input modality (skip in selection mode). */}
         {!isSelectionMode && cards.length > 0 && (
           <div className="px-4 pt-3 text-xs text-foreground/40 text-center">
-            Survole une carte pour zoomer · clic droit pour basculer image / description
+            {coarse
+              ? "Touche une carte pour zoomer · touche encore pour voir la description"
+              : "Survole une carte pour zoomer · clic droit pour basculer image / description"}
           </div>
         )}
 
@@ -81,8 +87,8 @@ export default function GraveyardOverlay({
                 return (
                   <div
                     key={`${id}-${i}`}
-                    onMouseEnter={() => setPreviewInstanceId(id)}
-                    onMouseLeave={() => {
+                    onMouseEnter={coarse ? undefined : () => setPreviewInstanceId(id)}
+                    onMouseLeave={coarse ? undefined : () => {
                       setPreviewInstanceId((curr) => (curr === id ? null : curr));
                       // Reset details when leaving so next hover starts on the
                       // image side (less surprising than a sticky toggle).
@@ -91,6 +97,20 @@ export default function GraveyardOverlay({
                     onClick={() => {
                       if (isSelectable && onSelectCard) {
                         onSelectCard(id);
+                        return;
+                      }
+                      // Touch: no hover/right-click, so tap cycles through
+                      // image preview → description → closed for this card.
+                      if (coarse && !isSelectionMode) {
+                        if (previewInstanceId !== id) {
+                          setPreviewInstanceId(id);
+                          setDetailsForId(null);
+                        } else if (detailsForId !== id) {
+                          setDetailsForId(id);
+                        } else {
+                          setPreviewInstanceId(null);
+                          setDetailsForId(null);
+                        }
                       }
                     }}
                     style={{
