@@ -2969,13 +2969,19 @@ function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: P
       }
     }
 
-    // Cycle éternel: ajoute une copie dans le deck, marquée pour auto-play
+    // Cycle éternel: la créature retourne dans le deck (copie marquée pour
+    // auto-play) au lieu de finir au cimetière. Comme la Résurrection plus
+    // haut, elle transite par le graveyard pour déclencher les triggers
+    // « Mort », puis on retire aussitôt la dépouille d'origine — sinon on
+    // garderait à la fois la copie recyclée dans le deck ET un doublon au
+    // cimetière.
     if (hasKw(c, "cycle_eternel")) {
       const copyInstance = createCardInstance({ ...c.card });
       copyInstance.cycleEternelAutoPlay = true;
       // Insert at random position in deck
       const insertIdx = Math.floor(rng() * (owner.deck.length + 1));
       owner.deck.splice(insertIdx, 0, copyInstance);
+      owner.graveyard = owner.graveyard.filter(g => g !== c);
     }
 
     // Custom on-death triggers from keywordInstances metadata. Curated
