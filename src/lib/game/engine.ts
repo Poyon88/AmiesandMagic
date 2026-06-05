@@ -3162,6 +3162,11 @@ export function tapActivate(state: GameState, action: TapActivateAction): GameSt
   const source = player.board.find(c => c.instanceId === action.sourceInstanceId);
   if (!source) return state;
   if (source.tapped) return state;
+  // Paralysie : la créature est inerte pour tout le tour — elle ne peut ni
+  // attaquer ni activer son pouvoir. (Le gate hasSummoningSickness plus bas
+  // ne suffit pas : Charge le contourne, et la paralysie peut être appliquée
+  // après l'untap, pendant le tour même de la créature.)
+  if (source.isParalyzed) return state;
   // Traque (charge) autorise le pouvoir activable dès l'invocation, même si
   // Traque est gagnée en cours de tour (où hasSummoningSickness peut rester vrai).
   if (source.hasSummoningSickness && !hasKw(source, "charge")) return state;

@@ -77,6 +77,7 @@ export default function BoardCreature({
     && isMyTurn
     && !isAnimating
     && !creature.tapped
+    && !creature.isParalyzed
     && (!creature.hasSummoningSickness || card.keywords.includes("charge"))
     && tapInstanceIdx !== null;
   const canActivateTap = baseEligibleForTap && targetingMode === "none";
