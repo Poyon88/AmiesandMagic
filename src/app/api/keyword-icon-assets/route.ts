@@ -83,7 +83,7 @@ export async function POST(request: Request) {
 
     const { error: uploadErr } = await supabase.storage
       .from("keyword-icon-images")
-      .upload(filePath, buffer, { upsert: true, contentType: imageMimeType });
+      .upload(filePath, buffer, { upsert: true, contentType: imageMimeType, cacheControl: "31536000" });
     if (uploadErr) throw new Error(`Image: ${uploadErr.message}`);
 
     const { data: urlData } = supabase.storage.from("keyword-icon-images").getPublicUrl(filePath);

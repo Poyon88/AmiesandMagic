@@ -130,7 +130,7 @@ async function uploadToBucket(
   const filePath = `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}.${ext}`;
   const { error } = await supabase.storage
     .from(bucket)
-    .upload(filePath, buffer, { upsert: true, contentType: mimeType });
+    .upload(filePath, buffer, { upsert: true, contentType: mimeType, cacheControl: '31536000' });
   if (error) throw new Error(`Upload ${bucket}: ${error.message}`);
   const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
   return data.publicUrl;

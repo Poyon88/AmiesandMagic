@@ -79,7 +79,7 @@ export async function POST(request: Request) {
       const filePath = `board_${Date.now()}_${Math.random().toString(36).slice(2, 6)}.${ext}`;
       const { error: uploadErr } = await supabase.storage
         .from('board-images')
-        .upload(filePath, buffer, { upsert: true, contentType: imageMimeType });
+        .upload(filePath, buffer, { upsert: true, contentType: imageMimeType, cacheControl: '31536000' });
       if (uploadErr) throw new Error(`Image: ${uploadErr.message}`);
       const { data: urlData } = supabase.storage.from('board-images').getPublicUrl(filePath);
       image_url = urlData.publicUrl;
@@ -96,7 +96,7 @@ export async function POST(request: Request) {
       const filePath = `graveyard_${Date.now()}_${Math.random().toString(36).slice(2, 6)}.${ext}`;
       const { error: uploadErr } = await supabase.storage
         .from('board-images')
-        .upload(filePath, buffer, { upsert: true, contentType: graveyardImageMimeType });
+        .upload(filePath, buffer, { upsert: true, contentType: graveyardImageMimeType, cacheControl: '31536000' });
       if (uploadErr) throw new Error(`Cimetière: ${uploadErr.message}`);
       const { data: urlData } = supabase.storage.from('board-images').getPublicUrl(filePath);
       graveyard_image_url = urlData.publicUrl;
@@ -179,7 +179,7 @@ export async function PUT(request: Request) {
 
       const { error: uploadErr } = await supabase.storage
         .from('board-images')
-        .upload(filePath, buffer, { upsert: true, contentType: imageMimeType });
+        .upload(filePath, buffer, { upsert: true, contentType: imageMimeType, cacheControl: '31536000' });
       if (uploadErr) throw new Error(`Image: ${uploadErr.message}`);
 
       const { data: urlData } = supabase.storage.from('board-images').getPublicUrl(filePath);

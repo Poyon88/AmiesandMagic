@@ -60,7 +60,7 @@ export async function POST(request: Request) {
       const filePath = `token_${safeName}_${Date.now()}.${ext}`;
       const { error: uploadErr } = await supabase.storage
         .from('card-images')
-        .upload(filePath, buffer, { upsert: true, contentType: imageMimeType });
+        .upload(filePath, buffer, { upsert: true, contentType: imageMimeType, cacheControl: '31536000' });
       if (uploadErr) throw new Error(`Image: ${uploadErr.message}`);
       const { data: urlData } = supabase.storage.from('card-images').getPublicUrl(filePath);
       image_url = urlData.publicUrl;
