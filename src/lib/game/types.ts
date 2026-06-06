@@ -547,6 +547,10 @@ export interface GameState {
   winner: string | null;
   lastAction: GameAction | null;
   mulliganReady: [boolean, boolean];
+  // File de déclencheurs interactifs en attente (ex. Remontée mort/retour au
+  // tour du contrôleur). Tant qu'elle est non vide, le jeu attend que le
+  // contrôleur de pendingTriggers[0] choisisse une cible (resolve_pending_trigger).
+  pendingTriggers?: PendingTrigger[];
   tokenTemplates?: TokenTemplate[];
   factionCardPool?: Card[];  // cards from deck factions + Mercenaires for Sélection X
   // Global pool of all spell cards (every faction, every set). Loaded once
@@ -630,7 +634,26 @@ export interface ConcedeAction {
   playerId: string;
 }
 
-export type GameAction = PlayCardAction | AttackAction | EndTurnAction | MulliganAction | HeroPowerAction | TapActivateAction | ConcedeAction;
+/** Résout un déclencheur interactif en attente (file `GameState.pendingTriggers`)
+ *  dont le contrôleur doit choisir la cible — ex. Remontée à la mort / au retour
+ *  pendant son propre tour. Dispatchée par le contrôleur (joueur actif). */
+export interface ResolvePendingTriggerAction {
+  type: "resolve_pending_trigger";
+  triggerId: string;
+  targetInstanceId: string;
+}
+
+export type GameAction = PlayCardAction | AttackAction | EndTurnAction | MulliganAction | HeroPowerAction | TapActivateAction | ConcedeAction | ResolvePendingTriggerAction;
+
+/** Déclencheur interactif en attente : le contrôleur doit choisir une cible
+ *  avant que le jeu ne continue. Porté par l'état pour rester déterministe et
+ *  rejouable côté réseau. */
+export interface PendingTrigger {
+  id: string;                       // déterministe (= sourceInstanceId)
+  kw: Keyword;                      // ex. "remontee"
+  controllerId: string;            // joueur qui choisit (toujours le joueur actif ici)
+  sourceInstanceId: string | null; // source (exclusion de cible)
+}
 
 // Combat event for animations
 export type CombatEventType = "damage" | "heal" | "buff" | "shield" | "poison" | "dodge" | "paralyze" | "resurrect" | "transform";

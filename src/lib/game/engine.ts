@@ -24,6 +24,8 @@ import type {
   SpellTargetSlot,
   SpellTargetType,
   TokenTemplate,
+  PendingTrigger,
+  ResolvePendingTriggerAction,
 } from "./types";
 import { SPELL_KEYWORDS } from "./spell-keywords";
 import { getEntraideReduction, getTokenManaCost, isCreatureKwShadowedBySpell } from "./abilities";
@@ -57,6 +59,13 @@ let currentTokenTemplates: TokenTemplate[] = [];
 // engine helper (cleanDeadCreatures…) can stamp creatures with their death
 // turn without having to thread state through every signature.
 let currentTurnNumber = 0;
+// Id du joueur dont c'est le tour pendant l'action en cours (set dans applyAction).
+// Permet aux déclencheurs (Remontée mort/retour) de savoir si le contrôleur est
+// le joueur actif → ciblage interactif, sinon cible aléatoire.
+let currentPlayerId = "";
+// Accumulateur de déclencheurs interactifs créés pendant l'action en cours.
+// Vidé au début d'applyAction, rattaché au state retourné à la fin.
+let pendingTriggerSink: PendingTrigger[] = [];
 
 export function initRNG(seed: number) {
   rng = createRNG(seed);
@@ -1005,7 +1014,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // Remontée (invocation) : renvoie une unité ciblée dans la main de son
     // propriétaire d'origine. Cible choisie par le joueur (action.targetInstanceId).
     if (hasKwOnPlay(cardInstance, "remontee")) {
-      resolveRemontee(action.targetInstanceId, cardInstance, player, opponent);
+      resolveRemontee(action.targetInstanceId, cardInstance.instanceId, player, opponent);
     }
 
     // Renforcement multiple (invocation) : +X/+Y à vos créatures de la race/clan
@@ -2963,17 +2972,25 @@ function canBeRemonteed(c: CardInstance, sourceInstanceId: string | null): boole
     && !(hasKw(c, "ombre") && !c.ombreRevealed);
 }
 
+// Cibles valides de Remontée (les 2 plateaux, hors source / Ancré / non-ciblable).
+// Exporté pour l'UI (sélecteur du déclencheur interactif en attente).
+export function remonteeTargetIds(controller: PlayerState, other: PlayerState, sourceInstanceId: string | null): string[] {
+  return [...controller.board, ...other.board]
+    .filter(c => canBeRemonteed(c, sourceInstanceId))
+    .map(c => c.instanceId);
+}
+
 // Renvoie une unité du plateau dans la main de son propriétaire d'origine
 // (trueOwnerId), sinon du contrôleur actuel. Cible explicite (invocation / tap /
 // sort) ; en l'absence de cible (mort / retour), tirage aléatoire parmi les
 // unités valides. Aucune cible valide → no-op (fizzle).
 function resolveRemontee(
   targetInstanceId: string | undefined,
-  source: CardInstance | null,
+  sourceInstanceId: string | null,
   controller: PlayerState,
   other: PlayerState,
 ): void {
-  const sourceId = source?.instanceId ?? null;
+  const sourceId = sourceInstanceId;
   let target: CardInstance | undefined;
   if (targetInstanceId) {
     const cand = findCreatureOnBoard(controller, targetInstanceId)
@@ -3196,8 +3213,24 @@ function resolveCuratedKeywordEffect(
       return;
     }
     case "remontee": {
-      // targetInstanceId fourni au tap ; absent en mort/retour → cible aléatoire.
-      resolveRemontee(targetInstanceId, source, owner, opponent);
+      // Tap (ou résolution différée) : cible explicite → on résout tout de suite.
+      if (targetInstanceId) {
+        resolveRemontee(targetInstanceId, source.instanceId, owner, opponent);
+        return;
+      }
+      // Mort / retour : si c'est le tour du contrôleur ET qu'au moins une cible
+      // valide existe, on DIFFÈRE le choix (déclencheur interactif en attente).
+      // Sinon (tour adverse, ou aucune cible) → cible aléatoire / fizzle.
+      if (owner.id === currentPlayerId && remonteeTargetIds(owner, opponent, source.instanceId).length > 0) {
+        pendingTriggerSink.push({
+          id: source.instanceId,
+          kw: "remontee",
+          controllerId: owner.id,
+          sourceInstanceId: source.instanceId,
+        });
+        return;
+      }
+      resolveRemontee(undefined, source.instanceId, owner, opponent);
       return;
     }
     case "convocation": {
@@ -3385,6 +3418,42 @@ export function tapActivate(state: GameState, action: TapActivateAction): GameSt
   resolveCuratedKeywordEffect(instance.id, instance.x ?? 1, source, player, opponent, action.targetInstanceId, instance);
 
   recalculateAuras(player, opponent);
+  newState.lastAction = action;
+  checkWinCondition(newState);
+  return newState;
+}
+
+// ============================================================
+// PENDING TRIGGER RESOLUTION
+// ============================================================
+
+// Résout un déclencheur interactif en attente (le contrôleur a choisi une cible).
+// Retire le déclencheur de la file, exécute l'effet (Remontée pour l'instant) ;
+// d'éventuels enchaînements s'empilent dans pendingTriggerSink (rattaché par
+// applyAction).
+export function resolvePendingTrigger(state: GameState, action: ResolvePendingTriggerAction): GameState {
+  const pool = state.factionCardPool;
+  const allPool = state.allSpellsPool;
+  const newState = deepClone({ ...state, factionCardPool: undefined, allSpellsPool: undefined } as GameState);
+  newState.factionCardPool = pool;
+  newState.allSpellsPool = allPool;
+
+  const queue = newState.pendingTriggers ?? [];
+  const idx = queue.findIndex(t => t.id === action.triggerId);
+  if (idx === -1) return state; // déclencheur introuvable → no-op
+  const trigger = queue[idx];
+  queue.splice(idx, 1);
+  newState.pendingTriggers = queue;
+
+  if (trigger.kw === "remontee") {
+    const controller = newState.players.find(p => p.id === trigger.controllerId);
+    const other = newState.players.find(p => p.id !== trigger.controllerId);
+    if (controller && other) {
+      resolveRemontee(action.targetInstanceId, trigger.sourceInstanceId, controller, other);
+    }
+  }
+
+  recalculateAuras(newState.players[0], newState.players[1]);
   newState.lastAction = action;
   checkWinCondition(newState);
   return newState;
@@ -3737,16 +3806,28 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   // Make token templates available to all engine functions
   currentTokenTemplates = state.tokenTemplates ?? [];
   currentTurnNumber = state.turnNumber;
+  currentPlayerId = state.players[state.currentPlayerIndex].id;
+  pendingTriggerSink = [];
+
+  let result: GameState;
   switch (action.type) {
-    case "mulligan": return applyMulligan(state, action);
-    case "play_card": return playCard(state, action);
-    case "attack": return attack(state, action);
-    case "end_turn": return endTurn(state);
-    case "hero_power": return useHeroPower(state, action);
-    case "tap_activate": return tapActivate(state, action);
-    case "concede": return concede(state, action);
-    default: return state;
+    case "mulligan": result = applyMulligan(state, action); break;
+    case "play_card": result = playCard(state, action); break;
+    case "attack": result = attack(state, action); break;
+    case "end_turn": result = endTurn(state); break;
+    case "hero_power": result = useHeroPower(state, action); break;
+    case "tap_activate": result = tapActivate(state, action); break;
+    case "concede": result = concede(state, action); break;
+    case "resolve_pending_trigger": result = resolvePendingTrigger(state, action); break;
+    default: result = state;
   }
+
+  // Rattache les déclencheurs interactifs créés pendant cette action (mort /
+  // retour de Remontée au tour du contrôleur) à l'état retourné.
+  if (pendingTriggerSink.length > 0 && result !== state) {
+    result.pendingTriggers = [...(result.pendingTriggers ?? []), ...pendingTriggerSink];
+  }
+  return result;
 }
 
 function concede(state: GameState, action: { playerId: string }): GameState {
