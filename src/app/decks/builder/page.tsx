@@ -16,8 +16,8 @@ export default async function DeckBuilderPage({
 
   if (!user) redirect("/login");
 
-  // Fetch all cards, heroes, sets, formats, format_sets, profile, collection, and boards
-  const [{ data: cards }, { data: heroes }, { data: sets }, { data: formats }, { data: formatSets }, { data: profile }, { data: userCollection }, { data: ownedPrints }, { data: allBoards }, { data: ownedBoardPrints }, { data: allCardBacks }, { data: ownedCardBackPrints }] = await Promise.all([
+  // Fetch all cards, heroes, sets, formats, profile, collection, and boards
+  const [{ data: cards }, { data: heroes }, { data: sets }, { data: formats }, { data: profile }, { data: userCollection }, { data: ownedPrints }, { data: allBoards }, { data: ownedBoardPrints }, { data: allCardBacks }, { data: ownedCardBackPrints }] = await Promise.all([
     supabase
       .from("cards")
       .select("*")
@@ -37,9 +37,6 @@ export default async function DeckBuilderPage({
       .eq("is_active", true)
       .order("id"),
     supabase
-      .from("format_sets")
-      .select("format_id, set_id"),
-    supabase
       .from("profiles")
       .select("role")
       .eq("id", user.id)
@@ -54,7 +51,7 @@ export default async function DeckBuilderPage({
       .eq("owner_id", user.id),
     supabase
       .from("game_boards")
-      .select("id, name, image_url, rarity, max_prints, is_default")
+      .select("id, name, image_url, rarity, max_prints, is_default, faction")
       .eq("is_active", true),
     supabase
       .from("user_board_prints")
@@ -62,7 +59,7 @@ export default async function DeckBuilderPage({
       .eq("owner_id", user.id),
     supabase
       .from("card_backs")
-      .select("id, name, image_url, rarity, max_prints, is_default")
+      .select("id, name, image_url, rarity, max_prints, is_default, faction")
       .eq("is_active", true),
     supabase
       .from("user_card_back_prints")
@@ -110,7 +107,6 @@ export default async function DeckBuilderPage({
       existingDeckCards={existingDeckCards}
       sets={sets ?? []}
       formats={formats ?? []}
-      formatSets={formatSets ?? []}
       collectedCardIds={collectedCardIds}
       isTester={isTester}
       boards={allBoards ?? []}

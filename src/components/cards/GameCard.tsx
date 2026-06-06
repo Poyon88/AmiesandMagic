@@ -61,6 +61,10 @@ interface GameCardProps {
   card: Card;
   onClick?: () => void;
   disabled?: boolean;
+  /** Apparence grisée (opacity réduite) sans bloquer le clic — sert à signaler
+   *  un état comme « max d'exemplaires atteint » tout en gardant la carte
+   *  cliquable (pour retirer un exemplaire). */
+  dimmed?: boolean;
   selected?: boolean;
   size?: "sm" | "md" | "lg";
   count?: number;
@@ -93,6 +97,7 @@ export default function GameCard({
   card,
   onClick,
   disabled = false,
+  dimmed = false,
   selected = false,
   size = "md",
   count,
@@ -252,7 +257,7 @@ export default function GameCard({
         filter: !isCreature && selected ? "drop-shadow(0 0 10px rgba(200,168,78,0.7))" : undefined,
         overflow: "hidden",
         cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.5 : 1,
+        opacity: disabled || dimmed ? 0.5 : 1,
         transition: "border-color 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease, filter 0.3s ease",
       }}
     >

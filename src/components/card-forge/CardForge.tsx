@@ -1541,8 +1541,6 @@ export default function CardForge() {
   const [newSetIcon, setNewSetIcon] = useState("⚔️");
   const [newSetReleasedAt, setNewSetReleasedAt] = useState("");
   const [formats, setFormats] = useState<GameFormat[]>([]);
-  const [variableSetIds, setVariableSetIds] = useState<number[]>([]);
-  const [savingFormats, setSavingFormats] = useState(false);
 
   // ─── NEW SPELL SYSTEM ──────────────────────────────────────────────────────
   const [spellKeywords, setSpellKeywords] = useState<SpellKeywordInstance[]>([]);
@@ -1652,11 +1650,6 @@ export default function CardForge() {
       if (fmtRes.ok) {
         const fmtData = await fmtRes.json();
         setFormats(Array.isArray(fmtData) ? fmtData : []);
-        const variableFormat = (Array.isArray(fmtData) ? fmtData : []).find((f: GameFormat) => f.code === 'variable');
-        if (variableFormat) {
-          const vsRes = await fetch(`/api/formats/${variableFormat.id}/sets`);
-          if (vsRes.ok) setVariableSetIds(await vsRes.json());
-        }
       }
       if (setsRes.ok) setSets(await setsRes.json());
     } catch { /* ignore */ }
@@ -4555,67 +4548,17 @@ export default function CardForge() {
                 </div>
                 {fmt.description && <p style={{ fontSize: 9, color: "#888", marginBottom: 8 }}>{fmt.description}</p>}
 
-                {fmt.code === "standard" && (
-                  <div style={{ fontSize: 9, color: "#666", lineHeight: 1.8 }}>
-                    <div><strong>Set de base :</strong> {sets.find(s => s.code === "BASE") ? `${sets.find(s => s.code === "BASE")!.icon} ${sets.find(s => s.code === "BASE")!.name}` : "Non trouvé"}</div>
-                    <div><strong>2 dernières extensions :</strong> {
-                      sets.filter(s => s.code !== "BASE" && s.released_at)
-                        .sort((a, b) => new Date(b.released_at!).getTime() - new Date(a.released_at!).getTime())
-                        .slice(0, 2)
-                        .map(s => `${s.icon} ${s.name}`).join(", ") || "Aucune"
-                    }</div>
-                    <div>+ Cartes sans extension de moins de 2 ans</div>
-                  </div>
+                {fmt.code === "classique-standard" && (
+                  <p style={{ fontSize: 9, color: "#666", lineHeight: 1.8 }}>Uniquement les cartes <strong>Communes</strong>, éditées il y a moins de ~2 ans (rotation par mois).</p>
                 )}
-
-                {fmt.code === "etendu" && (
-                  <p style={{ fontSize: 9, color: "#666" }}>Toutes les cartes sont jouables.</p>
+                {fmt.code === "classique-etendu" && (
+                  <p style={{ fontSize: 9, color: "#666", lineHeight: 1.8 }}>Uniquement les cartes <strong>Communes</strong>, toutes éditions depuis le début du jeu.</p>
                 )}
-
-                {fmt.code === "basique" && (
-                  <p style={{ fontSize: 9, color: "#666" }}>Mêmes règles que Standard, uniquement rareté <strong>Commune</strong>.</p>
+                {fmt.code === "expert-standard" && (
+                  <p style={{ fontSize: 9, color: "#666", lineHeight: 1.8 }}>Toutes raretés (plafonnées par les slots), éditées il y a moins de ~2 ans (rotation par mois).</p>
                 )}
-
-                {fmt.code === "variable" && (
-                  <div>
-                    <p style={{ fontSize: 9, color: "#888", marginBottom: 8 }}>Extensions incluses (+ set de base + cartes sans extension &lt; 2 ans) :</p>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
-                      {sets.filter(s => s.code !== "BASE").map(s => {
-                        const isSelected = variableSetIds.includes(s.id);
-                        return (
-                          <button key={s.id} onClick={() => setVariableSetIds(prev => isSelected ? prev.filter(id => id !== s.id) : [...prev, s.id])}
-                            style={{
-                              padding: "4px 10px", borderRadius: 5, cursor: "pointer", fontSize: 9, fontFamily: "'Cinzel',serif", transition: "all 0.15s",
-                              border: `1px solid ${isSelected ? "#4caf50" : "#e0e0e0"}`,
-                              background: isSelected ? "#e8f5e9" : "#fafafa",
-                              color: isSelected ? "#2e7d32" : "#666",
-                              fontWeight: isSelected ? 700 : 400,
-                            }}>
-                            {s.icon} {s.name}
-                          </button>
-                        );
-                      })}
-                      {sets.filter(s => s.code !== "BASE").length === 0 && <span style={{ fontSize: 9, color: "#aaa" }}>Aucune extension</span>}
-                    </div>
-                    <button onClick={async () => {
-                      setSavingFormats(true);
-                      try {
-                        await fetch(`/api/formats/${fmt.id}/sets`, {
-                          method: "PUT",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ set_ids: variableSetIds }),
-                        });
-                      } catch { /* ignore */ }
-                      setSavingFormats(false);
-                    }} disabled={savingFormats}
-                      style={{
-                        padding: "5px 16px", borderRadius: 6, border: "none", background: "#333", color: "#fff",
-                        fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: 700, cursor: savingFormats ? "wait" : "pointer",
-                        opacity: savingFormats ? 0.5 : 1,
-                      }}>
-                      {savingFormats ? "Sauvegarde..." : "Sauvegarder"}
-                    </button>
-                  </div>
+                {fmt.code === "expert-etendu" && (
+                  <p style={{ fontSize: 9, color: "#666", lineHeight: 1.8 }}>Toutes raretés (plafonnées par les slots), toutes éditions depuis le début du jeu.</p>
                 )}
               </div>
             ))}

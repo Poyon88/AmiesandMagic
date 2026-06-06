@@ -32,7 +32,7 @@ export default function MatchmakingQueue({
   const router = useRouter();
   const supabase = createClient();
   const [selectedFormatId, setSelectedFormatId] = useState<number | null>(
-    formats.find(f => f.code === 'standard')?.id ?? formats[0]?.id ?? null
+    formats.find(f => f.code === 'expert-standard')?.id ?? formats[0]?.id ?? null
   );
   const formatDecks = validDecks.filter(d => !selectedFormatId || d.format_id === selectedFormatId);
   const [selectedDeckId, setSelectedDeckId] = useState<number | null>(

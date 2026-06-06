@@ -317,7 +317,14 @@ export interface CardSet {
   released_at?: string | null;
 }
 
-export type FormatCode = 'standard' | 'etendu' | 'variable' | 'basique';
+// Matrice 2×2 : Mode (Classique/Expert) × Étendue (Standard/Étendu).
+//  - Classique : uniquement les cartes Communes.
+//  - Expert    : cartes non-communes autorisées (plafonnées par les slots de rareté).
+//  - Standard  : rotation ~2 ans (par mois+année, cf. isWithinTwoYears).
+//  - Étendu    : toutes les cartes depuis le début du jeu.
+export type DeckMode = 'classique' | 'expert';
+export type DeckExtent = 'standard' | 'etendu';
+export type FormatCode = `${DeckMode}-${DeckExtent}`;
 
 export interface GameFormat {
   id: number;

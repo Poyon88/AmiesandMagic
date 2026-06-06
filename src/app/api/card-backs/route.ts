@@ -50,7 +50,7 @@ export async function POST(request: Request) {
   const supabase = getAdminClient();
 
   try {
-    const { name, imageBase64, imageMimeType, rarity, max_prints, is_default } = await request.json();
+    const { name, imageBase64, imageMimeType, rarity, max_prints, is_default, faction } = await request.json();
     if (!name || !imageBase64 || !imageMimeType) {
       return NextResponse.json({ error: 'Nom et image requis' }, { status: 400 });
     }
@@ -70,6 +70,7 @@ export async function POST(request: Request) {
     const insertData: Record<string, unknown> = { name, image_url };
     if (rarity != null) insertData.rarity = rarity;
     if (max_prints != null) insertData.max_prints = max_prints;
+    if (faction != null) insertData.faction = faction;
     if (is_default === true) {
       await supabase.from('card_backs').update({ is_default: false }).eq('is_default', true);
       insertData.is_default = true;
@@ -98,7 +99,7 @@ export async function PUT(request: Request) {
   const supabase = getAdminClient();
 
   try {
-    const { id, name, is_active, rarity, max_prints, is_default, imageBase64, imageMimeType } = await request.json();
+    const { id, name, is_active, rarity, max_prints, is_default, imageBase64, imageMimeType, faction } = await request.json();
     if (!id) return NextResponse.json({ error: 'ID requis' }, { status: 400 });
 
     const updates: Record<string, unknown> = {};
@@ -106,6 +107,7 @@ export async function PUT(request: Request) {
     if (is_active !== undefined) updates.is_active = is_active;
     if (rarity !== undefined) updates.rarity = rarity;
     if (max_prints !== undefined) updates.max_prints = max_prints;
+    if (faction !== undefined) updates.faction = faction;
 
     if (is_default === true) {
       await supabase.from('card_backs').update({ is_default: false }).eq('is_default', true).neq('id', id);
