@@ -190,6 +190,7 @@ export const ALL_KEYWORDS: Keyword[] = [
   "douleur",
   "inspiration",
   "concentration",
+  "remontee",
 ];
 
 export const KEYWORD_LABELS: Record<Keyword, string> = {
@@ -232,6 +233,7 @@ export const KEYWORD_LABELS: Record<Keyword, string> = {
   douleur: "Douleur X",
   inspiration: "Inspiration X",
   concentration: "Concentration X",
+  remontee: "Remontée",
 };
 
 export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
@@ -273,4 +275,5 @@ export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
   douleur: "🤕",
   inspiration: "📖",
   concentration: "🎯",
+  remontee: "🔼",
 };

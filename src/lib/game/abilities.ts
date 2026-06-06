@@ -695,6 +695,19 @@ export const ABILITIES: Record<string, AbilityDef> = {
       params: ["amount"], needsTarget: false,
     },
   },
+  remontee: {
+    id: "remontee", label: "Remontée", symbol: "🔼",
+    desc: "Renvoie une unité ciblée dans la main de son propriétaire d'origine.",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      cost: 14, costPerX: 0, se: 4.0, minTier: 3, scalable: false, zone: "Terrain",
+      desc: "Cible une unité (selon le déclenchement) : elle remonte dans la main de son propriétaire d'origine.",
+    },
+    spell: {
+      desc: "Renvoie une unité ciblée dans la main de son propriétaire d'origine.",
+      params: [], needsTarget: true, targetType: "any_creature",
+    },
+  },
   concentration: {
     id: "concentration", label: "Concentration X", symbol: "🎯",
     desc: "Remplace chaque sort en main par un sort aléatoire (toutes factions) de coût en mana supérieur de X ; le coût du nouveau sort est réduit de X.",

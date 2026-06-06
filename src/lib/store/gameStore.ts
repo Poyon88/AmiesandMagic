@@ -2510,7 +2510,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     const instance = source.card.keyword_instances?.[instanceIdx];
     if (!instance || instance.mode !== "tap") return null;
 
-    const targets = getTapActivateTargets(gameState, instance.id);
+    const targets = getTapActivateTargets(gameState, instance.id, sourceInstanceId);
     if (targets && targets.length > 0) {
       set({
         selectedCardInstanceId: null,

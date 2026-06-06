@@ -235,6 +235,7 @@ function resolveCreatureKeywordAsHeroPower(
       if (!target || player.board.length >= MAX_BOARD_SIZE) break;
       opponent.board = opponent.board.filter(c => c !== target);
       target.originalOwnerId = opponent.id;
+      target.trueOwnerId = opponent.id;
       target.hasSummoningSickness = false;
       const list = target.card.keywords as string[];
       if (!list.includes("charge")) {
@@ -253,6 +254,8 @@ function resolveCreatureKeywordAsHeroPower(
       const stolen = opponent.board.splice(idx, 1)[0];
       stolen.hasSummoningSickness = true;
       stolen.originalOwnerId = null;
+      // Contrôle permanent, mais on mémorise le propriétaire d'origine pour Remontée.
+      stolen.trueOwnerId = opponent.id;
       player.board.push(stolen);
       break;
     }
@@ -354,6 +357,7 @@ function createCardInstance(card: Card): CardInstance {
     diedOnTurn: null,
     cycleEternelAutoPlay: false,
     originalOwnerId: null,
+    trueOwnerId: null,
     hasTransformedLycanthropie: false,
     grantedKeywordX: {},
     manaCostReduction: 0,
@@ -636,6 +640,7 @@ export function startTurn(state: GameState): GameState {
         player.graveyard.push(creature);
       }
       creature.originalOwnerId = null;
+      creature.trueOwnerId = null;
     }
   }
 
@@ -976,6 +981,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       if (stealTarget && player.board.length < MAX_BOARD_SIZE) {
         opponent.board = opponent.board.filter(c => c !== stealTarget);
         stealTarget.originalOwnerId = opponent.id;
+        stealTarget.trueOwnerId = opponent.id;
         stealTarget.hasSummoningSickness = false; // Traque
         if (!stealTarget.card.keywords.includes("charge")) {
           stealTarget.card = { ...stealTarget.card, keywords: [...stealTarget.card.keywords, "charge"] };
@@ -990,8 +996,16 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
         const idx = Math.floor(rng() * opponent.board.length);
         const stolen = opponent.board.splice(idx, 1)[0];
         stolen.hasSummoningSickness = true;
+        // Contrôle permanent, mais on mémorise le propriétaire d'origine (Remontée).
+        stolen.trueOwnerId = opponent.id;
         player.board.push(stolen);
       }
+    }
+
+    // Remontée (invocation) : renvoie une unité ciblée dans la main de son
+    // propriétaire d'origine. Cible choisie par le joueur (action.targetInstanceId).
+    if (hasKwOnPlay(cardInstance, "remontee")) {
+      resolveRemontee(action.targetInstanceId, cardInstance, player, opponent);
     }
 
     // Pillage: adversaire défausse une carte de son choix
@@ -1859,6 +1873,11 @@ function resolveSpellKeywords(
     const targetId = slot ? (ctx.targetMap[slot] ?? ctx.targetMap["target_0"]) : undefined;
 
     switch (kw.id) {
+      case "remontee": {
+        // Renvoie l'unité ciblée dans la main de son propriétaire d'origine.
+        resolveRemontee(targetId, null, ctx.caster, ctx.opponent);
+        break;
+      }
       case "douleur": {
         // Drawback : le sort inflige X dégâts au héros qui le lance.
         // Atteint uniquement si le sort n'a pas été contré (le check
@@ -2433,6 +2452,7 @@ function resolveAtomicEffect(ctx: SpellResolutionContext, effect: AtomicEffect):
           if (idx !== -1) {
             ctx.opponent.board.splice(idx, 1);
             target.originalOwnerId = ctx.opponent.id;
+            target.trueOwnerId = ctx.opponent.id;
             target.hasSummoningSickness = false;
             ctx.caster.board.push(target);
           }
@@ -2920,6 +2940,64 @@ function triggerReturnToHand(ci: CardInstance, owner: PlayerState, opponent: Pla
   }
 }
 
+// ── Remontée ──
+// Une unité est « remontable » si elle n'est pas la source, pas Ancré, et
+// ciblable (ni Invisible, ni Transcendance, ni Ombre non révélée).
+function canBeRemonteed(c: CardInstance, sourceInstanceId: string | null): boolean {
+  return c.instanceId !== sourceInstanceId
+    && !hasKw(c, "ancre")
+    && !hasKw(c, "invisible")
+    && !hasKw(c, "transcendance")
+    && !(hasKw(c, "ombre") && !c.ombreRevealed);
+}
+
+// Renvoie une unité du plateau dans la main de son propriétaire d'origine
+// (trueOwnerId), sinon du contrôleur actuel. Cible explicite (invocation / tap /
+// sort) ; en l'absence de cible (mort / retour), tirage aléatoire parmi les
+// unités valides. Aucune cible valide → no-op (fizzle).
+function resolveRemontee(
+  targetInstanceId: string | undefined,
+  source: CardInstance | null,
+  controller: PlayerState,
+  other: PlayerState,
+): void {
+  const sourceId = source?.instanceId ?? null;
+  let target: CardInstance | undefined;
+  if (targetInstanceId) {
+    const cand = findCreatureOnBoard(controller, targetInstanceId)
+      ?? findCreatureOnBoard(other, targetInstanceId);
+    if (cand && canBeRemonteed(cand, sourceId)) target = cand;
+  } else {
+    const pool = [...controller.board, ...other.board].filter(c => canBeRemonteed(c, sourceId));
+    if (pool.length > 0) target = pool[Math.floor(rng() * pool.length)];
+  }
+  if (!target) return;
+
+  const holder = controller.board.includes(target) ? controller : other;
+  holder.board = holder.board.filter(c => c !== target);
+
+  // Reset comme un bounce.
+  target.currentAttack = target.card.attack ?? 0;
+  target.currentHealth = target.card.health ?? 1;
+  target.maxHealth = target.card.health ?? 1;
+  target.hasSummoningSickness = true;
+
+  // Propriétaire d'origine (trueOwnerId), sinon le détenteur actuel.
+  const owner = target.trueOwnerId
+    ? ([controller, other].find(p => p.id === target!.trueOwnerId) ?? holder)
+    : holder;
+  const ownerOpponent = owner === controller ? other : controller;
+  target.originalOwnerId = null;
+  target.trueOwnerId = null;
+
+  if (owner.hand.length < MAX_HAND_SIZE) {
+    owner.hand.push(target);
+    triggerReturnToHand(target, owner, ownerOpponent);
+  } else {
+    owner.graveyard.push(target);
+  }
+}
+
 function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: PlayerState, depth = 0) {
   if (depth > 5 || dead.length === 0) return;
 
@@ -3077,6 +3155,11 @@ function resolveCuratedKeywordEffect(
   targetInstanceId?: string,
 ): void {
   switch (kw) {
+    case "remontee": {
+      // targetInstanceId fourni au tap ; absent en mort/retour → cible aléatoire.
+      resolveRemontee(targetInstanceId, source, owner, opponent);
+      return;
+    }
     case "convocation": {
       if (owner.board.length >= MAX_BOARD_SIZE) return;
       const tmpl = findTokenTemplate(source.card.convocation_token_id);
@@ -3221,6 +3304,7 @@ export function tapActivate(state: GameState, action: TapActivateAction): GameSt
 export function tapKeywordNeedsTarget(kw: Keyword): boolean {
   switch (kw) {
     case "vampirisme":
+    case "remontee":
       return true;
     default:
       return false;
@@ -3229,7 +3313,8 @@ export function tapKeywordNeedsTarget(kw: Keyword): boolean {
 
 /** Targets eligible for a tap-mode activation of `kw`. Returns null when
  *  the keyword doesn't need a picker (auto-resolves on activation). */
-export function getTapActivateTargets(state: GameState, kw: Keyword): string[] | null {
+export function getTapActivateTargets(state: GameState, kw: Keyword, sourceInstanceId?: string): string[] | null {
+  const player = state.players[state.currentPlayerIndex];
   const opponent = state.players[state.currentPlayerIndex === 0 ? 1 : 0];
   const filterTargetable = (creatures: CardInstance[]) =>
     creatures.filter(c =>
@@ -3240,6 +3325,11 @@ export function getTapActivateTargets(state: GameState, kw: Keyword): string[] |
   switch (kw) {
     case "vampirisme":
       return filterTargetable(opponent.board).map(c => c.instanceId);
+    case "remontee":
+      // N'importe quelle unité des deux plateaux (hors source / Ancré / non-ciblable).
+      return [...player.board, ...opponent.board]
+        .filter(c => canBeRemonteed(c, sourceInstanceId ?? null))
+        .map(c => c.instanceId);
     default:
       return null;
   }
@@ -3676,7 +3766,7 @@ export function needsTarget(card: Card): boolean {
 const CREATURE_TARGETING_KEYWORDS: Keyword[] = [
   "sacrifice", "corruption", "malediction",
   "permutation", "vampirisme", "mimique", "metamorphose",
-  "benediction", "tactique",
+  "benediction", "tactique", "remontee",
 ];
 
 export function creatureNeedsTarget(card: Card): boolean {
@@ -3718,6 +3808,12 @@ export function getCreatureTargets(state: GameState, card: Card): string[] {
           ...player.board.map(c => c.instanceId),
           ...filterEnemyTargetable2(opponent.board).map(c => c.instanceId),
         ];
+      case "remontee":
+        // Toute unité des deux plateaux (la source n'est pas encore en jeu),
+        // hors Ancré / non-ciblable.
+        return [...player.board, ...opponent.board]
+          .filter(c => canBeRemonteed(c, null))
+          .map(c => c.instanceId);
     }
   }
   return [];

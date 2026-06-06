@@ -46,7 +46,9 @@ export type Keyword =
   // Polymorphic — draw X cards
   | "inspiration"
   // Polymorphic — replace each spell in hand with a random higher-cost spell, discounted
-  | "concentration";
+  | "concentration"
+  // Polymorphic — bounce a unit to its true owner's hand (4 trigger modes)
+  | "remontee";
 
 export type SpellTargetType =
   | "any"
@@ -108,7 +110,8 @@ export type SpellKeywordId =
   | "rassemblement"
   | "concentration"
   | "selection_magique"
-  | "poison";
+  | "poison"
+  | "remontee";
 
 /** Trigger mode for a creature keyword. Undefined = on-play (default,
  *  existing behaviour). "death" = on-death rattle. "tap" = activated by
@@ -412,6 +415,11 @@ export interface CardInstance {
   cycleEternelAutoPlay: boolean;
   // Owner tracking (for Corruption end-of-turn return)
   originalOwnerId: string | null;
+  // Vrai propriétaire d'origine, persistant à travers un changement de camp
+  // PERMANENT (Domination / vol). null = la créature est chez son propriétaire.
+  // Utilisé par Remontée pour renvoyer une unité dans la main de son
+  // propriétaire initial, pas du contrôleur actuel.
+  trueOwnerId: string | null;
   // Lycanthropie: has already transformed
   hasTransformedLycanthropie: boolean;
   // Mots-clés accordés runtime par un pouvoir héroïque (mode grant_keyword)
