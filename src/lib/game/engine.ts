@@ -925,6 +925,10 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     cardInstance.hasSummoningSickness = !card.keywords.includes("charge");
     cardInstance.hasAttacked = false;
     cardInstance.attacksRemaining = maxAttacksFor(cardInstance);
+    // Une créature qui (re)entre en jeu n'est jamais engagée — sinon une créature
+    // renvoyée en main alors qu'elle était engagée (Remontée / bounce) resterait
+    // engagée à la replay et ne pourrait pas réutiliser son pouvoir en tap.
+    cardInstance.tapped = false;
     const pos = action.boardPosition ?? player.board.length;
     player.board.splice(pos, 0, cardInstance);
 
@@ -3010,6 +3014,8 @@ function resolveRemontee(
   target.currentHealth = target.card.health ?? 1;
   target.maxHealth = target.card.health ?? 1;
   target.hasSummoningSickness = true;
+  target.tapped = false;
+  target.hasAttacked = false;
 
   // Propriétaire d'origine (trueOwnerId), sinon le détenteur actuel.
   const owner = target.trueOwnerId
