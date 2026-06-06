@@ -151,12 +151,26 @@ export async function PUT(request: Request) {
   const supabase = getAdminClient();
 
   try {
-    const { id, name, is_active, music_track_id, music_track_ids, tense_track_id, victory_track_id, defeat_track_id, imageBase64, imageMimeType, rarity, max_prints, is_default } = await request.json();
+    const { id, name, is_active, music_track_id, music_track_ids, tense_track_id, victory_track_id, defeat_track_id, imageBase64, imageMimeType, rarity, max_prints, is_default, faction, race, clan } = await request.json();
     if (!id) return NextResponse.json({ error: 'ID requis' }, { status: 400 });
 
     const updates: Record<string, unknown> = {};
     if (name !== undefined) updates.name = name;
     if (is_active !== undefined) updates.is_active = is_active;
+
+    // Faction / clan / race (assignation depuis l'admin). Validés contre la
+    // liste FACTIONS. Une faction nulle efface l'affectation.
+    if (faction !== undefined || clan !== undefined) {
+      const fc = validateFactionClan(faction ?? null, clan ?? null);
+      if (!fc.ok) return NextResponse.json({ error: fc.error }, { status: 400 });
+      if (faction !== undefined) updates.faction = fc.faction;
+      if (clan !== undefined) updates.clan = fc.clan;
+    }
+    if (race !== undefined) {
+      const rc = validateRace(race ?? null, faction ?? null);
+      if (!rc.ok) return NextResponse.json({ error: rc.error }, { status: 400 });
+      updates.race = rc.race;
+    }
     if (music_track_id !== undefined) updates.music_track_id = music_track_id;
     if (tense_track_id !== undefined) updates.tense_track_id = tense_track_id;
     if (victory_track_id !== undefined) updates.victory_track_id = victory_track_id;
