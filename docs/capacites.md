@@ -1,0 +1,143 @@
+# Capacités — Créatures & Sorts
+
+> Généré depuis `src/lib/game/abilities.ts` (source unique de vérité). Total : 98 capacités — 72 créature, 10 sort, 16 mixtes.
+> Le suffixe **X** (ou X/Y) indique une capacité paramétrable.
+
+## Créature uniquement (72)
+
+- 🤝 **Loyauté** — Invocation : +1 ATK et +1 PV pour chaque allié de même race en jeu.
+- ⚓ **Ancré** — Ne peut pas être déplacé ou exilé.
+- 🛡️ **Résistance X** — Réduit les dégâts reçus de X (minimum 1 dégât).
+- 🎯 **Provocation** — Les ennemis doivent attaquer cette unité en priorité.
+- ⚔️ **Raid** — Peut attaquer une créature ennemie dès son invocation (mais pas le héros).
+- ⚡ **Traque** — Peut attaquer et utiliser son pouvoir activable dès son invocation.
+- 🗡️ **Première Frappe** — Lorsque cette unité attaque, inflige ses dégâts en premier ; l'unité adverse ne riposte que si elle survit.
+- 😤 **Berserk** — Double son ATK si ses PV actuels sont inférieurs à sa valeur de PV originale (sur la carte).
+- 🔰 **Bouclier** — Absorbe une première attaque sans dégâts.
+- 🦅 **Vol** — Ignore les provocations adverses.
+- 🏹 **Précision** — Ignore la Résistance, l'Armure et le Bouclier.
+- 🩸 **Drain de vie** — Soigne votre héros des dégâts infligés.
+- 💨 **Esquive** — Évite automatiquement la première attaque reçue chaque tour.
+- 💫 **Célérité** — Peut attaquer deux fois par tour.
+- /icons/augure.png **Augure** — Quand cette unité inflige des dégâts au héros adverse, vous piochez une carte.
+- ✝️ **Bénédiction** — Soigne complètement l'unité ciblée.
+- 🦁 **Bravoure** — Double ses dégâts (arrondi au supérieur) contre les unités ayant une ATK supérieure à la sienne.
+- 💰 **Pillage** — Invocation : l'adversaire défausse une carte de son choix.
+- ↩️ **Riposte X** — Quand cette unité subit des dégâts, inflige X dégâts à la source de l'attaque (unité ou héros).
+- 🔥 **Combustion** — Invocation : défaussez une carte de votre main, puis piochez deux cartes.
+- 👁️ **Terreur** — Les unités adverses perdent 1 ATK en présence de cette carte.
+- /icons/armure.png **Armure** — Réduit de moitié les dégâts de combat reçus (arrondi au supérieur) ; les dégâts de sorts ne sont pas réduits.
+- 👑 **Commandement** — Les alliés de même faction gagnent +1/+1.
+- 💢 **Fureur** — Après avoir subi des dégâts, attaque immédiatement une unité adverse aléatoire (héros si plus aucune unité). Se déclenche au plus une fois par tour.
+- ⚔️ **Double Attaque** — En phase offensive uniquement : inflige deux fois son ATK lors de l'attaque. L'unité ciblée riposte normalement.
+- 👻 **Invisible** — Ne peut pas être ciblé par des sorts ni par des capacités d'unités adverses.
+- 🔮 **Canalisation** — Tant que cette unité est en jeu, vos sorts coûtent 1 mana de moins (minimum 1).
+- ⚗️ **Catalyse** — Invocation : réduit de 1 le coût en mana de toutes les unités de même race dans votre main.
+- 🤝 **Entraide (Race)** — En main : coûte 1 mana de moins par allié de la race choisie présent en jeu (cumulable, plancher 0).
+- 🚫 **Contresort** — Invocation : annule le prochain sort adverse.
+- 📣 **Convocation X** — Invocation : crée un token X/X de la race indiquée.
+- 🐺 **Lycanthropie X** — Début de tour : se transforme en un token X/X avec Traque.
+- 💀 **Malédiction** — Invocation : ciblez une unité ennemie, elle est exilée à la fin du prochain tour adverse.
+- 🦴 **Nécrophagie** — Gagne +1 ATK et +1 PV chaque fois qu'une unité (alliée ou ennemie) meurt.
+- ⛓️ **Paralysie** — Les unités subissant des dégâts de cette créature ne peuvent attaquer ni utiliser de capacités actives avant la fin du prochain tour de leur propriétaire.
+- 🔀 **Permutation** — Invocation : échange les PV actuels de deux unités ciblées (une alliée et une ennemie).
+- 🩻 **Persécution X** — Chaque fois que cette unité attaque, inflige X dégâts au héros adverse.
+- 🐾 **Piétinement** — Lorsque cette unité attaque une créature, les dégâts excédentaires (au-delà des PV restants de la cible) sont infligés au héros adverse.
+- 👤 **Ombre du passé** — Invocation : gagne +1 ATK et +1 PV par unité de même race dans votre cimetière.
+- 📚 **Savant** — Invocation : gagne +1 ATK et +1 PV par sort dans votre cimetière.
+- ⚰️ **Profanation X** — Invocation : exile les X dernières cartes de votre cimetière pour accorder jusqu'à +X/+X à l'unité.
+- 🃏 **Prescience X** — Invocation : piochez des cartes jusqu'à avoir X cartes en main.
+- 👊 **Suprématie** — Invocation : gagne +1 ATK et +1 PV par carte dans votre main au moment de l'invocation.
+- 🔍 **Divination** — Invocation : révèle les 3 premières cartes de votre pioche ; placez-en une sur le dessus et les 2 autres en dessous dans l'ordre choisi.
+- 🔗 **Liaison de vie** — Partage les dégâts subis avec le héros adverse.
+- 🌑 **Ombre** — Ne peut être ciblée ni attaquée tant qu'elle n'a pas effectué une action (attaque ou capacité).
+- 💔 **Sacrifice** — Invocation : détruisez un allié pour gagner ses PV et son ATK de manière permanente.
+- 🕯️ **Maléfice** — À la mort, inflige X dégâts à toutes les unités (alliés et ennemis), X = son ATK.
+- ♾️ **Indestructible** — Ne subit aucun dégât de combat.
+- 💚 **Régénération** — Récupère 2 PV au début de votre tour.
+- 🖤 **Corruption** — Convertit l'unité ennemie sélectionnée à votre camp jusqu'à la fin du tour ; elle gagne Traque jusqu'à la fin du tour.
+- 💥 **Carnage X** — Mort : inflige X dégâts à toutes les unités en jeu (alliées et ennemies).
+- 📜 **Héritage X** — Mort : chaque unité alliée en jeu gagne +X ATK et +X PV de manière permanente.
+- 🪞 **Mimique** — Invocation : copie toutes les capacités d'une unité ciblée et les attribue à cette unité de manière permanente.
+- 🦎 **Métamorphose** — Invocation : cette unité devient une copie exacte (ATK / PV / capacités) d'une unité ciblée.
+- 📋 **Tactique X** — Invocation : attribue X capacité(s) choisie(s) à une unité alliée ciblée de manière permanente.
+- 🏚️ **Héritage du cimetière** — Invocation : attribue à cette unité les capacités d'une unité ciblée dans votre cimetière.
+- 🩸 **Pacte de sang** — Quand cette unité meurt, invoque deux tokens 1/1 de sa race.
+- 🐲 **Souffle de feu X** — Inflige X dégâts à toutes les unités ennemies lors de l'attaque (ex : Souffle de feu 2 = 2 dégâts).
+- 👁️‍🗨️ **Domination** — Prend le contrôle d'une unité ennemie au hasard à son invocation.
+- ✨ **Résurrection** — Revient en jeu après sa mort avec 1 PV ; perd la capacité Résurrection à son retour.
+- 🌟 **Transcendance** — Immunité totale aux sorts adverses : ne peut subir aucun dégât ni effet de sort, y compris les sorts de zone.
+- 🧛 **Vampirisme X** — Invocation : vole X PV à une unité ennemie ciblée et les ajoute aux PV de cette unité.
+- 🔮 **Traque du destin X** — Invocation : révèle les X premières cartes de votre deck, prenez-en une en main et placez les autres en dessous dans un ordre aléatoire.
+- ♻️ **Cycle éternel** — Mort : ajoutez une copie de cette carte dans votre deck ; si elle est piochée, mettez-la directement en jeu.
+- 🧬 **Sang mêlé** — Gagne +1 ATK et +1 PV pour chaque type de race différent parmi vos alliés en jeu.
+- ⚱️ **Martyr** — Mort : toutes vos unités de même race en jeu gagnent +1/+1 permanent.
+- 🐺 **Instinct de meute X** — Invocation : gagne +X ATK et +X PV si une unité alliée de même faction a rejoint le cimetière depuis le jeu ce tour.
+- 🗿 **Totem** — Cette unité gagne les capacités de toutes les unités de même race alliées en jeu.
+- 🏰 **Fierté du clan** — Tant que cette unité est en jeu, les unités de même clan invoquées arrivent avec +1/+1.
+- 📯 **Appel du clan X** — Invocation : mettez en jeu gratuitement la première unité de même clan avec un coût inférieur ou égal à X depuis le dessus de votre deck.
+- 🤜 **Solidarité X** — Invocation : piochez X cartes si vous contrôlez 2 autres unités de même race.
+
+## Sort uniquement (10)
+
+- 📣 **Invocation X/Y** — Invoque un token X/Y
+- 💥 **Impact X** — Inflige X dégâts à une cible
+- 🌊 **Déferlement X** — Inflige X dégâts à toutes les créatures ennemies
+- 🩸 **Siphon X** — Inflige X dégâts à une cible et soigne votre héros du même montant
+- ⛓️ **Entrave** — Paralyse une créature ennemie ciblée
+- ☠️ **Exécution** — Détruit une créature ciblée
+- 🤫 **Silence** — Retire tous les mots-clés d'une créature ciblée
+- ⬆️ **Renforcement +X/+Y** — Donne +X ATK et +Y PV à une créature alliée
+- 💚 **Guérison X** — Restaure X PV à une cible
+- 💎 **Afflux X** — Gagnez X mana ce tour
+
+## Mixtes — créature et sort (16)
+
+- ☠️ **Poison**
+  - Créature : Les unités blessées perdent 1 PV par tour.
+  - Sort : Les unités blessées perdent 1 PV par tour.
+- 📯 **Convocation**
+  - Créature : Invocation : crée le token configuré.
+  - Sort : Crée le token configuré.
+- 🏴 **Rassemblement X**
+  - Créature : Invocation : révèle les X premières cartes du deck ; ajoutez à votre main toutes les unités de même race et défaussez le reste.
+  - Sort : Révèle les X premières cartes de votre deck ; ajoutez à votre main les unités de la même race que ce sort et défaussez le reste.
+- 🪦 **Rappel**
+  - Créature : Invocation : remettez une carte ciblée de votre cimetière dans votre main.
+  - Sort : Renvoie une créature de votre cimetière dans votre main
+- ⚰️ **Exhumation X**
+  - Créature : Invocation : ressuscite une unité de votre cimetière dont le coût en mana est égal ou inférieur à X.
+  - Sort : Ressuscite une créature (coût ≤ X) de votre cimetière sur le terrain
+- 🎴 **Sélection X**
+  - Créature : Invocation : révèle 3 cartes communes aléatoires de coût ≤ X parmi les factions du même alignement (bon/neutre/maléfique) que cette carte ; ajoutez-en une à votre main. Sans limite de coût si X non défini.
+  - Sort : Choisissez une carte parmi 3 communes aléatoires de coût ≤ X (sans limite si X non défini), issues des factions du même alignement que ce sort, à ajouter en main
+- 🪄 **Sélection magique X**
+  - Créature : Invocation : révèle 3 sorts communs aléatoires de coût ≤ X parmi les factions du même alignement (bon/neutre/maléfique) que cette carte ; ajoutez-en un à votre main. Sans limite de coût si X non défini.
+  - Sort : Choisissez un sort parmi 3 sorts communs aléatoires de coût ≤ X (sans limite si X non défini), issus des factions du même alignement que ce sort, à ajouter en main
+- 👑 **Sélection Royale X**
+  - Créature : Invocation : révèle 3 cartes aléatoires parmi vos éditions limitées (≥30 requises ; sinon parmi des communes du même alignement) de coût ≤ X ; ajoutez-en une à votre main. Sans limite de coût si X non défini.
+  - Sort : Choisissez une carte parmi 3 cartes aléatoires de vos éditions limitées (≥30 requises ; sinon parmi des communes du même alignement) de coût ≤ X (sans limite si X non défini) à ajouter en main
+- 🔁 **Relancer X**
+  - Créature : Invocation : rejoue les X derniers sorts lancés avec des cibles aléatoires.
+  - Sort : Rejoue les X derniers sorts lancés avec des cibles aléatoires
+- 📖 **Inspiration X**
+  - Créature : Invocation : piochez X cartes.
+  - Sort : Piochez X cartes
+- 🔼 **Remontée**
+  - Créature : Cible une unité (selon le déclenchement) : elle remonte dans la main de son propriétaire d'origine.
+  - Sort : Renvoie une unité ciblée dans la main de son propriétaire d'origine.
+- ⏫ **Renforcement multiple**
+  - Créature : Selon le déclenchement : octroie +X/+Y à toutes vos créatures de la race/clan choisi.
+  - Sort : Octroie +X/+Y à toutes vos créatures de la race ou du clan sélectionné.
+- 🎯 **Concentration X**
+  - Créature : Invocation : remplace chaque sort en main par un sort aléatoire (toutes factions) de coût supérieur de X ; le coût du nouveau sort est réduit de X.
+  - Sort : Remplace chaque sort en main par un sort aléatoire (toutes factions) de coût supérieur de X ; le coût du nouveau sort est réduit de X.
+- 📣📣 **Convocations multiples**
+  - Créature : Invocation : crée plusieurs tokens selon la configuration.
+  - Sort : Crée plusieurs tokens selon la configuration de la carte.
+- 🌩️ **Tempête X**
+  - Créature : Invocation : inflige X dégâts répartis aléatoirement entre les unités ennemies.
+  - Sort : Inflige X dégâts répartis aléatoirement entre les unités ennemies.
+- 🤕 **Douleur X**
+  - Créature : Invocation : inflige X dégâts à votre héros.
+  - Sort : Au lancement, inflige X dégâts à votre héros.

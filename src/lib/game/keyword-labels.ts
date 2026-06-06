@@ -8,6 +8,7 @@ import { SPELL_KEYWORDS } from "./spell-keywords";
 export function keywordModeColor(mode: KeywordMode | undefined): string | null {
   if (mode === "death") return "#a83232"; // dark red
   if (mode === "tap") return "#d4a800";   // amber yellow
+  if (mode === "return") return "#3a7dd4"; // blue (retour en main)
   return null;
 }
 
@@ -24,6 +25,10 @@ export function keywordModeFilter(mode: KeywordMode | undefined): string | null 
   if (mode === "tap") {
     // → #d4a800 amber yellow
     return "brightness(0) saturate(100%) invert(63%) sepia(78%) saturate(2024%) hue-rotate(11deg) brightness(89%) contrast(99%)";
+  }
+  if (mode === "return") {
+    // → #3a7dd4 blue (retour en main)
+    return "brightness(0) saturate(100%) invert(38%) sepia(93%) saturate(1352%) hue-rotate(192deg) brightness(91%) contrast(94%)";
   }
   return null;
 }
@@ -185,6 +190,8 @@ export const ALL_KEYWORDS: Keyword[] = [
   "douleur",
   "inspiration",
   "concentration",
+  "remontee",
+  "renforcement_multiple",
 ];
 
 export const KEYWORD_LABELS: Record<Keyword, string> = {
@@ -227,6 +234,8 @@ export const KEYWORD_LABELS: Record<Keyword, string> = {
   douleur: "Douleur X",
   inspiration: "Inspiration X",
   concentration: "Concentration X",
+  remontee: "Remontée",
+  renforcement_multiple: "Renforcement multiple",
 };
 
 export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
@@ -268,4 +277,6 @@ export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
   douleur: "🤕",
   inspiration: "📖",
   concentration: "🎯",
+  remontee: "🔼",
+  renforcement_multiple: "⏫",
 };

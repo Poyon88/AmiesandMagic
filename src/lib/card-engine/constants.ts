@@ -33,19 +33,24 @@ export { KEYWORDS } from "@/lib/game/abilities";
 // pipeline (on-death rattle or tap-activated). Keywords missing from this
 // map can only be on-play. Shared by the Forge and the card Editor so both
 // surfaces gate the picker identically.
-export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<"death" | "tap">> = {
-  "Convocation X": new Set<"death" | "tap">(["death", "tap"]),
-  "Convocations multiples": new Set<"death" | "tap">(["death", "tap"]),
-  "Inspiration X": new Set<"death" | "tap">(["death", "tap"]),
-  "Pillage": new Set<"death" | "tap">(["death", "tap"]),
-  "Douleur X": new Set<"death" | "tap">(["death", "tap"]),
-  "Vampirisme X": new Set<"death" | "tap">(["death", "tap"]),
-  "Tempête X": new Set<"death" | "tap">(["death", "tap"]),
-  "Prescience X": new Set<"death" | "tap">(["tap"]),
-  "Suprématie": new Set<"death" | "tap">(["death"]),
-  "Ombre du passé": new Set<"death" | "tap">(["death"]),
-  "Savant": new Set<"death" | "tap">(["death"]),
-  "Combustion": new Set<"death" | "tap">(["death", "tap"]),
+// Le mode "return" (retour en main) est ouvert à TOUS les mots-clés curés, en
+// plus de leurs modes existants.
+type CuratedMode = "death" | "tap" | "return";
+export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
+  "Convocation X": new Set<CuratedMode>(["death", "tap", "return"]),
+  "Convocations multiples": new Set<CuratedMode>(["death", "tap", "return"]),
+  "Inspiration X": new Set<CuratedMode>(["death", "tap", "return"]),
+  "Pillage": new Set<CuratedMode>(["death", "tap", "return"]),
+  "Douleur X": new Set<CuratedMode>(["death", "tap", "return"]),
+  "Vampirisme X": new Set<CuratedMode>(["death", "tap", "return"]),
+  "Tempête X": new Set<CuratedMode>(["death", "tap", "return"]),
+  "Prescience X": new Set<CuratedMode>(["tap", "return"]),
+  "Suprématie": new Set<CuratedMode>(["death", "return"]),
+  "Ombre du passé": new Set<CuratedMode>(["death", "return"]),
+  "Savant": new Set<CuratedMode>(["death", "return"]),
+  "Combustion": new Set<CuratedMode>(["death", "tap", "return"]),
+  "Remontée": new Set<CuratedMode>(["death", "tap", "return"]),
+  "Renforcement multiple": new Set<CuratedMode>(["death", "tap", "return"]),
 };
 
 // ─── FACTIONS ────────────────────────────────────────────────────────────────

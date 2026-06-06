@@ -1093,6 +1093,13 @@ export default function GameBoard({ onAction }: GameBoardProps) {
         </div>
       )}
 
+      {/* Déclencheur interactif en attente (Remontée mort/retour) */}
+      {targetingMode === "pending_trigger" && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-blue-900/90 border border-blue-400 rounded-lg px-6 py-3 text-center backdrop-blur-sm">
+          <p className="text-white font-bold">🔼 Remontée — choisissez l&apos;unité à renvoyer</p>
+        </div>
+      )}
+
       {/* Damage animation overlay */}
       <DamageOverlay events={damageEvents} />
       <SpellCastOverlay event={spellCastEvent} onComplete={clearSpellCastEvent} />

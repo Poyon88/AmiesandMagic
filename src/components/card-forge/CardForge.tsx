@@ -6,8 +6,9 @@ import { generateCardStats, pickMana, pickRarity, buildId } from "@/lib/card-eng
 import { RARITIES, FACTIONS, TYPES, KEYWORDS, RARITY_WEIGHTS_BY_MANA, RARITY_MAP, ALIGNMENTS, CURATED_KEYWORD_MODES, getClanNamesForRace, getFactionForRace } from "@/lib/card-engine/constants";
 import CardVisual, { KEYWORD_SYMBOLS } from "./CardVisual";
 import KeywordIcon from "@/components/shared/KeywordIcon";
-import type { CardType, Keyword, SpellEffect, SpellTargetType, SpellKeywordInstance, SpellComposableEffects, SpellEffectNode, SpellTargetSlot, AtomicEffectType, SpellCondition, AtomicEffect, ConditionalEffectNode, CardSet, GameFormat, TokenTemplate, ConvocationTokenDef } from "@/lib/game/types";
+import type { CardType, Keyword, KeywordMode, SpellEffect, SpellTargetType, SpellKeywordInstance, SpellComposableEffects, SpellEffectNode, SpellTargetSlot, AtomicEffectType, SpellCondition, AtomicEffect, ConditionalEffectNode, CardSet, GameFormat, TokenTemplate, ConvocationTokenDef } from "@/lib/game/types";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
+import RaceClanPicker from "@/components/admin/RaceClanPicker";
 import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
 import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
 import { ABILITIES, abilityIconKeys, type AbilityDef } from "@/lib/game/abilities";
@@ -1522,7 +1523,7 @@ export default function CardForge() {
   // non-play modes; the UI gates the picker accordingly. Saved into
   // card.keyword_instances at save time so the engine can route the
   // effect to the on-death or tap pipeline instead.
-  const [keywordModes, setKeywordModes] = useState<Record<string, "death" | "tap">>({});
+  const [keywordModes, setKeywordModes] = useState<Record<string, KeywordMode>>({});
   // Spell-only: per-conferred-keyword grant scope (indexed by forge FR label).
   // Missing entry = "target" (single allied creature); "all_allies" = every
   // allied creature on cast. Saved into card.keyword_instances.grantScope.
@@ -1532,6 +1533,10 @@ export default function CardForge() {
   const [convocationTokens, setConvocationTokens] = useState<ConvocationTokenDef[]>([]);
   const [lycanthropieTokenId, setLycanthropieTokenId] = useState<number | null>(null);
   const [entraideRace, setEntraideRace] = useState<string>("");
+  // Renforcement multiple (créature) : +Y (PV) et race/clan ciblé (le +X = la valeur X).
+  const [rmY, setRmY] = useState<number>(1);
+  const [rmRace, setRmRace] = useState<string>("");
+  const [rmClan, setRmClan] = useState<string>("");
   const [cardSetId, setCardSetId] = useState<number | null>(null);
   const [cardYear, setCardYear] = useState<number | null>(null);
   const [cardMonth, setCardMonth] = useState<number | null>(null);
@@ -1808,7 +1813,7 @@ export default function CardForge() {
     setManualPower(2); setManualAbility(""); setManualFlavorText("");
     setManualIllustrationPrompt(""); setManualExtraContext(""); setManualKeywords([]); setKeywordXValues({}); setKeywordModes({}); setCard(null);
     setEditedPrompt(null); setSaveResult(null);
-    setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace("");
+    setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setRmRace(""); setRmClan("");
     setManualLifeCost(0); setManualDiscardCost(0); setManualSacrificeCost(0);
     setCardImages(prev => Object.fromEntries(Object.entries(prev).filter(([k]) => k !== "manual_preview")));
   }, []);
@@ -2088,6 +2093,10 @@ export default function CardForge() {
           // On a spell, a conferred keyword set to "all_allies" must persist
           // its scope even with no mode/X. "target" is the default → no field.
           const grantScope = isSpellCard && keywordGrantScope[label] === "all_allies" ? "all_allies" as const : undefined;
+          // Renforcement multiple (créature) : porte +X/+Y et race/clan ; toujours émis.
+          if (id === "renforcement_multiple" && !isSpellCard) {
+            return { id, ...(mode ? { mode } : {}), x: x ?? 0, y: rmY, ...(rmRace ? { race: rmRace } : {}), ...(rmClan ? { clan: rmClan } : {}) };
+          }
           if (!mode && x == null && !grantScope) return null; // pure play + no X + default scope → nothing to store
           return { id, ...(mode ? { mode } : {}), ...(x != null ? { x } : {}), ...(grantScope ? { grantScope } : {}) };
         })
@@ -2173,7 +2182,7 @@ export default function CardForge() {
     } finally {
       setSaving(false);
     }
-  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, keywordModes, keywordGrantScope]);
+  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, keywordModes, keywordGrantScope, rmY, rmRace, rmClan]);
 
   const [generatingImage, setGeneratingImage] = useState(false);
   const [editedPrompt, setEditedPrompt] = useState<string | null>(null);
@@ -2871,6 +2880,16 @@ export default function CardForge() {
                               {kw.id === "invocation_multiple" && (
                                 <div style={{ fontSize: 8, color: "#9b59b6", marginTop: 2 }}>Config dans "Tokens à invoquer" ci-dessous</div>
                               )}
+                              {kw.id === "renforcement_multiple" && (
+                                <div style={{ flexBasis: "100%", marginTop: 2 }}>
+                                  <label style={{ fontSize: 7, color: "#2c5d99", letterSpacing: 1, fontFamily: "'Cinzel',serif" }}>RACE / CLAN CIBLÉ</label>
+                                  <RaceClanPicker
+                                    race={kw.race ?? ""}
+                                    clan={kw.clan ?? ""}
+                                    onChange={(r, c) => setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, race: r || undefined, clan: c || undefined } : k))}
+                                  />
+                                </div>
+                              )}
                             </div>
                           );
                         })}
@@ -3013,11 +3032,11 @@ export default function CardForge() {
                                 and present in CURATED_KEYWORD_MODES. */}
                             {selected && CURATED_KEYWORD_MODES[id] && (
                               <div style={{ display: "inline-flex", gap: 2, marginLeft: 4 }}>
-                                {(["play", "death", "tap"] as const).map(mode => {
+                                {(["play", "death", "tap", "return"] as const).map(mode => {
                                   const allowed = mode === "play" || CURATED_KEYWORD_MODES[id].has(mode);
                                   const active = mode === "play" ? !keywordModes[id] : keywordModes[id] === mode;
-                                  const color = mode === "play" ? fac.color : mode === "death" ? "#a83232" : "#d4a800";
-                                  const label = mode === "play" ? "⚡" : mode === "death" ? "💀" : "⟲";
+                                  const color = mode === "play" ? fac.color : mode === "death" ? "#a83232" : mode === "tap" ? "#d4a800" : "#3a7dd4";
+                                  const label = mode === "play" ? "⚡" : mode === "death" ? "💀" : mode === "tap" ? "⟲" : "↩";
                                   return (
                                     <button
                                       key={mode}
@@ -3030,7 +3049,7 @@ export default function CardForge() {
                                           return next;
                                         });
                                       }}
-                                      title={mode === "play" ? "À l'invocation (défaut)" : mode === "death" ? "À la mort (deathrattle)" : "Activée par tap (engagement)"}
+                                      title={mode === "play" ? "À l'invocation (défaut)" : mode === "death" ? "À la mort (deathrattle)" : mode === "tap" ? "Activée par tap (engagement)" : "Au retour en main"}
                                       style={{
                                         width: 18, height: 18, borderRadius: 3,
                                         background: active ? color : "transparent",
@@ -3125,6 +3144,21 @@ export default function CardForge() {
                             <option key={r} value={r}>{r}</option>
                           ))}
                         </select>
+                      </div>
+                    )}
+                    {/* Renforcement multiple — +Y (PV) et race/clan ciblé (le +X = la valeur X) */}
+                    {manualKeywords.includes("Renforcement multiple") && (
+                      <div style={{ marginTop: 6, padding: 6, borderRadius: 6, border: "1px solid #cfe0f5", background: "#eef5ff" }}>
+                        <div style={{ fontSize: 8, color: "#2c5d99", letterSpacing: 1, fontWeight: 700, marginBottom: 4 }}>⏫ RENFORCEMENT MULTIPLE</div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                          <span style={{ fontSize: 9, color: "#27ae60" }}>+PV (Y)</span>
+                          <input type="number" min={0} max={20} value={rmY}
+                            onChange={e => setRmY(Math.max(0, parseInt(e.target.value) || 0))}
+                            style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: "1px solid #cfe0f5", fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }}
+                          />
+                          <span style={{ fontSize: 8, color: "#888" }}>(le +ATK = la valeur X)</span>
+                        </div>
+                        <RaceClanPicker race={rmRace} clan={rmClan} onChange={(r, c) => { setRmRace(r); setRmClan(c); }} />
                       </div>
                     )}
                     {/* Convocations multiples — list of token entries with optional stat overrides */}

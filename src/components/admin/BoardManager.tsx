@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { FACTIONS, getFactionDisplayName } from "@/lib/card-engine/constants";
+
+const FACTION_IDS = Object.keys(FACTIONS);
 
 interface MusicTrack {
   id: number;
@@ -21,6 +24,7 @@ interface GameBoard {
   rarity: string | null;
   max_prints: number | null;
   is_default: boolean;
+  faction: string | null;
   created_at: string;
   game_board_music_tracks?: { track_id: number }[] | null;
 }
@@ -50,6 +54,7 @@ export default function BoardManager() {
   const [newImagePreview, setNewImagePreview] = useState<string | null>(null);
   const [newMusicTrackId, setNewMusicTrackId] = useState<number | null>(null);
   const [newRarity, setNewRarity] = useState<string>("Commune");
+  const [newFaction, setNewFaction] = useState<string>("");
   const [newMaxPrints, setNewMaxPrints] = useState<number | null>(null);
   const [newIsDefault, setNewIsDefault] = useState(false);
   const [musicTracks, setMusicTracks] = useState<MusicTrack[]>([]);
@@ -128,6 +133,7 @@ export default function BoardManager() {
           imageMimeType: newImage.mimeType,
           music_track_id: newMusicTrackId,
           rarity: newRarity,
+          faction: newFaction || null,
           max_prints: effectiveMaxPrints,
           is_default: newIsDefault,
         }),
@@ -143,6 +149,7 @@ export default function BoardManager() {
       setNewImagePreview(null);
       setNewMusicTrackId(null);
       setNewRarity("Commune");
+      setNewFaction("");
       setNewMaxPrints(null);
       setNewIsDefault(false);
       await loadBoards();
@@ -289,6 +296,17 @@ export default function BoardManager() {
               {RARITIES.map((r) => <option key={r} value={r}>{r}</option>)}
             </select>
           </div>
+          <div style={{ minWidth: 140 }}>
+            <label style={STYLE.label}>Faction</label>
+            <select
+              value={newFaction}
+              onChange={(e) => setNewFaction(e.target.value)}
+              style={{ width: "100%", padding: "6px 10px", borderRadius: 5, border: "1px solid #e0e0e0", fontSize: 12, marginTop: 4 }}
+            >
+              <option value="">— Aucune —</option>
+              {FACTION_IDS.map((f) => <option key={f} value={f}>{getFactionDisplayName(f)} — {f}</option>)}
+            </select>
+          </div>
           {newRarity !== "Commune" && (
             <div style={{ minWidth: 90 }}>
               <label style={STYLE.label}>Exemplaires</label>
@@ -378,6 +396,17 @@ export default function BoardManager() {
                     style={{ padding: "3px 8px", borderRadius: 4, border: "1px solid #e0e0e0", fontSize: 11 }}
                   >
                     {RARITIES.map((r) => <option key={r} value={r}>{r}</option>)}
+                  </select>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={STYLE.label}>Faction :</span>
+                  <select
+                    value={board.faction ?? ""}
+                    onChange={(e) => handleUpdateField(board, { faction: e.target.value || null })}
+                    style={{ padding: "3px 8px", borderRadius: 4, border: "1px solid #e0e0e0", fontSize: 11 }}
+                  >
+                    <option value="">— Aucune —</option>
+                    {FACTION_IDS.map((f) => <option key={f} value={f}>{f}</option>)}
                   </select>
                 </div>
                 {(board.rarity ?? "Commune") !== "Commune" && (

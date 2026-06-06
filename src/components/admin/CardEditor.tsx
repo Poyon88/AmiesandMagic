@@ -8,6 +8,7 @@ import { KEYWORDS as KEYWORD_DEFS, FACTIONS, getFactionDisplayName, getAllClanNa
 import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS } from "@/lib/game/spell-keywords";
 import type { Card, Keyword, KeywordInstance, KeywordMode, SpellKeywordInstance, SpellComposableEffects, CardSet, TokenTemplate } from "@/lib/game/types";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
+import RaceClanPicker from "@/components/admin/RaceClanPicker";
 
 interface DbCard {
   id: number;
@@ -95,6 +96,13 @@ export default function CardEditor() {
   const [newImagePreview, setNewImagePreview] = useState<string | null>(null);
   const [generatingPrints, setGeneratingPrints] = useState(false);
   const [printsResult, setPrintsResult] = useState<{ ok: boolean; msg: string } | null>(null);
+  const [generatingPrompt, setGeneratingPrompt] = useState(false);
+  const [generatingImage, setGeneratingImage] = useState(false);
+  // Renforcement multiple (créature) : +Y (PV) et race/clan ciblé. Le +X (ATK)
+  // réutilise keywordXValues ; ces 3 champs sont sérialisés dans keyword_instances.
+  const [rmY, setRmY] = useState<number>(1);
+  const [rmRace, setRmRace] = useState<string>("");
+  const [rmClan, setRmClan] = useState<string>("");
 
   // Load data
   const loadData = useCallback(async () => {
@@ -198,11 +206,16 @@ export default function CardEditor() {
     // sidecar; the effect_text bracket is the legacy fallback for X.
     const modes: Record<string, KeywordMode> = {};
     const grantScopes: Record<string, "all_allies"> = {};
+    let rmYLoaded = 1, rmRaceLoaded = "", rmClanLoaded = "";
     for (const inst of card.keyword_instances ?? []) {
       if (inst.mode) modes[inst.id] = inst.mode;
       if (inst.x != null) parsedX[inst.id] = inst.x;
       if (inst.grantScope === "all_allies") grantScopes[inst.id] = "all_allies";
+      if (inst.id === "renforcement_multiple") {
+        rmYLoaded = inst.y ?? 1; rmRaceLoaded = inst.race ?? ""; rmClanLoaded = inst.clan ?? "";
+      }
     }
+    setRmY(rmYLoaded); setRmRace(rmRaceLoaded); setRmClan(rmClanLoaded);
     setKeywordModes(modes);
     setKeywordXValues(parsedX);
     setKeywordGrantScope(grantScopes);
@@ -339,6 +352,10 @@ export default function CardEditor() {
           // On a spell, a conferred keyword set to "all_allies" must persist
           // its scope even with no mode/X. "target" is the default → no field.
           const grantScope = isSpellCard && keywordGrantScope[id] === "all_allies" ? "all_allies" as const : undefined;
+          // Renforcement multiple (créature) : porte +X/+Y et race/clan ; toujours émis.
+          if (id === "renforcement_multiple" && !isSpellCard) {
+            return { id: id as Keyword, ...(mode ? { mode } : {}), x: x ?? 0, y: rmY, ...(rmRace ? { race: rmRace } : {}), ...(rmClan ? { clan: rmClan } : {}) };
+          }
           if (!mode && x == null && !grantScope) return null;
           return { id: id as Keyword, ...(mode ? { mode } : {}), ...(x != null ? { x } : {}), ...(grantScope ? { grantScope } : {}) };
         })
@@ -411,7 +428,7 @@ export default function CardEditor() {
       console.warn("[card-save] refresh failed after successful save:", err);
     }
     setSaving(false);
-  }, [selectedCard, editFields, newImageFile, keywordXValues, keywordModes, keywordGrantScope]);
+  }, [selectedCard, editFields, newImageFile, keywordXValues, keywordModes, keywordGrantScope, rmY, rmRace, rmClan]);
 
   // Delete
   const handleDelete = useCallback(async (id: number) => {
@@ -512,6 +529,75 @@ export default function CardEditor() {
     };
     reader.readAsDataURL(file);
   };
+
+  // Régénère le prompt d'illustration depuis les métadonnées de la carte
+  // (même route IA que la forge de création).
+  const handleGeneratePrompt = useCallback(async () => {
+    if (!selectedCard) return;
+    setGeneratingPrompt(true);
+    setSaveResult(null);
+    try {
+      const type = (editFields.card_type as string) || "creature";
+      const kwIds = (editFields.keywords as string[]) ?? [];
+      const stats = {
+        attack: type === "creature" ? (editFields.attack ?? null) : null,
+        defense: type === "creature" ? (editFields.health ?? null) : null,
+        power: null,
+        mana: editFields.mana_cost ?? 0,
+        keywords: kwIds.map((k) => KEYWORD_LABELS[k as Keyword] ?? k),
+      };
+      const res = await fetch("/api/cards/generate-text", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          factionId: editFields.faction || null,
+          type,
+          rarityId: editFields.rarity || null,
+          stats,
+          raceId: editFields.race || undefined,
+          clanId: editFields.clan || undefined,
+          existingName: editFields.name || undefined,
+          existingAbility: editFields.effect_text || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `Erreur ${res.status}`);
+      if (data.illustrationPrompt) {
+        setEditFields((f) => ({ ...f, illustration_prompt: data.illustrationPrompt }));
+        setSaveResult({ ok: true, msg: "Prompt régénéré" });
+      }
+    } catch (err) {
+      setSaveResult({ ok: false, msg: err instanceof Error ? err.message : "Erreur prompt" });
+    }
+    setGeneratingPrompt(false);
+  }, [selectedCard, editFields]);
+
+  // Génère une nouvelle image depuis le prompt courant. L'image obtenue devient
+  // `newImageFile` : elle est prévisualisée puis uploadée au clic sur Sauvegarder.
+  const handleGenerateImage = useCallback(async () => {
+    const prompt = ((editFields.illustration_prompt as string) || "").trim();
+    if (!prompt) {
+      setSaveResult({ ok: false, msg: "Renseigne d'abord un prompt d'illustration." });
+      return;
+    }
+    setGeneratingImage(true);
+    setSaveResult(null);
+    try {
+      const res = await fetch("/api/cards/generate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `Erreur ${res.status}`);
+      setNewImageFile({ base64: data.imageBase64, mimeType: data.mimeType });
+      setNewImagePreview(`data:${data.mimeType};base64,${data.imageBase64}`);
+      setSaveResult({ ok: true, msg: "Image générée — sauvegarde pour l'enregistrer." });
+    } catch (err) {
+      setSaveResult({ ok: false, msg: err instanceof Error ? err.message : "Erreur image" });
+    }
+    setGeneratingImage(false);
+  }, [editFields]);
 
   const clearFilters = () => {
     setSearch(""); setManaCostFilter(null); setTypeFilter(null); setKeywordFilter(null);
@@ -702,10 +788,17 @@ export default function CardEditor() {
               </div>
             )}
 
-            {/* Image upload */}
+            {/* Image upload + génération IA */}
             <div style={{ marginBottom: 12 }}>
               <div style={S.label}>Image</div>
               <input type="file" accept="image/*" onChange={handleImageChange} style={{ fontSize: 10, width: "100%" }} />
+              <button
+                onClick={handleGenerateImage}
+                disabled={generatingImage || !((editFields.illustration_prompt as string) || "").trim()}
+                style={{ ...S.btn("#7b3fb0"), marginTop: 6, width: "100%", opacity: generatingImage || !((editFields.illustration_prompt as string) || "").trim() ? 0.5 : 1 }}
+              >
+                {generatingImage ? "Génération…" : "🎨 Générer l'image depuis le prompt"}
+              </button>
             </div>
 
             {/* Name */}
@@ -977,7 +1070,7 @@ export default function CardEditor() {
             })()}
 
             {/* Trigger mode (déclenchement) for curated creature keywords —
-                ⚡ à l'arrivée (défaut) / 💀 à la mort / ⟲ activable (tap).
+                ⚡ à l'arrivée (défaut) / 💀 à la mort / ⟲ activable (tap) / ↩ retour en main.
                 Only keywords in CURATED_KEYWORD_MODES accept non-play modes;
                 the engine routes the effect to the matching pipeline. */}
             {editFields.card_type === "creature" && (() => {
@@ -997,11 +1090,11 @@ export default function CardEditor() {
                         <div key={kw} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           <span style={{ fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: 600, color: "#333", flex: 1 }}>{label}</span>
                           <div style={{ display: "inline-flex", gap: 3 }}>
-                            {(["play", "death", "tap"] as const).map(mode => {
+                            {(["play", "death", "tap", "return"] as const).map(mode => {
                               const allowed = mode === "play" || allowedModes.has(mode);
                               const active = mode === "play" ? !keywordModes[kw] : keywordModes[kw] === mode;
-                              const color = mode === "play" ? "#333" : mode === "death" ? "#a83232" : "#d4a800";
-                              const glyph = mode === "play" ? "⚡" : mode === "death" ? "💀" : "⟲";
+                              const color = mode === "play" ? "#333" : mode === "death" ? "#a83232" : mode === "tap" ? "#d4a800" : "#3a7dd4";
+                              const glyph = mode === "play" ? "⚡" : mode === "death" ? "💀" : mode === "tap" ? "⟲" : "↩";
                               return (
                                 <button
                                   key={mode}
@@ -1012,7 +1105,7 @@ export default function CardEditor() {
                                     else next[kw] = mode;
                                     return next;
                                   })}
-                                  title={mode === "play" ? "À l'arrivée en jeu (défaut)" : mode === "death" ? "À la mort (deathrattle)" : "Activable (tap / engagement)"}
+                                  title={mode === "play" ? "À l'arrivée en jeu (défaut)" : mode === "death" ? "À la mort (deathrattle)" : mode === "tap" ? "Activable (tap / engagement)" : "Au retour en main"}
                                   style={{
                                     width: 22, height: 22, borderRadius: 4,
                                     background: active ? color : "transparent",
@@ -1137,6 +1230,16 @@ export default function CardEditor() {
                         {kw.id === "invocation_multiple" && (
                           <div style={{ fontSize: 8, color: "#9b59b6" }}>Config dans &quot;Tokens à invoquer&quot; ci-dessous</div>
                         )}
+                        {kw.id === "renforcement_multiple" && (
+                          <div style={{ flexBasis: "100%", marginTop: 2 }}>
+                            <label style={{ fontSize: 7, color: "#2c5d99", letterSpacing: 1, fontFamily: "'Cinzel',serif" }}>RACE / CLAN CIBLÉ</label>
+                            <RaceClanPicker
+                              race={kw.race ?? ""}
+                              clan={kw.clan ?? ""}
+                              onChange={(r, c) => setSpellKws(spellKws.map((k, i) => i === idx ? { ...k, race: r || undefined, clan: c || undefined } : k))}
+                            />
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -1173,10 +1276,17 @@ export default function CardEditor() {
               <textarea value={(editFields.flavor_text as string) || ""} onChange={e => updateField("flavor_text", e.target.value)} style={S.textarea} />
             </div>
 
-            {/* Illustration prompt */}
+            {/* Illustration prompt + régénération IA */}
             <div style={{ marginBottom: 8 }}>
               <div style={S.label}>Prompt illustration</div>
               <textarea value={(editFields.illustration_prompt as string) || ""} onChange={e => updateField("illustration_prompt", e.target.value)} style={S.textarea} />
+              <button
+                onClick={handleGeneratePrompt}
+                disabled={generatingPrompt}
+                style={{ ...S.btn("#333"), marginTop: 6, width: "100%", opacity: generatingPrompt ? 0.5 : 1 }}
+              >
+                {generatingPrompt ? "Génération…" : "🤖 Régénérer le prompt par IA"}
+              </button>
             </div>
 
             {/* Convocation token (creature ou sort, X ou simple) — un seul
@@ -1223,6 +1333,22 @@ export default function CardEditor() {
                     <option key={r} value={r}>{r}</option>
                   ))}
                 </select>
+              </div>
+            )}
+
+            {((editFields.keywords as string[]) || []).includes("renforcement_multiple") && editFields.card_type === "creature" && (
+              <div style={{ marginBottom: 8, padding: "8px 10px", borderRadius: 6, background: "#eef5ff", border: "1px solid #cfe0f5" }}>
+                <div style={{ ...S.label, color: "#2c5d99", marginBottom: 6 }}>⏫ Renforcement multiple — +PV (Y) & cible</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                  <span style={{ fontSize: 9, color: "#27ae60" }}>+PV (Y)</span>
+                  <input
+                    type="number" min={0} max={20} value={rmY}
+                    onChange={e => setRmY(Math.max(0, parseInt(e.target.value) || 0))}
+                    style={{ width: 48, padding: "2px 6px", borderRadius: 4, border: "1px solid #cfe0f5", fontSize: 11, textAlign: "center" }}
+                  />
+                  <span style={{ fontSize: 9, color: "#888" }}>(le +ATK = la valeur X ci-dessus)</span>
+                </div>
+                <RaceClanPicker race={rmRace} clan={rmClan} onChange={(r, c) => { setRmRace(r); setRmClan(c); }} />
               </div>
             )}
 

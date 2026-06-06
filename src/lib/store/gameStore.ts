@@ -33,7 +33,26 @@ import {
   getDiscardCost,
   getSacrificeCost,
   getTapActivateTargets,
+  remonteeTargetIds,
 } from "@/lib/game/engine";
+
+// Overlay de ciblage pour un déclencheur interactif en attente (Remontée mort/
+// retour au tour du contrôleur). Si le 1er pending appartient au joueur local
+// et a des cibles valides, on entre le mode "pending_trigger" ; sinon "none".
+function pendingTriggerOverlay(
+  gs: GameState | null,
+  localPlayerId: string | null,
+): { targetingMode: "pending_trigger" | "none"; validTargets: string[]; pendingTriggerId: string | null } {
+  const none = { targetingMode: "none" as const, validTargets: [], pendingTriggerId: null };
+  const t = gs?.pendingTriggers?.[0];
+  if (!t || !localPlayerId || t.controllerId !== localPlayerId || t.kw !== "remontee") return none;
+  const controller = gs!.players.find(p => p.id === t.controllerId);
+  const other = gs!.players.find(p => p.id !== t.controllerId);
+  if (!controller || !other) return none;
+  const targets = remonteeTargetIds(controller, other, t.sourceInstanceId);
+  if (targets.length === 0) return none;
+  return { targetingMode: "pending_trigger", validTargets: targets, pendingTriggerId: t.id };
+}
 
 export interface SpellCastEvent {
   spellName: string;
@@ -102,7 +121,10 @@ interface GameStore {
   selectedCardInstanceId: string | null;
   selectedAttackerInstanceId: string | null;
   validTargets: string[];
-  targetingMode: "none" | "attack" | "spell" | "spell_multi" | "creature" | "graveyard" | "divination" | "selection" | "tactique_keywords" | "hero_power" | "cost_payment" | "tap";
+  targetingMode: "none" | "attack" | "spell" | "spell_multi" | "creature" | "graveyard" | "divination" | "selection" | "tactique_keywords" | "hero_power" | "cost_payment" | "tap" | "pending_trigger";
+  // Id du déclencheur interactif en attente que le contrôleur résout (Remontée
+  // mort/retour à son tour). null hors de ce mode.
+  pendingTriggerId: string | null;
   // Tap-activation targeting context — set when the player clicks Activer
   // on a creature whose tap-mode keyword needs a target (e.g. Vampirisme).
   // Both fields stay null outside of tap targeting.
@@ -581,6 +603,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   selectedAttackerInstanceId: null,
   validTargets: [],
   targetingMode: "none",
+  pendingTriggerId: null,
   pendingCostCard: null,
   selectedDiscardIds: [],
   selectedSacrificeIds: [],
@@ -638,7 +661,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     set({ gameState: state });
   },
 
-  setGameState: (state) => set({ gameState: state }),
+  setGameState: (state) => set({ gameState: state, ...pendingTriggerOverlay(state, get().localPlayerId) }),
   setLocalPlayerId: (id) => set({ localPlayerId: id }),
   setTokenTemplates: (templates) => set({ tokenTemplates: templates }),
   setBoardImageUrl: (url) => set({ boardImageUrl: url }),
@@ -689,6 +712,12 @@ export const useGameStore = create<GameStore>((set, get) => {
     // local clicks from getting here, and the page.tsx broadcast handler
     // enqueues remote actions via pendingIncomingActions directly.
     if (isAnimating) {
+      return null;
+    }
+
+    // Tant qu'un déclencheur interactif est en attente, seule sa résolution est
+    // permise (le contrôleur doit choisir une cible avant toute autre action).
+    if ((gameState.pendingTriggers?.length ?? 0) > 0 && action.type !== "resolve_pending_trigger") {
       return null;
     }
 
@@ -1247,12 +1276,12 @@ export const useGameStore = create<GameStore>((set, get) => {
 
     // Fast path: trivial action (no visible effects) — commit immediately.
     if (!hasAnything) {
+      const overlay = pendingTriggerOverlay(newState, get().localPlayerId);
       set({
         gameState: newState,
         selectedCardInstanceId: null,
         selectedAttackerInstanceId: null,
-        validTargets: [],
-        targetingMode: "none",
+        ...overlay,
         pendingCostCard: null,
         selectedDiscardIds: [],
         selectedSacrificeIds: [],
@@ -1422,7 +1451,11 @@ export const useGameStore = create<GameStore>((set, get) => {
       if (queued.length > 0) {
         set({ pendingIncomingActions: queued.slice(1) });
         get().dispatchAction(queued[0]);
+        return;
       }
+      // Plus d'action en file : si l'action vient de créer un déclencheur
+      // interactif en attente pour le joueur local, on entre le mode de ciblage.
+      set(pendingTriggerOverlay(get().gameState, get().localPlayerId));
     };
 
     // --- Schedule the sequence ---
@@ -2165,11 +2198,27 @@ export const useGameStore = create<GameStore>((set, get) => {
         instanceIdx: pendingTapInstanceIdx,
         targetInstanceId: targetId,
       });
+    } else if (targetingMode === "pending_trigger") {
+      const { pendingTriggerId } = get();
+      if (!pendingTriggerId) return null;
+      return get().dispatchAction({
+        type: "resolve_pending_trigger",
+        triggerId: pendingTriggerId,
+        targetInstanceId: targetId,
+      });
     }
     return null;
   },
 
   clearSelection: () => {
+    // Un déclencheur interactif en attente (Remontée mort/retour) est un choix
+    // OBLIGATOIRE : on ne le laisse pas annuler (clic fond / clic droit) — on
+    // ré-affiche le sélecteur.
+    const overlay = pendingTriggerOverlay(get().gameState, get().localPlayerId);
+    if (overlay.targetingMode === "pending_trigger") {
+      set(overlay);
+      return;
+    }
     set({
       selectedCardInstanceId: null,
       selectedAttackerInstanceId: null,
@@ -2510,7 +2559,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     const instance = source.card.keyword_instances?.[instanceIdx];
     if (!instance || instance.mode !== "tap") return null;
 
-    const targets = getTapActivateTargets(gameState, instance.id);
+    const targets = getTapActivateTargets(gameState, instance.id, sourceInstanceId);
     if (targets && targets.length > 0) {
       set({
         selectedCardInstanceId: null,

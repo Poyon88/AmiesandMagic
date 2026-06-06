@@ -46,7 +46,11 @@ export type Keyword =
   // Polymorphic — draw X cards
   | "inspiration"
   // Polymorphic — replace each spell in hand with a random higher-cost spell, discounted
-  | "concentration";
+  | "concentration"
+  // Polymorphic — bounce a unit to its true owner's hand (4 trigger modes)
+  | "remontee"
+  // Polymorphic — +X/+Y to all controller's creatures of a selected race/clan
+  | "renforcement_multiple";
 
 export type SpellTargetType =
   | "any"
@@ -108,13 +112,15 @@ export type SpellKeywordId =
   | "rassemblement"
   | "concentration"
   | "selection_magique"
-  | "poison";
+  | "poison"
+  | "remontee"
+  | "renforcement_multiple";
 
 /** Trigger mode for a creature keyword. Undefined = on-play (default,
  *  existing behaviour). "death" = on-death rattle. "tap" = activated by
  *  tapping the creature (MTG-strict semantics). Only a curated subset of
  *  keywords accept non-play modes — see plan. */
-export type KeywordMode = "death" | "tap";
+export type KeywordMode = "death" | "tap" | "return";
 
 /** Per-instance metadata for a creature keyword. Lives in
  *  `Card.keywordInstances` alongside the string `keywords` array so each
@@ -124,6 +130,13 @@ export interface KeywordInstance {
   id: Keyword;
   mode?: KeywordMode; // undefined ⇒ on-play
   x?: number;
+  /** Renforcement multiple : bonus de PV (+Y). `x` porte le bonus d'ATK (+X). */
+  y?: number;
+  /** Renforcement multiple : race ciblée (les créatures du contrôleur de cette
+   *  race gagnent +X/+Y). `clan` prime sur `race` quand il est défini. */
+  race?: string;
+  /** Renforcement multiple : clan ciblé (prioritaire sur `race`). */
+  clan?: string;
   /** Spell-only. When a creature keyword is carried by a SPELL, the spell
    *  CONFERS it to creature(s) on cast. `grantScope` chooses the recipients:
    *  "target" (default) = a single chosen allied creature; "all_allies" =
@@ -134,9 +147,10 @@ export interface KeywordInstance {
 export interface SpellKeywordInstance {
   id: SpellKeywordId;
   amount?: number;   // X value for impact, deferlement, siphon, guerison, inspiration, afflux
-  attack?: number;   // for renforcement, invocation
-  health?: number;   // for renforcement, invocation
-  race?: string;     // for invocation (legacy — token race, fallback when token_id absent)
+  attack?: number;   // for renforcement, renforcement_multiple, invocation
+  health?: number;   // for renforcement, renforcement_multiple, invocation
+  race?: string;     // for invocation (token race) and renforcement_multiple (race ciblée)
+  clan?: string;     // for renforcement_multiple (clan ciblé, prioritaire sur race)
   token_id?: number | null; // for invocation — id from token_templates (preferred over race)
 }
 
@@ -412,6 +426,11 @@ export interface CardInstance {
   cycleEternelAutoPlay: boolean;
   // Owner tracking (for Corruption end-of-turn return)
   originalOwnerId: string | null;
+  // Vrai propriétaire d'origine, persistant à travers un changement de camp
+  // PERMANENT (Domination / vol). null = la créature est chez son propriétaire.
+  // Utilisé par Remontée pour renvoyer une unité dans la main de son
+  // propriétaire initial, pas du contrôleur actuel.
+  trueOwnerId: string | null;
   // Lycanthropie: has already transformed
   hasTransformedLycanthropie: boolean;
   // Mots-clés accordés runtime par un pouvoir héroïque (mode grant_keyword)
@@ -528,6 +547,10 @@ export interface GameState {
   winner: string | null;
   lastAction: GameAction | null;
   mulliganReady: [boolean, boolean];
+  // File de déclencheurs interactifs en attente (ex. Remontée mort/retour au
+  // tour du contrôleur). Tant qu'elle est non vide, le jeu attend que le
+  // contrôleur de pendingTriggers[0] choisisse une cible (resolve_pending_trigger).
+  pendingTriggers?: PendingTrigger[];
   tokenTemplates?: TokenTemplate[];
   factionCardPool?: Card[];  // cards from deck factions + Mercenaires for Sélection X
   // Global pool of all spell cards (every faction, every set). Loaded once
@@ -611,7 +634,26 @@ export interface ConcedeAction {
   playerId: string;
 }
 
-export type GameAction = PlayCardAction | AttackAction | EndTurnAction | MulliganAction | HeroPowerAction | TapActivateAction | ConcedeAction;
+/** Résout un déclencheur interactif en attente (file `GameState.pendingTriggers`)
+ *  dont le contrôleur doit choisir la cible — ex. Remontée à la mort / au retour
+ *  pendant son propre tour. Dispatchée par le contrôleur (joueur actif). */
+export interface ResolvePendingTriggerAction {
+  type: "resolve_pending_trigger";
+  triggerId: string;
+  targetInstanceId: string;
+}
+
+export type GameAction = PlayCardAction | AttackAction | EndTurnAction | MulliganAction | HeroPowerAction | TapActivateAction | ConcedeAction | ResolvePendingTriggerAction;
+
+/** Déclencheur interactif en attente : le contrôleur doit choisir une cible
+ *  avant que le jeu ne continue. Porté par l'état pour rester déterministe et
+ *  rejouable côté réseau. */
+export interface PendingTrigger {
+  id: string;                       // déterministe (= sourceInstanceId)
+  kw: Keyword;                      // ex. "remontee"
+  controllerId: string;            // joueur qui choisit (toujours le joueur actif ici)
+  sourceInstanceId: string | null; // source (exclusion de cible)
+}
 
 // Combat event for animations
 export type CombatEventType = "damage" | "heal" | "buff" | "shield" | "poison" | "dodge" | "paralyze" | "resurrect" | "transform";

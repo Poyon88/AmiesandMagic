@@ -47,7 +47,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${cinzel.variable} ${crimsonText.variable}`}>
+    <html
+      lang="en"
+      className={`${cinzel.variable} ${crimsonText.variable}`}
+      // Certaines extensions / outils de navigateur (ex. sur iPad Safari)
+      // injectent un attribut sur <html> avant l'hydratation (ex.
+      // `__gcrremoteframetoken`), provoquant un mismatch SSR bruyant. On le
+      // supprime ici comme sur <body> ; n'affecte que cet élément.
+      suppressHydrationWarning
+    >
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         // Browser extensions (Grammarly, ColorZilla…) inject attributes

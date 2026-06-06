@@ -236,7 +236,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   canalisation: {
     id: "canalisation", label: "Canalisation", symbol: "🔮",
-    desc: "Tant que cette unité est en jeu, vos sorts coûtent 1 mana de moins.",
+    desc: "Tant que cette unité est en jeu, vos sorts coûtent 1 mana de moins (minimum 1).",
     applicable_to: ["creature"],
     creature: { cost: 13, costPerX: 0, se: 3.0, minTier: 2, scalable: false, zone: "Terrain" },
   },
@@ -693,6 +693,32 @@ export const ABILITIES: Record<string, AbilityDef> = {
     spell: {
       desc: "Piochez X cartes",
       params: ["amount"], needsTarget: false,
+    },
+  },
+  remontee: {
+    id: "remontee", label: "Remontée", symbol: "🔼",
+    desc: "Renvoie une unité ciblée dans la main de son propriétaire d'origine.",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      cost: 14, costPerX: 0, se: 4.0, minTier: 3, scalable: false, zone: "Terrain",
+      desc: "Cible une unité (selon le déclenchement) : elle remonte dans la main de son propriétaire d'origine.",
+    },
+    spell: {
+      desc: "Renvoie une unité ciblée dans la main de son propriétaire d'origine.",
+      params: [], needsTarget: true, targetType: "any_creature",
+    },
+  },
+  renforcement_multiple: {
+    id: "renforcement_multiple", label: "Renforcement multiple", symbol: "⏫",
+    desc: "Octroie +X/+Y à toutes vos créatures de la race ou du clan sélectionné.",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      cost: 16, costPerX: 6, se: 4.5, minTier: 3, scalable: true, zone: "Terrain",
+      desc: "Selon le déclenchement : octroie +X/+Y à toutes vos créatures de la race/clan choisi.",
+    },
+    spell: {
+      desc: "Octroie +X/+Y à toutes vos créatures de la race ou du clan sélectionné.",
+      params: ["attack", "health"], needsTarget: false,
     },
   },
   concentration: {
