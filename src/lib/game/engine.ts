@@ -26,7 +26,7 @@ import type {
   TokenTemplate,
 } from "./types";
 import { SPELL_KEYWORDS } from "./spell-keywords";
-import { getEntraideReduction, getTokenManaCost } from "./abilities";
+import { getEntraideReduction, getTokenManaCost, isCreatureKwShadowedBySpell } from "./abilities";
 import { parseXValuesFromEffectText } from "./keyword-labels";
 import {
   HERO_MAX_HP,
@@ -1563,6 +1563,10 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
           ? findCreatureOnBoard(player, grantTargetId)
           : null;
       for (const kw of card.keywords) {
+        // Ne pas conférer un mot-clé "ombre" déjà réalisé par un spell_keyword
+        // (ex. convocations_multiples ↔ invocation_multiple) : son effet est le
+        // sort lui-même, pas un don à un allié.
+        if (isCreatureKwShadowedBySpell(kw, card.spell_keywords)) continue;
         const inst = card.keyword_instances?.find((k) => k.id === kw);
         const scope = inst?.grantScope ?? "target";
         const params = inst?.x != null ? { amount: inst.x } : undefined;
@@ -2519,6 +2523,10 @@ export function getSpellTargetSlots(card: Card): SpellTargetSlot[] {
   // on the spell (all target-scope grants land on the same chosen ally).
   if (card.card_type === "spell" && card.keywords?.length) {
     const needsGrantTarget = card.keywords.some((kw) => {
+      // Un mot-clé "ombre" (ex. convocations_multiples) dont la version sort
+      // est présente dans spell_keywords (invocation_multiple) n'est PAS conféré
+      // à un allié — son effet passe par le sort. Il ne réclame donc pas de cible.
+      if (isCreatureKwShadowedBySpell(kw, card.spell_keywords)) return false;
       const inst = card.keyword_instances?.find((k) => k.id === kw);
       return (inst?.grantScope ?? "target") === "target";
     });
