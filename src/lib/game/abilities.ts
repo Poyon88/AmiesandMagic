@@ -576,40 +576,40 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   selection: {
     id: "selection", label: "Sélection X", symbol: "🎴",
-    desc: "Choisissez une carte parmi 3 communes aléatoires de coût ≤ X (sans limite de coût si X non défini) à ajouter en main.",
+    desc: "Choisissez une carte parmi 3 communes aléatoires de coût ≤ X (sans limite de coût si X non défini), issues des factions du même alignement (bon/neutre/maléfique) que cette carte, à ajouter en main.",
     applicable_to: ["creature", "spell"],
     creature: {
       cost: 9, costPerX: 4, se: 2.5, minTier: 2, scalable: true, zone: "Mixte",
-      desc: "Invocation : révèle 3 cartes communes aléatoires de votre collection (factions du deck) de coût ≤ X ; ajoutez-en une à votre main. Sans limite de coût si X non défini.",
+      desc: "Invocation : révèle 3 cartes communes aléatoires de coût ≤ X parmi les factions du même alignement (bon/neutre/maléfique) que cette carte ; ajoutez-en une à votre main. Sans limite de coût si X non défini.",
     },
     spell: {
-      desc: "Choisissez une carte parmi 3 communes aléatoires de votre collection de coût ≤ X (sans limite si X non défini) à ajouter en main",
+      desc: "Choisissez une carte parmi 3 communes aléatoires de coût ≤ X (sans limite si X non défini), issues des factions du même alignement que ce sort, à ajouter en main",
       params: ["amount"], needsTarget: false,
     },
   },
   selection_magique: {
     id: "selection_magique", label: "Sélection magique X", symbol: "🪄",
-    desc: "Choisissez un sort parmi 3 sorts aléatoires (toutes factions) de coût ≤ X (sans limite si X non défini) à ajouter en main.",
+    desc: "Choisissez un sort parmi 3 sorts communs aléatoires de coût ≤ X (sans limite si X non défini), issus des factions du même alignement (bon/neutre/maléfique) que cette carte, à ajouter en main.",
     applicable_to: ["creature", "spell"],
     creature: {
       cost: 11, costPerX: 4, se: 3.0, minTier: 2, scalable: true, zone: "Mixte",
-      desc: "Invocation : révèle 3 sorts aléatoires (toutes factions) de coût ≤ X ; ajoutez-en un à votre main. Sans limite de coût si X non défini.",
+      desc: "Invocation : révèle 3 sorts communs aléatoires de coût ≤ X parmi les factions du même alignement (bon/neutre/maléfique) que cette carte ; ajoutez-en un à votre main. Sans limite de coût si X non défini.",
     },
     spell: {
-      desc: "Choisissez un sort parmi 3 sorts aléatoires (toutes factions) de coût ≤ X (sans limite si X non défini) à ajouter en main",
+      desc: "Choisissez un sort parmi 3 sorts communs aléatoires de coût ≤ X (sans limite si X non défini), issus des factions du même alignement que ce sort, à ajouter en main",
       params: ["amount"], needsTarget: false,
     },
   },
   renfort_royal: {
     id: "renfort_royal", label: "Sélection Royale X", symbol: "👑",
-    desc: "Choisissez une carte parmi 3 éditions limitées que vous possédez (≥30 requises ; sinon parmi des communes), de coût ≤ X (sans limite si X non défini).",
+    desc: "Choisissez une carte parmi 3 éditions limitées que vous possédez (≥30 requises ; sinon parmi des communes du même alignement), de coût ≤ X (sans limite si X non défini).",
     applicable_to: ["creature", "spell"],
     creature: {
       cost: 14, costPerX: 5, se: 3.5, minTier: 3, scalable: true, zone: "Mixte",
-      desc: "Invocation : révèle 3 cartes aléatoires parmi vos éditions limitées (≥30 requises ; sinon parmi des communes) de coût ≤ X ; ajoutez-en une à votre main. Sans limite de coût si X non défini.",
+      desc: "Invocation : révèle 3 cartes aléatoires parmi vos éditions limitées (≥30 requises ; sinon parmi des communes du même alignement) de coût ≤ X ; ajoutez-en une à votre main. Sans limite de coût si X non défini.",
     },
     spell: {
-      desc: "Choisissez une carte parmi 3 cartes aléatoires de vos éditions limitées (≥30 requises ; sinon parmi des communes) de coût ≤ X (sans limite si X non défini) à ajouter en main",
+      desc: "Choisissez une carte parmi 3 cartes aléatoires de vos éditions limitées (≥30 requises ; sinon parmi des communes du même alignement) de coût ≤ X (sans limite si X non défini) à ajouter en main",
       params: ["amount"], needsTarget: false,
     },
   },

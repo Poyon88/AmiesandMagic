@@ -3,11 +3,11 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import type { Card, Keyword, CardSet, GameFormat, FormatSet } from "@/lib/game/types";
-import { getFormatFilter } from "@/lib/game/format-legality";
+import type { Card, Keyword, CardSet, GameFormat, DeckMode, DeckExtent } from "@/lib/game/types";
+import { getFormatFilter, parseFormatCode } from "@/lib/game/format-legality";
 import { isCardOwned } from "@/lib/game/collection";
 import { DECK_SIZE } from "@/lib/game/constants";
-import { FACTIONS, ALIGNMENTS, getFactionDisplayName } from "@/lib/card-engine/constants";
+import { FACTIONS, ALIGNMENTS, getFactionDisplayName, getFactionForRace } from "@/lib/card-engine/constants";
 import type { Alignment } from "@/lib/card-engine/constants";
 import GameCard from "@/components/cards/GameCard";
 
@@ -15,16 +15,25 @@ interface HeroRow {
   id: number;
   name: string;
   race: string;
+  faction: string | null;
   power_name: string;
   power_type: string;
   power_cost: number;
   power_effect: unknown;
   power_description: string;
+  thumbnail_url: string | null;
+  power_image_url: string | null;
 }
 
 interface DeckEntry {
   card: Card;
   quantity: number;
+}
+
+// Faction d'un héros : champ explicite, avec repli sur la race (français) si besoin.
+// Les héros ont tous une faction en base, ce repli n'est qu'une sécurité.
+function heroFactionOf(h: HeroRow): string | null {
+  return h.faction ?? getFactionForRace(h.race);
 }
 
 interface BoardRow {
@@ -34,6 +43,7 @@ interface BoardRow {
   rarity: string | null;
   max_prints: number | null;
   is_default: boolean;
+  faction: string | null;
 }
 
 interface OwnedBoardPrint {
@@ -50,6 +60,7 @@ interface CardBackRow {
   rarity: string | null;
   max_prints: number | null;
   is_default: boolean;
+  faction: string | null;
 }
 
 interface OwnedCardBackPrint {
@@ -67,7 +78,6 @@ interface DeckBuilderProps {
   existingDeckCards: { card_id: number; quantity: number }[];
   sets: CardSet[];
   formats: GameFormat[];
-  formatSets: FormatSet[];
   collectedCardIds: number[];
   isTester: boolean;
   boards: BoardRow[];
@@ -99,7 +109,6 @@ export default function DeckBuilder({
   existingDeckCards,
   sets,
   formats,
-  formatSets,
   collectedCardIds,
   isTester,
   boards,
@@ -126,6 +135,23 @@ export default function DeckBuilder({
   const [selectedFormatId, setSelectedFormatId] = useState<number | null>(
     existingDeck?.format_id ?? null
   );
+
+  // Faction du deck (déclarée tôt : pilote héros/plateaux/dos/cartes).
+  // Liste des factions sélectionnables (hors Mercenaires, complément cross-faction).
+  const FACTION_OPTIONS = useMemo(() => Object.keys(FACTIONS).filter((f) => f !== "Mercenaires"), []);
+  // Dérivée à l'édition de l'héros existant, sinon de la 1ʳᵉ carte non-Mercenaires.
+  const [selectedFaction, setSelectedFaction] = useState<string | null>(() => {
+    if (existingDeck?.hero_id != null) {
+      const h = heroes.find((x) => x.id === existingDeck.hero_id);
+      if (h) return heroFactionOf(h);
+    }
+    for (const dc of existingDeckCards) {
+      const c = cards.find((x) => x.id === dc.card_id);
+      if (c?.faction && c.faction !== "Mercenaires") return c.faction;
+    }
+    return null;
+  });
+
   const defaultBoardId = useMemo(() => boards.find((b) => b.is_default)?.id ?? null, [boards]);
   const [selectedBoardId, setSelectedBoardId] = useState<number | null>(
     existingDeck?.board_id ?? defaultBoardId
@@ -133,8 +159,10 @@ export default function DeckBuilder({
   const [boardPickerOpen, setBoardPickerOpen] = useState(false);
   const ownedBoardIds = useMemo(() => new Set(ownedBoardPrints.map((p) => p.board_id)), [ownedBoardPrints]);
   const accessibleBoards = useMemo(
-    () => boards.filter((b) => (b.rarity ?? "Commune") === "Commune" || ownedBoardIds.has(b.id)),
-    [boards, ownedBoardIds],
+    () => boards.filter((b) =>
+      selectedFaction != null && b.faction === selectedFaction &&
+      ((b.rarity ?? "Commune") === "Commune" || ownedBoardIds.has(b.id))),
+    [boards, ownedBoardIds, selectedFaction],
   );
   const selectedBoard = useMemo(() => boards.find((b) => b.id === selectedBoardId) ?? null, [boards, selectedBoardId]);
 
@@ -145,31 +173,64 @@ export default function DeckBuilder({
   const [cardBackPickerOpen, setCardBackPickerOpen] = useState(false);
   const ownedCardBackIds = useMemo(() => new Set(ownedCardBackPrints.map((p) => p.card_back_id)), [ownedCardBackPrints]);
   const accessibleCardBacks = useMemo(
-    () => cardBacks.filter((cb) => (cb.rarity ?? "Commune") === "Commune" || ownedCardBackIds.has(cb.id)),
-    [cardBacks, ownedCardBackIds],
+    () => cardBacks.filter((cb) =>
+      selectedFaction != null && cb.faction === selectedFaction &&
+      ((cb.rarity ?? "Commune") === "Commune" || ownedCardBackIds.has(cb.id))),
+    [cardBacks, ownedCardBackIds, selectedFaction],
   );
   const selectedCardBack = useMemo(() => cardBacks.find((cb) => cb.id === selectedCardBackId) ?? null, [cardBacks, selectedCardBackId]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+
+  // ── Onglets ──
+  const [tab, setTab] = useState<1 | 2 | 3>(1);
+
+  // Popover « pouvoir du héros » ouvert au clic droit sur une vignette de héros.
+  const [powerPopup, setPowerPopup] = useState<{ hero: HeroRow; x: number; y: number } | null>(null);
+
+  // Changer de faction vide les cartes/héros/plateau/dos incompatibles.
+  function changeFaction(faction: string | null) {
+    setSelectedFaction(faction);
+    if (!faction) return;
+    setDeckCards((prev) => {
+      const next = new Map<number, DeckEntry>();
+      prev.forEach((entry, id) => {
+        const f = entry.card.faction;
+        if (!f || f === faction || f === "Mercenaires") next.set(id, entry);
+      });
+      return next;
+    });
+    setSelectedHeroId((id) => {
+      const h = heroes.find((x) => x.id === id);
+      return h && heroFactionOf(h) === faction ? id : null;
+    });
+    setSelectedBoardId((id) => {
+      const b = boards.find((x) => x.id === id);
+      return b && b.faction === faction ? id : null;
+    });
+    setSelectedCardBackId((id) => {
+      const cb = cardBacks.find((x) => x.id === id);
+      return cb && cb.faction === faction ? id : null;
+    });
+  }
+
+  // Héros de la faction choisie (filtrage strict).
+  const factionHeroes = useMemo(
+    () => heroes.filter((h) => selectedFaction != null && heroFactionOf(h) === selectedFaction),
+    [heroes, selectedFaction],
+  );
 
   // Filters
   const [search, setSearch] = useState("");
   const [manaCostFilter, setManaCostFilter] = useState<number | null>(null);
   const [typeFilter, setTypeFilter] = useState<"creature" | "spell" | null>(null);
   const [keywordFilter, setKeywordFilter] = useState<Keyword | null>(null);
-  const [factionFilter, setFactionFilter] = useState<string | null>(null);
   const [rarityFilter, setRarityFilter] = useState<string | null>(null);
   const [expertOnly, setExpertOnly] = useState(false);
   const [raceFilter, setRaceFilter] = useState<string | null>(null);
   const [clanFilter, setClanFilter] = useState<string | null>(null);
   const [filterSet, setFilterSet] = useState("");
   const [filterYear, setFilterYear] = useState("");
-
-  const factions = useMemo(() => {
-    const set = new Set<string>();
-    cards.forEach(c => { if (c.faction) set.add(c.faction); });
-    return Array.from(set).sort();
-  }, [cards]);
 
   const races = useMemo(() => {
     const set = new Set<string>();
@@ -200,8 +261,8 @@ export default function DeckBuilder({
 
   const formatPredicate = useMemo(() => {
     if (!selectedFormat) return null;
-    return getFormatFilter(selectedFormat, sets, formatSets);
-  }, [selectedFormat, sets, formatSets]);
+    return getFormatFilter(selectedFormat);
+  }, [selectedFormat]);
 
   const filteredCards = useMemo(() => {
     return cards.filter((card) => {
@@ -220,8 +281,11 @@ export default function DeckBuilder({
           && card.spell_keywords.some((sk) => sk?.id === keywordFilter);
         if (!inKeywords && !inSpellKeywords) return false;
       }
-      if (factionFilter !== null && card.faction !== factionFilter)
-        return false;
+      // Pool verrouillé sur la faction choisie + Mercenaires.
+      if (selectedFaction) {
+        const f = card.faction;
+        if (f && f !== selectedFaction && f !== "Mercenaires") return false;
+      }
       if (rarityFilter !== null && card.rarity !== rarityFilter)
         return false;
       if (expertOnly && (card.rarity ?? "Commune") === "Commune")
@@ -236,7 +300,7 @@ export default function DeckBuilder({
         return false;
       return true;
     });
-  }, [cards, formatPredicate, search, manaCostFilter, typeFilter, keywordFilter, factionFilter, rarityFilter, expertOnly, raceFilter, clanFilter, filterSet, filterYear]);
+  }, [cards, formatPredicate, search, manaCostFilter, typeFilter, keywordFilter, selectedFaction, rarityFilter, expertOnly, raceFilter, clanFilter, filterSet, filterYear]);
 
   const sortedDeckEntries = useMemo(() => {
     return Array.from(deckCards.values()).sort(
@@ -259,9 +323,21 @@ export default function DeckBuilder({
 
   // ── Slot system ──
   const RARITY_HIERARCHY = ["Légendaire", "Épique", "Rare", "Peu Commune", "Commune"] as const;
-  const SLOT_COUNTS: Record<string, number> = { "Légendaire": 2, "Épique": 4, "Rare": 6, "Peu Commune": 8, "Commune": 30 };
+  // Axes du format sélectionné (vides tant qu'aucun format n'est choisi).
+  const formatMode: DeckMode | "" = selectedFormat ? parseFormatCode(selectedFormat.code).mode : "";
+  const formatExtent: DeckExtent | "" = selectedFormat ? parseFormatCode(selectedFormat.code).extent : "";
+  // Défaut Expert : tous les slots restent visibles tant qu'aucun format n'est choisi.
+  const deckMode: DeckMode = formatMode || "expert";
+  // En Classique, seules les Communes sont autorisées : 50 slots Commune, 0 ailleurs.
+  // En Expert, le système de slots par rareté plafonne les cartes non-communes (2/4/6/8 = 20 max).
+  const SLOT_COUNTS: Record<string, number> = useMemo(
+    () =>
+      deckMode === "classique"
+        ? { "Légendaire": 0, "Épique": 0, "Rare": 0, "Peu Commune": 0, "Commune": 50 }
+        : { "Légendaire": 2, "Épique": 4, "Rare": 6, "Peu Commune": 8, "Commune": 30 },
+    [deckMode],
+  );
   const MAX_MERCENAIRES = 4;
-  const MAX_CLANS = 2;
   const RARITY_COLORS: Record<string, string> = { "Légendaire": "#ffd54f", "Épique": "#ce93d8", "Rare": "#4fc3f7", "Peu Commune": "#4caf50", "Commune": "#aaaaaa" };
   const RARITY_EMOJI: Record<string, string> = { "Légendaire": "🟡", "Épique": "🟣", "Rare": "🔵", "Peu Commune": "🟢", "Commune": "⚪" };
 
@@ -381,8 +457,7 @@ export default function DeckBuilder({
     // Faction limit : une seule faction (hors Mercenaires)
     if (card.faction && card.faction !== "Mercenaires" && !deckStats.factions.has(card.faction) && deckStats.factions.size >= 1) return "1 seule faction autorisée";
 
-    // Clan limit : 2 clans distincts max (cartes sans clan toujours autorisées)
-    if (card.clan && card.faction !== "Mercenaires" && !deckStats.clans.has(card.clan) && deckStats.clans.size >= MAX_CLANS) return `Max ${MAX_CLANS} clans`;
+    // Pas de limite de clans : tous les clans de la faction sont autorisés.
 
     // Mercenaires limit
     if (card.faction === "Mercenaires" && deckStats.mercenairesCount >= deckStats.maxMercenaires) return `Max ${deckStats.maxMercenaires} Mercenaires`;
@@ -425,9 +500,36 @@ export default function DeckBuilder({
     setDeckCards(newMap);
   }
 
+  // Nombre max de copies : 3 pour les Communes, 1 pour les autres raretés.
+  function maxCopiesOf(card: Card): number {
+    return card.rarity && card.rarity !== "Commune" ? 1 : 3;
+  }
+
+  // Clic sur la grille des cartes : si la carte est déjà au max de copies,
+  // on retire un exemplaire ; sinon on en ajoute un.
+  function onGridCardClick(card: Card) {
+    const existing = deckCards.get(card.id);
+    if (existing && existing.quantity >= maxCopiesOf(card)) {
+      removeCard(card.id);
+    } else {
+      addCard(card);
+    }
+  }
+
+  // Résout la paire (mode, étendue) vers le format_id correspondant.
+  function resolveFormat(mode: DeckMode, extent: DeckExtent) {
+    const code = `${mode}-${extent}`;
+    const f = formats.find((ff) => ff.code === code);
+    setSelectedFormatId(f ? f.id : null);
+  }
+
   async function saveDeck() {
     if (!deckName.trim()) {
       setError("Please enter a deck name");
+      return;
+    }
+    if (!selectedFaction) {
+      setError("Veuillez choisir une faction (onglet Préparation)");
       return;
     }
     if (!selectedFormatId) {
@@ -445,6 +547,20 @@ export default function DeckBuilder({
     if (deckStats.violations.length > 0) {
       setError(deckStats.violations.join(", "));
       return;
+    }
+
+    // Légalité de format : toutes les cartes doivent respecter le mode (rareté)
+    // et l'étendue (rotation) du format choisi. Couvre le cas d'un deck monté en
+    // Expert puis basculé en Classique, ou d'une carte sortie de rotation.
+    if (selectedFormat) {
+      const legal = getFormatFilter(selectedFormat);
+      const illegal = Array.from(deckCards.values())
+        .filter(({ card }) => !legal(card))
+        .map(({ card }) => card.name);
+      if (illegal.length > 0) {
+        setError(`Cartes non autorisées dans ce format : ${illegal.join(", ")}`);
+        return;
+      }
     }
 
     // Verify ownership of collectible cards
@@ -507,19 +623,42 @@ export default function DeckBuilder({
   }
 
   return (
-    <div className="bg-background flex flex-col md:flex-row md:h-screen md:overflow-hidden">
-      {/* Left: Card Collection */}
-      <div className="flex-1 overflow-y-auto p-4 min-h-0">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-foreground">Card Collection</h2>
-          <button
-            onClick={() => router.push("/decks")}
-            className="px-3 py-1.5 bg-secondary border border-card-border rounded-lg text-sm text-foreground/60 hover:text-foreground transition-colors"
-          >
-            Cancel
-          </button>
+    <div className="bg-background flex flex-col md:h-screen md:overflow-hidden">
+      {/* Barre d'onglets */}
+      <div className="flex items-center justify-between gap-3 px-4 py-2.5 border-b border-card-border flex-shrink-0">
+        <div className="flex items-center gap-1.5">
+          {([[1, "1 · Préparation"], [2, "2 · Apparence"], [3, "3 · Cartes"]] as const).map(([n, label]) => (
+            <button
+              key={n}
+              onClick={() => setTab(n)}
+              className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-colors ${
+                tab === n ? "bg-primary text-background" : "bg-secondary border border-card-border text-foreground/60 hover:text-foreground"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
+        <button
+          onClick={() => router.push("/decks")}
+          className="px-3 py-1.5 bg-secondary border border-card-border rounded-lg text-sm text-foreground/60 hover:text-foreground transition-colors"
+        >
+          Annuler
+        </button>
+      </div>
 
+      {/* Corps : la colonne gauche (collection) n'apparaît qu'en onglet Cartes */}
+      <div className="flex flex-col md:flex-row md:flex-1 md:min-h-0 md:overflow-hidden">
+
+      {/* ===== Onglet 3 — colonne gauche : collection ===== */}
+      {tab === 3 && (
+      <div className="flex-1 overflow-y-auto p-4 min-h-0">
+        {!selectedFaction ? (
+          <div className="p-10 text-center text-foreground/50 text-sm">
+            Choisissez d&apos;abord une faction dans l&apos;onglet 1 · Préparation.
+          </div>
+        ) : (
+        <>
         {/* Filters */}
         <div className="flex flex-wrap gap-2 mb-4">
           <input
@@ -584,16 +723,6 @@ export default function DeckBuilder({
               <option key={kw} value={kw}>
                 {KEYWORD_LABELS[kw]}
               </option>
-            ))}
-          </select>
-          <select
-            value={factionFilter ?? ""}
-            onChange={(e) => setFactionFilter(e.target.value || null)}
-            className="px-2 py-1 bg-secondary border border-card-border rounded text-xs text-foreground/70 focus:outline-none"
-          >
-            <option value="">Factions</option>
-            {factions.map((f) => (
-              <option key={f} value={f}>{getFactionDisplayName(f)}</option>
             ))}
           </select>
           <select
@@ -668,68 +797,136 @@ export default function DeckBuilder({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filteredCards.map((card) => {
             const inDeck = deckCards.get(card.id);
+            const atMax = !!inDeck && inDeck.quantity >= maxCopiesOf(card);
+            // Au max de copies : on garde la carte cliquable pour en retirer un
+            // exemplaire. Sinon, désactivée si elle ne peut pas être ajoutée.
+            const disabled = !atMax && !!canAddCard(card);
             return (
               <GameCard
                 key={card.id}
                 card={card}
                 size="md"
-                onClick={() => addCard(card)}
-                disabled={!!canAddCard(card)}
+                onClick={() => onGridCardClick(card)}
+                disabled={disabled}
+                dimmed={atMax}
                 count={inDeck?.quantity}
               />
             );
           })}
         </div>
+        </>
+        )}
       </div>
+      )}
 
-      {/* Right: Current Deck (fixed on desktop, stacked under collection on mobile) */}
-      <div className="bg-secondary border-t md:border-t-0 md:border-l border-card-border flex flex-col md:flex-shrink-0 md:overflow-hidden md:w-[320px] md:max-w-[320px]">
+      {/* Colonne de droite : configuration / deck (toujours présente) */}
+      <div className={`bg-secondary border-t md:border-t-0 md:border-l border-card-border flex flex-col md:flex-shrink-0 md:overflow-hidden ${tab === 3 ? "md:w-[320px] md:max-w-[320px]" : "md:flex-1"}`}>
         {/* Configuration sections (héros / plateau / dos / nom / format / stats) — scrollent indépendamment, plafonnées pour libérer la place à la liste des cartes en dessous. */}
         <div style={{ flexShrink: 0, overflowY: "auto", maxHeight: "55vh" }}>
+
+        {/* ===== Onglet 1 — Préparation : nom, faction, format ===== */}
+        {tab === 1 && (
+        <div className="p-4 space-y-4">
+          <div>
+            <label className="block text-sm font-bold text-foreground mb-1.5">Nom du deck</label>
+            <input
+              type="text"
+              value={deckName}
+              onChange={(e) => setDeckName(e.target.value)}
+              placeholder="Nom du deck..."
+              className="w-full px-3 py-2 bg-background border border-card-border rounded-lg text-foreground focus:outline-none focus:border-primary"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-foreground mb-1.5">Faction</label>
+            <select
+              value={selectedFaction ?? ""}
+              onChange={(e) => changeFaction(e.target.value || null)}
+              className="w-full px-3 py-2 bg-background border border-card-border rounded-lg text-foreground text-sm focus:outline-none focus:border-primary"
+            >
+              <option value="">Choisir une faction...</option>
+              {FACTION_OPTIONS.map((f) => (
+                <option key={f} value={f}>{getFactionDisplayName(f)} — {f}</option>
+              ))}
+            </select>
+            <p className="mt-1 text-[11px] text-foreground/50">Mono-faction + Mercenaires. Changer de faction retire les cartes/héros incompatibles.</p>
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-foreground mb-1.5">Format</label>
+            <div className="flex gap-2">
+              <select
+                value={formatMode}
+                onChange={(e) => {
+                  const m = e.target.value as DeckMode | "";
+                  if (!m) { setSelectedFormatId(null); return; }
+                  resolveFormat(m, formatExtent || "standard");
+                }}
+                className="flex-1 px-3 py-2 bg-background border border-card-border rounded-lg text-foreground/70 text-sm focus:outline-none focus:border-primary"
+              >
+                <option value="">Mode...</option>
+                <option value="classique">Classique</option>
+                <option value="expert">Expert</option>
+              </select>
+              <select
+                value={formatExtent}
+                onChange={(e) => {
+                  const x = e.target.value as DeckExtent | "";
+                  if (!x) { setSelectedFormatId(null); return; }
+                  resolveFormat(formatMode || "classique", x);
+                }}
+                className="flex-1 px-3 py-2 bg-background border border-card-border rounded-lg text-foreground/70 text-sm focus:outline-none focus:border-primary"
+              >
+                <option value="">Étendue...</option>
+                <option value="standard">Standard</option>
+                <option value="etendu">Étendu</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        )}
+
+        {/* ===== Onglet 2 — Apparence : héros, plateau, dos ===== */}
+        {tab === 2 && !selectedFaction && (
+          <div className="p-6 text-center text-foreground/50 text-sm">Choisissez d&apos;abord une faction (onglet 1 · Préparation).</div>
+        )}
+        {tab === 2 && selectedFaction && (<>
         {/* Hero selection */}
         <div className="p-4 border-b border-card-border">
-          <h3 className="text-sm font-bold text-foreground mb-2">Choose Your Hero</h3>
-          <div className="grid grid-cols-5 gap-1.5">
-            {heroes.map((hero) => (
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-bold text-foreground">Choisir un héros</h3>
+            <span className="text-[10px] text-foreground/40">Clic droit : voir le pouvoir</span>
+          </div>
+          {factionHeroes.length === 0 && (
+            <p className="text-[11px] text-foreground/40 py-2">Aucun héros pour cette faction.</p>
+          )}
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+            {factionHeroes.map((hero) => (
               <button
                 key={hero.id}
                 onClick={() => setSelectedHeroId(hero.id)}
-                className={`
-                  relative flex flex-col items-center p-1.5 rounded-lg border-2 transition-all text-center
-                  ${selectedHeroId === hero.id
-                    ? "border-primary bg-primary/20 shadow-[0_0_8px_rgba(59,130,246,0.3)]"
-                    : "border-card-border/50 bg-background hover:border-card-border hover:bg-card-border/20"
-                  }
-                `}
+                onContextMenu={(e) => { e.preventDefault(); setPowerPopup({ hero, x: e.clientX, y: e.clientY }); }}
+                title="Clic droit : voir le pouvoir"
+                className={`relative rounded-lg overflow-hidden border-2 transition-all text-left ${
+                  selectedHeroId === hero.id
+                    ? "border-primary shadow-[0_0_10px_rgba(200,168,78,0.4)]"
+                    : "border-card-border/50 hover:border-primary/40"
+                }`}
               >
-                <span className="text-lg">{RACE_ICONS[hero.race] ?? "\u2B50"}</span>
-                <span className="text-[9px] text-foreground/70 leading-tight mt-0.5 truncate w-full">
-                  {hero.name.split(" ").pop()}
-                </span>
+                <div
+                  className="w-full aspect-[3/4] bg-background flex items-center justify-center"
+                  style={hero.thumbnail_url ? { backgroundImage: `url('${hero.thumbnail_url}')`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}
+                >
+                  {!hero.thumbnail_url && <span className="text-3xl opacity-60">{RACE_ICONS[hero.race] ?? "\u2B50"}</span>}
+                </div>
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background via-background/70 to-transparent px-1.5 py-1">
+                  <div className="text-[10px] font-bold text-foreground truncate">{hero.name}</div>
+                </div>
+                {selectedHeroId === hero.id && (
+                  <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-primary text-background text-[10px] font-bold flex items-center justify-center">{"\u2713"}</div>
+                )}
               </button>
             ))}
           </div>
-          {selectedHeroId && (() => {
-            const hero = heroes.find((h) => h.id === selectedHeroId);
-            if (!hero) return null;
-            return (
-              <div className="mt-2 p-2 bg-background rounded-lg border border-card-border/50">
-                <div className="text-xs font-bold text-foreground">{hero.name}</div>
-                <div className="text-[10px] text-primary font-medium">{hero.power_name}</div>
-                <div className="text-[10px] text-foreground/60">{hero.power_description}</div>
-                {hero.power_type === "passive" && (
-                  <span className="inline-block mt-1 px-1.5 py-0.5 bg-purple-600/20 text-purple-400 text-[9px] font-bold rounded">
-                    PASSIVE
-                  </span>
-                )}
-                {hero.power_type === "active" && (
-                  <span className="inline-block mt-1 px-1.5 py-0.5 bg-mana-blue/20 text-mana-blue text-[9px] font-bold rounded">
-                    {hero.power_cost} MANA
-                  </span>
-                )}
-              </div>
-            );
-          })()}
         </div>
 
         {/* Board selection */}
@@ -806,52 +1003,15 @@ export default function DeckBuilder({
           )}
         </div>
 
-        {/* Deck header */}
-        <div className="p-4 border-b border-card-border">
-          <input
-            type="text"
-            value={deckName}
-            onChange={(e) => setDeckName(e.target.value)}
-            placeholder="Deck name..."
-            className="w-full px-3 py-2 bg-background border border-card-border rounded-lg text-foreground focus:outline-none focus:border-primary mb-3"
-          />
-          <select
-            value={selectedFormatId ?? ""}
-            onChange={(e) => setSelectedFormatId(e.target.value ? parseInt(e.target.value) : null)}
-            className="w-full px-3 py-2 bg-background border border-card-border rounded-lg text-foreground/70 text-sm focus:outline-none focus:border-primary mb-3"
-          >
-            <option value="">Choisir un format...</option>
-            {formats.map((f) => (
-              <option key={f.id} value={f.id}>{f.name}</option>
-            ))}
-          </select>
-          <div className="flex items-center justify-between">
-            <span
-              className={`font-bold text-lg ${
-                totalCards === DECK_SIZE ? "text-success" : "text-foreground"
-              }`}
-            >
-              {totalCards}/{DECK_SIZE}
-            </span>
-          </div>
-          {/* Progress bar */}
-          <div className="mt-2 h-1.5 bg-background rounded-full overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all ${
-                totalCards === DECK_SIZE ? "bg-success" : "bg-primary"
-              }`}
-              style={{ width: `${(totalCards / DECK_SIZE) * 100}%` }}
-            />
-          </div>
-        </div>
+        </>)}
 
-        {/* Deck restrictions info */}
+        {/* Deck restrictions info (toujours visible) */}
         <div className="px-4 py-2 border-b border-card-border/30">
           <div className="flex flex-wrap gap-1.5 text-[10px] items-center">
             <span className="px-1.5 py-0.5 rounded font-bold" style={{ background: "#4caf5022", color: "#4caf50" }}>
               Mono-faction
             </span>
-            <span className="text-foreground/40">Clans: {deckStats.clans.size}/{MAX_CLANS}</span>
+            <span className="text-foreground/40">Clans: {deckStats.clans.size}</span>
             {Array.from(deckStats.allFactions).map(f => {
               const fac = FACTIONS[f];
               const align = ALIGNMENTS.find(a => a.id === fac?.alignment);
@@ -869,9 +1029,9 @@ export default function DeckBuilder({
         </div>
         </div>
 
-        {/* Compteur deck — toujours visible (le bloc de config au-dessus
-            scrolle indépendamment, donc on duplique ici la jauge totale
-            pour qu'elle reste lisible quand on consulte les cartes). */}
+        {/* ===== Onglet 3 — colonne droite : compteur, courbe, slots ===== */}
+        {tab === 3 && (<>
+        {/* Compteur deck */}
         <div className="px-4 py-2 border-t border-card-border flex-shrink-0 bg-secondary">
           <div className="flex items-center justify-between">
             <span className="text-[10px] text-foreground/60 font-bold uppercase tracking-wider">Deck</span>
@@ -1000,25 +1160,69 @@ export default function DeckBuilder({
             );
           })}
         </div>
+        </>)}
 
-        {/* Save button */}
+        {/* Barre Sauvegarder (uniquement sur l'onglet Cartes) */}
+        {tab === 3 && (
         <div className="p-4 border-t border-card-border flex-shrink-0">
           {error && (
             <p className="text-accent text-xs mb-2">{error}</p>
           )}
-          <button
-            onClick={saveDeck}
-            disabled={saving}
-            className="w-full py-3 bg-primary hover:bg-primary-dark text-background font-bold rounded-lg transition-colors disabled:opacity-50"
-          >
-            {saving
-              ? "Saving..."
-              : existingDeck
-              ? "Save Changes"
-              : "Create Deck"}
-          </button>
+          <div className="flex items-center gap-3">
+            <span className={`font-bold text-sm whitespace-nowrap ${totalCards === DECK_SIZE ? "text-success" : "text-foreground/70"}`}>
+              {totalCards}/{DECK_SIZE}
+            </span>
+            <button
+              onClick={saveDeck}
+              disabled={saving}
+              className="flex-1 py-3 bg-primary hover:bg-primary-dark text-background font-bold rounded-lg transition-colors disabled:opacity-50"
+            >
+              {saving ? "Sauvegarde..." : existingDeck ? "Enregistrer" : "Créer le deck"}
+            </button>
+          </div>
         </div>
+        )}
       </div>
+      </div>
+
+      {/* Pop-over pouvoir du héros (clic droit) */}
+      {powerPopup && (
+        <div
+          className="fixed inset-0 z-[60]"
+          onClick={() => setPowerPopup(null)}
+          onContextMenu={(e) => { e.preventDefault(); setPowerPopup(null); }}
+        >
+          <div
+            className="absolute w-64 bg-secondary border border-card-border rounded-xl shadow-2xl overflow-hidden"
+            style={{
+              left: Math.max(8, Math.min(powerPopup.x, (typeof window !== "undefined" ? window.innerWidth : 1280) - 272)),
+              top: Math.max(8, Math.min(powerPopup.y, (typeof window !== "undefined" ? window.innerHeight : 720) - 260)),
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {powerPopup.hero.power_image_url && (
+              <div
+                className="w-full h-28"
+                style={{ backgroundImage: `url('${powerPopup.hero.power_image_url}')`, backgroundSize: "cover", backgroundPosition: "center" }}
+              />
+            )}
+            <div className="p-3">
+              <div className="text-sm font-bold text-foreground">{powerPopup.hero.name}</div>
+              <div className="text-xs text-primary font-medium mt-0.5">{powerPopup.hero.power_name}</div>
+              {powerPopup.hero.power_description && (
+                <div className="text-[11px] text-foreground/70 mt-1 leading-snug">{powerPopup.hero.power_description}</div>
+              )}
+              <div className="mt-2">
+                {powerPopup.hero.power_type === "passive" ? (
+                  <span className="px-1.5 py-0.5 bg-purple-600/20 text-purple-400 text-[9px] font-bold rounded">PASSIF</span>
+                ) : (
+                  <span className="px-1.5 py-0.5 bg-mana-blue/20 text-mana-blue text-[9px] font-bold rounded">{powerPopup.hero.power_cost} MANA</span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Board picker modal */}
       {boardPickerOpen && (

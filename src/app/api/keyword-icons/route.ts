@@ -67,7 +67,7 @@ export async function POST(request: Request) {
 
     const { error: uploadError } = await supabase.storage
       .from('card-images')
-      .upload(filePath, buffer, { upsert: true, contentType: file.type });
+      .upload(filePath, buffer, { upsert: true, contentType: file.type, cacheControl: '31536000' });
 
     if (uploadError) return NextResponse.json({ error: uploadError.message }, { status: 500 });
 

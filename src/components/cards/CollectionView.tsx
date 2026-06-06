@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import type { Card, Keyword, CardSet, GameFormat, FormatSet } from "@/lib/game/types";
+import type { Card, Keyword, CardSet, GameFormat } from "@/lib/game/types";
 import { getFormatFilter } from "@/lib/game/format-legality";
 import { isCardOwned } from "@/lib/game/collection";
 import { getFactionDisplayName } from "@/lib/card-engine/constants";
@@ -20,7 +20,6 @@ interface CollectionViewProps {
   cards: Card[];
   sets: CardSet[];
   formats: GameFormat[];
-  formatSets: FormatSet[];
   collectedCardIds: number[];
   isTester: boolean;
   ownedPrints?: OwnedPrint[];
@@ -38,7 +37,7 @@ const RARITY_COLORS: Record<string, string> = {
   "Légendaire": "#ffd54f",
 };
 
-export default function CollectionView({ cards, sets, formats, formatSets, collectedCardIds, isTester, ownedPrints = [] }: CollectionViewProps) {
+export default function CollectionView({ cards, sets, formats, collectedCardIds, isTester, ownedPrints = [] }: CollectionViewProps) {
   const ownedSet = useMemo(() => new Set(collectedCardIds), [collectedCardIds]);
   const router = useRouter();
   const [search, setSearch] = useState("");
@@ -84,8 +83,8 @@ export default function CollectionView({ cards, sets, formats, formatSets, colle
 
   const formatPredicate = useMemo(() => {
     if (!selectedFormat) return null;
-    return getFormatFilter(selectedFormat, sets, formatSets);
-  }, [selectedFormat, sets, formatSets]);
+    return getFormatFilter(selectedFormat);
+  }, [selectedFormat]);
 
   // Build a map of prints per card_id for normal players
   const printsByCard = useMemo(() => {

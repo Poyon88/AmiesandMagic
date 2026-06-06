@@ -40,6 +40,7 @@ export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<"death" | "tap">>
   "Pillage": new Set<"death" | "tap">(["death", "tap"]),
   "Douleur X": new Set<"death" | "tap">(["death", "tap"]),
   "Vampirisme X": new Set<"death" | "tap">(["death", "tap"]),
+  "Tempête X": new Set<"death" | "tap">(["death", "tap"]),
   "Prescience X": new Set<"death" | "tap">(["tap"]),
   "Suprématie": new Set<"death" | "tap">(["death"]),
   "Ombre du passé": new Set<"death" | "tap">(["death"]),
@@ -65,12 +66,16 @@ export interface FactionClan {
   appliesTo: string | "all"; // race name or "all" for transversal clans
 }
 
+// A faction can declare several clan groups, each targeting a different race
+// (or "all"). E.g. the Elfes have race-specific clans for Elfes, Fées and
+// Aigles Géants. Resolve with getClanNamesForRace / getAllClanNames below.
+
 export const FACTIONS: Record<string, {
   displayName: string;
   color: string; accent: string; emoji: string; bg: string;
   alignment: Alignment;
   races: string[];
-  clans?: FactionClan;
+  clans?: FactionClan[];
   statWeights: { atk: number; def: number };
   guaranteedKeywords: string[];
   likelyKeywords: Record<string, number>;
@@ -78,12 +83,22 @@ export const FACTIONS: Record<string, {
   description: string;
   subType?: FactionSubType;
   raceProfiles?: Record<string, { statWeights: { atk: number; def: number }; likelyKeywords?: Record<string, number> }>;
+  // Per-clan tuning, same shape as raceProfiles. Used by factions whose
+  // playstyle differentiation lives on the clan rather than the race (the
+  // Élémentaires: one race "Élémentaire", four elemental clans). The
+  // generator prefers a matching raceProfile, then a clanProfile, then the
+  // faction-level weights.
+  clanProfiles?: Record<string, { statWeights: { atk: number; def: number }; likelyKeywords?: Record<string, number> }>;
 }> = {
   Elfes: {
     displayName: "L'Alliance Céleste",
     color: "#3a7d44", accent: "#55efc4", emoji: "🌿", bg: "#0a1f0a", alignment: "bon",
     races: ["Elfes", "Aigles Géants", "Fées"],
-    clans: { names: ["Sylvains", "Hauts-Elfes", "Elfes des Mers"], appliesTo: "Elfes" },
+    clans: [
+      { names: ["Sylvains", "Hauts-Elfes", "Elfes des Mers"], appliesTo: "Elfes" },
+      { names: ["Émeraudes"], appliesTo: "Fées" },
+      { names: ["Cimes Éternelles"], appliesTo: "Aigles Géants" },
+    ],
     statWeights: { atk: 1.10, def: 0.80 },
     guaranteedKeywords: [],
     likelyKeywords: { "Traque": 0.60, "Esquive": 0.55, "Précision": 0.50, "Invisible": 0.40, "Première Frappe": 0.45, "Drain de vie": 0.30, "Vol": 0.20,
@@ -99,7 +114,7 @@ export const FACTIONS: Record<string, {
     displayName: "La Confrérie de la Forge",
     color: "#b87333", accent: "#ff9f43", emoji: "⚒️", bg: "#2a1a0a", alignment: "bon",
     races: ["Nains", "Golems"],
-    clans: { names: ["Montagnes", "Collines", "Lave"], appliesTo: "Nains" },
+    clans: [{ names: ["Montagnes", "Collines", "Lave"], appliesTo: "Nains" }],
     statWeights: { atk: 0.85, def: 1.40 },
     guaranteedKeywords: [],
     likelyKeywords: { "Armure": 0.70, "Résistance X": 0.65, "Bouclier": 0.50, "Ancré": 0.45, "Berserk": 0.35, "Provocation": 0.40,
@@ -114,7 +129,7 @@ export const FACTIONS: Record<string, {
     displayName: "Le Pacte des Bois",
     color: "#8B6914", accent: "#DAA520", emoji: "🍃", bg: "#1a1508", alignment: "bon",
     races: ["Hobbits", "Hommes-Arbres"],
-    clans: { names: ["Plaines", "Rivièrains", "Landes"], appliesTo: "Hobbits" },
+    clans: [{ names: ["Plaines", "Rivièrains", "Landes"], appliesTo: "Hobbits" }],
     statWeights: { atk: 0.80, def: 0.90 },
     guaranteedKeywords: [],
     likelyKeywords: { "Esquive": 0.65, "Loyauté": 0.60, "Traque": 0.45, "Invisible": 0.50, "Résistance X": 0.35, "Ancré": 0.40,
@@ -130,7 +145,7 @@ export const FACTIONS: Record<string, {
     displayName: "Les Royaumes Libres",
     color: "#2c5f8a", accent: "#74b9ff", emoji: "⚔️", bg: "#0a0f2a", alignment: "neutre",
     races: ["Humains"],
-    clans: { names: ["Nordiques", "Orientaux", "Templiers", "Amazones", "Incas"], appliesTo: "all" },
+    clans: [{ names: ["Nordiques", "Orientaux", "Templiers", "Amazones", "Incas"], appliesTo: "all" }],
     statWeights: { atk: 1.00, def: 1.00 },
     guaranteedKeywords: [],
     likelyKeywords: { "Commandement": 0.55, "Loyauté": 0.60, "Bouclier": 0.45, "Première Frappe": 0.40, "Provocation": 0.35,
@@ -142,7 +157,7 @@ export const FACTIONS: Record<string, {
     displayName: "La Meute",
     color: "#7B5B3A", accent: "#CD853F", emoji: "🐺", bg: "#1a1008", alignment: "neutre",
     races: ["Hommes-Loups", "Hommes-Ours", "Hommes-Félins", "Centaures"],
-    clans: { names: ["Forêt", "Toundra", "Savane"], appliesTo: "all" },
+    clans: [{ names: ["Forêt", "Toundra", "Savane"], appliesTo: "all" }],
     statWeights: { atk: 1.20, def: 1.00 },
     guaranteedKeywords: [],
     likelyKeywords: { "Traque": 0.65, "Berserk": 0.60, "Fureur": 0.55, "Première Frappe": 0.45, "Régénération": 0.40, "Esquive": 0.35, "Vol": 0.20,
@@ -153,18 +168,22 @@ export const FACTIONS: Record<string, {
   "Élémentaires": {
     displayName: "Les Primordiaux",
     color: "#E67E22", accent: "#F39C12", emoji: "🌀", bg: "#1a1008", alignment: "neutre",
-    races: ["Feu", "Terre", "Eau", "Air/Tempête"],
+    races: ["Élémentaire"],
+    clans: [{ names: ["Feu", "Terre", "Eau", "Air"], appliesTo: "all" }],
     statWeights: { atk: 1.10, def: 1.10 },
     guaranteedKeywords: [],
     likelyKeywords: { "Fureur": 0.40, "Résistance X": 0.40, "Régénération": 0.35, "Esquive": 0.35,
       "Canalisation": 0.45, "Permutation": 0.30, "Métamorphose": 0.35, "Mimique": 0.30, "Carnage X": 0.30 },
     forbiddenKeywords: ["Loyauté", "Commandement", "Bouclier", "Pillage"],
     description: "Forces primordiales de la nature. Chaque élément a son propre style de combat.",
-    raceProfiles: {
+    // The four elements are now clans of the single race "Élémentaire";
+    // their distinct playstyles live in clanProfiles (consumed by the
+    // generator). "Air" was formerly the race "Air/Tempête".
+    clanProfiles: {
       "Feu": { statWeights: { atk: 1.40, def: 0.75 }, likelyKeywords: { "Fureur": 0.70, "Souffle de feu X": 0.60, "Berserk": 0.50, "Sacrifice": 0.35, "Combustion": 0.50, "Carnage X": 0.40 } },
       "Terre": { statWeights: { atk: 0.85, def: 1.50 }, likelyKeywords: { "Provocation": 0.70, "Armure": 0.65, "Ancré": 0.60, "Résistance X": 0.55, "Indestructible": 0.30, "Riposte X": 0.45 } },
       "Eau": { statWeights: { atk: 0.90, def: 1.10 }, likelyKeywords: { "Régénération": 0.65, "Drain de vie": 0.55, "Esquive": 0.50, "Résistance X": 0.40, "Paralysie": 0.50, "Bénédiction": 0.35 } },
-      "Air/Tempête": { statWeights: { atk: 1.15, def: 0.85 }, likelyKeywords: { "Vol": 0.80, "Traque": 0.65, "Célérité": 0.50, "Esquive": 0.45, "Première Frappe": 0.40, "Augure": 0.35 } },
+      "Air": { statWeights: { atk: 1.15, def: 0.85 }, likelyKeywords: { "Vol": 0.80, "Traque": 0.65, "Célérité": 0.50, "Esquive": 0.45, "Première Frappe": 0.40, "Augure": 0.35 } },
     },
   },
   Mercenaires: {
@@ -193,7 +212,7 @@ export const FACTIONS: Record<string, {
     displayName: "La Horde",
     color: "#4A7A2E", accent: "#7FFF00", emoji: "🗡️", bg: "#0f1a08", alignment: "maléfique",
     races: ["Orcs", "Gobelins", "Trolls", "Wargs"],
-    clans: { names: ["Plaines", "Marais", "Montagnes"], appliesTo: "all" },
+    clans: [{ names: ["Plaines", "Marais", "Montagnes"], appliesTo: "all" }],
     statWeights: { atk: 1.25, def: 0.85 },
     guaranteedKeywords: [],
     likelyKeywords: { "Traque": 0.60, "Berserk": 0.55, "Fureur": 0.50, "Sacrifice": 0.45, "Loyauté": 0.40, "Célérité": 0.35, "Double Attaque": 0.30, "Vol": 0.15,
@@ -217,7 +236,7 @@ export const FACTIONS: Record<string, {
     displayName: "L'Engeance du Chaos",
     color: "#4A0E4E", accent: "#9B59B6", emoji: "🔮", bg: "#150520", alignment: "maléfique",
     races: ["Elfes Corrompus", "Araignées Géantes", "Démons"],
-    clans: { names: ["Abysses souterrains", "Forêt maudite", "Cités de cendres"], appliesTo: "all" },
+    clans: [{ names: ["Abysses souterrains", "Forêt maudite", "Cités de cendres"], appliesTo: "all" }],
     statWeights: { atk: 1.15, def: 0.85 },
     guaranteedKeywords: [],
     likelyKeywords: { "Poison": 0.65, "Invisible": 0.55, "Ombre": 0.50, "Corruption": 0.50, "Maléfice": 0.45, "Drain de vie": 0.40, "Précision": 0.35,
@@ -246,6 +265,34 @@ const RACE_TO_FACTION: Record<string, string> = (() => {
 export function getFactionForRace(race: string | null | undefined): string | null {
   if (!race) return null;
   return RACE_TO_FACTION[race] ?? null;
+}
+
+// Every clan name a faction declares, across all of its clan groups (hence
+// across all races). Use for validation and "show every clan" surfaces.
+export function getAllClanNames(factionId: string | null | undefined): string[] {
+  if (!factionId) return [];
+  const groups = FACTIONS[factionId]?.clans;
+  if (!groups) return [];
+  return [...new Set(groups.flatMap((g) => g.names))];
+}
+
+// Clan names applicable to a given race within a faction. A clan group applies
+// when its `appliesTo` is "all" (or empty), or matches the race. With a
+// null/empty race, only the transversal ("all") groups apply.
+export function getClanNamesForRace(
+  factionId: string | null | undefined,
+  race: string | null | undefined,
+): string[] {
+  if (!factionId) return [];
+  const groups = FACTIONS[factionId]?.clans;
+  if (!groups) return [];
+  const out = new Set<string>();
+  for (const g of groups) {
+    if (g.appliesTo === "all" || !g.appliesTo || (race && g.appliesTo === race)) {
+      for (const n of g.names) out.add(n);
+    }
+  }
+  return [...out];
 }
 
 // Human-readable faction label. Internal ids (e.g. "Elfes") stay stable in code

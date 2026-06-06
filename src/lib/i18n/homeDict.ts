@@ -14,6 +14,9 @@ export interface HomeDict {
   collection_desc: string;
   decks_label: string;
   decks_desc: string;
+  tutorial_label: string;
+  tutorial_desc: string;
+  tutorial_back: string;
 
   // Header
   welcome: string;
@@ -53,6 +56,9 @@ export const homeDict: Record<Locale, HomeDict> = {
     collection_desc: "Cartes, héros, dos, plateaux",
     decks_label: "Mes decks",
     decks_desc: "Composez et ajustez vos decks",
+    tutorial_label: "Comment jouer",
+    tutorial_desc: "Apprenez les règles et les capacités",
+    tutorial_back: "Retour à l'accueil",
 
     welcome: "Bienvenue,",
     logout: "Déconnexion",
@@ -87,6 +93,9 @@ export const homeDict: Record<Locale, HomeDict> = {
     collection_desc: "Cards, heroes, backs, boards",
     decks_label: "My Decks",
     decks_desc: "Build and tune your decks",
+    tutorial_label: "How to Play",
+    tutorial_desc: "Learn the rules and abilities",
+    tutorial_back: "Back to home",
 
     welcome: "Welcome,",
     logout: "Log out",

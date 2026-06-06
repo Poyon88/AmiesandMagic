@@ -54,7 +54,7 @@ export async function POST(request: Request) {
     "Feu": "fire elemental, body made of living flames, molten core, embers floating around, intense heat haze",
     "Terre": "earth elemental, body of rock and stone, crystal growths, moss patches, heavy and immovable",
     "Eau": "water elemental, body of flowing translucent water, whirlpool core, droplets suspended in air",
-    "Air/Tempête": "storm elemental, body of swirling wind and lightning, crackling electricity, semi-transparent and volatile",
+    "Air": "storm elemental, body of swirling wind and lightning, crackling electricity, semi-transparent and volatile",
     // Mercenaires
     "Géants": "towering giant humanoid, crude armor, massive club or weapon, standing several stories tall",
     "Ogres": "large brutish ogre, ugly face, thick skin, crude leather armor, heavy gut, wielding a club",
@@ -81,7 +81,10 @@ export async function POST(request: Request) {
     "Araignées Géantes": "enormous spider with dark chitin, multiple glowing eyes, venomous dripping fangs, web-covered",
     "Démons": "demonic creature with horns, bat-like wings, cloven hooves, infernal flames, corrupted and terrifying",
   };
-  const raceVisual = raceId && raceVisualDescriptions[raceId] ? ` Visual: ${raceVisualDescriptions[raceId]}.` : '';
+  // For factions whose visual identity lives on the clan (Élémentaires: race
+  // "Élémentaire", clan = element), prefer the clan-keyed descriptor.
+  const visualKey = (clanId && raceVisualDescriptions[clanId]) ? clanId : raceId;
+  const raceVisual = visualKey && raceVisualDescriptions[visualKey] ? ` Visual: ${raceVisualDescriptions[visualKey]}.` : '';
   const raceHint = raceId ? `\n- Race: ${raceId}. La créature DOIT correspondre visuellement à cette race.${raceVisual}` : '';
   const clanHint = clanId ? `\n- Clan: ${clanId}. Le style, l'environnement et l'ambiance doivent refléter ce clan.` : '';
 
@@ -97,7 +100,7 @@ export async function POST(request: Request) {
     ? `\n- Contexte supplémentaire IMPÉRATIF (à intégrer dans l'illustration ET à refléter dans le ton / nom / capacité / lore si pertinent) : ${extra}`
     : '';
 
-  const raceVisualDesc = raceId ? (raceVisualDescriptions[raceId] || raceId) : '';
+  const raceVisualDesc = raceId ? (raceVisualDescriptions[visualKey ?? raceId] || raceId) : '';
 
   // Build prompt with race as the PRIMARY subject when specified
   const creatureSubject = raceId
@@ -172,9 +175,10 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
       if (jsonStart > 0) jsonStr = jsonStr.slice(jsonStart);
       const parsed = JSON.parse(jsonStr);
 
-      // Force race visual into illustrationPrompt — LLM instructions alone are unreliable
-      if (raceId && raceVisualDescriptions[raceId] && parsed.illustrationPrompt) {
-        const raceDesc = raceVisualDescriptions[raceId];
+      // Force race visual into illustrationPrompt — LLM instructions alone are unreliable.
+      // visualKey resolves to the clan element for clan-tuned factions (Élémentaires).
+      if (visualKey && raceVisualDescriptions[visualKey] && parsed.illustrationPrompt) {
+        const raceDesc = raceVisualDescriptions[visualKey];
         // Mapping of wrong race terms (French + English) to remove from the prompt
         const wrongRaceTerms: Record<string, string[]> = {
           "Elfes": ["elf", "elven", "elfe"],
@@ -192,7 +196,7 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
           "Feu": ["fire elemental"],
           "Terre": ["earth elemental"],
           "Eau": ["water elemental"],
-          "Air/Tempête": ["storm elemental", "air elemental"],
+          "Air": ["storm elemental", "air elemental"],
           "Géants": ["giant", "géant"],
           "Ogres": ["ogre"],
           "Dragons": ["dragon"],
@@ -215,18 +219,26 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
           "Araignées Géantes": ["spider", "araignée"],
           "Démons": ["demon", "démon"],
         };
-        // Get all wrong-race terms (other races in the same faction)
+        // Get all wrong terms: other races in the faction, plus — for clan-tuned
+        // factions (Élémentaires) — the sibling clans' terms so a Feu card doesn't
+        // describe a "water elemental". Only element clans appear in wrongRaceTerms,
+        // so non-element clans (Sylvains, …) contribute nothing here.
         const otherRaces = fac?.races?.filter((r: string) => r !== raceId) || [];
+        const otherClans = (fac?.clans ?? []).flatMap((g) => g.names).filter((c: string) => c !== clanId);
         const termsToRemove: string[] = [];
         for (const otherRace of otherRaces) {
           if (wrongRaceTerms[otherRace]) termsToRemove.push(...wrongRaceTerms[otherRace]);
           termsToRemove.push(otherRace.toLowerCase());
         }
-        // Build the fixed prompt: prepend race description, strip wrong race mentions
+        for (const otherClan of otherClans) {
+          if (wrongRaceTerms[otherClan]) termsToRemove.push(...wrongRaceTerms[otherClan]);
+        }
+        // Build the fixed prompt: prepend race description, strip wrong mentions.
+        // Replace with the resolved visual key (the element for clan-tuned factions).
         let fixedPrompt = parsed.illustrationPrompt;
         for (const term of termsToRemove) {
           const regex = new RegExp(`\\b${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}s?\\b`, 'gi');
-          fixedPrompt = fixedPrompt.replace(regex, raceId);
+          fixedPrompt = fixedPrompt.replace(regex, visualKey);
         }
         // Always prepend the authoritative race description
         parsed.illustrationPrompt = `${raceDesc}. ${fixedPrompt}`;

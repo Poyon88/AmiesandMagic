@@ -110,7 +110,7 @@ export default function HeroPortrait({
             alt={hero.heroDefinition.name ?? hero.heroDefinition.race}
             fill
             sizes="(min-resolution: 2dppx) 640px, 320px"
-            quality={92}
+            quality={90}
             className="object-cover"
             priority
           />

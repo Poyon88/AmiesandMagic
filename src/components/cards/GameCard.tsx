@@ -55,11 +55,16 @@ import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { KEYWORDS as keywordDefs, LIMITED_PRINT_COUNTS, ALIGNMENTS, getEffectiveAlignment, getFactionDisplayName } from "@/lib/card-engine/constants";
 import RarityFrame from "./RarityFrame";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
+import useCoarsePointer from "@/hooks/useCoarsePointer";
 
 interface GameCardProps {
   card: Card;
   onClick?: () => void;
   disabled?: boolean;
+  /** Apparence grisée (opacity réduite) sans bloquer le clic — sert à signaler
+   *  un état comme « max d'exemplaires atteint » tout en gardant la carte
+   *  cliquable (pour retirer un exemplaire). */
+  dimmed?: boolean;
   selected?: boolean;
   size?: "sm" | "md" | "lg";
   count?: number;
@@ -92,6 +97,7 @@ export default function GameCard({
   card,
   onClick,
   disabled = false,
+  dimmed = false,
   selected = false,
   size = "md",
   count,
@@ -152,7 +158,16 @@ export default function GameCard({
   };
   const { w, h } = dims[size];
   const s = size === "sm" ? 0.7 : size === "md" ? 0.85 : 1;
+  // Touch devices have no hover-zoom: enlarge the detail-overlay text only.
+  // `so` is the overlay text scale (base `s` bumped on coarse pointers); the
+  // always-visible card body keeps using `s` so its layout is unchanged.
+  const so = s * (useCoarsePointer() ? 1.3 : 1);
   const isCreature = card.card_type === "creature";
+
+  // `sizes` hint for the art slot (kept for the underlying <img> even though
+  // the card art is served unoptimized — see the Image below). Values track the
+  // rendered width with a little headroom for the 1.5× hover zoom.
+  const artSizes = size === "sm" ? "270px" : size === "lg" ? "510px" : "390px";
 
   // Pentagonal frame for spell cards: top edge straight, sides converge to a
   // bottom point. The clip-path crops the rectangular bounding box to this
@@ -242,7 +257,7 @@ export default function GameCard({
         filter: !isCreature && selected ? "drop-shadow(0 0 10px rgba(200,168,78,0.7))" : undefined,
         overflow: "hidden",
         cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.5 : 1,
+        opacity: disabled || dimmed ? 0.5 : 1,
         transition: "border-color 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease, filter 0.3s ease",
       }}
     >
@@ -254,14 +269,15 @@ export default function GameCard({
             alt={card.name}
             fill
             className="object-cover"
-            // Bumped from 1024/750 to 2048/1280 because the limited-edition
-            // 3D frame (preserve-3d in ExpertCardFrame) rasterises the
-            // wrapped art into a GPU texture sized at the layer's logical
-            // bounding box; without an oversized source srcset variant the
-            // texture is visibly soft on retina. Imagen 4 Ultra produces
-            // 2K so the larger srcset is available.
-            sizes="(min-resolution: 2dppx) 2048px, 1280px"
-            quality={95}
+            sizes={artSizes}
+            // Served directly from the Supabase CDN (no Next image optimizer).
+            // Card art sources are already small webp (≤800px, ~60-150KB, the
+            // forge compresses on upload), so the optimizer added little value
+            // while its dev-time serial transform queue left many grid cards
+            // blank when 10+ images requested optimization at once. Bypassing it
+            // loads all thumbnails in parallel from the CDN — reliable in dev
+            // and prod alike. (quality is ignored when unoptimized.)
+            unoptimized
           />
         ) : (
           <div style={{
@@ -320,7 +336,16 @@ export default function GameCard({
               const label = keywordLabels[kw] || kw;
               const baseTitle = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
               const modeSuffix = mode === "death" ? " · à la mort" : mode === "tap" ? " · tap" : "";
-              const displayTitle = baseTitle + modeSuffix;
+              // On a spell, these keywords are CONFERRED to creature(s). The
+              // "all allies" scope gets a visible GREEN chip (fill + border)
+              // behind the icon — a glow alone was clipped by the card's
+              // overflow:hidden. Single-target keeps the default look.
+              const grantScope = !isCreature
+                ? (card.keyword_instances?.find((k) => k.id === kw)?.grantScope ?? "target")
+                : null;
+              const isAllAllies = grantScope === "all_allies";
+              const grantSuffix = isAllAllies ? " · conférée à tous les alliés" : grantScope === "target" ? " · conférée à la cible" : "";
+              const displayTitle = baseTitle + modeSuffix + grantSuffix;
               const hasImg = !!iconOverrides[kw];
               const modeColor = keywordModeColor(mode);
               const modeFilter = keywordModeFilter(mode);
@@ -328,8 +353,8 @@ export default function GameCard({
               <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} title={displayTitle} style={{
                 minWidth: 40 * s, height: 40 * s, borderRadius: 4 * s,
                 padding: x != null ? `0 ${4 * s}px` : 0,
-                background: hasImg ? "transparent" : `${accentColor}33`,
-                border: hasImg ? "none" : `1px solid ${accentColor}66`,
+                background: isAllAllies ? "#27ae6055" : (hasImg ? "transparent" : `${accentColor}33`),
+                border: isAllAllies ? `1px solid #27ae60` : (hasImg ? "none" : `1px solid ${accentColor}66`),
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 * s,
                 fontSize: 10 * s, overflow: "hidden",
               }}>
@@ -444,14 +469,14 @@ export default function GameCard({
       }}>
         {/* Name */}
         <div style={{
-          fontSize: 18 * s, color: accentColor, fontWeight: 700,
+          fontSize: 18 * so, color: accentColor, fontWeight: 700,
           textAlign: "center", fontFamily: "'Cinzel', serif",
           borderBottom: `1px solid ${accentColor}55`, paddingBottom: 7 * s,
         }}>{card.name}</div>
 
         {/* Race / Clan */}
         {(card.race || card.clan) && (
-          <div style={{ display: "flex", justifyContent: "center", gap: 6 * s, fontSize: 13 * s, color: "#ddd", fontFamily: "'Crimson Text',serif" }}>
+          <div style={{ display: "flex", justifyContent: "center", gap: 6 * s, fontSize: 13 * so, color: "#ddd", fontFamily: "'Crimson Text',serif" }}>
             {card.race && <span>{card.race}</span>}
             {card.race && card.clan && <span style={{ color: "#888" }}>·</span>}
             {card.clan && <span style={{ fontStyle: "italic" }}>{card.clan}</span>}
@@ -477,14 +502,23 @@ export default function GameCard({
               if (kw === "convocations_multiples" && card.convocation_tokens?.length) {
                 desc = `Invocation : crée ${formatConvocationTokens(card.convocation_tokens, effectiveTokens)}`;
               }
+              // Conferred-keyword scope on a spell: green for "all allies".
+              const grantScope = !isCreature
+                ? (card.keyword_instances?.find((k) => k.id === kw)?.grantScope ?? "target")
+                : null;
+              const scopeNote = grantScope === "all_allies"
+                ? "Conférée à toutes les unités alliées."
+                : grantScope === "target" ? "Conférée à la créature ciblée." : null;
               const modeColor = keywordModeColor(mode);
               const modeFilter = keywordModeFilter(mode);
+              const labelColor = grantScope === "all_allies" ? "#2ecc71" : (modeColor ?? accentColor);
               return (
               <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
                 <span style={{ flexShrink: 0, display: "inline-flex", filter: modeFilter ?? undefined, lineHeight: 0 }}><KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={18 * s} keyword={kw} /></span>
                 <div>
-                  <div style={{ fontSize: 14 * s, color: modeColor ?? accentColor, fontWeight: 700 }}>{displayLabel}</div>
-                  {desc && <div style={{ fontSize: 12 * s, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
+                  <div style={{ fontSize: 14 * so, color: labelColor, fontWeight: 700 }}>{displayLabel}</div>
+                  {scopeNote && <div style={{ fontSize: 11.5 * so, color: grantScope === "all_allies" ? "#2ecc71" : "#9fb0c0", fontStyle: "italic", fontFamily: "'Crimson Text',serif" }}>{scopeNote}</div>}
+                  {desc && <div style={{ fontSize: 12 * so, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
                 </div>
               </div>
               );
@@ -503,8 +537,8 @@ export default function GameCard({
               <div key={`sk_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
                 <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={18 * s} keyword={`spell_${spellKw.id}`} /></span>
                 <div>
-                  <div style={{ fontSize: 14 * s, color: accentColor, fontWeight: 700 }}>{label}</div>
-                  <div style={{ fontSize: 12 * s, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>
+                  <div style={{ fontSize: 14 * so, color: accentColor, fontWeight: 700 }}>{label}</div>
+                  <div style={{ fontSize: 12 * so, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>
                 </div>
               </div>
               );
@@ -520,7 +554,7 @@ export default function GameCard({
           border: `1px solid ${accentColor}44`,
         }}>
           <p style={{
-            margin: 0, fontSize: 13 * s, color: "#eee",
+            margin: 0, fontSize: 13 * so, color: "#eee",
             lineHeight: 1.5, fontFamily: "'Crimson Text', serif",
           }}>{cleanEffectText(card.effect_text, card.spell_keywords)}</p>
         </div>
@@ -529,7 +563,7 @@ export default function GameCard({
         {/* Flavor text */}
         {card.flavor_text && (
           <p style={{
-            margin: 0, fontSize: 12 * s, color: `${accentColor}dd`,
+            margin: 0, fontSize: 12 * so, color: `${accentColor}dd`,
             fontStyle: "italic", lineHeight: 1.4, fontFamily: "'Crimson Text', serif",
             textAlign: "center",
           }}>&ldquo;{card.flavor_text}&rdquo;</p>
@@ -538,7 +572,7 @@ export default function GameCard({
         {/* Stats recap */}
         <div style={{
           display: "flex", justifyContent: "center", gap: 8 * s, flexWrap: "wrap",
-          fontSize: 13 * s, color: "#ccc",
+          fontSize: 13 * so, color: "#ccc",
           borderTop: `1px solid ${accentColor}33`, paddingTop: 7 * s,
         }}>
           {card.faction && <span style={{ color: accentColor, fontWeight: 600 }}>{getFactionDisplayName(card.faction)}</span>}

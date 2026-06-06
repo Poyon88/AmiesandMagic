@@ -13,6 +13,7 @@ import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
 import RarityFrame from "@/components/cards/RarityFrame";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
+import useCoarsePointer from "@/hooks/useCoarsePointer";
 
 interface BoardCreatureProps {
   creature: CardInstance;
@@ -76,6 +77,7 @@ export default function BoardCreature({
     && isMyTurn
     && !isAnimating
     && !creature.tapped
+    && !creature.isParalyzed
     && (!creature.hasSummoningSickness || card.keywords.includes("charge"))
     && tapInstanceIdx !== null;
   const canActivateTap = baseEligibleForTap && targetingMode === "none";
@@ -112,6 +114,8 @@ export default function BoardCreature({
   // uses W=120, H=168 with the same outer zoom 1.225).
   const W = 120;
   const H = 168;
+  // Touch devices have no hover-zoom: enlarge the detail-overlay text only.
+  const d = useCoarsePointer() ? 1.5 : 1;
   const accentColor = "#74b9ff";
   const iconOverrides = useKeywordIconStore((st) => st.overrides);
 
@@ -306,7 +310,9 @@ export default function BoardCreature({
             fill
             className="object-cover"
             sizes="(min-resolution: 2dppx) 600px, 300px"
-            quality={90}
+            // Direct from the Supabase CDN (card-art sources are already small
+            // webp ≤800px); bypasses the Next optimizer's dev-time queue.
+            unoptimized
           />
         ) : (
           <div style={{
@@ -574,14 +580,14 @@ export default function BoardCreature({
 
         {/* Name */}
         <div style={{
-          fontSize: 10, color: accentColor, fontWeight: 700,
+          fontSize: 10 * d, color: accentColor, fontWeight: 700,
           textAlign: "center", fontFamily: "'Cinzel', serif",
           borderBottom: `1px solid ${accentColor}44`, paddingBottom: 5,
         }}>{card.name}</div>
 
         {/* Race / Clan */}
         {(card.race || card.clan) && (
-          <div style={{ display: "flex", justifyContent: "center", gap: 4, fontSize: 7, color: "#888", fontFamily: "'Crimson Text',serif" }}>
+          <div style={{ display: "flex", justifyContent: "center", gap: 4, fontSize: 7 * d, color: "#888", fontFamily: "'Crimson Text',serif" }}>
             {card.race && <span>{card.race}</span>}
             {card.race && card.clan && <span style={{ color: "#555" }}>·</span>}
             {card.clan && <span style={{ fontStyle: "italic" }}>{card.clan}</span>}
@@ -625,12 +631,12 @@ export default function BoardCreature({
               background: "#0d0d1aaa", borderRadius: 4,
               border: "1px solid #ffffff14",
             }}>
-              <div style={{ fontSize: 7, color: "#888", fontFamily: "'Cinzel',serif", letterSpacing: 0.5, textAlign: "center", marginBottom: 1 }}>
+              <div style={{ fontSize: 7 * d, color: "#888", fontFamily: "'Cinzel',serif", letterSpacing: 0.5, textAlign: "center", marginBottom: 1 }}>
                 STATUTS
               </div>
               {statuses.map(s => (
-                <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 8, color: s.color, fontFamily: "'Crimson Text',serif" }}>
-                  <span style={{ fontSize: 9 }}>{s.emoji}</span>
+                <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 8 * d, color: s.color, fontFamily: "'Crimson Text',serif" }}>
+                  <span style={{ fontSize: 9 * d }}>{s.emoji}</span>
                   <span>{s.label}</span>
                 </div>
               ))}
@@ -665,8 +671,8 @@ export default function BoardCreature({
               <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
                 <span style={{ flexShrink: 0, display: "inline-flex", filter: modeFilter ?? undefined }}><KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={10} keyword={kw} /></span>
                 <div>
-                  <div style={{ fontSize: 8, color: modeColor ?? accentColor, fontWeight: 600 }}>{displayLabel}</div>
-                  {desc && <div style={{ fontSize: 7, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
+                  <div style={{ fontSize: 8 * d, color: modeColor ?? accentColor, fontWeight: 600 }}>{displayLabel}</div>
+                  {desc && <div style={{ fontSize: 7 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
                 </div>
               </div>
               );
@@ -683,7 +689,7 @@ export default function BoardCreature({
             border: `1px solid ${accentColor}22`,
           }}>
             <p style={{
-              margin: 0, fontSize: 8, color: "#ccc",
+              margin: 0, fontSize: 8 * d, color: "#ccc",
               lineHeight: 1.4, fontFamily: "'Crimson Text', serif",
             }}>{cleanEffectText(card.effect_text, card.spell_keywords)}</p>
           </div>
@@ -691,7 +697,7 @@ export default function BoardCreature({
 
         {card.flavor_text && (
           <p style={{
-            margin: 0, fontSize: 7, color: "#74b9ff77",
+            margin: 0, fontSize: 7 * d, color: "#74b9ff77",
             fontStyle: "italic", lineHeight: 1.3, fontFamily: "'Crimson Text', serif",
             textAlign: "center",
           }}>&ldquo;{card.flavor_text}&rdquo;</p>
@@ -700,7 +706,7 @@ export default function BoardCreature({
         {/* Stats recap */}
         <div style={{
           display: "flex", justifyContent: "center", gap: 8,
-          fontSize: 8, color: "#555",
+          fontSize: 8 * d, color: "#555",
         }}>
           <span style={{ color: isBuffedAtk ? "#2ecc71" : "#e74c3c" }}>⚔ {creature.currentAttack}</span>
           <span style={{ color: isDamaged ? "#e74c3c" : isBuffedHp ? "#2ecc71" : "#f1c40f" }}>❤ {creature.currentHealth}/{creature.maxHealth}</span>

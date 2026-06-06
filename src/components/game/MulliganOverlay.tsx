@@ -12,6 +12,7 @@ import { useGameStore } from "@/lib/store/gameStore";
 import { useAudioStore } from "@/lib/store/audioStore";
 import SfxEngine from "@/lib/audio/SfxEngine";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
+import useCoarsePointer from "@/hooks/useCoarsePointer";
 
 function playStandardSfx(eventType: string) {
   if (typeof window === "undefined") return;
@@ -56,6 +57,8 @@ function MulliganCard({
   const [showDetails, setShowDetails] = useState(false);
   const detailTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const accentColor = isCreature ? "#74b9ff" : "#ce93d8";
+  // Touch devices have no hover-zoom: enlarge the detail-overlay text only.
+  const d = useCoarsePointer() ? 1.35 : 1;
 
   // A card accepts clicks only after its flip has fully played AND the
   // overlay's selection phase is active. This prevents the user from toggling
@@ -128,7 +131,9 @@ function MulliganCard({
             fill
             className="object-cover"
             sizes="(min-resolution: 2dppx) 600px, 300px"
-            quality={90}
+            // Direct from the Supabase CDN (card-art sources are already small
+            // webp ≤800px); bypasses the Next optimizer's dev-time queue.
+            unoptimized
           />
         ) : (
           <div style={{
@@ -288,16 +293,17 @@ function MulliganCard({
         display: "flex", flexDirection: "column", justifyContent: "center",
         padding: "16px 12px",
         gap: 8,
+        overflowY: "auto",
       }}>
         <div style={{
-          fontSize: 13, color: accentColor, fontWeight: 700,
+          fontSize: 13 * d, color: accentColor, fontWeight: 700,
           textAlign: "center", fontFamily: "'Cinzel', serif",
           borderBottom: `1px solid ${accentColor}44`, paddingBottom: 6,
         }}>{card.name}</div>
 
         {/* Race / Clan */}
         {(card.race || card.clan) && (
-          <div style={{ display: "flex", justifyContent: "center", gap: 5, fontSize: 9, color: "#888", fontFamily: "'Crimson Text',serif" }}>
+          <div style={{ display: "flex", justifyContent: "center", gap: 5, fontSize: 9 * d, color: "#888", fontFamily: "'Crimson Text',serif" }}>
             {card.race && <span>{card.race}</span>}
             {card.race && card.clan && <span style={{ color: "#555" }}>·</span>}
             {card.clan && <span style={{ fontStyle: "italic" }}>{card.clan}</span>}
@@ -325,8 +331,8 @@ function MulliganCard({
               <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ display: "flex", alignItems: "flex-start", gap: 5 }}>
                 <span style={{ flexShrink: 0, display: "inline-flex", filter: modeFilter ?? undefined, lineHeight: 0 }}><KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={12} keyword={kw} /></span>
                 <div>
-                  <div style={{ fontSize: 10, color: modeColor ?? accentColor, fontWeight: 600 }}>{displayLabel}</div>
-                  {desc && <div style={{ fontSize: 8, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
+                  <div style={{ fontSize: 10 * d, color: modeColor ?? accentColor, fontWeight: 600 }}>{displayLabel}</div>
+                  {desc && <div style={{ fontSize: 8 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
                 </div>
               </div>
               );
@@ -349,8 +355,8 @@ function MulliganCard({
                 <div key={`sk_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 5 }}>
                   <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={12} keyword={`spell_${spellKw.id}`} /></span>
                   <div>
-                    <div style={{ fontSize: 10, color: accentColor, fontWeight: 600 }}>{label}</div>
-                    <div style={{ fontSize: 8, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>
+                    <div style={{ fontSize: 10 * d, color: accentColor, fontWeight: 600 }}>{label}</div>
+                    <div style={{ fontSize: 8 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>
                   </div>
                 </div>
               );
@@ -364,7 +370,7 @@ function MulliganCard({
             border: `1px solid ${accentColor}22`,
           }}>
             <p style={{
-              margin: 0, fontSize: 10, color: "#ccc",
+              margin: 0, fontSize: 10 * d, color: "#ccc",
               lineHeight: 1.5, fontFamily: "'Crimson Text', serif",
             }}>{cleanEffectText(card.effect_text, card.spell_keywords)}</p>
           </div>
@@ -372,7 +378,7 @@ function MulliganCard({
 
         {card.flavor_text && (
           <p style={{
-            margin: 0, fontSize: 9, color: `${accentColor}77`,
+            margin: 0, fontSize: 9 * d, color: `${accentColor}77`,
             fontStyle: "italic", lineHeight: 1.3, fontFamily: "'Crimson Text', serif",
             textAlign: "center",
           }}>&ldquo;{card.flavor_text}&rdquo;</p>
@@ -380,7 +386,7 @@ function MulliganCard({
 
         <div style={{
           display: "flex", justifyContent: "center", gap: 8,
-          fontSize: 9, color: "#555",
+          fontSize: 9 * d, color: "#555",
         }}>
           <span>{"💧"} {card.mana_cost}</span>
           {isCreature && <><span style={{ color: "#e74c3c" }}>{"⚔"} {card.attack}</span><span style={{ color: "#f1c40f" }}>{"❤"} {card.health}</span></>}

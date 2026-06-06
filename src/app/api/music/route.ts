@@ -78,7 +78,7 @@ export async function POST(request: Request) {
 
     const { error: uploadErr } = await supabase.storage
       .from("music-tracks")
-      .upload(filePath, buffer, { upsert: true, contentType: audioMimeType });
+      .upload(filePath, buffer, { upsert: true, contentType: audioMimeType, cacheControl: "31536000" });
     if (uploadErr) throw new Error(`Upload: ${uploadErr.message}`);
 
     const { data: urlData } = supabase.storage.from("music-tracks").getPublicUrl(filePath);

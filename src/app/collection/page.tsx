@@ -12,7 +12,7 @@ export default async function CollectionPage() {
 
   if (!user) redirect("/login");
 
-  const [{ data: cards }, { data: sets }, { data: formats }, { data: formatSets }, { data: profile }, { data: userCollection }, { data: ownedPrints }] = await Promise.all([
+  const [{ data: cards }, { data: sets }, { data: formats }, { data: profile }, { data: userCollection }, { data: ownedPrints }] = await Promise.all([
     supabase
       .from("cards")
       .select("*")
@@ -27,9 +27,6 @@ export default async function CollectionPage() {
       .select("*")
       .eq("is_active", true)
       .order("id"),
-    supabase
-      .from("format_sets")
-      .select("format_id, set_id"),
     supabase
       .from("profiles")
       .select("role")
@@ -59,7 +56,6 @@ export default async function CollectionPage() {
       cards={cards ?? []}
       sets={sets ?? []}
       formats={formats ?? []}
-      formatSets={formatSets ?? []}
       collectedCardIds={collectedCardIds}
       isTester={isSpecialRole}
       ownedPrints={isSpecialRole ? [] : (ownedPrints ?? []).map(p => ({

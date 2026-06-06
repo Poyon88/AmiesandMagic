@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { buildHeroPortraitPrompt } from '@/lib/ai/hero-portrait-prompt';
-import { FACTIONS } from '@/lib/card-engine/constants';
+import { FACTIONS, getAllClanNames } from '@/lib/card-engine/constants';
 
 const LEGACY_SIMPLIFIED_RACES = new Set([
   'humans', 'elves', 'dwarves', 'halflings', 'beastmen',
@@ -100,8 +100,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Faction invalide' }, { status: 400 });
   }
   if (clan != null && clan !== '' && faction && faction in FACTIONS) {
-    const factionDef = FACTIONS[faction];
-    if (factionDef.clans && !factionDef.clans.names.includes(clan)) {
+    const validClans = getAllClanNames(faction);
+    if (validClans.length > 0 && !validClans.includes(clan)) {
       return NextResponse.json({ error: 'Clan invalide pour cette faction' }, { status: 400 });
     }
   }

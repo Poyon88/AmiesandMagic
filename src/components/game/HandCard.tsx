@@ -16,6 +16,7 @@ import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
 import CostBadges from "@/components/cards/CostBadges";
 import RarityFrame from "@/components/cards/RarityFrame";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
+import useCoarsePointer from "@/hooks/useCoarsePointer";
 
 interface HandCardProps {
   cardInstance: CardInstance;
@@ -114,6 +115,10 @@ export default function HandCard({
   const showOverlay = isZoomed && showDetails;
   const W = 120;
   const H = 168;
+  // Touch devices have no hover-zoom to read the tiny detail-overlay text, so
+  // bump its font sizes. `d` multiplies the overlay text only — the always-on
+  // card body is left untouched so the hand layout is unchanged.
+  const d = useCoarsePointer() ? 1.5 : 1;
   const accentColor = isCreature ? "#74b9ff" : "#ce93d8";
   // Cost-payment visuals override the normal selection styling: red border
   // when picked for discard, gold glow on the source card being played.
@@ -387,7 +392,10 @@ export default function HandCard({
               fill
               className="object-cover"
               sizes="(min-resolution: 2dppx) 600px, 300px"
-              quality={90}
+              // Served directly from the Supabase CDN — card-art sources are
+              // already small webp (≤800px) so the Next optimizer only added
+              // dev-time queueing that left cards blank when many loaded at once.
+              unoptimized
             />
           ) : (
             <div style={{
@@ -450,14 +458,19 @@ export default function HandCard({
                   const hasImg = !!iconOverrides[kw];
                   const modeColor = keywordModeColor(mode);
                   const modeFilter = keywordModeFilter(mode);
-                  // Frame keeps the faction accent — only the icon glyph
-                  // itself is tinted by the mode, via a wrapper filter.
+                  // On a spell, keywords are CONFERRED — "all allies" gets a
+                  // visible green chip behind the icon (a glow was clipped by
+                  // overflow:hidden); single target keeps the default look.
+                  const grantScope = card.card_type === "spell"
+                    ? (card.keyword_instances?.find((k) => k.id === kw)?.grantScope ?? "target")
+                    : null;
+                  const isAllAllies = grantScope === "all_allies";
                   return (
                     <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{
                       minWidth: 24, height: 24, borderRadius: 3,
                       padding: x != null ? "0 2px" : 0,
-                      background: hasImg ? "transparent" : `${accentColor}33`,
-                      border: hasImg ? "none" : `1px solid ${accentColor}66`,
+                      background: isAllAllies ? "#27ae6055" : (hasImg ? "transparent" : `${accentColor}33`),
+                      border: isAllAllies ? "1px solid #27ae60" : (hasImg ? "none" : `1px solid ${accentColor}66`),
                       display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1,
                       fontSize: 8, overflow: "hidden",
                     }}>
@@ -553,14 +566,14 @@ export default function HandCard({
         }}>
           {/* Name */}
           <div style={{
-            fontSize: 9, color: accentColor, fontWeight: 700,
+            fontSize: 9 * d, color: accentColor, fontWeight: 700,
             textAlign: "center", fontFamily: "'Cinzel', serif",
             borderBottom: `1px solid ${accentColor}44`, paddingBottom: 4,
           }}>{card.name}</div>
 
           {/* Race / Clan */}
           {(card.race || card.clan) && (
-            <div style={{ display: "flex", justifyContent: "center", gap: 4, fontSize: 6, color: "#888", fontFamily: "'Crimson Text',serif" }}>
+            <div style={{ display: "flex", justifyContent: "center", gap: 4, fontSize: 6 * d, color: "#888", fontFamily: "'Crimson Text',serif" }}>
               {card.race && <span>{card.race}</span>}
               {card.race && card.clan && <span style={{ color: "#555" }}>·</span>}
               {card.clan && <span style={{ fontStyle: "italic" }}>{card.clan}</span>}
@@ -606,8 +619,8 @@ export default function HandCard({
                     <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={9} keyword={kw} />
                   </span>
                   <div>
-                    <div style={{ fontSize: 7, color: modeColor ?? accentColor, fontWeight: 600 }}>{displayLabel}</div>
-                    {desc && <div style={{ fontSize: 6, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
+                    <div style={{ fontSize: 7 * d, color: modeColor ?? accentColor, fontWeight: 600 }}>{displayLabel}</div>
+                    {desc && <div style={{ fontSize: 6 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
                   </div>
                 </div>
                 );
@@ -626,8 +639,8 @@ export default function HandCard({
                 <div key={`sk_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
                   <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={9} keyword={`spell_${spellKw.id}`} /></span>
                   <div>
-                    <div style={{ fontSize: 7, color: accentColor, fontWeight: 600 }}>{label}</div>
-                    <div style={{ fontSize: 6, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>
+                    <div style={{ fontSize: 7 * d, color: accentColor, fontWeight: 600 }}>{label}</div>
+                    <div style={{ fontSize: 6 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>
                   </div>
                 </div>
                 );
@@ -643,7 +656,7 @@ export default function HandCard({
             border: `1px solid ${accentColor}22`,
           }}>
             <p style={{
-              margin: 0, fontSize: 7, color: "#ccc",
+              margin: 0, fontSize: 7 * d, color: "#ccc",
               lineHeight: 1.4, fontFamily: "'Crimson Text', serif",
             }}>{cleanEffectText(card.effect_text, card.spell_keywords)}</p>
           </div>
@@ -651,7 +664,7 @@ export default function HandCard({
 
           {card.flavor_text && (
             <p style={{
-              margin: 0, fontSize: 6, color: "#74b9ff77",
+              margin: 0, fontSize: 6 * d, color: "#74b9ff77",
               fontStyle: "italic", lineHeight: 1.3, fontFamily: "'Crimson Text', serif",
               textAlign: "center",
             }}>&ldquo;{card.flavor_text}&rdquo;</p>
@@ -660,7 +673,7 @@ export default function HandCard({
           {/* Stats recap */}
           <div style={{
             display: "flex", justifyContent: "center", gap: 6,
-            fontSize: 7, color: "#555",
+            fontSize: 7 * d, color: "#555",
           }}>
             <span style={isCostReduced ? { color: "#2ecc71" } : undefined}>💧 {effectiveManaCost}</span>
             {isCreature && <><span style={{ color: "#e74c3c" }}>⚔ {card.attack}</span><span style={{ color: "#f1c40f" }}>❤ {card.health}</span></>}

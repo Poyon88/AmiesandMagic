@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from "react";
+import Image from "next/image";
 import { generateCardStats, pickMana, pickRarity, buildId } from "@/lib/card-engine/generator";
-import { RARITIES, FACTIONS, TYPES, KEYWORDS, RARITY_WEIGHTS_BY_MANA, RARITY_MAP, ALIGNMENTS, CURATED_KEYWORD_MODES } from "@/lib/card-engine/constants";
+import { RARITIES, FACTIONS, TYPES, KEYWORDS, RARITY_WEIGHTS_BY_MANA, RARITY_MAP, ALIGNMENTS, CURATED_KEYWORD_MODES, getClanNamesForRace, getFactionForRace } from "@/lib/card-engine/constants";
 import CardVisual, { KEYWORD_SYMBOLS } from "./CardVisual";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import type { CardType, Keyword, SpellEffect, SpellTargetType, SpellKeywordInstance, SpellComposableEffects, SpellEffectNode, SpellTargetSlot, AtomicEffectType, SpellCondition, AtomicEffect, ConditionalEffectNode, CardSet, GameFormat, TokenTemplate, ConvocationTokenDef } from "@/lib/game/types";
@@ -52,6 +53,7 @@ interface ForgeCard {
   power: number | null;
   keywords: string[];
   keywordXValues?: Record<string, number>;
+  keywordGrantScope?: Record<string, "all_allies">;
   ability: string;
   flavorText: string;
   illustrationPrompt: string;
@@ -891,26 +893,12 @@ export default function CardForge() {
   const cbFactionDef = cbFaction ? FACTIONS[cbFaction as keyof typeof FACTIONS] : null;
   const cbFactionRaces = cbFactionDef?.races
     ?? Object.values(FACTIONS).flatMap((f) => f.races).sort();
-  const cbFactionClans: string[] =
-    cbFactionDef?.clans && (
-      cbFactionDef.clans.appliesTo === "all"
-      || cbFactionDef.clans.appliesTo === cbRace
-      || !cbFactionDef.clans.appliesTo
-    )
-      ? cbFactionDef.clans.names
-      : [];
+  const cbFactionClans: string[] = getClanNamesForRace(cbFaction, cbRace);
 
   const bdFactionDef = bdFaction ? FACTIONS[bdFaction as keyof typeof FACTIONS] : null;
   const bdFactionRaces = bdFactionDef?.races
     ?? Object.values(FACTIONS).flatMap((f) => f.races).sort();
-  const bdFactionClans: string[] =
-    bdFactionDef?.clans && (
-      bdFactionDef.clans.appliesTo === "all"
-      || bdFactionDef.clans.appliesTo === bdRace
-      || !bdFactionDef.clans.appliesTo
-    )
-      ? bdFactionDef.clans.names
-      : [];
+  const bdFactionClans: string[] = getClanNamesForRace(bdFaction, bdRace);
 
   function generateCardBackPrompt() {
     const factionDef = cbFaction ? FACTIONS[cbFaction as keyof typeof FACTIONS] : null;
@@ -1535,6 +1523,10 @@ export default function CardForge() {
   // card.keyword_instances at save time so the engine can route the
   // effect to the on-death or tap pipeline instead.
   const [keywordModes, setKeywordModes] = useState<Record<string, "death" | "tap">>({});
+  // Spell-only: per-conferred-keyword grant scope (indexed by forge FR label).
+  // Missing entry = "target" (single allied creature); "all_allies" = every
+  // allied creature on cast. Saved into card.keyword_instances.grantScope.
+  const [keywordGrantScope, setKeywordGrantScope] = useState<Record<string, "all_allies">>({});
   const [hoveredKw, setHoveredKw] = useState<{ id: string; rect: DOMRect } | null>(null);
   const [convocationTokenId, setConvocationTokenId] = useState<number | null>(null);
   const [convocationTokens, setConvocationTokens] = useState<ConvocationTokenDef[]>([]);
@@ -1549,8 +1541,6 @@ export default function CardForge() {
   const [newSetIcon, setNewSetIcon] = useState("⚔️");
   const [newSetReleasedAt, setNewSetReleasedAt] = useState("");
   const [formats, setFormats] = useState<GameFormat[]>([]);
-  const [variableSetIds, setVariableSetIds] = useState<number[]>([]);
-  const [savingFormats, setSavingFormats] = useState(false);
 
   // ─── NEW SPELL SYSTEM ──────────────────────────────────────────────────────
   const [spellKeywords, setSpellKeywords] = useState<SpellKeywordInstance[]>([]);
@@ -1605,6 +1595,7 @@ export default function CardForge() {
     power: type !== "Unité" ? manualPower : null,
     keywords: manualKeywords,
     keywordXValues,
+    keywordGrantScope: type !== "Unité" ? keywordGrantScope : undefined,
     ability: manualAbility,
     flavorText: manualFlavorText,
     illustrationPrompt: manualIllustrationPrompt,
@@ -1659,35 +1650,17 @@ export default function CardForge() {
       if (fmtRes.ok) {
         const fmtData = await fmtRes.json();
         setFormats(Array.isArray(fmtData) ? fmtData : []);
-        const variableFormat = (Array.isArray(fmtData) ? fmtData : []).find((f: GameFormat) => f.code === 'variable');
-        if (variableFormat) {
-          const vsRes = await fetch(`/api/formats/${variableFormat.id}/sets`);
-          if (vsRes.ok) setVariableSetIds(await vsRes.json());
-        }
       }
       if (setsRes.ok) setSets(await setsRes.json());
     } catch { /* ignore */ }
   }, []);
 
-  // Returns the deduplicated list of clans that can apply to a given token
-  // race. We scan every faction whose `races` array contains the race and
-  // gather their clan names if `appliesTo === race || appliesTo === "all"`.
+  // Clans that can apply to a given token race. Each race belongs to exactly
+  // one faction (RACE_TO_FACTION), so we resolve that faction then ask for the
+  // clans applicable to this race (transversal + race-specific).
   const getAvailableTokenClans = useCallback((race: string): string[] => {
     if (!race) return [];
-    const out = new Set<string>();
-    for (const fac of Object.values(FACTIONS)) {
-      const facWithClans = fac as typeof fac & {
-        races?: string[];
-        clans?: { names: string[]; appliesTo: string };
-      };
-      if (!facWithClans.races?.includes(race)) continue;
-      const clans = facWithClans.clans;
-      if (!clans) continue;
-      if (clans.appliesTo === "all" || clans.appliesTo === race) {
-        for (const n of clans.names) out.add(n);
-      }
-    }
-    return Array.from(out);
+    return getClanNamesForRace(getFactionForRace(race), race);
   }, []);
 
   const generateTokenPrompt = useCallback(() => {
@@ -1708,7 +1681,7 @@ export default function CardForge() {
       "Feu": "a fire elemental, body made of living flames, molten core, embers floating around",
       "Terre": "an earth elemental, body of rock and stone, crystal growths, moss patches, heavy and immovable",
       "Eau": "a water elemental, body of flowing translucent water, whirlpool core, droplets suspended in air",
-      "Air/Tempête": "a storm elemental, body of swirling wind and lightning, crackling electricity, semi-transparent",
+      "Air": "a storm elemental, body of swirling wind and lightning, crackling electricity, semi-transparent",
       "Géants": "a towering giant humanoid, crude armor, massive club, standing several stories tall",
       "Ogres": "a large brutish ogre, ugly face, thick skin, crude leather armor, wielding a club",
       "Dragons": "a magnificent dragon with scales, massive wings, long tail, breathing fire, serpentine neck",
@@ -1876,7 +1849,7 @@ export default function CardForge() {
     setLoading(true);
     // Use manually-set mana if changed from default, and pass race for keyword selection
     const fixedMana = manualMana !== 3 ? manualMana : null;
-    const stats = generateCardStats(f, t, r, fixedMana, race || undefined);
+    const stats = generateCardStats(f, t, r, fixedMana, race || undefined, clan || undefined);
     // If manual keywords are set, override generated ones
     if (manualKeywords.length > 0) {
       stats.keywords = manualKeywords;
@@ -1937,8 +1910,9 @@ export default function CardForge() {
       const r = rarity || pickRarity();
       const facData = FACTIONS[f];
       const bulkRace = race || (facData?.races ? pick(facData.races) : "");
-      const bulkClan = clan || (facData?.clans ? pick(facData.clans.names) : "");
-      const stats = generateCardStats(f, t, r, null, bulkRace || undefined);
+      const bulkRaceClans = getClanNamesForRace(f, bulkRace);
+      const bulkClan = clan || (bulkRaceClans.length ? pick(bulkRaceClans) : "");
+      const stats = generateCardStats(f, t, r, null, bulkRace || undefined, bulkClan || undefined);
       let text: CardText = { name: "Inconnu", ability: "—", flavorText: "", illustrationPrompt: "" };
       try { text = await generateCardText(f, t, r, stats, bulkRace || undefined, bulkClan || undefined); } catch { /* fallback above */ }
       const c: ForgeCard = {
@@ -2104,14 +2078,18 @@ export default function CardForge() {
       // sidecar to route effects to the death/tap pipelines and to source
       // per-instance X (the bracket notation in effect_text remains the
       // legacy fallback for cards without instances).
+      const isSpellCard = FORGE_TO_GAME_TYPE[forgeCard.type] === "spell";
       const keywordInstances = forgeCard.keywords
         .map((label) => {
           const id = FORGE_TO_GAME_KEYWORD[label];
           if (!id) return null;
           const mode = keywordModes[label];
           const x = forgeCard.keywordXValues?.[label];
-          if (!mode && x == null) return null; // pure play + no X → nothing to store
-          return { id, ...(mode ? { mode } : {}), ...(x != null ? { x } : {}) };
+          // On a spell, a conferred keyword set to "all_allies" must persist
+          // its scope even with no mode/X. "target" is the default → no field.
+          const grantScope = isSpellCard && keywordGrantScope[label] === "all_allies" ? "all_allies" as const : undefined;
+          if (!mode && x == null && !grantScope) return null; // pure play + no X + default scope → nothing to store
+          return { id, ...(mode ? { mode } : {}), ...(x != null ? { x } : {}), ...(grantScope ? { grantScope } : {}) };
         })
         .filter(Boolean);
 
@@ -2195,7 +2173,7 @@ export default function CardForge() {
     } finally {
       setSaving(false);
     }
-  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile]);
+  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, keywordModes, keywordGrantScope]);
 
   const [generatingImage, setGeneratingImage] = useState(false);
   const [editedPrompt, setEditedPrompt] = useState<string | null>(null);
@@ -2397,11 +2375,11 @@ export default function CardForge() {
                 </Sec>
               )}
 
-              {/* Clan selector */}
-              {FACTIONS[faction]?.clans && (FACTIONS[faction].clans!.appliesTo === "all" || FACTIONS[faction].clans!.appliesTo === race) && (
+              {/* Clan selector — race-aware (transversal + race-specific clans) */}
+              {getClanNamesForRace(faction, race).length > 0 && (
                 <Sec title="Clan">
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
-                    {FACTIONS[faction].clans!.names.map(c => (
+                    {getClanNamesForRace(faction, race).map(c => (
                       <button key={c} onClick={() => setClan(clan === c ? "" : c)} style={{
                         padding: "4px 8px", borderRadius: 5, cursor: "pointer",
                         background: clan === c ? `${fac.color}22` : "#fff",
@@ -2984,6 +2962,10 @@ export default function CardForge() {
                       {availableManualKeywords.map(([id, kw]) => {
                         const selected = manualKeywords.includes(id);
                         const isScalable = kw.scalable;
+                        // On a spell, a selected conferred keyword is tinted green
+                        // when it grants to all allies, faction-colored otherwise.
+                        const grantAll = type !== "Unité" && selected && keywordGrantScope[id] === "all_allies";
+                        const selColor = grantAll ? "#27ae60" : fac.color;
                         return (
                           <div key={id} style={{ display: "inline-flex", alignItems: "center", gap: 2, position: "relative" }}
                             onMouseEnter={e => {
@@ -2999,12 +2981,15 @@ export default function CardForge() {
                               } else if (!selected && isScalable) {
                                 setKeywordXValues(prev => ({ ...prev, [id]: 1 }));
                               }
+                              if (selected) {
+                                setKeywordGrantScope(prev => { const next = { ...prev }; delete next[id]; return next; });
+                              }
                             }}
                               style={{
                                 padding: "3px 7px", borderRadius: isScalable && selected ? "5px 0 0 5px" : 5, cursor: "pointer",
-                                background: selected ? `${fac.color}22` : "#fff",
-                                border: `1px solid ${selected ? fac.color : "#e0e0e0"}`,
-                                color: selected ? fac.color : "#999",
+                                background: selected ? `${selColor}22` : "#fff",
+                                border: `1px solid ${selected ? selColor : "#e0e0e0"}`,
+                                color: selected ? selColor : "#999",
                                 fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: selected ? 700 : 400,
                                 transition: "all 0.15s",
                               }}>{id.replace(/ X$/, "")}{isScalable && !selected ? " X" : ""}</button>
@@ -3056,6 +3041,35 @@ export default function CardForge() {
                                         opacity: allowed ? 1 : 0.4,
                                       }}
                                     >{label}</button>
+                                  );
+                                })}
+                              </div>
+                            )}
+                            {/* Grant-scope picker — spells only. ◯ = créature
+                                ciblée (blanc), ⦿ = toutes les unités alliées
+                                (vert). Drives the green/white icon on the card. */}
+                            {selected && type !== "Unité" && (
+                              <div style={{ display: "inline-flex", gap: 2, marginLeft: 4 }}>
+                                {([["target", "◯", "#888", "Conférée à la créature ciblée"], ["all_allies", "⦿", "#27ae60", "Conférée à toutes les unités alliées"]] as const).map(([val, sym, color, title]) => {
+                                  const activeScope = (keywordGrantScope[id] === "all_allies" ? "all_allies" : "target") === val;
+                                  return (
+                                    <button
+                                      key={val}
+                                      title={title}
+                                      onClick={() => setKeywordGrantScope(prev => {
+                                        const next = { ...prev };
+                                        if (val === "all_allies") next[id] = "all_allies"; else delete next[id];
+                                        return next;
+                                      })}
+                                      style={{
+                                        width: 18, height: 18, borderRadius: 3,
+                                        background: activeScope ? color : "transparent",
+                                        border: `1px solid ${color}`,
+                                        color: activeScope ? "#fff" : color,
+                                        fontSize: 10, fontWeight: 700, cursor: "pointer",
+                                        padding: 0, lineHeight: 1,
+                                      }}
+                                    >{sym}</button>
                                   );
                                 })}
                               </div>
@@ -3529,7 +3543,11 @@ export default function CardForge() {
                   {tokenTemplates.map(t => (
                     <div key={t.id} style={{ border: "1px solid #e0e0e0", borderRadius: 8, overflow: "hidden", background: "#fff" }}>
                       {t.image_url ? (
-                        <img src={t.image_url} alt={t.name} style={{ width: "100%", height: 120, objectFit: "cover" }} />
+                        // Remote token art via next/image so the grid fetches a
+                        // small (~200px) variant instead of the full-res original.
+                        <div style={{ position: "relative", width: "100%", height: 120 }}>
+                          <Image src={t.image_url} alt={t.name} fill sizes="200px" quality={75} style={{ objectFit: "cover" }} />
+                        </div>
                       ) : (
                         <div style={{ width: "100%", height: 120, background: "#f0f0f0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30 }}>⚔️</div>
                       )}
@@ -4530,67 +4548,17 @@ export default function CardForge() {
                 </div>
                 {fmt.description && <p style={{ fontSize: 9, color: "#888", marginBottom: 8 }}>{fmt.description}</p>}
 
-                {fmt.code === "standard" && (
-                  <div style={{ fontSize: 9, color: "#666", lineHeight: 1.8 }}>
-                    <div><strong>Set de base :</strong> {sets.find(s => s.code === "BASE") ? `${sets.find(s => s.code === "BASE")!.icon} ${sets.find(s => s.code === "BASE")!.name}` : "Non trouvé"}</div>
-                    <div><strong>2 dernières extensions :</strong> {
-                      sets.filter(s => s.code !== "BASE" && s.released_at)
-                        .sort((a, b) => new Date(b.released_at!).getTime() - new Date(a.released_at!).getTime())
-                        .slice(0, 2)
-                        .map(s => `${s.icon} ${s.name}`).join(", ") || "Aucune"
-                    }</div>
-                    <div>+ Cartes sans extension de moins de 2 ans</div>
-                  </div>
+                {fmt.code === "classique-standard" && (
+                  <p style={{ fontSize: 9, color: "#666", lineHeight: 1.8 }}>Uniquement les cartes <strong>Communes</strong>, éditées il y a moins de ~2 ans (rotation par mois).</p>
                 )}
-
-                {fmt.code === "etendu" && (
-                  <p style={{ fontSize: 9, color: "#666" }}>Toutes les cartes sont jouables.</p>
+                {fmt.code === "classique-etendu" && (
+                  <p style={{ fontSize: 9, color: "#666", lineHeight: 1.8 }}>Uniquement les cartes <strong>Communes</strong>, toutes éditions depuis le début du jeu.</p>
                 )}
-
-                {fmt.code === "basique" && (
-                  <p style={{ fontSize: 9, color: "#666" }}>Mêmes règles que Standard, uniquement rareté <strong>Commune</strong>.</p>
+                {fmt.code === "expert-standard" && (
+                  <p style={{ fontSize: 9, color: "#666", lineHeight: 1.8 }}>Toutes raretés (plafonnées par les slots), éditées il y a moins de ~2 ans (rotation par mois).</p>
                 )}
-
-                {fmt.code === "variable" && (
-                  <div>
-                    <p style={{ fontSize: 9, color: "#888", marginBottom: 8 }}>Extensions incluses (+ set de base + cartes sans extension &lt; 2 ans) :</p>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
-                      {sets.filter(s => s.code !== "BASE").map(s => {
-                        const isSelected = variableSetIds.includes(s.id);
-                        return (
-                          <button key={s.id} onClick={() => setVariableSetIds(prev => isSelected ? prev.filter(id => id !== s.id) : [...prev, s.id])}
-                            style={{
-                              padding: "4px 10px", borderRadius: 5, cursor: "pointer", fontSize: 9, fontFamily: "'Cinzel',serif", transition: "all 0.15s",
-                              border: `1px solid ${isSelected ? "#4caf50" : "#e0e0e0"}`,
-                              background: isSelected ? "#e8f5e9" : "#fafafa",
-                              color: isSelected ? "#2e7d32" : "#666",
-                              fontWeight: isSelected ? 700 : 400,
-                            }}>
-                            {s.icon} {s.name}
-                          </button>
-                        );
-                      })}
-                      {sets.filter(s => s.code !== "BASE").length === 0 && <span style={{ fontSize: 9, color: "#aaa" }}>Aucune extension</span>}
-                    </div>
-                    <button onClick={async () => {
-                      setSavingFormats(true);
-                      try {
-                        await fetch(`/api/formats/${fmt.id}/sets`, {
-                          method: "PUT",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ set_ids: variableSetIds }),
-                        });
-                      } catch { /* ignore */ }
-                      setSavingFormats(false);
-                    }} disabled={savingFormats}
-                      style={{
-                        padding: "5px 16px", borderRadius: 6, border: "none", background: "#333", color: "#fff",
-                        fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: 700, cursor: savingFormats ? "wait" : "pointer",
-                        opacity: savingFormats ? 0.5 : 1,
-                      }}>
-                      {savingFormats ? "Sauvegarde..." : "Sauvegarder"}
-                    </button>
-                  </div>
+                {fmt.code === "expert-etendu" && (
+                  <p style={{ fontSize: 9, color: "#666", lineHeight: 1.8 }}>Toutes raretés (plafonnées par les slots), toutes éditions depuis le début du jeu.</p>
                 )}
               </div>
             ))}

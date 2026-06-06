@@ -103,7 +103,7 @@ export async function POST(request: Request) {
       const filePath = `forge_${Date.now()}_${Math.random().toString(36).slice(2, 6)}.${ext}`;
       const { error: uploadErr } = await supabaseAdmin.storage
         .from('card-images')
-        .upload(filePath, buffer, { upsert: true, contentType: imageMimeType });
+        .upload(filePath, buffer, { upsert: true, contentType: imageMimeType, cacheControl: '31536000' });
       if (uploadErr) throw new Error(`Image: ${uploadErr.message}`);
       const { data: urlData } = supabaseAdmin.storage.from('card-images').getPublicUrl(filePath);
       image_url = urlData.publicUrl;
@@ -153,7 +153,7 @@ export async function POST(request: Request) {
         const sfxPath = `cards/${urlKey}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}.${ext}`;
         const { error: sfxErr } = await supabaseAdmin.storage
           .from('sfx-tracks')
-          .upload(sfxPath, buf, { upsert: true, contentType: mime });
+          .upload(sfxPath, buf, { upsert: true, contentType: mime, cacheControl: '31536000' });
         if (sfxErr) throw new Error(`SFX upload: ${sfxErr.message}`);
         const { data: sfxUrl } = supabaseAdmin.storage.from('sfx-tracks').getPublicUrl(sfxPath);
         cardData[urlKey] = sfxUrl.publicUrl;

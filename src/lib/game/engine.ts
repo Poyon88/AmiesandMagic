@@ -1403,10 +1403,11 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // Tempête X — on-play, deals X damage spread one-by-one across the
     // currently-alive enemy creatures. Each "drop" picks a random target
     // from the live enemies (re-evaluated per drop so dead creatures stop
-    // taking hits). Does not target the enemy hero.
-    if (hasKw(cardInstance, "tempete")) {
-      const xVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
-      const total = xVals["tempete"] || Math.max(1, Math.floor(cardInstance.card.mana_cost / 3));
+    // taking hits). Does not target the enemy hero. Gated on hasKwOnPlay so
+    // a Tempête instance set to "death"/"tap" mode doesn't ALSO fire here at
+    // summon — it resolves from resolveCuratedKeywordEffect instead.
+    if (hasKwOnPlay(cardInstance, "tempete")) {
+      const total = getKwX(cardInstance, "tempete", undefined, Math.max(1, Math.floor(cardInstance.card.mana_cost / 3)));
       for (let drop = 0; drop < total; drop++) {
         const alive = opponent.board.filter((u) => u.currentHealth > 0);
         if (alive.length === 0) break;
@@ -1541,18 +1542,30 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       resolveComposableEffects(ctx, card.spell_effects.effects);
     }
 
-    // Phase 3: Grant creature keywords from spell to first target
+    // Phase 3: Grant creature keywords carried by the spell. Each keyword's
+    // recipients come from its keyword_instances entry:
+    //   - "all_allies" → every allied creature on the board at cast time
+    //   - "target" (default) → the single allied creature chosen via the
+    //     "grant_target" slot (falls back to the spell's primary target slot
+    //     so legacy single-target selection keeps working).
+    // X values are sourced from the instance and stored on each recipient via
+    // applyGrantedKeyword (which also handles divine_shield / charge side
+    // effects and records grantedKeywordX). Permanent — recalculateAuras never
+    // strips keywords from card.keywords.
     if (card.keywords.length > 0) {
-      const firstTargetId = targetMap["kw_0"] ?? targetMap["target_0"];
-      if (firstTargetId && firstTargetId !== "enemy_hero" && firstTargetId !== "friendly_hero") {
-        const target = findCreatureOnBoard(player, firstTargetId) ?? findCreatureOnBoard(opponent, firstTargetId);
-        if (target) {
-          for (const kw of card.keywords) {
-            if (kw === "divine_shield") target.hasDivineShield = true;
-            if (!target.card.keywords.includes(kw)) {
-              target.card = { ...target.card, keywords: [...target.card.keywords, kw] };
-            }
-          }
+      const grantTargetId = targetMap["grant_target"] ?? targetMap["kw_0"] ?? targetMap["target_0"];
+      const grantTarget =
+        grantTargetId && grantTargetId !== "enemy_hero" && grantTargetId !== "friendly_hero"
+          ? findCreatureOnBoard(player, grantTargetId)
+          : null;
+      for (const kw of card.keywords) {
+        const inst = card.keyword_instances?.find((k) => k.id === kw);
+        const scope = inst?.grantScope ?? "target";
+        const params = inst?.x != null ? { amount: inst.x } : undefined;
+        if (scope === "all_allies") {
+          for (const ally of player.board) applyGrantedKeyword(ally, kw, params);
+        } else if (grantTarget) {
+          applyGrantedKeyword(grantTarget, kw, params);
         }
       }
     }
@@ -1899,7 +1912,11 @@ function resolveSpellKeywords(
         if (targetId) {
           const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
           if (target) {
-            target.card = { ...target.card, keywords: [] };
+            // Clear BOTH the legacy keywords array AND keyword_instances — the
+            // latter is where mode-aware powers live (tap-activated abilities,
+            // on-death rattles, conferred-keyword scopes). Without this a
+            // silenced creature kept its activatable / death powers.
+            target.card = { ...target.card, keywords: [], keyword_instances: null };
             target.hasDivineShield = false;
             target.contresortActive = false;
             target.isParalyzed = false;
@@ -2422,7 +2439,10 @@ function resolveAtomicEffect(ctx: SpellResolutionContext, effect: AtomicEffect):
             ...target.card,
             attack: effect.attack ?? target.card.attack,
             health: effect.health ?? target.card.health,
+            // Strip keyword_instances too (tap/death powers, conferred scopes)
+            // so a transformed creature loses its activatable abilities.
             keywords: [],
+            keyword_instances: null,
           };
           target.hasDivineShield = false;
         }
@@ -2483,6 +2503,19 @@ export function getSpellTargetSlots(card: Card): SpellTargetSlot[] {
   // From composable effects
   if (card.spell_effects?.targets) {
     slots.push(...card.spell_effects.targets);
+  }
+
+  // Conferred creature keywords with single-target scope need one allied
+  // creature to receive them. A single shared slot serves every such keyword
+  // on the spell (all target-scope grants land on the same chosen ally).
+  if (card.card_type === "spell" && card.keywords?.length) {
+    const needsGrantTarget = card.keywords.some((kw) => {
+      const inst = card.keyword_instances?.find((k) => k.id === kw);
+      return (inst?.grantScope ?? "target") === "target";
+    });
+    if (needsGrantTarget) {
+      slots.push({ slot: "grant_target", type: "friendly_creature", label: "Cible du don" });
+    }
   }
 
   return slots;
@@ -2936,13 +2969,19 @@ function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: P
       }
     }
 
-    // Cycle éternel: ajoute une copie dans le deck, marquée pour auto-play
+    // Cycle éternel: la créature retourne dans le deck (copie marquée pour
+    // auto-play) au lieu de finir au cimetière. Comme la Résurrection plus
+    // haut, elle transite par le graveyard pour déclencher les triggers
+    // « Mort », puis on retire aussitôt la dépouille d'origine — sinon on
+    // garderait à la fois la copie recyclée dans le deck ET un doublon au
+    // cimetière.
     if (hasKw(c, "cycle_eternel")) {
       const copyInstance = createCardInstance({ ...c.card });
       copyInstance.cycleEternelAutoPlay = true;
       // Insert at random position in deck
       const insertIdx = Math.floor(rng() * (owner.deck.length + 1));
       owner.deck.splice(insertIdx, 0, copyInstance);
+      owner.graveyard = owner.graveyard.filter(g => g !== c);
     }
 
     // Custom on-death triggers from keywordInstances metadata. Curated
@@ -3084,6 +3123,20 @@ function resolveCuratedKeywordEffect(
       drawCard(owner);
       break;
     }
+    case "tempete": {
+      // Inflige X dégâts répartis un par un sur les créatures ennemies
+      // encore vivantes (cible recalculée à chaque goutte pour ne pas
+      // frapper les morts). Ne touche pas le héros. Identique à l'effet
+      // d'invocation, rejoué depuis le râle d'agonie (death) ou
+      // l'activation (tap).
+      for (let drop = 0; drop < x; drop++) {
+        const alive = opponent.board.filter((u) => u.currentHealth > 0);
+        if (alive.length === 0) break;
+        const target = alive[Math.floor(rng() * alive.length)];
+        dealDamageToCreature(target, 1, false, true);
+      }
+      break;
+    }
     // TODO: convocations_multiples, suprematie, ombre_du_passe, savant
     default:
       // No-op for keywords not yet supported in non-play modes. The
@@ -3109,6 +3162,11 @@ export function tapActivate(state: GameState, action: TapActivateAction): GameSt
   const source = player.board.find(c => c.instanceId === action.sourceInstanceId);
   if (!source) return state;
   if (source.tapped) return state;
+  // Paralysie : la créature est inerte pour tout le tour — elle ne peut ni
+  // attaquer ni activer son pouvoir. (Le gate hasSummoningSickness plus bas
+  // ne suffit pas : Charge le contourne, et la paralysie peut être appliquée
+  // après l'untap, pendant le tour même de la créature.)
+  if (source.isParalyzed) return state;
   // Traque (charge) autorise le pouvoir activable dès l'invocation, même si
   // Traque est gagnée en cours de tour (où hasSummoningSickness peut rester vrai).
   if (source.hasSummoningSickness && !hasKw(source, "charge")) return state;

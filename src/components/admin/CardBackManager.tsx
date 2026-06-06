@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { FACTIONS, getFactionDisplayName } from "@/lib/card-engine/constants";
 
 interface CardBack {
   id: number;
@@ -10,10 +11,12 @@ interface CardBack {
   rarity: string | null;
   max_prints: number | null;
   is_default: boolean;
+  faction: string | null;
   created_at: string;
 }
 
 const RARITIES = ["Commune", "Peu Commune", "Rare", "Épique", "Légendaire"];
+const FACTION_IDS = Object.keys(FACTIONS);
 const DEFAULT_MAX_PRINTS: Record<string, number> = {
   "Légendaire": 1,
   "Épique": 10,
@@ -37,6 +40,7 @@ export default function CardBackManager() {
   const [newImage, setNewImage] = useState<{ base64: string; mimeType: string } | null>(null);
   const [newImagePreview, setNewImagePreview] = useState<string | null>(null);
   const [newRarity, setNewRarity] = useState<string>("Commune");
+  const [newFaction, setNewFaction] = useState<string>("");
   const [newMaxPrints, setNewMaxPrints] = useState<number | null>(null);
   const [newIsDefault, setNewIsDefault] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -103,6 +107,7 @@ export default function CardBackManager() {
           imageBase64: newImage.base64,
           imageMimeType: newImage.mimeType,
           rarity: newRarity,
+          faction: newFaction || null,
           max_prints: effectiveMaxPrints,
           is_default: newIsDefault,
         }),
@@ -117,6 +122,7 @@ export default function CardBackManager() {
       setNewImage(null);
       setNewImagePreview(null);
       setNewRarity("Commune");
+      setNewFaction("");
       setNewMaxPrints(null);
       setNewIsDefault(false);
       await load();
@@ -237,6 +243,17 @@ export default function CardBackManager() {
               {RARITIES.map((r) => <option key={r} value={r}>{r}</option>)}
             </select>
           </div>
+          <div style={{ minWidth: 140 }}>
+            <label style={STYLE.label}>Faction</label>
+            <select
+              value={newFaction}
+              onChange={(e) => setNewFaction(e.target.value)}
+              style={{ width: "100%", padding: "6px 10px", borderRadius: 5, border: "1px solid #e0e0e0", fontSize: 12, marginTop: 4 }}
+            >
+              <option value="">— Aucune —</option>
+              {FACTION_IDS.map((f) => <option key={f} value={f}>{getFactionDisplayName(f)} — {f}</option>)}
+            </select>
+          </div>
           {newRarity !== "Commune" && (
             <div style={{ minWidth: 90 }}>
               <label style={STYLE.label}>Exemplaires</label>
@@ -326,6 +343,17 @@ export default function CardBackManager() {
                     style={{ padding: "3px 8px", borderRadius: 4, border: "1px solid #e0e0e0", fontSize: 11 }}
                   >
                     {RARITIES.map((r) => <option key={r} value={r}>{r}</option>)}
+                  </select>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={STYLE.label}>Faction :</span>
+                  <select
+                    value={cb.faction ?? ""}
+                    onChange={(e) => handleUpdateField(cb, { faction: e.target.value || null })}
+                    style={{ padding: "3px 8px", borderRadius: 4, border: "1px solid #e0e0e0", fontSize: 11 }}
+                  >
+                    <option value="">— Aucune —</option>
+                    {FACTION_IDS.map((f) => <option key={f} value={f}>{f}</option>)}
                   </select>
                 </div>
                 {(cb.rarity ?? "Commune") !== "Commune" && (
