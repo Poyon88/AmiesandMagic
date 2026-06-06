@@ -236,7 +236,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   canalisation: {
     id: "canalisation", label: "Canalisation", symbol: "🔮",
-    desc: "Tant que cette unité est en jeu, vos sorts coûtent 1 mana de moins.",
+    desc: "Tant que cette unité est en jeu, vos sorts coûtent 1 mana de moins (minimum 1).",
     applicable_to: ["creature"],
     creature: { cost: 13, costPerX: 0, se: 3.0, minTier: 2, scalable: false, zone: "Terrain" },
   },

@@ -844,7 +844,10 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
   let manaCost = Math.max(0, getTokenManaCost(card) - (cardInstance.manaCostReduction ?? 0));
   if (card.card_type === "spell") {
     const canalisationCount = player.board.filter(c => hasKw(c, "canalisation")).length;
-    manaCost = Math.max(0, manaCost - canalisationCount);
+    // Canalisation ne peut jamais faire descendre un sort sous 1 mana. Le
+    // plancher est min(1, coût) pour ne pas *augmenter* un sort déjà à 0
+    // (ex. réduit par Concentration) tout en bloquant la réduction à 1 sinon.
+    manaCost = Math.max(Math.min(1, manaCost), manaCost - canalisationCount);
   }
   if (card.card_type === "creature") {
     manaCost = Math.max(0, manaCost - getEntraideReduction(card, player.board));
@@ -3559,7 +3562,10 @@ export function canPlayCard(state: GameState, cardInstanceId: string): boolean {
   let manaCost = Math.max(0, getTokenManaCost(card.card) - (card.manaCostReduction ?? 0));
   if (card.card.card_type === "spell") {
     const canalisationCount = player.board.filter(c => hasKw(c, "canalisation")).length;
-    manaCost = Math.max(0, manaCost - canalisationCount);
+    // Canalisation ne peut jamais faire descendre un sort sous 1 mana. Le
+    // plancher est min(1, coût) pour ne pas *augmenter* un sort déjà à 0
+    // (ex. réduit par Concentration) tout en bloquant la réduction à 1 sinon.
+    manaCost = Math.max(Math.min(1, manaCost), manaCost - canalisationCount);
   }
   if (card.card.card_type === "creature") {
     manaCost = Math.max(0, manaCost - getEntraideReduction(card.card, player.board));
