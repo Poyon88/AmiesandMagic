@@ -708,6 +708,19 @@ export const ABILITIES: Record<string, AbilityDef> = {
       params: [], needsTarget: true, targetType: "any_creature",
     },
   },
+  renforcement_multiple: {
+    id: "renforcement_multiple", label: "Renforcement multiple", symbol: "⏫",
+    desc: "Octroie +X/+Y à toutes vos créatures de la race ou du clan sélectionné.",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      cost: 16, costPerX: 6, se: 4.5, minTier: 3, scalable: true, zone: "Terrain",
+      desc: "Selon le déclenchement : octroie +X/+Y à toutes vos créatures de la race/clan choisi.",
+    },
+    spell: {
+      desc: "Octroie +X/+Y à toutes vos créatures de la race ou du clan sélectionné.",
+      params: ["attack", "health"], needsTarget: false,
+    },
+  },
   concentration: {
     id: "concentration", label: "Concentration X", symbol: "🎯",
     desc: "Remplace chaque sort en main par un sort aléatoire (toutes factions) de coût en mana supérieur de X ; le coût du nouveau sort est réduit de X.",

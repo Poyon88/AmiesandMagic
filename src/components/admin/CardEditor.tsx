@@ -8,6 +8,7 @@ import { KEYWORDS as KEYWORD_DEFS, FACTIONS, getFactionDisplayName, getAllClanNa
 import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS } from "@/lib/game/spell-keywords";
 import type { Card, Keyword, KeywordInstance, KeywordMode, SpellKeywordInstance, SpellComposableEffects, CardSet, TokenTemplate } from "@/lib/game/types";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
+import RaceClanPicker from "@/components/admin/RaceClanPicker";
 
 interface DbCard {
   id: number;
@@ -97,6 +98,11 @@ export default function CardEditor() {
   const [printsResult, setPrintsResult] = useState<{ ok: boolean; msg: string } | null>(null);
   const [generatingPrompt, setGeneratingPrompt] = useState(false);
   const [generatingImage, setGeneratingImage] = useState(false);
+  // Renforcement multiple (créature) : +Y (PV) et race/clan ciblé. Le +X (ATK)
+  // réutilise keywordXValues ; ces 3 champs sont sérialisés dans keyword_instances.
+  const [rmY, setRmY] = useState<number>(1);
+  const [rmRace, setRmRace] = useState<string>("");
+  const [rmClan, setRmClan] = useState<string>("");
 
   // Load data
   const loadData = useCallback(async () => {
@@ -200,11 +206,16 @@ export default function CardEditor() {
     // sidecar; the effect_text bracket is the legacy fallback for X.
     const modes: Record<string, KeywordMode> = {};
     const grantScopes: Record<string, "all_allies"> = {};
+    let rmYLoaded = 1, rmRaceLoaded = "", rmClanLoaded = "";
     for (const inst of card.keyword_instances ?? []) {
       if (inst.mode) modes[inst.id] = inst.mode;
       if (inst.x != null) parsedX[inst.id] = inst.x;
       if (inst.grantScope === "all_allies") grantScopes[inst.id] = "all_allies";
+      if (inst.id === "renforcement_multiple") {
+        rmYLoaded = inst.y ?? 1; rmRaceLoaded = inst.race ?? ""; rmClanLoaded = inst.clan ?? "";
+      }
     }
+    setRmY(rmYLoaded); setRmRace(rmRaceLoaded); setRmClan(rmClanLoaded);
     setKeywordModes(modes);
     setKeywordXValues(parsedX);
     setKeywordGrantScope(grantScopes);
@@ -341,6 +352,10 @@ export default function CardEditor() {
           // On a spell, a conferred keyword set to "all_allies" must persist
           // its scope even with no mode/X. "target" is the default → no field.
           const grantScope = isSpellCard && keywordGrantScope[id] === "all_allies" ? "all_allies" as const : undefined;
+          // Renforcement multiple (créature) : porte +X/+Y et race/clan ; toujours émis.
+          if (id === "renforcement_multiple" && !isSpellCard) {
+            return { id: id as Keyword, ...(mode ? { mode } : {}), x: x ?? 0, y: rmY, ...(rmRace ? { race: rmRace } : {}), ...(rmClan ? { clan: rmClan } : {}) };
+          }
           if (!mode && x == null && !grantScope) return null;
           return { id: id as Keyword, ...(mode ? { mode } : {}), ...(x != null ? { x } : {}), ...(grantScope ? { grantScope } : {}) };
         })
@@ -413,7 +428,7 @@ export default function CardEditor() {
       console.warn("[card-save] refresh failed after successful save:", err);
     }
     setSaving(false);
-  }, [selectedCard, editFields, newImageFile, keywordXValues, keywordModes, keywordGrantScope]);
+  }, [selectedCard, editFields, newImageFile, keywordXValues, keywordModes, keywordGrantScope, rmY, rmRace, rmClan]);
 
   // Delete
   const handleDelete = useCallback(async (id: number) => {
@@ -1215,6 +1230,16 @@ export default function CardEditor() {
                         {kw.id === "invocation_multiple" && (
                           <div style={{ fontSize: 8, color: "#9b59b6" }}>Config dans &quot;Tokens à invoquer&quot; ci-dessous</div>
                         )}
+                        {kw.id === "renforcement_multiple" && (
+                          <div style={{ flexBasis: "100%", marginTop: 2 }}>
+                            <label style={{ fontSize: 7, color: "#2c5d99", letterSpacing: 1, fontFamily: "'Cinzel',serif" }}>RACE / CLAN CIBLÉ</label>
+                            <RaceClanPicker
+                              race={kw.race ?? ""}
+                              clan={kw.clan ?? ""}
+                              onChange={(r, c) => setSpellKws(spellKws.map((k, i) => i === idx ? { ...k, race: r || undefined, clan: c || undefined } : k))}
+                            />
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -1308,6 +1333,22 @@ export default function CardEditor() {
                     <option key={r} value={r}>{r}</option>
                   ))}
                 </select>
+              </div>
+            )}
+
+            {((editFields.keywords as string[]) || []).includes("renforcement_multiple") && editFields.card_type === "creature" && (
+              <div style={{ marginBottom: 8, padding: "8px 10px", borderRadius: 6, background: "#eef5ff", border: "1px solid #cfe0f5" }}>
+                <div style={{ ...S.label, color: "#2c5d99", marginBottom: 6 }}>⏫ Renforcement multiple — +PV (Y) & cible</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                  <span style={{ fontSize: 9, color: "#27ae60" }}>+PV (Y)</span>
+                  <input
+                    type="number" min={0} max={20} value={rmY}
+                    onChange={e => setRmY(Math.max(0, parseInt(e.target.value) || 0))}
+                    style={{ width: 48, padding: "2px 6px", borderRadius: 4, border: "1px solid #cfe0f5", fontSize: 11, textAlign: "center" }}
+                  />
+                  <span style={{ fontSize: 9, color: "#888" }}>(le +ATK = la valeur X ci-dessus)</span>
+                </div>
+                <RaceClanPicker race={rmRace} clan={rmClan} onChange={(r, c) => { setRmRace(r); setRmClan(c); }} />
               </div>
             )}
 

@@ -50,6 +50,7 @@ export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
   "Savant": new Set<CuratedMode>(["death", "return"]),
   "Combustion": new Set<CuratedMode>(["death", "tap", "return"]),
   "Remontée": new Set<CuratedMode>(["death", "tap", "return"]),
+  "Renforcement multiple": new Set<CuratedMode>(["death", "tap", "return"]),
 };
 
 // ─── FACTIONS ────────────────────────────────────────────────────────────────

@@ -95,6 +95,19 @@ export async function POST(request: Request) {
       if (!rc.race) return NextResponse.json({ error: 'Entraide : race cible requise.' }, { status: 400 });
     }
 
+    // Renforcement multiple : une race OU un clan cible doit être défini(e),
+    // côté créature (keyword_instances) comme côté sort (spell_keywords).
+    const rmInst = Array.isArray(card?.keyword_instances)
+      ? card.keyword_instances.find((i: { id?: string }) => i?.id === 'renforcement_multiple')
+      : null;
+    const rmSpell = Array.isArray(card?.spell_keywords)
+      ? card.spell_keywords.find((k: { id?: string }) => k?.id === 'renforcement_multiple')
+      : null;
+    const rm = rmInst ?? rmSpell;
+    if (rm && !rm.race && !rm.clan) {
+      return NextResponse.json({ error: 'Renforcement multiple : sélectionnez une race ou un clan cible.' }, { status: 400 });
+    }
+
     // Upload image if provided
     let image_url: string | null = null;
     if (imageBase64 && imageMimeType) {

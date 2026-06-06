@@ -48,7 +48,9 @@ export type Keyword =
   // Polymorphic — replace each spell in hand with a random higher-cost spell, discounted
   | "concentration"
   // Polymorphic — bounce a unit to its true owner's hand (4 trigger modes)
-  | "remontee";
+  | "remontee"
+  // Polymorphic — +X/+Y to all controller's creatures of a selected race/clan
+  | "renforcement_multiple";
 
 export type SpellTargetType =
   | "any"
@@ -111,7 +113,8 @@ export type SpellKeywordId =
   | "concentration"
   | "selection_magique"
   | "poison"
-  | "remontee";
+  | "remontee"
+  | "renforcement_multiple";
 
 /** Trigger mode for a creature keyword. Undefined = on-play (default,
  *  existing behaviour). "death" = on-death rattle. "tap" = activated by
@@ -127,6 +130,13 @@ export interface KeywordInstance {
   id: Keyword;
   mode?: KeywordMode; // undefined ⇒ on-play
   x?: number;
+  /** Renforcement multiple : bonus de PV (+Y). `x` porte le bonus d'ATK (+X). */
+  y?: number;
+  /** Renforcement multiple : race ciblée (les créatures du contrôleur de cette
+   *  race gagnent +X/+Y). `clan` prime sur `race` quand il est défini. */
+  race?: string;
+  /** Renforcement multiple : clan ciblé (prioritaire sur `race`). */
+  clan?: string;
   /** Spell-only. When a creature keyword is carried by a SPELL, the spell
    *  CONFERS it to creature(s) on cast. `grantScope` chooses the recipients:
    *  "target" (default) = a single chosen allied creature; "all_allies" =
@@ -137,9 +147,10 @@ export interface KeywordInstance {
 export interface SpellKeywordInstance {
   id: SpellKeywordId;
   amount?: number;   // X value for impact, deferlement, siphon, guerison, inspiration, afflux
-  attack?: number;   // for renforcement, invocation
-  health?: number;   // for renforcement, invocation
-  race?: string;     // for invocation (legacy — token race, fallback when token_id absent)
+  attack?: number;   // for renforcement, renforcement_multiple, invocation
+  health?: number;   // for renforcement, renforcement_multiple, invocation
+  race?: string;     // for invocation (token race) and renforcement_multiple (race ciblée)
+  clan?: string;     // for renforcement_multiple (clan ciblé, prioritaire sur race)
   token_id?: number | null; // for invocation — id from token_templates (preferred over race)
 }
 

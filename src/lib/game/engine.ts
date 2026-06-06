@@ -1008,6 +1008,13 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       resolveRemontee(action.targetInstanceId, cardInstance, player, opponent);
     }
 
+    // Renforcement multiple (invocation) : +X/+Y à vos créatures de la race/clan
+    // ciblé (lu depuis l'instance on-play du mot-clé). Source exclue.
+    if (hasKwOnPlay(cardInstance, "renforcement_multiple")) {
+      const rm = cardInstance.card.keyword_instances?.find(i => i.id === "renforcement_multiple" && !i.mode);
+      if (rm) applyRenforcementMultiple(player, rm.x ?? 0, rm.y ?? 0, rm.race, rm.clan, cardInstance.instanceId);
+    }
+
     // Pillage: adversaire défausse une carte de son choix
     if (hasKwOnPlay(cardInstance, "pillage") && opponent.hand.length > 0) {
       const discardIdx = Math.floor(rng() * opponent.hand.length);
@@ -1970,6 +1977,11 @@ function resolveSpellKeywords(
             target.maxHealth += hpBuff;
           }
         }
+        break;
+      }
+      case "renforcement_multiple": {
+        // +X/+Y à toutes les créatures du lanceur de la race/clan ciblé.
+        applyRenforcementMultiple(ctx.caster, kw.attack ?? 0, kw.health ?? 0, kw.race, kw.clan);
         break;
       }
       case "guerison": {
@@ -2935,7 +2947,7 @@ function triggerReturnToHand(ci: CardInstance, owner: PlayerState, opponent: Pla
   if (ci.card.card_type !== "creature") return;
   for (const inst of ci.card.keyword_instances ?? []) {
     if (inst.mode === "return") {
-      resolveCuratedKeywordEffect(inst.id, inst.x ?? 1, ci, owner, opponent);
+      resolveCuratedKeywordEffect(inst.id, inst.x ?? 1, ci, owner, opponent, undefined, inst);
     }
   }
 }
@@ -3101,7 +3113,7 @@ function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: P
     const customDeathInstances = c.card.keyword_instances ?? [];
     for (const inst of customDeathInstances) {
       if (inst.mode === "death") {
-        resolveCuratedKeywordEffect(inst.id, inst.x ?? 1, c, owner, enemy);
+        resolveCuratedKeywordEffect(inst.id, inst.x ?? 1, c, owner, enemy, undefined, inst);
       }
     }
 
@@ -3146,6 +3158,28 @@ function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: P
  *  `playCard` for the supported subset — keep the two paths in sync
  *  when extending the list. Source is the creature carrying the keyword
  *  (already dead for on-death; still alive for on-tap). */
+// Renforcement multiple : +X/+Y permanent à toutes les créatures du contrôleur
+// de la race ou du clan ciblé (clan prioritaire). La source est exclue. Même
+// pattern de buff permanent que le sort "renforcement" (modifie card + stats).
+function applyRenforcementMultiple(
+  controller: PlayerState,
+  x: number,
+  y: number,
+  race?: string | null,
+  clan?: string | null,
+  sourceInstanceId?: string | null,
+): void {
+  for (const ally of controller.board) {
+    if (sourceInstanceId && ally.instanceId === sourceInstanceId) continue;
+    const match = clan ? ally.card.clan === clan : (race ? ally.card.race === race : false);
+    if (!match) continue;
+    ally.card = { ...ally.card, attack: (ally.card.attack ?? 0) + x, health: (ally.card.health ?? 0) + y };
+    ally.currentAttack += x;
+    ally.currentHealth += y;
+    ally.maxHealth += y;
+  }
+}
+
 function resolveCuratedKeywordEffect(
   kw: Keyword,
   x: number,
@@ -3153,8 +3187,14 @@ function resolveCuratedKeywordEffect(
   owner: PlayerState,
   opponent: PlayerState,
   targetInstanceId?: string,
+  inst?: KeywordInstance,
 ): void {
   switch (kw) {
+    case "renforcement_multiple": {
+      // Tap / mort / retour : lit +X/+Y et race/clan depuis l'instance du mot-clé.
+      applyRenforcementMultiple(owner, inst?.x ?? 0, inst?.y ?? 0, inst?.race, inst?.clan, source.instanceId);
+      return;
+    }
     case "remontee": {
       // targetInstanceId fourni au tap ; absent en mort/retour → cible aléatoire.
       resolveRemontee(targetInstanceId, source, owner, opponent);
@@ -3289,7 +3329,7 @@ export function tapActivate(state: GameState, action: TapActivateAction): GameSt
   if (!instance || instance.mode !== "tap") return state;
 
   source.tapped = true;
-  resolveCuratedKeywordEffect(instance.id, instance.x ?? 1, source, player, opponent, action.targetInstanceId);
+  resolveCuratedKeywordEffect(instance.id, instance.x ?? 1, source, player, opponent, action.targetInstanceId, instance);
 
   recalculateAuras(player, opponent);
   newState.lastAction = action;
