@@ -114,7 +114,7 @@ export type SpellKeywordId =
  *  existing behaviour). "death" = on-death rattle. "tap" = activated by
  *  tapping the creature (MTG-strict semantics). Only a curated subset of
  *  keywords accept non-play modes — see plan. */
-export type KeywordMode = "death" | "tap";
+export type KeywordMode = "death" | "tap" | "return";
 
 /** Per-instance metadata for a creature keyword. Lives in
  *  `Card.keywordInstances` alongside the string `keywords` array so each

@@ -1055,7 +1055,7 @@ export default function CardEditor() {
             })()}
 
             {/* Trigger mode (déclenchement) for curated creature keywords —
-                ⚡ à l'arrivée (défaut) / 💀 à la mort / ⟲ activable (tap).
+                ⚡ à l'arrivée (défaut) / 💀 à la mort / ⟲ activable (tap) / ↩ retour en main.
                 Only keywords in CURATED_KEYWORD_MODES accept non-play modes;
                 the engine routes the effect to the matching pipeline. */}
             {editFields.card_type === "creature" && (() => {
@@ -1075,11 +1075,11 @@ export default function CardEditor() {
                         <div key={kw} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           <span style={{ fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: 600, color: "#333", flex: 1 }}>{label}</span>
                           <div style={{ display: "inline-flex", gap: 3 }}>
-                            {(["play", "death", "tap"] as const).map(mode => {
+                            {(["play", "death", "tap", "return"] as const).map(mode => {
                               const allowed = mode === "play" || allowedModes.has(mode);
                               const active = mode === "play" ? !keywordModes[kw] : keywordModes[kw] === mode;
-                              const color = mode === "play" ? "#333" : mode === "death" ? "#a83232" : "#d4a800";
-                              const glyph = mode === "play" ? "⚡" : mode === "death" ? "💀" : "⟲";
+                              const color = mode === "play" ? "#333" : mode === "death" ? "#a83232" : mode === "tap" ? "#d4a800" : "#3a7dd4";
+                              const glyph = mode === "play" ? "⚡" : mode === "death" ? "💀" : mode === "tap" ? "⟲" : "↩";
                               return (
                                 <button
                                   key={mode}
@@ -1090,7 +1090,7 @@ export default function CardEditor() {
                                     else next[kw] = mode;
                                     return next;
                                   })}
-                                  title={mode === "play" ? "À l'arrivée en jeu (défaut)" : mode === "death" ? "À la mort (deathrattle)" : "Activable (tap / engagement)"}
+                                  title={mode === "play" ? "À l'arrivée en jeu (défaut)" : mode === "death" ? "À la mort (deathrattle)" : mode === "tap" ? "Activable (tap / engagement)" : "Au retour en main"}
                                   style={{
                                     width: 22, height: 22, borderRadius: 4,
                                     background: active ? color : "transparent",

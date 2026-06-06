@@ -335,7 +335,7 @@ export default function GameCard({
               const { kw, x, mode } = entry;
               const label = keywordLabels[kw] || kw;
               const baseTitle = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
-              const modeSuffix = mode === "death" ? " · à la mort" : mode === "tap" ? " · tap" : "";
+              const modeSuffix = mode === "death" ? " · à la mort" : mode === "tap" ? " · tap" : mode === "return" ? " · retour en main" : "";
               // On a spell, these keywords are CONFERRED to creature(s). The
               // "all allies" scope gets a visible GREEN chip (fill + border)
               // behind the icon — a glow alone was clipped by the card's
@@ -494,7 +494,7 @@ export default function GameCard({
               const { kw, x, mode } = entry;
               const label = keywordLabels[kw] || kw;
               const baseLabel = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
-              const modeSuffix = mode === "death" ? " · à la mort" : mode === "tap" ? " · tap" : "";
+              const modeSuffix = mode === "death" ? " · à la mort" : mode === "tap" ? " · tap" : mode === "return" ? " · retour en main" : "";
               const displayLabel = baseLabel + modeSuffix;
               const forgeKey = keywordLabels[kw];
               const kwDef = forgeKey ? keywordDefs[forgeKey] : null;

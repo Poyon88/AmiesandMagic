@@ -6,7 +6,7 @@ import { generateCardStats, pickMana, pickRarity, buildId } from "@/lib/card-eng
 import { RARITIES, FACTIONS, TYPES, KEYWORDS, RARITY_WEIGHTS_BY_MANA, RARITY_MAP, ALIGNMENTS, CURATED_KEYWORD_MODES, getClanNamesForRace, getFactionForRace } from "@/lib/card-engine/constants";
 import CardVisual, { KEYWORD_SYMBOLS } from "./CardVisual";
 import KeywordIcon from "@/components/shared/KeywordIcon";
-import type { CardType, Keyword, SpellEffect, SpellTargetType, SpellKeywordInstance, SpellComposableEffects, SpellEffectNode, SpellTargetSlot, AtomicEffectType, SpellCondition, AtomicEffect, ConditionalEffectNode, CardSet, GameFormat, TokenTemplate, ConvocationTokenDef } from "@/lib/game/types";
+import type { CardType, Keyword, KeywordMode, SpellEffect, SpellTargetType, SpellKeywordInstance, SpellComposableEffects, SpellEffectNode, SpellTargetSlot, AtomicEffectType, SpellCondition, AtomicEffect, ConditionalEffectNode, CardSet, GameFormat, TokenTemplate, ConvocationTokenDef } from "@/lib/game/types";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
 import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
@@ -1522,7 +1522,7 @@ export default function CardForge() {
   // non-play modes; the UI gates the picker accordingly. Saved into
   // card.keyword_instances at save time so the engine can route the
   // effect to the on-death or tap pipeline instead.
-  const [keywordModes, setKeywordModes] = useState<Record<string, "death" | "tap">>({});
+  const [keywordModes, setKeywordModes] = useState<Record<string, KeywordMode>>({});
   // Spell-only: per-conferred-keyword grant scope (indexed by forge FR label).
   // Missing entry = "target" (single allied creature); "all_allies" = every
   // allied creature on cast. Saved into card.keyword_instances.grantScope.
@@ -3013,11 +3013,11 @@ export default function CardForge() {
                                 and present in CURATED_KEYWORD_MODES. */}
                             {selected && CURATED_KEYWORD_MODES[id] && (
                               <div style={{ display: "inline-flex", gap: 2, marginLeft: 4 }}>
-                                {(["play", "death", "tap"] as const).map(mode => {
+                                {(["play", "death", "tap", "return"] as const).map(mode => {
                                   const allowed = mode === "play" || CURATED_KEYWORD_MODES[id].has(mode);
                                   const active = mode === "play" ? !keywordModes[id] : keywordModes[id] === mode;
-                                  const color = mode === "play" ? fac.color : mode === "death" ? "#a83232" : "#d4a800";
-                                  const label = mode === "play" ? "⚡" : mode === "death" ? "💀" : "⟲";
+                                  const color = mode === "play" ? fac.color : mode === "death" ? "#a83232" : mode === "tap" ? "#d4a800" : "#3a7dd4";
+                                  const label = mode === "play" ? "⚡" : mode === "death" ? "💀" : mode === "tap" ? "⟲" : "↩";
                                   return (
                                     <button
                                       key={mode}
@@ -3030,7 +3030,7 @@ export default function CardForge() {
                                           return next;
                                         });
                                       }}
-                                      title={mode === "play" ? "À l'invocation (défaut)" : mode === "death" ? "À la mort (deathrattle)" : "Activée par tap (engagement)"}
+                                      title={mode === "play" ? "À l'invocation (défaut)" : mode === "death" ? "À la mort (deathrattle)" : mode === "tap" ? "Activée par tap (engagement)" : "Au retour en main"}
                                       style={{
                                         width: 18, height: 18, borderRadius: 3,
                                         background: active ? color : "transparent",

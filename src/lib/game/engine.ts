@@ -1285,6 +1285,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
         player.graveyard = player.graveyard.filter(c => c !== recallTarget);
         const refreshed = createCardInstance(recallTarget.card);
         player.hand.push(refreshed);
+        triggerReturnToHand(refreshed, player, opponent);
       }
     }
 
@@ -1700,7 +1701,10 @@ function resolveSpellEffect(
         if (effect.target === "friendly_graveyard_to_board") {
           if (caster.board.length < MAX_BOARD_SIZE) caster.board.push(creature);
         } else {
-          if (caster.hand.length < MAX_HAND_SIZE) caster.hand.push(creature);
+          if (caster.hand.length < MAX_HAND_SIZE) {
+            caster.hand.push(creature);
+            triggerReturnToHand(creature, caster, opponent);
+          }
         }
       }
       break;
@@ -2078,6 +2082,7 @@ function resolveSpellKeywords(
               ctx.caster.graveyard.splice(gravIdx, 1);
               const refreshed = createCardInstance(target.card);
               ctx.caster.hand.push(refreshed);
+              triggerReturnToHand(refreshed, ctx.caster, ctx.opponent);
             }
           }
         }
@@ -2468,6 +2473,7 @@ function resolveAtomicEffect(ctx: SpellResolutionContext, effect: AtomicEffect):
             target.hasSummoningSickness = true;
             if (owner.hand.length < MAX_HAND_SIZE) {
               owner.hand.push(target);
+              triggerReturnToHand(target, owner, ownerIsPlayer ? ctx.opponent : ctx.caster);
             } else {
               owner.graveyard.push(target);
             }
@@ -2890,6 +2896,20 @@ function cleanDeadCreatures(player: PlayerState): CardInstance[] {
   player.board = alive;
   player.graveyard.push(...dead);
   return dead;
+}
+
+// Déclencheur "retour en main" : quand une créature revient en main (renvoi
+// depuis le plateau, Rappel/Résurrection depuis le cimetière), exécute les
+// effets de ses mots-clés réglés sur le mode "return". Même patron que la
+// boucle on-death de processDeathTriggers. À n'appeler que lorsque la créature
+// atteint effectivement la main (le mode "return" perd son sens sinon).
+function triggerReturnToHand(ci: CardInstance, owner: PlayerState, opponent: PlayerState) {
+  if (ci.card.card_type !== "creature") return;
+  for (const inst of ci.card.keyword_instances ?? []) {
+    if (inst.mode === "return") {
+      resolveCuratedKeywordEffect(inst.id, inst.x ?? 1, ci, owner, opponent);
+    }
+  }
 }
 
 function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: PlayerState, depth = 0) {
