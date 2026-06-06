@@ -96,6 +96,9 @@ export default function GamePage() {
   // Async-safe lock so concurrent broadcasts can't trigger overlapping
   // gap-fetches that would replay the same seqs twice.
   const inflightCatchupRef = useRef<Promise<void> | null>(null);
+  // Rattrapage de l'état depuis match_actions ; défini dans loadMatch et appelé
+  // au réveil de veille / retour réseau / re-souscription realtime.
+  const resyncRef = useRef<(() => void) | null>(null);
 
   const {
     setGameState,
@@ -308,6 +311,64 @@ export default function GamePage() {
           config: { broadcast: { self: false } },
         });
 
+        // Applique une action reçue (broadcast ou rattrapage). Sérialisé via le
+        // pipeline d'animation : si une anim joue déjà, on empile.
+        const applyOne = (a: GameAction) => {
+          const store = useGameStore.getState();
+          if (!store.gameState) return;
+          if (a.type === "concede") {
+            store.dispatchAction(a);
+          } else if (store.isAnimating) {
+            useGameStore.setState((s) => ({
+              pendingIncomingActions: [...s.pendingIncomingActions, a],
+            }));
+          } else {
+            store.dispatchAction(a);
+          }
+          const newState = useGameStore.getState().gameState;
+          if (newState?.phase === "finished" && newState.winner) {
+            supabase
+              .from("matches")
+              .update({
+                status: "finished",
+                winner_id: newState.winner,
+                finished_at: new Date().toISOString(),
+              })
+              .eq("id", matchId)
+              .then(() => {});
+          }
+        };
+
+        // Rattrape TOUTES les actions persistées au-delà de lastSeq. Appelé au
+        // réveil de veille (visibilitychange), au retour réseau (online) et à la
+        // re-souscription realtime (SUBSCRIBED) — car pendant la veille le
+        // websocket meurt et plus aucun broadcast n'arrive pour déclencher le
+        // rattrapage de gap habituel. Sérialisé avec les gap-fetch.
+        const resyncFromLog = () => {
+          if (!useGameStore.getState().gameState) return; // partie pas encore initialisée
+          const run = (inflightCatchupRef.current ?? Promise.resolve()).then(async () => {
+            const { data: missing, error } = await supabase
+              .from("match_actions")
+              .select("seq, action")
+              .eq("match_id", matchId)
+              .gt("seq", lastSeqRef.current)
+              .order("seq", { ascending: true });
+            if (error) {
+              console.error("[match] resync failed", error);
+              return;
+            }
+            for (const row of missing ?? []) {
+              applyOne(row.action as GameAction);
+              lastSeqRef.current = row.seq as number;
+            }
+          });
+          inflightCatchupRef.current = run;
+          run.finally(() => {
+            if (inflightCatchupRef.current === run) inflightCatchupRef.current = null;
+          });
+        };
+        resyncRef.current = resyncFromLog;
+
         channel
           .on("broadcast", { event: "game_action" }, (payload) => {
             // Payload shape evolved: legacy broadcasts are bare actions, the
@@ -317,36 +378,6 @@ export default function GamePage() {
             const raw = payload.payload as GameAction | { action: GameAction; seq: number };
             const incomingAction: GameAction = "action" in raw ? raw.action : raw;
             const incomingSeq: number | null = "action" in raw ? raw.seq : null;
-
-            const applyOne = (a: GameAction) => {
-              const store = useGameStore.getState();
-              if (!store.gameState) return;
-              if (a.type === "concede") {
-                // dispatchAction has an early branch that interrupts any
-                // ongoing animation and clears the pending queue — invoke
-                // it directly so the DEFEAT/VICTORY overlay surfaces now
-                // instead of waiting for the local anim pipeline to drain.
-                store.dispatchAction(a);
-              } else if (store.isAnimating) {
-                useGameStore.setState((s) => ({
-                  pendingIncomingActions: [...s.pendingIncomingActions, a],
-                }));
-              } else {
-                store.dispatchAction(a);
-              }
-              const newState = useGameStore.getState().gameState;
-              if (newState?.phase === "finished" && newState.winner) {
-                supabase
-                  .from("matches")
-                  .update({
-                    status: "finished",
-                    winner_id: newState.winner,
-                    finished_at: new Date().toISOString(),
-                  })
-                  .eq("id", matchId)
-                  .then(() => {});
-              }
-            };
 
             // Legacy / untracked: apply as-is, can't detect or repair gaps.
             if (incomingSeq == null) {
@@ -404,6 +435,9 @@ export default function GamePage() {
           .subscribe(async (status) => {
             console.log("[match] channel status", status);
             if (status === "SUBSCRIBED") {
+              // Re-souscription (notamment après une coupure de veille) : on
+              // rattrape les actions manquées pendant que le socket était mort.
+              resyncFromLog();
               try {
                 const res = await channel.track({ user_id: user.id });
                 console.log("[match] presence tracked", res);
@@ -470,6 +504,23 @@ export default function GamePage() {
       }
     };
   }, [matchId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Réveil de veille (iPad) / retour réseau : forcer un rattrapage immédiat des
+  // actions persistées. Pendant la veille le websocket realtime meurt, donc plus
+  // aucun broadcast n'arrive pour déclencher le rattrapage habituel — sans ça
+  // l'état (plateau + timer dérivé de turnStartedAt) reste figé/décalé.
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === "visible") resyncRef.current?.();
+    };
+    const onOnline = () => resyncRef.current?.();
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("online", onOnline);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("online", onOnline);
+    };
+  }, []);
 
   // Broadcast actions to opponent. Each broadcast carries a per-match
   // monotonic seq so the receiver can detect gaps and fetch missing rows
