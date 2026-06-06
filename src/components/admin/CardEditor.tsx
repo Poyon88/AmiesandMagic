@@ -95,6 +95,8 @@ export default function CardEditor() {
   const [newImagePreview, setNewImagePreview] = useState<string | null>(null);
   const [generatingPrints, setGeneratingPrints] = useState(false);
   const [printsResult, setPrintsResult] = useState<{ ok: boolean; msg: string } | null>(null);
+  const [generatingPrompt, setGeneratingPrompt] = useState(false);
+  const [generatingImage, setGeneratingImage] = useState(false);
 
   // Load data
   const loadData = useCallback(async () => {
@@ -513,6 +515,75 @@ export default function CardEditor() {
     reader.readAsDataURL(file);
   };
 
+  // Régénère le prompt d'illustration depuis les métadonnées de la carte
+  // (même route IA que la forge de création).
+  const handleGeneratePrompt = useCallback(async () => {
+    if (!selectedCard) return;
+    setGeneratingPrompt(true);
+    setSaveResult(null);
+    try {
+      const type = (editFields.card_type as string) || "creature";
+      const kwIds = (editFields.keywords as string[]) ?? [];
+      const stats = {
+        attack: type === "creature" ? (editFields.attack ?? null) : null,
+        defense: type === "creature" ? (editFields.health ?? null) : null,
+        power: null,
+        mana: editFields.mana_cost ?? 0,
+        keywords: kwIds.map((k) => KEYWORD_LABELS[k as Keyword] ?? k),
+      };
+      const res = await fetch("/api/cards/generate-text", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          factionId: editFields.faction || null,
+          type,
+          rarityId: editFields.rarity || null,
+          stats,
+          raceId: editFields.race || undefined,
+          clanId: editFields.clan || undefined,
+          existingName: editFields.name || undefined,
+          existingAbility: editFields.effect_text || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `Erreur ${res.status}`);
+      if (data.illustrationPrompt) {
+        setEditFields((f) => ({ ...f, illustration_prompt: data.illustrationPrompt }));
+        setSaveResult({ ok: true, msg: "Prompt régénéré" });
+      }
+    } catch (err) {
+      setSaveResult({ ok: false, msg: err instanceof Error ? err.message : "Erreur prompt" });
+    }
+    setGeneratingPrompt(false);
+  }, [selectedCard, editFields]);
+
+  // Génère une nouvelle image depuis le prompt courant. L'image obtenue devient
+  // `newImageFile` : elle est prévisualisée puis uploadée au clic sur Sauvegarder.
+  const handleGenerateImage = useCallback(async () => {
+    const prompt = ((editFields.illustration_prompt as string) || "").trim();
+    if (!prompt) {
+      setSaveResult({ ok: false, msg: "Renseigne d'abord un prompt d'illustration." });
+      return;
+    }
+    setGeneratingImage(true);
+    setSaveResult(null);
+    try {
+      const res = await fetch("/api/cards/generate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `Erreur ${res.status}`);
+      setNewImageFile({ base64: data.imageBase64, mimeType: data.mimeType });
+      setNewImagePreview(`data:${data.mimeType};base64,${data.imageBase64}`);
+      setSaveResult({ ok: true, msg: "Image générée — sauvegarde pour l'enregistrer." });
+    } catch (err) {
+      setSaveResult({ ok: false, msg: err instanceof Error ? err.message : "Erreur image" });
+    }
+    setGeneratingImage(false);
+  }, [editFields]);
+
   const clearFilters = () => {
     setSearch(""); setManaCostFilter(null); setTypeFilter(null); setKeywordFilter(null);
     setFactionFilter(null); setRarityFilter(null); setRaceFilter(null); setClanFilter(null);
@@ -702,10 +773,17 @@ export default function CardEditor() {
               </div>
             )}
 
-            {/* Image upload */}
+            {/* Image upload + génération IA */}
             <div style={{ marginBottom: 12 }}>
               <div style={S.label}>Image</div>
               <input type="file" accept="image/*" onChange={handleImageChange} style={{ fontSize: 10, width: "100%" }} />
+              <button
+                onClick={handleGenerateImage}
+                disabled={generatingImage || !((editFields.illustration_prompt as string) || "").trim()}
+                style={{ ...S.btn("#7b3fb0"), marginTop: 6, width: "100%", opacity: generatingImage || !((editFields.illustration_prompt as string) || "").trim() ? 0.5 : 1 }}
+              >
+                {generatingImage ? "Génération…" : "🎨 Générer l'image depuis le prompt"}
+              </button>
             </div>
 
             {/* Name */}
@@ -1173,10 +1251,17 @@ export default function CardEditor() {
               <textarea value={(editFields.flavor_text as string) || ""} onChange={e => updateField("flavor_text", e.target.value)} style={S.textarea} />
             </div>
 
-            {/* Illustration prompt */}
+            {/* Illustration prompt + régénération IA */}
             <div style={{ marginBottom: 8 }}>
               <div style={S.label}>Prompt illustration</div>
               <textarea value={(editFields.illustration_prompt as string) || ""} onChange={e => updateField("illustration_prompt", e.target.value)} style={S.textarea} />
+              <button
+                onClick={handleGeneratePrompt}
+                disabled={generatingPrompt}
+                style={{ ...S.btn("#333"), marginTop: 6, width: "100%", opacity: generatingPrompt ? 0.5 : 1 }}
+              >
+                {generatingPrompt ? "Génération…" : "🤖 Régénérer le prompt par IA"}
+              </button>
             </div>
 
             {/* Convocation token (creature ou sort, X ou simple) — un seul
