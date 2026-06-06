@@ -3222,6 +3222,60 @@ function resolveCuratedKeywordEffect(
       owner.board.push(token);
       break;
     }
+    case "convocations_multiples": {
+      // Crée tous les tokens configurés (mêmes que l'effet on-play) lors d'un
+      // déclenchement mort / tap / retour en main.
+      for (const tokenDef of source.card.convocation_tokens ?? []) {
+        if (owner.board.length >= MAX_BOARD_SIZE) break;
+        const tmpl = findTokenTemplate(tokenDef.token_id);
+        if (!tmpl) continue;
+        const atk = tokenDef.attack ?? tmpl.attack;
+        const hp = tokenDef.health ?? tmpl.health;
+        let tokenCard: Card = {
+          id: -1, name: `Token ${tmpl.race}`.trim(),
+          mana_cost: 0, card_type: "creature",
+          attack: atk, health: hp,
+          effect_text: "",
+          keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
+          race: tmpl.race,
+          faction: getFactionForRace(tmpl.race) ?? source.card.faction,
+        };
+        tokenCard = applyTokenTemplate(tokenCard, tmpl);
+        const token = createCardInstance(tokenCard);
+        token.hasSummoningSickness = true;
+        owner.board.push(token);
+      }
+      break;
+    }
+    case "suprematie": {
+      // +1/+1 par carte dans la main du contrôleur (buff de la source).
+      const n = owner.hand.length;
+      source.summonBonusATK += n;
+      source.currentAttack += n;
+      source.currentHealth += n;
+      source.maxHealth += n;
+      break;
+    }
+    case "ombre_du_passe": {
+      // +1/+1 par unité de même race au cimetière (la source est exclue du
+      // décompte — utile en mode mort où elle vient d'y être placée).
+      if (!source.card.race) break;
+      const n = owner.graveyard.filter(c => c.instanceId !== source.instanceId && c.card.race === source.card.race && c.card.card_type === "creature").length;
+      source.summonBonusATK += n;
+      source.currentAttack += n;
+      source.currentHealth += n;
+      source.maxHealth += n;
+      break;
+    }
+    case "savant": {
+      // +1/+1 par sort dans le cimetière du contrôleur (buff de la source).
+      const n = owner.graveyard.filter(c => c.card.card_type === "spell").length;
+      source.summonBonusATK += n;
+      source.currentAttack += n;
+      source.currentHealth += n;
+      source.maxHealth += n;
+      break;
+    }
     case "inspiration": {
       for (let i = 0; i < x; i++) drawCard(owner);
       break;
@@ -3291,7 +3345,6 @@ function resolveCuratedKeywordEffect(
       }
       break;
     }
-    // TODO: convocations_multiples, suprematie, ombre_du_passe, savant
     default:
       // No-op for keywords not yet supported in non-play modes. The
       // Card Forge UI gates which keywords admins can put in death/tap
