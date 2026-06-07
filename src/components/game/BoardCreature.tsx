@@ -10,6 +10,7 @@ import { getTokenManaCost } from "@/lib/game/abilities";
 import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
+import { composedCapsOf, composedIcon, composedTriggerMode, describeComposedCap } from "@/lib/game/composed-display";
 import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
 import RarityFrame from "@/components/cards/RarityFrame";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
@@ -524,6 +525,22 @@ export default function BoardCreature({
               );
             });
           })()}
+          {/* Effets composés (icônes, teintées selon le déclencheur) */}
+          {composedCapsOf(card.capabilities).map((cap, i) => {
+            const ic = composedIcon(cap);
+            const cmode = composedTriggerMode(cap);
+            const ctint = keywordModeColor(cmode) ?? accentColor;
+            const cfilter = keywordModeFilter(cmode);
+            return (
+              <div key={`cx-${i}`} title={describeComposedCap(cap)} style={{
+                minWidth: 24, height: 24, borderRadius: 3,
+                background: `${ctint}33`, border: `1px solid ${ctint}66`,
+                display: "inline-flex", alignItems: "center", justifyContent: "center", overflow: "hidden",
+              }}>
+                <span style={{ display: "inline-flex", filter: cfilter ?? undefined }}><KeywordIcon symbol={ic.symbol} size={14} keyword={ic.keyword} /></span>
+              </div>
+            );
+          })}
 
           <div style={{ display: "flex", gap: 4, marginLeft: "auto" }}>
             <div style={{
