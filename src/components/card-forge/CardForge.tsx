@@ -1530,6 +1530,8 @@ export default function CardForge() {
   // Missing entry = "target" (single allied creature); "all_allies" = every
   // allied creature on cast. Saved into card.keyword_instances.grantScope.
   const [keywordGrantScope, setKeywordGrantScope] = useState<Record<string, "all_allies">>({});
+  // Conférer (mot-clé créature paramétrique) : ability conférée choisie.
+  const [conferAbilityId, setConferAbilityId] = useState<string>("");
   const [hoveredKw, setHoveredKw] = useState<{ id: string; rect: DOMRect } | null>(null);
   const [convocationTokenId, setConvocationTokenId] = useState<number | null>(null);
   const [convocationTokens, setConvocationTokens] = useState<ConvocationTokenDef[]>([]);
@@ -1819,7 +1821,7 @@ export default function CardForge() {
     setManualPower(2); setManualAbility(""); setManualFlavorText("");
     setManualIllustrationPrompt(""); setManualExtraContext(""); setManualKeywords([]); setKeywordXValues({}); setKeywordModes({}); setCard(null);
     setEditedPrompt(null); setSaveResult(null);
-    setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setRmRace(""); setRmClan("");
+    setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setRmRace(""); setRmClan(""); setConferAbilityId(""); setComposedCaps([]);
     setManualLifeCost(0); setManualDiscardCost(0); setManualSacrificeCost(0);
     setCardImages(prev => Object.fromEntries(Object.entries(prev).filter(([k]) => k !== "manual_preview")));
   }, []);
@@ -1973,6 +1975,7 @@ export default function CardForge() {
     "Terreur": "terreur", "Armure": "armure", "Commandement": "commandement",
     "Fureur": "fureur", "Double Attaque": "double_attaque", "Invisible": "invisible",
     "Canalisation": "canalisation", "Contresort": "contresort",
+    "Conférer": "conferer",
     "Convocation X": "convocation", "Malédiction": "malediction",
     "Nécrophagie": "necrophagie", "Paralysie": "paralysie",
     "Permutation": "permutation", "Persécution X": "persecution",
@@ -2102,6 +2105,11 @@ export default function CardForge() {
           // Renforcement multiple (créature) : porte +X/+Y et race/clan ; toujours émis.
           if (id === "renforcement_multiple" && !isSpellCard) {
             return { id, ...(mode ? { mode } : {}), x: x ?? 0, y: rmY, ...(rmRace ? { race: rmRace } : {}), ...(rmClan ? { clan: rmClan } : {}) };
+          }
+          // Conférer (créature) : porte l'ability conférée + la portée ; toujours émis.
+          if (id === "conferer" && !isSpellCard) {
+            const scope = keywordGrantScope["Conférer"] === "all_allies" ? "all_allies" as const : undefined;
+            return { id, ...(mode ? { mode } : {}), ...(conferAbilityId ? { grantAbilityId: conferAbilityId } : {}), ...(scope ? { grantScope: scope } : {}) };
           }
           if (!mode && x == null && !grantScope) return null; // pure play + no X + default scope → nothing to store
           return { id, ...(mode ? { mode } : {}), ...(x != null ? { x } : {}), ...(grantScope ? { grantScope } : {}) };
@@ -3166,6 +3174,28 @@ export default function CardForge() {
                           <span style={{ fontSize: 8, color: "#888" }}>(le +ATK = la valeur X)</span>
                         </div>
                         <RaceClanPicker race={rmRace} clan={rmClan} onChange={(r, c) => { setRmRace(r); setRmClan(c); }} />
+                      </div>
+                    )}
+                    {/* Conférer — capacité conférée + portée */}
+                    {manualKeywords.includes("Conférer") && (
+                      <div style={{ marginTop: 6, padding: 6, borderRadius: 6, border: `1px solid ${conferAbilityId ? "#8a6d3b44" : "#e74c3c"}`, background: "#fffdf6" }}>
+                        <div style={{ fontSize: 8, color: "#8a6d3b", letterSpacing: 1, fontWeight: 700, marginBottom: 4 }}>✋ CAPACITÉ CONFÉRÉE {!conferAbilityId && <span style={{ color: "#e74c3c" }}>· requise</span>}</div>
+                        <select value={conferAbilityId} onChange={e => setConferAbilityId(e.target.value)}
+                          style={{ width: "100%", padding: "4px 8px", borderRadius: 5, border: "1px solid #8a6d3b44", fontSize: 10, fontFamily: "'Cinzel',serif", background: "#fff", marginBottom: 4 }}>
+                          <option value="">-- Choisir une capacité --</option>
+                          {Object.values(ABILITIES).filter(a => a.triggers?.grantable && a.applicable_to.includes("creature")).sort((a, b) => (a.creature?.label ?? a.label).localeCompare(b.creature?.label ?? b.label, "fr")).map(a => (
+                            <option key={creatureEngineId(a)} value={creatureEngineId(a)}>{a.creature?.label ?? a.label}</option>
+                          ))}
+                        </select>
+                        <div style={{ display: "inline-flex", gap: 6 }}>
+                          {([["target", "1 allié ciblé"], ["all_allies", "Tous les alliés"]] as const).map(([val, txt]) => {
+                            const active = (keywordGrantScope["Conférer"] === "all_allies" ? "all_allies" : "target") === val;
+                            return (
+                              <button key={val} onClick={() => setKeywordGrantScope(prev => { const n = { ...prev }; if (val === "all_allies") n["Conférer"] = "all_allies"; else delete n["Conférer"]; return n; })}
+                                style={{ padding: "3px 10px", borderRadius: 5, border: `1px solid ${active ? "#8a6d3b" : "#ddd"}`, background: active ? "#8a6d3b22" : "#fff", color: active ? "#8a6d3b" : "#999", fontSize: 10, fontFamily: "'Cinzel',serif", fontWeight: active ? 700 : 400, cursor: "pointer" }}>{txt}</button>
+                            );
+                          })}
+                        </div>
                       </div>
                     )}
                     {/* Convocations multiples — list of token entries with optional stat overrides */}

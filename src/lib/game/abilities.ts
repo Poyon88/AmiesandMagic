@@ -820,6 +820,18 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["spell"],
     spell: { params: ["amount"], needsTarget: false },
   },
+  damnation: {
+    id: "damnation", label: "Damnation X", symbol: "🩸",
+    desc: "Inflige -X/-X (permanent) à une créature ennemie ciblée.",
+    applicable_to: ["spell"],
+    spell: { params: ["amount"], needsTarget: true, targetType: "enemy_creature" },
+  },
+  conferer: {
+    id: "conferer", label: "Conférer", symbol: "✋",
+    desc: "Invocation : confère une capacité choisie à une unité alliée (ou à toutes).",
+    applicable_to: ["creature"],
+    creature: { cost: 8, costPerX: 0, se: 2.0, minTier: 2, scalable: false, zone: "Terrain" },
+  },
 };
 
 // ─── Derived views ──────────────────────────────────────────────────────────

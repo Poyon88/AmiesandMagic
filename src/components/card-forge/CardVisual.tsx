@@ -33,6 +33,7 @@ function toRoman(n: number): string {
 }
 
 export const KEYWORD_SYMBOLS: Record<string, string> = {
+  "Conférer":         "✋",
   // Tier 0
   "Loyauté":          "🤝",
   "Ancré":            "⚓",

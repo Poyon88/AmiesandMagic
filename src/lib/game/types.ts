@@ -50,7 +50,9 @@ export type Keyword =
   // Polymorphic — bounce a unit to its true owner's hand (4 trigger modes)
   | "remontee"
   // Polymorphic — +X/+Y to all controller's creatures of a selected race/clan
-  | "renforcement_multiple";
+  | "renforcement_multiple"
+  // Confère une capacité choisie à une/aux unité(s) alliée(s) (mot-clé paramétrique)
+  | "conferer";
 
 export type SpellTargetType =
   | "any"
@@ -114,7 +116,8 @@ export type SpellKeywordId =
   | "selection_magique"
   | "poison"
   | "remontee"
-  | "renforcement_multiple";
+  | "renforcement_multiple"
+  | "damnation";
 
 /** Trigger mode for a creature keyword. Undefined = on-play (default,
  *  existing behaviour). "death" = on-death rattle. "tap" = activated by
@@ -142,6 +145,8 @@ export interface KeywordInstance {
    *  "target" (default) = a single chosen allied creature; "all_allies" =
    *  every allied creature on the board at cast time. Ignored on creatures. */
   grantScope?: "target" | "all_allies";
+  /** Mot-clé "conferer" : id de l'ability conférée à la/aux cible(s). */
+  grantAbilityId?: string;
 }
 
 export interface SpellKeywordInstance {

@@ -132,6 +132,30 @@ describe("interpréteur composé — contenus d'effet", () => {
     expect(h2).toBe(2); // ciblé, 5 − 3
   });
 
+  it("Damnation X (sort) : -X/-X à une créature ennemie ciblée", () => {
+    const s0 = mkState();
+    const u = mkInstance(mkCard({ attack: 3, health: 5 }));
+    s0.players[1].board = [u];
+    const spell = mkCard({ card_type: "spell", attack: null, health: null, spell_keywords: [{ id: "damnation", amount: 2 }] });
+    const s = play(s0, mkInstance(spell), { kw_0: u.instanceId });
+    const t = s.players[1].board[0];
+    expect(t.currentAttack).toBe(1); // 3 − 2
+    expect(t.currentHealth).toBe(3); // 5 − 2
+  });
+
+  it("Conférer (créature) : confère la capacité choisie aux alliés", () => {
+    const s0 = mkState();
+    const ally = mkInstance(mkCard({ attack: 1, health: 1 }));
+    s0.players[0].board = [ally];
+    const creature = mkInstance(mkCard({
+      attack: 1, health: 1, keywords: ["conferer"],
+      keyword_instances: [{ id: "conferer", grantAbilityId: "berserk", grantScope: "all_allies" }],
+    }));
+    const s = play(s0, creature);
+    const a = s.players[0].board.find((c) => c.card.id === ally.card.id)!;
+    expect((a.card.keywords as string[]).includes("berserk")).toBe(true);
+  });
+
   it("on_death : un mort composé buffe les alliés survivants", () => {
     const s0 = mkState();
     // Allié robuste (2/10) qui survivra au sort et recevra le buff de mort.

@@ -183,6 +183,7 @@ const CREATURE_KEYWORD_HERO_POWER_TARGET: Record<
   permutation: "enemy_creature",
   sacrifice: "friendly_creature",
   benediction: "friendly_creature",
+  conferer: "friendly_creature",
   domination: "none", // random enemy
 };
 
@@ -1681,6 +1682,21 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       recastSpells(newState, player, opponent, x);
     }
 
+    // Conférer : confère la capacité choisie à une/aux unité(s) alliée(s).
+    if (hasKwOnPlay(cardInstance, "conferer")) {
+      const inst = cardInstance.card.keyword_instances?.find(k => k.id === "conferer" && !k.mode);
+      const abilityId = inst?.grantAbilityId;
+      if (abilityId) {
+        const scope = inst?.grantScope ?? "target";
+        if (scope === "all_allies") {
+          for (const ally of player.board) applyGrantedKeyword(ally, abilityId);
+        } else if (action.targetInstanceId) {
+          const t = findCreatureOnBoard(player, action.targetInstanceId);
+          if (t) applyGrantedKeyword(t, abilityId);
+        }
+      }
+    }
+
     // Effets composés à l'entrée en jeu (modèle hybride).
     runComposedCapsForCard(cardInstance.card, "on_play", cardInstance, player, opponent, action.targetMap, action.targetInstanceId);
 
@@ -2118,6 +2134,24 @@ function resolveSpellKeywords(
         if (targetId) {
           const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
           if (target) target.currentHealth = 0;
+        }
+        break;
+      }
+      case "damnation": {
+        // -X/-X permanent à une créature ennemie ciblée (pendant négatif de Renforcement).
+        if (targetId) {
+          const target = findCreatureOnBoard(ctx.opponent, targetId) ?? findCreatureOnBoard(ctx.caster, targetId);
+          if (target) {
+            const amount = kw.amount ?? 0;
+            target.card = {
+              ...target.card,
+              attack: Math.max(0, (target.card.attack ?? 0) - amount),
+              health: Math.max(1, (target.card.health ?? 0) - amount),
+            };
+            target.currentAttack = Math.max(0, target.currentAttack - amount);
+            target.currentHealth -= amount;
+            target.maxHealth = Math.max(1, target.maxHealth - amount);
+          }
         }
         break;
       }
@@ -4135,7 +4169,7 @@ export function needsTarget(card: Card): boolean {
 const CREATURE_TARGETING_KEYWORDS: Keyword[] = [
   "sacrifice", "corruption", "malediction",
   "permutation", "vampirisme", "mimique", "metamorphose",
-  "benediction", "tactique", "remontee",
+  "benediction", "tactique", "remontee", "conferer",
 ];
 
 export function creatureNeedsTarget(card: Card): boolean {

@@ -236,6 +236,7 @@ export const KEYWORD_LABELS: Record<Keyword, string> = {
   concentration: "Concentration X",
   remontee: "Remontée",
   renforcement_multiple: "Renforcement multiple",
+  conferer: "Conférer",
 };
 
 export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
@@ -279,4 +280,5 @@ export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
   concentration: "🎯",
   remontee: "🔼",
   renforcement_multiple: "⏫",
+  conferer: "✋",
 };
