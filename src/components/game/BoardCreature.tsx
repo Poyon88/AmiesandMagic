@@ -525,16 +525,13 @@ export default function BoardCreature({
               );
             });
           })()}
-          {/* Effets composés (icônes, teintées selon le déclencheur) */}
+          {/* Effets composés (icônes sans cadre, teintées selon le déclencheur) */}
           {composedCapsOf(card.capabilities).map((cap, i) => {
             const ic = composedIcon(cap);
-            const cmode = composedTriggerMode(cap);
-            const ctint = keywordModeColor(cmode) ?? accentColor;
-            const cfilter = keywordModeFilter(cmode);
+            const cfilter = keywordModeFilter(composedTriggerMode(cap));
             return (
               <div key={`cx-${i}`} title={describeComposedCap(cap)} style={{
-                minWidth: 24, height: 24, borderRadius: 3,
-                background: `${ctint}33`, border: `1px solid ${ctint}66`,
+                width: 24, height: 24,
                 display: "inline-flex", alignItems: "center", justifyContent: "center", overflow: "hidden",
               }}>
                 <span style={{ display: "inline-flex", filter: cfilter ?? undefined }}><KeywordIcon symbol={ic.symbol} size={14} keyword={ic.keyword} /></span>

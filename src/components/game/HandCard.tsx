@@ -532,16 +532,13 @@ export default function HandCard({
               );
             })}
 
-            {/* Effets composés (icônes, teintées selon le déclencheur) */}
+            {/* Effets composés (icônes sans cadre, teintées selon le déclencheur) */}
             {composedCapsOf(card.capabilities).map((cap, i) => {
               const ic = composedIcon(cap);
-              const cmode = composedTriggerMode(cap);
-              const ctint = keywordModeColor(cmode) ?? accentColor;
-              const cfilter = keywordModeFilter(cmode);
+              const cfilter = keywordModeFilter(composedTriggerMode(cap));
               return (
                 <div key={`cx-${i}`} title={describeComposedCap(cap)} style={{
-                  minWidth: 24, height: 24, borderRadius: 3,
-                  background: `${ctint}33`, border: `1px solid ${ctint}66`,
+                  width: 24, height: 24,
                   display: "inline-flex", alignItems: "center", justifyContent: "center", overflow: "hidden",
                 }}>
                   <span style={{ display: "inline-flex", filter: cfilter ?? undefined }}><KeywordIcon symbol={ic.symbol} size={14} keyword={ic.keyword} /></span>
@@ -663,6 +660,22 @@ export default function HandCard({
                     <div style={{ fontSize: 6 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>
                   </div>
                 </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Effets composés — détail (icône + texte généré) */}
+          {composedCapsOf(card.capabilities).length > 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              {composedCapsOf(card.capabilities).map((cap, i) => {
+                const ic = composedIcon(cap);
+                const cfilter = keywordModeFilter(composedTriggerMode(cap));
+                return (
+                  <div key={`cxd-${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
+                    <span style={{ flexShrink: 0, filter: cfilter ?? undefined, lineHeight: 0 }}><KeywordIcon symbol={ic.symbol} size={9} keyword={ic.keyword} /></span>
+                    <div style={{ fontSize: 6 * d, color: "#bbb", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{describeComposedCap(cap)}</div>
+                  </div>
                 );
               })}
             </div>

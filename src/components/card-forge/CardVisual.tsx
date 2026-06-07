@@ -5,7 +5,7 @@ import { KEYWORDS, FACTIONS, RARITY_MAP } from '@/lib/card-engine/constants';
 import KeywordIcon from '@/components/shared/KeywordIcon';
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS, getSpellKeywordDesc, getSpellKeywordLabel, formatConvocationTokens } from '@/lib/game/spell-keywords';
 import { isCreatureKwShadowedBySpell } from '@/lib/game/abilities';
-import { KEYWORD_LABELS, keywordModeColor, keywordModeFilter } from '@/lib/game/keyword-labels';
+import { KEYWORD_LABELS, keywordModeFilter } from '@/lib/game/keyword-labels';
 import { composedCapsOf, composedIcon, composedTriggerMode, describeComposedCap } from '@/lib/game/composed-display';
 import type { Capability } from '@/lib/game/types';
 import type { SpellKeywordInstance, TokenTemplate } from '@/lib/game/types';
@@ -439,15 +439,12 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
           <div style={{ display: "flex", gap: 4 * s, flexWrap: "wrap" }}>
             {composedCapsOf(card!.capabilities).map((cap, i) => {
               const ic = composedIcon(cap);
-              const mode = composedTriggerMode(cap);
-              const color = keywordModeColor(mode) ?? fac.color;
-              const filter = keywordModeFilter(mode) ?? undefined;
+              const filter = keywordModeFilter(composedTriggerMode(cap)) ?? undefined;
               return (
                 <div key={`cx_${i}`} title={describeComposedCap(cap)} style={{
-                  minWidth: 19 * s, height: 19 * s, borderRadius: 6 * s,
-                  background: `${color}33`, border: `1px solid ${color}88`,
+                  minWidth: 19 * s, height: 19 * s,
                   display: "inline-flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 13 * s, cursor: "default", boxShadow: `0 0 6px ${color}44`,
+                  fontSize: 13 * s, cursor: "default",
                 }}>
                   <span style={filter ? { filter } : undefined}>
                     <KeywordIcon symbol={ic.symbol} keyword={ic.keyword} />
