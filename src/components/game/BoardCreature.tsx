@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import type { CardInstance, GameAction } from "@/lib/game/types";
 import { useGameStore } from "@/lib/store/gameStore";
-import { tapKeywordNeedsTarget } from "@/lib/game/engine";
+import { tapKeywordNeedsTarget, getCreatureTapComposedUid } from "@/lib/game/engine";
 import { getTokenManaCost } from "@/lib/game/abilities";
 import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
 import KeywordIcon from "@/components/shared/KeywordIcon";
@@ -50,6 +50,7 @@ export default function BoardCreature({
   const selectedSacrificeIds = useGameStore(s => s.selectedSacrificeIds);
   const toggleSacrificeSelection = useGameStore(s => s.toggleSacrificeSelection);
   const activateTap = useGameStore(s => s.activateTap);
+  const activateTapComposed = useGameStore(s => s.activateTapComposed);
   const isMyTurn = useGameStore(s => s.isMyTurn());
   const isAnimating = useGameStore(s => s.isAnimating);
 
@@ -68,6 +69,9 @@ export default function BoardCreature({
     }
     return null;
   })();
+  // Effet composé activable (on_activation) — uid, ou null. Utilisé si aucun
+  // keyword tap classique n'est présent.
+  const tapComposedUid = getCreatureTapComposedUid(card);
   // Base eligibility (engine-level: own + turn + not animating + not
   // already tapped + no sickness + has a tap instance). The Activer
   // button additionally hides during any targeting flow; the
@@ -80,7 +84,7 @@ export default function BoardCreature({
     && !creature.tapped
     && !creature.isParalyzed
     && (!creature.hasSummoningSickness || card.keywords.includes("charge"))
-    && tapInstanceIdx !== null;
+    && (tapInstanceIdx !== null || tapComposedUid !== null);
   const canActivateTap = baseEligibleForTap && targetingMode === "none";
   // Resolve token template image: instance cards spawned by the engine
   // carry token_id when they originate from a saved template; fall back to
@@ -189,12 +193,16 @@ export default function BoardCreature({
         // looser `baseEligibleForTap` rather than `canActivateTap` —
         // the preceding single click flips targetingMode to "attack",
         // which would otherwise cancel the double-click trigger.
-        if (!baseEligibleForTap || tapInstanceIdx === null) return;
-        const instance = card.keyword_instances?.[tapInstanceIdx];
-        if (!instance) return;
-        if (tapKeywordNeedsTarget(instance.id)) return;
-        const action = activateTap(creature.instanceId, tapInstanceIdx);
-        onAction?.(action);
+        if (!baseEligibleForTap) return;
+        if (tapInstanceIdx !== null) {
+          const instance = card.keyword_instances?.[tapInstanceIdx];
+          if (!instance) return;
+          if (tapKeywordNeedsTarget(instance.id)) return;
+          onAction?.(activateTap(creature.instanceId, tapInstanceIdx));
+        } else if (tapComposedUid) {
+          // activateTapComposed ouvre le sélecteur si une cible est requise.
+          onAction?.(activateTapComposed(creature.instanceId, tapComposedUid));
+        }
       }}
       onMouseEnter={() => {
         setIsHovered(true);
@@ -263,12 +271,12 @@ export default function BoardCreature({
           targeting / cost-payment / animation flow is in progress.
           Rendered OUTSIDE the clip-wrapper below so its `top: -22`
           offset isn't clipped by `overflow: hidden`. */}
-      {canActivateTap && tapInstanceIdx !== null && (
+      {canActivateTap && (tapInstanceIdx !== null || tapComposedUid !== null) && (
         <button
           onClick={(e) => {
             e.stopPropagation();
-            const action = activateTap(creature.instanceId, tapInstanceIdx);
-            onAction?.(action);
+            if (tapInstanceIdx !== null) onAction?.(activateTap(creature.instanceId, tapInstanceIdx));
+            else if (tapComposedUid) onAction?.(activateTapComposed(creature.instanceId, tapComposedUid));
           }}
           style={{
             position: "absolute",

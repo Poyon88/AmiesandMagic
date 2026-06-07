@@ -3651,6 +3651,32 @@ export function tapActivate(state: GameState, action: TapActivateAction): GameSt
   // Traque (charge) autorise le pouvoir activable dès l'invocation, même si
   // Traque est gagnée en cours de tour (où hasSummoningSickness peut rester vrai).
   if (source.hasSummoningSickness && !hasKw(source, "charge")) return state;
+
+  // Effet composé activable (on_activation) — référencé par uid.
+  if (action.composedUid) {
+    const cap = getCapabilities(source.card).find(
+      c => c.composed && c.trigger === "on_activation" && c.uid === action.composedUid,
+    );
+    if (!cap?.composed) return state;
+    source.tapped = true;
+    let chosen: string[] | undefined;
+    if (action.targetMap) {
+      const multi: string[] = [];
+      for (let i = 0; action.targetMap[`${cap.uid}#${i}`] != null; i++) multi.push(action.targetMap[`${cap.uid}#${i}`]);
+      if (multi.length) chosen = multi;
+    }
+    if (!chosen && action.targetInstanceId) chosen = [action.targetInstanceId];
+    resolveComposedEffect(cap.composed, source, player, opponent, chosen);
+    const pDead = cleanDeadCreatures(player);
+    const oDead = cleanDeadCreatures(opponent);
+    processDeathTriggers(pDead, player, opponent);
+    processDeathTriggers(oDead, opponent, player);
+    recalculateAuras(player, opponent);
+    newState.lastAction = action;
+    checkWinCondition(newState);
+    return newState;
+  }
+
   const instances = source.card.keyword_instances ?? [];
   const instance = instances[action.instanceIdx];
   if (!instance || instance.mode !== "tap") return state;
@@ -4197,6 +4223,30 @@ function firstOnPlayComposedChoiceCap(card: Card): import("./types").Capability 
 
 /** Descripteur de ciblage composé d'une créature à l'entrée (pour le store :
  *  uid de la capacité, nombre de cibles, type de cible). null si aucun. */
+/** uid du premier effet composé activable (on_activation) d'une créature, ou null. */
+export function getCreatureTapComposedUid(card: Card): string | null {
+  if (card.card_type !== "creature") return null;
+  const cap = getCapabilities(card).find(c => c.composed && c.trigger === "on_activation");
+  return cap?.uid ?? null;
+}
+
+/** Cibles valides pour l'activation d'un effet composé (uid) en désignation
+ *  "au choix", 1 cible unité plateau. null = pas de ciblage interactif requis
+ *  (hasard / toutes / héros / multi → résolus côté moteur). */
+export function getComposedTapTargets(state: GameState, card: Card, uid: string): string[] | null {
+  const player = state.players[state.currentPlayerIndex];
+  const opponent = state.players[state.currentPlayerIndex === 0 ? 1 : 0];
+  const cap = getCapabilities(card).find(c => c.uid === uid && c.composed && c.trigger === "on_activation");
+  const t = cap?.composed?.target;
+  if (!t || t.designation !== "choice" || t.entity !== "unit" || t.location !== "board" || t.count !== 1) return null;
+  return composedTargetPool(t, player, opponent)
+    .filter((c) => {
+      if (!opponent.board.includes(c)) return true;
+      return !hasKw(c, "invisible") && !hasKw(c, "transcendance") && !(hasKw(c, "ombre") && !c.ombreRevealed);
+    })
+    .map((c) => c.instanceId);
+}
+
 export function getCreatureComposedChoice(
   card: Card,
 ): { uid: string; count: number; type: SpellTargetType } | null {

@@ -2,7 +2,7 @@
 // On exerce le vrai flux applyAction(play_card) avec des cartes synthétiques
 // portant des capacités `composed`, et on vérifie l'état résultant.
 import { describe, expect, it } from "vitest";
-import { applyAction, creatureNeedsTarget, getCreatureTargets, getSpellTargetSlots, initRNG } from "./engine";
+import { applyAction, creatureNeedsTarget, getCreatureTapComposedUid, getCreatureTargets, getSpellTargetSlots, initRNG } from "./engine";
 import { HERO_MAX_HP } from "./constants";
 import type {
   Capability, Card, CardInstance, ComposedEffect, GameState, HeroState, PlayerState,
@@ -188,6 +188,19 @@ describe("interpréteur composé — contenus d'effet", () => {
     const s = applyAction(s0, { type: "play_card", cardInstanceId: ci.instanceId, targetInstanceId: u2.instanceId });
     expect(s.players[1].board.find((c) => c.card.id === u1.card.id)?.currentHealth).toBe(5);
     expect(s.players[1].board.find((c) => c.card.id === u2.card.id)?.currentHealth).toBe(2);
+  });
+
+  it("pouvoir activable composé (tap) : déclenche l'effet et engage la créature", () => {
+    const s0 = mkState();
+    const cap = composedCap("on_activation", { content: "deal_damage", magnitude: { x: 2 }, target: { entity: "hero", count: 1, side: "enemy", location: "board", designation: "random" } });
+    const src = mkInstance(mkCard({ attack: 1, health: 3, capabilities: [cap] }));
+    src.hasSummoningSickness = false;
+    s0.players[0].board = [src];
+    expect(getCreatureTapComposedUid(src.card)).toBe(cap.uid);
+    initRNG(1);
+    const s = applyAction(s0, { type: "tap_activate", sourceInstanceId: src.instanceId, instanceIdx: -1, composedUid: cap.uid });
+    expect(s.players[1].hero.hp).toBe(HERO_MAX_HP - 2);
+    expect(s.players[0].board[0].tapped).toBe(true);
   });
 
   it("on_death : un mort composé buffe les alliés survivants", () => {

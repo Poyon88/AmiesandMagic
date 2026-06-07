@@ -756,6 +756,9 @@ export interface TapActivateAction {
   instanceIdx: number;
   targetInstanceId?: string;
   targetMap?: Record<string, string>;
+  /** Active un effet COMPOSÉ on_activation (par uid) au lieu d'un keyword tap
+   *  positionnel (instanceIdx ignoré quand présent). */
+  composedUid?: string;
 }
 
 export interface ConcedeAction {

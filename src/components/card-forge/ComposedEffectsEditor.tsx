@@ -44,7 +44,7 @@ export default function ComposedEffectsEditor({
   tokenTemplates: TokenTemplate[];
 }) {
   const triggers: { v: CapabilityTrigger; l: string }[] = isUnit
-    ? [{ v: "on_play", l: "À l'entrée" }, { v: "on_death", l: "À la mort" }, { v: "on_return", l: "Au retour en main" }]
+    ? [{ v: "on_play", l: "À l'entrée" }, { v: "on_death", l: "À la mort" }, { v: "on_return", l: "Au retour en main" }, { v: "on_activation", l: "Pouvoir activable (tap)" }]
     : [{ v: "spell_resolution", l: "À la résolution" }];
 
   const addComposed = () => onChange([...value, {

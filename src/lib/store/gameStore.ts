@@ -19,6 +19,8 @@ import {
   creatureNeedsTarget,
   getCreatureTargets,
   getCreatureComposedChoice,
+  getCreatureTapComposedUid,
+  getComposedTapTargets,
   creatureNeedsGraveyardTarget,
   getGraveyardTargets,
   creatureNeedsDivination,
@@ -131,6 +133,8 @@ interface GameStore {
   // Both fields stay null outside of tap targeting.
   pendingTapSourceId: string | null;
   pendingTapInstanceIdx: number | null;
+  // uid de l'effet composé activable en attente de cible (null sinon).
+  pendingTapComposedUid: string | null;
   // Alternative-cost payment state — set when the player tries to play a card
   // with a discard_cost or sacrifice_cost > 0. The player picks N cards from
   // hand and/or N creatures from board, then confirms via CostPaymentOverlay.
@@ -245,6 +249,7 @@ interface GameStore {
   cancelCostPayment: () => void;
   activateHeroPower: () => GameAction | null;
   activateTap: (sourceInstanceId: string, instanceIdx: number) => GameAction | null;
+  activateTapComposed: (sourceInstanceId: string, capUid: string) => GameAction | null;
   confirmMulligan: (selectedInstanceIds: string[]) => GameAction | null;
 
   // Queries
@@ -619,6 +624,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   pendingTargetInstanceId: null,
   pendingTapSourceId: null,
   pendingTapInstanceIdx: null,
+  pendingTapComposedUid: null,
   spellTargetSlots: [],
   currentTargetSlotIndex: 0,
   collectedTargetMap: {},
@@ -1292,6 +1298,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         pendingHeroPowerSelection: false,
         pendingTapSourceId: null,
         pendingTapInstanceIdx: null,
+        pendingTapComposedUid: null,
         pendingCreatureChain: null,
         damageEvents: [],
         lastSfxEvents: sfxEvents,
@@ -1314,6 +1321,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       pendingHeroPowerSelection: false,
       pendingTapSourceId: null,
       pendingTapInstanceIdx: null,
+      pendingTapComposedUid: null,
     });
 
     // --- Phase timings ---
@@ -2220,8 +2228,18 @@ export const useGameStore = create<GameStore>((set, get) => {
         targetInstanceId: targetId,
       });
     } else if (targetingMode === "tap") {
-      const { pendingTapSourceId, pendingTapInstanceIdx } = get();
-      if (pendingTapSourceId === null || pendingTapInstanceIdx === null) return null;
+      const { pendingTapSourceId, pendingTapInstanceIdx, pendingTapComposedUid } = get();
+      if (pendingTapSourceId === null) return null;
+      if (pendingTapComposedUid) {
+        return get().dispatchAction({
+          type: "tap_activate",
+          sourceInstanceId: pendingTapSourceId,
+          instanceIdx: -1,
+          composedUid: pendingTapComposedUid,
+          targetInstanceId: targetId,
+        });
+      }
+      if (pendingTapInstanceIdx === null) return null;
       return get().dispatchAction({
         type: "tap_activate",
         sourceInstanceId: pendingTapSourceId,
@@ -2261,6 +2279,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       pendingTargetInstanceId: null,
       pendingTapSourceId: null,
       pendingTapInstanceIdx: null,
+      pendingTapComposedUid: null,
       spellTargetSlots: [],
       currentTargetSlotIndex: 0,
       collectedTargetMap: {},
@@ -2607,6 +2626,35 @@ export const useGameStore = create<GameStore>((set, get) => {
       type: "tap_activate",
       sourceInstanceId,
       instanceIdx,
+    });
+  },
+
+  activateTapComposed: (sourceInstanceId, capUid) => {
+    // Active un effet composé on_activation. Si la cible est "au choix" (1 unité
+    // plateau), ouvre le sélecteur ; sinon dispatch immédiat (hasard/toutes/héros).
+    const { gameState } = get();
+    if (!gameState) return null;
+    const player = gameState.players[gameState.currentPlayerIndex];
+    const source = player.board.find(c => c.instanceId === sourceInstanceId);
+    if (!source) return null;
+    const targets = getComposedTapTargets(gameState, source.card, capUid);
+    if (targets && targets.length > 0) {
+      set({
+        selectedCardInstanceId: null,
+        selectedAttackerInstanceId: null,
+        validTargets: targets,
+        targetingMode: "tap",
+        pendingTapSourceId: sourceInstanceId,
+        pendingTapInstanceIdx: null,
+        pendingTapComposedUid: capUid,
+      });
+      return null;
+    }
+    return get().dispatchAction({
+      type: "tap_activate",
+      sourceInstanceId,
+      instanceIdx: -1,
+      composedUid: capUid,
     });
   },
 
