@@ -18,6 +18,7 @@ import {
   getHeroPowerTargets,
   creatureNeedsTarget,
   getCreatureTargets,
+  getCreatureComposedChoice,
   creatureNeedsGraveyardTarget,
   getGraveyardTargets,
   creatureNeedsDivination,
@@ -150,6 +151,8 @@ interface GameStore {
   spellTargetSlots: SpellTargetSlot[];
   currentTargetSlotIndex: number;
   collectedTargetMap: Record<string, string>;
+  // Cibles collectées pour un effet composé multi-cibles "au choix" d'une créature.
+  creatureComposedCollected: string[];
   // Carries the partial play_card payload from a creature's first picker
   // (target / graveyard / divination) into a subsequent selection picker on
   // the same creature, so a creature combining e.g. mimique + selection can
@@ -619,6 +622,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   spellTargetSlots: [],
   currentTargetSlotIndex: 0,
   collectedTargetMap: {},
+  creatureComposedCollected: [],
   pendingCreatureChain: null,
   tokenTemplates: [],
   effectLog: [],
@@ -2027,6 +2031,32 @@ export const useGameStore = create<GameStore>((set, get) => {
     } else if (targetingMode === "creature" && selectedCardInstanceId) {
       const { pendingBoardPosition, gameState: gs } = get();
 
+      // Effet composé multi-cibles "au choix" : on collecte N cibles avant de jouer.
+      if (gs) {
+        const player0 = gs.players[gs.currentPlayerIndex];
+        const cardInst0 = player0.hand.find(c => c.instanceId === selectedCardInstanceId);
+        const choice = cardInst0 ? getCreatureComposedChoice(cardInst0.card) : null;
+        if (choice && choice.count >= 2) {
+          const collected = [...get().creatureComposedCollected, targetId];
+          if (collected.length < choice.count) {
+            set({
+              creatureComposedCollected: collected,
+              validTargets: get().validTargets.filter(t => t !== targetId),
+            });
+            return null; // on continue à collecter
+          }
+          const targetMap: Record<string, string> = {};
+          collected.forEach((id, i) => { targetMap[`${choice.uid}#${i}`] = id; });
+          set({ creatureComposedCollected: [] });
+          return get().dispatchAction({
+            type: "play_card",
+            cardInstanceId: selectedCardInstanceId,
+            targetMap,
+            boardPosition: pendingBoardPosition ?? undefined,
+          });
+        }
+      }
+
       if (gs) {
         const player = gs.players[gs.currentPlayerIndex];
         const cardInst = player.hand.find(c => c.instanceId === selectedCardInstanceId);
@@ -2234,6 +2264,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       spellTargetSlots: [],
       currentTargetSlotIndex: 0,
       collectedTargetMap: {},
+      creatureComposedCollected: [],
       pendingCreatureChain: null,
       pendingCostCard: null,
       selectedDiscardIds: [],

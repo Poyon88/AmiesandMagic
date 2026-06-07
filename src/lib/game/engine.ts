@@ -377,8 +377,16 @@ function runComposedCapsForCard(
 ): void {
   for (const cap of getCapabilities(card)) {
     if (!cap.composed || cap.trigger !== trigger) continue;
-    const picked = targetMap?.[cap.uid] ?? fallbackTargetId;
-    resolveComposedEffect(cap.composed, source, owner, opponent, picked ? [picked] : undefined);
+    let chosen: string[] | undefined;
+    if (targetMap) {
+      // Multi-cibles : slots `${uid}#0`, `${uid}#1`, … ; sinon slot unique `${uid}`.
+      const multi: string[] = [];
+      for (let i = 0; targetMap[`${cap.uid}#${i}`] != null; i++) multi.push(targetMap[`${cap.uid}#${i}`]);
+      if (multi.length) chosen = multi;
+      else if (targetMap[cap.uid] != null) chosen = [targetMap[cap.uid]];
+    }
+    if (!chosen && fallbackTargetId) chosen = [fallbackTargetId];
+    resolveComposedEffect(cap.composed, source, owner, opponent, chosen);
   }
 }
 
@@ -2784,9 +2792,13 @@ export function getSpellTargetSlots(card: Card): SpellTargetSlot[] {
   for (const cap of getCapabilities(card)) {
     const t = cap.composed?.target;
     if (!cap.composed || cap.trigger !== "spell_resolution" || !t) continue;
-    if (t.designation !== "choice" || t.count !== 1) continue;
+    if (t.designation !== "choice" || typeof t.count !== "number") continue; // "all"/hasard → pas de slot
     const type = composedSlotType(t);
-    if (type) slots.push({ slot: cap.uid, type, label: "Cible (effet composé)" });
+    if (!type) continue;
+    const n = Math.max(1, t.count);
+    for (let i = 0; i < n; i++) {
+      slots.push({ slot: `${cap.uid}#${i}`, type, label: n > 1 ? `Cible ${i + 1} (effet composé)` : "Cible (effet composé)" });
+    }
   }
 
   return slots;
@@ -4172,14 +4184,29 @@ const CREATURE_TARGETING_KEYWORDS: Keyword[] = [
   "benediction", "tactique", "remontee", "conferer",
 ];
 
-/** Première capacité composée à l'entrée demandant une cible interactive
- *  supportée en v1 : désignation "au choix", 1 cible, unité, sur le plateau. */
+/** Première capacité composée à l'entrée demandant un ciblage interactif :
+ *  désignation "au choix", N cibles (1 ou plus), unité, sur le plateau. */
 function firstOnPlayComposedChoiceCap(card: Card): import("./types").Capability | undefined {
   return getCapabilities(card).find((c) => {
     const t = c.composed?.target;
     return !!c.composed && c.trigger === "on_play" && !!t
-      && t.designation === "choice" && t.count === 1 && t.entity === "unit" && t.location === "board";
+      && t.designation === "choice" && typeof t.count === "number" && t.count >= 1
+      && t.entity === "unit" && t.location === "board";
   });
+}
+
+/** Descripteur de ciblage composé d'une créature à l'entrée (pour le store :
+ *  uid de la capacité, nombre de cibles, type de cible). null si aucun. */
+export function getCreatureComposedChoice(
+  card: Card,
+): { uid: string; count: number; type: SpellTargetType } | null {
+  if (card.card_type !== "creature") return null;
+  const cap = firstOnPlayComposedChoiceCap(card);
+  const t = cap?.composed?.target;
+  if (!cap || !t || typeof t.count !== "number") return null;
+  const type = composedSlotType(t);
+  if (!type) return null;
+  return { uid: cap.uid, count: t.count, type };
 }
 
 export function creatureNeedsTarget(card: Card): boolean {

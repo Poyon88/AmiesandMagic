@@ -124,8 +124,8 @@ describe("interpréteur composé — contenus d'effet", () => {
     const cap = composedCap("spell_resolution", { content: "deal_damage", magnitude: { x: 3 }, target: { entity: "unit", count: 1, side: "enemy", location: "board", designation: "choice" } });
     const spell = mkCard({ card_type: "spell", attack: null, health: null, capabilities: [cap] });
     const slots = getSpellTargetSlots(spell);
-    expect(slots.some((s) => s.slot === cap.uid && s.type === "enemy_creature")).toBe(true);
-    const s = play(s0, mkInstance(spell), { [cap.uid]: u2.instanceId });
+    expect(slots.some((s) => s.slot === `${cap.uid}#0` && s.type === "enemy_creature")).toBe(true);
+    const s = play(s0, mkInstance(spell), { [`${cap.uid}#0`]: u2.instanceId });
     const h1 = s.players[1].board.find((c) => c.card.id === u1.card.id)?.currentHealth;
     const h2 = s.players[1].board.find((c) => c.card.id === u2.card.id)?.currentHealth;
     expect(h1).toBe(5); // intact
@@ -154,6 +154,21 @@ describe("interpréteur composé — contenus d'effet", () => {
     const s = play(s0, creature);
     const a = s.players[0].board.find((c) => c.card.id === ally.card.id)!;
     expect((a.card.keywords as string[]).includes("berserk")).toBe(true);
+  });
+
+  it("ciblage au choix multi (count 2) : 2 slots, 2 cibles touchées", () => {
+    const s0 = mkState();
+    const u1 = mkInstance(mkCard({ attack: 1, health: 5 }));
+    const u2 = mkInstance(mkCard({ attack: 1, health: 5 }));
+    const u3 = mkInstance(mkCard({ attack: 1, health: 5 }));
+    s0.players[1].board = [u1, u2, u3];
+    const cap = composedCap("spell_resolution", { content: "deal_damage", magnitude: { x: 2 }, target: { entity: "unit", count: 2, side: "enemy", location: "board", designation: "choice" } });
+    const spell = mkCard({ card_type: "spell", attack: null, health: null, capabilities: [cap] });
+    expect(getSpellTargetSlots(spell).filter((s) => s.slot.startsWith(cap.uid)).length).toBe(2);
+    const s = play(s0, mkInstance(spell), { [`${cap.uid}#0`]: u1.instanceId, [`${cap.uid}#1`]: u3.instanceId });
+    expect(s.players[1].board.find((c) => c.card.id === u1.card.id)?.currentHealth).toBe(3); // touché
+    expect(s.players[1].board.find((c) => c.card.id === u2.card.id)?.currentHealth).toBe(5); // épargné
+    expect(s.players[1].board.find((c) => c.card.id === u3.card.id)?.currentHealth).toBe(3); // touché
   });
 
   it("créature à l'entrée 'au choix' : cibleur branché + cible respectée", () => {
