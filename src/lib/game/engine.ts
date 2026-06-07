@@ -1576,9 +1576,10 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       state: newState, caster: player, opponent, card, targetMap, results: {},
     };
 
-    // Phase 1: Resolve spell keywords
-    if (card.spell_keywords?.length) {
-      resolveSpellKeywords(ctx, card.spell_keywords);
+    // Phase 1: Resolve spell keywords (lus depuis le modèle unifié)
+    const spellInstances1 = spellResolutionInstances(card);
+    if (spellInstances1.length) {
+      resolveSpellKeywords(ctx, spellInstances1);
       // Intermediate death processing to detect target_destroyed
       const pDead = cleanDeadCreatures(player);
       const oDead = cleanDeadCreatures(opponent);
@@ -1842,9 +1843,10 @@ function recastSpells(
       state, caster: player, opponent, card, targetMap, results: {},
     };
 
-    // Resolve spell keywords
-    if (card.spell_keywords?.length) {
-      resolveSpellKeywords(ctx, card.spell_keywords);
+    // Resolve spell keywords (lus depuis le modèle unifié)
+    const spellInstances2 = spellResolutionInstances(card);
+    if (spellInstances2.length) {
+      resolveSpellKeywords(ctx, spellInstances2);
       const pDead = cleanDeadCreatures(player);
       const oDead = cleanDeadCreatures(opponent);
       for (const [slot, instanceId] of Object.entries(targetMap)) {
@@ -1875,6 +1877,24 @@ function recastSpells(
 // ============================================================
 // NEW SPELL SYSTEM — SPELL KEYWORD RESOLUTION
 // ============================================================
+
+/** Reconstruit la liste d'effets de sort (SpellKeywordInstance[]) depuis le
+ *  modèle unifié, dans l'ordre — l'index i est conservé, donc les slots de
+ *  cible `kw_${i}` restent valides. Permet à resolveSpellKeywords de consommer
+ *  les capacités sans changer son corps ni le flux de ciblage. */
+function spellResolutionInstances(card: Card): SpellKeywordInstance[] {
+  return getCapabilities(card)
+    .filter((c) => c.trigger === "spell_resolution" && c.effectKind === "immediate")
+    .map((c) => ({
+      id: c.abilityId as SpellKeywordInstance["id"],
+      amount: c.params?.x,
+      attack: c.params?.attack,
+      health: c.params?.health,
+      race: c.race,
+      clan: c.clan,
+      token_id: c.tokenId ?? null,
+    }));
+}
 
 function resolveSpellKeywords(
   ctx: SpellResolutionContext,
