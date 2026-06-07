@@ -10,7 +10,7 @@ import { getTokenManaCost } from "@/lib/game/abilities";
 import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
-import { composedCapsOf, composedIcon, composedTriggerMode, describeComposedCap } from "@/lib/game/composed-display";
+import { composedCapsOf, composedIcon, composedTriggerMode, composedValueText, describeComposedCap } from "@/lib/game/composed-display";
 import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
 import RarityFrame from "@/components/cards/RarityFrame";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
@@ -529,12 +529,15 @@ export default function BoardCreature({
           {composedCapsOf(card.capabilities).map((cap, i) => {
             const ic = composedIcon(cap);
             const cfilter = keywordModeFilter(composedTriggerMode(cap));
+            const val = composedValueText(cap);
+            const tint = keywordModeColor(composedTriggerMode(cap)) ?? accentColor;
             return (
               <div key={`cx-${i}`} title={describeComposedCap(cap)} style={{
-                width: 24, height: 24,
-                display: "inline-flex", alignItems: "center", justifyContent: "center", overflow: "hidden",
+                minWidth: 24, height: 24, padding: val ? "0 2px" : 0,
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1,
               }}>
                 <span style={{ display: "inline-flex", filter: cfilter ?? undefined }}><KeywordIcon symbol={ic.symbol} size={14} keyword={ic.keyword} /></span>
+                {val && <span style={{ fontSize: 8, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}` }}>{val}</span>}
               </div>
             );
           })}

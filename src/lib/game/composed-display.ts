@@ -3,7 +3,19 @@
 // tous les affichages de carte (forge, jeu, main, cimetière, mulligan, collection).
 
 import { ABILITIES, creatureEngineId } from "./abilities";
+import { toRoman } from "./keyword-labels";
 import type { Capability, ComposedEffect, KeywordMode, TargetSpec } from "./types";
+
+/** Valeur affichée à côté de l'icône composée (comme « II » pour Impact 2) :
+ *  X/Y pour buff/debuff, chiffre romain de X sinon. null si pas de valeur. */
+export function composedValueText(cap: Capability): string | null {
+  const m = cap.composed?.magnitude;
+  if (!m) return null;
+  if (cap.composed!.content === "buff" || cap.composed!.content === "debuff") {
+    return (m.x != null || m.y != null) ? `${m.x ?? 0}/${m.y ?? 0}` : null;
+  }
+  return (m.x != null && m.x > 0) ? toRoman(m.x) : null;
+}
 
 /** Icône (emoji de repli) + clé d'icône (pour une éventuelle icône uploadée).
  *  La clé pointe vers un keyword existant quand l'effet en réutilise l'icône, ou

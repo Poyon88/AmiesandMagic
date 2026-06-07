@@ -6,7 +6,7 @@ import KeywordIcon from '@/components/shared/KeywordIcon';
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS, getSpellKeywordDesc, getSpellKeywordLabel, formatConvocationTokens } from '@/lib/game/spell-keywords';
 import { isCreatureKwShadowedBySpell } from '@/lib/game/abilities';
 import { KEYWORD_LABELS, keywordModeFilter } from '@/lib/game/keyword-labels';
-import { composedCapsOf, composedIcon, composedTriggerMode, describeComposedCap } from '@/lib/game/composed-display';
+import { composedCapsOf, composedIcon, composedTriggerMode, composedValueText, describeComposedCap } from '@/lib/game/composed-display';
 import type { Capability } from '@/lib/game/types';
 import type { SpellKeywordInstance, TokenTemplate } from '@/lib/game/types';
 
@@ -440,15 +440,17 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
             {composedCapsOf(card!.capabilities).map((cap, i) => {
               const ic = composedIcon(cap);
               const filter = keywordModeFilter(composedTriggerMode(cap)) ?? undefined;
+              const val = composedValueText(cap);
               return (
                 <div key={`cx_${i}`} title={describeComposedCap(cap)} style={{
-                  minWidth: 19 * s, height: 19 * s,
-                  display: "inline-flex", alignItems: "center", justifyContent: "center",
+                  minWidth: 19 * s, height: 19 * s, padding: val ? `0 ${4 * s}px` : 0,
+                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 * s,
                   fontSize: 13 * s, cursor: "default",
                 }}>
                   <span style={filter ? { filter } : undefined}>
                     <KeywordIcon symbol={ic.symbol} keyword={ic.keyword} />
                   </span>
+                  {val && <span style={{ fontSize: 10 * s, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 4px ${fac.accent}` }}>{val}</span>}
                 </div>
               );
             })}
