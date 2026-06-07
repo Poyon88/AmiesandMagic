@@ -245,6 +245,59 @@ export interface Capability {
   grantScope?: "target" | "all_allies";
   /** Slots de cibles (0/1/N). Vide = aucun ciblage. Ordre = ordre du picker. */
   targets?: CapabilityTargetSlot[];
+  /** Effet COMPOSÉ (modèle hybride). Présent ⇒ la capacité est exécutée par
+   *  l'interpréteur générique (`resolveComposedEffect`) au lieu du chemin curé
+   *  via `abilityId`. Absent ⇒ comportement curé inchangé. */
+  composed?: ComposedEffect;
+}
+
+// ─── Capacités composables (modèle hybride) ─────────────────────────────────
+// Couche compositionnelle bornée : un interpréteur unique exécute ces contenus
+// d'effet courants sur un `TargetSpec`. Les mécaniques singulières (Métamorphose,
+// Totem, Cycle éternel, auras à périmètre dynamique…) restent curées via
+// `Capability.abilityId`.
+
+export type ComposedEffectContent =
+  | "deal_damage"
+  | "heal"
+  | "buff"
+  | "debuff"
+  | "draw_cards"
+  | "discard"
+  | "summon_token"
+  | "gain_mana"
+  | "destroy"
+  | "bounce"
+  | "paralyze"
+  | "grant_keyword";
+
+/** Spécification de cibles d'un effet composé. Les filtres par caractéristiques
+ *  (coût/ATK/déf/rareté) et par capacités possédées sont prévus pour la v2. */
+export interface TargetSpec {
+  /** Type de cible. "hero" = le héros du bord visé. */
+  entity: "unit" | "hero";
+  /** Nombre d'unités impactées : un entier, ou "all" pour tout le pool filtré. */
+  count: number | "all";
+  /** Bord visé. */
+  side: "ally" | "enemy" | "any";
+  /** Appartenance (choix multiples possibles, OU logique entre listes). */
+  membership?: { faction?: string[]; race?: string[]; clan?: string[] };
+  /** Zone où chercher les cibles. */
+  location: "board" | "hand" | "deck" | "graveyard";
+  /** Désignation : choisie par le joueur ou aléatoire. */
+  designation: "choice" | "random";
+}
+
+export interface ComposedEffect {
+  content: ComposedEffectContent;
+  /** Amplitude : `x` (montant générique), `y` (PV pour buff/debuff +X/+Y). */
+  magnitude?: { x?: number; y?: number };
+  /** Spécification de cibles. Absent ⇒ effet sur le contrôleur (pioche, mana…). */
+  target?: TargetSpec;
+  /** content === "grant_keyword" : id de l'ability conférée. */
+  grantAbilityId?: string;
+  /** content === "summon_token" : token à invoquer. */
+  tokenId?: number | null;
 }
 
 // --- Composable effects ---

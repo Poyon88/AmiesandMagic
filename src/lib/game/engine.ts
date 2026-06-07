@@ -240,6 +240,147 @@ function applyGrantCapability(
   if (target) applyGrantedKeyword(target, cap.abilityId, params);
 }
 
+// ── Interpréteur d'effets composés (modèle hybride) ─────────────────────────
+// Exécute les contenus d'effet courants sur un TargetSpec. Les capacités portant
+// `composed` empruntent ce chemin générique ; les autres restent curées (chemin
+// abilityId). Réutilise les helpers d'effet existants (dégâts, soin, token…).
+
+function composedTargetPool(
+  spec: import("./types").TargetSpec,
+  owner: PlayerState,
+  opponent: PlayerState,
+): CardInstance[] {
+  const zoneOf = (p: PlayerState): CardInstance[] =>
+    spec.location === "board" ? p.board
+      : spec.location === "hand" ? p.hand
+        : spec.location === "deck" ? p.deck
+          : p.graveyard;
+  let pool: CardInstance[] =
+    spec.side === "ally" ? [...zoneOf(owner)]
+      : spec.side === "enemy" ? [...zoneOf(opponent)]
+        : [...zoneOf(owner), ...zoneOf(opponent)];
+  const m = spec.membership;
+  if (m && (m.faction?.length || m.race?.length || m.clan?.length)) {
+    pool = pool.filter((c) =>
+      (!!m.faction?.length && m.faction.includes(c.card.faction ?? "")) ||
+      (!!m.race?.length && m.race.includes(c.card.race ?? "")) ||
+      (!!m.clan?.length && m.clan.includes(c.card.clan ?? "")));
+  }
+  return pool;
+}
+
+function selectComposedUnits(
+  spec: import("./types").TargetSpec,
+  pool: CardInstance[],
+  chosenTargetIds?: string[],
+): CardInstance[] {
+  if (spec.count === "all") return pool;
+  const n = typeof spec.count === "number" ? Math.max(0, spec.count) : 1;
+  if (spec.designation === "choice" && chosenTargetIds?.length) {
+    return chosenTargetIds
+      .map((id) => pool.find((c) => c.instanceId === id))
+      .filter((c): c is CardInstance => !!c)
+      .slice(0, n);
+  }
+  if (spec.designation === "random") return shuffleArray(pool).slice(0, n);
+  return pool.slice(0, n); // choix sans cible fournie → repli déterministe
+}
+
+function resolveComposedEffect(
+  composed: import("./types").ComposedEffect,
+  source: CardInstance | null,
+  owner: PlayerState,
+  opponent: PlayerState,
+  chosenTargetIds?: string[],
+): void {
+  const x = composed.magnitude?.x ?? 0;
+  const y = composed.magnitude?.y ?? 0;
+
+  // Effets sur le contrôleur (sans ciblage d'entité)
+  switch (composed.content) {
+    case "draw_cards": for (let i = 0; i < x; i++) drawCard(owner); return;
+    case "gain_mana": owner.mana += x; return;
+    case "discard":
+      for (let i = 0; i < x && owner.hand.length > 0; i++) {
+        const idx = Math.floor(rng() * owner.hand.length);
+        const [c] = owner.hand.splice(idx, 1);
+        owner.graveyard.push(c);
+      }
+      return;
+    case "summon_token": {
+      const count = x > 0 ? x : 1;
+      for (let i = 0; i < count && owner.board.length < MAX_BOARD_SIZE; i++) {
+        const tmpl = findTokenTemplate(composed.tokenId);
+        let base: Card = {
+          id: -1, name: tmpl?.name ?? "Token", mana_cost: 0, card_type: "creature",
+          attack: tmpl?.attack ?? 1, health: tmpl?.health ?? 1, effect_text: "",
+          keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
+          faction: source?.card.faction,
+        };
+        base = applyTokenTemplate(base, tmpl);
+        const tok = createCardInstance(base);
+        tok.hasSummoningSickness = true;
+        owner.board.push(tok);
+      }
+      return;
+    }
+    default: break;
+  }
+
+  const target = composed.target;
+  if (!target) return;
+
+  if (target.entity === "hero") {
+    const hero = target.side === "ally" ? owner.hero : opponent.hero;
+    if (composed.content === "deal_damage") dealDamageToHero(hero, x);
+    else if (composed.content === "heal") hero.hp = Math.min(hero.maxHp, hero.hp + x);
+    return;
+  }
+
+  const pool = composedTargetPool(target, owner, opponent);
+  const units = selectComposedUnits(target, pool, chosenTargetIds);
+  for (const u of units) {
+    switch (composed.content) {
+      case "deal_damage": dealDamageToCreature(u, x, false, true); break;
+      case "heal": u.currentHealth = Math.min(u.maxHealth, u.currentHealth + x); break;
+      case "buff":
+        u.card = { ...u.card, attack: (u.card.attack ?? 0) + x, health: (u.card.health ?? 0) + y };
+        u.currentAttack += x; u.currentHealth += y; u.maxHealth += y;
+        break;
+      case "debuff":
+        u.currentAttack = Math.max(0, u.currentAttack - x);
+        if (y > 0) { u.currentHealth -= y; u.maxHealth = Math.max(1, u.maxHealth - y); }
+        break;
+      case "destroy": u.currentHealth = 0; break;
+      case "paralyze": u.isParalyzed = true; break;
+      case "bounce": resolveRemontee(u.instanceId, source?.instanceId ?? null, owner, opponent); break;
+      case "grant_keyword":
+        if (composed.grantAbilityId) applyGrantedKeyword(u, composed.grantAbilityId, x > 0 ? { amount: x } : undefined);
+        break;
+      default: break;
+    }
+  }
+}
+
+/** Exécute les capacités composées d'une carte pour un déclencheur donné.
+ *  `targetMap[cap.uid]` (ou `fallbackTargetId`) fournit la cible choisie pour
+ *  les capacités en désignation "choice" (count = 1 en v1). */
+function runComposedCapsForCard(
+  card: Card,
+  trigger: import("./types").CapabilityTrigger,
+  source: CardInstance | null,
+  owner: PlayerState,
+  opponent: PlayerState,
+  targetMap?: Record<string, string>,
+  fallbackTargetId?: string,
+): void {
+  for (const cap of getCapabilities(card)) {
+    if (!cap.composed || cap.trigger !== trigger) continue;
+    const picked = targetMap?.[cap.uid] ?? fallbackTargetId;
+    resolveComposedEffect(cap.composed, source, owner, opponent, picked ? [picked] : undefined);
+  }
+}
+
 // Mode 2 fallback for creature-only keywords (corruption, malediction, …).
 // Replays the on-play effect that those keywords trigger when a creature
 // with them enters the field. Mirrors the inline logic in playCard so the
@@ -1540,6 +1681,9 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       recastSpells(newState, player, opponent, x);
     }
 
+    // Effets composés à l'entrée en jeu (modèle hybride).
+    runComposedCapsForCard(cardInstance.card, "on_play", cardInstance, player, opponent, action.targetMap, action.targetInstanceId);
+
     recalculateAuras(player, opponent);
 
     // Clean creatures killed by on-summon effects (vampirisme, corruption, etc.)
@@ -1608,6 +1752,9 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
         applyGrantCapability(cap, player, targetMap);
       }
     }
+
+    // Effets composés à la résolution du sort (modèle hybride).
+    runComposedCapsForCard(card, "spell_resolution", null, player, opponent, targetMap);
 
     // Legacy fallback for old spell_effect (temporary)
     if (card.spell_effect && !card.spell_keywords?.length && !card.spell_effects?.effects?.length) {
@@ -2979,6 +3126,8 @@ function triggerReturnToHand(ci: CardInstance, owner: PlayerState, opponent: Pla
       resolveCuratedKeywordEffect(inst.id, inst.x ?? 1, ci, owner, opponent, undefined, inst);
     }
   }
+  // Effets composés au retour en main (modèle hybride).
+  runComposedCapsForCard(ci.card, "on_return", ci, owner, opponent);
 }
 
 // ── Remontée ──
@@ -3155,6 +3304,9 @@ function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: P
         resolveCuratedKeywordEffect(inst.id, inst.x ?? 1, c, owner, enemy, undefined, inst);
       }
     }
+
+    // Effets composés à la mort (modèle hybride).
+    runComposedCapsForCard(c.card, "on_death", c, owner, enemy);
 
     // (Instinct de meute is now an on-play trigger — see playCard,
     // resolved once at summon based on whether any same-faction ally has
