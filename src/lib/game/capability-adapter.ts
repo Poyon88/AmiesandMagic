@@ -174,6 +174,17 @@ function deriveCreatureCapabilities(card: Card): Capability[] {
   });
 }
 
+// NOTE (refonte, fin de phase B) — surfaces moteur déjà branchées sur ce modèle
+// (via getCapabilities) : présence des keywords (hasKw), gating par déclencheur
+// (hasKwInMode / cardHasKwOnPlay), valeurs X (getKwX), résolution des sorts
+// (spellResolutionInstances → resolveSpellKeywords) et don (applyGrantCapability).
+// RESTE à brancher avant la phase F (suppression des colonnes legacy) : les
+// résolveurs d'effets curés mort/tap/retour (resolveCuratedKeywordEffect et ses
+// appelants qui lisent keyword_instances), la lecture `charge` de
+// createCardInstance, et les lectures directes de renforcement_multiple. Ces
+// chemins lisent des colonnes que la forge continue de peupler jusqu'en phase D,
+// donc restent cohérents d'ici là.
+
 /** Traduit une carte legacy en `Capability[]`, iso-comportement. Pur. */
 export function deriveCapabilities(card: Card): Capability[] {
   return card.card_type === "spell"
