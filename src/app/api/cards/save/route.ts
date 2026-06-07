@@ -4,6 +4,15 @@ import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { LIMITED_PRINT_COUNTS } from '@/lib/card-engine/constants';
 import { validateRace } from '@/lib/validation/faction-clan';
+import { deriveCapabilities } from '@/lib/game/capability-adapter';
+import type { Card } from '@/lib/game/types';
+
+// Champs dont dépend le modèle de capacités unifié : si l'un d'eux change, la
+// colonne `capabilities` doit être recalculée (dual-write via l'adaptateur).
+const CAPABILITY_FIELDS = [
+  'card_type', 'keywords', 'keyword_instances', 'spell_keywords', 'effect_text',
+  'convocation_token_id', 'convocation_tokens', 'lycanthropie_token_id', 'entraide_race',
+] as const;
 
 
 async function getAuthUser() {
@@ -36,7 +45,7 @@ export async function GET() {
   const supabaseAdmin = getAdminClient();
   const { data, error } = await supabaseAdmin
     .from('cards')
-    .select('id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, keywords, keyword_instances, spell_keywords, spell_effects, image_url, illustration_prompt, faction, race, clan, rarity, card_alignment, convocation_token_id, convocation_tokens, lycanthropie_token_id, entraide_race, set_id, card_year, card_month, sfx_play_url, sfx_death_url, life_cost, discard_cost, sacrifice_cost')
+    .select('id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, keywords, keyword_instances, spell_keywords, spell_effects, capabilities, image_url, illustration_prompt, faction, race, clan, rarity, card_alignment, convocation_token_id, convocation_tokens, lycanthropie_token_id, entraide_race, set_id, card_year, card_month, sfx_play_url, sfx_death_url, life_cost, discard_cost, sacrifice_cost')
     .order('name');
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -75,6 +84,17 @@ export async function POST(request: Request) {
       }
       if (Object.keys(patch).length === 0) {
         return NextResponse.json({ success: true, updated: true, noop: true });
+      }
+      // Dual-write : si le patch touche un champ dont dépendent les capacités,
+      // on recharge la ligne, on fusionne et on recalcule `capabilities`.
+      if (CAPABILITY_FIELDS.some((f) => f in patch)) {
+        const { data: current } = await supabaseAdmin
+          .from('cards')
+          .select('card_type, effect_text, keywords, keyword_instances, spell_keywords, convocation_token_id, convocation_tokens, lycanthropie_token_id, entraide_race')
+          .eq('id', updateId)
+          .single();
+        const merged = { ...(current ?? {}), ...patch } as unknown as Card;
+        patch.capabilities = deriveCapabilities(merged);
       }
       const { error: patchErr } = await supabaseAdmin
         .from('cards')
@@ -151,6 +171,10 @@ export async function POST(request: Request) {
       discard_cost: card.discard_cost ?? null,
       sacrifice_cost: card.sacrifice_cost ?? null,
     };
+    // Dual-write du modèle unifié : dérivé de la carte sauvegardée (l'adaptateur
+    // reproduit fidèlement la sémantique legacy). Source de vérité côté moteur
+    // une fois lue (getCapabilities) ; sinon repli adaptateur.
+    cardData.capabilities = deriveCapabilities(cardData as unknown as Card);
     if (image_url) cardData.image_url = image_url;
 
     // Upload SFX files if provided
