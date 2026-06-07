@@ -5,7 +5,9 @@ import { KEYWORDS, FACTIONS, RARITY_MAP } from '@/lib/card-engine/constants';
 import KeywordIcon from '@/components/shared/KeywordIcon';
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS, getSpellKeywordDesc, getSpellKeywordLabel, formatConvocationTokens } from '@/lib/game/spell-keywords';
 import { isCreatureKwShadowedBySpell } from '@/lib/game/abilities';
-import { KEYWORD_LABELS } from '@/lib/game/keyword-labels';
+import { KEYWORD_LABELS, keywordModeColor, keywordModeFilter } from '@/lib/game/keyword-labels';
+import { composedCapsOf, composedIcon, composedTriggerMode, describeComposedCap } from '@/lib/game/composed-display';
+import type { Capability } from '@/lib/game/types';
 import type { SpellKeywordInstance, TokenTemplate } from '@/lib/game/types';
 
 // Reverse of KEYWORD_LABELS: FR label → snake_case engine id. Forge state
@@ -144,6 +146,8 @@ interface CardData {
   cardYear?: number;
   cardMonth?: number;
   spellKeywords?: SpellKeywordInstance[];
+  // Effets composés (modèle hybride) — affichés en icônes (recto) et texte (verso).
+  capabilities?: Capability[] | null;
   budgetTotal: number;
   printNumber?: number;
   maxPrints?: number;
@@ -428,6 +432,31 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
           </div>
         )}
 
+        {/* Composed effect icons row (modèle hybride) — icône réutilisée la plus
+            proche, teintée selon le déclencheur (blanc/rouge/bleu/jaune). */}
+        {composedCapsOf(card!.capabilities).length > 0 && (
+          <div style={{ display: "flex", gap: 4 * s, flexWrap: "wrap" }}>
+            {composedCapsOf(card!.capabilities).map((cap, i) => {
+              const ic = composedIcon(cap);
+              const mode = composedTriggerMode(cap);
+              const color = keywordModeColor(mode) ?? fac.color;
+              const filter = keywordModeFilter(mode) ?? undefined;
+              return (
+                <div key={`cx_${i}`} title={describeComposedCap(cap)} style={{
+                  minWidth: 19 * s, height: 19 * s, borderRadius: 6 * s,
+                  background: `${color}33`, border: `1px solid ${color}88`,
+                  display: "inline-flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 13 * s, cursor: "default", boxShadow: `0 0 6px ${color}44`,
+                }}>
+                  <span style={filter ? { filter } : undefined}>
+                    <KeywordIcon symbol={ic.symbol} keyword={ic.keyword} />
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
         {/* Stats + rarity row */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           {/* Faction · Type */}
@@ -625,6 +654,23 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
           </div>
           );
         })()}
+
+        {/* Effets composés (verso) — sous les capacités classiques, même style. */}
+        {composedCapsOf(card!.capabilities).length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 * s }}>
+            {composedCapsOf(card!.capabilities).map((cap, i) => {
+              const ic = composedIcon(cap);
+              const mode = composedTriggerMode(cap);
+              const filter = keywordModeFilter(mode) ?? undefined;
+              return (
+                <div key={`cxd_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
+                  <span style={{ flexShrink: 0, ...(filter ? { filter } : {}) }}><KeywordIcon symbol={ic.symbol} size={18 * s} keyword={ic.keyword} /></span>
+                  <div style={{ fontSize: 12 * s, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{describeComposedCap(cap)}</div>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* Flavor text */}
         {card!.flavorText && (

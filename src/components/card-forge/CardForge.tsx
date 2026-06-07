@@ -75,6 +75,8 @@ interface ForgeCard {
   lifeCost?: number;
   discardCost?: number;
   sacrificeCost?: number;
+  // Effets composés (modèle hybride) — pour l'aperçu CardVisual.
+  capabilities?: Capability[] | null;
 }
 
 function Sec({ title, children }: { title: string; children: React.ReactNode }) {
@@ -1607,6 +1609,7 @@ export default function CardForge() {
     ability: manualAbility,
     flavorText: manualFlavorText,
     illustrationPrompt: manualIllustrationPrompt,
+    capabilities: composedCaps,
     budgetTotal: manualBudgetTotal,
     budgetUsed: manualBudgetUsed,
     generatedAt: card?.generatedAt || new Date().toISOString(),
