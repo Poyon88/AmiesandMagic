@@ -525,18 +525,25 @@ export default function BoardCreature({
               );
             });
           })()}
-          {/* Effets composés (icônes sans cadre, teintées selon le déclencheur) */}
+          {/* Effets composés (sans cadre ; même gabarit icône+valeur que les keywords) */}
           {composedCapsOf(card.capabilities).map((cap, i) => {
             const ic = composedIcon(cap);
             const cfilter = keywordModeFilter(composedTriggerMode(cap));
             const val = composedValueText(cap);
             const tint = keywordModeColor(composedTriggerMode(cap)) ?? accentColor;
+            const hasImg = !!iconOverrides[ic.keyword];
             return (
               <div key={`cx-${i}`} title={describeComposedCap(cap)} style={{
                 minWidth: 24, height: 24, padding: val ? "0 2px" : 0,
-                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1,
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, overflow: "hidden",
               }}>
-                <span style={{ display: "inline-flex", filter: cfilter ?? undefined }}><KeywordIcon symbol={ic.symbol} size={14} keyword={ic.keyword} /></span>
+                <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", filter: cfilter ?? undefined, lineHeight: 0 }}>
+                  {hasImg ? (
+                    <div style={{ width: 24, height: 24, flexShrink: 0 }}><KeywordIcon symbol={ic.symbol} size={14} keyword={ic.keyword} fill /></div>
+                  ) : (
+                    <KeywordIcon symbol={ic.symbol} size={14} keyword={ic.keyword} />
+                  )}
+                </span>
                 {val && <span style={{ fontSize: 8, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}` }}>{val}</span>}
               </div>
             );
