@@ -3383,10 +3383,16 @@ export default function CardForge() {
           const valStyle = { fontSize: 11, color: "#444", fontFamily: "'Cinzel',serif" } as const;
           return (
             <div style={{ flex: 1, overflow: "auto", padding: 16 }}>
-              <div style={{ maxWidth: 720, margin: "0 auto" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+              <div style={{ display: "flex", gap: 20, maxWidth: 1040, margin: "0 auto", alignItems: "flex-start" }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
                   <span style={{ fontFamily: "'Cinzel',serif", fontSize: 14, fontWeight: 700, color: fac.accent }}>✨ Capacités</span>
                   <span style={{ fontSize: 10, color: "#888" }}>Contenant : <b style={{ color: fac.color }}>{isUnit ? "Unité" : "Sort"}</b> (déduit du type de carte)</span>
+                </div>
+                <div style={{ fontSize: 10, color: "#999", marginBottom: 12 }}>
+                  {(card || (forgeMode === "manuel" && manualName))
+                    ? <>Réglez le détail des capacités de <b style={{ color: fac.accent }}>{manualName || card?.name || "la carte"}</b> : déclencheur, valeur X, token, race/clan, portée. La sélection des capacités se fait ici ou dans l&apos;onglet ⚒ Forge.</>
+                    : <>Aucune carte en cours. Générez ou saisissez une carte dans l&apos;onglet <b>⚒ Forge</b>, puis revenez régler ses capacités ici.</>}
                 </div>
 
                 {isUnit ? (
@@ -3593,7 +3599,29 @@ export default function CardForge() {
                 )}
 
                 <div style={{ marginTop: 16, fontSize: 10, color: "#999", fontStyle: "italic", borderTop: "1px solid #eee", paddingTop: 10 }}>
-                  Les capacités partagent l&apos;état de l&apos;onglet Forge. Générez/éditez la carte et sauvegardez depuis l&apos;onglet <b>⚒ Forge</b> ; le modèle unifié <code>capabilities</code> est recalculé automatiquement à l&apos;enregistrement.
+                  À l&apos;enregistrement, le modèle unifié <code>capabilities</code> est recalculé automatiquement depuis ces réglages.
+                </div>
+                </div>
+
+                {/* Colonne droite : aperçu live + sauvegarde (réutilise l'état de la Forge) */}
+                <div style={{ width: 300, flexShrink: 0, position: "sticky", top: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+                  <CardVisual
+                    card={(card || forgeMode === "manuel") ? manualCard : null}
+                    loading={forgeMode === "auto" && loading}
+                    imageUrl={cardImages[manualCard.id] || null}
+                    onImageChange={(url) => setCardImages(prev => ({ ...prev, [manualCard.id]: url }))}
+                    tokens={tokenTemplates}
+                  />
+                  {(card || (forgeMode === "manuel" && manualName)) ? (
+                    <Btn onClick={() => { if (!card) createManualCard(); saveToGame(manualCard); }} label={saving ? "⏳ …" : "💾 Sauvegarder"} color="#ffd54f" />
+                  ) : (
+                    <div style={{ fontSize: 9, color: "#aaa", fontStyle: "italic", textAlign: "center" }}>Générez/saisissez une carte dans ⚒ Forge pour pouvoir sauvegarder.</div>
+                  )}
+                  {saveResult && (
+                    <div style={{ padding: "8px 14px", borderRadius: 8, fontSize: 10, textAlign: "center", background: saveResult.ok ? "#e8f8f0" : "#fde8e8", border: `1px solid ${saveResult.ok ? "#a3e4c1" : "#f5a3a3"}`, color: saveResult.ok ? "#27ae60" : "#e74c3c" }}>
+                      {saveResult.msg}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
