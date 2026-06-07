@@ -181,8 +181,19 @@ export function deriveCapabilities(card: Card): Capability[] {
     : deriveCreatureCapabilities(card);
 }
 
+// Mémoïsation par objet `card`. Le moteur remplace toujours `card` par une copie
+// immuable quand il mute les keywords (grant / silence / corruption), donc une
+// nouvelle identité d'objet ⇒ re-dérivation correcte. Évite de re-dériver à
+// chaque `hasKw` dans les boucles de combat.
+const capabilitiesMemo = new WeakMap<Card, Capability[]>();
+
 /** Renvoie `card.capabilities` si présent (carte backfillée), sinon le dérive
- *  des structures legacy. Point d'entrée unique pour le moteur (phase B). */
+ *  des structures legacy (mémoïsé). Point d'entrée unique pour le moteur. */
 export function getCapabilities(card: Card): Capability[] {
-  return card.capabilities ?? deriveCapabilities(card);
+  if (card.capabilities) return card.capabilities;
+  const hit = capabilitiesMemo.get(card);
+  if (hit) return hit;
+  const derived = deriveCapabilities(card);
+  capabilitiesMemo.set(card, derived);
+  return derived;
 }

@@ -29,6 +29,7 @@ import type {
 } from "./types";
 import { SPELL_KEYWORDS } from "./spell-keywords";
 import { getEntraideReduction, getTokenManaCost, isCreatureKwShadowedBySpell } from "./abilities";
+import { getCapabilities } from "./capability-adapter";
 import { parseXValuesFromEffectText } from "./keyword-labels";
 import {
   HERO_MAX_HP,
@@ -75,31 +76,34 @@ export function initRNG(seed: number) {
 // KEYWORD HELPERS
 // ============================================================
 
-function hasKw(ci: CardInstance, kw: Keyword): boolean {
-  return ci.card.keywords.includes(kw);
+// ── Lecture du modèle de capacités unifié ───────────────────────────────────
+// `hasKw` / `hasKwInMode` / `cardHasKwOnPlay` / `getKwX` lisent désormais
+// `getCapabilities(card)` (= card.capabilities ?? deriveCapabilities(card)) au
+// lieu de `card.keywords` / `card.keyword_instances`. L'adaptateur reproduisant
+// fidèlement l'ancienne sémantique, le comportement est inchangé (gate :
+// engine-regression.test.ts). Les signatures sont préservées → aucun site
+// d'appel modifié.
+
+/** Mode legacy → déclencheur du modèle unifié. */
+function capTriggerForMode(mode: import("./types").KeywordMode | undefined): import("./types").CapabilityTrigger {
+  if (mode === "death") return "on_death";
+  if (mode === "tap") return "on_activation";
+  if (mode === "return") return "on_return";
+  return "on_play";
 }
 
-/** Mode-aware helpers: return true when the card carries at least one
- *  KeywordInstance of `kw` in the requested mode. Falls back to the
- *  legacy `keywords` array when `keywordInstances` is absent (older
- *  cards) so existing decks still work — every legacy keyword is
- *  treated as on-play (mode=undefined). */
+/** Présence de l'ability quel que soit le déclencheur (remplace l'ancien
+ *  `card.keywords.includes`). */
+function hasKw(ci: CardInstance, kw: Keyword): boolean {
+  return getCapabilities(ci.card).some(c => c.abilityId === kw);
+}
+
+/** Présence de l'ability sous un déclencheur donné. Ne concerne en pratique que
+ *  le set curé multi-mode (seul à être routé par déclencheur) ; pour ces ids,
+ *  l'adaptateur mappe le mode au déclencheur à l'identique. */
 function hasKwInMode(ci: CardInstance, kw: Keyword, mode: import("./types").KeywordMode | undefined): boolean {
-  const instances = ci.card.keyword_instances;
-  if (instances && instances.length > 0) {
-    const matchedMode = instances.some(k => k.id === kw && (k.mode ?? undefined) === mode);
-    if (matchedMode) return true;
-    // Mode "play" (mode=undefined) also matches a legacy entry in
-    // `keywords` without a matching instance row — i.e. the keyword is
-    // present but the new metadata wasn't populated. This keeps
-    // existing data working without a forced migration.
-    if (mode === undefined && ci.card.keywords.includes(kw) && !instances.some(k => k.id === kw)) {
-      return true;
-    }
-    return false;
-  }
-  // No keywordInstances at all → legacy card, treat as on-play.
-  return mode === undefined && ci.card.keywords.includes(kw);
+  const trigger = capTriggerForMode(mode);
+  return getCapabilities(ci.card).some(c => c.abilityId === kw && c.trigger === trigger);
 }
 
 function hasKwOnPlay(ci: CardInstance, kw: Keyword): boolean { return hasKwInMode(ci, kw, undefined); }
@@ -131,15 +135,7 @@ function mergeKeywordInstances(
  *  `creatureNeedsTarget` that operate on hand cards before they hit the
  *  board. Mirrors `hasKwInMode(_, kw, undefined)` semantics. */
 function cardHasKwOnPlay(card: Card, kw: Keyword): boolean {
-  const instances = card.keyword_instances;
-  if (instances && instances.length > 0) {
-    const hasInstancesForKw = instances.some(k => k.id === kw);
-    const hasPlayInstance = instances.some(k => k.id === kw && (k.mode ?? undefined) === undefined);
-    if (hasPlayInstance) return true;
-    if (card.keywords.includes(kw) && !hasInstancesForKw) return true;
-    return false;
-  }
-  return card.keywords.includes(kw);
+  return getCapabilities(card).some(c => c.abilityId === kw && c.trigger === "on_play");
 }
 
 /** Look up the X value for a specific keyword/mode pair. Prefers the
@@ -147,13 +143,11 @@ function cardHasKwOnPlay(card: Card, kw: Keyword): boolean {
  *  notation parsed from effect_text (legacy storage). Returns
  *  `defaultX` when neither source has a value. */
 function getKwX(ci: CardInstance, kw: Keyword, mode: import("./types").KeywordMode | undefined, defaultX: number): number {
-  const inst = ci.card.keyword_instances?.find(k => k.id === kw && (k.mode ?? undefined) === mode);
-  if (inst?.x != null) return inst.x;
-  if (mode === undefined) {
-    const fromText = parseXValuesFromEffectText(ci.card.effect_text)[kw];
-    if (fromText != null) return fromText;
-  }
-  return defaultX;
+  // L'adaptateur a déjà intégré le repli [Keyword X] de effect_text dans
+  // params.x (pour le mode par défaut), donc une simple lecture suffit.
+  const trigger = capTriggerForMode(mode);
+  const cap = getCapabilities(ci.card).find(c => c.abilityId === kw && c.trigger === trigger);
+  return cap?.params?.x ?? defaultX;
 }
 
 // Alternative cost helpers — collapse null/undefined/0 to 0 so call sites can
