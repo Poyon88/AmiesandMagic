@@ -6,7 +6,8 @@ import GameCard from "@/components/cards/GameCard";
 import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
 import { KEYWORDS as KEYWORD_DEFS, FACTIONS, getFactionDisplayName, getAllClanNames, CURATED_KEYWORD_MODES } from "@/lib/card-engine/constants";
 import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS } from "@/lib/game/spell-keywords";
-import type { Card, Keyword, KeywordInstance, KeywordMode, SpellKeywordInstance, SpellComposableEffects, CardSet, TokenTemplate } from "@/lib/game/types";
+import type { Card, Capability, Keyword, KeywordInstance, KeywordMode, SpellKeywordInstance, SpellComposableEffects, CardSet, TokenTemplate } from "@/lib/game/types";
+import ComposedEffectsEditor from "@/components/card-forge/ComposedEffectsEditor";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 import RaceClanPicker from "@/components/admin/RaceClanPicker";
 
@@ -40,6 +41,7 @@ interface DbCard {
   life_cost: number | null;
   discard_cost: number | null;
   sacrifice_cost: number | null;
+  capabilities: Capability[] | null;
 }
 
 const S = {
@@ -103,6 +105,8 @@ export default function CardEditor() {
   const [rmY, setRmY] = useState<number>(1);
   const [rmRace, setRmRace] = useState<string>("");
   const [rmClan, setRmClan] = useState<string>("");
+  // Effets composés (modèle hybride) de la carte en cours d'édition.
+  const [composedCaps, setComposedCaps] = useState<Capability[]>([]);
 
   // Load data
   const loadData = useCallback(async () => {
@@ -219,6 +223,7 @@ export default function CardEditor() {
     setKeywordModes(modes);
     setKeywordXValues(parsedX);
     setKeywordGrantScope(grantScopes);
+    setComposedCaps((card.capabilities ?? []).filter((c) => c.composed));
 
     // Strip X suffix from effect_text for editing
     const cleanEffectText = (card.effect_text || "").replace(/\s*\[[^\]]*\]$/, "").trim();
@@ -391,7 +396,7 @@ export default function CardEditor() {
         sacrifice_cost: (editFields.sacrifice_cost as number) || 0,
       };
 
-      const body: Record<string, unknown> = { card: cardData, updateId: selectedCard.id };
+      const body: Record<string, unknown> = { card: cardData, updateId: selectedCard.id, composed_capabilities: composedCaps };
       if (newImageFile) {
         body.imageBase64 = newImageFile.base64;
         body.imageMimeType = newImageFile.mimeType;
@@ -428,7 +433,7 @@ export default function CardEditor() {
       console.warn("[card-save] refresh failed after successful save:", err);
     }
     setSaving(false);
-  }, [selectedCard, editFields, newImageFile, keywordXValues, keywordModes, keywordGrantScope, rmY, rmRace, rmClan]);
+  }, [selectedCard, editFields, newImageFile, keywordXValues, keywordModes, keywordGrantScope, rmY, rmRace, rmClan, composedCaps]);
 
   // Delete
   const handleDelete = useCallback(async (id: number) => {
@@ -1351,6 +1356,16 @@ export default function CardEditor() {
                 <RaceClanPicker race={rmRace} clan={rmClan} onChange={(r, c) => { setRmRace(r); setRmClan(c); }} />
               </div>
             )}
+
+            {/* Effets composés (modèle hybride) — éditables sur carte existante */}
+            <div style={{ marginTop: 10, borderTop: "1px solid #eee", paddingTop: 8 }}>
+              <ComposedEffectsEditor
+                value={composedCaps}
+                onChange={setComposedCaps}
+                isUnit={editFields.card_type === "creature"}
+                tokenTemplates={tokenTemplates}
+              />
+            </div>
 
             {/* Convocations multiples — applies whether the trigger is a
                 creature on_play (keyword "convocations_multiples") or a

@@ -5,14 +5,15 @@ import Image from "next/image";
 import { generateCardStats, pickMana, pickRarity, buildId } from "@/lib/card-engine/generator";
 import { RARITIES, FACTIONS, TYPES, KEYWORDS, RARITY_WEIGHTS_BY_MANA, RARITY_MAP, ALIGNMENTS, CURATED_KEYWORD_MODES, getClanNamesForRace, getFactionForRace } from "@/lib/card-engine/constants";
 import CardVisual, { KEYWORD_SYMBOLS } from "./CardVisual";
+import ComposedEffectsEditor from "./ComposedEffectsEditor";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import type { CardType, Keyword, KeywordMode, SpellEffect, SpellTargetType, SpellKeywordInstance, SpellComposableEffects, SpellEffectNode, SpellTargetSlot, AtomicEffectType, SpellCondition, AtomicEffect, ConditionalEffectNode, CardSet, GameFormat, TokenTemplate, ConvocationTokenDef } from "@/lib/game/types";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 import RaceClanPicker from "@/components/admin/RaceClanPicker";
 import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
 import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
-import { ABILITIES, abilityIconKeys, type AbilityDef } from "@/lib/game/abilities";
-import type { SpellKeywordId } from "@/lib/game/types";
+import { ABILITIES, abilityIconKeys, creatureEngineId, type AbilityDef } from "@/lib/game/abilities";
+import type { SpellKeywordId, Capability } from "@/lib/game/types";
 import CardEditor from "@/components/admin/CardEditor";
 import { CARD_BACK_FRAMES, autoTrimDarkBorders, composeCardBack, getCardBackFrame } from "@/lib/card-back-frames";
 
@@ -75,6 +76,8 @@ interface ForgeCard {
   lifeCost?: number;
   discardCost?: number;
   sacrificeCost?: number;
+  // Effets composés (modèle hybride) — pour l'aperçu CardVisual.
+  capabilities?: Capability[] | null;
 }
 
 function Sec({ title, children }: { title: string; children: React.ReactNode }) {
@@ -1528,6 +1531,8 @@ export default function CardForge() {
   // Missing entry = "target" (single allied creature); "all_allies" = every
   // allied creature on cast. Saved into card.keyword_instances.grantScope.
   const [keywordGrantScope, setKeywordGrantScope] = useState<Record<string, "all_allies">>({});
+  // Conférer (mot-clé créature paramétrique) : ability conférée choisie.
+  const [conferAbilityId, setConferAbilityId] = useState<string>("");
   const [hoveredKw, setHoveredKw] = useState<{ id: string; rect: DOMRect } | null>(null);
   const [convocationTokenId, setConvocationTokenId] = useState<number | null>(null);
   const [convocationTokens, setConvocationTokens] = useState<ConvocationTokenDef[]>([]);
@@ -1549,6 +1554,9 @@ export default function CardForge() {
 
   // ─── NEW SPELL SYSTEM ──────────────────────────────────────────────────────
   const [spellKeywords, setSpellKeywords] = useState<SpellKeywordInstance[]>([]);
+  // Effets composés (modèle hybride) — capacités générées par composition,
+  // envoyées telles quelles au serveur (champ composed_capabilities).
+  const [composedCaps, setComposedCaps] = useState<Capability[]>([]);
   const [spellEffectsData, setSpellEffectsData] = useState<SpellComposableEffects | null>(null);
 
   const SPELL_TARGET_LABELS: Record<SpellTargetType, string> = {
@@ -1604,6 +1612,7 @@ export default function CardForge() {
     ability: manualAbility,
     flavorText: manualFlavorText,
     illustrationPrompt: manualIllustrationPrompt,
+    capabilities: composedCaps,
     budgetTotal: manualBudgetTotal,
     budgetUsed: manualBudgetUsed,
     generatedAt: card?.generatedAt || new Date().toISOString(),
@@ -1813,7 +1822,7 @@ export default function CardForge() {
     setManualPower(2); setManualAbility(""); setManualFlavorText("");
     setManualIllustrationPrompt(""); setManualExtraContext(""); setManualKeywords([]); setKeywordXValues({}); setKeywordModes({}); setCard(null);
     setEditedPrompt(null); setSaveResult(null);
-    setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setRmRace(""); setRmClan("");
+    setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setRmRace(""); setRmClan(""); setConferAbilityId(""); setComposedCaps([]);
     setManualLifeCost(0); setManualDiscardCost(0); setManualSacrificeCost(0);
     setCardImages(prev => Object.fromEntries(Object.entries(prev).filter(([k]) => k !== "manual_preview")));
   }, []);
@@ -1967,6 +1976,7 @@ export default function CardForge() {
     "Terreur": "terreur", "Armure": "armure", "Commandement": "commandement",
     "Fureur": "fureur", "Double Attaque": "double_attaque", "Invisible": "invisible",
     "Canalisation": "canalisation", "Contresort": "contresort",
+    "Conférer": "conferer",
     "Convocation X": "convocation", "Malédiction": "malediction",
     "Nécrophagie": "necrophagie", "Paralysie": "paralysie",
     "Permutation": "permutation", "Persécution X": "persecution",
@@ -2097,6 +2107,11 @@ export default function CardForge() {
           if (id === "renforcement_multiple" && !isSpellCard) {
             return { id, ...(mode ? { mode } : {}), x: x ?? 0, y: rmY, ...(rmRace ? { race: rmRace } : {}), ...(rmClan ? { clan: rmClan } : {}) };
           }
+          // Conférer (créature) : porte l'ability conférée + la portée ; toujours émis.
+          if (id === "conferer" && !isSpellCard) {
+            const scope = keywordGrantScope["Conférer"] === "all_allies" ? "all_allies" as const : undefined;
+            return { id, ...(mode ? { mode } : {}), ...(conferAbilityId ? { grantAbilityId: conferAbilityId } : {}), ...(scope ? { grantScope: scope } : {}) };
+          }
           if (!mode && x == null && !grantScope) return null; // pure play + no X + default scope → nothing to store
           return { id, ...(mode ? { mode } : {}), ...(x != null ? { x } : {}), ...(grantScope ? { grantScope } : {}) };
         })
@@ -2166,6 +2181,7 @@ export default function CardForge() {
           imageBase64,
           imageMimeType,
           updateId: undefined,
+          composed_capabilities: composedCaps,
           sfxPlayBase64: sfxPlayFile?.base64 || null,
           sfxPlayMimeType: sfxPlayFile?.mimeType || null,
           sfxDeathBase64: sfxDeathFile?.base64 || null,
@@ -2182,7 +2198,7 @@ export default function CardForge() {
     } finally {
       setSaving(false);
     }
-  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, keywordModes, keywordGrantScope, rmY, rmRace, rmClan]);
+  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, keywordModes, keywordGrantScope, rmY, rmRace, rmClan, composedCaps, conferAbilityId]);
 
   const [generatingImage, setGeneratingImage] = useState(false);
   const [editedPrompt, setEditedPrompt] = useState<string | null>(null);
@@ -2311,7 +2327,7 @@ export default function CardForge() {
             <span style={{ fontSize: 8, color: "#aaa", letterSpacing: 2 }}>ARMIES & MAGIC</span>
           </div>
           <div style={{ display: "flex", gap: 4 }}>
-            {([["forge", "⚒ Forge"], ["edition", "✏ Édition"], ["tokens", "🎭 Tokens"], ["card-backs", "🎴 Dos"], ["boards", "🗺 Plateaux"], ["kw-icons", "🪄 Icônes"], ["sets", "📦 Sets"], ["formats", "🎮 Formats"], ["bulk", "📦 Masse"], ["budget", "⚖ Budget"], ["schema", "📋 Schéma"], ["prints", "🏷 Séries"]] as const).map(([t, l]) => (
+            {([["forge", "⚒ Forge"], ["capacites", "✨ Capacités"], ["edition", "✏ Édition"], ["tokens", "🎭 Tokens"], ["card-backs", "🎴 Dos"], ["boards", "🗺 Plateaux"], ["kw-icons", "🪄 Icônes"], ["sets", "📦 Sets"], ["formats", "🎮 Formats"], ["bulk", "📦 Masse"], ["budget", "⚖ Budget"], ["schema", "📋 Schéma"], ["prints", "🏷 Séries"]] as const).map(([t, l]) => (
               <button key={t} onClick={() => { setTab(t); if (t === "sets") loadSets(); if (t === "formats") loadFormats(); if (t === "prints") loadPrintsData(); if (t === "kw-icons") loadKwAssets(); }} style={{
                 padding: "5px 14px", borderRadius: 6, cursor: "pointer",
                 background: tab === t ? "#333" : "transparent",
@@ -3161,6 +3177,28 @@ export default function CardForge() {
                         <RaceClanPicker race={rmRace} clan={rmClan} onChange={(r, c) => { setRmRace(r); setRmClan(c); }} />
                       </div>
                     )}
+                    {/* Conférer — capacité conférée + portée */}
+                    {manualKeywords.includes("Conférer") && (
+                      <div style={{ marginTop: 6, padding: 6, borderRadius: 6, border: `1px solid ${conferAbilityId ? "#8a6d3b44" : "#e74c3c"}`, background: "#fffdf6" }}>
+                        <div style={{ fontSize: 8, color: "#8a6d3b", letterSpacing: 1, fontWeight: 700, marginBottom: 4 }}>✋ CAPACITÉ CONFÉRÉE {!conferAbilityId && <span style={{ color: "#e74c3c" }}>· requise</span>}</div>
+                        <select value={conferAbilityId} onChange={e => setConferAbilityId(e.target.value)}
+                          style={{ width: "100%", padding: "4px 8px", borderRadius: 5, border: "1px solid #8a6d3b44", fontSize: 10, fontFamily: "'Cinzel',serif", background: "#fff", marginBottom: 4 }}>
+                          <option value="">-- Choisir une capacité --</option>
+                          {Object.values(ABILITIES).filter(a => a.triggers?.grantable && a.applicable_to.includes("creature")).sort((a, b) => (a.creature?.label ?? a.label).localeCompare(b.creature?.label ?? b.label, "fr")).map(a => (
+                            <option key={creatureEngineId(a)} value={creatureEngineId(a)}>{a.creature?.label ?? a.label}</option>
+                          ))}
+                        </select>
+                        <div style={{ display: "inline-flex", gap: 6 }}>
+                          {([["target", "1 allié ciblé"], ["all_allies", "Tous les alliés"]] as const).map(([val, txt]) => {
+                            const active = (keywordGrantScope["Conférer"] === "all_allies" ? "all_allies" : "target") === val;
+                            return (
+                              <button key={val} onClick={() => setKeywordGrantScope(prev => { const n = { ...prev }; if (val === "all_allies") n["Conférer"] = "all_allies"; else delete n["Conférer"]; return n; })}
+                                style={{ padding: "3px 10px", borderRadius: 5, border: `1px solid ${active ? "#8a6d3b" : "#ddd"}`, background: active ? "#8a6d3b22" : "#fff", color: active ? "#8a6d3b" : "#999", fontSize: 10, fontFamily: "'Cinzel',serif", fontWeight: active ? 700 : 400, cursor: "pointer" }}>{txt}</button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                     {/* Convocations multiples — list of token entries with optional stat overrides */}
                     {manualKeywords.includes("Convocations multiples") && (
                       <div style={{ marginTop: 6, border: "1px solid #9b59b633", borderRadius: 6, padding: 8, background: "#f9f0ff" }}>
@@ -3336,6 +3374,303 @@ export default function CardForge() {
             </div>
           </div>
         )}
+
+        {/* ── CAPACITÉS (éditeur guidé par capacité) ── */}
+        {tab === "capacites" && (() => {
+          const isUnit = type === "Unité";
+          const TRIGGER_FR: Record<string, string> = {
+            play: "À l'entrée", on_play: "À l'entrée",
+            death: "À la mort", on_death: "À la mort",
+            tap: "À l'activation (tap)", on_activation: "À l'activation (tap)",
+            return: "Au retour en main", on_return: "Au retour en main",
+            automatic: "Automatique (passif/conditionnel)",
+            spell_resolution: "À la résolution du sort",
+          };
+          // Capacités créature qui réclament une cible à l'entrée (informatif).
+          const CREATURE_TARGET_LABELS = new Set([
+            "Sacrifice", "Corruption", "Malédiction", "Permutation", "Vampirisme X",
+            "Mimique", "Métamorphose", "Bénédiction", "Tactique X", "Remontée",
+          ]);
+          const abilityForLabel = (label: string): AbilityDef | undefined => {
+            const engineId = FORGE_TO_GAME_KEYWORD[label];
+            if (!engineId) return undefined;
+            return Object.values(ABILITIES).find(a => creatureEngineId(a) === engineId) ?? ABILITIES[engineId];
+          };
+          const removeCreatureCap = (label: string) => {
+            setManualKeywords(prev => prev.filter(k => k !== label));
+            setKeywordXValues(prev => { const n = { ...prev }; delete n[label]; return n; });
+            setKeywordModes(prev => { const n = { ...prev }; delete n[label]; return n; });
+            setKeywordGrantScope(prev => { const n = { ...prev }; delete n[label]; return n; });
+          };
+          const addCreatureCap = (label: string) => {
+            if (!label || manualKeywords.includes(label)) return;
+            setManualKeywords(prev => [...prev, label]);
+            if (KEYWORDS[label]?.scalable) setKeywordXValues(prev => ({ ...prev, [label]: 1 }));
+          };
+          const addSpellEffect = (kwId: string) => {
+            const def = SPELL_KEYWORDS[kwId as keyof typeof SPELL_KEYWORDS];
+            if (!def || spellKeywords.some(k => k.id === kwId)) return;
+            const init: SpellKeywordInstance = { id: kwId as SpellKeywordInstance["id"] };
+            if (def.params.includes("amount")) init.amount = 1;
+            if (def.params.includes("attack")) init.attack = 1;
+            if (def.params.includes("health")) init.health = 1;
+            setSpellKeywords(prev => [...prev, init]);
+          };
+          const cardBorder = "1px solid #e3d9c0";
+          const labelStyle = { fontSize: 8, color: "#999", letterSpacing: 1, fontWeight: 700 } as const;
+          const valStyle = { fontSize: 11, color: "#444", fontFamily: "'Cinzel',serif" } as const;
+
+          return (
+            <div style={{ flex: 1, overflow: "auto", padding: 16 }}>
+              <div style={{ display: "flex", gap: 20, maxWidth: 1040, margin: "0 auto", alignItems: "flex-start" }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+                  <span style={{ fontFamily: "'Cinzel',serif", fontSize: 14, fontWeight: 700, color: fac.accent }}>✨ Capacités</span>
+                  <span style={{ fontSize: 10, color: "#888" }}>Contenant : <b style={{ color: fac.color }}>{isUnit ? "Unité" : "Sort"}</b> (déduit du type de carte)</span>
+                </div>
+                <div style={{ fontSize: 10, color: "#999", marginBottom: 12 }}>
+                  {(card || (forgeMode === "manuel" && manualName))
+                    ? <>Réglez le détail des capacités de <b style={{ color: fac.accent }}>{manualName || card?.name || "la carte"}</b> : déclencheur, valeur X, token, race/clan, portée. La sélection des capacités se fait ici ou dans l&apos;onglet ⚒ Forge.</>
+                    : <>Aucune carte en cours. Générez ou saisissez une carte dans l&apos;onglet <b>⚒ Forge</b>, puis revenez régler ses capacités ici.</>}
+                </div>
+
+                {isUnit ? (
+                  <>
+                    {manualKeywords.length === 0 && (
+                      <div style={{ fontSize: 11, color: "#aaa", fontStyle: "italic", padding: "12px 0" }}>Aucune capacité. Ajoutez-en une ci-dessous.</div>
+                    )}
+                    {manualKeywords.map(label => {
+                      const def = abilityForLabel(label);
+                      const meta = def?.triggers;
+                      const scalable = KEYWORDS[label]?.scalable;
+                      const curated = CURATED_KEYWORD_MODES[label];
+                      const fixedTrigger = meta?.automatic ? "automatic" : meta?.deathNature ? "on_death" : "on_play";
+                      return (
+                        <div key={label} style={{ border: cardBorder, borderRadius: 8, padding: 10, marginBottom: 8, background: "#fffdf8" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+                            <KeywordIcon symbol={KEYWORD_SYMBOLS[label] || "✦"} size={16} />
+                            <span style={{ fontFamily: "'Cinzel',serif", fontSize: 12, fontWeight: 700, color: fac.accent, flex: 1 }}>{label}</span>
+                            <button onClick={() => removeCreatureCap(label)} style={{ border: "none", background: "transparent", color: "#c0392b", cursor: "pointer", fontSize: 14 }} title="Supprimer">✕</button>
+                          </div>
+                          <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "6px 12px", alignItems: "center" }}>
+                            <span style={labelStyle}>DÉCLENCHEUR</span>
+                            {curated ? (
+                              <select
+                                value={keywordModes[label] ?? "play"}
+                                onChange={e => {
+                                  const v = e.target.value;
+                                  setKeywordModes(prev => { const n = { ...prev }; if (v === "play") delete n[label]; else n[label] = v as typeof n[string]; return n; });
+                                }}
+                                style={{ padding: "3px 8px", borderRadius: 5, border: cardBorder, fontSize: 11, fontFamily: "'Cinzel',serif", background: "#fff", maxWidth: 220 }}
+                              >
+                                {(["play", ...Array.from(curated)] as string[]).map(m => (
+                                  <option key={m} value={m}>{TRIGGER_FR[m] ?? m}</option>
+                                ))}
+                              </select>
+                            ) : (
+                              <span style={valStyle}>{TRIGGER_FR[fixedTrigger]}</span>
+                            )}
+
+                            <span style={labelStyle}>TYPE D&apos;EFFET</span>
+                            <span style={valStyle}>Effet immédiat</span>
+
+                            <span style={labelStyle}>EFFET</span>
+                            <span style={{ ...valStyle, display: "flex", alignItems: "center", gap: 8 }}>
+                              {def?.creature?.desc ?? def?.desc ?? label}
+                              {scalable && (
+                                <input type="number" min={1} max={10} value={keywordXValues[label] ?? 1}
+                                  onChange={e => setKeywordXValues(prev => ({ ...prev, [label]: Math.max(1, Math.min(10, parseInt(e.target.value) || 1)) }))}
+                                  style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: `1px solid ${fac.color}`, background: `${fac.color}11`, color: fac.color, fontSize: 11, textAlign: "center", fontWeight: 700, fontFamily: "'Cinzel',serif" }}
+                                  title="Valeur X" />
+                              )}
+                            </span>
+
+                            <span style={labelStyle}>CIBLE(S)</span>
+                            <span style={valStyle}>{CREATURE_TARGET_LABELS.has(label) && !keywordModes[label] ? "1 cible" : "—"}</span>
+                          </div>
+
+                          {/* Config spécifique (token / race / clan), réutilise les mêmes sélecteurs */}
+                          {(label === "Convocation X" || label === "Convocation") && (
+                            <div style={{ marginTop: 8 }}>
+                              <div style={{ ...labelStyle, color: "#c79a0a", marginBottom: 3 }}>TOKEN À INVOQUER {!convocationTokenId && <span style={{ color: "#e74c3c" }}>· requis</span>}</div>
+                              <TokenCascadePicker value={convocationTokenId} onChange={setConvocationTokenId} tokens={tokenTemplates} compact />
+                            </div>
+                          )}
+                          {label === "Lycanthropie X" && (
+                            <div style={{ marginTop: 8 }}>
+                              <div style={{ ...labelStyle, color: "#8b5cf6", marginBottom: 3 }}>🐺 TOKEN DE TRANSFORMATION {!lycanthropieTokenId && <span style={{ color: "#e74c3c" }}>· requis</span>}</div>
+                              <TokenCascadePicker value={lycanthropieTokenId} onChange={setLycanthropieTokenId} tokens={tokenTemplates} compact />
+                            </div>
+                          )}
+                          {label === "Entraide (Race)" && (
+                            <div style={{ marginTop: 8 }}>
+                              <div style={{ ...labelStyle, color: "#10b981", marginBottom: 3 }}>🤝 RACE CIBLE {!entraideRace && <span style={{ color: "#e74c3c" }}>· requise</span>}</div>
+                              <select value={entraideRace} onChange={e => setEntraideRace(e.target.value)} style={{ width: "100%", padding: "4px 8px", borderRadius: 5, border: cardBorder, fontSize: 11, fontFamily: "'Cinzel',serif", background: "#fff" }}>
+                                <option value="">-- Choisir une race --</option>
+                                {Array.from(new Set(Object.values(FACTIONS).flatMap(f => f.races))).sort().map(r => <option key={r} value={r}>{r}</option>)}
+                              </select>
+                            </div>
+                          )}
+                          {label === "Renforcement multiple" && (
+                            <div style={{ marginTop: 8 }}>
+                              <div style={{ ...labelStyle, color: "#2c5d99", marginBottom: 3 }}>⏫ +PV (Y) ET RACE / CLAN CIBLÉ <span style={{ color: "#888", fontWeight: 400 }}>(+ATK = X)</span></div>
+                              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                                <span style={{ fontSize: 9, color: "#27ae60" }}>+PV</span>
+                                <input type="number" min={0} max={20} value={rmY} onChange={e => setRmY(Math.max(0, parseInt(e.target.value) || 0))} style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: cardBorder, fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
+                              </div>
+                              <RaceClanPicker race={rmRace} clan={rmClan} onChange={(r, c) => { setRmRace(r); setRmClan(c); }} />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+
+                    <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontSize: 11, color: "#666" }}>+ Ajouter une capacité :</span>
+                      <select value="" onChange={e => addCreatureCap(e.target.value)} style={{ padding: "4px 10px", borderRadius: 5, border: cardBorder, fontSize: 11, fontFamily: "'Cinzel',serif", background: "#fff" }}>
+                        <option value="">-- choisir --</option>
+                        {availableManualKeywords.filter(([id]) => !manualKeywords.includes(id)).map(([id]) => (
+                          <option key={id} value={id}>{id}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* SORT : effets immédiats (spell_keywords) + capacités conférées (manualKeywords) */}
+                    {spellKeywords.length === 0 && manualKeywords.length === 0 && (
+                      <div style={{ fontSize: 11, color: "#aaa", fontStyle: "italic", padding: "12px 0" }}>Aucune capacité. Ajoutez un effet ou une capacité à conférer ci-dessous.</div>
+                    )}
+                    {spellKeywords.map((kw, idx) => {
+                      const def = SPELL_KEYWORDS[kw.id];
+                      if (!def) return null;
+                      return (
+                        <div key={kw.id} style={{ border: cardBorder, borderRadius: 8, padding: 10, marginBottom: 8, background: "#fbf7ff" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+                            <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[kw.id] || def.symbol || "✦"} size={16} />
+                            <span style={{ fontFamily: "'Cinzel',serif", fontSize: 12, fontWeight: 700, color: "#9b59b6", flex: 1 }}>{SPELL_KEYWORD_LABELS[kw.id] ?? kw.id}</span>
+                            <button onClick={() => setSpellKeywords(prev => prev.filter(k => k.id !== kw.id))} style={{ border: "none", background: "transparent", color: "#c0392b", cursor: "pointer", fontSize: 14 }} title="Supprimer">✕</button>
+                          </div>
+                          <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "6px 12px", alignItems: "center" }}>
+                            <span style={labelStyle}>DÉCLENCHEUR</span>
+                            <span style={valStyle}>{TRIGGER_FR.spell_resolution}</span>
+                            <span style={labelStyle}>TYPE D&apos;EFFET</span>
+                            <span style={valStyle}>Effet immédiat</span>
+                            <span style={labelStyle}>EFFET</span>
+                            <span style={{ ...valStyle, display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+                              {def.desc}
+                              {def.params.includes("amount") && (
+                                <label style={{ fontSize: 9, color: "#9b59b6" }}>X <input type="number" min={1} max={20} value={kw.amount ?? 1} onChange={e => { const v = Math.max(1, parseInt(e.target.value) || 1); setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, amount: v } : k)); }} style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: "1px solid #9b59b644", fontSize: 11, textAlign: "center", fontFamily: "'Cinzel',serif" }} /></label>
+                              )}
+                              {def.params.includes("attack") && (
+                                <label style={{ fontSize: 9, color: "#e74c3c" }}>ATK <input type="number" min={0} max={20} value={kw.attack ?? 1} onChange={e => { const v = Math.max(0, parseInt(e.target.value) || 0); setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, attack: v } : k)); }} style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: "1px solid #e74c3c44", fontSize: 11, textAlign: "center", fontFamily: "'Cinzel',serif", color: "#e74c3c" }} /></label>
+                              )}
+                              {def.params.includes("health") && (
+                                <label style={{ fontSize: 9, color: "#c79a0a" }}>PV <input type="number" min={0} max={20} value={kw.health ?? 1} onChange={e => { const v = Math.max(0, parseInt(e.target.value) || 0); setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, health: v } : k)); }} style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: "1px solid #c79a0a44", fontSize: 11, textAlign: "center", fontFamily: "'Cinzel',serif", color: "#c79a0a" }} /></label>
+                              )}
+                            </span>
+                            {kw.id === "invocation" && (
+                              <>
+                                <span style={labelStyle}>TOKEN</span>
+                                <TokenCascadePicker value={kw.token_id ?? null} onChange={(newId) => { const tmpl = tokenTemplates.find(t => t.id === newId) ?? null; setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, token_id: newId, race: tmpl?.race ?? undefined } : k)); }} tokens={tokenTemplates} compact />
+                              </>
+                            )}
+                            {kw.id === "renforcement_multiple" && (
+                              <>
+                                <span style={labelStyle}>RACE / CLAN</span>
+                                <RaceClanPicker race={kw.race ?? ""} clan={kw.clan ?? ""} onChange={(r, c) => setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, race: r || undefined, clan: c || undefined } : k))} />
+                              </>
+                            )}
+                            <span style={labelStyle}>CIBLE(S)</span>
+                            <span style={valStyle}>{def.needsTarget ? `1 cible${def.targetType ? ` (${def.targetType})` : ""}` : "—"}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {manualKeywords.map(label => {
+                      const allAllies = keywordGrantScope[label] === "all_allies";
+                      return (
+                        <div key={label} style={{ border: cardBorder, borderRadius: 8, padding: 10, marginBottom: 8, background: "#f5fff7" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+                            <KeywordIcon symbol={KEYWORD_SYMBOLS[label] || "✦"} size={16} />
+                            <span style={{ fontFamily: "'Cinzel',serif", fontSize: 12, fontWeight: 700, color: "#27ae60", flex: 1 }}>Conférer : {label}</span>
+                            <button onClick={() => removeCreatureCap(label)} style={{ border: "none", background: "transparent", color: "#c0392b", cursor: "pointer", fontSize: 14 }} title="Supprimer">✕</button>
+                          </div>
+                          <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "6px 12px", alignItems: "center" }}>
+                            <span style={labelStyle}>DÉCLENCHEUR</span>
+                            <span style={valStyle}>{TRIGGER_FR.spell_resolution}</span>
+                            <span style={labelStyle}>TYPE D&apos;EFFET</span>
+                            <span style={valStyle}>Conférer une capacité à une unité</span>
+                            <span style={labelStyle}>PORTÉE</span>
+                            <span style={{ display: "inline-flex", gap: 6 }}>
+                              {([["target", "1 allié ciblé"], ["all_allies", "Tous les alliés"]] as const).map(([val, txt]) => {
+                                const active = (allAllies ? "all_allies" : "target") === val;
+                                return (
+                                  <button key={val} onClick={() => setKeywordGrantScope(prev => { const n = { ...prev }; if (val === "all_allies") n[label] = "all_allies"; else delete n[label]; return n; })}
+                                    style={{ padding: "3px 10px", borderRadius: 5, border: `1px solid ${active ? "#27ae60" : "#ddd"}`, background: active ? "#27ae6022" : "#fff", color: active ? "#27ae60" : "#999", fontSize: 10, fontFamily: "'Cinzel',serif", fontWeight: active ? 700 : 400, cursor: "pointer" }}>{txt}</button>
+                                );
+                              })}
+                            </span>
+                            <span style={labelStyle}>CIBLE(S)</span>
+                            <span style={valStyle}>{allAllies ? "Toutes les unités alliées" : "1 unité alliée"}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontSize: 11, color: "#666" }}>+ Effet :</span>
+                      <select value="" onChange={e => addSpellEffect(e.target.value)} style={{ padding: "4px 10px", borderRadius: 5, border: cardBorder, fontSize: 11, fontFamily: "'Cinzel',serif", background: "#fff" }}>
+                        <option value="">-- effet du sort --</option>
+                        {ALL_SPELL_KEYWORDS.filter(id => !spellKeywords.some(k => k.id === id)).map(id => (
+                          <option key={id} value={id}>{SPELL_KEYWORD_LABELS[id] ?? id}</option>
+                        ))}
+                      </select>
+                      <span style={{ fontSize: 11, color: "#666", marginLeft: 8 }}>+ Conférer :</span>
+                      <select value="" onChange={e => addCreatureCap(e.target.value)} style={{ padding: "4px 10px", borderRadius: 5, border: cardBorder, fontSize: 11, fontFamily: "'Cinzel',serif", background: "#fff" }}>
+                        <option value="">-- capacité à conférer --</option>
+                        {availableManualKeywords.filter(([id]) => !manualKeywords.includes(id)).map(([id]) => (
+                          <option key={id} value={id}>{id}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </>
+                )}
+
+                {/* ── Effets composés (avancé) ── */}
+                <div style={{ marginTop: 18, borderTop: "2px solid #efe7d2", paddingTop: 12 }}>
+                  <ComposedEffectsEditor value={composedCaps} onChange={setComposedCaps} isUnit={isUnit} tokenTemplates={tokenTemplates} />
+                </div>
+
+                <div style={{ marginTop: 16, fontSize: 10, color: "#999", fontStyle: "italic", borderTop: "1px solid #eee", paddingTop: 10 }}>
+                  À l&apos;enregistrement, le modèle unifié <code>capabilities</code> est recalculé automatiquement depuis ces réglages.
+                </div>
+                </div>
+
+                {/* Colonne droite : aperçu live + sauvegarde (réutilise l'état de la Forge) */}
+                <div style={{ width: 300, flexShrink: 0, position: "sticky", top: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+                  <CardVisual
+                    card={(card || forgeMode === "manuel") ? manualCard : null}
+                    loading={forgeMode === "auto" && loading}
+                    imageUrl={cardImages[manualCard.id] || null}
+                    onImageChange={(url) => setCardImages(prev => ({ ...prev, [manualCard.id]: url }))}
+                    tokens={tokenTemplates}
+                  />
+                  {(card || (forgeMode === "manuel" && manualName)) ? (
+                    <Btn onClick={() => { if (!card) createManualCard(); saveToGame(manualCard); }} label={saving ? "⏳ …" : "💾 Sauvegarder"} color="#ffd54f" />
+                  ) : (
+                    <div style={{ fontSize: 9, color: "#aaa", fontStyle: "italic", textAlign: "center" }}>Générez/saisissez une carte dans ⚒ Forge pour pouvoir sauvegarder.</div>
+                  )}
+                  {saveResult && (
+                    <div style={{ padding: "8px 14px", borderRadius: 8, fontSize: 10, textAlign: "center", background: saveResult.ok ? "#e8f8f0" : "#fde8e8", border: `1px solid ${saveResult.ok ? "#a3e4c1" : "#f5a3a3"}`, color: saveResult.ok ? "#27ae60" : "#e74c3c" }}>
+                      {saveResult.msg}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* ── ÉDITION ── */}
         {tab === "edition" && (

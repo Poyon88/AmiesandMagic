@@ -29,6 +29,7 @@ import type {
 } from "./types";
 import { SPELL_KEYWORDS } from "./spell-keywords";
 import { getEntraideReduction, getTokenManaCost, isCreatureKwShadowedBySpell } from "./abilities";
+import { getCapabilities } from "./capability-adapter";
 import { parseXValuesFromEffectText } from "./keyword-labels";
 import {
   HERO_MAX_HP,
@@ -75,31 +76,34 @@ export function initRNG(seed: number) {
 // KEYWORD HELPERS
 // ============================================================
 
-function hasKw(ci: CardInstance, kw: Keyword): boolean {
-  return ci.card.keywords.includes(kw);
+// ── Lecture du modèle de capacités unifié ───────────────────────────────────
+// `hasKw` / `hasKwInMode` / `cardHasKwOnPlay` / `getKwX` lisent désormais
+// `getCapabilities(card)` (= card.capabilities ?? deriveCapabilities(card)) au
+// lieu de `card.keywords` / `card.keyword_instances`. L'adaptateur reproduisant
+// fidèlement l'ancienne sémantique, le comportement est inchangé (gate :
+// engine-regression.test.ts). Les signatures sont préservées → aucun site
+// d'appel modifié.
+
+/** Mode legacy → déclencheur du modèle unifié. */
+function capTriggerForMode(mode: import("./types").KeywordMode | undefined): import("./types").CapabilityTrigger {
+  if (mode === "death") return "on_death";
+  if (mode === "tap") return "on_activation";
+  if (mode === "return") return "on_return";
+  return "on_play";
 }
 
-/** Mode-aware helpers: return true when the card carries at least one
- *  KeywordInstance of `kw` in the requested mode. Falls back to the
- *  legacy `keywords` array when `keywordInstances` is absent (older
- *  cards) so existing decks still work — every legacy keyword is
- *  treated as on-play (mode=undefined). */
+/** Présence de l'ability quel que soit le déclencheur (remplace l'ancien
+ *  `card.keywords.includes`). */
+function hasKw(ci: CardInstance, kw: Keyword): boolean {
+  return getCapabilities(ci.card).some(c => c.abilityId === kw);
+}
+
+/** Présence de l'ability sous un déclencheur donné. Ne concerne en pratique que
+ *  le set curé multi-mode (seul à être routé par déclencheur) ; pour ces ids,
+ *  l'adaptateur mappe le mode au déclencheur à l'identique. */
 function hasKwInMode(ci: CardInstance, kw: Keyword, mode: import("./types").KeywordMode | undefined): boolean {
-  const instances = ci.card.keyword_instances;
-  if (instances && instances.length > 0) {
-    const matchedMode = instances.some(k => k.id === kw && (k.mode ?? undefined) === mode);
-    if (matchedMode) return true;
-    // Mode "play" (mode=undefined) also matches a legacy entry in
-    // `keywords` without a matching instance row — i.e. the keyword is
-    // present but the new metadata wasn't populated. This keeps
-    // existing data working without a forced migration.
-    if (mode === undefined && ci.card.keywords.includes(kw) && !instances.some(k => k.id === kw)) {
-      return true;
-    }
-    return false;
-  }
-  // No keywordInstances at all → legacy card, treat as on-play.
-  return mode === undefined && ci.card.keywords.includes(kw);
+  const trigger = capTriggerForMode(mode);
+  return getCapabilities(ci.card).some(c => c.abilityId === kw && c.trigger === trigger);
 }
 
 function hasKwOnPlay(ci: CardInstance, kw: Keyword): boolean { return hasKwInMode(ci, kw, undefined); }
@@ -131,15 +135,7 @@ function mergeKeywordInstances(
  *  `creatureNeedsTarget` that operate on hand cards before they hit the
  *  board. Mirrors `hasKwInMode(_, kw, undefined)` semantics. */
 function cardHasKwOnPlay(card: Card, kw: Keyword): boolean {
-  const instances = card.keyword_instances;
-  if (instances && instances.length > 0) {
-    const hasInstancesForKw = instances.some(k => k.id === kw);
-    const hasPlayInstance = instances.some(k => k.id === kw && (k.mode ?? undefined) === undefined);
-    if (hasPlayInstance) return true;
-    if (card.keywords.includes(kw) && !hasInstancesForKw) return true;
-    return false;
-  }
-  return card.keywords.includes(kw);
+  return getCapabilities(card).some(c => c.abilityId === kw && c.trigger === "on_play");
 }
 
 /** Look up the X value for a specific keyword/mode pair. Prefers the
@@ -147,13 +143,11 @@ function cardHasKwOnPlay(card: Card, kw: Keyword): boolean {
  *  notation parsed from effect_text (legacy storage). Returns
  *  `defaultX` when neither source has a value. */
 function getKwX(ci: CardInstance, kw: Keyword, mode: import("./types").KeywordMode | undefined, defaultX: number): number {
-  const inst = ci.card.keyword_instances?.find(k => k.id === kw && (k.mode ?? undefined) === mode);
-  if (inst?.x != null) return inst.x;
-  if (mode === undefined) {
-    const fromText = parseXValuesFromEffectText(ci.card.effect_text)[kw];
-    if (fromText != null) return fromText;
-  }
-  return defaultX;
+  // L'adaptateur a déjà intégré le repli [Keyword X] de effect_text dans
+  // params.x (pour le mode par défaut), donc une simple lecture suffit.
+  const trigger = capTriggerForMode(mode);
+  const cap = getCapabilities(ci.card).find(c => c.abilityId === kw && c.trigger === trigger);
+  return cap?.params?.x ?? defaultX;
 }
 
 // Alternative cost helpers — collapse null/undefined/0 to 0 so call sites can
@@ -189,6 +183,7 @@ const CREATURE_KEYWORD_HERO_POWER_TARGET: Record<
   permutation: "enemy_creature",
   sacrifice: "friendly_creature",
   benediction: "friendly_creature",
+  conferer: "friendly_creature",
   domination: "none", // random enemy
 };
 
@@ -220,6 +215,178 @@ function applyGrantedKeyword(
       ...creature.grantedKeywordX,
       [kwId]: params.amount,
     };
+  }
+}
+
+/** Applique une capacité de type « grant » (conférer `cap.abilityId` à une
+ *  unité). Généralise l'ancien bloc de don des sorts à tout contenant /
+ *  déclencheur : le sort, mais aussi (à terme) une unité qui confère à
+ *  l'entrée / la mort / l'activation. `owner` = contrôleur dont les alliés
+ *  reçoivent le don ; `targetMap` fournit le destinataire pour le scope
+ *  "target" (slot grant_target, repli kw_0 / target_0). */
+function applyGrantCapability(
+  cap: import("./types").Capability,
+  owner: PlayerState,
+  targetMap: Record<string, string>,
+) {
+  const scope = cap.grantScope ?? "target";
+  const params = cap.params?.x != null ? { amount: cap.params.x } : undefined;
+  if (scope === "all_allies") {
+    for (const ally of owner.board) applyGrantedKeyword(ally, cap.abilityId, params);
+    return;
+  }
+  const id = targetMap["grant_target"] ?? targetMap["kw_0"] ?? targetMap["target_0"];
+  const target =
+    id && id !== "enemy_hero" && id !== "friendly_hero" ? findCreatureOnBoard(owner, id) : null;
+  if (target) applyGrantedKeyword(target, cap.abilityId, params);
+}
+
+// ── Interpréteur d'effets composés (modèle hybride) ─────────────────────────
+// Exécute les contenus d'effet courants sur un TargetSpec. Les capacités portant
+// `composed` empruntent ce chemin générique ; les autres restent curées (chemin
+// abilityId). Réutilise les helpers d'effet existants (dégâts, soin, token…).
+
+function composedTargetPool(
+  spec: import("./types").TargetSpec,
+  owner: PlayerState,
+  opponent: PlayerState,
+): CardInstance[] {
+  const zoneOf = (p: PlayerState): CardInstance[] =>
+    spec.location === "board" ? p.board
+      : spec.location === "hand" ? p.hand
+        : spec.location === "deck" ? p.deck
+          : p.graveyard;
+  let pool: CardInstance[] =
+    spec.side === "ally" ? [...zoneOf(owner)]
+      : spec.side === "enemy" ? [...zoneOf(opponent)]
+        : [...zoneOf(owner), ...zoneOf(opponent)];
+  const m = spec.membership;
+  if (m && (m.faction?.length || m.race?.length || m.clan?.length)) {
+    pool = pool.filter((c) =>
+      (!!m.faction?.length && m.faction.includes(c.card.faction ?? "")) ||
+      (!!m.race?.length && m.race.includes(c.card.race ?? "")) ||
+      (!!m.clan?.length && m.clan.includes(c.card.clan ?? "")));
+  }
+  return pool;
+}
+
+function selectComposedUnits(
+  spec: import("./types").TargetSpec,
+  pool: CardInstance[],
+  chosenTargetIds?: string[],
+): CardInstance[] {
+  if (spec.count === "all") return pool;
+  const n = typeof spec.count === "number" ? Math.max(0, spec.count) : 1;
+  if (spec.designation === "choice" && chosenTargetIds?.length) {
+    return chosenTargetIds
+      .map((id) => pool.find((c) => c.instanceId === id))
+      .filter((c): c is CardInstance => !!c)
+      .slice(0, n);
+  }
+  if (spec.designation === "random") return shuffleArray(pool).slice(0, n);
+  return pool.slice(0, n); // choix sans cible fournie → repli déterministe
+}
+
+function resolveComposedEffect(
+  composed: import("./types").ComposedEffect,
+  source: CardInstance | null,
+  owner: PlayerState,
+  opponent: PlayerState,
+  chosenTargetIds?: string[],
+): void {
+  const x = composed.magnitude?.x ?? 0;
+  const y = composed.magnitude?.y ?? 0;
+
+  // Effets sur le contrôleur (sans ciblage d'entité)
+  switch (composed.content) {
+    case "draw_cards": for (let i = 0; i < x; i++) drawCard(owner); return;
+    case "gain_mana": owner.mana += x; return;
+    case "discard":
+      for (let i = 0; i < x && owner.hand.length > 0; i++) {
+        const idx = Math.floor(rng() * owner.hand.length);
+        const [c] = owner.hand.splice(idx, 1);
+        owner.graveyard.push(c);
+      }
+      return;
+    case "summon_token": {
+      const count = x > 0 ? x : 1;
+      for (let i = 0; i < count && owner.board.length < MAX_BOARD_SIZE; i++) {
+        const tmpl = findTokenTemplate(composed.tokenId);
+        let base: Card = {
+          id: -1, name: tmpl?.name ?? "Token", mana_cost: 0, card_type: "creature",
+          attack: tmpl?.attack ?? 1, health: tmpl?.health ?? 1, effect_text: "",
+          keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
+          faction: source?.card.faction,
+        };
+        base = applyTokenTemplate(base, tmpl);
+        const tok = createCardInstance(base);
+        tok.hasSummoningSickness = true;
+        owner.board.push(tok);
+      }
+      return;
+    }
+    default: break;
+  }
+
+  const target = composed.target;
+  if (!target) return;
+
+  if (target.entity === "hero") {
+    const hero = target.side === "ally" ? owner.hero : opponent.hero;
+    if (composed.content === "deal_damage") dealDamageToHero(hero, x);
+    else if (composed.content === "heal") hero.hp = Math.min(hero.maxHp, hero.hp + x);
+    return;
+  }
+
+  const pool = composedTargetPool(target, owner, opponent);
+  const units = selectComposedUnits(target, pool, chosenTargetIds);
+  for (const u of units) {
+    switch (composed.content) {
+      case "deal_damage": dealDamageToCreature(u, x, false, true); break;
+      case "heal": u.currentHealth = Math.min(u.maxHealth, u.currentHealth + x); break;
+      case "buff":
+        u.card = { ...u.card, attack: (u.card.attack ?? 0) + x, health: (u.card.health ?? 0) + y };
+        u.currentAttack += x; u.currentHealth += y; u.maxHealth += y;
+        break;
+      case "debuff":
+        u.currentAttack = Math.max(0, u.currentAttack - x);
+        if (y > 0) { u.currentHealth -= y; u.maxHealth = Math.max(1, u.maxHealth - y); }
+        break;
+      case "destroy": u.currentHealth = 0; break;
+      case "paralyze": u.isParalyzed = true; break;
+      case "bounce": resolveRemontee(u.instanceId, source?.instanceId ?? null, owner, opponent); break;
+      case "grant_keyword":
+        if (composed.grantAbilityId) applyGrantedKeyword(u, composed.grantAbilityId, x > 0 ? { amount: x } : undefined);
+        break;
+      default: break;
+    }
+  }
+}
+
+/** Exécute les capacités composées d'une carte pour un déclencheur donné.
+ *  `targetMap[cap.uid]` (ou `fallbackTargetId`) fournit la cible choisie pour
+ *  les capacités en désignation "choice" (count = 1 en v1). */
+function runComposedCapsForCard(
+  card: Card,
+  trigger: import("./types").CapabilityTrigger,
+  source: CardInstance | null,
+  owner: PlayerState,
+  opponent: PlayerState,
+  targetMap?: Record<string, string>,
+  fallbackTargetId?: string,
+): void {
+  for (const cap of getCapabilities(card)) {
+    if (!cap.composed || cap.trigger !== trigger) continue;
+    let chosen: string[] | undefined;
+    if (targetMap) {
+      // Multi-cibles : slots `${uid}#0`, `${uid}#1`, … ; sinon slot unique `${uid}`.
+      const multi: string[] = [];
+      for (let i = 0; targetMap[`${cap.uid}#${i}`] != null; i++) multi.push(targetMap[`${cap.uid}#${i}`]);
+      if (multi.length) chosen = multi;
+      else if (targetMap[cap.uid] != null) chosen = [targetMap[cap.uid]];
+    }
+    if (!chosen && fallbackTargetId) chosen = [fallbackTargetId];
+    resolveComposedEffect(cap.composed, source, owner, opponent, chosen);
   }
 }
 
@@ -1523,6 +1690,24 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       recastSpells(newState, player, opponent, x);
     }
 
+    // Conférer : confère la capacité choisie à une/aux unité(s) alliée(s).
+    if (hasKwOnPlay(cardInstance, "conferer")) {
+      const inst = cardInstance.card.keyword_instances?.find(k => k.id === "conferer" && !k.mode);
+      const abilityId = inst?.grantAbilityId;
+      if (abilityId) {
+        const scope = inst?.grantScope ?? "target";
+        if (scope === "all_allies") {
+          for (const ally of player.board) applyGrantedKeyword(ally, abilityId);
+        } else if (action.targetInstanceId) {
+          const t = findCreatureOnBoard(player, action.targetInstanceId);
+          if (t) applyGrantedKeyword(t, abilityId);
+        }
+      }
+    }
+
+    // Effets composés à l'entrée en jeu (modèle hybride).
+    runComposedCapsForCard(cardInstance.card, "on_play", cardInstance, player, opponent, action.targetMap, action.targetInstanceId);
+
     recalculateAuras(player, opponent);
 
     // Clean creatures killed by on-summon effects (vampirisme, corruption, etc.)
@@ -1559,9 +1744,10 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       state: newState, caster: player, opponent, card, targetMap, results: {},
     };
 
-    // Phase 1: Resolve spell keywords
-    if (card.spell_keywords?.length) {
-      resolveSpellKeywords(ctx, card.spell_keywords);
+    // Phase 1: Resolve spell keywords (lus depuis le modèle unifié)
+    const spellInstances1 = spellResolutionInstances(card);
+    if (spellInstances1.length) {
+      resolveSpellKeywords(ctx, spellInstances1);
       // Intermediate death processing to detect target_destroyed
       const pDead = cleanDeadCreatures(player);
       const oDead = cleanDeadCreatures(opponent);
@@ -1580,37 +1766,19 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       resolveComposableEffects(ctx, card.spell_effects.effects);
     }
 
-    // Phase 3: Grant creature keywords carried by the spell. Each keyword's
-    // recipients come from its keyword_instances entry:
-    //   - "all_allies" → every allied creature on the board at cast time
-    //   - "target" (default) → the single allied creature chosen via the
-    //     "grant_target" slot (falls back to the spell's primary target slot
-    //     so legacy single-target selection keeps working).
-    // X values are sourced from the instance and stored on each recipient via
-    // applyGrantedKeyword (which also handles divine_shield / charge side
-    // effects and records grantedKeywordX). Permanent — recalculateAuras never
-    // strips keywords from card.keywords.
-    if (card.keywords.length > 0) {
-      const grantTargetId = targetMap["grant_target"] ?? targetMap["kw_0"] ?? targetMap["target_0"];
-      const grantTarget =
-        grantTargetId && grantTargetId !== "enemy_hero" && grantTargetId !== "friendly_hero"
-          ? findCreatureOnBoard(player, grantTargetId)
-          : null;
-      for (const kw of card.keywords) {
-        // Ne pas conférer un mot-clé "ombre" déjà réalisé par un spell_keyword
-        // (ex. convocations_multiples ↔ invocation_multiple) : son effet est le
-        // sort lui-même, pas un don à un allié.
-        if (isCreatureKwShadowedBySpell(kw, card.spell_keywords)) continue;
-        const inst = card.keyword_instances?.find((k) => k.id === kw);
-        const scope = inst?.grantScope ?? "target";
-        const params = inst?.x != null ? { amount: inst.x } : undefined;
-        if (scope === "all_allies") {
-          for (const ally of player.board) applyGrantedKeyword(ally, kw, params);
-        } else if (grantTarget) {
-          applyGrantedKeyword(grantTarget, kw, params);
-        }
+    // Phase 3 : Don des capacités conférées par le sort (effectKind "grant"),
+    // lu depuis le modèle unifié. L'adaptateur a déjà appliqué l'exclusion
+    // polymorphe (isCreatureKwShadowedBySpell) et le grantScope ; le don passe
+    // par la fonction générique applyGrantCapability (réutilisée à terme par les
+    // dons d'unités). applyGrantedKeyword gère bouclier/traque et grantedKeywordX.
+    for (const cap of getCapabilities(card)) {
+      if (cap.trigger === "spell_resolution" && cap.effectKind === "grant") {
+        applyGrantCapability(cap, player, targetMap);
       }
     }
+
+    // Effets composés à la résolution du sort (modèle hybride).
+    runComposedCapsForCard(card, "spell_resolution", null, player, opponent, targetMap);
 
     // Legacy fallback for old spell_effect (temporary)
     if (card.spell_effect && !card.spell_keywords?.length && !card.spell_effects?.effects?.length) {
@@ -1846,9 +2014,10 @@ function recastSpells(
       state, caster: player, opponent, card, targetMap, results: {},
     };
 
-    // Resolve spell keywords
-    if (card.spell_keywords?.length) {
-      resolveSpellKeywords(ctx, card.spell_keywords);
+    // Resolve spell keywords (lus depuis le modèle unifié)
+    const spellInstances2 = spellResolutionInstances(card);
+    if (spellInstances2.length) {
+      resolveSpellKeywords(ctx, spellInstances2);
       const pDead = cleanDeadCreatures(player);
       const oDead = cleanDeadCreatures(opponent);
       for (const [slot, instanceId] of Object.entries(targetMap)) {
@@ -1879,6 +2048,24 @@ function recastSpells(
 // ============================================================
 // NEW SPELL SYSTEM — SPELL KEYWORD RESOLUTION
 // ============================================================
+
+/** Reconstruit la liste d'effets de sort (SpellKeywordInstance[]) depuis le
+ *  modèle unifié, dans l'ordre — l'index i est conservé, donc les slots de
+ *  cible `kw_${i}` restent valides. Permet à resolveSpellKeywords de consommer
+ *  les capacités sans changer son corps ni le flux de ciblage. */
+function spellResolutionInstances(card: Card): SpellKeywordInstance[] {
+  return getCapabilities(card)
+    .filter((c) => c.trigger === "spell_resolution" && c.effectKind === "immediate")
+    .map((c) => ({
+      id: c.abilityId as SpellKeywordInstance["id"],
+      amount: c.params?.x,
+      attack: c.params?.attack,
+      health: c.params?.health,
+      race: c.race,
+      clan: c.clan,
+      token_id: c.tokenId ?? null,
+    }));
+}
 
 function resolveSpellKeywords(
   ctx: SpellResolutionContext,
@@ -1955,6 +2142,24 @@ function resolveSpellKeywords(
         if (targetId) {
           const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
           if (target) target.currentHealth = 0;
+        }
+        break;
+      }
+      case "damnation": {
+        // -X/-X permanent à une créature ennemie ciblée (pendant négatif de Renforcement).
+        if (targetId) {
+          const target = findCreatureOnBoard(ctx.opponent, targetId) ?? findCreatureOnBoard(ctx.caster, targetId);
+          if (target) {
+            const amount = kw.amount ?? 0;
+            target.card = {
+              ...target.card,
+              attack: Math.max(0, (target.card.attack ?? 0) - amount),
+              health: Math.max(1, (target.card.health ?? 0) - amount),
+            };
+            target.currentAttack = Math.max(0, target.currentAttack - amount);
+            target.currentHealth -= amount;
+            target.maxHealth = Math.max(1, target.maxHealth - amount);
+          }
         }
         break;
       }
@@ -2580,7 +2785,32 @@ export function getSpellTargetSlots(card: Card): SpellTargetSlot[] {
     }
   }
 
+  // Effets composés à la résolution, en désignation "au choix" et count = 1.
+  // Le slot est clé sur le uid de la capacité (lu par runComposedCapsForCard).
+  // v1 : ciblage in-game limité au plateau / héros (le multi-cibles et les autres
+  // zones suivront). Les désignations "hasard"/"toutes" ne réclament aucun slot.
+  for (const cap of getCapabilities(card)) {
+    const t = cap.composed?.target;
+    if (!cap.composed || cap.trigger !== "spell_resolution" || !t) continue;
+    if (t.designation !== "choice" || typeof t.count !== "number") continue; // "all"/hasard → pas de slot
+    const type = composedSlotType(t);
+    if (!type) continue;
+    const n = Math.max(1, t.count);
+    for (let i = 0; i < n; i++) {
+      slots.push({ slot: `${cap.uid}#${i}`, type, label: n > 1 ? `Cible ${i + 1} (effet composé)` : "Cible (effet composé)" });
+    }
+  }
+
   return slots;
+}
+
+/** Mappe un TargetSpec (choix, count 1) vers un SpellTargetType pour le picker
+ *  in-game. Retourne undefined si non ciblable en v1 (zone ≠ plateau pour les
+ *  unités). */
+function composedSlotType(t: import("./types").TargetSpec): SpellTargetType | undefined {
+  if (t.entity === "hero") return t.side === "ally" ? "friendly_hero" : "enemy_hero";
+  if (t.location !== "board") return undefined;
+  return t.side === "ally" ? "friendly_creature" : t.side === "enemy" ? "enemy_creature" : "any_creature";
 }
 
 // ============================================================
@@ -2963,6 +3193,8 @@ function triggerReturnToHand(ci: CardInstance, owner: PlayerState, opponent: Pla
       resolveCuratedKeywordEffect(inst.id, inst.x ?? 1, ci, owner, opponent, undefined, inst);
     }
   }
+  // Effets composés au retour en main (modèle hybride).
+  runComposedCapsForCard(ci.card, "on_return", ci, owner, opponent);
 }
 
 // ── Remontée ──
@@ -3139,6 +3371,9 @@ function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: P
         resolveCuratedKeywordEffect(inst.id, inst.x ?? 1, c, owner, enemy, undefined, inst);
       }
     }
+
+    // Effets composés à la mort (modèle hybride).
+    runComposedCapsForCard(c.card, "on_death", c, owner, enemy);
 
     // (Instinct de meute is now an on-play trigger — see playCard,
     // resolved once at summon based on whether any same-faction ally has
@@ -3416,6 +3651,32 @@ export function tapActivate(state: GameState, action: TapActivateAction): GameSt
   // Traque (charge) autorise le pouvoir activable dès l'invocation, même si
   // Traque est gagnée en cours de tour (où hasSummoningSickness peut rester vrai).
   if (source.hasSummoningSickness && !hasKw(source, "charge")) return state;
+
+  // Effet composé activable (on_activation) — référencé par uid.
+  if (action.composedUid) {
+    const cap = getCapabilities(source.card).find(
+      c => c.composed && c.trigger === "on_activation" && c.uid === action.composedUid,
+    );
+    if (!cap?.composed) return state;
+    source.tapped = true;
+    let chosen: string[] | undefined;
+    if (action.targetMap) {
+      const multi: string[] = [];
+      for (let i = 0; action.targetMap[`${cap.uid}#${i}`] != null; i++) multi.push(action.targetMap[`${cap.uid}#${i}`]);
+      if (multi.length) chosen = multi;
+    }
+    if (!chosen && action.targetInstanceId) chosen = [action.targetInstanceId];
+    resolveComposedEffect(cap.composed, source, player, opponent, chosen);
+    const pDead = cleanDeadCreatures(player);
+    const oDead = cleanDeadCreatures(opponent);
+    processDeathTriggers(pDead, player, opponent);
+    processDeathTriggers(oDead, opponent, player);
+    recalculateAuras(player, opponent);
+    newState.lastAction = action;
+    checkWinCondition(newState);
+    return newState;
+  }
+
   const instances = source.card.keyword_instances ?? [];
   const instance = instances[action.instanceIdx];
   if (!instance || instance.mode !== "tap") return state;
@@ -3946,15 +4207,66 @@ export function needsTarget(card: Card): boolean {
 const CREATURE_TARGETING_KEYWORDS: Keyword[] = [
   "sacrifice", "corruption", "malediction",
   "permutation", "vampirisme", "mimique", "metamorphose",
-  "benediction", "tactique", "remontee",
+  "benediction", "tactique", "remontee", "conferer",
 ];
+
+/** Première capacité composée à l'entrée demandant un ciblage interactif :
+ *  désignation "au choix", N cibles (1 ou plus), unité, sur le plateau. */
+function firstOnPlayComposedChoiceCap(card: Card): import("./types").Capability | undefined {
+  return getCapabilities(card).find((c) => {
+    const t = c.composed?.target;
+    return !!c.composed && c.trigger === "on_play" && !!t
+      && t.designation === "choice" && typeof t.count === "number" && t.count >= 1
+      && t.entity === "unit" && t.location === "board";
+  });
+}
+
+/** Descripteur de ciblage composé d'une créature à l'entrée (pour le store :
+ *  uid de la capacité, nombre de cibles, type de cible). null si aucun. */
+/** uid du premier effet composé activable (on_activation) d'une créature, ou null. */
+export function getCreatureTapComposedUid(card: Card): string | null {
+  if (card.card_type !== "creature") return null;
+  const cap = getCapabilities(card).find(c => c.composed && c.trigger === "on_activation");
+  return cap?.uid ?? null;
+}
+
+/** Cibles valides pour l'activation d'un effet composé (uid) en désignation
+ *  "au choix", 1 cible unité plateau. null = pas de ciblage interactif requis
+ *  (hasard / toutes / héros / multi → résolus côté moteur). */
+export function getComposedTapTargets(state: GameState, card: Card, uid: string): string[] | null {
+  const player = state.players[state.currentPlayerIndex];
+  const opponent = state.players[state.currentPlayerIndex === 0 ? 1 : 0];
+  const cap = getCapabilities(card).find(c => c.uid === uid && c.composed && c.trigger === "on_activation");
+  const t = cap?.composed?.target;
+  if (!t || t.designation !== "choice" || t.entity !== "unit" || t.location !== "board" || t.count !== 1) return null;
+  return composedTargetPool(t, player, opponent)
+    .filter((c) => {
+      if (!opponent.board.includes(c)) return true;
+      return !hasKw(c, "invisible") && !hasKw(c, "transcendance") && !(hasKw(c, "ombre") && !c.ombreRevealed);
+    })
+    .map((c) => c.instanceId);
+}
+
+export function getCreatureComposedChoice(
+  card: Card,
+): { uid: string; count: number; type: SpellTargetType } | null {
+  if (card.card_type !== "creature") return null;
+  const cap = firstOnPlayComposedChoiceCap(card);
+  const t = cap?.composed?.target;
+  if (!cap || !t || typeof t.count !== "number") return null;
+  const type = composedSlotType(t);
+  if (!type) return null;
+  return { uid: cap.uid, count: t.count, type };
+}
 
 export function creatureNeedsTarget(card: Card): boolean {
   if (card.card_type !== "creature") return false;
   // Only request an on-play target if the targeting keyword actually
   // fires on play. A vampirisme entry that lives only in tap/death mode
   // shouldn't trigger the on-summon picker.
-  return card.keywords.some(kw => CREATURE_TARGETING_KEYWORDS.includes(kw) && cardHasKwOnPlay(card, kw));
+  if (card.keywords.some(kw => CREATURE_TARGETING_KEYWORDS.includes(kw) && cardHasKwOnPlay(card, kw))) return true;
+  // Effet composé à l'entrée en désignation "au choix" (1 cible unité, plateau).
+  return !!firstOnPlayComposedChoiceCap(card);
 }
 
 export function getCreatureTargets(state: GameState, card: Card): string[] {
@@ -3995,6 +4307,18 @@ export function getCreatureTargets(state: GameState, card: Card): string[] {
           .filter(c => canBeRemonteed(c, null))
           .map(c => c.instanceId);
     }
+  }
+  // Repli : cible d'un effet composé à l'entrée "au choix" (1 unité, plateau).
+  const cap = firstOnPlayComposedChoiceCap(card);
+  if (cap?.composed?.target) {
+    const t = cap.composed.target;
+    const pool = composedTargetPool(t, player, opponent);
+    return pool
+      .filter((c) => {
+        if (!opponent.board.includes(c)) return true; // alliés : toujours ciblables
+        return !hasKw(c, "invisible") && !hasKw(c, "transcendance") && !(hasKw(c, "ombre") && !c.ombreRevealed);
+      })
+      .map((c) => c.instanceId);
   }
   return [];
 }

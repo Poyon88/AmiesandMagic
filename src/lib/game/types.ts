@@ -50,7 +50,9 @@ export type Keyword =
   // Polymorphic — bounce a unit to its true owner's hand (4 trigger modes)
   | "remontee"
   // Polymorphic — +X/+Y to all controller's creatures of a selected race/clan
-  | "renforcement_multiple";
+  | "renforcement_multiple"
+  // Confère une capacité choisie à une/aux unité(s) alliée(s) (mot-clé paramétrique)
+  | "conferer";
 
 export type SpellTargetType =
   | "any"
@@ -114,7 +116,8 @@ export type SpellKeywordId =
   | "selection_magique"
   | "poison"
   | "remontee"
-  | "renforcement_multiple";
+  | "renforcement_multiple"
+  | "damnation";
 
 /** Trigger mode for a creature keyword. Undefined = on-play (default,
  *  existing behaviour). "death" = on-death rattle. "tap" = activated by
@@ -142,6 +145,8 @@ export interface KeywordInstance {
    *  "target" (default) = a single chosen allied creature; "all_allies" =
    *  every allied creature on the board at cast time. Ignored on creatures. */
   grantScope?: "target" | "all_allies";
+  /** Mot-clé "conferer" : id de l'ability conférée à la/aux cible(s). */
+  grantAbilityId?: string;
 }
 
 export interface SpellKeywordInstance {
@@ -185,7 +190,125 @@ export interface SpellTargetSlot {
   label?: string;          // UI hint, e.g. "Créature à détruire"
 }
 
+// ============================================================
+// UNIFIED CAPABILITY MODEL (refonte des capacités)
+// ============================================================
+//
+// Modèle unique remplaçant à terme les trois structures historiques
+// (`keywords[]`, `keyword_instances[]`, `spell_keywords[]`). Le « Contenant »
+// (unité / sort / mixte) est implicite via `Card.card_type`. Chaque carte
+// porte `capabilities: Capability[]`, où chaque capacité déclare son
+// Déclencheur, son Type d'effet, l'ability concernée, ses paramètres et ses
+// cibles. Déploiement phasé : la colonne reste nullable et le moteur retombe
+// sur l'adaptateur (`deriveCapabilities`) tant qu'une carte n'est pas backfillée.
+
+/** Déclencheur d'une capacité.
+ *  Unités : on_play (entrée, défaut) · on_death (mort) · on_return (remontée en
+ *  main) · on_activation (activation / tap) · automatic (passif / conditionnel /
+ *  réactif au combat — set curé câblé dans le moteur).
+ *  Sorts : toujours spell_resolution (à la résolution, si non contré). */
+export type CapabilityTrigger =
+  | "on_play"
+  | "on_death"
+  | "on_return"
+  | "on_activation"
+  | "automatic"
+  | "spell_resolution";
+
+/** Type d'effet : effet immédiat, ou conférer une capacité à une unité. */
+export type CapabilityEffectKind = "immediate" | "grant";
+
+/** Un slot de cible que la capacité demande au joueur de sélectionner. */
+export interface CapabilityTargetSlot {
+  type: SpellTargetType;
+  label?: string;
+}
+
+export interface Capability {
+  /** Identifiant unique au sein du `capabilities[]` de la carte. Permet au
+   *  moteur et à la file de déclencheurs en attente de référencer une capacité
+   *  précise (remplace l'ancien `instanceIdx` positionnel). */
+  uid: string;
+  trigger: CapabilityTrigger;
+  effectKind: CapabilityEffectKind;
+  /** Id de l'ability du registre ABILITIES.
+   *  - immediate / automatic : l'id dont le handler s'exécute.
+   *  - grant : l'id de la capacité CONFÉRÉE à l'unité. */
+  abilityId: string;
+  /** Paramètres numériques. `x` = scalaire générique (ancien
+   *  KeywordInstance.x / SpellKeywordInstance.amount) ; `attack`/`health` =
+   *  paire +X/+Y (renforcement, renforcement_multiple, invocation). */
+  params?: { x?: number; attack?: number; health?: number };
+  /** Race/clan ciblé (renforcement_multiple, entraide, race du token). */
+  race?: string;
+  clan?: string;
+  /** Référence token (convocation / invocation / convocation_simple). */
+  tokenId?: number | null;
+  /** Config multi-tokens (convocations_multiples / invocation_multiple). */
+  tokens?: ConvocationTokenDef[];
+  /** GRANT uniquement : destinataires de la capacité conférée. */
+  grantScope?: "target" | "all_allies";
+  /** Slots de cibles (0/1/N). Vide = aucun ciblage. Ordre = ordre du picker. */
+  targets?: CapabilityTargetSlot[];
+  /** Effet COMPOSÉ (modèle hybride). Présent ⇒ la capacité est exécutée par
+   *  l'interpréteur générique (`resolveComposedEffect`) au lieu du chemin curé
+   *  via `abilityId`. Absent ⇒ comportement curé inchangé. */
+  composed?: ComposedEffect;
+}
+
+// ─── Capacités composables (modèle hybride) ─────────────────────────────────
+// Couche compositionnelle bornée : un interpréteur unique exécute ces contenus
+// d'effet courants sur un `TargetSpec`. Les mécaniques singulières (Métamorphose,
+// Totem, Cycle éternel, auras à périmètre dynamique…) restent curées via
+// `Capability.abilityId`.
+
+export type ComposedEffectContent =
+  | "deal_damage"
+  | "heal"
+  | "buff"
+  | "debuff"
+  | "draw_cards"
+  | "discard"
+  | "summon_token"
+  | "gain_mana"
+  | "destroy"
+  | "bounce"
+  | "paralyze"
+  | "grant_keyword";
+
+/** Spécification de cibles d'un effet composé. Les filtres par caractéristiques
+ *  (coût/ATK/déf/rareté) et par capacités possédées sont prévus pour la v2. */
+export interface TargetSpec {
+  /** Type de cible. "hero" = le héros du bord visé. */
+  entity: "unit" | "hero";
+  /** Nombre d'unités impactées : un entier, ou "all" pour tout le pool filtré. */
+  count: number | "all";
+  /** Bord visé. */
+  side: "ally" | "enemy" | "any";
+  /** Appartenance (choix multiples possibles, OU logique entre listes). */
+  membership?: { faction?: string[]; race?: string[]; clan?: string[] };
+  /** Zone où chercher les cibles. */
+  location: "board" | "hand" | "deck" | "graveyard";
+  /** Désignation : choisie par le joueur ou aléatoire. */
+  designation: "choice" | "random";
+}
+
+export interface ComposedEffect {
+  content: ComposedEffectContent;
+  /** Amplitude : `x` (montant générique), `y` (PV pour buff/debuff +X/+Y). */
+  magnitude?: { x?: number; y?: number };
+  /** Spécification de cibles. Absent ⇒ effet sur le contrôleur (pioche, mana…). */
+  target?: TargetSpec;
+  /** content === "grant_keyword" : id de l'ability conférée. */
+  grantAbilityId?: string;
+  /** content === "summon_token" : token à invoquer. */
+  tokenId?: number | null;
+}
+
 // --- Composable effects ---
+// @deprecated Arbre d'effets génériques typé mais non utilisé en jeu. Conservé
+// le temps de la refonte (cf. plan), superseded par le modèle Capability
+// ci-dessus ; sera supprimé en phase de nettoyage.
 
 export type AtomicEffectType =
   | "deal_damage"
@@ -291,8 +414,14 @@ export interface Card {
   // Supabase column name (`keyword_instances`) for direct row mapping.
   keyword_instances?: KeywordInstance[] | null;
   spell_effect?: SpellEffect | null;          // Legacy — will be removed
+  /** @deprecated Superseded by `capabilities`. Lecture-fallback uniquement
+   *  pendant le déploiement phasé (cf. plan refonte des capacités). */
   spell_keywords: SpellKeywordInstance[] | null;
   spell_effects: SpellComposableEffects | null;
+  /** Modèle de capacité unifié (colonne JSONB `capabilities`). Source de vérité
+   *  à partir de la phase D ; `null`/absent ⇒ carte non backfillée, le moteur
+   *  retombe sur `deriveCapabilities(card)` à partir des structures legacy. */
+  capabilities?: Capability[] | null;
   image_url: string | null;
   illustration_prompt?: string | null;
   faction?: string;
@@ -627,6 +756,9 @@ export interface TapActivateAction {
   instanceIdx: number;
   targetInstanceId?: string;
   targetMap?: Record<string, string>;
+  /** Active un effet COMPOSÉ on_activation (par uid) au lieu d'un keyword tap
+   *  positionnel (instanceIdx ignoré quand présent). */
+  composedUid?: string;
 }
 
 export interface ConcedeAction {

@@ -16,7 +16,15 @@
 // untouched — `card.keywords` still stores FR labels (TEXT[]) and
 // `card.spell_keywords` still stores snake_case ids (JSONB).
 
-import type { Card, CardInstance, SpellKeywordId, SpellTargetType } from "./types";
+import type {
+  Card,
+  CapabilityEffectKind,
+  CapabilityTrigger,
+  CardInstance,
+  CardType,
+  SpellKeywordId,
+  SpellTargetType,
+} from "./types";
 
 export type KeywordZone = "Terrain" | "Cimetière" | "Main" | "Mixte" | "Deck" | "Race" | "Clan";
 
@@ -51,6 +59,36 @@ export interface AbilitySpellMeta {
   targetType?: SpellTargetType;
 }
 
+/** Métadonnées de la taxonomie « Déclencheur × Type d'effet » (refonte des
+ *  capacités). Additif : ne touche pas aux vues KEYWORDS/SPELL_KEYWORDS. Pilote
+ *  les listes déroulantes de la forge et la découverte des ids « automatiques »
+ *  par le moteur. Dérivé automatiquement depuis les jeux d'ids ci-dessous
+ *  (`attachTriggerMeta`), pas saisi à la main entrée par entrée. */
+export interface AbilityTriggerMeta {
+  /** Déclencheurs autorisés sur une UNITÉ (pour la forge). */
+  creatureTriggers?: CapabilityTrigger[];
+  /** Déclencheurs autorisés sur un SORT (toujours ["spell_resolution"]). */
+  spellTriggers?: CapabilityTrigger[];
+  /** Types d'effet autorisés (immediate, et grant si conférable). */
+  effectKinds: CapabilityEffectKind[];
+  /** true ⇒ passif / aura / réactif-combat câblé en dur dans le moteur
+   *  (recalculateAuras / attack / startTurn / coût). Le moteur le découvre via
+   *  `hasCapability(id)` quel que soit le déclencheur ; son `trigger` est donc
+   *  purement cosmétique/taxonomique. */
+  automatic?: boolean;
+  /** true ⇒ effet intrinsèque « à la mort » (carnage, héritage, martyr…).
+   *  Câblé dans processDeathTriggers via `hasKw` (any). */
+  deathNature?: boolean;
+  /** true ⇒ capacité « multi-mode curée » : peut être authorée en on_play /
+   *  on_death / on_activation / on_return, et c'est le SEUL cas où le moteur
+   *  route par déclencheur (`capsByTrigger`). Le `trigger` est donc
+   *  load-bearing pour ces ids. */
+  curatedMultiMode?: boolean;
+  /** true ⇒ peut être CONFÉRÉE à une unité (effet « grant » ; comprise par
+   *  applyGrantedKeyword). */
+  grantable?: boolean;
+}
+
 export interface AbilityDef {
   /** snake_case stable identifier. */
   id: string;
@@ -63,6 +101,8 @@ export interface AbilityDef {
   applicable_to: AbilityHost[];
   creature?: AbilityCreatureMeta;
   spell?: AbilitySpellMeta;
+  /** Taxonomie déclencheur/effet (dérivée — cf. attachTriggerMeta en bas). */
+  triggers?: AbilityTriggerMeta;
 }
 
 export const ABILITIES: Record<string, AbilityDef> = {
@@ -780,6 +820,18 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["spell"],
     spell: { params: ["amount"], needsTarget: false },
   },
+  damnation: {
+    id: "damnation", label: "Damnation X", symbol: "🩸",
+    desc: "Inflige -X/-X (permanent) à une créature ennemie ciblée.",
+    applicable_to: ["spell"],
+    spell: { params: ["amount"], needsTarget: true, targetType: "enemy_creature" },
+  },
+  conferer: {
+    id: "conferer", label: "Conférer", symbol: "✋",
+    desc: "Invocation : confère une capacité choisie à une unité alliée (ou à toutes).",
+    applicable_to: ["creature"],
+    creature: { cost: 8, costPerX: 0, se: 2.0, minTier: 2, scalable: false, zone: "Terrain" },
+  },
 };
 
 // ─── Derived views ──────────────────────────────────────────────────────────
@@ -949,4 +1001,98 @@ export function getEntraideReduction(card: Card, board: CardInstance[]): number 
 export function getTokenManaCost(card: Card): number {
   if (card.token_id == null) return card.mana_cost;
   return Math.floor(((card.attack ?? 0) + (card.health ?? 0)) / 2);
+}
+
+// ─── Classification de la taxonomie déclencheur/effet ────────────────────────
+//
+// Les jeux d'ids ci-dessous utilisent les *ids moteur* — ceux stockés dans
+// `card.keywords[]` et testés par `hasKw` (donc `creature.id` quand il diffère
+// de l'id du registre, ex. "convocations_multiples"). Ils sont la source de
+// vérité de la classification consommée par l'adaptateur (deriveCapabilities)
+// et la forge.
+
+/** Engine id côté créature (override `creature.id` si présent, sinon `id`). */
+export function creatureEngineId(a: AbilityDef): string {
+  return a.creature?.id ?? a.id;
+}
+
+/** Capacités « multi-mode curées » : authorables en on_play / on_death /
+ *  on_activation / on_return, et SEUL cas où le moteur route par déclencheur
+ *  (`hasKwOnPlay` aujourd'hui → `capsByTrigger` en phase B). Leur `trigger` est
+ *  donc load-bearing — l'adaptateur DOIT respecter le mode exact. Liste tirée
+ *  des appels `hasKwOnPlay` et du switch `resolveCuratedKeywordEffect`. */
+export const CURATED_MULTIMODE_IDS: ReadonlySet<string> = new Set([
+  "combustion", "convocation", "convocations_multiples", "douleur", "inspiration",
+  "ombre_du_passe", "pillage", "prescience", "remontee", "renforcement_multiple",
+  "savant", "suprematie", "tempete", "vampirisme",
+]);
+
+/** Effets intrinsèques « à la mort » câblés dans processDeathTriggers via
+ *  `hasKw` (any-trigger). Stockés mode-undefined en legacy mais conceptuellement
+ *  on_death ; le label de déclencheur est cosmétique (le moteur les trouve par
+ *  id quel que soit le trigger). */
+export const DEATH_NATURE_IDS: ReadonlySet<string> = new Set([
+  "carnage", "heritage", "malefice", "martyr", "pacte_de_sang",
+  "resurrection", "cycle_eternel",
+]);
+
+/** Capacités passives / aura / réactives-combat câblées en dur
+ *  (recalculateAuras, attack, startTurn, calcul de coût). Le moteur les
+ *  découvre via `hasCapability(id)` quel que soit le déclencheur ; leur
+ *  `trigger` est donc cosmétique/taxonomique (classées "automatic"). */
+export const AUTOMATIC_ABILITY_IDS: ReadonlySet<string> = new Set([
+  // Auras / présence continue
+  "terreur", "commandement", "fierte_du_clan", "sang_mele", "totem",
+  // Passifs de combat / statiques
+  "berserk", "premiere_frappe", "double_attaque", "esquive", "armure",
+  "resistance", "precision", "indestructible", "transcendance", "invisible",
+  "ombre", "taunt", "vol", "ranged", "ancre", "divine_shield", "celerite",
+  "charge", "raid", "drain_de_vie", "bravoure",
+  // Réactifs (déclenchés au combat / à la mort d'autrui)
+  "augure", "fureur", "riposte", "persecution", "souffle_de_feu", "pietinement",
+  "liaison_de_vie", "paralysie", "poison", "necrophagie",
+  // Début de tour / calcul de coût
+  "regeneration", "canalisation", "entraide",
+]);
+
+/** Dérive la taxonomie déclencheur/effet d'une ability depuis les jeux d'ids.
+ *  Centralisé (pas saisi à la main par entrée) pour rester cohérent et testable. */
+export function deriveAbilityTriggerMeta(a: AbilityDef): AbilityTriggerMeta {
+  const cid = creatureEngineId(a);
+  const isCreature = a.applicable_to.includes("creature");
+  const isSpell = a.applicable_to.includes("spell");
+  const curatedMultiMode = CURATED_MULTIMODE_IDS.has(cid);
+  const deathNature = DEATH_NATURE_IDS.has(cid);
+  const automatic = AUTOMATIC_ABILITY_IDS.has(cid);
+  // Les keywords statiques/passifs sont exactement ceux qu'il est sensé de
+  // CONFÉRER de façon permanente à une unité.
+  const grantable = automatic;
+
+  let creatureTriggers: CapabilityTrigger[] | undefined;
+  if (isCreature) {
+    if (curatedMultiMode) creatureTriggers = ["on_play", "on_death", "on_activation", "on_return"];
+    else if (deathNature) creatureTriggers = ["on_death"];
+    else if (automatic) creatureTriggers = ["automatic"];
+    else creatureTriggers = ["on_play"];
+  }
+  const spellTriggers: CapabilityTrigger[] | undefined = isSpell ? ["spell_resolution"] : undefined;
+  const effectKinds: CapabilityEffectKind[] = grantable ? ["immediate", "grant"] : ["immediate"];
+
+  return { creatureTriggers, spellTriggers, effectKinds, automatic, deathNature, curatedMultiMode, grantable };
+}
+
+// Attache la taxonomie dérivée à chaque entrée du registre (additif — n'altère
+// ni les vues KEYWORDS/SPELL_KEYWORDS ni les sélecteurs UI existants).
+for (const a of Object.values(ABILITIES)) {
+  a.triggers = deriveAbilityTriggerMeta(a);
+}
+
+/** Déclencheurs proposés par la forge pour (contenant, ability). Sorts ⇒
+ *  toujours spell_resolution ; unités ⇒ selon la classification. */
+export function getCapabilityTriggers(cardType: CardType, abilityId: string): CapabilityTrigger[] {
+  const a = ABILITIES[abilityId] ?? Object.values(ABILITIES).find((x) => creatureEngineId(x) === abilityId);
+  if (!a?.triggers) return cardType === "spell" ? ["spell_resolution"] : ["on_play"];
+  return cardType === "spell"
+    ? a.triggers.spellTriggers ?? ["spell_resolution"]
+    : a.triggers.creatureTriggers ?? ["on_play"];
 }

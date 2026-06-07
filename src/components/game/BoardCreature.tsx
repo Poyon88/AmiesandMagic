@@ -5,11 +5,12 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import type { CardInstance, GameAction } from "@/lib/game/types";
 import { useGameStore } from "@/lib/store/gameStore";
-import { tapKeywordNeedsTarget } from "@/lib/game/engine";
+import { tapKeywordNeedsTarget, getCreatureTapComposedUid } from "@/lib/game/engine";
 import { getTokenManaCost } from "@/lib/game/abilities";
 import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
+import { composedCapsOf, composedIcon, composedTriggerMode, composedValueText, describeComposedCap } from "@/lib/game/composed-display";
 import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
 import RarityFrame from "@/components/cards/RarityFrame";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
@@ -49,6 +50,7 @@ export default function BoardCreature({
   const selectedSacrificeIds = useGameStore(s => s.selectedSacrificeIds);
   const toggleSacrificeSelection = useGameStore(s => s.toggleSacrificeSelection);
   const activateTap = useGameStore(s => s.activateTap);
+  const activateTapComposed = useGameStore(s => s.activateTapComposed);
   const isMyTurn = useGameStore(s => s.isMyTurn());
   const isAnimating = useGameStore(s => s.isAnimating);
 
@@ -67,6 +69,9 @@ export default function BoardCreature({
     }
     return null;
   })();
+  // Effet composé activable (on_activation) — uid, ou null. Utilisé si aucun
+  // keyword tap classique n'est présent.
+  const tapComposedUid = getCreatureTapComposedUid(card);
   // Base eligibility (engine-level: own + turn + not animating + not
   // already tapped + no sickness + has a tap instance). The Activer
   // button additionally hides during any targeting flow; the
@@ -79,7 +84,7 @@ export default function BoardCreature({
     && !creature.tapped
     && !creature.isParalyzed
     && (!creature.hasSummoningSickness || card.keywords.includes("charge"))
-    && tapInstanceIdx !== null;
+    && (tapInstanceIdx !== null || tapComposedUid !== null);
   const canActivateTap = baseEligibleForTap && targetingMode === "none";
   // Resolve token template image: instance cards spawned by the engine
   // carry token_id when they originate from a saved template; fall back to
@@ -188,12 +193,16 @@ export default function BoardCreature({
         // looser `baseEligibleForTap` rather than `canActivateTap` —
         // the preceding single click flips targetingMode to "attack",
         // which would otherwise cancel the double-click trigger.
-        if (!baseEligibleForTap || tapInstanceIdx === null) return;
-        const instance = card.keyword_instances?.[tapInstanceIdx];
-        if (!instance) return;
-        if (tapKeywordNeedsTarget(instance.id)) return;
-        const action = activateTap(creature.instanceId, tapInstanceIdx);
-        onAction?.(action);
+        if (!baseEligibleForTap) return;
+        if (tapInstanceIdx !== null) {
+          const instance = card.keyword_instances?.[tapInstanceIdx];
+          if (!instance) return;
+          if (tapKeywordNeedsTarget(instance.id)) return;
+          onAction?.(activateTap(creature.instanceId, tapInstanceIdx));
+        } else if (tapComposedUid) {
+          // activateTapComposed ouvre le sélecteur si une cible est requise.
+          onAction?.(activateTapComposed(creature.instanceId, tapComposedUid));
+        }
       }}
       onMouseEnter={() => {
         setIsHovered(true);
@@ -262,12 +271,12 @@ export default function BoardCreature({
           targeting / cost-payment / animation flow is in progress.
           Rendered OUTSIDE the clip-wrapper below so its `top: -22`
           offset isn't clipped by `overflow: hidden`. */}
-      {canActivateTap && tapInstanceIdx !== null && (
+      {canActivateTap && (tapInstanceIdx !== null || tapComposedUid !== null) && (
         <button
           onClick={(e) => {
             e.stopPropagation();
-            const action = activateTap(creature.instanceId, tapInstanceIdx);
-            onAction?.(action);
+            if (tapInstanceIdx !== null) onAction?.(activateTap(creature.instanceId, tapInstanceIdx));
+            else if (tapComposedUid) onAction?.(activateTapComposed(creature.instanceId, tapComposedUid));
           }}
           style={{
             position: "absolute",
@@ -519,11 +528,34 @@ export default function BoardCreature({
                     <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={14} keyword={kw} />
                   )}
                 </span>
-                {x != null && <span style={{ fontSize: 8, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}` }}>{toRoman(x)}</span>}
+                {x != null && <span style={{ fontSize: 8, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}` }}>{toRoman(x)}</span>}
               </div>
               );
             });
           })()}
+          {/* Effets composés (sans cadre ; même gabarit icône+valeur que les keywords) */}
+          {composedCapsOf(card.capabilities).map((cap, i) => {
+            const ic = composedIcon(cap);
+            const cfilter = keywordModeFilter(composedTriggerMode(cap));
+            const val = composedValueText(cap);
+            const tint = keywordModeColor(composedTriggerMode(cap)) ?? accentColor;
+            const hasImg = !!iconOverrides[ic.keyword];
+            return (
+              <div key={`cx-${i}`} title={describeComposedCap(cap)} style={{
+                minWidth: 24, height: 24, padding: val ? "0 2px" : 0,
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, overflow: "hidden",
+              }}>
+                <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", filter: cfilter ?? undefined, lineHeight: 0 }}>
+                  {hasImg ? (
+                    <div style={{ width: 24, height: 24, flexShrink: 0 }}><KeywordIcon symbol={ic.symbol} size={14} keyword={ic.keyword} fill /></div>
+                  ) : (
+                    <KeywordIcon symbol={ic.symbol} size={14} keyword={ic.keyword} />
+                  )}
+                </span>
+                {val && <span style={{ fontSize: 8, fontWeight: 900, color: keywordModeColor(composedTriggerMode(cap)) ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}`, marginLeft: -3 }}>{val}</span>}
+              </div>
+            );
+          })}
 
           <div style={{ display: "flex", gap: 4, marginLeft: "auto" }}>
             <div style={{

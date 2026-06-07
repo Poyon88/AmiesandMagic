@@ -52,6 +52,7 @@ import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS, getSpellKe
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
+import { composedCapsOf, composedIcon, composedTriggerMode, composedValueText, describeComposedCap } from "@/lib/game/composed-display";
 import { KEYWORDS as keywordDefs, LIMITED_PRINT_COUNTS, ALIGNMENTS, getEffectiveAlignment, getFactionDisplayName } from "@/lib/card-engine/constants";
 import RarityFrame from "./RarityFrame";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
@@ -367,7 +368,7 @@ export default function GameCard({
                     <KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={22 * s} keyword={kw} />
                   )}
                 </span>
-                {x != null && <span style={{ fontSize: 10 * s, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}` }}>{toRoman(x)}</span>}
+                {x != null && <span style={{ fontSize: 10 * s, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}` }}>{toRoman(x)}</span>}
               </div>
               );
             });
@@ -417,6 +418,28 @@ export default function GameCard({
                 }}>{valueText}</span>}
               </div>
               );
+          })}
+
+          {/* Effets composés (icônes sans cadre, teintées selon le déclencheur).
+              Même gabarit que les keywords classiques (boîte 40·s, image fill). */}
+          {composedCapsOf(card.capabilities).map((cap, i) => {
+            const ic = composedIcon(cap);
+            const cfilter = keywordModeFilter(composedTriggerMode(cap));
+            const hasImg = !!iconOverrides[ic.keyword];
+            const val = composedValueText(cap);
+            const tint = keywordModeColor(composedTriggerMode(cap)) ?? accentColor;
+            return (
+              <div key={`cx-${i}`} title={describeComposedCap(cap)} style={{ minWidth: 40 * s, height: 40 * s, padding: val ? `0 ${4 * s}px` : 0, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 * s }}>
+                <span style={{ display: "inline-flex", filter: cfilter ?? undefined, lineHeight: 0 }}>
+                  {hasImg ? (
+                    <div style={{ width: 40 * s, height: 40 * s, flexShrink: 0 }}><KeywordIcon symbol={ic.symbol} size={22 * s} keyword={ic.keyword} fill /></div>
+                  ) : (
+                    <KeywordIcon symbol={ic.symbol} size={22 * s} keyword={ic.keyword} />
+                  )}
+                </span>
+                {val && <span style={{ fontSize: 10 * s, fontWeight: 900, color: keywordModeColor(composedTriggerMode(cap)) ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}`, marginLeft: -3 * s }}>{val}</span>}
+              </div>
+            );
           })}
 
           {/* Stats — pushed to right */}
@@ -541,6 +564,22 @@ export default function GameCard({
                   <div style={{ fontSize: 12 * so, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>
                 </div>
               </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Effets composés — détail (icône + texte généré) */}
+        {composedCapsOf(card.capabilities).length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 * s }}>
+            {composedCapsOf(card.capabilities).map((cap, i) => {
+              const ic = composedIcon(cap);
+              const cfilter = keywordModeFilter(composedTriggerMode(cap));
+              return (
+                <div key={`cxd-${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
+                  <span style={{ flexShrink: 0, display: "inline-flex", filter: cfilter ?? undefined, lineHeight: 0 }}><KeywordIcon symbol={ic.symbol} size={18 * s} keyword={ic.keyword} /></span>
+                  <div style={{ fontSize: 12 * so, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{describeComposedCap(cap)}</div>
+                </div>
               );
             })}
           </div>

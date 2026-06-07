@@ -18,6 +18,9 @@ import {
   getHeroPowerTargets,
   creatureNeedsTarget,
   getCreatureTargets,
+  getCreatureComposedChoice,
+  getCreatureTapComposedUid,
+  getComposedTapTargets,
   creatureNeedsGraveyardTarget,
   getGraveyardTargets,
   creatureNeedsDivination,
@@ -130,6 +133,8 @@ interface GameStore {
   // Both fields stay null outside of tap targeting.
   pendingTapSourceId: string | null;
   pendingTapInstanceIdx: number | null;
+  // uid de l'effet composé activable en attente de cible (null sinon).
+  pendingTapComposedUid: string | null;
   // Alternative-cost payment state — set when the player tries to play a card
   // with a discard_cost or sacrifice_cost > 0. The player picks N cards from
   // hand and/or N creatures from board, then confirms via CostPaymentOverlay.
@@ -150,6 +155,8 @@ interface GameStore {
   spellTargetSlots: SpellTargetSlot[];
   currentTargetSlotIndex: number;
   collectedTargetMap: Record<string, string>;
+  // Cibles collectées pour un effet composé multi-cibles "au choix" d'une créature.
+  creatureComposedCollected: string[];
   // Carries the partial play_card payload from a creature's first picker
   // (target / graveyard / divination) into a subsequent selection picker on
   // the same creature, so a creature combining e.g. mimique + selection can
@@ -242,6 +249,7 @@ interface GameStore {
   cancelCostPayment: () => void;
   activateHeroPower: () => GameAction | null;
   activateTap: (sourceInstanceId: string, instanceIdx: number) => GameAction | null;
+  activateTapComposed: (sourceInstanceId: string, capUid: string) => GameAction | null;
   confirmMulligan: (selectedInstanceIds: string[]) => GameAction | null;
 
   // Queries
@@ -616,9 +624,11 @@ export const useGameStore = create<GameStore>((set, get) => {
   pendingTargetInstanceId: null,
   pendingTapSourceId: null,
   pendingTapInstanceIdx: null,
+  pendingTapComposedUid: null,
   spellTargetSlots: [],
   currentTargetSlotIndex: 0,
   collectedTargetMap: {},
+  creatureComposedCollected: [],
   pendingCreatureChain: null,
   tokenTemplates: [],
   effectLog: [],
@@ -1288,6 +1298,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         pendingHeroPowerSelection: false,
         pendingTapSourceId: null,
         pendingTapInstanceIdx: null,
+        pendingTapComposedUid: null,
         pendingCreatureChain: null,
         damageEvents: [],
         lastSfxEvents: sfxEvents,
@@ -1310,6 +1321,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       pendingHeroPowerSelection: false,
       pendingTapSourceId: null,
       pendingTapInstanceIdx: null,
+      pendingTapComposedUid: null,
     });
 
     // --- Phase timings ---
@@ -2027,6 +2039,32 @@ export const useGameStore = create<GameStore>((set, get) => {
     } else if (targetingMode === "creature" && selectedCardInstanceId) {
       const { pendingBoardPosition, gameState: gs } = get();
 
+      // Effet composé multi-cibles "au choix" : on collecte N cibles avant de jouer.
+      if (gs) {
+        const player0 = gs.players[gs.currentPlayerIndex];
+        const cardInst0 = player0.hand.find(c => c.instanceId === selectedCardInstanceId);
+        const choice = cardInst0 ? getCreatureComposedChoice(cardInst0.card) : null;
+        if (choice && choice.count >= 2) {
+          const collected = [...get().creatureComposedCollected, targetId];
+          if (collected.length < choice.count) {
+            set({
+              creatureComposedCollected: collected,
+              validTargets: get().validTargets.filter(t => t !== targetId),
+            });
+            return null; // on continue à collecter
+          }
+          const targetMap: Record<string, string> = {};
+          collected.forEach((id, i) => { targetMap[`${choice.uid}#${i}`] = id; });
+          set({ creatureComposedCollected: [] });
+          return get().dispatchAction({
+            type: "play_card",
+            cardInstanceId: selectedCardInstanceId,
+            targetMap,
+            boardPosition: pendingBoardPosition ?? undefined,
+          });
+        }
+      }
+
       if (gs) {
         const player = gs.players[gs.currentPlayerIndex];
         const cardInst = player.hand.find(c => c.instanceId === selectedCardInstanceId);
@@ -2190,8 +2228,18 @@ export const useGameStore = create<GameStore>((set, get) => {
         targetInstanceId: targetId,
       });
     } else if (targetingMode === "tap") {
-      const { pendingTapSourceId, pendingTapInstanceIdx } = get();
-      if (pendingTapSourceId === null || pendingTapInstanceIdx === null) return null;
+      const { pendingTapSourceId, pendingTapInstanceIdx, pendingTapComposedUid } = get();
+      if (pendingTapSourceId === null) return null;
+      if (pendingTapComposedUid) {
+        return get().dispatchAction({
+          type: "tap_activate",
+          sourceInstanceId: pendingTapSourceId,
+          instanceIdx: -1,
+          composedUid: pendingTapComposedUid,
+          targetInstanceId: targetId,
+        });
+      }
+      if (pendingTapInstanceIdx === null) return null;
       return get().dispatchAction({
         type: "tap_activate",
         sourceInstanceId: pendingTapSourceId,
@@ -2231,9 +2279,11 @@ export const useGameStore = create<GameStore>((set, get) => {
       pendingTargetInstanceId: null,
       pendingTapSourceId: null,
       pendingTapInstanceIdx: null,
+      pendingTapComposedUid: null,
       spellTargetSlots: [],
       currentTargetSlotIndex: 0,
       collectedTargetMap: {},
+      creatureComposedCollected: [],
       pendingCreatureChain: null,
       pendingCostCard: null,
       selectedDiscardIds: [],
@@ -2576,6 +2626,35 @@ export const useGameStore = create<GameStore>((set, get) => {
       type: "tap_activate",
       sourceInstanceId,
       instanceIdx,
+    });
+  },
+
+  activateTapComposed: (sourceInstanceId, capUid) => {
+    // Active un effet composé on_activation. Si la cible est "au choix" (1 unité
+    // plateau), ouvre le sélecteur ; sinon dispatch immédiat (hasard/toutes/héros).
+    const { gameState } = get();
+    if (!gameState) return null;
+    const player = gameState.players[gameState.currentPlayerIndex];
+    const source = player.board.find(c => c.instanceId === sourceInstanceId);
+    if (!source) return null;
+    const targets = getComposedTapTargets(gameState, source.card, capUid);
+    if (targets && targets.length > 0) {
+      set({
+        selectedCardInstanceId: null,
+        selectedAttackerInstanceId: null,
+        validTargets: targets,
+        targetingMode: "tap",
+        pendingTapSourceId: sourceInstanceId,
+        pendingTapInstanceIdx: null,
+        pendingTapComposedUid: capUid,
+      });
+      return null;
+    }
+    return get().dispatchAction({
+      type: "tap_activate",
+      sourceInstanceId,
+      instanceIdx: -1,
+      composedUid: capUid,
     });
   },
 

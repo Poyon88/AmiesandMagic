@@ -7,6 +7,7 @@ import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, c
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS, getSpellKeywordLabel, getSpellKeywordDesc } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import KeywordIcon from "@/components/shared/KeywordIcon";
+import { composedCapsOf, composedIcon, composedTriggerMode, composedValueText, describeComposedCap } from "@/lib/game/composed-display";
 import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
 import { useGameStore } from "@/lib/store/gameStore";
 import { useAudioStore } from "@/lib/store/audioStore";
@@ -215,7 +216,7 @@ function MulliganCard({
                 <span style={{ display: "inline-flex", filter: modeFilter ?? undefined, lineHeight: 0 }}>
                   <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={11} keyword={kw} />
                 </span>
-                {x != null && <span style={{ fontSize: 8, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}` }}>{toRoman(x)}</span>}
+                {x != null && <span style={{ fontSize: 8, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}` }}>{toRoman(x)}</span>}
               </div>
               );
             })}
@@ -254,6 +255,25 @@ function MulliganCard({
                   marginLeft: -4,
                 }}>{valueText}</span>}
               </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Effets composés (icônes sans cadre, teintées selon le déclencheur).
+            Alignées à gauche comme les keywords classiques. */}
+        {composedCapsOf(card.capabilities).length > 0 && (
+          <div style={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
+            {composedCapsOf(card.capabilities).map((cap, i) => {
+              const ic = composedIcon(cap);
+              const cfilter = keywordModeFilter(composedTriggerMode(cap));
+              const val = composedValueText(cap);
+              const tint = keywordModeColor(composedTriggerMode(cap)) ?? accentColor;
+              return (
+                <div key={`cx-${i}`} title={describeComposedCap(cap)} style={{ minWidth: 24, height: 24, padding: val ? "0 3px" : 0, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 }}>
+                  <span style={{ display: "inline-flex", filter: cfilter ?? undefined, lineHeight: 0 }}><KeywordIcon symbol={ic.symbol} size={14} keyword={ic.keyword} /></span>
+                  {val && <span style={{ fontSize: 8, fontWeight: 900, color: keywordModeColor(composedTriggerMode(cap)) ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}`, marginLeft: -3 }}>{val}</span>}
+                </div>
               );
             })}
           </div>
@@ -358,6 +378,22 @@ function MulliganCard({
                     <div style={{ fontSize: 10 * d, color: accentColor, fontWeight: 600 }}>{label}</div>
                     <div style={{ fontSize: 8 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>
                   </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Effets composés — détail (icône + texte généré) */}
+        {composedCapsOf(card.capabilities).length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+            {composedCapsOf(card.capabilities).map((cap, i) => {
+              const ic = composedIcon(cap);
+              const cfilter = keywordModeFilter(composedTriggerMode(cap));
+              return (
+                <div key={`cxd-${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 5 }}>
+                  <span style={{ flexShrink: 0 }}><KeywordIcon symbol={ic.symbol} size={12} keyword={ic.keyword} /></span>
+                  <div style={{ fontSize: 8 * d, color: "#bbb", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{describeComposedCap(cap)}</div>
                 </div>
               );
             })}
