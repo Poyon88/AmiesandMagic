@@ -4172,12 +4172,24 @@ const CREATURE_TARGETING_KEYWORDS: Keyword[] = [
   "benediction", "tactique", "remontee", "conferer",
 ];
 
+/** Première capacité composée à l'entrée demandant une cible interactive
+ *  supportée en v1 : désignation "au choix", 1 cible, unité, sur le plateau. */
+function firstOnPlayComposedChoiceCap(card: Card): import("./types").Capability | undefined {
+  return getCapabilities(card).find((c) => {
+    const t = c.composed?.target;
+    return !!c.composed && c.trigger === "on_play" && !!t
+      && t.designation === "choice" && t.count === 1 && t.entity === "unit" && t.location === "board";
+  });
+}
+
 export function creatureNeedsTarget(card: Card): boolean {
   if (card.card_type !== "creature") return false;
   // Only request an on-play target if the targeting keyword actually
   // fires on play. A vampirisme entry that lives only in tap/death mode
   // shouldn't trigger the on-summon picker.
-  return card.keywords.some(kw => CREATURE_TARGETING_KEYWORDS.includes(kw) && cardHasKwOnPlay(card, kw));
+  if (card.keywords.some(kw => CREATURE_TARGETING_KEYWORDS.includes(kw) && cardHasKwOnPlay(card, kw))) return true;
+  // Effet composé à l'entrée en désignation "au choix" (1 cible unité, plateau).
+  return !!firstOnPlayComposedChoiceCap(card);
 }
 
 export function getCreatureTargets(state: GameState, card: Card): string[] {
@@ -4218,6 +4230,18 @@ export function getCreatureTargets(state: GameState, card: Card): string[] {
           .filter(c => canBeRemonteed(c, null))
           .map(c => c.instanceId);
     }
+  }
+  // Repli : cible d'un effet composé à l'entrée "au choix" (1 unité, plateau).
+  const cap = firstOnPlayComposedChoiceCap(card);
+  if (cap?.composed?.target) {
+    const t = cap.composed.target;
+    const pool = composedTargetPool(t, player, opponent);
+    return pool
+      .filter((c) => {
+        if (!opponent.board.includes(c)) return true; // alliés : toujours ciblables
+        return !hasKw(c, "invisible") && !hasKw(c, "transcendance") && !(hasKw(c, "ombre") && !c.ombreRevealed);
+      })
+      .map((c) => c.instanceId);
   }
   return [];
 }

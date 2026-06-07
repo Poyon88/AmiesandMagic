@@ -2,7 +2,7 @@
 // On exerce le vrai flux applyAction(play_card) avec des cartes synthétiques
 // portant des capacités `composed`, et on vérifie l'état résultant.
 import { describe, expect, it } from "vitest";
-import { applyAction, getSpellTargetSlots, initRNG } from "./engine";
+import { applyAction, creatureNeedsTarget, getCreatureTargets, getSpellTargetSlots, initRNG } from "./engine";
 import { HERO_MAX_HP } from "./constants";
 import type {
   Capability, Card, CardInstance, ComposedEffect, GameState, HeroState, PlayerState,
@@ -154,6 +154,25 @@ describe("interpréteur composé — contenus d'effet", () => {
     const s = play(s0, creature);
     const a = s.players[0].board.find((c) => c.card.id === ally.card.id)!;
     expect((a.card.keywords as string[]).includes("berserk")).toBe(true);
+  });
+
+  it("créature à l'entrée 'au choix' : cibleur branché + cible respectée", () => {
+    const s0 = mkState();
+    const u1 = mkInstance(mkCard({ attack: 1, health: 5 }));
+    const u2 = mkInstance(mkCard({ attack: 1, health: 5 }));
+    s0.players[1].board = [u1, u2];
+    const cap = composedCap("on_play", { content: "deal_damage", magnitude: { x: 3 }, target: { entity: "unit", count: 1, side: "enemy", location: "board", designation: "choice" } });
+    const creatureCard = mkCard({ attack: 1, health: 1, capabilities: [cap] });
+    // Le cibleur in-game doit s'activer et proposer les unités ennemies.
+    expect(creatureNeedsTarget(creatureCard)).toBe(true);
+    expect(getCreatureTargets(s0, creatureCard).sort()).toEqual([u1.instanceId, u2.instanceId].sort());
+    // Jouer en ciblant u2 → seul u2 est touché.
+    const ci = mkInstance(creatureCard);
+    initRNG(42);
+    s0.players[0].hand.push(ci);
+    const s = applyAction(s0, { type: "play_card", cardInstanceId: ci.instanceId, targetInstanceId: u2.instanceId });
+    expect(s.players[1].board.find((c) => c.card.id === u1.card.id)?.currentHealth).toBe(5);
+    expect(s.players[1].board.find((c) => c.card.id === u2.card.id)?.currentHealth).toBe(2);
   });
 
   it("on_death : un mort composé buffe les alliés survivants", () => {
