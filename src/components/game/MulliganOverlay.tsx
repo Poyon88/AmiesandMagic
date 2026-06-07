@@ -7,6 +7,7 @@ import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, c
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS, getSpellKeywordLabel, getSpellKeywordDesc } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import KeywordIcon from "@/components/shared/KeywordIcon";
+import { composedCapsOf, composedIcon, composedTriggerMode, describeComposedCap } from "@/lib/game/composed-display";
 import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
 import { useGameStore } from "@/lib/store/gameStore";
 import { useAudioStore } from "@/lib/store/audioStore";
@@ -259,6 +260,21 @@ function MulliganCard({
           </div>
         )}
 
+        {/* Effets composés (icônes sans cadre, teintées selon le déclencheur) */}
+        {composedCapsOf(card.capabilities).length > 0 && (
+          <div style={{ display: "flex", gap: 3, flexWrap: "wrap", justifyContent: "center" }}>
+            {composedCapsOf(card.capabilities).map((cap, i) => {
+              const ic = composedIcon(cap);
+              const cfilter = keywordModeFilter(composedTriggerMode(cap));
+              return (
+                <div key={`cx-${i}`} title={describeComposedCap(cap)} style={{ width: 20, height: 20, display: "inline-flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+                  <span style={{ display: "inline-flex", filter: cfilter ?? undefined }}><KeywordIcon symbol={ic.symbol} size={11} keyword={ic.keyword} /></span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
         {/* Stats */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <span style={{ fontSize: 8, color: "#ffffff44", textTransform: "uppercase" }}>{card.card_type}</span>
@@ -358,6 +374,22 @@ function MulliganCard({
                     <div style={{ fontSize: 10 * d, color: accentColor, fontWeight: 600 }}>{label}</div>
                     <div style={{ fontSize: 8 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>
                   </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Effets composés — détail (icône + texte généré) */}
+        {composedCapsOf(card.capabilities).length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+            {composedCapsOf(card.capabilities).map((cap, i) => {
+              const ic = composedIcon(cap);
+              const cfilter = keywordModeFilter(composedTriggerMode(cap));
+              return (
+                <div key={`cxd-${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 5 }}>
+                  <span style={{ flexShrink: 0 }}><KeywordIcon symbol={ic.symbol} size={12} keyword={ic.keyword} /></span>
+                  <div style={{ fontSize: 8 * d, color: "#bbb", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{describeComposedCap(cap)}</div>
                 </div>
               );
             })}
