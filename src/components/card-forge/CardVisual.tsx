@@ -450,7 +450,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                   <span style={filter ? { filter } : undefined}>
                     <KeywordIcon symbol={ic.symbol} keyword={ic.keyword} />
                   </span>
-                  {val && <span style={{ fontSize: 10 * s, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 4px ${fac.accent}` }}>{val}</span>}
+                  {val && <span style={{ fontSize: 10 * s, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 4px ${fac.accent}`, marginLeft: -3 * s }}>{val}</span>}
                 </div>
               );
             })}

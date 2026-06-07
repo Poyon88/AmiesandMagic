@@ -437,7 +437,7 @@ export default function GameCard({
                     <KeywordIcon symbol={ic.symbol} size={22 * s} keyword={ic.keyword} />
                   )}
                 </span>
-                {val && <span style={{ fontSize: 10 * s, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}` }}>{val}</span>}
+                {val && <span style={{ fontSize: 10 * s, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}`, marginLeft: -3 * s }}>{val}</span>}
               </div>
             );
           })}

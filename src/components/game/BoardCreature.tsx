@@ -544,7 +544,7 @@ export default function BoardCreature({
                     <KeywordIcon symbol={ic.symbol} size={14} keyword={ic.keyword} />
                   )}
                 </span>
-                {val && <span style={{ fontSize: 8, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}` }}>{val}</span>}
+                {val && <span style={{ fontSize: 8, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}`, marginLeft: -3 }}>{val}</span>}
               </div>
             );
           })}
