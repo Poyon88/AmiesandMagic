@@ -260,15 +260,16 @@ function MulliganCard({
           </div>
         )}
 
-        {/* Effets composés (icônes sans cadre, teintées selon le déclencheur) */}
+        {/* Effets composés (icônes sans cadre, teintées selon le déclencheur).
+            Alignées à gauche comme les keywords classiques. */}
         {composedCapsOf(card.capabilities).length > 0 && (
-          <div style={{ display: "flex", gap: 3, flexWrap: "wrap", justifyContent: "center" }}>
+          <div style={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
             {composedCapsOf(card.capabilities).map((cap, i) => {
               const ic = composedIcon(cap);
               const cfilter = keywordModeFilter(composedTriggerMode(cap));
               return (
-                <div key={`cx-${i}`} title={describeComposedCap(cap)} style={{ width: 20, height: 20, display: "inline-flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-                  <span style={{ display: "inline-flex", filter: cfilter ?? undefined }}><KeywordIcon symbol={ic.symbol} size={11} keyword={ic.keyword} /></span>
+                <div key={`cx-${i}`} title={describeComposedCap(cap)} style={{ width: 24, height: 24, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                  <span style={{ display: "inline-flex", filter: cfilter ?? undefined, lineHeight: 0 }}><KeywordIcon symbol={ic.symbol} size={14} keyword={ic.keyword} /></span>
                 </div>
               );
             })}

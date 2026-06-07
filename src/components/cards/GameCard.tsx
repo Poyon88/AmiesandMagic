@@ -420,13 +420,21 @@ export default function GameCard({
               );
           })}
 
-          {/* Effets composés (icônes sans cadre, teintées selon le déclencheur) */}
+          {/* Effets composés (icônes sans cadre, teintées selon le déclencheur).
+              Même gabarit que les keywords classiques (boîte 40·s, image fill). */}
           {composedCapsOf(card.capabilities).map((cap, i) => {
             const ic = composedIcon(cap);
             const cfilter = keywordModeFilter(composedTriggerMode(cap));
+            const hasImg = !!iconOverrides[ic.keyword];
             return (
-              <div key={`cx-${i}`} title={describeComposedCap(cap)} style={{ width: 26 * s, height: 26 * s, display: "inline-flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-                <span style={{ display: "inline-flex", filter: cfilter ?? undefined }}><KeywordIcon symbol={ic.symbol} size={22 * s} keyword={ic.keyword} /></span>
+              <div key={`cx-${i}`} title={describeComposedCap(cap)} style={{ width: 40 * s, height: 40 * s, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                <span style={{ display: "inline-flex", filter: cfilter ?? undefined, lineHeight: 0 }}>
+                  {hasImg ? (
+                    <div style={{ width: 40 * s, height: 40 * s, flexShrink: 0 }}><KeywordIcon symbol={ic.symbol} size={22 * s} keyword={ic.keyword} fill /></div>
+                  ) : (
+                    <KeywordIcon symbol={ic.symbol} size={22 * s} keyword={ic.keyword} />
+                  )}
+                </span>
               </div>
             );
           })}
