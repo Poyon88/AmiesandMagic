@@ -216,7 +216,7 @@ function MulliganCard({
                 <span style={{ display: "inline-flex", filter: modeFilter ?? undefined, lineHeight: 0 }}>
                   <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={11} keyword={kw} />
                 </span>
-                {x != null && <span style={{ fontSize: 8, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}` }}>{toRoman(x)}</span>}
+                {x != null && <span style={{ fontSize: 8, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}` }}>{toRoman(x)}</span>}
               </div>
               );
             })}
@@ -272,7 +272,7 @@ function MulliganCard({
               return (
                 <div key={`cx-${i}`} title={describeComposedCap(cap)} style={{ minWidth: 24, height: 24, padding: val ? "0 3px" : 0, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 }}>
                   <span style={{ display: "inline-flex", filter: cfilter ?? undefined, lineHeight: 0 }}><KeywordIcon symbol={ic.symbol} size={14} keyword={ic.keyword} /></span>
-                  {val && <span style={{ fontSize: 8, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}`, marginLeft: -3 }}>{val}</span>}
+                  {val && <span style={{ fontSize: 8, fontWeight: 900, color: keywordModeColor(composedTriggerMode(cap)) ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}`, marginLeft: -3 }}>{val}</span>}
                 </div>
               );
             })}

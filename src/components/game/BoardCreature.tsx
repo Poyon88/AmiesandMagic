@@ -528,7 +528,7 @@ export default function BoardCreature({
                     <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={14} keyword={kw} />
                   )}
                 </span>
-                {x != null && <span style={{ fontSize: 8, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}` }}>{toRoman(x)}</span>}
+                {x != null && <span style={{ fontSize: 8, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}` }}>{toRoman(x)}</span>}
               </div>
               );
             });
@@ -552,7 +552,7 @@ export default function BoardCreature({
                     <KeywordIcon symbol={ic.symbol} size={14} keyword={ic.keyword} />
                   )}
                 </span>
-                {val && <span style={{ fontSize: 8, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}`, marginLeft: -3 }}>{val}</span>}
+                {val && <span style={{ fontSize: 8, fontWeight: 900, color: keywordModeColor(composedTriggerMode(cap)) ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}`, marginLeft: -3 }}>{val}</span>}
               </div>
             );
           })}

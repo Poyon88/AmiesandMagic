@@ -368,7 +368,7 @@ export default function GameCard({
                     <KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={22 * s} keyword={kw} />
                   )}
                 </span>
-                {x != null && <span style={{ fontSize: 10 * s, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}` }}>{toRoman(x)}</span>}
+                {x != null && <span style={{ fontSize: 10 * s, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}` }}>{toRoman(x)}</span>}
               </div>
               );
             });
@@ -437,7 +437,7 @@ export default function GameCard({
                     <KeywordIcon symbol={ic.symbol} size={22 * s} keyword={ic.keyword} />
                   )}
                 </span>
-                {val && <span style={{ fontSize: 10 * s, fontWeight: 900, color: "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}`, marginLeft: -3 * s }}>{val}</span>}
+                {val && <span style={{ fontSize: 10 * s, fontWeight: 900, color: keywordModeColor(composedTriggerMode(cap)) ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}`, marginLeft: -3 * s }}>{val}</span>}
               </div>
             );
           })}
