@@ -5,7 +5,17 @@ import { cookies } from 'next/headers';
 import { LIMITED_PRINT_COUNTS } from '@/lib/card-engine/constants';
 import { validateRace } from '@/lib/validation/faction-clan';
 import { deriveCapabilities } from '@/lib/game/capability-adapter';
-import type { Card } from '@/lib/game/types';
+import type { Capability, Card } from '@/lib/game/types';
+
+/** Normalise les capacités composées reçues du client : ne garde que celles
+ *  portant un effet `composed`, et réassigne des uid stables (préfixe `cx_`)
+ *  pour éviter toute collision avec les uid dérivés du legacy (sk_/grant_/cw_). */
+function sanitizeComposed(input: unknown): Capability[] {
+  if (!Array.isArray(input)) return [];
+  return (input as Capability[])
+    .filter((c) => c && typeof c === 'object' && c.composed)
+    .map((c, i) => ({ ...c, uid: `cx_${i}`, effectKind: 'immediate' as const, abilityId: c.abilityId || '_composed' }));
+}
 
 // Champs dont dépend le modèle de capacités unifié : si l'un d'eux change, la
 // colonne `capabilities` doit être recalculée (dual-write via l'adaptateur).
@@ -59,7 +69,8 @@ export async function POST(request: Request) {
   const supabaseAdmin = getAdminClient();
 
   try {
-    const { card, imageBase64, imageMimeType, updateId, sfxPlayBase64, sfxPlayMimeType, sfxDeathBase64, sfxDeathMimeType, partial } = await request.json();
+    const { card, imageBase64, imageMimeType, updateId, sfxPlayBase64, sfxPlayMimeType, sfxDeathBase64, sfxDeathMimeType, partial, composed_capabilities } = await request.json();
+    const composedCaps = sanitizeComposed(composed_capabilities);
 
     // Partial update path: only update the fields explicitly present in
     // `card`. Used by callers that just want to bump a couple of columns
@@ -90,11 +101,13 @@ export async function POST(request: Request) {
       if (CAPABILITY_FIELDS.some((f) => f in patch)) {
         const { data: current } = await supabaseAdmin
           .from('cards')
-          .select('card_type, effect_text, keywords, keyword_instances, spell_keywords, convocation_token_id, convocation_tokens, lycanthropie_token_id, entraide_race')
+          .select('card_type, effect_text, keywords, keyword_instances, spell_keywords, capabilities, convocation_token_id, convocation_tokens, lycanthropie_token_id, entraide_race')
           .eq('id', updateId)
           .single();
         const merged = { ...(current ?? {}), ...patch } as unknown as Card;
-        patch.capabilities = deriveCapabilities(merged);
+        // Préserver les effets composés existants (le legacy ne les porte pas).
+        const keptComposed = ((current?.capabilities as Capability[] | null) ?? []).filter((c) => c?.composed);
+        patch.capabilities = [...deriveCapabilities(merged), ...keptComposed];
       }
       const { error: patchErr } = await supabaseAdmin
         .from('cards')
@@ -174,7 +187,7 @@ export async function POST(request: Request) {
     // Dual-write du modèle unifié : dérivé de la carte sauvegardée (l'adaptateur
     // reproduit fidèlement la sémantique legacy). Source de vérité côté moteur
     // une fois lue (getCapabilities) ; sinon repli adaptateur.
-    cardData.capabilities = deriveCapabilities(cardData as unknown as Card);
+    cardData.capabilities = [...deriveCapabilities(cardData as unknown as Card), ...composedCaps];
     if (image_url) cardData.image_url = image_url;
 
     // Upload SFX files if provided
