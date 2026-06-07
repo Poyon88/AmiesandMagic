@@ -6,6 +6,7 @@ import type { CardInstance } from "@/lib/game/types";
 import { KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText } from "@/lib/game/keyword-labels";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, getSpellKeywordLabel } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
+import { composedCapsOf, composedIcon, describeComposedCap } from "@/lib/game/composed-display";
 import { ALIGNMENTS, getEffectiveAlignment } from "@/lib/card-engine/constants";
 import CardArt from "@/components/cards/CardArt";
 import CostBadges from "@/components/cards/CostBadges";
@@ -142,6 +143,18 @@ export default function CardPreview({ cardInstance, anchorRef, position = "above
               </span>
               );
             })}
+          </div>
+        )}
+
+        {/* Effets composés (modèle hybride) */}
+        {composedCapsOf(card.capabilities).length > 0 && (
+          <div className="px-3 pb-1 flex flex-col gap-1">
+            {composedCapsOf(card.capabilities).map((cap, i) => (
+              <div key={`cx_${i}`} className="text-[10px] text-foreground/70 leading-snug flex gap-1.5 items-start">
+                <span className="flex-shrink-0">{composedIcon(cap).symbol}</span>
+                <span>{describeComposedCap(cap)}</span>
+              </div>
+            ))}
           </div>
         )}
 
