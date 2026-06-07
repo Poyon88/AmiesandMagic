@@ -217,6 +217,29 @@ function applyGrantedKeyword(
   }
 }
 
+/** Applique une capacité de type « grant » (conférer `cap.abilityId` à une
+ *  unité). Généralise l'ancien bloc de don des sorts à tout contenant /
+ *  déclencheur : le sort, mais aussi (à terme) une unité qui confère à
+ *  l'entrée / la mort / l'activation. `owner` = contrôleur dont les alliés
+ *  reçoivent le don ; `targetMap` fournit le destinataire pour le scope
+ *  "target" (slot grant_target, repli kw_0 / target_0). */
+function applyGrantCapability(
+  cap: import("./types").Capability,
+  owner: PlayerState,
+  targetMap: Record<string, string>,
+) {
+  const scope = cap.grantScope ?? "target";
+  const params = cap.params?.x != null ? { amount: cap.params.x } : undefined;
+  if (scope === "all_allies") {
+    for (const ally of owner.board) applyGrantedKeyword(ally, cap.abilityId, params);
+    return;
+  }
+  const id = targetMap["grant_target"] ?? targetMap["kw_0"] ?? targetMap["target_0"];
+  const target =
+    id && id !== "enemy_hero" && id !== "friendly_hero" ? findCreatureOnBoard(owner, id) : null;
+  if (target) applyGrantedKeyword(target, cap.abilityId, params);
+}
+
 // Mode 2 fallback for creature-only keywords (corruption, malediction, …).
 // Replays the on-play effect that those keywords trigger when a creature
 // with them enters the field. Mirrors the inline logic in playCard so the
@@ -1574,35 +1597,14 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       resolveComposableEffects(ctx, card.spell_effects.effects);
     }
 
-    // Phase 3: Grant creature keywords carried by the spell. Each keyword's
-    // recipients come from its keyword_instances entry:
-    //   - "all_allies" → every allied creature on the board at cast time
-    //   - "target" (default) → the single allied creature chosen via the
-    //     "grant_target" slot (falls back to the spell's primary target slot
-    //     so legacy single-target selection keeps working).
-    // X values are sourced from the instance and stored on each recipient via
-    // applyGrantedKeyword (which also handles divine_shield / charge side
-    // effects and records grantedKeywordX). Permanent — recalculateAuras never
-    // strips keywords from card.keywords.
-    if (card.keywords.length > 0) {
-      const grantTargetId = targetMap["grant_target"] ?? targetMap["kw_0"] ?? targetMap["target_0"];
-      const grantTarget =
-        grantTargetId && grantTargetId !== "enemy_hero" && grantTargetId !== "friendly_hero"
-          ? findCreatureOnBoard(player, grantTargetId)
-          : null;
-      for (const kw of card.keywords) {
-        // Ne pas conférer un mot-clé "ombre" déjà réalisé par un spell_keyword
-        // (ex. convocations_multiples ↔ invocation_multiple) : son effet est le
-        // sort lui-même, pas un don à un allié.
-        if (isCreatureKwShadowedBySpell(kw, card.spell_keywords)) continue;
-        const inst = card.keyword_instances?.find((k) => k.id === kw);
-        const scope = inst?.grantScope ?? "target";
-        const params = inst?.x != null ? { amount: inst.x } : undefined;
-        if (scope === "all_allies") {
-          for (const ally of player.board) applyGrantedKeyword(ally, kw, params);
-        } else if (grantTarget) {
-          applyGrantedKeyword(grantTarget, kw, params);
-        }
+    // Phase 3 : Don des capacités conférées par le sort (effectKind "grant"),
+    // lu depuis le modèle unifié. L'adaptateur a déjà appliqué l'exclusion
+    // polymorphe (isCreatureKwShadowedBySpell) et le grantScope ; le don passe
+    // par la fonction générique applyGrantCapability (réutilisée à terme par les
+    // dons d'unités). applyGrantedKeyword gère bouclier/traque et grantedKeywordX.
+    for (const cap of getCapabilities(card)) {
+      if (cap.trigger === "spell_resolution" && cap.effectKind === "grant") {
+        applyGrantCapability(cap, player, targetMap);
       }
     }
 
