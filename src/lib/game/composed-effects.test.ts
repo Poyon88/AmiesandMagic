@@ -2,7 +2,7 @@
 // On exerce le vrai flux applyAction(play_card) avec des cartes synthétiques
 // portant des capacités `composed`, et on vérifie l'état résultant.
 import { describe, expect, it } from "vitest";
-import { applyAction, initRNG } from "./engine";
+import { applyAction, getSpellTargetSlots, initRNG } from "./engine";
 import { HERO_MAX_HP } from "./constants";
 import type {
   Capability, Card, CardInstance, ComposedEffect, GameState, HeroState, PlayerState,
@@ -114,6 +114,22 @@ describe("interpréteur composé — contenus d'effet", () => {
     const s = play(s0, mkInstance(creature));
     const totalDmg = s.players[1].board.reduce((acc, c) => acc + (5 - c.currentHealth), 0);
     expect(totalDmg).toBe(1); // une seule unité a pris 1 dégât
+  });
+
+  it("ciblage au choix (count 1) : slot émis + cible choisie respectée", () => {
+    const s0 = mkState();
+    const u1 = mkInstance(mkCard({ attack: 1, health: 5 }));
+    const u2 = mkInstance(mkCard({ attack: 1, health: 5 }));
+    s0.players[1].board = [u1, u2];
+    const cap = composedCap("spell_resolution", { content: "deal_damage", magnitude: { x: 3 }, target: { entity: "unit", count: 1, side: "enemy", location: "board", designation: "choice" } });
+    const spell = mkCard({ card_type: "spell", attack: null, health: null, capabilities: [cap] });
+    const slots = getSpellTargetSlots(spell);
+    expect(slots.some((s) => s.slot === cap.uid && s.type === "enemy_creature")).toBe(true);
+    const s = play(s0, mkInstance(spell), { [cap.uid]: u2.instanceId });
+    const h1 = s.players[1].board.find((c) => c.card.id === u1.card.id)?.currentHealth;
+    const h2 = s.players[1].board.find((c) => c.card.id === u2.card.id)?.currentHealth;
+    expect(h1).toBe(5); // intact
+    expect(h2).toBe(2); // ciblé, 5 − 3
   });
 
   it("on_death : un mort composé buffe les alliés survivants", () => {

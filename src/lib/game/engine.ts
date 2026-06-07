@@ -2743,7 +2743,28 @@ export function getSpellTargetSlots(card: Card): SpellTargetSlot[] {
     }
   }
 
+  // Effets composés à la résolution, en désignation "au choix" et count = 1.
+  // Le slot est clé sur le uid de la capacité (lu par runComposedCapsForCard).
+  // v1 : ciblage in-game limité au plateau / héros (le multi-cibles et les autres
+  // zones suivront). Les désignations "hasard"/"toutes" ne réclament aucun slot.
+  for (const cap of getCapabilities(card)) {
+    const t = cap.composed?.target;
+    if (!cap.composed || cap.trigger !== "spell_resolution" || !t) continue;
+    if (t.designation !== "choice" || t.count !== 1) continue;
+    const type = composedSlotType(t);
+    if (type) slots.push({ slot: cap.uid, type, label: "Cible (effet composé)" });
+  }
+
   return slots;
+}
+
+/** Mappe un TargetSpec (choix, count 1) vers un SpellTargetType pour le picker
+ *  in-game. Retourne undefined si non ciblable en v1 (zone ≠ plateau pour les
+ *  unités). */
+function composedSlotType(t: import("./types").TargetSpec): SpellTargetType | undefined {
+  if (t.entity === "hero") return t.side === "ally" ? "friendly_hero" : "enemy_hero";
+  if (t.location !== "board") return undefined;
+  return t.side === "ally" ? "friendly_creature" : t.side === "enemy" ? "enemy_creature" : "any_creature";
 }
 
 // ============================================================
