@@ -270,17 +270,97 @@ function composedTargetPool(
   return pool;
 }
 
-function selectComposedUnits(
+/** Ids de cibles valides pour un ciblage composé "au choix" : ids d'unités
+ *  (filtrées ciblables) + marqueurs héros ("enemy_hero"/"friendly_hero") pour
+ *  les entités "hero" et "both". `opponent` sert au filtre de ciblabilité. */
+function composedChoiceTargetIds(
+  t: import("./types").TargetSpec,
+  player: PlayerState,
+  opponent: PlayerState,
+): string[] {
+  const ids: string[] = [];
+  if (t.entity === "hero" || t.entity === "both") {
+    if (t.side === "ally") ids.push("friendly_hero");
+    else if (t.side === "enemy") ids.push("enemy_hero");
+    else ids.push("friendly_hero", "enemy_hero");
+  }
+  if (t.entity === "unit" || t.entity === "both") {
+    for (const c of composedTargetPool(t, player, opponent)) {
+      const targetable = !opponent.board.includes(c)
+        || (!hasKw(c, "invisible") && !hasKw(c, "transcendance") && !(hasKw(c, "ombre") && !c.ombreRevealed));
+      if (targetable) ids.push(c.instanceId);
+    }
+  }
+  return ids;
+}
+
+function applyComposedToHero(content: import("./types").ComposedEffectContent, hero: import("./types").HeroState, x: number): void {
+  if (content === "deal_damage") dealDamageToHero(hero, x);
+  else if (content === "heal") hero.hp = Math.min(hero.maxHp, hero.hp + x);
+}
+
+function applyComposedToUnit(
+  composed: import("./types").ComposedEffect,
+  u: CardInstance,
+  x: number,
+  y: number,
+  source: CardInstance | null,
+  owner: PlayerState,
+  opponent: PlayerState,
+): void {
+  switch (composed.content) {
+    case "deal_damage": dealDamageToCreature(u, x, false, true); break;
+    case "heal": u.currentHealth = Math.min(u.maxHealth, u.currentHealth + x); break;
+    case "buff":
+      u.card = { ...u.card, attack: (u.card.attack ?? 0) + x, health: (u.card.health ?? 0) + y };
+      u.currentAttack += x; u.currentHealth += y; u.maxHealth += y;
+      break;
+    case "debuff":
+      u.currentAttack = Math.max(0, u.currentAttack - x);
+      if (y > 0) { u.currentHealth -= y; u.maxHealth = Math.max(1, u.maxHealth - y); }
+      break;
+    case "destroy": u.currentHealth = 0; break;
+    case "paralyze": u.isParalyzed = true; break;
+    case "bounce": resolveRemontee(u.instanceId, source?.instanceId ?? null, owner, opponent); break;
+    case "grant_keyword":
+      if (composed.grantAbilityId) applyGrantedKeyword(u, composed.grantAbilityId, x > 0 ? { amount: x } : undefined);
+      break;
+    default: break;
+  }
+}
+
+/** Cible composée résolue : une unité, ou un héros. */
+type ComposedTargetRef =
+  | { kind: "unit"; unit: CardInstance }
+  | { kind: "hero"; hero: import("./types").HeroState };
+
+/** Construit la liste des cibles sélectionnables d'un TargetSpec (unités et/ou
+ *  héros selon `entity`), puis applique nombre/désignation. */
+function selectComposedTargets(
   spec: import("./types").TargetSpec,
-  pool: CardInstance[],
+  owner: PlayerState,
+  opponent: PlayerState,
   chosenTargetIds?: string[],
-): CardInstance[] {
+): ComposedTargetRef[] {
+  const pool: ComposedTargetRef[] = [];
+  const wantsHero = spec.entity === "hero" || spec.entity === "both";
+  const wantsUnit = spec.entity === "unit" || spec.entity === "both";
+  if (wantsHero) {
+    if (spec.side === "ally") pool.push({ kind: "hero", hero: owner.hero });
+    else if (spec.side === "enemy") pool.push({ kind: "hero", hero: opponent.hero });
+    else pool.push({ kind: "hero", hero: owner.hero }, { kind: "hero", hero: opponent.hero });
+  }
+  if (wantsUnit) for (const u of composedTargetPool(spec, owner, opponent)) pool.push({ kind: "unit", unit: u });
+
   if (spec.count === "all") return pool;
   const n = typeof spec.count === "number" ? Math.max(0, spec.count) : 1;
   if (spec.designation === "choice" && chosenTargetIds?.length) {
     return chosenTargetIds
-      .map((id) => pool.find((c) => c.instanceId === id))
-      .filter((c): c is CardInstance => !!c)
+      .map((id): ComposedTargetRef | undefined =>
+        id === "enemy_hero" ? { kind: "hero", hero: opponent.hero }
+          : id === "friendly_hero" ? { kind: "hero", hero: owner.hero }
+            : pool.find((t) => t.kind === "unit" && t.unit.instanceId === id))
+      .filter((t): t is ComposedTargetRef => !!t)
       .slice(0, n);
   }
   if (spec.designation === "random") return shuffleArray(pool).slice(0, n);
@@ -331,35 +411,9 @@ function resolveComposedEffect(
   const target = composed.target;
   if (!target) return;
 
-  if (target.entity === "hero") {
-    const hero = target.side === "ally" ? owner.hero : opponent.hero;
-    if (composed.content === "deal_damage") dealDamageToHero(hero, x);
-    else if (composed.content === "heal") hero.hp = Math.min(hero.maxHp, hero.hp + x);
-    return;
-  }
-
-  const pool = composedTargetPool(target, owner, opponent);
-  const units = selectComposedUnits(target, pool, chosenTargetIds);
-  for (const u of units) {
-    switch (composed.content) {
-      case "deal_damage": dealDamageToCreature(u, x, false, true); break;
-      case "heal": u.currentHealth = Math.min(u.maxHealth, u.currentHealth + x); break;
-      case "buff":
-        u.card = { ...u.card, attack: (u.card.attack ?? 0) + x, health: (u.card.health ?? 0) + y };
-        u.currentAttack += x; u.currentHealth += y; u.maxHealth += y;
-        break;
-      case "debuff":
-        u.currentAttack = Math.max(0, u.currentAttack - x);
-        if (y > 0) { u.currentHealth -= y; u.maxHealth = Math.max(1, u.maxHealth - y); }
-        break;
-      case "destroy": u.currentHealth = 0; break;
-      case "paralyze": u.isParalyzed = true; break;
-      case "bounce": resolveRemontee(u.instanceId, source?.instanceId ?? null, owner, opponent); break;
-      case "grant_keyword":
-        if (composed.grantAbilityId) applyGrantedKeyword(u, composed.grantAbilityId, x > 0 ? { amount: x } : undefined);
-        break;
-      default: break;
-    }
+  for (const t of selectComposedTargets(target, owner, opponent, chosenTargetIds)) {
+    if (t.kind === "hero") applyComposedToHero(composed.content, t.hero, x);
+    else applyComposedToUnit(composed, t.unit, x, y, source, owner, opponent);
   }
 }
 
@@ -2809,6 +2863,8 @@ export function getSpellTargetSlots(card: Card): SpellTargetSlot[] {
  *  unités). */
 function composedSlotType(t: import("./types").TargetSpec): SpellTargetType | undefined {
   if (t.entity === "hero") return t.side === "ally" ? "friendly_hero" : "enemy_hero";
+  // "both" : héros OU unité → "any" (le picker accepte héros et créatures).
+  if (t.entity === "both") return "any";
   if (t.location !== "board") return undefined;
   return t.side === "ally" ? "friendly_creature" : t.side === "enemy" ? "enemy_creature" : "any_creature";
 }
@@ -4217,7 +4273,7 @@ function firstOnPlayComposedChoiceCap(card: Card): import("./types").Capability 
     const t = c.composed?.target;
     return !!c.composed && c.trigger === "on_play" && !!t
       && t.designation === "choice" && typeof t.count === "number" && t.count >= 1
-      && t.entity === "unit" && t.location === "board";
+      && (t.entity === "unit" || t.entity === "both") && t.location === "board";
   });
 }
 
@@ -4238,13 +4294,8 @@ export function getComposedTapTargets(state: GameState, card: Card, uid: string)
   const opponent = state.players[state.currentPlayerIndex === 0 ? 1 : 0];
   const cap = getCapabilities(card).find(c => c.uid === uid && c.composed && c.trigger === "on_activation");
   const t = cap?.composed?.target;
-  if (!t || t.designation !== "choice" || t.entity !== "unit" || t.location !== "board" || t.count !== 1) return null;
-  return composedTargetPool(t, player, opponent)
-    .filter((c) => {
-      if (!opponent.board.includes(c)) return true;
-      return !hasKw(c, "invisible") && !hasKw(c, "transcendance") && !(hasKw(c, "ombre") && !c.ombreRevealed);
-    })
-    .map((c) => c.instanceId);
+  if (!t || t.designation !== "choice" || (t.entity !== "unit" && t.entity !== "both") || t.location !== "board" || t.count !== 1) return null;
+  return composedChoiceTargetIds(t, player, opponent);
 }
 
 export function getCreatureComposedChoice(
@@ -4308,17 +4359,10 @@ export function getCreatureTargets(state: GameState, card: Card): string[] {
           .map(c => c.instanceId);
     }
   }
-  // Repli : cible d'un effet composé à l'entrée "au choix" (1 unité, plateau).
+  // Repli : cible d'un effet composé à l'entrée "au choix" (unité et/ou héros).
   const cap = firstOnPlayComposedChoiceCap(card);
   if (cap?.composed?.target) {
-    const t = cap.composed.target;
-    const pool = composedTargetPool(t, player, opponent);
-    return pool
-      .filter((c) => {
-        if (!opponent.board.includes(c)) return true; // alliés : toujours ciblables
-        return !hasKw(c, "invisible") && !hasKw(c, "transcendance") && !(hasKw(c, "ombre") && !c.ombreRevealed);
-      })
-      .map((c) => c.instanceId);
+    return composedChoiceTargetIds(cap.composed.target, player, opponent);
   }
   return [];
 }

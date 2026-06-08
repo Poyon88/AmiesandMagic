@@ -171,6 +171,18 @@ describe("interpréteur composé — contenus d'effet", () => {
     expect(s.players[1].board.find((c) => c.card.id === u3.card.id)?.currentHealth).toBe(3); // touché
   });
 
+  it("entity 'both' (toutes) : touche les unités ET le héros du bord", () => {
+    const s0 = mkState();
+    const u1 = mkInstance(mkCard({ attack: 1, health: 5 }));
+    const u2 = mkInstance(mkCard({ attack: 1, health: 5 }));
+    s0.players[1].board = [u1, u2];
+    const spell = mkCard({ card_type: "spell", attack: null, health: null,
+      capabilities: [composedCap("spell_resolution", { content: "deal_damage", magnitude: { x: 2 }, target: { entity: "both", count: "all", side: "enemy", location: "board", designation: "random" } })] });
+    const s = play(s0, mkInstance(spell));
+    expect(s.players[1].hero.hp).toBe(HERO_MAX_HP - 2);
+    expect(s.players[1].board.map((c) => c.currentHealth)).toEqual([3, 3]);
+  });
+
   it("créature à l'entrée 'au choix' : cibleur branché + cible respectée", () => {
     const s0 = mkState();
     const u1 = mkInstance(mkCard({ attack: 1, health: 5 }));
