@@ -126,13 +126,13 @@ export default function ComposedEffectsEditor({
                   {meta.target === "unit_or_hero" && (
                     <>
                       <span style={labelStyle}>TYPE</span>
-                      {sel(t.entity, [{ v: "unit", l: "Unité" }, { v: "hero", l: "Héros" }], (v) => patchTarget(idx, { entity: v as TargetSpec["entity"] }))}
+                      {sel(t.entity, [{ v: "unit", l: "Unité" }, { v: "hero", l: "Héros" }, { v: "both", l: "Les deux (héros + unités)" }], (v) => patchTarget(idx, { entity: v as TargetSpec["entity"] }))}
                     </>
                   )}
                   <span style={labelStyle}>BORD</span>
                   {sel(t.side, [{ v: "ally", l: "Allié" }, { v: "enemy", l: "Ennemi" }, { v: "any", l: "Indifférent" }], (v) => patchTarget(idx, { side: v as TargetSpec["side"] }))}
 
-                  {t.entity === "unit" && (
+                  {(t.entity === "unit" || t.entity === "both") && (
                     <>
                       <span style={labelStyle}>NOMBRE</span>
                       <span style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>

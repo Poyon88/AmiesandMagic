@@ -493,6 +493,11 @@ export default function GameBoard({ onAction }: GameBoardProps) {
       {...boardCancelLongPress.handlers}
       onClick={(e) => {
         if (boardCancelLongPress.consume()) return;
+        // A tap anywhere that isn't a hand card dismisses an open card-detail
+        // zoom (touch): the zoomed card snaps back to its normal board look.
+        if (!(e.target as HTMLElement).closest('[data-hand-card="true"]')) {
+          window.dispatchEvent(new CustomEvent("dismiss-card-detail"));
+        }
         if (e.target === e.currentTarget) clearSelection();
       }}
       onContextMenu={(e) => {

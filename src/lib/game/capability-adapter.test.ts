@@ -57,6 +57,30 @@ describe("deriveCapabilities — sorts", () => {
     expect(cap.params).toEqual({ x: 2 });
   });
 
+  it("appel_du_clan est polymorphe (créature + sort) et dérive une capacité de sort sans cible", () => {
+    // Authoring : l'ability est applicable aux deux contextes.
+    expect(ABILITIES.appel_du_clan.applicable_to).toEqual(
+      expect.arrayContaining(["creature", "spell"]),
+    );
+    // Côté sort : un spell_keyword appel_du_clan dérive une capacité résoluble,
+    // sans slot de cible (needsTarget: false), avec X reporté en params.x.
+    const c = card({
+      card_type: "spell",
+      attack: null,
+      health: null,
+      clan: "incas",
+      spell_keywords: [{ id: "appel_du_clan", amount: 3 }] as SpellKeywordInstance[],
+    });
+    const [cap] = deriveCapabilities(c);
+    expect(cap).toMatchObject({
+      trigger: "spell_resolution",
+      effectKind: "immediate",
+      abilityId: "appel_du_clan",
+      params: { x: 3 },
+    });
+    expect(cap.targets).toEqual([]);
+  });
+
   it("renforcement (spell) reporte attack/health", () => {
     const c = card({
       card_type: "spell",

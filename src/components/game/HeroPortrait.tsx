@@ -74,17 +74,6 @@ export default function HeroPortrait({
       </div>
 
       <motion.div
-        data-target-id={isOpponent ? "enemy_hero" : "friendly_hero"}
-        {...longPress.handlers}
-        onClick={onClick ? () => { if (longPress.consume()) return; onClick(); } : undefined}
-        onDoubleClick={onDoubleClick}
-        onContextMenu={(e) => {
-          if (!onContextMenu) return;
-          e.preventDefault();
-          onContextMenu();
-        }}
-        onMouseEnter={onMouseEnter}
-        onMouseLeave={onMouseLeave}
         animate={
           damageAmount
             ? { x: [0, -5, 5, -5, 5, 0] }
@@ -93,10 +82,10 @@ export default function HeroPortrait({
         transition={{ duration: 0.5, ease: "easeOut" }}
         style={LONG_PRESS_RESET_STYLE}
         className={`
-          relative w-40 h-48 rounded-xl overflow-hidden
+          pointer-events-none relative w-40 h-48 rounded-xl overflow-hidden
           transition-[box-shadow,transform]
-          ${isValidTarget ? "ring-2 ring-attack-red animate-[pulse-ring_1.5s_ease-in-out_infinite] cursor-pointer hover:scale-105" : ""}
-          ${onClick && !isValidTarget ? "cursor-pointer hover:scale-105" : ""}
+          ${isValidTarget ? "ring-2 ring-attack-red animate-[pulse-ring_1.5s_ease-in-out_infinite] hover:scale-105" : ""}
+          ${onClick && !isValidTarget ? "hover:scale-105" : ""}
         `}
       >
         {/* Hero portrait — admin-uploaded 2D image (`thumbnailUrl`) wins
@@ -138,6 +127,27 @@ export default function HeroPortrait({
             <span className="text-[18px] font-bold text-white leading-none">{hero.armor}</span>
           </div>
         )}
+
+        {/* Centered tap zone — the portrait box itself is pointer-transparent
+            (pointer-events-none above); only this ~55%-wide disc over the
+            crest captures clicks/taps. This keeps hand cards that peek out
+            from behind the floating portrait tappable on touch/iPad, where
+            the full 160×192 box used to steal their taps. */}
+        <div
+          data-target-id={isOpponent ? "enemy_hero" : "friendly_hero"}
+          {...longPress.handlers}
+          onClick={onClick ? () => { if (longPress.consume()) return; onClick(); } : undefined}
+          onDoubleClick={onDoubleClick}
+          onContextMenu={(e) => {
+            if (!onContextMenu) return;
+            e.preventDefault();
+            onContextMenu();
+          }}
+          onMouseEnter={onMouseEnter}
+          onMouseLeave={onMouseLeave}
+          className={`absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-auto ${onClick ? "cursor-pointer" : ""}`}
+          style={{ width: "55%", height: "55%", touchAction: "manipulation" }}
+        />
       </motion.div>
     </div>
   );

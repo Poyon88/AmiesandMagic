@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -151,6 +151,25 @@ export default function HandCard({
     if (armTimer.current) clearTimeout(armTimer.current);
   };
 
+  // Touch UX: a tap anywhere outside the hand (empty board, a creature, the
+  // hero…) dismisses an open detail overlay and disarms a primed spell, so a
+  // zoomed card snaps back to its normal on-board look. GameBoard fires the
+  // "dismiss-card-detail" window event on those taps. Desktop hover-zoom is
+  // untouched — it isn't opened via touch, so neither ref is set.
+  useEffect(() => {
+    const dismiss = () => {
+      if (!detailsOpenedByTouch.current && !armedForCast.current) return;
+      detailsOpenedByTouch.current = false;
+      armedForCast.current = false;
+      setShowDetails(false);
+      setIsHovered(false);
+      if (detailTimer.current) clearTimeout(detailTimer.current);
+      if (armTimer.current) clearTimeout(armTimer.current);
+    };
+    window.addEventListener("dismiss-card-detail", dismiss);
+    return () => window.removeEventListener("dismiss-card-detail", dismiss);
+  }, []);
+
   const longPress = useLongPress(() => {
     if (detailTimer.current) clearTimeout(detailTimer.current);
     // Spells follow the double-tap UX on touch — long-press arms them so
@@ -271,6 +290,7 @@ export default function HandCard({
         opacity: { duration: 0.25, ease: "easeOut" },
       }}
       data-instance-id={cardInstance.instanceId}
+      data-hand-card="true"
       style={{ width: W, height: H, position: "relative", zoom: 1.41 }}
     >
       <div

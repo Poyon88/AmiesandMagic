@@ -111,6 +111,7 @@ export type SpellKeywordId =
   | "relancer"
   | "tempete"
   | "douleur"
+  | "appel_du_clan"
   | "rassemblement"
   | "concentration"
   | "selection_magique"
@@ -279,8 +280,8 @@ export type ComposedEffectContent =
 /** Spécification de cibles d'un effet composé. Les filtres par caractéristiques
  *  (coût/ATK/déf/rareté) et par capacités possédées sont prévus pour la v2. */
 export interface TargetSpec {
-  /** Type de cible. "hero" = le héros du bord visé. */
-  entity: "unit" | "hero";
+  /** Type de cible. "hero" = le héros du bord visé ; "both" = héros + unités. */
+  entity: "unit" | "hero" | "both";
   /** Nombre d'unités impactées : un entier, ou "all" pour tout le pool filtré. */
   count: number | "all";
   /** Bord visé. */

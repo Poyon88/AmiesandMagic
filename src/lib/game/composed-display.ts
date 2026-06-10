@@ -95,6 +95,12 @@ function describeContent(eff: ComposedEffect): string {
 function describeTarget(t: TargetSpec | undefined): string {
   if (!t) return "";
   if (t.entity === "hero") return t.side === "ally" ? "à votre héros" : "au héros adverse";
+  if (t.entity === "both") {
+    const sideTxt = t.side === "ally" ? "alliés" : t.side === "enemy" ? "ennemis" : "";
+    return t.count === "all"
+      ? `à toutes les unités et au héros ${sideTxt}`.trim()
+      : `à une cible (unité ou héros)${sideTxt ? ` ${sideTxt}` : ""}`;
+  }
   const count = t.count === "all" ? "toutes les unités" : t.count === 1 ? "une unité" : `${t.count} unités`;
   const sideTxt = t.side === "ally" ? (t.count === "all" || (typeof t.count === "number" && t.count > 1) ? "alliées" : "alliée")
     : t.side === "enemy" ? (t.count === "all" || (typeof t.count === "number" && t.count > 1) ? "ennemies" : "ennemie") : "";
