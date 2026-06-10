@@ -44,17 +44,18 @@ import { getFactionForRace, getEffectiveAlignment, FACTIONS } from "@/lib/card-e
 // SEEDED PRNG (mulberry32) — deterministic across clients
 // ============================================================
 
-function createRNG(seed: number): () => number {
-  let s = seed | 0;
-  return function () {
-    s = (s + 0x6d2b79f5) | 0;
-    let t = Math.imul(s ^ (s >>> 15), 1 | s);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
+// mulberry32 state. Lives in this module var but is SYNCED to GameState.rngState
+// at every applyAction boundary (loaded at entry, written back at exit), so the
+// random stream is part of the serialized/replayed/snapshotted state — no
+// out-of-band singleton drift between the two clients of an online match.
+let rngState = 0;
 
-let rng: () => number = Math.random;
+function rng(): number {
+  rngState = (rngState + 0x6d2b79f5) | 0;
+  let t = Math.imul(rngState ^ (rngState >>> 15), 1 | rngState);
+  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+}
 let currentTokenTemplates: TokenTemplate[] = [];
 // Turn number of the action being processed. Set in `applyAction` so any
 // engine helper (cleanDeadCreatures…) can stamp creatures with their death
@@ -69,7 +70,7 @@ let currentPlayerId = "";
 let pendingTriggerSink: PendingTrigger[] = [];
 
 export function initRNG(seed: number) {
-  rng = createRNG(seed);
+  rngState = seed | 0;
 }
 
 // ============================================================
@@ -684,6 +685,9 @@ export function initializeGame(
     winner: null,
     lastAction: null,
     mulliganReady: [false, false],
+    // Snapshot the RNG position after seeding + the opening shuffle, so the
+    // initial state already carries the stream both clients continue from.
+    rngState,
     factionCardPool: factionCardPool ?? undefined,
     allSpellsPool: allSpellsPool ?? undefined,
   };
@@ -4152,6 +4156,10 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   currentTurnNumber = state.turnNumber;
   currentPlayerId = state.players[state.currentPlayerIndex].id;
   pendingTriggerSink = [];
+  // Load the RNG position carried in the state so this action's random draws
+  // continue the exact stream both clients share (rather than a module
+  // singleton that can drift). Written back into `result` below.
+  if (state.rngState !== undefined) rngState = state.rngState;
 
   let result: GameState;
   switch (action.type) {
@@ -4171,6 +4179,9 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   if (pendingTriggerSink.length > 0 && result !== state) {
     result.pendingTriggers = [...(result.pendingTriggers ?? []), ...pendingTriggerSink];
   }
+  // Persist the advanced RNG position into the returned state so the next
+  // action (here or on the other client) resumes the same stream.
+  if (result !== state) result.rngState = rngState;
   return result;
 }
 

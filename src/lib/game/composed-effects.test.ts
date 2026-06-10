@@ -46,6 +46,7 @@ function mkState(): GameState {
   return {
     players: [mkPlayer("P1"), mkPlayer("P2")], currentPlayerIndex: 0, turnNumber: 1,
     turnStartedAt: 0, phase: "playing", winner: null, lastAction: null, mulliganReady: [true, true],
+    rngState: 1,
   };
 }
 
