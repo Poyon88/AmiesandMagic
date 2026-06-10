@@ -2021,7 +2021,11 @@ function pickRandomTarget(
       break;
   }
   if (candidates.length === 0) return undefined;
-  return candidates[Math.floor(Math.random() * candidates.length)];
+  // MUST use the shared seeded rng (not Math.random) — this runs during action
+  // replay on BOTH clients, so a non-deterministic draw makes each client pick a
+  // different target, permanently desyncing the match (divergent board / HP /
+  // graveyard). All other engine randomness already goes through rng().
+  return candidates[Math.floor(rng() * candidates.length)];
 }
 
 function recastSpells(

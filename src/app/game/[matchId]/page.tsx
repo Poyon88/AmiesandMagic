@@ -75,6 +75,10 @@ export default function GamePage() {
   }, []);
   const [phase, setPhase] = useState<"loading" | "waiting" | "playing">("loading");
   const [error, setError] = useState("");
+  // Set when an action could not be persisted to match_actions after retries.
+  // A missing row means the opponent can't resync past that seq, so we surface
+  // a non-blocking banner inviting a reload rather than failing silently.
+  const [persistWarning, setPersistWarning] = useState(false);
   const matchDataRef = useRef<{
     match: MatchData;
     p1Cards: { card: Card; quantity: number }[];
@@ -522,11 +526,39 @@ export default function GamePage() {
     };
   }, []);
 
+  // Persist an action row to match_actions, the source of truth used by gap
+  // recovery / resync. Runs off the broadcast path (latency unchanged) but is
+  // retried with backoff: a lost row leaves a permanent hole in the log that
+  // the opponent can never resync past, causing a permanent desync. A unique
+  // violation (23505) means the row is already there — treat as success.
+  const persistAction = useCallback(
+    async (seq: number, action: GameAction) => {
+      const MAX_ATTEMPTS = 5;
+      for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+        const { error } = await supabase
+          .from("match_actions")
+          .insert({ match_id: matchId, seq, action });
+        if (!error || error.code === "23505") return;
+        console.error(
+          `[match] persist action failed (attempt ${attempt}/${MAX_ATTEMPTS})`,
+          { seq, error }
+        );
+        if (attempt < MAX_ATTEMPTS) {
+          await new Promise((r) => setTimeout(r, 300 * attempt));
+        } else {
+          // Exhausted retries — the log now has a hole at this seq.
+          setPersistWarning(true);
+        }
+      }
+    },
+    [matchId, supabase]
+  );
+
   // Broadcast actions to opponent. Each broadcast carries a per-match
   // monotonic seq so the receiver can detect gaps and fetch missing rows
-  // from match_actions. The DB insert is fire-and-forget — broadcast
-  // latency stays unchanged ; the persisted row is only read on gap
-  // recovery.
+  // from match_actions. Broadcast goes out immediately; persistence is
+  // retried in the background (persistAction) so the action log stays
+  // gap-free for resync.
   const handleAction = useCallback(
     (action: GameAction) => {
       const seq = lastSeqRef.current + 1;
@@ -538,12 +570,7 @@ export default function GamePage() {
         payload: { action, seq },
       });
 
-      supabase
-        .from("match_actions")
-        .insert({ match_id: matchId, seq, action })
-        .then(({ error }) => {
-          if (error) console.error("[match] persist action failed", { seq, error });
-        });
+      void persistAction(seq, action);
 
       // Update match status on game end
       const store = useGameStore.getState();
@@ -559,7 +586,7 @@ export default function GamePage() {
           .then(() => {});
       }
     },
-    [matchId, supabase]
+    [matchId, supabase, persistAction]
   );
 
   if (error) {
@@ -600,6 +627,29 @@ export default function GamePage() {
   return (
     <>
       <OrientationLock />
+      {persistWarning && (
+        <div
+          role="alert"
+          className="fixed top-0 inset-x-0 z-[100] flex items-center justify-center gap-3 px-4 py-2 bg-red-900/90 text-white text-xs sm:text-sm backdrop-blur-sm"
+          style={{ paddingTop: "max(0.5rem, env(safe-area-inset-top))" }}
+        >
+          <span>
+            Une action n&apos;a pas pu être enregistrée — risque de désynchronisation.
+            Rechargez la page pour resynchroniser.
+          </span>
+          <button
+            onClick={() => window.location.reload()}
+            className="shrink-0 px-2 py-0.5 rounded bg-white/20 hover:bg-white/30 font-bold"
+          >
+            Recharger
+          </button>
+          <button
+            onClick={() => setPersistWarning(false)}
+            aria-label="Fermer"
+            className="shrink-0 px-1.5 leading-none text-base hover:opacity-80"
+          >×</button>
+        </div>
+      )}
       <GameBoard onAction={handleAction} />
     </>
   );
