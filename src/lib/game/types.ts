@@ -677,6 +677,12 @@ export interface GameState {
   winner: string | null;
   lastAction: GameAction | null;
   mulliganReady: [boolean, boolean];
+  /** mulberry32 PRNG state, carried IN the game state so the random stream is
+   *  part of what gets replayed/snapshotted. The engine loads it at the start
+   *  of every `applyAction` and writes the advanced value back, so two clients
+   *  replaying the same actions stay bit-identical — and a refetched snapshot
+   *  restores the exact RNG position (no out-of-band module-singleton drift). */
+  rngState: number;
   // File de déclencheurs interactifs en attente (ex. Remontée mort/retour au
   // tour du contrôleur). Tant qu'elle est non vide, le jeu attend que le
   // contrôleur de pendingTriggers[0] choisisse une cible (resolve_pending_trigger).

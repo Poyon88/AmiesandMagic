@@ -8,7 +8,7 @@ import { useAudioStore } from "@/lib/store/audioStore";
 import SfxEngine from "@/lib/audio/SfxEngine";
 import GameBoard from "@/components/game/GameBoard";
 import OrientationLock from "@/components/shared/OrientationLock";
-import type { Card, GameAction, HeroDefinition, HeroPowerEffect, Race } from "@/lib/game/types";
+import type { Card, GameAction, GameState, HeroDefinition, HeroPowerEffect, Race } from "@/lib/game/types";
 
 interface HeroRow {
   id: number;
@@ -103,6 +103,9 @@ export default function GamePage() {
   // Rattrapage de l'état depuis match_actions ; défini dans loadMatch et appelé
   // au réveil de veille / retour réseau / re-souscription realtime.
   const resyncRef = useRef<(() => void) | null>(null);
+  // Seq d'un snapshot à écrire dès que l'animation de l'action locale se termine
+  // (le commit du gameState est différé pendant l'animation — cf. writeSnapshot).
+  const pendingSnapshotSeqRef = useRef<number | null>(null);
 
   const {
     setGameState,
@@ -351,6 +354,35 @@ export default function GamePage() {
         const resyncFromLog = () => {
           if (!useGameStore.getState().gameState) return; // partie pas encore initialisée
           const run = (inflightCatchupRef.current ?? Promise.resolve()).then(async () => {
+            // 1) Adopte le snapshot serveur faisant autorité s'il nous devance.
+            //    Récupère d'un coup l'état (RNG inclus via state.rngState) après
+            //    une veille/déconnexion où des actions ont pu être manquées OU le
+            //    rejeu diverger. Garde !isAnimating : setGameState court-circuite
+            //    la file d'animation. Le rejeu du log ci-dessous complète ensuite
+            //    avec les actions plus récentes que le snapshot.
+            if (!useGameStore.getState().isAnimating) {
+              const { data: snap } = await supabase
+                .from("match_state")
+                .select("seq, state")
+                .eq("match_id", matchId)
+                .maybeSingle();
+              const snapSeq = snap?.seq as number | undefined;
+              if (snap && snapSeq != null && snapSeq > lastSeqRef.current) {
+                const local = useGameStore.getState().gameState;
+                if (local) {
+                  // Ré-attache les pools statiques retirés du snapshot (chaque
+                  // client les a déjà en mémoire depuis l'init du match).
+                  useGameStore.getState().setGameState({
+                    ...(snap.state as GameState),
+                    factionCardPool: local.factionCardPool,
+                    allSpellsPool: local.allSpellsPool,
+                    tokenTemplates: local.tokenTemplates,
+                  });
+                  lastSeqRef.current = snapSeq;
+                }
+              }
+            }
+            // 2) Complète avec les actions journalisées après notre seq courant.
             const { data: missing, error } = await supabase
               .from("match_actions")
               .select("seq, action")
@@ -554,6 +586,31 @@ export default function GamePage() {
     [matchId, supabase]
   );
 
+  // Upsert the authoritative full GameState into match_state, tagged with the
+  // action's seq. This is the source of truth a peer adopts on resync (vs only
+  // replaying the action log). The heavy static card pools are stripped — each
+  // client already holds them and re-attaches on adopt — keeping the row small.
+  // Fire-and-forget: snapshots are a recovery aid; the action log is primary,
+  // and a stale/older snapshot is simply ignored by peers already ahead of it.
+  const writeSnapshot = useCallback(
+    (seq: number) => {
+      const gs = useGameStore.getState().gameState;
+      if (!gs) return;
+      const { factionCardPool: _f, allSpellsPool: _a, tokenTemplates: _t, ...lean } = gs;
+      void _f; void _a; void _t;
+      supabase
+        .from("match_state")
+        .upsert(
+          { match_id: matchId, seq, state: lean, updated_at: new Date().toISOString() },
+          { onConflict: "match_id" }
+        )
+        .then(({ error }) => {
+          if (error) console.error("[match] snapshot upsert failed", { seq, error });
+        });
+    },
+    [matchId, supabase]
+  );
+
   // Broadcast actions to opponent. Each broadcast carries a per-match
   // monotonic seq so the receiver can detect gaps and fetch missing rows
   // from match_actions. Broadcast goes out immediately; persistence is
@@ -572,6 +629,16 @@ export default function GamePage() {
 
       void persistAction(seq, action);
 
+      // Snapshot the post-action state. On the fast path the store committed it
+      // synchronously (write now); during an animation the gameState commit is
+      // deferred to phaseUnlock, so defer the snapshot until the animation ends
+      // (the isAnimating→false subscription below picks it up).
+      if (useGameStore.getState().isAnimating) {
+        pendingSnapshotSeqRef.current = seq;
+      } else {
+        writeSnapshot(seq);
+      }
+
       // Update match status on game end
       const store = useGameStore.getState();
       if (store.gameState?.phase === "finished" && store.gameState.winner) {
@@ -586,8 +653,22 @@ export default function GamePage() {
           .then(() => {});
       }
     },
-    [matchId, supabase, persistAction]
+    [matchId, supabase, persistAction, writeSnapshot]
   );
+
+  // Deferred-snapshot drain: when an animated local action finishes (the
+  // animation pipeline flips isAnimating true→false and commits the new
+  // gameState), write the snapshot that handleAction parked for it.
+  useEffect(() => {
+    const unsub = useGameStore.subscribe((state, prev) => {
+      if (prev.isAnimating && !state.isAnimating && pendingSnapshotSeqRef.current != null) {
+        const seq = pendingSnapshotSeqRef.current;
+        pendingSnapshotSeqRef.current = null;
+        writeSnapshot(seq);
+      }
+    });
+    return unsub;
+  }, [writeSnapshot]);
 
   if (error) {
     return (
