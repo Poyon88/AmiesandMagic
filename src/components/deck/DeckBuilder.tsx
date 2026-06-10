@@ -822,9 +822,13 @@ export default function DeckBuilder({
       )}
 
       {/* Colonne de droite : configuration / deck (toujours présente) */}
-      <div className={`bg-secondary border-t md:border-t-0 md:border-l border-card-border flex flex-col md:flex-shrink-0 md:overflow-hidden ${tab === 3 ? "md:w-[320px] md:max-w-[320px]" : "md:flex-1"}`}>
-        {/* Configuration sections (héros / plateau / dos / nom / format / stats) — scrollent indépendamment, plafonnées pour libérer la place à la liste des cartes en dessous. */}
-        <div style={{ flexShrink: 0, overflowY: "auto", maxHeight: "55vh" }}>
+      <div className={`bg-secondary border-t md:border-t-0 md:border-l border-card-border flex flex-col md:flex-shrink-0 ${tab === 3 ? "md:overflow-hidden md:w-[320px] md:max-w-[320px]" : "md:overflow-y-auto md:flex-1"}`}>
+        {/* Configuration sections (héros / plateau / dos / nom / format / stats).
+            Onglet 3 (Cartes) : plafonnées à 55vh avec scroll interne pour libérer
+            la place à la liste des cartes en dessous. Onglets 1 & 2 : pas de
+            plafond — elles s'écoulent dans le scroll unique du panneau, sinon le
+            plateau/dos passent sous le pli (invisibles sur iPad). */}
+        <div style={{ flexShrink: 0, overflowY: tab === 3 ? "auto" : "visible", maxHeight: tab === 3 ? "55vh" : undefined }}>
 
         {/* ===== Onglet 1 — Préparation : nom, faction, format ===== */}
         {tab === 1 && (
@@ -1094,8 +1098,9 @@ export default function DeckBuilder({
           </div>
         </div>
 
-        {/* Slot sections */}
-        <div className="flex-1 overflow-y-auto" style={{ minHeight: 0 }}>
+        {/* Slot sections — scroll propre seulement sur l'onglet Cartes ; sur les
+            onglets 1 & 2 la liste s'écoule dans le scroll unique du panneau. */}
+        <div className={tab === 3 ? "flex-1 overflow-y-auto" : ""} style={{ minHeight: 0 }}>
           {totalCards === 0 && (
             <p className="text-center text-foreground/30 mt-8 text-sm">
               Cliquez sur les cartes pour les ajouter
