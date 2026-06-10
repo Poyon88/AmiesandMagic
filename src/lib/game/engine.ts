@@ -2443,6 +2443,23 @@ function resolveSpellKeywords(
         recastSpells(ctx.state, ctx.caster, ctx.opponent, amount);
         break;
       }
+      case "appel_du_clan": {
+        // Mirror the creature-side behaviour: put the first same-clan creature
+        // (mana cost ≤ X) found in the deck directly into play, free and with
+        // summoning sickness. Uses the spell's own clan — a no-op when the
+        // spell has no clan or the board is full (same fail-safe as creatures).
+        const x = kw.amount ?? 1;
+        const clan = ctx.card.clan;
+        if (!clan || ctx.caster.board.length >= MAX_BOARD_SIZE) break;
+        const idx = ctx.caster.deck.findIndex(c => c.card.clan === clan && c.card.card_type === "creature" && c.card.mana_cost <= x);
+        if (idx >= 0) {
+          const [called] = ctx.caster.deck.splice(idx, 1);
+          const calledInstance = createCardInstance(called.card);
+          calledInstance.hasSummoningSickness = true;
+          ctx.caster.board.push(calledInstance);
+        }
+        break;
+      }
       case "rassemblement": {
         // Mirror the creature-side behaviour: reveal X top deck cards, keep
         // same-race creatures (capped by hand size), discard the rest.

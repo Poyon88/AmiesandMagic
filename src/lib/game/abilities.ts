@@ -564,8 +564,12 @@ export const ABILITIES: Record<string, AbilityDef> = {
   appel_du_clan: {
     id: "appel_du_clan", label: "Appel du clan X", symbol: "📯",
     desc: "Invocation : mettez en jeu gratuitement la première unité de même clan avec un coût inférieur ou égal à X depuis le dessus de votre deck.",
-    applicable_to: ["creature"],
+    applicable_to: ["creature", "spell"],
     creature: { cost: 16, costPerX: 5, se: 4.5, minTier: 3, scalable: true, zone: "Clan" },
+    spell: {
+      desc: "Mettez en jeu gratuitement la première unité de même clan que ce sort, avec un coût inférieur ou égal à X, depuis votre deck.",
+      params: ["amount"], needsTarget: false,
+    },
   },
   solidarite: {
     id: "solidarite", label: "Solidarité X", symbol: "🤜",

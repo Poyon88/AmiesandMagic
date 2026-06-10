@@ -111,6 +111,7 @@ export type SpellKeywordId =
   | "relancer"
   | "tempete"
   | "douleur"
+  | "appel_du_clan"
   | "rassemblement"
   | "concentration"
   | "selection_magique"
