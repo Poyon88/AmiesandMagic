@@ -560,7 +560,7 @@ export default function HandCard({
               const tint = keywordModeColor(composedTriggerMode(cap)) ?? accentColor;
               const hasImg = !!iconOverrides[ic.keyword];
               return (
-                <div key={`cx-${i}`} title={describeComposedCap(cap)} style={{
+                <div key={`cx-${i}`} title={describeComposedCap(cap, tokenTemplates)} style={{
                   minWidth: 24, height: 24, padding: val ? "0 2px" : 0,
                   display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, overflow: "hidden",
                 }}>
@@ -704,7 +704,7 @@ export default function HandCard({
                 return (
                   <div key={`cxd-${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
                     <span style={{ flexShrink: 0, filter: cfilter ?? undefined, lineHeight: 0 }}><KeywordIcon symbol={ic.symbol} size={9} keyword={ic.keyword} /></span>
-                    <div style={{ fontSize: 6 * d, color: "#bbb", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{describeComposedCap(cap)}</div>
+                    <div style={{ fontSize: 6 * d, color: "#bbb", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{describeComposedCap(cap, tokenTemplates)}</div>
                   </div>
                 );
               })}

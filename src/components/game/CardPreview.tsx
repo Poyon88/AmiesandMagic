@@ -7,6 +7,7 @@ import { KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText } 
 import { SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, getSpellKeywordLabel } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import { composedCapsOf, composedIcon, describeComposedCap } from "@/lib/game/composed-display";
+import { useGameStore } from "@/lib/store/gameStore";
 import { ALIGNMENTS, getEffectiveAlignment } from "@/lib/card-engine/constants";
 import CardArt from "@/components/cards/CardArt";
 import CostBadges from "@/components/cards/CostBadges";
@@ -18,6 +19,7 @@ interface CardPreviewProps {
 }
 
 export default function CardPreview({ cardInstance, anchorRef, position = "above" }: CardPreviewProps) {
+  const tokenTemplates = useGameStore((s) => s.tokenTemplates);
   const [mounted, setMounted] = useState(false);
   const [coords, setCoords] = useState({ left: 0, top: 0 });
   const previewRef = useRef<HTMLDivElement>(null);
@@ -152,7 +154,7 @@ export default function CardPreview({ cardInstance, anchorRef, position = "above
             {composedCapsOf(card.capabilities).map((cap, i) => (
               <div key={`cx_${i}`} className="text-[10px] text-foreground/70 leading-snug flex gap-1.5 items-start">
                 <span className="flex-shrink-0">{composedIcon(cap).symbol}</span>
-                <span>{describeComposedCap(cap)}</span>
+                <span>{describeComposedCap(cap, tokenTemplates)}</span>
               </div>
             ))}
           </div>

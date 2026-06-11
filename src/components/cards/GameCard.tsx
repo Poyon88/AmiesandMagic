@@ -429,7 +429,7 @@ export default function GameCard({
             const val = composedValueText(cap);
             const tint = keywordModeColor(composedTriggerMode(cap)) ?? accentColor;
             return (
-              <div key={`cx-${i}`} title={describeComposedCap(cap)} style={{ minWidth: 40 * s, height: 40 * s, padding: val ? `0 ${4 * s}px` : 0, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 * s }}>
+              <div key={`cx-${i}`} title={describeComposedCap(cap, effectiveTokens)} style={{ minWidth: 40 * s, height: 40 * s, padding: val ? `0 ${4 * s}px` : 0, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 * s }}>
                 <span style={{ display: "inline-flex", filter: cfilter ?? undefined, lineHeight: 0 }}>
                   {hasImg ? (
                     <div style={{ width: 40 * s, height: 40 * s, flexShrink: 0 }}><KeywordIcon symbol={ic.symbol} size={22 * s} keyword={ic.keyword} fill /></div>
@@ -578,7 +578,7 @@ export default function GameCard({
               return (
                 <div key={`cxd-${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
                   <span style={{ flexShrink: 0, display: "inline-flex", filter: cfilter ?? undefined, lineHeight: 0 }}><KeywordIcon symbol={ic.symbol} size={18 * s} keyword={ic.keyword} /></span>
-                  <div style={{ fontSize: 12 * so, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{describeComposedCap(cap)}</div>
+                  <div style={{ fontSize: 12 * so, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{describeComposedCap(cap, effectiveTokens)}</div>
                 </div>
               );
             })}

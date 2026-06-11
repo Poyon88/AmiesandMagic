@@ -4,7 +4,7 @@
 
 import { ABILITIES, creatureEngineId } from "./abilities";
 import { toRoman } from "./keyword-labels";
-import type { Capability, ComposedEffect, KeywordMode, TargetSpec } from "./types";
+import type { Capability, ComposedEffect, KeywordMode, TargetSpec, TokenTemplate } from "./types";
 
 /** Valeur affichée à côté de l'icône composée (comme « II » pour Impact 2) :
  *  X/Y pour buff/debuff, chiffre romain de X sinon. null si pas de valeur. */
@@ -68,7 +68,7 @@ function plural(n: number, sing: string, plur = sing + "s"): string {
   return n > 1 ? plur : sing;
 }
 
-function describeContent(eff: ComposedEffect): string {
+function describeContent(eff: ComposedEffect, tokens?: TokenTemplate[]): string {
   const x = eff.magnitude?.x ?? 0;
   const y = eff.magnitude?.y ?? 0;
   switch (eff.content) {
@@ -86,7 +86,14 @@ function describeContent(eff: ComposedEffect): string {
     }
     case "draw_cards": return `piochez ${x} ${plural(x, "carte")}`;
     case "discard": return `l'adversaire défausse ${x} ${plural(x, "carte")}`;
-    case "summon_token": return `invoque ${x > 1 ? `${x} tokens` : "un token"}`;
+    case "summon_token": {
+      // Resolve the token template (when available) so the description names the
+      // token and shows its stats — e.g. "invoque 2 Token Hommes-Loups (2/2)".
+      // Falls back to the generic "token(s)" wording if no template is passed.
+      const tok = eff.tokenId != null ? tokens?.find((t) => t.id === eff.tokenId) : undefined;
+      const label = tok ? `${tok.name} (${tok.attack}/${tok.health})` : (x > 1 ? "tokens" : "token");
+      return x > 1 ? `invoque ${x} ${label}` : `invoque un ${label}`;
+    }
     case "gain_mana": return `gagnez ${x} mana ce tour`;
     default: return String(eff.content);
   }
@@ -111,12 +118,13 @@ function describeTarget(t: TargetSpec | undefined): string {
   return ["à", count, sideTxt, mtxt && `(${mtxt})`, locTxt, desTxt].filter(Boolean).join(" ");
 }
 
-/** Phrase FR décrivant un effet composé (générateur paramétrique). */
-export function describeComposedCap(cap: Capability): string {
+/** Phrase FR décrivant un effet composé (générateur paramétrique). Passer
+ *  `tokens` (templates) pour nommer/chiffrer les tokens d'un effet summon_token. */
+export function describeComposedCap(cap: Capability, tokens?: TokenTemplate[]): string {
   const eff = cap.composed;
   if (!eff) return "";
   const prefix = TRIGGER_PREFIX[cap.trigger];
-  const body = [describeContent(eff), describeTarget(eff.target)].filter(Boolean).join(" ");
+  const body = [describeContent(eff, tokens), describeTarget(eff.target)].filter(Boolean).join(" ");
   const sentence = prefix ? `${prefix} : ${body}` : body;
   return sentence.charAt(0).toUpperCase() + sentence.slice(1) + ".";
 }

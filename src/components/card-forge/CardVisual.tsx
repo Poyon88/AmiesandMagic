@@ -442,7 +442,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
               const filter = keywordModeFilter(composedTriggerMode(cap)) ?? undefined;
               const val = composedValueText(cap);
               return (
-                <div key={`cx_${i}`} title={describeComposedCap(cap)} style={{
+                <div key={`cx_${i}`} title={describeComposedCap(cap, tokens)} style={{
                   minWidth: 19 * s, height: 19 * s, padding: val ? `0 ${4 * s}px` : 0,
                   display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 * s,
                   fontSize: 13 * s, cursor: "default",
@@ -665,7 +665,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
               return (
                 <div key={`cxd_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
                   <span style={{ flexShrink: 0, ...(filter ? { filter } : {}) }}><KeywordIcon symbol={ic.symbol} size={18 * s} keyword={ic.keyword} /></span>
-                  <div style={{ fontSize: 12 * s, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{describeComposedCap(cap)}</div>
+                  <div style={{ fontSize: 12 * s, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{describeComposedCap(cap, tokens)}</div>
                 </div>
               );
             })}
