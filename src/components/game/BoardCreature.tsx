@@ -541,7 +541,7 @@ export default function BoardCreature({
             const tint = keywordModeColor(composedTriggerMode(cap)) ?? accentColor;
             const hasImg = !!iconOverrides[ic.keyword];
             return (
-              <div key={`cx-${i}`} title={describeComposedCap(cap)} style={{
+              <div key={`cx-${i}`} title={describeComposedCap(cap, tokenTemplates)} style={{
                 minWidth: 24, height: 24, padding: val ? "0 2px" : 0,
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, overflow: "hidden",
               }}>

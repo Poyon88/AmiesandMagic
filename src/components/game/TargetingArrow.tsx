@@ -12,7 +12,7 @@ const isTouchDevice =
   ("ontouchstart" in window || navigator.maxTouchPoints > 0);
 
 interface TargetingArrowProps {
-  targetingMode: "none" | "attack" | "spell" | "spell_multi" | "creature" | "graveyard" | "divination" | "selection" | "tactique_keywords" | "hero_power" | "cost_payment" | "tap" | "pending_trigger";
+  targetingMode: "none" | "attack" | "attack_power" | "spell" | "spell_multi" | "creature" | "graveyard" | "divination" | "selection" | "tactique_keywords" | "hero_power" | "cost_payment" | "tap" | "pending_trigger";
   sourceInstanceId: string | null;
   hoveredTargetId: string | null;
 }
@@ -118,6 +118,7 @@ export default function TargetingArrow({
       // Update stroke color live (attack vs spell vs hero_power vs tap)
       const m = modeRef.current;
       const color = m === "attack" ? "#ef4444"
+        : m === "attack_power" ? "#9D00FF"
         : m === "creature" ? "#2ecc71"
         : m === "hero_power" ? "#eab308"
         : m === "tap" ? "#d4a800"

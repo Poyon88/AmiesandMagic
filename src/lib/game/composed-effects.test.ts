@@ -235,3 +235,79 @@ describe("interpréteur composé — contenus d'effet", () => {
     expect(surv.currentAttack).toBe(4);
   });
 });
+
+describe("pouvoir composé à l'attaque (on_attack)", () => {
+  const onAttackCap = (x: number) => composedCap("on_attack", {
+    content: "deal_damage", magnitude: { x },
+    target: { entity: "unit", side: "enemy", count: 1, location: "board", designation: "choice" },
+  });
+
+  it("résout le pouvoir AVANT le combat ; s'il tue le défenseur → attaque à blanc, attaquant dépensé et indemne", () => {
+    initRNG(42);
+    const state = mkState();
+    const cap = onAttackCap(5);
+    const attacker = mkInstance(mkCard({ attack: 3, health: 3, capabilities: [cap] }));
+    const defender = mkInstance(mkCard({ attack: 2, health: 2 }));
+    state.players[0].board.push(attacker);
+    state.players[1].board.push(defender);
+
+    const result = applyAction(state, {
+      type: "attack",
+      attackerInstanceId: attacker.instanceId,
+      targetInstanceId: defender.instanceId,
+      targetMap: { [`${cap.uid}#0`]: defender.instanceId },
+    });
+
+    // Le pouvoir (5) tue le défenseur (2 PV) → retiré du plateau.
+    expect(result.players[1].board.find(c => c.instanceId === defender.instanceId)).toBeUndefined();
+    // Attaque à blanc : pas de combat, donc pas de riposte → attaquant indemne.
+    const a = result.players[0].board.find(c => c.instanceId === attacker.instanceId)!;
+    expect(a.currentHealth).toBe(3);
+    // Mais l'attaquant est bien dépensé.
+    expect(a.attacksRemaining).toBe(0);
+    expect(a.tapped).toBe(true);
+    // Snapshot deux-vagues attaché pour le store.
+    expect(result.onAttackWave).toBeTruthy();
+  });
+
+  it("si le pouvoir laisse le défenseur en vie, le combat a lieu normalement (pouvoir + combat cumulés)", () => {
+    initRNG(42);
+    const state = mkState();
+    const cap = onAttackCap(1);
+    const attacker = mkInstance(mkCard({ attack: 2, health: 5, capabilities: [cap] }));
+    const defender = mkInstance(mkCard({ attack: 3, health: 5 }));
+    state.players[0].board.push(attacker);
+    state.players[1].board.push(defender);
+
+    const result = applyAction(state, {
+      type: "attack",
+      attackerInstanceId: attacker.instanceId,
+      targetInstanceId: defender.instanceId,
+      targetMap: { [`${cap.uid}#0`]: defender.instanceId },
+    });
+
+    const d = result.players[1].board.find(c => c.instanceId === defender.instanceId)!;
+    const a = result.players[0].board.find(c => c.instanceId === attacker.instanceId)!;
+    // Défenseur : 5 − 1 (pouvoir) − 2 (combat) = 2.
+    expect(d.currentHealth).toBe(2);
+    // Attaquant : 5 − 3 (riposte) = 2.
+    expect(a.currentHealth).toBe(2);
+  });
+});
+
+describe("cible composée — soi-même (entity self)", () => {
+  it("applique l'effet à la créature source (buff sur soi à l'entrée), sans demander de cible", () => {
+    initRNG(42);
+    const cap = composedCap("on_play", {
+      content: "buff", magnitude: { x: 2, y: 3 },
+      target: { entity: "self", count: 1, side: "ally", location: "board", designation: "choice" },
+    });
+    const ci = mkInstance(mkCard({ attack: 1, health: 1, capabilities: [cap] }));
+    // self n'est pas un slot de ciblage → pas de picker requis.
+    expect(creatureNeedsTarget(ci.card)).toBe(false);
+    const result = play(mkState(), ci);
+    const onBoard = result.players[0].board.find(c => c.instanceId === ci.instanceId)!;
+    expect(onBoard.currentAttack).toBe(3); // 1 + 2
+    expect(onBoard.currentHealth).toBe(4); // 1 + 3
+  });
+});

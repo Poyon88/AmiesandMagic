@@ -19,6 +19,8 @@ import {
   creatureNeedsTarget,
   getCreatureTargets,
   getCreatureComposedChoice,
+  getOnAttackComposedChoice,
+  getOnAttackTargets,
   getCreatureTapComposedUid,
   getComposedTapTargets,
   creatureNeedsGraveyardTarget,
@@ -124,7 +126,7 @@ interface GameStore {
   selectedCardInstanceId: string | null;
   selectedAttackerInstanceId: string | null;
   validTargets: string[];
-  targetingMode: "none" | "attack" | "spell" | "spell_multi" | "creature" | "graveyard" | "divination" | "selection" | "tactique_keywords" | "hero_power" | "cost_payment" | "tap" | "pending_trigger";
+  targetingMode: "none" | "attack" | "attack_power" | "spell" | "spell_multi" | "creature" | "graveyard" | "divination" | "selection" | "tactique_keywords" | "hero_power" | "cost_payment" | "tap" | "pending_trigger";
   // Id du déclencheur interactif en attente que le contrôleur résout (Remontée
   // mort/retour à son tour). null hors de ce mode.
   pendingTriggerId: string | null;
@@ -157,6 +159,10 @@ interface GameStore {
   collectedTargetMap: Record<string, string>;
   // Cibles collectées pour un effet composé multi-cibles "au choix" d'une créature.
   creatureComposedCollected: string[];
+  // Attaque avec pouvoir composé "à l'attaque" en désignation "au choix" : la
+  // cible d'attaque est mémorisée pendant qu'on collecte les cibles du pouvoir.
+  pendingAttackDefenderId: string | null;
+  attackPowerCollected: string[];
   // Carries the partial play_card payload from a creature's first picker
   // (target / graveyard / divination) into a subsequent selection picker on
   // the same creature, so a creature combining e.g. mimique + selection can
@@ -629,6 +635,8 @@ export const useGameStore = create<GameStore>((set, get) => {
   currentTargetSlotIndex: 0,
   collectedTargetMap: {},
   creatureComposedCollected: [],
+  pendingAttackDefenderId: null,
+  attackPowerCollected: [],
   pendingCreatureChain: null,
   tokenTemplates: [],
   effectLog: [],
@@ -819,7 +827,15 @@ export const useGameStore = create<GameStore>((set, get) => {
     }
 
     const newState = applyAction(gameState, action);
-    const dmgEvents = detectDamageEvents(gameState, newState, localPlayerId);
+    // Two-wave attack: pop the post-power / pre-combat snapshot the engine
+    // attached when an "à l'attaque" composed power fired. Wave 1 = power
+    // (gameState→intermediate), wave 2 = combat (intermediate→newState). The
+    // combat builders below diff from `combatOld` so the power's damage isn't
+    // re-shown in the combat wave.
+    const onAttackWave = newState.onAttackWave ?? null;
+    if (newState.onAttackWave) newState.onAttackWave = undefined;
+    const combatOld = onAttackWave ? onAttackWave.intermediate : gameState;
+    const dmgEvents = detectDamageEvents(combatOld, newState, localPlayerId);
     const logEntries = generateEffectLog(gameState, newState, action);
 
     // Pop Fureur strikes off the state so they only animate once. Each
@@ -899,7 +915,9 @@ export const useGameStore = create<GameStore>((set, get) => {
     const deadCreatures: CardInstance[] = [];
     const deathOwnerIdx = new Map<string, number>();
     for (let i = 0; i < 2; i++) {
-      const oldBoard = gameState.players[i].board;
+      // combatOld = post-power board on a two-wave attack, so combat deaths
+      // exclude power-killed creatures (those animate in wave 1).
+      const oldBoard = combatOld.players[i].board;
       const newBoard = newState.players[i].board;
       for (const oldC of oldBoard) {
         if (!newBoard.find((c) => c.instanceId === oldC.instanceId)) {
@@ -1232,7 +1250,9 @@ export const useGameStore = create<GameStore>((set, get) => {
     // buffs are rewound so they only appear after the death animation.
     const impactState = cloneState(newState);
     for (let i = 0; i < 2; i++) {
-      const oldBoard = gameState.players[i].board;
+      // combatOld baseline so the combat wave doesn't resurrect power-killed
+      // creatures (already removed in wave 1) nor re-show their HP loss.
+      const oldBoard = combatOld.players[i].board;
       const newBoard = newState.players[i].board;
       const deadIds = new Set(
         oldBoard
@@ -1404,6 +1424,48 @@ export const useGameStore = create<GameStore>((set, get) => {
     const staggeredDmgEvents = staggerByTarget(impactOnlyEvents);
     const staggeredTriggerEvents = staggerByTarget(deferredBuffEvents);
 
+    // --- Wave 1 (on-attack power) artifacts: diff gameState → intermediate ---
+    let powerImpactState: GameState | null = null;
+    let powerDeathState: GameState | null = null;
+    let powerDmgStaggered: ReturnType<typeof staggerByTarget> = [];
+    let powerHasDeaths = false;
+    if (onAttackWave) {
+      const inter = onAttackWave.intermediate;
+      powerImpactState = cloneState(inter);
+      for (let i = 0; i < 2; i++) {
+        const oldBoard = gameState.players[i].board;
+        const interBoard = inter.players[i].board;
+        const deadIds = new Set(
+          oldBoard.filter((c) => !interBoard.find((nc) => nc.instanceId === c.instanceId)).map((c) => c.instanceId),
+        );
+        if (deadIds.size > 0) powerHasDeaths = true;
+        // Originally-living creatures: power-dead shown at 0 HP on their slot,
+        // survivors at their post-power values.
+        powerImpactState.players[i].board = oldBoard.map((c) =>
+          deadIds.has(c.instanceId) ? { ...c, currentHealth: 0 } : (interBoard.find((nc) => nc.instanceId === c.instanceId) ?? c),
+        );
+        // Append creatures the power summoned (on_attack summon_token) so they
+        // appear in the power wave rather than popping in later.
+        for (const nc of interBoard) {
+          if (!powerImpactState.players[i].board.find((c) => c.instanceId === nc.instanceId)) {
+            powerImpactState.players[i].board.push(nc);
+          }
+        }
+      }
+      // The intermediate already has power-dead creatures removed → it IS the
+      // post-power-death state.
+      powerDeathState = cloneState(inter);
+      powerDmgStaggered = staggerByTarget(detectDamageEvents(gameState, inter, localPlayerId));
+    }
+
+    const phasePowerImpacts = () => {
+      if (!powerImpactState) return;
+      set({ gameState: powerImpactState, damageEvents: powerDmgStaggered });
+    };
+    const phasePowerDeaths = () => {
+      if (powerDeathState) set({ gameState: powerDeathState });
+    };
+
     const phaseImpacts = () => {
       set({
         gameState: impactState,
@@ -1472,13 +1534,25 @@ export const useGameStore = create<GameStore>((set, get) => {
 
     // --- Schedule the sequence ---
     let cursor = 0;
+    // Wave 1 (on-attack power) — plays BEFORE the attack lunge/combat: the
+    // power's damage popups, then its deaths, so the player sees the power
+    // resolve fully before combat.
+    if (onAttackWave) {
+      phasePowerImpacts(); // t=0
+      cursor += IMPACT_MS;
+      if (powerHasDeaths) {
+        setTimeout(phasePowerDeaths, cursor);
+        cursor += DEATH_MS;
+      }
+    }
     // Phase 0 (Cost discard) — runs before the overlay so the discarded
     // card reads as a paid prerequisite, not a consequence of the spell.
     if (costDiscardEvent) {
-      phaseCostDiscard();
+      if (cursor === 0) phaseCostDiscard();
+      else setTimeout(phaseCostDiscard, cursor);
       cursor += COST_DISCARD_MS;
     }
-    // Phase A (Overlay) — fires at t=cursor (still 0 if no cost discard).
+    // Phase A (Overlay) — fires at t=cursor (0 if no power wave / cost discard).
     if (cursor === 0) phaseOverlay();
     else setTimeout(phaseOverlay, cursor);
     if (hasOverlay) cursor += OVERLAY_PRE_IMPACT_MS;
@@ -1977,10 +2051,52 @@ export const useGameStore = create<GameStore>((set, get) => {
     } = get();
 
     if (targetingMode === "attack" && selectedAttackerInstanceId) {
+      // Defender chosen. If the attacker carries an "à l'attaque" composed
+      // power with player-chosen targets, collect those next (carried in the
+      // same attack action) before dispatching. Otherwise dispatch now.
+      const gs = get().gameState;
+      const attacker = gs?.players[gs.currentPlayerIndex].board.find(c => c.instanceId === selectedAttackerInstanceId);
+      const powerChoice = attacker ? getOnAttackComposedChoice(attacker.card) : null;
+      if (gs && attacker && powerChoice) {
+        set({
+          pendingAttackDefenderId: targetId,
+          targetingMode: "attack_power",
+          attackPowerCollected: [],
+          validTargets: getOnAttackTargets(gs, attacker.card),
+        });
+        return null;
+      }
       return get().dispatchAction({
         type: "attack",
         attackerInstanceId: selectedAttackerInstanceId,
         targetInstanceId: targetId,
+      });
+    } else if (targetingMode === "attack_power" && selectedAttackerInstanceId) {
+      // Collecting the on-attack power's target(s). When complete, dispatch the
+      // attack carrying both the defender and the power's targetMap.
+      const { pendingAttackDefenderId, gameState: gs } = get();
+      const attacker = gs?.players[gs.currentPlayerIndex].board.find(c => c.instanceId === selectedAttackerInstanceId);
+      const powerChoice = attacker ? getOnAttackComposedChoice(attacker.card) : null;
+      if (!gs || !attacker || !powerChoice || pendingAttackDefenderId == null) {
+        set({ targetingMode: "none", validTargets: [], pendingAttackDefenderId: null, attackPowerCollected: [] });
+        return null;
+      }
+      const collected = [...get().attackPowerCollected, targetId];
+      if (collected.length < powerChoice.count) {
+        set({
+          attackPowerCollected: collected,
+          validTargets: get().validTargets.filter(t => t !== targetId),
+        });
+        return null; // continue collecting
+      }
+      const targetMap: Record<string, string> = {};
+      collected.forEach((id, i) => { targetMap[`${powerChoice.uid}#${i}`] = id; });
+      set({ pendingAttackDefenderId: null, attackPowerCollected: [] });
+      return get().dispatchAction({
+        type: "attack",
+        attackerInstanceId: selectedAttackerInstanceId,
+        targetInstanceId: pendingAttackDefenderId,
+        targetMap,
       });
     } else if (targetingMode === "spell" && selectedCardInstanceId) {
       const { spellTargetSlots, gameState: gs } = get();
@@ -2284,6 +2400,8 @@ export const useGameStore = create<GameStore>((set, get) => {
       currentTargetSlotIndex: 0,
       collectedTargetMap: {},
       creatureComposedCollected: [],
+      pendingAttackDefenderId: null,
+      attackPowerCollected: [],
       pendingCreatureChain: null,
       pendingCostCard: null,
       selectedDiscardIds: [],
