@@ -9,6 +9,7 @@ export function keywordModeColor(mode: KeywordMode | undefined): string | null {
   if (mode === "death") return "#a83232"; // dark red
   if (mode === "tap") return "#d4a800";   // amber yellow
   if (mode === "return") return "#3a7dd4"; // blue (retour en main)
+  if (mode === "attack") return "#9D00FF"; // vivid purple (à l'attaque)
   return null;
 }
 
@@ -29,6 +30,11 @@ export function keywordModeFilter(mode: KeywordMode | undefined): string | null 
   if (mode === "return") {
     // → #3a7dd4 blue (retour en main)
     return "brightness(0) saturate(100%) invert(38%) sepia(93%) saturate(1352%) hue-rotate(192deg) brightness(91%) contrast(94%)";
+  }
+  if (mode === "attack") {
+    // → #9D00FF vivid purple (à l'attaque). Tuned via sosuke/Pjoqqp; verify on a
+    // rendered icon and nudge hue-rotate/saturate if it skews blue or pink.
+    return "brightness(0) saturate(100%) invert(13%) sepia(95%) saturate(7426%) hue-rotate(274deg) brightness(101%) contrast(116%)";
   }
   return null;
 }

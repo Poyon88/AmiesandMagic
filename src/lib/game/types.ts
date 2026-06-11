@@ -124,7 +124,7 @@ export type SpellKeywordId =
  *  existing behaviour). "death" = on-death rattle. "tap" = activated by
  *  tapping the creature (MTG-strict semantics). Only a curated subset of
  *  keywords accept non-play modes — see plan. */
-export type KeywordMode = "death" | "tap" | "return";
+export type KeywordMode = "death" | "tap" | "return" | "attack";
 
 /** Per-instance metadata for a creature keyword. Lives in
  *  `Card.keywordInstances` alongside the string `keywords` array so each
@@ -213,6 +213,7 @@ export type CapabilityTrigger =
   | "on_death"
   | "on_return"
   | "on_activation"
+  | "on_attack"
   | "automatic"
   | "spell_resolution";
 
@@ -702,6 +703,11 @@ export interface GameState {
     attackerInstanceId: string;
     victimInstanceId: string;
   }>;
+  // Transient: when an attack fires an "à l'attaque" composed power, the engine
+  // attaches the post-power / pre-combat board here so the store can animate the
+  // power in a first wave (its damage/deaths) then combat in a second wave.
+  // Cleared by the store after scheduling, like fureurStrikes. Pools stripped.
+  onAttackWave?: { intermediate: GameState } | null;
 }
 
 export type GameActionType = "play_card" | "attack" | "end_turn" | "spell_target";
@@ -730,6 +736,11 @@ export interface AttackAction {
   type: "attack";
   attackerInstanceId: string;
   targetInstanceId: string;
+  /** Cibles choisies pour un pouvoir composé « à l'attaque » (trigger
+   *  on_attack, désignation choice). Mêmes clés que play_card : `${uid}#${i}`
+   *  pour multi, `${uid}` pour cible unique. Porté par l'action ⇒ les deux
+   *  clients résolvent le pouvoir à l'identique au rejeu. */
+  targetMap?: Record<string, string>;
 }
 
 export interface EndTurnAction {

@@ -2940,6 +2940,39 @@ export function attack(state: GameState, action: AttackAction): GameState {
     attacker.ombreRevealed = true;
   }
 
+  // Validate a creature target exists BEFORE firing any on-attack power, so an
+  // invalid attack stays a no-op — returning `state` AFTER the power would
+  // discard the power's effects.
+  if (effectiveTarget !== "enemy_hero" && !opponent.board.find(c => c.instanceId === effectiveTarget)) {
+    return state;
+  }
+
+  // "À l'attaque" composed power: resolves BEFORE combat damage. The chosen
+  // targets ride in action.targetMap (same `${uid}#${i}` keying as play_card).
+  // Realize its deaths immediately so the board the combat reads is post-power,
+  // and snapshot the intermediate (post-power / pre-combat) state for the
+  // store's first animation wave.
+  if (hasOnAttackComposed(attacker.card)) {
+    runComposedCapsForCard(attacker.card, "on_attack", attacker, player, opponent, action.targetMap);
+    const pDeadPow = cleanDeadCreatures(player);
+    const oDeadPow = cleanDeadCreatures(opponent);
+    processDeathTriggers(pDeadPow, player, opponent);
+    processDeathTriggers(oDeadPow, opponent, player);
+    recalculateAuras(player, opponent);
+    // Snapshot for wave 1 — pools stripped (the store diffs boards only).
+    const fp = newState.factionCardPool, ap = newState.allSpellsPool;
+    newState.factionCardPool = undefined; newState.allSpellsPool = undefined;
+    newState.onAttackWave = { intermediate: deepClone(newState) };
+    newState.factionCardPool = fp; newState.allSpellsPool = ap;
+    // Power could have killed the attacker itself (e.g. an AoE it's caught in)
+    // → no combat, finalize.
+    if (!player.board.find(c => c.instanceId === attacker.instanceId)) {
+      newState.lastAction = action;
+      checkWinCondition(newState);
+      return newState;
+    }
+  }
+
   let attackPower = attacker.currentAttack;
 
   // Bravoure: double ses dégâts contre unités à ATK supérieure
@@ -2989,7 +3022,18 @@ export function attack(state: GameState, action: AttackAction): GameState {
 
   } else {
     const target = opponent.board.find(c => c.instanceId === effectiveTarget);
-    if (!target) return state;
+    if (!target) {
+      // The on-attack power killed/removed the defender before combat. The
+      // target existed at the start (validated above), so this only happens
+      // post-power → the attack whiffs but the attacker is still spent.
+      attacker.attacksRemaining--;
+      attacker.targetsAttackedThisTurn.push(effectiveTarget);
+      attacker.hasAttacked = attacker.attacksRemaining <= 0;
+      attacker.tapped = attacker.attacksRemaining <= 0;
+      newState.lastAction = action;
+      checkWinCondition(newState);
+      return newState;
+    }
 
     // Esquive: évite automatiquement la 1re attaque chaque tour
     if (hasKw(target, "esquive") && !target.esquiveUsedThisTurn) {
@@ -4350,6 +4394,47 @@ export function creatureNeedsTarget(card: Card): boolean {
   if (card.keywords.some(kw => CREATURE_TARGETING_KEYWORDS.includes(kw) && cardHasKwOnPlay(card, kw))) return true;
   // Effet composé à l'entrée en désignation "au choix" (1 cible unité, plateau).
   return !!firstOnPlayComposedChoiceCap(card);
+}
+
+// ─── "À l'attaque" composed power (trigger on_attack) ──────────────────────
+
+/** True if the card carries any on_attack composed cap — the engine fires it
+ *  before combat and the store animates it as a first wave. */
+export function hasOnAttackComposed(card: Card): boolean {
+  return getCapabilities(card).some((c) => !!c.composed && c.trigger === "on_attack");
+}
+
+/** First on_attack composed cap whose target is player-chosen (designation
+ *  "choice", count number). null when the power is auto/random/all (no picker). */
+function firstOnAttackComposedChoiceCap(card: Card): import("./types").Capability | undefined {
+  return getCapabilities(card).find((c) => {
+    const t = c.composed?.target;
+    return !!c.composed && c.trigger === "on_attack" && !!t
+      && t.designation === "choice" && typeof t.count === "number" && t.count >= 1;
+  });
+}
+
+/** Targeting descriptor for an on_attack choice power (store picker): cap uid,
+ *  number of targets, SpellTargetType. null if none / not player-chosen. */
+export function getOnAttackComposedChoice(
+  card: Card,
+): { uid: string; count: number; type: SpellTargetType } | null {
+  if (card.card_type !== "creature") return null;
+  const cap = firstOnAttackComposedChoiceCap(card);
+  const t = cap?.composed?.target;
+  if (!cap || !t || typeof t.count !== "number") return null;
+  const type = composedSlotType(t);
+  if (!type) return null;
+  return { uid: cap.uid, count: t.count, type };
+}
+
+/** Valid target ids for an on_attack choice power (store picker). */
+export function getOnAttackTargets(state: GameState, card: Card): string[] {
+  const player = state.players[state.currentPlayerIndex];
+  const opponent = state.players[state.currentPlayerIndex === 0 ? 1 : 0];
+  const cap = firstOnAttackComposedChoiceCap(card);
+  if (!cap?.composed?.target) return [];
+  return composedChoiceTargetIds(cap.composed.target, player, opponent);
 }
 
 export function getCreatureTargets(state: GameState, card: Card): string[] {

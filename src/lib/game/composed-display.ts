@@ -53,6 +53,7 @@ export function composedTriggerMode(cap: Capability): KeywordMode | undefined {
     case "on_death": return "death";
     case "on_return": return "return";
     case "on_activation": return "tap";
+    case "on_attack": return "attack";
     default: return undefined; // on_play / spell_resolution → blanc
   }
 }
@@ -62,6 +63,7 @@ const TRIGGER_PREFIX: Record<string, string> = {
   on_death: "À la mort",
   on_return: "Au retour en main",
   on_activation: "À l'activation",
+  on_attack: "À l'attaque",
 };
 
 function plural(n: number, sing: string, plur = sing + "s"): string {
