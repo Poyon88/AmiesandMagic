@@ -294,3 +294,20 @@ describe("pouvoir composé à l'attaque (on_attack)", () => {
     expect(a.currentHealth).toBe(2);
   });
 });
+
+describe("cible composée — soi-même (entity self)", () => {
+  it("applique l'effet à la créature source (buff sur soi à l'entrée), sans demander de cible", () => {
+    initRNG(42);
+    const cap = composedCap("on_play", {
+      content: "buff", magnitude: { x: 2, y: 3 },
+      target: { entity: "self", count: 1, side: "ally", location: "board", designation: "choice" },
+    });
+    const ci = mkInstance(mkCard({ attack: 1, health: 1, capabilities: [cap] }));
+    // self n'est pas un slot de ciblage → pas de picker requis.
+    expect(creatureNeedsTarget(ci.card)).toBe(false);
+    const result = play(mkState(), ci);
+    const onBoard = result.players[0].board.find(c => c.instanceId === ci.instanceId)!;
+    expect(onBoard.currentAttack).toBe(3); // 1 + 2
+    expect(onBoard.currentHealth).toBe(4); // 1 + 3
+  });
+});

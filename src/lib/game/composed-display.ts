@@ -103,6 +103,7 @@ function describeContent(eff: ComposedEffect, tokens?: TokenTemplate[]): string 
 
 function describeTarget(t: TargetSpec | undefined): string {
   if (!t) return "";
+  if (t.entity === "self") return "à elle-même";
   if (t.entity === "hero") return t.side === "ally" ? "à votre héros" : "au héros adverse";
   if (t.entity === "both") {
     const sideTxt = t.side === "ally" ? "alliés" : t.side === "enemy" ? "ennemis" : "";

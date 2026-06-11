@@ -123,12 +123,17 @@ export default function ComposedEffectsEditor({
               <div style={{ marginTop: 8, borderTop: "1px dashed #eadfc4", paddingTop: 8 }}>
                 <div style={{ ...labelStyle, marginBottom: 6 }}>CIBLES</div>
                 <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "6px 12px", alignItems: "center" }}>
-                  {meta.target === "unit_or_hero" && (
-                    <>
-                      <span style={labelStyle}>TYPE</span>
-                      {sel(t.entity, [{ v: "unit", l: "Unité" }, { v: "hero", l: "Héros" }, { v: "both", l: "Les deux (héros + unités)" }], (v) => patchTarget(idx, { entity: v as TargetSpec["entity"] }))}
-                    </>
+                  <span style={labelStyle}>TYPE</span>
+                  {sel(
+                    t.entity,
+                    meta.target === "unit_or_hero"
+                      ? [{ v: "unit", l: "Unité" }, { v: "hero", l: "Héros" }, { v: "both", l: "Les deux (héros + unités)" }, { v: "self", l: "Soi-même (la créature)" }]
+                      : [{ v: "unit", l: "Unité" }, { v: "self", l: "Soi-même (la créature)" }],
+                    (v) => patchTarget(idx, { entity: v as TargetSpec["entity"] }),
                   )}
+
+                  {/* "self" = la source : ni bord, ni nombre, ni choix. */}
+                  {t.entity !== "self" && (<>
                   <span style={labelStyle}>BORD</span>
                   {sel(t.side, [{ v: "ally", l: "Allié" }, { v: "enemy", l: "Ennemi" }, { v: "any", l: "Indifférent" }], (v) => patchTarget(idx, { side: v as TargetSpec["side"] }))}
 
@@ -154,6 +159,7 @@ export default function ComposedEffectsEditor({
                       {sel(t.designation, [{ v: "choice", l: "Au choix" }, { v: "random", l: "Au hasard" }], (v) => patchTarget(idx, { designation: v as TargetSpec["designation"] }))}
                     </>
                   )}
+                  </>)}
                 </div>
               </div>
             )}

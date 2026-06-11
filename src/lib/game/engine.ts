@@ -412,6 +412,13 @@ function resolveComposedEffect(
   const target = composed.target;
   if (!target) return;
 
+  // "self" : la créature source elle-même — déterministe, ni pool ni choix.
+  // No-op si la source n'est pas une unité (ex. sort).
+  if (target.entity === "self") {
+    if (source) applyComposedToUnit(composed, source, x, y, source, owner, opponent);
+    return;
+  }
+
   for (const t of selectComposedTargets(target, owner, opponent, chosenTargetIds)) {
     if (t.kind === "hero") applyComposedToHero(composed.content, t.hero, x);
     else applyComposedToUnit(composed, t.unit, x, y, source, owner, opponent);
@@ -2887,6 +2894,7 @@ export function getSpellTargetSlots(card: Card): SpellTargetSlot[] {
  *  in-game. Retourne undefined si non ciblable en v1 (zone ≠ plateau pour les
  *  unités). */
 function composedSlotType(t: import("./types").TargetSpec): SpellTargetType | undefined {
+  if (t.entity === "self") return undefined; // déterministe (la source) → aucun picker
   if (t.entity === "hero") return t.side === "ally" ? "friendly_hero" : "enemy_hero";
   // "both" : héros OU unité → "any" (le picker accepte héros et créatures).
   if (t.entity === "both") return "any";
