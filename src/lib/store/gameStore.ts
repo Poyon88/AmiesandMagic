@@ -1,9 +1,9 @@
 import { create } from "zustand";
-import type { GameState, GameAction, Card, CardInstance, DamageEvent, HeroDefinition, PlayerState, SpellTargetSlot, SpellTargetType, TokenTemplate } from "@/lib/game/types";
+import type { GameState, GameAction, Card, CardInstance, DamageEvent, DeathFxEvent, HeroDefinition, PlayerState, SpellTargetSlot, SpellTargetType, TokenTemplate } from "@/lib/game/types";
 import { useAudioStore } from "./audioStore";
 import SfxEngine from "@/lib/audio/SfxEngine";
 import { playAttackLunge } from "@/lib/game/animations";
-import { parseXValuesFromEffectText } from "@/lib/game/keyword-labels";
+import { parseXValuesFromEffectText, KEYWORD_LABELS, KEYWORD_SYMBOLS } from "@/lib/game/keyword-labels";
 import {
   initializeGame,
   applyAction,
@@ -176,6 +176,8 @@ interface GameStore {
   tokenTemplates: TokenTemplate[];
   effectLog: { id: string; text: string; timestamp: number }[];
   damageEvents: DamageEvent[];
+  deathEvents: DeathFxEvent[];
+  summonEvents: string[]; // instanceIds of creatures summoned this action (FX)
   spellCastEvent: SpellCastEvent | null;
   fireBreathEvent: FireBreathEvent | null;
   cycleEternelEvent: CycleEternelEvent | null;
@@ -242,6 +244,8 @@ interface GameStore {
   selectTarget: (targetId: string) => GameAction | null;
   clearSelection: () => void;
   clearDamageEvents: () => void;
+  clearDeathEvents: () => void;
+  clearSummonEvents: () => void;
   clearSpellCastEvent: () => void;
   clearFireBreathEvent: () => void;
   clearCycleEternelEvent: () => void;
@@ -281,6 +285,21 @@ function getElementCenter(targetId: string): { x: number; y: number } {
     return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
   }
   return { x: -9999, y: -9999 };
+}
+
+// Keywords that already have their own dedicated popup — skip them in the
+// generic "empower" (capability acquired) detection so we don't double up.
+const EMPOWER_SKIP = new Set(["divine_shield", "poison", "paralysie"]);
+
+// Build a readable "🐺 Berserk" label for a freshly-granted keyword. Image-path
+// symbols (e.g. /icons/augure.png) fall back to a generic rune glyph; numeric
+// keywords drop their trailing " X" placeholder.
+function keywordGrantLabel(kw: string): string | null {
+  const label = (KEYWORD_LABELS as Record<string, string>)[kw];
+  if (!label) return null; // internal/undisplayable flag — ignore
+  const sym = (KEYWORD_SYMBOLS as Record<string, string>)[kw];
+  const glyph = sym && !sym.startsWith("/") ? sym : "✦";
+  return `${glyph} ${label.replace(/ X$/, "")}`;
 }
 
 function detectDamageEvents(
@@ -426,6 +445,39 @@ function detectDamageEvents(
           label: "⛓️ Paralysie",
           ...pos,
         });
+      }
+
+      // Capability acquired — a keyword/ability was granted at runtime (hero
+      // power aura, composed grant, spell grant…). Previously silent. We diff
+      // the keyword set + grantedKeywordX and surface one "empower" flourish
+      // per creature (batched) so the player sees the unit gain power.
+      const oldKws = new Set((oldCreature.card.keywords as unknown as string[]).map(String));
+      const gained: string[] = [];
+      for (const kw of newCreature.card.keywords as unknown as string[]) {
+        const k = String(kw);
+        if (!oldKws.has(k) && !EMPOWER_SKIP.has(k)) gained.push(k);
+      }
+      // grantedKeywordX entries that are new (numeric keyword X assigned) and
+      // not already covered by the set diff above.
+      const oldGx = oldCreature.grantedKeywordX ?? {};
+      const newGx = newCreature.grantedKeywordX ?? {};
+      for (const k of Object.keys(newGx)) {
+        if (!(k in oldGx) && !oldKws.has(k) && !EMPOWER_SKIP.has(k) && !gained.includes(k)) {
+          gained.push(k);
+        }
+      }
+      if (gained.length > 0) {
+        const labels = gained.map(keywordGrantLabel).filter(Boolean) as string[];
+        if (labels.length > 0) {
+          const pos = getElementCenter(oldCreature.instanceId);
+          events.push({
+            targetId: oldCreature.instanceId,
+            amount: 0,
+            type: "empower",
+            label: labels.join("  ·  "),
+            ...pos,
+          });
+        }
       }
     }
 
@@ -641,6 +693,8 @@ export const useGameStore = create<GameStore>((set, get) => {
   tokenTemplates: [],
   effectLog: [],
   damageEvents: [],
+  deathEvents: [],
+  summonEvents: [],
   spellCastEvent: null,
   fireBreathEvent: null,
   cycleEternelEvent: null,
@@ -714,6 +768,8 @@ export const useGameStore = create<GameStore>((set, get) => {
         isAnimating: false,
         pendingIncomingActions: [],
         damageEvents: [],
+        deathEvents: [],
+        summonEvents: [],
         spellCastEvent: null,
         fireBreathEvent: null,
         cycleEternelEvent: null,
@@ -836,6 +892,20 @@ export const useGameStore = create<GameStore>((set, get) => {
     if (newState.onAttackWave) newState.onAttackWave = undefined;
     const combatOld = onAttackWave ? onAttackWave.intermediate : gameState;
     const dmgEvents = detectDamageEvents(combatOld, newState, localPlayerId);
+    // Cosmetic: stamp the attacker centre onto combat-damage events so the FX
+    // layer can shoot debris / kick the shake along the strike vector. Same
+    // DOM-derived coords on both clients → no effect on game state or sync.
+    // `getElementCenter` returns a -9999 sentinel if the node is gone; the FX
+    // layer treats that as "no direction" and falls back to a radial burst.
+    if (action.type === "attack" && action.attackerInstanceId) {
+      const src = getElementCenter(action.attackerInstanceId);
+      for (const ev of dmgEvents) {
+        if (ev.type === "damage") {
+          ev.srcX = src.x;
+          ev.srcY = src.y;
+        }
+      }
+    }
     const logEntries = generateEffectLog(gameState, newState, action);
 
     // Pop Fureur strikes off the state so they only animate once. Each
@@ -926,6 +996,15 @@ export const useGameStore = create<GameStore>((set, get) => {
         }
       }
     }
+
+    // Death FX positions — captured NOW, while the dying creatures are still
+    // mounted in the DOM (this runs synchronously at dispatch, before the death
+    // phase removes them). Viewport coords → identical on both clients. Power-
+    // wave deaths animate separately and aren't included here.
+    const deathFxEvents: DeathFxEvent[] = deadCreatures.map((dead) => {
+      const pos = getElementCenter(dead.instanceId);
+      return { instanceId: dead.instanceId, x: pos.x, y: pos.y, poisoned: !!dead.isPoisoned };
+    });
 
     // Cycle éternel — one entry per dead creature carrying the keyword. The
     // engine has already inserted a copy at a random position in the owner's
@@ -1478,7 +1557,10 @@ export const useGameStore = create<GameStore>((set, get) => {
     };
 
     const phaseDeaths = () => {
-      set({ gameState: postDeathState });
+      set({
+        gameState: postDeathState,
+        ...(deathFxEvents.length > 0 ? { deathEvents: deathFxEvents } : {}),
+      });
       playSfxBatch(deathSfx);
     };
 
@@ -1487,6 +1569,9 @@ export const useGameStore = create<GameStore>((set, get) => {
         gameState: preDrawState,
         ...(staggeredTriggerEvents.length > 0 ? { damageEvents: staggeredTriggerEvents } : {}),
         ...(cycleEvent ? { cycleEternelEvent: cycleEvent } : {}),
+        // FX: the new creatures mount in this same render — the Canvas layer
+        // resolves each one's position from the DOM and bursts a portal there.
+        ...(newCreatureIds.size > 0 ? { summonEvents: Array.from(newCreatureIds) } : {}),
       });
       playSfxBatch(summonSfx);
     };
@@ -2428,6 +2513,14 @@ export const useGameStore = create<GameStore>((set, get) => {
 
   clearTempeteEvent: () => {
     set({ tempeteEvent: null });
+  },
+
+  clearDeathEvents: () => {
+    set({ deathEvents: [] });
+  },
+
+  clearSummonEvents: () => {
+    set({ summonEvents: [] });
   },
 
   clearHeroPowerCastEvent: () => {

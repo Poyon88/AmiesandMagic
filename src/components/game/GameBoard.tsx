@@ -21,6 +21,7 @@ import EffectLog from "./EffectLog";
 import TurnTimer from "./TurnTimer";
 import TargetingArrow from "./TargetingArrow";
 import DamageOverlay from "./DamageOverlay";
+import ImpactFxLayer from "./ImpactFxLayer";
 import SpellCastOverlay from "./SpellCastOverlay";
 import FireBreathOverlay from "./FireBreathOverlay";
 import CycleEternelOverlay from "./CycleEternelOverlay";
@@ -45,7 +46,7 @@ interface GameBoardProps {
 
 export default function GameBoard({ onAction }: GameBoardProps) {
   useGameMusic();
-  const { shakeControls, isFrozen } = useScreenShake();
+  const { shakeControls, isFrozen, isFrozenBig } = useScreenShake();
 
   const {
     gameState,
@@ -68,6 +69,10 @@ export default function GameBoard({ onAction }: GameBoardProps) {
     clearSelection,
     damageEvents,
     clearDamageEvents,
+    deathEvents,
+    clearDeathEvents,
+    summonEvents,
+    clearSummonEvents,
     spellCastEvent,
     clearSpellCastEvent,
     fireBreathEvent,
@@ -125,9 +130,53 @@ export default function GameBoard({ onAction }: GameBoardProps) {
     return () => clearTimeout(timer);
   }, [damageEvents, clearDamageEvents]);
 
+  // Auto-clear death FX events after the burst has played out.
+  useEffect(() => {
+    if (deathEvents.length === 0) return;
+    const timer = setTimeout(clearDeathEvents, 2500);
+    return () => clearTimeout(timer);
+  }, [deathEvents, clearDeathEvents]);
+
+  // Auto-clear summon FX events after the portal burst has played out.
+  useEffect(() => {
+    if (summonEvents.length === 0) return;
+    const timer = setTimeout(clearSummonEvents, 2500);
+    return () => clearTimeout(timer);
+  }, [summonEvents, clearSummonEvents]);
+
   function getDamage(targetId: string): number | null {
-    const evt = damageEvents.find((e: DamageEvent) => e.targetId === targetId);
+    // Damage only — buffs/heals/empowers must NOT trigger the hit reaction
+    // (knockback/flash). Those drive the gentle boost pulse via getBoost().
+    const evt = damageEvents.find(
+      (e: DamageEvent) => e.targetId === targetId && (e.type ?? "damage") === "damage",
+    );
     return evt ? evt.amount : null;
+  }
+
+  // A positive boost (stat buff or capability gained) landed on this unit →
+  // drives BoardCreature's graceful power-up pulse. Damage takes precedence.
+  function getBoost(targetId: string): "buff" | "empower" | null {
+    const evt = damageEvents.find(
+      (e: DamageEvent) =>
+        e.targetId === targetId && (e.type === "buff" || e.type === "empower"),
+    );
+    return evt ? (evt.type as "buff" | "empower") : null;
+  }
+
+  // Normalised strike direction for the hit creature's directional knockback —
+  // derived from the same srcX/srcY stamped on the damage event. Returns 0/0
+  // (→ symmetric shudder) when there's no attacker (spell/ability damage).
+  function getHitDir(targetId: string): { x: number; y: number } {
+    const evt = damageEvents.find(
+      (e: DamageEvent) => e.targetId === targetId && (e.type ?? "damage") === "damage",
+    );
+    if (!evt || evt.srcX == null || evt.srcY == null || evt.srcX < -9000) {
+      return { x: 0, y: 0 };
+    }
+    const dx = evt.x - evt.srcX;
+    const dy = evt.y - evt.srcY;
+    const len = Math.hypot(dx, dy) || 1;
+    return { x: dx / len, y: dy / len };
   }
 
   const boardImageUrl = useGameStore((s) => s.boardImageUrl);
@@ -530,7 +579,11 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           width: "100%",
           height: "100%",
           position: "relative",
-          filter: isFrozen ? "brightness(1.5) saturate(1.6) contrast(1.1)" : "none",
+          filter: isFrozen
+            ? isFrozenBig
+              ? "brightness(1.85) saturate(1.9) contrast(1.18)"
+              : "brightness(1.5) saturate(1.6) contrast(1.1)"
+            : "none",
           transition: isFrozen ? "none" : "filter 90ms ease-out",
         }}
       >
@@ -725,6 +778,10 @@ export default function GameBoard({ onAction }: GameBoardProps) {
                   isOwn={false}
                   isValidTarget={validTargets.includes(creature.instanceId)}
                   damageAmount={getDamage(creature.instanceId)}
+                  hitDirX={getHitDir(creature.instanceId).x}
+                  hitDirY={getHitDir(creature.instanceId).y}
+                  boostKind={getBoost(creature.instanceId)}
+                  summoning={summonEvents.includes(creature.instanceId)}
                   onClick={
                     validTargets.includes(creature.instanceId)
                       ? () => handleSelectTarget(creature.instanceId)
@@ -786,6 +843,10 @@ export default function GameBoard({ onAction }: GameBoardProps) {
                       }
                       isValidTarget={validTargets.includes(creature.instanceId)}
                       damageAmount={getDamage(creature.instanceId)}
+                      hitDirX={getHitDir(creature.instanceId).x}
+                      hitDirY={getHitDir(creature.instanceId).y}
+                      boostKind={getBoost(creature.instanceId)}
+                      summoning={summonEvents.includes(creature.instanceId)}
                       onClick={
                         validTargets.includes(creature.instanceId)
                           ? () => handleSelectTarget(creature.instanceId)
@@ -1106,6 +1167,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
       )}
 
       {/* Damage animation overlay */}
+      <ImpactFxLayer />
       <DamageOverlay events={damageEvents} />
       <SpellCastOverlay event={spellCastEvent} onComplete={clearSpellCastEvent} />
       <FireBreathOverlay event={fireBreathEvent} onComplete={clearFireBreathEvent} />

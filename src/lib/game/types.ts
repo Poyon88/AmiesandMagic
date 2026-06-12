@@ -808,7 +808,7 @@ export interface PendingTrigger {
 }
 
 // Combat event for animations
-export type CombatEventType = "damage" | "heal" | "buff" | "shield" | "poison" | "dodge" | "paralyze" | "resurrect" | "transform";
+export type CombatEventType = "damage" | "heal" | "buff" | "shield" | "poison" | "dodge" | "paralyze" | "resurrect" | "transform" | "empower";
 
 export interface DamageEvent {
   targetId: string;
@@ -818,6 +818,24 @@ export interface DamageEvent {
   x: number;
   y: number;
   delayMs?: number; // stagger delay when multiple targets share one action
+  // Visual-only (cosmetic): attacker centre in viewport coords, stamped for
+  // combat hits so the FX layer can shoot debris/shake along the strike
+  // vector. Optional — absent for spell/ability damage (→ radial burst).
+  // Computed identically on both clients from the same DOM, so it never
+  // affects game state or multiplayer determinism.
+  srcX?: number;
+  srcY?: number;
+}
+
+// Visual-only: a creature died this action. Carries its last on-board position
+// (viewport coords, captured before removal) so the FX layer can burst shards/
+// ash there. Position is DOM-derived → identical on both clients, never touches
+// game state.
+export interface DeathFxEvent {
+  instanceId: string;
+  x: number;
+  y: number;
+  poisoned: boolean;
 }
 
 // Match data from database

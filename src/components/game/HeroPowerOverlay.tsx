@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import type { HeroPowerCastEvent } from "@/lib/store/gameStore";
+import { emitImpact } from "@/lib/fx/impactFx";
 
 interface HeroPowerOverlayProps {
   event: HeroPowerCastEvent | null;
@@ -27,6 +28,7 @@ const HERO_IMAGES: Record<string, string> = {
 
 export default function HeroPowerOverlay({ event, onComplete }: HeroPowerOverlayProps) {
   const [mounted, setMounted] = useState(false);
+  const cardRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => setMounted(true), []);
 
   useEffect(() => {
@@ -34,6 +36,21 @@ export default function HeroPowerOverlay({ event, onComplete }: HeroPowerOverlay
     const timer = setTimeout(onComplete, DISPLAY_MS);
     return () => clearTimeout(timer);
   }, [event, onComplete]);
+
+  // Canvas FX: a golden release burst radiating from the hero-power card.
+  useEffect(() => {
+    if (!event) return;
+    const release = setTimeout(() => {
+      const r = cardRef.current?.getBoundingClientRect();
+      if (r) {
+        emitImpact({
+          x: r.left + r.width / 2, y: r.top + r.height / 2,
+          amount: 0, type: "cast", dirX: 0, dirY: 0, big: false, paletteKey: "heropower",
+        });
+      }
+    }, 150);
+    return () => clearTimeout(release);
+  }, [event]);
 
   if (!mounted) return null;
 
@@ -133,6 +150,7 @@ export default function HeroPowerOverlay({ event, onComplete }: HeroPowerOverlay
 
           {/* Card-shaped panel: hero portrait as background + text overlay */}
           <motion.div
+            ref={cardRef}
             style={{
               position: "relative",
               width: 252,
