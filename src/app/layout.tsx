@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Cinzel, Crimson_Text } from "next/font/google";
 import "./globals.css";
 import AudioProvider from "@/components/AudioProvider";
+import KeywordIconPreloader from "@/components/KeywordIconPreloader";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -67,6 +68,7 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <AudioProvider />
+        <KeywordIconPreloader />
         {children}
       </body>
     </html>

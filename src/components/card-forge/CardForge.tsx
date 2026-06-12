@@ -3257,7 +3257,7 @@ export default function CardForge() {
                           pointerEvents: "none",
                         }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-                            <KeywordIcon symbol={KEYWORD_SYMBOLS[hoveredKw.id] || "✦"} size={16} />
+                            <KeywordIcon symbol={KEYWORD_SYMBOLS[hoveredKw.id] || "✦"} size={16} keyword={hoveredKw.id} />
                             <span style={{ fontSize: 13, color: fac.accent, fontWeight: 700, fontFamily: "'Cinzel',serif" }}>{hoveredKw.id}</span>
                           </div>
                           <div style={{ fontSize: 12, color: "#ddd", lineHeight: 1.5, fontFamily: "'Crimson Text',serif", marginBottom: 8 }}>
@@ -3448,7 +3448,7 @@ export default function CardForge() {
                       return (
                         <div key={label} style={{ border: cardBorder, borderRadius: 8, padding: 10, marginBottom: 8, background: "#fffdf8" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-                            <KeywordIcon symbol={KEYWORD_SYMBOLS[label] || "✦"} size={16} />
+                            <KeywordIcon symbol={KEYWORD_SYMBOLS[label] || "✦"} size={16} keyword={label} />
                             <span style={{ fontFamily: "'Cinzel',serif", fontSize: 12, fontWeight: 700, color: fac.accent, flex: 1 }}>{label}</span>
                             <button onClick={() => removeCreatureCap(label)} style={{ border: "none", background: "transparent", color: "#c0392b", cursor: "pointer", fontSize: 14 }} title="Supprimer">✕</button>
                           </div>
@@ -3547,7 +3547,7 @@ export default function CardForge() {
                       return (
                         <div key={kw.id} style={{ border: cardBorder, borderRadius: 8, padding: 10, marginBottom: 8, background: "#fbf7ff" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-                            <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[kw.id] || def.symbol || "✦"} size={16} />
+                            <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[kw.id] || def.symbol || "✦"} size={16} keyword={`spell_${kw.id}`} />
                             <span style={{ fontFamily: "'Cinzel',serif", fontSize: 12, fontWeight: 700, color: "#9b59b6", flex: 1 }}>{SPELL_KEYWORD_LABELS[kw.id] ?? kw.id}</span>
                             <button onClick={() => setSpellKeywords(prev => prev.filter(k => k.id !== kw.id))} style={{ border: "none", background: "transparent", color: "#c0392b", cursor: "pointer", fontSize: 14 }} title="Supprimer">✕</button>
                           </div>
@@ -3592,7 +3592,7 @@ export default function CardForge() {
                       return (
                         <div key={label} style={{ border: cardBorder, borderRadius: 8, padding: 10, marginBottom: 8, background: "#f5fff7" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-                            <KeywordIcon symbol={KEYWORD_SYMBOLS[label] || "✦"} size={16} />
+                            <KeywordIcon symbol={KEYWORD_SYMBOLS[label] || "✦"} size={16} keyword={label} />
                             <span style={{ fontFamily: "'Cinzel',serif", fontSize: 12, fontWeight: 700, color: "#27ae60", flex: 1 }}>Conférer : {label}</span>
                             <button onClick={() => removeCreatureCap(label)} style={{ border: "none", background: "transparent", color: "#c0392b", cursor: "pointer", fontSize: 14 }} title="Supprimer">✕</button>
                           </div>
@@ -3813,7 +3813,7 @@ export default function CardForge() {
                         pointerEvents: "none",
                       }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-                          <KeywordIcon symbol={KEYWORD_SYMBOLS[hoveredKw.id] || "✦"} size={16} />
+                          <KeywordIcon symbol={KEYWORD_SYMBOLS[hoveredKw.id] || "✦"} size={16} keyword={hoveredKw.id} />
                           <span style={{ fontSize: 13, color: "#c8a84e", fontWeight: 700, fontFamily: "'Cinzel',serif" }}>{hoveredKw.id}</span>
                         </div>
                         <div style={{ fontSize: 12, color: "#ddd", lineHeight: 1.5, fontFamily: "'Crimson Text',serif", marginBottom: 8 }}>
