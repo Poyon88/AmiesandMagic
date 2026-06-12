@@ -338,7 +338,7 @@ export default function DeckBuilder({
     [deckMode],
   );
   const MAX_MERCENAIRES = 4;
-  const MAX_CLANS = 2;
+  const MAX_CLANS = 1;
   const RARITY_COLORS: Record<string, string> = { "Légendaire": "#ffd54f", "Épique": "#ce93d8", "Rare": "#4fc3f7", "Peu Commune": "#4caf50", "Commune": "#aaaaaa" };
   const RARITY_EMOJI: Record<string, string> = { "Légendaire": "🟡", "Épique": "🟣", "Rare": "🔵", "Peu Commune": "🟢", "Commune": "⚪" };
 
@@ -346,11 +346,13 @@ export default function DeckBuilder({
     return RARITY_HIERARCHY.indexOf(r as typeof RARITY_HIERARCHY[number]);
   }
 
-  // Deck restrictions (alignment + faction + clans + mercenaires).
-  // Règle : 1 seule faction (hors Mercenaires) et 2 clans distincts max.
-  // Les decks 2-factions déjà enregistrés sont conservés : le dépassement
-  // faction/clan n'est pas listé dans `violations` (qui bloque la sauvegarde),
-  // la limite est seulement appliquée à l'ajout de nouvelles cartes (canAddCard).
+  // Deck restrictions (alignment + faction + clan + mercenaires).
+  // Règle : 1 seule faction (hors Mercenaires) et 1 seul clan, plus les
+  // Mercenaires et les cartes sans clan de la faction (toujours autorisées).
+  // Les decks déjà enregistrés qui dépassent (2 factions / 2 clans) sont
+  // conservés : le dépassement faction/clan n'est pas listé dans `violations`
+  // (qui bloque la sauvegarde), la limite est seulement appliquée à l'ajout de
+  // nouvelles cartes (canAddCard).
   const deckStats = useMemo(() => {
     const factionSet = new Set<string>();
     const allFactions = new Set<string>();
@@ -458,8 +460,8 @@ export default function DeckBuilder({
     // Faction limit : une seule faction (hors Mercenaires)
     if (card.faction && card.faction !== "Mercenaires" && !deckStats.factions.has(card.faction) && deckStats.factions.size >= 1) return "1 seule faction autorisée";
 
-    // Clan limit : 2 clans distincts max (cartes sans clan toujours autorisées)
-    if (card.clan && card.faction !== "Mercenaires" && !deckStats.clans.has(card.clan) && deckStats.clans.size >= MAX_CLANS) return `Max ${MAX_CLANS} clans`;
+    // Clan limit : 1 seul clan (cartes sans clan + Mercenaires toujours autorisés)
+    if (card.clan && card.faction !== "Mercenaires" && !deckStats.clans.has(card.clan) && deckStats.clans.size >= MAX_CLANS) return "1 seul clan autorisé";
 
     // Mercenaires limit
     if (card.faction === "Mercenaires" && deckStats.mercenairesCount >= deckStats.maxMercenaires) return `Max ${deckStats.maxMercenaires} Mercenaires`;
@@ -1017,7 +1019,10 @@ export default function DeckBuilder({
             <span className="px-1.5 py-0.5 rounded font-bold" style={{ background: "#4caf5022", color: "#4caf50" }}>
               Mono-faction
             </span>
-            <span className="text-foreground/40">Clans: {deckStats.clans.size}/{MAX_CLANS}</span>
+            <span className="px-1.5 py-0.5 rounded font-bold" style={{ background: "#4caf5022", color: "#4caf50" }}>
+              Mono-clan
+            </span>
+            <span className="text-foreground/40">Clan: {deckStats.clans.size}/{MAX_CLANS}</span>
             {Array.from(deckStats.allFactions).map(f => {
               const fac = FACTIONS[f];
               const align = ALIGNMENTS.find(a => a.id === fac?.alignment);
