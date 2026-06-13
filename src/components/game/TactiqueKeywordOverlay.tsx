@@ -59,7 +59,7 @@ export default function TactiqueKeywordOverlay({ keywords, maxSelections, onConf
                   transition: "all 0.15s",
                 }}
               >
-                <KeywordIcon symbol={symbol} size={18} />
+                <KeywordIcon symbol={symbol} size={18} keyword={gameKw} />
                 <span style={{ fontSize: 14, color: isSelected ? "#2ecc71" : "#ccc", fontWeight: isSelected ? 700 : 400, fontFamily: "'Cinzel',serif" }}>
                   {label}
                 </span>

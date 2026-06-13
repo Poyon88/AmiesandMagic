@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import type { DamageEvent } from "@/lib/game/types";
+import { isBigHit } from "@/lib/fx/impactFx";
 
 interface DamageOverlayProps {
   events: DamageEvent[];
@@ -107,6 +108,13 @@ const config = {
     particleColor: "#c084fc",
     textColor: "#a855f7",
     format: (evt: DamageEvent) => evt.label ?? "🔮 Transformation",
+  },
+  // Capability acquired (keyword granted at runtime) — arcane amethyst/gold.
+  empower: {
+    flashColor: "rgba(168, 85, 247, 0.38)",
+    particleColor: "#c084fc",
+    textColor: "#d8b4fe",
+    format: (evt: DamageEvent) => evt.label ?? "✦ Capacité",
   },
 };
 
@@ -313,7 +321,12 @@ function PoisonPopup({ event }: { event: DamageEvent }) {
 }
 
 function DamagePopup({ event }: { event: DamageEvent }) {
-  const { flashColor, particleColor, textColor, format } = config.damage;
+  const { flashColor, textColor, format } = config.damage;
+  // The shockwave ring, impact cross and debris particles now live on the
+  // additive Canvas layer (ImpactFxLayer) — far denser/glowier than DOM. The
+  // popup keeps a cheap radial flash (reads well on Safari) + the NUMBER,
+  // which gets a "crit" treatment on big hits (the cinematic beat).
+  const big = isBigHit(event.amount);
 
   return (
     <motion.div
@@ -328,25 +341,7 @@ function DamagePopup({ event }: { event: DamageEvent }) {
       animate={{ opacity: 0 }}
       transition={{ duration: 4.0, ease: "easeOut" }}
     >
-      {/* Expanding shockwave ring */}
-      <motion.div
-        style={{
-          position: "absolute",
-          left: -50,
-          top: -50,
-          width: 100,
-          height: 100,
-          borderRadius: "50%",
-          border: `3px solid ${textColor}`,
-          boxShadow: `0 0 28px ${textColor}aa, inset 0 0 18px ${textColor}66`,
-          pointerEvents: "none",
-        }}
-        initial={{ scale: 0.2, opacity: 1 }}
-        animate={{ scale: 3.2, opacity: 0 }}
-        transition={{ duration: 1.4, ease: "easeOut" }}
-      />
-
-      {/* Inner radial flash */}
+      {/* Cheap radial flash to seat the number on the impact point */}
       <motion.div
         style={{
           position: "absolute",
@@ -359,70 +354,26 @@ function DamagePopup({ event }: { event: DamageEvent }) {
           pointerEvents: "none",
         }}
         initial={{ scale: 0.4, opacity: 1 }}
-        animate={{ scale: 2, opacity: 0 }}
-        transition={{ duration: 1.0 }}
+        animate={{ scale: big ? 2.4 : 2, opacity: 0 }}
+        transition={{ duration: big ? 0.5 : 0.35 }}
       />
 
-      {/* Impact slash cross */}
-      {[0, 90].map((rot) => (
-        <motion.div
-          key={rot}
-          style={{
-            position: "absolute",
-            left: -50,
-            top: -2,
-            width: 100,
-            height: 4,
-            borderRadius: 2,
-            background: `linear-gradient(90deg, transparent 0%, ${textColor} 50%, transparent 100%)`,
-            boxShadow: `0 0 12px ${textColor}`,
-            transform: `rotate(${rot}deg)`,
-            pointerEvents: "none",
-          }}
-          initial={{ scaleX: 0, opacity: 1 }}
-          animate={{ scaleX: 1.4, opacity: 0 }}
-          transition={{ duration: 0.55, ease: "easeOut" }}
-        />
-      ))}
-
-      {/* Debris particles — 14, longer distance */}
-      {[...Array(14)].map((_, i) => {
-        const angle = (i / 14) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
-        const dist = 40 + Math.random() * 40;
-        const dx = Math.cos(angle) * dist;
-        const dy = Math.sin(angle) * dist;
-        return (
-          <motion.div
-            key={i}
-            style={{
-              position: "absolute",
-              width: 7,
-              height: 7,
-              borderRadius: "50%",
-              background: particleColor,
-              boxShadow: `0 0 8px ${particleColor}`,
-              left: -3.5,
-              top: -3.5,
-              pointerEvents: "none",
-            }}
-            initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
-            animate={{ x: dx, y: dy, opacity: 0, scale: 0 }}
-            transition={{ duration: 1.2 + Math.random() * 0.6, ease: [0.2, 0.6, 0.3, 1], delay: i * 0.015 }}
-          />
-        );
-      })}
-
-      {/* Damage number — bounce in, linger, drift up */}
+      {/* Damage number — punchy impact-frame, crit styling on big hits */}
       <motion.span
         style={{
           position: "absolute",
           left: "50%",
           top: "50%",
           transform: "translate(-50%, -50%)",
-          fontSize: "2.4rem",
+          fontSize: big ? "3.4rem" : "2.4rem",
           fontWeight: 900,
-          color: textColor,
-          textShadow: `0 0 14px ${textColor}, 0 0 24px ${textColor}aa, 0 2px 3px #000`,
+          color: big ? "#fff3d6" : textColor,
+          // Dual-offset chromatic shadows give a punchy, slightly aberrated
+          // edge; big hits add a gold rim + heavier red bloom.
+          textShadow: big
+            ? `0 0 4px #fff, 0 0 18px ${textColor}, 0 0 34px ${textColor}, 2px 0 0 #ff3b3b, -2px 0 0 #36d6ff, 0 3px 4px #000`
+            : `0 0 14px ${textColor}, 0 0 24px ${textColor}aa, 1px 0 0 #ff6b6b88, -1px 0 0 #36d6ff66, 0 2px 3px #000`,
+          WebkitTextStroke: big ? "1px rgba(255,210,120,0.9)" : "0",
           fontFamily: "'Cinzel', serif",
           whiteSpace: "nowrap",
           pointerEvents: "none",
@@ -431,9 +382,9 @@ function DamagePopup({ event }: { event: DamageEvent }) {
         initial={{ y: 10, scale: 0.2, opacity: 0, rotate: -12 }}
         animate={{
           y: [10, -6, -6, -52],
-          scale: [0.2, 1.9, 1.6, 1.2],
+          scale: big ? [0.2, 2.4, 1.8, 1.3] : [0.2, 1.9, 1.6, 1.2],
           opacity: [0, 1, 1, 0],
-          rotate: [-12, 4, 0, 0],
+          rotate: [-12, big ? 5 : 4, 0, 0],
         }}
         transition={{
           duration: 3.5,
@@ -441,7 +392,7 @@ function DamagePopup({ event }: { event: DamageEvent }) {
           ease: ["backOut", "easeOut", "easeIn"],
         }}
       >
-        {format(event)}
+        {big ? `${format(event)}!` : format(event)}
       </motion.span>
     </motion.div>
   );
@@ -465,11 +416,11 @@ function EventPopup({ event }: { event: DamageEvent }) {
   }
 
   const { flashColor, particleColor, textColor, format } = config[type];
-  const isPositive = type === "heal" || type === "buff" || type === "dodge" || type === "paralyze" || type === "resurrect" || type === "transform";
-  // Buff popups (Commandement aura, Renforcement, Sang mêlé…) often fire
-  // in batches when several allies are touched at once. Slow them down so
-  // each `+1/+1` is readable instead of strobing past.
-  const slowMul = type === "buff" ? 1.7 : 1;
+  const isPositive = type === "heal" || type === "buff" || type === "dodge" || type === "paralyze" || type === "resurrect" || type === "transform" || type === "empower";
+  // Buff/empower popups (Commandement aura, Renforcement, granted keywords…)
+  // often fire in batches when several allies are touched at once. Slow them
+  // down so each `+1/+1` or capability label is readable, not strobing past.
+  const slowMul = type === "buff" || type === "empower" ? 1.7 : 1;
 
   return (
     <motion.div

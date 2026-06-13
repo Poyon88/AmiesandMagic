@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { KEYWORD_LABELS, KEYWORD_SYMBOLS } from "@/lib/game/keyword-labels";
+import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import type { Keyword } from "@/lib/game/types";
 
 interface CustomIcon {
@@ -51,6 +52,9 @@ export default function KeywordIconManager() {
     } else {
       setMessage({ text: `Icône de "${KEYWORD_LABELS[keyword as Keyword]}" mise à jour`, type: "success" });
       fetchIcons();
+      // Refresh the shared override store so the rest of the app (forge
+      // preview, in-game cards…) reflects the new icon without a reload.
+      useKeywordIconStore.getState().reload();
     }
     setUploading(null);
   }
@@ -68,6 +72,7 @@ export default function KeywordIconManager() {
     } else {
       setMessage({ text: `Icône de "${KEYWORD_LABELS[keyword as Keyword]}" réinitialisée`, type: "success" });
       fetchIcons();
+      useKeywordIconStore.getState().reload();
     }
   }
 

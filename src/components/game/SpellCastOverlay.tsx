@@ -17,6 +17,7 @@ import {
   getSpellKeywordDesc,
 } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
+import { emitImpact } from "@/lib/fx/impactFx";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { KEYWORDS as keywordDefs, getFactionDisplayName } from "@/lib/card-engine/constants";
 
@@ -131,6 +132,39 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
     const timer = setTimeout(onComplete, DISPLAY_MS);
     return () => clearTimeout(timer);
   }, [event, onComplete]);
+
+  // Canvas FX: a release burst radiating from the spell card, then a gather of
+  // arcane energy on each target right as the arrows arrive — landing just
+  // before the impact popups at OVERLAY_PRE_IMPACT_MS (1800ms). Visual-only,
+  // fires deterministically with the overlay on both clients.
+  useEffect(() => {
+    if (!event) return;
+    const paletteKey = event.countered ? "spell_red" : "spell";
+    const release = setTimeout(() => {
+      const r = cardRef.current?.getBoundingClientRect();
+      if (r) {
+        emitImpact({
+          x: r.left + r.width / 2, y: r.top + r.height / 2,
+          amount: 0, type: "cast", dirX: 0, dirY: 0, big: false, paletteKey,
+        });
+      }
+    }, 150);
+    const targets = event.countered ? null : setTimeout(() => {
+      for (const id of event.targetIds ?? []) {
+        const el = findTargetEl(id);
+        if (!el) continue;
+        const r = el.getBoundingClientRect();
+        emitImpact({
+          x: r.left + r.width / 2, y: r.top + r.height / 2,
+          amount: 0, type: "cast_hit", dirX: 0, dirY: 0, big: false, paletteKey,
+        });
+      }
+    }, 1250);
+    return () => {
+      clearTimeout(release);
+      if (targets) clearTimeout(targets);
+    };
+  }, [event]);
 
   if (!mounted) return null;
 

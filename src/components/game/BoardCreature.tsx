@@ -15,6 +15,7 @@ import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
 import RarityFrame from "@/components/cards/RarityFrame";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
 import useCoarsePointer from "@/hooks/useCoarsePointer";
+import { isBigHit } from "@/lib/fx/impactFx";
 
 interface BoardCreatureProps {
   creature: CardInstance;
@@ -23,6 +24,16 @@ interface BoardCreatureProps {
   isSelected?: boolean;
   isValidTarget?: boolean;
   damageAmount?: number | null;
+  /** Normalised strike direction (target − attacker) so the creature recoils
+   *  away from the attacker. 0/absent ⇒ a small symmetric shudder. */
+  hitDirX?: number;
+  hitDirY?: number;
+  /** A positive event landed on this unit this action — drives a graceful
+   *  upward "power-up" pulse (distinct from the violent hit reaction). */
+  boostKind?: "buff" | "empower" | null;
+  /** True when this creature was summoned by an effect this action — gives it a
+   *  stronger materialisation entry to pair with the Canvas portal burst. */
+  summoning?: boolean;
   onClick?: () => void;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
@@ -39,6 +50,10 @@ export default function BoardCreature({
   isSelected = false,
   isValidTarget = false,
   damageAmount = null,
+  hitDirX = 0,
+  hitDirY = 0,
+  boostKind = null,
+  summoning = false,
   onClick,
   onMouseEnter,
   onMouseLeave,
@@ -143,24 +158,111 @@ export default function BoardCreature({
     if (detailTimer.current) clearTimeout(detailTimer.current);
   });
 
+  // Hit reaction: knock the creature back ALONG the strike vector (away from
+  // the attacker), squash on impact, and flash white briefly. Bigger amplitude
+  // on big hits. Falls back to a small symmetric shudder when no direction was
+  // supplied (e.g. spell/ability damage). The number, canvas burst and shake
+  // all read the same direction so the three channels agree.
+  const isHit = damageAmount != null && damageAmount > 0;
+  const bigHit = isHit && isBigHit(damageAmount as number);
+  const hasHitDir = hitDirX !== 0 || hitDirY !== 0;
+  const knockAmp = bigHit ? 16 : 10;
+  const kx = hasHitDir ? hitDirX * knockAmp : 0;
+  const ky = hasHitDir ? hitDirY * knockAmp : 0;
+  const hitAnimate = hasHitDir
+    ? {
+        x: [0, kx, kx * 0.3, 0],
+        y: [0, ky, ky * 0.3, 0],
+        scaleX: [1, bigHit ? 1.16 : 1.1, 0.96, 1],
+        scaleY: [1, bigHit ? 0.82 : 0.88, 1.05, 1],
+        filter: [
+          "brightness(1) saturate(1)",
+          `brightness(${bigHit ? 2.6 : 2.1}) saturate(0.5)`,
+          "brightness(1) saturate(1)",
+        ],
+        opacity: 1,
+        rotate: 0,
+      }
+    : { x: [0, -4, 4, -4, 4, 0], y: 0, opacity: 1, scale: 1, rotate: 0 };
+
+  // Graceful "power-up" — gentle rise + warm/arcane glow pulse, no recoil.
+  // Empower (capability gained) is a touch stronger and shimmers.
+  const isBoost = !isHit && boostKind != null;
+  const isEmpower = boostKind === "empower";
+  const boostDur = isEmpower ? 0.75 : 0.6;
+  const boostAnimate = {
+    x: 0,
+    y: [0, isEmpower ? -6 : -8, 0],
+    scaleX: [1, isEmpower ? 1.09 : 1.06, 1],
+    scaleY: [1, isEmpower ? 1.09 : 1.06, 1],
+    rotate: isEmpower ? [0, -1.5, 1.5, 0] : 0,
+    filter: [
+      "brightness(1) saturate(1)",
+      `brightness(${isEmpower ? 1.6 : 1.45}) saturate(${isEmpower ? 1.5 : 1.35})`,
+      "brightness(1) saturate(1)",
+    ],
+    opacity: 1,
+  };
+
   return (
     <motion.div
       layout
       data-instance-id={creature.instanceId}
       style={{ width: W, height: H, position: "relative", zIndex: isZoomed ? 100 : isSelected ? 10 : 1, zoom: 1.41 }}
-      initial={{ y: isOwn ? 40 : -40, opacity: 0, scale: 0.5, rotate: 0 }}
+      initial={
+        summoning
+          ? { y: isOwn ? 18 : -18, opacity: 0, scale: 0.1, rotate: isOwn ? -6 : 6 }
+          : { y: isOwn ? 40 : -40, opacity: 0, scale: 0.5, rotate: 0 }
+      }
       animate={
-        damageAmount
-          ? { x: [0, -4, 4, -4, 4, 0], y: 0, opacity: 1, scale: 1, rotate: 0 }
+        isHit
+          ? hitAnimate
+          : isBoost
+          ? boostAnimate
           : { x: 0, y: 0, opacity: 1, scale: 1, rotate: 0 }
       }
       exit={creature.isPoisoned
-        ? { opacity: 0, scale: 0.3, rotate: -10, filter: "brightness(0.5) saturate(2) hue-rotate(80deg)", transition: { duration: 1.0, ease: "easeIn" } }
-        : { opacity: 0, scale: 0, rotate: -15, filter: "brightness(2) saturate(0)", transition: { duration: 1.0, ease: "easeIn" } }
+        ? {
+            // Toxic dissolve — flares green, then crumbles, sinking & blurring.
+            // Synced with the Canvas death burst that fires as the exit starts.
+            opacity: [1, 1, 0],
+            scale: [1, 1.08, 0.25],
+            rotate: [0, 0, 12],
+            y: [0, -4, 16],
+            filter: [
+              "blur(0px) brightness(1) saturate(1) hue-rotate(0deg)",
+              "blur(0px) brightness(1.4) saturate(2.6) hue-rotate(70deg)",
+              "blur(3px) brightness(0.5) saturate(2) hue-rotate(90deg)",
+            ],
+            transition: { duration: 1.0, ease: "easeIn", times: [0, 0.2, 1] },
+          }
+        : {
+            // Struck dead — a hot flash, then the body comes apart: spins,
+            // sinks, desaturates and blurs out as the shards/ash take over.
+            opacity: [1, 1, 0],
+            scale: [1, 1.12, 0.2],
+            rotate: [0, 0, -22],
+            y: [0, -6, 18],
+            filter: [
+              "blur(0px) brightness(1) saturate(1)",
+              "blur(0px) brightness(2.4) saturate(0.3)",
+              "blur(3px) brightness(0.6) saturate(0)",
+            ],
+            transition: { duration: 0.95, ease: "easeIn", times: [0, 0.18, 1] },
+          }
       }
       transition={{
         default: { type: "spring", stiffness: 280, damping: 22, mass: 1.3 },
-        x: { duration: 0.25, ease: "easeOut" },
+        x: isHit && hasHitDir ? { duration: 0.42, ease: "easeOut" } : { duration: 0.25, ease: "easeOut" },
+        y: isHit && hasHitDir
+          ? { duration: 0.42, ease: "easeOut" }
+          : isBoost
+          ? { duration: boostDur, ease: "easeOut" }
+          : undefined,
+        scaleX: { duration: isBoost ? boostDur : 0.42, ease: "easeOut" },
+        scaleY: { duration: isBoost ? boostDur : 0.42, ease: "easeOut" },
+        rotate: isBoost && isEmpower ? { duration: boostDur, ease: "easeOut" } : undefined,
+        filter: { duration: isBoost ? boostDur : 0.32, ease: "easeOut" },
         opacity: { duration: 0.3, ease: "easeOut" },
       }}
     >

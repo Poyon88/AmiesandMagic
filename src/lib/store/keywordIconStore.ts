@@ -4,15 +4,15 @@ import { POLYMORPHIC_ICON_KEY_FALLBACK } from '@/lib/game/abilities';
 interface KeywordIconStore {
   overrides: Record<string, string>;
   loaded: boolean;
+  /** Loads overrides once (no-op if already loaded). */
   fetchOverrides: () => Promise<void>;
+  /** Forces a refetch regardless of `loaded` — call after the forge uploads or
+   *  resets an icon so every open view picks up the change without a reload. */
+  reload: () => Promise<void>;
 }
 
-export const useKeywordIconStore = create<KeywordIconStore>((set, get) => ({
-  overrides: {},
-  loaded: false,
-
-  fetchOverrides: async () => {
-    if (get().loaded) return;
+export const useKeywordIconStore = create<KeywordIconStore>((set, get) => {
+  const doFetch = async () => {
     try {
       const res = await fetch('/api/keyword-icons');
       if (!res.ok) return;
@@ -32,5 +32,15 @@ export const useKeywordIconStore = create<KeywordIconStore>((set, get) => ({
     } catch {
       set({ loaded: true });
     }
-  },
-}));
+  };
+
+  return {
+    overrides: {},
+    loaded: false,
+    fetchOverrides: async () => {
+      if (get().loaded) return;
+      await doFetch();
+    },
+    reload: doFetch,
+  };
+});
