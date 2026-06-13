@@ -155,13 +155,13 @@ export default function ImpactFxLayer() {
       }
       const pal = paletteFor(e.type);
       if (e.type === "buff") {
-        // Stat boost — graceful ascending gold, no violent burst.
-        haloRing(acquire, e.x, e.y, pal);
+        // Stat boost — graceful ascending gold. L'anneau est désormais rendu
+        // en DOM derrière la carte (BoardCreature) ; on garde les motes montantes.
         risingMotes(acquire, e.x, e.y, intensity, pal);
       } else if (e.type === "empower") {
-        // Capability acquired — arcane implosion, then a rising flourish.
+        // Capability acquired — arcane implosion + rising flourish. L'anneau
+        // (halo) est rendu en DOM derrière la carte ; pas de haloRing Canvas ici.
         arcaneConverge(acquire, e.x, e.y, intensity, pal);
-        haloRing(acquire, e.x, e.y, pal);
         risingMotes(acquire, e.x, e.y, 4, pal);
       } else {
         // Combat damage — directional shockwave + debris.
