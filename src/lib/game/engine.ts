@@ -132,6 +132,47 @@ function mergeKeywordInstances(
   return [...seen.values()];
 }
 
+/** Carries the COMPOSED (hybrid-model) capabilities of a copy source over to
+ *  the copier. Composed effects live ONLY in `capabilities[]` — they have no
+ *  `keywords` / `keyword_instances` representation — so the keyword merge above
+ *  silently drops them. Copy-ability effects (Mimique, Héritage du cimetière)
+ *  must therefore carry them explicitly, else an inherited composed ability is
+ *  lost.
+ *
+ *  Composed capabilities never come from `deriveCapabilities` (derivation only
+ *  produces curated abilities), so reading `source.capabilities` directly is
+ *  sufficient — a source with null capabilities simply has none to copy.
+ *
+ *  Inherited caps are re-uided (`inh_<uid>`) so they never collide with the
+ *  copier's own capability uids: the engine references composed caps by `uid`
+ *  for targeting, and uids are positional (`cw_0`, `sk_0`…) so two cards can
+ *  share one. Composed abilities the copier already has (same trigger + effect)
+ *  are skipped. Returns the copier's existing capabilities unchanged (including
+ *  null) when the source has nothing composed to add. */
+function mergeComposedCapabilities(
+  own: import("./types").Capability[] | null | undefined,
+  source: import("./types").Capability[] | null | undefined,
+): import("./types").Capability[] | null {
+  const srcComposed = (source ?? []).filter((c) => c.composed);
+  if (srcComposed.length === 0) return own ?? null;
+  const ownArr = own ?? [];
+  const composedSig = (c: import("./types").Capability) =>
+    `${c.trigger}|${JSON.stringify(c.composed)}`;
+  const ownSigs = new Set(ownArr.filter((c) => c.composed).map(composedSig));
+  const uids = new Set(ownArr.map((c) => c.uid));
+  const additions: import("./types").Capability[] = [];
+  for (const cap of srcComposed) {
+    if (ownSigs.has(composedSig(cap))) continue; // déjà présente sur le copieur
+    let uid = `inh_${cap.uid}`;
+    let k = 0;
+    while (uids.has(uid)) uid = `inh${k++}_${cap.uid}`;
+    uids.add(uid);
+    additions.push({ ...cap, uid });
+  }
+  if (additions.length === 0) return own ?? null;
+  return [...ownArr, ...additions];
+}
+
 /** Card-level (no CardInstance) mode check used by UI helpers like
  *  `creatureNeedsTarget` that operate on hand cards before they hit the
  *  board. Mirrors `hasKwInMode(_, kw, undefined)` semantics. */
@@ -1431,7 +1472,8 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       if (mimicTarget) {
         const newKeywords = [...new Set([...cardInstance.card.keywords, ...mimicTarget.card.keywords])];
         const newInstances = mergeKeywordInstances(cardInstance.card.keyword_instances, mimicTarget.card.keyword_instances);
-        cardInstance.card = { ...cardInstance.card, keywords: newKeywords, keyword_instances: newInstances };
+        const newCapabilities = mergeComposedCapabilities(cardInstance.card.capabilities, mimicTarget.card.capabilities);
+        cardInstance.card = { ...cardInstance.card, keywords: newKeywords, keyword_instances: newInstances, capabilities: newCapabilities };
         // Copy runtime state flags
         if (mimicTarget.hasDivineShield) cardInstance.hasDivineShield = true;
       }
@@ -1543,7 +1585,8 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
           : graveCreatures[graveCreatures.length - 1]) ?? graveCreatures[graveCreatures.length - 1];
         const newKeywords = [...new Set([...cardInstance.card.keywords, ...graveTarget.card.keywords])];
         const newInstances = mergeKeywordInstances(cardInstance.card.keyword_instances, graveTarget.card.keyword_instances);
-        cardInstance.card = { ...cardInstance.card, keywords: newKeywords, keyword_instances: newInstances };
+        const newCapabilities = mergeComposedCapabilities(cardInstance.card.capabilities, graveTarget.card.capabilities);
+        cardInstance.card = { ...cardInstance.card, keywords: newKeywords, keyword_instances: newInstances, capabilities: newCapabilities };
       }
     }
 
