@@ -1,5 +1,5 @@
 import type { SpellKeywordId, SpellKeywordInstance, SpellTargetType, Card, ConvocationTokenDef, TokenTemplate } from "./types";
-import { SPELL_KEYWORDS as ABILITIES_SPELL_KEYWORDS, type DerivedSpellKeywordDef } from "./abilities";
+import { SPELL_KEYWORDS as ABILITIES_SPELL_KEYWORDS, ABILITIES, type DerivedSpellKeywordDef } from "./abilities";
 
 // Single source of truth lives in `src/lib/game/abilities.ts` (unified
 // registry shared with creature keywords). The map below is re-exported
@@ -21,11 +21,29 @@ export const SPELL_KEYWORD_SYMBOLS: Record<SpellKeywordId, string> = Object.from
   Object.entries(SPELL_KEYWORDS).map(([id, def]) => [id, def.symbol])
 ) as Record<SpellKeywordId, string>;
 
+// Resolves a creature keyword id (e.g. "raid") to its French display label
+// (e.g. "Raid"). Drops the trailing " X" that scalable keywords carry in
+// their label — token keywords are stored without a value, so the bare
+// name reads best in the convocation blurb. Falls back to the raw id.
+function tokenKeywordLabel(id: string): string {
+  const a = ABILITIES[id];
+  const label = a?.creature?.label ?? a?.label ?? id;
+  return label.replace(/ X$/, "");
+}
+
+// Parenthesised keyword blurb for a single resolved token template, e.g.
+// " (Raid, Poison)". Empty string when the token has no keywords.
+function tokenKeywordSuffix(tmpl?: TokenTemplate | null): string {
+  const kws = (tmpl?.keywords ?? []).map(tokenKeywordLabel);
+  return kws.length ? ` (${kws.join(", ")})` : "";
+}
+
 // Renders the convocation_tokens array as a human-readable French string.
-// Groups identical entries (same token + same effective stats) so the
-// admin sees "2 tokens Goblins des Marais 1/1 et un token Orc 2/2" rather
-// than the raw list. Falls back to stats-only when the token registry is
-// not available at the call site.
+// Groups identical entries (same token + same effective stats + same
+// keywords) so the admin sees "2 tokens Goblins des Marais 1/1 et un token
+// Orc 2/2" rather than the raw list, and surfaces each token's keywords in
+// parentheses (e.g. "un token Tigre 3/3 (Raid)"). Falls back to stats-only
+// when the token registry is not available at the call site.
 export function formatConvocationTokens(
   tokens: ConvocationTokenDef[],
   registry?: TokenTemplate[],
@@ -34,7 +52,7 @@ export function formatConvocationTokens(
 
   const groups = new Map<
     string,
-    { count: number; name: string; atk: number; hp: number }
+    { count: number; name: string; atk: number; hp: number; keywords: string }
   >();
 
   for (const t of tokens) {
@@ -42,16 +60,18 @@ export function formatConvocationTokens(
     const atk = t.attack ?? tmpl?.attack ?? 1;
     const hp = t.health ?? tmpl?.health ?? 1;
     const name = tmpl?.name ?? "Token";
-    const key = `${tmpl?.id ?? "x"}|${atk}|${hp}|${name}`;
+    const keywords = (tmpl?.keywords ?? []).map(tokenKeywordLabel).join(", ");
+    const key = `${tmpl?.id ?? "x"}|${atk}|${hp}|${name}|${keywords}`;
     const existing = groups.get(key);
     if (existing) existing.count++;
-    else groups.set(key, { count: 1, name, atk, hp });
+    else groups.set(key, { count: 1, name, atk, hp, keywords });
   }
 
   const parts = Array.from(groups.values()).map((g) => {
     const noun = g.count > 1 ? "tokens" : "token";
     const countStr = g.count === 1 ? "un" : String(g.count);
-    return `${countStr} ${noun} ${g.name} ${g.atk}/${g.hp}`;
+    const kwSuffix = g.keywords ? ` (${g.keywords})` : "";
+    return `${countStr} ${noun} ${g.name} ${g.atk}/${g.hp}${kwSuffix}`;
   });
 
   if (parts.length === 1) return parts[0];
@@ -91,7 +111,7 @@ export function getSpellKeywordDesc(
   if (kw.id === "invocation") {
     const tmpl = kw.token_id ? tokens?.find(t => t.id === kw.token_id) : null;
     if (tmpl) {
-      desc = `Invoque un ${tmpl.name} ${kw.attack ?? tmpl.attack ?? 1}/${kw.health ?? tmpl.health ?? 1}`;
+      desc = `Invoque un ${tmpl.name} ${kw.attack ?? tmpl.attack ?? 1}/${kw.health ?? tmpl.health ?? 1}${tokenKeywordSuffix(tmpl)}`;
     } else if (kw.race) {
       desc = `Invoque un ${kw.race} ${kw.attack ?? 1}/${kw.health ?? 1}`;
     }
@@ -102,7 +122,7 @@ export function getSpellKeywordDesc(
   // description générique du registre.
   if (kw.id === "convocation_simple" && card?.convocation_token_id) {
     const tmpl = tokens?.find(t => t.id === card.convocation_token_id);
-    if (tmpl) desc = `Crée un ${tmpl.name} ${tmpl.attack}/${tmpl.health}`;
+    if (tmpl) desc = `Crée un ${tmpl.name} ${tmpl.attack}/${tmpl.health}${tokenKeywordSuffix(tmpl)}`;
   }
 
   return desc;
