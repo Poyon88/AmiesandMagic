@@ -293,6 +293,64 @@ describe("pouvoir composé à l'attaque (on_attack)", () => {
     // Attaquant : 5 − 3 (riposte) = 2.
     expect(a.currentHealth).toBe(2);
   });
+
+  it("Double Attaque déclenche le pouvoir 'à l'attaque' DEUX fois (ex. Commandant des Griffes : +1/+1 → +2/+2)", () => {
+    initRNG(42);
+    const state = mkState();
+    // Buff +1/+1 sur soi quand il attaque.
+    const cap = composedCap("on_attack", {
+      content: "buff", magnitude: { x: 1, y: 1 },
+      target: { entity: "self", count: 1, side: "ally", location: "board", designation: "choice" },
+    });
+    // `card.capabilities` court-circuite la dérivation depuis `keywords`, donc
+    // on exprime Double Attaque comme une capability explicite (hasKw lit l'abilityId).
+    const doubleAttaque: Capability = {
+      uid: `c_${seq++}`, trigger: "on_attack", effectKind: "immediate", abilityId: "double_attaque",
+    };
+    const attacker = mkInstance(mkCard({
+      attack: 3, health: 6, capabilities: [cap, doubleAttaque],
+    }));
+    // Cible grasse : survit aux deux frappes pour qu'on lise l'état final de l'attaquant.
+    const defender = mkInstance(mkCard({ attack: 0, health: 20 }));
+    state.players[0].board.push(attacker);
+    state.players[1].board.push(defender);
+
+    const result = applyAction(state, {
+      type: "attack",
+      attackerInstanceId: attacker.instanceId,
+      targetInstanceId: defender.instanceId,
+    });
+
+    const a = result.players[0].board.find(c => c.instanceId === attacker.instanceId)!;
+    // +1/+1 deux fois → 3+2 = 5 ATK, 6+2 = 8 PV max.
+    expect(a.currentAttack).toBe(5);
+    expect(a.maxHealth).toBe(8);
+    expect(a.card.attack).toBe(5);
+  });
+
+  it("sans Double Attaque, le pouvoir 'à l'attaque' ne se déclenche qu'une fois", () => {
+    initRNG(42);
+    const state = mkState();
+    const cap = composedCap("on_attack", {
+      content: "buff", magnitude: { x: 1, y: 1 },
+      target: { entity: "self", count: 1, side: "ally", location: "board", designation: "choice" },
+    });
+    const attacker = mkInstance(mkCard({ attack: 3, health: 6, capabilities: [cap] }));
+    const defender = mkInstance(mkCard({ attack: 0, health: 20 }));
+    state.players[0].board.push(attacker);
+    state.players[1].board.push(defender);
+
+    const result = applyAction(state, {
+      type: "attack",
+      attackerInstanceId: attacker.instanceId,
+      targetInstanceId: defender.instanceId,
+    });
+
+    const a = result.players[0].board.find(c => c.instanceId === attacker.instanceId)!;
+    // +1/+1 une seule fois → 4 ATK, 7 PV max.
+    expect(a.currentAttack).toBe(4);
+    expect(a.maxHealth).toBe(7);
+  });
 });
 
 describe("cible composée — soi-même (entity self)", () => {
