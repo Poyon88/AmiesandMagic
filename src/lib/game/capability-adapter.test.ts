@@ -287,11 +287,12 @@ describe("deriveCapabilities — créatures", () => {
 });
 
 describe("getCapabilities", () => {
-  it("retourne card.capabilities quand présent (carte backfillée)", () => {
+  it("retourne card.capabilities tel quel quand les keywords y sont déjà représentés", () => {
     const existing: Capability[] = [
       { uid: "x", trigger: "on_play", effectKind: "immediate", abilityId: "loyaute" },
     ];
-    const c = card({ keywords: ["terreur"] as Card["keywords"], capabilities: existing });
+    // keywords ⊆ capabilities (cas des cartes backfillées) → chemin rapide, même référence.
+    const c = card({ keywords: ["loyaute"] as Card["keywords"], capabilities: existing });
     expect(getCapabilities(c)).toBe(existing);
   });
 
@@ -346,5 +347,32 @@ describe("registre — métadonnées de taxonomie", () => {
     for (const id of CURATED_MULTIMODE_IDS) {
       expect(AUTOMATIC_ABILITY_IDS.has(id), id).toBe(false);
     }
+  });
+});
+
+describe("getCapabilities — mots-clés conférés au runtime (modèle capabilities)", () => {
+  it("merge un keyword ajouté à card.keywords mais absent des capabilities (ex. raid conféré)", () => {
+    // Commandant des Griffes-like : capabilities backfillées + raid poussé dans
+    // keywords par applyGrantedKeyword au runtime. Sans merge, hasKw("raid")=false.
+    const c = card({
+      keywords: ["double_attaque", "raid"] as Card["keywords"],
+      capabilities: [
+        { uid: "cw_0", trigger: "automatic", effectKind: "immediate", abilityId: "double_attaque", targets: [] },
+      ] as Capability[],
+    });
+    const caps = getCapabilities(c);
+    expect(caps.some((k) => k.abilityId === "raid"), "raid doit être visible (hasKw)").toBe(true);
+    expect(caps.some((k) => k.abilityId === "double_attaque")).toBe(true);
+  });
+
+  it("ne duplique pas un keyword déjà représenté en capabilities", () => {
+    const c = card({
+      keywords: ["double_attaque"] as Card["keywords"],
+      capabilities: [
+        { uid: "cw_0", trigger: "automatic", effectKind: "immediate", abilityId: "double_attaque", targets: [] },
+      ] as Capability[],
+    });
+    const caps = getCapabilities(c);
+    expect(caps.filter((k) => k.abilityId === "double_attaque")).toHaveLength(1);
   });
 });

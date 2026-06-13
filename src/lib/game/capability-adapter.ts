@@ -201,10 +201,26 @@ const capabilitiesMemo = new WeakMap<Card, Capability[]>();
 /** Renvoie `card.capabilities` si présent (carte backfillée), sinon le dérive
  *  des structures legacy (mémoïsé). Point d'entrée unique pour le moteur. */
 export function getCapabilities(card: Card): Capability[] {
-  if (card.capabilities) return card.capabilities;
   const hit = capabilitiesMemo.get(card);
   if (hit) return hit;
-  const derived = deriveCapabilities(card);
-  capabilitiesMemo.set(card, derived);
-  return derived;
+
+  let caps: Capability[];
+  if (card.capabilities) {
+    // Carte backfillée. MAIS les mots-clés conférés au runtime
+    // (applyGrantedKeyword : raid, bouclier, traque…, ou corruption) sont
+    // poussés dans `card.keywords` SANS toucher `capabilities`. Sans ce merge,
+    // `hasKw()` ne les voit pas sur une carte au modèle capabilities → un raid
+    // accordé ne lèverait pas le mal d'invocation, etc. On dérive donc une
+    // capacité pour chaque keyword absent des capabilities et on l'ajoute.
+    const present = new Set(card.capabilities.map((c) => c.abilityId));
+    const extra = ((card.keywords ?? []) as unknown as string[]).filter((kw) => !present.has(kw));
+    caps = extra.length
+      ? [...card.capabilities, ...deriveCapabilities({ ...card, capabilities: null, keywords: extra as unknown as Card["keywords"] })]
+      : card.capabilities;
+  } else {
+    caps = deriveCapabilities(card);
+  }
+
+  capabilitiesMemo.set(card, caps);
+  return caps;
 }
