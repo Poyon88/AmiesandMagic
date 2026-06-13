@@ -47,7 +47,7 @@ export async function POST(request: Request) {
   const supabase = getAdminClient();
 
   try {
-    const { race, clan, name, attack, health, keywords, imageBase64, imageMimeType, updateId } = await request.json();
+    const { race, clan, faction, name, attack, health, keywords, imageBase64, imageMimeType, updateId } = await request.json();
     if (!race || !name) return NextResponse.json({ error: 'Race et nom requis' }, { status: 400 });
     const atk = typeof attack === 'number' && attack >= 0 ? Math.floor(attack) : 1;
     const hp = typeof health === 'number' && health >= 1 ? Math.floor(health) : 1;
@@ -68,6 +68,7 @@ export async function POST(request: Request) {
 
     const templateData: Record<string, unknown> = {
       race,
+      faction: typeof faction === 'string' && faction.trim() ? faction.trim() : null,
       clan: typeof clan === 'string' && clan.trim() ? clan.trim() : null,
       name,
       attack: atk,

@@ -118,10 +118,10 @@ export default function TokenCascadePicker({
     fontFamily: "'Cinzel',serif",
   };
 
-  // Faction is implied by race (each race lives in exactly one faction).
-  // Surface it read-only so the admin sees what banner the spawned token
-  // will fly on the board.
-  const factionId = getFactionForRace(currentRace);
+  // Faction : explicite sur le token si renseignée (choix libre race↔faction),
+  // sinon déduite de la race. Surface read-only pour montrer la bannière sous
+  // laquelle le token invoqué apparaîtra.
+  const factionId = selected?.faction ?? getFactionForRace(currentRace);
   const factionDef = factionId ? FACTIONS[factionId] : null;
 
   return (

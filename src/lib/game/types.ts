@@ -175,6 +175,10 @@ export interface ConvocationTokenDef {
 export interface TokenTemplate {
   id: number;
   race: string;
+  // Faction explicite (optionnelle). Quand null/absente, la faction du token
+  // invoqué est déduite de la race (getFactionForRace) — rétro-compat tokens
+  // créés avant l'ajout de la colonne.
+  faction?: string | null;
   clan: string | null;
   name: string;
   attack: number;

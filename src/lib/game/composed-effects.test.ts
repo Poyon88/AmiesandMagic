@@ -79,6 +79,26 @@ describe("interpréteur composé — contenus d'effet", () => {
     expect(s.players[0].board.length).toBe(3); // la créature + 2 tokens
   });
 
+  it("token invoqué : faction EXPLICITE du template prioritaire (choix libre race↔faction)", () => {
+    const s0 = mkState();
+    // Token de race « Fauves » mais faction explicite « Hommes-Bêtes ».
+    s0.tokenTemplates = [{ id: 99, race: "Fauves", faction: "Hommes-Bêtes", clan: null, name: "Tigre", attack: 3, health: 3, image_url: null, keywords: [] }];
+    const creature = mkCard({ faction: "Mercenaires", capabilities: [composedCap("on_play", { content: "summon_token", magnitude: { x: 1 }, tokenId: 99 })] });
+    const s = play(s0, mkInstance(creature));
+    const token = s.players[0].board.find(c => c.card.race === "Fauves")!;
+    expect(token.card.faction).toBe("Hommes-Bêtes"); // pas la faction de l'invocateur
+  });
+
+  it("token invoqué legacy (sans faction) : repli sur la faction de l'invocateur", () => {
+    const s0 = mkState();
+    // Template sans faction (token créé avant la colonne).
+    s0.tokenTemplates = [{ id: 98, race: "Fauves", clan: null, name: "Tigre", attack: 3, health: 3, image_url: null, keywords: [] }];
+    const creature = mkCard({ faction: "Mercenaires", capabilities: [composedCap("on_play", { content: "summon_token", magnitude: { x: 1 }, tokenId: 98 })] });
+    const s = play(s0, mkInstance(creature));
+    const token = s.players[0].board.find(c => c.card.race === "Fauves")!;
+    expect(token.card.faction).toBe("Mercenaires"); // repli inchangé
+  });
+
   it("deal_damage à toutes les unités ennemies", () => {
     const s0 = mkState();
     s0.players[1].board = [mkInstance(mkCard({ attack: 1, health: 3 })), mkInstance(mkCard({ attack: 1, health: 3 }))];

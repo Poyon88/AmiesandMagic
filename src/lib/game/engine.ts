@@ -631,6 +631,11 @@ function applyTokenTemplate(tokenCard: Card, tmpl: TokenTemplate | null): Card {
     image_url: tmpl.image_url,
     keywords: tmpl.keywords?.length ? tmpl.keywords : tokenCard.keywords,
     race: tmpl.race,
+    // Faction explicite du template prioritaire ; sinon on conserve celle déjà
+    // posée par l'appelant (déduite de la race via getFactionForRace, avec repli
+    // sur la faction de l'invocateur). Centralisé ici → couvre tous les sites
+    // d'invocation sans toucher leur logique de repli.
+    faction: tmpl.faction ?? tokenCard.faction,
     clan: tmpl.clan ?? tokenCard.clan,
     token_id: tmpl.id,
   };

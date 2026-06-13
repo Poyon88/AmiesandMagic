@@ -144,6 +144,7 @@ export default function CardForge() {
   // Token templates
   const [tokenTemplates, setTokenTemplates] = useState<TokenTemplate[]>([]);
   const [tokenRace, setTokenRace] = useState("");
+  const [tokenFaction, setTokenFaction] = useState("");
   const [tokenClan, setTokenClan] = useState("");
   const [tokenName, setTokenName] = useState("");
   const [tokenAttack, setTokenAttack] = useState<number>(1);
@@ -1687,13 +1688,13 @@ export default function CardForge() {
     } catch { /* ignore */ }
   }, []);
 
-  // Clans that can apply to a given token race. Each race belongs to exactly
-  // one faction (RACE_TO_FACTION), so we resolve that faction then ask for the
-  // clans applicable to this race (transversal + race-specific).
+  // Clans that can apply to a given token race. On utilise la faction choisie
+  // pour le token si elle est renseignée (choix libre race↔faction) ; sinon on
+  // retombe sur la faction déduite de la race (rétro-compat).
   const getAvailableTokenClans = useCallback((race: string): string[] => {
     if (!race) return [];
-    return getClanNamesForRace(getFactionForRace(race), race);
-  }, []);
+    return getClanNamesForRace(tokenFaction || getFactionForRace(race), race);
+  }, [tokenFaction]);
 
   const generateTokenPrompt = useCallback(() => {
     if (!tokenRace) return;
@@ -1795,6 +1796,7 @@ export default function CardForge() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           race: tokenRace,
+          faction: tokenFaction || null,
           clan: tokenClan || null,
           name: tokenName,
           attack: tokenAttack,
@@ -1807,7 +1809,7 @@ export default function CardForge() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Erreur serveur');
-      setTokenRace(""); setTokenClan(""); setTokenName(""); setTokenKeywords([]);
+      setTokenRace(""); setTokenFaction(""); setTokenClan(""); setTokenName(""); setTokenKeywords([]);
       setTokenAttack(1); setTokenHealth(1);
       setTokenImageBase64(null); setTokenImageMime(null);
       setTokenImagePreview(null); setTokenEditId(null); setTokenPrompt("");
@@ -1818,7 +1820,7 @@ export default function CardForge() {
     } finally {
       setTokenSaving(false);
     }
-  }, [tokenRace, tokenClan, tokenName, tokenAttack, tokenHealth, tokenKeywords, tokenImageBase64, tokenImageMime, tokenEditId, loadTokenTemplates]);
+  }, [tokenRace, tokenFaction, tokenClan, tokenName, tokenAttack, tokenHealth, tokenKeywords, tokenImageBase64, tokenImageMime, tokenEditId, loadTokenTemplates]);
 
   const deleteTokenTemplate = useCallback(async (id: number) => {
     try {
@@ -2392,21 +2394,31 @@ export default function CardForge() {
                 ))}
               </Sec>
 
-              {/* Race selector */}
+              {/* Race selector — races principales de la faction + toutes les races.
+                  La faction stockée reste celle choisie ; une race non native est
+                  simplement autorisée (choix libre race↔faction). */}
               {FACTIONS[faction]?.races && (
                 <Sec title="Race">
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
-                    {FACTIONS[faction].races.map(r => (
-                      <button key={r} onClick={() => { setRace(race === r ? "" : r); setClan(""); }} style={{
-                        padding: "4px 8px", borderRadius: 5, cursor: "pointer",
-                        background: race === r ? `${fac.color}22` : "#fff",
-                        border: `1px solid ${race === r ? fac.color : "#e0e0e0"}`,
-                        color: race === r ? fac.color : "#888",
-                        fontFamily: "'Cinzel',serif", fontSize: 9, fontWeight: race === r ? 700 : 400,
-                        transition: "all 0.15s",
-                      }}>{r}</button>
-                    ))}
-                  </div>
+                  {[
+                    { label: "Races principales", list: FACTIONS[faction].races },
+                    { label: "Toutes les races", list: [...new Set(Object.values(FACTIONS).flatMap(f => f.races))].sort() },
+                  ].map(group => (
+                    <div key={group.label} style={{ marginBottom: 6 }}>
+                      <div style={{ fontSize: 8, color: "#aaa", letterSpacing: 1, marginBottom: 3 }}>{group.label}</div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
+                        {group.list.map(r => (
+                          <button key={r} onClick={() => { setRace(race === r ? "" : r); setClan(""); }} style={{
+                            padding: "4px 8px", borderRadius: 5, cursor: "pointer",
+                            background: race === r ? `${fac.color}22` : "#fff",
+                            border: `1px solid ${race === r ? fac.color : "#e0e0e0"}`,
+                            color: race === r ? fac.color : "#888",
+                            fontFamily: "'Cinzel',serif", fontSize: 9, fontWeight: race === r ? 700 : 400,
+                            transition: "all 0.15s",
+                          }}>{r}</button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </Sec>
               )}
 
@@ -3711,6 +3723,16 @@ export default function CardForge() {
                 <div style={{ fontSize: 10, color: "#666", letterSpacing: 1, marginBottom: 8, fontWeight: 700 }}>
                   {tokenEditId ? "MODIFIER LE TEMPLATE" : "NOUVEAU TEMPLATE"}
                 </div>
+                <div style={{ marginBottom: 10 }}>
+                  <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>FACTION (optionnel)</label>
+                  <select value={tokenFaction} onChange={e => { setTokenFaction(e.target.value); setTokenClan(""); }}
+                    style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }}>
+                    <option value="">-- Déduite de la race --</option>
+                    {Object.keys(FACTIONS).map(f => (
+                      <option key={f} value={f}>{f}</option>
+                    ))}
+                  </select>
+                </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
                   <div>
                     <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>RACE</label>
@@ -3897,7 +3919,7 @@ export default function CardForge() {
                     {tokenSaving ? "Sauvegarde..." : tokenEditId ? "Mettre a jour" : "Creer"}
                   </button>
                   {tokenEditId && (
-                    <button onClick={() => { setTokenEditId(null); setTokenRace(""); setTokenName(""); setTokenImageBase64(null); setTokenImageMime(null); setTokenImagePreview(null); setTokenPrompt(""); }}
+                    <button onClick={() => { setTokenEditId(null); setTokenRace(""); setTokenFaction(""); setTokenName(""); setTokenImageBase64(null); setTokenImageMime(null); setTokenImagePreview(null); setTokenPrompt(""); }}
                       style={{ padding: "6px 16px", borderRadius: 6, border: "1px solid #ddd", background: "#fff", color: "#888", fontSize: 10, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>
                       Annuler
                     </button>
@@ -3941,7 +3963,7 @@ export default function CardForge() {
                           <span style={{ color: "#f1c40f" }}>{t.health}</span>
                         </div>
                         <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
-                          <button onClick={() => { setTokenEditId(t.id); setTokenRace(t.race); setTokenClan(t.clan ?? ""); setTokenName(t.name); setTokenAttack(t.attack ?? 1); setTokenHealth(t.health ?? 1); setTokenKeywords(t.keywords?.map(k => GAME_TO_FORGE_KEYWORD[k] || k) ?? []); setTokenImagePreview(t.image_url); setTokenImageBase64(null); setTokenImageMime(null); setTokenPrompt(""); }}
+                          <button onClick={() => { setTokenEditId(t.id); setTokenRace(t.race); setTokenFaction(t.faction ?? ""); setTokenClan(t.clan ?? ""); setTokenName(t.name); setTokenAttack(t.attack ?? 1); setTokenHealth(t.health ?? 1); setTokenKeywords(t.keywords?.map(k => GAME_TO_FORGE_KEYWORD[k] || k) ?? []); setTokenImagePreview(t.image_url); setTokenImageBase64(null); setTokenImageMime(null); setTokenPrompt(""); }}
                             style={{ fontSize: 8, padding: "2px 8px", borderRadius: 4, border: "1px solid #ddd", background: "#fff", color: "#666", cursor: "pointer", fontFamily: "'Cinzel',serif" }}>
                             Modifier
                           </button>
