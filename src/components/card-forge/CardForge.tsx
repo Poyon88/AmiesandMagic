@@ -38,6 +38,25 @@ async function generateCardText(factionId: string, type: string, rarityId: strin
 
 function pick<T>(arr: T[]): T { return arr[Math.floor(Math.random() * arr.length)]; }
 
+// Décode du base64 en octets de façon robuste cross-navigateur. Safari/WebKit
+// rejette tout caractère hors-alphabet (espaces, retours-ligne insérés par
+// certains modèles d'image, base64 URL-safe) avec « The string did not match
+// the expected pattern. », là où Chrome est tolérant. On nettoie donc avant
+// `atob` : suppression des blancs, normalisation URL-safe (-_ → +/), padding.
+function base64ToBytes(base64: string) {
+  let clean = (base64 ?? "").replace(/\s/g, "").replace(/-/g, "+").replace(/_/g, "/");
+  const pad = clean.length % 4;
+  if (pad) clean += "=".repeat(4 - pad);
+  const bin = atob(clean);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes;
+}
+
+function base64ToBlobUrl(base64: string, mime: string): string {
+  return URL.createObjectURL(new Blob([base64ToBytes(base64)], { type: mime }));
+}
+
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 
 interface ForgeCard {
@@ -1389,8 +1408,7 @@ export default function CardForge() {
         }
 
         // 2. PUT the decoded bytes directly to Supabase Storage.
-        const bytes = Uint8Array.from(atob(variant.base64), (c) => c.charCodeAt(0));
-        const blob = new Blob([bytes], { type: variant.mime });
+        const blob = new Blob([base64ToBytes(variant.base64)], { type: variant.mime });
         const putRes = await fetch(urlData.signedUrl, {
           method: "PUT",
           headers: { "Content-Type": variant.mime },
@@ -1756,12 +1774,8 @@ export default function CardForge() {
       if (!res.ok) throw new Error(data.error || 'Erreur génération');
       setTokenImageBase64(data.imageBase64);
       setTokenImageMime(data.mimeType);
-      // Convert to blob URL for preview
-      const byteChars = atob(data.imageBase64);
-      const byteArray = new Uint8Array(byteChars.length);
-      for (let i = 0; i < byteChars.length; i++) byteArray[i] = byteChars.charCodeAt(i);
-      const blob = new Blob([byteArray], { type: data.mimeType });
-      setTokenImagePreview(URL.createObjectURL(blob));
+      // Convert to blob URL for preview (base64 nettoyé : robuste sur Safari).
+      setTokenImagePreview(base64ToBlobUrl(data.imageBase64, data.mimeType));
       setTokenMessage({ ok: true, msg: `Image générée (${data.model})` });
     } catch (err) {
       setTokenMessage({ ok: false, msg: err instanceof Error ? err.message : "Erreur" });
@@ -2276,12 +2290,8 @@ export default function CardForge() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Erreur génération image');
 
-      // Convert base64 to blob URL for preview
-      const byteChars = atob(data.imageBase64);
-      const byteArray = new Uint8Array(byteChars.length);
-      for (let i = 0; i < byteChars.length; i++) byteArray[i] = byteChars.charCodeAt(i);
-      const blob = new Blob([byteArray], { type: data.mimeType });
-      const blobUrl = URL.createObjectURL(blob);
+      // Convert base64 to blob URL for preview (base64 nettoyé : robuste sur Safari).
+      const blobUrl = base64ToBlobUrl(data.imageBase64, data.mimeType);
 
       setCardImages(prev => ({ ...prev, [forgeCard.id]: blobUrl }));
       setSaveResult({ ok: true, msg: `Illustration générée (${data.model})` });

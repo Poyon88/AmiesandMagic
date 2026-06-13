@@ -2961,12 +2961,22 @@ export function attack(state: GameState, action: AttackAction): GameState {
   // and snapshot the intermediate (post-power / pre-combat) state for the
   // store's first animation wave.
   if (hasOnAttackComposed(attacker.card)) {
-    runComposedCapsForCard(attacker.card, "on_attack", attacker, player, opponent, action.targetMap);
-    const pDeadPow = cleanDeadCreatures(player);
-    const oDeadPow = cleanDeadCreatures(opponent);
-    processDeathTriggers(pDeadPow, player, opponent);
-    processDeathTriggers(oDeadPow, opponent, player);
-    recalculateAuras(player, opponent);
+    // Double Attaque frappe deux fois "dans" la même attaque : l'effet
+    // composé "à l'attaque" doit donc se déclencher une fois par frappe
+    // (ex. Commandant des Griffes : +1/+1 quand il attaque → +2/+2 avec
+    // Double Attaque). On boucle les déclenchements et on snapshot une
+    // seule fois après, l'animation wave 1 montrant l'effet cumulé.
+    const onAttackTriggers = hasKw(attacker, "double_attaque") ? 2 : 1;
+    for (let t = 0; t < onAttackTriggers; t++) {
+      // L'effet a pu tuer l'attaquant lui-même (AoE) → ne pas re-déclencher.
+      if (!player.board.find(c => c.instanceId === attacker.instanceId)) break;
+      runComposedCapsForCard(attacker.card, "on_attack", attacker, player, opponent, action.targetMap);
+      const pDeadPow = cleanDeadCreatures(player);
+      const oDeadPow = cleanDeadCreatures(opponent);
+      processDeathTriggers(pDeadPow, player, opponent);
+      processDeathTriggers(oDeadPow, opponent, player);
+      recalculateAuras(player, opponent);
+    }
     // Snapshot for wave 1 — pools stripped (the store diffs boards only).
     const fp = newState.factionCardPool, ap = newState.allSpellsPool;
     newState.factionCardPool = undefined; newState.allSpellsPool = undefined;
