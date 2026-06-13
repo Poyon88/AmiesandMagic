@@ -10,6 +10,7 @@ import { DECK_SIZE } from "@/lib/game/constants";
 import { FACTIONS, ALIGNMENTS, getFactionDisplayName, getFactionForRace } from "@/lib/card-engine/constants";
 import type { Alignment } from "@/lib/card-engine/constants";
 import GameCard from "@/components/cards/GameCard";
+import { AmButton } from "@/components/ui/AmButton";
 
 interface HeroRow {
   id: number;
@@ -627,50 +628,57 @@ export default function DeckBuilder({
   }
 
   return (
-    <div className="bg-background flex flex-col md:h-screen md:overflow-hidden">
-      {/* Barre d'onglets */}
-      <div className="flex items-center justify-between gap-3 px-4 py-2.5 border-b border-card-border flex-shrink-0">
-        <div className="flex items-center gap-1.5">
-          {([[1, "1 · Préparation"], [2, "2 · Apparence"], [3, "3 · Cartes"]] as const).map(([n, label]) => (
-            <button
-              key={n}
-              onClick={() => setTab(n)}
-              className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-colors ${
-                tab === n ? "bg-primary text-background" : "bg-secondary border border-card-border text-foreground/60 hover:text-foreground"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
+    <div className="am-mesh am-grain relative bg-am-bg-0 text-am-ink flex flex-col md:h-screen md:overflow-hidden">
+      {/* Barre d'onglets — La Forge */}
+      <div className="relative z-10 flex items-center justify-between gap-3 px-4 py-3 border-b border-am-gold/30 flex-shrink-0 bg-am-bg-1/70 backdrop-blur-sm">
+        <div className="flex items-center gap-2.5">
+          <span className="hidden sm:inline font-[family-name:var(--font-cinzel),serif] text-[10px] tracking-[0.32em] uppercase text-am-arcane-bright/80 pr-1">
+            Forge ton deck
+          </span>
+          <div className="flex items-center gap-1.5">
+            {([[1, "1 · Préparation"], [2, "2 · Apparence"], [3, "3 · Cartes"]] as const).map(([n, label]) => (
+              <button
+                key={n}
+                onClick={() => setTab(n)}
+                className={`am-gild-border px-3.5 py-1.5 rounded-lg text-sm font-bold font-[family-name:var(--font-cinzel),serif] tracking-wide transition-all ${
+                  tab === n
+                    ? "am-btn am-btn-gold am-btn-sheen"
+                    : "bg-am-bg-2 text-am-ink-soft hover:text-am-ink hover:bg-am-bg-3"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
         <button
           onClick={() => router.push("/decks")}
-          className="px-3 py-1.5 bg-secondary border border-card-border rounded-lg text-sm text-foreground/60 hover:text-foreground transition-colors"
+          className="am-btn am-btn-ghost px-4 py-1.5 rounded-lg text-sm"
         >
           Annuler
         </button>
       </div>
 
       {/* Corps : la colonne gauche (collection) n'apparaît qu'en onglet Cartes */}
-      <div className="flex flex-col md:flex-row md:flex-1 md:min-h-0 md:overflow-hidden">
+      <div className="relative z-10 flex flex-col md:flex-row md:flex-1 md:min-h-0 md:overflow-hidden">
 
       {/* ===== Onglet 3 — colonne gauche : collection ===== */}
       {tab === 3 && (
       <div className="flex-1 overflow-y-auto p-4 min-h-0">
         {!selectedFaction ? (
-          <div className="p-10 text-center text-foreground/50 text-sm">
+          <div className="am-glass mx-auto mt-10 max-w-md p-10 text-center text-am-ink-soft font-[family-name:var(--font-crimson),serif] italic text-base">
             Choisissez d&apos;abord une faction dans l&apos;onglet 1 · Préparation.
           </div>
         ) : (
         <>
         {/* Filters */}
-        <div className="flex flex-wrap gap-2 mb-4">
+        <div className="am-glass flex flex-wrap gap-2 mb-4 p-3 items-center">
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search..."
-            className="px-3 py-1.5 bg-secondary border border-card-border rounded-lg text-sm text-foreground focus:outline-none focus:border-primary w-48"
+            className="am-gild-border px-3 py-1.5 bg-am-bg-2 rounded-lg text-sm text-am-ink placeholder:text-am-ink-faint focus:outline-none focus:ring-2 focus:ring-am-gold/60 focus:ring-offset-2 focus:ring-offset-am-bg-0 w-48"
           />
           <div className="flex gap-0.5">
             {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((cost) => (
@@ -681,8 +689,8 @@ export default function DeckBuilder({
                 }
                 className={`w-6 h-6 rounded-full text-[10px] font-bold transition-colors ${
                   manaCostFilter === cost
-                    ? "bg-mana-blue text-white"
-                    : "bg-secondary border border-card-border text-foreground/50 hover:border-mana-blue/50"
+                    ? "bg-am-azure text-white"
+                    : "am-gild-border bg-am-bg-2 text-am-ink-faint hover:text-am-ink hover:border-am-azure/50"
                 }`}
               >
                 {cost}
@@ -693,10 +701,10 @@ export default function DeckBuilder({
             onClick={() =>
               setTypeFilter(typeFilter === "creature" ? null : "creature")
             }
-            className={`px-2 py-1 rounded text-xs transition-colors ${
+            className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors ${
               typeFilter === "creature"
-                ? "bg-primary text-background"
-                : "bg-secondary border border-card-border text-foreground/50"
+                ? "bg-am-gold text-am-bg-0"
+                : "am-gild-border bg-am-bg-2 text-am-ink-soft hover:text-am-ink"
             }`}
           >
             Creatures
@@ -705,10 +713,10 @@ export default function DeckBuilder({
             onClick={() =>
               setTypeFilter(typeFilter === "spell" ? null : "spell")
             }
-            className={`px-2 py-1 rounded text-xs transition-colors ${
+            className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors ${
               typeFilter === "spell"
-                ? "bg-purple-600 text-white"
-                : "bg-secondary border border-card-border text-foreground/50"
+                ? "bg-am-arcane text-white"
+                : "am-gild-border bg-am-bg-2 text-am-ink-soft hover:text-am-ink"
             }`}
           >
             Spells
@@ -720,7 +728,7 @@ export default function DeckBuilder({
                 e.target.value ? (e.target.value as Keyword) : null
               )
             }
-            className="px-2 py-1 bg-secondary border border-card-border rounded text-xs text-foreground/70 focus:outline-none"
+            className="am-gild-border px-2 py-1 bg-am-bg-2 rounded-md text-xs text-am-ink-soft focus:outline-none focus:ring-2 focus:ring-am-gold/60 focus:ring-offset-2 focus:ring-offset-am-bg-0"
           >
             <option value="">Capacités</option>
             {KEYWORDS.map((kw) => (
@@ -732,7 +740,7 @@ export default function DeckBuilder({
           <select
             value={raceFilter ?? ""}
             onChange={(e) => setRaceFilter(e.target.value || null)}
-            className="px-2 py-1 bg-secondary border border-card-border rounded text-xs text-foreground/70 focus:outline-none"
+            className="am-gild-border px-2 py-1 bg-am-bg-2 rounded-md text-xs text-am-ink-soft focus:outline-none focus:ring-2 focus:ring-am-gold/60 focus:ring-offset-2 focus:ring-offset-am-bg-0"
           >
             <option value="">Races</option>
             {races.map((r) => (
@@ -742,7 +750,7 @@ export default function DeckBuilder({
           <select
             value={clanFilter ?? ""}
             onChange={(e) => setClanFilter(e.target.value || null)}
-            className="px-2 py-1 bg-secondary border border-card-border rounded text-xs text-foreground/70 focus:outline-none"
+            className="am-gild-border px-2 py-1 bg-am-bg-2 rounded-md text-xs text-am-ink-soft focus:outline-none focus:ring-2 focus:ring-am-gold/60 focus:ring-offset-2 focus:ring-offset-am-bg-0"
           >
             <option value="">Clans</option>
             {clans.map((c) => (
@@ -752,7 +760,7 @@ export default function DeckBuilder({
           <select
             value={filterSet}
             onChange={(e) => setFilterSet(e.target.value)}
-            className="px-2 py-1 bg-secondary border border-card-border rounded text-xs text-foreground/70 focus:outline-none"
+            className="am-gild-border px-2 py-1 bg-am-bg-2 rounded-md text-xs text-am-ink-soft focus:outline-none focus:ring-2 focus:ring-am-gold/60 focus:ring-offset-2 focus:ring-offset-am-bg-0"
           >
             <option value="">Sets</option>
             {sets.map((s) => (
@@ -762,7 +770,7 @@ export default function DeckBuilder({
           <select
             value={filterYear}
             onChange={(e) => setFilterYear(e.target.value)}
-            className="px-2 py-1 bg-secondary border border-card-border rounded text-xs text-foreground/70 focus:outline-none"
+            className="am-gild-border px-2 py-1 bg-am-bg-2 rounded-md text-xs text-am-ink-soft focus:outline-none focus:ring-2 focus:ring-am-gold/60 focus:ring-offset-2 focus:ring-offset-am-bg-0"
           >
             <option value="">Année</option>
             {years.map((y) => (
@@ -774,10 +782,10 @@ export default function DeckBuilder({
               <button
                 key={r}
                 onClick={() => setRarityFilter(rarityFilter === r ? null : r)}
-                className={`px-2 py-1 rounded text-[10px] font-medium transition-colors ${
+                className={`px-2 py-1 rounded-md text-[10px] font-semibold transition-colors ${
                   rarityFilter === r
-                    ? "bg-primary text-background"
-                    : "bg-secondary border border-card-border text-foreground/50"
+                    ? "bg-am-gold text-am-bg-0"
+                    : "am-gild-border bg-am-bg-2 text-am-ink-soft hover:text-am-ink"
                 }`}
               >
                 {r === "Peu Commune" ? "PC" : r === "Légendaire" ? "Lég." : r}
@@ -787,10 +795,10 @@ export default function DeckBuilder({
           <button
             onClick={() => setExpertOnly((v) => !v)}
             title="Afficher uniquement les cartes expertes (non-communes)"
-            className={`px-2 py-1 rounded text-[10px] font-bold transition-colors ${
+            className={`px-2.5 py-1 rounded-md text-[10px] font-bold transition-colors ${
               expertOnly
-                ? "border border-primary text-primary bg-primary/10"
-                : "bg-secondary border border-card-border text-foreground/50 hover:border-primary/50"
+                ? "border border-am-gold text-am-gold bg-am-gold/10"
+                : "am-gild-border bg-am-bg-2 text-am-ink-soft hover:text-am-gold"
             }`}
           >
             Expert
@@ -824,7 +832,7 @@ export default function DeckBuilder({
       )}
 
       {/* Colonne de droite : configuration / deck (toujours présente) */}
-      <div className={`bg-secondary border-t md:border-t-0 md:border-l border-card-border flex flex-col md:flex-shrink-0 ${tab === 3 ? "md:overflow-hidden md:w-[320px] md:max-w-[320px]" : "md:overflow-y-auto md:flex-1"}`}>
+      <div className={`bg-am-bg-1/80 backdrop-blur-sm border-t md:border-t-0 md:border-l border-am-gold/30 flex flex-col md:flex-shrink-0 ${tab === 3 ? "md:overflow-hidden md:w-[320px] md:max-w-[320px]" : "md:overflow-y-auto md:flex-1"}`}>
         {/* Configuration sections (héros / plateau / dos / nom / format / stats).
             Onglet 3 (Cartes) : plafonnées à 55vh avec scroll interne pour libérer
             la place à la liste des cartes en dessous. Onglets 1 & 2 : pas de
@@ -834,60 +842,67 @@ export default function DeckBuilder({
 
         {/* ===== Onglet 1 — Préparation : nom, faction, format ===== */}
         {tab === 1 && (
-        <div className="p-4 space-y-4">
-          <div>
-            <label className="block text-sm font-bold text-foreground mb-1.5">Nom du deck</label>
-            <input
-              type="text"
-              value={deckName}
-              onChange={(e) => setDeckName(e.target.value)}
-              placeholder="Nom du deck..."
-              className="w-full px-3 py-2 bg-background border border-card-border rounded-lg text-foreground focus:outline-none focus:border-primary"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-bold text-foreground mb-1.5">Faction</label>
-            <select
-              value={selectedFaction ?? ""}
-              onChange={(e) => changeFaction(e.target.value || null)}
-              className="w-full px-3 py-2 bg-background border border-card-border rounded-lg text-foreground text-sm focus:outline-none focus:border-primary"
-            >
-              <option value="">Choisir une faction...</option>
-              {FACTION_OPTIONS.map((f) => (
-                <option key={f} value={f}>{getFactionDisplayName(f)} — {f}</option>
-              ))}
-            </select>
-            <p className="mt-1 text-[11px] text-foreground/50">Mono-faction + Mercenaires. Changer de faction retire les cartes/héros incompatibles.</p>
-          </div>
-          <div>
-            <label className="block text-sm font-bold text-foreground mb-1.5">Format</label>
-            <div className="flex gap-2">
+        <div className="p-4 md:p-6">
+          <div className="am-glass p-5 space-y-5">
+            <div className="text-center pb-1">
+              <span className="font-[family-name:var(--font-cinzel),serif] text-[10px] tracking-[0.32em] uppercase text-am-arcane-bright/80">Préparation</span>
+              <h2 className="am-foil-text font-[family-name:var(--font-cinzel),serif] font-bold text-2xl mt-1">Forger un deck</h2>
+              <div className="am-rule-diamond mt-3 w-32 mx-auto" />
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-am-gold mb-1.5">Nom du deck</label>
+              <input
+                type="text"
+                value={deckName}
+                onChange={(e) => setDeckName(e.target.value)}
+                placeholder="Nom du deck..."
+                className="am-gild-border w-full px-3 py-2 bg-am-bg-2 rounded-lg text-am-ink placeholder:text-am-ink-faint focus:outline-none focus:ring-2 focus:ring-am-gold/60 focus:ring-offset-2 focus:ring-offset-am-bg-0"
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-am-gold mb-1.5">Faction</label>
               <select
-                value={formatMode}
-                onChange={(e) => {
-                  const m = e.target.value as DeckMode | "";
-                  if (!m) { setSelectedFormatId(null); return; }
-                  resolveFormat(m, formatExtent || "standard");
-                }}
-                className="flex-1 px-3 py-2 bg-background border border-card-border rounded-lg text-foreground/70 text-sm focus:outline-none focus:border-primary"
+                value={selectedFaction ?? ""}
+                onChange={(e) => changeFaction(e.target.value || null)}
+                className="am-gild-border w-full px-3 py-2 bg-am-bg-2 rounded-lg text-am-ink text-sm focus:outline-none focus:ring-2 focus:ring-am-gold/60 focus:ring-offset-2 focus:ring-offset-am-bg-0"
               >
-                <option value="">Mode...</option>
-                <option value="classique">Classique</option>
-                <option value="expert">Expert</option>
+                <option value="">Choisir une faction...</option>
+                {FACTION_OPTIONS.map((f) => (
+                  <option key={f} value={f}>{getFactionDisplayName(f)} — {f}</option>
+                ))}
               </select>
-              <select
-                value={formatExtent}
-                onChange={(e) => {
-                  const x = e.target.value as DeckExtent | "";
-                  if (!x) { setSelectedFormatId(null); return; }
-                  resolveFormat(formatMode || "classique", x);
-                }}
-                className="flex-1 px-3 py-2 bg-background border border-card-border rounded-lg text-foreground/70 text-sm focus:outline-none focus:border-primary"
-              >
-                <option value="">Étendue...</option>
-                <option value="standard">Standard</option>
-                <option value="etendu">Étendu</option>
-              </select>
+              <p className="mt-1.5 text-[11px] text-am-ink-faint font-[family-name:var(--font-crimson),serif] italic">Mono-faction + Mercenaires. Changer de faction retire les cartes/héros incompatibles.</p>
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-am-gold mb-1.5">Format</label>
+              <div className="flex gap-2">
+                <select
+                  value={formatMode}
+                  onChange={(e) => {
+                    const m = e.target.value as DeckMode | "";
+                    if (!m) { setSelectedFormatId(null); return; }
+                    resolveFormat(m, formatExtent || "standard");
+                  }}
+                  className="am-gild-border flex-1 px-3 py-2 bg-am-bg-2 rounded-lg text-am-ink-soft text-sm focus:outline-none focus:ring-2 focus:ring-am-gold/60 focus:ring-offset-2 focus:ring-offset-am-bg-0"
+                >
+                  <option value="">Mode...</option>
+                  <option value="classique">Classique</option>
+                  <option value="expert">Expert</option>
+                </select>
+                <select
+                  value={formatExtent}
+                  onChange={(e) => {
+                    const x = e.target.value as DeckExtent | "";
+                    if (!x) { setSelectedFormatId(null); return; }
+                    resolveFormat(formatMode || "classique", x);
+                  }}
+                  className="am-gild-border flex-1 px-3 py-2 bg-am-bg-2 rounded-lg text-am-ink-soft text-sm focus:outline-none focus:ring-2 focus:ring-am-gold/60 focus:ring-offset-2 focus:ring-offset-am-bg-0"
+                >
+                  <option value="">Étendue...</option>
+                  <option value="standard">Standard</option>
+                  <option value="etendu">Étendu</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>
@@ -895,17 +910,17 @@ export default function DeckBuilder({
 
         {/* ===== Onglet 2 — Apparence : héros, plateau, dos ===== */}
         {tab === 2 && !selectedFaction && (
-          <div className="p-6 text-center text-foreground/50 text-sm">Choisissez d&apos;abord une faction (onglet 1 · Préparation).</div>
+          <div className="am-glass m-4 p-6 text-center text-am-ink-soft text-sm font-[family-name:var(--font-crimson),serif] italic">Choisissez d&apos;abord une faction (onglet 1 · Préparation).</div>
         )}
         {tab === 2 && selectedFaction && (<>
         {/* Hero selection */}
-        <div className="p-4 border-b border-card-border">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-bold text-foreground">Choisir un héros</h3>
-            <span className="text-[10px] text-foreground/40">Clic droit : voir le pouvoir</span>
+        <div className="p-4 border-b border-am-gold/20">
+          <div className="flex items-center justify-between mb-2.5">
+            <h3 className="text-sm font-bold font-[family-name:var(--font-cinzel),serif] text-am-gold tracking-wide">Choisir un héros</h3>
+            <span className="text-[10px] text-am-ink-faint italic">Clic droit : voir le pouvoir</span>
           </div>
           {factionHeroes.length === 0 && (
-            <p className="text-[11px] text-foreground/40 py-2">Aucun héros pour cette faction.</p>
+            <p className="text-[11px] text-am-ink-faint py-2 italic">Aucun héros pour cette faction.</p>
           )}
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
             {factionHeroes.map((hero) => (
@@ -916,21 +931,21 @@ export default function DeckBuilder({
                 title="Clic droit : voir le pouvoir"
                 className={`relative rounded-lg overflow-hidden border-2 transition-all text-left ${
                   selectedHeroId === hero.id
-                    ? "border-primary shadow-[0_0_10px_rgba(200,168,78,0.4)]"
-                    : "border-card-border/50 hover:border-primary/40"
+                    ? "border-am-gold shadow-[0_0_14px_rgba(216,178,90,0.5)]"
+                    : "border-am-gold/20 hover:border-am-gold/50"
                 }`}
               >
                 <div
-                  className="w-full aspect-[3/4] bg-background flex items-center justify-center"
+                  className="w-full aspect-[3/4] bg-am-bg-2 flex items-center justify-center"
                   style={hero.thumbnail_url ? { backgroundImage: `url('${hero.thumbnail_url}')`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}
                 >
                   {!hero.thumbnail_url && <span className="text-3xl opacity-60">{RACE_ICONS[hero.race] ?? "\u2B50"}</span>}
                 </div>
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background via-background/70 to-transparent px-1.5 py-1">
-                  <div className="text-[10px] font-bold text-foreground truncate">{hero.name}</div>
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-am-bg-0 via-am-bg-0/70 to-transparent px-1.5 py-1">
+                  <div className="text-[10px] font-bold text-am-ink truncate">{hero.name}</div>
                 </div>
                 {selectedHeroId === hero.id && (
-                  <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-primary text-background text-[10px] font-bold flex items-center justify-center">{"\u2713"}</div>
+                  <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-am-gold text-am-bg-0 text-[10px] font-bold flex items-center justify-center">{"\u2713"}</div>
                 )}
               </button>
             ))}
@@ -938,10 +953,10 @@ export default function DeckBuilder({
         </div>
 
         {/* Board selection */}
-        <div className="p-4 border-b border-card-border">
-          <h3 className="text-sm font-bold text-foreground mb-2">Plateau</h3>
+        <div className="p-4 border-b border-am-gold/20">
+          <h3 className="text-sm font-bold font-[family-name:var(--font-cinzel),serif] text-am-gold tracking-wide mb-2.5">Plateau</h3>
           {selectedBoard ? (
-            <div className="rounded-lg overflow-hidden border border-card-border/50 bg-background">
+            <div className="am-gild-border rounded-lg overflow-hidden bg-am-bg-2">
               <div
                 className="relative w-full h-20"
                 style={{
@@ -950,15 +965,15 @@ export default function DeckBuilder({
                   backgroundPosition: "center",
                 }}
               >
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-am-bg-0 via-am-bg-0/40 to-transparent" />
                 <div className="absolute bottom-1 left-2 right-2 flex items-end justify-between">
                   <div>
-                    <div className="text-xs font-bold text-foreground drop-shadow">{selectedBoard.name}</div>
-                    <div className="text-[9px] text-foreground/70">{selectedBoard.rarity ?? "Commune"}</div>
+                    <div className="text-xs font-bold text-am-ink drop-shadow">{selectedBoard.name}</div>
+                    <div className="text-[9px] text-am-ink-soft">{selectedBoard.rarity ?? "Commune"}</div>
                   </div>
                   <button
                     onClick={() => setBoardPickerOpen(true)}
-                    className="text-[9px] px-2 py-0.5 bg-primary/80 hover:bg-primary text-background font-bold rounded"
+                    className="text-[9px] px-2 py-0.5 bg-am-gold/90 hover:bg-am-gold text-am-bg-0 font-bold rounded"
                   >
                     Changer
                   </button>
@@ -968,7 +983,7 @@ export default function DeckBuilder({
           ) : (
             <button
               onClick={() => setBoardPickerOpen(true)}
-              className="w-full py-2 bg-background border border-dashed border-card-border rounded-lg text-xs text-foreground/60 hover:border-primary/50 hover:text-foreground"
+              className="w-full py-2 bg-am-bg-2 border border-dashed border-am-gold/30 rounded-lg text-xs text-am-ink-soft hover:border-am-gold/60 hover:text-am-ink transition-colors"
             >
               Choisir un plateau
             </button>
@@ -976,10 +991,10 @@ export default function DeckBuilder({
         </div>
 
         {/* Card back selection */}
-        <div className="p-4 border-b border-card-border">
-          <h3 className="text-sm font-bold text-foreground mb-2">Dos de carte</h3>
+        <div className="p-4 border-b border-am-gold/20">
+          <h3 className="text-sm font-bold font-[family-name:var(--font-cinzel),serif] text-am-gold tracking-wide mb-2.5">Dos de carte</h3>
           {selectedCardBack ? (
-            <div className="rounded-lg overflow-hidden border border-card-border/50 bg-background flex items-stretch">
+            <div className="am-gild-border rounded-lg overflow-hidden bg-am-bg-2 flex items-stretch">
               <div
                 className="w-14 h-20 shrink-0"
                 style={{
@@ -990,12 +1005,12 @@ export default function DeckBuilder({
               />
               <div className="flex-1 flex items-center justify-between px-3">
                 <div>
-                  <div className="text-xs font-bold text-foreground">{selectedCardBack.name}</div>
-                  <div className="text-[9px] text-foreground/70">{selectedCardBack.rarity ?? "Commune"}</div>
+                  <div className="text-xs font-bold text-am-ink">{selectedCardBack.name}</div>
+                  <div className="text-[9px] text-am-ink-soft">{selectedCardBack.rarity ?? "Commune"}</div>
                 </div>
                 <button
                   onClick={() => setCardBackPickerOpen(true)}
-                  className="text-[9px] px-2 py-0.5 bg-primary/80 hover:bg-primary text-background font-bold rounded"
+                  className="text-[9px] px-2 py-0.5 bg-am-gold/90 hover:bg-am-gold text-am-bg-0 font-bold rounded"
                 >
                   Changer
                 </button>
@@ -1004,7 +1019,7 @@ export default function DeckBuilder({
           ) : (
             <button
               onClick={() => setCardBackPickerOpen(true)}
-              className="w-full py-2 bg-background border border-dashed border-card-border rounded-lg text-xs text-foreground/60 hover:border-primary/50 hover:text-foreground"
+              className="w-full py-2 bg-am-bg-2 border border-dashed border-am-gold/30 rounded-lg text-xs text-am-ink-soft hover:border-am-gold/60 hover:text-am-ink transition-colors"
             >
               Choisir un dos
             </button>
@@ -1014,26 +1029,26 @@ export default function DeckBuilder({
         </>)}
 
         {/* Deck restrictions info (toujours visible) */}
-        <div className="px-4 py-2 border-b border-card-border/30">
+        <div className="px-4 py-2.5 border-b border-am-gold/20">
           <div className="flex flex-wrap gap-1.5 text-[10px] items-center">
-            <span className="px-1.5 py-0.5 rounded font-bold" style={{ background: "#4caf5022", color: "#4caf50" }}>
+            <span className="px-2 py-0.5 rounded-full font-bold border border-am-jade/40 bg-am-jade/10 text-am-jade">
               Mono-faction
             </span>
-            <span className="px-1.5 py-0.5 rounded font-bold" style={{ background: "#4caf5022", color: "#4caf50" }}>
+            <span className="px-2 py-0.5 rounded-full font-bold border border-am-jade/40 bg-am-jade/10 text-am-jade">
               Mono-clan
             </span>
-            <span className="text-foreground/40">Clan: {deckStats.clans.size}/{MAX_CLANS}</span>
+            <span className="text-am-ink-faint">Clan: {deckStats.clans.size}/{MAX_CLANS}</span>
             {Array.from(deckStats.allFactions).map(f => {
               const fac = FACTIONS[f];
               const align = ALIGNMENTS.find(a => a.id === fac?.alignment);
               return <span key={f} style={{ color: fac?.color }}>{fac?.emoji} {f} <span style={{ color: align?.color }}>{align?.emoji}</span></span>;
             })}
-            <span className="text-foreground/40">| Mercenaires: {deckStats.mercenairesCount}/{deckStats.maxMercenaires}</span>
+            <span className="text-am-ink-faint">| Mercenaires: {deckStats.mercenairesCount}/{deckStats.maxMercenaires}</span>
           </div>
           {deckStats.violations.length > 0 && (
             <div className="mt-1.5">
               {deckStats.violations.map((v, i) => (
-                <div key={i} className="text-[10px] text-accent">{"⚠"} {v}</div>
+                <div key={i} className="text-[10px] text-am-ember font-semibold">{"⚠"} {v}</div>
               ))}
             </div>
           )}
@@ -1043,21 +1058,21 @@ export default function DeckBuilder({
         {/* ===== Onglet 3 — colonne droite : compteur, courbe, slots ===== */}
         {tab === 3 && (<>
         {/* Compteur deck */}
-        <div className="px-4 py-2 border-t border-card-border flex-shrink-0 bg-secondary">
+        <div className="px-4 py-2.5 border-t border-am-gold/30 flex-shrink-0 bg-am-bg-1/60">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] text-foreground/60 font-bold uppercase tracking-wider">Deck</span>
+            <span className="text-[10px] text-am-gold font-bold uppercase tracking-[0.2em] font-[family-name:var(--font-cinzel),serif]">Deck</span>
             <span
               className={`font-bold text-base ${
-                totalCards === DECK_SIZE ? "text-success" : "text-foreground"
+                totalCards === DECK_SIZE ? "text-am-jade" : "text-am-ink"
               }`}
             >
               {totalCards}/{DECK_SIZE}
             </span>
           </div>
-          <div className="mt-1 h-1.5 bg-background rounded-full overflow-hidden">
+          <div className="mt-1 h-1.5 bg-am-bg-3 rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all ${
-                totalCards === DECK_SIZE ? "bg-success" : "bg-primary"
+                totalCards === DECK_SIZE ? "bg-am-jade" : "bg-am-gold"
               }`}
               style={{ width: `${Math.min(100, (totalCards / DECK_SIZE) * 100)}%` }}
             />
@@ -1080,20 +1095,20 @@ export default function DeckBuilder({
                   className="flex-1 flex flex-col items-center gap-0.5 group cursor-pointer"
                 >
                   <span className={`text-[9px] leading-none transition-colors ${
-                    count > 0 ? "text-foreground/80" : "text-transparent"
+                    count > 0 ? "text-am-ink-soft" : "text-transparent"
                   }`}>
                     {count}
                   </span>
                   <div className="w-full h-8 flex items-end">
                     <div
                       className={`w-full rounded-sm transition-all ${
-                        isFiltered ? "bg-mana-blue" : "bg-mana-blue/50 group-hover:bg-mana-blue/80"
+                        isFiltered ? "bg-am-azure" : "bg-am-azure/50 group-hover:bg-am-azure/80"
                       }`}
                       style={{ height: `${height}px` }}
                     />
                   </div>
                   <span className={`text-[9px] leading-none font-bold transition-colors ${
-                    isFiltered ? "text-mana-blue" : "text-foreground/50 group-hover:text-foreground/80"
+                    isFiltered ? "text-am-azure" : "text-am-ink-faint group-hover:text-am-ink-soft"
                   }`}>
                     {label}
                   </span>
@@ -1107,7 +1122,7 @@ export default function DeckBuilder({
             onglets 1 & 2 la liste s'écoule dans le scroll unique du panneau. */}
         <div className={tab === 3 ? "flex-1 overflow-y-auto" : ""} style={{ minHeight: 0 }}>
           {totalCards === 0 && (
-            <p className="text-center text-foreground/30 mt-8 text-sm">
+            <p className="text-center text-am-ink-faint mt-8 text-sm font-[family-name:var(--font-crimson),serif] italic">
               Cliquez sur les cartes pour les ajouter
             </p>
           )}
@@ -1127,8 +1142,8 @@ export default function DeckBuilder({
                   className="px-3 py-1.5 flex items-center justify-between"
                   style={{ background: `${color}11` }}
                 >
-                  <span className="text-[10px] font-bold" style={{ color }}>{emoji} {tier.toUpperCase()}</span>
-                  <span className="text-[10px]" style={{ color: used > maxSlots ? "#e74c3c" : "#666" }}>{used}/{maxSlots}</span>
+                  <span className="text-[10px] font-bold tracking-wide" style={{ color }}>{emoji} {tier.toUpperCase()}</span>
+                  <span className="text-[10px] font-semibold" style={{ color: used > maxSlots ? "var(--am-ember)" : "var(--am-ink-faint)" }}>{used}/{maxSlots}</span>
                 </div>
 
                 {/* Cards in this slot */}
@@ -1137,12 +1152,12 @@ export default function DeckBuilder({
                     <div
                       key={entry.card.id}
                       onClick={() => removeCard(entry.card.id)}
-                      className="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-card-border/30 transition-colors group"
+                      className="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-am-bg-3/60 transition-colors group"
                     >
-                      <span className="w-4 h-4 rounded-full bg-mana-blue flex items-center justify-center text-white text-[9px] font-bold flex-shrink-0">
+                      <span className="w-4 h-4 rounded-full bg-am-azure flex items-center justify-center text-white text-[9px] font-bold flex-shrink-0">
                         {entry.card.mana_cost}
                       </span>
-                      <span className="text-[11px] text-foreground flex-1 truncate">
+                      <span className="text-[11px] text-am-ink flex-1 truncate">
                         {entry.card.name}
                       </span>
                       {entry.substituted && (
@@ -1151,9 +1166,9 @@ export default function DeckBuilder({
                         </span>
                       )}
                       {entry.quantity > 1 && (
-                        <span className="text-[10px] text-foreground/40">x{entry.quantity}</span>
+                        <span className="text-[10px] text-am-ink-faint">x{entry.quantity}</span>
                       )}
-                      <span className="text-[10px] text-foreground/20 group-hover:text-accent transition-colors">{"✕"}</span>
+                      <span className="text-[10px] text-am-ink-ghost group-hover:text-am-ember transition-colors">{"✕"}</span>
                     </div>
                   ))}
 
@@ -1176,21 +1191,23 @@ export default function DeckBuilder({
 
         {/* Barre Sauvegarder (uniquement sur l'onglet Cartes) */}
         {tab === 3 && (
-        <div className="p-4 border-t border-card-border flex-shrink-0">
+        <div className="p-4 border-t border-am-gold/30 flex-shrink-0 bg-am-bg-1/60">
           {error && (
-            <p className="text-accent text-xs mb-2">{error}</p>
+            <p className="text-am-ember text-xs mb-2 font-semibold">{error}</p>
           )}
           <div className="flex items-center gap-3">
-            <span className={`font-bold text-sm whitespace-nowrap ${totalCards === DECK_SIZE ? "text-success" : "text-foreground/70"}`}>
+            <span className={`font-bold text-sm whitespace-nowrap ${totalCards === DECK_SIZE ? "text-am-jade" : "text-am-ink-soft"}`}>
               {totalCards}/{DECK_SIZE}
             </span>
-            <button
+            <AmButton
+              variant="gold"
+              size="md"
               onClick={saveDeck}
               disabled={saving}
-              className="flex-1 py-3 bg-primary hover:bg-primary-dark text-background font-bold rounded-lg transition-colors disabled:opacity-50"
+              className="flex-1 rounded-lg"
             >
               {saving ? "Sauvegarde..." : existingDeck ? "Enregistrer" : "Créer le deck"}
-            </button>
+            </AmButton>
           </div>
         </div>
         )}
@@ -1205,7 +1222,7 @@ export default function DeckBuilder({
           onContextMenu={(e) => { e.preventDefault(); setPowerPopup(null); }}
         >
           <div
-            className="absolute w-64 bg-secondary border border-card-border rounded-xl shadow-2xl overflow-hidden"
+            className="am-glass absolute w-64 rounded-xl shadow-2xl overflow-hidden"
             style={{
               left: Math.max(8, Math.min(powerPopup.x, (typeof window !== "undefined" ? window.innerWidth : 1280) - 272)),
               top: Math.max(8, Math.min(powerPopup.y, (typeof window !== "undefined" ? window.innerHeight : 720) - 260)),
@@ -1219,16 +1236,16 @@ export default function DeckBuilder({
               />
             )}
             <div className="p-3">
-              <div className="text-sm font-bold text-foreground">{powerPopup.hero.name}</div>
-              <div className="text-xs text-primary font-medium mt-0.5">{powerPopup.hero.power_name}</div>
+              <div className="text-sm font-bold font-[family-name:var(--font-cinzel),serif] text-am-ink">{powerPopup.hero.name}</div>
+              <div className="text-xs text-am-gold font-medium mt-0.5">{powerPopup.hero.power_name}</div>
               {powerPopup.hero.power_description && (
-                <div className="text-[11px] text-foreground/70 mt-1 leading-snug">{powerPopup.hero.power_description}</div>
+                <div className="text-[11px] text-am-ink-soft mt-1 leading-snug font-[family-name:var(--font-crimson),serif] italic">{powerPopup.hero.power_description}</div>
               )}
               <div className="mt-2">
                 {powerPopup.hero.power_type === "passive" ? (
-                  <span className="px-1.5 py-0.5 bg-purple-600/20 text-purple-400 text-[9px] font-bold rounded">PASSIF</span>
+                  <span className="px-1.5 py-0.5 bg-am-arcane/20 text-am-arcane-bright text-[9px] font-bold rounded">PASSIF</span>
                 ) : (
-                  <span className="px-1.5 py-0.5 bg-mana-blue/20 text-mana-blue text-[9px] font-bold rounded">{powerPopup.hero.power_cost} MANA</span>
+                  <span className="px-1.5 py-0.5 bg-am-azure/20 text-am-azure text-[9px] font-bold rounded">{powerPopup.hero.power_cost} MANA</span>
                 )}
               </div>
             </div>
@@ -1243,19 +1260,19 @@ export default function DeckBuilder({
           onClick={() => setBoardPickerOpen(false)}
         >
           <div
-            className="bg-secondary border border-card-border rounded-xl w-full max-w-4xl max-h-[80vh] overflow-hidden flex flex-col"
+            className="am-glass rounded-xl w-full max-w-4xl max-h-[80vh] overflow-hidden flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-4 border-b border-card-border flex items-center justify-between">
-              <h3 className="text-lg font-bold text-foreground">Choisir un plateau</h3>
+            <div className="p-4 border-b border-am-gold/30 flex items-center justify-between">
+              <h3 className="text-lg font-bold am-foil-text font-[family-name:var(--font-cinzel),serif]">Choisir un plateau</h3>
               <button
                 onClick={() => setBoardPickerOpen(false)}
-                className="text-foreground/60 hover:text-foreground text-xl leading-none px-2"
+                className="text-am-ink-soft hover:text-am-ink text-xl leading-none px-2"
               >×</button>
             </div>
             <div className="overflow-y-auto p-4 grid grid-cols-2 md:grid-cols-3 gap-3">
               {accessibleBoards.length === 0 ? (
-                <div className="col-span-full text-center text-foreground/50 py-10 text-sm">
+                <div className="col-span-full text-center text-am-ink-soft py-10 text-sm italic">
                   Aucun plateau disponible.
                 </div>
               ) : accessibleBoards.map((b) => {
@@ -1270,7 +1287,7 @@ export default function DeckBuilder({
                       setBoardPickerOpen(false);
                     }}
                     className={`relative rounded-lg overflow-hidden border-2 transition-all text-left ${
-                      selected ? "border-primary shadow-[0_0_10px_rgba(200,168,78,0.4)]" : "border-card-border/50 hover:border-primary/40"
+                      selected ? "border-am-gold shadow-[0_0_14px_rgba(216,178,90,0.5)]" : "border-am-gold/20 hover:border-am-gold/50"
                     }`}
                   >
                     <div
@@ -1281,12 +1298,12 @@ export default function DeckBuilder({
                         backgroundPosition: "center",
                       }}
                     />
-                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background via-background/70 to-transparent p-2">
-                      <div className="text-xs font-bold text-foreground">{b.name}</div>
-                      <div className="text-[10px] text-foreground/70 flex items-center gap-2">
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-am-bg-0 via-am-bg-0/70 to-transparent p-2">
+                      <div className="text-xs font-bold text-am-ink">{b.name}</div>
+                      <div className="text-[10px] text-am-ink-soft flex items-center gap-2">
                         <span>{b.rarity ?? "Commune"}</span>
                         {!isCommon && prints.length > 0 && (
-                          <span className="text-primary">
+                          <span className="text-am-gold">
                             {prints.map((p) => `${p.print_number}/${p.max_prints}`).join(", ")}
                           </span>
                         )}
@@ -1307,19 +1324,19 @@ export default function DeckBuilder({
           onClick={() => setCardBackPickerOpen(false)}
         >
           <div
-            className="bg-secondary border border-card-border rounded-xl w-full max-w-4xl max-h-[80vh] overflow-hidden flex flex-col"
+            className="am-glass rounded-xl w-full max-w-4xl max-h-[80vh] overflow-hidden flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-4 border-b border-card-border flex items-center justify-between">
-              <h3 className="text-lg font-bold text-foreground">Choisir un dos</h3>
+            <div className="p-4 border-b border-am-gold/30 flex items-center justify-between">
+              <h3 className="text-lg font-bold am-foil-text font-[family-name:var(--font-cinzel),serif]">Choisir un dos</h3>
               <button
                 onClick={() => setCardBackPickerOpen(false)}
-                className="text-foreground/60 hover:text-foreground text-xl leading-none px-2"
+                className="text-am-ink-soft hover:text-am-ink text-xl leading-none px-2"
               >×</button>
             </div>
             <div className="overflow-y-auto p-4 grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
               {accessibleCardBacks.length === 0 ? (
-                <div className="col-span-full text-center text-foreground/50 py-10 text-sm">
+                <div className="col-span-full text-center text-am-ink-soft py-10 text-sm italic">
                   Aucun dos disponible.
                 </div>
               ) : accessibleCardBacks.map((cb) => {
@@ -1334,7 +1351,7 @@ export default function DeckBuilder({
                       setCardBackPickerOpen(false);
                     }}
                     className={`relative rounded-lg overflow-hidden border-2 transition-all text-left aspect-[5/7] ${
-                      selected ? "border-primary shadow-[0_0_10px_rgba(200,168,78,0.4)]" : "border-card-border/50 hover:border-primary/40"
+                      selected ? "border-am-gold shadow-[0_0_14px_rgba(216,178,90,0.5)]" : "border-am-gold/20 hover:border-am-gold/50"
                     }`}
                   >
                     <div
@@ -1345,12 +1362,12 @@ export default function DeckBuilder({
                         backgroundPosition: "center",
                       }}
                     />
-                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background via-background/70 to-transparent p-2">
-                      <div className="text-xs font-bold text-foreground">{cb.name}</div>
-                      <div className="text-[10px] text-foreground/70 flex items-center gap-2">
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-am-bg-0 via-am-bg-0/70 to-transparent p-2">
+                      <div className="text-xs font-bold text-am-ink">{cb.name}</div>
+                      <div className="text-[10px] text-am-ink-soft flex items-center gap-2">
                         <span>{cb.rarity ?? "Commune"}</span>
                         {!isCommon && prints.length > 0 && (
-                          <span className="text-primary">
+                          <span className="text-am-gold">
                             {prints.map((p) => `${p.print_number}/${p.max_prints}`).join(", ")}
                           </span>
                         )}

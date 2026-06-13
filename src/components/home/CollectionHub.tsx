@@ -2,6 +2,8 @@
 
 import HomeHeader from "@/components/home/HomeHeader";
 import MenuTile from "@/components/home/MenuTile";
+import AmAtmosphere from "@/components/ui/AmAtmosphere";
+import AmHeading from "@/components/ui/AmHeading";
 import { useStoredLocale } from "@/lib/i18n/useLocale";
 import { homeDict } from "@/lib/i18n/homeDict";
 
@@ -15,7 +17,9 @@ export default function CollectionHub({ username, goldBalance }: CollectionHubPr
   const t = homeDict[locale];
 
   return (
-    <div className="min-h-screen bg-[#0a0a18] text-[#e0e0e0]">
+    <div className="relative min-h-screen bg-am-bg-0 text-am-ink">
+      <AmAtmosphere />
+
       <HomeHeader
         username={username}
         goldBalance={goldBalance}
@@ -25,34 +29,18 @@ export default function CollectionHub({ username, goldBalance }: CollectionHubPr
 
       <main
         id="main-content"
-        className="relative px-4 md:px-10 pt-28 md:pt-32 pb-16 min-h-screen"
-        style={{
-          background:
-            "radial-gradient(ellipse at 50% 35%, rgba(21,21,51,0.95) 0%, #0a0a18 75%)",
-        }}
+        className="relative px-4 md:px-10 pt-28 md:pt-32 pb-20 md:pb-24 min-h-screen"
       >
         {/* Title */}
-        <div className="text-center mb-10 md:mb-14">
-          <h1
-            className="font-[family-name:var(--font-cinzel),serif] font-bold text-[#c8a84e]"
-            style={{
-              fontSize: "clamp(32px, 5vw, 52px)",
-              letterSpacing: "0.06em",
-              textShadow: "0 0 28px rgba(200, 168, 78, 0.3)",
-            }}
-          >
+        <div className="am-animate-rise mb-12 md:mb-16">
+          <AmHeading as="h1" align="center">
             {t.collection_title}
-          </h1>
-          <div
-            className="mx-auto mt-4 h-px w-28"
-            style={{ background: "linear-gradient(90deg, transparent, #c8a84e, transparent)" }}
-            aria-hidden="true"
-          />
+          </AmHeading>
         </div>
 
         <nav aria-label="Sous-sections de la collection" className="max-w-6xl mx-auto">
-          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-5 md:gap-7 items-start">
-            <li>
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8 items-start">
+            <li className="am-animate-rise" style={{ animationDelay: "0.05s" }}>
               <MenuTile
                 href="/collection"
                 accent="cards"
@@ -66,7 +54,7 @@ export default function CollectionHub({ username, goldBalance }: CollectionHubPr
                 }
               />
             </li>
-            <li>
+            <li className="am-animate-rise" style={{ animationDelay: "0.12s" }}>
               <MenuTile
                 href="/heroes"
                 accent="heroes"
@@ -81,7 +69,7 @@ export default function CollectionHub({ username, goldBalance }: CollectionHubPr
                 }
               />
             </li>
-            <li>
+            <li className="am-animate-rise" style={{ animationDelay: "0.19s" }}>
               <MenuTile
                 href="/card-backs"
                 accent="card_backs"
@@ -95,7 +83,7 @@ export default function CollectionHub({ username, goldBalance }: CollectionHubPr
                 }
               />
             </li>
-            <li>
+            <li className="am-animate-rise" style={{ animationDelay: "0.26s" }}>
               <MenuTile
                 href="/boards"
                 accent="boards"

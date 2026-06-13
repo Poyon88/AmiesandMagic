@@ -1,6 +1,16 @@
 @import "tailwindcss";
 
+/* ───────────────────────────────────────────────────────────────────────────
+   ARMIES & MAGIC — DESIGN SYSTEM
+   "Arcane War-Codex": layered obsidian surfaces with a warm violet undertone,
+   a true gilded-foil gold as the hero accent, and an arcane violet as the
+   energy accent. The legacy game tokens below are preserved verbatim so the
+   GameBoard and combat overlays keep working untouched — the new --am-* layer
+   drives every redesigned out-of-game surface.
+   ─────────────────────────────────────────────────────────────────────────── */
+
 :root {
+  /* ── Legacy game tokens (DO NOT change — GameBoard depends on them) ── */
   --background: #1a1a2e;
   --foreground: #e0e0e0;
   --primary: #c8a84e;
@@ -13,9 +23,60 @@
   --health-yellow: #f1c40f;
   --attack-red: #e74c3c;
   --success: #2ecc71;
+
+  /* ── New design-system tokens (--am-*) ── */
+
+  /* Surfaces — warm obsidian with a faint violet cast, real elevation steps */
+  --am-bg-0: #08070f;   /* page base / deepest void */
+  --am-bg-1: #0f0d1a;   /* section base */
+  --am-bg-2: #171327;   /* panel */
+  --am-bg-3: #221c38;   /* raised panel / hover */
+  --am-bg-4: #2c2547;   /* active / popover */
+
+  /* Ink — warm parchment, never pure white */
+  --am-ink: #efe8d6;
+  --am-ink-soft: rgba(239, 232, 214, 0.68);
+  --am-ink-faint: rgba(239, 232, 214, 0.42);
+  --am-ink-ghost: rgba(239, 232, 214, 0.22);
+
+  /* Gold — the hero. Used flat for borders, as a gradient for foil. */
+  --am-gold: #d8b25a;
+  --am-gold-bright: #f4e09a;
+  --am-gold-deep: #9a7730;
+  --am-gold-ink: #1a1408;        /* text that sits on a gold fill */
+  --am-foil: linear-gradient(135deg, #f4e09a 0%, #d8b25a 42%, #b08b3a 70%, #f4e09a 100%);
+  --am-foil-flat: linear-gradient(135deg, #f4e09a, #d8b25a 45%, #9a7730);
+
+  /* Arcane — the modern energy accent (sorcery violet) */
+  --am-arcane: #9a6bff;
+  --am-arcane-bright: #c4a6ff;
+  --am-arcane-deep: #5b3bb5;
+
+  /* Semantic accents (reuse legacy hues for continuity) */
+  --am-ember: #e0533c;   /* danger / play / attack */
+  --am-jade: #36c98a;    /* success */
+  --am-azure: #4a90d9;   /* info / mana */
+
+  /* Hairlines & gilded borders */
+  --am-line: rgba(239, 232, 214, 0.10);
+  --am-line-strong: rgba(239, 232, 214, 0.18);
+  --am-gild: rgba(216, 178, 90, 0.30);
+  --am-gild-strong: rgba(216, 178, 90, 0.85);
+
+  /* Radii & shadow scale */
+  --am-r-sm: 8px;
+  --am-r-md: 14px;
+  --am-r-lg: 20px;
+  --am-r-xl: 28px;
+  --am-shadow-sm: 0 4px 14px rgba(0, 0, 0, 0.45);
+  --am-shadow-md: 0 14px 36px rgba(0, 0, 0, 0.55);
+  --am-shadow-lg: 0 30px 70px rgba(0, 0, 0, 0.6);
+  --am-glow-gold: 0 0 28px rgba(216, 178, 90, 0.35);
+  --am-glow-arcane: 0 0 28px rgba(154, 107, 255, 0.4);
 }
 
 @theme inline {
+  /* Legacy mappings (unchanged) */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
@@ -30,32 +91,274 @@
   --color-success: var(--success);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* New design-system mappings → Tailwind utilities (bg-am-*, text-am-*, …) */
+  --color-am-bg-0: var(--am-bg-0);
+  --color-am-bg-1: var(--am-bg-1);
+  --color-am-bg-2: var(--am-bg-2);
+  --color-am-bg-3: var(--am-bg-3);
+  --color-am-bg-4: var(--am-bg-4);
+  --color-am-ink: var(--am-ink);
+  --color-am-ink-soft: var(--am-ink-soft);
+  --color-am-ink-faint: var(--am-ink-faint);
+  --color-am-gold: var(--am-gold);
+  --color-am-gold-bright: var(--am-gold-bright);
+  --color-am-gold-deep: var(--am-gold-deep);
+  --color-am-arcane: var(--am-arcane);
+  --color-am-arcane-bright: var(--am-arcane-bright);
+  --color-am-ember: var(--am-ember);
+  --color-am-jade: var(--am-jade);
+  --color-am-azure: var(--am-azure);
+
+  /* Distinctive type roles */
+  --font-display: var(--font-cinzel);
+  --font-serif: var(--font-crimson);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--am-bg-0);
+  color: var(--am-ink);
+  /* Fix: was Arial. Use the loaded Geist sans for UI text. */
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
   min-height: 100vh;
 }
 
-/* Scrollbar styling */
+/* ───────────────────────── Atmosphere utilities ───────────────────────── */
+
+/* Film-grain overlay. Apply to a pointer-events-none absolute layer to add
+   tactile texture over flat gradients. */
+.am-grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Atmospheric gradient mesh — deep arcane glow blooms. Use as a fixed/absolute
+   backdrop behind page content. */
+.am-mesh {
+  background-color: var(--am-bg-0);
+  background-image:
+    radial-gradient(ellipse 60% 50% at 18% 0%, rgba(154, 107, 255, 0.14), transparent 60%),
+    radial-gradient(ellipse 50% 45% at 85% 12%, rgba(216, 178, 90, 0.12), transparent 60%),
+    radial-gradient(ellipse 70% 60% at 50% 110%, rgba(91, 59, 181, 0.18), transparent 65%);
+}
+
+/* Radial vignette to focus the centre of a section. */
+.am-vignette::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 75% 65% at 50% 45%, transparent 0%, rgba(8, 7, 15, 0.55) 100%);
+}
+
+/* ───────────────────────── Surface primitives ───────────────────────── */
+
+/* Frosted gilded panel — the default container for the new pages. */
+.am-glass {
+  background:
+    linear-gradient(160deg, rgba(34, 28, 56, 0.72) 0%, rgba(15, 13, 26, 0.82) 100%);
+  border: 1px solid var(--am-line-strong);
+  border-radius: var(--am-r-lg);
+  box-shadow: var(--am-shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Gilded hairline border — subtle gold edge that reads as "framed". */
+.am-gild-border {
+  border: 1px solid var(--am-gild);
+  box-shadow: inset 0 0 0 1px rgba(216, 178, 90, 0.06), var(--am-shadow-sm);
+}
+
+/* ───────────────────────── Foil text ───────────────────────── */
+
+/* Gold-foil gradient text for display headings. */
+.am-foil-text {
+  background: linear-gradient(135deg, #f4e09a 0%, #d8b25a 45%, #b0883a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Foil with a sweeping highlight on hover/load (pair with .am-shimmer). */
+.am-foil-sheen {
+  background: linear-gradient(
+    105deg,
+    #b0883a 0%,
+    #d8b25a 30%,
+    #fff3c4 48%,
+    #d8b25a 66%,
+    #b0883a 100%
+  );
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ───────────────────────── Decorative rule ───────────────────────── */
+
+.am-rule {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--am-gild-strong), transparent);
+}
+
+/* Diamond-centred rule (ornamental divider) */
+.am-rule-diamond {
+  position: relative;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--am-gild), transparent);
+}
+.am-rule-diamond::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  transform: translate(-50%, -50%) rotate(45deg);
+  background: var(--am-gold);
+  box-shadow: 0 0 10px rgba(216, 178, 90, 0.7);
+}
+
+/* ───────────────────────── Buttons ───────────────────────── */
+
+.am-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: var(--font-cinzel), serif;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  border-radius: var(--am-r-md);
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+.am-btn:active { transform: translateY(1px) scale(0.985); }
+.am-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--am-bg-0), 0 0 0 4px var(--am-gold);
+}
+
+/* Primary gilded button */
+.am-btn-gold {
+  color: var(--am-gold-ink);
+  background: linear-gradient(135deg, #f4e09a 0%, #d8b25a 45%, #a87f30 100%);
+  box-shadow: 0 6px 24px rgba(216, 178, 90, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.am-btn-gold:hover {
+  box-shadow: 0 10px 34px rgba(216, 178, 90, 0.45), 0 0 50px rgba(216, 178, 90, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+/* Arcane energy button (secondary CTA) */
+.am-btn-arcane {
+  color: #f3eeff;
+  background: linear-gradient(135deg, #a878ff 0%, #7c4ff0 50%, #5b3bb5 100%);
+  box-shadow: 0 6px 24px rgba(124, 79, 240, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+.am-btn-arcane:hover {
+  box-shadow: 0 10px 34px rgba(124, 79, 240, 0.5), 0 0 50px rgba(154, 107, 255, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+/* Ghost / outline button */
+.am-btn-ghost {
+  color: var(--am-gold);
+  background: rgba(216, 178, 90, 0.06);
+  border: 1px solid var(--am-gild);
+}
+.am-btn-ghost:hover {
+  background: rgba(216, 178, 90, 0.14);
+  border-color: var(--am-gild-strong);
+  transform: translateY(-1px);
+}
+
+/* Sheen sweep that crosses a button on hover (decorative) */
+.am-btn-sheen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.35) 48%, transparent 66%);
+  transform: translateX(-130%);
+  transition: transform 0.7s ease;
+  pointer-events: none;
+}
+.am-btn-sheen:hover::after { transform: translateX(130%); }
+
+/* ───────────────────────── Motion ───────────────────────── */
+
+@keyframes am-rise {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes am-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes am-sheen-sweep {
+  0%   { background-position: 250% 0; }
+  100% { background-position: -50% 0; }
+}
+@keyframes am-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-12px); }
+}
+@keyframes am-pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(216, 178, 90, 0); }
+  50%      { box-shadow: 0 0 24px 2px rgba(216, 178, 90, 0.35); }
+}
+
+/* Apply to elements for a staggered page-load reveal. Pair with inline
+   animation-delay for the stagger. */
+.am-animate-rise {
+  opacity: 0;
+  animation: am-rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.am-animate-fade {
+  opacity: 0;
+  animation: am-fade 0.9s ease forwards;
+}
+/* Continuous foil shimmer for hero headings */
+.am-shimmer {
+  animation: am-sheen-sweep 6s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .am-animate-rise,
+  .am-animate-fade { animation: none; opacity: 1; }
+  .am-shimmer { animation: none; }
+}
+
+/* ───────────────────────── Scrollbar ───────────────────────── */
+
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
+  height: 10px;
 }
-
 ::-webkit-scrollbar-track {
-  background: var(--secondary);
+  background: var(--am-bg-1);
 }
-
 ::-webkit-scrollbar-thumb {
-  background: var(--card-border);
-  border-radius: 4px;
+  background: linear-gradient(180deg, var(--am-gold-deep), #3a3158);
+  border-radius: 6px;
+  border: 2px solid var(--am-bg-1);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, var(--am-gold), var(--am-gold-deep));
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--primary-dark);
-}
+/* ───────────────────────── Legacy game keyframes (unchanged) ───────────── */
 
 /* Target pulse animation - ring glow without opacity changes */
 @keyframes pulse-ring {

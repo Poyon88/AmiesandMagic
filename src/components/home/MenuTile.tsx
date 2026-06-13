@@ -29,7 +29,7 @@ export default function MenuTile({ href, label, description, accent, glyph, bgIm
   return (
     <Link
       href={href}
-      className="group block relative overflow-hidden rounded-2xl transition-all duration-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c8a84e] focus-visible:ring-offset-4 focus-visible:ring-offset-[#0a0a18] w-full"
+      className="group block relative overflow-hidden rounded-2xl transition-all duration-500 hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c8a84e] focus-visible:ring-offset-4 focus-visible:ring-offset-am-bg-0 w-full"
       style={{
         // Landscape ratio so wide gameplay-style background images fit
         // with minimal cropping. Still works for plain glyph tiles
@@ -41,19 +41,28 @@ export default function MenuTile({ href, label, description, accent, glyph, bgIm
         // discrete panel. The accent color is mixed in at the top so
         // the tile category is recognisable even without the glyph.
         background: `
-          radial-gradient(ellipse at 50% 0%, ${accentColor}33 0%, transparent 55%),
-          linear-gradient(160deg, rgba(60,60,95,0.95) 0%, rgba(20,20,38,1) 100%)
+          radial-gradient(ellipse at 50% 0%, ${accentColor}40 0%, transparent 55%),
+          linear-gradient(160deg, rgba(44,37,71,0.96) 0%, rgba(12,11,22,1) 100%)
         `,
         // No default border — only the four gold L-corners are visible
         // in the resting state. The full inset gold border fades in on
         // hover / keyboard focus (see the separate overlay below) so
         // the active tile reads as "selected".
         boxShadow: `
-          inset 0 1px 0 rgba(200,168,78,0.18),
-          0 18px 40px rgba(0,0,0,0.55)
+          inset 0 1px 0 rgba(244,224,154,0.18),
+          0 20px 46px rgba(0,0,0,0.6)
         `,
       }}
     >
+      {/* Accent-colored hover glow that lifts from the bottom edge —
+          gives each category a distinct "aura" when active. */}
+      <div
+        className="absolute inset-x-0 bottom-0 h-2/3 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+        style={{
+          background: `radial-gradient(ellipse at 50% 100%, ${accentColor}55 0%, transparent 70%)`,
+        }}
+        aria-hidden="true"
+      />
       {/* Optional background image — full-bleed, slightly desaturated
           and darkened so the title + description stay legible. Sits
           below the accent glow + corner ornaments. */}
@@ -123,11 +132,8 @@ export default function MenuTile({ href, label, description, accent, glyph, bgIm
           </div>
         )}
         <h2
-          className="font-[family-name:var(--font-cinzel),serif] font-bold text-[#c8a84e] tracking-wider"
-          style={{
-            fontSize: "clamp(20px, 2.4vw, 30px)",
-            textShadow: "0 0 18px rgba(200, 168, 78, 0.3)",
-          }}
+          className="am-foil-text font-[family-name:var(--font-cinzel),serif] font-bold tracking-wider"
+          style={{ fontSize: "clamp(20px, 2.4vw, 30px)" }}
         >
           {label}
         </h2>

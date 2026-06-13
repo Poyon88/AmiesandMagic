@@ -8,6 +8,9 @@
 import { useMemo, useState } from "react";
 import HomeHeader from "@/components/home/HomeHeader";
 import KeywordIcon from "@/components/shared/KeywordIcon";
+import AmAtmosphere from "@/components/ui/AmAtmosphere";
+import AmHeading from "@/components/ui/AmHeading";
+import AmPanel from "@/components/ui/AmPanel";
 import { useStoredLocale } from "@/lib/i18n/useLocale";
 import { homeDict } from "@/lib/i18n/homeDict";
 import { CREATURE_ABILITIES, SPELL_ABILITIES } from "@/lib/game/abilities";
@@ -21,8 +24,7 @@ import {
   STARTING_MANA,
 } from "@/lib/game/constants";
 
-// ── Design tokens (match the menu / collection hub) ───────────────────────────
-const GOLD = "#c8a84e";
+// ── Design tokens (Arcane War-Codex design system) ────────────────────────────
 const cinzel = "font-[family-name:var(--font-cinzel),serif]";
 const crimson = "font-[family-name:var(--font-crimson),serif]";
 
@@ -39,7 +41,9 @@ export default function TutorialView({ username, goldBalance }: TutorialViewProp
   const [track, setTrack] = useState<Track>("beginner");
 
   return (
-    <div className="min-h-screen bg-[#0a0a18] text-[#e0e0e0]">
+    <div className="min-h-screen bg-am-bg-0 text-am-ink">
+      <AmAtmosphere />
+
       <HomeHeader
         username={username}
         goldBalance={goldBalance}
@@ -50,35 +54,20 @@ export default function TutorialView({ username, goldBalance }: TutorialViewProp
       <main
         id="main-content"
         className="relative px-4 md:px-10 pt-28 md:pt-32 pb-20 min-h-screen"
-        style={{
-          background:
-            "radial-gradient(ellipse at 50% 35%, rgba(21,21,51,0.95) 0%, #0a0a18 75%)",
-        }}
       >
         {/* Title */}
-        <div className="text-center mb-8 md:mb-10">
-          <h1
-            className={`${cinzel} font-bold text-[#c8a84e]`}
-            style={{
-              fontSize: "clamp(32px, 5vw, 52px)",
-              letterSpacing: "0.06em",
-              textShadow: "0 0 28px rgba(200, 168, 78, 0.3)",
-            }}
+        <div className="am-animate-rise mb-10 md:mb-12">
+          <AmHeading
+            as="h1"
+            eyebrow="Apprends l'art du duel"
+            subtitle="Armies & Magic — duel de cartes médiéval-fantastique"
           >
             Comment jouer
-          </h1>
-          <p className={`${crimson} italic text-[#e0e0e0]/65 mt-3`} style={{ fontSize: "clamp(14px,1.6vw,18px)" }}>
-            Armies &amp; Magic — duel de cartes médiéval-fantastique
-          </p>
-          <div
-            className="mx-auto mt-4 h-px w-28"
-            style={{ background: `linear-gradient(90deg, transparent, ${GOLD}, transparent)` }}
-            aria-hidden="true"
-          />
+          </AmHeading>
         </div>
 
         {/* Track switch */}
-        <div className="flex justify-center gap-3 mb-10">
+        <div className="flex justify-center gap-3 mb-10 am-animate-fade" style={{ animationDelay: "120ms" }}>
           <TrackButton active={track === "beginner"} onClick={() => setTrack("beginner")} label="Débutant — guide complet" />
           <TrackButton active={track === "tcg"} onClick={() => setTrack("tcg")} label="Joueur de TCG — l'essentiel" />
         </div>
@@ -100,14 +89,8 @@ function TrackButton({ active, onClick, label }: { active: boolean; onClick: () 
   return (
     <button
       onClick={onClick}
-      className={`${cinzel} px-4 py-2 rounded-lg text-sm md:text-base transition-all`}
-      style={{
-        background: active ? `${GOLD}22` : "transparent",
-        border: `1px solid ${active ? GOLD : "#3d3d5c"}`,
-        color: active ? GOLD : "#e0e0e0aa",
-        fontWeight: active ? 700 : 400,
-        boxShadow: active ? `0 0 16px ${GOLD}33` : "none",
-      }}
+      aria-pressed={active}
+      className={`${cinzel} am-btn ${active ? "am-btn-gold am-btn-sheen" : "am-btn-ghost"} px-4 py-2 text-sm md:text-base`}
     >
       {label}
     </button>
@@ -117,39 +100,40 @@ function TrackButton({ active, onClick, label }: { active: boolean; onClick: () 
 // ── Shared layout primitives ──────────────────────────────────────────────────
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="mb-8">
-      <h2 className={`${cinzel} text-[#c8a84e] font-bold mb-3`} style={{ fontSize: "clamp(20px,2.6vw,28px)", letterSpacing: "0.04em" }}>
+    <section className="mb-9 am-animate-rise">
+      <AmHeading as="h2" align="left" className="mb-5">
         {title}
-      </h2>
-      <div
-        className="rounded-xl p-5 md:p-6"
-        style={{ background: "linear-gradient(160deg, rgba(45,45,74,0.55), rgba(20,20,38,0.85))", border: "1px solid #3d3d5c" }}
-      >
+      </AmHeading>
+      <AmPanel corners className="p-5 md:p-7">
         {children}
-      </div>
+      </AmPanel>
     </section>
   );
 }
 
 function P({ children }: { children: React.ReactNode }) {
-  return <p className={`${crimson} text-[#e0e0e0]/85 leading-relaxed mb-3`} style={{ fontSize: 16 }}>{children}</p>;
+  return (
+    <p className={`${crimson} text-am-ink/90 leading-[1.85] mb-4 last:mb-0`} style={{ fontSize: 17 }}>
+      {children}
+    </p>
+  );
 }
 
 function Stat({ value, label }: { value: string; label: string }) {
   return (
-    <div className="rounded-lg px-4 py-3 text-center" style={{ background: "#15152e", border: "1px solid #3d3d5c" }}>
-      <div className={`${cinzel} font-bold text-[#c8a84e]`} style={{ fontSize: 22 }}>{value}</div>
-      <div className={`${crimson} text-[#e0e0e0]/65`} style={{ fontSize: 13 }}>{label}</div>
+    <div className="am-gild-border rounded-[var(--am-r-md)] bg-am-bg-1 px-4 py-3 text-center">
+      <div className={`${cinzel} am-foil-text font-bold`} style={{ fontSize: 22 }}>{value}</div>
+      <div className={`${crimson} italic text-am-ink-soft mt-1`} style={{ fontSize: 13 }}>{label}</div>
     </div>
   );
 }
 
 function Bullets({ items }: { items: React.ReactNode[] }) {
   return (
-    <ul className="space-y-2">
+    <ul className="space-y-3">
       {items.map((it, i) => (
-        <li key={i} className={`${crimson} text-[#e0e0e0]/85 leading-relaxed flex gap-2`} style={{ fontSize: 15.5 }}>
-          <span className="text-[#c8a84e] shrink-0" aria-hidden="true">◆</span>
+        <li key={i} className={`${crimson} text-am-ink/90 leading-[1.8] flex gap-3`} style={{ fontSize: 16 }}>
+          <span className="text-am-gold-bright shrink-0 mt-0.5" aria-hidden="true">◆</span>
           <span>{it}</span>
         </li>
       ))}
@@ -157,7 +141,9 @@ function Bullets({ items }: { items: React.ReactNode[] }) {
   );
 }
 
-const Hi = ({ children }: { children: React.ReactNode }) => <strong className="text-[#c8a84e]">{children}</strong>;
+const Hi = ({ children }: { children: React.ReactNode }) => (
+  <strong className="text-am-gold-bright font-semibold">{children}</strong>
+);
 
 // ── Beginner guide (complete) ─────────────────────────────────────────────────
 function BeginnerGuide() {
@@ -169,7 +155,7 @@ function BeginnerGuide() {
           la partie en réduisant les points de vie du héros adverse à <Hi>0</Hi>. Pour cela, vous invoquez des
           créatures et lancez des sorts.
         </P>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
           <Stat value={`${HERO_MAX_HP} PV`} label="Héros au départ" />
           <Stat value={`${STARTING_HAND_SIZE} cartes`} label="Main de départ" />
           <Stat value={`${STARTING_MANA} → ${MAX_MANA}`} label="Mana (croît chaque tour)" />
@@ -214,8 +200,8 @@ function BeginnerGuide() {
         <P>
           Un sort produit un effet immédiat puis part au <Hi>cimetière</Hi>. Certains sorts nécessitent une
           <Hi> cible</Hi> (une créature, un héros…). Nouveauté : un sort peut aussi <Hi>conférer une capacité de
-          créature</Hi> — à une créature ciblée (icône <span style={{ color: "#dfe6e9" }}>blanche</span>) ou à
-          toutes vos unités alliées (icône <span style={{ color: "#27ae60" }}>verte</span>).
+          créature</Hi> — à une créature ciblée (icône <span className="text-am-ink">blanche</span>) ou à
+          toutes vos unités alliées (icône <span className="text-am-jade">verte</span>).
         </P>
       </Section>
 
@@ -352,22 +338,23 @@ function KeywordReference() {
   const spellF = spell.filter(match);
 
   return (
-    <section className="mt-12">
-      <h2 className={`${cinzel} text-[#c8a84e] font-bold mb-2 text-center`} style={{ fontSize: "clamp(22px,3vw,32px)", letterSpacing: "0.04em" }}>
+    <section className="mt-16 am-animate-rise">
+      <AmHeading
+        as="h2"
+        eyebrow="Le lexique du combat"
+        subtitle="Référence complète, toujours à jour avec le jeu. « X » et « Y » sont des valeurs réglées sur chaque carte."
+      >
         Toutes les capacités
-      </h2>
-      <p className={`${crimson} italic text-[#e0e0e0]/60 text-center mb-5`} style={{ fontSize: 14 }}>
-        Référence complète, toujours à jour avec le jeu. « X » et « Y » sont des valeurs réglées sur chaque carte.
-      </p>
+      </AmHeading>
 
-      <div className="flex justify-center mb-7">
+      <div className="flex justify-center mt-7 mb-9">
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Rechercher une capacité…"
-          className={`${crimson} w-full max-w-md px-4 py-2 rounded-lg outline-none`}
-          style={{ background: "#15152e", border: `1px solid #3d3d5c`, color: "#e0e0e0", fontSize: 15 }}
+          className={`${crimson} w-full max-w-md px-4 py-3 rounded-[var(--am-r-md)] bg-am-bg-1 text-am-ink border border-am-gold/30 outline-none transition-shadow focus-visible:ring-2 focus-visible:ring-am-gold focus-visible:ring-offset-2 focus-visible:ring-offset-am-bg-0 placeholder:text-am-ink-soft/60`}
+          style={{ fontSize: 16 }}
         />
       </div>
 
@@ -375,7 +362,9 @@ function KeywordReference() {
       <KeywordGroup title={`Capacités de sort (${spellF.length})`} items={spellF} />
 
       {creatureF.length === 0 && spellF.length === 0 && (
-        <p className={`${crimson} text-[#e0e0e0]/50 text-center py-6`}>Aucune capacité ne correspond à « {query} ».</p>
+        <p className={`${crimson} italic text-am-ink-soft text-center py-8`} style={{ fontSize: 16 }}>
+          Aucune capacité ne correspond à « {query} ».
+        </p>
       )}
     </section>
   );
@@ -384,28 +373,27 @@ function KeywordReference() {
 function KeywordGroup({ title, items }: { title: string; items: { key: string; label: string; symbol: string; desc: string }[] }) {
   if (items.length === 0) return null;
   return (
-    <div className="mb-8">
-      <h3 className={`${cinzel} text-[#e0e0e0]/80 font-semibold mb-3`} style={{ fontSize: 17, letterSpacing: "0.05em" }}>
-        {title}
-      </h3>
+    <div className="mb-10">
+      <div className="flex items-center gap-4 mb-4">
+        <h3 className={`${cinzel} text-am-gold font-semibold shrink-0`} style={{ fontSize: 17, letterSpacing: "0.05em" }}>
+          {title}
+        </h3>
+        <span className="am-rule flex-1" aria-hidden="true" />
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {items.map((k) => (
-          <div
-            key={k.key}
-            className="flex items-start gap-3 rounded-lg p-3"
-            style={{ background: "#15152e", border: "1px solid #2d2d4a" }}
-          >
+          <AmPanel key={k.key} className="flex items-start gap-3 !rounded-[var(--am-r-md)] p-3">
             <div
-              className="shrink-0 flex items-center justify-center rounded-md"
-              style={{ width: 40, height: 40, background: "#0a0a18", border: `1px solid ${GOLD}44` }}
+              className="shrink-0 flex items-center justify-center rounded-[var(--am-r-sm)] bg-am-bg-0 border border-am-gold/30"
+              style={{ width: 40, height: 40 }}
             >
               <KeywordIcon symbol={k.symbol} keyword={k.key} size={22} />
             </div>
             <div className="min-w-0">
-              <div className={`${cinzel} text-[#c8a84e] font-semibold`} style={{ fontSize: 14.5 }}>{k.label}</div>
-              <div className={`${crimson} text-[#e0e0e0]/75 leading-snug`} style={{ fontSize: 14 }}>{k.desc}</div>
+              <div className={`${cinzel} text-am-gold-bright font-semibold`} style={{ fontSize: 14.5 }}>{k.label}</div>
+              <div className={`${crimson} text-am-ink-soft leading-snug mt-0.5`} style={{ fontSize: 14 }}>{k.desc}</div>
             </div>
-          </div>
+          </AmPanel>
         ))}
       </div>
     </div>

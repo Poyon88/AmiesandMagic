@@ -13,7 +13,7 @@ export default async function AuctionPage() {
   if (!user) redirect("/login");
 
   return (
-    <div style={{ height: "100vh", overflow: "auto", background: "#1a1a2e" }}>
+    <div style={{ height: "100vh", overflow: "auto" }} className="bg-am-bg-0">
       <AuctionHouse userId={user.id} />
     </div>
   );

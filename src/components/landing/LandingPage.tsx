@@ -305,37 +305,48 @@ export default function LandingPage({ showcaseCards, factionHeroUrls }: LandingP
   const floatingCards = useMemo(() => showcaseCards.slice(0, 3), [showcaseCards]);
 
   return (
-    <div className="bg-[#0a0a18] text-[#e0e0e0] min-h-screen overflow-x-hidden">
+    <div className="bg-am-bg-0 text-am-ink min-h-screen overflow-x-hidden">
 
       {/* ── Navbar ────────────────────────────────────────────────────── */}
       <nav
         className="fixed top-0 inset-x-0 z-[100] flex justify-between items-center px-6 md:px-10 py-4 transition-all duration-500"
         style={{
-          background: scrollY > 50 ? "rgba(10, 10, 24, 0.9)" : "transparent",
-          borderBottom: scrollY > 50 ? "1px solid rgba(200, 168, 78, 0.15)" : "1px solid transparent",
-          boxShadow: scrollY > 50 ? "0 4px 30px rgba(0,0,0,0.4)" : "none",
+          background: scrollY > 50
+            ? "linear-gradient(180deg, rgba(15,13,26,0.92), rgba(8,7,15,0.84))"
+            : "transparent",
+          borderBottom: scrollY > 50 ? "1px solid var(--am-gild)" : "1px solid transparent",
+          boxShadow: scrollY > 50 ? "0 8px 34px rgba(0,0,0,0.5)" : "none",
+          backdropFilter: scrollY > 50 ? "blur(12px)" : "none",
+          WebkitBackdropFilter: scrollY > 50 ? "blur(12px)" : "none",
         }}
       >
-        <div
-          className="font-[family-name:var(--font-cinzel),serif] text-xl md:text-2xl font-bold tracking-wider text-[#c8a84e]"
-          style={{ textShadow: "0 0 20px rgba(200, 168, 78, 0.3)" }}
-        >
-          Armies & Magic
+        <div className="flex items-center gap-2.5">
+          <span
+            className="grid place-items-center w-9 h-9 rounded-lg shrink-0"
+            style={{
+              background: "linear-gradient(135deg, #f4e09a, #d8b25a 50%, #9a7730)",
+              boxShadow: "0 4px 14px rgba(216,178,90,0.35), inset 0 1px 0 rgba(255,255,255,0.4)",
+            }}
+            aria-hidden="true"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1a1408" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2 4 6v6c0 5 3.5 8 8 10 4.5-2 8-5 8-10V6z" />
+            </svg>
+          </span>
+          <div className="am-foil-text font-[family-name:var(--font-cinzel),serif] text-xl md:text-2xl font-bold tracking-wider">
+            Armies &amp; Magic
+          </div>
         </div>
         <div className="flex items-center gap-3 md:gap-4">
           <button
             onClick={() => setLocale(locale === "fr" ? "en" : "fr")}
-            className="px-3 py-1.5 text-xs md:text-sm font-semibold text-[#c8a84e] rounded-md border border-[#c8a84e]/30 bg-[#c8a84e]/10 hover:bg-[#c8a84e]/20 transition-colors"
+            className="am-btn am-btn-ghost px-3 py-1.5 text-xs md:text-sm"
           >
             {locale === "fr" ? "EN" : "FR"}
           </button>
           <button
             onClick={() => router.push("/login")}
-            className="font-[family-name:var(--font-cinzel),serif] px-5 md:px-6 py-2 md:py-2.5 text-sm md:text-base font-bold text-[#0a0a18] rounded-lg tracking-wide transition-transform hover:scale-105 active:scale-95"
-            style={{
-              background: "linear-gradient(135deg, #c8a84e, #a08030)",
-              boxShadow: "0 4px 20px rgba(200, 168, 78, 0.3), inset 0 1px 0 rgba(255,255,255,0.2)",
-            }}
+            className="am-btn am-btn-gold am-btn-sheen px-5 md:px-6 py-2 md:py-2.5 text-sm md:text-base"
           >
             {txt.nav_play}
           </button>
@@ -551,18 +562,17 @@ function HeroSection({ txt, scrollY, floatingCards, onPlay }: HeroSectionProps) 
         >
           <button
             onClick={onPlay}
-            className="font-[family-name:var(--font-cinzel),serif] px-10 py-4 text-base md:text-lg font-extrabold text-[#0a0a18] rounded-xl tracking-wide transition-transform hover:scale-105 active:scale-95"
+            className="am-btn am-btn-gold am-btn-sheen px-10 py-4 text-base md:text-lg"
             style={{
-              background: "linear-gradient(135deg, #e8c664, #c8a84e 45%, #a08030)",
               boxShadow:
-                "0 8px 40px rgba(200, 168, 78, 0.4), 0 0 60px rgba(200, 168, 78, 0.2), inset 0 1px 0 rgba(255,255,255,0.25)",
+                "0 8px 40px rgba(216, 178, 90, 0.4), 0 0 60px rgba(216, 178, 90, 0.2), inset 0 1px 0 rgba(255,255,255,0.3)",
             }}
           >
             {txt.hero_cta}
           </button>
           <a
             href="#features"
-            className="font-[family-name:var(--font-cinzel),serif] px-8 py-4 text-sm md:text-base font-semibold text-[#c8a84e] tracking-wide border border-[#c8a84e]/40 rounded-xl bg-[#0a0a18]/30 hover:bg-[#c8a84e]/10 hover:border-[#c8a84e]/70 transition-colors"
+            className="am-btn am-btn-ghost px-8 py-4 text-sm md:text-base"
           >
             {txt.hero_cta_secondary}
           </a>
@@ -618,7 +628,7 @@ function FeaturesSection({ id, title, features }: FeaturesSectionProps) {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.8 }}
-        className="font-[family-name:var(--font-cinzel),serif] font-bold text-[#c8a84e] text-center mb-4"
+        className="am-foil-text font-[family-name:var(--font-cinzel),serif] font-bold text-center mb-4"
         style={{
           fontSize: "clamp(28px, 4vw, 44px)",
           letterSpacing: "0.1em",
@@ -689,7 +699,7 @@ function FeatureBlock({
           style={{ background: "linear-gradient(90deg, #c8a84e, transparent)" }}
         />
         <h3
-          className="font-[family-name:var(--font-cinzel),serif] font-bold text-[#c8a84e] mb-5 leading-tight"
+          className="am-foil-text font-[family-name:var(--font-cinzel),serif] font-bold mb-5 leading-tight"
           style={{
             fontSize: "clamp(22px, 3vw, 34px)",
             letterSpacing: "0.02em",
@@ -797,7 +807,7 @@ function FactionsSection({ title, subtitle, factionLabels, factionHeroUrls }: Fa
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.8 }}
-        className="font-[family-name:var(--font-cinzel),serif] font-bold text-[#c8a84e] text-center mb-4"
+        className="am-foil-text font-[family-name:var(--font-cinzel),serif] font-bold text-center mb-4"
         style={{
           fontSize: "clamp(28px, 4.5vw, 48px)",
           letterSpacing: "0.08em",
@@ -924,11 +934,8 @@ function FactionCard({
 
         <div className="text-center">
           <h3
-            className="font-[family-name:var(--font-cinzel),serif] font-bold text-[#c8a84e] tracking-wider"
-            style={{
-              fontSize: "clamp(16px, 2vw, 21px)",
-              textShadow: "0 0 15px rgba(200, 168, 78, 0.3)",
-            }}
+            className="am-foil-text font-[family-name:var(--font-cinzel),serif] font-bold tracking-wider"
+            style={{ fontSize: "clamp(16px, 2vw, 21px)" }}
           >
             {name}
           </h3>
@@ -975,7 +982,7 @@ function ShowcaseSection({ title, subtitle, cards }: ShowcaseSectionProps) {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.8 }}
-        className="font-[family-name:var(--font-cinzel),serif] font-bold text-[#c8a84e] text-center mb-4 px-6"
+        className="am-foil-text font-[family-name:var(--font-cinzel),serif] font-bold text-center mb-4 px-6"
         style={{
           fontSize: "clamp(26px, 4vw, 42px)",
           letterSpacing: "0.06em",
@@ -1062,7 +1069,7 @@ function CtaFinalSection({ title, subtitle, btn, onClick }: CtaFinalSectionProps
         className="relative z-[2]"
       >
         <h2
-          className="font-[family-name:var(--font-cinzel),serif] font-bold text-[#c8a84e] mb-4 leading-tight"
+          className="am-foil-text font-[family-name:var(--font-cinzel),serif] font-bold mb-4 leading-tight"
           style={{
             fontSize: "clamp(32px, 5.5vw, 56px)",
             letterSpacing: "0.05em",
@@ -1079,11 +1086,10 @@ function CtaFinalSection({ title, subtitle, btn, onClick }: CtaFinalSectionProps
         </p>
         <button
           onClick={onClick}
-          className="font-[family-name:var(--font-cinzel),serif] px-12 py-5 text-base md:text-lg font-extrabold text-[#0a0a18] rounded-xl tracking-wide transition-transform hover:scale-105 active:scale-95"
+          className="am-btn am-btn-gold am-btn-sheen px-12 py-5 text-base md:text-lg"
           style={{
-            background: "linear-gradient(135deg, #e8c664, #c8a84e 45%, #a08030)",
             boxShadow:
-              "0 8px 40px rgba(200, 168, 78, 0.4), 0 0 80px rgba(200, 168, 78, 0.25), inset 0 1px 0 rgba(255,255,255,0.25)",
+              "0 8px 40px rgba(216, 178, 90, 0.4), 0 0 80px rgba(216, 178, 90, 0.25), inset 0 1px 0 rgba(255,255,255,0.3)",
           }}
         >
           {btn}

@@ -8,6 +8,8 @@ import { isCardOwned } from "@/lib/game/collection";
 import { getFactionDisplayName } from "@/lib/card-engine/constants";
 import GameCard from "./GameCard";
 import ExpertCardFrame from "./ExpertCardFrame";
+import AmAtmosphere from "@/components/ui/AmAtmosphere";
+import { AmButton } from "@/components/ui/AmButton";
 
 interface OwnedPrint {
   id: number;
@@ -36,6 +38,12 @@ const RARITY_COLORS: Record<string, string> = {
   "Épique": "#ce93d8",
   "Légendaire": "#ffd54f",
 };
+
+// Shared classes for the gilded select inputs in the filter bar.
+const SELECT_CLS =
+  "am-gild-border rounded-lg bg-am-bg-2 px-3 py-1.5 text-[16px] sm:text-sm text-am-ink-soft transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-am-gold focus-visible:ring-offset-2 focus-visible:ring-offset-am-bg-0";
+const FILTER_LABEL_CLS =
+  "mr-1 font-[family-name:var(--font-crimson),serif] text-sm italic text-am-ink-faint";
 
 export default function CollectionView({ cards, sets, formats, collectedCardIds, isTester, ownedPrints = [] }: CollectionViewProps) {
   const ownedSet = useMemo(() => new Set(collectedCardIds), [collectedCardIds]);
@@ -176,280 +184,308 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
     search || manaCostFilter !== null || typeFilter !== null || keywordFilter !== null || factionFilter !== null || rarityFilter !== null || expertOnly || raceFilter !== null || clanFilter !== null || filterSet !== "" || filterYear !== "" || formatFilter !== "";
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-primary">Card Collection</h1>
-          <p className="text-foreground/50 text-sm mt-1">
-            {displayItems.length} carte{displayItems.length > 1 ? "s" : ""}{isNormalPlayer ? "" : ` sur ${cards.length}`}
-          </p>
-        </div>
-        <button
-          onClick={() => router.push("/")}
-          className="px-4 py-2 bg-secondary border border-card-border rounded-lg text-foreground/60 hover:text-foreground hover:border-primary/40 transition-colors"
-        >
-          Back to Menu
-        </button>
-      </div>
+    <div className="relative min-h-screen bg-am-bg-0 px-5 py-8 sm:px-8 sm:py-10">
+      <AmAtmosphere />
 
-      {/* Filters */}
-      <div className="bg-secondary rounded-xl border border-card-border p-4 mb-6">
-        <div className="flex flex-wrap gap-4 items-center">
-          {/* Search */}
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name..."
-            className="px-4 py-2 bg-background border border-card-border rounded-lg text-foreground focus:outline-none focus:border-primary transition-colors w-64"
-          />
-
-          {/* Mana cost filter */}
-          <div className="flex items-center gap-1">
-            <span className="text-foreground/50 text-sm mr-1">Mana:</span>
-            {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((cost) => (
-              <button
-                key={cost}
-                onClick={() =>
-                  setManaCostFilter(manaCostFilter === cost ? null : cost)
-                }
-                className={`w-7 h-7 rounded-full text-xs font-bold transition-colors ${
-                  manaCostFilter === cost
-                    ? "bg-mana-blue text-white"
-                    : "bg-background border border-card-border text-foreground/50 hover:border-mana-blue/50"
-                }`}
-              >
-                {cost}
-              </button>
-            ))}
+      <div className="mx-auto max-w-7xl">
+        {/* Header */}
+        <div className="am-animate-rise flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="font-[family-name:var(--font-cinzel),serif] text-xs font-bold uppercase tracking-[0.32em] text-am-arcane-bright">
+              Admire tes armées
+            </p>
+            <h1 className="am-foil-text mt-2 font-[family-name:var(--font-cinzel),serif] text-4xl font-bold sm:text-5xl">
+              Collection de cartes
+            </h1>
+            <p className="mt-2 font-[family-name:var(--font-crimson),serif] text-sm italic text-am-ink-soft">
+              {displayItems.length} carte{displayItems.length > 1 ? "s" : ""}{isNormalPlayer ? "" : ` sur ${cards.length}`}
+            </p>
           </div>
-
-          {/* Type filter */}
-          <div className="flex gap-1">
-            <button
-              onClick={() =>
-                setTypeFilter(typeFilter === "creature" ? null : "creature")
-              }
-              className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                typeFilter === "creature"
-                  ? "bg-primary text-background"
-                  : "bg-background border border-card-border text-foreground/50 hover:border-primary/50"
-              }`}
-            >
-              Creatures
-            </button>
-            <button
-              onClick={() =>
-                setTypeFilter(typeFilter === "spell" ? null : "spell")
-              }
-              className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                typeFilter === "spell"
-                  ? "bg-purple-600 text-white"
-                  : "bg-background border border-card-border text-foreground/50 hover:border-purple-500/50"
-              }`}
-            >
-              Spells
-            </button>
-          </div>
-
-          {/* Reset */}
-          {hasActiveFilters && (
-            <button
-              onClick={resetFilters}
-              className="px-3 py-1.5 text-sm text-accent hover:text-accent/80 transition-colors"
-            >
-              Reset Filters
-            </button>
-          )}
+          <AmButton
+            variant="ghost"
+            size="sm"
+            onClick={() => router.push("/")}
+          >
+            Back to Menu
+          </AmButton>
         </div>
 
-        {/* Second row: Faction, Rarity, Keyword */}
-        <div className="flex flex-wrap gap-4 items-center mt-3 pt-3 border-t border-card-border/30">
-          {/* Faction filter */}
-          <div className="flex items-center gap-1">
-            <span className="text-foreground/50 text-sm mr-1">Faction:</span>
-            <select
-              value={factionFilter ?? ""}
-              onChange={(e) => setFactionFilter(e.target.value || null)}
-              className="px-3 py-1.5 bg-background border border-card-border rounded-lg text-foreground/70 text-sm focus:outline-none focus:border-primary"
-            >
-              <option value="">Toutes</option>
-              {factions.map((f) => (
-                <option key={f} value={f}>{getFactionDisplayName(f)}</option>
-              ))}
-            </select>
-          </div>
+        <div className="am-rule-diamond am-animate-fade my-8" style={{ animationDelay: "0.1s" }} />
 
-          {/* Rarity filter */}
-          <div className="flex items-center gap-1">
-            <span className="text-foreground/50 text-sm mr-1">Rareté:</span>
-            <div className="flex gap-1">
-              {RARITIES.map((r) => (
+        {/* Filters */}
+        <div className="am-glass am-animate-rise mb-8 p-5" style={{ animationDelay: "0.12s" }}>
+          <div className="flex flex-wrap items-center gap-4">
+            {/* Search */}
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by name..."
+              className="am-gild-border w-64 rounded-lg bg-am-bg-2 px-4 py-2 text-[16px] text-am-ink placeholder:text-am-ink-faint transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-am-gold focus-visible:ring-offset-2 focus-visible:ring-offset-am-bg-0"
+            />
+
+            {/* Mana cost filter */}
+            <div className="flex items-center gap-1">
+              <span className={FILTER_LABEL_CLS}>Mana:</span>
+              {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((cost) => (
                 <button
-                  key={r}
-                  onClick={() => setRarityFilter(rarityFilter === r ? null : r)}
-                  style={{
-                    borderColor: rarityFilter === r ? RARITY_COLORS[r] : undefined,
-                    color: rarityFilter === r ? RARITY_COLORS[r] : undefined,
-                    backgroundColor: rarityFilter === r ? `${RARITY_COLORS[r]}15` : undefined,
-                  }}
-                  className={`px-2 py-1 rounded-lg text-xs font-medium transition-colors ${
-                    rarityFilter === r
-                      ? "border"
-                      : "bg-background border border-card-border text-foreground/50 hover:border-primary/50"
+                  key={cost}
+                  onClick={() =>
+                    setManaCostFilter(manaCostFilter === cost ? null : cost)
+                  }
+                  className={`h-7 w-7 rounded-full text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-am-arcane focus-visible:ring-offset-2 focus-visible:ring-offset-am-bg-0 ${
+                    manaCostFilter === cost
+                      ? "border border-am-arcane bg-am-arcane/20 text-am-arcane-bright"
+                      : "am-gild-border bg-am-bg-2 text-am-ink-soft hover:text-am-ink"
                   }`}
                 >
-                  {r}
+                  {cost}
                 </button>
               ))}
             </div>
+
+            {/* Type filter */}
+            <div className="flex gap-1">
+              <button
+                onClick={() =>
+                  setTypeFilter(typeFilter === "creature" ? null : "creature")
+                }
+                className={`rounded-lg px-3 py-1.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-am-gold focus-visible:ring-offset-2 focus-visible:ring-offset-am-bg-0 ${
+                  typeFilter === "creature"
+                    ? "border border-am-gold/60 bg-am-gold/15 text-am-gold-bright"
+                    : "am-gild-border bg-am-bg-2 text-am-ink-soft hover:text-am-ink"
+                }`}
+              >
+                Creatures
+              </button>
+              <button
+                onClick={() =>
+                  setTypeFilter(typeFilter === "spell" ? null : "spell")
+                }
+                className={`rounded-lg px-3 py-1.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-am-arcane focus-visible:ring-offset-2 focus-visible:ring-offset-am-bg-0 ${
+                  typeFilter === "spell"
+                    ? "border border-am-arcane bg-am-arcane/20 text-am-arcane-bright"
+                    : "am-gild-border bg-am-bg-2 text-am-ink-soft hover:text-am-ink"
+                }`}
+              >
+                Spells
+              </button>
+            </div>
+
+            {/* Reset */}
+            {hasActiveFilters && (
+              <button
+                onClick={resetFilters}
+                className="rounded-lg px-3 py-1.5 font-[family-name:var(--font-crimson),serif] text-sm italic text-am-ember transition-colors hover:text-am-ember/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-am-ember focus-visible:ring-offset-2 focus-visible:ring-offset-am-bg-0"
+              >
+                Reset Filters
+              </button>
+            )}
           </div>
 
-          {/* Expert mode filter — shows only non-Commune cards */}
-          <button
-            onClick={() => setExpertOnly((v) => !v)}
-            title="Afficher uniquement les cartes expertes (non-communes)"
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
-              expertOnly
-                ? "border border-primary text-primary bg-primary/10"
-                : "bg-background border border-card-border text-foreground/50 hover:border-primary/50"
-            }`}
-          >
-            Expert uniquement
-          </button>
+          {/* Second row: Faction, Rarity, Keyword */}
+          <div className="mt-4 flex flex-wrap items-center gap-4 border-t border-am-gold/15 pt-4">
+            {/* Faction filter */}
+            <div className="flex items-center gap-1">
+              <span className={FILTER_LABEL_CLS}>Faction:</span>
+              <select
+                value={factionFilter ?? ""}
+                onChange={(e) => setFactionFilter(e.target.value || null)}
+                className={SELECT_CLS}
+              >
+                <option value="">Toutes</option>
+                {factions.map((f) => (
+                  <option key={f} value={f}>{getFactionDisplayName(f)}</option>
+                ))}
+              </select>
+            </div>
 
-          {/* Keyword filter */}
-          <div className="flex items-center gap-1">
-            <span className="text-foreground/50 text-sm mr-1">Capacité:</span>
-            <select
-              value={keywordFilter ?? ""}
-              onChange={(e) =>
-                setKeywordFilter(e.target.value ? (e.target.value as Keyword) : null)
+            {/* Rarity filter */}
+            <div className="flex items-center gap-1">
+              <span className={FILTER_LABEL_CLS}>Rareté:</span>
+              <div className="flex gap-1">
+                {RARITIES.map((r) => (
+                  <button
+                    key={r}
+                    onClick={() => setRarityFilter(rarityFilter === r ? null : r)}
+                    style={{
+                      borderColor: rarityFilter === r ? RARITY_COLORS[r] : undefined,
+                      color: rarityFilter === r ? RARITY_COLORS[r] : undefined,
+                      backgroundColor: rarityFilter === r ? `${RARITY_COLORS[r]}15` : undefined,
+                    }}
+                    className={`rounded-lg px-2 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-am-gold focus-visible:ring-offset-2 focus-visible:ring-offset-am-bg-0 ${
+                      rarityFilter === r
+                        ? "border"
+                        : "am-gild-border bg-am-bg-2 text-am-ink-soft hover:text-am-ink"
+                    }`}
+                  >
+                    {r}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Expert mode filter — shows only non-Commune cards */}
+            <button
+              onClick={() => setExpertOnly((v) => !v)}
+              title="Afficher uniquement les cartes expertes (non-communes)"
+              className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-am-gold focus-visible:ring-offset-2 focus-visible:ring-offset-am-bg-0 ${
+                expertOnly
+                  ? "border border-am-gold/60 bg-am-gold/15 text-am-gold-bright"
+                  : "am-gild-border bg-am-bg-2 text-am-ink-soft hover:text-am-ink"
+              }`}
+            >
+              Expert uniquement
+            </button>
+
+            {/* Keyword filter */}
+            <div className="flex items-center gap-1">
+              <span className={FILTER_LABEL_CLS}>Capacité:</span>
+              <select
+                value={keywordFilter ?? ""}
+                onChange={(e) =>
+                  setKeywordFilter(e.target.value ? (e.target.value as Keyword) : null)
+                }
+                className={SELECT_CLS}
+              >
+                <option value="">Toutes</option>
+                {KEYWORDS.map((kw) => (
+                  <option key={kw} value={kw}>
+                    {KEYWORD_LABELS[kw]}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Race filter */}
+            <div className="flex items-center gap-1">
+              <span className={FILTER_LABEL_CLS}>Race:</span>
+              <select
+                value={raceFilter ?? ""}
+                onChange={(e) => setRaceFilter(e.target.value || null)}
+                className={SELECT_CLS}
+              >
+                <option value="">Toutes</option>
+                {races.map((r) => (
+                  <option key={r} value={r}>{r}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Clan filter */}
+            <div className="flex items-center gap-1">
+              <span className={FILTER_LABEL_CLS}>Clan:</span>
+              <select
+                value={clanFilter ?? ""}
+                onChange={(e) => setClanFilter(e.target.value || null)}
+                className={SELECT_CLS}
+              >
+                <option value="">Tous</option>
+                {clans.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Format filter */}
+            <div className="flex items-center gap-1">
+              <span className={FILTER_LABEL_CLS}>Format:</span>
+              <select
+                value={formatFilter}
+                onChange={(e) => setFormatFilter(e.target.value)}
+                className={SELECT_CLS}
+              >
+                <option value="">Tous</option>
+                {formats.map((f) => (
+                  <option key={f.id} value={String(f.id)}>{f.name}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Set filter */}
+            <div className="flex items-center gap-1">
+              <span className={FILTER_LABEL_CLS}>Set:</span>
+              <select
+                value={filterSet}
+                onChange={(e) => setFilterSet(e.target.value)}
+                className={SELECT_CLS}
+              >
+                <option value="">Tous</option>
+                {sets.map((s) => (
+                  <option key={s.id} value={String(s.id)}>{s.icon} {s.name}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Year filter */}
+            <div className="flex items-center gap-1">
+              <span className={FILTER_LABEL_CLS}>Année:</span>
+              <select
+                value={filterYear}
+                onChange={(e) => setFilterYear(e.target.value)}
+                className={SELECT_CLS}
+              >
+                <option value="">Toutes</option>
+                {years.map((y) => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Card Grid */}
+        {displayItems.length === 0 ? (
+          <div className="am-glass am-animate-rise px-6 py-20 text-center font-[family-name:var(--font-crimson),serif] text-xl italic text-am-ink-soft">
+            Aucune carte ne correspond à vos filtres
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 justify-items-center gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {displayItems.map((item, i) => {
+              const rarity = item.card.rarity ?? "Commune";
+              const isExpert = rarity !== "Commune";
+              // Lift the whole cell above its neighbours on hover so the
+              // 1.5× zoom renders in front of adjacent cards instead of
+              // being clipped by later ones in DOM order. `relative` makes
+              // the z-index actually apply; the inner GameCard's own zoom
+              // z-index is trapped inside this cell otherwise.
+              const hoverLift = "relative z-0 hover:z-30";
+              const animProps =
+                i < 24
+                  ? {
+                      className: `${hoverLift} am-animate-rise`,
+                      style: { animationDelay: `${0.02 * i + 0.05}s` } as const,
+                    }
+                  : { className: hoverLift };
+              if (isExpert) {
+                return (
+                  <div key={item.key} {...animProps}>
+                    <ExpertCardFrame rarity={rarity}>
+                      <GameCard
+                        card={item.card}
+                        size="md"
+                        printNumber={item.printNumber}
+                        maxPrints={item.maxPrints}
+                        disableHoverZoom
+                      />
+                    </ExpertCardFrame>
+                  </div>
+                );
               }
-              className="px-3 py-1.5 bg-background border border-card-border rounded-lg text-foreground/70 text-sm focus:outline-none focus:border-primary"
-            >
-              <option value="">Toutes</option>
-              {KEYWORDS.map((kw) => (
-                <option key={kw} value={kw}>
-                  {KEYWORD_LABELS[kw]}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Race filter */}
-          <div className="flex items-center gap-1">
-            <span className="text-foreground/50 text-sm mr-1">Race:</span>
-            <select
-              value={raceFilter ?? ""}
-              onChange={(e) => setRaceFilter(e.target.value || null)}
-              className="px-3 py-1.5 bg-background border border-card-border rounded-lg text-foreground/70 text-sm focus:outline-none focus:border-primary"
-            >
-              <option value="">Toutes</option>
-              {races.map((r) => (
-                <option key={r} value={r}>{r}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Clan filter */}
-          <div className="flex items-center gap-1">
-            <span className="text-foreground/50 text-sm mr-1">Clan:</span>
-            <select
-              value={clanFilter ?? ""}
-              onChange={(e) => setClanFilter(e.target.value || null)}
-              className="px-3 py-1.5 bg-background border border-card-border rounded-lg text-foreground/70 text-sm focus:outline-none focus:border-primary"
-            >
-              <option value="">Tous</option>
-              {clans.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Format filter */}
-          <div className="flex items-center gap-1">
-            <span className="text-foreground/50 text-sm mr-1">Format:</span>
-            <select
-              value={formatFilter}
-              onChange={(e) => setFormatFilter(e.target.value)}
-              className="px-3 py-1.5 bg-background border border-card-border rounded-lg text-foreground/70 text-sm focus:outline-none focus:border-primary"
-            >
-              <option value="">Tous</option>
-              {formats.map((f) => (
-                <option key={f.id} value={String(f.id)}>{f.name}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Set filter */}
-          <div className="flex items-center gap-1">
-            <span className="text-foreground/50 text-sm mr-1">Set:</span>
-            <select
-              value={filterSet}
-              onChange={(e) => setFilterSet(e.target.value)}
-              className="px-3 py-1.5 bg-background border border-card-border rounded-lg text-foreground/70 text-sm focus:outline-none focus:border-primary"
-            >
-              <option value="">Tous</option>
-              {sets.map((s) => (
-                <option key={s.id} value={String(s.id)}>{s.icon} {s.name}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Year filter */}
-          <div className="flex items-center gap-1">
-            <span className="text-foreground/50 text-sm mr-1">Année:</span>
-            <select
-              value={filterYear}
-              onChange={(e) => setFilterYear(e.target.value)}
-              className="px-3 py-1.5 bg-background border border-card-border rounded-lg text-foreground/70 text-sm focus:outline-none focus:border-primary"
-            >
-              <option value="">Toutes</option>
-              {years.map((y) => (
-                <option key={y} value={y}>{y}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Card Grid */}
-      {displayItems.length === 0 ? (
-        <div className="text-center py-20 text-foreground/40">
-          Aucune carte ne correspond à vos filtres
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 justify-items-center">
-          {displayItems.map((item) => {
-            const rarity = item.card.rarity ?? "Commune";
-            const isExpert = rarity !== "Commune";
-            if (isExpert) {
               return (
-                <ExpertCardFrame key={item.key} rarity={rarity}>
+                <div key={item.key} {...animProps}>
                   <GameCard
                     card={item.card}
                     size="md"
                     printNumber={item.printNumber}
                     maxPrints={item.maxPrints}
-                    disableHoverZoom
                   />
-                </ExpertCardFrame>
+                </div>
               );
-            }
-            return (
-              <GameCard
-                key={item.key}
-                card={item.card}
-                size="md"
-                printNumber={item.printNumber}
-                maxPrints={item.maxPrints}
-              />
-            );
-          })}
-        </div>
-      )}
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
