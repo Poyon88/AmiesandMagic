@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { DECK_SIZE } from "@/lib/game/constants";
+import AmAtmosphere from "@/components/ui/AmAtmosphere";
+import { AmButton } from "@/components/ui/AmButton";
 
 interface DeckWithCount {
   id: number;
@@ -37,104 +39,130 @@ export default function DeckList({ decks }: { decks: DeckWithCount[] }) {
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-primary">My Decks</h1>
-          <p className="text-foreground/50 text-sm mt-1">
-            {decks.length} deck{decks.length !== 1 ? "s" : ""}
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <button
-            onClick={() => router.push("/decks/builder")}
-            className="px-5 py-2.5 bg-primary hover:bg-primary-dark text-background font-bold rounded-lg transition-colors"
-          >
-            + New Deck
-          </button>
-          <button
-            onClick={() => router.push("/")}
-            className="px-4 py-2.5 bg-secondary border border-card-border rounded-lg text-foreground/60 hover:text-foreground hover:border-primary/40 transition-colors"
-          >
-            Back to Menu
-          </button>
-        </div>
-      </div>
+    <div className="relative min-h-screen bg-am-bg-0 px-5 py-8 sm:px-8 sm:py-10">
+      <AmAtmosphere />
 
-      {/* Deck Grid */}
-      {decks.length === 0 ? (
-        <div className="text-center py-20">
-          <p className="text-foreground/40 text-lg mb-4">
-            You don&apos;t have any decks yet
-          </p>
-          <button
-            onClick={() => router.push("/decks/builder")}
-            className="px-6 py-3 bg-primary hover:bg-primary-dark text-background font-bold rounded-lg transition-colors"
-          >
-            Create Your First Deck
-          </button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {decks.map((deck) => (
-            <div
-              key={deck.id}
-              className="bg-secondary border border-card-border rounded-xl p-5 hover:border-primary/40 transition-colors"
+      <div className="mx-auto max-w-6xl">
+        {/* Header */}
+        <div className="am-animate-rise flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="font-[family-name:var(--font-cinzel),serif] text-xs font-bold uppercase tracking-[0.32em] text-am-arcane-bright">
+              Compose ton armée
+            </p>
+            <h1 className="am-foil-text mt-2 font-[family-name:var(--font-cinzel),serif] text-4xl font-bold sm:text-5xl">
+              My Decks
+            </h1>
+            <p className="mt-2 font-[family-name:var(--font-crimson),serif] text-sm italic text-am-ink-soft">
+              {decks.length} deck{decks.length !== 1 ? "s" : ""} in your armory
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <AmButton
+              variant="gold"
+              size="sm"
+              onClick={() => router.push("/decks/builder")}
             >
-              <h3 className="font-bold text-foreground text-lg mb-1">
-                {deck.name}
-              </h3>
-              <p
-                className={`text-sm mb-4 ${
-                  deck.cardCount === DECK_SIZE
-                    ? "text-success"
-                    : "text-accent"
-                }`}
-              >
-                {deck.cardCount}/{DECK_SIZE} cards
-                {deck.cardCount === DECK_SIZE && " (Valid)"}
-              </p>
-
-              <div className="flex gap-2">
-                <button
-                  onClick={() =>
-                    router.push(`/decks/builder?id=${deck.id}`)
-                  }
-                  className="flex-1 py-2 bg-mana-blue/20 text-mana-blue rounded-lg text-sm font-medium hover:bg-mana-blue/30 transition-colors"
-                >
-                  Edit
-                </button>
-
-                {confirmDeleteId === deck.id ? (
-                  <div className="flex gap-1">
-                    <button
-                      onClick={() => handleDelete(deck.id)}
-                      disabled={deletingId === deck.id}
-                      className="px-3 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent/80 transition-colors disabled:opacity-50"
-                    >
-                      {deletingId === deck.id ? "..." : "Confirm"}
-                    </button>
-                    <button
-                      onClick={() => setConfirmDeleteId(null)}
-                      className="px-3 py-2 bg-background border border-card-border rounded-lg text-sm text-foreground/50 hover:text-foreground transition-colors"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setConfirmDeleteId(deck.id)}
-                    className="px-3 py-2 bg-accent/20 text-accent rounded-lg text-sm font-medium hover:bg-accent/30 transition-colors"
-                  >
-                    Delete
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
+              + New Deck
+            </AmButton>
+            <AmButton
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push("/")}
+            >
+              Back to Menu
+            </AmButton>
+          </div>
         </div>
-      )}
+
+        <div className="am-rule-diamond am-animate-fade my-8" style={{ animationDelay: "0.1s" }} />
+
+        {/* Deck Grid */}
+        {decks.length === 0 ? (
+          <div className="am-glass am-animate-rise flex flex-col items-center gap-6 px-6 py-20 text-center">
+            <p className="font-[family-name:var(--font-crimson),serif] text-xl italic text-am-ink-soft">
+              You don&apos;t have any decks yet
+            </p>
+            <AmButton
+              variant="gold"
+              size="md"
+              onClick={() => router.push("/decks/builder")}
+            >
+              Create Your First Deck
+            </AmButton>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {decks.map((deck, i) => {
+              const isValid = deck.cardCount === DECK_SIZE;
+              return (
+                <div
+                  key={deck.id}
+                  className="am-glass am-animate-rise group flex flex-col p-5 transition-all duration-300 hover:-translate-y-1 hover:border-am-gold/40"
+                  style={{ animationDelay: `${0.06 * i + 0.12}s` }}
+                >
+                  <h3 className="am-foil-text font-[family-name:var(--font-cinzel),serif] text-xl font-bold leading-tight">
+                    {deck.name}
+                  </h3>
+
+                  <div className="mt-3 mb-5">
+                    <span
+                      className={`am-gild-border inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${
+                        isValid ? "text-am-jade" : "text-am-gold"
+                      }`}
+                    >
+                      <span
+                        className={`h-1.5 w-1.5 rounded-full ${
+                          isValid ? "bg-am-jade" : "bg-am-gold"
+                        }`}
+                      />
+                      {deck.cardCount}/{DECK_SIZE} cards
+                      {isValid && " (Valid)"}
+                    </span>
+                  </div>
+
+                  <div className="am-rule mb-4 opacity-60" />
+
+                  <div className="mt-auto flex gap-2">
+                    <button
+                      onClick={() =>
+                        router.push(`/decks/builder?id=${deck.id}`)
+                      }
+                      className="flex-1 rounded-lg bg-am-azure/15 py-2 text-sm font-medium text-am-azure transition-colors hover:bg-am-azure/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-am-azure focus-visible:ring-offset-2 focus-visible:ring-offset-am-bg-0"
+                    >
+                      Edit
+                    </button>
+
+                    {confirmDeleteId === deck.id ? (
+                      <div className="flex gap-1">
+                        <button
+                          onClick={() => handleDelete(deck.id)}
+                          disabled={deletingId === deck.id}
+                          className="rounded-lg bg-am-ember px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-am-ember/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-am-ember focus-visible:ring-offset-2 focus-visible:ring-offset-am-bg-0 disabled:opacity-50"
+                        >
+                          {deletingId === deck.id ? "..." : "Confirm"}
+                        </button>
+                        <button
+                          onClick={() => setConfirmDeleteId(null)}
+                          className="rounded-lg border border-am-gold/30 bg-am-bg-2 px-3 py-2 text-sm text-am-ink-soft transition-colors hover:text-am-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-am-gold focus-visible:ring-offset-2 focus-visible:ring-offset-am-bg-0"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setConfirmDeleteId(deck.id)}
+                        className="rounded-lg bg-am-ember/15 px-3 py-2 text-sm font-medium text-am-ember transition-colors hover:bg-am-ember/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-am-ember focus-visible:ring-offset-2 focus-visible:ring-offset-am-bg-0"
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

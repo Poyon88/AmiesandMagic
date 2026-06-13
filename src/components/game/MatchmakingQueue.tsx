@@ -4,6 +4,10 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { GameFormat } from "@/lib/game/types";
+import AmAtmosphere from "@/components/ui/AmAtmosphere";
+import AmHeading from "@/components/ui/AmHeading";
+import AmPanel from "@/components/ui/AmPanel";
+import { AmButton } from "@/components/ui/AmButton";
 
 interface ValidDeck {
   id: number;
@@ -239,126 +243,147 @@ export default function MatchmakingQueue({
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <div className="w-full max-w-md p-8 bg-secondary rounded-xl border border-card-border shadow-2xl">
-        <h1 className="text-3xl font-bold text-center text-primary mb-2">
-          Play
-        </h1>
-        <p className="text-center text-foreground/50 text-sm mb-8">
-          Find an opponent and battle
-        </p>
+    <div className="relative min-h-screen bg-am-bg-0 flex items-center justify-center px-4 py-12 overflow-hidden">
+      <AmAtmosphere />
 
-        {!inQueue ? (
-          <>
-            {validDecks.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-foreground/50 mb-4">
-                  You need at least one valid deck (50 cards) to play.
-                </p>
-                <button
-                  onClick={() => router.push("/decks/builder")}
-                  className="px-6 py-2 bg-primary hover:bg-primary-dark text-background font-bold rounded-lg transition-colors"
-                >
-                  Create a Deck
-                </button>
-              </div>
-            ) : (
-              <>
-                {formats.length > 0 && (
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-foreground/70 mb-2">
-                      Format :
-                    </label>
-                    <div className="flex gap-2 flex-wrap">
-                      {formats.map((f) => (
-                        <button
-                          key={f.id}
-                          onClick={() => {
-                            setSelectedFormatId(f.id);
-                            const firstDeck = validDecks.find(d => d.format_id === f.id);
-                            setSelectedDeckId(firstDeck?.id ?? null);
-                          }}
-                          className={`px-4 py-2 rounded-lg border-2 text-sm font-medium transition-colors ${
-                            selectedFormatId === f.id
-                              ? "border-primary bg-primary/10 text-primary"
-                              : "border-card-border bg-background text-foreground/60 hover:border-primary/40"
-                          }`}
-                        >
-                          {f.name}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
+      <AmPanel
+        corners
+        glow
+        className="am-animate-rise w-full max-w-md p-8 md:p-10"
+      >
+        <AmHeading
+          as="h1"
+          eyebrow="Prouve ta valeur"
+          subtitle="Trouve un adversaire et bats-toi"
+        >
+          Jouer
+        </AmHeading>
 
-                <label className="block text-sm font-medium text-foreground/70 mb-2">
-                  Select your deck:
-                </label>
-                {formatDecks.length === 0 && selectedFormatId && (
-                  <p className="text-foreground/50 text-sm mb-4">
-                    Aucun deck pour ce format. Créez-en un dans le deck builder.
+        <div className="mt-8">
+          {!inQueue ? (
+            <>
+              {validDecks.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-am-ink-soft mb-6 font-[family-name:var(--font-crimson),serif] italic text-lg">
+                    You need at least one valid deck (50 cards) to play.
                   </p>
-                )}
-                <div className="space-y-2 mb-6">
-                  {formatDecks.map((deck) => (
-                    <button
-                      key={deck.id}
-                      onClick={() => setSelectedDeckId(deck.id)}
-                      className={`w-full p-3 rounded-lg border-2 text-left transition-colors ${
-                        selectedDeckId === deck.id
-                          ? "border-primary bg-primary/10"
-                          : "border-card-border bg-background hover:border-primary/40"
-                      }`}
-                    >
-                      <div className="font-medium text-foreground">
-                        {deck.name}
-                      </div>
-                      <div className="text-xs text-success">
-                        {deck.cardCount} cards
-                      </div>
-                    </button>
-                  ))}
+                  <AmButton
+                    variant="gold"
+                    size="md"
+                    onClick={() => router.push("/decks/builder")}
+                  >
+                    Create a Deck
+                  </AmButton>
                 </div>
+              ) : (
+                <>
+                  {formats.length > 0 && (
+                    <div className="mb-6">
+                      <label className="block text-[11px] font-display tracking-[0.22em] uppercase text-am-gold/80 mb-3">
+                        Format :
+                      </label>
+                      <div className="flex gap-2 flex-wrap">
+                        {formats.map((f) => (
+                          <button
+                            key={f.id}
+                            onClick={() => {
+                              setSelectedFormatId(f.id);
+                              const firstDeck = validDecks.find(d => d.format_id === f.id);
+                              setSelectedDeckId(firstDeck?.id ?? null);
+                            }}
+                            className={`px-4 py-2 rounded-md border text-sm font-medium transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-am-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-am-bg-0 ${
+                              selectedFormatId === f.id
+                                ? "border-am-gold/60 bg-am-gold/15 text-am-gold-bright shadow-[0_0_18px_-6px_rgba(216,178,90,0.5)]"
+                                : "border-am-gold/15 bg-am-bg-1 text-am-ink-soft hover:border-am-gold/40 hover:text-am-ink"
+                            }`}
+                          >
+                            {f.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-                {error && (
-                  <p className="text-accent text-sm mb-4">{error}</p>
-                )}
+                  <div className="am-rule mb-6" />
 
-                <button
-                  onClick={joinQueue}
-                  disabled={!selectedDeckId}
-                  className="w-full py-3 bg-accent hover:bg-accent/80 text-white font-bold rounded-lg transition-colors disabled:opacity-50"
-                >
-                  Find Match
-                </button>
-              </>
-            )}
+                  <label className="block text-[11px] font-display tracking-[0.22em] uppercase text-am-gold/80 mb-3">
+                    Select your deck:
+                  </label>
+                  {formatDecks.length === 0 && selectedFormatId && (
+                    <p className="text-am-ink-soft text-sm mb-4 font-[family-name:var(--font-crimson),serif] italic">
+                      Aucun deck pour ce format. Créez-en un dans le deck builder.
+                    </p>
+                  )}
+                  <div className="space-y-2 mb-7">
+                    {formatDecks.map((deck) => (
+                      <button
+                        key={deck.id}
+                        onClick={() => setSelectedDeckId(deck.id)}
+                        className={`w-full p-4 rounded-md border text-left transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-am-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-am-bg-0 ${
+                          selectedDeckId === deck.id
+                            ? "border-am-gold/60 bg-am-gold/10 shadow-[0_0_22px_-8px_rgba(216,178,90,0.55)]"
+                            : "border-am-gold/15 bg-am-bg-1 hover:border-am-gold/40 hover:bg-am-bg-3"
+                        }`}
+                      >
+                        <div className="font-display font-semibold text-am-ink tracking-wide">
+                          {deck.name}
+                        </div>
+                        <div className="text-xs text-am-jade mt-0.5">
+                          {deck.cardCount} cards
+                        </div>
+                      </button>
+                    ))}
+                  </div>
 
-            <button
-              onClick={() => router.push("/")}
-              className="w-full mt-3 py-2 bg-background border border-card-border rounded-lg text-foreground/60 hover:text-foreground transition-colors text-sm"
-            >
-              Back to Menu
-            </button>
-          </>
-        ) : (
-          <div className="text-center py-8">
-            <div className="text-5xl mb-6 animate-pulse">⚔️</div>
-            <p className="text-foreground/70 text-lg mb-2">
-              Searching for opponent...
-            </p>
-            <p className="text-foreground/40 text-2xl font-mono mb-8">
-              {formatTime(queueTime)}
-            </p>
-            <button
-              onClick={leaveQueue}
-              className="px-8 py-2 bg-background border border-card-border rounded-lg text-foreground/60 hover:text-foreground hover:border-accent/40 transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
-        )}
-      </div>
+                  {error && (
+                    <p className="text-am-ember text-sm mb-4 text-center">{error}</p>
+                  )}
+
+                  <AmButton
+                    variant="gold"
+                    size="lg"
+                    onClick={joinQueue}
+                    disabled={!selectedDeckId}
+                    className="w-full"
+                  >
+                    Find Match
+                  </AmButton>
+                </>
+              )}
+
+              <button
+                onClick={() => router.push("/")}
+                className="am-btn am-btn-ghost w-full mt-3 px-6 py-2.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-am-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-am-bg-0"
+              >
+                Back to Menu
+              </button>
+            </>
+          ) : (
+            <div className="text-center py-6">
+              <div
+                className="mx-auto mb-7 flex h-24 w-24 items-center justify-center rounded-full border border-am-gold/40 bg-am-bg-1/60 text-5xl am-shimmer"
+                style={{ animation: "am-pulse-glow 2.2s ease-in-out infinite" }}
+                aria-hidden="true"
+              >
+                ⚔️
+              </div>
+              <p className="font-display tracking-[0.18em] uppercase text-am-arcane-bright text-sm mb-3">
+                Searching for opponent...
+              </p>
+              <p className="text-am-gold-bright text-3xl font-mono mb-2 tabular-nums">
+                {formatTime(queueTime)}
+              </p>
+              <div className="am-rule-diamond w-32 mx-auto my-7" />
+              <button
+                onClick={leaveQueue}
+                className="am-btn am-btn-ghost px-9 py-2.5 text-sm text-am-ember hover:!text-am-ember focus:outline-none focus-visible:ring-2 focus-visible:ring-am-ember/50 focus-visible:ring-offset-2 focus-visible:ring-offset-am-bg-0"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+        </div>
+      </AmPanel>
     </div>
   );
 }

@@ -5,6 +5,8 @@ import type { AuctionWithDetails, AuctionFilters, AuctionSettings } from "@/lib/
 import AuctionCard from "./AuctionCard";
 import CreateAuctionModal from "./CreateAuctionModal";
 import MyAuctions from "./MyAuctions";
+import AmAtmosphere from "@/components/ui/AmAtmosphere";
+import { AmButton, AmLinkButton } from "@/components/ui/AmButton";
 
 interface AuctionHouseProps {
   userId: string;
@@ -16,6 +18,9 @@ const SORT_OPTIONS = [
   { value: "price_desc", label: "Prix décroissant" },
   { value: "newest", label: "Plus récentes" },
 ];
+
+const SELECT_CLASS =
+  "am-gild-border bg-am-bg-2 text-am-ink rounded-[var(--am-r-sm)] px-3 min-w-[130px] min-h-[44px] text-base outline-none focus-visible:shadow-[0_0_0_2px_var(--am-bg-0),0_0_0_4px_var(--am-gold)]";
 
 export default function AuctionHouse({ userId }: AuctionHouseProps) {
   const [auctions, setAuctions] = useState<AuctionWithDetails[]>([]);
@@ -70,52 +75,34 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
   const totalPages = Math.ceil(total / (filters.limit ?? 20));
 
   return (
-    <div style={{ maxWidth: 1200, margin: "0 auto", padding: "24px 16px" }}>
+    <div className="relative mx-auto max-w-[1200px] px-4 py-8">
+      <AmAtmosphere />
+
       {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between am-animate-rise">
         <div>
-          <h1 style={{ fontSize: 28, fontWeight: 700, color: "#c8a84e", fontFamily: "var(--font-cinzel), serif", margin: 0 }}>
-            Hôtel des Enchères
+          <span className="font-display text-[10px] md:text-xs tracking-[0.32em] uppercase text-am-arcane-bright/80">
+            Recrute tes troupes
+          </span>
+          <h1 className="am-foil-text font-[family-name:var(--font-cinzel),serif] font-bold leading-tight text-3xl mt-1">
+            Hôtel des ventes
           </h1>
-          <p style={{ color: "#999", fontSize: 14, margin: "4px 0 0" }}>
+          <p className="font-[family-name:var(--font-crimson),serif] italic text-am-ink-soft text-sm mt-1">
             Achetez et vendez des cartes
           </p>
         </div>
-        <div style={{ display: "flex", gap: 8 }}>
-          <a
-            href="/"
-            style={{
-              padding: "8px 16px",
-              background: "#2a2a45",
-              border: "1px solid #3d3d5c",
-              borderRadius: 8,
-              color: "#e0e0e0",
-              textDecoration: "none",
-              fontSize: 14,
-            }}
-          >
+        <div className="flex gap-3">
+          <AmLinkButton href="/" variant="ghost" size="sm">
             Menu
-          </a>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            style={{
-              padding: "8px 20px",
-              background: "#c8a84e",
-              border: "none",
-              borderRadius: 8,
-              color: "#1a1a2e",
-              fontWeight: 600,
-              fontSize: 14,
-              cursor: "pointer",
-            }}
-          >
+          </AmLinkButton>
+          <AmButton onClick={() => setShowCreateModal(true)} variant="gold" size="sm">
             Vendre une carte
-          </button>
+          </AmButton>
         </div>
       </div>
 
       {/* Tabs */}
-      <div style={{ display: "flex", gap: 0, marginBottom: 20, borderBottom: "1px solid #3d3d5c" }}>
+      <div className="mb-6 flex gap-0 border-b border-am-gold/30 am-animate-rise" style={{ animationDelay: "60ms" }}>
         {[
           { key: "browse" as const, label: "Parcourir" },
           { key: "my" as const, label: "Mes Enchères" },
@@ -123,16 +110,11 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            style={{
-              padding: "10px 24px",
-              background: "transparent",
-              border: "none",
-              borderBottom: activeTab === tab.key ? "2px solid #c8a84e" : "2px solid transparent",
-              color: activeTab === tab.key ? "#c8a84e" : "#999",
-              fontWeight: activeTab === tab.key ? 600 : 400,
-              fontSize: 14,
-              cursor: "pointer",
-            }}
+            className={`px-6 py-2.5 text-sm font-[family-name:var(--font-cinzel),serif] tracking-wide transition-colors -mb-px border-b-2 ${
+              activeTab === tab.key
+                ? "border-am-gold text-am-gold font-bold"
+                : "border-transparent text-am-ink-soft hover:text-am-ink"
+            }`}
           >
             {tab.label}
           </button>
@@ -144,7 +126,7 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
       ) : (
         <>
           {/* Filters */}
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
+          <div className="am-glass mb-6 flex flex-wrap gap-3 p-4 am-animate-rise" style={{ animationDelay: "120ms" }}>
             <input
               type="text"
               placeholder="Rechercher..."
@@ -153,16 +135,7 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
                 setSearch(e.target.value);
                 setFilters((f) => ({ ...f, page: 1 }));
               }}
-              style={{
-                padding: "8px 12px",
-                background: "#2a2a45",
-                border: "1px solid #3d3d5c",
-                borderRadius: 6,
-                color: "#e0e0e0",
-                fontSize: 13,
-                flex: "1 1 200px",
-                minWidth: 150,
-              }}
+              className="am-gild-border bg-am-bg-2 text-am-ink rounded-[var(--am-r-sm)] px-3 min-h-[44px] text-base outline-none placeholder:text-am-ink-faint flex-[1_1_200px] min-w-[150px] focus-visible:shadow-[0_0_0_2px_var(--am-bg-0),0_0_0_4px_var(--am-gold)]"
             />
             <select
               value={faction}
@@ -170,7 +143,7 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
                 setFaction(e.target.value);
                 setFilters((f) => ({ ...f, page: 1 }));
               }}
-              style={selectStyle}
+              className={SELECT_CLASS}
             >
               <option value="">Toutes factions</option>
               {["Lumière", "Ténèbres", "Nature", "Feu", "Eau", "Terre", "Air", "Neutre"].map((f) => (
@@ -183,7 +156,7 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
                 setRarity(e.target.value);
                 setFilters((f) => ({ ...f, page: 1 }));
               }}
-              style={selectStyle}
+              className={SELECT_CLASS}
             >
               <option value="">Toutes raretés</option>
               {["Commune", "Peu Commune", "Rare", "Épique", "Légendaire"].map((r) => (
@@ -196,7 +169,7 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
                 setCardType(e.target.value);
                 setFilters((f) => ({ ...f, page: 1 }));
               }}
-              style={selectStyle}
+              className={SELECT_CLASS}
             >
               <option value="">Tous types</option>
               <option value="creature">Créature</option>
@@ -207,7 +180,7 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
               onChange={(e) =>
                 setFilters((f) => ({ ...f, sort: e.target.value as AuctionFilters["sort"], page: 1 }))
               }
-              style={selectStyle}
+              className={SELECT_CLASS}
             >
               {SORT_OPTIONS.map((o) => (
                 <option key={o.value} value={o.value}>{o.label}</option>
@@ -217,45 +190,54 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
 
           {/* Auction grid */}
           {loading ? (
-            <div style={{ textAlign: "center", padding: 60, color: "#999" }}>Chargement...</div>
+            <div className="py-16 text-center font-[family-name:var(--font-crimson),serif] italic text-am-ink-soft">
+              Chargement...
+            </div>
           ) : auctions.length === 0 ? (
-            <div style={{ textAlign: "center", padding: 60, color: "#999" }}>
+            <div className="am-glass py-16 text-center font-[family-name:var(--font-crimson),serif] italic text-am-ink-soft">
               Aucune enchère trouvée
             </div>
           ) : (
             <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-                gap: 16,
-              }}
+              className="grid gap-4"
+              style={{ gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))" }}
             >
-              {auctions.map((auction) => (
-                <AuctionCard key={auction.id} auction={auction} />
+              {auctions.map((auction, i) => (
+                <div
+                  key={auction.id}
+                  className="am-animate-rise"
+                  style={{ animationDelay: `${Math.min(i * 40, 400)}ms` }}
+                >
+                  <AuctionCard auction={auction} />
+                </div>
               ))}
             </div>
           )}
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 24 }}>
-              <button
+            <div className="mt-8 flex items-center justify-center gap-3">
+              <AmButton
+                variant="ghost"
+                size="sm"
                 disabled={filters.page === 1}
                 onClick={() => setFilters((f) => ({ ...f, page: (f.page ?? 1) - 1 }))}
-                style={paginationBtnStyle(filters.page === 1)}
+                className="disabled:opacity-40 disabled:cursor-default"
               >
                 Précédent
-              </button>
-              <span style={{ color: "#999", lineHeight: "36px", fontSize: 14 }}>
+              </AmButton>
+              <span className="font-[family-name:var(--font-cinzel),serif] text-sm text-am-ink-soft leading-9">
                 Page {filters.page} / {totalPages}
               </span>
-              <button
+              <AmButton
+                variant="ghost"
+                size="sm"
                 disabled={filters.page === totalPages}
                 onClick={() => setFilters((f) => ({ ...f, page: (f.page ?? 1) + 1 }))}
-                style={paginationBtnStyle(filters.page === totalPages)}
+                className="disabled:opacity-40 disabled:cursor-default"
               >
                 Suivant
-              </button>
+              </AmButton>
             </div>
           )}
         </>
@@ -274,29 +256,4 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
       )}
     </div>
   );
-}
-
-const selectStyle: React.CSSProperties = {
-  padding: "12px 12px",
-  background: "#2a2a45",
-  border: "1px solid #3d3d5c",
-  borderRadius: 6,
-  color: "#e0e0e0",
-  // 16px on mobile prevents iOS Safari from auto-zooming on focus.
-  fontSize: 16,
-  minWidth: 130,
-  minHeight: 44,
-};
-
-function paginationBtnStyle(disabled: boolean): React.CSSProperties {
-  return {
-    padding: "12px 16px",
-    background: disabled ? "#1a1a2e" : "#2a2a45",
-    border: "1px solid #3d3d5c",
-    borderRadius: 6,
-    color: disabled ? "#666" : "#e0e0e0",
-    cursor: disabled ? "default" : "pointer",
-    fontSize: 14,
-    minHeight: 44,
-  };
 }

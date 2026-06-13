@@ -2,6 +2,7 @@
 
 import HomeHeader from "@/components/home/HomeHeader";
 import MenuTile from "@/components/home/MenuTile";
+import AmAtmosphere from "@/components/ui/AmAtmosphere";
 import { useStoredLocale } from "@/lib/i18n/useLocale";
 import { homeDict } from "@/lib/i18n/homeDict";
 
@@ -15,44 +16,47 @@ export default function MainMenu({ username, goldBalance }: MainMenuProps) {
   const t = homeDict[locale];
 
   return (
-    <div className="min-h-screen bg-[#0a0a18] text-[#e0e0e0]">
+    <div className="min-h-screen text-am-ink">
+      <AmAtmosphere />
       <HomeHeader username={username} goldBalance={goldBalance} />
 
       <main
         id="main-content"
         className="relative px-4 md:px-10 pt-28 md:pt-32 pb-16 min-h-screen"
-        style={{
-          background:
-            "radial-gradient(ellipse at 50% 35%, rgba(21,21,51,0.95) 0%, #0a0a18 75%)",
-        }}
       >
         {/* Title */}
         <div className="text-center mb-10 md:mb-14">
+          <span
+            className="am-animate-fade font-[family-name:var(--font-cinzel),serif] text-[10px] md:text-xs tracking-[0.34em] uppercase text-am-arcane-bright/80 block mb-4"
+            style={{ animationDelay: "0.05s" }}
+          >
+            {t.welcome} {username}
+          </span>
           <h1
-            className="font-[family-name:var(--font-cinzel),serif] font-bold text-[#c8a84e]"
+            className="am-foil-text am-animate-rise font-[family-name:var(--font-cinzel),serif] font-bold"
             style={{
               fontSize: "clamp(36px, 6vw, 64px)",
               letterSpacing: "0.06em",
-              textShadow: "0 0 32px rgba(200, 168, 78, 0.35)",
+              animationDelay: "0.1s",
             }}
           >
             Armies &amp; Magic
           </h1>
           <p
-            className="font-[family-name:var(--font-crimson),serif] italic text-[#e0e0e0]/65 mt-3"
-            style={{ fontSize: "clamp(15px, 1.8vw, 20px)" }}
+            className="am-animate-rise font-[family-name:var(--font-crimson),serif] italic text-am-ink-soft mt-3"
+            style={{ fontSize: "clamp(15px, 1.8vw, 20px)", animationDelay: "0.2s" }}
           >
             {t.home_subtitle}
           </p>
           <div
-            className="mx-auto mt-5 h-px w-32"
-            style={{ background: "linear-gradient(90deg, transparent, #c8a84e, transparent)" }}
+            className="am-rule-diamond am-animate-fade mx-auto mt-6 w-40"
+            style={{ animationDelay: "0.3s" }}
             aria-hidden="true"
           />
         </div>
 
         {/* 2×2 grid (1 column on small mobile) */}
-        <nav aria-label="Sections principales" className="max-w-6xl mx-auto">
+        <nav aria-label="Sections principales" className="max-w-6xl mx-auto am-animate-rise" style={{ animationDelay: "0.35s" }}>
           <ul className="grid grid-cols-1 sm:grid-cols-2 gap-5 md:gap-7 items-start">
             <li>
               <MenuTile
