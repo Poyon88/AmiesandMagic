@@ -185,7 +185,9 @@ export default function BoardCreature({
       }
     : { x: [0, -4, 4, -4, 4, 0], y: 0, opacity: 1, scale: 1, rotate: 0 };
 
-  // Graceful "power-up" — gentle rise + warm/arcane glow pulse, no recoil.
+  // Graceful "power-up" — gentle rise + warm/arcane glow flash, NO resize.
+  // L'énergie est portée par un halo qui enfle DERRIÈRE la carte (voir plus bas) :
+  // la carte ne change plus de taille (pas de "dégonflage" en retour à scale 1).
   // Empower (capability gained) is a touch stronger and shimmers.
   const isBoost = !isHit && boostKind != null;
   const isEmpower = boostKind === "empower";
@@ -193,8 +195,7 @@ export default function BoardCreature({
   const boostAnimate = {
     x: 0,
     y: [0, isEmpower ? -6 : -8, 0],
-    scaleX: [1, isEmpower ? 1.09 : 1.06, 1],
-    scaleY: [1, isEmpower ? 1.09 : 1.06, 1],
+    scale: 1,
     rotate: isEmpower ? [0, -1.5, 1.5, 0] : 0,
     filter: [
       "brightness(1) saturate(1)",
@@ -203,6 +204,11 @@ export default function BoardCreature({
     ],
     opacity: 1,
   };
+  // Halo de boost (derrière la carte) — couleur dérivée du type de boost :
+  // or pour un buff de stats, arcane (violet) pour une capacité acquise.
+  // Couleurs alignées sur les palettes Canvas de impactFx.ts.
+  const haloRgb = isEmpower ? "168,85,247" : "234,179,8";
+  const haloPeak = isEmpower ? 1.5 : 1.35;
 
   return (
     <motion.div
@@ -259,13 +265,28 @@ export default function BoardCreature({
           : isBoost
           ? { duration: boostDur, ease: "easeOut" }
           : undefined,
-        scaleX: { duration: isBoost ? boostDur : 0.42, ease: "easeOut" },
-        scaleY: { duration: isBoost ? boostDur : 0.42, ease: "easeOut" },
+        scaleX: { duration: 0.42, ease: "easeOut" },
+        scaleY: { duration: 0.42, ease: "easeOut" },
         rotate: isBoost && isEmpower ? { duration: boostDur, ease: "easeOut" } : undefined,
         filter: { duration: isBoost ? boostDur : 0.32, ease: "easeOut" },
         opacity: { duration: 0.3, ease: "easeOut" },
       }}
     >
+    {/* Halo de boost — enfle puis s'estompe DERRIÈRE la carte (zIndex -1).
+        La carte étant opaque, le halo apparaît comme une auréole qui déborde
+        des bords ; aucun redimensionnement de la carte elle-même. */}
+    <motion.div
+      aria-hidden
+      style={{
+        position: "absolute", inset: "-16%", borderRadius: 24,
+        pointerEvents: "none", zIndex: -1,
+        background: `radial-gradient(closest-side, rgba(${haloRgb},0.55), rgba(${haloRgb},0) 78%)`,
+        boxShadow: `0 0 36px 10px rgba(${haloRgb},0.45)`,
+      }}
+      initial={{ opacity: 0, scale: 0.85 }}
+      animate={isBoost ? { opacity: [0, 0.9, 0], scale: [0.85, haloPeak] } : { opacity: 0, scale: 0.85 }}
+      transition={{ duration: boostDur, ease: "easeOut" }}
+    />
     <div
       ref={creatureRef}
       {...longPress.handlers}
