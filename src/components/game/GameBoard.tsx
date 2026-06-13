@@ -1020,26 +1020,32 @@ export default function GameBoard({ onAction }: GameBoardProps) {
             full 8-card hand still fits without horizontal overflow. The
             zoomed-on-hover/long-press card lifts above siblings via z-index. */}
         <div
-          className="absolute bottom-0 left-0 right-0 flex justify-center px-6 pb-4 pt-1 overflow-visible z-30"
+          // z-[41] : au-dessus du héros (z-40) pour que la dernière carte à
+          // droite reste cliquable au lieu de déclencher le pouvoir héroïque
+          // (tactile/iPad). pointer-events-none sur le conteneur pleine largeur
+          // pour que ses zones vides laissent passer les clics vers le héros /
+          // cimetière ; chaque carte réactive les events (pointer-events-auto).
+          className="absolute bottom-0 left-0 right-0 flex justify-center px-6 pb-4 pt-1 overflow-visible z-[41] pointer-events-none"
           style={{ gap: isNarrowViewport ? -56 : 4 }}
         >
           {myPlayer.hand.map((cardInstance) => {
             const playable =
               myTurn && canPlayCard(gameState, cardInstance.instanceId);
             return (
-              <HandCard
-                key={cardInstance.instanceId}
-                cardInstance={cardInstance}
-                canPlay={playable}
-                isSelected={
-                  selectedCardInstanceId === cardInstance.instanceId
-                }
-                onClick={() => {
-                  if (cardInstance.card.card_type === "creature") return;
-                  const action = selectCardInHand(cardInstance.instanceId);
-                  broadcast(action);
-                }}
-              />
+              <div key={cardInstance.instanceId} style={{ pointerEvents: "auto" }}>
+                <HandCard
+                  cardInstance={cardInstance}
+                  canPlay={playable}
+                  isSelected={
+                    selectedCardInstanceId === cardInstance.instanceId
+                  }
+                  onClick={() => {
+                    if (cardInstance.card.card_type === "creature") return;
+                    const action = selectCardInHand(cardInstance.instanceId);
+                    broadcast(action);
+                  }}
+                />
+              </div>
             );
           })}
         </div>
