@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
+import { requireAdmin } from '@/lib/admin/requireAdmin';
 
 async function getAuthUser() {
   const cookieStore = await cookies();
@@ -67,10 +68,10 @@ export async function GET(request: Request) {
 
 // PATCH /api/card-prints — assign/unassign a print, toggle tradeable
 export async function PATCH(request: Request) {
-  const user = await getAuthUser();
-  if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+  const auth = await requireAdmin();
+  if (auth.error) return auth.error;
 
-  const supabaseAdmin = getAdminClient();
+  const supabaseAdmin = auth.supabase;
 
   try {
     const { printId, ownerId, isTradeable } = await request.json();

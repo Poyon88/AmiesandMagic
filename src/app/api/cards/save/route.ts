@@ -6,6 +6,7 @@ import { LIMITED_PRINT_COUNTS } from '@/lib/card-engine/constants';
 import { validateRace } from '@/lib/validation/faction-clan';
 import { deriveCapabilities } from '@/lib/game/capability-adapter';
 import type { Capability, Card } from '@/lib/game/types';
+import { requireAdmin } from '@/lib/admin/requireAdmin';
 
 /** Normalise les capacités composées reçues du client : ne garde que celles
  *  portant un effet `composed`, et réassigne des uid stables (préfixe `cx_`)
@@ -63,10 +64,10 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const user = await getAuthUser();
-  if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+  const auth = await requireAdmin();
+  if (auth.error) return auth.error;
 
-  const supabaseAdmin = getAdminClient();
+  const supabaseAdmin = auth.supabase;
 
   try {
     const { card, imageBase64, imageMimeType, updateId, sfxPlayBase64, sfxPlayMimeType, sfxDeathBase64, sfxDeathMimeType, partial, composed_capabilities } = await request.json();
@@ -252,10 +253,10 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const user = await getAuthUser();
-  if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+  const auth = await requireAdmin();
+  if (auth.error) return auth.error;
 
-  const supabaseAdmin = getAdminClient();
+  const supabaseAdmin = auth.supabase;
 
   try {
     const { id } = await request.json();

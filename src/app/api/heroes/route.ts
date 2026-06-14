@@ -5,6 +5,7 @@ import { cookies } from 'next/headers';
 import { FACTIONS } from '@/lib/card-engine/constants';
 import { ABILITIES } from '@/lib/game/abilities';
 import { validateFactionClan } from '@/lib/validation/faction-clan';
+import { requireAdmin } from '@/lib/admin/requireAdmin';
 
 const ALLOWED_POWER_MODES = new Set(['grant_keyword', 'spell_trigger', 'aura']);
 
@@ -152,10 +153,10 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const user = await getAuthUser();
-  if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+  const auth = await requireAdmin();
+  if (auth.error) return auth.error;
 
-  const supabase = getAdminClient();
+  const supabase = auth.supabase;
 
   try {
     const body = await request.json();
@@ -262,10 +263,10 @@ export async function POST(request: Request) {
 }
 
 export async function PUT(request: Request) {
-  const user = await getAuthUser();
-  if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+  const auth = await requireAdmin();
+  if (auth.error) return auth.error;
 
-  const supabase = getAdminClient();
+  const supabase = auth.supabase;
 
   try {
     const body = await request.json();
@@ -355,10 +356,10 @@ export async function PUT(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const user = await getAuthUser();
-  if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+  const auth = await requireAdmin();
+  if (auth.error) return auth.error;
 
-  const supabase = getAdminClient();
+  const supabase = auth.supabase;
 
   try {
     const { id } = await request.json();
