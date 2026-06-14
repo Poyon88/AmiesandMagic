@@ -3,6 +3,7 @@ import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { validateFactionClan, validateRace } from '@/lib/validation/faction-clan';
+import { requireAdmin } from '@/lib/admin/requireAdmin';
 
 async function getAuthUser() {
   const cookieStore = await cookies();
@@ -42,10 +43,10 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const user = await getAuthUser();
-  if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+  const auth = await requireAdmin();
+  if (auth.error) return auth.error;
 
-  const supabase = getAdminClient();
+  const supabase = auth.supabase;
 
   try {
     const {
@@ -145,10 +146,10 @@ export async function POST(request: Request) {
 }
 
 export async function PUT(request: Request) {
-  const user = await getAuthUser();
-  if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+  const auth = await requireAdmin();
+  if (auth.error) return auth.error;
 
-  const supabase = getAdminClient();
+  const supabase = auth.supabase;
 
   try {
     const { id, name, is_active, music_track_id, music_track_ids, tense_track_id, victory_track_id, defeat_track_id, imageBase64, imageMimeType, rarity, max_prints, is_default, faction, race, clan } = await request.json();
@@ -230,10 +231,10 @@ export async function PUT(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const user = await getAuthUser();
-  if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+  const auth = await requireAdmin();
+  if (auth.error) return auth.error;
 
-  const supabase = getAdminClient();
+  const supabase = auth.supabase;
 
   try {
     const { id } = await request.json();

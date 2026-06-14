@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
+import { requireAdmin } from '@/lib/admin/requireAdmin';
 
 async function getAuthUser() {
   const cookieStore = await cookies();
@@ -51,14 +52,14 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const user = await getAuthUser();
-  if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+  const auth = await requireAdmin();
+  if (auth.error) return auth.error;
 
   const { id } = await params;
   const formatId = parseInt(id);
   if (isNaN(formatId)) return NextResponse.json({ error: 'ID invalide' }, { status: 400 });
 
-  const supabase = getAdminClient();
+  const supabase = auth.supabase;
 
   try {
     const { set_ids } = await request.json() as { set_ids: number[] };

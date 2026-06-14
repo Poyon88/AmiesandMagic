@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+import { requireAdmin } from '@/lib/admin/requireAdmin';
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -63,10 +64,10 @@ export async function GET(request: Request) {
 
 // POST /api/keyword-icon-assets — create a new asset (uploads image)
 export async function POST(request: Request) {
-  const user = await getAuthUser();
-  if (!user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+  const auth = await requireAdmin();
+  if (auth.error) return auth.error;
 
-  const supabase = getAdminClient();
+  const supabase = auth.supabase;
 
   try {
     const { name, imageBase64, imageMimeType, keyword_type, keyword, style, prompt } = await request.json();
@@ -118,10 +119,10 @@ export async function POST(request: Request) {
 
 // PATCH /api/keyword-icon-assets — activate an asset (make it the icon for its keyword)
 export async function PATCH(request: Request) {
-  const user = await getAuthUser();
-  if (!user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+  const auth = await requireAdmin();
+  if (auth.error) return auth.error;
 
-  const supabase = getAdminClient();
+  const supabase = auth.supabase;
 
   try {
     const { id } = await request.json();
@@ -151,10 +152,10 @@ export async function PATCH(request: Request) {
 
 // DELETE /api/keyword-icon-assets — remove an asset + its stored image
 export async function DELETE(request: Request) {
-  const user = await getAuthUser();
-  if (!user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+  const auth = await requireAdmin();
+  if (auth.error) return auth.error;
 
-  const supabase = getAdminClient();
+  const supabase = auth.supabase;
 
   try {
     const { id } = await request.json();

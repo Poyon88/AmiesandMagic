@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+import { requireAdmin } from '@/lib/admin/requireAdmin';
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -56,10 +57,10 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const user = await getAuthUser();
-  if (!user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+  const auth = await requireAdmin();
+  if (auth.error) return auth.error;
 
-  const supabase = getAdminClient();
+  const supabase = auth.supabase;
 
   try {
     const { name, category, audioBase64, audioMimeType } = await request.json();
@@ -97,10 +98,10 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const user = await getAuthUser();
-  if (!user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+  const auth = await requireAdmin();
+  if (auth.error) return auth.error;
 
-  const supabase = getAdminClient();
+  const supabase = auth.supabase;
 
   try {
     const { id } = await request.json();
