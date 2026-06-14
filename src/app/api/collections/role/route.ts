@@ -1,38 +1,12 @@
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
-import { createClient } from '@supabase/supabase-js';
-import { cookies } from 'next/headers';
+import { requireAdmin } from '@/lib/admin/requireAdmin';
 
-async function getAuthUser() {
-  const cookieStore = await cookies();
-  const supabaseAuth = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return cookieStore.getAll(); },
-        setAll() { /* read-only */ },
-      },
-    }
-  );
-  const { data: { user } } = await supabaseAuth.auth.getUser();
-  return user;
-}
-
-function getAdminClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  );
-}
-
-// GET /api/collections/role — list all profiles
+// GET /api/collections/role — list all profiles (admin only)
 export async function GET() {
-  const user = await getAuthUser();
-  if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+  const auth = await requireAdmin();
+  if (auth.error) return auth.error;
 
-  const supabase = getAdminClient();
-  const { data, error } = await supabase
+  const { data, error } = await auth.supabase
     .from('profiles')
     .select('id, username, role')
     .order('username');
@@ -41,10 +15,11 @@ export async function GET() {
   return NextResponse.json(data);
 }
 
-// POST /api/collections/role — { userId, role }
+// POST /api/collections/role — { userId, role } (admin only)
 export async function POST(request: Request) {
-  const user = await getAuthUser();
-  if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+  const auth = await requireAdmin();
+  if (auth.error) return auth.error;
+  const supabase = auth.supabase;
 
   const { userId, role } = await request.json() as { userId: string; role: string };
 
@@ -52,7 +27,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'userId et role (player|testeur) requis' }, { status: 400 });
   }
 
-  const supabase = getAdminClient();
   const { error } = await supabase
     .from('profiles')
     .update({ role })

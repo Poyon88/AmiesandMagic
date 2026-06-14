@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
 import { generateImage, GenerateImageError } from '@/lib/ai/generate-image';
+import { requireAdmin } from '@/lib/admin/requireAdmin';
 
 export async function POST(request: Request) {
+  const auth = await requireAdmin();
+  if (auth.error) return auth.error;
+
   const {
     prompt,
     referenceImageBase64,

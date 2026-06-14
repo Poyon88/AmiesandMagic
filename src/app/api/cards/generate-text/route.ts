@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
 import { FACTIONS } from '@/lib/card-engine/constants';
+import { requireAdmin } from '@/lib/admin/requireAdmin';
 
 export async function POST(request: Request) {
+  const auth = await requireAdmin();
+  if (auth.error) return auth.error;
+
   const body = await request.json();
   const { factionId, type, rarityId, stats, existingName, existingAbility, clanId, extraContext } = body;
   const extra = typeof extraContext === 'string' ? extraContext.trim() : '';
