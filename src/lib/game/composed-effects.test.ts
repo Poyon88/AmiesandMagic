@@ -442,3 +442,32 @@ describe("copie de capacités (Héritage du cimetière / Mimique) — capacités
     expect(inherited.uid.startsWith("inh")).toBe(true);
   });
 });
+
+describe("désignation automatique", () => {
+  it("count=all : applique l'effet à tout le pool, sans choix ni cible fournie", () => {
+    const s0 = mkState();
+    s0.players[1].board = [mkInstance(mkCard({ attack: 1, health: 5 })), mkInstance(mkCard({ attack: 1, health: 5 }))];
+    const creature = mkCard({ attack: 1, health: 1,
+      capabilities: [composedCap("on_play", { content: "deal_damage", magnitude: { x: 2 },
+        target: { entity: "unit", count: "all", side: "enemy", location: "board", designation: "automatic" } })] });
+    // Désignation automatique → aucun picker requis.
+    expect(creatureNeedsTarget(creature)).toBe(false);
+    const s = play(s0, mkInstance(creature));
+    expect(s.players[1].board.map(c => c.currentHealth)).toEqual([3, 3]); // 5 − 2 chacune
+  });
+
+  it("count=N : applique à N cibles de façon déterministe, sans demander de cible", () => {
+    const s0 = mkState();
+    s0.players[1].board = [
+      mkInstance(mkCard({ attack: 1, health: 5 })),
+      mkInstance(mkCard({ attack: 1, health: 5 })),
+      mkInstance(mkCard({ attack: 1, health: 5 })),
+    ];
+    const creature = mkCard({ attack: 1, health: 1,
+      capabilities: [composedCap("on_play", { content: "deal_damage", magnitude: { x: 2 },
+        target: { entity: "unit", count: 2, side: "enemy", location: "board", designation: "automatic" } })] });
+    expect(creatureNeedsTarget(creature)).toBe(false);
+    const s = play(s0, mkInstance(creature));
+    expect(s.players[1].board.filter(c => c.currentHealth < 5).length).toBe(2); // exactement 2 touchées
+  });
+});
