@@ -1711,6 +1711,7 @@ export default function CardForge() {
       "Hommes-Ours": "a werebear humanoid, massive bear-headed figure, thick fur, enormous claws, towering",
       "Hommes-Félins": "a feline humanoid with panther features, lithe and agile body, slit pupils, sleek fur",
       "Centaures": "a centaur, a single creature with a human head, human chest and human arms on top, and four horse legs below with hooves, no separate horse head, wielding spear or bow, wild hair, tribal war paint",
+      "Mimis": "a small adorable beast-folk critter, fluffy oversized fur, big innocent eyes, tiny twitching nose, stubby paws, cute and harmless-looking yet bravely armed",
       "Feu": "a fire elemental, body made of living flames, molten core, embers floating around",
       "Terre": "an earth elemental, body of rock and stone, crystal growths, moss patches, heavy and immovable",
       "Eau": "a water elemental, body of flowing translucent water, whirlpool core, droplets suspended in air",

@@ -117,7 +117,9 @@ function describeTarget(t: TargetSpec | undefined): string {
   const memb = t.membership;
   const mtxt = memb ? [...(memb.race ?? []), ...(memb.clan ?? []), ...(memb.faction ?? [])].join("/") : "";
   const locTxt = t.location === "hand" ? "en main" : t.location === "deck" ? "du deck" : t.location === "graveyard" ? "du cimetière" : "";
-  const desTxt = t.designation === "random" ? "au hasard" : (t.count !== "all" ? "au choix" : "");
+  const desTxt = t.designation === "random" ? "au hasard"
+    : t.designation === "automatic" ? (t.count !== "all" ? "automatiquement" : "")
+    : (t.count !== "all" ? "au choix" : "");
   return ["à", count, sideTxt, mtxt && `(${mtxt})`, locTxt, desTxt].filter(Boolean).join(" ");
 }
 

@@ -52,6 +52,21 @@ export const CARD_BACK_FRAMES: CardBackFrameDef[] = [
     outputWidth: 1024,
     outputHeight: 1434,
   },
+  {
+    id: "sans",
+    label: "Sans",
+    // Transparent overlay: no border is drawn. The illustration fills the
+    // whole 5:7 canvas (cover-fit, cropped like the other frames).
+    svgPath: "/card-back-frames/sans.svg",
+    innerAreaPct: {
+      x: 0,
+      y: 0,
+      w: 1,
+      h: 1,
+    },
+    outputWidth: 1024,
+    outputHeight: 1434,
+  },
 ];
 
 export function getCardBackFrame(id: string): CardBackFrameDef {

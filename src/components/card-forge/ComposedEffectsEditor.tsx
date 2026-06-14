@@ -156,7 +156,7 @@ export default function ComposedEffectsEditor({
                       />
 
                       <span style={labelStyle}>DÉSIGNATION</span>
-                      {sel(t.designation, [{ v: "choice", l: "Au choix" }, { v: "random", l: "Au hasard" }], (v) => patchTarget(idx, { designation: v as TargetSpec["designation"] }))}
+                      {sel(t.designation, [{ v: "choice", l: "Au choix" }, { v: "random", l: "Au hasard" }, { v: "automatic", l: "Automatique" }], (v) => patchTarget(idx, { designation: v as TargetSpec["designation"] }))}
                     </>
                   )}
                   </>)}

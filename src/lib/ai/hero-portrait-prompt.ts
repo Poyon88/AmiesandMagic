@@ -83,6 +83,8 @@ export const GRANULAR_RACE_DESCRIPTORS: Record<string, string> = {
     'A humanoid werefelid warrior — bipedal humanoid silhouette, feline head with whiskers, slit pupils, tufted ears, sleek spotted fur, agile build.',
   'Centaures':
     'A humanoid centaur — humanoid torso and head atop equine lower body (only the upper humanoid half framed in this bust portrait), wild mane braided into the hair, weathered features.',
+  'Mimis':
+    'An adorable little beast-folk — small rounded humanoid silhouette, oversized soft fur, big innocent eyes, tiny twitching nose, stubby paws, an endearingly cute and harmless expression that belies a brave little warrior.',
   // Élémentaires faction
   'Feu':
     'A humanoid fire elemental warrior — clearly bipedal humanoid silhouette, skin of glowing embers and flowing flame, hair made of living fire, eyes like burning coals.',
@@ -279,6 +281,8 @@ export const CLAN_ACCENTS: Record<string, string> = {
   Toundra: 'thick frost-covered fur cloak, ice-blue eye color, frost crystals on the brow',
   Savane: 'sun-bleached lion-mane mantle, ochre warpaint stripes',
   Marais: 'algae-stained leather, swamp-green skin tone, a bone-and-reed necklace',
+  Mignons:
+    'big round innocent eyes, soft fluffy oversized ears, pastel-toned downy fur, a tiny flower tucked behind the ear, an endearingly cute and harmless expression',
   // Elfes Noirs
   'Abysses souterrains':
     'glowing violet eyes, obsidian crown, faintly luminescent skin veins',

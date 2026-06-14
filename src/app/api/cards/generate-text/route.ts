@@ -50,6 +50,7 @@ export async function POST(request: Request) {
     "Hommes-Ours": "werebear-like humanoid, massive bear-headed figure, thick fur, enormous claws, towering and powerful",
     "Hommes-Félins": "feline humanoid with cat/panther features, lithe and agile body, whiskers, slit pupils, sleek fur",
     "Centaures": "centaur with human torso on horse body, wielding spear or bow, wild mane, tribal markings",
+    "Mimis": "small adorable beast-folk creature, fluffy oversized fur, big innocent eyes, tiny paws, cute and harmless-looking yet brave",
     // Élémentaires
     "Feu": "fire elemental, body made of living flames, molten core, embers floating around, intense heat haze",
     "Terre": "earth elemental, body of rock and stone, crystal growths, moss patches, heavy and immovable",
@@ -193,6 +194,7 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
           "Hommes-Ours": ["werebear", "bear-man", "homme-ours"],
           "Hommes-Félins": ["werecat", "cat-man", "homme-félin"],
           "Centaures": ["centaur", "centaure"],
+          "Mimis": ["mimi", "mimis", "critter", "cute creature", "petite bête"],
           "Feu": ["fire elemental"],
           "Terre": ["earth elemental"],
           "Eau": ["water elemental"],

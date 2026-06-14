@@ -297,8 +297,10 @@ export interface TargetSpec {
   membership?: { faction?: string[]; race?: string[]; clan?: string[] };
   /** Zone où chercher les cibles. */
   location: "board" | "hand" | "deck" | "graveyard";
-  /** Désignation : choisie par le joueur ou aléatoire. */
-  designation: "choice" | "random";
+  /** Désignation : choisie par le joueur, aléatoire, ou automatique (le moteur
+   *  applique l'effet à tout le pool filtré sans choix ni hasard — pertinent
+   *  pour les effets touchant toutes les cibles, count = "all"). */
+  designation: "choice" | "random" | "automatic";
 }
 
 export interface ComposedEffect {

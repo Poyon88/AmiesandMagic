@@ -3,6 +3,7 @@
 // portant des capacités `composed`, et on vérifie l'état résultant.
 import { describe, expect, it } from "vitest";
 import { applyAction, creatureNeedsTarget, getCreatureTapComposedUid, getCreatureTargets, getSpellTargetSlots, initRNG } from "./engine";
+import { getCapabilities } from "./capability-adapter";
 import { HERO_MAX_HP } from "./constants";
 import type {
   Capability, Card, CardInstance, ComposedEffect, GameState, HeroState, PlayerState,
@@ -387,5 +388,86 @@ describe("cible composée — soi-même (entity self)", () => {
     const onBoard = result.players[0].board.find(c => c.instanceId === ci.instanceId)!;
     expect(onBoard.currentAttack).toBe(3); // 1 + 2
     expect(onBoard.currentHealth).toBe(4); // 1 + 3
+  });
+});
+
+describe("copie de capacités (Héritage du cimetière / Mimique) — capacités composées", () => {
+  // Effet composé qui ne vit QUE dans capabilities[] (aucune représentation
+  // keywords/keyword_instances) : c'est précisément ce que la copie laissait
+  // tomber avant le correctif.
+  const onDeathBurn = () => composedCap("on_death", {
+    content: "deal_damage", magnitude: { x: 3 },
+    target: { entity: "hero", count: 1, side: "enemy", location: "board", designation: "random" },
+  });
+
+  it("Héritage du cimetière hérite la capacité composée d'une unité du cimetière, qui se déclenche à la mort de l'héritier", () => {
+    initRNG(42);
+    const s0 = mkState();
+    // Mort au cimetière : à sa mort, 3 dégâts au héros ennemi (effet composé).
+    const dead = mkInstance(mkCard({ attack: 1, health: 1, capabilities: [onDeathBurn()] }));
+    s0.players[0].graveyard.push(dead);
+    // Héritier 1/1 avec Héritage du cimetière (mot-clé curé, capabilities null).
+    const heir = mkInstance(mkCard({ attack: 1, health: 1, keywords: ["heritage_du_cimetiere"] }));
+    s0.players[0].hand.push(heir);
+    const s1 = applyAction(s0, { type: "play_card", cardInstanceId: heir.instanceId, graveyardTargetInstanceId: dead.instanceId });
+
+    // L'héritier porte désormais la capacité composée on_death.
+    const onBoard = s1.players[0].board.find(c => c.instanceId === heir.instanceId)!;
+    expect(getCapabilities(onBoard.card).some(c => c.composed && c.trigger === "on_death")).toBe(true);
+
+    // …et elle se déclenche à SA mort : sort de 5 dégâts à toutes les unités
+    // alliées → tue l'héritier (1 PV) → l'effet hérité tire 3 sur le héros ennemi.
+    const spell = mkInstance(mkCard({ card_type: "spell", attack: null, health: null,
+      capabilities: [composedCap("spell_resolution", { content: "deal_damage", magnitude: { x: 5 }, target: { entity: "unit", count: "all", side: "ally", location: "board", designation: "random" } })] }));
+    s1.players[0].hand.push(spell);
+    const s2 = applyAction(s1, { type: "play_card", cardInstanceId: spell.instanceId });
+
+    expect(s2.players[0].board.find(c => c.instanceId === heir.instanceId)).toBeUndefined(); // héritier mort
+    expect(s2.players[1].hero.hp).toBe(HERO_MAX_HP - 3); // l'on_death hérité a bien tiré
+  });
+
+  it("Mimique copie la capacité composée d'une unité ciblée sur le plateau", () => {
+    initRNG(42);
+    const s0 = mkState();
+    const model = mkInstance(mkCard({ attack: 2, health: 5, capabilities: [onDeathBurn()] }));
+    s0.players[0].board.push(model);
+    const heir = mkInstance(mkCard({ attack: 1, health: 1, keywords: ["mimique"] }));
+    s0.players[0].hand.push(heir);
+    const s1 = applyAction(s0, { type: "play_card", cardInstanceId: heir.instanceId, targetInstanceId: model.instanceId });
+
+    const onBoard = s1.players[0].board.find(c => c.instanceId === heir.instanceId)!;
+    expect(getCapabilities(onBoard.card).some(c => c.composed && c.trigger === "on_death")).toBe(true);
+    // uid ré-attribué pour ne pas entrer en collision avec ceux du copieur.
+    const inherited = getCapabilities(onBoard.card).find(c => c.composed && c.trigger === "on_death")!;
+    expect(inherited.uid.startsWith("inh")).toBe(true);
+  });
+});
+
+describe("désignation automatique", () => {
+  it("count=all : applique l'effet à tout le pool, sans choix ni cible fournie", () => {
+    const s0 = mkState();
+    s0.players[1].board = [mkInstance(mkCard({ attack: 1, health: 5 })), mkInstance(mkCard({ attack: 1, health: 5 }))];
+    const creature = mkCard({ attack: 1, health: 1,
+      capabilities: [composedCap("on_play", { content: "deal_damage", magnitude: { x: 2 },
+        target: { entity: "unit", count: "all", side: "enemy", location: "board", designation: "automatic" } })] });
+    // Désignation automatique → aucun picker requis.
+    expect(creatureNeedsTarget(creature)).toBe(false);
+    const s = play(s0, mkInstance(creature));
+    expect(s.players[1].board.map(c => c.currentHealth)).toEqual([3, 3]); // 5 − 2 chacune
+  });
+
+  it("count=N : applique à N cibles de façon déterministe, sans demander de cible", () => {
+    const s0 = mkState();
+    s0.players[1].board = [
+      mkInstance(mkCard({ attack: 1, health: 5 })),
+      mkInstance(mkCard({ attack: 1, health: 5 })),
+      mkInstance(mkCard({ attack: 1, health: 5 })),
+    ];
+    const creature = mkCard({ attack: 1, health: 1,
+      capabilities: [composedCap("on_play", { content: "deal_damage", magnitude: { x: 2 },
+        target: { entity: "unit", count: 2, side: "enemy", location: "board", designation: "automatic" } })] });
+    expect(creatureNeedsTarget(creature)).toBe(false);
+    const s = play(s0, mkInstance(creature));
+    expect(s.players[1].board.filter(c => c.currentHealth < 5).length).toBe(2); // exactement 2 touchées
   });
 });
