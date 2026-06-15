@@ -2,7 +2,7 @@
 // On exerce le vrai flux applyAction(play_card) avec des cartes synthétiques
 // portant des capacités `composed`, et on vérifie l'état résultant.
 import { describe, expect, it } from "vitest";
-import { applyAction, creatureNeedsTarget, getCreatureTapComposedUid, getCreatureTargets, getSpellTargetSlots, initRNG } from "./engine";
+import { applyAction, creatureNeedsTarget, getCreatureTapComposedUid, getCreatureTargets, getSpellTargetSlots, initRNG, initializeGame } from "./engine";
 import { getCapabilities } from "./capability-adapter";
 import { HERO_MAX_HP } from "./constants";
 import type {
@@ -469,5 +469,39 @@ describe("désignation automatique", () => {
     expect(creatureNeedsTarget(creature)).toBe(false);
     const s = play(s0, mkInstance(creature));
     expect(s.players[1].board.filter(c => c.currentHealth < 5).length).toBe(2); // exactement 2 touchées
+  });
+});
+
+describe("silence retire toutes les sources de capacités (modèle unifié)", () => {
+  it("Silence vide aussi les capacités composées (capabilities[])", () => {
+    const s0 = mkState();
+    // Créature avec une capacité composée on_death — vit uniquement dans
+    // capabilities[], aucune représentation keywords/keyword_instances.
+    const victim = mkInstance(mkCard({ attack: 2, health: 3,
+      capabilities: [composedCap("on_death", { content: "deal_damage", magnitude: { x: 3 },
+        target: { entity: "hero", count: 1, side: "enemy", location: "board", designation: "random" } })] }));
+    s0.players[1].board = [victim];
+    expect(getCapabilities(victim.card).some(c => c.composed)).toBe(true); // présente avant
+
+    const spell = mkCard({ card_type: "spell", attack: null, health: null, spell_keywords: [{ id: "silence" }] });
+    const s = play(s0, mkInstance(spell), { kw_0: victim.instanceId });
+
+    // Après silence : plus aucune capacité (ni curée ni composée).
+    expect(getCapabilities(s.players[1].board[0].card).length).toBe(0);
+  });
+});
+
+describe("déterminisme des pools de sélection (tri canonique par id)", () => {
+  it("initializeGame trie factionCardPool et allSpellsPool par id, quel que soit l'ordre d'entrée", () => {
+    const faction = [mkCard({ id: 30 }), mkCard({ id: 10 }), mkCard({ id: 20 })];
+    const spells = [
+      mkCard({ id: 5, card_type: "spell", attack: null, health: null }),
+      mkCard({ id: 1, card_type: "spell", attack: null, health: null }),
+      mkCard({ id: 3, card_type: "spell", attack: null, health: null }),
+    ];
+    const g = initializeGame("P1", "P2", [], [], 0, 42, null, null, faction, spells);
+    // Ordre canonique → les deux clients indexent le même pool par RNG partagé.
+    expect(g.factionCardPool?.map((c) => c.id)).toEqual([10, 20, 30]);
+    expect(g.allSpellsPool?.map((c) => c.id)).toEqual([1, 3, 5]);
   });
 });

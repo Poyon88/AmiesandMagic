@@ -741,8 +741,13 @@ export function initializeGame(
     // Snapshot the RNG position after seeding + the opening shuffle, so the
     // initial state already carries the stream both clients continue from.
     rngState,
-    factionCardPool: factionCardPool ?? undefined,
-    allSpellsPool: allSpellsPool ?? undefined,
+    // Canonicalise pool order by id. Selection effects (Concentration,
+    // Sélection, Renfort royal, Sélection magique) index/shuffle these pools
+    // with the shared seeded RNG, so a divergent fetch order between the two
+    // clients would select different cards → desync. Sorting at the engine
+    // boundary makes the order independent of the caller's DB fetch order.
+    factionCardPool: factionCardPool ? [...factionCardPool].sort((a, b) => a.id - b.id) : undefined,
+    allSpellsPool: allSpellsPool ? [...allSpellsPool].sort((a, b) => a.id - b.id) : undefined,
   };
 }
 
@@ -2284,11 +2289,13 @@ function resolveSpellKeywords(
         if (targetId) {
           const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
           if (target) {
-            // Clear BOTH the legacy keywords array AND keyword_instances — the
-            // latter is where mode-aware powers live (tap-activated abilities,
-            // on-death rattles, conferred-keyword scopes). Without this a
-            // silenced creature kept its activatable / death powers.
-            target.card = { ...target.card, keywords: [], keyword_instances: null };
+            // Clear the legacy keywords array, keyword_instances AND the
+            // unified `capabilities` (where composed/backfilled abilities live).
+            // keyword_instances holds mode-aware powers (tap-activated, on-death
+            // rattles, conferred scopes); `capabilities`, when set, is what
+            // getCapabilities() reads — leaving it would let a backfilled
+            // creature keep every curated AND composed ability through silence.
+            target.card = { ...target.card, keywords: [], keyword_instances: null, capabilities: null };
             target.hasDivineShield = false;
             target.contresortActive = false;
             target.isParalyzed = false;
@@ -2835,10 +2842,12 @@ function resolveAtomicEffect(ctx: SpellResolutionContext, effect: AtomicEffect):
             ...target.card,
             attack: effect.attack ?? target.card.attack,
             health: effect.health ?? target.card.health,
-            // Strip keyword_instances too (tap/death powers, conferred scopes)
-            // so a transformed creature loses its activatable abilities.
+            // Strip keyword_instances (tap/death powers, conferred scopes) AND
+            // the unified `capabilities` (composed/backfilled abilities) so a
+            // transformed creature truly loses all its abilities.
             keywords: [],
             keyword_instances: null,
+            capabilities: null,
           };
           target.hasDivineShield = false;
         }
