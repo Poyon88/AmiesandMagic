@@ -33,6 +33,7 @@ Contresort;2;Non;Terrain;Invocation : annule le prochain sort adverse.
 Convocation X;2;Oui;Terrain;Invocation : crée un token X/X de même race et clan (si clan indiqué sur la carte).
 Malédiction;2;Non;Terrain;Invocation : ciblez une unité ennemie, elle est exilée à la fin du prochain tour adverse.
 Nécrophagie;2;Non;Terrain;Gagne +1 ATK et +1 PV chaque fois qu'une unité (alliée ou ennemie) meurt.
+Richesse X;2;Oui;Terrain;Gagne +X ATK et +X PV chaque fois qu'un joueur défausse une carte.
 Paralysie;2;Non;Terrain;Invocation : une unité ennemie ciblée ne peut pas attaquer lors du prochain tour adverse.
 Permutation;2;Non;Terrain;Invocation : échange les PV actuels de deux unités ciblées (une alliée et une ennemie).
 Persécution X;2;Oui;Terrain;Chaque fois que cette unité attaque, inflige X dégâts au héros adverse.

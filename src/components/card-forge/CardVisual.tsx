@@ -71,6 +71,7 @@ export const KEYWORD_SYMBOLS: Record<string, string> = {
   "Convocation X":    "📣",
   "Malédiction":      "💀",
   "Nécrophagie":      "🦴",
+  "Richesse X":       "🤑",
   "Paralysie":        "⛓️",
   "Permutation":      "🔀",
   "Persécution X":    "🩻",

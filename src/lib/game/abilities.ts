@@ -258,6 +258,15 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["creature"],
     creature: { cost: -8, costPerX: 0, se: -2.0, minTier: 1, scalable: false, zone: "Terrain" },
   },
+  // Réactif scalable : se déclenche à chaque défausse (main → cimetière) de
+  // N'IMPORTE quel joueur. Câblé dans le moteur via discardFromHand →
+  // triggerRichesse (classé automatic/réactif, comme Nécrophagie).
+  richesse: {
+    id: "richesse", label: "Richesse X", symbol: "🤑",
+    desc: "Chaque fois qu'un joueur défausse une carte, cette unité gagne +X/+X (permanent).",
+    applicable_to: ["creature"],
+    creature: { cost: 10, costPerX: 6, se: 3.5, minTier: 2, scalable: true, zone: "Terrain" },
+  },
   armure: {
     id: "armure", label: "Armure", symbol: "/icons/armure.png",
     desc: "Réduit de moitié les dégâts de combat reçus (arrondi au supérieur) ; les dégâts de sorts ne sont pas réduits.",
@@ -1066,9 +1075,9 @@ export const AUTOMATIC_ABILITY_IDS: ReadonlySet<string> = new Set([
   "resistance", "precision", "indestructible", "transcendance", "invisible",
   "ombre", "taunt", "vol", "ranged", "ancre", "divine_shield", "celerite",
   "charge", "raid", "drain_de_vie", "bravoure",
-  // Réactifs (déclenchés au combat / à la mort d'autrui)
+  // Réactifs (déclenchés au combat / à la mort d'autrui / à la défausse)
   "augure", "fureur", "riposte", "persecution", "souffle_de_feu", "pietinement",
-  "liaison_de_vie", "paralysie", "poison", "necrophagie",
+  "liaison_de_vie", "paralysie", "poison", "necrophagie", "richesse",
   // Début de tour / calcul de coût
   "regeneration", "canalisation", "entraide",
 ]);

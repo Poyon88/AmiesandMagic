@@ -36,6 +36,7 @@ id_registre,id_creature,label,symbole,hotes,description_creature,description_sor
 "lycanthropie","lycanthropie","Lycanthropie X","🐺","creature","Début de tour : se transforme en un token X/X avec Traque.",""
 "malediction","malediction","Malédiction","💀","creature","Invocation : ciblez une unité ennemie, elle est exilée à la fin du prochain tour adverse.",""
 "necrophagie","necrophagie","Nécrophagie","🦴","creature","Gagne +1 ATK et +1 PV chaque fois qu'une unité (alliée ou ennemie) meurt.",""
+"richesse","richesse","Richesse X","🤑","creature","Gagne +X ATK et +X PV chaque fois qu'un joueur défausse une carte.",""
 "paralysie","paralysie","Paralysie","⛓️","creature","Les unités subissant des dégâts de cette créature ne peuvent attaquer ni utiliser de capacités actives avant la fin du prochain tour de leur propriétaire.",""
 "permutation","permutation","Permutation","🔀","creature","Invocation : échange les PV actuels de deux unités ciblées (une alliée et une ennemie).",""
 "persecution","persecution","Persécution X","🩻","creature","Chaque fois que cette unité attaque, inflige X dégâts au héros adverse.",""

@@ -45,6 +45,8 @@ export type Keyword =
   | "douleur"
   // Drawback — self ATK reduced by opponent's hand size (dynamic aura)
   | "pauvrete"
+  // Reactive — gains +X/+X each time any player discards a card
+  | "richesse"
   // Polymorphic — draw X cards
   | "inspiration"
   // Polymorphic — replace each spell in hand with a random higher-cost spell, discounted
@@ -541,6 +543,9 @@ export interface CardInstance {
   // Nécrophagie: permanent buff tracker
   necrophagieATKBonus: number;
   necrophagiePVBonus: number;
+  // Richesse: permanent buff tracker (+X/+X per discard, any player)
+  richesseATKBonus: number;
+  richessePVBonus: number;
   // Martyr (death-trigger from same-race ally): permanent ATK bonus
   // tracked separately from currentAttack so recalculateAuras() doesn't
   // erase it on its next pass.
