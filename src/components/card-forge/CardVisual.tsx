@@ -53,7 +53,7 @@ export const KEYWORD_SYMBOLS: Record<string, string> = {
   "Augure":           "📖",
   "Bénédiction":      "✝️",
   "Bravoure":         "🦁",
-  "Pillage":          "💰",
+  "Pillage X":        "💰",
   "Riposte X":        "↩️",
   "Rappel":           "🔄",
   "Combustion":       "🔥",

@@ -118,6 +118,7 @@ export type SpellKeywordId =
   | "poison"
   | "remontee"
   | "renforcement_multiple"
+  | "pillage"
   | "damnation";
 
 /** Trigger mode for a creature keyword. Undefined = on-play (default,
@@ -152,7 +153,7 @@ export interface KeywordInstance {
 
 export interface SpellKeywordInstance {
   id: SpellKeywordId;
-  amount?: number;   // X value for impact, deferlement, siphon, guerison, inspiration, afflux
+  amount?: number;   // X value for impact, deferlement, siphon, guerison, inspiration, afflux, pillage
   attack?: number;   // for renforcement, renforcement_multiple, invocation
   health?: number;   // for renforcement, renforcement_multiple, invocation
   race?: string;     // for invocation (token race) and renforcement_multiple (race ciblée)

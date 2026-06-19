@@ -1986,7 +1986,7 @@ export default function CardForge() {
     "Précision": "precision", "Drain de vie": "drain_de_vie", "Esquive": "esquive",
     "Poison": "poison", "Célérité": "celerite",
     "Augure": "augure", "Bénédiction": "benediction", "Bravoure": "bravoure",
-    "Pillage": "pillage", "Riposte X": "riposte",
+    "Pillage X": "pillage", "Riposte X": "riposte",
     // Tier 1 — Cimetière / Main
     "Rappel": "rappel", "Combustion": "combustion",
     // Tier 2 — Terrain

@@ -17,7 +17,7 @@ id_registre,id_creature,label,symbole,hotes,description_creature,description_sor
 "augure","augure","Augure","/icons/augure.png","creature","Quand cette unité inflige des dégâts au héros adverse, vous piochez une carte.",""
 "benediction","benediction","Bénédiction","✝️","creature","Soigne complètement l'unité ciblée.",""
 "bravoure","bravoure","Bravoure","🦁","creature","Double ses dégâts (arrondi au supérieur) contre les unités ayant une ATK supérieure à la sienne.",""
-"pillage","pillage","Pillage","💰","creature","Invocation : l'adversaire défausse une carte de son choix.",""
+"pillage","pillage","Pillage X","💰","creature;spell","L'adversaire défausse X cartes aléatoires de sa main.",""
 "riposte","riposte","Riposte X","↩️","creature","Quand cette unité subit des dégâts, inflige X dégâts à la source de l'attaque (unité ou héros).",""
 "combustion","combustion","Combustion","🔥","creature","Invocation : défaussez une carte de votre main, puis piochez deux cartes.",""
 "terreur","terreur","Terreur","👁️","creature","Les unités adverses perdent 1 ATK en présence de cette carte.",""

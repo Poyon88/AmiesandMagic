@@ -206,7 +206,7 @@ export const KEYWORD_LABELS: Record<Keyword, string> = {
   berserk: "Berserk", vol: "Vol", precision: "Précision", drain_de_vie: "Drain de vie", esquive: "Esquive",
   poison: "Poison", celerite: "Célérité",
   augure: "Augure", benediction: "Bénédiction", bravoure: "Bravoure",
-  pillage: "Pillage", riposte: "Riposte X",
+  pillage: "Pillage X", riposte: "Riposte X",
   rappel: "Rappel", combustion: "Combustion",
   terreur: "Terreur", armure: "Armure",
   commandement: "Commandement", fureur: "Fureur", double_attaque: "Double Attaque", invisible: "Invisible",

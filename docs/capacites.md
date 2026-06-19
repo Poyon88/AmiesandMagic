@@ -22,7 +22,7 @@
 - /icons/augure.png **Augure** — Quand cette unité inflige des dégâts au héros adverse, vous piochez une carte.
 - ✝️ **Bénédiction** — Soigne complètement l'unité ciblée.
 - 🦁 **Bravoure** — Double ses dégâts (arrondi au supérieur) contre les unités ayant une ATK supérieure à la sienne.
-- 💰 **Pillage** — Invocation : l'adversaire défausse une carte de son choix.
+- 💰 **Pillage X** — L'adversaire défausse X cartes aléatoires de sa main (capacité de créature à l'invocation et de sort).
 - ↩️ **Riposte X** — Quand cette unité subit des dégâts, inflige X dégâts à la source de l'attaque (unité ou héros).
 - 🔥 **Combustion** — Invocation : défaussez une carte de votre main, puis piochez deux cartes.
 - 👁️ **Terreur** — Les unités adverses perdent 1 ATK en présence de cette carte.

@@ -1311,11 +1311,17 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       if (rm) applyRenforcementMultiple(player, rm.x ?? 0, rm.y ?? 0, rm.race, rm.clan, cardInstance.instanceId);
     }
 
-    // Pillage: adversaire défausse une carte de son choix
-    if (hasKwOnPlay(cardInstance, "pillage") && opponent.hand.length > 0) {
-      const discardIdx = Math.floor(rng() * opponent.hand.length);
-      const discarded = opponent.hand.splice(discardIdx, 1)[0];
-      opponent.graveyard.push(discarded);
+    // Pillage X: l'adversaire défausse X cartes aléatoires de sa main.
+    // Gated on hasKwOnPlay pour qu'une instance en mode death/tap/return ne
+    // se déclenche pas aussi à l'invocation (elle passe par
+    // resolveCuratedKeywordEffect).
+    if (hasKwOnPlay(cardInstance, "pillage")) {
+      const x = getKwX(cardInstance, "pillage", undefined, 1);
+      for (let i = 0; i < x && opponent.hand.length > 0; i++) {
+        const discardIdx = Math.floor(rng() * opponent.hand.length);
+        const discarded = opponent.hand.splice(discardIdx, 1)[0];
+        opponent.graveyard.push(discarded);
+      }
     }
 
     // Contresort: annule le prochain sort adverse
@@ -2431,6 +2437,16 @@ function resolveSpellKeywords(
       case "inspiration": {
         const amount = kw.amount ?? 1;
         for (let j = 0; j < amount; j++) drawCard(ctx.caster);
+        break;
+      }
+      case "pillage": {
+        // L'adversaire défausse X cartes aléatoires de sa main.
+        const total = kw.amount ?? 1;
+        for (let drop = 0; drop < total && ctx.opponent.hand.length > 0; drop++) {
+          const discardIdx = Math.floor(rng() * ctx.opponent.hand.length);
+          const discarded = ctx.opponent.hand.splice(discardIdx, 1)[0];
+          ctx.opponent.graveyard.push(discarded);
+        }
         break;
       }
       case "afflux": {
@@ -3755,10 +3771,11 @@ function resolveCuratedKeywordEffect(
       break;
     }
     case "pillage": {
-      if (opponent.hand.length === 0) return;
-      const idx = Math.floor(rng() * opponent.hand.length);
-      const discarded = opponent.hand.splice(idx, 1)[0];
-      opponent.graveyard.push(discarded);
+      for (let i = 0; i < x && opponent.hand.length > 0; i++) {
+        const idx = Math.floor(rng() * opponent.hand.length);
+        const discarded = opponent.hand.splice(idx, 1)[0];
+        opponent.graveyard.push(discarded);
+      }
       break;
     }
     case "douleur": {

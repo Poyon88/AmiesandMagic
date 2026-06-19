@@ -40,7 +40,7 @@ export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
   "Convocation X": new Set<CuratedMode>(["death", "tap", "return"]),
   "Convocations multiples": new Set<CuratedMode>(["death", "tap", "return"]),
   "Inspiration X": new Set<CuratedMode>(["death", "tap", "return"]),
-  "Pillage": new Set<CuratedMode>(["death", "tap", "return"]),
+  "Pillage X": new Set<CuratedMode>(["death", "tap", "return"]),
   "Douleur X": new Set<CuratedMode>(["death", "tap", "return"]),
   "Vampirisme X": new Set<CuratedMode>(["death", "tap", "return"]),
   "Tempête X": new Set<CuratedMode>(["death", "tap", "return"]),
@@ -108,7 +108,7 @@ export const FACTIONS: Record<string, {
     guaranteedKeywords: [],
     likelyKeywords: { "Traque": 0.60, "Esquive": 0.55, "Précision": 0.50, "Invisible": 0.40, "Première Frappe": 0.45, "Drain de vie": 0.30, "Vol": 0.20,
       "Augure": 0.40, "Canalisation": 0.40, "Catalyse": 0.40, "Divination": 0.45, "Prescience X": 0.35, "Suprématie": 0.40, "Contresort": 0.35, "Héritage X": 0.25, "Tactique X": 0.30 },
-    forbiddenKeywords: ["Armure", "Ancré", "Provocation", "Berserk", "Nécrophagie", "Pillage", "Carnage X"],
+    forbiddenKeywords: ["Armure", "Ancré", "Provocation", "Berserk", "Nécrophagie", "Pillage X", "Carnage X"],
     description: "Agiles et furtifs. Favorisent la vitesse et l'esquive. Aigles géants parmi leurs rangs.",
     raceProfiles: {
       "Aigles Géants": { statWeights: { atk: 1.20, def: 0.70 }, likelyKeywords: { "Vol": 0.90, "Traque": 0.60, "Première Frappe": 0.50, "Augure": 0.40 } },
@@ -124,7 +124,7 @@ export const FACTIONS: Record<string, {
     guaranteedKeywords: [],
     likelyKeywords: { "Armure": 0.70, "Résistance X": 0.65, "Bouclier": 0.50, "Ancré": 0.45, "Berserk": 0.35, "Provocation": 0.40,
       "Riposte X": 0.50, "Bravoure": 0.40, "Catalyse": 0.40, "Tactique X": 0.25 },
-    forbiddenKeywords: ["Vol", "Invisible", "Esquive", "Ombre", "Traque", "Pillage"],
+    forbiddenKeywords: ["Vol", "Invisible", "Esquive", "Ombre", "Traque", "Pillage X"],
     description: "Solides et résistants. Favorisent la défense et la ténacité.",
     raceProfiles: {
       "Golems": { statWeights: { atk: 0.90, def: 1.60 }, likelyKeywords: { "Ancré": 0.80, "Armure": 0.75, "Provocation": 0.60, "Indestructible": 0.30, "Riposte X": 0.45 } },
@@ -139,7 +139,7 @@ export const FACTIONS: Record<string, {
     guaranteedKeywords: [],
     likelyKeywords: { "Esquive": 0.65, "Loyauté": 0.60, "Traque": 0.45, "Invisible": 0.50, "Résistance X": 0.35, "Ancré": 0.40,
       "Bravoure": 0.45, "Bénédiction": 0.40, "Divination": 0.30, "Héritage X": 0.30, "Combustion": 0.25 },
-    forbiddenKeywords: ["Terreur", "Corruption", "Domination", "Sacrifice", "Maléfice", "Nécrophagie", "Pillage", "Carnage X"],
+    forbiddenKeywords: ["Terreur", "Corruption", "Domination", "Sacrifice", "Maléfice", "Nécrophagie", "Pillage X", "Carnage X"],
     description: "Petits mais rusés. Esquive et entraide.",
     subType: { threshold: 6, name: "Homme-Arbre", emoji: "🌳", descOverride: "Homme-arbre allié des Hobbits. Colosse végétal, lent mais dévastateur et protecteur." },
     raceProfiles: {
@@ -179,7 +179,7 @@ export const FACTIONS: Record<string, {
     guaranteedKeywords: [],
     likelyKeywords: { "Fureur": 0.40, "Résistance X": 0.40, "Régénération": 0.35, "Esquive": 0.35,
       "Canalisation": 0.45, "Permutation": 0.30, "Métamorphose": 0.35, "Mimique": 0.30, "Carnage X": 0.30 },
-    forbiddenKeywords: ["Loyauté", "Commandement", "Bouclier", "Pillage"],
+    forbiddenKeywords: ["Loyauté", "Commandement", "Bouclier", "Pillage X"],
     description: "Forces primordiales de la nature. Chaque élément a son propre style de combat.",
     // The four elements are now clans of the single race "Élémentaire";
     // their distinct playstyles live in clanProfiles (consumed by the
@@ -203,7 +203,7 @@ export const FACTIONS: Record<string, {
     description: "Soldats de fortune sans allégeance. Polyvalents et disponibles pour tous les decks.",
     raceProfiles: {
       "Géants": { statWeights: { atk: 1.15, def: 1.30 }, likelyKeywords: { "Provocation": 0.65, "Résistance X": 0.60, "Armure": 0.55, "Indestructible": 0.45, "Terreur": 0.40, "Carnage X": 0.30 } },
-      "Ogres": { statWeights: { atk: 1.25, def: 1.10 }, likelyKeywords: { "Berserk": 0.55, "Fureur": 0.50, "Provocation": 0.40, "Résistance X": 0.35, "Pillage": 0.30 } },
+      "Ogres": { statWeights: { atk: 1.25, def: 1.10 }, likelyKeywords: { "Berserk": 0.55, "Fureur": 0.50, "Provocation": 0.40, "Résistance X": 0.35, "Pillage X": 0.30 } },
       "Dragons": { statWeights: { atk: 1.40, def: 0.90 }, likelyKeywords: { "Vol": 0.90, "Souffle de feu X": 0.70, "Terreur": 0.60, "Fureur": 0.50, "Indestructible": 0.40, "Transcendance": 0.35, "Vampirisme X": 0.25 } },
       "Chiens": { statWeights: { atk: 1.10, def: 0.80 }, likelyKeywords: { "Raid": 0.70, "Traque": 0.55, "Instinct de meute X": 0.60, "Loyauté": 0.50, "Esquive": 0.40, "Berserk": 0.35, "Première Frappe": 0.30 } },
       "Phoenix": { statWeights: { atk: 1.20, def: 0.95 }, likelyKeywords: { "Vol": 0.80, "Résurrection": 0.70, "Souffle de feu X": 0.55, "Régénération": 0.50, "Bouclier": 0.40, "Berserk": 0.35, "Fureur": 0.30, "Cycle éternel": 0.45 } },
@@ -221,7 +221,7 @@ export const FACTIONS: Record<string, {
     statWeights: { atk: 1.25, def: 0.85 },
     guaranteedKeywords: [],
     likelyKeywords: { "Traque": 0.60, "Berserk": 0.55, "Fureur": 0.50, "Sacrifice": 0.45, "Loyauté": 0.40, "Célérité": 0.35, "Double Attaque": 0.30, "Vol": 0.15,
-      "Pillage": 0.45, "Convocation X": 0.45, "Combustion": 0.40, "Persécution X": 0.40, "Carnage X": 0.35, "Profanation X": 0.30, "Pacte de sang": 0.30 },
+      "Pillage X": 0.45, "Convocation X": 0.45, "Combustion": 0.40, "Persécution X": 0.40, "Carnage X": 0.35, "Profanation X": 0.30, "Pacte de sang": 0.30 },
     forbiddenKeywords: ["Invisible", "Armure", "Régénération", "Transcendance", "Canalisation", "Contresort", "Divination"],
     description: "Horde brutale. Gobelins rapides et sacrifiables. Orcs brutes et agressifs. Trolls résistants. Wargs rapides.",
     subType: { threshold: 3, name: "Orc", emoji: "💪", lowName: "Gobelin", lowEmoji: "👺" },
@@ -245,7 +245,7 @@ export const FACTIONS: Record<string, {
     statWeights: { atk: 1.15, def: 0.85 },
     guaranteedKeywords: [],
     likelyKeywords: { "Poison": 0.65, "Invisible": 0.55, "Ombre": 0.50, "Corruption": 0.50, "Maléfice": 0.45, "Drain de vie": 0.40, "Précision": 0.35,
-      "Malédiction": 0.50, "Paralysie": 0.40, "Nécrophagie": 0.40, "Pillage": 0.40, "Permutation": 0.40, "Persécution X": 0.35, "Ombre du passé": 0.40, "Exhumation X": 0.35, "Héritage du cimetière": 0.35, "Rappel": 0.40, "Métamorphose": 0.30, "Domination": 0.35, "Vampirisme X": 0.40 },
+      "Malédiction": 0.50, "Paralysie": 0.40, "Nécrophagie": 0.40, "Pillage X": 0.40, "Permutation": 0.40, "Persécution X": 0.35, "Ombre du passé": 0.40, "Exhumation X": 0.35, "Héritage du cimetière": 0.35, "Rappel": 0.40, "Métamorphose": 0.30, "Domination": 0.35, "Vampirisme X": 0.40 },
     forbiddenKeywords: ["Loyauté", "Commandement", "Bouclier", "Provocation", "Bénédiction", "Bravoure"],
     description: "Sournois et venimeux. Poison, ombre et corruption.",
     raceProfiles: {

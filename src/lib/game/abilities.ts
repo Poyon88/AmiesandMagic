@@ -219,10 +219,14 @@ export const ABILITIES: Record<string, AbilityDef> = {
     creature: { cost: 9, costPerX: 0, se: 2.0, minTier: 1, scalable: false, zone: "Terrain" },
   },
   pillage: {
-    id: "pillage", label: "Pillage", symbol: "💰",
-    desc: "Invocation : l'adversaire défausse une carte de son choix.",
-    applicable_to: ["creature"],
-    creature: { cost: 13, costPerX: 0, se: 3.0, minTier: 1, scalable: false, zone: "Terrain" },
+    id: "pillage", label: "Pillage X", symbol: "💰",
+    desc: "L'adversaire défausse X cartes aléatoires de sa main.",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      cost: 8, costPerX: 5, se: 3.0, minTier: 1, scalable: true, zone: "Terrain",
+      desc: "Invocation : l'adversaire défausse X cartes aléatoires de sa main.",
+    },
+    spell: { params: ["amount"], needsTarget: false },
   },
   riposte: {
     id: "riposte", label: "Riposte X", symbol: "↩️",

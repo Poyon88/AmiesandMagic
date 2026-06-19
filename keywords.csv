@@ -16,7 +16,7 @@ Célérité;1;Non;Terrain;Peut attaquer deux fois par tour.
 Augure;1;Non;Terrain;Quand cette unité inflige des dégâts au héros adverse, vous piochez une carte.
 Bénédiction;1;Non;Terrain;Soigne complètement l'unité ciblée.
 Bravoure;1;Non;Terrain;Double ses dégâts (arrondi au supérieur) contre les unités ayant une ATK supérieure à la sienne.
-Pillage;1;Non;Terrain;Invocation : l'adversaire défausse une carte de son choix.
+Pillage X;1;Oui;Terrain;L'adversaire défausse X cartes aléatoires de sa main.
 Riposte X;1;Oui;Terrain;Quand cette unité subit des dégâts, inflige X dégâts à la source de l'attaque (unité ou héros).
 Rappel;1;Non;Cimetière;Invocation : remettez une carte ciblée de votre cimetière dans votre main.
 Combustion;1;Non;Main;Invocation : défaussez une carte de votre main, puis piochez deux cartes.
