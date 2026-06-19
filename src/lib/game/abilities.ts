@@ -263,7 +263,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
   // triggerRichesse (classé automatic/réactif, comme Nécrophagie).
   richesse: {
     id: "richesse", label: "Richesse X", symbol: "🤑",
-    desc: "Chaque fois qu'un joueur défausse une carte, cette unité gagne +X/+X (permanent).",
+    desc: "Chaque fois qu'un joueur défausse une carte de sa main, cette unité gagne +X/+X (permanent).",
     applicable_to: ["creature"],
     creature: { cost: 10, costPerX: 6, se: 3.5, minTier: 2, scalable: true, zone: "Terrain" },
   },

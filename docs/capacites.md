@@ -40,7 +40,7 @@
 - 🐺 **Lycanthropie X** — Début de tour : se transforme en un token X/X avec Traque.
 - 💀 **Malédiction** — Invocation : ciblez une unité ennemie, elle est exilée à la fin du prochain tour adverse.
 - 🦴 **Nécrophagie** — Gagne +1 ATK et +1 PV chaque fois qu'une unité (alliée ou ennemie) meurt.
-- 🤑 **Richesse X** — Gagne +X ATK et +X PV chaque fois qu'un joueur (allié ou ennemi) défausse une carte.
+- 🤑 **Richesse X** — Gagne +X ATK et +X PV chaque fois qu'un joueur (allié ou ennemi) défausse une carte de sa main.
 - ⛓️ **Paralysie** — Les unités subissant des dégâts de cette créature ne peuvent attaquer ni utiliser de capacités actives avant la fin du prochain tour de leur propriétaire.
 - 🔀 **Permutation** — Invocation : échange les PV actuels de deux unités ciblées (une alliée et une ennemie).
 - 🩻 **Persécution X** — Chaque fois que cette unité attaque, inflige X dégâts au héros adverse.
