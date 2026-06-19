@@ -21,6 +21,7 @@ Riposte X;1;Oui;Terrain;Quand cette unité subit des dégâts, inflige X dégât
 Rappel;1;Non;Cimetière;Invocation : remettez une carte ciblée de votre cimetière dans votre main.
 Combustion;1;Non;Main;Invocation : défaussez une carte de votre main, puis piochez deux cartes.
 Terreur;2;Non;Terrain;Les unités adverses perdent 1 ATK en présence de cette carte.
+Pauvreté X;1;Non;Terrain;Cette unité perd autant de Force que le nombre de cartes en main de l'adversaire (X dynamique).
 Armure;2;Non;Terrain;Réduit de moitié les dégâts de combat reçus (arrondi au supérieur) ; les dégâts de sorts ne sont pas réduits.
 Commandement;2;Non;Terrain;Les alliés de même faction gagnent +1/+1.
 Fureur;2;Non;Terrain;Après avoir subi des dégâts, attaque immédiatement une unité adverse au choix.

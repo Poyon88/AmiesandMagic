@@ -248,6 +248,16 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["creature"],
     creature: { cost: 11, costPerX: 0, se: 2.5, minTier: 2, scalable: false, zone: "Terrain" },
   },
+  // Drawback dynamique : X n'est PAS choisi à la forge mais calculé en jeu
+  // (= taille de la main adverse), d'où costPerX 0 / scalable false. Câblé
+  // comme aura dans recalculateAuras (voir AUTOMATIC_ABILITY_IDS). Coût
+  // négatif : rend du budget en forge en échange du malus d'ATK.
+  pauvrete: {
+    id: "pauvrete", label: "Pauvreté X", symbol: "📉",
+    desc: "Cette unité perd autant de Force que le nombre de cartes en main de l'adversaire (X = taille de la main adverse, dynamique).",
+    applicable_to: ["creature"],
+    creature: { cost: -8, costPerX: 0, se: -2.0, minTier: 1, scalable: false, zone: "Terrain" },
+  },
   armure: {
     id: "armure", label: "Armure", symbol: "/icons/armure.png",
     desc: "Réduit de moitié les dégâts de combat reçus (arrondi au supérieur) ; les dégâts de sorts ne sont pas réduits.",
@@ -1050,7 +1060,7 @@ export const DEATH_NATURE_IDS: ReadonlySet<string> = new Set([
  *  `trigger` est donc cosmétique/taxonomique (classées "automatic"). */
 export const AUTOMATIC_ABILITY_IDS: ReadonlySet<string> = new Set([
   // Auras / présence continue
-  "terreur", "commandement", "fierte_du_clan", "sang_mele", "totem",
+  "terreur", "commandement", "fierte_du_clan", "sang_mele", "totem", "pauvrete",
   // Passifs de combat / statiques
   "berserk", "premiere_frappe", "double_attaque", "esquive", "armure",
   "resistance", "precision", "indestructible", "transcendance", "invisible",

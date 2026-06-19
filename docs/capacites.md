@@ -26,6 +26,7 @@
 - ↩️ **Riposte X** — Quand cette unité subit des dégâts, inflige X dégâts à la source de l'attaque (unité ou héros).
 - 🔥 **Combustion** — Invocation : défaussez une carte de votre main, puis piochez deux cartes.
 - 👁️ **Terreur** — Les unités adverses perdent 1 ATK en présence de cette carte.
+- 📉 **Pauvreté X** — Cette unité perd autant de Force que le nombre de cartes en main de l'adversaire (X dynamique = taille de la main adverse).
 - /icons/armure.png **Armure** — Réduit de moitié les dégâts de combat reçus (arrondi au supérieur) ; les dégâts de sorts ne sont pas réduits.
 - 👑 **Commandement** — Les alliés de même faction gagnent +1/+1.
 - 💢 **Fureur** — Après avoir subi des dégâts, attaque immédiatement une unité adverse aléatoire (héros si plus aucune unité). Se déclenche au plus une fois par tour.

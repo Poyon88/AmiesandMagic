@@ -43,6 +43,8 @@ export type Keyword =
   | "tempete"
   // Drawback — self-damage on ETB / cast
   | "douleur"
+  // Drawback — self ATK reduced by opponent's hand size (dynamic aura)
+  | "pauvrete"
   // Polymorphic — draw X cards
   | "inspiration"
   // Polymorphic — replace each spell in hand with a random higher-cost spell, discounted

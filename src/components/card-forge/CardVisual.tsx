@@ -59,6 +59,7 @@ export const KEYWORD_SYMBOLS: Record<string, string> = {
   "Combustion":       "🔥",
   // Tier 2
   "Terreur":          "👁️",
+  "Pauvreté X":       "📉",
   "Armure":           "/icons/armure.png",
   "Commandement":     "👑",
   "Fureur":           "💢",

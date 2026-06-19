@@ -802,6 +802,18 @@ function recalculateAuras(player: PlayerState, opponent: PlayerState) {
     c.currentAttack = Math.max(0, c.currentAttack - opponentTerreurCount);
   }
 
+  // Pauvreté : une unité dotée de ce mot-clé perd autant d'ATK que le nombre
+  // de cartes en main de SON adversaire (X dynamique, recalculé ici à chaque
+  // changement d'état). Clampé à 0 comme Terreur.
+  const playerHandSize = player.hand.length;
+  const opponentHandSize = opponent.hand.length;
+  for (const c of player.board) {
+    if (hasKw(c, "pauvrete")) c.currentAttack = Math.max(0, c.currentAttack - opponentHandSize);
+  }
+  for (const c of opponent.board) {
+    if (hasKw(c, "pauvrete")) c.currentAttack = Math.max(0, c.currentAttack - playerHandSize);
+  }
+
   // Commandement: alliés de même faction gagnent +1/+1 (per board commandement
   // unit + per hero aura stack of same faction).
   const playerHeroFaction = player.hero.heroDefinition?.faction ?? null;

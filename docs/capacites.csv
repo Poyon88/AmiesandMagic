@@ -21,6 +21,7 @@ id_registre,id_creature,label,symbole,hotes,description_creature,description_sor
 "riposte","riposte","Riposte X","↩️","creature","Quand cette unité subit des dégâts, inflige X dégâts à la source de l'attaque (unité ou héros).",""
 "combustion","combustion","Combustion","🔥","creature","Invocation : défaussez une carte de votre main, puis piochez deux cartes.",""
 "terreur","terreur","Terreur","👁️","creature","Les unités adverses perdent 1 ATK en présence de cette carte.",""
+"pauvrete","pauvrete","Pauvreté X","📉","creature","Cette unité perd autant de Force que le nombre de cartes en main de l'adversaire (X dynamique).",""
 "armure","armure","Armure","/icons/armure.png","creature","Réduit de moitié les dégâts de combat reçus (arrondi au supérieur) ; les dégâts de sorts ne sont pas réduits.",""
 "commandement","commandement","Commandement","👑","creature","Les alliés de même faction gagnent +1/+1.",""
 "fureur","fureur","Fureur","💢","creature","Après avoir subi des dégâts, attaque immédiatement une unité adverse aléatoire (héros si plus aucune unité). Se déclenche au plus une fois par tour.",""

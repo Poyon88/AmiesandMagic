@@ -1990,7 +1990,7 @@ export default function CardForge() {
     // Tier 1 — Cimetière / Main
     "Rappel": "rappel", "Combustion": "combustion",
     // Tier 2 — Terrain
-    "Terreur": "terreur", "Armure": "armure", "Commandement": "commandement",
+    "Terreur": "terreur", "Pauvreté X": "pauvrete", "Armure": "armure", "Commandement": "commandement",
     "Fureur": "fureur", "Double Attaque": "double_attaque", "Invisible": "invisible",
     "Canalisation": "canalisation", "Contresort": "contresort",
     "Conférer": "conferer",
