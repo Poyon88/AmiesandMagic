@@ -257,6 +257,8 @@ export const CLAN_ACCENTS: Record<string, string> = {
     'silken layered robes with dragon embroidery, ornate jade pendant, a single curved hairpin',
   Incas:
     'a feathered headdress with quetzal plumes, hammered-gold sun pectoral, vibrant woven mantle in red-and-ochre geometric patterns',
+  Touaregs:
+    'an indigo tagelmust veil wrapped around the face leaving only the eyes, flowing desert-blue robes, silver talismanic jewelry, sun-weathered bronze skin',
   // Elfes
   Sylvains:
     'a leaf-woven circlet, mossy-green hooded cape, traces of foliage and twigs in the hair',

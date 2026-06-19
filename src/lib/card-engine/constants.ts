@@ -150,7 +150,7 @@ export const FACTIONS: Record<string, {
     displayName: "Les Royaumes Libres",
     color: "#2c5f8a", accent: "#74b9ff", emoji: "⚔️", bg: "#0a0f2a", alignment: "neutre",
     races: ["Humains"],
-    clans: [{ names: ["Nordiques", "Orientaux", "Templiers", "Amazones", "Incas"], appliesTo: "all" }],
+    clans: [{ names: ["Nordiques", "Orientaux", "Templiers", "Amazones", "Incas", "Touaregs"], appliesTo: "all" }],
     statWeights: { atk: 1.00, def: 1.00 },
     guaranteedKeywords: [],
     likelyKeywords: { "Commandement": 0.55, "Loyauté": 0.60, "Bouclier": 0.45, "Première Frappe": 0.40, "Provocation": 0.35,
