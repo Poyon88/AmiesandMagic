@@ -219,10 +219,14 @@ export const ABILITIES: Record<string, AbilityDef> = {
     creature: { cost: 9, costPerX: 0, se: 2.0, minTier: 1, scalable: false, zone: "Terrain" },
   },
   pillage: {
-    id: "pillage", label: "Pillage", symbol: "💰",
-    desc: "Invocation : l'adversaire défausse une carte de son choix.",
-    applicable_to: ["creature"],
-    creature: { cost: 13, costPerX: 0, se: 3.0, minTier: 1, scalable: false, zone: "Terrain" },
+    id: "pillage", label: "Pillage X", symbol: "💰",
+    desc: "L'adversaire défausse X cartes aléatoires de sa main.",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      cost: 8, costPerX: 5, se: 3.0, minTier: 1, scalable: true, zone: "Terrain",
+      desc: "Invocation : l'adversaire défausse X cartes aléatoires de sa main.",
+    },
+    spell: { params: ["amount"], needsTarget: false },
   },
   riposte: {
     id: "riposte", label: "Riposte X", symbol: "↩️",
@@ -243,6 +247,25 @@ export const ABILITIES: Record<string, AbilityDef> = {
     desc: "Les unités adverses perdent 1 ATK en présence de cette carte.",
     applicable_to: ["creature"],
     creature: { cost: 11, costPerX: 0, se: 2.5, minTier: 2, scalable: false, zone: "Terrain" },
+  },
+  // Drawback dynamique : X n'est PAS choisi à la forge mais calculé en jeu
+  // (= taille de la main adverse), d'où costPerX 0 / scalable false. Câblé
+  // comme aura dans recalculateAuras (voir AUTOMATIC_ABILITY_IDS). Coût
+  // négatif : rend du budget en forge en échange du malus d'ATK.
+  pauvrete: {
+    id: "pauvrete", label: "Pauvreté X", symbol: "📉",
+    desc: "Cette unité perd autant de Force que le nombre de cartes en main de l'adversaire (X = taille de la main adverse, dynamique).",
+    applicable_to: ["creature"],
+    creature: { cost: -8, costPerX: 0, se: -2.0, minTier: 1, scalable: false, zone: "Terrain" },
+  },
+  // Réactif scalable : se déclenche à chaque défausse (main → cimetière) de
+  // N'IMPORTE quel joueur. Câblé dans le moteur via discardFromHand →
+  // triggerRichesse (classé automatic/réactif, comme Nécrophagie).
+  richesse: {
+    id: "richesse", label: "Richesse X", symbol: "🤑",
+    desc: "Chaque fois qu'un joueur défausse une carte de sa main, cette unité gagne +X/+X (permanent).",
+    applicable_to: ["creature"],
+    creature: { cost: 10, costPerX: 6, se: 3.5, minTier: 2, scalable: true, zone: "Terrain" },
   },
   armure: {
     id: "armure", label: "Armure", symbol: "/icons/armure.png",
@@ -1046,15 +1069,15 @@ export const DEATH_NATURE_IDS: ReadonlySet<string> = new Set([
  *  `trigger` est donc cosmétique/taxonomique (classées "automatic"). */
 export const AUTOMATIC_ABILITY_IDS: ReadonlySet<string> = new Set([
   // Auras / présence continue
-  "terreur", "commandement", "fierte_du_clan", "sang_mele", "totem",
+  "terreur", "commandement", "fierte_du_clan", "sang_mele", "totem", "pauvrete",
   // Passifs de combat / statiques
   "berserk", "premiere_frappe", "double_attaque", "esquive", "armure",
   "resistance", "precision", "indestructible", "transcendance", "invisible",
   "ombre", "taunt", "vol", "ranged", "ancre", "divine_shield", "celerite",
   "charge", "raid", "drain_de_vie", "bravoure",
-  // Réactifs (déclenchés au combat / à la mort d'autrui)
+  // Réactifs (déclenchés au combat / à la mort d'autrui / à la défausse)
   "augure", "fureur", "riposte", "persecution", "souffle_de_feu", "pietinement",
-  "liaison_de_vie", "paralysie", "poison", "necrophagie",
+  "liaison_de_vie", "paralysie", "poison", "necrophagie", "richesse",
   // Début de tour / calcul de coût
   "regeneration", "canalisation", "entraide",
 ]);

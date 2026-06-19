@@ -1986,16 +1986,16 @@ export default function CardForge() {
     "Précision": "precision", "Drain de vie": "drain_de_vie", "Esquive": "esquive",
     "Poison": "poison", "Célérité": "celerite",
     "Augure": "augure", "Bénédiction": "benediction", "Bravoure": "bravoure",
-    "Pillage": "pillage", "Riposte X": "riposte",
+    "Pillage X": "pillage", "Riposte X": "riposte",
     // Tier 1 — Cimetière / Main
     "Rappel": "rappel", "Combustion": "combustion",
     // Tier 2 — Terrain
-    "Terreur": "terreur", "Armure": "armure", "Commandement": "commandement",
+    "Terreur": "terreur", "Pauvreté X": "pauvrete", "Armure": "armure", "Commandement": "commandement",
     "Fureur": "fureur", "Double Attaque": "double_attaque", "Invisible": "invisible",
     "Canalisation": "canalisation", "Contresort": "contresort",
     "Conférer": "conferer",
     "Convocation X": "convocation", "Malédiction": "malediction",
-    "Nécrophagie": "necrophagie", "Paralysie": "paralysie",
+    "Nécrophagie": "necrophagie", "Richesse X": "richesse", "Paralysie": "paralysie",
     "Permutation": "permutation", "Persécution X": "persecution",
     "Piétinement": "pietinement",
     // Tier 2 — Cimetière / Main / Mixte

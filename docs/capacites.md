@@ -22,10 +22,11 @@
 - /icons/augure.png **Augure** — Quand cette unité inflige des dégâts au héros adverse, vous piochez une carte.
 - ✝️ **Bénédiction** — Soigne complètement l'unité ciblée.
 - 🦁 **Bravoure** — Double ses dégâts (arrondi au supérieur) contre les unités ayant une ATK supérieure à la sienne.
-- 💰 **Pillage** — Invocation : l'adversaire défausse une carte de son choix.
+- 💰 **Pillage X** — L'adversaire défausse X cartes aléatoires de sa main (capacité de créature à l'invocation et de sort).
 - ↩️ **Riposte X** — Quand cette unité subit des dégâts, inflige X dégâts à la source de l'attaque (unité ou héros).
 - 🔥 **Combustion** — Invocation : défaussez une carte de votre main, puis piochez deux cartes.
 - 👁️ **Terreur** — Les unités adverses perdent 1 ATK en présence de cette carte.
+- 📉 **Pauvreté X** — Cette unité perd autant de Force que le nombre de cartes en main de l'adversaire (X dynamique = taille de la main adverse).
 - /icons/armure.png **Armure** — Réduit de moitié les dégâts de combat reçus (arrondi au supérieur) ; les dégâts de sorts ne sont pas réduits.
 - 👑 **Commandement** — Les alliés de même faction gagnent +1/+1.
 - 💢 **Fureur** — Après avoir subi des dégâts, attaque immédiatement une unité adverse aléatoire (héros si plus aucune unité). Se déclenche au plus une fois par tour.
@@ -39,6 +40,7 @@
 - 🐺 **Lycanthropie X** — Début de tour : se transforme en un token X/X avec Traque.
 - 💀 **Malédiction** — Invocation : ciblez une unité ennemie, elle est exilée à la fin du prochain tour adverse.
 - 🦴 **Nécrophagie** — Gagne +1 ATK et +1 PV chaque fois qu'une unité (alliée ou ennemie) meurt.
+- 🤑 **Richesse X** — Gagne +X ATK et +X PV chaque fois qu'un joueur (allié ou ennemi) défausse une carte de sa main.
 - ⛓️ **Paralysie** — Les unités subissant des dégâts de cette créature ne peuvent attaquer ni utiliser de capacités actives avant la fin du prochain tour de leur propriétaire.
 - 🔀 **Permutation** — Invocation : échange les PV actuels de deux unités ciblées (une alliée et une ennemie).
 - 🩻 **Persécution X** — Chaque fois que cette unité attaque, inflige X dégâts au héros adverse.

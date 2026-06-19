@@ -16,11 +16,12 @@ Célérité;1;Non;Terrain;Peut attaquer deux fois par tour.
 Augure;1;Non;Terrain;Quand cette unité inflige des dégâts au héros adverse, vous piochez une carte.
 Bénédiction;1;Non;Terrain;Soigne complètement l'unité ciblée.
 Bravoure;1;Non;Terrain;Double ses dégâts (arrondi au supérieur) contre les unités ayant une ATK supérieure à la sienne.
-Pillage;1;Non;Terrain;Invocation : l'adversaire défausse une carte de son choix.
+Pillage X;1;Oui;Terrain;L'adversaire défausse X cartes aléatoires de sa main.
 Riposte X;1;Oui;Terrain;Quand cette unité subit des dégâts, inflige X dégâts à la source de l'attaque (unité ou héros).
 Rappel;1;Non;Cimetière;Invocation : remettez une carte ciblée de votre cimetière dans votre main.
 Combustion;1;Non;Main;Invocation : défaussez une carte de votre main, puis piochez deux cartes.
 Terreur;2;Non;Terrain;Les unités adverses perdent 1 ATK en présence de cette carte.
+Pauvreté X;1;Non;Terrain;Cette unité perd autant de Force que le nombre de cartes en main de l'adversaire (X dynamique).
 Armure;2;Non;Terrain;Réduit de moitié les dégâts de combat reçus (arrondi au supérieur) ; les dégâts de sorts ne sont pas réduits.
 Commandement;2;Non;Terrain;Les alliés de même faction gagnent +1/+1.
 Fureur;2;Non;Terrain;Après avoir subi des dégâts, attaque immédiatement une unité adverse au choix.
@@ -32,6 +33,7 @@ Contresort;2;Non;Terrain;Invocation : annule le prochain sort adverse.
 Convocation X;2;Oui;Terrain;Invocation : crée un token X/X de même race et clan (si clan indiqué sur la carte).
 Malédiction;2;Non;Terrain;Invocation : ciblez une unité ennemie, elle est exilée à la fin du prochain tour adverse.
 Nécrophagie;2;Non;Terrain;Gagne +1 ATK et +1 PV chaque fois qu'une unité (alliée ou ennemie) meurt.
+Richesse X;2;Oui;Terrain;Gagne +X ATK et +X PV chaque fois qu'un joueur défausse une carte de sa main.
 Paralysie;2;Non;Terrain;Invocation : une unité ennemie ciblée ne peut pas attaquer lors du prochain tour adverse.
 Permutation;2;Non;Terrain;Invocation : échange les PV actuels de deux unités ciblées (une alliée et une ennemie).
 Persécution X;2;Oui;Terrain;Chaque fois que cette unité attaque, inflige X dégâts au héros adverse.

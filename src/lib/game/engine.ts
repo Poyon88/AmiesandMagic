@@ -425,9 +425,7 @@ function resolveComposedEffect(
     case "gain_mana": owner.mana += x; return;
     case "discard":
       for (let i = 0; i < x && owner.hand.length > 0; i++) {
-        const idx = Math.floor(rng() * owner.hand.length);
-        const [c] = owner.hand.splice(idx, 1);
-        owner.graveyard.push(c);
+        discardFromHand(owner, Math.floor(rng() * owner.hand.length), [owner, opponent]);
       }
       return;
     case "summon_token": {
@@ -626,6 +624,8 @@ function createCardInstance(card: Card): CardInstance {
     loyautePVBonus: 0,
     necrophagieATKBonus: 0,
     necrophagiePVBonus: 0,
+    richesseATKBonus: 0,
+    richessePVBonus: 0,
     martyrATKBonus: 0,
     persecutionX: 0,
     riposteX: 0,
@@ -752,6 +752,51 @@ export function initializeGame(
 }
 
 // ============================================================
+// DISCARD (main → cimetière) + déclencheur Richesse
+// ============================================================
+
+// Richesse X : chaque défausse (de n'importe quel joueur) confère +X/+X
+// permanent à toute créature en jeu portant le mot-clé. Tracké comme
+// Nécrophagie (bonus permanent réappliqué par recalculateAuras côté ATK ;
+// le PV/maxHealth est incrémenté directement car le recalc ne le réinitialise
+// pas).
+function triggerRichesse(players: PlayerState[]) {
+  for (const p of players) {
+    for (const unit of p.board) {
+      if (hasKw(unit, "richesse")) {
+        // X lu depuis [Richesse N] de effect_text (patron des automatiques
+        // scalables : persecution, carnage). Repli mana/3 si non annoté.
+        const x = parseXValuesFromEffectText(unit.card.effect_text)["richesse"]
+          || Math.max(1, Math.floor(unit.card.mana_cost / 3));
+        unit.richesseATKBonus += x;
+        unit.richessePVBonus += x;
+        unit.currentAttack += x;
+        unit.currentHealth += x;
+        unit.maxHealth += x;
+      }
+    }
+  }
+}
+
+// Défausse la carte à `handIdx` de la main d'un joueur vers son cimetière et
+// déclenche Richesse sur les deux plateaux. Point de passage UNIQUE de toutes
+// les défausses (coût de défausse, Pillage, Combustion, pouvoir de héros,
+// sorts…) pour que le réactif Richesse reste cohérent quelle qu'en soit la
+// source. `players` doit contenir les deux joueurs (les deux plateaux). Renvoie
+// la carte défaussée, ou null si l'index est hors borne.
+function discardFromHand(
+  player: PlayerState,
+  handIdx: number,
+  players: PlayerState[],
+): CardInstance | null {
+  if (handIdx < 0 || handIdx >= player.hand.length) return null;
+  const [card] = player.hand.splice(handIdx, 1);
+  player.graveyard.push(card);
+  triggerRichesse(players);
+  return card;
+}
+
+// ============================================================
 // AURA RECALCULATION
 // ============================================================
 
@@ -763,6 +808,7 @@ function recalculateAuras(player: PlayerState, opponent: PlayerState) {
     atk += c.summonBonusATK;
     if (c.berserkActive) atk += c.berserkATKBonus;
     atk += c.necrophagieATKBonus;
+    atk += c.richesseATKBonus;
     atk += c.martyrATKBonus;
     atk += c.instinctDeMeuteATKBonus;
     c.currentAttack = atk;
@@ -773,6 +819,7 @@ function recalculateAuras(player: PlayerState, opponent: PlayerState) {
     atk += c.summonBonusATK;
     if (c.berserkActive) atk += c.berserkATKBonus;
     atk += c.necrophagieATKBonus;
+    atk += c.richesseATKBonus;
     atk += c.martyrATKBonus;
     atk += c.instinctDeMeuteATKBonus;
     c.currentAttack = atk;
@@ -800,6 +847,18 @@ function recalculateAuras(player: PlayerState, opponent: PlayerState) {
   }
   for (const c of player.board) {
     c.currentAttack = Math.max(0, c.currentAttack - opponentTerreurCount);
+  }
+
+  // Pauvreté : une unité dotée de ce mot-clé perd autant d'ATK que le nombre
+  // de cartes en main de SON adversaire (X dynamique, recalculé ici à chaque
+  // changement d'état). Clampé à 0 comme Terreur.
+  const playerHandSize = player.hand.length;
+  const opponentHandSize = opponent.hand.length;
+  for (const c of player.board) {
+    if (hasKw(c, "pauvrete")) c.currentAttack = Math.max(0, c.currentAttack - opponentHandSize);
+  }
+  for (const c of opponent.board) {
+    if (hasKw(c, "pauvrete")) c.currentAttack = Math.max(0, c.currentAttack - playerHandSize);
   }
 
   // Commandement: alliés de même faction gagnent +1/+1 (per board commandement
@@ -1000,9 +1059,9 @@ export function startTurn(state: GameState): GameState {
       };
       tokenCard = applyTokenTemplate(tokenCard, tmpl);
       creature.card = tokenCard;
-      creature.currentAttack = x + creature.summonBonusATK + creature.necrophagieATKBonus + creature.loyauteATKBonus + creature.auraHealthBonus;
-      creature.currentHealth = x + creature.necrophagiePVBonus + creature.loyautePVBonus;
-      creature.maxHealth = x + creature.necrophagiePVBonus + creature.loyautePVBonus;
+      creature.currentAttack = x + creature.summonBonusATK + creature.necrophagieATKBonus + creature.richesseATKBonus + creature.loyauteATKBonus + creature.auraHealthBonus;
+      creature.currentHealth = x + creature.necrophagiePVBonus + creature.richessePVBonus + creature.loyautePVBonus;
+      creature.maxHealth = x + creature.necrophagiePVBonus + creature.richessePVBonus + creature.loyautePVBonus;
       creature.hasSummoningSickness = false; // Traque
     }
 
@@ -1183,10 +1242,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
   // Discard chosen hand cards.
   for (const id of requestedDiscards) {
     const idx = player.hand.findIndex(c => c.instanceId === id);
-    if (idx !== -1) {
-      const [discarded] = player.hand.splice(idx, 1);
-      player.graveyard.push(discarded);
-    }
+    if (idx !== -1) discardFromHand(player, idx, [player, opponent]);
   }
   // Sacrifice chosen board creatures, batching death triggers at the end.
   if (requestedSacrifices.length > 0) {
@@ -1311,11 +1367,15 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       if (rm) applyRenforcementMultiple(player, rm.x ?? 0, rm.y ?? 0, rm.race, rm.clan, cardInstance.instanceId);
     }
 
-    // Pillage: adversaire défausse une carte de son choix
-    if (hasKwOnPlay(cardInstance, "pillage") && opponent.hand.length > 0) {
-      const discardIdx = Math.floor(rng() * opponent.hand.length);
-      const discarded = opponent.hand.splice(discardIdx, 1)[0];
-      opponent.graveyard.push(discarded);
+    // Pillage X: l'adversaire défausse X cartes aléatoires de sa main.
+    // Gated on hasKwOnPlay pour qu'une instance en mode death/tap/return ne
+    // se déclenche pas aussi à l'invocation (elle passe par
+    // resolveCuratedKeywordEffect).
+    if (hasKwOnPlay(cardInstance, "pillage")) {
+      const x = getKwX(cardInstance, "pillage", undefined, 1);
+      for (let i = 0; i < x && opponent.hand.length > 0; i++) {
+        discardFromHand(opponent, Math.floor(rng() * opponent.hand.length), [player, opponent]);
+      }
     }
 
     // Contresort: annule le prochain sort adverse
@@ -1500,9 +1560,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // Gated on the play-mode instance so a Combustion entry living
     // only in tap/death mode doesn't auto-fire on summon.
     if (hasKwOnPlay(cardInstance, "combustion") && player.hand.length > 0) {
-      const discardIdx = Math.floor(rng() * player.hand.length);
-      const discarded = player.hand.splice(discardIdx, 1)[0];
-      player.graveyard.push(discarded);
+      discardFromHand(player, Math.floor(rng() * player.hand.length), [player, opponent]);
       drawCard(player);
       drawCard(player);
     }
@@ -2433,6 +2491,14 @@ function resolveSpellKeywords(
         for (let j = 0; j < amount; j++) drawCard(ctx.caster);
         break;
       }
+      case "pillage": {
+        // L'adversaire défausse X cartes aléatoires de sa main.
+        const total = kw.amount ?? 1;
+        for (let drop = 0; drop < total && ctx.opponent.hand.length > 0; drop++) {
+          discardFromHand(ctx.opponent, Math.floor(rng() * ctx.opponent.hand.length), [ctx.caster, ctx.opponent]);
+        }
+        break;
+      }
       case "afflux": {
         ctx.caster.mana += kw.amount ?? 1;
         break;
@@ -2732,9 +2798,7 @@ function resolveAtomicEffect(ctx: SpellResolutionContext, effect: AtomicEffect):
     case "discard": {
       const amount = effect.amount ?? 1;
       for (let i = 0; i < amount && ctx.opponent.hand.length > 0; i++) {
-        const idx = Math.floor(rng() * ctx.opponent.hand.length);
-        const discarded = ctx.opponent.hand.splice(idx, 1)[0];
-        ctx.opponent.graveyard.push(discarded);
+        discardFromHand(ctx.opponent, Math.floor(rng() * ctx.opponent.hand.length), [ctx.caster, ctx.opponent]);
       }
       break;
     }
@@ -3755,10 +3819,9 @@ function resolveCuratedKeywordEffect(
       break;
     }
     case "pillage": {
-      if (opponent.hand.length === 0) return;
-      const idx = Math.floor(rng() * opponent.hand.length);
-      const discarded = opponent.hand.splice(idx, 1)[0];
-      opponent.graveyard.push(discarded);
+      for (let i = 0; i < x && opponent.hand.length > 0; i++) {
+        discardFromHand(opponent, Math.floor(rng() * opponent.hand.length), [owner, opponent]);
+      }
       break;
     }
     case "douleur": {
@@ -3797,9 +3860,7 @@ function resolveCuratedKeywordEffect(
       // Mirrors the on-play effect; safe to fire in death mode too
       // since the owner is still around to draw.
       if (owner.hand.length > 0) {
-        const discardIdx = Math.floor(rng() * owner.hand.length);
-        const discarded = owner.hand.splice(discardIdx, 1)[0];
-        owner.graveyard.push(discarded);
+        discardFromHand(owner, Math.floor(rng() * owner.hand.length), [owner, opponent]);
       }
       drawCard(owner);
       drawCard(owner);
