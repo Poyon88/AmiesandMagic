@@ -58,6 +58,7 @@ Tactique X;3;Oui;Terrain;Invocation : attribue X capacité(s) choisie(s) à une 
 Exhumation X;3;Oui;Cimetière;Invocation : ressuscite une unité de votre cimetière dont le coût en mana est égal ou inférieur à X.
 Héritage du cimetière;3;Non;Cimetière;Invocation : attribue à cette unité les capacités d'une unité ciblée dans votre cimetière.
 Pacte de sang;4;Non;Terrain;Quand cette unité meurt, invoque deux tokens 1/1 de sa race.
+Sacrifice démoniaque X;3;Oui;Terrain;À la mort de cette unité, répartit aléatoirement X réductions de coût (-1 mana) parmi les Démons de votre main. Un Démon ne peut coûter moins de 1.
 Souffle de feu X;4;Oui;Terrain;Inflige X dégâts à toutes les unités ennemies lors de l'attaque (ex : Souffle de feu 2 = 2 dégâts).
 Domination;4;Non;Terrain;Prend le contrôle d'une unité ennemie au hasard à son invocation.
 Résurrection;4;Non;Terrain;Revient en jeu après sa mort avec 1 PV ; perd la capacité Résurrection à son retour.

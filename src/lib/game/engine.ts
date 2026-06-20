@@ -630,6 +630,7 @@ function createCardInstance(card: Card): CardInstance {
     persecutionX: 0,
     riposteX: 0,
     carnageX: 0,
+    sacrificeDemoniaqueX: 0,
     heritageX: 0,
     instinctDeMeuteX: 0,
     instinctDeMeuteATKBonus: 0,
@@ -1836,6 +1837,13 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     if (hasKw(cardInstance, "carnage")) {
       const carnXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
       cardInstance.carnageX = carnXVals["carnage"] || Math.max(1, Math.floor(cardInstance.card.mana_cost / 2));
+    }
+
+    // Set Sacrifice démoniaque X (effet à la mort) — caché à l'invocation,
+    // comme Carnage X.
+    if (hasKw(cardInstance, "sacrifice_demoniaque")) {
+      const sdVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
+      cardInstance.sacrificeDemoniaqueX = sdVals["sacrifice_demoniaque"] || Math.max(1, Math.floor(cardInstance.card.mana_cost / 3));
     }
 
     // Set Héritage X value
@@ -3529,6 +3537,26 @@ function resolveRemontee(
   }
 }
 
+// Sacrifice démoniaque X : répartit X réductions de -1 mana parmi les Démons
+// de la main du joueur. Chaque point est attribué à un Démon tiré aléatoirement
+// (RNG seedé) PARMI ceux encore réductibles (coût effectif > 1), ce qui garantit
+// qu'aucun Démon ne passe sous 1 mana et qu'aucun point n'est gaspillé tant
+// qu'il reste à réduire. S'il n'y a plus de Démon réductible, le surplus de
+// points est perdu. La réduction est permanente (persiste en main via
+// manaCostReduction jusqu'à ce que le Démon soit joué).
+function distributeDemonCostReductions(player: PlayerState, x: number) {
+  for (let i = 0; i < x; i++) {
+    const reducible = player.hand.filter(
+      (c) =>
+        c.card.race === "Démons" &&
+        Math.max(0, getTokenManaCost(c.card) - (c.manaCostReduction ?? 0)) > 1,
+    );
+    if (reducible.length === 0) break;
+    const target = reducible[Math.floor(rng() * reducible.length)];
+    target.manaCostReduction = (target.manaCostReduction ?? 0) + 1;
+  }
+}
+
 function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: PlayerState, depth = 0) {
   if (depth > 5 || dead.length === 0) return;
 
@@ -3545,6 +3573,12 @@ function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: P
     if (hasKw(c, "carnage") && c.carnageX > 0) {
       [...enemy.board].forEach(e => dealDamageToCreature(e, c.carnageX, false, true));
       [...owner.board].forEach(e => dealDamageToCreature(e, c.carnageX, false, true));
+    }
+
+    // Sacrifice démoniaque X: répartit X réductions de coût parmi les Démons
+    // de la main du contrôleur (owner).
+    if (hasKw(c, "sacrifice_demoniaque") && c.sacrificeDemoniaqueX > 0) {
+      distributeDemonCostReductions(owner, c.sacrificeDemoniaqueX);
     }
 
     // Héritage X: chaque allié gagne +X ATK et +X PV

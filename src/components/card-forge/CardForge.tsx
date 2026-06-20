@@ -1995,7 +1995,7 @@ export default function CardForge() {
     "Canalisation": "canalisation", "Contresort": "contresort",
     "Conférer": "conferer",
     "Convocation X": "convocation", "Malédiction": "malediction",
-    "Nécrophagie": "necrophagie", "Richesse X": "richesse", "Paralysie": "paralysie",
+    "Nécrophagie": "necrophagie", "Richesse X": "richesse", "Sacrifice démoniaque X": "sacrifice_demoniaque", "Paralysie": "paralysie",
     "Permutation": "permutation", "Persécution X": "persecution",
     "Piétinement": "pietinement",
     // Tier 2 — Cimetière / Main / Mixte

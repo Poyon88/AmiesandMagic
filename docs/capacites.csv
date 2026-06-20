@@ -61,6 +61,7 @@ id_registre,id_creature,label,symbole,hotes,description_creature,description_sor
 "tactique","tactique","Tactique X","📋","creature","Invocation : attribue X capacité(s) choisie(s) à une unité alliée ciblée de manière permanente.",""
 "heritage_du_cimetiere","heritage_du_cimetiere","Héritage du cimetière","🏚️","creature","Invocation : attribue à cette unité les capacités d'une unité ciblée dans votre cimetière.",""
 "pacte_de_sang","pacte_de_sang","Pacte de sang","🩸","creature","Quand cette unité meurt, invoque deux tokens 1/1 de sa race.",""
+"sacrifice_demoniaque","sacrifice_demoniaque","Sacrifice démoniaque X","👹","creature","À la mort de cette unité, répartit aléatoirement X réductions de coût (-1 mana) parmi les Démons de votre main. Un Démon ne peut coûter moins de 1.",""
 "souffle_de_feu","souffle_de_feu","Souffle de feu X","🐲","creature","Inflige X dégâts à toutes les unités ennemies lors de l'attaque (ex : Souffle de feu 2 = 2 dégâts).",""
 "domination","domination","Domination","👁️‍🗨️","creature","Prend le contrôle d'une unité ennemie au hasard à son invocation.",""
 "resurrection","resurrection","Résurrection","✨","creature","Revient en jeu après sa mort avec 1 PV ; perd la capacité Résurrection à son retour.",""
