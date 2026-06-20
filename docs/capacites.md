@@ -65,6 +65,7 @@
 - 📋 **Tactique X** — Invocation : attribue X capacité(s) choisie(s) à une unité alliée ciblée de manière permanente.
 - 🏚️ **Héritage du cimetière** — Invocation : attribue à cette unité les capacités d'une unité ciblée dans votre cimetière.
 - 🩸 **Pacte de sang** — Quand cette unité meurt, invoque deux tokens 1/1 de sa race.
+- 👹 **Sacrifice démoniaque X** — À la mort de cette unité, répartit aléatoirement X réductions de coût (−1 mana chacune) parmi les Démons de votre main. Un Démon ne peut coûter moins de 1.
 - 🐲 **Souffle de feu X** — Inflige X dégâts à toutes les unités ennemies lors de l'attaque (ex : Souffle de feu 2 = 2 dégâts).
 - 👁️‍🗨️ **Domination** — Prend le contrôle d'une unité ennemie au hasard à son invocation.
 - ✨ **Résurrection** — Revient en jeu après sa mort avec 1 PV ; perd la capacité Résurrection à son retour.

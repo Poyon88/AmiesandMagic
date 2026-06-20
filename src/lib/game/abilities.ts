@@ -510,6 +510,15 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["creature"],
     creature: { cost: 25, costPerX: 0, se: 5.5, minTier: 4, scalable: false, zone: "Terrain" },
   },
+  // Effet intrinsèque « à la mort » (death-nature, comme Carnage) : se déclenche
+  // à la mort de la créature qui le porte, quelle que soit sa race. X réductions
+  // de -1 mana réparties aléatoirement parmi les Démons de la main du contrôleur.
+  sacrifice_demoniaque: {
+    id: "sacrifice_demoniaque", label: "Sacrifice démoniaque X", symbol: "👹",
+    desc: "À la mort de cette unité, répartit aléatoirement X réductions de coût (-1 mana chacune) parmi les Démons de votre main. Un Démon ne peut coûter moins de 1.",
+    applicable_to: ["creature"],
+    creature: { cost: 8, costPerX: 5, se: 3.0, minTier: 3, scalable: true, zone: "Terrain" },
+  },
   souffle_de_feu: {
     id: "souffle_de_feu", label: "Souffle de feu X", symbol: "🐲",
     desc: "Inflige X dégâts à toutes les unités ennemies lors de l'attaque (ex : Souffle de feu 2 = 2 dégâts).",
@@ -1060,7 +1069,7 @@ export const CURATED_MULTIMODE_IDS: ReadonlySet<string> = new Set([
  *  id quel que soit le trigger). */
 export const DEATH_NATURE_IDS: ReadonlySet<string> = new Set([
   "carnage", "heritage", "malefice", "martyr", "pacte_de_sang",
-  "resurrection", "cycle_eternel",
+  "resurrection", "cycle_eternel", "sacrifice_demoniaque",
 ]);
 
 /** Capacités passives / aura / réactives-combat câblées en dur

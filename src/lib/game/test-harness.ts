@@ -24,7 +24,7 @@ export function mkInstance(card: Card): CardInstance {
     corruptionStolenIds: [], contresortActive: false, maledictionTargetId: null, isParalyzed: false,
     loyauteATKBonus: 0, loyautePVBonus: 0, summonBonusATK: 0, auraHealthBonus: 0,
     necrophagieATKBonus: 0, necrophagiePVBonus: 0, richesseATKBonus: 0, richessePVBonus: 0, martyrATKBonus: 0,
-    persecutionX: 0, riposteX: 0, carnageX: 0, heritageX: 0,
+    persecutionX: 0, riposteX: 0, carnageX: 0, sacrificeDemoniaqueX: 0, heritageX: 0,
     instinctDeMeuteX: 0, instinctDeMeuteATKBonus: 0, diedOnTurn: null,
     cycleEternelAutoPlay: false, originalOwnerId: null, trueOwnerId: null,
     hasTransformedLycanthropie: false, grantedKeywordX: {}, manaCostReduction: 0,

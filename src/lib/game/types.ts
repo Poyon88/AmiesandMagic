@@ -47,6 +47,8 @@ export type Keyword =
   | "pauvrete"
   // Reactive — gains +X/+X each time any player discards a card
   | "richesse"
+  // Death — on death, distributes X cost reductions among Démons in hand
+  | "sacrifice_demoniaque"
   // Polymorphic — draw X cards
   | "inspiration"
   // Polymorphic — replace each spell in hand with a random higher-cost spell, discounted
@@ -556,6 +558,8 @@ export interface CardInstance {
   riposteX: number;
   // Carnage X: death AoE
   carnageX: number;
+  // Sacrifice démoniaque X: # of -1 cost reductions distributed to hand Démons on death
+  sacrificeDemoniaqueX: number;
   // Héritage X: death buff to allies
   heritageX: number;
   // Instinct de meute X: X value resolved at summon (how much the on-play
