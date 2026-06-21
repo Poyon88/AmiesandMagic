@@ -3804,7 +3804,7 @@ export default function CardForge() {
                 <div style={{ marginTop: 10, position: "relative" }}>
                   <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>CAPACITES DU TOKEN</label>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginTop: 4 }}>
-                    {Object.entries(KEYWORDS).filter(([, kw]) => kw.minTier <= 1).map(([kwName]) => {
+                    {Object.entries(KEYWORDS).filter(([, kw]) => kw.minTier <= 1 || kw.tokenAllowed).map(([kwName]) => {
                       const active = tokenKeywords.includes(kwName);
                       return (
                         <button key={kwName} onClick={() => {
