@@ -3576,9 +3576,16 @@ function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: P
     }
 
     // Sacrifice démoniaque X: répartit X réductions de coût parmi les Démons
-    // de la main du contrôleur (owner).
-    if (hasKw(c, "sacrifice_demoniaque") && c.sacrificeDemoniaqueX > 0) {
-      distributeDemonCostReductions(owner, c.sacrificeDemoniaqueX);
+    // de la main du contrôleur (owner). X vient de la mise en cache à
+    // l'invocation (cartes forgées) ; repli runtime (effect_text / conféré /
+    // défaut 1) pour les instances qui ne passent pas par playCard — notamment
+    // les TOKENS, qui sinon auraient sacrificeDemoniaqueX = 0.
+    if (hasKw(c, "sacrifice_demoniaque")) {
+      const sdX = c.sacrificeDemoniaqueX > 0
+        ? c.sacrificeDemoniaqueX
+        : (parseXValuesFromEffectText(c.card.effect_text)["sacrifice_demoniaque"]
+            ?? c.grantedKeywordX["sacrifice_demoniaque"] ?? 1);
+      distributeDemonCostReductions(owner, sdX);
     }
 
     // Héritage X: chaque allié gagne +X ATK et +X PV

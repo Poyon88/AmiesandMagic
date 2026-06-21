@@ -47,6 +47,9 @@ export interface AbilityCreatureMeta {
   minTier: number;
   scalable: boolean;
   zone: KeywordZone;
+  /** true ⇒ proposable sur un token dans la forge, même si minTier > 1
+   *  (le picker de tokens n'autorise sinon que les mots-clés minTier ≤ 1). */
+  tokenAllowed?: boolean;
 }
 
 export interface AbilitySpellMeta {
@@ -517,7 +520,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     id: "sacrifice_demoniaque", label: "Sacrifice démoniaque X", symbol: "👹",
     desc: "À la mort de cette unité, répartit aléatoirement X réductions de coût (-1 mana chacune) parmi les Démons de votre main. Un Démon ne peut coûter moins de 1.",
     applicable_to: ["creature"],
-    creature: { cost: 8, costPerX: 5, se: 3.0, minTier: 3, scalable: true, zone: "Terrain" },
+    creature: { cost: 8, costPerX: 5, se: 3.0, minTier: 3, scalable: true, zone: "Terrain", tokenAllowed: true },
   },
   souffle_de_feu: {
     id: "souffle_de_feu", label: "Souffle de feu X", symbol: "🐲",
@@ -884,10 +887,11 @@ export const KEYWORDS: Record<string, {
   scalable: boolean;
   zone: KeywordZone;
   desc: string;
+  tokenAllowed: boolean;
 }> = (() => {
   const out: Record<string, {
     cost: number; costPerX: number; se: number; minTier: number;
-    scalable: boolean; zone: KeywordZone; desc: string;
+    scalable: boolean; zone: KeywordZone; desc: string; tokenAllowed: boolean;
   }> = {};
   for (const a of Object.values(ABILITIES)) {
     if (!a.creature) continue;
@@ -900,6 +904,7 @@ export const KEYWORDS: Record<string, {
       scalable: a.creature.scalable,
       zone: a.creature.zone,
       desc: a.creature.desc ?? a.desc,
+      tokenAllowed: a.creature.tokenAllowed ?? false,
     };
   }
   return out;

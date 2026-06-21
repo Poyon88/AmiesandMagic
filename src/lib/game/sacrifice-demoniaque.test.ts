@@ -78,4 +78,20 @@ describe("Sacrifice démoniaque X", () => {
     expect(reduc(next, 0, mine.instanceId)).toBe(2);
     expect(reduc(next, 1, theirs.instanceId)).toBe(0);
   });
+
+  it("fonctionne sur un token (X par défaut = 1, sans cache d'invocation)", () => {
+    const s = mkState();
+    const d = demon(5, "D");
+    s.players[0].hand.push(d);
+    // Simule un token : le mot-clé est présent mais sacrificeDemoniaqueX reste
+    // à 0 (les tokens ne passent pas par playCard). Le repli runtime → X = 1.
+    const token = mkInstance(mkCard({ attack: 1, health: 1, keywords: ["sacrifice_demoniaque"] }));
+    s.players[0].board.push(token);
+    const blocker = mkInstance(mkCard({ attack: 5, health: 5 }));
+    s.players[1].board.push(blocker);
+
+    const next = attack(s, { type: "attack", attackerInstanceId: token.instanceId, targetInstanceId: blocker.instanceId });
+
+    expect(reduc(next, 0, d.instanceId)).toBe(1);
+  });
 });
