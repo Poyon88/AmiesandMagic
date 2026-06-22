@@ -3,6 +3,7 @@ import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import type { CreateAuctionPayload } from '@/lib/auction/types';
+import { isPlayerSellingEnabled } from '@/lib/auction/flags';
 
 async function getAuthUser() {
   const cookieStore = await cookies();
@@ -188,6 +189,15 @@ export async function POST(request: Request) {
 
   const isAdmin = profile?.role === 'admin';
   const sellerType = isAdmin ? 'admin' : 'player';
+
+  // La revente de cartes par les joueurs est désactivée (conformité jeu d'argent).
+  // Seul un admin peut créer une annonce tant que le flag n'est pas réactivé.
+  if (!isAdmin && !isPlayerSellingEnabled()) {
+    return NextResponse.json(
+      { error: "La vente de cartes est temporairement indisponible." },
+      { status: 403 },
+    );
+  }
 
   // Validate ownership and escrow items
   for (const item of items) {

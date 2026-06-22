@@ -7,6 +7,7 @@ import CreateAuctionModal from "./CreateAuctionModal";
 import MyAuctions from "./MyAuctions";
 import AmAtmosphere from "@/components/ui/AmAtmosphere";
 import { AmButton, AmLinkButton } from "@/components/ui/AmButton";
+import { isPlayerSellingEnabled } from "@/lib/auction/flags";
 
 interface AuctionHouseProps {
   userId: string;
@@ -29,6 +30,7 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
   const [settings, setSettings] = useState<AuctionSettings | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [activeTab, setActiveTab] = useState<"browse" | "my">("browse");
+  const sellingEnabled = isPlayerSellingEnabled();
 
   const [filters, setFilters] = useState<AuctionFilters>({
     sort: "ending_soon",
@@ -88,16 +90,18 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
             Hôtel des ventes
           </h1>
           <p className="font-[family-name:var(--font-crimson),serif] italic text-am-ink-soft text-sm mt-1">
-            Achetez et vendez des cartes
+            {sellingEnabled ? "Achetez et vendez des cartes" : "Achetez des cartes"}
           </p>
         </div>
         <div className="flex gap-3">
           <AmLinkButton href="/" variant="ghost" size="sm">
             Menu
           </AmLinkButton>
-          <AmButton onClick={() => setShowCreateModal(true)} variant="gold" size="sm">
-            Vendre une carte
-          </AmButton>
+          {sellingEnabled && (
+            <AmButton onClick={() => setShowCreateModal(true)} variant="gold" size="sm">
+              Vendre une carte
+            </AmButton>
+          )}
         </div>
       </div>
 
@@ -243,7 +247,7 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
         </>
       )}
 
-      {showCreateModal && settings && (
+      {sellingEnabled && showCreateModal && settings && (
         <CreateAuctionModal
           userId={userId}
           settings={settings}
