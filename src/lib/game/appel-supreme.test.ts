@@ -78,6 +78,25 @@ describe("Appel Suprême", () => {
     expect(run()).toBe(run()); // déterministe
   });
 
+  it("pouvoir de héros (spell_trigger) : récupère la créature de la race au plus haut coût", () => {
+    const s = mkState();
+    s.rngState = 7;
+    seedDeck(s);
+    s.players[0].mana = 5;
+    s.players[0].hero.heroDefinition = {
+      id: 1, name: "Héros", race: "Humains",
+      powerName: "Appel Suprême", powerCost: 2, powerDescription: "",
+      powerEffect: { mode: "spell_trigger", keywordId: "appel_supreme", race: RACE },
+    };
+
+    const next = applyAction(s, { type: "hero_power" } as GameAction);
+
+    // la race passe bien du powerEffect jusqu'à appelSupreme
+    expect(next.players[0].hand.filter(c => isOrc5(c.card.name))).toHaveLength(1);
+    expect(next.players[0].deck.some(c => c.card.name === "Sort-Orc-7")).toBe(true);
+    expect(next.players[0].hand.some(c => c.card.name === "Humain-9")).toBe(false);
+  });
+
   it("no-op : aucune créature de la race dans le deck", () => {
     const s = mkState();
     s.rngState = 7;

@@ -4211,6 +4211,11 @@ export function useHeroPower(state: GameState, action: HeroPowerAction): GameSta
           amount: effect.params?.amount,
           attack: effect.params?.attack,
           health: effect.params?.health,
+          // Capacités portant une race/clan (Appel Suprême, Renforcement
+          // multiple…) : sans ce passage, le résolveur ne reçoit pas la race
+          // et l'effet est un no-op.
+          race: effect.race,
+          clan: effect.clan,
         };
         // resolveSpellKeywords reads the target from `targetMap["kw_<i>"]`
         // (or `target_0`), not from a key named after the keyword id. The

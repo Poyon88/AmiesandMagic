@@ -29,6 +29,7 @@ import HeroPowerOverlay from "./HeroPowerOverlay";
 import GraveyardAffectOverlay from "./GraveyardAffectOverlay";
 import DiscardFromHandOverlay from "./DiscardFromHandOverlay";
 import TempeteOverlay from "./TempeteOverlay";
+import ManaReductionOverlay from "./ManaReductionOverlay";
 import ArenaDeckGraveyardCluster from "./ArenaDeckGraveyardCluster";
 import MulliganOverlay from "./MulliganOverlay";
 import SettingsModal from "@/components/shared/SettingsModal";
@@ -87,6 +88,8 @@ export default function GameBoard({ onAction }: GameBoardProps) {
     clearDiscardFromHandEvent,
     tempeteEvent,
     clearTempeteEvent,
+    manaReductionEvent,
+    clearManaReductionEvent,
     isAnimating,
     spellTargetSlots,
     currentTargetSlotIndex,
@@ -1182,6 +1185,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
       <GraveyardAffectOverlay event={graveyardAffectEvent} onComplete={clearGraveyardAffectEvent} />
       <DiscardFromHandOverlay event={discardFromHandEvent} onComplete={clearDiscardFromHandEvent} />
       <TempeteOverlay event={tempeteEvent} onComplete={clearTempeteEvent} />
+      <ManaReductionOverlay event={manaReductionEvent} onComplete={clearManaReductionEvent} />
 
       {/* Targeting arrow overlay */}
       <TargetingArrow

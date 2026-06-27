@@ -2871,7 +2871,9 @@ export default function CardForge() {
                         {/* Inline params for active keywords */}
                         {spellKeywords.map((kw, idx) => {
                           const def = SPELL_KEYWORDS[kw.id];
-                          if (def.params.length === 0) return null;
+                          // appel_supreme n'a pas de paramètre X mais porte une
+                          // race ciblée → ne pas l'éliminer ici.
+                          if (def.params.length === 0 && kw.id !== "appel_supreme") return null;
                           return (
                             <div key={kw.id} style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 4, alignItems: "center" }}>
                               <span style={{ fontSize: 9, color: "#9b59b6", fontWeight: 700, minWidth: 70 }}>{def.symbol} {SPELL_KEYWORD_LABELS[kw.id].replace(" X", "").replace(" +X/+Y", "")}</span>
@@ -2942,6 +2944,16 @@ export default function CardForge() {
                                     clan={kw.clan ?? ""}
                                     onChange={(r, c) => setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, race: r || undefined, clan: c || undefined } : k))}
                                   />
+                                </div>
+                              )}
+                              {kw.id === "appel_supreme" && (
+                                <div style={{ flexBasis: "100%", marginTop: 2 }}>
+                                  <label style={{ fontSize: 7, color: "#10b981", letterSpacing: 1, fontFamily: "'Cinzel',serif" }}>RACE CIBLÉE {!kw.race && <span style={{ color: "#e74c3c" }}>· requise</span>}</label>
+                                  <select value={kw.race ?? ""} onChange={e => setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, race: e.target.value || undefined } : k))}
+                                    style={{ display: "block", marginTop: 2, padding: "3px 6px", borderRadius: 5, border: "1px solid #10b98144", fontSize: 11, fontFamily: "'Cinzel',serif", background: "#fff" }}>
+                                    <option value="">-- Choisir une race --</option>
+                                    {Array.from(new Set(Object.values(FACTIONS).flatMap(f => f.races))).sort().map(r => <option key={r} value={r}>{r}</option>)}
+                                  </select>
                                 </div>
                               )}
                             </div>

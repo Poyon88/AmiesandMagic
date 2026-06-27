@@ -619,6 +619,10 @@ export interface HeroPowerEffect {
   params?: { amount?: number; attack?: number; health?: number };
   // FK to token_templates.id when keywordId === "convocation".
   tokenId?: number | null;
+  // Race/clan ciblé pour les capacités qui en portent une (Appel Suprême,
+  // Renforcement multiple…) lorsqu'elles sont déclenchées par un pouvoir.
+  race?: string;
+  clan?: string;
 }
 
 export interface HeroDefinition {

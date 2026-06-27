@@ -175,6 +175,8 @@ export default function HeroManager() {
   const [powerParamAmount, setPowerParamAmount] = useState<number>(1);
   const [powerParamAttack, setPowerParamAttack] = useState<number>(0);
   const [powerParamHealth, setPowerParamHealth] = useState<number>(0);
+  // Appel Suprême (pouvoir) : race ciblée fixée sur le pouvoir.
+  const [powerParamRace, setPowerParamRace] = useState<string>("");
   const [powerTokenId, setPowerTokenId] = useState<number | null>(null);
   // null = unlimited
   const [powerUsageLimit, setPowerUsageLimit] = useState<number | null>(null);
@@ -337,6 +339,7 @@ export default function HeroManager() {
     setPowerParamAmount(1);
     setPowerParamAttack(0);
     setPowerParamHealth(0);
+    setPowerParamRace("");
     setPowerTokenId(null);
     setPowerUsageLimit(null);
     setPowerDescription("");
@@ -379,6 +382,7 @@ export default function HeroManager() {
     setPowerParamAmount(typeof params.amount === "number" ? params.amount : 1);
     setPowerParamAttack(typeof params.attack === "number" ? params.attack : 0);
     setPowerParamHealth(typeof params.health === "number" ? params.health : 0);
+    setPowerParamRace(typeof pe.race === "string" ? pe.race : "");
     setPowerTokenId(typeof pe.tokenId === "number" ? pe.tokenId : null);
     setPowerUsageLimit(typeof hero.power_usage_limit === "number" ? hero.power_usage_limit : null);
 
@@ -703,6 +707,15 @@ export default function HeroManager() {
     if (Object.keys(params).length > 0) powerEffect.params = params;
     if ((powerKeywordId === "convocation" || powerKeywordId === "convocation_simple") && powerTokenId != null) {
       powerEffect.tokenId = powerTokenId;
+    }
+    // Appel Suprême : la race ciblée est obligatoire et doit être persistée
+    // sur le pouvoir (sinon le moteur ne récupère aucune créature).
+    if (powerKeywordId === "appel_supreme") {
+      if (!powerParamRace) {
+        setError("Appel Suprême : sélectionnez la race cible avant d'enregistrer.");
+        return;
+      }
+      powerEffect.race = powerParamRace;
     }
 
     setSaving(true);
@@ -1037,6 +1050,21 @@ export default function HeroManager() {
                             style={STYLE.input} />
                         </div>
                       )}
+                    </div>
+                  )}
+
+                  {powerKeywordId === "appel_supreme" && (
+                    <div style={{ marginTop: 10, padding: 8, borderRadius: 6, background: "#f0fdf4", border: `1px solid ${powerParamRace ? "#10b98144" : "#e74c3c"}` }}>
+                      <label style={STYLE.label}>
+                        RACE CIBLÉE
+                        {!powerParamRace && <span style={{ color: "#e74c3c", marginLeft: 6 }}>· Requise</span>}
+                      </label>
+                      <select value={powerParamRace} onChange={(e) => setPowerParamRace(e.target.value)} style={{ ...STYLE.input, marginTop: 4 }}>
+                        <option value="">-- Choisir une race --</option>
+                        {Array.from(new Set(Object.values(FACTIONS).flatMap(f => f.races))).sort().map(r => (
+                          <option key={r} value={r}>{r}</option>
+                        ))}
+                      </select>
                     </div>
                   )}
 

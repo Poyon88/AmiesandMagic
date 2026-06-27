@@ -14,6 +14,8 @@ type PowerEffectV2 = {
   keywordId: string;
   params?: { amount?: number; attack?: number; health?: number };
   tokenId?: number | null;
+  race?: string;
+  clan?: string;
 };
 
 function validatePowerEffect(
@@ -64,6 +66,10 @@ function validatePowerEffect(
     }
     validated.tokenId = obj.tokenId;
   }
+  // Race/clan ciblé (Appel Suprême, Renforcement multiple…) — conservés tels
+  // quels pour que le moteur les reçoive via le SpellKeywordInstance synthétisé.
+  if (typeof obj.race === 'string' && obj.race.trim()) validated.race = obj.race;
+  if (typeof obj.clan === 'string' && obj.clan.trim()) validated.clan = obj.clan;
   return { ok: true, value: validated };
 }
 

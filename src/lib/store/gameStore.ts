@@ -93,6 +93,15 @@ export interface TempeteEvent {
   timestamp: number;
 }
 
+// Une ou plusieurs cartes de la main du joueur local viennent de voir leur
+// coût en mana réduit (Sacrifice démoniaque…). Sert à faire flotter un « -N »
+// vert sur chaque carte concernée. `byInstance` mappe instanceId → réduction
+// appliquée par CETTE action.
+export interface ManaReductionEvent {
+  byInstance: Record<string, number>;
+  timestamp: number;
+}
+
 export interface HeroPowerCastEvent {
   heroName: string;
   race: string;
@@ -182,6 +191,7 @@ interface GameStore {
   fireBreathEvent: FireBreathEvent | null;
   cycleEternelEvent: CycleEternelEvent | null;
   tempeteEvent: TempeteEvent | null;
+  manaReductionEvent: ManaReductionEvent | null;
   heroPowerCastEvent: HeroPowerCastEvent | null;
   graveyardAffectEvent: GraveyardAffectEvent | null;
   discardFromHandEvent: DiscardFromHandEvent | null;
@@ -250,6 +260,7 @@ interface GameStore {
   clearFireBreathEvent: () => void;
   clearCycleEternelEvent: () => void;
   clearTempeteEvent: () => void;
+  clearManaReductionEvent: () => void;
   clearHeroPowerCastEvent: () => void;
   clearGraveyardAffectEvent: () => void;
   clearDiscardFromHandEvent: () => void;
@@ -699,6 +710,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   fireBreathEvent: null,
   cycleEternelEvent: null,
   tempeteEvent: null,
+  manaReductionEvent: null,
   heroPowerCastEvent: null,
   graveyardAffectEvent: null,
   discardFromHandEvent: null,
@@ -777,6 +789,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         graveyardAffectEvent: null,
         discardFromHandEvent: null,
         tempeteEvent: null,
+        manaReductionEvent: null,
       });
       return action;
     }
@@ -1138,6 +1151,26 @@ export const useGameStore = create<GameStore>((set, get) => {
       }
     }
 
+    // Réduction de coût (Sacrifice démoniaque…) : on diffe le manaCostReduction
+    // des cartes de la main du joueur LOCAL avant/après l'action et on émet un
+    // « -N » vert flottant sur chaque carte concernée. Pur diff côté store,
+    // aucun changement moteur.
+    let manaReductionEvent: ManaReductionEvent | null = null;
+    {
+      const byInstance: Record<string, number> = {};
+      for (let i = 0; i < 2; i++) {
+        if (newState.players[i].id !== localPlayerId) continue;
+        const oldHand = new Map(gameState.players[i].hand.map(c => [c.instanceId, c.manaCostReduction ?? 0]));
+        for (const c of newState.players[i].hand) {
+          const delta = (c.manaCostReduction ?? 0) - (oldHand.get(c.instanceId) ?? 0);
+          if (delta > 0) byInstance[c.instanceId] = delta;
+        }
+      }
+      if (Object.keys(byInstance).length > 0) {
+        manaReductionEvent = { byInstance, timestamp: Date.now() };
+      }
+    }
+
     // SFX from card draw (new cards in hand). The mulligan action is the one
     // exception: its pipeline fires ~1250ms after confirm, while the mulligan
     // overlay is still flipping cards and masking its own audio. The Mana
@@ -1286,7 +1319,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     ];
     const hasDraws = drawnCounts[0] + drawnCounts[1] > 0;
 
-    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent;
+    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!manaReductionEvent;
 
     // Deep clone helper — factionCardPool / allSpellsPool carry non-serialisable refs, keep them aside.
     const cloneState = (state: GameState): GameState => {
@@ -1560,6 +1593,8 @@ export const useGameStore = create<GameStore>((set, get) => {
       set({
         gameState: postDeathState,
         ...(deathFxEvents.length > 0 ? { deathEvents: deathFxEvents } : {}),
+        // Le « -N » mana flotte au moment de la mort (Sacrifice démoniaque).
+        ...(manaReductionEvent ? { manaReductionEvent } : {}),
       });
       playSfxBatch(deathSfx);
     };
@@ -2527,6 +2562,10 @@ export const useGameStore = create<GameStore>((set, get) => {
 
   clearTempeteEvent: () => {
     set({ tempeteEvent: null });
+  },
+
+  clearManaReductionEvent: () => {
+    set({ manaReductionEvent: null });
   },
 
   clearDeathEvents: () => {
