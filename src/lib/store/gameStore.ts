@@ -2184,9 +2184,15 @@ export const useGameStore = create<GameStore>((set, get) => {
         targetMap,
       });
     } else if (targetingMode === "spell" && selectedCardInstanceId) {
-      const { spellTargetSlots, gameState: gs } = get();
-      const slot = spellTargetSlots[0]?.slot ?? "target_0";
-      const collectedMap = { [slot]: targetId };
+      const { spellTargetSlots, currentTargetSlotIndex, collectedTargetMap, gameState: gs } = get();
+      // Use the CURRENT slot (not always the first) and carry forward targets
+      // already collected for earlier slots. A multi-target spell whose last
+      // slot resolves in "spell" mode (e.g. Rappel des Tempêtes : Exhumation
+      // kw_0 puis Remontée kw_1) otherwise lost its kw_0 graveyard target and
+      // mis-keyed the final one onto kw_0 — silently dropping the resurrection.
+      const currentSlot = spellTargetSlots[currentTargetSlotIndex] ?? spellTargetSlots[0];
+      const slot = currentSlot?.slot ?? "target_0";
+      const collectedMap = { ...collectedTargetMap, [slot]: targetId };
       // Chain into a selection-style picker if the spell carries one (e.g.
       // Souffle des Origines: Renforcement targets first, then the
       // Sélection magique picker, with the kw_0 target carried forward).
@@ -2460,6 +2466,14 @@ export const useGameStore = create<GameStore>((set, get) => {
   },
 
   clearSelection: () => {
+    // Un sélecteur « Sélection » (révélation de N cartes : pouvoir de héros,
+    // sort, ou invocation de créature) est un choix OBLIGATOIRE une fois les
+    // cartes révélées : on refuse d'annuler (clic fond / Échap / clic droit),
+    // sinon le joueur « scoute » gratuitement puis relance pour de nouvelles
+    // cartes. La confirmation passe par dispatchAction (pas clearSelection) et
+    // reste donc possible. La Divination (mode dédié) garde son annulation.
+    if (get().targetingMode === "selection") return;
+
     // Un déclencheur interactif en attente (Remontée mort/retour) est un choix
     // OBLIGATOIRE : on ne le laisse pas annuler (clic fond / clic droit) — on
     // ré-affiche le sélecteur.
@@ -2751,6 +2765,10 @@ export const useGameStore = create<GameStore>((set, get) => {
   activateHeroPower: () => {
     const { gameState } = get();
     if (!gameState) return null;
+    // Un sélecteur de sélection déjà ouvert est un choix obligatoire : on ne
+    // ré-active pas le pouvoir (anti-réentrance, ex. raccourci clavier) tant
+    // que le joueur n'a pas choisi — sinon il régénère de nouvelles cartes.
+    if (get().targetingMode === "selection") return null;
     if (!canUseHeroPower(gameState)) return null;
 
     const player = gameState.players[gameState.currentPlayerIndex];

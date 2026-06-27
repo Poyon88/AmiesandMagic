@@ -1767,6 +1767,14 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       }
     }
 
+    // Appel Suprême: récupère en main la créature de la race fixée au coût en
+    // mana le plus élevé restante dans le deck (au hasard si égalité). La race
+    // est portée par la capacité (keyword_instances[i].race).
+    if (hasKw(cardInstance, "appel_supreme")) {
+      const race = getCapabilities(cardInstance.card).find(c => c.abilityId === "appel_supreme")?.race;
+      if (race) appelSupreme(player, race);
+    }
+
     // Rassemblement X: révèle X premières cartes du deck, unités de même race en main, reste défaussé
     if (hasKw(cardInstance, "rassemblement") && cardInstance.card.race && player.deck.length > 0) {
       const rasXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
@@ -2255,6 +2263,22 @@ function spellResolutionInstances(card: Card): SpellKeywordInstance[] {
     }));
 }
 
+// Appel Suprême (créature on-play + sort) : déplace du deck vers la main la
+// créature de la race donnée au coût en mana le plus élevé ; en cas d'égalité,
+// tirage via la RNG seedée (déterministe sur les deux clients). No-op si aucune
+// créature de cette race, main pleine, deck vide ou race absente. Les sorts de
+// la race sont ignorés (créatures uniquement).
+function appelSupreme(player: PlayerState, race: string): void {
+  if (!race || player.hand.length >= MAX_HAND_SIZE) return;
+  const cands = player.deck.filter(c => c.card.card_type === "creature" && c.card.race === race);
+  if (cands.length === 0) return;
+  const maxCost = Math.max(...cands.map(c => c.card.mana_cost));
+  const tied = cands.filter(c => c.card.mana_cost === maxCost);
+  const chosen = tied[Math.floor(rng() * tied.length)];
+  player.deck = player.deck.filter(c => c !== chosen);
+  player.hand.push(chosen);
+}
+
 function resolveSpellKeywords(
   ctx: SpellResolutionContext,
   keywords: SpellKeywordInstance[]
@@ -2602,6 +2626,12 @@ function resolveSpellKeywords(
           calledInstance.hasSummoningSickness = true;
           ctx.caster.board.push(calledInstance);
         }
+        break;
+      }
+      case "appel_supreme": {
+        // Récupère en main la créature de la race choisie (kw.race) au coût en
+        // mana le plus élevé restante dans le deck (au hasard si égalité).
+        if (kw.race) appelSupreme(ctx.caster, kw.race);
         break;
       }
       case "rassemblement": {

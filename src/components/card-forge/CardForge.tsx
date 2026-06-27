@@ -1561,6 +1561,9 @@ export default function CardForge() {
   const [rmY, setRmY] = useState<number>(1);
   const [rmRace, setRmRace] = useState<string>("");
   const [rmClan, setRmClan] = useState<string>("");
+  // Appel Suprême : race ciblée fixée sur la carte (créature). Persistée dans
+  // keyword_instances[i].race (créature) / spell_keywords[i].race (sort).
+  const [asRace, setAsRace] = useState<string>("");
   const [cardSetId, setCardSetId] = useState<number | null>(null);
   const [cardYear, setCardYear] = useState<number | null>(null);
   const [cardMonth, setCardMonth] = useState<number | null>(null);
@@ -1839,7 +1842,7 @@ export default function CardForge() {
     setManualPower(2); setManualAbility(""); setManualFlavorText("");
     setManualIllustrationPrompt(""); setManualExtraContext(""); setManualKeywords([]); setKeywordXValues({}); setKeywordModes({}); setCard(null);
     setEditedPrompt(null); setSaveResult(null);
-    setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setRmRace(""); setRmClan(""); setConferAbilityId(""); setComposedCaps([]);
+    setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setRmRace(""); setRmClan(""); setAsRace(""); setConferAbilityId(""); setComposedCaps([]);
     setManualLifeCost(0); setManualDiscardCost(0); setManualSacrificeCost(0);
     setCardImages(prev => Object.fromEntries(Object.entries(prev).filter(([k]) => k !== "manual_preview")));
   }, []);
@@ -2019,7 +2022,7 @@ export default function CardForge() {
     "Entraide (Race)": "entraide",
     "Cycle éternel": "cycle_eternel", "Martyr": "martyr",
     "Instinct de meute X": "instinct_de_meute", "Totem": "totem",
-    "Appel du clan X": "appel_du_clan", "Rassemblement X": "rassemblement",
+    "Appel du clan X": "appel_du_clan", "Appel Suprême": "appel_supreme", "Rassemblement X": "rassemblement",
     "Sélection X": "selection",
     "Lycanthropie X": "lycanthropie",
     "Tempête X": "tempete",
@@ -2078,6 +2081,14 @@ export default function CardForge() {
         setSaving(false);
         return;
       }
+      // Appel Suprême (créature) : la race ciblée est obligatoire — sans elle,
+      // le moteur ne récupère rien (no-op silencieux). gameKeywords ne porte
+      // que les mots-clés créature, donc ce guard ne touche pas les sorts.
+      if (gameKeywords.includes("appel_supreme") && !asRace) {
+        setSaveResult({ ok: false, msg: "Appel Suprême : sélectionnez la race cible avant de sauvegarder." });
+        setSaving(false);
+        return;
+      }
       // Same guard on the spell side: a sort with `invocation_multiple`
       // (= "Convocations multiples" in the picker) must carry the token
       // list — without it the engine's case fires but spawns nothing.
@@ -2123,6 +2134,10 @@ export default function CardForge() {
           // Renforcement multiple (créature) : porte +X/+Y et race/clan ; toujours émis.
           if (id === "renforcement_multiple" && !isSpellCard) {
             return { id, ...(mode ? { mode } : {}), x: x ?? 0, y: rmY, ...(rmRace ? { race: rmRace } : {}), ...(rmClan ? { clan: rmClan } : {}) };
+          }
+          // Appel Suprême (créature) : porte la race ciblée ; toujours émis.
+          if (id === "appel_supreme" && !isSpellCard) {
+            return { id, ...(mode ? { mode } : {}), ...(asRace ? { race: asRace } : {}) };
           }
           // Conférer (créature) : porte l'ability conférée + la portée ; toujours émis.
           if (id === "conferer" && !isSpellCard) {
@@ -2215,7 +2230,7 @@ export default function CardForge() {
     } finally {
       setSaving(false);
     }
-  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, keywordModes, keywordGrantScope, rmY, rmRace, rmClan, composedCaps, conferAbilityId]);
+  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, keywordModes, keywordGrantScope, rmY, rmRace, rmClan, asRace, composedCaps, conferAbilityId]);
 
   const [generatingImage, setGeneratingImage] = useState(false);
   const [editedPrompt, setEditedPrompt] = useState<string | null>(null);
@@ -3200,6 +3215,21 @@ export default function CardForge() {
                         <RaceClanPicker race={rmRace} clan={rmClan} onChange={(r, c) => { setRmRace(r); setRmClan(c); }} />
                       </div>
                     )}
+                    {/* Appel Suprême — race ciblée (récupère la créature de cette race au plus haut coût) */}
+                    {manualKeywords.includes("Appel Suprême") && (
+                      <div style={{ marginTop: 6, padding: 6, borderRadius: 6, border: `1px solid ${asRace ? "#10b98144" : "#e74c3c"}`, background: "#f0fdf4" }}>
+                        <div style={{ fontSize: 8, color: "#10b981", letterSpacing: 1, fontWeight: 700, marginBottom: 4 }}>
+                          🎺 RACE CIBLE {!asRace && <span style={{ color: "#e74c3c", marginLeft: 4 }}>· Requise</span>}
+                        </div>
+                        <select value={asRace} onChange={e => setAsRace(e.target.value)}
+                          style={{ width: "100%", padding: "4px 8px", borderRadius: 5, border: "1px solid #10b98144", fontSize: 10, fontFamily: "'Cinzel',serif", background: "#fff" }}>
+                          <option value="">-- Choisir une race --</option>
+                          {Array.from(new Set(Object.values(FACTIONS).flatMap(f => f.races))).sort().map(r => (
+                            <option key={r} value={r}>{r}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
                     {/* Conférer — capacité conférée + portée */}
                     {manualKeywords.includes("Conférer") && (
                       <div style={{ marginTop: 6, padding: 6, borderRadius: 6, border: `1px solid ${conferAbilityId ? "#8a6d3b44" : "#e74c3c"}`, background: "#fffdf6" }}>
@@ -3544,6 +3574,15 @@ export default function CardForge() {
                               <RaceClanPicker race={rmRace} clan={rmClan} onChange={(r, c) => { setRmRace(r); setRmClan(c); }} />
                             </div>
                           )}
+                          {label === "Appel Suprême" && (
+                            <div style={{ marginTop: 8 }}>
+                              <div style={{ ...labelStyle, color: "#10b981", marginBottom: 3 }}>🎺 RACE CIBLE {!asRace && <span style={{ color: "#e74c3c" }}>· requise</span>}</div>
+                              <select value={asRace} onChange={e => setAsRace(e.target.value)} style={{ width: "100%", padding: "4px 8px", borderRadius: 5, border: cardBorder, fontSize: 11, fontFamily: "'Cinzel',serif", background: "#fff" }}>
+                                <option value="">-- Choisir une race --</option>
+                                {Array.from(new Set(Object.values(FACTIONS).flatMap(f => f.races))).sort().map(r => <option key={r} value={r}>{r}</option>)}
+                              </select>
+                            </div>
+                          )}
                         </div>
                       );
                     })}
@@ -3602,6 +3641,16 @@ export default function CardForge() {
                               <>
                                 <span style={labelStyle}>RACE / CLAN</span>
                                 <RaceClanPicker race={kw.race ?? ""} clan={kw.clan ?? ""} onChange={(r, c) => setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, race: r || undefined, clan: c || undefined } : k))} />
+                              </>
+                            )}
+                            {kw.id === "appel_supreme" && (
+                              <>
+                                <span style={labelStyle}>RACE {!kw.race && <span style={{ color: "#e74c3c" }}>· requise</span>}</span>
+                                <select value={kw.race ?? ""} onChange={e => setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, race: e.target.value || undefined } : k))}
+                                  style={{ padding: "3px 6px", borderRadius: 5, border: cardBorder, fontSize: 11, fontFamily: "'Cinzel',serif", background: "#fff" }}>
+                                  <option value="">-- Race --</option>
+                                  {Array.from(new Set(Object.values(FACTIONS).flatMap(f => f.races))).sort().map(r => <option key={r} value={r}>{r}</option>)}
+                                </select>
                               </>
                             )}
                             <span style={labelStyle}>CIBLE(S)</span>

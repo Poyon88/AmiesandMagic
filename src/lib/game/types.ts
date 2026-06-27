@@ -27,7 +27,7 @@ export type Keyword =
   // Tier 2 — Deck / Race / Clan
   | "traque_du_destin" | "sang_mele" | "fierte_du_clan" | "solidarite" | "lycanthropie" | "entraide"
   // Tier 3 — Deck / Race / Clan / Mixte
-  | "cycle_eternel" | "martyr" | "instinct_de_meute" | "totem" | "appel_du_clan" | "rassemblement"
+  | "cycle_eternel" | "martyr" | "instinct_de_meute" | "totem" | "appel_du_clan" | "appel_supreme" | "rassemblement"
   // Tier 4
   | "pacte_de_sang" | "souffle_de_feu" | "domination" | "resurrection" | "transcendance"
   | "vampirisme"
@@ -118,6 +118,7 @@ export type SpellKeywordId =
   | "tempete"
   | "douleur"
   | "appel_du_clan"
+  | "appel_supreme"
   | "rassemblement"
   | "concentration"
   | "selection_magique"

@@ -606,6 +606,19 @@ export const ABILITIES: Record<string, AbilityDef> = {
       params: ["amount"], needsTarget: false,
     },
   },
+  appel_supreme: {
+    id: "appel_supreme", label: "Appel Suprême", symbol: "🎺",
+    desc: "Ajoute à votre main la créature de la race choisie au coût en mana le plus élevé restante dans votre deck (au hasard en cas d'égalité).",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      cost: 10, costPerX: 0, se: 3.5, minTier: 2, scalable: false, zone: "Deck",
+      desc: "Invocation : ajoute à votre main la créature de la race choisie au coût en mana le plus élevé restante dans votre deck (au hasard si égalité).",
+    },
+    spell: {
+      desc: "Ajoute à votre main la créature de la race choisie au coût le plus élevé restante dans votre deck (au hasard si égalité).",
+      params: [], needsTarget: false,
+    },
+  },
   solidarite: {
     id: "solidarite", label: "Solidarité X", symbol: "🤜",
     desc: "Invocation : piochez X cartes si vous contrôlez 2 autres unités de même race.",
