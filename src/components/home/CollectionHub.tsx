@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import HomeHeader from "@/components/home/HomeHeader";
 import MenuTile from "@/components/home/MenuTile";
 import AmAtmosphere from "@/components/ui/AmAtmosphere";
@@ -7,14 +8,53 @@ import AmHeading from "@/components/ui/AmHeading";
 import { useStoredLocale } from "@/lib/i18n/useLocale";
 import { homeDict } from "@/lib/i18n/homeDict";
 
+type BgCategory = "cards" | "heroes" | "cardBacks" | "boards";
+
 interface CollectionHubProps {
   username: string;
   goldBalance: number;
+  bgCandidates: Record<BgCategory, string[]>;
 }
 
-export default function CollectionHub({ username, goldBalance }: CollectionHubProps) {
+const EMPTY_BG: Record<BgCategory, string | undefined> = {
+  cards: undefined,
+  heroes: undefined,
+  cardBacks: undefined,
+  boards: undefined,
+};
+
+export default function CollectionHub({ username, goldBalance, bgCandidates }: CollectionHubProps) {
   const [locale] = useStoredLocale();
   const t = homeDict[locale];
+
+  // Per-session tile artwork: pick one image at random from each category's
+  // highest-rarity pool, frozen in sessionStorage so it stays stable while the
+  // player navigates within the session (re-rolls on a new session / login).
+  const [bg, setBg] = useState<Record<BgCategory, string | undefined>>(EMPTY_BG);
+  useEffect(() => {
+    const pick = (cat: BgCategory): string | undefined => {
+      const pool = bgCandidates[cat] ?? [];
+      if (pool.length === 0) return undefined;
+      const key = `collhub:bg:v1:${cat}`;
+      try {
+        const stored = sessionStorage.getItem(key);
+        if (stored && pool.includes(stored)) return stored;
+      } catch { /* sessionStorage unavailable */ }
+      const chosen = pool[Math.floor(Math.random() * pool.length)];
+      try { sessionStorage.setItem(key, chosen); } catch { /* ignore */ }
+      return chosen;
+    };
+    // Deferred to a post-mount effect on purpose: the pick relies on
+    // sessionStorage + Math.random, so it must run only on the client to keep
+    // the first render identical to the server HTML (no hydration mismatch).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setBg({
+      cards: pick("cards"),
+      heroes: pick("heroes"),
+      cardBacks: pick("cardBacks"),
+      boards: pick("boards"),
+    });
+  }, [bgCandidates]);
 
   return (
     <div className="relative min-h-screen bg-am-bg-0 text-am-ink">
@@ -46,6 +86,7 @@ export default function CollectionHub({ username, goldBalance }: CollectionHubPr
                 accent="cards"
                 label={t.my_cards}
                 description={t.my_cards_desc}
+                bgImage={bg.cards}
                 glyph={
                   <svg width="52" height="52" viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="14" y="10" width="22" height="32" rx="2" transform="rotate(-10 25 26)" />
@@ -60,6 +101,7 @@ export default function CollectionHub({ username, goldBalance }: CollectionHubPr
                 accent="heroes"
                 label={t.my_heroes}
                 description={t.my_heroes_desc}
+                bgImage={bg.heroes}
                 glyph={
                   <svg width="52" height="52" viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="32" cy="22" r="8" />
@@ -75,6 +117,7 @@ export default function CollectionHub({ username, goldBalance }: CollectionHubPr
                 accent="card_backs"
                 label={t.my_card_backs}
                 description={t.my_card_backs_desc}
+                bgImage={bg.cardBacks}
                 glyph={
                   <svg width="52" height="52" viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="18" y="10" width="28" height="44" rx="3" />
@@ -89,6 +132,7 @@ export default function CollectionHub({ username, goldBalance }: CollectionHubPr
                 accent="boards"
                 label={t.my_boards}
                 description={t.my_boards_desc}
+                bgImage={bg.boards}
                 glyph={
                   <svg width="52" height="52" viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="8" y="20" width="48" height="24" rx="2" />
