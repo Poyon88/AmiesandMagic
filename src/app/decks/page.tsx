@@ -25,12 +25,34 @@ export default async function DecksPage() {
     .eq("user_id", user.id)
     .order("updated_at", { ascending: false });
 
+  // Hero thumbnails fetched via a separate lookup (decks.hero_id → heroes.id),
+  // not an embedded FK join, per the project's Supabase guidelines.
+  const heroIds = [
+    ...new Set(
+      (decks ?? [])
+        .map((d) => d.hero_id as number | null)
+        .filter((id): id is number => id != null)
+    ),
+  ];
+  const heroThumbById = new Map<number, string | null>();
+  if (heroIds.length > 0) {
+    const { data: heroes } = await supabase
+      .from("heroes")
+      .select("id, thumbnail_url")
+      .in("id", heroIds);
+    for (const h of (heroes ?? []) as { id: number; thumbnail_url: string | null }[]) {
+      heroThumbById.set(h.id, h.thumbnail_url ?? null);
+    }
+  }
+
   const decksWithCount = (decks ?? []).map((deck) => ({
     ...deck,
     cardCount: (deck.deck_cards as { quantity: number }[]).reduce(
       (sum: number, dc: { quantity: number }) => sum + dc.quantity,
       0
     ),
+    heroThumbnail:
+      deck.hero_id != null ? heroThumbById.get(deck.hero_id) ?? null : null,
   }));
 
   return <DeckList decks={decksWithCount} />;

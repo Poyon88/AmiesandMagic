@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { DECK_SIZE } from "@/lib/game/constants";
 import AmAtmosphere from "@/components/ui/AmAtmosphere";
 import { AmButton } from "@/components/ui/AmButton";
@@ -11,6 +12,7 @@ interface DeckWithCount {
   name: string;
   cardCount: number;
   updated_at: string;
+  heroThumbnail?: string | null;
 }
 
 export default function DeckList({ decks }: { decks: DeckWithCount[] }) {
@@ -104,7 +106,18 @@ export default function DeckList({ decks }: { decks: DeckWithCount[] }) {
                     {deck.name}
                   </h3>
 
-                  <div className="mt-3 mb-5">
+                  <div className="mt-3 mb-5 flex items-center gap-2.5">
+                    {deck.heroThumbnail && (
+                      <Image
+                        src={deck.heroThumbnail}
+                        alt=""
+                        width={36}
+                        height={36}
+                        unoptimized
+                        aria-hidden="true"
+                        className="h-9 w-9 shrink-0 rounded-full border border-am-gold/40 object-cover bg-am-bg-2"
+                      />
+                    )}
                     <span
                       className={`am-gild-border inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${
                         isValid ? "text-am-jade" : "text-am-gold"
