@@ -79,6 +79,24 @@ export function formatConvocationTokens(
   return `${parts.slice(0, -1).join(", ")} et ${parts[parts.length - 1]}`;
 }
 
+// Human-readable French blurb for a SINGLE convocation token (creature
+// keywords "convocation" / "convocation_simple", configured via
+// `card.convocation_token_id`). `statOverride` carries the scalable X value
+// (Convocation X creates an X/X) — when > 0 it overrides the template stats,
+// otherwise the template defaults are used. Returns null when the token can't
+// be resolved, so callers keep the generic registry description.
+export function formatConvocationToken(
+  tokenId: number | null | undefined,
+  registry?: TokenTemplate[],
+  statOverride?: number | null,
+): string | null {
+  const tmpl = tokenId != null ? registry?.find((r) => r.id === tokenId) ?? null : null;
+  if (!tmpl) return null;
+  const atk = statOverride != null && statOverride > 0 ? statOverride : tmpl.attack;
+  const hp = statOverride != null && statOverride > 0 ? statOverride : tmpl.health;
+  return `un token ${tmpl.name} ${atk}/${hp}${tokenKeywordSuffix(tmpl)}`;
+}
+
 /** Get the display description for a spell keyword, with token details for invocation_multiple */
 export function getSpellKeywordDesc(
   kw: SpellKeywordInstance,

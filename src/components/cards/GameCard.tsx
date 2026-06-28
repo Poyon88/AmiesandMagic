@@ -48,7 +48,7 @@ function loadSetRegistry(): Promise<CardSet[]> {
   return _setRegistryPromise;
 }
 import { KEYWORD_SYMBOLS as keywordSymbols, KEYWORD_LABELS as keywordLabels, toRoman, parseXValuesFromEffectText, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
-import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS, getSpellKeywordDesc, getSpellKeywordLabel, formatConvocationTokens } from "@/lib/game/spell-keywords";
+import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS, getSpellKeywordDesc, getSpellKeywordLabel, formatConvocationTokens, formatConvocationToken } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
@@ -336,7 +336,7 @@ export default function GameCard({
               const { kw, x, mode } = entry;
               const label = keywordLabels[kw] || kw;
               const baseTitle = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
-              const modeSuffix = mode === "death" ? " · à la mort" : mode === "tap" ? " · tap" : mode === "return" ? " · retour en main" : "";
+              const modeSuffix = mode === "death" ? " · à la mort" : mode === "tap" ? " · tap" : mode === "return" ? " · retour en main" : mode === "end_of_turn" ? " · fin du tour" : "";
               // On a spell, these keywords are CONFERRED to creature(s). The
               // "all allies" scope gets a visible GREEN chip (fill + border)
               // behind the icon — a glow alone was clipped by the card's
@@ -517,13 +517,16 @@ export default function GameCard({
               const { kw, x, mode } = entry;
               const label = keywordLabels[kw] || kw;
               const baseLabel = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
-              const modeSuffix = mode === "death" ? " · à la mort" : mode === "tap" ? " · tap" : mode === "return" ? " · retour en main" : "";
+              const modeSuffix = mode === "death" ? " · à la mort" : mode === "tap" ? " · tap" : mode === "return" ? " · retour en main" : mode === "end_of_turn" ? " · fin du tour" : "";
               const displayLabel = baseLabel + modeSuffix;
               const forgeKey = keywordLabels[kw];
               const kwDef = forgeKey ? keywordDefs[forgeKey] : null;
               let desc = kwDef?.desc ? (x != null ? kwDef.desc.replace(/X/g, String(x)) : kwDef.desc) : null;
               if (kw === "convocations_multiples" && card.convocation_tokens?.length) {
                 desc = `Invocation : crée ${formatConvocationTokens(card.convocation_tokens, effectiveTokens)}`;
+              } else if (kw === "convocation" || kw === "convocation_simple") {
+                const tokenStr = formatConvocationToken(card.convocation_token_id, effectiveTokens, kw === "convocation" ? x : null);
+                if (tokenStr) desc = `Invocation : crée ${tokenStr}`;
               }
               // Conferred-keyword scope on a spell: green for "all allies".
               const grantScope = !isCreature

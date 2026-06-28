@@ -3132,11 +3132,11 @@ export default function CardForge() {
                                 and present in CURATED_KEYWORD_MODES. */}
                             {selected && CURATED_KEYWORD_MODES[id] && (
                               <div style={{ display: "inline-flex", gap: 2, marginLeft: 4 }}>
-                                {(["play", "death", "tap", "return"] as const).map(mode => {
+                                {(["play", "death", "tap", "return", "end_of_turn"] as const).map(mode => {
                                   const allowed = mode === "play" || CURATED_KEYWORD_MODES[id].has(mode);
                                   const active = mode === "play" ? !keywordModes[id] : keywordModes[id] === mode;
-                                  const color = mode === "play" ? fac.color : mode === "death" ? "#a83232" : mode === "tap" ? "#d4a800" : "#3a7dd4";
-                                  const label = mode === "play" ? "⚡" : mode === "death" ? "💀" : mode === "tap" ? "⟲" : "↩";
+                                  const color = mode === "play" ? fac.color : mode === "death" ? "#a83232" : mode === "tap" ? "#d4a800" : mode === "return" ? "#3a7dd4" : "#1fb6a6";
+                                  const label = mode === "play" ? "⚡" : mode === "death" ? "💀" : mode === "tap" ? "⟲" : mode === "return" ? "↩" : "⌛";
                                   return (
                                     <button
                                       key={mode}
@@ -3149,7 +3149,7 @@ export default function CardForge() {
                                           return next;
                                         });
                                       }}
-                                      title={mode === "play" ? "À l'invocation (défaut)" : mode === "death" ? "À la mort (deathrattle)" : mode === "tap" ? "Activée par tap (engagement)" : "Au retour en main"}
+                                      title={mode === "play" ? "À l'invocation (défaut)" : mode === "death" ? "À la mort (deathrattle)" : mode === "tap" ? "Activée par tap (engagement)" : mode === "return" ? "Au retour en main" : "À la fin du tour"}
                                       style={{
                                         width: 18, height: 18, borderRadius: 3,
                                         background: active ? color : "transparent",
@@ -3482,6 +3482,8 @@ export default function CardForge() {
             death: "À la mort", on_death: "À la mort",
             tap: "À l'activation (tap)", on_activation: "À l'activation (tap)",
             return: "Au retour en main", on_return: "Au retour en main",
+            end_of_turn: "À la fin du tour", on_end_of_turn: "À la fin du tour",
+            attack: "À l'attaque", on_attack: "À l'attaque",
             automatic: "Automatique (passif/conditionnel)",
             spell_resolution: "À la résolution du sort",
           };

@@ -39,6 +39,7 @@ import {
   getSacrificeCost,
   getTapActivateTargets,
   remonteeTargetIds,
+  endOfTurnTriggerTargets,
 } from "@/lib/game/engine";
 
 // Overlay de ciblage pour un déclencheur interactif en attente (Remontée mort/
@@ -50,11 +51,16 @@ function pendingTriggerOverlay(
 ): { targetingMode: "pending_trigger" | "none"; validTargets: string[]; pendingTriggerId: string | null } {
   const none = { targetingMode: "none" as const, validTargets: [], pendingTriggerId: null };
   const t = gs?.pendingTriggers?.[0];
-  if (!t || !localPlayerId || t.controllerId !== localPlayerId || t.kw !== "remontee") return none;
+  if (!t || !localPlayerId || t.controllerId !== localPlayerId) return none;
+  // Variante « fin de tour » (effet composé) vs remontée (mot-clé).
+  const isEndOfTurn = !!t.capUid;
+  if (!isEndOfTurn && t.kw !== "remontee") return none;
   const controller = gs!.players.find(p => p.id === t.controllerId);
   const other = gs!.players.find(p => p.id !== t.controllerId);
   if (!controller || !other) return none;
-  const targets = remonteeTargetIds(controller, other, t.sourceInstanceId);
+  const targets = isEndOfTurn
+    ? endOfTurnTriggerTargets(gs!, t)
+    : remonteeTargetIds(controller, other, t.sourceInstanceId);
   if (targets.length === 0) return none;
   return { targetingMode: "pending_trigger", validTargets: targets, pendingTriggerId: t.id };
 }

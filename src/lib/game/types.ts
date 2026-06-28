@@ -132,7 +132,7 @@ export type SpellKeywordId =
  *  existing behaviour). "death" = on-death rattle. "tap" = activated by
  *  tapping the creature (MTG-strict semantics). Only a curated subset of
  *  keywords accept non-play modes — see plan. */
-export type KeywordMode = "death" | "tap" | "return" | "attack";
+export type KeywordMode = "death" | "tap" | "return" | "attack" | "end_of_turn";
 
 /** Per-instance metadata for a creature keyword. Lives in
  *  `Card.keywordInstances` alongside the string `keywords` array so each
@@ -226,6 +226,7 @@ export type CapabilityTrigger =
   | "on_return"
   | "on_activation"
   | "on_attack"
+  | "on_end_of_turn"
   | "automatic"
   | "spell_resolution";
 
@@ -733,6 +734,11 @@ export interface GameState {
   // power in a first wave (its damage/deaths) then combat in a second wave.
   // Cleared by the store after scheduling, like fureurStrikes. Pools stripped.
   onAttackWave?: { intermediate: GameState } | null;
+  // Transient : un end_turn est en pause sur des déclencheurs « fin de tour »
+  // interactifs (cibles au choix). Tant que c'est vrai et que des
+  // pendingTriggers restent, la bascule de tour est différée ; finishEndTurn
+  // s'exécute quand la file est vidée (cf. resolvePendingTrigger).
+  endTurnPending?: boolean;
 }
 
 export type GameActionType = "play_card" | "attack" | "end_turn" | "spell_target";
@@ -824,10 +830,13 @@ export type GameAction = PlayCardAction | AttackAction | EndTurnAction | Mulliga
  *  avant que le jeu ne continue. Porté par l'état pour rester déterministe et
  *  rejouable côté réseau. */
 export interface PendingTrigger {
-  id: string;                       // déterministe (= sourceInstanceId)
-  kw: Keyword;                      // ex. "remontee"
+  id: string;                       // déterministe (= sourceInstanceId, +uid pour les caps)
+  kw?: Keyword;                     // ex. "remontee" (variante mot-clé) ; absent pour les caps
   controllerId: string;            // joueur qui choisit (toujours le joueur actif ici)
   sourceInstanceId: string | null; // source (exclusion de cible)
+  /** Présent ⇒ variante « effet composé fin de tour » : uid de la capability
+   *  on_end_of_turn à résoudre sur la cible choisie. Absent ⇒ remontée. */
+  capUid?: string;
 }
 
 // Combat event for animations

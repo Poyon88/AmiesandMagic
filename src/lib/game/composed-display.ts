@@ -54,6 +54,7 @@ export function composedTriggerMode(cap: Capability): KeywordMode | undefined {
     case "on_return": return "return";
     case "on_activation": return "tap";
     case "on_attack": return "attack";
+    case "on_end_of_turn": return "end_of_turn";
     default: return undefined; // on_play / spell_resolution → blanc
   }
 }
@@ -64,6 +65,7 @@ const TRIGGER_PREFIX: Record<string, string> = {
   on_return: "Au retour en main",
   on_activation: "À l'activation",
   on_attack: "À l'attaque",
+  on_end_of_turn: "À la fin du tour",
 };
 
 function plural(n: number, sing: string, plur = sing + "s"): string {

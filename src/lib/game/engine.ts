@@ -90,6 +90,7 @@ function capTriggerForMode(mode: import("./types").KeywordMode | undefined): imp
   if (mode === "death") return "on_death";
   if (mode === "tap") return "on_activation";
   if (mode === "return") return "on_return";
+  if (mode === "end_of_turn") return "on_end_of_turn";
   return "on_play";
 }
 
@@ -409,6 +410,39 @@ function selectComposedTargets(
   return pool.slice(0, n); // choix sans cible fournie → repli déterministe
 }
 
+// Liste TOUTES les cibles éligibles (instanceIds + sentinelles de héros) d'un
+// TargetSpec, sans appliquer count/designation — pour alimenter un sélecteur.
+function composedTargetIds(
+  spec: import("./types").TargetSpec,
+  owner: PlayerState,
+  opponent: PlayerState,
+): string[] {
+  const ids: string[] = [];
+  const wantsHero = spec.entity === "hero" || spec.entity === "both";
+  const wantsUnit = spec.entity === "unit" || spec.entity === "both";
+  if (wantsHero) {
+    if (spec.side === "ally") ids.push("friendly_hero");
+    else if (spec.side === "enemy") ids.push("enemy_hero");
+    else ids.push("friendly_hero", "enemy_hero");
+  }
+  if (wantsUnit) for (const u of composedTargetPool(spec, owner, opponent)) ids.push(u.instanceId);
+  return ids;
+}
+
+// Cibles éligibles pour un déclencheur « fin de tour » interactif en attente
+// (capUid). Exporté pour que le store construise le sélecteur.
+export function endOfTurnTriggerTargets(state: GameState, trigger: import("./types").PendingTrigger): string[] {
+  const controller = state.players.find(p => p.id === trigger.controllerId);
+  const other = state.players.find(p => p.id !== trigger.controllerId);
+  if (!controller || !other) return [];
+  const source = controller.board.find(c => c.instanceId === trigger.sourceInstanceId);
+  if (!source) return [];
+  const cap = getCapabilities(source.card).find(c => c.uid === trigger.capUid && c.composed);
+  const spec = cap?.composed?.target;
+  if (!spec) return [];
+  return composedTargetIds(spec, controller, other);
+}
+
 function resolveComposedEffect(
   composed: import("./types").ComposedEffect,
   source: CardInstance | null,
@@ -642,6 +676,67 @@ function createCardInstance(card: Card): CardInstance {
     grantedKeywordX: {},
     manaCostReduction: 0,
   };
+}
+
+// Prépare une instance EXISTANTE à ré-entrer en jeu (depuis la main après un
+// bounce, ou depuis le cimetière via Rappel/Résurrection/Cycle Éternel) en
+// CONSERVANT ses bonus permanents accumulés au lieu de la recréer à neuf.
+// Ce qui est conservé : `card` (qui porte déjà les buffs génériques de sorts,
+// cf. content "buff"), tous les champs de bonus permanents (+ATK/+PV trackés,
+// valeurs X, summonBonusATK, martyr/necrophagie/richesse/loyauté/instinct) et
+// les mots-clés accordés (grantedKeywordX). Ce qui est réinitialisé : les états
+// transitoires/de tour, les bonus d'aura/temporaires (recalculés par
+// recalculateAuras une fois sur le plateau) et la propriété volée.
+// Les PV sont recomposés depuis la base (du card, buffs génériques inclus) plus
+// les bonus de PV trackés — même formule que la reconstruction existante des
+// stats — puis soin complet. L'ATK provisoire est laissée à la base ; elle est
+// recomposée par recalculateAuras à partir des champs ATK conservés.
+function returnInstanceToPlay(inst: CardInstance): void {
+  const baseAtk = inst.card.attack ?? 0;
+  const baseHp = inst.card.health ?? 1;
+
+  // PV : base + bonus de PV permanents conservés, soin complet. L'aura de PV
+  // (Commandement) est purgée ici et réappliquée par recalculateAuras.
+  inst.maxHealth = baseHp + inst.loyautePVBonus + inst.necrophagiePVBonus + inst.richessePVBonus;
+  inst.currentHealth = inst.maxHealth;
+  inst.auraHealthBonus = 0;
+
+  // ATK = base + bonus ATK permanents conservés (même formule que
+  // recalculateAuras, qui la reconfirmera une fois sur le plateau). Berserk /
+  // Fureur sont remis inactifs ci-dessous donc exclus, comme dans recalc.
+  inst.currentAttack = baseAtk
+    + inst.loyauteATKBonus
+    + inst.summonBonusATK
+    + inst.necrophagieATKBonus
+    + inst.richesseATKBonus
+    + inst.martyrATKBonus
+    + inst.instinctDeMeuteATKBonus;
+
+  // États transitoires / de tour réinitialisés.
+  inst.tapped = false;
+  inst.hasAttacked = false;
+  inst.hasSummoningSickness = !inst.card.keywords.includes("charge");
+  inst.attacksRemaining = 1;
+  inst.targetsAttackedThisTurn = [];
+  inst.esquiveUsedThisTurn = false;
+  inst.isParalyzed = false;
+  inst.isPoisoned = false;
+  inst.maledictionTargetId = null;
+  inst.ombreRevealed = false;
+  inst.contresortActive = false;
+  inst.fureurActive = false;
+  inst.fureurATKBonus = 0;
+  inst.berserkActive = false;
+  inst.berserkATKBonus = 0;
+  inst.diedOnTurn = null;
+  inst.hasUsedResurrection = false;
+  inst.hasTransformedLycanthropie = false;
+  inst.corruptionStolenIds = [];
+  inst.hasDivineShield = inst.card.keywords.includes("divine_shield");
+
+  // Plus contrôlée/volée : revient à son propriétaire, sans marqueur de vol.
+  inst.originalOwnerId = null;
+  inst.trueOwnerId = null;
 }
 
 // Returns the saved token template for a given id (looked up against the
@@ -1145,6 +1240,63 @@ export function endTurn(state: GameState): GameState {
   newState.factionCardPool = pool;
   newState.allSpellsPool = allPool;
 
+  // Déclencheurs « fin de tour » du joueur SORTANT (contrôleur), avant la purge
+  // des statuts et la bascule, pendant que c'est encore son tour. Les effets à
+  // cible « au choix » sont mis en file (pendingTriggers) et résolus par le
+  // joueur ; les autres (soi/auto/aléatoire/toutes) sont appliqués tout de suite.
+  const outgoing = newState.players[newState.currentPlayerIndex];
+  const opponent = newState.players[newState.currentPlayerIndex === 0 ? 1 : 0];
+  for (const creature of [...outgoing.board]) {
+    // Mots-clés curés en mode "end_of_turn" (non interactifs).
+    for (const inst of creature.card.keyword_instances ?? []) {
+      if (inst.mode === "end_of_turn") {
+        resolveCuratedKeywordEffect(inst.id, inst.x ?? 1, creature, outgoing, opponent, undefined, inst);
+      }
+    }
+    // Effets composés on_end_of_turn.
+    for (const cap of getCapabilities(creature.card)) {
+      if (!cap.composed || cap.trigger !== "on_end_of_turn") continue;
+      if (cap.composed.target?.designation === "choice") {
+        const trig: import("./types").PendingTrigger = {
+          id: `${creature.instanceId}#${cap.uid}`,
+          controllerId: outgoing.id,
+          sourceInstanceId: creature.instanceId,
+          capUid: cap.uid,
+        };
+        // File seulement s'il existe une cible éligible — sinon no-op (pas de
+        // soft-lock du changement de tour).
+        if (endOfTurnTriggerTargets(newState, trig).length > 0) {
+          (newState.pendingTriggers ??= []).push(trig);
+        }
+        continue;
+      }
+      resolveComposedEffect(cap.composed, creature, outgoing, opponent);
+    }
+  }
+
+  // Nettoyage des morts provoquées par les effets fin-de-tour (les deux camps).
+  const deadOut = cleanDeadCreatures(outgoing);
+  const deadOpp = cleanDeadCreatures(opponent);
+  processDeathTriggers(deadOut, outgoing, opponent);
+  processDeathTriggers(deadOpp, opponent, outgoing);
+  recalculateAuras(outgoing, opponent);
+  checkWinCondition(newState);
+
+  // Des choix interactifs restent à résoudre : on diffère la bascule de tour.
+  // finishEndTurn s'exécutera quand la file sera vidée (resolvePendingTrigger).
+  if ((newState.pendingTriggers?.length ?? 0) > 0) {
+    newState.endTurnPending = true;
+    return newState;
+  }
+
+  return finishEndTurn(newState);
+}
+
+// Purge des statuts du joueur sortant + bascule du tour + startTurn. Séparé
+// d'endTurn pour pouvoir être différé après la résolution des déclencheurs
+// « fin de tour » interactifs. `newState` est déjà cloné par l'appelant.
+function finishEndTurn(newState: GameState): GameState {
+  newState.endTurnPending = false;
   // Expire one-turn statuses on the OUTGOING player's creatures: they were
   // visible (icon + statut row) during the player's whole turn so the
   // user understood why a paralyzed creature couldn't act, and we now
@@ -1634,9 +1786,12 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
           ? resurrectable.find(c => c.instanceId === action.graveyardTargetInstanceId)
           : resurrectable[resurrectable.length - 1]) ?? resurrectable[resurrectable.length - 1];
         player.graveyard = player.graveyard.filter(c => c !== target);
-        const revived = createCardInstance(target.card);
-        revived.hasSummoningSickness = true;
-        player.board.push(revived);
+        // Réutilise l'instance du cimetière pour CONSERVER ses bonus accumulés
+        // (nouvelle identité pour éviter toute référence obsolète).
+        returnInstanceToPlay(target);
+        target.instanceId = generateInstanceId();
+        target.hasSummoningSickness = true;
+        player.board.push(target);
       }
     }
 
@@ -1661,9 +1816,11 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
         : player.graveyard[player.graveyard.length - 1]) ?? player.graveyard[player.graveyard.length - 1];
       if (recallTarget && player.hand.length < MAX_HAND_SIZE) {
         player.graveyard = player.graveyard.filter(c => c !== recallTarget);
-        const refreshed = createCardInstance(recallTarget.card);
-        player.hand.push(refreshed);
-        triggerReturnToHand(refreshed, player, opponent);
+        // Conserve les bonus accumulés (nouvelle identité d'instance).
+        returnInstanceToPlay(recallTarget);
+        recallTarget.instanceId = generateInstanceId();
+        player.hand.push(recallTarget);
+        triggerReturnToHand(recallTarget, player, opponent);
       }
     }
 
@@ -2555,9 +2712,11 @@ function resolveSpellKeywords(
             const target = ctx.caster.graveyard[gravIdx];
             if (target.card.card_type === "creature" && ctx.caster.hand.length < MAX_HAND_SIZE) {
               ctx.caster.graveyard.splice(gravIdx, 1);
-              const refreshed = createCardInstance(target.card);
-              ctx.caster.hand.push(refreshed);
-              triggerReturnToHand(refreshed, ctx.caster, ctx.opponent);
+              // Conserve les bonus accumulés (nouvelle identité d'instance).
+              returnInstanceToPlay(target);
+              target.instanceId = generateInstanceId();
+              ctx.caster.hand.push(target);
+              triggerReturnToHand(target, ctx.caster, ctx.opponent);
             }
           }
         }
@@ -2598,9 +2757,11 @@ function resolveSpellKeywords(
                 && target.card.mana_cost <= maxCost
                 && ctx.caster.board.length < MAX_BOARD_SIZE) {
               ctx.caster.graveyard.splice(gravIdx, 1);
-              const revived = createCardInstance(target.card);
-              revived.hasSummoningSickness = true;
-              ctx.caster.board.push(revived);
+              // Conserve les bonus accumulés (nouvelle identité d'instance).
+              returnInstanceToPlay(target);
+              target.instanceId = generateInstanceId();
+              target.hasSummoningSickness = true;
+              ctx.caster.board.push(target);
             }
           }
         }
@@ -3543,21 +3704,16 @@ function resolveRemontee(
   const holder = controller.board.includes(target) ? controller : other;
   holder.board = holder.board.filter(c => c !== target);
 
-  // Reset comme un bounce.
-  target.currentAttack = target.card.attack ?? 0;
-  target.currentHealth = target.card.health ?? 1;
-  target.maxHealth = target.card.health ?? 1;
-  target.hasSummoningSickness = true;
-  target.tapped = false;
-  target.hasAttacked = false;
-
-  // Propriétaire d'origine (trueOwnerId), sinon le détenteur actuel.
+  // Propriétaire d'origine (trueOwnerId), sinon le détenteur actuel. À lire
+  // AVANT returnInstanceToPlay, qui remet trueOwnerId à null.
   const owner = target.trueOwnerId
     ? ([controller, other].find(p => p.id === target!.trueOwnerId) ?? holder)
     : holder;
   const ownerOpponent = owner === controller ? other : controller;
-  target.originalOwnerId = null;
-  target.trueOwnerId = null;
+
+  // Retour en main en CONSERVANT les bonus permanents accumulés (au lieu d'un
+  // reset à la base) ; soin complet, états de tour réinitialisés, vol annulé.
+  returnInstanceToPlay(target);
 
   if (owner.hand.length < MAX_HAND_SIZE) {
     owner.hand.push(target);
@@ -3637,13 +3793,17 @@ function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: P
     if (hasKw(c, "resurrection") && !c.hasUsedResurrection) {
       if (owner.board.length < MAX_BOARD_SIZE) {
         const newKeywords = c.card.keywords.filter(kw => kw !== "resurrection");
-        const revivedCard = { ...c.card, keywords: newKeywords };
-        const revived = createCardInstance(revivedCard);
-        revived.currentHealth = 1;
-        revived.maxHealth = c.maxHealth;
-        revived.hasUsedResurrection = true;
-        revived.hasSummoningSickness = true;
-        owner.board.push(revived);
+        // Réutilise l'instance pour CONSERVER ses bonus ; elle perd Résurrection
+        // (gravée dans son card). returnInstanceToPlay recompose maxHealth avec
+        // les bonus conservés, puis on applique la règle propre à Résurrection :
+        // revient à 1 PV (pas de soin complet pour ce mot-clé).
+        c.card = { ...c.card, keywords: newKeywords };
+        returnInstanceToPlay(c);
+        c.instanceId = generateInstanceId();
+        c.currentHealth = 1;
+        c.hasUsedResurrection = true;
+        c.hasSummoningSickness = true;
+        owner.board.push(c);
         owner.graveyard = owner.graveyard.filter(g => g !== c);
       }
     }
@@ -3687,11 +3847,14 @@ function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: P
     // garderait à la fois la copie recyclée dans le deck ET un doublon au
     // cimetière.
     if (hasKw(c, "cycle_eternel")) {
-      const copyInstance = createCardInstance({ ...c.card });
-      copyInstance.cycleEternelAutoPlay = true;
+      // Réutilise l'instance pour CONSERVER ses bonus accumulés (au lieu d'une
+      // copie neuve) ; nouvelle identité, marquée pour auto-play à la pioche.
+      returnInstanceToPlay(c);
+      c.instanceId = generateInstanceId();
+      c.cycleEternelAutoPlay = true;
       // Insert at random position in deck
       const insertIdx = Math.floor(rng() * (owner.deck.length + 1));
-      owner.deck.splice(insertIdx, 0, copyInstance);
+      owner.deck.splice(insertIdx, 0, c);
       owner.graveyard = owner.graveyard.filter(g => g !== c);
     }
 
@@ -4044,9 +4207,23 @@ export function resolvePendingTrigger(state: GameState, action: ResolvePendingTr
   queue.splice(idx, 1);
   newState.pendingTriggers = queue;
 
-  if (trigger.kw === "remontee") {
-    const controller = newState.players.find(p => p.id === trigger.controllerId);
-    const other = newState.players.find(p => p.id !== trigger.controllerId);
+  const controller = newState.players.find(p => p.id === trigger.controllerId);
+  const other = newState.players.find(p => p.id !== trigger.controllerId);
+
+  if (trigger.capUid) {
+    // Variante « fin de tour » : résout l'effet composé sur la cible choisie.
+    if (controller && other) {
+      const source = controller.board.find(c => c.instanceId === trigger.sourceInstanceId);
+      const cap = source ? getCapabilities(source.card).find(c => c.uid === trigger.capUid && c.composed) : undefined;
+      if (cap?.composed) {
+        resolveComposedEffect(cap.composed, source ?? null, controller, other, [action.targetInstanceId]);
+        const deadC = cleanDeadCreatures(controller);
+        const deadO = cleanDeadCreatures(other);
+        processDeathTriggers(deadC, controller, other);
+        processDeathTriggers(deadO, other, controller);
+      }
+    }
+  } else if (trigger.kw === "remontee") {
     if (controller && other) {
       resolveRemontee(action.targetInstanceId, trigger.sourceInstanceId, controller, other);
     }
@@ -4055,6 +4232,12 @@ export function resolvePendingTrigger(state: GameState, action: ResolvePendingTr
   recalculateAuras(newState.players[0], newState.players[1]);
   newState.lastAction = action;
   checkWinCondition(newState);
+
+  // Si un end_turn était en pause sur des choix interactifs et que la file est
+  // désormais vide, on termine le tour (purge statuts + bascule + startTurn).
+  if (newState.endTurnPending && (newState.pendingTriggers?.length ?? 0) === 0) {
+    return finishEndTurn(newState);
+  }
   return newState;
 }
 

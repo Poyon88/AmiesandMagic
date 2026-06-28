@@ -201,7 +201,7 @@ function MulliganCard({
               const { kw, x, mode } = entry;
               const label = KEYWORD_LABELS[kw] || kw;
               const baseTitle = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
-              const modeSuffix = mode === "death" ? " · à la mort" : mode === "tap" ? " · tap" : mode === "return" ? " · retour en main" : "";
+              const modeSuffix = mode === "death" ? " · à la mort" : mode === "tap" ? " · tap" : mode === "return" ? " · retour en main" : mode === "end_of_turn" ? " · fin du tour" : "";
               const displayTitle = baseTitle + modeSuffix;
               const modeColor = keywordModeColor(mode);
               const modeFilter = keywordModeFilter(mode);
@@ -340,7 +340,7 @@ function MulliganCard({
               const { kw, x, mode } = entry;
               const label = KEYWORD_LABELS[kw] || kw;
               const baseLabel = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
-              const modeSuffix = mode === "death" ? " · à la mort" : mode === "tap" ? " · tap" : mode === "return" ? " · retour en main" : "";
+              const modeSuffix = mode === "death" ? " · à la mort" : mode === "tap" ? " · tap" : mode === "return" ? " · retour en main" : mode === "end_of_turn" ? " · fin du tour" : "";
               const displayLabel = baseLabel + modeSuffix;
               const forgeKey = KEYWORD_LABELS[kw];
               const kwDef = forgeKey ? keywordDefs[forgeKey] : null;

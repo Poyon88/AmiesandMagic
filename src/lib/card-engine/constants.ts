@@ -33,24 +33,24 @@ export { KEYWORDS } from "@/lib/game/abilities";
 // pipeline (on-death rattle or tap-activated). Keywords missing from this
 // map can only be on-play. Shared by the Forge and the card Editor so both
 // surfaces gate the picker identically.
-// Le mode "return" (retour en main) est ouvert à TOUS les mots-clés curés, en
-// plus de leurs modes existants.
-type CuratedMode = "death" | "tap" | "return";
+// Les modes "return" (retour en main) et "end_of_turn" (fin du tour) sont
+// ouverts à TOUS les mots-clés curés, en plus de leurs modes existants.
+type CuratedMode = "death" | "tap" | "return" | "end_of_turn";
 export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
-  "Convocation X": new Set<CuratedMode>(["death", "tap", "return"]),
-  "Convocations multiples": new Set<CuratedMode>(["death", "tap", "return"]),
-  "Inspiration X": new Set<CuratedMode>(["death", "tap", "return"]),
-  "Pillage X": new Set<CuratedMode>(["death", "tap", "return"]),
-  "Douleur X": new Set<CuratedMode>(["death", "tap", "return"]),
-  "Vampirisme X": new Set<CuratedMode>(["death", "tap", "return"]),
-  "Tempête X": new Set<CuratedMode>(["death", "tap", "return"]),
-  "Prescience X": new Set<CuratedMode>(["tap", "return"]),
-  "Suprématie": new Set<CuratedMode>(["death", "return"]),
-  "Ombre du passé": new Set<CuratedMode>(["death", "return"]),
-  "Savant": new Set<CuratedMode>(["death", "return"]),
-  "Combustion": new Set<CuratedMode>(["death", "tap", "return"]),
-  "Remontée": new Set<CuratedMode>(["death", "tap", "return"]),
-  "Renforcement multiple": new Set<CuratedMode>(["death", "tap", "return"]),
+  "Convocation X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
+  "Convocations multiples": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
+  "Inspiration X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
+  "Pillage X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
+  "Douleur X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
+  "Vampirisme X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
+  "Tempête X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
+  "Prescience X": new Set<CuratedMode>(["tap", "return", "end_of_turn"]),
+  "Suprématie": new Set<CuratedMode>(["death", "return", "end_of_turn"]),
+  "Ombre du passé": new Set<CuratedMode>(["death", "return", "end_of_turn"]),
+  "Savant": new Set<CuratedMode>(["death", "return", "end_of_turn"]),
+  "Combustion": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
+  "Remontée": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
+  "Renforcement multiple": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
 };
 
 // ─── FACTIONS ────────────────────────────────────────────────────────────────

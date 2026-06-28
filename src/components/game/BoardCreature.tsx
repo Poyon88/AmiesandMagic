@@ -7,6 +7,7 @@ import type { CardInstance, GameAction } from "@/lib/game/types";
 import { useGameStore } from "@/lib/store/gameStore";
 import { tapKeywordNeedsTarget, getCreatureTapComposedUid } from "@/lib/game/engine";
 import { getTokenManaCost } from "@/lib/game/abilities";
+import { formatConvocationToken, formatConvocationTokens } from "@/lib/game/spell-keywords";
 import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
@@ -821,11 +822,17 @@ export default function BoardCreature({
                 : kw === "entraide" && card.entraide_race
                   ? `${label} (${card.entraide_race})`
                   : label;
-              const modeSuffix = mode === "death" ? " · à la mort" : mode === "tap" ? " · tap" : mode === "return" ? " · retour en main" : "";
+              const modeSuffix = mode === "death" ? " · à la mort" : mode === "tap" ? " · tap" : mode === "return" ? " · retour en main" : mode === "end_of_turn" ? " · fin du tour" : "";
               const displayLabel = baseLabel + modeSuffix;
               const forgeKey = KEYWORD_LABELS[kw];
               const kwDef = forgeKey ? keywordDefs[forgeKey] : null;
-              const desc = kwDef?.desc ? (x != null ? kwDef.desc.replace(/X/g, String(x)) : kwDef.desc) : null;
+              let desc = kwDef?.desc ? (x != null ? kwDef.desc.replace(/X/g, String(x)) : kwDef.desc) : null;
+              if (kw === "convocations_multiples" && card.convocation_tokens?.length) {
+                desc = `Invocation : crée ${formatConvocationTokens(card.convocation_tokens, tokenTemplates)}`;
+              } else if (kw === "convocation" || kw === "convocation_simple") {
+                const tokenStr = formatConvocationToken(card.convocation_token_id, tokenTemplates, kw === "convocation" ? x : null);
+                if (tokenStr) desc = `Invocation : crée ${tokenStr}`;
+              }
               const modeColor = keywordModeColor(mode);
               const modeFilter = keywordModeFilter(mode);
               return (
