@@ -13,9 +13,18 @@ interface Cell {
 interface Props {
   factions: string[];
   cells: Cell[];
+  /** Transforme une clé en libellé affiché (par défaut : nom de faction). */
+  labelFor?: (key: string) => string;
+  /** Phrase d'explication au-dessus de la grille. */
+  legend?: string;
 }
 
-export default function MatchupHeatmap({ factions, cells }: Props) {
+export default function MatchupHeatmap({
+  factions,
+  cells,
+  labelFor = getFactionDisplayName,
+  legend = "Lecture : la ligne = faction du gagnant potentiel, la colonne = faction adverse. Cellule colorée = winrate de la ligne contre la colonne.",
+}: Props) {
   if (factions.length === 0) {
     return <div style={{ color: "#888", padding: 20, textAlign: "center" }}>Aucun matchup enregistré.</div>;
   }
@@ -36,7 +45,7 @@ export default function MatchupHeatmap({ factions, cells }: Props) {
   return (
     <div style={{ overflow: "auto", border: "1px solid #3d3d5c", borderRadius: 4, padding: 12, background: "#1a1a2e" }}>
       <div style={{ marginBottom: 8, color: "#ccc", fontSize: 13 }}>
-        Lecture : la ligne = faction du gagnant potentiel, la colonne = faction adverse. Cellule colorée = winrate de la ligne contre la colonne.
+        {legend}
       </div>
       <div style={{
         display: "grid",
@@ -48,12 +57,12 @@ export default function MatchupHeatmap({ factions, cells }: Props) {
           <div key={`col-${f}`} style={{
             color: "#c8a84e", fontSize: 11, textAlign: "center", padding: "4px 2px",
             transform: "rotate(-30deg)", transformOrigin: "center", whiteSpace: "nowrap",
-          }}>{getFactionDisplayName(f)}</div>
+          }}>{labelFor(f)}</div>
         ))}
         {factions.flatMap((row) => [
           <div key={`row-${row}`} style={{
             color: "#c8a84e", fontSize: 12, padding: "4px 8px", textAlign: "right", alignSelf: "center",
-          }}>{getFactionDisplayName(row)}</div>,
+          }}>{labelFor(row)}</div>,
           ...factions.map((col) => {
             const c = map.get(`${row}__${col}`);
             const wr = c?.winrate_a ?? 0;
@@ -61,7 +70,7 @@ export default function MatchupHeatmap({ factions, cells }: Props) {
             return (
               <div
                 key={`${row}-${col}`}
-                title={total > 0 ? `${getFactionDisplayName(row)} vs ${getFactionDisplayName(col)} : ${c!.wins_a}/${total} (${(wr * 100).toFixed(1)}%)` : "Aucun matchup"}
+                title={total > 0 ? `${labelFor(row)} vs ${labelFor(col)} : ${c!.wins_a}/${total} (${(wr * 100).toFixed(1)}%)` : "Aucun matchup"}
                 style={{
                   background: colorFor(wr, total),
                   height: cellSize,

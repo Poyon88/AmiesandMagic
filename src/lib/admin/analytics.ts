@@ -234,8 +234,39 @@ export interface MatchupCell {
   winrate_a: number;
 }
 
-/** Heatmap : pour chaque paire (factionA, factionB), winrate de A face à B. */
-export function aggregateMatchups(snapshots: DeckSnapshot[]): MatchupCell[] {
+/**
+ * Clé principale (faction/race/clan le plus représenté en copies) d'un snapshot,
+ * dérivée de ses cartes. Reproduit la logique SQL de `primary_faction`
+ * (somme des quantités, on garde le plus présent) pour les attributs non stockés.
+ */
+export function primaryAttributeOf(
+  snap: DeckSnapshot,
+  cards: Map<number, CardRow>,
+  attribute: 'faction' | 'race' | 'clan'
+): string | null {
+  const counts = new Map<string, number>();
+  for (const e of snap.cards) {
+    const value = cards.get(e.card_id)?.[attribute];
+    if (!value) continue;
+    counts.set(value, (counts.get(value) ?? 0) + e.copies);
+  }
+  let best: string | null = null;
+  let max = 0;
+  for (const [value, n] of counts) {
+    if (n > max) { max = n; best = value; }
+  }
+  return best;
+}
+
+/**
+ * Heatmap : pour chaque paire (clé A, clé B), winrate de A face à B.
+ * `keyOf` extrait la clé de regroupement d'un snapshot (faction stockée par défaut,
+ * ou clan/race dérivés via {@link primaryAttributeOf}).
+ */
+export function aggregateMatchups(
+  snapshots: DeckSnapshot[],
+  keyOf: (s: DeckSnapshot) => string | null = (s) => s.primary_faction
+): MatchupCell[] {
   const byMatch = new Map<string, DeckSnapshot[]>();
   for (const s of snapshots) {
     const arr = byMatch.get(s.match_id) ?? [];
@@ -247,11 +278,11 @@ export function aggregateMatchups(snapshots: DeckSnapshot[]): MatchupCell[] {
   for (const [, pair] of byMatch) {
     if (pair.length !== 2) continue;
     const [p, q] = pair;
-    if (!p.primary_faction || !q.primary_faction) continue;
     const winner = p.is_winner ? p : q;
     const loser = p.is_winner ? q : p;
-    const fa = winner.primary_faction!;
-    const fb = loser.primary_faction!;
+    const fa = keyOf(winner);
+    const fb = keyOf(loser);
+    if (!fa || !fb) continue;
     // Cell (fa, fb) : fa a gagné
     const k1 = key(fa, fb);
     let c1 = map.get(k1);

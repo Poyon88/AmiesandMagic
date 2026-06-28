@@ -35,8 +35,8 @@ create table if not exists public.match_deck_snapshots (
   id bigserial primary key,
   match_id uuid not null references public.matches(id) on delete cascade,
   player_id uuid not null,
-  deck_id uuid,
-  hero_id uuid,
+  deck_id bigint,
+  hero_id bigint,
   is_winner boolean not null,
   cards jsonb not null default '[]'::jsonb,
   primary_faction text,
@@ -66,8 +66,8 @@ set search_path = public
 as $$
 declare
   m record;
-  p1_hero uuid;
-  p2_hero uuid;
+  p1_hero bigint;
+  p2_hero bigint;
   p1_cards jsonb;
   p2_cards jsonb;
   p1_faction text;

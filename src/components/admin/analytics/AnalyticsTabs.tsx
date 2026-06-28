@@ -7,7 +7,7 @@ import EvolutionChart from "./EvolutionChart";
 import MatchupHeatmap from "./MatchupHeatmap";
 import BackfillButton from "./BackfillButton";
 
-type EntityKind = "factions" | "races" | "clans" | "cards" | "heroes" | "abilities" | "matchups";
+type EntityKind = "factions" | "races" | "clans" | "cards" | "heroes" | "abilities" | "matchups" | "matchupsClan";
 
 const TABS: Array<{ id: EntityKind; label: string; icon: string }> = [
   { id: "factions", label: "Factions", icon: "🏛️" },
@@ -16,8 +16,11 @@ const TABS: Array<{ id: EntityKind; label: string; icon: string }> = [
   { id: "cards", label: "Cartes", icon: "🃏" },
   { id: "heroes", label: "Héros", icon: "🤴" },
   { id: "abilities", label: "Capacités", icon: "✨" },
-  { id: "matchups", label: "Matchups", icon: "⚔️" },
+  { id: "matchups", label: "Matchups Factions", icon: "⚔️" },
+  { id: "matchupsClan", label: "Matchups Clans", icon: "🆚" },
 ];
+
+const MATCHUP_TABS: EntityKind[] = ["matchups", "matchupsClan"];
 
 const PERIODS = [
   { id: "7d", label: "7 jours" },
@@ -28,7 +31,7 @@ const PERIODS = [
 
 type Period = typeof PERIODS[number]["id"];
 
-const ENTITY_MAP: Record<Exclude<EntityKind, "matchups">, "card" | "hero" | "faction" | "race" | "clan" | "ability"> = {
+const ENTITY_MAP: Record<Exclude<EntityKind, "matchups" | "matchupsClan">, "card" | "hero" | "faction" | "race" | "clan" | "ability"> = {
   factions: "faction",
   races: "race",
   clans: "clan",
@@ -55,8 +58,9 @@ export default function AnalyticsTabs() {
     setSelected(null);
     const effMin = showLowSample ? 1 : minGames;
     try {
-      if (tab === "matchups") {
-        const r = await fetch(`/api/admin/analytics/matchups?period=${period}`);
+      if (MATCHUP_TABS.includes(tab)) {
+        const by = tab === "matchupsClan" ? "clan" : "faction";
+        const r = await fetch(`/api/admin/analytics/matchups?period=${period}&by=${by}`);
         const j = await r.json();
         if (!r.ok) throw new Error(j.error ?? `HTTP ${r.status}`);
         setMatchups(j);
@@ -127,7 +131,7 @@ export default function AnalyticsTabs() {
             >{p.label}</button>
           ))}
         </div>
-        {tab !== "matchups" && (
+        {!MATCHUP_TABS.includes(tab) && (
           <>
             <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#ccc" }}>
               Seuil min :
@@ -162,9 +166,18 @@ export default function AnalyticsTabs() {
         </div>
       )}
 
-      {tab === "matchups" ? (
+      {MATCHUP_TABS.includes(tab) ? (
         matchups ? (
-          <MatchupHeatmap factions={matchups.factions} cells={matchups.cells} />
+          <MatchupHeatmap
+            factions={matchups.factions}
+            cells={matchups.cells}
+            labelFor={tab === "matchupsClan" ? (k) => k : undefined}
+            legend={
+              tab === "matchupsClan"
+                ? "Lecture : la ligne = clan du gagnant potentiel, la colonne = clan adverse. Cellule colorée = winrate de la ligne contre la colonne."
+                : undefined
+            }
+          />
         ) : <div style={{ color: "#888" }}>Chargement…</div>
       ) : (
         <>
@@ -180,7 +193,7 @@ export default function AnalyticsTabs() {
               />
               {selected && (
                 <EvolutionChart
-                  entity={ENTITY_MAP[tab as Exclude<EntityKind, "matchups">]}
+                  entity={ENTITY_MAP[tab as Exclude<EntityKind, "matchups" | "matchupsClan">]}
                   entityKey={selected.key}
                   entityLabel={selected.label}
                   period={period}
