@@ -472,6 +472,48 @@ describe("désignation automatique", () => {
   });
 });
 
+describe("désignation scatter (répartition point par point)", () => {
+  it("distribue exactement X points sur le pool ennemi, sans demander de cible", () => {
+    const s0 = mkState();
+    s0.players[1].board = [
+      mkInstance(mkCard({ attack: 1, health: 5 })),
+      mkInstance(mkCard({ attack: 1, health: 5 })),
+      mkInstance(mkCard({ attack: 1, health: 5 })),
+    ];
+    const creature = mkCard({ attack: 1, health: 1,
+      capabilities: [composedCap("on_play", { content: "deal_damage", magnitude: { x: 2 },
+        target: { entity: "unit", count: 1, side: "enemy", location: "board", designation: "scatter" } })] });
+    // Scatter est aléatoire → aucun picker requis.
+    expect(creatureNeedsTarget(creature)).toBe(false);
+    const s = play(s0, mkInstance(creature));
+    const totalDmg = s.players[1].board.reduce((acc, c) => acc + (5 - c.currentHealth), 0);
+    expect(totalDmg).toBe(2); // 2 points répartis, total conservé
+    // Chaque unité a pris entre 0 et 2 points (aucune n'excède l'amplitude totale).
+    for (const c of s.players[1].board) expect(5 - c.currentHealth).toBeLessThanOrEqual(2);
+  });
+
+  it("tirage avec remise : une seule cible peut cumuler tous les points", () => {
+    const s0 = mkState();
+    // Pool d'une seule unité → les 3 points tombent forcément dessus.
+    s0.players[1].board = [mkInstance(mkCard({ attack: 1, health: 10 }))];
+    const creature = mkCard({ attack: 1, health: 1,
+      capabilities: [composedCap("on_play", { content: "deal_damage", magnitude: { x: 3 },
+        target: { entity: "unit", count: 1, side: "enemy", location: "board", designation: "scatter" } })] });
+    const s = play(s0, mkInstance(creature));
+    expect(s.players[1].board[0].currentHealth).toBe(7); // 10 − 3 cumulés
+  });
+
+  it("pool vide : aucun effet, aucune erreur", () => {
+    const s0 = mkState();
+    const creature = mkCard({ attack: 1, health: 1,
+      capabilities: [composedCap("on_play", { content: "deal_damage", magnitude: { x: 4 },
+        target: { entity: "unit", count: 1, side: "enemy", location: "board", designation: "scatter" } })] });
+    const s = play(s0, mkInstance(creature));
+    expect(s.players[1].board.length).toBe(0);
+    expect(s.players[1].hero.hp).toBe(HERO_MAX_HP); // le héros n'est pas dans le pool (entity unit)
+  });
+});
+
 describe("silence retire toutes les sources de capacités (modèle unifié)", () => {
   it("Silence vide aussi les capacités composées (capabilities[])", () => {
     const s0 = mkState();

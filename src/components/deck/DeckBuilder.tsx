@@ -6,7 +6,9 @@ import { createClient } from "@/lib/supabase/client";
 import type { Card, Keyword, CardSet, GameFormat, DeckMode, DeckExtent } from "@/lib/game/types";
 import { getFormatFilter, parseFormatCode } from "@/lib/game/format-legality";
 import { isCardOwned } from "@/lib/game/collection";
-import { DECK_SIZE } from "@/lib/game/constants";
+import { DECK_SIZE, MAX_SAME_CAPABILITY, CAPABILITY_LIMIT_EXEMPT } from "@/lib/game/constants";
+import { ABILITIES } from "@/lib/game/abilities";
+import { namedCreatureCapabilityIds, creatureCapabilityCounts, capabilityLimitViolations } from "@/lib/game/deck-rules";
 import { FACTIONS, ALIGNMENTS, getFactionDisplayName, getFactionForRace } from "@/lib/card-engine/constants";
 import type { Alignment } from "@/lib/card-engine/constants";
 import GameCard from "@/components/cards/GameCard";
@@ -382,6 +384,10 @@ export default function DeckBuilder({
     const violations: string[] = [];
     if (alignmentConflict) violations.push("Alignement Bon et Maléfique incompatibles");
     if (mercenairesCount > maxMercenaires) violations.push(`Max ${maxMercenaires} Mercenaires (actuellement ${mercenairesCount})`);
+    // Limite : pas plus de MAX_SAME_CAPABILITY fois une même capacité nommée (sauf Vol).
+    for (const v of capabilityLimitViolations(creatureCapabilityCounts(deckCards.values()))) {
+      violations.push(`Max ${MAX_SAME_CAPABILITY} capacités « ${v.label} » (actuellement ${v.count})`);
+    }
 
     return { factions: factionSet, allFactions, clans: clanSet, alignments: alignmentSet, violations, alignmentConflict, mercenairesCount, maxMercenaires };
   }, [deckCards]);
@@ -475,6 +481,16 @@ export default function DeckBuilder({
       if (slotCounts[tier] < SLOT_COUNTS[tier]) { hasSlot = true; break; }
     }
     if (!hasSlot) return "Plus de slot disponible";
+
+    // Limite : une même capacité nommée ne peut dépasser MAX_SAME_CAPABILITY
+    // exemplaires dans le deck (Vol exempté). +1 simule l'ajout de cette carte.
+    const capCounts = creatureCapabilityCounts(deckCards.values());
+    for (const id of namedCreatureCapabilityIds(card)) {
+      if (CAPABILITY_LIMIT_EXEMPT.has(id)) continue;
+      if ((capCounts.get(id) ?? 0) + 1 > MAX_SAME_CAPABILITY) {
+        return `Max ${MAX_SAME_CAPABILITY} × capacité « ${ABILITIES[id]?.label ?? id} »`;
+      }
+    }
 
     return null;
   }

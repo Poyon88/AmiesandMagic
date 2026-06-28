@@ -26,7 +26,7 @@ export function composedIcon(cap: Capability): { symbol: string; keyword: string
   switch (eff.content) {
     case "deal_damage": {
       const t = eff.target;
-      if (t?.designation === "random") return { symbol: "🌩️", keyword: "spell_tempete" };
+      if (t?.designation === "random" || t?.designation === "scatter") return { symbol: "🌩️", keyword: "spell_tempete" };
       if (t && t.entity === "unit" && t.count === "all" && t.side === "enemy") return { symbol: "🌊", keyword: "spell_deferlement" };
       return { symbol: "💥", keyword: "spell_impact" }; // cible unique / héros / repli
     }
@@ -125,13 +125,34 @@ function describeTarget(t: TargetSpec | undefined): string {
   return ["à", count, sideTxt, mtxt && `(${mtxt})`, locTxt, desTxt].filter(Boolean).join(" ");
 }
 
+/** Répartition point par point (designation "scatter") : décrit les X points
+ *  distribués un à un, chacun sur une cible aléatoire du pool. Renvoie null si
+ *  l'effet n'est pas un scatter de dégâts/soin. Ex. « inflige 2 fois 1 dégât,
+ *  à chaque fois à une cible ennemie aléatoire (unité ou héros) ». */
+function describeScatter(eff: ComposedEffect): string | null {
+  const t = eff.target;
+  if (!t || t.designation !== "scatter") return null;
+  if (eff.content !== "deal_damage" && eff.content !== "heal") return null;
+  const x = eff.magnitude?.x ?? 0;
+  const action = eff.content === "deal_damage" ? "inflige" : "rend";
+  const unit = eff.content === "deal_damage" ? "dégât" : "PV";
+  const sideAdj = t.side === "ally" ? "alliée" : t.side === "enemy" ? "ennemie" : "";
+  const memb = t.membership;
+  const mtxt = memb ? [...(memb.race ?? []), ...(memb.clan ?? []), ...(memb.faction ?? [])].join("/") : "";
+  const targetTxt = t.entity === "both"
+    ? `à une cible ${sideAdj} aléatoire (unité ou héros)`
+    : `à une unité ${sideAdj} aléatoire`;
+  return [`${action} ${x} fois 1 ${unit}, à chaque fois`, targetTxt, mtxt && `(${mtxt})`].filter(Boolean).join(" ");
+}
+
 /** Phrase FR décrivant un effet composé (générateur paramétrique). Passer
  *  `tokens` (templates) pour nommer/chiffrer les tokens d'un effet summon_token. */
 export function describeComposedCap(cap: Capability, tokens?: TokenTemplate[]): string {
   const eff = cap.composed;
   if (!eff) return "";
   const prefix = TRIGGER_PREFIX[cap.trigger];
-  const body = [describeContent(eff, tokens), describeTarget(eff.target)].filter(Boolean).join(" ");
+  const body = describeScatter(eff)
+    ?? [describeContent(eff, tokens), describeTarget(eff.target)].filter(Boolean).join(" ");
   const sentence = prefix ? `${prefix} : ${body}` : body;
   return sentence.charAt(0).toUpperCase() + sentence.slice(1) + ".";
 }

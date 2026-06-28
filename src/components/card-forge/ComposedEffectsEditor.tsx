@@ -96,7 +96,12 @@ export default function ComposedEffectsEditor({
               <span style={labelStyle}>CONTENU</span>
               {sel(eff.content, COMPOSED_CONTENTS.map((o) => ({ v: o.v, l: o.l })), (v) => {
                 const m = COMPOSED_CONTENTS.find((c) => c.v === v)!;
-                patchEffect(idx, { content: v, target: m.target === "none" ? undefined : (eff.target ?? { ...DEFAULT_TARGET, entity: "unit" }), grantAbilityId: v === "grant_keyword" ? (eff.grantAbilityId ?? GRANTABLE[0]?.id) : undefined });
+                const prev = eff.target ?? { ...DEFAULT_TARGET, entity: "unit" };
+                // "scatter" (répartition point par point) n'a de sens que pour dégâts/soin.
+                const scatterOk = v === "deal_damage" || v === "heal";
+                const nextTarget = m.target === "none" ? undefined
+                  : (prev.designation === "scatter" && !scatterOk ? { ...prev, designation: "random" as const } : prev);
+                patchEffect(idx, { content: v, target: nextTarget, grantAbilityId: v === "grant_keyword" ? (eff.grantAbilityId ?? GRANTABLE[0]?.id) : undefined });
               })}
 
               <span style={labelStyle}>AMPLITUDE</span>
@@ -139,11 +144,22 @@ export default function ComposedEffectsEditor({
 
                   {(t.entity === "unit" || t.entity === "both") && (
                     <>
-                      <span style={labelStyle}>NOMBRE</span>
-                      <span style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
-                        {sel(countMode, [{ v: "1", l: "1" }, { v: "N", l: "N" }, { v: "all", l: "Toutes" }], (v) => patchTarget(idx, { count: v === "all" ? "all" : v === "1" ? 1 : 2 }))}
-                        {countMode === "N" && numInput(typeof t.count === "number" ? t.count : 2, (n) => patchTarget(idx, { count: Math.max(1, n) }), 1, 8)}
-                      </span>
+                      {t.designation === "scatter" ? (
+                        <>
+                          <span style={labelStyle}>NOMBRE</span>
+                          <span style={{ fontSize: 9, color: "#8a6d3b", fontStyle: "italic" }}>
+                            {`X (${eff.magnitude?.x ?? 0}) points répartis au hasard sur le pool`}
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <span style={labelStyle}>NOMBRE</span>
+                          <span style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
+                            {sel(countMode, [{ v: "1", l: "1" }, { v: "N", l: "N" }, { v: "all", l: "Toutes" }], (v) => patchTarget(idx, { count: v === "all" ? "all" : v === "1" ? 1 : 2 }))}
+                            {countMode === "N" && numInput(typeof t.count === "number" ? t.count : 2, (n) => patchTarget(idx, { count: Math.max(1, n) }), 1, 8)}
+                          </span>
+                        </>
+                      )}
 
                       <span style={labelStyle}>LOCALISATION</span>
                       {sel(t.location, [{ v: "board", l: "Plateau" }, { v: "hand", l: "Main" }, { v: "deck", l: "Deck" }, { v: "graveyard", l: "Cimetière" }], (v) => patchTarget(idx, { location: v as TargetSpec["location"] }))}
@@ -156,7 +172,19 @@ export default function ComposedEffectsEditor({
                       />
 
                       <span style={labelStyle}>DÉSIGNATION</span>
-                      {sel(t.designation, [{ v: "choice", l: "Au choix" }, { v: "random", l: "Au hasard" }, { v: "automatic", l: "Automatique" }], (v) => patchTarget(idx, { designation: v as TargetSpec["designation"] }))}
+                      {sel(
+                        t.designation,
+                        [
+                          { v: "choice", l: "Au choix" },
+                          { v: "random", l: "Au hasard" },
+                          // Répartition point par point : dégâts/soin uniquement.
+                          ...((eff.content === "deal_damage" || eff.content === "heal")
+                            ? [{ v: "scatter" as const, l: "Réparti au hasard (par point)" }]
+                            : []),
+                          { v: "automatic", l: "Automatique" },
+                        ],
+                        (v) => patchTarget(idx, { designation: v as TargetSpec["designation"] }),
+                      )}
                     </>
                   )}
                   </>)}

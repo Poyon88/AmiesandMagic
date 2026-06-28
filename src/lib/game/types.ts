@@ -306,10 +306,16 @@ export interface TargetSpec {
   membership?: { faction?: string[]; race?: string[]; clan?: string[] };
   /** Zone où chercher les cibles. */
   location: "board" | "hand" | "deck" | "graveyard";
-  /** Désignation : choisie par le joueur, aléatoire, ou automatique (le moteur
-   *  applique l'effet à tout le pool filtré sans choix ni hasard — pertinent
-   *  pour les effets touchant toutes les cibles, count = "all"). */
-  designation: "choice" | "random" | "automatic";
+  /** Désignation :
+   *  - "choice"    : cibles choisies par le joueur (un slot de ciblage par cible) ;
+   *  - "random"    : `count` cibles tirées au sort, chacune subit l'effet plein ;
+   *  - "automatic" : le moteur applique l'effet à tout le pool filtré sans choix
+   *                  ni hasard (pertinent pour count = "all") ;
+   *  - "scatter"   : RÉPARTITION POINT PAR POINT (deal_damage / heal seulement).
+   *                  L'amplitude `x` est le nombre de points distribués un à un,
+   *                  au hasard, sur le pool éligible (tirage avec remise → une
+   *                  même cible peut en cumuler plusieurs). `count` est ignoré. */
+  designation: "choice" | "random" | "automatic" | "scatter";
 }
 
 export interface ComposedEffect {
@@ -808,6 +814,10 @@ export interface TapActivateAction {
   /** Active un effet COMPOSÉ on_activation (par uid) au lieu d'un keyword tap
    *  positionnel (instanceIdx ignoré quand présent). */
   composedUid?: string;
+  /** Carte choisie dans la modale « 1 parmi 3 » quand le keyword tap est une
+   *  capacité Sélection (selection / selection_magique / renfort_royal). Le
+   *  moteur la cherche dans factionCardPool / allSpellsPool et l'ajoute en main. */
+  selectionCardId?: number;
 }
 
 export interface ConcedeAction {
@@ -821,7 +831,11 @@ export interface ConcedeAction {
 export interface ResolvePendingTriggerAction {
   type: "resolve_pending_trigger";
   triggerId: string;
-  targetInstanceId: string;
+  /** Cible choisie pour une remontée / un effet composé fin de tour. Absent pour
+   *  une Sélection en fin de tour (qui passe par `selectionCardId`). */
+  targetInstanceId?: string;
+  /** Carte choisie pour une Sélection en fin de tour (selectionType présent). */
+  selectionCardId?: number;
 }
 
 export type GameAction = PlayCardAction | AttackAction | EndTurnAction | MulliganAction | HeroPowerAction | TapActivateAction | ConcedeAction | ResolvePendingTriggerAction;
@@ -837,6 +851,13 @@ export interface PendingTrigger {
   /** Présent ⇒ variante « effet composé fin de tour » : uid de la capability
    *  on_end_of_turn à résoudre sur la cible choisie. Absent ⇒ remontée. */
   capUid?: string;
+  /** Présent ⇒ variante « Sélection en fin de tour » : famille de la capacité
+   *  (selection / selection_magique / renfort_royal). Le contrôleur choisit une
+   *  carte parmi `selectionOptionIds` via la modale de sélection ; la carte
+   *  choisie est ajoutée à sa main. */
+  selectionType?: "selection" | "selection_magique" | "renfort_royal";
+  /** Ids des cartes offertes (résolus en Card côté store via les pools). */
+  selectionOptionIds?: number[];
 }
 
 // Combat event for animations

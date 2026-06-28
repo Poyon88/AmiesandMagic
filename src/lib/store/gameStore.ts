@@ -48,10 +48,18 @@ import {
 function pendingTriggerOverlay(
   gs: GameState | null,
   localPlayerId: string | null,
-): { targetingMode: "pending_trigger" | "none"; validTargets: string[]; pendingTriggerId: string | null } {
+): { targetingMode: "pending_trigger" | "selection" | "none"; validTargets: string[]; pendingTriggerId: string | null; selectionCards?: Card[] } {
   const none = { targetingMode: "none" as const, validTargets: [], pendingTriggerId: null };
   const t = gs?.pendingTriggers?.[0];
   if (!t || !localPlayerId || t.controllerId !== localPlayerId) return none;
+  // Variante « Sélection en fin de tour » : ouvre la modale « 1 parmi 3 » (les
+  // cartes offertes sont portées par le trigger sous forme d'ids).
+  if (t.selectionType) {
+    const byId = new Map([...(gs!.factionCardPool ?? []), ...(gs!.allSpellsPool ?? [])].map(c => [c.id, c] as const));
+    const ordered = (t.selectionOptionIds ?? []).map(id => byId.get(id)).filter((c): c is Card => !!c);
+    if (ordered.length === 0) return none;
+    return { targetingMode: "selection" as const, validTargets: [], pendingTriggerId: t.id, selectionCards: ordered };
+  }
   // Variante « fin de tour » (effet composé) vs remontée (mot-clé).
   const isEndOfTurn = !!t.capUid;
   if (!isEndOfTurn && t.kw !== "remontee") return none;
@@ -2445,6 +2453,23 @@ export const useGameStore = create<GameStore>((set, get) => {
         divinationChoiceIndex: choiceIndex,
         boardPosition: pendingBoardPosition ?? undefined,
       });
+    } else if (targetingMode === "selection" && get().pendingTapSourceId !== null && get().pendingTapInstanceIdx !== null) {
+      // Sélection déclenchée par un TAP : la carte choisie est ajoutée en main.
+      const cardId = parseInt(targetId) || 0;
+      return get().dispatchAction({
+        type: "tap_activate",
+        sourceInstanceId: get().pendingTapSourceId!,
+        instanceIdx: get().pendingTapInstanceIdx!,
+        selectionCardId: cardId,
+      });
+    } else if (targetingMode === "selection" && get().pendingTriggerId) {
+      // Sélection en FIN DE TOUR (déclencheur interactif en attente).
+      const cardId = parseInt(targetId) || 0;
+      return get().dispatchAction({
+        type: "resolve_pending_trigger",
+        triggerId: get().pendingTriggerId!,
+        selectionCardId: cardId,
+      });
     } else if (targetingMode === "selection" && get().pendingHeroPowerSelection) {
       // Hero power picker — dispatch a hero_power action with the chosen
       // card id ; engine.ts mirrors it into targetMap for the selection /
@@ -2893,6 +2918,32 @@ export const useGameStore = create<GameStore>((set, get) => {
     if (!source) return null;
     const instance = source.card.keyword_instances?.[instanceIdx];
     if (!instance || instance.mode !== "tap") return null;
+
+    // Sélection / Sélection magique / Renfort Royal au tap : ouvre la modale
+    // « 1 parmi 3 » (même flux qu'à l'invocation). Le choix est renvoyé via
+    // selectTarget → tap_activate { selectionCardId }.
+    if (instance.id === "selection" || instance.id === "selection_magique" || instance.id === "renfort_royal") {
+      const x = instance.x ?? 0;
+      const choices = instance.id === "selection_magique" ? getMagicalSelectionCards(gameState, x, source.card)
+        : instance.id === "renfort_royal" ? getRenfortRoyalCards(gameState, x, source.card)
+          : getSelectionCards(gameState, x, source.card);
+      if (choices.length === 0) {
+        // Aucune carte éligible → on engage quand même la créature (fizzle).
+        return get().dispatchAction({ type: "tap_activate", sourceInstanceId, instanceIdx });
+      }
+      set({
+        selectedCardInstanceId: null,
+        selectedAttackerInstanceId: null,
+        validTargets: [],
+        targetingMode: "selection",
+        selectionCards: choices,
+        pendingTapSourceId: sourceInstanceId,
+        pendingTapInstanceIdx: instanceIdx,
+        pendingHeroPowerSelection: false,
+        pendingTriggerId: null,
+      });
+      return null;
+    }
 
     const targets = getTapActivateTargets(gameState, instance.id, sourceInstanceId);
     if (targets && targets.length > 0) {

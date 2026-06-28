@@ -377,13 +377,12 @@ type ComposedTargetRef =
   | { kind: "unit"; unit: CardInstance }
   | { kind: "hero"; hero: import("./types").HeroState };
 
-/** Construit la liste des cibles sélectionnables d'un TargetSpec (unités et/ou
- *  héros selon `entity`), puis applique nombre/désignation. */
-function selectComposedTargets(
+/** Construit le pool brut de cibles d'un TargetSpec (unités et/ou héros selon
+ *  `entity`/`side`/`membership`/`location`), SANS appliquer nombre/désignation. */
+function buildComposedPool(
   spec: import("./types").TargetSpec,
   owner: PlayerState,
   opponent: PlayerState,
-  chosenTargetIds?: string[],
 ): ComposedTargetRef[] {
   const pool: ComposedTargetRef[] = [];
   const wantsHero = spec.entity === "hero" || spec.entity === "both";
@@ -394,6 +393,18 @@ function selectComposedTargets(
     else pool.push({ kind: "hero", hero: owner.hero }, { kind: "hero", hero: opponent.hero });
   }
   if (wantsUnit) for (const u of composedTargetPool(spec, owner, opponent)) pool.push({ kind: "unit", unit: u });
+  return pool;
+}
+
+/** Construit la liste des cibles sélectionnables d'un TargetSpec (unités et/ou
+ *  héros selon `entity`), puis applique nombre/désignation. */
+function selectComposedTargets(
+  spec: import("./types").TargetSpec,
+  owner: PlayerState,
+  opponent: PlayerState,
+  chosenTargetIds?: string[],
+): ComposedTargetRef[] {
+  const pool = buildComposedPool(spec, owner, opponent);
 
   if (spec.count === "all") return pool;
   const n = typeof spec.count === "number" ? Math.max(0, spec.count) : 1;
@@ -489,6 +500,21 @@ function resolveComposedEffect(
   // No-op si la source n'est pas une unité (ex. sort).
   if (target.entity === "self") {
     if (source) applyComposedToUnit(composed, source, x, y, source, owner, opponent);
+    return;
+  }
+
+  // "scatter" : répartition point par point. Les `x` points de dégâts/soin sont
+  // distribués un à un, au hasard (tirage avec remise) sur le pool éligible — une
+  // même cible peut donc en encaisser plusieurs. `count` est ignoré.
+  if (target.designation === "scatter" && (composed.content === "deal_damage" || composed.content === "heal")) {
+    const pool = buildComposedPool(target, owner, opponent);
+    if (pool.length === 0) return;
+    const points = Math.max(0, x);
+    for (let i = 0; i < points; i++) {
+      const ref = pool[Math.floor(rng() * pool.length)];
+      if (ref.kind === "hero") applyComposedToHero(composed.content, ref.hero, 1);
+      else applyComposedToUnit(composed, ref.unit, 1, 0, source, owner, opponent);
+    }
     return;
   }
 
@@ -1247,11 +1273,28 @@ export function endTurn(state: GameState): GameState {
   const outgoing = newState.players[newState.currentPlayerIndex];
   const opponent = newState.players[newState.currentPlayerIndex === 0 ? 1 : 0];
   for (const creature of [...outgoing.board]) {
-    // Mots-clés curés en mode "end_of_turn" (non interactifs).
+    // Mots-clés curés en mode "end_of_turn".
     for (const inst of creature.card.keyword_instances ?? []) {
-      if (inst.mode === "end_of_turn") {
-        resolveCuratedKeywordEffect(inst.id, inst.x ?? 1, creature, outgoing, opponent, undefined, inst);
+      if (inst.mode !== "end_of_turn") continue;
+      // Sélection / Sélection magique / Renfort Royal : déclencheur INTERACTIF
+      // (modale « 1 parmi 3 »). On met en file un pendingTrigger porteur des 3
+      // cartes offertes ; le contrôleur choisit avant la bascule de tour. File
+      // seulement s'il existe au moins une carte éligible (sinon no-op).
+      if (inst.id === "selection" || inst.id === "selection_magique" || inst.id === "renfort_royal") {
+        const options = selectionCardsForKeyword(inst.id, newState, inst.x ?? 0, creature.card);
+        if (options.length > 0) {
+          (newState.pendingTriggers ??= []).push({
+            id: `${creature.instanceId}#${inst.id}`,
+            controllerId: outgoing.id,
+            sourceInstanceId: creature.instanceId,
+            selectionType: inst.id,
+            selectionOptionIds: options.map(c => c.id),
+          });
+        }
+        continue;
       }
+      // Autres mots-clés curés : résolution immédiate (non interactive).
+      resolveCuratedKeywordEffect(inst.id, inst.x ?? 1, creature, outgoing, opponent, undefined, inst);
     }
     // Effets composés on_end_of_turn.
     for (const cap of getCapabilities(creature.card)) {
@@ -4177,7 +4220,17 @@ export function tapActivate(state: GameState, action: TapActivateAction): GameSt
   if (!instance || instance.mode !== "tap") return state;
 
   source.tapped = true;
-  resolveCuratedKeywordEffect(instance.id, instance.x ?? 1, source, player, opponent, action.targetInstanceId, instance);
+  if (instance.id === "selection" || instance.id === "selection_magique" || instance.id === "renfort_royal") {
+    // Sélection au tap : la carte choisie (modale « 1 parmi 3 ») est ajoutée en
+    // main. Lookup dans les deux pools comme pour l'invocation.
+    if (action.selectionCardId != null && player.hand.length < MAX_HAND_SIZE) {
+      const chosenCard = newState.factionCardPool?.find(c => c.id === action.selectionCardId)
+        ?? newState.allSpellsPool?.find(c => c.id === action.selectionCardId);
+      if (chosenCard) player.hand.push(createCardInstance(chosenCard));
+    }
+  } else {
+    resolveCuratedKeywordEffect(instance.id, instance.x ?? 1, source, player, opponent, action.targetInstanceId, instance);
+  }
 
   recalculateAuras(player, opponent);
   newState.lastAction = action;
@@ -4216,12 +4269,19 @@ export function resolvePendingTrigger(state: GameState, action: ResolvePendingTr
       const source = controller.board.find(c => c.instanceId === trigger.sourceInstanceId);
       const cap = source ? getCapabilities(source.card).find(c => c.uid === trigger.capUid && c.composed) : undefined;
       if (cap?.composed) {
-        resolveComposedEffect(cap.composed, source ?? null, controller, other, [action.targetInstanceId]);
+        resolveComposedEffect(cap.composed, source ?? null, controller, other, action.targetInstanceId ? [action.targetInstanceId] : undefined);
         const deadC = cleanDeadCreatures(controller);
         const deadO = cleanDeadCreatures(other);
         processDeathTriggers(deadC, controller, other);
         processDeathTriggers(deadO, other, controller);
       }
+    }
+  } else if (trigger.selectionType) {
+    // Variante « Sélection en fin de tour » : la carte choisie va en main.
+    if (controller && action.selectionCardId != null && controller.hand.length < MAX_HAND_SIZE) {
+      const chosenCard = newState.factionCardPool?.find(c => c.id === action.selectionCardId)
+        ?? newState.allSpellsPool?.find(c => c.id === action.selectionCardId);
+      if (chosenCard) controller.hand.push(createCardInstance(chosenCard));
     }
   } else if (trigger.kw === "remontee") {
     if (controller && other) {
@@ -5091,6 +5151,18 @@ export function getMagicalSelectionCards(
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
   return shuffled.slice(0, Math.min(SELECTION_OFFER_COUNT, shuffled.length));
+}
+
+/** Aiguille vers le bon builder de cartes selon la famille de Sélection. */
+function selectionCardsForKeyword(
+  id: "selection" | "selection_magique" | "renfort_royal",
+  state: GameState,
+  maxManaCost: number,
+  source?: { faction?: string | null; card_alignment?: string | null } | null,
+): Card[] {
+  if (id === "selection_magique") return getMagicalSelectionCards(state, maxManaCost, source);
+  if (id === "renfort_royal") return getRenfortRoyalCards(state, maxManaCost, source);
+  return getSelectionCards(state, maxManaCost, source);
 }
 
 export function getSpellTargets(state: GameState, card: Card, slotType?: SpellTargetType): string[] {

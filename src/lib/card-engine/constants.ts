@@ -51,6 +51,13 @@ export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
   "Combustion": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
   "Remontée": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
   "Renforcement multiple": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
+  // Sélection : seuls tap et fin de tour (en plus de l'entrée). Pas de mort ni
+  // retour en main — ces deux-là surviennent pendant le tour adverse et la
+  // Sélection est interactive (modale « 1 parmi 3 »), qui doit rester sur le
+  // tour du contrôleur.
+  "Sélection X": new Set<CuratedMode>(["tap", "end_of_turn"]),
+  "Sélection magique X": new Set<CuratedMode>(["tap", "end_of_turn"]),
+  "Sélection Royale X": new Set<CuratedMode>(["tap", "end_of_turn"]),
 };
 
 // ─── FACTIONS ────────────────────────────────────────────────────────────────
