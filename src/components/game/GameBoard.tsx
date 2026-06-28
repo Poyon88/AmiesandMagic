@@ -217,8 +217,10 @@ export default function GameBoard({ onAction }: GameBoardProps) {
 
   // Touch devices: the portrait double-tap (non-targeted powers) is unreliable
   // and creatures/hand cards can overlap the small portrait disc, so coarse-
-  // pointer players get an explicit, single-tap HeroPowerButton in the hero
-  // cluster (see render below). Desktop keeps the portrait click/double-click.
+  // pointer players get an explicit, single-tap HeroPowerButton. It lives in the
+  // END TURN column (right edge, mid-height) — a zone the centered hand never
+  // reaches — because under the portrait it got buried by a full 8-card hand on
+  // iPad. Desktop keeps the portrait click/double-click.
   const coarse = useCoarsePointer();
 
   // Auto-attack-all: fires each eligible creature's attack on the enemy hero,
@@ -520,8 +522,8 @@ export default function GameBoard({ onAction }: GameBoardProps) {
   };
 
   // Desktop-only shortcut. Touch devices simulate dblclick unreliably, so the
-  // mobile path for non-targeted powers is the HeroPowerButton rendered under
-  // the hero — leave both wired so each platform has a stable affordance.
+  // mobile path for non-targeted powers is the HeroPowerButton in the END TURN
+  // column — leave both wired so each platform has a stable affordance.
   const handleMyHeroDoubleClick = () => {
     if (heroPowerAvailable && !heroPowerIsTargeted) {
       handleActivateHeroPower();
@@ -967,16 +969,9 @@ export default function GameBoard({ onAction }: GameBoardProps) {
                 : undefined
             }
           />
-          {coarse && myHeroDef && (
-            <HeroPowerButton
-              heroDef={myHeroDef}
-              isOpponent={false}
-              canUse={heroPowerAvailable}
-              isUsed={myPlayer.hero.heroPowerUsedThisTurn}
-              mana={myPlayer.mana}
-              onClick={handleHeroPowerButtonTap}
-            />
-          )}
+          {/* Le pouvoir héroïque tactile est rendu dans la colonne END TURN
+              (bord droit, zone dégagée) pour ne pas être recouvert par une main
+              pleine — cf. ce bloc plus bas. */}
           <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} />
         </div>
         )}
@@ -1007,24 +1002,21 @@ export default function GameBoard({ onAction }: GameBoardProps) {
                   : undefined
               }
             />
-            {coarse && myHeroDef && (
-              <HeroPowerButton
-                heroDef={myHeroDef}
-                isOpponent={false}
-                canUse={heroPowerAvailable}
-                isUsed={myPlayer.hero.heroPowerUsedThisTurn}
-                mana={myPlayer.mana}
-                onClick={handleHeroPowerButtonTap}
-              />
-            )}
+            {/* Pouvoir héroïque tactile : rendu dans la colonne END TURN (bord
+                droit dégagé) afin de ne pas être recouvert par une main pleine. */}
             {/* Mana orbs directly under the 3D hero, next to the HP number
                 rendered inside the canvas. */}
             <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} />
           </div>
         )}
 
-        {/* ============= END TURN + TIMER + CANCEL ============= */}
-        <div className="absolute right-[2%] top-[44%] -translate-y-1/2 z-20 flex flex-col items-center gap-3">
+        {/* ============= END TURN + TIMER + CANCEL + (touch) HERO POWER =============
+            z-[42] : au-dessus de la main (z-[41]). Cette colonne vit sur le bord
+            droit à mi-hauteur, une zone que la main (centrée, en bas) n'atteint
+            jamais — c'est pourquoi le pouvoir héroïque tactile est rattaché ICI :
+            avec 8 cartes en main, le bouton placé sous le portrait était recouvert
+            par la dernière carte et devenait intappable sur iPad. */}
+        <div className="absolute right-[2%] top-[44%] -translate-y-1/2 z-[42] flex flex-col items-center gap-3">
           {targetingMode !== "none" && (
             <button
               onClick={clearSelection}
@@ -1060,6 +1052,19 @@ export default function GameBoard({ onAction }: GameBoardProps) {
               END TURN
             </span>
           </button>
+          {/* Pouvoir héroïque tactile, dans la zone toujours dégagée du bord
+              droit (cf. commentaire ci-dessus). Tactile uniquement ; sur desktop
+              le clic/double-clic du portrait pilote le pouvoir. */}
+          {coarse && myHeroDef && (
+            <HeroPowerButton
+              heroDef={myHeroDef}
+              isOpponent={false}
+              canUse={heroPowerAvailable}
+              isUsed={myPlayer.hero.heroPowerUsedThisTurn}
+              mana={myPlayer.mana}
+              onClick={handleHeroPowerButtonTap}
+            />
+          )}
         </div>
 
         {/* ============= PLAYER HAND =============
