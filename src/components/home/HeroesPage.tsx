@@ -76,12 +76,27 @@ export default function HeroesPage({ username, goldBalance }: HeroesPageProps) {
     return Array.from(set).sort();
   }, [heroes]);
 
+  // Clans restricted to the selected faction: only clans borne by heroes of
+  // that faction appear, so the clan row stays relevant. With no faction
+  // selected, every clan present is offered.
   const clans = useMemo(() => {
     if (!heroes) return [];
     const set = new Set<string>();
-    for (const h of heroes) if (h.clan) set.add(h.clan);
+    for (const h of heroes) {
+      if (!h.clan) continue;
+      if (selectedFaction !== "__all__" && (h.faction ?? h.race) !== selectedFaction) continue;
+      set.add(h.clan);
+    }
     return Array.from(set).sort();
-  }, [heroes]);
+  }, [heroes, selectedFaction]);
+
+  // Selecting a faction resets the clan: the previous clan may not belong to
+  // the new faction, which would silently empty the grid. Event-driven (not an
+  // effect) so there's no cascading re-render.
+  const handleSelectFaction = (faction: string) => {
+    setSelectedFaction(faction);
+    setSelectedClan("__all__");
+  };
 
   // Rarities actually present, ordered by the canonical rarity tiers.
   const rarities = useMemo(() => {
@@ -164,7 +179,7 @@ export default function HeroesPage({ username, goldBalance }: HeroesPageProps) {
                 allLabel={t.heroes_filter_all}
                 value={selectedFaction}
                 options={factions}
-                onSelect={setSelectedFaction}
+                onSelect={handleSelectFaction}
                 display={getFactionDisplayName}
               />
             )}
