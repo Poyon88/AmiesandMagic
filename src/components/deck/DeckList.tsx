@@ -102,22 +102,24 @@ export default function DeckList({ decks }: { decks: DeckWithCount[] }) {
                   className="am-glass am-animate-rise group flex flex-col p-5 transition-all duration-300 hover:-translate-y-1 hover:border-am-gold/40"
                   style={{ animationDelay: `${0.06 * i + 0.12}s` }}
                 >
-                  <h3 className="am-foil-text font-[family-name:var(--font-cinzel),serif] text-xl font-bold leading-tight">
-                    {deck.name}
-                  </h3>
-
-                  <div className="mt-3 mb-5 flex items-center gap-2.5">
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="am-foil-text font-[family-name:var(--font-cinzel),serif] text-xl font-bold leading-tight min-w-0 flex-1">
+                      {deck.name}
+                    </h3>
                     {deck.heroThumbnail && (
                       <Image
                         src={deck.heroThumbnail}
                         alt=""
-                        width={36}
-                        height={36}
+                        width={72}
+                        height={72}
                         unoptimized
                         aria-hidden="true"
-                        className="h-9 w-9 shrink-0 rounded-full border border-am-gold/40 object-cover bg-am-bg-2"
+                        className="h-[72px] w-[72px] shrink-0 rounded-full border border-am-gold/40 object-cover bg-am-bg-2 shadow-[0_4px_14px_rgba(0,0,0,0.5)]"
                       />
                     )}
+                  </div>
+
+                  <div className="mt-3 mb-5">
                     <span
                       className={`am-gild-border inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${
                         isValid ? "text-am-jade" : "text-am-gold"
