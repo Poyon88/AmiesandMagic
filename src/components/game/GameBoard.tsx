@@ -491,14 +491,19 @@ export default function GameBoard({ onAction }: GameBoardProps) {
       : null;
 
   const handleMyHeroClick = () => {
-    // 1. Hero is being picked AS a target for another effect.
-    if (validTargets.includes("friendly_hero")) {
-      handleSelectTarget("friendly_hero");
+    const now = performance.now();
+    // 1. Second click of a double-click that just opened hero-power targeting —
+    //    swallow it. MUST run before the friendly_hero target check below, or a
+    //    power that can legally target the hero (e.g. the elf power) would fire
+    //    on the hero itself on the double-click. The arrow stays up so the
+    //    player can then pick a real target.
+    if (targetingMode === "hero_power" && now - justOpenedHeroTargetingRef.current < 400) {
       return;
     }
-    // 2. Second click of a double-click just after opening targeting — swallow.
-    const now = performance.now();
-    if (targetingMode === "hero_power" && now - justOpenedHeroTargetingRef.current < 320) {
+    // 2. Hero is being picked AS a target for another effect, or a deliberate
+    //    (post-double-click-window) self-target of the hero power.
+    if (validTargets.includes("friendly_hero")) {
+      handleSelectTarget("friendly_hero");
       return;
     }
     // 3. Hero power targeting already active → cancel.
