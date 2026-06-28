@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type MouseEvent as ReactMouseEvent } from "react";
 import Image from "next/image";
 import HomeHeader from "@/components/home/HomeHeader";
 import AmAtmosphere from "@/components/ui/AmAtmosphere";
@@ -34,6 +34,9 @@ export default function HeroesPage({ username, goldBalance }: HeroesPageProps) {
   const [heroes, setHeroes] = useState<HeroRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedFaction, setSelectedFaction] = useState<string>("__all__");
+  // Right-click on a hero card opens a popover next to it showing the power
+  // visual (custom illustration, falling back to the race-generic icon).
+  const [powerView, setPowerView] = useState<{ hero: HeroRow; x: number; y: number } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -70,6 +73,35 @@ export default function HeroesPage({ username, goldBalance }: HeroesPageProps) {
     if (selectedFaction === "__all__") return heroes;
     return heroes.filter((h) => (h.faction ?? h.race) === selectedFaction);
   }, [heroes, selectedFaction]);
+
+  const handleShowPower = (hero: HeroRow, e: ReactMouseEvent<HTMLElement>) => {
+    if (!hero.power_name && !hero.power_image_url) return;
+    e.preventDefault();
+    const rect = e.currentTarget.getBoundingClientRect();
+    const W = 280;
+    const margin = 12;
+    // Prefer the right side; flip to the left if it would overflow the viewport.
+    const placeRight = rect.right + margin + W <= window.innerWidth;
+    const x = placeRight ? rect.right + margin : rect.left - margin - W;
+    const y = Math.min(rect.top, Math.max(margin, window.innerHeight - 280));
+    setPowerView({ hero, x: Math.max(margin, x), y: Math.max(margin, y) });
+  };
+
+  // Dismiss the popover on Escape, scroll, or resize (it is anchored to a
+  // fixed viewport position, so it would otherwise detach from the card).
+  useEffect(() => {
+    if (!powerView) return;
+    const close = () => setPowerView(null);
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") close(); };
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("scroll", close, true);
+    window.addEventListener("resize", close);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("scroll", close, true);
+      window.removeEventListener("resize", close);
+    };
+  }, [powerView]);
 
   return (
     <div className="relative min-h-screen bg-am-bg-0 text-am-ink">
@@ -148,20 +180,45 @@ export default function HeroesPage({ username, goldBalance }: HeroesPageProps) {
                   className="am-animate-rise"
                   style={{ animationDelay: `${Math.min(i * 0.06, 0.6)}s` }}
                 >
-                  <HeroCard hero={h} powerLabel={t.hero_power} />
+                  <HeroCard hero={h} powerLabel={t.hero_power} onShowPower={handleShowPower} />
                 </li>
               ))}
             </ul>
           )}
         </div>
       </main>
+
+      {powerView && (
+        <div
+          className="fixed inset-0 z-[70]"
+          onClick={() => setPowerView(null)}
+          onContextMenu={(e) => { e.preventDefault(); setPowerView(null); }}
+        >
+          <HeroPowerPopover
+            hero={powerView.hero}
+            x={powerView.x}
+            y={powerView.y}
+            powerLabel={t.hero_power}
+          />
+        </div>
+      )}
     </div>
   );
 }
 
-function HeroCard({ hero, powerLabel }: { hero: HeroRow; powerLabel: string }) {
+function HeroCard({
+  hero,
+  powerLabel,
+  onShowPower,
+}: {
+  hero: HeroRow;
+  powerLabel: string;
+  onShowPower: (hero: HeroRow, e: ReactMouseEvent<HTMLElement>) => void;
+}) {
   return (
-    <article className="am-glass group relative overflow-hidden rounded-2xl border border-am-gold/20 transition-all duration-300 hover:border-am-gold/55 hover:-translate-y-1 hover:shadow-[0_24px_60px_-18px_rgba(0,0,0,0.65),0_0_50px_-18px_rgba(154,107,255,0.45)]">
+    <article
+      onContextMenu={(e) => onShowPower(hero, e)}
+      className="am-glass group relative overflow-hidden rounded-2xl border border-am-gold/20 transition-all duration-300 hover:border-am-gold/55 hover:-translate-y-1 hover:shadow-[0_24px_60px_-18px_rgba(0,0,0,0.65),0_0_50px_-18px_rgba(154,107,255,0.45)]">
       {/* Gilded L-corner ornaments */}
       <div className="absolute top-3 left-3 w-7 h-7 border-t border-l border-am-gold/50 rounded-tl-sm pointer-events-none" aria-hidden="true" />
       <div className="absolute top-3 right-3 w-7 h-7 border-t border-r border-am-gold/50 rounded-tr-sm pointer-events-none" aria-hidden="true" />
@@ -230,5 +287,63 @@ function HeroCard({ hero, powerLabel }: { hero: HeroRow; powerLabel: string }) {
         )}
       </div>
     </article>
+  );
+}
+
+function HeroPowerPopover({
+  hero,
+  x,
+  y,
+  powerLabel,
+}: {
+  hero: HeroRow;
+  x: number;
+  y: number;
+  powerLabel: string;
+}) {
+  const [imgFailed, setImgFailed] = useState(false);
+  // Per-hero illustration wins; fall back to the race-generic power icon.
+  const src = hero.power_image_url ?? (hero.race ? `/images/powers/${hero.race}.svg` : null);
+  return (
+    <div
+      role="dialog"
+      aria-label={`${powerLabel} — ${hero.power_name ?? hero.name}`}
+      onClick={(e) => e.stopPropagation()}
+      onContextMenu={(e) => e.stopPropagation()}
+      className="am-glass am-animate-fade fixed z-[80] w-[280px] rounded-xl border border-am-gold/40 shadow-[0_24px_60px_-18px_rgba(0,0,0,0.75)] overflow-hidden"
+      style={{ left: x, top: y }}
+    >
+      {src && !imgFailed ? (
+        <div className="relative w-full h-40 bg-am-bg-1/60">
+          <Image
+            src={src}
+            alt={hero.power_name ?? "Pouvoir"}
+            fill
+            sizes="280px"
+            className="object-contain"
+            unoptimized
+            onError={() => setImgFailed(true)}
+          />
+        </div>
+      ) : (
+        <div className="flex items-center justify-center w-full h-40 bg-am-bg-1/60 text-am-gold/50 text-5xl" aria-hidden="true">
+          ✦
+        </div>
+      )}
+      <div className="p-4 text-center">
+        <div className="flex items-center justify-center gap-2 mb-1.5 text-xs uppercase tracking-[0.2em] text-am-gold">
+          <span aria-hidden="true">✦</span>
+          <span>{powerLabel}</span>
+        </div>
+        {hero.power_name && (
+          <p className="font-display font-semibold text-am-ink text-sm">{hero.power_name}</p>
+        )}
+        {hero.power_description && (
+          <p className="font-serif text-am-ink-soft text-xs mt-1.5 leading-relaxed">
+            {hero.power_description}
+          </p>
+        )}
+      </div>
+    </div>
   );
 }
