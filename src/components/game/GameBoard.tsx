@@ -8,6 +8,7 @@ import { canPlayCard, canAttack, canUseHeroPower, getSpellTargets, getValidTarge
 import HeroPortrait from "./HeroPortrait";
 import Hero3DViewer from "./Hero3DViewer";
 import HeroPowerButton from "./HeroPowerButton";
+import useCoarsePointer from "@/hooks/useCoarsePointer";
 import HeroPowerDescriptionOverlay from "./HeroPowerDescriptionOverlay";
 import ManaBar from "./ManaBar";
 import BoardCreature from "./BoardCreature";
@@ -214,6 +215,12 @@ export default function GameBoard({ onAction }: GameBoardProps) {
     broadcast(action);
   }, [activateHeroPower, broadcast]);
 
+  // Touch devices: the portrait double-tap (non-targeted powers) is unreliable
+  // and creatures/hand cards can overlap the small portrait disc, so coarse-
+  // pointer players get an explicit, single-tap HeroPowerButton in the hero
+  // cluster (see render below). Desktop keeps the portrait click/double-click.
+  const coarse = useCoarsePointer();
+
   // Auto-attack-all: fires each eligible creature's attack on the enemy hero,
   // leftmost first, waiting for the previous animation to finish before the
   // next dispatch. Sets `isAutoAttacking` to true throughout so the turn
@@ -388,6 +395,34 @@ export default function GameBoard({ onAction }: GameBoardProps) {
     [selectTarget, broadcast]
   );
 
+  // Keep the mulligan overlay mounted past the mulligan phase transition so
+  // the local reveal animation (including replacements) can finish even if
+  // the opponent confirms quickly. Declared before the early return below so
+  // hook order stays stable across renders (rules-of-hooks).
+  const [mulliganOverlayRequired, setMulliganOverlayRequired] = useState(false);
+  useEffect(() => {
+    if (gameState?.phase === "mulligan") setMulliganOverlayRequired(true);
+  }, [gameState?.phase]);
+
+  // Long-press equivalent of the board-level right-click: backs out of a
+  // multi-target spell slot or cancels the active targeting mode entirely.
+  const boardCancelLongPress = useLongPress(() => {
+    if (targetingMode === "spell_multi" && currentTargetSlotIndex > 0) {
+      const prevSlot = spellTargetSlots[currentTargetSlotIndex - 1];
+      const prevMap = { ...useGameStore.getState().collectedTargetMap };
+      delete prevMap[prevSlot.slot];
+      const card = gameState?.players[gameState.currentPlayerIndex].hand.find(c => c.instanceId === selectedCardInstanceId);
+      const prevTargets = card && gameState ? getSpellTargets(gameState, card.card, prevSlot.type) : [];
+      useGameStore.setState({
+        currentTargetSlotIndex: currentTargetSlotIndex - 1,
+        collectedTargetMap: prevMap,
+        validTargets: prevTargets,
+      });
+    } else if (targetingMode !== "none") {
+      clearSelection();
+    }
+  });
+
   if (!gameState || !myPlayer || !opponent) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -398,17 +433,8 @@ export default function GameBoard({ onAction }: GameBoardProps) {
 
   const isFinished = gameState.phase === "finished";
   const isWinner = gameState.winner === localPlayerId;
-  const isMulligan = gameState.phase === "mulligan";
   const myPlayerIndex = gameState.players.findIndex((p) => p.id === localPlayerId);
   const myMulliganDone = myPlayerIndex !== -1 && gameState.mulliganReady[myPlayerIndex];
-
-  // Keep the mulligan overlay mounted past the mulligan phase transition so
-  // the local reveal animation (including replacements) can finish even if
-  // the opponent confirms quickly.
-  const [mulliganOverlayRequired, setMulliganOverlayRequired] = useState(false);
-  useEffect(() => {
-    if (isMulligan) setMulliganOverlayRequired(true);
-  }, [isMulligan]);
 
   // ─── Hero 3D interaction handlers ──────────────────────────────────────
   // Player's hero: click = targeted power (opens arrow), dblclick = non-targeted
@@ -497,6 +523,17 @@ export default function GameBoard({ onAction }: GameBoardProps) {
     }
   };
 
+  // Single-tap activation for the touch HeroPowerButton: a targeted power opens
+  // targeting (a second tap on the button cancels it), a non-targeted power
+  // casts immediately. The button itself only fires onClick when usable.
+  const handleHeroPowerButtonTap = () => {
+    if (targetingMode === "hero_power") {
+      clearSelection();
+      return;
+    }
+    handleActivateHeroPower();
+  };
+
   const handleMyHeroContextMenu = () => {
     if (myHeroDef) setHeroDescriptionDef(myHeroDef);
   };
@@ -510,25 +547,6 @@ export default function GameBoard({ onAction }: GameBoardProps) {
   const handleOppHeroContextMenu = () => {
     if (oppHeroDef) setHeroDescriptionDef(oppHeroDef);
   };
-
-  // Long-press equivalent of the board-level right-click: backs out of a
-  // multi-target spell slot or cancels the active targeting mode entirely.
-  const boardCancelLongPress = useLongPress(() => {
-    if (targetingMode === "spell_multi" && currentTargetSlotIndex > 0) {
-      const prevSlot = spellTargetSlots[currentTargetSlotIndex - 1];
-      const prevMap = { ...useGameStore.getState().collectedTargetMap };
-      delete prevMap[prevSlot.slot];
-      const card = gameState?.players[gameState.currentPlayerIndex].hand.find(c => c.instanceId === selectedCardInstanceId);
-      const prevTargets = card && gameState ? getSpellTargets(gameState, card.card, prevSlot.type) : [];
-      useGameStore.setState({
-        currentTargetSlotIndex: currentTargetSlotIndex - 1,
-        collectedTargetMap: prevMap,
-        validTargets: prevTargets,
-      });
-    } else if (targetingMode !== "none") {
-      clearSelection();
-    }
-  });
 
   return (
     <div
@@ -921,9 +939,10 @@ export default function GameBoard({ onAction }: GameBoardProps) {
         {!myPlayer.hero.heroDefinition?.glbUrl && (
         <div className="absolute right-[1%] bottom-[28%] lg:bottom-[1%] z-40 flex flex-col items-center gap-1">
           {allAttackButton}
-          {/* HeroPowerButton hidden so the 2D hero matches the 3D-hero
-              UX: left-click on the portrait activates the power (when
-              available), right-click opens the description overlay. */}
+          {/* On desktop the portrait click/double-click drives the power
+              (mirrors the 3D-hero UX). On touch, double-tap is unreliable and
+              creatures/hand can cover the portrait, so an explicit single-tap
+              button is shown instead. */}
           <HeroPortrait
             hero={myPlayer.hero}
             isOpponent={false}
@@ -943,6 +962,16 @@ export default function GameBoard({ onAction }: GameBoardProps) {
                 : undefined
             }
           />
+          {coarse && myHeroDef && (
+            <HeroPowerButton
+              heroDef={myHeroDef}
+              isOpponent={false}
+              canUse={heroPowerAvailable}
+              isUsed={myPlayer.hero.heroPowerUsedThisTurn}
+              mana={myPlayer.mana}
+              onClick={handleHeroPowerButtonTap}
+            />
+          )}
           <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} />
         </div>
         )}
@@ -973,6 +1002,16 @@ export default function GameBoard({ onAction }: GameBoardProps) {
                   : undefined
               }
             />
+            {coarse && myHeroDef && (
+              <HeroPowerButton
+                heroDef={myHeroDef}
+                isOpponent={false}
+                canUse={heroPowerAvailable}
+                isUsed={myPlayer.hero.heroPowerUsedThisTurn}
+                mana={myPlayer.mana}
+                onClick={handleHeroPowerButtonTap}
+              />
+            )}
             {/* Mana orbs directly under the 3D hero, next to the HP number
                 rendered inside the canvas. */}
             <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} />
