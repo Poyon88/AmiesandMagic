@@ -1,13 +1,18 @@
 "use client";
 
-import { useEffect, useMemo, useState, type MouseEvent as ReactMouseEvent } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import HomeHeader from "@/components/home/HomeHeader";
 import AmAtmosphere from "@/components/ui/AmAtmosphere";
 import AmHeading from "@/components/ui/AmHeading";
 import { useStoredLocale } from "@/lib/i18n/useLocale";
 import { homeDict } from "@/lib/i18n/homeDict";
-import { getFactionDisplayName } from "@/lib/card-engine/constants";
+import { getFactionDisplayName, RARITIES } from "@/lib/card-engine/constants";
+import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
+
+const RARITY_COLOR: Record<string, string> = Object.fromEntries(
+  RARITIES.map((r) => [r.id, r.color])
+);
 
 interface HeroesPageProps {
   username: string;
@@ -19,6 +24,7 @@ interface HeroRow {
   name: string;
   race: string | null;
   faction: string | null;
+  clan: string | null;
   rarity: string | null;
   thumbnail_url: string | null;
   power_name: string | null;
@@ -34,6 +40,8 @@ export default function HeroesPage({ username, goldBalance }: HeroesPageProps) {
   const [heroes, setHeroes] = useState<HeroRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedFaction, setSelectedFaction] = useState<string>("__all__");
+  const [selectedClan, setSelectedClan] = useState<string>("__all__");
+  const [selectedRarity, setSelectedRarity] = useState<string>("__all__");
   // Right-click on a hero card opens a popover next to it showing the power
   // visual (custom illustration, falling back to the race-generic icon).
   const [powerView, setPowerView] = useState<{ hero: HeroRow; x: number; y: number } | null>(null);
@@ -68,21 +76,41 @@ export default function HeroesPage({ username, goldBalance }: HeroesPageProps) {
     return Array.from(set).sort();
   }, [heroes]);
 
+  const clans = useMemo(() => {
+    if (!heroes) return [];
+    const set = new Set<string>();
+    for (const h of heroes) if (h.clan) set.add(h.clan);
+    return Array.from(set).sort();
+  }, [heroes]);
+
+  // Rarities actually present, ordered by the canonical rarity tiers.
+  const rarities = useMemo(() => {
+    if (!heroes) return [];
+    const present = new Set<string>();
+    for (const h of heroes) present.add(h.rarity ?? "Commune");
+    return RARITIES.filter((r) => present.has(r.id)).map((r) => r.id);
+  }, [heroes]);
+
   const visibleHeroes = useMemo(() => {
     if (!heroes) return [];
-    if (selectedFaction === "__all__") return heroes;
-    return heroes.filter((h) => (h.faction ?? h.race) === selectedFaction);
-  }, [heroes, selectedFaction]);
+    return heroes.filter((h) => {
+      if (selectedFaction !== "__all__" && (h.faction ?? h.race) !== selectedFaction) return false;
+      if (selectedClan !== "__all__" && h.clan !== selectedClan) return false;
+      if (selectedRarity !== "__all__" && (h.rarity ?? "Commune") !== selectedRarity) return false;
+      return true;
+    });
+  }, [heroes, selectedFaction, selectedClan, selectedRarity]);
 
-  const handleShowPower = (hero: HeroRow, e: ReactMouseEvent<HTMLElement>) => {
+  const handleShowPower = (hero: HeroRow, rect: DOMRect) => {
     if (!hero.power_name && !hero.power_image_url) return;
-    e.preventDefault();
-    const rect = e.currentTarget.getBoundingClientRect();
     const W = 280;
     const margin = 12;
-    // Prefer the right side; flip to the left if it would overflow the viewport.
-    const placeRight = rect.right + margin + W <= window.innerWidth;
-    const x = placeRight ? rect.right + margin : rect.left - margin - W;
+    // Prefer the right of the card, flip to its left, else center (mobile, where
+    // the card spans the full width so neither side fits).
+    let x: number;
+    if (rect.right + margin + W <= window.innerWidth) x = rect.right + margin;
+    else if (rect.left - margin - W >= 0) x = rect.left - margin - W;
+    else x = (window.innerWidth - W) / 2;
     const y = Math.min(rect.top, Math.max(margin, window.innerHeight - 280));
     setPowerView({ hero, x: Math.max(margin, x), y: Math.max(margin, y) });
   };
@@ -124,39 +152,41 @@ export default function HeroesPage({ username, goldBalance }: HeroesPageProps) {
           </AmHeading>
         </div>
 
-        {/* Faction filter */}
-        {heroes && heroes.length > 0 && factions.length > 1 && (
+        {/* Filters: faction / clan / rarity */}
+        {heroes && heroes.length > 0 && (factions.length > 1 || clans.length > 0 || rarities.length > 1) && (
           <div
-            className="am-animate-fade max-w-5xl mx-auto mb-10 md:mb-12 flex flex-wrap items-center justify-center gap-2.5"
+            className="am-animate-fade max-w-5xl mx-auto mb-10 md:mb-12 flex flex-col items-center gap-3"
             style={{ animationDelay: "0.1s" }}
           >
-            <button
-              type="button"
-              onClick={() => setSelectedFaction("__all__")}
-              className={`font-display px-4 py-1.5 text-sm tracking-wide rounded-full border transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-am-gold focus-visible:ring-offset-2 focus-visible:ring-offset-am-bg-0 ${
-                selectedFaction === "__all__"
-                  ? "border-am-gold bg-am-gold/20 text-am-gold-bright shadow-[0_0_18px_-4px_rgba(216,178,90,0.5)]"
-                  : "border-am-gold/25 bg-am-gold/5 text-am-ink-soft hover:border-am-gold/60 hover:text-am-gold"
-              }`}
-              aria-pressed={selectedFaction === "__all__"}
-            >
-              {t.heroes_filter_all}
-            </button>
-            {factions.map((f) => (
-              <button
-                key={f}
-                type="button"
-                onClick={() => setSelectedFaction(f)}
-                className={`font-display px-4 py-1.5 text-sm tracking-wide rounded-full border transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-am-gold focus-visible:ring-offset-2 focus-visible:ring-offset-am-bg-0 ${
-                  selectedFaction === f
-                    ? "border-am-gold bg-am-gold/20 text-am-gold-bright shadow-[0_0_18px_-4px_rgba(216,178,90,0.5)]"
-                    : "border-am-gold/25 bg-am-gold/5 text-am-ink-soft hover:border-am-gold/60 hover:text-am-gold"
-                }`}
-                aria-pressed={selectedFaction === f}
-              >
-                {getFactionDisplayName(f)}
-              </button>
-            ))}
+            {factions.length > 1 && (
+              <FilterPills
+                label={t.heroes_label_faction}
+                allLabel={t.heroes_filter_all}
+                value={selectedFaction}
+                options={factions}
+                onSelect={setSelectedFaction}
+                display={getFactionDisplayName}
+              />
+            )}
+            {clans.length > 0 && (
+              <FilterPills
+                label={t.heroes_label_clan}
+                allLabel={t.heroes_filter_all}
+                value={selectedClan}
+                options={clans}
+                onSelect={setSelectedClan}
+              />
+            )}
+            {rarities.length > 1 && (
+              <FilterPills
+                label={t.heroes_label_rarity}
+                allLabel={t.heroes_filter_all}
+                value={selectedRarity}
+                options={rarities}
+                onSelect={setSelectedRarity}
+                colorFor={(id) => RARITY_COLOR[id]}
+              />
+            )}
           </div>
         )}
 
@@ -206,6 +236,56 @@ export default function HeroesPage({ username, goldBalance }: HeroesPageProps) {
   );
 }
 
+function FilterPills({
+  label,
+  allLabel,
+  value,
+  options,
+  onSelect,
+  display = (id) => id,
+  colorFor,
+}: {
+  label: string;
+  allLabel: string;
+  value: string;
+  options: string[];
+  onSelect: (v: string) => void;
+  display?: (id: string) => string;
+  colorFor?: (id: string) => string | undefined;
+}) {
+  const renderPill = (id: string, text: string) => {
+    const active = value === id;
+    const c = active && colorFor ? colorFor(id) : undefined;
+    return (
+      <button
+        key={id}
+        type="button"
+        onClick={() => onSelect(id)}
+        aria-pressed={active}
+        style={c ? { borderColor: c, color: c, backgroundColor: `${c}22` } : undefined}
+        className={`font-display px-4 py-1.5 text-sm tracking-wide rounded-full border transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-am-gold focus-visible:ring-offset-2 focus-visible:ring-offset-am-bg-0 ${
+          active
+            ? c
+              ? ""
+              : "border-am-gold bg-am-gold/20 text-am-gold-bright shadow-[0_0_18px_-4px_rgba(216,178,90,0.5)]"
+            : "border-am-gold/25 bg-am-gold/5 text-am-ink-soft hover:border-am-gold/60 hover:text-am-gold"
+        }`}
+      >
+        {text}
+      </button>
+    );
+  };
+  return (
+    <div className="flex flex-wrap items-center justify-center gap-2">
+      <span className="font-display text-am-ink-soft text-xs uppercase tracking-[0.18em] mr-1">
+        {label}
+      </span>
+      {renderPill("__all__", allLabel)}
+      {options.map((o) => renderPill(o, display(o)))}
+    </div>
+  );
+}
+
 function HeroCard({
   hero,
   powerLabel,
@@ -213,11 +293,22 @@ function HeroCard({
 }: {
   hero: HeroRow;
   powerLabel: string;
-  onShowPower: (hero: HeroRow, e: ReactMouseEvent<HTMLElement>) => void;
+  onShowPower: (hero: HeroRow, rect: DOMRect) => void;
 }) {
+  const articleRef = useRef<HTMLElement>(null);
+  // Touch equivalent of right-click: a long-press opens the same power popover.
+  const longPress = useLongPress(() => {
+    if (articleRef.current) onShowPower(hero, articleRef.current.getBoundingClientRect());
+  });
   return (
     <article
-      onContextMenu={(e) => onShowPower(hero, e)}
+      ref={articleRef}
+      {...longPress.handlers}
+      onContextMenu={(e) => {
+        e.preventDefault();
+        onShowPower(hero, e.currentTarget.getBoundingClientRect());
+      }}
+      style={LONG_PRESS_RESET_STYLE}
       className="am-glass group relative overflow-hidden rounded-2xl border border-am-gold/20 transition-all duration-300 hover:border-am-gold/55 hover:-translate-y-1 hover:shadow-[0_24px_60px_-18px_rgba(0,0,0,0.65),0_0_50px_-18px_rgba(154,107,255,0.45)]">
       {/* Gilded L-corner ornaments */}
       <div className="absolute top-3 left-3 w-7 h-7 border-t border-l border-am-gold/50 rounded-tl-sm pointer-events-none" aria-hidden="true" />
@@ -258,9 +349,11 @@ function HeroCard({
           {hero.name}
         </h2>
 
-        {(hero.faction || hero.race) && (
+        {(hero.faction || hero.race || hero.clan) && (
           <p className="font-serif italic text-am-arcane-bright/80 text-sm tracking-wide">
-            {hero.faction ? getFactionDisplayName(hero.faction) : hero.race}
+            {[hero.faction ? getFactionDisplayName(hero.faction) : hero.race, hero.clan]
+              .filter(Boolean)
+              .join(" · ")}
           </p>
         )}
 

@@ -40,6 +40,9 @@ export interface HomeDict {
   heroes_title: string;
   heroes_empty: string;
   heroes_filter_all: string;
+  heroes_label_faction: string;
+  heroes_label_clan: string;
+  heroes_label_rarity: string;
   heroes_loading: string;
   heroes_load_error: string;
   hero_power: string;
@@ -78,7 +81,10 @@ export const homeDict: Record<Locale, HomeDict> = {
 
     heroes_title: "Mes héros",
     heroes_empty: "Aucun héros débloqué pour l'instant.",
-    heroes_filter_all: "Toutes les factions",
+    heroes_filter_all: "Tous",
+    heroes_label_faction: "Faction",
+    heroes_label_clan: "Clan",
+    heroes_label_rarity: "Rareté",
     heroes_loading: "Chargement…",
     heroes_load_error: "Impossible de charger vos héros.",
     hero_power: "Pouvoir",
@@ -115,7 +121,10 @@ export const homeDict: Record<Locale, HomeDict> = {
 
     heroes_title: "My Heroes",
     heroes_empty: "No heroes unlocked yet.",
-    heroes_filter_all: "All factions",
+    heroes_filter_all: "All",
+    heroes_label_faction: "Faction",
+    heroes_label_clan: "Clan",
+    heroes_label_rarity: "Rarity",
     heroes_loading: "Loading…",
     heroes_load_error: "Could not load your heroes.",
     hero_power: "Power",
