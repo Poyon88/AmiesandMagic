@@ -1098,7 +1098,7 @@ export default function CardEditor() {
                             {(["play", "death", "tap", "return", "end_of_turn"] as const).map(mode => {
                               const allowed = mode === "play" || allowedModes.has(mode);
                               const active = mode === "play" ? !keywordModes[kw] : keywordModes[kw] === mode;
-                              const color = mode === "play" ? "#333" : mode === "death" ? "#a83232" : mode === "tap" ? "#d4a800" : mode === "return" ? "#3a7dd4" : "#1fb6a6";
+                              const color = mode === "play" ? "#333" : mode === "death" ? "#a83232" : mode === "tap" ? "#d4a800" : mode === "return" ? "#3a7dd4" : "#2faa3f";
                               const glyph = mode === "play" ? "⚡" : mode === "death" ? "💀" : mode === "tap" ? "⟲" : mode === "return" ? "↩" : "⌛";
                               return (
                                 <button
