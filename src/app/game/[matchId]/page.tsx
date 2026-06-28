@@ -9,6 +9,7 @@ import SfxEngine from "@/lib/audio/SfxEngine";
 import GameBoard from "@/components/game/GameBoard";
 import OrientationLock from "@/components/shared/OrientationLock";
 import type { Card, GameAction, GameState, HeroDefinition, HeroPowerEffect, Race } from "@/lib/game/types";
+import { syncHash, reconcileVerdict } from "@/lib/game/stateHash";
 
 interface HeroRow {
   id: number;
@@ -106,6 +107,11 @@ export default function GamePage() {
   // Seq d'un snapshot à écrire dès que l'animation de l'action locale se termine
   // (le commit du gameState est différé pendant l'animation — cf. writeSnapshot).
   const pendingSnapshotSeqRef = useRef<number | null>(null);
+  // Dernier checkpoint {seq, hash} reçu de l'adversaire (hash faisant autorité
+  // de l'état post-action). Comparé à notre propre hash dès qu'on a appliqué le
+  // même seq et qu'on est au repos ; sur divergence on adopte le snapshot.
+  const pendingCheckpointRef = useRef<{ seq: number; hash: string } | null>(null);
+  const reconcileRef = useRef<(() => void) | null>(null);
 
   const {
     setGameState,
@@ -397,6 +403,7 @@ export default function GamePage() {
               applyOne(row.action as GameAction);
               lastSeqRef.current = row.seq as number;
             }
+            reconcileCheckpoint();
           });
           inflightCatchupRef.current = run;
           run.finally(() => {
@@ -404,6 +411,72 @@ export default function GamePage() {
           });
         };
         resyncRef.current = resyncFromLog;
+
+        // Réconciliation anti-désync. L'adversaire diffuse, après chaque action,
+        // un hash faisant autorité de son état post-action (cf. writeSnapshot).
+        // Dès qu'on a appliqué le même seq et qu'aucune animation ne joue, on
+        // compare ; sur divergence avérée (non-déterminisme du moteur OU action
+        // perdue passée sous le radar du gap-recovery) on adopte le snapshot
+        // serveur de ce seq. Purement additif : ne se déclenche que sur mismatch
+        // confirmé, jamais sur le chemin in-order/gap normal.
+        const reconcileCheckpoint = () => {
+          const cp = pendingCheckpointRef.current;
+          if (!cp) return;
+          const store = useGameStore.getState();
+          const gs = store.gameState;
+          const localHash = gs ? syncHash(gs) : null;
+          // Pré-vérif synchrone (sans lecture DB) : in-sync / pas aligné → rien.
+          const pre = reconcileVerdict({
+            localSeq: lastSeqRef.current,
+            localHash,
+            checkpointSeq: cp.seq,
+            checkpointHash: cp.hash,
+            isAnimating: store.isAnimating,
+            snapSeq: null,
+          });
+          if (pre === "ok" || pre === "stale") { pendingCheckpointRef.current = null; return; }
+          if (pre === "wait") return; // re-tenté après catch-up / fin d'animation
+          // pre === "refetch" : divergence à seq égal → lit le snapshot et adopte.
+          const run = (inflightCatchupRef.current ?? Promise.resolve()).then(async () => {
+            const cur = pendingCheckpointRef.current;
+            if (!cur || cur.seq !== cp.seq) return; // remplacé par un checkpoint plus récent
+            const { data: snap } = await supabase
+              .from("match_state")
+              .select("seq, state")
+              .eq("match_id", matchId)
+              .maybeSingle();
+            const snapSeq = (snap?.seq as number | undefined) ?? null;
+            const s = useGameStore.getState();
+            const v = reconcileVerdict({
+              localSeq: lastSeqRef.current,
+              localHash: s.gameState ? syncHash(s.gameState) : null,
+              checkpointSeq: cur.seq,
+              checkpointHash: cur.hash,
+              isAnimating: s.isAnimating,
+              snapSeq,
+            });
+            if (v === "adopt" && snap) {
+              const local = s.gameState;
+              if (local && !s.isAnimating && lastSeqRef.current === cur.seq) {
+                useGameStore.getState().setGameState({
+                  ...(snap.state as GameState),
+                  factionCardPool: local.factionCardPool,
+                  allSpellsPool: local.allSpellsPool,
+                  tokenTemplates: local.tokenTemplates,
+                });
+                console.warn("[match] checkpoint mismatch — adopted authoritative snapshot", { seq: cur.seq });
+              }
+              pendingCheckpointRef.current = null;
+            } else if (v === "refetch") {
+              setTimeout(() => reconcileRef.current?.(), 400); // snapshot pas encore à jour
+            } else if (v !== "wait") {
+              pendingCheckpointRef.current = null; // ok / stale : plus rien à faire
+            }
+          });
+          inflightCatchupRef.current = run;
+          run.finally(() => { if (inflightCatchupRef.current === run) inflightCatchupRef.current = null; });
+        };
+        reconcileRef.current = reconcileCheckpoint;
 
         channel
           .on("broadcast", { event: "game_action" }, (payload) => {
@@ -429,6 +502,7 @@ export default function GamePage() {
             if (incomingSeq === lastSeqRef.current + 1) {
               applyOne(incomingAction);
               lastSeqRef.current = incomingSeq;
+              reconcileCheckpoint();
               return;
             }
 
@@ -459,6 +533,7 @@ export default function GamePage() {
               }
               applyOne(incomingAction);
               lastSeqRef.current = incomingSeq;
+              reconcileCheckpoint();
             });
             inflightCatchupRef.current = catchup;
             catchup.finally(() => {
@@ -466,6 +541,13 @@ export default function GamePage() {
                 inflightCatchupRef.current = null;
               }
             });
+          })
+          .on("broadcast", { event: "checkpoint" }, (payload) => {
+            const cp = payload.payload as { seq: number; hash: string } | null;
+            if (!cp || typeof cp.seq !== "number" || typeof cp.hash !== "string") return;
+            const prev = pendingCheckpointRef.current;
+            if (!prev || cp.seq >= prev.seq) pendingCheckpointRef.current = cp;
+            reconcileCheckpoint();
           })
           .on("presence", { event: "sync" }, () => tryInit("sync"))
           .subscribe(async (status) => {
@@ -607,6 +689,14 @@ export default function GamePage() {
         .then(({ error }) => {
           if (error) console.error("[match] snapshot upsert failed", { seq, error });
         });
+      // Diffuse le hash faisant autorité de cet état post-action. Le pair le
+      // compare au sien une fois ce seq appliqué et adopte le snapshot ci-dessus
+      // en cas de divergence silencieuse (cf. reconcileCheckpoint).
+      channelRef.current?.send({
+        type: "broadcast",
+        event: "checkpoint",
+        payload: { seq, hash: syncHash(gs) },
+      });
     },
     [matchId, supabase]
   );
@@ -661,10 +751,15 @@ export default function GamePage() {
   // gameState), write the snapshot that handleAction parked for it.
   useEffect(() => {
     const unsub = useGameStore.subscribe((state, prev) => {
-      if (prev.isAnimating && !state.isAnimating && pendingSnapshotSeqRef.current != null) {
-        const seq = pendingSnapshotSeqRef.current;
-        pendingSnapshotSeqRef.current = null;
-        writeSnapshot(seq);
+      if (prev.isAnimating && !state.isAnimating) {
+        if (pendingSnapshotSeqRef.current != null) {
+          const seq = pendingSnapshotSeqRef.current;
+          pendingSnapshotSeqRef.current = null;
+          writeSnapshot(seq);
+        }
+        // L'animation bloquait toute comparaison de checkpoint : re-tente
+        // maintenant que l'état est commité et le client au repos.
+        reconcileRef.current?.();
       }
     });
     return unsub;

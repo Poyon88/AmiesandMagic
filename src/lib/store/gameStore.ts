@@ -1641,13 +1641,24 @@ export const useGameStore = create<GameStore>((set, get) => {
 
     const phaseUnlock = () => {
       set({ isAnimating: false });
-      const queued = get().pendingIncomingActions;
-      if (queued.length > 0) {
-        set({ pendingIncomingActions: queued.slice(1) });
-        get().dispatchAction(queued[0]);
-        return;
+      // Draine la file des actions reçues pendant l'animation. Chaque dispatch
+      // peut emprunter le « slow path » (qui repasse isAnimating à true et
+      // re-drainera via SON propre phaseUnlock — on s'arrête alors ici) ou le
+      // « fast path » (commit synchrone sans animation : isAnimating reste
+      // false). Avant, on ne dépilait qu'UNE action puis on faisait return ;
+      // si c'était une action rapide, la suite de la file restait bloquée
+      // jusqu'à la prochaine action animée — et comme lastSeqRef a déjà avancé
+      // côté page à la mise en file, ces actions n'étaient jamais re-récupérées
+      // par le gap-recovery → désync permanente. On boucle donc tant que la
+      // file n'est pas vide et qu'aucune animation n'a redémarré.
+      while (get().pendingIncomingActions.length > 0 && !get().isAnimating) {
+        const [next, ...rest] = get().pendingIncomingActions;
+        set({ pendingIncomingActions: rest });
+        get().dispatchAction(next);
       }
-      // Plus d'action en file : si l'action vient de créer un déclencheur
+      // Une action a relancé une animation : son phaseUnlock poursuivra le drain.
+      if (get().isAnimating) return;
+      // Plus d'action en file : si la dernière action a créé un déclencheur
       // interactif en attente pour le joueur local, on entre le mode de ciblage.
       set(pendingTriggerOverlay(get().gameState, get().localPlayerId));
     };
