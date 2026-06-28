@@ -13,12 +13,41 @@ interface DeckWithCount {
   cardCount: number;
   updated_at: string;
   heroThumbnail?: string | null;
+  formatId?: number | null;
+  formatName?: string | null;
 }
+
+const ALL = "__all__";
+const NONE = "__none__";
 
 export default function DeckList({ decks }: { decks: DeckWithCount[] }) {
   const router = useRouter();
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
+  const [selectedFormat, setSelectedFormat] = useState<string>(ALL);
+
+  // Distinct format buckets present among the user's decks, in format-id order,
+  // with a "Sans format" bucket last when some deck has no format set.
+  const formatOptions = (() => {
+    const byId = new Map<number, string>();
+    let hasNone = false;
+    for (const d of decks) {
+      if (d.formatId != null) byId.set(d.formatId, d.formatName ?? `Format ${d.formatId}`);
+      else hasNone = true;
+    }
+    const opts = [...byId.entries()]
+      .sort((a, b) => a[0] - b[0])
+      .map(([id, name]) => ({ value: String(id), label: name }));
+    if (hasNone) opts.push({ value: NONE, label: "Sans format" });
+    return opts;
+  })();
+
+  const filteredDecks =
+    selectedFormat === ALL
+      ? decks
+      : selectedFormat === NONE
+        ? decks.filter((d) => d.formatId == null)
+        : decks.filter((d) => String(d.formatId) === selectedFormat);
 
   async function handleDelete(deckId: number) {
     setDeletingId(deckId);
@@ -55,7 +84,8 @@ export default function DeckList({ decks }: { decks: DeckWithCount[] }) {
               My Decks
             </h1>
             <p className="mt-2 font-[family-name:var(--font-crimson),serif] text-sm italic text-am-ink-soft">
-              {decks.length} deck{decks.length !== 1 ? "s" : ""} in your armory
+              {filteredDecks.length} deck{filteredDecks.length !== 1 ? "s" : ""}
+              {selectedFormat === ALL ? " in your armory" : " in this format"}
             </p>
           </div>
           <div className="flex gap-3">
@@ -78,6 +108,33 @@ export default function DeckList({ decks }: { decks: DeckWithCount[] }) {
 
         <div className="am-rule-diamond am-animate-fade my-8" style={{ animationDelay: "0.1s" }} />
 
+        {/* Format filter — only when decks span more than one format bucket */}
+        {formatOptions.length > 1 && (
+          <div className="am-animate-fade mb-8 flex flex-wrap items-center justify-center gap-2" style={{ animationDelay: "0.12s" }}>
+            <span className="font-[family-name:var(--font-cinzel),serif] mr-1 text-xs uppercase tracking-[0.18em] text-am-ink-soft">
+              Format
+            </span>
+            {[{ value: ALL, label: "All" }, ...formatOptions].map((opt) => {
+              const active = selectedFormat === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setSelectedFormat(opt.value)}
+                  aria-pressed={active}
+                  className={`font-[family-name:var(--font-cinzel),serif] rounded-full border px-4 py-1.5 text-sm tracking-wide transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-am-gold focus-visible:ring-offset-2 focus-visible:ring-offset-am-bg-0 ${
+                    active
+                      ? "border-am-gold bg-am-gold/20 text-am-gold-bright shadow-[0_0_18px_-4px_rgba(216,178,90,0.5)]"
+                      : "border-am-gold/25 bg-am-gold/5 text-am-ink-soft hover:border-am-gold/60 hover:text-am-gold"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         {/* Deck Grid */}
         {decks.length === 0 ? (
           <div className="am-glass am-animate-rise flex flex-col items-center gap-6 px-6 py-20 text-center">
@@ -92,9 +149,18 @@ export default function DeckList({ decks }: { decks: DeckWithCount[] }) {
               Create Your First Deck
             </AmButton>
           </div>
+        ) : filteredDecks.length === 0 ? (
+          <div className="am-glass am-animate-rise flex flex-col items-center gap-6 px-6 py-20 text-center">
+            <p className="font-[family-name:var(--font-crimson),serif] text-xl italic text-am-ink-soft">
+              No decks in this format
+            </p>
+            <AmButton variant="ghost" size="md" onClick={() => setSelectedFormat(ALL)}>
+              Show all decks
+            </AmButton>
+          </div>
         ) : (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {decks.map((deck, i) => {
+            {filteredDecks.map((deck, i) => {
               const isValid = deck.cardCount === DECK_SIZE;
               return (
                 <div
@@ -119,7 +185,7 @@ export default function DeckList({ decks }: { decks: DeckWithCount[] }) {
                     )}
                   </div>
 
-                  <div className="mt-3 mb-5">
+                  <div className="mt-3 mb-5 flex flex-wrap items-center gap-2">
                     <span
                       className={`am-gild-border inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${
                         isValid ? "text-am-jade" : "text-am-gold"
@@ -133,6 +199,11 @@ export default function DeckList({ decks }: { decks: DeckWithCount[] }) {
                       {deck.cardCount}/{DECK_SIZE} cards
                       {isValid && " (Valid)"}
                     </span>
+                    {deck.formatName && (
+                      <span className="inline-flex items-center rounded-full border border-am-arcane/40 bg-am-arcane/10 px-3 py-1 text-xs font-medium text-am-arcane-bright">
+                        {deck.formatName}
+                      </span>
+                    )}
                   </div>
 
                   <div className="am-rule mb-4 opacity-60" />

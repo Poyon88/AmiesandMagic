@@ -25,6 +25,17 @@ export default async function DecksPage() {
     .eq("user_id", user.id)
     .order("updated_at", { ascending: false });
 
+  // Format names for the per-deck badge + the format filter. Separate lookup
+  // (not an embedded FK join) per the project's Supabase guidelines.
+  const formatNameById = new Map<number, string>();
+  const { data: formats } = await supabase
+    .from("formats")
+    .select("id, name")
+    .order("id");
+  for (const f of (formats ?? []) as { id: number; name: string }[]) {
+    formatNameById.set(f.id, f.name);
+  }
+
   // Hero thumbnails fetched via a separate lookup (decks.hero_id → heroes.id),
   // not an embedded FK join, per the project's Supabase guidelines.
   const heroIds = [
@@ -45,15 +56,20 @@ export default async function DecksPage() {
     }
   }
 
-  const decksWithCount = (decks ?? []).map((deck) => ({
-    ...deck,
-    cardCount: (deck.deck_cards as { quantity: number }[]).reduce(
-      (sum: number, dc: { quantity: number }) => sum + dc.quantity,
-      0
-    ),
-    heroThumbnail:
-      deck.hero_id != null ? heroThumbById.get(deck.hero_id) ?? null : null,
-  }));
+  const decksWithCount = (decks ?? []).map((deck) => {
+    const formatId = (deck.format_id as number | null) ?? null;
+    return {
+      ...deck,
+      cardCount: (deck.deck_cards as { quantity: number }[]).reduce(
+        (sum: number, dc: { quantity: number }) => sum + dc.quantity,
+        0
+      ),
+      heroThumbnail:
+        deck.hero_id != null ? heroThumbById.get(deck.hero_id) ?? null : null,
+      formatId,
+      formatName: formatId != null ? formatNameById.get(formatId) ?? null : null,
+    };
+  });
 
   return <DeckList decks={decksWithCount} />;
 }
