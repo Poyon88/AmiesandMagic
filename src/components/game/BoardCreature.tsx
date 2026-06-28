@@ -842,6 +842,26 @@ export default function BoardCreature({
           );
         })()}
 
+        {/* Effets composés — détail (icône + texte généré, comme la collection) */}
+        {composedCapsOf(card.capabilities).length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+            {composedCapsOf(card.capabilities).map((cap, i) => {
+              const ic = composedIcon(cap);
+              const cfilter = keywordModeFilter(composedTriggerMode(cap));
+              return (
+                <div key={`cxd-${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
+                  <span style={{ flexShrink: 0, display: "inline-flex", filter: cfilter ?? undefined, lineHeight: 0 }}>
+                    <KeywordIcon symbol={ic.symbol} size={10} keyword={ic.keyword} />
+                  </span>
+                  <div style={{ fontSize: 8 * d, color: "#ccc", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>
+                    {describeComposedCap(cap, tokenTemplates)}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
         {/* Effect text */}
         {cleanEffectText(card.effect_text, card.spell_keywords) && (
           <div style={{
