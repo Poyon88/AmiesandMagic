@@ -135,7 +135,8 @@ export default function BoardCreature({
   const W = 120;
   const H = 168;
   // Touch devices have no hover-zoom: enlarge the detail-overlay text only.
-  const d = useCoarsePointer() ? 1.5 : 1;
+  const coarse = useCoarsePointer();
+  const d = coarse ? 1.5 : 1;
   const accentColor = "#74b9ff";
   const iconOverrides = useKeywordIconStore((st) => st.overrides);
 
@@ -328,8 +329,13 @@ export default function BoardCreature({
         }
       }}
       onMouseEnter={() => {
-        setIsHovered(true);
         onMouseEnter?.();
+        // iPad/Safari fire a synthetic mouseenter on tap (hover emulation)
+        // with no matching mouseleave, which would leave a hover-opened
+        // detail overlay stuck. On touch, only long-press opens the detail
+        // (it handles its own tap-to-dismiss); desktop hover is unchanged.
+        if (coarse) return;
+        setIsHovered(true);
         // Auto-detail only kicks in when freely hovering own creatures.
         // Skip it during any targeting mode (attack OR spell) and on
         // enemy creatures, so the artwork stays visible while the player

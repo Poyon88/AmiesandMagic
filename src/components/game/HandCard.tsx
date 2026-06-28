@@ -121,7 +121,8 @@ export default function HandCard({
   // Touch devices have no hover-zoom to read the tiny detail-overlay text, so
   // bump its font sizes. `d` multiplies the overlay text only — the always-on
   // card body is left untouched so the hand layout is unchanged.
-  const d = useCoarsePointer() ? 1.5 : 1;
+  const coarse = useCoarsePointer();
+  const d = coarse ? 1.5 : 1;
   const accentColor = isCreature ? "#74b9ff" : "#ce93d8";
   // Cost-payment visuals override the normal selection styling: red border
   // when picked for discard, gold glow on the source card being played.
@@ -299,6 +300,11 @@ export default function HandCard({
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
         onMouseEnter={() => {
+          // iPad/Safari fire a synthetic mouseenter on tap (hover emulation)
+          // but never a matching mouseleave, so a hover-opened overlay would
+          // get stuck. On touch, only long-press opens the detail (it handles
+          // its own tap-to-dismiss); desktop hover is unchanged.
+          if (coarse) return;
           setIsHovered(true);
           detailTimer.current = setTimeout(() => setShowDetails(true), 600);
         }}
