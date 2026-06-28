@@ -1315,6 +1315,40 @@ export default function CardForge() {
     setBdRefImagePreview(null);
   }
 
+  // Import a board image directly from the computer instead of generating one.
+  // The file is resized/encoded and injected as a selected variant so it flows
+  // through the exact same save pipeline (signed upload + board row) as AI ones.
+  function handleBoardImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const img = new window.Image();
+    img.onload = () => {
+      const MAX_W = 1920;
+      let { width, height } = img;
+      if (width > MAX_W) {
+        height = Math.round(height * (MAX_W / width));
+        width = MAX_W;
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d")!;
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+      ctx.drawImage(img, 0, 0, width, height);
+      const mime = "image/webp";
+      const dataUrl = canvas.toDataURL(mime, 0.9);
+      const base64 = dataUrl.split(",")[1];
+      setBdVariantMode(1);
+      setBdVariations([{ base64, mime, url: dataUrl }]);
+      setBdSelectedIdxs([0]);
+      setBdMessage({ ok: true, msg: "Image importée — prête à enregistrer." });
+    };
+    img.onerror = () => setBdMessage({ ok: false, msg: "Impossible de lire l'image importée." });
+    img.src = URL.createObjectURL(file);
+    e.target.value = ""; // allow re-importing the same file
+  }
+
   async function generateBoardImage() {
     if (!bdPrompt) return;
     setBdGenerating(true);
@@ -4580,6 +4614,11 @@ export default function CardForge() {
                         style={{ padding: "4px 12px", borderRadius: 5, border: "none", background: bdPrompt && !bdGenerating ? "linear-gradient(135deg, #6c5ce7, #a855f7)" : "#e0e0e0", color: "#fff", fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: 700, cursor: bdPrompt && !bdGenerating ? "pointer" : "default" }}>
                         {bdGenerating ? "Génération…" : bdVariations.length > 0 ? `Relancer ${bdVariantMode} variante(s)` : `Générer ${bdVariantMode} variante(s)`}
                       </button>
+                      <span style={{ fontSize: 9, color: "#bbb", fontFamily: "'Cinzel',serif", alignSelf: "center" }}>ou</span>
+                      <label style={{ padding: "4px 12px", borderRadius: 5, border: "1px solid #ddd", background: "#fff", color: "#666", fontSize: 9, fontFamily: "'Cinzel',serif", cursor: "pointer", alignSelf: "center" }}>
+                        Importer une image
+                        <input type="file" accept="image/*" onChange={handleBoardImageUpload} style={{ display: "none" }} />
+                      </label>
                     </div>
                   </div>
                 </div>
