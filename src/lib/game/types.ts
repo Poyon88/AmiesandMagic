@@ -838,7 +838,16 @@ export interface ResolvePendingTriggerAction {
   selectionCardId?: number;
 }
 
-export type GameAction = PlayCardAction | AttackAction | EndTurnAction | MulliganAction | HeroPowerAction | TapActivateAction | ConcedeAction | ResolvePendingTriggerAction;
+/** Repli automatique à l'expiration du chrono : résout TOUS les déclencheurs
+ *  interactifs en attente au hasard (RNG semée, déterministe), puis termine le
+ *  tour. Émise par le client du joueur actif quand son temps est écoulé alors
+ *  que des `pendingTriggers` restent non résolus. Sans payload : le tirage est
+ *  fait dans le moteur. */
+export interface AutoResolvePendingTriggersAction {
+  type: "auto_resolve_pending_triggers";
+}
+
+export type GameAction = PlayCardAction | AttackAction | EndTurnAction | MulliganAction | HeroPowerAction | TapActivateAction | ConcedeAction | ResolvePendingTriggerAction | AutoResolvePendingTriggersAction;
 
 /** Déclencheur interactif en attente : le contrôleur doit choisir une cible
  *  avant que le jeu ne continue. Porté par l'état pour rester déterministe et

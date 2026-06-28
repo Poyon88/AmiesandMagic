@@ -1883,7 +1883,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // factionCardPool first (Sélection / Renfort Royal) and falls back to
     // allSpellsPool (Sélection magique sources its choices there).
     if (
-      (hasKw(cardInstance, "selection") || hasKw(cardInstance, "renfort_royal") || hasKw(cardInstance, "selection_magique"))
+      (cardHasKwOnPlay(cardInstance.card, "selection") || cardHasKwOnPlay(cardInstance.card, "renfort_royal") || cardHasKwOnPlay(cardInstance.card, "selection_magique"))
       && action.selectionCardId != null
     ) {
       const chosenCard = newState.factionCardPool?.find(c => c.id === action.selectionCardId)
@@ -4260,34 +4260,7 @@ export function resolvePendingTrigger(state: GameState, action: ResolvePendingTr
   queue.splice(idx, 1);
   newState.pendingTriggers = queue;
 
-  const controller = newState.players.find(p => p.id === trigger.controllerId);
-  const other = newState.players.find(p => p.id !== trigger.controllerId);
-
-  if (trigger.capUid) {
-    // Variante « fin de tour » : résout l'effet composé sur la cible choisie.
-    if (controller && other) {
-      const source = controller.board.find(c => c.instanceId === trigger.sourceInstanceId);
-      const cap = source ? getCapabilities(source.card).find(c => c.uid === trigger.capUid && c.composed) : undefined;
-      if (cap?.composed) {
-        resolveComposedEffect(cap.composed, source ?? null, controller, other, action.targetInstanceId ? [action.targetInstanceId] : undefined);
-        const deadC = cleanDeadCreatures(controller);
-        const deadO = cleanDeadCreatures(other);
-        processDeathTriggers(deadC, controller, other);
-        processDeathTriggers(deadO, other, controller);
-      }
-    }
-  } else if (trigger.selectionType) {
-    // Variante « Sélection en fin de tour » : la carte choisie va en main.
-    if (controller && action.selectionCardId != null && controller.hand.length < MAX_HAND_SIZE) {
-      const chosenCard = newState.factionCardPool?.find(c => c.id === action.selectionCardId)
-        ?? newState.allSpellsPool?.find(c => c.id === action.selectionCardId);
-      if (chosenCard) controller.hand.push(createCardInstance(chosenCard));
-    }
-  } else if (trigger.kw === "remontee") {
-    if (controller && other) {
-      resolveRemontee(action.targetInstanceId, trigger.sourceInstanceId, controller, other);
-    }
-  }
+  applyOnePendingTrigger(newState, trigger, { targetInstanceId: action.targetInstanceId, selectionCardId: action.selectionCardId });
 
   recalculateAuras(newState.players[0], newState.players[1]);
   newState.lastAction = action;
@@ -4298,6 +4271,84 @@ export function resolvePendingTrigger(state: GameState, action: ResolvePendingTr
   if (newState.endTurnPending && (newState.pendingTriggers?.length ?? 0) === 0) {
     return finishEndTurn(newState);
   }
+  return newState;
+}
+
+/** Résout UN déclencheur interactif sur un choix donné (cible / carte). Partagé
+ *  par la résolution manuelle (resolvePendingTrigger) et le repli automatique
+ *  (autoResolvePendingTriggers). `newState` est déjà cloné, pools rattachés. */
+function applyOnePendingTrigger(
+  newState: GameState,
+  trigger: import("./types").PendingTrigger,
+  choice: { targetInstanceId?: string; selectionCardId?: number },
+): void {
+  const controller = newState.players.find(p => p.id === trigger.controllerId);
+  const other = newState.players.find(p => p.id !== trigger.controllerId);
+
+  if (trigger.capUid) {
+    // Variante « fin de tour » : résout l'effet composé sur la cible choisie.
+    if (controller && other) {
+      const source = controller.board.find(c => c.instanceId === trigger.sourceInstanceId);
+      const cap = source ? getCapabilities(source.card).find(c => c.uid === trigger.capUid && c.composed) : undefined;
+      if (cap?.composed) {
+        resolveComposedEffect(cap.composed, source ?? null, controller, other, choice.targetInstanceId ? [choice.targetInstanceId] : undefined);
+        const deadC = cleanDeadCreatures(controller);
+        const deadO = cleanDeadCreatures(other);
+        processDeathTriggers(deadC, controller, other);
+        processDeathTriggers(deadO, other, controller);
+      }
+    }
+  } else if (trigger.selectionType) {
+    // Variante « Sélection en fin de tour » : la carte choisie va en main.
+    if (controller && choice.selectionCardId != null && controller.hand.length < MAX_HAND_SIZE) {
+      const chosenCard = newState.factionCardPool?.find(c => c.id === choice.selectionCardId)
+        ?? newState.allSpellsPool?.find(c => c.id === choice.selectionCardId);
+      if (chosenCard) controller.hand.push(createCardInstance(chosenCard));
+    }
+  } else if (trigger.kw === "remontee") {
+    if (controller && other) {
+      resolveRemontee(choice.targetInstanceId, trigger.sourceInstanceId, controller, other);
+    }
+  }
+}
+
+/** Repli à l'expiration du chrono : draine TOUTE la file `pendingTriggers` en
+ *  choisissant au hasard (rng semée → déterministe entre les deux clients) un
+ *  choix valide pour chacun, puis termine le tour. */
+export function autoResolvePendingTriggers(state: GameState): GameState {
+  const pool = state.factionCardPool;
+  const allPool = state.allSpellsPool;
+  const newState = deepClone({ ...state, factionCardPool: undefined, allSpellsPool: undefined } as GameState);
+  newState.factionCardPool = pool;
+  newState.allSpellsPool = allPool;
+
+  const queue = newState.pendingTriggers ?? [];
+  newState.pendingTriggers = [];
+  for (const trigger of queue) {
+    let choice: { targetInstanceId?: string; selectionCardId?: number } = {};
+    if (trigger.selectionType) {
+      const opts = trigger.selectionOptionIds ?? [];
+      if (opts.length > 0) choice = { selectionCardId: opts[Math.floor(rng() * opts.length)] };
+    } else if (trigger.capUid) {
+      const targets = endOfTurnTriggerTargets(newState, trigger);
+      if (targets.length > 0) choice = { targetInstanceId: targets[Math.floor(rng() * targets.length)] };
+    } else if (trigger.kw === "remontee") {
+      const controller = newState.players.find(p => p.id === trigger.controllerId);
+      const other = newState.players.find(p => p.id !== trigger.controllerId);
+      if (controller && other) {
+        const targets = remonteeTargetIds(controller, other, trigger.sourceInstanceId);
+        if (targets.length > 0) choice = { targetInstanceId: targets[Math.floor(rng() * targets.length)] };
+      }
+    }
+    applyOnePendingTrigger(newState, trigger, choice);
+  }
+
+  recalculateAuras(newState.players[0], newState.players[1]);
+  newState.lastAction = { type: "auto_resolve_pending_triggers" };
+  checkWinCondition(newState);
+
+  // La file est vidée : si un end_turn était en pause, on termine le tour.
+  if (newState.endTurnPending) return finishEndTurn(newState);
   return newState;
 }
 
@@ -4670,6 +4721,7 @@ export function applyAction(state: GameState, action: GameAction): GameState {
     case "tap_activate": result = tapActivate(state, action); break;
     case "concede": result = concede(state, action); break;
     case "resolve_pending_trigger": result = resolvePendingTrigger(state, action); break;
+    case "auto_resolve_pending_triggers": result = autoResolvePendingTriggers(state); break;
     default: result = state;
   }
 
@@ -4981,16 +5033,19 @@ export function getTraqueDuDestinX(card: Card): number {
   return xVals["traque_du_destin"] || Math.max(1, Math.floor(card.mana_cost / 2));
 }
 
+// Ces helpers gouvernent l'ouverture de la modale « 1 parmi 3 » À L'INVOCATION.
+// Ils doivent donc être gatés sur le mode on_play : une Sélection réglée en
+// tap/fin de tour ne doit PAS proposer de carte à l'entrée.
 export function creatureNeedsSelection(card: Card): boolean {
-  return card.card_type === "creature" && card.keywords.includes("selection" as Keyword);
+  return card.card_type === "creature" && cardHasKwOnPlay(card, "selection" as Keyword);
 }
 
 export function creatureNeedsRenfortRoyal(card: Card): boolean {
-  return card.card_type === "creature" && card.keywords.includes("renfort_royal" as Keyword);
+  return card.card_type === "creature" && cardHasKwOnPlay(card, "renfort_royal" as Keyword);
 }
 
 export function creatureNeedsMagicalSelection(card: Card): boolean {
-  return card.card_type === "creature" && card.keywords.includes("selection_magique" as Keyword);
+  return card.card_type === "creature" && cardHasKwOnPlay(card, "selection_magique" as Keyword);
 }
 
 const RENFORT_ROYAL_OWNERSHIP_THRESHOLD = 30;

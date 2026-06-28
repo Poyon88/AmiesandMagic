@@ -22,6 +22,14 @@ interface TurnTimerProps {
    *  duration spent paused is added to an offset so the player isn't
    *  penalised after unpause. */
   isPaused?: boolean;
+  /** True quand des déclencheurs interactifs « fin de tour » restent à résoudre
+   *  (file pendingTriggers du joueur local). Dans ce cas, l'expiration du chrono
+   *  ne déclenche PAS onTimeUp (end_turn, bloqué de toute façon) mais
+   *  onPendingTimeout (repli automatique au hasard). */
+  hasPendingTriggers?: boolean;
+  /** Appelé une fois quand le chrono atteint 0 alors que des pendingTriggers
+   *  restent — le joueur n'a pas choisi à temps, on résout au hasard. */
+  onPendingTimeout?: () => void;
 }
 
 function computeTimeLeft(turnStartedAt: number, offsetMs = 0): number {
@@ -36,12 +44,18 @@ export default function TurnTimer({
   turnNumber,
   turnStartedAt,
   isPaused = false,
+  hasPendingTriggers = false,
+  onPendingTimeout,
 }: TurnTimerProps) {
   const pauseStartedAtRef = useRef<number | null>(null);
   const pauseOffsetMsRef = useRef(0);
   const [timeLeft, setTimeLeft] = useState(() => computeTimeLeft(turnStartedAt));
   const onTimeUpRef = useRef(onTimeUp);
   onTimeUpRef.current = onTimeUp;
+  const onPendingTimeoutRef = useRef(onPendingTimeout);
+  onPendingTimeoutRef.current = onPendingTimeout;
+  const hasPendingTriggersRef = useRef(hasPendingTriggers);
+  hasPendingTriggersRef.current = hasPendingTriggers;
 
   const hasFiredWarningRef = useRef(false);
   const hasFiredTimeUpRef = useRef(false);
@@ -55,9 +69,19 @@ export default function TurnTimer({
     if (isPaused) return;
     const next = computeTimeLeft(turnStartedAt, pauseOffsetMsRef.current);
     setTimeLeft(next);
-    if (next <= 0 && isMyTurn && !hasFiredTimeUpRef.current) {
-      hasFiredTimeUpRef.current = true;
-      setTimeout(() => onTimeUpRef.current(), 0);
+    if (next <= 0 && isMyTurn) {
+      // Des effets « fin de tour » non résolus restent en file : on déclenche le
+      // repli automatique (résolution au hasard) au lieu de end_turn — qui serait
+      // de toute façon bloqué tant que la file n'est pas vide. Re-tenté à chaque
+      // tick : l'action draine toute la file en une fois et est idempotente
+      // (dispatch no-op pendant une animation ; la condition s'éteint dès que la
+      // file est vidée), ce qui couvre le cas « tour terminé PAR le timeout ».
+      if (hasPendingTriggersRef.current) {
+        setTimeout(() => onPendingTimeoutRef.current?.(), 0);
+      } else if (!hasFiredTimeUpRef.current) {
+        hasFiredTimeUpRef.current = true;
+        setTimeout(() => onTimeUpRef.current(), 0);
+      }
     }
   }, [turnStartedAt, isMyTurn, isPaused]);
 

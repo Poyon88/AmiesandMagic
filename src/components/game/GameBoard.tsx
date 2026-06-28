@@ -210,6 +210,18 @@ export default function GameBoard({ onAction }: GameBoardProps) {
     broadcast(dispatchAction({ type: "end_turn" }));
   }, [dispatchAction, broadcast]);
 
+  // Chrono écoulé alors que des effets « fin de tour » restent à résoudre : le
+  // joueur n'a pas choisi à temps → repli automatique (résolution au hasard,
+  // déterministe côté moteur). Seul le joueur actif (contrôleur de la file) émet
+  // l'action ; dispatchAction no-op pendant une animation, donc re-tentable.
+  const handleAutoResolvePending = useCallback(() => {
+    const s = useGameStore.getState();
+    if (!s.gameState || s.isAnimating) return;
+    if (s.gameState.players[s.gameState.currentPlayerIndex].id !== s.localPlayerId) return;
+    if ((s.gameState.pendingTriggers?.length ?? 0) === 0) return;
+    broadcast(dispatchAction({ type: "auto_resolve_pending_triggers" }));
+  }, [dispatchAction, broadcast]);
+
   const handleActivateHeroPower = useCallback(() => {
     const action = activateHeroPower();
     broadcast(action);
@@ -1031,6 +1043,8 @@ export default function GameBoard({ onAction }: GameBoardProps) {
             turnNumber={gameState.turnNumber}
             turnStartedAt={gameState.turnStartedAt}
             isPaused={isAutoAttacking}
+            hasPendingTriggers={(gameState.pendingTriggers?.length ?? 0) > 0}
+            onPendingTimeout={handleAutoResolvePending}
           />
           <button
             onClick={handleEndTurn}

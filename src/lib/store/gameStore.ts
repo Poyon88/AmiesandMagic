@@ -818,7 +818,9 @@ export const useGameStore = create<GameStore>((set, get) => {
 
     // Tant qu'un déclencheur interactif est en attente, seule sa résolution est
     // permise (le contrôleur doit choisir une cible avant toute autre action).
-    if ((gameState.pendingTriggers?.length ?? 0) > 0 && action.type !== "resolve_pending_trigger") {
+    if ((gameState.pendingTriggers?.length ?? 0) > 0
+      && action.type !== "resolve_pending_trigger"
+      && action.type !== "auto_resolve_pending_triggers") {
       return null;
     }
 

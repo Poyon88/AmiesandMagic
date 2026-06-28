@@ -114,6 +114,19 @@ describe("Sélection en fin de tour (on_end_of_turn)", () => {
     expect(s2.pendingTriggers?.length ?? 0).toBe(0);
   });
 
+  it("RÉGRESSION : une Sélection en fin de tour ne se déclenche PAS à l'invocation", () => {
+    const s0 = mkState();
+    s0.factionCardPool = [commune(903)];
+    const ci = mkInstance(mkCard({ attack: 1, health: 1, faction: undefined,
+      keywords: ["selection"] as unknown as Card["keywords"],
+      keyword_instances: [{ id: "selection" as Keyword, mode: "end_of_turn" }] }));
+    s0.players[0].hand.push(ci);
+    initRNG(42);
+    // Même en forçant selectionCardId, rien ne doit être ajouté à l'entrée.
+    const s = applyAction(s0, { type: "play_card", cardInstanceId: ci.instanceId, selectionCardId: 903 });
+    expect(s.players[0].hand.some(c => c.card.id === 903)).toBe(false);
+  });
+
   it("aucune carte éligible (pool vide) → pas de pending trigger, le tour bascule", () => {
     const s0 = mkState();
     s0.factionCardPool = [];
@@ -125,5 +138,77 @@ describe("Sélection en fin de tour (on_end_of_turn)", () => {
     const s = applyAction(s0, { type: "end_turn" });
     expect(s.pendingTriggers?.length ?? 0).toBe(0);
     expect(s.currentPlayerIndex).toBe(1);
+  });
+});
+
+describe("Repli automatique à l'expiration du chrono (auto_resolve_pending_triggers)", () => {
+  // Construit un état où la file contient une Sélection fin de tour non résolue.
+  function stateWithPendingSelection(poolIds: number[]) {
+    const s0 = mkState();
+    s0.factionCardPool = poolIds.map(id => commune(id));
+    s0.players[1].deck = [mkInstance(mkCard({}))]; // évite la fatigue au startTurn suivant
+    const src = mkInstance(mkCard({ attack: 1, health: 3, faction: undefined,
+      keywords: ["selection"] as unknown as Card["keywords"],
+      keyword_instances: [{ id: "selection" as Keyword, mode: "end_of_turn" }] }));
+    s0.players[0].board = [src];
+    initRNG(7);
+    return applyAction(s0, { type: "end_turn" }); // crée le pending, ne bascule pas
+  }
+
+  it("résout au hasard la Sélection en attente, vide la file et bascule le tour", () => {
+    const s1 = stateWithPendingSelection([901, 902, 903]);
+    expect(s1.pendingTriggers?.[0]?.selectionType).toBe("selection");
+    const s2 = applyAction(s1, { type: "auto_resolve_pending_triggers" });
+    expect(s2.players[0].hand.length).toBe(1);
+    expect([901, 902, 903]).toContain(s2.players[0].hand[0].card.id);
+    expect(s2.pendingTriggers?.length ?? 0).toBe(0);
+    expect(s2.currentPlayerIndex).toBe(1);
+  });
+
+  it("est déterministe : même état initial ⇒ même carte choisie", () => {
+    const a = applyAction(stateWithPendingSelection([901, 902, 903]), { type: "auto_resolve_pending_triggers" });
+    const b = applyAction(stateWithPendingSelection([901, 902, 903]), { type: "auto_resolve_pending_triggers" });
+    expect(a.players[0].hand[0].card.id).toBe(b.players[0].hand[0].card.id);
+  });
+
+  it("draine PLUSIEURS effets en attente (2 créatures Sélection)", () => {
+    const s0 = mkState();
+    s0.factionCardPool = [commune(901), commune(902), commune(903)];
+    s0.players[1].deck = [mkInstance(mkCard({}))];
+    s0.players[0].board = [
+      mkInstance(mkCard({ attack: 1, health: 3, faction: undefined,
+        keywords: ["selection"] as unknown as Card["keywords"],
+        keyword_instances: [{ id: "selection" as Keyword, mode: "end_of_turn" }] })),
+      mkInstance(mkCard({ attack: 1, health: 3, faction: undefined,
+        keywords: ["selection"] as unknown as Card["keywords"],
+        keyword_instances: [{ id: "selection" as Keyword, mode: "end_of_turn" }] })),
+    ];
+    initRNG(7);
+    const s1 = applyAction(s0, { type: "end_turn" });
+    expect(s1.pendingTriggers?.length).toBe(2);
+    const s2 = applyAction(s1, { type: "auto_resolve_pending_triggers" });
+    expect(s2.players[0].hand.length).toBe(2);
+    expect(s2.pendingTriggers?.length ?? 0).toBe(0);
+    expect(s2.currentPlayerIndex).toBe(1);
+  });
+});
+
+describe("RÉGRESSION générale : mot-clé curé en mode fin de tour", () => {
+  it("Inspiration en fin de tour pioche en fin de tour, PAS à l'invocation", () => {
+    const s0 = mkState();
+    s0.players[0].deck = [mkInstance(mkCard({})), mkInstance(mkCard({})), mkInstance(mkCard({})), mkInstance(mkCard({})), mkInstance(mkCard({}))];
+    const ci = mkInstance(mkCard({ attack: 1, health: 1,
+      keywords: ["inspiration"] as unknown as Card["keywords"],
+      keyword_instances: [{ id: "inspiration" as Keyword, mode: "end_of_turn", x: 2 }] }));
+    s0.players[0].hand.push(ci);
+    initRNG(42);
+
+    const afterPlay = applyAction(s0, { type: "play_card", cardInstanceId: ci.instanceId });
+    expect(afterPlay.players[0].hand.length).toBe(0); // aucune pioche à l'entrée
+    expect(afterPlay.players[0].deck.length).toBe(5);
+
+    const afterEnd = applyAction(afterPlay, { type: "end_turn" });
+    expect(afterEnd.players[0].hand.length).toBe(2); // Inspiration 2 en fin de tour
+    expect(afterEnd.players[0].deck.length).toBe(3);
   });
 });
