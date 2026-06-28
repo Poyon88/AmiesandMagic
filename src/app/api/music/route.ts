@@ -128,3 +128,32 @@ export async function DELETE(request: Request) {
     );
   }
 }
+
+const ALLOWED_CATEGORIES = ["menu", "board", "tense", "victory", "defeat"];
+
+// Update an existing track's category (recategorize without re-uploading).
+export async function PATCH(request: Request) {
+  const auth = await requireAdmin();
+  if (auth.error) return auth.error;
+
+  try {
+    const { id, category } = await request.json();
+    if (!id) return NextResponse.json({ error: "ID requis" }, { status: 400 });
+    if (!ALLOWED_CATEGORIES.includes(category)) {
+      return NextResponse.json({ error: "Catégorie invalide" }, { status: 400 });
+    }
+
+    const { error } = await auth.supabase
+      .from("music_tracks")
+      .update({ category })
+      .eq("id", id);
+    if (error) throw new Error(error.message);
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Erreur inconnue" },
+      { status: 500 }
+    );
+  }
+}

@@ -34,7 +34,7 @@ export default function MusicManager() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [newName, setNewName] = useState("");
-  const [newCategory, setNewCategory] = useState("menu");
+  const [newCategory, setNewCategory] = useState("board");
   const [newAudio, setNewAudio] = useState<{ base64: string; mimeType: string } | null>(null);
   const [newFileName, setNewFileName] = useState<string | null>(null);
   const previewRef = useRef<HTMLAudioElement>(null);
@@ -102,6 +102,24 @@ export default function MusicManager() {
       setError(err instanceof Error ? err.message : "Erreur réseau");
     }
     setSaving(false);
+  };
+
+  const handleCategoryChange = async (track: MusicTrack, category: string) => {
+    if (category === track.category) return;
+    try {
+      const res = await fetch("/api/music", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: track.id, category }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        console.error("Erreur changement catégorie:", data.error);
+      }
+      await loadTracks();
+    } catch (err) {
+      console.error("Erreur changement catégorie:", err);
+    }
   };
 
   const handleDelete = async (track: MusicTrack) => {
@@ -196,21 +214,28 @@ export default function MusicManager() {
 
       {/* Track list */}
       {tracks.map((track) => {
-        const cat = CATEGORIES.find((c) => c.value === track.category);
         return (
           <div key={track.id} style={STYLE.card}>
             <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
               <div style={{ flex: 1 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
                   <h3 style={{ ...STYLE.title, margin: 0 }}>{track.name}</h3>
-                  <span style={{
-                    ...STYLE.badge,
-                    background: "#e8f0fe",
-                    color: "#1a73e8",
-                    border: "1px solid #a8c7fa",
-                  }}>
-                    {cat?.label || track.category}
-                  </span>
+                  <select
+                    value={track.category}
+                    onChange={(e) => handleCategoryChange(track, e.target.value)}
+                    title="Changer la catégorie"
+                    style={{
+                      ...STYLE.badge,
+                      background: "#e8f0fe",
+                      color: "#1a73e8",
+                      border: "1px solid #a8c7fa",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {CATEGORIES.map((c) => (
+                      <option key={c.value} value={c.value}>{c.label}</option>
+                    ))}
+                  </select>
                 </div>
                 <p style={{ fontSize: 9, color: "#aaa", marginBottom: 8 }}>
                   Ajouté le {new Date(track.created_at).toLocaleDateString("fr-FR")}
