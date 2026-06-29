@@ -68,6 +68,15 @@ let currentPlayerId = "";
 // Accumulateur de déclencheurs interactifs créés pendant l'action en cours.
 // Vidé au début d'applyAction, rattaché au state retourné à la fin.
 let pendingTriggerSink: PendingTrigger[] = [];
+// Accumulateur des points de dégâts/soin SÉQUENTIELS (scatter, Tempête) émis un
+// à un pendant l'action en cours, dans l'ordre. Vidé au début d'applyAction,
+// rattaché à state.sequentialHits à la fin (indice d'animation, hors hash). On
+// passe par un sink module-level — comme pendingTriggerSink — pour éviter de
+// threader le state dans resolveComposedEffect et tous ses appelants.
+let sequentialHitsSink: Array<{ targetInstanceId: string; type: "damage" | "heal" }> = [];
+// Ids des joueurs dans l'ordre de state.players (set dans applyAction). Sert à
+// résoudre l'index du sentinel héros `__hero_<idx>__` sans porter le state.
+let currentPlayerIds: string[] = [];
 
 export function initRNG(seed: number) {
   rngState = seed | 0;
@@ -530,13 +539,21 @@ function resolveComposedEffect(
   // points sur une créature à 1 PV → le 2e doit partir ailleurs, ou se perdre).
   if (target.designation === "scatter" && (composed.content === "deal_damage" || composed.content === "heal")) {
     const points = Math.max(0, x);
+    const seqType = composed.content === "heal" ? "heal" : "damage";
     for (let i = 0; i < points; i++) {
       const pool = buildComposedPool(target, owner, opponent)
         .filter((ref) => ref.kind === "hero" || ref.unit.currentHealth > 0);
       if (pool.length === 0) break;
       const ref = pool[Math.floor(rng() * pool.length)];
-      if (ref.kind === "hero") applyComposedToHero(composed.content, ref.hero, 1);
-      else applyComposedToUnit(composed, ref.unit, 1, 0, source, owner, opponent);
+      if (ref.kind === "hero") {
+        applyComposedToHero(composed.content, ref.hero, 1);
+        const heroOwner = ref.hero === owner.hero ? owner : opponent;
+        const idx = currentPlayerIds.indexOf(heroOwner.id);
+        sequentialHitsSink.push({ targetInstanceId: `__hero_${idx}__`, type: seqType });
+      } else {
+        applyComposedToUnit(composed, ref.unit, 1, 0, source, owner, opponent);
+        sequentialHitsSink.push({ targetInstanceId: ref.unit.instanceId, type: seqType });
+      }
     }
     return;
   }
@@ -2036,6 +2053,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
         if (alive.length === 0) break;
         const target = alive[Math.floor(rng() * alive.length)];
         dealDamageToCreature(target, 1, false, true);
+        sequentialHitsSink.push({ targetInstanceId: target.instanceId, type: "damage" });
       }
     }
 
@@ -2778,6 +2796,7 @@ function resolveSpellKeywords(
           if (alive.length === 0) break;
           const target = alive[Math.floor(rng() * alive.length)];
           dealDamageToCreature(target, 1, false, true);
+          sequentialHitsSink.push({ targetInstanceId: target.instanceId, type: "damage" });
         }
         break;
       }
@@ -4521,6 +4540,41 @@ function triggerPassiveOnCreatureDeath(_player: PlayerState, _deadCount: number)
 // Validations run in this order: definition exists, not already used this
 // turn, usage limit not exhausted, enough mana. All gated by silent return
 // of the unchanged input state on failure (mirrors legacy useHeroPower).
+/** Carte « sort » synthétique portant l'effet composé d'un pouvoir de héros en
+ *  une unique capacité spell_resolution. Utilisée par le calcul des slots de
+ *  ciblage ET par la résolution — source unique pour qu'ils ne divergent pas.
+ *  uid stable "hp_0" → les clés targetMap concordent entre store et moteur.
+ *  Null si le pouvoir n'est pas en mode "composed". */
+export function heroPowerSyntheticCard(heroDef: HeroDefinition): Card | null {
+  const effect = heroDef.powerEffect;
+  if (!effect || effect.mode !== "composed" || !effect.composed) return null;
+  return {
+    id: -1, name: heroDef.powerName ?? "Pouvoir", mana_cost: heroDef.powerCost,
+    card_type: "spell", attack: 0, health: 0,
+    effect_text: heroDef.powerDescription ?? "",
+    keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
+    capabilities: [{
+      uid: "hp_0", trigger: "spell_resolution", effectKind: "immediate",
+      abilityId: "_composed", composed: effect.composed,
+    }],
+  } as Card;
+}
+
+/** Descripteur des slots à CHOISIR par le joueur pour un pouvoir composé
+ *  (homogène : une seule capacité, N cibles de même type). Null quand aucun
+ *  picker n'est requis (self / hero-only / random / automatic / all / scatter /
+ *  effet sur le contrôleur) — résolu alors avec un targetMap vide. */
+export function heroPowerComposedChoice(
+  heroDef: HeroDefinition,
+): { uid: string; count: number; type: SpellTargetType } | null {
+  const synth = heroPowerSyntheticCard(heroDef);
+  if (!synth) return null;
+  const SELECTABLE: SpellTargetType[] = ["any", "any_creature", "friendly_creature", "enemy_creature"];
+  const slots = getSpellTargetSlots(synth).filter(s => SELECTABLE.includes(s.type));
+  if (!slots.length) return null;
+  return { uid: slots[0].slot.split("#")[0], count: slots.length, type: slots[0].type };
+}
+
 export function useHeroPower(state: GameState, action: HeroPowerAction): GameState {
   const pool = state.factionCardPool;
   const allPool = state.allSpellsPool;
@@ -4685,6 +4739,22 @@ export function useHeroPower(state: GameState, action: HeroPowerAction): GameSta
       }
       break;
     }
+
+    case "composed": {
+      // Mode 4 : effet composé résolu comme un sort lancé par le héros. On
+      // réutilise EXACTEMENT le chemin sort (carte synthétique → interpréteur
+      // composé via targetMap), suivi du même nettoyage post-sort (morts +
+      // râles d'agonie ; recalculateAuras ci-dessous complète la parité).
+      const synth = heroPowerSyntheticCard(heroDef);
+      if (synth) {
+        runComposedCapsForCard(synth, "spell_resolution", null, player, opponent, action.targetMap);
+        const pDead = cleanDeadCreatures(player);
+        const oDead = cleanDeadCreatures(opponent);
+        processDeathTriggers(pDead, player, opponent);
+        processDeathTriggers(oDead, opponent, player);
+      }
+      break;
+    }
   }
 
   recalculateAuras(player, opponent);
@@ -4715,6 +4785,7 @@ export function heroPowerNeedsTarget(heroDef: HeroDefinition): boolean {
     const creatureTarget = CREATURE_KEYWORD_HERO_POWER_TARGET[effect.keywordId];
     return creatureTarget != null && creatureTarget !== "none";
   }
+  if (effect.mode === "composed") return heroPowerComposedChoice(heroDef) != null;
   return false; // aura → no target
 }
 
@@ -4752,6 +4823,12 @@ export function getHeroPowerTargets(state: GameState, heroDef: HeroDefinition): 
       return [...player.board.map(c => c.instanceId), ...opponent.board.map(c => c.instanceId)];
     }
     return [];
+  }
+  if (effect.mode === "composed") {
+    const choice = heroPowerComposedChoice(heroDef);
+    const synth = heroPowerSyntheticCard(heroDef);
+    if (!choice || !synth) return [];
+    return getSpellTargets(state, synth, choice.type);
   }
   return []; // aura → no target
 }
@@ -4812,7 +4889,9 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   currentTokenTemplates = state.tokenTemplates ?? [];
   currentTurnNumber = state.turnNumber;
   currentPlayerId = state.players[state.currentPlayerIndex].id;
+  currentPlayerIds = state.players.map(p => p.id);
   pendingTriggerSink = [];
+  sequentialHitsSink = [];
   // Load the RNG position carried in the state so this action's random draws
   // continue the exact stream both clients share (rather than a module
   // singleton that can drift). Written back into `result` below.
@@ -4836,6 +4915,11 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   // retour de Remontée au tour du contrôleur) à l'état retourné.
   if (pendingTriggerSink.length > 0 && result !== state) {
     result.pendingTriggers = [...(result.pendingTriggers ?? []), ...pendingTriggerSink];
+  }
+  // Rattache les points séquentiels (scatter/Tempête) émis pendant l'action,
+  // dans l'ordre, pour que le store anime un popup + un burst par point.
+  if (sequentialHitsSink.length > 0 && result !== state) {
+    result.sequentialHits = [...(result.sequentialHits ?? []), ...sequentialHitsSink];
   }
   // Persist the advanced RNG position into the returned state so the next
   // action (here or on the other client) resumes the same stream.

@@ -21,8 +21,8 @@ import type { GameState } from "./types";
 //    the snapshot too; each client re-attaches its own copy.
 //  - turnStartedAt : a wall-clock Date.now() stamped per client in startTurn;
 //    legitimately differs between clients and never affects gameplay.
-//  - fureurStrikes / onAttackWave : transient animation hints, cleared by the
-//    store after scheduling; not part of the durable game truth.
+//  - fureurStrikes / onAttackWave / sequentialHits : transient animation hints,
+//    cleared by the store after scheduling; not part of the durable game truth.
 const VOLATILE_KEYS = new Set([
   "factionCardPool",
   "allSpellsPool",
@@ -30,6 +30,7 @@ const VOLATILE_KEYS = new Set([
   "turnStartedAt",
   "fureurStrikes",
   "onAttackWave",
+  "sequentialHits",
 ]);
 
 // Deterministic JSON: object keys emitted in sorted order so two structurally

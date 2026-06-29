@@ -615,11 +615,15 @@ export type Race = "elves" | "dwarves" | "halflings" | "humans" | "beastmen" | "
 export type HeroPowerMode =
   | "grant_keyword"   // pay cost → grant the keyword to a targeted creature
   | "spell_trigger"   // pay cost → fire the keyword's spell-side effect once
-  | "aura";           // pay cost → activate a persistent aura (stackable)
+  | "aura"            // pay cost → activate a persistent aura (stackable)
+  | "composed";       // pay cost → resolve a composed effect, like a spell cast by the hero
 
 export interface HeroPowerEffect {
   mode: HeroPowerMode;
   keywordId: string;  // matches an entry in ABILITIES (src/lib/game/abilities.ts)
+  // mode === "composed" : effet générique résolu par l'interpréteur composé
+  // (resolveComposedEffect), comme un sort. keywordId vaut "_composed" (ignoré).
+  composed?: ComposedEffect;
   // Optional numeric params for keywords that need them:
   //   amount → Impact X, Inspiration X, Convocation X, Renforcement (X part), …
   //   attack / health → Renforcement +X/+Y, summon_token override stats, …
@@ -735,6 +739,15 @@ export interface GameState {
     attackerInstanceId: string;
     victimInstanceId: string;
   }>;
+  // Transient: chaque point INDIVIDUEL d'une source de dégâts/soin séquentielle
+  // (effets composés scatter, Tempête) est poussé ici dans l'ordre de résolution,
+  // pour que le store rende un popup + un burst VFX décalés par point au lieu d'un
+  // total agrégé par cible. Héros via le sentinel `__hero_<idx>__` (cf. fureurStrikes).
+  // Vidé par le store après planification ; exclu du hash d'état.
+  sequentialHits?: Array<{
+    targetInstanceId: string;
+    type: "damage" | "heal";
+  }>;
   // Transient: when an attack fires an "à l'attaque" composed power, the engine
   // attaches the post-power / pre-combat board here so the store can animate the
   // power in a first wave (its damage/deaths) then combat in a second wave.
@@ -793,6 +806,9 @@ export interface MulliganAction {
 export interface HeroPowerAction {
   type: "hero_power";
   targetInstanceId?: string;
+  // mode === "composed" : cibles choisies par slot `${uid}#${i}` (comme un
+  // sort). Lu par runComposedCapsForCard via la carte synthétique du pouvoir.
+  targetMap?: Record<string, string>;
   // Card chosen via the selection / renfort_royal / selection_magique
   // overlay when the hero power's keyword routes through a picker. The
   // engine looks the card up in factionCardPool / allSpellsPool and adds

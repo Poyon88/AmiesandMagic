@@ -16,6 +16,7 @@ import {
   canUseHeroPower,
   heroPowerNeedsTarget,
   getHeroPowerTargets,
+  heroPowerComposedChoice,
   creatureNeedsTarget,
   getCreatureTargets,
   getCreatureComposedChoice,
@@ -182,6 +183,9 @@ interface GameStore {
   collectedTargetMap: Record<string, string>;
   // Cibles collectées pour un effet composé multi-cibles "au choix" d'une créature.
   creatureComposedCollected: string[];
+  // Pouvoir de héros composé en cours de ciblage : uid de la capacité + nombre
+  // de cibles à collecter (réutilise creatureComposedCollected pour l'accu).
+  pendingHeroPowerComposed: { uid: string; count: number } | null;
   // Attaque avec pouvoir composé "à l'attaque" en désignation "au choix" : la
   // cible d'attaque est mémorisée pendant qu'on collecte les cibles du pouvoir.
   pendingAttackDefenderId: string | null;
@@ -712,6 +716,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   currentTargetSlotIndex: 0,
   collectedTargetMap: {},
   creatureComposedCollected: [],
+  pendingHeroPowerComposed: null,
   pendingAttackDefenderId: null,
   attackPowerCollected: [],
   pendingCreatureChain: null,
@@ -960,6 +965,31 @@ export const useGameStore = create<GameStore>((set, get) => {
     const FUREUR_PHASE_EXTRA_MS = fureurStrikes.length > 0
       ? FUREUR_DAMAGE_DELAY_MS + (fureurStrikes.length - 1) * FUREUR_LUNGE_GAP_MS + 500
       : 0;
+
+    // Points séquentiels (scatter / Tempête) : un popup + un burst VFX par point,
+    // dans l'ordre réel, au lieu d'un total agrégé par cible (même patron que
+    // fureurStrikes). On vide la liste transitoire après extraction. Désactivé
+    // sur le chemin "à l'attaque" (onAttackWave) où ces dégâts vivent dans la
+    // vague 1 — on retombe alors sur l'agrégat existant.
+    const rawSeqHits = (!onAttackWave && newState.sequentialHits) ? newState.sequentialHits : [];
+    if (newState.sequentialHits) newState.sequentialHits = undefined;
+    // Retraduit le sentinel héros `__hero_<idx>__` en repère local (cf. fureur).
+    const seqHits = rawSeqHits.map((h) => {
+      const m = /^__hero_(\d)__$/.exec(h.targetInstanceId);
+      if (!m) return h;
+      const isLocal = newState.players[+m[1]]?.id === localPlayerId;
+      return { ...h, targetInstanceId: isLocal ? "friendly_hero" : "enemy_hero" };
+    });
+    const SEQ_STEP_MS = 140; // décalage par point (~130–160ms = points distincts à l'œil)
+    const seqTargets = new Set(seqHits.map((h) => h.targetInstanceId));
+    const seqEvents: DamageEvent[] = seqHits.map((h, i) => ({
+      targetId: h.targetInstanceId,
+      amount: 1,
+      type: h.type,
+      ...getElementCenter(h.targetInstanceId),
+      delayMs: i * SEQ_STEP_MS,
+    }));
+    const SEQ_PHASE_EXTRA_MS = seqEvents.length > 0 ? (seqEvents.length - 1) * SEQ_STEP_MS + 500 : 0;
 
     // Detect recast spells by comparing spell history
     const newHistoryLen = newState.players[playerIdx].spellHistory?.length ?? 0;
@@ -1549,7 +1579,14 @@ export const useGameStore = create<GameStore>((set, get) => {
         return { ...ev, delayMs: base + fureurBonus };
       });
     };
-    const staggeredDmgEvents = staggerByTarget(impactOnlyEvents);
+    // Pour les cibles touchées par des points séquentiels, on retire l'agrégat
+    // diffé (damage/heal) — remplacé par les seqEvents par point déjà décalés
+    // (qui NE repassent PAS par staggerByTarget, sinon leur delayMs serait
+    // écrasé). Les autres types (shield/poison/empower) restent intacts.
+    const nonSeqImpactEvents = impactOnlyEvents.filter(
+      (ev) => !(seqTargets.has(ev.targetId) && (ev.type === "damage" || ev.type === "heal")),
+    );
+    const staggeredDmgEvents = [...staggerByTarget(nonSeqImpactEvents), ...seqEvents];
     const staggeredTriggerEvents = staggerByTarget(deferredBuffEvents);
 
     // --- Wave 1 (on-attack power) artifacts: diff gameState → intermediate ---
@@ -1720,7 +1757,7 @@ export const useGameStore = create<GameStore>((set, get) => {
 
     // Phase B (Impacts) — always run if there's anything beyond the overlay.
     setTimeout(phaseImpacts, cursor);
-    cursor += IMPACT_MS + FUREUR_PHASE_EXTRA_MS;
+    cursor += IMPACT_MS + FUREUR_PHASE_EXTRA_MS + SEQ_PHASE_EXTRA_MS;
 
     if (hasDeaths) {
       setTimeout(phaseDeaths, cursor);
@@ -2509,6 +2546,23 @@ export const useGameStore = create<GameStore>((set, get) => {
         divinationChoiceIndex: pendingCreatureChain?.divinationChoiceIndex,
       });
     } else if (targetingMode === "hero_power") {
+      // Pouvoir composé multi-cibles "au choix" : collecte N cibles puis dispatch
+      // un targetMap par slot (même patron que l'effet composé de créature).
+      const { pendingHeroPowerComposed } = get();
+      if (pendingHeroPowerComposed) {
+        const collected = [...get().creatureComposedCollected, targetId];
+        if (collected.length < pendingHeroPowerComposed.count) {
+          set({
+            creatureComposedCollected: collected,
+            validTargets: get().validTargets.filter(t => t !== targetId), // pas de double-pick
+          });
+          return null; // on continue à collecter
+        }
+        const targetMap: Record<string, string> = {};
+        collected.forEach((id, i) => { targetMap[`${pendingHeroPowerComposed.uid}#${i}`] = id; });
+        set({ creatureComposedCollected: [], pendingHeroPowerComposed: null });
+        return get().dispatchAction({ type: "hero_power", targetMap });
+      }
       return get().dispatchAction({
         type: "hero_power",
         targetInstanceId: targetId,
@@ -2578,6 +2632,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       currentTargetSlotIndex: 0,
       collectedTargetMap: {},
       creatureComposedCollected: [],
+      pendingHeroPowerComposed: null,
       pendingAttackDefenderId: null,
       attackPowerCollected: [],
       pendingCreatureChain: null,
@@ -2890,6 +2945,25 @@ export const useGameStore = create<GameStore>((set, get) => {
         });
         return null;
       }
+    }
+
+    // Pouvoir composé : si des cibles doivent être choisies, on entre en mode
+    // hero_power en mémorisant le slot (uid + nombre) pour collecter N cibles.
+    // Sinon (self / hero-only / random / automatic / draw / mana / …) → direct.
+    if (effect && effect.mode === "composed") {
+      const choice = heroPowerComposedChoice(heroDef);
+      if (!choice) {
+        return get().dispatchAction({ type: "hero_power" });
+      }
+      set({
+        selectedCardInstanceId: null,
+        selectedAttackerInstanceId: null,
+        validTargets: getHeroPowerTargets(gameState, heroDef),
+        targetingMode: "hero_power",
+        pendingHeroPowerComposed: { uid: choice.uid, count: choice.count },
+        creatureComposedCollected: [],
+      });
+      return null;
     }
 
     if (heroPowerNeedsTarget(heroDef)) {

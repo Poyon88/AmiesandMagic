@@ -7,7 +7,7 @@ import { ABILITIES } from '@/lib/game/abilities';
 import { validateFactionClan } from '@/lib/validation/faction-clan';
 import { requireAdmin } from '@/lib/admin/requireAdmin';
 
-const ALLOWED_POWER_MODES = new Set(['grant_keyword', 'spell_trigger', 'aura']);
+const ALLOWED_POWER_MODES = new Set(['grant_keyword', 'spell_trigger', 'aura', 'composed']);
 
 type PowerEffectV2 = {
   mode: string;
@@ -16,6 +16,7 @@ type PowerEffectV2 = {
   tokenId?: number | null;
   race?: string;
   clan?: string;
+  composed?: Record<string, unknown>;
 };
 
 function validatePowerEffect(
@@ -28,7 +29,20 @@ function validatePowerEffect(
   const mode = obj.mode;
   const keywordId = obj.keywordId;
   if (typeof mode !== 'string' || !ALLOWED_POWER_MODES.has(mode)) {
-    return { ok: false, error: 'powerEffect.mode doit être grant_keyword, spell_trigger ou aura' };
+    return { ok: false, error: 'powerEffect.mode doit être grant_keyword, spell_trigger, aura ou composed' };
+  }
+  // Mode "composed" : effet générique (résolu comme un sort). Pas de keyword
+  // dans ABILITIES ; on valide la présence d'un objet composed { content, … }.
+  if (mode === 'composed') {
+    const composed = obj.composed;
+    if (!composed || typeof composed !== 'object') {
+      return { ok: false, error: 'powerEffect.composed requis (objet { content, target?, magnitude? }) pour le mode composed' };
+    }
+    const content = (composed as Record<string, unknown>).content;
+    if (typeof content !== 'string' || !content.trim()) {
+      return { ok: false, error: 'powerEffect.composed.content requis' };
+    }
+    return { ok: true, value: { mode, keywordId: '_composed', composed: composed as Record<string, unknown> } };
   }
   if (typeof keywordId !== 'string' || !keywordId.trim()) {
     return { ok: false, error: 'powerEffect.keywordId requis' };

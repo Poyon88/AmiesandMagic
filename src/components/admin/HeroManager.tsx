@@ -3,8 +3,9 @@
 import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Stage, useGLTF } from "@react-three/drei";
-import type { TokenTemplate } from "@/lib/game/types";
+import type { TokenTemplate, Capability, ComposedEffect } from "@/lib/game/types";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
+import ComposedEffectsEditor from "@/components/card-forge/ComposedEffectsEditor";
 import { FACTIONS, getFactionDisplayName, getClanNamesForRace } from "@/lib/card-engine/constants";
 import { ABILITIES } from "@/lib/game/abilities";
 import { autoTrimDarkBorders } from "@/lib/card-back-frames";
@@ -91,11 +92,21 @@ async function compressBase64Image(
 // Power system V2 — see /Users/encellefabrice/.claude/plans/tender-tickling-wilkes.md
 // for the design. A hero power is (mode, keywordId, params, tokenId?).
 
-const POWER_MODE_LABELS: Record<"grant_keyword" | "spell_trigger" | "aura", string> = {
+const POWER_MODE_LABELS: Record<"grant_keyword" | "spell_trigger" | "aura" | "composed", string> = {
   grant_keyword: "1. Donner la capacité à une créature ciblée",
   spell_trigger: "2. Déclencher l'effet une fois (comme un sort)",
   aura: "3. Activer comme aura persistante (cumulable)",
+  composed: "4. Effet composé (avancé : dégâts/soin/buff/cibles…)",
 };
+
+// Capacité composée par défaut pour un pouvoir de héros (mode "composed").
+// uid stable "hp_0" attendu par le moteur (heroPowerSyntheticCard).
+function defaultHeroComposedCap(): Capability {
+  return {
+    uid: "hp_0", trigger: "spell_resolution", effectKind: "immediate", abilityId: "_composed",
+    composed: { content: "deal_damage", magnitude: { x: 1 }, target: { entity: "unit", count: 1, side: "enemy", location: "board", designation: "choice" } },
+  };
+}
 
 // Imports below — ABILITIES is the unified registry shared with creature
 // + spell sides. We pick the picker entries from there.
@@ -170,7 +181,8 @@ export default function HeroManager() {
   const [powerName, setPowerName] = useState("");
   const [powerCost, setPowerCost] = useState<number>(2);
   // V2 power system : (mode, keywordId, params).
-  const [powerMode, setPowerMode] = useState<"grant_keyword" | "spell_trigger" | "aura">("grant_keyword");
+  const [powerMode, setPowerMode] = useState<"grant_keyword" | "spell_trigger" | "aura" | "composed">("grant_keyword");
+  const [powerComposed, setPowerComposed] = useState<Capability[]>([defaultHeroComposedCap()]);
   const [powerKeywordId, setPowerKeywordId] = useState<string>("divine_shield");
   const [powerParamAmount, setPowerParamAmount] = useState<number>(1);
   const [powerParamAttack, setPowerParamAttack] = useState<number>(0);
@@ -335,6 +347,7 @@ export default function HeroManager() {
     setPowerName("");
     setPowerCost(2);
     setPowerMode("grant_keyword");
+    setPowerComposed([defaultHeroComposedCap()]);
     setPowerKeywordId("divine_shield");
     setPowerParamAmount(1);
     setPowerParamAttack(0);
@@ -374,8 +387,14 @@ export default function HeroManager() {
     setPowerCost(typeof hero.power_cost === "number" ? hero.power_cost : 2);
     setPowerDescription(hero.power_description ?? "");
     const pe = (hero.power_effect ?? {}) as Record<string, unknown>;
-    const mode = pe.mode === "spell_trigger" || pe.mode === "aura" ? pe.mode : "grant_keyword";
-    setPowerMode(mode as "grant_keyword" | "spell_trigger" | "aura");
+    const mode = pe.mode === "spell_trigger" || pe.mode === "aura" || pe.mode === "composed" ? pe.mode : "grant_keyword";
+    setPowerMode(mode as "grant_keyword" | "spell_trigger" | "aura" | "composed");
+    // mode "composed" : on charge l'effet composé dans une capacité unique "hp_0".
+    setPowerComposed(
+      mode === "composed" && pe.composed
+        ? [{ uid: "hp_0", trigger: "spell_resolution", effectKind: "immediate", abilityId: "_composed", composed: pe.composed as ComposedEffect }]
+        : [defaultHeroComposedCap()],
+    );
     const kwid = typeof pe.keywordId === "string" && pe.keywordId in ABILITIES ? pe.keywordId : "divine_shield";
     setPowerKeywordId(kwid);
     const params = (pe.params ?? {}) as Record<string, unknown>;
@@ -681,41 +700,53 @@ export default function HeroManager() {
       setError("Modèle 3D (GLB) ou image 2D requis");
       return;
     }
-    // Build the V2 power effect from the form state. Only include params
-    // that the chosen keyword actually consumes (server validates).
-    const ability = ABILITIES[powerKeywordId];
-    const wantsAmount =
-      !!ability?.spell?.params?.includes("amount")
-      // Creature-side scalable keywords (Résistance X, Carnage X, …) also
-      // need the X value persisted.
-      || !!ability?.creature?.scalable;
-    const wantsAttack = !!ability?.spell?.params?.includes("attack");
-    const wantsHealth = !!ability?.spell?.params?.includes("health");
-    const params: { amount?: number; attack?: number; health?: number } = {};
-    if (wantsAmount) params.amount = powerParamAmount;
-    if (wantsAttack) params.attack = powerParamAttack;
-    if (wantsHealth) params.health = powerParamHealth;
-    // Mode 3 (aura) also benefits from a stack-multiplier value even on
-    // keywords that don't formally declare a scalable param.
-    if (!wantsAmount && !wantsAttack && !wantsHealth && powerMode === "aura" && powerParamAmount > 0) {
-      params.amount = powerParamAmount;
-    }
-    const powerEffect: Record<string, unknown> = {
-      mode: powerMode,
-      keywordId: powerKeywordId,
-    };
-    if (Object.keys(params).length > 0) powerEffect.params = params;
-    if ((powerKeywordId === "convocation" || powerKeywordId === "convocation_simple") && powerTokenId != null) {
-      powerEffect.tokenId = powerTokenId;
-    }
-    // Appel Suprême : la race ciblée est obligatoire et doit être persistée
-    // sur le pouvoir (sinon le moteur ne récupère aucune créature).
-    if (powerKeywordId === "appel_supreme") {
-      if (!powerParamRace) {
-        setError("Appel Suprême : sélectionnez la race cible avant d'enregistrer.");
+    // Build the power effect from the form state.
+    let powerEffect: Record<string, unknown>;
+    if (powerMode === "composed") {
+      // Mode 4 : effet composé générique (résolu comme un sort lancé par le
+      // héros). On persiste l'unique ComposedEffect ; keywordId est ignoré.
+      const composed = powerComposed[0]?.composed;
+      if (!composed) {
+        setError("Effet composé manquant.");
         return;
       }
-      powerEffect.race = powerParamRace;
+      powerEffect = { mode: "composed", keywordId: "_composed", composed };
+    } else {
+      // Only include params that the chosen keyword actually consumes (server validates).
+      const ability = ABILITIES[powerKeywordId];
+      const wantsAmount =
+        !!ability?.spell?.params?.includes("amount")
+        // Creature-side scalable keywords (Résistance X, Carnage X, …) also
+        // need the X value persisted.
+        || !!ability?.creature?.scalable;
+      const wantsAttack = !!ability?.spell?.params?.includes("attack");
+      const wantsHealth = !!ability?.spell?.params?.includes("health");
+      const params: { amount?: number; attack?: number; health?: number } = {};
+      if (wantsAmount) params.amount = powerParamAmount;
+      if (wantsAttack) params.attack = powerParamAttack;
+      if (wantsHealth) params.health = powerParamHealth;
+      // Mode 3 (aura) also benefits from a stack-multiplier value even on
+      // keywords that don't formally declare a scalable param.
+      if (!wantsAmount && !wantsAttack && !wantsHealth && powerMode === "aura" && powerParamAmount > 0) {
+        params.amount = powerParamAmount;
+      }
+      powerEffect = {
+        mode: powerMode,
+        keywordId: powerKeywordId,
+      };
+      if (Object.keys(params).length > 0) powerEffect.params = params;
+      if ((powerKeywordId === "convocation" || powerKeywordId === "convocation_simple") && powerTokenId != null) {
+        powerEffect.tokenId = powerTokenId;
+      }
+      // Appel Suprême : la race ciblée est obligatoire et doit être persistée
+      // sur le pouvoir (sinon le moteur ne récupère aucune créature).
+      if (powerKeywordId === "appel_supreme") {
+        if (!powerParamRace) {
+          setError("Appel Suprême : sélectionnez la race cible avant d'enregistrer.");
+          return;
+        }
+        powerEffect.race = powerParamRace;
+      }
     }
 
     setSaving(true);
@@ -948,9 +979,17 @@ export default function HeroManager() {
                 .sort((a, b) => a.label.localeCompare(b.label, "fr"));
               const previewLabel = ability?.label ?? powerKeywordId;
               const previewDesc = ability?.desc ?? "—";
+              const composedSummary = (() => {
+                const eff = powerComposed[0]?.composed;
+                if (!eff) return "effet composé";
+                const x = eff.magnitude?.x ?? 0;
+                const tgt = eff.target ? `${eff.target.count} ${eff.target.side} ${eff.target.entity}` : "contrôleur";
+                return `${eff.content} (x${x}) → ${tgt}`;
+              })();
               const modeText =
                 powerMode === "grant_keyword" ? `Donne « ${previewLabel} » à une créature ciblée` :
                 powerMode === "spell_trigger" ? `Déclenche l'effet « ${previewLabel} » une fois` :
+                powerMode === "composed" ? `Effet composé : ${composedSummary}` :
                 /* aura */                       `Active l'aura « ${previewLabel} » (cumulable)`;
               const limitText = powerUsageLimit == null ? "illimité" : `${powerUsageLimit}× max par partie`;
               return (
@@ -1003,6 +1042,19 @@ export default function HeroManager() {
                     </div>
                   </div>
 
+                  {powerMode === "composed" && (
+                    <div style={{ marginTop: 10 }}>
+                      <ComposedEffectsEditor
+                        value={powerComposed}
+                        onChange={setPowerComposed}
+                        isUnit={false}
+                        tokenTemplates={tokenTemplates}
+                        singleEffect
+                      />
+                    </div>
+                  )}
+
+                  {powerMode !== "composed" && (<>
                   <div style={{ marginTop: 10 }}>
                     <label style={STYLE.label}>
                       Mot-clé{" "}
@@ -1083,6 +1135,7 @@ export default function HeroManager() {
                       </div>
                     </div>
                   )}
+                  </>)}
 
                   <div style={{
                     marginTop: 10, padding: "8px 10px", borderRadius: 6,

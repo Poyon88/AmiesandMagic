@@ -36,12 +36,15 @@ const cardBorder = "1px solid #e3d9c0";
 const labelStyle = { fontSize: 8, color: "#999", letterSpacing: 1, fontWeight: 700 } as const;
 
 export default function ComposedEffectsEditor({
-  value, onChange, isUnit, tokenTemplates,
+  value, onChange, isUnit, tokenTemplates, singleEffect = false,
 }: {
   value: Capability[];
   onChange: (v: Capability[]) => void;
   isUnit: boolean;
   tokenTemplates: TokenTemplate[];
+  // Un seul effet composé édité (ex. pouvoir de héros) : masque ajout/suppression
+  // pour garantir le contrat « un seul ComposedEffect » sans perte silencieuse.
+  singleEffect?: boolean;
 }) {
   const triggers: { v: CapabilityTrigger; l: string }[] = isUnit
     ? [{ v: "on_play", l: "À l'entrée" }, { v: "on_death", l: "À la mort" }, { v: "on_return", l: "Au retour en main" }, { v: "on_activation", l: "Pouvoir activable (tap)" }, { v: "on_attack", l: "À l'attaque" }, { v: "on_end_of_turn", l: "À la fin du tour" }]
@@ -87,7 +90,9 @@ export default function ComposedEffectsEditor({
           <div key={cap.uid} style={{ border: cardBorder, borderRadius: 8, padding: 10, marginBottom: 8, background: "#fffdf6" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
               <span style={{ fontFamily: "'Cinzel',serif", fontSize: 11, fontWeight: 700, color: "#8a6d3b", flex: 1 }}>Effet composé {idx + 1}</span>
-              <button onClick={() => removeComposed(idx)} style={{ border: "none", background: "transparent", color: "#c0392b", cursor: "pointer", fontSize: 14 }} title="Supprimer">✕</button>
+              {!singleEffect && (
+                <button onClick={() => removeComposed(idx)} style={{ border: "none", background: "transparent", color: "#c0392b", cursor: "pointer", fontSize: 14 }} title="Supprimer">✕</button>
+              )}
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "6px 12px", alignItems: "center" }}>
               <span style={labelStyle}>DÉCLENCHEUR</span>
@@ -194,7 +199,9 @@ export default function ComposedEffectsEditor({
           </div>
         );
       })}
-      <button onClick={addComposed} style={{ marginTop: 4, padding: "5px 12px", borderRadius: 6, border: "1px dashed #b8a36a", background: "#fffdf6", color: "#8a6d3b", fontSize: 11, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>+ Ajouter un effet composé</button>
+      {!singleEffect && (
+        <button onClick={addComposed} style={{ marginTop: 4, padding: "5px 12px", borderRadius: 6, border: "1px dashed #b8a36a", background: "#fffdf6", color: "#8a6d3b", fontSize: 11, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>+ Ajouter un effet composé</button>
+      )}
     </div>
   );
 }
