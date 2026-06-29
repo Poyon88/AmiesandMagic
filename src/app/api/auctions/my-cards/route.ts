@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
+import { isPlayerSellingEnabled } from '@/lib/auction/flags';
 
 async function getAuthUser() {
   const cookieStore = await cookies();
@@ -32,6 +33,22 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
 
   const supabase = getAdminClient();
+
+  // La revente par les joueurs est désactivée : seul un admin peut lister son
+  // inventaire vendable tant que le flag n'est pas réactivé (conformité).
+  if (!isPlayerSellingEnabled()) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    if (profile?.role !== 'admin') {
+      return NextResponse.json(
+        { error: "La vente de cartes est temporairement indisponible." },
+        { status: 403 },
+      );
+    }
+  }
 
   // Fetch owned prints with card details
   const { data: prints } = await supabase

@@ -10,6 +10,7 @@ export interface HomeDict {
   play_desc: string;
   market_label: string;
   market_desc: string;
+  market_desc_buy: string;
   collection_label: string;
   collection_desc: string;
   decks_label: string;
@@ -55,6 +56,7 @@ export const homeDict: Record<Locale, HomeDict> = {
     play_desc: "Trouvez un adversaire et lancez une partie",
     market_label: "Marché",
     market_desc: "Achetez et vendez aux enchères",
+    market_desc_buy: "Achetez aux enchères",
     collection_label: "Ma collection",
     collection_desc: "Cartes, héros, dos, plateaux",
     decks_label: "Mes decks",
@@ -95,6 +97,7 @@ export const homeDict: Record<Locale, HomeDict> = {
     play_desc: "Find an opponent and battle",
     market_label: "Market",
     market_desc: "Buy and sell at auction",
+    market_desc_buy: "Buy at auction",
     collection_label: "My Collection",
     collection_desc: "Cards, heroes, backs, boards",
     decks_label: "My Decks",

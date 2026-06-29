@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { AuctionWithDetails } from "@/lib/auction/types";
+import { isPlayerSellingEnabled } from "@/lib/auction/flags";
 
 interface MyAuctionsProps {
   userId: string;
@@ -17,7 +18,10 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
 
 export default function MyAuctions({ userId }: MyAuctionsProps) {
   const router = useRouter();
-  const [tab, setTab] = useState<"selling" | "bidding">("selling");
+  const sellingEnabled = isPlayerSellingEnabled();
+  const [tab, setTab] = useState<"selling" | "bidding">(
+    sellingEnabled ? "selling" : "bidding",
+  );
   const [sellerAuctions, setSellerAuctions] = useState<AuctionWithDetails[]>([]);
   const [bidderAuctions, setBidderAuctions] = useState<AuctionWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,6 +57,7 @@ export default function MyAuctions({ userId }: MyAuctionsProps) {
     <div>
       {/* Sub tabs */}
       <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+        {sellingEnabled && (
         <button
           onClick={() => setTab("selling")}
           style={{
@@ -68,6 +73,7 @@ export default function MyAuctions({ userId }: MyAuctionsProps) {
         >
           Mes ventes ({sellerAuctions.length})
         </button>
+        )}
         <button
           onClick={() => setTab("bidding")}
           style={{

@@ -5,6 +5,7 @@ import MenuTile from "@/components/home/MenuTile";
 import AmAtmosphere from "@/components/ui/AmAtmosphere";
 import { useStoredLocale } from "@/lib/i18n/useLocale";
 import { homeDict } from "@/lib/i18n/homeDict";
+import { isPlayerSellingEnabled } from "@/lib/auction/flags";
 
 interface MainMenuProps {
   username: string;
@@ -72,7 +73,7 @@ export default function MainMenu({ username, goldBalance }: MainMenuProps) {
                 href="/auction"
                 accent="market"
                 label={t.market_label}
-                description={t.market_desc}
+                description={isPlayerSellingEnabled() ? t.market_desc : t.market_desc_buy}
                 bgImage="/images/home/marche-bg.png"
               />
             </li>
