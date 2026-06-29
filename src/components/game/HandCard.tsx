@@ -10,6 +10,7 @@ import type { DragEvent } from "react";
 import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS, getSpellKeywordLabel, getSpellKeywordDesc, formatConvocationToken, formatConvocationTokens } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell, getEntraideReduction, getTokenManaCost } from "@/lib/game/abilities";
+import { persistentStats } from "@/lib/game/engine";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { composedCapsOf, composedIcon, composedTriggerMode, composedValueText, describeComposedCap } from "@/lib/game/composed-display";
@@ -79,6 +80,13 @@ export default function HandCard({
     : null;
   const resolvedImageUrl = card.image_url ?? tokenTemplate?.image_url ?? null;
   const isCreature = card.card_type === "creature";
+  // Stats EFFECTIVES affichées : base + bonus conservés (loyauté, summon,
+  // nécrophagie…). Pertinent pour une créature renvoyée en main (rebond) qui
+  // garde son bonus de Loyauté — aligne la main sur le cimetière. Pour une
+  // carte fraîche, les bonus valent 0 → stats de base inchangées.
+  const { attack: displayAttack, health: displayHealth } = isCreature
+    ? persistentStats(cardInstance)
+    : { attack: card.attack ?? 0, health: card.health ?? 0 };
   const [isDragging, setIsDragging] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
@@ -589,14 +597,14 @@ export default function HandCard({
                   padding: "1px 5px", borderRadius: 4,
                   background: "#e74c3c18", border: "1px solid #e74c3c55",
                 }}>
-                  <span style={{ fontSize: 13, color: "#e74c3c", fontWeight: 700 }}>{card.attack}</span>
+                  <span style={{ fontSize: 13, color: "#e74c3c", fontWeight: 700 }}>{displayAttack}</span>
                 </div>
                 <div style={{
                   display: "flex", alignItems: "center",
                   padding: "1px 5px", borderRadius: 4,
                   background: "#f1c40f18", border: "1px solid #f1c40f55",
                 }}>
-                  <span style={{ fontSize: 13, color: "#f1c40f", fontWeight: 700 }}>{card.health}</span>
+                  <span style={{ fontSize: 13, color: "#f1c40f", fontWeight: 700 }}>{displayHealth}</span>
                 </div>
               </div>
             )}
@@ -751,7 +759,7 @@ export default function HandCard({
             fontSize: 7 * d, color: "#555",
           }}>
             <span style={isCostReduced ? { color: "#2ecc71" } : undefined}>💧 {effectiveManaCost}</span>
-            {isCreature && <><span style={{ color: "#e74c3c" }}>⚔ {card.attack}</span><span style={{ color: "#f1c40f" }}>❤ {card.health}</span></>}
+            {isCreature && <><span style={{ color: "#e74c3c" }}>⚔ {displayAttack}</span><span style={{ color: "#f1c40f" }}>❤ {displayHealth}</span></>}
           </div>
         </div>
         </div>{/* close clip-wrapper */}

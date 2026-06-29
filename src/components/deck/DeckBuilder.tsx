@@ -12,6 +12,7 @@ import { namedCreatureCapabilityIds, creatureCapabilityCounts, capabilityLimitVi
 import { FACTIONS, ALIGNMENTS, getFactionDisplayName, getFactionForRace } from "@/lib/card-engine/constants";
 import type { Alignment } from "@/lib/card-engine/constants";
 import GameCard from "@/components/cards/GameCard";
+import KeywordIcon from "@/components/shared/KeywordIcon";
 import useLongPress from "@/hooks/useLongPress";
 import { AmButton } from "@/components/ui/AmButton";
 
@@ -113,7 +114,7 @@ const KEYWORDS = [...ALL_KEYWORDS].sort((a, b) => KEYWORD_LABELS[a].localeCompar
 // qu'un appui long déclenche aussi le retrait (même pattern que BoardCreature).
 function DeckCardRow({
   card, quantity, substituted, tint,
-  onRemove, onPreviewEnter, onPreviewLeave, onPreviewLong,
+  onRemove, onPreviewEnter, onPreviewLeave, onPreviewLong, onPreviewContext,
 }: {
   card: Card;
   quantity: number;
@@ -123,6 +124,7 @@ function DeckCardRow({
   onPreviewEnter: (card: Card) => void;
   onPreviewLeave: () => void;
   onPreviewLong: (card: Card) => void;
+  onPreviewContext: () => void;
 }) {
   const lp = useLongPress(() => onPreviewLong(card));
   const rarity = card.rarity || "Commune";
@@ -132,6 +134,7 @@ function DeckCardRow({
       onClick={() => { if (lp.consume()) return; onRemove(); }}
       onMouseEnter={() => onPreviewEnter(card)}
       onMouseLeave={onPreviewLeave}
+      onContextMenu={(e) => { e.preventDefault(); onPreviewContext(); }}
       className="relative flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-am-bg-3/60 transition-colors group overflow-hidden"
       style={{
         boxShadow: `inset 3px 0 0 ${tint}`,
@@ -255,6 +258,9 @@ export default function DeckBuilder({
   // (souris) pour éviter les événements souris synthétiques sur tactile.
   const [previewCard, setPreviewCard] = useState<Card | null>(null);
   const [previewTouch, setPreviewTouch] = useState(false);
+  // Clic droit sur l'aperçu flottant : bascule illustration ⇄ descriptif. Remis
+  // à false à chaque changement de carte pour repartir sur l'illustration.
+  const [previewDetails, setPreviewDetails] = useState(false);
   const previewTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hoverCapable = useRef(true);
   useEffect(() => {
@@ -264,14 +270,18 @@ export default function DeckBuilder({
   const schedulePreview = (card: Card) => {
     if (!hoverCapable.current) return;
     if (previewTimer.current) clearTimeout(previewTimer.current);
-    previewTimer.current = setTimeout(() => { setPreviewTouch(false); setPreviewCard(card); }, 150);
+    previewTimer.current = setTimeout(() => { setPreviewTouch(false); setPreviewDetails(false); setPreviewCard(card); }, 150);
   };
   const clearPreview = () => {
     if (!hoverCapable.current) return;
     if (previewTimer.current) { clearTimeout(previewTimer.current); previewTimer.current = null; }
     setPreviewCard(null);
+    setPreviewDetails(false);
   };
-  const openTouchPreview = (card: Card) => { setPreviewTouch(true); setPreviewCard(card); };
+  // L'aperçu flottant étant pointer-events:none, le clic droit est capté sur la
+  // ligne survolée (DeckCardRow) et pilote la face affichée de cette carte.
+  const togglePreviewDetails = () => setPreviewDetails((p) => !p);
+  const openTouchPreview = (card: Card) => { setPreviewDetails(false); setPreviewTouch(true); setPreviewCard(card); };
   const closeTouchPreview = () => { setPreviewTouch(false); setPreviewCard(null); };
 
   // Changer de faction vide les cartes/héros/plateau/dos incompatibles.
@@ -468,12 +478,32 @@ export default function DeckBuilder({
     if (alignmentConflict) violations.push("Alignement Bon et Maléfique incompatibles");
     if (mercenairesCount > maxMercenaires) violations.push(`Max ${maxMercenaires} Mercenaires (actuellement ${mercenairesCount})`);
     // Limite : pas plus de MAX_SAME_CAPABILITY fois une même capacité nommée (sauf Vol).
-    for (const v of capabilityLimitViolations(creatureCapabilityCounts(deckCards.values()))) {
+    const capabilityCounts = creatureCapabilityCounts(deckCards.values());
+    for (const v of capabilityLimitViolations(capabilityCounts)) {
       violations.push(`Max ${MAX_SAME_CAPABILITY} capacités « ${v.label} » (actuellement ${v.count})`);
     }
 
-    return { factions: factionSet, allFactions, clans: clanSet, alignments: alignmentSet, violations, alignmentConflict, mercenairesCount, maxMercenaires };
+    return { factions: factionSet, allFactions, clans: clanSet, alignments: alignmentSet, violations, alignmentConflict, mercenairesCount, maxMercenaires, capabilityCounts };
   }, [deckCards]);
+
+  // Récap des mots-clés (capacités nommées) du deck, trié pour un affichage
+  // stable : du plus fréquent au plus rare, puis par libellé. Chaque entrée
+  // porte la clé d'icône côté créature (`creature.id ?? id`, qui sert aussi à
+  // la résolution d'override) et le symbole par défaut du registre.
+  const keywordTally = useMemo(() => {
+    return [...deckStats.capabilityCounts.entries()]
+      .map(([id, count]) => {
+        const def = ABILITIES[id];
+        return {
+          id,
+          count,
+          iconKey: def?.creature?.id ?? id,
+          symbol: def?.symbol ?? "✦",
+          label: def?.creature?.label ?? def?.label ?? id,
+        };
+      })
+      .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+  }, [deckStats.capabilityCounts]);
 
   // Allocate all deck cards to slots (greedy: highest rarity cards fill their own tier first)
   const slotAllocation = useMemo(() => {
@@ -1258,6 +1288,7 @@ export default function DeckBuilder({
                       onPreviewEnter={schedulePreview}
                       onPreviewLeave={clearPreview}
                       onPreviewLong={openTouchPreview}
+                      onPreviewContext={togglePreviewDetails}
                     />
                   ))}
 
@@ -1276,6 +1307,32 @@ export default function DeckBuilder({
             );
           })}
         </div>
+
+        {/* Récap mots-clés — décompte par capacité nommée présente dans le deck.
+            Nombre en rouge (am-ember) une fois la limite MAX_SAME_CAPABILITY
+            atteinte, pour signaler qu'on ne peut plus en ajouter. */}
+        {keywordTally.length > 0 && (
+          <div className="px-3 py-2 border-t border-am-gold/30 flex-shrink-0 bg-am-bg-1/60">
+            <div className="text-[9px] text-am-gold font-bold uppercase tracking-[0.2em] mb-1.5 font-[family-name:var(--font-cinzel),serif]">Mots-clés</div>
+            <div className="flex flex-wrap gap-x-3 gap-y-1.5">
+              {keywordTally.map(({ id, count, iconKey, symbol, label }) => {
+                const atLimit = count >= MAX_SAME_CAPABILITY;
+                return (
+                  <div
+                    key={id}
+                    title={`${label} : ${count}${atLimit ? ` (max ${MAX_SAME_CAPABILITY})` : ""}`}
+                    className="flex items-center gap-1"
+                  >
+                    <span className="inline-flex items-center justify-center" style={{ width: 18, height: 18 }}>
+                      <KeywordIcon symbol={symbol} size={14} keyword={iconKey} />
+                    </span>
+                    <span className={`text-[11px] font-bold tabular-nums ${atLimit ? "text-am-ember" : "text-am-ink-soft"}`}>{count}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
         </>)}
 
         {/* Barre Sauvegarder (uniquement sur l'onglet Cartes) */}
@@ -1323,7 +1380,7 @@ export default function DeckBuilder({
           className="fixed z-[60] pointer-events-none hidden md:block drop-shadow-2xl"
           style={{ right: 332, top: "50%", transform: "translateY(-50%)" }}
         >
-          <GameCard card={previewCard} size="lg" forceRarityFrame disableHoverZoom />
+          <GameCard card={previewCard} size="lg" forceRarityFrame disableHoverZoom showDetails={previewDetails} />
         </div>
       )}
 

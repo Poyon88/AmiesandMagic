@@ -1,10 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import type { CardInstance } from "@/lib/game/types";
+import type { Card, CardInstance } from "@/lib/game/types";
 import GameCard from "@/components/cards/GameCard";
 import { getTokenManaCost } from "@/lib/game/abilities";
+import { persistentStats } from "@/lib/game/engine";
 import useCoarsePointer from "@/hooks/useCoarsePointer";
+
+// Carte à afficher pour une instance du cimetière : pour une créature, on
+// réinjecte les stats EFFECTIVES (base + bonus conservés comme la Loyauté) dans
+// attack/health, afin que le badge reflète l'état réel — les buffs génériques y
+// sont déjà cuits, mais loyauté/summon/nécrophagie/richesse… vivent sur
+// l'instance. Sans ça, le cimetière montrait les stats de base et la Loyauté
+// paraissait perdue alors qu'elle est conservée (cf. returnInstanceToPlay).
+function graveyardDisplayCard(inst: CardInstance): Card {
+  if (inst.card.card_type !== "creature") return inst.card;
+  const { attack, health } = persistentStats(inst);
+  return { ...inst.card, attack, health };
+}
 
 interface GraveyardOverlayProps {
   cards: CardInstance[];
@@ -123,7 +136,7 @@ export default function GraveyardOverlay({
                     }}
                   >
                     <GameCard
-                      card={cardInstance.card}
+                      card={graveyardDisplayCard(cardInstance)}
                       size="sm"
                       // The in-grid scale-1.5 hover would be clipped by the
                       // modal's overflow — we use a fixed-position preview
@@ -159,7 +172,7 @@ export default function GraveyardOverlay({
           }}
         >
           <GameCard
-            card={previewCard.card}
+            card={graveyardDisplayCard(previewCard)}
             size="lg"
             disableHoverZoom
             forceRarityFrame

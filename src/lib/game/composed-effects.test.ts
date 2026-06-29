@@ -512,6 +512,38 @@ describe("désignation scatter (répartition point par point)", () => {
     expect(s.players[1].board.length).toBe(0);
     expect(s.players[1].hero.hp).toBe(HERO_MAX_HP); // le héros n'est pas dans le pool (entity unit)
   });
+
+  it("résolution séquentielle : un point létal ne se gaspille pas sur la cible morte", () => {
+    // Deux unités à 1 PV, 2 points. En réévaluant les cibles vivantes avant
+    // chaque point, la première meurt puis le second point part forcément sur
+    // la seconde → les DEUX meurent, quel que soit le tirage. (Avec un pool figé
+    // + tirage avec remise, les 2 points pouvaient retomber sur la même.)
+    const s0 = mkState();
+    s0.players[1].board = [
+      mkInstance(mkCard({ attack: 1, health: 1 })),
+      mkInstance(mkCard({ attack: 1, health: 1 })),
+    ];
+    const creature = mkCard({ attack: 1, health: 1,
+      capabilities: [composedCap("on_play", { content: "deal_damage", magnitude: { x: 2 },
+        target: { entity: "unit", count: 1, side: "enemy", location: "board", designation: "scatter" } })] });
+    const s = play(s0, mkInstance(creature));
+    const alive = s.players[1].board.filter((c) => c.currentHealth > 0);
+    expect(alive.length).toBe(0);
+  });
+
+  it("cible unique à 1 PV : le second point ne la refrappe pas (se perd)", () => {
+    // Cas exact rapporté : une seule créature ennemie à 1 PV, effet à 2 points.
+    // Le 1er point la tue ; faute d'autre cible valide, le 2e se perd au lieu
+    // de frapper un cadavre — et ne déborde pas sur le héros (entity = unit).
+    const s0 = mkState();
+    s0.players[1].board = [mkInstance(mkCard({ attack: 1, health: 1 }))];
+    const creature = mkCard({ attack: 1, health: 1,
+      capabilities: [composedCap("on_play", { content: "deal_damage", magnitude: { x: 2 },
+        target: { entity: "unit", count: 1, side: "enemy", location: "board", designation: "scatter" } })] });
+    const s = play(s0, mkInstance(creature));
+    expect(s.players[1].board.filter((c) => c.currentHealth > 0).length).toBe(0);
+    expect(s.players[1].hero.hp).toBe(HERO_MAX_HP);
+  });
 });
 
 describe("silence retire toutes les sources de capacités (modèle unifié)", () => {

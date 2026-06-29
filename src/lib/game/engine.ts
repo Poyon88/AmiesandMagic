@@ -178,6 +178,9 @@ function mergeComposedCapabilities(
  *  `creatureNeedsTarget` that operate on hand cards before they hit the
  *  board. Mirrors `hasKwInMode(_, kw, undefined)` semantics. */
 function cardHasKwOnPlay(card: Card, kw: Keyword): boolean {
+  // getCapabilities réaligne désormais les triggers périmés des capabilities[]
+  // backfillées sur le mode autoritaire de keyword_instances (cf. adapter), donc
+  // une simple lecture du trigger suffit — `hasKwInMode` fait de même.
   return getCapabilities(card).some(c => c.abilityId === kw && c.trigger === "on_play");
 }
 
@@ -505,12 +508,17 @@ function resolveComposedEffect(
 
   // "scatter" : répartition point par point. Les `x` points de dégâts/soin sont
   // distribués un à un, au hasard (tirage avec remise) sur le pool éligible — une
-  // même cible peut donc en encaisser plusieurs. `count` est ignoré.
+  // même cible VIVANTE peut donc en cumuler plusieurs. `count` est ignoré.
+  // Résolution SÉQUENTIELLE : le pool est reconstruit AVANT chaque point et les
+  // unités tuées par un point précédent en sont exclues (currentHealth ≤ 0), pour
+  // ne pas gaspiller un point sur une cible déjà morte (cf. Danseuse du Vent : 2
+  // points sur une créature à 1 PV → le 2e doit partir ailleurs, ou se perdre).
   if (target.designation === "scatter" && (composed.content === "deal_damage" || composed.content === "heal")) {
-    const pool = buildComposedPool(target, owner, opponent);
-    if (pool.length === 0) return;
     const points = Math.max(0, x);
     for (let i = 0; i < points; i++) {
+      const pool = buildComposedPool(target, owner, opponent)
+        .filter((ref) => ref.kind === "hero" || ref.unit.currentHealth > 0);
+      if (pool.length === 0) break;
       const ref = pool[Math.floor(rng() * pool.length)];
       if (ref.kind === "hero") applyComposedToHero(composed.content, ref.hero, 1);
       else applyComposedToUnit(composed, ref.unit, 1, 0, source, owner, opponent);
@@ -717,26 +725,36 @@ function createCardInstance(card: Card): CardInstance {
 // les bonus de PV trackés — même formule que la reconstruction existante des
 // stats — puis soin complet. L'ATK provisoire est laissée à la base ; elle est
 // recomposée par recalculateAuras à partir des champs ATK conservés.
+/** Stats EFFECTIVES « permanentes » d'une instance = base de la carte + tous les
+ *  bonus +ATK/+PV CONSERVÉS à travers les zones (loyauté, summon, nécrophagie,
+ *  richesse, martyr, instinct). EXCLUT les bonus transitoires recalculés sur le
+ *  plateau (auras, berserk, fureur). Source unique : recompose les stats en
+ *  sortie de zone (returnInstanceToPlay) ET pilote l'affichage hors-plateau
+ *  (cimetière / main) pour qu'il reflète l'état réel — au même titre que les
+ *  buffs génériques, déjà cuits dans `card.attack`/`card.health`. */
+export function persistentStats(inst: CardInstance): { attack: number; health: number } {
+  return {
+    attack: (inst.card.attack ?? 0)
+      + inst.loyauteATKBonus + inst.summonBonusATK + inst.necrophagieATKBonus
+      + inst.richesseATKBonus + inst.martyrATKBonus + inst.instinctDeMeuteATKBonus,
+    health: (inst.card.health ?? 1)
+      + inst.loyautePVBonus + inst.necrophagiePVBonus + inst.richessePVBonus,
+  };
+}
+
 function returnInstanceToPlay(inst: CardInstance): void {
-  const baseAtk = inst.card.attack ?? 0;
-  const baseHp = inst.card.health ?? 1;
+  const { attack, health } = persistentStats(inst);
 
   // PV : base + bonus de PV permanents conservés, soin complet. L'aura de PV
   // (Commandement) est purgée ici et réappliquée par recalculateAuras.
-  inst.maxHealth = baseHp + inst.loyautePVBonus + inst.necrophagiePVBonus + inst.richessePVBonus;
+  inst.maxHealth = health;
   inst.currentHealth = inst.maxHealth;
   inst.auraHealthBonus = 0;
 
   // ATK = base + bonus ATK permanents conservés (même formule que
   // recalculateAuras, qui la reconfirmera une fois sur le plateau). Berserk /
   // Fureur sont remis inactifs ci-dessous donc exclus, comme dans recalc.
-  inst.currentAttack = baseAtk
-    + inst.loyauteATKBonus
-    + inst.summonBonusATK
-    + inst.necrophagieATKBonus
-    + inst.richesseATKBonus
-    + inst.martyrATKBonus
-    + inst.instinctDeMeuteATKBonus;
+  inst.currentAttack = attack;
 
   // États transitoires / de tour réinitialisés.
   inst.tapped = false;

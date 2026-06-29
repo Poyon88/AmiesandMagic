@@ -127,6 +127,32 @@ describe("Sélection en fin de tour (on_end_of_turn)", () => {
     expect(s.players[0].hand.some(c => c.card.id === 903)).toBe(false);
   });
 
+  it("RÉGRESSION Prêtresse de la Lune : capabilities[] backfillé (trigger on_play périmé) ne se joue pas à l'invocation", () => {
+    // Config réelle de la carte : keyword_instances dit end_of_turn, mais le
+    // capabilities[] stocké garde un trigger on_play obsolète. La dérivation
+    // étant court-circuitée par capabilities[], le mode de keyword_instances
+    // doit rester autoritaire — sinon la Sélection se déclenche à l'entrée EN
+    // PLUS de la fin de tour.
+    const s0 = mkState();
+    s0.factionCardPool = [commune(904)];
+    const card = mkCard({ attack: 1, health: 1, faction: undefined,
+      keywords: ["selection"] as unknown as Card["keywords"],
+      keyword_instances: [{ id: "selection" as Keyword, x: 5, mode: "end_of_turn" }],
+      capabilities: [{ uid: "cw_0", trigger: "on_play", effectKind: "immediate", abilityId: "selection", params: { x: 5 }, targets: [] }] });
+    const ci = mkInstance(card);
+    s0.players[0].hand.push(ci);
+    initRNG(42);
+
+    // À l'invocation : aucune carte ajoutée, même en forçant selectionCardId.
+    const played = applyAction(s0, { type: "play_card", cardInstanceId: ci.instanceId, selectionCardId: 904 });
+    expect(played.players[0].hand.some(c => c.card.id === 904)).toBe(false);
+
+    // En fin de tour : la Sélection se déclenche bien (pending trigger).
+    const ended = applyAction(played, { type: "end_turn" });
+    expect(ended.pendingTriggers?.[0]?.selectionType).toBe("selection");
+    expect(ended.pendingTriggers?.[0]?.selectionOptionIds).toContain(904);
+  });
+
   it("aucune carte éligible (pool vide) → pas de pending trigger, le tour bascule", () => {
     const s0 = mkState();
     s0.factionCardPool = [];
@@ -190,6 +216,27 @@ describe("Repli automatique à l'expiration du chrono (auto_resolve_pending_trig
     expect(s2.players[0].hand.length).toBe(2);
     expect(s2.pendingTriggers?.length ?? 0).toBe(0);
     expect(s2.currentPlayerIndex).toBe(1);
+  });
+});
+
+describe("RÉGRESSION remontee : capabilities[] backfillé en mode fin de tour", () => {
+  it("Maîtresse des Ombres : remontee (instance end_of_turn, capabilities on_play périmé) ne rebondit PAS à l'invocation", () => {
+    const s0 = mkState();
+    const enemy = mkInstance(mkCard({ id: 7777, name: "Cible", attack: 2, health: 2 }));
+    s0.players[1].board = [enemy];
+    const card = mkCard({ attack: 1, health: 1, faction: undefined,
+      keywords: ["remontee"] as unknown as Card["keywords"],
+      keyword_instances: [{ id: "remontee" as Keyword, mode: "end_of_turn" }],
+      capabilities: [{ uid: "cw_0", trigger: "on_play", effectKind: "immediate", abilityId: "remontee", targets: [] }] });
+    const ci = mkInstance(card);
+    s0.players[0].hand.push(ci);
+    initRNG(42);
+
+    // À l'invocation : la cible ennemie n'est PAS renvoyée en main (le rebond
+    // ne se déclenche qu'en fin de tour). Avant le réalignement de trigger, le
+    // capabilities[] on_play périmé faisait rebondir la cible dès l'entrée.
+    const played = applyAction(s0, { type: "play_card", cardInstanceId: ci.instanceId, targetInstanceId: enemy.instanceId });
+    expect(played.players[1].board.some(c => c.instanceId === enemy.instanceId)).toBe(true);
   });
 });
 

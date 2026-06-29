@@ -219,6 +219,23 @@ export function getCapabilities(card: Card): Capability[] {
     caps = extra.length
       ? [...card.capabilities, ...deriveCapabilities({ ...card, capabilities: null, keywords: extra as unknown as Card["keywords"] })]
       : card.capabilities;
+    // Réalignement des triggers périmés. Une capacité backfillée peut porter un
+    // `trigger` antérieur au mapping des modes curés (ex. Prêtresse de la Lune :
+    // selection / Maîtresse des Ombres : remontee — keyword_instances dit
+    // end_of_turn mais le capabilities[] garde on_play). Le MODE de
+    // keyword_instances fait autorité : si le trigger stocké ne correspond à
+    // AUCUNE instance de ce mot-clé, on le réaligne sur la première. Les capacités
+    // sans instance (composées, mots-clés conférés) et celles déjà cohérentes
+    // sont laissées telles quelles → aucun changement de comportement hors cartes
+    // réellement incohérentes.
+    const instList = card.keyword_instances ?? [];
+    if (instList.length) {
+      caps = caps.map((c) => {
+        const valid = instList.filter((i) => i.id === c.abilityId).map((i) => triggerForCreatureMode(c.abilityId, i.mode));
+        if (!valid.length || valid.includes(c.trigger)) return c;
+        return { ...c, trigger: valid[0] };
+      });
+    }
   } else {
     caps = deriveCapabilities(card);
   }

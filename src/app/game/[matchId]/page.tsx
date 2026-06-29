@@ -542,6 +542,21 @@ export default function GamePage() {
               }
             });
           })
+          .on("broadcast", { event: "mulligan" }, (payload) => {
+            // Confirmation de mulligan de l'adversaire, hors voie seq (cf.
+            // handleAction). Appliquée de façon idempotente : on ignore si ce
+            // joueur a déjà confirmé (applyMulligan re-piocherait sinon) ou si on
+            // a déjà quitté la phase mulligan — couvre les doublons de broadcast
+            // et les arrivées tardives.
+            const raw = payload.payload as { action: GameAction } | null;
+            const a = raw?.action;
+            if (!a || a.type !== "mulligan") return;
+            const st = useGameStore.getState().gameState;
+            if (!st || st.phase !== "mulligan") return;
+            const pIdx = st.players.findIndex((p) => p.id === a.playerId);
+            if (pIdx === -1 || st.mulliganReady[pIdx]) return;
+            applyOne(a);
+          })
           .on("broadcast", { event: "checkpoint" }, (payload) => {
             const cp = payload.payload as { seq: number; hash: string } | null;
             if (!cp || typeof cp.seq !== "number" || typeof cp.hash !== "string") return;
@@ -708,6 +723,31 @@ export default function GamePage() {
   // gap-free for resync.
   const handleAction = useCallback(
     (action: GameAction) => {
+      // Le mulligan est la SEULE action que les deux joueurs peuvent émettre
+      // simultanément. Le seq monotone est partagé et assigné par l'émetteur :
+      // en jeu tour-par-tour un seul client émet à la fois, mais au mulligan les
+      // deux assignent seq=1 → chacun rejette celui de l'autre comme doublon
+      // (incomingSeq <= lastSeqRef) → mulligan figé. On le route donc sur un
+      // event dédié IDEMPOTENT, hors de la voie seq. L'application locale a déjà
+      // eu lieu dans le store (confirmMulligan) ; ici on ne fait que prévenir le
+      // pair. La voie seq démarre proprement à la 1re action de tour (lastSeqRef
+      // reste à 0 pendant le mulligan).
+      if (action.type === "mulligan") {
+        channelRef.current?.send({
+          type: "broadcast",
+          event: "mulligan",
+          payload: { action },
+        });
+        // Si ce confirm a fait basculer en jeu, on fige un snapshot (le mulligan
+        // n'étant pas dans le log seq, la reprise après reconnexion s'appuie sur
+        // ce snapshot tant qu'aucune action de tour n'a encore été persistée).
+        const st = useGameStore.getState();
+        if (st.gameState?.phase === "playing" && !st.isAnimating) {
+          writeSnapshot(lastSeqRef.current);
+        }
+        return;
+      }
+
       const seq = lastSeqRef.current + 1;
       lastSeqRef.current = seq;
 
