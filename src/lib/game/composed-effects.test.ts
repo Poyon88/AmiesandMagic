@@ -391,6 +391,66 @@ describe("cible composée — soi-même (entity self)", () => {
   });
 });
 
+describe("debuff composé — réduction permanente (cuite dans card, survit au recalc/zone)", () => {
+  it("cuit la baisse d'ATK/PV dans card et la reflète sur currentAttack/maxHealth après recalc", () => {
+    const cap = composedCap("on_play", {
+      content: "debuff", magnitude: { x: 1, y: 1 },
+      target: { entity: "self", count: 1, side: "ally", location: "board", designation: "choice" },
+    });
+    const ci = mkInstance(mkCard({ attack: 4, health: 5, capabilities: [cap] }));
+    const result = play(mkState(), ci);
+    const onBoard = result.players[0].board.find(c => c.instanceId === ci.instanceId)!;
+    // Baisse cuite dans card → survit à recalculateAuras (qui recompose depuis card).
+    expect(onBoard.card.attack).toBe(3);   // 4 - 1
+    expect(onBoard.card.health).toBe(4);   // 5 - 1
+    expect(onBoard.currentAttack).toBe(3);
+    expect(onBoard.maxHealth).toBe(4);
+  });
+
+  it("debuff létal sur le plateau : PV permanente réduite à 0 ⇒ la créature meurt", () => {
+    // Créature 2/1 qui se debuff -0/-1 à l'entrée → 0 PV → morte au summon.
+    const cap = composedCap("on_play", {
+      content: "debuff", magnitude: { x: 0, y: 1 },
+      target: { entity: "self", count: 1, side: "ally", location: "board", designation: "choice" },
+    });
+    const ci = mkInstance(mkCard({ name: "Fragile", attack: 2, health: 1, capabilities: [cap] }));
+    const result = play(mkState(), ci);
+    expect(result.players[0].board.find(c => c.instanceId === ci.instanceId)).toBeUndefined();
+    expect(result.players[0].graveyard.find(c => c.card.name === "Fragile")).toBeDefined();
+  });
+
+  it("debuff non létal : laisse ≥ 1 PV ⇒ la créature survit (non-régression du plancher retiré)", () => {
+    const cap = composedCap("on_play", {
+      content: "debuff", magnitude: { x: 0, y: 1 },
+      target: { entity: "self", count: 1, side: "ally", location: "board", designation: "choice" },
+    });
+    const ci = mkInstance(mkCard({ name: "Costaud", attack: 2, health: 3, capabilities: [cap] }));
+    const result = play(mkState(), ci);
+    const onBoard = result.players[0].board.find(c => c.instanceId === ci.instanceId)!;
+    expect(onBoard).toBeDefined();
+    expect(onBoard.card.health).toBe(2); // 3 - 1
+    expect(onBoard.maxHealth).toBe(2);
+  });
+
+  it("buff puis debuff sur soi (cf. Ombre Insaisissable : +1 ATK / -1 PV) → 2/2 persistant", () => {
+    const buff = composedCap("on_play", {
+      content: "buff", magnitude: { x: 1, y: 0 },
+      target: { entity: "self", count: 1, side: "ally", location: "board", designation: "choice" },
+    });
+    const debuff = composedCap("on_play", {
+      content: "debuff", magnitude: { x: 0, y: 1 },
+      target: { entity: "self", count: 1, side: "ally", location: "board", designation: "choice" },
+    });
+    const ci = mkInstance(mkCard({ attack: 1, health: 3, capabilities: [buff, debuff] }));
+    const result = play(mkState(), ci);
+    const onBoard = result.players[0].board.find(c => c.instanceId === ci.instanceId)!;
+    expect(onBoard.card.attack).toBe(2);   // 1 + 1
+    expect(onBoard.card.health).toBe(2);   // 3 - 1
+    expect(onBoard.currentAttack).toBe(2);
+    expect(onBoard.maxHealth).toBe(2);
+  });
+});
+
 describe("copie de capacités (Héritage du cimetière / Mimique) — capacités composées", () => {
   // Effet composé qui ne vit QUE dans capabilities[] (aucune représentation
   // keywords/keyword_instances) : c'est précisément ce que la copie laissait

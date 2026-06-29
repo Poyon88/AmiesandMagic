@@ -362,8 +362,23 @@ function applyComposedToUnit(
       u.currentAttack += x; u.currentHealth += y; u.maxHealth += y;
       break;
     case "debuff":
+      // Réduction PERMANENTE, symétrique du buff : on cuit la baisse dans
+      // `u.card` (comme malédiction pour l'ATK). Sans ça, recalculateAuras et
+      // persistentStats — qui recomposent ATK/PV depuis `card` + bonus trackés —
+      // effacent la baisse au prochain recalc, et l'affichage hors-plateau
+      // (main/cimetière) ne la reflète pas (bug Ombre Insaisissable : son
+      // debuff de PV au retour en main était perdu, seul le buff d'ATK tenait).
+      // PV SANS plancher : une baisse qui amène la PV permanente à ≤0 doit
+      // TUER la créature (sur le plateau via cleanDeadCreatures du site
+      // déclencheur ; au retour en main via triggerReturnToHand). Seule l'ATK
+      // garde un plancher à 0 (ATK négative absurde).
+      u.card = {
+        ...u.card,
+        attack: Math.max(0, (u.card.attack ?? 0) - x),
+        health: y > 0 ? (u.card.health ?? 1) - y : (u.card.health ?? 1),
+      };
       u.currentAttack = Math.max(0, u.currentAttack - x);
-      if (y > 0) { u.currentHealth -= y; u.maxHealth = Math.max(1, u.maxHealth - y); }
+      if (y > 0) { u.currentHealth -= y; u.maxHealth = u.maxHealth - y; }
       break;
     case "destroy": u.currentHealth = 0; break;
     case "paralyze": u.isParalyzed = true; break;
@@ -3719,6 +3734,17 @@ function triggerReturnToHand(ci: CardInstance, owner: PlayerState, opponent: Pla
   }
   // Effets composés au retour en main (modèle hybride).
   runComposedCapsForCard(ci.card, "on_return", ci, owner, opponent);
+
+  // Règle générale : si un effet de retour (ex. auto-debuff d'Ombre
+  // Insaisissable) a réduit la PV permanente à ≤0, la créature meurt pour de
+  // bon — retirée de la main, envoyée au cimetière. On NE re-déclenche PAS
+  // on_death (sinon boucle infinie self-bounce) : elle part silencieusement.
+  // C'est le pendant « en main » des death-checks (cleanDeadCreatures) du
+  // plateau, pour que la mort à 0 PV soit uniforme partout.
+  if (persistentStats(ci).health <= 0 && owner.hand.includes(ci)) {
+    owner.hand = owner.hand.filter(x => x !== ci);
+    owner.graveyard.push(ci);
+  }
 }
 
 // ── Remontée ──
@@ -3730,6 +3756,55 @@ function canBeRemonteed(c: CardInstance, sourceInstanceId: string | null): boole
     && !hasKw(c, "invisible")
     && !hasKw(c, "transcendance")
     && !(hasKw(c, "ombre") && !c.ombreRevealed);
+}
+
+// Remontée réglée sur le déclencheur « mort ». Dans ce mode, le mot-clé n'est
+// PAS un renvoi ciblé (la source s'exclut elle-même via canBeRemonteed) mais un
+// auto-renvoi : « quand je meurs, je remonte en main ». Détecté ici pour le
+// traiter à part dans processDeathTriggers et le retirer de la boucle générique.
+function hasRemonteeDeathMode(c: CardInstance): boolean {
+  return (c.card.keyword_instances ?? []).some(i => i.id === "remontee" && i.mode === "death");
+}
+
+// Même intention via le modèle COMPOSÉ : une capacité « bounce » sur on_death
+// ciblant la créature elle-même (entity "self") = « quand je meurs, je remonte
+// en main » (cf. Ombre Insaisissable). Le chemin composé générique ne sait pas
+// la résoudre (la source est déjà au cimetière et resolveRemontee exclut la
+// source → no-op), d'où ce repérage explicite pour la router vers l'auto-renvoi.
+function hasComposedSelfBounceOnDeath(c: CardInstance): boolean {
+  return getCapabilities(c.card).some(cap =>
+    cap.trigger === "on_death"
+    && cap.composed?.content === "bounce"
+    && cap.composed?.target?.entity === "self");
+}
+
+// La créature morte doit-elle se renvoyer ELLE-MÊME en main ? (mot-clé OU composé)
+function wantsSelfReturnOnDeath(c: CardInstance): boolean {
+  return hasRemonteeDeathMode(c) || hasComposedSelfBounceOnDeath(c);
+}
+
+// Auto-renvoi en main d'une créature morte porteuse d'une remontée/bounce en
+// mode mort. La dépouille a transité par le cimetière (pour les comptages
+// « morts ce tour » + triggers mort des autres) ; on l'en retire et on la
+// pousse dans la main de son propriétaire d'origine, bonus permanents conservés
+// (returnInstanceToPlay), soin complet. Comme Résurrection / Cycle éternel.
+// Main pleine → la dépouille reste au cimetière (repli standard).
+function returnDeadCreatureToHand(c: CardInstance, owner: PlayerState, enemy: PlayerState): void {
+  // Propriétaire d'origine (trueOwnerId) à lire AVANT returnInstanceToPlay,
+  // qui le remet à null. Sinon, détenteur courant du cimetière (owner).
+  const realOwner = c.trueOwnerId
+    ? ([owner, enemy].find(p => p.id === c.trueOwnerId) ?? owner)
+    : owner;
+  const realOwnerOpp = realOwner === owner ? enemy : owner;
+  returnInstanceToPlay(c);
+  c.instanceId = generateInstanceId();
+  owner.graveyard = owner.graveyard.filter(g => g !== c);
+  if (realOwner.hand.length < MAX_HAND_SIZE) {
+    realOwner.hand.push(c);
+    triggerReturnToHand(c, realOwner, realOwnerOpp);
+  } else {
+    realOwner.graveyard.push(c);
+  }
 }
 
 // Cibles valides de Remontée (les 2 plateaux, hors source / Ancré / non-ciblable).
@@ -3919,6 +3994,17 @@ function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: P
       owner.graveyard = owner.graveyard.filter(g => g !== c);
     }
 
+    // Remontée en mode « mort » : auto-renvoi en main au lieu de finir au
+    // cimetière (« quand je meurs, je remonte »), que ce soit exprimé par le
+    // mot-clé (keyword_instances mode death) ou par une capacité composée
+    // bounce/self/on_death. Pas de ciblage ni d'UI : la créature se renvoie
+    // ELLE-MÊME, donc ça marche aussi pendant le tour adverse. Le
+    // `owner.graveyard.includes(c)` évite un double traitement si une autre
+    // règle (Résurrection / Cycle éternel) a déjà sorti l'instance plus haut.
+    if (wantsSelfReturnOnDeath(c) && owner.graveyard.includes(c)) {
+      returnDeadCreatureToHand(c, owner, enemy);
+    }
+
     // Custom on-death triggers from keywordInstances metadata. Curated
     // keywords (see plan) can opt into mode "death" so their on-play
     // effect fires from the death rattle slot instead. The on-play block
@@ -3927,6 +4013,9 @@ function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: P
     const customDeathInstances = c.card.keyword_instances ?? [];
     for (const inst of customDeathInstances) {
       if (inst.mode === "death") {
+        // Remontée-mort = self-bounce déjà traité juste au-dessus : ne pas la
+        // repasser ici (sinon double effet — auto-renvoi PUIS renvoi ciblé).
+        if (inst.id === "remontee") continue;
         resolveCuratedKeywordEffect(inst.id, inst.x ?? 1, c, owner, enemy, undefined, inst);
       }
     }

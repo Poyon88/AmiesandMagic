@@ -105,6 +105,113 @@ describe("Conservation des bonus — Rappel (cimetière → main)", () => {
   });
 });
 
+describe("Remontée en mode mort — auto-renvoi en main (pas au cimetière)", () => {
+  it("la créature qui meurt remonte ELLE-MÊME en main, bonus conservés, soin complet", () => {
+    const s = mkState();
+    const champ = mkInstance(mkCard({
+      name: "Spectre", attack: 5, health: 5,
+      keyword_instances: [{ id: "remontee", mode: "death" }],
+    }));
+    champ.necrophagieATKBonus = 2; // +2 ATK accumulé
+    champ.necrophagiePVBonus = 2;  // +2 PV accumulé
+    champ.currentHealth = 1;        // mourra de la riposte
+    champ.hasSummoningSickness = false;
+    s.players[0].board.push(champ);
+
+    const blocker = mkInstance(mkCard({ name: "Blocker", attack: 3, health: 5 }));
+    s.players[1].board.push(blocker);
+
+    // Le Spectre attaque : 3 (riposte) avec 1 PV → meurt → remontée mode mort.
+    const next = attack(s, {
+      type: "attack", attackerInstanceId: champ.instanceId, targetInstanceId: blocker.instanceId,
+    });
+
+    const inHand = next.players[0].hand.find((c) => c.card.name === "Spectre")!;
+    expect(inHand).toBeDefined();                 // bien revenu en main
+    expect(inHand.necrophagieATKBonus).toBe(2);   // bonus conservé
+    expect(inHand.currentAttack).toBe(7);          // 5 base + 2
+    expect(inHand.maxHealth).toBe(7);              // 5 base + 2
+    expect(inHand.currentHealth).toBe(7);          // soin complet
+    // ni sur le plateau, ni au cimetière
+    expect(next.players[0].board.find((c) => c.card.name === "Spectre")).toBeUndefined();
+    expect(next.players[0].graveyard.find((c) => c.card.name === "Spectre")).toBeUndefined();
+  });
+});
+
+describe("Remontée en mode mort — capacité composée bounce/self (cf. Ombre Insaisissable)", () => {
+  it("la créature sacrifiée/morte remonte en main via un bounce composé on_death ciblant self", () => {
+    const s = mkState();
+    // Modèle « capabilities » : bounce de soi-même au déclencheur mort.
+    const ombre = mkInstance(mkCard({
+      name: "Ombre", attack: 1, health: 3,
+      capabilities: [{
+        uid: "cx_2", trigger: "on_death", abilityId: "_composed", effectKind: "immediate",
+        composed: {
+          target: { side: "enemy", count: 1, entity: "self", location: "board", designation: "choice" },
+          content: "bounce", magnitude: { x: 1 },
+        },
+      }],
+    } as Parameters<typeof mkCard>[0]));
+    ombre.currentHealth = 1;        // mourra de la riposte
+    ombre.hasSummoningSickness = false;
+    s.players[0].board.push(ombre);
+
+    const blocker = mkInstance(mkCard({ name: "Blocker", attack: 3, health: 5 }));
+    s.players[1].board.push(blocker);
+
+    const next = attack(s, {
+      type: "attack", attackerInstanceId: ombre.instanceId, targetInstanceId: blocker.instanceId,
+    });
+
+    // Revenue en main, pas restée au cimetière.
+    expect(next.players[0].hand.find((c) => c.card.name === "Ombre")).toBeDefined();
+    expect(next.players[0].board.find((c) => c.card.name === "Ombre")).toBeUndefined();
+    expect(next.players[0].graveyard.find((c) => c.card.name === "Ombre")).toBeUndefined();
+  });
+});
+
+describe("Boucle self-bounce + auto-debuff — mort définitive à 0 PV (cf. Ombre Insaisissable)", () => {
+  // Carte type Ombre Insaisissable : à la mort elle remonte en main (bounce
+  // self), et au retour elle gagne +1 ATK et perd 1 PV permanent.
+  const ombreCaps = [
+    { uid: "d0", trigger: "on_death", abilityId: "_composed", effectKind: "immediate",
+      composed: { target: { side: "enemy", count: 1, entity: "self", location: "board", designation: "choice" }, content: "bounce", magnitude: { x: 1 } } },
+    { uid: "r0", trigger: "on_return", abilityId: "_composed", effectKind: "immediate",
+      composed: { target: { side: "ally", count: 1, entity: "self", location: "board", designation: "choice" }, content: "buff", magnitude: { x: 1, y: 0 } } },
+    { uid: "r1", trigger: "on_return", abilityId: "_composed", effectKind: "immediate",
+      composed: { target: { side: "ally", count: 1, entity: "self", location: "board", designation: "choice" }, content: "debuff", magnitude: { x: 0, y: 1 } } },
+  ];
+
+  function killReturning(baseAtk: number, baseHp: number) {
+    const s = mkState();
+    const ombre = mkInstance(mkCard({ name: "Ombre", attack: baseAtk, health: baseHp, capabilities: ombreCaps } as Parameters<typeof mkCard>[0]));
+    ombre.currentHealth = 1;        // mourra de la riposte
+    ombre.hasSummoningSickness = false;
+    s.players[0].board.push(ombre);
+    const blocker = mkInstance(mkCard({ name: "Blocker", attack: 3, health: 5 }));
+    s.players[1].board.push(blocker);
+    return attack(s, { type: "attack", attackerInstanceId: ombre.instanceId, targetInstanceId: blocker.instanceId });
+  }
+
+  it("retour non terminal : 1/3 → 2/2 en main (PV permanente > 0, reste)", () => {
+    const next = killReturning(1, 3);
+    const inHand = next.players[0].hand.find((c) => c.card.name === "Ombre")!;
+    expect(inHand).toBeDefined();
+    expect(inHand.card.attack).toBe(2);  // +1 ATK
+    expect(inHand.card.health).toBe(2);  // -1 PV cuit dans card
+    expect(next.players[0].graveyard.find((c) => c.card.name === "Ombre")).toBeUndefined();
+  });
+
+  it("retour terminal : à 0 PV après le debuff, elle MEURT (cimetière, pas en main, pas de boucle)", () => {
+    // Base 1/1 : retour → soin à 1 PV → buff +1 ATK → debuff -1 PV → 0 PV → mort.
+    const next = killReturning(1, 1);
+    expect(next.players[0].hand.find((c) => c.card.name === "Ombre")).toBeUndefined();
+    expect(next.players[0].graveyard.find((c) => c.card.name === "Ombre")).toBeDefined();
+    // Pas restée sur le plateau non plus.
+    expect(next.players[0].board.find((c) => c.card.name === "Ombre")).toBeUndefined();
+  });
+});
+
 describe("Conservation des bonus — Résurrection (revient à 1 PV)", () => {
   it("conserve l'ATK boostée mais revient à 1 PV (règle du mot-clé)", () => {
     const s = mkState();
