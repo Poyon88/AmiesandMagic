@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { Card, Keyword, CardSet, GameFormat, DeckMode, DeckExtent } from "@/lib/game/types";
@@ -12,6 +12,7 @@ import { namedCreatureCapabilityIds, creatureCapabilityCounts, capabilityLimitVi
 import { FACTIONS, ALIGNMENTS, getFactionDisplayName, getFactionForRace } from "@/lib/card-engine/constants";
 import type { Alignment } from "@/lib/card-engine/constants";
 import GameCard from "@/components/cards/GameCard";
+import useLongPress from "@/hooks/useLongPress";
 import { AmButton } from "@/components/ui/AmButton";
 
 interface HeroRow {
@@ -104,6 +105,63 @@ const RACE_ICONS: Record<string, string> = {
 import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
 const KEYWORDS = [...ALL_KEYWORDS].sort((a, b) => KEYWORD_LABELS[a].localeCompare(KEYWORD_LABELS[b], "fr"));
 
+// Une ligne de carte sélectionnée dans la liste de droite (« deck list »).
+// Look proche d'une liste de deck Hearthstone : illustration de la carte en
+// fond (dégradé pour garder gemme + nom lisibles), liseré de rareté, compteur.
+// Survol (desktop) ou appui long (tactile) → aperçu plein format ; le tap
+// simple retire un exemplaire (onRemove). Le hook useLongPress.consume() évite
+// qu'un appui long déclenche aussi le retrait (même pattern que BoardCreature).
+function DeckCardRow({
+  card, quantity, substituted, tint,
+  onRemove, onPreviewEnter, onPreviewLeave, onPreviewLong,
+}: {
+  card: Card;
+  quantity: number;
+  substituted: boolean;
+  tint: string;
+  onRemove: () => void;
+  onPreviewEnter: (card: Card) => void;
+  onPreviewLeave: () => void;
+  onPreviewLong: (card: Card) => void;
+}) {
+  const lp = useLongPress(() => onPreviewLong(card));
+  const rarity = card.rarity || "Commune";
+  return (
+    <div
+      {...lp.handlers}
+      onClick={() => { if (lp.consume()) return; onRemove(); }}
+      onMouseEnter={() => onPreviewEnter(card)}
+      onMouseLeave={onPreviewLeave}
+      className="relative flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-am-bg-3/60 transition-colors group overflow-hidden"
+      style={{
+        boxShadow: `inset 3px 0 0 ${tint}`,
+        backgroundImage: card.image_url
+          ? `linear-gradient(to right, var(--am-bg-1) 0%, var(--am-bg-1) 42%, ${tint}1f 72%, rgba(0,0,0,0) 100%), url('${card.image_url}')`
+          : `linear-gradient(to right, ${tint}14, rgba(0,0,0,0))`,
+        backgroundSize: card.image_url ? "100% 100%, cover" : undefined,
+        backgroundPosition: card.image_url ? "left, right center" : undefined,
+        backgroundRepeat: "no-repeat",
+      }}
+    >
+      <span className="w-4 h-4 rounded-full bg-am-azure flex items-center justify-center text-white text-[9px] font-bold flex-shrink-0">
+        {card.mana_cost}
+      </span>
+      <span className="text-[11px] text-am-ink flex-1 truncate" style={{ textShadow: "0 1px 3px rgba(0,0,0,0.95)" }}>
+        {card.name}
+      </span>
+      {substituted && (
+        <span className="text-[8px] px-1 rounded" style={{ background: `${tint}33`, color: tint }}>
+          {rarity[0]}
+        </span>
+      )}
+      {quantity > 1 && (
+        <span className="text-[10px] text-am-ink-soft font-bold" style={{ textShadow: "0 1px 3px rgba(0,0,0,0.95)" }}>x{quantity}</span>
+      )}
+      <span className="text-[10px] text-am-ink-ghost group-hover:text-am-ember transition-colors">{"✕"}</span>
+    </div>
+  );
+}
+
 export default function DeckBuilder({
   cards,
   heroes,
@@ -190,6 +248,31 @@ export default function DeckBuilder({
 
   // Popover « pouvoir du héros » ouvert au clic droit sur une vignette de héros.
   const [powerPopup, setPowerPopup] = useState<{ hero: HeroRow; x: number; y: number } | null>(null);
+
+  // Aperçu plein format d'une carte du deck. `touch` ⇒ ouvert par appui long
+  // (modale centrée + backdrop) ; sinon survol desktop (carte flottante non
+  // interactive). On n'arme l'aperçu au survol que sur les pointeurs « hover »
+  // (souris) pour éviter les événements souris synthétiques sur tactile.
+  const [previewCard, setPreviewCard] = useState<Card | null>(null);
+  const [previewTouch, setPreviewTouch] = useState(false);
+  const previewTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hoverCapable = useRef(true);
+  useEffect(() => {
+    hoverCapable.current = typeof window !== "undefined" && !!window.matchMedia?.("(hover: hover)").matches;
+    return () => { if (previewTimer.current) clearTimeout(previewTimer.current); };
+  }, []);
+  const schedulePreview = (card: Card) => {
+    if (!hoverCapable.current) return;
+    if (previewTimer.current) clearTimeout(previewTimer.current);
+    previewTimer.current = setTimeout(() => { setPreviewTouch(false); setPreviewCard(card); }, 150);
+  };
+  const clearPreview = () => {
+    if (!hoverCapable.current) return;
+    if (previewTimer.current) { clearTimeout(previewTimer.current); previewTimer.current = null; }
+    setPreviewCard(null);
+  };
+  const openTouchPreview = (card: Card) => { setPreviewTouch(true); setPreviewCard(card); };
+  const closeTouchPreview = () => { setPreviewTouch(false); setPreviewCard(null); };
 
   // Changer de faction vide les cartes/héros/plateau/dos incompatibles.
   function changeFaction(faction: string | null) {
@@ -1165,27 +1248,17 @@ export default function DeckBuilder({
                 {/* Cards in this slot */}
                 <div className="px-2 py-1">
                   {entries.map(entry => (
-                    <div
+                    <DeckCardRow
                       key={entry.card.id}
-                      onClick={() => removeCard(entry.card.id)}
-                      className="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-am-bg-3/60 transition-colors group"
-                    >
-                      <span className="w-4 h-4 rounded-full bg-am-azure flex items-center justify-center text-white text-[9px] font-bold flex-shrink-0">
-                        {entry.card.mana_cost}
-                      </span>
-                      <span className="text-[11px] text-am-ink flex-1 truncate">
-                        {entry.card.name}
-                      </span>
-                      {entry.substituted && (
-                        <span className="text-[8px] px-1 rounded" style={{ background: `${RARITY_COLORS[entry.card.rarity || "Commune"]}33`, color: RARITY_COLORS[entry.card.rarity || "Commune"] }}>
-                          {entry.card.rarity?.[0] || "C"}
-                        </span>
-                      )}
-                      {entry.quantity > 1 && (
-                        <span className="text-[10px] text-am-ink-faint">x{entry.quantity}</span>
-                      )}
-                      <span className="text-[10px] text-am-ink-ghost group-hover:text-am-ember transition-colors">{"✕"}</span>
-                    </div>
+                      card={entry.card}
+                      quantity={entry.quantity}
+                      substituted={entry.substituted}
+                      tint={RARITY_COLORS[entry.card.rarity || "Commune"]}
+                      onRemove={() => removeCard(entry.card.id)}
+                      onPreviewEnter={schedulePreview}
+                      onPreviewLeave={clearPreview}
+                      onPreviewLong={openTouchPreview}
+                    />
                   ))}
 
                   {/* Empty slot indicators (only for non-Commune rarities) */}
@@ -1229,6 +1302,30 @@ export default function DeckBuilder({
         )}
       </div>
       </div>
+
+      {/* Aperçu plein format d'une carte du deck — tactile : modale centrée
+          avec backdrop (tap pour fermer). */}
+      {previewCard && previewTouch && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/75 p-6"
+          onClick={closeTouchPreview}
+        >
+          <div onClick={(e) => e.stopPropagation()}>
+            <GameCard card={previewCard} size="lg" forceRarityFrame disableHoverZoom />
+          </div>
+        </div>
+      )}
+      {/* Aperçu au survol (desktop) — carte flottante non interactive, ancrée à
+          gauche du panneau de droite. position:fixed pour éviter le clipping de
+          la liste scrollable (et les soucis de stacking Safari). */}
+      {previewCard && !previewTouch && (
+        <div
+          className="fixed z-[60] pointer-events-none hidden md:block drop-shadow-2xl"
+          style={{ right: 332, top: "50%", transform: "translateY(-50%)" }}
+        >
+          <GameCard card={previewCard} size="lg" forceRarityFrame disableHoverZoom />
+        </div>
+      )}
 
       {/* Pop-over pouvoir du héros (clic droit) */}
       {powerPopup && (
