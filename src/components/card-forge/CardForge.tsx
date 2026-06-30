@@ -13,7 +13,7 @@ import RaceClanPicker from "@/components/admin/RaceClanPicker";
 import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
 import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
 import { ABILITIES, abilityIconKeys, creatureEngineId, type AbilityDef } from "@/lib/game/abilities";
-import type { SpellKeywordId, Capability } from "@/lib/game/types";
+import type { SpellKeywordId, Capability, CapabilityTrigger } from "@/lib/game/types";
 import CardEditor from "@/components/admin/CardEditor";
 import { CARD_BACK_FRAMES, autoTrimDarkBorders, composeCardBack, getCardBackFrame } from "@/lib/card-back-frames";
 
@@ -1586,6 +1586,9 @@ export default function CardForge() {
   const [keywordGrantScope, setKeywordGrantScope] = useState<Record<string, "all_allies">>({});
   // Conférer (mot-clé créature paramétrique) : ability conférée choisie.
   const [conferAbilityId, setConferAbilityId] = useState<string>("");
+  // Déclenchement (mot-clé créature paramétrique) : sous-ensemble figé de
+  // déclencheurs dont les effets composés des autres alliés sont rejoués.
+  const [declenchementTriggers, setDeclenchementTriggers] = useState<CapabilityTrigger[]>([]);
   const [hoveredKw, setHoveredKw] = useState<{ id: string; rect: DOMRect } | null>(null);
   const [convocationTokenId, setConvocationTokenId] = useState<number | null>(null);
   const [convocationTokens, setConvocationTokens] = useState<ConvocationTokenDef[]>([]);
@@ -1876,7 +1879,7 @@ export default function CardForge() {
     setManualPower(2); setManualAbility(""); setManualFlavorText("");
     setManualIllustrationPrompt(""); setManualExtraContext(""); setManualKeywords([]); setKeywordXValues({}); setKeywordModes({}); setCard(null);
     setEditedPrompt(null); setSaveResult(null);
-    setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setRmRace(""); setRmClan(""); setAsRace(""); setConferAbilityId(""); setComposedCaps([]);
+    setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setRmRace(""); setRmClan(""); setAsRace(""); setConferAbilityId(""); setDeclenchementTriggers([]); setComposedCaps([]);
     setManualLifeCost(0); setManualDiscardCost(0); setManualSacrificeCost(0);
     setCardImages(prev => Object.fromEntries(Object.entries(prev).filter(([k]) => k !== "manual_preview")));
   }, []);
@@ -2031,6 +2034,7 @@ export default function CardForge() {
     "Fureur": "fureur", "Double Attaque": "double_attaque", "Invisible": "invisible",
     "Canalisation": "canalisation", "Contresort": "contresort",
     "Conférer": "conferer",
+    "Déclenchement": "declenchement",
     "Convocation X": "convocation", "Malédiction": "malediction",
     "Nécrophagie": "necrophagie", "Richesse X": "richesse", "Sacrifice démoniaque X": "sacrifice_demoniaque", "Paralysie": "paralysie",
     "Permutation": "permutation", "Persécution X": "persecution",
@@ -2178,6 +2182,10 @@ export default function CardForge() {
             const scope = keywordGrantScope["Conférer"] === "all_allies" ? "all_allies" as const : undefined;
             return { id, ...(mode ? { mode } : {}), ...(conferAbilityId ? { grantAbilityId: conferAbilityId } : {}), ...(scope ? { grantScope: scope } : {}) };
           }
+          // Déclenchement (créature) : porte le sous-ensemble figé de déclencheurs ; toujours émis.
+          if (id === "declenchement" && !isSpellCard) {
+            return { id, ...(mode ? { mode } : {}), ...(declenchementTriggers.length ? { replayTriggers: declenchementTriggers } : {}) };
+          }
           if (!mode && x == null && !grantScope) return null; // pure play + no X + default scope → nothing to store
           return { id, ...(mode ? { mode } : {}), ...(x != null ? { x } : {}), ...(grantScope ? { grantScope } : {}) };
         })
@@ -2264,7 +2272,7 @@ export default function CardForge() {
     } finally {
       setSaving(false);
     }
-  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, keywordModes, keywordGrantScope, rmY, rmRace, rmClan, asRace, composedCaps, conferAbilityId]);
+  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, keywordModes, keywordGrantScope, rmY, rmRace, rmClan, asRace, composedCaps, conferAbilityId, declenchementTriggers]);
 
   const [generatingImage, setGeneratingImage] = useState(false);
   const [editedPrompt, setEditedPrompt] = useState<string | null>(null);
@@ -3292,6 +3300,21 @@ export default function CardForge() {
                             const active = (keywordGrantScope["Conférer"] === "all_allies" ? "all_allies" : "target") === val;
                             return (
                               <button key={val} onClick={() => setKeywordGrantScope(prev => { const n = { ...prev }; if (val === "all_allies") n["Conférer"] = "all_allies"; else delete n["Conférer"]; return n; })}
+                                style={{ padding: "3px 10px", borderRadius: 5, border: `1px solid ${active ? "#8a6d3b" : "#ddd"}`, background: active ? "#8a6d3b22" : "#fff", color: active ? "#8a6d3b" : "#999", fontSize: 10, fontFamily: "'Cinzel',serif", fontWeight: active ? 700 : 400, cursor: "pointer" }}>{txt}</button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                    {/* Déclenchement — sous-ensemble figé de déclencheurs rejoués */}
+                    {manualKeywords.includes("Déclenchement") && (
+                      <div style={{ marginTop: 6, padding: 6, borderRadius: 6, border: `1px solid ${declenchementTriggers.length ? "#8a6d3b44" : "#e74c3c"}`, background: "#fffdf6" }}>
+                        <div style={{ fontSize: 8, color: "#8a6d3b", letterSpacing: 1, fontWeight: 700, marginBottom: 4 }}>🔂 DÉCLENCHEURS REJOUÉS {!declenchementTriggers.length && <span style={{ color: "#e74c3c" }}>· requis</span>}</div>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                          {([["on_play", "Entrée en jeu"], ["on_death", "Mort"], ["on_end_of_turn", "Fin du tour"], ["on_return", "Retour en main"]] as const).map(([val, txt]) => {
+                            const active = declenchementTriggers.includes(val);
+                            return (
+                              <button key={val} type="button" onClick={() => setDeclenchementTriggers(prev => active ? prev.filter(t => t !== val) : [...prev, val])}
                                 style={{ padding: "3px 10px", borderRadius: 5, border: `1px solid ${active ? "#8a6d3b" : "#ddd"}`, background: active ? "#8a6d3b22" : "#fff", color: active ? "#8a6d3b" : "#999", fontSize: 10, fontFamily: "'Cinzel',serif", fontWeight: active ? 700 : 400, cursor: "pointer" }}>{txt}</button>
                             );
                           })}

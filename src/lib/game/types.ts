@@ -58,7 +58,10 @@ export type Keyword =
   // Polymorphic — +X/+Y to all controller's creatures of a selected race/clan
   | "renforcement_multiple"
   // Confère une capacité choisie à une/aux unité(s) alliée(s) (mot-clé paramétrique)
-  | "conferer";
+  | "conferer"
+  // Rejoue à l'entrée en jeu les effets composés déclenchés des AUTRES alliés,
+  // pour un sous-ensemble figé de déclencheurs (cf. replayTriggers).
+  | "declenchement";
 
 export type SpellTargetType =
   | "any"
@@ -156,6 +159,10 @@ export interface KeywordInstance {
   grantScope?: "target" | "all_allies";
   /** Mot-clé "conferer" : id de l'ability conférée à la/aux cible(s). */
   grantAbilityId?: string;
+  /** Mot-clé "declenchement" : sous-ensemble FIGÉ (à la création) de déclencheurs
+   *  dont les capacités composées des AUTRES alliés sont rejouées une fois à
+   *  l'entrée en jeu du porteur. ⊆ {on_play, on_death, on_end_of_turn, on_return}. */
+  replayTriggers?: CapabilityTrigger[];
 }
 
 export interface SpellKeywordInstance {
@@ -269,6 +276,9 @@ export interface Capability {
    *  l'interpréteur générique (`resolveComposedEffect`) au lieu du chemin curé
    *  via `abilityId`. Absent ⇒ comportement curé inchangé. */
   composed?: ComposedEffect;
+  /** Mot-clé "declenchement" uniquement : cf. KeywordInstance.replayTriggers
+   *  (reporté sur la capability backfillée pour survivre au modèle unifié). */
+  replayTriggers?: CapabilityTrigger[];
 }
 
 // ─── Capacités composables (modèle hybride) ─────────────────────────────────
@@ -758,6 +768,17 @@ export interface GameState {
   // pendingTriggers restent, la bascule de tour est différée ; finishEndTurn
   // s'exécute quand la file est vidée (cf. resolvePendingTrigger).
   endTurnPending?: boolean;
+  // Pile d'effets LIFO unifiée (cf. plan « pile d'effets »). Vide entre deux
+  // actions, SAUF si la résolution est suspendue sur un choix joueur : la frame
+  // au sommet porte alors `awaitingChoice` et la pile persiste dans l'état
+  // (hashée + snapshotée → survit au resync, comme pendingTriggers). Données
+  // JSON pures (réf. créatures par instanceId, joueurs par id) pour survivre au
+  // deepClone et au snapshot multijoueur.
+  effectStack?: StackFrame[];
+  // Compteur de débordements de la garde de pile (profondeur/boucle). Télémétrie
+  // déterministe (les 2 clients le calculent à l'identique) mais classée volatile
+  // (exclue du hash) pour ne jamais provoquer de verdict de désync.
+  stackOverflowCount?: number;
 }
 
 export type GameActionType = "play_card" | "attack" | "end_turn" | "spell_target";
@@ -883,6 +904,47 @@ export interface PendingTrigger {
   selectionType?: "selection" | "selection_magique" | "renfort_royal";
   /** Ids des cartes offertes (résolus en Card côté store via les pools). */
   selectionOptionIds?: number[];
+}
+
+/** Frame de la pile d'effets LIFO unifiée. UN frame = UN effet atomique (un
+ *  `ComposedEffect`, ou un corps de mot-clé curated). Donnée JSON pure : les
+ *  créatures sont référencées par `instanceId` et re-localisées à la résolution
+ *  (la source peut être au cimetière), les joueurs par `id`. Voir le plan maître. */
+export interface StackFrame {
+  /** Id déterministe (`${sourceInstanceId}#${trigger}#${seq}`) — clé du sélecteur
+   *  de cible quand la frame est suspendue sur un choix. */
+  frameId: string;
+  kind: "composed" | "curated" | "death_nature";
+  /** Contrôleur de l'effet (owner/opponent résolus par id à la résolution). */
+  ownerId: string;
+  /** Source de l'effet ; null si sans source (re-localisée board+graveyard+hand). */
+  sourceInstanceId: string | null;
+  /** Déclencheur d'origine (cosmétique + routage du mode valeur). */
+  trigger: CapabilityTrigger;
+  /** kind === "composed" : snapshot inline de l'effet (pas re-lu depuis la carte,
+   *  car Déclenchement rejoue l'effet d'un allié avec une autre source). */
+  composed?: ComposedEffect;
+  /** uid de la capability d'origine (reconstruction du sélecteur de choix). */
+  capUid?: string;
+  /** Cibles choisies (pré-connues via targetMap, ou fixées après choix joueur). */
+  chosenTargetIds?: string[];
+  /** true ⇒ frame suspendue au sommet, en attente d'un choix de cible. */
+  awaitingChoice?: boolean;
+  /** true ⇒ ne JAMAIS suspendre sur un choix : ciblage en repli déterministe
+   *  (pool.slice) sans UI. Utilisé par Déclenchement pour rejouer les effets des
+   *  alliés sans empiler N sélections interactives (évite l'explosion + desync). */
+  noSuspend?: boolean;
+  /** kind === "curated"/"death_nature" : mot-clé + X + instance à résoudre. */
+  curatedKw?: Keyword;
+  curatedX?: number;
+  curatedInst?: KeywordInstance;
+  /** Mode valeur (Déclenchement mort/retour) : rejoue le payoff sortant mais
+   *  saute l'auto-suppression (self-bounce/destroy/deal_damage/debuff). */
+  valueMode?: boolean;
+  /** Garde unifiée : profondeur depuis le déclencheur racine + id de la cause
+   *  racine (détection de boucle par origine). */
+  depth: number;
+  originTag: string;
 }
 
 // Combat event for animations
