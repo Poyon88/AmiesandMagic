@@ -215,7 +215,15 @@ export function getCapabilities(card: Card): Capability[] {
     // accordé ne lèverait pas le mal d'invocation, etc. On dérive donc une
     // capacité pour chaque keyword absent des capabilities et on l'ajoute.
     const present = new Set(card.capabilities.map((c) => c.abilityId));
-    const extra = ((card.keywords ?? []) as unknown as string[]).filter((kw) => !present.has(kw));
+    // On exclut les mots-clés créature « ombragés » par leur jumeau-sort déjà
+    // présent (ex. convocations_multiples ↔ invocation_multiple). Sans ça, ils
+    // sont vus comme « manquants » (id snake_case ≠ id du sort) et la
+    // ré-dérivation ci-dessous, qui repart de `card.spell_keywords` (conservés
+    // par le spread), DUPLIQUE toutes les capacités de sort → effet joué deux
+    // fois (ex. Seconde Tournée invoquait 8 jetons au lieu de 4).
+    const extra = ((card.keywords ?? []) as unknown as string[]).filter(
+      (kw) => !present.has(kw) && !isCreatureKwShadowedBySpell(kw, card.spell_keywords),
+    );
     caps = extra.length
       ? [...card.capabilities, ...deriveCapabilities({ ...card, capabilities: null, keywords: extra as unknown as Card["keywords"] })]
       : card.capabilities;

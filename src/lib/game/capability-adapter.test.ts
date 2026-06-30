@@ -375,4 +375,29 @@ describe("getCapabilities — mots-clés conférés au runtime (modèle capabili
     const caps = getCapabilities(c);
     expect(caps.filter((k) => k.abilityId === "double_attaque")).toHaveLength(1);
   });
+
+  it("sort backfillé avec keyword créature ombragé par son jumeau-sort → pas de duplication (régression Seconde Tournée)", () => {
+    // Seconde Tournée (carte 107) : sort backfillé dont les capabilities portent
+    // le spell_keyword `invocation_multiple`, tandis que `keywords[]` garde son
+    // jumeau créature `convocations_multiples`. Comme les deux ids diffèrent, le
+    // merge le voyait « manquant » et ré-dérivait TOUS les spell_keywords →
+    // invocation_multiple dupliqué → invocation des jetons jouée deux fois.
+    const c = card({
+      card_type: "spell",
+      attack: null,
+      health: null,
+      keywords: ["convocations_multiples"] as Card["keywords"],
+      spell_keywords: [
+        { id: "invocation_multiple", amount: 1, attack: 1, health: 1 },
+        { id: "inspiration", amount: 1, attack: 1, health: 1 },
+      ] as SpellKeywordInstance[],
+      capabilities: [
+        { uid: "sk_0", trigger: "spell_resolution", effectKind: "immediate", abilityId: "invocation_multiple", params: { x: 1, attack: 1, health: 1 }, targets: [] },
+        { uid: "sk_1", trigger: "spell_resolution", effectKind: "immediate", abilityId: "inspiration", params: { x: 1, attack: 1, health: 1 }, targets: [] },
+      ] as Capability[],
+    });
+    const caps = getCapabilities(c);
+    expect(caps.filter((k) => k.abilityId === "invocation_multiple")).toHaveLength(1);
+    expect(caps.filter((k) => k.abilityId === "inspiration")).toHaveLength(1);
+  });
 });
