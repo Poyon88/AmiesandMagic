@@ -33,52 +33,18 @@ export function useScreenShake() {
 
     const earliestDelay = Math.min(...damageOnly.map((e) => e.delayMs ?? 0));
     const isBig = biggest >= BIG_HIT_THRESHOLD;
-    const intensity = isBig ? 14 : 7;
-    const duration = isBig ? 0.5 : 0.32;
-
-    // Directional kick: lurch ALONG the strike vector (attacker → target) then
-    // settle with a decaying oscillation. Falls back to a horizontal-dominant
-    // shudder when no attacker direction was stamped (spell/ability damage).
-    let dirX = 1;
-    let dirY = 0.25;
-    const sx = biggestEvent.srcX;
-    const sy = biggestEvent.srcY;
-    if (sx != null && sy != null && sx > -9000) {
-      const dx = biggestEvent.x - sx;
-      const dy = biggestEvent.y - sy;
-      const len = Math.hypot(dx, dy) || 1;
-      dirX = dx / len;
-      dirY = dy / len;
-    }
-    const kick = (axis: number) => [
-      0,
-      axis * intensity,
-      -axis * intensity * 0.6,
-      axis * intensity * 0.4,
-      -axis * intensity * 0.2,
-      axis * intensity * 0.08,
-      0,
-    ];
-
     let freezeTimer: ReturnType<typeof setTimeout> | null = null;
     const hitStop = isBig ? BIG_HIT_STOP_MS : HIT_STOP_MS;
 
+    // Hit-stop only: a brief brightness/contrast punch on the board (filter,
+    // driven by isFrozen) — NO positional shake/recoil. The board no longer
+    // lurches when creatures take damage.
     const startTimer = setTimeout(() => {
       setFrozen(true);
       setFrozenBig(isBig);
       freezeTimer = setTimeout(() => {
         setFrozen(false);
         setFrozenBig(false);
-        shakeControls.start({
-          x: kick(dirX),
-          y: kick(dirY),
-          rotate: isBig ? [0, -0.6, 0.5, -0.3, 0.2, 0, 0] : [0, -0.3, 0.25, -0.1, 0.05, 0, 0],
-          transition: {
-            duration,
-            ease: "easeOut",
-            times: [0, 0.12, 0.28, 0.45, 0.65, 0.85, 1],
-          },
-        });
       }, hitStop);
     }, earliestDelay);
 

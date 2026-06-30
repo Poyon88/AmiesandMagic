@@ -25,10 +25,6 @@ interface BoardCreatureProps {
   isSelected?: boolean;
   isValidTarget?: boolean;
   damageAmount?: number | null;
-  /** Normalised strike direction (target − attacker) so the creature recoils
-   *  away from the attacker. 0/absent ⇒ a small symmetric shudder. */
-  hitDirX?: number;
-  hitDirY?: number;
   /** A positive event landed on this unit this action — drives a graceful
    *  upward "power-up" pulse (distinct from the violent hit reaction). */
   boostKind?: "buff" | "empower" | null;
@@ -51,8 +47,6 @@ export default function BoardCreature({
   isSelected = false,
   isValidTarget = false,
   damageAmount = null,
-  hitDirX = 0,
-  hitDirY = 0,
   boostKind = null,
   summoning = false,
   onClick,
@@ -160,32 +154,24 @@ export default function BoardCreature({
     if (detailTimer.current) clearTimeout(detailTimer.current);
   });
 
-  // Hit reaction: knock the creature back ALONG the strike vector (away from
-  // the attacker), squash on impact, and flash white briefly. Bigger amplitude
-  // on big hits. Falls back to a small symmetric shudder when no direction was
-  // supplied (e.g. spell/ability damage). The number, canvas burst and shake
-  // all read the same direction so the three channels agree.
+  // Hit reaction: a brief white flash only — no recoil/knockback or squash.
+  // The damage number and Canvas burst still convey direction; the card itself
+  // stays put when struck. Bigger hits flash a touch brighter.
   const isHit = damageAmount != null && damageAmount > 0;
   const bigHit = isHit && isBigHit(damageAmount as number);
-  const hasHitDir = hitDirX !== 0 || hitDirY !== 0;
-  const knockAmp = bigHit ? 16 : 10;
-  const kx = hasHitDir ? hitDirX * knockAmp : 0;
-  const ky = hasHitDir ? hitDirY * knockAmp : 0;
-  const hitAnimate = hasHitDir
-    ? {
-        x: [0, kx, kx * 0.3, 0],
-        y: [0, ky, ky * 0.3, 0],
-        scaleX: [1, bigHit ? 1.16 : 1.1, 0.96, 1],
-        scaleY: [1, bigHit ? 0.82 : 0.88, 1.05, 1],
-        filter: [
-          "brightness(1) saturate(1)",
-          `brightness(${bigHit ? 2.6 : 2.1}) saturate(0.5)`,
-          "brightness(1) saturate(1)",
-        ],
-        opacity: 1,
-        rotate: 0,
-      }
-    : { x: [0, -4, 4, -4, 4, 0], y: 0, opacity: 1, scale: 1, rotate: 0 };
+  const hitAnimate = {
+    x: 0,
+    y: 0,
+    scaleX: 1,
+    scaleY: 1,
+    filter: [
+      "brightness(1) saturate(1)",
+      `brightness(${bigHit ? 2.6 : 2.1}) saturate(0.5)`,
+      "brightness(1) saturate(1)",
+    ],
+    opacity: 1,
+    rotate: 0,
+  };
 
   // Graceful "power-up" — gentle rise + warm/arcane glow flash, NO resize.
   // L'énergie est portée par un halo qui enfle DERRIÈRE la carte (voir plus bas) :
@@ -214,7 +200,6 @@ export default function BoardCreature({
 
   return (
     <motion.div
-      layout
       data-instance-id={creature.instanceId}
       style={{ width: W, height: H, position: "relative", zIndex: isZoomed ? 100 : isSelected ? 10 : 1, zoom: 1.41 }}
       initial={
@@ -261,12 +246,8 @@ export default function BoardCreature({
       }
       transition={{
         default: { type: "spring", stiffness: 280, damping: 22, mass: 1.3 },
-        x: isHit && hasHitDir ? { duration: 0.42, ease: "easeOut" } : { duration: 0.25, ease: "easeOut" },
-        y: isHit && hasHitDir
-          ? { duration: 0.42, ease: "easeOut" }
-          : isBoost
-          ? { duration: boostDur, ease: "easeOut" }
-          : undefined,
+        x: { duration: 0.25, ease: "easeOut" },
+        y: isBoost ? { duration: boostDur, ease: "easeOut" } : undefined,
         scaleX: { duration: 0.42, ease: "easeOut" },
         scaleY: { duration: 0.42, ease: "easeOut" },
         rotate: isBoost && isEmpower ? { duration: boostDur, ease: "easeOut" } : undefined,
