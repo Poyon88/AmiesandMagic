@@ -31,6 +31,10 @@ interface BoardCreatureProps {
   /** True when this creature was summoned by an effect this action — gives it a
    *  stronger materialisation entry to pair with the Canvas portal burst. */
   summoning?: boolean;
+  /** True when this creature was just PLAYED from hand this action → sober
+   *  entry (gentle fade + slight rise). Distinct from `summoning` (portal FX).
+   *  Piloté par la logique de jeu (store), donc jamais rejoué sur un remount. */
+  entering?: boolean;
   onClick?: () => void;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
@@ -49,6 +53,7 @@ export default function BoardCreature({
   damageAmount = null,
   boostKind = null,
   summoning = false,
+  entering = false,
   onClick,
   onMouseEnter,
   onMouseLeave,
@@ -203,12 +208,15 @@ export default function BoardCreature({
       data-instance-id={creature.instanceId}
       style={{ width: W, height: H, position: "relative", zIndex: isZoomed ? 100 : isSelected ? 10 : 1, zoom: 1.41 }}
       initial={
-        // Seules les créatures RÉELLEMENT invoquées cette action jouent une
-        // entrée (FX portail). Sinon `false` : pas d'animation de montage, pour
-        // qu'un éventuel remount (adoption snapshot / reconciliation) ne rejoue
-        // PAS l'entrée (rebond scale 0.5→1 = le « rétrécissement/recul » observé).
+        // On ne joue une entrée QUE pour une créature réellement nouvelle cette
+        // action (invoquée → FX portail ; jouée depuis la main → entrée douce).
+        // Sinon `false` : aucun montage animé, pour qu'un remount (adoption
+        // snapshot / réconciliation) ne rejoue PAS l'entrée (le « rétrécissement/
+        // recul » observé venait du rebond scale 0.5→1 rejoué au remount).
         summoning
           ? { y: isOwn ? 18 : -18, opacity: 0, scale: 0.1, rotate: isOwn ? -6 : 6 }
+          : entering
+          ? { opacity: 0, y: isOwn ? 8 : -8 } // entrée douce : fondu + légère montée, PAS de scale
           : false
       }
       animate={
@@ -251,12 +259,13 @@ export default function BoardCreature({
       transition={{
         default: { type: "spring", stiffness: 280, damping: 22, mass: 1.3 },
         x: { duration: 0.25, ease: "easeOut" },
-        y: isBoost ? { duration: boostDur, ease: "easeOut" } : undefined,
+        // Entrée douce : montée en tween lisse (pas le ressort par défaut, qui rebondirait).
+        y: isBoost ? { duration: boostDur, ease: "easeOut" } : entering ? { duration: 0.34, ease: "easeOut" } : undefined,
         scaleX: { duration: 0.42, ease: "easeOut" },
         scaleY: { duration: 0.42, ease: "easeOut" },
         rotate: isBoost && isEmpower ? { duration: boostDur, ease: "easeOut" } : undefined,
         filter: { duration: isBoost ? boostDur : 0.32, ease: "easeOut" },
-        opacity: { duration: 0.3, ease: "easeOut" },
+        opacity: { duration: entering ? 0.4 : 0.3, ease: "easeOut" },
       }}
     >
     {/* Halo de boost — enfle puis s'estompe DERRIÈRE la carte (zIndex -1).

@@ -205,6 +205,7 @@ interface GameStore {
   damageEvents: DamageEvent[];
   deathEvents: DeathFxEvent[];
   summonEvents: string[]; // instanceIds of creatures summoned this action (FX)
+  entryEvents: string[]; // instanceIds de créatures JOUÉES depuis la main cette action → entrée douce (≠ FX portail des invocations)
   spellCastEvent: SpellCastEvent | null;
   fireBreathEvent: FireBreathEvent | null;
   cycleEternelEvent: CycleEternelEvent | null;
@@ -725,6 +726,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   damageEvents: [],
   deathEvents: [],
   summonEvents: [],
+  entryEvents: [],
   spellCastEvent: null,
   fireBreathEvent: null,
   cycleEternelEvent: null,
@@ -801,6 +803,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         damageEvents: [],
         deathEvents: [],
         summonEvents: [],
+        entryEvents: [],
         spellCastEvent: null,
         fireBreathEvent: null,
         cycleEternelEvent: null,
@@ -1357,6 +1360,16 @@ export const useGameStore = create<GameStore>((set, get) => {
     }
     const hasSummons = newCreatureIds.size > 0;
 
+    // Créature JOUÉE depuis la main qui vient d'arriver sur le plateau (≠ sort,
+    // ≠ invocation par effet) → entrée « douce » (fondu + légère montée). Vaut
+    // null si le playedId est un sort ou n'est pas une créature nouvellement en jeu.
+    let playedCreatureId: string | null = null;
+    if (playedId) {
+      const onNew = newState.players.some((p) => p.board.some((c) => c.instanceId === playedId));
+      const onOld = gameState.players.some((p) => p.board.some((c) => c.instanceId === playedId));
+      if (onNew && !onOld) playedCreatureId = playedId;
+    }
+
     // How many cards each player drew this action — we hold them out of the
     // hand until the final "draw" phase so the animation is clearly separated.
     const drawnCounts: [number, number] = [
@@ -1479,6 +1492,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         pendingTapComposedUid: null,
         pendingCreatureChain: null,
         damageEvents: [],
+        entryEvents: playedCreatureId ? [playedCreatureId] : [],
         lastSfxEvents: sfxEvents,
         effectLog: [...get().effectLog, ...logEntries].slice(-20),
       });
@@ -1500,6 +1514,9 @@ export const useGameStore = create<GameStore>((set, get) => {
       pendingTapSourceId: null,
       pendingTapInstanceIdx: null,
       pendingTapComposedUid: null,
+      // Posé avant les phases : la créature jouée monte en phase d'impact avec
+      // `entering` vrai → entrée douce. Réécrit à chaque action donc auto-reset.
+      entryEvents: playedCreatureId ? [playedCreatureId] : [],
     });
 
     // --- Phase timings ---

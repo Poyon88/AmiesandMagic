@@ -74,6 +74,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
     deathEvents,
     clearDeathEvents,
     summonEvents,
+    entryEvents,
     clearSummonEvents,
     spellCastEvent,
     clearSpellCastEvent,
@@ -804,6 +805,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
                   damageAmount={getDamage(creature.instanceId)}
                   boostKind={getBoost(creature.instanceId)}
                   summoning={summonEvents.includes(creature.instanceId)}
+                  entering={entryEvents.includes(creature.instanceId)}
                   onClick={
                     validTargets.includes(creature.instanceId)
                       ? () => handleSelectTarget(creature.instanceId)
@@ -867,6 +869,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
                       damageAmount={getDamage(creature.instanceId)}
                       boostKind={getBoost(creature.instanceId)}
                       summoning={summonEvents.includes(creature.instanceId)}
+                      entering={entryEvents.includes(creature.instanceId)}
                       onClick={
                         validTargets.includes(creature.instanceId)
                           ? () => handleSelectTarget(creature.instanceId)
