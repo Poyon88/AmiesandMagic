@@ -560,6 +560,9 @@ export interface CardInstance {
   summonBonusATK: number;
   // Aura health bonus (commandement) — tracked to adjust HP when aura changes
   auraHealthBonus: number;
+  // Aura health bonus (sang mêlé) — dynamic PV bonus, tracked separately from
+  // auraHealthBonus so the two dynamic +PV auras don't clobber each other.
+  sangMeleHealthBonus: number;
   // Nécrophagie: permanent buff tracker
   necrophagieATKBonus: number;
   necrophagiePVBonus: number;

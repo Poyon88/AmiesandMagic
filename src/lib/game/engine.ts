@@ -716,6 +716,7 @@ function createCardInstance(card: Card): CardInstance {
     esquiveUsedThisTurn: false,
     summonBonusATK: 0,
     auraHealthBonus: 0,
+    sangMeleHealthBonus: 0,
     ombreRevealed: false,
     corruptionStolenIds: [],
     contresortActive: false,
@@ -783,6 +784,7 @@ function returnInstanceToPlay(inst: CardInstance): void {
   inst.maxHealth = health;
   inst.currentHealth = inst.maxHealth;
   inst.auraHealthBonus = 0;
+  inst.sangMeleHealthBonus = 0;
 
   // ATK = base + bonus ATK permanents conservés (même formule que
   // recalculateAuras, qui la reconfirmera une fois sur le plateau). Berserk /
@@ -973,7 +975,7 @@ function discardFromHand(
 // AURA RECALCULATION
 // ============================================================
 
-function recalculateAuras(player: PlayerState, opponent: PlayerState) {
+export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
   // Reset ATK to base + permanent bonuses (not auras)
   for (const c of player.board) {
     let atk = c.card.attack ?? 0;
@@ -1099,12 +1101,24 @@ function recalculateAuras(player: PlayerState, opponent: PlayerState) {
     }
   }
 
-  // Sang mêlé: +1 ATK et +1 PV par type de race différent parmi vos alliés
+  // Sang mêlé: +1 ATK et +1 PV par type de race différent parmi vos alliés.
+  // Aura DYNAMIQUE (comme Commandement) : l'ATK est recalculé (reset ci-dessus),
+  // les PV suivent via `sangMeleHealthBonus` avec diff pour monter/descendre
+  // quand la diversité de races change (ex. mort d'un allié de race unique),
+  // avec la garde « ne pas tuer par retrait d'aura ».
   for (const board of [player.board, opponent.board]) {
     for (const c of board) {
       if (hasKw(c, "sang_mele")) {
-        const uniqueRaces = new Set(board.filter(a => a !== c && a.card.race).map(a => a.card.race));
-        c.currentAttack += uniqueRaces.size;
+        const uniqueRaces = new Set(board.filter(a => a !== c && a.card.race).map(a => a.card.race)).size;
+        c.currentAttack += uniqueRaces;
+        const oldHP = c.sangMeleHealthBonus;
+        if (uniqueRaces !== oldHP) {
+          const diff = uniqueRaces - oldHP;
+          c.maxHealth += diff;
+          c.currentHealth += diff;
+          if (c.currentHealth < 1 && uniqueRaces < oldHP) c.currentHealth = 1; // don't kill via aura removal
+          c.sangMeleHealthBonus = uniqueRaces;
+        }
       }
     }
   }
@@ -1973,14 +1987,10 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       }
     }
 
-    // Sang mêlé: +1 ATK et +1 PV par type de race différent (on-summon permanent PV)
-    if (hasKw(cardInstance, "sang_mele")) {
-      const uniqueRaces = new Set(player.board.filter(a => a !== cardInstance && a.card.race).map(a => a.card.race));
-      if (uniqueRaces.size > 0) {
-        cardInstance.currentHealth += uniqueRaces.size;
-        cardInstance.maxHealth += uniqueRaces.size;
-      }
-    }
+    // Sang mêlé (+1 ATK / +1 PV par race alliée différente) est désormais une
+    // aura DYNAMIQUE entièrement gérée par recalculateAuras (ATK + PV via
+    // sangMeleHealthBonus), appelé juste après la mise en jeu. Plus de bonus PV
+    // permanent cuit ici — sinon le PV ne redescendait jamais (bug signalé).
 
     // Fierté du clan: handled as an aura — units of same clan summoned get +1/+1
     // Check if existing allies with Fierté du clan buff the newly summoned unit
