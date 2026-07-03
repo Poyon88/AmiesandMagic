@@ -203,9 +203,13 @@ export default function BoardCreature({
       data-instance-id={creature.instanceId}
       style={{ width: W, height: H, position: "relative", zIndex: isZoomed ? 100 : isSelected ? 10 : 1, zoom: 1.41 }}
       initial={
+        // Seules les créatures RÉELLEMENT invoquées cette action jouent une
+        // entrée (FX portail). Sinon `false` : pas d'animation de montage, pour
+        // qu'un éventuel remount (adoption snapshot / reconciliation) ne rejoue
+        // PAS l'entrée (rebond scale 0.5→1 = le « rétrécissement/recul » observé).
         summoning
           ? { y: isOwn ? 18 : -18, opacity: 0, scale: 0.1, rotate: isOwn ? -6 : 6 }
-          : { y: isOwn ? 40 : -40, opacity: 0, scale: 0.5, rotate: 0 }
+          : false
       }
       animate={
         isHit
