@@ -4,8 +4,9 @@ import { describe, expect, it } from "vitest";
 import { validateFactionClan, validateRace } from "./faction-clan";
 
 // Valeurs stables de FACTIONS (cf. card-engine/constants.ts) :
-//   Hommes-Bêtes — races: Hommes-Loups, Hommes-Ours, Hommes-Félins, Centaures, Mimis
-//                  clans: Forêt, Toundra, Savane, Jungle, Mignons
+//   Hommes-Bêtes — races: Hommes-Loups, Hommes-Ours, Hommes-Félins, Centaures,
+//                         Mimis, Hommes-Chiens, Hommes-Renards, Hommes-Cerfs
+//                  clans: Forêt, Toundra, Savane, Jungle, Mignons, Pacte des Griffes
 describe("validateFactionClan", () => {
   it("accepte faction + clan valides", () => {
     expect(validateFactionClan("Hommes-Bêtes", "Forêt")).toEqual({ ok: true, faction: "Hommes-Bêtes", clan: "Forêt" });

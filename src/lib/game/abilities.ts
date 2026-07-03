@@ -884,6 +884,12 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["creature"],
     creature: { cost: 8, costPerX: 0, se: 2.0, minTier: 2, scalable: false, zone: "Terrain" },
   },
+  declenchement: {
+    id: "declenchement", label: "Déclenchement", symbol: "🔂",
+    desc: "Invocation : rejoue une fois les effets composés déclenchés des autres alliés en jeu, pour un sous-ensemble figé de déclencheurs (entrée / mort / fin de tour / retour).",
+    applicable_to: ["creature"],
+    creature: { cost: 8, costPerX: 0, se: 2.0, minTier: 3, scalable: false, zone: "Terrain" },
+  },
 };
 
 // ─── Derived views ──────────────────────────────────────────────────────────

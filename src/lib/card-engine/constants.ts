@@ -168,8 +168,8 @@ export const FACTIONS: Record<string, {
   "Hommes-Bêtes": {
     displayName: "La Meute",
     color: "#7B5B3A", accent: "#CD853F", emoji: "🐺", bg: "#1a1008", alignment: "neutre",
-    races: ["Hommes-Loups", "Hommes-Ours", "Hommes-Félins", "Centaures", "Mimis"],
-    clans: [{ names: ["Forêt", "Toundra", "Savane", "Jungle", "Mignons"], appliesTo: "all" }],
+    races: ["Hommes-Loups", "Hommes-Ours", "Hommes-Félins", "Centaures", "Mimis", "Hommes-Chiens", "Hommes-Renards", "Hommes-Cerfs"],
+    clans: [{ names: ["Forêt", "Toundra", "Savane", "Jungle", "Mignons", "Pacte des Griffes"], appliesTo: "all" }],
     statWeights: { atk: 1.20, def: 1.00 },
     guaranteedKeywords: [],
     likelyKeywords: { "Traque": 0.65, "Berserk": 0.60, "Fureur": 0.55, "Première Frappe": 0.45, "Régénération": 0.40, "Esquive": 0.35, "Vol": 0.20,

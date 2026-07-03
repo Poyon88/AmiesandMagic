@@ -26,6 +26,7 @@ import type {
   TokenTemplate,
   PendingTrigger,
   ResolvePendingTriggerAction,
+  StackFrame,
 } from "./types";
 import { SPELL_KEYWORDS } from "./spell-keywords";
 import { getEntraideReduction, getTokenManaCost, isCreatureKwShadowedBySpell } from "./abilities";
@@ -715,6 +716,7 @@ function createCardInstance(card: Card): CardInstance {
     esquiveUsedThisTurn: false,
     summonBonusATK: 0,
     auraHealthBonus: 0,
+    sangMeleHealthBonus: 0,
     ombreRevealed: false,
     corruptionStolenIds: [],
     contresortActive: false,
@@ -782,6 +784,7 @@ function returnInstanceToPlay(inst: CardInstance): void {
   inst.maxHealth = health;
   inst.currentHealth = inst.maxHealth;
   inst.auraHealthBonus = 0;
+  inst.sangMeleHealthBonus = 0;
 
   // ATK = base + bonus ATK permanents conservés (même formule que
   // recalculateAuras, qui la reconfirmera une fois sur le plateau). Berserk /
@@ -972,7 +975,7 @@ function discardFromHand(
 // AURA RECALCULATION
 // ============================================================
 
-function recalculateAuras(player: PlayerState, opponent: PlayerState) {
+export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
   // Reset ATK to base + permanent bonuses (not auras)
   for (const c of player.board) {
     let atk = c.card.attack ?? 0;
@@ -1098,12 +1101,24 @@ function recalculateAuras(player: PlayerState, opponent: PlayerState) {
     }
   }
 
-  // Sang mêlé: +1 ATK et +1 PV par type de race différent parmi vos alliés
+  // Sang mêlé: +1 ATK et +1 PV par type de race différent parmi vos alliés.
+  // Aura DYNAMIQUE (comme Commandement) : l'ATK est recalculé (reset ci-dessus),
+  // les PV suivent via `sangMeleHealthBonus` avec diff pour monter/descendre
+  // quand la diversité de races change (ex. mort d'un allié de race unique),
+  // avec la garde « ne pas tuer par retrait d'aura ».
   for (const board of [player.board, opponent.board]) {
     for (const c of board) {
       if (hasKw(c, "sang_mele")) {
-        const uniqueRaces = new Set(board.filter(a => a !== c && a.card.race).map(a => a.card.race));
-        c.currentAttack += uniqueRaces.size;
+        const uniqueRaces = new Set(board.filter(a => a !== c && a.card.race).map(a => a.card.race)).size;
+        c.currentAttack += uniqueRaces;
+        const oldHP = c.sangMeleHealthBonus;
+        if (uniqueRaces !== oldHP) {
+          const diff = uniqueRaces - oldHP;
+          c.maxHealth += diff;
+          c.currentHealth += diff;
+          if (c.currentHealth < 1 && uniqueRaces < oldHP) c.currentHealth = 1; // don't kill via aura removal
+          c.sangMeleHealthBonus = uniqueRaces;
+        }
       }
     }
   }
@@ -1972,14 +1987,10 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       }
     }
 
-    // Sang mêlé: +1 ATK et +1 PV par type de race différent (on-summon permanent PV)
-    if (hasKw(cardInstance, "sang_mele")) {
-      const uniqueRaces = new Set(player.board.filter(a => a !== cardInstance && a.card.race).map(a => a.card.race));
-      if (uniqueRaces.size > 0) {
-        cardInstance.currentHealth += uniqueRaces.size;
-        cardInstance.maxHealth += uniqueRaces.size;
-      }
-    }
+    // Sang mêlé (+1 ATK / +1 PV par race alliée différente) est désormais une
+    // aura DYNAMIQUE entièrement gérée par recalculateAuras (ATK + PV via
+    // sangMeleHealthBonus), appelé juste après la mise en jeu. Plus de bonus PV
+    // permanent cuit ici — sinon le PV ne redescendait jamais (bug signalé).
 
     // Fierté du clan: handled as an aura — units of same clan summoned get +1/+1
     // Check if existing allies with Fierté du clan buff the newly summoned unit
@@ -2148,16 +2159,28 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       }
     }
 
-    // Effets composés à l'entrée en jeu (modèle hybride).
-    runComposedCapsForCard(cardInstance.card, "on_play", cardInstance, player, opponent, action.targetMap, action.targetInstanceId);
+    // Effets composés à l'entrée en jeu (modèle hybride) → pile LIFO. Un effet
+    // poussé pendant la résolution (ex. mort déclenchée par un dégât on_play) se
+    // résout avant la frame sœur suivante (interruption). Les morts sont
+    // traitées par settleDeaths pendant le drain.
+    pushFrames(newState, buildComposedFrames(
+      cardInstance.card, "on_play", cardInstance, player.id, action.targetMap, action.targetInstanceId,
+    ));
+    drainStack(newState);
 
+    // Déclenchement : le porteur rejoue une fois les effets composés des AUTRES
+    // alliés (sous-ensemble figé), après que ses propres effets d'entrée aient
+    // résolu. Pousse les frames source = l'allié d'origine puis draine.
+    if (hasKwOnPlay(cardInstance, "declenchement")) {
+      runDeclenchement(newState, cardInstance, getDeclenchementTriggers(cardInstance.card), player);
+    }
+
+    // Filet : nettoie les morts causées par les effets curated on-play inline
+    // (tactique / relancer / conférer…) — encore résolus hors pile à ce palier
+    // (migration des curated = palier g). Idempotent si la pile a déjà tout
+    // nettoyé. Recalcul d'auras garanti (parité avec l'ancien comportement).
+    settleDeaths(newState, 0);
     recalculateAuras(player, opponent);
-
-    // Clean creatures killed by on-summon effects (vampirisme, corruption, etc.)
-    const summonDead = cleanDeadCreatures(player);
-    const summonDeadOpp = cleanDeadCreatures(opponent);
-    processDeathTriggers(summonDead, player, opponent);
-    processDeathTriggers(summonDeadOpp, opponent, player);
 
   } else if (card.card_type === "spell") {
     // Contresort: check if opponent has an active counter-spell
@@ -3898,10 +3921,218 @@ function distributeDemonCostReductions(player: PlayerState, x: number) {
   }
 }
 
-function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: PlayerState, depth = 0) {
-  if (depth > 5 || dead.length === 0) return;
+// ============================================================
+// EFFECT STACK (LIFO) — résolution unifiée des déclencheurs
+// ============================================================
+// Pile d'effets LIFO unifiée (cf. plan maître). Les frames sont des données JSON
+// pures (créatures réf. par instanceId, joueurs par id) pour survivre au
+// deepClone et au snapshot multijoueur. `drainStack` résout en LIFO : un effet
+// poussé pendant la résolution d'un autre se résout AVANT la reprise
+// (interruption façon Magic). Migration incrémentale : à ce palier le cœur est
+// en place mais aucun producteur ne pousse encore de frame (no-op).
 
-  for (const c of dead) {
+const MAX_STACK_DEPTH = 64;
+
+/** Localise une instance par id sur les 2 plateaux + cimetières + mains. La
+ *  source d'une frame peut avoir changé de zone (mort, retour) depuis la poussée. */
+function findInstanceById(state: GameState, instanceId: string): CardInstance | null {
+  for (const p of state.players) {
+    for (const zone of [p.board, p.graveyard, p.hand]) {
+      const found = zone.find(c => c.instanceId === instanceId);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+/** Une frame composée « au choix » suspend la pile si son contrôleur est le
+ *  joueur actif, qu'aucune cible n'a encore été fixée et qu'au moins une cible
+ *  est éligible. Sinon elle se résout immédiatement (repli déterministe/aléatoire
+ *  de selectComposedTargets, ou tirage auto au tour adverse). */
+function frameNeedsChoice(state: GameState, frame: StackFrame): boolean {
+  if (frame.noSuspend) return false; // Déclenchement : ciblage déterministe, jamais d'UI
+  if (frame.kind !== "composed" || !frame.composed) return false;
+  if (frame.composed.target?.designation !== "choice") return false;
+  if (frame.chosenTargetIds && frame.chosenTargetIds.length > 0) return false;
+  const owner = state.players.find(p => p.id === frame.ownerId);
+  const opponent = state.players.find(p => p.id !== frame.ownerId);
+  if (!owner || !opponent) return false;
+  if (owner.id !== currentPlayerId) return false; // tour adverse → résolution auto, pas d'UI
+  return composedChoiceTargetIds(frame.composed.target, owner, opponent).length > 0;
+}
+
+/** Contenus composés « auto-suppression » : sautés en mode valeur (Déclenchement
+ *  rejoue le payoff sortant sans tuer/renvoyer la source). Cf. plan §7. */
+function isSelfRemovalComposed(c: import("./types").ComposedEffect): boolean {
+  if (c.target?.entity !== "self") return false;
+  if (c.content === "bounce" || c.content === "destroy" || c.content === "deal_damage") return true;
+  if (c.content === "debuff" && (c.magnitude?.y ?? 0) > 0) return true;
+  return false;
+}
+
+/** Résout une frame (composée : chemin générique ; curated/death_nature : chemin
+ *  abilityId). La source est re-localisée par id (peut être au cimetière). */
+function resolveFrame(state: GameState, frame: StackFrame): void {
+  const owner = state.players.find(p => p.id === frame.ownerId);
+  const opponent = state.players.find(p => p.id !== frame.ownerId);
+  if (!owner || !opponent) return;
+  const source = frame.sourceInstanceId ? findInstanceById(state, frame.sourceInstanceId) : null;
+
+  if (frame.kind === "composed" && frame.composed) {
+    if (frame.valueMode && isSelfRemovalComposed(frame.composed)) return; // mode valeur : saute l'auto-suppression
+    resolveComposedEffect(frame.composed, source, owner, opponent, frame.chosenTargetIds);
+    return;
+  }
+  // curated / death_nature : producteurs branchés aux paliers (c)/(g).
+  if (frame.curatedKw && source) {
+    resolveCuratedKeywordEffect(frame.curatedKw, frame.curatedX ?? 1, source, owner, opponent, undefined, frame.curatedInst);
+  }
+}
+
+/** Nettoie les morts des 2 bords et réinjecte leurs déclencheurs de mort.
+ *  Palier (a)/(b) : pont vers le système de mort existant (processDeathTriggers).
+ *  Palier (c) : remplacé par une production de frames on_death sur la pile (ce
+ *  qui ferme la fenêtre d'auras périmées et supprime le drop silencieux). */
+function settleDeaths(state: GameState, _depth: number): void {
+  const [p0, p1] = state.players;
+  const d0 = cleanDeadCreatures(p0);
+  const d1 = cleanDeadCreatures(p1);
+  if (d0.length > 0) processDeathTriggers(d0, p0, p1);
+  if (d1.length > 0) processDeathTriggers(d1, p1, p0);
+}
+
+/** Empile un lot de frames : `batch[0]` sera résolu EN PREMIER, et tout le lot
+ *  avant ce qui est déjà sur la pile (primitive d'interruption LIFO). Applique
+ *  la garde de profondeur unifiée : au dépassement, PAS de drop silencieux
+ *  (corrige bug #1) — télémétrie + arrêt d'expansion de cette frame. */
+function pushFrames(state: GameState, frames: StackFrame[]): void {
+  if (frames.length === 0) return;
+  const stack = (state.effectStack ??= []);
+  for (let i = frames.length - 1; i >= 0; i--) {
+    const f = frames[i];
+    if (f.depth > MAX_STACK_DEPTH) {
+      console.warn("[effect-stack] profondeur max atteinte", { originTag: f.originTag, depth: f.depth });
+      state.stackOverflowCount = (state.stackOverflowCount ?? 0) + 1;
+      continue;
+    }
+    stack.push(f);
+  }
+}
+
+/** Vide la pile en LIFO. Après CHAQUE frame : nettoyage des morts puis
+ *  recalcul des auras (auras jamais périmées — corrige bug #2). Rend la main en
+ *  laissant la frame au sommet si un choix joueur est requis : la pile suspendue
+ *  persiste dans l'état (hashée + snapshotée), reprise par
+ *  resolvePendingTrigger / autoResolvePendingTriggers. */
+function drainStack(state: GameState): void {
+  const stack = state.effectStack;
+  if (!stack || stack.length === 0) return;
+  let iterations = 0;
+  while (stack.length > 0) {
+    if (++iterations > 10000) { // garde-fou ultime (ne devrait jamais se déclencher avec MAX_STACK_DEPTH)
+      console.warn("[effect-stack] garde-fou d'itérations déclenché");
+      break;
+    }
+    const top = stack[stack.length - 1];
+    if (frameNeedsChoice(state, top)) { top.awaitingChoice = true; return; }
+    stack.pop();
+    resolveFrame(state, top);
+    settleDeaths(state, top.depth);
+    recalculateAuras(state.players[0], state.players[1]);
+  }
+  if (stack.length === 0) delete state.effectStack;
+}
+
+/** Construit les frames composées d'une carte pour un déclencheur donné. Reproduit
+ *  le mapping `targetMap`/`fallbackTargetId` de `runComposedCapsForCard` (slots
+ *  `${uid}#${i}` multi, `${uid}` simple) mais produit des frames de pile au lieu
+ *  de résoudre inline. `sourceIdOverride` permet à Déclenchement de rejouer
+ *  l'effet d'un allié avec une autre source. */
+function buildComposedFrames(
+  card: Card,
+  trigger: import("./types").CapabilityTrigger,
+  source: CardInstance | null,
+  ownerId: string,
+  targetMap?: Record<string, string>,
+  fallbackTargetId?: string,
+  opts?: { valueMode?: boolean; depth?: number; originTag?: string; sourceIdOverride?: string | null; noSuspend?: boolean },
+): StackFrame[] {
+  const frames: StackFrame[] = [];
+  const sourceId = opts && "sourceIdOverride" in opts ? opts.sourceIdOverride ?? null : (source?.instanceId ?? null);
+  const baseTag = opts?.originTag ?? `${sourceId}#${trigger}`;
+  let seq = 0;
+  for (const cap of getCapabilities(card)) {
+    if (!cap.composed || cap.trigger !== trigger) continue;
+    let chosen: string[] | undefined;
+    if (targetMap) {
+      const multi: string[] = [];
+      for (let i = 0; targetMap[`${cap.uid}#${i}`] != null; i++) multi.push(targetMap[`${cap.uid}#${i}`]);
+      if (multi.length) chosen = multi;
+      else if (targetMap[cap.uid] != null) chosen = [targetMap[cap.uid]];
+    }
+    if (!chosen && fallbackTargetId) chosen = [fallbackTargetId];
+    frames.push({
+      frameId: `${sourceId}#${trigger}#${seq++}`,
+      kind: "composed",
+      ownerId,
+      sourceInstanceId: sourceId,
+      trigger,
+      composed: cap.composed,
+      capUid: cap.uid,
+      chosenTargetIds: chosen,
+      valueMode: opts?.valueMode,
+      noSuspend: opts?.noSuspend,
+      depth: opts?.depth ?? 0,
+      originTag: baseTag,
+    });
+  }
+  return frames;
+}
+
+/** Lit le sous-ensemble de déclencheurs rejoués par Déclenchement (capabilities
+ *  backfillées d'abord, sinon keyword_instances legacy). */
+function getDeclenchementTriggers(card: Card): import("./types").CapabilityTrigger[] {
+  const cap = getCapabilities(card).find(c => c.abilityId === "declenchement" && (c.replayTriggers?.length ?? 0) > 0);
+  if (cap?.replayTriggers?.length) return cap.replayTriggers;
+  const inst = (card.keyword_instances ?? []).find(k => k.id === "declenchement" && !k.mode);
+  return inst?.replayTriggers ?? [];
+}
+
+/** Déclenchement : à l'entrée du porteur, rejoue UNE FOIS les capacités COMPOSÉES
+ *  des AUTRES alliés (hors autres porteurs de Déclenchement) pour chaque
+ *  déclencheur du sous-ensemble figé. Frames source = l'allié A (self/scatter/
+ *  buff-self ciblent A ; invocation à la faction de A) ; mode valeur pour
+ *  mort/retour (payoff sortant sans auto-suppression) ; ciblage déterministe
+ *  (noSuspend). La garde de pile (depth/originTag) borne la récursion. */
+function runDeclenchement(
+  state: GameState,
+  carrier: CardInstance,
+  replayTriggers: import("./types").CapabilityTrigger[],
+  owner: PlayerState,
+): void {
+  if (replayTriggers.length === 0) return;
+  const frames: StackFrame[] = [];
+  for (const ally of [...owner.board]) {
+    if (ally.instanceId === carrier.instanceId) continue; // exclut le porteur
+    if (hasKw(ally, "declenchement")) continue;           // exclut les autres Déclenchements (anti-miroir)
+    for (const trigger of replayTriggers) {
+      const valueMode = trigger === "on_death" || trigger === "on_return";
+      frames.push(...buildComposedFrames(
+        ally.card, trigger, ally, owner.id, undefined, undefined,
+        { valueMode, noSuspend: true, depth: 1, originTag: `declenchement#${carrier.instanceId}`, sourceIdOverride: ally.instanceId },
+      ));
+    }
+  }
+  pushFrames(state, frames);
+  drainStack(state);
+}
+
+/** Résout les déclencheurs de mort D'UNE créature (Maléfice, Carnage, Héritage,
+ *  Résurrection, Pacte de sang, Martyr, Cycle éternel, auto-renvoi, instances
+ *  curated mode death, composés on_death, Nécrophagie). Extrait de l'ancienne
+ *  boucle de processDeathTriggers. `owner` = contrôleur de la créature morte. */
+function resolveCreatureDeath(c: CardInstance, owner: PlayerState, enemy: PlayerState): void {
+  {
     // Maléfice: inflige X dégâts à TOUTES les unités (alliés et ennemis), X = ATK
     if (hasKw(c, "malefice")) {
       const maleficeDmg = c.card.attack ?? 0;
@@ -4060,17 +4291,34 @@ function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: P
     }
   }
 
-  // Trigger passive hero power on friendly death
-  triggerPassiveOnCreatureDeath(owner, dead.length);
+}
 
-  // Cascade: malefice/carnage may have killed more
-  const ownerCascadeDead = cleanDeadCreatures(owner);
-  const enemyCascadeDead = cleanDeadCreatures(enemy);
-  if (ownerCascadeDead.length > 0) {
-    processDeathTriggers(ownerCascadeDead, owner, enemy, depth + 1);
-  }
-  if (enemyCascadeDead.length > 0) {
-    processDeathTriggers(enemyCascadeDead, enemy, owner, depth + 1);
+/** Traite les morts via une pile LIFO locale (remplace l'ancienne récursion
+ *  breadth-first plafonnée à 5). Chaque mort résout ses déclencheurs, PUIS on
+ *  recalcule les auras (jamais périmées — corrige bug #2) et on ré-empile les
+ *  morts en cascade qu'elle a provoquées : elles sont traitées AVANT les morts
+ *  sœurs restantes (interruption LIFO). Plus de drop silencieux (corrige bug #1)
+ *  : garde-fou large + télémétrie. Signature préservée (les 12 sites d'appel
+ *  passent (dead, owner, enemy) — l'ancien 4e paramètre `depth` disparaît). */
+function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: PlayerState): void {
+  if (dead.length === 0) return;
+  type DeathWork = { c: CardInstance; owner: PlayerState; enemy: PlayerState };
+  const work: DeathWork[] = [];
+  // dead[0] doit être traité en premier → empilé en dernier (pop = LIFO).
+  for (let i = dead.length - 1; i >= 0; i--) work.push({ c: dead[i], owner, enemy });
+  let guard = 0;
+  while (work.length > 0) {
+    if (++guard > 100000) { console.warn("[death] garde-fou d'itérations déclenché"); break; }
+    const w = work.pop()!;
+    resolveCreatureDeath(w.c, w.owner, w.enemy);
+    recalculateAuras(owner, enemy);
+    // Cascade : Maléfice/Carnage/auto-débuff ont pu tuer d'autres unités. On
+    // ré-empile (ennemi d'abord puis allié → allié traité en premier, ordre
+    // plateau) ; elles passent avant les morts sœurs restantes (LIFO).
+    const ed = cleanDeadCreatures(enemy);
+    const od = cleanDeadCreatures(owner);
+    for (let i = ed.length - 1; i >= 0; i--) work.push({ c: ed[i], owner: enemy, enemy: owner });
+    for (let i = od.length - 1; i >= 0; i--) work.push({ c: od[i], owner, enemy });
   }
 }
 
@@ -4516,15 +4764,6 @@ export function getTapActivateTargets(state: GameState, kw: Keyword, sourceInsta
   }
 }
 
-// Legacy passive trigger ("Lich Malachar"-style buff_on_friendly_death) was
-// part of the old HeroPowerEffect schema. Under the V2 system, this kind of
-// effect is expressed as mode "aura" + keyword "necrophagie" instead. The
-// stub stays as a no-op so existing call sites don't break — heroes carrying
-// the legacy shape simply do nothing on creature death.
-function triggerPassiveOnCreatureDeath(_player: PlayerState, _deadCount: number) {
-  return;
-}
-
 // ============================================================
 // HERO POWER
 // ============================================================
@@ -4910,6 +5149,12 @@ export function applyAction(state: GameState, action: GameAction): GameState {
     case "auto_resolve_pending_triggers": result = autoResolvePendingTriggers(state); break;
     default: result = state;
   }
+
+  // Vide la pile d'effets LIFO produite pendant l'action (interruption +
+  // résolution des morts via settleDeaths). No-op tant qu'aucun producteur n'a
+  // poussé de frame (migration incrémentale). Suspend si un choix joueur reste
+  // requis (la pile persiste alors dans l'état).
+  if (result !== state) drainStack(result);
 
   // Rattache les déclencheurs interactifs créés pendant cette action (mort /
   // retour de Remontée au tour du contrôleur) à l'état retourné.

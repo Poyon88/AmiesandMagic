@@ -23,6 +23,10 @@ import type { GameState } from "./types";
 //    legitimately differs between clients and never affects gameplay.
 //  - fureurStrikes / onAttackWave / sequentialHits : transient animation hints,
 //    cleared by the store after scheduling; not part of the durable game truth.
+//  - stackOverflowCount : deterministic effect-stack guard telemetry; both
+//    clients compute it identically but it must never drive a desync verdict.
+//    NB: `effectStack` is intentionally NOT volatile — a suspended stack is
+//    durable game truth and must be hashed so a divergence is detected.
 const VOLATILE_KEYS = new Set([
   "factionCardPool",
   "allSpellsPool",
@@ -31,6 +35,7 @@ const VOLATILE_KEYS = new Set([
   "fureurStrikes",
   "onAttackWave",
   "sequentialHits",
+  "stackOverflowCount",
 ]);
 
 // Deterministic JSON: object keys emitted in sorted order so two structurally

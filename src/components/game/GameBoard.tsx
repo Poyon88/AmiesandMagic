@@ -74,6 +74,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
     deathEvents,
     clearDeathEvents,
     summonEvents,
+    entryEvents,
     clearSummonEvents,
     spellCastEvent,
     clearSpellCastEvent,
@@ -165,22 +166,6 @@ export default function GameBoard({ onAction }: GameBoardProps) {
         e.targetId === targetId && (e.type === "buff" || e.type === "empower"),
     );
     return evt ? (evt.type as "buff" | "empower") : null;
-  }
-
-  // Normalised strike direction for the hit creature's directional knockback —
-  // derived from the same srcX/srcY stamped on the damage event. Returns 0/0
-  // (→ symmetric shudder) when there's no attacker (spell/ability damage).
-  function getHitDir(targetId: string): { x: number; y: number } {
-    const evt = damageEvents.find(
-      (e: DamageEvent) => e.targetId === targetId && (e.type ?? "damage") === "damage",
-    );
-    if (!evt || evt.srcX == null || evt.srcY == null || evt.srcX < -9000) {
-      return { x: 0, y: 0 };
-    }
-    const dx = evt.x - evt.srcX;
-    const dy = evt.y - evt.srcY;
-    const len = Math.hypot(dx, dy) || 1;
-    return { x: dx / len, y: dy / len };
   }
 
   const boardImageUrl = useGameStore((s) => s.boardImageUrl);
@@ -810,7 +795,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
               No creatures
             </div>
           ) : (
-            <AnimatePresence mode="popLayout">
+            <AnimatePresence>
               {opponent.board.map((creature) => (
                 <BoardCreature
                   key={creature.instanceId}
@@ -818,10 +803,9 @@ export default function GameBoard({ onAction }: GameBoardProps) {
                   isOwn={false}
                   isValidTarget={validTargets.includes(creature.instanceId)}
                   damageAmount={getDamage(creature.instanceId)}
-                  hitDirX={getHitDir(creature.instanceId).x}
-                  hitDirY={getHitDir(creature.instanceId).y}
                   boostKind={getBoost(creature.instanceId)}
                   summoning={summonEvents.includes(creature.instanceId)}
+                  entering={entryEvents.includes(creature.instanceId)}
                   onClick={
                     validTargets.includes(creature.instanceId)
                       ? () => handleSelectTarget(creature.instanceId)
@@ -862,7 +846,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
             </div>
           ) : (
             <>
-              <AnimatePresence mode="popLayout">
+              <AnimatePresence>
                 {myPlayer.board.flatMap((creature, i) => {
                   const canAtt =
                     myTurn && canAttack(gameState, creature.instanceId);
@@ -883,10 +867,9 @@ export default function GameBoard({ onAction }: GameBoardProps) {
                       }
                       isValidTarget={validTargets.includes(creature.instanceId)}
                       damageAmount={getDamage(creature.instanceId)}
-                      hitDirX={getHitDir(creature.instanceId).x}
-                      hitDirY={getHitDir(creature.instanceId).y}
                       boostKind={getBoost(creature.instanceId)}
                       summoning={summonEvents.includes(creature.instanceId)}
+                      entering={entryEvents.includes(creature.instanceId)}
                       onClick={
                         validTargets.includes(creature.instanceId)
                           ? () => handleSelectTarget(creature.instanceId)
