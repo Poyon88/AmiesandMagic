@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { getInstanceCenter, curvedPath } from "@/lib/fx/overlayMotion";
 
 // Touch devices have no continuous cursor position to anchor the arrow tail.
 // Players already see valid targets via per-component pulsing highlights
@@ -17,18 +18,6 @@ interface TargetingArrowProps {
   hoveredTargetId: string | null;
 }
 
-function findElement(id: string): Element | null {
-  return (
-    document.querySelector(`[data-instance-id="${id}"]`) ??
-    document.querySelector(`[data-target-id="${id}"]`)
-  );
-}
-
-function getElementCenter(el: Element): { x: number; y: number } {
-  const rect = el.getBoundingClientRect();
-  return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-}
-
 export default function TargetingArrow({
   targetingMode,
   sourceInstanceId,
@@ -39,6 +28,7 @@ export default function TargetingArrow({
   const glowPathRef = useRef<SVGPathElement>(null);
   const arrowheadRef = useRef<SVGPolygonElement>(null);
   const rafId = useRef<number>(0);
+  const smoothEnd = useRef<{ x: number; y: number } | null>(null);
   const [mounted, setMounted] = useState(false);
 
   // Keep props in refs so the rAF loop always reads the latest values
@@ -70,43 +60,47 @@ export default function TargetingArrow({
   // Single rAF loop that reads refs directly
   useEffect(() => {
     if (!isActive) return;
+    smoothEnd.current = null; // fresh magnetic tracking each activation
 
-    const loop = () => {
+    const loop = (t: number) => {
       const sid = sourceIdRef.current;
       if (!pathRef.current || !glowPathRef.current || !arrowheadRef.current || !sid) {
         rafId.current = requestAnimationFrame(loop);
         return;
       }
 
-      const sourceEl = findElement(sid);
-      if (!sourceEl) {
+      const source = getInstanceCenter(sid);
+      if (!source) {
         rafId.current = requestAnimationFrame(loop);
         return;
       }
 
-      const source = getElementCenter(sourceEl);
-      let end = mousePos.current;
-
+      // Raw aim: the cursor, or the centre of the hovered valid target.
+      let aim = mousePos.current;
       const hid = hoveredRef.current;
       if (hid) {
-        const targetEl = findElement(hid);
-        if (targetEl) {
-          end = getElementCenter(targetEl);
-        }
+        const c = getInstanceCenter(hid);
+        if (c) aim = c;
       }
 
-      const dist = Math.hypot(end.x - source.x, end.y - source.y);
+      // Magnetic follow: the tip eases toward the aim instead of snapping, so
+      // locking onto a valid target reads as a smooth pull, not a teleport.
+      const se = smoothEnd.current;
+      if (!se) {
+        smoothEnd.current = { x: aim.x, y: aim.y };
+      } else {
+        se.x += (aim.x - se.x) * 0.3;
+        se.y += (aim.y - se.y) * 0.3;
+      }
+      const end = smoothEnd.current!; // always set just above
 
-      // Quadratic bezier control point — curve upward
-      const midX = (source.x + end.x) / 2;
-      const midY = (source.y + end.y) / 2;
-      const curveStrength = Math.min(dist * 0.25, 100);
-      const cx = midX;
-      const cy = midY - curveStrength;
-
-      const d = `M ${source.x} ${source.y} Q ${cx} ${cy} ${end.x} ${end.y}`;
+      // Shared curved-path helper — same curve as the spell-cast arrows
+      // (unifies the old 0.25/100 vs 0.22/90 mismatch the player could feel).
+      const { d, cx, cy } = curvedPath(source.x, source.y, end.x, end.y);
       pathRef.current.setAttribute("d", d);
       glowPathRef.current.setAttribute("d", d);
+      // Dashes flow toward the target (period matches strokeDasharray "20 10").
+      pathRef.current.style.strokeDashoffset = String(-((t * 0.06) % 30));
 
       // Arrowhead rotation: tangent at t=1 of quadratic bezier
       const angle = Math.atan2(end.y - cy, end.x - cx) * (180 / Math.PI);

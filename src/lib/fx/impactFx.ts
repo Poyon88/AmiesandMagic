@@ -155,7 +155,9 @@ export function directionalDebris(
     p.y = y;
     p.vx = Math.cos(angle) * speed;
     p.vy = Math.sin(angle) * speed;
-    p.age = 0;
+    // Negative birth offset (0–50ms) so the shards spray out over time rather
+    // than popping as one instantaneous starburst.
+    p.age = -(Math.random() * 0.05);
     p.life = 0.28 + Math.random() * 0.32;
     p.size = 2 + Math.random() * 2.5;
     p.drag = 4.5;
@@ -370,7 +372,7 @@ export function deathShards(
     p.y = y + (Math.random() - 0.5) * 40;
     p.vx = Math.cos(angle) * speed;
     p.vy = Math.sin(angle) * speed - 40; // slight initial upward pop
-    p.age = 0;
+    p.age = -(Math.random() * 0.05); // staggered emission (see directionalDebris)
     p.life = 0.55 + Math.random() * 0.5;
     p.size = 2.5 + Math.random() * 3;
     p.drag = 2.2;

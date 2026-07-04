@@ -606,8 +606,10 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           position: "relative",
           filter: isFrozen
             ? isFrozenBig
-              ? "brightness(1.85) saturate(1.9) contrast(1.18)"
-              : "brightness(1.5) saturate(1.6) contrast(1.1)"
+              // Punchy but no longer blowing out card art — the big beat leans
+              // on contrast/saturation more than raw brightness (was 1.85).
+              ? "brightness(1.55) saturate(1.8) contrast(1.22)"
+              : "brightness(1.4) saturate(1.55) contrast(1.12)"
             : "none",
           transition: isFrozen ? "none" : "filter 90ms ease-out",
         }}

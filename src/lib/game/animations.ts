@@ -10,9 +10,10 @@ function findEl(id: string): HTMLElement | null {
 
 /**
  * Lunge animation with anticipation (wind-up) and follow-through (overshoot).
- * Three phases: pull back away from target → lunge forward + tilt → return with
- * a slight backwards overshoot then settle. Total ~660ms. Safe to call on both
- * clients — no-op if either element is missing.
+ * Three phases: pull back away from target → accelerate forward into the strike
+ * (ease-IN, so it explodes into contact) → a brief freeze at the point of impact
+ * (hit-stop) then recoil past home and settle. Total ~720ms. Safe to call on
+ * both clients — no-op if either element is missing.
  */
 export function playAttackLunge(attackerInstanceId: string, targetId: string) {
   if (typeof window === "undefined") return;
@@ -63,28 +64,33 @@ export function playAttackLunge(attackerInstanceId: string, targetId: string) {
       { transform: "translate(0, 0) scale(1) rotate(0deg)" },
       { transform: `translate(${anticX}px, ${anticY}px) scale(0.94) rotate(${tilt * -3}deg)` },
     ],
-    { duration: 110, easing: "cubic-bezier(0.4, 0, 0.6, 1)", fill: "forwards" }
+    { duration: 130, easing: "cubic-bezier(0.3, 0, 0.7, 0.5)", fill: "forwards" }
   );
 
   antic.onfinish = () => {
-    // Phase 2: Lunge — explosive forward strike with scale-up and forward lean
+    // Phase 2: Lunge — explosive forward strike. Ease-IN dominant so the creature
+    // ACCELERATES into the target (the old ease-out decelerated right at the
+    // moment it should be hitting hardest, softening the impact).
     const lunge = attackerEl.animate(
       [
         { transform: `translate(${anticX}px, ${anticY}px) scale(0.94) rotate(${tilt * -3}deg)` },
         { transform: `translate(${lungeX}px, ${lungeY}px) scale(1.12) rotate(${tilt * 5}deg)` },
       ],
-      { duration: 230, easing: "cubic-bezier(0.2, 0, 0.4, 1)", fill: "forwards" }
+      { duration: 230, easing: "cubic-bezier(0.55, 0, 0.9, 0.35)", fill: "forwards" }
     );
 
     lunge.onfinish = () => {
-      // Phase 3: Follow-through — recoil past the home position, then settle
+      // Phase 3: Hit-stop then follow-through. The first ~12% holds the peak
+      // pose (a ~45ms freeze at contact — even a few frames of stillness read as
+      // real force), then it recoils past home and settles.
       const ret = attackerEl.animate(
         [
           { transform: `translate(${lungeX}px, ${lungeY}px) scale(1.12) rotate(${tilt * 5}deg)`, offset: 0 },
-          { transform: `translate(${overshootX}px, ${overshootY}px) scale(0.97) rotate(${tilt * -1.5}deg)`, offset: 0.65 },
+          { transform: `translate(${lungeX}px, ${lungeY}px) scale(1.12) rotate(${tilt * 5}deg)`, offset: 0.12 },
+          { transform: `translate(${overshootX}px, ${overshootY}px) scale(0.97) rotate(${tilt * -1.5}deg)`, offset: 0.68 },
           { transform: "translate(0, 0) scale(1) rotate(0deg)", offset: 1 },
         ],
-        { duration: 320, easing: "cubic-bezier(0.34, 1.2, 0.4, 1)", fill: "forwards" }
+        { duration: 360, easing: "cubic-bezier(0.34, 1.2, 0.4, 1)", fill: "forwards" }
       );
 
       ret.onfinish = () => finishAll(antic, lunge, ret);

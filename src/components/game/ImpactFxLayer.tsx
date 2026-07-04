@@ -191,10 +191,14 @@ export default function ImpactFxLayer() {
           liveRef.current--;
           continue;
         }
+        // Staggered-emission particles carry a small negative birth offset —
+        // hold them invisible at the spawn point until they're "born".
+        if (p.age < 0) continue;
         const t = p.age / p.life; // 0→1
-        // Integrate motion (skip for static rings).
+        // Integrate motion (skip for static rings). Exponential decay is
+        // frame-rate independent (the old linear 1−drag·dt drifted at low FPS).
         if (p.kind !== "ring") {
-          const damp = Math.max(0, 1 - p.drag * dt);
+          const damp = Math.exp(-p.drag * dt);
           p.vx *= damp;
           p.vy = p.vy * damp + p.gravity * dt;
           p.x += p.vx * dt;

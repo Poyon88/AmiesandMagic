@@ -42,7 +42,10 @@ function SpellTargetArrows({
 
   useEffect(() => {
     let raf = 0;
-    const loop = () => {
+    const loop = (t: number) => {
+      // Dashes flow toward the target — the arrow reads as energy streaming to
+      // the victim rather than a frozen line. Period matches strokeDasharray "14 7".
+      const dashOffset = String(-((t * 0.05) % 21));
       const src = sourceRef.current?.getBoundingClientRect();
       if (src) {
         // Anchor the arrow on the right edge of the spell card (cards are on the left).
@@ -58,6 +61,7 @@ function SpellTargetArrows({
           const ty = r.top + r.height / 2;
           const { d, cx, cy } = curvedPath(sx, sy, tx, ty);
           path.setAttribute("d", d);
+          path.style.strokeDashoffset = dashOffset;
           const angle = (Math.atan2(ty - cy, tx - cx) * 180) / Math.PI;
           head.setAttribute("transform", `translate(${tx}, ${ty}) rotate(${angle})`);
         });
