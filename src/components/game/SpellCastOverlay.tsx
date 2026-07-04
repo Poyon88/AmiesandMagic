@@ -26,7 +26,7 @@ interface SpellCastOverlayProps {
   onComplete: () => void;
 }
 
-const DISPLAY_MS = 2800;
+const DISPLAY_MS = 2000;
 
 function findTargetEl(id: string): Element | null {
   return (
@@ -287,8 +287,11 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
               y: [30, 0, 0, -8, -30],
             }}
             transition={{
+              // Fade-out now starts at 0.6 (was 0.82): the card popped, settled,
+              // and used to sit motionless for ~1.7s before leaving. Compressed
+              // so the reveal reads as a beat, not a hold.
               duration: DISPLAY_MS / 1000,
-              times: [0, 0.13, 0.22, 0.82, 1],
+              times: [0, 0.16, 0.26, 0.6, 1],
               ease: ["backOut", "easeInOut", "easeIn"],
             }}
           >
