@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import type { GraveyardAffectEvent } from "@/lib/store/gameStore";
+import { CASCADE_EASE, CASCADE_STAGGER } from "@/lib/fx/overlayMotion";
 
 interface Props {
   event: GraveyardAffectEvent | null;
@@ -104,8 +105,8 @@ export default function GraveyardAffectOverlay({ event, onComplete }: Props) {
                 transition={{
                   duration: DISPLAY_MS / 1000,
                   times: [0, 0.15, 0.35, 0.75, 1],
-                  ease: ["backOut", "linear", "easeIn"],
-                  delay: 0.08 * i,
+                  ease: CASCADE_EASE,
+                  delay: CASCADE_STAGGER * i,
                 }}
               >
                 <div style={{

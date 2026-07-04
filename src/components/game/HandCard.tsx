@@ -19,6 +19,7 @@ import CostBadges from "@/components/cards/CostBadges";
 import RarityFrame from "@/components/cards/RarityFrame";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
 import useCoarsePointer from "@/hooks/useCoarsePointer";
+import { SPRINGS } from "@/lib/fx/overlayMotion";
 
 interface HandCardProps {
   cardInstance: CardInstance;
@@ -295,7 +296,7 @@ export default function HandCard({
       initial={{ y: 60, opacity: 0, scale: 0.7 }}
       animate={{ y: 0, opacity: 1, scale: 1 }}
       transition={{
-        default: { type: "spring", stiffness: 320, damping: 20, mass: 1.1 },
+        default: SPRINGS.handEntry,
         opacity: { duration: 0.25, ease: "easeOut" },
       }}
       data-instance-id={cardInstance.instanceId}

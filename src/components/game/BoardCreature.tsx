@@ -17,6 +17,7 @@ import RarityFrame from "@/components/cards/RarityFrame";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
 import useCoarsePointer from "@/hooks/useCoarsePointer";
 import { isBigHit } from "@/lib/fx/impactFx";
+import { SPRINGS } from "@/lib/fx/overlayMotion";
 
 interface BoardCreatureProps {
   creature: CardInstance;
@@ -259,7 +260,7 @@ export default function BoardCreature({
           }
       }
       transition={{
-        default: { type: "spring", stiffness: 280, damping: 22, mass: 1.3 },
+        default: SPRINGS.boardSettle,
         x: { duration: 0.25, ease: "easeOut" },
         // Entrée douce : montée en tween lisse (pas le ressort par défaut, qui rebondirait).
         y: isBoost ? { duration: boostDur, ease: "easeOut" } : entering ? { duration: 0.34, ease: "easeOut" } : undefined,

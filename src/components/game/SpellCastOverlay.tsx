@@ -18,21 +18,14 @@ import {
 } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import { emitImpact } from "@/lib/fx/impactFx";
+import { OVERLAY, cardRevealInitial, cardRevealAnimate, cardRevealTransition, findInstanceEl, curvedPath } from "@/lib/fx/overlayMotion";
+import { RadialFlash, HaloBloom, ExpandingRing, OrbitingSparkles } from "@/components/game/OverlayPrimitives";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { KEYWORDS as keywordDefs, getFactionDisplayName } from "@/lib/card-engine/constants";
 
 interface SpellCastOverlayProps {
   event: SpellCastEvent | null;
   onComplete: () => void;
-}
-
-const DISPLAY_MS = 2000;
-
-function findTargetEl(id: string): Element | null {
-  return (
-    document.querySelector(`[data-instance-id="${id}"]`) ??
-    document.querySelector(`[data-target-id="${id}"]`)
-  );
 }
 
 function SpellTargetArrows({
@@ -56,20 +49,16 @@ function SpellTargetArrows({
         const sx = src.right - 10;
         const sy = src.top + src.height / 2;
         targetIds.forEach((id, i) => {
-          const el = findTargetEl(id);
+          const el = findInstanceEl(id);
           const path = pathsRef.current[i];
           const head = headsRef.current[i];
           if (!el || !path || !head) return;
           const r = el.getBoundingClientRect();
           const tx = r.left + r.width / 2;
           const ty = r.top + r.height / 2;
-          const midX = (sx + tx) / 2;
-          const midY = (sy + ty) / 2;
-          const dist = Math.hypot(tx - sx, ty - sy);
-          const curve = Math.min(dist * 0.22, 90);
-          const cy = midY - curve;
-          path.setAttribute("d", `M ${sx} ${sy} Q ${midX} ${cy} ${tx} ${ty}`);
-          const angle = (Math.atan2(ty - cy, tx - midX) * 180) / Math.PI;
+          const { d, cx, cy } = curvedPath(sx, sy, tx, ty);
+          path.setAttribute("d", d);
+          const angle = (Math.atan2(ty - cy, tx - cx) * 180) / Math.PI;
           head.setAttribute("transform", `translate(${tx}, ${ty}) rotate(${angle})`);
         });
       }
@@ -95,7 +84,7 @@ function SpellTargetArrows({
       }}
       initial={{ opacity: 0 }}
       animate={{ opacity: [0, 1, 1, 0] }}
-      transition={{ duration: DISPLAY_MS / 1000, times: [0, 0.2, 0.78, 1] }}
+      transition={{ duration: OVERLAY.displayMs / 1000, times: [0, 0.2, 0.78, 1] }}
     >
       {targetIds.map((_, i) => (
         <g key={i}>
@@ -129,7 +118,7 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
 
   useEffect(() => {
     if (!event) return;
-    const timer = setTimeout(onComplete, DISPLAY_MS);
+    const timer = setTimeout(onComplete, OVERLAY.displayMs);
     return () => clearTimeout(timer);
   }, [event, onComplete]);
 
@@ -151,7 +140,7 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
     }, 150);
     const targets = event.countered ? null : setTimeout(() => {
       for (const id of event.targetIds ?? []) {
-        const el = findTargetEl(id);
+        const el = findInstanceEl(id);
         if (!el) continue;
         const r = el.getBoundingClientRect();
         emitImpact({
@@ -198,71 +187,21 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
           exit={{ opacity: 0 }}
           transition={{ duration: 0.25 }}
         >
-          {/* Background radial flash — focused on the left where the card is */}
-          <motion.div
-            style={{
-              position: "absolute",
-              inset: 0,
-              background: `radial-gradient(ellipse at 20% 50%, rgba(${color}, 0.32) 0%, transparent 55%)`,
-            }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: [0, 1, 0.7, 0] }}
-            transition={{ duration: 3.0, times: [0, 0.12, 0.7, 1] }}
+          {/* Background flash · halo · shockwave ring · orbiting sparkles —
+              shared overlay chrome (see OverlayPrimitives). */}
+          <RadialFlash color={color} duration={3.0} />
+          <HaloBloom color={color} size={460} duration={3.2} peakTime={0.15} />
+          <ExpandingRing color={color} size={260} duration={1.6} />
+          <OrbitingSparkles
+            count={14}
+            lightColor={lightColor}
+            hexColor={hexColor}
+            baseRadius={200}
+            spread={70}
+            durBase={1.6}
+            durSpread={0.5}
+            stagger={0.04}
           />
-
-          {/* Halo behind the description */}
-          <motion.div
-            style={{
-              position: "absolute",
-              width: 460,
-              height: 460,
-              borderRadius: "50%",
-              background: `radial-gradient(circle, rgba(${color}, 0.55) 0%, rgba(${color}, 0.22) 45%, transparent 70%)`,
-              filter: `blur(12px)`,
-            }}
-            initial={{ scale: 0.4, opacity: 0 }}
-            animate={{ scale: [0.4, 1.1, 1], opacity: [0, 0.9, 0] }}
-            transition={{ duration: 3.2, times: [0, 0.15, 1], ease: "easeOut" }}
-          />
-
-          {/* Expanding ring */}
-          <motion.div
-            style={{
-              position: "absolute",
-              width: 260,
-              height: 260,
-              borderRadius: "50%",
-              border: `2px solid rgba(${color}, 0.75)`,
-              boxShadow: `0 0 28px rgba(${color}, 0.5)`,
-            }}
-            initial={{ scale: 0.5, opacity: 1 }}
-            animate={{ scale: 3, opacity: 0 }}
-            transition={{ duration: 1.6, ease: "easeOut", delay: 0.1 }}
-          />
-
-          {/* Orbiting sparkles */}
-          {[...Array(14)].map((_, i) => {
-            const angle = (i / 14) * Math.PI * 2;
-            const radius = 200 + Math.random() * 70;
-            const dx = Math.cos(angle) * radius;
-            const dy = Math.sin(angle) * radius;
-            return (
-              <motion.div
-                key={i}
-                style={{
-                  position: "absolute",
-                  width: 7,
-                  height: 7,
-                  borderRadius: "50%",
-                  background: lightColor,
-                  boxShadow: `0 0 10px ${hexColor}, 0 0 20px ${hexColor}`,
-                }}
-                initial={{ x: 0, y: 0, opacity: 0, scale: 0 }}
-                animate={{ x: dx, y: dy, opacity: [0, 1, 0], scale: [0, 1.6, 0] }}
-                transition={{ duration: 1.6 + Math.random() * 0.5, ease: "easeOut", delay: 0.04 * i }}
-              />
-            );
-          })}
 
           {/* Card-shaped panel with art background + description overlay */}
           <motion.div
@@ -280,20 +219,9 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
                 ? `url('${card.image_url}') center/cover no-repeat, linear-gradient(160deg, #1a0a2a, #0d0d1a)`
                 : "linear-gradient(160deg, #1a0a2a, #0d0d1a)",
             }}
-            initial={{ scale: 0.5, opacity: 0, y: 30 }}
-            animate={{
-              scale: [0.5, 1.06, 1, 1, 0.97],
-              opacity: [0, 1, 1, 1, 0],
-              y: [30, 0, 0, -8, -30],
-            }}
-            transition={{
-              // Fade-out now starts at 0.6 (was 0.82): the card popped, settled,
-              // and used to sit motionless for ~1.7s before leaving. Compressed
-              // so the reveal reads as a beat, not a hold.
-              duration: DISPLAY_MS / 1000,
-              times: [0, 0.16, 0.26, 0.6, 1],
-              ease: ["backOut", "easeInOut", "easeIn"],
-            }}
+            initial={cardRevealInitial}
+            animate={cardRevealAnimate}
+            transition={cardRevealTransition}
           >
             {/* Description overlay (less opaque so the art shows through) */}
             <div style={{

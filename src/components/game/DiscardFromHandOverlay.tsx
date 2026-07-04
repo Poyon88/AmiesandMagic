@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import type { DiscardFromHandEvent } from "@/lib/store/gameStore";
+import { CASCADE_EASE, CASCADE_STAGGER } from "@/lib/fx/overlayMotion";
 
 interface Props {
   event: DiscardFromHandEvent | null;
@@ -111,8 +112,8 @@ export default function DiscardFromHandOverlay({ event, onComplete }: Props) {
                 transition={{
                   duration: DISPLAY_MS / 1000,
                   times: [0, 0.15, 0.4, 0.78, 1],
-                  ease: ["backOut", "linear", "easeIn"],
-                  delay: 0.08 * i,
+                  ease: CASCADE_EASE,
+                  delay: CASCADE_STAGGER * i,
                 }}
               >
                 <div style={{
