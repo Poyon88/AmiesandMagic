@@ -21,10 +21,13 @@ import {
   soulRise,
 } from "@/lib/fx/impactFx";
 
-// Pool size — a hit emits ~40-90 particles; 700 comfortably covers several
-// overlapping hits (Fureur chains, multi-target) without per-emit allocation.
-const POOL_SIZE = 700;
-const MAX_DPR = 2; // Retina can report 2-3; cap to spare additive fill-rate.
+// Pool size — a hit emits ~50-110 particles (denser since the sprite draw is
+// cheap); 1000 comfortably covers several overlapping hits (Fureur chains,
+// multi-target) while keeping the ring-buffer's anti-stomp margin.
+const POOL_SIZE = 1000;
+// Sprite draw removed the per-particle gradient allocation, so a higher DPR is
+// now affordable — crisper particles on Retina (still capped to spare fill-rate).
+const MAX_DPR = 2.5;
 
 function makePool(): Particle[] {
   const pool: Particle[] = new Array(POOL_SIZE);
@@ -39,6 +42,30 @@ function makePool(): Particle[] {
     };
   }
   return pool;
+}
+
+// Pre-rendered soft-dot sprites, one per colour, built lazily and cached for the
+// page's lifetime. This replaces a fresh `createRadialGradient` for EVERY glow
+// particle EVERY frame (thousands of gradient objects/sec) with a single cached
+// `drawImage` — removing all per-frame allocation, which is what lets the layer
+// run at higher DPR and particle density. Palettes use a small fixed set of
+// colours, so the cache stays tiny.
+const SPRITE_R = 32; // sprite half-size in px (the gradient extent)
+const spriteCache = new Map<string, HTMLCanvasElement>();
+function dotSprite(r: number, g: number, b: number): HTMLCanvasElement {
+  const key = `${r},${g},${b}`;
+  const cached = spriteCache.get(key);
+  if (cached) return cached;
+  const spr = document.createElement("canvas");
+  spr.width = spr.height = SPRITE_R * 2;
+  const c = spr.getContext("2d")!;
+  const grad = c.createRadialGradient(SPRITE_R, SPRITE_R, 0, SPRITE_R, SPRITE_R, SPRITE_R);
+  grad.addColorStop(0, `rgba(${r},${g},${b},1)`);
+  grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
+  c.fillStyle = grad;
+  c.fillRect(0, 0, SPRITE_R * 2, SPRITE_R * 2);
+  spriteCache.set(key, spr);
+  return spr;
 }
 
 /**
@@ -220,21 +247,18 @@ export default function ImpactFxLayer() {
           ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
           ctx.stroke();
         } else {
-          // Soft glowing dot via radial gradient — accumulates into bloom.
-          // Attack/decay envelope: a fast fade-in (first 12% of life) kills the
-          // hard-edged spawn pop, then an ease-out fade so debris burns out
-          // instead of blinking off at a fixed size/alpha.
+          // Soft glowing dot via a pre-rendered, colour-tinted sprite (one
+          // cached drawImage instead of a fresh radial gradient per particle
+          // per frame). Attack/decay envelope: a fast fade-in (first 12% of
+          // life) kills the hard-edged spawn pop, then an ease-out fade so
+          // debris burns out instead of blinking off at a fixed size/alpha.
           const env = t < 0.12 ? t / 0.12 : Math.pow(1 - t, 1.6);
           const a = p.alpha * env;
           const radius = p.size * (p.kind === "spark" ? Math.max(0.02, Math.pow(1 - t, 0.7)) : 1);
-          const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, radius * 2.2);
-          grad.addColorStop(0, `rgba(${p.r},${p.g},${p.b},${a})`);
-          grad.addColorStop(1, `rgba(${p.r},${p.g},${p.b},0)`);
-          ctx.globalAlpha = 1;
-          ctx.fillStyle = grad;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, radius * 2.2, 0, Math.PI * 2);
-          ctx.fill();
+          const glow = radius * 2.2; // draw extent (matches the old gradient radius)
+          const spr = dotSprite(p.r, p.g, p.b);
+          ctx.globalAlpha = a;
+          ctx.drawImage(spr, p.x - glow, p.y - glow, glow * 2, glow * 2);
         }
       }
 

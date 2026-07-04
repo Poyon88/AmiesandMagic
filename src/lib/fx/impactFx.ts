@@ -138,7 +138,7 @@ export function directionalDebris(
   big: boolean,
   pal: Palette,
 ): void {
-  const count = Math.round((big ? 16 : 9) + intensity * 1.4);
+  const count = Math.round((big ? 20 : 12) + intensity * 1.6);
   const hasDir = dirX !== 0 || dirY !== 0;
   const baseAngle = hasDir ? Math.atan2(dirY, dirX) : 0;
   // Tight cone along the strike when directional; full circle otherwise.
@@ -165,7 +165,9 @@ export function directionalDebris(
     p.r = pal.spark[0];
     p.g = pal.spark[1];
     p.b = pal.spark[2];
-    p.alpha = 0.5;
+    // Hotter cores — under additive blending a higher peak alpha clips toward
+    // white at the centre, so the sparks read as incandescent rather than tinted.
+    p.alpha = 0.65;
   }
 }
 
@@ -178,7 +180,7 @@ export function sparkBurst(
   big: boolean,
   pal: Palette,
 ): void {
-  const count = Math.round((big ? 22 : 12) + intensity * 1.6);
+  const count = Math.round((big ? 28 : 16) + intensity * 1.8);
   for (let i = 0; i < count; i++) {
     const p = acquire();
     if (!p) return;

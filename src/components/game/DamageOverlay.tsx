@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import type { DamageEvent } from "@/lib/game/types";
 import { isBigHit } from "@/lib/fx/impactFx";
 
@@ -20,8 +20,50 @@ function DelayedPopup({ delay, children }: { delay: number; children: React.Reac
   return show ? <>{children}</> : null;
 }
 
+// Reduced-motion popup: number + a plain opacity fade, no particle sprays, no
+// multi-keyframe scale/position arcs. Mirrors the Canvas layer, which already
+// suppresses its bursts under prefers-reduced-motion.
+function ReducedPopup({ event }: { event: DamageEvent }) {
+  if (event.x < -9000) return null;
+  const type = event.type ?? "damage";
+  const { textColor, format } = config[type];
+  const big = type === "damage" && isBigHit(event.amount);
+  return (
+    <motion.div
+      style={{
+        position: "absolute",
+        left: event.x,
+        top: event.y,
+        transform: "translate(-50%, -50%)",
+        pointerEvents: "none",
+      }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: [0, 1, 1, 0] }}
+      transition={{ duration: 1.6, times: [0, 0.1, 0.7, 1] }}
+    >
+      <span
+        style={{
+          position: "absolute",
+          left: "50%",
+          top: "50%",
+          transform: "translate(-50%, -50%)",
+          fontSize: big ? "2.6rem" : "2rem",
+          fontWeight: 900,
+          color: textColor,
+          fontFamily: "'Cinzel', serif",
+          whiteSpace: "nowrap",
+          textShadow: "0 0 10px #000, 0 2px 4px #000",
+        }}
+      >
+        {format(event)}
+      </span>
+    </motion.div>
+  );
+}
+
 export default function DamageOverlay({ events }: DamageOverlayProps) {
   const [mounted, setMounted] = useState(false);
+  const reduced = useReducedMotion();
   useEffect(() => setMounted(true), []);
 
   if (!mounted) return null;
@@ -44,7 +86,7 @@ export default function DamageOverlay({ events }: DamageOverlayProps) {
           const key = `${i}-${evt.targetId}-${evt.type}-${evt.amount}-${evt.delayMs ?? 0}`;
           return (
             <DelayedPopup key={key} delay={evt.delayMs ?? 0}>
-              <EventPopup event={evt} />
+              {reduced ? <ReducedPopup event={evt} /> : <EventPopup event={evt} />}
             </DelayedPopup>
           );
         })}

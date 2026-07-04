@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -37,6 +37,39 @@ export default function FireBreathOverlay({ event, onComplete }: FireBreathOverl
     const timer = setTimeout(onComplete, 2200);
     return () => clearTimeout(timer);
   }, [event, onComplete]);
+
+  // Particle geometry resolved ONCE per event (not in render) so it stays stable
+  // across re-renders and is identical on both networked clients.
+  const fireParticles = useMemo(() => {
+    if (!event) return [];
+    return Array.from({ length: 20 }, (_, i) => {
+      // Focused cone pointing UP toward the opponent board (±35° around up).
+      const frac = i / 19;
+      const angle = -Math.PI / 2 + (frac - 0.5) * (70 * Math.PI / 180);
+      const radius = 140 + Math.random() * 200;
+      return {
+        dx: Math.cos(angle) * radius,
+        dy: Math.sin(angle) * radius - 30,
+        size: 8 + Math.random() * 12,
+        hue: Math.random() * 40,
+        light: 55 + Math.random() * 20,
+        dur: 0.8 + Math.random() * 0.6,
+      };
+    });
+  }, [event]);
+
+  const embers = useMemo(() => {
+    if (!event) return [];
+    return Array.from({ length: 12 }, () => ({
+      xSpread: (Math.random() - 0.5) * 300,
+      yEnd: -(60 + Math.random() * 200),
+      size: 3 + Math.random() * 5,
+      hue: Math.random() * 30 + 10,
+      light: 60 + Math.random() * 20,
+      dur: 1.2 + Math.random() * 0.6,
+      delay: 0.2 + Math.random() * 0.3,
+    }));
+  }, [event]);
 
   if (!mounted) return null;
 
@@ -123,80 +156,56 @@ export default function FireBreathOverlay({ event, onComplete }: FireBreathOverl
               </div>
             </motion.div>
 
-            {/* Fire wave particles spreading horizontally across opponent board */}
-            {[...Array(20)].map((_, i) => {
-              // Focused cone pointing UP toward the opponent board (±35° around
-              // straight up) — a directed jet of fire, not a 180° radial fan.
-              const frac = i / 19; // 0..1 across the fan
-              const angle = -Math.PI / 2 + (frac - 0.5) * (70 * Math.PI / 180);
-              const radius = 140 + Math.random() * 200;
-              const dx = Math.cos(angle) * radius;
-              const dy = Math.sin(angle) * radius - 30; // extra push toward the enemy
-              const size = 8 + Math.random() * 12;
-              const hue = Math.random() * 40; // 0-40 = red to orange-yellow
-              return (
-                <motion.div
-                  key={`fire-${i}`}
-                  style={{
-                    position: "absolute",
-                    width: size,
-                    height: size,
-                    borderRadius: "50%",
-                    background: `hsl(${hue}, 100%, ${55 + Math.random() * 20}%)`,
-                    left: -size / 2,
-                    top: -size / 2,
-                    boxShadow: `0 0 ${size}px hsl(${hue}, 100%, 50%), 0 0 ${size * 2}px rgba(255, 100, 0, 0.3)`,
-                    filter: "blur(1px)",
-                  }}
-                  initial={{ x: 0, y: 0, opacity: 0, scale: 0 }}
-                  animate={{
-                    x: dx,
-                    y: dy,
-                    opacity: [0, 1, 0.8, 0],
-                    scale: [0, 1.5, 1, 0],
-                  }}
-                  transition={{
-                    duration: 0.8 + Math.random() * 0.6,
-                    ease: "easeOut",
-                    delay: 0.05 + i * 0.03,
-                  }}
-                />
-              );
-            })}
+            {/* Fire wave — a directed cone of fire toward the opponent board. */}
+            {fireParticles.map((p, i) => (
+              <motion.div
+                key={`fire-${i}`}
+                style={{
+                  position: "absolute",
+                  width: p.size,
+                  height: p.size,
+                  borderRadius: "50%",
+                  background: `hsl(${p.hue}, 100%, ${p.light}%)`,
+                  left: -p.size / 2,
+                  top: -p.size / 2,
+                  boxShadow: `0 0 ${p.size}px hsl(${p.hue}, 100%, 50%), 0 0 ${p.size * 2}px rgba(255, 100, 0, 0.3)`,
+                  filter: "blur(1px)",
+                }}
+                initial={{ x: 0, y: 0, opacity: 0, scale: 0 }}
+                animate={{
+                  x: p.dx,
+                  y: p.dy,
+                  opacity: [0, 1, 0.8, 0],
+                  scale: [0, 1.5, 1, 0],
+                }}
+                transition={{ duration: p.dur, ease: "easeOut", delay: 0.05 + i * 0.03 }}
+              />
+            ))}
 
             {/* Ember / ash particles rising */}
-            {[...Array(12)].map((_, i) => {
-              const xSpread = (Math.random() - 0.5) * 300;
-              const yEnd = -(60 + Math.random() * 200);
-              const size = 3 + Math.random() * 5;
-              return (
-                <motion.div
-                  key={`ember-${i}`}
-                  style={{
-                    position: "absolute",
-                    width: size,
-                    height: size,
-                    borderRadius: "50%",
-                    background: `hsl(${Math.random() * 30 + 10}, 100%, ${60 + Math.random() * 20}%)`,
-                    left: -size / 2,
-                    top: -size / 2,
-                    boxShadow: "0 0 6px rgba(255, 150, 0, 0.6)",
-                  }}
-                  initial={{ x: 0, y: 0, opacity: 0, scale: 1 }}
-                  animate={{
-                    x: xSpread,
-                    y: yEnd,
-                    opacity: [0, 1, 0.6, 0],
-                    scale: [0.5, 1, 0.5],
-                  }}
-                  transition={{
-                    duration: 1.2 + Math.random() * 0.6,
-                    ease: "easeOut",
-                    delay: 0.2 + Math.random() * 0.3,
-                  }}
-                />
-              );
-            })}
+            {embers.map((e, i) => (
+              <motion.div
+                key={`ember-${i}`}
+                style={{
+                  position: "absolute",
+                  width: e.size,
+                  height: e.size,
+                  borderRadius: "50%",
+                  background: `hsl(${e.hue}, 100%, ${e.light}%)`,
+                  left: -e.size / 2,
+                  top: -e.size / 2,
+                  boxShadow: "0 0 6px rgba(255, 150, 0, 0.6)",
+                }}
+                initial={{ x: 0, y: 0, opacity: 0, scale: 1 }}
+                animate={{
+                  x: e.xSpread,
+                  y: e.yEnd,
+                  opacity: [0, 1, 0.6, 0],
+                  scale: [0.5, 1, 0.5],
+                }}
+                transition={{ duration: e.dur, ease: "easeOut", delay: e.delay }}
+              />
+            ))}
 
             {/* Expanding fire ring */}
             <motion.div
