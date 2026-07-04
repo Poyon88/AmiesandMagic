@@ -202,18 +202,27 @@ export default function ImpactFxLayer() {
         }
 
         if (p.kind === "ring") {
-          const expand = 1 + t * 5;
+          // Ease-out expansion: the ring lunges out then decelerates, and its
+          // alpha snaps bright then trails off (cubic) so the shockwave reads as
+          // a crack rather than a linearly-dissolving circle.
+          const easeOut = 1 - (1 - t) * (1 - t);
+          const expand = 1 + easeOut * 5;
           const radius = p.size * expand;
-          ctx.globalAlpha = p.alpha * (1 - t);
+          const fade = (1 - t) * (1 - t) * (1 - t);
+          ctx.globalAlpha = p.alpha * fade;
           ctx.strokeStyle = `rgb(${p.r},${p.g},${p.b})`;
-          ctx.lineWidth = Math.max(0.5, (1 - t) * 4);
+          ctx.lineWidth = Math.max(0.5, (1 - t) * (1 - t) * 4);
           ctx.beginPath();
           ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
           ctx.stroke();
         } else {
           // Soft glowing dot via radial gradient — accumulates into bloom.
-          const a = p.alpha * (1 - t);
-          const radius = p.size * (p.kind === "spark" ? 1 - t * 0.6 : 1);
+          // Attack/decay envelope: a fast fade-in (first 12% of life) kills the
+          // hard-edged spawn pop, then an ease-out fade so debris burns out
+          // instead of blinking off at a fixed size/alpha.
+          const env = t < 0.12 ? t / 0.12 : Math.pow(1 - t, 1.6);
+          const a = p.alpha * env;
+          const radius = p.size * (p.kind === "spark" ? Math.max(0.02, Math.pow(1 - t, 0.7)) : 1);
           const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, radius * 2.2);
           grad.addColorStop(0, `rgba(${p.r},${p.g},${p.b},${a})`);
           grad.addColorStop(1, `rgba(${p.r},${p.g},${p.b},0)`);

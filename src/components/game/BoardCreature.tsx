@@ -167,8 +167,10 @@ export default function BoardCreature({
   const hitAnimate = {
     x: 0,
     y: 0,
-    scaleX: 1,
-    scaleY: 1,
+    // Big hits get a near-imperceptible squash (4%) — no positional recoil, but
+    // enough deformation to sell weight. Small hits stay put; the flash carries.
+    scaleX: bigHit ? [1, 1.04, 1] : 1,
+    scaleY: bigHit ? [1, 0.96, 1] : 1,
     filter: [
       "brightness(1) saturate(1)",
       `brightness(${bigHit ? 2.6 : 2.1}) saturate(0.5)`,
@@ -261,10 +263,15 @@ export default function BoardCreature({
         x: { duration: 0.25, ease: "easeOut" },
         // Entrée douce : montée en tween lisse (pas le ressort par défaut, qui rebondirait).
         y: isBoost ? { duration: boostDur, ease: "easeOut" } : entering ? { duration: 0.34, ease: "easeOut" } : undefined,
-        scaleX: { duration: 0.42, ease: "easeOut" },
-        scaleY: { duration: 0.42, ease: "easeOut" },
+        // Snappy squash for the hit reaction (fast in/out), gentle otherwise.
+        scaleX: isHit ? { duration: 0.18, ease: "easeOut", times: [0, 0.35, 1] } : { duration: 0.42, ease: "easeOut" },
+        scaleY: isHit ? { duration: 0.18, ease: "easeOut", times: [0, 0.35, 1] } : { duration: 0.42, ease: "easeOut" },
         rotate: isBoost && isEmpower ? { duration: boostDur, ease: "easeOut" } : undefined,
-        filter: { duration: isBoost ? boostDur : 0.32, ease: "easeOut" },
+        // Hit flash snaps to peak in ~15% of the window then decays — a fast
+        // onset reads as impact, where the old symmetric ramp peaked mid-way.
+        filter: isHit
+          ? { duration: 0.38, ease: "easeOut", times: [0, 0.15, 1] }
+          : { duration: isBoost ? boostDur : 0.32, ease: "easeOut" },
         opacity: { duration: entering ? 0.4 : 0.3, ease: "easeOut" },
       }}
     >

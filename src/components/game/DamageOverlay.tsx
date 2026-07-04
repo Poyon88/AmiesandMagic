@@ -321,11 +321,12 @@ function PoisonPopup({ event }: { event: DamageEvent }) {
 }
 
 function DamagePopup({ event }: { event: DamageEvent }) {
-  const { flashColor, textColor, format } = config.damage;
-  // The shockwave ring, impact cross and debris particles now live on the
-  // additive Canvas layer (ImpactFxLayer) — far denser/glowier than DOM. The
-  // popup keeps a cheap radial flash (reads well on Safari) + the NUMBER,
-  // which gets a "crit" treatment on big hits (the cinematic beat).
+  const { textColor, format } = config.damage;
+  // The shockwave ring, impact cross, debris AND the impact glow all live on the
+  // additive Canvas layer (ImpactFxLayer) — far denser/glowier than DOM. The DOM
+  // popup owns ONLY the NUMBER (with a "crit" treatment on big hits). It used to
+  // also draw a radial flash here, but that stacked a second, flatter glow on
+  // top of the Canvas shockwave at the same point — muddy. Canvas owns the glow.
   const big = isBigHit(event.amount);
 
   return (
@@ -339,25 +340,8 @@ function DamagePopup({ event }: { event: DamageEvent }) {
       }}
       initial={{ opacity: 1 }}
       animate={{ opacity: 0 }}
-      transition={{ duration: 4.0, ease: "easeOut" }}
+      transition={{ duration: 3.5, ease: "easeOut" }}
     >
-      {/* Cheap radial flash to seat the number on the impact point */}
-      <motion.div
-        style={{
-          position: "absolute",
-          left: -55,
-          top: -55,
-          width: 110,
-          height: 110,
-          borderRadius: "50%",
-          background: `radial-gradient(circle, ${flashColor} 0%, rgba(0,0,0,0) 70%)`,
-          pointerEvents: "none",
-        }}
-        initial={{ scale: 0.4, opacity: 1 }}
-        animate={{ scale: big ? 2.4 : 2, opacity: 0 }}
-        transition={{ duration: big ? 0.5 : 0.35 }}
-      />
-
       {/* Damage number — punchy impact-frame, crit styling on big hits */}
       <motion.span
         style={{
@@ -417,6 +401,12 @@ function EventPopup({ event }: { event: DamageEvent }) {
 
   const { flashColor, particleColor, textColor, format } = config[type];
   const isPositive = type === "heal" || type === "buff" || type === "dodge" || type === "paralyze" || type === "resurrect" || type === "transform" || type === "empower";
+  // buff/empower already get their rising motes / arcane converge from the
+  // Canvas layer (ImpactFxLayer). Rendering the DOM sparkle spray on top —
+  // same colour family, same point — is literal duplication, so for those two
+  // the DOM popup shows the number + flash only. Other types are Canvas-blind
+  // and keep their DOM particles.
+  const canvasOwnsParticles = type === "buff" || type === "empower";
   // Buff/empower popups (Commandement aura, Renforcement, granted keywords…)
   // often fire in batches when several allies are touched at once. Slow them
   // down so each `+1/+1` or capability label is readable, not strobing past.
@@ -452,8 +442,8 @@ function EventPopup({ event }: { event: DamageEvent }) {
         transition={{ duration: 0.6 }}
       />
 
-      {/* Particles */}
-      {isPositive ? (
+      {/* Particles — skipped for buff/empower (Canvas owns those). */}
+      {canvasOwnsParticles ? null : isPositive ? (
         // Rising sparkles for heal/buff
         [...Array(8)].map((_, i) => {
           const xSpread = (Math.random() - 0.5) * 40;

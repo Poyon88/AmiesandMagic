@@ -37,8 +37,8 @@ interface ExpertCardFrameProps {
 // cursor-following glossy reflection without any 3D transforms — those used
 // to flatten the inner card art into a low-DPR GPU texture (preserve-3d
 // rasterisation) and made illustrations visibly soft on retina. Hover zoom
-// uses CSS `zoom` (re-lays-out at the larger size) instead of
-// `transform: scale()` so the content stays crisp when enlarged.
+// uses a 2D `transform: scale()` (animatable, so it eases in smoothly) — a flat
+// scale doesn't trigger the preserve-3d rasterisation that softened the art.
 export default function ExpertCardFrame({ rarity, children }: ExpertCardFrameProps) {
   const [hover, setHover] = useState({ mx: 50, my: 50, hovered: false });
 
@@ -84,10 +84,13 @@ export default function ExpertCardFrame({ rarity, children }: ExpertCardFramePro
       style={{
         display: "inline-block",
         position: "relative",
-        // CSS `zoom` re-rasterises the content at the zoomed size instead of
-        // upscaling a fixed bitmap (which `transform: scale` would do).
-        zoom: hover.hovered ? 1.5 : 1,
-        transition: "zoom 0.2s ease-out",
+        // Grow on hover with `transform: scale` — unlike CSS `zoom` (which is
+        // not an animatable property, so its transition was silently ignored and
+        // the enlarge snapped), transform interpolates smoothly and is GPU-
+        // composited. It also overlaps neighbours instead of reflowing the row.
+        transform: hover.hovered ? "scale(1.5)" : "scale(1)",
+        transformOrigin: "center",
+        transition: "transform 0.2s ease-out",
         zIndex: hover.hovered ? 20 : 1,
       }}
     >

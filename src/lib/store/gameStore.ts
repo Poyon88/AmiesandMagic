@@ -1520,7 +1520,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     });
 
     // --- Phase timings ---
-    const OVERLAY_PRE_IMPACT_MS = 1800; // spell / hero-power → impact start
+    const OVERLAY_PRE_IMPACT_MS = 1150; // spell / hero-power → impact start (tightened: the card's motion is done by ~600ms, so 1800 left a long dead hold before impact)
     const ATTACK_LUNGE_PRE_IMPACT_MS = 700; // lunge (~650ms) + short buffer
     const IMPACT_MS = 1200;
     const DRAW_MS = 1000;
@@ -1532,7 +1532,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     // so it doesn't drag the cast — the popup visually starts here and
     // continues fading while the spell overlay flies in.
     const COST_DISCARD_MS = 1000;
-    const RECAST_GAP_MS = 1800;
+    const RECAST_GAP_MS = 1200; // gap between recasts (tightened from 1800 — a 3-recast cascade was 5.4s of pure gap)
 
     // --- Phase handlers ---
     const phaseOverlay = () => {

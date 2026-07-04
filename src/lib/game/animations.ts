@@ -38,7 +38,21 @@ export function playAttackLunge(attackerInstanceId: string, targetId: string) {
   const origZ = attackerEl.style.zIndex;
   attackerEl.style.zIndex = "50";
 
+  // Safety net: if the chain is interrupted before its final phase settles
+  // (target removed mid-strike, element reconciled), the onfinish callbacks may
+  // never run — restore the raised zIndex anyway so it can't stay stuck at 50.
+  // Cleared as soon as finishAll runs on the normal path.
+  let settled = false;
+  const fallbackTimer = window.setTimeout(() => {
+    if (settled) return;
+    settled = true;
+    attackerEl.style.zIndex = origZ;
+  }, 900);
+
   const finishAll = (...anims: Animation[]) => {
+    clearTimeout(fallbackTimer);
+    if (settled) return;
+    settled = true;
     for (const a of anims) a.cancel();
     attackerEl.style.zIndex = origZ;
   };
