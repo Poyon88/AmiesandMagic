@@ -22,13 +22,15 @@ import {
 } from "@/lib/fx/impactFx";
 import { findInstanceEl } from "@/lib/fx/overlayMotion";
 
-// Pool size — a hit emits ~50-110 particles (denser since the sprite draw is
-// cheap); 1000 comfortably covers several overlapping hits (Fureur chains,
-// multi-target) while keeping the ring-buffer's anti-stomp margin.
-const POOL_SIZE = 1000;
-// Sprite draw removed the per-particle gradient allocation, so a higher DPR is
-// now affordable — crisper particles on Retina (still capped to spare fill-rate).
-const MAX_DPR = 2.5;
+// Pool size — a hit emits ~40-90 particles; 800 comfortably covers several
+// overlapping hits (Fureur chains, multi-target) without per-emit allocation.
+const POOL_SIZE = 800;
+// DPR cap. Kept at 2 (NOT higher): additive blending is fill-rate bound, and on
+// iPad/Retina a higher DPR janks the main thread enough to delay the
+// setTimeout-gated state commits in dispatchAction — which desyncs the slower
+// device 1-2s behind its opponent. 2 is the tested-good baseline; the sprite
+// draw (cheaper than the old per-particle gradient) keeps headroom.
+const MAX_DPR = 2;
 
 function makePool(): Particle[] {
   const pool: Particle[] = new Array(POOL_SIZE);
