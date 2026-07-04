@@ -1106,19 +1106,25 @@ export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
   // les PV suivent via `sangMeleHealthBonus` avec diff pour monter/descendre
   // quand la diversité de races change (ex. mort d'un allié de race unique),
   // avec la garde « ne pas tuer par retrait d'aura ».
+  // La réconciliation des PV tourne pour TOUTE créature (pas seulement celles
+  // qui ont encore le mot-clé) : sans le mot-clé, uniqueRaces = 0 ramène le
+  // bonus à zéro. Ainsi un Silence, qui retire « sang_mele », fait bien retomber
+  // le bonus de PV (l'ATK, elle, n'est simplement plus ré-ajoutée). Sinon le
+  // rollback, gardé derrière hasKw, ne se déclenchait jamais après un silence.
   for (const board of [player.board, opponent.board]) {
     for (const c of board) {
-      if (hasKw(c, "sang_mele")) {
-        const uniqueRaces = new Set(board.filter(a => a !== c && a.card.race).map(a => a.card.race)).size;
-        c.currentAttack += uniqueRaces;
-        const oldHP = c.sangMeleHealthBonus;
-        if (uniqueRaces !== oldHP) {
-          const diff = uniqueRaces - oldHP;
-          c.maxHealth += diff;
-          c.currentHealth += diff;
-          if (c.currentHealth < 1 && uniqueRaces < oldHP) c.currentHealth = 1; // don't kill via aura removal
-          c.sangMeleHealthBonus = uniqueRaces;
-        }
+      const hasSangMele = hasKw(c, "sang_mele");
+      const uniqueRaces = hasSangMele
+        ? new Set(board.filter(a => a !== c && a.card.race).map(a => a.card.race)).size
+        : 0;
+      if (hasSangMele) c.currentAttack += uniqueRaces;
+      const oldHP = c.sangMeleHealthBonus;
+      if (uniqueRaces !== oldHP) {
+        const diff = uniqueRaces - oldHP;
+        c.maxHealth += diff;
+        c.currentHealth += diff;
+        if (c.currentHealth < 1 && uniqueRaces < oldHP) c.currentHealth = 1; // don't kill via aura removal
+        c.sangMeleHealthBonus = uniqueRaces;
       }
     }
   }

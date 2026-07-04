@@ -50,4 +50,28 @@ describe("Sang mêlé — aura dynamique ATK+PV", () => {
     expect(mele.maxHealth).toBe(1); // 1 + 0
     expect(mele.currentHealth).toBe(1); // pas tué par retrait d'aura
   });
+
+  it("le silence (perte du mot-clé) retire AUSSI le bonus de PV, pas seulement l'ATK", () => {
+    const p1 = mkPlayer("P1");
+    const p2 = mkPlayer("P2");
+    const wolf = mkInstance(mkCard({ attack: 1, health: 1, race: "Hommes-Loups" }));
+    const bear = mkInstance(mkCard({ attack: 1, health: 1, race: "Hommes-Ours" }));
+    const mele = mkInstance(mkCard({ name: "Sang", attack: 2, health: 3, race: "Centaures", keywords: ["sang_mele"] }));
+    p1.board = [wolf, bear, mele];
+
+    recalculateAuras(p1, p2);
+    expect(mele.currentAttack).toBe(4); // 2 + 2
+    expect(mele.maxHealth).toBe(5); // 3 + 2
+    expect(mele.sangMeleHealthBonus).toBe(2);
+
+    // Silence : le handler vide les mots-clés de la carte. Au recompute qui suit,
+    // la créature n'a plus « sang_mele » → uniqueRaces = 0 doit ramener le PV à 0.
+    mele.card = { ...mele.card, keywords: [] };
+    recalculateAuras(p1, p2);
+
+    expect(mele.currentAttack).toBe(2); // ATK plus ré-ajoutée → base
+    expect(mele.maxHealth).toBe(3); // le +2 PV Sang mêlé a bien été retranché
+    expect(mele.currentHealth).toBe(3);
+    expect(mele.sangMeleHealthBonus).toBe(0);
+  });
 });
