@@ -20,6 +20,7 @@ import {
   ashFall,
   soulRise,
 } from "@/lib/fx/impactFx";
+import { findInstanceEl } from "@/lib/fx/overlayMotion";
 
 // Pool size — a hit emits ~50-110 particles (denser since the sprite draw is
 // cheap); 1000 comfortably covers several overlapping hits (Fureur chains,
@@ -384,7 +385,9 @@ export default function ImpactFxLayer() {
     const ids = [...summonEvents];
     const timer = setTimeout(() => {
       for (const id of ids) {
-        const el = document.querySelector(`[data-instance-id="${id}"]`);
+        // Prefer the on-board creature over the just-played hand copy that may
+        // still be mid-exit-animation with the same instanceId.
+        const el = findInstanceEl(id);
         if (!el) continue;
         const r = el.getBoundingClientRect();
         emitImpact({

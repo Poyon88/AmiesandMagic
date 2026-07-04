@@ -1,11 +1,15 @@
 // Pure DOM animation helpers. Fire-and-forget — no callbacks, the caller
 // schedules follow-up state transitions independently via the animation queue.
 
+import { findInstanceEl } from "@/lib/fx/overlayMotion";
+
 function findEl(id: string): HTMLElement | null {
   if (id === "enemy_hero" || id === "friendly_hero") {
     return document.querySelector(`[data-target-id="${id}"]`) as HTMLElement | null;
   }
-  return document.querySelector(`[data-instance-id="${id}"]`) as HTMLElement | null;
+  // Prefer the on-board creature over any hand copy sharing this instanceId
+  // (the lunge must animate the fighter on the board, not a card in hand).
+  return findInstanceEl(id) as HTMLElement | null;
 }
 
 /**

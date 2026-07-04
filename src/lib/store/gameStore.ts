@@ -3,6 +3,7 @@ import type { GameState, GameAction, Card, CardInstance, DamageEvent, DeathFxEve
 import { useAudioStore } from "./audioStore";
 import SfxEngine from "@/lib/audio/SfxEngine";
 import { playAttackLunge } from "@/lib/game/animations";
+import { findInstanceEl } from "@/lib/fx/overlayMotion";
 import { parseXValuesFromEffectText, KEYWORD_LABELS, KEYWORD_SYMBOLS } from "@/lib/game/keyword-labels";
 import {
   initializeGame,
@@ -308,7 +309,9 @@ function getElementCenter(targetId: string): { x: number; y: number } {
   if (targetId === "enemy_hero" || targetId === "friendly_hero") {
     el = document.querySelector(`[data-target-id="${targetId}"]`);
   } else {
-    el = document.querySelector(`[data-instance-id="${targetId}"]`);
+    // Prefer the on-board creature over any hand copy sharing this instanceId,
+    // so the damage popup/FX anchors on the board fighter, not a card in hand.
+    el = findInstanceEl(targetId);
   }
   if (el) {
     const rect = el.getBoundingClientRect();

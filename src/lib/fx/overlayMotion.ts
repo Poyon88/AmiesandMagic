@@ -64,11 +64,23 @@ export const CASCADE_EASE: Transition["ease"] = ["backOut", "linear", "easeIn"];
 export const CASCADE_STAGGER = 0.08;
 
 // ---- DOM anchor resolution (was duplicated across 4 overlays) ---------------
+// A combat / spell target is ALWAYS an on-board creature (or a hero), never a
+// hand card. But the same `instanceId` can be present in BOTH the hand and the
+// board at the same instant — an instance keeps its id across zones, and framer
+// keeps a just-played card mounted through its hand exit animation. A plain
+// `querySelector` returns whichever copy is first in the DOM, so the resolver
+// could lock a targeting arrow onto the HAND copy (visibly the wrong creature)
+// while the engine correctly applies the effect on the board. This was most
+// visible on iPad, where slower rendering / touch timing widens that overlap
+// window. Hand cards are tagged `data-hand-card="true"`, so we skip them.
 export function findInstanceEl(id: string): Element | null {
-  return (
-    document.querySelector(`[data-instance-id="${id}"]`) ??
-    document.querySelector(`[data-target-id="${id}"]`)
-  );
+  const matches = document.querySelectorAll(`[data-instance-id="${id}"]`);
+  if (matches.length > 1) {
+    for (const el of matches) {
+      if (el.getAttribute("data-hand-card") !== "true") return el;
+    }
+  }
+  return matches[0] ?? document.querySelector(`[data-target-id="${id}"]`);
 }
 
 export function getInstanceCenter(id: string): { x: number; y: number } | null {
@@ -111,4 +123,15 @@ export function sparkleDuration(i: number, base: number, spread: number): number
   const h = Math.sin(i * 78.233) * 12543.1234;
   const frac = h - Math.floor(h);
   return base + frac * spread;
+}
+
+// General deterministic pseudo-random in [0,1) from an index + channel seed.
+// Same inputs → same output on every client and every re-render — unlike
+// Math.random, which reshuffles between renders, diverges between networked
+// clients, AND is rejected by the react-hooks/purity rule when called in
+// render (including inside useMemo). `seed` decorrelates independent quantities
+// (radius vs size vs hue) drawn for the same index; `frac(i, s)`-style usage.
+export function hashRandom(i: number, seed: number): number {
+  const h = Math.sin(i * 12.9898 + seed * 78.233) * 43758.5453;
+  return h - Math.floor(h);
 }

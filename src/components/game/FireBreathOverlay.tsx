@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { findInstanceEl, hashRandom } from "@/lib/fx/overlayMotion";
 
 export interface FireBreathEvent {
   attackerInstanceId: string;
@@ -23,10 +24,9 @@ export default function FireBreathOverlay({ event, onComplete }: FireBreathOverl
   useEffect(() => {
     if (!event) return;
 
-    // Get attacker position
-    const attackerEl = document.querySelector(
-      `[data-instance-id="${event.attackerInstanceId}"]`
-    );
+    // Get attacker position (board creature — prefer the on-board element over
+    // any hand copy sharing the same instanceId).
+    const attackerEl = findInstanceEl(event.attackerInstanceId);
     if (attackerEl) {
       const rect = attackerEl.getBoundingClientRect();
       setSourcePos({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
@@ -46,28 +46,28 @@ export default function FireBreathOverlay({ event, onComplete }: FireBreathOverl
       // Focused cone pointing UP toward the opponent board (±35° around up).
       const frac = i / 19;
       const angle = -Math.PI / 2 + (frac - 0.5) * (70 * Math.PI / 180);
-      const radius = 140 + Math.random() * 200;
+      const radius = 140 + hashRandom(i, 1) * 200;
       return {
         dx: Math.cos(angle) * radius,
         dy: Math.sin(angle) * radius - 30,
-        size: 8 + Math.random() * 12,
-        hue: Math.random() * 40,
-        light: 55 + Math.random() * 20,
-        dur: 0.8 + Math.random() * 0.6,
+        size: 8 + hashRandom(i, 2) * 12,
+        hue: hashRandom(i, 3) * 40,
+        light: 55 + hashRandom(i, 4) * 20,
+        dur: 0.8 + hashRandom(i, 5) * 0.6,
       };
     });
   }, [event]);
 
   const embers = useMemo(() => {
     if (!event) return [];
-    return Array.from({ length: 12 }, () => ({
-      xSpread: (Math.random() - 0.5) * 300,
-      yEnd: -(60 + Math.random() * 200),
-      size: 3 + Math.random() * 5,
-      hue: Math.random() * 30 + 10,
-      light: 60 + Math.random() * 20,
-      dur: 1.2 + Math.random() * 0.6,
-      delay: 0.2 + Math.random() * 0.3,
+    return Array.from({ length: 12 }, (_, i) => ({
+      xSpread: (hashRandom(i, 11) - 0.5) * 300,
+      yEnd: -(60 + hashRandom(i, 12) * 200),
+      size: 3 + hashRandom(i, 13) * 5,
+      hue: hashRandom(i, 14) * 30 + 10,
+      light: 60 + hashRandom(i, 15) * 20,
+      dur: 1.2 + hashRandom(i, 16) * 0.6,
+      delay: 0.2 + hashRandom(i, 17) * 0.3,
     }));
   }, [event]);
 

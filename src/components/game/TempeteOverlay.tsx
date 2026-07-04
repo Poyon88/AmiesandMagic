@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import type { TempeteEvent } from "@/lib/store/gameStore";
+import { getInstanceCenter, hashRandom } from "@/lib/fx/overlayMotion";
 
 interface Props {
   event: TempeteEvent | null;
@@ -18,17 +19,6 @@ const BOLT_MS = 260;
 const IMPACT_MS = 320;
 const STAGGER_MS = 200;
 const TAIL_FADE_MS = 140;
-
-// Walks up from a creature's `data-instance-id="..."` element to its
-// bounding box in viewport coords. Returns null if the target has been
-// removed from the DOM (creature already died, mid-animation).
-function getCreatureCenter(instanceId: string): { x: number; y: number } | null {
-  if (typeof document === "undefined") return null;
-  const el = document.querySelector(`[data-instance-id="${instanceId}"]`);
-  if (!el) return null;
-  const r = el.getBoundingClientRect();
-  return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
-}
 
 // Quadratic Bezier path from `(sx, sy)` to `(tx, ty)` with a curved arc
 // — control point sits between them, offset perpendicular by `bulge`.
@@ -74,19 +64,19 @@ export default function TempeteOverlay({ event, onComplete }: Props) {
     const skyZoneLeft = window.innerWidth * 0.15;
     const skyZoneRight = window.innerWidth * 0.85;
     for (let i = 0; i < event.targetIds.length; i++) {
-      const target = getCreatureCenter(event.targetIds[i]);
+      const target = getInstanceCenter(event.targetIds[i]);
       if (!target) continue;
       // Each missile starts somewhere along a horizontal "storm cloud"
-      // band at the top of the viewport. Random per drop so the missiles
-      // don't all stack on the same vertical line.
-      const sx = skyZoneLeft + Math.random() * (skyZoneRight - skyZoneLeft);
+      // band at the top of the viewport. Deterministic per drop (hashRandom)
+      // so the missiles don't stack on the same vertical line yet stay
+      // identical across re-renders and between networked clients.
+      const sx = skyZoneLeft + hashRandom(i, 1) * (skyZoneRight - skyZoneLeft);
       const origin = { x: sx, y: skyY };
-      const bulge = (Math.random() - 0.5) * 90;
-      // Spark fan computed once here (not in render) so it stays stable across
-      // re-renders instead of reshuffling every frame.
+      const bulge = (hashRandom(i, 2) - 0.5) * 90;
+      // Spark fan computed once here (not in render) and deterministically.
       const sparks = [0, 1, 2, 3, 4].map((s) => {
-        const ang = (s / 5) * Math.PI * 2 + Math.random() * 0.4;
-        const dist = 24 + Math.random() * 14;
+        const ang = (s / 5) * Math.PI * 2 + hashRandom(i * 5 + s, 3) * 0.4;
+        const dist = 24 + hashRandom(i * 5 + s, 4) * 14;
         return { dx: Math.cos(ang) * dist, dy: Math.sin(ang) * dist };
       });
       out.push({
