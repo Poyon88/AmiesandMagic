@@ -3,7 +3,7 @@ import type { GameState, GameAction, Card, CardInstance, DamageEvent, DeathFxEve
 import { useAudioStore } from "./audioStore";
 import SfxEngine from "@/lib/audio/SfxEngine";
 import { playAttackLunge } from "@/lib/game/animations";
-import { findInstanceEl } from "@/lib/fx/overlayMotion";
+import { findInstanceEl, overlayRect } from "@/lib/fx/overlayMotion";
 import { parseXValuesFromEffectText, KEYWORD_LABELS, KEYWORD_SYMBOLS } from "@/lib/game/keyword-labels";
 import {
   initializeGame,
@@ -314,7 +314,7 @@ function getElementCenter(targetId: string): { x: number; y: number } {
     el = findInstanceEl(targetId);
   }
   if (el) {
-    const rect = el.getBoundingClientRect();
+    const rect = overlayRect(el);
     return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
   }
   return { x: -9999, y: -9999 };

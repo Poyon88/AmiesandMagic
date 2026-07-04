@@ -301,6 +301,7 @@ export default function HandCard({
       }}
       data-instance-id={cardInstance.instanceId}
       data-hand-card="true"
+      data-zoom={1.41}
       style={{ width: W, height: H, position: "relative", zoom: 1.41 }}
     >
       <div

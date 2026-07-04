@@ -209,6 +209,7 @@ export default function BoardCreature({
   return (
     <motion.div
       data-instance-id={creature.instanceId}
+      data-zoom={1.41}
       style={{ width: W, height: H, position: "relative", zIndex: isZoomed ? 100 : isSelected ? 10 : 1, zoom: 1.41 }}
       initial={
         // On ne joue une entrée QUE pour une créature réellement nouvelle cette

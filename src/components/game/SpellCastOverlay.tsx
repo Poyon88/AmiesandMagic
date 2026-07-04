@@ -18,7 +18,7 @@ import {
 } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import { emitImpact } from "@/lib/fx/impactFx";
-import { OVERLAY, cardRevealInitial, cardRevealAnimate, cardRevealTransition, findInstanceEl, curvedPath } from "@/lib/fx/overlayMotion";
+import { OVERLAY, cardRevealInitial, cardRevealAnimate, cardRevealTransition, findInstanceEl, curvedPath, overlayRect } from "@/lib/fx/overlayMotion";
 import { RadialFlash, HaloBloom, ExpandingRing, OrbitingSparkles } from "@/components/game/OverlayPrimitives";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { KEYWORDS as keywordDefs, getFactionDisplayName } from "@/lib/card-engine/constants";
@@ -39,6 +39,7 @@ function SpellTargetArrows({
 }) {
   const pathsRef = useRef<(SVGPathElement | null)[]>([]);
   const headsRef = useRef<(SVGPolygonElement | null)[]>([]);
+  const svgRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
     let raf = 0;
@@ -48,17 +49,25 @@ function SpellTargetArrows({
       const dashOffset = String(-((t * 0.05) % 21));
       const src = sourceRef.current?.getBoundingClientRect();
       if (src) {
+        // The SVG is position:fixed; on iPad (viewport-fit=cover + Safari UI) its
+        // own origin is NOT necessarily viewport (0,0) in getBoundingClientRect
+        // space, which offsets every arrow beside its target. Measure the SVG's
+        // own box and express all points relative to it — a strict no-op on
+        // desktop (origin 0,0), self-correcting on iPad whatever the cause.
+        const o = svgRef.current?.getBoundingClientRect();
+        const ox = o?.left ?? 0;
+        const oy = o?.top ?? 0;
         // Anchor the arrow on the right edge of the spell card (cards are on the left).
-        const sx = src.right - 10;
-        const sy = src.top + src.height / 2;
+        const sx = src.right - 10 - ox;
+        const sy = src.top + src.height / 2 - oy;
         targetIds.forEach((id, i) => {
           const el = findInstanceEl(id);
           const path = pathsRef.current[i];
           const head = headsRef.current[i];
           if (!el || !path || !head) return;
-          const r = el.getBoundingClientRect();
-          const tx = r.left + r.width / 2;
-          const ty = r.top + r.height / 2;
+          const r = overlayRect(el);
+          const tx = r.left + r.width / 2 - ox;
+          const ty = r.top + r.height / 2 - oy;
           const { d, cx, cy } = curvedPath(sx, sy, tx, ty);
           path.setAttribute("d", d);
           path.style.strokeDashoffset = dashOffset;
@@ -76,6 +85,7 @@ function SpellTargetArrows({
 
   return (
     <motion.svg
+      ref={svgRef}
       style={{
         position: "fixed",
         top: 0,
@@ -146,7 +156,7 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
       for (const id of event.targetIds ?? []) {
         const el = findInstanceEl(id);
         if (!el) continue;
-        const r = el.getBoundingClientRect();
+        const r = overlayRect(el);
         emitImpact({
           x: r.left + r.width / 2, y: r.top + r.height / 2,
           amount: 0, type: "cast_hit", dirX: 0, dirY: 0, big: false, paletteKey,

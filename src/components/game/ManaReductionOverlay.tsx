@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import type { ManaReductionEvent } from "@/lib/store/gameStore";
+import { overlayRect } from "@/lib/fx/overlayMotion";
 
 interface Props {
   event: ManaReductionEvent | null;
@@ -18,7 +19,7 @@ function handCardAnchor(instanceId: string): { x: number; y: number } | null {
   if (typeof document === "undefined") return null;
   const el = document.querySelector(`[data-instance-id="${instanceId}"]`);
   if (!el) return null;
-  const r = el.getBoundingClientRect();
+  const r = overlayRect(el);
   // Ancré près du badge de mana (haut de la carte).
   return { x: r.left + r.width / 2, y: r.top + r.height * 0.18 };
 }

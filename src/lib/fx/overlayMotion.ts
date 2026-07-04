@@ -83,11 +83,39 @@ export function findInstanceEl(id: string): Element | null {
   return matches[0] ?? document.querySelector(`[data-target-id="${id}"]`);
 }
 
+// Element box in fixed-overlay (viewport) coordinates, corrected for a CSS
+// `zoom` that the browser may not have baked into getBoundingClientRect. Board
+// and hand cards render at `zoom: 1.41` (and carry `data-zoom` so the factor is
+// read reliably).
+//
+// Chrome bakes the zoom into the rect: `rect.width` ≈ 1.41× the unzoomed layout
+// width (`offsetWidth`), and the rect is already in painted/viewport space.
+//
+// Safari/iPad instead returns the rect in the element's PRE-zoom coordinate
+// space (`rect.width` ≈ `offsetWidth`, ratio ~1). The painted box — which is
+// what position:fixed overlays and touch input use — is that rect scaled by the
+// zoom about the VIEWPORT ORIGIN (measured on-device: rect [240,439,120,168] at
+// zoom 1.41 paints as [338,619,169,237], and a tap landed inside it). So both
+// position AND size get multiplied. Detected via the ratio, so Chrome (ratio
+// ~1.41) is a strict no-op.
+export function overlayRect(el: Element): { left: number; top: number; width: number; height: number } {
+  const r = el.getBoundingClientRect();
+  const he = el as HTMLElement;
+  const zoom =
+    parseFloat(el.getAttribute("data-zoom") ?? "") ||
+    parseFloat(getComputedStyle(he).zoom || "") ||
+    1;
+  if (zoom !== 1 && he.offsetWidth > 0 && Math.abs(r.width / he.offsetWidth - 1) < 0.15) {
+    return { left: r.left * zoom, top: r.top * zoom, width: r.width * zoom, height: r.height * zoom };
+  }
+  return { left: r.left, top: r.top, width: r.width, height: r.height };
+}
+
 export function getInstanceCenter(id: string): { x: number; y: number } | null {
   const el = findInstanceEl(id);
   if (!el) return null;
-  const r = el.getBoundingClientRect();
-  return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+  const b = overlayRect(el);
+  return { x: b.left + b.width / 2, y: b.top + b.height / 2 };
 }
 
 // ---- Curved targeting path (was duplicated 3× with divergent constants) -----

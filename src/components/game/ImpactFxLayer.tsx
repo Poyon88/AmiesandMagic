@@ -20,7 +20,7 @@ import {
   ashFall,
   soulRise,
 } from "@/lib/fx/impactFx";
-import { findInstanceEl } from "@/lib/fx/overlayMotion";
+import { findInstanceEl, overlayRect } from "@/lib/fx/overlayMotion";
 
 // Pool size — a hit emits ~40-90 particles; 800 comfortably covers several
 // overlapping hits (Fureur chains, multi-target) without per-emit allocation.
@@ -391,7 +391,7 @@ export default function ImpactFxLayer() {
         // still be mid-exit-animation with the same instanceId.
         const el = findInstanceEl(id);
         if (!el) continue;
-        const r = el.getBoundingClientRect();
+        const r = overlayRect(el);
         emitImpact({
           x: r.left + r.width / 2,
           y: r.top + r.height / 2,

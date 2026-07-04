@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { findInstanceEl, hashRandom } from "@/lib/fx/overlayMotion";
+import { findInstanceEl, hashRandom, overlayRect } from "@/lib/fx/overlayMotion";
 
 export interface FireBreathEvent {
   attackerInstanceId: string;
@@ -28,7 +28,7 @@ export default function FireBreathOverlay({ event, onComplete }: FireBreathOverl
     // any hand copy sharing the same instanceId).
     const attackerEl = findInstanceEl(event.attackerInstanceId);
     if (attackerEl) {
-      const rect = attackerEl.getBoundingClientRect();
+      const rect = overlayRect(attackerEl);
       setSourcePos({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
     } else {
       setSourcePos({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
