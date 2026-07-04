@@ -217,7 +217,7 @@ export default function BoardCreature({
         // snapshot / réconciliation) ne rejoue PAS l'entrée (le « rétrécissement/
         // recul » observé venait du rebond scale 0.5→1 rejoué au remount).
         summoning
-          ? { y: isOwn ? 18 : -18, opacity: 0, scale: 0.1, rotate: isOwn ? -6 : 6 }
+          ? { y: isOwn ? 18 : -18, opacity: 0, scale: 0.3, rotate: isOwn ? -6 : 6 }
           : entering
           ? { opacity: 0, y: isOwn ? 8 : -8 } // entrée douce : fondu + légère montée, PAS de scale
           : false
@@ -262,6 +262,9 @@ export default function BoardCreature({
       transition={{
         default: SPRINGS.boardSettle,
         x: { duration: 0.25, ease: "easeOut" },
+        // L'invocation atterrit sur un ressort dédié plus vif (le défaut, lourd,
+        // la faisait dériver après le flash de portail au lieu d'atterrir avec).
+        scale: summoning ? SPRINGS.summon : undefined,
         // Entrée douce : montée en tween lisse (pas le ressort par défaut, qui rebondirait).
         y: isBoost ? { duration: boostDur, ease: "easeOut" } : entering ? { duration: 0.34, ease: "easeOut" } : undefined,
         // Snappy squash for the hit reaction (fast in/out), gentle otherwise.
@@ -288,8 +291,10 @@ export default function BoardCreature({
         boxShadow: `0 0 36px 10px rgba(${haloRgb},0.45)`,
       }}
       initial={{ opacity: 0, scale: 0.85 }}
-      animate={isBoost ? { opacity: [0, 0.9, 0], scale: [0.85, haloPeak] } : { opacity: 0, scale: 0.85 }}
-      transition={{ duration: boostDur, ease: "easeOut" }}
+      // 3 stops sur le scale (le pic s'aligne avec l'opacité max puis se détend)
+      // — avant, en 2 stops, le halo grossissait encore en disparaissant.
+      animate={isBoost ? { opacity: [0, 0.9, 0], scale: [0.85, haloPeak, haloPeak * 0.96] } : { opacity: 0, scale: 0.85 }}
+      transition={{ duration: boostDur, ease: "easeOut", times: isBoost ? [0, 0.4, 1] : undefined }}
     />
     <div
       ref={creatureRef}

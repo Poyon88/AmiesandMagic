@@ -53,6 +53,7 @@ interface Missile {
   target: { x: number; y: number };
   path: string;
   delay: number;
+  sparks: { dx: number; dy: number }[];
 }
 
 // Tempête X — Hearthstone-style "Arcane Missiles" cadence: each drop is a
@@ -81,12 +82,20 @@ export default function TempeteOverlay({ event, onComplete }: Props) {
       const sx = skyZoneLeft + Math.random() * (skyZoneRight - skyZoneLeft);
       const origin = { x: sx, y: skyY };
       const bulge = (Math.random() - 0.5) * 90;
+      // Spark fan computed once here (not in render) so it stays stable across
+      // re-renders instead of reshuffling every frame.
+      const sparks = [0, 1, 2, 3, 4].map((s) => {
+        const ang = (s / 5) * Math.PI * 2 + Math.random() * 0.4;
+        const dist = 24 + Math.random() * 14;
+        return { dx: Math.cos(ang) * dist, dy: Math.sin(ang) * dist };
+      });
       out.push({
         key: i,
         origin,
         target,
         path: bezierPath(origin.x, origin.y, target.x, target.y, bulge),
         delay: (i * STAGGER_MS) / 1000,
+        sparks,
       });
     }
     return out;
@@ -125,19 +134,36 @@ export default function TempeteOverlay({ event, onComplete }: Props) {
           transition={{ duration: 0.18 }}
         >
           <defs>
-            {/* Trail gradient: transparent at the origin (cloud) → bright
-                cyan-white at the head (target end). Painted along the path
-                so the leading tip reads as the projectile head. */}
-            <linearGradient id={gradientId} gradientUnits="userSpaceOnUse"
-              x1="0" y1="0" x2={vw} y2={vh}>
-              <stop offset="0%" stopColor="#5aa9ff" stopOpacity="0" />
-              <stop offset="60%" stopColor="#a7d4ff" stopOpacity="0.85" />
-              <stop offset="100%" stopColor="#ffffff" stopOpacity="1" />
-            </linearGradient>
+            {/* One gradient PER missile, aligned to its own origin→target
+                vector: transparent at the cloud, bright cyan-white at the head.
+                A single shared screen-diagonal gradient (the old approach) put
+                the bright end in the wrong place for bolts travelling against
+                the diagonal. */}
+            {missiles.map((m) => (
+              <linearGradient key={m.key} id={`${gradientId}-${m.key}`}
+                gradientUnits="userSpaceOnUse"
+                x1={m.origin.x} y1={m.origin.y} x2={m.target.x} y2={m.target.y}>
+                <stop offset="0%" stopColor="#5aa9ff" stopOpacity="0" />
+                <stop offset="60%" stopColor="#a7d4ff" stopOpacity="0.85" />
+                <stop offset="100%" stopColor="#ffffff" stopOpacity="1" />
+              </linearGradient>
+            ))}
           </defs>
 
           {missiles.map((m) => (
             <g key={m.key}>
+              {/* Cloud flicker — a brief charge at the origin just before the
+                  bolt fires (anticipation). */}
+              <motion.circle
+                cx={m.origin.x}
+                cy={m.origin.y}
+                r={14}
+                fill="rgba(150, 190, 255, 0.5)"
+                style={{ filter: "blur(3px)" }}
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: [0.5, 1.2, 0.8], opacity: [0, 0.7, 0] }}
+                transition={{ duration: 0.16, delay: Math.max(0, m.delay - 0.1), ease: "easeOut" }}
+              />
               {/* Outer glow trail — wider, soft */}
               <motion.path
                 d={m.path}
@@ -162,7 +188,7 @@ export default function TempeteOverlay({ event, onComplete }: Props) {
                   reads as the projectile tip */}
               <motion.path
                 d={m.path}
-                stroke={`url(#${gradientId})`}
+                stroke={`url(#${gradientId}-${m.key})`}
                 strokeWidth={3.5}
                 strokeLinecap="round"
                 fill="none"
@@ -204,34 +230,31 @@ export default function TempeteOverlay({ event, onComplete }: Props) {
                   ease: "easeOut",
                 }}
               />
-              {/* Spark burst — 5 little particles fanning out from impact */}
-              {[0, 1, 2, 3, 4].map((s) => {
-                const ang = (s / 5) * Math.PI * 2 + Math.random() * 0.4;
-                const dist = 24 + Math.random() * 14;
-                return (
-                  <motion.circle
-                    key={`spark-${m.key}-${s}`}
-                    cx={m.target.x}
-                    cy={m.target.y}
-                    r={2.5}
-                    fill="#e8f3ff"
-                    style={{ filter: "drop-shadow(0 0 4px #ffffff)" }}
-                    initial={{ x: 0, y: 0, opacity: 0, scale: 1 }}
-                    animate={{
-                      x: Math.cos(ang) * dist,
-                      y: Math.sin(ang) * dist,
-                      opacity: [0, 1, 0],
-                      scale: [1, 1, 0],
-                    }}
-                    transition={{
-                      duration: IMPACT_MS / 1000,
-                      times: [0, 0.3, 1],
-                      delay: m.delay + BOLT_MS / 1000,
-                      ease: "easeOut",
-                    }}
-                  />
-                );
-              })}
+              {/* Spark burst — 5 little particles fanning out from impact
+                  (geometry memoised on the missile, see useMemo). */}
+              {m.sparks.map((sp, s) => (
+                <motion.circle
+                  key={`spark-${m.key}-${s}`}
+                  cx={m.target.x}
+                  cy={m.target.y}
+                  r={2.5}
+                  fill="#e8f3ff"
+                  style={{ filter: "drop-shadow(0 0 4px #ffffff)" }}
+                  initial={{ x: 0, y: 0, opacity: 0, scale: 1 }}
+                  animate={{
+                    x: sp.dx,
+                    y: sp.dy,
+                    opacity: [0, 1, 0],
+                    scale: [1, 1, 0],
+                  }}
+                  transition={{
+                    duration: IMPACT_MS / 1000,
+                    times: [0, 0.3, 1],
+                    delay: m.delay + BOLT_MS / 1000,
+                    ease: "easeOut",
+                  }}
+                />
+              ))}
             </g>
           ))}
         </motion.svg>

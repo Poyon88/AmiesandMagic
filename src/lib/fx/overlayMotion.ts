@@ -45,11 +45,14 @@ export const cardRevealTransition: Transition = {
 // ---- Card motion springs (shared by BoardCreature + HandCard) --------------
 // One source of truth so a card obeys the same physics in hand and on board.
 // (Values preserved from their original per-component definitions.)
-export const SPRINGS: Record<"boardSettle" | "handEntry", Transition> = {
-  /** Board creature settle — governs summon scale-in and animate transitions. */
+export const SPRINGS: Record<"boardSettle" | "handEntry" | "summon", Transition> = {
+  /** Board creature settle — governs animate transitions and reconciled moves. */
   boardSettle: { type: "spring", stiffness: 280, damping: 22, mass: 1.3 },
   /** Hand-card draw-in — a touch snappier and bouncier than the board. */
   handEntry: { type: "spring", stiffness: 320, damping: 20, mass: 1.1 },
+  /** Effect-summon materialisation — snappier & lighter (slight overshoot) so
+   *  the creature lands WITH the portal flash instead of drifting in after it. */
+  summon: { type: "spring", stiffness: 420, damping: 26, mass: 0.9 },
 };
 
 // ---- Card cascade reveals (graveyard / discard) ----------------------------

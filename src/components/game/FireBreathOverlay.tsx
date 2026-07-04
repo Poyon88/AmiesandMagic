@@ -111,14 +111,6 @@ export default function FireBreathOverlay({ event, onComplete }: FireBreathOverl
             >
               <div
                 style={{
-                  fontSize: "2.5rem",
-                  filter: "drop-shadow(0 0 12px rgba(255, 100, 0, 0.9))",
-                }}
-              >
-                🐲
-              </div>
-              <div
-                style={{
                   fontSize: "1rem",
                   fontWeight: 800,
                   color: "#ffd700",
@@ -133,11 +125,13 @@ export default function FireBreathOverlay({ event, onComplete }: FireBreathOverl
 
             {/* Fire wave particles spreading horizontally across opponent board */}
             {[...Array(20)].map((_, i) => {
-              const spread = (i / 20) * Math.PI - Math.PI / 2; // -90° to +90° spread
-              const radius = 100 + Math.random() * 200;
-              const dx = Math.cos(spread) * radius * 1.5;
-              // Fire goes upward (toward opponent board which is above)
-              const dy = -Math.abs(Math.sin(spread) * radius) - 40 - Math.random() * 80;
+              // Focused cone pointing UP toward the opponent board (±35° around
+              // straight up) — a directed jet of fire, not a 180° radial fan.
+              const frac = i / 19; // 0..1 across the fan
+              const angle = -Math.PI / 2 + (frac - 0.5) * (70 * Math.PI / 180);
+              const radius = 140 + Math.random() * 200;
+              const dx = Math.cos(angle) * radius;
+              const dy = Math.sin(angle) * radius - 30; // extra push toward the enemy
               const size = 8 + Math.random() * 12;
               const hue = Math.random() * 40; // 0-40 = red to orange-yellow
               return (

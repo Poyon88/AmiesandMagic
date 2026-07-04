@@ -5,6 +5,7 @@ import Image from "next/image";
 import type { HeroState } from "@/lib/game/types";
 import { HERO_MAX_HP } from "@/lib/game/constants";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
+import { isBigHit } from "@/lib/fx/impactFx";
 
 const HERO_IMAGES: Record<string, string> = {
   elves: "/images/heroes/elves.png",
@@ -52,6 +53,7 @@ export default function HeroPortrait({
 }: HeroPortraitProps) {
   const hpPercentage = Math.max(0, (hero.hp / HERO_MAX_HP) * 100);
   const longPress = useLongPress(() => onContextMenu?.());
+  const isBigDmg = damageAmount != null && isBigHit(damageAmount);
 
   return (
     <div className="relative flex flex-col items-center">
@@ -76,10 +78,19 @@ export default function HeroPortrait({
       <motion.div
         animate={
           damageAmount
-            ? { x: [0, -5, 5, -5, 5, 0] }
-            : { x: 0 }
+            ? {
+                // Amplitude-decaying shake (reads as an impact absorbing, not a
+                // constant vibration) + a brightness flash, tiered on big hits.
+                x: isBigDmg ? [0, -11, 8, -5, 4, -2, 0] : [0, -7, 5, -3, 2, -1, 0],
+                filter: [
+                  "brightness(1) saturate(1)",
+                  `brightness(${isBigDmg ? 1.8 : 1.55}) saturate(0.6)`,
+                  "brightness(1) saturate(1)",
+                ],
+              }
+            : { x: 0, filter: "brightness(1) saturate(1)" }
         }
-        transition={{ duration: 0.5, ease: "easeOut" }}
+        transition={{ duration: isBigDmg ? 0.55 : 0.45, ease: "easeOut" }}
         style={LONG_PRESS_RESET_STYLE}
         className={`
           pointer-events-none relative w-40 h-48 rounded-xl overflow-hidden
