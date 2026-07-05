@@ -431,6 +431,7 @@ function selectComposedTargets(
   owner: PlayerState,
   opponent: PlayerState,
   chosenTargetIds?: string[],
+  harmful?: boolean,
 ): ComposedTargetRef[] {
   const pool = buildComposedPool(spec, owner, opponent);
 
@@ -446,7 +447,21 @@ function selectComposedTargets(
       .slice(0, n);
   }
   if (spec.designation === "random") return shuffleArray(pool).slice(0, n);
-  return pool.slice(0, n); // choix sans cible fournie → repli déterministe
+  // Repli déterministe pour un « au choix » SANS cible désignée : survient au
+  // tour adverse (pas d'UI, cf. frameNeedsChoice) ou pour une frame « choix »
+  // suspendue qui a fuité au-delà du tour de son propriétaire. Un effet
+  // OFFENSIF ne doit alors JAMAIS frapper son propre camp faute de désignation
+  // — sinon le lanceur se retourne contre lui-même (bug : Jeune Archère se
+  // suicidant quand l'adversaire jouait une carte). On restreint aux cibles
+  // ENNEMIES ; aucune → l'effet fizzle proprement (slice sur liste vide).
+  if (spec.designation === "choice" && harmful) {
+    return pool
+      .filter((ref) =>
+        (ref.kind === "hero" && ref.hero === opponent.hero) ||
+        (ref.kind === "unit" && opponent.board.includes(ref.unit)))
+      .slice(0, n);
+  }
+  return pool.slice(0, n);
 }
 
 // Liste TOUTES les cibles éligibles (instanceIds + sentinelles de héros) d'un
@@ -559,7 +574,12 @@ function resolveComposedEffect(
     return;
   }
 
-  for (const t of selectComposedTargets(target, owner, opponent, chosenTargetIds)) {
+  // Contenus OFFENSIFS : leur repli auto ne doit jamais frapper le camp du
+  // lanceur (cf. selectComposedTargets).
+  const harmful =
+    composed.content === "deal_damage" || composed.content === "destroy" ||
+    composed.content === "debuff" || composed.content === "paralyze";
+  for (const t of selectComposedTargets(target, owner, opponent, chosenTargetIds, harmful)) {
     if (t.kind === "hero") applyComposedToHero(composed.content, t.hero, x);
     else applyComposedToUnit(composed, t.unit, x, y, source, owner, opponent);
   }
@@ -1337,6 +1357,14 @@ export function endTurn(state: GameState): GameState {
   newState.factionCardPool = pool;
   newState.allSpellsPool = allPool;
 
+  // Option B : un effet composé « au choix » resté EN SUSPENS à la fin du tour
+  // de son propriétaire (chrono expiré, aucune cible désignée) ne doit pas
+  // fuiter au tour adverse — où il se résoudrait automatiquement, potentiellement
+  // contre son propre camp. On draine la pile en mode « fizzle » TANT QUE c'est
+  // encore son tour : les choix non désignés sont abandonnés, les effets non
+  // interactifs empilés se résolvent normalement. (cf. drainStack / Jeune Archère)
+  drainStack(newState, { fizzleUnresolvedChoices: true });
+
   // Déclencheurs « fin de tour » du joueur SORTANT (contrôleur), avant la purge
   // des statuts et la bascule, pendant que c'est encore son tour. Les effets à
   // cible « au choix » sont mis en file (pendingTriggers) et résolus par le
@@ -1370,7 +1398,13 @@ export function endTurn(state: GameState): GameState {
     // Effets composés on_end_of_turn.
     for (const cap of getCapabilities(creature.card)) {
       if (!cap.composed || cap.trigger !== "on_end_of_turn") continue;
-      if (cap.composed.target?.designation === "choice") {
+      // `entity: "self"` vise toujours la source — il se résout de façon
+      // déterministe (cf. resolveComposedEffect) et ne doit JAMAIS être
+      // aiguillé vers la file de choix : composedTargetIds ne produit aucune
+      // cible pour "self", donc le déclencheur serait silencieusement perdu
+      // (ex. Ours Maudit : buff +1/+1 sur soi en fin de tour qui ne partait
+      // jamais car la donnée portait designation:"choice" + entity:"self").
+      if (cap.composed.target?.designation === "choice" && cap.composed.target?.entity !== "self") {
         const trig: import("./types").PendingTrigger = {
           id: `${creature.instanceId}#${cap.uid}`,
           controllerId: outgoing.id,
@@ -4030,7 +4064,7 @@ function pushFrames(state: GameState, frames: StackFrame[]): void {
  *  laissant la frame au sommet si un choix joueur est requis : la pile suspendue
  *  persiste dans l'état (hashée + snapshotée), reprise par
  *  resolvePendingTrigger / autoResolvePendingTriggers. */
-function drainStack(state: GameState): void {
+function drainStack(state: GameState, opts?: { fizzleUnresolvedChoices?: boolean }): void {
   const stack = state.effectStack;
   if (!stack || stack.length === 0) return;
   let iterations = 0;
@@ -4040,7 +4074,15 @@ function drainStack(state: GameState): void {
       break;
     }
     const top = stack[stack.length - 1];
-    if (frameNeedsChoice(state, top)) { top.awaitingChoice = true; return; }
+    if (frameNeedsChoice(state, top)) {
+      // Option B : à la fin du tour du propriétaire, un « au choix » resté sans
+      // désignation (chrono expiré) NE fuite PAS au tour adverse — il fizzle.
+      // On dépile la frame sans la résoudre ; les effets NON interactifs
+      // éventuellement empilés en dessous se résolvent normalement.
+      if (opts?.fizzleUnresolvedChoices) { stack.pop(); continue; }
+      top.awaitingChoice = true;
+      return;
+    }
     stack.pop();
     resolveFrame(state, top);
     settleDeaths(state, top.depth);
