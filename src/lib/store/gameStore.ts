@@ -1258,14 +1258,21 @@ export const useGameStore = create<GameStore>((set, get) => {
       const sourceId = action.type === "tap_activate" ? action.sourceInstanceId : casterHeroSentinel;
 
       const enemyBoardIds = new Set(gameState.players[oppIdx].board.map((c) => c.instanceId));
-      const targetIds = Array.from(new Set(
-        dmgEvents
-          .filter((ev) =>
-            ev.type === "damage" &&
-            ev.targetId !== sourceId &&
-            (enemyBoardIds.has(ev.targetId) || ev.targetId === enemyHeroSentinel))
-          .map((ev) => ev.targetId),
-      ));
+      const hit = new Set<string>();
+      // Cibles ayant subi des dégâts (créature adverse ou héros adverse).
+      for (const ev of dmgEvents) {
+        if (ev.type !== "damage") continue;
+        if (enemyBoardIds.has(ev.targetId) || ev.targetId === enemyHeroSentinel) hit.add(ev.targetId);
+      }
+      // Cibles dont le Bouclier a ABSORBÉ le coup (hasDivineShield true→false) :
+      // aucun event de dégât n'est émis, mais le pouvoir les a bien visées — la
+      // flèche doit quand même partir vers elles.
+      const oldShield = new Map(gameState.players[oppIdx].board.map((c) => [c.instanceId, c.hasDivineShield]));
+      for (const c of newState.players[oppIdx].board) {
+        if (oldShield.get(c.instanceId) === true && c.hasDivineShield === false) hit.add(c.instanceId);
+      }
+      hit.delete(sourceId);
+      const targetIds = Array.from(hit);
       if (targetIds.length > 0) {
         powerArrowEvent = {
           sourceId,
@@ -1597,6 +1604,7 @@ export const useGameStore = create<GameStore>((set, get) => {
 
     // --- Phase timings ---
     const OVERLAY_PRE_IMPACT_MS = 1150; // spell / hero-power → impact start (tightened: the card's motion is done by ~600ms, so 1800 left a long dead hold before impact)
+    const POWER_ARROW_PRE_IMPACT_MS = 550; // pouvoir tap sans overlay : laisse la flèche partir avant que les dégâts/bouclier ne s'affichent
     const ATTACK_LUNGE_PRE_IMPACT_MS = 700; // lunge (~650ms) + short buffer
     const IMPACT_MS = 1200;
     const DRAW_MS = 1000;
@@ -1617,6 +1625,9 @@ export const useGameStore = create<GameStore>((set, get) => {
         ...(spellEvent ? { spellCastEvent: spellEvent } : {}),
         ...(fireEvent ? { fireBreathEvent: fireEvent } : {}),
         ...(heroPowerEvent ? { heroPowerCastEvent: heroPowerEvent } : {}),
+        // La flèche de pouvoir part AVANT l'impact (simultanée à l'anim
+        // héroïque pour un pouvoir de héros ; les dégâts/bouclier suivent).
+        ...(powerArrowEvent ? { powerArrowEvent } : {}),
       }));
       playSfxBatch(overlaySfx);
       // Attack lunge plays on BOTH the active and passive client, since this
@@ -1731,7 +1742,6 @@ export const useGameStore = create<GameStore>((set, get) => {
         lastSfxEvents: impactSfx,
         ...(graveyardAffectEvent ? { graveyardAffectEvent } : {}),
         ...(tempeteEvent ? { tempeteEvent } : {}),
-        ...(powerArrowEvent ? { powerArrowEvent } : {}),
       });
       playSfxBatch(impactSfx);
     };
@@ -1835,6 +1845,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     else setTimeout(phaseOverlay, cursor);
     if (hasOverlay) cursor += OVERLAY_PRE_IMPACT_MS;
     else if (isAttack) cursor += ATTACK_LUNGE_PRE_IMPACT_MS;
+    else if (powerArrowEvent) cursor += POWER_ARROW_PRE_IMPACT_MS;
 
     // Recast spell overlays must appear BEFORE phaseImpacts so each
     // recasted spell is shown casting *before* its (already-applied)
