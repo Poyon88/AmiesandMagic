@@ -158,13 +158,16 @@ export default function Hero3DViewer({
   powerReadyHalo = null,
 }: Hero3DViewerProps) {
   const [hovered, setHovered] = useState(false);
+  // Tous les hooks doivent être appelés inconditionnellement AVANT tout early
+  // return : glbUrl peut passer de null à défini quand la définition du héros se
+  // charge, et un hook appelé après le `return null` changeait le nombre de
+  // hooks entre deux rendus (crash React « rendered fewer hooks than expected »).
+  const longPress = useLongPress(() => onContextMenu?.());
   const glbUrl = hero.heroDefinition?.glbUrl ?? null;
 
   if (!glbUrl) return null; // caller should pick the 2D fallback
 
   const interactive = !!(onClick || onDoubleClick || onContextMenu);
-
-  const longPress = useLongPress(() => onContextMenu?.());
 
   function handleClickCapture(e: React.MouseEvent) {
     if (longPress.consume()) return;
