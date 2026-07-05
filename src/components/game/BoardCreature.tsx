@@ -4,7 +4,7 @@ import { useState, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import type { CardInstance, GameAction } from "@/lib/game/types";
-import { useGameStore } from "@/lib/store/gameStore";
+import { useGameStore, selectPowerTargetingColor } from "@/lib/store/gameStore";
 import { tapKeywordNeedsTarget, getCreatureTapComposedUid } from "@/lib/game/engine";
 import { getTokenManaCost } from "@/lib/game/abilities";
 import { formatConvocationToken, formatConvocationTokens } from "@/lib/game/spell-keywords";
@@ -63,6 +63,10 @@ export default function BoardCreature({
   const card = creature.card;
   const tokenTemplates = useGameStore(s => s.tokenTemplates);
   const targetingMode = useGameStore(s => s.targetingMode);
+  // Couleur de surbrillance des cibles valides pendant l'activation d'un
+  // pouvoir : reprend la couleur de l'icône du pouvoir (jaune pour activable,
+  // etc.). null hors ciblage de pouvoir → repli sur le rouge habituel.
+  const powerTargetColor = useGameStore(selectPowerTargetingColor);
   const selectedSacrificeIds = useGameStore(s => s.selectedSacrificeIds);
   const toggleSacrificeSelection = useGameStore(s => s.toggleSacrificeSelection);
   const activateTap = useGameStore(s => s.activateTap);
@@ -144,7 +148,7 @@ export default function BoardCreature({
   let border = "2px solid #3d3d5c";
   if (isSelectedForSacrifice) border = "2px solid #a060a0";
   else if (isSelected) border = "2px solid #f1c40f";
-  else if (isValidTarget) border = "2px solid #e74c3c";
+  else if (isValidTarget) border = `2px solid ${powerTargetColor ?? "#e74c3c"}`;
   else if (canAttack) border = "2px solid #2ecc71";
 
   const longPress = useLongPress(() => {
@@ -379,7 +383,7 @@ export default function BoardCreature({
         border,
         boxShadow: isSelectedForSacrifice ? "0 0 16px #a060a088"
           : isSelected ? "0 0 14px #f1c40f44"
-          : isValidTarget ? "0 0 14px #e74c3c44"
+          : isValidTarget ? `0 0 14px ${powerTargetColor ?? "#e74c3c"}44`
           : canAttack ? "0 0 12px #2ecc7166"
           : "none",
         // overflow: visible so the RarityFrame (inset: -4) can extend

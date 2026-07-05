@@ -27,6 +27,10 @@ interface HeroPortraitProps {
   hero: HeroState;
   isOpponent: boolean;
   isValidTarget?: boolean;
+  /** When the hero is a valid target for an ACTIVATABLE POWER, this carries
+   *  the power's icon colour so the highlight matches it (jaune pour activable,
+   *  etc.). null/undefined → default red attack-target ring is kept. */
+  validTargetColor?: string | null;
   damageAmount?: number | null;
   onClick?: () => void;
   // Double-click → activates non-targeted hero powers (e.g. gain_armor,
@@ -44,6 +48,7 @@ export default function HeroPortrait({
   hero,
   isOpponent,
   isValidTarget = false,
+  validTargetColor = null,
   damageAmount = null,
   onClick,
   onDoubleClick,
@@ -54,6 +59,9 @@ export default function HeroPortrait({
   const hpPercentage = Math.max(0, (hero.hp / HERO_MAX_HP) * 100);
   const longPress = useLongPress(() => onContextMenu?.());
   const isBigDmg = damageAmount != null && isBigHit(damageAmount);
+  // Activatable-power targeting → colour the ring like the power icon instead
+  // of the default red attack ring.
+  const powerRing = isValidTarget && !!validTargetColor;
 
   return (
     <div className="relative flex flex-col items-center">
@@ -91,11 +99,14 @@ export default function HeroPortrait({
             : { x: 0, filter: "brightness(1) saturate(1)" }
         }
         transition={{ duration: isBigDmg ? 0.55 : 0.45, ease: "easeOut" }}
-        style={LONG_PRESS_RESET_STYLE}
+        style={powerRing
+          ? { ...LONG_PRESS_RESET_STYLE, boxShadow: `0 0 0 2px ${validTargetColor}, 0 0 14px 2px ${validTargetColor}66` }
+          : LONG_PRESS_RESET_STYLE}
         className={`
           pointer-events-none relative w-40 h-48 rounded-xl overflow-hidden
           transition-[box-shadow,transform]
-          ${isValidTarget ? "ring-2 ring-attack-red animate-[pulse-ring_1.5s_ease-in-out_infinite] hover:scale-105" : ""}
+          ${isValidTarget && !powerRing ? "ring-2 ring-attack-red animate-[pulse-ring_1.5s_ease-in-out_infinite] hover:scale-105" : ""}
+          ${powerRing ? "hover:scale-105" : ""}
           ${onClick && !isValidTarget ? "hover:scale-105" : ""}
         `}
       >

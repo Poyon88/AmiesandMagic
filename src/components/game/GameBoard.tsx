@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useRef, type DragEvent } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
-import { useGameStore } from "@/lib/store/gameStore";
+import { useGameStore, selectPowerTargetingColor } from "@/lib/store/gameStore";
 import { canPlayCard, canAttack, canUseHeroPower, getSpellTargets, getValidTargets, heroPowerNeedsTarget } from "@/lib/game/engine";
 import HeroPortrait from "./HeroPortrait";
 import Hero3DViewer from "./Hero3DViewer";
@@ -174,6 +174,9 @@ export default function GameBoard({ onAction }: GameBoardProps) {
   const isMtgo = boardLayout === "mtgo";
   const opponentCardBackUrl = useGameStore((s) => s.opponentCardBackUrl);
   const myCardBackUrl = useGameStore((s) => s.myCardBackUrl);
+  // Icon-matched highlight colour while targeting an activatable power (null
+  // for attacks/spells → heroes keep their default red target ring).
+  const powerTargetColor = useGameStore(selectPowerTargetingColor);
   const myPlayer = getMyPlayerState();
   const opponent = getOpponentPlayerState();
   const myTurn = isMyTurn() && !isAnimating;
@@ -703,6 +706,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
             hero={opponent.hero}
             isOpponent={true}
             isValidTarget={validTargets.includes("enemy_hero")}
+            validTargetColor={powerTargetColor}
             damageAmount={getDamage("enemy_hero")}
             onClick={handleOppHeroClick}
             onContextMenu={handleOppHeroContextMenu}
@@ -951,6 +955,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
             hero={myPlayer.hero}
             isOpponent={false}
             isValidTarget={validTargets.includes("friendly_hero")}
+            validTargetColor={powerTargetColor}
             damageAmount={getDamage("friendly_hero")}
             onClick={handleMyHeroClick}
             onDoubleClick={handleMyHeroDoubleClick}

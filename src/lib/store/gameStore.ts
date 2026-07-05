@@ -4,7 +4,8 @@ import { useAudioStore } from "./audioStore";
 import SfxEngine from "@/lib/audio/SfxEngine";
 import { playAttackLunge } from "@/lib/game/animations";
 import { findInstanceEl, overlayRect } from "@/lib/fx/overlayMotion";
-import { parseXValuesFromEffectText, KEYWORD_LABELS, KEYWORD_SYMBOLS } from "@/lib/game/keyword-labels";
+import { parseXValuesFromEffectText, KEYWORD_LABELS, KEYWORD_SYMBOLS, keywordModeColor } from "@/lib/game/keyword-labels";
+import { composedCapsOf, composedTriggerMode } from "@/lib/game/composed-display";
 import {
   initializeGame,
   applyAction,
@@ -611,6 +612,27 @@ function generateEffectLog(
   }
 
   return entries;
+}
+
+/** Couleur de surbrillance des cibles valides pendant le ciblage d'un POUVOIR
+ *  ACTIVABLE (mode "tap"). Reprend la couleur d'icône du pouvoir activé
+ *  (keywordModeColor du mode / trigger composé) pour que le bord des cibles
+ *  matche l'icône : activable → jaune, retour en main → bleu, etc. Renvoie
+ *  null hors ciblage de pouvoir — l'attaque et les sorts gardent alors leur
+ *  bord rouge / violet habituel (repli côté composant). */
+export function selectPowerTargetingColor(s: GameStore): string | null {
+  if (s.targetingMode !== "tap" || !s.gameState || !s.pendingTapSourceId) return null;
+  const gs = s.gameState;
+  const src = gs.players[gs.currentPlayerIndex].board.find(c => c.instanceId === s.pendingTapSourceId);
+  if (!src) return null;
+  if (s.pendingTapInstanceIdx != null) {
+    return keywordModeColor(src.card.keyword_instances?.[s.pendingTapInstanceIdx]?.mode) ?? null;
+  }
+  if (s.pendingTapComposedUid) {
+    const cap = composedCapsOf(src.card.capabilities).find(c => c.uid === s.pendingTapComposedUid);
+    return cap ? (keywordModeColor(composedTriggerMode(cap)) ?? null) : null;
+  }
+  return null;
 }
 
 export const useGameStore = create<GameStore>((set, get) => {
