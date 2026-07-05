@@ -35,6 +35,7 @@ const VOLATILE_KEYS = new Set([
   "fureurStrikes",
   "onAttackWave",
   "sequentialHits",
+  "powerStrikes",
   "stackOverflowCount",
 ]);
 

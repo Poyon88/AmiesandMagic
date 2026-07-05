@@ -761,6 +761,16 @@ export interface GameState {
     targetInstanceId: string;
     type: "damage" | "heal";
   }>;
+  // Transient: chaque dégât infligé par un effet composé DÉCLENCHÉ (mort/retour/
+  // attaque/fin de tour — PAS tap/on-play) est poussé ici {source, cible, mode}
+  // pour que le store trace une flèche source→cible colorée par mode (vert fin de
+  // tour, rouge mort, violet attaque, bleu retour). Héros via `__hero_<idx>__`.
+  // Vidé par le store après planification ; exclu du hash d'état.
+  powerStrikes?: Array<{
+    sourceId: string;
+    targetId: string;
+    mode: KeywordMode;
+  }>;
   // Transient: when an attack fires an "à l'attaque" composed power, the engine
   // attaches the post-power / pre-combat board here so the store can animate the
   // power in a first wave (its damage/deaths) then combat in a second wave.

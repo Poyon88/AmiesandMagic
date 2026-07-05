@@ -75,9 +75,45 @@ let pendingTriggerSink: PendingTrigger[] = [];
 // passe par un sink module-level — comme pendingTriggerSink — pour éviter de
 // threader le state dans resolveComposedEffect et tous ses appelants.
 let sequentialHitsSink: Array<{ targetInstanceId: string; type: "damage" | "heal" }> = [];
+// Flèches source→cible des dégâts de pouvoir DÉCLENCHÉS (mort/retour/attaque/fin
+// de tour). Rempli via l'enregistrement dans resolveComposedEffect, en lisant le
+// « mode » ambiant posé autour de chaque résolution de capacité (cf.
+// withComposedMode). Rattaché à state.powerStrikes ; hors hash. Le tap/on-play
+// est volontairement EXCLU (le tap est déjà couvert par la détection jaune du
+// store ; on-play n'a pas de mode couleur).
+let powerStrikeSink: Array<{ sourceId: string; targetId: string; mode: import("./types").KeywordMode }> = [];
+// Mode (couleur) de la capacité composée en cours de résolution — posé autour de
+// chaque resolveComposedEffect par withComposedMode. `undefined` = on-play /
+// résolution de sort → aucune flèche.
+let composedStrikeMode: import("./types").KeywordMode | undefined = undefined;
 // Ids des joueurs dans l'ordre de state.players (set dans applyAction). Sert à
 // résoudre l'index du sentinel héros `__hero_<idx>__` sans porter le state.
 let currentPlayerIds: string[] = [];
+
+/** Pose le mode couleur ambiant le temps de résoudre une capacité composée
+ *  (source des flèches de pouvoir), puis le restaure — sûr en ré-entrance. */
+function withComposedMode<T>(mode: import("./types").KeywordMode | undefined, fn: () => T): T {
+  const prev = composedStrikeMode;
+  composedStrikeMode = mode;
+  try { return fn(); } finally { composedStrikeMode = prev; }
+}
+
+/** Enregistre une frappe de pouvoir (flèche source→cible) pour un dégât composé,
+ *  UNIQUEMENT pour les modes déclenchés colorés (mort/retour/attaque/fin de tour).
+ *  Le tap et l'on-play (mode absent) sont ignorés ici. */
+function recordPowerStrike(source: CardInstance | null, targetId: string, content: import("./types").ComposedEffectContent, x: number): void {
+  if (content !== "deal_damage" || x <= 0 || !source) return;
+  const mode = composedStrikeMode;
+  if (mode !== "death" && mode !== "return" && mode !== "attack" && mode !== "end_of_turn") return;
+  powerStrikeSink.push({ sourceId: source.instanceId, targetId, mode });
+}
+
+/** Sentinel héros `__hero_<idx>__` pour une frappe de pouvoir (converti en
+ *  sentinelle locale par le store). */
+function heroStrikeSentinel(hero: import("./types").HeroState, owner: PlayerState, opponent: PlayerState): string {
+  const heroOwner = hero === owner.hero ? owner : opponent;
+  return `__hero_${currentPlayerIds.indexOf(heroOwner.id)}__`;
+}
 
 export function initRNG(seed: number) {
   rngState = seed | 0;
@@ -566,9 +602,11 @@ function resolveComposedEffect(
         const heroOwner = ref.hero === owner.hero ? owner : opponent;
         const idx = currentPlayerIds.indexOf(heroOwner.id);
         sequentialHitsSink.push({ targetInstanceId: `__hero_${idx}__`, type: seqType });
+        recordPowerStrike(source, `__hero_${idx}__`, composed.content, 1);
       } else {
         applyComposedToUnit(composed, ref.unit, 1, 0, source, owner, opponent);
         sequentialHitsSink.push({ targetInstanceId: ref.unit.instanceId, type: seqType });
+        recordPowerStrike(source, ref.unit.instanceId, composed.content, 1);
       }
     }
     return;
@@ -580,8 +618,27 @@ function resolveComposedEffect(
     composed.content === "deal_damage" || composed.content === "destroy" ||
     composed.content === "debuff" || composed.content === "paralyze";
   for (const t of selectComposedTargets(target, owner, opponent, chosenTargetIds, harmful)) {
-    if (t.kind === "hero") applyComposedToHero(composed.content, t.hero, x);
-    else applyComposedToUnit(composed, t.unit, x, y, source, owner, opponent);
+    if (t.kind === "hero") {
+      applyComposedToHero(composed.content, t.hero, x);
+      recordPowerStrike(source, heroStrikeSentinel(t.hero, owner, opponent), composed.content, x);
+    } else {
+      applyComposedToUnit(composed, t.unit, x, y, source, owner, opponent);
+      recordPowerStrike(source, t.unit.instanceId, composed.content, x);
+    }
+  }
+}
+
+/** Déclencheur → mode couleur (miroir de composedTriggerMode, gardé local pour
+ *  éviter un import croisé). on_play / spell_resolution → undefined (pas de
+ *  flèche). */
+function triggerToKeywordMode(trigger: import("./types").CapabilityTrigger): import("./types").KeywordMode | undefined {
+  switch (trigger) {
+    case "on_death": return "death";
+    case "on_return": return "return";
+    case "on_activation": return "tap";
+    case "on_attack": return "attack";
+    case "on_end_of_turn": return "end_of_turn";
+    default: return undefined;
   }
 }
 
@@ -608,7 +665,8 @@ function runComposedCapsForCard(
       else if (targetMap[cap.uid] != null) chosen = [targetMap[cap.uid]];
     }
     if (!chosen && fallbackTargetId) chosen = [fallbackTargetId];
-    resolveComposedEffect(cap.composed, source, owner, opponent, chosen);
+    withComposedMode(triggerToKeywordMode(trigger), () =>
+      resolveComposedEffect(cap.composed!, source, owner, opponent, chosen));
   }
 }
 
@@ -1418,7 +1476,8 @@ export function endTurn(state: GameState): GameState {
         }
         continue;
       }
-      resolveComposedEffect(cap.composed, creature, outgoing, opponent);
+      withComposedMode("end_of_turn", () =>
+        resolveComposedEffect(cap.composed!, creature, outgoing, opponent));
     }
   }
 
@@ -4020,7 +4079,8 @@ function resolveFrame(state: GameState, frame: StackFrame): void {
 
   if (frame.kind === "composed" && frame.composed) {
     if (frame.valueMode && isSelfRemovalComposed(frame.composed)) return; // mode valeur : saute l'auto-suppression
-    resolveComposedEffect(frame.composed, source, owner, opponent, frame.chosenTargetIds);
+    withComposedMode(triggerToKeywordMode(frame.trigger), () =>
+      resolveComposedEffect(frame.composed!, source, owner, opponent, frame.chosenTargetIds));
     return;
   }
   // curated / death_nature : producteurs branchés aux paliers (c)/(g).
@@ -4713,7 +4773,8 @@ function applyOnePendingTrigger(
       const source = controller.board.find(c => c.instanceId === trigger.sourceInstanceId);
       const cap = source ? getCapabilities(source.card).find(c => c.uid === trigger.capUid && c.composed) : undefined;
       if (cap?.composed) {
-        resolveComposedEffect(cap.composed, source ?? null, controller, other, choice.targetInstanceId ? [choice.targetInstanceId] : undefined);
+        withComposedMode(triggerToKeywordMode(cap.trigger), () =>
+          resolveComposedEffect(cap.composed!, source ?? null, controller, other, choice.targetInstanceId ? [choice.targetInstanceId] : undefined));
         const deadC = cleanDeadCreatures(controller);
         const deadO = cleanDeadCreatures(other);
         processDeathTriggers(deadC, controller, other);
@@ -5179,6 +5240,8 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   currentPlayerIds = state.players.map(p => p.id);
   pendingTriggerSink = [];
   sequentialHitsSink = [];
+  powerStrikeSink = [];
+  composedStrikeMode = undefined;
   // Load the RNG position carried in the state so this action's random draws
   // continue the exact stream both clients share (rather than a module
   // singleton that can drift). Written back into `result` below.
@@ -5213,6 +5276,11 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   // dans l'ordre, pour que le store anime un popup + un burst par point.
   if (sequentialHitsSink.length > 0 && result !== state) {
     result.sequentialHits = [...(result.sequentialHits ?? []), ...sequentialHitsSink];
+  }
+  // Rattache les frappes de pouvoir déclenchées (flèches source→cible colorées
+  // par mode) émises pendant l'action.
+  if (powerStrikeSink.length > 0 && result !== state) {
+    result.powerStrikes = [...(result.powerStrikes ?? []), ...powerStrikeSink];
   }
   // Persist the advanced RNG position into the returned state so the next
   // action (here or on the other client) resumes the same stream.

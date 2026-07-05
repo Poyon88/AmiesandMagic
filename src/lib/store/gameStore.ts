@@ -89,12 +89,17 @@ export interface SpellCastEvent {
 // vers chaque cible touchée, pour que les deux joueurs voient d'où viennent
 // les dégâts (ex. Veilleur des Lisières). Transient (hors hash de désync) ;
 // coords DOM déterministes, rejoué chez l'adversaire via dispatchAction.
-export interface PowerArrowEvent {
+export interface PowerArrowGroup {
   // instanceId d'une créature OU sentinelle héros ("friendly_hero"/"enemy_hero",
   // relative au joueur local) — findInstanceEl résout les deux.
   sourceId: string;
   targetIds: string[];
   color: string;
+}
+export interface PowerArrowEvent {
+  // Un groupe de flèches par (source, couleur). Un pouvoir activé = jaune ; les
+  // dégâts déclenchés (mort/retour/attaque/fin de tour) portent leur couleur de mode.
+  arrows: PowerArrowGroup[];
   timestamp: number;
 }
 
@@ -1250,6 +1255,19 @@ export const useGameStore = create<GameStore>((set, get) => {
     // Les sentinelles héros sont relatives au joueur local (comme dmgEvents /
     // data-target-id), donc l'ancrage reste correct sur les deux écrans.
     let powerArrowEvent: PowerArrowEvent | null = null;
+    const powerArrows: PowerArrowGroup[] = [];
+    // Sentinelle héros moteur `__hero_<idx>__` → repère LOCAL ("friendly_hero"/
+    // "enemy_hero") ; un instanceId de créature passe tel quel.
+    const heroSentinelToLocal = (id: string): string => {
+      const m = /^__hero_(\d+)__$/.exec(id);
+      if (!m) return id;
+      return gameState.players[Number(m[1])]?.id === localPlayerId ? "friendly_hero" : "enemy_hero";
+    };
+
+    // (1) Pouvoir ACTIVÉ (tap) ou pouvoir de HÉROS → flèche JAUNE. Cibles
+    // déduites en comparant l'état AVANT (gameState) / APRÈS (newState) sur le
+    // plateau adverse (PAS detectDamageEvents : il rate les créatures mortes et
+    // confond perte de boost et dégâts).
     if (action.type === "tap_activate" || action.type === "hero_power") {
       const oppIdx = playerIdx === 0 ? 1 : 0;
       const casterIsLocal = localPlayerId === gameState.players[playerIdx].id;
@@ -1257,44 +1275,44 @@ export const useGameStore = create<GameStore>((set, get) => {
       const enemyHeroSentinel = casterIsLocal ? "enemy_hero" : "friendly_hero";
       const sourceId = action.type === "tap_activate" ? action.sourceInstanceId : casterHeroSentinel;
 
-      // On déduit les cibles réellement frappées en comparant l'état AVANT
-      // (gameState) et APRÈS (newState) le pouvoir, sur le plateau adverse.
-      // On N'utilise PAS detectDamageEvents car il (a) ignore les créatures
-      // mortes — retirées du plateau — et (b) confond une baisse de PV due à
-      // une perte de boost (ex. mort d'un porteur de Sang mêlé) avec de vrais
-      // dégâts, ce qui traçait des flèches parasites.
       const hit = new Set<string>();
       const newOppById = new Map(newState.players[oppIdx].board.map((c) => [c.instanceId, c]));
       for (const oldC of gameState.players[oppIdx].board) {
         const newC = newOppById.get(oldC.instanceId);
-        if (!newC) {
-          // Disparue du plateau adverse = tuée par le pouvoir → cible.
-          hit.add(oldC.instanceId);
-        } else if (newC.currentHealth < oldC.currentHealth && newC.maxHealth >= oldC.maxHealth) {
-          // Vrais dégâts : PV courants en baisse SANS baisse de PV max (une
-          // perte de boost fait chuter maxHealth → exclue).
-          hit.add(oldC.instanceId);
-        } else if (oldC.hasDivineShield && !newC.hasDivineShield) {
-          // Bouclier ayant absorbé le coup (aucun dégât émis).
-          hit.add(oldC.instanceId);
-        }
+        if (!newC) hit.add(oldC.instanceId); // tuée
+        else if (newC.currentHealth < oldC.currentHealth && newC.maxHealth >= oldC.maxHealth) hit.add(oldC.instanceId); // vrais dégâts (exclut perte de boost)
+        else if (oldC.hasDivineShield && !newC.hasDivineShield) hit.add(oldC.instanceId); // bouclier absorbé
       }
-      // Héros adverse touché (PV ou armure en baisse).
       const oldHero = gameState.players[oppIdx].hero;
       const newHero = newState.players[oppIdx].hero;
       if (newHero.hp < oldHero.hp || newHero.armor < oldHero.armor) hit.add(enemyHeroSentinel);
 
       hit.delete(sourceId);
       const targetIds = Array.from(hit);
-      if (targetIds.length > 0) {
-        powerArrowEvent = {
-          sourceId,
-          targetIds,
-          color: "#d4a800", // jaune "activable" (cohérent avec la flèche de ciblage tap)
-          timestamp: Date.now(),
-        };
-      }
+      if (targetIds.length > 0) powerArrows.push({ sourceId, targetIds, color: "#d4a800" });
     }
+
+    // (2) Dégâts de pouvoir DÉCLENCHÉS (mort/retour/attaque/fin de tour),
+    // enregistrés par le moteur avec leur mode → flèche colorée par mode
+    // (rouge/bleu/violet/vert, via keywordModeColor). Regroupées par (source, couleur).
+    if (newState.powerStrikes && newState.powerStrikes.length > 0) {
+      const groups = new Map<string, { sourceId: string; color: string; targets: Set<string> }>();
+      for (const st of newState.powerStrikes) {
+        const color = keywordModeColor(st.mode) ?? "#d4a800";
+        const src = heroSentinelToLocal(st.sourceId);
+        const tgt = heroSentinelToLocal(st.targetId);
+        const key = `${src}|${color}`;
+        let g = groups.get(key);
+        if (!g) { g = { sourceId: src, color, targets: new Set() }; groups.set(key, g); }
+        if (tgt !== src) g.targets.add(tgt);
+      }
+      for (const g of groups.values()) {
+        if (g.targets.size > 0) powerArrows.push({ sourceId: g.sourceId, targetIds: Array.from(g.targets), color: g.color });
+      }
+      newState.powerStrikes = undefined; // consommé (indice d'animation, hors état)
+    }
+
+    if (powerArrows.length > 0) powerArrowEvent = { arrows: powerArrows, timestamp: Date.now() };
 
     // Réduction de coût (Sacrifice démoniaque…) : on diffe le manaCostReduction
     // des cartes de la main du joueur LOCAL avant/après l'action et on émet un
