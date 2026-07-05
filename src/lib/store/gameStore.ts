@@ -535,6 +535,33 @@ function detectDamageEvents(
       }
     }
 
+    // Buffs sur les créatures EN MAIN (ex. Entrainement). La boucle ci-dessus
+    // ne diffe que le plateau, donc un boost de la main serait silencieux. On
+    // ne diffe que les cartes présentes dans les DEUX états de main : une carte
+    // piochée ou renvoyée en main (rebond) n'était pas dans l'ancienne main →
+    // ignorée, donc pas de faux popup. Popup flottant "+X/+Y" identique au
+    // plateau, ancré sur la carte en main via son data-instance-id.
+    for (const oldCard of oldPlayer.hand) {
+      if (oldCard.card.card_type !== "creature") continue;
+      const newCard = newPlayer.hand.find((c) => c.instanceId === oldCard.instanceId);
+      if (!newCard) continue;
+      const atkDiff = newCard.currentAttack - oldCard.currentAttack;
+      const hpDiff = newCard.maxHealth - oldCard.maxHealth;
+      if (atkDiff > 0 || hpDiff > 0) {
+        const pos = getElementCenter(oldCard.instanceId);
+        const parts: string[] = [];
+        if (atkDiff > 0) parts.push(`+${atkDiff}`);
+        if (hpDiff > 0) parts.push(`+${hpDiff}`);
+        events.push({
+          targetId: oldCard.instanceId,
+          amount: atkDiff + hpDiff,
+          type: "buff",
+          label: parts.join("/"),
+          ...pos,
+        });
+      }
+    }
+
     // Detect new creatures on board (resurrection, exhumation, convocation)
     for (const newCreature of newPlayer.board) {
       const existed = oldPlayer.board.find(c => c.instanceId === newCreature.instanceId);
@@ -1287,6 +1314,22 @@ export const useGameStore = create<GameStore>((set, get) => {
       const newHero = newState.players[oppIdx].hero;
       if (newHero.hp < oldHero.hp || newHero.armor < oldHero.armor) hit.add(enemyHeroSentinel);
 
+      // Pouvoir de HÉROS ciblé : le diff de plateau adverse ci-dessus rate les
+      // cibles ALLIÉES (un buff/boost n'inflige pas de dégâts). On lit donc les
+      // cibles explicitement déclarées dans l'action (targetInstanceId + valeurs
+      // de targetMap pour les pouvoirs composés/sort) et on trace une flèche vers
+      // toute créature en jeu ainsi ciblée — alliée (boost) comme ennemie.
+      if (action.type === "hero_power") {
+        const onBoard = new Set<string>([
+          ...newState.players[0].board.map((c) => c.instanceId),
+          ...newState.players[1].board.map((c) => c.instanceId),
+        ]);
+        const declared: string[] = [];
+        if (action.targetInstanceId) declared.push(action.targetInstanceId);
+        if (action.targetMap) declared.push(...Object.values(action.targetMap));
+        for (const id of declared) if (onBoard.has(id)) hit.add(id);
+      }
+
       hit.delete(sourceId);
       const targetIds = Array.from(hit);
       if (targetIds.length > 0) powerArrows.push({ sourceId, targetIds, color: "#d4a800" });
@@ -1649,6 +1692,22 @@ export const useGameStore = create<GameStore>((set, get) => {
     const COST_DISCARD_MS = 1000;
     const RECAST_GAP_MS = 1200; // gap between recasts (tightened from 1800 — a 3-recast cascade was 5.4s of pure gap)
 
+    // Une attaque sur héros porte une sentinelle en POINT DE VUE DE L'ATTAQUANT
+    // ("enemy_hero" = héros défenseur). Le lunge la résout via `data-target-id`,
+    // qui est en repère LOCAL — donc sur l'écran du joueur qui SUBIT l'attaque,
+    // "enemy_hero" désigne le héros de l'attaquant et le lunge vise le mauvais
+    // héros (bug : « la créature adverse semble attaquer son propre héros »). On
+    // la retraduit en repère local d'après le propriétaire de l'attaquant. Les
+    // cibles créature (instanceId global) passent inchangées.
+    const attackHeroTargetToLocal = (targetId: string, attackerInstanceId: string): string => {
+      if (targetId !== "enemy_hero" && targetId !== "friendly_hero") return targetId;
+      const atkIdx = gameState.players.findIndex((p) => p.board.some((c) => c.instanceId === attackerInstanceId));
+      if (atkIdx < 0) return targetId;
+      // "enemy_hero" (POV attaquant) = héros du joueur OPPOSÉ à l'attaquant.
+      const defenderIdx = targetId === "enemy_hero" ? (atkIdx === 0 ? 1 : 0) : atkIdx;
+      return gameState.players[defenderIdx]?.id === localPlayerId ? "friendly_hero" : "enemy_hero";
+    };
+
     // --- Phase handlers ---
     const phaseOverlay = () => {
       set((s) => ({
@@ -1664,7 +1723,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       // Attack lunge plays on BOTH the active and passive client, since this
       // runs inside dispatchAction which remote broadcasts go through too.
       if (isAttack && action.type === "attack") {
-        playAttackLunge(action.attackerInstanceId, action.targetInstanceId);
+        playAttackLunge(action.attackerInstanceId, attackHeroTargetToLocal(action.targetInstanceId, action.attackerInstanceId));
         // Fureur chain: each strike replays a lunge from the Fureur
         // creature to its current victim, staggered so the player sees
         // them as successive events. Multi-step chains animate

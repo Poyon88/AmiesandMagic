@@ -4,6 +4,7 @@ import {
   ABILITIES,
   AUTOMATIC_ABILITY_IDS,
   CURATED_MULTIMODE_IDS,
+  CREATURE_LABEL_TO_ENGINE_ID,
   creatureEngineId,
 } from "./abilities";
 import type { Card, Capability, KeywordInstance, SpellKeywordInstance } from "./types";
@@ -310,6 +311,19 @@ describe("registre — métadonnées de taxonomie", () => {
     }
   });
 
+  // La forge stocke les mots-clés créature par leur LIBELLÉ FR (clé de KEYWORDS)
+  // et les mappe vers l'id moteur via CREATURE_LABEL_TO_ENGINE_ID à la sauvegarde.
+  // Si un mot-clé créature manque de ce map, la forge le perd SILENCIEUSEMENT à la
+  // création (le pouvoir n'est pas sauvegardé). Garde-fou : chaque mot-clé créature
+  // doit y figurer et pointer sur son id moteur.
+  it("chaque mot-clé créature est mappé label FR → id moteur (sauvegarde forge)", () => {
+    for (const a of Object.values(ABILITIES)) {
+      if (!a.creature) continue;
+      const label = a.creature.label ?? a.label;
+      expect(CREATURE_LABEL_TO_ENGINE_ID[label], `${a.id} (label "${label}")`).toBe(creatureEngineId(a));
+    }
+  });
+
   it("les abilities applicables aux sorts ont spellTriggers = [spell_resolution]", () => {
     for (const a of Object.values(ABILITIES)) {
       if (a.applicable_to.includes("spell")) {
@@ -318,10 +332,41 @@ describe("registre — métadonnées de taxonomie", () => {
     }
   });
 
+  // Convention : la description d'une carte décrit l'EFFET, pas le déclencheur —
+  // ce dernier est déjà porté par la couleur du texte sur la carte. Les pouvoirs
+  // multi-mode ne doivent donc jamais préfixer leur desc par une mention
+  // générique de déclenchement ("Selon le déclenchement", "Au déclenchement"…).
+  // Garde-fou pour les futurs mots-clés (cf. Entrainement / Renforcement multiple).
+  it("aucune desc ne mentionne un déclencheur générique", () => {
+    const FORBIDDEN = /selon le déclenchement|au déclenchement|selon le mode|selon le déclencheur/i;
+    for (const a of Object.values(ABILITIES)) {
+      for (const [where, desc] of [
+        ["desc", a.desc],
+        ["creature.desc", a.creature?.desc],
+        ["spell.desc", a.spell?.desc],
+      ] as const) {
+        if (desc) expect(FORBIDDEN.test(desc), `${a.id} (${where}): "${desc}"`).toBe(false);
+      }
+    }
+  });
+
   it("les ids curés exposent les 4 déclencheurs unité et le flag curatedMultiMode", () => {
     for (const a of Object.values(ABILITIES)) {
       if (CURATED_MULTIMODE_IDS.has(creatureEngineId(a))) {
         expect(a.triggers!.curatedMultiMode, a.id).toBe(true);
+        // Entrainement est l'exception : il accepte TOUS les déclencheurs
+        // habituels (dont fin-de-tour et attaque), pas seulement les 4 curés.
+        if (creatureEngineId(a) === "entrainement") {
+          expect(a.triggers!.creatureTriggers).toEqual([
+            "on_play",
+            "on_death",
+            "on_activation",
+            "on_return",
+            "on_end_of_turn",
+            "on_attack",
+          ]);
+          continue;
+        }
         expect(a.triggers!.creatureTriggers).toEqual([
           "on_play",
           "on_death",

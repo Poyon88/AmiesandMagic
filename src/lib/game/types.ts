@@ -57,6 +57,8 @@ export type Keyword =
   | "remontee"
   // Polymorphic — +X/+Y to all controller's creatures of a selected race/clan
   | "renforcement_multiple"
+  // +X/+X aux créatures en main de la même faction que la source (multi-trigger)
+  | "entrainement"
   // Confère une capacité choisie à une/aux unité(s) alliée(s) (mot-clé paramétrique)
   | "conferer"
   // Rejoue à l'entrée en jeu les effets composés déclenchés des AUTRES alliés,
@@ -129,6 +131,7 @@ export type SpellKeywordId =
   | "remontee"
   | "renforcement_multiple"
   | "pillage"
+  | "entrainement"
   | "damnation";
 
 /** Trigger mode for a creature keyword. Undefined = on-play (default,

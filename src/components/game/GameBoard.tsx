@@ -449,6 +449,16 @@ export default function GameBoard({ onAction }: GameBoardProps) {
   const oppHeroDef = opponent.hero.heroDefinition;
   const heroPowerAvailable = myTurn && canUseHeroPower(gameState) && !!myHeroDef;
 
+  // Une carte de la main ADVERSE vient d'être boostée (Entrainement côté
+  // adverse). La main adverse est un simple paquet de dos (pas d'élément par
+  // carte), donc on flashe le paquet entier — un « tell » que la main a été
+  // renforcée, sans révéler quelles cartes ni le montant (info cachée préservée).
+  const opponentHandBoosted = damageEvents.some(
+    (e: DamageEvent) =>
+      (e.type === "buff" || e.type === "empower") &&
+      opponent.hand.some((c) => c.instanceId === e.targetId),
+  );
+
   // Number of friendly creatures that can currently attack the enemy hero
   // — drives the auto-attack-all button's enabled state and tooltip count.
   const eligibleHeroAttackerCount =
@@ -666,7 +676,22 @@ export default function GameBoard({ onAction }: GameBoardProps) {
                 : "top-[1%] right-[2%]"
             }`}
           >
-            <div className="relative w-32 aspect-[5/7] rounded-lg overflow-hidden">
+            <motion.div
+              className="relative w-32 aspect-[5/7] rounded-lg overflow-hidden"
+              animate={
+                opponentHandBoosted
+                  ? {
+                      filter: ["brightness(1)", "brightness(1.5)", "brightness(1)"],
+                      boxShadow: [
+                        "0 0 0px 0px rgba(234,179,8,0)",
+                        "0 0 28px 8px rgba(234,179,8,0.8)",
+                        "0 0 0px 0px rgba(234,179,8,0)",
+                      ],
+                    }
+                  : { filter: "brightness(1)", boxShadow: "0 0 0px 0px rgba(234,179,8,0)" }
+              }
+              transition={{ duration: 0.6, ease: "easeOut" }}
+            >
               {opponentCardBackUrl ? (
                 <Image
                   src={opponentCardBackUrl}
@@ -689,7 +714,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
               <div className="absolute -bottom-2 -right-2 min-w-[32px] h-8 px-2 rounded-full bg-background/90 border-2 border-primary/60 flex items-center justify-center text-foreground font-bold text-sm shadow-lg">
                 {opponent.hand.length}
               </div>
-            </div>
+            </motion.div>
           </div>
         )}
 
@@ -1095,6 +1120,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
                 <HandCard
                   cardInstance={cardInstance}
                   canPlay={playable}
+                  boost={getBoost(cardInstance.instanceId)}
                   isSelected={
                     selectedCardInstanceId === cardInstance.instanceId
                   }

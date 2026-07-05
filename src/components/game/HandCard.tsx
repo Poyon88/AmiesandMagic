@@ -26,6 +26,10 @@ interface HandCardProps {
   canPlay: boolean;
   isSelected?: boolean;
   onClick?: () => void;
+  // Boost récent sur cette carte EN MAIN (ex. Entrainement) → flash doré +
+  // halo (mêmes couleurs que BoardCreature). "empower" (violet) réservé si un
+  // jour un buff de capacité vise la main ; sinon "buff" (or).
+  boost?: "buff" | "empower" | null;
 }
 
 export default function HandCard({
@@ -33,6 +37,7 @@ export default function HandCard({
   canPlay,
   isSelected = false,
   onClick,
+  boost = null,
 }: HandCardProps) {
   const card = cardInstance.card;
   const gameState = useGameStore(s => s.gameState);
@@ -46,6 +51,14 @@ export default function HandCard({
   const isCostPaymentMode = targetingMode === "cost_payment";
   const isPendingCostSource = pendingCostCard?.instanceId === cardInstance.instanceId;
   const isSelectedForDiscard = selectedDiscardIds.includes(cardInstance.instanceId);
+
+  // Flash de boost (mêmes réglages que BoardCreature) : or pour un buff de
+  // stats, violet pour une capacité acquise.
+  const isBoost = boost != null;
+  const isEmpower = boost === "empower";
+  const boostDur = isEmpower ? 0.75 : 0.6;
+  const haloRgb = isEmpower ? "168,85,247" : "234,179,8";
+  const haloPeak = isEmpower ? 1.5 : 1.35;
 
   // Compute effective mana cost (accounting for Canalisation on spells and
   // Entraide on creatures — cumulable ; plancher 1 pour les sorts via
@@ -294,16 +307,46 @@ export default function HandCard({
   return (
     <motion.div
       initial={{ y: 60, opacity: 0, scale: 0.7 }}
-      animate={{ y: 0, opacity: 1, scale: 1 }}
-      transition={{
-        default: SPRINGS.handEntry,
-        opacity: { duration: 0.25, ease: "easeOut" },
-      }}
+      animate={
+        isBoost
+          ? {
+              // Flash doux « power-up » : légère montée + éclat de luminosité,
+              // retour au repos. Aligné sur BoardCreature (pas de resize).
+              y: [0, isEmpower ? -6 : -8, 0],
+              opacity: 1,
+              scale: 1,
+              filter: [
+                "brightness(1) saturate(1)",
+                `brightness(${isEmpower ? 1.6 : 1.45}) saturate(${isEmpower ? 1.5 : 1.35})`,
+                "brightness(1) saturate(1)",
+              ],
+            }
+          : { y: 0, opacity: 1, scale: 1 }
+      }
+      transition={
+        isBoost
+          ? { duration: boostDur, ease: "easeOut" }
+          : { default: SPRINGS.handEntry, opacity: { duration: 0.25, ease: "easeOut" } }
+      }
       data-instance-id={cardInstance.instanceId}
       data-hand-card="true"
       data-zoom={1.41}
       style={{ width: W, height: H, position: "relative", zoom: 1.41 }}
     >
+      {/* Halo de boost — enfle puis s'estompe DERRIÈRE la carte (zIndex -1),
+          auréole dorée qui déborde des bords. Miroir de BoardCreature. */}
+      <motion.div
+        aria-hidden
+        style={{
+          position: "absolute", inset: "-16%", borderRadius: 24,
+          pointerEvents: "none", zIndex: -1,
+          background: `radial-gradient(closest-side, rgba(${haloRgb},0.55), rgba(${haloRgb},0) 78%)`,
+          boxShadow: `0 0 36px 10px rgba(${haloRgb},0.45)`,
+        }}
+        initial={{ opacity: 0, scale: 0.85 }}
+        animate={isBoost ? { opacity: [0, 0.9, 0], scale: [0.85, haloPeak, haloPeak * 0.96] } : { opacity: 0, scale: 0.85 }}
+        transition={{ duration: boostDur, ease: "easeOut", times: isBoost ? [0, 0.4, 1] : undefined }}
+      />
       <div
         ref={cardRef}
         draggable={canPlay}

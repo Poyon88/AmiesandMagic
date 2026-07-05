@@ -1727,6 +1727,11 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       if (rm) applyRenforcementMultiple(player, rm.x ?? 0, rm.y ?? 0, rm.race, rm.clan, cardInstance.instanceId);
     }
 
+    // Entrainement X (invocation) : +X/+X aux créatures en main de même faction.
+    if (hasKwOnPlay(cardInstance, "entrainement")) {
+      applyEntrainement(player, cardInstance.card.faction, getKwX(cardInstance, "entrainement", undefined, 1), cardInstance.instanceId);
+    }
+
     // Pillage X: l'adversaire défausse X cartes aléatoires de sa main.
     // Gated on hasKwOnPlay pour qu'une instance en mode death/tap/return ne
     // se déclenche pas aussi à l'invocation (elle passe par
@@ -2789,6 +2794,11 @@ function resolveSpellKeywords(
         applyRenforcementMultiple(ctx.caster, kw.attack ?? 0, kw.health ?? 0, kw.race, kw.clan);
         break;
       }
+      case "entrainement": {
+        // +X/+X aux créatures en main du lanceur de la même faction que le sort.
+        applyEntrainement(ctx.caster, ctx.card.faction, kw.amount ?? 0);
+        break;
+      }
       case "guerison": {
         const amount = kw.amount ?? 0;
         if (targetId === "enemy_hero") {
@@ -3525,6 +3535,26 @@ export function attack(state: GameState, action: AttackAction): GameState {
       newState.lastAction = action;
       checkWinCondition(newState);
       return newState;
+    }
+  }
+
+  // Mots-clés CURÉS "à l'attaque" (instances mode "attack"). Le flux d'attaque
+  // ne dispatche nativement que les effets composés ; on ajoute ici le pont
+  // pour les mots-clés curés (ex. Entrainement) afin d'honorer le déclencheur
+  // attaque. Miroir de la boucle fin-de-tour. Entrainement ne modifie que la
+  // main, mais on nettoie/recalcule au cas où un futur mot-clé curé attaque
+  // impacterait le plateau.
+  for (const inst of attacker.card.keyword_instances ?? []) {
+    if (inst.mode !== "attack") continue;
+    resolveCuratedKeywordEffect(inst.id, inst.x ?? 1, attacker, player, opponent, undefined, inst);
+  }
+  {
+    const pDeadAtk = cleanDeadCreatures(player);
+    const oDeadAtk = cleanDeadCreatures(opponent);
+    if (pDeadAtk.length || oDeadAtk.length) {
+      processDeathTriggers(pDeadAtk, player, opponent);
+      processDeathTriggers(oDeadAtk, opponent, player);
+      recalculateAuras(player, opponent);
     }
   }
 
@@ -4461,6 +4491,29 @@ function applyRenforcementMultiple(
   }
 }
 
+/** Entrainement X : +X/+X à toutes les créatures EN MAIN du contrôleur de la
+ *  même faction que la source (snapshot au moment du déclenchement). Buff cuit
+ *  dans `card.attack/health` (patron permanent, cf. applyRenforcementMultiple)
+ *  → il persiste ensuite quand la carte est jouée. Les cartes en main sont des
+ *  CardInstance affichés avec current*, d'où la mise à jour de current/max. */
+function applyEntrainement(
+  controller: PlayerState,
+  faction: string | null | undefined,
+  x: number,
+  sourceInstanceId?: string | null,
+): void {
+  if (!faction || x <= 0) return;
+  for (const c of controller.hand) {
+    if (sourceInstanceId && c.instanceId === sourceInstanceId) continue;
+    if (c.card.card_type !== "creature") continue;
+    if (c.card.faction !== faction) continue;
+    c.card = { ...c.card, attack: (c.card.attack ?? 0) + x, health: (c.card.health ?? 0) + x };
+    c.currentAttack += x;
+    c.currentHealth += x;
+    c.maxHealth += x;
+  }
+}
+
 function resolveCuratedKeywordEffect(
   kw: Keyword,
   x: number,
@@ -4474,6 +4527,13 @@ function resolveCuratedKeywordEffect(
     case "renforcement_multiple": {
       // Tap / mort / retour : lit +X/+Y et race/clan depuis l'instance du mot-clé.
       applyRenforcementMultiple(owner, inst?.x ?? 0, inst?.y ?? 0, inst?.race, inst?.clan, source.instanceId);
+      return;
+    }
+    case "entrainement": {
+      // Mort / tap / retour / fin-de-tour : +X/+X aux créatures en main de même
+      // faction que la source (snapshot). La source est exclue (utile en mode
+      // retour, où elle vient de rejoindre la main).
+      applyEntrainement(owner, source.card.faction, inst?.x ?? x, source.instanceId);
       return;
     }
     case "remontee": {
