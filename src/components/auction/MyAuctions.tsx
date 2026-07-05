@@ -31,7 +31,7 @@ export default function MyAuctions({ userId }: MyAuctionsProps) {
       setLoading(true);
 
       // Fetch all auctions where user is seller
-      const sellerRes = await fetch("/api/auctions/admin");
+      await fetch("/api/auctions/admin");
       // Since the admin endpoint requires admin role, we'll use the main endpoint
       // and filter client-side, or create a dedicated endpoint
       // For now, fetch active + ended and filter

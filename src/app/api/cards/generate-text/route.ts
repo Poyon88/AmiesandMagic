@@ -11,7 +11,6 @@ export async function POST(request: Request) {
   const extra = typeof extraContext === 'string' ? extraContext.trim() : '';
   // raceId can arrive as "undefined" string from JSON — normalize to real undefined
   const raceId = body.raceId && body.raceId !== 'undefined' ? body.raceId : undefined;
-  console.log(`[card-forge] INPUT — factionId: ${factionId}, raceId: "${raceId}", type: ${type}`);
 
   const kws = stats.keywords?.length > 0 ? `Mots-clés: ${stats.keywords.join(', ')}. ` : '';
   const statsDesc = stats.attack != null
@@ -248,7 +247,6 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
         }
         // Always prepend the authoritative race description
         parsed.illustrationPrompt = `${raceDesc}. ${fixedPrompt}`;
-        console.log(`[card-forge] Race override: ${raceId} | Final prompt: ${parsed.illustrationPrompt.substring(0, 200)}...`);
       }
 
       return NextResponse.json(parsed);

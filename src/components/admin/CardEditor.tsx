@@ -1137,7 +1137,6 @@ export default function CardEditor() {
             {editFields.card_type === "spell" && (() => {
               const spellKws = (editFields.spell_keywords as SpellKeywordInstance[]) || [];
               const setSpellKws = (next: SpellKeywordInstance[]) => updateField("spell_keywords", next);
-              const allRaces = Array.from(new Set(Object.values(FACTIONS).flatMap(f => f.races))).sort();
               return (
                 <div style={{ marginBottom: 8, padding: 8, borderRadius: 6, border: "1px solid #9b59b633", background: "#f9f0ff" }}>
                   <div style={{ ...S.label, color: "#9b59b6" }}>Capacités de sort ({spellKws.length})</div>
@@ -1271,13 +1270,13 @@ export default function CardEditor() {
 
             {/* Effect text */}
             <div style={{ marginBottom: 8 }}>
-              <div style={S.label}>Texte d'effet</div>
+              <div style={S.label}>Texte d&apos;effet</div>
               <textarea value={(editFields.effect_text as string) || ""} onChange={e => updateField("effect_text", e.target.value)} style={S.textarea} />
             </div>
 
             {/* Flavor text */}
             <div style={{ marginBottom: 8 }}>
-              <div style={S.label}>Texte d'ambiance</div>
+              <div style={S.label}>Texte d&apos;ambiance</div>
               <textarea value={(editFields.flavor_text as string) || ""} onChange={e => updateField("flavor_text", e.target.value)} style={S.textarea} />
             </div>
 

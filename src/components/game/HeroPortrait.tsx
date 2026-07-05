@@ -56,7 +56,6 @@ export default function HeroPortrait({
   onMouseEnter,
   onMouseLeave,
 }: HeroPortraitProps) {
-  const hpPercentage = Math.max(0, (hero.hp / HERO_MAX_HP) * 100);
   const longPress = useLongPress(() => onContextMenu?.());
   const isBigDmg = damageAmount != null && isBigHit(damageAmount);
   // Activatable-power targeting → colour the ring like the power icon instead

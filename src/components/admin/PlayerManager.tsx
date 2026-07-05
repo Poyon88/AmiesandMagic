@@ -249,7 +249,7 @@ export default function PlayerManager() {
 
                 {/* Change username */}
                 <div style={actionRow}>
-                  <label style={labelStyle}>Nom d'utilisateur</label>
+                  <label style={labelStyle}>Nom d&apos;utilisateur</label>
                   <div style={{ display: "flex", gap: 6 }}>
                     <input
                       type="text"

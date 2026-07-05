@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { GameState, GameAction, Card, CardInstance, DamageEvent, DeathFxEvent, HeroDefinition, PlayerState, SpellTargetSlot, SpellTargetType, TokenTemplate } from "@/lib/game/types";
+import type { GameState, GameAction, Card, CardInstance, DamageEvent, DeathFxEvent, HeroDefinition, PlayerState, SpellTargetSlot, TokenTemplate } from "@/lib/game/types";
 import { useAudioStore } from "./audioStore";
 import SfxEngine from "@/lib/audio/SfxEngine";
 import { playAttackLunge } from "@/lib/game/animations";
@@ -24,7 +24,6 @@ import {
   getCreatureComposedChoice,
   getOnAttackComposedChoice,
   getOnAttackTargets,
-  getCreatureTapComposedUid,
   getComposedTapTargets,
   creatureNeedsGraveyardTarget,
   getGraveyardTargets,

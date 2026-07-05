@@ -20,11 +20,8 @@ export default function useGameSfx() {
 
     const engine = SfxEngine.getInstance();
 
-    console.log("[SFX] events:", lastSfxEvents, "standardUrls keys:", Object.keys(standardSfxUrls));
-
     for (const event of lastSfxEvents) {
       const url = event.cardSfxUrl || standardSfxUrls[event.type];
-      console.log("[SFX] playing:", event.type, "url:", url?.slice(-40));
       if (url) {
         engine.play(url);
       }

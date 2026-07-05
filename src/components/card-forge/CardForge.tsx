@@ -2,12 +2,12 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import Image from "next/image";
-import { generateCardStats, pickMana, pickRarity, buildId } from "@/lib/card-engine/generator";
+import { generateCardStats, pickRarity, buildId } from "@/lib/card-engine/generator";
 import { RARITIES, FACTIONS, TYPES, KEYWORDS, CREATURE_LABEL_TO_ENGINE_ID, RARITY_WEIGHTS_BY_MANA, RARITY_MAP, ALIGNMENTS, CURATED_KEYWORD_MODES, getClanNamesForRace, getFactionForRace } from "@/lib/card-engine/constants";
 import CardVisual, { KEYWORD_SYMBOLS } from "./CardVisual";
 import ComposedEffectsEditor from "./ComposedEffectsEditor";
 import KeywordIcon from "@/components/shared/KeywordIcon";
-import type { CardType, Keyword, KeywordMode, SpellEffect, SpellTargetType, SpellKeywordInstance, SpellComposableEffects, SpellEffectNode, SpellTargetSlot, AtomicEffectType, SpellCondition, AtomicEffect, ConditionalEffectNode, CardSet, GameFormat, TokenTemplate, ConvocationTokenDef } from "@/lib/game/types";
+import type { CardType, Keyword, KeywordMode, SpellKeywordInstance, SpellComposableEffects, CardSet, GameFormat, TokenTemplate, ConvocationTokenDef } from "@/lib/game/types";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 import RaceClanPicker from "@/components/admin/RaceClanPicker";
 import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
@@ -1618,14 +1618,6 @@ export default function CardForge() {
   const [composedCaps, setComposedCaps] = useState<Capability[]>([]);
   const [spellEffectsData, setSpellEffectsData] = useState<SpellComposableEffects | null>(null);
 
-  const SPELL_TARGET_LABELS: Record<SpellTargetType, string> = {
-    any: "N'importe qui", any_creature: "Créature",
-    enemy_hero: "Héros ennemi", friendly_hero: "Héros allié",
-    friendly_creature: "Créature alliée", enemy_creature: "Créature ennemie",
-    all_enemy_creatures: "Toutes créa. ennemies", all_enemies: "Tous ennemis",
-    all_friendly_creatures: "Toutes créa. alliées",
-    friendly_graveyard: "Cimetière → main", friendly_graveyard_to_board: "Cimetière → terrain",
-  };
 
   function buildSpellData(): { spell_keywords: SpellKeywordInstance[] | null; spell_effects: SpellComposableEffects | null } {
     if (type === "Unité") return { spell_keywords: null, spell_effects: null };
@@ -2077,9 +2069,6 @@ export default function CardForge() {
   const [saveResult, setSaveResult] = useState<{ ok: boolean; msg: string } | null>(null);
 
 
-  const GAME_TO_FORGE_TYPE: Record<string, string> = {
-    creature: "Unité", spell: "Sort",
-  };
   const GAME_TO_FORGE_KEYWORD: Record<string, string> = Object.fromEntries(
     Object.entries(FORGE_TO_GAME_KEYWORD).map(([k, v]) => [v, k])
   );
@@ -2979,7 +2968,7 @@ export default function CardForge() {
                                 </div>
                               )}
                               {kw.id === "invocation_multiple" && (
-                                <div style={{ fontSize: 8, color: "#9b59b6", marginTop: 2 }}>Config dans "Tokens à invoquer" ci-dessous</div>
+                                <div style={{ fontSize: 8, color: "#9b59b6", marginTop: 2 }}>Config dans &quot;Tokens à invoquer&quot; ci-dessous</div>
                               )}
                               {kw.id === "renforcement_multiple" && (
                                 <div style={{ flexBasis: "100%", marginTop: 2 }}>
@@ -4566,7 +4555,7 @@ export default function CardForge() {
                       <div style={{ gridColumn: "span 3", display: "flex", alignItems: "center", gap: 8 }}>
                         <input type="checkbox" id="bdIsDefault" checked={bdIsDefault} onChange={e => setBdIsDefault(e.target.checked)} />
                         <label htmlFor="bdIsDefault" style={{ fontSize: 10, color: "#555", fontFamily: "'Cinzel',serif", cursor: "pointer" }}>
-                          Plateau par défaut (utilisé quand le deck n'en spécifie pas)
+                          Plateau par défaut (utilisé quand le deck n&apos;en spécifie pas)
                         </label>
                       </div>
                     )}

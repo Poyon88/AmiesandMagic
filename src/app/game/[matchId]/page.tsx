@@ -114,7 +114,6 @@ export default function GamePage() {
   const reconcileRef = useRef<(() => void) | null>(null);
 
   const {
-    setGameState,
     setLocalPlayerId,
     initGame,
     setOwnedLimitedCardIds,
@@ -566,14 +565,12 @@ export default function GamePage() {
           })
           .on("presence", { event: "sync" }, () => tryInit("sync"))
           .subscribe(async (status) => {
-            console.log("[match] channel status", status);
             if (status === "SUBSCRIBED") {
               // Re-souscription (notamment après une coupure de veille) : on
               // rattrape les actions manquées pendant que le socket était mort.
               resyncFromLog();
               try {
-                const res = await channel.track({ user_id: user.id });
-                console.log("[match] presence tracked", res);
+                await channel.track({ user_id: user.id });
               } catch (e) {
                 console.error("[match] presence track failed", e);
                 // Retry once after 1s — covers transient WebSocket hiccups
@@ -596,7 +593,6 @@ export default function GamePage() {
           const state = channel.presenceState();
           const playerCount = Object.keys(state).length;
           if (playerCount < 2) return;
-          console.log(`[match] init game from ${source} (players=${playerCount})`);
           gameInitializedRef.current = true;
           const { match: m, p1Cards: p1, p2Cards: p2, p1Hero, p2Hero, factionCards, allSpells, p1OwnedLimitedIds, p2OwnedLimitedIds } = matchDataRef.current;
           const seed = parseInt(matchId.replace(/-/g, "").slice(0, 8), 16);

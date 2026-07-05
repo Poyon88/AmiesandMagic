@@ -632,7 +632,7 @@ export default function CollectionManager({ profiles, allCards, allBoards, allCa
 
                       {boardPrints.length === 0 ? (
                         <div style={{ padding: 24, textAlign: "center", color: "#aaa", fontStyle: "italic", fontSize: 12 }}>
-                          Aucun exemplaire généré. Utilise le bouton "Générer les exemplaires" dans /admin/boards.
+                          Aucun exemplaire généré. Utilise le bouton &quot;Générer les exemplaires&quot; dans /admin/boards.
                         </div>
                       ) : (
                         <div style={{ maxHeight: 420, overflowY: "auto" }}>
@@ -762,7 +762,7 @@ export default function CollectionManager({ profiles, allCards, allBoards, allCa
 
                       {cardBackPrints.length === 0 ? (
                         <div style={{ padding: 24, textAlign: "center", color: "#aaa", fontStyle: "italic", fontSize: 12 }}>
-                          Aucun exemplaire généré. Utilise le bouton "Générer les exemplaires" dans /admin/card-backs.
+                          Aucun exemplaire généré. Utilise le bouton &quot;Générer les exemplaires&quot; dans /admin/card-backs.
                         </div>
                       ) : (
                         <div style={{ maxHeight: 420, overflowY: "auto" }}>

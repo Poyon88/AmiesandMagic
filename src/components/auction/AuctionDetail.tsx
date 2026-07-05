@@ -342,7 +342,7 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
                 marginBottom: 16,
               }}
             >
-              Annuler l'enchère
+              Annuler l&apos;enchère
             </button>
           )}
 

@@ -398,12 +398,6 @@ export default function DeckBuilder({
     });
   }, [cards, formatPredicate, search, manaCostFilter, typeFilter, keywordFilter, selectedFaction, rarityFilter, expertOnly, raceFilter, clanFilter, filterSet, filterYear]);
 
-  const sortedDeckEntries = useMemo(() => {
-    return Array.from(deckCards.values()).sort(
-      (a, b) => a.card.mana_cost - b.card.mana_cost || a.card.name.localeCompare(b.card.name)
-    );
-  }, [deckCards]);
-
   // Mana curve : nombre de cartes par coût (0..7+). Tout ce qui coûte 7 ou
   // plus est agrégé dans la dernière colonne pour garder la courbe compacte
   // et lisible — au-delà de 7 il y a très peu de cartes en pratique.

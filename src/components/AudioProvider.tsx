@@ -11,7 +11,6 @@ const SILENT_PREFIXES = ["/admin", "/card-forge"];
 
 export default function AudioProvider() {
   const pathname = usePathname();
-  const hasSetupRef = useRef(false);
   const contextTracksLoadedRef = useRef(false);
 
   const {

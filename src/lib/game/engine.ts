@@ -155,8 +155,6 @@ function hasKwInMode(ci: CardInstance, kw: Keyword, mode: import("./types").Keyw
 }
 
 function hasKwOnPlay(ci: CardInstance, kw: Keyword): boolean { return hasKwInMode(ci, kw, undefined); }
-function hasKwOnDeath(ci: CardInstance, kw: Keyword): boolean { return hasKwInMode(ci, kw, "death"); }
-function hasKwOnTap(ci: CardInstance, kw: Keyword): boolean { return hasKwInMode(ci, kw, "tap"); }
 
 /** Merge two `keyword_instances` lists, deduping on (id, mode). Used by
  *  copy-keyword effects (Mimique, Héritage du cimetière) so that the
@@ -2864,11 +2862,6 @@ function resolveSpellKeywords(
       }
       case "invocation_multiple": {
         const tokenDefs = ctx.card.convocation_tokens ?? [];
-        console.log(
-          `[engine] Spell invocation_multiple sur "${ctx.card.name}" — convocation_tokens:`,
-          ctx.card.convocation_tokens,
-          "→ tokenDefs.length =", tokenDefs.length,
-        );
         if (tokenDefs.length === 0) {
           console.warn(
             `[engine] Spell invocation_multiple: aucun token configuré pour le sort "${ctx.card.name}" — vérifiez l'onglet Édition.`,
