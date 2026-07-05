@@ -25,7 +25,7 @@ export const LIMITED_PRINT_COUNTS: Record<string, number> = {
 // working unchanged.
 
 export type { KeywordZone } from "@/lib/game/abilities";
-export { KEYWORDS } from "@/lib/game/abilities";
+export { KEYWORDS, CREATURE_LABEL_TO_ENGINE_ID } from "@/lib/game/abilities";
 
 // FR-label → set of trigger modes that keyword can opt into beyond the
 // default on-play. The engine (resolveCuratedKeywordEffect) mirrors this:
@@ -35,7 +35,7 @@ export { KEYWORDS } from "@/lib/game/abilities";
 // surfaces gate the picker identically.
 // Les modes "return" (retour en main) et "end_of_turn" (fin du tour) sont
 // ouverts à TOUS les mots-clés curés, en plus de leurs modes existants.
-type CuratedMode = "death" | "tap" | "return" | "end_of_turn";
+type CuratedMode = "death" | "tap" | "return" | "end_of_turn" | "attack";
 export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
   "Convocation X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
   "Convocations multiples": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
@@ -51,6 +51,9 @@ export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
   "Combustion": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
   "Remontée": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
   "Renforcement multiple": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
+  // Entrainement accepte TOUS les déclencheurs habituels, y compris l'attaque
+  // (seul mot-clé curé câblé sur le flux d'attaque, cf. engine.ts).
+  "Entrainement X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack"]),
   // Sélection : seuls tap et fin de tour (en plus de l'entrée). Pas de mort ni
   // retour en main — ces deux-là surviennent pendant le tour adverse et la
   // Sélection est interactive (modale « 1 parmi 3 »), qui doit rester sur le

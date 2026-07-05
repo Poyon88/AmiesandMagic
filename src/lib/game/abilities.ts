@@ -793,7 +793,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["creature", "spell"],
     creature: {
       cost: 14, costPerX: 0, se: 4.0, minTier: 3, scalable: false, zone: "Terrain",
-      desc: "Cible une unité (selon le déclenchement) : elle remonte dans la main de son propriétaire d'origine.",
+      desc: "Renvoie une unité ciblée dans la main de son propriétaire d'origine.",
     },
     spell: {
       desc: "Renvoie une unité ciblée dans la main de son propriétaire d'origine.",
@@ -806,11 +806,24 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["creature", "spell"],
     creature: {
       cost: 16, costPerX: 6, se: 4.5, minTier: 3, scalable: true, zone: "Terrain",
-      desc: "Selon le déclenchement : octroie +X/+Y à toutes vos créatures de la race/clan choisi.",
+      desc: "Octroie +X/+Y à toutes vos créatures de la race ou du clan sélectionné.",
     },
     spell: {
       desc: "Octroie +X/+Y à toutes vos créatures de la race ou du clan sélectionné.",
       params: ["attack", "health"], needsTarget: false,
+    },
+  },
+  entrainement: {
+    id: "entrainement", label: "Entrainement X", symbol: "🏋️",
+    desc: "Octroie +X/+X à vos créatures en main de la même faction.",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      cost: 18, costPerX: 8, se: 4.0, minTier: 3, scalable: true, zone: "Main",
+      desc: "Octroie +X/+X à vos créatures en main de la même faction.",
+    },
+    spell: {
+      desc: "Octroie +X/+X à vos créatures en main de la même faction.",
+      params: ["amount"], needsTarget: false,
     },
   },
   concentration: {
@@ -925,6 +938,22 @@ export const KEYWORDS: Record<string, {
       desc: a.creature.desc ?? a.desc,
       tokenAllowed: a.creature.tokenAllowed ?? false,
     };
+  }
+  return out;
+})();
+
+// Reverse map : libellé FR côté créature (la clé de KEYWORDS, ce que la forge
+// stocke dans manualKeywords) → id moteur du mot-clé. Dérivé de la MÊME source
+// qu'KEYWORDS pour rester exhaustif automatiquement — évite qu'un nouveau
+// mot-clé (ex. Entrainement) soit ajouté à KEYWORDS/au picker mais oublié dans
+// la table de mapping de sauvegarde de la forge (bug : pouvoir non sauvegardé à
+// la création alors qu'il fonctionne à l'édition).
+export const CREATURE_LABEL_TO_ENGINE_ID: Record<string, string> = (() => {
+  const out: Record<string, string> = {};
+  for (const a of Object.values(ABILITIES)) {
+    if (!a.creature) continue;
+    const label = a.creature.label ?? a.label;
+    out[label] = a.creature.id ?? a.id;
   }
   return out;
 })();
@@ -1082,7 +1111,7 @@ export function creatureEngineId(a: AbilityDef): string {
  *  donc load-bearing — l'adaptateur DOIT respecter le mode exact. Liste tirée
  *  des appels `hasKwOnPlay` et du switch `resolveCuratedKeywordEffect`. */
 export const CURATED_MULTIMODE_IDS: ReadonlySet<string> = new Set([
-  "combustion", "convocation", "convocations_multiples", "douleur", "inspiration",
+  "combustion", "convocation", "convocations_multiples", "douleur", "entrainement", "inspiration",
   "ombre_du_passe", "pillage", "prescience", "remontee", "renforcement_multiple",
   "savant", "suprematie", "tempete", "vampirisme",
 ]);
@@ -1130,7 +1159,10 @@ export function deriveAbilityTriggerMeta(a: AbilityDef): AbilityTriggerMeta {
 
   let creatureTriggers: CapabilityTrigger[] | undefined;
   if (isCreature) {
-    if (curatedMultiMode) creatureTriggers = ["on_play", "on_death", "on_activation", "on_return"];
+    // Entrainement accepte TOUS les déclencheurs habituels (dont fin-de-tour et
+    // attaque), là où le défaut curated multi-mode n'en propose que 4.
+    if (cid === "entrainement") creatureTriggers = ["on_play", "on_death", "on_activation", "on_return", "on_end_of_turn", "on_attack"];
+    else if (curatedMultiMode) creatureTriggers = ["on_play", "on_death", "on_activation", "on_return"];
     else if (deathNature) creatureTriggers = ["on_death"];
     else if (automatic) creatureTriggers = ["automatic"];
     else creatureTriggers = ["on_play"];

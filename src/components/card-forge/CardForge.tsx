@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import Image from "next/image";
 import { generateCardStats, pickMana, pickRarity, buildId } from "@/lib/card-engine/generator";
-import { RARITIES, FACTIONS, TYPES, KEYWORDS, RARITY_WEIGHTS_BY_MANA, RARITY_MAP, ALIGNMENTS, CURATED_KEYWORD_MODES, getClanNamesForRace, getFactionForRace } from "@/lib/card-engine/constants";
+import { RARITIES, FACTIONS, TYPES, KEYWORDS, CREATURE_LABEL_TO_ENGINE_ID, RARITY_WEIGHTS_BY_MANA, RARITY_MAP, ALIGNMENTS, CURATED_KEYWORD_MODES, getClanNamesForRace, getFactionForRace } from "@/lib/card-engine/constants";
 import CardVisual, { KEYWORD_SYMBOLS } from "./CardVisual";
 import ComposedEffectsEditor from "./ComposedEffectsEditor";
 import KeywordIcon from "@/components/shared/KeywordIcon";
@@ -2017,6 +2017,9 @@ export default function CardForge() {
   };
 
   const FORGE_TO_GAME_KEYWORD: Record<string, Keyword> = {
+    // Base dérivée de KEYWORDS (libellé FR créature → id moteur), exhaustive par
+    // construction. Les alias legacy ci-dessous l'emportent (spread en dernier).
+    ...(CREATURE_LABEL_TO_ENGINE_ID as Record<string, Keyword>),
     // Legacy aliases
     "Raid": "raid", "Convocations multiples": "convocations_multiples", "Traque": "charge", "Provocation": "taunt", "Bouclier": "divine_shield", "Vol": "ranged",
     // Tier 0
@@ -3140,11 +3143,11 @@ export default function CardForge() {
                                 and present in CURATED_KEYWORD_MODES. */}
                             {selected && CURATED_KEYWORD_MODES[id] && (
                               <div style={{ display: "inline-flex", gap: 2, marginLeft: 4 }}>
-                                {(["play", "death", "tap", "return", "end_of_turn"] as const).map(mode => {
+                                {(["play", "death", "tap", "return", "end_of_turn", "attack"] as const).map(mode => {
                                   const allowed = mode === "play" || CURATED_KEYWORD_MODES[id].has(mode);
                                   const active = mode === "play" ? !keywordModes[id] : keywordModes[id] === mode;
-                                  const color = mode === "play" ? fac.color : mode === "death" ? "#a83232" : mode === "tap" ? "#d4a800" : mode === "return" ? "#3a7dd4" : "#2faa3f";
-                                  const label = mode === "play" ? "⚡" : mode === "death" ? "💀" : mode === "tap" ? "⟲" : mode === "return" ? "↩" : "⌛";
+                                  const color = mode === "play" ? fac.color : mode === "death" ? "#a83232" : mode === "tap" ? "#d4a800" : mode === "return" ? "#3a7dd4" : mode === "attack" ? "#9b59b6" : "#2faa3f";
+                                  const label = mode === "play" ? "⚡" : mode === "death" ? "💀" : mode === "tap" ? "⟲" : mode === "return" ? "↩" : mode === "attack" ? "⚔" : "⌛";
                                   return (
                                     <button
                                       key={mode}
@@ -3157,7 +3160,7 @@ export default function CardForge() {
                                           return next;
                                         });
                                       }}
-                                      title={mode === "play" ? "À l'invocation (défaut)" : mode === "death" ? "À la mort (deathrattle)" : mode === "tap" ? "Activée par tap (engagement)" : mode === "return" ? "Au retour en main" : "À la fin du tour"}
+                                      title={mode === "play" ? "À l'invocation (défaut)" : mode === "death" ? "À la mort (deathrattle)" : mode === "tap" ? "Activée par tap (engagement)" : mode === "return" ? "Au retour en main" : mode === "attack" ? "À l'attaque" : "À la fin du tour"}
                                       style={{
                                         width: 18, height: 18, borderRadius: 3,
                                         background: active ? color : "transparent",

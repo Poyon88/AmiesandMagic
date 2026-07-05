@@ -66,3 +66,4 @@ Transcendance;4;Non;Terrain;Immunité totale aux sorts adverses : ne peut subir 
 Vampirisme X;4;Oui;Terrain;Invocation : vole X PV à une unité ennemie ciblée et les ajoute aux PV de cette unité.
 Douleur X;0;Oui;Terrain;Invocation (unité) ou Lancement (sort) : inflige X dégâts à votre héros.
 Inspiration X;2;Oui;Main;Invocation (unité) ou Lancement (sort) : piochez X cartes.
+Entrainement X;3;Oui;Main;Selon le déclenchement (unité, tous déclencheurs) ou Lancement (sort) : octroie +X/+X à vos créatures en main de la même faction.

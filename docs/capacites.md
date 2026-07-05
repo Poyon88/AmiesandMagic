@@ -132,6 +132,9 @@
 - ⏫ **Renforcement multiple**
   - Créature : Selon le déclenchement : octroie +X/+Y à toutes vos créatures de la race/clan choisi.
   - Sort : Octroie +X/+Y à toutes vos créatures de la race ou du clan sélectionné.
+- 🏋️ **Entrainement X**
+  - Créature : Octroie +X/+X à vos créatures en main de la même faction.
+  - Sort : Octroie +X/+X à vos créatures en main de la même faction.
 - 🎯 **Concentration X**
   - Créature : Invocation : remplace chaque sort en main par un sort aléatoire (toutes factions) de coût supérieur de X ; le coût du nouveau sort est réduit de X.
   - Sort : Remplace chaque sort en main par un sort aléatoire (toutes factions) de coût supérieur de X ; le coût du nouveau sort est réduit de X.

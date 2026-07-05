@@ -51,6 +51,18 @@ export default function HeroPowerDescriptionOverlay({
         <div style={{ textAlign: "center" }}>
           <div
             style={{
+              fontSize: 18,
+              fontWeight: 700,
+              color: "#e8e0c8",
+              fontFamily: "'Cinzel', serif",
+              letterSpacing: 0.5,
+              marginBottom: 10,
+            }}
+          >
+            {heroDef.name || "—"}
+          </div>
+          <div
+            style={{
               fontSize: 11,
               letterSpacing: 2,
               color: "rgba(200, 168, 78, 0.6)",
