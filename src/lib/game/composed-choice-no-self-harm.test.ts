@@ -23,7 +23,7 @@ const ARCHERE_ONPLAY: ComposedEffect = {
 };
 
 describe("effet « au choix » offensif — repli sans auto-suicide", () => {
-  it("une frame choix suspendue qui fuite au tour adverse ne tue pas son lanceur", () => {
+  it("Option B : un choix non résolu FIZZLE à la fin du tour et ne fuite pas", () => {
     const s = mkState();
     s.players[0].deck.push(mkInstance(mkCard({}))); // évite la fatigue
     s.players[1].deck.push(mkInstance(mkCard({})));
@@ -37,19 +37,21 @@ describe("effet « au choix » offensif — repli sans auto-suicide", () => {
     expect(afterPlay.players[0].board.find((c) => c.instanceId === archere.instanceId)).toBeTruthy();
     expect(afterPlay.effectStack?.length ?? 0).toBe(1); // frame suspendue
 
-    // P0 finit son tour → la frame suspendue survit (fuite).
+    // P0 finit son tour → Option B : la frame suspendue FIZZLE (ne fuite pas).
     const afterEnd = applyAction(afterPlay, { type: "end_turn" });
     expect(afterEnd.currentPlayerIndex).toBe(1);
+    expect(afterEnd.effectStack?.length ?? 0).toBe(0); // pile vidée : plus de frame fantôme
 
-    // P1 joue une carte → drainStack résout la frame fuitée.
+    // P1 joue une carte → aucune frame fuitée à drainer : rien ne se passe.
     const filler = mkInstance(mkCard({ name: "Filler", attack: 1, health: 1 }));
     filler.hasSummoningSickness = true;
     afterEnd.players[1].hand.push(filler);
     const afterP1 = applyAction(afterEnd, { type: "play_card", cardInstanceId: filler.instanceId });
 
-    // L'Archère (lanceur) NE doit PAS s'être suicidée : le repli offensif vise
-    // le camp ennemi, jamais la source.
+    // L'Archère (lanceur) survit intacte, et la créature de P1 n'est pas touchée
+    // (l'effet a fizzlé, il n'a été ni redirigé ni retardé au tour adverse).
     expect(afterP1.players[0].graveyard.find((c) => c.instanceId === archere.instanceId)).toBeFalsy();
     expect(afterP1.players[0].board.find((c) => c.instanceId === archere.instanceId)?.currentHealth).toBe(1);
+    expect(afterP1.players[1].board.find((c) => c.instanceId === filler.instanceId)?.currentHealth).toBe(1);
   });
 });

@@ -1357,6 +1357,14 @@ export function endTurn(state: GameState): GameState {
   newState.factionCardPool = pool;
   newState.allSpellsPool = allPool;
 
+  // Option B : un effet composé « au choix » resté EN SUSPENS à la fin du tour
+  // de son propriétaire (chrono expiré, aucune cible désignée) ne doit pas
+  // fuiter au tour adverse — où il se résoudrait automatiquement, potentiellement
+  // contre son propre camp. On draine la pile en mode « fizzle » TANT QUE c'est
+  // encore son tour : les choix non désignés sont abandonnés, les effets non
+  // interactifs empilés se résolvent normalement. (cf. drainStack / Jeune Archère)
+  drainStack(newState, { fizzleUnresolvedChoices: true });
+
   // Déclencheurs « fin de tour » du joueur SORTANT (contrôleur), avant la purge
   // des statuts et la bascule, pendant que c'est encore son tour. Les effets à
   // cible « au choix » sont mis en file (pendingTriggers) et résolus par le
@@ -4056,7 +4064,7 @@ function pushFrames(state: GameState, frames: StackFrame[]): void {
  *  laissant la frame au sommet si un choix joueur est requis : la pile suspendue
  *  persiste dans l'état (hashée + snapshotée), reprise par
  *  resolvePendingTrigger / autoResolvePendingTriggers. */
-function drainStack(state: GameState): void {
+function drainStack(state: GameState, opts?: { fizzleUnresolvedChoices?: boolean }): void {
   const stack = state.effectStack;
   if (!stack || stack.length === 0) return;
   let iterations = 0;
@@ -4066,7 +4074,15 @@ function drainStack(state: GameState): void {
       break;
     }
     const top = stack[stack.length - 1];
-    if (frameNeedsChoice(state, top)) { top.awaitingChoice = true; return; }
+    if (frameNeedsChoice(state, top)) {
+      // Option B : à la fin du tour du propriétaire, un « au choix » resté sans
+      // désignation (chrono expiré) NE fuite PAS au tour adverse — il fizzle.
+      // On dépile la frame sans la résoudre ; les effets NON interactifs
+      // éventuellement empilés en dessous se résolvent normalement.
+      if (opts?.fizzleUnresolvedChoices) { stack.pop(); continue; }
+      top.awaitingChoice = true;
+      return;
+    }
     stack.pop();
     resolveFrame(state, top);
     settleDeaths(state, top.depth);
