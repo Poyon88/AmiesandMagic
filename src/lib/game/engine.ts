@@ -1370,7 +1370,13 @@ export function endTurn(state: GameState): GameState {
     // Effets composés on_end_of_turn.
     for (const cap of getCapabilities(creature.card)) {
       if (!cap.composed || cap.trigger !== "on_end_of_turn") continue;
-      if (cap.composed.target?.designation === "choice") {
+      // `entity: "self"` vise toujours la source — il se résout de façon
+      // déterministe (cf. resolveComposedEffect) et ne doit JAMAIS être
+      // aiguillé vers la file de choix : composedTargetIds ne produit aucune
+      // cible pour "self", donc le déclencheur serait silencieusement perdu
+      // (ex. Ours Maudit : buff +1/+1 sur soi en fin de tour qui ne partait
+      // jamais car la donnée portait designation:"choice" + entity:"self").
+      if (cap.composed.target?.designation === "choice" && cap.composed.target?.entity !== "self") {
         const trig: import("./types").PendingTrigger = {
           id: `${creature.instanceId}#${cap.uid}`,
           controllerId: outgoing.id,

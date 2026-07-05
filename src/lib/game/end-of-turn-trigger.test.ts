@@ -15,6 +15,14 @@ const SELF_BUFF: ComposedEffect = {
   content: "buff", magnitude: { x: 1, y: 1 }, target: { entity: "self", count: 1, side: "ally", location: "board", designation: "automatic" },
 };
 
+// Donnée « cassée » telle que produite historiquement par la forge pour un
+// effet « Soi-même » : la sélection "self" masquait les sélecteurs mais
+// laissait designation:"choice" (+ side:"enemy") stockés — combinaison qui
+// faisait silencieusement disparaître le déclencheur (cf. Ours Maudit).
+const SELF_BUFF_BROKEN_DATA: ComposedEffect = {
+  content: "buff", magnitude: { x: 1, y: 1 }, target: { entity: "self", count: 1, side: "enemy", location: "board", designation: "choice" },
+};
+
 describe("Déclencheur fin de tour — non interactif", () => {
   it("applique l'effet à la fin du tour du contrôleur puis bascule", () => {
     const s = mkState();
@@ -28,6 +36,22 @@ describe("Déclencheur fin de tour — non interactif", () => {
     expect(after.maxHealth).toBe(3);     // 2 + 1
     expect(next.currentPlayerIndex).toBe(1); // tour basculé
     expect(next.endTurnPending ?? false).toBe(false);
+  });
+
+  it("résout un buff « Soi-même » même si la donnée porte designation:choice (régression Ours Maudit)", () => {
+    const s = mkState();
+    const c = mkInstance(mkCard({ attack: 1, health: 1, capabilities: [composedCap("on_end_of_turn", SELF_BUFF_BROKEN_DATA)] }));
+    s.players[0].board.push(c);
+
+    const next = applyAction(s, { type: "end_turn" });
+
+    const after = next.players[0].board.find((x) => x.instanceId === c.instanceId)!;
+    expect(after.currentAttack).toBe(2); // 1 + 1 — le pouvoir S'EST bien déclenché
+    expect(after.maxHealth).toBe(2);     // 1 + 1
+    // "self" ne doit JAMAIS mettre le tour en pause : pas de file de choix.
+    expect(next.pendingTriggers?.length ?? 0).toBe(0);
+    expect(next.endTurnPending ?? false).toBe(false);
+    expect(next.currentPlayerIndex).toBe(1); // tour basculé normalement
   });
 
   it("frappe une cible automatique (héros adverse)", () => {

@@ -139,7 +139,17 @@ export default function ComposedEffectsEditor({
                     meta.target === "unit_or_hero"
                       ? [{ v: "unit", l: "Unité" }, { v: "hero", l: "Héros" }, { v: "both", l: "Les deux (héros + unités)" }, { v: "self", l: "Soi-même (la créature)" }]
                       : [{ v: "unit", l: "Unité" }, { v: "self", l: "Soi-même (la créature)" }],
-                    (v) => patchTarget(idx, { entity: v as TargetSpec["entity"] }),
+                    (v) => {
+                      const entity = v as TargetSpec["entity"];
+                      // "self" vise la source : il doit se résoudre
+                      // automatiquement. On force designation:"automatic"
+                      // (et count:1), sinon le "choice" par défaut resterait
+                      // stocké et casserait la résolution (le déclencheur
+                      // serait perdu — cf. Ours Maudit fin de tour).
+                      patchTarget(idx, entity === "self"
+                        ? { entity, designation: "automatic", count: 1 }
+                        : { entity });
+                    },
                   )}
 
                   {/* "self" = la source : ni bord, ni nombre, ni choix. */}
