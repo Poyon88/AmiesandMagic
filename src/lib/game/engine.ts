@@ -431,6 +431,7 @@ function selectComposedTargets(
   owner: PlayerState,
   opponent: PlayerState,
   chosenTargetIds?: string[],
+  harmful?: boolean,
 ): ComposedTargetRef[] {
   const pool = buildComposedPool(spec, owner, opponent);
 
@@ -446,7 +447,21 @@ function selectComposedTargets(
       .slice(0, n);
   }
   if (spec.designation === "random") return shuffleArray(pool).slice(0, n);
-  return pool.slice(0, n); // choix sans cible fournie → repli déterministe
+  // Repli déterministe pour un « au choix » SANS cible désignée : survient au
+  // tour adverse (pas d'UI, cf. frameNeedsChoice) ou pour une frame « choix »
+  // suspendue qui a fuité au-delà du tour de son propriétaire. Un effet
+  // OFFENSIF ne doit alors JAMAIS frapper son propre camp faute de désignation
+  // — sinon le lanceur se retourne contre lui-même (bug : Jeune Archère se
+  // suicidant quand l'adversaire jouait une carte). On restreint aux cibles
+  // ENNEMIES ; aucune → l'effet fizzle proprement (slice sur liste vide).
+  if (spec.designation === "choice" && harmful) {
+    return pool
+      .filter((ref) =>
+        (ref.kind === "hero" && ref.hero === opponent.hero) ||
+        (ref.kind === "unit" && opponent.board.includes(ref.unit)))
+      .slice(0, n);
+  }
+  return pool.slice(0, n);
 }
 
 // Liste TOUTES les cibles éligibles (instanceIds + sentinelles de héros) d'un
@@ -559,7 +574,12 @@ function resolveComposedEffect(
     return;
   }
 
-  for (const t of selectComposedTargets(target, owner, opponent, chosenTargetIds)) {
+  // Contenus OFFENSIFS : leur repli auto ne doit jamais frapper le camp du
+  // lanceur (cf. selectComposedTargets).
+  const harmful =
+    composed.content === "deal_damage" || composed.content === "destroy" ||
+    composed.content === "debuff" || composed.content === "paralyze";
+  for (const t of selectComposedTargets(target, owner, opponent, chosenTargetIds, harmful)) {
     if (t.kind === "hero") applyComposedToHero(composed.content, t.hero, x);
     else applyComposedToUnit(composed, t.unit, x, y, source, owner, opponent);
   }
