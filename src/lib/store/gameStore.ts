@@ -4,7 +4,8 @@ import { useAudioStore } from "./audioStore";
 import SfxEngine from "@/lib/audio/SfxEngine";
 import { playAttackLunge } from "@/lib/game/animations";
 import { findInstanceEl, overlayRect } from "@/lib/fx/overlayMotion";
-import { parseXValuesFromEffectText, KEYWORD_LABELS, KEYWORD_SYMBOLS } from "@/lib/game/keyword-labels";
+import { parseXValuesFromEffectText, KEYWORD_LABELS, KEYWORD_SYMBOLS, keywordModeColor } from "@/lib/game/keyword-labels";
+import { composedCapsOf, composedTriggerMode } from "@/lib/game/composed-display";
 import {
   initializeGame,
   applyAction,
@@ -82,6 +83,19 @@ export interface SpellCastEvent {
   countered?: boolean;
   card?: Card | null;
   targetIds?: string[];
+}
+
+// Flèche source→cible tracée depuis la CRÉATURE qui active un pouvoir (tap)
+// vers chaque cible touchée, pour que les deux joueurs voient d'où viennent
+// les dégâts (ex. Veilleur des Lisières). Transient (hors hash de désync) ;
+// coords DOM déterministes, rejoué chez l'adversaire via dispatchAction.
+export interface PowerArrowEvent {
+  // instanceId d'une créature OU sentinelle héros ("friendly_hero"/"enemy_hero",
+  // relative au joueur local) — findInstanceEl résout les deux.
+  sourceId: string;
+  targetIds: string[];
+  color: string;
+  timestamp: number;
 }
 
 export interface FireBreathEvent {
@@ -211,6 +225,7 @@ interface GameStore {
   fireBreathEvent: FireBreathEvent | null;
   cycleEternelEvent: CycleEternelEvent | null;
   tempeteEvent: TempeteEvent | null;
+  powerArrowEvent: PowerArrowEvent | null;
   manaReductionEvent: ManaReductionEvent | null;
   heroPowerCastEvent: HeroPowerCastEvent | null;
   graveyardAffectEvent: GraveyardAffectEvent | null;
@@ -280,6 +295,7 @@ interface GameStore {
   clearFireBreathEvent: () => void;
   clearCycleEternelEvent: () => void;
   clearTempeteEvent: () => void;
+  clearPowerArrowEvent: () => void;
   clearManaReductionEvent: () => void;
   clearHeroPowerCastEvent: () => void;
   clearGraveyardAffectEvent: () => void;
@@ -613,6 +629,27 @@ function generateEffectLog(
   return entries;
 }
 
+/** Couleur de surbrillance des cibles valides pendant le ciblage d'un POUVOIR
+ *  ACTIVABLE (mode "tap"). Reprend la couleur d'icône du pouvoir activé
+ *  (keywordModeColor du mode / trigger composé) pour que le bord des cibles
+ *  matche l'icône : activable → jaune, retour en main → bleu, etc. Renvoie
+ *  null hors ciblage de pouvoir — l'attaque et les sorts gardent alors leur
+ *  bord rouge / violet habituel (repli côté composant). */
+export function selectPowerTargetingColor(s: GameStore): string | null {
+  if (s.targetingMode !== "tap" || !s.gameState || !s.pendingTapSourceId) return null;
+  const gs = s.gameState;
+  const src = gs.players[gs.currentPlayerIndex].board.find(c => c.instanceId === s.pendingTapSourceId);
+  if (!src) return null;
+  if (s.pendingTapInstanceIdx != null) {
+    return keywordModeColor(src.card.keyword_instances?.[s.pendingTapInstanceIdx]?.mode) ?? null;
+  }
+  if (s.pendingTapComposedUid) {
+    const cap = composedCapsOf(src.card.capabilities).find(c => c.uid === s.pendingTapComposedUid);
+    return cap ? (keywordModeColor(composedTriggerMode(cap)) ?? null) : null;
+  }
+  return null;
+}
+
 export const useGameStore = create<GameStore>((set, get) => {
   // After on-board target collection finishes for a spell (e.g. Renforcement),
   // check if the same spell also carries a selection-style picker
@@ -734,6 +771,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   fireBreathEvent: null,
   cycleEternelEvent: null,
   tempeteEvent: null,
+  powerArrowEvent: null,
   manaReductionEvent: null,
   heroPowerCastEvent: null,
   graveyardAffectEvent: null,
@@ -814,6 +852,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         graveyardAffectEvent: null,
         discardFromHandEvent: null,
         tempeteEvent: null,
+        powerArrowEvent: null,
         manaReductionEvent: null,
       });
       return action;
@@ -1203,6 +1242,60 @@ export const useGameStore = create<GameStore>((set, get) => {
       }
     }
 
+    // Flèche source→cible pour un pouvoir qui inflige des dégâts : trace un
+    // trait depuis la SOURCE (la créature qui active un pouvoir tap, ou le
+    // héros du lanceur pour un pouvoir de héros) vers chaque cible ENNEMIE
+    // touchée — créatures adverses ET héros adverse — pour que les DEUX
+    // joueurs voient d'où viennent les dégâts (ex. Veilleur des Lisières).
+    // Les sentinelles héros sont relatives au joueur local (comme dmgEvents /
+    // data-target-id), donc l'ancrage reste correct sur les deux écrans.
+    let powerArrowEvent: PowerArrowEvent | null = null;
+    if (action.type === "tap_activate" || action.type === "hero_power") {
+      const oppIdx = playerIdx === 0 ? 1 : 0;
+      const casterIsLocal = localPlayerId === gameState.players[playerIdx].id;
+      const casterHeroSentinel = casterIsLocal ? "friendly_hero" : "enemy_hero";
+      const enemyHeroSentinel = casterIsLocal ? "enemy_hero" : "friendly_hero";
+      const sourceId = action.type === "tap_activate" ? action.sourceInstanceId : casterHeroSentinel;
+
+      // On déduit les cibles réellement frappées en comparant l'état AVANT
+      // (gameState) et APRÈS (newState) le pouvoir, sur le plateau adverse.
+      // On N'utilise PAS detectDamageEvents car il (a) ignore les créatures
+      // mortes — retirées du plateau — et (b) confond une baisse de PV due à
+      // une perte de boost (ex. mort d'un porteur de Sang mêlé) avec de vrais
+      // dégâts, ce qui traçait des flèches parasites.
+      const hit = new Set<string>();
+      const newOppById = new Map(newState.players[oppIdx].board.map((c) => [c.instanceId, c]));
+      for (const oldC of gameState.players[oppIdx].board) {
+        const newC = newOppById.get(oldC.instanceId);
+        if (!newC) {
+          // Disparue du plateau adverse = tuée par le pouvoir → cible.
+          hit.add(oldC.instanceId);
+        } else if (newC.currentHealth < oldC.currentHealth && newC.maxHealth >= oldC.maxHealth) {
+          // Vrais dégâts : PV courants en baisse SANS baisse de PV max (une
+          // perte de boost fait chuter maxHealth → exclue).
+          hit.add(oldC.instanceId);
+        } else if (oldC.hasDivineShield && !newC.hasDivineShield) {
+          // Bouclier ayant absorbé le coup (aucun dégât émis).
+          hit.add(oldC.instanceId);
+        }
+      }
+      // Héros adverse touché (PV ou armure en baisse).
+      const oldHero = gameState.players[oppIdx].hero;
+      const newHero = newState.players[oppIdx].hero;
+      if (newHero.hp < oldHero.hp || newHero.armor < oldHero.armor) hit.add(enemyHeroSentinel);
+
+      hit.delete(sourceId);
+      const targetIds = Array.from(hit);
+      if (targetIds.length > 0) {
+        powerArrowEvent = {
+          sourceId,
+          targetIds,
+          color: "#d4a800", // jaune "activable" (cohérent avec la flèche de ciblage tap)
+          timestamp: Date.now(),
+        };
+      }
+    }
+
     // Réduction de coût (Sacrifice démoniaque…) : on diffe le manaCostReduction
     // des cartes de la main du joueur LOCAL avant/après l'action et on émet un
     // « -N » vert flottant sur chaque carte concernée. Pur diff côté store,
@@ -1381,7 +1474,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     ];
     const hasDraws = drawnCounts[0] + drawnCounts[1] > 0;
 
-    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!manaReductionEvent;
+    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!powerArrowEvent || !!manaReductionEvent;
 
     // Deep clone helper — factionCardPool / allSpellsPool carry non-serialisable refs, keep them aside.
     const cloneState = (state: GameState): GameState => {
@@ -1524,6 +1617,7 @@ export const useGameStore = create<GameStore>((set, get) => {
 
     // --- Phase timings ---
     const OVERLAY_PRE_IMPACT_MS = 1150; // spell / hero-power → impact start (tightened: the card's motion is done by ~600ms, so 1800 left a long dead hold before impact)
+    const POWER_ARROW_PRE_IMPACT_MS = 550; // pouvoir tap sans overlay : laisse la flèche partir avant que les dégâts/bouclier ne s'affichent
     const ATTACK_LUNGE_PRE_IMPACT_MS = 700; // lunge (~650ms) + short buffer
     const IMPACT_MS = 1200;
     const DRAW_MS = 1000;
@@ -1544,6 +1638,9 @@ export const useGameStore = create<GameStore>((set, get) => {
         ...(spellEvent ? { spellCastEvent: spellEvent } : {}),
         ...(fireEvent ? { fireBreathEvent: fireEvent } : {}),
         ...(heroPowerEvent ? { heroPowerCastEvent: heroPowerEvent } : {}),
+        // La flèche de pouvoir part AVANT l'impact (simultanée à l'anim
+        // héroïque pour un pouvoir de héros ; les dégâts/bouclier suivent).
+        ...(powerArrowEvent ? { powerArrowEvent } : {}),
       }));
       playSfxBatch(overlaySfx);
       // Attack lunge plays on BOTH the active and passive client, since this
@@ -1761,6 +1858,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     else setTimeout(phaseOverlay, cursor);
     if (hasOverlay) cursor += OVERLAY_PRE_IMPACT_MS;
     else if (isAttack) cursor += ATTACK_LUNGE_PRE_IMPACT_MS;
+    else if (powerArrowEvent) cursor += POWER_ARROW_PRE_IMPACT_MS;
 
     // Recast spell overlays must appear BEFORE phaseImpacts so each
     // recasted spell is shown casting *before* its (already-applied)
@@ -2669,6 +2767,10 @@ export const useGameStore = create<GameStore>((set, get) => {
 
   clearSpellCastEvent: () => {
     set({ spellCastEvent: null });
+  },
+
+  clearPowerArrowEvent: () => {
+    set({ powerArrowEvent: null });
   },
 
   clearFireBreathEvent: () => {
