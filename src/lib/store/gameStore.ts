@@ -85,6 +85,17 @@ export interface SpellCastEvent {
   targetIds?: string[];
 }
 
+// Flèche source→cible tracée depuis la CRÉATURE qui active un pouvoir (tap)
+// vers chaque cible touchée, pour que les deux joueurs voient d'où viennent
+// les dégâts (ex. Veilleur des Lisières). Transient (hors hash de désync) ;
+// coords DOM déterministes, rejoué chez l'adversaire via dispatchAction.
+export interface PowerArrowEvent {
+  sourceInstanceId: string;
+  targetIds: string[];
+  color: string;
+  timestamp: number;
+}
+
 export interface FireBreathEvent {
   attackerInstanceId: string;
   timestamp: number;
@@ -212,6 +223,7 @@ interface GameStore {
   fireBreathEvent: FireBreathEvent | null;
   cycleEternelEvent: CycleEternelEvent | null;
   tempeteEvent: TempeteEvent | null;
+  powerArrowEvent: PowerArrowEvent | null;
   manaReductionEvent: ManaReductionEvent | null;
   heroPowerCastEvent: HeroPowerCastEvent | null;
   graveyardAffectEvent: GraveyardAffectEvent | null;
@@ -281,6 +293,7 @@ interface GameStore {
   clearFireBreathEvent: () => void;
   clearCycleEternelEvent: () => void;
   clearTempeteEvent: () => void;
+  clearPowerArrowEvent: () => void;
   clearManaReductionEvent: () => void;
   clearHeroPowerCastEvent: () => void;
   clearGraveyardAffectEvent: () => void;
@@ -756,6 +769,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   fireBreathEvent: null,
   cycleEternelEvent: null,
   tempeteEvent: null,
+  powerArrowEvent: null,
   manaReductionEvent: null,
   heroPowerCastEvent: null,
   graveyardAffectEvent: null,
@@ -836,6 +850,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         graveyardAffectEvent: null,
         discardFromHandEvent: null,
         tempeteEvent: null,
+        powerArrowEvent: null,
         manaReductionEvent: null,
       });
       return action;
@@ -1225,6 +1240,30 @@ export const useGameStore = create<GameStore>((set, get) => {
       }
     }
 
+    // Flèche source→cible pour un pouvoir ACTIVABLE (tap) qui inflige des
+    // dégâts : trace un trait depuis la créature source vers chaque créature
+    // ennemie touchée, pour que les DEUX joueurs voient d'où viennent les
+    // dégâts (ex. Veilleur des Lisières). Une flèche par cible unique.
+    let powerArrowEvent: PowerArrowEvent | null = null;
+    if (action.type === "tap_activate") {
+      const enemyBoardIds = new Set(
+        gameState.players[gameState.currentPlayerIndex === 0 ? 1 : 0].board.map((c) => c.instanceId),
+      );
+      const targetIds = Array.from(new Set(
+        dmgEvents
+          .filter((ev) => ev.type === "damage" && enemyBoardIds.has(ev.targetId))
+          .map((ev) => ev.targetId),
+      ));
+      if (targetIds.length > 0) {
+        powerArrowEvent = {
+          sourceInstanceId: action.sourceInstanceId,
+          targetIds,
+          color: "#d4a800", // jaune "activable" (cohérent avec la flèche de ciblage tap)
+          timestamp: Date.now(),
+        };
+      }
+    }
+
     // Réduction de coût (Sacrifice démoniaque…) : on diffe le manaCostReduction
     // des cartes de la main du joueur LOCAL avant/après l'action et on émet un
     // « -N » vert flottant sur chaque carte concernée. Pur diff côté store,
@@ -1403,7 +1442,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     ];
     const hasDraws = drawnCounts[0] + drawnCounts[1] > 0;
 
-    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!manaReductionEvent;
+    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!powerArrowEvent || !!manaReductionEvent;
 
     // Deep clone helper — factionCardPool / allSpellsPool carry non-serialisable refs, keep them aside.
     const cloneState = (state: GameState): GameState => {
@@ -1680,6 +1719,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         lastSfxEvents: impactSfx,
         ...(graveyardAffectEvent ? { graveyardAffectEvent } : {}),
         ...(tempeteEvent ? { tempeteEvent } : {}),
+        ...(powerArrowEvent ? { powerArrowEvent } : {}),
       });
       playSfxBatch(impactSfx);
     };
@@ -2691,6 +2731,10 @@ export const useGameStore = create<GameStore>((set, get) => {
 
   clearSpellCastEvent: () => {
     set({ spellCastEvent: null });
+  },
+
+  clearPowerArrowEvent: () => {
+    set({ powerArrowEvent: null });
   },
 
   clearFireBreathEvent: () => {

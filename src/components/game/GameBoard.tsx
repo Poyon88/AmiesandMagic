@@ -24,6 +24,7 @@ import TargetingArrow from "./TargetingArrow";
 import DamageOverlay from "./DamageOverlay";
 import ImpactFxLayer from "./ImpactFxLayer";
 import SpellCastOverlay from "./SpellCastOverlay";
+import PowerArrowOverlay from "./PowerArrowOverlay";
 import FireBreathOverlay from "./FireBreathOverlay";
 import CycleEternelOverlay from "./CycleEternelOverlay";
 import HeroPowerOverlay from "./HeroPowerOverlay";
@@ -78,6 +79,8 @@ export default function GameBoard({ onAction }: GameBoardProps) {
     clearSummonEvents,
     spellCastEvent,
     clearSpellCastEvent,
+    powerArrowEvent,
+    clearPowerArrowEvent,
     fireBreathEvent,
     clearFireBreathEvent,
     cycleEternelEvent,
@@ -1232,6 +1235,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
       <ImpactFxLayer />
       <DamageOverlay events={damageEvents} />
       <SpellCastOverlay event={spellCastEvent} onComplete={clearSpellCastEvent} />
+      <PowerArrowOverlay event={powerArrowEvent} onComplete={clearPowerArrowEvent} />
       <FireBreathOverlay event={fireBreathEvent} onComplete={clearFireBreathEvent} />
       <CycleEternelOverlay event={cycleEternelEvent} onComplete={clearCycleEternelEvent} />
       <HeroPowerOverlay event={heroPowerCastEvent} onComplete={clearHeroPowerCastEvent} />
