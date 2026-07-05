@@ -55,8 +55,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'userId, amount et type requis' }, { status: 400 });
   }
 
-  if (amount <= 0) {
-    return NextResponse.json({ error: 'Le montant doit être positif' }, { status: 400 });
+  if (!Number.isInteger(amount) || amount <= 0 || amount > 1_000_000_000) {
+    return NextResponse.json({ error: 'Le montant doit être un entier positif borné' }, { status: 400 });
   }
 
   if (!['admin_credit', 'admin_debit'].includes(type)) {

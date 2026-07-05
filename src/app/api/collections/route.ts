@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
+import { requireAdmin } from '@/lib/admin/requireAdmin';
 
 async function getAuthUser() {
   const cookieStore = await cookies();
@@ -56,9 +57,15 @@ export async function GET(request: Request) {
 }
 
 // POST /api/collections — { userId, cardIds }
+// Admin-only: la modification de collection (attribution de cartes) est une
+// opération privilégiée. Sans cette garde, tout compte authentifié pouvait
+// s'octroyer n'importe quelle carte (contournement de l'économie) ou écrire
+// dans la collection d'autrui. Le seul appelant légitime est le panneau admin
+// CollectionManager, qui cible un userId arbitraire — d'où requireAdmin().
 export async function POST(request: Request) {
-  const user = await getAuthUser();
-  if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+  const auth = await requireAdmin();
+  if (auth.error) return auth.error;
+  const supabase = auth.supabase;
 
   const body = await request.json();
   const { userId, cardIds } = body as { userId: string; cardIds: number[] };
@@ -67,7 +74,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'userId et cardIds requis' }, { status: 400 });
   }
 
-  const supabase = getAdminClient();
   const rows = cardIds.map(card_id => ({ user_id: userId, card_id }));
 
   const { error } = await supabase
@@ -80,9 +86,12 @@ export async function POST(request: Request) {
 }
 
 // DELETE /api/collections — { userId, cardIds }
+// Admin-only (voir POST) : empêche la suppression arbitraire de la collection
+// d'un autre joueur (griefing / IDOR destructif).
 export async function DELETE(request: Request) {
-  const user = await getAuthUser();
-  if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+  const auth = await requireAdmin();
+  if (auth.error) return auth.error;
+  const supabase = auth.supabase;
 
   const body = await request.json();
   const { userId, cardIds } = body as { userId: string; cardIds: number[] };
@@ -91,7 +100,6 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: 'userId et cardIds requis' }, { status: 400 });
   }
 
-  const supabase = getAdminClient();
   const { error } = await supabase
     .from('user_collections')
     .delete()

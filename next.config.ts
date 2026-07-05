@@ -20,6 +20,25 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "20mb",
     },
   },
+  // Durcissement HTTP de base (hors CSP, laissée à part car elle nécessite des
+  // tests sur les origines Supabase/3D/framer). Ces en-têtes sont sûrs par
+  // défaut : anti-clickjacking, anti-MIME-sniffing, HSTS, politique de referrer.
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=63072000; includeSubDomains; preload",
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

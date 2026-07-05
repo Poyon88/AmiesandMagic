@@ -39,7 +39,7 @@ export async function POST(
   const body = await request.json() as PlaceBidPayload;
   const { amount, is_buyout } = body;
 
-  if (!amount || amount <= 0) {
+  if (!Number.isInteger(amount) || amount <= 0 || amount > 1_000_000_000) {
     return NextResponse.json({ error: 'Montant invalide' }, { status: 400 });
   }
 

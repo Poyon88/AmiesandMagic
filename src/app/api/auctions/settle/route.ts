@@ -10,12 +10,17 @@ function getAdminClient() {
 
 // POST /api/auctions/settle — settle all expired auctions (cron or admin)
 export async function POST(request: Request) {
-  // Protect with CRON_SECRET or admin auth
+  // Protect with CRON_SECRET or admin auth.
+  // Fail-closed : si CRON_SECRET n'est pas configuré, on N'ouvre PAS la route —
+  // on exige alors obligatoirement une session admin. (Auparavant, un secret
+  // absent désactivait toute la vérification et laissait la route ouverte en
+  // anonyme, alors qu'elle déclenche des transferts de fonds via settle_auction.)
   const authHeader = request.headers.get('authorization');
   const cronSecret = process.env.CRON_SECRET;
+  const isCron = !!cronSecret && authHeader === `Bearer ${cronSecret}`;
 
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-    // Fallback: check if admin user
+  if (!isCron) {
+    // Pas un appel cron authentifié → exiger un utilisateur admin.
     const { createServerClient } = await import('@supabase/ssr');
     const { cookies } = await import('next/headers');
     const cookieStore = await cookies();
