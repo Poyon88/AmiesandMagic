@@ -37,7 +37,7 @@ export default function PowerArrowOverlay({ event, onComplete }: PowerArrowOverl
       // Dashes flow toward the target — reads as energy streaming to the
       // victim. Period matches strokeDasharray "14 7".
       const dashOffset = String(-((t * 0.05) % 21));
-      const src = getInstanceCenter(event.sourceInstanceId);
+      const src = getInstanceCenter(event.sourceId);
       if (src) {
         // The SVG is position:fixed; measure its own box so all points are
         // expressed relative to it (no-op on desktop, self-correcting on

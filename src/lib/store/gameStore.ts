@@ -90,7 +90,9 @@ export interface SpellCastEvent {
 // les dégâts (ex. Veilleur des Lisières). Transient (hors hash de désync) ;
 // coords DOM déterministes, rejoué chez l'adversaire via dispatchAction.
 export interface PowerArrowEvent {
-  sourceInstanceId: string;
+  // instanceId d'une créature OU sentinelle héros ("friendly_hero"/"enemy_hero",
+  // relative au joueur local) — findInstanceEl résout les deux.
+  sourceId: string;
   targetIds: string[];
   color: string;
   timestamp: number;
@@ -1240,23 +1242,33 @@ export const useGameStore = create<GameStore>((set, get) => {
       }
     }
 
-    // Flèche source→cible pour un pouvoir ACTIVABLE (tap) qui inflige des
-    // dégâts : trace un trait depuis la créature source vers chaque créature
-    // ennemie touchée, pour que les DEUX joueurs voient d'où viennent les
-    // dégâts (ex. Veilleur des Lisières). Une flèche par cible unique.
+    // Flèche source→cible pour un pouvoir qui inflige des dégâts : trace un
+    // trait depuis la SOURCE (la créature qui active un pouvoir tap, ou le
+    // héros du lanceur pour un pouvoir de héros) vers chaque cible ENNEMIE
+    // touchée — créatures adverses ET héros adverse — pour que les DEUX
+    // joueurs voient d'où viennent les dégâts (ex. Veilleur des Lisières).
+    // Les sentinelles héros sont relatives au joueur local (comme dmgEvents /
+    // data-target-id), donc l'ancrage reste correct sur les deux écrans.
     let powerArrowEvent: PowerArrowEvent | null = null;
-    if (action.type === "tap_activate") {
-      const enemyBoardIds = new Set(
-        gameState.players[gameState.currentPlayerIndex === 0 ? 1 : 0].board.map((c) => c.instanceId),
-      );
+    if (action.type === "tap_activate" || action.type === "hero_power") {
+      const oppIdx = playerIdx === 0 ? 1 : 0;
+      const casterIsLocal = localPlayerId === gameState.players[playerIdx].id;
+      const casterHeroSentinel = casterIsLocal ? "friendly_hero" : "enemy_hero";
+      const enemyHeroSentinel = casterIsLocal ? "enemy_hero" : "friendly_hero";
+      const sourceId = action.type === "tap_activate" ? action.sourceInstanceId : casterHeroSentinel;
+
+      const enemyBoardIds = new Set(gameState.players[oppIdx].board.map((c) => c.instanceId));
       const targetIds = Array.from(new Set(
         dmgEvents
-          .filter((ev) => ev.type === "damage" && enemyBoardIds.has(ev.targetId))
+          .filter((ev) =>
+            ev.type === "damage" &&
+            ev.targetId !== sourceId &&
+            (enemyBoardIds.has(ev.targetId) || ev.targetId === enemyHeroSentinel))
           .map((ev) => ev.targetId),
       ));
       if (targetIds.length > 0) {
         powerArrowEvent = {
-          sourceInstanceId: action.sourceInstanceId,
+          sourceId,
           targetIds,
           color: "#d4a800", // jaune "activable" (cohérent avec la flèche de ciblage tap)
           timestamp: Date.now(),
