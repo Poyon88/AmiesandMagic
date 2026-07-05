@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { motion, useScroll, useTransform, useInView } from "framer-motion";
+import { motion, useScroll, useTransform, useInView, useMotionValue, useSpring, type MotionValue } from "framer-motion";
 import type { Card } from "@/lib/game/types";
 import GameCard from "@/components/cards/GameCard";
 
@@ -21,6 +21,7 @@ type Dict = {
   hero_sub: string;
   hero_cta: string;
   hero_cta_secondary: string;
+  hero_proof: string;
   features_title: string;
   f1_title: string; f1_desc: string;
   f2_title: string; f2_desc: string;
@@ -55,6 +56,7 @@ const t: Record<"fr" | "en", Dict> = {
     hero_sub: "Forge ta légende. Mène ta faction. Écris ton histoire.",
     hero_cta: "Entrer dans l'arène",
     hero_cta_secondary: "Découvrir",
+    hero_proof: "Plus de 400 cartes offertes dès la première partie",
     features_title: "Pourquoi Armies & Magic",
     f1_title: "La profondeur des légendes.",
     f1_desc: "Armies & Magic unit la stratégie des TCG cultes à des mécaniques pensées pour les champions d'aujourd'hui.",
@@ -91,6 +93,7 @@ const t: Record<"fr" | "en", Dict> = {
     hero_sub: "Forge your legend. Lead your faction. Write your own saga.",
     hero_cta: "Enter the arena",
     hero_cta_secondary: "Discover",
+    hero_proof: "Over 400 cards, free from your very first game",
     features_title: "Why Armies & Magic",
     f1_title: "The depth of legends.",
     f1_desc: "Armies & Magic unites the strategy of iconic TCGs with mechanics built for today's champions.",
@@ -286,14 +289,19 @@ interface LandingPageProps {
 export default function LandingPage({ showcaseCards, factionHeroUrls }: LandingPageProps) {
   const router = useRouter();
   const [locale, setLocale] = useStoredLocale();
-  const [scrollY, setScrollY] = useState(0);
+  // Only a boolean threshold drives the navbar chrome now — setting it to
+  // the same value bails out of a re-render, so the whole tree no longer
+  // re-renders on every scroll frame (the floating hero cards are driven
+  // by framer motion values instead, see HeroSection).
+  const [scrolled, setScrolled] = useState(false);
   const txt = t[locale];
 
-  const handleScroll = useCallback(() => setScrollY(window.scrollY), []);
   useEffect(() => {
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [handleScroll]);
+    const onScroll = () => setScrolled(window.scrollY > 50);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const features = [
     { title: txt.f1_title, desc: txt.f1_desc, accent: "sword" },
@@ -311,13 +319,13 @@ export default function LandingPage({ showcaseCards, factionHeroUrls }: LandingP
       <nav
         className="fixed top-0 inset-x-0 z-[100] flex justify-between items-center px-6 md:px-10 py-4 transition-all duration-500"
         style={{
-          background: scrollY > 50
+          background: scrolled
             ? "linear-gradient(180deg, rgba(15,13,26,0.92), rgba(8,7,15,0.84))"
             : "transparent",
-          borderBottom: scrollY > 50 ? "1px solid var(--am-gild)" : "1px solid transparent",
-          boxShadow: scrollY > 50 ? "0 8px 34px rgba(0,0,0,0.5)" : "none",
-          backdropFilter: scrollY > 50 ? "blur(12px)" : "none",
-          WebkitBackdropFilter: scrollY > 50 ? "blur(12px)" : "none",
+          borderBottom: scrolled ? "1px solid var(--am-gild)" : "1px solid transparent",
+          boxShadow: scrolled ? "0 8px 34px rgba(0,0,0,0.5)" : "none",
+          backdropFilter: scrolled ? "blur(12px)" : "none",
+          WebkitBackdropFilter: scrolled ? "blur(12px)" : "none",
         }}
       >
         <div className="flex items-center gap-2.5">
@@ -356,7 +364,6 @@ export default function LandingPage({ showcaseCards, factionHeroUrls }: LandingP
       {/* ── Hero ─────────────────────────────────────────────────────── */}
       <HeroSection
         txt={txt}
-        scrollY={scrollY}
         floatingCards={floatingCards}
         onPlay={() => router.push("/login")}
       />
@@ -416,6 +423,38 @@ export default function LandingPage({ showcaseCards, factionHeroUrls }: LandingP
           0%, 100% { transform: translateY(0px); }
           50% { transform: translateY(-14px); }
         }
+        /* Slow Ken Burns drift on the battlefield backdrop */
+        @keyframes heroKenBurns {
+          0%   { transform: scale(1.04) translate3d(0, 0, 0); }
+          50%  { transform: scale(1.11) translate3d(-1.5%, -1%, 0); }
+          100% { transform: scale(1.04) translate3d(0, 0, 0); }
+        }
+        /* Drifting volumetric light beams */
+        @keyframes heroGodrays {
+          0%   { opacity: 0.35; transform: translateX(-4%) rotate(0.5deg); }
+          50%  { opacity: 0.6;  transform: translateX(4%) rotate(-0.5deg); }
+          100% { opacity: 0.35; transform: translateX(-4%) rotate(0.5deg); }
+        }
+        /* Low fog sliding across the base of the hero */
+        @keyframes heroFog {
+          0%   { transform: translateX(-6%); opacity: 0.5; }
+          50%  { transform: translateX(6%);  opacity: 0.8; }
+          100% { transform: translateX(-6%); opacity: 0.5; }
+        }
+        /* One-shot foil highlight sweep across the hero title */
+        @keyframes heroTitleSheen {
+          0%   { background-position: 220% 0; }
+          100% { background-position: -120% 0; }
+        }
+        /* Continuous showcase marquee — the track holds two card copies, so
+           translating a full -50% loops back seamlessly. */
+        @keyframes showcaseMarquee {
+          from { transform: translate3d(0, 0, 0); }
+          to   { transform: translate3d(-50%, 0, 0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .hero-kenburns, .hero-godrays, .hero-fog, .hero-floatcard { animation: none !important; }
+        }
       `}</style>
     </div>
   );
@@ -425,42 +464,159 @@ export default function LandingPage({ showcaseCards, factionHeroUrls }: LandingP
 
 interface HeroSectionProps {
   txt: Dict;
-  scrollY: number;
   floatingCards: Card[];
   onPlay: () => void;
 }
 
-function HeroSection({ txt, scrollY, floatingCards, onPlay }: HeroSectionProps) {
-  const heroRef = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
-  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "25%"]);
-  const contentY = useTransform(scrollYProgress, [0, 1], ["0%", "40%"]);
-  const contentOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
+// Respect the OS "reduce motion" preference — gates the ambient animation
+// (particles, Ken Burns, god-rays, pointer parallax, card float).
+function useReducedMotion(): boolean {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReduced(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+  return reduced;
+}
 
-  const cardPositions = [
-    { left: "8%", top: "18%", rot: -14, speedMul: 0.25 },
-    { left: "78%", top: "22%", rot: 11, speedMul: 0.35 },
-    { left: "46%", top: "68%", rot: -4, speedMul: 0.18 },
-  ];
+// Foreground parallax card. Depth scales how strongly it reacts to the
+// cursor; the whole thing lifts + fades out as the hero scrolls away.
+const CARD_SLOTS = [
+  { left: "6%", top: "16%", rot: -13, depth: 1.0 },
+  { left: "78%", top: "20%", rot: 12, depth: 1.2 },
+  { left: "44%", top: "64%", rot: -4, depth: 0.65 },
+] as const;
+
+function FloatingCard({
+  card,
+  index,
+  px,
+  py,
+  scrollProgress,
+  reduced,
+}: {
+  card: Card;
+  index: number;
+  px: MotionValue<number>;
+  py: MotionValue<number>;
+  scrollProgress: MotionValue<number>;
+  reduced: boolean;
+}) {
+  const slot = CARD_SLOTS[index];
+  const tiltY = useTransform(px, [-0.5, 0.5], [16, -16]);
+  const tiltX = useTransform(py, [-0.5, 0.5], [-11, 11]);
+  const parX = useTransform(px, [-0.5, 0.5], [slot.depth * 36, slot.depth * -36]);
+  const parY = useTransform(py, [-0.5, 0.5], [slot.depth * 24, slot.depth * -24]);
+  const lift = useTransform(scrollProgress, [0, 1], [0, slot.depth * -260]);
+  const y = useTransform([parY, lift], ([p, l]) => (p as number) + (l as number));
+  const opacity = useTransform(scrollProgress, [0, 0.35], [reduced ? 0.55 : 0.9, 0]);
+
+  return (
+    <motion.div
+      className="absolute z-[3] pointer-events-none will-change-transform hidden md:block"
+      style={{
+        left: slot.left,
+        top: slot.top,
+        x: parX,
+        y,
+        rotateX: tiltX,
+        rotateY: tiltY,
+        rotateZ: slot.rot,
+        opacity,
+        transformPerspective: 1000,
+        filter: "drop-shadow(0 26px 48px rgba(0,0,0,0.62))",
+      }}
+    >
+      <div
+        className="hero-floatcard"
+        style={{
+          animation: reduced ? undefined : `floatCard ${6 + index}s ease-in-out infinite`,
+          animationDelay: `${index * 0.7}s`,
+        }}
+      >
+        <GameCard card={card} size="sm" disabled />
+      </div>
+    </motion.div>
+  );
+}
+
+function HeroSection({ txt, floatingCards, onPlay }: HeroSectionProps) {
+  const heroRef = useRef<HTMLElement>(null);
+  const reduced = useReducedMotion();
+
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
+  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "22%"]);
+  const contentOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
+  const scrollIndicatorOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0]);
+
+  // Pointer parallax — normalized to [-0.5, 0.5] then spring-smoothed so
+  // every depth layer eases toward the cursor instead of snapping.
+  const rawX = useMotionValue(0);
+  const rawY = useMotionValue(0);
+  const px = useSpring(rawX, { stiffness: 55, damping: 18, mass: 0.4 });
+  const py = useSpring(rawY, { stiffness: 55, damping: 18, mass: 0.4 });
+
+  const handlePointerMove = useCallback(
+    (e: React.PointerEvent) => {
+      if (reduced) return;
+      const r = heroRef.current?.getBoundingClientRect();
+      if (!r) return;
+      rawX.set((e.clientX - r.left) / r.width - 0.5);
+      rawY.set((e.clientY - r.top) / r.height - 0.5);
+    },
+    [reduced, rawX, rawY],
+  );
+  const handlePointerLeave = useCallback(() => {
+    rawX.set(0);
+    rawY.set(0);
+  }, [rawX, rawY]);
+
+  // Layered cursor response: deep background drifts against the pointer,
+  // foreground content nudges with it, particles sit in between.
+  const bgTX = useTransform(px, [-0.5, 0.5], [20, -20]);
+  const bgTY = useTransform(py, [-0.5, 0.5], [14, -14]);
+  const contentTX = useTransform(px, [-0.5, 0.5], [-14, 14]);
+  const contentTYbase = useTransform(py, [-0.5, 0.5], [-8, 8]);
+  const contentScrollY = useTransform(scrollYProgress, [0, 1], [0, 220]);
+  const contentY = useTransform(
+    [contentTYbase, contentScrollY],
+    ([m, s]) => (m as number) + (s as number),
+  );
+  const particleTX = useTransform(px, [-0.5, 0.5], [-9, 9]);
+  const particleTY = useTransform(py, [-0.5, 0.5], [-7, 7]);
 
   return (
     <section
       ref={heroRef}
+      onPointerMove={handlePointerMove}
+      onPointerLeave={handlePointerLeave}
       className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden"
     >
-      {/* Battlefield background with parallax */}
-      <motion.div
-        className="absolute inset-0 z-0"
-        style={{ y: bgY }}
-      >
-        <Image
-          src="/images/battlefield.jpg"
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-center"
-        />
+      {/* Battlefield background: scroll parallax (outer) + cursor drift (inner) */}
+      <motion.div className="absolute inset-0 z-0" style={{ y: bgY }}>
+        <motion.div className="absolute inset-0" style={{ x: bgTX, y: bgTY }}>
+          {/* Ken Burns lives on its own wrapper, over-sized so the slow zoom
+              never reveals an edge. */}
+          <div className="absolute inset-[-6%]">
+            <div
+              className="relative w-full h-full hero-kenburns"
+              style={{ animation: reduced ? undefined : "heroKenBurns 26s ease-in-out infinite" }}
+            >
+              <Image
+                src="/images/battlefield.jpg"
+                alt=""
+                fill
+                priority
+                sizes="100vw"
+                className="object-cover object-center"
+              />
+            </div>
+          </div>
+        </motion.div>
+
         {/* Heavy vertical gradient for legibility + fade to next section */}
         <div
           className="absolute inset-0"
@@ -479,36 +635,53 @@ function HeroSection({ txt, scrollY, floatingCards, onPlay }: HeroSectionProps) 
         />
       </motion.div>
 
-      {/* Particles above the darkening overlay */}
-      <ParticleCanvas />
-
-      {/* Floating cards (foreground parallax) */}
-      {floatingCards.map((card, i) => {
-        const p = cardPositions[i];
-        const offset = scrollY * p.speedMul;
-        return (
+      {/* Drifting god-rays + low fog (ambient light, skipped under reduce-motion) */}
+      {!reduced && (
+        <>
           <div
-            key={card.id}
-            className="absolute z-[3] pointer-events-none will-change-transform"
+            className="absolute inset-0 z-[1] pointer-events-none hero-godrays"
             style={{
-              left: p.left,
-              top: p.top,
-              transform: `translateY(${-offset}px) rotate(${p.rot}deg)`,
-              opacity: Math.max(0, 0.4 - scrollY / 1200),
-              filter: "drop-shadow(0 20px 40px rgba(0,0,0,0.6))",
-              animation: `floatCard ${6 + i}s ease-in-out infinite`,
-              animationDelay: `${i * 0.7}s`,
+              mixBlendMode: "screen",
+              animation: "heroGodrays 15s ease-in-out infinite",
+              background:
+                "repeating-linear-gradient(102deg, transparent 0, transparent 64px, rgba(216,178,90,0.05) 78px, rgba(216,178,90,0.10) 100px, transparent 128px)",
             }}
-          >
-            <GameCard card={card} size="sm" disabled />
-          </div>
-        );
-      })}
+          />
+          <div
+            className="absolute inset-x-0 bottom-0 h-1/2 z-[1] pointer-events-none hero-fog"
+            style={{
+              animation: "heroFog 20s ease-in-out infinite",
+              background:
+                "radial-gradient(ellipse 75% 100% at 50% 130%, rgba(126,116,168,0.20), transparent 72%)",
+            }}
+          />
+        </>
+      )}
+
+      {/* Particles (gentle cursor parallax), skipped under reduce-motion */}
+      {!reduced && (
+        <motion.div className="absolute inset-0 z-[2]" style={{ x: particleTX, y: particleTY }}>
+          <ParticleCanvas />
+        </motion.div>
+      )}
+
+      {/* Floating cards (interactive foreground parallax) */}
+      {floatingCards.map((card, i) => (
+        <FloatingCard
+          key={card.id}
+          card={card}
+          index={i}
+          px={px}
+          py={py}
+          scrollProgress={scrollYProgress}
+          reduced={reduced}
+        />
+      ))}
 
       {/* Hero content */}
       <motion.div
         className="relative z-[10] text-center px-6 max-w-5xl mx-auto"
-        style={{ y: contentY, opacity: contentOpacity }}
+        style={{ x: contentTX, y: contentY, opacity: contentOpacity }}
       >
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -521,16 +694,25 @@ function HeroSection({ txt, scrollY, floatingCards, onPlay }: HeroSectionProps) 
           </span>
         </motion.div>
 
+        {/* Title: entrance fade/rise (framer) + living foil sheen (CSS) */}
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.2 }}
-          className="font-[family-name:var(--font-cinzel),serif] font-black text-[#f1d77a] m-0 leading-[0.95]"
+          className="font-[family-name:var(--font-cinzel),serif] font-black m-0 leading-[0.95]"
           style={{
             fontSize: "clamp(52px, 11vw, 140px)",
             letterSpacing: "0.04em",
-            textShadow:
-              "0 0 60px rgba(200, 168, 78, 0.5), 0 4px 30px rgba(0,0,0,0.9), 0 0 120px rgba(200, 168, 78, 0.2)",
+            background:
+              "linear-gradient(105deg, #b0883a 0%, #d8b25a 28%, #fff3c4 46%, #f6dd8a 54%, #d8b25a 72%, #b0883a 100%)",
+            backgroundSize: "220% 100%",
+            WebkitBackgroundClip: "text",
+            backgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            color: "transparent",
+            filter:
+              "drop-shadow(0 4px 30px rgba(0,0,0,0.85)) drop-shadow(0 0 70px rgba(200,168,78,0.4))",
+            animation: reduced ? undefined : "heroTitleSheen 7s ease-in-out infinite alternate",
           }}
         >
           {txt.hero_title}
@@ -577,12 +759,28 @@ function HeroSection({ txt, scrollY, floatingCards, onPlay }: HeroSectionProps) 
             {txt.hero_cta_secondary}
           </a>
         </motion.div>
+
+        {/* Trust chip — surfaces the "400+ free cards" value prop up front */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 1.1 }}
+          className="mt-7 flex items-center justify-center gap-2 text-[color:var(--am-ink-soft)]"
+        >
+          <span aria-hidden="true" className="text-[color:var(--am-gold)]">✦</span>
+          <span
+            className="font-[family-name:var(--font-crimson),serif] tracking-wide"
+            style={{ fontSize: "clamp(12px, 1.4vw, 15px)" }}
+          >
+            {txt.hero_proof}
+          </span>
+        </motion.div>
       </motion.div>
 
       {/* Scroll indicator */}
       <motion.div
         className="absolute bottom-8 left-1/2 z-[10] -translate-x-1/2"
-        style={{ opacity: useTransform(scrollYProgress, [0, 0.15], [1, 0]) }}
+        style={{ opacity: scrollIndicatorOpacity }}
       >
         <div
           className="flex justify-center"
@@ -963,6 +1161,17 @@ interface ShowcaseSectionProps {
 }
 
 function ShowcaseSection({ title, subtitle, cards }: ShowcaseSectionProps) {
+  const reduced = useReducedMotion();
+  // The marquee needs two identical halves so a -50% translate loops back
+  // seamlessly. Each half repeats the deck enough times to comfortably
+  // exceed a wide viewport — otherwise a short deck would leave a visible
+  // gap mid-scroll. ~288px is a `md` card + its right margin.
+  const repeatsPerHalf = Math.max(1, Math.ceil(1600 / Math.max(1, cards.length * 288)));
+  const marqueeCards = Array.from({ length: repeatsPerHalf * 2 }, () => cards).flat();
+  // ~4.2s of travel per card keeps it a slow parade; scale with a half's
+  // width so the pixel speed stays constant whatever the deck size.
+  const marqueeDuration = Math.max(24, repeatsPerHalf * cards.length * 4.2);
+
   return (
     <section
       className="relative py-24 md:py-32"
@@ -1001,31 +1210,65 @@ function ShowcaseSection({ title, subtitle, cards }: ShowcaseSectionProps) {
         {subtitle}
       </motion.p>
 
-      {/* Horizontal scroll-snap gallery */}
-      <div
-        className="overflow-x-auto overflow-y-hidden pb-8"
-        style={{
-          scrollSnapType: "x mandatory",
-          scrollbarWidth: "thin",
-          scrollbarColor: "#3d3d5c #0a0a18",
-        }}
-      >
-        <div className="flex gap-6 md:gap-8 px-6 md:px-12 pt-4 pb-2 min-w-max justify-start md:justify-center">
-          {cards.map((card, i) => (
-            <motion.div
-              key={card.id}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-40px" }}
-              transition={{ duration: 0.6, delay: (i % 6) * 0.08 }}
-              style={{ scrollSnapAlign: "center", scrollSnapStop: "always" }}
-              className="flex-none transition-transform duration-300 hover:-translate-y-2"
-            >
-              <GameCard card={card} size="md" />
-            </motion.div>
-          ))}
+      {reduced ? (
+        /* Reduced-motion: a plain, manually scrollable gallery (no auto-run).
+           Generous vertical padding keeps the 1.5× hover-zoom from being
+           clipped by overflow-y-hidden. */
+        <div
+          className="overflow-x-auto overflow-y-hidden"
+          style={{
+            scrollSnapType: "x mandatory",
+            scrollbarWidth: "thin",
+            scrollbarColor: "#3d3d5c #0a0a18",
+          }}
+        >
+          <div className="flex gap-6 md:gap-8 px-6 md:px-12 py-24 min-w-max justify-start md:justify-center">
+            {cards.map((card) => (
+              <div
+                key={card.id}
+                style={{ scrollSnapAlign: "center", scrollSnapStop: "always" }}
+                className="flex-none relative z-0 hover:z-30 transition-transform duration-300 hover:-translate-y-1"
+              >
+                <GameCard card={card} size="md" />
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      ) : (
+        /* Auto-scrolling marquee. The `group` container pauses the track on
+           hover so a card can be inspected/zoomed; edge masks fade cards in
+           and out. `py-24` gives the 1.5× hover-zoom vertical breathing room
+           (overflow-y stays clipped, so the padding is what prevents it being
+           cut off top/bottom). */
+        <div
+          className="group relative overflow-hidden"
+          style={{
+            maskImage:
+              "linear-gradient(90deg, transparent 0%, #000 7%, #000 93%, transparent 100%)",
+            WebkitMaskImage:
+              "linear-gradient(90deg, transparent 0%, #000 7%, #000 93%, transparent 100%)",
+          }}
+        >
+          <div
+            className="flex py-24 w-max will-change-transform group-hover:[animation-play-state:paused]"
+            style={{ animation: `showcaseMarquee ${marqueeDuration}s linear infinite` }}
+          >
+            {marqueeCards.map((card, i) => (
+              <div
+                key={`${card.id}-${i}`}
+                aria-hidden={i >= cards.length}
+                // Per-card right margin (not flex `gap`) so one full copy's
+                // width equals exactly the -50% translation → seamless loop.
+                // relative + hover:z lifts the hovered card above its
+                // neighbours so the 1.5× zoom is never overlapped.
+                className="flex-none mr-6 md:mr-8 relative z-0 hover:z-30 transition-transform duration-300 hover:-translate-y-1"
+              >
+                <GameCard card={card} size="md" />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </section>
   );
 }
