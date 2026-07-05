@@ -1257,20 +1257,33 @@ export const useGameStore = create<GameStore>((set, get) => {
       const enemyHeroSentinel = casterIsLocal ? "enemy_hero" : "friendly_hero";
       const sourceId = action.type === "tap_activate" ? action.sourceInstanceId : casterHeroSentinel;
 
-      const enemyBoardIds = new Set(gameState.players[oppIdx].board.map((c) => c.instanceId));
+      // On déduit les cibles réellement frappées en comparant l'état AVANT
+      // (gameState) et APRÈS (newState) le pouvoir, sur le plateau adverse.
+      // On N'utilise PAS detectDamageEvents car il (a) ignore les créatures
+      // mortes — retirées du plateau — et (b) confond une baisse de PV due à
+      // une perte de boost (ex. mort d'un porteur de Sang mêlé) avec de vrais
+      // dégâts, ce qui traçait des flèches parasites.
       const hit = new Set<string>();
-      // Cibles ayant subi des dégâts (créature adverse ou héros adverse).
-      for (const ev of dmgEvents) {
-        if (ev.type !== "damage") continue;
-        if (enemyBoardIds.has(ev.targetId) || ev.targetId === enemyHeroSentinel) hit.add(ev.targetId);
+      const newOppById = new Map(newState.players[oppIdx].board.map((c) => [c.instanceId, c]));
+      for (const oldC of gameState.players[oppIdx].board) {
+        const newC = newOppById.get(oldC.instanceId);
+        if (!newC) {
+          // Disparue du plateau adverse = tuée par le pouvoir → cible.
+          hit.add(oldC.instanceId);
+        } else if (newC.currentHealth < oldC.currentHealth && newC.maxHealth >= oldC.maxHealth) {
+          // Vrais dégâts : PV courants en baisse SANS baisse de PV max (une
+          // perte de boost fait chuter maxHealth → exclue).
+          hit.add(oldC.instanceId);
+        } else if (oldC.hasDivineShield && !newC.hasDivineShield) {
+          // Bouclier ayant absorbé le coup (aucun dégât émis).
+          hit.add(oldC.instanceId);
+        }
       }
-      // Cibles dont le Bouclier a ABSORBÉ le coup (hasDivineShield true→false) :
-      // aucun event de dégât n'est émis, mais le pouvoir les a bien visées — la
-      // flèche doit quand même partir vers elles.
-      const oldShield = new Map(gameState.players[oppIdx].board.map((c) => [c.instanceId, c.hasDivineShield]));
-      for (const c of newState.players[oppIdx].board) {
-        if (oldShield.get(c.instanceId) === true && c.hasDivineShield === false) hit.add(c.instanceId);
-      }
+      // Héros adverse touché (PV ou armure en baisse).
+      const oldHero = gameState.players[oppIdx].hero;
+      const newHero = newState.players[oppIdx].hero;
+      if (newHero.hp < oldHero.hp || newHero.armor < oldHero.armor) hit.add(enemyHeroSentinel);
+
       hit.delete(sourceId);
       const targetIds = Array.from(hit);
       if (targetIds.length > 0) {
