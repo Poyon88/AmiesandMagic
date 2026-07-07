@@ -11,6 +11,18 @@ import OrientationLock from "@/components/shared/OrientationLock";
 import type { Card, GameAction, GameState, HeroDefinition, HeroPowerEffect, Race } from "@/lib/game/types";
 import { syncHash, reconcileVerdict } from "@/lib/game/stateHash";
 
+// Colonnes de `cards` réellement consommées par le moteur en partie. Projection
+// explicite (au lieu de select("*")) pour réduire l'egress : le pool de sorts +
+// cartes de faction est chargé par match ET par client. On écarte
+// `illustration_prompt` (long prompt de génération, jamais lu en jeu) et
+// `created_at`. Miroir de la liste de api/cards/save (moins illustration_prompt).
+const GAME_CARD_COLUMNS =
+  "id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, " +
+  "keywords, keyword_instances, spell_keywords, spell_effects, capabilities, " +
+  "image_url, faction, race, clan, rarity, card_alignment, convocation_token_id, " +
+  "convocation_tokens, lycanthropie_token_id, entraide_race, set_id, card_year, " +
+  "card_month, sfx_play_url, sfx_death_url, life_cost, discard_cost, sacrifice_cost";
+
 interface HeroRow {
   id: number;
   name: string;
@@ -224,20 +236,22 @@ export default function GamePage() {
             .filter(Boolean) as string[]
         );
         deckFactions.add("Mercenaires");
+        // `.returns<Card[]>()` : la projection est une string dynamique, donc
+        // supabase-js ne peut pas inférer la forme des lignes — on la fournit.
         const [factionCardsRes, manaSparkRes, allSpellsRes] = await Promise.all([
-          supabase.from("cards").select("*").in("faction", Array.from(deckFactions)),
-          supabase.from("cards").select("*").eq("name", "Mana Spark").eq("card_type", "spell").limit(1),
+          supabase.from("cards").select(GAME_CARD_COLUMNS).in("faction", Array.from(deckFactions)).returns<Card[]>(),
+          supabase.from("cards").select(GAME_CARD_COLUMNS).eq("name", "Mana Spark").eq("card_type", "spell").limit(1).returns<Card[]>(),
           // Concentration X: needs every spell across every faction/set, not
           // just the deck-faction subset that factionCardPool covers.
-          supabase.from("cards").select("*").eq("card_type", "spell"),
+          supabase.from("cards").select(GAME_CARD_COLUMNS).eq("card_type", "spell").returns<Card[]>(),
         ]);
         const factionCards = factionCardsRes.data ?? [];
         // Ensure Mana Spark is in the pool (may not be if Humains not in deck factions)
         const manaSpark = manaSparkRes.data?.[0];
-        if (manaSpark && !factionCards.find((c: { id: number }) => c.id === manaSpark.id)) {
+        if (manaSpark && !factionCards.find((c) => c.id === manaSpark.id)) {
           factionCards.push(manaSpark);
         }
-        const allSpells = (allSpellsRes.data ?? []) as import("@/lib/game/types").Card[];
+        const allSpells = allSpellsRes.data ?? [];
 
         // Determine which board the match uses: the second player's deck board,
         // falling back to the admin-chosen default board.
