@@ -89,6 +89,7 @@ export async function POST(request: Request) {
   // "Élémentaire", clan = element), prefer the clan-keyed descriptor.
   const visualKey = (clanId && raceVisualDescriptions[clanId]) ? clanId : raceId;
   const raceVisual = visualKey && raceVisualDescriptions[visualKey] ? ` Visual: ${raceVisualDescriptions[visualKey]}.` : '';
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- feature en attente : à injecter dans le prompt (indice de race pour la génération)
   const raceHint = raceId ? `\n- Race: ${raceId}. La créature DOIT correspondre visuellement à cette race.${raceVisual}` : '';
   const clanHint = clanId ? `\n- Clan: ${clanId}. Le style, l'environnement et l'ambiance doivent refléter ce clan.` : '';
 

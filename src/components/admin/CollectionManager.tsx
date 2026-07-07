@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
+import Link from "next/link";
 
 interface ProfileRow {
   id: string;
@@ -290,13 +291,13 @@ export default function CollectionManager({ profiles, allCards, allBoards, allCa
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: 24 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
-        <a href="/" style={{
+        <Link href="/" style={{
           padding: "5px 12px", borderRadius: 6, cursor: "pointer",
           background: "transparent", border: "1px solid #ddd", color: "#888",
           fontFamily: "'Cinzel',serif", fontSize: 9, fontWeight: 700, letterSpacing: 0.8,
           textDecoration: "none", display: "flex", alignItems: "center", gap: 4,
           transition: "all 0.2s",
-        }}>← Menu</a>
+        }}>← Menu</Link>
         <h1 style={{ fontSize: 24, fontWeight: "bold", margin: 0 }}>Gestion des Collections</h1>
       </div>
 

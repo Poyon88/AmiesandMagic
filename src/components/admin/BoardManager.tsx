@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { FACTIONS, getFactionDisplayName } from "@/lib/card-engine/constants";
 
 const FACTION_IDS = Object.keys(FACTIONS);
@@ -234,13 +235,13 @@ export default function BoardManager() {
   return (
     <div style={{ maxWidth: 700, margin: "0 auto", padding: "30px 20px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
-        <a href="/" style={{
+        <Link href="/" style={{
           padding: "5px 12px", borderRadius: 6, cursor: "pointer",
           background: "transparent", border: "1px solid #ddd", color: "#888",
           fontFamily: "'Cinzel',serif", fontSize: 9, fontWeight: 700, letterSpacing: 0.8,
           textDecoration: "none", display: "flex", alignItems: "center", gap: 4,
           transition: "all 0.2s",
-        }}>← Menu</a>
+        }}>← Menu</Link>
         <h1 style={{ fontSize: 18, fontFamily: "'Cinzel',serif", fontWeight: 700, color: "#333", letterSpacing: 1, margin: 0 }}>
           Gestion des Plateaux
         </h1>

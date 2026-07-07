@@ -3,7 +3,6 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import type { HeroState } from "@/lib/game/types";
-import { HERO_MAX_HP } from "@/lib/game/constants";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
 import { isBigHit } from "@/lib/fx/impactFx";
 

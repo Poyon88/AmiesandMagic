@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { generateCardStats, pickRarity, buildId } from "@/lib/card-engine/generator";
 import { RARITIES, FACTIONS, TYPES, KEYWORDS, CREATURE_LABEL_TO_ENGINE_ID, RARITY_WEIGHTS_BY_MANA, RARITY_MAP, ALIGNMENTS, CURATED_KEYWORD_MODES, getClanNamesForRace, getFactionForRace } from "@/lib/card-engine/constants";
 import CardVisual, { KEYWORD_SYMBOLS } from "./CardVisual";
@@ -2374,7 +2375,7 @@ export default function CardForge() {
         {/* Topbar */}
         <div style={{ padding: "11px 20px", borderBottom: "1px solid #e0e0e0", background: "#fafafa", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <a href="/" style={{
+            <Link href="/" style={{
               padding: "5px 12px", borderRadius: 6, cursor: "pointer",
               background: "transparent",
               border: "1px solid #ddd",
@@ -2383,7 +2384,7 @@ export default function CardForge() {
               transition: "all 0.2s",
               textDecoration: "none",
               display: "flex", alignItems: "center", gap: 4,
-            }}>← Menu</a>
+            }}>← Menu</Link>
             <span style={{ fontSize: 18 }}>⚗️</span>
             <span style={{ fontSize: 15, fontWeight: 700, color: "#333", letterSpacing: 2.5 }}>CARD FORGE</span>
             <span style={{ fontSize: 8, color: "#aaa", letterSpacing: 2 }}>ARMIES & MAGIC</span>

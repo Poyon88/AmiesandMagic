@@ -601,7 +601,7 @@ export default function GamePage() {
         // fallback below. Sync events can occasionally be missed (transient
         // realtime hiccup, slow loader on one side), so we re-check every
         // 2s while in waiting phase as a safety net.
-        function tryInit(source: "sync" | "poll") {
+        function tryInit(_source: "sync" | "poll") {
           if (gameInitializedRef.current) return;
           if (!matchDataRef.current) return;
           const state = channel.presenceState();

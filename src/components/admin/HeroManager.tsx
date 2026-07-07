@@ -10,6 +10,7 @@ import { FACTIONS, getFactionDisplayName, getClanNamesForRace } from "@/lib/card
 import { ABILITIES } from "@/lib/game/abilities";
 import { autoTrimDarkBorders } from "@/lib/card-back-frames";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- utilisé uniquement comme type (typeof RACES[number])
 const RACES = [
   "humans", "elves", "dwarves", "halflings",
   "beastmen", "giants", "dark_elves", "orcs_goblins", "undead",
