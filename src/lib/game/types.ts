@@ -72,6 +72,11 @@ export type SpellTargetType =
   | "friendly_hero"
   | "friendly_creature"
   | "enemy_creature"
+  // Unité OU héros d'un camp donné (picker des effets composés « both » +
+  // side). enemy_any = plateau ennemi + héros ennemi ; friendly_any = plateau
+  // allié + héros allié. Évite qu'un effet offensif propose ses propres cibles.
+  | "enemy_any"
+  | "friendly_any"
   | "all_enemy_creatures"
   | "all_enemies"
   | "all_friendly_creatures"
