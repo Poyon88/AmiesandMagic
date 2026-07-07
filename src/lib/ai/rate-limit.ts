@@ -21,7 +21,7 @@ export type AiGenerationKind =
 
 // Quotas par utilisateur sur une fenêtre glissante de 24 h.
 const DAILY_LIMITS: Record<AiGenerationKind, number> = {
-  figurine_3d: 15,
+  figurine_3d: 5,
   hero_portrait: 40,
   hero_power_image: 40,
   prompt_compose: 80,
