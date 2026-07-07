@@ -789,6 +789,15 @@ export interface GameState {
   // pendingTriggers restent, la bascule de tour est différée ; finishEndTurn
   // s'exécute quand la file est vidée (cf. resolvePendingTrigger).
   endTurnPending?: boolean;
+  // File ORDONNÉE des effets « fin de tour » restant à résoudre, dans l'ordre
+  // strict gauche→droite du plateau du joueur sortant (curés puis composés par
+  // créature). Persistée pour rendre la fin de tour RÉSUMABLE : dès qu'un effet
+  // interactif est atteint, la séquence se met en pause (pendingTriggers) et
+  // reprend ici — automatiques compris — après la résolution du joueur, pour que
+  // l'ordre du plateau soit respecté tous régimes confondus. `undefined` = plus
+  // aucun effet fin-de-tour à traiter (phase de finalisation / mort). État
+  // durable (hashé/synchronisé comme pendingTriggers), pas un indice d'animation.
+  endOfTurnQueue?: EndOfTurnStep[];
   // Pile d'effets LIFO unifiée (cf. plan « pile d'effets »). Vide entre deux
   // actions, SAUF si la résolution est suspendue sur un choix joueur : la frame
   // au sommet porte alors `awaitingChoice` et la pile persiste dans l'état
@@ -910,6 +919,19 @@ export type GameAction = PlayCardAction | AttackAction | EndTurnAction | Mulliga
 /** Déclencheur interactif en attente : le contrôleur doit choisir une cible
  *  avant que le jeu ne continue. Porté par l'état pour rester déterministe et
  *  rejouable côté réseau. */
+/** Un effet « fin de tour » en attente de traitement dans la file ordonnée
+ *  `GameState.endOfTurnQueue`. Identifie sa créature source + l'effet précis à
+ *  résoudre : soit un mot-clé curé (mode end_of_turn), soit une capacité
+ *  composée on_end_of_turn (par uid). Données 100% sérialisables → survit au
+ *  clone/hash/resync (les références vives sont re-résolues via l'instanceId). */
+export interface EndOfTurnStep {
+  sourceInstanceId: string;
+  /** Mot-clé curé en mode end_of_turn (l'instance complète : id, x, race…). */
+  curated?: KeywordInstance;
+  /** uid d'une capacité composée on_end_of_turn de la carte source. */
+  capUid?: string;
+}
+
 export interface PendingTrigger {
   id: string;                       // déterministe (= sourceInstanceId, +uid pour les caps)
   kw?: Keyword;                     // ex. "remontee" (variante mot-clé) ; absent pour les caps

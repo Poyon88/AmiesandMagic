@@ -368,12 +368,19 @@ function detectDamageEvents(
     const isLocal = oldPlayer.id === localPlayerId;
     const heroId = isLocal ? "friendly_hero" : "enemy_hero";
 
-    // Hero damage
-    if (newPlayer.hero.hp < oldPlayer.hero.hp) {
+    // Hero damage — inclut les dégâts absorbés par l'armure. dealDamageToHero
+    // retire d'abord l'armure puis les PV : un coup encaissé par l'armure fait
+    // baisser hero.armor SANS toucher hero.hp. Sans ce cumul, un surplus de
+    // Piétinement (ou toute attaque) mangé par l'armure n'affichait aucun FX de
+    // dégât. Total ressenti = PV perdus + armure perdue.
+    const heroHpLoss = oldPlayer.hero.hp - newPlayer.hero.hp;
+    const heroArmorLoss = oldPlayer.hero.armor - newPlayer.hero.armor;
+    const heroDamageTaken = Math.max(0, heroHpLoss) + Math.max(0, heroArmorLoss);
+    if (heroDamageTaken > 0) {
       const pos = getElementCenter(heroId);
       events.push({
         targetId: heroId,
-        amount: oldPlayer.hero.hp - newPlayer.hero.hp,
+        amount: heroDamageTaken,
         type: "damage",
         ...pos,
       });
@@ -1035,8 +1042,8 @@ export const useGameStore = create<GameStore>((set, get) => {
       const isLocal = newState.players[idx]?.id === localPlayerId;
       return { ...s, victimInstanceId: isLocal ? "friendly_hero" : "enemy_hero" };
     });
-    const FUREUR_LUNGE_GAP_MS = 700;        // gap between successive Fureur lunges
-    const FUREUR_FIRST_DELAY_MS = 800;      // gap between main lunge and first Fureur lunge
+    const FUREUR_LUNGE_GAP_MS = 1000;       // gap between successive Fureur lunges (ralenti pour lisibilité de la chaîne)
+    const FUREUR_FIRST_DELAY_MS = 900;      // gap between main lunge and first Fureur lunge
     const FUREUR_DAMAGE_DELAY_MS = 1300;    // base delay added to victim damage popups
     const FUREUR_PHASE_EXTRA_MS = fureurStrikes.length > 0
       ? FUREUR_DAMAGE_DELAY_MS + (fureurStrikes.length - 1) * FUREUR_LUNGE_GAP_MS + 500
