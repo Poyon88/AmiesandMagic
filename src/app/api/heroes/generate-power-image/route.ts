@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { enforceAiQuota } from '@/lib/ai/rate-limit';
 import { generateImage, GenerateImageError } from '@/lib/ai/generate-image';
 
 async function getAuthUser() {
@@ -22,6 +23,9 @@ async function getAuthUser() {
 export async function POST(request: Request) {
   const user = await getAuthUser();
   if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+
+  const quota = await enforceAiQuota(user.id, 'hero_power_image');
+  if (!quota.ok) return quota.response;
 
   const body = await request.json().catch(() => ({})) as {
     prompt?: string;
