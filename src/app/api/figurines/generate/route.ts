@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { enforceAiQuota } from "@/lib/ai/rate-limit";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -87,6 +88,9 @@ async function pollTask(apiKey: string, taskId: string): Promise<MeshyTask> {
 export async function POST(request: Request) {
   const user = await getAuthUser();
   if (!user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+
+  const quota = await enforceAiQuota(user.id, "figurine_3d");
+  if (!quota.ok) return quota.response;
 
   const apiKey = process.env.MESHY_API_KEY;
   if (!apiKey) {

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { enforceAiQuota } from '@/lib/ai/rate-limit';
 import { buildHeroPortraitPrompt } from '@/lib/ai/hero-portrait-prompt';
 import { FACTIONS, getAllClanNames } from '@/lib/card-engine/constants';
 
@@ -82,6 +83,9 @@ async function enrichWithLLM(basePrompt: string, extraContext: string): Promise<
 export async function POST(request: Request) {
   const user = await getAuthUser();
   if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+
+  const quota = await enforceAiQuota(user.id, 'prompt_compose');
+  if (!quota.ok) return quota.response;
 
   const body = await request.json().catch(() => ({})) as {
     name?: string;
