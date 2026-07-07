@@ -399,7 +399,14 @@ function applyComposedToUnit(
   opponent: PlayerState,
 ): void {
   switch (composed.content) {
-    case "deal_damage": dealDamageToCreature(u, x, false, true); break;
+    case "deal_damage": {
+      // Riposte : la source à punir est la créature à l'origine de l'effet, sauf
+      // quand l'effet vient d'un SORT (source = instance de sort, hors plateau)
+      // ou n'a pas d'unité source → on riposte alors le héros lanceur (owner).
+      const dmgSource = source && source.card.card_type !== "spell" ? source : owner.hero;
+      dealDamageToCreature(u, x, false, true, dmgSource);
+      break;
+    }
     case "heal": u.currentHealth = Math.min(u.maxHealth, u.currentHealth + x); break;
     case "buff":
       u.card = { ...u.card, attack: (u.card.attack ?? 0) + x, health: (u.card.health ?? 0) + y };
@@ -743,7 +750,7 @@ function resolveCreatureKeywordAsHeroPower(
       const target = opponent.board.find(c => c.instanceId === targetInstanceId);
       if (!target) break;
       const amount = params?.amount ?? 1;
-      dealDamageToCreature(target, amount, false, true);
+      dealDamageToCreature(target, amount, false, true, player.hero);
       player.hero.hp += amount;
       break;
     }
@@ -2165,7 +2172,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
         const alive = opponent.board.filter((u) => u.currentHealth > 0);
         if (alive.length === 0) break;
         const target = alive[Math.floor(rng() * alive.length)];
-        dealDamageToCreature(target, 1, false, true);
+        dealDamageToCreature(target, 1, false, true, player.hero);
         sequentialHitsSink.push({ targetInstanceId: target.instanceId, type: "damage" });
       }
     }
@@ -2395,19 +2402,19 @@ function resolveSpellEffect(
             dealDamageToHero(caster.hero, amount);
           } else if (targetInstanceId) {
             const target = findCreatureOnBoard(caster, targetInstanceId) ?? findCreatureOnBoard(opponent, targetInstanceId);
-            if (target) dealDamageToCreature(target, amount, false, true);
+            if (target) dealDamageToCreature(target, amount, false, true, caster.hero);
           }
           break;
         }
         case "all_enemy_creatures":
-          [...opponent.board].forEach(c => dealDamageToCreature(c, amount, false, true));
+          [...opponent.board].forEach(c => dealDamageToCreature(c, amount, false, true, caster.hero));
           break;
         case "all_enemies":
           dealDamageToHero(opponent.hero, amount);
-          [...opponent.board].forEach(c => dealDamageToCreature(c, amount, false, true));
+          [...opponent.board].forEach(c => dealDamageToCreature(c, amount, false, true, caster.hero));
           break;
         case "all_friendly_creatures":
-          [...caster.board].forEach(c => dealDamageToCreature(c, amount, false, true));
+          [...caster.board].forEach(c => dealDamageToCreature(c, amount, false, true, caster.hero));
           break;
       }
       break;
@@ -2689,20 +2696,20 @@ function resolveSpellKeywords(
           dealDamageToHero(ctx.caster.hero, amount);
         } else if (targetId) {
           const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
-          if (target) dealDamageToCreature(target, amount, false, true);
+          if (target) dealDamageToCreature(target, amount, false, true, ctx.caster.hero);
         }
         break;
       }
       case "deferlement": {
         const amount = kw.amount ?? 0;
-        [...ctx.opponent.board].forEach(c => dealDamageToCreature(c, amount, false, true));
+        [...ctx.opponent.board].forEach(c => dealDamageToCreature(c, amount, false, true, ctx.caster.hero));
         break;
       }
       case "siphon": {
         const amount = kw.amount ?? 0;
         if (targetId && targetId !== "enemy_hero" && targetId !== "friendly_hero") {
           const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
-          if (target) dealDamageToCreature(target, amount, false, true);
+          if (target) dealDamageToCreature(target, amount, false, true, ctx.caster.hero);
         } else if (targetId === "enemy_hero") {
           dealDamageToHero(ctx.opponent.hero, amount);
         }
@@ -2920,7 +2927,7 @@ function resolveSpellKeywords(
           const alive = ctx.opponent.board.filter((u) => u.currentHealth > 0);
           if (alive.length === 0) break;
           const target = alive[Math.floor(rng() * alive.length)];
-          dealDamageToCreature(target, 1, false, true);
+          dealDamageToCreature(target, 1, false, true, ctx.caster.hero);
           sequentialHitsSink.push({ targetInstanceId: target.instanceId, type: "damage" });
         }
         break;
@@ -3165,7 +3172,7 @@ function resolveAtomicEffect(ctx: SpellResolutionContext, effect: AtomicEffect):
         dealDamageToHero(ctx.caster.hero, amount);
       } else if (targetId) {
         const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
-        if (target) dealDamageToCreature(target, amount, false, true);
+        if (target) dealDamageToCreature(target, amount, false, true, ctx.caster.hero);
       }
       break;
     }
@@ -3572,7 +3579,7 @@ export function attack(state: GameState, action: AttackAction): GameState {
     if (hasKw(attacker, "souffle_de_feu")) {
       const fireXVals = parseXValuesFromEffectText(attacker.card.effect_text);
       const fireX = fireXVals["souffle_de_feu"] || Math.max(1, Math.floor(attacker.card.mana_cost / 2));
-      [...opponent.board].forEach(c => dealDamageToCreature(c, fireX));
+      [...opponent.board].forEach(c => dealDamageToCreature(c, fireX, false, false, attacker));
     }
 
     dealDamageToHero(opponent.hero, attackPower);
@@ -3649,7 +3656,7 @@ export function attack(state: GameState, action: AttackAction): GameState {
 
     if (hasFirstStrike) {
       const targetHpBefore = target.currentHealth;
-      dealDamageToCreature(target, attackPower, attackerHasPrecision);
+      dealDamageToCreature(target, attackPower, attackerHasPrecision, false, attacker);
 
       if (attackerHasTrample && target.currentHealth < 0 && targetHpBefore > 0) {
         dealDamageToHero(opponent.hero, -target.currentHealth);
@@ -3666,7 +3673,7 @@ export function attack(state: GameState, action: AttackAction): GameState {
 
       // If target survived, it retaliates
       if (target.currentHealth > 0) {
-        dealDamageToCreature(attacker, target.currentAttack);
+        dealDamageToCreature(attacker, target.currentAttack, false, false, target);
         if (hasKw(target, "poison") && attacker.currentHealth > 0) {
           attacker.isPoisoned = true;
         }
@@ -3679,13 +3686,13 @@ export function attack(state: GameState, action: AttackAction): GameState {
       // damage; the retaliation is unchanged.
       const finalAttackPower = hasDoubleAttack ? attackPower * 2 : attackPower;
       const targetHpBefore = target.currentHealth;
-      dealDamageToCreature(target, finalAttackPower, attackerHasPrecision);
+      dealDamageToCreature(target, finalAttackPower, attackerHasPrecision, false, attacker);
 
       if (attackerHasTrample && target.currentHealth < 0 && targetHpBefore > 0) {
         dealDamageToHero(opponent.hero, -target.currentHealth);
       }
 
-      dealDamageToCreature(attacker, target.currentAttack, hasKw(target, "precision"));
+      dealDamageToCreature(attacker, target.currentAttack, hasKw(target, "precision"), false, target);
 
       // Poison application
       if (hasKw(attacker, "poison") && target.currentHealth > 0) target.isPoisoned = true;
@@ -3701,7 +3708,7 @@ export function attack(state: GameState, action: AttackAction): GameState {
     if (hasKw(attacker, "souffle_de_feu")) {
       const fireXVals = parseXValuesFromEffectText(attacker.card.effect_text);
       const fireX = fireXVals["souffle_de_feu"] || Math.max(1, Math.floor(attacker.card.mana_cost / 2));
-      [...opponent.board].forEach(c => dealDamageToCreature(c, fireX));
+      [...opponent.board].forEach(c => dealDamageToCreature(c, fireX, false, false, attacker));
     }
 
     // Drain de vie: heal own hero for damage dealt
@@ -3719,10 +3726,10 @@ export function attack(state: GameState, action: AttackAction): GameState {
       dealDamageToHero(player.hero, attackPower);
     }
 
-    // Riposte X: counter-damage to attacker
-    if (hasKw(target, "riposte") && target.riposteX > 0) {
-      dealDamageToCreature(attacker, target.riposteX);
-    }
+    // Riposte X : désormais centralisée dans dealDamageToCreature (déclenchée
+    // par TOUTE source de dégât, pas seulement le combat) — cf. la passe de
+    // `source` aux appels de combat ci-dessus. Plus de bloc dédié ici pour
+    // éviter un double déclenchement.
 
     // Fureur: après avoir subi des dégâts en combat, la créature lance une
     // attaque supplémentaire sur une unité adverse aléatoire (héros si plus
@@ -3804,9 +3811,9 @@ function runFureurChain(
       break;
     }
     const victim = enemies[Math.floor(rng() * enemies.length)];
-    dealDamageToCreature(victim, creature.currentAttack);
+    dealDamageToCreature(victim, creature.currentAttack, false, false, creature);
     if (creature.currentHealth > 0 && victim.currentAttack > 0) {
-      dealDamageToCreature(creature, victim.currentAttack);
+      dealDamageToCreature(creature, victim.currentAttack, false, false, victim);
     }
     (state.fureurStrikes ??= []).push({
       attackerInstanceId: creature.instanceId,
@@ -3830,7 +3837,16 @@ function dealDamageToHero(hero: import("./types").HeroState, damage: number) {
   hero.hp -= damage;
 }
 
-function dealDamageToCreature(creature: CardInstance, damage: number, ignoreDR = false, isSpellDamage = false) {
+// `source` = ce qui inflige les dégâts (unité OU héros). Optionnel : les sources
+// sans agresseur vivant (poison, fatigue, effets qui écrivent directement les PV)
+// ne le passent pas et ne déclenchent donc pas Riposte.
+function dealDamageToCreature(
+  creature: CardInstance,
+  damage: number,
+  ignoreDR = false,
+  isSpellDamage = false,
+  source?: CardInstance | import("./types").HeroState | null,
+) {
   if (damage <= 0) return;
 
   // Transcendance: immunité totale aux sorts (y compris zone)
@@ -3865,6 +3881,20 @@ function dealDamageToCreature(creature: CardInstance, damage: number, ignoreDR =
 
   if (damage <= 0) return;
   creature.currentHealth -= damage;
+
+  // Riposte X : dès que cette unité subit RÉELLEMENT des dégâts (on est passé
+  // après Bouclier / Résistance / Armure / immunités), elle renvoie X dégâts à
+  // la source de l'attaque — unité ou héros — quelle que soit son origine
+  // (combat, sort, zone, râle d'agonie…). La contre-riposte est infligée SANS
+  // source, donc elle ne peut pas re-déclencher une riposte : pas de boucle
+  // riposte↔riposte. On ne se riposte jamais soi-même.
+  if (source && source !== creature && hasKw(creature, "riposte") && creature.riposteX > 0) {
+    if ("instanceId" in source) {
+      dealDamageToCreature(source, creature.riposteX);
+    } else {
+      dealDamageToHero(source, creature.riposteX);
+    }
+  }
 }
 
 // ============================================================
@@ -4275,14 +4305,14 @@ function resolveCreatureDeath(c: CardInstance, owner: PlayerState, enemy: Player
     if (hasKw(c, "malefice")) {
       const maleficeDmg = c.card.attack ?? 0;
       dealDamageToHero(enemy.hero, maleficeDmg);
-      [...enemy.board].forEach(e => dealDamageToCreature(e, maleficeDmg, false, true));
-      [...owner.board].forEach(e => dealDamageToCreature(e, maleficeDmg, false, true));
+      [...enemy.board].forEach(e => dealDamageToCreature(e, maleficeDmg, false, true, c));
+      [...owner.board].forEach(e => dealDamageToCreature(e, maleficeDmg, false, true, c));
     }
 
     // Carnage X: inflige X dégâts à TOUTES les unités en jeu
     if (hasKw(c, "carnage") && c.carnageX > 0) {
-      [...enemy.board].forEach(e => dealDamageToCreature(e, c.carnageX, false, true));
-      [...owner.board].forEach(e => dealDamageToCreature(e, c.carnageX, false, true));
+      [...enemy.board].forEach(e => dealDamageToCreature(e, c.carnageX, false, true, c));
+      [...owner.board].forEach(e => dealDamageToCreature(e, c.carnageX, false, true, c));
     }
 
     // Sacrifice démoniaque X: répartit X réductions de coût parmi les Démons
@@ -4695,7 +4725,7 @@ function resolveCuratedKeywordEffect(
         const alive = opponent.board.filter((u) => u.currentHealth > 0);
         if (alive.length === 0) break;
         const target = alive[Math.floor(rng() * alive.length)];
-        dealDamageToCreature(target, 1, false, true);
+        dealDamageToCreature(target, 1, false, true, source);
       }
       break;
     }
