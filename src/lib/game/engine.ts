@@ -1432,16 +1432,59 @@ export function endTurn(state: GameState): GameState {
   // des statuts et la bascule, pendant que c'est encore son tour. Les effets à
   // cible « au choix » sont mis en file (pendingTriggers) et résolus par le
   // joueur ; les autres (soi/auto/aléatoire/toutes) sont appliqués tout de suite.
+  // Séquence de fin de tour STRICTEMENT ordonnée gauche→droite (tous régimes
+  // confondus). On construit la file ordonnée des effets du joueur sortant puis
+  // on la traite : les automatiques se résolvent en ligne, et dès qu'un effet
+  // INTERACTIF est atteint la séquence se met en pause (endOfTurnQueue persistée)
+  // et reprend — automatiques suivants compris — après la résolution du joueur.
+  // Cf. advanceEndOfTurn / resolvePendingTrigger.
+  newState.endOfTurnQueue = buildEndOfTurnQueue(newState.players[newState.currentPlayerIndex]);
+  return advanceEndOfTurn(newState);
+}
+
+/** Construit la file ORDONNÉE des effets « fin de tour » du joueur sortant, dans
+ *  l'ordre strict du plateau (gauche→droite), et pour chaque créature : d'abord
+ *  ses mots-clés curés en mode end_of_turn (ordre du tableau), puis ses capacités
+ *  composées on_end_of_turn (ordre de getCapabilities). */
+function buildEndOfTurnQueue(outgoing: PlayerState): import("./types").EndOfTurnStep[] {
+  const steps: import("./types").EndOfTurnStep[] = [];
+  for (const creature of outgoing.board) {
+    for (const inst of creature.card.keyword_instances ?? []) {
+      if (inst.mode === "end_of_turn") steps.push({ sourceInstanceId: creature.instanceId, curated: inst });
+    }
+    for (const cap of getCapabilities(creature.card)) {
+      if (cap.composed && cap.trigger === "on_end_of_turn") {
+        steps.push({ sourceInstanceId: creature.instanceId, capUid: cap.uid });
+      }
+    }
+  }
+  return steps;
+}
+
+/** Traite la file `endOfTurnQueue` DANS L'ORDRE : résout les effets automatiques
+ *  en ligne et, au premier effet interactif (Sélection* ou composé « au choix »
+ *  non-self avec cible éligible), met UN pendingTrigger et rend la main (pause,
+ *  endTurnPending). Reprend à la même position au prochain appel. File épuisée →
+ *  finalisation (finalizeEndOfTurn). C'est ce qui garantit l'ordre strict
+ *  gauche→droite tous régimes confondus : un automatique situé après un
+ *  interactif ne se résout qu'une fois cet interactif tranché. */
+function advanceEndOfTurn(newState: GameState): GameState {
   const outgoing = newState.players[newState.currentPlayerIndex];
   const opponent = newState.players[newState.currentPlayerIndex === 0 ? 1 : 0];
-  for (const creature of [...outgoing.board]) {
-    // Mots-clés curés en mode "end_of_turn".
-    for (const inst of creature.card.keyword_instances ?? []) {
-      if (inst.mode !== "end_of_turn") continue;
-      // Sélection / Sélection magique / Renfort Royal : déclencheur INTERACTIF
-      // (modale « 1 parmi 3 »). On met en file un pendingTrigger porteur des 3
-      // cartes offertes ; le contrôleur choisit avant la bascule de tour. File
-      // seulement s'il existe au moins une carte éligible (sinon no-op).
+  const queue = newState.endOfTurnQueue;
+  if (!queue) return finalizeEndOfTurn(newState);
+
+  while (queue.length > 0) {
+    const step = queue[0];
+    const creature = outgoing.board.find(c => c.instanceId === step.sourceInstanceId);
+    // Source partie du plateau entre pause et reprise → on saute ses effets.
+    if (!creature) { queue.shift(); continue; }
+
+    if (step.curated) {
+      const inst = step.curated;
+      queue.shift();
+      // Sélection / Sélection magique / Renfort Royal : interactif (modale
+      // « 1 parmi 3 »). File seulement s'il existe une carte éligible.
       if (inst.id === "selection" || inst.id === "selection_magique" || inst.id === "renfort_royal") {
         const options = selectionCardsForKeyword(inst.id, newState, inst.x ?? 0, creature.card);
         if (options.length > 0) {
@@ -1452,41 +1495,53 @@ export function endTurn(state: GameState): GameState {
             selectionType: inst.id,
             selectionOptionIds: options.map(c => c.id),
           });
+          newState.endTurnPending = true;
+          return newState; // PAUSE
         }
-        continue;
+        continue; // aucune carte offerte → no-op
       }
       // Autres mots-clés curés : résolution immédiate (non interactive).
       resolveCuratedKeywordEffect(inst.id, inst.x ?? 1, creature, outgoing, opponent, undefined, inst);
+      continue;
     }
-    // Effets composés on_end_of_turn.
-    for (const cap of getCapabilities(creature.card)) {
-      if (!cap.composed || cap.trigger !== "on_end_of_turn") continue;
-      // `entity: "self"` vise toujours la source — il se résout de façon
-      // déterministe (cf. resolveComposedEffect) et ne doit JAMAIS être
-      // aiguillé vers la file de choix : composedTargetIds ne produit aucune
-      // cible pour "self", donc le déclencheur serait silencieusement perdu
-      // (ex. Ours Maudit : buff +1/+1 sur soi en fin de tour qui ne partait
-      // jamais car la donnée portait designation:"choice" + entity:"self").
-      if (cap.composed.target?.designation === "choice" && cap.composed.target?.entity !== "self") {
-        const trig: import("./types").PendingTrigger = {
-          id: `${creature.instanceId}#${cap.uid}`,
-          controllerId: outgoing.id,
-          sourceInstanceId: creature.instanceId,
-          capUid: cap.uid,
-        };
-        // File seulement s'il existe une cible éligible — sinon no-op (pas de
-        // soft-lock du changement de tour).
-        if (endOfTurnTriggerTargets(newState, trig).length > 0) {
-          (newState.pendingTriggers ??= []).push(trig);
-        }
-        continue;
+
+    // Effet composé on_end_of_turn.
+    const cap = getCapabilities(creature.card).find(c => c.uid === step.capUid && c.composed);
+    queue.shift();
+    if (!cap || !cap.composed) continue;
+    // `entity: "self"` vise toujours la source → jamais mis en file de choix
+    // (déterministe, cf. régression Ours Maudit). Un « au choix » non-self avec
+    // au moins une cible éligible met le tour en pause.
+    if (cap.composed.target?.designation === "choice" && cap.composed.target?.entity !== "self") {
+      const trig: import("./types").PendingTrigger = {
+        id: `${creature.instanceId}#${cap.uid}`,
+        controllerId: outgoing.id,
+        sourceInstanceId: creature.instanceId,
+        capUid: cap.uid,
+      };
+      if (endOfTurnTriggerTargets(newState, trig).length > 0) {
+        (newState.pendingTriggers ??= []).push(trig);
+        newState.endTurnPending = true;
+        return newState; // PAUSE
       }
-      withComposedMode("end_of_turn", () =>
-        resolveComposedEffect(cap.composed!, creature, outgoing, opponent));
+      continue; // aucune cible éligible → no-op (pas de soft-lock)
     }
+    withComposedMode("end_of_turn", () =>
+      resolveComposedEffect(cap.composed!, creature, outgoing, opponent));
   }
 
-  // Nettoyage des morts provoquées par les effets fin-de-tour (les deux camps).
+  // File épuisée : plus aucun effet fin-de-tour → finalisation.
+  newState.endOfTurnQueue = undefined;
+  return finalizeEndOfTurn(newState);
+}
+
+/** Finalise la fin de tour une fois TOUS les effets fin-de-tour traités :
+ *  nettoyage des morts + râles d'agonie (deux camps), auras, victoire. Si des
+ *  choix interactifs (ex. Remontée à la mort) restent, on diffère la bascule ;
+ *  sinon on bascule (finishEndTurn). */
+function finalizeEndOfTurn(newState: GameState): GameState {
+  const outgoing = newState.players[newState.currentPlayerIndex];
+  const opponent = newState.players[newState.currentPlayerIndex === 0 ? 1 : 0];
   const deadOut = cleanDeadCreatures(outgoing);
   const deadOpp = cleanDeadCreatures(opponent);
   processDeathTriggers(deadOut, outgoing, opponent);
@@ -1494,13 +1549,10 @@ export function endTurn(state: GameState): GameState {
   recalculateAuras(outgoing, opponent);
   checkWinCondition(newState);
 
-  // Des choix interactifs restent à résoudre : on diffère la bascule de tour.
-  // finishEndTurn s'exécutera quand la file sera vidée (resolvePendingTrigger).
   if ((newState.pendingTriggers?.length ?? 0) > 0) {
     newState.endTurnPending = true;
     return newState;
   }
-
   return finishEndTurn(newState);
 }
 
@@ -4838,8 +4890,14 @@ export function resolvePendingTrigger(state: GameState, action: ResolvePendingTr
   newState.lastAction = action;
   checkWinCondition(newState);
 
-  // Si un end_turn était en pause sur des choix interactifs et que la file est
-  // désormais vide, on termine le tour (purge statuts + bascule + startTurn).
+  // Reprise de la séquence de fin de tour dans l'ordre strict du plateau : s'il
+  // reste des effets fin-de-tour en file, on les traite (automatiques compris)
+  // jusqu'au prochain interactif ou la finalisation. `endOfTurnQueue` défini ⇒
+  // on est encore dans la phase d'effets ; undefined ⇒ file épuisée (on est dans
+  // la queue de finalisation / Remontée mort), on garde l'ancien comportement.
+  if (newState.endTurnPending && newState.endOfTurnQueue !== undefined) {
+    return advanceEndOfTurn(newState);
+  }
   if (newState.endTurnPending && (newState.pendingTriggers?.length ?? 0) === 0) {
     return finishEndTurn(newState);
   }
@@ -4895,33 +4953,50 @@ export function autoResolvePendingTriggers(state: GameState): GameState {
   newState.factionCardPool = pool;
   newState.allSpellsPool = allPool;
 
-  const queue = newState.pendingTriggers ?? [];
-  newState.pendingTriggers = [];
-  for (const trigger of queue) {
-    let choice: { targetInstanceId?: string; selectionCardId?: number } = {};
-    if (trigger.selectionType) {
-      const opts = trigger.selectionOptionIds ?? [];
-      if (opts.length > 0) choice = { selectionCardId: opts[Math.floor(rng() * opts.length)] };
-    } else if (trigger.capUid) {
-      const targets = endOfTurnTriggerTargets(newState, trigger);
-      if (targets.length > 0) choice = { targetInstanceId: targets[Math.floor(rng() * targets.length)] };
-    } else if (trigger.kw === "remontee") {
-      const controller = newState.players.find(p => p.id === trigger.controllerId);
-      const other = newState.players.find(p => p.id !== trigger.controllerId);
-      if (controller && other) {
-        const targets = remonteeTargetIds(controller, other, trigger.sourceInstanceId);
+  // Draine TOUTE la séquence de fin de tour de façon déterministe (rng semée →
+  // identique entre clients). En ordre strict il n'y a qu'UN déclencheur
+  // interactif à la fois : on le résout au hasard, puis on reprend la file
+  // (automatiques + interactif suivant) jusqu'à la bascule. finishEndTurn, s'il
+  // s'exécute via advanceEndOfTurn, écrase ce lastAction par "end_turn" (comme
+  // avant). Le garde borne la boucle (chaque itération retire ≥1 effet).
+  newState.lastAction = { type: "auto_resolve_pending_triggers" };
+  let guard = 0;
+  while ((newState.pendingTriggers?.length ?? 0) > 0 && guard++ < 500) {
+    const queue = newState.pendingTriggers ?? [];
+    newState.pendingTriggers = [];
+    for (const trigger of queue) {
+      let choice: { targetInstanceId?: string; selectionCardId?: number } = {};
+      if (trigger.selectionType) {
+        const opts = trigger.selectionOptionIds ?? [];
+        if (opts.length > 0) choice = { selectionCardId: opts[Math.floor(rng() * opts.length)] };
+      } else if (trigger.capUid) {
+        const targets = endOfTurnTriggerTargets(newState, trigger);
         if (targets.length > 0) choice = { targetInstanceId: targets[Math.floor(rng() * targets.length)] };
+      } else if (trigger.kw === "remontee") {
+        const controller = newState.players.find(p => p.id === trigger.controllerId);
+        const other = newState.players.find(p => p.id !== trigger.controllerId);
+        if (controller && other) {
+          const targets = remonteeTargetIds(controller, other, trigger.sourceInstanceId);
+          if (targets.length > 0) choice = { targetInstanceId: targets[Math.floor(rng() * targets.length)] };
+        }
       }
+      applyOnePendingTrigger(newState, trigger, choice);
     }
-    applyOnePendingTrigger(newState, trigger, choice);
+    recalculateAuras(newState.players[0], newState.players[1]);
+    checkWinCondition(newState);
+    // Reprise de la file fin-de-tour : résout les automatiques suivants et met
+    // éventuellement le prochain interactif en file (nouvelle itération) ou
+    // finalise + bascule le tour (finishEndTurn).
+    if (newState.endTurnPending && newState.endOfTurnQueue !== undefined) {
+      advanceEndOfTurn(newState);
+    }
   }
 
-  recalculateAuras(newState.players[0], newState.players[1]);
-  newState.lastAction = { type: "auto_resolve_pending_triggers" };
-  checkWinCondition(newState);
-
-  // La file est vidée : si un end_turn était en pause, on termine le tour.
-  if (newState.endTurnPending) return finishEndTurn(newState);
+  // Sécurité : file d'effets épuisée mais bascule pas encore faite (queue de
+  // finalisation / Remontée mort vidée) → on termine le tour.
+  if (newState.endTurnPending && newState.endOfTurnQueue === undefined && (newState.pendingTriggers?.length ?? 0) === 0) {
+    return finishEndTurn(newState);
+  }
   return newState;
 }
 

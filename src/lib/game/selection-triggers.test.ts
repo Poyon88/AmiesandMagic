@@ -211,7 +211,11 @@ describe("Repli automatique à l'expiration du chrono (auto_resolve_pending_trig
     ];
     initRNG(7);
     const s1 = applyAction(s0, { type: "end_turn" });
-    expect(s1.pendingTriggers?.length).toBe(2);
+    // Ordre STRICT gauche→droite : un seul effet interactif en file à la fois.
+    // La 1re Sélection met le tour en pause ; la 2de n'est mise en file qu'après
+    // sa résolution (la séquence restante vit dans endOfTurnQueue).
+    expect(s1.pendingTriggers?.length).toBe(1);
+    // auto-résolution : draine TOUTE la séquence (les 2 Sélections), puis bascule.
     const s2 = applyAction(s1, { type: "auto_resolve_pending_triggers" });
     expect(s2.players[0].hand.length).toBe(2);
     expect(s2.pendingTriggers?.length ?? 0).toBe(0);
