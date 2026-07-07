@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, memo } from "react";
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -32,7 +32,7 @@ interface HandCardProps {
   boost?: "buff" | "empower" | null;
 }
 
-export default function HandCard({
+function HandCard({
   cardInstance,
   canPlay,
   isSelected = false,
@@ -847,3 +847,19 @@ export default function HandCard({
     </motion.div>
   );
 }
+
+// Mémoïsé : évite les re-renders déclenchés par le PARENT (GameBoard) quand
+// rien ne change pour cette carte. HandCard s'abonne déjà finement au store
+// (gameState/localPlayerId/…) pour son propre contenu. On ignore `onClick`
+// (arrow inline recréée à chaque render du parent) : son comportement dépend
+// de cardInstance (comparé) + selectCardInHand/broadcast, refs stables.
+function propsEqual(a: HandCardProps, b: HandCardProps): boolean {
+  return (
+    a.cardInstance === b.cardInstance &&
+    a.canPlay === b.canPlay &&
+    a.isSelected === b.isSelected &&
+    a.boost === b.boost
+  );
+}
+
+export default memo(HandCard, propsEqual);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, memo } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import type { CardInstance, GameAction } from "@/lib/game/types";
@@ -45,7 +45,7 @@ interface BoardCreatureProps {
   onAction?: (action: GameAction | null) => void;
 }
 
-export default function BoardCreature({
+function BoardCreature({
   creature,
   isOwn,
   canAttack = false,
@@ -917,3 +917,26 @@ export default function BoardCreature({
     </motion.div>
   );
 }
+
+// Mémoïsé : GameBoard re-render à chaque event d'animation/hover/targeting.
+// On ne compare que les props de DONNÉES ; les props-fonctions (onClick,
+// onMouseEnter/Leave, onAction) sont ignorées à dessein car leur comportement
+// est entièrement déterminé par ces mêmes données + des handlers useCallback
+// stables côté parent (handleSelectTarget/Attacker dépendent de gameState/myTurn,
+// eux-mêmes capturés par `creature`/`canAttack`). Le moteur deepClone l'état,
+// donc `creature` reçoit une nouvelle référence dès qu'il change réellement.
+function propsEqual(a: BoardCreatureProps, b: BoardCreatureProps): boolean {
+  return (
+    a.creature === b.creature &&
+    a.isOwn === b.isOwn &&
+    a.canAttack === b.canAttack &&
+    a.isSelected === b.isSelected &&
+    a.isValidTarget === b.isValidTarget &&
+    a.damageAmount === b.damageAmount &&
+    a.boostKind === b.boostKind &&
+    a.summoning === b.summoning &&
+    a.entering === b.entering
+  );
+}
+
+export default memo(BoardCreature, propsEqual);
