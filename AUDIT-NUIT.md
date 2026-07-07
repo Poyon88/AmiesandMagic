@@ -22,9 +22,10 @@
 
 | Sévérité | Finding | Statut |
 |---|---|---|
-| 🔴 **CRITICAL** | `collections` POST/DELETE : tout compte pouvait s'octroyer/supprimer des cartes arbitraires | ✅ **Corrigé** |
+| 🔴 **CRITICAL** | `collections` POST/DELETE : tout compte pouvait s'octroyer/supprimer des cartes arbitraires | ✅ **Corrigé (API + RLS DB)** |
+| 🔴 **CRITICAL** | **`profiles.role` : escalade de privilège** — tout compte pouvait s'auto-promouvoir admin (privilège colonne + RLS par ligne) | ⚠️ **Correctif SQL prêt à appliquer** |
 | 🟠 HIGH | `Hero3DViewer` : hook appelé conditionnellement (crash React possible) | ✅ **Corrigé** |
-| 🟠 HIGH | RLS des tables publiques non vérifiable dans le repo (probablement absente sur certaines) | ⚠️ **À traiter (dashboard)** |
+| ~~🟠 HIGH~~ | ~~RLS des tables publiques probablement absente~~ → **infondé** : RLS activée sur les 25 tables (vérifié en prod) | ✅ **Vérifié sain** |
 | 🟠 HIGH | Perf : `GameBoard` s'abonne au store entier (jank combat/iPad) | 📋 À revoir |
 | 🟠 HIGH | Perf/egress : `select('*')` de tout le pool de sorts/cartes à chaque match | 📋 À revoir |
 | 🟡 MEDIUM | `auctions/settle` : fail-open si `CRON_SECRET` absent | ✅ **Corrigé** |
@@ -66,9 +67,17 @@
 
 ## 4. Findings à revoir (NON corrigés — décision ou refactor nécessaire)
 
-### 🟠 HIGH — RLS des tables publiques (action dashboard)
-L'anon key est publique et PostgREST expose **toutes** les tables du schéma `public` : toute table sans RLS est lisible/écrivable directement via `https://<ref>.supabase.co/rest/v1/<table>`, **en contournant les routes API**. Les tables cœur (`profiles`, `user_collections`, `card_prints`, `decks`, `cards`, `matches`…) n'ont **aucune** instruction RLS dans le repo (créées via dashboard, non auditables ici). Cas prouvé : `sfx_tracks` est créée **explicitement sans RLS** (`supabase-migration-sfx.sql:5`).
-> ⚠️ Si `user_collections` est déjà sans RLS, le correctif CRITICAL ci-dessus (route API) ne suffit pas : un client peut écrire en direct. **Action prioritaire** : lancer `get_advisors(security)` dans le dashboard et activer `ENABLE ROW LEVEL SECURITY` + policies scoped `auth.uid()` sur toutes les tables publiques.
+### 🔴 CRITICAL — Escalade de privilège via `profiles.role` (découvert au diagnostic DB, 2026-07-07)
+> **Mise à jour post-diagnostic.** L'alerte initiale « RLS absente sur les tables publiques » s'est révélée **infondée** : le diagnostic sur la prod (`supabase-rls-diagnostic.sql`) montre la **RLS activée sur les 25 tables** avec des policies globalement correctes — elles étaient juste créées dans le dashboard, invisibles depuis le repo. `user_collections` a une policy SELECT self-only et **aucune** policy d'écriture → le trou résiduel du CRITICAL collections était donc déjà fermé côté DB.
+
+En creusant les policies, on a trouvé **bien pire** : la table `profiles` a une policy `UPDATE USING (auth.uid() = id)` **et** le rôle `authenticated` possède le privilège UPDATE sur la colonne `role`, sans trigger de protection. Or la RLS est **par ligne, pas par colonne**. Donc tout compte connecté pouvait s'auto-promouvoir admin :
+```js
+supabase.from('profiles').update({ role: 'admin' }).eq('id', monId)
+```
+→ accès à **toutes** les routes admin (créditer son wallet, s'octroyer des cartes, bannir…). Invisible à l'audit statique (policy dashboard). **Correctif** dans `supabase-migration-rls-hardening.sql` : `REVOKE UPDATE ON public.profiles FROM authenticated, anon;` (aucun code client n'écrit sur profiles → zéro casse). **À appliquer en prod.**
+
+### 🟢 LOW — Expositions en lecture (RLS)
+`profiles` et `card_prints` ont un `SELECT USING (true)` pour `authenticated` (tout compte lit tous les profils / prints). Peu sensible ; à resserrer seulement si `profiles` gagne des colonnes PII. Détail et SQL commenté dans `supabase-migration-rls-hardening.sql`.
 
 ### 🟠 HIGH — Performance rendu & egress
 - **`GameBoard.tsx:106`** s'abonne au store Zustand **entier** (`= useGameStore()` sans sélecteur) → re-render complet du sous-arbre (2 boards × N créatures + main) à **chaque** event d'animation/hover/targeting. Aucun composant de `game/` n'utilise `React.memo`. Cause n°1 de jank en combat. → Sélecteurs atomiques + `memo` sur `BoardCreature`/`HandCard` + handlers stabilisés. **À tester en match réel (pièges iPad connus).**
