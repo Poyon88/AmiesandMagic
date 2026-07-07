@@ -3436,8 +3436,15 @@ export function getSpellTargetSlots(card: Card): SpellTargetSlot[] {
 function composedSlotType(t: import("./types").TargetSpec): SpellTargetType | undefined {
   if (t.entity === "self") return undefined; // déterministe (la source) → aucun picker
   if (t.entity === "hero") return t.side === "ally" ? "friendly_hero" : "enemy_hero";
-  // "both" : héros OU unité → "any" (le picker accepte héros et créatures).
-  if (t.entity === "both") return "any";
+  // "both" : héros OU unité. Side-aware — un effet OFFENSIF (side "enemy") ne
+  // doit proposer QUE le camp ennemi (unité + héros ennemi), jamais ses propres
+  // unités / son propre héros (sinon auto-dégâts au clic). Idem côté allié.
+  // Sans side précisé → "any" (les deux camps, comportement historique).
+  if (t.entity === "both") {
+    return t.side === "enemy" ? "enemy_any"
+         : t.side === "ally" ? "friendly_any"
+         : "any";
+  }
   if (t.location !== "board") return undefined;
   return t.side === "ally" ? "friendly_creature" : t.side === "enemy" ? "enemy_creature" : "any_creature";
 }
@@ -5849,6 +5856,16 @@ export function getSpellTargets(state: GameState, card: Card, slotType?: SpellTa
         ...player.board.map(c => c.instanceId),
         ...filterEnemyTargetable(opponent.board).map(c => c.instanceId),
         "enemy_hero", "friendly_hero",
+      ];
+    case "enemy_any":
+      return [
+        ...filterEnemyTargetable(opponent.board).map(c => c.instanceId),
+        "enemy_hero",
+      ];
+    case "friendly_any":
+      return [
+        ...player.board.map(c => c.instanceId),
+        "friendly_hero",
       ];
     case "any_creature":
       return [
