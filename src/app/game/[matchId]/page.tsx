@@ -10,6 +10,7 @@ import GameBoard from "@/components/game/GameBoard";
 import OrientationLock from "@/components/shared/OrientationLock";
 import type { Card, GameAction, GameState, HeroDefinition, HeroPowerEffect, Race } from "@/lib/game/types";
 import { syncHash, reconcileVerdict } from "@/lib/game/stateHash";
+import { FACTIONS } from "@/lib/card-engine/constants";
 
 // Colonnes de `cards` réellement consommées par le moteur en partie. Projection
 // explicite (au lieu de select("*")) pour réduire l'egress : le pool de sorts +
@@ -229,17 +230,34 @@ export default function GamePage() {
           (p2DeckData.data?.heroes as unknown as HeroRow) ?? null
         );
 
-        // Load faction card pool for Sélection X keyword
+        // Load faction card pool for Sélection X keyword.
         const deckFactions = new Set(
           [...p1Cards, ...p2Cards]
             .map((c) => c.card.faction)
             .filter(Boolean) as string[]
         );
         deckFactions.add("Mercenaires");
+        // Sélection X propose des communes de TOUTES les factions du même
+        // ALIGNEMENT (bon/neutre/maléfique) que la carte source, pas seulement
+        // des factions du deck. On élargit donc le pool à toutes les factions
+        // partageant un alignement avec une faction du deck — sinon un joueur
+        // mono-faction ne se voit proposer que sa propre faction (cf. Intendant
+        // des Gemmes : neutre → doit offrir toutes les factions neutres).
+        const deckAlignments = new Set<string>();
+        for (const f of deckFactions) {
+          const al = FACTIONS[f]?.alignment;
+          if (al && al !== "spéciale") deckAlignments.add(al);
+        }
+        const selectionFactions = new Set(deckFactions);
+        for (const [factionId, def] of Object.entries(FACTIONS)) {
+          if (def.alignment !== "spéciale" && deckAlignments.has(def.alignment)) {
+            selectionFactions.add(factionId);
+          }
+        }
         // `.returns<Card[]>()` : la projection est une string dynamique, donc
         // supabase-js ne peut pas inférer la forme des lignes — on la fournit.
         const [factionCardsRes, manaSparkRes, allSpellsRes] = await Promise.all([
-          supabase.from("cards").select(GAME_CARD_COLUMNS).in("faction", Array.from(deckFactions)).returns<Card[]>(),
+          supabase.from("cards").select(GAME_CARD_COLUMNS).in("faction", Array.from(selectionFactions)).returns<Card[]>(),
           supabase.from("cards").select(GAME_CARD_COLUMNS).eq("name", "Mana Spark").eq("card_type", "spell").limit(1).returns<Card[]>(),
           // Concentration X: needs every spell across every faction/set, not
           // just the deck-faction subset that factionCardPool covers.
