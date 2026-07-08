@@ -2618,6 +2618,10 @@ function recastSpells(
 
     // Build random target map
     const targetMap: Record<string, string> = {};
+    // Vraies cibles du sort (pour l'animation « comme depuis la main »), hors
+    // fallback target_0 défensif ci-dessous — sinon un sort de zone afficherait
+    // une flèche parasite vers une créature aléatoire.
+    const realTargetIds: string[] = [];
     if (card.spell_keywords?.length) {
       for (let i = 0; i < card.spell_keywords.length; i++) {
         const kw = card.spell_keywords[i];
@@ -2625,7 +2629,7 @@ function recastSpells(
         if (!def) continue;
         if (def.needsTarget) {
           const target = pickRandomTarget(player, opponent, def.targetType);
-          if (target) targetMap[`kw_${i}`] = target;
+          if (target) { targetMap[`kw_${i}`] = target; realTargetIds.push(target); }
         }
       }
     }
@@ -2633,13 +2637,25 @@ function recastSpells(
     if (card.spell_effects?.targets?.length) {
       for (const slot of card.spell_effects.targets) {
         const target = pickRandomTarget(player, opponent, slot.type as SpellTargetType);
-        if (target) targetMap[slot.slot] = target;
+        if (target) { targetMap[slot.slot] = target; realTargetIds.push(target); }
       }
     }
     if (!targetMap["target_0"]) {
       const fallback = pickRandomTarget(player, opponent, "any");
       if (fallback) targetMap["target_0"] = fallback;
     }
+
+    // Indice d'animation : rejoue le sort relancé comme s'il venait de la main
+    // (overlay + flèches vers ses cibles). Cibles héros caster-relatives →
+    // sentinelles absolues __hero_<idx>__ (traduites par POV côté store).
+    const pIdx = state.players.indexOf(player);
+    const oIdx = state.players.indexOf(opponent);
+    const animTargetIds = [...new Set(realTargetIds)].map(id =>
+      id === "enemy_hero" ? `__hero_${oIdx}__`
+      : id === "friendly_hero" ? `__hero_${pIdx}__`
+      : id,
+    );
+    (state.recastEvents ??= []).push({ card, targetIds: animTargetIds });
 
     const ctx: SpellResolutionContext = {
       state, caster: player, opponent, card, targetMap, results: {},

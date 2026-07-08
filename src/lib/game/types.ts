@@ -779,6 +779,17 @@ export interface GameState {
     targetId: string;
     mode: KeywordMode;
   }>;
+  // Transient: chaque sort RELANCÉ par la capacité Relancer est poussé ici
+  // {card, targetIds} — dans l'ordre de relance (plus récent d'abord) — pour que
+  // le store l'anime comme un sort joué depuis la main : overlay du sort +
+  // flèches vers ses cibles (choisies aléatoirement à la relance) + VFX de
+  // ciblage. Cibles héros en sentinelles absolues `__hero_<idx>__` (traduites
+  // par POV côté store, cf. fureurStrikes). Vidé par le store après
+  // planification ; exclu du hash d'état.
+  recastEvents?: Array<{
+    card: Card;
+    targetIds: string[];
+  }>;
   // Transient: when an attack fires an "à l'attaque" composed power, the engine
   // attaches the post-power / pre-combat board here so the store can animate the
   // power in a first wave (its damage/deaths) then combat in a second wave.

@@ -982,22 +982,8 @@ export const useGameStore = create<GameStore>((set, get) => {
       }
     }
 
-    // Capture spell history length before action to detect recasts
+    // playerIdx = joueur actif (caster) ; réutilisé plus bas (POV, oppIdx…).
     const playerIdx = gameState.currentPlayerIndex;
-    const oldHistoryLen = gameState.players[playerIdx].spellHistory?.length ?? 0;
-
-    // Detect if this card has "relancer" (spell keyword or creature keyword)
-    let isRelancerCard = false;
-    if (action.type === "play_card") {
-      const player = gameState.players[playerIdx];
-      const cardInst = player.hand.find((c) => c.instanceId === action.cardInstanceId);
-      if (cardInst) {
-        isRelancerCard = !!(
-          cardInst.card.spell_keywords?.some(kw => kw.id === "relancer") ||
-          cardInst.card.keywords.includes("relancer" as import("@/lib/game/types").Keyword)
-        );
-      }
-    }
 
     const newState = applyAction(gameState, action);
     // Two-wave attack: pop the post-power / pre-combat snapshot the engine
@@ -1074,40 +1060,26 @@ export const useGameStore = create<GameStore>((set, get) => {
     }));
     const SEQ_PHASE_EXTRA_MS = seqEvents.length > 0 ? (seqEvents.length - 1) * SEQ_STEP_MS + 500 : 0;
 
-    // Detect recast spells by comparing spell history
-    const newHistoryLen = newState.players[playerIdx].spellHistory?.length ?? 0;
-    const recastSpells: SpellCastEvent[] = [];
-    if (isRelancerCard && newHistoryLen > oldHistoryLen) {
-      // New spells were added to history during recast — but actually recasts don't add to history
-      // Instead, use the old history to find which spells were replayed
-    }
-    // For recast: the spells replayed are the last X from the OLD history
-    if (isRelancerCard) {
-      const oldHistory = gameState.players[playerIdx].spellHistory ?? [];
-      if (action.type === "play_card") {
-        const player = gameState.players[playerIdx];
-        const cardInst = player.hand.find((c) => c.instanceId === action.cardInstanceId);
-        if (cardInst) {
-          // Get X value
-          const spellKw = cardInst.card.spell_keywords?.find(kw => kw.id === "relancer");
-          let x = spellKw?.amount ?? 1;
-          if (!spellKw && cardInst.card.keywords.includes("relancer" as import("@/lib/game/types").Keyword)) {
-            // Creature keyword — extract X from effect text
-            const match = cardInst.card.effect_text.match(/Relancer\s+(\d+)/i);
-            x = match ? parseInt(match[1]) : 1;
-          }
-          const replayed = oldHistory.slice(-x).reverse();
-          for (const entry of replayed) {
-            recastSpells.push({
-              spellName: `♻️ ${entry.card.name}`,
-              effectText: entry.card.effect_text,
-              timestamp: Date.now(),
-              card: entry.card,
-            });
-          }
-        }
-      }
-    }
+    // Sorts relancés (capacité Relancer) : le moteur a enregistré chaque relance
+    // dans newState.recastEvents {card, targetIds}, dans l'ordre de relance. On
+    // les anime comme un sort joué depuis la main (overlay + flèches vers les
+    // cibles choisies aléatoirement + VFX de ciblage). Sentinelles héros
+    // absolues `__hero_<idx>__` → POV local (cf. fureurStrikes / sequentialHits).
+    // On vide la liste transitoire après extraction (exclue du hash).
+    const rawRecasts = newState.recastEvents ?? [];
+    if (newState.recastEvents) newState.recastEvents = undefined;
+    const recastSpells: SpellCastEvent[] = rawRecasts.map((rc) => ({
+      spellName: `♻️ ${rc.card.name}`,
+      effectText: rc.card.effect_text,
+      timestamp: Date.now(),
+      card: rc.card,
+      targetIds: rc.targetIds.map((id) => {
+        const m = /^__hero_(\d)__$/.exec(id);
+        if (!m) return id;
+        const isLocal = newState.players[+m[1]]?.id === localPlayerId;
+        return isLocal ? "friendly_hero" : "enemy_hero";
+      }),
+    }));
 
     // Detect if a spell was countered (contresort)
     if (spellEvent && action.type === "play_card") {
