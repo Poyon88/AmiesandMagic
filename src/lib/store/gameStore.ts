@@ -984,6 +984,9 @@ export const useGameStore = create<GameStore>((set, get) => {
 
     // playerIdx = joueur actif (caster) ; réutilisé plus bas (POV, oppIdx…).
     const playerIdx = gameState.currentPlayerIndex;
+    // Fin de tour : le moteur a DÉJÀ basculé le tour dans newState (voir plus bas
+    // le maintien de l'identité du tour sortant + l'ordre plateau des effets).
+    const isEndTurn = action.type === "end_turn";
 
     const newState = applyAction(gameState, action);
     // Two-wave attack: pop the post-power / pre-combat snapshot the engine
@@ -1261,6 +1264,9 @@ export const useGameStore = create<GameStore>((set, get) => {
     // data-target-id), donc l'ancrage reste correct sur les deux écrans.
     let powerArrowEvent: PowerArrowEvent | null = null;
     const powerArrows: PowerArrowGroup[] = [];
+    // Fin de tour : cible touchée → index plateau de sa créature source
+    // (rempli depuis powerStrikes) pour ordonner les popups gauche→droite.
+    const endTurnSourceIdxByTarget = new Map<string, number>();
     // Sentinelle héros moteur `__hero_<idx>__` → repère LOCAL ("friendly_hero"/
     // "enemy_hero") ; un instanceId de créature passe tel quel.
     const heroSentinelToLocal = (id: string): string => {
@@ -1326,6 +1332,14 @@ export const useGameStore = create<GameStore>((set, get) => {
         let g = groups.get(key);
         if (!g) { g = { sourceId: src, color, targets: new Set() }; groups.set(key, g); }
         if (tgt !== src) g.targets.add(tgt);
+        // Fin de tour : le moteur résout les effets dans l'ordre plateau
+        // gauche→droite des créatures sources. On mémorise, par cible touchée,
+        // l'index plateau de sa créature source (dans le plateau du joueur
+        // SORTANT) pour rejouer les popups de dégâts dans ce même ordre.
+        if (isEndTurn && !endTurnSourceIdxByTarget.has(tgt)) {
+          const srcIdx = gameState.players[playerIdx].board.findIndex((c) => c.instanceId === st.sourceId);
+          if (srcIdx >= 0) endTurnSourceIdxByTarget.set(tgt, srcIdx);
+        }
       }
       for (const g of groups.values()) {
         if (g.targets.size > 0) powerArrows.push({ sourceId: g.sourceId, targetIds: Array.from(g.targets), color: g.color });
@@ -1610,6 +1624,31 @@ export const useGameStore = create<GameStore>((set, get) => {
     const preDrawState = cloneState(newState);
     trimDrawsFromHand(preDrawState);
 
+    // --- Fin de tour : garder l'identité du tour SORTANT sur les états
+    // intermédiaires. Bug : le tour suivant « commençait » (indicateur de tour,
+    // timer, mana rechargé) AVANT que les effets de fin de tour ne finissent de
+    // s'animer, parce que le moteur bascule déjà tout dans newState et que ces
+    // états intermédiaires en sont des clones. On rétablit currentPlayerIndex /
+    // turnStartedAt / turnNumber / mana aux valeurs sortantes pendant que les
+    // FX de fin de tour jouent ; la bascule visible n'arrive qu'au commit final
+    // (phaseDraws → newState). preDrawState n'est préservé QUE s'il reste une
+    // phase de pioche après lui ; sinon il est l'état terminal et doit déjà
+    // porter le tour basculé (paquet vide → pas de phaseDraws).
+    if (isEndTurn) {
+      const keepOutgoingTurn = (state: GameState) => {
+        state.currentPlayerIndex = gameState.currentPlayerIndex;
+        state.turnStartedAt = gameState.turnStartedAt;
+        state.turnNumber = gameState.turnNumber;
+        for (let i = 0; i < 2; i++) {
+          state.players[i].mana = gameState.players[i].mana;
+          state.players[i].maxMana = gameState.players[i].maxMana;
+        }
+      };
+      keepOutgoingTurn(impactState);
+      keepOutgoingTurn(postDeathState);
+      if (hasDraws) keepOutgoingTurn(preDrawState);
+    }
+
     // Fast path: trivial action (no visible effects) — commit immediately.
     if (!hasAnything) {
       const overlay = pendingTriggerOverlay(newState, get().localPlayerId);
@@ -1758,7 +1797,24 @@ export const useGameStore = create<GameStore>((set, get) => {
     const nonSeqImpactEvents = impactOnlyEvents.filter(
       (ev) => !(seqTargets.has(ev.targetId) && (ev.type === "damage" || ev.type === "heal")),
     );
-    const staggeredDmgEvents = [...staggerByTarget(nonSeqImpactEvents), ...seqEvents];
+    // Fin de tour : ordonner les popups par index plateau de la créature SOURCE
+    // (gauche→droite, comme le moteur résout) plutôt que par ordre d'apparition
+    // des cibles. Les cibles sans source connue (buffs sans powerStrike) passent
+    // après, dans l'ordre courant.
+    const staggerEndTurnBySource = (events: typeof dmgEvents) => {
+      const idxOf = (t: string) => endTurnSourceIdxByTarget.get(t) ?? Number.MAX_SAFE_INTEGER;
+      const ordered = events
+        .map((ev, i) => ({ ev, i }))
+        .sort((a, b) => idxOf(a.ev.targetId) - idxOf(b.ev.targetId) || a.i - b.i);
+      const rank = new Map<string, number>();
+      for (const { ev } of ordered) {
+        if (!rank.has(ev.targetId)) rank.set(ev.targetId, rank.size);
+      }
+      return ordered.map(({ ev }) => ({ ...ev, delayMs: (rank.get(ev.targetId) ?? 0) * STAGGER_MS }));
+    };
+    const staggeredDmgEvents = isEndTurn
+      ? [...staggerEndTurnBySource(nonSeqImpactEvents), ...seqEvents]
+      : [...staggerByTarget(nonSeqImpactEvents), ...seqEvents];
     const staggeredTriggerEvents = staggerByTarget(deferredBuffEvents);
 
     // --- Wave 1 (on-attack power) artifacts: diff gameState → intermediate ---
