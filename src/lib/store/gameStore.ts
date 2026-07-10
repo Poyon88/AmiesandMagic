@@ -5,7 +5,8 @@ import SfxEngine from "@/lib/audio/SfxEngine";
 import { playAttackLunge } from "@/lib/game/animations";
 import { findInstanceEl, overlayRect } from "@/lib/fx/overlayMotion";
 import { parseXValuesFromEffectText, KEYWORD_LABELS, KEYWORD_SYMBOLS, keywordModeColor } from "@/lib/game/keyword-labels";
-import { composedCapsOf, composedTriggerMode } from "@/lib/game/composed-display";
+import { composedCapsOf, composedTriggerMode, composedChoicePrompt } from "@/lib/game/composed-display";
+import { getCapabilities } from "@/lib/game/capability-adapter";
 import {
   initializeGame,
   applyAction,
@@ -50,8 +51,8 @@ import {
 function pendingTriggerOverlay(
   gs: GameState | null,
   localPlayerId: string | null,
-): { targetingMode: "pending_trigger" | "selection" | "none"; validTargets: string[]; pendingTriggerId: string | null; selectionCards?: Card[] } {
-  const none = { targetingMode: "none" as const, validTargets: [], pendingTriggerId: null };
+): { targetingMode: "pending_trigger" | "selection" | "none"; validTargets: string[]; pendingTriggerId: string | null; pendingTriggerPrompt: string | null; selectionCards?: Card[] } {
+  const none = { targetingMode: "none" as const, validTargets: [], pendingTriggerId: null, pendingTriggerPrompt: null };
   const t = gs?.pendingTriggers?.[0];
   if (!t || !localPlayerId || t.controllerId !== localPlayerId) return none;
   // Variante « Sélection en fin de tour » : ouvre la modale « 1 parmi 3 » (les
@@ -60,7 +61,7 @@ function pendingTriggerOverlay(
     const byId = new Map([...(gs!.factionCardPool ?? []), ...(gs!.allSpellsPool ?? [])].map(c => [c.id, c] as const));
     const ordered = (t.selectionOptionIds ?? []).map(id => byId.get(id)).filter((c): c is Card => !!c);
     if (ordered.length === 0) return none;
-    return { targetingMode: "selection" as const, validTargets: [], pendingTriggerId: t.id, selectionCards: ordered };
+    return { targetingMode: "selection" as const, validTargets: [], pendingTriggerId: t.id, pendingTriggerPrompt: null, selectionCards: ordered };
   }
   // Variante « fin de tour » (effet composé) vs remontée (mot-clé).
   const isEndOfTurn = !!t.capUid;
@@ -72,7 +73,16 @@ function pendingTriggerOverlay(
     ? endOfTurnTriggerTargets(gs!, t)
     : remonteeTargetIds(controller, other, t.sourceInstanceId);
   if (targets.length === 0) return none;
-  return { targetingMode: "pending_trigger", validTargets: targets, pendingTriggerId: t.id };
+  // Le message du sélecteur doit refléter l'EFFET réel. Pour un effet composé de
+  // fin de tour, on le dérive de la capability (ex. buff → « choisissez une
+  // créature à renforcer ») au lieu du texte de Remontée qui était figé.
+  let prompt = "🔼 Remontée — choisissez l'unité à renvoyer en main";
+  if (isEndOfTurn) {
+    const source = controller.board.find(c => c.instanceId === t.sourceInstanceId);
+    const cap = source ? getCapabilities(source.card).find(c => c.uid === t.capUid && c.composed) : undefined;
+    prompt = cap ? composedChoicePrompt(cap) : "🎯 Choisissez une cible";
+  }
+  return { targetingMode: "pending_trigger", validTargets: targets, pendingTriggerId: t.id, pendingTriggerPrompt: prompt };
 }
 
 export interface SpellCastEvent {
@@ -173,6 +183,10 @@ interface GameStore {
   // Id du déclencheur interactif en attente que le contrôleur résout (Remontée
   // mort/retour à son tour). null hors de ce mode.
   pendingTriggerId: string | null;
+  // Message du sélecteur du déclencheur en attente, dérivé de l'effet réel
+  // (ex. buff de fin de tour → « choisissez une créature à renforcer »). null
+  // hors du mode pending_trigger.
+  pendingTriggerPrompt: string | null;
   // Tap-activation targeting context — set when the player clicks Activer
   // on a creature whose tap-mode keyword needs a target (e.g. Vampirisme).
   // Both fields stay null outside of tap targeting.
@@ -778,6 +792,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   validTargets: [],
   targetingMode: "none",
   pendingTriggerId: null,
+  pendingTriggerPrompt: null,
   pendingCostCard: null,
   selectedDiscardIds: [],
   selectedSacrificeIds: [],
