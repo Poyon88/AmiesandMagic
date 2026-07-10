@@ -1348,6 +1348,10 @@ export const useGameStore = create<GameStore>((set, get) => {
     }
 
     if (powerArrows.length > 0) powerArrowEvent = { arrows: powerArrows, timestamp: Date.now() };
+    // Fin de tour avec plusieurs sources : au lieu de faire partir toutes les
+    // flèches d'un coup, on les révèle une par une gauche→droite (ordre plateau
+    // déjà porté par powerArrows) — voir le planificateur cumulatif plus bas.
+    const staggerEndTurnArrows = isEndTurn && !!powerArrowEvent && powerArrowEvent.arrows.length > 1;
 
     // Réduction de coût (Sacrifice démoniaque…) : on diffe le manaCostReduction
     // des cartes de la main du joueur LOCAL avant/après l'action et on émet un
@@ -1734,7 +1738,9 @@ export const useGameStore = create<GameStore>((set, get) => {
         ...(heroPowerEvent ? { heroPowerCastEvent: heroPowerEvent } : {}),
         // La flèche de pouvoir part AVANT l'impact (simultanée à l'anim
         // héroïque pour un pouvoir de héros ; les dégâts/bouclier suivent).
-        ...(powerArrowEvent ? { powerArrowEvent } : {}),
+        // En fin de tour étalée, l'émission est déléguée au planificateur
+        // cumulatif (plus bas) — on ne pousse pas le lot complet ici.
+        ...(powerArrowEvent && !staggerEndTurnArrows ? { powerArrowEvent } : {}),
       }));
       playSfxBatch(overlaySfx);
       // Attack lunge plays on BOTH the active and passive client, since this
@@ -1965,8 +1971,27 @@ export const useGameStore = create<GameStore>((set, get) => {
       cursor += COST_DISCARD_MS;
     }
     // Phase A (Overlay) — fires at t=cursor (0 if no power wave / cost discard).
+    const overlayAt = cursor;
     if (cursor === 0) phaseOverlay();
     else setTimeout(phaseOverlay, cursor);
+
+    // Fin de tour : révèle les flèches de pouvoir une par une, gauche→droite.
+    // Émission CUMULATIVE avec le MÊME timestamp que powerArrowEvent : le
+    // composant ne remonte pas (clé = timestamp), donc chaque flèche ajoutée
+    // apparaît sans re-fondu de l'ensemble et reste visible pendant que la
+    // suivante arrive. Cadence alignée sur celle des popups (STAGGER_MS) pour
+    // que chaque flèche précède son dégât du même délai (POWER_ARROW_PRE_IMPACT_MS).
+    if (staggerEndTurnArrows && powerArrowEvent) {
+      const groups = powerArrowEvent.arrows;
+      const ts = powerArrowEvent.timestamp;
+      for (let i = 0; i < groups.length; i++) {
+        const cumulative = { arrows: groups.slice(0, i + 1), timestamp: ts };
+        const at = overlayAt + i * STAGGER_MS;
+        if (at === 0) set({ powerArrowEvent: cumulative });
+        else setTimeout(() => set({ powerArrowEvent: cumulative }), at);
+      }
+    }
+
     if (hasOverlay) cursor += OVERLAY_PRE_IMPACT_MS;
     else if (isAttack) cursor += ATTACK_LUNGE_PRE_IMPACT_MS;
     else if (powerArrowEvent) cursor += POWER_ARROW_PRE_IMPACT_MS;
