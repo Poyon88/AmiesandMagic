@@ -367,6 +367,10 @@ function composedChoiceTargetIds(
   t: import("./types").TargetSpec,
   player: PlayerState,
   opponent: PlayerState,
+  // Transcendance ne protège que des SORTS : un effet composé porté par une
+  // créature (on_attack, on_play, tap…) peut cibler une unité transcendante.
+  // true ⇒ effet issu d'un sort (spell_resolution), on respecte Transcendance.
+  sourceIsSpell = true,
 ): string[] {
   const ids: string[] = [];
   if (t.entity === "hero" || t.entity === "both") {
@@ -377,7 +381,9 @@ function composedChoiceTargetIds(
   if (t.entity === "unit" || t.entity === "both") {
     for (const c of composedTargetPool(t, player, opponent)) {
       const targetable = !opponent.board.includes(c)
-        || (!hasKw(c, "invisible") && !hasKw(c, "transcendance") && !(hasKw(c, "ombre") && !c.ombreRevealed));
+        || (!hasKw(c, "invisible")
+          && (!sourceIsSpell || !hasKw(c, "transcendance"))
+          && !(hasKw(c, "ombre") && !c.ombreRevealed));
       if (targetable) ids.push(c.instanceId);
     }
   }
@@ -397,6 +403,10 @@ function applyComposedToUnit(
   source: CardInstance | null,
   owner: PlayerState,
   opponent: PlayerState,
+  // true ⇒ l'effet composé provient d'un SORT (trigger spell_resolution). Seuls
+  // les sorts sont bloqués par Transcendance ; une capacité de créature passe
+  // outre (cf. resolveComposedEffect qui le dérive du déclencheur).
+  fromSpell = false,
 ): void {
   switch (composed.content) {
     case "deal_damage": {
@@ -404,7 +414,7 @@ function applyComposedToUnit(
       // quand l'effet vient d'un SORT (source = instance de sort, hors plateau)
       // ou n'a pas d'unité source → on riposte alors le héros lanceur (owner).
       const dmgSource = source && source.card.card_type !== "spell" ? source : owner.hero;
-      dealDamageToCreature(u, x, false, true, dmgSource);
+      dealDamageToCreature(u, x, false, true, dmgSource, fromSpell);
       break;
     }
     case "heal": u.currentHealth = Math.min(u.maxHealth, u.currentHealth + x); break;
@@ -433,7 +443,7 @@ function applyComposedToUnit(
       break;
     case "destroy": u.currentHealth = 0; break;
     case "paralyze": u.isParalyzed = true; break;
-    case "bounce": resolveRemontee(u.instanceId, source?.instanceId ?? null, owner, opponent); break;
+    case "bounce": resolveRemontee(u.instanceId, source?.instanceId ?? null, owner, opponent, fromSpell); break;
     case "grant_keyword":
       if (composed.grantAbilityId) applyGrantedKeyword(u, composed.grantAbilityId, x > 0 ? { amount: x } : undefined);
       break;
@@ -544,6 +554,9 @@ function resolveComposedEffect(
   owner: PlayerState,
   opponent: PlayerState,
   chosenTargetIds?: string[],
+  // true ⇒ effet issu d'un sort (trigger spell_resolution) → respecte
+  // Transcendance. Défaut false : une capacité de créature l'ignore.
+  fromSpell = false,
 ): void {
   const x = composed.magnitude?.x ?? 0;
   const y = composed.magnitude?.y ?? 0;
@@ -583,7 +596,7 @@ function resolveComposedEffect(
   // "self" : la créature source elle-même — déterministe, ni pool ni choix.
   // No-op si la source n'est pas une unité (ex. sort).
   if (target.entity === "self") {
-    if (source) applyComposedToUnit(composed, source, x, y, source, owner, opponent);
+    if (source) applyComposedToUnit(composed, source, x, y, source, owner, opponent, fromSpell);
     return;
   }
 
@@ -609,7 +622,7 @@ function resolveComposedEffect(
         sequentialHitsSink.push({ targetInstanceId: `__hero_${idx}__`, type: seqType });
         recordPowerStrike(source, `__hero_${idx}__`, composed.content, 1);
       } else {
-        applyComposedToUnit(composed, ref.unit, 1, 0, source, owner, opponent);
+        applyComposedToUnit(composed, ref.unit, 1, 0, source, owner, opponent, fromSpell);
         sequentialHitsSink.push({ targetInstanceId: ref.unit.instanceId, type: seqType });
         recordPowerStrike(source, ref.unit.instanceId, composed.content, 1);
       }
@@ -627,7 +640,7 @@ function resolveComposedEffect(
       applyComposedToHero(composed.content, t.hero, x);
       recordPowerStrike(source, heroStrikeSentinel(t.hero, owner, opponent), composed.content, x);
     } else {
-      applyComposedToUnit(composed, t.unit, x, y, source, owner, opponent);
+      applyComposedToUnit(composed, t.unit, x, y, source, owner, opponent, fromSpell);
       recordPowerStrike(source, t.unit.instanceId, composed.content, x);
     }
   }
@@ -671,7 +684,7 @@ function runComposedCapsForCard(
     }
     if (!chosen && fallbackTargetId) chosen = [fallbackTargetId];
     withComposedMode(triggerToKeywordMode(trigger), () =>
-      resolveComposedEffect(cap.composed!, source, owner, opponent, chosen));
+      resolveComposedEffect(cap.composed!, source, owner, opponent, chosen, trigger === "spell_resolution"));
   }
 }
 
@@ -2745,7 +2758,8 @@ function resolveSpellKeywords(
     switch (kw.id) {
       case "remontee": {
         // Renvoie l'unité ciblée dans la main de son propriétaire d'origine.
-        resolveRemontee(targetId, null, ctx.caster, ctx.opponent);
+        // Sort → respecte Transcendance.
+        resolveRemontee(targetId, null, ctx.caster, ctx.opponent, true);
         break;
       }
       case "douleur": {
@@ -3914,11 +3928,19 @@ function dealDamageToCreature(
   ignoreDR = false,
   isSpellDamage = false,
   source?: CardInstance | import("./types").HeroState | null,
+  // Transcendance = immunité aux SORTS uniquement. `isSpellDamage` sert aussi à
+  // marquer les dégâts « non-combat » (capacités de créature composées, Maléfice,
+  // Carnage…) pour qu'ils ignorent Indestructible/Armure — mais ceux-là NE sont
+  // PAS des sorts et ne doivent donc pas être bloqués par Transcendance. Ce
+  // drapeau distingue la vraie source-sort. undefined ⇒ on retombe sur
+  // isSpellDamage (compat : les vrais sorts passent déjà isSpellDamage=true).
+  fromSpell?: boolean,
 ) {
   if (damage <= 0) return;
 
-  // Transcendance: immunité totale aux sorts (y compris zone)
-  if (hasKw(creature, "transcendance") && isSpellDamage) {
+  // Transcendance: immunité totale aux sorts (y compris zone), mais pas aux
+  // capacités de créatures.
+  if (hasKw(creature, "transcendance") && (fromSpell ?? isSpellDamage)) {
     return;
   }
 
@@ -4019,11 +4041,14 @@ function triggerReturnToHand(ci: CardInstance, owner: PlayerState, opponent: Pla
 // ── Remontée ──
 // Une unité est « remontable » si elle n'est pas la source, pas Ancré, et
 // ciblable (ni Invisible, ni Transcendance, ni Ombre non révélée).
-function canBeRemonteed(c: CardInstance, sourceInstanceId: string | null): boolean {
+// `sourceIsSpell` : Transcendance n'immunise que les sorts. Un renvoi en main
+// (Remontée) déclenché par une capacité de créature peut donc viser une unité
+// transcendante ; seul un sort la respecte. Défaut true (compat sûre).
+function canBeRemonteed(c: CardInstance, sourceInstanceId: string | null, sourceIsSpell = true): boolean {
   return c.instanceId !== sourceInstanceId
     && !hasKw(c, "ancre")
     && !hasKw(c, "invisible")
-    && !hasKw(c, "transcendance")
+    && (!sourceIsSpell || !hasKw(c, "transcendance"))
     && !(hasKw(c, "ombre") && !c.ombreRevealed);
 }
 
@@ -4078,9 +4103,9 @@ function returnDeadCreatureToHand(c: CardInstance, owner: PlayerState, enemy: Pl
 
 // Cibles valides de Remontée (les 2 plateaux, hors source / Ancré / non-ciblable).
 // Exporté pour l'UI (sélecteur du déclencheur interactif en attente).
-export function remonteeTargetIds(controller: PlayerState, other: PlayerState, sourceInstanceId: string | null): string[] {
+export function remonteeTargetIds(controller: PlayerState, other: PlayerState, sourceInstanceId: string | null, sourceIsSpell = false): string[] {
   return [...controller.board, ...other.board]
-    .filter(c => canBeRemonteed(c, sourceInstanceId))
+    .filter(c => canBeRemonteed(c, sourceInstanceId, sourceIsSpell))
     .map(c => c.instanceId);
 }
 
@@ -4093,15 +4118,18 @@ function resolveRemontee(
   sourceInstanceId: string | null,
   controller: PlayerState,
   other: PlayerState,
+  // Transcendance n'immunise que des sorts : par défaut (capacité de créature)
+  // une unité transcendante est renvoyable. Les sorts passent sourceIsSpell=true.
+  sourceIsSpell = false,
 ): void {
   const sourceId = sourceInstanceId;
   let target: CardInstance | undefined;
   if (targetInstanceId) {
     const cand = findCreatureOnBoard(controller, targetInstanceId)
       ?? findCreatureOnBoard(other, targetInstanceId);
-    if (cand && canBeRemonteed(cand, sourceId)) target = cand;
+    if (cand && canBeRemonteed(cand, sourceId, sourceIsSpell)) target = cand;
   } else {
-    const pool = [...controller.board, ...other.board].filter(c => canBeRemonteed(c, sourceId));
+    const pool = [...controller.board, ...other.board].filter(c => canBeRemonteed(c, sourceId, sourceIsSpell));
     if (pool.length > 0) target = pool[Math.floor(rng() * pool.length)];
   }
   if (!target) return;
@@ -4185,7 +4213,7 @@ function frameNeedsChoice(state: GameState, frame: StackFrame): boolean {
   const opponent = state.players.find(p => p.id !== frame.ownerId);
   if (!owner || !opponent) return false;
   if (owner.id !== currentPlayerId) return false; // tour adverse → résolution auto, pas d'UI
-  return composedChoiceTargetIds(frame.composed.target, owner, opponent).length > 0;
+  return composedChoiceTargetIds(frame.composed.target, owner, opponent, frame.trigger === "spell_resolution").length > 0;
 }
 
 /** Contenus composés « auto-suppression » : sautés en mode valeur (Déclenchement
@@ -4208,7 +4236,7 @@ function resolveFrame(state: GameState, frame: StackFrame): void {
   if (frame.kind === "composed" && frame.composed) {
     if (frame.valueMode && isSelfRemovalComposed(frame.composed)) return; // mode valeur : saute l'auto-suppression
     withComposedMode(triggerToKeywordMode(frame.trigger), () =>
-      resolveComposedEffect(frame.composed!, source, owner, opponent, frame.chosenTargetIds));
+      resolveComposedEffect(frame.composed!, source, owner, opponent, frame.chosenTargetIds, frame.trigger === "spell_resolution"));
     return;
   }
   // curated / death_nature : producteurs branchés aux paliers (c)/(g).
@@ -4373,14 +4401,15 @@ function resolveCreatureDeath(c: CardInstance, owner: PlayerState, enemy: Player
     if (hasKw(c, "malefice")) {
       const maleficeDmg = c.card.attack ?? 0;
       dealDamageToHero(enemy.hero, maleficeDmg);
-      [...enemy.board].forEach(e => dealDamageToCreature(e, maleficeDmg, false, true, c));
-      [...owner.board].forEach(e => dealDamageToCreature(e, maleficeDmg, false, true, c));
+      // Capacités de créature (Maléfice/Carnage) : non bloquées par Transcendance.
+      [...enemy.board].forEach(e => dealDamageToCreature(e, maleficeDmg, false, true, c, false));
+      [...owner.board].forEach(e => dealDamageToCreature(e, maleficeDmg, false, true, c, false));
     }
 
     // Carnage X: inflige X dégâts à TOUTES les unités en jeu
     if (hasKw(c, "carnage") && c.carnageX > 0) {
-      [...enemy.board].forEach(e => dealDamageToCreature(e, c.carnageX, false, true, c));
-      [...owner.board].forEach(e => dealDamageToCreature(e, c.carnageX, false, true, c));
+      [...enemy.board].forEach(e => dealDamageToCreature(e, c.carnageX, false, true, c, false));
+      [...owner.board].forEach(e => dealDamageToCreature(e, c.carnageX, false, true, c, false));
     }
 
     // Sacrifice démoniaque X: répartit X réductions de coût parmi les Démons
@@ -4793,7 +4822,8 @@ function resolveCuratedKeywordEffect(
         const alive = opponent.board.filter((u) => u.currentHealth > 0);
         if (alive.length === 0) break;
         const target = alive[Math.floor(rng() * alive.length)];
-        dealDamageToCreature(target, 1, false, true, source);
+        // Capacité de créature (Tempête) : non bloquée par Transcendance.
+        dealDamageToCreature(target, 1, false, true, source, false);
       }
       break;
     }
@@ -5035,10 +5065,11 @@ export function tapKeywordNeedsTarget(kw: Keyword): boolean {
 export function getTapActivateTargets(state: GameState, kw: Keyword, sourceInstanceId?: string): string[] | null {
   const player = state.players[state.currentPlayerIndex];
   const opponent = state.players[state.currentPlayerIndex === 0 ? 1 : 0];
+  // Activation d'une capacité de créature (tap) : Transcendance (immunité aux
+  // sorts) ne protège pas la cible ici — seuls Invisible / Ombre non révélée.
   const filterTargetable = (creatures: CardInstance[]) =>
     creatures.filter(c =>
       !hasKw(c, "invisible")
-      && !hasKw(c, "transcendance")
       && !(hasKw(c, "ombre") && !c.ombreRevealed)
     );
   switch (kw) {
@@ -5611,7 +5642,7 @@ export function getComposedTapTargets(state: GameState, card: Card, uid: string)
   const cap = getCapabilities(card).find(c => c.uid === uid && c.composed && c.trigger === "on_activation");
   const t = cap?.composed?.target;
   if (!t || t.designation !== "choice" || (t.entity !== "unit" && t.entity !== "both") || t.location !== "board" || t.count !== 1) return null;
-  return composedChoiceTargetIds(t, player, opponent);
+  return composedChoiceTargetIds(t, player, opponent, false); // effet composé de créature (tap)
 }
 
 export function getCreatureComposedChoice(
@@ -5674,17 +5705,19 @@ export function getOnAttackTargets(state: GameState, card: Card): string[] {
   const opponent = state.players[state.currentPlayerIndex === 0 ? 1 : 0];
   const cap = firstOnAttackComposedChoiceCap(card);
   if (!cap?.composed?.target) return [];
-  return composedChoiceTargetIds(cap.composed.target, player, opponent);
+  return composedChoiceTargetIds(cap.composed.target, player, opponent, false); // effet composé de créature (à l'attaque)
 }
 
 export function getCreatureTargets(state: GameState, card: Card): string[] {
   const player = state.players[state.currentPlayerIndex];
   const opponent = state.players[state.currentPlayerIndex === 0 ? 1 : 0];
 
+  // Capacités de créature (Corruption, Malédiction, Permutation, Vampirisme,
+  // Mimique, Métamorphose…) : Transcendance n'immunise que les sorts, donc elle
+  // n'exclut PAS la cible ici (à la différence d'Invisible / Ombre non révélée).
   const filterEnemyTargetable2 = (creatures: CardInstance[]) =>
     creatures.filter(c =>
       !hasKw(c, "invisible")
-      && !hasKw(c, "transcendance")
       && !(hasKw(c, "ombre") && !c.ombreRevealed)
     );
 
@@ -5719,7 +5752,7 @@ export function getCreatureTargets(state: GameState, card: Card): string[] {
   // Repli : cible d'un effet composé à l'entrée "au choix" (unité et/ou héros).
   const cap = firstOnPlayComposedChoiceCap(card);
   if (cap?.composed?.target) {
-    return composedChoiceTargetIds(cap.composed.target, player, opponent);
+    return composedChoiceTargetIds(cap.composed.target, player, opponent, false); // effet composé de créature (à l'entrée)
   }
   return [];
 }
