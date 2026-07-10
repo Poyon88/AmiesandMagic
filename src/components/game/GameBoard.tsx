@@ -114,6 +114,12 @@ export default function GameBoard({ onAction }: GameBoardProps) {
   const [hoveredTargetId, setHoveredTargetId] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [heroDescriptionDef, setHeroDescriptionDef] = useState<HeroDefinition | null>(null);
+  // « Voir le plateau » : masque temporairement (visuel-only) l'overlay de
+  // sélection plein écran pour laisser le joueur consulter le gameboard avant
+  // de décider. On ne touche JAMAIS au store (targetingMode/selectionCards) :
+  // le mode "selection" est obligatoire (verrou), donc l'overlay reste
+  // logiquement actif et le bouton de retour reste toujours monté.
+  const [overlayPeeked, setOverlayPeeked] = useState(false);
   // Narrow-viewport flag: triggers fanned hand overlap so 6-8 cards still fit
   // on small landscape phones (e.g. iPhone SE landscape ≈ 667 px).
   const [isNarrowViewport, setIsNarrowViewport] = useState(false);
@@ -130,7 +136,15 @@ export default function GameBoard({ onAction }: GameBoardProps) {
   // Clear hover when targeting ends
   useEffect(() => {
     if (targetingMode === "none") setHoveredTargetId(null);
+    // Chaque nouvel écran de sélection (ou sa résolution) repart en mode visible.
+    setOverlayPeeked(false);
   }, [targetingMode]);
+
+  // Overlays plein écran (fond noir) qui masquent le plateau et supportent le
+  // peek. Bandeaux (spell_multi / pending_trigger) et CostPaymentOverlay
+  // (non-modal, plateau visible) exclus.
+  const PEEKABLE_MODES = ["selection", "divination", "graveyard", "tactique_keywords"] as const;
+  const isPeekableOverlayActive = (PEEKABLE_MODES as readonly string[]).includes(targetingMode);
 
   // Auto-clear damage events after animation
   useEffect(() => {
@@ -1138,6 +1152,18 @@ export default function GameBoard({ onAction }: GameBoardProps) {
       </motion.div>{/* end 16:9 board container */}
 
       {/* ============= FIXED OVERLAYS ============= */}
+      {/* Bascule « Voir le plateau / Revenir » : montée dès qu'un overlay de
+          sélection plein écran est actif (indépendamment de overlayPeeked pour
+          rester accessible une fois masqué → jamais de soft-lock). z-[60] pour
+          passer au-dessus des overlays (z-50). */}
+      {isPeekableOverlayActive && (
+        <button
+          onClick={() => setOverlayPeeked((v) => !v)}
+          className="fixed top-4 right-4 z-[60] text-sm text-accent hover:text-accent/80 transition-colors bg-black/70 px-4 py-3 rounded min-h-[44px] backdrop-blur-sm"
+        >
+          {overlayPeeked ? "↩ Revenir à la sélection" : "👁 Voir le plateau"}
+        </button>
+      )}
       {mulliganOverlayRequired && (
         <MulliganOverlay
           hand={myPlayer.hand}
@@ -1171,7 +1197,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           onClose={() => setGraveyardView(null)}
         />
       )}
-      {targetingMode === "graveyard" && (
+      {targetingMode === "graveyard" && !overlayPeeked && (
         <GraveyardOverlay
           cards={myPlayer.graveyard}
           title="Choisissez une carte"
@@ -1183,7 +1209,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           }}
         />
       )}
-      {targetingMode === "divination" && divinationCards.length > 0 && (
+      {targetingMode === "divination" && divinationCards.length > 0 && !overlayPeeked && (
         <DivinationOverlay
           cards={divinationCards}
           onChoose={(idx) => {
@@ -1193,7 +1219,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           onCancel={clearSelection}
         />
       )}
-      {targetingMode === "selection" && selectionCards.length > 0 && (
+      {targetingMode === "selection" && selectionCards.length > 0 && !overlayPeeked && (
         <SelectionOverlay
           cards={selectionCards}
           onChoose={(cardId) => {
@@ -1202,7 +1228,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           }}
         />
       )}
-      {targetingMode === "tactique_keywords" && tactiqueAvailableKeywords.length > 0 && (
+      {targetingMode === "tactique_keywords" && tactiqueAvailableKeywords.length > 0 && !overlayPeeked && (
         <TactiqueKeywordOverlay
           keywords={tactiqueAvailableKeywords}
           maxSelections={tactiqueMaxSelections}
