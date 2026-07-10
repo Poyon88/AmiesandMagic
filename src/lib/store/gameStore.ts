@@ -1334,6 +1334,37 @@ export const useGameStore = create<GameStore>((set, get) => {
       if (targetIds.length > 0) powerArrows.push({ sourceId, targetIds, color: "#d4a800" });
     }
 
+    // (1b) Créature JOUÉE avec un effet d'arrivée CIBLÉ (« à l'entrée ») →
+    // flèche BLANCHE de la créature vers chaque créature ciblée. Les autres
+    // déclencheurs (mort/retour/attaque/fin de tour) portent leur couleur de
+    // mode via powerStrikes ; l'entrée en jeu n'a pas de couleur de mode, d'où
+    // le blanc. On lit la/les cible(s) déclarée(s) dans l'action (comme le
+    // pouvoir de héros), ce qui couvre tous les contenus (buff/dégâts/…), pas
+    // seulement les dégâts. Les sorts ont leur propre animation (SpellCastOverlay),
+    // donc on se limite à une carte devenue une CRÉATURE sur le plateau.
+    if (action.type === "play_card") {
+      const sourceId = action.cardInstanceId;
+      const playedIsCreature =
+        newState.players[0].board.some((c) => c.instanceId === sourceId) ||
+        newState.players[1].board.some((c) => c.instanceId === sourceId);
+      if (playedIsCreature) {
+        // Union avant/après pour retrouver aussi une cible tuée par l'effet.
+        const boardIds = new Set<string>([
+          ...gameState.players[0].board.map((c) => c.instanceId),
+          ...gameState.players[1].board.map((c) => c.instanceId),
+          ...newState.players[0].board.map((c) => c.instanceId),
+          ...newState.players[1].board.map((c) => c.instanceId),
+        ]);
+        const declared: string[] = [];
+        if (action.targetInstanceId) declared.push(action.targetInstanceId);
+        if (action.targetMap) declared.push(...Object.values(action.targetMap));
+        const targetIds = Array.from(new Set(declared)).filter(
+          (id) => id !== sourceId && boardIds.has(id),
+        );
+        if (targetIds.length > 0) powerArrows.push({ sourceId, targetIds, color: "#ffffff" });
+      }
+    }
+
     // (2) Dégâts de pouvoir DÉCLENCHÉS (mort/retour/attaque/fin de tour),
     // enregistrés par le moteur avec leur mode → flèche colorée par mode
     // (rouge/bleu/violet/vert, via keywordModeColor). Regroupées par (source, couleur).
