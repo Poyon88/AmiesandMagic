@@ -9,7 +9,7 @@ export function keywordModeColor(mode: KeywordMode | undefined): string | null {
   if (mode === "death") return "#a83232"; // dark red
   if (mode === "tap") return "#d4a800";   // amber yellow
   if (mode === "return") return "#3a7dd4"; // blue (retour en main)
-  if (mode === "attack") return "#9D00FF"; // vivid purple (à l'attaque)
+  if (mode === "attack") return "#E735F6"; // magenta (à l'attaque)
   if (mode === "end_of_turn") return "#2faa3f"; // green (fin du tour)
   return null;
 }
@@ -33,9 +33,13 @@ export function keywordModeFilter(mode: KeywordMode | undefined): string | null 
     return "brightness(0) saturate(100%) invert(38%) sepia(93%) saturate(1352%) hue-rotate(192deg) brightness(91%) contrast(94%)";
   }
   if (mode === "attack") {
-    // → #9D00FF vivid purple (à l'attaque). Tuned via sosuke/Pjoqqp; verify on a
-    // rendered icon and nudge hue-rotate/saturate if it skews blue or pink.
-    return "brightness(0) saturate(100%) invert(13%) sepia(95%) saturate(7426%) hue-rotate(274deg) brightness(101%) contrast(116%)";
+    // → #E735F6 magenta (à l'attaque). The previous chain targeted #9D00FF but
+    // its extreme saturate(7426%) rendered as vivid purple on Blink yet magenta
+    // on WebKit/iOS Safari, so the icon (filter) and the X value (hex above) no
+    // longer matched on Safari. This chain uses a moderate saturate(372%) that
+    // resolves to the same magenta on both engines, keeping icon + number
+    // consistent cross-browser. Keep in sync with keywordModeColor("attack").
+    return "brightness(0) saturate(100%) invert(59%) sepia(55%) saturate(372%) hue-rotate(247deg) brightness(71%) contrast(285%)";
   }
   if (mode === "end_of_turn") {
     // → #2faa3f green (fin du tour)
