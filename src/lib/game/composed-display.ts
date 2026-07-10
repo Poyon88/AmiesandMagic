@@ -161,3 +161,29 @@ export function describeComposedCap(cap: Capability, tokens?: TokenTemplate[]): 
 export function composedCapsOf(capabilities: Capability[] | null | undefined): Capability[] {
   return (capabilities ?? []).filter((c) => !!c.composed);
 }
+
+/** Libellé du sélecteur de cible d'un effet composé « au choix » (ex. le
+ *  déclencheur interactif de fin de tour). Décrit l'ACTION à réaliser sur la
+ *  cible à désigner — auparavant l'overlay affichait un texte de Remontée figé
+ *  quel que soit l'effet réel (bug : un buff de fin de tour proposait « une
+ *  créature à remonter en main »). Préfixé de l'icône de l'effet. */
+export function composedChoicePrompt(cap: Capability): string {
+  const eff = cap.composed;
+  if (!eff) return "🎯 Choisissez une cible";
+  const ic = composedIcon(cap).symbol;
+  const icon = ic.startsWith("/") || ic.startsWith("http") ? "🎯" : ic;
+  const body = (() => {
+    switch (eff.content) {
+      case "deal_damage": return "choisissez une cible à blesser";
+      case "heal": return "choisissez une cible à soigner";
+      case "buff": return "choisissez une créature à renforcer";
+      case "debuff": return "choisissez une créature à affaiblir";
+      case "destroy": return "choisissez une créature à détruire";
+      case "bounce": return "choisissez une créature à renvoyer en main";
+      case "paralyze": return "choisissez une créature à paralyser";
+      case "grant_keyword": return "choisissez une créature à qui conférer la capacité";
+      default: return "choisissez une cible";
+    }
+  })();
+  return `${icon} ${body.charAt(0).toUpperCase() + body.slice(1)}`;
+}

@@ -59,6 +59,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
     pendingTapSourceId,
     validTargets,
     targetingMode,
+    pendingTriggerPrompt,
     divinationCards,
     selectionCards,
     tactiqueAvailableKeywords,
@@ -1250,10 +1251,11 @@ export default function GameBoard({ onAction }: GameBoardProps) {
         </div>
       )}
 
-      {/* Déclencheur interactif en attente (Remontée mort/retour) */}
+      {/* Déclencheur interactif en attente (Remontée mort/retour, ou effet
+          composé de fin de tour). Le message reflète l'effet réel. */}
       {targetingMode === "pending_trigger" && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-blue-900/90 border border-blue-400 rounded-lg px-6 py-3 text-center backdrop-blur-sm">
-          <p className="text-white font-bold">🔼 Remontée — choisissez l&apos;unité à renvoyer</p>
+          <p className="text-white font-bold">{pendingTriggerPrompt ?? "🎯 Choisissez une cible"}</p>
         </div>
       )}
 
