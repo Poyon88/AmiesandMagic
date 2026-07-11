@@ -307,7 +307,8 @@ export type ComposedEffectContent =
   | "destroy"
   | "bounce"
   | "paralyze"
-  | "grant_keyword";
+  | "grant_keyword"
+  | "exhumation";
 
 /** Spécification de cibles d'un effet composé. Les filtres par caractéristiques
  *  (coût/ATK/déf/rareté) et par capacités possédées sont prévus pour la v2. */

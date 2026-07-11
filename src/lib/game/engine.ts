@@ -587,6 +587,29 @@ function resolveComposedEffect(
       }
       return;
     }
+    case "exhumation": {
+      // Ressuscite une créature du cimetière du contrôleur (coût ≤ x) sur le
+      // plateau. Réutilise returnInstanceToPlay (conserve les bonus permanents),
+      // comme le mot-clé exhumation (cf. cases mot-clé creature/sort). Cible
+      // choisie via chosenTargetIds ; sinon repli DÉTERMINISTE = plus haut coût
+      // éligible (jamais rng, pour la rejouabilité multijoueur).
+      const maxCost = x;
+      const eligible = owner.graveyard.filter(
+        (c) => c.card.card_type === "creature" && c.card.mana_cost <= maxCost,
+      );
+      if (eligible.length === 0 || owner.board.length >= MAX_BOARD_SIZE) return;
+      const chosenId = chosenTargetIds?.[0];
+      const target =
+        (chosenId ? eligible.find((c) => c.instanceId === chosenId) : undefined)
+        ?? eligible.reduce((best, c) => (c.card.mana_cost > best.card.mana_cost ? c : best), eligible[0]);
+      owner.graveyard = owner.graveyard.filter((c) => c !== target);
+      returnInstanceToPlay(target);
+      target.instanceId = generateInstanceId();
+      // Traque (charge) → pas de mal d'invocation, même ressuscitée.
+      target.hasSummoningSickness = !target.card.keywords.includes("charge");
+      owner.board.push(target);
+      return;
+    }
     default: break;
   }
 
@@ -2072,7 +2095,8 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
         // (nouvelle identité pour éviter toute référence obsolète).
         returnInstanceToPlay(target);
         target.instanceId = generateInstanceId();
-        target.hasSummoningSickness = true;
+        // Traque (charge) → pas de mal d'invocation, même ressuscitée.
+        target.hasSummoningSickness = !target.card.keywords.includes("charge");
         player.board.push(target);
       }
     }
@@ -3069,7 +3093,8 @@ function resolveSpellKeywords(
               // Conserve les bonus accumulés (nouvelle identité d'instance).
               returnInstanceToPlay(target);
               target.instanceId = generateInstanceId();
-              target.hasSummoningSickness = true;
+              // Traque (charge) → pas de mal d'invocation, même ressuscitée.
+              target.hasSummoningSickness = !target.card.keywords.includes("charge");
               ctx.caster.board.push(target);
             }
           }
@@ -3533,6 +3558,11 @@ function composedSlotType(t: import("./types").TargetSpec): SpellTargetType | un
     return t.side === "enemy" ? "enemy_any"
          : t.side === "ally" ? "friendly_any"
          : "any";
+  }
+  // Exhumation composée : cible une créature du cimetière ALLIÉ (résurrection) →
+  // picker cimetière existant. Cimetière ennemi non pris en charge.
+  if (t.location === "graveyard") {
+    return t.entity === "unit" && t.side === "ally" ? "friendly_graveyard_to_board" : undefined;
   }
   if (t.location !== "board") return undefined;
   return t.side === "ally" ? "friendly_creature" : t.side === "enemy" ? "enemy_creature" : "any_creature";
@@ -4453,7 +4483,8 @@ function resolveCreatureDeath(c: CardInstance, owner: PlayerState, enemy: Player
         c.instanceId = generateInstanceId();
         c.currentHealth = 1;
         c.hasUsedResurrection = true;
-        c.hasSummoningSickness = true;
+        // Traque (charge) → pas de mal d'invocation, même ressuscitée.
+        c.hasSummoningSickness = !c.card.keywords.includes("charge");
         owner.board.push(c);
         owner.graveyard = owner.graveyard.filter(g => g !== c);
       }
@@ -5129,7 +5160,7 @@ export function heroPowerComposedChoice(
 ): { uid: string; count: number; type: SpellTargetType } | null {
   const synth = heroPowerSyntheticCard(heroDef);
   if (!synth) return null;
-  const SELECTABLE: SpellTargetType[] = ["any", "any_creature", "friendly_creature", "enemy_creature"];
+  const SELECTABLE: SpellTargetType[] = ["any", "any_creature", "friendly_creature", "enemy_creature", "friendly_graveyard_to_board"];
   const slots = getSpellTargetSlots(synth).filter(s => SELECTABLE.includes(s.type));
   if (!slots.length) return null;
   return { uid: slots[0].slot.split("#")[0], count: slots.length, type: slots[0].type };
@@ -5388,6 +5419,9 @@ export function getHeroPowerTargets(state: GameState, heroDef: HeroDefinition): 
     const choice = heroPowerComposedChoice(heroDef);
     const synth = heroPowerSyntheticCard(heroDef);
     if (!choice || !synth) return [];
+    // Exhumation composée : cibles cimetière filtrées par coût (getSpellTargets
+    // ne filtrerait pas). Sinon chemin plateau/héros standard.
+    if (choice.type === "friendly_graveyard_to_board") return getComposedGraveyardTargets(state, synth, choice.uid);
     return getSpellTargets(state, synth, choice.type);
   }
   return []; // aura → no target
@@ -5622,6 +5656,30 @@ function firstOnPlayComposedChoiceCap(card: Card): import("./types").Capability 
       && t.designation === "choice" && typeof t.count === "number" && t.count >= 1
       && (t.entity === "unit" || t.entity === "both") && t.location === "board";
   });
+}
+
+/** Première capacité composée à l'entrée demandant un ciblage CIMETIÈRE
+ *  interactif (exhumation composée) : au choix, 1 unité, cimetière allié.
+ *  Volontairement DISJOINTE de firstOnPlayComposedChoiceCap (plateau-only) pour
+ *  ne pas ré-router les picks cimetière dans le picker plateau. */
+function firstOnPlayComposedGraveyardChoiceCap(card: Card): import("./types").Capability | undefined {
+  return getCapabilities(card).find((c) => {
+    const t = c.composed?.target;
+    return !!c.composed && c.trigger === "on_play" && !!t
+      && t.designation === "choice" && t.count === 1
+      && t.entity === "unit" && t.location === "graveyard" && t.side === "ally";
+  });
+}
+
+/** True si la créature ouvre un picker cimetière composé à l'entrée. */
+export function creatureNeedsComposedGraveyardTarget(card: Card): boolean {
+  return card.card_type === "creature" && !!firstOnPlayComposedGraveyardChoiceCap(card);
+}
+
+/** uid de la capacité composée cimetière à l'entrée, ou null. */
+export function getCreatureComposedGraveyardChoice(card: Card): { uid: string } | null {
+  const cap = firstOnPlayComposedGraveyardChoiceCap(card);
+  return cap ? { uid: cap.uid } : null;
 }
 
 /** Descripteur de ciblage composé d'une créature à l'entrée (pour le store :
@@ -6061,6 +6119,20 @@ export function getSpellGraveyardTargets(state: GameState, card: Card, slotIndex
       .map(c => c.instanceId);
   }
   return [];
+}
+
+/** Cibles cimetière (instanceIds) d'un effet composé « exhumation » au choix :
+ *  créatures du cimetière du joueur courant de coût ≤ magnitude.x. Provider
+ *  filtré-par-coût partagé par tous les sites d'ouverture du picker — les pools
+ *  composés génériques (composedTargetPool / getSpellTargets) n'appliquent AUCUN
+ *  filtre de coût, d'où ce helper dédié. */
+export function getComposedGraveyardTargets(state: GameState, card: Card, capUid: string): string[] {
+  const player = state.players[state.currentPlayerIndex];
+  const cap = getCapabilities(card).find(c => c.uid === capUid && c.composed);
+  const x = cap?.composed?.magnitude?.x ?? 0;
+  return player.graveyard
+    .filter(c => c.card.card_type === "creature" && c.card.mana_cost <= x)
+    .map(c => c.instanceId);
 }
 
 // ============================================================
