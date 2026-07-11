@@ -41,6 +41,7 @@ export function composedIcon(cap: Capability): { symbol: string; keyword: string
     case "discard": return { symbol: "💰", keyword: "pillage" };
     case "summon_token": return { symbol: "📣", keyword: "spell_invocation" };
     case "gain_mana": return { symbol: "💎", keyword: "spell_afflux" };
+    case "exhumation": return { symbol: "🪦", keyword: "exhumation" };
     default: return { symbol: "✦", keyword: "" };
   }
 }
@@ -99,6 +100,7 @@ function describeContent(eff: ComposedEffect, tokens?: TokenTemplate[]): string 
       return x > 1 ? `invoque ${x} ${label}` : `invoque un ${label}`;
     }
     case "gain_mana": return `gagnez ${x} mana ce tour`;
+    case "exhumation": return `ressuscite une créature (coût ≤ ${x})`;
     default: return String(eff.content);
   }
 }
@@ -182,6 +184,7 @@ export function composedChoicePrompt(cap: Capability): string {
       case "bounce": return "choisissez une créature à renvoyer en main";
       case "paralyze": return "choisissez une créature à paralyser";
       case "grant_keyword": return "choisissez une créature à qui conférer la capacité";
+      case "exhumation": return "choisissez une créature à ressusciter";
       default: return "choisissez une cible";
     }
   })();

@@ -23,6 +23,7 @@ const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" |
   { v: "discard", l: "Défausser (adversaire)", target: "none" },
   { v: "summon_token", l: "Invoquer un token", target: "none" },
   { v: "gain_mana", l: "Gagner du mana", target: "none" },
+  { v: "exhumation", l: "Ressusciter (cimetière)", target: "unit" },
 ];
 
 const GRANTABLE = Object.values(ABILITIES)
@@ -104,8 +105,12 @@ export default function ComposedEffectsEditor({
                 const prev = eff.target ?? { ...DEFAULT_TARGET, entity: "unit" };
                 // "scatter" (répartition point par point) n'a de sens que pour dégâts/soin.
                 const scatterOk = v === "deal_damage" || v === "heal";
+                // Exhumation : cible pré-remplie cimetière allié « au choix » (sinon
+                // composedSlotType ne produirait pas de picker). Champs éditables ensuite.
                 const nextTarget = m.target === "none" ? undefined
-                  : (prev.designation === "scatter" && !scatterOk ? { ...prev, designation: "random" as const } : prev);
+                  : v === "exhumation"
+                    ? { entity: "unit" as const, count: 1 as const, side: "ally" as const, location: "graveyard" as const, designation: "choice" as const }
+                    : (prev.designation === "scatter" && !scatterOk ? { ...prev, designation: "random" as const } : prev);
                 patchEffect(idx, { content: v, target: nextTarget, grantAbilityId: v === "grant_keyword" ? (eff.grantAbilityId ?? GRANTABLE[0]?.id) : undefined });
               })}
 

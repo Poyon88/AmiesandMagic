@@ -38,6 +38,9 @@ import {
   creatureNeedsMagicalSelection,
   getMagicalSelectionCards,
   getSpellGraveyardTargets,
+  getComposedGraveyardTargets,
+  creatureNeedsComposedGraveyardTarget,
+  getCreatureComposedGraveyardChoice,
   getDiscardCost,
   getSacrificeCost,
   getTapActivateTargets,
@@ -219,6 +222,10 @@ interface GameStore {
   // Pouvoir de héros composé en cours de ciblage : uid de la capacité + nombre
   // de cibles à collecter (réutilise creatureComposedCollected pour l'accu).
   pendingHeroPowerComposed: { uid: string; count: number } | null;
+  // Exhumation composée en cours de ciblage cimetière : uid de la capacité +
+  // contexte de dispatch (le picker cimetière est partagé, ce flag route l'action
+  // finale). count toujours 1 (exhumation = 1 cible).
+  pendingComposedGraveyard: { uid: string; count: number; context: "spell" | "creature" | "hero_power" } | null;
   // Attaque avec pouvoir composé "à l'attaque" en désignation "au choix" : la
   // cible d'attaque est mémorisée pendant qu'on collecte les cibles du pouvoir.
   pendingAttackDefenderId: string | null;
@@ -811,6 +818,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   collectedTargetMap: {},
   creatureComposedCollected: [],
   pendingHeroPowerComposed: null,
+  pendingComposedGraveyard: null,
   pendingAttackDefenderId: null,
   attackPowerCollected: [],
   pendingCreatureChain: null,
@@ -2132,6 +2140,25 @@ export const useGameStore = create<GameStore>((set, get) => {
       }
     }
 
+    // Exhumation composée à l'entrée (picker cimetière). Placé AVANT le bloc
+    // mot-clé ci-dessous pour ne pas interférer avec rappel/heritage/exhumation
+    // mot-clé (qui passent par graveyardTargetInstanceId).
+    if (card && creatureNeedsComposedGraveyardTarget(card.card)) {
+      const uid = getCreatureComposedGraveyardChoice(card.card)!.uid;
+      const gravTargets = getComposedGraveyardTargets(gameState, card.card, uid);
+      if (gravTargets.length > 0) {
+        set({
+          selectedCardInstanceId: instanceId,
+          selectedAttackerInstanceId: null,
+          validTargets: gravTargets,
+          targetingMode: "graveyard",
+          pendingBoardPosition: boardPosition ?? null,
+          pendingComposedGraveyard: { uid, count: 1, context: "creature" },
+        });
+        return null;
+      }
+    }
+
     if (card && creatureNeedsGraveyardTarget(card.card)) {
       const gravTargets = getGraveyardTargets(gameState, card.card);
       if (gravTargets.length > 0) {
@@ -2402,6 +2429,24 @@ export const useGameStore = create<GameStore>((set, get) => {
 
       // Graveyard-targeting spell keywords
       if (firstSlot.type === "friendly_graveyard" || firstSlot.type === "friendly_graveyard_to_board") {
+        // Slot composé (clé `${uid}#i`) → exhumation composée : provider filtré
+        // par coût + flag de dispatch. Distinct des slots mot-clé `kw_N`.
+        if (firstSlot.slot.includes("#")) {
+          const uid = firstSlot.slot.split("#")[0];
+          const gravTargets = getComposedGraveyardTargets(gameState, card.card, uid);
+          if (gravTargets.length > 0) {
+            set({
+              selectedCardInstanceId: instanceId,
+              selectedAttackerInstanceId: null,
+              validTargets: gravTargets,
+              targetingMode: "graveyard",
+              pendingComposedGraveyard: { uid, count: 1, context: "spell" },
+            });
+            return null;
+          }
+          // Aucune créature éligible → joue sans effet.
+          return get().dispatchAction({ type: "play_card", cardInstanceId: instanceId });
+        }
         const kwIndex = parseInt(firstSlot.slot.replace("kw_", ""));
         const gravTargets = getSpellGraveyardTargets(gameState, card.card, kwIndex);
         if (gravTargets.length > 0) {
@@ -2532,6 +2577,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       targetingMode,
       selectedAttackerInstanceId,
       selectedCardInstanceId,
+      pendingComposedGraveyard,
     } = get();
 
     if (targetingMode === "attack" && selectedAttackerInstanceId) {
@@ -2712,6 +2758,27 @@ export const useGameStore = create<GameStore>((set, get) => {
         targetInstanceId: pendingTargetInstanceId ?? undefined,
         tactiqueKeywords: keywords,
         boardPosition: pendingBoardPosition ?? undefined,
+      });
+    } else if (targetingMode === "graveyard" && pendingComposedGraveyard) {
+      // Exhumation composée : la créature choisie est keyée sur le slot composé
+      // `${uid}#0` et l'action est DIFFUSÉE (déterminisme multijoueur), comme tout
+      // autre pick composé. Précède la logique mot-clé ci-dessous (kw_ / creature
+      // graveyardTargetInstanceId), qui ne s'exécute que si le flag est null →
+      // garde de non-régression. Couvre aussi le pouvoir de héros (selectedCard-
+      // InstanceId null), que la branche suivante n'atteindrait pas.
+      const { uid, context } = pendingComposedGraveyard;
+      const targetMap = { [`${uid}#0`]: targetId };
+      const boardPos = get().pendingBoardPosition;
+      const selId = get().selectedCardInstanceId;
+      set({ pendingComposedGraveyard: null });
+      if (context === "hero_power") {
+        return get().dispatchAction({ type: "hero_power", targetMap });
+      }
+      return get().dispatchAction({
+        type: "play_card",
+        cardInstanceId: selId!,
+        targetMap,
+        boardPosition: boardPos ?? undefined,
       });
     } else if (targetingMode === "graveyard" && selectedCardInstanceId) {
       const { pendingBoardPosition, spellTargetSlots, currentTargetSlotIndex, collectedTargetMap, gameState: gs } = get();
@@ -2933,6 +3000,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       collectedTargetMap: {},
       creatureComposedCollected: [],
       pendingHeroPowerComposed: null,
+      pendingComposedGraveyard: null,
       pendingAttackDefenderId: null,
       attackPowerCollected: [],
       pendingCreatureChain: null,
@@ -3258,6 +3326,18 @@ export const useGameStore = create<GameStore>((set, get) => {
       const choice = heroPowerComposedChoice(heroDef);
       if (!choice) {
         return get().dispatchAction({ type: "hero_power" });
+      }
+      // Exhumation composée : picker cimetière (mode "graveyard") au lieu du
+      // ciblage plateau/héros. La cible est dispatchée via pendingComposedGraveyard.
+      if (choice.type === "friendly_graveyard_to_board") {
+        set({
+          selectedCardInstanceId: null,
+          selectedAttackerInstanceId: null,
+          validTargets: getHeroPowerTargets(gameState, heroDef),
+          targetingMode: "graveyard",
+          pendingComposedGraveyard: { uid: choice.uid, count: choice.count, context: "hero_power" },
+        });
+        return null;
       }
       set({
         selectedCardInstanceId: null,
