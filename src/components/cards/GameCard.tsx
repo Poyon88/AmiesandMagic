@@ -310,20 +310,26 @@ export default function GameCard({
         }}>x{count}</div>
       )}
 
-      {/* ── Bottom bar: name + keywords + stats ── */}
+      {/* ── Card name — top bar (ocre, 2 lignes, ombre). Padding horizontal
+             pour dégager les badges de coût (haut-gauche) et count (haut-droit). ── */}
+      <div style={{
+        position: "absolute", top: 0, left: 0, right: 0, zIndex: 2,
+        padding: `${4 * s}px ${30 * s}px ${8 * s}px`,
+        background: "linear-gradient(180deg, #0d0d1add 0%, #0d0d1a88 45%, transparent 78%)",
+        fontSize: 13 * so, color: "#d8b25a", fontWeight: 700, textAlign: "center",
+        overflow: "hidden", textOverflow: "ellipsis", lineHeight: 1.15,
+        display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 2,
+        fontFamily: "'Cinzel', serif",
+        textShadow: "0 1px 2px #000, 0 0 3px #000, 0 0 5px #000",
+      }}>{card.name}</div>
+
+      {/* ── Bottom bar: keywords + stats ── */}
       <div style={{
         position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2,
         padding: `${6 * s}px ${8 * s}px ${isCreature ? 6 * s : spellPointDepth + 4}px`,
         background: "linear-gradient(0deg, #0d0d1add 0%, #0d0d1a88 40%, transparent 65%)",
         display: "flex", flexDirection: "column", gap: 4 * s,
       }}>
-        {/* Card name */}
-        <div style={{
-          fontSize: 13 * s, color: "#e0e0e0", fontWeight: 700,
-          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-          fontFamily: "'Cinzel', serif",
-        }}>{card.name}</div>
-
         {/* Keywords + Stats — single row */}
         <div style={{ display: "flex", alignItems: "center", gap: 4 * s, flexWrap: "wrap" }}>
           {/* Keyword symbols */}

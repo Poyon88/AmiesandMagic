@@ -301,13 +301,15 @@ function GraveyardTile({ topCard, emptyImageUrl, count, isOpponent, onClick }: G
               fontFamily: "'Cinzel', serif",
               fontSize: 12,
               fontWeight: 700,
-              color: "#fff",
-              textShadow: "0 1px 3px rgba(0,0,0,0.95)",
+              color: "#d8b25a",
+              textShadow: "0 1px 2px #000, 0 0 3px #000, 0 0 5px #000",
               letterSpacing: 0.4,
               overflow: "hidden",
               textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-              lineHeight: 1.1,
+              display: "-webkit-box",
+              WebkitBoxOrient: "vertical",
+              WebkitLineClamp: 2,
+              lineHeight: 1.15,
             }}
           >
             {topCard.name}

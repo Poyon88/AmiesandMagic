@@ -177,6 +177,19 @@ function MulliganCard({
         boxShadow: "0 0 8px #74b9ff55",
       }}>{card.mana_cost}</div>
 
+      {/* Name — top bar (ocre, 2 lignes, ombre) ; padding gauche pour dégager
+          l'orbe de mana. Taille alignée sur l'échelle iPad (* d). */}
+      <div style={{
+        position: "absolute", top: 0, left: 0, right: 0, zIndex: 2,
+        padding: "6px 34px 8px",
+        background: "linear-gradient(180deg, #0d0d1add 0%, #0d0d1a88 45%, transparent 78%)",
+        fontSize: 12 * d, color: "#d8b25a", fontWeight: 700, textAlign: "center",
+        overflow: "hidden", textOverflow: "ellipsis", lineHeight: 1.15,
+        display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 2,
+        fontFamily: "'Cinzel', serif",
+        textShadow: "0 1px 2px #000, 0 0 3px #000, 0 0 5px #000",
+      }}>{card.name}</div>
+
       {/* Bottom bar */}
       <div style={{
         position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2,
@@ -184,13 +197,6 @@ function MulliganCard({
         background: "linear-gradient(0deg, #0d0d1add 0%, #0d0d1a88 40%, transparent 65%)",
         display: "flex", flexDirection: "column", gap: 4,
       }}>
-        {/* Name */}
-        <div style={{
-          fontSize: 12, color: "#e0e0e0", fontWeight: 700,
-          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-          fontFamily: "'Cinzel', serif",
-        }}>{card.name}</div>
-
         {/* Keyword symbols */}
         {(card.keywords.length > 0 || (card.keyword_instances?.length ?? 0) > 0) && (() => {
           const entries = buildKeywordDisplayEntries(card)
