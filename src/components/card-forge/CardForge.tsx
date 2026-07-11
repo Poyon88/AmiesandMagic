@@ -1597,6 +1597,8 @@ export default function CardForge() {
   const [entraideRace, setEntraideRace] = useState<string>("");
   // Renforcement multiple (créature) : +Y (PV) et race/clan ciblé (le +X = la valeur X).
   const [rmY, setRmY] = useState<number>(1);
+  // Affaiblissement -X/-Y (créature) : le -PV (Y) dédié (le -ATK = la valeur X générique).
+  const [afY, setAfY] = useState<number>(1);
   const [rmRace, setRmRace] = useState<string>("");
   const [rmClan, setRmClan] = useState<string>("");
   // Appel Suprême : race ciblée fixée sur la carte (créature). Persistée dans
@@ -1872,7 +1874,7 @@ export default function CardForge() {
     setManualPower(2); setManualAbility(""); setManualFlavorText("");
     setManualIllustrationPrompt(""); setManualExtraContext(""); setManualKeywords([]); setKeywordXValues({}); setKeywordModes({}); setCard(null);
     setEditedPrompt(null); setSaveResult(null);
-    setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setRmRace(""); setRmClan(""); setAsRace(""); setConferAbilityId(""); setDeclenchementTriggers([]); setComposedCaps([]);
+    setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setAfY(1); setRmRace(""); setRmClan(""); setAsRace(""); setConferAbilityId(""); setDeclenchementTriggers([]); setComposedCaps([]);
     setManualLifeCost(0); setManualDiscardCost(0); setManualSacrificeCost(0);
     setCardImages(prev => Object.fromEntries(Object.entries(prev).filter(([k]) => k !== "manual_preview")));
   }, []);
@@ -2060,6 +2062,7 @@ export default function CardForge() {
     "Sélection X": "selection",
     "Lycanthropie X": "lycanthropie",
     "Tempête X": "tempete",
+    "Cataclysme X": "cataclysme",
     "Douleur X": "douleur",
     "Inspiration X": "inspiration",
   };
@@ -2166,6 +2169,10 @@ export default function CardForge() {
           if (id === "renforcement_multiple" && !isSpellCard) {
             return { id, ...(mode ? { mode } : {}), x: x ?? 0, y: rmY, ...(rmRace ? { race: rmRace } : {}), ...(rmClan ? { clan: rmClan } : {}) };
           }
+          // Affaiblissement (créature) : porte -X (ATK, valeur générique) / -Y (PV dédié).
+          if (id === "affaiblissement" && !isSpellCard) {
+            return { id, ...(mode ? { mode } : {}), x: x ?? 0, y: afY };
+          }
           // Appel Suprême (créature) : porte la race ciblée ; toujours émis.
           if (id === "appel_supreme" && !isSpellCard) {
             return { id, ...(mode ? { mode } : {}), ...(asRace ? { race: asRace } : {}) };
@@ -2265,7 +2272,7 @@ export default function CardForge() {
     } finally {
       setSaving(false);
     }
-  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, keywordModes, keywordGrantScope, rmY, rmRace, rmClan, asRace, composedCaps, conferAbilityId, declenchementTriggers]);
+  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, keywordModes, keywordGrantScope, rmY, afY, rmRace, rmClan, asRace, composedCaps, conferAbilityId, declenchementTriggers]);
 
   const [generatingImage, setGeneratingImage] = useState(false);
   const [editedPrompt, setEditedPrompt] = useState<string | null>(null);
@@ -3262,6 +3269,20 @@ export default function CardForge() {
                         <RaceClanPicker race={rmRace} clan={rmClan} onChange={(r, c) => { setRmRace(r); setRmClan(c); }} />
                       </div>
                     )}
+                    {/* Affaiblissement — -PV (Y) dédié (le -ATK = la valeur X) */}
+                    {manualKeywords.includes("Affaiblissement -X/-Y") && (
+                      <div style={{ marginTop: 6, padding: 6, borderRadius: 6, border: "1px solid #f5cfcf", background: "#fff0f0" }}>
+                        <div style={{ fontSize: 8, color: "#992c2c", letterSpacing: 1, fontWeight: 700, marginBottom: 4 }}>🔻 AFFAIBLISSEMENT</div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <span style={{ fontSize: 9, color: "#c0392b" }}>-PV (Y)</span>
+                          <input type="number" min={0} max={20} value={afY}
+                            onChange={e => setAfY(Math.max(0, parseInt(e.target.value) || 0))}
+                            style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: "1px solid #f5cfcf", fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }}
+                          />
+                          <span style={{ fontSize: 8, color: "#888" }}>(le -ATK = la valeur X)</span>
+                        </div>
+                      </div>
+                    )}
                     {/* Appel Suprême — race ciblée (récupère la créature de cette race au plus haut coût) */}
                     {manualKeywords.includes("Appel Suprême") && (
                       <div style={{ marginTop: 6, padding: 6, borderRadius: 6, border: `1px solid ${asRace ? "#10b98144" : "#e74c3c"}`, background: "#f0fdf4" }}>
@@ -3636,6 +3657,15 @@ export default function CardForge() {
                                 <input type="number" min={0} max={20} value={rmY} onChange={e => setRmY(Math.max(0, parseInt(e.target.value) || 0))} style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: cardBorder, fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
                               </div>
                               <RaceClanPicker race={rmRace} clan={rmClan} onChange={(r, c) => { setRmRace(r); setRmClan(c); }} />
+                            </div>
+                          )}
+                          {label === "Affaiblissement -X/-Y" && (
+                            <div style={{ marginTop: 8 }}>
+                              <div style={{ ...labelStyle, color: "#992c2c", marginBottom: 3 }}>🔻 -PV (Y) <span style={{ color: "#888", fontWeight: 400 }}>(-ATK = X)</span></div>
+                              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                <span style={{ fontSize: 9, color: "#c0392b" }}>-PV</span>
+                                <input type="number" min={0} max={20} value={afY} onChange={e => setAfY(Math.max(0, parseInt(e.target.value) || 0))} style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: cardBorder, fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
+                              </div>
                             </div>
                           )}
                           {label === "Appel Suprême" && (
