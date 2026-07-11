@@ -12,6 +12,7 @@ import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, cleanEffectText, buildKeyword
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { composedCapsOf, composedIcon, composedTriggerMode, composedValueText, describeComposedCap } from "@/lib/game/composed-display";
+import ComposedMarker from "@/components/cards/ComposedMarker";
 import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
 import RarityFrame from "@/components/cards/RarityFrame";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
@@ -678,7 +679,7 @@ function BoardCreature({
           {/* Effets composés (sans cadre ; même gabarit icône+valeur que les keywords) */}
           {composedCapsOf(card.capabilities).map((cap, i) => {
             const ic = composedIcon(cap);
-            const cfilter = keywordModeFilter(composedTriggerMode(cap));
+            const cmode = composedTriggerMode(cap);
             const val = composedValueText(cap);
             const tint = keywordModeColor(composedTriggerMode(cap)) ?? accentColor;
             const hasImg = !!iconOverrides[ic.keyword];
@@ -687,12 +688,15 @@ function BoardCreature({
                 minWidth: 24, height: 24, padding: val ? "0 2px" : 0,
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, overflow: "hidden",
               }}>
-                <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", filter: cfilter ?? undefined, lineHeight: 0 }}>
+                <span style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0 }}>
+                  <span style={{ display: "inline-flex", lineHeight: 0, filter: keywordModeFilter(cmode) ?? undefined }}>
                   {hasImg ? (
                     <div style={{ width: 24, height: 24, flexShrink: 0 }}><KeywordIcon symbol={ic.symbol} size={14} keyword={ic.keyword} fill /></div>
                   ) : (
                     <KeywordIcon symbol={ic.symbol} size={14} keyword={ic.keyword} />
                   )}
+                  </span>
+                  <ComposedMarker mode={cmode} size={7} />
                 </span>
                 {val && <span style={{ fontSize: 8, fontWeight: 900, color: keywordModeColor(composedTriggerMode(cap)) ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}`, marginLeft: -3 }}>{val}</span>}
               </div>
@@ -866,11 +870,14 @@ function BoardCreature({
           <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
             {composedCapsOf(card.capabilities).map((cap, i) => {
               const ic = composedIcon(cap);
-              const cfilter = keywordModeFilter(composedTriggerMode(cap));
+              const cmode = composedTriggerMode(cap);
               return (
                 <div key={`cxd-${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
-                  <span style={{ flexShrink: 0, display: "inline-flex", filter: cfilter ?? undefined, lineHeight: 0 }}>
-                    <KeywordIcon symbol={ic.symbol} size={10} keyword={ic.keyword} />
+                  <span style={{ position: "relative", flexShrink: 0, display: "inline-flex", lineHeight: 0 }}>
+                    <span style={{ display: "inline-flex", lineHeight: 0, filter: keywordModeFilter(cmode) ?? undefined }}>
+                      <KeywordIcon symbol={ic.symbol} size={10} keyword={ic.keyword} />
+                    </span>
+                    <ComposedMarker mode={cmode} size={6} />
                   </span>
                   <div style={{ fontSize: 8 * d, color: "#ccc", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>
                     {describeComposedCap(cap, tokenTemplates)}

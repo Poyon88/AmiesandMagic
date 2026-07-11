@@ -8,6 +8,7 @@ import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, getSpellKeywordLabel, getSpellKe
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { composedCapsOf, composedIcon, composedTriggerMode, composedValueText, describeComposedCap } from "@/lib/game/composed-display";
+import ComposedMarker from "@/components/cards/ComposedMarker";
 import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
 import { useGameStore } from "@/lib/store/gameStore";
 import { useAudioStore } from "@/lib/store/audioStore";
@@ -264,12 +265,12 @@ function MulliganCard({
           <div style={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
             {composedCapsOf(card.capabilities).map((cap, i) => {
               const ic = composedIcon(cap);
-              const cfilter = keywordModeFilter(composedTriggerMode(cap));
+              const cmode = composedTriggerMode(cap);
               const val = composedValueText(cap);
               const tint = keywordModeColor(composedTriggerMode(cap)) ?? accentColor;
               return (
                 <div key={`cx-${i}`} title={describeComposedCap(cap, tokenTemplates)} style={{ minWidth: 24, height: 24, padding: val ? "0 3px" : 0, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 }}>
-                  <span style={{ display: "inline-flex", filter: cfilter ?? undefined, lineHeight: 0 }}><KeywordIcon symbol={ic.symbol} size={14} keyword={ic.keyword} /></span>
+                  <span style={{ position: "relative", display: "inline-flex", lineHeight: 0 }}><span style={{ display: "inline-flex", lineHeight: 0, filter: keywordModeFilter(cmode) ?? undefined }}><KeywordIcon symbol={ic.symbol} size={14} keyword={ic.keyword} /></span><ComposedMarker mode={cmode} size={7} /></span>
                   {val && <span style={{ fontSize: 8, fontWeight: 900, color: keywordModeColor(composedTriggerMode(cap)) ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}`, marginLeft: -3 }}>{val}</span>}
                 </div>
               );
@@ -387,9 +388,10 @@ function MulliganCard({
           <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
             {composedCapsOf(card.capabilities).map((cap, i) => {
               const ic = composedIcon(cap);
+              const cmode = composedTriggerMode(cap);
               return (
                 <div key={`cxd-${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 5 }}>
-                  <span style={{ flexShrink: 0 }}><KeywordIcon symbol={ic.symbol} size={12} keyword={ic.keyword} /></span>
+                  <span style={{ position: "relative", flexShrink: 0, display: "inline-flex", lineHeight: 0 }}><span style={{ display: "inline-flex", lineHeight: 0, filter: keywordModeFilter(cmode) ?? undefined }}><KeywordIcon symbol={ic.symbol} size={12} keyword={ic.keyword} /></span><ComposedMarker mode={cmode} size={7} /></span>
                   <div style={{ fontSize: 8 * d, color: "#bbb", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{describeComposedCap(cap, tokenTemplates)}</div>
                 </div>
               );

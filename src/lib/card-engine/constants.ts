@@ -45,6 +45,8 @@ export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
   "Vampirisme X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
   "Tempête X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
   "Cataclysme X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
+  "Renforcement +X/+Y": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
+  "Impact X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
   "Prescience X": new Set<CuratedMode>(["tap", "return", "end_of_turn"]),
   "Suprématie": new Set<CuratedMode>(["death", "return", "end_of_turn"]),
   "Ombre du passé": new Set<CuratedMode>(["death", "return", "end_of_turn"]),

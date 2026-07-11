@@ -1599,6 +1599,8 @@ export default function CardForge() {
   const [rmY, setRmY] = useState<number>(1);
   // Affaiblissement -X/-Y (créature) : le -PV (Y) dédié (le -ATK = la valeur X générique).
   const [afY, setAfY] = useState<number>(1);
+  // Renforcement +X/+Y (créature, self-buff) : le +PV (Y) dédié (le +ATK = la valeur X).
+  const [rfY, setRfY] = useState<number>(1);
   const [rmRace, setRmRace] = useState<string>("");
   const [rmClan, setRmClan] = useState<string>("");
   // Appel Suprême : race ciblée fixée sur la carte (créature). Persistée dans
@@ -1874,7 +1876,7 @@ export default function CardForge() {
     setManualPower(2); setManualAbility(""); setManualFlavorText("");
     setManualIllustrationPrompt(""); setManualExtraContext(""); setManualKeywords([]); setKeywordXValues({}); setKeywordModes({}); setCard(null);
     setEditedPrompt(null); setSaveResult(null);
-    setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setAfY(1); setRmRace(""); setRmClan(""); setAsRace(""); setConferAbilityId(""); setDeclenchementTriggers([]); setComposedCaps([]);
+    setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setAfY(1); setRfY(1); setRmRace(""); setRmClan(""); setAsRace(""); setConferAbilityId(""); setDeclenchementTriggers([]); setComposedCaps([]);
     setManualLifeCost(0); setManualDiscardCost(0); setManualSacrificeCost(0);
     setCardImages(prev => Object.fromEntries(Object.entries(prev).filter(([k]) => k !== "manual_preview")));
   }, []);
@@ -2173,6 +2175,10 @@ export default function CardForge() {
           if (id === "affaiblissement" && !isSpellCard) {
             return { id, ...(mode ? { mode } : {}), x: x ?? 0, y: afY };
           }
+          // Renforcement (créature, self-buff) : porte +X (ATK générique) / +Y (PV dédié).
+          if (id === "renforcement" && !isSpellCard) {
+            return { id, ...(mode ? { mode } : {}), x: x ?? 0, y: rfY };
+          }
           // Appel Suprême (créature) : porte la race ciblée ; toujours émis.
           if (id === "appel_supreme" && !isSpellCard) {
             return { id, ...(mode ? { mode } : {}), ...(asRace ? { race: asRace } : {}) };
@@ -2272,7 +2278,7 @@ export default function CardForge() {
     } finally {
       setSaving(false);
     }
-  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, keywordModes, keywordGrantScope, rmY, afY, rmRace, rmClan, asRace, composedCaps, conferAbilityId, declenchementTriggers]);
+  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, keywordModes, keywordGrantScope, rmY, afY, rfY, rmRace, rmClan, asRace, composedCaps, conferAbilityId, declenchementTriggers]);
 
   const [generatingImage, setGeneratingImage] = useState(false);
   const [editedPrompt, setEditedPrompt] = useState<string | null>(null);
@@ -3120,7 +3126,7 @@ export default function CardForge() {
                                 fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: selected ? 700 : 400,
                                 transition: "all 0.15s",
                               }}>{id.replace(/ X$/, "")}{isScalable && !selected ? " X" : ""}</button>
-                            {isScalable && selected && (
+                            {isScalable && selected && id !== "Renforcement +X/+Y" && (
                               <input
                                 type="number" min={1} max={10}
                                 value={keywordXValues[id] ?? 1}
@@ -3280,6 +3286,24 @@ export default function CardForge() {
                             style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: "1px solid #f5cfcf", fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }}
                           />
                           <span style={{ fontSize: 8, color: "#888" }}>(le -ATK = la valeur X)</span>
+                        </div>
+                      </div>
+                    )}
+                    {/* Renforcement (créature, self-buff) — +ATK (X) et +PV (Y) réglables séparément */}
+                    {manualKeywords.includes("Renforcement +X/+Y") && (
+                      <div style={{ marginTop: 6, padding: 6, borderRadius: 6, border: "1px solid #cfe8d4", background: "#f0fff4" }}>
+                        <div style={{ fontSize: 8, color: "#1e7d3b", letterSpacing: 1, fontWeight: 700, marginBottom: 4 }}>⬆️ RENFORCEMENT (SUR SOI)</div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <span style={{ fontSize: 9, color: "#27ae60" }}>+ATK (X)</span>
+                          <input type="number" min={0} max={20} value={keywordXValues["Renforcement +X/+Y"] ?? 1}
+                            onChange={e => setKeywordXValues(prev => ({ ...prev, ["Renforcement +X/+Y"]: Math.max(0, Math.min(20, parseInt(e.target.value) || 0)) }))}
+                            style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: "1px solid #cfe8d4", fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }}
+                          />
+                          <span style={{ fontSize: 9, color: "#27ae60" }}>+PV (Y)</span>
+                          <input type="number" min={0} max={20} value={rfY}
+                            onChange={e => setRfY(Math.max(0, parseInt(e.target.value) || 0))}
+                            style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: "1px solid #cfe8d4", fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }}
+                          />
                         </div>
                       </div>
                     )}
@@ -3615,7 +3639,7 @@ export default function CardForge() {
                             <span style={labelStyle}>EFFET</span>
                             <span style={{ ...valStyle, display: "flex", alignItems: "center", gap: 8 }}>
                               {def?.creature?.desc ?? def?.desc ?? label}
-                              {scalable && (
+                              {scalable && label !== "Renforcement +X/+Y" && (
                                 <input type="number" min={1} max={10} value={keywordXValues[label] ?? 1}
                                   onChange={e => setKeywordXValues(prev => ({ ...prev, [label]: Math.max(1, Math.min(10, parseInt(e.target.value) || 1)) }))}
                                   style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: `1px solid ${fac.color}`, background: `${fac.color}11`, color: fac.color, fontSize: 11, textAlign: "center", fontWeight: 700, fontFamily: "'Cinzel',serif" }}
@@ -3665,6 +3689,17 @@ export default function CardForge() {
                               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                                 <span style={{ fontSize: 9, color: "#c0392b" }}>-PV</span>
                                 <input type="number" min={0} max={20} value={afY} onChange={e => setAfY(Math.max(0, parseInt(e.target.value) || 0))} style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: cardBorder, fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
+                              </div>
+                            </div>
+                          )}
+                          {label === "Renforcement +X/+Y" && (
+                            <div style={{ marginTop: 8 }}>
+                              <div style={{ ...labelStyle, color: "#1e7d3b", marginBottom: 3 }}>⬆️ +ATK (X) / +PV (Y) <span style={{ color: "#888", fontWeight: 400 }}>(sur soi)</span></div>
+                              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                <span style={{ fontSize: 9, color: "#27ae60" }}>+ATK</span>
+                                <input type="number" min={0} max={20} value={keywordXValues[label] ?? 1} onChange={e => setKeywordXValues(prev => ({ ...prev, [label]: Math.max(0, Math.min(20, parseInt(e.target.value) || 0)) }))} style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: cardBorder, fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
+                                <span style={{ fontSize: 9, color: "#27ae60" }}>+PV</span>
+                                <input type="number" min={0} max={20} value={rfY} onChange={e => setRfY(Math.max(0, parseInt(e.target.value) || 0))} style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: cardBorder, fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
                               </div>
                             </div>
                           )}
