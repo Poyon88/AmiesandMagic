@@ -10,6 +10,7 @@ import KeywordIcon from "@/components/shared/KeywordIcon";
 import { composedCapsOf, composedIcon, composedKeywordName, composedTriggerMode, composedValueText, describeComposedCap } from "@/lib/game/composed-display";
 import ComposedMarker from "@/components/cards/ComposedMarker";
 import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
+import { MULLIGAN_TIMER_SECONDS } from "@/lib/game/constants";
 import { useGameStore } from "@/lib/store/gameStore";
 import { useAudioStore } from "@/lib/store/audioStore";
 import SfxEngine from "@/lib/audio/SfxEngine";
@@ -498,6 +499,12 @@ export default function MulliganOverlay({
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [revealedIds, setRevealedIds] = useState<Set<string>>(new Set());
   const [phase, setPhase] = useState<"initial" | "selecting" | "replacing" | "complete">("initial");
+  // Compte à rebours du mulligan (par client). Démarre à l'entrée en phase
+  // "selecting" ; à 0, confirme automatiquement la sélection courante.
+  const [timeLeft, setTimeLeft] = useState(MULLIGAN_TIMER_SECONDS);
+  const mulliganDeadlineRef = useRef<number | null>(null);
+  const hasAutoConfirmedRef = useRef(false);
+  const confirmRef = useRef<() => void>(() => {});
   const myCardBackUrl = useGameStore((s) => s.myCardBackUrl);
   const kickedOffInitialRef = useRef(false);
   const kickedOffReplacementRef = useRef(false);
@@ -602,6 +609,40 @@ export default function MulliganOverlay({
       setTimeout(() => setPhase("complete"), POST_REVEAL_HOLD_MS);
     }
   }
+  // Garde une référence fraîche vers le handler (capture le `selected` courant)
+  // pour que l'auto-confirm du timer soumette la bonne sélection sans re-souscrire
+  // l'intervalle à chaque toggle de carte.
+  confirmRef.current = handleConfirmClick;
+
+  // Compte à rebours 45 s (ancré sur l'horloge → résiste au throttling d'onglet,
+  // comme TurnTimer). Ne tourne qu'en phase "selecting" ; à 0, auto-confirme une
+  // seule fois (garde anti double-tir avec un clic manuel).
+  useEffect(() => {
+    if (phase !== "selecting") return;
+    if (mulliganDeadlineRef.current == null) {
+      mulliganDeadlineRef.current = Date.now() + MULLIGAN_TIMER_SECONDS * 1000;
+    }
+    const tick = () => {
+      const deadline = mulliganDeadlineRef.current;
+      if (deadline == null) return;
+      const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+      setTimeLeft(remaining);
+      if (remaining <= 0 && !hasAutoConfirmedRef.current) {
+        hasAutoConfirmedRef.current = true;
+        confirmRef.current();
+      }
+    };
+    tick();
+    const id = setInterval(tick, 500);
+    const onVisibility = () => tick();
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("focus", onVisibility);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("focus", onVisibility);
+    };
+  }, [phase]);
 
   // Signal the parent as soon as the local animation is finished so it can
   // safely unmount the overlay (the game phase may have already flipped to
@@ -631,9 +672,15 @@ export default function MulliganOverlay({
     <div className="fixed inset-0 bg-black/85 z-50 flex items-center justify-center">
       <div className="text-center max-w-4xl px-6">
         <h1 className="text-2xl font-bold text-foreground mb-2">Mulligan</h1>
-        <p className="text-foreground/50 mb-8 text-sm">
+        <p className="text-foreground/50 mb-4 text-sm">
           Sélectionnez les cartes à remplacer, puis confirmez.
         </p>
+
+        {phase === "selecting" && (
+          <div className={`mb-8 text-xl font-bold tabular-nums ${timeLeft <= 10 ? "text-red-400 animate-pulse" : "text-foreground/70"}`}>
+            ⏱ {timeLeft}s
+          </div>
+        )}
 
         <div className="flex justify-center gap-5 mb-10">
           {displayedHand.map((cardInstance) => (

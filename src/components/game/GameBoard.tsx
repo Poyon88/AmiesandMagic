@@ -44,10 +44,14 @@ import { useScreenShake } from "@/hooks/useScreenShake";
 
 interface GameBoardProps {
   onAction?: (action: GameAction) => void;
+  // Émis quand l'animation de révélation de mulligan locale est terminée
+  // (prévient le pair). Vrai quand l'adversaire a émis le sien.
+  onMulliganRevealDone?: () => void;
+  opponentMulliganRevealDone?: boolean;
 }
 
 
-export default function GameBoard({ onAction }: GameBoardProps) {
+export default function GameBoard({ onAction, onMulliganRevealDone, opponentMulliganRevealDone = false }: GameBoardProps) {
   useGameMusic();
   const { shakeControls, isFrozen, isFrozenBig } = useScreenShake();
 
@@ -420,9 +424,38 @@ export default function GameBoard({ onAction }: GameBoardProps) {
   // the opponent confirms quickly. Declared before the early return below so
   // hook order stays stable across renders (rules-of-hooks).
   const [mulliganOverlayRequired, setMulliganOverlayRequired] = useState(false);
+  const [localMulliganRevealDone, setLocalMulliganRevealDone] = useState(false);
+  // Horodatage (wall-clock, hors-hash) du dévoilement synchronisé du plateau —
+  // sert à ré-ancrer le chrono de tour pour qu'il ne compte pas pendant l'attente
+  // de l'adversaire. 0 = pas encore dévoilé.
+  const [boardRevealedAt, setBoardRevealedAt] = useState(0);
   useEffect(() => {
     if (gameState?.phase === "mulligan") setMulliganOverlayRequired(true);
   }, [gameState?.phase]);
+  // On ne dévoile le plateau (démontage de l'overlay) que lorsque la partie a
+  // démarré (phase "playing" = les DEUX confirmés) ET que les DEUX joueurs ont
+  // fini leur animation de révélation (handshake "mulligan_reveal_done"). Sinon
+  // le 1er à confirmer verrait le plateau + le chrono tourner pendant que l'autre
+  // termine son remplacement. Fallback anti-blocage : si le signal de l'adversaire
+  // n'arrive jamais (reconnexion, broadcast manqué), on dévoile après 10 s.
+  useEffect(() => {
+    if (gameState?.phase !== "playing" || !localMulliganRevealDone || !mulliganOverlayRequired) return;
+    const reveal = () => {
+      setBoardRevealedAt(Date.now());
+      setMulliganOverlayRequired(false);
+      // La pipeline mulligan a sauté draw_card exprès ; on le joue ici, au moment
+      // exact où le plateau devient visible (pioche de début de tour + Mana Spark
+      // du 2e joueur), pour l'accompagner d'un son.
+      const audio = useAudioStore.getState();
+      const url = audio.standardSfxUrls["draw_card"];
+      if (url && audio.userHasInteracted && !audio.settings.sfxMuted) {
+        SfxEngine.getInstance().play(url);
+      }
+    };
+    if (opponentMulliganRevealDone) { reveal(); return; }
+    const fallback = setTimeout(reveal, 10000);
+    return () => clearTimeout(fallback);
+  }, [gameState?.phase, localMulliganRevealDone, opponentMulliganRevealDone, mulliganOverlayRequired]);
 
   // Long-press equivalent of the board-level right-click: backs out of a
   // multi-target spell slot or cancels the active targeting mode entirely.
@@ -1074,7 +1107,7 @@ export default function GameBoard({ onAction }: GameBoardProps) {
             isMyTurn={myTurn}
             onTimeUp={handleEndTurn}
             turnNumber={gameState.turnNumber}
-            turnStartedAt={gameState.turnStartedAt}
+            turnStartedAt={Math.max(gameState.turnStartedAt, boardRevealedAt)}
             isPaused={isAutoAttacking}
             hasPendingTriggers={(gameState.pendingTriggers?.length ?? 0) > 0}
             onPendingTimeout={handleAutoResolvePending}
@@ -1170,15 +1203,8 @@ export default function GameBoard({ onAction }: GameBoardProps) {
           onConfirm={handleMulliganConfirm}
           waitingForOpponent={myMulliganDone}
           onRevealComplete={() => {
-            setMulliganOverlayRequired(false);
-            // The mulligan pipeline skipped draw_card on purpose; fire it now
-            // so the turn-start draw (and the Mana Spark for the 2nd player)
-            // has audible feedback at the exact moment they become visible.
-            const audio = useAudioStore.getState();
-            const url = audio.standardSfxUrls["draw_card"];
-            if (url && audio.userHasInteracted && !audio.settings.sfxMuted) {
-              SfxEngine.getInstance().play(url);
-            }
+            setLocalMulliganRevealDone(true);
+            onMulliganRevealDone?.();
           }}
         />
       )}

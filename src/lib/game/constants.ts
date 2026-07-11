@@ -13,3 +13,6 @@ export const MAX_MANA = 10;
 export const STARTING_MANA = 0;
 export const CARDS_DRAWN_PER_TURN = 1;
 export const TURN_TIMER_SECONDS = 90;
+// Compte à rebours du mulligan (par client). À 0 → confirmation automatique de
+// la sélection courante (garder tout si rien n'est sélectionné).
+export const MULLIGAN_TIMER_SECONDS = 45;

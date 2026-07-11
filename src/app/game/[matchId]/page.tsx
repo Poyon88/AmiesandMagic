@@ -93,6 +93,11 @@ export default function GamePage() {
   // A missing row means the opponent can't resync past that seq, so we surface
   // a non-blocking banner inviting a reload rather than failing silently.
   const [persistWarning, setPersistWarning] = useState(false);
+  // Vrai quand l'adversaire a fini son animation de révélation de mulligan
+  // (broadcast "mulligan_reveal_done"). Le plateau n'est dévoilé que lorsque les
+  // DEUX joueurs ont terminé (cf. GameBoard) → démarrage synchronisé. État de
+  // page (remonté par match) : pas de reset manuel nécessaire.
+  const [opponentMulliganRevealDone, setOpponentMulliganRevealDone] = useState(false);
   const matchDataRef = useRef<{
     match: MatchData;
     p1Cards: { card: Card; quantity: number }[];
@@ -588,6 +593,12 @@ export default function GamePage() {
             if (pIdx === -1 || st.mulliganReady[pIdx]) return;
             applyOne(a);
           })
+          .on("broadcast", { event: "mulligan_reveal_done" }, () => {
+            // L'adversaire a fini son animation de révélation de mulligan
+            // (self:false → seul l'adversaire émet). On mémorise pour ne dévoiler
+            // le plateau que lorsque les DEUX ont terminé (cf. GameBoard).
+            setOpponentMulliganRevealDone(true);
+          })
           .on("broadcast", { event: "checkpoint" }, (payload) => {
             const cp = payload.payload as { seq: number; hash: string } | null;
             if (!cp || typeof cp.seq !== "number" || typeof cp.hash !== "string") return;
@@ -814,6 +825,17 @@ export default function GamePage() {
     [matchId, supabase, persistAction, writeSnapshot]
   );
 
+  // Prévient le pair que notre animation de révélation de mulligan est terminée,
+  // pour un dévoilement synchronisé du plateau (cf. GameBoard). Hors voie seq,
+  // idempotent (le récepteur ne fait que poser un booléen).
+  const emitRevealDone = useCallback(() => {
+    channelRef.current?.send({
+      type: "broadcast",
+      event: "mulligan_reveal_done",
+      payload: {},
+    });
+  }, []);
+
   // Deferred-snapshot drain: when an animated local action finishes (the
   // animation pipeline flips isAnimating true→false and commits the new
   // gameState), write the snapshot that handleAction parked for it.
@@ -894,7 +916,7 @@ export default function GamePage() {
           >×</button>
         </div>
       )}
-      <GameBoard onAction={handleAction} />
+      <GameBoard onAction={handleAction} onMulliganRevealDone={emitRevealDone} opponentMulliganRevealDone={opponentMulliganRevealDone} />
     </>
   );
 }
