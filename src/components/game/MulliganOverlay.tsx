@@ -207,9 +207,8 @@ function MulliganCard({
               const modeFilter = keywordModeFilter(mode);
               return (
               <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} title={displayTitle} style={{
-                minWidth: 20, height: 20, borderRadius: 5,
+                minWidth: 20, height: 20,
                 padding: x != null ? "0 3px" : 0,
-                background: `${accentColor}33`, border: `1px solid ${accentColor}66`,
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2,
                 fontSize: 11,
               }}>
@@ -242,9 +241,8 @@ function MulliganCard({
                 : usesAmount ? toRoman(spellKw.amount ?? 1) : null;
               return (
               <div key={`sk_${i}`} title={displayTitle} style={{
-                minWidth: 20, height: 20, borderRadius: 5,
+                minWidth: 20, height: 20,
                 padding: hasValue ? "0 3px" : 0,
-                background: `${accentColor}33`, border: `1px solid ${accentColor}66`,
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 0,
                 fontSize: 11,
               }}>
