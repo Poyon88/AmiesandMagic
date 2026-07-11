@@ -54,10 +54,10 @@ function mkState(): GameState {
 
 const GRAVE_TARGET: TargetSpec = { entity: "unit", count: 1, side: "ally", location: "graveyard", designation: "choice" };
 
-/** Sort composé "exhumation" (X = maxCost). Renvoie la carte + l'uid de la cap
- *  (nécessaire pour keyer le targetMap `${uid}#0`). */
-function exhumSpell(x: number): { card: Card; uid: string } {
-  const cap = composedCap("spell_resolution", { content: "exhumation", magnitude: { x }, target: { ...GRAVE_TARGET } });
+/** Sort composé "exhumation" (X = maxCost, count = nb de cibles). Renvoie la carte
+ *  + l'uid de la cap (nécessaire pour keyer le targetMap `${uid}#i`). */
+function exhumSpell(x: number, count: number | "all" = 1): { card: Card; uid: string } {
+  const cap = composedCap("spell_resolution", { content: "exhumation", magnitude: { x }, target: { ...GRAVE_TARGET, count } });
   const card = mkCard({ card_type: "spell", attack: null, health: null, capabilities: [cap] });
   return { card, uid: cap.uid };
 }
@@ -87,6 +87,46 @@ describe("exhumation composée — résolution moteur", () => {
     // atterrit aussi au cimetière → on filtre sur les créatures).
     const graveCreatures = s.players[0].graveyard.filter(c => c.card.card_type === "creature");
     expect(graveCreatures.map(c => c.card.name)).toEqual(["Rat"]);
+  });
+
+  it("multi-cible : ressuscite les N créatures choisies (count = 3)", () => {
+    const s0 = mkState();
+    const a = mkInstance(mkCard({ name: "A", mana_cost: 2, attack: 2, health: 2 }));
+    const b = mkInstance(mkCard({ name: "B", mana_cost: 3, attack: 3, health: 3 }));
+    const c = mkInstance(mkCard({ name: "C", mana_cost: 1, attack: 1, health: 1 }));
+    const d = mkInstance(mkCard({ name: "D", mana_cost: 3, attack: 4, health: 4 }));
+    s0.players[0].graveyard = [a, b, c, d];
+    const { card, uid } = exhumSpell(3, 3);
+    const s = play(s0, mkInstance(card), {
+      [`${uid}#0`]: a.instanceId, [`${uid}#1`]: b.instanceId, [`${uid}#2`]: c.instanceId,
+    });
+    const names = s.players[0].board.map(x => x.card.name).sort();
+    expect(names).toEqual(["A", "B", "C"]); // les 3 choisies, pas D
+  });
+
+  it("multi-cible borné par le disponible (« jusqu'à N ») : count 3 mais 2 éligibles → 2", () => {
+    const s0 = mkState();
+    const a = mkInstance(mkCard({ name: "A", mana_cost: 2, attack: 2, health: 2 }));
+    const b = mkInstance(mkCard({ name: "B", mana_cost: 3, attack: 3, health: 3 }));
+    s0.players[0].graveyard = [a, b];
+    const { card, uid } = exhumSpell(3, 3);
+    const s = play(s0, mkInstance(card), { [`${uid}#0`]: a.instanceId, [`${uid}#1`]: b.instanceId });
+    expect(s.players[0].board.map(x => x.card.name).sort()).toEqual(["A", "B"]);
+  });
+
+  it("multi-cible repli non-interactif : sans targetMap, ressuscite les N plus hauts coûts", () => {
+    const s0 = mkState();
+    s0.players[0].graveyard = [
+      mkInstance(mkCard({ name: "Rat", mana_cost: 1 })),
+      mkInstance(mkCard({ name: "Ours", mana_cost: 3, health: 5 })),
+      mkInstance(mkCard({ name: "Loup", mana_cost: 2, health: 2 })),
+      mkInstance(mkCard({ name: "Cerf", mana_cost: 3, health: 3 })),
+    ];
+    const { card } = exhumSpell(3, 2); // pas de targetMap → repli, 2 plus hauts coûts (les deux « 3 »)
+    const s = play(s0, mkInstance(card));
+    const costs = s.players[0].board.map(x => x.card.mana_cost).sort();
+    expect(s.players[0].board.length).toBe(2);
+    expect(costs).toEqual([3, 3]);
   });
 
   it("respecte le filtre de coût : une créature coût > X n'est pas ressuscitée", () => {

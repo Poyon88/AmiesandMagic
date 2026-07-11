@@ -100,7 +100,11 @@ function describeContent(eff: ComposedEffect, tokens?: TokenTemplate[]): string 
       return x > 1 ? `invoque ${x} ${label}` : `invoque un ${label}`;
     }
     case "gain_mana": return `gagnez ${x} mana ce tour`;
-    case "exhumation": return `ressuscite une créature (coût ≤ ${x})`;
+    case "exhumation": {
+      const n = eff.target?.count;
+      const who = typeof n === "number" && n > 1 ? `jusqu'à ${n} créatures` : n === "all" ? "toutes les créatures" : "une créature";
+      return `ressuscite ${who} de votre cimetière (coût ≤ ${x})`;
+    }
     default: return String(eff.content);
   }
 }
@@ -153,8 +157,12 @@ export function describeComposedCap(cap: Capability, tokens?: TokenTemplate[]): 
   const eff = cap.composed;
   if (!eff) return "";
   const prefix = TRIGGER_PREFIX[cap.trigger];
+  // Exhumation : la phrase de contenu décrit déjà le nombre + la zone (cimetière)
+  // → on n'y accole pas le descripteur de cible générique (qui dirait « à N unités
+  // alliées du cimetière au choix », redondant).
+  const skipTarget = eff.content === "exhumation";
   const body = describeScatter(eff)
-    ?? [describeContent(eff, tokens), describeTarget(eff.target)].filter(Boolean).join(" ");
+    ?? [describeContent(eff, tokens), skipTarget ? "" : describeTarget(eff.target)].filter(Boolean).join(" ");
   const sentence = prefix ? `${prefix} : ${body}` : body;
   return sentence.charAt(0).toUpperCase() + sentence.slice(1) + ".";
 }
