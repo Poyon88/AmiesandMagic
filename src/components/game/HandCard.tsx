@@ -558,13 +558,9 @@ function HandCard({
                       fontSize: 8, overflow: "hidden",
                     }}>
                       <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", filter: modeFilter ?? undefined, lineHeight: 0 }}>
-                        {hasImg ? (
-                          <div style={{ width: 24, height: 24, flexShrink: 0 }}>
-                            <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={14} keyword={kw} fill />
-                          </div>
-                        ) : (
-                          <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={14} keyword={kw} />
-                        )}
+                        <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 14, height: 14, flexShrink: 0 }}>
+                          <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={14} keyword={kw} fill />
+                        </span>
                       </span>
                       {x != null && <span style={{ fontSize: 8, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}` }}>{toRoman(x)}</span>}
                     </div>
@@ -593,20 +589,15 @@ function HandCard({
                 padding: hasValue ? "0 2px" : 0,
                 background: hasImg ? "transparent" : `${accentColor}33`,
                 border: hasImg ? "none" : `1px solid ${accentColor}66`,
-                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 0,
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1,
                 fontSize: 8, overflow: "hidden",
               }}>
-                {hasImg ? (
-                  <div style={{ width: 24, height: 24, flexShrink: 0 }}>
-                    <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={14} keyword={spellKey} fill />
-                  </div>
-                ) : (
-                  <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={14} keyword={spellKey} />
-                )}
+                <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 14, height: 14, flexShrink: 0 }}>
+                  <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={14} keyword={spellKey} fill />
+                </span>
                 {valueText && <span style={{
                   fontSize: 8, fontWeight: 900, color: "#fff",
                   fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}`,
-                  marginLeft: -6,
                 }}>{valueText}</span>}
               </div>
               );

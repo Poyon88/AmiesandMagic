@@ -379,17 +379,20 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                   minWidth: 19 * s, height: 19 * s, borderRadius: 6 * s,
                   padding: `0 ${xVal != null ? 5 * s : 0}px`,
                   background: `${badgeColor}33`, border: `1px solid ${badgeColor}88`,
-                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 3 * s,
+                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 0,
                   fontSize: 13 * s, cursor: "default",
                   boxShadow: grantScope === "all_allies" ? `0 0 8px #27ae60aa` : `0 0 6px ${badgeColor}44`,
                   transition: "all 0.2s",
                 }}>
-                  <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} keyword={FR_LABEL_TO_ID[kw] ?? kw} />
+                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 15 * s, height: 15 * s, flexShrink: 0 }}>
+                    <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} keyword={FR_LABEL_TO_ID[kw] ?? kw} size={15 * s} fill />
+                  </span>
                   {xVal != null && (
                     <span style={{
                       fontSize: 10 * s, fontWeight: 900, lineHeight: 1,
                       color: "#fff", fontFamily: "'Cinzel',serif",
                       textShadow: `0 0 4px ${fac.accent}`,
+                      marginLeft: -4 * s,
                     }}>{toRoman(xVal)}</span>
                   )}
                 </div>
@@ -429,7 +432,9 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                   boxShadow: `0 0 6px ${fac.color}44`,
                   transition: "all 0.2s",
                 }}>
-                  <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} keyword={`spell_${spellKw.id}`} />
+                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 15 * s, height: 15 * s, flexShrink: 0 }}>
+                    <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} keyword={`spell_${spellKw.id}`} size={15 * s} fill />
+                  </span>
                   {valueText && (
                     <span style={{
                       fontSize: 10 * s, fontWeight: 900, lineHeight: 1,

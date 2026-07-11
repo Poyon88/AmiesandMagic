@@ -663,13 +663,9 @@ function BoardCreature({
                 fontSize: 8, overflow: "hidden",
               }}>
                 <span style={{ display: "inline-flex", filter: modeFilter ?? undefined }}>
-                  {hasImg ? (
-                    <div style={{ width: 24, height: 24, flexShrink: 0 }}>
-                      <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={14} keyword={kw} fill />
-                    </div>
-                  ) : (
-                    <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={14} keyword={kw} />
-                  )}
+                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 14, height: 14, flexShrink: 0 }}>
+                    <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={14} keyword={kw} fill />
+                  </span>
                 </span>
                 {x != null && <span style={{ fontSize: 8, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}` }}>{toRoman(x)}</span>}
               </div>

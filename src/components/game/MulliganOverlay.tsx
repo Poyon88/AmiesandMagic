@@ -214,7 +214,9 @@ function MulliganCard({
                 fontSize: 11,
               }}>
                 <span style={{ display: "inline-flex", filter: modeFilter ?? undefined, lineHeight: 0 }}>
-                  <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={11} keyword={kw} />
+                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 11, height: 11, flexShrink: 0 }}>
+                    <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={11} keyword={kw} fill />
+                  </span>
                 </span>
                 {x != null && <span style={{ fontSize: 8, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}` }}>{toRoman(x)}</span>}
               </div>
@@ -244,14 +246,15 @@ function MulliganCard({
               <div key={`sk_${i}`} title={displayTitle} style={{
                 minWidth: 20, height: 20,
                 padding: hasValue ? "0 3px" : 0,
-                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 0,
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2,
                 fontSize: 11,
               }}>
-                <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={11} keyword={`spell_${spellKw.id}`} />
+                <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 11, height: 11, flexShrink: 0 }}>
+                  <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={11} keyword={`spell_${spellKw.id}`} fill />
+                </span>
                 {valueText && <span style={{
                   fontSize: 8, fontWeight: 900, color: "#fff",
                   fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}`,
-                  marginLeft: -4,
                 }}>{valueText}</span>}
               </div>
               );
