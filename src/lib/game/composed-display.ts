@@ -19,7 +19,7 @@ export function composedValueText(cap: Capability): string | null {
 
 /** Icône (emoji de repli) + clé d'icône (pour une éventuelle icône uploadée).
  *  La clé pointe vers un keyword existant quand l'effet en réutilise l'icône, ou
- *  vers un id propre (damnation / conferer) pour les nouveaux. */
+ *  vers un id propre (ex. conferer) pour les nouveaux. */
 export function composedIcon(cap: Capability): { symbol: string; keyword: string } {
   const eff = cap.composed;
   if (!eff) return { symbol: "✦", keyword: "" };

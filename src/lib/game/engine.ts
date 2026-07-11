@@ -2924,24 +2924,6 @@ function resolveSpellKeywords(
         }
         break;
       }
-      case "damnation": {
-        // -X/-X permanent à une créature ennemie ciblée (pendant négatif de Renforcement).
-        if (targetId) {
-          const target = findCreatureOnBoard(ctx.opponent, targetId) ?? findCreatureOnBoard(ctx.caster, targetId);
-          if (target) {
-            const amount = kw.amount ?? 0;
-            target.card = {
-              ...target.card,
-              attack: Math.max(0, (target.card.attack ?? 0) - amount),
-              health: Math.max(1, (target.card.health ?? 0) - amount),
-            };
-            target.currentAttack = Math.max(0, target.currentAttack - amount);
-            target.currentHealth -= amount;
-            target.maxHealth = Math.max(1, target.maxHealth - amount);
-          }
-        }
-        break;
-      }
       case "silence": {
         if (targetId) {
           const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);

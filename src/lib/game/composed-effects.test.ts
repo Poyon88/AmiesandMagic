@@ -154,11 +154,11 @@ describe("interpréteur composé — contenus d'effet", () => {
     expect(h2).toBe(2); // ciblé, 5 − 3
   });
 
-  it("Damnation X (sort) : -X/-X à une créature ennemie ciblée", () => {
+  it("Affaiblissement -X/-Y (sort) : -X ATK / -Y PV à une créature ennemie ciblée", () => {
     const s0 = mkState();
     const u = mkInstance(mkCard({ attack: 3, health: 5 }));
     s0.players[1].board = [u];
-    const spell = mkCard({ card_type: "spell", attack: null, health: null, spell_keywords: [{ id: "damnation", amount: 2 }] });
+    const spell = mkCard({ card_type: "spell", attack: null, health: null, spell_keywords: [{ id: "affaiblissement", attack: 2, health: 2 }] });
     const s = play(s0, mkInstance(spell), { kw_0: u.instanceId });
     const t = s.players[1].board[0];
     expect(t.currentAttack).toBe(1); // 3 − 2

@@ -1591,6 +1591,7 @@ export default function CardForge() {
   // déclencheurs dont les effets composés des autres alliés sont rejoués.
   const [declenchementTriggers, setDeclenchementTriggers] = useState<CapabilityTrigger[]>([]);
   const [hoveredKw, setHoveredKw] = useState<{ id: string; rect: DOMRect } | null>(null);
+  const [hoveredSpellKw, setHoveredSpellKw] = useState<{ id: string; rect: DOMRect } | null>(null);
   const [convocationTokenId, setConvocationTokenId] = useState<number | null>(null);
   const [convocationTokens, setConvocationTokens] = useState<ConvocationTokenDef[]>([]);
   const [lycanthropieTokenId, setLycanthropieTokenId] = useState<number | null>(null);
@@ -2888,7 +2889,7 @@ export default function CardForge() {
                       <div style={{ marginTop: 5 }}>
                         <label style={{ fontSize: 8, color: "#666", letterSpacing: 1 }}>SPELL KEYWORDS</label>
                         <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginTop: 3 }}>
-                          {ALL_SPELL_KEYWORDS.map(kwId => {
+                          {[...ALL_SPELL_KEYWORDS].sort((a, b) => (SPELL_KEYWORD_LABELS[a] ?? a).localeCompare(SPELL_KEYWORD_LABELS[b] ?? b, "fr")).map(kwId => {
                             const def = SPELL_KEYWORDS[kwId];
                             const active = spellKeywords.some(k => k.id === kwId);
                             return (
@@ -2903,7 +2904,11 @@ export default function CardForge() {
                                   setSpellKeywords(prev => [...prev, init]);
                                 }
                               }}
-                                title={def.desc}
+                                onMouseEnter={(e) => {
+                                  const rect = e.currentTarget.getBoundingClientRect();
+                                  setHoveredSpellKw({ id: kwId, rect });
+                                }}
+                                onMouseLeave={() => setHoveredSpellKw(null)}
                                 style={{
                                   padding: "3px 7px", borderRadius: 5, cursor: "pointer", fontSize: 9,
                                   fontFamily: "'Cinzel',serif", fontWeight: active ? 700 : 400,
@@ -2911,10 +2916,39 @@ export default function CardForge() {
                                   border: `1px solid ${active ? "#9b59b6" : "#e0e0e0"}`,
                                   color: active ? "#9b59b6" : "#999",
                                 }}
-                              >{def.symbol} {def.label.replace(" X", "").replace(" +X/+Y", "")}</button>
+                              ><span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 16, height: 16, borderRadius: 4, background: "#2a2a3a", verticalAlign: "middle", marginRight: 4, flexShrink: 0, overflow: "hidden" }}><KeywordIcon symbol={def.symbol || "✦"} size={10} keyword={`spell_${kwId}`} fill /></span>{def.label.replace(" X", "").replace(" +X/+Y", "")}</button>
                             );
                           })}
                         </div>
+
+                        {/* Spell-keyword hover tooltip — même fenêtre stylée que
+                            les capacités (créatures), thème violet des sorts. */}
+                        {hoveredSpellKw && SPELL_KEYWORDS[hoveredSpellKw.id as keyof typeof SPELL_KEYWORDS] && (() => {
+                          const def = SPELL_KEYWORDS[hoveredSpellKw.id as keyof typeof SPELL_KEYWORDS];
+                          return (
+                            <div style={{
+                              position: "fixed",
+                              left: Math.min(hoveredSpellKw.rect.left, window.innerWidth - 280),
+                              top: hoveredSpellKw.rect.bottom + 6,
+                              zIndex: 9999,
+                              width: 260,
+                              padding: "10px 12px",
+                              background: "#1a1a2e",
+                              border: "1px solid #9b59b666",
+                              borderRadius: 8,
+                              boxShadow: "0 4px 20px rgba(0,0,0,0.5), 0 0 8px rgba(155,89,182,0.2)",
+                              pointerEvents: "none",
+                            }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+                                <KeywordIcon symbol={def.symbol || "✦"} size={16} keyword={`spell_${hoveredSpellKw.id}`} />
+                                <span style={{ fontSize: 13, color: "#c39bd8", fontWeight: 700, fontFamily: "'Cinzel',serif" }}>{def.label}</span>
+                              </div>
+                              <div style={{ fontSize: 12, color: "#ddd", lineHeight: 1.5, fontFamily: "'Crimson Text',serif" }}>
+                                {def.desc}
+                              </div>
+                            </div>
+                          );
+                        })()}
 
                         {/* Inline params for active keywords */}
                         {spellKeywords.map((kw, idx) => {
@@ -2924,7 +2958,7 @@ export default function CardForge() {
                           if (def.params.length === 0 && kw.id !== "appel_supreme") return null;
                           return (
                             <div key={kw.id} style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 4, alignItems: "center" }}>
-                              <span style={{ fontSize: 9, color: "#9b59b6", fontWeight: 700, minWidth: 70 }}>{def.symbol} {SPELL_KEYWORD_LABELS[kw.id].replace(" X", "").replace(" +X/+Y", "")}</span>
+                              <span style={{ fontSize: 9, color: "#9b59b6", fontWeight: 700, minWidth: 70, display: "inline-flex", alignItems: "center", gap: 3 }}><span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 16, height: 16, borderRadius: 4, background: "#2a2a3a", flexShrink: 0, overflow: "hidden" }}><KeywordIcon symbol={def.symbol || "✦"} size={10} keyword={`spell_${kw.id}`} fill /></span> {SPELL_KEYWORD_LABELS[kw.id].replace(" X", "").replace(" +X/+Y", "")}</span>
                               {def.params.includes("amount") && (
                                 <div>
                                   <label style={{ fontSize: 7, color: "#666" }}>X</label>
@@ -3125,7 +3159,7 @@ export default function CardForge() {
                                 color: selected ? selColor : "#999",
                                 fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: selected ? 700 : 400,
                                 transition: "all 0.15s",
-                              }}>{id.replace(/ X$/, "")}{isScalable && !selected ? " X" : ""}</button>
+                              }}>{id.replace(/ X$/, "")}{isScalable && !selected && / X$/.test(id) ? " X" : ""}</button>
                             {isScalable && selected && id !== "Renforcement +X/+Y" && (
                               <input
                                 type="number" min={1} max={10}
@@ -3417,7 +3451,7 @@ export default function CardForge() {
                           pointerEvents: "none",
                         }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-                            <KeywordIcon symbol={KEYWORD_SYMBOLS[hoveredKw.id] || "✦"} size={16} keyword={hoveredKw.id} />
+                            <KeywordIcon symbol={KEYWORD_SYMBOLS[hoveredKw.id] || "✦"} size={16} keyword={CREATURE_LABEL_TO_ENGINE_ID[hoveredKw.id] ?? hoveredKw.id} />
                             <span style={{ fontSize: 13, color: fac.accent, fontWeight: 700, fontFamily: "'Cinzel',serif" }}>{hoveredKw.id}</span>
                           </div>
                           <div style={{ fontSize: 12, color: "#ddd", lineHeight: 1.5, fontFamily: "'Crimson Text',serif", marginBottom: 8 }}>
@@ -3610,7 +3644,7 @@ export default function CardForge() {
                       return (
                         <div key={label} style={{ border: cardBorder, borderRadius: 8, padding: 10, marginBottom: 8, background: "#fffdf8" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-                            <KeywordIcon symbol={KEYWORD_SYMBOLS[label] || "✦"} size={16} keyword={label} />
+                            <KeywordIcon symbol={KEYWORD_SYMBOLS[label] || "✦"} size={16} keyword={CREATURE_LABEL_TO_ENGINE_ID[label] ?? label} />
                             <span style={{ fontFamily: "'Cinzel',serif", fontSize: 12, fontWeight: 700, color: fac.accent, flex: 1 }}>{label}</span>
                             <button onClick={() => removeCreatureCap(label)} style={{ border: "none", background: "transparent", color: "#c0392b", cursor: "pointer", fontSize: 14 }} title="Supprimer">✕</button>
                           </div>
@@ -3793,7 +3827,7 @@ export default function CardForge() {
                       return (
                         <div key={label} style={{ border: cardBorder, borderRadius: 8, padding: 10, marginBottom: 8, background: "#f5fff7" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-                            <KeywordIcon symbol={KEYWORD_SYMBOLS[label] || "✦"} size={16} keyword={label} />
+                            <KeywordIcon symbol={KEYWORD_SYMBOLS[label] || "✦"} size={16} keyword={CREATURE_LABEL_TO_ENGINE_ID[label] ?? label} />
                             <span style={{ fontFamily: "'Cinzel',serif", fontSize: 12, fontWeight: 700, color: "#27ae60", flex: 1 }}>Conférer : {label}</span>
                             <button onClick={() => removeCreatureCap(label)} style={{ border: "none", background: "transparent", color: "#c0392b", cursor: "pointer", fontSize: 14 }} title="Supprimer">✕</button>
                           </div>
@@ -4024,7 +4058,7 @@ export default function CardForge() {
                         pointerEvents: "none",
                       }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-                          <KeywordIcon symbol={KEYWORD_SYMBOLS[hoveredKw.id] || "✦"} size={16} keyword={hoveredKw.id} />
+                          <KeywordIcon symbol={KEYWORD_SYMBOLS[hoveredKw.id] || "✦"} size={16} keyword={CREATURE_LABEL_TO_ENGINE_ID[hoveredKw.id] ?? hoveredKw.id} />
                           <span style={{ fontSize: 13, color: "#c8a84e", fontWeight: 700, fontFamily: "'Cinzel',serif" }}>{hoveredKw.id}</span>
                         </div>
                         <div style={{ fontSize: 12, color: "#ddd", lineHeight: 1.5, fontFamily: "'Crimson Text',serif", marginBottom: 8 }}>

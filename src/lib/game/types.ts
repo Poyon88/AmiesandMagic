@@ -145,7 +145,6 @@ export type SpellKeywordId =
   | "renforcement_multiple"
   | "pillage"
   | "entrainement"
-  | "damnation"
   | "cataclysme"
   | "affaiblissement";
 
