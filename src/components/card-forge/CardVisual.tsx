@@ -7,6 +7,7 @@ import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, getSpellKeywordDesc, getSpellKey
 import { isCreatureKwShadowedBySpell } from '@/lib/game/abilities';
 import { KEYWORD_LABELS, keywordModeColor, keywordModeFilter } from '@/lib/game/keyword-labels';
 import { composedCapsOf, composedIcon, composedTriggerMode, composedValueText, describeComposedCap } from '@/lib/game/composed-display';
+import ComposedMarker from '@/components/cards/ComposedMarker';
 import type { Capability } from '@/lib/game/types';
 import type { SpellKeywordInstance, TokenTemplate } from '@/lib/game/types';
 
@@ -117,6 +118,8 @@ export const KEYWORD_SYMBOLS: Record<string, string> = {
   "Rassemblement X":  "🏴",
   "Cataclysme X":     "☄️",
   "Affaiblissement -X/-Y": "🔻",
+  "Renforcement +X/+Y": "⬆️",
+  "Impact X": "💥",
 };
 
 // ─── TYPES ───────────────────────────────────────────────────────────────────
@@ -447,7 +450,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
           <div style={{ display: "flex", gap: 4 * s, flexWrap: "wrap" }}>
             {composedCapsOf(card!.capabilities).map((cap, i) => {
               const ic = composedIcon(cap);
-              const filter = keywordModeFilter(composedTriggerMode(cap)) ?? undefined;
+              const cmode = composedTriggerMode(cap);
               const val = composedValueText(cap);
               return (
                 <div key={`cx_${i}`} title={describeComposedCap(cap, tokens)} style={{
@@ -455,8 +458,9 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                   display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 * s,
                   fontSize: 13 * s, cursor: "default",
                 }}>
-                  <span style={filter ? { filter } : undefined}>
-                    <KeywordIcon symbol={ic.symbol} keyword={ic.keyword} />
+                  <span style={{ position: "relative", display: "inline-flex", lineHeight: 0 }}>
+                    <span style={{ display: "inline-flex", lineHeight: 0, filter: keywordModeFilter(cmode) ?? undefined }}><KeywordIcon symbol={ic.symbol} keyword={ic.keyword} /></span>
+                    <ComposedMarker mode={cmode} size={8 * s} />
                   </span>
                   {val && <span style={{ fontSize: 10 * s, fontWeight: 900, color: keywordModeColor(composedTriggerMode(cap)) ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 4px ${fac.accent}`, marginLeft: -3 * s }}>{val}</span>}
                 </div>
@@ -668,11 +672,10 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
           <div style={{ display: "flex", flexDirection: "column", gap: 6 * s }}>
             {composedCapsOf(card!.capabilities).map((cap, i) => {
               const ic = composedIcon(cap);
-              const mode = composedTriggerMode(cap);
-              const filter = keywordModeFilter(mode) ?? undefined;
+              const cmode = composedTriggerMode(cap);
               return (
                 <div key={`cxd_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
-                  <span style={{ flexShrink: 0, ...(filter ? { filter } : {}) }}><KeywordIcon symbol={ic.symbol} size={18 * s} keyword={ic.keyword} /></span>
+                  <span style={{ position: "relative", flexShrink: 0, display: "inline-flex" }}><span style={{ display: "inline-flex", lineHeight: 0, filter: keywordModeFilter(cmode) ?? undefined }}><KeywordIcon symbol={ic.symbol} size={18 * s} keyword={ic.keyword} /></span><ComposedMarker mode={cmode} size={9 * s} /></span>
                   <div style={{ fontSize: 12 * s, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{describeComposedCap(cap, tokens)}</div>
                 </div>
               );

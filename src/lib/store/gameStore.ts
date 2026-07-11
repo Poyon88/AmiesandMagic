@@ -45,6 +45,7 @@ import {
   getSacrificeCost,
   getTapActivateTargets,
   remonteeTargetIds,
+  impactTargetIds,
   endOfTurnTriggerTargets,
 } from "@/lib/game/engine";
 
@@ -66,20 +67,24 @@ function pendingTriggerOverlay(
     if (ordered.length === 0) return none;
     return { targetingMode: "selection" as const, validTargets: [], pendingTriggerId: t.id, pendingTriggerPrompt: null, selectionCards: ordered };
   }
-  // Variante « fin de tour » (effet composé) vs remontée (mot-clé).
+  // Variante « fin de tour » (effet composé) vs mot-clé différé (remontée / impact).
   const isEndOfTurn = !!t.capUid;
-  if (!isEndOfTurn && t.kw !== "remontee") return none;
+  if (!isEndOfTurn && t.kw !== "remontee" && t.kw !== "impact") return none;
   const controller = gs!.players.find(p => p.id === t.controllerId);
   const other = gs!.players.find(p => p.id !== t.controllerId);
   if (!controller || !other) return none;
   const targets = isEndOfTurn
     ? endOfTurnTriggerTargets(gs!, t)
-    : remonteeTargetIds(controller, other, t.sourceInstanceId);
+    : t.kw === "impact"
+      ? impactTargetIds(controller, other)
+      : remonteeTargetIds(controller, other, t.sourceInstanceId);
   if (targets.length === 0) return none;
   // Le message du sélecteur doit refléter l'EFFET réel. Pour un effet composé de
   // fin de tour, on le dérive de la capability (ex. buff → « choisissez une
   // créature à renforcer ») au lieu du texte de Remontée qui était figé.
-  let prompt = "🔼 Remontée — choisissez l'unité à renvoyer en main";
+  let prompt = t.kw === "impact"
+    ? `💥 Impact — choisissez une cible à frapper${t.x ? ` (${t.x})` : ""}`
+    : "🔼 Remontée — choisissez l'unité à renvoyer en main";
   if (isEndOfTurn) {
     const source = controller.board.find(c => c.instanceId === t.sourceInstanceId);
     const cap = source ? getCapabilities(source.card).find(c => c.uid === t.capUid && c.composed) : undefined;

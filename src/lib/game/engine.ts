@@ -1840,6 +1840,12 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       if (rm) applyRenforcementMultiple(player, rm.x ?? 0, rm.y ?? 0, rm.race, rm.clan, cardInstance.instanceId);
     }
 
+    // Renforcement (invocation) : la créature se buffe elle-même de +X/+Y.
+    if (hasKwOnPlay(cardInstance, "renforcement")) {
+      const rf = cardInstance.card.keyword_instances?.find(i => i.id === "renforcement" && !i.mode);
+      applyRenforcementSelf(cardInstance, rf?.x ?? 0, rf?.y ?? 0);
+    }
+
     // Entrainement X (invocation) : +X/+X aux créatures en main de même faction.
     if (hasKwOnPlay(cardInstance, "entrainement")) {
       applyEntrainement(player, cardInstance.card.faction, getKwX(cardInstance, "entrainement", undefined, 1), cardInstance.instanceId);
@@ -1984,6 +1990,12 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       const inst = cardInstance.card.keyword_instances?.find(i => i.id === "affaiblissement" && !i.mode);
       const target = opponent.board.find(c => c.instanceId === action.targetInstanceId);
       if (inst && target) applyAffaiblissement(target, inst.x ?? 0, inst.y ?? 0);
+    }
+
+    // Impact X (invocation) : X dégâts à la cible choisie (créature OU héros,
+    // tout bord). applyImpactTo gère les sentinelles héros avant tout board.find.
+    if (hasKwOnPlay(cardInstance, "impact") && action.targetInstanceId) {
+      applyImpactTo(action.targetInstanceId, getKwX(cardInstance, "impact", undefined, 1), cardInstance, player, opponent);
     }
 
     // Paralysie: now a combat effect (applied when dealing damage, like poison)
@@ -4696,6 +4708,16 @@ function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: P
  *  `playCard` for the supported subset — keep the two paths in sync
  *  when extending the list. Source is the creature carrying the keyword
  *  (already dead for on-death; still alive for on-tap). */
+// Renforcement (créature) : +X/+Y PERMANENT à la créature elle-même (buff cuit
+// dans `card`, comme le sort renforcement / applyRenforcementMultiple, pour
+// survivre à recalculateAuras et persister en main/cimetière).
+function applyRenforcementSelf(inst: CardInstance, x: number, y: number): void {
+  inst.card = { ...inst.card, attack: (inst.card.attack ?? 0) + x, health: (inst.card.health ?? 0) + y };
+  inst.currentAttack += x;
+  inst.currentHealth += y;
+  inst.maxHealth += y;
+}
+
 // Renforcement multiple : +X/+Y permanent à toutes les créatures du contrôleur
 // de la race ou du clan ciblé (clan prioritaire). La source est exclue. Même
 // pattern de buff permanent que le sort "renforcement" (modifie card + stats).
@@ -4756,6 +4778,11 @@ function resolveCuratedKeywordEffect(
       applyRenforcementMultiple(owner, inst?.x ?? 0, inst?.y ?? 0, inst?.race, inst?.clan, source.instanceId);
       return;
     }
+    case "renforcement": {
+      // Tap / mort / retour / fin de tour : +X/+Y permanent à la source elle-même.
+      applyRenforcementSelf(source, inst?.x ?? 0, inst?.y ?? 0);
+      return;
+    }
     case "entrainement": {
       // Mort / tap / retour / fin-de-tour : +X/+X aux créatures en main de même
       // faction que la source (snapshot). La source est exclue (utile en mode
@@ -4782,6 +4809,20 @@ function resolveCuratedKeywordEffect(
         return;
       }
       resolveRemontee(undefined, source.instanceId, owner, opponent);
+      return;
+    }
+    case "impact": {
+      // Tap (ou résolution différée) : cible explicite → dégâts immédiats.
+      if (targetInstanceId) { applyImpactTo(targetInstanceId, x, source, owner, opponent); return; }
+      // Mort / retour / fin de tour : sur le tour du contrôleur ET s'il existe
+      // une cible → on DIFFÈRE (picker interactif). Sur le tour adverse (ou pas
+      // de cible) → cible ALÉATOIRE déterministe (rng semée, comme Remontée).
+      const pool = impactTargetIds(owner, opponent);
+      if (owner.id === currentPlayerId && pool.length > 0) {
+        pendingTriggerSink.push({ id: source.instanceId, kw: "impact", x, controllerId: owner.id, sourceInstanceId: source.instanceId });
+        return;
+      }
+      if (pool.length > 0) applyImpactTo(pool[Math.floor(rng() * pool.length)], x, source, owner, opponent);
       return;
     }
     case "convocation": {
@@ -5095,6 +5136,12 @@ function applyOnePendingTrigger(
     if (controller && other) {
       resolveRemontee(choice.targetInstanceId, trigger.sourceInstanceId, controller, other);
     }
+  } else if (trigger.kw === "impact") {
+    // X porté par le trigger (la source est au cimetière en mode mort). Source
+    // null : pas de vol de vie sur Impact.
+    if (controller && other) {
+      applyImpactTo(choice.targetInstanceId, trigger.x ?? 0, null, controller, other);
+    }
   }
 }
 
@@ -5134,6 +5181,13 @@ export function autoResolvePendingTriggers(state: GameState): GameState {
           const targets = remonteeTargetIds(controller, other, trigger.sourceInstanceId);
           if (targets.length > 0) choice = { targetInstanceId: targets[Math.floor(rng() * targets.length)] };
         }
+      } else if (trigger.kw === "impact") {
+        const controller = newState.players.find(p => p.id === trigger.controllerId);
+        const other = newState.players.find(p => p.id !== trigger.controllerId);
+        if (controller && other) {
+          const targets = impactTargetIds(controller, other);
+          if (targets.length > 0) choice = { targetInstanceId: targets[Math.floor(rng() * targets.length)] };
+        }
       }
       applyOnePendingTrigger(newState, trigger, choice);
     }
@@ -5163,6 +5217,7 @@ export function tapKeywordNeedsTarget(kw: Keyword): boolean {
   switch (kw) {
     case "vampirisme":
     case "remontee":
+    case "impact":
       return true;
     default:
       return false;
@@ -5189,6 +5244,9 @@ export function getTapActivateTargets(state: GameState, kw: Keyword, sourceInsta
       return [...player.board, ...opponent.board]
         .filter(c => canBeRemonteed(c, sourceInstanceId ?? null))
         .map(c => c.instanceId);
+    case "impact":
+      // Créature OU héros, tout bord.
+      return impactTargetIds(player, opponent);
     default:
       return null;
   }
@@ -5720,7 +5778,7 @@ export function needsTarget(card: Card): boolean {
 }
 
 const CREATURE_TARGETING_KEYWORDS: Keyword[] = [
-  "sacrifice", "corruption", "malediction", "affaiblissement",
+  "sacrifice", "corruption", "malediction", "affaiblissement", "impact",
   "permutation", "vampirisme", "mimique", "metamorphose",
   "benediction", "tactique", "remontee", "conferer",
 ];
@@ -5845,6 +5903,30 @@ export function getOnAttackTargets(state: GameState, card: Card): string[] {
   return composedChoiceTargetIds(cap.composed.target, player, opponent, false); // effet composé de créature (à l'attaque)
 }
 
+/** Cibles d'Impact (créature OU héros, TOUT bord) : instanceIds des créatures
+ *  des deux plateaux (hors invisible / ombre non révélée) + sentinelles héros.
+ *  Les sentinelles "enemy_hero"/"friendly_hero" sont relatives au `controller`. */
+export function impactTargetIds(controller: PlayerState, other: PlayerState): string[] {
+  const targetable = (c: CardInstance) => !hasKw(c, "invisible") && !(hasKw(c, "ombre") && !c.ombreRevealed);
+  return [
+    ...controller.board.filter(targetable).map(c => c.instanceId),
+    ...other.board.filter(targetable).map(c => c.instanceId),
+    "enemy_hero", "friendly_hero",
+  ];
+}
+
+/** Applique X dégâts d'Impact à une cible (créature OU héros). Les sentinelles
+ *  héros sont testées AVANT toute recherche sur les plateaux (sinon un hit héros
+ *  serait silencieusement perdu). Capacité de créature : isSpellDamage=true,
+ *  fromSpell=false → non bloquée par Transcendance (comme Cataclysme/Tempête). */
+function applyImpactTo(targetId: string | undefined, x: number, source: CardInstance | null, controller: PlayerState, other: PlayerState): void {
+  if (!targetId || x <= 0) return;
+  if (targetId === "enemy_hero") { dealDamageToHero(other.hero, x); return; }
+  if (targetId === "friendly_hero") { dealDamageToHero(controller.hero, x); return; }
+  const target = findCreatureOnBoard(controller, targetId) ?? findCreatureOnBoard(other, targetId);
+  if (target) dealDamageToCreature(target, x, false, true, source, false);
+}
+
 export function getCreatureTargets(state: GameState, card: Card): string[] {
   const player = state.players[state.currentPlayerIndex];
   const opponent = state.players[state.currentPlayerIndex === 0 ? 1 : 0];
@@ -5873,6 +5955,9 @@ export function getCreatureTargets(state: GameState, card: Card): string[] {
       case "permutation":
       case "vampirisme":
         return filterEnemyTargetable2(opponent.board).map(c => c.instanceId);
+      case "impact":
+        // Créature OU héros, tout bord (la source n'est pas encore en jeu).
+        return impactTargetIds(player, opponent);
       case "mimique":
       case "metamorphose":
         return [

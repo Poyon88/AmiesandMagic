@@ -3,7 +3,7 @@
 // tous les affichages de carte (forge, jeu, main, cimetière, mulligan, collection).
 
 import { ABILITIES, creatureEngineId } from "./abilities";
-import { toRoman } from "./keyword-labels";
+import { toRoman, keywordModeColor } from "./keyword-labels";
 import type { Capability, ComposedEffect, KeywordMode, TargetSpec, TokenTemplate } from "./types";
 
 /** Valeur affichée à côté de l'icône composée (comme « II » pour Impact 2) :
@@ -27,12 +27,14 @@ export function composedIcon(cap: Capability): { symbol: string; keyword: string
     case "deal_damage": {
       const t = eff.target;
       if (t?.designation === "random" || t?.designation === "scatter") return { symbol: "🌩️", keyword: "spell_tempete" };
+      // Toutes les unités des DEUX camps (Unité / Indifférent / Toutes) → Cataclysme.
+      if (t && t.entity === "unit" && t.count === "all" && t.side === "any") return { symbol: "☄️", keyword: "cataclysme" };
       if (t && t.entity === "unit" && t.count === "all" && t.side === "enemy") return { symbol: "🌊", keyword: "spell_deferlement" };
       return { symbol: "💥", keyword: "spell_impact" }; // cible unique / héros / repli
     }
     case "heal": return { symbol: "💚", keyword: "spell_guerison" };
     case "buff": return { symbol: "⬆️", keyword: "spell_renforcement" };
-    case "debuff": return { symbol: "🩸", keyword: "damnation" };
+    case "debuff": return { symbol: "🔻", keyword: "affaiblissement" };
     case "destroy": return { symbol: "☠️", keyword: "spell_execution" };
     case "bounce": return { symbol: "🔼", keyword: "spell_remontee" };
     case "paralyze": return { symbol: "⛓️", keyword: "spell_entrave" };
@@ -58,6 +60,14 @@ export function composedTriggerMode(cap: Capability): KeywordMode | undefined {
     case "on_end_of_turn": return "end_of_turn";
     default: return undefined; // on_play / spell_resolution → blanc
   }
+}
+
+/** Couleur du marqueur ✦ d'un effet composé, selon le déclencheur (mort=rouge,
+ *  tap=jaune, retour=bleu, attaque=violet…). BLANC par défaut (on_play / sort) :
+ *  dans ce mode l'icône n'est pas teintée (elle reste blanche), le ✦ doit donc
+ *  matcher — même règle que la teinte de l'icône (keywordModeColor null ⇒ blanc). */
+export function composedMarkerColor(mode: KeywordMode | undefined): string {
+  return keywordModeColor(mode) ?? "#ffffff";
 }
 
 const TRIGGER_PREFIX: Record<string, string> = {

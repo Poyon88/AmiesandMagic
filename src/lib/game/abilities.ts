@@ -728,8 +728,12 @@ export const ABILITIES: Record<string, AbilityDef> = {
   // ─── Spell-only ───────────────────────────────────────────────────────────
   impact: {
     id: "impact", label: "Impact X", symbol: "💥",
-    desc: "Inflige X dégâts à une cible",
-    applicable_to: ["spell"],
+    desc: "Inflige X dégâts à une cible (créature ou héros, n'importe quel bord).",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      cost: 6, costPerX: 4, se: 3.0, minTier: 1, scalable: true, zone: "Terrain",
+      desc: "Inflige X dégâts à une cible ciblée (créature ou héros, n'importe quel bord).",
+    },
     spell: { params: ["amount"], needsTarget: true, targetType: "any" },
   },
   deferlement: {
@@ -764,8 +768,12 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   renforcement: {
     id: "renforcement", label: "Renforcement +X/+Y", symbol: "⬆️",
-    desc: "Donne +X ATK et +Y PV à une créature alliée",
-    applicable_to: ["spell"],
+    desc: "Sort : +X/+Y à une créature alliée. Créature : +X/+Y à elle-même.",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      cost: 8, costPerX: 4, se: 3.0, minTier: 1, scalable: true, zone: "Terrain",
+      desc: "Gagne +X ATK et +Y PV de façon permanente.",
+    },
     spell: { params: ["attack", "health"], needsTarget: true, targetType: "friendly_creature" },
   },
   affaiblissement: {
@@ -1136,7 +1144,7 @@ export function creatureEngineId(a: AbilityDef): string {
 export const CURATED_MULTIMODE_IDS: ReadonlySet<string> = new Set([
   "combustion", "convocation", "convocations_multiples", "douleur", "entrainement", "inspiration",
   "ombre_du_passe", "pillage", "prescience", "remontee", "renforcement_multiple",
-  "savant", "suprematie", "tempete", "vampirisme", "cataclysme",
+  "savant", "suprematie", "tempete", "vampirisme", "cataclysme", "renforcement", "impact",
 ]);
 
 /** Effets intrinsèques « à la mort » câblés dans processDeathTriggers via

@@ -59,6 +59,10 @@ export type Keyword =
   | "concentration"
   // Polymorphic — bounce a unit to its true owner's hand (4 trigger modes)
   | "remontee"
+  // Polymorphic — X damage to a chosen creature OR hero (any side), multi-trigger
+  | "impact"
+  // Polymorphic — self-buff +X/+Y (creature) / target ally (spell), multi-trigger
+  | "renforcement"
   // Polymorphic — +X/+Y to all controller's creatures of a selected race/clan
   | "renforcement_multiple"
   // +X/+X aux créatures en main de la même faction que la source (multi-trigger)
@@ -955,6 +959,9 @@ export interface PendingTrigger {
   kw?: Keyword;                     // ex. "remontee" (variante mot-clé) ; absent pour les caps
   controllerId: string;            // joueur qui choisit (toujours le joueur actif ici)
   sourceInstanceId: string | null; // source (exclusion de cible)
+  /** Montant porté par le trigger (ex. Impact X en mode différé mort/fin de
+   *  tour : la source est au cimetière, on ne peut pas relire X du plateau). */
+  x?: number;
   /** Présent ⇒ variante « effet composé fin de tour » : uid de la capability
    *  on_end_of_turn à résoudre sur la cible choisie. Absent ⇒ remontée. */
   capUid?: string;
