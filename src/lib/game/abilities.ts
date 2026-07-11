@@ -768,6 +768,19 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["spell"],
     spell: { params: ["attack", "health"], needsTarget: true, targetType: "friendly_creature" },
   },
+  affaiblissement: {
+    id: "affaiblissement", label: "Affaiblissement -X/-Y", symbol: "🔻",
+    desc: "Donne -X ATK et -Y PV à une créature ennemie ciblée",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      cost: 14, costPerX: 5, se: 3.5, minTier: 2, scalable: true, zone: "Terrain",
+      desc: "Invocation : donne -X ATK et -Y PV à une créature ennemie ciblée.",
+    },
+    spell: {
+      desc: "Donne -X ATK et -Y PV à une créature ennemie ciblée.",
+      params: ["attack", "health"], needsTarget: true, targetType: "enemy_creature",
+    },
+  },
   guerison: {
     id: "guerison", label: "Guérison X", symbol: "💚",
     desc: "Restaure X PV à une cible",
@@ -857,6 +870,16 @@ export const ABILITIES: Record<string, AbilityDef> = {
     creature: {
       cost: 10, costPerX: 4, se: 3.5, minTier: 2, scalable: true, zone: "Terrain",
       desc: "Invocation : inflige X dégâts répartis aléatoirement entre les unités ennemies.",
+    },
+    spell: { params: ["amount"], needsTarget: false },
+  },
+  cataclysme: {
+    id: "cataclysme", label: "Cataclysme X", symbol: "☄️",
+    desc: "Inflige X dégâts à toutes les créatures (alliées ET ennemies).",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      cost: 11, costPerX: 4, se: 3.5, minTier: 2, scalable: true, zone: "Terrain",
+      desc: "Invocation : inflige X dégâts à toutes les créatures (alliées ET ennemies).",
     },
     spell: { params: ["amount"], needsTarget: false },
   },
@@ -1113,7 +1136,7 @@ export function creatureEngineId(a: AbilityDef): string {
 export const CURATED_MULTIMODE_IDS: ReadonlySet<string> = new Set([
   "combustion", "convocation", "convocations_multiples", "douleur", "entrainement", "inspiration",
   "ombre_du_passe", "pillage", "prescience", "remontee", "renforcement_multiple",
-  "savant", "suprematie", "tempete", "vampirisme",
+  "savant", "suprematie", "tempete", "vampirisme", "cataclysme",
 ]);
 
 /** Effets intrinsèques « à la mort » câblés dans processDeathTriggers via

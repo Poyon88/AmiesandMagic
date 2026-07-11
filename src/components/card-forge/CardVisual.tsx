@@ -115,6 +115,8 @@ export const KEYWORD_SYMBOLS: Record<string, string> = {
   "Appel du clan X":  "📯",
   "Solidarité X":     "🤜",
   "Rassemblement X":  "🏴",
+  "Cataclysme X":     "☄️",
+  "Affaiblissement -X/-Y": "🔻",
 };
 
 // ─── TYPES ───────────────────────────────────────────────────────────────────
@@ -406,10 +408,13 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
               const usesAmount = def.params.includes("amount");
               const hasValue = usesAmount || usesAtkHp;
               const useStatBuffFormat = usesAtkHp && def.label.includes("+X");
+              const useStatDebuffFormat = usesAtkHp && def.label.includes("-X");
               const valueText = usesAtkHp
                 ? useStatBuffFormat
                   ? `+${spellKw.attack ?? 0}/+${spellKw.health ?? 0}`
-                  : `${spellKw.attack ?? 0}/${spellKw.health ?? 0}`
+                  : useStatDebuffFormat
+                    ? `-${spellKw.attack ?? 0}/-${spellKw.health ?? 0}`
+                    : `${spellKw.attack ?? 0}/${spellKw.health ?? 0}`
                 : usesAmount ? toRoman(spellKw.amount ?? 1) : null;
               return (
                 <div key={`sk_${i}`} title={`${label}: ${desc}`} style={{

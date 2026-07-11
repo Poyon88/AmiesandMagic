@@ -1978,6 +1978,14 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       }
     }
 
+    // Affaiblissement -X/-Y (invocation) : -X ATK / -Y PV à la créature ennemie
+    // ciblée. X/Y lus depuis keyword_instances (comme renforcement_multiple).
+    if (hasKwOnPlay(cardInstance, "affaiblissement") && action.targetInstanceId) {
+      const inst = cardInstance.card.keyword_instances?.find(i => i.id === "affaiblissement" && !i.mode);
+      const target = opponent.board.find(c => c.instanceId === action.targetInstanceId);
+      if (inst && target) applyAffaiblissement(target, inst.x ?? 0, inst.y ?? 0);
+    }
+
     // Paralysie: now a combat effect (applied when dealing damage, like poison)
 
     // Permutation: échange les PV de deux unités (une alliée, une ennemie)
@@ -2283,6 +2291,16 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
         const target = alive[Math.floor(rng() * alive.length)];
         dealDamageToCreature(target, 1, false, true, player.hero);
         sequentialHitsSink.push({ targetInstanceId: target.instanceId, type: "damage" });
+      }
+    }
+
+    // Cataclysme X — invocation : X dégâts (plein, déterministe) à TOUTES les
+    // créatures des deux camps, la source COMPRISE (elle est sur player.board).
+    if (hasKwOnPlay(cardInstance, "cataclysme")) {
+      const x = getKwX(cardInstance, "cataclysme", undefined, Math.max(1, Math.floor(cardInstance.card.mana_cost / 3)));
+      for (const c of [...opponent.board, ...player.board]) {
+        dealDamageToCreature(c, x, false, true, player.hero, false);
+        sequentialHitsSink.push({ targetInstanceId: c.instanceId, type: "damage" });
       }
     }
 
@@ -2787,6 +2805,21 @@ function appelSupreme(player: PlayerState, race: string): void {
   player.hand.push(chosen);
 }
 
+/** Affaiblissement -X/-Y : baisse PERMANENTE d'ATK/PV d'une créature (miroir de
+ *  Renforcement, même math que l'effet composé "debuff"). La baisse est CUITE
+ *  dans `card` — sinon recalculateAuras/persistentStats, qui recomposent ATK/PV
+ *  depuis `card` + bonus trackés, l'effacent. ATK plancher à 0 ; PV SANS plancher
+ *  → PV ≤ 0 tue (via cleanDeadCreatures/settleDeaths du site appelant). */
+function applyAffaiblissement(target: CardInstance, x: number, y: number): void {
+  target.card = {
+    ...target.card,
+    attack: Math.max(0, (target.card.attack ?? 0) - x),
+    health: y > 0 ? (target.card.health ?? 1) - y : (target.card.health ?? 1),
+  };
+  target.currentAttack = Math.max(0, target.currentAttack - x);
+  if (y > 0) { target.currentHealth -= y; target.maxHealth = target.maxHealth - y; }
+}
+
 function resolveSpellKeywords(
   ctx: SpellResolutionContext,
   keywords: SpellKeywordInstance[]
@@ -2829,6 +2862,13 @@ function resolveSpellKeywords(
       case "deferlement": {
         const amount = kw.amount ?? 0;
         [...ctx.opponent.board].forEach(c => dealDamageToCreature(c, amount, false, true, ctx.caster.hero));
+        break;
+      }
+      case "cataclysme": {
+        // X dégâts à TOUTES les créatures des deux camps (vs Déferlement =
+        // ennemis seuls). fromSpell non passé → vrai sort (respecte Transcendance).
+        const amount = kw.amount ?? 0;
+        [...ctx.opponent.board, ...ctx.caster.board].forEach(c => dealDamageToCreature(c, amount, false, true, ctx.caster.hero));
         break;
       }
       case "siphon": {
@@ -2917,6 +2957,15 @@ function resolveSpellKeywords(
             target.currentHealth += hpBuff;
             target.maxHealth += hpBuff;
           }
+        }
+        break;
+      }
+      case "affaiblissement": {
+        // Miroir debuff de Renforcement : -X ATK / -Y PV à la créature ennemie
+        // ciblée. Peut la tuer (PV ≤ 0) → morts balayées après (cleanDeadCreatures).
+        if (targetId) {
+          const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
+          if (target) applyAffaiblissement(target, kw.attack ?? 0, kw.health ?? 0);
         }
         break;
       }
@@ -4878,6 +4927,15 @@ function resolveCuratedKeywordEffect(
       }
       break;
     }
+    case "cataclysme": {
+      // X dégâts (plein) à TOUTES les créatures des deux camps, source comprise.
+      // Rejoué depuis le râle d'agonie (death) / l'activation (tap) / le retour.
+      // Capacité de créature → non bloquée par Transcendance (fromSpell=false).
+      for (const c of [...opponent.board, ...owner.board]) {
+        dealDamageToCreature(c, x, false, true, source, false);
+      }
+      break;
+    }
     default:
       // No-op for keywords not yet supported in non-play modes. The
       // Card Forge UI gates which keywords admins can put in death/tap
@@ -5662,7 +5720,7 @@ export function needsTarget(card: Card): boolean {
 }
 
 const CREATURE_TARGETING_KEYWORDS: Keyword[] = [
-  "sacrifice", "corruption", "malediction",
+  "sacrifice", "corruption", "malediction", "affaiblissement",
   "permutation", "vampirisme", "mimique", "metamorphose",
   "benediction", "tactique", "remontee", "conferer",
 ];
@@ -5811,6 +5869,7 @@ export function getCreatureTargets(state: GameState, card: Card): string[] {
         return player.board.map(c => c.instanceId);
       case "corruption":
       case "malediction":
+      case "affaiblissement":
       case "permutation":
       case "vampirisme":
         return filterEnemyTargetable2(opponent.board).map(c => c.instanceId);

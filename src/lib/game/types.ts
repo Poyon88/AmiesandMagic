@@ -41,6 +41,10 @@ export type Keyword =
   | "relancer"
   // Tier 2 — AoE random damage
   | "tempete"
+  // Tier 2 — AoE full damage to BOTH boards (allies + enemies)
+  | "cataclysme"
+  // Tier 2 — targeted enemy debuff -X/-Y
+  | "affaiblissement"
   // Drawback — self-damage on ETB / cast
   | "douleur"
   // Drawback — self ATK reduced by opponent's hand size (dynamic aura)
@@ -137,7 +141,9 @@ export type SpellKeywordId =
   | "renforcement_multiple"
   | "pillage"
   | "entrainement"
-  | "damnation";
+  | "damnation"
+  | "cataclysme"
+  | "affaiblissement";
 
 /** Trigger mode for a creature keyword. Undefined = on-play (default,
  *  existing behaviour). "death" = on-death rattle. "tap" = activated by
@@ -175,7 +181,7 @@ export interface KeywordInstance {
 
 export interface SpellKeywordInstance {
   id: SpellKeywordId;
-  amount?: number;   // X value for impact, deferlement, siphon, guerison, inspiration, afflux, pillage
+  amount?: number;   // X value for impact, deferlement, siphon, guerison, inspiration, afflux, pillage, cataclysme
   attack?: number;   // for renforcement, renforcement_multiple, invocation
   health?: number;   // for renforcement, renforcement_multiple, invocation
   race?: string;     // for invocation (token race) and renforcement_multiple (race ciblée)
