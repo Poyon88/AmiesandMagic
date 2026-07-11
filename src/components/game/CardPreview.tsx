@@ -6,7 +6,7 @@ import type { CardInstance } from "@/lib/game/types";
 import { KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText } from "@/lib/game/keyword-labels";
 import { getSpellKeywordLabel } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
-import { composedCapsOf, composedIcon, composedTriggerMode, describeComposedCap } from "@/lib/game/composed-display";
+import { composedCapsOf, composedIcon, composedKeywordName, composedTriggerMode, describeComposedCap } from "@/lib/game/composed-display";
 import ComposedMarker from "@/components/cards/ComposedMarker";
 import { useGameStore } from "@/lib/store/gameStore";
 import { ALIGNMENTS, getEffectiveAlignment } from "@/lib/card-engine/constants";
@@ -152,12 +152,18 @@ export default function CardPreview({ cardInstance, anchorRef, position = "above
         {/* Effets composés (modèle hybride) */}
         {composedCapsOf(card.capabilities).length > 0 && (
           <div className="px-3 pb-1 flex flex-col gap-1">
-            {composedCapsOf(card.capabilities).map((cap, i) => (
+            {composedCapsOf(card.capabilities).map((cap, i) => {
+              const nm = composedKeywordName(cap);
+              return (
               <div key={`cx_${i}`} className="text-[10px] text-foreground/70 leading-snug flex gap-1.5 items-start">
                 <span className="flex-shrink-0 relative inline-block">{composedIcon(cap).symbol}<ComposedMarker mode={composedTriggerMode(cap)} size={6} /></span>
-                <span>{describeComposedCap(cap, tokenTemplates)}</span>
+                <div>
+                  {nm && <div className="text-am-gold font-semibold">{nm}</div>}
+                  <div>{describeComposedCap(cap, tokenTemplates)}</div>
+                </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
 

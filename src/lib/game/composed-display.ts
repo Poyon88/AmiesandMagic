@@ -3,7 +3,7 @@
 // tous les affichages de carte (forge, jeu, main, cimetière, mulligan, collection).
 
 import { ABILITIES, creatureEngineId } from "./abilities";
-import { toRoman, keywordModeColor } from "./keyword-labels";
+import { toRoman, keywordModeColor, KEYWORD_LABELS } from "./keyword-labels";
 import type { Capability, ComposedEffect, KeywordMode, TargetSpec, TokenTemplate } from "./types";
 
 /** Valeur affichée à côté de l'icône composée (comme « II » pour Impact 2) :
@@ -46,6 +46,19 @@ export function composedIcon(cap: Capability): { symbol: string; keyword: string
     case "exhumation": return { symbol: "🪦", keyword: "exhumation" };
     default: return { symbol: "✦", keyword: "" };
   }
+}
+
+/** Nom du pouvoir dont l'icône est réutilisée pour cette capacité composée
+ *  (ex. buff → « Renforcement », dégât de zone → « Cataclysme »). Dérivé de la
+ *  MÊME source que l'icône (composedIcon().keyword) → le nom colle toujours à
+ *  l'icône affichée. "" si aucun libellé résoluble (pas de préfixe affiché). */
+export function composedKeywordName(cap: Capability): string {
+  const key = composedIcon(cap).keyword;
+  if (!key) return "";
+  const bareId = key.replace(/^spell_/, ""); // spell_renforcement → renforcement
+  const label = ABILITIES[bareId]?.label ?? KEYWORD_LABELS[bareId as keyof typeof KEYWORD_LABELS];
+  if (!label) return "";
+  return label.replace(/\s*[-+]?X.*$/, "").trim(); // "Renforcement +X/+Y" → "Renforcement"
 }
 
 /** Mode (au sens couleur d'icône) déduit du déclencheur de la capacité :

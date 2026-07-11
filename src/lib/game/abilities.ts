@@ -774,7 +774,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
       cost: 8, costPerX: 4, se: 3.0, minTier: 1, scalable: true, zone: "Terrain",
       desc: "Gagne +X ATK et +Y PV de façon permanente.",
     },
-    spell: { params: ["attack", "health"], needsTarget: true, targetType: "friendly_creature" },
+    spell: { desc: "+X/+Y à une créature alliée ciblée.", params: ["attack", "health"], needsTarget: true, targetType: "friendly_creature" },
   },
   affaiblissement: {
     id: "affaiblissement", label: "Affaiblissement -X/-Y", symbol: "🔻",

@@ -11,7 +11,7 @@ import { formatConvocationToken, formatConvocationTokens } from "@/lib/game/spel
 import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
-import { composedCapsOf, composedIcon, composedTriggerMode, composedValueText, describeComposedCap } from "@/lib/game/composed-display";
+import { composedCapsOf, composedIcon, composedKeywordName, composedTriggerMode, composedValueText, describeComposedCap } from "@/lib/game/composed-display";
 import ComposedMarker from "@/components/cards/ComposedMarker";
 import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
 import RarityFrame from "@/components/cards/RarityFrame";
@@ -867,6 +867,7 @@ function BoardCreature({
             {composedCapsOf(card.capabilities).map((cap, i) => {
               const ic = composedIcon(cap);
               const cmode = composedTriggerMode(cap);
+              const nm = composedKeywordName(cap);
               return (
                 <div key={`cxd-${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
                   <span style={{ position: "relative", flexShrink: 0, display: "inline-flex", lineHeight: 0 }}>
@@ -875,8 +876,9 @@ function BoardCreature({
                     </span>
                     <ComposedMarker mode={cmode} size={6} />
                   </span>
-                  <div style={{ fontSize: 8 * d, color: "#ccc", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>
-                    {describeComposedCap(cap, tokenTemplates)}
+                  <div>
+                    {nm && <div style={{ fontSize: 8 * d, color: "#d8b25a", fontWeight: 600 }}>{nm}</div>}
+                    <div style={{ fontSize: 7 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{describeComposedCap(cap, tokenTemplates)}</div>
                   </div>
                 </div>
               );

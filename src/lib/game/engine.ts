@@ -421,6 +421,7 @@ function applyComposedToUnit(
     case "buff":
       u.card = { ...u.card, attack: (u.card.attack ?? 0) + x, health: (u.card.health ?? 0) + y };
       u.currentAttack += x; u.currentHealth += y; u.maxHealth += y;
+      u.lastBuffMode = composedStrikeMode; // couleur de l'effet → teinte du popup
       break;
     case "debuff":
       // Réduction PERMANENTE, symétrique du buff : on cuit la baisse dans
@@ -440,6 +441,7 @@ function applyComposedToUnit(
       };
       u.currentAttack = Math.max(0, u.currentAttack - x);
       if (y > 0) { u.currentHealth -= y; u.maxHealth = u.maxHealth - y; }
+      u.lastBuffMode = composedStrikeMode; // couleur de l'effet → teinte du popup
       break;
     case "destroy": u.currentHealth = 0; break;
     case "paralyze": u.isParalyzed = true; break;
@@ -934,7 +936,10 @@ function returnInstanceToPlay(inst: CardInstance): void {
   inst.tapped = false;
   inst.hasAttacked = false;
   inst.hasSummoningSickness = !inst.card.keywords.includes("charge");
-  inst.attacksRemaining = 1;
+  // maxAttacksFor (pas 1 en dur) : une créature Célérité qui revient du cimetière
+  // conserve ses 2 attaques/tour (utile avec Raid, qui la laisse attaquer malgré
+  // le mal d'invocation). Non-Célérité → 1, inchangé.
+  inst.attacksRemaining = maxAttacksFor(inst);
   inst.targetsAttackedThisTurn = [];
   inst.esquiveUsedThisTurn = false;
   inst.isParalyzed = false;
@@ -2830,6 +2835,7 @@ function applyAffaiblissement(target: CardInstance, x: number, y: number): void 
   };
   target.currentAttack = Math.max(0, target.currentAttack - x);
   if (y > 0) { target.currentHealth -= y; target.maxHealth = target.maxHealth - y; }
+  target.lastBuffMode = composedStrikeMode; // couleur de l'effet → teinte du popup
 }
 
 function resolveSpellKeywords(
@@ -3702,28 +3708,48 @@ export function attack(state: GameState, action: AttackAction): GameState {
     return state;
   }
 
-  // "À l'attaque" composed power: resolves BEFORE combat damage. The chosen
-  // targets ride in action.targetMap (same `${uid}#${i}` keying as play_card).
-  // Realize its deaths immediately so the board the combat reads is post-power,
-  // and snapshot the intermediate (post-power / pre-combat) state for the
-  // store's first animation wave.
-  if (hasOnAttackComposed(attacker.card)) {
-    // Double Attaque frappe deux fois "dans" la même attaque : l'effet
-    // composé "à l'attaque" doit donc se déclencher une fois par frappe
-    // (ex. Commandant des Griffes : +1/+1 quand il attaque → +2/+2 avec
-    // Double Attaque). On boucle les déclenchements et on snapshot une
-    // seule fois après, l'animation wave 1 montrant l'effet cumulé.
-    const onAttackTriggers = hasKw(attacker, "double_attaque") ? 2 : 1;
-    for (let t = 0; t < onAttackTriggers; t++) {
-      // L'effet a pu tuer l'attaquant lui-même (AoE) → ne pas re-déclencher.
-      if (!player.board.find(c => c.instanceId === attacker.instanceId)) break;
-      runComposedCapsForCard(attacker.card, "on_attack", attacker, player, opponent, action.targetMap);
-      const pDeadPow = cleanDeadCreatures(player);
-      const oDeadPow = cleanDeadCreatures(opponent);
-      processDeathTriggers(pDeadPow, player, opponent);
-      processDeathTriggers(oDeadPow, opponent, player);
-      recalculateAuras(player, opponent);
+  // "À l'attaque" : les pouvoirs COMPOSÉS et les mots-clés CURÉS (mode "attack")
+  // se résolvent AVANT les dégâts de combat. On snapshot l'état intermédiaire
+  // (post-pouvoir / pré-combat) pour la 1re vague d'animation du store — APRÈS
+  // les deux, sinon un buff curé tomberait dans la vague de combat et son popup
+  // s'animerait EN MÊME TEMPS QUE / APRÈS les dégâts au lieu d'avant.
+  const hasCuratedAttack = (attacker.card.keyword_instances ?? []).some(i => i.mode === "attack");
+  if (hasOnAttackComposed(attacker.card) || hasCuratedAttack) {
+    // Pouvoirs composés "à l'attaque". Les cibles choisies voyagent dans
+    // action.targetMap. Double Attaque frappe deux fois "dans" la même attaque :
+    // l'effet composé se déclenche une fois par frappe (ex. Commandant des
+    // Griffes : +1/+1 → +2/+2 avec Double Attaque) ; on snapshot une seule fois.
+    if (hasOnAttackComposed(attacker.card)) {
+      const onAttackTriggers = hasKw(attacker, "double_attaque") ? 2 : 1;
+      for (let t = 0; t < onAttackTriggers; t++) {
+        // L'effet a pu tuer l'attaquant lui-même (AoE) → ne pas re-déclencher.
+        if (!player.board.find(c => c.instanceId === attacker.instanceId)) break;
+        runComposedCapsForCard(attacker.card, "on_attack", attacker, player, opponent, action.targetMap);
+        const pDeadPow = cleanDeadCreatures(player);
+        const oDeadPow = cleanDeadCreatures(opponent);
+        processDeathTriggers(pDeadPow, player, opponent);
+        processDeathTriggers(oDeadPow, opponent, player);
+        recalculateAuras(player, opponent);
+      }
     }
+
+    // Mots-clés CURÉS "à l'attaque" (instances mode "attack"), appliqués AVANT le
+    // snapshot pour s'animer dans la 1re vague comme les pouvoirs composés (ex.
+    // Renforcement/Entrainement en mode attaque). Miroir de la boucle fin-de-tour.
+    if (hasCuratedAttack && player.board.find(c => c.instanceId === attacker.instanceId)) {
+      for (const inst of attacker.card.keyword_instances ?? []) {
+        if (inst.mode !== "attack") continue;
+        resolveCuratedKeywordEffect(inst.id, inst.x ?? 1, attacker, player, opponent, undefined, inst);
+      }
+      const pDeadAtk = cleanDeadCreatures(player);
+      const oDeadAtk = cleanDeadCreatures(opponent);
+      if (pDeadAtk.length || oDeadAtk.length) {
+        processDeathTriggers(pDeadAtk, player, opponent);
+        processDeathTriggers(oDeadAtk, opponent, player);
+        recalculateAuras(player, opponent);
+      }
+    }
+
     // Snapshot for wave 1 — pools stripped (the store diffs boards only).
     const fp = newState.factionCardPool, ap = newState.allSpellsPool;
     newState.factionCardPool = undefined; newState.allSpellsPool = undefined;
@@ -3735,26 +3761,6 @@ export function attack(state: GameState, action: AttackAction): GameState {
       newState.lastAction = action;
       checkWinCondition(newState);
       return newState;
-    }
-  }
-
-  // Mots-clés CURÉS "à l'attaque" (instances mode "attack"). Le flux d'attaque
-  // ne dispatche nativement que les effets composés ; on ajoute ici le pont
-  // pour les mots-clés curés (ex. Entrainement) afin d'honorer le déclencheur
-  // attaque. Miroir de la boucle fin-de-tour. Entrainement ne modifie que la
-  // main, mais on nettoie/recalcule au cas où un futur mot-clé curé attaque
-  // impacterait le plateau.
-  for (const inst of attacker.card.keyword_instances ?? []) {
-    if (inst.mode !== "attack") continue;
-    resolveCuratedKeywordEffect(inst.id, inst.x ?? 1, attacker, player, opponent, undefined, inst);
-  }
-  {
-    const pDeadAtk = cleanDeadCreatures(player);
-    const oDeadAtk = cleanDeadCreatures(opponent);
-    if (pDeadAtk.length || oDeadAtk.length) {
-      processDeathTriggers(pDeadAtk, player, opponent);
-      processDeathTriggers(oDeadAtk, opponent, player);
-      recalculateAuras(player, opponent);
     }
   }
 
@@ -4716,6 +4722,7 @@ function applyRenforcementSelf(inst: CardInstance, x: number, y: number): void {
   inst.currentAttack += x;
   inst.currentHealth += y;
   inst.maxHealth += y;
+  inst.lastBuffMode = composedStrikeMode; // couleur de l'effet → teinte du popup
 }
 
 // Renforcement multiple : +X/+Y permanent à toutes les créatures du contrôleur
@@ -4737,6 +4744,7 @@ function applyRenforcementMultiple(
     ally.currentAttack += x;
     ally.currentHealth += y;
     ally.maxHealth += y;
+    ally.lastBuffMode = composedStrikeMode; // couleur de l'effet → teinte du popup
   }
 }
 
@@ -4760,6 +4768,7 @@ function applyEntrainement(
     c.currentAttack += x;
     c.currentHealth += x;
     c.maxHealth += x;
+    c.lastBuffMode = composedStrikeMode; // couleur de l'effet → teinte du popup
   }
 }
 
@@ -4775,19 +4784,24 @@ function resolveCuratedKeywordEffect(
   switch (kw) {
     case "renforcement_multiple": {
       // Tap / mort / retour : lit +X/+Y et race/clan depuis l'instance du mot-clé.
-      applyRenforcementMultiple(owner, inst?.x ?? 0, inst?.y ?? 0, inst?.race, inst?.clan, source.instanceId);
+      // withComposedMode(inst.mode) : pose le mode ambiant pour que le buff
+      // estampille lastBuffMode (teinte du popup par la couleur de l'effet).
+      withComposedMode(inst?.mode, () =>
+        applyRenforcementMultiple(owner, inst?.x ?? 0, inst?.y ?? 0, inst?.race, inst?.clan, source.instanceId));
       return;
     }
     case "renforcement": {
       // Tap / mort / retour / fin de tour : +X/+Y permanent à la source elle-même.
-      applyRenforcementSelf(source, inst?.x ?? 0, inst?.y ?? 0);
+      withComposedMode(inst?.mode, () =>
+        applyRenforcementSelf(source, inst?.x ?? 0, inst?.y ?? 0));
       return;
     }
     case "entrainement": {
       // Mort / tap / retour / fin-de-tour : +X/+X aux créatures en main de même
       // faction que la source (snapshot). La source est exclue (utile en mode
       // retour, où elle vient de rejoindre la main).
-      applyEntrainement(owner, source.card.faction, inst?.x ?? x, source.instanceId);
+      withComposedMode(inst?.mode, () =>
+        applyEntrainement(owner, source.card.faction, inst?.x ?? x, source.instanceId));
       return;
     }
     case "remontee": {
@@ -5624,6 +5638,14 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   sequentialHitsSink = [];
   powerStrikeSink = [];
   composedStrikeMode = undefined;
+  // Indice cosmétique (hors hash) : on efface la provenance de buff sur toutes
+  // les instances pour que le popup « +X/+Y » de CETTE action ne soit teinté
+  // que par un effet déclenché MAINTENANT — sinon un mode périmé d'une action
+  // précédente pourrait mal colorer un buff non-composé (aura, mot-clé) ultérieur.
+  for (const p of state.players) {
+    for (const c of p.board) c.lastBuffMode = undefined;
+    for (const c of p.hand) c.lastBuffMode = undefined;
+  }
   // Load the RNG position carried in the state so this action's random draws
   // continue the exact stream both clients share (rather than a module
   // singleton that can drift). Written back into `result` below.

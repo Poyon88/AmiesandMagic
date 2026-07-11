@@ -52,7 +52,7 @@ import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, getSpellKeywordDesc, getSpellKey
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
-import { composedCapsOf, composedIcon, composedTriggerMode, composedValueText, describeComposedCap } from "@/lib/game/composed-display";
+import { composedCapsOf, composedIcon, composedKeywordName, composedTriggerMode, composedValueText, describeComposedCap } from "@/lib/game/composed-display";
 import ComposedMarker from "@/components/cards/ComposedMarker";
 import { KEYWORDS as keywordDefs, LIMITED_PRINT_COUNTS, ALIGNMENTS, getEffectiveAlignment, getFactionDisplayName } from "@/lib/card-engine/constants";
 import RarityFrame from "./RarityFrame";
@@ -574,10 +574,14 @@ export default function GameCard({
             {composedCapsOf(card.capabilities).map((cap, i) => {
               const ic = composedIcon(cap);
               const cmode = composedTriggerMode(cap);
+              const nm = composedKeywordName(cap);
               return (
                 <div key={`cxd-${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
                   <span style={{ position: "relative", flexShrink: 0, display: "inline-flex", lineHeight: 0 }}><span style={{ display: "inline-flex", lineHeight: 0, filter: keywordModeFilter(cmode) ?? undefined }}><KeywordIcon symbol={ic.symbol} size={18 * s} keyword={ic.keyword} /></span><ComposedMarker mode={cmode} size={9 * s} /></span>
-                  <div style={{ fontSize: 12 * so, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{describeComposedCap(cap, effectiveTokens)}</div>
+                  <div>
+                    {nm && <div style={{ fontSize: 14 * so, color: "#d8b25a", fontWeight: 700 }}>{nm}</div>}
+                    <div style={{ fontSize: 12 * so, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{describeComposedCap(cap, effectiveTokens)}</div>
+                  </div>
                 </div>
               );
             })}

@@ -105,6 +105,12 @@ export default function CardEditor() {
   const [rmY, setRmY] = useState<number>(1);
   const [rmRace, setRmRace] = useState<string>("");
   const [rmClan, setRmClan] = useState<string>("");
+  // Renforcement +X/+Y (créature, self-buff) : le +PV (Y) dédié. Le +ATK (X)
+  // réutilise keywordXValues ; sérialisé dans keyword_instances comme la Forge.
+  const [rfY, setRfY] = useState<number>(1);
+  // Affaiblissement -X/-Y (créature) : le -PV (Y) dédié. Le -ATK (X) réutilise
+  // keywordXValues ; sérialisé dans keyword_instances comme la Forge.
+  const [afY, setAfY] = useState<number>(1);
   // Effets composés (modèle hybride) de la carte en cours d'édition.
   const [composedCaps, setComposedCaps] = useState<Capability[]>([]);
 
@@ -210,7 +216,7 @@ export default function CardEditor() {
     // sidecar; the effect_text bracket is the legacy fallback for X.
     const modes: Record<string, KeywordMode> = {};
     const grantScopes: Record<string, "all_allies"> = {};
-    let rmYLoaded = 1, rmRaceLoaded = "", rmClanLoaded = "";
+    let rmYLoaded = 1, rmRaceLoaded = "", rmClanLoaded = "", rfYLoaded = 1, afYLoaded = 1;
     for (const inst of card.keyword_instances ?? []) {
       if (inst.mode) modes[inst.id] = inst.mode;
       if (inst.x != null) parsedX[inst.id] = inst.x;
@@ -218,8 +224,10 @@ export default function CardEditor() {
       if (inst.id === "renforcement_multiple") {
         rmYLoaded = inst.y ?? 1; rmRaceLoaded = inst.race ?? ""; rmClanLoaded = inst.clan ?? "";
       }
+      if (inst.id === "renforcement") rfYLoaded = inst.y ?? 1;
+      if (inst.id === "affaiblissement") afYLoaded = inst.y ?? 1;
     }
-    setRmY(rmYLoaded); setRmRace(rmRaceLoaded); setRmClan(rmClanLoaded);
+    setRmY(rmYLoaded); setRmRace(rmRaceLoaded); setRmClan(rmClanLoaded); setRfY(rfYLoaded); setAfY(afYLoaded);
     setKeywordModes(modes);
     setKeywordXValues(parsedX);
     setKeywordGrantScope(grantScopes);
@@ -361,6 +369,14 @@ export default function CardEditor() {
           if (id === "renforcement_multiple" && !isSpellCard) {
             return { id: id as Keyword, ...(mode ? { mode } : {}), x: x ?? 0, y: rmY, ...(rmRace ? { race: rmRace } : {}), ...(rmClan ? { clan: rmClan } : {}) };
           }
+          // Renforcement +X/+Y (créature, self-buff) : porte +X (ATK) / +Y (PV) ; toujours émis.
+          if (id === "renforcement" && !isSpellCard) {
+            return { id: id as Keyword, ...(mode ? { mode } : {}), x: x ?? 0, y: rfY };
+          }
+          // Affaiblissement -X/-Y (créature) : porte -X (ATK) / -Y (PV) ; toujours émis.
+          if (id === "affaiblissement" && !isSpellCard) {
+            return { id: id as Keyword, ...(mode ? { mode } : {}), x: x ?? 0, y: afY };
+          }
           if (!mode && x == null && !grantScope) return null;
           return { id: id as Keyword, ...(mode ? { mode } : {}), ...(x != null ? { x } : {}), ...(grantScope ? { grantScope } : {}) };
         })
@@ -433,7 +449,7 @@ export default function CardEditor() {
       console.warn("[card-save] refresh failed after successful save:", err);
     }
     setSaving(false);
-  }, [selectedCard, editFields, newImageFile, keywordXValues, keywordModes, keywordGrantScope, rmY, rmRace, rmClan, composedCaps]);
+  }, [selectedCard, editFields, newImageFile, keywordXValues, keywordModes, keywordGrantScope, rmY, rmRace, rmClan, rfY, afY, composedCaps]);
 
   // Delete
   const handleDelete = useCallback(async (id: number) => {
@@ -1007,6 +1023,9 @@ export default function CardEditor() {
             {(() => {
               const activeScalable = ((editFields.keywords as string[]) || []).filter(kw => {
                 const label = KEYWORD_LABELS[kw as Keyword];
+                // renforcement / affaiblissement (créature) : leur X est réglé
+                // dans le bloc unifié dédié (avec le Y). Pas ici.
+                if ((kw === "renforcement" || kw === "affaiblissement") && editFields.card_type === "creature") return false;
                 return label && KEYWORD_DEFS[label]?.scalable;
               });
               if (activeScalable.length === 0) return null;
@@ -1353,6 +1372,50 @@ export default function CardEditor() {
                   <span style={{ fontSize: 9, color: "#888" }}>(le +ATK = la valeur X ci-dessus)</span>
                 </div>
                 <RaceClanPicker race={rmRace} clan={rmClan} onChange={(r, c) => { setRmRace(r); setRmClan(c); }} />
+              </div>
+            )}
+
+            {/* Renforcement (créature, self-buff) — bloc unifié +ATK (X) / +PV (Y),
+                identique à la Forge de création. */}
+            {((editFields.keywords as string[]) || []).includes("renforcement") && editFields.card_type === "creature" && (
+              <div style={{ marginBottom: 8, padding: "8px 10px", borderRadius: 6, border: "1px solid #cfe8d4", background: "#f0fff4" }}>
+                <div style={{ ...S.label, color: "#1e7d3b", marginBottom: 6 }}>⬆️ RENFORCEMENT (SUR SOI)</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 9, color: "#27ae60" }}>+ATK (X)</span>
+                  <input
+                    type="number" min={0} max={20} value={keywordXValues["renforcement"] ?? 1}
+                    onChange={e => setKeywordXValues(prev => ({ ...prev, ["renforcement"]: Math.max(0, Math.min(20, parseInt(e.target.value) || 0)) }))}
+                    style={{ width: 48, padding: "2px 6px", borderRadius: 4, border: "1px solid #cfe8d4", fontSize: 11, textAlign: "center" }}
+                  />
+                  <span style={{ fontSize: 9, color: "#27ae60" }}>+PV (Y)</span>
+                  <input
+                    type="number" min={0} max={20} value={rfY}
+                    onChange={e => setRfY(Math.max(0, parseInt(e.target.value) || 0))}
+                    style={{ width: 48, padding: "2px 6px", borderRadius: 4, border: "1px solid #cfe8d4", fontSize: 11, textAlign: "center" }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Affaiblissement (créature) — bloc unifié -ATK (X) / -PV (Y),
+                identique à la Forge de création. */}
+            {((editFields.keywords as string[]) || []).includes("affaiblissement") && editFields.card_type === "creature" && (
+              <div style={{ marginBottom: 8, padding: "8px 10px", borderRadius: 6, border: "1px solid #f5cfcf", background: "#fff0f0" }}>
+                <div style={{ ...S.label, color: "#992c2c", marginBottom: 6 }}>🔻 AFFAIBLISSEMENT</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 9, color: "#c0392b" }}>-ATK (X)</span>
+                  <input
+                    type="number" min={0} max={20} value={keywordXValues["affaiblissement"] ?? 1}
+                    onChange={e => setKeywordXValues(prev => ({ ...prev, ["affaiblissement"]: Math.max(0, Math.min(20, parseInt(e.target.value) || 0)) }))}
+                    style={{ width: 48, padding: "2px 6px", borderRadius: 4, border: "1px solid #f5cfcf", fontSize: 11, textAlign: "center" }}
+                  />
+                  <span style={{ fontSize: 9, color: "#c0392b" }}>-PV (Y)</span>
+                  <input
+                    type="number" min={0} max={20} value={afY}
+                    onChange={e => setAfY(Math.max(0, parseInt(e.target.value) || 0))}
+                    style={{ width: 48, padding: "2px 6px", borderRadius: 4, border: "1px solid #f5cfcf", fontSize: 11, textAlign: "center" }}
+                  />
+                </div>
               </div>
             )}
 

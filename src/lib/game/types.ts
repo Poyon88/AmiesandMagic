@@ -543,6 +543,13 @@ export interface CardInstance {
   currentAttack: number;
   currentHealth: number;
   maxHealth: number;
+  // Mode/couleur de l'effet composé ayant appliqué le DERNIER buff/debuff de
+  // stats à cette instance (posé depuis composedStrikeMode). Purement cosmétique
+  // (hors hash) : lu par le store pour teinter le popup « +X/+Y » / « -X/-Y »
+  // avec la couleur de l'effet (ex. rose #E735F6 pour un buff « à l'attaque »).
+  // Remis à undefined au début de chaque applyAction ; undefined ⇒ couleur par
+  // défaut du popup.
+  lastBuffMode?: KeywordMode;
   hasAttacked: boolean;
   hasSummoningSickness: boolean;
   hasDivineShield: boolean;
@@ -1016,13 +1023,17 @@ export interface StackFrame {
 }
 
 // Combat event for animations
-export type CombatEventType = "damage" | "heal" | "buff" | "shield" | "poison" | "dodge" | "paralyze" | "resurrect" | "transform" | "empower";
+export type CombatEventType = "damage" | "heal" | "buff" | "debuff" | "shield" | "poison" | "dodge" | "paralyze" | "resurrect" | "transform" | "empower";
 
 export interface DamageEvent {
   targetId: string;
   amount: number;
   type: CombatEventType;
   label?: string;
+  // Cosmetic override for the popup text colour. When set (e.g. the colour of
+  // the effect that triggered a buff/debuff, via keywordModeColor), the overlay
+  // uses it instead of the type's default palette colour. Absent ⇒ default.
+  color?: string;
   x: number;
   y: number;
   delayMs?: number; // stagger delay when multiple targets share one action

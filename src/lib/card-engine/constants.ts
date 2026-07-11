@@ -33,29 +33,37 @@ export { KEYWORDS, CREATURE_LABEL_TO_ENGINE_ID } from "@/lib/game/abilities";
 // pipeline (on-death rattle or tap-activated). Keywords missing from this
 // map can only be on-play. Shared by the Forge and the card Editor so both
 // surfaces gate the picker identically.
-// Les modes "return" (retour en main) et "end_of_turn" (fin du tour) sont
-// ouverts à TOUS les mots-clés curés, en plus de leurs modes existants.
+// Les modes "return" (retour en main), "end_of_turn" (fin du tour) et
+// "attack" (à l'attaque d'une créature) sont ouverts à TOUS les mots-clés
+// curés « à effet », en plus de leurs modes existants. Le moteur
+// (engine.ts, boucle du flux d'attaque) exécute n'importe quel mot-clé curé
+// en mode "attack" de façon générique ; l'appartenance à ce map est le seul
+// verrou côté picker.
 type CuratedMode = "death" | "tap" | "return" | "end_of_turn" | "attack";
 export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
-  "Convocation X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
-  "Convocations multiples": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
-  "Inspiration X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
-  "Pillage X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
-  "Douleur X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
+  "Convocation X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack"]),
+  "Convocations multiples": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack"]),
+  "Inspiration X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack"]),
+  "Pillage X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack"]),
+  "Douleur X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack"]),
   "Vampirisme X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
-  "Tempête X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
-  "Cataclysme X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
-  "Renforcement +X/+Y": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
+  "Tempête X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack"]),
+  "Cataclysme X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack"]),
+  "Renforcement +X/+Y": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack"]),
+  // Impact / Remontée / Vampirisme lisent un targetInstanceId que le flux
+  // d'attaque (synchrone, pré-combat, sans pause) ne fournit pas : Impact et
+  // Remontée reporteraient leur picker APRÈS le combat, Vampirisme frapperait
+  // le héros au lieu d'une créature. Pas de mode "attack" tant qu'un vrai
+  // ciblage n'est pas câblé dans le flux d'attaque.
   "Impact X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
-  "Prescience X": new Set<CuratedMode>(["tap", "return", "end_of_turn"]),
-  "Suprématie": new Set<CuratedMode>(["death", "return", "end_of_turn"]),
-  "Ombre du passé": new Set<CuratedMode>(["death", "return", "end_of_turn"]),
-  "Savant": new Set<CuratedMode>(["death", "return", "end_of_turn"]),
-  "Combustion": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
+  "Prescience X": new Set<CuratedMode>(["tap", "return", "end_of_turn", "attack"]),
+  "Suprématie": new Set<CuratedMode>(["death", "return", "end_of_turn", "attack"]),
+  "Ombre du passé": new Set<CuratedMode>(["death", "return", "end_of_turn", "attack"]),
+  "Savant": new Set<CuratedMode>(["death", "return", "end_of_turn", "attack"]),
+  "Combustion": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack"]),
   "Remontée": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
-  "Renforcement multiple": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
-  // Entrainement accepte TOUS les déclencheurs habituels, y compris l'attaque
-  // (seul mot-clé curé câblé sur le flux d'attaque, cf. engine.ts).
+  "Renforcement multiple": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack"]),
+  // Entrainement accepte TOUS les déclencheurs habituels, y compris l'attaque.
   "Entrainement X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack"]),
   // Sélection : seuls tap et fin de tour (en plus de l'entrée). Pas de mort ni
   // retour en main — ces deux-là surviennent pendant le tour adverse et la

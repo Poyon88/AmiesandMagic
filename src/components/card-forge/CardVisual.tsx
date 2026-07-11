@@ -6,7 +6,7 @@ import KeywordIcon from '@/components/shared/KeywordIcon';
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, getSpellKeywordDesc, getSpellKeywordLabel, formatConvocationTokens } from '@/lib/game/spell-keywords';
 import { isCreatureKwShadowedBySpell } from '@/lib/game/abilities';
 import { KEYWORD_LABELS, keywordModeColor, keywordModeFilter } from '@/lib/game/keyword-labels';
-import { composedCapsOf, composedIcon, composedTriggerMode, composedValueText, describeComposedCap } from '@/lib/game/composed-display';
+import { composedCapsOf, composedIcon, composedKeywordName, composedTriggerMode, composedValueText, describeComposedCap } from '@/lib/game/composed-display';
 import ComposedMarker from '@/components/cards/ComposedMarker';
 import type { Capability } from '@/lib/game/types';
 import type { SpellKeywordInstance, TokenTemplate } from '@/lib/game/types';
@@ -678,10 +678,14 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
             {composedCapsOf(card!.capabilities).map((cap, i) => {
               const ic = composedIcon(cap);
               const cmode = composedTriggerMode(cap);
+              const nm = composedKeywordName(cap);
               return (
                 <div key={`cxd_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
                   <span style={{ position: "relative", flexShrink: 0, display: "inline-flex" }}><span style={{ display: "inline-flex", lineHeight: 0, filter: keywordModeFilter(cmode) ?? undefined }}><KeywordIcon symbol={ic.symbol} size={18 * s} keyword={ic.keyword} /></span><ComposedMarker mode={cmode} size={9 * s} /></span>
-                  <div style={{ fontSize: 12 * s, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{describeComposedCap(cap, tokens)}</div>
+                  <div>
+                    {nm && <div style={{ fontSize: 14 * s, color: "#d8b25a", fontWeight: 700 }}>{nm}</div>}
+                    <div style={{ fontSize: 12 * s, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{describeComposedCap(cap, tokens)}</div>
+                  </div>
                 </div>
               );
             })}

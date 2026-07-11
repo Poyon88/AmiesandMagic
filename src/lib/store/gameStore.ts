@@ -443,12 +443,17 @@ function detectDamageEvents(
       if (!newCreature) continue;
 
       // Damage (poison tick or regular)
-      if (newCreature.currentHealth < oldCreature.currentHealth) {
+      // Dégâts réels = baisse de PV courants NON expliquée par une baisse de PV
+      // max (celle-ci vient d'un debuff, géré plus bas comme « -X/-Y »). Évite un
+      // double popup (dégât + debuff) quand un debuff réduit aussi les PV courants.
+      const maxHpDrop = Math.max(0, oldCreature.maxHealth - newCreature.maxHealth);
+      const dmgAmount = (oldCreature.currentHealth - newCreature.currentHealth) - maxHpDrop;
+      if (dmgAmount > 0) {
         const pos = getElementCenter(oldCreature.instanceId);
-        const isPoisonTick = oldCreature.isPoisoned && (oldCreature.currentHealth - newCreature.currentHealth) === 1;
+        const isPoisonTick = oldCreature.isPoisoned && dmgAmount === 1;
         events.push({
           targetId: oldCreature.instanceId,
-          amount: oldCreature.currentHealth - newCreature.currentHealth,
+          amount: dmgAmount,
           type: isPoisonTick ? "poison" : "damage",
           ...pos,
         });
@@ -468,9 +473,13 @@ function detectDamageEvents(
         });
       }
 
-      // Buff (attack or health increase from buff spells)
+      // Buff / debuff (ATK ou PV max changés par un effet). On teinte le popup
+      // par la couleur de l'effet déclencheur (lastBuffMode → keywordModeColor).
+      // maxHealth pour les PV : un DÉGÂT baisse currentHealth sans toucher
+      // maxHealth → il ne déclenche pas de faux popup de debuff.
       const atkDiff = newCreature.currentAttack - oldCreature.currentAttack;
       const hpDiff = newCreature.maxHealth - oldCreature.maxHealth;
+      const buffColor = keywordModeColor(newCreature.lastBuffMode) ?? undefined;
       if (atkDiff > 0 || hpDiff > 0) {
         const pos = getElementCenter(oldCreature.instanceId);
         const parts: string[] = [];
@@ -481,6 +490,28 @@ function detectDamageEvents(
           amount: atkDiff + hpDiff,
           type: "buff",
           label: parts.join("/"),
+          ...(buffColor ? { color: buffColor } : {}),
+          ...pos,
+        });
+      }
+      // Debuff : baisse PERMANENTE des stats de BASE (card.attack/health) — seuls
+      // les vrais debuffs (Affaiblissement, debuff composé, malédiction) la cuisent
+      // dans `card`. On l'isole ainsi de l'expiration d'un buff temporaire / d'une
+      // aura (qui ne baisse que currentAttack/maxHealth sans toucher `card`) pour
+      // éviter de faux « -1 ». Même carte requise (≠ transformation).
+      const baseAtkDrop = (oldCreature.card.attack ?? 0) - (newCreature.card.attack ?? 0);
+      const baseHpDrop = (oldCreature.card.health ?? 0) - (newCreature.card.health ?? 0);
+      if (newCreature.card.id === oldCreature.card.id && (baseAtkDrop > 0 || baseHpDrop > 0)) {
+        const pos = getElementCenter(oldCreature.instanceId);
+        const parts: string[] = [];
+        if (baseAtkDrop > 0) parts.push(`-${baseAtkDrop}`);
+        if (baseHpDrop > 0) parts.push(`-${baseHpDrop}`);
+        events.push({
+          targetId: oldCreature.instanceId,
+          amount: -(baseAtkDrop + baseHpDrop),
+          type: "debuff",
+          label: parts.join("/"),
+          ...(buffColor ? { color: buffColor } : {}),
           ...pos,
         });
       }
@@ -579,6 +610,7 @@ function detectDamageEvents(
       if (!newCard) continue;
       const atkDiff = newCard.currentAttack - oldCard.currentAttack;
       const hpDiff = newCard.maxHealth - oldCard.maxHealth;
+      const buffColor = keywordModeColor(newCard.lastBuffMode) ?? undefined;
       if (atkDiff > 0 || hpDiff > 0) {
         const pos = getElementCenter(oldCard.instanceId);
         const parts: string[] = [];
@@ -589,6 +621,23 @@ function detectDamageEvents(
           amount: atkDiff + hpDiff,
           type: "buff",
           label: parts.join("/"),
+          ...(buffColor ? { color: buffColor } : {}),
+          ...pos,
+        });
+      }
+      const baseAtkDrop = (oldCard.card.attack ?? 0) - (newCard.card.attack ?? 0);
+      const baseHpDrop = (oldCard.card.health ?? 0) - (newCard.card.health ?? 0);
+      if (newCard.card.id === oldCard.card.id && (baseAtkDrop > 0 || baseHpDrop > 0)) {
+        const pos = getElementCenter(oldCard.instanceId);
+        const parts: string[] = [];
+        if (baseAtkDrop > 0) parts.push(`-${baseAtkDrop}`);
+        if (baseHpDrop > 0) parts.push(`-${baseHpDrop}`);
+        events.push({
+          targetId: oldCard.instanceId,
+          amount: -(baseAtkDrop + baseHpDrop),
+          type: "debuff",
+          label: parts.join("/"),
+          ...(buffColor ? { color: buffColor } : {}),
           ...pos,
         });
       }

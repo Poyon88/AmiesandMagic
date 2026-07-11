@@ -26,7 +26,8 @@ function DelayedPopup({ delay, children }: { delay: number; children: React.Reac
 function ReducedPopup({ event }: { event: DamageEvent }) {
   if (event.x < -9000) return null;
   const type = event.type ?? "damage";
-  const { textColor, format } = config[type];
+  const { format } = config[type];
+  const textColor = event.color ?? config[type].textColor;
   const big = type === "damage" && isBigHit(event.amount);
   return (
     <motion.div
@@ -114,6 +115,14 @@ const config = {
     particleColor: "#fbbf24",
     textColor: "#eab308",
     format: (evt: DamageEvent) => evt.label ?? `+${evt.amount}`,
+  },
+  // Stat reduction (-X/-Y). Default reddish tint; overridden by evt.color when
+  // the triggering effect has a mode colour (keywordModeColor).
+  debuff: {
+    flashColor: "rgba(224, 85, 85, 0.35)",
+    particleColor: "#e05555",
+    textColor: "#e05555",
+    format: (evt: DamageEvent) => evt.label ?? String(evt.amount),
   },
   shield: {
     flashColor: "rgba(250, 204, 21, 0.3)",
@@ -441,7 +450,8 @@ function EventPopup({ event }: { event: DamageEvent }) {
     return <DamagePopup event={event} />;
   }
 
-  const { flashColor, particleColor, textColor, format } = config[type];
+  const { flashColor, particleColor, format } = config[type];
+  const textColor = event.color ?? config[type].textColor;
   const isPositive = type === "heal" || type === "buff" || type === "dodge" || type === "paralyze" || type === "resurrect" || type === "transform" || type === "empower";
   // buff/empower already get their rising motes / arcane converge from the
   // Canvas layer (ImpactFxLayer). Rendering the DOM sparkle spray on top —
