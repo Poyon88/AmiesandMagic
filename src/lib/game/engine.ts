@@ -588,26 +588,46 @@ function resolveComposedEffect(
       return;
     }
     case "exhumation": {
-      // Ressuscite une créature du cimetière du contrôleur (coût ≤ x) sur le
-      // plateau. Réutilise returnInstanceToPlay (conserve les bonus permanents),
-      // comme le mot-clé exhumation (cf. cases mot-clé creature/sort). Cible
-      // choisie via chosenTargetIds ; sinon repli DÉTERMINISTE = plus haut coût
-      // éligible (jamais rng, pour la rejouabilité multijoueur).
+      // Ressuscite jusqu'à `count` créatures du cimetière du contrôleur (coût
+      // ≤ x) sur le plateau. Réutilise returnInstanceToPlay (conserve les bonus
+      // permanents), comme le mot-clé exhumation. count "all" (ou absent) → tout
+      // le pool éligible. Cibles CHOISIES via chosenTargetIds (picker, dans
+      // l'ordre) ; en leur absence (déclencheur non-interactif), repli
+      // DÉTERMINISTE = plus hauts coûts éligibles (jamais rng, pour la
+      // rejouabilité multijoueur).
       const maxCost = x;
-      const eligible = owner.graveyard.filter(
-        (c) => c.card.card_type === "creature" && c.card.mana_cost <= maxCost,
-      );
-      if (eligible.length === 0 || owner.board.length >= MAX_BOARD_SIZE) return;
-      const chosenId = chosenTargetIds?.[0];
-      const target =
-        (chosenId ? eligible.find((c) => c.instanceId === chosenId) : undefined)
-        ?? eligible.reduce((best, c) => (c.card.mana_cost > best.card.mana_cost ? c : best), eligible[0]);
-      owner.graveyard = owner.graveyard.filter((c) => c !== target);
-      returnInstanceToPlay(target);
-      target.instanceId = generateInstanceId();
-      // Traque (charge) → pas de mal d'invocation, même ressuscitée.
-      target.hasSummoningSickness = !target.card.keywords.includes("charge");
-      owner.board.push(target);
+      const cnt = composed.target?.count;
+      const desired = typeof cnt === "number" ? cnt : Infinity;
+      const resurrect = (inst: CardInstance | undefined): boolean => {
+        if (!inst || owner.board.length >= MAX_BOARD_SIZE) return false;
+        if (inst.card.card_type !== "creature" || inst.card.mana_cost > maxCost) return false;
+        owner.graveyard = owner.graveyard.filter((c) => c !== inst);
+        returnInstanceToPlay(inst);
+        inst.instanceId = generateInstanceId();
+        // Traque (charge) → pas de mal d'invocation, même ressuscitée.
+        inst.hasSummoningSickness = !inst.card.keywords.includes("charge");
+        owner.board.push(inst);
+        return true;
+      };
+      let done = 0;
+      const chosen = chosenTargetIds ?? [];
+      if (chosen.length > 0) {
+        // Interactif : ressuscite exactement les créatures choisies (pas de repli
+        // au-delà — le joueur a désigné son lot).
+        for (const id of chosen) {
+          if (done >= desired) break;
+          if (resurrect(owner.graveyard.find((c) => c.instanceId === id))) done++;
+        }
+      } else {
+        // Non-interactif : repli déterministe, plus hauts coûts d'abord.
+        while (done < desired && owner.board.length < MAX_BOARD_SIZE) {
+          const eligible = owner.graveyard.filter((c) => c.card.card_type === "creature" && c.card.mana_cost <= maxCost);
+          if (eligible.length === 0) break;
+          const best = eligible.reduce((b, c) => (c.card.mana_cost > b.card.mana_cost ? c : b), eligible[0]);
+          if (!resurrect(best)) break;
+          done++;
+        }
+      }
       return;
     }
     default: break;
@@ -5666,7 +5686,7 @@ function firstOnPlayComposedGraveyardChoiceCap(card: Card): import("./types").Ca
   return getCapabilities(card).find((c) => {
     const t = c.composed?.target;
     return !!c.composed && c.trigger === "on_play" && !!t
-      && t.designation === "choice" && t.count === 1
+      && t.designation === "choice" && typeof t.count === "number" && t.count >= 1
       && t.entity === "unit" && t.location === "graveyard" && t.side === "ally";
   });
 }
@@ -5676,10 +5696,11 @@ export function creatureNeedsComposedGraveyardTarget(card: Card): boolean {
   return card.card_type === "creature" && !!firstOnPlayComposedGraveyardChoiceCap(card);
 }
 
-/** uid de la capacité composée cimetière à l'entrée, ou null. */
-export function getCreatureComposedGraveyardChoice(card: Card): { uid: string } | null {
+/** uid + nombre de cibles de la capacité composée cimetière à l'entrée, ou null. */
+export function getCreatureComposedGraveyardChoice(card: Card): { uid: string; count: number } | null {
   const cap = firstOnPlayComposedGraveyardChoiceCap(card);
-  return cap ? { uid: cap.uid } : null;
+  const count = cap?.composed?.target?.count;
+  return cap && typeof count === "number" ? { uid: cap.uid, count } : null;
 }
 
 /** Descripteur de ciblage composé d'une créature à l'entrée (pour le store :
