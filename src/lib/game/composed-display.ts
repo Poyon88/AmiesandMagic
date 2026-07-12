@@ -201,7 +201,8 @@ function describeContent(eff: ComposedEffect, tokens: TokenTemplate[] | undefine
       // token and shows its stats — e.g. "invoque 2 Token Hommes-Loups (2/2)".
       // Falls back to the generic "token(s)" wording if no template is passed.
       const tok = eff.tokenId != null ? tokens?.find((tk) => tk.id === eff.tokenId) : undefined;
-      const label = tok ? `${tok.name} (${tok.attack}/${tok.health})` : frag(t, x > 1 ? "content.token_many" : "content.token_one");
+      const tokLabel = tok ? ((tok.id != null ? t?.(`vocab.tokens.${tok.id}`) : undefined) ?? tok.name) : "";
+      const label = tok ? `${tokLabel} (${tok.attack}/${tok.health})` : frag(t, x > 1 ? "content.token_many" : "content.token_one");
       return frag(t, x > 1 ? "content.summon_many" : "content.summon_one", { x, token: label });
     }
     case "gain_mana": return frag(t, "content.gain_mana", { x });

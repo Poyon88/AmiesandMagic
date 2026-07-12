@@ -7,7 +7,6 @@ import type { CardInstance, GameAction } from "@/lib/game/types";
 import { useGameStore, selectPowerTargetingColor } from "@/lib/store/gameStore";
 import { tapKeywordNeedsTarget, getCreatureTapComposedUid } from "@/lib/game/engine";
 import { getTokenManaCost } from "@/lib/game/abilities";
-import { formatConvocationToken, formatConvocationTokens } from "@/lib/game/spell-keywords";
 import { KEYWORD_SYMBOLS, toRoman, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
@@ -850,10 +849,10 @@ function BoardCreature({
               const displayLabel = baseLabel + modeSuffix;
               let desc = vocab.keywordDesc(kw, x);
               if (kw === "convocations_multiples" && card.convocation_tokens?.length) {
-                desc = `Invocation : crée ${formatConvocationTokens(card.convocation_tokens, tokenTemplates)}`;
+                desc = vocab.convocationPrefix(vocab.convocationTokens(card.convocation_tokens, tokenTemplates));
               } else if (kw === "convocation" || kw === "convocation_simple") {
-                const tokenStr = formatConvocationToken(card.convocation_token_id, tokenTemplates, kw === "convocation" ? x : null);
-                if (tokenStr) desc = `Invocation : crée ${tokenStr}`;
+                const tokenStr = vocab.convocationToken(card.convocation_token_id, tokenTemplates, kw === "convocation" ? x : null);
+                if (tokenStr) desc = vocab.convocationPrefix(tokenStr);
               }
               const modeColor = keywordModeColor(mode);
               const modeFilter = keywordModeFilter(mode);

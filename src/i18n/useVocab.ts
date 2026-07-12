@@ -2,9 +2,9 @@
 
 import { useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
-import type { Keyword, SpellKeywordInstance, Card, TokenTemplate, Capability } from "@/lib/game/types";
+import type { Keyword, SpellKeywordInstance, Card, TokenTemplate, Capability, ConvocationTokenDef } from "@/lib/game/types";
 import { getKeywordDisplayLabel, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
-import { getSpellKeywordLabel, getSpellKeywordDesc } from "@/lib/game/spell-keywords";
+import { getSpellKeywordLabel, getSpellKeywordDesc, formatConvocationTokens, formatConvocationToken } from "@/lib/game/spell-keywords";
 import { composedKeywordName, describeComposedCap } from "@/lib/game/composed-display";
 import {
   getAlignmentLabel,
@@ -55,6 +55,15 @@ export interface Vocab {
   // Nom de token localisé, indexé par l'id `token_templates` (porté par la carte
   // token via `card.token_id`). Fallback : le nom FR canonique fourni.
   tokenName: (id: number | null | undefined, fallbackName: string) => string;
+  // Descriptions de convocation localisées (nom du token + phrase). Le préfixe
+  // « Invocation : crée … » et la liste sont composés côté helper avec SafeT.
+  convocationTokens: (tokens: ConvocationTokenDef[], registry?: TokenTemplate[]) => string;
+  convocationToken: (
+    tokenId: number | null | undefined,
+    registry?: TokenTemplate[],
+    statOverride?: number | null,
+  ) => string | null;
+  convocationPrefix: (content: string) => string;
   // Suffixe de déclenchement affiché après un mot-clé (« Provocation · à la
   // mort »). Renvoie une chaîne vide pour le mode par défaut (invocation) et
   // les modes sans suffixe. Fallback FR intégré.
@@ -124,6 +133,16 @@ export function useVocab(): Vocab {
         (code ? safe(`vocab.formats.${code}`) : undefined) ?? fallbackName,
       tokenName: (id: number | null | undefined, fallbackName: string) =>
         (id != null ? safe(`vocab.tokens.${id}`) : undefined) ?? fallbackName,
+      convocationTokens: (tokens: ConvocationTokenDef[], registry?: TokenTemplate[]) =>
+        formatConvocationTokens(tokens, registry, safe),
+      convocationToken: (
+        tokenId: number | null | undefined,
+        registry?: TokenTemplate[],
+        statOverride?: number | null,
+      ) => formatConvocationToken(tokenId, registry, statOverride, safe),
+      convocationPrefix: (content: string) =>
+        (safe("game.convocation_prefix")?.replace(/\{content\}/g, content)) ??
+        `Invocation : crée ${content}`,
       modeSuffix: (mode: string | null | undefined) => {
         if (!mode || !(mode in MODE_SUFFIX_FR)) return "";
         return safe(`game.mode_suffix_${mode}`) ?? MODE_SUFFIX_FR[mode];

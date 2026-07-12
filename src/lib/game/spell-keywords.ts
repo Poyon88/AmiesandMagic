@@ -22,46 +22,63 @@ export const SPELL_KEYWORD_SYMBOLS: Record<SpellKeywordId, string> = Object.from
   Object.entries(SPELL_KEYWORDS).map(([id, def]) => [id, def.symbol])
 ) as Record<SpellKeywordId, string>;
 
-// Resolves a creature keyword id (e.g. "raid") to its French display label
-// (e.g. "Raid"). Drops the trailing " X" that scalable keywords carry in
-// their label — token keywords are stored without a value, so the bare
-// name reads best in the convocation blurb. Falls back to the raw id.
-function tokenKeywordLabel(id: string): string {
+// Gabarit localisé (clé messages) avec repli FR + substitution manuelle des
+// {marqueurs} (SafeT renvoie la chaîne brute, cf. useVocab). Sans traducteur
+// (moteur / forge / admin) → repli FR : le comportement historique est conservé.
+function cfrag(t: SafeT | undefined, key: string, fallback: string, params?: Record<string, string | number>): string {
+  let s = t?.(key) ?? fallback;
+  if (params) for (const [k, v] of Object.entries(params)) s = s.replace(new RegExp(`\\{${k}\\}`, "g"), String(v));
+  return s;
+}
+
+// Nom localisé d'un token (vocab.tokens.{id}), repli sur le nom FR du template.
+function tokenName(tmpl: TokenTemplate | null | undefined, t?: SafeT): string {
+  if (!tmpl) return "Token";
+  return (tmpl.id != null ? t?.(`vocab.tokens.${tmpl.id}`) : undefined) ?? tmpl.name;
+}
+
+// Resolves a creature keyword id (e.g. "raid") to its display label
+// (e.g. "Raid" / "Raid" / …). Drops the trailing " X" that scalable keywords
+// carry in their label — token keywords are stored without a value, so the bare
+// name reads best in the convocation blurb. Localised via vocab.keywords.{id};
+// falls back to the FR label then the raw id.
+function tokenKeywordLabel(id: string, t?: SafeT): string {
   const a = ABILITIES[id];
-  const label = a?.creature?.label ?? a?.label ?? id;
-  return label.replace(/ X$/, "");
+  const fallback = (a?.creature?.label ?? a?.label ?? id).replace(/ X$/, "");
+  const localized = t?.(`vocab.keywords.${id}.label`);
+  return (localized ?? fallback).replace(/ X$/, "");
 }
 
 // Parenthesised keyword blurb for a single resolved token template, e.g.
 // " (Raid, Poison)". Empty string when the token has no keywords.
-function tokenKeywordSuffix(tmpl?: TokenTemplate | null): string {
-  const kws = (tmpl?.keywords ?? []).map(tokenKeywordLabel);
-  return kws.length ? ` (${kws.join(", ")})` : "";
+function tokenKeywordSuffix(tmpl?: TokenTemplate | null, t?: SafeT): string {
+  const kws = (tmpl?.keywords ?? []).map((k) => tokenKeywordLabel(k, t));
+  return kws.length ? cfrag(t, "game.convocation_keywords", ` (${kws.join(", ")})`, { keywords: kws.join(", ") }) : "";
 }
 
-// Renders the convocation_tokens array as a human-readable French string.
-// Groups identical entries (same token + same effective stats + same
-// keywords) so the admin sees "2 tokens Goblins des Marais 1/1 et un token
-// Orc 2/2" rather than the raw list, and surfaces each token's keywords in
-// parentheses (e.g. "un token Tigre 3/3 (Raid)"). Falls back to stats-only
-// when the token registry is not available at the call site.
+// Renders the convocation_tokens array as a human-readable string. Groups
+// identical entries (same token + same effective stats + same keywords) so the
+// reader sees "2 tokens Goblins des Marais 1/1 et un token Orc 2/2" rather than
+// the raw list, and surfaces each token's keywords in parentheses. Localised
+// via a SafeT (repli FR sans traducteur — préserve la forge/admin en FR).
 export function formatConvocationTokens(
   tokens: ConvocationTokenDef[],
   registry?: TokenTemplate[],
+  t?: SafeT,
 ): string {
-  if (!tokens.length) return "aucun token";
+  if (!tokens.length) return cfrag(t, "game.convocation_none", "aucun token");
 
   const groups = new Map<
     string,
     { count: number; name: string; atk: number; hp: number; keywords: string }
   >();
 
-  for (const t of tokens) {
-    const tmpl = registry?.find((r) => r.id === t.token_id) ?? null;
-    const atk = t.attack ?? tmpl?.attack ?? 1;
-    const hp = t.health ?? tmpl?.health ?? 1;
-    const name = tmpl?.name ?? "Token";
-    const keywords = (tmpl?.keywords ?? []).map(tokenKeywordLabel).join(", ");
+  for (const tk of tokens) {
+    const tmpl = registry?.find((r) => r.id === tk.token_id) ?? null;
+    const atk = tk.attack ?? tmpl?.attack ?? 1;
+    const hp = tk.health ?? tmpl?.health ?? 1;
+    const name = tokenName(tmpl, t);
+    const keywords = (tmpl?.keywords ?? []).map((k) => tokenKeywordLabel(k, t)).join(", ");
     const key = `${tmpl?.id ?? "x"}|${atk}|${hp}|${name}|${keywords}`;
     const existing = groups.get(key);
     if (existing) existing.count++;
@@ -69,33 +86,37 @@ export function formatConvocationTokens(
   }
 
   const parts = Array.from(groups.values()).map((g) => {
-    const noun = g.count > 1 ? "tokens" : "token";
-    const countStr = g.count === 1 ? "un" : String(g.count);
-    const kwSuffix = g.keywords ? ` (${g.keywords})` : "";
-    return `${countStr} ${noun} ${g.name} ${g.atk}/${g.hp}${kwSuffix}`;
+    const kwSuffix = g.keywords ? cfrag(t, "game.convocation_keywords", ` (${g.keywords})`, { keywords: g.keywords }) : "";
+    const base = g.count > 1
+      ? cfrag(t, "game.convocation_token_many", `${g.count} tokens ${g.name} ${g.atk}/${g.hp}`, { count: g.count, token: g.name, atk: g.atk, hp: g.hp })
+      : cfrag(t, "game.convocation_token_one", `un token ${g.name} ${g.atk}/${g.hp}`, { token: g.name, atk: g.atk, hp: g.hp });
+    return base + kwSuffix;
   });
 
   if (parts.length === 1) return parts[0];
-  if (parts.length === 2) return `${parts[0]} et ${parts[1]}`;
-  return `${parts.slice(0, -1).join(", ")} et ${parts[parts.length - 1]}`;
+  // "a et b" / "a, b et c" — le dernier segment est joint par « et » localisé.
+  const last = parts[parts.length - 1];
+  const head = parts.slice(0, -1).join(", ");
+  return cfrag(t, "game.convocation_and", `${head} et ${last}`, { a: head, b: last });
 }
 
-// Human-readable French blurb for a SINGLE convocation token (creature
-// keywords "convocation" / "convocation_simple", configured via
-// `card.convocation_token_id`). `statOverride` carries the scalable X value
-// (Convocation X creates an X/X) — when > 0 it overrides the template stats,
-// otherwise the template defaults are used. Returns null when the token can't
-// be resolved, so callers keep the generic registry description.
+// Human-readable blurb for a SINGLE convocation token (creature keywords
+// "convocation" / "convocation_simple", configured via `card.convocation_token_id`).
+// `statOverride` carries the scalable X value (Convocation X creates an X/X) —
+// when > 0 it overrides the template stats, otherwise the template defaults are
+// used. Returns null when the token can't be resolved. Localised via SafeT.
 export function formatConvocationToken(
   tokenId: number | null | undefined,
   registry?: TokenTemplate[],
   statOverride?: number | null,
+  t?: SafeT,
 ): string | null {
   const tmpl = tokenId != null ? registry?.find((r) => r.id === tokenId) ?? null : null;
   if (!tmpl) return null;
   const atk = statOverride != null && statOverride > 0 ? statOverride : tmpl.attack;
   const hp = statOverride != null && statOverride > 0 ? statOverride : tmpl.health;
-  return `un token ${tmpl.name} ${atk}/${hp}${tokenKeywordSuffix(tmpl)}`;
+  const name = tokenName(tmpl, t);
+  return cfrag(t, "game.convocation_token_one", `un token ${name} ${atk}/${hp}`, { token: name, atk, hp }) + tokenKeywordSuffix(tmpl, t);
 }
 
 /** Get the display description for a spell keyword, with token details for invocation_multiple */
@@ -124,18 +145,25 @@ export function getSpellKeywordDesc(
   // (override or template defaults). Without it, we fall back to the
   // stats-only description.
   if (kw.id === "invocation_multiple" && card?.convocation_tokens?.length) {
-    desc = `Crée ${formatConvocationTokens(card.convocation_tokens, tokens)}`;
+    desc = cfrag(t, "game.convocation_create_list", `Crée ${formatConvocationTokens(card.convocation_tokens, tokens, t)}`, {
+      content: formatConvocationTokens(card.convocation_tokens, tokens, t),
+    });
   }
 
   // Override for invocation — prefer the resolved token template name
   // (multi-token-per-race safe); fall back to the raw race for legacy
   // entries that only stored kw.race.
   if (kw.id === "invocation") {
-    const tmpl = kw.token_id ? tokens?.find(t => t.id === kw.token_id) : null;
+    const tmpl = kw.token_id ? tokens?.find((tk) => tk.id === kw.token_id) : null;
     if (tmpl) {
-      desc = `Invoque un ${tmpl.name} ${kw.attack ?? tmpl.attack ?? 1}/${kw.health ?? tmpl.health ?? 1}${tokenKeywordSuffix(tmpl)}`;
+      const name = tokenName(tmpl, t);
+      const atk = kw.attack ?? tmpl.attack ?? 1;
+      const hp = kw.health ?? tmpl.health ?? 1;
+      desc = cfrag(t, "game.convocation_invoke_one", `Invoque un ${name} ${atk}/${hp}`, { token: name, atk, hp }) + tokenKeywordSuffix(tmpl, t);
     } else if (kw.race) {
-      desc = `Invoque un ${kw.race} ${kw.attack ?? 1}/${kw.health ?? 1}`;
+      const atk = kw.attack ?? 1;
+      const hp = kw.health ?? 1;
+      desc = cfrag(t, "game.convocation_invoke_race", `Invoque un ${kw.race} ${atk}/${hp}`, { race: kw.race, atk, hp });
     }
   }
 
@@ -143,8 +171,11 @@ export function getSpellKeywordDesc(
   // par défaut depuis le registre. Sans registre/token configuré, garde la
   // description générique du registre.
   if (kw.id === "convocation_simple" && card?.convocation_token_id) {
-    const tmpl = tokens?.find(t => t.id === card.convocation_token_id);
-    if (tmpl) desc = `Crée un ${tmpl.name} ${tmpl.attack}/${tmpl.health}${tokenKeywordSuffix(tmpl)}`;
+    const tmpl = tokens?.find((tk) => tk.id === card.convocation_token_id);
+    if (tmpl) {
+      const name = tokenName(tmpl, t);
+      desc = cfrag(t, "game.convocation_create_one", `Crée un ${name} ${tmpl.attack}/${tmpl.health}`, { token: name, atk: tmpl.attack, hp: tmpl.health }) + tokenKeywordSuffix(tmpl, t);
+    }
   }
 
   return desc;

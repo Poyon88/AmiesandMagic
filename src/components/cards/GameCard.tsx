@@ -50,7 +50,7 @@ function loadSetRegistry(): Promise<CardSet[]> {
   return _setRegistryPromise;
 }
 import { KEYWORD_SYMBOLS as keywordSymbols, toRoman, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
-import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, formatConvocationTokens, formatConvocationToken } from "@/lib/game/spell-keywords";
+import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
@@ -529,10 +529,10 @@ export default function GameCard({
               const displayLabel = baseLabel + modeSuffix;
               let desc = vocab.keywordDesc(kw, x);
               if (kw === "convocations_multiples" && card.convocation_tokens?.length) {
-                desc = `Invocation : crée ${formatConvocationTokens(card.convocation_tokens, effectiveTokens)}`;
+                desc = vocab.convocationPrefix(vocab.convocationTokens(card.convocation_tokens, effectiveTokens));
               } else if (kw === "convocation" || kw === "convocation_simple") {
-                const tokenStr = formatConvocationToken(card.convocation_token_id, effectiveTokens, kw === "convocation" ? x : null);
-                if (tokenStr) desc = `Invocation : crée ${tokenStr}`;
+                const tokenStr = vocab.convocationToken(card.convocation_token_id, effectiveTokens, kw === "convocation" ? x : null);
+                if (tokenStr) desc = vocab.convocationPrefix(tokenStr);
               }
               // Conferred-keyword scope on a spell: green for "all allies".
               const grantScope = !isCreature
