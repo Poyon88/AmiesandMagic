@@ -1,9 +1,6 @@
 // Configuration i18n centrale. Source de vérité pour la liste des langues.
 // La langue source (et le fallback garanti partout) est le français.
-//
-// Ce fichier SUPERSEDE l'ancien `Locale = "fr" | "en"` de
-// `src/lib/i18n/useLocale.ts` : on élargit à 6 langues d'emblée pour éviter
-// la dette de types.
+// 6 langues d'emblée (l'ancien système maison fr/en localStorage a été retiré).
 
 export const SUPPORTED_LOCALES = ["fr", "en", "es", "de", "it", "pt"] as const;
 
