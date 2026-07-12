@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslations } from "next-intl";
 import type { DiscardFromHandEvent } from "@/lib/store/gameStore";
 import { CASCADE_EASE, CASCADE_STAGGER } from "@/lib/fx/overlayMotion";
 import { useCardText } from "./CardTextProvider";
@@ -23,6 +24,7 @@ const DISPLAY_MS = 1800;
 // floats up briefly with a flame motif so the player sees what was lost
 // before the new draws arrive.
 export default function DiscardFromHandOverlay({ event, onComplete }: Props) {
+  const t = useTranslations("game");
   const { localizeName } = useCardText();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -78,7 +80,7 @@ export default function DiscardFromHandOverlay({ event, onComplete }: Props) {
             animate={{ y: 0, opacity: [0, 1, 1, 0] }}
             transition={{ duration: DISPLAY_MS / 1000, times: [0, 0.15, 0.8, 1] }}
           >
-            🔥 Défaussée — {cards.length > 1 ? `${cards.length} cartes` : "1 carte"}
+            {t('discard_label', { count: cards.length })}
           </motion.div>
 
           {/* Cards row */}

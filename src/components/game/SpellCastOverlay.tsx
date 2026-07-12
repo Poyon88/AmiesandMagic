@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGameStore, type SpellCastEvent } from "@/lib/store/gameStore";
 import {
@@ -125,6 +126,7 @@ function SpellTargetArrows({
 }
 
 export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlayProps) {
+  const t = useTranslations("game");
   const [mounted, setMounted] = useState(false);
   const cardRef = useRef<HTMLDivElement | null>(null);
   const tokenTemplates = useGameStore((s) => s.tokenTemplates);
@@ -294,7 +296,7 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
                       // Conferred keyword scope shown via the label note + colour;
                       // the icon itself is left intact (no destructive recolour).
                       const grantScope = card.keyword_instances?.find((k) => k.id === kw)?.grantScope ?? "target";
-                      const grantNote = grantScope === "all_allies" ? " · à tous les alliés" : " · à la créature ciblée";
+                      const grantNote = grantScope === "all_allies" ? t('spell_grant_all_allies') : t('spell_grant_target');
                       return (
                         <div key={kw} style={{ display: "flex", alignItems: "flex-start", gap: 6 }}>
                           <span style={{ flexShrink: 0 }}>
@@ -380,7 +382,7 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
                 color: hexColor,
                 textShadow: `0 0 10px ${hexColor}, 0 2px 4px rgba(0,0,0,0.9)`,
               }}>
-                🛡️ Contresort !
+                {t('spell_countered')}
               </div>
             )}
             </div>

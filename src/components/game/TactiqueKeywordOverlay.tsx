@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { KEYWORD_SYMBOLS } from "@/lib/game/keyword-labels";
 import { KEYWORD_LABELS } from "@/lib/game/keyword-labels";
 import type { Keyword } from "@/lib/game/types";
@@ -14,6 +15,7 @@ interface TactiqueKeywordOverlayProps {
 }
 
 export default function TactiqueKeywordOverlay({ keywords, maxSelections, onConfirm, onCancel }: TactiqueKeywordOverlayProps) {
+  const t = useTranslations("game");
   const [selected, setSelected] = useState<string[]>([]);
 
   const toggle = (kw: string) => {
@@ -34,10 +36,10 @@ export default function TactiqueKeywordOverlay({ keywords, maxSelections, onConf
       }}>
         <div style={{ textAlign: "center" }}>
           <div style={{ fontSize: 18, fontWeight: 700, color: "#2ecc71", fontFamily: "'Cinzel',serif" }}>
-            📋 Tactique
+            {t('tactique_title')}
           </div>
           <p style={{ fontSize: 13, color: "#bbb", fontFamily: "'Crimson Text',serif", marginTop: 4 }}>
-            Choisissez {maxSelections} capacité{maxSelections > 1 ? "s" : ""} à transférer
+            {t('tactique_subtitle', { count: maxSelections })}
           </p>
         </div>
 
@@ -78,7 +80,7 @@ export default function TactiqueKeywordOverlay({ keywords, maxSelections, onConf
               fontSize: 13, fontFamily: "'Cinzel',serif", cursor: "pointer",
             }}
           >
-            Annuler
+            {t('action_cancel')}
           </button>
           <button
             onClick={() => selected.length > 0 && onConfirm(selected)}
@@ -91,7 +93,7 @@ export default function TactiqueKeywordOverlay({ keywords, maxSelections, onConf
               fontWeight: 700,
             }}
           >
-            Confirmer ({selected.length}/{maxSelections})
+            {t('tactique_confirm', { selected: selected.length, max: maxSelections })}
           </button>
         </div>
       </div>

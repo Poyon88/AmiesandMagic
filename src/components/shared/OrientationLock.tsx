@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 /**
  * Full-screen overlay shown when a phone is held in portrait. The game board
@@ -12,6 +13,7 @@ import { useEffect, useState } from "react";
  * we just observe the viewport and render this overlay when needed.
  */
 export default function OrientationLock() {
+  const t = useTranslations("common");
   const [isPortraitPhone, setIsPortraitPhone] = useState(false);
 
   useEffect(() => {
@@ -63,11 +65,10 @@ export default function OrientationLock() {
         📱
       </div>
       <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: 1 }}>
-        Tournez votre téléphone
+        {t('rotate_device')}
       </div>
       <div style={{ fontSize: 14, opacity: 0.75, maxWidth: 320, lineHeight: 1.5 }}>
-        Armies & Magic se joue en mode paysage. Mettez votre appareil à
-        l&apos;horizontale pour continuer.
+        {t('rotate_device_hint')}
       </div>
       <style>{`
         @keyframes amg-rotate-hint {

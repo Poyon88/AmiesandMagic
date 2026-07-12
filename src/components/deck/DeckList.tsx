@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { DECK_SIZE } from "@/lib/game/constants";
@@ -22,6 +23,7 @@ const NONE = "__none__";
 
 export default function DeckList({ decks }: { decks: DeckWithCount[] }) {
   const router = useRouter();
+  const t = useTranslations("deck");
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
   const [selectedFormat, setSelectedFormat] = useState<string>(ALL);
@@ -32,13 +34,13 @@ export default function DeckList({ decks }: { decks: DeckWithCount[] }) {
     const byId = new Map<number, string>();
     let hasNone = false;
     for (const d of decks) {
-      if (d.formatId != null) byId.set(d.formatId, d.formatName ?? `Format ${d.formatId}`);
+      if (d.formatId != null) byId.set(d.formatId, d.formatName ?? t("format_number", { id: d.formatId }));
       else hasNone = true;
     }
     const opts = [...byId.entries()]
       .sort((a, b) => a[0] - b[0])
       .map(([id, name]) => ({ value: String(id), label: name }));
-    if (hasNone) opts.push({ value: NONE, label: "Sans format" });
+    if (hasNone) opts.push({ value: NONE, label: t("no_format") });
     return opts;
   })();
 
@@ -78,14 +80,15 @@ export default function DeckList({ decks }: { decks: DeckWithCount[] }) {
         <div className="am-animate-rise flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="font-[family-name:var(--font-cinzel),serif] text-xs font-bold uppercase tracking-[0.32em] text-am-arcane-bright">
-              Compose ton armée
+              {t("compose_your_army")}
             </p>
             <h1 className="am-foil-text mt-2 font-[family-name:var(--font-cinzel),serif] text-4xl font-bold sm:text-5xl">
-              My Decks
+              {t("my_decks")}
             </h1>
             <p className="mt-2 font-[family-name:var(--font-crimson),serif] text-sm italic text-am-ink-soft">
-              {filteredDecks.length} deck{filteredDecks.length !== 1 ? "s" : ""}
-              {selectedFormat === ALL ? " in your armory" : " in this format"}
+              {selectedFormat === ALL
+                ? t("decks_in_armory", { count: filteredDecks.length })
+                : t("decks_in_format", { count: filteredDecks.length })}
             </p>
           </div>
           <div className="flex gap-3">
@@ -94,14 +97,14 @@ export default function DeckList({ decks }: { decks: DeckWithCount[] }) {
               size="sm"
               onClick={() => router.push("/decks/builder")}
             >
-              + New Deck
+              + {t("new_deck")}
             </AmButton>
             <AmButton
               variant="ghost"
               size="sm"
               onClick={() => router.push("/")}
             >
-              Back to Menu
+              {t("back_to_menu")}
             </AmButton>
           </div>
         </div>
@@ -112,9 +115,9 @@ export default function DeckList({ decks }: { decks: DeckWithCount[] }) {
         {formatOptions.length > 1 && (
           <div className="am-animate-fade mb-8 flex flex-wrap items-center justify-center gap-2" style={{ animationDelay: "0.12s" }}>
             <span className="font-[family-name:var(--font-cinzel),serif] mr-1 text-xs uppercase tracking-[0.18em] text-am-ink-soft">
-              Format
+              {t("format")}
             </span>
-            {[{ value: ALL, label: "All" }, ...formatOptions].map((opt) => {
+            {[{ value: ALL, label: t("all") }, ...formatOptions].map((opt) => {
               const active = selectedFormat === opt.value;
               return (
                 <button
@@ -139,23 +142,23 @@ export default function DeckList({ decks }: { decks: DeckWithCount[] }) {
         {decks.length === 0 ? (
           <div className="am-glass am-animate-rise flex flex-col items-center gap-6 px-6 py-20 text-center">
             <p className="font-[family-name:var(--font-crimson),serif] text-xl italic text-am-ink-soft">
-              You don&apos;t have any decks yet
+              {t("no_decks_yet")}
             </p>
             <AmButton
               variant="gold"
               size="md"
               onClick={() => router.push("/decks/builder")}
             >
-              Create Your First Deck
+              {t("create_first_deck")}
             </AmButton>
           </div>
         ) : filteredDecks.length === 0 ? (
           <div className="am-glass am-animate-rise flex flex-col items-center gap-6 px-6 py-20 text-center">
             <p className="font-[family-name:var(--font-crimson),serif] text-xl italic text-am-ink-soft">
-              No decks in this format
+              {t("no_decks_in_format")}
             </p>
             <AmButton variant="ghost" size="md" onClick={() => setSelectedFormat(ALL)}>
-              Show all decks
+              {t("show_all_decks")}
             </AmButton>
           </div>
         ) : (
@@ -196,8 +199,8 @@ export default function DeckList({ decks }: { decks: DeckWithCount[] }) {
                           isValid ? "bg-am-jade" : "bg-am-gold"
                         }`}
                       />
-                      {deck.cardCount}/{DECK_SIZE} cards
-                      {isValid && " (Valid)"}
+                      {t("cards_count_label", { count: deck.cardCount, size: DECK_SIZE })}
+                      {isValid && t("valid_suffix")}
                     </span>
                     {deck.formatName && (
                       <span className="inline-flex items-center rounded-full border border-am-arcane/40 bg-am-arcane/10 px-3 py-1 text-xs font-medium text-am-arcane-bright">
@@ -215,7 +218,7 @@ export default function DeckList({ decks }: { decks: DeckWithCount[] }) {
                       }
                       className="flex-1 rounded-lg bg-am-azure/15 py-2 text-sm font-medium text-am-azure transition-colors hover:bg-am-azure/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-am-azure focus-visible:ring-offset-2 focus-visible:ring-offset-am-bg-0"
                     >
-                      Edit
+                      {t("edit")}
                     </button>
 
                     {confirmDeleteId === deck.id ? (
@@ -225,13 +228,13 @@ export default function DeckList({ decks }: { decks: DeckWithCount[] }) {
                           disabled={deletingId === deck.id}
                           className="rounded-lg bg-am-ember px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-am-ember/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-am-ember focus-visible:ring-offset-2 focus-visible:ring-offset-am-bg-0 disabled:opacity-50"
                         >
-                          {deletingId === deck.id ? "..." : "Confirm"}
+                          {deletingId === deck.id ? "..." : t("confirm")}
                         </button>
                         <button
                           onClick={() => setConfirmDeleteId(null)}
                           className="rounded-lg border border-am-gold/30 bg-am-bg-2 px-3 py-2 text-sm text-am-ink-soft transition-colors hover:text-am-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-am-gold focus-visible:ring-offset-2 focus-visible:ring-offset-am-bg-0"
                         >
-                          Cancel
+                          {t("cancel")}
                         </button>
                       </div>
                     ) : (
@@ -239,7 +242,7 @@ export default function DeckList({ decks }: { decks: DeckWithCount[] }) {
                         onClick={() => setConfirmDeleteId(deck.id)}
                         className="rounded-lg bg-am-ember/15 px-3 py-2 text-sm font-medium text-am-ember transition-colors hover:bg-am-ember/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-am-ember focus-visible:ring-offset-2 focus-visible:ring-offset-am-bg-0"
                       >
-                        Delete
+                        {t("delete")}
                       </button>
                     )}
                   </div>

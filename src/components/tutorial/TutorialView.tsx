@@ -36,6 +36,7 @@ type Track = "beginner" | "tcg";
 
 export default function TutorialView({ username, goldBalance }: TutorialViewProps) {
   const t = useTranslations("home");
+  const tt = useTranslations("tutorial");
   const [track, setTrack] = useState<Track>("beginner");
 
   return (
@@ -57,17 +58,17 @@ export default function TutorialView({ username, goldBalance }: TutorialViewProp
         <div className="am-animate-rise mb-10 md:mb-12">
           <AmHeading
             as="h1"
-            eyebrow="Apprends l'art du duel"
-            subtitle="Armies & Magic — duel de cartes médiéval-fantastique"
+            eyebrow={tt('page_eyebrow')}
+            subtitle={tt('page_subtitle')}
           >
-            Comment jouer
+            {tt('page_title')}
           </AmHeading>
         </div>
 
         {/* Track switch */}
         <div className="flex justify-center gap-3 mb-10 am-animate-fade" style={{ animationDelay: "120ms" }}>
-          <TrackButton active={track === "beginner"} onClick={() => setTrack("beginner")} label="Débutant — guide complet" />
-          <TrackButton active={track === "tcg"} onClick={() => setTrack("tcg")} label="Joueur de TCG — l'essentiel" />
+          <TrackButton active={track === "beginner"} onClick={() => setTrack("beginner")} label={tt('track_beginner')} />
+          <TrackButton active={track === "tcg"} onClick={() => setTrack("tcg")} label={tt('track_tcg')} />
         </div>
 
         <div className="max-w-4xl mx-auto">
@@ -145,24 +146,25 @@ const Hi = ({ children }: { children: React.ReactNode }) => (
 
 // ── Beginner guide (complete) ─────────────────────────────────────────────────
 function BeginnerGuide() {
+  const tt = useTranslations("tutorial");
   return (
     <>
-      <Section title="Le but du jeu">
+      <Section title={tt('goal_title')}>
         <P>
           Chaque joueur incarne un <Hi>héros</Hi> qui démarre avec <Hi>{HERO_MAX_HP} points de vie</Hi>. Vous gagnez
           la partie en réduisant les points de vie du héros adverse à <Hi>0</Hi>. Pour cela, vous invoquez des
           créatures et lancez des sorts.
         </P>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
-          <Stat value={`${HERO_MAX_HP} PV`} label="Héros au départ" />
-          <Stat value={`${STARTING_HAND_SIZE} cartes`} label="Main de départ" />
-          <Stat value={`${STARTING_MANA} → ${MAX_MANA}`} label="Mana (croît chaque tour)" />
-          <Stat value={`${MAX_BOARD_SIZE}`} label="Créatures max sur le terrain" />
+          <Stat value={`${HERO_MAX_HP} PV`} label={tt('stat_hero_start')} />
+          <Stat value={`${STARTING_HAND_SIZE} cartes`} label={tt('stat_starting_hand')} />
+          <Stat value={`${STARTING_MANA} → ${MAX_MANA}`} label={tt('stat_mana_growth')} />
+          <Stat value={`${MAX_BOARD_SIZE}`} label={tt('stat_max_board')} />
         </div>
       </Section>
 
-      <Section title="Le déroulement d'un tour">
-        <P>Au début de chacun de vos tours, dans l'ordre :</P>
+      <Section title={tt('turn_title')}>
+        <P>{tt('turn_intro')}</P>
         <Bullets items={[
           <>Votre <Hi>mana maximum augmente de 1</Hi> (jusqu'à {MAX_MANA}), puis votre mana est entièrement rechargé.</>,
           <>Vous <Hi>piochez 1 carte</Hi>.</>,
@@ -176,7 +178,7 @@ function BeginnerGuide() {
         </P>
       </Section>
 
-      <Section title="La main et la pioche">
+      <Section title={tt('hand_title')}>
         <P>
           Vous démarrez avec <Hi>{STARTING_HAND_SIZE} cartes</Hi> et pouvez en remplacer autant que vous voulez lors
           du <Hi>mulligan</Hi> (avant le début de la partie). Votre main peut contenir au maximum
@@ -185,7 +187,7 @@ function BeginnerGuide() {
         </P>
       </Section>
 
-      <Section title="Les créatures">
+      <Section title={tt('creatures_title')}>
         <P>
           Une créature a une <Hi>attaque (ATK)</Hi> et des <Hi>points de vie (PV)</Hi>. Quand vous l'invoquez, elle
           arrive avec le <Hi>mal d'invocation</Hi> : elle ne peut pas attaquer le tour où elle est posée (sauf si elle
@@ -194,7 +196,7 @@ function BeginnerGuide() {
         </P>
       </Section>
 
-      <Section title="Les sorts">
+      <Section title={tt('spells_title')}>
         <P>
           Un sort produit un effet immédiat puis part au <Hi>cimetière</Hi>. Certains sorts nécessitent une
           <Hi> cible</Hi> (une créature, un héros…). Nouveauté : un sort peut aussi <Hi>conférer une capacité de
@@ -203,7 +205,7 @@ function BeginnerGuide() {
         </P>
       </Section>
 
-      <Section title="Le combat">
+      <Section title={tt('combat_title')}>
         <P>
           Quand une créature en attaque une autre, les deux s'infligent <Hi>simultanément</Hi> leur attaque. Si elle
           attaque le héros adverse, elle lui inflige son ATK. Quelques règles importantes :
@@ -215,10 +217,10 @@ function BeginnerGuide() {
           <><Hi>Résistance X</Hi> réduit les dégâts reçus, <Hi>Armure</Hi> divise par deux les dégâts de combat.</>,
           <><Hi>Esquive</Hi> évite la première attaque du tour.</>,
         ]} />
-        <P>La liste complète des capacités est en bas de page.</P>
+        <P>{tt('combat_see_full_list')}</P>
       </Section>
 
-      <Section title="Le héros et son pouvoir">
+      <Section title={tt('hero_title')}>
         <P>
           Au-delà de ses {HERO_MAX_HP} PV, votre héros possède un <Hi>pouvoir</Hi> utilisable <Hi>une fois par
           tour</Hi> en payant son coût en mana. Selon le héros, il peut conférer une capacité à une créature,
@@ -226,7 +228,7 @@ function BeginnerGuide() {
         </P>
       </Section>
 
-      <Section title="Les coûts alternatifs">
+      <Section title={tt('alt_costs_title')}>
         <P>
           Certaines cartes puissantes coûtent, <Hi>en plus du mana</Hi> : des <Hi>points de vie</Hi> de votre héros,
           la <Hi>défausse</Hi> de cartes de votre main, ou le <Hi>sacrifice</Hi> de créatures alliées. Ces coûts
@@ -234,7 +236,7 @@ function BeginnerGuide() {
         </P>
       </Section>
 
-      <Section title="Construire un deck">
+      <Section title={tt('deck_title')}>
         <P>Un deck contient exactement <Hi>{DECK_SIZE} cartes</Hi> et suit ces règles :</P>
         <Bullets items={[
           <>Une <Hi>seule faction</Hi> principale par deck.</>,
@@ -251,18 +253,19 @@ function BeginnerGuide() {
 
 // ── TCG-player guide (concise) ────────────────────────────────────────────────
 function TcgGuide() {
+  const tt = useTranslations("tutorial");
   return (
     <>
-      <Section title="Les chiffres clés">
+      <Section title={tt('tcg_numbers_title')}>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <Stat value={`${HERO_MAX_HP}`} label="PV du héros" />
-          <Stat value={`${DECK_SIZE}`} label="Cartes / deck (exact)" />
-          <Stat value={`${STARTING_HAND_SIZE} → ${MAX_HAND_SIZE}`} label="Main (départ → max)" />
-          <Stat value={`${STARTING_MANA} → ${MAX_MANA}`} label="Mana (+1 / tour)" />
+          <Stat value={`${HERO_MAX_HP}`} label={tt('stat_hero_hp')} />
+          <Stat value={`${DECK_SIZE}`} label={tt('stat_deck_exact')} />
+          <Stat value={`${STARTING_HAND_SIZE} → ${MAX_HAND_SIZE}`} label={tt('stat_hand_range')} />
+          <Stat value={`${STARTING_MANA} → ${MAX_MANA}`} label={tt('stat_mana_per_turn')} />
         </div>
       </Section>
 
-      <Section title="Boucle de jeu (spécificités A&M)">
+      <Section title={tt('tcg_gameloop_title')}>
         <Bullets items={[
           <>Début de tour : <Hi>+1 mana max</Hi> (cap {MAX_MANA}), recharge complète, <Hi>pioche 1</Hi>.</>,
           <>Victoire : héros adverse à <Hi>0 PV</Hi>. Deck vide → <Hi>fatigue</Hi> croissante.</>,
@@ -272,7 +275,7 @@ function TcgGuide() {
         ]} />
       </Section>
 
-      <Section title="Deckbuilding">
+      <Section title={tt('tcg_deckbuilding_title')}>
         <Bullets items={[
           <><Hi>Mono-faction</Hi>, <Hi>≤ 2 clans</Hi>, <Hi>≤ 4 Mercenaires</Hi>.</>,
           <>Slots de rareté : <Hi>2 / 4 / 6 / 8 / 30</Hi> (Lég / Épique / Rare / Peu Commune / Commune).</>,
@@ -282,7 +285,7 @@ function TcgGuide() {
         ]} />
       </Section>
 
-      <Section title="Combat — résolution">
+      <Section title={tt('tcg_combat_title')}>
         <Bullets items={[
           <>Échange <Hi>simultané</Hi> par défaut ; <Hi>Première Frappe</Hi> frappe avant.</>,
           <>Défense : <Hi>Bouclier divin</Hi> (absorbe 1 coup), <Hi>Résistance X</Hi> (−X, min 1), <Hi>Armure</Hi> (½ dégâts de combat), <Hi>Indestructible</Hi> (immunise le combat), <Hi>Transcendance</Hi> (immunise les sorts), <Hi>Esquive</Hi>.</>,
@@ -292,7 +295,7 @@ function TcgGuide() {
         ]} />
       </Section>
 
-      <Section title="Héros & sorts">
+      <Section title={tt('tcg_hero_spells_title')}>
         <Bullets items={[
           <>Pouvoir de héros : <Hi>1× / tour</Hi>, coût en mana. 3 modes : conférer un mot-clé, déclencher un effet de sort, ou activer une <Hi>aura</Hi> empilable.</>,
           <>Coûts alternatifs (cumulatifs, non réductibles) : <Hi>PV</Hi>, <Hi>défausse</Hi>, <Hi>sacrifice</Hi>.</>,
@@ -306,6 +309,7 @@ function TcgGuide() {
 
 // ── Auto-generated keyword reference (from the ability registry) ──────────────
 function KeywordReference() {
+  const tt = useTranslations("tutorial");
   const [query, setQuery] = useState("");
 
   const creature = useMemo(
@@ -339,10 +343,10 @@ function KeywordReference() {
     <section className="mt-16 am-animate-rise">
       <AmHeading
         as="h2"
-        eyebrow="Le lexique du combat"
-        subtitle="Référence complète, toujours à jour avec le jeu. « X » et « Y » sont des valeurs réglées sur chaque carte."
+        eyebrow={tt('lexicon_eyebrow')}
+        subtitle={tt('lexicon_subtitle')}
       >
-        Toutes les capacités
+        {tt('lexicon_title')}
       </AmHeading>
 
       <div className="flex justify-center mt-7 mb-9">
@@ -350,18 +354,18 @@ function KeywordReference() {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Rechercher une capacité…"
+          placeholder={tt('search_placeholder')}
           className={`${crimson} w-full max-w-md px-4 py-3 rounded-[var(--am-r-md)] bg-am-bg-1 text-am-ink border border-am-gold/30 outline-none transition-shadow focus-visible:ring-2 focus-visible:ring-am-gold focus-visible:ring-offset-2 focus-visible:ring-offset-am-bg-0 placeholder:text-am-ink-soft/60`}
           style={{ fontSize: 16 }}
         />
       </div>
 
-      <KeywordGroup title={`Capacités de créature (${creatureF.length})`} items={creatureF} />
-      <KeywordGroup title={`Capacités de sort (${spellF.length})`} items={spellF} />
+      <KeywordGroup title={tt('creature_abilities_group', { count: creatureF.length })} items={creatureF} />
+      <KeywordGroup title={tt('spell_abilities_group', { count: spellF.length })} items={spellF} />
 
       {creatureF.length === 0 && spellF.length === 0 && (
         <p className={`${crimson} italic text-am-ink-soft text-center py-8`} style={{ fontSize: 16 }}>
-          Aucune capacité ne correspond à « {query} ».
+          {tt('no_ability_match', { query })}
         </p>
       )}
     </section>

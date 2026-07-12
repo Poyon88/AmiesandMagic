@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { useAudioStore } from "@/lib/store/audioStore";
 
 interface SettingsModalProps {
@@ -13,6 +14,7 @@ interface SettingsModalProps {
 }
 
 export default function SettingsModal({ isOpen, onClose, onConcede }: SettingsModalProps) {
+  const t = useTranslations("common");
   const { settings, setMusicVolume, toggleMusicMute, setSfxVolume, toggleSfxMute } = useAudioStore();
   const [concedeArmed, setConcedeArmed] = useState(false);
   const armTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -67,7 +69,7 @@ export default function SettingsModal({ isOpen, onClose, onConcede }: SettingsMo
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
           <h2 style={{ fontSize: 16, fontWeight: 700, letterSpacing: 1, margin: 0 }}>
-            Réglages
+            {t('settings_title')}
           </h2>
           <button
             onClick={onClose}
@@ -88,7 +90,7 @@ export default function SettingsModal({ isOpen, onClose, onConcede }: SettingsMo
         <div style={{ marginBottom: 20 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
             <label style={{ fontSize: 12, letterSpacing: 0.5 }}>
-              Musique
+              {t('music')}
             </label>
             <button
               onClick={toggleMusicMute}
@@ -104,7 +106,7 @@ export default function SettingsModal({ isOpen, onClose, onConcede }: SettingsMo
                 cursor: "pointer",
               }}
             >
-              {settings.musicMuted ? "Muet" : "Actif"}
+              {settings.musicMuted ? t('muted') : t('active')}
             </button>
           </div>
           <input
@@ -129,7 +131,7 @@ export default function SettingsModal({ isOpen, onClose, onConcede }: SettingsMo
         <div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
             <label style={{ fontSize: 12, letterSpacing: 0.5 }}>
-              Effets sonores
+              {t('sound_effects')}
             </label>
             <button
               onClick={toggleSfxMute}
@@ -145,7 +147,7 @@ export default function SettingsModal({ isOpen, onClose, onConcede }: SettingsMo
                 cursor: "pointer",
               }}
             >
-              {settings.sfxMuted ? "Muet" : "Actif"}
+              {settings.sfxMuted ? t('muted') : t('active')}
             </button>
           </div>
           <input
@@ -190,7 +192,7 @@ export default function SettingsModal({ isOpen, onClose, onConcede }: SettingsMo
                 transition: "background 0.15s, color 0.15s, border 0.15s",
               }}
             >
-              {concedeArmed ? "⚠ Confirmer la concession" : "Concéder le match"}
+              {concedeArmed ? t('concede_confirm') : t('concede_match')}
             </button>
             {concedeArmed && (
               <p style={{
@@ -201,7 +203,7 @@ export default function SettingsModal({ isOpen, onClose, onConcede }: SettingsMo
                 fontFamily: "'Cinzel', serif",
                 letterSpacing: 0.5,
               }}>
-                Cliquez à nouveau pour confirmer · annulation auto dans 5s
+                {t('concede_hint')}
               </p>
             )}
           </div>

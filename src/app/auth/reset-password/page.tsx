@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import AuthShell, { authFieldClass, authLabelClass } from "@/components/auth/AuthShell";
 
@@ -10,6 +11,7 @@ import AuthShell, { authFieldClass, authLabelClass } from "@/components/auth/Aut
 // already authenticated at this point — we just collect a new password
 // and call updateUser. On success they're redirected to /.
 export default function ResetPasswordPage() {
+  const t = useTranslations("auth");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
@@ -35,24 +37,24 @@ export default function ResetPasswordPage() {
     setError("");
     setInfo("");
     if (password.length < 8) {
-      setError("Le mot de passe doit faire au moins 8 caractères.");
+      setError(t("password_min_length"));
       return;
     }
     if (password !== confirm) {
-      setError("Les deux mots de passe ne correspondent pas.");
+      setError(t("passwords_mismatch"));
       return;
     }
     setLoading(true);
     try {
       const { error: updateErr } = await supabase.auth.updateUser({ password });
       if (updateErr) throw updateErr;
-      setInfo("Mot de passe mis à jour. Redirection...");
+      setInfo(t("password_updated_redirect"));
       setTimeout(() => {
         router.push("/");
         router.refresh();
       }, 800);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Erreur inconnue.");
+      setError(err instanceof Error ? err.message : t("unknown_error"));
     } finally {
       setLoading(false);
     }
@@ -60,14 +62,14 @@ export default function ResetPasswordPage() {
 
   return (
     <AuthShell
-      heading="Réinitialiser le mot de passe"
-      sub="Choisissez un nouveau mot de passe pour votre compte."
+      heading={t("reset_heading")}
+      sub={t("reset_sub")}
       footer={
         <button
           onClick={() => router.push("/login")}
           className="w-full py-2 text-sm text-am-ink-faint hover:text-am-gold transition-colors"
         >
-          ← Retour à la connexion
+          {t("back_to_login")}
         </button>
       }
     >
@@ -80,8 +82,7 @@ export default function ResetPasswordPage() {
             color: "var(--am-ember)",
           }}
         >
-          Lien de réinitialisation expiré ou invalide. Repartez de la page de
-          connexion et redemandez un email.
+          {t("reset_link_invalid")}
         </div>
       )}
       {error && (
@@ -111,7 +112,7 @@ export default function ResetPasswordPage() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className={authLabelClass}>Nouveau mot de passe</label>
+          <label className={authLabelClass}>{t("new_password_label")}</label>
           <input
             type="password"
             value={password}
@@ -120,11 +121,11 @@ export default function ResetPasswordPage() {
             minLength={8}
             disabled={hasSession === false}
             className={authFieldClass}
-            placeholder="Min 8 caractères"
+            placeholder={t("password_min_placeholder")}
           />
         </div>
         <div>
-          <label className={authLabelClass}>Confirmer</label>
+          <label className={authLabelClass}>{t("confirm_label")}</label>
           <input
             type="password"
             value={confirm}
@@ -133,7 +134,7 @@ export default function ResetPasswordPage() {
             minLength={8}
             disabled={hasSession === false}
             className={authFieldClass}
-            placeholder="Retapez le mot de passe"
+            placeholder={t("confirm_placeholder")}
           />
         </div>
         <button
@@ -141,7 +142,7 @@ export default function ResetPasswordPage() {
           disabled={loading || hasSession === false}
           className="am-btn am-btn-gold am-btn-sheen w-full py-3 text-base disabled:opacity-50"
         >
-          {loading ? "Mise à jour..." : "Mettre à jour"}
+          {loading ? t("updating") : t("update")}
         </button>
       </form>
     </AuthShell>

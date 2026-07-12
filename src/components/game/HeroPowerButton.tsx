@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createPortal } from "react-dom";
+import { useTranslations } from "next-intl";
 import type { HeroDefinition } from "@/lib/game/types";
 
 const POWER_IMAGES: Record<string, string> = {
@@ -33,6 +34,7 @@ export default function HeroPowerButton({
   mana,
   onClick,
 }: HeroPowerButtonProps) {
+  const t = useTranslations("game");
   const [hovered, setHovered] = useState(false);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
 
@@ -110,7 +112,7 @@ export default function HeroPowerButton({
             <div className="text-xs font-bold text-foreground">{heroDef.powerName}</div>
             <div className="text-[10px] text-foreground/60 mt-0.5">{heroDef.powerDescription}</div>
             {isUsed && (
-              <div className="text-[10px] text-accent mt-1 font-medium">Used this turn</div>
+              <div className="text-[10px] text-accent mt-1 font-medium">{t('power_used_this_turn')}</div>
             )}
           </div>,
           document.body

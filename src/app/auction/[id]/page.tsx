@@ -1,8 +1,12 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import AuctionDetail from "@/components/auction/AuctionDetail";
 
-export const metadata = { title: "Détail Enchère — Armies & Magic" };
+export async function generateMetadata() {
+  const t = await getTranslations("auction");
+  return { title: t("detail_page_title") };
+}
 
 export default async function AuctionDetailPage({
   params,

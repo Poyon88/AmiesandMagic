@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { KEYWORDS, FACTIONS, RARITY_MAP } from '@/lib/card-engine/constants';
 import KeywordIcon from '@/components/shared/KeywordIcon';
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, getSpellKeywordDesc, getSpellKeywordLabel, formatConvocationTokens } from '@/lib/game/spell-keywords';
@@ -170,6 +171,7 @@ interface CardData {
 
 export default function CardVisual({ card, loading, compact = false, imageUrl, onImageChange, tokens }: { card: CardData | null; loading: boolean; compact?: boolean; imageUrl?: string | null; onImageChange?: (url: string) => void; tokens?: TokenTemplate[] }) {
   const [hovered, setHovered] = useState(false);
+  const t = useTranslations("forge");
   const W = compact ? 180 : 300;
   const H = compact ? 252 : 420;
   const s = compact ? 0.6 : 1;
@@ -183,7 +185,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
       color: "#2a2a4a", fontFamily: "'Cinzel',serif", gap: 10,
     }}>
       <div style={{ fontSize: 40 * s }}>⚗️</div>
-      {!compact && <div style={{ fontSize: 11 }}>Forgez votre première carte</div>}
+      {!compact && <div style={{ fontSize: 11 }}>{t('forge_first_card')}</div>}
     </div>
   );
 
@@ -196,7 +198,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
       color: "#2a2a4a", fontFamily: "'Cinzel',serif", gap: 12,
     }}>
       <div style={{ fontSize: 36 * s, animation: "spin 2s linear infinite" }}>⚙️</div>
-      {!compact && <div style={{ fontSize: 10 }}>Forge en cours…</div>}
+      {!compact && <div style={{ fontSize: 10 }}>{t('forging')}</div>}
     </div>
   );
 
@@ -287,7 +289,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
         {/* Cost row: mana + alternative costs (life/discard/sacrifice) */}
         <div style={{ display: "flex", flexDirection: "row", gap: 4 * s, alignItems: "center", flexShrink: 0 }}>
           {card!.mana > 0 && (
-            <div title={`Coût en mana : ${card!.mana}`} style={{
+            <div title={t('mana_cost_title', { mana: card!.mana })} style={{
               width: 28 * s, height: 28 * s, borderRadius: "50%",
               background: "radial-gradient(circle,#1a3a6a,#0d1f3c)",
               border: `${2 * s}px solid #74b9ff`,
@@ -297,7 +299,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
             }}>{card!.mana}</div>
           )}
           {card!.lifeCost && card!.lifeCost > 0 ? (
-            <div title={`Coût en vie : ${card!.lifeCost}`} style={{
+            <div title={t('life_cost_title', { life: card!.lifeCost })} style={{
               width: 28 * s, height: 28 * s, borderRadius: "50%",
               background: "radial-gradient(circle,#6a1a1a,#3c0d0d)",
               border: `${2 * s}px solid #e74c3c`,
@@ -311,7 +313,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
             </div>
           ) : null}
           {card!.discardCost && card!.discardCost > 0 ? (
-            <div title={`Défaussez ${card!.discardCost} carte${card!.discardCost > 1 ? "s" : ""}`} style={{
+            <div title={t('discard_cost_title', { count: card!.discardCost })} style={{
               width: 24 * s, height: 28 * s, borderRadius: 5 * s,
               background: "radial-gradient(circle,#3a3a4a,#1f1f2c)",
               border: `${2 * s}px solid #bbbbbb`,
@@ -325,7 +327,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
             </div>
           ) : null}
           {card!.sacrificeCost && card!.sacrificeCost > 0 ? (
-            <div title={`Sacrifiez ${card!.sacrificeCost} créature${card!.sacrificeCost > 1 ? "s" : ""}`} style={{
+            <div title={t('sacrifice_cost_title', { count: card!.sacrificeCost })} style={{
               width: 28 * s, height: 28 * s, borderRadius: "50%",
               background: "radial-gradient(circle,#3a1a3a,#1f0d1f)",
               border: `${2 * s}px solid #a060a0`,
@@ -600,7 +602,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
               const detailScope = card!.type !== "Unité"
                 ? (card!.keywordGrantScope?.[kw] === "all_allies" ? "all_allies" : "target")
                 : null;
-              const detailNote = detailScope === "all_allies" ? " (à tous les alliés)" : detailScope === "target" ? " (à la créature ciblée)" : "";
+              const detailNote = detailScope === "all_allies" ? t('detail_note_all_allies') : detailScope === "target" ? t('detail_note_target') : "";
               return (
                 <div key={kw} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
                   <span style={{ flexShrink: 0 }}><KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={18 * s} keyword={FR_LABEL_TO_ID[kw] ?? kw} /></span>

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import type { HeroPowerCastEvent } from "@/lib/store/gameStore";
 import { emitImpact } from "@/lib/fx/impactFx";
@@ -27,6 +28,7 @@ const HERO_IMAGES: Record<string, string> = {
 };
 
 export default function HeroPowerOverlay({ event, onComplete }: HeroPowerOverlayProps) {
+  const t = useTranslations("game");
   const [mounted, setMounted] = useState(false);
   const cardRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => setMounted(true), []);
@@ -186,7 +188,7 @@ export default function HeroPowerOverlay({ event, onComplete }: HeroPowerOverlay
                 fontFamily: "'Crimson Text', serif",
                 textShadow: "0 1px 2px rgba(0,0,0,0.95)",
               }}>
-                Pouvoir héroïque activé
+                {t('power_hero_activated')}
               </div>
             </div>
           </motion.div>

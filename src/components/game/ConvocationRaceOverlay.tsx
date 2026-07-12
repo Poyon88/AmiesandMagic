@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import type { TokenTemplate } from "@/lib/game/types";
 
 interface ConvocationRaceOverlayProps {
@@ -9,6 +10,7 @@ interface ConvocationRaceOverlayProps {
 }
 
 export default function ConvocationRaceOverlay({ templates, onSelect, onCancel }: ConvocationRaceOverlayProps) {
+  const t = useTranslations("game");
   return (
     <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center">
       <div style={{
@@ -19,10 +21,10 @@ export default function ConvocationRaceOverlay({ templates, onSelect, onCancel }
       }}>
         <div style={{ textAlign: "center" }}>
           <div style={{ fontSize: 18, fontWeight: 700, color: "#f1c40f", fontFamily: "'Cinzel',serif" }}>
-            📣 Convocation
+            {t('convocation_title')}
           </div>
           <p style={{ fontSize: 13, color: "#bbb", fontFamily: "'Crimson Text',serif", marginTop: 4 }}>
-            Choisissez la race du token à invoquer
+            {t('convocation_subtitle')}
           </p>
         </div>
 
@@ -69,7 +71,7 @@ export default function ConvocationRaceOverlay({ templates, onSelect, onCancel }
             transition: "all 0.15s",
           }}
         >
-          Annuler
+          {t('action_cancel')}
         </button>
       </div>
     </div>

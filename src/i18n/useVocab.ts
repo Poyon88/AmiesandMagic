@@ -26,7 +26,19 @@ export interface Vocab {
   factionName: (faction: string | null | undefined) => string;
   rarityLabel: (rarity: string | null | undefined) => string;
   clanName: (clan: string | null | undefined) => string;
+  // Suffixe de déclenchement affiché après un mot-clé (« Provocation · à la
+  // mort »). Renvoie une chaîne vide pour le mode par défaut (invocation) et
+  // les modes sans suffixe. Fallback FR intégré.
+  modeSuffix: (mode: string | null | undefined) => string;
 }
+
+// Suffixes FR par défaut, également fallback si la clé de traduction manque.
+const MODE_SUFFIX_FR: Record<string, string> = {
+  death: " · à la mort",
+  tap: " · tap",
+  return: " · retour en main",
+  end_of_turn: " · fin du tour",
+};
 
 export function useVocab(): Vocab {
   const t = useTranslations();
@@ -46,6 +58,10 @@ export function useVocab(): Vocab {
       rarityLabel: (rarity: string | null | undefined) =>
         getRarityLabel(rarity, safe),
       clanName: (clan: string | null | undefined) => getClanName(clan, safe),
+      modeSuffix: (mode: string | null | undefined) => {
+        if (!mode || !(mode in MODE_SUFFIX_FR)) return "";
+        return safe(`game.mode_suffix_${mode}`) ?? MODE_SUFFIX_FR[mode];
+      },
     }),
     [safe],
   );

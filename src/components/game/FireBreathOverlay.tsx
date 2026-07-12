@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
+import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import { findInstanceEl, hashRandom, overlayRect } from "@/lib/fx/overlayMotion";
 
@@ -16,6 +17,7 @@ interface FireBreathOverlayProps {
 }
 
 export default function FireBreathOverlay({ event, onComplete }: FireBreathOverlayProps) {
+  const t = useTranslations("game");
   const [mounted, setMounted] = useState(false);
   const [sourcePos, setSourcePos] = useState<{ x: number; y: number } | null>(null);
 
@@ -152,7 +154,7 @@ export default function FireBreathOverlay({ event, onComplete }: FireBreathOverl
                   letterSpacing: "0.05em",
                 }}
               >
-                Souffle de Feu
+                {t('fire_breath_label')}
               </div>
             </motion.div>
 

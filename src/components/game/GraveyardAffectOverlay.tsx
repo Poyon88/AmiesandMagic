@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslations } from "next-intl";
 import type { GraveyardAffectEvent } from "@/lib/store/gameStore";
 import { CASCADE_EASE, CASCADE_STAGGER } from "@/lib/fx/overlayMotion";
 import { useCardText } from "./CardTextProvider";
@@ -15,6 +16,7 @@ interface Props {
 const DISPLAY_MS = 2200;
 
 export default function GraveyardAffectOverlay({ event, onComplete }: Props) {
+  const t = useTranslations("game");
   const { localizeName } = useCardText();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -71,7 +73,7 @@ export default function GraveyardAffectOverlay({ event, onComplete }: Props) {
             animate={{ y: 0, opacity: [0, 1, 1, 0] }}
             transition={{ duration: DISPLAY_MS / 1000, times: [0, 0.15, 0.8, 1] }}
           >
-            🪦 Cimetière — {cards.length} carte{cards.length > 1 ? "s" : ""}
+            {t('graveyard_affect_label', { count: cards.length })}
           </motion.div>
 
           {/* Cards row */}

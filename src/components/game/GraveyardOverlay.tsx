@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import type { Card, CardInstance } from "@/lib/game/types";
 import GameCard from "@/components/cards/GameCard";
 import { getTokenManaCost } from "@/lib/game/abilities";
@@ -35,6 +36,7 @@ export default function GraveyardOverlay({
   selectableInstanceIds,
   onSelectCard,
 }: GraveyardOverlayProps) {
+  const t = useTranslations("game");
   const isSelectionMode = selectableInstanceIds && selectableInstanceIds.length > 0;
   // Touch devices have neither hover (to open the preview) nor right-click (to
   // flip to the description). On a coarse pointer we drive everything from tap.
@@ -58,13 +60,13 @@ export default function GraveyardOverlay({
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-card-border">
           <h2 className="text-lg font-bold text-foreground">
-            {title} ({cards.length} carte{cards.length !== 1 ? "s" : ""})
+            {title} ({t('card_count', { count: cards.length })})
           </h2>
           <button
             onClick={onClose}
             className="px-4 py-1.5 bg-background border border-card-border rounded-lg text-sm text-foreground/60 hover:text-foreground transition-colors"
           >
-            {isSelectionMode ? "Annuler" : "Fermer"}
+            {isSelectionMode ? t('action_cancel') : t('action_close')}
           </button>
         </div>
 
@@ -72,7 +74,7 @@ export default function GraveyardOverlay({
         {isSelectionMode && (
           <div className="px-4 pt-3">
             <p className="text-sm text-primary font-medium text-center">
-              Choisissez une carte du cimetière
+              {t('graveyard_select_prompt')}
             </p>
           </div>
         )}
@@ -81,8 +83,8 @@ export default function GraveyardOverlay({
         {!isSelectionMode && cards.length > 0 && (
           <div className="px-4 pt-3 text-xs text-foreground/40 text-center">
             {coarse
-              ? "Touche une carte pour zoomer · touche encore pour voir la description"
-              : "Survole une carte pour zoomer · clic droit pour basculer image / description"}
+              ? t('graveyard_hint_touch')
+              : t('graveyard_hint_hover')}
           </div>
         )}
 
@@ -90,7 +92,7 @@ export default function GraveyardOverlay({
         <div className="flex-1 overflow-y-auto p-4">
           {cards.length === 0 ? (
             <p className="text-center text-foreground/30 py-8">
-              Aucune carte dans le cimetière
+              {t('graveyard_empty')}
             </p>
           ) : (
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">

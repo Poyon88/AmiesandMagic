@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import type { Card } from "@/lib/game/types";
 import GameCard from "@/components/cards/GameCard";
 import { useGameStore } from "@/lib/store/gameStore";
@@ -11,6 +12,7 @@ interface SelectionOverlayProps {
 }
 
 export default function SelectionOverlay({ cards, onChoose }: SelectionOverlayProps) {
+  const t = useTranslations("game");
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const tokenTemplates = useGameStore((s) => s.tokenTemplates);
 
@@ -23,10 +25,10 @@ export default function SelectionOverlay({ cards, onChoose }: SelectionOverlayPr
           fontFamily: "'Cinzel', serif", textAlign: "center",
           textShadow: "0 2px 8px rgba(0,0,0,0.5)",
         }}>
-          🎴 Sélection
+          {t('selection_title')}
         </div>
         <p style={{ fontSize: 14, color: "#bbb", textAlign: "center", fontFamily: "'Crimson Text', serif", marginTop: -12 }}>
-          Choisissez une carte à ajouter à votre main
+          {t('selection_subtitle')}
         </p>
 
         {/* Cards */}

@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { useNotificationStore } from "@/lib/store/notificationStore";
 
 export default function NotificationBell() {
+  const t = useTranslations("common");
   const { notifications, unreadCount, fetchNotifications, markAsRead, markAllRead } =
     useNotificationStore();
   const [open, setOpen] = useState(false);
@@ -58,7 +60,7 @@ export default function NotificationBell() {
           fontSize: 16,
           cursor: "pointer",
         }}
-        title="Notifications"
+        title={t('notifications')}
       >
         🔔
         {unreadCount > 0 && (
@@ -110,7 +112,7 @@ export default function NotificationBell() {
               borderBottom: "1px solid #3d3d5c",
             }}
           >
-            <span style={{ fontSize: 14, fontWeight: 600, color: "#e0e0e0" }}>Notifications</span>
+            <span style={{ fontSize: 14, fontWeight: 600, color: "#e0e0e0" }}>{t('notifications')}</span>
             {unreadCount > 0 && (
               <button
                 onClick={() => markAllRead()}
@@ -122,14 +124,14 @@ export default function NotificationBell() {
                   cursor: "pointer",
                 }}
               >
-                Tout marquer lu
+                {t('mark_all_read')}
               </button>
             )}
           </div>
 
           {notifications.length === 0 ? (
             <div style={{ padding: 24, textAlign: "center", color: "#666", fontSize: 13 }}>
-              Aucune notification
+              {t('no_notifications')}
             </div>
           ) : (
             <div>

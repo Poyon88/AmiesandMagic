@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslations } from "next-intl";
 import type { CycleEternelEvent } from "@/lib/store/gameStore";
 import { useCardText } from "./CardTextProvider";
 
@@ -81,6 +82,7 @@ export default function CycleEternelOverlay({ event, onComplete }: CycleEternelO
 }
 
 function CycleEntry({ entry }: { entry: Resolved }) {
+  const t = useTranslations("game");
   const { localizeName } = useCardText();
   const startX = window.innerWidth / 2;
   const startY = window.innerHeight / 2;
@@ -233,7 +235,7 @@ function CycleEntry({ entry }: { entry: Resolved }) {
           delay,
         }}
       >
-        ♻ Cycle Éternel
+        {t('cycle_eternel_caption')}
       </motion.div>
 
       {/* Particle trail toward the deck */}

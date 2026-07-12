@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import type { AuctionSettings } from "@/lib/auction/types";
 import { getFactionDisplayName } from "@/lib/card-engine/constants";
 
@@ -25,15 +26,16 @@ interface CreateAuctionModalProps {
   onCreated: () => void;
 }
 
-const DURATION_LABELS: Record<number, string> = {
-  1: "1 minute",
-  60: "1 heure",
-  360: "6 heures",
-  720: "12 heures",
-  1440: "24 heures",
+const DURATION_LABEL_KEYS: Record<number, string> = {
+  1: "duration_1min",
+  60: "duration_1h",
+  360: "duration_6h",
+  720: "duration_12h",
+  1440: "duration_24h",
 };
 
 export default function CreateAuctionModal({ userId, settings, onClose, onCreated }: CreateAuctionModalProps) {
+  const t = useTranslations("auction");
   const [cards, setCards] = useState<CardOption[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [startingBid, setStartingBid] = useState("100");
@@ -93,19 +95,19 @@ export default function CreateAuctionModal({ userId, settings, onClose, onCreate
   async function handleSubmit() {
     setError("");
     if (selected.size === 0) {
-      setError("Sélectionnez au moins une carte");
+      setError(t("error_select_card"));
       return;
     }
 
     const bid = parseInt(startingBid);
     if (!bid || bid <= 0) {
-      setError("Mise de départ invalide");
+      setError(t("error_invalid_bid"));
       return;
     }
 
     const buyout = buyoutPrice ? parseInt(buyoutPrice) : undefined;
     if (buyout !== undefined && buyout <= bid) {
-      setError("Le prix d'achat immédiat doit être supérieur à la mise de départ");
+      setError(t("error_buyout_too_low"));
       return;
     }
 
@@ -173,7 +175,7 @@ export default function CreateAuctionModal({ userId, settings, onClose, onCreate
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
           <h2 style={{ fontSize: 20, fontWeight: 700, color: "#c8a84e", margin: 0, fontFamily: "var(--font-cinzel), serif" }}>
-            Créer une enchère
+            {t("create_title")}
           </h2>
           <button
             onClick={onClose}
@@ -186,11 +188,11 @@ export default function CreateAuctionModal({ userId, settings, onClose, onCreate
         {/* Card selection */}
         <div style={{ marginBottom: 20 }}>
           <div style={{ fontSize: 13, color: "#999", marginBottom: 8 }}>
-            Sélectionnez les cartes à vendre ({selected.size}/{settings.max_items_per_lot} max)
+            {t("select_cards", { selected: selected.size, max: settings.max_items_per_lot })}
           </div>
           <input
             type="text"
-            placeholder="Rechercher une carte..."
+            placeholder={t("search_card_placeholder")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={{
@@ -207,11 +209,11 @@ export default function CreateAuctionModal({ userId, settings, onClose, onCreate
           />
 
           {loading ? (
-            <div style={{ color: "#999", padding: 20, textAlign: "center" }}>Chargement...</div>
+            <div style={{ color: "#999", padding: 20, textAlign: "center" }}>{t("loading")}</div>
           ) : (
             <div style={{ maxHeight: 250, overflow: "auto", display: "flex", flexDirection: "column", gap: 4 }}>
               {filteredCards.length === 0 ? (
-                <div style={{ color: "#666", padding: 10, textAlign: "center" }}>Aucune carte disponible</div>
+                <div style={{ color: "#666", padding: 10, textAlign: "center" }}>{t("no_cards_available")}</div>
               ) : (
                 filteredCards.map((card) => {
                   const key = cardKey(card);
@@ -236,8 +238,8 @@ export default function CreateAuctionModal({ userId, settings, onClose, onCreate
                         <span style={{ color: "#e0e0e0", fontWeight: 500 }}>{card.name}</span>
                         <span style={{ color: "#999", marginLeft: 8, fontSize: 11 }}>
                           {card.rarity}
-                          {card.kind === "board" ? " · Plateau"
-                            : card.kind === "card_back" ? " · Dos"
+                          {card.kind === "board" ? ` · ${t("board")}`
+                            : card.kind === "card_back" ? ` · ${t("card_back")}`
                             : card.faction ? ` — ${getFactionDisplayName(card.faction)}` : ""}
                         </span>
                         {(card.source_type === "print" || card.source_type === "board_print" || card.source_type === "card_back_print") && (
@@ -275,7 +277,7 @@ export default function CreateAuctionModal({ userId, settings, onClose, onCreate
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
           <div>
             <label style={{ fontSize: 12, color: "#999", display: "block", marginBottom: 4 }}>
-              Mise de départ (or)
+              {t("starting_bid_label")}
             </label>
             <input
               type="number"
@@ -287,13 +289,13 @@ export default function CreateAuctionModal({ userId, settings, onClose, onCreate
           </div>
           <div>
             <label style={{ fontSize: 12, color: "#999", display: "block", marginBottom: 4 }}>
-              Achat immédiat (optionnel)
+              {t("buyout_optional")}
             </label>
             <input
               type="number"
               value={buyoutPrice}
               onChange={(e) => setBuyoutPrice(e.target.value)}
-              placeholder="Aucun"
+              placeholder={t("none")}
               style={inputStyle}
             />
           </div>
@@ -301,7 +303,7 @@ export default function CreateAuctionModal({ userId, settings, onClose, onCreate
 
         {/* Duration */}
         <div style={{ marginBottom: 20 }}>
-          <label style={{ fontSize: 12, color: "#999", display: "block", marginBottom: 6 }}>Durée</label>
+          <label style={{ fontSize: 12, color: "#999", display: "block", marginBottom: 6 }}>{t("duration")}</label>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {settings.allowed_durations.map((d) => (
               <button
@@ -318,7 +320,7 @@ export default function CreateAuctionModal({ userId, settings, onClose, onCreate
                   cursor: "pointer",
                 }}
               >
-                {DURATION_LABELS[d] ?? `${d}min`}
+                {DURATION_LABEL_KEYS[d] ? t(DURATION_LABEL_KEYS[d]) : t("duration_generic", { n: d })}
               </button>
             ))}
           </div>
@@ -326,7 +328,7 @@ export default function CreateAuctionModal({ userId, settings, onClose, onCreate
 
         {/* Commission info */}
         <div style={{ fontSize: 12, color: "#999", marginBottom: 16 }}>
-          Commission: {settings.commission_rate}% sera prélevé sur le montant de la vente
+          {t("commission_info", { rate: settings.commission_rate })}
         </div>
 
         {error && (
@@ -350,7 +352,7 @@ export default function CreateAuctionModal({ userId, settings, onClose, onCreate
               cursor: "pointer",
             }}
           >
-            Annuler
+            {t("cancel")}
           </button>
           <button
             onClick={handleSubmit}
@@ -367,7 +369,7 @@ export default function CreateAuctionModal({ userId, settings, onClose, onCreate
               cursor: submitting || selected.size === 0 ? "default" : "pointer",
             }}
           >
-            {submitting ? "Création..." : `Mettre en vente (${selected.size} carte${selected.size > 1 ? "s" : ""})`}
+            {submitting ? t("creating") : t("submit_sell", { count: selected.size })}
           </button>
         </div>
       </div>

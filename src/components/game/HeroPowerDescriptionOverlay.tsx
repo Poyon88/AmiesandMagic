@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
 import type { HeroDefinition } from "@/lib/game/types";
 
 interface HeroPowerDescriptionOverlayProps {
@@ -17,6 +18,7 @@ export default function HeroPowerDescriptionOverlay({
   activationsUsed,
   onClose,
 }: HeroPowerDescriptionOverlayProps) {
+  const t = useTranslations("game");
   // Close on Escape
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
@@ -71,7 +73,7 @@ export default function HeroPowerDescriptionOverlay({
               marginBottom: 6,
             }}
           >
-            Pouvoir héroïque
+            {t('power_hero_label')}
           </div>
           <h3
             style={{
@@ -107,8 +109,8 @@ export default function HeroPowerDescriptionOverlay({
           }}
         >
           <span>
-            <span style={{ color: "#888", letterSpacing: 1 }}>Coût : </span>
-            <strong style={{ color: "#4a90d9" }}>{heroDef.powerCost ?? 0}</strong> mana
+            <span style={{ color: "#888", letterSpacing: 1 }}>{t('power_cost_label')} </span>
+            <strong style={{ color: "#4a90d9" }}>{heroDef.powerCost ?? 0}</strong> {t('power_mana_unit')}
           </span>
           <span
             style={{
@@ -122,10 +124,10 @@ export default function HeroPowerDescriptionOverlay({
           >
             {(() => {
               const m = heroDef.powerEffect?.mode;
-              if (m === "grant_keyword") return "Don de capacité";
-              if (m === "spell_trigger") return "Effet ponctuel";
-              if (m === "aura") return "Aura persistante";
-              return "Actif";
+              if (m === "grant_keyword") return t('power_mode_grant_keyword');
+              if (m === "spell_trigger") return t('power_mode_spell_trigger');
+              if (m === "aura") return t('power_mode_aura');
+              return t('power_mode_active');
             })()}
           </span>
         </div>
@@ -141,7 +143,7 @@ export default function HeroPowerDescriptionOverlay({
             padding: "8px 0",
           }}
         >
-          {heroDef.powerDescription || <em style={{ color: "#777" }}>Aucune description.</em>}
+          {heroDef.powerDescription || <em style={{ color: "#777" }}>{t('power_no_description')}</em>}
         </p>
 
         <div
@@ -157,11 +159,11 @@ export default function HeroPowerDescriptionOverlay({
         >
           {(() => {
             const limit = heroDef.powerUsageLimit;
-            if (limit == null) return <span>Activations : illimité</span>;
+            if (limit == null) return <span>{t('power_activations_unlimited')}</span>;
             if (activationsUsed != null) {
-              return <span>Activations : {activationsUsed} / {limit}</span>;
+              return <span>{t('power_activations_used', { used: activationsUsed, limit })}</span>;
             }
-            return <span>Limite : {limit}× max</span>;
+            return <span>{t('power_usage_limit', { limit })}</span>;
           })()}
         </div>
 
@@ -180,7 +182,7 @@ export default function HeroPowerDescriptionOverlay({
             letterSpacing: 1,
           }}
         >
-          Fermer
+          {t('action_close')}
         </button>
 
         <div
@@ -193,7 +195,7 @@ export default function HeroPowerDescriptionOverlay({
             marginTop: 2,
           }}
         >
-          Échap ou clic hors zone pour fermer
+          {t('power_close_hint')}
         </div>
       </div>
     </div>

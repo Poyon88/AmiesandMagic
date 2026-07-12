@@ -2,17 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import type { AuctionWithDetails } from "@/lib/auction/types";
 import GameCard from "@/components/cards/GameCard";
 
-function useCountdown(endDate: string) {
+function useCountdown(endDate: string, endedLabel: string) {
   const [timeLeft, setTimeLeft] = useState("");
 
   useEffect(() => {
     function update() {
       const diff = new Date(endDate).getTime() - Date.now();
       if (diff <= 0) {
-        setTimeLeft("Terminée");
+        setTimeLeft(endedLabel);
         return;
       }
       const h = Math.floor(diff / 3600000);
@@ -25,7 +26,7 @@ function useCountdown(endDate: string) {
     update();
     const interval = setInterval(update, 1000);
     return () => clearInterval(interval);
-  }, [endDate]);
+  }, [endDate, endedLabel]);
 
   return timeLeft;
 }
@@ -36,15 +37,16 @@ interface AuctionCardProps {
 
 export default function AuctionCard({ auction }: AuctionCardProps) {
   const router = useRouter();
-  const timeLeft = useCountdown(auction.ends_at);
-  const isExpired = timeLeft === "Terminée";
+  const t = useTranslations("auction");
+  const timeLeft = useCountdown(auction.ends_at, t("ended"));
+  const isExpired = timeLeft === t("ended");
 
   const mainItem = auction.items?.[0];
   const mainCard = mainItem?.card ?? null;
   const mainBoard = mainItem?.board ?? null;
   const mainCardBack = mainItem?.card_back ?? null;
   const itemCount = auction.items?.length ?? 0;
-  const itemName = mainCard?.name ?? mainBoard?.name ?? mainCardBack?.name ?? "Objet inconnu";
+  const itemName = mainCard?.name ?? mainBoard?.name ?? mainCardBack?.name ?? t("unknown_item");
 
   return (
     <div
@@ -76,7 +78,7 @@ export default function AuctionCard({ auction }: AuctionCardProps) {
             <div style={{ position: "absolute", inset: 0, background: "linear-gradient(0deg, rgba(0,0,0,0.85), transparent 50%)" }} />
             <div style={{ position: "absolute", bottom: 8, left: 8, right: 8 }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{mainBoard.name}</div>
-              <div style={{ fontSize: 10, color: "#ccc" }}>{mainBoard.rarity ?? "Commune"} · Plateau</div>
+              <div style={{ fontSize: 10, color: "#ccc" }}>{mainBoard.rarity ?? "Commune"} · {t("board")}</div>
             </div>
           </div>
         ) : mainCardBack ? (
@@ -91,7 +93,7 @@ export default function AuctionCard({ auction }: AuctionCardProps) {
             <div style={{ position: "absolute", inset: 0, background: "linear-gradient(0deg, rgba(0,0,0,0.85), transparent 50%)" }} />
             <div style={{ position: "absolute", bottom: 8, left: 8, right: 8 }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{mainCardBack.name}</div>
-              <div style={{ fontSize: 10, color: "#ccc" }}>{mainCardBack.rarity ?? "Commune"} · Dos</div>
+              <div style={{ fontSize: 10, color: "#ccc" }}>{mainCardBack.rarity ?? "Commune"} · {t("card_back")}</div>
             </div>
           </div>
         ) : null}
@@ -110,7 +112,7 @@ export default function AuctionCard({ auction }: AuctionCardProps) {
               zIndex: 25,
             }}
           >
-            +{itemCount - 1} objet{itemCount > 2 ? "s" : ""}
+            {t("extra_items", { count: itemCount - 1 })}
           </div>
         )}
       </div>
@@ -144,7 +146,7 @@ export default function AuctionCard({ auction }: AuctionCardProps) {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "end" }}>
           <div>
             <div style={{ fontSize: 10, color: "#999", marginBottom: 2 }}>
-              {auction.current_bid ? "Enchère actuelle" : "Mise de départ"}
+              {auction.current_bid ? t("current_bid") : t("starting_bid")}
             </div>
             <div style={{ fontSize: 18, fontWeight: 700, color: "#ffd54f", display: "flex", alignItems: "center", gap: 4 }}>
               <span style={{ fontSize: 14 }}>🪙</span>
@@ -154,18 +156,18 @@ export default function AuctionCard({ auction }: AuctionCardProps) {
           <div style={{ textAlign: "right" }}>
             {auction.buyout_price && (
               <div style={{ fontSize: 11, color: "#4caf50" }}>
-                Achat: 🪙 {auction.buyout_price.toLocaleString("fr-FR")}
+                {t("buyout_short")} 🪙 {auction.buyout_price.toLocaleString("fr-FR")}
               </div>
             )}
             <div style={{ fontSize: 11, color: "#999", marginTop: 2 }}>
-              {auction.bid_count} enchère{auction.bid_count !== 1 ? "s" : ""}
+              {t("bid_count", { count: auction.bid_count })}
             </div>
           </div>
         </div>
 
         {/* Seller */}
         <div style={{ fontSize: 10, color: "#666", marginTop: 8, borderTop: "1px solid #3d3d5c33", paddingTop: 6 }}>
-          Vendeur: {auction.seller_username ?? "Système"}
+          {t("seller")} {auction.seller_username ?? t("system")}
         </div>
       </div>
     </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import type { AuctionWithDetails, AuctionFilters, AuctionSettings } from "@/lib/auction/types";
 import AuctionCard from "./AuctionCard";
 import CreateAuctionModal from "./CreateAuctionModal";
@@ -14,16 +15,17 @@ interface AuctionHouseProps {
 }
 
 const SORT_OPTIONS = [
-  { value: "ending_soon", label: "Fin imminente" },
-  { value: "price_asc", label: "Prix croissant" },
-  { value: "price_desc", label: "Prix décroissant" },
-  { value: "newest", label: "Plus récentes" },
+  { value: "ending_soon", labelKey: "sort_ending_soon" },
+  { value: "price_asc", labelKey: "sort_price_asc" },
+  { value: "price_desc", labelKey: "sort_price_desc" },
+  { value: "newest", labelKey: "sort_newest" },
 ];
 
 const SELECT_CLASS =
   "am-gild-border bg-am-bg-2 text-am-ink rounded-[var(--am-r-sm)] px-3 min-w-[130px] min-h-[44px] text-base outline-none focus-visible:shadow-[0_0_0_2px_var(--am-bg-0),0_0_0_4px_var(--am-gold)]";
 
 export default function AuctionHouse({ userId }: AuctionHouseProps) {
+  const t = useTranslations("auction");
   const [auctions, setAuctions] = useState<AuctionWithDetails[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -84,22 +86,22 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between am-animate-rise">
         <div>
           <span className="font-display text-[10px] md:text-xs tracking-[0.32em] uppercase text-am-arcane-bright/80">
-            Recrute tes troupes
+            {t("header_kicker")}
           </span>
           <h1 className="am-foil-text font-[family-name:var(--font-cinzel),serif] font-bold leading-tight text-3xl mt-1">
-            Hôtel des ventes
+            {t("title")}
           </h1>
           <p className="font-[family-name:var(--font-crimson),serif] italic text-am-ink-soft text-sm mt-1">
-            {sellingEnabled ? "Achetez et vendez des cartes" : "Achetez des cartes"}
+            {sellingEnabled ? t("subtitle_sell") : t("subtitle_buy")}
           </p>
         </div>
         <div className="flex gap-3">
           <AmLinkButton href="/" variant="ghost" size="sm">
-            Menu
+            {t("menu")}
           </AmLinkButton>
           {sellingEnabled && (
             <AmButton onClick={() => setShowCreateModal(true)} variant="gold" size="sm">
-              Vendre une carte
+              {t("sell_card")}
             </AmButton>
           )}
         </div>
@@ -108,8 +110,8 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
       {/* Tabs */}
       <div className="mb-6 flex gap-0 border-b border-am-gold/30 am-animate-rise" style={{ animationDelay: "60ms" }}>
         {[
-          { key: "browse" as const, label: "Parcourir" },
-          { key: "my" as const, label: "Mes Enchères" },
+          { key: "browse" as const, label: t("tab_browse") },
+          { key: "my" as const, label: t("tab_my") },
         ].map((tab) => (
           <button
             key={tab.key}
@@ -133,7 +135,7 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
           <div className="am-glass mb-6 flex flex-wrap gap-3 p-4 am-animate-rise" style={{ animationDelay: "120ms" }}>
             <input
               type="text"
-              placeholder="Rechercher..."
+              placeholder={t("search_placeholder")}
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
@@ -149,7 +151,7 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
               }}
               className={SELECT_CLASS}
             >
-              <option value="">Toutes factions</option>
+              <option value="">{t("all_factions")}</option>
               {["Lumière", "Ténèbres", "Nature", "Feu", "Eau", "Terre", "Air", "Neutre"].map((f) => (
                 <option key={f} value={f}>{f}</option>
               ))}
@@ -162,7 +164,7 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
               }}
               className={SELECT_CLASS}
             >
-              <option value="">Toutes raretés</option>
+              <option value="">{t("all_rarities")}</option>
               {["Commune", "Peu Commune", "Rare", "Épique", "Légendaire"].map((r) => (
                 <option key={r} value={r}>{r}</option>
               ))}
@@ -175,9 +177,9 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
               }}
               className={SELECT_CLASS}
             >
-              <option value="">Tous types</option>
-              <option value="creature">Créature</option>
-              <option value="spell">Sort</option>
+              <option value="">{t("all_types")}</option>
+              <option value="creature">{t("type_creature")}</option>
+              <option value="spell">{t("type_spell")}</option>
             </select>
             <select
               value={filters.sort}
@@ -187,7 +189,7 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
               className={SELECT_CLASS}
             >
               {SORT_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>{o.label}</option>
+                <option key={o.value} value={o.value}>{t(o.labelKey)}</option>
               ))}
             </select>
           </div>
@@ -195,11 +197,11 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
           {/* Auction grid */}
           {loading ? (
             <div className="py-16 text-center font-[family-name:var(--font-crimson),serif] italic text-am-ink-soft">
-              Chargement...
+              {t("loading")}
             </div>
           ) : auctions.length === 0 ? (
             <div className="am-glass py-16 text-center font-[family-name:var(--font-crimson),serif] italic text-am-ink-soft">
-              Aucune enchère trouvée
+              {t("no_auctions")}
             </div>
           ) : (
             <div
@@ -228,10 +230,10 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
                 onClick={() => setFilters((f) => ({ ...f, page: (f.page ?? 1) - 1 }))}
                 className="disabled:opacity-40 disabled:cursor-default"
               >
-                Précédent
+                {t("previous")}
               </AmButton>
               <span className="font-[family-name:var(--font-cinzel),serif] text-sm text-am-ink-soft leading-9">
-                Page {filters.page} / {totalPages}
+                {t("page_of", { page: filters.page ?? 1, total: totalPages })}
               </span>
               <AmButton
                 variant="ghost"
@@ -240,7 +242,7 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
                 onClick={() => setFilters((f) => ({ ...f, page: (f.page ?? 1) + 1 }))}
                 className="disabled:opacity-40 disabled:cursor-default"
               >
-                Suivant
+                {t("next")}
               </AmButton>
             </div>
           )}

@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, useRef, type DragEvent } from "react"
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { useGameStore, selectPowerTargetingColor } from "@/lib/store/gameStore";
+import { useTranslations } from "next-intl";
 import { canPlayCard, canAttack, canUseHeroPower, getSpellTargets, getValidTargets, heroPowerNeedsTarget } from "@/lib/game/engine";
 import HeroPortrait from "./HeroPortrait";
 import Hero3DViewer from "./Hero3DViewer";
@@ -53,6 +54,7 @@ interface GameBoardProps {
 
 export default function GameBoard({ onAction, onMulliganRevealDone, opponentMulliganRevealDone = false }: GameBoardProps) {
   useGameMusic();
+  const t = useTranslations("game");
   const { shakeControls, isFrozen, isFrozenBig } = useScreenShake();
 
   const {
@@ -706,7 +708,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
           className={`absolute z-30 w-11 h-11 flex items-center justify-center text-lg bg-secondary/80 border border-card-border rounded-lg text-foreground/70 hover:text-foreground hover:border-primary/40 transition-colors backdrop-blur-sm ${
             isMtgo ? "top-[26%] right-[2%]" : "top-[1%] right-[2%]"
           }`}
-          title="Réglages"
+          title={t("settings")}
         >
           ⚙
         </button>
@@ -874,7 +876,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
         >
           {opponent.board.length === 0 ? (
             <div className="text-foreground/10 text-sm">
-              No creatures
+              {t("no_creatures")}
             </div>
           ) : (
             <AnimatePresence>
@@ -920,11 +922,11 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
           <div ref={myBoardRef} className="flex justify-center gap-2 min-h-[88px] items-center">
           {myPlayer.board.length === 0 && !isDragOver ? (
             <div className="text-foreground/10 text-sm">
-              Drag cards to play them here
+              {t("drag_hint")}
             </div>
           ) : myPlayer.board.length === 0 && isDragOver ? (
             <div className="text-success/50 text-sm font-medium">
-              Drop to play creature
+              {t("drop_hint")}
             </div>
           ) : (
             <>
@@ -1100,7 +1102,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
               onClick={clearSelection}
               className="text-sm text-accent hover:text-accent/80 transition-colors bg-black/50 px-4 py-3 rounded min-h-[44px]"
             >
-              Cancel targeting
+              {t("cancel_targeting")}
             </button>
           )}
           <TurnTimer
@@ -1226,7 +1228,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
       {targetingMode === "graveyard" && !overlayPeeked && (
         <GraveyardOverlay
           cards={myPlayer.graveyard}
-          title="Choisissez une carte"
+          title={t("choose_card")}
           onClose={clearSelection}
           selectableInstanceIds={validTargets}
           onSelectCard={(id) => {

@@ -1,8 +1,12 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import AuctionHouse from "@/components/auction/AuctionHouse";
 
-export const metadata = { title: "Hôtel des Enchères — Armies & Magic" };
+export async function generateMetadata() {
+  const t = await getTranslations("auction");
+  return { title: t("page_title") };
+}
 
 export default async function AuctionPage() {
   const supabase = await createClient();

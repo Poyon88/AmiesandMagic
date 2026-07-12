@@ -845,7 +845,7 @@ function BoardCreature({
                 : kw === "entraide" && card.entraide_race
                   ? `${label} (${card.entraide_race})`
                   : label;
-              const modeSuffix = mode === "death" ? " · à la mort" : mode === "tap" ? " · tap" : mode === "return" ? " · retour en main" : mode === "end_of_turn" ? " · fin du tour" : "";
+              const modeSuffix = vocab.modeSuffix(mode);
               const displayLabel = baseLabel + modeSuffix;
               const forgeKey = KEYWORD_LABELS[kw];
               const kwDef = forgeKey ? keywordDefs[forgeKey] : null;

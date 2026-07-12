@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import { generateCardStats, pickRarity, buildId } from "@/lib/card-engine/generator";
@@ -132,6 +133,7 @@ function Btn({ onClick, label, color }: { onClick: () => void; label: string; co
 // ─── MAIN COMPONENT ──────────────────────────────────────────────────────────
 
 export default function CardForge() {
+  const tf = useTranslations("forge");
   const [faction, setFaction] = useState("Elfes");
   const [race, setRace] = useState("");
   const [clan, setClan] = useState("");
@@ -740,7 +742,7 @@ export default function CardForge() {
       setKwRefImageMime("image/jpeg");
       setKwRefImagePreview(dataUrl);
     };
-    img.onerror = () => setKwMessage({ ok: false, msg: "Impossible de lire l'image de référence." });
+    img.onerror = () => setKwMessage({ ok: false, msg: tf('cannot_read_ref_image') });
     img.src = URL.createObjectURL(file);
   }
 
@@ -766,7 +768,7 @@ export default function CardForge() {
           setKwName(kwSelectedAbility.label);
         }
       } catch {
-        setKwMessage({ ok: false, msg: "Impossible de charger l'image." });
+        setKwMessage({ ok: false, msg: tf('cannot_load_image') });
       }
     };
     reader.readAsDataURL(file);
@@ -797,7 +799,7 @@ export default function CardForge() {
         const rawUrl = `data:${mime};base64,${data.imageBase64}`;
         return await silhouetteToTransparentPng(rawUrl, kwColorMode);
       } catch (err) {
-        return { error: err instanceof Error ? err.message : "Erreur réseau" };
+        return { error: err instanceof Error ? err.message : tf('network_error') };
       }
     };
 
@@ -809,7 +811,7 @@ export default function CardForge() {
     } else {
       setKwVariations(ok);
       if (ok.length < 3) {
-        setKwMessage({ ok: false, msg: `${3 - ok.length} variante(s) ont échoué.` });
+        setKwMessage({ ok: false, msg: tf('variants_failed', { n: 3 - ok.length }) });
       }
     }
     setKwGenerating(false);
@@ -859,7 +861,7 @@ export default function CardForge() {
             ok++;
           }
         } catch (err) {
-          if (!firstError) firstError = err instanceof Error ? err.message : "Erreur réseau";
+          if (!firstError) firstError = err instanceof Error ? err.message : tf('network_error');
         }
       }
     }
@@ -872,7 +874,7 @@ export default function CardForge() {
             ? `${ok}/${total} icônes enregistrées (créature + sort).`
             : multi
             ? `${ok} icônes enregistrées.`
-            : `Icône "${baseName}" enregistrée.`,
+            : tf('icon_saved', { name: baseName }),
       });
       setKwVariations([]);
       setKwSelectedIdxs([]);
@@ -881,7 +883,7 @@ export default function CardForge() {
       clearKwRefImage();
       await loadKwAssets();
     } else if (ok > 0) {
-      setKwMessage({ ok: false, msg: `${ok} icône(s) enregistrée(s), mais erreur sur les autres : ${firstError}` });
+      setKwMessage({ ok: false, msg: tf('icons_saved_partial', { ok, error: firstError ?? "" }) });
       await loadKwAssets();
     } else {
       setKwMessage({ ok: false, msg: firstError ?? "Erreur inconnue" });
@@ -899,7 +901,7 @@ export default function CardForge() {
   }
 
   async function deleteKwAsset(id: number, name: string) {
-    if (!confirm(`Supprimer l'icône "${name}" ?`)) return;
+    if (!confirm(tf('confirm_delete_icon', { name }))) return;
     await fetch("/api/keyword-icon-assets", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
@@ -1008,7 +1010,7 @@ export default function CardForge() {
       setCbRefImageMime("image/jpeg");
       setCbRefImagePreview(dataUrl);
     };
-    img.onerror = () => setCbMessage({ ok: false, msg: "Impossible de lire l'image de référence." });
+    img.onerror = () => setCbMessage({ ok: false, msg: tf('cannot_read_ref_image') });
     img.src = URL.createObjectURL(file);
   }
 
@@ -1044,7 +1046,7 @@ export default function CardForge() {
         setCbVariations([]);
         setCbSelectedIdxs([]);
       } catch (err) {
-        setCbMessage({ ok: false, msg: err instanceof Error ? err.message : "Erreur d'import" });
+        setCbMessage({ ok: false, msg: err instanceof Error ? err.message : tf('import_error') });
       }
     };
     reader.readAsDataURL(file);
@@ -1103,7 +1105,7 @@ export default function CardForge() {
           url: `data:${framed.mime};base64,${framed.base64}`,
         };
       } catch (err) {
-        return { error: err instanceof Error ? err.message : "Erreur réseau" };
+        return { error: err instanceof Error ? err.message : tf('network_error') };
       }
     };
 
@@ -1124,7 +1126,7 @@ export default function CardForge() {
         setCbImagePreview(ok[0].url);
       }
       if (ok.length < cbVariantMode) {
-        setCbMessage({ ok: false, msg: `${cbVariantMode - ok.length} variante(s) ont échoué.` });
+        setCbMessage({ ok: false, msg: tf('variants_failed', { n: cbVariantMode - ok.length }) });
       }
     }
     setCbGenerating(false);
@@ -1202,12 +1204,12 @@ export default function CardForge() {
           ok++;
         }
       } catch (err) {
-        if (!firstError) firstError = err instanceof Error ? err.message : "Erreur réseau";
+        if (!firstError) firstError = err instanceof Error ? err.message : tf('network_error');
       }
     }
 
     if (ok > 0 && !firstError) {
-      setCbMessage({ ok: true, msg: multi ? `${ok} dos enregistrés.` : `Dos "${baseName}" enregistré.` });
+      setCbMessage({ ok: true, msg: multi ? tf('backs_saved', { n: ok }) : tf('back_saved', { name: baseName }) });
       setCbName("");
       setCbImageBase64(null);
       setCbImageMime(null);
@@ -1216,7 +1218,7 @@ export default function CardForge() {
       setCbVariations([]);
       setCbSelectedIdxs([]);
     } else if (ok > 0) {
-      setCbMessage({ ok: false, msg: `${ok} dos enregistré(s), mais erreur sur les autres : ${firstError}` });
+      setCbMessage({ ok: false, msg: tf('backs_saved_partial', { ok, error: firstError ?? "" }) });
     } else {
       setCbMessage({ ok: false, msg: firstError ?? "Erreur inconnue" });
     }
@@ -1306,7 +1308,7 @@ export default function CardForge() {
       setBdRefImageMime("image/jpeg");
       setBdRefImagePreview(dataUrl);
     };
-    img.onerror = () => setBdMessage({ ok: false, msg: "Impossible de lire l'image de référence." });
+    img.onerror = () => setBdMessage({ ok: false, msg: tf('cannot_read_ref_image') });
     img.src = URL.createObjectURL(file);
   }
 
@@ -1343,9 +1345,9 @@ export default function CardForge() {
       setBdVariantMode(1);
       setBdVariations([{ base64, mime, url: dataUrl }]);
       setBdSelectedIdxs([0]);
-      setBdMessage({ ok: true, msg: "Image importée — prête à enregistrer." });
+      setBdMessage({ ok: true, msg: tf('image_imported') });
     };
-    img.onerror = () => setBdMessage({ ok: false, msg: "Impossible de lire l'image importée." });
+    img.onerror = () => setBdMessage({ ok: false, msg: tf('cannot_read_imported_image') });
     img.src = URL.createObjectURL(file);
     e.target.value = ""; // allow re-importing the same file
   }
@@ -1383,7 +1385,7 @@ export default function CardForge() {
           url: `data:${mime};base64,${data.imageBase64}`,
         };
       } catch (err) {
-        return { error: err instanceof Error ? err.message : "Erreur réseau" };
+        return { error: err instanceof Error ? err.message : tf('network_error') };
       }
     };
 
@@ -1400,7 +1402,7 @@ export default function CardForge() {
       // Auto-pick the single variant so admin can save in one click.
       if (bdVariantMode === 1) setBdSelectedIdxs([0]);
       if (ok.length < bdVariantMode) {
-        setBdMessage({ ok: false, msg: `${bdVariantMode - ok.length} variante(s) ont échoué.` });
+        setBdMessage({ ok: false, msg: tf('variants_failed', { n: bdVariantMode - ok.length }) });
       }
     }
     setBdGenerating(false);
@@ -1485,11 +1487,11 @@ export default function CardForge() {
           ok++;
         }
       } catch (err) {
-        if (!firstError) firstError = err instanceof Error ? err.message : "Erreur réseau";
+        if (!firstError) firstError = err instanceof Error ? err.message : tf('network_error');
       }
     }
     if (ok > 0 && !firstError) {
-      setBdMessage({ ok: true, msg: multi ? `${ok} plateaux enregistrés.` : `Plateau "${baseName}" enregistré.` });
+      setBdMessage({ ok: true, msg: multi ? tf('boards_saved', { n: ok }) : tf('board_saved_named', { name: baseName }) });
       setBdName("");
       setBdVariations([]);
       setBdSelectedIdxs([]);
@@ -1499,7 +1501,7 @@ export default function CardForge() {
       setBdClan("");
       clearBoardRefImage();
     } else if (ok > 0) {
-      setBdMessage({ ok: false, msg: `${ok} plateau(x) enregistré(s), mais erreur sur les autres : ${firstError}` });
+      setBdMessage({ ok: false, msg: tf('boards_saved_partial', { ok, error: firstError ?? "" }) });
     } else {
       setBdMessage({ ok: false, msg: firstError ?? "Erreur inconnue" });
     }
@@ -1811,14 +1813,14 @@ export default function CardForge() {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Erreur génération');
+      if (!res.ok) throw new Error(data.error || tf('generation_error'));
       setTokenImageBase64(data.imageBase64);
       setTokenImageMime(data.mimeType);
       // Convert to blob URL for preview (base64 nettoyé : robuste sur Safari).
       setTokenImagePreview(base64ToBlobUrl(data.imageBase64, data.mimeType));
-      setTokenMessage({ ok: true, msg: `Image générée (${data.model})` });
+      setTokenMessage({ ok: true, msg: tf('image_generated', { model: data.model }) });
     } catch (err) {
-      setTokenMessage({ ok: false, msg: err instanceof Error ? err.message : "Erreur" });
+      setTokenMessage({ ok: false, msg: err instanceof Error ? err.message : tf('error') });
     } finally {
       setTokenGenerating(false);
     }
@@ -1847,15 +1849,15 @@ export default function CardForge() {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Erreur serveur');
+      if (!res.ok) throw new Error(data.error || tf('server_error'));
       setTokenRace(""); setTokenFaction(""); setTokenClan(""); setTokenName(""); setTokenKeywords([]);
       setTokenAttack(1); setTokenHealth(1);
       setTokenImageBase64(null); setTokenImageMime(null);
       setTokenImagePreview(null); setTokenEditId(null); setTokenPrompt("");
-      setTokenMessage({ ok: true, msg: tokenEditId ? "Template mis à jour" : "Template créé" });
+      setTokenMessage({ ok: true, msg: tokenEditId ? tf('template_updated') : tf('template_created') });
       loadTokenTemplates();
     } catch (err) {
-      setTokenMessage({ ok: false, msg: err instanceof Error ? err.message : "Erreur" });
+      setTokenMessage({ ok: false, msg: err instanceof Error ? err.message : tf('error') });
     } finally {
       setTokenSaving(false);
     }
@@ -2094,27 +2096,27 @@ export default function CardForge() {
       // would produce a no-op spawn at play time (the engine logs a warn
       // but the game UX feels broken). Block the save and explain why.
       if (gameKeywords.includes("convocation") && !convocationTokenId) {
-        setSaveResult({ ok: false, msg: "Convocation X : sélectionnez un token dans le picker avant de sauvegarder." });
+        setSaveResult({ ok: false, msg: tf('validation_convocation_x') });
         setSaving(false);
         return;
       }
       if (gameKeywords.includes("convocation_simple") && !convocationTokenId) {
-        setSaveResult({ ok: false, msg: "Convocation : sélectionnez un token dans le picker avant de sauvegarder." });
+        setSaveResult({ ok: false, msg: tf('validation_convocation') });
         setSaving(false);
         return;
       }
       if (gameKeywords.includes("convocations_multiples") && convocationTokens.length === 0) {
-        setSaveResult({ ok: false, msg: "Convocations multiples : ajoutez au moins un token dans la liste avant de sauvegarder." });
+        setSaveResult({ ok: false, msg: tf('validation_multi_convocation') });
         setSaving(false);
         return;
       }
       if (gameKeywords.includes("lycanthropie") && !lycanthropieTokenId) {
-        setSaveResult({ ok: false, msg: "Lycanthropie X : sélectionnez un token de transformation avant de sauvegarder." });
+        setSaveResult({ ok: false, msg: tf('validation_lycanthropie') });
         setSaving(false);
         return;
       }
       if (gameKeywords.includes("entraide") && !entraideRace) {
-        setSaveResult({ ok: false, msg: "Entraide (Race) : sélectionnez la race cible avant de sauvegarder." });
+        setSaveResult({ ok: false, msg: tf('validation_entraide') });
         setSaving(false);
         return;
       }
@@ -2122,7 +2124,7 @@ export default function CardForge() {
       // le moteur ne récupère rien (no-op silencieux). gameKeywords ne porte
       // que les mots-clés créature, donc ce guard ne touche pas les sorts.
       if (gameKeywords.includes("appel_supreme") && !asRace) {
-        setSaveResult({ ok: false, msg: "Appel Suprême : sélectionnez la race cible avant de sauvegarder." });
+        setSaveResult({ ok: false, msg: tf('validation_appel_supreme') });
         setSaving(false);
         return;
       }
@@ -2133,7 +2135,7 @@ export default function CardForge() {
         spellKeywords.some((k) => k.id === "invocation_multiple") &&
         convocationTokens.length === 0
       ) {
-        setSaveResult({ ok: false, msg: "Convocations multiples (sort) : ajoutez au moins un token dans la liste avant de sauvegarder." });
+        setSaveResult({ ok: false, msg: tf('validation_multi_convocation_spell') });
         setSaving(false);
         return;
       }
@@ -2141,7 +2143,7 @@ export default function CardForge() {
         spellKeywords.some((k) => k.id === "convocation_simple") &&
         !convocationTokenId
       ) {
-        setSaveResult({ ok: false, msg: "Convocation (sort) : sélectionnez un token dans le picker avant de sauvegarder." });
+        setSaveResult({ ok: false, msg: tf('validation_convocation_spell') });
         setSaving(false);
         return;
       }
@@ -2271,11 +2273,11 @@ export default function CardForge() {
       });
 
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Erreur serveur');
+      if (!response.ok) throw new Error(data.error || tf('server_error'));
 
-      setSaveResult({ ok: true, msg: `"${forgeCard.name}" ajoutée !` });
+      setSaveResult({ ok: true, msg: tf('card_added', { name: forgeCard.name }) });
     } catch (err) {
-      setSaveResult({ ok: false, msg: err instanceof Error ? err.message : "Erreur inconnue" });
+      setSaveResult({ ok: false, msg: err instanceof Error ? err.message : tf('unknown_error') });
     } finally {
       setSaving(false);
     }
@@ -2315,7 +2317,7 @@ export default function CardForge() {
       setIllusRefImageMime("image/jpeg");
       setIllusRefImagePreview(dataUrl);
     };
-    img.onerror = () => setSaveResult({ ok: false, msg: "Impossible de lire l'image de référence." });
+    img.onerror = () => setSaveResult({ ok: false, msg: tf('cannot_read_ref_image') });
     img.src = URL.createObjectURL(file);
   }, []);
 
@@ -2355,15 +2357,15 @@ export default function CardForge() {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Erreur génération image');
+      if (!res.ok) throw new Error(data.error || tf('image_generation_error'));
 
       // Convert base64 to blob URL for preview (base64 nettoyé : robuste sur Safari).
       const blobUrl = base64ToBlobUrl(data.imageBase64, data.mimeType);
 
       setCardImages(prev => ({ ...prev, [forgeCard.id]: blobUrl }));
-      setSaveResult({ ok: true, msg: `Illustration générée (${data.model})` });
+      setSaveResult({ ok: true, msg: tf('illustration_generated', { model: data.model }) });
     } catch (err) {
-      setSaveResult({ ok: false, msg: err instanceof Error ? err.message : "Erreur génération" });
+      setSaveResult({ ok: false, msg: err instanceof Error ? err.message : tf('generation_error') });
     } finally {
       setGeneratingImage(false);
     }
@@ -2398,13 +2400,13 @@ export default function CardForge() {
               transition: "all 0.2s",
               textDecoration: "none",
               display: "flex", alignItems: "center", gap: 4,
-            }}>← Menu</Link>
+            }}>← {tf('menu')}</Link>
             <span style={{ fontSize: 18 }}>⚗️</span>
             <span style={{ fontSize: 15, fontWeight: 700, color: "#333", letterSpacing: 2.5 }}>CARD FORGE</span>
             <span style={{ fontSize: 8, color: "#aaa", letterSpacing: 2 }}>ARMIES & MAGIC</span>
           </div>
           <div style={{ display: "flex", gap: 4 }}>
-            {([["forge", "⚒ Forge"], ["capacites", "✨ Capacités"], ["edition", "✏ Édition"], ["tokens", "🎭 Tokens"], ["card-backs", "🎴 Dos"], ["boards", "🗺 Plateaux"], ["kw-icons", "🪄 Icônes"], ["sets", "📦 Sets"], ["formats", "🎮 Formats"], ["bulk", "📦 Masse"], ["budget", "⚖ Budget"], ["schema", "📋 Schéma"], ["prints", "🏷 Séries"]] as const).map(([t, l]) => (
+            {([["forge", `⚒ ${tf('tab_forge')}`], ["capacites", `✨ ${tf('tab_capacities')}`], ["edition", `✏ ${tf('tab_edition')}`], ["tokens", `🎭 ${tf('tab_tokens')}`], ["card-backs", `🎴 ${tf('tab_card_backs')}`], ["boards", `🗺 ${tf('tab_boards')}`], ["kw-icons", `🪄 ${tf('tab_icons')}`], ["sets", `📦 ${tf('tab_sets')}`], ["formats", `🎮 ${tf('tab_formats')}`], ["bulk", `📦 ${tf('tab_bulk')}`], ["budget", `⚖ ${tf('tab_budget')}`], ["schema", `📋 ${tf('tab_schema')}`], ["prints", `🏷 ${tf('tab_prints')}`]] as const).map(([t, l]) => (
               <button key={t} onClick={() => { setTab(t); if (t === "sets") loadSets(); if (t === "formats") loadFormats(); if (t === "prints") loadPrintsData(); if (t === "kw-icons") loadKwAssets(); }} style={{
                 padding: "5px 14px", borderRadius: 6, cursor: "pointer",
                 background: tab === t ? "#333" : "transparent",
@@ -2423,7 +2425,7 @@ export default function CardForge() {
               transition: "all 0.2s",
               textDecoration: "none",
               display: "flex", alignItems: "center",
-            }}>🗺 Plateaux</a>
+            }}>🗺 {tf('tab_boards')}</a>
             <a href="/admin/collections" style={{
               padding: "5px 14px", borderRadius: 6, cursor: "pointer",
               background: "transparent",
@@ -2433,7 +2435,7 @@ export default function CardForge() {
               transition: "all 0.2s",
               textDecoration: "none",
               display: "flex", alignItems: "center",
-            }}>📚 Collections</a>
+            }}>📚 {tf('collections')}</a>
           </div>
         </div>
 
@@ -2443,7 +2445,7 @@ export default function CardForge() {
 
             {/* Controls */}
             <div style={{ width: 235, minHeight: 0, padding: "16px 13px", borderRight: "1px solid #e8e8e8", background: "#fafafa", display: "flex", flexDirection: "column", gap: 16, overflowY: "auto" }}>
-              <Sec title="Faction">
+              <Sec title={tf('section_faction')}>
                 {Object.entries(FACTIONS).map(([f, fc]) => (
                   <button key={f} onClick={() => setFaction(f)} style={{
                     padding: "6px 10px", borderRadius: 6, cursor: "pointer", width: "100%",
@@ -2463,10 +2465,10 @@ export default function CardForge() {
                   La faction stockée reste celle choisie ; une race non native est
                   simplement autorisée (choix libre race↔faction). */}
               {FACTIONS[faction]?.races && (
-                <Sec title="Race">
+                <Sec title={tf('section_race')}>
                   {[
-                    { label: "Races principales", list: FACTIONS[faction].races },
-                    { label: "Toutes les races", list: [...new Set(Object.values(FACTIONS).flatMap(f => f.races))].sort() },
+                    { label: tf('main_races'), list: FACTIONS[faction].races },
+                    { label: tf('all_races'), list: [...new Set(Object.values(FACTIONS).flatMap(f => f.races))].sort() },
                   ].map(group => (
                     <div key={group.label} style={{ marginBottom: 6 }}>
                       <div style={{ fontSize: 8, color: "#aaa", letterSpacing: 1, marginBottom: 3 }}>{group.label}</div>
@@ -2489,7 +2491,7 @@ export default function CardForge() {
 
               {/* Clan selector — race-aware (transversal + race-specific clans) */}
               {getClanNamesForRace(faction, race).length > 0 && (
-                <Sec title="Clan">
+                <Sec title={tf('section_clan')}>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
                     {getClanNamesForRace(faction, race).map(c => (
                       <button key={c} onClick={() => setClan(clan === c ? "" : c)} style={{
@@ -2507,7 +2509,7 @@ export default function CardForge() {
 
               {/* Mercenaires alignment selector */}
               {faction === "Mercenaires" && (
-                <Sec title="Alignement">
+                <Sec title={tf('section_alignment')}>
                   <div style={{ display: "flex", gap: 3 }}>
                     {(["bon", "neutre", "maléfique"] as const).map(a => {
                       const al = ALIGNMENTS.find(x => x.id === a);
@@ -2525,7 +2527,7 @@ export default function CardForge() {
                 </Sec>
               )}
 
-              <Sec title="Type">
+              <Sec title={tf('section_type')}>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4 }}>
                   {TYPES.map(t => (
                     <button key={t} onClick={() => setType(t)} style={{
@@ -2539,7 +2541,7 @@ export default function CardForge() {
                 </div>
               </Sec>
 
-              <Sec title="Rareté">
+              <Sec title={tf('section_rarity')}>
                 {RARITIES.map(r => (
                   <button key={r.id} onClick={() => setRarity(r.id)} style={{
                     padding: "6px 10px", borderRadius: 6, cursor: "pointer", width: "100%",
@@ -2556,30 +2558,30 @@ export default function CardForge() {
                 ))}
               </Sec>
 
-              <Sec title="Set / Année">
+              <Sec title={tf('section_set_year')}>
                 <select value={cardSetId ?? ""} onChange={e => { const v = e.target.value; setCardSetId(v ? parseInt(v) : null); if (v) { setCardYear(null); setCardMonth(null); } }}
                   style={{ width: "100%", padding: "5px 8px", borderRadius: 5, border: "1px solid #e0e0e0", fontSize: 10, fontFamily: "'Cinzel',serif", marginBottom: 4 }}>
-                  <option value="">— Aucun set —</option>
+                  <option value="">{tf('no_set')}</option>
                   {sets.map(s => <option key={s.id} value={s.id}>{s.icon} {s.name} ({s.code})</option>)}
                 </select>
                 <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                  <span style={{ fontSize: 8, color: "#888" }}>OU Mois/Année :</span>
+                  <span style={{ fontSize: 8, color: "#888" }}>{tf('or_month_year')}</span>
                   <select value={cardMonth ?? ""} onChange={e => { const v = e.target.value ? parseInt(e.target.value) : null; setCardMonth(v); if (v && !cardYear) setCardYear(new Date().getFullYear()); if (v) setCardSetId(null); }}
                     disabled={!!cardSetId}
                     style={{ width: 70, padding: "3px 6px", borderRadius: 4, border: "1px solid #e0e0e0", fontSize: 10, fontFamily: "'Cinzel',serif", opacity: cardSetId ? 0.4 : 1 }}>
-                    <option value="">Mois</option>
+                    <option value="">{tf('month')}</option>
                     {["Jan","Fév","Mar","Avr","Mai","Juin","Juil","Aoû","Sep","Oct","Nov","Déc"].map((m, i) => (
                       <option key={i + 1} value={i + 1}>{m}</option>
                     ))}
                   </select>
-                  <input type="number" min={2020} max={2040} value={cardYear ?? ""} placeholder="ex: 2026"
+                  <input type="number" min={2020} max={2040} value={cardYear ?? ""} placeholder={tf('year_placeholder')}
                     onChange={e => { const v = e.target.value ? parseInt(e.target.value) : null; setCardYear(v); if (v) setCardSetId(null); }}
                     disabled={!!cardSetId}
                     style={{ width: 60, padding: "3px 6px", borderRadius: 4, border: "1px solid #e0e0e0", fontSize: 10, fontFamily: "'Cinzel',serif", opacity: cardSetId ? 0.4 : 1 }} />
                 </div>
               </Sec>
 
-              <Sec title="Mode">
+              <Sec title={tf('section_mode')}>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4 }}>
                   {(["auto", "manuel"] as const).map(m => (
                     <button key={m} onClick={() => setForgeMode(m)} style={{
@@ -2589,7 +2591,7 @@ export default function CardForge() {
                       color: forgeMode === m ? "#fff" : "#888",
                       fontFamily: "'Cinzel',serif", fontSize: 9, transition: "all 0.15s",
                       textTransform: "capitalize",
-                    }}>{m === "auto" ? "⚙ Auto" : "✏ Manuel"}</button>
+                    }}>{m === "auto" ? `⚙ ${tf('mode_auto')}` : `✏ ${tf('mode_manual')}`}</button>
                   ))}
                 </div>
               </Sec>
@@ -2605,7 +2607,7 @@ export default function CardForge() {
                   animation: loading ? "pulse 1.5s infinite" : "none",
                   transition: "all 0.3s",
                 }}>
-                  {loading ? "FORGE EN COURS…" : `${fac.emoji}  FORGER`}
+                  {loading ? tf('forging_caps') : `${fac.emoji}  ${tf('forge_button')}`}
                 </button>
               )}
 
@@ -2619,7 +2621,7 @@ export default function CardForge() {
                     boxShadow: `0 2px 12px ${fac.color}44`,
                     transition: "all 0.3s",
                   }}>
-                    {"✏ CRÉER"}
+                    {`✏ ${tf('create_button')}`}
                   </button>
                   <button onClick={resetManualForm} style={{
                     padding: "7px", borderRadius: 6, cursor: "pointer",
@@ -2627,7 +2629,7 @@ export default function CardForge() {
                     color: "#999", fontFamily: "'Cinzel',serif", fontSize: 9, fontWeight: 600,
                     transition: "all 0.2s",
                   }}>
-                    {"🗑 RÉINITIALISER"}
+                    {`🗑 ${tf('reset_button')}`}
                   </button>
                 </>
               )}
@@ -2650,7 +2652,7 @@ export default function CardForge() {
               {(card || (forgeMode === "manuel" && manualName)) && !loading && (
                 <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
                   <div style={{ flex: 1, minWidth: 140 }}>
-                    <label style={{ fontSize: 9, color: "#888", fontFamily: "'Cinzel',serif" }}>Son d&apos;invocation</label>
+                    <label style={{ fontSize: 9, color: "#888", fontFamily: "'Cinzel',serif" }}>{tf('summon_sound')}</label>
                     <input
                       type="file"
                       accept="audio/*"
@@ -2668,7 +2670,7 @@ export default function CardForge() {
                     />
                   </div>
                   <div style={{ flex: 1, minWidth: 140 }}>
-                    <label style={{ fontSize: 9, color: "#888", fontFamily: "'Cinzel',serif" }}>Son de mort</label>
+                    <label style={{ fontSize: 9, color: "#888", fontFamily: "'Cinzel',serif" }}>{tf('death_sound')}</label>
                     <input
                       type="file"
                       accept="audio/*"
@@ -2689,9 +2691,9 @@ export default function CardForge() {
               )}
               {(card || (forgeMode === "manuel" && manualName)) && !loading && (
                 <div style={{ display: "flex", gap: 7 }}>
-                  {forgeMode === "auto" && <Btn onClick={() => forgeCard()} label="🎲 Re-roll" color="#74b9ff" />}
+                  {forgeMode === "auto" && <Btn onClick={() => forgeCard()} label={`🎲 ${tf('reroll')}`} color="#74b9ff" />}
                   <Btn onClick={() => exportJSON([manualCard])} label="📤 JSON" color="#55efc4" />
-                  <Btn onClick={() => { if (!card) createManualCard(); saveToGame(manualCard); }} label={saving ? "⏳ …" : "💾 Nouvelle carte"} color="#ffd54f" />
+                  <Btn onClick={() => { if (!card) createManualCard(); saveToGame(manualCard); }} label={saving ? "⏳ …" : `💾 ${tf('new_card')}`} color="#ffd54f" />
                 </div>
               )}
               {saveResult && !loading && (
@@ -2710,7 +2712,7 @@ export default function CardForge() {
                 const currentPrompt = editedPrompt ?? basePrompt;
                 return (
                   <div style={{ maxWidth: 380, padding: "10px 14px", borderRadius: 8, background: "#fff", border: "1px solid #e0e0e0", fontFamily: "'Crimson Text',serif", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
-                    <div style={{ fontSize: 8, color: "#aaa", letterSpacing: 1.5, marginBottom: 4, fontFamily: "'Cinzel',serif" }}>ILLUSTRATION PROMPT</div>
+                    <div style={{ fontSize: 8, color: "#aaa", letterSpacing: 1.5, marginBottom: 4, fontFamily: "'Cinzel',serif" }}>{tf('illustration_prompt_label')}</div>
                     <textarea
                       value={currentPrompt}
                       onChange={e => setEditedPrompt(e.target.value)}
@@ -2723,27 +2725,27 @@ export default function CardForge() {
                       {illusRefImagePreview ? (
                         <div style={{ width: 54, height: 54, borderRadius: 6, overflow: "hidden", border: "1px solid #27ae60", flexShrink: 0 }}>
                           {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={illusRefImagePreview} alt="Référence" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                          <img src={illusRefImagePreview} alt={tf('reference')} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                         </div>
                       ) : (
                         <div style={{ width: 54, height: 54, borderRadius: 6, border: "2px dashed #ddd", background: "#fafafa", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, color: "#bbb", fontFamily: "'Cinzel',serif", flexShrink: 0, textAlign: "center", padding: 2 }}>
-                          Aucune réf.
+                          {tf('no_reference')}
                         </div>
                       )}
                       <div style={{ display: "flex", flexDirection: "column", gap: 3, flex: 1 }}>
-                        <span style={{ fontSize: 8, color: "#888", letterSpacing: 1, fontFamily: "'Cinzel',serif" }}>IMAGE DE RÉFÉRENCE (optionnel)</span>
+                        <span style={{ fontSize: 8, color: "#888", letterSpacing: 1, fontFamily: "'Cinzel',serif" }}>{tf('reference_image_optional')}</span>
                         <span style={{ fontSize: 9, color: "#777", fontFamily: "'Crimson Text',serif", lineHeight: 1.3 }}>
-                          Inspire la pose / composition / mood. Le style du prompt reste prioritaire.
+                          {tf('reference_image_hint')}
                         </span>
                         <div style={{ display: "flex", gap: 6, marginTop: 2 }}>
                           <label style={{ padding: "3px 10px", borderRadius: 5, border: "1px solid #ddd", background: "#fff", color: "#666", fontSize: 9, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>
-                            {illusRefImagePreview ? "Remplacer" : "Choisir une image"}
+                            {illusRefImagePreview ? tf('replace') : tf('choose_image')}
                             <input type="file" accept="image/*" onChange={handleIllusRefImageChange} style={{ display: "none" }} />
                           </label>
                           {illusRefImagePreview && (
                             <button type="button" onClick={clearIllusRefImage}
                               style={{ padding: "3px 10px", borderRadius: 5, border: "1px solid #f5a3a3", background: "#fff", color: "#e74c3c", fontSize: 9, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>
-                              Retirer
+                              {tf('remove_image')}
                             </button>
                           )}
                         </div>
@@ -2754,12 +2756,12 @@ export default function CardForge() {
                       <button onClick={() => navigator.clipboard.writeText(currentPrompt)} style={{
                         fontSize: 9, background: "none", border: "none",
                         color: "#27ae60", cursor: "pointer", fontFamily: "'Cinzel',serif",
-                      }}>[copier]</button>
+                      }}>{`[${tf('copy')}]`}</button>
                       {editedPrompt !== null && editedPrompt !== basePrompt && (
                         <button onClick={() => setEditedPrompt(null)} style={{
                           fontSize: 9, background: "none", border: "none",
                           color: "#e74c3c", cursor: "pointer", fontFamily: "'Cinzel',serif",
-                        }}>[reset]</button>
+                        }}>{`[${tf('reset_short')}]`}</button>
                       )}
                       <button
                         onClick={() => {
@@ -2775,7 +2777,7 @@ export default function CardForge() {
                           fontFamily: "'Cinzel',serif",
                           animation: generatingImage ? "pulse 1.5s infinite" : "none",
                         }}
-                      >{generatingImage ? "⏳ Génération…" : "🎨 Illustrer"}</button>
+                      >{generatingImage ? `⏳ ${tf('generating')}` : `🎨 ${tf('illustrate')}`}</button>
                     </div>
                   </div>
                 );
@@ -2787,8 +2789,8 @@ export default function CardForge() {
 
               {forgeMode === "auto" && !card && (
                 <>
-                  <div style={{ fontSize: 8, color: "#aaa", letterSpacing: 2, marginBottom: 10 }}>HISTORIQUE</div>
-                  {history.length === 0 && <div style={{ fontSize: 10, color: "#ccc", textAlign: "center", marginTop: 30 }}>Aucune carte</div>}
+                  <div style={{ fontSize: 8, color: "#aaa", letterSpacing: 2, marginBottom: 10 }}>{tf('history')}</div>
+                  {history.length === 0 && <div style={{ fontSize: 10, color: "#ccc", textAlign: "center", marginTop: 30 }}>{tf('no_card')}</div>}
                   {history.map(c => {
                     const f = FACTIONS[c.faction] || FACTIONS.Humains;
                     const r = RARITY_MAP[c.rarity];
@@ -2812,13 +2814,13 @@ export default function CardForge() {
 
               {(forgeMode === "manuel" || card) && (
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  <div style={{ fontSize: 8, color: "#aaa", letterSpacing: 2 }}>{"ÉDITION"}</div>
+                  <div style={{ fontSize: 8, color: "#aaa", letterSpacing: 2 }}>{tf('edition_label')}</div>
 
                   {/* Nom */}
                   <div>
-                    <label style={{ fontSize: 9, color: "#666", letterSpacing: 1 }}>NOM</label>
+                    <label style={{ fontSize: 9, color: "#666", letterSpacing: 1 }}>{tf('name_label')}</label>
                     <input type="text" value={manualName} onChange={e => setManualName(e.target.value)}
-                      placeholder="Nom de la carte"
+                      placeholder={tf('card_name_placeholder')}
                       style={{ width: "100%", padding: "6px 10px", borderRadius: 6, border: "1px solid #e0e0e0", background: "#fff", color: "#333", fontFamily: "'Crimson Text',serif", fontSize: 13, marginTop: 3 }}
                     />
                   </div>
@@ -2826,7 +2828,7 @@ export default function CardForge() {
                   {/* Mana + Stats */}
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6 }}>
                     <div>
-                      <label style={{ fontSize: 8, color: "#4a90d9", letterSpacing: 1 }}>MANA</label>
+                      <label style={{ fontSize: 8, color: "#4a90d9", letterSpacing: 1 }}>{tf('mana_label')}</label>
                       <input type="number" min={0} max={10} value={manualMana} onChange={e => setManualMana(Math.max(0, Math.min(10, parseInt(e.target.value) || 0)))}
                         style={{ width: "100%", padding: "5px 4px", borderRadius: 6, border: "1px solid #4a90d944", background: "#fff", color: "#4a90d9", fontFamily: "'Cinzel',serif", fontSize: 14, textAlign: "center", marginTop: 3 }}
                       />
@@ -2849,7 +2851,7 @@ export default function CardForge() {
                     ) : (
                       <div style={{ gridColumn: "span 2" }}>
                         <label style={{ fontSize: 8, color: "#9b59b6", letterSpacing: 1 }}>
-                          PUISSANCE
+                          {tf('power_label')}
                         </label>
                         <input type="number" min={1} max={20} value={manualPower} onChange={e => setManualPower(Math.max(1, parseInt(e.target.value) || 1))}
                           style={{ width: "100%", padding: "5px 4px", borderRadius: 6, border: "1px solid #9b59b644", background: "#fff", color: "#9b59b6", fontFamily: "'Cinzel',serif", fontSize: 14, textAlign: "center", marginTop: 3 }}
@@ -2861,19 +2863,19 @@ export default function CardForge() {
                   {/* Coûts additionnels (cumulables avec mana) */}
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6 }}>
                     <div>
-                      <label style={{ fontSize: 8, color: "#e74c3c", letterSpacing: 1 }} title="Points de vie payés par le héros à l'invocation. La carte est non-jouable si la somme tomberait à 0 PV.">♥ VIE</label>
+                      <label style={{ fontSize: 8, color: "#e74c3c", letterSpacing: 1 }} title={tf('life_cost_hint')}>♥ {tf('life_label')}</label>
                       <input type="number" min={0} max={20} value={manualLifeCost} onChange={e => setManualLifeCost(Math.max(0, Math.min(20, parseInt(e.target.value) || 0)))}
                         style={{ width: "100%", padding: "5px 4px", borderRadius: 6, border: "1px solid #e74c3c44", background: "#fff", color: "#e74c3c", fontFamily: "'Cinzel',serif", fontSize: 14, textAlign: "center", marginTop: 3 }}
                       />
                     </div>
                     <div>
-                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }} title="Nombre de cartes que le joueur doit défausser de sa main pour jouer cette carte.">🃏 DISCARD</label>
+                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }} title={tf('discard_cost_hint')}>🃏 {tf('discard_label')}</label>
                       <input type="number" min={0} max={5} value={manualDiscardCost} onChange={e => setManualDiscardCost(Math.max(0, Math.min(5, parseInt(e.target.value) || 0)))}
                         style={{ width: "100%", padding: "5px 4px", borderRadius: 6, border: "1px solid #88888844", background: "#fff", color: "#555", fontFamily: "'Cinzel',serif", fontSize: 14, textAlign: "center", marginTop: 3 }}
                       />
                     </div>
                     <div>
-                      <label style={{ fontSize: 8, color: "#a060a0", letterSpacing: 1 }} title="Nombre de créatures alliées que le joueur doit sacrifier pour jouer cette carte.">☠ SACRIFICE</label>
+                      <label style={{ fontSize: 8, color: "#a060a0", letterSpacing: 1 }} title={tf('sacrifice_cost_hint')}>☠ {tf('sacrifice_label')}</label>
                       <input type="number" min={0} max={5} value={manualSacrificeCost} onChange={e => setManualSacrificeCost(Math.max(0, Math.min(5, parseInt(e.target.value) || 0)))}
                         style={{ width: "100%", padding: "5px 4px", borderRadius: 6, border: "1px solid #a060a044", background: "#fff", color: "#a060a0", fontFamily: "'Cinzel',serif", fontSize: 14, textAlign: "center", marginTop: 3 }}
                       />
@@ -2883,11 +2885,11 @@ export default function CardForge() {
                   {/* Spell Keywords + Composable Effects Builder */}
                   {type !== "Unité" && (
                     <div style={{ border: "1px solid #9b59b633", borderRadius: 8, padding: 8, background: "#f9f0ff" }}>
-                      <label style={{ fontSize: 9, color: "#9b59b6", letterSpacing: 1, fontWeight: 700 }}>EFFETS DU SORT</label>
+                      <label style={{ fontSize: 9, color: "#9b59b6", letterSpacing: 1, fontWeight: 700 }}>{tf('spell_effects_label')}</label>
 
                       {/* Spell Keywords */}
                       <div style={{ marginTop: 5 }}>
-                        <label style={{ fontSize: 8, color: "#666", letterSpacing: 1 }}>SPELL KEYWORDS</label>
+                        <label style={{ fontSize: 8, color: "#666", letterSpacing: 1 }}>{tf('spell_keywords_label')}</label>
                         <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginTop: 3 }}>
                           {[...ALL_SPELL_KEYWORDS].sort((a, b) => (SPELL_KEYWORD_LABELS[a] ?? a).localeCompare(SPELL_KEYWORD_LABELS[b] ?? b, "fr")).map(kwId => {
                             const def = SPELL_KEYWORDS[kwId];
@@ -2997,7 +2999,7 @@ export default function CardForge() {
                               )}
                               {kw.id === "invocation" && (
                                 <div style={{ flexBasis: "100%", marginTop: 2 }}>
-                                  <label style={{ fontSize: 7, color: "#27ae60", letterSpacing: 1, fontFamily: "'Cinzel',serif" }}>TOKEN À INVOQUER</label>
+                                  <label style={{ fontSize: 7, color: "#27ae60", letterSpacing: 1, fontFamily: "'Cinzel',serif" }}>{tf('token_to_summon')}</label>
                                   <TokenCascadePicker
                                     value={kw.token_id ?? null}
                                     onChange={(newId) => {
@@ -3016,11 +3018,11 @@ export default function CardForge() {
                                 </div>
                               )}
                               {kw.id === "invocation_multiple" && (
-                                <div style={{ fontSize: 8, color: "#9b59b6", marginTop: 2 }}>Config dans &quot;Tokens à invoquer&quot; ci-dessous</div>
+                                <div style={{ fontSize: 8, color: "#9b59b6", marginTop: 2 }}>{tf('config_below_tokens')}</div>
                               )}
                               {kw.id === "renforcement_multiple" && (
                                 <div style={{ flexBasis: "100%", marginTop: 2 }}>
-                                  <label style={{ fontSize: 7, color: "#2c5d99", letterSpacing: 1, fontFamily: "'Cinzel',serif" }}>RACE / CLAN CIBLÉ</label>
+                                  <label style={{ fontSize: 7, color: "#2c5d99", letterSpacing: 1, fontFamily: "'Cinzel',serif" }}>{tf('targeted_race_clan')}</label>
                                   <RaceClanPicker
                                     race={kw.race ?? ""}
                                     clan={kw.clan ?? ""}
@@ -3030,10 +3032,10 @@ export default function CardForge() {
                               )}
                               {kw.id === "appel_supreme" && (
                                 <div style={{ flexBasis: "100%", marginTop: 2 }}>
-                                  <label style={{ fontSize: 7, color: "#10b981", letterSpacing: 1, fontFamily: "'Cinzel',serif" }}>RACE CIBLÉE {!kw.race && <span style={{ color: "#e74c3c" }}>· requise</span>}</label>
+                                  <label style={{ fontSize: 7, color: "#10b981", letterSpacing: 1, fontFamily: "'Cinzel',serif" }}>{tf('targeted_race')} {!kw.race && <span style={{ color: "#e74c3c" }}>· {tf('required')}</span>}</label>
                                   <select value={kw.race ?? ""} onChange={e => setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, race: e.target.value || undefined } : k))}
                                     style={{ display: "block", marginTop: 2, padding: "3px 6px", borderRadius: 5, border: "1px solid #10b98144", fontSize: 11, fontFamily: "'Cinzel',serif", background: "#fff" }}>
-                                    <option value="">-- Choisir une race --</option>
+                                    <option value="">{tf('choose_race')}</option>
                                     {Array.from(new Set(Object.values(FACTIONS).flatMap(f => f.races))).sort().map(r => <option key={r} value={r}>{r}</option>)}
                                   </select>
                                 </div>
@@ -3046,7 +3048,7 @@ export default function CardForge() {
                       {/* Token list for invocation_multiple spell keyword */}
                       {spellKeywords.some(k => k.id === "invocation_multiple") && (
                         <div style={{ marginTop: 6, border: "1px solid #9b59b633", borderRadius: 6, padding: 8, background: "#f0e8ff" }}>
-                          <label style={{ fontSize: 8, color: "#9b59b6", letterSpacing: 1, fontWeight: 700 }}>TOKENS À INVOQUER</label>
+                          <label style={{ fontSize: 8, color: "#9b59b6", letterSpacing: 1, fontWeight: 700 }}>{tf('tokens_to_summon')}</label>
                           {convocationTokens.map((tok, idx) => {
                             const tmpl = tokenTemplates.find(t => t.id === tok.token_id);
                             return (
@@ -3058,18 +3060,18 @@ export default function CardForge() {
                                   compact
                                 />
                                 <div style={{ display: "flex", gap: 6, alignItems: "center", marginTop: 4 }}>
-                                  <span style={{ fontSize: 8, color: "#999", letterSpacing: 1 }}>OVERRIDE :</span>
+                                  <span style={{ fontSize: 8, color: "#999", letterSpacing: 1 }}>{tf('override_label')}</span>
                                   <input type="number" min={0} max={20}
                                     value={tok.attack ?? ""}
                                     placeholder={tmpl ? String(tmpl.attack) : "ATK"}
                                     onChange={e => setConvocationTokens(prev => prev.map((t, i) => i === idx ? { ...t, attack: e.target.value ? Math.max(0, parseInt(e.target.value)) : undefined } : t))}
-                                    style={{ width: 36, padding: "2px", borderRadius: 4, border: "1px solid #e74c3c44", fontSize: 10, textAlign: "center", color: "#e74c3c", fontFamily: "'Cinzel',serif" }} title="ATK override" />
+                                    style={{ width: 36, padding: "2px", borderRadius: 4, border: "1px solid #e74c3c44", fontSize: 10, textAlign: "center", color: "#e74c3c", fontFamily: "'Cinzel',serif" }} title={tf('atk_override')} />
                                   <span style={{ fontSize: 8, color: "#999" }}>/</span>
                                   <input type="number" min={1} max={20}
                                     value={tok.health ?? ""}
                                     placeholder={tmpl ? String(tmpl.health) : "DEF"}
                                     onChange={e => setConvocationTokens(prev => prev.map((t, i) => i === idx ? { ...t, health: e.target.value ? Math.max(1, parseInt(e.target.value)) : undefined } : t))}
-                                    style={{ width: 36, padding: "2px", borderRadius: 4, border: "1px solid #f1c40f44", fontSize: 10, textAlign: "center", color: "#f1c40f", fontFamily: "'Cinzel',serif" }} title="DEF override" />
+                                    style={{ width: 36, padding: "2px", borderRadius: 4, border: "1px solid #f1c40f44", fontSize: 10, textAlign: "center", color: "#f1c40f", fontFamily: "'Cinzel',serif" }} title={tf('def_override')} />
                                   <button onClick={() => setConvocationTokens(prev => prev.filter((_, i) => i !== idx))}
                                     style={{ marginLeft: "auto", padding: "1px 7px", borderRadius: 3, border: "1px solid #f5a3a3", background: "#fde8e8", color: "#e74c3c", fontSize: 9, cursor: "pointer" }}>×</button>
                                 </div>
@@ -3078,7 +3080,7 @@ export default function CardForge() {
                           })}
                           <button onClick={() => setConvocationTokens(prev => [...prev, { token_id: 0 }])}
                             style={{ marginTop: 6, padding: "3px 10px", borderRadius: 4, border: "1px solid #9b59b644", background: "#fff", color: "#9b59b6", fontSize: 9, cursor: "pointer", fontFamily: "'Cinzel',serif" }}>
-                            + Ajouter un token
+                            {tf('add_token')}
                           </button>
                         </div>
                       )}
@@ -3086,7 +3088,7 @@ export default function CardForge() {
                       {/* Composable Effects (JSON editor for now — full tree builder in future iteration) */}
                       <div style={{ marginTop: 8 }}>
                         <details>
-                          <summary style={{ fontSize: 8, color: "#666", letterSpacing: 1, cursor: "pointer" }}>EFFETS COMPOSABLES (avancé)</summary>
+                          <summary style={{ fontSize: 8, color: "#666", letterSpacing: 1, cursor: "pointer" }}>{tf('composable_effects_advanced')}</summary>
                           <textarea
                             value={spellEffectsData ? JSON.stringify(spellEffectsData, null, 2) : ""}
                             placeholder='{"targets":[{"slot":"target_0","type":"enemy_creature"}],"effects":[{"type":"deal_damage","target_slot":"target_0","amount":2}]}'
@@ -3107,7 +3109,7 @@ export default function CardForge() {
                             }}
                           />
                           <div style={{ fontSize: 7, color: "#999", marginTop: 2 }}>
-                            JSON : targets (slots de cible) + effects (arbre if/then/else)
+                            {tf('json_hint')}
                           </div>
                         </details>
                       </div>
@@ -3124,7 +3126,7 @@ export default function CardForge() {
 
                   {/* Capacités */}
                   <div style={{ position: "relative" }}>
-                    <label style={{ fontSize: 9, color: "#666", letterSpacing: 1 }}>CAPACITÉS ({manualKeywords.length})</label>
+                    <label style={{ fontSize: 9, color: "#666", letterSpacing: 1 }}>{tf('abilities_count', { count: manualKeywords.length })}</label>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginTop: 4 }}>
                       {availableManualKeywords.map(([id, kw]) => {
                         const selected = manualKeywords.includes(id);
@@ -3197,7 +3199,7 @@ export default function CardForge() {
                                           return next;
                                         });
                                       }}
-                                      title={mode === "play" ? "À l'invocation (défaut)" : mode === "death" ? "À la mort (deathrattle)" : mode === "tap" ? "Activée par tap (engagement)" : mode === "return" ? "Au retour en main" : mode === "attack" ? "À l'attaque" : "À la fin du tour"}
+                                      title={mode === "play" ? tf('mode_title_play') : mode === "death" ? tf('mode_title_death') : mode === "tap" ? tf('mode_title_tap') : mode === "return" ? tf('mode_title_return') : mode === "attack" ? tf('mode_title_attack') : tf('mode_title_end_of_turn')}
                                       style={{
                                         width: 18, height: 18, borderRadius: 3,
                                         background: active ? color : "transparent",
@@ -3217,7 +3219,7 @@ export default function CardForge() {
                                 (vert). Drives the green/white icon on the card. */}
                             {selected && type !== "Unité" && (
                               <div style={{ display: "inline-flex", gap: 2, marginLeft: 4 }}>
-                                {([["target", "◯", "#888", "Conférée à la créature ciblée"], ["all_allies", "⦿", "#27ae60", "Conférée à toutes les unités alliées"]] as const).map(([val, sym, color, title]) => {
+                                {([["target", "◯", "#888", tf('grant_scope_target')], ["all_allies", "⦿", "#27ae60", tf('grant_scope_all_allies')]] as const).map(([val, sym, color, title]) => {
                                   const activeScope = (keywordGrantScope[id] === "all_allies" ? "all_allies" : "target") === val;
                                   return (
                                     <button
@@ -3255,7 +3257,7 @@ export default function CardForge() {
                     ) && (
                       <div style={{ marginTop: 6, padding: 6, borderRadius: 6, border: `1px solid ${convocationTokenId ? "#f1c40f44" : "#e74c3c"}`, background: "#fffdf3" }}>
                         <div style={{ fontSize: 8, color: "#f1c40f", letterSpacing: 1, fontWeight: 700, marginBottom: 4 }}>
-                          TOKEN À INVOQUER {!convocationTokenId && <span style={{ color: "#e74c3c", marginLeft: 4 }}>· Requis</span>}
+                          {tf('token_to_summon')} {!convocationTokenId && <span style={{ color: "#e74c3c", marginLeft: 4 }}>· {tf('required_caps')}</span>}
                         </div>
                         <TokenCascadePicker
                           value={convocationTokenId}
@@ -3269,7 +3271,7 @@ export default function CardForge() {
                     {manualKeywords.includes("Lycanthropie X") && (
                       <div style={{ marginTop: 6, padding: 6, borderRadius: 6, border: `1px solid ${lycanthropieTokenId ? "#8b5cf644" : "#e74c3c"}`, background: "#faf5ff" }}>
                         <div style={{ fontSize: 8, color: "#8b5cf6", letterSpacing: 1, fontWeight: 700, marginBottom: 4 }}>
-                          🐺 TOKEN DE TRANSFORMATION {!lycanthropieTokenId && <span style={{ color: "#e74c3c", marginLeft: 4 }}>· Requis</span>}
+                          🐺 {tf('transformation_token')} {!lycanthropieTokenId && <span style={{ color: "#e74c3c", marginLeft: 4 }}>· {tf('required_caps')}</span>}
                         </div>
                         <TokenCascadePicker
                           value={lycanthropieTokenId}
@@ -3283,11 +3285,11 @@ export default function CardForge() {
                     {manualKeywords.includes("Entraide (Race)") && (
                       <div style={{ marginTop: 6, padding: 6, borderRadius: 6, border: `1px solid ${entraideRace ? "#10b98144" : "#e74c3c"}`, background: "#f0fdf4" }}>
                         <div style={{ fontSize: 8, color: "#10b981", letterSpacing: 1, fontWeight: 700, marginBottom: 4 }}>
-                          🤝 RACE CIBLE {!entraideRace && <span style={{ color: "#e74c3c", marginLeft: 4 }}>· Requise</span>}
+                          🤝 {tf('target_race_label')} {!entraideRace && <span style={{ color: "#e74c3c", marginLeft: 4 }}>· {tf('required_caps_f')}</span>}
                         </div>
                         <select value={entraideRace} onChange={e => setEntraideRace(e.target.value)}
                           style={{ width: "100%", padding: "4px 8px", borderRadius: 5, border: "1px solid #10b98144", fontSize: 10, fontFamily: "'Cinzel',serif", background: "#fff" }}>
-                          <option value="">-- Choisir une race --</option>
+                          <option value="">{tf('choose_race')}</option>
                           {Array.from(new Set(Object.values(FACTIONS).flatMap(f => f.races))).sort().map(r => (
                             <option key={r} value={r}>{r}</option>
                           ))}
@@ -3304,7 +3306,7 @@ export default function CardForge() {
                             onChange={e => setRmY(Math.max(0, parseInt(e.target.value) || 0))}
                             style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: "1px solid #cfe0f5", fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }}
                           />
-                          <span style={{ fontSize: 8, color: "#888" }}>(le +ATK = la valeur X)</span>
+                          <span style={{ fontSize: 8, color: "#888" }}>{tf('atk_is_x')}</span>
                         </div>
                         <RaceClanPicker race={rmRace} clan={rmClan} onChange={(r, c) => { setRmRace(r); setRmClan(c); }} />
                       </div>
@@ -3319,7 +3321,7 @@ export default function CardForge() {
                             onChange={e => setAfY(Math.max(0, parseInt(e.target.value) || 0))}
                             style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: "1px solid #f5cfcf", fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }}
                           />
-                          <span style={{ fontSize: 8, color: "#888" }}>(le -ATK = la valeur X)</span>
+                          <span style={{ fontSize: 8, color: "#888" }}>{tf('neg_atk_is_x')}</span>
                         </div>
                       </div>
                     )}
@@ -3345,11 +3347,11 @@ export default function CardForge() {
                     {manualKeywords.includes("Appel Suprême") && (
                       <div style={{ marginTop: 6, padding: 6, borderRadius: 6, border: `1px solid ${asRace ? "#10b98144" : "#e74c3c"}`, background: "#f0fdf4" }}>
                         <div style={{ fontSize: 8, color: "#10b981", letterSpacing: 1, fontWeight: 700, marginBottom: 4 }}>
-                          🎺 RACE CIBLE {!asRace && <span style={{ color: "#e74c3c", marginLeft: 4 }}>· Requise</span>}
+                          🎺 {tf('target_race_label')} {!asRace && <span style={{ color: "#e74c3c", marginLeft: 4 }}>· {tf('required_caps_f')}</span>}
                         </div>
                         <select value={asRace} onChange={e => setAsRace(e.target.value)}
                           style={{ width: "100%", padding: "4px 8px", borderRadius: 5, border: "1px solid #10b98144", fontSize: 10, fontFamily: "'Cinzel',serif", background: "#fff" }}>
-                          <option value="">-- Choisir une race --</option>
+                          <option value="">{tf('choose_race')}</option>
                           {Array.from(new Set(Object.values(FACTIONS).flatMap(f => f.races))).sort().map(r => (
                             <option key={r} value={r}>{r}</option>
                           ))}
@@ -3359,16 +3361,16 @@ export default function CardForge() {
                     {/* Conférer — capacité conférée + portée */}
                     {manualKeywords.includes("Conférer") && (
                       <div style={{ marginTop: 6, padding: 6, borderRadius: 6, border: `1px solid ${conferAbilityId ? "#8a6d3b44" : "#e74c3c"}`, background: "#fffdf6" }}>
-                        <div style={{ fontSize: 8, color: "#8a6d3b", letterSpacing: 1, fontWeight: 700, marginBottom: 4 }}>✋ CAPACITÉ CONFÉRÉE {!conferAbilityId && <span style={{ color: "#e74c3c" }}>· requise</span>}</div>
+                        <div style={{ fontSize: 8, color: "#8a6d3b", letterSpacing: 1, fontWeight: 700, marginBottom: 4 }}>✋ {tf('label_granted_ability')} {!conferAbilityId && <span style={{ color: "#e74c3c" }}>· {tf('required')}</span>}</div>
                         <select value={conferAbilityId} onChange={e => setConferAbilityId(e.target.value)}
                           style={{ width: "100%", padding: "4px 8px", borderRadius: 5, border: "1px solid #8a6d3b44", fontSize: 10, fontFamily: "'Cinzel',serif", background: "#fff", marginBottom: 4 }}>
-                          <option value="">-- Choisir une capacité --</option>
+                          <option value="">{tf('choose_ability')}</option>
                           {Object.values(ABILITIES).filter(a => a.triggers?.grantable && a.applicable_to.includes("creature")).sort((a, b) => (a.creature?.label ?? a.label).localeCompare(b.creature?.label ?? b.label, "fr")).map(a => (
                             <option key={creatureEngineId(a)} value={creatureEngineId(a)}>{a.creature?.label ?? a.label}</option>
                           ))}
                         </select>
                         <div style={{ display: "inline-flex", gap: 6 }}>
-                          {([["target", "1 allié ciblé"], ["all_allies", "Tous les alliés"]] as const).map(([val, txt]) => {
+                          {([["target", tf('scope_one_ally')], ["all_allies", tf('scope_all_allies')]] as const).map(([val, txt]) => {
                             const active = (keywordGrantScope["Conférer"] === "all_allies" ? "all_allies" : "target") === val;
                             return (
                               <button key={val} onClick={() => setKeywordGrantScope(prev => { const n = { ...prev }; if (val === "all_allies") n["Conférer"] = "all_allies"; else delete n["Conférer"]; return n; })}
@@ -3381,9 +3383,9 @@ export default function CardForge() {
                     {/* Déclenchement — sous-ensemble figé de déclencheurs rejoués */}
                     {manualKeywords.includes("Déclenchement") && (
                       <div style={{ marginTop: 6, padding: 6, borderRadius: 6, border: `1px solid ${declenchementTriggers.length ? "#8a6d3b44" : "#e74c3c"}`, background: "#fffdf6" }}>
-                        <div style={{ fontSize: 8, color: "#8a6d3b", letterSpacing: 1, fontWeight: 700, marginBottom: 4 }}>🔂 DÉCLENCHEURS REJOUÉS {!declenchementTriggers.length && <span style={{ color: "#e74c3c" }}>· requis</span>}</div>
+                        <div style={{ fontSize: 8, color: "#8a6d3b", letterSpacing: 1, fontWeight: 700, marginBottom: 4 }}>🔂 {tf('replayed_triggers')} {!declenchementTriggers.length && <span style={{ color: "#e74c3c" }}>· {tf('required_m')}</span>}</div>
                         <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                          {([["on_play", "Entrée en jeu"], ["on_death", "Mort"], ["on_end_of_turn", "Fin du tour"], ["on_return", "Retour en main"]] as const).map(([val, txt]) => {
+                          {([["on_play", tf('trigger_short_on_play')], ["on_death", tf('trigger_short_on_death')], ["on_end_of_turn", tf('trigger_short_end_of_turn')], ["on_return", tf('trigger_short_on_return')]] as const).map(([val, txt]) => {
                             const active = declenchementTriggers.includes(val);
                             return (
                               <button key={val} type="button" onClick={() => setDeclenchementTriggers(prev => active ? prev.filter(t => t !== val) : [...prev, val])}
@@ -3396,7 +3398,7 @@ export default function CardForge() {
                     {/* Convocations multiples — list of token entries with optional stat overrides */}
                     {manualKeywords.includes("Convocations multiples") && (
                       <div style={{ marginTop: 6, border: "1px solid #9b59b633", borderRadius: 6, padding: 8, background: "#f9f0ff" }}>
-                        <label style={{ fontSize: 8, color: "#9b59b6", letterSpacing: 1, fontWeight: 700 }}>TOKENS À INVOQUER</label>
+                        <label style={{ fontSize: 8, color: "#9b59b6", letterSpacing: 1, fontWeight: 700 }}>{tf('tokens_to_summon')}</label>
                         {convocationTokens.map((tok, idx) => {
                           const tmpl = tokenTemplates.find(t => t.id === tok.token_id);
                           return (
@@ -3413,13 +3415,13 @@ export default function CardForge() {
                                   value={tok.attack ?? ""}
                                   placeholder={tmpl ? String(tmpl.attack) : "ATK"}
                                   onChange={e => setConvocationTokens(prev => prev.map((t, i) => i === idx ? { ...t, attack: e.target.value ? Math.max(0, parseInt(e.target.value)) : undefined } : t))}
-                                  style={{ width: 36, padding: "2px", borderRadius: 4, border: "1px solid #e74c3c44", fontSize: 10, textAlign: "center", color: "#e74c3c", fontFamily: "'Cinzel',serif" }} title="ATK override" />
+                                  style={{ width: 36, padding: "2px", borderRadius: 4, border: "1px solid #e74c3c44", fontSize: 10, textAlign: "center", color: "#e74c3c", fontFamily: "'Cinzel',serif" }} title={tf('atk_override')} />
                                 <span style={{ fontSize: 8, color: "#999" }}>/</span>
                                 <input type="number" min={1} max={20}
                                   value={tok.health ?? ""}
                                   placeholder={tmpl ? String(tmpl.health) : "DEF"}
                                   onChange={e => setConvocationTokens(prev => prev.map((t, i) => i === idx ? { ...t, health: e.target.value ? Math.max(1, parseInt(e.target.value)) : undefined } : t))}
-                                  style={{ width: 36, padding: "2px", borderRadius: 4, border: "1px solid #f1c40f44", fontSize: 10, textAlign: "center", color: "#f1c40f", fontFamily: "'Cinzel',serif" }} title="DEF override" />
+                                  style={{ width: 36, padding: "2px", borderRadius: 4, border: "1px solid #f1c40f44", fontSize: 10, textAlign: "center", color: "#f1c40f", fontFamily: "'Cinzel',serif" }} title={tf('def_override')} />
                                 <button onClick={() => setConvocationTokens(prev => prev.filter((_, i) => i !== idx))}
                                   style={{ marginLeft: "auto", padding: "1px 7px", borderRadius: 3, border: "1px solid #f5a3a3", background: "#fde8e8", color: "#e74c3c", fontSize: 9, cursor: "pointer" }}>×</button>
                               </div>
@@ -3428,7 +3430,7 @@ export default function CardForge() {
                         })}
                         <button onClick={() => setConvocationTokens(prev => [...prev, { token_id: 0 }])}
                           style={{ marginTop: 6, padding: "3px 10px", borderRadius: 4, border: "1px solid #9b59b644", background: "#fff", color: "#9b59b6", fontSize: 9, cursor: "pointer", fontFamily: "'Cinzel',serif" }}>
-                          + Ajouter un token
+                          {tf('add_token')}
                         </button>
                       </div>
                     )}
@@ -3458,8 +3460,8 @@ export default function CardForge() {
                             {kwDef.desc}
                           </div>
                           <div style={{ display: "flex", gap: 8, fontSize: 10, color: "#999" }}>
-                            <span>Tier : <strong style={{ color: "#bbb" }}>{tierLabel}</strong></span>
-                            <span>Coût : <strong style={{ color: "#bbb" }}>{kwDef.cost} pts</strong>{kwDef.costPerX > 0 && <> (+{kwDef.costPerX}/X)</>}</span>
+                            <span>{tf('tier_label')} <strong style={{ color: "#bbb" }}>{tierLabel}</strong></span>
+                            <span>{tf('cost_label')} <strong style={{ color: "#bbb" }}>{tf('points_value', { pts: kwDef.cost })}</strong>{kwDef.costPerX > 0 && <> (+{kwDef.costPerX}/X)</>}</span>
                             <span style={{ color: kwDef.zone === "Terrain" ? "#4caf50" : kwDef.zone === "Cimetière" ? "#9b59b6" : kwDef.zone === "Main" ? "#3498db" : "#f39c12" }}>
                               {kwDef.zone}
                             </span>
@@ -3471,9 +3473,9 @@ export default function CardForge() {
 
                   {/* Ability */}
                   <div>
-                    <label style={{ fontSize: 9, color: "#666", letterSpacing: 1 }}>POUVOIR SPÉCIFIQUE</label>
+                    <label style={{ fontSize: 9, color: "#666", letterSpacing: 1 }}>{tf('specific_power_label')}</label>
                     <textarea value={manualAbility} onChange={e => setManualAbility(e.target.value)}
-                      placeholder="Texte du pouvoir spécifique…"
+                      placeholder={tf('specific_power_placeholder')}
                       rows={3}
                       style={{ width: "100%", padding: "6px 10px", borderRadius: 6, border: "1px solid #e0e0e0", background: "#fff", color: "#333", fontFamily: "'Crimson Text',serif", fontSize: 12, marginTop: 3, resize: "vertical" }}
                     />
@@ -3481,9 +3483,9 @@ export default function CardForge() {
 
                   {/* Flavor Text */}
                   <div>
-                    <label style={{ fontSize: 9, color: "#666", letterSpacing: 1 }}>TEXTE D&apos;AMBIANCE</label>
+                    <label style={{ fontSize: 9, color: "#666", letterSpacing: 1 }}>{tf('flavor_text_label')}</label>
                     <textarea value={manualFlavorText} onChange={e => setManualFlavorText(e.target.value)}
-                      placeholder="Citation narrative…"
+                      placeholder={tf('flavor_text_placeholder')}
                       rows={2}
                       style={{ width: "100%", padding: "6px 10px", borderRadius: 6, border: "1px solid #e0e0e0", background: "#fff", color: "#888", fontFamily: "'Crimson Text',serif", fontSize: 11, fontStyle: "italic", marginTop: 3, resize: "vertical" }}
                     />
@@ -3493,9 +3495,9 @@ export default function CardForge() {
                       both the AI-generated prompt and (at image-gen
                       time) the prompt sent to the image model. */}
                   <div>
-                    <label style={{ fontSize: 9, color: "#666", letterSpacing: 1 }}>CONTEXTE SUPPLÉMENTAIRE (optionnel)</label>
+                    <label style={{ fontSize: 9, color: "#666", letterSpacing: 1 }}>{tf('extra_context_label')}</label>
                     <textarea value={manualExtraContext} onChange={e => setManualExtraContext(e.target.value)}
-                      placeholder="Ex : tient une épée enflammée, regard menaçant, vue de dos, brouillard rougeâtre, armure dorée…"
+                      placeholder={tf('extra_context_placeholder')}
                       rows={2}
                       style={{ width: "100%", padding: "6px 10px", borderRadius: 6, border: "1px solid #e0e0e0", background: "#fff", color: "#333", fontFamily: "'Crimson Text',serif", fontSize: 11, marginTop: 3, resize: "vertical" }}
                     />
@@ -3504,7 +3506,7 @@ export default function CardForge() {
                   {/* Illustration Prompt */}
                   <div>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <label style={{ fontSize: 9, color: "#666", letterSpacing: 1 }}>PROMPT ILLUSTRATION</label>
+                      <label style={{ fontSize: 9, color: "#666", letterSpacing: 1 }}>{tf('illustration_prompt_label2')}</label>
                       <button
                         disabled={genIllusPromptLoading || !faction || !type || !rarity}
                         onClick={async () => {
@@ -3527,22 +3529,22 @@ export default function CardForge() {
                             const data = await res.json().catch(() => null);
                             if (!res.ok) {
                               console.error('[card-forge] generate-text HTTP error', res.status, data);
-                              setSaveResult({ ok: false, msg: `Erreur API (${res.status}): ${data?.error || 'voir console'}` });
+                              setSaveResult({ ok: false, msg: tf('api_error', { status: res.status, detail: data?.error || tf('see_console') }) });
                               return;
                             }
                             if (!data?.illustrationPrompt) {
                               console.warn('[card-forge] generate-text returned no illustrationPrompt', data);
-                              setSaveResult({ ok: false, msg: "L'IA n'a pas renvoyé de prompt — vérifier ANTHROPIC_API_KEY et les logs serveur" });
+                              setSaveResult({ ok: false, msg: tf('ai_no_prompt') });
                               return;
                             }
                             setManualIllustrationPrompt(data.illustrationPrompt);
                             if (!manualAbility && data.ability) setManualAbility(data.ability);
                             if (!manualFlavorText && data.flavorText) setManualFlavorText(data.flavorText);
                             if (!manualName && data.name) setManualName(data.name);
-                            setSaveResult({ ok: true, msg: "Prompt illustration généré" });
+                            setSaveResult({ ok: true, msg: tf('illustration_prompt_generated') });
                           } catch (err) {
                             console.error('[card-forge] generate-text fetch failed', err);
-                            setSaveResult({ ok: false, msg: err instanceof Error ? err.message : "Erreur réseau" });
+                            setSaveResult({ ok: false, msg: err instanceof Error ? err.message : tf('network_error') });
                           } finally {
                             setGenIllusPromptLoading(false);
                           }
@@ -3554,10 +3556,10 @@ export default function CardForge() {
                           color: "#6c5ce7", fontFamily: "'Cinzel',serif",
                           opacity: genIllusPromptLoading || !faction || !type || !rarity ? 0.5 : 1,
                         }}
-                      >{genIllusPromptLoading ? "⏳ Génération…" : "🤖 Générer par IA"}</button>
+                      >{genIllusPromptLoading ? `⏳ ${tf('generating')}` : `🤖 ${tf('generate_by_ai')}`}</button>
                     </div>
                     <textarea value={manualIllustrationPrompt} onChange={e => setManualIllustrationPrompt(e.target.value)}
-                      placeholder="English prompt for image generation…"
+                      placeholder={tf('english_prompt_placeholder')}
                       rows={3}
                       style={{ width: "100%", padding: "6px 10px", borderRadius: 6, border: "1px solid #e0e0e0", background: "#fff", color: "#666", fontFamily: "'Crimson Text',serif", fontSize: 11, marginTop: 3, resize: "vertical" }}
                     />
@@ -3573,14 +3575,14 @@ export default function CardForge() {
         {tab === "capacites" && (() => {
           const isUnit = type === "Unité";
           const TRIGGER_FR: Record<string, string> = {
-            play: "À l'entrée", on_play: "À l'entrée",
-            death: "À la mort", on_death: "À la mort",
-            tap: "À l'activation (tap)", on_activation: "À l'activation (tap)",
-            return: "Au retour en main", on_return: "Au retour en main",
-            end_of_turn: "À la fin du tour", on_end_of_turn: "À la fin du tour",
-            attack: "À l'attaque", on_attack: "À l'attaque",
-            automatic: "Automatique (passif/conditionnel)",
-            spell_resolution: "À la résolution du sort",
+            play: tf('trigger_on_play'), on_play: tf('trigger_on_play'),
+            death: tf('trigger_on_death'), on_death: tf('trigger_on_death'),
+            tap: tf('trigger_tap_activation'), on_activation: tf('trigger_tap_activation'),
+            return: tf('trigger_on_return'), on_return: tf('trigger_on_return'),
+            end_of_turn: tf('trigger_on_end_of_turn'), on_end_of_turn: tf('trigger_on_end_of_turn'),
+            attack: tf('trigger_on_attack'), on_attack: tf('trigger_on_attack'),
+            automatic: tf('trigger_automatic'),
+            spell_resolution: tf('trigger_spell_resolution_full'),
           };
           // Capacités créature qui réclament une cible à l'entrée (informatif).
           const CREATURE_TARGET_LABELS = new Set([
@@ -3621,8 +3623,8 @@ export default function CardForge() {
               <div style={{ display: "flex", gap: 20, maxWidth: 1040, margin: "0 auto", alignItems: "flex-start" }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-                  <span style={{ fontFamily: "'Cinzel',serif", fontSize: 14, fontWeight: 700, color: fac.accent }}>✨ Capacités</span>
-                  <span style={{ fontSize: 10, color: "#888" }}>Contenant : <b style={{ color: fac.color }}>{isUnit ? "Unité" : "Sort"}</b> (déduit du type de carte)</span>
+                  <span style={{ fontFamily: "'Cinzel',serif", fontSize: 14, fontWeight: 700, color: fac.accent }}>✨ {tf('tab_capacities')}</span>
+                  <span style={{ fontSize: 10, color: "#888" }}>{tf('container_label')} <b style={{ color: fac.color }}>{isUnit ? "Unité" : "Sort"}</b> {tf('derived_from_type')}</span>
                 </div>
                 <div style={{ fontSize: 10, color: "#999", marginBottom: 12 }}>
                   {(card || (forgeMode === "manuel" && manualName))
@@ -3633,7 +3635,7 @@ export default function CardForge() {
                 {isUnit ? (
                   <>
                     {manualKeywords.length === 0 && (
-                      <div style={{ fontSize: 11, color: "#aaa", fontStyle: "italic", padding: "12px 0" }}>Aucune capacité. Ajoutez-en une ci-dessous.</div>
+                      <div style={{ fontSize: 11, color: "#aaa", fontStyle: "italic", padding: "12px 0" }}>{tf('no_ability_add_below')}</div>
                     )}
                     {manualKeywords.map(label => {
                       const def = abilityForLabel(label);
@@ -3646,10 +3648,10 @@ export default function CardForge() {
                           <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
                             <KeywordIcon symbol={KEYWORD_SYMBOLS[label] || "✦"} size={16} keyword={CREATURE_LABEL_TO_ENGINE_ID[label] ?? label} />
                             <span style={{ fontFamily: "'Cinzel',serif", fontSize: 12, fontWeight: 700, color: fac.accent, flex: 1 }}>{label}</span>
-                            <button onClick={() => removeCreatureCap(label)} style={{ border: "none", background: "transparent", color: "#c0392b", cursor: "pointer", fontSize: 14 }} title="Supprimer">✕</button>
+                            <button onClick={() => removeCreatureCap(label)} style={{ border: "none", background: "transparent", color: "#c0392b", cursor: "pointer", fontSize: 14 }} title={tf('remove')}>✕</button>
                           </div>
                           <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "6px 12px", alignItems: "center" }}>
-                            <span style={labelStyle}>DÉCLENCHEUR</span>
+                            <span style={labelStyle}>{tf('label_trigger')}</span>
                             {curated ? (
                               <select
                                 value={keywordModes[label] ?? "play"}
@@ -3667,49 +3669,49 @@ export default function CardForge() {
                               <span style={valStyle}>{TRIGGER_FR[fixedTrigger]}</span>
                             )}
 
-                            <span style={labelStyle}>TYPE D&apos;EFFET</span>
-                            <span style={valStyle}>Effet immédiat</span>
+                            <span style={labelStyle}>{tf('effect_type_label')}</span>
+                            <span style={valStyle}>{tf('immediate_effect')}</span>
 
-                            <span style={labelStyle}>EFFET</span>
+                            <span style={labelStyle}>{tf('effect_label')}</span>
                             <span style={{ ...valStyle, display: "flex", alignItems: "center", gap: 8 }}>
                               {def?.creature?.desc ?? def?.desc ?? label}
                               {scalable && label !== "Renforcement +X/+Y" && (
                                 <input type="number" min={1} max={10} value={keywordXValues[label] ?? 1}
                                   onChange={e => setKeywordXValues(prev => ({ ...prev, [label]: Math.max(1, Math.min(10, parseInt(e.target.value) || 1)) }))}
                                   style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: `1px solid ${fac.color}`, background: `${fac.color}11`, color: fac.color, fontSize: 11, textAlign: "center", fontWeight: 700, fontFamily: "'Cinzel',serif" }}
-                                  title="Valeur X" />
+                                  title={tf('x_value_title')} />
                               )}
                             </span>
 
-                            <span style={labelStyle}>CIBLE(S)</span>
-                            <span style={valStyle}>{CREATURE_TARGET_LABELS.has(label) && !keywordModes[label] ? "1 cible" : "—"}</span>
+                            <span style={labelStyle}>{tf('targets_label2')}</span>
+                            <span style={valStyle}>{CREATURE_TARGET_LABELS.has(label) && !keywordModes[label] ? tf('one_target') : "—"}</span>
                           </div>
 
                           {/* Config spécifique (token / race / clan), réutilise les mêmes sélecteurs */}
                           {(label === "Convocation X" || label === "Convocation") && (
                             <div style={{ marginTop: 8 }}>
-                              <div style={{ ...labelStyle, color: "#c79a0a", marginBottom: 3 }}>TOKEN À INVOQUER {!convocationTokenId && <span style={{ color: "#e74c3c" }}>· requis</span>}</div>
+                              <div style={{ ...labelStyle, color: "#c79a0a", marginBottom: 3 }}>{tf('token_to_summon')} {!convocationTokenId && <span style={{ color: "#e74c3c" }}>· {tf('required_m')}</span>}</div>
                               <TokenCascadePicker value={convocationTokenId} onChange={setConvocationTokenId} tokens={tokenTemplates} compact />
                             </div>
                           )}
                           {label === "Lycanthropie X" && (
                             <div style={{ marginTop: 8 }}>
-                              <div style={{ ...labelStyle, color: "#8b5cf6", marginBottom: 3 }}>🐺 TOKEN DE TRANSFORMATION {!lycanthropieTokenId && <span style={{ color: "#e74c3c" }}>· requis</span>}</div>
+                              <div style={{ ...labelStyle, color: "#8b5cf6", marginBottom: 3 }}>🐺 {tf('transformation_token')} {!lycanthropieTokenId && <span style={{ color: "#e74c3c" }}>· {tf('required_m')}</span>}</div>
                               <TokenCascadePicker value={lycanthropieTokenId} onChange={setLycanthropieTokenId} tokens={tokenTemplates} compact />
                             </div>
                           )}
                           {label === "Entraide (Race)" && (
                             <div style={{ marginTop: 8 }}>
-                              <div style={{ ...labelStyle, color: "#10b981", marginBottom: 3 }}>🤝 RACE CIBLE {!entraideRace && <span style={{ color: "#e74c3c" }}>· requise</span>}</div>
+                              <div style={{ ...labelStyle, color: "#10b981", marginBottom: 3 }}>🤝 {tf('target_race_label')} {!entraideRace && <span style={{ color: "#e74c3c" }}>· {tf('required')}</span>}</div>
                               <select value={entraideRace} onChange={e => setEntraideRace(e.target.value)} style={{ width: "100%", padding: "4px 8px", borderRadius: 5, border: cardBorder, fontSize: 11, fontFamily: "'Cinzel',serif", background: "#fff" }}>
-                                <option value="">-- Choisir une race --</option>
+                                <option value="">{tf('choose_race')}</option>
                                 {Array.from(new Set(Object.values(FACTIONS).flatMap(f => f.races))).sort().map(r => <option key={r} value={r}>{r}</option>)}
                               </select>
                             </div>
                           )}
                           {label === "Renforcement multiple" && (
                             <div style={{ marginTop: 8 }}>
-                              <div style={{ ...labelStyle, color: "#2c5d99", marginBottom: 3 }}>⏫ +PV (Y) ET RACE / CLAN CIBLÉ <span style={{ color: "#888", fontWeight: 400 }}>(+ATK = X)</span></div>
+                              <div style={{ ...labelStyle, color: "#2c5d99", marginBottom: 3 }}>⏫ {tf('rm_config_label')} <span style={{ color: "#888", fontWeight: 400 }}>{tf('atk_equals_x')}</span></div>
                               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
                                 <span style={{ fontSize: 9, color: "#27ae60" }}>+PV</span>
                                 <input type="number" min={0} max={20} value={rmY} onChange={e => setRmY(Math.max(0, parseInt(e.target.value) || 0))} style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: cardBorder, fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
@@ -3719,7 +3721,7 @@ export default function CardForge() {
                           )}
                           {label === "Affaiblissement -X/-Y" && (
                             <div style={{ marginTop: 8 }}>
-                              <div style={{ ...labelStyle, color: "#992c2c", marginBottom: 3 }}>🔻 -PV (Y) <span style={{ color: "#888", fontWeight: 400 }}>(-ATK = X)</span></div>
+                              <div style={{ ...labelStyle, color: "#992c2c", marginBottom: 3 }}>🔻 -PV (Y) <span style={{ color: "#888", fontWeight: 400 }}>{tf('neg_atk_equals_x')}</span></div>
                               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                                 <span style={{ fontSize: 9, color: "#c0392b" }}>-PV</span>
                                 <input type="number" min={0} max={20} value={afY} onChange={e => setAfY(Math.max(0, parseInt(e.target.value) || 0))} style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: cardBorder, fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
@@ -3728,7 +3730,7 @@ export default function CardForge() {
                           )}
                           {label === "Renforcement +X/+Y" && (
                             <div style={{ marginTop: 8 }}>
-                              <div style={{ ...labelStyle, color: "#1e7d3b", marginBottom: 3 }}>⬆️ +ATK (X) / +PV (Y) <span style={{ color: "#888", fontWeight: 400 }}>(sur soi)</span></div>
+                              <div style={{ ...labelStyle, color: "#1e7d3b", marginBottom: 3 }}>⬆️ +ATK (X) / +PV (Y) <span style={{ color: "#888", fontWeight: 400 }}>{tf('on_self')}</span></div>
                               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                                 <span style={{ fontSize: 9, color: "#27ae60" }}>+ATK</span>
                                 <input type="number" min={0} max={20} value={keywordXValues[label] ?? 1} onChange={e => setKeywordXValues(prev => ({ ...prev, [label]: Math.max(0, Math.min(20, parseInt(e.target.value) || 0)) }))} style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: cardBorder, fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
@@ -3739,9 +3741,9 @@ export default function CardForge() {
                           )}
                           {label === "Appel Suprême" && (
                             <div style={{ marginTop: 8 }}>
-                              <div style={{ ...labelStyle, color: "#10b981", marginBottom: 3 }}>🎺 RACE CIBLE {!asRace && <span style={{ color: "#e74c3c" }}>· requise</span>}</div>
+                              <div style={{ ...labelStyle, color: "#10b981", marginBottom: 3 }}>🎺 {tf('target_race_label')} {!asRace && <span style={{ color: "#e74c3c" }}>· {tf('required')}</span>}</div>
                               <select value={asRace} onChange={e => setAsRace(e.target.value)} style={{ width: "100%", padding: "4px 8px", borderRadius: 5, border: cardBorder, fontSize: 11, fontFamily: "'Cinzel',serif", background: "#fff" }}>
-                                <option value="">-- Choisir une race --</option>
+                                <option value="">{tf('choose_race')}</option>
                                 {Array.from(new Set(Object.values(FACTIONS).flatMap(f => f.races))).sort().map(r => <option key={r} value={r}>{r}</option>)}
                               </select>
                             </div>
@@ -3751,9 +3753,9 @@ export default function CardForge() {
                     })}
 
                     <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 8 }}>
-                      <span style={{ fontSize: 11, color: "#666" }}>+ Ajouter une capacité :</span>
+                      <span style={{ fontSize: 11, color: "#666" }}>{tf('add_ability')}</span>
                       <select value="" onChange={e => addCreatureCap(e.target.value)} style={{ padding: "4px 10px", borderRadius: 5, border: cardBorder, fontSize: 11, fontFamily: "'Cinzel',serif", background: "#fff" }}>
-                        <option value="">-- choisir --</option>
+                        <option value="">{tf('choose_dash')}</option>
                         {availableManualKeywords.filter(([id]) => !manualKeywords.includes(id)).map(([id]) => (
                           <option key={id} value={id}>{id}</option>
                         ))}
@@ -3764,7 +3766,7 @@ export default function CardForge() {
                   <>
                     {/* SORT : effets immédiats (spell_keywords) + capacités conférées (manualKeywords) */}
                     {spellKeywords.length === 0 && manualKeywords.length === 0 && (
-                      <div style={{ fontSize: 11, color: "#aaa", fontStyle: "italic", padding: "12px 0" }}>Aucune capacité. Ajoutez un effet ou une capacité à conférer ci-dessous.</div>
+                      <div style={{ fontSize: 11, color: "#aaa", fontStyle: "italic", padding: "12px 0" }}>{tf('no_ability_add_effect')}</div>
                     )}
                     {spellKeywords.map((kw, idx) => {
                       const def = SPELL_KEYWORDS[kw.id];
@@ -3774,14 +3776,14 @@ export default function CardForge() {
                           <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
                             <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[kw.id] || def.symbol || "✦"} size={16} keyword={`spell_${kw.id}`} />
                             <span style={{ fontFamily: "'Cinzel',serif", fontSize: 12, fontWeight: 700, color: "#9b59b6", flex: 1 }}>{SPELL_KEYWORD_LABELS[kw.id] ?? kw.id}</span>
-                            <button onClick={() => setSpellKeywords(prev => prev.filter(k => k.id !== kw.id))} style={{ border: "none", background: "transparent", color: "#c0392b", cursor: "pointer", fontSize: 14 }} title="Supprimer">✕</button>
+                            <button onClick={() => setSpellKeywords(prev => prev.filter(k => k.id !== kw.id))} style={{ border: "none", background: "transparent", color: "#c0392b", cursor: "pointer", fontSize: 14 }} title={tf('remove')}>✕</button>
                           </div>
                           <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "6px 12px", alignItems: "center" }}>
-                            <span style={labelStyle}>DÉCLENCHEUR</span>
+                            <span style={labelStyle}>{tf('label_trigger')}</span>
                             <span style={valStyle}>{TRIGGER_FR.spell_resolution}</span>
-                            <span style={labelStyle}>TYPE D&apos;EFFET</span>
-                            <span style={valStyle}>Effet immédiat</span>
-                            <span style={labelStyle}>EFFET</span>
+                            <span style={labelStyle}>{tf('effect_type_label')}</span>
+                            <span style={valStyle}>{tf('immediate_effect')}</span>
+                            <span style={labelStyle}>{tf('effect_label')}</span>
                             <span style={{ ...valStyle, display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
                               {def.desc}
                               {def.params.includes("amount") && (
@@ -3802,22 +3804,22 @@ export default function CardForge() {
                             )}
                             {kw.id === "renforcement_multiple" && (
                               <>
-                                <span style={labelStyle}>RACE / CLAN</span>
+                                <span style={labelStyle}>{tf('race_clan_label')}</span>
                                 <RaceClanPicker race={kw.race ?? ""} clan={kw.clan ?? ""} onChange={(r, c) => setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, race: r || undefined, clan: c || undefined } : k))} />
                               </>
                             )}
                             {kw.id === "appel_supreme" && (
                               <>
-                                <span style={labelStyle}>RACE {!kw.race && <span style={{ color: "#e74c3c" }}>· requise</span>}</span>
+                                <span style={labelStyle}>{tf('race_label')} {!kw.race && <span style={{ color: "#e74c3c" }}>· {tf('required')}</span>}</span>
                                 <select value={kw.race ?? ""} onChange={e => setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, race: e.target.value || undefined } : k))}
                                   style={{ padding: "3px 6px", borderRadius: 5, border: cardBorder, fontSize: 11, fontFamily: "'Cinzel',serif", background: "#fff" }}>
-                                  <option value="">-- Race --</option>
+                                  <option value="">{tf('race_dash')}</option>
                                   {Array.from(new Set(Object.values(FACTIONS).flatMap(f => f.races))).sort().map(r => <option key={r} value={r}>{r}</option>)}
                                 </select>
                               </>
                             )}
-                            <span style={labelStyle}>CIBLE(S)</span>
-                            <span style={valStyle}>{def.needsTarget ? `1 cible${def.targetType ? ` (${def.targetType})` : ""}` : "—"}</span>
+                            <span style={labelStyle}>{tf('targets_label2')}</span>
+                            <span style={valStyle}>{def.needsTarget ? `${tf('one_target')}${def.targetType ? ` (${def.targetType})` : ""}` : "—"}</span>
                           </div>
                         </div>
                       );
@@ -3828,17 +3830,17 @@ export default function CardForge() {
                         <div key={label} style={{ border: cardBorder, borderRadius: 8, padding: 10, marginBottom: 8, background: "#f5fff7" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
                             <KeywordIcon symbol={KEYWORD_SYMBOLS[label] || "✦"} size={16} keyword={CREATURE_LABEL_TO_ENGINE_ID[label] ?? label} />
-                            <span style={{ fontFamily: "'Cinzel',serif", fontSize: 12, fontWeight: 700, color: "#27ae60", flex: 1 }}>Conférer : {label}</span>
-                            <button onClick={() => removeCreatureCap(label)} style={{ border: "none", background: "transparent", color: "#c0392b", cursor: "pointer", fontSize: 14 }} title="Supprimer">✕</button>
+                            <span style={{ fontFamily: "'Cinzel',serif", fontSize: 12, fontWeight: 700, color: "#27ae60", flex: 1 }}>{tf('confer_prefix')} {label}</span>
+                            <button onClick={() => removeCreatureCap(label)} style={{ border: "none", background: "transparent", color: "#c0392b", cursor: "pointer", fontSize: 14 }} title={tf('remove')}>✕</button>
                           </div>
                           <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "6px 12px", alignItems: "center" }}>
-                            <span style={labelStyle}>DÉCLENCHEUR</span>
+                            <span style={labelStyle}>{tf('label_trigger')}</span>
                             <span style={valStyle}>{TRIGGER_FR.spell_resolution}</span>
-                            <span style={labelStyle}>TYPE D&apos;EFFET</span>
-                            <span style={valStyle}>Conférer une capacité à une unité</span>
-                            <span style={labelStyle}>PORTÉE</span>
+                            <span style={labelStyle}>{tf('effect_type_label')}</span>
+                            <span style={valStyle}>{tf('confer_ability_to_unit')}</span>
+                            <span style={labelStyle}>{tf('scope_label')}</span>
                             <span style={{ display: "inline-flex", gap: 6 }}>
-                              {([["target", "1 allié ciblé"], ["all_allies", "Tous les alliés"]] as const).map(([val, txt]) => {
+                              {([["target", tf('scope_one_ally')], ["all_allies", tf('scope_all_allies')]] as const).map(([val, txt]) => {
                                 const active = (allAllies ? "all_allies" : "target") === val;
                                 return (
                                   <button key={val} onClick={() => setKeywordGrantScope(prev => { const n = { ...prev }; if (val === "all_allies") n[label] = "all_allies"; else delete n[label]; return n; })}
@@ -3846,24 +3848,24 @@ export default function CardForge() {
                                 );
                               })}
                             </span>
-                            <span style={labelStyle}>CIBLE(S)</span>
-                            <span style={valStyle}>{allAllies ? "Toutes les unités alliées" : "1 unité alliée"}</span>
+                            <span style={labelStyle}>{tf('targets_label2')}</span>
+                            <span style={valStyle}>{allAllies ? tf('all_allied_units') : tf('one_allied_unit')}</span>
                           </div>
                         </div>
                       );
                     })}
 
                     <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
-                      <span style={{ fontSize: 11, color: "#666" }}>+ Effet :</span>
+                      <span style={{ fontSize: 11, color: "#666" }}>{tf('add_effect')}</span>
                       <select value="" onChange={e => addSpellEffect(e.target.value)} style={{ padding: "4px 10px", borderRadius: 5, border: cardBorder, fontSize: 11, fontFamily: "'Cinzel',serif", background: "#fff" }}>
-                        <option value="">-- effet du sort --</option>
+                        <option value="">{tf('spell_effect_dash')}</option>
                         {ALL_SPELL_KEYWORDS.filter(id => !spellKeywords.some(k => k.id === id)).map(id => (
                           <option key={id} value={id}>{SPELL_KEYWORD_LABELS[id] ?? id}</option>
                         ))}
                       </select>
-                      <span style={{ fontSize: 11, color: "#666", marginLeft: 8 }}>+ Conférer :</span>
+                      <span style={{ fontSize: 11, color: "#666", marginLeft: 8 }}>{tf('add_confer')}</span>
                       <select value="" onChange={e => addCreatureCap(e.target.value)} style={{ padding: "4px 10px", borderRadius: 5, border: cardBorder, fontSize: 11, fontFamily: "'Cinzel',serif", background: "#fff" }}>
-                        <option value="">-- capacité à conférer --</option>
+                        <option value="">{tf('ability_to_confer_dash')}</option>
                         {availableManualKeywords.filter(([id]) => !manualKeywords.includes(id)).map(([id]) => (
                           <option key={id} value={id}>{id}</option>
                         ))}
@@ -3892,9 +3894,9 @@ export default function CardForge() {
                     tokens={tokenTemplates}
                   />
                   {(card || (forgeMode === "manuel" && manualName)) ? (
-                    <Btn onClick={() => { if (!card) createManualCard(); saveToGame(manualCard); }} label={saving ? "⏳ …" : "💾 Sauvegarder"} color="#ffd54f" />
+                    <Btn onClick={() => { if (!card) createManualCard(); saveToGame(manualCard); }} label={saving ? "⏳ …" : `💾 ${tf('save')}`} color="#ffd54f" />
                   ) : (
-                    <div style={{ fontSize: 9, color: "#aaa", fontStyle: "italic", textAlign: "center" }}>Générez/saisissez une carte dans ⚒ Forge pour pouvoir sauvegarder.</div>
+                    <div style={{ fontSize: 9, color: "#aaa", fontStyle: "italic", textAlign: "center" }}>{tf('generate_to_save')}</div>
                   )}
                   {saveResult && (
                     <div style={{ padding: "8px 14px", borderRadius: 8, fontSize: 10, textAlign: "center", background: saveResult.ok ? "#e8f8f0" : "#fde8e8", border: `1px solid ${saveResult.ok ? "#a3e4c1" : "#f5a3a3"}`, color: saveResult.ok ? "#27ae60" : "#e74c3c" }}>
@@ -3918,7 +3920,7 @@ export default function CardForge() {
         {tab === "tokens" && (
           <div style={{ flex: 1, padding: 22, overflowY: "auto" }}>
             <div style={{ maxWidth: 700, margin: "0 auto" }}>
-              <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16, letterSpacing: 2 }}>TEMPLATES DE TOKENS</h2>
+              <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16, letterSpacing: 2 }}>{tf('token_templates_title')}</h2>
 
               {/* Status message */}
               {tokenMessage && (
@@ -3934,13 +3936,13 @@ export default function CardForge() {
               {/* New/Edit form */}
               <div style={{ border: "1px solid #e0e0e0", borderRadius: 8, padding: 16, marginBottom: 20, background: "#fafafa" }}>
                 <div style={{ fontSize: 10, color: "#666", letterSpacing: 1, marginBottom: 8, fontWeight: 700 }}>
-                  {tokenEditId ? "MODIFIER LE TEMPLATE" : "NOUVEAU TEMPLATE"}
+                  {tokenEditId ? tf('edit_template') : tf('new_template')}
                 </div>
                 <div style={{ marginBottom: 10 }}>
-                  <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>FACTION (optionnel)</label>
+                  <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('faction_optional')}</label>
                   <select value={tokenFaction} onChange={e => { setTokenFaction(e.target.value); setTokenClan(""); }}
                     style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }}>
-                    <option value="">-- Déduite de la race --</option>
+                    <option value="">{tf('deduced_from_race')}</option>
                     {Object.keys(FACTIONS).map(f => (
                       <option key={f} value={f}>{f}</option>
                     ))}
@@ -3948,7 +3950,7 @@ export default function CardForge() {
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
                   <div>
-                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>RACE</label>
+                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('race_label')}</label>
                     <select value={tokenRace} onChange={e => {
                       const r = e.target.value;
                       setTokenRace(r);
@@ -3958,7 +3960,7 @@ export default function CardForge() {
                       if (!tokenName) setTokenName(r);
                     }}
                       style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }}>
-                      <option value="">-- Choisir --</option>
+                      <option value="">{tf('choose_dash_cap')}</option>
                       {allRaces.map(r => (
                         <option key={r} value={r}>{r}</option>
                       ))}
@@ -3969,7 +3971,7 @@ export default function CardForge() {
                     const disabled = !tokenRace || clans.length === 0;
                     return (
                       <div>
-                        <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>CLAN (optionnel)</label>
+                        <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('clan_optional')}</label>
                         <select value={tokenClan} onChange={e => setTokenClan(e.target.value)}
                           disabled={disabled}
                           style={{
@@ -3980,7 +3982,7 @@ export default function CardForge() {
                             color: disabled ? "#bbb" : "#333",
                             cursor: disabled ? "not-allowed" : "pointer",
                           }}>
-                          <option value="">{disabled && tokenRace ? "Aucun clan disponible" : "-- Aucun --"}</option>
+                          <option value="">{disabled && tokenRace ? tf('no_clan_available') : tf('none_dash')}</option>
                           {clans.map(c => (
                             <option key={c} value={c}>{c}</option>
                           ))}
@@ -3989,9 +3991,9 @@ export default function CardForge() {
                     );
                   })()}
                   <div>
-                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>NOM DU TOKEN</label>
+                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('token_name_label')}</label>
                     <input type="text" value={tokenName} onChange={e => setTokenName(e.target.value)}
-                      placeholder="Ex: Recrue Elfique"
+                      placeholder={tf('token_name_placeholder')}
                       style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }} />
                   </div>
                 </div>
@@ -3999,13 +4001,13 @@ export default function CardForge() {
                 {/* Stats par défaut du token (override possible par carte) */}
                 <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                   <div>
-                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>ATTAQUE PAR DÉFAUT</label>
+                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('default_attack')}</label>
                     <input type="number" min={0} max={20} value={tokenAttack}
                       onChange={e => setTokenAttack(Math.max(0, parseInt(e.target.value) || 0))}
                       style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2, color: "#e74c3c" }} />
                   </div>
                   <div>
-                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>DÉFENSE PAR DÉFAUT</label>
+                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('default_defense')}</label>
                     <input type="number" min={1} max={20} value={tokenHealth}
                       onChange={e => setTokenHealth(Math.max(1, parseInt(e.target.value) || 1))}
                       style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2, color: "#f1c40f" }} />
@@ -4014,7 +4016,7 @@ export default function CardForge() {
 
                 {/* Keywords */}
                 <div style={{ marginTop: 10, position: "relative" }}>
-                  <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>CAPACITES DU TOKEN</label>
+                  <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('token_abilities')}</label>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginTop: 4 }}>
                     {Object.entries(KEYWORDS).filter(([, kw]) => kw.minTier <= 1 || kw.tokenAllowed).map(([kwName]) => {
                       const active = tokenKeywords.includes(kwName);
@@ -4065,8 +4067,8 @@ export default function CardForge() {
                           {kwDef.desc}
                         </div>
                         <div style={{ display: "flex", gap: 8, fontSize: 10, color: "#999" }}>
-                          <span>Tier : <strong style={{ color: "#bbb" }}>{tierLabel}</strong></span>
-                          <span>Coût : <strong style={{ color: "#bbb" }}>{kwDef.cost} pts</strong>{kwDef.costPerX > 0 && <> (+{kwDef.costPerX}/X)</>}</span>
+                          <span>{tf('tier_label')} <strong style={{ color: "#bbb" }}>{tierLabel}</strong></span>
+                          <span>{tf('cost_label')} <strong style={{ color: "#bbb" }}>{tf('points_value', { pts: kwDef.cost })}</strong>{kwDef.costPerX > 0 && <> (+{kwDef.costPerX}/X)</>}</span>
                           <span style={{ color: kwDef.zone === "Terrain" ? "#4caf50" : kwDef.zone === "Cimetière" ? "#9b59b6" : kwDef.zone === "Main" ? "#3498db" : "#f39c12" }}>
                             {kwDef.zone}
                           </span>
@@ -4078,27 +4080,27 @@ export default function CardForge() {
 
                 {/* Prompt generation */}
                 <div style={{ marginTop: 10 }}>
-                  <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>PROMPT IMAGE</label>
+                  <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('image_prompt_label')}</label>
                   <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
                     <textarea value={tokenPrompt} onChange={e => setTokenPrompt(e.target.value)}
-                      placeholder="Cliquez 'Auto-prompt' pour générer, ou écrivez le vôtre..."
+                      placeholder={tf('auto_prompt_placeholder')}
                       style={{ flex: 1, minHeight: 60, padding: 6, borderRadius: 6, border: "1px solid #ddd", fontSize: 10, fontFamily: "monospace", resize: "vertical" }} />
                   </div>
                   <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
                     <button onClick={generateTokenPrompt} disabled={!tokenRace}
                       style={{ padding: "4px 12px", borderRadius: 5, border: "1px solid #ddd", background: "#fff", color: tokenRace ? "#666" : "#ccc", fontSize: 9, fontFamily: "'Cinzel',serif", cursor: tokenRace ? "pointer" : "default" }}>
-                      Auto-prompt
+                      {tf('auto_prompt')}
                     </button>
                     <button onClick={generateTokenImage} disabled={!tokenPrompt || tokenGenerating}
                       style={{ padding: "4px 12px", borderRadius: 5, border: "none", background: tokenPrompt && !tokenGenerating ? "linear-gradient(135deg, #6c5ce7, #a855f7)" : "#e0e0e0", color: "#fff", fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: 700, cursor: tokenPrompt && !tokenGenerating ? "pointer" : "default" }}>
-                      {tokenGenerating ? "Génération..." : "Générer image"}
+                      {tokenGenerating ? tf('generating') : tf('generate_image')}
                     </button>
                   </div>
                 </div>
 
                 {/* Image upload OR generated preview */}
                 <div style={{ marginTop: 10 }}>
-                  <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>OU UPLOADER UNE IMAGE</label>
+                  <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('or_upload_image')}</label>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 4 }}>
                     <input type="file" accept=".png,.jpg,.jpeg,.webp"
                       onChange={e => {
@@ -4121,7 +4123,7 @@ export default function CardForge() {
                 {/* Preview */}
                 {tokenImagePreview && (
                   <div style={{ marginTop: 10, textAlign: "center" }}>
-                    <img src={tokenImagePreview} alt="preview" style={{ maxWidth: 200, maxHeight: 200, objectFit: "cover", borderRadius: 8, border: "2px solid #ddd" }} />
+                    <img src={tokenImagePreview} alt={tf('preview')} style={{ maxWidth: 200, maxHeight: 200, objectFit: "cover", borderRadius: 8, border: "2px solid #ddd" }} />
                   </div>
                 )}
 
@@ -4129,12 +4131,12 @@ export default function CardForge() {
                 <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
                   <button onClick={saveTokenTemplate} disabled={!tokenRace || !tokenName || tokenSaving}
                     style={{ padding: "6px 16px", borderRadius: 6, border: "none", background: "#333", color: "#fff", fontSize: 10, fontFamily: "'Cinzel',serif", fontWeight: 700, cursor: "pointer", opacity: (!tokenRace || !tokenName || tokenSaving) ? 0.4 : 1 }}>
-                    {tokenSaving ? "Sauvegarde..." : tokenEditId ? "Mettre a jour" : "Creer"}
+                    {tokenSaving ? tf('saving') : tokenEditId ? tf('update') : tf('create2')}
                   </button>
                   {tokenEditId && (
                     <button onClick={() => { setTokenEditId(null); setTokenRace(""); setTokenFaction(""); setTokenName(""); setTokenImageBase64(null); setTokenImageMime(null); setTokenImagePreview(null); setTokenPrompt(""); }}
                       style={{ padding: "6px 16px", borderRadius: 6, border: "1px solid #ddd", background: "#fff", color: "#888", fontSize: 10, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>
-                      Annuler
+                      {tf('cancel')}
                     </button>
                   )}
                 </div>
@@ -4144,14 +4146,14 @@ export default function CardForge() {
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
                   <span style={{ fontSize: 10, color: "#666", letterSpacing: 1, fontWeight: 700 }}>
-                    TEMPLATES EXISTANTS ({tokenTemplates.length})
+                    {tf('existing_templates', { count: tokenTemplates.length })}
                   </span>
                   <button onClick={loadTokenTemplates} style={{ padding: "4px 12px", borderRadius: 5, border: "1px solid #ddd", background: "#fff", color: "#666", fontSize: 9, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>
-                    Charger / Rafraichir
+                    {tf('load_refresh')}
                   </button>
                 </div>
                 {tokenTemplates.length === 0 && (
-                  <div style={{ color: "#ccc", fontSize: 11, textAlign: "center", padding: 20 }}>Aucun template — cliquez Charger</div>
+                  <div style={{ color: "#ccc", fontSize: 11, textAlign: "center", padding: 20 }}>{tf('no_template')}</div>
                 )}
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 10 }}>
                   {tokenTemplates.map(t => (
@@ -4178,11 +4180,11 @@ export default function CardForge() {
                         <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
                           <button onClick={() => { setTokenEditId(t.id); setTokenRace(t.race); setTokenFaction(t.faction ?? ""); setTokenClan(t.clan ?? ""); setTokenName(t.name); setTokenAttack(t.attack ?? 1); setTokenHealth(t.health ?? 1); setTokenKeywords(t.keywords?.map(k => GAME_TO_FORGE_KEYWORD[k] || k) ?? []); setTokenImagePreview(t.image_url); setTokenImageBase64(null); setTokenImageMime(null); setTokenPrompt(""); }}
                             style={{ fontSize: 8, padding: "2px 8px", borderRadius: 4, border: "1px solid #ddd", background: "#fff", color: "#666", cursor: "pointer", fontFamily: "'Cinzel',serif" }}>
-                            Modifier
+                            {tf('edit')}
                           </button>
                           <button onClick={() => deleteTokenTemplate(t.id)}
                             style={{ fontSize: 8, padding: "2px 8px", borderRadius: 4, border: "1px solid #f5a3a3", background: "#fde8e8", color: "#e74c3c", cursor: "pointer", fontFamily: "'Cinzel',serif" }}>
-                            Supprimer
+                            {tf('remove')}
                           </button>
                         </div>
                       </div>
@@ -4198,7 +4200,7 @@ export default function CardForge() {
         {tab === "card-backs" && (
           <div style={{ flex: 1, padding: 22, overflowY: "auto" }}>
             <div style={{ maxWidth: 780, margin: "0 auto" }}>
-              <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16, letterSpacing: 2 }}>GÉNÉRER UN DOS DE CARTE</h2>
+              <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16, letterSpacing: 2 }}>{tf('generate_card_back_title')}</h2>
 
               {cbMessage && (
                 <div style={{
@@ -4214,45 +4216,45 @@ export default function CardForge() {
                 {/* Left: form */}
                 <div style={{ border: "1px solid #e0e0e0", borderRadius: 8, padding: 16, background: "#fafafa" }}>
                   <div style={{ fontSize: 10, color: "#666", letterSpacing: 1, marginBottom: 10, fontWeight: 700 }}>
-                    MÉTADONNÉES
+                    {tf('metadata')}
                   </div>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                     <div style={{ gridColumn: "span 2" }}>
-                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>NOM</label>
+                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('name_label')}</label>
                       <input type="text" value={cbName} onChange={e => setCbName(e.target.value)}
-                        placeholder="Ex: Gardien des Bois-Anciens"
+                        placeholder={tf('card_back_name_placeholder')}
                         style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }} />
                     </div>
                     <div>
-                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>FACTION</label>
+                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('faction_label')}</label>
                       <select value={cbFaction} onChange={e => { setCbFaction(e.target.value); setCbRace(""); setCbClan(""); }}
                         style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }}>
-                        <option value="">-- Aucune --</option>
+                        <option value="">{tf('none_dash_f')}</option>
                         {Object.entries(FACTIONS).map(([id, f]) => (
                           <option key={id} value={id}>{f.emoji} {f.displayName}</option>
                         ))}
                       </select>
                     </div>
                     <div>
-                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>RACE</label>
+                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('race_label')}</label>
                       <select value={cbRace} onChange={e => { setCbRace(e.target.value); setCbClan(""); }}
                         style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }}>
-                        <option value="">-- Aucune --</option>
+                        <option value="">{tf('none_dash_f')}</option>
                         {cbFactionRaces.map(r => <option key={r} value={r}>{r}</option>)}
                       </select>
                     </div>
                     {cbFactionClans.length > 0 && (
                       <div style={{ gridColumn: "span 2" }}>
-                        <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>CLAN</label>
+                        <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('clan_label')}</label>
                         <select value={cbClan} onChange={e => setCbClan(e.target.value)}
                           style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }}>
-                          <option value="">-- Aucun --</option>
+                          <option value="">{tf('none_dash')}</option>
                           {cbFactionClans.map(c => <option key={c} value={c}>{c}</option>)}
                         </select>
                       </div>
                     )}
                     <div>
-                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>RARETÉ</label>
+                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('rarity_label')}</label>
                       <select value={cbRarity} onChange={e => {
                         const r = e.target.value;
                         setCbRarity(r);
@@ -4265,7 +4267,7 @@ export default function CardForge() {
                     </div>
                     {cbRarity !== "Commune" && (
                       <div>
-                        <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>EXEMPLAIRES</label>
+                        <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('copies_label')}</label>
                         <input type="number" min={1} value={cbMaxPrints ?? ""}
                           onChange={e => setCbMaxPrints(e.target.value ? Number(e.target.value) : null)}
                           style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }} />
@@ -4275,7 +4277,7 @@ export default function CardForge() {
                       <div style={{ display: "flex", alignItems: "center", paddingTop: 18 }}>
                         <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 10, color: "#333", cursor: "pointer" }}>
                           <input type="checkbox" checked={cbIsDefault} onChange={e => setCbIsDefault(e.target.checked)} />
-                          Par défaut
+                          {tf('default_checkbox')}
                         </label>
                       </div>
                     )}
@@ -4283,7 +4285,7 @@ export default function CardForge() {
 
                   {/* Cadre standard composé sur l'illustration après génération */}
                   <div style={{ marginTop: 12 }}>
-                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>CADRE</label>
+                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('frame_label')}</label>
                     <select
                       value={cbFrameId}
                       onChange={async (e) => {
@@ -4333,15 +4335,15 @@ export default function CardForge() {
                       ))}
                     </select>
                     <div style={{ fontSize: 9, color: "#888", marginTop: 3, fontStyle: "italic" }}>
-                      Le cadre est appliqué après génération. L&apos;IA peut se concentrer sur l&apos;illustration seule — aucun cadre à dessiner.
+                      {tf('frame_hint')}
                     </div>
                   </div>
 
                   {/* Mode de génération (1 ou 3 variantes) */}
                   <div style={{ marginTop: 12 }}>
-                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>MODE DE GÉNÉRATION</label>
+                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('generation_mode')}</label>
                     <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
-                      {([[1, "1 variante"], [3, "3 variantes"]] as const).map(([val, label]) => (
+                      {([[1, tf('one_variant')], [3, tf('three_variants')]] as const).map(([val, label]) => (
                         <button key={val} type="button" onClick={() => setCbVariantMode(val)}
                           style={{
                             flex: 1, padding: "6px 10px", borderRadius: 5, cursor: "pointer", fontSize: 10,
@@ -4358,9 +4360,9 @@ export default function CardForge() {
 
                   {/* Instructions additionnelles */}
                   <div style={{ marginTop: 12 }}>
-                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>INSTRUCTIONS SUPPLÉMENTAIRES</label>
+                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('extra_instructions')}</label>
                     <textarea value={cbInstructions} onChange={e => setCbInstructions(e.target.value)}
-                      placeholder="Ex: runes dorées, plumes, miroir poli, dragon enroulé..."
+                      placeholder={tf('card_back_instructions_placeholder')}
                       style={{ width: "100%", minHeight: 50, padding: 6, borderRadius: 6, border: "1px solid #ddd", fontSize: 10, fontFamily: "'Crimson Text',serif", marginTop: 4, resize: "vertical" }} />
                   </div>
 
@@ -4369,27 +4371,27 @@ export default function CardForge() {
                     {cbRefImagePreview ? (
                       <div style={{ width: 72, height: 72, borderRadius: 6, overflow: "hidden", border: "1px solid #27ae60", flexShrink: 0 }}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={cbRefImagePreview} alt="Référence" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                        <img src={cbRefImagePreview} alt={tf('reference')} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                       </div>
                     ) : (
                       <div style={{ width: 72, height: 72, borderRadius: 6, border: "2px dashed #ddd", background: "#fafafa", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: "#bbb", fontFamily: "'Cinzel',serif", flexShrink: 0, textAlign: "center", padding: 4 }}>
-                        Aucune réf.
+                        {tf('no_reference')}
                       </div>
                     )}
                     <div style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
-                      <span style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>IMAGE DE RÉFÉRENCE (optionnel)</span>
+                      <span style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('reference_image_optional')}</span>
                       <span style={{ fontSize: 9, color: "#777", fontFamily: "'Crimson Text',serif", lineHeight: 1.3 }}>
-                        Sert d&apos;inspiration visuelle (sujet / palette / mood). Les règles du prompt restent prioritaires.
+                        {tf('reference_image_hint2')}
                       </span>
                       <div style={{ display: "flex", gap: 6, marginTop: 2 }}>
                         <label style={{ padding: "4px 10px", borderRadius: 5, border: "1px solid #ddd", background: "#fff", color: "#666", fontSize: 9, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>
-                          {cbRefImagePreview ? "Remplacer" : "Choisir une image"}
+                          {cbRefImagePreview ? tf('replace') : tf('choose_image')}
                           <input type="file" accept="image/*" onChange={handleCardBackRefImageChange} style={{ display: "none" }} />
                         </label>
                         {cbRefImagePreview && (
                           <button type="button" onClick={clearCardBackRefImage}
                             style={{ padding: "4px 10px", borderRadius: 5, border: "1px solid #f5a3a3", background: "#fff", color: "#e74c3c", fontSize: 9, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>
-                            Retirer
+                            {tf('remove_image')}
                           </button>
                         )}
                       </div>
@@ -4398,21 +4400,21 @@ export default function CardForge() {
 
                   {/* Prompt */}
                   <div style={{ marginTop: 12 }}>
-                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>PROMPT IMAGE</label>
+                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('image_prompt_label')}</label>
                     <textarea value={cbPrompt} onChange={e => setCbPrompt(e.target.value)}
-                      placeholder="Cliquez 'Auto-prompt' pour générer, ou écrivez le vôtre..."
+                      placeholder={tf('auto_prompt_placeholder')}
                       style={{ width: "100%", minHeight: 90, padding: 6, borderRadius: 6, border: "1px solid #ddd", fontSize: 9.5, fontFamily: "monospace", marginTop: 4, resize: "vertical" }} />
                     <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
                       <button onClick={generateCardBackPrompt}
                         style={{ padding: "4px 12px", borderRadius: 5, border: "1px solid #ddd", background: "#fff", color: "#666", fontSize: 9, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>
-                        Auto-prompt
+                        {tf('auto_prompt')}
                       </button>
                       <button onClick={generateCardBackImage} disabled={!cbPrompt || cbGenerating}
                         style={{ padding: "4px 12px", borderRadius: 5, border: "none", background: cbPrompt && !cbGenerating ? "linear-gradient(135deg, #6c5ce7, #a855f7)" : "#e0e0e0", color: "#fff", fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: 700, cursor: cbPrompt && !cbGenerating ? "pointer" : "default" }}>
-                        {cbGenerating ? "Génération..." : "Générer image"}
+                        {cbGenerating ? tf('generating') : tf('generate_image')}
                       </button>
                       <label style={{ padding: "4px 12px", borderRadius: 5, border: "1px solid #ddd", background: "#fff", color: "#666", fontSize: 9, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>
-                        Upload manuel
+                        {tf('manual_upload')}
                         <input type="file" accept="image/*" onChange={handleCardBackFileChange} style={{ display: "none" }} />
                       </label>
                     </div>
@@ -4426,7 +4428,7 @@ export default function CardForge() {
                     // number of picks are saved when the admin hits Save.
                     <div>
                       <div style={{ fontSize: 9, color: "#888", letterSpacing: 1, marginBottom: 6 }}>
-                        VARIANTES ({cbSelectedIdxs.length} / {cbVariations.length} sélectionnée{cbSelectedIdxs.length > 1 ? "s" : ""})
+                        {tf('variants_count', { selected: cbSelectedIdxs.length, total: cbVariations.length })}
                       </div>
                       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(110px, 1fr))", gap: 8 }}>
                         {cbVariations.map((v, i) => {
@@ -4449,7 +4451,7 @@ export default function CardForge() {
                               }}
                             >
                               {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={v.url} alt={`Variante ${i + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                              <img src={v.url} alt={tf('variant_n', { n: i + 1 })} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                               <div style={{
                                 position: "absolute", top: 4, right: 4,
                                 width: 18, height: 18, borderRadius: "50%",
@@ -4469,7 +4471,7 @@ export default function CardForge() {
                     <div style={{ width: "100%", aspectRatio: "2.5/3.5", borderRadius: 10, overflow: "hidden" }}>
                       <img
                         src={cbImagePreview}
-                        alt="Aperçu du dos"
+                        alt={tf('card_back_preview')}
                         style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                       />
                     </div>
@@ -4479,7 +4481,7 @@ export default function CardForge() {
                       border: "2px dashed #ddd", background: "#fafafa",
                       display: "flex", alignItems: "center", justifyContent: "center",
                     }}>
-                      <span style={{ fontSize: 10, color: "#bbb", fontFamily: "'Cinzel',serif" }}>Aperçu du dos</span>
+                      <span style={{ fontSize: 10, color: "#bbb", fontFamily: "'Cinzel',serif" }}>{tf('card_back_preview')}</span>
                     </div>
                   )}
                   {(() => {
@@ -4494,10 +4496,10 @@ export default function CardForge() {
                           cursor: disabled ? "default" : "pointer",
                         }}>
                         {cbSaving
-                          ? "Enregistrement…"
+                          ? tf('saving2')
                           : pickCount > 1
-                            ? `Enregistrer ${pickCount} dos`
-                            : "Enregistrer le dos"}
+                            ? tf('save_n_backs', { n: pickCount })
+                            : tf('save_back')}
                       </button>
                     );
                   })()}
@@ -4511,7 +4513,7 @@ export default function CardForge() {
         {tab === "boards" && (
           <div style={{ flex: 1, padding: 22, overflowY: "auto" }}>
             <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-              <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16, letterSpacing: 2 }}>GÉNÉRER UN PLATEAU DE JEU</h2>
+              <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16, letterSpacing: 2 }}>{tf('generate_board_title')}</h2>
 
               {bdMessage && (
                 <div style={{
@@ -4527,17 +4529,17 @@ export default function CardForge() {
                 {/* LEFT — form */}
                 <div style={{ border: "1px solid #e0e0e0", borderRadius: 8, padding: 16, background: "#fafafa" }}>
                   <div style={{ fontSize: 10, color: "#666", letterSpacing: 1, marginBottom: 10, fontWeight: 700 }}>
-                    MÉTADONNÉES
+                    {tf('metadata')}
                   </div>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
                     <div style={{ gridColumn: "span 3" }}>
-                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>NOM</label>
+                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('name_label')}</label>
                       <input type="text" value={bdName} onChange={e => setBdName(e.target.value)}
-                        placeholder="Ex: Taverne du Dragon Endormi"
+                        placeholder={tf('board_name_placeholder')}
                         style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }} />
                     </div>
                     <div style={{ gridColumn: "span 3" }}>
-                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>STYLE DE COMPOSITION</label>
+                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('composition_style')}</label>
                       <select value={bdStyle} onChange={e => setBdStyle(e.target.value as BoardStyleId)}
                         style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }}>
                         {Object.entries(BOARD_STYLES).map(([id, def]) => (
@@ -4546,17 +4548,17 @@ export default function CardForge() {
                       </select>
                       <div style={{ fontSize: 9, color: "#888", marginTop: 3, fontStyle: "italic" }}>
                         {bdStyle === "surface"
-                          ? "Uniquement le terrain (herbe, neige, sable, pierre…) qui remplit tout le cadre. Aucun décor, aucune bordure — idéal pour un rendu purement ambiance."
+                          ? tf('board_style_surface')
                           : bdStyle === "minimal"
-                            ? "Centre du plateau laissé vide (surface plate), décoration sur les bords. Pensé pour figurines 3D."
+                            ? tf('board_style_minimal')
                             : bdStyle === "mtgo"
-                              ? "Composition MTG Arena : centre épuré, décor restreint aux panneaux latéraux. En jeu : grand tile cimetière cliquable à gauche, héros + deck + mana + PV à droite (symétrie inversée pour l'adversaire). Active automatiquement le layout MTGO."
-                              : "Composition Hearthstone : props thématiques partout, divider central orné."}
+                              ? tf('board_style_mtgo')
+                              : tf('board_style_hearthstone')}
                       </div>
                     </div>
                     {bdStyle === "mtgo" && (
                       <div style={{ gridColumn: "span 3" }}>
-                        <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>IMAGE DU CIMETIÈRE (optionnelle)</label>
+                        <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('graveyard_image_optional')}</label>
                         <input type="file" accept="image/*"
                           onChange={(e) => {
                             const file = e.target.files?.[0];
@@ -4585,51 +4587,51 @@ export default function CardForge() {
                           }}
                           style={{ width: "100%", fontSize: 10, marginTop: 4 }} />
                         {bdGraveyardPreview && (
-                          <img src={bdGraveyardPreview} alt="Cimetière"
+                          <img src={bdGraveyardPreview} alt={tf('graveyard')}
                             style={{ width: 96, height: 136, objectFit: "cover", borderRadius: 6, border: "1px solid #9b59b6", marginTop: 6 }} />
                         )}
                         <div style={{ fontSize: 9, color: "#888", marginTop: 3, fontStyle: "italic" }}>
-                          Image affichée comme tile cliquable du cimetière. Sans image, un cercueil par défaut sera affiché.
+                          {tf('graveyard_image_hint')}
                         </div>
                       </div>
                     )}
                     <div>
-                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>ENVIRONNEMENT</label>
+                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('environment_label')}</label>
                       <select value={bdEnvPreset} onChange={e => setBdEnvPreset(e.target.value)}
                         style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }}>
                         {BOARD_ENV_PRESETS.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
                       </select>
                     </div>
                     <div>
-                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>FACTION (optionnel)</label>
+                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('faction_optional')}</label>
                       <select value={bdFaction} onChange={e => { setBdFaction(e.target.value); setBdRace(""); setBdClan(""); }}
                         style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }}>
-                        <option value="">-- Aucune --</option>
+                        <option value="">{tf('none_dash_f')}</option>
                         {Object.entries(FACTIONS).map(([id, f]) => (
                           <option key={id} value={id}>{f.displayName}</option>
                         ))}
                       </select>
                     </div>
                     <div>
-                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>RACE (optionnel)</label>
+                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('race_optional')}</label>
                       <select value={bdRace} onChange={e => { setBdRace(e.target.value); setBdClan(""); }}
                         style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }}>
-                        <option value="">-- Aucune --</option>
+                        <option value="">{tf('none_dash_f')}</option>
                         {bdFactionRaces.map(r => <option key={r} value={r}>{r}</option>)}
                       </select>
                     </div>
                     {bdFactionClans.length > 0 && (
                       <div>
-                        <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>CLAN (optionnel)</label>
+                        <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('clan_optional')}</label>
                         <select value={bdClan} onChange={e => setBdClan(e.target.value)}
                           style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }}>
-                          <option value="">-- Aucun --</option>
+                          <option value="">{tf('none_dash')}</option>
                           {bdFactionClans.map(c => <option key={c} value={c}>{c}</option>)}
                         </select>
                       </div>
                     )}
                     <div>
-                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>RARETÉ</label>
+                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('rarity_label')}</label>
                       <select value={bdRarity} onChange={e => {
                         const r = e.target.value;
                         setBdRarity(r);
@@ -4646,7 +4648,7 @@ export default function CardForge() {
                     </div>
                     {bdRarity !== "Commune" ? (
                       <div style={{ gridColumn: "span 3" }}>
-                        <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>EXEMPLAIRES</label>
+                        <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('copies_label')}</label>
                         <input type="number" value={bdMaxPrints ?? ""} onChange={e => setBdMaxPrints(e.target.value ? parseInt(e.target.value) : null)}
                           placeholder={String(BD_DEFAULT_MAX_PRINTS[bdRarity] ?? "")}
                           style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }} />
@@ -4655,14 +4657,14 @@ export default function CardForge() {
                       <div style={{ gridColumn: "span 3", display: "flex", alignItems: "center", gap: 8 }}>
                         <input type="checkbox" id="bdIsDefault" checked={bdIsDefault} onChange={e => setBdIsDefault(e.target.checked)} />
                         <label htmlFor="bdIsDefault" style={{ fontSize: 10, color: "#555", fontFamily: "'Cinzel',serif", cursor: "pointer" }}>
-                          Plateau par défaut (utilisé quand le deck n&apos;en spécifie pas)
+                          {tf('default_board_hint')}
                         </label>
                       </div>
                     )}
                     <div style={{ gridColumn: "span 3" }}>
-                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>MODE DE GÉNÉRATION</label>
+                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('generation_mode')}</label>
                       <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
-                        {([[1, "1 variante"], [3, "3 variantes"]] as const).map(([val, label]) => (
+                        {([[1, tf('one_variant')], [3, tf('three_variants')]] as const).map(([val, label]) => (
                           <button key={val} type="button" onClick={() => setBdVariantMode(val)}
                             style={{
                               flex: 1, padding: "6px 10px", borderRadius: 5, cursor: "pointer", fontSize: 10,
@@ -4677,12 +4679,12 @@ export default function CardForge() {
                       </div>
                     </div>
                     <div style={{ gridColumn: "span 3" }}>
-                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>INSTRUCTIONS SUPPLÉMENTAIRES (optionnel)</label>
+                      <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('extra_instructions_optional')}</label>
                       <textarea value={bdInstructions} onChange={e => setBdInstructions(e.target.value)}
-                        placeholder="Ex: ambiance cyberpunk avec néons violets, pluie battante, réflexions sur sol métallique…"
+                        placeholder={tf('board_instructions_placeholder')}
                         style={{ width: "100%", minHeight: 44, padding: 6, borderRadius: 6, border: "1px solid #ddd", fontSize: 10, fontFamily: "'Crimson Text',serif", marginTop: 4, resize: "vertical" }} />
                       <div style={{ fontSize: 9, color: "#888", marginTop: 3, fontStyle: "italic" }}>
-                        Remplace le bloc sujet/environnement du prompt si rempli. Les règles de composition (Hearthstone, 16:9, symétrie, cadre) restent toujours appliquées.
+                        {tf('board_instructions_hint')}
                       </div>
                     </div>
 
@@ -4690,25 +4692,25 @@ export default function CardForge() {
                     <div style={{ gridColumn: "span 3", display: "flex", alignItems: "center", gap: 10, marginTop: 6 }}>
                       {bdRefImagePreview ? (
                         <div style={{ width: 72, height: 72, borderRadius: 6, overflow: "hidden", border: "1px solid #27ae60", flexShrink: 0 }}>
-                          <img src={bdRefImagePreview} alt="Référence" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                          <img src={bdRefImagePreview} alt={tf('reference')} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                         </div>
                       ) : (
-                        <div style={{ width: 72, height: 72, borderRadius: 6, border: "2px dashed #ddd", background: "#fafafa", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: "#bbb", fontFamily: "'Cinzel',serif", flexShrink: 0, textAlign: "center", padding: 4 }}>Aucune réf.</div>
+                        <div style={{ width: 72, height: 72, borderRadius: 6, border: "2px dashed #ddd", background: "#fafafa", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: "#bbb", fontFamily: "'Cinzel',serif", flexShrink: 0, textAlign: "center", padding: 4 }}>{tf('no_reference')}</div>
                       )}
                       <div style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
-                        <span style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>IMAGE DE RÉFÉRENCE (optionnel)</span>
+                        <span style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('reference_image_optional')}</span>
                         <span style={{ fontSize: 9, color: "#777", fontFamily: "'Crimson Text',serif", lineHeight: 1.3 }}>
-                          Sert d&apos;inspiration visuelle (sujet / palette / mood). Les règles de composition restent prioritaires.
+                          {tf('reference_image_hint3')}
                         </span>
                         <div style={{ display: "flex", gap: 6, marginTop: 2 }}>
                           <label style={{ padding: "4px 10px", borderRadius: 5, border: "1px solid #ddd", background: "#fff", color: "#666", fontSize: 9, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>
-                            {bdRefImagePreview ? "Remplacer" : "Choisir une image"}
+                            {bdRefImagePreview ? tf('replace') : tf('choose_image')}
                             <input type="file" accept="image/*" onChange={handleBoardRefImageChange} style={{ display: "none" }} />
                           </label>
                           {bdRefImagePreview && (
                             <button type="button" onClick={clearBoardRefImage}
                               style={{ padding: "4px 10px", borderRadius: 5, border: "1px solid #e74c3c55", background: "#e74c3c11", color: "#e74c3c", fontSize: 9, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>
-                              Retirer
+                              {tf('remove_image')}
                             </button>
                           )}
                         </div>
@@ -4718,22 +4720,22 @@ export default function CardForge() {
 
                   {/* Prompt */}
                   <div style={{ marginTop: 12 }}>
-                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>PROMPT IMAGE</label>
+                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('image_prompt_label')}</label>
                     <textarea value={bdPrompt} onChange={e => setBdPrompt(e.target.value)}
-                      placeholder="Cliquez 'Auto-prompt' pour générer, ou écrivez le vôtre..."
+                      placeholder={tf('auto_prompt_placeholder')}
                       style={{ width: "100%", minHeight: 90, padding: 6, borderRadius: 6, border: "1px solid #ddd", fontSize: 9.5, fontFamily: "monospace", marginTop: 4, resize: "vertical" }} />
                     <div style={{ display: "flex", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
                       <button type="button" onClick={generateBoardPrompt}
                         style={{ padding: "4px 12px", borderRadius: 5, border: "1px solid #ddd", background: "#fff", color: "#666", fontSize: 9, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>
-                        Auto-prompt
+                        {tf('auto_prompt')}
                       </button>
                       <button type="button" onClick={generateBoardImage} disabled={!bdPrompt || bdGenerating}
                         style={{ padding: "4px 12px", borderRadius: 5, border: "none", background: bdPrompt && !bdGenerating ? "linear-gradient(135deg, #6c5ce7, #a855f7)" : "#e0e0e0", color: "#fff", fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: 700, cursor: bdPrompt && !bdGenerating ? "pointer" : "default" }}>
-                        {bdGenerating ? "Génération…" : bdVariations.length > 0 ? `Relancer ${bdVariantMode} variante(s)` : `Générer ${bdVariantMode} variante(s)`}
+                        {bdGenerating ? tf('generating') : bdVariations.length > 0 ? tf('rerun_variants', { n: bdVariantMode }) : tf('generate_variants', { n: bdVariantMode })}
                       </button>
-                      <span style={{ fontSize: 9, color: "#bbb", fontFamily: "'Cinzel',serif", alignSelf: "center" }}>ou</span>
+                      <span style={{ fontSize: 9, color: "#bbb", fontFamily: "'Cinzel',serif", alignSelf: "center" }}>{tf('or')}</span>
                       <label style={{ padding: "4px 12px", borderRadius: 5, border: "1px solid #ddd", background: "#fff", color: "#666", fontSize: 9, fontFamily: "'Cinzel',serif", cursor: "pointer", alignSelf: "center" }}>
-                        Importer une image
+                        {tf('import_image')}
                         <input type="file" accept="image/*" onChange={handleBoardImageUpload} style={{ display: "none" }} />
                       </label>
                     </div>
@@ -4743,7 +4745,7 @@ export default function CardForge() {
                 {/* RIGHT — variants + save */}
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   <div style={{ fontSize: 10, color: "#666", letterSpacing: 1, fontWeight: 700 }}>
-                    {bdVariantMode === 1 ? "APERÇU" : "VARIANTES (cliquez pour cocher — plusieurs possibles)"}
+                    {bdVariantMode === 1 ? tf('preview_caps') : tf('variants_check_hint')}
                   </div>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 10 }}>
                     {Array.from({ length: bdVariantMode }).map((_, i) => {
@@ -4766,7 +4768,7 @@ export default function CardForge() {
                           }}>
                           {v ? (
                             <>
-                              <img src={v.url} alt={`Variante ${i + 1}`} style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }} />
+                              <img src={v.url} alt={tf('variant_n', { n: i + 1 })} style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }} />
                               {isSelected && (
                                 <div style={{ position: "absolute", top: 6, right: 8, background: "#27ae60", color: "#fff", borderRadius: 12, padding: "1px 8px", fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: 700 }}>
                                   ✓
@@ -4775,7 +4777,7 @@ export default function CardForge() {
                             </>
                           ) : (
                             <span style={{ fontSize: 10, color: "#bbb", fontFamily: "'Cinzel',serif" }}>
-                              {bdGenerating ? "…" : `Variante ${i + 1}`}
+                              {bdGenerating ? "…" : tf('variant_n', { n: i + 1 })}
                             </span>
                           )}
                         </button>
@@ -4787,10 +4789,10 @@ export default function CardForge() {
                     const disabled = !bdName.trim() || bdSelectedIdxs.length === 0 || bdSaving;
                     const count = bdSelectedIdxs.length;
                     const label = bdSaving
-                      ? "Enregistrement…"
+                      ? tf('saving2')
                       : count <= 1
-                        ? "Enregistrer le plateau"
-                        : `Enregistrer les ${count} plateaux sélectionnés`;
+                        ? tf('save_board')
+                        : tf('save_n_boards', { n: count });
                     return (
                       <button type="button" onClick={saveBoard} disabled={disabled}
                         style={{
@@ -4817,7 +4819,7 @@ export default function CardForge() {
         {tab === "kw-icons" && (
           <div style={{ flex: 1, padding: 22, overflowY: "auto" }}>
             <div style={{ maxWidth: 900, margin: "0 auto" }}>
-              <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16, letterSpacing: 2 }}>GÉNÉRER UNE ICÔNE DE CAPACITÉ</h2>
+              <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16, letterSpacing: 2 }}>{tf('generate_ability_icon_title')}</h2>
 
               {kwMessage && (
                 <div style={{
@@ -4831,14 +4833,14 @@ export default function CardForge() {
 
               <div style={{ border: "1px solid #e0e0e0", borderRadius: 8, padding: 16, background: "#fafafa" }}>
                 <div style={{ fontSize: 10, color: "#666", letterSpacing: 1, marginBottom: 10, fontWeight: 700 }}>
-                  PARAMÈTRES
+                  {tf('parameters')}
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 10 }}>
                   <div>
-                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>CAPACITÉ</label>
+                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('ability_label')}</label>
                     <select value={kwSelected} onChange={e => setKwSelected(e.target.value)}
                       style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }}>
-                      <option value="">-- Choisir une capacité --</option>
+                      <option value="">{tf('choose_ability')}</option>
                       {abilityOptions.map(opt => (
                         <option key={opt.id} value={opt.id}>
                           {opt.marker} {opt.label}
@@ -4848,28 +4850,28 @@ export default function CardForge() {
                     <div style={{ fontSize: 9, color: "#999", marginTop: 4, fontFamily: "'Crimson Text',serif" }}>
                       {kwSelectedAbility ? (
                         kwTargetHosts.length > 1
-                          ? "🔀 Capacité polymorphe — l'icône sera enregistrée pour la créature ET le sort."
+                          ? tf('ability_polymorph')
                           : kwTargetHosts[0] === "creature"
-                          ? "👤 Capacité de créature."
-                          : "🪄 Capacité de sort."
-                      ) : "👤 créature · 🪄 sort · 🔀 partagée"}
+                          ? tf('ability_creature')
+                          : tf('ability_spell')
+                      ) : tf('ability_legend')}
                     </div>
                   </div>
                   <div>
-                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>NOM DE L&apos;ICÔNE</label>
+                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('icon_name_label')}</label>
                     <input type="text" value={kwName} onChange={e => setKwName(e.target.value)}
-                      placeholder="Ex: Bouclier v2"
+                      placeholder={tf('icon_name_placeholder')}
                       style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }} />
                   </div>
                   <div />
                   <div style={{ gridColumn: "span 3" }}>
-                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>STYLE</label>
+                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('style_label')}</label>
                     <div style={{ display: "flex", gap: 6, marginTop: 4, flexWrap: "wrap" }}>
                       {([
-                        ["white", "Blanc pur"],
-                        ["grey", "Gris pur"],
-                        ["colored", "Coloré"],
-                        ["sculpture", "Sculpture"],
+                        ["white", tf('style_white')],
+                        ["grey", tf('style_grey')],
+                        ["colored", tf('style_colored')],
+                        ["sculpture", tf('style_sculpture')],
                       ] as const).map(([val, label]) => (
                         <button key={val} type="button" onClick={() => setKwColorMode(val)}
                           style={{
@@ -4885,9 +4887,9 @@ export default function CardForge() {
                     </div>
                   </div>
                   <div style={{ gridColumn: "span 3" }}>
-                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>INSTRUCTIONS SUPPLÉMENTAIRES (optionnel)</label>
+                    <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('extra_instructions_optional')}</label>
                     <textarea value={kwInstructions} onChange={e => setKwInstructions(e.target.value)}
-                      placeholder="Ex: privilégier un éclair, un crâne stylisé..."
+                      placeholder={tf('icon_instructions_placeholder')}
                       style={{ width: "100%", minHeight: 36, padding: 6, borderRadius: 6, border: "1px solid #ddd", fontSize: 10, fontFamily: "'Crimson Text',serif", marginTop: 4, resize: "vertical" }} />
                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
                       {kwRefImagePreview ? (
@@ -4895,29 +4897,29 @@ export default function CardForge() {
                           width: 72, height: 72, borderRadius: 6, overflow: "hidden",
                           border: "1px solid #27ae60", flexShrink: 0, position: "relative",
                         }}>
-                          <img src={kwRefImagePreview} alt="Référence" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                          <img src={kwRefImagePreview} alt={tf('reference')} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                         </div>
                       ) : (
                         <div style={{
                           width: 72, height: 72, borderRadius: 6, border: "2px dashed #ddd",
                           background: "#fafafa", display: "flex", alignItems: "center", justifyContent: "center",
                           fontSize: 9, color: "#bbb", fontFamily: "'Cinzel',serif", flexShrink: 0, textAlign: "center", padding: 4,
-                        }}>Aucune réf.</div>
+                        }}>{tf('no_reference')}</div>
                       )}
                       <div style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
-                        <span style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>IMAGE DE RÉFÉRENCE (optionnel)</span>
+                        <span style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('reference_image_optional')}</span>
                         <span style={{ fontSize: 9, color: "#777", fontFamily: "'Crimson Text',serif", lineHeight: 1.3 }}>
-                          Sert d&apos;inspiration visuelle au sujet uniquement ; toutes les contraintes de style (fond, silhouette, palette…) sont conservées.
+                          {tf('reference_image_hint4')}
                         </span>
                         <div style={{ display: "flex", gap: 6, marginTop: 2 }}>
                           <label style={{ padding: "4px 10px", borderRadius: 5, border: "1px solid #ddd", background: "#fff", color: "#666", fontSize: 9, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>
-                            {kwRefImagePreview ? "Remplacer" : "Choisir une image"}
+                            {kwRefImagePreview ? tf('replace') : tf('choose_image')}
                             <input type="file" accept="image/*" onChange={handleKwRefImageChange} style={{ display: "none" }} />
                           </label>
                           {kwRefImagePreview && (
                             <button type="button" onClick={clearKwRefImage}
                               style={{ padding: "4px 10px", borderRadius: 5, border: "1px solid #e74c3c55", background: "#e74c3c11", color: "#e74c3c", fontSize: 9, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>
-                              Retirer
+                              {tf('remove_image')}
                             </button>
                           )}
                         </div>
@@ -4928,21 +4930,21 @@ export default function CardForge() {
 
                 {/* Prompt */}
                 <div style={{ marginTop: 12 }}>
-                  <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>PROMPT IMAGE</label>
+                  <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('image_prompt_label')}</label>
                   <textarea value={kwPrompt} onChange={e => setKwPrompt(e.target.value)}
-                    placeholder="Cliquez 'Auto-prompt' pour générer, ou écrivez le vôtre..."
+                    placeholder={tf('auto_prompt_placeholder')}
                     style={{ width: "100%", minHeight: 70, padding: 6, borderRadius: 6, border: "1px solid #ddd", fontSize: 9.5, fontFamily: "monospace", marginTop: 4, resize: "vertical" }} />
                   <div style={{ display: "flex", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
                     <button type="button" onClick={generateKeywordIconPrompt} disabled={!kwSelected}
                       style={{ padding: "4px 12px", borderRadius: 5, border: "1px solid #ddd", background: "#fff", color: kwSelected ? "#666" : "#ccc", fontSize: 9, fontFamily: "'Cinzel',serif", cursor: kwSelected ? "pointer" : "default" }}>
-                      Auto-prompt
+                      {tf('auto_prompt')}
                     </button>
                     <button type="button" onClick={generateKeywordIconImage} disabled={!kwPrompt || kwGenerating}
                       style={{ padding: "4px 12px", borderRadius: 5, border: "none", background: kwPrompt && !kwGenerating ? "linear-gradient(135deg, #6c5ce7, #a855f7)" : "#e0e0e0", color: "#fff", fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: 700, cursor: kwPrompt && !kwGenerating ? "pointer" : "default" }}>
-                      {kwGenerating ? "Génération…" : kwVariations.length > 0 ? "Relancer 3 variantes" : "Générer 3 variantes"}
+                      {kwGenerating ? tf('generating') : kwVariations.length > 0 ? tf('rerun_3_variants') : tf('generate_3_variants')}
                     </button>
                     <label style={{ padding: "4px 12px", borderRadius: 5, border: "1px solid #ddd", background: "#fff", color: "#666", fontSize: 9, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>
-                      Upload manuel
+                      {tf('manual_upload')}
                       <input type="file" accept="image/*" onChange={handleKwFileChange} style={{ display: "none" }} />
                     </label>
                   </div>
@@ -4951,7 +4953,7 @@ export default function CardForge() {
                 {/* 3 variations preview — checker bg reveals transparency. Click to toggle. */}
                 <div style={{ marginTop: 14 }}>
                   <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>
-                    VARIANTES (cliquez pour cocher celles à sauvegarder — plusieurs possibles)
+                    {tf('variants_check_save_hint')}
                   </label>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginTop: 6 }}>
                     {[0, 1, 2].map((i) => {
@@ -4974,7 +4976,7 @@ export default function CardForge() {
                           }}>
                           {v ? (
                             <>
-                              <img src={v.url} alt={`Variante ${i + 1}`} style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }} />
+                              <img src={v.url} alt={tf('variant_n', { n: i + 1 })} style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }} />
                               {isSelected && (
                                 <div style={{ position: "absolute", top: 4, right: 6, background: "#27ae60", color: "#fff", borderRadius: 12, padding: "1px 8px", fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: 700 }}>
                                   ✓
@@ -4983,7 +4985,7 @@ export default function CardForge() {
                             </>
                           ) : (
                             <span style={{ fontSize: 10, color: "#bbb", fontFamily: "'Cinzel',serif" }}>
-                              {kwGenerating ? "…" : `Variante ${i + 1}`}
+                              {kwGenerating ? "…" : tf('variant_n', { n: i + 1 })}
                             </span>
                           )}
                         </button>
@@ -4997,10 +4999,10 @@ export default function CardForge() {
                     const disabled = !kwName.trim() || !kwSelected || kwSelectedIdxs.length === 0 || kwSaving;
                     const count = kwSelectedIdxs.length;
                     const label = kwSaving
-                      ? "Enregistrement…"
+                      ? tf('saving2')
                       : count <= 1
-                        ? "Enregistrer la variante sélectionnée"
-                        : `Enregistrer les ${count} variantes sélectionnées`;
+                        ? tf('save_variant')
+                        : tf('save_n_variants', { n: count });
                     return (
                       <button type="button" onClick={saveKeywordIcon} disabled={disabled}
                         style={{
@@ -5019,10 +5021,10 @@ export default function CardForge() {
               {/* Gallery */}
               <div style={{ marginTop: 28 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                  <h3 style={{ fontSize: 12, fontFamily: "'Cinzel',serif", fontWeight: 700, letterSpacing: 2, margin: 0 }}>GALERIE</h3>
+                  <h3 style={{ fontSize: 12, fontFamily: "'Cinzel',serif", fontWeight: 700, letterSpacing: 2, margin: 0 }}>{tf('gallery')}</h3>
                   <select value={kwGalleryFilter} onChange={e => { setKwGalleryFilter(e.target.value); }} onBlur={loadKwAssets}
                     style={{ padding: "4px 8px", borderRadius: 5, border: "1px solid #ddd", fontSize: 10, fontFamily: "'Cinzel',serif" }}>
-                    <option value="">Toutes les capacités</option>
+                    <option value="">{tf('all_abilities')}</option>
                     <optgroup label="Créature">
                       {creatureKeywordOptions.map(opt => <option key={`c-${opt.id}`} value={opt.id}>{opt.label}</option>)}
                     </optgroup>
@@ -5032,12 +5034,12 @@ export default function CardForge() {
                   </select>
                   <button type="button" onClick={loadKwAssets}
                     style={{ padding: "4px 10px", borderRadius: 5, border: "1px solid #ddd", background: "#fff", color: "#666", fontSize: 9, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>
-                    Rafraîchir
+                    {tf('refresh')}
                   </button>
                 </div>
                 {kwAssets.length === 0 ? (
                   <div style={{ padding: 24, textAlign: "center", color: "#aaa", fontSize: 11, fontFamily: "'Crimson Text',serif", background: "#fff", border: "1px solid #eee", borderRadius: 8 }}>
-                    Aucune icône. Commence par en générer une ci-dessus.
+                    {tf('no_icon')}
                   </div>
                 ) : (
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 12 }}>
@@ -5071,7 +5073,7 @@ export default function CardForge() {
                                   flex: 1, padding: "3px 6px", borderRadius: 4, border: "none", fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: 700, cursor: a.is_active ? "default" : "pointer",
                                   background: a.is_active ? "#e0e0e0" : "#27ae60", color: a.is_active ? "#888" : "#fff",
                                 }}>
-                                {a.is_active ? "Active" : "Activer"}
+                                {a.is_active ? tf('active') : tf('activate')}
                               </button>
                               <button type="button" onClick={() => deleteKwAsset(a.id, a.name)}
                                 style={{ padding: "3px 8px", borderRadius: 4, border: "none", background: "#e74c3c22", color: "#e74c3c", fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: 700, cursor: "pointer" }}>
@@ -5094,16 +5096,16 @@ export default function CardForge() {
           <div style={{ flex: 1, padding: 18, display: "flex", flexDirection: "column", gap: 14, overflowY: "auto" }}>
             <div style={{ background: "#fff", borderRadius: 8, border: "1px solid #e0e0e0", padding: 16 }}>
               <h3 style={{ fontSize: 11, fontFamily: "'Cinzel',serif", fontWeight: 700, color: "#333", marginBottom: 12, letterSpacing: 1 }}>
-                CRÉER UN SET
+                {tf('create_set')}
               </h3>
               <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                <input value={newSetName} onChange={e => setNewSetName(e.target.value)} placeholder="Nom (ex: Set de Base)"
+                <input value={newSetName} onChange={e => setNewSetName(e.target.value)} placeholder={tf('set_name_placeholder')}
                   style={{ flex: 2, padding: "6px 10px", borderRadius: 5, border: "1px solid #e0e0e0", fontSize: 11, fontFamily: "'Cinzel',serif" }} />
-                <input value={newSetCode} onChange={e => setNewSetCode(e.target.value.toUpperCase())} placeholder="Code (ex: BASE)" maxLength={8}
+                <input value={newSetCode} onChange={e => setNewSetCode(e.target.value.toUpperCase())} placeholder={tf('set_code_placeholder')} maxLength={8}
                   style={{ width: 80, padding: "6px 10px", borderRadius: 5, border: "1px solid #e0e0e0", fontSize: 11, fontFamily: "'Cinzel',serif", textTransform: "uppercase" }} />
-                <input value={newSetIcon} onChange={e => setNewSetIcon(e.target.value)} placeholder="Icône"
+                <input value={newSetIcon} onChange={e => setNewSetIcon(e.target.value)} placeholder={tf('icon_placeholder')}
                   style={{ width: 40, padding: "6px", borderRadius: 5, border: "1px solid #e0e0e0", fontSize: 14, textAlign: "center" }} />
-                <input type="date" value={newSetReleasedAt} onChange={e => setNewSetReleasedAt(e.target.value)} title="Date de sortie"
+                <input type="date" value={newSetReleasedAt} onChange={e => setNewSetReleasedAt(e.target.value)} title={tf('release_date')}
                   style={{ padding: "6px 10px", borderRadius: 5, border: "1px solid #e0e0e0", fontSize: 11, fontFamily: "'Cinzel',serif" }} />
                 <button onClick={async () => {
                   if (!newSetName || !newSetCode) return;
@@ -5111,16 +5113,16 @@ export default function CardForge() {
                   if (res.ok) { setNewSetName(""); setNewSetCode(""); setNewSetIcon("⚔️"); setNewSetReleasedAt(""); loadSets(); }
                 }} disabled={!newSetName || !newSetCode}
                   style={{ padding: "6px 16px", borderRadius: 6, border: "none", background: "#333", color: "#fff", fontSize: 10, fontFamily: "'Cinzel',serif", fontWeight: 700, cursor: "pointer", opacity: (!newSetName || !newSetCode) ? 0.4 : 1 }}>
-                  Créer
+                  {tf('create2')}
                 </button>
               </div>
             </div>
 
             <div style={{ background: "#fff", borderRadius: 8, border: "1px solid #e0e0e0", padding: 16 }}>
               <h3 style={{ fontSize: 11, fontFamily: "'Cinzel',serif", fontWeight: 700, color: "#333", marginBottom: 12, letterSpacing: 1 }}>
-                SETS EXISTANTS ({sets.length})
+                {tf('existing_sets', { count: sets.length })}
               </h3>
-              {sets.length === 0 && <p style={{ fontSize: 10, color: "#aaa" }}>Aucun set créé</p>}
+              {sets.length === 0 && <p style={{ fontSize: 10, color: "#aaa" }}>{tf('no_set_created')}</p>}
               {sets.map(s => (
                 <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: "1px solid #f0f0f0" }}>
                   <span style={{ fontSize: 18 }}>{s.icon}</span>
@@ -5132,9 +5134,9 @@ export default function CardForge() {
                     const res = await fetch('/api/sets', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: s.id }) });
                     const data = await res.json();
                     if (res.ok) loadSets();
-                    else alert(data.error || "Erreur");
+                    else alert(data.error || tf('error'));
                   }} style={{ fontSize: 8, padding: "3px 10px", borderRadius: 4, border: "1px solid #f5a3a3", background: "#fde8e8", color: "#e74c3c", cursor: "pointer", fontFamily: "'Cinzel',serif" }}>
-                    Supprimer
+                    {tf('remove')}
                   </button>
                 </div>
               ))}
@@ -5147,7 +5149,7 @@ export default function CardForge() {
           <div style={{ flex: 1, padding: 18, display: "flex", flexDirection: "column", gap: 14, overflowY: "auto" }}>
             {formats.length === 0 && (
               <div style={{ background: "#fff", borderRadius: 8, border: "1px solid #e0e0e0", padding: 16, textAlign: "center" }}>
-                <p style={{ fontSize: 10, color: "#aaa" }}>Aucun format trouvé. Vérifiez que la table &quot;formats&quot; est créée et peuplée.</p>
+                <p style={{ fontSize: 10, color: "#aaa" }}>{tf('no_format_found')}</p>
               </div>
             )}
             {formats.map(fmt => (
@@ -5162,7 +5164,7 @@ export default function CardForge() {
                     color: fmt.is_active ? "#2e7d32" : "#e74c3c",
                     border: `1px solid ${fmt.is_active ? "#a5d6a7" : "#f5a3a3"}`,
                   }}>
-                    {fmt.is_active ? "Actif" : "Inactif"}
+                    {fmt.is_active ? tf('active_m') : tf('inactive')}
                   </span>
                 </div>
                 {fmt.description && <p style={{ fontSize: 9, color: "#888", marginBottom: 8 }}>{fmt.description}</p>}
@@ -5188,16 +5190,16 @@ export default function CardForge() {
         {tab === "bulk" && (
           <div style={{ flex: 1, padding: 18, display: "flex", flexDirection: "column", gap: 14 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", background: "#fff", borderRadius: 8, border: "1px solid #e0e0e0" }}>
-              <span style={{ fontSize: 10, color: "#888", letterSpacing: 1 }}>NOMBRE</span>
+              <span style={{ fontSize: 10, color: "#888", letterSpacing: 1 }}>{tf('label_count')}</span>
               <input type="number" value={bulkCount} min={1} max={500}
                 onChange={e => setBulkCount(Math.max(1, Math.min(500, parseInt(e.target.value) || 1)))}
                 style={{ width: 60, padding: "4px 8px", background: "#f8f8f8", border: "1px solid #e0e0e0", borderRadius: 6, color: "#333", fontFamily: "'Cinzel',serif", fontSize: 13, textAlign: "center" }}
               />
-              <span style={{ fontSize: 9, color: "#aaa" }}>Tous paramètres aléatoires</span>
+              <span style={{ fontSize: 9, color: "#aaa" }}>{tf('all_random')}</span>
               <div style={{ flex: 1 }} />
               {bulkProgress
-                ? <Btn onClick={() => { abortRef.current = true; setBulkProgress(null); }} label="✕ Annuler" color="#ff6b6b" />
-                : <Btn onClick={startBulk} label="▶ Lancer" color="#ffd54f" />
+                ? <Btn onClick={() => { abortRef.current = true; setBulkProgress(null); }} label={`✕ ${tf('cancel')}`} color="#ff6b6b" />
+                : <Btn onClick={startBulk} label={`▶ ${tf('launch')}`} color="#ffd54f" />
               }
               {bulkCards.length > 0 && !bulkProgress && (
                 <Btn onClick={() => exportJSON(bulkCards)} label={`📤 JSON (${bulkCards.length})`} color="#55efc4" />
@@ -5255,15 +5257,15 @@ export default function CardForge() {
         {tab === "budget" && (
           <div style={{ flex: 1, padding: 22, overflowY: "auto" }}>
             <div style={{ maxWidth: 820, display: "flex", flexDirection: "column", gap: 18 }}>
-              <div style={{ fontSize: 8, color: "#aaa", letterSpacing: 2 }}>SYSTÈME DE BUDGET — RÉFÉRENCE</div>
+              <div style={{ fontSize: 8, color: "#aaa", letterSpacing: 2 }}>{tf('budget_system_reference')}</div>
 
               {/* Mana-Rarity distribution */}
-              <Panel title="DISTRIBUTION RARETÉ PAR COÛT DE MANA (MODE BULK)">
+              <Panel title={tf('panel_mana_rarity')}>
                 <div style={{ overflowX: "auto" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 9 }}>
                     <thead>
                       <tr>
-                        <th style={{ padding: "5px 10px", textAlign: "left", color: "#333", fontWeight: 400, borderBottom: "1px solid #e0e0e0" }}>Mana</th>
+                        <th style={{ padding: "5px 10px", textAlign: "left", color: "#333", fontWeight: 400, borderBottom: "1px solid #e0e0e0" }}>{tf('mana_th')}</th>
                         {RARITIES.map(r => (
                           <th key={r.id} style={{ padding: "5px 10px", textAlign: "center", color: r.color, fontWeight: 700, borderBottom: "1px solid #e0e0e0", whiteSpace: "nowrap" }}>
                             {r.code} {r.label}
@@ -5302,7 +5304,7 @@ export default function CardForge() {
               </Panel>
 
               {/* Rarity grid */}
-              <Panel title="MULTIPLICATEURS PAR RARETÉ">
+              <Panel title={tf('panel_rarity_multipliers')}>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 8 }}>
                   {RARITIES.map(r => (
                     <div key={r.id} style={{ textAlign: "center", padding: "10px 6px", borderRadius: 5, border: `1px solid ${r.color}33`, background: `${r.color}08` }}>
@@ -5319,9 +5321,9 @@ export default function CardForge() {
               </Panel>
 
               {/* Stat costs */}
-              <Panel title="COÛT DES STATISTIQUES">
+              <Panel title={tf('panel_stat_costs')}>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                  {([["ATK", "#ff6b6b", "2.5 pts par point"], ["DEF", "#74b9ff", "2.0 pts par point"]] as const).map(([stat, color, desc]) => (
+                  {([["ATK", "#ff6b6b", tf('atk_cost_desc')], ["DEF", "#74b9ff", tf('def_cost_desc')]] as const).map(([stat, color, desc]) => (
                     <div key={stat} style={{ padding: "10px 14px", borderRadius: 5, background: `${color}0a`, border: `1px solid ${color}33` }}>
                       <div style={{ fontSize: 11, color, fontWeight: 700, marginBottom: 3 }}>{stat}</div>
                       <div style={{ fontSize: 9, color: "#555" }}>{desc}</div>
@@ -5329,13 +5331,12 @@ export default function CardForge() {
                   ))}
                 </div>
                 <div style={{ marginTop: 8, fontSize: 8.5, color: "#333", lineHeight: 1.8 }}>
-                  L&apos;algorithme alloue d&apos;abord ATK (45% du budget restant), puis DEF (55%), puis tente d&apos;ajouter des capacités jusqu&apos;à épuisement.
-                  Les multiplicateurs de faction (ATK weight, DEF weight) modifient les plages de tirage.
+                  {tf('budget_algo_desc')}
                 </div>
               </Panel>
 
               {/* Keyword costs */}
-              <Panel title="COÛT DES CAPACITÉS">
+              <Panel title={tf('panel_ability_costs')}>
                 <div style={{ fontSize: 8, color: "#333", lineHeight: 1.9, marginBottom: 10 }}>
                   <strong style={{ color: "#aaa" }}>1 SE (stat équivalent)</strong> = ~4.5 pts de budget = 1 point de stat vanilla que la capacité remplace.
                   &nbsp;ATK coûte <strong style={{ color: "#ff6b6b" }}>5 pts</strong>, DEF coûte <strong style={{ color: "#74b9ff" }}>4 pts</strong>.
@@ -5361,7 +5362,7 @@ export default function CardForge() {
               </Panel>
 
               {/* Faction profiles */}
-              <Panel title="PROFILS DE FACTION">
+              <Panel title={tf('panel_faction_profiles')}>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(235px,1fr))", gap: 8 }}>
                   {Object.entries(FACTIONS).map(([f, fc]) => (
                     <div key={f} style={{ padding: "10px 12px", borderRadius: 5, background: `${fc.color}09`, border: `1px solid ${fc.color}28` }}>
@@ -5372,8 +5373,8 @@ export default function CardForge() {
                       <div style={{ fontSize: 8.5, color: "#3a3a5a", fontFamily: "'Crimson Text',serif", marginBottom: 6 }}>{fc.description}</div>
                       <div style={{ fontSize: 8, color: "#333", lineHeight: 1.8 }}>
                         <div>⚔ ATK ×{fc.statWeights.atk.toFixed(2)} &nbsp;·&nbsp; 🛡 DEF ×{fc.statWeights.def.toFixed(2)}</div>
-                        {fc.guaranteedKeywords.length > 0 && <div style={{ color: fc.accent }}>★ Garanti : {fc.guaranteedKeywords.join(", ")}</div>}
-                        <div style={{ color: "#222" }}>✕ Interdit : {fc.forbiddenKeywords.join(", ")}</div>
+                        {fc.guaranteedKeywords.length > 0 && <div style={{ color: fc.accent }}>★ {tf('guaranteed_label')} {fc.guaranteedKeywords.join(", ")}</div>}
+                        <div style={{ color: "#222" }}>✕ {tf('forbidden_label')} {fc.forbiddenKeywords.join(", ")}</div>
                       </div>
                     </div>
                   ))}
@@ -5387,7 +5388,7 @@ export default function CardForge() {
         {tab === "schema" && (
           <div style={{ flex: 1, padding: 22, overflowY: "auto" }}>
             <div style={{ maxWidth: 660 }}>
-              <div style={{ fontSize: 8, color: "#aaa", letterSpacing: 2, marginBottom: 12 }}>CARD SCHEMA — JSON</div>
+              <div style={{ fontSize: 8, color: "#aaa", letterSpacing: 2, marginBottom: 12 }}>{tf('card_schema_label')}</div>
               <pre style={{ background: "#f8f8f8", border: "1px solid #e0e0e0", borderRadius: 8, padding: 18, fontSize: 11, color: "#6c5ce7", lineHeight: 1.75, fontFamily: "monospace", overflow: "auto" }}>
 {JSON.stringify({
   id: "am_1711234567_ab12",
@@ -5415,10 +5416,10 @@ export default function CardForge() {
         {/* ── PRINTS (Séries Limitées) ── */}
         {tab === "prints" && (
           <div style={{ flex: 1, padding: 22, overflowY: "auto" }}>
-            <div style={{ fontSize: 8, color: "#aaa", letterSpacing: 2, marginBottom: 16 }}>SÉRIES LIMITÉES — ATTRIBUTION</div>
+            <div style={{ fontSize: 8, color: "#aaa", letterSpacing: 2, marginBottom: 16 }}>{tf('limited_series_assignment')}</div>
 
             {printsCards.length === 0 ? (
-              <div style={{ color: "#aaa", fontSize: 12, textAlign: "center", marginTop: 40 }}>Aucune carte forgée avec date en base.</div>
+              <div style={{ color: "#aaa", fontSize: 12, textAlign: "center", marginTop: 40 }}>{tf('no_dated_card')}</div>
             ) : (
               <div style={{ display: "grid", gridTemplateColumns: "300px 1fr", gap: 20, maxWidth: 1000 }}>
                 {/* Left: card list */}
@@ -5427,7 +5428,7 @@ export default function CardForge() {
                     type="text"
                     value={printsSearch}
                     onChange={(e) => setPrintsSearch(e.target.value)}
-                    placeholder="Rechercher..."
+                    placeholder={tf('search_placeholder')}
                     style={{ width: "100%", padding: "6px 10px", borderRadius: 6, border: "1px solid #e0e0e0", fontSize: 11, marginBottom: 8, fontFamily: "'Cinzel',serif" }}
                   />
                   <div style={{ background: "#fafafa", borderRadius: 8, border: "1px solid #e0e0e0", maxHeight: 500, overflowY: "auto" }}>
@@ -5460,16 +5461,16 @@ export default function CardForge() {
                 <div>
                   {!selectedPrintCard ? (
                     <div style={{ padding: 40, textAlign: "center", color: "#bbb", fontSize: 11, background: "#fafafa", borderRadius: 8, border: "1px solid #e0e0e0" }}>
-                      Sélectionner une carte pour voir ses exemplaires
+                      {tf('select_card_for_copies')}
                     </div>
                   ) : printsLoading ? (
-                    <div style={{ padding: 20, color: "#aaa", fontSize: 11 }}>Chargement...</div>
+                    <div style={{ padding: 20, color: "#aaa", fontSize: 11 }}>{tf('loading')}</div>
                   ) : (
                     <div style={{ background: "#fafafa", borderRadius: 8, border: "1px solid #e0e0e0", padding: 14 }}>
                       <div style={{ marginBottom: 12 }}>
                         <div style={{ fontSize: 13, fontWeight: 700, fontFamily: "'Cinzel',serif" }}>{selectedPrintCard.name}</div>
                         <div style={{ fontSize: 10, color: "#888" }}>
-                          {selectedPrintCard.rarity} — {printsList.length} exemplaires — {printsList.filter(p => p.owner_id).length} attribués, {printsList.filter(p => !p.owner_id).length} disponibles
+                          {tf('prints_summary', { rarity: selectedPrintCard.rarity ?? "", total: printsList.length, assigned: printsList.filter(p => p.owner_id).length, available: printsList.filter(p => !p.owner_id).length })}
                         </div>
                       </div>
 
@@ -5478,9 +5479,9 @@ export default function CardForge() {
                           <thead>
                             <tr style={{ borderBottom: "2px solid #e0e0e0", textAlign: "left" }}>
                               <th style={{ padding: "5px 8px", fontWeight: 700, fontSize: 9, letterSpacing: 0.5 }}>#</th>
-                              <th style={{ padding: "5px 8px", fontWeight: 700, fontSize: 9, letterSpacing: 0.5 }}>PROPRIÉTAIRE</th>
-                              <th style={{ padding: "5px 8px", fontWeight: 700, fontSize: 9, letterSpacing: 0.5 }}>ÉCHANGEABLE</th>
-                              <th style={{ padding: "5px 8px", fontWeight: 700, fontSize: 9, letterSpacing: 0.5 }}>ACTIONS</th>
+                              <th style={{ padding: "5px 8px", fontWeight: 700, fontSize: 9, letterSpacing: 0.5 }}>{tf('owner_th')}</th>
+                              <th style={{ padding: "5px 8px", fontWeight: 700, fontSize: 9, letterSpacing: 0.5 }}>{tf('tradeable_th')}</th>
+                              <th style={{ padding: "5px 8px", fontWeight: 700, fontSize: 9, letterSpacing: 0.5 }}>{tf('actions_th')}</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -5490,25 +5491,25 @@ export default function CardForge() {
                                 <td style={{ padding: "5px 8px" }}>
                                   {p.owner_username
                                     ? <span style={{ color: "#27ae60", fontWeight: 600 }}>{p.owner_username}</span>
-                                    : <span style={{ color: "#ccc" }}>— disponible —</span>}
+                                    : <span style={{ color: "#ccc" }}>{tf('available_dash')}</span>}
                                 </td>
                                 <td style={{ padding: "5px 8px" }}>
                                   <button onClick={() => togglePrintTradeable(p.id, p.is_tradeable)} style={{
                                     padding: "2px 8px", borderRadius: 4, border: "none", fontSize: 9, fontWeight: 700, cursor: "pointer",
                                     background: p.is_tradeable ? "#27ae6022" : "#e74c3c22",
                                     color: p.is_tradeable ? "#27ae60" : "#e74c3c",
-                                  }}>{p.is_tradeable ? "Oui" : "Non"}</button>
+                                  }}>{p.is_tradeable ? tf('yes') : tf('no')}</button>
                                 </td>
                                 <td style={{ padding: "5px 8px" }}>
                                   {p.owner_id ? (
                                     <button onClick={() => assignPrint(p.id, null)} style={{
                                       padding: "3px 10px", borderRadius: 5, border: "none", background: "#e74c3c22", color: "#e74c3c", fontSize: 9, fontWeight: 700, cursor: "pointer",
-                                    }}>Retirer</button>
+                                    }}>{tf('unassign')}</button>
                                   ) : (
                                     <select value="" onChange={(e) => { if (e.target.value) assignPrint(p.id, e.target.value); }} style={{
                                       padding: "3px 6px", borderRadius: 5, border: "1px solid #ddd", fontSize: 9, fontFamily: "'Cinzel',serif",
                                     }}>
-                                      <option value="">Attribuer à...</option>
+                                      <option value="">{tf('assign_to')}</option>
                                       {printsProfiles.map(prof => (
                                         <option key={prof.id} value={prof.id}>{prof.username}</option>
                                       ))}

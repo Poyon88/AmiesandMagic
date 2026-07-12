@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { Card, Keyword, CardSet, GameFormat, DeckMode, DeckExtent } from "@/lib/game/types";
@@ -185,6 +186,7 @@ export default function DeckBuilder({
   const supabase = createClient();
   const ownedSet = useMemo(() => new Set(collectedCardIds), [collectedCardIds]);
   const vocab = useVocab();
+  const t = useTranslations("deck");
 
   const [deckName, setDeckName] = useState(existingDeck?.name ?? "");
   const [selectedHeroId, setSelectedHeroId] = useState<number | null>(
@@ -471,12 +473,12 @@ export default function DeckBuilder({
 
     const alignmentConflict = alignmentSet.has("bon") && alignmentSet.has("maléfique");
     const violations: string[] = [];
-    if (alignmentConflict) violations.push("Alignement Bon et Maléfique incompatibles");
-    if (mercenairesCount > maxMercenaires) violations.push(`Max ${maxMercenaires} Mercenaires (actuellement ${mercenairesCount})`);
+    if (alignmentConflict) violations.push(t("alignment_incompatible"));
+    if (mercenairesCount > maxMercenaires) violations.push(t("max_mercenaires_current", { max: maxMercenaires, current: mercenairesCount }));
     // Limite : pas plus de MAX_SAME_CAPABILITY fois une même capacité nommée (sauf Vol).
     const capabilityCounts = creatureCapabilityCounts(deckCards.values());
     for (const v of capabilityLimitViolations(capabilityCounts)) {
-      violations.push(`Max ${MAX_SAME_CAPABILITY} capacités « ${v.label} » (actuellement ${v.count})`);
+      violations.push(t("max_capability_current", { max: MAX_SAME_CAPABILITY, label: v.label, count: v.count }));
     }
 
     return { factions: factionSet, allFactions, clans: clanSet, alignments: alignmentSet, violations, alignmentConflict, mercenairesCount, maxMercenaires, capabilityCounts };
@@ -559,28 +561,28 @@ export default function DeckBuilder({
   }, [slotAllocation]);
 
   function canAddCard(card: Card): string | null {
-    if (!isCardOwned(card, ownedSet, isTester)) return "Carte non possédée";
-    if (totalCards >= DECK_SIZE) return "Deck plein";
+    if (!isCardOwned(card, ownedSet, isTester)) return t("card_not_owned");
+    if (totalCards >= DECK_SIZE) return t("deck_full");
     const existing = deckCards.get(card.id);
     // Peu Commune, Rare, Épique, Légendaire : 1 exemplaire max. Commune : 3 max.
     const maxCopies = (card.rarity && card.rarity !== "Commune") ? 1 : 3;
-    if (existing && existing.quantity >= maxCopies) return maxCopies === 1 ? "Exemplaire unique" : "Max 3 copies";
+    if (existing && existing.quantity >= maxCopies) return maxCopies === 1 ? t("unique_copy") : t("max_three_copies");
 
     // Alignment
     if (card.faction) {
       const a = card.faction === "Mercenaires" ? card.card_alignment : FACTIONS[card.faction]?.alignment;
-      if (a === "bon" && deckStats.alignments.has("maléfique")) return "Conflit d'alignement";
-      if (a === "maléfique" && deckStats.alignments.has("bon")) return "Conflit d'alignement";
+      if (a === "bon" && deckStats.alignments.has("maléfique")) return t("alignment_conflict");
+      if (a === "maléfique" && deckStats.alignments.has("bon")) return t("alignment_conflict");
     }
 
     // Faction limit : une seule faction (hors Mercenaires)
-    if (card.faction && card.faction !== "Mercenaires" && !deckStats.factions.has(card.faction) && deckStats.factions.size >= 1) return "1 seule faction autorisée";
+    if (card.faction && card.faction !== "Mercenaires" && !deckStats.factions.has(card.faction) && deckStats.factions.size >= 1) return t("one_faction_only");
 
     // Clan limit : 1 seul clan (cartes sans clan + Mercenaires toujours autorisés)
-    if (card.clan && card.faction !== "Mercenaires" && !deckStats.clans.has(card.clan) && deckStats.clans.size >= MAX_CLANS) return "1 seul clan autorisé";
+    if (card.clan && card.faction !== "Mercenaires" && !deckStats.clans.has(card.clan) && deckStats.clans.size >= MAX_CLANS) return t("one_clan_only");
 
     // Mercenaires limit
-    if (card.faction === "Mercenaires" && deckStats.mercenairesCount >= deckStats.maxMercenaires) return `Max ${deckStats.maxMercenaires} Mercenaires`;
+    if (card.faction === "Mercenaires" && deckStats.mercenairesCount >= deckStats.maxMercenaires) return t("max_mercenaires", { max: deckStats.maxMercenaires });
 
     // Slot availability: check if there's a slot for this card's rarity (or higher)
     const cardRarIdx = rarityIndex(card.rarity || "Commune");
@@ -589,7 +591,7 @@ export default function DeckBuilder({
       const tier = RARITY_HIERARCHY[i];
       if (slotCounts[tier] < SLOT_COUNTS[tier]) { hasSlot = true; break; }
     }
-    if (!hasSlot) return "Plus de slot disponible";
+    if (!hasSlot) return t("no_slot_available");
 
     // Limite : une même capacité nommée ne peut dépasser MAX_SAME_CAPABILITY
     // exemplaires dans le deck (Vol exempté). +1 simule l'ajout de cette carte.
@@ -597,7 +599,7 @@ export default function DeckBuilder({
     for (const id of namedCreatureCapabilityIds(card)) {
       if (CAPABILITY_LIMIT_EXEMPT.has(id)) continue;
       if ((capCounts.get(id) ?? 0) + 1 > MAX_SAME_CAPABILITY) {
-        return `Max ${MAX_SAME_CAPABILITY} × capacité « ${ABILITIES[id]?.label ?? id} »`;
+        return t("max_capability", { max: MAX_SAME_CAPABILITY, label: ABILITIES[id]?.label ?? id });
       }
     }
 
@@ -655,23 +657,23 @@ export default function DeckBuilder({
 
   async function saveDeck() {
     if (!deckName.trim()) {
-      setError("Please enter a deck name");
+      setError(t("enter_deck_name"));
       return;
     }
     if (!selectedFaction) {
-      setError("Veuillez choisir une faction (onglet Préparation)");
+      setError(t("choose_faction_prep"));
       return;
     }
     if (!selectedFormatId) {
-      setError("Veuillez sélectionner un format");
+      setError(t("select_format"));
       return;
     }
     if (!selectedHeroId) {
-      setError("Please select a hero");
+      setError(t("select_hero"));
       return;
     }
     if (totalCards !== DECK_SIZE) {
-      setError(`Le deck doit contenir exactement ${DECK_SIZE} cartes (actuellement ${totalCards})`);
+      setError(t("deck_exact_size", { size: DECK_SIZE, current: totalCards }));
       return;
     }
     if (deckStats.violations.length > 0) {
@@ -688,7 +690,7 @@ export default function DeckBuilder({
         .filter(({ card }) => !legal(card))
         .map(({ card }) => card.name);
       if (illegal.length > 0) {
-        setError(`Cartes non autorisées dans ce format : ${illegal.join(", ")}`);
+        setError(t("illegal_cards", { cards: illegal.join(", ") }));
         return;
       }
     }
@@ -698,7 +700,7 @@ export default function DeckBuilder({
       const unownedCards = Array.from(deckCards.values())
         .filter(({ card }) => card.set_id == null && !ownedSet.has(card.id));
       if (unownedCards.length > 0) {
-        setError("Le deck contient des cartes non possédées");
+        setError(t("deck_contains_unowned"));
         return;
       }
     }
@@ -746,7 +748,7 @@ export default function DeckBuilder({
       router.push("/decks");
       router.refresh();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to save deck");
+      setError(err instanceof Error ? err.message : t("save_failed"));
     } finally {
       setSaving(false);
     }
@@ -758,10 +760,10 @@ export default function DeckBuilder({
       <div className="relative z-10 flex items-center justify-between gap-3 px-4 py-3 border-b border-am-gold/30 flex-shrink-0 bg-am-bg-1/70 backdrop-blur-sm">
         <div className="flex items-center gap-2.5">
           <span className="hidden sm:inline font-[family-name:var(--font-cinzel),serif] text-[10px] tracking-[0.32em] uppercase text-am-arcane-bright/80 pr-1">
-            Forge ton deck
+            {t("forge_your_deck")}
           </span>
           <div className="flex items-center gap-1.5">
-            {([[1, "1 · Préparation"], [2, "2 · Apparence"], [3, "3 · Cartes"]] as const).map(([n, label]) => (
+            {([[1, t("step_preparation")], [2, t("step_appearance")], [3, t("step_cards")]] as const).map(([n, label]) => (
               <button
                 key={n}
                 onClick={() => setTab(n)}
@@ -780,7 +782,7 @@ export default function DeckBuilder({
           onClick={() => router.push("/decks")}
           className="am-btn am-btn-ghost px-4 py-1.5 rounded-lg text-sm"
         >
-          Annuler
+          {t("cancel")}
         </button>
       </div>
 
@@ -792,7 +794,7 @@ export default function DeckBuilder({
       <div className="flex-1 overflow-y-auto p-4 min-h-0">
         {!selectedFaction ? (
           <div className="am-glass mx-auto mt-10 max-w-md p-10 text-center text-am-ink-soft font-[family-name:var(--font-crimson),serif] italic text-base">
-            Choisissez d&apos;abord une faction dans l&apos;onglet 1 · Préparation.
+            {t("choose_faction_first_tab")}
           </div>
         ) : (
         <>
@@ -802,7 +804,7 @@ export default function DeckBuilder({
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search..."
+            placeholder={t("search_placeholder")}
             className="am-gild-border px-3 py-1.5 bg-am-bg-2 rounded-lg text-sm text-am-ink placeholder:text-am-ink-faint focus:outline-none focus:ring-2 focus:ring-am-gold/60 focus:ring-offset-2 focus:ring-offset-am-bg-0 w-48"
           />
           <div className="flex gap-0.5">
@@ -832,7 +834,7 @@ export default function DeckBuilder({
                 : "am-gild-border bg-am-bg-2 text-am-ink-soft hover:text-am-ink"
             }`}
           >
-            Creatures
+            {t("creatures")}
           </button>
           <button
             onClick={() =>
@@ -844,7 +846,7 @@ export default function DeckBuilder({
                 : "am-gild-border bg-am-bg-2 text-am-ink-soft hover:text-am-ink"
             }`}
           >
-            Spells
+            {t("spells")}
           </button>
           <select
             value={keywordFilter ?? ""}
@@ -855,7 +857,7 @@ export default function DeckBuilder({
             }
             className="am-gild-border px-2 py-1 bg-am-bg-2 rounded-md text-xs text-am-ink-soft focus:outline-none focus:ring-2 focus:ring-am-gold/60 focus:ring-offset-2 focus:ring-offset-am-bg-0"
           >
-            <option value="">Capacités</option>
+            <option value="">{t("all_capabilities")}</option>
             {KEYWORDS.map((kw) => (
               <option key={kw} value={kw}>
                 {vocab.keywordLabel(kw)}
@@ -867,7 +869,7 @@ export default function DeckBuilder({
             onChange={(e) => setRaceFilter(e.target.value || null)}
             className="am-gild-border px-2 py-1 bg-am-bg-2 rounded-md text-xs text-am-ink-soft focus:outline-none focus:ring-2 focus:ring-am-gold/60 focus:ring-offset-2 focus:ring-offset-am-bg-0"
           >
-            <option value="">Races</option>
+            <option value="">{t("all_races")}</option>
             {races.map((r) => (
               <option key={r} value={r}>{vocab.rarityLabel(r)}</option>
             ))}
@@ -877,7 +879,7 @@ export default function DeckBuilder({
             onChange={(e) => setClanFilter(e.target.value || null)}
             className="am-gild-border px-2 py-1 bg-am-bg-2 rounded-md text-xs text-am-ink-soft focus:outline-none focus:ring-2 focus:ring-am-gold/60 focus:ring-offset-2 focus:ring-offset-am-bg-0"
           >
-            <option value="">Clans</option>
+            <option value="">{t("all_clans")}</option>
             {clans.map((c) => (
               <option key={c} value={c}>{vocab.clanName(c)}</option>
             ))}
@@ -887,7 +889,7 @@ export default function DeckBuilder({
             onChange={(e) => setFilterSet(e.target.value)}
             className="am-gild-border px-2 py-1 bg-am-bg-2 rounded-md text-xs text-am-ink-soft focus:outline-none focus:ring-2 focus:ring-am-gold/60 focus:ring-offset-2 focus:ring-offset-am-bg-0"
           >
-            <option value="">Sets</option>
+            <option value="">{t("all_sets")}</option>
             {sets.map((s) => (
               <option key={s.id} value={String(s.id)}>{s.icon} {s.name}</option>
             ))}
@@ -897,7 +899,7 @@ export default function DeckBuilder({
             onChange={(e) => setFilterYear(e.target.value)}
             className="am-gild-border px-2 py-1 bg-am-bg-2 rounded-md text-xs text-am-ink-soft focus:outline-none focus:ring-2 focus:ring-am-gold/60 focus:ring-offset-2 focus:ring-offset-am-bg-0"
           >
-            <option value="">Année</option>
+            <option value="">{t("year")}</option>
             {years.map((y) => (
               <option key={y} value={y}>{y}</option>
             ))}
@@ -913,20 +915,20 @@ export default function DeckBuilder({
                     : "am-gild-border bg-am-bg-2 text-am-ink-soft hover:text-am-ink"
                 }`}
               >
-                {r === "Peu Commune" ? "PC" : r === "Légendaire" ? "Lég." : r}
+                {r === "Peu Commune" ? t("rarity_abbr_uncommon") : r === "Légendaire" ? t("rarity_abbr_legendary") : vocab.rarityLabel(r)}
               </button>
             ))}
           </div>
           <button
             onClick={() => setExpertOnly((v) => !v)}
-            title="Afficher uniquement les cartes expertes (non-communes)"
+            title={t("expert_only_title")}
             className={`px-2.5 py-1 rounded-md text-[10px] font-bold transition-colors ${
               expertOnly
                 ? "border border-am-gold text-am-gold bg-am-gold/10"
                 : "am-gild-border bg-am-bg-2 text-am-ink-soft hover:text-am-gold"
             }`}
           >
-            Expert
+            {t("expert")}
           </button>
         </div>
 
@@ -970,36 +972,36 @@ export default function DeckBuilder({
         <div className="p-4 md:p-6">
           <div className="am-glass p-5 space-y-5">
             <div className="text-center pb-1">
-              <span className="font-[family-name:var(--font-cinzel),serif] text-[10px] tracking-[0.32em] uppercase text-am-arcane-bright/80">Préparation</span>
-              <h2 className="am-foil-text font-[family-name:var(--font-cinzel),serif] font-bold text-2xl mt-1">Forger un deck</h2>
+              <span className="font-[family-name:var(--font-cinzel),serif] text-[10px] tracking-[0.32em] uppercase text-am-arcane-bright/80">{t("preparation")}</span>
+              <h2 className="am-foil-text font-[family-name:var(--font-cinzel),serif] font-bold text-2xl mt-1">{t("forge_a_deck")}</h2>
               <div className="am-rule-diamond mt-3 w-32 mx-auto" />
             </div>
             <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-am-gold mb-1.5">Nom du deck</label>
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-am-gold mb-1.5">{t("deck_name")}</label>
               <input
                 type="text"
                 value={deckName}
                 onChange={(e) => setDeckName(e.target.value)}
-                placeholder="Nom du deck..."
+                placeholder={t("deck_name_placeholder")}
                 className="am-gild-border w-full px-3 py-2 bg-am-bg-2 rounded-lg text-am-ink placeholder:text-am-ink-faint focus:outline-none focus:ring-2 focus:ring-am-gold/60 focus:ring-offset-2 focus:ring-offset-am-bg-0"
               />
             </div>
             <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-am-gold mb-1.5">Faction</label>
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-am-gold mb-1.5">{t("faction")}</label>
               <select
                 value={selectedFaction ?? ""}
                 onChange={(e) => changeFaction(e.target.value || null)}
                 className="am-gild-border w-full px-3 py-2 bg-am-bg-2 rounded-lg text-am-ink text-sm focus:outline-none focus:ring-2 focus:ring-am-gold/60 focus:ring-offset-2 focus:ring-offset-am-bg-0"
               >
-                <option value="">Choisir une faction...</option>
+                <option value="">{t("choose_faction")}</option>
                 {FACTION_OPTIONS.map((f) => (
                   <option key={f} value={f}>{vocab.factionName(f)} — {f}</option>
                 ))}
               </select>
-              <p className="mt-1.5 text-[11px] text-am-ink-faint font-[family-name:var(--font-crimson),serif] italic">Mono-faction + Mercenaires. Changer de faction retire les cartes/héros incompatibles.</p>
+              <p className="mt-1.5 text-[11px] text-am-ink-faint font-[family-name:var(--font-crimson),serif] italic">{t("faction_hint")}</p>
             </div>
             <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-am-gold mb-1.5">Format</label>
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-am-gold mb-1.5">{t("format")}</label>
               <div className="flex gap-2">
                 <select
                   value={formatMode}
@@ -1010,9 +1012,9 @@ export default function DeckBuilder({
                   }}
                   className="am-gild-border flex-1 px-3 py-2 bg-am-bg-2 rounded-lg text-am-ink-soft text-sm focus:outline-none focus:ring-2 focus:ring-am-gold/60 focus:ring-offset-2 focus:ring-offset-am-bg-0"
                 >
-                  <option value="">Mode...</option>
-                  <option value="classique">Classique</option>
-                  <option value="expert">Expert</option>
+                  <option value="">{t("mode_placeholder")}</option>
+                  <option value="classique">{t("mode_classic")}</option>
+                  <option value="expert">{t("mode_expert")}</option>
                 </select>
                 <select
                   value={formatExtent}
@@ -1023,9 +1025,9 @@ export default function DeckBuilder({
                   }}
                   className="am-gild-border flex-1 px-3 py-2 bg-am-bg-2 rounded-lg text-am-ink-soft text-sm focus:outline-none focus:ring-2 focus:ring-am-gold/60 focus:ring-offset-2 focus:ring-offset-am-bg-0"
                 >
-                  <option value="">Étendue...</option>
-                  <option value="standard">Standard</option>
-                  <option value="etendu">Étendu</option>
+                  <option value="">{t("extent_placeholder")}</option>
+                  <option value="standard">{t("extent_standard")}</option>
+                  <option value="etendu">{t("extent_extended")}</option>
                 </select>
               </div>
             </div>
@@ -1035,17 +1037,17 @@ export default function DeckBuilder({
 
         {/* ===== Onglet 2 — Apparence : héros, plateau, dos ===== */}
         {tab === 2 && !selectedFaction && (
-          <div className="am-glass m-4 p-6 text-center text-am-ink-soft text-sm font-[family-name:var(--font-crimson),serif] italic">Choisissez d&apos;abord une faction (onglet 1 · Préparation).</div>
+          <div className="am-glass m-4 p-6 text-center text-am-ink-soft text-sm font-[family-name:var(--font-crimson),serif] italic">{t("choose_faction_first_tab_short")}</div>
         )}
         {tab === 2 && selectedFaction && (<>
         {/* Hero selection */}
         <div className="p-4 border-b border-am-gold/20">
           <div className="flex items-center justify-between mb-2.5">
-            <h3 className="text-sm font-bold font-[family-name:var(--font-cinzel),serif] text-am-gold tracking-wide">Choisir un héros</h3>
-            <span className="text-[10px] text-am-ink-faint italic">Clic droit : voir le pouvoir</span>
+            <h3 className="text-sm font-bold font-[family-name:var(--font-cinzel),serif] text-am-gold tracking-wide">{t("choose_hero")}</h3>
+            <span className="text-[10px] text-am-ink-faint italic">{t("right_click_power")}</span>
           </div>
           {factionHeroes.length === 0 && (
-            <p className="text-[11px] text-am-ink-faint py-2 italic">Aucun héros pour cette faction.</p>
+            <p className="text-[11px] text-am-ink-faint py-2 italic">{t("no_hero_for_faction")}</p>
           )}
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
             {factionHeroes.map((hero) => (
@@ -1053,7 +1055,7 @@ export default function DeckBuilder({
                 key={hero.id}
                 onClick={() => setSelectedHeroId(hero.id)}
                 onContextMenu={(e) => { e.preventDefault(); setPowerPopup({ hero, x: e.clientX, y: e.clientY }); }}
-                title="Clic droit : voir le pouvoir"
+                title={t("right_click_power")}
                 className={`relative rounded-lg overflow-hidden border-2 transition-all text-left ${
                   selectedHeroId === hero.id
                     ? "border-am-gold shadow-[0_0_14px_rgba(216,178,90,0.5)]"
@@ -1079,7 +1081,7 @@ export default function DeckBuilder({
 
         {/* Board selection */}
         <div className="p-4 border-b border-am-gold/20">
-          <h3 className="text-sm font-bold font-[family-name:var(--font-cinzel),serif] text-am-gold tracking-wide mb-2.5">Plateau</h3>
+          <h3 className="text-sm font-bold font-[family-name:var(--font-cinzel),serif] text-am-gold tracking-wide mb-2.5">{t("board")}</h3>
           {selectedBoard ? (
             <div className="am-gild-border rounded-lg overflow-hidden bg-am-bg-2">
               <div
@@ -1094,13 +1096,13 @@ export default function DeckBuilder({
                 <div className="absolute bottom-1 left-2 right-2 flex items-end justify-between">
                   <div>
                     <div className="text-xs font-bold text-am-ink drop-shadow">{selectedBoard.name}</div>
-                    <div className="text-[9px] text-am-ink-soft">{selectedBoard.rarity ?? "Commune"}</div>
+                    <div className="text-[9px] text-am-ink-soft">{vocab.rarityLabel(selectedBoard.rarity ?? "Commune")}</div>
                   </div>
                   <button
                     onClick={() => setBoardPickerOpen(true)}
                     className="text-[9px] px-2 py-0.5 bg-am-gold/90 hover:bg-am-gold text-am-bg-0 font-bold rounded"
                   >
-                    Changer
+                    {t("change")}
                   </button>
                 </div>
               </div>
@@ -1110,14 +1112,14 @@ export default function DeckBuilder({
               onClick={() => setBoardPickerOpen(true)}
               className="w-full py-2 bg-am-bg-2 border border-dashed border-am-gold/30 rounded-lg text-xs text-am-ink-soft hover:border-am-gold/60 hover:text-am-ink transition-colors"
             >
-              Choisir un plateau
+              {t("choose_board")}
             </button>
           )}
         </div>
 
         {/* Card back selection */}
         <div className="p-4 border-b border-am-gold/20">
-          <h3 className="text-sm font-bold font-[family-name:var(--font-cinzel),serif] text-am-gold tracking-wide mb-2.5">Dos de carte</h3>
+          <h3 className="text-sm font-bold font-[family-name:var(--font-cinzel),serif] text-am-gold tracking-wide mb-2.5">{t("card_back")}</h3>
           {selectedCardBack ? (
             <div className="am-gild-border rounded-lg overflow-hidden bg-am-bg-2 flex items-stretch">
               <div
@@ -1131,13 +1133,13 @@ export default function DeckBuilder({
               <div className="flex-1 flex items-center justify-between px-3">
                 <div>
                   <div className="text-xs font-bold text-am-ink">{selectedCardBack.name}</div>
-                  <div className="text-[9px] text-am-ink-soft">{selectedCardBack.rarity ?? "Commune"}</div>
+                  <div className="text-[9px] text-am-ink-soft">{vocab.rarityLabel(selectedCardBack.rarity ?? "Commune")}</div>
                 </div>
                 <button
                   onClick={() => setCardBackPickerOpen(true)}
                   className="text-[9px] px-2 py-0.5 bg-am-gold/90 hover:bg-am-gold text-am-bg-0 font-bold rounded"
                 >
-                  Changer
+                  {t("change")}
                 </button>
               </div>
             </div>
@@ -1146,7 +1148,7 @@ export default function DeckBuilder({
               onClick={() => setCardBackPickerOpen(true)}
               className="w-full py-2 bg-am-bg-2 border border-dashed border-am-gold/30 rounded-lg text-xs text-am-ink-soft hover:border-am-gold/60 hover:text-am-ink transition-colors"
             >
-              Choisir un dos
+              {t("choose_card_back")}
             </button>
           )}
         </div>
@@ -1157,18 +1159,18 @@ export default function DeckBuilder({
         <div className="px-4 py-2.5 border-b border-am-gold/20">
           <div className="flex flex-wrap gap-1.5 text-[10px] items-center">
             <span className="px-2 py-0.5 rounded-full font-bold border border-am-jade/40 bg-am-jade/10 text-am-jade">
-              Mono-faction
+              {t("mono_faction")}
             </span>
             <span className="px-2 py-0.5 rounded-full font-bold border border-am-jade/40 bg-am-jade/10 text-am-jade">
-              Mono-clan
+              {t("mono_clan")}
             </span>
-            <span className="text-am-ink-faint">Clan: {deckStats.clans.size}/{MAX_CLANS}</span>
+            <span className="text-am-ink-faint">{t("clan_label")} {deckStats.clans.size}/{MAX_CLANS}</span>
             {Array.from(deckStats.allFactions).map(f => {
               const fac = FACTIONS[f];
               const align = ALIGNMENTS.find(a => a.id === fac?.alignment);
-              return <span key={f} style={{ color: fac?.color }}>{fac?.emoji} {f} <span style={{ color: align?.color }}>{align?.emoji}</span></span>;
+              return <span key={f} style={{ color: fac?.color }}>{fac?.emoji} {vocab.factionName(f)} <span style={{ color: align?.color }}>{align?.emoji}</span></span>;
             })}
-            <span className="text-am-ink-faint">| Mercenaires: {deckStats.mercenairesCount}/{deckStats.maxMercenaires}</span>
+            <span className="text-am-ink-faint">| {vocab.factionName("Mercenaires")}: {deckStats.mercenairesCount}/{deckStats.maxMercenaires}</span>
           </div>
           {deckStats.violations.length > 0 && (
             <div className="mt-1.5">
@@ -1185,7 +1187,7 @@ export default function DeckBuilder({
         {/* Compteur deck */}
         <div className="px-4 py-2.5 border-t border-am-gold/30 flex-shrink-0 bg-am-bg-1/60">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] text-am-gold font-bold uppercase tracking-[0.2em] font-[family-name:var(--font-cinzel),serif]">Deck</span>
+            <span className="text-[10px] text-am-gold font-bold uppercase tracking-[0.2em] font-[family-name:var(--font-cinzel),serif]">{t("deck")}</span>
             <span
               className={`font-bold text-base ${
                 totalCards === DECK_SIZE ? "text-am-jade" : "text-am-ink"
@@ -1216,7 +1218,7 @@ export default function DeckBuilder({
                 <button
                   key={cost}
                   onClick={() => setManaCostFilter(isFiltered ? null : cost)}
-                  title={`${label} mana : ${count} carte${count > 1 ? "s" : ""}`}
+                  title={t("mana_curve_tooltip", { label, count })}
                   className="flex-1 flex flex-col items-center gap-0.5 group cursor-pointer"
                 >
                   <span className={`text-[9px] leading-none transition-colors ${
@@ -1248,7 +1250,7 @@ export default function DeckBuilder({
         <div className={tab === 3 ? "flex-1 overflow-y-auto" : ""} style={{ minHeight: 0 }}>
           {totalCards === 0 && (
             <p className="text-center text-am-ink-faint mt-8 text-sm font-[family-name:var(--font-crimson),serif] italic">
-              Cliquez sur les cartes pour les ajouter
+              {t("click_cards_to_add")}
             </p>
           )}
           {RARITY_HIERARCHY.map(tier => {
@@ -1267,7 +1269,7 @@ export default function DeckBuilder({
                   className="px-3 py-1.5 flex items-center justify-between"
                   style={{ background: `${color}11` }}
                 >
-                  <span className="text-[10px] font-bold tracking-wide" style={{ color }}>{emoji} {tier.toUpperCase()}</span>
+                  <span className="text-[10px] font-bold tracking-wide" style={{ color }}>{emoji} {vocab.rarityLabel(tier).toUpperCase()}</span>
                   <span className="text-[10px] font-semibold" style={{ color: used > maxSlots ? "var(--am-ember)" : "var(--am-ink-faint)" }}>{used}/{maxSlots}</span>
                 </div>
 
@@ -1292,11 +1294,11 @@ export default function DeckBuilder({
                   {!isCommon && emptySlots > 0 && Array.from({ length: Math.min(emptySlots, 4) }).map((_, i) => (
                     <div key={`empty-${i}`} className="flex items-center gap-2 px-2 py-1 opacity-20">
                       <span className="w-4 h-4 rounded-full border border-dashed flex-shrink-0" style={{ borderColor: color }} />
-                      <span className="text-[10px]" style={{ color }}>emplacement libre</span>
+                      <span className="text-[10px]" style={{ color }}>{t("free_slot")}</span>
                     </div>
                   ))}
                   {!isCommon && emptySlots > 4 && (
-                    <div className="px-2 py-0.5 text-[9px] opacity-20" style={{ color }}>+{emptySlots - 4} emplacements</div>
+                    <div className="px-2 py-0.5 text-[9px] opacity-20" style={{ color }}>{t("more_slots", { count: emptySlots - 4 })}</div>
                   )}
                 </div>
               </div>
@@ -1309,14 +1311,14 @@ export default function DeckBuilder({
             atteinte, pour signaler qu'on ne peut plus en ajouter. */}
         {keywordTally.length > 0 && (
           <div className="px-3 py-2 border-t border-am-gold/30 flex-shrink-0 bg-am-bg-1/60">
-            <div className="text-[9px] text-am-gold font-bold uppercase tracking-[0.2em] mb-1.5 font-[family-name:var(--font-cinzel),serif]">Mots-clés</div>
+            <div className="text-[9px] text-am-gold font-bold uppercase tracking-[0.2em] mb-1.5 font-[family-name:var(--font-cinzel),serif]">{t("keywords")}</div>
             <div className="flex flex-wrap gap-x-3 gap-y-1.5">
               {keywordTally.map(({ id, count, iconKey, symbol, label }) => {
                 const atLimit = count >= MAX_SAME_CAPABILITY;
                 return (
                   <div
                     key={id}
-                    title={`${label} : ${count}${atLimit ? ` (max ${MAX_SAME_CAPABILITY})` : ""}`}
+                    title={`${label} : ${count}${atLimit ? ` ${t("max_suffix", { max: MAX_SAME_CAPABILITY })}` : ""}`}
                     className="flex items-center gap-1"
                   >
                     <span className="inline-flex items-center justify-center" style={{ width: 18, height: 18 }}>
@@ -1348,7 +1350,7 @@ export default function DeckBuilder({
               disabled={saving}
               className="flex-1 rounded-lg"
             >
-              {saving ? "Sauvegarde..." : existingDeck ? "Enregistrer" : "Créer le deck"}
+              {saving ? t("saving") : existingDeck ? t("save_deck") : t("create_deck")}
             </AmButton>
           </div>
         </div>
@@ -1409,9 +1411,9 @@ export default function DeckBuilder({
               )}
               <div className="mt-2">
                 {powerPopup.hero.power_type === "passive" ? (
-                  <span className="px-1.5 py-0.5 bg-am-arcane/20 text-am-arcane-bright text-[9px] font-bold rounded">PASSIF</span>
+                  <span className="px-1.5 py-0.5 bg-am-arcane/20 text-am-arcane-bright text-[9px] font-bold rounded">{t("passive")}</span>
                 ) : (
-                  <span className="px-1.5 py-0.5 bg-am-azure/20 text-am-azure text-[9px] font-bold rounded">{powerPopup.hero.power_cost} MANA</span>
+                  <span className="px-1.5 py-0.5 bg-am-azure/20 text-am-azure text-[9px] font-bold rounded">{powerPopup.hero.power_cost} {t("mana")}</span>
                 )}
               </div>
             </div>
@@ -1430,7 +1432,7 @@ export default function DeckBuilder({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-4 border-b border-am-gold/30 flex items-center justify-between">
-              <h3 className="text-lg font-bold am-foil-text font-[family-name:var(--font-cinzel),serif]">Choisir un plateau</h3>
+              <h3 className="text-lg font-bold am-foil-text font-[family-name:var(--font-cinzel),serif]">{t("choose_board")}</h3>
               <button
                 onClick={() => setBoardPickerOpen(false)}
                 className="text-am-ink-soft hover:text-am-ink text-xl leading-none px-2"
@@ -1439,7 +1441,7 @@ export default function DeckBuilder({
             <div className="overflow-y-auto p-4 grid grid-cols-2 md:grid-cols-3 gap-3">
               {accessibleBoards.length === 0 ? (
                 <div className="col-span-full text-center text-am-ink-soft py-10 text-sm italic">
-                  Aucun plateau disponible.
+                  {t("no_board_available")}
                 </div>
               ) : accessibleBoards.map((b) => {
                 const isCommon = (b.rarity ?? "Commune") === "Commune";
@@ -1467,7 +1469,7 @@ export default function DeckBuilder({
                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-am-bg-0 via-am-bg-0/70 to-transparent p-2">
                       <div className="text-xs font-bold text-am-ink">{b.name}</div>
                       <div className="text-[10px] text-am-ink-soft flex items-center gap-2">
-                        <span>{b.rarity ?? "Commune"}</span>
+                        <span>{vocab.rarityLabel(b.rarity ?? "Commune")}</span>
                         {!isCommon && prints.length > 0 && (
                           <span className="text-am-gold">
                             {prints.map((p) => `${p.print_number}/${p.max_prints}`).join(", ")}
@@ -1494,7 +1496,7 @@ export default function DeckBuilder({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-4 border-b border-am-gold/30 flex items-center justify-between">
-              <h3 className="text-lg font-bold am-foil-text font-[family-name:var(--font-cinzel),serif]">Choisir un dos</h3>
+              <h3 className="text-lg font-bold am-foil-text font-[family-name:var(--font-cinzel),serif]">{t("choose_card_back")}</h3>
               <button
                 onClick={() => setCardBackPickerOpen(false)}
                 className="text-am-ink-soft hover:text-am-ink text-xl leading-none px-2"
@@ -1503,7 +1505,7 @@ export default function DeckBuilder({
             <div className="overflow-y-auto p-4 grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
               {accessibleCardBacks.length === 0 ? (
                 <div className="col-span-full text-center text-am-ink-soft py-10 text-sm italic">
-                  Aucun dos disponible.
+                  {t("no_card_back_available")}
                 </div>
               ) : accessibleCardBacks.map((cb) => {
                 const isCommon = (cb.rarity ?? "Commune") === "Commune";
@@ -1531,7 +1533,7 @@ export default function DeckBuilder({
                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-am-bg-0 via-am-bg-0/70 to-transparent p-2">
                       <div className="text-xs font-bold text-am-ink">{cb.name}</div>
                       <div className="text-[10px] text-am-ink-soft flex items-center gap-2">
-                        <span>{cb.rarity ?? "Commune"}</span>
+                        <span>{vocab.rarityLabel(cb.rarity ?? "Commune")}</span>
                         {!isCommon && prints.length > 0 && (
                           <span className="text-am-gold">
                             {prints.map((p) => `${p.print_number}/${p.max_prints}`).join(", ")}

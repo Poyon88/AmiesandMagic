@@ -12,6 +12,7 @@ import OrientationLock from "@/components/shared/OrientationLock";
 import type { Card, GameAction, GameState, HeroDefinition, HeroPowerEffect, Race } from "@/lib/game/types";
 import { syncHash, reconcileVerdict } from "@/lib/game/stateHash";
 import { FACTIONS } from "@/lib/card-engine/constants";
+import { useTranslations } from "next-intl";
 
 // Colonnes de `cards` réellement consommées par le moteur en partie. Projection
 // explicite (au lieu de select("*")) pour réduire l'egress : le pool de sorts +
@@ -70,6 +71,7 @@ function mapHeroRow(row: HeroRow | null): HeroDefinition | null {
 export default function GamePage() {
   const { matchId } = useParams<{ matchId: string }>();
   const supabase = createClient();
+  const t = useTranslations("game");
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const presencePollRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -149,7 +151,7 @@ export default function GamePage() {
         } = await supabase.auth.getUser();
         if (cancelled) return;
         if (!user) {
-          setError("Not authenticated");
+          setError(t("error_not_authenticated"));
           return;
         }
 
@@ -164,7 +166,7 @@ export default function GamePage() {
 
         if (cancelled) return;
         if (matchError || !match) {
-          setError("Match not found");
+          setError(t("error_match_not_found"));
           return;
         }
 
@@ -657,7 +659,7 @@ export default function GamePage() {
         presencePollRef.current = setInterval(() => tryInit("poll"), 2000);
       } catch (err) {
         if (!cancelled) {
-          setError("Failed to load match");
+          setError(t("error_load_failed"));
           console.error(err);
         }
       }
@@ -867,7 +869,7 @@ export default function GamePage() {
               onClick={() => (window.location.href = "/")}
               className="px-6 py-2 bg-primary text-background rounded-lg font-bold"
             >
-              Return to Menu
+              {t("return_to_menu")}
             </button>
           </div>
         </div>
@@ -883,7 +885,7 @@ export default function GamePage() {
           <div className="text-center">
             <div className="text-4xl mb-4 animate-bounce">⚔️</div>
             <p className="text-foreground/50">
-              {phase === "loading" ? "Loading match..." : "Waiting for opponent..."}
+              {phase === "loading" ? t("loading") : t("waiting_opponent")}
             </p>
           </div>
         </div>
@@ -900,19 +902,16 @@ export default function GamePage() {
           className="fixed top-0 inset-x-0 z-[100] flex items-center justify-center gap-3 px-4 py-2 bg-red-900/90 text-white text-xs sm:text-sm backdrop-blur-sm"
           style={{ paddingTop: "max(0.5rem, env(safe-area-inset-top))" }}
         >
-          <span>
-            Une action n&apos;a pas pu être enregistrée — risque de désynchronisation.
-            Rechargez la page pour resynchroniser.
-          </span>
+          <span>{t("persist_warning")}</span>
           <button
             onClick={() => window.location.reload()}
             className="shrink-0 px-2 py-0.5 rounded bg-white/20 hover:bg-white/30 font-bold"
           >
-            Recharger
+            {t("reload")}
           </button>
           <button
             onClick={() => setPersistWarning(false)}
-            aria-label="Fermer"
+            aria-label={t("close")}
             className="shrink-0 px-1.5 leading-none text-base hover:opacity-80"
           >×</button>
         </div>

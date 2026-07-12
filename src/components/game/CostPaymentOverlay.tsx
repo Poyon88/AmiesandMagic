@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import type { GameAction } from "@/lib/game/types";
 import { useGameStore } from "@/lib/store/gameStore";
 import { useCardText } from "./CardTextProvider";
@@ -16,6 +17,7 @@ interface Props {
 // boutons Confirmer / Annuler. La sélection elle-même est gérée par
 // HandCard et BoardCreature via toggleDiscardSelection / toggleSacrificeSelection.
 export default function CostPaymentOverlay({ onConfirmedAction }: Props) {
+  const t = useTranslations("game");
   const targetingMode = useGameStore(s => s.targetingMode);
   const pendingCostCard = useGameStore(s => s.pendingCostCard);
   const selectedDiscardIds = useGameStore(s => s.selectedDiscardIds);
@@ -29,7 +31,7 @@ export default function CostPaymentOverlay({ onConfirmedAction }: Props) {
 
   const player = gameState?.players[gameState.currentPlayerIndex];
   const card = player?.hand.find(c => c.instanceId === pendingCostCard.instanceId);
-  const cardName = card ? localizeName(card.card) : "carte";
+  const cardName = card ? localizeName(card.card) : t('cost_default_card_name');
 
   const discardOk = selectedDiscardIds.length === pendingCostCard.discardNeeded;
   const sacrificeOk = selectedSacrificeIds.length === pendingCostCard.sacrificeNeeded;
@@ -57,7 +59,7 @@ export default function CostPaymentOverlay({ onConfirmedAction }: Props) {
         fontSize: 15, fontWeight: 700, color: "#c8a84e",
         fontFamily: "'Cinzel',serif",
       }}>
-        Payez les coûts de {cardName}
+        {t('cost_pay_title', { name: cardName })}
       </div>
 
       {pendingCostCard.discardNeeded > 0 && (
@@ -66,7 +68,7 @@ export default function CostPaymentOverlay({ onConfirmedAction }: Props) {
           fontFamily: "'Crimson Text',serif",
           textAlign: "center",
         }}>
-          🃏 Défausser {pendingCostCard.discardNeeded} carte{pendingCostCard.discardNeeded > 1 ? "s" : ""}
+          {t('cost_discard_label', { count: pendingCostCard.discardNeeded })}
           {" — "}
           <strong>{selectedDiscardIds.length}/{pendingCostCard.discardNeeded}</strong>
         </div>
@@ -78,7 +80,7 @@ export default function CostPaymentOverlay({ onConfirmedAction }: Props) {
           fontFamily: "'Crimson Text',serif",
           textAlign: "center",
         }}>
-          ☠ Sacrifier {pendingCostCard.sacrificeNeeded} créature{pendingCostCard.sacrificeNeeded > 1 ? "s" : ""}
+          {t('cost_sacrifice_label', { count: pendingCostCard.sacrificeNeeded })}
           {" — "}
           <strong>{selectedSacrificeIds.length}/{pendingCostCard.sacrificeNeeded}</strong>
         </div>
@@ -93,7 +95,7 @@ export default function CostPaymentOverlay({ onConfirmedAction }: Props) {
             fontSize: 12, fontFamily: "'Cinzel',serif", cursor: "pointer",
           }}
         >
-          Annuler
+          {t('action_cancel')}
         </button>
         <button
           onClick={() => {
@@ -111,7 +113,7 @@ export default function CostPaymentOverlay({ onConfirmedAction }: Props) {
             cursor: canConfirm ? "pointer" : "not-allowed",
           }}
         >
-          Confirmer
+          {t('action_confirm')}
         </button>
       </div>
     </div>

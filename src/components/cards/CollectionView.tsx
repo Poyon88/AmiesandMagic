@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import type { Card, Keyword, CardSet, GameFormat } from "@/lib/game/types";
 import { getFormatFilter } from "@/lib/game/format-legality";
@@ -48,6 +49,7 @@ const FILTER_LABEL_CLS =
 export default function CollectionView({ cards, sets, formats, collectedCardIds, isTester, ownedPrints = [] }: CollectionViewProps) {
   const ownedSet = useMemo(() => new Set(collectedCardIds), [collectedCardIds]);
   const vocab = useVocab();
+  const t = useTranslations("deck");
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [manaCostFilter, setManaCostFilter] = useState<number | null>(null);
@@ -193,13 +195,13 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
         <div className="am-animate-rise flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="font-[family-name:var(--font-cinzel),serif] text-xs font-bold uppercase tracking-[0.32em] text-am-arcane-bright">
-              Admire tes armées
+              {t("admire_your_armies")}
             </p>
             <h1 className="am-foil-text mt-2 font-[family-name:var(--font-cinzel),serif] text-4xl font-bold sm:text-5xl">
-              Collection de cartes
+              {t("card_collection")}
             </h1>
             <p className="mt-2 font-[family-name:var(--font-crimson),serif] text-sm italic text-am-ink-soft">
-              {displayItems.length} carte{displayItems.length > 1 ? "s" : ""}{isNormalPlayer ? "" : ` sur ${cards.length}`}
+              {t("cards_count", { count: displayItems.length })}{isNormalPlayer ? "" : t("cards_of_total", { total: cards.length })}
             </p>
           </div>
           <AmButton
@@ -207,7 +209,7 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
             size="sm"
             onClick={() => router.push("/")}
           >
-            Back to Menu
+            {t("back_to_menu")}
           </AmButton>
         </div>
 
@@ -221,13 +223,13 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by name..."
+              placeholder={t("search_by_name")}
               className="am-gild-border w-64 rounded-lg bg-am-bg-2 px-4 py-2 text-[16px] text-am-ink placeholder:text-am-ink-faint transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-am-gold focus-visible:ring-offset-2 focus-visible:ring-offset-am-bg-0"
             />
 
             {/* Mana cost filter */}
             <div className="flex items-center gap-1">
-              <span className={FILTER_LABEL_CLS}>Mana:</span>
+              <span className={FILTER_LABEL_CLS}>{t("mana_label")}</span>
               {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((cost) => (
                 <button
                   key={cost}
@@ -257,7 +259,7 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
                     : "am-gild-border bg-am-bg-2 text-am-ink-soft hover:text-am-ink"
                 }`}
               >
-                Creatures
+                {t("creatures")}
               </button>
               <button
                 onClick={() =>
@@ -269,7 +271,7 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
                     : "am-gild-border bg-am-bg-2 text-am-ink-soft hover:text-am-ink"
                 }`}
               >
-                Spells
+                {t("spells")}
               </button>
             </div>
 
@@ -279,7 +281,7 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
                 onClick={resetFilters}
                 className="rounded-lg px-3 py-1.5 font-[family-name:var(--font-crimson),serif] text-sm italic text-am-ember transition-colors hover:text-am-ember/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-am-ember focus-visible:ring-offset-2 focus-visible:ring-offset-am-bg-0"
               >
-                Reset Filters
+                {t("reset_filters")}
               </button>
             )}
           </div>
@@ -288,13 +290,13 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
           <div className="mt-4 flex flex-wrap items-center gap-4 border-t border-am-gold/15 pt-4">
             {/* Faction filter */}
             <div className="flex items-center gap-1">
-              <span className={FILTER_LABEL_CLS}>Faction:</span>
+              <span className={FILTER_LABEL_CLS}>{t("faction_label")}</span>
               <select
                 value={factionFilter ?? ""}
                 onChange={(e) => setFactionFilter(e.target.value || null)}
                 className={SELECT_CLS}
               >
-                <option value="">Toutes</option>
+                <option value="">{t("all_fem")}</option>
                 {factions.map((f) => (
                   <option key={f} value={f}>{vocab.factionName(f)}</option>
                 ))}
@@ -303,7 +305,7 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
 
             {/* Rarity filter */}
             <div className="flex items-center gap-1">
-              <span className={FILTER_LABEL_CLS}>Rareté:</span>
+              <span className={FILTER_LABEL_CLS}>{t("rarity_label")}</span>
               <div className="flex gap-1">
                 {RARITIES.map((r) => (
                   <button
@@ -329,19 +331,19 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
             {/* Expert mode filter — shows only non-Commune cards */}
             <button
               onClick={() => setExpertOnly((v) => !v)}
-              title="Afficher uniquement les cartes expertes (non-communes)"
+              title={t("expert_only_title")}
               className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-am-gold focus-visible:ring-offset-2 focus-visible:ring-offset-am-bg-0 ${
                 expertOnly
                   ? "border border-am-gold/60 bg-am-gold/15 text-am-gold-bright"
                   : "am-gild-border bg-am-bg-2 text-am-ink-soft hover:text-am-ink"
               }`}
             >
-              Expert uniquement
+              {t("expert_only")}
             </button>
 
             {/* Keyword filter */}
             <div className="flex items-center gap-1">
-              <span className={FILTER_LABEL_CLS}>Capacité:</span>
+              <span className={FILTER_LABEL_CLS}>{t("capability_label")}</span>
               <select
                 value={keywordFilter ?? ""}
                 onChange={(e) =>
@@ -349,7 +351,7 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
                 }
                 className={SELECT_CLS}
               >
-                <option value="">Toutes</option>
+                <option value="">{t("all_fem")}</option>
                 {KEYWORDS.map((kw) => (
                   <option key={kw} value={kw}>
                     {vocab.keywordLabel(kw)}
@@ -360,13 +362,13 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
 
             {/* Race filter */}
             <div className="flex items-center gap-1">
-              <span className={FILTER_LABEL_CLS}>Race:</span>
+              <span className={FILTER_LABEL_CLS}>{t("race_label")}</span>
               <select
                 value={raceFilter ?? ""}
                 onChange={(e) => setRaceFilter(e.target.value || null)}
                 className={SELECT_CLS}
               >
-                <option value="">Toutes</option>
+                <option value="">{t("all_fem")}</option>
                 {races.map((r) => (
                   <option key={r} value={r}>{r}</option>
                 ))}
@@ -375,13 +377,13 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
 
             {/* Clan filter */}
             <div className="flex items-center gap-1">
-              <span className={FILTER_LABEL_CLS}>Clan:</span>
+              <span className={FILTER_LABEL_CLS}>{t("clan_label")}</span>
               <select
                 value={clanFilter ?? ""}
                 onChange={(e) => setClanFilter(e.target.value || null)}
                 className={SELECT_CLS}
               >
-                <option value="">Tous</option>
+                <option value="">{t("all_masc")}</option>
                 {clans.map((c) => (
                   <option key={c} value={c}>{vocab.clanName(c)}</option>
                 ))}
@@ -390,13 +392,13 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
 
             {/* Format filter */}
             <div className="flex items-center gap-1">
-              <span className={FILTER_LABEL_CLS}>Format:</span>
+              <span className={FILTER_LABEL_CLS}>{t("format_label")}</span>
               <select
                 value={formatFilter}
                 onChange={(e) => setFormatFilter(e.target.value)}
                 className={SELECT_CLS}
               >
-                <option value="">Tous</option>
+                <option value="">{t("all_masc")}</option>
                 {formats.map((f) => (
                   <option key={f.id} value={String(f.id)}>{f.name}</option>
                 ))}
@@ -405,13 +407,13 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
 
             {/* Set filter */}
             <div className="flex items-center gap-1">
-              <span className={FILTER_LABEL_CLS}>Set:</span>
+              <span className={FILTER_LABEL_CLS}>{t("set_label")}</span>
               <select
                 value={filterSet}
                 onChange={(e) => setFilterSet(e.target.value)}
                 className={SELECT_CLS}
               >
-                <option value="">Tous</option>
+                <option value="">{t("all_masc")}</option>
                 {sets.map((s) => (
                   <option key={s.id} value={String(s.id)}>{s.icon} {s.name}</option>
                 ))}
@@ -420,13 +422,13 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
 
             {/* Year filter */}
             <div className="flex items-center gap-1">
-              <span className={FILTER_LABEL_CLS}>Année:</span>
+              <span className={FILTER_LABEL_CLS}>{t("year_label")}</span>
               <select
                 value={filterYear}
                 onChange={(e) => setFilterYear(e.target.value)}
                 className={SELECT_CLS}
               >
-                <option value="">Toutes</option>
+                <option value="">{t("all_fem")}</option>
                 {years.map((y) => (
                   <option key={y} value={y}>{y}</option>
                 ))}
@@ -438,7 +440,7 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
         {/* Card Grid */}
         {displayItems.length === 0 ? (
           <div className="am-glass am-animate-rise px-6 py-20 text-center font-[family-name:var(--font-crimson),serif] text-xl italic text-am-ink-soft">
-            Aucune carte ne correspond à vos filtres
+            {t("no_cards_match")}
           </div>
         ) : (
           <div className="grid grid-cols-1 justify-items-center gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

@@ -2,17 +2,18 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import type { AuctionWithDetails, AuctionBid } from "@/lib/auction/types";
 import GameCard from "@/components/cards/GameCard";
 
-function useCountdown(endDate: string) {
+function useCountdown(endDate: string, endedLabel: string) {
   const [timeLeft, setTimeLeft] = useState("");
 
   useEffect(() => {
     function update() {
       const diff = new Date(endDate).getTime() - Date.now();
       if (diff <= 0) {
-        setTimeLeft("Terminée");
+        setTimeLeft(endedLabel);
         return;
       }
       const h = Math.floor(diff / 3600000);
@@ -25,7 +26,7 @@ function useCountdown(endDate: string) {
     update();
     const interval = setInterval(update, 1000);
     return () => clearInterval(interval);
-  }, [endDate]);
+  }, [endDate, endedLabel]);
 
   return timeLeft;
 }
@@ -37,6 +38,7 @@ interface AuctionDetailProps {
 
 export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps) {
   const router = useRouter();
+  const t = useTranslations("auction");
   const [auction, setAuction] = useState<AuctionWithDetails & { bids?: AuctionBid[] } | null>(null);
   const [loading, setLoading] = useState(true);
   const [bidAmount, setBidAmount] = useState("");
@@ -62,8 +64,8 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
     fetchAuction();
   }, [fetchAuction]);
 
-  const timeLeft = useCountdown(auction?.ends_at ?? new Date().toISOString());
-  const isExpired = timeLeft === "Terminée";
+  const timeLeft = useCountdown(auction?.ends_at ?? new Date().toISOString(), t("ended"));
+  const isExpired = timeLeft === t("ended");
   const isSeller = auction?.seller_id === userId;
   const isCurrentBidder = auction?.current_bidder_id === userId;
 
@@ -75,7 +77,7 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
 
     const amount = isBuyout ? auction.buyout_price! : parseInt(bidAmount);
     if (!amount || amount <= 0) {
-      setError("Montant invalide");
+      setError(t("invalid_amount"));
       setBidding(false);
       return;
     }
@@ -90,7 +92,7 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
     if (data.error) {
       setError(data.error);
     } else {
-      setSuccess(isBuyout ? "Achat immédiat réussi !" : "Enchère placée !");
+      setSuccess(isBuyout ? t("buyout_success") : t("bid_placed"));
       fetchAuction();
     }
     setBidding(false);
@@ -108,11 +110,11 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
   }
 
   if (loading) {
-    return <div style={{ textAlign: "center", padding: 60, color: "#999" }}>Chargement...</div>;
+    return <div style={{ textAlign: "center", padding: 60, color: "#999" }}>{t("loading")}</div>;
   }
 
   if (!auction) {
-    return <div style={{ textAlign: "center", padding: 60, color: "#e74c3c" }}>Enchère introuvable</div>;
+    return <div style={{ textAlign: "center", padding: 60, color: "#e74c3c" }}>{t("not_found")}</div>;
   }
 
   return (
@@ -131,7 +133,7 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
           marginBottom: 20,
         }}
       >
-        Retour aux enchères
+        {t("back_to_auctions")}
       </button>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
@@ -139,11 +141,11 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
         <div>
           <h2 style={{ fontSize: 20, fontWeight: 700, color: "#c8a84e", margin: "0 0 16px", fontFamily: "var(--font-cinzel), serif" }}>
             {auction.items.length > 1
-              ? "Lot"
+              ? t("lot")
               : auction.items[0]?.card?.name
                 ?? auction.items[0]?.board?.name
                 ?? auction.items[0]?.card_back?.name
-                ?? "Objet"}
+                ?? t("item")}
           </h2>
 
           <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
@@ -163,7 +165,7 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
                       <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>{item.board.name}</div>
                       <div style={{ fontSize: 11, color: "#ddd" }}>
                         {item.board.rarity ?? "Commune"}
-                        {item.board.max_prints ? ` · ${item.board.max_prints} ex.` : ""}
+                        {item.board.max_prints ? ` · ${t("copies", { count: item.board.max_prints })}` : ""}
                       </div>
                     </div>
                   </div>
@@ -179,17 +181,17 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
                       <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>{item.card_back.name}</div>
                       <div style={{ fontSize: 11, color: "#ddd" }}>
                         {item.card_back.rarity ?? "Commune"}
-                        {item.card_back.max_prints ? ` · ${item.card_back.max_prints} ex.` : ""}
+                        {item.card_back.max_prints ? ` · ${t("copies", { count: item.card_back.max_prints })}` : ""}
                       </div>
                     </div>
                   </div>
                 ) : null}
                 <div style={{ fontSize: 11, color: "#666" }}>
-                  {item.source_type === "print" ? "Édition limitée"
-                    : item.source_type === "board_print" ? "Plateau limité"
-                    : item.source_type === "card_back_print" ? "Dos limité"
-                    : item.source_type === "admin" ? "Système"
-                    : "Collection"}
+                  {item.source_type === "print" ? t("source_print")
+                    : item.source_type === "board_print" ? t("source_board_print")
+                    : item.source_type === "card_back_print" ? t("source_card_back_print")
+                    : item.source_type === "admin" ? t("source_admin")
+                    : t("source_collection")}
                 </div>
               </div>
             ))}
@@ -197,9 +199,9 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
 
           {/* Seller info */}
           <div style={{ marginTop: 16, fontSize: 13, color: "#999" }}>
-            Vendeur: <span style={{ color: "#e0e0e0" }}>{auction.seller_username ?? "Système"}</span>
+            {t("seller")} <span style={{ color: "#e0e0e0" }}>{auction.seller_username ?? t("system")}</span>
             {auction.seller_type === "admin" && (
-              <span style={{ marginLeft: 6, fontSize: 11, color: "#c8a84e" }}>ADMIN</span>
+              <span style={{ marginLeft: 6, fontSize: 11, color: "#c8a84e" }}>{t("admin_badge")}</span>
             )}
           </div>
         </div>
@@ -219,14 +221,14 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
               <div>
                 <div style={{ fontSize: 12, color: "#999" }}>
-                  {auction.current_bid ? "Enchère actuelle" : "Mise de départ"}
+                  {auction.current_bid ? t("current_bid") : t("starting_bid")}
                 </div>
                 <div style={{ fontSize: 28, fontWeight: 700, color: "#ffd54f", display: "flex", alignItems: "center", gap: 6 }}>
                   🪙 {(auction.current_bid ?? auction.starting_bid).toLocaleString("fr-FR")}
                 </div>
               </div>
               <div style={{ textAlign: "right" }}>
-                <div style={{ fontSize: 12, color: "#999" }}>Temps restant</div>
+                <div style={{ fontSize: 12, color: "#999" }}>{t("time_left")}</div>
                 <div
                   style={{
                     fontSize: 20,
@@ -240,18 +242,18 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
             </div>
 
             <div style={{ fontSize: 13, color: "#999", marginBottom: 4 }}>
-              {auction.bid_count} enchère{auction.bid_count !== 1 ? "s" : ""} — Commission: {auction.commission_rate}%
+              {t("bid_count", { count: auction.bid_count })} — {t("commission", { rate: auction.commission_rate })}
             </div>
 
             {isCurrentBidder && !isExpired && (
               <div style={{ fontSize: 13, color: "#4caf50", marginTop: 8 }}>
-                Vous êtes le meilleur enchérisseur
+                {t("highest_bidder")}
               </div>
             )}
 
             {auction.status !== "active" && (
               <div style={{ fontSize: 14, fontWeight: 600, color: auction.status === "ended_sold" ? "#4caf50" : "#e74c3c", marginTop: 8 }}>
-                {auction.status === "ended_sold" ? "Vendue" : auction.status === "ended_unsold" ? "Invendue" : "Annulée"}
+                {auction.status === "ended_sold" ? t("status_sold") : auction.status === "ended_unsold" ? t("status_unsold") : t("status_cancelled")}
               </div>
             )}
           </div>
@@ -298,7 +300,7 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
                     minHeight: 44,
                   }}
                 >
-                  {bidding ? "..." : "Enchérir"}
+                  {bidding ? "..." : t("bid_button")}
                 </button>
               </div>
 
@@ -319,7 +321,7 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
                     minHeight: 44,
                   }}
                 >
-                  Achat immédiat — 🪙 {auction.buyout_price.toLocaleString("fr-FR")}
+                  {t("buyout_immediate")} — 🪙 {auction.buyout_price.toLocaleString("fr-FR")}
                 </button>
               )}
             </div>
@@ -342,7 +344,7 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
                 marginBottom: 16,
               }}
             >
-              Annuler l&apos;enchère
+              {t("cancel_auction")}
             </button>
           )}
 
@@ -367,10 +369,10 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
             }}
           >
             <h3 style={{ fontSize: 14, fontWeight: 600, color: "#e0e0e0", margin: "0 0 12px" }}>
-              Historique des enchères
+              {t("bid_history")}
             </h3>
             {!auction.bids?.length ? (
-              <div style={{ fontSize: 13, color: "#666" }}>Aucune enchère pour le moment</div>
+              <div style={{ fontSize: 13, color: "#666" }}>{t("no_bids_yet")}</div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 {auction.bids.map((bid) => (
@@ -386,8 +388,8 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
                     }}
                   >
                     <span style={{ color: bid.bidder_id === userId ? "#c8a84e" : "#e0e0e0" }}>
-                      {bid.bidder_username ?? "Anonyme"}
-                      {bid.is_buyout && <span style={{ color: "#2ecc71", marginLeft: 4 }}>(Achat immédiat)</span>}
+                      {bid.bidder_username ?? t("anonymous")}
+                      {bid.is_buyout && <span style={{ color: "#2ecc71", marginLeft: 4 }}>{t("buyout_tag")}</span>}
                     </span>
                     <span style={{ color: "#ffd54f", fontWeight: 600 }}>
                       🪙 {bid.amount.toLocaleString("fr-FR")}

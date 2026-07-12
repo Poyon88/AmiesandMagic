@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import type { CardInstance } from "@/lib/game/types";
 import GameCard from "@/components/cards/GameCard";
 import { useGameStore } from "@/lib/store/gameStore";
@@ -12,6 +13,7 @@ interface DivinationOverlayProps {
 }
 
 export default function DivinationOverlay({ cards, onChoose, onCancel }: DivinationOverlayProps) {
+  const t = useTranslations("game");
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const tokenTemplates = useGameStore((s) => s.tokenTemplates);
   // The picker is shared between Divination (chosen card → top of deck) and
@@ -27,10 +29,10 @@ export default function DivinationOverlay({ cards, onChoose, onCancel }: Divinat
     }
     return false;
   });
-  const title = isTraqueDuDestin ? "🔮 Traque du destin" : "🔍 Divination";
+  const title = isTraqueDuDestin ? t('divination_traque_title') : t('divination_title');
   const subtitle = isTraqueDuDestin
-    ? "Choisissez la carte à prendre en main. Les autres iront sous le deck."
-    : "Choisissez la carte à placer sur le dessus de votre pioche";
+    ? t('divination_traque_subtitle')
+    : t('divination_subtitle');
 
   return (
     <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center">
@@ -79,7 +81,7 @@ export default function DivinationOverlay({ cards, onChoose, onCancel }: Divinat
             transition: "all 0.15s",
           }}
         >
-          Annuler
+          {t('action_cancel')}
         </button>
       </div>
     </div>

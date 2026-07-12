@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import type { GameFormat } from "@/lib/game/types";
 import AmAtmosphere from "@/components/ui/AmAtmosphere";
@@ -33,6 +34,7 @@ export default function MatchmakingQueue({
   validDecks: ValidDeck[];
   formats: GameFormat[];
 }) {
+  const t = useTranslations("game");
   const router = useRouter();
   const supabase = createClient();
   const [selectedFormatId, setSelectedFormatId] = useState<number | null>(
@@ -139,7 +141,7 @@ export default function MatchmakingQueue({
 
   async function joinQueue() {
     if (!selectedDeckId) {
-      setError("Please select a deck");
+      setError(t('queue_select_deck_error'));
       return;
     }
 
@@ -203,7 +205,7 @@ export default function MatchmakingQueue({
       }
     } catch (err) {
       console.error("[matchmaking] initial rpc exception", err);
-      setError("Erreur de connexion au matchmaking");
+      setError(t('queue_connection_error'));
       setInQueue(false);
       inQueueRef.current = false;
       cleanupTimers();
@@ -253,10 +255,10 @@ export default function MatchmakingQueue({
       >
         <AmHeading
           as="h1"
-          eyebrow="Prouve ta valeur"
-          subtitle="Trouve un adversaire et bats-toi"
+          eyebrow={t('queue_eyebrow')}
+          subtitle={t('queue_subtitle')}
         >
-          Jouer
+          {t('queue_heading')}
         </AmHeading>
 
         <div className="mt-8">
@@ -265,14 +267,14 @@ export default function MatchmakingQueue({
               {validDecks.length === 0 ? (
                 <div className="text-center py-8">
                   <p className="text-am-ink-soft mb-6 font-[family-name:var(--font-crimson),serif] italic text-lg">
-                    You need at least one valid deck (50 cards) to play.
+                    {t('queue_no_valid_deck')}
                   </p>
                   <AmButton
                     variant="gold"
                     size="md"
                     onClick={() => router.push("/decks/builder")}
                   >
-                    Create a Deck
+                    {t('queue_create_deck')}
                   </AmButton>
                 </div>
               ) : (
@@ -280,7 +282,7 @@ export default function MatchmakingQueue({
                   {formats.length > 0 && (
                     <div className="mb-6">
                       <label className="block text-[11px] font-display tracking-[0.22em] uppercase text-am-gold/80 mb-3">
-                        Format :
+                        {t('queue_format_label')}
                       </label>
                       <div className="flex gap-2 flex-wrap">
                         {formats.map((f) => (
@@ -307,11 +309,11 @@ export default function MatchmakingQueue({
                   <div className="am-rule mb-6" />
 
                   <label className="block text-[11px] font-display tracking-[0.22em] uppercase text-am-gold/80 mb-3">
-                    Select your deck:
+                    {t('queue_select_deck_label')}
                   </label>
                   {formatDecks.length === 0 && selectedFormatId && (
                     <p className="text-am-ink-soft text-sm mb-4 font-[family-name:var(--font-crimson),serif] italic">
-                      Aucun deck pour ce format. Créez-en un dans le deck builder.
+                      {t('queue_no_deck_for_format')}
                     </p>
                   )}
                   <div className="space-y-2 mb-7">
@@ -329,7 +331,7 @@ export default function MatchmakingQueue({
                           {deck.name}
                         </div>
                         <div className="text-xs text-am-jade mt-0.5">
-                          {deck.cardCount} cards
+                          {t('card_count', { count: deck.cardCount })}
                         </div>
                       </button>
                     ))}
@@ -346,7 +348,7 @@ export default function MatchmakingQueue({
                     disabled={!selectedDeckId}
                     className="w-full"
                   >
-                    Find Match
+                    {t('queue_find_match')}
                   </AmButton>
                 </>
               )}
@@ -355,7 +357,7 @@ export default function MatchmakingQueue({
                 onClick={() => router.push("/")}
                 className="am-btn am-btn-ghost w-full mt-3 px-6 py-2.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-am-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-am-bg-0"
               >
-                Back to Menu
+                {t('queue_back_to_menu')}
               </button>
             </>
           ) : (
@@ -368,7 +370,7 @@ export default function MatchmakingQueue({
                 ⚔️
               </div>
               <p className="font-display tracking-[0.18em] uppercase text-am-arcane-bright text-sm mb-3">
-                Searching for opponent...
+                {t('queue_searching')}
               </p>
               <p className="text-am-gold-bright text-3xl font-mono mb-2 tabular-nums">
                 {formatTime(queueTime)}
@@ -378,7 +380,7 @@ export default function MatchmakingQueue({
                 onClick={leaveQueue}
                 className="am-btn am-btn-ghost px-9 py-2.5 text-sm text-am-ember hover:!text-am-ember focus:outline-none focus-visible:ring-2 focus-visible:ring-am-ember/50 focus-visible:ring-offset-2 focus-visible:ring-offset-am-bg-0"
               >
-                Cancel
+                {t('action_cancel')}
               </button>
             </div>
           )}

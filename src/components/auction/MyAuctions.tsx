@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import type { AuctionWithDetails } from "@/lib/auction/types";
 import { isPlayerSellingEnabled } from "@/lib/auction/flags";
 
@@ -9,15 +10,16 @@ interface MyAuctionsProps {
   userId: string;
 }
 
-const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  active: { label: "Active", color: "#c8a84e" },
-  ended_sold: { label: "Vendue", color: "#2ecc71" },
-  ended_unsold: { label: "Invendue", color: "#e74c3c" },
-  cancelled: { label: "Annulée", color: "#999" },
+const STATUS_META: Record<string, { labelKey: string; color: string }> = {
+  active: { labelKey: "status_active", color: "#c8a84e" },
+  ended_sold: { labelKey: "status_sold", color: "#2ecc71" },
+  ended_unsold: { labelKey: "status_unsold", color: "#e74c3c" },
+  cancelled: { labelKey: "status_cancelled", color: "#999" },
 };
 
 export default function MyAuctions({ userId }: MyAuctionsProps) {
   const router = useRouter();
+  const t = useTranslations("auction");
   const sellingEnabled = isPlayerSellingEnabled();
   const [tab, setTab] = useState<"selling" | "bidding">(
     sellingEnabled ? "selling" : "bidding",
@@ -71,7 +73,7 @@ export default function MyAuctions({ userId }: MyAuctionsProps) {
             cursor: "pointer",
           }}
         >
-          Mes ventes ({sellerAuctions.length})
+          {t("my_sales", { count: sellerAuctions.length })}
         </button>
         )}
         <button
@@ -87,21 +89,23 @@ export default function MyAuctions({ userId }: MyAuctionsProps) {
             cursor: "pointer",
           }}
         >
-          Mes enchères ({bidderAuctions.length})
+          {t("my_bids", { count: bidderAuctions.length })}
         </button>
       </div>
 
       {loading ? (
-        <div style={{ textAlign: "center", padding: 40, color: "#999" }}>Chargement...</div>
+        <div style={{ textAlign: "center", padding: 40, color: "#999" }}>{t("loading")}</div>
       ) : currentList.length === 0 ? (
         <div style={{ textAlign: "center", padding: 40, color: "#999" }}>
-          {tab === "selling" ? "Vous n'avez aucune vente" : "Vous n'avez enchéri sur rien"}
+          {tab === "selling" ? t("no_sales") : t("no_bids_placed")}
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {currentList.map((auction) => {
             const mainCard = auction.items?.[0]?.card;
-            const statusInfo = STATUS_LABELS[auction.status] ?? { label: auction.status, color: "#999" };
+            const statusMeta = STATUS_META[auction.status];
+            const statusLabel = statusMeta ? t(statusMeta.labelKey) : auction.status;
+            const statusColor = statusMeta?.color ?? "#999";
             return (
               <div
                 key={auction.id}
@@ -125,7 +129,7 @@ export default function MyAuctions({ userId }: MyAuctionsProps) {
               >
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 600, color: "#e0e0e0" }}>
-                    {mainCard?.name ?? "Carte inconnue"}
+                    {mainCard?.name ?? t("unknown_card")}
                     {(auction.items?.length ?? 0) > 1 && (
                       <span style={{ fontSize: 12, color: "#c8a84e", marginLeft: 6 }}>
                         +{(auction.items?.length ?? 0) - 1}
@@ -133,8 +137,7 @@ export default function MyAuctions({ userId }: MyAuctionsProps) {
                     )}
                   </div>
                   <div style={{ fontSize: 12, color: "#999", marginTop: 2 }}>
-                    {auction.bid_count} enchère{auction.bid_count !== 1 ? "s" : ""} — Fin:{" "}
-                    {new Date(auction.ends_at).toLocaleString("fr-FR")}
+                    {t("bid_count", { count: auction.bid_count })} — {t("ends_at", { date: new Date(auction.ends_at).toLocaleString("fr-FR") })}
                   </div>
                 </div>
                 <div style={{ textAlign: "right" }}>
@@ -146,11 +149,11 @@ export default function MyAuctions({ userId }: MyAuctionsProps) {
                       fontSize: 11,
                       padding: "2px 8px",
                       borderRadius: 10,
-                      background: `${statusInfo.color}22`,
-                      color: statusInfo.color,
+                      background: `${statusColor}22`,
+                      color: statusColor,
                     }}
                   >
-                    {statusInfo.label}
+                    {statusLabel}
                   </span>
                 </div>
               </div>
