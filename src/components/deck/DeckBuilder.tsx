@@ -871,7 +871,7 @@ export default function DeckBuilder({
           >
             <option value="">{t("all_races")}</option>
             {races.map((r) => (
-              <option key={r} value={r}>{vocab.rarityLabel(r)}</option>
+              <option key={r} value={r}>{vocab.raceName(r)}</option>
             ))}
           </select>
           <select
@@ -891,7 +891,7 @@ export default function DeckBuilder({
           >
             <option value="">{t("all_sets")}</option>
             {sets.map((s) => (
-              <option key={s.id} value={String(s.id)}>{s.icon} {s.name}</option>
+              <option key={s.id} value={String(s.id)}>{s.icon} {vocab.setName(s.code, s.name)}</option>
             ))}
           </select>
           <select

@@ -532,6 +532,12 @@
     },
     "sets": {
       "1": "Basis-Set"
+    },
+    "formats": {
+      "expert-standard": "Experte · Standard",
+      "expert-etendu": "Experte · Erweitert",
+      "classique-etendu": "Klassisch · Erweitert",
+      "classique-standard": "Klassisch · Standard"
     }
   },
   "home": {

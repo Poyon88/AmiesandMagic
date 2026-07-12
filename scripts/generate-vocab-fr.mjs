@@ -82,6 +82,15 @@ for (const a of ALIGNMENTS ?? []) {
 // dans fr.json sont préservées (édition manuelle possible).
 vocab.sets = { "1": "Set de Base" };
 
+// Formats : lignes DB, clé = `code` stable (`${mode}-${extent}`). L'ensemble est
+// figé (4 combinaisons mode × étendue). Nom composite FR → traduit par le pipeline.
+vocab.formats = {
+  "expert-standard": "Expert · Standard",
+  "expert-etendu": "Expert · Étendu",
+  "classique-etendu": "Classique · Étendu",
+  "classique-standard": "Classique · Standard",
+};
+
 // ─── fusion non destructive dans fr.json ─────────────────────────────────────
 let fr = {};
 try {
@@ -89,8 +98,9 @@ try {
 } catch {
   fr = {};
 }
-// Préserve les codes de set déjà présents (nouveaux sets seedés à la main).
+// Préserve les codes de set/format déjà présents (seeds manuels).
 vocab.sets = { ...(fr.vocab?.sets ?? {}), ...vocab.sets };
+vocab.formats = { ...(fr.vocab?.formats ?? {}), ...vocab.formats };
 fr.vocab = vocab;
 fs.writeFileSync(FR_PATH, JSON.stringify(fr, null, 2) + "\n");
 

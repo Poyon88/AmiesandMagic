@@ -35,6 +35,9 @@ export interface Vocab {
   // Nom de set localisé, indexé par le `code` stable du set (les sets sont des
   // lignes DB, pas des constantes moteur). Fallback : le nom DB (FR) fourni.
   setName: (code: string | null | undefined, fallbackName: string) => string;
+  // Nom de format localisé, indexé par le `code` stable (`${mode}-${extent}`).
+  // Fallback : le nom DB (FR) fourni.
+  formatName: (code: string | null | undefined, fallbackName: string) => string;
   // Suffixe de déclenchement affiché après un mot-clé (« Provocation · à la
   // mort »). Renvoie une chaîne vide pour le mode par défaut (invocation) et
   // les modes sans suffixe. Fallback FR intégré.
@@ -79,6 +82,8 @@ export function useVocab(): Vocab {
         getAlignmentLabel(alignment, safe),
       setName: (code: string | null | undefined, fallbackName: string) =>
         (code ? safe(`vocab.sets.${code}`) : undefined) ?? fallbackName,
+      formatName: (code: string | null | undefined, fallbackName: string) =>
+        (code ? safe(`vocab.formats.${code}`) : undefined) ?? fallbackName,
       modeSuffix: (mode: string | null | undefined) => {
         if (!mode || !(mode in MODE_SUFFIX_FR)) return "";
         return safe(`game.mode_suffix_${mode}`) ?? MODE_SUFFIX_FR[mode];

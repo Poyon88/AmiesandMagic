@@ -370,7 +370,7 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
               >
                 <option value="">{t("all_fem")}</option>
                 {races.map((r) => (
-                  <option key={r} value={r}>{r}</option>
+                  <option key={r} value={r}>{vocab.raceName(r)}</option>
                 ))}
               </select>
             </div>
@@ -400,7 +400,7 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
               >
                 <option value="">{t("all_masc")}</option>
                 {formats.map((f) => (
-                  <option key={f.id} value={String(f.id)}>{f.name}</option>
+                  <option key={f.id} value={String(f.id)}>{vocab.formatName(f.code, f.name)}</option>
                 ))}
               </select>
             </div>
@@ -415,7 +415,7 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
               >
                 <option value="">{t("all_masc")}</option>
                 {sets.map((s) => (
-                  <option key={s.id} value={String(s.id)}>{s.icon} {s.name}</option>
+                  <option key={s.id} value={String(s.id)}>{s.icon} {vocab.setName(s.code, s.name)}</option>
                 ))}
               </select>
             </div>
