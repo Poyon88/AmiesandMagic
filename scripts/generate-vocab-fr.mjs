@@ -24,6 +24,7 @@ const FR_PATH = path.join(ROOT, "messages", "fr.json");
 const entry = `
 export { KEYWORD_LABELS } from "@/lib/game/keyword-labels";
 export { SPELL_KEYWORDS } from "@/lib/game/spell-keywords";
+export { COMPOSED_FR } from "@/lib/game/composed-display";
 export { FACTIONS, RARITIES, KEYWORDS, ALIGNMENTS } from "@/lib/card-engine/constants";
 `;
 
@@ -39,15 +40,27 @@ const built = await esbuild.build({
 
 const tmp = path.join(ROOT, "scripts", ".vocab-bundle.mjs");
 fs.writeFileSync(tmp, built.outputFiles[0].text);
-let KEYWORD_LABELS, SPELL_KEYWORDS, FACTIONS, RARITIES, KEYWORDS, ALIGNMENTS;
+let KEYWORD_LABELS, SPELL_KEYWORDS, COMPOSED_FR, FACTIONS, RARITIES, KEYWORDS, ALIGNMENTS;
 try {
-  ({ KEYWORD_LABELS, SPELL_KEYWORDS, FACTIONS, RARITIES, KEYWORDS, ALIGNMENTS } = await import(`file://${tmp}?t=${Date.now()}`));
+  ({ KEYWORD_LABELS, SPELL_KEYWORDS, COMPOSED_FR, FACTIONS, RARITIES, KEYWORDS, ALIGNMENTS } = await import(`file://${tmp}?t=${Date.now()}`));
 } finally {
   fs.rmSync(tmp, { force: true });
 }
 
+// Déplie une map plate à clés pointées ({"a.b": v}) en objets imbriqués.
+function unflatten(flatMap) {
+  const out = {};
+  for (const [key, val] of Object.entries(flatMap)) {
+    const parts = key.split(".");
+    let cur = out;
+    for (let i = 0; i < parts.length - 1; i++) cur = cur[parts[i]] ??= {};
+    cur[parts[parts.length - 1]] = val;
+  }
+  return out;
+}
+
 // ─── construit vocab.* ──────────────────────────────────────────────────────
-const vocab = { keywords: {}, spell_keywords: {}, factions: {}, rarities: {}, clans: {}, races: {}, alignments: {} };
+const vocab = { keywords: {}, spell_keywords: {}, composed: {}, factions: {}, rarities: {}, clans: {}, races: {}, alignments: {} };
 
 for (const [id, label] of Object.entries(KEYWORD_LABELS)) {
   vocab.keywords[id] = { label };
@@ -63,6 +76,11 @@ for (const [id, def] of Object.entries(SPELL_KEYWORDS ?? {})) {
   vocab.spell_keywords[id] = { label: def.label };
   if (def.desc) vocab.spell_keywords[id].desc = def.desc;
 }
+
+// Effets composés : fragments de phrase paramétriques (source unique
+// COMPOSED_FR dans composed-display.ts, aussi repli runtime). Dépliés en objets
+// imbriqués pour que next-intl résolve `vocab.composed.trigger.on_play`, etc.
+vocab.composed = unflatten(COMPOSED_FR ?? {});
 
 for (const [id, def] of Object.entries(FACTIONS)) {
   vocab.factions[id] = { displayName: def.displayName };

@@ -13,7 +13,7 @@ import { isCreatureKwShadowedBySpell, getEntraideReduction, getTokenManaCost } f
 import { persistentStats } from "@/lib/game/engine";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
-import { composedCapsOf, composedIcon, composedKeywordName, composedTriggerMode, composedValueText, describeComposedCap } from "@/lib/game/composed-display";
+import { composedCapsOf, composedIcon, composedTriggerMode, composedValueText } from "@/lib/game/composed-display";
 import ComposedMarker from "@/components/cards/ComposedMarker";
 import CostBadges from "@/components/cards/CostBadges";
 import RarityFrame from "@/components/cards/RarityFrame";
@@ -621,7 +621,7 @@ function HandCard({
               const tint = keywordModeColor(composedTriggerMode(cap)) ?? accentColor;
               const hasImg = !!iconOverrides[ic.keyword];
               return (
-                <div key={`cx-${i}`} title={describeComposedCap(cap, tokenTemplates)} style={{
+                <div key={`cx-${i}`} title={vocab.composedDesc(cap, tokenTemplates)} style={{
                   minWidth: 24, height: 24, padding: val ? "0 2px" : 0,
                   display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, overflow: "hidden",
                 }}>
@@ -769,13 +769,13 @@ function HandCard({
               {composedCapsOf(card.capabilities).map((cap, i) => {
                 const ic = composedIcon(cap);
                 const cmode = composedTriggerMode(cap);
-                const nm = composedKeywordName(cap);
+                const nm = vocab.composedName(cap);
                 return (
                   <div key={`cxd-${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
                     <span style={{ position: "relative", flexShrink: 0, display: "inline-flex", lineHeight: 0 }}><span style={{ display: "inline-flex", lineHeight: 0, filter: keywordModeFilter(cmode) ?? undefined }}><KeywordIcon symbol={ic.symbol} size={9} keyword={ic.keyword} /></span><ComposedMarker mode={cmode} size={6} /></span>
                     <div>
                       {nm && <div style={{ fontSize: 7 * d, color: "#d8b25a", fontWeight: 600 }}>{nm}</div>}
-                      <div style={{ fontSize: 6 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{describeComposedCap(cap, tokenTemplates)}</div>
+                      <div style={{ fontSize: 6 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{vocab.composedDesc(cap, tokenTemplates)}</div>
                     </div>
                   </div>
                 );

@@ -2,9 +2,10 @@
 
 import { useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
-import type { Keyword, SpellKeywordInstance, Card, TokenTemplate } from "@/lib/game/types";
+import type { Keyword, SpellKeywordInstance, Card, TokenTemplate, Capability } from "@/lib/game/types";
 import { getKeywordDisplayLabel, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
 import { getSpellKeywordLabel, getSpellKeywordDesc } from "@/lib/game/spell-keywords";
+import { composedKeywordName, describeComposedCap } from "@/lib/game/composed-display";
 import {
   getAlignmentLabel,
   getClanName,
@@ -36,6 +37,10 @@ export interface Vocab {
     card?: Card | null,
     tokens?: TokenTemplate[],
   ) => string;
+  // Effets composés (modèle hybride) : nom du pouvoir (icône réutilisée) et
+  // phrase paramétrique décrivant l'effet. Localisés, repli FR intégré.
+  composedName: (cap: Capability) => string;
+  composedDesc: (cap: Capability, tokens?: TokenTemplate[]) => string;
   factionName: (faction: string | null | undefined) => string;
   rarityLabel: (rarity: string | null | undefined) => string;
   clanName: (clan: string | null | undefined) => string;
@@ -88,6 +93,9 @@ export function useVocab(): Vocab {
         card?: Card | null,
         tokens?: TokenTemplate[],
       ) => getSpellKeywordDesc(kw, card, tokens, safe),
+      composedName: (cap: Capability) => composedKeywordName(cap, safe),
+      composedDesc: (cap: Capability, tokens?: TokenTemplate[]) =>
+        describeComposedCap(cap, tokens, safe),
       factionName: (faction: string | null | undefined) =>
         getFactionDisplayName(faction, safe),
       rarityLabel: (rarity: string | null | undefined) =>

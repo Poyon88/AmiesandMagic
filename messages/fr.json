@@ -531,6 +531,84 @@
         "desc": "Gagnez X mana ce tour"
       }
     },
+    "composed": {
+      "trigger": {
+        "on_play": "À l'entrée",
+        "on_death": "À la mort",
+        "on_return": "Au retour en main",
+        "on_activation": "À l'activation",
+        "on_attack": "À l'attaque",
+        "on_end_of_turn": "À la fin du tour"
+      },
+      "content": {
+        "deal_damage_one": "inflige {x} dégât",
+        "deal_damage_many": "inflige {x} dégâts",
+        "heal": "soigne {x} PV",
+        "buff": "octroie +{x}/+{y}",
+        "debuff": "inflige -{x}/-{y}",
+        "destroy": "détruit",
+        "bounce": "renvoie en main",
+        "paralyze": "paralyse",
+        "grant_keyword": "confère {ability}",
+        "ability_generic": "une capacité",
+        "draw_cards_one": "piochez {x} carte",
+        "draw_cards_many": "piochez {x} cartes",
+        "discard_one": "l'adversaire défausse {x} carte",
+        "discard_many": "l'adversaire défausse {x} cartes",
+        "summon_one": "invoque un {token}",
+        "summon_many": "invoque {x} {token}",
+        "token_one": "token",
+        "token_many": "tokens",
+        "gain_mana": "gagnez {x} mana ce tour",
+        "exhumation": "ressuscite {who} de votre cimetière (coût ≤ {x})",
+        "exhum_one": "une créature",
+        "exhum_all": "toutes les créatures",
+        "exhum_upto": "jusqu'à {n} créatures"
+      },
+      "target": {
+        "self": "à elle-même",
+        "hero_ally": "à votre héros",
+        "hero_enemy": "au héros adverse",
+        "both_all": "à toutes les unités et au héros {side}",
+        "both_one": "à une cible (unité ou héros){side}",
+        "both_side_ally": "alliés",
+        "both_side_enemy": "ennemis",
+        "count_all": "à toutes les unités",
+        "count_one": "à une unité",
+        "count_n": "à {n} unités",
+        "side_ally_one": "alliée",
+        "side_ally_many": "alliées",
+        "side_enemy_one": "ennemie",
+        "side_enemy_many": "ennemies",
+        "loc_hand": "en main",
+        "loc_deck": "du deck",
+        "loc_graveyard": "du cimetière",
+        "des_random": "au hasard",
+        "des_automatic": "automatiquement",
+        "des_choice": "au choix"
+      },
+      "scatter": {
+        "action_damage": "inflige",
+        "action_heal": "rend",
+        "unit_damage": "dégât",
+        "unit_heal": "PV",
+        "times": "{x} fois 1 {unit}, à chaque fois",
+        "target_both": "à une cible {side} aléatoire (unité ou héros)",
+        "target_unit": "à une unité {side} aléatoire"
+      },
+      "choice": {
+        "deal_damage": "choisissez une cible à blesser",
+        "heal": "choisissez une cible à soigner",
+        "buff": "choisissez une créature à renforcer",
+        "debuff": "choisissez une créature à affaiblir",
+        "destroy": "choisissez une créature à détruire",
+        "bounce": "choisissez une créature à renvoyer en main",
+        "paralyze": "choisissez une créature à paralyser",
+        "grant_keyword": "choisissez une créature à qui conférer la capacité",
+        "exhumation": "choisissez une créature à ressusciter",
+        "default": "choisissez une cible"
+      }
+    },
     "factions": {
       "Elfes": {
         "displayName": "L'Alliance Céleste",
