@@ -362,6 +362,29 @@ export function getClanName(
   return t?.(`vocab.clans.${clan}`) ?? clan;
 }
 
+// Nom de race localisé (identité FR = valeur data). Fallback : la valeur brute.
+export function getRaceName(
+  race: string | null | undefined,
+  t?: SafeT,
+): string {
+  if (!race) return "";
+  return t?.(`vocab.races.${race}`) ?? race;
+}
+
+// Libellé d'alignement localisé (id moteur stable). Fallback : le libellé FR
+// déclaré dans ALIGNMENTS, puis l'id.
+export function getAlignmentLabel(
+  alignment: string | null | undefined,
+  t?: SafeT,
+): string {
+  if (!alignment) return "";
+  return (
+    t?.(`vocab.alignments.${alignment}`) ??
+    ALIGNMENTS.find((a) => a.id === alignment)?.label ??
+    alignment
+  );
+}
+
 export const TYPES = ["Unité", "Sort", "Artefact", "Magie"];
 
 export const ALIGNMENTS: { id: Alignment; label: string; emoji: string; color: string }[] = [

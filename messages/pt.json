@@ -2,304 +2,403 @@
   "vocab": {
     "keywords": {
       "charge": {
-        "label": "Perseguição"
+        "label": "Perseguição",
+        "desc": "Pode atacar e usar seu poder ativável assim que é invocado."
       },
       "taunt": {
-        "label": "Provocação"
+        "label": "Provocação",
+        "desc": "Os inimigos devem atacar esta unidade com prioridade."
       },
       "divine_shield": {
-        "label": "Escudo"
+        "label": "Escudo",
+        "desc": "Absorve o primeiro ataque sem sofrer dano."
       },
       "ranged": {
-        "label": "Voo"
+        "label": "Voo",
+        "desc": "Ignora as provocações adversárias."
       },
       "raid": {
-        "label": "Raid"
+        "label": "Raid",
+        "desc": "Pode atacar uma criatura inimiga assim que é invocado (mas não o herói)."
       },
       "convocations_multiples": {
-        "label": "Convocações Múltiplas"
+        "label": "Convocações Múltiplas",
+        "desc": "Invocação: cria vários tokens conforme a configuração."
       },
       "loyaute": {
-        "label": "Lealdade"
+        "label": "Lealdade",
+        "desc": "Invocação: +1 ATK e +1 PV para cada aliado da mesma raça em jogo."
       },
       "ancre": {
-        "label": "Ancorado"
+        "label": "Ancorado",
+        "desc": "Não pode ser movido ou exilado."
       },
       "resistance": {
-        "label": "Resistência X"
+        "label": "Resistência X",
+        "desc": "Reduz o dano recebido em X (mínimo 1 de dano)."
       },
       "premiere_frappe": {
-        "label": "Primeiro Ataque"
+        "label": "Primeiro Ataque",
+        "desc": "Quando esta unidade ataca, causa seu dano primeiro; a unidade adversária só reage se sobreviver."
       },
       "berserk": {
-        "label": "Berserk"
+        "label": "Berserk",
+        "desc": "Dobra seu ATK se seus PV atuais forem inferiores ao valor de PV original (na carta)."
       },
       "vol": {
-        "label": "Voo"
+        "label": "Voo",
+        "desc": "Ignora as provocações adversárias."
       },
       "precision": {
-        "label": "Precisão"
+        "label": "Precisão",
+        "desc": "Ignora Resistência, Armadura e Escudo."
       },
       "drain_de_vie": {
-        "label": "Dreno de Vida"
+        "label": "Dreno de Vida",
+        "desc": "Cura seu herói pelo dano causado."
       },
       "esquive": {
-        "label": "Esquiva"
+        "label": "Esquiva",
+        "desc": "Evita automaticamente o primeiro ataque recebido a cada turno."
       },
       "poison": {
-        "label": "Veneno"
+        "label": "Veneno",
+        "desc": "As unidades feridas perdem 1 PV por turno."
       },
       "celerite": {
-        "label": "Celeridade"
+        "label": "Celeridade",
+        "desc": "Pode atacar duas vezes por turno."
       },
       "augure": {
-        "label": "Augúrio"
+        "label": "Augúrio",
+        "desc": "Quando esta unidade causa dano ao herói adversário, você compra uma carta."
       },
       "benediction": {
-        "label": "Bênção"
+        "label": "Bênção",
+        "desc": "Cura completamente a unidade alvo."
       },
       "bravoure": {
-        "label": "Bravura"
+        "label": "Bravura",
+        "desc": "Dobra seu dano (arredondado para cima) contra unidades com ATK superior ao seu."
       },
       "pillage": {
-        "label": "Pilhagem X"
+        "label": "Pilhagem X",
+        "desc": "Invocação: o adversário descarta X cartas aleatórias de sua mão."
       },
       "riposte": {
-        "label": "Riposte X"
+        "label": "Riposte X",
+        "desc": "Quando esta unidade sofre dano, causa X de dano à fonte do ataque (unidade ou herói)."
       },
       "rappel": {
-        "label": "Retorno"
+        "label": "Retorno",
+        "desc": "Invocação: retorne uma carta alvo do seu cemitério para a sua mão."
       },
       "combustion": {
-        "label": "Combustão"
+        "label": "Combustão",
+        "desc": "Invocação: descarte uma carta da sua mão e compre duas cartas."
       },
       "terreur": {
-        "label": "Terror"
+        "label": "Terror",
+        "desc": "As unidades adversárias perdem 1 ATK na presença desta carta."
       },
       "pauvrete": {
-        "label": "Pobreza X"
+        "label": "Pobreza X",
+        "desc": "Esta unidade perde Força igual ao número de cartas na mão do adversário (X = tamanho da mão adversária, dinâmico)."
       },
       "armure": {
-        "label": "Armadura"
+        "label": "Armadura",
+        "desc": "Reduz à metade o dano de combate recebido (arredondado para cima); dano de magias não é reduzido."
       },
       "commandement": {
-        "label": "Comando"
+        "label": "Comando",
+        "desc": "Aliados da mesma facção ganham +1/+1."
       },
       "fureur": {
-        "label": "Fúria"
+        "label": "Fúria",
+        "desc": "Após sofrer dano, ataca imediatamente uma unidade adversária aleatória (o herói se não houver unidades). Ativa-se no máximo uma vez por turno."
       },
       "double_attaque": {
-        "label": "Ataque Duplo"
+        "label": "Ataque Duplo",
+        "desc": "Somente na fase ofensiva: causa o dobro do seu ATK no ataque. A unidade alvo reage normalmente."
       },
       "invisible": {
-        "label": "Invisível"
+        "label": "Invisível",
+        "desc": "Não pode ser alvo de magias nem de habilidades de unidades adversárias."
       },
       "canalisation": {
-        "label": "Canalização"
+        "label": "Canalização",
+        "desc": "Enquanto esta unidade estiver em jogo, suas magias custam 1 mana a menos (mínimo 1)."
       },
       "contresort": {
-        "label": "Contramagia"
+        "label": "Contramagia",
+        "desc": "Invocação: cancela a próxima magia adversária."
       },
       "convocation": {
-        "label": "Convocação X"
+        "label": "Convocação X",
+        "desc": "Invocação: cria um token X/X da raça indicada."
       },
       "convocation_simple": {
-        "label": "Convocação"
+        "label": "Convocação",
+        "desc": "Invocação: cria o token configurado."
       },
       "malediction": {
-        "label": "Maldição"
+        "label": "Maldição",
+        "desc": "Invocação: escolha uma unidade inimiga; ela é exilada no fim do próximo turno adversário."
       },
       "necrophagie": {
-        "label": "Necrofagia"
+        "label": "Necrofagia",
+        "desc": "Ganha +1 ATK e +1 PV cada vez que uma unidade (aliada ou inimiga) morre."
       },
       "richesse": {
-        "label": "Riqueza X"
+        "label": "Riqueza X",
+        "desc": "Sempre que um jogador descarta uma carta de sua mão, esta unidade ganha +X/+X (permanente)."
       },
       "sacrifice_demoniaque": {
-        "label": "Sacrifício Demoníaco X"
+        "label": "Sacrifício Demoníaco X",
+        "desc": "Ao morrer, distribui aleatoriamente X reduções de custo (-1 mana cada) entre os Demônios da sua mão. Um Demônio não pode custar menos de 1."
       },
       "paralysie": {
-        "label": "Paralisia"
+        "label": "Paralisia",
+        "desc": "As unidades que sofrem dano desta criatura não podem atacar nem usar capacidades ativas até o fim do próximo turno de seu proprietário."
       },
       "permutation": {
-        "label": "Permutação"
+        "label": "Permutação",
+        "desc": "Invocação: troca os PV atuais de duas unidades-alvo (uma aliada e uma inimiga)."
       },
       "persecution": {
-        "label": "Perseguição X"
+        "label": "Perseguição X",
+        "desc": "Sempre que esta unidade ataca, inflige X de dano ao herói adversário."
       },
       "pietinement": {
-        "label": "Pisoteamento"
+        "label": "Pisoteamento",
+        "desc": "Quando esta unidade ataca uma criatura, o dano excedente (além dos PV restantes do alvo) é infligido ao herói adversário."
       },
       "catalyse": {
-        "label": "Catálise"
+        "label": "Catálise",
+        "desc": "Invocação: reduz em 1 o custo de mana de todas as unidades da mesma raça na sua mão."
       },
       "ombre_du_passe": {
-        "label": "Sombra do passado"
+        "label": "Sombra do passado",
+        "desc": "Invocação: ganha +1 ATK e +1 PV por unidade da mesma raça no seu cemitério."
       },
       "profanation": {
-        "label": "Profanação X"
+        "label": "Profanação X",
+        "desc": "Invocação: exila as últimas X cartas do seu cemitério para conceder até +X/+X à unidade."
       },
       "prescience": {
-        "label": "Presciência X"
+        "label": "Presciência X",
+        "desc": "Invocação: compre cartas até ter X cartas na mão."
       },
       "suprematie": {
-        "label": "Supremacia"
+        "label": "Supremacia",
+        "desc": "Invocação: ganha +1 ATK e +1 PV por carta na sua mão no momento da invocação."
       },
       "divination": {
-        "label": "Divinação"
+        "label": "Divinação",
+        "desc": "Invocação: revela as 3 primeiras cartas do seu deck; coloque uma no topo e as outras 2 embaixo na ordem escolhida."
       },
       "savant": {
-        "label": "Sábio"
+        "label": "Sábio",
+        "desc": "Invocação: ganha +1 ATK e +1 PV por magia no seu cemitério."
       },
       "liaison_de_vie": {
-        "label": "Vínculo de vida"
+        "label": "Vínculo de vida",
+        "desc": "Compartilha o dano recebido com o herói adversário."
       },
       "ombre": {
-        "label": "Sombra"
+        "label": "Sombra",
+        "desc": "Não pode ser alvo nem atacada enquanto não realizar uma ação (ataque ou habilidade)."
       },
       "sacrifice": {
-        "label": "Sacrifício"
+        "label": "Sacrifício",
+        "desc": "Invocação: destrua um aliado para ganhar permanentemente seus PV e ATK."
       },
       "malefice": {
-        "label": "Malefício"
+        "label": "Malefício",
+        "desc": "Ao morrer, inflige X de dano a todas as unidades (aliadas e inimigas), X = seu ATK."
       },
       "indestructible": {
-        "label": "Indestrutível"
+        "label": "Indestrutível",
+        "desc": "Não sofre dano de combate."
       },
       "regeneration": {
-        "label": "Regeneração"
+        "label": "Regeneração",
+        "desc": "Recupera 2 PV no início do seu turno."
       },
       "corruption": {
-        "label": "Corrupção"
+        "label": "Corrupção",
+        "desc": "Converte a unidade inimiga selecionada para o seu lado até o fim do turno; ela ganha Rastreamento até o fim do turno."
       },
       "carnage": {
-        "label": "Carnificina X"
+        "label": "Carnificina X",
+        "desc": "Morte: inflige X de dano a todas as unidades em jogo (aliadas e inimigas)."
       },
       "heritage": {
-        "label": "Herança X"
+        "label": "Herança X",
+        "desc": "Morte: cada unidade aliada em jogo ganha +X ATK e +X PV permanentemente."
       },
       "mimique": {
-        "label": "Mímica"
+        "label": "Mímica",
+        "desc": "Invocação: copia todas as habilidades de uma unidade-alvo e as atribui a esta unidade permanentemente."
       },
       "metamorphose": {
-        "label": "Metamorfose"
+        "label": "Metamorfose",
+        "desc": "Invocação: esta unidade torna-se uma cópia exata (ATK / PV / habilidades) de uma unidade-alvo."
       },
       "tactique": {
-        "label": "Tática X"
+        "label": "Tática X",
+        "desc": "Invocação: atribui X habilidade(s) escolhida(s) a uma unidade aliada-alvo permanentemente."
       },
       "exhumation": {
-        "label": "Exumação X"
+        "label": "Exumação X",
+        "desc": "Invocação: ressuscita uma unidade do seu cemitério com custo de mana igual ou inferior a X."
       },
       "heritage_du_cimetiere": {
-        "label": "Herança do cemitério"
+        "label": "Herança do cemitério",
+        "desc": "Invocação: atribui a esta unidade as habilidades de uma unidade-alvo no seu cemitério."
       },
       "pacte_de_sang": {
-        "label": "Pacto de sangue"
+        "label": "Pacto de sangue",
+        "desc": "Quando esta unidade morre, invoca dois tokens 1/1 da sua raça."
       },
       "souffle_de_feu": {
-        "label": "Bafo de fogo X"
+        "label": "Bafo de fogo X",
+        "desc": "Inflige X de dano a todas as unidades inimigas ao atacar (ex: Sopro de Fogo 2 = 2 de dano)."
       },
       "domination": {
-        "label": "Dominação"
+        "label": "Dominação",
+        "desc": "Assume o controle de uma unidade inimiga aleatória ao ser invocada."
       },
       "resurrection": {
-        "label": "Ressurreição"
+        "label": "Ressurreição",
+        "desc": "Retorna ao jogo após morrer com 1 PV; perde a habilidade Ressurreição ao retornar."
       },
       "transcendance": {
-        "label": "Transcendência"
+        "label": "Transcendência",
+        "desc": "Imunidade total a magias adversárias: não pode sofrer dano nem efeito de magia, incluindo magias de área."
       },
       "vampirisme": {
-        "label": "Vampirismo X"
+        "label": "Vampirismo X",
+        "desc": "Invocação: rouba X PV de uma unidade inimiga-alvo e os adiciona aos PV desta unidade."
       },
       "traque_du_destin": {
-        "label": "Caça ao destino X"
+        "label": "Caça ao destino X",
+        "desc": "Invocação: revela as X primeiras cartas do seu deck, adicione uma à mão e coloque as demais embaixo em ordem aleatória."
       },
       "sang_mele": {
-        "label": "Sangue misturado"
+        "label": "Sangue misturado",
+        "desc": "Ganha +1 ATK e +1 PV para cada tipo de raça diferente entre seus aliados em jogo."
       },
       "fierte_du_clan": {
-        "label": "Orgulho do clã"
+        "label": "Orgulho do clã",
+        "desc": "Enquanto esta unidade estiver em jogo, as unidades do mesmo clã invocadas entram com +1/+1."
       },
       "solidarite": {
-        "label": "Solidariedade X"
+        "label": "Solidariedade X",
+        "desc": "Invocação: compre X cartas se você controlar outras 2 unidades da mesma raça."
       },
       "entraide": {
         "label": "Entreajuda"
       },
       "cycle_eternel": {
-        "label": "Ciclo eterno"
+        "label": "Ciclo eterno",
+        "desc": "Morte: adicione uma cópia desta carta ao seu deck; se for comprada, coloque-a diretamente em jogo."
       },
       "martyr": {
-        "label": "Mártir"
+        "label": "Mártir",
+        "desc": "Morte: todas as suas unidades da mesma raça em jogo ganham +1/+1 permanentemente."
       },
       "instinct_de_meute": {
-        "label": "Instinto de matilha X"
+        "label": "Instinto de matilha X",
+        "desc": "Invocação: ganha +X ATK e +X PV se uma unidade aliada da mesma facção foi ao cemitério durante este turno."
       },
       "totem": {
-        "label": "Totem"
+        "label": "Totem",
+        "desc": "Esta unidade ganha as habilidades de todas as unidades aliadas da mesma raça em jogo."
       },
       "appel_du_clan": {
-        "label": "Chamado do clã X"
+        "label": "Chamado do clã X",
+        "desc": "Invocação: coloque em jogo gratuitamente a primeira unidade do mesmo clã com custo igual ou inferior a X do topo do seu deck."
       },
       "appel_supreme": {
-        "label": "Chamado Supremo"
+        "label": "Chamado Supremo",
+        "desc": "Invocação: adiciona à sua mão a criatura da raça escolhida com o maior custo de mana restante no seu deck (aleatória em caso de empate)."
       },
       "rassemblement": {
-        "label": "Reunião X"
+        "label": "Reunião X",
+        "desc": "Invocação: revela as X primeiras cartas do deck; adicione à sua mão todas as unidades da mesma raça e descarte o restante."
       },
       "selection": {
-        "label": "Seleção X"
+        "label": "Seleção X",
+        "desc": "Invocação: revela 3 cartas comuns aleatórias de custo ≤ X entre as facções do mesmo alinhamento (bom/neutro/maligno) que esta carta; adicione uma à sua mão. Sem limite de custo se X não definido."
       },
       "selection_magique": {
-        "label": "Seleção Mágica X"
+        "label": "Seleção Mágica X",
+        "desc": "Invocação: revela 3 magias comuns aleatórias de custo ≤ X entre as facções do mesmo alinhamento (bom/neutro/maligno) que esta carta; adicione uma à sua mão. Sem limite de custo se X não definido."
       },
       "renfort_royal": {
-        "label": "Seleção Real X"
+        "label": "Seleção Real X",
+        "desc": "Invocação: revela 3 cartas aleatórias entre suas edições limitadas (≥30 necessárias; caso contrário, entre comuns do mesmo alinhamento) de custo ≤ X; adicione uma à sua mão. Sem limite de custo se X não definido."
       },
       "lycanthropie": {
-        "label": "Licantropia X"
+        "label": "Licantropia X",
+        "desc": "Início de turno: transforma-se em um token X/X com Rastreamento."
       },
       "relancer": {
-        "label": "Relançar X"
+        "label": "Relançar X",
+        "desc": "Invocação: relança as X últimas magias conjuradas com alvos aleatórios."
       },
       "tempete": {
-        "label": "Tempestade X"
+        "label": "Tempestade X",
+        "desc": "Invocação: causa X de dano distribuídos aleatoriamente entre as unidades inimigas."
       },
       "cataclysme": {
-        "label": "Cataclismo X"
+        "label": "Cataclismo X",
+        "desc": "Invocação: causa X de dano a todas as criaturas (aliadas E inimigas)."
       },
       "affaiblissement": {
-        "label": "Enfraquecimento -X/-Y"
+        "label": "Enfraquecimento -X/-Y",
+        "desc": "Invocação: aplica -X ATK e -Y PV a uma criatura inimiga alvo."
       },
       "renforcement": {
-        "label": "Reforço +X/+Y"
+        "label": "Reforço +X/+Y",
+        "desc": "Ganha +X ATK e +Y PV permanentemente."
       },
       "impact": {
-        "label": "Impacto X"
+        "label": "Impacto X",
+        "desc": "Causa X de dano a um alvo escolhido (criatura ou herói, qualquer lado)."
       },
       "douleur": {
-        "label": "Dor X"
+        "label": "Dor X",
+        "desc": "Invocação: causa X de dano ao seu herói."
       },
       "inspiration": {
-        "label": "Inspiração X"
+        "label": "Inspiração X",
+        "desc": "Invocação: compre X cartas."
       },
       "concentration": {
-        "label": "Concentração X"
+        "label": "Concentração X",
+        "desc": "Invocação: substitui cada magia na mão por uma magia aleatória (todas as facções) de custo X superior; o custo da nova magia é reduzido em X."
       },
       "remontee": {
-        "label": "Reviravolta"
+        "label": "Reviravolta",
+        "desc": "Devolve uma unidade alvo à mão de seu proprietário original."
       },
       "renforcement_multiple": {
-        "label": "Reforço Múltiplo"
+        "label": "Reforço Múltiplo",
+        "desc": "Concede +X/+Y a todas as suas criaturas da raça ou clã selecionado."
       },
       "entrainement": {
-        "label": "Treinamento X"
+        "label": "Treinamento X",
+        "desc": "Concede +X/+X às suas criaturas na mão da mesma facção."
       },
       "conferer": {
-        "label": "Conferir"
+        "label": "Conferir",
+        "desc": "Invocação: concede uma habilidade escolhida a uma unidade aliada (ou a todas)."
       },
       "declenchement": {
-        "label": "Ativação"
+        "label": "Ativação",
+        "desc": "Invocação: reativa uma vez os efeitos compostos acionados dos outros aliados em jogo, para um subconjunto fixo de gatilhos (entrada / morte / fim de turno / retorno)."
       }
     },
     "factions": {
@@ -383,6 +482,56 @@
       "Abysses souterrains": "Abismos Subterrâneos",
       "Forêt maudite": "Floresta Maldita",
       "Cités de cendres": "Cidades de Cinzas"
+    },
+    "races": {
+      "Elfes": "Elfos",
+      "Aigles Géants": "Águias Gigantes",
+      "Fées": "Fadas",
+      "Nains": "Anões",
+      "Golems": "Golens",
+      "Hobbits": "Hobbits",
+      "Hommes-Arbres": "Homens-Árvore",
+      "Humains": "Humanos",
+      "Hommes-Loups": "Homens-Lobos",
+      "Hommes-Ours": "Homens-Ursos",
+      "Hommes-Félins": "Homens-Felinos",
+      "Centaures": "Centauros",
+      "Mimis": "Mimis",
+      "Hommes-Chiens": "Homens-Cães",
+      "Hommes-Renards": "Homens-Raposas",
+      "Hommes-Cerfs": "Homens-Cervos",
+      "Élémentaire": "Elemental",
+      "Géants": "Gigantes",
+      "Ogres": "Ogros",
+      "Dragons": "Dragões",
+      "Chiens": "Cães",
+      "Phoenix": "Phoenix",
+      "Anges": "Anjos",
+      "Ours": "Ursos",
+      "Loups": "Lobos",
+      "Fauves": "Feras",
+      "Orcs": "Orcs",
+      "Gobelins": "Goblins",
+      "Trolls": "Trolls",
+      "Wargs": "Wargs",
+      "Squelettes": "Esqueletos",
+      "Zombies": "Zumbis",
+      "Spectres": "Espectros",
+      "Vampires": "Vampiros",
+      "Lich": "Lich",
+      "Banshees": "Banshees",
+      "Elfes Corrompus": "Elfos Corrompidos",
+      "Araignées Géantes": "Aranhas Gigantes",
+      "Démons": "Demônios"
+    },
+    "alignments": {
+      "bon": "Bom",
+      "neutre": "Neutro",
+      "maléfique": "Maléfico",
+      "spéciale": "Especial"
+    },
+    "sets": {
+      "1": "Set Básico"
     }
   },
   "home": {

@@ -7,7 +7,7 @@ import Image from "next/image";
 import type { CardInstance } from "@/lib/game/types";
 import { useGameStore } from "@/lib/store/gameStore";
 import type { DragEvent } from "react";
-import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
+import { KEYWORD_SYMBOLS, toRoman, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, getSpellKeywordLabel, getSpellKeywordDesc, formatConvocationToken, formatConvocationTokens } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell, getEntraideReduction, getTokenManaCost } from "@/lib/game/abilities";
 import { persistentStats } from "@/lib/game/engine";
@@ -15,7 +15,6 @@ import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { composedCapsOf, composedIcon, composedKeywordName, composedTriggerMode, composedValueText, describeComposedCap } from "@/lib/game/composed-display";
 import ComposedMarker from "@/components/cards/ComposedMarker";
-import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
 import CostBadges from "@/components/cards/CostBadges";
 import RarityFrame from "@/components/cards/RarityFrame";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
@@ -720,9 +719,7 @@ function HandCard({
                     : label;
                 const modeSuffix = vocab.modeSuffix(mode);
                 const displayLabel = baseLabel + modeSuffix;
-                const forgeKey = KEYWORD_LABELS[kw];
-                const kwDef = forgeKey ? keywordDefs[forgeKey] : null;
-                let desc = kwDef?.desc ? (x != null ? kwDef.desc.replace(/X/g, String(x)) : kwDef.desc) : null;
+                let desc = vocab.keywordDesc(kw, x);
                 if (kw === "convocations_multiples" && card.convocation_tokens?.length) {
                   desc = `Invocation : crée ${formatConvocationTokens(card.convocation_tokens, tokenTemplates)}`;
                 } else if (kw === "convocation" || kw === "convocation_simple") {

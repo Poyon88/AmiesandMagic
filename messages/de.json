@@ -2,304 +2,403 @@
   "vocab": {
     "keywords": {
       "charge": {
-        "label": "Verfolgung"
+        "label": "Verfolgung",
+        "desc": "Kann sofort nach der Beschwörung angreifen und seine aktivierbare Fähigkeit nutzen."
       },
       "taunt": {
-        "label": "Provokation"
+        "label": "Provokation",
+        "desc": "Feinde müssen diese Einheit vorrangig angreifen."
       },
       "divine_shield": {
-        "label": "Schild"
+        "label": "Schild",
+        "desc": "Absorbiert den ersten erlittenen Angriff ohne Schaden."
       },
       "ranged": {
-        "label": "Flug"
+        "label": "Flug",
+        "desc": "Ignoriert feindliche Provokationen."
       },
       "raid": {
-        "label": "Überfall"
+        "label": "Überfall",
+        "desc": "Kann sofort nach der Beschwörung eine feindliche Kreatur angreifen (aber nicht den Helden)."
       },
       "convocations_multiples": {
-        "label": "Mehrfachbeschwörung"
+        "label": "Mehrfachbeschwörung",
+        "desc": "Beschwörung: Erstellt mehrere Token gemäß der Konfiguration."
       },
       "loyaute": {
-        "label": "Loyalität"
+        "label": "Loyalität",
+        "desc": "Beschwörung: +1 ATK und +1 LP für jeden verbündeten Einheit derselben Rasse im Spiel."
       },
       "ancre": {
-        "label": "Verankert"
+        "label": "Verankert",
+        "desc": "Kann weder verschoben noch verbannt werden."
       },
       "resistance": {
-        "label": "Resistenz X"
+        "label": "Resistenz X",
+        "desc": "Reduziert erlittenen Schaden um X (mindestens 1 Schaden)."
       },
       "premiere_frappe": {
-        "label": "Erster Angriff"
+        "label": "Erster Angriff",
+        "desc": "Wenn diese Einheit angreift, fügt sie zuerst Schaden zu; die gegnerische Einheit schlägt nur zurück, wenn sie überlebt."
       },
       "berserk": {
-        "label": "Berserker"
+        "label": "Berserker",
+        "desc": "Verdoppelt seinen ATK, wenn seine aktuellen LP unter dem ursprünglichen LP-Wert der Karte liegen."
       },
       "vol": {
-        "label": "Flug"
+        "label": "Flug",
+        "desc": "Ignoriert feindliche Provokationen."
       },
       "precision": {
-        "label": "Präzision"
+        "label": "Präzision",
+        "desc": "Ignoriert Resistenz, Rüstung und Schild."
       },
       "drain_de_vie": {
-        "label": "Lebensraub"
+        "label": "Lebensraub",
+        "desc": "Heilt Ihren Helden um den verursachten Schaden."
       },
       "esquive": {
-        "label": "Ausweichen"
+        "label": "Ausweichen",
+        "desc": "Weicht pro Runde automatisch dem ersten erlittenen Angriff aus."
       },
       "poison": {
-        "label": "Gift"
+        "label": "Gift",
+        "desc": "Verwundete Einheiten verlieren 1 LP pro Runde."
       },
       "celerite": {
-        "label": "Eile"
+        "label": "Eile",
+        "desc": "Kann zweimal pro Runde angreifen."
       },
       "augure": {
-        "label": "Vorzeichen"
+        "label": "Vorzeichen",
+        "desc": "Wenn diese Einheit dem gegnerischen Helden Schaden zufügt, ziehen Sie eine Karte."
       },
       "benediction": {
-        "label": "Segen"
+        "label": "Segen",
+        "desc": "Heilt die Zieleinheit vollständig."
       },
       "bravoure": {
-        "label": "Tapferkeit"
+        "label": "Tapferkeit",
+        "desc": "Verdoppelt den Schaden (aufgerundet) gegen Einheiten mit höherem ATK als dem eigenen."
       },
       "pillage": {
-        "label": "Plünderung X"
+        "label": "Plünderung X",
+        "desc": "Beschwörung: Der Gegner wirft X zufällige Karten aus seiner Hand ab."
       },
       "riposte": {
-        "label": "Vergeltung X"
+        "label": "Vergeltung X",
+        "desc": "Wenn diese Einheit Schaden erleidet, fügt sie der Schadensquelle (Einheit oder Held) X Schaden zu."
       },
       "rappel": {
-        "label": "Rückruf"
+        "label": "Rückruf",
+        "desc": "Beschwörung: Nehmen Sie eine Zielkarte aus Ihrem Friedhof auf die Hand zurück."
       },
       "combustion": {
-        "label": "Verbrennung"
+        "label": "Verbrennung",
+        "desc": "Beschwörung: Werfen Sie eine Karte aus Ihrer Hand ab und ziehen Sie dann zwei Karten."
       },
       "terreur": {
-        "label": "Schrecken"
+        "label": "Schrecken",
+        "desc": "Gegnerische Einheiten verlieren 1 ATK, solange diese Karte im Spiel ist."
       },
       "pauvrete": {
-        "label": "Verarmung X"
+        "label": "Verarmung X",
+        "desc": "Diese Einheit verliert so viel Stärke, wie der Gegner Karten auf der Hand hat (X = aktuelle Handgröße des Gegners, dynamisch)."
       },
       "armure": {
-        "label": "Rüstung"
+        "label": "Rüstung",
+        "desc": "Halbiert erlittenen Kampfschaden (aufgerundet); Zaubrerschaden wird nicht reduziert."
       },
       "commandement": {
-        "label": "Kommando"
+        "label": "Kommando",
+        "desc": "Verbündete derselben Fraktion erhalten +1/+1."
       },
       "fureur": {
-        "label": "Raserei"
+        "label": "Raserei",
+        "desc": "Nachdem diese Einheit Schaden erlitten hat, greift sie sofort eine zufällige feindliche Einheit an (den Helden, falls keine Einheiten mehr vorhanden). Löst höchstens einmal pro Runde aus."
       },
       "double_attaque": {
-        "label": "Doppelangriff"
+        "label": "Doppelangriff",
+        "desc": "Nur in der Angriffsphase: Fügt beim Angriff den doppelten ATK-Schaden zu. Die Zieleinheit schlägt normal zurück."
       },
       "invisible": {
-        "label": "Unsichtbar"
+        "label": "Unsichtbar",
+        "desc": "Kann weder von Zaubern noch von Fähigkeiten feindlicher Einheiten gezielt werden."
       },
       "canalisation": {
-        "label": "Kanalisation"
+        "label": "Kanalisation",
+        "desc": "Solange diese Einheit im Spiel ist, kosten Ihre Zauber 1 Mana weniger (mindestens 1)."
       },
       "contresort": {
-        "label": "Gegenzauber"
+        "label": "Gegenzauber",
+        "desc": "Beschwörung: Hebt den nächsten gegnerischen Zauber auf."
       },
       "convocation": {
-        "label": "Beschwörung X"
+        "label": "Beschwörung X",
+        "desc": "Beschwörung: Erstellt einen X/X-Token der angegebenen Rasse."
       },
       "convocation_simple": {
-        "label": "Beschwörung"
+        "label": "Beschwörung",
+        "desc": "Beschwörung: Erstellt den konfigurierten Token."
       },
       "malediction": {
-        "label": "Fluch"
+        "label": "Fluch",
+        "desc": "Beschwörung: Wählt eine feindliche Einheit – sie wird am Ende des nächsten gegnerischen Zuges verbannt."
       },
       "necrophagie": {
-        "label": "Nekrophagie"
+        "label": "Nekrophagie",
+        "desc": "Erhält +1 ATK und +1 LP, wann immer eine Einheit (verbündet oder feindlich) stirbt."
       },
       "richesse": {
-        "label": "Reichtum X"
+        "label": "Reichtum X",
+        "desc": "Wann immer ein Spieler eine Karte aus der Hand abwirft, erhält diese Einheit dauerhaft +X/+X."
       },
       "sacrifice_demoniaque": {
-        "label": "Dämonopfer X"
+        "label": "Dämonopfer X",
+        "desc": "Beim Tod dieser Einheit werden X Kostenreduzierungen (-1 Mana je) zufällig auf die Dämonen in Ihrer Hand verteilt. Ein Dämon kann nicht weniger als 1 kosten."
       },
       "paralysie": {
-        "label": "Lähmung"
+        "label": "Lähmung",
+        "desc": "Einheiten, die von dieser Kreatur Schaden erleiden, können bis zum Ende des nächsten Zuges ihres Besitzers weder angreifen noch aktive Fähigkeiten nutzen."
       },
       "permutation": {
-        "label": "Permutation"
+        "label": "Permutation",
+        "desc": "Beschwörung: Tauscht die aktuellen LP zweier ausgewählter Einheiten (eine verbündete und eine feindliche)."
       },
       "persecution": {
-        "label": "Verfolgung X"
+        "label": "Verfolgung X",
+        "desc": "Jedes Mal, wenn diese Einheit angreift, fügt sie dem gegnerischen Helden X Schaden zu."
       },
       "pietinement": {
-        "label": "Niedertrampeln"
+        "label": "Niedertrampeln",
+        "desc": "Wenn diese Einheit eine Kreatur angreift, wird überschüssiger Schaden (über die verbleibenden LP des Ziels hinaus) dem gegnerischen Helden zugefügt."
       },
       "catalyse": {
-        "label": "Katalyse"
+        "label": "Katalyse",
+        "desc": "Beschwörung: Reduziert die Manakosten aller Einheiten derselben Rasse auf deiner Hand um 1."
       },
       "ombre_du_passe": {
-        "label": "Schatten der Vergangenheit"
+        "label": "Schatten der Vergangenheit",
+        "desc": "Beschwörung: Erhält +1 ATK und +1 LP für jede Einheit derselben Rasse auf deinem Friedhof."
       },
       "profanation": {
-        "label": "Entweihung X"
+        "label": "Entweihung X",
+        "desc": "Beschwörung: Verbannt die letzten X Karten deines Friedhofs, um der Einheit bis zu +X/+X zu gewähren."
       },
       "prescience": {
-        "label": "Präszienz X"
+        "label": "Präszienz X",
+        "desc": "Beschwörung: Ziehe Karten, bis du X Karten auf der Hand hast."
       },
       "suprematie": {
-        "label": "Vorherrschaft"
+        "label": "Vorherrschaft",
+        "desc": "Beschwörung: Erhält +1 ATK und +1 LP für jede Karte auf deiner Hand zum Zeitpunkt der Beschwörung."
       },
       "divination": {
-        "label": "Divination"
+        "label": "Divination",
+        "desc": "Beschwörung: Decke die obersten 3 Karten deines Decks auf; lege eine davon oben und die anderen 2 in gewählter Reihenfolge unten ab."
       },
       "savant": {
-        "label": "Gelehrter"
+        "label": "Gelehrter",
+        "desc": "Beschwörung: Erhält +1 ATK und +1 LP für jeden Zauber auf deinem Friedhof."
       },
       "liaison_de_vie": {
-        "label": "Lebensband"
+        "label": "Lebensband",
+        "desc": "Teilt erlittenen Schaden mit dem gegnerischen Helden."
       },
       "ombre": {
-        "label": "Schatten"
+        "label": "Schatten",
+        "desc": "Kann weder als Ziel gewählt noch angegriffen werden, solange sie keine Aktion (Angriff oder Fähigkeit) ausgeführt hat."
       },
       "sacrifice": {
-        "label": "Opferung"
+        "label": "Opferung",
+        "desc": "Beschwörung: Zerstöre einen Verbündeten, um dessen LP und ATK dauerhaft zu erhalten."
       },
       "malefice": {
-        "label": "Übeltat"
+        "label": "Übeltat",
+        "desc": "Beim Tod: Fügt allen Einheiten (Verbündeten und Feinden) X Schaden zu; X = ihre ATK."
       },
       "indestructible": {
-        "label": "Unzerstörbar"
+        "label": "Unzerstörbar",
+        "desc": "Erleidet keinen Kampfschaden."
       },
       "regeneration": {
-        "label": "Regeneration"
+        "label": "Regeneration",
+        "desc": "Stellt zu Beginn deines Zuges 2 LP wieder her."
       },
       "corruption": {
-        "label": "Korruption"
+        "label": "Korruption",
+        "desc": "Konvertiert die gewählte feindliche Einheit bis zum Ende des Zuges auf deine Seite; sie erhält bis zum Ende des Zuges Jagdinstinkt."
       },
       "carnage": {
-        "label": "Gemetzel X"
+        "label": "Gemetzel X",
+        "desc": "Tod: Fügt allen Einheiten im Spiel (Verbündeten und Feinden) X Schaden zu."
       },
       "heritage": {
-        "label": "Erbe X"
+        "label": "Erbe X",
+        "desc": "Tod: Jede verbündete Einheit im Spiel erhält dauerhaft +X ATK und +X LP."
       },
       "mimique": {
-        "label": "Mimikry"
+        "label": "Mimikry",
+        "desc": "Beschwörung: Kopiert alle Fähigkeiten einer ausgewählten Einheit und überträgt sie dauerhaft auf diese Einheit."
       },
       "metamorphose": {
-        "label": "Metamorphose"
+        "label": "Metamorphose",
+        "desc": "Beschwörung: Diese Einheit wird zu einer exakten Kopie (ATK / LP / Fähigkeiten) einer ausgewählten Einheit."
       },
       "tactique": {
-        "label": "Taktik X"
+        "label": "Taktik X",
+        "desc": "Beschwörung: Verleiht einer ausgewählten verbündeten Einheit dauerhaft X gewählte Fähigkeit(en)."
       },
       "exhumation": {
-        "label": "Exhumierung X"
+        "label": "Exhumierung X",
+        "desc": "Beschwörung: Erweckt eine Einheit von deinem Friedhof wieder, deren Manakosten X oder weniger betragen."
       },
       "heritage_du_cimetiere": {
-        "label": "Erbe des Friedhofs"
+        "label": "Erbe des Friedhofs",
+        "desc": "Beschwörung: Überträgt die Fähigkeiten einer ausgewählten Einheit auf deinem Friedhof dauerhaft auf diese Einheit."
       },
       "pacte_de_sang": {
-        "label": "Blutpakt"
+        "label": "Blutpakt",
+        "desc": "Wenn diese Einheit stirbt, werden zwei 1/1-Token ihrer Rasse beschworen."
       },
       "souffle_de_feu": {
-        "label": "Feueratem X"
+        "label": "Feueratem X",
+        "desc": "Fügt beim Angriff allen feindlichen Einheiten X Schaden zu (z. B.: Feueratem 2 = 2 Schaden)."
       },
       "domination": {
-        "label": "Dominanz"
+        "label": "Dominanz",
+        "desc": "Übernimmt bei ihrer Beschwörung die Kontrolle über eine zufällige feindliche Einheit."
       },
       "resurrection": {
-        "label": "Auferstehung"
+        "label": "Auferstehung",
+        "desc": "Kehrt nach dem Tod mit 1 LP ins Spiel zurück; verliert beim Zurückkehren die Fähigkeit Auferstehung."
       },
       "transcendance": {
-        "label": "Transzendenz"
+        "label": "Transzendenz",
+        "desc": "Vollständige Immunität gegen gegnerische Zauber: Kann weder Schaden noch Effekte von Zaubern erleiden, einschließlich Flächenzauber."
       },
       "vampirisme": {
-        "label": "Vampirismus X"
+        "label": "Vampirismus X",
+        "desc": "Beschwörung: Stiehlt X LP von einer ausgewählten feindlichen Einheit und fügt sie den LP dieser Einheit hinzu."
       },
       "traque_du_destin": {
-        "label": "Schicksalsjagd X"
+        "label": "Schicksalsjagd X",
+        "desc": "Beschwörung: Decke die obersten X Karten deines Decks auf, nimm eine davon auf die Hand und lege die übrigen in zufälliger Reihenfolge unten ab."
       },
       "sang_mele": {
-        "label": "Mischblut"
+        "label": "Mischblut",
+        "desc": "Erhält +1 ATK und +1 LP für jeden unterschiedlichen Rassentyp unter deinen verbündeten Einheiten im Spiel."
       },
       "fierte_du_clan": {
-        "label": "Clanstolz"
+        "label": "Clanstolz",
+        "desc": "Solange diese Einheit im Spiel ist, werden Einheiten desselben Clans mit +1/+1 beschworen."
       },
       "solidarite": {
-        "label": "Solidarität X"
+        "label": "Solidarität X",
+        "desc": "Beschwörung: Ziehe X Karten, wenn du 2 weitere Einheiten derselben Rasse kontrollierst."
       },
       "entraide": {
         "label": "Gegenseitige Hilfe"
       },
       "cycle_eternel": {
-        "label": "Ewiger Kreislauf"
+        "label": "Ewiger Kreislauf",
+        "desc": "Tod: Füge eine Kopie dieser Karte deinem Deck hinzu; wird sie gezogen, kommt sie direkt ins Spiel."
       },
       "martyr": {
-        "label": "Märtyrer"
+        "label": "Märtyrer",
+        "desc": "Tod: Alle deine Einheiten derselben Rasse im Spiel erhalten dauerhaft +1/+1."
       },
       "instinct_de_meute": {
-        "label": "Rudelinstinkt X"
+        "label": "Rudelinstinkt X",
+        "desc": "Beschwörung: Erhält +X ATK und +X LP, wenn eine verbündete Einheit derselben Fraktion in diesem Zug vom Spielfeld auf den Friedhof gelegt wurde."
       },
       "totem": {
-        "label": "Totem"
+        "label": "Totem",
+        "desc": "Diese Einheit erhält die Fähigkeiten aller verbündeten Einheiten derselben Rasse im Spiel."
       },
       "appel_du_clan": {
-        "label": "Ruf des Clans X"
+        "label": "Ruf des Clans X",
+        "desc": "Beschwörung: Bringe die erste Einheit desselben Clans mit Kosten von X oder weniger von der Oberseite deines Decks kostenlos ins Spiel."
       },
       "appel_supreme": {
-        "label": "Oberster Ruf"
+        "label": "Oberster Ruf",
+        "desc": "Beschwörung: Füge der gewählten Rasse die Kreatur mit den höchsten Manakosten aus deinem Deck deiner Hand hinzu (bei Gleichstand zufällig)."
       },
       "rassemblement": {
-        "label": "Sammlung X"
+        "label": "Sammlung X",
+        "desc": "Beschwörung: Decke die obersten X Karten des Decks auf; füge alle Einheiten derselben Rasse deiner Hand hinzu und lege den Rest ab."
       },
       "selection": {
-        "label": "Auswahl X"
+        "label": "Auswahl X",
+        "desc": "Beschwörung: Enthülle 3 zufällige gewöhnliche Karten mit Kosten ≤ X aus Fraktionen desselben Ausrichtung (gut/neutral/böse) wie diese Karte; füge eine davon deiner Hand hinzu. Keine Kostenbegrenzung, falls X nicht definiert."
       },
       "selection_magique": {
-        "label": "Magische Auswahl X"
+        "label": "Magische Auswahl X",
+        "desc": "Beschwörung: Enthülle 3 zufällige gewöhnliche Zauber mit Kosten ≤ X aus Fraktionen derselben Ausrichtung (gut/neutral/böse) wie diese Karte; füge einen davon deiner Hand hinzu. Keine Kostenbegrenzung, falls X nicht definiert."
       },
       "renfort_royal": {
-        "label": "Königliche Auswahl X"
+        "label": "Königliche Auswahl X",
+        "desc": "Beschwörung: Enthülle 3 zufällige Karten aus deinen limitierten Editionen (mind. 30 erforderlich; sonst gewöhnliche Karten derselben Ausrichtung) mit Kosten ≤ X; füge eine davon deiner Hand hinzu. Keine Kostenbegrenzung, falls X nicht definiert."
       },
       "lycanthropie": {
-        "label": "Lykanthropie X"
+        "label": "Lykanthropie X",
+        "desc": "Zugebinn: Verwandelt sich in einen X/X-Token mit Fährte."
       },
       "relancer": {
-        "label": "Neu würfeln X"
+        "label": "Neu würfeln X",
+        "desc": "Beschwörung: Spiele die letzten X gewirkten Zauber mit zufälligen Zielen erneut."
       },
       "tempete": {
-        "label": "Sturm X"
+        "label": "Sturm X",
+        "desc": "Beschwörung: Verteile X Schaden zufällig auf gegnerische Einheiten."
       },
       "cataclysme": {
-        "label": "Katastrophe X"
+        "label": "Katastrophe X",
+        "desc": "Beschwörung: Füge allen Kreaturen (verbündeten UND gegnerischen) X Schaden zu."
       },
       "affaiblissement": {
-        "label": "Schwächung -X/-Y"
+        "label": "Schwächung -X/-Y",
+        "desc": "Beschwörung: Gib einer gezielten gegnerischen Kreatur -X ATK und -Y LP."
       },
       "renforcement": {
-        "label": "Stärkung +X/+Y"
+        "label": "Stärkung +X/+Y",
+        "desc": "Erhält dauerhaft +X ATK und +Y LP."
       },
       "impact": {
-        "label": "Wucht X"
+        "label": "Wucht X",
+        "desc": "Fügt einem gezielten Ziel (Kreatur oder Held, beliebige Seite) X Schaden zu."
       },
       "douleur": {
-        "label": "Schmerz X"
+        "label": "Schmerz X",
+        "desc": "Beschwörung: Fügt deinem Helden X Schaden zu."
       },
       "inspiration": {
-        "label": "Inspiration X"
+        "label": "Inspiration X",
+        "desc": "Beschwörung: Ziehe X Karten."
       },
       "concentration": {
-        "label": "Konzentration X"
+        "label": "Konzentration X",
+        "desc": "Beschwörung: Ersetze jeden Zauber in der Hand durch einen zufälligen Zauber (alle Fraktionen) mit um X höheren Kosten; die Kosten des neuen Zaubers werden um X reduziert."
       },
       "remontee": {
-        "label": "Aufschwung"
+        "label": "Aufschwung",
+        "desc": "Gibt eine gezielte Einheit in die Hand ihres ursprünglichen Besitzers zurück."
       },
       "renforcement_multiple": {
-        "label": "Mehrfachstärkung"
+        "label": "Mehrfachstärkung",
+        "desc": "Verleiht allen deinen Kreaturen der gewählten Rasse oder des gewählten Clans +X/+Y."
       },
       "entrainement": {
-        "label": "Training X"
+        "label": "Training X",
+        "desc": "Verleiht deinen Kreaturen in der Hand derselben Fraktion +X/+X."
       },
       "conferer": {
-        "label": "Verleihen"
+        "label": "Verleihen",
+        "desc": "Beschwörung: Verleiht einer verbündeten Einheit (oder allen) eine gewählte Fähigkeit."
       },
       "declenchement": {
-        "label": "Auslösung"
+        "label": "Auslösung",
+        "desc": "Beschwörung: Löse die zusammengesetzten Triggereffekte der anderen verbündeten Einheiten im Spiel einmalig erneut aus, für eine festgelegte Teilmenge von Auslösern (Einzug / Tod / Zugende / Rückkehr)."
       }
     },
     "factions": {
@@ -383,6 +482,56 @@
       "Abysses souterrains": "Unterirdische Abgründe",
       "Forêt maudite": "Verfluchter Wald",
       "Cités de cendres": "Aschestädte"
+    },
+    "races": {
+      "Elfes": "Elfen",
+      "Aigles Géants": "Riesenadler",
+      "Fées": "Feen",
+      "Nains": "Zwerge",
+      "Golems": "Golems",
+      "Hobbits": "Hobbits",
+      "Hommes-Arbres": "Baummenschen",
+      "Humains": "Menschen",
+      "Hommes-Loups": "Wolfsmenschen",
+      "Hommes-Ours": "Bärenmenschen",
+      "Hommes-Félins": "Katzenmenschen",
+      "Centaures": "Zentauren",
+      "Mimis": "Mimis",
+      "Hommes-Chiens": "Hundsmenschen",
+      "Hommes-Renards": "Fuchsmenschen",
+      "Hommes-Cerfs": "Hirschmenschen",
+      "Élémentaire": "Elementare",
+      "Géants": "Riesen",
+      "Ogres": "Oger",
+      "Dragons": "Drachen",
+      "Chiens": "Hunde",
+      "Phoenix": "Phoenix",
+      "Anges": "Engel",
+      "Ours": "Bären",
+      "Loups": "Wölfe",
+      "Fauves": "Raubtiere",
+      "Orcs": "Orks",
+      "Gobelins": "Goblins",
+      "Trolls": "Trolle",
+      "Wargs": "Wargs",
+      "Squelettes": "Skelette",
+      "Zombies": "Zombies",
+      "Spectres": "Gespenster",
+      "Vampires": "Vampire",
+      "Lich": "Lich",
+      "Banshees": "Banshees",
+      "Elfes Corrompus": "Verderbte Elfen",
+      "Araignées Géantes": "Riesenspinnen",
+      "Démons": "Dämonen"
+    },
+    "alignments": {
+      "bon": "Gut",
+      "neutre": "Neutral",
+      "maléfique": "Böse",
+      "spéciale": "Spezial"
+    },
+    "sets": {
+      "1": "Basis-Set"
     }
   },
   "home": {

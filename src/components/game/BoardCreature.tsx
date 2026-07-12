@@ -8,12 +8,11 @@ import { useGameStore, selectPowerTargetingColor } from "@/lib/store/gameStore";
 import { tapKeywordNeedsTarget, getCreatureTapComposedUid } from "@/lib/game/engine";
 import { getTokenManaCost } from "@/lib/game/abilities";
 import { formatConvocationToken, formatConvocationTokens } from "@/lib/game/spell-keywords";
-import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
+import { KEYWORD_SYMBOLS, toRoman, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { composedCapsOf, composedIcon, composedKeywordName, composedTriggerMode, composedValueText, describeComposedCap } from "@/lib/game/composed-display";
 import ComposedMarker from "@/components/cards/ComposedMarker";
-import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
 import RarityFrame from "@/components/cards/RarityFrame";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
 import useCoarsePointer from "@/hooks/useCoarsePointer";
@@ -847,9 +846,7 @@ function BoardCreature({
                   : label;
               const modeSuffix = vocab.modeSuffix(mode);
               const displayLabel = baseLabel + modeSuffix;
-              const forgeKey = KEYWORD_LABELS[kw];
-              const kwDef = forgeKey ? keywordDefs[forgeKey] : null;
-              let desc = kwDef?.desc ? (x != null ? kwDef.desc.replace(/X/g, String(x)) : kwDef.desc) : null;
+              let desc = vocab.keywordDesc(kw, x);
               if (kw === "convocations_multiples" && card.convocation_tokens?.length) {
                 desc = `Invocation : crée ${formatConvocationTokens(card.convocation_tokens, tokenTemplates)}`;
               } else if (kw === "convocation" || kw === "convocation_simple") {

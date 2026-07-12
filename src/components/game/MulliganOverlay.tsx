@@ -3,13 +3,12 @@
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import type { CardInstance } from "@/lib/game/types";
-import { KEYWORD_SYMBOLS, KEYWORD_LABELS, toRoman, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
+import { KEYWORD_SYMBOLS, toRoman, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, getSpellKeywordLabel, getSpellKeywordDesc } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { composedCapsOf, composedIcon, composedKeywordName, composedTriggerMode, composedValueText, describeComposedCap } from "@/lib/game/composed-display";
 import ComposedMarker from "@/components/cards/ComposedMarker";
-import { KEYWORDS as keywordDefs } from "@/lib/card-engine/constants";
 import { MULLIGAN_TIMER_SECONDS } from "@/lib/game/constants";
 import { useGameStore } from "@/lib/store/gameStore";
 import { useAudioStore } from "@/lib/store/audioStore";
@@ -355,9 +354,7 @@ function MulliganCard({
               const baseLabel = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
               const modeSuffix = vocab.modeSuffix(mode);
               const displayLabel = baseLabel + modeSuffix;
-              const forgeKey = KEYWORD_LABELS[kw];
-              const kwDef = forgeKey ? keywordDefs[forgeKey] : null;
-              const desc = kwDef?.desc ? (x != null ? kwDef.desc.replace(/X/g, String(x)) : kwDef.desc) : null;
+              const desc = vocab.keywordDesc(kw, x);
               const modeColor = keywordModeColor(mode);
               const modeFilter = keywordModeFilter(mode);
               return (

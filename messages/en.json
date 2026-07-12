@@ -2,304 +2,403 @@
   "vocab": {
     "keywords": {
       "charge": {
-        "label": "Charge"
+        "label": "Charge",
+        "desc": "Can attack and use its activated ability immediately upon summoning."
       },
       "taunt": {
-        "label": "Taunt"
+        "label": "Taunt",
+        "desc": "Enemies must attack this unit first."
       },
       "divine_shield": {
-        "label": "Divine Shield"
+        "label": "Divine Shield",
+        "desc": "Absorbs the first attack with no damage."
       },
       "ranged": {
-        "label": "Flight"
+        "label": "Flight",
+        "desc": "Ignores enemy Taunt."
       },
       "raid": {
-        "label": "Raid"
+        "label": "Raid",
+        "desc": "Can attack an enemy creature immediately upon summoning (but not the hero)."
       },
       "convocations_multiples": {
-        "label": "Multi-Summon"
+        "label": "Multi-Summon",
+        "desc": "Summon: creates multiple tokens based on configuration."
       },
       "loyaute": {
-        "label": "Loyalty"
+        "label": "Loyalty",
+        "desc": "Summon: +1 ATK and +1 HP for each allied unit of the same race in play."
       },
       "ancre": {
-        "label": "Anchored"
+        "label": "Anchored",
+        "desc": "Cannot be moved or exiled."
       },
       "resistance": {
-        "label": "Resistance X"
+        "label": "Resistance X",
+        "desc": "Reduces damage taken by X (minimum 1 damage)."
       },
       "premiere_frappe": {
-        "label": "First Strike"
+        "label": "First Strike",
+        "desc": "When this unit attacks, it deals its damage first; the opposing unit only strikes back if it survives."
       },
       "berserk": {
-        "label": "Berserk"
+        "label": "Berserk",
+        "desc": "Doubles its ATK if its current HP are below its original HP value (on the card)."
       },
       "vol": {
-        "label": "Flight"
+        "label": "Flight",
+        "desc": "Ignores enemy Taunt."
       },
       "precision": {
-        "label": "Precision"
+        "label": "Precision",
+        "desc": "Ignores Resistance, Armor, and Shield."
       },
       "drain_de_vie": {
-        "label": "Lifedrain"
+        "label": "Lifedrain",
+        "desc": "Heals your hero for the damage dealt."
       },
       "esquive": {
-        "label": "Dodge"
+        "label": "Dodge",
+        "desc": "Automatically dodges the first attack received each turn."
       },
       "poison": {
-        "label": "Poison"
+        "label": "Poison",
+        "desc": "Wounded units lose 1 HP per turn."
       },
       "celerite": {
-        "label": "Swiftness"
+        "label": "Swiftness",
+        "desc": "Can attack twice per turn."
       },
       "augure": {
-        "label": "Omen"
+        "label": "Omen",
+        "desc": "When this unit deals damage to the enemy hero, you draw a card."
       },
       "benediction": {
-        "label": "Blessing"
+        "label": "Blessing",
+        "desc": "Fully heals the targeted unit."
       },
       "bravoure": {
-        "label": "Valor"
+        "label": "Valor",
+        "desc": "Doubles its damage (rounded up) against units with higher ATK than its own."
       },
       "pillage": {
-        "label": "Plunder X"
+        "label": "Plunder X",
+        "desc": "Summon: the opponent discards X random cards from their hand."
       },
       "riposte": {
-        "label": "Riposte X"
+        "label": "Riposte X",
+        "desc": "When this unit takes damage, deals X damage to the source of the attack (unit or hero)."
       },
       "rappel": {
-        "label": "Recall"
+        "label": "Recall",
+        "desc": "Summon: return a target card from your graveyard to your hand."
       },
       "combustion": {
-        "label": "Combustion"
+        "label": "Combustion",
+        "desc": "Summon: discard a card from your hand, then draw two cards."
       },
       "terreur": {
-        "label": "Terror"
+        "label": "Terror",
+        "desc": "Enemy units lose 1 ATK while this card is in play."
       },
       "pauvrete": {
-        "label": "Poverty X"
+        "label": "Poverty X",
+        "desc": "This unit loses ATK equal to the number of cards in the opponent's hand (X = opponent's hand size, dynamic)."
       },
       "armure": {
-        "label": "Armor"
+        "label": "Armor",
+        "desc": "Reduces combat damage taken by half (rounded up); spell damage is not reduced."
       },
       "commandement": {
-        "label": "Command"
+        "label": "Command",
+        "desc": "Allied units of the same faction gain +1/+1."
       },
       "fureur": {
-        "label": "Fury"
+        "label": "Fury",
+        "desc": "After taking damage, immediately attacks a random enemy unit (or the hero if none remain). Triggers at most once per turn."
       },
       "double_attaque": {
-        "label": "Double Strike"
+        "label": "Double Strike",
+        "desc": "Offensive phase only: deals its ATK twice when attacking. The targeted unit strikes back normally."
       },
       "invisible": {
-        "label": "Invisible"
+        "label": "Invisible",
+        "desc": "Cannot be targeted by spells or enemy unit abilities."
       },
       "canalisation": {
-        "label": "Channeling"
+        "label": "Channeling",
+        "desc": "While this unit is in play, your spells cost 1 less mana (minimum 1)."
       },
       "contresort": {
-        "label": "Counterspell"
+        "label": "Counterspell",
+        "desc": "Summon: counters the next enemy spell."
       },
       "convocation": {
-        "label": "Summon X"
+        "label": "Summon X",
+        "desc": "Summon: creates an X/X token of the indicated race."
       },
       "convocation_simple": {
-        "label": "Summon"
+        "label": "Summon",
+        "desc": "Summon: creates the configured token."
       },
       "malediction": {
-        "label": "Curse"
+        "label": "Curse",
+        "desc": "Summon: target an enemy unit; it is exiled at the end of the opponent's next turn."
       },
       "necrophagie": {
-        "label": "Necrophagy"
+        "label": "Necrophagy",
+        "desc": "Gains +1 ATK and +1 HP whenever a unit (allied or enemy) dies."
       },
       "richesse": {
-        "label": "Wealth X"
+        "label": "Wealth X",
+        "desc": "Whenever any player discards a card from their hand, this unit permanently gains +X/+X."
       },
       "sacrifice_demoniaque": {
-        "label": "Demonic Sacrifice X"
+        "label": "Demonic Sacrifice X",
+        "desc": "When this unit dies, randomly distributes X cost reductions (-1 mana each) among the Demons in your hand. A Demon cannot cost less than 1."
       },
       "paralysie": {
-        "label": "Paralysis"
+        "label": "Paralysis",
+        "desc": "Units damaged by this creature cannot attack or use active abilities until the end of their controller's next turn."
       },
       "permutation": {
-        "label": "Permutation"
+        "label": "Permutation",
+        "desc": "Battlecry: swap the current HP of two target units (one ally and one enemy)."
       },
       "persecution": {
-        "label": "Persecution X"
+        "label": "Persecution X",
+        "desc": "Whenever this unit attacks, deal X damage to the enemy hero."
       },
       "pietinement": {
-        "label": "Trample"
+        "label": "Trample",
+        "desc": "When this unit attacks a creature, excess damage (beyond the target's remaining HP) is dealt to the enemy hero."
       },
       "catalyse": {
-        "label": "Catalysis"
+        "label": "Catalysis",
+        "desc": "Battlecry: reduce the mana cost of all units of the same race in your hand by 1."
       },
       "ombre_du_passe": {
-        "label": "Shadow of the Past"
+        "label": "Shadow of the Past",
+        "desc": "Battlecry: gain +1 ATK and +1 HP for each unit of the same race in your graveyard."
       },
       "profanation": {
-        "label": "Desecration X"
+        "label": "Desecration X",
+        "desc": "Battlecry: exile the last X cards from your graveyard to grant up to +X/+X to the unit."
       },
       "prescience": {
-        "label": "Prescience X"
+        "label": "Prescience X",
+        "desc": "Battlecry: draw cards until you have X cards in hand."
       },
       "suprematie": {
-        "label": "Supremacy"
+        "label": "Supremacy",
+        "desc": "Battlecry: gain +1 ATK and +1 HP for each card in your hand at the time of summoning."
       },
       "divination": {
-        "label": "Divination"
+        "label": "Divination",
+        "desc": "Battlecry: reveal the top 3 cards of your deck; place one on top and the other 2 at the bottom in any order."
       },
       "savant": {
-        "label": "Savant"
+        "label": "Savant",
+        "desc": "Battlecry: gain +1 ATK and +1 HP for each spell in your graveyard."
       },
       "liaison_de_vie": {
-        "label": "Lifebond"
+        "label": "Lifebond",
+        "desc": "Shares damage taken with the enemy hero."
       },
       "ombre": {
-        "label": "Shadow"
+        "label": "Shadow",
+        "desc": "Cannot be targeted or attacked until it takes an action (attack or ability)."
       },
       "sacrifice": {
-        "label": "Sacrifice"
+        "label": "Sacrifice",
+        "desc": "Battlecry: destroy an ally to permanently gain its HP and ATK."
       },
       "malefice": {
-        "label": "Hex"
+        "label": "Hex",
+        "desc": "On death, deal X damage to all units (allies and enemies), where X equals its ATK."
       },
       "indestructible": {
-        "label": "Indestructible"
+        "label": "Indestructible",
+        "desc": "Takes no combat damage."
       },
       "regeneration": {
-        "label": "Regeneration"
+        "label": "Regeneration",
+        "desc": "Restores 2 HP at the start of your turn."
       },
       "corruption": {
-        "label": "Corruption"
+        "label": "Corruption",
+        "desc": "Convert a target enemy unit to your side until end of turn; it gains Traque until end of turn."
       },
       "carnage": {
-        "label": "Carnage X"
+        "label": "Carnage X",
+        "desc": "On death: deal X damage to all units in play (allies and enemies)."
       },
       "heritage": {
-        "label": "Legacy X"
+        "label": "Legacy X",
+        "desc": "On death: each allied unit in play permanently gains +X ATK and +X HP."
       },
       "mimique": {
-        "label": "Mimic"
+        "label": "Mimic",
+        "desc": "Battlecry: copy all abilities of a target unit and permanently grant them to this unit."
       },
       "metamorphose": {
-        "label": "Metamorphosis"
+        "label": "Metamorphosis",
+        "desc": "Battlecry: this unit becomes an exact copy (ATK / HP / abilities) of a target unit."
       },
       "tactique": {
-        "label": "Tactics X"
+        "label": "Tactics X",
+        "desc": "Battlecry: permanently grant X chosen ability(ies) to a target allied unit."
       },
       "exhumation": {
-        "label": "Exhumation X"
+        "label": "Exhumation X",
+        "desc": "Battlecry: resurrect a unit from your graveyard with a mana cost equal to or less than X."
       },
       "heritage_du_cimetiere": {
-        "label": "Graveyard Legacy"
+        "label": "Graveyard Legacy",
+        "desc": "Battlecry: grant this unit the abilities of a target unit in your graveyard."
       },
       "pacte_de_sang": {
-        "label": "Blood Pact"
+        "label": "Blood Pact",
+        "desc": "When this unit dies, summon two 1/1 tokens of its race."
       },
       "souffle_de_feu": {
-        "label": "Fire Breath X"
+        "label": "Fire Breath X",
+        "desc": "Deal X damage to all enemy units when attacking (e.g. Fire Breath 2 = 2 damage)."
       },
       "domination": {
-        "label": "Domination"
+        "label": "Domination",
+        "desc": "Takes control of a random enemy unit upon summoning."
       },
       "resurrection": {
-        "label": "Resurrection"
+        "label": "Resurrection",
+        "desc": "Returns to play after death with 1 HP; loses the Resurrection ability upon return."
       },
       "transcendance": {
-        "label": "Transcendence"
+        "label": "Transcendence",
+        "desc": "Fully immune to enemy spells: cannot be damaged or affected by any spell, including area-of-effect spells."
       },
       "vampirisme": {
-        "label": "Vampirism X"
+        "label": "Vampirism X",
+        "desc": "Battlecry: steal X HP from a target enemy unit and add them to this unit's HP."
       },
       "traque_du_destin": {
-        "label": "Fate Hunt X"
+        "label": "Fate Hunt X",
+        "desc": "Battlecry: reveal the top X cards of your deck, take one into your hand and place the rest at the bottom in a random order."
       },
       "sang_mele": {
-        "label": "Mixed Blood"
+        "label": "Mixed Blood",
+        "desc": "Gains +1 ATK and +1 HP for each different race type among your allies in play."
       },
       "fierte_du_clan": {
-        "label": "Clan Pride"
+        "label": "Clan Pride",
+        "desc": "While this unit is in play, units of the same clan enter with +1/+1."
       },
       "solidarite": {
-        "label": "Solidarity X"
+        "label": "Solidarity X",
+        "desc": "Battlecry: draw X cards if you control 2 other units of the same race."
       },
       "entraide": {
         "label": "Mutual Aid"
       },
       "cycle_eternel": {
-        "label": "Eternal Cycle"
+        "label": "Eternal Cycle",
+        "desc": "On death: add a copy of this card to your deck; if drawn, put it directly into play."
       },
       "martyr": {
-        "label": "Martyr"
+        "label": "Martyr",
+        "desc": "On death: all your units of the same race in play permanently gain +1/+1."
       },
       "instinct_de_meute": {
-        "label": "Pack Instinct X"
+        "label": "Pack Instinct X",
+        "desc": "Battlecry: gain +X ATK and +X HP if an allied unit of the same faction went from play to the graveyard this turn."
       },
       "totem": {
-        "label": "Totem"
+        "label": "Totem",
+        "desc": "This unit gains the abilities of all allied units of the same race in play."
       },
       "appel_du_clan": {
-        "label": "Clan Call X"
+        "label": "Clan Call X",
+        "desc": "Battlecry: put the first unit of the same clan with a cost equal to or less than X from the top of your deck into play for free."
       },
       "appel_supreme": {
-        "label": "Supreme Call"
+        "label": "Supreme Call",
+        "desc": "Battlecry: add to your hand the highest mana cost unit of the chosen race remaining in your deck (random if tied)."
       },
       "rassemblement": {
-        "label": "Rally X"
+        "label": "Rally X",
+        "desc": "Summon: reveal the top X cards of your deck; add all units of the same race to your hand and discard the rest."
       },
       "selection": {
-        "label": "Selection X"
+        "label": "Selection X",
+        "desc": "Summon: reveal 3 random common cards with cost ≤ X from factions sharing this card's alignment (good/neutral/evil); add one to your hand. No cost limit if X is undefined."
       },
       "selection_magique": {
-        "label": "Arcane Selection X"
+        "label": "Arcane Selection X",
+        "desc": "Summon: reveal 3 random common spells with cost ≤ X from factions sharing this card's alignment (good/neutral/evil); add one to your hand. No cost limit if X is undefined."
       },
       "renfort_royal": {
-        "label": "Royal Selection X"
+        "label": "Royal Selection X",
+        "desc": "Summon: reveal 3 random cards from your limited editions (≥30 required; otherwise from commons of the same alignment) with cost ≤ X; add one to your hand. No cost limit if X is undefined."
       },
       "lycanthropie": {
-        "label": "Lycanthropy X"
+        "label": "Lycanthropy X",
+        "desc": "Start of turn: transforms into an X/X token with Stalk."
       },
       "relancer": {
-        "label": "Reroll X"
+        "label": "Reroll X",
+        "desc": "Summon: replay the last X spells cast with random targets."
       },
       "tempete": {
-        "label": "Storm X"
+        "label": "Storm X",
+        "desc": "Summon: deal X damage distributed randomly among enemy units."
       },
       "cataclysme": {
-        "label": "Cataclysm X"
+        "label": "Cataclysm X",
+        "desc": "Summon: deal X damage to all creatures (allied AND enemy)."
       },
       "affaiblissement": {
-        "label": "Weaken -X/-Y"
+        "label": "Weaken -X/-Y",
+        "desc": "Summon: give -X ATK and -Y HP to a targeted enemy creature."
       },
       "renforcement": {
-        "label": "Strengthen +X/+Y"
+        "label": "Strengthen +X/+Y",
+        "desc": "Permanently gains +X ATK and +Y HP."
       },
       "impact": {
-        "label": "Impact X"
+        "label": "Impact X",
+        "desc": "Deal X damage to a target (creature or hero, either side)."
       },
       "douleur": {
-        "label": "Pain X"
+        "label": "Pain X",
+        "desc": "Summon: deal X damage to your hero."
       },
       "inspiration": {
-        "label": "Inspiration X"
+        "label": "Inspiration X",
+        "desc": "Summon: draw X cards."
       },
       "concentration": {
-        "label": "Focus X"
+        "label": "Focus X",
+        "desc": "Summon: replace each spell in hand with a random spell (any faction) costing X more; reduce the new spell's cost by X."
       },
       "remontee": {
-        "label": "Comeback"
+        "label": "Comeback",
+        "desc": "Return a targeted unit to its owner's hand."
       },
       "renforcement_multiple": {
-        "label": "Multi-Strengthen"
+        "label": "Multi-Strengthen",
+        "desc": "Grant +X/+Y to all your creatures of the selected race or clan."
       },
       "entrainement": {
-        "label": "Training X"
+        "label": "Training X",
+        "desc": "Grant +X/+X to your creatures of the same faction in hand."
       },
       "conferer": {
-        "label": "Bestow"
+        "label": "Bestow",
+        "desc": "Summon: grant a chosen ability to an allied unit (or to all of them)."
       },
       "declenchement": {
-        "label": "Trigger"
+        "label": "Trigger",
+        "desc": "Summon: replay once the triggered compound effects of other allies in play, for a fixed subset of triggers (enter / death / end of turn / return)."
       }
     },
     "factions": {
@@ -383,6 +482,56 @@
       "Abysses souterrains": "Underground Abyss",
       "Forêt maudite": "Cursed Forest",
       "Cités de cendres": "Ash Cities"
+    },
+    "races": {
+      "Elfes": "Elves",
+      "Aigles Géants": "Giant Eagles",
+      "Fées": "Faeries",
+      "Nains": "Dwarves",
+      "Golems": "Golems",
+      "Hobbits": "Hobbits",
+      "Hommes-Arbres": "Treefolk",
+      "Humains": "Humans",
+      "Hommes-Loups": "Werewolves",
+      "Hommes-Ours": "Werebears",
+      "Hommes-Félins": "Werecats",
+      "Centaures": "Centaurs",
+      "Mimis": "Mimis",
+      "Hommes-Chiens": "Weredogs",
+      "Hommes-Renards": "Werefoxes",
+      "Hommes-Cerfs": "Weredeer",
+      "Élémentaire": "Elemental",
+      "Géants": "Giants",
+      "Ogres": "Ogres",
+      "Dragons": "Dragons",
+      "Chiens": "Dogs",
+      "Phoenix": "Phoenix",
+      "Anges": "Angels",
+      "Ours": "Bears",
+      "Loups": "Wolves",
+      "Fauves": "Beasts",
+      "Orcs": "Orcs",
+      "Gobelins": "Goblins",
+      "Trolls": "Trolls",
+      "Wargs": "Wargs",
+      "Squelettes": "Skeletons",
+      "Zombies": "Zombies",
+      "Spectres": "Spectres",
+      "Vampires": "Vampires",
+      "Lich": "Lich",
+      "Banshees": "Banshees",
+      "Elfes Corrompus": "Corrupted Elves",
+      "Araignées Géantes": "Giant Spiders",
+      "Démons": "Demons"
+    },
+    "alignments": {
+      "bon": "Good",
+      "neutre": "Neutral",
+      "maléfique": "Evil",
+      "spéciale": "Special"
+    },
+    "sets": {
+      "1": "Base Set"
     }
   },
   "home": {

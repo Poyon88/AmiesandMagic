@@ -7,7 +7,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useGameStore, type SpellCastEvent } from "@/lib/store/gameStore";
 import {
   KEYWORD_SYMBOLS,
-  KEYWORD_LABELS,
   toRoman,
   parseXValuesFromEffectText,
   cleanEffectText,
@@ -22,7 +21,8 @@ import { emitImpact } from "@/lib/fx/impactFx";
 import { OVERLAY, cardRevealInitial, cardRevealAnimate, cardRevealTransition, findInstanceEl, curvedPath, overlayRect } from "@/lib/fx/overlayMotion";
 import { RadialFlash, HaloBloom, ExpandingRing, OrbitingSparkles } from "@/components/game/OverlayPrimitives";
 import KeywordIcon from "@/components/shared/KeywordIcon";
-import { KEYWORDS as keywordDefs, getFactionDisplayName } from "@/lib/card-engine/constants";
+import { getFactionDisplayName } from "@/lib/card-engine/constants";
+import { useVocab } from "@/i18n/useVocab";
 
 interface SpellCastOverlayProps {
   event: SpellCastEvent | null;
@@ -127,6 +127,7 @@ function SpellTargetArrows({
 
 export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlayProps) {
   const t = useTranslations("game");
+  const vocab = useVocab();
   const [mounted, setMounted] = useState(false);
   const cardRef = useRef<HTMLDivElement | null>(null);
   const tokenTemplates = useGameStore((s) => s.tokenTemplates);
@@ -286,13 +287,9 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
                   <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                     {visibleKws.map((kw) => {
                       const x = (xVals as Record<string, number>)[kw];
-                      const label = KEYWORD_LABELS[kw] || kw;
+                      const label = vocab.keywordLabel(kw);
                       const displayLabel = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
-                      const forgeKey = KEYWORD_LABELS[kw];
-                      const kwDef = forgeKey ? keywordDefs[forgeKey] : null;
-                      const desc = kwDef?.desc
-                        ? (x != null ? kwDef.desc.replace(/X/g, String(x)) : kwDef.desc)
-                        : null;
+                      const desc = vocab.keywordDesc(kw, x);
                       // Conferred keyword scope shown via the label note + colour;
                       // the icon itself is left intact (no destructive recolour).
                       const grantScope = card.keyword_instances?.find((k) => k.id === kw)?.grantScope ?? "target";

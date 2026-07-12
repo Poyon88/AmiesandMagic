@@ -49,14 +49,14 @@ function loadSetRegistry(): Promise<CardSet[]> {
     });
   return _setRegistryPromise;
 }
-import { KEYWORD_SYMBOLS as keywordSymbols, KEYWORD_LABELS as keywordLabels, toRoman, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
+import { KEYWORD_SYMBOLS as keywordSymbols, toRoman, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, getSpellKeywordDesc, getSpellKeywordLabel, formatConvocationTokens, formatConvocationToken } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { composedCapsOf, composedIcon, composedKeywordName, composedTriggerMode, composedValueText, describeComposedCap } from "@/lib/game/composed-display";
 import ComposedMarker from "@/components/cards/ComposedMarker";
-import { KEYWORDS as keywordDefs, LIMITED_PRINT_COUNTS, ALIGNMENTS, getEffectiveAlignment } from "@/lib/card-engine/constants";
+import { LIMITED_PRINT_COUNTS, ALIGNMENTS, getEffectiveAlignment } from "@/lib/card-engine/constants";
 import RarityFrame from "./RarityFrame";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
 import useCoarsePointer from "@/hooks/useCoarsePointer";
@@ -506,7 +506,7 @@ export default function GameCard({
         {/* Race / Clan */}
         {(card.race || card.clan) && (
           <div style={{ display: "flex", justifyContent: "center", gap: 6 * s, fontSize: 13 * so, color: "#ddd", fontFamily: "'Crimson Text',serif" }}>
-            {card.race && <span>{card.race}</span>}
+            {card.race && <span>{vocab.raceName(card.race)}</span>}
             {card.race && card.clan && <span style={{ color: "#888" }}>·</span>}
             {card.clan && <span style={{ fontStyle: "italic" }}>{vocab.clanName(card.clan)}</span>}
           </div>
@@ -525,9 +525,7 @@ export default function GameCard({
               const baseLabel = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
               const modeSuffix = mode === "death" ? " · à la mort" : mode === "tap" ? " · tap" : mode === "return" ? " · retour en main" : mode === "end_of_turn" ? " · fin du tour" : "";
               const displayLabel = baseLabel + modeSuffix;
-              const forgeKey = keywordLabels[kw];
-              const kwDef = forgeKey ? keywordDefs[forgeKey] : null;
-              let desc = kwDef?.desc ? (x != null ? kwDef.desc.replace(/X/g, String(x)) : kwDef.desc) : null;
+              let desc = vocab.keywordDesc(kw, x);
               if (kw === "convocations_multiples" && card.convocation_tokens?.length) {
                 desc = `Invocation : crée ${formatConvocationTokens(card.convocation_tokens, effectiveTokens)}`;
               } else if (kw === "convocation" || kw === "convocation_simple") {
@@ -635,7 +633,7 @@ export default function GameCard({
             if (!def) return null;
             return (
               <span style={{ color: def.color, fontWeight: 600 }}>
-                {def.emoji} {def.label}
+                {def.emoji} {vocab.alignmentLabel(align)}
               </span>
             );
           })()}
@@ -657,7 +655,7 @@ export default function GameCard({
                 fontFamily: "'Cinzel',serif", letterSpacing: 0.5,
                 textShadow: "0 1px 2px rgba(0,0,0,0.8)",
               }}>
-                {cardSet.icon ? `${cardSet.icon} ` : ""}{cardSet.name}
+                {cardSet.icon ? `${cardSet.icon} ` : ""}{vocab.setName(cardSet.code, cardSet.name)}
               </div>
             );
           }
