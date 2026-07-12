@@ -71,8 +71,19 @@ export function useVocab(): Vocab {
 
   // SafeT : ne renvoie une valeur que si la clé existe (sinon undefined →
   // fallback FR côté helper). Évite tout warning MISSING_MESSAGE.
+  //
+  // On utilise `t.raw` (pas `t`) : les gabarits de vocabulaire portent des
+  // marqueurs littéraux « {x} », « {y} », « {amount} » que les helpers
+  // substituent EUX-MÊMES (frag / .replace). Passer par `t()` déclencherait le
+  // formatage ICU de next-intl, qui lève FORMATTING_ERROR sur ces variables non
+  // fournies. `t.raw` renvoie la chaîne brute, sans interprétation ICU. Aucun
+  // message `vocab.*` n'utilise de plural/select, donc c'est sans risque.
   const safe: SafeT = useCallback(
-    (key: string) => (t.has(key) ? t(key) : undefined),
+    (key: string) => {
+      if (!t.has(key)) return undefined;
+      const raw = t.raw(key);
+      return typeof raw === "string" ? raw : undefined;
+    },
     [t],
   );
 

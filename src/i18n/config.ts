@@ -27,7 +27,8 @@ export const LOCALE_LABELS: Record<Locale, string> = {
 // vocabulaire (getKeywordDisplayLabel, getFactionDisplayName, …) l'acceptent
 // en paramètre OPTIONNEL : sans traducteur (code moteur / SSR sans provider)
 // ils retombent sur le français source. Le hook client `useVocab` fabrique
-// un SafeT à partir de next-intl (`t.has` + `t`).
+// un SafeT à partir de next-intl (`t.has` + `t.raw` — chaîne brute, pas de
+// formatage ICU : les helpers substituent eux-mêmes les {marqueurs}).
 export type SafeT = (key: string) => string | undefined;
 
 export function isLocale(value: unknown): value is Locale {
