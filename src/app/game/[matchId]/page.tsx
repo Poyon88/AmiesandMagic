@@ -7,6 +7,7 @@ import { useGameStore } from "@/lib/store/gameStore";
 import { useAudioStore } from "@/lib/store/audioStore";
 import SfxEngine from "@/lib/audio/SfxEngine";
 import GameBoard from "@/components/game/GameBoard";
+import CardTextProvider from "@/components/game/CardTextProvider";
 import OrientationLock from "@/components/shared/OrientationLock";
 import type { Card, GameAction, GameState, HeroDefinition, HeroPowerEffect, Race } from "@/lib/game/types";
 import { syncHash, reconcileVerdict } from "@/lib/game/stateHash";
@@ -916,7 +917,9 @@ export default function GamePage() {
           >×</button>
         </div>
       )}
-      <GameBoard onAction={handleAction} onMulliganRevealDone={emitRevealDone} opponentMulliganRevealDone={opponentMulliganRevealDone} />
+      <CardTextProvider>
+        <GameBoard onAction={handleAction} onMulliganRevealDone={emitRevealDone} opponentMulliganRevealDone={opponentMulliganRevealDone} />
+      </CardTextProvider>
     </>
   );
 }

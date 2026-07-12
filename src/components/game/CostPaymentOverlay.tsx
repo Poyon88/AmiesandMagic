@@ -2,6 +2,7 @@
 
 import type { GameAction } from "@/lib/game/types";
 import { useGameStore } from "@/lib/store/gameStore";
+import { useCardText } from "./CardTextProvider";
 
 interface Props {
   // Called with the dispatched action when confirmation produces one. Lets
@@ -22,12 +23,13 @@ export default function CostPaymentOverlay({ onConfirmedAction }: Props) {
   const confirmCostPayment = useGameStore(s => s.confirmCostPayment);
   const cancelCostPayment = useGameStore(s => s.cancelCostPayment);
   const gameState = useGameStore(s => s.gameState);
+  const { localizeName } = useCardText();
 
   if (targetingMode !== "cost_payment" || !pendingCostCard) return null;
 
   const player = gameState?.players[gameState.currentPlayerIndex];
   const card = player?.hand.find(c => c.instanceId === pendingCostCard.instanceId);
-  const cardName = card?.card.name ?? "carte";
+  const cardName = card ? localizeName(card.card) : "carte";
 
   const discardOk = selectedDiscardIds.length === pendingCostCard.discardNeeded;
   const sacrificeOk = selectedSacrificeIds.length === pendingCostCard.sacrificeNeeded;

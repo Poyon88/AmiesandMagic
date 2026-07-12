@@ -6,6 +6,7 @@ import type { CardInstance } from "@/lib/game/types";
 import GameCard from "@/components/cards/GameCard";
 import { getTokenManaCost } from "@/lib/game/abilities";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
+import { useCardText } from "./CardTextProvider";
 
 interface Props {
   deckCount: number;
@@ -189,6 +190,7 @@ function GraveyardTile({ topCard, emptyImageUrl, count, isOpponent, onClick }: G
   // the surrounding board layout. Right-click toggles the preview between
   // the card art and the description overlay (same pattern used inside
   // GraveyardOverlay).
+  const { localizeName } = useCardText();
   const [hovered, setHovered] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const accentSoft = isOpponent ? "rgba(231, 76, 60, 0.25)" : "rgba(155, 89, 182, 0.25)";
@@ -312,7 +314,7 @@ function GraveyardTile({ topCard, emptyImageUrl, count, isOpponent, onClick }: G
               lineHeight: 1.15,
             }}
           >
-            {topCard.name}
+            {localizeName(topCard)}
           </div>
         </div>
       )}

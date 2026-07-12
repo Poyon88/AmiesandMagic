@@ -7,7 +7,8 @@ import { createClient } from "@/lib/supabase/client";
 import GoldBalance from "@/components/shared/GoldBalance";
 import NotificationBell from "@/components/shared/NotificationBell";
 import SettingsModal from "@/components/shared/SettingsModal";
-import { useStoredLocale } from "@/lib/i18n/useLocale";
+import LanguageSelector from "@/components/shared/LanguageSelector";
+import { useLocale } from "@/i18n/useLocale";
 import { homeDict } from "@/lib/i18n/homeDict";
 
 interface HomeHeaderProps {
@@ -28,8 +29,11 @@ export default function HomeHeader({ username, goldBalance, backHref, backLabel 
   const supabase = createClient();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [locale, setLocale] = useStoredLocale();
-  const t = homeDict[locale];
+  // Locale unifiée sur le cookie `am-locale` (via next-intl). Les libellés du
+  // header viennent encore de homeDict (fr/en) — pour les autres langues, pas
+  // encore extraites, on retombe proprement sur le FR (chantier Phase 5).
+  const [locale] = useLocale();
+  const t = homeDict[locale as "fr" | "en"] ?? homeDict.fr;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 30);
@@ -134,14 +138,7 @@ export default function HomeHeader({ username, goldBalance, backHref, backLabel 
 
           <NotificationBell />
 
-          <button
-            type="button"
-            onClick={() => setLocale(locale === "fr" ? "en" : "fr")}
-            className="px-3 py-1.5 text-xs md:text-sm font-display font-semibold text-am-gold rounded-lg am-gild-border bg-am-gold/[0.06] hover:bg-am-gold/15 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-am-gold"
-            aria-label={`Langue : ${locale === "fr" ? "Français" : "English"} — cliquer pour basculer`}
-          >
-            {locale === "fr" ? "EN" : "FR"}
-          </button>
+          <LanguageSelector />
 
           <button
             type="button"

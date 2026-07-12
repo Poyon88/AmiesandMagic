@@ -1,4 +1,5 @@
 import type { Keyword, KeywordMode, KeywordInstance, SpellKeywordInstance } from "./types";
+import type { SafeT } from "@/i18n/config";
 import { SPELL_KEYWORDS } from "./spell-keywords";
 
 /** Color used to tint a keyword icon based on its trigger mode. Returned
@@ -266,6 +267,21 @@ export const KEYWORD_LABELS: Record<Keyword, string> = {
   conferer: "Conférer",
   declenchement: "Déclenchement",
 };
+
+/**
+ * Libellé d'AFFICHAGE localisé d'un mot-clé, keyé par l'id moteur snake_case
+ * (le même que `card.keywords` / `buildKeywordDisplayEntries`). Avec un
+ * traducteur, tente `vocab.keywords.{id}.label` ; sinon (ou clé absente)
+ * retombe sur le français source `KEYWORD_LABELS`.
+ *
+ * ⚠️ NE PAS confondre avec `KEYWORD_LABELS`, qui reste la source FR
+ * *load-bearing* pour le parser (`parseXValuesFromEffectText`,
+ * `cleanEffectText`). Ces parsers comparent des labels FR et NE doivent PAS
+ * être localisés — utilisez ce helper uniquement pour le rendu à l'écran.
+ */
+export function getKeywordDisplayLabel(kw: Keyword, t?: SafeT): string {
+  return t?.(`vocab.keywords.${kw}.label`) ?? KEYWORD_LABELS[kw] ?? kw;
+}
 
 export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
   charge: "⚡", taunt: "🎯", divine_shield: "🔰", ranged: "🦅",

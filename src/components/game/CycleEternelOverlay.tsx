@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import type { CycleEternelEvent } from "@/lib/store/gameStore";
+import { useCardText } from "./CardTextProvider";
 
 interface CycleEternelOverlayProps {
   event: CycleEternelEvent | null;
@@ -80,6 +81,7 @@ export default function CycleEternelOverlay({ event, onComplete }: CycleEternelO
 }
 
 function CycleEntry({ entry }: { entry: Resolved }) {
+  const { localizeName } = useCardText();
   const startX = window.innerWidth / 2;
   const startY = window.innerHeight / 2;
   const { deckPos } = entry;
@@ -197,7 +199,7 @@ function CycleEntry({ entry }: { entry: Resolved }) {
             delay,
           }}
         >
-          ♻️ {entry.card.name}
+          ♻️ {localizeName(entry.card)}
         </motion.div>
       </motion.div>
 

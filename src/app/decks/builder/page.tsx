@@ -1,6 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { getLocale } from "next-intl/server";
 import DeckBuilder from "@/components/deck/DeckBuilder";
+import { localizeCardsInPlace } from "@/lib/cards/localizeCard";
+import { normalizeLocale } from "@/i18n/config";
 
 export const dynamic = "force-dynamic";
 
@@ -67,6 +70,11 @@ export default async function DeckBuilderPage({
       .eq("owner_id", user.id),
   ]);
 
+  // i18n : traduit nom + ambiance en place (surface d'affichage ; effect_text
+  // reste FR canonique pour la reconstruction d'effet).
+  const locale = normalizeLocale(await getLocale());
+  const localizedCards = await localizeCardsInPlace(supabase, cards ?? [], locale);
+
   const isTester = profile?.role === "testeur";
   const printCardIds = (ownedPrints ?? []).map(r => r.card_id);
   const collectedCardIds = [...new Set([
@@ -100,7 +108,7 @@ export default async function DeckBuilderPage({
 
   return (
     <DeckBuilder
-      cards={cards ?? []}
+      cards={localizedCards}
       heroes={heroes ?? []}
       userId={user.id}
       existingDeck={existingDeck}

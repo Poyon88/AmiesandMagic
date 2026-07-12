@@ -12,6 +12,7 @@ import { useGameStore } from "@/lib/store/gameStore";
 import { ALIGNMENTS, getEffectiveAlignment } from "@/lib/card-engine/constants";
 import CardArt from "@/components/cards/CardArt";
 import CostBadges from "@/components/cards/CostBadges";
+import { useCardText } from "./CardTextProvider";
 
 interface CardPreviewProps {
   cardInstance: CardInstance;
@@ -21,6 +22,7 @@ interface CardPreviewProps {
 
 export default function CardPreview({ cardInstance, anchorRef, position = "above" }: CardPreviewProps) {
   const tokenTemplates = useGameStore((s) => s.tokenTemplates);
+  const { localizeName } = useCardText();
   const [mounted, setMounted] = useState(false);
   const [coords, setCoords] = useState({ left: 0, top: 0 });
   const previewRef = useRef<HTMLDivElement>(null);
@@ -85,7 +87,7 @@ export default function CardPreview({ cardInstance, anchorRef, position = "above
         {/* Name */}
         <div className="px-3 py-2 text-center border-b border-card-border/30">
           <h3 className="text-sm font-bold text-foreground leading-tight">
-            {card.name}
+            {localizeName(card)}
           </h3>
           {(() => {
             const align = getEffectiveAlignment(card);

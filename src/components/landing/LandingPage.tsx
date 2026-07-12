@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, useMemo, useSyncExternalStore } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion, useScroll, useTransform, useInView, useMotionValue, useSpring, type MotionValue } from "framer-motion";
 import type { Card } from "@/lib/game/types";
 import GameCard from "@/components/cards/GameCard";
+import LanguageSelector from "@/components/shared/LanguageSelector";
+import { useLocale } from "@/i18n/useLocale";
 
 // ─── Translations ───────────────────────────────────────────────────────────
 
@@ -125,7 +127,6 @@ const t: Record<"fr" | "en", Dict> = {
   },
 };
 
-type Locale = "fr" | "en";
 type FactionKey = keyof Dict["factions"];
 
 // ─── Factions catalog ──────────────────────────────────────────────────────
@@ -141,46 +142,6 @@ const FACTION_ORDER: { key: FactionKey; heroExt: "svg" | "png"; bannerExt: "svg"
   { key: "orcs_goblins", heroExt: "svg", bannerExt: "svg" },
   { key: "undead", heroExt: "png", bannerExt: "svg" },
 ];
-
-// ─── Locale persistence ────────────────────────────────────────────────────
-
-const LOCALE_KEY = "am-landing-locale";
-const LOCALE_EVENT = "am-landing-locale-change";
-
-function subscribeLocale(cb: () => void) {
-  window.addEventListener("storage", cb);
-  window.addEventListener(LOCALE_EVENT, cb);
-  return () => {
-    window.removeEventListener("storage", cb);
-    window.removeEventListener(LOCALE_EVENT, cb);
-  };
-}
-
-function readLocale(): Locale {
-  try {
-    const v = localStorage.getItem(LOCALE_KEY);
-    return v === "en" ? "en" : "fr";
-  } catch {
-    return "fr";
-  }
-}
-
-function useStoredLocale(): [Locale, (l: Locale) => void] {
-  const locale = useSyncExternalStore(
-    subscribeLocale,
-    readLocale,
-    () => "fr" as Locale,
-  );
-  const update = useCallback((l: Locale) => {
-    try {
-      localStorage.setItem(LOCALE_KEY, l);
-      window.dispatchEvent(new Event(LOCALE_EVENT));
-    } catch {
-      // ignore
-    }
-  }, []);
-  return [locale, update];
-}
 
 // ─── Particle Canvas ───────────────────────────────────────────────────────
 
@@ -288,13 +249,15 @@ interface LandingPageProps {
 
 export default function LandingPage({ showcaseCards, factionHeroUrls }: LandingPageProps) {
   const router = useRouter();
-  const [locale, setLocale] = useStoredLocale();
+  // Locale sur le cookie `am-locale` (via next-intl). Le dico du landing est
+  // fr/en ; les autres langues retombent sur le FR en attendant l'extraction.
+  const [locale] = useLocale();
   // Only a boolean threshold drives the navbar chrome now — setting it to
   // the same value bails out of a re-render, so the whole tree no longer
   // re-renders on every scroll frame (the floating hero cards are driven
   // by framer motion values instead, see HeroSection).
   const [scrolled, setScrolled] = useState(false);
-  const txt = t[locale];
+  const txt = t[locale as "fr" | "en"] ?? t.fr;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50);
@@ -346,12 +309,7 @@ export default function LandingPage({ showcaseCards, factionHeroUrls }: LandingP
           </div>
         </div>
         <div className="flex items-center gap-3 md:gap-4">
-          <button
-            onClick={() => setLocale(locale === "fr" ? "en" : "fr")}
-            className="am-btn am-btn-ghost px-3 py-1.5 text-xs md:text-sm"
-          >
-            {locale === "fr" ? "EN" : "FR"}
-          </button>
+          <LanguageSelector />
           <button
             onClick={() => router.push("/login")}
             className="am-btn am-btn-gold am-btn-sheen px-5 md:px-6 py-2 md:py-2.5 text-sm md:text-base"

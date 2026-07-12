@@ -1,8 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Cinzel, Crimson_Text } from "next/font/google";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale } from "next-intl/server";
 import "./globals.css";
 import AudioProvider from "@/components/AudioProvider";
 import KeywordIconPreloader from "@/components/KeywordIconPreloader";
+import LocaleMigration from "@/components/LocaleMigration";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,14 +45,15 @@ export const metadata: Metadata = {
   description: "A fantasy collectible card game",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
   return (
     <html
-      lang="en"
+      lang={locale}
       className={`${cinzel.variable} ${crimsonText.variable}`}
       // Certaines extensions / outils de navigateur (ex. sur iPad Safari)
       // injectent un attribut sur <html> avant l'hydratation (ex.
@@ -67,9 +71,12 @@ export default function RootLayout({
         // React team for this scenario.
         suppressHydrationWarning
       >
-        <AudioProvider />
-        <KeywordIconPreloader />
-        {children}
+        <NextIntlClientProvider>
+          <LocaleMigration />
+          <AudioProvider />
+          <KeywordIconPreloader />
+          {children}
+        </NextIntlClientProvider>
       </body>
     </html>
   );

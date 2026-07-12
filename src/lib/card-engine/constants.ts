@@ -1,3 +1,5 @@
+import type { SafeT } from "@/i18n/config";
+
 // ─── RARITIES ────────────────────────────────────────────────────────────────
 
 export const RARITIES = [
@@ -324,9 +326,40 @@ export function getClanNamesForRace(
 // Human-readable faction label. Internal ids (e.g. "Elfes") stay stable in code
 // and DB; this maps them to the player-facing name (e.g. "L'Alliance Céleste").
 // Falls back to the raw value for ids not in FACTIONS.
-export function getFactionDisplayName(faction: string | null | undefined): string {
+//
+// i18n : avec un traducteur `t` (SafeT), tente `vocab.factions.{id}.displayName`
+// puis retombe sur le `displayName` FR source. Sans `t` (moteur / SSR sans
+// provider), renvoie le FR — tout le code existant compile inchangé.
+export function getFactionDisplayName(
+  faction: string | null | undefined,
+  t?: SafeT,
+): string {
   if (!faction) return "";
-  return FACTIONS[faction]?.displayName ?? faction;
+  return (
+    t?.(`vocab.factions.${faction}.displayName`) ??
+    FACTIONS[faction]?.displayName ??
+    faction
+  );
+}
+
+// Libellé de rareté localisé, keyé par l'id de rareté (qui reste la chaîne FR,
+// ex. "Commune", stable en DB). Fallback FR via RARITY_MAP.
+export function getRarityLabel(
+  rarity: string | null | undefined,
+  t?: SafeT,
+): string {
+  if (!rarity) return "";
+  return t?.(`vocab.rarities.${rarity}`) ?? RARITY_MAP[rarity]?.label ?? rarity;
+}
+
+// Nom de clan localisé. Les ids de clan restent les chaînes FR (ex. "Montagnes"),
+// stables en DB ; seul l'affichage est traduit.
+export function getClanName(
+  clan: string | null | undefined,
+  t?: SafeT,
+): string {
+  if (!clan) return "";
+  return t?.(`vocab.clans.${clan}`) ?? clan;
 }
 
 export const TYPES = ["Unité", "Sort", "Artefact", "Magie"];

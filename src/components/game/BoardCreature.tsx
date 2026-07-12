@@ -19,6 +19,7 @@ import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
 import useCoarsePointer from "@/hooks/useCoarsePointer";
 import { isBigHit } from "@/lib/fx/impactFx";
 import { SPRINGS } from "@/lib/fx/overlayMotion";
+import { useCardText } from "./CardTextProvider";
 
 interface BoardCreatureProps {
   creature: CardInstance;
@@ -62,6 +63,7 @@ function BoardCreature({
   onAction,
 }: BoardCreatureProps) {
   const card = creature.card;
+  const { localizeName, localizeFlavor } = useCardText();
   const tokenTemplates = useGameStore(s => s.tokenTemplates);
   const targetingMode = useGameStore(s => s.targetingMode);
   // Couleur de surbrillance des cibles valides pendant l'activation d'un
@@ -394,7 +396,7 @@ function BoardCreature({
         cursor: "pointer",
         transition: "border-color 0.2s, box-shadow 0.2s",
       }}
-      title={`${card.name} (${creature.currentAttack}/${creature.currentHealth})`}
+      title={`${localizeName(card)} (${creature.currentAttack}/${creature.currentHealth})`}
     >
       {/* Rarity frame — fades in only on hover-zoom for non-Commune
           creatures. Inset=6 (border 2 + 4px ring) and borderRadius=14
@@ -546,7 +548,7 @@ function BoardCreature({
         display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 2,
         fontFamily: "'Cinzel', serif",
         textShadow: "0 1px 2px #000, 0 0 3px #000, 0 0 5px #000",
-      }}>{card.name}</div>
+      }}>{localizeName(card)}</div>
 
       {/* Poison indicator (shifted below the mana orb) */}
       {creature.isPoisoned && (
@@ -764,7 +766,7 @@ function BoardCreature({
           fontSize: 10 * d, color: accentColor, fontWeight: 700,
           textAlign: "center", fontFamily: "'Cinzel', serif",
           borderBottom: `1px solid ${accentColor}44`, paddingBottom: 5,
-        }}>{card.name}</div>
+        }}>{localizeName(card)}</div>
 
         {/* Race / Clan */}
         {(card.race || card.clan) && (
@@ -907,12 +909,12 @@ function BoardCreature({
           </div>
         )}
 
-        {card.flavor_text && (
+        {localizeFlavor(card) && (
           <p style={{
             margin: 0, fontSize: 7 * d, color: "#74b9ff77",
             fontStyle: "italic", lineHeight: 1.3, fontFamily: "'Crimson Text', serif",
             textAlign: "center",
-          }}>&ldquo;{card.flavor_text}&rdquo;</p>
+          }}>&ldquo;{localizeFlavor(card)}&rdquo;</p>
         )}
 
         {/* Stats recap */}

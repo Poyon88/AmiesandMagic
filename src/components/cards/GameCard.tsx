@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import type { Card, CardSet, TokenTemplate } from "@/lib/game/types";
 import CostBadges from "./CostBadges";
+import { useCardText } from "@/components/game/CardTextProvider";
 
 // Module-level lazy cache so any GameCard mounted out of the in-game flow
 // (deck builder, collection, auctions, landing showcase…) can still resolve
@@ -113,6 +114,7 @@ export default function GameCard({
   effectiveManaCost,
 }: GameCardProps) {
   const displayedManaCost = effectiveManaCost ?? card.mana_cost;
+  const { localizeName, localizeFlavor } = useCardText();
   const [hovered, setHovered] = useState(false);
   const [internalShowDetails, setInternalShowDetails] = useState(false);
   const showDetails = showDetailsProp ?? internalShowDetails;
@@ -321,7 +323,7 @@ export default function GameCard({
         display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 2,
         fontFamily: "'Cinzel', serif",
         textShadow: "0 1px 2px #000, 0 0 3px #000, 0 0 5px #000",
-      }}>{card.name}</div>
+      }}>{localizeName(card)}</div>
 
       {/* ── Bottom bar: keywords + stats ── */}
       <div style={{
@@ -497,7 +499,7 @@ export default function GameCard({
           fontSize: 18 * so, color: accentColor, fontWeight: 700,
           textAlign: "center", fontFamily: "'Cinzel', serif",
           borderBottom: `1px solid ${accentColor}55`, paddingBottom: 7 * s,
-        }}>{card.name}</div>
+        }}>{localizeName(card)}</div>
 
         {/* Race / Clan */}
         {(card.race || card.clan) && (
@@ -609,12 +611,12 @@ export default function GameCard({
         )}
 
         {/* Flavor text */}
-        {card.flavor_text && (
+        {localizeFlavor(card) && (
           <p style={{
             margin: 0, fontSize: 12 * so, color: `${accentColor}dd`,
             fontStyle: "italic", lineHeight: 1.4, fontFamily: "'Crimson Text', serif",
             textAlign: "center",
-          }}>&ldquo;{card.flavor_text}&rdquo;</p>
+          }}>&ldquo;{localizeFlavor(card)}&rdquo;</p>
         )}
 
         {/* Stats recap */}

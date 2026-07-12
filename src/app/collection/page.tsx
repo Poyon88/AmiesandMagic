@@ -1,6 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { getLocale } from "next-intl/server";
 import CollectionView from "@/components/cards/CollectionView";
+import { localizeCardsInPlace } from "@/lib/cards/localizeCard";
+import { normalizeLocale } from "@/i18n/config";
 
 export const dynamic = "force-dynamic";
 
@@ -43,6 +46,11 @@ export default async function CollectionPage() {
       .order("print_number"),
   ]);
 
+  // i18n : sur cette surface d'affichage pur, on traduit nom + ambiance en
+  // place selon la langue active (effect_text reste FR canonique).
+  const locale = normalizeLocale(await getLocale());
+  const localizedCards = await localizeCardsInPlace(supabase, cards ?? [], locale);
+
   const role = profile?.role ?? "player";
   const isSpecialRole = role === "testeur" || role === "admin";
   const printCardIds = (ownedPrints ?? []).map(r => r.card_id);
@@ -53,7 +61,7 @@ export default async function CollectionPage() {
 
   return (
     <CollectionView
-      cards={cards ?? []}
+      cards={localizedCards}
       sets={sets ?? []}
       formats={formats ?? []}
       collectedCardIds={collectedCardIds}

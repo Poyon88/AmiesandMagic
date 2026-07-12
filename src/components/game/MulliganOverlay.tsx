@@ -16,6 +16,7 @@ import { useAudioStore } from "@/lib/store/audioStore";
 import SfxEngine from "@/lib/audio/SfxEngine";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
 import useCoarsePointer from "@/hooks/useCoarsePointer";
+import { useCardText } from "./CardTextProvider";
 
 function playStandardSfx(eventType: string) {
   if (typeof window === "undefined") return;
@@ -54,6 +55,7 @@ function MulliganCard({
   interactable: boolean;
 }) {
   const card = cardInstance.card;
+  const { localizeName, localizeFlavor } = useCardText();
   const isCreature = card.card_type === "creature";
   const tokenTemplates = useGameStore((s) => s.tokenTemplates);
   const [isHovered, setIsHovered] = useState(false);
@@ -189,7 +191,7 @@ function MulliganCard({
         display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 2,
         fontFamily: "'Cinzel', serif",
         textShadow: "0 1px 2px #000, 0 0 3px #000, 0 0 5px #000",
-      }}>{card.name}</div>
+      }}>{localizeName(card)}</div>
 
       {/* Bottom bar */}
       <div style={{
@@ -328,7 +330,7 @@ function MulliganCard({
           fontSize: 13 * d, color: accentColor, fontWeight: 700,
           textAlign: "center", fontFamily: "'Cinzel', serif",
           borderBottom: `1px solid ${accentColor}44`, paddingBottom: 6,
-        }}>{card.name}</div>
+        }}>{localizeName(card)}</div>
 
         {/* Race / Clan */}
         {(card.race || card.clan) && (
@@ -425,12 +427,12 @@ function MulliganCard({
           </div>
         )}
 
-        {card.flavor_text && (
+        {localizeFlavor(card) && (
           <p style={{
             margin: 0, fontSize: 9 * d, color: `${accentColor}77`,
             fontStyle: "italic", lineHeight: 1.3, fontFamily: "'Crimson Text', serif",
             textAlign: "center",
-          }}>&ldquo;{card.flavor_text}&rdquo;</p>
+          }}>&ldquo;{localizeFlavor(card)}&rdquo;</p>
         )}
 
         <div style={{

@@ -1,12 +1,29 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { LIMITED_PRINT_COUNTS } from '@/lib/card-engine/constants';
 import { validateRace } from '@/lib/validation/faction-clan';
 import { deriveCapabilities } from '@/lib/game/capability-adapter';
 import type { Capability, Card } from '@/lib/game/types';
 import { requireAdmin } from '@/lib/admin/requireAdmin';
+import { upsertCardTranslations } from '@/lib/cards/cardTranslations';
+
+// Planifie (hors du chemin de réponse, via `after`) la (re)traduction nom +
+// ambiance d'une carte vers les 5 langues. i18n : seuls nom/ambiance sont
+// traduits ; les overrides manuels sont préservés côté helper.
+function scheduleCardTranslation(
+  supabaseAdmin: SupabaseClient,
+  card: { id: number; name: string | null; flavor_text: string | null },
+) {
+  after(async () => {
+    try {
+      await upsertCardTranslations(supabaseAdmin, card);
+    } catch (err) {
+      console.error('[card-save] translation scheduling failed:', err);
+    }
+  });
+}
 
 /** Normalise les capacités composées reçues du client : ne garde que celles
  *  portant un effet `composed`, et réassigne des uid stables (préfixe `cx_`)
@@ -115,6 +132,15 @@ export async function POST(request: Request) {
         .update(patch)
         .eq('id', updateId);
       if (patchErr) throw new Error(patchErr.message);
+      // i18n : si le nom ou l'ambiance a été touché(e), replanifie la traduction.
+      if ('name' in patch || 'flavor_text' in patch) {
+        const { data: row } = await supabaseAdmin
+          .from('cards')
+          .select('id, name, flavor_text')
+          .eq('id', updateId)
+          .single();
+        if (row) scheduleCardTranslation(supabaseAdmin, row);
+      }
       return NextResponse.json({ success: true, updated: true });
     }
 
@@ -212,12 +238,29 @@ export async function POST(request: Request) {
     }
 
     if (updateId) {
-      // Update existing card
+      // Update existing card — capture l'ancien nom/ambiance pour ne
+      // retraduire que si l'un des deux a réellement changé.
+      const { data: prev } = await supabaseAdmin
+        .from('cards')
+        .select('name, flavor_text')
+        .eq('id', updateId)
+        .single();
       const { error: updateErr } = await supabaseAdmin
         .from('cards')
         .update(cardData)
         .eq('id', updateId);
       if (updateErr) throw new Error(updateErr.message);
+      if (
+        !prev ||
+        prev.name !== cardData.name ||
+        (prev.flavor_text ?? null) !== (cardData.flavor_text ?? null)
+      ) {
+        scheduleCardTranslation(supabaseAdmin, {
+          id: updateId as number,
+          name: cardData.name as string | null,
+          flavor_text: cardData.flavor_text as string | null,
+        });
+      }
       return NextResponse.json({ success: true, name: card.name, updated: true });
     } else {
       // Insert new card
@@ -228,6 +271,15 @@ export async function POST(request: Request) {
         .select('id')
         .single();
       if (insertErr) throw new Error(insertErr.message);
+
+      // i18n : traduit nom + ambiance de la nouvelle carte en arrière-plan.
+      if (inserted) {
+        scheduleCardTranslation(supabaseAdmin, {
+          id: inserted.id as number,
+          name: cardData.name as string | null,
+          flavor_text: cardData.flavor_text as string | null,
+        });
+      }
 
       // Generate limited prints for forged cards with date
       const printCount = card.rarity ? LIMITED_PRINT_COUNTS[card.rarity] : undefined;

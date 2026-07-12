@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import type { GraveyardAffectEvent } from "@/lib/store/gameStore";
 import { CASCADE_EASE, CASCADE_STAGGER } from "@/lib/fx/overlayMotion";
+import { useCardText } from "./CardTextProvider";
 
 interface Props {
   event: GraveyardAffectEvent | null;
@@ -14,6 +15,7 @@ interface Props {
 const DISPLAY_MS = 2200;
 
 export default function GraveyardAffectOverlay({ event, onComplete }: Props) {
+  const { localizeName } = useCardText();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
@@ -127,7 +129,7 @@ export default function GraveyardAffectOverlay({ event, onComplete }: Props) {
                     textAlign: "center",
                     lineHeight: 1.15,
                   }}>
-                    {card.name}
+                    {localizeName(card)}
                   </div>
                 </div>
               </motion.div>
