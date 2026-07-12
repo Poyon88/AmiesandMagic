@@ -3,8 +3,7 @@
 import HomeHeader from "@/components/home/HomeHeader";
 import MenuTile from "@/components/home/MenuTile";
 import AmAtmosphere from "@/components/ui/AmAtmosphere";
-import { useStoredLocale } from "@/lib/i18n/useLocale";
-import { homeDict } from "@/lib/i18n/homeDict";
+import { useTranslations } from "next-intl";
 import { isPlayerSellingEnabled } from "@/lib/auction/flags";
 
 interface MainMenuProps {
@@ -13,8 +12,7 @@ interface MainMenuProps {
 }
 
 export default function MainMenu({ username, goldBalance }: MainMenuProps) {
-  const [locale] = useStoredLocale();
-  const t = homeDict[locale];
+  const t = useTranslations("home");
 
   return (
     <div className="min-h-screen text-am-ink">
@@ -31,7 +29,7 @@ export default function MainMenu({ username, goldBalance }: MainMenuProps) {
             className="am-animate-fade font-[family-name:var(--font-cinzel),serif] text-[10px] md:text-xs tracking-[0.34em] uppercase text-am-arcane-bright/80 block mb-4"
             style={{ animationDelay: "0.05s" }}
           >
-            {t.welcome} {username}
+            {t('welcome')} {username}
           </span>
           <h1
             className="am-foil-text am-animate-rise font-[family-name:var(--font-cinzel),serif] font-bold"
@@ -47,7 +45,7 @@ export default function MainMenu({ username, goldBalance }: MainMenuProps) {
             className="am-animate-rise font-[family-name:var(--font-crimson),serif] italic text-am-ink-soft mt-3"
             style={{ fontSize: "clamp(15px, 1.8vw, 20px)", animationDelay: "0.2s" }}
           >
-            {t.home_subtitle}
+            {t('home_subtitle')}
           </p>
           <div
             className="am-rule-diamond am-animate-fade mx-auto mt-6 w-40"
@@ -63,8 +61,8 @@ export default function MainMenu({ username, goldBalance }: MainMenuProps) {
               <MenuTile
                 href="/play"
                 accent="play"
-                label={t.play_label}
-                description={t.play_desc}
+                label={t('play_label')}
+                description={t('play_desc')}
                 bgImage="/images/home/jouez-bg.png"
               />
             </li>
@@ -72,8 +70,8 @@ export default function MainMenu({ username, goldBalance }: MainMenuProps) {
               <MenuTile
                 href="/auction"
                 accent="market"
-                label={t.market_label}
-                description={isPlayerSellingEnabled() ? t.market_desc : t.market_desc_buy}
+                label={t('market_label')}
+                description={isPlayerSellingEnabled() ? t('market_desc') : t('market_desc_buy')}
                 bgImage="/images/home/marche-bg.png"
               />
             </li>
@@ -81,8 +79,8 @@ export default function MainMenu({ username, goldBalance }: MainMenuProps) {
               <MenuTile
                 href="/collection-hub"
                 accent="collection"
-                label={t.collection_label}
-                description={t.collection_desc}
+                label={t('collection_label')}
+                description={t('collection_desc')}
                 bgImage="/images/home/collection-bg-v2.png"
               />
             </li>
@@ -90,8 +88,8 @@ export default function MainMenu({ username, goldBalance }: MainMenuProps) {
               <MenuTile
                 href="/decks"
                 accent="decks"
-                label={t.decks_label}
-                description={t.decks_desc}
+                label={t('decks_label')}
+                description={t('decks_desc')}
                 bgImage="/images/home/decks-bg.png"
               />
             </li>
@@ -99,8 +97,8 @@ export default function MainMenu({ username, goldBalance }: MainMenuProps) {
               <MenuTile
                 href="/tutoriel"
                 accent="heroes"
-                label={t.tutorial_label}
-                description={t.tutorial_desc}
+                label={t('tutorial_label')}
+                description={t('tutorial_desc')}
                 glyph={
                   <svg width="52" height="52" viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M32 16 Q22 10 10 12 V48 Q22 46 32 52 Q42 46 54 48 V12 Q42 10 32 16 Z" />

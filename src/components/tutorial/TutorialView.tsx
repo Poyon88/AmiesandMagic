@@ -11,8 +11,7 @@ import KeywordIcon from "@/components/shared/KeywordIcon";
 import AmAtmosphere from "@/components/ui/AmAtmosphere";
 import AmHeading from "@/components/ui/AmHeading";
 import AmPanel from "@/components/ui/AmPanel";
-import { useStoredLocale } from "@/lib/i18n/useLocale";
-import { homeDict } from "@/lib/i18n/homeDict";
+import { useTranslations } from "next-intl";
 import { CREATURE_ABILITIES, SPELL_ABILITIES } from "@/lib/game/abilities";
 import {
   HERO_MAX_HP,
@@ -36,8 +35,7 @@ interface TutorialViewProps {
 type Track = "beginner" | "tcg";
 
 export default function TutorialView({ username, goldBalance }: TutorialViewProps) {
-  const [locale] = useStoredLocale();
-  const t = homeDict[locale];
+  const t = useTranslations("home");
   const [track, setTrack] = useState<Track>("beginner");
 
   return (
@@ -48,7 +46,7 @@ export default function TutorialView({ username, goldBalance }: TutorialViewProp
         username={username}
         goldBalance={goldBalance}
         backHref="/"
-        backLabel={t.tutorial_back}
+        backLabel={t('tutorial_back')}
       />
 
       <main

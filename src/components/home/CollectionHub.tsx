@@ -5,8 +5,7 @@ import HomeHeader from "@/components/home/HomeHeader";
 import MenuTile from "@/components/home/MenuTile";
 import AmAtmosphere from "@/components/ui/AmAtmosphere";
 import AmHeading from "@/components/ui/AmHeading";
-import { useStoredLocale } from "@/lib/i18n/useLocale";
-import { homeDict } from "@/lib/i18n/homeDict";
+import { useTranslations } from "next-intl";
 
 type BgCategory = "cards" | "heroes" | "cardBacks" | "boards";
 
@@ -24,8 +23,7 @@ const EMPTY_BG: Record<BgCategory, string | undefined> = {
 };
 
 export default function CollectionHub({ username, goldBalance, bgCandidates }: CollectionHubProps) {
-  const [locale] = useStoredLocale();
-  const t = homeDict[locale];
+  const t = useTranslations("home");
 
   // Per-session tile artwork: pick one image at random from each category's
   // highest-rarity pool, frozen in sessionStorage so it stays stable while the
@@ -64,7 +62,7 @@ export default function CollectionHub({ username, goldBalance, bgCandidates }: C
         username={username}
         goldBalance={goldBalance}
         backHref="/"
-        backLabel={t.collection_back}
+        backLabel={t('collection_back')}
       />
 
       <main
@@ -74,7 +72,7 @@ export default function CollectionHub({ username, goldBalance, bgCandidates }: C
         {/* Title */}
         <div className="am-animate-rise mb-12 md:mb-16">
           <AmHeading as="h1" align="center">
-            {t.collection_title}
+            {t('collection_title')}
           </AmHeading>
         </div>
 
@@ -84,8 +82,8 @@ export default function CollectionHub({ username, goldBalance, bgCandidates }: C
               <MenuTile
                 href="/collection"
                 accent="cards"
-                label={t.my_cards}
-                description={t.my_cards_desc}
+                label={t('my_cards')}
+                description={t('my_cards_desc')}
                 bgImage={bg.cards}
                 glyph={
                   <svg width="52" height="52" viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -99,8 +97,8 @@ export default function CollectionHub({ username, goldBalance, bgCandidates }: C
               <MenuTile
                 href="/heroes"
                 accent="heroes"
-                label={t.my_heroes}
-                description={t.my_heroes_desc}
+                label={t('my_heroes')}
+                description={t('my_heroes_desc')}
                 bgImage={bg.heroes}
                 glyph={
                   <svg width="52" height="52" viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -115,8 +113,8 @@ export default function CollectionHub({ username, goldBalance, bgCandidates }: C
               <MenuTile
                 href="/card-backs"
                 accent="card_backs"
-                label={t.my_card_backs}
-                description={t.my_card_backs_desc}
+                label={t('my_card_backs')}
+                description={t('my_card_backs_desc')}
                 bgImage={bg.cardBacks}
                 glyph={
                   <svg width="52" height="52" viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -130,8 +128,8 @@ export default function CollectionHub({ username, goldBalance, bgCandidates }: C
               <MenuTile
                 href="/boards"
                 accent="boards"
-                label={t.my_boards}
-                description={t.my_boards_desc}
+                label={t('my_boards')}
+                description={t('my_boards_desc')}
                 bgImage={bg.boards}
                 glyph={
                   <svg width="52" height="52" viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

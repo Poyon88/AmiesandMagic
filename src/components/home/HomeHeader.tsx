@@ -8,8 +8,7 @@ import GoldBalance from "@/components/shared/GoldBalance";
 import NotificationBell from "@/components/shared/NotificationBell";
 import SettingsModal from "@/components/shared/SettingsModal";
 import LanguageSelector from "@/components/shared/LanguageSelector";
-import { useLocale } from "@/i18n/useLocale";
-import { homeDict } from "@/lib/i18n/homeDict";
+import { useTranslations } from "next-intl";
 
 interface HomeHeaderProps {
   username: string;
@@ -29,11 +28,7 @@ export default function HomeHeader({ username, goldBalance, backHref, backLabel 
   const supabase = createClient();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  // Locale unifiée sur le cookie `am-locale` (via next-intl). Les libellés du
-  // header viennent encore de homeDict (fr/en) — pour les autres langues, pas
-  // encore extraites, on retombe proprement sur le FR (chantier Phase 5).
-  const [locale] = useLocale();
-  const t = homeDict[locale as "fr" | "en"] ?? homeDict.fr;
+  const t = useTranslations("home");
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 30);
@@ -55,7 +50,7 @@ export default function HomeHeader({ username, goldBalance, backHref, backLabel 
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[200] focus:px-4 focus:py-2 focus:rounded-md focus:bg-[#c8a84e] focus:text-[#0a0a18] focus:font-bold"
       >
-        {t.skip_to_content}
+        {t('skip_to_content')}
       </a>
 
       <header
@@ -88,10 +83,10 @@ export default function HomeHeader({ username, goldBalance, backHref, backLabel 
             <Link
               href={backHref}
               className="group inline-flex items-center gap-2 text-sm md:text-base text-am-ink-soft hover:text-am-gold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-am-gold focus-visible:ring-offset-2 focus-visible:ring-offset-am-bg-0 rounded px-2 py-1"
-              aria-label={backLabel ?? t.collection_back}
+              aria-label={backLabel ?? t('collection_back')}
             >
               <span aria-hidden="true" className="transition-transform group-hover:-translate-x-0.5">←</span>
-              <span className="hidden sm:inline font-display tracking-wide">{backLabel ?? t.collection_back}</span>
+              <span className="hidden sm:inline font-display tracking-wide">{backLabel ?? t('collection_back')}</span>
             </Link>
           ) : (
             <Link
@@ -123,7 +118,7 @@ export default function HomeHeader({ username, goldBalance, backHref, backLabel 
 
         <div className="flex items-center gap-2 md:gap-3">
           <span className="hidden md:inline text-sm text-am-ink-soft mr-1">
-            {t.welcome}{" "}
+            {t('welcome')}{" "}
             <span className="am-foil-text font-display font-semibold">
               {username}
             </span>
@@ -144,8 +139,8 @@ export default function HomeHeader({ username, goldBalance, backHref, backLabel 
             type="button"
             onClick={() => setSettingsOpen(true)}
             className="grid place-items-center w-9 h-9 text-am-gold am-gild-border bg-am-gold/[0.06] hover:bg-am-gold/15 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-am-gold"
-            aria-label={t.settings}
-            title={t.settings}
+            aria-label={t('settings')}
+            title={t('settings')}
           >
             <span aria-hidden="true" className="text-base">⚙</span>
           </button>
@@ -154,9 +149,9 @@ export default function HomeHeader({ username, goldBalance, backHref, backLabel 
             type="button"
             onClick={handleLogout}
             className="px-3 md:px-4 py-1.5 text-xs md:text-sm font-display font-semibold text-am-ink-soft hover:text-am-ember am-gild-border bg-am-gold/[0.06] hover:bg-am-ember/10 hover:border-am-ember/40 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-am-gold"
-            aria-label={t.logout}
+            aria-label={t('logout')}
           >
-            {t.logout}
+            {t('logout')}
           </button>
         </div>
       </header>

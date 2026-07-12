@@ -5,8 +5,7 @@ import Image from "next/image";
 import HomeHeader from "@/components/home/HomeHeader";
 import AmAtmosphere from "@/components/ui/AmAtmosphere";
 import AmHeading from "@/components/ui/AmHeading";
-import { useStoredLocale } from "@/lib/i18n/useLocale";
-import { homeDict } from "@/lib/i18n/homeDict";
+import { useTranslations } from "next-intl";
 import { getFactionDisplayName, RARITIES } from "@/lib/card-engine/constants";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
 
@@ -34,8 +33,7 @@ interface HeroRow {
 }
 
 export default function HeroesPage({ username, goldBalance }: HeroesPageProps) {
-  const [locale] = useStoredLocale();
-  const t = homeDict[locale];
+  const t = useTranslations("home");
 
   const [heroes, setHeroes] = useState<HeroRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -59,12 +57,12 @@ export default function HeroesPage({ username, goldBalance }: HeroesPageProps) {
       })
       .catch(() => {
         if (cancelled) return;
-        setError(t.heroes_load_error);
+        setError(t('heroes_load_error'));
       });
     return () => {
       cancelled = true;
     };
-  }, [t.heroes_load_error]);
+  }, [t('heroes_load_error')]);
 
   const factions = useMemo(() => {
     if (!heroes) return [];
@@ -154,7 +152,7 @@ export default function HeroesPage({ username, goldBalance }: HeroesPageProps) {
         username={username}
         goldBalance={goldBalance}
         backHref="/collection-hub"
-        backLabel={t.collection_title}
+        backLabel={t('collection_title')}
       />
 
       <main
@@ -163,7 +161,7 @@ export default function HeroesPage({ username, goldBalance }: HeroesPageProps) {
       >
         <div className="am-animate-rise mb-10 md:mb-14">
           <AmHeading as="h1" align="center">
-            {t.heroes_title}
+            {t('heroes_title')}
           </AmHeading>
         </div>
 
@@ -175,8 +173,8 @@ export default function HeroesPage({ username, goldBalance }: HeroesPageProps) {
           >
             {factions.length > 1 && (
               <FilterPills
-                label={t.heroes_label_faction}
-                allLabel={t.heroes_filter_all}
+                label={t('heroes_label_faction')}
+                allLabel={t('heroes_filter_all')}
                 value={selectedFaction}
                 options={factions}
                 onSelect={handleSelectFaction}
@@ -185,8 +183,8 @@ export default function HeroesPage({ username, goldBalance }: HeroesPageProps) {
             )}
             {clans.length > 0 && (
               <FilterPills
-                label={t.heroes_label_clan}
-                allLabel={t.heroes_filter_all}
+                label={t('heroes_label_clan')}
+                allLabel={t('heroes_filter_all')}
                 value={selectedClan}
                 options={clans}
                 onSelect={setSelectedClan}
@@ -194,8 +192,8 @@ export default function HeroesPage({ username, goldBalance }: HeroesPageProps) {
             )}
             {rarities.length > 1 && (
               <FilterPills
-                label={t.heroes_label_rarity}
-                allLabel={t.heroes_filter_all}
+                label={t('heroes_label_rarity')}
+                allLabel={t('heroes_filter_all')}
                 value={selectedRarity}
                 options={rarities}
                 onSelect={setSelectedRarity}
@@ -212,10 +210,10 @@ export default function HeroesPage({ username, goldBalance }: HeroesPageProps) {
             </p>
           )}
           {!heroes && !error && (
-            <p className="text-center font-serif italic text-am-ink-soft">{t.heroes_loading}</p>
+            <p className="text-center font-serif italic text-am-ink-soft">{t('heroes_loading')}</p>
           )}
           {heroes && visibleHeroes.length === 0 && (
-            <p className="text-center font-serif italic text-am-ink-soft">{t.heroes_empty}</p>
+            <p className="text-center font-serif italic text-am-ink-soft">{t('heroes_empty')}</p>
           )}
           {heroes && visibleHeroes.length > 0 && (
             <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
@@ -225,7 +223,7 @@ export default function HeroesPage({ username, goldBalance }: HeroesPageProps) {
                   className="am-animate-rise"
                   style={{ animationDelay: `${Math.min(i * 0.06, 0.6)}s` }}
                 >
-                  <HeroCard hero={h} powerLabel={t.hero_power} onShowPower={handleShowPower} />
+                  <HeroCard hero={h} powerLabel={t('hero_power')} onShowPower={handleShowPower} />
                 </li>
               ))}
             </ul>
@@ -243,7 +241,7 @@ export default function HeroesPage({ username, goldBalance }: HeroesPageProps) {
             hero={powerView.hero}
             x={powerView.x}
             y={powerView.y}
-            powerLabel={t.hero_power}
+            powerLabel={t('hero_power')}
           />
         </div>
       )}
