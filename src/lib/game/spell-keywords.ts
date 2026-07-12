@@ -1,5 +1,6 @@
 import type { SpellKeywordId, SpellKeywordInstance, SpellTargetType, Card, ConvocationTokenDef, TokenTemplate } from "./types";
 import { SPELL_KEYWORDS as ABILITIES_SPELL_KEYWORDS, ABILITIES, type DerivedSpellKeywordDef } from "./abilities";
+import type { SafeT } from "@/i18n/config";
 
 // Single source of truth lives in `src/lib/game/abilities.ts` (unified
 // registry shared with creature keywords). The map below is re-exported
@@ -102,13 +103,16 @@ export function getSpellKeywordDesc(
   kw: SpellKeywordInstance,
   card?: Card | null,
   tokens?: TokenTemplate[],
+  t?: SafeT,
 ): string {
   const def = SPELL_KEYWORDS[kw.id];
   // Defensive: a stale spell_keyword.id (admin renamed/removed an ability
   // without migrating cards) would crash here on `def.desc`. Fall back to
   // the raw id so the UI still renders.
   if (!def) return String(kw.id);
-  let desc = def.desc;
+  // Gabarit localisé (vocab.spell_keywords.{id}.desc) ; repli FR = def.desc.
+  // La substitution X/Y/amount et les surcharges d'invocation restent en aval.
+  let desc = t?.(`vocab.spell_keywords.${kw.id}.desc`) ?? def.desc;
 
   // Replace X/Y from params
   if (def.params.includes("attack")) desc = desc.replace(/X/g, String(kw.attack ?? 0));
@@ -147,10 +151,10 @@ export function getSpellKeywordDesc(
 }
 
 /** Get the display label for a spell keyword */
-export function getSpellKeywordLabel(kw: SpellKeywordInstance): string {
+export function getSpellKeywordLabel(kw: SpellKeywordInstance, t?: SafeT): string {
   const def = SPELL_KEYWORDS[kw.id];
   if (!def) return String(kw.id);
-  let label = def.label;
+  let label = t?.(`vocab.spell_keywords.${kw.id}.label`) ?? def.label;
   if (def.params.includes("attack")) label = label.replace(/X/, String(kw.attack ?? 0));
   else if (def.params.includes("amount")) label = label.replace(/X/, String(kw.amount ?? 1));
   if (def.params.includes("health")) label = label.replace(/Y/, String(kw.health ?? 0));

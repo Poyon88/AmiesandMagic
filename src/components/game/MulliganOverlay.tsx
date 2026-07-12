@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import type { CardInstance } from "@/lib/game/types";
 import { KEYWORD_SYMBOLS, toRoman, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
-import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, getSpellKeywordLabel, getSpellKeywordDesc } from "@/lib/game/spell-keywords";
+import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { composedCapsOf, composedIcon, composedKeywordName, composedTriggerMode, composedValueText, describeComposedCap } from "@/lib/game/composed-display";
@@ -242,7 +242,7 @@ function MulliganCard({
             {card.spell_keywords.map((spellKw, i) => {
               const def = SPELL_KEYWORDS[spellKw.id];
               if (!def) return null;
-              const displayTitle = getSpellKeywordLabel(spellKw);
+              const displayTitle = vocab.spellKeywordLabel(spellKw);
               const usesAtkHp = def.params.includes("attack") && def.params.includes("health");
               const usesAmount = def.params.includes("amount");
               const hasValue = usesAmount || usesAtkHp;
@@ -379,8 +379,8 @@ function MulliganCard({
             {card.spell_keywords.map((spellKw, i) => {
               const def = SPELL_KEYWORDS[spellKw.id];
               if (!def) return null;
-              const label = getSpellKeywordLabel(spellKw);
-              const desc = getSpellKeywordDesc(spellKw, card, tokenTemplates);
+              const label = vocab.spellKeywordLabel(spellKw);
+              const desc = vocab.spellKeywordDesc(spellKw, card, tokenTemplates);
               return (
                 <div key={`sk_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 5 }}>
                   <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={12} keyword={`spell_${spellKw.id}`} /></span>

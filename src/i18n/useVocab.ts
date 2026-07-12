@@ -2,8 +2,9 @@
 
 import { useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
-import type { Keyword } from "@/lib/game/types";
+import type { Keyword, SpellKeywordInstance, Card, TokenTemplate } from "@/lib/game/types";
 import { getKeywordDisplayLabel, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
+import { getSpellKeywordLabel, getSpellKeywordDesc } from "@/lib/game/spell-keywords";
 import {
   getAlignmentLabel,
   getClanName,
@@ -27,6 +28,14 @@ export interface Vocab {
   // substituée aux gabarits « X » comme le fait le moteur. Fallback FR =
   // KEYWORDS[label].desc. Renvoie null si aucune description.
   keywordDesc: (kw: Keyword, x?: number | null) => string | null;
+  // Mots-clés de SORT (registre distinct). Label/desc localisés avec
+  // substitution X/Y/amount ; fallback FR intégré.
+  spellKeywordLabel: (kw: SpellKeywordInstance) => string;
+  spellKeywordDesc: (
+    kw: SpellKeywordInstance,
+    card?: Card | null,
+    tokens?: TokenTemplate[],
+  ) => string;
   factionName: (faction: string | null | undefined) => string;
   rarityLabel: (rarity: string | null | undefined) => string;
   clanName: (clan: string | null | undefined) => string;
@@ -72,6 +81,13 @@ export function useVocab(): Vocab {
         if (!tmpl) return null;
         return x != null ? tmpl.replace(/X/g, String(x)) : tmpl;
       },
+      spellKeywordLabel: (kw: SpellKeywordInstance) =>
+        getSpellKeywordLabel(kw, safe),
+      spellKeywordDesc: (
+        kw: SpellKeywordInstance,
+        card?: Card | null,
+        tokens?: TokenTemplate[],
+      ) => getSpellKeywordDesc(kw, card, tokens, safe),
       factionName: (faction: string | null | undefined) =>
         getFactionDisplayName(faction, safe),
       rarityLabel: (rarity: string | null | undefined) =>

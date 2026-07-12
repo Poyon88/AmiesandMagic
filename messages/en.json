@@ -538,6 +538,136 @@
       "expert-etendu": "Expert · Extended",
       "classique-etendu": "Classic · Extended",
       "classique-standard": "Classic · Standard"
+    },
+    "spell_keywords": {
+      "poison": {
+        "label": "Poison",
+        "desc": "Wounded units lose 1 HP per turn."
+      },
+      "pillage": {
+        "label": "Pillage X",
+        "desc": "The opponent discards X random cards from their hand."
+      },
+      "convocation_simple": {
+        "label": "Summon",
+        "desc": "Creates the configured token."
+      },
+      "appel_du_clan": {
+        "label": "Clan Call X",
+        "desc": "Deploy for free the first unit of the same clan as this spell, with a cost equal to or less than X, from your deck."
+      },
+      "appel_supreme": {
+        "label": "Supreme Call",
+        "desc": "Add to your hand the highest-cost creature of the chosen race remaining in your deck (random if tied)."
+      },
+      "rassemblement": {
+        "label": "Rally X",
+        "desc": "Reveal the top X cards of your deck; add units of the same race as this spell to your hand and discard the rest."
+      },
+      "rappel": {
+        "label": "Recall",
+        "desc": "Return a creature from your graveyard to your hand."
+      },
+      "exhumation": {
+        "label": "Exhumation X",
+        "desc": "Resurrect a creature (cost ≤ X) from your graveyard onto the battlefield."
+      },
+      "selection": {
+        "label": "Selection X",
+        "desc": "Choose one card from 3 random commons with cost ≤ X (no limit if X is undefined), from factions of the same alignment as this spell, to add to your hand."
+      },
+      "selection_magique": {
+        "label": "Magic Selection X",
+        "desc": "Choose one spell from 3 random common spells with cost ≤ X (no limit if X is undefined), from factions of the same alignment as this spell, to add to your hand."
+      },
+      "renfort_royal": {
+        "label": "Royal Selection X",
+        "desc": "Choose one card from 3 random cards from your limited editions (≥30 required; otherwise from commons of the same alignment) with cost ≤ X (no limit if X is undefined) to add to your hand."
+      },
+      "relancer": {
+        "label": "Recast X",
+        "desc": "Replays the last X spells cast with random targets."
+      },
+      "invocation": {
+        "label": "Invocation X/Y",
+        "desc": "Summons an X/Y token."
+      },
+      "impact": {
+        "label": "Impact X",
+        "desc": "Deal X damage to a target (creature or hero, either side)."
+      },
+      "deferlement": {
+        "label": "Surge X",
+        "desc": "Deal X damage to all enemy creatures."
+      },
+      "siphon": {
+        "label": "Siphon X",
+        "desc": "Deal X damage to a target and heal your hero for the same amount."
+      },
+      "entrave": {
+        "label": "Shackle",
+        "desc": "Paralyze a targeted enemy creature."
+      },
+      "execution": {
+        "label": "Execution",
+        "desc": "Destroy a targeted creature."
+      },
+      "silence": {
+        "label": "Silence",
+        "desc": "Remove all keywords from a targeted creature."
+      },
+      "renforcement": {
+        "label": "Reinforcement +X/+Y",
+        "desc": "+X/+Y to a targeted allied creature."
+      },
+      "affaiblissement": {
+        "label": "Weakening -X/-Y",
+        "desc": "Gives -X ATK and -Y HP to a targeted enemy creature."
+      },
+      "guerison": {
+        "label": "Healing X",
+        "desc": "Restores X HP to a target."
+      },
+      "inspiration": {
+        "label": "Inspiration X",
+        "desc": "Draw X cards."
+      },
+      "remontee": {
+        "label": "Recall",
+        "desc": "Returns a targeted unit to its owner's hand."
+      },
+      "renforcement_multiple": {
+        "label": "Mass Reinforcement",
+        "desc": "Grants +X/+Y to all your creatures of the selected race or clan."
+      },
+      "entrainement": {
+        "label": "Training X",
+        "desc": "Grants +X/+X to your creatures of the same faction in hand."
+      },
+      "concentration": {
+        "label": "Concentration X",
+        "desc": "Replaces each spell in hand with a random spell (any faction) costing X more; the new spell's cost is reduced by X."
+      },
+      "invocation_multiple": {
+        "label": "Mass Summon",
+        "desc": "Creates multiple tokens as defined by the card's configuration."
+      },
+      "tempete": {
+        "label": "Storm X",
+        "desc": "Deals X damage split randomly among enemy units."
+      },
+      "cataclysme": {
+        "label": "Cataclysm X",
+        "desc": "Deals X damage to all creatures (allied AND enemy)."
+      },
+      "douleur": {
+        "label": "Pain X",
+        "desc": "On cast, deals X damage to your hero."
+      },
+      "afflux": {
+        "label": "Surge X",
+        "desc": "Gain X mana this turn."
+      }
     }
   },
   "home": {

@@ -8,7 +8,7 @@ import type { CardInstance } from "@/lib/game/types";
 import { useGameStore } from "@/lib/store/gameStore";
 import type { DragEvent } from "react";
 import { KEYWORD_SYMBOLS, toRoman, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
-import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, getSpellKeywordLabel, getSpellKeywordDesc, formatConvocationToken, formatConvocationTokens } from "@/lib/game/spell-keywords";
+import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, formatConvocationToken, formatConvocationTokens } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell, getEntraideReduction, getTokenManaCost } from "@/lib/game/abilities";
 import { persistentStats } from "@/lib/game/engine";
 import KeywordIcon from "@/components/shared/KeywordIcon";
@@ -581,7 +581,7 @@ function HandCard({
             {card.spell_keywords && card.spell_keywords.length > 0 && card.spell_keywords.map((spellKw, i) => {
               const def = SPELL_KEYWORDS[spellKw.id];
               if (!def) return null;
-              const displayTitle = getSpellKeywordLabel(spellKw);
+              const displayTitle = vocab.spellKeywordLabel(spellKw);
               const usesAtkHp = def.params.includes("attack") && def.params.includes("health");
               const usesAmount = def.params.includes("amount");
               const hasValue = usesAmount || usesAtkHp;
@@ -748,8 +748,8 @@ function HandCard({
           {card.spell_keywords && card.spell_keywords.length > 0 && (
             <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
               {card.spell_keywords.map((spellKw, i) => {
-                const label = getSpellKeywordLabel(spellKw);
-                const desc = getSpellKeywordDesc(spellKw, card, tokenTemplates);
+                const label = vocab.spellKeywordLabel(spellKw);
+                const desc = vocab.spellKeywordDesc(spellKw, card, tokenTemplates);
                 return (
                 <div key={`sk_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
                   <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={9} keyword={`spell_${spellKw.id}`} /></span>

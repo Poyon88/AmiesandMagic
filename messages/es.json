@@ -538,6 +538,136 @@
       "expert-etendu": "Experto · Extendido",
       "classique-etendu": "Clásico · Extendido",
       "classique-standard": "Clásico · Estándar"
+    },
+    "spell_keywords": {
+      "poison": {
+        "label": "Veneno",
+        "desc": "Las unidades heridas pierden 1 PV por turno."
+      },
+      "pillage": {
+        "label": "Pillaje X",
+        "desc": "El adversario descarta X cartas aleatorias de su mano."
+      },
+      "convocation_simple": {
+        "label": "Convocación",
+        "desc": "Crea el token configurado."
+      },
+      "appel_du_clan": {
+        "label": "Llamada del clan X",
+        "desc": "Pon en juego gratuitamente la primera unidad del mismo clan que este hechizo, con un coste inferior o igual a X, desde tu mazo."
+      },
+      "appel_supreme": {
+        "label": "Llamada Suprema",
+        "desc": "Añade a tu mano la criatura de la raza elegida con el mayor coste restante en tu mazo (al azar en caso de empate)."
+      },
+      "rassemblement": {
+        "label": "Reunión X",
+        "desc": "Revela las X primeras cartas de tu mazo; añade a tu mano las unidades de la misma raza que este hechizo y descarta el resto."
+      },
+      "rappel": {
+        "label": "Retorno",
+        "desc": "Devuelve una criatura de tu cementerio a tu mano."
+      },
+      "exhumation": {
+        "label": "Exhumación X",
+        "desc": "Resucita una criatura (coste ≤ X) de tu cementerio al campo de batalla."
+      },
+      "selection": {
+        "label": "Selección X",
+        "desc": "Elige una carta entre 3 cartas comunes aleatorias de coste ≤ X (sin límite si X no está definido), de facciones del mismo alineamiento que este hechizo, para añadir a tu mano."
+      },
+      "selection_magique": {
+        "label": "Selección mágica X",
+        "desc": "Elige un hechizo entre 3 hechizos comunes aleatorios de coste ≤ X (sin límite si X no está definido), de facciones del mismo alineamiento que este hechizo, para añadir a tu mano."
+      },
+      "renfort_royal": {
+        "label": "Selección Real X",
+        "desc": "Elige una carta entre 3 cartas aleatorias de tus ediciones limitadas (se requieren ≥30; si no, entre comunes del mismo alineamiento) de coste ≤ X (sin límite si X no está definido) para añadir a tu mano."
+      },
+      "relancer": {
+        "label": "Relanzar X",
+        "desc": "Vuelve a lanzar los X últimos hechizos lanzados con objetivos aleatorios."
+      },
+      "invocation": {
+        "label": "Invocación X/Y",
+        "desc": "Invoca un token X/Y."
+      },
+      "impact": {
+        "label": "Impacto X",
+        "desc": "Inflige X de daño a un objetivo (criatura o héroe, cualquier bando)."
+      },
+      "deferlement": {
+        "label": "Oleada X",
+        "desc": "Inflige X de daño a todas las criaturas enemigas."
+      },
+      "siphon": {
+        "label": "Sifón X",
+        "desc": "Inflige X de daño a un objetivo y cura a tu héroe por la misma cantidad."
+      },
+      "entrave": {
+        "label": "Entorpecimiento",
+        "desc": "Paraliza una criatura enemiga objetivo."
+      },
+      "execution": {
+        "label": "Ejecución",
+        "desc": "Destruye una criatura objetivo."
+      },
+      "silence": {
+        "label": "Silencio",
+        "desc": "Elimina todas las palabras clave de una criatura objetivo."
+      },
+      "renforcement": {
+        "label": "Refuerzo +X/+Y",
+        "desc": "+X/+Y a una criatura aliada objetivo."
+      },
+      "affaiblissement": {
+        "label": "Debilitamiento -X/-Y",
+        "desc": "Otorga -X ATK y -Y PV a una criatura enemiga objetivo."
+      },
+      "guerison": {
+        "label": "Curación X",
+        "desc": "Restaura X PV a un objetivo"
+      },
+      "inspiration": {
+        "label": "Inspiración X",
+        "desc": "Roba X cartas"
+      },
+      "remontee": {
+        "label": "Retorno",
+        "desc": "Devuelve una unidad objetivo a la mano de su propietario original."
+      },
+      "renforcement_multiple": {
+        "label": "Refuerzo múltiple",
+        "desc": "Otorga +X/+Y a todas tus criaturas de la raza o clan seleccionado."
+      },
+      "entrainement": {
+        "label": "Entrenamiento X",
+        "desc": "Otorga +X/+X a tus criaturas en mano de la misma facción."
+      },
+      "concentration": {
+        "label": "Concentración X",
+        "desc": "Reemplaza cada hechizo en mano por un hechizo aleatorio (todas las facciones) de coste X mayor; el coste del nuevo hechizo se reduce en X."
+      },
+      "invocation_multiple": {
+        "label": "Convocaciones múltiples",
+        "desc": "Crea varios tokens según la configuración de la carta."
+      },
+      "tempete": {
+        "label": "Tormenta X",
+        "desc": "Inflige X de daño repartido aleatoriamente entre las unidades enemigas."
+      },
+      "cataclysme": {
+        "label": "Cataclismo X",
+        "desc": "Inflige X de daño a todas las criaturas (aliadas Y enemigas)."
+      },
+      "douleur": {
+        "label": "Dolor X",
+        "desc": "Al lanzar, inflige X de daño a tu héroe."
+      },
+      "afflux": {
+        "label": "Afluencia X",
+        "desc": "Gana X de maná este turno"
+      }
     }
   },
   "home": {

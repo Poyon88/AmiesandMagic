@@ -13,8 +13,6 @@ import {
 } from "@/lib/game/keyword-labels";
 import {
   SPELL_KEYWORD_SYMBOLS,
-  getSpellKeywordLabel,
-  getSpellKeywordDesc,
 } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import { emitImpact } from "@/lib/fx/impactFx";
@@ -318,8 +316,8 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
                 {card.spell_keywords && card.spell_keywords.length > 0 && (
                   <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                     {card.spell_keywords.map((spellKw, i) => {
-                      const label = getSpellKeywordLabel(spellKw);
-                      const desc = getSpellKeywordDesc(spellKw, card, tokenTemplates);
+                      const label = vocab.spellKeywordLabel(spellKw);
+                      const desc = vocab.spellKeywordDesc(spellKw, card, tokenTemplates);
                       return (
                         <div key={`sk_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 6 }}>
                           <span style={{ flexShrink: 0 }}>

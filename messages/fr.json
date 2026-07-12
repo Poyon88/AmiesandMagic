@@ -401,6 +401,136 @@
         "desc": "Invocation : rejoue une fois les effets composés déclenchés des autres alliés en jeu, pour un sous-ensemble figé de déclencheurs (entrée / mort / fin de tour / retour)."
       }
     },
+    "spell_keywords": {
+      "poison": {
+        "label": "Poison",
+        "desc": "Les unités blessées perdent 1 PV par tour."
+      },
+      "pillage": {
+        "label": "Pillage X",
+        "desc": "L'adversaire défausse X cartes aléatoires de sa main."
+      },
+      "convocation_simple": {
+        "label": "Convocation",
+        "desc": "Crée le token configuré."
+      },
+      "appel_du_clan": {
+        "label": "Appel du clan X",
+        "desc": "Mettez en jeu gratuitement la première unité de même clan que ce sort, avec un coût inférieur ou égal à X, depuis votre deck."
+      },
+      "appel_supreme": {
+        "label": "Appel Suprême",
+        "desc": "Ajoute à votre main la créature de la race choisie au coût le plus élevé restante dans votre deck (au hasard si égalité)."
+      },
+      "rassemblement": {
+        "label": "Rassemblement X",
+        "desc": "Révèle les X premières cartes de votre deck ; ajoutez à votre main les unités de la même race que ce sort et défaussez le reste."
+      },
+      "rappel": {
+        "label": "Rappel",
+        "desc": "Renvoie une créature de votre cimetière dans votre main"
+      },
+      "exhumation": {
+        "label": "Exhumation X",
+        "desc": "Ressuscite une créature (coût ≤ X) de votre cimetière sur le terrain"
+      },
+      "selection": {
+        "label": "Sélection X",
+        "desc": "Choisissez une carte parmi 3 communes aléatoires de coût ≤ X (sans limite si X non défini), issues des factions du même alignement que ce sort, à ajouter en main"
+      },
+      "selection_magique": {
+        "label": "Sélection magique X",
+        "desc": "Choisissez un sort parmi 3 sorts communs aléatoires de coût ≤ X (sans limite si X non défini), issus des factions du même alignement que ce sort, à ajouter en main"
+      },
+      "renfort_royal": {
+        "label": "Sélection Royale X",
+        "desc": "Choisissez une carte parmi 3 cartes aléatoires de vos éditions limitées (≥30 requises ; sinon parmi des communes du même alignement) de coût ≤ X (sans limite si X non défini) à ajouter en main"
+      },
+      "relancer": {
+        "label": "Relancer X",
+        "desc": "Rejoue les X derniers sorts lancés avec des cibles aléatoires"
+      },
+      "invocation": {
+        "label": "Invocation X/Y",
+        "desc": "Invoque un token X/Y"
+      },
+      "impact": {
+        "label": "Impact X",
+        "desc": "Inflige X dégâts à une cible (créature ou héros, n'importe quel bord)."
+      },
+      "deferlement": {
+        "label": "Déferlement X",
+        "desc": "Inflige X dégâts à toutes les créatures ennemies"
+      },
+      "siphon": {
+        "label": "Siphon X",
+        "desc": "Inflige X dégâts à une cible et soigne votre héros du même montant"
+      },
+      "entrave": {
+        "label": "Entrave",
+        "desc": "Paralyse une créature ennemie ciblée"
+      },
+      "execution": {
+        "label": "Exécution",
+        "desc": "Détruit une créature ciblée"
+      },
+      "silence": {
+        "label": "Silence",
+        "desc": "Retire tous les mots-clés d'une créature ciblée"
+      },
+      "renforcement": {
+        "label": "Renforcement +X/+Y",
+        "desc": "+X/+Y à une créature alliée ciblée."
+      },
+      "affaiblissement": {
+        "label": "Affaiblissement -X/-Y",
+        "desc": "Donne -X ATK et -Y PV à une créature ennemie ciblée."
+      },
+      "guerison": {
+        "label": "Guérison X",
+        "desc": "Restaure X PV à une cible"
+      },
+      "inspiration": {
+        "label": "Inspiration X",
+        "desc": "Piochez X cartes"
+      },
+      "remontee": {
+        "label": "Remontée",
+        "desc": "Renvoie une unité ciblée dans la main de son propriétaire d'origine."
+      },
+      "renforcement_multiple": {
+        "label": "Renforcement multiple",
+        "desc": "Octroie +X/+Y à toutes vos créatures de la race ou du clan sélectionné."
+      },
+      "entrainement": {
+        "label": "Entrainement X",
+        "desc": "Octroie +X/+X à vos créatures en main de la même faction."
+      },
+      "concentration": {
+        "label": "Concentration X",
+        "desc": "Remplace chaque sort en main par un sort aléatoire (toutes factions) de coût supérieur de X ; le coût du nouveau sort est réduit de X."
+      },
+      "invocation_multiple": {
+        "label": "Convocations multiples",
+        "desc": "Crée plusieurs tokens selon la configuration de la carte."
+      },
+      "tempete": {
+        "label": "Tempête X",
+        "desc": "Inflige X dégâts répartis aléatoirement entre les unités ennemies."
+      },
+      "cataclysme": {
+        "label": "Cataclysme X",
+        "desc": "Inflige X dégâts à toutes les créatures (alliées ET ennemies)."
+      },
+      "douleur": {
+        "label": "Douleur X",
+        "desc": "Au lancement, inflige X dégâts à votre héros."
+      },
+      "afflux": {
+        "label": "Afflux X",
+        "desc": "Gagnez X mana ce tour"
+      }
+    },
     "factions": {
       "Elfes": {
         "displayName": "L'Alliance Céleste",

@@ -538,6 +538,136 @@
       "expert-etendu": "Expert · Esteso",
       "classique-etendu": "Classico · Esteso",
       "classique-standard": "Classico · Standard"
+    },
+    "spell_keywords": {
+      "poison": {
+        "label": "Veleno",
+        "desc": "Le unità ferite perdono 1 PV per turno."
+      },
+      "pillage": {
+        "label": "Saccheggio X",
+        "desc": "L'avversario scarta X carte casuali dalla sua mano."
+      },
+      "convocation_simple": {
+        "label": "Convocazione",
+        "desc": "Crea il token configurato."
+      },
+      "appel_du_clan": {
+        "label": "Richiamo del Clan X",
+        "desc": "Schiera gratuitamente la prima unità dello stesso clan di questo incantesimo con costo inferiore o uguale a X dal tuo deck."
+      },
+      "appel_supreme": {
+        "label": "Richiamo Supremo",
+        "desc": "Aggiunge alla tua mano la creatura della razza scelta con il costo più alto rimasta nel tuo deck (casuale in caso di parità)."
+      },
+      "rassemblement": {
+        "label": "Raduno X",
+        "desc": "Rivela le prime X carte del tuo deck; aggiungi alla tua mano le unità della stessa razza di questo incantesimo e scarta il resto."
+      },
+      "rappel": {
+        "label": "Richiamo",
+        "desc": "Riporta una creatura dal tuo cimitero in mano"
+      },
+      "exhumation": {
+        "label": "Esumazione X",
+        "desc": "Resuscita una creatura (costo ≤ X) dal tuo cimitero sul campo"
+      },
+      "selection": {
+        "label": "Selezione X",
+        "desc": "Scegli una carta tra 3 carte comuni casuali di costo ≤ X (nessun limite se X non definito), delle fazioni dello stesso allineamento di questo incantesimo, da aggiungere in mano"
+      },
+      "selection_magique": {
+        "label": "Selezione Magica X",
+        "desc": "Scegli un incantesimo tra 3 incantesimi comuni casuali di costo ≤ X (nessun limite se X non definito), delle fazioni dello stesso allineamento di questo incantesimo, da aggiungere in mano"
+      },
+      "renfort_royal": {
+        "label": "Selezione Reale X",
+        "desc": "Scegli una carta tra 3 carte casuali delle tue edizioni limitate (≥30 richieste; altrimenti tra comuni dello stesso allineamento) di costo ≤ X (nessun limite se X non definito) da aggiungere in mano"
+      },
+      "relancer": {
+        "label": "Rilanciare X",
+        "desc": "Rilancia gli ultimi X incantesimi lanciati con bersagli casuali"
+      },
+      "invocation": {
+        "label": "Invocazione X/Y",
+        "desc": "Evoca un token X/Y"
+      },
+      "impact": {
+        "label": "Impatto X",
+        "desc": "Infligge X danni a un bersaglio (creatura o eroe, qualsiasi schieramento)."
+      },
+      "deferlement": {
+        "label": "Ondata X",
+        "desc": "Infligge X danni a tutte le creature nemiche"
+      },
+      "siphon": {
+        "label": "Sifone X",
+        "desc": "Infligge X danni a un bersaglio e cura il tuo eroe della stessa quantità"
+      },
+      "entrave": {
+        "label": "Intralcio",
+        "desc": "Paralizza una creatura nemica bersagliata"
+      },
+      "execution": {
+        "label": "Esecuzione",
+        "desc": "Distrugge una creatura bersagliata"
+      },
+      "silence": {
+        "label": "Silenzio",
+        "desc": "Rimuove tutte le parole chiave da una creatura bersagliata"
+      },
+      "renforcement": {
+        "label": "Potenziamento +X/+Y",
+        "desc": "+X/+Y a una creatura alleata bersagliata."
+      },
+      "affaiblissement": {
+        "label": "Indebolimento -X/-Y",
+        "desc": "Conferisce -X ATK e -Y PV a una creatura nemica bersagliata."
+      },
+      "guerison": {
+        "label": "Guarigione X",
+        "desc": "Ripristina X PV a un bersaglio"
+      },
+      "inspiration": {
+        "label": "Ispirazione X",
+        "desc": "Pesca X carte"
+      },
+      "remontee": {
+        "label": "Ritorno",
+        "desc": "Restituisce un'unità bersagliata alla mano del suo proprietario originale."
+      },
+      "renforcement_multiple": {
+        "label": "Potenziamento multiplo",
+        "desc": "Conferisce +X/+Y a tutte le tue creature della razza o del clan selezionato."
+      },
+      "entrainement": {
+        "label": "Addestramento X",
+        "desc": "Conferisce +X/+X alle tue creature in mano della stessa fazione."
+      },
+      "concentration": {
+        "label": "Concentrazione X",
+        "desc": "Sostituisce ogni incantesimo in mano con un incantesimo casuale (tutte le fazioni) di costo superiore di X; il costo del nuovo incantesimo è ridotto di X."
+      },
+      "invocation_multiple": {
+        "label": "Convocazioni multiple",
+        "desc": "Crea più token in base alla configurazione della carta."
+      },
+      "tempete": {
+        "label": "Tempesta X",
+        "desc": "Infligge X danni distribuiti casualmente tra le unità nemiche."
+      },
+      "cataclysme": {
+        "label": "Cataclisma X",
+        "desc": "Infligge X danni a tutte le creature (alleate E nemiche)."
+      },
+      "douleur": {
+        "label": "Dolore X",
+        "desc": "All'attivazione, infligge X danni al tuo eroe."
+      },
+      "afflux": {
+        "label": "Afflusso X",
+        "desc": "Guadagna X mana questo turno"
+      }
     }
   },
   "home": {

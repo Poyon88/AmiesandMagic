@@ -23,6 +23,7 @@ const FR_PATH = path.join(ROOT, "messages", "fr.json");
 // résolvant l'alias @/* via tsconfig, puis on l'importe pour lire les valeurs.
 const entry = `
 export { KEYWORD_LABELS } from "@/lib/game/keyword-labels";
+export { SPELL_KEYWORDS } from "@/lib/game/spell-keywords";
 export { FACTIONS, RARITIES, KEYWORDS, ALIGNMENTS } from "@/lib/card-engine/constants";
 `;
 
@@ -38,15 +39,15 @@ const built = await esbuild.build({
 
 const tmp = path.join(ROOT, "scripts", ".vocab-bundle.mjs");
 fs.writeFileSync(tmp, built.outputFiles[0].text);
-let KEYWORD_LABELS, FACTIONS, RARITIES, KEYWORDS, ALIGNMENTS;
+let KEYWORD_LABELS, SPELL_KEYWORDS, FACTIONS, RARITIES, KEYWORDS, ALIGNMENTS;
 try {
-  ({ KEYWORD_LABELS, FACTIONS, RARITIES, KEYWORDS, ALIGNMENTS } = await import(`file://${tmp}?t=${Date.now()}`));
+  ({ KEYWORD_LABELS, SPELL_KEYWORDS, FACTIONS, RARITIES, KEYWORDS, ALIGNMENTS } = await import(`file://${tmp}?t=${Date.now()}`));
 } finally {
   fs.rmSync(tmp, { force: true });
 }
 
 // ─── construit vocab.* ──────────────────────────────────────────────────────
-const vocab = { keywords: {}, factions: {}, rarities: {}, clans: {}, races: {}, alignments: {} };
+const vocab = { keywords: {}, spell_keywords: {}, factions: {}, rarities: {}, clans: {}, races: {}, alignments: {} };
 
 for (const [id, label] of Object.entries(KEYWORD_LABELS)) {
   vocab.keywords[id] = { label };
@@ -54,6 +55,13 @@ for (const [id, label] of Object.entries(KEYWORD_LABELS)) {
   // conserve les gabarits X/Y substitués à l'exécution). Traduite par le pipeline.
   const desc = KEYWORDS?.[label]?.desc;
   if (desc) vocab.keywords[id].desc = desc;
+}
+
+// Mots-clés de SORT (registre distinct, gabarits label/desc avec X/Y/amount
+// substitués à l'exécution par getSpellKeywordLabel/Desc).
+for (const [id, def] of Object.entries(SPELL_KEYWORDS ?? {})) {
+  vocab.spell_keywords[id] = { label: def.label };
+  if (def.desc) vocab.spell_keywords[id].desc = def.desc;
 }
 
 for (const [id, def] of Object.entries(FACTIONS)) {
@@ -107,6 +115,8 @@ fs.writeFileSync(FR_PATH, JSON.stringify(fr, null, 2) + "\n");
 const counts = {
   keywords: Object.keys(vocab.keywords).length,
   keyword_descs: Object.values(vocab.keywords).filter((k) => k.desc).length,
+  spell_keywords: Object.keys(vocab.spell_keywords).length,
+  spell_keyword_descs: Object.values(vocab.spell_keywords).filter((k) => k.desc).length,
   factions: Object.keys(vocab.factions).length,
   rarities: Object.keys(vocab.rarities).length,
   clans: Object.keys(vocab.clans).length,

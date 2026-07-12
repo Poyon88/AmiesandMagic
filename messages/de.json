@@ -538,6 +538,136 @@
       "expert-etendu": "Experte · Erweitert",
       "classique-etendu": "Klassisch · Erweitert",
       "classique-standard": "Klassisch · Standard"
+    },
+    "spell_keywords": {
+      "poison": {
+        "label": "Gift",
+        "desc": "Verwundete Einheiten verlieren 1 LP pro Runde."
+      },
+      "pillage": {
+        "label": "Plünderung X",
+        "desc": "Der Gegner legt X zufällige Karten aus seiner Hand ab."
+      },
+      "convocation_simple": {
+        "label": "Beschwörung",
+        "desc": "Erstellt den konfigurierten Token."
+      },
+      "appel_du_clan": {
+        "label": "Clanruf X",
+        "desc": "Spiele die erste Einheit desselben Clans wie dieser Zauber mit Kosten von höchstens X kostenlos aus deinem Deck aus."
+      },
+      "appel_supreme": {
+        "label": "Supremer Ruf",
+        "desc": "Fügt deiner Hand die Kreatur der gewählten Rasse mit den höchsten verbleibenden Kosten in deinem Deck hinzu (bei Gleichstand zufällig)."
+      },
+      "rassemblement": {
+        "label": "Sammlung X",
+        "desc": "Enthülle die ersten X Karten deines Decks; füge Einheiten derselben Rasse wie dieser Zauber deiner Hand hinzu und lege den Rest ab."
+      },
+      "rappel": {
+        "label": "Rückruf",
+        "desc": "Gibt eine Kreatur aus deinem Friedhof auf deine Hand zurück."
+      },
+      "exhumation": {
+        "label": "Exhumierung X",
+        "desc": "Erweckt eine Kreatur (Kosten ≤ X) aus deinem Friedhof auf dem Spielfeld."
+      },
+      "selection": {
+        "label": "Auswahl X",
+        "desc": "Wähle eine Karte aus 3 zufälligen gewöhnlichen Karten mit Kosten ≤ X (unbegrenzt, falls X nicht definiert) aus Fraktionen derselben Gesinnung wie dieser Zauber, um sie auf die Hand zu nehmen."
+      },
+      "selection_magique": {
+        "label": "Magische Auswahl X",
+        "desc": "Wähle einen Zauber aus 3 zufälligen gewöhnlichen Zaubern mit Kosten ≤ X (unbegrenzt, falls X nicht definiert) aus Fraktionen derselben Gesinnung wie dieser Zauber, um ihn auf die Hand zu nehmen."
+      },
+      "renfort_royal": {
+        "label": "Königliche Auswahl X",
+        "desc": "Wähle eine Karte aus 3 zufälligen Karten deiner limitierten Editionen (≥30 erforderlich; sonst aus gewöhnlichen derselben Gesinnung) mit Kosten ≤ X (unbegrenzt, falls X nicht definiert), um sie auf die Hand zu nehmen."
+      },
+      "relancer": {
+        "label": "Wiederholen X",
+        "desc": "Spielt die letzten X gewirkten Zauber mit zufälligen Zielen erneut."
+      },
+      "invocation": {
+        "label": "Beschwörung X/Y",
+        "desc": "Beschwört einen X/Y-Token."
+      },
+      "impact": {
+        "label": "Einschlag X",
+        "desc": "Fügt einem Ziel (Kreatur oder Held, beliebige Seite) X Schaden zu."
+      },
+      "deferlement": {
+        "label": "Ansturm X",
+        "desc": "Fügt allen feindlichen Kreaturen X Schaden zu."
+      },
+      "siphon": {
+        "label": "Siphon X",
+        "desc": "Fügt einem Ziel X Schaden zu und heilt deinen Helden um denselben Betrag."
+      },
+      "entrave": {
+        "label": "Fesselung",
+        "desc": "Lähmt eine anvisierte feindliche Kreatur."
+      },
+      "execution": {
+        "label": "Hinrichtung",
+        "desc": "Zerstört eine anvisierte Kreatur."
+      },
+      "silence": {
+        "label": "Stille",
+        "desc": "Entfernt alle Schlüsselwörter einer anvisierten Kreatur."
+      },
+      "renforcement": {
+        "label": "Stärkung +X/+Y",
+        "desc": "+X/+Y für eine anvisierte verbündete Kreatur."
+      },
+      "affaiblissement": {
+        "label": "Schwächung -X/-Y",
+        "desc": "Gibt einer feindlichen Zielkreatur -X ATK und -Y LP."
+      },
+      "guerison": {
+        "label": "Heilung X",
+        "desc": "Stellt einer Zieleinheit X LP wieder her."
+      },
+      "inspiration": {
+        "label": "Inspiration X",
+        "desc": "Ziehe X Karten."
+      },
+      "remontee": {
+        "label": "Rückzug",
+        "desc": "Gibt eine Zieleinheit auf die Hand ihres ursprünglichen Besitzers zurück."
+      },
+      "renforcement_multiple": {
+        "label": "Mehrfachstärkung",
+        "desc": "Gewährt allen deinen Kreaturen der gewählten Rasse oder des gewählten Clans +X/+Y."
+      },
+      "entrainement": {
+        "label": "Training X",
+        "desc": "Gewährt deinen Kreaturen auf der Hand derselben Fraktion +X/+X."
+      },
+      "concentration": {
+        "label": "Konzentration X",
+        "desc": "Ersetzt jeden Zauber auf der Hand durch einen zufälligen Zauber (alle Fraktionen) mit um X höheren Kosten; die Kosten des neuen Zaubers werden um X reduziert."
+      },
+      "invocation_multiple": {
+        "label": "Mehrfachbeschwörung",
+        "desc": "Erzeugt mehrere Tokens gemäß der Kartenkonfiguration."
+      },
+      "tempete": {
+        "label": "Sturm X",
+        "desc": "Verteilt X Schaden zufällig auf feindliche Einheiten."
+      },
+      "cataclysme": {
+        "label": "Katastrophe X",
+        "desc": "Fügt allen Kreaturen (verbündeten UND feindlichen) X Schaden zu."
+      },
+      "douleur": {
+        "label": "Schmerz X",
+        "desc": "Beim Wirken erleidet dein Held X Schaden."
+      },
+      "afflux": {
+        "label": "Zufluss X",
+        "desc": "Erhalte X Mana in diesem Zug."
+      }
     }
   },
   "home": {

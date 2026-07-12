@@ -50,7 +50,7 @@ function loadSetRegistry(): Promise<CardSet[]> {
   return _setRegistryPromise;
 }
 import { KEYWORD_SYMBOLS as keywordSymbols, toRoman, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
-import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, getSpellKeywordDesc, getSpellKeywordLabel, formatConvocationTokens, formatConvocationToken } from "@/lib/game/spell-keywords";
+import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, formatConvocationTokens, formatConvocationToken } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
@@ -387,7 +387,7 @@ export default function GameCard({
               // Skip stale ids that no longer exist in the registry — silently
               // dropping a single icon is better than crashing the whole card.
               if (!def) return null;
-              const displayTitle = getSpellKeywordLabel(spellKw);
+              const displayTitle = vocab.spellKeywordLabel(spellKw);
               const usesAtkHp = def.params.includes("attack") && def.params.includes("health");
               const usesAmount = def.params.includes("amount");
               const hasValue = usesAmount || usesAtkHp;
@@ -561,8 +561,8 @@ export default function GameCard({
         {card.spell_keywords && card.spell_keywords.length > 0 && (
           <div style={{ display: "flex", flexDirection: "column", gap: 6 * s }}>
             {card.spell_keywords.map((spellKw, i) => {
-              const label = getSpellKeywordLabel(spellKw);
-              const desc = getSpellKeywordDesc(spellKw, card, effectiveTokens);
+              const label = vocab.spellKeywordLabel(spellKw);
+              const desc = vocab.spellKeywordDesc(spellKw, card, effectiveTokens);
               return (
               <div key={`sk_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
                 <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={18 * s} keyword={`spell_${spellKw.id}`} /></span>

@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { CardInstance } from "@/lib/game/types";
 import { toRoman, parseXValuesFromEffectText, cleanEffectText } from "@/lib/game/keyword-labels";
-import { getSpellKeywordLabel } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import { composedCapsOf, composedIcon, composedKeywordName, composedTriggerMode, describeComposedCap } from "@/lib/game/composed-display";
 import ComposedMarker from "@/components/cards/ComposedMarker";
@@ -143,7 +142,7 @@ export default function CardPreview({ cardInstance, anchorRef, position = "above
         {card.spell_keywords && card.spell_keywords.length > 0 && (
           <div className="px-3 pb-1 flex gap-1 flex-wrap">
             {card.spell_keywords.map((spellKw, i) => {
-              const displayLabel = getSpellKeywordLabel(spellKw);
+              const displayLabel = vocab.spellKeywordLabel(spellKw);
               return (
               <span key={`sk_${i}`} className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 font-medium">
                 {displayLabel}
