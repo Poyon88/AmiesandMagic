@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import type { HeroPowerCastEvent } from "@/lib/store/gameStore";
+import { useHeroText } from "@/i18n/useHeroText";
 import { emitImpact } from "@/lib/fx/impactFx";
 import { OVERLAY, cardRevealInitial, cardRevealAnimate, cardRevealTransition } from "@/lib/fx/overlayMotion";
 import { RadialFlash, HaloBloom, ExpandingRing, OrbitingSparkles } from "@/components/game/OverlayPrimitives";
@@ -29,6 +30,7 @@ const HERO_IMAGES: Record<string, string> = {
 
 export default function HeroPowerOverlay({ event, onComplete }: HeroPowerOverlayProps) {
   const t = useTranslations("game");
+  const heroText = useHeroText();
   const [mounted, setMounted] = useState(false);
   const cardRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => setMounted(true), []);
@@ -63,6 +65,17 @@ export default function HeroPowerOverlay({ event, onComplete }: HeroPowerOverlay
 
   // Per-hero power illustration wins over the race-generic fallback.
   const imageUrl = event ? (event.powerImageUrl ?? HERO_IMAGES[event.race] ?? null) : null;
+
+  // Localise the FR-canonical event fields at render time (keyed by heroId).
+  const heroName = event
+    ? heroText.heroName({ id: event.heroId, name: event.heroName })
+    : "";
+  const powerName = event
+    ? heroText.powerName({ id: event.heroId, power_name: event.powerName }) ?? event.powerName
+    : "";
+  const powerDescription = event
+    ? heroText.powerDesc({ id: event.heroId, power_description: event.powerDescription }) ?? event.powerDescription
+    : "";
 
   return createPortal(
     <AnimatePresence>
@@ -140,7 +153,7 @@ export default function HeroPowerOverlay({ event, onComplete }: HeroPowerOverlay
                 letterSpacing: "0.02em",
                 textShadow: "0 1px 2px rgba(0,0,0,0.95)",
               }}>
-                {event.heroName}
+                {heroName}
               </div>
 
               {/* Power name */}
@@ -155,14 +168,14 @@ export default function HeroPowerOverlay({ event, onComplete }: HeroPowerOverlay
                 textShadow: `0 0 10px rgba(${color}, 0.9), 0 2px 3px rgba(0,0,0,0.95)`,
                 letterSpacing: "0.03em",
               }}>
-                ✨ {event.powerName}
+                ✨ {powerName}
               </div>
 
               {/* Spacer keeps the illustration centre clear */}
               <div style={{ flex: 1 }} />
 
               {/* Power description */}
-              {event.powerDescription && (
+              {powerDescription && (
                 <div style={{
                   padding: "6px 9px",
                   background: `rgba(${color}, 0.18)`,
@@ -176,7 +189,7 @@ export default function HeroPowerOverlay({ event, onComplete }: HeroPowerOverlay
                     lineHeight: 1.4,
                     fontFamily: "'Crimson Text', serif",
                     textShadow: "0 1px 2px rgba(0,0,0,0.9)",
-                  }}>{event.powerDescription}</p>
+                  }}>{powerDescription}</p>
                 </div>
               )}
 

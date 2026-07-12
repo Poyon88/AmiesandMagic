@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useTranslations } from "next-intl";
 import type { HeroDefinition } from "@/lib/game/types";
+import { useHeroText } from "@/i18n/useHeroText";
 
 interface HeroPowerDescriptionOverlayProps {
   heroDef: HeroDefinition;
@@ -19,6 +20,13 @@ export default function HeroPowerDescriptionOverlay({
   onClose,
 }: HeroPowerDescriptionOverlayProps) {
   const t = useTranslations("game");
+  const heroText = useHeroText();
+  const heroName = heroText.heroName({ id: heroDef.id, name: heroDef.name });
+  const powerName =
+    heroText.powerName({ id: heroDef.id, power_name: heroDef.powerName }) ?? heroDef.powerName;
+  const powerDescription =
+    heroText.powerDesc({ id: heroDef.id, power_description: heroDef.powerDescription }) ??
+    heroDef.powerDescription;
   // Close on Escape
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
@@ -61,7 +69,7 @@ export default function HeroPowerDescriptionOverlay({
               marginBottom: 10,
             }}
           >
-            {heroDef.name || "—"}
+            {heroName || "—"}
           </div>
           <div
             style={{
@@ -85,7 +93,7 @@ export default function HeroPowerDescriptionOverlay({
               margin: 0,
             }}
           >
-            {heroDef.powerName || "—"}
+            {powerName || "—"}
           </h3>
           <div
             style={{
@@ -143,7 +151,7 @@ export default function HeroPowerDescriptionOverlay({
             padding: "8px 0",
           }}
         >
-          {heroDef.powerDescription || <em style={{ color: "#777" }}>{t('power_no_description')}</em>}
+          {powerDescription || <em style={{ color: "#777" }}>{t('power_no_description')}</em>}
         </p>
 
         <div

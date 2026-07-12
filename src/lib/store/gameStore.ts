@@ -155,6 +155,9 @@ export interface ManaReductionEvent {
 }
 
 export interface HeroPowerCastEvent {
+  // Purely an FX payload (not part of hashed GameState). heroId lets the
+  // overlay localise name / power via useHeroText at render time.
+  heroId: number;
   heroName: string;
   race: string;
   powerName: string;
@@ -1036,6 +1039,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       const heroDef = player.hero.heroDefinition;
       if (heroDef) {
         heroPowerEvent = {
+          heroId: heroDef.id,
           heroName: heroDef.name,
           race: heroDef.race,
           powerName: heroDef.powerName,

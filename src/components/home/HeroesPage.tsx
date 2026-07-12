@@ -8,6 +8,7 @@ import AmHeading from "@/components/ui/AmHeading";
 import { useTranslations } from "next-intl";
 import { RARITIES } from "@/lib/card-engine/constants";
 import { useVocab } from "@/i18n/useVocab";
+import { useHeroText } from "@/i18n/useHeroText";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
 
 const RARITY_COLOR: Record<string, string> = Object.fromEntries(
@@ -313,6 +314,7 @@ function HeroCard({
   onShowPower: (hero: HeroRow, rect: DOMRect) => void;
 }) {
   const vocab = useVocab();
+  const heroText = useHeroText();
   const articleRef = useRef<HTMLElement>(null);
   // Touch equivalent of right-click: a long-press opens the same power popover.
   const longPress = useLongPress(() => {
@@ -348,7 +350,7 @@ function HeroCard({
             {hero.thumbnail_url ? (
               <Image
                 src={hero.thumbnail_url}
-                alt={`${hero.name} — portrait`}
+                alt={`${heroText.heroName(hero)} — portrait`}
                 fill
                 sizes="180px"
                 className="object-contain"
@@ -364,7 +366,7 @@ function HeroCard({
           className="am-foil-text font-display font-bold tracking-wide mt-1"
           style={{ fontSize: "clamp(18px, 1.9vw, 23px)", letterSpacing: "0.04em" }}
         >
-          {hero.name}
+          {heroText.heroName(hero)}
         </h2>
 
         {(hero.faction || hero.race || hero.clan) && (
@@ -387,11 +389,11 @@ function HeroCard({
               <span>{powerLabel}</span>
             </div>
             <p className="font-display font-semibold text-am-ink text-sm">
-              {hero.power_name}
+              {heroText.powerName(hero)}
             </p>
             {hero.power_description && (
               <p className="font-serif text-am-ink-soft text-xs mt-1.5 leading-relaxed">
-                {hero.power_description}
+                {heroText.powerDesc(hero)}
               </p>
             )}
           </div>
@@ -412,13 +414,14 @@ function HeroPowerPopover({
   y: number;
   powerLabel: string;
 }) {
+  const heroText = useHeroText();
   const [imgFailed, setImgFailed] = useState(false);
   // Per-hero illustration wins; fall back to the race-generic power icon.
   const src = hero.power_image_url ?? (hero.race ? `/images/powers/${hero.race}.svg` : null);
   return (
     <div
       role="dialog"
-      aria-label={`${powerLabel} — ${hero.power_name ?? hero.name}`}
+      aria-label={`${powerLabel} — ${heroText.powerName(hero) ?? heroText.heroName(hero)}`}
       onClick={(e) => e.stopPropagation()}
       onContextMenu={(e) => e.stopPropagation()}
       className="am-glass am-animate-fade fixed z-[80] w-[280px] rounded-xl border border-am-gold/40 shadow-[0_24px_60px_-18px_rgba(0,0,0,0.75)] overflow-hidden"
@@ -447,11 +450,11 @@ function HeroPowerPopover({
           <span>{powerLabel}</span>
         </div>
         {hero.power_name && (
-          <p className="font-display font-semibold text-am-ink text-sm">{hero.power_name}</p>
+          <p className="font-display font-semibold text-am-ink text-sm">{heroText.powerName(hero)}</p>
         )}
         {hero.power_description && (
           <p className="font-serif text-am-ink-soft text-xs mt-1.5 leading-relaxed">
-            {hero.power_description}
+            {heroText.powerDesc(hero)}
           </p>
         )}
       </div>

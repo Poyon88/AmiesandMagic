@@ -1,0 +1,637 @@
+{
+  "en": {
+    "19": {
+      "name": "Test Portrait 2",
+      "power_name": "Heal",
+      "power_description": "Heal a target for 2 HP"
+    },
+    "24": {
+      "name": "Elendil",
+      "power_name": "Magic Arrow",
+      "power_description": "Deal 1 damage to a target"
+    },
+    "28": {
+      "name": "Gorash the Strategist",
+      "power_name": "Power Strike",
+      "power_description": "Deal 2 damage to a target"
+    },
+    "29": {
+      "name": "Durgrim",
+      "power_name": "Armor",
+      "power_description": "Grant Armor to a target unit (reduces non-spell damage taken by half)"
+    },
+    "30": {
+      "name": "Asterion",
+      "power_name": "Hoof Kick",
+      "power_description": "Deal 2 damage to the enemy hero"
+    },
+    "31": {
+      "name": "Maldrak",
+      "power_name": "Fangs",
+      "power_description": "Drain 1 HP from the target"
+    },
+    "33": {
+      "name": "Aldric the Just",
+      "power_name": "Divine Shield",
+      "power_description": "Grant Divine Shield to the target unit"
+    },
+    "34": {
+      "name": "Velkyn",
+      "power_name": "Corruption",
+      "power_description": "Convert the selected enemy unit to your side until end of turn; it gains Pursuit until end of turn."
+    },
+    "35": {
+      "name": "Balinor",
+      "power_name": "Allegiance",
+      "power_description": "Friendly units of the same faction get +1/+1"
+    },
+    "36": {
+      "name": "Primordis",
+      "power_name": "Stone Skin",
+      "power_description": "The target creature gains Armor: Reduces combat damage taken by half (rounded up); spell damage is not reduced."
+    },
+    "37": {
+      "name": "Sylvaran",
+      "power_name": "Heightened Resistance",
+      "power_description": "Grant \"Resistance 2\" to a target creature."
+    },
+    "38": {
+      "name": "Milo",
+      "power_name": "Call a Friend",
+      "power_description": "Summon a brave young hobbit 0/1"
+    },
+    "39": {
+      "name": "Naïa",
+      "power_name": "Instant Spell",
+      "power_description": "Choose a spell from 3 random spells (all factions) with cost ≤ X to add to your hand."
+    },
+    "40": {
+      "name": "Elyndra",
+      "power_name": "Healing",
+      "power_description": "Fully heal the target unit"
+    },
+    "41": {
+      "name": "Karvok",
+      "power_name": "Bear Strength",
+      "power_description": "Give +1/+1 to a friendly unit"
+    },
+    "43": {
+      "name": "Aetheron",
+      "power_name": "Storm",
+      "power_description": "Deal 2 damage split randomly among enemy units"
+    },
+    "44": {
+      "name": "Sigurd",
+      "power_name": "Berserk",
+      "power_description": "Grant Berserk to a target unit"
+    },
+    "45": {
+      "name": "Amaya",
+      "power_name": "Clan Call",
+      "power_description": "Summon a 1/1 Inca ally"
+    },
+    "46": {
+      "name": "Ragnar Moonhowler",
+      "power_name": "Command",
+      "power_description": "Friendly units of the \"The Pack\" faction in play get +1/+1"
+    },
+    "47": {
+      "name": "Arjun Fireclaw",
+      "power_name": "Feline Grace",
+      "power_description": "Grant \"Raid\" to a target creature."
+    },
+    "48": {
+      "name": "Nimbor, Warden of Storms",
+      "power_name": "Storm",
+      "power_description": "Deal 1 damage twice to random enemies"
+    },
+    "49": {
+      "name": "Nutkin, Guardian of Dreams",
+      "power_name": "Invigorating Nut",
+      "power_description": "Give +1/+1 to the target friendly unit"
+    },
+    "50": {
+      "name": "Noham the Negotiator",
+      "power_name": "Favorable Deal",
+      "power_description": "Choose a card from 3 random commons with cost ≤ 4 from factions of the same alignment as this card to add to your hand."
+    },
+    "51": {
+      "name": "Vaelkor, Master of the Abyss",
+      "power_name": "Abyssal Call",
+      "power_description": "Add to your hand the demon with the highest mana cost remaining in your deck (random in case of a tie)."
+    },
+    "53": {
+      "name": "Hayato, Master of Shadows",
+      "power_name": "Sudden Disappearance",
+      "power_description": "Return a target friendly unit to its original owner's hand."
+    }
+  },
+  "es": {
+    "19": {
+      "name": "Retrato de Prueba 2",
+      "power_name": "Curación",
+      "power_description": "Cura un objetivo por 2 PV"
+    },
+    "24": {
+      "name": "Elendil",
+      "power_name": "Flecha Mágica",
+      "power_description": "Inflige 1 de daño a un objetivo"
+    },
+    "28": {
+      "name": "Gorash el Estratega",
+      "power_name": "Golpe Poderoso",
+      "power_description": "Inflige 2 puntos de daño a un objetivo"
+    },
+    "29": {
+      "name": "Durgrim",
+      "power_name": "Armadura",
+      "power_description": "Otorga armadura a una unidad objetivo (reduce a la mitad el daño recibido que no provenga de hechizos)"
+    },
+    "30": {
+      "name": "Asterion",
+      "power_name": "Golpe de Casco",
+      "power_description": "Inflige 2 puntos de daño al héroe rival"
+    },
+    "31": {
+      "name": "Maldrak",
+      "power_name": "Colmillos",
+      "power_description": "Roba 1 PV al objetivo"
+    },
+    "33": {
+      "name": "Aldric el Justo",
+      "power_name": "Escudo Divino",
+      "power_description": "Otorga escudo divino a la unidad objetivo"
+    },
+    "34": {
+      "name": "Velkyn",
+      "power_name": "Corrupción",
+      "power_description": "Convierte la unidad enemiga seleccionada a tu bando hasta el final del turno; gana Acecho hasta el final del turno."
+    },
+    "35": {
+      "name": "Balinor",
+      "power_name": "Lealtad",
+      "power_description": "Las unidades de la misma facción obtienen +1/+1"
+    },
+    "36": {
+      "name": "Primordis",
+      "power_name": "Piel de Piedra",
+      "power_description": "La criatura objetivo gana Armadura: reduce a la mitad el daño de combate recibido (redondeado hacia arriba); el daño de hechizos no se reduce."
+    },
+    "37": {
+      "name": "Sylvaran",
+      "power_name": "Resistencia Aumentada",
+      "power_description": "Otorga «Resistencia 2» a una criatura objetivo."
+    },
+    "38": {
+      "name": "Milo",
+      "power_name": "Llamada a un Amigo",
+      "power_description": "Invoca un joven hobbit valiente 0/1"
+    },
+    "39": {
+      "name": "Naïa",
+      "power_name": "Hechizo Instantáneo",
+      "power_description": "Elige un hechizo entre 3 hechizos aleatorios (de todas las facciones) de coste ≤ X para añadir a tu mano."
+    },
+    "40": {
+      "name": "Elyndra",
+      "power_name": "Sanación",
+      "power_description": "Cura completamente a la unidad objetivo"
+    },
+    "41": {
+      "name": "Karvok",
+      "power_name": "Fuerza de los Osos",
+      "power_description": "Otorga +1/+1 a una unidad aliada"
+    },
+    "43": {
+      "name": "Aetheron",
+      "power_name": "Tormenta",
+      "power_description": "Inflige 2 de daño repartidos aleatoriamente entre las unidades enemigas"
+    },
+    "44": {
+      "name": "Sigurd",
+      "power_name": "Berserk",
+      "power_description": "Otorga Berserk a una unidad objetivo"
+    },
+    "45": {
+      "name": "Amaya",
+      "power_name": "Llamada del Clan",
+      "power_description": "Invoca una aliada Inca 1/1"
+    },
+    "46": {
+      "name": "Ragnar Aullaluna",
+      "power_name": "Mando",
+      "power_description": "Las unidades de la facción «La Jauría» en juego obtienen +1/+1"
+    },
+    "47": {
+      "name": "Arjun Garra de Fuego",
+      "power_name": "Gracia Felina",
+      "power_description": "Otorga «Saqueo» a una criatura objetivo."
+    },
+    "48": {
+      "name": "Nimbor, Guardián de las Tormentas",
+      "power_name": "Tormenta",
+      "power_description": "Inflige daño 2 veces a enemigos aleatorios"
+    },
+    "49": {
+      "name": "Nutkin, Guardiana de los Sueños",
+      "power_name": "Nuez Vigorizante",
+      "power_description": "Otorga +1/+1 a la unidad aliada objetivo"
+    },
+    "50": {
+      "name": "Noham el Negociador",
+      "power_name": "Trato Favorable",
+      "power_description": "Elige una carta entre 3 cartas comunes aleatorias de coste ≤ 4 pertenecientes a facciones del mismo alineamiento que esta carta, para añadir a tu mano."
+    },
+    "51": {
+      "name": "Vaelkor, Señor de los Abismos",
+      "power_name": "Llamada Abisal",
+      "power_description": "Añade a tu mano el demonio con el mayor coste de maná restante en tu mazo (elegido al azar en caso de empate)."
+    },
+    "53": {
+      "name": "Hayato, Maestro de las Sombras",
+      "power_name": "Desaparición Súbita",
+      "power_description": "Devuelve una unidad aliada objetivo a la mano de su propietario original."
+    }
+  },
+  "de": {
+    "19": {
+      "name": "Test Portrait 2",
+      "power_name": "Heilung",
+      "power_description": "Heile ein Ziel um 2 LP"
+    },
+    "24": {
+      "name": "Elendil",
+      "power_name": "Magischer Pfeil",
+      "power_description": "Füge einem Ziel 1 Schaden zu"
+    },
+    "28": {
+      "name": "Gorash der Stratege",
+      "power_name": "Kraftvoller Schlag",
+      "power_description": "Füge einem Ziel 2 Schadenspunkte zu"
+    },
+    "29": {
+      "name": "Durgrim",
+      "power_name": "Rüstung",
+      "power_description": "Verleihe einer Zieleinheit Rüstung (halbiert erlittenen Schaden, der nicht von Zaubern stammt)"
+    },
+    "30": {
+      "name": "Asterion",
+      "power_name": "Hufschlag",
+      "power_description": "Füge dem gegnerischen Helden 2 Schadenspunkte zu"
+    },
+    "31": {
+      "name": "Maldrak",
+      "power_name": "Reißzähne",
+      "power_description": "Stiehl dem Ziel 1 LP"
+    },
+    "33": {
+      "name": "Aldric der Gerechte",
+      "power_name": "Göttlicher Schild",
+      "power_description": "Verleihe der Zieleinheit Göttlichen Schild"
+    },
+    "34": {
+      "name": "Velkyn",
+      "power_name": "Korruption",
+      "power_description": "Konvertiere die gewählte feindliche Einheit bis zum Ende des Zuges auf deine Seite; sie erhält bis zum Ende des Zuges Jagd."
+    },
+    "35": {
+      "name": "Balinor",
+      "power_name": "Gefolgschaft",
+      "power_description": "Einheiten derselben Fraktion erhalten +1/+1"
+    },
+    "36": {
+      "name": "Primordis",
+      "power_name": "Steinhaut",
+      "power_description": "Die Zielkreatur erhält Rüstung: Halbiert erlittenen Kampfschaden (aufgerundet); Zauberschaden wird nicht reduziert."
+    },
+    "37": {
+      "name": "Sylvaran",
+      "power_name": "Erhöhte Resistenz",
+      "power_description": "Verleihe einer Zielkreatur „Resistenz 2\"."
+    },
+    "38": {
+      "name": "Milo",
+      "power_name": "Ruf nach einem Freund",
+      "power_description": "Beschwöre einen tapferen jungen Hobbit 0/1"
+    },
+    "39": {
+      "name": "Naïa",
+      "power_name": "Sofortzauber",
+      "power_description": "Wähle einen Zauber aus 3 zufälligen Zaubern (alle Fraktionen) mit Kosten ≤ X, um ihn auf die Hand zu nehmen."
+    },
+    "40": {
+      "name": "Elyndra",
+      "power_name": "Genesung",
+      "power_description": "Heile die Zieleinheit vollständig"
+    },
+    "41": {
+      "name": "Karvok",
+      "power_name": "Bärenstärke",
+      "power_description": "Verleihe einer verbündeten Einheit +1/+1"
+    },
+    "43": {
+      "name": "Aetheron",
+      "power_name": "Sturm",
+      "power_description": "Füge 2 Schaden zufällig verteilt auf feindliche Einheiten zu"
+    },
+    "44": {
+      "name": "Sigurd",
+      "power_name": "Berserk",
+      "power_description": "Verleihe einer Zieleinheit Berserker"
+    },
+    "45": {
+      "name": "Amaya",
+      "power_name": "Ruf des Clans",
+      "power_description": "Beschwöre eine verbündete Inka 1/1"
+    },
+    "46": {
+      "name": "Ragnar Mondheulер",
+      "power_name": "Befehlsgewalt",
+      "power_description": "Einheiten der Fraktion „Das Rudel\" im Spiel erhalten +1/+1"
+    },
+    "47": {
+      "name": "Arjun Feuerklaue",
+      "power_name": "Katzenhafte Anmut",
+      "power_description": "Verleihe einer Zielkreatur „Razzia\"."
+    },
+    "48": {
+      "name": "Nimbor, Hüter der Stürme",
+      "power_name": "Sturm",
+      "power_description": "Füge 2 Mal einem zufälligen Feind Schaden zu"
+    },
+    "49": {
+      "name": "Nutkin, Hüterin der Träume",
+      "power_name": "Stärkende Nuss",
+      "power_description": "Verleihe der Zielverbündeten +1/+1"
+    },
+    "50": {
+      "name": "Noham der Unterhändler",
+      "power_name": "Günstiger Handel",
+      "power_description": "Wähle eine Karte aus 3 zufälligen gewöhnlichen Karten mit Kosten ≤ 4 aus Fraktionen derselben Gesinnung wie diese Karte, um sie auf die Hand zu nehmen."
+    },
+    "51": {
+      "name": "Vaelkor, Herr der Abgründe",
+      "power_name": "Abyssischer Ruf",
+      "power_description": "Füge deiner Hand den Dämon mit den höchsten Manakosten aus deinem Deck hinzu (bei Gleichstand zufällig)."
+    },
+    "53": {
+      "name": "Hayato, Meister der Schatten",
+      "power_name": "Plötzliches Verschwinden",
+      "power_description": "Schicke eine Zielverbündete zurück in die Hand ihres ursprünglichen Besitzers."
+    }
+  },
+  "it": {
+    "19": {
+      "name": "Test Portrait 2",
+      "power_name": "Cura",
+      "power_description": "Cura un bersaglio di 2 PV"
+    },
+    "24": {
+      "name": "Elendil",
+      "power_name": "Freccia Magica",
+      "power_description": "Infliggi 1 danno a un bersaglio"
+    },
+    "28": {
+      "name": "Gorash lo Stratega",
+      "power_name": "Colpo Potente",
+      "power_description": "Infliggi 2 danni a un bersaglio"
+    },
+    "29": {
+      "name": "Durgrim",
+      "power_name": "Armatura",
+      "power_description": "Conferisce armatura a un'unità bersaglio (riduce della metà i danni subiti che non provengono da magie)"
+    },
+    "30": {
+      "name": "Asterion",
+      "power_name": "Colpo di Zoccolo",
+      "power_description": "Infliggi 2 danni all'eroe avversario"
+    },
+    "31": {
+      "name": "Maldrak",
+      "power_name": "Zanne",
+      "power_description": "Ruba 1 PV al bersaglio"
+    },
+    "33": {
+      "name": "Aldric il Giusto",
+      "power_name": "Scudo Divino",
+      "power_description": "Conferisce scudo divino all'unità bersaglio"
+    },
+    "34": {
+      "name": "Velkyn",
+      "power_name": "Corruzione",
+      "power_description": "Converte l'unità nemica selezionata alla tua fazione fino alla fine del turno; ottiene Caccia fino alla fine del turno."
+    },
+    "35": {
+      "name": "Balinor",
+      "power_name": "Alleanza",
+      "power_description": "Le unità della stessa fazione ottengono +1/+1"
+    },
+    "36": {
+      "name": "Primordis",
+      "power_name": "Pelle di Pietra",
+      "power_description": "La creatura bersaglio ottiene Armatura: riduce della metà i danni da combattimento subiti (arrotondati per eccesso); i danni da magie non vengono ridotti."
+    },
+    "37": {
+      "name": "Sylvaran",
+      "power_name": "Resistenza Aumentata",
+      "power_description": "Conferisce «Resistenza 2» a una creatura bersaglio."
+    },
+    "38": {
+      "name": "Milo",
+      "power_name": "Chiama un Amico",
+      "power_description": "Evoca un giovane hobbit valoroso 0/1"
+    },
+    "39": {
+      "name": "Naïa",
+      "power_name": "Incantesimo Istantaneo",
+      "power_description": "Scegli una magia tra 3 magie casuali (tutte le fazioni) di costo ≤ X da aggiungere in mano."
+    },
+    "40": {
+      "name": "Elyndra",
+      "power_name": "Guarigione",
+      "power_description": "Cura completamente l'unità bersaglio"
+    },
+    "41": {
+      "name": "Karvok",
+      "power_name": "Forza degli Orsi",
+      "power_description": "Conferisce +1/+1 a un'unità alleata"
+    },
+    "43": {
+      "name": "Aetheron",
+      "power_name": "Tempesta",
+      "power_description": "Infliggi 2 danni distribuiti casualmente tra le unità nemiche"
+    },
+    "44": {
+      "name": "Sigurd",
+      "power_name": "Berserk",
+      "power_description": "Conferisce Berserk a un'unità bersaglio"
+    },
+    "45": {
+      "name": "Amaya",
+      "power_name": "Richiamo del Clan",
+      "power_description": "Evoca un'alleata Inca 1/1"
+    },
+    "46": {
+      "name": "Ragnar Urla-Luna",
+      "power_name": "Comando",
+      "power_description": "Le unità della fazione \"Il Branco\" in gioco ottengono +1/+1"
+    },
+    "47": {
+      "name": "Arjun Artiglio-di-Fuoco",
+      "power_name": "Grazia Felina",
+      "power_description": "Conferisce «Raid» a una creatura bersaglio."
+    },
+    "48": {
+      "name": "Nimbor, Guardiano delle Tempeste",
+      "power_name": "Tempesta",
+      "power_description": "Infliggi 2 volte 1 danno a nemici casuali"
+    },
+    "49": {
+      "name": "Nutkin, guardiana dei sogni",
+      "power_name": "Nocciola Rinvigorente",
+      "power_description": "Conferisce +1/+1 all'unità alleata bersaglio"
+    },
+    "50": {
+      "name": "Noham il Negoziatore",
+      "power_name": "Affare Vantaggioso",
+      "power_description": "Scegli una carta tra 3 comuni casuali di costo ≤ 4 provenienti dalle fazioni dello stesso allineamento di questa carta, da aggiungere in mano."
+    },
+    "51": {
+      "name": "Vaelkor, Signore degli Abissi",
+      "power_name": "Richiamo Abissale",
+      "power_description": "Aggiunge alla tua mano il demone con il costo in mana più alto rimasto nel tuo mazzo (casuale in caso di parità)."
+    },
+    "53": {
+      "name": "Hayato, Maestro delle Ombre",
+      "power_name": "Scomparsa Improvvisa",
+      "power_description": "Restituisce un'unità alleata bersaglio alla mano del suo proprietario originale."
+    }
+  },
+  "pt": {
+    "19": {
+      "name": "Retrato de Teste 2",
+      "power_name": "Cura",
+      "power_description": "Cure 2 PVs em um alvo"
+    },
+    "24": {
+      "name": "Elendil",
+      "power_name": "Flecha Mágica",
+      "power_description": "Causa 1 de dano a um alvo"
+    },
+    "28": {
+      "name": "Gorash, o Estrategista",
+      "power_name": "Golpe Poderoso",
+      "power_description": "Causa 2 pontos de dano a um alvo"
+    },
+    "29": {
+      "name": "Durgrim",
+      "power_name": "Armadura",
+      "power_description": "Concede Armadura a uma unidade-alvo (reduz à metade o dano recebido que não seja proveniente de magias)"
+    },
+    "30": {
+      "name": "Asterion",
+      "power_name": "Coice",
+      "power_description": "Causa 2 pontos de dano ao herói adversário"
+    },
+    "31": {
+      "name": "Maldrak",
+      "power_name": "Presas",
+      "power_description": "Rouba 1 PV do alvo"
+    },
+    "33": {
+      "name": "Aldric, o Justo",
+      "power_name": "Escudo Divino",
+      "power_description": "Concede Escudo Divino à unidade-alvo"
+    },
+    "34": {
+      "name": "Velkyn",
+      "power_name": "Corrupção",
+      "power_description": "Converte a unidade inimiga selecionada para o seu lado até o fim do turno; ela ganha Rastreamento até o fim do turno."
+    },
+    "35": {
+      "name": "Balinor",
+      "power_name": "Lealdade",
+      "power_description": "As unidades da mesma facção ganham +1/+1"
+    },
+    "36": {
+      "name": "Primordis",
+      "power_name": "Pele de Pedra",
+      "power_description": "A criatura-alvo ganha Armadura: reduz à metade o dano de combate recebido (arredondado para cima); o dano de magias não é reduzido."
+    },
+    "37": {
+      "name": "Sylvaran",
+      "power_name": "Resistência Aumentada",
+      "power_description": "Concede «Resistência 2» a uma criatura-alvo."
+    },
+    "38": {
+      "name": "Milo",
+      "power_name": "Chamar um Amigo",
+      "power_description": "Convoca um jovem hobbit valente 0/1"
+    },
+    "39": {
+      "name": "Naïa",
+      "power_name": "Feitiço Instantâneo",
+      "power_description": "Escolha uma magia entre 3 magias aleatórias (todas as facções) de custo ≤ X para adicionar à sua mão."
+    },
+    "40": {
+      "name": "Elyndra",
+      "power_name": "Recuperação",
+      "power_description": "Cura completamente a unidade-alvo"
+    },
+    "41": {
+      "name": "Karvok",
+      "power_name": "Força dos Ursos",
+      "power_description": "Concede +1/+1 a uma unidade aliada"
+    },
+    "43": {
+      "name": "Aetheron",
+      "power_name": "Tempestade",
+      "power_description": "Causa 2 de dano distribuídos aleatoriamente entre as unidades inimigas"
+    },
+    "44": {
+      "name": "Sigurd",
+      "power_name": "Berserk",
+      "power_description": "Concede Berserk a uma unidade-alvo"
+    },
+    "45": {
+      "name": "Amaya",
+      "power_name": "Chamado do Clã",
+      "power_description": "Invoca uma aliada Inca 1/1"
+    },
+    "46": {
+      "name": "Ragnar Uiva-Lua",
+      "power_name": "Comando",
+      "power_description": "As unidades da facção \"A Alcateia\" em jogo ganham +1/+1"
+    },
+    "47": {
+      "name": "Arjun Garra-de-Fogo",
+      "power_name": "Graça Felina",
+      "power_description": "Concede «Ataque» a uma criatura-alvo."
+    },
+    "48": {
+      "name": "Nimbor, Guardião das Tempestades",
+      "power_name": "Tempestade",
+      "power_description": "Causa 1 de dano duas vezes a inimigos aleatórios"
+    },
+    "49": {
+      "name": "Nutkin, Guardiã dos Sonhos",
+      "power_name": "Noz Revigorante",
+      "power_description": "Concede +1/+1 à unidade aliada-alvo"
+    },
+    "50": {
+      "name": "Noham, o Negociador",
+      "power_name": "Negócio Favorável",
+      "power_description": "Escolha uma carta entre 3 comuns aleatórias de custo ≤ 4 pertencentes às facções do mesmo alinhamento que esta carta, para adicionar à sua mão."
+    },
+    "51": {
+      "name": "Vaelkor, Senhor dos Abismos",
+      "power_name": "Chamado Abissal",
+      "power_description": "Adiciona à sua mão o demônio de maior custo de mana restante em seu deck (escolhido aleatoriamente em caso de empate)."
+    },
+    "53": {
+      "name": "Hayato, Mestre das Sombras",
+      "power_name": "Desaparecimento Súbito",
+      "power_description": "Retorna uma unidade aliada-alvo para a mão de seu proprietário original."
+    }
+  }
+}

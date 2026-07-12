@@ -12,6 +12,7 @@ import { ABILITIES } from "@/lib/game/abilities";
 import { namedCreatureCapabilityIds, creatureCapabilityCounts, capabilityLimitViolations } from "@/lib/game/deck-rules";
 import { FACTIONS, ALIGNMENTS, getFactionForRace } from "@/lib/card-engine/constants";
 import { useVocab } from "@/i18n/useVocab";
+import { useHeroText } from "@/i18n/useHeroText";
 import type { Alignment } from "@/lib/card-engine/constants";
 import GameCard from "@/components/cards/GameCard";
 import KeywordIcon from "@/components/shared/KeywordIcon";
@@ -186,6 +187,7 @@ export default function DeckBuilder({
   const supabase = createClient();
   const ownedSet = useMemo(() => new Set(collectedCardIds), [collectedCardIds]);
   const vocab = useVocab();
+  const heroText = useHeroText();
   const t = useTranslations("deck");
 
   const [deckName, setDeckName] = useState(existingDeck?.name ?? "");
@@ -1069,7 +1071,7 @@ export default function DeckBuilder({
                   {!hero.thumbnail_url && <span className="text-3xl opacity-60">{RACE_ICONS[hero.race] ?? "\u2B50"}</span>}
                 </div>
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-am-bg-0 via-am-bg-0/70 to-transparent px-1.5 py-1">
-                  <div className="text-[10px] font-bold text-am-ink truncate">{hero.name}</div>
+                  <div className="text-[10px] font-bold text-am-ink truncate">{heroText.heroName(hero)}</div>
                 </div>
                 {selectedHeroId === hero.id && (
                   <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-am-gold text-am-bg-0 text-[10px] font-bold flex items-center justify-center">{"\u2713"}</div>
@@ -1404,10 +1406,10 @@ export default function DeckBuilder({
               />
             )}
             <div className="p-3">
-              <div className="text-sm font-bold font-[family-name:var(--font-cinzel),serif] text-am-ink">{powerPopup.hero.name}</div>
-              <div className="text-xs text-am-gold font-medium mt-0.5">{powerPopup.hero.power_name}</div>
+              <div className="text-sm font-bold font-[family-name:var(--font-cinzel),serif] text-am-ink">{heroText.heroName(powerPopup.hero)}</div>
+              <div className="text-xs text-am-gold font-medium mt-0.5">{heroText.powerName(powerPopup.hero)}</div>
               {powerPopup.hero.power_description && (
-                <div className="text-[11px] text-am-ink-soft mt-1 leading-snug font-[family-name:var(--font-crimson),serif] italic">{powerPopup.hero.power_description}</div>
+                <div className="text-[11px] text-am-ink-soft mt-1 leading-snug font-[family-name:var(--font-crimson),serif] italic">{heroText.powerDesc(powerPopup.hero)}</div>
               )}
               <div className="mt-2">
                 {powerPopup.hero.power_type === "passive" ? (

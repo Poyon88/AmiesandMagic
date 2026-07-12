@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
 import type { HeroDefinition } from "@/lib/game/types";
+import { useHeroText } from "@/i18n/useHeroText";
 
 const POWER_IMAGES: Record<string, string> = {
   elves: "/images/powers/elves.svg",
@@ -35,10 +36,17 @@ export default function HeroPowerButton({
   onClick,
 }: HeroPowerButtonProps) {
   const t = useTranslations("game");
+  const heroText = useHeroText();
   const [hovered, setHovered] = useState(false);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
 
   if (!heroDef) return null;
+
+  const powerName =
+    heroText.powerName({ id: heroDef.id, power_name: heroDef.powerName }) ?? heroDef.powerName;
+  const powerDescription =
+    heroText.powerDesc({ id: heroDef.id, power_description: heroDef.powerDescription }) ??
+    heroDef.powerDescription;
 
   // V2 power system : every power is "active" (must pay the cost). Mode 3
   // (aura) is also activated, just produces a persistent effect.
@@ -85,14 +93,14 @@ export default function HeroPowerButton({
         {/* Class power icon */}
         <img
           src={POWER_IMAGES[heroDef.race] ?? POWER_IMAGES.humans}
-          alt={heroDef.powerName}
+          alt={powerName}
           className="w-full h-full rounded-full object-cover"
         />
       </div>
 
       {/* Power name — always visible */}
       <span className="text-[9px] text-foreground/40 truncate max-w-16 text-center leading-tight">
-        {heroDef.powerName}
+        {powerName}
       </span>
 
       {/* Tooltip — portaled to body so it's never clipped */}
@@ -109,8 +117,8 @@ export default function HeroPowerButton({
                 : "translateX(-50%) translateY(-100%)",
             }}
           >
-            <div className="text-xs font-bold text-foreground">{heroDef.powerName}</div>
-            <div className="text-[10px] text-foreground/60 mt-0.5">{heroDef.powerDescription}</div>
+            <div className="text-xs font-bold text-foreground">{powerName}</div>
+            <div className="text-[10px] text-foreground/60 mt-0.5">{powerDescription}</div>
             {isUsed && (
               <div className="text-[10px] text-accent mt-1 font-medium">{t('power_used_this_turn')}</div>
             )}
