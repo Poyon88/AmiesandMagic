@@ -1633,5 +1633,17 @@
     "equipped": "Ausgerüstet",
     "default_badge": "Standard",
     "not_owned": "nicht im Besitz"
+  },
+  "boards": {
+    "eyebrow": "Gestalte deine Arena",
+    "title": "Meine Spielfelder",
+    "subtitle": "{visible, plural, one {# sichtbar} other {# sichtbar}} · {prints, plural, one {# Print im Besitz} other {# Prints im Besitz}}",
+    "back_to_menu": "Zurück zum Menü",
+    "rarity_label": "Seltenheit:",
+    "owned_only": "Nur im Besitz",
+    "empty": "Keine Spielfelder zum Anzeigen.",
+    "equipped": "Ausgerüstet",
+    "default_badge": "Standard",
+    "not_owned": "nicht im Besitz"
   }
 }

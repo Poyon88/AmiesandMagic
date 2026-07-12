@@ -1633,5 +1633,17 @@
     "equipped": "Équipé",
     "default_badge": "Par défaut",
     "not_owned": "non possédé"
+  },
+  "boards": {
+    "eyebrow": "Dresse ton arène",
+    "title": "Mes Plateaux",
+    "subtitle": "{visible, plural, one {# visible} other {# visibles}} · {prints, plural, one {# print possédé} other {# prints possédés}}",
+    "back_to_menu": "Retour au menu",
+    "rarity_label": "Rareté :",
+    "owned_only": "Uniquement possédés",
+    "empty": "Aucun plateau à afficher.",
+    "equipped": "Équipé",
+    "default_badge": "Par défaut",
+    "not_owned": "non possédé"
   }
 }

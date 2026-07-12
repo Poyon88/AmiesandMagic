@@ -1,0 +1,477 @@
+{
+  "en": {
+    "1": {
+      "name": "Base"
+    },
+    "2": {
+      "name": "Upgraded Base"
+    },
+    "3": {
+      "name": "Desert"
+    },
+    "4": {
+      "name": "Plains"
+    },
+    "7": {
+      "name": "Druidic Grove"
+    },
+    "21": {
+      "name": "Enchanted Forest"
+    },
+    "22": {
+      "name": "Arid Ruins"
+    },
+    "23": {
+      "name": "Battlefield 1"
+    },
+    "26": {
+      "name": "Forest of the Ents"
+    },
+    "27": {
+      "name": "Templar Plains"
+    },
+    "28": {
+      "name": "Haunted Graveyard"
+    },
+    "29": {
+      "name": "Dwarven Mountain"
+    },
+    "30": {
+      "name": "Celestial City"
+    },
+    "31": {
+      "name": "Crystal Cavern"
+    },
+    "32": {
+      "name": "Ice Floe"
+    },
+    "33": {
+      "name": "Forgotten Jungle"
+    },
+    "34": {
+      "name": "Inca Ruins"
+    },
+    "35": {
+      "name": "Cursed Forest"
+    },
+    "36": {
+      "name": "Feline Palace"
+    },
+    "37": {
+      "name": "Air Elementals"
+    },
+    "38": {
+      "name": "Cutes Plateau"
+    },
+    "39": {
+      "name": "Tavern"
+    },
+    "40": {
+      "name": "The Ashen Kingdom"
+    },
+    "41": {
+      "name": "Elfes Sylv 1"
+    },
+    "42": {
+      "name": "Air Elemental 1"
+    },
+    "43": {
+      "name": "Air Elemental 2"
+    },
+    "44": {
+      "name": "Black Dragon Sanctuary"
+    },
+    "45": {
+      "name": "Horde Lands"
+    },
+    "46": {
+      "name": "Combat Plain"
+    },
+    "47": {
+      "name": "Empty Plain"
+    },
+    "48": {
+      "name": "Green Felt"
+    }
+  },
+  "es": {
+    "1": {
+      "name": "Base"
+    },
+    "2": {
+      "name": "Base mejorada"
+    },
+    "3": {
+      "name": "Desierto"
+    },
+    "4": {
+      "name": "Llanura"
+    },
+    "7": {
+      "name": "Bosque druídico"
+    },
+    "21": {
+      "name": "Bosque encantado"
+    },
+    "22": {
+      "name": "Ruinas Áridas"
+    },
+    "23": {
+      "name": "Campo de batalla 1"
+    },
+    "26": {
+      "name": "Bosque de los Ents"
+    },
+    "27": {
+      "name": "Llanura de los templarios"
+    },
+    "28": {
+      "name": "Cementerio embrujado"
+    },
+    "29": {
+      "name": "Montaña enana"
+    },
+    "30": {
+      "name": "Ciudad celestial"
+    },
+    "31": {
+      "name": "Caverna cristalina"
+    },
+    "32": {
+      "name": "Banquisa"
+    },
+    "33": {
+      "name": "Jungla olvidada"
+    },
+    "34": {
+      "name": "Ruinas Incas"
+    },
+    "35": {
+      "name": "Bosque maldito"
+    },
+    "36": {
+      "name": "Palacio Felino"
+    },
+    "37": {
+      "name": "Elementales del Aire"
+    },
+    "38": {
+      "name": "Meseta Cutes"
+    },
+    "39": {
+      "name": "Taberna"
+    },
+    "40": {
+      "name": "El Reino de Cenizas"
+    },
+    "41": {
+      "name": "Elfos Sylv 1"
+    },
+    "42": {
+      "name": "Air Elemental 1"
+    },
+    "43": {
+      "name": "Air Elemental 2"
+    },
+    "44": {
+      "name": "Santuario del Dragón Negro"
+    },
+    "45": {
+      "name": "Tierras de las Manadas"
+    },
+    "46": {
+      "name": "Llanura de combate"
+    },
+    "47": {
+      "name": "Llanura Vacía"
+    },
+    "48": {
+      "name": "Tapete verde"
+    }
+  },
+  "de": {
+    "1": {
+      "name": "Basis"
+    },
+    "2": {
+      "name": "Verbesserte Basis"
+    },
+    "3": {
+      "name": "Wüste"
+    },
+    "4": {
+      "name": "Ebene"
+    },
+    "7": {
+      "name": "Druidenhain"
+    },
+    "21": {
+      "name": "Verzauberter Wald"
+    },
+    "22": {
+      "name": "Karge Ruinen"
+    },
+    "23": {
+      "name": "Schlachtfeld 1"
+    },
+    "26": {
+      "name": "Wald der Ents"
+    },
+    "27": {
+      "name": "Ebene der Templer"
+    },
+    "28": {
+      "name": "Heimgesuchter Friedhof"
+    },
+    "29": {
+      "name": "Zwergengebirge"
+    },
+    "30": {
+      "name": "Himmlische Stadt"
+    },
+    "31": {
+      "name": "Kristallhöhle"
+    },
+    "32": {
+      "name": "Packeis"
+    },
+    "33": {
+      "name": "Vergessener Dschungel"
+    },
+    "34": {
+      "name": "Inkaruinen"
+    },
+    "35": {
+      "name": "Verfluchter Wald"
+    },
+    "36": {
+      "name": "Felinpalast"
+    },
+    "37": {
+      "name": "Luftelementare"
+    },
+    "38": {
+      "name": "Plateau Cutes"
+    },
+    "39": {
+      "name": "Taverne"
+    },
+    "40": {
+      "name": "Das Aschereich"
+    },
+    "41": {
+      "name": "Elfes Sylv 1"
+    },
+    "42": {
+      "name": "Air Elemental 1"
+    },
+    "43": {
+      "name": "Air Elemental 2"
+    },
+    "44": {
+      "name": "Heiligtum des Schwarzen Drachen"
+    },
+    "45": {
+      "name": "Land der Herden"
+    },
+    "46": {
+      "name": "Kampfebene"
+    },
+    "47": {
+      "name": "Leere Ebene"
+    },
+    "48": {
+      "name": "Grüner Tisch"
+    }
+  },
+  "it": {
+    "1": {
+      "name": "Base"
+    },
+    "2": {
+      "name": "Base Migliorata"
+    },
+    "3": {
+      "name": "Deserto"
+    },
+    "4": {
+      "name": "Pianure"
+    },
+    "7": {
+      "name": "Boschetto Druidico"
+    },
+    "21": {
+      "name": "Foresta Incantata"
+    },
+    "22": {
+      "name": "Rovine Aride"
+    },
+    "23": {
+      "name": "Campo di Battaglia 1"
+    },
+    "26": {
+      "name": "Foresta degli Ent"
+    },
+    "27": {
+      "name": "Pianura dei Templari"
+    },
+    "28": {
+      "name": "Cimitero Infestato"
+    },
+    "29": {
+      "name": "Montagna Nanica"
+    },
+    "30": {
+      "name": "Città Celeste"
+    },
+    "31": {
+      "name": "Caverna Cristallina"
+    },
+    "32": {
+      "name": "Banchisa"
+    },
+    "33": {
+      "name": "Giungla Dimenticata"
+    },
+    "34": {
+      "name": "Rovine Inca"
+    },
+    "35": {
+      "name": "Foresta Maledetta"
+    },
+    "36": {
+      "name": "Palazzo Felino"
+    },
+    "37": {
+      "name": "Elementali dell'Aria"
+    },
+    "38": {
+      "name": "Altopiano Cutes"
+    },
+    "39": {
+      "name": "Taverna"
+    },
+    "40": {
+      "name": "Il Regno delle Ceneri"
+    },
+    "41": {
+      "name": "Elfes Sylv 1"
+    },
+    "42": {
+      "name": "Air Elemental 1"
+    },
+    "43": {
+      "name": "Air Elemental 2"
+    },
+    "44": {
+      "name": "Santuario del Drago Nero"
+    },
+    "45": {
+      "name": "Terre delle Mandrie"
+    },
+    "46": {
+      "name": "Pianura di Combattimento"
+    },
+    "47": {
+      "name": "Pianura Vuota"
+    },
+    "48": {
+      "name": "Tappeto Verde"
+    }
+  },
+  "pt": {
+    "1": {
+      "name": "Base"
+    },
+    "2": {
+      "name": "Base Melhorada"
+    },
+    "3": {
+      "name": "Deserto"
+    },
+    "4": {
+      "name": "Planícies"
+    },
+    "7": {
+      "name": "Bosque Druídico"
+    },
+    "21": {
+      "name": "Floresta Encantada"
+    },
+    "22": {
+      "name": "Ruínas Áridas"
+    },
+    "23": {
+      "name": "Campo de Batalha 1"
+    },
+    "26": {
+      "name": "Floresta dos Ents"
+    },
+    "27": {
+      "name": "Planície dos Templários"
+    },
+    "28": {
+      "name": "Cemitério Assombrado"
+    },
+    "29": {
+      "name": "Montanha Anã"
+    },
+    "30": {
+      "name": "Cidade Celestial"
+    },
+    "31": {
+      "name": "Caverna Cristalina"
+    },
+    "32": {
+      "name": "Banquisa"
+    },
+    "33": {
+      "name": "Selva Esquecida"
+    },
+    "34": {
+      "name": "Ruínas Incas"
+    },
+    "35": {
+      "name": "Floresta Maldita"
+    },
+    "36": {
+      "name": "Palácio Felino"
+    },
+    "37": {
+      "name": "Elementais do Ar"
+    },
+    "38": {
+      "name": "Plateau Cutes"
+    },
+    "39": {
+      "name": "Taverna"
+    },
+    "40": {
+      "name": "O Reino das Cinzas"
+    },
+    "41": {
+      "name": "Elfes Sylv 1"
+    },
+    "42": {
+      "name": "Air Elemental 1"
+    },
+    "43": {
+      "name": "Air Elemental 2"
+    },
+    "44": {
+      "name": "Santuário do Dragão Negro"
+    },
+    "45": {
+      "name": "Terras das Manadas"
+    },
+    "46": {
+      "name": "Planície de Combate"
+    },
+    "47": {
+      "name": "Planície Vazia"
+    },
+    "48": {
+      "name": "Tapete Verde"
+    }
+  }
+}

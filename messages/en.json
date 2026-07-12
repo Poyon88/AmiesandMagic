@@ -1633,5 +1633,17 @@
     "equipped": "Equipped",
     "default_badge": "Default",
     "not_owned": "not owned"
+  },
+  "boards": {
+    "eyebrow": "Set up your arena",
+    "title": "My Boards",
+    "subtitle": "{visible, plural, one {# visible} other {# visible}} · {prints, plural, one {# print owned} other {# prints owned}}",
+    "back_to_menu": "Back to menu",
+    "rarity_label": "Rarity:",
+    "owned_only": "Owned only",
+    "empty": "No boards to display.",
+    "equipped": "Equipped",
+    "default_badge": "Default",
+    "not_owned": "not owned"
   }
 }

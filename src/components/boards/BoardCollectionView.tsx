@@ -2,6 +2,9 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useVocab } from "@/i18n/useVocab";
+import { useBoardText } from "@/i18n/useBoardText";
 import AmAtmosphere from "@/components/ui/AmAtmosphere";
 import AmHeading from "@/components/ui/AmHeading";
 import { AmButton } from "@/components/ui/AmButton";
@@ -40,6 +43,9 @@ const RARITY_COLORS: Record<string, string> = {
 
 export default function BoardCollectionView({ boards, ownedPrints }: Props) {
   const router = useRouter();
+  const t = useTranslations("boards");
+  const vocab = useVocab();
+  const boardText = useBoardText();
   const [rarityFilter, setRarityFilter] = useState<string | null>(null);
   const [ownedOnly, setOwnedOnly] = useState(false);
 
@@ -90,14 +96,10 @@ export default function BoardCollectionView({ boards, ownedPrints }: Props) {
             <AmHeading
               as="h1"
               align="left"
-              eyebrow="Dresse ton arène"
-              subtitle={
-                <>
-                  {displayItems.length} visible{displayItems.length > 1 ? "s" : ""} · {ownedCount} print{ownedCount > 1 ? "s" : ""} possédé{ownedCount > 1 ? "s" : ""}
-                </>
-              }
+              eyebrow={t("eyebrow")}
+              subtitle={t("subtitle", { visible: displayItems.length, prints: ownedCount })}
             >
-              Mes Plateaux
+              {t("title")}
             </AmHeading>
             <AmButton
               variant="ghost"
@@ -105,7 +107,7 @@ export default function BoardCollectionView({ boards, ownedPrints }: Props) {
               onClick={() => router.push("/")}
               className="self-start sm:self-auto shrink-0"
             >
-              Back to Menu
+              {t("back_to_menu")}
             </AmButton>
           </div>
 
@@ -114,7 +116,7 @@ export default function BoardCollectionView({ boards, ownedPrints }: Props) {
             <div className="flex flex-wrap gap-5 items-center">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="font-[family-name:var(--font-cinzel),serif] text-am-ink-soft text-xs uppercase tracking-[0.18em] mr-1">
-                  Rareté :
+                  {t("rarity_label")}
                 </span>
                 <div className="flex flex-wrap gap-1.5">
                   {RARITIES.map((r) => (
@@ -132,7 +134,7 @@ export default function BoardCollectionView({ boards, ownedPrints }: Props) {
                           : "bg-am-bg-2 border border-am-gold/20 text-am-ink-soft hover:border-am-gold/50 hover:text-am-ink"
                       }`}
                     >
-                      {r}
+                      {vocab.rarityLabel(r)}
                     </button>
                   ))}
                 </div>
@@ -145,7 +147,7 @@ export default function BoardCollectionView({ boards, ownedPrints }: Props) {
                   onChange={(e) => setOwnedOnly(e.target.checked)}
                   className="accent-am-gold"
                 />
-                Uniquement possédés
+                {t("owned_only")}
               </label>
             </div>
           </div>
@@ -154,7 +156,7 @@ export default function BoardCollectionView({ boards, ownedPrints }: Props) {
 
           {displayItems.length === 0 ? (
             <div className="text-center py-24 font-[family-name:var(--font-crimson),serif] italic text-am-ink-faint text-lg">
-              Aucun plateau à afficher.
+              {t("empty")}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6">
@@ -190,7 +192,7 @@ export default function BoardCollectionView({ boards, ownedPrints }: Props) {
                     {/* Equipped / selected badge */}
                     {selected && (
                       <span className="absolute top-2.5 left-2.5 z-10 flex items-center gap-1 rounded-full bg-am-bg-0/80 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-am-jade backdrop-blur-sm ring-1 ring-am-jade/40">
-                        ✦ Équipé
+                        ✦ {t("equipped")}
                       </span>
                     )}
 
@@ -198,11 +200,11 @@ export default function BoardCollectionView({ boards, ownedPrints }: Props) {
                       <div className="flex items-center justify-between gap-2">
                         <div className="min-w-0">
                           <div className="font-[family-name:var(--font-cinzel),serif] text-sm font-bold text-am-ink truncate drop-shadow">
-                            {board.name}
+                            {boardText.name(board)}
                           </div>
                           <div className="text-[10px] uppercase tracking-wide" style={{ color }}>
-                            {rarity}
-                            {board.is_default && <span className="ml-2 text-am-jade">· Par défaut</span>}
+                            {vocab.rarityLabel(rarity)}
+                            {board.is_default && <span className="ml-2 text-am-jade">· {t("default_badge")}</span>}
                           </div>
                         </div>
                         {print && (
@@ -214,7 +216,7 @@ export default function BoardCollectionView({ boards, ownedPrints }: Props) {
                           </span>
                         )}
                         {!isCommon && !print && (
-                          <span className="text-[9px] text-am-ink-faint italic shrink-0">non possédé</span>
+                          <span className="text-[9px] text-am-ink-faint italic shrink-0">{t("not_owned")}</span>
                         )}
                       </div>
                     </div>

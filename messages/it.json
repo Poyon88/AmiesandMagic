@@ -1633,5 +1633,17 @@
     "equipped": "Equipaggiato",
     "default_badge": "Predefinito",
     "not_owned": "non posseduto"
+  },
+  "boards": {
+    "eyebrow": "Prepara la tua arena",
+    "title": "I Miei Tabelloni",
+    "subtitle": "{visible, plural, one {# visibile} other {# visibili}} · {prints, plural, one {# print posseduto} other {# print posseduti}}",
+    "back_to_menu": "Torna al menu",
+    "rarity_label": "Rarità :",
+    "owned_only": "Solo posseduti",
+    "empty": "Nessun tabellone da visualizzare.",
+    "equipped": "Equipaggiato",
+    "default_badge": "Predefinito",
+    "not_owned": "non posseduto"
   }
 }

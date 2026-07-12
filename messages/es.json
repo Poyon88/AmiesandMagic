@@ -1633,5 +1633,17 @@
     "equipped": "Equipado",
     "default_badge": "Por defecto",
     "not_owned": "no poseído"
+  },
+  "boards": {
+    "eyebrow": "Prepara tu arena",
+    "title": "Mis Tableros",
+    "subtitle": "{visible, plural, one {# visible} other {# visibles}} · {prints, plural, one {# copia poseída} other {# copias poseídas}}",
+    "back_to_menu": "Volver al menú",
+    "rarity_label": "Rareza:",
+    "owned_only": "Solo poseídos",
+    "empty": "No hay tableros para mostrar.",
+    "equipped": "Equipado",
+    "default_badge": "Por defecto",
+    "not_owned": "no poseído"
   }
 }

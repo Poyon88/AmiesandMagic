@@ -1633,5 +1633,17 @@
     "equipped": "Equipado",
     "default_badge": "Padrão",
     "not_owned": "não possuído"
+  },
+  "boards": {
+    "eyebrow": "Prepare a sua arena",
+    "title": "Meus Tabuleiros",
+    "subtitle": "{visible, plural, one {# visível} other {# visíveis}} · {prints, plural, one {# print possuído} other {# prints possuídos}}",
+    "back_to_menu": "Voltar ao menu",
+    "rarity_label": "Raridade :",
+    "owned_only": "Apenas possuídos",
+    "empty": "Nenhum tabuleiro para exibir.",
+    "equipped": "Equipado",
+    "default_badge": "Padrão",
+    "not_owned": "não possuído"
   }
 }
