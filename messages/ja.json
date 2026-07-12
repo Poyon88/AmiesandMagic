@@ -1,0 +1,1696 @@
+{
+  "vocab": {
+    "keywords": {
+      "charge": {
+        "label": "追跡",
+        "desc": "召喚直後から攻撃および起動能力を使用できる。"
+      },
+      "taunt": {
+        "label": "挑発",
+        "desc": "敵はこのユニットを優先的に攻撃しなければならない。"
+      },
+      "divine_shield": {
+        "label": "盾",
+        "desc": "最初の攻撃を一度だけダメージなしで無効化する。"
+      },
+      "ranged": {
+        "label": "飛行",
+        "desc": "相手の挑発を無視する。"
+      },
+      "raid": {
+        "label": "襲撃",
+        "desc": "召喚直後から敵クリーチャーに攻撃できる（ヒーローには不可）。"
+      },
+      "convocations_multiples": {
+        "label": "複数召喚",
+        "desc": "召喚時：設定に応じて複数のトークンを生成する。"
+      },
+      "loyaute": {
+        "label": "忠誠",
+        "desc": "召喚時：場にいる同種族の味方1体につきATK+1・HP+1を得る。"
+      },
+      "ancre": {
+        "label": "固定",
+        "desc": "移動または追放されない。"
+      },
+      "resistance": {
+        "label": "耐性X",
+        "desc": "受けるダメージをXだけ軽減する（最低1ダメージ）。"
+      },
+      "premiere_frappe": {
+        "label": "先制攻撃",
+        "desc": "このユニットが攻撃すると先にダメージを与える。相手ユニットは生き残った場合のみ反撃できる。"
+      },
+      "berserk": {
+        "label": "狂戦士",
+        "desc": "現在のHPが元のHP値（カード記載）を下回っている場合、ATKが2倍になる。"
+      },
+      "vol": {
+        "label": "飛行",
+        "desc": "相手の挑発を無視する。"
+      },
+      "precision": {
+        "label": "精密",
+        "desc": "耐性・アーマー・盾を無視する。"
+      },
+      "drain_de_vie": {
+        "label": "ライフドレイン",
+        "desc": "与えたダメージ分だけ自分のヒーローを回復する。"
+      },
+      "esquive": {
+        "label": "回避",
+        "desc": "各ターン、最初に受ける攻撃を自動的に回避する。"
+      },
+      "poison": {
+        "label": "毒",
+        "desc": "傷ついたユニットはターンごとにHP1を失う。"
+      },
+      "celerite": {
+        "label": "速攻",
+        "desc": "1ターンに2回攻撃できる。"
+      },
+      "augure": {
+        "label": "予兆",
+        "desc": "このユニットが相手ヒーローにダメージを与えるたびにカードを1枚引く。"
+      },
+      "benediction": {
+        "label": "祝福",
+        "desc": "対象のユニットを完全に回復する。"
+      },
+      "bravoure": {
+        "label": "勇猛",
+        "desc": "自身より高いATKを持つユニットに対してダメージが2倍になる（端数は切り上げ）。"
+      },
+      "pillage": {
+        "label": "略奪 X",
+        "desc": "召喚時：相手はランダムに手札をX枚捨てる。"
+      },
+      "riposte": {
+        "label": "反撃 X",
+        "desc": "このユニットがダメージを受けたとき、攻撃源（ユニットまたはヒーロー）にXダメージを与える。"
+      },
+      "rappel": {
+        "label": "帰還",
+        "desc": "召喚時：自分の墓地から対象のカード1枚を手札に戻す。"
+      },
+      "combustion": {
+        "label": "燃焼",
+        "desc": "召喚時：手札を1枚捨て、カードを2枚引く。"
+      },
+      "terreur": {
+        "label": "恐怖",
+        "desc": "このカードが場にある間、相手ユニット全体のATKが1減少する。"
+      },
+      "pauvrete": {
+        "label": "貧困 X",
+        "desc": "このユニットの力は相手の手札枚数分だけ減少する（X＝相手の手札枚数、動的）。"
+      },
+      "armure": {
+        "label": "装甲",
+        "desc": "戦闘ダメージを半減する（端数切り上げ）。呪文によるダメージは軽減されない。"
+      },
+      "commandement": {
+        "label": "指揮",
+        "desc": "同じ派閥の味方ユニット全体が+1/+1を得る。"
+      },
+      "fureur": {
+        "label": "激怒",
+        "desc": "ダメージを受けた後、ランダムな相手ユニット（ユニットがいない場合はヒーロー）に即座に攻撃する。1ターンに1度のみ発動。"
+      },
+      "double_attaque": {
+        "label": "二段攻撃",
+        "desc": "攻撃フェイズ時のみ：攻撃時にATKを2回分与える。対象ユニットは通常通り反撃できる。"
+      },
+      "invisible": {
+        "label": "透明",
+        "desc": "相手の呪文やユニット能力の対象にならない。"
+      },
+      "canalisation": {
+        "label": "魔力集中",
+        "desc": "このユニットが場にある間、自分の呪文のコストが1マナ減少する（最小1）。"
+      },
+      "contresort": {
+        "label": "呪文封じ",
+        "desc": "召喚時：相手の次の呪文を打ち消す。"
+      },
+      "convocation": {
+        "label": "召喚 X",
+        "desc": "召喚時：指定された種族のX/Xトークンを生成する。"
+      },
+      "convocation_simple": {
+        "label": "召喚",
+        "desc": "召喚時：設定されたトークンを生成する。"
+      },
+      "malediction": {
+        "label": "呪い",
+        "desc": "召喚時：敵ユニット1体を対象にする。そのユニットは次の相手ターン終了時に追放される。"
+      },
+      "necrophagie": {
+        "label": "死肉食らい",
+        "desc": "ユニット（味方・敵問わず）が死亡するたびに+1 ATK、+1 PVを得る。"
+      },
+      "richesse": {
+        "label": "富 X",
+        "desc": "いずれかのプレイヤーが手札を捨てるたびに、このユニットは+X/+Xを得る（永続）。"
+      },
+      "sacrifice_demoniaque": {
+        "label": "悪魔の生贄 X",
+        "desc": "このユニットが死亡したとき、手札のデーモンにコスト軽減（各-1マナ）をランダムにX回分配する。デーモンのコストは最小1。"
+      },
+      "paralysie": {
+        "label": "麻痺",
+        "desc": "このクリーチャーからダメージを受けたユニットは、そのオーナーの次のターン終了まで攻撃もアクティブ能力の使用もできない。"
+      },
+      "permutation": {
+        "label": "入れ替え",
+        "desc": "召喚時：対象の2体のユニット（味方1体と敵1体）の現在HPを入れ替える。"
+      },
+      "persecution": {
+        "label": "迫害 X",
+        "desc": "このユニットが攻撃するたびに、相手ヒーローにXダメージを与える。"
+      },
+      "pietinement": {
+        "label": "踏みにじり",
+        "desc": "このユニットがクリーチャーを攻撃した際、超過ダメージ（対象の残りHPを上回る分）を相手ヒーローに与える。"
+      },
+      "catalyse": {
+        "label": "触媒",
+        "desc": "召喚時：手札にある同じ種族のユニット全てのマナコストを1減らす。"
+      },
+      "ombre_du_passe": {
+        "label": "過去の影",
+        "desc": "召喚時：墓地にある同じ種族のユニット1体につき+1 ATK、+1 HPを得る。"
+      },
+      "profanation": {
+        "label": "冒涜 X",
+        "desc": "召喚時：墓地の末尾X枚のカードを追放し、このユニットに最大+X/+Xを付与する。"
+      },
+      "prescience": {
+        "label": "予知 X",
+        "desc": "召喚時：手札がX枚になるまでカードを引く。"
+      },
+      "suprematie": {
+        "label": "覇権",
+        "desc": "召喚時：召喚時点の手札1枚につき+1 ATK、+1 HPを得る。"
+      },
+      "divination": {
+        "label": "占術",
+        "desc": "召喚時：デッキの上から3枚を公開し、1枚を一番上に、残り2枚を好きな順番で一番下に置く。"
+      },
+      "savant": {
+        "label": "賢者",
+        "desc": "召喚時：墓地にある呪文1枚につき+1 ATK、+1 HPを得る。"
+      },
+      "liaison_de_vie": {
+        "label": "生命の絆",
+        "desc": "受けたダメージを相手ヒーローと分かち合う。"
+      },
+      "ombre": {
+        "label": "影",
+        "desc": "行動（攻撃またはアビリティ）を行うまで、対象にされず攻撃されない。"
+      },
+      "sacrifice": {
+        "label": "生贄",
+        "desc": "召喚時：味方1体を破壊し、そのHPとATKを永続的に獲得する。"
+      },
+      "malefice": {
+        "label": "呪詛",
+        "desc": "死亡時：全ユニット（味方・敵問わず）にXダメージを与える。X＝このユニットのATK。"
+      },
+      "indestructible": {
+        "label": "不壊",
+        "desc": "戦闘ダメージを一切受けない。"
+      },
+      "regeneration": {
+        "label": "再生",
+        "desc": "自分のターン開始時にHPを2回復する。"
+      },
+      "corruption": {
+        "label": "腐敗",
+        "desc": "選択した敵ユニットをターン終了まで自軍に加え、そのユニットはターン終了まで追跡を得る。"
+      },
+      "carnage": {
+        "label": "大虐殺 X",
+        "desc": "死亡時：場にいる全ユニット（味方・敵問わず）にXダメージを与える。"
+      },
+      "heritage": {
+        "label": "遺産 X",
+        "desc": "死亡時：場にいる味方ユニット全てが永続的に+X ATK、+X HPを得る。"
+      },
+      "mimique": {
+        "label": "模倣",
+        "desc": "召喚時：対象のユニットが持つ全アビリティをコピーし、このユニットに永続的に付与する。"
+      },
+      "metamorphose": {
+        "label": "変身",
+        "desc": "召喚時：対象ユニットの完全なコピー（ATK／HP／能力）になる。"
+      },
+      "tactique": {
+        "label": "戦術 X",
+        "desc": "召喚時：対象の味方ユニット1体に、選んだ能力をX個永続付与する。"
+      },
+      "exhumation": {
+        "label": "発掘 X",
+        "desc": "召喚時：墓地にある、マナコストがX以下のユニット1体を復活させる。"
+      },
+      "heritage_du_cimetiere": {
+        "label": "墓地の遺産",
+        "desc": "召喚時：墓地の対象ユニットの能力をこのユニットに付与する。"
+      },
+      "pacte_de_sang": {
+        "label": "血の契約",
+        "desc": "このユニットが死亡したとき、同じ種族の1/1トークンを2体召喚する。"
+      },
+      "souffle_de_feu": {
+        "label": "ファイアブレス X",
+        "desc": "攻撃時、すべての敵ユニットにXダメージを与える（例：ファイアブレス2＝2ダメージ）。"
+      },
+      "domination": {
+        "label": "支配",
+        "desc": "召喚時、ランダムな敵ユニット1体のコントロールを奪う。"
+      },
+      "resurrection": {
+        "label": "復活",
+        "desc": "死亡後にHP1で場に戻る。帰還時に復活能力を失う。"
+      },
+      "transcendance": {
+        "label": "超越",
+        "desc": "相手の呪文に完全耐性を持ち、範囲呪文を含むいかなる呪文のダメージや効果も受けない。"
+      },
+      "vampirisme": {
+        "label": "吸血 X",
+        "desc": "召喚時：対象の敵ユニットからXHPを奪い、このユニットのHPに加算する。"
+      },
+      "traque_du_destin": {
+        "label": "運命追跡 X",
+        "desc": "召喚時：デッキの上からX枚を公開し、1枚を手札に加え、残りをランダムな順でデッキ下に置く。"
+      },
+      "sang_mele": {
+        "label": "混血",
+        "desc": "場にいる味方の異なる種族の種類ごとに+1 ATK、+1 HPを得る。"
+      },
+      "fierte_du_clan": {
+        "label": "一族の誇り",
+        "desc": "このユニットが場にいる間、同じクランのユニットは+1/+1の状態で召喚される。"
+      },
+      "solidarite": {
+        "label": "連帯 X",
+        "desc": "召喚時：同じ種族の他のユニットを2体以上コントロールしていれば、カードをX枚引く。"
+      },
+      "entraide": {
+        "label": "助け合い"
+      },
+      "cycle_eternel": {
+        "label": "永遠の輪廻",
+        "desc": "死亡時：このカードのコピーをデッキに加える。そのカードを引いた場合、直接場に出す。"
+      },
+      "martyr": {
+        "label": "殉教者",
+        "desc": "死亡時：場にいる同じ種族の味方ユニットすべてに永続+1/+1を付与する。"
+      },
+      "instinct_de_meute": {
+        "label": "群れの本能 X",
+        "desc": "召喚時：このターン中に同じ派閥の味方ユニットが場から墓地へ送られていれば、+X ATKと+X HPを得る。"
+      },
+      "totem": {
+        "label": "トーテム",
+        "desc": "場にいる同じ種族の味方ユニット全員の能力を得る。"
+      },
+      "appel_du_clan": {
+        "label": "一族の呼び声 X",
+        "desc": "召喚時：デッキの上から、コストがX以下の同じクランのユニット1体を無料で場に出す。"
+      },
+      "appel_supreme": {
+        "label": "至高の召喚",
+        "desc": "召喚：デッキに残る選択した種族の中で最もマナコストが高いクリーチャーを手札に加える（同コストの場合はランダム）。"
+      },
+      "rassemblement": {
+        "label": "集結 X",
+        "desc": "召喚：デッキの上からX枚を公開し、同じ種族のユニットをすべて手札に加え、残りを捨てる。"
+      },
+      "selection": {
+        "label": "選択 X",
+        "desc": "召喚：このカードと同じ陣営（善／中立／悪）のコスト≤Xのランダムなコモンカード3枚を公開し、1枚を手札に加える。Xが未定義の場合はコスト制限なし。"
+      },
+      "selection_magique": {
+        "label": "魔法選択 X",
+        "desc": "召喚：このカードと同じ陣営（善／中立／悪）のコスト≤Xのランダムなコモン呪文3枚を公開し、1枚を手札に加える。Xが未定義の場合はコスト制限なし。"
+      },
+      "renfort_royal": {
+        "label": "王室選択 X",
+        "desc": "召喚：コスト≤Xの限定版カードからランダムに3枚公開する（30枚以上必要；足りない場合は同じ陣営のコモンから）。1枚を手札に加える。Xが未定義の場合はコスト制限なし。"
+      },
+      "lycanthropie": {
+        "label": "獣人変化 X",
+        "desc": "ターン開始時：追跡を持つX/Xトークンに変身する。"
+      },
+      "relancer": {
+        "label": "再詠唱 X",
+        "desc": "召喚：最後に唱えたX個の呪文をランダムな対象で再使用する。"
+      },
+      "tempete": {
+        "label": "嵐 X",
+        "desc": "召喚：敵ユニットにランダムに分散してXダメージを与える。"
+      },
+      "cataclysme": {
+        "label": "大災害 X",
+        "desc": "召喚：すべてのクリーチャー（味方・敵問わず）にXダメージを与える。"
+      },
+      "affaiblissement": {
+        "label": "弱体化 -X/-Y",
+        "desc": "召喚：対象の敵クリーチャーのATKを-X、HPを-Yする。"
+      },
+      "renforcement": {
+        "label": "強化 +X/+Y",
+        "desc": "ATKを+X、HPを+Y永続的に得る。"
+      },
+      "impact": {
+        "label": "衝撃 X",
+        "desc": "対象（クリーチャーまたはヒーロー、どちらの陣営でも可）にXダメージを与える。"
+      },
+      "douleur": {
+        "label": "苦痛 X",
+        "desc": "召喚：自分のヒーローにXダメージを与える。"
+      },
+      "inspiration": {
+        "label": "霊感 X",
+        "desc": "召喚：カードをX枚引く。"
+      },
+      "concentration": {
+        "label": "集中 X",
+        "desc": "召喚：手札の各呪文を、コストがXだけ高いランダムな呪文（全派閥）と入れ替える。新しい呪文のコストはXだけ減少する。"
+      },
+      "remontee": {
+        "label": "帰還",
+        "desc": "対象のユニットを元の所有者の手札に戻す。"
+      },
+      "renforcement_multiple": {
+        "label": "集団強化",
+        "desc": "選択した種族またはクランのすべての自軍クリーチャーに+X/+Yを付与する。"
+      },
+      "entrainement": {
+        "label": "訓練 X",
+        "desc": "手札にある同じ派閥のクリーチャーに+X/+Xを付与する。"
+      },
+      "conferer": {
+        "label": "付与",
+        "desc": "召喚：選択した能力を味方ユニット1体（またはすべて）に付与する。"
+      },
+      "declenchement": {
+        "label": "誘発",
+        "desc": "召喚：場にいる他の味方の複合誘発効果（登場／死亡／ターン終了／帰還）を一度再発動する。"
+      }
+    },
+    "spell_keywords": {
+      "poison": {
+        "label": "毒",
+        "desc": "傷ついたユニットはターンごとにHP-1。"
+      },
+      "pillage": {
+        "label": "略奪 X",
+        "desc": "相手の手札からランダムにX枚捨てさせる。"
+      },
+      "convocation_simple": {
+        "label": "召喚",
+        "desc": "設定されたトークンを生成する。"
+      },
+      "appel_du_clan": {
+        "label": "氏族の呼び声 X",
+        "desc": "デッキからこの呪文と同じ氏族を持つコストX以下のユニット1体を無償で場に出す。"
+      },
+      "appel_supreme": {
+        "label": "至高の召喚",
+        "desc": "デッキに残る選択した種族のうち最もコストが高いクリーチャーを手札に加える（同コストの場合はランダム）。"
+      },
+      "rassemblement": {
+        "label": "結集 X",
+        "desc": "デッキの上からX枚を公開し、この呪文と同じ種族のユニットを手札に加え、残りを捨てる。"
+      },
+      "rappel": {
+        "label": "帰還",
+        "desc": "墓地のクリーチャー1体を手札に戻す。"
+      },
+      "exhumation": {
+        "label": "発掘 X",
+        "desc": "墓地からクリーチャー（コスト≤X）1体を場に復活させる。"
+      },
+      "selection": {
+        "label": "選択 X",
+        "desc": "この呪文と同じ陣営のコモンカード3枚（コスト≤X、X未指定なら無制限）からランダムに1枚選んで手札に加える。"
+      },
+      "selection_magique": {
+        "label": "魔法の選択 X",
+        "desc": "この呪文と同じ陣営のコモン呪文3枚（コスト≤X、X未指定なら無制限）からランダムに1枚選んで手札に加える。"
+      },
+      "renfort_royal": {
+        "label": "王家の選択 X",
+        "desc": "限定版カード（30枚以上必要、不足時は同陣営コモン）からコスト≤X（X未指定なら無制限）のランダムな3枚のうち1枚を選んで手札に加える。"
+      },
+      "relancer": {
+        "label": "再詠唱 X",
+        "desc": "最後に唱えたX個の呪文をランダムな対象で再使用する。"
+      },
+      "invocation": {
+        "label": "召喚 X/Y",
+        "desc": "X/Yのトークンを召喚する。"
+      },
+      "impact": {
+        "label": "衝撃 X",
+        "desc": "対象1体（クリーチャーまたはヒーロー、どちらの陣営も可）にXダメージを与える。"
+      },
+      "deferlement": {
+        "label": "殲滅 X",
+        "desc": "敵クリーチャー全体にXダメージを与える。"
+      },
+      "siphon": {
+        "label": "吸命 X",
+        "desc": "対象1体にXダメージを与え、同量だけ自分のヒーローを回復する。"
+      },
+      "entrave": {
+        "label": "束縛",
+        "desc": "対象の敵クリーチャー1体を麻痺させる。"
+      },
+      "execution": {
+        "label": "処刑",
+        "desc": "対象のクリーチャー1体を破壊する。"
+      },
+      "silence": {
+        "label": "沈黙",
+        "desc": "対象のクリーチャー1体のキーワードをすべて取り除く。"
+      },
+      "renforcement": {
+        "label": "強化 +X/+Y",
+        "desc": "対象の味方クリーチャー1体に+X/+Y。"
+      },
+      "affaiblissement": {
+        "label": "弱体化 -X/-Y",
+        "desc": "対象の敵クリーチャーに-X ATKと-Y PVを与える。"
+      },
+      "guerison": {
+        "label": "回復 X",
+        "desc": "対象のPVをX回復する"
+      },
+      "inspiration": {
+        "label": "鼓舞 X",
+        "desc": "カードをX枚引く"
+      },
+      "remontee": {
+        "label": "帰還",
+        "desc": "対象のユニットを元の持ち主の手札に戻す。"
+      },
+      "renforcement_multiple": {
+        "label": "集団強化",
+        "desc": "選択した種族またはクランの自軍クリーチャー全体に+X/+Yを与える。"
+      },
+      "entrainement": {
+        "label": "鍛錬 X",
+        "desc": "手札にある同一ファクションのクリーチャーに+X/+Xを与える。"
+      },
+      "concentration": {
+        "label": "集中 X",
+        "desc": "手札の呪文をそれぞれコストがXだけ高いランダムな呪文（全ファクション）と交換する。新しい呪文のコストはXだけ減少する。"
+      },
+      "invocation_multiple": {
+        "label": "複数召喚",
+        "desc": "カードの設定に応じて複数のトークンを生成する。"
+      },
+      "tempete": {
+        "label": "嵐 X",
+        "desc": "敵ユニットにXダメージをランダムに分散して与える。"
+      },
+      "cataclysme": {
+        "label": "大災害 X",
+        "desc": "全クリーチャー（味方・敵問わず）にXダメージを与える。"
+      },
+      "douleur": {
+        "label": "苦痛 X",
+        "desc": "発動時、自軍ヒーローにXダメージを与える。"
+      },
+      "afflux": {
+        "label": "魔力流入 X",
+        "desc": "このターン、マナをX獲得する"
+      }
+    },
+    "composed": {
+      "trigger": {
+        "on_play": "場に出たとき",
+        "on_death": "死亡時",
+        "on_return": "手札に戻ったとき",
+        "on_activation": "起動時",
+        "on_attack": "攻撃時",
+        "on_end_of_turn": "ターン終了時"
+      },
+      "content": {
+        "deal_damage_one": "{x}ダメージを与える",
+        "deal_damage_many": "{x}ダメージを与える",
+        "heal": "{x}PVを回復する",
+        "buff": "+{x}/+{y}を与える",
+        "debuff": "-{x}/-{y}を与える",
+        "destroy": "破壊する",
+        "bounce": "手札に戻す",
+        "paralyze": "麻痺させる",
+        "grant_keyword": "{ability}を付与する",
+        "ability_generic": "能力",
+        "draw_cards_one": "カードを{x}枚引く",
+        "draw_cards_many": "カードを{x}枚引く",
+        "discard_one": "相手は{x}枚捨てる",
+        "discard_many": "相手は{x}枚捨てる",
+        "summon_one": "{token}を1体召喚する",
+        "summon_many": "{token}を{x}体召喚する",
+        "token_one": "トークン",
+        "token_many": "トークン",
+        "gain_mana": "このターン{x}マナを得る",
+        "exhumation": "墓地から{who}を蘇生する（コスト≤{x}）",
+        "exhum_one": "クリーチャー1体",
+        "exhum_all": "すべてのクリーチャー",
+        "exhum_upto": "クリーチャー{n}体まで"
+      },
+      "target": {
+        "self": "自身に",
+        "hero_ally": "自分のヒーローに",
+        "hero_enemy": "相手のヒーローに",
+        "both_all": "すべてのユニットと{side}ヒーローに",
+        "both_one": "対象1体（ユニットまたはヒーロー）{side}に",
+        "both_side_ally": "味方の",
+        "both_side_enemy": "敵の",
+        "count_all": "すべてのユニットに",
+        "count_one": "ユニット1体に",
+        "count_n": "{n}体のユニットに",
+        "side_ally_one": "味方の",
+        "side_ally_many": "味方の",
+        "side_enemy_one": "敵の",
+        "side_enemy_many": "敵の",
+        "loc_hand": "手札の",
+        "loc_deck": "デッキの",
+        "loc_graveyard": "墓地の",
+        "des_random": "ランダムに",
+        "des_automatic": "自動的に",
+        "des_choice": "任意に"
+      },
+      "scatter": {
+        "action_damage": "与える",
+        "action_heal": "回復する",
+        "unit_damage": "ダメージ",
+        "unit_heal": "HP",
+        "times": "{x}回、毎回1{unit}を",
+        "target_both": "ランダムな{side}対象1体（ユニットまたはヒーロー）に",
+        "target_unit": "ランダムな{side}ユニット1体に"
+      },
+      "choice": {
+        "deal_damage": "ダメージを与える対象を選んでください",
+        "heal": "回復する対象を選んでください",
+        "buff": "強化するクリーチャーを選んでください",
+        "debuff": "弱体化するクリーチャーを選んでください",
+        "destroy": "破壊するクリーチャーを選んでください",
+        "bounce": "手札に戻すクリーチャーを選んでください",
+        "paralyze": "麻痺させるクリーチャーを選んでください",
+        "grant_keyword": "能力を付与するクリーチャーを選んでください",
+        "exhumation": "蘇生するクリーチャーを選んでください",
+        "default": "対象を選んでください"
+      }
+    },
+    "factions": {
+      "Elfes": {
+        "displayName": "天界同盟",
+        "description": "機敏で隠密。速度と回避を得意とする。巨大な鷲を擁する。"
+      },
+      "Nains": {
+        "displayName": "鍛冶の兄弟団",
+        "description": "堅固で耐久力抜群。防御と粘り強さを重視する。"
+      },
+      "Hobbits": {
+        "displayName": "森の盟約",
+        "description": "小柄だが狡猾。回避と相互援助を得意とする。"
+      },
+      "Humains": {
+        "displayName": "自由王国連合",
+        "description": "バランスと汎用性を兼ね備える。集団シナジーが強み。"
+      },
+      "Hommes-Bêtes": {
+        "displayName": "群れ",
+        "description": "野性的で凶暴。素早く攻撃し、再生し、激怒する。"
+      },
+      "Élémentaires": {
+        "displayName": "原初の者たち",
+        "description": "自然の原初の力。各元素が独自の戦闘スタイルを持つ。"
+      },
+      "Mercenaires": {
+        "displayName": "傭兵",
+        "description": "忠誠なき雇われ兵。汎用性が高く、あらゆるデッキで使用可能。"
+      },
+      "Orcs": {
+        "displayName": "大群",
+        "description": "残忍な大軍団。素早く使い捨て可能なゴブリン。粗暴で攻撃的なオーク。屈強なトロル。俊足のワーグ。"
+      },
+      "Morts-Vivants": {
+        "displayName": "死都",
+        "description": "飽くなき腐敗の軍勢。蘇生とライフドレインを操る。"
+      },
+      "Elfes Noirs": {
+        "displayName": "混沌の眷属",
+        "description": "陰険で毒を持つ。毒、影、腐敗を操る。"
+      }
+    },
+    "rarities": {
+      "Commune": "コモン",
+      "Peu Commune": "アンコモン",
+      "Rare": "レア",
+      "Épique": "エピック",
+      "Légendaire": "レジェンド"
+    },
+    "clans": {
+      "Sylvains": "森のエルフ",
+      "Hauts-Elfes": "ハイエルフ",
+      "Elfes des Mers": "海のエルフ",
+      "Émeraudes": "エメラルド族",
+      "Cimes Éternelles": "永遠の峰",
+      "Montagnes": "山岳族",
+      "Collines": "丘陵",
+      "Lave": "溶岩",
+      "Plaines": "平原",
+      "Rivièrains": "川辺の民",
+      "Landes": "荒野",
+      "Nordiques": "北方の民",
+      "Orientaux": "東方の民",
+      "Templiers": "聖堂騎士団",
+      "Amazones": "アマゾン",
+      "Incas": "インカ",
+      "Touaregs": "トゥアレグ",
+      "Forêt": "森林",
+      "Toundra": "ツンドラ",
+      "Savane": "サバンナ",
+      "Jungle": "密林",
+      "Mignons": "キュート族",
+      "Pacte des Griffes": "鉤爪の盟約",
+      "Feu": "炎",
+      "Terre": "大地",
+      "Eau": "水",
+      "Air": "風",
+      "Marais": "沼地",
+      "Abysses souterrains": "地底の深淵",
+      "Forêt maudite": "呪われた森",
+      "Cités de cendres": "灰の都市"
+    },
+    "races": {
+      "Elfes": "エルフ",
+      "Aigles Géants": "大鷲",
+      "Fées": "妖精",
+      "Nains": "ドワーフ",
+      "Golems": "ゴーレム",
+      "Hobbits": "ホビット",
+      "Hommes-Arbres": "樹人",
+      "Humains": "人間",
+      "Hommes-Loups": "狼人間",
+      "Hommes-Ours": "熊人間",
+      "Hommes-Félins": "猫人間",
+      "Centaures": "ケンタウロス",
+      "Mimis": "ミミ族",
+      "Hommes-Chiens": "犬人間",
+      "Hommes-Renards": "狐人間",
+      "Hommes-Cerfs": "シカ人",
+      "Élémentaire": "エレメンタル",
+      "Géants": "巨人",
+      "Ogres": "オーガ",
+      "Dragons": "ドラゴン",
+      "Chiens": "犬",
+      "Phoenix": "フェニックス",
+      "Anges": "天使",
+      "Ours": "熊",
+      "Loups": "狼",
+      "Fauves": "野獣",
+      "Orcs": "オーク",
+      "Gobelins": "ゴブリン",
+      "Trolls": "トロル",
+      "Wargs": "ワーグ",
+      "Squelettes": "スケルトン",
+      "Zombies": "ゾンビ",
+      "Spectres": "スペクター",
+      "Vampires": "ヴァンパイア",
+      "Lich": "リッチ",
+      "Banshees": "バンシー",
+      "Elfes Corrompus": "堕落したエルフ",
+      "Araignées Géantes": "巨大蜘蛛",
+      "Démons": "デーモン"
+    },
+    "alignments": {
+      "bon": "善",
+      "neutre": "中立",
+      "maléfique": "悪",
+      "spéciale": "特殊"
+    },
+    "sets": {
+      "1": "基本セット"
+    },
+    "formats": {
+      "expert-standard": "エキスパート・スタンダード",
+      "expert-etendu": "エキスパート・エクステンデッド",
+      "classique-etendu": "クラシック・エクステンデッド",
+      "classique-standard": "クラシック・スタンダード"
+    },
+    "tokens": {
+      "3": "巨大鷲",
+      "4": "風のエレメンタル",
+      "5": "軍用犬",
+      "6": "巨大蜘蛛",
+      "8": "ツリーフォーク",
+      "9": "人間",
+      "10": "ドラゴン",
+      "11": "オオカミ",
+      "13": "クマ",
+      "14": "エルフ",
+      "15": "ケンタウロス",
+      "16": "天使",
+      "18": "ホビット（基本）",
+      "19": "神殿の兵士",
+      "20": "ゴブリン",
+      "21": "勇敢な若きホビット",
+      "22": "ゾンビ",
+      "23": "ヴァイキング戦士",
+      "24": "インカ",
+      "25": "ヒョウ",
+      "26": "アンチャンチュ",
+      "27": "人間",
+      "28": "トラ",
+      "29": "うさぎ",
+      "30": "リス",
+      "31": "子グマ",
+      "32": "下級デーモン",
+      "33": "かわいい犬",
+      "34": "スケルトン"
+    }
+  },
+  "home": {
+    "home_subtitle": "一枚のカード。一つの伝説。あなたの番だ。",
+    "play_label": "プレイ",
+    "play_desc": "対戦相手を見つけてゲームを始めよう",
+    "market_label": "マーケット",
+    "market_desc": "オークションで売買しよう",
+    "market_desc_buy": "オークションで購入しよう",
+    "collection_label": "マイコレクション",
+    "collection_desc": "カード、ヒーロー、スリーブ、ボード",
+    "decks_label": "マイデッキ",
+    "decks_desc": "デッキを組んで調整しよう",
+    "tutorial_label": "遊び方",
+    "tutorial_desc": "ルールと能力を学ぼう",
+    "tutorial_back": "ホームへ戻る",
+    "welcome": "ようこそ、",
+    "logout": "ログアウト",
+    "settings": "設定",
+    "skip_to_content": "コンテンツへスキップ",
+    "collection_title": "マイコレクション",
+    "collection_back": "ホームに戻る",
+    "my_cards": "マイカード",
+    "my_cards_desc": "所持カードのカタログ",
+    "my_heroes": "マイヒーロー",
+    "my_heroes_desc": "解放済みチャンピオン",
+    "my_card_backs": "マイカードバック",
+    "my_card_backs_desc": "所持カードバック",
+    "my_boards": "マイボード",
+    "my_boards_desc": "所持ゲームボード",
+    "heroes_title": "マイヒーロー",
+    "heroes_empty": "まだヒーローが解放されていません。",
+    "heroes_filter_all": "すべて",
+    "heroes_label_faction": "勢力",
+    "heroes_label_clan": "クラン",
+    "heroes_label_rarity": "レアリティ",
+    "heroes_loading": "読み込み中…",
+    "heroes_load_error": "ヒーローを読み込めませんでした。",
+    "hero_power": "パワー"
+  },
+  "landing": {
+    "nav_play": "プレイ",
+    "hero_eyebrow": "ファンタジーTCG — 新世代",
+    "hero_title": "Armies & Magic",
+    "hero_sub": "伝説を鍛えろ。勢力を率いろ。歴史を刻め。",
+    "hero_cta": "アリーナへ",
+    "hero_cta_secondary": "詳しく見る",
+    "hero_proof": "初戦から400枚以上のカードを無料獲得",
+    "features_title": "Armies & Magicを選ぶ理由",
+    "f1_title": "伝説の深み。",
+    "f1_desc": "Armies & Magicは、名作TCGの戦略性と、現代のチャンピオンのために設計されたメカニクスを融合させます。",
+    "f2_title": "全カード。初戦から。",
+    "f2_desc": "クラシックモードはインストール直後から完全解放。400枚以上のカードを最初から無料で使い、自分だけのデッキを構築しましょう。",
+    "f3_title": "エキスパートデッキは、それぞれが唯一の作品。",
+    "f3_desc": "限定カードがエキスパートデッキに個性をもたらします。共通枠の仕組みにより、勝敗を決めるのはあなたの戦略のみ。",
+    "f4_title": "モバイルアリーナが、ついに本気になった。",
+    "f4_desc": "レアカードや賞金が懸かったトーナメント——これまで大手デスクトップTCGだけに許されていた真剣勝負の舞台。",
+    "factions_title": "九つの勢力。一つの伝説。",
+    "factions_sub": "それぞれの種族が独自の道を持つ。あなたが選ぶのは？",
+    "showcase_title": "モンスター図鑑。無数の組み合わせ。",
+    "showcase_sub": "最も弱い生き物から神話の英雄まで、すべてのカードが意味を持つ。",
+    "cta_title": "アリーナがあなたを待っている。",
+    "cta_sub": "召喚師たちの戦いに加われ。",
+    "cta_btn": "冒険を始める",
+    "footer": "Armies & Magic — 無断転載禁止",
+    "factions": {
+      "humans": {
+        "name": "自由王国連合",
+        "tagline": "旗印のもとに団結せよ"
+      },
+      "elves": {
+        "name": "天空同盟",
+        "tagline": "永遠の森の守護者"
+      },
+      "dwarves": {
+        "name": "鍛冶兄弟団",
+        "tagline": "岩石に鍛えられし者たち"
+      },
+      "halflings": {
+        "name": "森の盟約",
+        "tagline": "小さき身体、大きき心"
+      },
+      "beastmen": {
+        "name": "群狼",
+        "tagline": "荒野の怒り"
+      },
+      "giants": {
+        "name": "原初の者たち",
+        "tagline": "元素が目覚める"
+      },
+      "dark_elves": {
+        "name": "混沌の眷属",
+        "tagline": "闇には名がある"
+      },
+      "orcs_goblins": {
+        "name": "大群勢",
+        "tagline": "大群の咆哮"
+      },
+      "undead": {
+        "name": "死都",
+        "tagline": "墓所の沈黙が破られた"
+      }
+    }
+  },
+  "auction": {
+    "ended": "終了",
+    "unknown_item": "不明なアイテム",
+    "board": "ボード",
+    "card_back": "カード裏面",
+    "extra_items": "+{count, plural, =1 {# 個} other {# 個}}",
+    "current_bid": "現在の入札額",
+    "starting_bid": "開始価格",
+    "buyout_short": "即決:",
+    "bid_count": "{count, plural, =1 {# 件の入札} other {# 件の入札}}",
+    "seller": "出品者:",
+    "system": "システム",
+    "invalid_amount": "無効な金額",
+    "buyout_success": "即決落札成功！",
+    "bid_placed": "入札完了！",
+    "loading": "読み込み中...",
+    "not_found": "オークションが見つかりません",
+    "back_to_auctions": "オークション一覧へ戻る",
+    "lot": "ロット",
+    "item": "アイテム",
+    "copies": "{count} 部",
+    "source_print": "限定版",
+    "source_board_print": "限定盤面",
+    "source_card_back_print": "限定カード裏面",
+    "source_admin": "システム",
+    "source_collection": "コレクション",
+    "admin_badge": "管理者",
+    "time_left": "残り時間",
+    "commission": "手数料: {rate}%",
+    "highest_bidder": "あなたが最高入札者です",
+    "status_sold": "落札済み",
+    "status_unsold": "不落札",
+    "status_cancelled": "キャンセル済み",
+    "bid_button": "入札する",
+    "buyout_immediate": "即決購入",
+    "cancel_auction": "入札をキャンセル",
+    "bid_history": "入札履歴",
+    "no_bids_yet": "まだ入札がありません",
+    "anonymous": "匿名",
+    "buyout_tag": "（即決）",
+    "sort_ending_soon": "終了間近",
+    "sort_price_asc": "価格：安い順",
+    "sort_price_desc": "価格：高い順",
+    "sort_newest": "新着順",
+    "header_kicker": "仲間を集めよ",
+    "title": "オークションハウス",
+    "subtitle_sell": "カードを売買する",
+    "subtitle_buy": "カードを購入する",
+    "menu": "メニュー",
+    "sell_card": "カードを出品",
+    "tab_browse": "一覧",
+    "tab_my": "マイ入札",
+    "search_placeholder": "検索...",
+    "all_factions": "全派閥",
+    "all_rarities": "全レアリティ",
+    "all_types": "全タイプ",
+    "type_creature": "クリーチャー",
+    "type_spell": "スペル",
+    "no_auctions": "入札が見つかりません",
+    "previous": "前へ",
+    "next": "次へ",
+    "page_of": "{page} / {total} ページ",
+    "duration_1min": "1分",
+    "duration_1h": "1時間",
+    "duration_6h": "6時間",
+    "duration_12h": "12時間",
+    "duration_24h": "24時間",
+    "duration_generic": "{n}分",
+    "create_title": "オークションを作成",
+    "select_cards": "売却するカードを選択 ({selected}/{max} 枚まで)",
+    "search_card_placeholder": "カードを検索...",
+    "no_cards_available": "利用可能なカードなし",
+    "starting_bid_label": "開始入札額（ゴールド）",
+    "buyout_optional": "即決価格（任意）",
+    "none": "なし",
+    "duration": "期間",
+    "commission_info": "手数料: 売却額の {rate}% が差し引かれます",
+    "error_select_card": "カードを1枚以上選択してください",
+    "error_invalid_bid": "開始入札額が無効です",
+    "error_buyout_too_low": "即決価格は開始入札額より高く設定してください",
+    "cancel": "キャンセル",
+    "creating": "作成中...",
+    "submit_sell": "出品する ({count, plural, =1 {# 枚} other {# 枚}})",
+    "my_sales": "出品中 ({count})",
+    "my_bids": "入札中 ({count})",
+    "no_sales": "出品中の商品はありません",
+    "no_bids_placed": "入札中のオークションはありません",
+    "unknown_card": "不明なカード",
+    "ends_at": "終了: {date}",
+    "status_active": "開催中",
+    "page_title": "オークションハウス — Armies & Magic",
+    "detail_page_title": "オークション詳細 — Armies & Magic"
+  },
+  "auth": {
+    "forgot_email_required": "リセットをリクエストする前にメールアドレスを入力してください。",
+    "forgot_email_sent": "{email} にリセット用メールを送信しました。受信トレイ（および迷惑メールフォルダ）をご確認ください。",
+    "forgot_send_error": "リセット用メールを送信できませんでした。",
+    "password_min_length": "パスワードは8文字以上にしてください。",
+    "generic_error": "エラーが発生しました。",
+    "tagline": "ファンタジー・コレクタブルカードゲーム",
+    "back_to_site": "← サイトに戻る",
+    "login": "ログイン",
+    "register": "新規登録",
+    "username_label": "ユーザー名",
+    "username_placeholder": "ユーザー名を選んでください",
+    "email_label": "メールアドレス",
+    "email_placeholder": "your@email.com",
+    "password_label": "パスワード",
+    "sending": "送信中...",
+    "forgot_password": "パスワードをお忘れですか？",
+    "password_min_placeholder": "8文字以上",
+    "password_placeholder_login": "パスワードを入力してください",
+    "loading": "読み込み中...",
+    "create_account": "アカウントを作成",
+    "sign_in": "ログイン",
+    "or": "または",
+    "continue_google": "Googleで続ける",
+    "continue_discord": "Discordで続ける",
+    "passwords_mismatch": "パスワードが一致しません。",
+    "password_updated_redirect": "パスワードを更新しました。リダイレクト中...",
+    "unknown_error": "不明なエラーが発生しました。",
+    "reset_heading": "パスワードをリセット",
+    "reset_sub": "アカウントの新しいパスワードを設定してください。",
+    "back_to_login": "← ログインに戻る",
+    "reset_link_invalid": "リセットリンクが無効または期限切れです。ログインページに戻り、再度メールをリクエストしてください。",
+    "new_password_label": "新しいパスワード",
+    "confirm_label": "確認",
+    "confirm_placeholder": "パスワードを再入力",
+    "updating": "更新中...",
+    "update": "更新"
+  },
+  "common": {
+    "settings_title": "設定",
+    "music": "ミュージック",
+    "sound_effects": "効果音",
+    "muted": "ミュート",
+    "active": "オン",
+    "concede_match": "マッチを投了する",
+    "concede_confirm": "⚠ 投了を確認",
+    "concede_hint": "もう一度クリックして確認 · 5秒後に自動キャンセル",
+    "notifications": "通知",
+    "mark_all_read": "すべて既読にする",
+    "no_notifications": "通知はありません",
+    "rotate_device": "端末を回転させてください",
+    "rotate_device_hint": "Armies & Magicは横画面でプレイします。端末を横向きにしてください。"
+  },
+  "forge": {
+    "forge_first_card": "最初のカードを鍛造する",
+    "forging": "鍛造中…",
+    "mana_cost_title": "マナコスト：{mana}",
+    "life_cost_title": "ライフコスト：{life}",
+    "discard_cost_title": "{count, plural, one {カードを#枚捨てる} other {カードを#枚捨てる}}",
+    "sacrifice_cost_title": "{count, plural, one {クリーチャーを#体生贄に捧げる} other {クリーチャーを#体生贄に捧げる}}",
+    "detail_note_all_allies": "（全ての味方に）",
+    "detail_note_target": "（対象のクリーチャーに）",
+    "trigger_on_play": "場に出たとき",
+    "trigger_on_death": "死亡時",
+    "trigger_on_return": "手札に戻ったとき",
+    "trigger_on_activation": "起動能力（タップ）",
+    "trigger_on_attack": "攻撃時",
+    "trigger_on_end_of_turn": "ターン終了時",
+    "trigger_spell_resolution": "解決時",
+    "composed_effects_heading": "複合エフェクト（上級）",
+    "composed_effects_subtitle": "内容＋強度＋対象",
+    "composed_effect_n": "複合エフェクト {n}",
+    "remove": "削除",
+    "label_trigger": "トリガー",
+    "label_content": "内容",
+    "content_deal_damage": "ダメージを与える",
+    "content_heal": "回復する",
+    "content_buff": "バフ +X/+Y",
+    "content_debuff": "デバフ -X/-Y",
+    "content_destroy": "破壊する",
+    "content_bounce": "手札に戻す",
+    "content_paralyze": "麻痺させる",
+    "content_grant_keyword": "能力を付与する",
+    "content_draw_cards": "ドローする",
+    "content_discard": "捨てさせる（相手）",
+    "content_summon_token": "トークンを召喚する",
+    "content_gain_mana": "マナを得る",
+    "content_exhumation": "蘇生する（墓地）",
+    "label_magnitude": "強度",
+    "label_granted_ability": "付与する能力",
+    "label_token": "トークン",
+    "label_targets": "対象",
+    "label_type": "タイプ",
+    "entity_unit": "ユニット",
+    "entity_hero": "ヒーロー",
+    "entity_both": "両方（ヒーロー＋ユニット）",
+    "entity_self": "自身（クリーチャー）",
+    "label_side": "サイド",
+    "side_ally": "味方",
+    "side_enemy": "敵",
+    "side_any": "どちらでも",
+    "label_count": "数量",
+    "scatter_points_hint": "X（{x}）ポイントをプール上にランダム分配",
+    "count_all": "すべて",
+    "label_location": "場所",
+    "location_board": "ボード",
+    "location_hand": "手札",
+    "location_deck": "デッキ",
+    "location_graveyard": "墓地",
+    "label_membership": "所属",
+    "label_designation": "指定",
+    "designation_choice": "任意選択",
+    "designation_random": "ランダム",
+    "designation_scatter": "ランダム分配（ポイント単位）",
+    "designation_automatic": "自動",
+    "add_composed_effect": "＋複合エフェクトを追加",
+    "tab_forge": "フォージ",
+    "tab_capacities": "能力",
+    "tab_edition": "編集",
+    "tab_tokens": "トークン",
+    "tab_card_backs": "カード裏面",
+    "tab_boards": "ボード",
+    "tab_icons": "アイコン",
+    "tab_sets": "セット",
+    "tab_formats": "フォーマット",
+    "tab_bulk": "一括",
+    "tab_budget": "予算",
+    "tab_schema": "スキーマ",
+    "tab_prints": "シリーズ",
+    "menu": "メニュー",
+    "collections": "コレクション",
+    "section_faction": "派閥",
+    "section_race": "種族",
+    "main_races": "主要種族",
+    "all_races": "全種族",
+    "section_clan": "クラン",
+    "section_alignment": "属性",
+    "section_type": "タイプ",
+    "section_rarity": "レアリティ",
+    "section_set_year": "セット / 年",
+    "no_set": "— セットなし —",
+    "or_month_year": "または 月/年：",
+    "month": "月",
+    "year_placeholder": "例：2026",
+    "section_mode": "モード",
+    "mode_auto": "自動",
+    "mode_manual": "手動",
+    "forging_caps": "鍛造中…",
+    "forge_button": "鍛造する",
+    "create_button": "作成する",
+    "reset_button": "リセット",
+    "summon_sound": "召喚音",
+    "death_sound": "死亡音",
+    "reroll": "リロール",
+    "new_card": "新しいカード",
+    "illustration_prompt_label": "イラストプロンプト",
+    "reference": "参照",
+    "no_reference": "参照なし",
+    "reference_image_optional": "参照画像（任意）",
+    "reference_image_hint": "ポーズ・構図・雰囲気の参考に使用。プロンプトのスタイルが優先されます。",
+    "replace": "差し替え",
+    "choose_image": "画像を選択",
+    "remove_image": "削除",
+    "copy": "コピー",
+    "reset_short": "リセット",
+    "generating": "生成中…",
+    "illustrate": "イラスト生成",
+    "history": "履歴",
+    "no_card": "カードなし",
+    "edition_label": "エディション",
+    "name_label": "名前",
+    "card_name_placeholder": "カード名",
+    "mana_label": "マナ",
+    "power_label": "パワー",
+    "life_cost_hint": "召喚時にヒーローが支払うライフポイント。合計が0HPになる場合、このカードはプレイ不可。",
+    "life_label": "ライフ",
+    "discard_cost_hint": "このカードをプレイするために手札から捨てるカード枚数。",
+    "discard_label": "ディスカード",
+    "sacrifice_cost_hint": "このカードをプレイするために生け贄に捧げる味方クリーチャーの数。",
+    "sacrifice_label": "サクリファイス",
+    "spell_effects_label": "スペル効果",
+    "spell_keywords_label": "スペルキーワード",
+    "token_to_summon": "召喚するトークン",
+    "config_below_tokens": "下の「召喚するトークン」で設定",
+    "targeted_race_clan": "対象種族 / クラン",
+    "targeted_race": "対象種族",
+    "required": "必須",
+    "choose_race": "-- 種族を選択 --",
+    "tokens_to_summon": "召喚するトークン",
+    "override_label": "オーバーライド：",
+    "atk_override": "ATK（上書き）",
+    "def_override": "DEF（上書き）",
+    "add_token": "＋トークンを追加",
+    "composable_effects_advanced": "コンポーザブル効果（上級）",
+    "json_hint": "JSON：targets（対象スロット）＋ effects（if/then/else ツリー）",
+    "abilities_count": "能力 ({count})",
+    "mode_title_play": "召喚時（デフォルト）",
+    "mode_title_death": "死亡時（デスラトル）",
+    "mode_title_tap": "タップで発動（エンゲージ）",
+    "mode_title_return": "手札に戻ったとき",
+    "mode_title_attack": "攻撃時",
+    "mode_title_end_of_turn": "ターン終了時",
+    "grant_scope_target": "対象クリーチャーに付与",
+    "grant_scope_all_allies": "全味方ユニットに付与",
+    "required_caps": "必須",
+    "transformation_token": "変身トークン",
+    "target_race_label": "対象種族",
+    "required_caps_f": "必須",
+    "atk_is_x": "（＋ATK＝X値）",
+    "neg_atk_is_x": "（－ATK＝X値）",
+    "choose_ability": "-- 能力を選択 --",
+    "scope_one_ally": "味方1体を対象",
+    "scope_all_allies": "全味方",
+    "replayed_triggers": "再実行トリガー",
+    "required_m": "必須",
+    "trigger_short_on_play": "場に出た時",
+    "trigger_short_on_death": "死亡時",
+    "trigger_short_end_of_turn": "ターン終了時",
+    "trigger_short_on_return": "手札に戻った時",
+    "tier_label": "ティア：",
+    "cost_label": "コスト：",
+    "points_value": "{pts} pts",
+    "specific_power_label": "固有能力",
+    "specific_power_placeholder": "固有能力のテキスト…",
+    "flavor_text_label": "フレーバーテキスト",
+    "flavor_text_placeholder": "物語の引用…",
+    "extra_context_label": "補足コンテキスト（任意）",
+    "extra_context_placeholder": "例：炎の剣を持つ、威圧的な眼差し、後ろ姿、赤みがかった霧、黄金の鎧…",
+    "illustration_prompt_label2": "イラストプロンプト",
+    "api_error": "APIエラー（{status}）：{detail}",
+    "see_console": "コンソールを確認",
+    "ai_no_prompt": "AIがプロンプトを返しませんでした — ANTHROPIC_API_KEYとサーバーログを確認してください",
+    "illustration_prompt_generated": "イラストプロンプトを生成しました",
+    "network_error": "ネットワークエラー",
+    "generate_by_ai": "AIで生成",
+    "english_prompt_placeholder": "画像生成用の英語プロンプト…",
+    "trigger_tap_activation": "起動時（タップ）",
+    "trigger_automatic": "自動（常時／条件付き）",
+    "trigger_spell_resolution_full": "呪文解決時",
+    "container_label": "コンテナ：",
+    "derived_from_type": "（カードタイプから自動取得）",
+    "no_ability_add_below": "能力なし。以下から追加してください。",
+    "effect_type_label": "効果タイプ",
+    "immediate_effect": "即時効果",
+    "effect_label": "効果",
+    "x_value_title": "X の値",
+    "targets_label2": "対象",
+    "one_target": "対象1体",
+    "rm_config_label": "+HP（Y）および対象の種族／クラン",
+    "atk_equals_x": "（+ATK = X）",
+    "neg_atk_equals_x": "（-ATK = X）",
+    "on_self": "（自身に）",
+    "add_ability": "＋能力を追加：",
+    "choose_dash": "-- 選択 --",
+    "no_ability_add_effect": "能力なし。以下に付与するエフェクトまたは能力を追加してください。",
+    "race_clan_label": "種族 / クラン",
+    "race_label": "種族",
+    "race_dash": "-- 種族 --",
+    "confer_prefix": "付与：",
+    "confer_ability_to_unit": "ユニットに能力を付与",
+    "scope_label": "範囲",
+    "all_allied_units": "全味方ユニット",
+    "one_allied_unit": "味方ユニット1体",
+    "add_effect": "＋ エフェクト：",
+    "spell_effect_dash": "-- 呪文エフェクト --",
+    "add_confer": "＋ 付与：",
+    "ability_to_confer_dash": "-- 付与する能力 --",
+    "save": "保存",
+    "generate_to_save": "⚒ フォージでカードを生成または入力すると保存できます。",
+    "token_templates_title": "トークンテンプレート",
+    "edit_template": "テンプレートを編集",
+    "new_template": "新規テンプレート",
+    "faction_optional": "勢力（任意）",
+    "deduced_from_race": "-- 種族から自動決定 --",
+    "choose_dash_cap": "-- 選択 --",
+    "clan_optional": "クラン（任意）",
+    "no_clan_available": "利用可能なクランなし",
+    "none_dash": "-- なし --",
+    "token_name_label": "トークン名",
+    "token_name_placeholder": "例：エルフの新兵",
+    "default_attack": "デフォルト攻撃力",
+    "default_defense": "デフォルト防御力",
+    "token_abilities": "トークンの能力",
+    "image_prompt_label": "画像プロンプト",
+    "auto_prompt_placeholder": "「オートプロンプト」をクリックして生成、またはプロンプトを入力...",
+    "auto_prompt": "オートプロンプト",
+    "generate_image": "画像を生成",
+    "or_upload_image": "または画像をアップロード",
+    "preview": "プレビュー",
+    "saving": "保存中...",
+    "update": "更新",
+    "create2": "作成",
+    "cancel": "キャンセル",
+    "existing_templates": "既存のテンプレート（{count}）",
+    "load_refresh": "読み込み／更新",
+    "no_template": "テンプレートなし — 読み込みをクリック",
+    "edit": "編集",
+    "generate_card_back_title": "カード裏面を生成",
+    "metadata": "メタデータ",
+    "card_back_name_placeholder": "例：古森の守護者",
+    "faction_label": "陣営",
+    "none_dash_f": "-- なし --",
+    "clan_label": "クラン",
+    "rarity_label": "レアリティ",
+    "copies_label": "枚数",
+    "default_checkbox": "デフォルト",
+    "frame_label": "フレーム",
+    "frame_hint": "フレームは生成後に適用されます。AIはイラストのみに集中できます — フレームの描画は不要です。",
+    "generation_mode": "生成モード",
+    "one_variant": "バリアント 1 種",
+    "three_variants": "バリアント 3 種",
+    "extra_instructions": "追加指示",
+    "card_back_instructions_placeholder": "例：金色のルーン、羽根、磨かれた鏡、とぐろを巻くドラゴン…",
+    "reference_image_hint2": "ビジュアルのインスピレーション（被写体／パレット／ムード）として使用。プロンプトのルールが優先されます。",
+    "manual_upload": "手動アップロード",
+    "variants_count": "バリアント（{selected} / {total} {selected, plural, one {選択中} other {選択中}}）",
+    "variant_n": "バリアント {n}",
+    "card_back_preview": "裏面プレビュー",
+    "saving2": "保存中…",
+    "save_n_backs": "裏面を {n} 枚保存",
+    "save_back": "裏面を保存",
+    "generate_board_title": "ゲームボードを生成",
+    "board_name_placeholder": "例：眠れる竜の酒場",
+    "composition_style": "構図スタイル",
+    "board_style_surface": "フレーム全体を覆う地形のみ（草地、雪、砂、石など）。装飾・ボーダーなし — 純粋な雰囲気重視のレンダリングに最適。",
+    "board_style_minimal": "中央を空白（平面）にし、縁に装飾を配置。3Dフィギュア向け。",
+    "board_style_mtgo": "MTG Arena構図：中央はシンプル、装飾はサイドパネルのみ。ゲーム中：左に大きなクリック可能な墓地タイル、右にヒーロー・デッキ・マナ・HPを配置（相手側は左右反転）。MTGOレイアウトを自動適用。",
+    "board_style_hearthstone": "Hearthstone構図：テーマに沿ったプロップを全体に配置、中央に装飾的なディバイダー。",
+    "graveyard_image_optional": "墓地の画像（任意）",
+    "graveyard": "墓地",
+    "graveyard_image_hint": "墓地のクリック可能なタイルとして表示される画像。画像がない場合はデフォルトの棺が表示されます。",
+    "environment_label": "環境",
+    "race_optional": "種族（任意）",
+    "default_board_hint": "デフォルトボード（デッキで指定がない場合に使用）",
+    "extra_instructions_optional": "追加指示（任意）",
+    "board_instructions_placeholder": "例：紫のネオンが光るサイバーパンクの雰囲気、激しい雨、金属の床に映る反射…",
+    "board_instructions_hint": "入力した場合、プロンプトのテーマ／環境ブロックを置き換えます。構図ルール（ハースストーン、16:9、対称性、フレーム）は常に適用されます。",
+    "reference_image_hint3": "ビジュアルのインスピレーション（テーマ／カラーパレット／ムード）として使用。構図ルールが優先されます。",
+    "rerun_variants": "{n}バリアントを再生成",
+    "generate_variants": "{n}バリアントを生成",
+    "or": "または",
+    "import_image": "画像をインポート",
+    "preview_caps": "プレビュー",
+    "variants_check_hint": "バリアント（クリックして選択 — 複数可）",
+    "save_board": "ボードを保存",
+    "save_n_boards": "選択した{n}枚のボードを保存",
+    "generate_ability_icon_title": "アビリティアイコンを生成",
+    "parameters": "パラメータ",
+    "ability_label": "アビリティ",
+    "ability_polymorph": "🔀 ポリモーフアビリティ — アイコンはクリーチャーとスペルの両方に保存されます。",
+    "ability_creature": "👤 クリーチャーアビリティ。",
+    "ability_spell": "🪄 スペルアビリティ。",
+    "ability_legend": "👤 クリーチャー · 🪄 スペル · 🔀 共有",
+    "icon_name_label": "アイコン名",
+    "icon_name_placeholder": "例：シールド v2",
+    "style_label": "スタイル",
+    "style_white": "ピュアホワイト",
+    "style_grey": "ピュアグレー",
+    "style_colored": "カラー",
+    "style_sculpture": "彫刻",
+    "icon_instructions_placeholder": "例：稲妻やスタイリッシュな髑髏を優先…",
+    "reference_image_hint4": "テーマのみのビジュアルインスピレーションとして使用。スタイルの制約（背景・シルエット・カラーパレットなど）はすべて維持されます。",
+    "rerun_3_variants": "3バリアントを再生成",
+    "generate_3_variants": "3バリアントを生成",
+    "variants_check_save_hint": "バリアント（保存するものをクリックして選択 — 複数可）",
+    "save_variant": "選択したバリアントを保存",
+    "save_n_variants": "選択した{n}個のバリアントを保存",
+    "gallery": "ギャラリー",
+    "all_abilities": "すべてのアビリティ",
+    "refresh": "更新",
+    "no_icon": "アイコンがありません。まず上で生成してください。",
+    "active": "有効",
+    "activate": "有効にする",
+    "create_set": "セットを作成",
+    "set_name_placeholder": "名前（例：ベースセット）",
+    "set_code_placeholder": "コード（例：BASE）",
+    "icon_placeholder": "アイコン",
+    "release_date": "リリース日",
+    "existing_sets": "既存セット（{count}）",
+    "no_set_created": "セットなし",
+    "error": "エラー",
+    "no_format_found": "フォーマットが見つかりません。「formats」テーブルが作成・入力済みか確認してください。",
+    "active_m": "有効",
+    "inactive": "無効",
+    "all_random": "全パラメータランダム",
+    "launch": "開始",
+    "budget_system_reference": "バジェットシステム — 参照",
+    "panel_mana_rarity": "マナコスト別レアリティ分布（バルクモード）",
+    "mana_th": "マナ",
+    "panel_rarity_multipliers": "レアリティ別倍率",
+    "panel_stat_costs": "ステータスコスト",
+    "atk_cost_desc": "1ポイントにつき2.5pts",
+    "def_cost_desc": "1ポイントにつき2.0pts",
+    "budget_algo_desc": "アルゴリズムはまずATK（残バジェットの45%）、次にDEF（55%）を割り当て、残りでアビリティの追加を試みます。派閥倍率（ATKウェイト・DEFウェイト）により抽選範囲が変動します。",
+    "panel_ability_costs": "アビリティコスト",
+    "panel_faction_profiles": "派閥プロフィール",
+    "guaranteed_label": "保証：",
+    "forbidden_label": "禁止：",
+    "card_schema_label": "カードスキーマ — JSON",
+    "limited_series_assignment": "限定シリーズ — 割り当て",
+    "no_dated_card": "日付付きでフォージされたカードがありません。",
+    "search_placeholder": "検索...",
+    "select_card_for_copies": "カードを選択してコピーを表示",
+    "loading": "読み込み中...",
+    "prints_summary": "{rarity} — 計{total}枚 — {assigned}枚割当済み、{available}枚利用可能",
+    "owner_th": "所有者",
+    "tradeable_th": "交換可能",
+    "actions_th": "アクション",
+    "available_dash": "— 未割当 —",
+    "yes": "はい",
+    "no": "いいえ",
+    "unassign": "割り当て解除",
+    "assign_to": "割り当て先...",
+    "cannot_read_ref_image": "参照画像を読み込めません。",
+    "cannot_load_image": "画像を読み込めません。",
+    "variants_failed": "{n} 個のバリアントが失敗しました。",
+    "confirm_delete_icon": "アイコン「{name}」を削除しますか？",
+    "icon_saved": "アイコン「{name}」を保存しました。",
+    "icons_saved_partial": "{ok} 個のアイコンを保存しましたが、他にエラーが発生しました：{error}",
+    "backs_saved": "{n} 個の裏面を保存しました。",
+    "back_saved": "裏面「{name}」を保存しました。",
+    "backs_saved_partial": "{ok} 個の裏面を保存しましたが、他にエラーが発生しました：{error}",
+    "image_imported": "画像をインポートしました — 保存できます。",
+    "cannot_read_imported_image": "インポートした画像を読み込めません。",
+    "boards_saved": "{n} 個のボードを保存しました。",
+    "board_saved_named": "ボード「{name}」を保存しました。",
+    "boards_saved_partial": "{ok} 個のボードを保存しましたが、他にエラーが発生しました：{error}",
+    "image_generated": "画像を生成しました（{model}）",
+    "generation_error": "生成エラー",
+    "server_error": "サーバーエラー",
+    "image_generation_error": "画像生成エラー",
+    "template_updated": "テンプレートを更新しました",
+    "template_created": "テンプレートを作成しました",
+    "validation_convocation_x": "召喚 X：保存前にピッカーでトークンを選択してください。",
+    "validation_convocation": "召喚：保存前にピッカーでトークンを選択してください。",
+    "validation_multi_convocation": "複数召喚：保存前にリストへトークンを1つ以上追加してください。",
+    "validation_lycanthropie": "狼男変身 X：保存前に変身トークンを選択してください。",
+    "validation_entraide": "相互援助（種族）：保存前に対象種族を選択してください。",
+    "validation_appel_supreme": "至高の召集：保存前に対象種族を選択してください。",
+    "validation_multi_convocation_spell": "複数召喚（呪文）：保存前にリストへトークンを1つ以上追加してください。",
+    "validation_convocation_spell": "召喚（呪文）：保存前にピッカーでトークンを選択してください。",
+    "card_added": "「{name}」を追加しました！",
+    "unknown_error": "不明なエラー",
+    "illustration_generated": "イラストを生成しました（{model}）",
+    "import_error": "インポートエラー"
+  },
+  "game": {
+    "error_not_authenticated": "未認証",
+    "error_match_not_found": "対戦が見つかりません",
+    "error_load_failed": "対戦の読み込みに失敗しました",
+    "loading": "対戦を読み込み中…",
+    "waiting_opponent": "対戦相手を待っています…",
+    "return_to_menu": "メニューへ戻る",
+    "persist_warning": "アクションを保存できませんでした — 同期がずれる可能性があります。再同期するにはページを再読み込みしてください。",
+    "reload": "再読み込み",
+    "close": "閉じる",
+    "settings": "設定",
+    "choose_card": "カードを選んでください",
+    "no_creatures": "クリーチャーなし",
+    "drag_hint": "カードをここにドラッグしてプレイ",
+    "drop_hint": "離してクリーチャーをプレイ",
+    "cancel_targeting": "ターゲット指定をキャンセル",
+    "action_cancel": "キャンセル",
+    "action_confirm": "確認",
+    "action_close": "閉じる",
+    "card_count": "{count, plural, one {# 枚のカード} other {# 枚のカード}}",
+    "selection_title": "🎴 選択",
+    "selection_subtitle": "手札に加えるカードを選んでください",
+    "power_hero_activated": "ヒーロー能力を発動しました",
+    "power_used_this_turn": "このターン使用済み",
+    "power_hero_label": "ヒーロー能力",
+    "power_cost_label": "コスト：",
+    "power_mana_unit": "マナ",
+    "power_mode_grant_keyword": "能力付与",
+    "power_mode_spell_trigger": "単発効果",
+    "power_mode_aura": "永続オーラ",
+    "power_mode_active": "アクティブ",
+    "power_no_description": "説明なし。",
+    "power_activations_unlimited": "発動回数：無制限",
+    "power_activations_used": "発動回数：{used} / {limit}",
+    "power_usage_limit": "上限：{limit}× まで",
+    "power_close_hint": "Escキーまたは枠外クリックで閉じる",
+    "divination_traque_title": "🔮 運命の追跡",
+    "divination_title": "🔍 占い",
+    "divination_traque_subtitle": "手札に加えるカードを選んでください。残りはデッキの下に置かれます。",
+    "divination_subtitle": "デッキの一番上に置くカードを選んでください",
+    "graveyard_select_prompt": "墓地からカードを選んでください",
+    "graveyard_hint_touch": "カードをタップして拡大・もう一度タップで説明表示",
+    "graveyard_hint_hover": "カードにカーソルを合わせて拡大・右クリックでイラスト／説明を切替",
+    "graveyard_empty": "墓地にカードはありません",
+    "cost_default_card_name": "カード",
+    "cost_pay_title": "{name} のコストを支払う",
+    "cost_discard_label": "🃏 {count, plural, one {カードを # 枚捨てる} other {カードを # 枚捨てる}}",
+    "cost_sacrifice_label": "☠ {count, plural, one {クリーチャーを # 体生贄に捧げる} other {クリーチャーを # 体生贄に捧げる}}",
+    "tactique_title": "📋 タクティクス",
+    "tactique_subtitle": "{count, plural, one {移転する能力を # つ選んでください} other {移転する能力を # つ選んでください}}",
+    "tactique_confirm": "確認 ({selected}/{max})",
+    "convocation_title": "📣 召喚",
+    "convocation_subtitle": "召喚するトークンの種族を選んでください",
+    "cycle_eternel_caption": "♻ 永遠のサイクル",
+    "discard_label": "🔥 {count, plural, one {捨て札 — # 枚} other {捨て札 — # 枚}}",
+    "graveyard_affect_label": "🪦 {count, plural, one {墓地 — # 枚} other {墓地 — # 枚}}",
+    "zone_deck": "デッキ",
+    "zone_graveyard": "墓地",
+    "zone_deck_yours": "自分のデッキ",
+    "zone_deck_opponent": "相手のデッキ",
+    "zone_graveyard_yours": "自分の墓地",
+    "zone_graveyard_opponent": "相手の墓地",
+    "convocation_prefix": "召喚：{content} を生成",
+    "convocation_create_list": "{content} を生成",
+    "convocation_token_one": "{token} {atk}/{hp} トークン×1",
+    "convocation_token_many": "{token} {atk}/{hp} トークン×{count}",
+    "convocation_invoke_one": "{token} {atk}/{hp} を1体召喚",
+    "convocation_invoke_race": "{race} {atk}/{hp} を1体召喚",
+    "convocation_create_one": "{token} {atk}/{hp} を1体生成",
+    "convocation_none": "トークンなし",
+    "convocation_and": "{a}と{b}",
+    "convocation_keywords": " ({keywords})",
+    "spell_countered": "🛡️ 呪文無効！",
+    "spell_grant_all_allies": " · 全味方クリーチャーに",
+    "spell_grant_target": " · 対象クリーチャーに",
+    "fire_breath_label": "炎のブレス",
+    "queue_eyebrow": "実力を証明せよ",
+    "queue_subtitle": "対戦相手を見つけて戦え",
+    "queue_heading": "プレイ",
+    "queue_select_deck_error": "デッキを選択してください",
+    "queue_connection_error": "マッチメイキング接続エラー",
+    "queue_no_valid_deck": "プレイするには有効なデッキ（50枚）が最低1つ必要です。",
+    "queue_create_deck": "デッキを作成",
+    "queue_format_label": "フォーマット：",
+    "queue_select_deck_label": "デッキを選択：",
+    "queue_no_deck_for_format": "このフォーマットのデッキがありません。デッキビルダーで作成してください。",
+    "queue_find_match": "対戦を探す",
+    "queue_back_to_menu": "メニューに戻る",
+    "queue_searching": "対戦相手を検索中…",
+    "mode_suffix_death": " · 死亡時",
+    "mode_suffix_tap": " · タップ",
+    "mode_suffix_return": " · 手札に戻す",
+    "mode_suffix_end_of_turn": " · ターン終了時"
+  },
+  "tutorial": {
+    "page_eyebrow": "決闘の極意を学べ",
+    "page_subtitle": "Armies & Magic — 中世ファンタジー・カード決闘",
+    "page_title": "遊び方",
+    "track_beginner": "初心者 — 完全ガイド",
+    "track_tcg": "TCGプレイヤー — 要点のみ",
+    "goal_title": "ゲームの目的",
+    "stat_hero_start": "開始時のヒーロー",
+    "stat_starting_hand": "初期手札",
+    "stat_mana_growth": "マナ（毎ターン増加）",
+    "stat_max_board": "フィールドに出せるクリーチャーの最大数",
+    "turn_title": "ターンの流れ",
+    "turn_intro": "各ターンの開始時、以下の順で処理します：",
+    "hand_title": "手札とドロー",
+    "creatures_title": "クリーチャー",
+    "spells_title": "スペル",
+    "combat_title": "戦闘",
+    "combat_see_full_list": "能力の完全なリストはページ下部にあります。",
+    "hero_title": "ヒーローとその能力",
+    "alt_costs_title": "代替コスト",
+    "deck_title": "デッキを構築する",
+    "tcg_numbers_title": "主要な数値",
+    "stat_hero_hp": "ヒーローのHP",
+    "stat_deck_exact": "カード枚数 / デッキ（固定）",
+    "stat_hand_range": "手札（開始時 → 上限）",
+    "stat_mana_per_turn": "マナ（+1 / ターン）",
+    "tcg_gameloop_title": "ゲームループ（A&M固有のルール）",
+    "tcg_deckbuilding_title": "デッキ構築",
+    "tcg_combat_title": "戦闘 — 解決順",
+    "tcg_hero_spells_title": "ヒーロー＆スペル",
+    "lexicon_eyebrow": "戦闘用語集",
+    "lexicon_subtitle": "常にゲームと同期した完全リファレンス。「X」「Y」は各カードで設定される数値です。",
+    "lexicon_title": "全能力一覧",
+    "search_placeholder": "能力を検索…",
+    "creature_abilities_group": "クリーチャー能力（{count}）",
+    "spell_abilities_group": "スペル能力（{count}）",
+    "no_ability_match": "「{query}」に一致する能力はありません。"
+  },
+  "deck": {
+    "max_mercenaires_current": "傭兵は最大{max}枚（現在{current}枚）",
+    "max_capability_current": "「{label}」能力は最大{max}枚（現在{count}枚）",
+    "card_not_owned": "未所持のカード",
+    "deck_full": "デッキ満杯",
+    "unique_copy": "ユニーク（1枚のみ）",
+    "max_three_copies": "最大3枚まで",
+    "alignment_conflict": "アライメント競合",
+    "one_faction_only": "1勢力のみ使用可",
+    "one_clan_only": "1クランのみ使用可",
+    "max_mercenaires": "傭兵は最大{max}枚",
+    "no_slot_available": "空きスロットなし",
+    "max_capability": "「{label}」能力は最大{max}枚まで",
+    "enter_deck_name": "デッキ名を入力してください",
+    "choose_faction_prep": "勢力を選択してください（準備タブ）",
+    "select_format": "フォーマットを選択してください",
+    "select_hero": "ヒーローを選択してください",
+    "deck_exact_size": "デッキはちょうど{size}枚にしてください（現在{current}枚）",
+    "illegal_cards": "このフォーマットで使用不可のカード：{cards}",
+    "deck_contains_unowned": "デッキに未所持のカードが含まれています",
+    "save_failed": "デッキの保存に失敗しました",
+    "forge_your_deck": "デッキを鍛造する",
+    "step_preparation": "1 · 準備",
+    "step_appearance": "2 · 外観",
+    "step_cards": "3 · カード",
+    "cancel": "キャンセル",
+    "choose_faction_first_tab": "まずタブ「1 · 準備」で勢力を選択してください。",
+    "search_placeholder": "検索...",
+    "creatures": "クリーチャー",
+    "spells": "スペル",
+    "all_capabilities": "能力",
+    "all_races": "種族",
+    "all_clans": "クラン",
+    "all_sets": "セット",
+    "year": "年",
+    "rarity_abbr_uncommon": "アン",
+    "rarity_abbr_legendary": "伝説",
+    "expert_only_title": "エキスパートカード（アンコモン以上）のみ表示",
+    "expert": "エキスパート",
+    "preparation": "準備",
+    "forge_a_deck": "デッキを鍛造する",
+    "deck_name": "デッキ名",
+    "deck_name_placeholder": "デッキ名...",
+    "faction": "陣営",
+    "choose_faction": "陣営を選択...",
+    "faction_hint": "単一陣営＋傭兵。陣営変更時、非対応のカード/ヒーローは除外されます。",
+    "format": "フォーマット",
+    "mode_placeholder": "モード...",
+    "mode_classic": "クラシック",
+    "mode_expert": "エキスパート",
+    "extent_placeholder": "範囲...",
+    "extent_standard": "スタンダード",
+    "extent_extended": "エクステンデッド",
+    "choose_faction_first_tab_short": "先に陣営を選択してください（タブ1・準備）。",
+    "choose_hero": "ヒーローを選択",
+    "right_click_power": "右クリック：能力を確認",
+    "no_hero_for_faction": "この陣営のヒーローはいません。",
+    "board": "ボード",
+    "change": "変更",
+    "choose_board": "ボードを選択",
+    "card_back": "カード裏面",
+    "choose_card_back": "裏面を選択",
+    "mono_faction": "単一陣営",
+    "mono_clan": "単一クラン",
+    "clan_label": "クラン：",
+    "deck": "デッキ",
+    "mana_curve_tooltip": "{label} マナ：{count, plural, one {# 枚} other {# 枚}}",
+    "click_cards_to_add": "カードをクリックして追加",
+    "free_slot": "空きスロット",
+    "more_slots": "+{count} スロット",
+    "keywords": "キーワード",
+    "max_suffix": "（最大 {max}）",
+    "saving": "保存中...",
+    "save_deck": "保存",
+    "create_deck": "デッキを作成",
+    "passive": "パッシブ",
+    "mana": "マナ",
+    "no_board_available": "利用可能なボードがありません。",
+    "no_card_back_available": "利用可能な裏面がありません。",
+    "format_number": "フォーマット {id}",
+    "no_format": "フォーマットなし",
+    "compose_your_army": "軍を編成しよう",
+    "my_decks": "マイデッキ",
+    "decks_in_armory": "{count, plural, one {# デッキ} other {# デッキ}}（武器庫内）",
+    "decks_in_format": "{count, plural, one {# デッキ} other {# デッキ}}（このフォーマット）",
+    "new_deck": "新規デッキ",
+    "back_to_menu": "メニューに戻る",
+    "all": "すべて",
+    "no_decks_yet": "デッキがまだありません",
+    "create_first_deck": "最初のデッキを作成しよう",
+    "no_decks_in_format": "このフォーマットにデッキはありません",
+    "show_all_decks": "すべてのデッキを表示",
+    "cards_count_label": "{count}/{size} 枚",
+    "valid_suffix": " （有効）",
+    "edit": "編集",
+    "confirm": "確認",
+    "delete": "削除",
+    "admire_your_armies": "自分の軍を眺めよう",
+    "card_collection": "カードコレクション",
+    "cards_count": "{count, plural, one {# 枚} other {# 枚}}",
+    "cards_of_total": " / {total}",
+    "search_by_name": "名前で検索...",
+    "mana_label": "マナ：",
+    "reset_filters": "フィルターをリセット",
+    "faction_label": "勢力：",
+    "all_fem": "すべて",
+    "rarity_label": "レアリティ：",
+    "expert_only": "エキスパートのみ",
+    "capability_label": "能力：",
+    "race_label": "種族：",
+    "all_masc": "すべて",
+    "format_label": "フォーマット：",
+    "set_label": "セット：",
+    "year_label": "年：",
+    "no_cards_match": "フィルターに一致するカードはありません",
+    "alignment_incompatible": "善と悪のアライメントは共存できません"
+  },
+  "cardBacks": {
+    "eyebrow": "スタイルを見せよう",
+    "title": "マイカードバック",
+    "subtitle": "{visible, plural, one {# 表示中} other {# 表示中}} · {prints, plural, one {# 所持プリント} other {# 所持プリント}}",
+    "back_to_menu": "メニューに戻る",
+    "rarity_label": "レアリティ：",
+    "owned_only": "所持済みのみ",
+    "empty": "表示する裏面がありません。",
+    "equipped": "装備中",
+    "default_badge": "デフォルト",
+    "not_owned": "未所持"
+  },
+  "boards": {
+    "eyebrow": "アリーナを設定する",
+    "title": "マイボード",
+    "subtitle": "{visible, plural, one {# 表示中} other {# 表示中}} · {prints, plural, one {# プリント所持} other {# プリント所持}}",
+    "back_to_menu": "メニューに戻る",
+    "rarity_label": "レアリティ：",
+    "owned_only": "所持済みのみ",
+    "empty": "表示するボードがありません。",
+    "equipped": "装備中",
+    "default_badge": "デフォルト",
+    "not_owned": "未所持"
+  }
+}

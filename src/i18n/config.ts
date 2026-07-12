@@ -1,8 +1,10 @@
 // Configuration i18n centrale. Source de vérité pour la liste des langues.
 // La langue source (et le fallback garanti partout) est le français.
-// 6 langues d'emblée (l'ancien système maison fr/en localStorage a été retiré).
+// 8 langues (l'ancien système maison fr/en localStorage a été retiré) :
+// FR source + EN/ES/DE/IT/PT/JA/ZH. L'arabe (RTL) est différé (miroir des
+// layouts = chantier séparé). ja/zh = LTR, aucun réglage `dir` nécessaire.
 
-export const SUPPORTED_LOCALES = ["fr", "en", "es", "de", "it", "pt"] as const;
+export const SUPPORTED_LOCALES = ["fr", "en", "es", "de", "it", "pt", "ja", "zh"] as const;
 
 export type Locale = (typeof SUPPORTED_LOCALES)[number];
 
@@ -20,6 +22,8 @@ export const LOCALE_LABELS: Record<Locale, string> = {
   de: "Deutsch",
   it: "Italiano",
   pt: "Português",
+  ja: "日本語",
+  zh: "中文",
 };
 
 // Traducteur « sûr » : renvoie la chaîne traduite si la clé existe, sinon

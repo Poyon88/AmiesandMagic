@@ -1,0 +1,1696 @@
+{
+  "vocab": {
+    "keywords": {
+      "charge": {
+        "label": "追猎",
+        "desc": "召唤当回合即可攻击并使用其主动技能。"
+      },
+      "taunt": {
+        "label": "嘲讽",
+        "desc": "敌方必须优先攻击此单位。"
+      },
+      "divine_shield": {
+        "label": "圣盾",
+        "desc": "抵消首次受到的攻击伤害。"
+      },
+      "ranged": {
+        "label": "飞行",
+        "desc": "无视敌方嘲讽。"
+      },
+      "raid": {
+        "label": "突袭",
+        "desc": "召唤当回合即可攻击一个敌方生物（但不能攻击英雄）。"
+      },
+      "convocations_multiples": {
+        "label": "多重召唤",
+        "desc": "召唤：根据配置生成多个衍生物。"
+      },
+      "loyaute": {
+        "label": "忠义",
+        "desc": "召唤：场上每有一个同族盟友，获得+1攻击力和+1生命值。"
+      },
+      "ancre": {
+        "label": "锚定",
+        "desc": "无法被移动或放逐。"
+      },
+      "resistance": {
+        "label": "抗性 X",
+        "desc": "受到的伤害减少X点（最少承受1点伤害）。"
+      },
+      "premiere_frappe": {
+        "label": "先手",
+        "desc": "此单位攻击时先行造成伤害；敌方单位仅在存活时才能反击。"
+      },
+      "berserk": {
+        "label": "狂暴",
+        "desc": "若当前生命值低于卡牌原始生命值，攻击力翻倍。"
+      },
+      "vol": {
+        "label": "飞行",
+        "desc": "无视敌方嘲讽。"
+      },
+      "precision": {
+        "label": "精准",
+        "desc": "无视抗性、护甲和圣盾。"
+      },
+      "drain_de_vie": {
+        "label": "生命汲取",
+        "desc": "造成的伤害为你的英雄恢复等量生命值。"
+      },
+      "esquive": {
+        "label": "闪避",
+        "desc": "每回合自动躲避首次受到的攻击。"
+      },
+      "poison": {
+        "label": "毒素",
+        "desc": "受伤单位每回合流失1点生命值。"
+      },
+      "celerite": {
+        "label": "迅捷",
+        "desc": "每回合可攻击两次。"
+      },
+      "augure": {
+        "label": "预兆",
+        "desc": "此单位对敌方英雄造成伤害时，你抽一张牌。"
+      },
+      "benediction": {
+        "label": "祝福",
+        "desc": "使目标单位完全恢复生命值。"
+      },
+      "bravoure": {
+        "label": "英勇",
+        "desc": "对攻击力高于自身的单位造成的伤害翻倍（向上取整）。"
+      },
+      "pillage": {
+        "label": "掠夺 X",
+        "desc": "召唤：对手随机弃掉手牌中的 X 张牌。"
+      },
+      "riposte": {
+        "label": "反击 X",
+        "desc": "此单位受到伤害时，对攻击来源（单位或英雄）造成 X 点伤害。"
+      },
+      "rappel": {
+        "label": "召回",
+        "desc": "召唤：将你墓地中目标牌取回手牌。"
+      },
+      "combustion": {
+        "label": "燃烧",
+        "desc": "召唤：弃掉手中一张牌，然后抽两张牌。"
+      },
+      "terreur": {
+        "label": "恐惧",
+        "desc": "敌方单位在此牌在场时失去 1 点攻击力。"
+      },
+      "pauvrete": {
+        "label": "贫困 X",
+        "desc": "此单位失去的力量等同于对手手牌数量（X = 对手当前手牌数，动态计算）。"
+      },
+      "armure": {
+        "label": "护甲",
+        "desc": "所受战斗伤害减半（向上取整）；法术伤害不受此效果影响。"
+      },
+      "commandement": {
+        "label": "统率",
+        "desc": "同阵营的友方单位获得 +1/+1。"
+      },
+      "fureur": {
+        "label": "狂怒",
+        "desc": "受到伤害后，立即攻击一个随机敌方单位（若无单位则攻击英雄）。每回合最多触发一次。"
+      },
+      "double_attaque": {
+        "label": "双重攻击",
+        "desc": "仅限进攻阶段：攻击时造成两倍攻击力的伤害。目标单位正常反击。"
+      },
+      "invisible": {
+        "label": "隐形",
+        "desc": "不能被法术或敌方单位技能指定为目标。"
+      },
+      "canalisation": {
+        "label": "法力引导",
+        "desc": "此单位在场时，你的法术费用降低 1 点法力（最低 1 点）。"
+      },
+      "contresort": {
+        "label": "反制法术",
+        "desc": "召唤：取消对手下一个法术。"
+      },
+      "convocation": {
+        "label": "召唤 X",
+        "desc": "召唤：生成一个指定种族的 X/X 衍生物。"
+      },
+      "convocation_simple": {
+        "label": "召唤",
+        "desc": "召唤：生成已配置的衍生物。"
+      },
+      "malediction": {
+        "label": "诅咒",
+        "desc": "召唤：指定一个敌方单位，该单位在对手下一回合结束时被放逐。"
+      },
+      "necrophagie": {
+        "label": "食腐",
+        "desc": "每当任意单位（友方或敌方）死亡时，获得 +1 攻击力和 +1 生命值。"
+      },
+      "richesse": {
+        "label": "财富 X",
+        "desc": "每当任意玩家弃掉手牌中的一张牌时，此单位永久获得 +X/+X。"
+      },
+      "sacrifice_demoniaque": {
+        "label": "恶魔献祭 X",
+        "desc": "此单位死亡时，随机将 X 次费用削减（每次 -1 点法力）分配给手牌中的恶魔。恶魔费用最低为 1。"
+      },
+      "paralysie": {
+        "label": "麻痹",
+        "desc": "被此生物造成伤害的单位，在其控制者的下一回合结束前无法攻击或使用主动技能。"
+      },
+      "permutation": {
+        "label": "置换",
+        "desc": "召唤：交换一个友方单位与一个敌方单位当前的生命值。"
+      },
+      "persecution": {
+        "label": "迫害 X",
+        "desc": "每当此单位发动攻击时，对敌方英雄造成 X 点伤害。"
+      },
+      "pietinement": {
+        "label": "践踏",
+        "desc": "此单位攻击生物时，超出目标剩余生命值的多余伤害将对敌方英雄造成。"
+      },
+      "catalyse": {
+        "label": "催化",
+        "desc": "召唤：将手牌中所有同族单位的法力费用降低 1。"
+      },
+      "ombre_du_passe": {
+        "label": "往昔之影",
+        "desc": "召唤：墓地中每有一个同族单位，此单位获得 +1 攻击 和 +1 生命值。"
+      },
+      "profanation": {
+        "label": "亵渎 X",
+        "desc": "召唤：放逐墓地中最后 X 张牌，为此单位提供最多 +X/+X。"
+      },
+      "prescience": {
+        "label": "预知 X",
+        "desc": "召唤：持续抽牌，直到手牌达到 X 张。"
+      },
+      "suprematie": {
+        "label": "霸权",
+        "desc": "召唤：召唤时手牌中每有一张牌，此单位获得 +1 攻击 和 +1 生命值。"
+      },
+      "divination": {
+        "label": "占卜",
+        "desc": "召唤：揭示牌库顶的 3 张牌，将其中 1 张放回顶部，另外 2 张按选定顺序放回底部。"
+      },
+      "savant": {
+        "label": "学者",
+        "desc": "召唤：墓地中每有一张法术牌，此单位获得 +1 攻击 和 +1 生命值。"
+      },
+      "liaison_de_vie": {
+        "label": "生命链接",
+        "desc": "与敌方英雄共同承受所受伤害。"
+      },
+      "ombre": {
+        "label": "潜影",
+        "desc": "在此单位执行行动（攻击或使用技能）之前，无法被选为目标或受到攻击。"
+      },
+      "sacrifice": {
+        "label": "献祭",
+        "desc": "召唤：摧毁一个友方单位，永久获得其生命值和攻击力。"
+      },
+      "malefice": {
+        "label": "诅咒",
+        "desc": "死亡时，对所有单位（友方与敌方）造成 X 点伤害，X 等于其攻击力。"
+      },
+      "indestructible": {
+        "label": "坚不可摧",
+        "desc": "不受任何战斗伤害。"
+      },
+      "regeneration": {
+        "label": "再生",
+        "desc": "你的回合开始时，恢复 2 点生命值。"
+      },
+      "corruption": {
+        "label": "腐化",
+        "desc": "将选定的敌方单位转化至己方阵营直到回合结束；该单位在本回合结束前获得追猎。"
+      },
+      "carnage": {
+        "label": "屠戮 X",
+        "desc": "死亡：对场上所有单位（友方与敌方）造成 X 点伤害。"
+      },
+      "heritage": {
+        "label": "传承 X",
+        "desc": "死亡：场上每个友方单位永久获得 +X 攻击 和 +X 生命值。"
+      },
+      "mimique": {
+        "label": "拟态",
+        "desc": "召唤：复制目标单位的所有技能，并永久赋予此单位。"
+      },
+      "metamorphose": {
+        "label": "变形",
+        "desc": "召唤：此单位变为目标单位的完全复制（攻击/生命/能力）。"
+      },
+      "tactique": {
+        "label": "战术 X",
+        "desc": "召唤：永久赋予目标友方单位 X 个选定的能力。"
+      },
+      "exhumation": {
+        "label": "掘墓 X",
+        "desc": "召唤：复活你墓地中法力费用等于或低于 X 的一个单位。"
+      },
+      "heritage_du_cimetiere": {
+        "label": "墓地传承",
+        "desc": "召唤：将你墓地中目标单位的能力赋予此单位。"
+      },
+      "pacte_de_sang": {
+        "label": "血之契约",
+        "desc": "此单位死亡时，召唤两个同种族的 1/1 衍生物。"
+      },
+      "souffle_de_feu": {
+        "label": "烈焰吐息 X",
+        "desc": "攻击时对所有敌方单位造成 X 点伤害（例：烈焰吐息 2 = 2 点伤害）。"
+      },
+      "domination": {
+        "label": "支配",
+        "desc": "召唤时随机夺取一个敌方单位的控制权。"
+      },
+      "resurrection": {
+        "label": "复活",
+        "desc": "死亡后以 1 点生命值重回战场；复活后失去复活能力。"
+      },
+      "transcendance": {
+        "label": "超脱",
+        "desc": "对敌方所有法术完全免疫：不受任何法术的伤害或效果影响，包括范围法术。"
+      },
+      "vampirisme": {
+        "label": "吸血 X",
+        "desc": "召唤：从目标敌方单位吸取 X 点生命值，并将其加到此单位的生命值上。"
+      },
+      "traque_du_destin": {
+        "label": "命运追踪 X",
+        "desc": "召唤：揭示你牌库顶的 X 张牌，取其中一张加入手牌，其余以随机顺序置于牌库底。"
+      },
+      "sang_mele": {
+        "label": "混血",
+        "desc": "场上每有一种不同种族的友方单位，此单位获得 +1 攻击和 +1 生命值。"
+      },
+      "fierte_du_clan": {
+        "label": "氏族荣耀",
+        "desc": "此单位在场时，同氏族单位召唤时额外附带 +1/+1。"
+      },
+      "solidarite": {
+        "label": "团结 X",
+        "desc": "召唤：若你控制另外 2 个同种族单位，则摸 X 张牌。"
+      },
+      "entraide": {
+        "label": "互助"
+      },
+      "cycle_eternel": {
+        "label": "永恒轮回",
+        "desc": "死亡：将此牌的一个副本加入你的牌库；若摸到此牌，直接将其置入战场。"
+      },
+      "martyr": {
+        "label": "殉道者",
+        "desc": "死亡：你场上所有同种族单位永久获得 +1/+1。"
+      },
+      "instinct_de_meute": {
+        "label": "群狼本能 X",
+        "desc": "召唤：若本回合内有一个同阵营友方单位从战场进入了墓地，则此单位获得 +X 攻击和 +X 生命值。"
+      },
+      "totem": {
+        "label": "图腾",
+        "desc": "此单位获得场上所有同种族友方单位的能力。"
+      },
+      "appel_du_clan": {
+        "label": "氏族召唤 X",
+        "desc": "召唤：从你牌库顶找出第一张费用等于或低于 X 的同氏族单位，免费将其置入战场。"
+      },
+      "appel_supreme": {
+        "label": "至高召唤",
+        "desc": "召唤：将你牌库中所选种族里法力消耗最高的生物加入手牌（费用相同时随机选取）。"
+      },
+      "rassemblement": {
+        "label": "集结 X",
+        "desc": "召唤：揭示牌库顶的X张牌；将其中所有同种族单位加入手牌，其余弃置。"
+      },
+      "selection": {
+        "label": "抉择 X",
+        "desc": "召唤：从与本卡阵营相同（善良/中立/邪恶）的派系中随机揭示3张费用≤X的普通牌；选择其中一张加入手牌。若X未定义则无费用上限。"
+      },
+      "selection_magique": {
+        "label": "魔法抉择 X",
+        "desc": "召唤：从与本卡阵营相同（善良/中立/邪恶）的派系中随机揭示3张费用≤X的普通法术；选择其中一张加入手牌。若X未定义则无费用上限。"
+      },
+      "renfort_royal": {
+        "label": "皇家抉择 X",
+        "desc": "召唤：从你的限定版牌（需≥30张；否则从同阵营普通牌中）随机揭示3张费用≤X的牌；选择其中一张加入手牌。若X未定义则无费用上限。"
+      },
+      "lycanthropie": {
+        "label": "狼人变身 X",
+        "desc": "回合开始：变形为一个具有追踪的X/X衍生物。"
+      },
+      "relancer": {
+        "label": "重铸 X",
+        "desc": "召唤：以随机目标重新施放最近X个已施放的法术。"
+      },
+      "tempete": {
+        "label": "风暴 X",
+        "desc": "召唤：将X点伤害随机分配给各敌方单位。"
+      },
+      "cataclysme": {
+        "label": "灾变 X",
+        "desc": "召唤：对所有生物（友方及敌方）各造成X点伤害。"
+      },
+      "affaiblissement": {
+        "label": "削弱 -X/-Y",
+        "desc": "召唤：使目标敌方生物获得-X攻击力和-Y生命值。"
+      },
+      "renforcement": {
+        "label": "强化 +X/+Y",
+        "desc": "永久获得+X攻击力和+Y生命值。"
+      },
+      "impact": {
+        "label": "冲击 X",
+        "desc": "对目标（任意一方的生物或英雄）造成X点伤害。"
+      },
+      "douleur": {
+        "label": "痛苦 X",
+        "desc": "召唤：对你的英雄造成X点伤害。"
+      },
+      "inspiration": {
+        "label": "启示 X",
+        "desc": "召唤：抽X张牌。"
+      },
+      "concentration": {
+        "label": "专注 X",
+        "desc": "召唤：将手牌中每个法术替换为一个费用高X点的随机法术（全派系）；新法术的费用降低X点。"
+      },
+      "remontee": {
+        "label": "回弹",
+        "desc": "将目标单位返回其原始拥有者的手牌。"
+      },
+      "renforcement_multiple": {
+        "label": "群体强化",
+        "desc": "使你所有选定种族或氏族的生物获得+X/+Y。"
+      },
+      "entrainement": {
+        "label": "训练 X",
+        "desc": "使你手牌中同派系的生物获得+X/+X。"
+      },
+      "conferer": {
+        "label": "赋予",
+        "desc": "召唤：将所选能力赋予一个（或所有）友方单位。"
+      },
+      "declenchement": {
+        "label": "触发",
+        "desc": "召唤：将场上其他友方单位的复合触发效果重新触发一次，适用于固定的触发子集（入场/死亡/回合结束/返回）。"
+      }
+    },
+    "spell_keywords": {
+      "poison": {
+        "label": "中毒",
+        "desc": "受伤单位每回合失去1点生命值。"
+      },
+      "pillage": {
+        "label": "掠夺 X",
+        "desc": "对手随机弃掉手中X张牌。"
+      },
+      "convocation_simple": {
+        "label": "召唤",
+        "desc": "生成已配置的衍生物。"
+      },
+      "appel_du_clan": {
+        "label": "族群召唤 X",
+        "desc": "从你的牌库中免费召唤与此法术同族、费用不超过X的第一张单位牌。"
+      },
+      "appel_supreme": {
+        "label": "至高召唤",
+        "desc": "将你牌库中所选种族费用最高的生物加入手牌（费用相同时随机选取）。"
+      },
+      "rassemblement": {
+        "label": "集结 X",
+        "desc": "揭示你牌库顶的X张牌；将与此法术同种族的单位牌加入手牌，其余弃置。"
+      },
+      "rappel": {
+        "label": "召回",
+        "desc": "将你墓地中的一个生物返回手牌。"
+      },
+      "exhumation": {
+        "label": "掘墓 X",
+        "desc": "将你墓地中一个生物（费用≤X）复活至战场。"
+      },
+      "selection": {
+        "label": "甄选 X",
+        "desc": "从与此法术同阵营的3张随机普通牌（费用≤X，若X未定义则无限制）中选择一张加入手牌。"
+      },
+      "selection_magique": {
+        "label": "魔法甄选 X",
+        "desc": "从与此法术同阵营的3张随机普通法术（费用≤X，若X未定义则无限制）中选择一张加入手牌。"
+      },
+      "renfort_royal": {
+        "label": "皇家甄选 X",
+        "desc": "从你的限定版牌（需≥30张；否则从同阵营普通牌中）随机选3张费用≤X（若X未定义则无限制）的牌，选择一张加入手牌。"
+      },
+      "relancer": {
+        "label": "重施 X",
+        "desc": "以随机目标重新施放最近X个法术。"
+      },
+      "invocation": {
+        "label": "召唤 X/Y",
+        "desc": "召唤一个X/Y衍生物。"
+      },
+      "impact": {
+        "label": "冲击 X",
+        "desc": "对一个目标（生物或英雄，任意一侧）造成X点伤害。"
+      },
+      "deferlement": {
+        "label": "横扫 X",
+        "desc": "对所有敌方生物造成X点伤害。"
+      },
+      "siphon": {
+        "label": "虹吸 X",
+        "desc": "对一个目标造成X点伤害，并为你的英雄恢复等量生命值。"
+      },
+      "entrave": {
+        "label": "束缚",
+        "desc": "使目标敌方生物陷入麻痹。"
+      },
+      "execution": {
+        "label": "处决",
+        "desc": "消灭目标生物。"
+      },
+      "silence": {
+        "label": "沉默",
+        "desc": "移除目标生物的所有关键词。"
+      },
+      "renforcement": {
+        "label": "强化 +X/+Y",
+        "desc": "使目标友方生物获得+X/+Y。"
+      },
+      "affaiblissement": {
+        "label": "弱化 -X/-Y",
+        "desc": "对目标敌方生物给予 -X ATK 和 -Y PV。"
+      },
+      "guerison": {
+        "label": "治愈 X",
+        "desc": "为目标恢复 X PV"
+      },
+      "inspiration": {
+        "label": "启示 X",
+        "desc": "抽 X 张牌"
+      },
+      "remontee": {
+        "label": "归还",
+        "desc": "将目标单位返回其原主手中。"
+      },
+      "renforcement_multiple": {
+        "label": "群体强化",
+        "desc": "为所选种族或氏族的所有己方生物给予 +X/+Y。"
+      },
+      "entrainement": {
+        "label": "训练 X",
+        "desc": "为手牌中同阵营的己方生物给予 +X/+X。"
+      },
+      "concentration": {
+        "label": "专注 X",
+        "desc": "将手中每张法术替换为费用高 X 的随机法术（全阵营）；新法术费用降低 X。"
+      },
+      "invocation_multiple": {
+        "label": "多重召唤",
+        "desc": "按卡牌配置生成多个衍生物。"
+      },
+      "tempete": {
+        "label": "风暴 X",
+        "desc": "对敌方单位随机分配 X 点伤害。"
+      },
+      "cataclysme": {
+        "label": "浩劫 X",
+        "desc": "对所有生物（己方与敌方）造成 X 点伤害。"
+      },
+      "douleur": {
+        "label": "苦痛 X",
+        "desc": "施放时，对己方英雄造成 X 点伤害。"
+      },
+      "afflux": {
+        "label": "涌流 X",
+        "desc": "本回合获得 X 点法力"
+      }
+    },
+    "composed": {
+      "trigger": {
+        "on_play": "入场时",
+        "on_death": "死亡时",
+        "on_return": "回手时",
+        "on_activation": "激活时",
+        "on_attack": "攻击时",
+        "on_end_of_turn": "回合结束时"
+      },
+      "content": {
+        "deal_damage_one": "造成 {x} 点伤害",
+        "deal_damage_many": "造成 {x} 点伤害",
+        "heal": "恢复 {x} PV",
+        "buff": "给予 +{x}/+{y}",
+        "debuff": "给予 -{x}/-{y}",
+        "destroy": "消灭",
+        "bounce": "返回手牌",
+        "paralyze": "麻痹",
+        "grant_keyword": "赋予 {ability}",
+        "ability_generic": "一个能力",
+        "draw_cards_one": "抽 {x} 张牌",
+        "draw_cards_many": "抽 {x} 张牌",
+        "discard_one": "对手弃 {x} 张牌",
+        "discard_many": "对手弃 {x} 张牌",
+        "summon_one": "召唤一个 {token}",
+        "summon_many": "召唤 {x} 个 {token}",
+        "token_one": "衍生物",
+        "token_many": "衍生物",
+        "gain_mana": "本回合获得 {x} 点法力",
+        "exhumation": "从你的墓地复活 {who}（费用 ≤ {x}）",
+        "exhum_one": "一个生物",
+        "exhum_all": "所有生物",
+        "exhum_upto": "至多 {n} 个生物"
+      },
+      "target": {
+        "self": "对自身",
+        "hero_ally": "对你的英雄",
+        "hero_enemy": "对对方英雄",
+        "both_all": "对所有单位及 {side} 英雄",
+        "both_one": "对一个目标（单位或英雄）{side}",
+        "both_side_ally": "我方",
+        "both_side_enemy": "敌方",
+        "count_all": "对所有单位",
+        "count_one": "对一个单位",
+        "count_n": "对 {n} 个单位",
+        "side_ally_one": "友方",
+        "side_ally_many": "友方",
+        "side_enemy_one": "敌方",
+        "side_enemy_many": "敌方",
+        "loc_hand": "手牌中",
+        "loc_deck": "牌库中",
+        "loc_graveyard": "墓地中",
+        "des_random": "随机",
+        "des_automatic": "自动",
+        "des_choice": "自选"
+      },
+      "scatter": {
+        "action_damage": "造成",
+        "action_heal": "恢复",
+        "unit_damage": "伤害",
+        "unit_heal": "生命值",
+        "times": "{x} 次，每次 1 点 {unit}，每次随机",
+        "target_both": "对一个随机 {side} 目标（单位或英雄）",
+        "target_unit": "对一个随机 {side} 单位"
+      },
+      "choice": {
+        "deal_damage": "选择一个目标造成伤害",
+        "heal": "选择一个治疗目标",
+        "buff": "选择一个强化的生物",
+        "debuff": "选择一个削弱的生物",
+        "destroy": "选择一个消灭的生物",
+        "bounce": "选择一个返回手牌的生物",
+        "paralyze": "选择一个麻痹的生物",
+        "grant_keyword": "选择一个赋予能力的生物",
+        "exhumation": "选择一个复活的生物",
+        "default": "选择一个目标"
+      }
+    },
+    "factions": {
+      "Elfes": {
+        "displayName": "天界联盟",
+        "description": "敏捷而隐秘。擅长速度与闪避。巨鹰列于其阵。"
+      },
+      "Nains": {
+        "displayName": "熔炉兄弟会",
+        "description": "坚实耐久。擅长防御与韧性。"
+      },
+      "Hobbits": {
+        "displayName": "林地契约",
+        "description": "身形虽小，足智多谋。闪避与互助。"
+      },
+      "Humains": {
+        "displayName": "自由王国",
+        "description": "均衡而多能。擅长团队协同。"
+      },
+      "Hommes-Bêtes": {
+        "displayName": "兽群",
+        "description": "野性凶猛。出击迅速，自我再生，狂暴嗜战。"
+      },
+      "Élémentaires": {
+        "displayName": "太初之灵",
+        "description": "自然的原始之力。每种元素各有其战斗风格。"
+      },
+      "Mercenaires": {
+        "displayName": "雇佣兵",
+        "description": "无归属的战争贩子。灵活多变，适配任意牌组。"
+      },
+      "Orcs": {
+        "displayName": "兽族部落",
+        "description": "蛮横的游牧大军。哥布林行动迅捷可随意牺牲。兽人粗野好斗。巨魔坚韧耐打。座狼速度奇快。"
+      },
+      "Morts-Vivants": {
+        "displayName": "亡者之城",
+        "description": "贪婪而腐化。复活与生命汲取。"
+      },
+      "Elfes Noirs": {
+        "displayName": "混沌孽种",
+        "description": "阴险毒辣。毒素、暗影与腐化。"
+      }
+    },
+    "rarities": {
+      "Commune": "普通",
+      "Peu Commune": "非凡",
+      "Rare": "稀有",
+      "Épique": "史诗",
+      "Légendaire": "传说"
+    },
+    "clans": {
+      "Sylvains": "林地精灵",
+      "Hauts-Elfes": "高等精灵",
+      "Elfes des Mers": "海洋精灵",
+      "Émeraudes": "翡翠氏族",
+      "Cimes Éternelles": "永恒之巅",
+      "Montagnes": "山岳氏族",
+      "Collines": "丘陵",
+      "Lave": "熔岩",
+      "Plaines": "平原",
+      "Rivièrains": "河岸",
+      "Landes": "荒原",
+      "Nordiques": "北境",
+      "Orientaux": "东方",
+      "Templiers": "圣殿",
+      "Amazones": "亚马逊",
+      "Incas": "印加",
+      "Touaregs": "图阿雷格",
+      "Forêt": "森林",
+      "Toundra": "苔原",
+      "Savane": "草原",
+      "Jungle": "丛林",
+      "Mignons": "萌宠",
+      "Pacte des Griffes": "利爪契约",
+      "Feu": "火焰",
+      "Terre": "大地",
+      "Eau": "水流",
+      "Air": "风空",
+      "Marais": "沼泽",
+      "Abysses souterrains": "地下深渊",
+      "Forêt maudite": "诅咒森林",
+      "Cités de cendres": "灰烬之城"
+    },
+    "races": {
+      "Elfes": "精灵",
+      "Aigles Géants": "巨鹰",
+      "Fées": "仙灵",
+      "Nains": "矮人",
+      "Golems": "魔像",
+      "Hobbits": "霍比特人",
+      "Hommes-Arbres": "树人",
+      "Humains": "人类",
+      "Hommes-Loups": "狼人",
+      "Hommes-Ours": "熊人",
+      "Hommes-Félins": "猫人",
+      "Centaures": "半人马",
+      "Mimis": "咪咪",
+      "Hommes-Chiens": "犬人",
+      "Hommes-Renards": "狐人",
+      "Hommes-Cerfs": "鹿人",
+      "Élémentaire": "元素生物",
+      "Géants": "巨人",
+      "Ogres": "食人魔",
+      "Dragons": "龙",
+      "Chiens": "犬",
+      "Phoenix": "凤凰",
+      "Anges": "天使",
+      "Ours": "熊",
+      "Loups": "狼",
+      "Fauves": "野兽",
+      "Orcs": "兽人",
+      "Gobelins": "哥布林",
+      "Trolls": "巨魔",
+      "Wargs": "座狼",
+      "Squelettes": "骷髅",
+      "Zombies": "僵尸",
+      "Spectres": "幽灵",
+      "Vampires": "吸血鬼",
+      "Lich": "巫妖",
+      "Banshees": "女妖",
+      "Elfes Corrompus": "堕落精灵",
+      "Araignées Géantes": "巨型蜘蛛",
+      "Démons": "恶魔"
+    },
+    "alignments": {
+      "bon": "善良",
+      "neutre": "中立",
+      "maléfique": "邪恶",
+      "spéciale": "特殊"
+    },
+    "sets": {
+      "1": "基础系列"
+    },
+    "formats": {
+      "expert-standard": "专家·标准",
+      "expert-etendu": "专家·扩展",
+      "classique-etendu": "经典·扩展",
+      "classique-standard": "经典·标准"
+    },
+    "tokens": {
+      "3": "巨鹰",
+      "4": "气元素",
+      "5": "战犬",
+      "6": "巨型蜘蛛",
+      "8": "树人",
+      "9": "人类",
+      "10": "龙",
+      "11": "狼群",
+      "13": "熊",
+      "14": "精灵",
+      "15": "半人马",
+      "16": "天使",
+      "18": "霍比特人（基础）",
+      "19": "圣殿战士",
+      "20": "哥布林",
+      "21": "勇敢的霍比特少年",
+      "22": "僵尸",
+      "23": "维京战士",
+      "24": "印加人",
+      "25": "黑豹",
+      "26": "安查楚",
+      "27": "人类",
+      "28": "老虎",
+      "29": "小兔子",
+      "30": "松鼠",
+      "31": "小熊崽",
+      "32": "小恶魔",
+      "33": "可爱小狗",
+      "34": "骷髅"
+    }
+  },
+  "home": {
+    "home_subtitle": "一张牌。一段传奇。轮到你了。",
+    "play_label": "对战",
+    "play_desc": "寻找对手，开始一局游戏",
+    "market_label": "市场",
+    "market_desc": "拍卖买卖",
+    "market_desc_buy": "参与拍卖购买",
+    "collection_label": "我的收藏",
+    "collection_desc": "卡牌、英雄、牌背、牌桌",
+    "decks_label": "我的牌组",
+    "decks_desc": "构建与调整你的牌组",
+    "tutorial_label": "如何游玩",
+    "tutorial_desc": "学习规则与技能",
+    "tutorial_back": "返回主页",
+    "welcome": "欢迎，",
+    "logout": "退出登录",
+    "settings": "设置",
+    "skip_to_content": "跳至内容",
+    "collection_title": "我的收藏",
+    "collection_back": "返回主页",
+    "my_cards": "我的卡牌",
+    "my_cards_desc": "您拥有的卡牌目录",
+    "my_heroes": "我的英雄",
+    "my_heroes_desc": "已解锁的英雄",
+    "my_card_backs": "我的卡背",
+    "my_card_backs_desc": "已拥有的卡背",
+    "my_boards": "我的棋盘",
+    "my_boards_desc": "已拥有的游戏棋盘",
+    "heroes_title": "我的英雄",
+    "heroes_empty": "暂无已解锁的英雄。",
+    "heroes_filter_all": "全部",
+    "heroes_label_faction": "阵营",
+    "heroes_label_clan": "氏族",
+    "heroes_label_rarity": "稀有度",
+    "heroes_loading": "加载中……",
+    "heroes_load_error": "无法加载您的英雄。",
+    "hero_power": "技能"
+  },
+  "landing": {
+    "nav_play": "开始游戏",
+    "hero_eyebrow": "幻想卡牌对战——新世代",
+    "hero_title": "Armies & Magic",
+    "hero_sub": "铸就传奇。统率阵营。书写历史。",
+    "hero_cta": "进入竞技场",
+    "hero_cta_secondary": "探索游戏",
+    "hero_proof": "首局即可获赠逾400张卡牌",
+    "features_title": "为何选择 Armies & Magic",
+    "f1_title": "传奇的深度。",
+    "f1_desc": "Armies & Magic 将经典 TCG 的策略精髓与专为当代玩家打造的机制融为一体。",
+    "f2_title": "全部卡牌。首局即享。",
+    "f2_desc": "经典模式安装即完整开放。游戏伊始即可免费获得逾400张卡牌，打造属于您的专属牌组。",
+    "f3_title": "每套专家牌组，皆为孤品。",
+    "f3_desc": "限量发行的卡牌让每套专家牌组独一无二。统一配额确保胜负只取决于您的策略。",
+    "f4_title": "移动竞技场，终于名副其实。",
+    "f4_desc": "锦标赛设有稀有卡牌与现金奖励——这一级别的对决此前只属于最顶级的桌面 TCG。",
+    "factions_title": "九大阵营。一段传奇。",
+    "factions_sub": "每个种族都有其独特之路。你将选择哪一条？",
+    "showcase_title": "一部图鉴。千万种搭配。",
+    "showcase_sub": "从最普通的生物到神话英雄，每张卡牌都举足轻重。",
+    "cta_title": "竞技场在等待你。",
+    "cta_sub": "加入召唤师，共赴战场。",
+    "cta_btn": "开启冒险",
+    "footer": "Armies & Magic — 保留所有权利",
+    "factions": {
+      "humans": {
+        "name": "自由王国",
+        "tagline": "同旗并肩"
+      },
+      "elves": {
+        "name": "天空联盟",
+        "tagline": "永恒林木的守护者"
+      },
+      "dwarves": {
+        "name": "锻造兄弟会",
+        "tagline": "生于岩石"
+      },
+      "halflings": {
+        "name": "林地契约",
+        "tagline": "身形虽小，心志弥坚"
+      },
+      "beastmen": {
+        "name": "兽群",
+        "tagline": "蛮荒之地的怒火"
+      },
+      "giants": {
+        "name": "原初者",
+        "tagline": "元素苏醒"
+      },
+      "dark_elves": {
+        "name": "混沌孽裔",
+        "tagline": "暗影有其名"
+      },
+      "orcs_goblins": {
+        "name": "大部落",
+        "tagline": "部落的怒吼"
+      },
+      "undead": {
+        "name": "亡者之都",
+        "tagline": "墓冢的沉寂已被打破"
+      }
+    }
+  },
+  "auction": {
+    "ended": "已结束",
+    "unknown_item": "未知物品",
+    "board": "卡板",
+    "card_back": "卡背",
+    "extra_items": "+{count, plural, =1 {# 件物品} other {# 件物品}}",
+    "current_bid": "当前出价",
+    "starting_bid": "起拍价",
+    "buyout_short": "一口价:",
+    "bid_count": "{count, plural, =1 {# 次出价} other {# 次出价}}",
+    "seller": "卖家:",
+    "system": "系统",
+    "invalid_amount": "金额无效",
+    "buyout_success": "一口价购买成功！",
+    "bid_placed": "出价成功！",
+    "loading": "加载中...",
+    "not_found": "拍卖未找到",
+    "back_to_auctions": "返回拍卖列表",
+    "lot": "拍品",
+    "item": "物品",
+    "copies": "{count} 份",
+    "source_print": "限量版",
+    "source_board_print": "限量棋盘",
+    "source_card_back_print": "限量卡背",
+    "source_admin": "系统",
+    "source_collection": "收藏品",
+    "admin_badge": "管理员",
+    "time_left": "剩余时间",
+    "commission": "手续费：{rate}%",
+    "highest_bidder": "您是最高出价者",
+    "status_sold": "已售出",
+    "status_unsold": "未售出",
+    "status_cancelled": "已取消",
+    "bid_button": "出价",
+    "buyout_immediate": "立即购买",
+    "cancel_auction": "取消拍卖",
+    "bid_history": "出价记录",
+    "no_bids_yet": "暂无出价",
+    "anonymous": "匿名",
+    "buyout_tag": "（立即购买）",
+    "sort_ending_soon": "即将结束",
+    "sort_price_asc": "价格升序",
+    "sort_price_desc": "价格降序",
+    "sort_newest": "最新上架",
+    "header_kicker": "招募你的军队",
+    "title": "拍卖行",
+    "subtitle_sell": "买卖卡牌",
+    "subtitle_buy": "购买卡牌",
+    "menu": "菜单",
+    "sell_card": "出售卡牌",
+    "tab_browse": "浏览",
+    "tab_my": "我的拍卖",
+    "search_placeholder": "搜索...",
+    "all_factions": "所有阵营",
+    "all_rarities": "所有稀有度",
+    "all_types": "所有类型",
+    "type_creature": "生物",
+    "type_spell": "法术",
+    "no_auctions": "未找到拍卖",
+    "previous": "上一页",
+    "next": "下一页",
+    "page_of": "第{page}页 / 共{total}页",
+    "duration_1min": "1分钟",
+    "duration_1h": "1小时",
+    "duration_6h": "6小时",
+    "duration_12h": "12小时",
+    "duration_24h": "24小时",
+    "duration_generic": "{n}分钟",
+    "create_title": "创建拍卖",
+    "select_cards": "选择要出售的卡牌（{selected}/{max} 张上限）",
+    "search_card_placeholder": "搜索卡牌...",
+    "no_cards_available": "暂无可用卡牌",
+    "starting_bid_label": "起拍价（金币）",
+    "buyout_optional": "一口价（可选）",
+    "none": "无",
+    "duration": "持续时间",
+    "commission_info": "手续费：将从成交金额中扣除 {rate}%",
+    "error_select_card": "请至少选择一张卡牌",
+    "error_invalid_bid": "起拍价无效",
+    "error_buyout_too_low": "一口价必须高于起拍价",
+    "cancel": "取消",
+    "creating": "创建中...",
+    "submit_sell": "上架出售（{count, plural, =1 {# 张卡牌} other {# 张卡牌}}）",
+    "my_sales": "我的出售（{count}）",
+    "my_bids": "我的竞拍（{count}）",
+    "no_sales": "您暂无出售记录",
+    "no_bids_placed": "您尚未参与任何竞拍",
+    "unknown_card": "未知卡牌",
+    "ends_at": "截止：{date}",
+    "status_active": "进行中",
+    "page_title": "拍卖行 — Armies & Magic",
+    "detail_page_title": "拍卖详情 — Armies & Magic"
+  },
+  "auth": {
+    "forgot_email_required": "请先输入邮箱地址，再申请重置密码。",
+    "forgot_email_sent": "重置邮件已发送至 {email}，请查收（包括垃圾邮件文件夹）。",
+    "forgot_send_error": "无法发送重置邮件。",
+    "password_min_length": "密码长度至少为8位字符。",
+    "generic_error": "发生错误。",
+    "tagline": "奇幻集换式卡牌游戏",
+    "back_to_site": "← 返回网站",
+    "login": "登录",
+    "register": "注册",
+    "username_label": "用户名",
+    "username_placeholder": "选择一个用户名",
+    "email_label": "邮箱",
+    "email_placeholder": "your@email.com",
+    "password_label": "密码",
+    "sending": "发送中...",
+    "forgot_password": "忘记密码？",
+    "password_min_placeholder": "至少8个字符",
+    "password_placeholder_login": "请输入密码",
+    "loading": "加载中...",
+    "create_account": "创建账号",
+    "sign_in": "登录",
+    "or": "或",
+    "continue_google": "使用Google继续",
+    "continue_discord": "使用Discord继续",
+    "passwords_mismatch": "两次输入的密码不一致。",
+    "password_updated_redirect": "密码已更新，正在跳转...",
+    "unknown_error": "未知错误。",
+    "reset_heading": "重置密码",
+    "reset_sub": "为您的账号设置新密码。",
+    "back_to_login": "← 返回登录",
+    "reset_link_invalid": "重置链接已过期或无效，请返回登录页面重新申请邮件。",
+    "new_password_label": "新密码",
+    "confirm_label": "确认",
+    "confirm_placeholder": "再次输入密码",
+    "updating": "更新中...",
+    "update": "更新"
+  },
+  "common": {
+    "settings_title": "设置",
+    "music": "音乐",
+    "sound_effects": "音效",
+    "muted": "已静音",
+    "active": "已启用",
+    "concede_match": "认负",
+    "concede_confirm": "⚠ 确认认负",
+    "concede_hint": "再次点击确认 · 5秒后自动取消",
+    "notifications": "通知",
+    "mark_all_read": "全部标为已读",
+    "no_notifications": "暂无通知",
+    "rotate_device": "请旋转设备",
+    "rotate_device_hint": "Armies & Magic 需横屏游玩，请将设备横置后继续。"
+  },
+  "forge": {
+    "forge_first_card": "锻造您的第一张卡牌",
+    "forging": "锻造中…",
+    "mana_cost_title": "法力消耗：{mana}",
+    "life_cost_title": "生命消耗：{life}",
+    "discard_cost_title": "弃置 {count, plural, one {# 张牌} other {# 张牌}}",
+    "sacrifice_cost_title": "献祭 {count, plural, one {# 个生物} other {# 个生物}}",
+    "detail_note_all_allies": "（对所有友方）",
+    "detail_note_target": "（对目标生物）",
+    "trigger_on_play": "入场时",
+    "trigger_on_death": "死亡时",
+    "trigger_on_return": "回手时",
+    "trigger_on_activation": "激活异能（横置）",
+    "trigger_on_attack": "攻击时",
+    "trigger_on_end_of_turn": "回合结束时",
+    "trigger_spell_resolution": "结算时",
+    "composed_effects_heading": "复合效果（高级）",
+    "composed_effects_subtitle": "内容 + 幅度 + 目标",
+    "composed_effect_n": "复合效果 {n}",
+    "remove": "删除",
+    "label_trigger": "触发条件",
+    "label_content": "内容",
+    "content_deal_damage": "造成伤害",
+    "content_heal": "治疗",
+    "content_buff": "增益 +X/+Y",
+    "content_debuff": "减益 -X/-Y",
+    "content_destroy": "消灭",
+    "content_bounce": "弹回手牌",
+    "content_paralyze": "麻痹",
+    "content_grant_keyword": "赋予关键字异能",
+    "content_draw_cards": "抽牌",
+    "content_discard": "弃牌（对手）",
+    "content_summon_token": "召唤衍生物",
+    "content_gain_mana": "获得法力",
+    "content_exhumation": "复活（墓地）",
+    "label_magnitude": "幅度",
+    "label_granted_ability": "赋予的异能",
+    "label_token": "衍生物",
+    "label_targets": "目标",
+    "label_type": "类型",
+    "entity_unit": "单位",
+    "entity_hero": "英雄",
+    "entity_both": "两者（英雄 + 单位）",
+    "entity_self": "自身（生物）",
+    "label_side": "阵营",
+    "side_ally": "友方",
+    "side_enemy": "敌方",
+    "side_any": "不限",
+    "label_count": "数量",
+    "scatter_points_hint": "X（{x}）点随机分配至池",
+    "count_all": "全部",
+    "label_location": "位置",
+    "location_board": "战场",
+    "location_hand": "手牌",
+    "location_deck": "牌库",
+    "location_graveyard": "墓地",
+    "label_membership": "归属",
+    "label_designation": "指定方式",
+    "designation_choice": "自选",
+    "designation_random": "随机",
+    "designation_scatter": "随机分配（按点数）",
+    "designation_automatic": "自动",
+    "add_composed_effect": "+ 添加复合效果",
+    "tab_forge": "锻造",
+    "tab_capacities": "能力",
+    "tab_edition": "编辑",
+    "tab_tokens": "衍生物",
+    "tab_card_backs": "牌背",
+    "tab_boards": "战场",
+    "tab_icons": "图标",
+    "tab_sets": "系列",
+    "tab_formats": "赛制",
+    "tab_bulk": "批量",
+    "tab_budget": "预算",
+    "tab_schema": "模板",
+    "tab_prints": "版本",
+    "menu": "菜单",
+    "collections": "收藏",
+    "section_faction": "阵营",
+    "section_race": "种族",
+    "main_races": "主要种族",
+    "all_races": "所有种族",
+    "section_clan": "阵营",
+    "section_alignment": "阵营属性",
+    "section_type": "类型",
+    "section_rarity": "稀有度",
+    "section_set_year": "系列 / 年份",
+    "no_set": "— 无系列 —",
+    "or_month_year": "或 月份/年份：",
+    "month": "月份",
+    "year_placeholder": "例：2026",
+    "section_mode": "模式",
+    "mode_auto": "自动",
+    "mode_manual": "手动",
+    "forging_caps": "锻造中…",
+    "forge_button": "锻造",
+    "create_button": "创建",
+    "reset_button": "重置",
+    "summon_sound": "召唤音效",
+    "death_sound": "死亡音效",
+    "reroll": "重新随机",
+    "new_card": "新卡牌",
+    "illustration_prompt_label": "插图提示词",
+    "reference": "参考",
+    "no_reference": "无参考",
+    "reference_image_optional": "参考图片（可选）",
+    "reference_image_hint": "影响姿势 / 构图 / 氛围，提示词风格仍优先。",
+    "replace": "替换",
+    "choose_image": "选择图片",
+    "remove_image": "移除",
+    "copy": "复制",
+    "reset_short": "重置",
+    "generating": "生成中…",
+    "illustrate": "生成插图",
+    "history": "历史记录",
+    "no_card": "无卡牌",
+    "edition_label": "版本",
+    "name_label": "名称",
+    "card_name_placeholder": "卡牌名称",
+    "mana_label": "法力",
+    "power_label": "战力",
+    "life_cost_hint": "召唤时英雄支付的生命值。若总量将降至0，则该牌不可出牌。",
+    "life_label": "生命",
+    "discard_cost_hint": "出此牌时玩家须从手牌弃置的卡牌数量。",
+    "discard_label": "弃牌",
+    "sacrifice_cost_hint": "出此牌时玩家须牺牲的我方生物数量。",
+    "sacrifice_label": "牺牲",
+    "spell_effects_label": "法术效果",
+    "spell_keywords_label": "法术关键词",
+    "token_to_summon": "待召唤衍生物",
+    "config_below_tokens": "在下方\"待召唤衍生物\"中配置",
+    "targeted_race_clan": "目标种族／阵营",
+    "targeted_race": "目标种族",
+    "required": "必填",
+    "choose_race": "-- 选择种族 --",
+    "tokens_to_summon": "待召唤衍生物",
+    "override_label": "覆盖：",
+    "atk_override": "攻击（覆盖）",
+    "def_override": "防御（覆盖）",
+    "add_token": "+ 添加衍生物",
+    "composable_effects_advanced": "可组合效果（高级）",
+    "json_hint": "JSON：targets（目标槽位）+ effects（if/then/else 树）",
+    "abilities_count": "技能（{count}）",
+    "mode_title_play": "召唤时（默认）",
+    "mode_title_death": "死亡时（亡语）",
+    "mode_title_tap": "横置激活（tap）",
+    "mode_title_return": "返回手牌时",
+    "mode_title_attack": "攻击时",
+    "mode_title_end_of_turn": "回合结束时",
+    "grant_scope_target": "赋予目标生物",
+    "grant_scope_all_allies": "赋予所有我方单位",
+    "required_caps": "必填",
+    "transformation_token": "变形衍生物",
+    "target_race_label": "目标种族",
+    "required_caps_f": "必填",
+    "atk_is_x": "（+攻击 = X值）",
+    "neg_atk_is_x": "（-攻击 = X值）",
+    "choose_ability": "-- 选择技能 --",
+    "scope_one_ally": "1个目标友方",
+    "scope_all_allies": "所有友方",
+    "replayed_triggers": "重触发器",
+    "required_m": "必填",
+    "trigger_short_on_play": "入场",
+    "trigger_short_on_death": "死亡",
+    "trigger_short_end_of_turn": "回合结束",
+    "trigger_short_on_return": "返回手牌",
+    "tier_label": "等级：",
+    "cost_label": "费用：",
+    "points_value": "{pts} 点",
+    "specific_power_label": "特殊能力",
+    "specific_power_placeholder": "特殊能力文本…",
+    "flavor_text_label": "风味文本",
+    "flavor_text_placeholder": "叙事引言…",
+    "extra_context_label": "补充背景（可选）",
+    "extra_context_placeholder": "例：手持燃焰之剑、目露威胁、背影视角、红雾弥漫、黄金铠甲…",
+    "illustration_prompt_label2": "插图提示词",
+    "api_error": "API 错误（{status}）：{detail}",
+    "see_console": "查看控制台",
+    "ai_no_prompt": "AI 未返回提示词——请检查 ANTHROPIC_API_KEY 及服务器日志",
+    "illustration_prompt_generated": "插图提示词已生成",
+    "network_error": "网络错误",
+    "generate_by_ai": "AI 生成",
+    "english_prompt_placeholder": "用于图像生成的英文提示词…",
+    "trigger_tap_activation": "激活时（tap）",
+    "trigger_automatic": "自动（被动/条件）",
+    "trigger_spell_resolution_full": "法术结算时",
+    "container_label": "容器：",
+    "derived_from_type": "（由卡牌类型推导）",
+    "no_ability_add_below": "暂无能力，请在下方添加。",
+    "effect_type_label": "效果类型",
+    "immediate_effect": "即时效果",
+    "effect_label": "效果",
+    "x_value_title": "X 值",
+    "targets_label2": "目标",
+    "one_target": "1 个目标",
+    "rm_config_label": "+生命值（Y）及目标种族/阵营",
+    "atk_equals_x": "（+攻击力 = X）",
+    "neg_atk_equals_x": "（-攻击力 = X）",
+    "on_self": "（作用于自身）",
+    "add_ability": "+ 添加能力：",
+    "choose_dash": "-- 请选择 --",
+    "no_ability_add_effect": "暂无能力。请在下方添加效果或赋予能力。",
+    "race_clan_label": "种族 / 氏族",
+    "race_label": "种族",
+    "race_dash": "-- 种族 --",
+    "confer_prefix": "赋予：",
+    "confer_ability_to_unit": "赋予单位一项能力",
+    "scope_label": "范围",
+    "all_allied_units": "所有友方单位",
+    "one_allied_unit": "1个友方单位",
+    "add_effect": "+ 效果：",
+    "spell_effect_dash": "-- 法术效果 --",
+    "add_confer": "+ 赋予：",
+    "ability_to_confer_dash": "-- 待赋予的能力 --",
+    "save": "保存",
+    "generate_to_save": "请在 ⚒ 锻造 中生成/输入卡牌后再保存。",
+    "token_templates_title": "代币模板",
+    "edit_template": "编辑模板",
+    "new_template": "新建模板",
+    "faction_optional": "阵营（可选）",
+    "deduced_from_race": "-- 由种族推断 --",
+    "choose_dash_cap": "-- 选择 --",
+    "clan_optional": "氏族（可选）",
+    "no_clan_available": "暂无可用氏族",
+    "none_dash": "-- 无 --",
+    "token_name_label": "代币名称",
+    "token_name_placeholder": "例：精灵新兵",
+    "default_attack": "默认攻击",
+    "default_defense": "默认防御",
+    "token_abilities": "代币能力",
+    "image_prompt_label": "图像提示词",
+    "auto_prompt_placeholder": "点击「自动提示词」生成，或自行输入...",
+    "auto_prompt": "自动提示词",
+    "generate_image": "生成图像",
+    "or_upload_image": "或上传图像",
+    "preview": "预览",
+    "saving": "保存中...",
+    "update": "更新",
+    "create2": "创建",
+    "cancel": "取消",
+    "existing_templates": "已有模板（{count}）",
+    "load_refresh": "加载 / 刷新",
+    "no_template": "暂无模板 — 请点击加载",
+    "edit": "编辑",
+    "generate_card_back_title": "生成卡背",
+    "metadata": "元数据",
+    "card_back_name_placeholder": "例：远古林地守护者",
+    "faction_label": "阵营",
+    "none_dash_f": "-- 无 --",
+    "clan_label": "氏族",
+    "rarity_label": "稀有度",
+    "copies_label": "副本数",
+    "default_checkbox": "默认",
+    "frame_label": "边框",
+    "frame_hint": "边框在生成后叠加。AI 专注于插画本身 — 无需绘制边框。",
+    "generation_mode": "生成模式",
+    "one_variant": "1 个变体",
+    "three_variants": "3 个变体",
+    "extra_instructions": "附加说明",
+    "card_back_instructions_placeholder": "例：金色符文、羽毛、抛光镜面、盘龙……",
+    "reference_image_hint2": "用作视觉参考（主体 / 色调 / 氛围）。提示词规则仍优先生效。",
+    "manual_upload": "手动上传",
+    "variants_count": "变体（{selected} / {total} 已选）",
+    "variant_n": "变体 {n}",
+    "card_back_preview": "卡背预览",
+    "saving2": "保存中…",
+    "save_n_backs": "保存 {n} 个卡背",
+    "save_back": "保存卡背",
+    "generate_board_title": "生成游戏棋盘",
+    "board_name_placeholder": "例：沉睡之龙酒馆",
+    "composition_style": "构图风格",
+    "board_style_surface": "纯地形（草地、雪地、沙地、石地……）铺满整个画面。无装饰、无边框 — 适合纯氛围风格。",
+    "board_style_minimal": "棋盘中央留空（平整地面），边缘添加装饰。专为 3D 模型设计。",
+    "board_style_mtgo": "MTG Arena 构图：中央简洁，装饰集中于两侧面板。游戏中：左侧为大型可点击墓地区域，右侧为英雄 + 牌库 + 法力 + 生命值（对手布局左右对称翻转）。自动启用 MTGO 布局。",
+    "board_style_hearthstone": "炉石传说构图：主题道具遍布全图，中央分隔线精心装饰。",
+    "graveyard_image_optional": "墓地图片（可选）",
+    "graveyard": "墓地",
+    "graveyard_image_hint": "显示为可点击的墓地区域图片。未设置时将显示默认棺材图标。",
+    "environment_label": "环境",
+    "race_optional": "种族（可选）",
+    "default_board_hint": "默认棋盘（牌组未指定棋盘时使用）",
+    "extra_instructions_optional": "附加说明（可选）",
+    "board_instructions_placeholder": "例：赛博朋克风格，紫色霓虹灯，瓢泼大雨，金属地面反光……",
+    "board_instructions_hint": "若填写，将替换提示词中的主体/环境部分。构图规则（炉石传说风格、16:9、对称、边框）始终生效。",
+    "reference_image_hint3": "用作视觉参考（主体/配色/氛围）。构图规则始终优先。",
+    "rerun_variants": "重新生成 {n} 个变体",
+    "generate_variants": "生成 {n} 个变体",
+    "or": "或",
+    "import_image": "导入图片",
+    "preview_caps": "预览",
+    "variants_check_hint": "变体（点击勾选——可多选）",
+    "save_board": "保存场地",
+    "save_n_boards": "保存已选的 {n} 个场地",
+    "generate_ability_icon_title": "生成技能图标",
+    "parameters": "参数",
+    "ability_label": "技能",
+    "ability_polymorph": "🔀 多态技能——图标将同时保存至该生物与法术。",
+    "ability_creature": "👤 生物技能。",
+    "ability_spell": "🪄 法术技能。",
+    "ability_legend": "👤 生物 · 🪄 法术 · 🔀 共享",
+    "icon_name_label": "图标名称",
+    "icon_name_placeholder": "例：盾牌 v2",
+    "style_label": "风格",
+    "style_white": "纯白",
+    "style_grey": "纯灰",
+    "style_colored": "彩色",
+    "style_sculpture": "雕塑",
+    "icon_instructions_placeholder": "例：突出闪电、风格化骷髅……",
+    "reference_image_hint4": "仅用作主体的视觉参考；风格约束（背景、轮廓、配色等）保持不变。",
+    "rerun_3_variants": "重新生成 3 个变体",
+    "generate_3_variants": "生成 3 个变体",
+    "variants_check_save_hint": "变体（点击勾选要保存的变体——可多选）",
+    "save_variant": "保存已选变体",
+    "save_n_variants": "保存已选的 {n} 个变体",
+    "gallery": "图库",
+    "all_abilities": "全部技能",
+    "refresh": "刷新",
+    "no_icon": "暂无图标，请先在上方生成。",
+    "active": "已启用",
+    "activate": "启用",
+    "create_set": "创建卡组",
+    "set_name_placeholder": "名称（例：基础系列）",
+    "set_code_placeholder": "代码（例：BASE）",
+    "icon_placeholder": "图标",
+    "release_date": "发行日期",
+    "existing_sets": "现有系列（{count}）",
+    "no_set_created": "暂无系列",
+    "error": "错误",
+    "no_format_found": "未找到赛制。请确认\"formats\"表已创建并填充数据。",
+    "active_m": "启用",
+    "inactive": "停用",
+    "all_random": "全部随机",
+    "launch": "启动",
+    "budget_system_reference": "费用体系 — 参考",
+    "panel_mana_rarity": "法力费用稀有度分布（批量模式）",
+    "mana_th": "法力",
+    "panel_rarity_multipliers": "稀有度倍率",
+    "panel_stat_costs": "属性费用",
+    "atk_cost_desc": "每点 2.5 费",
+    "def_cost_desc": "每点 2.0 费",
+    "budget_algo_desc": "算法优先分配攻击（剩余预算的 45%），再分配防御（55%），随后尽可能添加技能直至预算耗尽。阵营倍率（ATK weight、DEF weight）会影响数值的抽取范围。",
+    "panel_ability_costs": "技能费用",
+    "panel_faction_profiles": "阵营配置",
+    "guaranteed_label": "保底：",
+    "forbidden_label": "禁用：",
+    "card_schema_label": "卡牌结构 — JSON",
+    "limited_series_assignment": "限定系列 — 分配",
+    "no_dated_card": "数据库中无带日期的铸造卡牌。",
+    "search_placeholder": "搜索...",
+    "select_card_for_copies": "选择卡牌以查看其副本",
+    "loading": "加载中...",
+    "prints_summary": "{rarity} — 共 {total} 张 — 已分配 {assigned}，可用 {available}",
+    "owner_th": "持有者",
+    "tradeable_th": "可交易",
+    "actions_th": "操作",
+    "available_dash": "— 可用 —",
+    "yes": "是",
+    "no": "否",
+    "unassign": "移除",
+    "assign_to": "分配给…",
+    "cannot_read_ref_image": "无法读取参考图片。",
+    "cannot_load_image": "无法加载图片。",
+    "variants_failed": "{n} 个变体失败。",
+    "confirm_delete_icon": "删除图标「{name}」？",
+    "icon_saved": "图标「{name}」已保存。",
+    "icons_saved_partial": "已保存 {ok} 个图标，但其余项出错：{error}",
+    "backs_saved": "已保存 {n} 张卡背。",
+    "back_saved": "卡背「{name}」已保存。",
+    "backs_saved_partial": "已保存 {ok} 张卡背，但其余项出错：{error}",
+    "image_imported": "图片已导入——可以保存了。",
+    "cannot_read_imported_image": "无法读取导入的图片。",
+    "boards_saved": "已保存 {n} 张游戏板。",
+    "board_saved_named": "游戏板「{name}」已保存。",
+    "boards_saved_partial": "已保存 {ok} 张游戏板，但其余项出错：{error}",
+    "image_generated": "图片已生成（{model}）",
+    "generation_error": "生成错误",
+    "server_error": "服务器错误",
+    "image_generation_error": "图片生成错误",
+    "template_updated": "模板已更新",
+    "template_created": "模板已创建",
+    "validation_convocation_x": "召唤 X：请在选择器中选择一个 token 后再保存。",
+    "validation_convocation": "召唤：请在选择器中选择一个 token 后再保存。",
+    "validation_multi_convocation": "多重召唤：请在列表中至少添加一个 token 后再保存。",
+    "validation_lycanthropie": "狼人变身 X：请选择一个变身 token 后再保存。",
+    "validation_entraide": "互助（种族）：请选择目标种族后再保存。",
+    "validation_appel_supreme": "至高召唤：请选择目标种族后再保存。",
+    "validation_multi_convocation_spell": "多重召唤（法术）：请在列表中至少添加一个 token 后再保存。",
+    "validation_convocation_spell": "召唤（法术）：请在选择器中选择一个 token 后再保存。",
+    "card_added": "「{name}」已添加！",
+    "unknown_error": "未知错误",
+    "illustration_generated": "插图已生成（{model}）",
+    "import_error": "导入错误"
+  },
+  "game": {
+    "error_not_authenticated": "未登录",
+    "error_match_not_found": "找不到对局",
+    "error_load_failed": "对局加载失败",
+    "loading": "正在加载对局……",
+    "waiting_opponent": "等待对手……",
+    "return_to_menu": "返回菜单",
+    "persist_warning": "某个操作未能保存——可能导致数据不同步。请重新加载页面以重新同步。",
+    "reload": "重新加载",
+    "close": "关闭",
+    "settings": "设置",
+    "choose_card": "选择一张卡牌",
+    "no_creatures": "无生物",
+    "drag_hint": "将卡牌拖至此处以出牌",
+    "drop_hint": "松开以召唤生物",
+    "cancel_targeting": "取消选定目标",
+    "action_cancel": "取消",
+    "action_confirm": "确认",
+    "action_close": "关闭",
+    "card_count": "{count, plural, one {# 张牌} other {# 张牌}}",
+    "selection_title": "🎴 选牌",
+    "selection_subtitle": "选择一张牌加入手牌",
+    "power_hero_activated": "英雄技能已发动",
+    "power_used_this_turn": "本回合已使用",
+    "power_hero_label": "英雄技能",
+    "power_cost_label": "费用：",
+    "power_mana_unit": "法力",
+    "power_mode_grant_keyword": "赋予关键字",
+    "power_mode_spell_trigger": "即时效果",
+    "power_mode_aura": "持续光环",
+    "power_mode_active": "主动",
+    "power_no_description": "暂无描述。",
+    "power_activations_unlimited": "发动次数：无限",
+    "power_activations_used": "发动次数：{used} / {limit}",
+    "power_usage_limit": "上限：最多 {limit} 次",
+    "power_close_hint": "按 Esc 或点击区域外关闭",
+    "divination_traque_title": "🔮 命运追踪",
+    "divination_title": "🔍 占卜",
+    "divination_traque_subtitle": "选择一张牌加入手牌，其余牌将置于牌库底。",
+    "divination_subtitle": "选择一张牌置于牌库顶",
+    "graveyard_select_prompt": "从墓地选择一张牌",
+    "graveyard_hint_touch": "点击卡牌放大 · 再次点击查看描述",
+    "graveyard_hint_hover": "悬停卡牌放大 · 右键切换图片／描述",
+    "graveyard_empty": "墓地中没有卡牌",
+    "cost_default_card_name": "卡牌",
+    "cost_pay_title": "支付 {name} 的费用",
+    "cost_discard_label": "🃏 {count, plural, one {弃置 # 张牌} other {弃置 # 张牌}}",
+    "cost_sacrifice_label": "☠ {count, plural, one {牺牲 # 个生物} other {牺牲 # 个生物}}",
+    "tactique_title": "📋 战术",
+    "tactique_subtitle": "{count, plural, one {选择 # 个技能进行转移} other {选择 # 个技能进行转移}}",
+    "tactique_confirm": "确认 ({selected}/{max})",
+    "convocation_title": "📣 召唤",
+    "convocation_subtitle": "选择要召唤的token种族",
+    "cycle_eternel_caption": "♻ 永恒循环",
+    "discard_label": "🔥 {count, plural, one {弃牌 — # 张} other {弃牌 — # 张}}",
+    "graveyard_affect_label": "🪦 {count, plural, one {墓地 — # 张} other {墓地 — # 张}}",
+    "zone_deck": "牌库",
+    "zone_graveyard": "墓地",
+    "zone_deck_yours": "你的牌库",
+    "zone_deck_opponent": "对手的牌库",
+    "zone_graveyard_yours": "你的墓地",
+    "zone_graveyard_opponent": "对手的墓地",
+    "convocation_prefix": "召唤：创建 {content}",
+    "convocation_create_list": "创建 {content}",
+    "convocation_token_one": "一个 {token} {atk}/{hp} token",
+    "convocation_token_many": "{count} 个 {token} {atk}/{hp} token",
+    "convocation_invoke_one": "召唤一个 {token} {atk}/{hp}",
+    "convocation_invoke_race": "召唤一个 {race} {atk}/{hp}",
+    "convocation_create_one": "创建一个 {token} {atk}/{hp}",
+    "convocation_none": "无token",
+    "convocation_and": "{a} 和 {b}",
+    "convocation_keywords": " ({keywords})",
+    "spell_countered": "🛡️ 反制！",
+    "spell_grant_all_allies": " · 对所有友方单位",
+    "spell_grant_target": " · 对目标生物",
+    "fire_breath_label": "烈焰吐息",
+    "queue_eyebrow": "证明你的实力",
+    "queue_subtitle": "寻找对手，一决高下",
+    "queue_heading": "开始游戏",
+    "queue_select_deck_error": "请选择一个牌组",
+    "queue_connection_error": "匹配服务器连接失败",
+    "queue_no_valid_deck": "你至少需要一个有效牌组（50张牌）才能游戏。",
+    "queue_create_deck": "创建牌组",
+    "queue_format_label": "赛制：",
+    "queue_select_deck_label": "选择你的牌组：",
+    "queue_no_deck_for_format": "该赛制下暂无牌组，请在牌组构建器中创建。",
+    "queue_find_match": "寻找对局",
+    "queue_back_to_menu": "返回主菜单",
+    "queue_searching": "正在寻找对手…",
+    "mode_suffix_death": " · 死亡时",
+    "mode_suffix_tap": " · 点击",
+    "mode_suffix_return": " · 回手牌",
+    "mode_suffix_end_of_turn": " · 回合结束"
+  },
+  "tutorial": {
+    "page_eyebrow": "学习决斗之道",
+    "page_subtitle": "Armies & Magic — 中世纪奇幻卡牌对决",
+    "page_title": "如何游玩",
+    "track_beginner": "新手 — 完整指南",
+    "track_tcg": "TCG玩家 — 核心要点",
+    "goal_title": "游戏目标",
+    "stat_hero_start": "英雄初始状态",
+    "stat_starting_hand": "起始手牌",
+    "stat_mana_growth": "法力值（每回合增加）",
+    "stat_max_board": "场上最多随从数",
+    "turn_title": "回合流程",
+    "turn_intro": "每回合开始时，按顺序执行：",
+    "hand_title": "手牌与抽牌",
+    "creatures_title": "随从",
+    "spells_title": "法术",
+    "combat_title": "战斗",
+    "combat_see_full_list": "完整技能列表见页面底部。",
+    "hero_title": "英雄与英雄技能",
+    "alt_costs_title": "替代费用",
+    "deck_title": "构建牌组",
+    "tcg_numbers_title": "关键数据",
+    "stat_hero_hp": "英雄生命值",
+    "stat_deck_exact": "牌组卡牌数（精确）",
+    "stat_hand_range": "手牌数（初始 → 上限）",
+    "stat_mana_per_turn": "法力值（+1 / 回合）",
+    "tcg_gameloop_title": "游戏循环（A&M特有机制）",
+    "tcg_deckbuilding_title": "构筑牌组",
+    "tcg_combat_title": "战斗结算",
+    "tcg_hero_spells_title": "英雄与法术",
+    "lexicon_eyebrow": "战斗词典",
+    "lexicon_subtitle": "完整参考，与游戏实时同步。「X」与「Y」为各卡牌上的设定数值。",
+    "lexicon_title": "全部技能",
+    "search_placeholder": "搜索技能…",
+    "creature_abilities_group": "随从技能（{count}）",
+    "spell_abilities_group": "法术技能（{count}）",
+    "no_ability_match": "没有与「{query}」匹配的技能。"
+  },
+  "deck": {
+    "alignment_incompatible": "善良与邪恶阵营不可兼容",
+    "max_mercenaires_current": "最多 {max} 名雇佣兵（当前 {current}）",
+    "max_capability_current": "最多 {max} 张「{label}」能力牌（当前 {count}）",
+    "card_not_owned": "未拥有此牌",
+    "deck_full": "牌组已满",
+    "unique_copy": "限单张",
+    "max_three_copies": "最多 3 张",
+    "alignment_conflict": "阵营冲突",
+    "one_faction_only": "仅限 1 个势力",
+    "one_clan_only": "仅限 1 个氏族",
+    "max_mercenaires": "最多 {max} 名雇佣兵",
+    "no_slot_available": "无可用槽位",
+    "max_capability": "最多 {max} × 「{label}」能力",
+    "enter_deck_name": "请输入牌组名称",
+    "choose_faction_prep": "请选择一个势力（准备标签页）",
+    "select_format": "请选择赛制",
+    "select_hero": "请选择英雄",
+    "deck_exact_size": "牌组须恰好包含 {size} 张牌（当前 {current}）",
+    "illegal_cards": "以下牌在此赛制中不合法：{cards}",
+    "deck_contains_unowned": "牌组含有未拥有的卡牌",
+    "save_failed": "牌组保存失败",
+    "forge_your_deck": "锻造你的牌组",
+    "step_preparation": "1 · 准备",
+    "step_appearance": "2 · 外观",
+    "step_cards": "3 · 卡牌",
+    "cancel": "取消",
+    "choose_faction_first_tab": "请先在第 1 步「准备」标签页中选择一个势力。",
+    "search_placeholder": "搜索...",
+    "creatures": "生物",
+    "spells": "法术",
+    "all_capabilities": "能力",
+    "all_races": "种族",
+    "all_clans": "氏族",
+    "all_sets": "系列",
+    "year": "年份",
+    "rarity_abbr_uncommon": "非普",
+    "rarity_abbr_legendary": "传奇",
+    "expert_only_title": "仅显示专家牌（非普通）",
+    "expert": "专家",
+    "preparation": "准备",
+    "forge_a_deck": "锻造牌组",
+    "deck_name": "牌组名称",
+    "deck_name_placeholder": "牌组名称...",
+    "faction": "阵营",
+    "choose_faction": "选择阵营...",
+    "faction_hint": "单一阵营 + 雇佣兵。更换阵营将移除不兼容的卡牌/英雄。",
+    "format": "赛制",
+    "mode_placeholder": "模式...",
+    "mode_classic": "经典",
+    "mode_expert": "专家",
+    "extent_placeholder": "范围...",
+    "extent_standard": "标准",
+    "extent_extended": "扩展",
+    "choose_faction_first_tab_short": "请先选择阵营（标签页 1 · 准备）。",
+    "choose_hero": "选择英雄",
+    "right_click_power": "右键：查看技能",
+    "no_hero_for_faction": "该阵营暂无英雄。",
+    "board": "战场",
+    "change": "更换",
+    "choose_board": "选择战场",
+    "card_back": "卡背",
+    "choose_card_back": "选择卡背",
+    "mono_faction": "单一阵营",
+    "mono_clan": "单一氏族",
+    "clan_label": "氏族：",
+    "deck": "牌组",
+    "mana_curve_tooltip": "{label} 法力：{count, plural, one {# 张牌} other {# 张牌}}",
+    "click_cards_to_add": "点击卡牌以添加",
+    "free_slot": "空槽位",
+    "more_slots": "+{count} 个槽位",
+    "keywords": "关键词",
+    "max_suffix": "（最多 {max}）",
+    "saving": "保存中...",
+    "save_deck": "保存",
+    "create_deck": "创建牌组",
+    "passive": "被动",
+    "mana": "法力",
+    "no_board_available": "暂无可用战场。",
+    "no_card_back_available": "暂无可用卡背。",
+    "format_number": "赛制 {id}",
+    "no_format": "无赛制",
+    "compose_your_army": "组建你的军队",
+    "my_decks": "我的牌组",
+    "decks_in_armory": "{count, plural, one {# 个牌组} other {# 个牌组}}在你的武器库中",
+    "decks_in_format": "{count, plural, one {# 个牌组} other {# 个牌组}}在此赛制中",
+    "new_deck": "新建牌组",
+    "back_to_menu": "返回菜单",
+    "all": "全部",
+    "no_decks_yet": "你还没有任何牌组",
+    "create_first_deck": "创建你的第一个牌组",
+    "no_decks_in_format": "此赛制暂无牌组",
+    "show_all_decks": "显示所有牌组",
+    "cards_count_label": "{count}/{size} 张牌",
+    "valid_suffix": " （有效）",
+    "edit": "编辑",
+    "confirm": "确认",
+    "delete": "删除",
+    "admire_your_armies": "欣赏你的军队",
+    "card_collection": "卡牌收藏",
+    "cards_count": "{count, plural, one {# 张牌} other {# 张牌}}",
+    "cards_of_total": " / {total}",
+    "search_by_name": "按名称搜索...",
+    "mana_label": "法力：",
+    "reset_filters": "重置筛选",
+    "faction_label": "阵营：",
+    "all_fem": "全部",
+    "rarity_label": "稀有度：",
+    "expert_only": "仅限专家",
+    "capability_label": "能力：",
+    "race_label": "种族：",
+    "all_masc": "全部",
+    "format_label": "赛制：",
+    "set_label": "系列：",
+    "year_label": "年份：",
+    "no_cards_match": "没有卡牌符合筛选条件"
+  },
+  "cardBacks": {
+    "eyebrow": "展示你的风格",
+    "title": "我的卡背",
+    "subtitle": "{visible, plural, one {# 个可见} other {# 个可见}} · {prints, plural, one {# 张已拥有} other {# 张已拥有}}",
+    "back_to_menu": "返回菜单",
+    "rarity_label": "稀有度：",
+    "owned_only": "仅显示已拥有",
+    "empty": "暂无可显示的卡背。",
+    "equipped": "已装备",
+    "default_badge": "默认",
+    "not_owned": "未拥有"
+  },
+  "boards": {
+    "eyebrow": "布置你的竞技场",
+    "title": "我的战场",
+    "subtitle": "{visible, plural, one {# 个显示} other {# 个显示}} · {prints, plural, one {# 个版本已拥有} other {# 个版本已拥有}}",
+    "back_to_menu": "返回菜单",
+    "rarity_label": "稀有度：",
+    "owned_only": "仅显示已拥有",
+    "empty": "暂无可显示的战场。",
+    "equipped": "已装备",
+    "default_badge": "默认",
+    "not_owned": "未拥有"
+  }
+}

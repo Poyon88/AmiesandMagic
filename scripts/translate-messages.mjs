@@ -21,8 +21,8 @@ const MESSAGES_DIR = path.join(ROOT, "messages");
 const HASH_FILE = path.join(ROOT, ".i18n-hashes.json");
 
 const SOURCE_LOCALE = "fr";
-const TARGET_LOCALES = ["en", "es", "de", "it", "pt"];
-const LANG_NAMES = { en: "English", es: "Spanish", de: "German", it: "Italian", pt: "Portuguese" };
+const TARGET_LOCALES = ["en", "es", "de", "it", "pt", "ja", "zh"];
+const LANG_NAMES = { en: "English", es: "Spanish", de: "German", it: "Italian", pt: "Portuguese", ja: "Japanese", zh: "Simplified Chinese" };
 const MODEL = "claude-sonnet-4-6";
 
 const args = process.argv.slice(2);

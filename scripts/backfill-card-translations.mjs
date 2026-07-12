@@ -23,7 +23,7 @@ const SERVICE_KEY = env.SUPABASE_SERVICE_ROLE_KEY;
 const ANTHROPIC_KEY = env.ANTHROPIC_API_KEY;
 const MODEL = "claude-sonnet-4-6";
 
-const LANG_NAMES = { en: "English", es: "Spanish", de: "German", it: "Italian", pt: "Portuguese" };
+const LANG_NAMES = { en: "English", es: "Spanish", de: "German", it: "Italian", pt: "Portuguese", ja: "Japanese", zh: "Simplified Chinese" };
 
 const args = process.argv.slice(2);
 const only = (args.find((a) => a.startsWith("--only=")) || "").split("=")[1];

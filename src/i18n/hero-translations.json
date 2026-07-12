@@ -633,5 +633,259 @@
       "power_name": "Desaparecimento Súbito",
       "power_description": "Retorna uma unidade aliada-alvo para a mão de seu proprietário original."
     }
+  },
+  "ja": {
+    "19": {
+      "name": "テストポートレート2",
+      "power_name": "治癒",
+      "power_description": "対象1体を2のライフで回復する"
+    },
+    "24": {
+      "name": "エレンディル",
+      "power_name": "魔法の矢",
+      "power_description": "対象1体に1ダメージを与える"
+    },
+    "28": {
+      "name": "ゴラシュ、策略家",
+      "power_name": "強力な一撃",
+      "power_description": "対象1体に2ダメージを与える"
+    },
+    "29": {
+      "name": "ダーグリム",
+      "power_name": "アーマー",
+      "power_description": "対象の味方ユニットに「アーマー」を付与する（呪文以外から受けるダメージを半減する）"
+    },
+    "30": {
+      "name": "アステリオン",
+      "power_name": "蹄蹴り",
+      "power_description": "相手ヒーローに2ダメージを与える"
+    },
+    "31": {
+      "name": "マルドラク",
+      "power_name": "牙",
+      "power_description": "対象から1のライフを奪う"
+    },
+    "33": {
+      "name": "アルドリック、公正なる者",
+      "power_name": "神聖なる盾",
+      "power_description": "対象のユニットに「神聖なる盾」を付与する"
+    },
+    "34": {
+      "name": "ヴェルキン",
+      "power_name": "腐敗",
+      "power_description": "選択した敵ユニットをターン終了まで自分の陣営に加える；そのユニットはターン終了まで「トラッキング」を得る。"
+    },
+    "35": {
+      "name": "バリノア",
+      "power_name": "忠誠の誓い",
+      "power_description": "同じ派閥のユニットは+1/+1を得る"
+    },
+    "36": {
+      "name": "プリモルディス",
+      "power_name": "石の肌",
+      "power_description": "対象のクリーチャーに「アーマー」を付与する：受ける戦闘ダメージを半減する（端数は切り上げ）；呪文によるダメージは軽減されない。"
+    },
+    "37": {
+      "name": "シルヴァラン",
+      "power_name": "強化耐性",
+      "power_description": "対象のクリーチャーに「耐性2」を付与する。"
+    },
+    "38": {
+      "name": "ミロ",
+      "power_name": "仲間への呼びかけ",
+      "power_description": "勇敢な若きホビット0/1を召喚する"
+    },
+    "39": {
+      "name": "ナイア",
+      "power_name": "瞬間魔法",
+      "power_description": "コスト≤Xのランダムな呪文3枚（全派閥）の中から1枚選び、手札に加える。"
+    },
+    "40": {
+      "name": "エリンドラ",
+      "power_name": "回復",
+      "power_description": "対象のユニットを完全に回復する"
+    },
+    "41": {
+      "name": "カルヴォク",
+      "power_name": "熊の力",
+      "power_description": "味方ユニット1体に+1/+1を付与する"
+    },
+    "43": {
+      "name": "エーテロン",
+      "power_name": "嵐",
+      "power_description": "2ダメージを敵ユニット間にランダムに分散して与える"
+    },
+    "44": {
+      "name": "シグルド",
+      "power_name": "バーサーク",
+      "power_description": "対象のユニットに「バーサーク」を付与する"
+    },
+    "45": {
+      "name": "アマヤ",
+      "power_name": "氏族の呼び声",
+      "power_description": "インカの味方ユニット1/1を召喚する"
+    },
+    "46": {
+      "name": "ラグナル・月吠え",
+      "power_name": "指揮",
+      "power_description": "場にいる「群れ」派閥のユニットは+1/+1を得る"
+    },
+    "47": {
+      "name": "アルジュン・炎爪",
+      "power_name": "猫の優雅さ",
+      "power_description": "対象のクリーチャーに「レイド」を付与する。"
+    },
+    "48": {
+      "name": "ニンボア、嵐の守護者",
+      "power_name": "嵐",
+      "power_description": "ランダムな敵に1ダメージを2回与える"
+    },
+    "49": {
+      "name": "ナトキン、夢の守護者",
+      "power_name": "活力の木の実",
+      "power_description": "対象の味方ユニットに+1/+1を付与する"
+    },
+    "50": {
+      "name": "ノアム、交渉人",
+      "power_name": "有利な取引",
+      "power_description": "このカードと同じ属性の派閥から、コスト≤4のランダムなコモンカード3枚の中から1枚選び、手札に加える。"
+    },
+    "51": {
+      "name": "ヴァエルコア、深淵の覇者",
+      "power_name": "深淵の呼び声",
+      "power_description": "デッキに残っているマナコストが最も高い悪魔カードを手札に加える（同コストの場合はランダムに選ぶ）。"
+    },
+    "53": {
+      "name": "ハヤト、影の達人",
+      "power_name": "突然の消滅",
+      "power_description": "対象の味方ユニットを、その元の所有者の手札に戻す。"
+    }
+  },
+  "zh": {
+    "19": {
+      "name": "测试立绘2",
+      "power_name": "治愈",
+      "power_description": "将一个目标治疗2点生命值"
+    },
+    "24": {
+      "name": "埃伦迪尔",
+      "power_name": "魔法箭",
+      "power_description": "对一个目标造成1点伤害"
+    },
+    "28": {
+      "name": "戈拉什·谋略家",
+      "power_name": "强力打击",
+      "power_description": "对一个目标造成2点伤害"
+    },
+    "29": {
+      "name": "杜格林",
+      "power_name": "护甲",
+      "power_description": "赋予目标单位护甲（将所受的非法术伤害减半）"
+    },
+    "30": {
+      "name": "阿斯特里昂",
+      "power_name": "蹄击",
+      "power_description": "对对方英雄造成2点伤害"
+    },
+    "31": {
+      "name": "马尔德拉克",
+      "power_name": "獠牙",
+      "power_description": "从目标处吸取1点生命值"
+    },
+    "33": {
+      "name": "阿尔德里克·公正者",
+      "power_name": "神圣护盾",
+      "power_description": "赋予目标单位神圣护盾"
+    },
+    "34": {
+      "name": "维尔金",
+      "power_name": "腐化",
+      "power_description": "将选中的敌方单位转化至你的阵营直到回合结束；该单位获得追猎直到回合结束。"
+    },
+    "35": {
+      "name": "巴利诺尔",
+      "power_name": "效忠",
+      "power_description": "相同阵营的单位获得+1/+1"
+    },
+    "36": {
+      "name": "原初者",
+      "power_name": "石皮",
+      "power_description": "目标生物获得护甲：将所受战斗伤害减半（向上取整）；法术伤害不受影响。"
+    },
+    "37": {
+      "name": "西尔瓦兰",
+      "power_name": "强化抗性",
+      "power_description": "赋予目标生物「韧性2」。"
+    },
+    "38": {
+      "name": "米洛",
+      "power_name": "呼唤友军",
+      "power_description": "召唤一个勇敢的霍比特小子 0/1"
+    },
+    "39": {
+      "name": "奈亚",
+      "power_name": "即时咒语",
+      "power_description": "从费用≤X的随机3张法术牌（全阵营）中选择一张加入手牌。"
+    },
+    "40": {
+      "name": "艾琳德拉",
+      "power_name": "治疗",
+      "power_description": "将目标单位的生命值完全恢复"
+    },
+    "41": {
+      "name": "卡尔沃克",
+      "power_name": "熊之力",
+      "power_description": "赋予一个友方单位+1/+1"
+    },
+    "43": {
+      "name": "埃瑟隆",
+      "power_name": "风暴",
+      "power_description": "将2点伤害随机分配给敌方单位"
+    },
+    "44": {
+      "name": "西格德",
+      "power_name": "狂暴",
+      "power_description": "赋予目标单位狂暴"
+    },
+    "45": {
+      "name": "天彩",
+      "power_name": "氏族召唤",
+      "power_description": "召唤一个印加族友方单位 1/1"
+    },
+    "46": {
+      "name": "拉格纳·嚎月者",
+      "power_name": "号令",
+      "power_description": "场上「狼群」阵营的单位获得+1/+1"
+    },
+    "47": {
+      "name": "阿尔君·火爪",
+      "power_name": "猫之优雅",
+      "power_description": "赋予目标生物「突袭」。"
+    },
+    "48": {
+      "name": "尼姆博尔·风暴守护者",
+      "power_name": "风暴",
+      "power_description": "对随机敌方目标造成2次1点伤害"
+    },
+    "49": {
+      "name": "纳特金·梦境守护者",
+      "power_name": "活力坚果",
+      "power_description": "赋予目标友方单位+1/+1"
+    },
+    "50": {
+      "name": "诺汉·斡旋者",
+      "power_name": "有利交易",
+      "power_description": "从费用≤4的随机3张普通牌中选择一张加入手牌，这些牌来自与本卡同阵营阵营的派系。"
+    },
+    "51": {
+      "name": "瓦尔科尔·深渊主宰",
+      "power_name": "深渊召唤",
+      "power_description": "将你牌库中法力费用最高的恶魔牌加入手牌（费用相同时随机选取）。"
+    },
+    "53": {
+      "name": "隼人·暗影宗师",
+      "power_name": "骤然消隐",
+      "power_description": "将目标友方单位返回其原属玩家的手牌。"
+    }
   }
 }
