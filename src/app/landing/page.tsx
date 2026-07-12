@@ -1,5 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
+import { getLocale } from "next-intl/server";
 import LandingPage from "@/components/landing/LandingPage";
+import { localizeCardsInPlace } from "@/lib/cards/localizeCard";
+import { normalizeLocale } from "@/i18n/config";
 import type { Card } from "@/lib/game/types";
 
 export const metadata = {
@@ -57,9 +60,15 @@ export default async function Landing() {
       .not("thumbnail_url", "is", null),
   ]);
 
-  const showcaseCards: Card[] = (showcaseData ?? [])
+  const showcaseCardsFr: Card[] = (showcaseData ?? [])
     .map(s => s.card as unknown as Card)
     .filter(Boolean);
+
+  // Localise nom + ambiance des cartes vitrine pour la locale active (repli FR).
+  // Surface d'affichage pur : `effect_text` reste canonique (rendu via le
+  // système de mots-clés vocab). En FR, court-circuit sans requête.
+  const locale = normalizeLocale(await getLocale());
+  const showcaseCards = await localizeCardsInPlace(supabase, showcaseCardsFr, locale);
 
   const factionHeroUrls: Record<string, string> = {};
   for (const h of heroesData ?? []) {
