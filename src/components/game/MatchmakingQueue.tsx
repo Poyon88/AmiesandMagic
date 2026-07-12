@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useVocab } from "@/i18n/useVocab";
 import { createClient } from "@/lib/supabase/client";
 import type { GameFormat } from "@/lib/game/types";
 import AmAtmosphere from "@/components/ui/AmAtmosphere";
@@ -35,6 +36,7 @@ export default function MatchmakingQueue({
   formats: GameFormat[];
 }) {
   const t = useTranslations("game");
+  const vocab = useVocab();
   const router = useRouter();
   const supabase = createClient();
   const [selectedFormatId, setSelectedFormatId] = useState<number | null>(
@@ -299,7 +301,7 @@ export default function MatchmakingQueue({
                                 : "border-am-gold/15 bg-am-bg-1 text-am-ink-soft hover:border-am-gold/40 hover:text-am-ink"
                             }`}
                           >
-                            {f.name}
+                            {vocab.formatName(f.code, f.name)}
                           </button>
                         ))}
                       </div>
