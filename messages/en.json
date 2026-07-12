@@ -1,1 +1,388 @@
-{}
+{
+  "vocab": {
+    "keywords": {
+      "charge": {
+        "label": "Charge"
+      },
+      "taunt": {
+        "label": "Taunt"
+      },
+      "divine_shield": {
+        "label": "Divine Shield"
+      },
+      "ranged": {
+        "label": "Flight"
+      },
+      "raid": {
+        "label": "Raid"
+      },
+      "convocations_multiples": {
+        "label": "Multi-Summon"
+      },
+      "loyaute": {
+        "label": "Loyalty"
+      },
+      "ancre": {
+        "label": "Anchored"
+      },
+      "resistance": {
+        "label": "Resistance X"
+      },
+      "premiere_frappe": {
+        "label": "First Strike"
+      },
+      "berserk": {
+        "label": "Berserk"
+      },
+      "vol": {
+        "label": "Flight"
+      },
+      "precision": {
+        "label": "Precision"
+      },
+      "drain_de_vie": {
+        "label": "Lifedrain"
+      },
+      "esquive": {
+        "label": "Dodge"
+      },
+      "poison": {
+        "label": "Poison"
+      },
+      "celerite": {
+        "label": "Swiftness"
+      },
+      "augure": {
+        "label": "Omen"
+      },
+      "benediction": {
+        "label": "Blessing"
+      },
+      "bravoure": {
+        "label": "Valor"
+      },
+      "pillage": {
+        "label": "Plunder X"
+      },
+      "riposte": {
+        "label": "Riposte X"
+      },
+      "rappel": {
+        "label": "Recall"
+      },
+      "combustion": {
+        "label": "Combustion"
+      },
+      "terreur": {
+        "label": "Terror"
+      },
+      "pauvrete": {
+        "label": "Poverty X"
+      },
+      "armure": {
+        "label": "Armor"
+      },
+      "commandement": {
+        "label": "Command"
+      },
+      "fureur": {
+        "label": "Fury"
+      },
+      "double_attaque": {
+        "label": "Double Strike"
+      },
+      "invisible": {
+        "label": "Invisible"
+      },
+      "canalisation": {
+        "label": "Channeling"
+      },
+      "contresort": {
+        "label": "Counterspell"
+      },
+      "convocation": {
+        "label": "Summon X"
+      },
+      "convocation_simple": {
+        "label": "Summon"
+      },
+      "malediction": {
+        "label": "Curse"
+      },
+      "necrophagie": {
+        "label": "Necrophagy"
+      },
+      "richesse": {
+        "label": "Wealth X"
+      },
+      "sacrifice_demoniaque": {
+        "label": "Demonic Sacrifice X"
+      },
+      "paralysie": {
+        "label": "Paralysis"
+      },
+      "permutation": {
+        "label": "Permutation"
+      },
+      "persecution": {
+        "label": "Persecution X"
+      },
+      "pietinement": {
+        "label": "Trample"
+      },
+      "catalyse": {
+        "label": "Catalysis"
+      },
+      "ombre_du_passe": {
+        "label": "Shadow of the Past"
+      },
+      "profanation": {
+        "label": "Desecration X"
+      },
+      "prescience": {
+        "label": "Prescience X"
+      },
+      "suprematie": {
+        "label": "Supremacy"
+      },
+      "divination": {
+        "label": "Divination"
+      },
+      "savant": {
+        "label": "Savant"
+      },
+      "liaison_de_vie": {
+        "label": "Lifebond"
+      },
+      "ombre": {
+        "label": "Shadow"
+      },
+      "sacrifice": {
+        "label": "Sacrifice"
+      },
+      "malefice": {
+        "label": "Hex"
+      },
+      "indestructible": {
+        "label": "Indestructible"
+      },
+      "regeneration": {
+        "label": "Regeneration"
+      },
+      "corruption": {
+        "label": "Corruption"
+      },
+      "carnage": {
+        "label": "Carnage X"
+      },
+      "heritage": {
+        "label": "Legacy X"
+      },
+      "mimique": {
+        "label": "Mimic"
+      },
+      "metamorphose": {
+        "label": "Metamorphosis"
+      },
+      "tactique": {
+        "label": "Tactics X"
+      },
+      "exhumation": {
+        "label": "Exhumation X"
+      },
+      "heritage_du_cimetiere": {
+        "label": "Graveyard Legacy"
+      },
+      "pacte_de_sang": {
+        "label": "Blood Pact"
+      },
+      "souffle_de_feu": {
+        "label": "Fire Breath X"
+      },
+      "domination": {
+        "label": "Domination"
+      },
+      "resurrection": {
+        "label": "Resurrection"
+      },
+      "transcendance": {
+        "label": "Transcendence"
+      },
+      "vampirisme": {
+        "label": "Vampirism X"
+      },
+      "traque_du_destin": {
+        "label": "Fate Hunt X"
+      },
+      "sang_mele": {
+        "label": "Mixed Blood"
+      },
+      "fierte_du_clan": {
+        "label": "Clan Pride"
+      },
+      "solidarite": {
+        "label": "Solidarity X"
+      },
+      "entraide": {
+        "label": "Mutual Aid"
+      },
+      "cycle_eternel": {
+        "label": "Eternal Cycle"
+      },
+      "martyr": {
+        "label": "Martyr"
+      },
+      "instinct_de_meute": {
+        "label": "Pack Instinct X"
+      },
+      "totem": {
+        "label": "Totem"
+      },
+      "appel_du_clan": {
+        "label": "Clan Call X"
+      },
+      "appel_supreme": {
+        "label": "Supreme Call"
+      },
+      "rassemblement": {
+        "label": "Rally X"
+      },
+      "selection": {
+        "label": "Selection X"
+      },
+      "selection_magique": {
+        "label": "Arcane Selection X"
+      },
+      "renfort_royal": {
+        "label": "Royal Selection X"
+      },
+      "lycanthropie": {
+        "label": "Lycanthropy X"
+      },
+      "relancer": {
+        "label": "Reroll X"
+      },
+      "tempete": {
+        "label": "Storm X"
+      },
+      "cataclysme": {
+        "label": "Cataclysm X"
+      },
+      "affaiblissement": {
+        "label": "Weaken -X/-Y"
+      },
+      "renforcement": {
+        "label": "Strengthen +X/+Y"
+      },
+      "impact": {
+        "label": "Impact X"
+      },
+      "douleur": {
+        "label": "Pain X"
+      },
+      "inspiration": {
+        "label": "Inspiration X"
+      },
+      "concentration": {
+        "label": "Focus X"
+      },
+      "remontee": {
+        "label": "Comeback"
+      },
+      "renforcement_multiple": {
+        "label": "Multi-Strengthen"
+      },
+      "entrainement": {
+        "label": "Training X"
+      },
+      "conferer": {
+        "label": "Bestow"
+      },
+      "declenchement": {
+        "label": "Trigger"
+      }
+    },
+    "factions": {
+      "Elfes": {
+        "displayName": "The Celestial Alliance",
+        "description": "Agile and stealthy. Masters of speed and evasion. Giant eagles fight among their ranks."
+      },
+      "Nains": {
+        "displayName": "The Forge Brotherhood",
+        "description": "Sturdy and resilient. Masters of defense and tenacity."
+      },
+      "Hobbits": {
+        "displayName": "The Woodland Pact",
+        "description": "Small but cunning. Evasion and mutual aid."
+      },
+      "Humains": {
+        "displayName": "The Free Kingdoms",
+        "description": "Balanced and versatile. Group synergies."
+      },
+      "Hommes-Bêtes": {
+        "displayName": "The Pack",
+        "description": "Savage and ferocious. Strike fast, regenerate, and fly into a rage."
+      },
+      "Élémentaires": {
+        "displayName": "The Primordials",
+        "description": "Primal forces of nature. Each element brings its own fighting style."
+      },
+      "Mercenaires": {
+        "displayName": "Mercenaries",
+        "description": "Soldiers of fortune with no allegiance. Versatile and available for any deck."
+      },
+      "Orcs": {
+        "displayName": "The Horde",
+        "description": "A brutal horde. Fast and expendable goblins. Brutish and aggressive orcs. Resilient trolls. Swift wargs."
+      },
+      "Morts-Vivants": {
+        "displayName": "The Necropolis",
+        "description": "Insatiable and corrupted. Resurrection and life drain."
+      },
+      "Elfes Noirs": {
+        "displayName": "The Chaos Brood",
+        "description": "Devious and venomous. Poison, shadow, and corruption."
+      }
+    },
+    "rarities": {
+      "Commune": "Common",
+      "Peu Commune": "Uncommon",
+      "Rare": "Rare",
+      "Épique": "Epic",
+      "Légendaire": "Legendary"
+    },
+    "clans": {
+      "Sylvains": "Sylvans",
+      "Hauts-Elfes": "High Elves",
+      "Elfes des Mers": "Sea Elves",
+      "Émeraudes": "Emeralds",
+      "Cimes Éternelles": "Eternal Peaks",
+      "Montagnes": "Mountains",
+      "Collines": "Hills",
+      "Lave": "Lava",
+      "Plaines": "Plains",
+      "Rivièrains": "Riverfolk",
+      "Landes": "Moorlands",
+      "Nordiques": "Nordics",
+      "Orientaux": "Easterns",
+      "Templiers": "Templars",
+      "Amazones": "Amazons",
+      "Incas": "Incas",
+      "Touaregs": "Tuaregs",
+      "Forêt": "Forest",
+      "Toundra": "Tundra",
+      "Savane": "Savanna",
+      "Jungle": "Jungle",
+      "Mignons": "Cuties",
+      "Pacte des Griffes": "Claw Pact",
+      "Feu": "Fire",
+      "Terre": "Earth",
+      "Eau": "Water",
+      "Air": "Air",
+      "Marais": "Swamp",
+      "Abysses souterrains": "Underground Abyss",
+      "Forêt maudite": "Cursed Forest",
+      "Cités de cendres": "Ash Cities"
+    }
+  }
+}

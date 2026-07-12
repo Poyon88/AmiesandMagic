@@ -1,1 +1,388 @@
-{}
+{
+  "vocab": {
+    "keywords": {
+      "charge": {
+        "label": "Verfolgung"
+      },
+      "taunt": {
+        "label": "Provokation"
+      },
+      "divine_shield": {
+        "label": "Schild"
+      },
+      "ranged": {
+        "label": "Flug"
+      },
+      "raid": {
+        "label": "Überfall"
+      },
+      "convocations_multiples": {
+        "label": "Mehrfachbeschwörung"
+      },
+      "loyaute": {
+        "label": "Loyalität"
+      },
+      "ancre": {
+        "label": "Verankert"
+      },
+      "resistance": {
+        "label": "Resistenz X"
+      },
+      "premiere_frappe": {
+        "label": "Erster Angriff"
+      },
+      "berserk": {
+        "label": "Berserker"
+      },
+      "vol": {
+        "label": "Flug"
+      },
+      "precision": {
+        "label": "Präzision"
+      },
+      "drain_de_vie": {
+        "label": "Lebensraub"
+      },
+      "esquive": {
+        "label": "Ausweichen"
+      },
+      "poison": {
+        "label": "Gift"
+      },
+      "celerite": {
+        "label": "Eile"
+      },
+      "augure": {
+        "label": "Vorzeichen"
+      },
+      "benediction": {
+        "label": "Segen"
+      },
+      "bravoure": {
+        "label": "Tapferkeit"
+      },
+      "pillage": {
+        "label": "Plünderung X"
+      },
+      "riposte": {
+        "label": "Vergeltung X"
+      },
+      "rappel": {
+        "label": "Rückruf"
+      },
+      "combustion": {
+        "label": "Verbrennung"
+      },
+      "terreur": {
+        "label": "Schrecken"
+      },
+      "pauvrete": {
+        "label": "Verarmung X"
+      },
+      "armure": {
+        "label": "Rüstung"
+      },
+      "commandement": {
+        "label": "Kommando"
+      },
+      "fureur": {
+        "label": "Raserei"
+      },
+      "double_attaque": {
+        "label": "Doppelangriff"
+      },
+      "invisible": {
+        "label": "Unsichtbar"
+      },
+      "canalisation": {
+        "label": "Kanalisation"
+      },
+      "contresort": {
+        "label": "Gegenzauber"
+      },
+      "convocation": {
+        "label": "Beschwörung X"
+      },
+      "convocation_simple": {
+        "label": "Beschwörung"
+      },
+      "malediction": {
+        "label": "Fluch"
+      },
+      "necrophagie": {
+        "label": "Nekrophagie"
+      },
+      "richesse": {
+        "label": "Reichtum X"
+      },
+      "sacrifice_demoniaque": {
+        "label": "Dämonopfer X"
+      },
+      "paralysie": {
+        "label": "Lähmung"
+      },
+      "permutation": {
+        "label": "Permutation"
+      },
+      "persecution": {
+        "label": "Verfolgung X"
+      },
+      "pietinement": {
+        "label": "Niedertrampeln"
+      },
+      "catalyse": {
+        "label": "Katalyse"
+      },
+      "ombre_du_passe": {
+        "label": "Schatten der Vergangenheit"
+      },
+      "profanation": {
+        "label": "Entweihung X"
+      },
+      "prescience": {
+        "label": "Präszienz X"
+      },
+      "suprematie": {
+        "label": "Vorherrschaft"
+      },
+      "divination": {
+        "label": "Divination"
+      },
+      "savant": {
+        "label": "Gelehrter"
+      },
+      "liaison_de_vie": {
+        "label": "Lebensband"
+      },
+      "ombre": {
+        "label": "Schatten"
+      },
+      "sacrifice": {
+        "label": "Opferung"
+      },
+      "malefice": {
+        "label": "Übeltat"
+      },
+      "indestructible": {
+        "label": "Unzerstörbar"
+      },
+      "regeneration": {
+        "label": "Regeneration"
+      },
+      "corruption": {
+        "label": "Korruption"
+      },
+      "carnage": {
+        "label": "Gemetzel X"
+      },
+      "heritage": {
+        "label": "Erbe X"
+      },
+      "mimique": {
+        "label": "Mimikry"
+      },
+      "metamorphose": {
+        "label": "Metamorphose"
+      },
+      "tactique": {
+        "label": "Taktik X"
+      },
+      "exhumation": {
+        "label": "Exhumierung X"
+      },
+      "heritage_du_cimetiere": {
+        "label": "Erbe des Friedhofs"
+      },
+      "pacte_de_sang": {
+        "label": "Blutpakt"
+      },
+      "souffle_de_feu": {
+        "label": "Feueratem X"
+      },
+      "domination": {
+        "label": "Dominanz"
+      },
+      "resurrection": {
+        "label": "Auferstehung"
+      },
+      "transcendance": {
+        "label": "Transzendenz"
+      },
+      "vampirisme": {
+        "label": "Vampirismus X"
+      },
+      "traque_du_destin": {
+        "label": "Schicksalsjagd X"
+      },
+      "sang_mele": {
+        "label": "Mischblut"
+      },
+      "fierte_du_clan": {
+        "label": "Clanstolz"
+      },
+      "solidarite": {
+        "label": "Solidarität X"
+      },
+      "entraide": {
+        "label": "Gegenseitige Hilfe"
+      },
+      "cycle_eternel": {
+        "label": "Ewiger Kreislauf"
+      },
+      "martyr": {
+        "label": "Märtyrer"
+      },
+      "instinct_de_meute": {
+        "label": "Rudelinstinkt X"
+      },
+      "totem": {
+        "label": "Totem"
+      },
+      "appel_du_clan": {
+        "label": "Ruf des Clans X"
+      },
+      "appel_supreme": {
+        "label": "Oberster Ruf"
+      },
+      "rassemblement": {
+        "label": "Sammlung X"
+      },
+      "selection": {
+        "label": "Auswahl X"
+      },
+      "selection_magique": {
+        "label": "Magische Auswahl X"
+      },
+      "renfort_royal": {
+        "label": "Königliche Auswahl X"
+      },
+      "lycanthropie": {
+        "label": "Lykanthropie X"
+      },
+      "relancer": {
+        "label": "Neu würfeln X"
+      },
+      "tempete": {
+        "label": "Sturm X"
+      },
+      "cataclysme": {
+        "label": "Katastrophe X"
+      },
+      "affaiblissement": {
+        "label": "Schwächung -X/-Y"
+      },
+      "renforcement": {
+        "label": "Stärkung +X/+Y"
+      },
+      "impact": {
+        "label": "Wucht X"
+      },
+      "douleur": {
+        "label": "Schmerz X"
+      },
+      "inspiration": {
+        "label": "Inspiration X"
+      },
+      "concentration": {
+        "label": "Konzentration X"
+      },
+      "remontee": {
+        "label": "Aufschwung"
+      },
+      "renforcement_multiple": {
+        "label": "Mehrfachstärkung"
+      },
+      "entrainement": {
+        "label": "Training X"
+      },
+      "conferer": {
+        "label": "Verleihen"
+      },
+      "declenchement": {
+        "label": "Auslösung"
+      }
+    },
+    "factions": {
+      "Elfes": {
+        "displayName": "Das Himmelsbündnis",
+        "description": "Wendig und heimlich. Setzen auf Geschwindigkeit und Ausweichen. Riesenadler in ihren Reihen."
+      },
+      "Nains": {
+        "displayName": "Die Schmiedebruderschaft",
+        "description": "Solide und widerstandsfähig. Setzen auf Verteidigung und Zähigkeit."
+      },
+      "Hobbits": {
+        "displayName": "Der Waldpakt",
+        "description": "Klein, aber gerissen. Ausweichen und gegenseitige Unterstützung."
+      },
+      "Humains": {
+        "displayName": "Die Freien Königreiche",
+        "description": "Ausgewogen und vielseitig. Gruppensynergien."
+      },
+      "Hommes-Bêtes": {
+        "displayName": "Das Rudel",
+        "description": "Wild und grausam. Greifen schnell an, regenerieren sich und verfallen in Raserei."
+      },
+      "Élémentaires": {
+        "displayName": "Die Urgewalten",
+        "description": "Urkräfte der Natur. Jedes Element hat seinen eigenen Kampfstil."
+      },
+      "Mercenaires": {
+        "displayName": "Söldner",
+        "description": "Glückssoldaten ohne Bündnistreue. Vielseitig und für alle Decks verfügbar."
+      },
+      "Orcs": {
+        "displayName": "Die Horde",
+        "description": "Brutale Horde. Schnelle und entbehrliche Goblins. Rohe und aggressive Orks. Widerstandsfähige Trolle. Schnelle Wargs."
+      },
+      "Morts-Vivants": {
+        "displayName": "Die Nekropole",
+        "description": "Unersättlich und verdorben. Auferstehung und Lebenskraft-Entzug."
+      },
+      "Elfes Noirs": {
+        "displayName": "Die Ausgeburt des Chaos",
+        "description": "Hinterlistig und giftig. Gift, Schatten und Verderbnis."
+      }
+    },
+    "rarities": {
+      "Commune": "Gewöhnlich",
+      "Peu Commune": "Ungewöhnlich",
+      "Rare": "Selten",
+      "Épique": "Episch",
+      "Légendaire": "Legendär"
+    },
+    "clans": {
+      "Sylvains": "Waldbewohner",
+      "Hauts-Elfes": "Hochelfen",
+      "Elfes des Mers": "Meerelfen",
+      "Émeraudes": "Smaragde",
+      "Cimes Éternelles": "Ewige Gipfel",
+      "Montagnes": "Berge",
+      "Collines": "Hügel",
+      "Lave": "Lava",
+      "Plaines": "Ebenen",
+      "Rivièrains": "Flussbewohner",
+      "Landes": "Heideland",
+      "Nordiques": "Nordländer",
+      "Orientaux": "Östliche Völker",
+      "Templiers": "Templer",
+      "Amazones": "Amazonen",
+      "Incas": "Inkas",
+      "Touaregs": "Tuareg",
+      "Forêt": "Wald",
+      "Toundra": "Tundra",
+      "Savane": "Savanne",
+      "Jungle": "Dschungel",
+      "Mignons": "Niedliche",
+      "Pacte des Griffes": "Krallenpakt",
+      "Feu": "Feuer",
+      "Terre": "Erde",
+      "Eau": "Wasser",
+      "Air": "Luft",
+      "Marais": "Sumpf",
+      "Abysses souterrains": "Unterirdische Abgründe",
+      "Forêt maudite": "Verfluchter Wald",
+      "Cités de cendres": "Aschestädte"
+    }
+  }
+}

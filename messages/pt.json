@@ -1,1 +1,388 @@
-{}
+{
+  "vocab": {
+    "keywords": {
+      "charge": {
+        "label": "Perseguição"
+      },
+      "taunt": {
+        "label": "Provocação"
+      },
+      "divine_shield": {
+        "label": "Escudo"
+      },
+      "ranged": {
+        "label": "Voo"
+      },
+      "raid": {
+        "label": "Raid"
+      },
+      "convocations_multiples": {
+        "label": "Convocações Múltiplas"
+      },
+      "loyaute": {
+        "label": "Lealdade"
+      },
+      "ancre": {
+        "label": "Ancorado"
+      },
+      "resistance": {
+        "label": "Resistência X"
+      },
+      "premiere_frappe": {
+        "label": "Primeiro Ataque"
+      },
+      "berserk": {
+        "label": "Berserk"
+      },
+      "vol": {
+        "label": "Voo"
+      },
+      "precision": {
+        "label": "Precisão"
+      },
+      "drain_de_vie": {
+        "label": "Dreno de Vida"
+      },
+      "esquive": {
+        "label": "Esquiva"
+      },
+      "poison": {
+        "label": "Veneno"
+      },
+      "celerite": {
+        "label": "Celeridade"
+      },
+      "augure": {
+        "label": "Augúrio"
+      },
+      "benediction": {
+        "label": "Bênção"
+      },
+      "bravoure": {
+        "label": "Bravura"
+      },
+      "pillage": {
+        "label": "Pilhagem X"
+      },
+      "riposte": {
+        "label": "Riposte X"
+      },
+      "rappel": {
+        "label": "Retorno"
+      },
+      "combustion": {
+        "label": "Combustão"
+      },
+      "terreur": {
+        "label": "Terror"
+      },
+      "pauvrete": {
+        "label": "Pobreza X"
+      },
+      "armure": {
+        "label": "Armadura"
+      },
+      "commandement": {
+        "label": "Comando"
+      },
+      "fureur": {
+        "label": "Fúria"
+      },
+      "double_attaque": {
+        "label": "Ataque Duplo"
+      },
+      "invisible": {
+        "label": "Invisível"
+      },
+      "canalisation": {
+        "label": "Canalização"
+      },
+      "contresort": {
+        "label": "Contramagia"
+      },
+      "convocation": {
+        "label": "Convocação X"
+      },
+      "convocation_simple": {
+        "label": "Convocação"
+      },
+      "malediction": {
+        "label": "Maldição"
+      },
+      "necrophagie": {
+        "label": "Necrofagia"
+      },
+      "richesse": {
+        "label": "Riqueza X"
+      },
+      "sacrifice_demoniaque": {
+        "label": "Sacrifício Demoníaco X"
+      },
+      "paralysie": {
+        "label": "Paralisia"
+      },
+      "permutation": {
+        "label": "Permutação"
+      },
+      "persecution": {
+        "label": "Perseguição X"
+      },
+      "pietinement": {
+        "label": "Pisoteamento"
+      },
+      "catalyse": {
+        "label": "Catálise"
+      },
+      "ombre_du_passe": {
+        "label": "Sombra do passado"
+      },
+      "profanation": {
+        "label": "Profanação X"
+      },
+      "prescience": {
+        "label": "Presciência X"
+      },
+      "suprematie": {
+        "label": "Supremacia"
+      },
+      "divination": {
+        "label": "Divinação"
+      },
+      "savant": {
+        "label": "Sábio"
+      },
+      "liaison_de_vie": {
+        "label": "Vínculo de vida"
+      },
+      "ombre": {
+        "label": "Sombra"
+      },
+      "sacrifice": {
+        "label": "Sacrifício"
+      },
+      "malefice": {
+        "label": "Malefício"
+      },
+      "indestructible": {
+        "label": "Indestrutível"
+      },
+      "regeneration": {
+        "label": "Regeneração"
+      },
+      "corruption": {
+        "label": "Corrupção"
+      },
+      "carnage": {
+        "label": "Carnificina X"
+      },
+      "heritage": {
+        "label": "Herança X"
+      },
+      "mimique": {
+        "label": "Mímica"
+      },
+      "metamorphose": {
+        "label": "Metamorfose"
+      },
+      "tactique": {
+        "label": "Tática X"
+      },
+      "exhumation": {
+        "label": "Exumação X"
+      },
+      "heritage_du_cimetiere": {
+        "label": "Herança do cemitério"
+      },
+      "pacte_de_sang": {
+        "label": "Pacto de sangue"
+      },
+      "souffle_de_feu": {
+        "label": "Bafo de fogo X"
+      },
+      "domination": {
+        "label": "Dominação"
+      },
+      "resurrection": {
+        "label": "Ressurreição"
+      },
+      "transcendance": {
+        "label": "Transcendência"
+      },
+      "vampirisme": {
+        "label": "Vampirismo X"
+      },
+      "traque_du_destin": {
+        "label": "Caça ao destino X"
+      },
+      "sang_mele": {
+        "label": "Sangue misturado"
+      },
+      "fierte_du_clan": {
+        "label": "Orgulho do clã"
+      },
+      "solidarite": {
+        "label": "Solidariedade X"
+      },
+      "entraide": {
+        "label": "Entreajuda"
+      },
+      "cycle_eternel": {
+        "label": "Ciclo eterno"
+      },
+      "martyr": {
+        "label": "Mártir"
+      },
+      "instinct_de_meute": {
+        "label": "Instinto de matilha X"
+      },
+      "totem": {
+        "label": "Totem"
+      },
+      "appel_du_clan": {
+        "label": "Chamado do clã X"
+      },
+      "appel_supreme": {
+        "label": "Chamado Supremo"
+      },
+      "rassemblement": {
+        "label": "Reunião X"
+      },
+      "selection": {
+        "label": "Seleção X"
+      },
+      "selection_magique": {
+        "label": "Seleção Mágica X"
+      },
+      "renfort_royal": {
+        "label": "Seleção Real X"
+      },
+      "lycanthropie": {
+        "label": "Licantropia X"
+      },
+      "relancer": {
+        "label": "Relançar X"
+      },
+      "tempete": {
+        "label": "Tempestade X"
+      },
+      "cataclysme": {
+        "label": "Cataclismo X"
+      },
+      "affaiblissement": {
+        "label": "Enfraquecimento -X/-Y"
+      },
+      "renforcement": {
+        "label": "Reforço +X/+Y"
+      },
+      "impact": {
+        "label": "Impacto X"
+      },
+      "douleur": {
+        "label": "Dor X"
+      },
+      "inspiration": {
+        "label": "Inspiração X"
+      },
+      "concentration": {
+        "label": "Concentração X"
+      },
+      "remontee": {
+        "label": "Reviravolta"
+      },
+      "renforcement_multiple": {
+        "label": "Reforço Múltiplo"
+      },
+      "entrainement": {
+        "label": "Treinamento X"
+      },
+      "conferer": {
+        "label": "Conferir"
+      },
+      "declenchement": {
+        "label": "Ativação"
+      }
+    },
+    "factions": {
+      "Elfes": {
+        "displayName": "A Aliança Celestial",
+        "description": "Ágeis e furtivos. Valorizam velocidade e esquiva. Águias gigantes em suas fileiras."
+      },
+      "Nains": {
+        "displayName": "A Irmandade da Forja",
+        "description": "Sólidos e resistentes. Valorizam defesa e tenacidade."
+      },
+      "Hobbits": {
+        "displayName": "O Pacto dos Bosques",
+        "description": "Pequenos mas astutos. Esquiva e entreajuda."
+      },
+      "Humains": {
+        "displayName": "Os Reinos Livres",
+        "description": "Equilibrados e versáteis. Sinergias de grupo."
+      },
+      "Hommes-Bêtes": {
+        "displayName": "A Matilha",
+        "description": "Selvagens e ferozes. Atacam rápido, regeneram e entram em fúria."
+      },
+      "Élémentaires": {
+        "displayName": "Os Primordiais",
+        "description": "Forças primordiais da natureza. Cada elemento tem seu próprio estilo de combate."
+      },
+      "Mercenaires": {
+        "displayName": "Mercenários",
+        "description": "Soldados de fortuna sem lealdade. Versáteis e disponíveis para todos os decks."
+      },
+      "Orcs": {
+        "displayName": "A Horda",
+        "description": "Horda brutal. Goblins rápidos e descartáveis. Orcs brutais e agressivos. Trolls resistentes. Wargs velozes."
+      },
+      "Morts-Vivants": {
+        "displayName": "A Necrópole",
+        "description": "Insaciáveis e corrompidos. Ressurreição e dreno de vida."
+      },
+      "Elfes Noirs": {
+        "displayName": "A Prole do Caos",
+        "description": "Sorrateiros e venenosos. Veneno, sombra e corrupção."
+      }
+    },
+    "rarities": {
+      "Commune": "Comum",
+      "Peu Commune": "Incomum",
+      "Rare": "Rara",
+      "Épique": "Épica",
+      "Légendaire": "Lendária"
+    },
+    "clans": {
+      "Sylvains": "Silvanos",
+      "Hauts-Elfes": "Altos Elfos",
+      "Elfes des Mers": "Elfos do Mar",
+      "Émeraudes": "Esmeraldas",
+      "Cimes Éternelles": "Cumes Eternos",
+      "Montagnes": "Montanhas",
+      "Collines": "Colinas",
+      "Lave": "Lava",
+      "Plaines": "Planícies",
+      "Rivièrains": "Ribeirinhos",
+      "Landes": "Charnecas",
+      "Nordiques": "Nórdicos",
+      "Orientaux": "Orientais",
+      "Templiers": "Templários",
+      "Amazones": "Amazonas",
+      "Incas": "Incas",
+      "Touaregs": "Tuaregues",
+      "Forêt": "Floresta",
+      "Toundra": "Tundra",
+      "Savane": "Savana",
+      "Jungle": "Selva",
+      "Mignons": "Fofinhos",
+      "Pacte des Griffes": "Pacto das Garras",
+      "Feu": "Fogo",
+      "Terre": "Terra",
+      "Eau": "Água",
+      "Air": "Ar",
+      "Marais": "Pântano",
+      "Abysses souterrains": "Abismos Subterrâneos",
+      "Forêt maudite": "Floresta Maldita",
+      "Cités de cendres": "Cidades de Cinzas"
+    }
+  }
+}

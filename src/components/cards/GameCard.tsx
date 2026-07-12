@@ -5,6 +5,7 @@ import Image from "next/image";
 import type { Card, CardSet, TokenTemplate } from "@/lib/game/types";
 import CostBadges from "./CostBadges";
 import { useCardText } from "@/components/game/CardTextProvider";
+import { useVocab } from "@/i18n/useVocab";
 
 // Module-level lazy cache so any GameCard mounted out of the in-game flow
 // (deck builder, collection, auctions, landing showcase…) can still resolve
@@ -55,7 +56,7 @@ import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { composedCapsOf, composedIcon, composedKeywordName, composedTriggerMode, composedValueText, describeComposedCap } from "@/lib/game/composed-display";
 import ComposedMarker from "@/components/cards/ComposedMarker";
-import { KEYWORDS as keywordDefs, LIMITED_PRINT_COUNTS, ALIGNMENTS, getEffectiveAlignment, getFactionDisplayName } from "@/lib/card-engine/constants";
+import { KEYWORDS as keywordDefs, LIMITED_PRINT_COUNTS, ALIGNMENTS, getEffectiveAlignment } from "@/lib/card-engine/constants";
 import RarityFrame from "./RarityFrame";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
 import useCoarsePointer from "@/hooks/useCoarsePointer";
@@ -115,6 +116,7 @@ export default function GameCard({
 }: GameCardProps) {
   const displayedManaCost = effectiveManaCost ?? card.mana_cost;
   const { localizeName, localizeFlavor } = useCardText();
+  const vocab = useVocab();
   const [hovered, setHovered] = useState(false);
   const [internalShowDetails, setInternalShowDetails] = useState(false);
   const showDetails = showDetailsProp ?? internalShowDetails;
@@ -343,7 +345,7 @@ export default function GameCard({
               .filter((e) => !isCreatureKwShadowedBySpell(e.kw, card.spell_keywords));
             return entries.map((entry, idx) => {
               const { kw, x, mode } = entry;
-              const label = keywordLabels[kw] || kw;
+              const label = vocab.keywordLabel(kw);
               const baseTitle = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
               const modeSuffix = mode === "death" ? " · à la mort" : mode === "tap" ? " · tap" : mode === "return" ? " · retour en main" : mode === "end_of_turn" ? " · fin du tour" : "";
               // On a spell, these keywords are CONFERRED to creature(s). The
@@ -506,7 +508,7 @@ export default function GameCard({
           <div style={{ display: "flex", justifyContent: "center", gap: 6 * s, fontSize: 13 * so, color: "#ddd", fontFamily: "'Crimson Text',serif" }}>
             {card.race && <span>{card.race}</span>}
             {card.race && card.clan && <span style={{ color: "#888" }}>·</span>}
-            {card.clan && <span style={{ fontStyle: "italic" }}>{card.clan}</span>}
+            {card.clan && <span style={{ fontStyle: "italic" }}>{vocab.clanName(card.clan)}</span>}
           </div>
         )}
 
@@ -519,7 +521,7 @@ export default function GameCard({
           <div style={{ display: "flex", flexDirection: "column", gap: 6 * s }}>
             {entries.map((entry, idx) => {
               const { kw, x, mode } = entry;
-              const label = keywordLabels[kw] || kw;
+              const label = vocab.keywordLabel(kw);
               const baseLabel = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
               const modeSuffix = mode === "death" ? " · à la mort" : mode === "tap" ? " · tap" : mode === "return" ? " · retour en main" : mode === "end_of_turn" ? " · fin du tour" : "";
               const displayLabel = baseLabel + modeSuffix;
@@ -625,7 +627,7 @@ export default function GameCard({
           fontSize: 13 * so, color: "#ccc",
           borderTop: `1px solid ${accentColor}33`, paddingTop: 7 * s,
         }}>
-          {card.faction && <span style={{ color: accentColor, fontWeight: 600 }}>{getFactionDisplayName(card.faction)}</span>}
+          {card.faction && <span style={{ color: accentColor, fontWeight: 600 }}>{vocab.factionName(card.faction)}</span>}
           {(() => {
             const align = getEffectiveAlignment(card);
             if (!align) return null;
