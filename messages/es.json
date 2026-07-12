@@ -422,5 +422,69 @@
     "heroes_loading": "Cargando…",
     "heroes_load_error": "No se pueden cargar tus héroes.",
     "hero_power": "Poder"
+  },
+  "landing": {
+    "nav_play": "Jugar",
+    "hero_eyebrow": "Fantasy TCG — Nueva generación",
+    "hero_title": "Armies & Magic",
+    "hero_sub": "Forja tu leyenda. Lidera tu facción. Escribe tu historia.",
+    "hero_cta": "Entrar en la arena",
+    "hero_cta_secondary": "Descubrir",
+    "hero_proof": "Más de 400 cartas disponibles desde la primera partida",
+    "features_title": "Por qué Armies & Magic",
+    "f1_title": "La profundidad de las leyendas.",
+    "f1_desc": "Armies & Magic fusiona la estrategia de los TCG de culto con mecánicas diseñadas para los campeones de hoy.",
+    "f2_title": "Todas las cartas. Desde la primera partida.",
+    "f2_desc": "El modo clásico está completo desde la instalación. Dispón gratuitamente desde el inicio del juego de más de 400 cartas y forja el mazo que te define.",
+    "f3_title": "Cada mazo Experto, una obra única.",
+    "f3_desc": "Las cartas de tirada limitada hacen que cada mazo Experto sea singular. El cupo común garantiza que solo tu estrategia decida.",
+    "f4_title": "La arena móvil, por fin a la altura.",
+    "f4_desc": "Torneos con premios en cartas raras y dotaciones económicas — un nivel de competición hasta ahora reservado a los grandes TCG de escritorio.",
+    "factions_title": "Nueve facciones. Una leyenda.",
+    "factions_sub": "Cada raza tiene su propio camino. ¿Cuál será el tuyo?",
+    "showcase_title": "Un bestiario. Miles de combinaciones.",
+    "showcase_sub": "Desde la criatura más humilde hasta el héroe mítico, cada carta importa.",
+    "cta_title": "La arena te espera.",
+    "cta_sub": "Únete a los invocadores en la batalla.",
+    "cta_btn": "Comenzar la aventura",
+    "footer": "Armies & Magic — Todos los derechos reservados",
+    "factions": {
+      "humans": {
+        "name": "Los Reinos Libres",
+        "tagline": "Unidos bajo la bandera"
+      },
+      "elves": {
+        "name": "La Alianza Celestial",
+        "tagline": "Guardianes del bosque eterno"
+      },
+      "dwarves": {
+        "name": "La Cofradía de la Forja",
+        "tagline": "Forjados en la piedra"
+      },
+      "halflings": {
+        "name": "El Pacto de los Bosques",
+        "tagline": "Pequeños en talla, grandes de corazón"
+      },
+      "beastmen": {
+        "name": "La Manada",
+        "tagline": "Furia de las tierras salvajes"
+      },
+      "giants": {
+        "name": "Los Primordiales",
+        "tagline": "Los elementos despiertan"
+      },
+      "dark_elves": {
+        "name": "La Progenie del Caos",
+        "tagline": "Las sombras tienen nombre"
+      },
+      "orcs_goblins": {
+        "name": "La Horda",
+        "tagline": "El grito de las hordas"
+      },
+      "undead": {
+        "name": "La Necrópolis",
+        "tagline": "El silencio de las tumbas se ha roto"
+      }
+    }
   }
 }

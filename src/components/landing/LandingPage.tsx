@@ -7,7 +7,7 @@ import { motion, useScroll, useTransform, useInView, useMotionValue, useSpring, 
 import type { Card } from "@/lib/game/types";
 import GameCard from "@/components/cards/GameCard";
 import LanguageSelector from "@/components/shared/LanguageSelector";
-import { useLocale } from "@/i18n/useLocale";
+import { useMessages } from "next-intl";
 
 // ─── Translations ───────────────────────────────────────────────────────────
 
@@ -50,82 +50,6 @@ type Dict = {
   };
 };
 
-const t: Record<"fr" | "en", Dict> = {
-  fr: {
-    nav_play: "Jouer",
-    hero_eyebrow: "Fantasy TCG — Nouvelle génération",
-    hero_title: "Armies & Magic",
-    hero_sub: "Forge ta légende. Mène ta faction. Écris ton histoire.",
-    hero_cta: "Entrer dans l'arène",
-    hero_cta_secondary: "Découvrir",
-    hero_proof: "Plus de 400 cartes offertes dès la première partie",
-    features_title: "Pourquoi Armies & Magic",
-    f1_title: "La profondeur des légendes.",
-    f1_desc: "Armies & Magic unit la stratégie des TCG cultes à des mécaniques pensées pour les champions d'aujourd'hui.",
-    f2_title: "Toutes les cartes. Dès la première partie.",
-    f2_desc: "Le mode classique est intégral dès l'installation. Disposez gratuitement dès le début du jeu de plus de 400 cartes, forgez le deck qui vous ressemble.",
-    f3_title: "Chaque deck Expert, une œuvre unique.",
-    f3_desc: "Les cartes en tirage limité rendent chaque deck Expert singulier. Le quota commun garantit que seule votre stratégie décide.",
-    f4_title: "L'arène mobile, enfin à la hauteur.",
-    f4_desc: "Des tournois récompensés en cartes rares et en dotations financières — un niveau d'enjeu jusqu'ici réservé aux plus grands TCG desktop.",
-    factions_title: "Neuf factions. Une légende.",
-    factions_sub: "Chaque race porte sa propre voie. Laquelle sera la tienne ?",
-    showcase_title: "Un bestiaire. Des milliers de combinaisons.",
-    showcase_sub: "De la créature la plus humble au héros mythique, chaque carte compte.",
-    cta_title: "L'arène t'attend.",
-    cta_sub: "Rejoins les invocateurs dans la bataille.",
-    cta_btn: "Commencer l'aventure",
-    footer: "Armies & Magic — Tous droits réservés",
-    factions: {
-      humans: { name: "Les Royaumes Libres", tagline: "Unis sous la bannière" },
-      elves: { name: "L'Alliance Céleste", tagline: "Gardiens de la sylve éternelle" },
-      dwarves: { name: "La Confrérie de la Forge", tagline: "Forgés dans la pierre" },
-      halflings: { name: "Le Pacte des Bois", tagline: "Petits par la taille, grands par le cœur" },
-      beastmen: { name: "La Meute", tagline: "Fureur des terres sauvages" },
-      giants: { name: "Les Primordiaux", tagline: "Les éléments s'éveillent" },
-      dark_elves: { name: "L'Engeance du Chaos", tagline: "Les ombres ont un nom" },
-      orcs_goblins: { name: "La Horde", tagline: "Le cri des hordes" },
-      undead: { name: "La Nécropole", tagline: "Le silence des tombeaux s'est rompu" },
-    },
-  },
-  en: {
-    nav_play: "Play",
-    hero_eyebrow: "Next-gen Fantasy TCG",
-    hero_title: "Armies & Magic",
-    hero_sub: "Forge your legend. Lead your faction. Write your own saga.",
-    hero_cta: "Enter the arena",
-    hero_cta_secondary: "Discover",
-    hero_proof: "Over 400 cards, free from your very first game",
-    features_title: "Why Armies & Magic",
-    f1_title: "The depth of legends.",
-    f1_desc: "Armies & Magic unites the strategy of iconic TCGs with mechanics built for today's champions.",
-    f2_title: "Every card. From your first game.",
-    f2_desc: "Classic mode is yours in full from the very start. Over 400 cards are yours from day one — free — to forge the deck that fits you.",
-    f3_title: "Every Expert deck, a singular work.",
-    f3_desc: "Limited-print cards make every Expert deck unique. A shared quota ensures only your strategy decides.",
-    f4_title: "Mobile, at last worthy of the stakes.",
-    f4_desc: "Tournaments rewarded with rare cards and cash prizes — a level of stakes once reserved for desktop TCGs.",
-    factions_title: "Nine factions. One legend.",
-    factions_sub: "Each race walks its own path. Which will be yours?",
-    showcase_title: "A bestiary. Thousands of combinations.",
-    showcase_sub: "From the humblest creature to mythic heroes, every card matters.",
-    cta_title: "The arena awaits.",
-    cta_sub: "Join the summoners on the battlefield.",
-    cta_btn: "Begin the adventure",
-    footer: "Armies & Magic — All rights reserved",
-    factions: {
-      humans: { name: "Les Royaumes Libres", tagline: "United under the banner" },
-      elves: { name: "L'Alliance Céleste", tagline: "Keepers of the eternal wood" },
-      dwarves: { name: "La Confrérie de la Forge", tagline: "Forged in stone" },
-      halflings: { name: "Le Pacte des Bois", tagline: "Small in stature, grand in heart" },
-      beastmen: { name: "La Meute", tagline: "Fury of the wild lands" },
-      giants: { name: "Les Primordiaux", tagline: "The elements awaken" },
-      dark_elves: { name: "L'Engeance du Chaos", tagline: "The shadows bear a name" },
-      orcs_goblins: { name: "La Horde", tagline: "The horde's cry" },
-      undead: { name: "La Nécropole", tagline: "The silence of tombs broken" },
-    },
-  },
-};
 
 type FactionKey = keyof Dict["factions"];
 
@@ -249,15 +173,15 @@ interface LandingPageProps {
 
 export default function LandingPage({ showcaseCards, factionHeroUrls }: LandingPageProps) {
   const router = useRouter();
-  // Locale sur le cookie `am-locale` (via next-intl). Le dico du landing est
-  // fr/en ; les autres langues retombent sur le FR en attendant l'extraction.
-  const [locale] = useLocale();
   // Only a boolean threshold drives the navbar chrome now — setting it to
   // the same value bails out of a re-render, so the whole tree no longer
   // re-renders on every scroll frame (the floating hero cards are driven
   // by framer motion values instead, see HeroSection).
   const [scrolled, setScrolled] = useState(false);
-  const txt = t[locale as "fr" | "en"] ?? t.fr;
+  // Le dico du landing vit désormais dans le namespace `landing` des catalogues
+  // next-intl (rempli par le pipeline). useMessages() renvoie l'objet brut de la
+  // locale active — même forme que l'ancien Dict, donc passé tel quel aux enfants.
+  const txt = (useMessages() as unknown as { landing: Dict }).landing;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50);

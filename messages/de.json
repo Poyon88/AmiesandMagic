@@ -422,5 +422,69 @@
     "heroes_loading": "Wird geladen…",
     "heroes_load_error": "Deine Helden konnten nicht geladen werden.",
     "hero_power": "Fähigkeit"
+  },
+  "landing": {
+    "nav_play": "Spielen",
+    "hero_eyebrow": "Fantasy TCG — Neue Generation",
+    "hero_title": "Armies & Magic",
+    "hero_sub": "Schmiede deine Legende. Führe deine Fraktion. Schreib deine Geschichte.",
+    "hero_cta": "Die Arena betreten",
+    "hero_cta_secondary": "Entdecken",
+    "hero_proof": "Über 400 Karten bereits ab der ersten Partie",
+    "features_title": "Warum Armies & Magic",
+    "f1_title": "Die Tiefe der Legenden.",
+    "f1_desc": "Armies & Magic verbindet die Strategie kultiger TCGs mit Mechaniken, die für die Champions von heute entwickelt wurden.",
+    "f2_title": "Alle Karten. Ab der ersten Partie.",
+    "f2_desc": "Der Klassik-Modus ist von Anfang an vollständig verfügbar. Spiele von Beginn an kostenlos mit über 400 Karten und schmieде das Deck, das zu dir passt.",
+    "f3_title": "Jedes Experten-Deck ein Unikat.",
+    "f3_desc": "Limitierte Karten machen jedes Experten-Deck einzigartig. Das gemeinsame Kontingent stellt sicher, dass allein deine Strategie entscheidet.",
+    "f4_title": "Die mobile Arena — endlich auf Augenhöhe.",
+    "f4_desc": "Turniere mit seltenen Karten und Geldpreisen — ein Niveau, das bisher den größten Desktop-TCGs vorbehalten war.",
+    "factions_title": "Neun Fraktionen. Eine Legende.",
+    "factions_sub": "Jede Rasse geht ihren eigenen Weg. Welchen wählst du?",
+    "showcase_title": "Ein Bestiarium. Tausende Kombinationen.",
+    "showcase_sub": "Von der bescheidensten Kreatur bis zum mythischen Helden — jede Karte zählt.",
+    "cta_title": "Die Arena wartet auf dich.",
+    "cta_sub": "Schließ dich den Beschwörern im Kampf an.",
+    "cta_btn": "Abenteuer beginnen",
+    "footer": "Armies & Magic — Alle Rechte vorbehalten",
+    "factions": {
+      "humans": {
+        "name": "Die Freien Königreiche",
+        "tagline": "Vereint unter dem Banner"
+      },
+      "elves": {
+        "name": "Das Himmelsbündnis",
+        "tagline": "Hüter des ewigen Waldes"
+      },
+      "dwarves": {
+        "name": "Die Bruderschaft der Esse",
+        "tagline": "Im Stein geschmiedet"
+      },
+      "halflings": {
+        "name": "Der Pakt der Wälder",
+        "tagline": "Klein an Statur, groß im Herzen"
+      },
+      "beastmen": {
+        "name": "Das Rudel",
+        "tagline": "Furor der Wildlande"
+      },
+      "giants": {
+        "name": "Die Urgewaltigen",
+        "tagline": "Die Elemente erwachen"
+      },
+      "dark_elves": {
+        "name": "Die Ausgeburt des Chaos",
+        "tagline": "Die Schatten tragen einen Namen"
+      },
+      "orcs_goblins": {
+        "name": "Die Horde",
+        "tagline": "Der Schlachtruf der Horden"
+      },
+      "undead": {
+        "name": "Die Nekropole",
+        "tagline": "Die Stille der Gräber ist gebrochen"
+      }
+    }
   }
 }

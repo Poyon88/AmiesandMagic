@@ -36,5 +36,69 @@
     "heroes_loading": "Loading…",
     "heroes_load_error": "Could not load your heroes.",
     "hero_power": "Power"
+  },
+  "landing": {
+    "nav_play": "Play",
+    "hero_eyebrow": "Next-gen Fantasy TCG",
+    "hero_title": "Armies & Magic",
+    "hero_sub": "Forge your legend. Lead your faction. Write your own saga.",
+    "hero_cta": "Enter the arena",
+    "hero_cta_secondary": "Discover",
+    "hero_proof": "Over 400 cards, free from your very first game",
+    "features_title": "Why Armies & Magic",
+    "f1_title": "The depth of legends.",
+    "f1_desc": "Armies & Magic unites the strategy of iconic TCGs with mechanics built for today's champions.",
+    "f2_title": "Every card. From your first game.",
+    "f2_desc": "Classic mode is yours in full from the very start. Over 400 cards are yours from day one — free — to forge the deck that fits you.",
+    "f3_title": "Every Expert deck, a singular work.",
+    "f3_desc": "Limited-print cards make every Expert deck unique. A shared quota ensures only your strategy decides.",
+    "f4_title": "Mobile, at last worthy of the stakes.",
+    "f4_desc": "Tournaments rewarded with rare cards and cash prizes — a level of stakes once reserved for desktop TCGs.",
+    "factions_title": "Nine factions. One legend.",
+    "factions_sub": "Each race walks its own path. Which will be yours?",
+    "showcase_title": "A bestiary. Thousands of combinations.",
+    "showcase_sub": "From the humblest creature to mythic heroes, every card matters.",
+    "cta_title": "The arena awaits.",
+    "cta_sub": "Join the summoners on the battlefield.",
+    "cta_btn": "Begin the adventure",
+    "footer": "Armies & Magic — All rights reserved",
+    "factions": {
+      "humans": {
+        "name": "Les Royaumes Libres",
+        "tagline": "United under the banner"
+      },
+      "elves": {
+        "name": "L'Alliance Céleste",
+        "tagline": "Keepers of the eternal wood"
+      },
+      "dwarves": {
+        "name": "La Confrérie de la Forge",
+        "tagline": "Forged in stone"
+      },
+      "halflings": {
+        "name": "Le Pacte des Bois",
+        "tagline": "Small in stature, grand in heart"
+      },
+      "beastmen": {
+        "name": "La Meute",
+        "tagline": "Fury of the wild lands"
+      },
+      "giants": {
+        "name": "Les Primordiaux",
+        "tagline": "The elements awaken"
+      },
+      "dark_elves": {
+        "name": "L'Engeance du Chaos",
+        "tagline": "The shadows bear a name"
+      },
+      "orcs_goblins": {
+        "name": "La Horde",
+        "tagline": "The horde's cry"
+      },
+      "undead": {
+        "name": "La Nécropole",
+        "tagline": "The silence of tombs broken"
+      }
+    }
   }
 }
