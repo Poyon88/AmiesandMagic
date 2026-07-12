@@ -1621,5 +1621,17 @@
     "set_label": "Set:",
     "year_label": "Año:",
     "no_cards_match": "Ninguna carta coincide con tus filtros"
+  },
+  "cardBacks": {
+    "eyebrow": "Muestra tu estilo",
+    "title": "Mis reversos de cartas",
+    "subtitle": "{visible, plural, one {# visible} other {# visibles}} · {prints, plural, one {# print poseído} other {# prints poseídos}}",
+    "back_to_menu": "Volver al menú",
+    "rarity_label": "Rareza:",
+    "owned_only": "Solo poseídos",
+    "empty": "No hay reversos para mostrar.",
+    "equipped": "Equipado",
+    "default_badge": "Por defecto",
+    "not_owned": "no poseído"
   }
 }

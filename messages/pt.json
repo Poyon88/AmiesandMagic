@@ -1621,5 +1621,17 @@
     "set_label": "Set:",
     "year_label": "Ano:",
     "no_cards_match": "Nenhuma carta corresponde aos seus filtros"
+  },
+  "cardBacks": {
+    "eyebrow": "Mostre seu estilo",
+    "title": "Meus Dorsos de cartas",
+    "subtitle": "{visible, plural, one {# visível} other {# visíveis}} · {prints, plural, one {# print possuído} other {# prints possuídos}}",
+    "back_to_menu": "Voltar ao menu",
+    "rarity_label": "Raridade:",
+    "owned_only": "Apenas possuídos",
+    "empty": "Nenhum dorso para exibir.",
+    "equipped": "Equipado",
+    "default_badge": "Padrão",
+    "not_owned": "não possuído"
   }
 }

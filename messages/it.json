@@ -1621,5 +1621,17 @@
     "set_label": "Set:",
     "year_label": "Anno:",
     "no_cards_match": "Nessuna carta corrisponde ai tuoi filtri"
+  },
+  "cardBacks": {
+    "eyebrow": "Mostra il tuo stile",
+    "title": "I miei dorsi carta",
+    "subtitle": "{visible, plural, one {# visibile} other {# visibili}} · {prints, plural, one {# print posseduto} other {# print posseduti}}",
+    "back_to_menu": "Torna al menu",
+    "rarity_label": "Rarità :",
+    "owned_only": "Solo posseduti",
+    "empty": "Nessun dorso da mostrare.",
+    "equipped": "Equipaggiato",
+    "default_badge": "Predefinito",
+    "not_owned": "non posseduto"
   }
 }

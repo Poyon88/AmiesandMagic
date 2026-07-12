@@ -1621,5 +1621,17 @@
     "set_label": "Set:",
     "year_label": "Year:",
     "no_cards_match": "No cards match your filters"
+  },
+  "cardBacks": {
+    "eyebrow": "Show your style",
+    "title": "My Card Backs",
+    "subtitle": "{visible, plural, one {# visible} other {# visible}} · {prints, plural, one {# print owned} other {# prints owned}}",
+    "back_to_menu": "Back to menu",
+    "rarity_label": "Rarity:",
+    "owned_only": "Owned only",
+    "empty": "No card backs to display.",
+    "equipped": "Equipped",
+    "default_badge": "Default",
+    "not_owned": "not owned"
   }
 }

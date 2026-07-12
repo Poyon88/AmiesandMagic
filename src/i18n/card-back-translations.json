@@ -1,0 +1,567 @@
+{
+  "en": {
+    "2": {
+      "name": "Test 1"
+    },
+    "5": {
+      "name": "Elves 1"
+    },
+    "6": {
+      "name": "Dwarves 1"
+    },
+    "7": {
+      "name": "Templars 1"
+    },
+    "8": {
+      "name": "Easterns 1"
+    },
+    "9": {
+      "name": "Hobbits 1"
+    },
+    "11": {
+      "name": "Dark Elves 1"
+    },
+    "12": {
+      "name": "High Elves 1"
+    },
+    "13": {
+      "name": "Templars Test 4"
+    },
+    "14": {
+      "name": "Fire Elemental 1"
+    },
+    "15": {
+      "name": "Earth Elemental 1"
+    },
+    "16": {
+      "name": "High Elves Reframed 1"
+    },
+    "17": {
+      "name": "Hobbits Reframed 1"
+    },
+    "19": {
+      "name": "Simple Black Werewolf 1"
+    },
+    "20": {
+      "name": "High Elves Simple Black 1"
+    },
+    "21": {
+      "name": "Vampires Simple Black 1"
+    },
+    "22": {
+      "name": "Demon Simple Black"
+    },
+    "23": {
+      "name": "Dwarf Simple Black 1"
+    },
+    "24": {
+      "name": "Templars Simple Black 1"
+    },
+    "25": {
+      "name": "Hobbits Simple Black"
+    },
+    "26": {
+      "name": "Water Elementals Simple Black"
+    },
+    "27": {
+      "name": "Orcs Simple Black 1"
+    },
+    "28": {
+      "name": "Undead Simple Black 1"
+    },
+    "29": {
+      "name": "Dark Elf Simple Black 1"
+    },
+    "30": {
+      "name": "High Elves Simple Black 1"
+    },
+    "31": {
+      "name": "Wood Elves"
+    },
+    "32": {
+      "name": "Easterns"
+    },
+    "33": {
+      "name": "Easterns 2"
+    },
+    "34": {
+      "name": "Faeries Base"
+    },
+    "35": {
+      "name": "Amazons"
+    },
+    "36": {
+      "name": "Bengal Tigers"
+    },
+    "37": {
+      "name": "Tiger Back 2"
+    },
+    "38": {
+      "name": "Lotus 2"
+    },
+    "39": {
+      "name": "Cuties"
+    },
+    "40": {
+      "name": "Touareg 1"
+    },
+    "41": {
+      "name": "Mark of the Shinobi"
+    },
+    "42": {
+      "name": "The Claw Pact"
+    }
+  },
+  "es": {
+    "2": {
+      "name": "Prueba 1"
+    },
+    "5": {
+      "name": "Elfos 1"
+    },
+    "6": {
+      "name": "Enanos 1"
+    },
+    "7": {
+      "name": "Templarios 1"
+    },
+    "8": {
+      "name": "Orientales 1"
+    },
+    "9": {
+      "name": "Hobbits 1"
+    },
+    "11": {
+      "name": "Elfos Oscuros 1"
+    },
+    "12": {
+      "name": "Altos Elfos 1"
+    },
+    "13": {
+      "name": "Templarios prueba 4"
+    },
+    "14": {
+      "name": "Elem fuego 1"
+    },
+    "15": {
+      "name": "Elem Tierra 1"
+    },
+    "16": {
+      "name": "Altos Elfos recortado 1"
+    },
+    "17": {
+      "name": "Hobbits recortado 1"
+    },
+    "19": {
+      "name": "Hombre Lobo Negro Simple 1"
+    },
+    "20": {
+      "name": "Altos Elfos Negro Simple 1"
+    },
+    "21": {
+      "name": "Vampiros Negro Simple 1"
+    },
+    "22": {
+      "name": "Demonio Negro Simple"
+    },
+    "23": {
+      "name": "Enano Negro Simple 1"
+    },
+    "24": {
+      "name": "Templarios Negro Simple 1"
+    },
+    "25": {
+      "name": "Hobbits Negro Simple"
+    },
+    "26": {
+      "name": "Elementales Agua Negro Simple"
+    },
+    "27": {
+      "name": "Orcos Negro Simple 1"
+    },
+    "28": {
+      "name": "No Muertos Negro Simple 1"
+    },
+    "29": {
+      "name": "Elfo Oscuro Negro Simple 1"
+    },
+    "30": {
+      "name": "Altos Elfos Negro Simple 1"
+    },
+    "31": {
+      "name": "Elfos Silvanos"
+    },
+    "32": {
+      "name": "Orientales"
+    },
+    "33": {
+      "name": "Orientales 2"
+    },
+    "34": {
+      "name": "Hadas Base"
+    },
+    "35": {
+      "name": "Amazonas"
+    },
+    "36": {
+      "name": "Tigres de Bengala"
+    },
+    "37": {
+      "name": "Dorso Tigre 2"
+    },
+    "38": {
+      "name": "Lotus 2"
+    },
+    "39": {
+      "name": "Cutes"
+    },
+    "40": {
+      "name": "Tuareg 1"
+    },
+    "41": {
+      "name": "Marca del Shinobi"
+    },
+    "42": {
+      "name": "El Pacto de las Garras"
+    }
+  },
+  "de": {
+    "2": {
+      "name": "Test 1"
+    },
+    "5": {
+      "name": "Elfen 1"
+    },
+    "6": {
+      "name": "Zwerge 1"
+    },
+    "7": {
+      "name": "Templer 1"
+    },
+    "8": {
+      "name": "Orientalen 1"
+    },
+    "9": {
+      "name": "Hobbits 1"
+    },
+    "11": {
+      "name": "Dunkelelfen 1"
+    },
+    "12": {
+      "name": "Hochelfen 1"
+    },
+    "13": {
+      "name": "Templer Test 4"
+    },
+    "14": {
+      "name": "Feuerelementar 1"
+    },
+    "15": {
+      "name": "Erdelementar 1"
+    },
+    "16": {
+      "name": "Hochelfen zugeschnitten 1"
+    },
+    "17": {
+      "name": "Hobbits zugeschnitten 1"
+    },
+    "19": {
+      "name": "Einfach Schwarz Werwolf 1"
+    },
+    "20": {
+      "name": "Hochelfen Einfach Schwarz 1"
+    },
+    "21": {
+      "name": "Vampire Einfach Schwarz 1"
+    },
+    "22": {
+      "name": "Dämon Einfach Schwarz"
+    },
+    "23": {
+      "name": "Zwerg Einfach Schwarz 1"
+    },
+    "24": {
+      "name": "Templer Einfach Schwarz 1"
+    },
+    "25": {
+      "name": "Hobbits Einfach Schwarz"
+    },
+    "26": {
+      "name": "Wasserelementar Einfach Schwarz"
+    },
+    "27": {
+      "name": "Orks Einfach Schwarz 1"
+    },
+    "28": {
+      "name": "Untote Einfach Schwarz 1"
+    },
+    "29": {
+      "name": "Dunkelelf Einfach Schwarz 1"
+    },
+    "30": {
+      "name": "Hochelfen Einfach Schwarz 1"
+    },
+    "31": {
+      "name": "Waldelfen"
+    },
+    "32": {
+      "name": "Orientalen"
+    },
+    "33": {
+      "name": "Orientalen 2"
+    },
+    "34": {
+      "name": "Feen Basis"
+    },
+    "35": {
+      "name": "Amazonen"
+    },
+    "36": {
+      "name": "Bengaltiger"
+    },
+    "37": {
+      "name": "Tiger 2"
+    },
+    "38": {
+      "name": "Lotus 2"
+    },
+    "39": {
+      "name": "Cutes"
+    },
+    "40": {
+      "name": "Touareg 1"
+    },
+    "41": {
+      "name": "Zeichen des Shinobi"
+    },
+    "42": {
+      "name": "Der Pakt der Klauen"
+    }
+  },
+  "it": {
+    "2": {
+      "name": "Test 1"
+    },
+    "5": {
+      "name": "Elfi 1"
+    },
+    "6": {
+      "name": "Nani 1"
+    },
+    "7": {
+      "name": "Templari 1"
+    },
+    "8": {
+      "name": "Orientali 1"
+    },
+    "9": {
+      "name": "Hobbit 1"
+    },
+    "11": {
+      "name": "Elfi Oscuri 1"
+    },
+    "12": {
+      "name": "Alti Elfi 1"
+    },
+    "13": {
+      "name": "Templari test 4"
+    },
+    "14": {
+      "name": "Elem Fuoco 1"
+    },
+    "15": {
+      "name": "Elem Terra 1"
+    },
+    "16": {
+      "name": "Alti Elfi ritagliato 1"
+    },
+    "17": {
+      "name": "Hobbit ritagliato 1"
+    },
+    "19": {
+      "name": "Lupo Mannaro Nero Semplice 1"
+    },
+    "20": {
+      "name": "Alti Elfi Nero Semplice 1"
+    },
+    "21": {
+      "name": "Vampiri Nero Semplice 1"
+    },
+    "22": {
+      "name": "Demone Nero Semplice"
+    },
+    "23": {
+      "name": "Nano Nero Semplice 1"
+    },
+    "24": {
+      "name": "Templari Nero Semplice 1"
+    },
+    "25": {
+      "name": "Hobbit Nero Semplice"
+    },
+    "26": {
+      "name": "Elementali Acqua Nero Semplice"
+    },
+    "27": {
+      "name": "Orchi Nero Semplice 1"
+    },
+    "28": {
+      "name": "Non Morti Nero Semplice 1"
+    },
+    "29": {
+      "name": "Elfo Oscuro Nero Semplice 1"
+    },
+    "30": {
+      "name": "Alti Elfi Nero Semplice 1"
+    },
+    "31": {
+      "name": "Elfi Silvani"
+    },
+    "32": {
+      "name": "Orientali"
+    },
+    "33": {
+      "name": "Orientali 2"
+    },
+    "34": {
+      "name": "Fate Base"
+    },
+    "35": {
+      "name": "Amazzoni"
+    },
+    "36": {
+      "name": "Tigri del Bengala"
+    },
+    "37": {
+      "name": "Dorso Tigre 2"
+    },
+    "38": {
+      "name": "Loto 2"
+    },
+    "39": {
+      "name": "Cutes"
+    },
+    "40": {
+      "name": "Tuareg 1"
+    },
+    "41": {
+      "name": "Marchio dello Shinobi"
+    },
+    "42": {
+      "name": "Il Patto degli Artigli"
+    }
+  },
+  "pt": {
+    "2": {
+      "name": "Teste 1"
+    },
+    "5": {
+      "name": "Elfos 1"
+    },
+    "6": {
+      "name": "Anões 1"
+    },
+    "7": {
+      "name": "Templários 1"
+    },
+    "8": {
+      "name": "Orientais 1"
+    },
+    "9": {
+      "name": "Hobbits 1"
+    },
+    "11": {
+      "name": "Elfos Negros 1"
+    },
+    "12": {
+      "name": "Altos Elfos 1"
+    },
+    "13": {
+      "name": "Templários teste 4"
+    },
+    "14": {
+      "name": "Elem fogo 1"
+    },
+    "15": {
+      "name": "Elem Terra 1"
+    },
+    "16": {
+      "name": "Altos Elfos recortado 1"
+    },
+    "17": {
+      "name": "Hobbits recortado 1"
+    },
+    "19": {
+      "name": "Lobisomem Negro Simples 1"
+    },
+    "20": {
+      "name": "Altos Elfos Negro Simples 1"
+    },
+    "21": {
+      "name": "Vampiros Negro Simples 1"
+    },
+    "22": {
+      "name": "Demônio Negro Simples"
+    },
+    "23": {
+      "name": "Anão Negro Simples 1"
+    },
+    "24": {
+      "name": "Templários Negro Simples 1"
+    },
+    "25": {
+      "name": "Hobbits Negro Simples"
+    },
+    "26": {
+      "name": "Elementais Água Negro Simples"
+    },
+    "27": {
+      "name": "Orcs Negro Simples 1"
+    },
+    "28": {
+      "name": "Mortos-Vivos Negro Simples 1"
+    },
+    "29": {
+      "name": "Elfo Negro Simples 1"
+    },
+    "30": {
+      "name": "Altos Elfos Negro Simples 1"
+    },
+    "31": {
+      "name": "Elfos Silvanos"
+    },
+    "32": {
+      "name": "Orientais"
+    },
+    "33": {
+      "name": "Orientais 2"
+    },
+    "34": {
+      "name": "Fadas Base"
+    },
+    "35": {
+      "name": "Amazonas"
+    },
+    "36": {
+      "name": "Tigres de Bengala"
+    },
+    "37": {
+      "name": "Verso Tigre 2"
+    },
+    "38": {
+      "name": "Lotus 2"
+    },
+    "39": {
+      "name": "Fofos"
+    },
+    "40": {
+      "name": "Tuaregue 1"
+    },
+    "41": {
+      "name": "Marca do Shinobi"
+    },
+    "42": {
+      "name": "O Pacto das Garras"
+    }
+  }
+}

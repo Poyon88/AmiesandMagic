@@ -1621,5 +1621,17 @@
     "set_label": "Set:",
     "year_label": "Jahr:",
     "no_cards_match": "Keine Karte entspricht deinen Filtern"
+  },
+  "cardBacks": {
+    "eyebrow": "Zeig deinen Stil",
+    "title": "Meine Kartenrückseiten",
+    "subtitle": "{visible, plural, one {# sichtbar} other {# sichtbar}} · {prints, plural, one {# Print im Besitz} other {# Prints im Besitz}}",
+    "back_to_menu": "Zurück zum Menü",
+    "rarity_label": "Seltenheit:",
+    "owned_only": "Nur im Besitz",
+    "empty": "Keine Kartenrückseiten verfügbar.",
+    "equipped": "Ausgerüstet",
+    "default_badge": "Standard",
+    "not_owned": "nicht im Besitz"
   }
 }
