@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { useVocab } from "@/i18n/useVocab";
 import { DECK_SIZE } from "@/lib/game/constants";
 import AmAtmosphere from "@/components/ui/AmAtmosphere";
 import { AmButton } from "@/components/ui/AmButton";
@@ -15,6 +16,7 @@ interface DeckWithCount {
   updated_at: string;
   heroThumbnail?: string | null;
   formatId?: number | null;
+  formatCode?: string | null;
   formatName?: string | null;
 }
 
@@ -24,6 +26,7 @@ const NONE = "__none__";
 export default function DeckList({ decks }: { decks: DeckWithCount[] }) {
   const router = useRouter();
   const t = useTranslations("deck");
+  const vocab = useVocab();
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
   const [selectedFormat, setSelectedFormat] = useState<string>(ALL);
@@ -34,7 +37,7 @@ export default function DeckList({ decks }: { decks: DeckWithCount[] }) {
     const byId = new Map<number, string>();
     let hasNone = false;
     for (const d of decks) {
-      if (d.formatId != null) byId.set(d.formatId, d.formatName ?? t("format_number", { id: d.formatId }));
+      if (d.formatId != null) byId.set(d.formatId, vocab.formatName(d.formatCode, d.formatName ?? t("format_number", { id: d.formatId })));
       else hasNone = true;
     }
     const opts = [...byId.entries()]
@@ -204,7 +207,7 @@ export default function DeckList({ decks }: { decks: DeckWithCount[] }) {
                     </span>
                     {deck.formatName && (
                       <span className="inline-flex items-center rounded-full border border-am-arcane/40 bg-am-arcane/10 px-3 py-1 text-xs font-medium text-am-arcane-bright">
-                        {deck.formatName}
+                        {vocab.formatName(deck.formatCode, deck.formatName)}
                       </span>
                     )}
                   </div>

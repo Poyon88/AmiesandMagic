@@ -26,14 +26,15 @@ export default async function DecksPage() {
     .order("updated_at", { ascending: false });
 
   // Format names for the per-deck badge + the format filter. Separate lookup
-  // (not an embedded FK join) per the project's Supabase guidelines.
-  const formatNameById = new Map<number, string>();
+  // (not an embedded FK join) per the project's Supabase guidelines. `code` is
+  // the stable key used to localise the format label client-side (vocab.formats).
+  const formatById = new Map<number, { code: string; name: string }>();
   const { data: formats } = await supabase
     .from("formats")
-    .select("id, name")
+    .select("id, code, name")
     .order("id");
-  for (const f of (formats ?? []) as { id: number; name: string }[]) {
-    formatNameById.set(f.id, f.name);
+  for (const f of (formats ?? []) as { id: number; code: string; name: string }[]) {
+    formatById.set(f.id, { code: f.code, name: f.name });
   }
 
   // Hero thumbnails fetched via a separate lookup (decks.hero_id → heroes.id),
@@ -67,7 +68,8 @@ export default async function DecksPage() {
       heroThumbnail:
         deck.hero_id != null ? heroThumbById.get(deck.hero_id) ?? null : null,
       formatId,
-      formatName: formatId != null ? formatNameById.get(formatId) ?? null : null,
+      formatCode: formatId != null ? formatById.get(formatId)?.code ?? null : null,
+      formatName: formatId != null ? formatById.get(formatId)?.name ?? null : null,
     };
   });
 
