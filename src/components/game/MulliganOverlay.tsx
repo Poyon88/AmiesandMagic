@@ -17,6 +17,7 @@ import SfxEngine from "@/lib/audio/SfxEngine";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
 import useCoarsePointer from "@/hooks/useCoarsePointer";
 import { useCardText } from "./CardTextProvider";
+import { useVocab } from "@/i18n/useVocab";
 
 function playStandardSfx(eventType: string) {
   if (typeof window === "undefined") return;
@@ -56,6 +57,7 @@ function MulliganCard({
 }) {
   const card = cardInstance.card;
   const { localizeName, localizeFlavor } = useCardText();
+  const vocab = useVocab();
   const isCreature = card.card_type === "creature";
   const tokenTemplates = useGameStore((s) => s.tokenTemplates);
   const [isHovered, setIsHovered] = useState(false);
@@ -209,7 +211,7 @@ function MulliganCard({
           <div style={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
             {entries.map((entry, idx) => {
               const { kw, x, mode } = entry;
-              const label = KEYWORD_LABELS[kw] || kw;
+              const label = vocab.keywordLabel(kw);
               const baseTitle = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
               const modeSuffix = mode === "death" ? " · à la mort" : mode === "tap" ? " · tap" : mode === "return" ? " · retour en main" : mode === "end_of_turn" ? " · fin du tour" : "";
               const displayTitle = baseTitle + modeSuffix;
@@ -337,7 +339,7 @@ function MulliganCard({
           <div style={{ display: "flex", justifyContent: "center", gap: 5, fontSize: 9 * d, color: "#888", fontFamily: "'Crimson Text',serif" }}>
             {card.race && <span>{card.race}</span>}
             {card.race && card.clan && <span style={{ color: "#555" }}>·</span>}
-            {card.clan && <span style={{ fontStyle: "italic" }}>{card.clan}</span>}
+            {card.clan && <span style={{ fontStyle: "italic" }}>{vocab.clanName(card.clan)}</span>}
           </div>
         )}
 
@@ -349,7 +351,7 @@ function MulliganCard({
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             {entries.map((entry, idx) => {
               const { kw, x, mode } = entry;
-              const label = KEYWORD_LABELS[kw] || kw;
+              const label = vocab.keywordLabel(kw);
               const baseLabel = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
               const modeSuffix = mode === "death" ? " · à la mort" : mode === "tap" ? " · tap" : mode === "return" ? " · retour en main" : mode === "end_of_turn" ? " · fin du tour" : "";
               const displayLabel = baseLabel + modeSuffix;

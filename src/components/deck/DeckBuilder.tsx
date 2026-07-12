@@ -9,7 +9,8 @@ import { isCardOwned } from "@/lib/game/collection";
 import { DECK_SIZE, MAX_SAME_CAPABILITY, CAPABILITY_LIMIT_EXEMPT } from "@/lib/game/constants";
 import { ABILITIES } from "@/lib/game/abilities";
 import { namedCreatureCapabilityIds, creatureCapabilityCounts, capabilityLimitViolations } from "@/lib/game/deck-rules";
-import { FACTIONS, ALIGNMENTS, getFactionDisplayName, getFactionForRace } from "@/lib/card-engine/constants";
+import { FACTIONS, ALIGNMENTS, getFactionForRace } from "@/lib/card-engine/constants";
+import { useVocab } from "@/i18n/useVocab";
 import type { Alignment } from "@/lib/card-engine/constants";
 import GameCard from "@/components/cards/GameCard";
 import KeywordIcon from "@/components/shared/KeywordIcon";
@@ -183,6 +184,7 @@ export default function DeckBuilder({
   const router = useRouter();
   const supabase = createClient();
   const ownedSet = useMemo(() => new Set(collectedCardIds), [collectedCardIds]);
+  const vocab = useVocab();
 
   const [deckName, setDeckName] = useState(existingDeck?.name ?? "");
   const [selectedHeroId, setSelectedHeroId] = useState<number | null>(
@@ -856,7 +858,7 @@ export default function DeckBuilder({
             <option value="">Capacités</option>
             {KEYWORDS.map((kw) => (
               <option key={kw} value={kw}>
-                {KEYWORD_LABELS[kw]}
+                {vocab.keywordLabel(kw)}
               </option>
             ))}
           </select>
@@ -867,7 +869,7 @@ export default function DeckBuilder({
           >
             <option value="">Races</option>
             {races.map((r) => (
-              <option key={r} value={r}>{r}</option>
+              <option key={r} value={r}>{vocab.rarityLabel(r)}</option>
             ))}
           </select>
           <select
@@ -877,7 +879,7 @@ export default function DeckBuilder({
           >
             <option value="">Clans</option>
             {clans.map((c) => (
-              <option key={c} value={c}>{c}</option>
+              <option key={c} value={c}>{vocab.clanName(c)}</option>
             ))}
           </select>
           <select
@@ -991,7 +993,7 @@ export default function DeckBuilder({
               >
                 <option value="">Choisir une faction...</option>
                 {FACTION_OPTIONS.map((f) => (
-                  <option key={f} value={f}>{getFactionDisplayName(f)} — {f}</option>
+                  <option key={f} value={f}>{vocab.factionName(f)} — {f}</option>
                 ))}
               </select>
               <p className="mt-1.5 text-[11px] text-am-ink-faint font-[family-name:var(--font-crimson),serif] italic">Mono-faction + Mercenaires. Changer de faction retire les cartes/héros incompatibles.</p>

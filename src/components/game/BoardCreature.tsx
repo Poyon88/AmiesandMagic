@@ -20,6 +20,7 @@ import useCoarsePointer from "@/hooks/useCoarsePointer";
 import { isBigHit } from "@/lib/fx/impactFx";
 import { SPRINGS } from "@/lib/fx/overlayMotion";
 import { useCardText } from "./CardTextProvider";
+import { useVocab } from "@/i18n/useVocab";
 
 interface BoardCreatureProps {
   creature: CardInstance;
@@ -64,6 +65,7 @@ function BoardCreature({
 }: BoardCreatureProps) {
   const card = creature.card;
   const { localizeName, localizeFlavor } = useCardText();
+  const vocab = useVocab();
   const tokenTemplates = useGameStore(s => s.tokenTemplates);
   const targetingMode = useGameStore(s => s.targetingMode);
   // Couleur de surbrillance des cibles valides pendant l'activation d'un
@@ -773,7 +775,7 @@ function BoardCreature({
           <div style={{ display: "flex", justifyContent: "center", gap: 4, fontSize: 7 * d, color: "#888", fontFamily: "'Crimson Text',serif" }}>
             {card.race && <span>{card.race}</span>}
             {card.race && card.clan && <span style={{ color: "#555" }}>·</span>}
-            {card.clan && <span style={{ fontStyle: "italic" }}>{card.clan}</span>}
+            {card.clan && <span style={{ fontStyle: "italic" }}>{vocab.clanName(card.clan)}</span>}
           </div>
         )}
 
@@ -837,7 +839,7 @@ function BoardCreature({
             {entries.map((entry, idx) => {
               const { kw, mode } = entry;
               const x = entry.x ?? grantedX[kw];
-              const label = KEYWORD_LABELS[kw] || kw;
+              const label = vocab.keywordLabel(kw);
               const baseLabel = x != null
                 ? label.replace(/ X$/, ` ${toRoman(x)}`)
                 : kw === "entraide" && card.entraide_race

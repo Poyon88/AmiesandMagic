@@ -6,7 +6,8 @@ import HomeHeader from "@/components/home/HomeHeader";
 import AmAtmosphere from "@/components/ui/AmAtmosphere";
 import AmHeading from "@/components/ui/AmHeading";
 import { useTranslations } from "next-intl";
-import { getFactionDisplayName, RARITIES } from "@/lib/card-engine/constants";
+import { RARITIES } from "@/lib/card-engine/constants";
+import { useVocab } from "@/i18n/useVocab";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
 
 const RARITY_COLOR: Record<string, string> = Object.fromEntries(
@@ -34,6 +35,7 @@ interface HeroRow {
 
 export default function HeroesPage({ username, goldBalance }: HeroesPageProps) {
   const t = useTranslations("home");
+  const vocab = useVocab();
 
   const [heroes, setHeroes] = useState<HeroRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -178,7 +180,7 @@ export default function HeroesPage({ username, goldBalance }: HeroesPageProps) {
                 value={selectedFaction}
                 options={factions}
                 onSelect={handleSelectFaction}
-                display={getFactionDisplayName}
+                display={vocab.factionName}
               />
             )}
             {clans.length > 0 && (
@@ -188,6 +190,7 @@ export default function HeroesPage({ username, goldBalance }: HeroesPageProps) {
                 value={selectedClan}
                 options={clans}
                 onSelect={setSelectedClan}
+                display={vocab.clanName}
               />
             )}
             {rarities.length > 1 && (
@@ -197,6 +200,7 @@ export default function HeroesPage({ username, goldBalance }: HeroesPageProps) {
                 value={selectedRarity}
                 options={rarities}
                 onSelect={setSelectedRarity}
+                display={vocab.rarityLabel}
                 colorFor={(id) => RARITY_COLOR[id]}
               />
             )}
@@ -308,6 +312,7 @@ function HeroCard({
   powerLabel: string;
   onShowPower: (hero: HeroRow, rect: DOMRect) => void;
 }) {
+  const vocab = useVocab();
   const articleRef = useRef<HTMLElement>(null);
   // Touch equivalent of right-click: a long-press opens the same power popover.
   const longPress = useLongPress(() => {
@@ -364,7 +369,7 @@ function HeroCard({
 
         {(hero.faction || hero.race || hero.clan) && (
           <p className="font-serif italic text-am-arcane-bright/80 text-sm tracking-wide">
-            {[hero.faction ? getFactionDisplayName(hero.faction) : hero.race, hero.clan]
+            {[hero.faction ? vocab.factionName(hero.faction) : hero.race, hero.clan ? vocab.clanName(hero.clan) : null]
               .filter(Boolean)
               .join(" · ")}
           </p>

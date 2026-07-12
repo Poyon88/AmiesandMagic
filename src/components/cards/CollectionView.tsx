@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import type { Card, Keyword, CardSet, GameFormat } from "@/lib/game/types";
 import { getFormatFilter } from "@/lib/game/format-legality";
 import { isCardOwned } from "@/lib/game/collection";
-import { getFactionDisplayName } from "@/lib/card-engine/constants";
+import { useVocab } from "@/i18n/useVocab";
 import GameCard from "./GameCard";
 import ExpertCardFrame from "./ExpertCardFrame";
 import AmAtmosphere from "@/components/ui/AmAtmosphere";
@@ -47,6 +47,7 @@ const FILTER_LABEL_CLS =
 
 export default function CollectionView({ cards, sets, formats, collectedCardIds, isTester, ownedPrints = [] }: CollectionViewProps) {
   const ownedSet = useMemo(() => new Set(collectedCardIds), [collectedCardIds]);
+  const vocab = useVocab();
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [manaCostFilter, setManaCostFilter] = useState<number | null>(null);
@@ -295,7 +296,7 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
               >
                 <option value="">Toutes</option>
                 {factions.map((f) => (
-                  <option key={f} value={f}>{getFactionDisplayName(f)}</option>
+                  <option key={f} value={f}>{vocab.factionName(f)}</option>
                 ))}
               </select>
             </div>
@@ -319,7 +320,7 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
                         : "am-gild-border bg-am-bg-2 text-am-ink-soft hover:text-am-ink"
                     }`}
                   >
-                    {r}
+                    {vocab.rarityLabel(r)}
                   </button>
                 ))}
               </div>
@@ -351,7 +352,7 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
                 <option value="">Toutes</option>
                 {KEYWORDS.map((kw) => (
                   <option key={kw} value={kw}>
-                    {KEYWORD_LABELS[kw]}
+                    {vocab.keywordLabel(kw)}
                   </option>
                 ))}
               </select>
@@ -382,7 +383,7 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
               >
                 <option value="">Tous</option>
                 {clans.map((c) => (
-                  <option key={c} value={c}>{c}</option>
+                  <option key={c} value={c}>{vocab.clanName(c)}</option>
                 ))}
               </select>
             </div>

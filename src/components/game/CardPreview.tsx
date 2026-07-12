@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { CardInstance } from "@/lib/game/types";
-import { KEYWORD_LABELS, toRoman, parseXValuesFromEffectText, cleanEffectText } from "@/lib/game/keyword-labels";
+import { toRoman, parseXValuesFromEffectText, cleanEffectText } from "@/lib/game/keyword-labels";
 import { getSpellKeywordLabel } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import { composedCapsOf, composedIcon, composedKeywordName, composedTriggerMode, describeComposedCap } from "@/lib/game/composed-display";
@@ -13,6 +13,7 @@ import { ALIGNMENTS, getEffectiveAlignment } from "@/lib/card-engine/constants";
 import CardArt from "@/components/cards/CardArt";
 import CostBadges from "@/components/cards/CostBadges";
 import { useCardText } from "./CardTextProvider";
+import { useVocab } from "@/i18n/useVocab";
 
 interface CardPreviewProps {
   cardInstance: CardInstance;
@@ -23,6 +24,7 @@ interface CardPreviewProps {
 export default function CardPreview({ cardInstance, anchorRef, position = "above" }: CardPreviewProps) {
   const tokenTemplates = useGameStore((s) => s.tokenTemplates);
   const { localizeName } = useCardText();
+  const vocab = useVocab();
   const [mounted, setMounted] = useState(false);
   const [coords, setCoords] = useState({ left: 0, top: 0 });
   const previewRef = useRef<HTMLDivElement>(null);
@@ -118,7 +120,7 @@ export default function CardPreview({ cardInstance, anchorRef, position = "above
           <div className="px-3 pb-1 flex gap-1 flex-wrap">
             {visibleKws.map((kw) => {
               const x = xVals[kw];
-              const label = KEYWORD_LABELS[kw] || kw.replace("_", " ");
+              const label = vocab.keywordLabel(kw);
               const displayLabel = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
               // On a spell, conferred keywords show their grant scope: green
               // text = all allies, default = single targeted creature.
