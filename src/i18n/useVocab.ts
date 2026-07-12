@@ -52,6 +52,9 @@ export interface Vocab {
   // Nom de format localisé, indexé par le `code` stable (`${mode}-${extent}`).
   // Fallback : le nom DB (FR) fourni.
   formatName: (code: string | null | undefined, fallbackName: string) => string;
+  // Nom de token localisé, indexé par l'id `token_templates` (porté par la carte
+  // token via `card.token_id`). Fallback : le nom FR canonique fourni.
+  tokenName: (id: number | null | undefined, fallbackName: string) => string;
   // Suffixe de déclenchement affiché après un mot-clé (« Provocation · à la
   // mort »). Renvoie une chaîne vide pour le mode par défaut (invocation) et
   // les modes sans suffixe. Fallback FR intégré.
@@ -119,6 +122,8 @@ export function useVocab(): Vocab {
         (code ? safe(`vocab.sets.${code}`) : undefined) ?? fallbackName,
       formatName: (code: string | null | undefined, fallbackName: string) =>
         (code ? safe(`vocab.formats.${code}`) : undefined) ?? fallbackName,
+      tokenName: (id: number | null | undefined, fallbackName: string) =>
+        (id != null ? safe(`vocab.tokens.${id}`) : undefined) ?? fallbackName,
       modeSuffix: (mode: string | null | undefined) => {
         if (!mode || !(mode in MODE_SUFFIX_FR)) return "";
         return safe(`game.mode_suffix_${mode}`) ?? MODE_SUFFIX_FR[mode];

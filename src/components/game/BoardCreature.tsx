@@ -65,6 +65,8 @@ function BoardCreature({
   const card = creature.card;
   const { localizeName, localizeFlavor } = useCardText();
   const vocab = useVocab();
+  // localizeName already localises token names (CardTextProvider →
+  // vocab.tokens.{token_id}); no token-specific handling needed here.
   const tokenTemplates = useGameStore(s => s.tokenTemplates);
   const targetingMode = useGameStore(s => s.targetingMode);
   // Couleur de surbrillance des cibles valides pendant l'activation d'un

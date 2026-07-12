@@ -746,6 +746,37 @@
       "expert-etendu": "Experte · Erweitert",
       "classique-etendu": "Klassisch · Erweitert",
       "classique-standard": "Klassisch · Standard"
+    },
+    "tokens": {
+      "3": "Riesenadler",
+      "4": "Luftelementar",
+      "5": "Kampfhund",
+      "6": "Riesenspinne",
+      "8": "Baummensch",
+      "9": "Mensch",
+      "10": "Drachen",
+      "11": "Wölfe",
+      "13": "Bären",
+      "14": "Elfe",
+      "15": "Zentaur",
+      "16": "Engel",
+      "18": "Hobbits Basis",
+      "19": "Tempelsoldat",
+      "20": "Kobolde",
+      "21": "Tapferer junger Hobbit",
+      "22": "Zombies",
+      "23": "Wikingerkrieger",
+      "24": "Inkas",
+      "25": "Panther",
+      "26": "Anchanchu",
+      "27": "Menschen",
+      "28": "Tiger",
+      "29": "Häschen",
+      "30": "Eichhörnchen",
+      "31": "Bärenjunges",
+      "32": "Kleiner Dämon",
+      "33": "Süße Hunde",
+      "34": "Skelette"
     }
   },
   "home": {
@@ -1465,7 +1496,13 @@
     "mode_suffix_death": " · auf den Tod",
     "mode_suffix_tap": " · tap",
     "mode_suffix_return": " · zurück auf die Hand",
-    "mode_suffix_end_of_turn": " · Rundenende"
+    "mode_suffix_end_of_turn": " · Rundenende",
+    "zone_deck": "Nachziehstapel",
+    "zone_graveyard": "Friedhof",
+    "zone_deck_yours": "Ihr Nachziehstapel",
+    "zone_deck_opponent": "Nachziehstapel des Gegners",
+    "zone_graveyard_yours": "Ihr Friedhof",
+    "zone_graveyard_opponent": "Friedhof des Gegners"
   },
   "tutorial": {
     "page_eyebrow": "Lerne die Kunst des Duells",

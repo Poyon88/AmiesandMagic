@@ -746,6 +746,37 @@
       "expert-etendu": "Experto · Extendido",
       "classique-etendu": "Clásico · Extendido",
       "classique-standard": "Clásico · Estándar"
+    },
+    "tokens": {
+      "3": "Águilas Gigantes",
+      "4": "Elemental del Aire",
+      "5": "Perro de combate",
+      "6": "Araña Gigante",
+      "8": "Hombre Árbol",
+      "9": "Humano",
+      "10": "Dragones",
+      "11": "Lobos",
+      "13": "Osos",
+      "14": "Elfo",
+      "15": "Centauro",
+      "16": "Ángel",
+      "18": "Hobbits Base",
+      "19": "Soldado del Templo",
+      "20": "Goblins",
+      "21": "Joven Hobbit Valiente",
+      "22": "Zombis",
+      "23": "Guerrero Vikingo",
+      "24": "Incas",
+      "25": "Pantera",
+      "26": "Anchanchu",
+      "27": "Humanos",
+      "28": "Tigre",
+      "29": "Conejito",
+      "30": "Ardilla",
+      "31": "Osito",
+      "32": "Demonio menor",
+      "33": "Perros Monos",
+      "34": "Esqueletos"
     }
   },
   "home": {
@@ -1465,7 +1496,13 @@
     "mode_suffix_death": " · a muerte",
     "mode_suffix_tap": " · tap",
     "mode_suffix_return": " · retorno a mano",
-    "mode_suffix_end_of_turn": " · fin de turno"
+    "mode_suffix_end_of_turn": " · fin de turno",
+    "zone_deck": "Mazo",
+    "zone_graveyard": "Cementerio",
+    "zone_deck_yours": "Tu mazo",
+    "zone_deck_opponent": "Mazo rival",
+    "zone_graveyard_yours": "Tu cementerio",
+    "zone_graveyard_opponent": "Cementerio rival"
   },
   "tutorial": {
     "page_eyebrow": "Aprende el arte del duelo",

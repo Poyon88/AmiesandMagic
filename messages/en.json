@@ -746,6 +746,37 @@
       "expert-etendu": "Expert · Extended",
       "classique-etendu": "Classic · Extended",
       "classique-standard": "Classic · Standard"
+    },
+    "tokens": {
+      "3": "Giant Eagles",
+      "4": "Air Elemental",
+      "5": "War Hound",
+      "6": "Giant Spider",
+      "8": "Treant",
+      "9": "Human",
+      "10": "Dragons",
+      "11": "Wolves",
+      "13": "Bears",
+      "14": "Elf",
+      "15": "Centaur",
+      "16": "Angel",
+      "18": "Basic Hobbits",
+      "19": "Temple Soldier",
+      "20": "Goblins",
+      "21": "Brave Young Hobbit",
+      "22": "Zombies",
+      "23": "Viking Warrior",
+      "24": "Incas",
+      "25": "Panther",
+      "26": "Anchanchu",
+      "27": "Humans",
+      "28": "Tiger",
+      "29": "Bunny",
+      "30": "Squirrel",
+      "31": "Bear Cub",
+      "32": "Minor Demon",
+      "33": "Cute Dogs",
+      "34": "Skeletons"
     }
   },
   "home": {
@@ -1465,7 +1496,13 @@
     "mode_suffix_death": " · to the death",
     "mode_suffix_tap": " · tap",
     "mode_suffix_return": " · return to hand",
-    "mode_suffix_end_of_turn": " · end of turn"
+    "mode_suffix_end_of_turn": " · end of turn",
+    "zone_deck": "Deck",
+    "zone_graveyard": "Graveyard",
+    "zone_deck_yours": "Your Deck",
+    "zone_deck_opponent": "Opponent's Deck",
+    "zone_graveyard_yours": "Your Graveyard",
+    "zone_graveyard_opponent": "Opponent's Graveyard"
   },
   "tutorial": {
     "page_eyebrow": "Master the Art of the Duel",

@@ -1219,8 +1219,8 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
           }
           title={
             graveyardView === "my"
-              ? "Votre Cimetière"
-              : "Cimetière adverse"
+              ? t("zone_graveyard_yours")
+              : t("zone_graveyard_opponent")
           }
           onClose={() => setGraveyardView(null)}
         />

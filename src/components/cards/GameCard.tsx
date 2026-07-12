@@ -117,6 +117,8 @@ export default function GameCard({
   const displayedManaCost = effectiveManaCost ?? card.mana_cost;
   const { localizeName, localizeFlavor } = useCardText();
   const vocab = useVocab();
+  // localizeName already localises token names (via CardTextProvider →
+  // vocab.tokens.{token_id}), so no token-specific handling is needed here.
   const [hovered, setHovered] = useState(false);
   const [internalShowDetails, setInternalShowDetails] = useState(false);
   const showDetails = showDetailsProp ?? internalShowDetails;

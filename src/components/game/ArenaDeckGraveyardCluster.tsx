@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import type { CardInstance } from "@/lib/game/types";
 import GameCard from "@/components/cards/GameCard";
 import { getTokenManaCost } from "@/lib/game/abilities";
@@ -91,6 +92,7 @@ function DeckTile({ cardBackUrl, count, isOpponent }: DeckTileProps) {
   // Hover-preview of the card back at a larger size — same right-side anchor
   // as the graveyard preview for consistency. No right-click toggle here:
   // the back has no description side, only the art.
+  const t = useTranslations("game");
   const [hovered, setHovered] = useState(false);
   const accentSoft = isOpponent ? "rgba(231, 76, 60, 0.25)" : "rgba(155, 89, 182, 0.25)";
   const pileShadow = buildPileShadow(count, accentSoft);
@@ -101,7 +103,7 @@ function DeckTile({ cardBackUrl, count, isOpponent }: DeckTileProps) {
   return (
     <div
       className="relative w-32 aspect-[5/7]"
-      title={isOpponent ? "Pioche adverse" : "Votre pioche"}
+      title={isOpponent ? t("zone_deck_opponent") : t("zone_deck_yours")}
       data-no-global-click-sfx="true"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -137,7 +139,7 @@ function DeckTile({ cardBackUrl, count, isOpponent }: DeckTileProps) {
         )}
       </div>
       <FrameOverlay isOpponent={isOpponent} />
-      <TopLabel label="Pioche" isOpponent={isOpponent} />
+      <TopLabel label={t("zone_deck")} isOpponent={isOpponent} />
       <CountBadge count={count} />
 
       {hovered && cardBackUrl && (
@@ -190,6 +192,7 @@ function GraveyardTile({ topCard, emptyImageUrl, count, isOpponent, onClick }: G
   // the surrounding board layout. Right-click toggles the preview between
   // the card art and the description overlay (same pattern used inside
   // GraveyardOverlay).
+  const t = useTranslations("game");
   const { localizeName } = useCardText();
   const [hovered, setHovered] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
@@ -236,7 +239,7 @@ function GraveyardTile({ topCard, emptyImageUrl, count, isOpponent, onClick }: G
         setShowDetails((prev) => !prev);
       }}
       data-no-global-click-sfx="true"
-      title={isOpponent ? "Cimetière adverse" : "Votre cimetière"}
+      title={isOpponent ? t("zone_graveyard_opponent") : t("zone_graveyard_yours")}
       className="relative w-32 aspect-[5/7] cursor-pointer"
       style={LONG_PRESS_RESET_STYLE}
     >
@@ -319,7 +322,7 @@ function GraveyardTile({ topCard, emptyImageUrl, count, isOpponent, onClick }: G
         </div>
       )}
       <FrameOverlay isOpponent={isOpponent} />
-      <TopLabel label="Cimetière" isOpponent={isOpponent} />
+      <TopLabel label={t("zone_graveyard")} isOpponent={isOpponent} />
       <CountBadge count={count} />
 
       {hovered && topCard && (

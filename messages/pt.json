@@ -746,6 +746,37 @@
       "expert-etendu": "Expert · Estendido",
       "classique-etendu": "Clássico · Estendido",
       "classique-standard": "Clássico · Standard"
+    },
+    "tokens": {
+      "3": "Águias Gigantes",
+      "4": "Elemental do Ar",
+      "5": "Cão de Combate",
+      "6": "Aranha Gigante",
+      "8": "Homem-Árvore",
+      "9": "Humano",
+      "10": "Dragões",
+      "11": "Lobos",
+      "13": "Ursos",
+      "14": "Elfo",
+      "15": "Centauro",
+      "16": "Anjo",
+      "18": "Hobbits Base",
+      "19": "Soldado do Templo",
+      "20": "Goblins",
+      "21": "Jovem Hobbit Valente",
+      "22": "Zumbis",
+      "23": "Guerreiro Viking",
+      "24": "Incas",
+      "25": "Pantera",
+      "26": "Anchanchu",
+      "27": "Humanos",
+      "28": "Tigre",
+      "29": "Coelhinho",
+      "30": "Esquilo",
+      "31": "Filhote de Urso",
+      "32": "Demônio Menor",
+      "33": "Cachorrinhos Fofos",
+      "34": "Esqueletos"
     }
   },
   "home": {
@@ -1465,7 +1496,13 @@
     "mode_suffix_death": " · até a morte",
     "mode_suffix_tap": " · tap",
     "mode_suffix_return": " · retorno à mão",
-    "mode_suffix_end_of_turn": " · fim do turno"
+    "mode_suffix_end_of_turn": " · fim do turno",
+    "zone_deck": "Baralho",
+    "zone_graveyard": "Cemitério",
+    "zone_deck_yours": "Seu baralho",
+    "zone_deck_opponent": "Baralho adversário",
+    "zone_graveyard_yours": "Seu cemitério",
+    "zone_graveyard_opponent": "Cemitério adversário"
   },
   "tutorial": {
     "page_eyebrow": "Aprenda a arte do duelo",

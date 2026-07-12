@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { normalizeLocale, DEFAULT_LOCALE } from "@/i18n/config";
 
 // Localisation du nom + ambiance des cartes SUR LA SURFACE DE JEU, purement au
@@ -17,6 +17,9 @@ interface CardLike {
   id: number;
   name?: string | null;
   flavor_text?: string | null;
+  // Cartes token : id -1 (aucune ligne card_translations) mais un token_id
+  // stable → nom localisé via le registre `vocab.tokens.{id}` du catalogue.
+  token_id?: number | null;
 }
 
 interface CardTextCtx {
@@ -38,6 +41,7 @@ export function useCardText(): CardTextCtx {
 
 export default function CardTextProvider({ children }: { children: React.ReactNode }) {
   const locale = normalizeLocale(useLocale());
+  const t = useTranslations();
   const [map, setMap] = useState<Map<number, { name: string | null; flavor_text: string | null }> | null>(null);
 
   useEffect(() => {
@@ -69,11 +73,19 @@ export default function CardTextProvider({ children }: { children: React.ReactNo
 
   const value = useMemo<CardTextCtx>(() => {
     if (!map) return IDENTITY;
+    // Nom de token : les cartes token (id -1) ne matchent aucune ligne
+    // card_translations ; on résout leur nom via `vocab.tokens.{token_id}`
+    // (même catalogue, rempli par le pipeline). Repli sur le nom FR canonique.
+    const tokenName = (c: CardLike): string | null => {
+      if (c.token_id == null) return null;
+      const key = `vocab.tokens.${c.token_id}`;
+      return t.has(key) ? (t.raw(key) as string) : null;
+    };
     return {
-      localizeName: (c) => map.get(c.id)?.name ?? c.name ?? "",
+      localizeName: (c) => tokenName(c) ?? map.get(c.id)?.name ?? c.name ?? "",
       localizeFlavor: (c) => map.get(c.id)?.flavor_text ?? c.flavor_text ?? null,
     };
-  }, [map]);
+  }, [map, t]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

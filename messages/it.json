@@ -746,6 +746,37 @@
       "expert-etendu": "Expert · Esteso",
       "classique-etendu": "Classico · Esteso",
       "classique-standard": "Classico · Standard"
+    },
+    "tokens": {
+      "3": "Aquile Giganti",
+      "4": "Elementale dell'Aria",
+      "5": "Cane da combattimento",
+      "6": "Ragno Gigante",
+      "8": "Uomo-Albero",
+      "9": "Umano",
+      "10": "Draghi",
+      "11": "Lupi",
+      "13": "Orsi",
+      "14": "Elfo",
+      "15": "Centauro",
+      "16": "Angelo",
+      "18": "Hobbit Base",
+      "19": "Soldato del Tempio",
+      "20": "Goblin",
+      "21": "Giovane Hobbit Valoroso",
+      "22": "Zombie",
+      "23": "Guerriero Vichingo",
+      "24": "Inca",
+      "25": "Pantera",
+      "26": "Anchanchu",
+      "27": "Umani",
+      "28": "Tigre",
+      "29": "Coniglietto",
+      "30": "Scoiattolo",
+      "31": "Orsetto",
+      "32": "Demone minore",
+      "33": "Cagnolini Carini",
+      "34": "Scheletri"
     }
   },
   "home": {
@@ -1465,7 +1496,13 @@
     "mode_suffix_death": " · a morte",
     "mode_suffix_tap": " · tap",
     "mode_suffix_return": " · ritorno in mano",
-    "mode_suffix_end_of_turn": " · fine del turno"
+    "mode_suffix_end_of_turn": " · fine del turno",
+    "zone_deck": "Mazzo",
+    "zone_graveyard": "Cimitero",
+    "zone_deck_yours": "Il tuo mazzo",
+    "zone_deck_opponent": "Mazzo avversario",
+    "zone_graveyard_yours": "Il tuo cimitero",
+    "zone_graveyard_opponent": "Cimitero avversario"
   },
   "tutorial": {
     "page_eyebrow": "Impara l'arte del duello",
