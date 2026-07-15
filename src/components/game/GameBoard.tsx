@@ -43,6 +43,11 @@ import SfxEngine from "@/lib/audio/SfxEngine";
 import useLongPress from "@/hooks/useLongPress";
 import { useScreenShake } from "@/hooks/useScreenShake";
 
+// Fixed design size the board is authored against (16:9). The whole board is a
+// canvas of this size, scaled uniformly to fit the viewport (see boardScale).
+const DESIGN_W = 1920;
+const DESIGN_H = 1080;
+
 interface GameBoardProps {
   onAction?: (action: GameAction) => void;
   // Émis quand l'animation de révélation de mulligan locale est terminée
@@ -126,14 +131,43 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
   // le mode "selection" est obligatoire (verrou), donc l'overlay reste
   // logiquement actif et le bouton de retour reste toujours monté.
   const [overlayPeeked, setOverlayPeeked] = useState(false);
-  // Narrow-viewport flag: triggers fanned hand overlap so 6-8 cards still fit
-  // on small landscape phones (e.g. iPhone SE landscape ≈ 667 px).
-  const [isNarrowViewport, setIsNarrowViewport] = useState(false);
+  // Scale-to-fit canvas: the board is authored at a fixed 1920×1080 design size
+  // (every zone is a % of it) and scaled uniformly to fit the viewport, so cards,
+  // portraits, text and buttons all shrink TOGETHER on smaller screens instead of
+  // crowding a shrinking 16:9 frame. At 1920×1080 the scale is 1 → pixel-identical
+  // to before. scale = min(availW / 1920, availH / 1080).
+  const boardWrapRef = useRef<HTMLDivElement>(null);
+  const [boardScale, setBoardScale] = useState(1);
   useEffect(() => {
-    const update = () => setIsNarrowViewport(typeof window !== "undefined" && window.innerWidth < 900);
+    const el = boardWrapRef.current;
+    const update = () => {
+      // Measure the outer container's own padded box (already inset by the device
+      // safe-area) rather than window.innerHeight / 100vh, which overshoots under
+      // the collapsible iOS Safari toolbar and forces the user to scroll.
+      const availW =
+        el?.clientWidth || (typeof window !== "undefined" ? window.innerWidth : DESIGN_W);
+      const availH =
+        el?.clientHeight || (typeof window !== "undefined" ? window.innerHeight : DESIGN_H);
+      setBoardScale(Math.min(availW / DESIGN_W, availH / DESIGN_H));
+    };
     update();
+    const ro =
+      typeof ResizeObserver !== "undefined" && el ? new ResizeObserver(update) : null;
+    ro?.observe(el!);
     window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
+    window.addEventListener("orientationchange", update);
+    // iOS Safari collapses/expands its toolbar without firing window "resize" —
+    // visualViewport does fire, so listen there too to keep the fit exact.
+    const vv = typeof window !== "undefined" ? window.visualViewport : null;
+    vv?.addEventListener("resize", update);
+    vv?.addEventListener("scroll", update);
+    return () => {
+      ro?.disconnect();
+      window.removeEventListener("resize", update);
+      window.removeEventListener("orientationchange", update);
+      vv?.removeEventListener("resize", update);
+      vv?.removeEventListener("scroll", update);
+    };
   }, []);
   // Guards against the second click of a double-click on a targeted hero
   // power instantly cancelling the targeting that the first click opened.
@@ -204,6 +238,23 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
   const myPlayer = getMyPlayerState();
   const opponent = getOpponentPlayerState();
   const myTurn = isMyTurn() && !isAnimating;
+
+  // Hand spacing keyed off card COUNT against the fixed DESIGN_W canvas (not the
+  // window width — under scale-to-fit the window no longer reflects on-canvas
+  // crowding). A card renders ≈169px (120 × zoom 1.41); usable width is the
+  // canvas minus the hand row's px-6 padding. Gap stays at 4 until cards would
+  // overflow (~11 cards), then fans negative, floored at -56 (the previous max
+  // overlap) so even a very large hand stays on-canvas.
+  const HAND_CARD_FOOTPRINT = 169;
+  const HAND_USABLE_W = DESIGN_W - 48;
+  const handCount = myPlayer?.hand.length ?? 0;
+  const handGap =
+    handCount > 1
+      ? Math.max(
+          -56,
+          Math.min(4, Math.floor((HAND_USABLE_W - HAND_CARD_FOOTPRINT * handCount) / (handCount - 1)))
+        )
+      : 4;
 
   // Broadcast helper
   const broadcast = useCallback(
@@ -620,6 +671,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
 
   return (
     <div
+      ref={boardWrapRef}
       className="fixed inset-0 select-none"
       style={{
         backgroundColor: "#0d0d1a",
@@ -659,16 +711,34 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
         }
       }}
     >
-      {/* 16:9 board container */}
+      {/* Scale-to-fit canvas wrapper. The board is a fixed DESIGN_W×DESIGN_H
+          canvas centred in the viewport and scaled uniformly by boardScale, so
+          every fixed-px child (cards, portraits, buttons, text) shrinks together
+          on small screens. data-board-scale lets the FX layer (overlayMotion)
+          keep particle placement aligned under the transform. NOTE: this
+          transform becomes the containing block for any position:fixed
+          descendant — new fixed-position UI added INSIDE must be portalled to
+          document.body (as HandCard's drag ghost already is). */}
+      <div
+        data-board-scale={boardScale}
+        style={{
+          position: "absolute",
+          left: "50%",
+          top: "50%",
+          width: DESIGN_W,
+          height: DESIGN_H,
+          transform: `translate(-50%, -50%) scale(${boardScale})`,
+          transformOrigin: "center center",
+          overflow: "visible",
+        }}
+      >
+      {/* 16:9 board canvas */}
       <motion.div
         animate={shakeControls}
-        className="absolute inset-0 m-auto overflow-visible"
+        className="overflow-visible"
         style={{
-          aspectRatio: "16/9",
-          maxWidth: "100vw",
-          maxHeight: "100vh",
-          width: "100%",
-          height: "100%",
+          width: DESIGN_W,
+          height: DESIGN_H,
           position: "relative",
           filter: isFrozen
             ? isFrozenBig
@@ -1150,9 +1220,9 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
         </div>
 
         {/* ============= PLAYER HAND =============
-            On narrow landscape viewports we fan the cards (negative gap) so a
-            full 8-card hand still fits without horizontal overflow. The
-            zoomed-on-hover/long-press card lifts above siblings via z-index. */}
+            The hand fans (negative gap) only once the card COUNT would overflow
+            the fixed canvas width (see handGap) — the zoomed-on-hover/long-press
+            card lifts above siblings via z-index. */}
         <div
           // z-[41] : au-dessus du héros (z-40) pour que la dernière carte à
           // droite reste cliquable au lieu de déclencher le pouvoir héroïque
@@ -1160,7 +1230,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
           // pour que ses zones vides laissent passer les clics vers le héros /
           // cimetière ; chaque carte réactive les events (pointer-events-auto).
           className="absolute bottom-0 left-0 right-0 flex justify-center px-6 pb-4 pt-1 overflow-visible z-[41] pointer-events-none"
-          style={{ gap: isNarrowViewport ? -56 : 4 }}
+          style={{ gap: handGap }}
         >
           {myPlayer.hand.map((cardInstance) => {
             const playable =
@@ -1184,9 +1254,12 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             );
           })}
         </div>
-      </motion.div>{/* end 16:9 board container */}
+      </motion.div>{/* end 16:9 board canvas */}
+      </div>{/* end scale-to-fit wrapper */}
 
-      {/* ============= FIXED OVERLAYS ============= */}
+      {/* ============= FIXED OVERLAYS =============
+          Rendered OUTSIDE the scale-to-fit wrapper so full-screen modals and the
+          FX/targeting layers stay in true viewport space (unscaled). */}
       {/* Bascule « Voir le plateau / Revenir » : montée dès qu'un overlay de
           sélection plein écran est actif (indépendamment de overlayPeeked pour
           rester accessible une fois masqué → jamais de soft-lock). z-[60] pour

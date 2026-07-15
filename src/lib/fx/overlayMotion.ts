@@ -105,7 +105,19 @@ export function overlayRect(el: Element): { left: number; top: number; width: nu
     parseFloat(el.getAttribute("data-zoom") ?? "") ||
     parseFloat(getComputedStyle(he).zoom || "") ||
     1;
-  if (zoom !== 1 && he.offsetWidth > 0 && Math.abs(r.width / he.offsetWidth - 1) < 0.15) {
+  // The board sits inside a scale-to-fit canvas (transform: scale(boardScale)).
+  // getBoundingClientRect() bakes that transform into r.width, but offsetWidth
+  // does NOT reflect it — so factor boardScale out of the zoom-vs-no-zoom ratio,
+  // otherwise the guard flips at S<1 and the correction fires on the wrong
+  // browser (mis-placing FX particles on Safari). Read the live scale off the
+  // nearest [data-board-scale] ancestor; default 1 for elements outside it.
+  const scaleEl = he.closest("[data-board-scale]") as HTMLElement | null;
+  const boardScale = scaleEl ? parseFloat(scaleEl.getAttribute("data-board-scale") || "1") || 1 : 1;
+  if (
+    zoom !== 1 &&
+    he.offsetWidth > 0 &&
+    Math.abs(r.width / (he.offsetWidth * boardScale) - 1) < 0.15
+  ) {
     return { left: r.left * zoom, top: r.top * zoom, width: r.width * zoom, height: r.height * zoom };
   }
   return { left: r.left, top: r.top, width: r.width, height: r.height };
