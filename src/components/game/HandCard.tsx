@@ -635,7 +635,10 @@ function HandCard({
                   <span style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0 }}>
                     <span style={{ display: "inline-flex", lineHeight: 0, filter: keywordModeFilter(cmode) ?? undefined }}>
                     {hasImg ? (
-                      <div style={{ width: 24, height: 24, flexShrink: 0 }}><KeywordIcon symbol={ic.symbol} size={14} keyword={ic.keyword} fill /></div>
+                      // 14×14 to match the keyword-chip icon size — was 24×24,
+                      // which made composed-effect icons on hand cards render
+                      // bigger than the same keyword shown as a chip in play.
+                      <div style={{ width: 14, height: 14, flexShrink: 0 }}><KeywordIcon symbol={ic.symbol} size={14} keyword={ic.keyword} fill /></div>
                     ) : (
                       <KeywordIcon symbol={ic.symbol} size={14} keyword={ic.keyword} />
                     )}
