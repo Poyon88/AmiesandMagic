@@ -742,10 +742,12 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
           position: "relative",
           filter: isFrozen
             ? isFrozenBig
-              // Punchy but no longer blowing out card art — the big beat leans
-              // on contrast/saturation more than raw brightness (was 1.85).
-              ? "brightness(1.55) saturate(1.8) contrast(1.22)"
-              : "brightness(1.4) saturate(1.55) contrast(1.12)"
+              // Punchy but cross-browser safe. Firefox applies brightness()/
+              // saturate() in a way that blows out the (already bright) board
+              // art's highlights to yellow-white where Chrome stays soft, so the
+              // beat now leans on contrast over raw brightness (was 1.85→1.55).
+              ? "brightness(1.32) saturate(1.45) contrast(1.15)"
+              : "brightness(1.22) saturate(1.3) contrast(1.1)"
             : "none",
           transition: isFrozen ? "none" : "filter 90ms ease-out",
         }}
@@ -763,11 +765,16 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
           quality={100}
           unoptimized
           draggable={false}
-          style={{ zIndex: -1, imageRendering: "auto" }}
+          // Base brightness lift: the raw board art renders too dark on both
+          // Chrome and Firefox, so give the artwork a small always-on brightness
+          // bump. Applied to the IMAGE only (not the motion.div) so cards/UI text
+          // are untouched; the hit-stop freeze filter still stacks on top.
+          style={{ zIndex: -1, imageRendering: "auto", filter: "brightness(1.4)" }}
         />
 
-        {/* Subtle overlay for readability */}
-        <div className="absolute inset-0 bg-background/10 pointer-events-none z-0" />
+        {/* Subtle overlay for readability — kept light (/5) so it doesn't fight
+            the brightness lift above. */}
+        <div className="absolute inset-0 bg-background/5 pointer-events-none z-0" />
 
         {/* ============= SETTINGS BUTTON =============
             Snaps to a slot below the opponent deck/graveyard cluster in

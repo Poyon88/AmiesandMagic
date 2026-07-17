@@ -440,7 +440,11 @@ function HandCard({
           cursor: isCostPaymentMode
             ? (isPendingCostSource ? "default" : "pointer")
             : isDragging ? "grabbing" : canPlay ? "grab" : "not-allowed",
-          opacity: isDragging ? 0.5 : (isCostPaymentMode || canPlay) ? 1 : 0.75,
+          // Non-playable cards (e.g. the whole hand during the opponent's turn)
+          // stay readable at 0.9 — the desaturated border already signals
+          // "can't play this now", so heavy dimming just made the hand hard to
+          // read (was 0.75).
+          opacity: isDragging ? 0.5 : (isCostPaymentMode || canPlay) ? 1 : 0.9,
           transition: "border-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease",
           transform: isZoomed ? "translateX(-50%)" : "none",
           zoom: isZoomed ? 1.3 : 1,
@@ -478,6 +482,9 @@ function HandCard({
               fill
               className="object-cover"
               sizes="(min-resolution: 2dppx) 600px, 300px"
+              // Base brightness lift to match the brightened board (see
+              // BoardCreature) — raw card art reads too dark otherwise.
+              style={{ filter: "brightness(1.3)" }}
               // Served directly from the Supabase CDN — card-art sources are
               // already small webp (≤800px) so the Next optimizer only added
               // dev-time queueing that left cards blank when many loaded at once.
@@ -845,7 +852,9 @@ function HandCard({
             <img
               src={resolvedImageUrl}
               alt={card.name}
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              // Match the inline card art's brightness lift so the zoomed/drag
+              // ghost doesn't look darker than the card it came from.
+              style={{ width: "100%", height: "100%", objectFit: "cover", filter: "brightness(1.3)" }}
             />
           )}
         </div>,
