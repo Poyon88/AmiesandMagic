@@ -1777,6 +1777,8 @@ export default function CardForge() {
       "Elfes Corrompus": "a dark elf with ashen skin, white hair, cruel features, spiked dark armor, malevolent aura",
       "Araignées Géantes": "an enormous spider with dark chitin, multiple glowing eyes, venomous dripping fangs",
       "Démons": "a demonic creature with horns, bat-like wings, cloven hooves, infernal flames",
+      "Gnomes": "a small tinker gnome with goggles, a bushy beard, leather apron, mechanical gadgets and clockwork contraptions",
+      "Guerriers du Chaos": "a towering chaos warrior in blackened spiked plate armor, corrupted heavy weapon, malevolent glowing runes, imposing and grim",
     };
     const visual = tokenVisualDescriptions[tokenRace] || `a ${tokenRace} creature`;
     const nameHint = tokenName ? ` named "${tokenName}"` : '';
@@ -1937,7 +1939,9 @@ export default function CardForge() {
     if (manualAbility) text.ability = manualAbility;
     const newCard: ForgeCard = {
       id: buildId(), name: text.name || "Sans nom",
-      faction: f, race, clan, cardAlignment, type: t, rarity: r, ...stats,
+      faction: f, clan, cardAlignment, type: t, rarity: r, ...stats,
+      // La race dérivée du mana (clans à sous-races) prime ; sinon la race choisie.
+      race: stats.race ?? race,
       ability: text.ability || "—",
       flavorText: text.flavorText || "",
       illustrationPrompt: text.illustrationPrompt || "",
@@ -1988,8 +1992,10 @@ export default function CardForge() {
       try { text = await generateCardText(f, t, r, stats, bulkRace || undefined, bulkClan || undefined); } catch { /* fallback above */ }
       const c: ForgeCard = {
         id: buildId(), name: text.name || "Sans nom",
-        faction: f, race: bulkRace, clan: bulkClan, cardAlignment: facData?.alignment === "spéciale" ? pick(["bon","neutre","maléfique"]) : (facData?.alignment || "neutre"),
+        faction: f, clan: bulkClan, cardAlignment: facData?.alignment === "spéciale" ? pick(["bon","neutre","maléfique"]) : (facData?.alignment || "neutre"),
         type: t, rarity: r, ...stats,
+        // La race dérivée du mana (clans à sous-races) prime ; sinon la race tirée.
+        race: stats.race ?? bulkRace,
         ability: text.ability || "—", flavorText: text.flavorText || "",
         illustrationPrompt: text.illustrationPrompt || "",
         generatedAt: new Date().toISOString(),

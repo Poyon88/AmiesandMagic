@@ -140,6 +140,10 @@ export const GRANULAR_RACE_DESCRIPTORS: Record<string, string> = {
     'A humanoid spider-warrior — bipedal humanoid upper torso atop arachnid lower body (only upper half visible in this bust), eight glittering eyes across the brow, chitinous black armor, fanged maw.',
   'Démons':
     'A humanoid demon warrior — bipedal humanoid silhouette, crimson or obsidian skin, horns curving from the brow, glowing infernal eyes, fanged mouth, broad muscular shoulders.',
+  'Gnomes':
+    'A diminutive gnome tinkerer — small stature, oversized inventive goggles pushed onto a bushy beard, leather apron with tools, clever bright eyes, clockwork trinkets.',
+  'Guerriers du Chaos':
+    'A towering chaos warrior — hulking silhouette in blackened spiked plate armor, corrupted glowing runes, grim helm with burning eyes, aura of dread.',
 };
 
 // Physical features per race. Kept short so it doesn't drown the faction layer.

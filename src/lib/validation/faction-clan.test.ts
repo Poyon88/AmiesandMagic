@@ -3,13 +3,14 @@
 import { describe, expect, it } from "vitest";
 import { validateFactionClan, validateRace } from "./faction-clan";
 
-// Valeurs stables de FACTIONS (cf. card-engine/constants.ts) :
+// Valeurs stables de FACTIONS (cf. card-engine/constants.ts, post-refonte) :
 //   Hommes-Bêtes — races: Hommes-Loups, Hommes-Ours, Hommes-Félins, Centaures,
 //                         Mimis, Hommes-Chiens, Hommes-Renards, Hommes-Cerfs
-//                  clans: Forêt, Toundra, Savane, Jungle, Mignons, Pacte des Griffes
+//                  clans: Cour Pourpre, Enfants de la Lune, Pacte des Griffes,
+//                         Harde Sauvage (Les Mignons = clan bonus inerte, non listé)
 describe("validateFactionClan", () => {
   it("accepte faction + clan valides", () => {
-    expect(validateFactionClan("Hommes-Bêtes", "Forêt")).toEqual({ ok: true, faction: "Hommes-Bêtes", clan: "Forêt" });
+    expect(validateFactionClan("Hommes-Bêtes", "Le Pacte des Griffes")).toEqual({ ok: true, faction: "Hommes-Bêtes", clan: "Le Pacte des Griffes" });
   });
 
   it("rejette une faction inconnue", () => {
@@ -59,5 +60,36 @@ describe("validateRace", () => {
 
   it("rejette une valeur non-string", () => {
     expect(validateRace(123, null)).toEqual({ ok: false, error: "Race invalide" });
+  });
+});
+
+// Refonte factions & clans (Phase A) : nouvelles factions, factions absorbées,
+// nouvelles races et race libre.
+describe("refonte factions & clans", () => {
+  it("les factions absorbées ne sont plus valides", () => {
+    expect(validateFactionClan("Orcs", null)).toEqual({ ok: false, error: "Faction invalide" });
+    expect(validateFactionClan("Hobbits", null)).toEqual({ ok: false, error: "Faction invalide" });
+  });
+
+  it("accepte les nouvelles factions humaines et leurs clans", () => {
+    expect(validateFactionClan("EmpireDuMilieu", "Les Lames de l'Ombre")).toEqual({ ok: true, faction: "EmpireDuMilieu", clan: "Les Lames de l'Ombre" });
+    expect(validateFactionClan("RoyaumesDuSoleil", "Les Enfants du Soleil")).toEqual({ ok: true, faction: "RoyaumesDuSoleil", clan: "Les Enfants du Soleil" });
+  });
+
+  it("accepte les nouveaux clans des factions refondues", () => {
+    expect(validateFactionClan("Elfes", "Les Hobbits").ok).toBe(true);
+    expect(validateFactionClan("Elfes Noirs", "Les Cohortes Sanglantes").ok).toBe(true);
+    expect(validateFactionClan("Nains", "La Guilde des Ingénieurs").ok).toBe(true);
+  });
+
+  it("Les Mignons (clan bonus inerte) n'est pas un clan valide", () => {
+    expect(validateFactionClan("Hommes-Bêtes", "Les Mignons")).toEqual({ ok: false, error: "Clan invalide pour cette faction" });
+  });
+
+  it("rattache les races absorbées et les nouvelles races à leur faction", () => {
+    expect(validateRace("Orcs", "Elfes Noirs")).toEqual({ ok: true, race: "Orcs" });
+    expect(validateRace("Hobbits", "Elfes")).toEqual({ ok: true, race: "Hobbits" });
+    expect(validateRace("Gnomes", "Nains")).toEqual({ ok: true, race: "Gnomes" });
+    expect(validateRace("Guerriers du Chaos", "Elfes Noirs")).toEqual({ ok: true, race: "Guerriers du Chaos" });
   });
 });

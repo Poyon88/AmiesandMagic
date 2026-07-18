@@ -887,6 +887,20 @@ function createCardInstance(card: Card): CardInstance {
   };
 }
 
+// Dédoublement : fabrique une « copie exacte » de la créature `source` prête à
+// entrer en jeu. Le clone est une NOUVELLE instance construite à partir de la
+// carte de la source — donc mêmes ATK/PV de base (les bonus PERMANENTS étant
+// cuits dans `card.attack`/`card.health`, ils sont copiés ; les bonus d'AURA
+// seront recalculés pour la position propre du clone). Il entre FRAIS, à PV
+// pleins : c'est le seul comportement cohérent sur TOUS les déclencheurs — en
+// particulier « à la mort », où la source est à 0 PV. Le mal des invocations
+// est respecté (Traque/charge dérogent, via createCardInstance). Le clone
+// porte lui aussi le mot-clé mais n'est jamais repassé par un flux de
+// déclenchement dans la même résolution → pas de duplication récursive.
+function makeDedoublementClone(source: CardInstance): CardInstance {
+  return createCardInstance({ ...source.card });
+}
+
 // Prépare une instance EXISTANTE à ré-entrer en jeu (depuis la main après un
 // bounce, ou depuis le cimetière via Rappel/Résurrection/Cycle Éternel) en
 // CONSERVANT ses bonus permanents accumulés au lieu de la recréer à neuf.
@@ -2057,6 +2071,14 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
         cardInstance.maxHealth = morphTarget.maxHealth;
         cardInstance.hasDivineShield = morphTarget.hasDivineShield;
       }
+    }
+
+    // Dédoublement (mode invocation) : crée en jeu une copie exacte de cette
+    // créature. Les autres déclencheurs (mort, tap, retour, fin de tour,
+    // attaque) passent par resolveCuratedKeywordEffect ; le gate hasKwOnPlay
+    // garantit qu'une instance en mode non-invocation ne se dédouble pas ici.
+    if (hasKwOnPlay(cardInstance, "dedoublement") && player.board.length < MAX_BOARD_SIZE) {
+      player.board.push(makeDedoublementClone(cardInstance));
     }
 
     // Combustion: défaussez une carte de votre main, piochez deux.
@@ -4841,6 +4863,14 @@ function resolveCuratedKeywordEffect(
       const token = createCardInstance(tokenCard);
       token.hasSummoningSickness = true;
       owner.board.push(token);
+      break;
+    }
+    case "dedoublement": {
+      // Mort / tap / retour / fin de tour / attaque : crée une copie exacte de
+      // la source (même logique que l'effet on-play). Le clone entre frais ;
+      // pas de récursion (il n'est pas repassé par un flux de déclenchement).
+      if (owner.board.length >= MAX_BOARD_SIZE) return;
+      owner.board.push(makeDedoublementClone(source));
       break;
     }
     case "convocations_multiples": {
