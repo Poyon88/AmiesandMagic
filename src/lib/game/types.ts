@@ -21,7 +21,7 @@ export type Keyword =
   // Tier 3 — Terrain
   | "liaison_de_vie" | "ombre" | "sacrifice" | "malefice"
   | "indestructible" | "regeneration" | "corruption"
-  | "carnage" | "heritage" | "mimique" | "metamorphose" | "tactique"
+  | "carnage" | "heritage" | "mimique" | "metamorphose" | "dedoublement" | "tactique"
   // Tier 3 — Cimetière
   | "exhumation" | "heritage_du_cimetiere"
   // Tier 2 — Deck / Race / Clan

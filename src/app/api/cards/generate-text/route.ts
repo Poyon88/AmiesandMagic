@@ -84,6 +84,10 @@ export async function POST(request: Request) {
     "Elfes Corrompus": "dark elf with ashen/obsidian skin, white hair, cruel features, spiked dark armor, malevolent aura",
     "Araignées Géantes": "enormous spider with dark chitin, multiple glowing eyes, venomous dripping fangs, web-covered",
     "Démons": "demonic creature with horns, bat-like wings, cloven hooves, infernal flames, corrupted and terrifying",
+    // Nains (Guilde des Ingénieurs)
+    "Gnomes": "small tinker gnome with goggles, bushy beard, leather apron, clockwork gadgets and mechanical contraptions",
+    // Légions du Chaos (Garde Noire)
+    "Guerriers du Chaos": "towering chaos warrior in blackened spiked plate armor, corrupted heavy weapon, malevolent glowing runes, imposing and grim",
   };
   // For factions whose visual identity lives on the clan (Élémentaires: race
   // "Élémentaire", clan = element), prefer the clan-keyed descriptor.
@@ -224,6 +228,8 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
           "Elfes Corrompus": ["dark elf", "drow", "elfe noir", "elfe corrompu"],
           "Araignées Géantes": ["spider", "araignée"],
           "Démons": ["demon", "démon"],
+          "Gnomes": ["gnome", "tinker", "tinkerer"],
+          "Guerriers du Chaos": ["chaos warrior", "chaos knight", "guerrier du chaos"],
         };
         // Get all wrong terms: other races in the faction, plus — for clan-tuned
         // factions (Élémentaires) — the sibling clans' terms so a Feu card doesn't

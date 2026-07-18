@@ -493,6 +493,12 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["creature"],
     creature: { cost: 20, costPerX: 0, se: 4.5, minTier: 3, scalable: false, zone: "Terrain" },
   },
+  dedoublement: {
+    id: "dedoublement", label: "Dédoublement", symbol: "👯",
+    desc: "Invocation : crée en jeu une copie exacte de cette créature.",
+    applicable_to: ["creature"],
+    creature: { cost: 22, costPerX: 0, se: 5.0, minTier: 3, scalable: false, zone: "Terrain" },
+  },
   tactique: {
     id: "tactique", label: "Tactique X", symbol: "📋",
     desc: "Invocation : attribue X capacité(s) choisie(s) à une unité alliée ciblée de manière permanente.",
@@ -1136,7 +1142,7 @@ export function creatureEngineId(a: AbilityDef): string {
  *  donc load-bearing — l'adaptateur DOIT respecter le mode exact. Liste tirée
  *  des appels `hasKwOnPlay` et du switch `resolveCuratedKeywordEffect`. */
 export const CURATED_MULTIMODE_IDS: ReadonlySet<string> = new Set([
-  "combustion", "convocation", "convocations_multiples", "douleur", "entrainement", "inspiration",
+  "combustion", "convocation", "convocations_multiples", "dedoublement", "douleur", "entrainement", "inspiration",
   "ombre_du_passe", "pillage", "prescience", "remontee", "renforcement_multiple",
   "savant", "suprematie", "tempete", "vampirisme", "cataclysme", "renforcement", "impact",
 ]);
@@ -1184,9 +1190,10 @@ export function deriveAbilityTriggerMeta(a: AbilityDef): AbilityTriggerMeta {
 
   let creatureTriggers: CapabilityTrigger[] | undefined;
   if (isCreature) {
-    // Entrainement accepte TOUS les déclencheurs habituels (dont fin-de-tour et
-    // attaque), là où le défaut curated multi-mode n'en propose que 4.
-    if (cid === "entrainement") creatureTriggers = ["on_play", "on_death", "on_activation", "on_return", "on_end_of_turn", "on_attack"];
+    // Entrainement et Dédoublement acceptent TOUS les déclencheurs habituels
+    // (dont fin-de-tour et attaque), là où le défaut curated multi-mode n'en
+    // propose que 4.
+    if (cid === "entrainement" || cid === "dedoublement") creatureTriggers = ["on_play", "on_death", "on_activation", "on_return", "on_end_of_turn", "on_attack"];
     else if (curatedMultiMode) creatureTriggers = ["on_play", "on_death", "on_activation", "on_return"];
     else if (deathNature) creatureTriggers = ["on_death"];
     else if (automatic) creatureTriggers = ["automatic"];

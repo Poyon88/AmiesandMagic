@@ -245,6 +245,10 @@
         "label": "Métamorphose",
         "desc": "Invocation : cette unité devient une copie exacte (ATK / PV / capacités) d'une unité ciblée."
       },
+      "dedoublement": {
+        "label": "Dédoublement",
+        "desc": "Invocation : crée en jeu une copie exacte de cette créature."
+      },
       "tactique": {
         "label": "Tactique X",
         "desc": "Invocation : attribue X capacité(s) choisie(s) à une unité alliée ciblée de manière permanente."
@@ -746,37 +750,6 @@
       "expert-etendu": "Expert · Étendu",
       "classique-etendu": "Classique · Étendu",
       "classique-standard": "Classique · Standard"
-    },
-    "tokens": {
-      "3": "Aigles Géants",
-      "4": "Elémentaire des Airs",
-      "5": "Chien de combat",
-      "6": "Araignée Géante",
-      "8": "Homme-Arbre",
-      "9": "Humain",
-      "10": "Dragons",
-      "11": "Loups",
-      "13": "Ours",
-      "14": "Elfe",
-      "15": "Centaure",
-      "16": "Ange",
-      "18": "Hobbits Base",
-      "19": "Soldat du Temple",
-      "20": "Gobelins",
-      "21": "Jeune Hobbit Vaillant",
-      "22": "Zombies",
-      "23": "Guerrier Viking",
-      "24": "Incas",
-      "25": "Panthère",
-      "26": "Anchanchu",
-      "27": "Humains",
-      "28": "Tigre",
-      "29": "Lapinou",
-      "30": "Ecureuil",
-      "31": "Ourson",
-      "32": "Démon mineur",
-      "33": "Chiens Mignon",
-      "34": "Squelettes"
     }
   },
   "home": {

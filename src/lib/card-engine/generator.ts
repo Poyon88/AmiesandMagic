@@ -1,5 +1,5 @@
 import {
-  RARITIES, RARITY_MAP, KEYWORDS, FACTIONS,
+  RARITIES, RARITY_MAP, KEYWORDS, FACTIONS, deriveRaceForClan,
   STAT_COST, MANA_BUDGET_BASE,
   MANA_WEIGHTS, MANA_WEIGHTS_BY_RARITY, RARITY_WEIGHTS_BY_MANA,
   RARITY_WEIGHTS_GLOBAL,
@@ -63,15 +63,15 @@ function computeBudget(mana: number, rarityId: string) {
 function getAvailableKeywords(factionId: string, rarityId: string, raceId?: string, clanId?: string) {
   const faction = FACTIONS[factionId];
   const tier = RARITY_MAP[rarityId].tier;
-  // Profile keyword weights: prefer the race profile, then the clan profile
-  // (the Élémentaires carry their elemental playstyle on the clan), then the
-  // faction-level likelihoods.
-  const profileKws: Record<string, number> | undefined =
-    (raceId ? faction.raceProfiles?.[raceId]?.likelyKeywords : undefined)
-    ?? (clanId ? faction.clanProfiles?.[clanId]?.likelyKeywords : undefined);
+  // Poids des mots-clés : cascade CLAN > RACE > FACTION, comblée PAR MOT-CLÉ.
+  // Le profil de clan prime ; un mot-clé absent de sa table retombe sur le
+  // profil de race (ex. l'Aigle Géant garde son poids de Vol dans un clan elfe),
+  // puis sur l'ombrelle de faction, puis sur le défaut 0.12.
+  const clanKws = clanId ? faction.clanProfiles?.[clanId]?.likelyKeywords : undefined;
+  const raceKws = raceId ? faction.raceProfiles?.[raceId]?.likelyKeywords : undefined;
   return Object.entries(KEYWORDS)
     .filter(([id, kw]) => kw.minTier <= tier && !faction.forbiddenKeywords.includes(id))
-    .map(([id, kw]) => ({ id, ...kw, weight: (profileKws ? profileKws[id] : undefined) ?? faction.likelyKeywords[id] ?? 0.12 }));
+    .map(([id, kw]) => ({ id, ...kw, weight: clanKws?.[id] ?? raceKws?.[id] ?? faction.likelyKeywords[id] ?? 0.12 }));
 }
 
 function pickWeightedKeyword(available: ReturnType<typeof getAvailableKeywords>, alreadyPicked: string[]) {
@@ -93,25 +93,17 @@ export function generateCardStats(factionId: string, type: string, rarityId: str
   const isUnit = type === 'Unité';
   const mana = fixedMana ?? pickMana(rarityId);
 
-  // Race-specific stat adjustments — fall back to clan profile when the
-  // faction tunes by clan instead (Élémentaires).
-  let statWeights = { ...faction.statWeights };
-  const raceProfile = (raceId && faction.raceProfiles?.[raceId])
-    || (clanId && faction.clanProfiles?.[clanId])
-    || null;
-  if (raceProfile) {
-    statWeights = { ...raceProfile.statWeights };
-  }
+  // Race persistée par le mana pour les clans « à sous-races » (Cohortes
+  // Sanglantes, clan Hobbits). Sinon on conserve la race passée. `effectiveRace`
+  // pilote le profil de race, la garantie Vol, et la valeur renvoyée (stockée
+  // telle quelle sur la carte).
+  const effectiveRace = deriveRaceForClan(factionId, clanId, mana) ?? raceId;
 
-  // Sub-type stat adjustments (mana-based)
-  if (faction.subType && isUnit) {
-    const st = faction.subType;
-    if (factionId === "Hobbits" && mana >= st.threshold && !raceProfile) {
-      statWeights = { atk: 0.90, def: 1.50 };
-    } else if (factionId === "Orcs" && mana < st.threshold && !raceProfile) {
-      statWeights = { atk: 1.10, def: 0.70 };
-    }
-  }
+  // Poids de stats : cascade CLAN > RACE > FACTION (le profil de clan prime,
+  // le profil de race comble, sinon l'ombrelle de faction).
+  const clanStatW = clanId ? faction.clanProfiles?.[clanId]?.statWeights : undefined;
+  const raceStatW = effectiveRace ? faction.raceProfiles?.[effectiveRace]?.statWeights : undefined;
+  const statWeights = { ...(clanStatW ?? raceStatW ?? faction.statWeights) };
   let budget = computeBudget(mana, rarityId);
   const totalBudget = budget;
 
@@ -123,7 +115,7 @@ export function generateCardStats(factionId: string, type: string, rarityId: str
   if (isUnit) {
     // Dragons et Aigles Géants : Vol toujours garanti. Le clan Air
     // (anciennement la race "Air/Tempête") conserve ce Vol garanti.
-    if (raceId === "Dragons" || raceId === "Aigles Géants" || clanId === "Air") {
+    if (effectiveRace === "Dragons" || effectiveRace === "Aigles Géants" || clanId === "Air") {
       keywords.push("Vol");
     }
 
@@ -133,17 +125,6 @@ export function generateCardStats(factionId: string, type: string, rarityId: str
       const kw = KEYWORDS[kid];
       if (kw && kw.minTier <= RARITY_MAP[rarityId].tier && Math.random() < FREQUENT_CHANCE) {
         keywords.push(kid);
-      }
-    }
-
-    // Sub-type frequent keywords
-    if (faction.subType) {
-      const st = faction.subType;
-      if (factionId === "Hobbits" && mana >= st.threshold) {
-        if (Math.random() < FREQUENT_CHANCE) keywords.push("Provocation");
-        if (Math.random() < FREQUENT_CHANCE) keywords.push("Ancré");
-      } else if (factionId === "Orcs" && mana < st.threshold) {
-        if (Math.random() < FREQUENT_CHANCE) keywords.push("Traque");
       }
     }
 
@@ -198,7 +179,7 @@ export function generateCardStats(factionId: string, type: string, rarityId: str
       'Légendaire':  { max: 3, probs: [0.85, 0.55, 0.25] },
     };
     const kwConfig = KW_CONFIG[rarityId] || { max: 2, probs: [0.50, 0.25] };
-    const available = getAvailableKeywords(factionId, rarityId, raceId, clanId);
+    const available = getAvailableKeywords(factionId, rarityId, effectiveRace, clanId);
     let attempts = 0;
     while (keywords.length < kwConfig.max && attempts < 15) {
       const slotProb = kwConfig.probs[keywords.length] ?? 0;
@@ -228,6 +209,9 @@ export function generateCardStats(factionId: string, type: string, rarityId: str
 
   return {
     mana, attack, defense, power,
+    // Race effectivement retenue (dérivée du mana pour les clans à sous-races,
+    // sinon la race passée). La forge la persiste sur la carte.
+    race: effectiveRace,
     keywords: [...new Set(keywords)],
     keywordXValues,
     budgetTotal: totalBudget,
