@@ -484,7 +484,7 @@ function HandCard({
               sizes="(min-resolution: 2dppx) 600px, 300px"
               // Base brightness lift to match the brightened board (see
               // BoardCreature) — raw card art reads too dark otherwise.
-              style={{ filter: "brightness(1.3)" }}
+              style={{ filter: "brightness(1.05)" }}
               // Served directly from the Supabase CDN — card-art sources are
               // already small webp (≤800px) so the Next optimizer only added
               // dev-time queueing that left cards blank when many loaded at once.
@@ -857,7 +857,7 @@ function HandCard({
               alt={card.name}
               // Match the inline card art's brightness lift so the zoomed/drag
               // ghost doesn't look darker than the card it came from.
-              style={{ width: "100%", height: "100%", objectFit: "cover", filter: "brightness(1.3)" }}
+              style={{ width: "100%", height: "100%", objectFit: "cover", filter: "brightness(1.05)" }}
             />
           )}
         </div>,
