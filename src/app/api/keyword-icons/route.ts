@@ -29,9 +29,14 @@ function getAdminClient() {
 // GET /api/keyword-icons — public, returns all custom icons
 export async function GET() {
   const supabase = getAdminClient();
-  const { data, error } = await supabase
+  // Tente d'inclure `scale` ; repli si la colonne n'existe pas encore (migration
+  // non appliquée) pour ne jamais casser l'affichage des icônes.
+  let { data, error } = await supabase
     .from('keyword_icons')
-    .select('keyword, icon_url');
+    .select('keyword, icon_url, scale');
+  if (error) {
+    ({ data, error } = await supabase.from('keyword_icons').select('keyword, icon_url'));
+  }
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ icons: data ?? [] });
@@ -56,8 +61,29 @@ export async function POST(request: Request) {
   const formData = await request.formData();
   const keyword = formData.get('keyword') as string;
   const file = formData.get('file') as File | null;
+  const scaleRaw = formData.get('scale');
 
   if (!keyword) return NextResponse.json({ error: 'keyword requis' }, { status: 400 });
+
+  // Parse an optional `scale` (facteur d'échelle d'affichage). Borné à
+  // [0.25, 4] pour éviter les valeurs aberrantes.
+  let scale: number | null = null;
+  if (scaleRaw != null && scaleRaw !== '') {
+    const n = Number(scaleRaw);
+    if (!Number.isFinite(n)) return NextResponse.json({ error: 'scale invalide' }, { status: 400 });
+    scale = Math.min(4, Math.max(0.25, n));
+  }
+
+  // Mise à jour de l'échelle seule (sans nouveau fichier) : l'icône doit déjà
+  // exister (l'échelle n'a de sens qu'avec une image uploadée).
+  if (!file && scale != null) {
+    const { error } = await supabase
+      .from('keyword_icons')
+      .update({ scale, updated_at: new Date().toISOString() })
+      .eq('keyword', keyword);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ success: true, scale });
+  }
 
   if (file) {
     // Upload to Supabase Storage
@@ -77,10 +103,13 @@ export async function POST(request: Request) {
 
     const iconUrl = urlData.publicUrl;
 
-    // Upsert in keyword_icons table
+    // Upsert in keyword_icons table. `scale` n'est inclus que s'il est fourni,
+    // pour ne pas réinitialiser l'échelle existante lors d'un simple ré-upload.
+    const row: Record<string, unknown> = { keyword, icon_url: iconUrl, updated_at: new Date().toISOString() };
+    if (scale != null) row.scale = scale;
     const { error } = await supabase
       .from('keyword_icons')
-      .upsert({ keyword, icon_url: iconUrl, updated_at: new Date().toISOString() }, { onConflict: 'keyword' });
+      .upsert(row, { onConflict: 'keyword' });
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 

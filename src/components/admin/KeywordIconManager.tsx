@@ -8,10 +8,12 @@ import type { Keyword } from "@/lib/game/types";
 interface CustomIcon {
   keyword: string;
   icon_url: string;
+  scale?: number | null;
 }
 
 export default function KeywordIconManager() {
   const [customIcons, setCustomIcons] = useState<Record<string, string>>({});
+  const [scales, setScales] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState<string | null>(null);
   const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
@@ -22,12 +24,30 @@ export default function KeywordIconManager() {
     const res = await fetch("/api/keyword-icons");
     const data = await res.json();
     const map: Record<string, string> = {};
+    const scaleMap: Record<string, number> = {};
     for (const icon of (data.icons ?? []) as CustomIcon[]) {
       map[icon.keyword] = icon.icon_url;
+      scaleMap[icon.keyword] = icon.scale != null ? Number(icon.scale) : 1;
     }
     setCustomIcons(map);
+    setScales(scaleMap);
     setLoading(false);
   }, []);
+
+  // Enregistre le facteur d'échelle d'une icône (sans nouveau fichier).
+  async function handleScale(keyword: string, scale: number) {
+    const formData = new FormData();
+    formData.append("keyword", keyword);
+    formData.append("scale", String(scale));
+    const res = await fetch("/api/keyword-icons", { method: "POST", body: formData });
+    const data = await res.json();
+    if (data.error) {
+      setMessage({ text: data.error, type: "error" });
+    } else {
+      setMessage({ text: `Échelle de "${KEYWORD_LABELS[keyword as Keyword]}" : ×${scale.toFixed(2)}`, type: "success" });
+      useKeywordIconStore.getState().reload();
+    }
+  }
 
   useEffect(() => {
     fetchIcons();
@@ -168,7 +188,7 @@ export default function KeywordIconManager() {
                       <img
                         src={displayUrl}
                         alt={label}
-                        style={{ width: 28, height: 28, objectFit: "contain" }}
+                        style={{ width: 28, height: 28, objectFit: "contain", transform: `scale(${scales[kw] ?? 1})` }}
                       />
                     ) : (
                       <span style={{ fontSize: 20 }}>{defaultSymbol}</span>
@@ -182,6 +202,27 @@ export default function KeywordIconManager() {
                       {customUrl ? "Image personnalisée" : isImage ? "Image locale" : `Emoji: ${defaultSymbol}`}
                     </div>
                   </div>
+
+                  {/* Échelle d'affichage (uniquement pour les icônes image) */}
+                  {customUrl && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, width: 170, flexShrink: 0 }}>
+                      <input
+                        type="range"
+                        min={0.5}
+                        max={2.5}
+                        step={0.05}
+                        value={scales[kw] ?? 1}
+                        onChange={(e) => setScales((prev) => ({ ...prev, [kw]: Number(e.target.value) }))}
+                        onPointerUp={() => handleScale(kw, scales[kw] ?? 1)}
+                        onKeyUp={() => handleScale(kw, scales[kw] ?? 1)}
+                        title="Taille d'affichage de l'icône"
+                        style={{ flex: 1 }}
+                      />
+                      <span style={{ fontSize: 11, color: "#666", width: 34, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
+                        ×{(scales[kw] ?? 1).toFixed(2)}
+                      </span>
+                    </div>
+                  )}
 
                   {/* Actions */}
                   <div style={{ display: "flex", gap: 6, alignItems: "center" }}>

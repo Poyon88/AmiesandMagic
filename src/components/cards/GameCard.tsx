@@ -166,6 +166,11 @@ export default function GameCard({
   };
   const { w, h } = dims[size];
   const s = size === "sm" ? 0.7 : size === "md" ? 0.85 : 1;
+  // Échelle des icônes de mots-clés de la barre du bas : +50% par rapport au
+  // gabarit historique (33·s), pour une meilleure lisibilité. La normalisation
+  // fine par icône (marges internes des PNG) se règle en plus dans l'admin.
+  const CARD_ICON_MULT = 1.5;
+  const icoS = s * CARD_ICON_MULT;
   // Touch devices have no hover-zoom: enlarge the detail-overlay text only.
   // `so` is the overlay text scale (base `s` bumped on coarse pointers); the
   // always-visible card body keeps using `s` so its layout is unchanged.
@@ -365,7 +370,7 @@ export default function GameCard({
               const modeFilter = keywordModeFilter(mode);
               return (
               <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} title={displayTitle} style={{
-                minWidth: 40 * s, height: 40 * s, borderRadius: 4 * s,
+                minWidth: 40 * icoS, height: 40 * icoS, borderRadius: 4 * s,
                 padding: x != null ? `0 ${4 * s}px` : 0,
                 background: isAllAllies ? "#27ae6055" : (hasImg ? "transparent" : `${accentColor}33`),
                 border: isAllAllies ? `1px solid #27ae60` : (hasImg ? "none" : `1px solid ${accentColor}66`),
@@ -373,8 +378,8 @@ export default function GameCard({
                 fontSize: 10 * s, overflow: "hidden",
               }}>
                 <span style={{ display: "inline-flex", filter: modeFilter ?? undefined, lineHeight: 0 }}>
-                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 33 * s, height: 33 * s, flexShrink: 0 }}>
-                    <KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={33 * s} keyword={kw} fill />
+                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 33 * icoS, height: 33 * icoS, flexShrink: 0 }}>
+                    <KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={33 * icoS} keyword={kw} fill />
                   </span>
                 </span>
                 {x != null && <span style={{ fontSize: 10 * s, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}`, marginLeft: -6 * s }}>{toRoman(x)}</span>}
@@ -406,15 +411,15 @@ export default function GameCard({
               const hasImg = !!iconOverrides[spellKey];
               return (
               <div key={`sk_${i}`} title={displayTitle} style={{
-                minWidth: 40 * s, height: 40 * s, borderRadius: 4 * s,
+                minWidth: 40 * icoS, height: 40 * icoS, borderRadius: 4 * s,
                 padding: hasValue ? `0 ${4 * s}px` : 0,
                 background: hasImg ? "transparent" : `${accentColor}33`,
                 border: hasImg ? "none" : `1px solid ${accentColor}66`,
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 * s,
                 fontSize: 10 * s, overflow: "hidden",
               }}>
-                <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 33 * s, height: 33 * s, flexShrink: 0 }}>
-                  <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={33 * s} keyword={spellKey} fill />
+                <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 33 * icoS, height: 33 * icoS, flexShrink: 0 }}>
+                  <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={33 * icoS} keyword={spellKey} fill />
                 </span>
                 {valueText && <span style={{
                   fontSize: 10 * s, fontWeight: 900, color: "#fff",
@@ -434,16 +439,16 @@ export default function GameCard({
             const val = composedValueText(cap);
             const tint = keywordModeColor(composedTriggerMode(cap)) ?? accentColor;
             return (
-              <div key={`cx-${i}`} title={vocab.composedDesc(cap, effectiveTokens)} style={{ minWidth: 40 * s, height: 40 * s, padding: val ? `0 ${4 * s}px` : 0, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 * s }}>
+              <div key={`cx-${i}`} title={vocab.composedDesc(cap, effectiveTokens)} style={{ minWidth: 40 * icoS, height: 40 * icoS, padding: val ? `0 ${4 * s}px` : 0, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 * s }}>
                 <span style={{ position: "relative", display: "inline-flex", lineHeight: 0 }}>
                   <span style={{ display: "inline-flex", lineHeight: 0, filter: keywordModeFilter(cmode) ?? undefined }}>
                   {hasImg ? (
-                    <div style={{ width: 40 * s, height: 40 * s, flexShrink: 0 }}><KeywordIcon symbol={ic.symbol} size={22 * s} keyword={ic.keyword} fill /></div>
+                    <div style={{ width: 40 * icoS, height: 40 * icoS, flexShrink: 0 }}><KeywordIcon symbol={ic.symbol} size={22 * icoS} keyword={ic.keyword} fill /></div>
                   ) : (
-                    <KeywordIcon symbol={ic.symbol} size={22 * s} keyword={ic.keyword} />
+                    <KeywordIcon symbol={ic.symbol} size={22 * icoS} keyword={ic.keyword} />
                   )}
                   </span>
-                  <ComposedMarker mode={cmode} size={11 * s} />
+                  <ComposedMarker mode={cmode} size={11 * icoS} />
                 </span>
                 {val && <span style={{ fontSize: 10 * s, fontWeight: 900, color: keywordModeColor(composedTriggerMode(cap)) ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}`, marginLeft: -3 * s }}>{val}</span>}
               </div>

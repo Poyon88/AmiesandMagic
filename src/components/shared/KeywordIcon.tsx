@@ -19,7 +19,7 @@ export default function KeywordIcon({
   keyword?: string;
   fill?: boolean;
 }) {
-  const { overrides, loaded, fetchOverrides } = useKeywordIconStore();
+  const { overrides, scales, loaded, fetchOverrides } = useKeywordIconStore();
 
   useEffect(() => {
     if (!loaded) fetchOverrides();
@@ -28,13 +28,19 @@ export default function KeywordIcon({
   const overrideUrl = keyword ? overrides[keyword] : undefined;
   const effectiveSymbol = overrideUrl ?? symbol;
 
+  // Facteur d'échelle par icône (normalisation des marges internes des PNG).
+  // Appliqué via transform pour ne pas perturber la mise en page (la boîte
+  // parente garde sa taille ; l'excédent transparent déborde sans gêne).
+  const scale = keyword ? (scales[keyword] ?? 1) : 1;
+  const transform = scale !== 1 ? `scale(${scale})` : undefined;
+
   if (effectiveSymbol.startsWith("/") || effectiveSymbol.startsWith("http")) {
     if (fill) {
       return (
         <img
           src={effectiveSymbol}
           alt=""
-          style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
+          style={{ width: "100%", height: "100%", objectFit: "contain", display: "block", transform }}
         />
       );
     }
@@ -43,9 +49,9 @@ export default function KeywordIcon({
       <img
         src={effectiveSymbol}
         alt=""
-        style={{ width: imgSize, height: imgSize, objectFit: "contain", display: "inline-block", verticalAlign: "middle" }}
+        style={{ width: imgSize, height: imgSize, objectFit: "contain", display: "inline-block", verticalAlign: "middle", transform }}
       />
     );
   }
-  return <span style={{ fontSize: size, lineHeight: 1 }}>{effectiveSymbol}</span>;
+  return <span style={{ fontSize: size, lineHeight: 1, display: "inline-block", transform }}>{effectiveSymbol}</span>;
 }
