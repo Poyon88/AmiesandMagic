@@ -616,23 +616,27 @@
     "factions": {
       "Elfes": {
         "displayName": "L'Alliance Céleste",
-        "description": "Agiles et furtifs. Favorisent la vitesse et l'esquive. Aigles géants parmi leurs rangs."
+        "description": "L'alliance du bon peuple des bois : elfes furtifs, fées mages, hobbits rusés et leurs colosses Hommes-Arbres."
       },
       "Nains": {
         "displayName": "La Confrérie de la Forge",
-        "description": "Solides et résistants. Favorisent la défense et la ténacité."
+        "description": "Solides et résistants : défense, ténacité, forge et ingénierie gnome."
       },
-      "Hobbits": {
-        "displayName": "Le Pacte des Bois",
-        "description": "Petits mais rusés. Esquive et entraide."
+      "EmpireDuMilieu": {
+        "displayName": "L'Empire du Milieu",
+        "description": "Stratégie et contrôle : discipline, formations, mysticisme et furtivité."
+      },
+      "RoyaumesDuSoleil": {
+        "displayName": "Les Royaumes du Soleil",
+        "description": "Soleil, désert et esprits : brasier rituel, nomades pilleurs et invocateurs."
       },
       "Humains": {
         "displayName": "Les Royaumes Libres",
-        "description": "Équilibrés et polyvalents. Synergies de groupe."
+        "description": "Le vieux continent : honneur, acier et champions héroïques."
       },
       "Hommes-Bêtes": {
         "displayName": "La Meute",
-        "description": "Sauvages et féroces. Attaquent vite, régénèrent, entrent en rage."
+        "description": "Sauvages et féroces : attaquent vite, régénèrent, entrent en rage."
       },
       "Élémentaires": {
         "displayName": "Les Primordiaux",
@@ -642,17 +646,13 @@
         "displayName": "Mercenaires",
         "description": "Soldats de fortune sans allégeance. Polyvalents et disponibles pour tous les decks."
       },
-      "Orcs": {
-        "displayName": "La Horde",
-        "description": "Horde brutale. Gobelins rapides et sacrifiables. Orcs brutes et agressifs. Trolls résistants. Wargs rapides."
-      },
       "Morts-Vivants": {
         "displayName": "La Nécropole",
-        "description": "Insatiables et corrompus. Résurrection et drain de vie."
+        "description": "Insatiables et corrompus : résurrection, drain de vie et magie du cimetière."
       },
       "Elfes Noirs": {
-        "displayName": "L'Engeance du Chaos",
-        "description": "Sournois et venimeux. Poison, ombre et corruption."
+        "displayName": "Les Légions du Chaos",
+        "description": "Toutes les forces du Chaos unies : horde organisée, cour démoniaque, corrompus du poison et élite déchue."
       }
     },
     "rarities": {
@@ -663,46 +663,49 @@
       "Légendaire": "Légendaire"
     },
     "clans": {
-      "Sylvains": "Sylvains",
-      "Hauts-Elfes": "Hauts-Elfes",
-      "Elfes des Mers": "Elfes des Mers",
-      "Émeraudes": "Émeraudes",
-      "Cimes Éternelles": "Cimes Éternelles",
-      "Montagnes": "Montagnes",
-      "Collines": "Collines",
-      "Lave": "Lave",
-      "Plaines": "Plaines",
-      "Rivièrains": "Rivièrains",
-      "Landes": "Landes",
-      "Nordiques": "Nordiques",
-      "Orientaux": "Orientaux",
-      "Templiers": "Templiers",
-      "Amazones": "Amazones",
-      "Incas": "Incas",
-      "Touaregs": "Touaregs",
-      "Forêt": "Forêt",
-      "Toundra": "Toundra",
-      "Savane": "Savane",
-      "Jungle": "Jungle",
-      "Mignons": "Mignons",
-      "Pacte des Griffes": "Pacte des Griffes",
+      "Les Sylvains": "Les Sylvains",
+      "Les Hauts-Elfes": "Les Hauts-Elfes",
+      "La Forêt d'Émeraude": "La Forêt d'Émeraude",
+      "Les Hobbits": "Les Hobbits",
+      "Les Gardiens de la Montagne": "Les Gardiens de la Montagne",
+      "La Forge Ardente": "La Forge Ardente",
+      "Les Sentinelles d'Airain": "Les Sentinelles d'Airain",
+      "La Guilde des Ingénieurs": "La Guilde des Ingénieurs",
+      "Les Hordes des Steppes": "Les Hordes des Steppes",
+      "L'Empire de Jade": "L'Empire de Jade",
+      "Les Lames de l'Ombre": "Les Lames de l'Ombre",
+      "Les Enfants du Soleil": "Les Enfants du Soleil",
+      "Les Seigneurs des Dunes": "Les Seigneurs des Dunes",
+      "Le Royaume des Masques": "Le Royaume des Masques",
+      "Le Royaume du Nord": "Le Royaume du Nord",
+      "L'Ordre de l'Aube": "L'Ordre de l'Aube",
+      "Les Guerrières du Vent": "Les Guerrières du Vent",
+      "La Cour Pourpre": "La Cour Pourpre",
+      "Les Enfants de la Lune": "Les Enfants de la Lune",
+      "Le Pacte des Griffes": "Le Pacte des Griffes",
+      "La Harde Sauvage": "La Harde Sauvage",
       "Feu": "Feu",
       "Terre": "Terre",
       "Eau": "Eau",
       "Air": "Air",
-      "Marais": "Marais",
-      "Abysses souterrains": "Abysses souterrains",
-      "Forêt maudite": "Forêt maudite",
-      "Cités de cendres": "Cités de cendres"
+      "Les Rangs Silencieux": "Les Rangs Silencieux",
+      "Le Voile Hurlant": "Le Voile Hurlant",
+      "La Cour Écarlate": "La Cour Écarlate",
+      "Le Conclave d'Ossements": "Le Conclave d'Ossements",
+      "Les Cohortes Sanglantes": "Les Cohortes Sanglantes",
+      "La Cour Infernale": "La Cour Infernale",
+      "La Forêt Maudite": "La Forêt Maudite",
+      "La Garde Noire": "La Garde Noire"
     },
     "races": {
       "Elfes": "Elfes",
-      "Aigles Géants": "Aigles Géants",
       "Fées": "Fées",
-      "Nains": "Nains",
-      "Golems": "Golems",
+      "Aigles Géants": "Aigles Géants",
       "Hobbits": "Hobbits",
       "Hommes-Arbres": "Hommes-Arbres",
+      "Nains": "Nains",
+      "Golems": "Golems",
+      "Gnomes": "Gnomes",
       "Humains": "Humains",
       "Hommes-Loups": "Hommes-Loups",
       "Hommes-Ours": "Hommes-Ours",
@@ -722,10 +725,6 @@
       "Ours": "Ours",
       "Loups": "Loups",
       "Fauves": "Fauves",
-      "Orcs": "Orcs",
-      "Gobelins": "Gobelins",
-      "Trolls": "Trolls",
-      "Wargs": "Wargs",
       "Squelettes": "Squelettes",
       "Zombies": "Zombies",
       "Spectres": "Spectres",
@@ -734,7 +733,12 @@
       "Banshees": "Banshees",
       "Elfes Corrompus": "Elfes Corrompus",
       "Araignées Géantes": "Araignées Géantes",
-      "Démons": "Démons"
+      "Démons": "Démons",
+      "Orcs": "Orcs",
+      "Gobelins": "Gobelins",
+      "Trolls": "Trolls",
+      "Wargs": "Wargs",
+      "Guerriers du Chaos": "Guerriers du Chaos"
     },
     "alignments": {
       "bon": "Bon",

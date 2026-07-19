@@ -399,6 +399,10 @@
       "declenchement": {
         "label": "Trigger",
         "desc": "Summon: replay once the triggered compound effects of other allies in play, for a fixed subset of triggers (enter / death / end of turn / return)."
+      },
+      "dedoublement": {
+        "label": "Doubling",
+        "desc": "Summon: creates an exact copy of this creature in play."
       }
     },
     "spell_keywords": {
@@ -612,23 +616,19 @@
     "factions": {
       "Elfes": {
         "displayName": "The Celestial Alliance",
-        "description": "Agile and stealthy. Masters of speed and evasion. Giant eagles fight among their ranks."
+        "description": "An alliance of the good folk of the woods: stealthy elves, mage faeries, cunning hobbits, and their colossal Treemen."
       },
       "Nains": {
         "displayName": "The Forge Brotherhood",
-        "description": "Sturdy and resilient. Masters of defense and tenacity."
-      },
-      "Hobbits": {
-        "displayName": "The Woodland Pact",
-        "description": "Small but cunning. Evasion and mutual aid."
+        "description": "Sturdy and resilient: defense, tenacity, forging, and gnome engineering."
       },
       "Humains": {
         "displayName": "The Free Kingdoms",
-        "description": "Balanced and versatile. Group synergies."
+        "description": "The old continent: honor, steel, and heroic champions."
       },
       "Hommes-Bêtes": {
         "displayName": "The Pack",
-        "description": "Savage and ferocious. Strike fast, regenerate, and fly into a rage."
+        "description": "Wild and ferocious: fast attackers, regenerators, rage unleashed."
       },
       "Élémentaires": {
         "displayName": "The Primordials",
@@ -638,17 +638,21 @@
         "displayName": "Mercenaries",
         "description": "Soldiers of fortune with no allegiance. Versatile and available for any deck."
       },
-      "Orcs": {
-        "displayName": "The Horde",
-        "description": "A brutal horde. Fast and expendable goblins. Brutish and aggressive orcs. Resilient trolls. Swift wargs."
-      },
       "Morts-Vivants": {
         "displayName": "The Necropolis",
-        "description": "Insatiable and corrupted. Resurrection and life drain."
+        "description": "Insatiable and corrupted: resurrection, life drain, and graveyard magic."
       },
       "Elfes Noirs": {
-        "displayName": "The Chaos Brood",
-        "description": "Devious and venomous. Poison, shadow, and corruption."
+        "displayName": "The Chaos Legions",
+        "description": "All the forces of Chaos united: organized horde, demonic court, poison-corrupted, and fallen elite."
+      },
+      "EmpireDuMilieu": {
+        "displayName": "The Middle Empire",
+        "description": "Strategy and control: discipline, formations, mysticism, and stealth."
+      },
+      "RoyaumesDuSoleil": {
+        "displayName": "The Sun Kingdoms",
+        "description": "Sun, desert, and spirits: ritual fire, raiding nomads, and summoners."
       }
     },
     "rarities": {
@@ -659,46 +663,48 @@
       "Légendaire": "Legendary"
     },
     "clans": {
-      "Sylvains": "Sylvans",
-      "Hauts-Elfes": "High Elves",
-      "Elfes des Mers": "Sea Elves",
-      "Émeraudes": "Emeralds",
-      "Cimes Éternelles": "Eternal Peaks",
-      "Montagnes": "Mountains",
-      "Collines": "Hills",
-      "Lave": "Lava",
-      "Plaines": "Plains",
-      "Rivièrains": "Riverfolk",
-      "Landes": "Moorlands",
-      "Nordiques": "Nordics",
-      "Orientaux": "Easterns",
-      "Templiers": "Templars",
-      "Amazones": "Amazons",
-      "Incas": "Incas",
-      "Touaregs": "Tuaregs",
-      "Forêt": "Forest",
-      "Toundra": "Tundra",
-      "Savane": "Savanna",
-      "Jungle": "Jungle",
-      "Mignons": "Cuties",
-      "Pacte des Griffes": "Claw Pact",
       "Feu": "Fire",
       "Terre": "Earth",
       "Eau": "Water",
       "Air": "Air",
-      "Marais": "Swamp",
-      "Abysses souterrains": "Underground Abyss",
-      "Forêt maudite": "Cursed Forest",
-      "Cités de cendres": "Ash Cities"
+      "Les Sylvains": "The Sylvans",
+      "Les Hauts-Elfes": "The High Elves",
+      "La Forêt d'Émeraude": "The Emerald Forest",
+      "Les Hobbits": "The Hobbits",
+      "Les Gardiens de la Montagne": "The Mountain Wardens",
+      "La Forge Ardente": "The Blazing Forge",
+      "Les Sentinelles d'Airain": "The Bronze Sentinels",
+      "La Guilde des Ingénieurs": "The Engineers' Guild",
+      "Les Hordes des Steppes": "The Steppe Hordes",
+      "L'Empire de Jade": "The Jade Empire",
+      "Les Lames de l'Ombre": "The Shadow Blades",
+      "Les Enfants du Soleil": "The Children of the Sun",
+      "Les Seigneurs des Dunes": "The Dune Lords",
+      "Le Royaume des Masques": "The Kingdom of Masks",
+      "Le Royaume du Nord": "The Northern Kingdom",
+      "L'Ordre de l'Aube": "The Order of the Dawn",
+      "Les Guerrières du Vent": "The Wind Warriors",
+      "La Cour Pourpre": "The Crimson Court",
+      "Les Enfants de la Lune": "The Children of the Moon",
+      "Le Pacte des Griffes": "The Claw Pact",
+      "La Harde Sauvage": "The Wild Pack",
+      "Les Rangs Silencieux": "The Silent Ranks",
+      "Le Voile Hurlant": "The Howling Veil",
+      "La Cour Écarlate": "The Scarlet Court",
+      "Le Conclave d'Ossements": "The Bone Conclave",
+      "Les Cohortes Sanglantes": "The Bloodied Cohorts",
+      "La Cour Infernale": "The Infernal Court",
+      "La Forêt Maudite": "The Cursed Forest",
+      "La Garde Noire": "The Black Guard"
     },
     "races": {
       "Elfes": "Elves",
-      "Aigles Géants": "Giant Eagles",
       "Fées": "Faeries",
-      "Nains": "Dwarves",
-      "Golems": "Golems",
+      "Aigles Géants": "Giant Eagles",
       "Hobbits": "Hobbits",
       "Hommes-Arbres": "Treefolk",
+      "Nains": "Dwarves",
+      "Golems": "Golems",
       "Humains": "Humans",
       "Hommes-Loups": "Werewolves",
       "Hommes-Ours": "Werebears",
@@ -718,10 +724,6 @@
       "Ours": "Bears",
       "Loups": "Wolves",
       "Fauves": "Beasts",
-      "Orcs": "Orcs",
-      "Gobelins": "Goblins",
-      "Trolls": "Trolls",
-      "Wargs": "Wargs",
       "Squelettes": "Skeletons",
       "Zombies": "Zombies",
       "Spectres": "Spectres",
@@ -730,7 +732,13 @@
       "Banshees": "Banshees",
       "Elfes Corrompus": "Corrupted Elves",
       "Araignées Géantes": "Giant Spiders",
-      "Démons": "Demons"
+      "Démons": "Demons",
+      "Orcs": "Orcs",
+      "Gobelins": "Goblins",
+      "Trolls": "Trolls",
+      "Wargs": "Wargs",
+      "Gnomes": "Gnomes",
+      "Guerriers du Chaos": "Chaos Warriors"
     },
     "alignments": {
       "bon": "Good",
@@ -746,37 +754,6 @@
       "expert-etendu": "Expert · Extended",
       "classique-etendu": "Classic · Extended",
       "classique-standard": "Classic · Standard"
-    },
-    "tokens": {
-      "3": "Giant Eagles",
-      "4": "Air Elemental",
-      "5": "War Hound",
-      "6": "Giant Spider",
-      "8": "Treant",
-      "9": "Human",
-      "10": "Dragons",
-      "11": "Wolves",
-      "13": "Bears",
-      "14": "Elf",
-      "15": "Centaur",
-      "16": "Angel",
-      "18": "Basic Hobbits",
-      "19": "Temple Soldier",
-      "20": "Goblins",
-      "21": "Brave Young Hobbit",
-      "22": "Zombies",
-      "23": "Viking Warrior",
-      "24": "Incas",
-      "25": "Panther",
-      "26": "Anchanchu",
-      "27": "Humans",
-      "28": "Tiger",
-      "29": "Bunny",
-      "30": "Squirrel",
-      "31": "Bear Cub",
-      "32": "Minor Demon",
-      "33": "Cute Dogs",
-      "34": "Skeletons"
     }
   },
   "home": {
