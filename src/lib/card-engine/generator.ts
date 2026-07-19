@@ -115,7 +115,7 @@ export function generateCardStats(factionId: string, type: string, rarityId: str
   if (isUnit) {
     // Dragons et Aigles Géants : Vol toujours garanti. Le clan Air
     // (anciennement la race "Air/Tempête") conserve ce Vol garanti.
-    if (effectiveRace === "Dragons" || effectiveRace === "Aigles Géants" || clanId === "Air") {
+    if (effectiveRace === "Dragons" || effectiveRace === "Aigles Géants" || clanId === "Le Souffle des Cimes") {
       keywords.push("Vol");
     }
 

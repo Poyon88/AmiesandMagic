@@ -77,7 +77,7 @@ describe("refonte factions & clans", () => {
   });
 
   it("accepte les nouveaux clans des factions refondues", () => {
-    expect(validateFactionClan("Elfes", "Les Hobbits").ok).toBe(true);
+    expect(validateFactionClan("Elfes", "La Combe Verte").ok).toBe(true);
     expect(validateFactionClan("Elfes Noirs", "Les Cohortes Sanglantes").ok).toBe(true);
     expect(validateFactionClan("Nains", "La Guilde des Ingénieurs").ok).toBe(true);
   });

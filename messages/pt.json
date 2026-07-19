@@ -245,6 +245,10 @@
         "label": "Metamorfose",
         "desc": "Invocação: esta unidade torna-se uma cópia exata (ATK / PV / habilidades) de uma unidade-alvo."
       },
+      "dedoublement": {
+        "label": "Desdobramento",
+        "desc": "Invocação: cria em jogo uma cópia exata desta criatura."
+      },
       "tactique": {
         "label": "Tática X",
         "desc": "Invocação: atribui X habilidade(s) escolhida(s) a uma unidade aliada-alvo permanentemente."
@@ -399,10 +403,6 @@
       "declenchement": {
         "label": "Ativação",
         "desc": "Invocação: reativa uma vez os efeitos compostos acionados dos outros aliados em jogo, para um subconjunto fixo de gatilhos (entrada / morte / fim de turno / retorno)."
-      },
-      "dedoublement": {
-        "label": "Desdobramento",
-        "desc": "Invocação: cria em jogo uma cópia exata desta criatura."
       }
     },
     "spell_keywords": {
@@ -622,6 +622,14 @@
         "displayName": "A Irmandade da Forja",
         "description": "Sólidos e resistentes: defesa, tenacidade, forja e engenharia gnoma."
       },
+      "EmpireDuMilieu": {
+        "displayName": "O Império do Meio",
+        "description": "Estratégia e controle: disciplina, formações, misticismo e furtividade."
+      },
+      "RoyaumesDuSoleil": {
+        "displayName": "Os Reinos do Sol",
+        "description": "Sol, deserto e espíritos: braseiro ritual, nômades saqueadores e invocadores."
+      },
       "Humains": {
         "displayName": "Os Reinos Livres",
         "description": "O velho continente: honra, aço e campeões heroicos."
@@ -645,14 +653,6 @@
       "Elfes Noirs": {
         "displayName": "As Legiões do Caos",
         "description": "Todas as forças do Caos unidas: horda organizada, corte demoníaca, corrompidos pelo veneno e elite decaída."
-      },
-      "EmpireDuMilieu": {
-        "displayName": "O Império do Meio",
-        "description": "Estratégia e controle: disciplina, formações, misticismo e furtividade."
-      },
-      "RoyaumesDuSoleil": {
-        "displayName": "Os Reinos do Sol",
-        "description": "Sol, deserto e espíritos: braseiro ritual, nômades saqueadores e invocadores."
       }
     },
     "rarities": {
@@ -663,14 +663,9 @@
       "Légendaire": "Lendária"
     },
     "clans": {
-      "Feu": "Fogo",
-      "Terre": "Terra",
-      "Eau": "Água",
-      "Air": "Ar",
       "Les Sylvains": "Os Silvanos",
       "Les Hauts-Elfes": "Os Altos Elfos",
       "La Forêt d'Émeraude": "A Floresta de Esmeralda",
-      "Les Hobbits": "Os Hobbits",
       "Les Gardiens de la Montagne": "Os Guardiões da Montanha",
       "La Forge Ardente": "A Forja Ardente",
       "Les Sentinelles d'Airain": "As Sentinelas de Bronze",
@@ -684,18 +679,23 @@
       "Le Royaume du Nord": "O Reino do Norte",
       "L'Ordre de l'Aube": "A Ordem da Aurora",
       "Les Guerrières du Vent": "As Guerreiras do Vento",
-      "La Cour Pourpre": "A Corte Púrpura",
       "Les Enfants de la Lune": "Os Filhos da Lua",
       "Le Pacte des Griffes": "O Pacto das Garras",
       "La Harde Sauvage": "A Matilha Selvagem",
       "Les Rangs Silencieux": "As Fileiras Silenciosas",
       "Le Voile Hurlant": "O Véu Uivante",
       "La Cour Écarlate": "A Corte Escarlate",
-      "Le Conclave d'Ossements": "O Conclave de Ossos",
       "Les Cohortes Sanglantes": "As Coortes Sangrentas",
-      "La Cour Infernale": "A Corte Infernal",
       "La Forêt Maudite": "A Floresta Maldita",
-      "La Garde Noire": "A Guarda Negra"
+      "La Garde Noire": "A Guarda Negra",
+      "La Combe Verte": "O Vale Verde",
+      "Les Seigneurs Fauves": "Os Senhores Selvagens",
+      "La Colère des Flammes": "A Fúria das Chamas",
+      "Le Socle du Monde": "A Base do Mundo",
+      "La Vague Sans Fin": "A Onda Sem Fim",
+      "Le Souffle des Cimes": "O Sopro dos Cumes",
+      "Le Cénacle Nécromant": "O Cenáculo Necrômante",
+      "Les Princes des Abîmes": "Os Príncipes dos Abismos"
     },
     "races": {
       "Elfes": "Elfos",
@@ -705,6 +705,7 @@
       "Hommes-Arbres": "Homens-Árvore",
       "Nains": "Anões",
       "Golems": "Golens",
+      "Gnomes": "Gnomos",
       "Humains": "Humanos",
       "Hommes-Loups": "Homens-Lobos",
       "Hommes-Ours": "Homens-Ursos",
@@ -737,7 +738,6 @@
       "Gobelins": "Goblins",
       "Trolls": "Trolls",
       "Wargs": "Wargs",
-      "Gnomes": "Gnomos",
       "Guerriers du Chaos": "Guerreiros do Caos"
     },
     "alignments": {

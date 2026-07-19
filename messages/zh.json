@@ -245,6 +245,10 @@
         "label": "变形",
         "desc": "召唤：此单位变为目标单位的完全复制（攻击/生命/能力）。"
       },
+      "dedoublement": {
+        "label": "分身",
+        "desc": "召唤：在场上生成该生物的一个完整副本。"
+      },
       "tactique": {
         "label": "战术 X",
         "desc": "召唤：永久赋予目标友方单位 X 个选定的能力。"
@@ -399,10 +403,6 @@
       "declenchement": {
         "label": "触发",
         "desc": "召唤：将场上其他友方单位的复合触发效果重新触发一次，适用于固定的触发子集（入场/死亡/回合结束/返回）。"
-      },
-      "dedoublement": {
-        "label": "分身",
-        "desc": "召唤：在场上生成该生物的一个完整副本。"
       }
     },
     "spell_keywords": {
@@ -622,6 +622,14 @@
         "displayName": "熔炉兄弟会",
         "description": "坚固耐久：防御、韧性、锻造与侏儒工程。"
       },
+      "EmpireDuMilieu": {
+        "displayName": "中央帝国",
+        "description": "谋略与掌控：纪律、阵型、神秘主义与潜行。"
+      },
+      "RoyaumesDuSoleil": {
+        "displayName": "太阳王国",
+        "description": "烈日、沙漠与灵魂：祭祀烈焰、掠夺游牧民与召唤师。"
+      },
       "Humains": {
         "displayName": "自由王国",
         "description": "古老大陆：荣耀、钢铁与英雄斗士。"
@@ -645,14 +653,6 @@
       "Elfes Noirs": {
         "displayName": "混沌军团",
         "description": "混沌诸力合而为一：组织化的兽群、恶魔宫廷、毒化堕落者与堕落精英。"
-      },
-      "EmpireDuMilieu": {
-        "displayName": "中央帝国",
-        "description": "谋略与掌控：纪律、阵型、神秘主义与潜行。"
-      },
-      "RoyaumesDuSoleil": {
-        "displayName": "太阳王国",
-        "description": "烈日、沙漠与灵魂：祭祀烈焰、掠夺游牧民与召唤师。"
       }
     },
     "rarities": {
@@ -663,14 +663,9 @@
       "Légendaire": "传说"
     },
     "clans": {
-      "Feu": "火焰",
-      "Terre": "大地",
-      "Eau": "水流",
-      "Air": "风空",
       "Les Sylvains": "林地族",
       "Les Hauts-Elfes": "高等精灵",
       "La Forêt d'Émeraude": "翡翠森林",
-      "Les Hobbits": "霍比特人",
       "Les Gardiens de la Montagne": "山岳守卫",
       "La Forge Ardente": "烈焰熔炉",
       "Les Sentinelles d'Airain": "青铜哨兵",
@@ -684,18 +679,23 @@
       "Le Royaume du Nord": "北方王国",
       "L'Ordre de l'Aube": "黎明骑士团",
       "Les Guerrières du Vent": "风之女战士",
-      "La Cour Pourpre": "紫宫廷",
       "Les Enfants de la Lune": "月之子",
       "Le Pacte des Griffes": "爪契盟约",
       "La Harde Sauvage": "野性兽群",
       "Les Rangs Silencieux": "沉默军阵",
       "Le Voile Hurlant": "嚎啸之幕",
       "La Cour Écarlate": "猩红宫廷",
-      "Le Conclave d'Ossements": "白骨议会",
       "Les Cohortes Sanglantes": "血腥军团",
-      "La Cour Infernale": "地狱宫廷",
       "La Forêt Maudite": "诅咒森林",
-      "La Garde Noire": "黑色卫队"
+      "La Garde Noire": "黑色卫队",
+      "La Combe Verte": "翠谷",
+      "Les Seigneurs Fauves": "野兽领主",
+      "La Colère des Flammes": "烈焰之怒",
+      "Le Socle du Monde": "世界基石",
+      "La Vague Sans Fin": "无尽浪潮",
+      "Le Souffle des Cimes": "峰巅之息",
+      "Le Cénacle Nécromant": "死灵秘会",
+      "Les Princes des Abîmes": "深渊王侯"
     },
     "races": {
       "Elfes": "精灵",
@@ -705,6 +705,7 @@
       "Hommes-Arbres": "树人",
       "Nains": "矮人",
       "Golems": "魔像",
+      "Gnomes": "侏儒",
       "Humains": "人类",
       "Hommes-Loups": "狼人",
       "Hommes-Ours": "熊人",
@@ -737,7 +738,6 @@
       "Gobelins": "哥布林",
       "Trolls": "巨魔",
       "Wargs": "座狼",
-      "Gnomes": "侏儒",
       "Guerriers du Chaos": "混沌战士"
     },
     "alignments": {

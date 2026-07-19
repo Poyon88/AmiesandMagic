@@ -245,6 +245,10 @@
         "label": "Metamorfosis",
         "desc": "Invocación: esta unidad se convierte en una copia exacta (ATK / PV / habilidades) de una unidad objetivo."
       },
+      "dedoublement": {
+        "label": "Desdoblamiento",
+        "desc": "Invocación: crea en juego una copia exacta de esta criatura."
+      },
       "tactique": {
         "label": "Táctica X",
         "desc": "Invocación: otorga X habilidad(es) a elección a una unidad aliada objetivo de forma permanente."
@@ -399,10 +403,6 @@
       "declenchement": {
         "label": "Activación",
         "desc": "Invocación: vuelve a activar una vez los efectos compuestos desencadenados de los demás aliados en juego, para un subconjunto fijo de activadores (entrada / muerte / fin de turno / regreso)."
-      },
-      "dedoublement": {
-        "label": "Desdoblamiento",
-        "desc": "Invocación: crea en juego una copia exacta de esta criatura."
       }
     },
     "spell_keywords": {
@@ -622,6 +622,14 @@
         "displayName": "La Hermandad de la Forja",
         "description": "Sólidos y resistentes: defensa, tenacidad, forja e ingeniería gnoma."
       },
+      "EmpireDuMilieu": {
+        "displayName": "El Imperio del Centro",
+        "description": "Estrategia y control: disciplina, formaciones, misticismo y sigilo."
+      },
+      "RoyaumesDuSoleil": {
+        "displayName": "Los Reinos del Sol",
+        "description": "Sol, desierto y espíritus: hoguera ritual, nómadas saqueadores e invocadores."
+      },
       "Humains": {
         "displayName": "Los Reinos Libres",
         "description": "El viejo continente: honor, acero y campeones heroicos."
@@ -645,14 +653,6 @@
       "Elfes Noirs": {
         "displayName": "Las Legiones del Caos",
         "description": "Todas las fuerzas del Caos unidas: horda organizada, corte demoníaca, corrompidos del veneno y élite caída."
-      },
-      "EmpireDuMilieu": {
-        "displayName": "El Imperio del Centro",
-        "description": "Estrategia y control: disciplina, formaciones, misticismo y sigilo."
-      },
-      "RoyaumesDuSoleil": {
-        "displayName": "Los Reinos del Sol",
-        "description": "Sol, desierto y espíritus: hoguera ritual, nómadas saqueadores e invocadores."
       }
     },
     "rarities": {
@@ -663,14 +663,9 @@
       "Légendaire": "Legendaria"
     },
     "clans": {
-      "Feu": "Fuego",
-      "Terre": "Tierra",
-      "Eau": "Agua",
-      "Air": "Aire",
       "Les Sylvains": "Los Silvanos",
       "Les Hauts-Elfes": "Los Altos Elfos",
       "La Forêt d'Émeraude": "El Bosque de Esmeralda",
-      "Les Hobbits": "Los Hobbits",
       "Les Gardiens de la Montagne": "Los Guardianes de la Montaña",
       "La Forge Ardente": "La Forja Ardiente",
       "Les Sentinelles d'Airain": "Las Centinelas de Bronce",
@@ -684,18 +679,23 @@
       "Le Royaume du Nord": "El Reino del Norte",
       "L'Ordre de l'Aube": "La Orden del Alba",
       "Les Guerrières du Vent": "Las Guerreras del Viento",
-      "La Cour Pourpre": "La Corte Púrpura",
       "Les Enfants de la Lune": "Los Hijos de la Luna",
       "Le Pacte des Griffes": "El Pacto de las Garras",
       "La Harde Sauvage": "La Manada Salvaje",
       "Les Rangs Silencieux": "Las Filas Silenciosas",
       "Le Voile Hurlant": "El Velo Aullante",
       "La Cour Écarlate": "La Corte Escarlata",
-      "Le Conclave d'Ossements": "El Cónclave de Huesos",
       "Les Cohortes Sanglantes": "Las Cohortes Sangrientas",
-      "La Cour Infernale": "La Corte Infernal",
       "La Forêt Maudite": "El Bosque Maldito",
-      "La Garde Noire": "La Guardia Negra"
+      "La Garde Noire": "La Guardia Negra",
+      "La Combe Verte": "La Cañada Verde",
+      "Les Seigneurs Fauves": "Los Señores Salvajes",
+      "La Colère des Flammes": "La Ira de las Llamas",
+      "Le Socle du Monde": "El Pedestal del Mundo",
+      "La Vague Sans Fin": "La Ola Sin Fin",
+      "Le Souffle des Cimes": "El Aliento de las Cimas",
+      "Le Cénacle Nécromant": "El Cenáculo Nigromante",
+      "Les Princes des Abîmes": "Los Príncipes de los Abismos"
     },
     "races": {
       "Elfes": "Elfos",
@@ -705,6 +705,7 @@
       "Hommes-Arbres": "Hombres-Árbol",
       "Nains": "Enanos",
       "Golems": "Golems",
+      "Gnomes": "Gnomos",
       "Humains": "Humanos",
       "Hommes-Loups": "Hombres-Lobo",
       "Hommes-Ours": "Hombres-Oso",
@@ -737,7 +738,6 @@
       "Gobelins": "Goblins",
       "Trolls": "Trols",
       "Wargs": "Wargs",
-      "Gnomes": "Gnomos",
       "Guerriers du Chaos": "Guerreros del Caos"
     },
     "alignments": {

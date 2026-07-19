@@ -12,12 +12,12 @@
 > - **Royaumes Libres** (code `Humains`) → Le Royaume du Nord, L'Ordre de l'Aube, Les Guerrières du Vent
 > - **Empire du Milieu** (code `EmpireDuMilieu`) → Les Hordes des Steppes, L'Empire de Jade, Les Lames de l'Ombre
 > - **Royaumes du Soleil** (code `RoyaumesDuSoleil`) → Les Enfants du Soleil, Les Seigneurs des Dunes, Le Royaume des Masques
-> - **Elfes / L'Alliance Céleste** → Les Sylvains, Les Hauts-Elfes, La Forêt d'Émeraude, **Les Hobbits** (la faction Hobbits est absorbée ici) ; Aigles Géants = race libre
+> - **Elfes / L'Alliance Céleste** → Les Sylvains, Les Hauts-Elfes, La Forêt d'Émeraude, **La Combe Verte** (la faction Hobbits est absorbée ici) ; Aigles Géants = race libre
 > - **Nains / La Confrérie de la Forge** → Les Gardiens de la Montagne, La Forge Ardente, Les Sentinelles d'Airain (Golems), **La Guilde des Ingénieurs** (Gnomes — nouvelle race). *Les Marteaux des Collines sont dissous (2 clans nains max).*
-> - **Hommes-Bêtes / La Meute** → La Cour Pourpre, Les Enfants de la Lune, Le Pacte des Griffes, La Harde Sauvage + **Les Mignons** (clan bonus caché)
-> - **Les Légions du Chaos** (ex-Elfes Noirs, **absorbe la faction Orcs**) → Les Cohortes Sanglantes (Orcs/Gobelins/Trolls/Wargs), La Cour Infernale (Démons), La Forêt Maudite (Elfes Corrompus + Araignées), La Garde Noire (Guerriers du Chaos — nouvelle race)
-> - **Morts-Vivants / La Nécropole** → Les Rangs Silencieux, Le Voile Hurlant, La Cour Écarlate, Le Conclave d'Ossements
-> - **Élémentaires** → Feu, Terre, Eau, Air (confirmé)
+> - **Hommes-Bêtes / La Meute** → Les Seigneurs Fauves, Les Enfants de la Lune, Le Pacte des Griffes, La Harde Sauvage + **Les Mignons** (clan bonus caché)
+> - **Les Légions du Chaos** (ex-Elfes Noirs, **absorbe la faction Orcs**) → Les Cohortes Sanglantes (Orcs/Gobelins/Trolls/Wargs), Les Princes des Abîmes (Démons), La Forêt Maudite (Elfes Corrompus + Araignées), La Garde Noire (Guerriers du Chaos — nouvelle race)
+> - **Morts-Vivants / La Nécropole** → Les Rangs Silencieux, Le Voile Hurlant, La Cour Écarlate, Le Cénacle Nécromant
+> - **Élémentaires** → La Colère des Flammes (Feu), Le Socle du Monde (Terre), La Vague Sans Fin (Eau), Le Souffle des Cimes (Air)
 > - **Mercenaires** → sans clan (confirmé)
 >
 > **Nombre de factions : 10** (les 10 d'origine + Empire du Milieu + Royaumes du Soleil − Hobbits absorbée dans les Elfes − Orcs absorbée dans les Légions du Chaos).
@@ -74,7 +74,7 @@ Chaque faction a un **nom de code interne** (utilisé en base et dans le moteur,
 
 ### 3.1 🌿 Elfes — « L'Alliance Céleste » — *Bon*
 - **Races** : Elfes · Fées · **Aigles Géants** (race libre, disponible dans tous les clans) · **Hobbits** · **Hommes-Arbres**
-- **Clans** : Les Sylvains, Les Hauts-Elfes (Elfes) · La Forêt d'Émeraude (Fées) · Les Hobbits (Hobbits + Hommes-Arbres) — profils distincts en §5.3
+- **Clans** : Les Sylvains, Les Hauts-Elfes (Elfes) · La Forêt d'Émeraude (Fées) · La Combe Verte (Hobbits + Hommes-Arbres) — profils distincts en §5.3
 - **Philosophie** : L'alliance du bon peuple des bois — elfes agiles et furtifs, fées mages, et désormais les hobbits rusés et leurs colosses Hommes-Arbres. Poids stats faction (ombrelle) : 1.05 / 0.85.
 - **Pouvoirs privilégiés (ombrelle)** : Traque (0.50), Esquive (0.50), Précision (0.45), Divination (0.45), Augure (0.40), Canalisation (0.40), Invisible (0.40), Contresort (0.35), Première Frappe (0.35), Loyauté (0.35), Bénédiction (0.30), Vol (0.20).
 - **Pouvoirs interdits** : Armure, Berserk, Nécrophagie, Pillage X, Carnage X. *(Ancré et Provocation, autrefois interdits, sont désormais autorisés pour accueillir les Hommes-Arbres.)*
@@ -110,14 +110,14 @@ Chaque faction a un **nom de code interne** (utilisé en base et dans le moteur,
 
 ### 3.6 🐺 Hommes-Bêtes — « La Meute » — *Neutre*
 - **Races** : Hommes-Loups · Hommes-Ours · Hommes-Félins · Centaures · Mimis · Hommes-Chiens · Hommes-Renards · Hommes-Cerfs
-- **Clans** : La Cour Pourpre (Félins), Les Enfants de la Lune (Ours + Loups), Le Pacte des Griffes (Chiens + Renards, ouvert à toutes races), La Harde Sauvage (Centaures + Cerfs) · **Les Mignons** (Mimis — clan bonus caché) — profils distincts en §5.5
+- **Clans** : Les Seigneurs Fauves (Félins), Les Enfants de la Lune (Ours + Loups), Le Pacte des Griffes (Chiens + Renards, ouvert à toutes races), La Harde Sauvage (Centaures + Cerfs) · **Les Mignons** (Mimis — clan bonus caché) — profils distincts en §5.5
 - **Philosophie** : Sauvages et féroces. Attaquent vite, régénèrent, entrent en rage. Poids stats faction (ombrelle) : ATK élevée (1.20 / 1.00).
 - **Pouvoirs privilégiés (ombrelle)** : Traque (0.65), Berserk (0.55), Fureur (0.55), Première Frappe (0.45), Régénération (0.40), Bravoure (0.40), Combustion (0.35), Esquive (0.35), Persécution X (0.30), Augure (0.30), Vol (0.20).
 - **Pouvoirs interdits** : Armure, Commandement, Invisible, Ancré, Canalisation, Contresort.
 
 ### 3.7 🌀 Élémentaires — « Les Primordiaux » — *Neutre*
 - **Race** : Élémentaire (unique)
-- **Clans** : **Feu · Terre · Eau · Air** — clans à style de combat distinct (voir §5.1). *(On conserve les 4 éléments — à confirmer.)*
+- **Clans** : **La Colère des Flammes** (Feu) · **Le Socle du Monde** (Terre) · **La Vague Sans Fin** (Eau) · **Le Souffle des Cimes** (Air) — clans à style de combat distinct (voir §5.1).
 - **Philosophie** : Forces primordiales de la nature. Chaque élément a son propre style. Poids stats : équilibré (1.10 / 1.10).
 - **Pouvoirs privilégiés (niveau faction)** : Canalisation (0.45), Fureur (0.40), Résistance X (0.40), Métamorphose (0.35), Régénération (0.35), Esquive (0.35), Permutation (0.30), Mimique (0.30), Carnage X (0.30).
 - **Pouvoirs interdits** : Loyauté, Commandement, Bouclier, Pillage X.
@@ -131,14 +131,14 @@ Chaque faction a un **nom de code interne** (utilisé en base et dans le moteur,
 
 ### 3.9 💀 Morts-Vivants — « La Nécropole » — *Maléfique*
 - **Races** : Squelettes · Zombies · Spectres · Vampires · Lich · Banshees
-- **Clans** : **Les Rangs Silencieux** (Squelettes + Zombies), **Le Voile Hurlant** (Spectres + Banshees), **La Cour Écarlate** (Vampires), **Le Conclave d'Ossements** (Liches) — profils distincts en §5.6
+- **Clans** : **Les Rangs Silencieux** (Squelettes + Zombies), **Le Voile Hurlant** (Spectres + Banshees), **La Cour Écarlate** (Vampires), **Le Cénacle Nécromant** (Liches) — profils distincts en §5.6
 - **Philosophie** : Insatiables et corrompus. Résurrection, drain de vie, exploitation du cimetière. Quatre voies : la nuée qui revient sans cesse, les intangibles qui terrorisent, les prédateurs qui drainent, les nécromanciens qui recyclent. Poids stats faction (ombrelle) : légèrement offensif (1.05 / 0.95).
 - **Pouvoirs privilégiés (ombrelle)** : Poison (0.65), Drain de vie (0.60), Nécrophagie (0.55), Terreur (0.55), Rappel (0.55), Exhumation X (0.55), Maléfice (0.50), Ombre du passé (0.50), Profanation X (0.50), Vampirisme X (0.50), Régénération (0.45), Héritage du cimetière (0.45), Résurrection (0.40), Pacte de sang (0.40), Convocation X (0.40), Liaison de vie (0.35), Corruption (0.30), Domination (0.30), Vol (0.15).
 - **Pouvoirs interdits** : Loyauté, Commandement, Bouclier, Bénédiction, Bravoure.
 
 ### 3.10 🔮 Les Légions du Chaos — *Maléfique* *(ex-Elfes Noirs « L'Engeance du Chaos », absorbe la faction Orcs)*
 - **Races** : Orcs · Gobelins · Trolls · Wargs · Démons · Elfes Corrompus · Araignées Géantes · **Guerriers du Chaos** (nouvelle race)
-- **Clans** : **Les Cohortes Sanglantes** (Orcs + Gobelins + Trolls + Wargs), **La Cour Infernale** (Démons), **La Forêt Maudite** (Elfes Corrompus + Araignées Géantes), **La Garde Noire** (Guerriers du Chaos) — profils distincts en §5.7
+- **Clans** : **Les Cohortes Sanglantes** (Orcs + Gobelins + Trolls + Wargs), **Les Princes des Abîmes** (Démons), **La Forêt Maudite** (Elfes Corrompus + Araignées Géantes), **La Garde Noire** (Guerriers du Chaos) — profils distincts en §5.7
 - **Philosophie** : Toutes les forces du Chaos rassemblées sous une même bannière : la horde organisée qui déferle par vagues, la cour démoniaque du sacrifice et de la terreur, les corrompus du poison et de l'ombre, et l'élite lourde des champions déchus. Poids stats faction (ombrelle) : offensif (1.15 / 0.90).
 - **Pouvoirs privilégiés (ombrelle)** : Fureur (0.50), Traque (0.50), Berserk (0.45), Poison (0.45), Sacrifice (0.45), Terreur (0.45), Invisible (0.40), Ombre (0.40), Malédiction (0.40), Pillage X (0.40), Persécution X (0.40), Carnage X (0.35), Maléfice (0.35), Pacte de sang (0.35), Drain de vie (0.35), Corruption (0.30), Convocation X (0.30), Domination (0.30), Vol (0.20).
 - **Pouvoirs interdits** : Loyauté, Commandement, Bouclier, Bénédiction, Bravoure. *(Provocation et Régénération, autrefois interdites côté Elfes Noirs/Orcs, sont désormais **autorisées** — notamment pour les Trolls et la Garde Noire.)*
@@ -180,10 +180,10 @@ Certaines factions différencient leurs races par un profil de pouvoirs propre (
 
 | Clan | Style (ATK/DEF) | Pouvoirs signature |
 |---|---|---|
-| 🔥 **Feu** | 1.40 / 0.75 | Fureur (0.70), Souffle de feu X (0.60), Berserk (0.50), Combustion (0.50), Carnage X (0.40), Sacrifice (0.35) |
-| 🪨 **Terre** | 0.85 / 1.50 | Provocation (0.70), Armure (0.65), Ancré (0.60), Résistance X (0.55), Riposte X (0.45), Indestructible (0.30) |
-| 💧 **Eau** | 0.90 / 1.10 | Régénération (0.65), Drain de vie (0.55), Paralysie (0.50), Esquive (0.50), Résistance X (0.40), Bénédiction (0.35) |
-| 🌬️ **Air** | 1.15 / 0.85 | Vol (0.80), Traque (0.65), Célérité (0.50), Esquive (0.45), Première Frappe (0.40), Augure (0.35) |
+| 🔥 **La Colère des Flammes** *(Feu)* | 1.40 / 0.75 | Fureur (0.70), Souffle de feu X (0.60), Berserk (0.50), Combustion (0.50), Carnage X (0.40), Sacrifice (0.35) |
+| 🪨 **Le Socle du Monde** *(Terre)* | 0.85 / 1.50 | Provocation (0.70), Armure (0.65), Ancré (0.60), Résistance X (0.55), Riposte X (0.45), Indestructible (0.30) |
+| 💧 **La Vague Sans Fin** *(Eau)* | 0.90 / 1.10 | Régénération (0.65), Drain de vie (0.55), Paralysie (0.50), Esquive (0.50), Résistance X (0.40), Bénédiction (0.35) |
+| 🌬️ **Le Souffle des Cimes** *(Air)* | 1.15 / 0.85 | Vol (0.80), Traque (0.65), Célérité (0.50), Esquive (0.45), Première Frappe (0.40), Augure (0.35) |
 
 ### 5.2 Factions humaines (profils distincts)
 
@@ -218,7 +218,7 @@ Certaines factions différencient leurs races par un profil de pouvoirs propre (
 | 🌳 **Les Sylvains** | Elfes | 1.15/0.80 | Escarmoucheurs furtifs des bois | Traque (0.55), Esquive (0.55), Invisible (0.45), Première Frappe (0.45), Précision (0.45), Combustion (0.30) |
 | 📖 **Les Hauts-Elfes** | Elfes | 0.95/0.90 | Mages arcaniques, contrôle | Canalisation (0.55), Divination (0.50), Contresort (0.45), Augure (0.45), Prescience X (0.40), Précision (0.35), Suprématie (0.35) |
 | 🧚 **La Forêt d'Émeraude** | Fées | 0.75/0.75 | Fées volantes, soutien | Vol (0.85), Invisible (0.60), Canalisation (0.55), Divination (0.50), Augure (0.50), Drain de vie (0.40), Contresort (0.40) |
-| 🍃 **Les Hobbits** | Hobbits + Hommes-Arbres | 0.85/1.05 | Rusés insaisissables + colosses (≥6 mana → Hommes-Arbres) | Esquive (0.55), Loyauté (0.55), Bravoure (0.45), Invisible (0.40), Bénédiction (0.40), Régénération (0.35), Ancré (0.35), Provocation (0.35), Résistance X (0.35) |
+| 🍃 **La Combe Verte** | Hobbits + Hommes-Arbres | 0.85/1.05 | Rusés insaisissables + colosses (≥6 mana → Hommes-Arbres) | Esquive (0.55), Loyauté (0.55), Bravoure (0.45), Invisible (0.40), Bénédiction (0.40), Régénération (0.35), Ancré (0.35), Provocation (0.35), Résistance X (0.35) |
 
 > **Aigles Géants** = race libre : peut apparaître dans n'importe quel clan elfe (profil de race §4).
 
@@ -237,7 +237,7 @@ Certaines factions différencient leurs races par un profil de pouvoirs propre (
 
 | Clan | Race(s) | Style | Identité / mécanique | Pouvoirs signature |
 |---|---|---|---|---|
-| 🐯 **La Cour Pourpre** | Hommes-Félins | 1.30/0.85 | Splendeur maharadjah — *bonus à l'attaque* | Persécution X (0.55), Célérité (0.50), Traque (0.50), Bravoure (0.45), Première Frappe (0.45), Double Attaque (0.40) |
+| 🐯 **Les Seigneurs Fauves** | Hommes-Félins | 1.30/0.85 | Splendeur maharadjah — *bonus à l'attaque* | Persécution X (0.55), Célérité (0.50), Traque (0.50), Bravoure (0.45), Première Frappe (0.45), Double Attaque (0.40) |
 | 🌙 **Les Enfants de la Lune** | Hommes-Ours + Hommes-Loups | 1.25/1.00 | Lycanthropes — *transformation* | Lycanthropie X (0.55), Berserk (0.50), Fureur (0.50), Traque (0.45), Régénération (0.40), Résistance X (0.40) |
 | 🐾 **Le Pacte des Griffes** | Hommes-Chiens + Hommes-Renards (ouvert à toutes races) | 1.15/0.95 | Alliance — *bonus si plusieurs races sur le board* | Sang mêlé (0.60), Solidarité X (0.50), Loyauté (0.45), Instinct de meute X (0.45), Bravoure (0.40), Traque (0.40) |
 | 🐴 **La Harde Sauvage** | Centaures + Hommes-Cerfs | 1.20/0.95 | Charge & tir des plaines | Célérité (0.50), Raid (0.50), Piétinement (0.45), Précision (0.45), Traque (0.45), Bravoure (0.40) |
@@ -252,14 +252,14 @@ Certaines factions différencient leurs races par un profil de pouvoirs propre (
 | ⚰️ **Les Rangs Silencieux** | Squelettes + Zombies | 1.00/0.90 | Nuée increvable, recyclage | Nécrophagie (0.55), Exhumation X (0.55), Rappel (0.50), Convocation X (0.50), Poison (0.40), Sacrifice (0.35), Pacte de sang (0.35) |
 | 👻 **Le Voile Hurlant** | Spectres + Banshees | 1.05/0.75 | Intangibles, terreur | Terreur (0.60), Ombre (0.55), Invisible (0.50), Esquive (0.50), Maléfice (0.45), Malédiction (0.40), Paralysie (0.35) |
 | 🦇 **La Cour Écarlate** | Vampires | 1.25/0.90 | Prédateurs, drain agressif | Drain de vie (0.60), Vampirisme X (0.55), Célérité (0.45), Régénération (0.45), Pacte de sang (0.40), Terreur (0.35), Vol (0.30) |
-| 📿 **Le Conclave d'Ossements** | Liches | 0.85/1.00 | Nécromanciens, magie du cimetière | Héritage du cimetière (0.55), Résurrection (0.50), Ombre du passé (0.50), Savant (0.45), Canalisation (0.45), Domination (0.40), Divination (0.35) |
+| 📿 **Le Cénacle Nécromant** | Liches | 0.85/1.00 | Nécromanciens, magie du cimetière | Héritage du cimetière (0.55), Résurrection (0.50), Ombre du passé (0.50), Savant (0.45), Canalisation (0.45), Domination (0.40), Divination (0.35) |
 
 ### 5.7 Les Légions du Chaos (profils distincts)
 
 | Clan | Race(s) | Style | Identité / mécanique | Pouvoirs signature |
 |---|---|---|---|---|
 | ⚔️ **Les Cohortes Sanglantes** | Orcs + Gobelins + Trolls + Wargs | 1.25/0.90 | Armée organisée — *vagues préparées en main* | Traque (0.55), Entrainement X (0.50), Berserk (0.50), Fureur (0.45), Catalyse (0.45), Convocation X (0.40), Entraide (Race) (0.40), Régénération (0.35 — Trolls), Provocation (0.35 — Trolls), Célérité (0.35 — Wargs), Sacrifice (0.30) |
-| 👹 **La Cour Infernale** | Démons | 1.35/0.80 | Sacrifice et terreur | Fureur (0.65), Sacrifice (0.55), Terreur (0.50), Persécution X (0.45), Pacte de sang (0.40), Carnage X (0.40), Vol (0.30) |
+| 👹 **Les Princes des Abîmes** | Démons | 1.35/0.80 | Sacrifice et terreur | Fureur (0.65), Sacrifice (0.55), Terreur (0.50), Persécution X (0.45), Pacte de sang (0.40), Carnage X (0.40), Vol (0.30) |
 | 🕸️ **La Forêt Maudite** | Elfes Corrompus + Araignées Géantes | 1.10/0.90 | Poison et ombre | Poison (0.65), Invisible (0.55), Ombre (0.50), Malédiction (0.50), Esquive (0.45), Drain de vie (0.40) |
 | 🛡️ **La Garde Noire** | Guerriers du Chaos | 1.10/1.15 | Élite lourde corrompue | Armure (0.60), Résistance X (0.55), Fureur (0.45), Provocation (0.45), Maléfice (0.40), Riposte X (0.40) |
 
@@ -470,11 +470,11 @@ Les pouvoirs héroïques réutilisent le registre de capacités unifié (`abilit
 | ⚔️ Royaumes Libres | Neutre | Le vieux continent, honneur et champions | Royaume du Nord, Ordre de l'Aube, Guerrières du Vent |
 | 🏯 Empire du Milieu | Neutre | Stratégie, contrôle et furtivité | Hordes des Steppes, Empire de Jade, Lames de l'Ombre |
 | ☀️ Royaumes du Soleil | Neutre | Soleil, désert et esprits | Enfants du Soleil, Seigneurs des Dunes, Royaume des Masques |
-| 🐺 Hommes-Bêtes | Neutre | Agression sauvage et bestiaire | Cour Pourpre, Enfants de la Lune, Pacte des Griffes, Harde Sauvage (+ Mignons bonus) |
-| 🌀 Élémentaires | Neutre | 4 styles selon l'élément | Feu, Terre, Eau, Air |
+| 🐺 Hommes-Bêtes | Neutre | Agression sauvage et bestiaire | Seigneurs Fauves, Enfants de la Lune, Pacte des Griffes, Harde Sauvage (+ Mignons bonus) |
+| 🌀 Élémentaires | Neutre | 4 styles selon l'élément | La Colère des Flammes, Le Socle du Monde, La Vague Sans Fin, Le Souffle des Cimes |
 | 💰 Mercenaires | Spéciale | Polyvalents, jouables partout | — |
-| 💀 Morts-Vivants | Maléfique | Recyclage du cimetière, drain, terreur | Rangs Silencieux, Voile Hurlant, Cour Écarlate, Conclave d'Ossements |
-| 🔮 Les Légions du Chaos | Maléfique | Toutes les forces du Chaos unies | Cohortes Sanglantes, Cour Infernale, Forêt Maudite, Garde Noire |
+| 💀 Morts-Vivants | Maléfique | Recyclage du cimetière, drain, terreur | Rangs Silencieux, Voile Hurlant, Cour Écarlate, Cénacle Nécromant |
+| 🔮 Les Légions du Chaos | Maléfique | Toutes les forces du Chaos unies | Cohortes Sanglantes, Princes des Abîmes, Forêt Maudite, Garde Noire |
 
 ---
 

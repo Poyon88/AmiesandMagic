@@ -145,8 +145,8 @@ export const FACTIONS: Record<string, {
     clans: [
       { names: ["Les Sylvains", "Les Hauts-Elfes"], appliesTo: "Elfes" },
       { names: ["La Forêt d'Émeraude"], appliesTo: "Fées" },
-      { names: ["Les Hobbits"], appliesTo: "Hobbits" },
-      { names: ["Les Hobbits"], appliesTo: "Hommes-Arbres" },
+      { names: ["La Combe Verte"], appliesTo: "Hobbits" },
+      { names: ["La Combe Verte"], appliesTo: "Hommes-Arbres" },
     ],
     statWeights: { atk: 1.05, def: 0.85 },
     guaranteedKeywords: [],
@@ -162,10 +162,10 @@ export const FACTIONS: Record<string, {
       "Les Sylvains": { statWeights: { atk: 1.15, def: 0.80 }, likelyKeywords: { "Traque": 0.55, "Esquive": 0.55, "Invisible": 0.45, "Première Frappe": 0.45, "Précision": 0.45, "Combustion": 0.30 } },
       "Les Hauts-Elfes": { statWeights: { atk: 0.95, def: 0.90 }, likelyKeywords: { "Canalisation": 0.55, "Divination": 0.50, "Contresort": 0.45, "Augure": 0.45, "Prescience X": 0.40, "Précision": 0.35, "Suprématie": 0.35 } },
       "La Forêt d'Émeraude": { statWeights: { atk: 0.75, def: 0.75 }, likelyKeywords: { "Vol": 0.85, "Invisible": 0.60, "Canalisation": 0.55, "Divination": 0.50, "Augure": 0.50, "Drain de vie": 0.40, "Contresort": 0.40 } },
-      "Les Hobbits": { statWeights: { atk: 0.85, def: 1.05 }, likelyKeywords: { "Esquive": 0.55, "Loyauté": 0.55, "Bravoure": 0.45, "Invisible": 0.40, "Bénédiction": 0.40, "Régénération": 0.35, "Ancré": 0.35, "Provocation": 0.35, "Résistance X": 0.35 } },
+      "La Combe Verte": { statWeights: { atk: 0.85, def: 1.05 }, likelyKeywords: { "Esquive": 0.55, "Loyauté": 0.55, "Bravoure": 0.45, "Invisible": 0.40, "Bénédiction": 0.40, "Régénération": 0.35, "Ancré": 0.35, "Provocation": 0.35, "Résistance X": 0.35 } },
     },
     clanRaceBands: {
-      "Les Hobbits": [
+      "La Combe Verte": [
         { maxMana: 5, races: [{ race: "Hobbits", weight: 1 }] },
         { maxMana: null, races: [{ race: "Hommes-Arbres", weight: 1 }] },
       ],
@@ -248,7 +248,7 @@ export const FACTIONS: Record<string, {
     color: "#7B5B3A", accent: "#CD853F", emoji: "🐺", bg: "#1a1008", alignment: "neutre",
     races: ["Hommes-Loups", "Hommes-Ours", "Hommes-Félins", "Centaures", "Mimis", "Hommes-Chiens", "Hommes-Renards", "Hommes-Cerfs"],
     clans: [
-      { names: ["La Cour Pourpre"], appliesTo: "Hommes-Félins" },
+      { names: ["Les Seigneurs Fauves"], appliesTo: "Hommes-Félins" },
       { names: ["Les Enfants de la Lune"], appliesTo: "Hommes-Ours" },
       { names: ["Les Enfants de la Lune"], appliesTo: "Hommes-Loups" },
       { names: ["Le Pacte des Griffes"], appliesTo: "all" },
@@ -261,7 +261,7 @@ export const FACTIONS: Record<string, {
     forbiddenKeywords: ["Armure", "Commandement", "Invisible", "Ancré", "Canalisation", "Contresort"],
     description: "Sauvages et féroces : attaquent vite, régénèrent, entrent en rage.",
     clanProfiles: {
-      "La Cour Pourpre": { statWeights: { atk: 1.30, def: 0.85 }, likelyKeywords: { "Persécution X": 0.55, "Célérité": 0.50, "Traque": 0.50, "Bravoure": 0.45, "Première Frappe": 0.45, "Double Attaque": 0.40 } },
+      "Les Seigneurs Fauves": { statWeights: { atk: 1.30, def: 0.85 }, likelyKeywords: { "Persécution X": 0.55, "Célérité": 0.50, "Traque": 0.50, "Bravoure": 0.45, "Première Frappe": 0.45, "Double Attaque": 0.40 } },
       "Les Enfants de la Lune": { statWeights: { atk: 1.25, def: 1.00 }, likelyKeywords: { "Lycanthropie X": 0.55, "Berserk": 0.50, "Fureur": 0.50, "Traque": 0.45, "Régénération": 0.40, "Résistance X": 0.40 } },
       "Le Pacte des Griffes": { statWeights: { atk: 1.15, def: 0.95 }, likelyKeywords: { "Sang mêlé": 0.60, "Solidarité X": 0.50, "Loyauté": 0.45, "Instinct de meute X": 0.45, "Bravoure": 0.40, "Traque": 0.40 } },
       "La Harde Sauvage": { statWeights: { atk: 1.20, def: 0.95 }, likelyKeywords: { "Célérité": 0.50, "Raid": 0.50, "Piétinement": 0.45, "Précision": 0.45, "Traque": 0.45, "Bravoure": 0.40 } },
@@ -272,7 +272,7 @@ export const FACTIONS: Record<string, {
     displayName: "Les Primordiaux",
     color: "#E67E22", accent: "#F39C12", emoji: "🌀", bg: "#1a1008", alignment: "neutre",
     races: ["Élémentaire"],
-    clans: [{ names: ["Feu", "Terre", "Eau", "Air"], appliesTo: "all" }],
+    clans: [{ names: ["La Colère des Flammes", "Le Socle du Monde", "La Vague Sans Fin", "Le Souffle des Cimes"], appliesTo: "all" }],
     statWeights: { atk: 1.10, def: 1.10 },
     guaranteedKeywords: [],
     likelyKeywords: { "Fureur": 0.40, "Résistance X": 0.40, "Régénération": 0.35, "Esquive": 0.35,
@@ -281,12 +281,12 @@ export const FACTIONS: Record<string, {
     description: "Forces primordiales de la nature. Chaque élément a son propre style de combat.",
     // The four elements are now clans of the single race "Élémentaire";
     // their distinct playstyles live in clanProfiles (consumed by the
-    // generator). "Air" was formerly the race "Air/Tempête".
+    // generator). "Le Souffle des Cimes" was formerly the race "Air/Tempête".
     clanProfiles: {
-      "Feu": { statWeights: { atk: 1.40, def: 0.75 }, likelyKeywords: { "Fureur": 0.70, "Souffle de feu X": 0.60, "Berserk": 0.50, "Sacrifice": 0.35, "Combustion": 0.50, "Carnage X": 0.40 } },
-      "Terre": { statWeights: { atk: 0.85, def: 1.50 }, likelyKeywords: { "Provocation": 0.70, "Armure": 0.65, "Ancré": 0.60, "Résistance X": 0.55, "Indestructible": 0.30, "Riposte X": 0.45 } },
-      "Eau": { statWeights: { atk: 0.90, def: 1.10 }, likelyKeywords: { "Régénération": 0.65, "Drain de vie": 0.55, "Esquive": 0.50, "Résistance X": 0.40, "Paralysie": 0.50, "Bénédiction": 0.35 } },
-      "Air": { statWeights: { atk: 1.15, def: 0.85 }, likelyKeywords: { "Vol": 0.80, "Traque": 0.65, "Célérité": 0.50, "Esquive": 0.45, "Première Frappe": 0.40, "Augure": 0.35 } },
+      "La Colère des Flammes": { statWeights: { atk: 1.40, def: 0.75 }, likelyKeywords: { "Fureur": 0.70, "Souffle de feu X": 0.60, "Berserk": 0.50, "Sacrifice": 0.35, "Combustion": 0.50, "Carnage X": 0.40 } },
+      "Le Socle du Monde": { statWeights: { atk: 0.85, def: 1.50 }, likelyKeywords: { "Provocation": 0.70, "Armure": 0.65, "Ancré": 0.60, "Résistance X": 0.55, "Indestructible": 0.30, "Riposte X": 0.45 } },
+      "La Vague Sans Fin": { statWeights: { atk: 0.90, def: 1.10 }, likelyKeywords: { "Régénération": 0.65, "Drain de vie": 0.55, "Esquive": 0.50, "Résistance X": 0.40, "Paralysie": 0.50, "Bénédiction": 0.35 } },
+      "Le Souffle des Cimes": { statWeights: { atk: 1.15, def: 0.85 }, likelyKeywords: { "Vol": 0.80, "Traque": 0.65, "Célérité": 0.50, "Esquive": 0.45, "Première Frappe": 0.40, "Augure": 0.35 } },
     },
   },
   Mercenaires: {
@@ -321,7 +321,7 @@ export const FACTIONS: Record<string, {
       { names: ["Le Voile Hurlant"], appliesTo: "Spectres" },
       { names: ["Le Voile Hurlant"], appliesTo: "Banshees" },
       { names: ["La Cour Écarlate"], appliesTo: "Vampires" },
-      { names: ["Le Conclave d'Ossements"], appliesTo: "Lich" },
+      { names: ["Le Cénacle Nécromant"], appliesTo: "Lich" },
     ],
     statWeights: { atk: 1.05, def: 0.95 },
     guaranteedKeywords: [],
@@ -332,7 +332,7 @@ export const FACTIONS: Record<string, {
       "Les Rangs Silencieux": { statWeights: { atk: 1.00, def: 0.90 }, likelyKeywords: { "Nécrophagie": 0.55, "Exhumation X": 0.55, "Rappel": 0.50, "Convocation X": 0.50, "Poison": 0.40, "Sacrifice": 0.35, "Pacte de sang": 0.35 } },
       "Le Voile Hurlant": { statWeights: { atk: 1.05, def: 0.75 }, likelyKeywords: { "Terreur": 0.60, "Ombre": 0.55, "Invisible": 0.50, "Esquive": 0.50, "Maléfice": 0.45, "Malédiction": 0.40, "Paralysie": 0.35 } },
       "La Cour Écarlate": { statWeights: { atk: 1.25, def: 0.90 }, likelyKeywords: { "Drain de vie": 0.60, "Vampirisme X": 0.55, "Célérité": 0.45, "Régénération": 0.45, "Pacte de sang": 0.40, "Terreur": 0.35, "Vol": 0.30 } },
-      "Le Conclave d'Ossements": { statWeights: { atk: 0.85, def: 1.00 }, likelyKeywords: { "Héritage du cimetière": 0.55, "Résurrection": 0.50, "Ombre du passé": 0.50, "Savant": 0.45, "Canalisation": 0.45, "Domination": 0.40, "Divination": 0.35 } },
+      "Le Cénacle Nécromant": { statWeights: { atk: 0.85, def: 1.00 }, likelyKeywords: { "Héritage du cimetière": 0.55, "Résurrection": 0.50, "Ombre du passé": 0.50, "Savant": 0.45, "Canalisation": 0.45, "Domination": 0.40, "Divination": 0.35 } },
     },
   },
   "Elfes Noirs": {
@@ -344,7 +344,7 @@ export const FACTIONS: Record<string, {
       { names: ["Les Cohortes Sanglantes"], appliesTo: "Gobelins" },
       { names: ["Les Cohortes Sanglantes"], appliesTo: "Trolls" },
       { names: ["Les Cohortes Sanglantes"], appliesTo: "Wargs" },
-      { names: ["La Cour Infernale"], appliesTo: "Démons" },
+      { names: ["Les Princes des Abîmes"], appliesTo: "Démons" },
       { names: ["La Forêt Maudite"], appliesTo: "Elfes Corrompus" },
       { names: ["La Forêt Maudite"], appliesTo: "Araignées Géantes" },
       { names: ["La Garde Noire"], appliesTo: "Guerriers du Chaos" },
@@ -360,7 +360,7 @@ export const FACTIONS: Record<string, {
     },
     clanProfiles: {
       "Les Cohortes Sanglantes": { statWeights: { atk: 1.25, def: 0.90 }, likelyKeywords: { "Traque": 0.55, "Entrainement X": 0.50, "Berserk": 0.50, "Fureur": 0.45, "Catalyse": 0.45, "Convocation X": 0.40, "Entraide (Race)": 0.40, "Régénération": 0.35, "Provocation": 0.35, "Célérité": 0.35, "Sacrifice": 0.30 } },
-      "La Cour Infernale": { statWeights: { atk: 1.35, def: 0.80 }, likelyKeywords: { "Fureur": 0.65, "Sacrifice": 0.55, "Terreur": 0.50, "Persécution X": 0.45, "Pacte de sang": 0.40, "Carnage X": 0.40, "Vol": 0.30 } },
+      "Les Princes des Abîmes": { statWeights: { atk: 1.35, def: 0.80 }, likelyKeywords: { "Fureur": 0.65, "Sacrifice": 0.55, "Terreur": 0.50, "Persécution X": 0.45, "Pacte de sang": 0.40, "Carnage X": 0.40, "Vol": 0.30 } },
       "La Forêt Maudite": { statWeights: { atk: 1.10, def: 0.90 }, likelyKeywords: { "Poison": 0.65, "Invisible": 0.55, "Ombre": 0.50, "Malédiction": 0.50, "Esquive": 0.45, "Drain de vie": 0.40 } },
       "La Garde Noire": { statWeights: { atk: 1.10, def: 1.15 }, likelyKeywords: { "Armure": 0.60, "Résistance X": 0.55, "Fureur": 0.45, "Provocation": 0.45, "Maléfice": 0.40, "Riposte X": 0.40 } },
     },

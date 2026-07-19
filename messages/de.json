@@ -245,6 +245,10 @@
         "label": "Metamorphose",
         "desc": "Beschwörung: Diese Einheit wird zu einer exakten Kopie (ATK / LP / Fähigkeiten) einer ausgewählten Einheit."
       },
+      "dedoublement": {
+        "label": "Verdoppelung",
+        "desc": "Beschwörung: Erstellt eine exakte Kopie dieser Kreatur im Spiel."
+      },
       "tactique": {
         "label": "Taktik X",
         "desc": "Beschwörung: Verleiht einer ausgewählten verbündeten Einheit dauerhaft X gewählte Fähigkeit(en)."
@@ -399,10 +403,6 @@
       "declenchement": {
         "label": "Auslösung",
         "desc": "Beschwörung: Löse die zusammengesetzten Triggereffekte der anderen verbündeten Einheiten im Spiel einmalig erneut aus, für eine festgelegte Teilmenge von Auslösern (Einzug / Tod / Zugende / Rückkehr)."
-      },
-      "dedoublement": {
-        "label": "Verdoppelung",
-        "desc": "Beschwörung: Erstellt eine exakte Kopie dieser Kreatur im Spiel."
       }
     },
     "spell_keywords": {
@@ -622,6 +622,14 @@
         "displayName": "Die Schmiedebruderschaft",
         "description": "Solide und zäh: Verteidigung, Unnachgiebigkeit, Schmiedekunst und Gnomingenieurswesen."
       },
+      "EmpireDuMilieu": {
+        "displayName": "Das Mittlere Kaiserreich",
+        "description": "Strategie und Kontrolle: Disziplin, Formationen, Mystizismus und Heimlichkeit."
+      },
+      "RoyaumesDuSoleil": {
+        "displayName": "Die Sonnenreiche",
+        "description": "Sonne, Wüste und Geister: rituelle Flammen, plündernde Nomaden und Beschwörer."
+      },
       "Humains": {
         "displayName": "Die Freien Königreiche",
         "description": "Der alte Kontinent: Ehre, Stahl und heroische Helden."
@@ -645,14 +653,6 @@
       "Elfes Noirs": {
         "displayName": "Die Legionen des Chaos",
         "description": "Alle Mächte des Chaos vereint: geordnete Horde, dämonischer Hof, Giftverseuchte und gefallene Elite."
-      },
-      "EmpireDuMilieu": {
-        "displayName": "Das Mittlere Kaiserreich",
-        "description": "Strategie und Kontrolle: Disziplin, Formationen, Mystizismus und Heimlichkeit."
-      },
-      "RoyaumesDuSoleil": {
-        "displayName": "Die Sonnenreiche",
-        "description": "Sonne, Wüste und Geister: rituelle Flammen, plündernde Nomaden und Beschwörer."
       }
     },
     "rarities": {
@@ -663,14 +663,9 @@
       "Légendaire": "Legendär"
     },
     "clans": {
-      "Feu": "Feuer",
-      "Terre": "Erde",
-      "Eau": "Wasser",
-      "Air": "Luft",
       "Les Sylvains": "Die Waldläufer",
       "Les Hauts-Elfes": "Die Hochelfen",
       "La Forêt d'Émeraude": "Der Smaragdwald",
-      "Les Hobbits": "Die Hobbits",
       "Les Gardiens de la Montagne": "Die Bergwächter",
       "La Forge Ardente": "Die Glühende Schmiede",
       "Les Sentinelles d'Airain": "Die Erzwächter",
@@ -684,18 +679,23 @@
       "Le Royaume du Nord": "Das Nordreich",
       "L'Ordre de l'Aube": "Der Orden der Morgenröte",
       "Les Guerrières du Vent": "Die Kriegerinnen des Windes",
-      "La Cour Pourpre": "Der Purpurhof",
       "Les Enfants de la Lune": "Die Kinder des Mondes",
       "Le Pacte des Griffes": "Der Klauenpakt",
       "La Harde Sauvage": "Die Wilde Meute",
       "Les Rangs Silencieux": "Die Schweigenden Reihen",
       "Le Voile Hurlant": "Der Heulende Schleier",
       "La Cour Écarlate": "Der Scharlachrote Hof",
-      "Le Conclave d'Ossements": "Das Knochenkonklave",
       "Les Cohortes Sanglantes": "Die Blutigen Kohorten",
-      "La Cour Infernale": "Der Höllische Hof",
       "La Forêt Maudite": "Der Verfluchte Wald",
-      "La Garde Noire": "Die Schwarze Garde"
+      "La Garde Noire": "Die Schwarze Garde",
+      "La Combe Verte": "Das Grüne Tal",
+      "Les Seigneurs Fauves": "Die Wilden Herren",
+      "La Colère des Flammes": "Der Zorn der Flammen",
+      "Le Socle du Monde": "Das Fundament der Welt",
+      "La Vague Sans Fin": "Die Endlose Welle",
+      "Le Souffle des Cimes": "Der Atem der Gipfel",
+      "Le Cénacle Nécromant": "Der Nekromantenzirkel",
+      "Les Princes des Abîmes": "Die Fürsten der Abgründe"
     },
     "races": {
       "Elfes": "Elfen",
@@ -705,6 +705,7 @@
       "Hommes-Arbres": "Baummenschen",
       "Nains": "Zwerge",
       "Golems": "Golems",
+      "Gnomes": "Gnome",
       "Humains": "Menschen",
       "Hommes-Loups": "Wolfsmenschen",
       "Hommes-Ours": "Bärenmenschen",
@@ -737,7 +738,6 @@
       "Gobelins": "Goblins",
       "Trolls": "Trolle",
       "Wargs": "Wargs",
-      "Gnomes": "Gnome",
       "Guerriers du Chaos": "Chaoskämpfer"
     },
     "alignments": {
