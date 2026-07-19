@@ -769,7 +769,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
           // Chrome and Firefox, so give the artwork a small always-on brightness
           // bump. Applied to the IMAGE only (not the motion.div) so cards/UI text
           // are untouched; the hit-stop freeze filter still stacks on top.
-          style={{ zIndex: -1, imageRendering: "auto", filter: "brightness(1.4)" }}
+          style={{ zIndex: -1, imageRendering: "auto", filter: "brightness(1.12)" }}
         />
 
         {/* Subtle overlay for readability — kept light (/5) so it doesn't fight
