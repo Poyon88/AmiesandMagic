@@ -64,7 +64,19 @@ export default function KeywordIcon({
         ? { width: "100%", height: "100%" }
         : { width: Math.round(size * 1.8), height: Math.round(size * 1.8) };
       return (
-        <span style={{ display: "inline-flex", filter: ICON_CONTRAST_HALO, lineHeight: 0, verticalAlign: "middle" }}>
+        <span
+          style={{
+            display: "inline-flex",
+            filter: ICON_CONTRAST_HALO,
+            lineHeight: 0,
+            verticalAlign: "middle",
+            // En mode `fill`, l'enfant masqué est dimensionné en %. Le wrapper
+            // DOIT donc porter la taille : sinon il se dimensionne sur son
+            // contenu, qui se dimensionne sur lui — référence circulaire, la
+            // boîte s'effondre à 0 et l'icône disparaît.
+            ...(fill ? { width: "100%", height: "100%" } : null),
+          }}
+        >
           <span
             style={{
               ...box,
