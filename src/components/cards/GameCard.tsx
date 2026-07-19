@@ -382,7 +382,7 @@ export default function GameCard({
                     <KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={33 * icoS} keyword={kw} fill />
                   </span>
                 </span>
-                {x != null && <span style={{ fontSize: 10 * s, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}`, marginLeft: -6 * s }}>{xNumeral(x)}</span>}
+                {x != null && <span style={{ fontSize: 15 * s, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}`, marginLeft: 1 * s }}>{xNumeral(x)}</span>}
               </div>
               );
             });
@@ -422,9 +422,9 @@ export default function GameCard({
                   <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={33 * icoS} keyword={spellKey} fill />
                 </span>
                 {valueText && <span style={{
-                  fontSize: 10 * s, fontWeight: 900, color: "#fff",
+                  fontSize: 15 * s, fontWeight: 900, color: "#fff",
                   fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}`,
-                  marginLeft: -6 * s,
+                  marginLeft: 1 * s,
                 }}>{valueText}</span>}
               </div>
               );
@@ -450,7 +450,7 @@ export default function GameCard({
                   </span>
                   <ComposedMarker mode={cmode} size={11 * icoS} />
                 </span>
-                {val && <span style={{ fontSize: 10 * s, fontWeight: 900, color: keywordModeColor(composedTriggerMode(cap)) ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}`, marginLeft: -3 * s }}>{val}</span>}
+                {val && <span style={{ fontSize: 15 * s, fontWeight: 900, color: keywordModeColor(composedTriggerMode(cap)) ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}`, marginLeft: 1 * s }}>{val}</span>}
               </div>
             );
           })}
