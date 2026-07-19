@@ -1397,7 +1397,7 @@ export const useGameStore = create<GameStore>((set, get) => {
 
       hit.delete(sourceId);
       const targetIds = Array.from(hit);
-      if (targetIds.length > 0) powerArrows.push({ sourceId, targetIds, color: "#d4a800" });
+      if (targetIds.length > 0) powerArrows.push({ sourceId, targetIds, color: "#F68D09" });
     }
 
     // (1b) Créature JOUÉE avec un effet d'arrivée CIBLÉ (« à l'entrée ») →

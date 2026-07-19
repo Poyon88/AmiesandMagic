@@ -73,19 +73,7 @@ export interface Vocab {
     statOverride?: number | null,
   ) => string | null;
   convocationPrefix: (content: string) => string;
-  // Suffixe de déclenchement affiché après un mot-clé (« Provocation · à la
-  // mort »). Renvoie une chaîne vide pour le mode par défaut (invocation) et
-  // les modes sans suffixe. Fallback FR intégré.
-  modeSuffix: (mode: string | null | undefined) => string;
 }
-
-// Suffixes FR par défaut, également fallback si la clé de traduction manque.
-const MODE_SUFFIX_FR: Record<string, string> = {
-  death: " · à la mort",
-  tap: " · tap",
-  return: " · retour en main",
-  end_of_turn: " · fin du tour",
-};
 
 // Nombre max de races affichées entre parenthèses dans un libellé de sélecteur.
 const MAX_RACES_LABEL = 3;
@@ -168,10 +156,6 @@ export function useVocab(): Vocab {
       convocationPrefix: (content: string) =>
         (safe("game.convocation_prefix")?.replace(/\{content\}/g, content)) ??
         `Invocation : crée ${content}`,
-      modeSuffix: (mode: string | null | undefined) => {
-        if (!mode || !(mode in MODE_SUFFIX_FR)) return "";
-        return safe(`game.mode_suffix_${mode}`) ?? MODE_SUFFIX_FR[mode];
-      },
     }),
     [safe],
   );

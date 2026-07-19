@@ -213,9 +213,8 @@ function MulliganCard({
             {entries.map((entry, idx) => {
               const { kw, x, mode } = entry;
               const label = vocab.keywordLabel(kw);
-              const baseTitle = x != null ? label.replace(/ X$/, ` ${xNumeral(x)}`) : label;
-              const modeSuffix = vocab.modeSuffix(mode);
-              const displayTitle = baseTitle + modeSuffix;
+              // Plus d'annotation de déclencheur : la couleur transmet le moment.
+              const displayTitle = x != null ? label.replace(/ X$/, ` ${xNumeral(x)}`) : label;
               const modeColor = keywordModeColor(mode);
               const modeFilter = keywordModeFilter(mode);
               return (
@@ -261,11 +260,11 @@ function MulliganCard({
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2,
                 fontSize: 11,
               }}>
-                <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 26, height: 26, flexShrink: 0 }}>
+                <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 26, height: 26, flexShrink: 0, filter: keywordModeFilter("spell") ?? undefined }}>
                   <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={26} keyword={`spell_${spellKw.id}`} fill />
                 </span>
                 {valueText && <span style={{
-                  fontSize: 13, fontWeight: 900, color: "#fff",
+                  fontSize: 13, fontWeight: 900, color: keywordModeColor("spell") ?? "#fff",
                   fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}`,
                 }}>{valueText}</span>}
               </div>
@@ -353,9 +352,8 @@ function MulliganCard({
             {entries.map((entry, idx) => {
               const { kw, x, mode } = entry;
               const label = vocab.keywordLabel(kw);
-              const baseLabel = x != null ? label.replace(/ X$/, ` ${xNumeral(x)}`) : label;
-              const modeSuffix = vocab.modeSuffix(mode);
-              const displayLabel = baseLabel + modeSuffix;
+              // Plus d'annotation de déclencheur : la couleur transmet le moment.
+              const displayLabel = x != null ? label.replace(/ X$/, ` ${xNumeral(x)}`) : label;
               const desc = vocab.keywordDesc(kw, x);
               const modeColor = keywordModeColor(mode);
               const modeFilter = keywordModeFilter(mode);
@@ -363,7 +361,7 @@ function MulliganCard({
               <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ display: "flex", alignItems: "flex-start", gap: 5 }}>
                 <span style={{ flexShrink: 0, display: "inline-flex", filter: modeFilter ?? undefined, lineHeight: 0 }}><KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={12} keyword={kw} /></span>
                 <div>
-                  <div style={{ fontSize: 10 * d, color: modeColor ?? accentColor, fontWeight: 600 }}>{displayLabel}</div>
+                  <div style={{ fontSize: 10 * d, color: modeColor ?? "#fff", fontWeight: 600 }}>{displayLabel}</div>
                   {desc && <div style={{ fontSize: 8 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
                 </div>
               </div>
@@ -385,9 +383,9 @@ function MulliganCard({
               const desc = vocab.spellKeywordDesc(spellKw, card, tokenTemplates);
               return (
                 <div key={`sk_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 5 }}>
-                  <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={12} keyword={`spell_${spellKw.id}`} /></span>
+                  <span style={{ flexShrink: 0, filter: keywordModeFilter("spell") ?? undefined }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={12} keyword={`spell_${spellKw.id}`} /></span>
                   <div>
-                    <div style={{ fontSize: 10 * d, color: accentColor, fontWeight: 600 }}>{label}</div>
+                    <div style={{ fontSize: 10 * d, color: keywordModeColor("spell") ?? accentColor, fontWeight: 600 }}>{label}</div>
                     <div style={{ fontSize: 8 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>
                   </div>
                 </div>
@@ -407,7 +405,7 @@ function MulliganCard({
                 <div key={`cxd-${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 5 }}>
                   <span style={{ position: "relative", flexShrink: 0, display: "inline-flex", lineHeight: 0 }}><span style={{ display: "inline-flex", lineHeight: 0, filter: keywordModeFilter(cmode) ?? undefined }}><KeywordIcon symbol={ic.symbol} size={12} keyword={ic.keyword} /></span><ComposedMarker mode={cmode} size={7} /></span>
                   <div>
-                    {nm && <div style={{ fontSize: 10 * d, color: "#d8b25a", fontWeight: 600 }}>{nm}</div>}
+                    {nm && <div style={{ fontSize: 10 * d, color: keywordModeColor(cmode) ?? "#fff", fontWeight: 600 }}>{nm}</div>}
                     <div style={{ fontSize: 8 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{vocab.composedDesc(cap, tokenTemplates)}</div>
                   </div>
                 </div>

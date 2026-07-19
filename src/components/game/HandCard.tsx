@@ -609,11 +609,11 @@ function HandCard({
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1,
                 fontSize: 8, overflow: "visible",
               }}>
-                <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, flexShrink: 0 }}>
+                <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, flexShrink: 0, filter: keywordModeFilter("spell") ?? undefined }}>
                   <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={20} keyword={spellKey} fill />
                 </span>
                 {valueText && <span style={{
-                  fontSize: 12, fontWeight: 900, color: "#fff",
+                  fontSize: 12, fontWeight: 900, color: keywordModeColor("spell") ?? "#fff",
                   fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}`,
                 }}>{valueText}</span>}
               </div>
@@ -727,8 +727,8 @@ function HandCard({
                   : kw === "entraide" && card.entraide_race
                     ? `${label} (${card.entraide_race})`
                     : label;
-                const modeSuffix = vocab.modeSuffix(mode);
-                const displayLabel = baseLabel + modeSuffix;
+                // Plus d'annotation de déclencheur : la couleur transmet le moment.
+                const displayLabel = baseLabel;
                 let desc = vocab.keywordDesc(kw, x);
                 if (kw === "convocations_multiples" && card.convocation_tokens?.length) {
                   desc = vocab.convocationPrefix(vocab.convocationTokens(card.convocation_tokens, tokenTemplates));
@@ -744,7 +744,7 @@ function HandCard({
                     <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={9} keyword={kw} />
                   </span>
                   <div>
-                    <div style={{ fontSize: 7 * d, color: modeColor ?? accentColor, fontWeight: 600 }}>{displayLabel}</div>
+                    <div style={{ fontSize: 7 * d, color: modeColor ?? "#fff", fontWeight: 600 }}>{displayLabel}</div>
                     {desc && <div style={{ fontSize: 6 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
                   </div>
                 </div>
@@ -762,9 +762,9 @@ function HandCard({
                 const desc = vocab.spellKeywordDesc(spellKw, card, tokenTemplates);
                 return (
                 <div key={`sk_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
-                  <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={9} keyword={`spell_${spellKw.id}`} /></span>
+                  <span style={{ flexShrink: 0, filter: keywordModeFilter("spell") ?? undefined }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={9} keyword={`spell_${spellKw.id}`} /></span>
                   <div>
-                    <div style={{ fontSize: 7 * d, color: accentColor, fontWeight: 600 }}>{label}</div>
+                    <div style={{ fontSize: 7 * d, color: keywordModeColor("spell") ?? accentColor, fontWeight: 600 }}>{label}</div>
                     <div style={{ fontSize: 6 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>
                   </div>
                 </div>
@@ -784,7 +784,7 @@ function HandCard({
                   <div key={`cxd-${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
                     <span style={{ position: "relative", flexShrink: 0, display: "inline-flex", lineHeight: 0 }}><span style={{ display: "inline-flex", lineHeight: 0, filter: keywordModeFilter(cmode) ?? undefined }}><KeywordIcon symbol={ic.symbol} size={9} keyword={ic.keyword} /></span><ComposedMarker mode={cmode} size={6} /></span>
                     <div>
-                      {nm && <div style={{ fontSize: 7 * d, color: "#d8b25a", fontWeight: 600 }}>{nm}</div>}
+                      {nm && <div style={{ fontSize: 7 * d, color: keywordModeColor(cmode) ?? "#fff", fontWeight: 600 }}>{nm}</div>}
                       <div style={{ fontSize: 6 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{vocab.composedDesc(cap, tokenTemplates)}</div>
                     </div>
                   </div>

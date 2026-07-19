@@ -171,6 +171,9 @@ export default function GameCard({
   // fine par icône (marges internes des PNG) se règle en plus dans l'admin.
   const CARD_ICON_MULT = 1.5;
   const icoS = s * CARD_ICON_MULT;
+  // Agrandissement des CHIFFRES (coût de mana, attaque, PV) et du NOM sur la
+  // face de carte, pour rester proportionnés aux icônes agrandies (ci-dessus).
+  const CARD_STAT_MULT = 1.3;
   // Touch devices have no hover-zoom: enlarge the detail-overlay text only.
   // `so` is the overlay text scale (base `s` bumped on coarse pointers); the
   // always-visible card body keeps using `s` so its layout is unchanged.
@@ -308,7 +311,7 @@ export default function GameCard({
 
 
       {/* ── Cost badges (mana + life + discard + sacrifice) ── */}
-      <CostBadges card={card} size={27 * s} effectiveManaCost={effectiveManaCost} />
+      <CostBadges card={card} size={27 * s * CARD_STAT_MULT} effectiveManaCost={effectiveManaCost} />
 
       {/* ── Count badge ── */}
       {count !== undefined && (
@@ -325,9 +328,9 @@ export default function GameCard({
              pour dégager les badges de coût (haut-gauche) et count (haut-droit). ── */}
       <div style={{
         position: "absolute", top: 0, left: 0, right: 0, zIndex: 2,
-        padding: `${4 * s}px ${30 * s}px ${8 * s}px`,
+        padding: `${4 * s}px ${42 * s}px ${8 * s}px`,
         background: "linear-gradient(180deg, #0d0d1add 0%, #0d0d1a88 45%, transparent 78%)",
-        fontSize: 13 * so, color: "#d8b25a", fontWeight: 700, textAlign: "center",
+        fontSize: 13 * so * CARD_STAT_MULT, color: "#d8b25a", fontWeight: 700, textAlign: "center",
         overflow: "hidden", textOverflow: "ellipsis", lineHeight: 1.15,
         display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 2,
         fontFamily: "'Cinzel', serif",
@@ -354,7 +357,8 @@ export default function GameCard({
               const { kw, x, mode } = entry;
               const label = vocab.keywordLabel(kw);
               const baseTitle = x != null ? label.replace(/ X$/, ` ${xNumeral(x)}`) : label;
-              const modeSuffix = mode === "death" ? " · à la mort" : mode === "tap" ? " · tap" : mode === "return" ? " · retour en main" : mode === "end_of_turn" ? " · fin du tour" : "";
+              // Pas d'annotation de déclencheur (« · fin du tour »…) : la couleur de
+              // l'icône la transmet désormais.
               // On a spell, these keywords are CONFERRED to creature(s). The
               // "all allies" scope gets a visible GREEN chip (fill + border)
               // behind the icon — a glow alone was clipped by the card's
@@ -364,7 +368,7 @@ export default function GameCard({
                 : null;
               const isAllAllies = grantScope === "all_allies";
               const grantSuffix = isAllAllies ? " · conférée à tous les alliés" : grantScope === "target" ? " · conférée à la cible" : "";
-              const displayTitle = baseTitle + modeSuffix + grantSuffix;
+              const displayTitle = baseTitle + grantSuffix;
               const hasImg = !!iconOverrides[kw];
               const modeColor = keywordModeColor(mode);
               const modeFilter = keywordModeFilter(mode);
@@ -418,11 +422,11 @@ export default function GameCard({
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 * s,
                 fontSize: 10 * s, overflow: "visible",
               }}>
-                <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 33 * icoS, height: 33 * icoS, flexShrink: 0 }}>
+                <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 33 * icoS, height: 33 * icoS, flexShrink: 0, filter: keywordModeFilter("spell") ?? undefined }}>
                   <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={33 * icoS} keyword={spellKey} fill />
                 </span>
                 {valueText && <span style={{
-                  fontSize: 15 * s, fontWeight: 900, color: "#fff",
+                  fontSize: 15 * s, fontWeight: 900, color: keywordModeColor("spell") ?? "#fff",
                   fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}`,
                   marginLeft: 1 * s,
                 }}>{valueText}</span>}
@@ -463,14 +467,14 @@ export default function GameCard({
                 padding: `${1 * s}px ${6 * s}px`, borderRadius: 5 * s,
                 background: "#e74c3c18", border: "1px solid #e74c3c55",
               }}>
-                <span style={{ fontSize: 17 * s, color: "#e74c3c", fontWeight: 700 }}>{card.attack}</span>
+                <span style={{ fontSize: 17 * s * CARD_STAT_MULT, color: "#e74c3c", fontWeight: 700, lineHeight: 1 }}>{card.attack}</span>
               </div>
               <div style={{
                 display: "flex", alignItems: "center",
                 padding: `${1 * s}px ${6 * s}px`, borderRadius: 5 * s,
                 background: "#f1c40f18", border: "1px solid #f1c40f55",
               }}>
-                <span style={{ fontSize: 17 * s, color: "#f1c40f", fontWeight: 700 }}>{card.health}</span>
+                <span style={{ fontSize: 17 * s * CARD_STAT_MULT, color: "#f1c40f", fontWeight: 700, lineHeight: 1 }}>{card.health}</span>
               </div>
             </div>
           )}
@@ -529,9 +533,9 @@ export default function GameCard({
             {entries.map((entry, idx) => {
               const { kw, x, mode } = entry;
               const label = vocab.keywordLabel(kw);
-              const baseLabel = x != null ? label.replace(/ X$/, ` ${xNumeral(x)}`) : label;
-              const modeSuffix = mode === "death" ? " · à la mort" : mode === "tap" ? " · tap" : mode === "return" ? " · retour en main" : mode === "end_of_turn" ? " · fin du tour" : "";
-              const displayLabel = baseLabel + modeSuffix;
+              // Plus d'annotation de déclencheur (« · fin du tour »…) dans le label :
+              // la couleur de l'icône/du texte la transmet, le descriptif est allégé.
+              const displayLabel = x != null ? label.replace(/ X$/, ` ${xNumeral(x)}`) : label;
               let desc = vocab.keywordDesc(kw, x);
               if (kw === "convocations_multiples" && card.convocation_tokens?.length) {
                 desc = vocab.convocationPrefix(vocab.convocationTokens(card.convocation_tokens, effectiveTokens));
@@ -548,7 +552,9 @@ export default function GameCard({
                 : grantScope === "target" ? "Conférée à la créature ciblée." : null;
               const modeColor = keywordModeColor(mode);
               const modeFilter = keywordModeFilter(mode);
-              const labelColor = grantScope === "all_allies" ? "#2ecc71" : (modeColor ?? accentColor);
+              // Nom = couleur de l'icône : teinte de mode si présente, sinon BLANC
+              // (l'icône d'un effet persistant/passif est une silhouette blanche).
+              const labelColor = grantScope === "all_allies" ? "#2ecc71" : (modeColor ?? "#fff");
               return (
               <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
                 <span style={{ flexShrink: 0, display: "inline-flex", filter: modeFilter ?? undefined, lineHeight: 0 }}><KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={18 * s} keyword={kw} /></span>
@@ -572,9 +578,9 @@ export default function GameCard({
               const desc = vocab.spellKeywordDesc(spellKw, card, effectiveTokens);
               return (
               <div key={`sk_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
-                <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={18 * s} keyword={`spell_${spellKw.id}`} /></span>
+                <span style={{ flexShrink: 0, filter: keywordModeFilter("spell") ?? undefined }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={18 * s} keyword={`spell_${spellKw.id}`} /></span>
                 <div>
-                  <div style={{ fontSize: 14 * so, color: accentColor, fontWeight: 700 }}>{label}</div>
+                  <div style={{ fontSize: 14 * so, color: keywordModeColor("spell") ?? accentColor, fontWeight: 700 }}>{label}</div>
                   <div style={{ fontSize: 12 * so, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>
                 </div>
               </div>
@@ -594,7 +600,7 @@ export default function GameCard({
                 <div key={`cxd-${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
                   <span style={{ position: "relative", flexShrink: 0, display: "inline-flex", lineHeight: 0 }}><span style={{ display: "inline-flex", lineHeight: 0, filter: keywordModeFilter(cmode) ?? undefined }}><KeywordIcon symbol={ic.symbol} size={18 * s} keyword={ic.keyword} /></span><ComposedMarker mode={cmode} size={9 * s} /></span>
                   <div>
-                    {nm && <div style={{ fontSize: 14 * so, color: "#d8b25a", fontWeight: 700 }}>{nm}</div>}
+                    {nm && <div style={{ fontSize: 14 * so, color: keywordModeColor(cmode) ?? "#fff", fontWeight: 700 }}>{nm}</div>}
                     <div style={{ fontSize: 12 * so, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{vocab.composedDesc(cap, effectiveTokens)}</div>
                   </div>
                 </div>
