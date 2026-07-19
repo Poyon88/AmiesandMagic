@@ -1,33 +1,77 @@
 import type { Keyword, KeywordMode, KeywordInstance, SpellKeywordInstance } from "./types";
 import type { SafeT } from "@/i18n/config";
 import { SPELL_KEYWORDS } from "./spell-keywords";
+import { AUTOMATIC_ABILITY_IDS, DEATH_NATURE_IDS, CURATED_MULTIMODE_IDS } from "./abilities";
+
+/** Mode d'affichage d'un mot-clé SANS mode explicite : un effet d'arrivée en
+ *  jeu (on-play) reçoit le mode "entry" (teinte jaune, comme les sorts) pour se
+ *  distinguer d'un passif/permanent, qui reste neutre (undefined → blanc).
+ *  Miroir exact de la priorité de `deriveAbilityTriggerMeta` (abilities.ts) :
+ *  curated multi-mode (défaut = on-play) > râle d'agonie > passif automatic >
+ *  on-play simple. Les modes explicites (death/tap/return…) court-circuitent
+ *  cet helper en amont. */
+function defaultDisplayMode(kw: Keyword): KeywordMode | undefined {
+  if (CURATED_MULTIMODE_IDS.has(kw)) return "entry";    // défaut = arrivée en jeu
+  if (DEATH_NATURE_IDS.has(kw)) return undefined;       // râle d'agonie → neutre
+  if (AUTOMATIC_ABILITY_IDS.has(kw)) return undefined;  // passif / permanent → blanc
+  return "entry";                                        // effet d'arrivée simple
+}
 
 /** Color used to tint a keyword icon based on its trigger mode. Returned
  *  values are CSS hex strings — callers compose them into background /
- *  border / glow as appropriate. The fallback (`undefined` mode = on-play)
- *  returns null so the existing accent-color logic keeps applying. */
+ *  border / glow as appropriate. The fallback (`undefined` mode = passive /
+ *  permanent effect) returns null so the icon stays white and the existing
+ *  accent-color logic keeps applying. */
 export function keywordModeColor(mode: KeywordMode | undefined): string | null {
+  // Jaune clair = tout ce qui se déclenche « à l'invocation » : effet d'arrivée
+  // en jeu d'une créature (entry) ET résolution d'un sort (spell). Même couleur
+  // volontairement (même moment de jeu).
+  if (mode === "entry" || mode === "spell") return "#FFE05C"; // jaune clair lumineux
   if (mode === "death") return "#a83232"; // dark red
-  if (mode === "tap") return "#d4a800";   // amber yellow
+  if (mode === "tap") return "#F68D09";   // orange vif (pouvoir activé — distinct de l'arrivée jaune)
   if (mode === "return") return "#3a7dd4"; // blue (retour en main)
   if (mode === "attack") return "#E735F6"; // magenta (à l'attaque)
   if (mode === "end_of_turn") return "#2faa3f"; // green (fin du tour)
   return null;
 }
 
-/** CSS `filter` chain that flattens any emoji or image icon to a single
- *  target colour matching the trigger mode. Built with
- *  https://codepen.io/sosuke/pen/Pjoqqp from the hex above so the visual
- *  output stays consistent between the two helpers. Returns null for the
- *  default on-play mode (no filter — emoji/image kept multicolor). */
-export function keywordModeFilter(mode: KeywordMode | undefined): string | null {
+/** Liseré de contraste sombre ajouté à CHAQUE icône (teintée ou blanche) pour
+ *  rester lisible sur une illustration de carte quelconque : sur un fond clair
+ *  ou doré, une teinte unie (jaune, argent, blanc) se noierait sans ce halo.
+ *  Appliqué APRÈS la conversion de teinte dans la même chaîne `filter` — sinon
+ *  la teinte recolorerait le halo. */
+const ICON_CONTRAST_HALO =
+  "drop-shadow(0 0 1.2px rgba(0,0,0,.95)) drop-shadow(0 0 1.2px rgba(0,0,0,.95)) drop-shadow(0 1px 1px rgba(0,0,0,.85))";
+
+/** Chaîne `filter` complète d'une icône : teinte de mode (si présente) SUIVIE du
+ *  halo de contraste, toujours appliqué. Renvoie donc toujours une valeur (jamais
+ *  null) — même une icône sans teinte (passif/blanc) reçoit le halo. */
+export function keywordModeFilter(mode: KeywordMode | undefined): string {
+  const tint = keywordModeTint(mode);
+  return tint ? `${tint} ${ICON_CONTRAST_HALO}` : ICON_CONTRAST_HALO;
+}
+
+/** Teinte de mode seule (sans halo) : chaîne `filter` qui aplatit une icône
+ *  emoji/image vers une couleur unique correspondant au déclencheur. Générée via
+ *  https://codepen.io/sosuke/pen/Pjoqqp depuis le hex de keywordModeColor, pour
+ *  que les deux helpers restent cohérents. Null pour le passif/permanent (aucune
+ *  teinte — l'icône reste blanche/multicolore). */
+function keywordModeTint(mode: KeywordMode | undefined): string | null {
+  if (mode === "entry" || mode === "spell") {
+    // → #FFE05C jaune clair lumineux — arrivée en jeu (créature) ET sort, même
+    // couleur (tout ce qui se déclenche à l'invocation). Re-solveur contraint ;
+    // rendu #ffe65c ≈ cible (Δ=6). Garder en phase avec keywordModeColor.
+    return "brightness(0) saturate(100%) invert(70%) sepia(32%) saturate(1150%) hue-rotate(329deg) brightness(141%) contrast(117%)";
+  }
   if (mode === "death") {
     // → #a83232 dark red
     return "brightness(0) saturate(100%) invert(24%) sepia(50%) saturate(3253%) hue-rotate(341deg) brightness(95%) contrast(91%)";
   }
   if (mode === "tap") {
-    // → #d4a800 amber yellow
-    return "brightness(0) saturate(100%) invert(63%) sepia(78%) saturate(2024%) hue-rotate(11deg) brightness(89%) contrast(99%)";
+    // → #F68D09 orange vif (pouvoir activé, distinct de l'arrivée jaune).
+    // Re-solveur contraint, saturate(1460%) ; rendu ≈ cible. Garder en phase
+    // avec keywordModeColor("tap").
+    return "brightness(0) saturate(100%) invert(32%) sepia(89%) saturate(1460%) hue-rotate(16deg) brightness(145%) contrast(93%)";
   }
   if (mode === "return") {
     // → #3a7dd4 blue (retour en main)
@@ -37,10 +81,12 @@ export function keywordModeFilter(mode: KeywordMode | undefined): string | null 
     // → #E735F6 magenta (à l'attaque). The previous chain targeted #9D00FF but
     // its extreme saturate(7426%) rendered as vivid purple on Blink yet magenta
     // on WebKit/iOS Safari, so the icon (filter) and the X value (hex above) no
-    // longer matched on Safari. This chain uses a moderate saturate(372%) that
-    // resolves to the same magenta on both engines, keeping icon + number
-    // consistent cross-browser. Keep in sync with keywordModeColor("attack").
-    return "brightness(0) saturate(100%) invert(59%) sepia(55%) saturate(372%) hue-rotate(247deg) brightness(71%) contrast(285%)";
+    // longer matched on Safari. This chain keeps a moderate saturate(372%) that
+    // resolves to magenta on both engines. brightness raised 71%→95% (hue &
+    // saturate unchanged, so cross-browser hue is preserved): the old 71% left
+    // the thin-line icons noticeably darker than the flat-hex label/number on
+    // real Chrome. Keep in sync with keywordModeColor("attack").
+    return "brightness(0) saturate(100%) invert(59%) sepia(55%) saturate(372%) hue-rotate(247deg) brightness(95%) contrast(285%)";
   }
   if (mode === "end_of_turn") {
     // → #2faa3f green (fin du tour)
@@ -78,13 +124,13 @@ export function buildKeywordDisplayEntries(
     out.push({
       kw: inst.id,
       x: inst.x ?? (inst.mode === undefined ? xFromText[inst.id] : undefined),
-      mode: inst.mode,
+      mode: inst.mode ?? defaultDisplayMode(inst.id),
       instanceIdx: i,
     });
   }
   for (const kw of card.keywords) {
     if (!idsCovered.has(kw)) {
-      out.push({ kw, x: xFromText[kw] });
+      out.push({ kw, x: xFromText[kw], mode: defaultDisplayMode(kw) });
     }
   }
   return out;

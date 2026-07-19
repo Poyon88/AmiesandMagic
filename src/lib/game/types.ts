@@ -148,11 +148,15 @@ export type SpellKeywordId =
   | "cataclysme"
   | "affaiblissement";
 
-/** Trigger mode for a creature keyword. Undefined = on-play (default,
- *  existing behaviour). "death" = on-death rattle. "tap" = activated by
- *  tapping the creature (MTG-strict semantics). Only a curated subset of
- *  keywords accept non-play modes — see plan. */
-export type KeywordMode = "death" | "tap" | "return" | "attack" | "end_of_turn";
+/** Trigger mode for a creature keyword (also reused to tint spell effects).
+ *  Undefined = neutral default (passive / permanent effect, kept white).
+ *  "entry" (on-play creature effect) and "spell" (spell resolution) share the
+ *  same light-yellow tint — everything that fires "on cast / on summon" reads
+ *  alike, distinct from an always-on passive (white). "tap" = tap-activated
+ *  ability, tinted orange so it stays distinct from an on-play effect that may
+ *  sit on the same creature. "death" = on-death rattle. Only a curated subset
+ *  of keywords accept non-play modes — see plan. */
+export type KeywordMode = "entry" | "spell" | "death" | "tap" | "return" | "attack" | "end_of_turn";
 
 /** Per-instance metadata for a creature keyword. Lives in
  *  `Card.keywordInstances` alongside the string `keywords` array so each

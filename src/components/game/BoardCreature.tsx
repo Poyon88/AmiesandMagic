@@ -852,8 +852,8 @@ function BoardCreature({
                 : kw === "entraide" && card.entraide_race
                   ? `${label} (${card.entraide_race})`
                   : label;
-              const modeSuffix = vocab.modeSuffix(mode);
-              const displayLabel = baseLabel + modeSuffix;
+              // Plus d'annotation de déclencheur : la couleur transmet le moment.
+              const displayLabel = baseLabel;
               let desc = vocab.keywordDesc(kw, x);
               if (kw === "convocations_multiples" && card.convocation_tokens?.length) {
                 desc = vocab.convocationPrefix(vocab.convocationTokens(card.convocation_tokens, tokenTemplates));
@@ -867,7 +867,7 @@ function BoardCreature({
               <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
                 <span style={{ flexShrink: 0, display: "inline-flex", filter: modeFilter ?? undefined }}><KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={10} keyword={kw} /></span>
                 <div>
-                  <div style={{ fontSize: 8 * d, color: modeColor ?? accentColor, fontWeight: 600 }}>{displayLabel}</div>
+                  <div style={{ fontSize: 8 * d, color: modeColor ?? "#fff", fontWeight: 600 }}>{displayLabel}</div>
                   {desc && <div style={{ fontSize: 7 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
                 </div>
               </div>
@@ -893,7 +893,7 @@ function BoardCreature({
                     <ComposedMarker mode={cmode} size={6} />
                   </span>
                   <div>
-                    {nm && <div style={{ fontSize: 8 * d, color: "#d8b25a", fontWeight: 600 }}>{nm}</div>}
+                    {nm && <div style={{ fontSize: 8 * d, color: keywordModeColor(cmode) ?? "#fff", fontWeight: 600 }}>{nm}</div>}
                     <div style={{ fontSize: 7 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{vocab.composedDesc(cap, tokenTemplates)}</div>
                   </div>
                 </div>

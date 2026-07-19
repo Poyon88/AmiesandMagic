@@ -701,6 +701,8 @@ function triggerToKeywordMode(trigger: import("./types").CapabilityTrigger): imp
     case "on_activation": return "tap";
     case "on_attack": return "attack";
     case "on_end_of_turn": return "end_of_turn";
+    case "on_play": return "entry"; // arrivée en jeu → jaune (cohérence flèche/icône)
+    case "spell_resolution": return "spell"; // sort → jaune (cohérence flèche/icône)
     default: return undefined;
   }
 }

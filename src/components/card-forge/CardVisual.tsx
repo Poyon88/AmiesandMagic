@@ -429,13 +429,13 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                   boxShadow: `0 0 6px ${fac.color}44`,
                   transition: "all 0.2s",
                 }}>
-                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 15 * s, height: 15 * s, flexShrink: 0 }}>
+                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 15 * s, height: 15 * s, flexShrink: 0, filter: keywordModeFilter("spell") ?? undefined }}>
                     <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} keyword={`spell_${spellKw.id}`} size={15 * s} fill />
                   </span>
                   {valueText && (
                     <span style={{
                       fontSize: 10 * s, fontWeight: 900, lineHeight: 1,
-                      color: "#fff", fontFamily: "'Cinzel',serif",
+                      color: keywordModeColor("spell") ?? "#fff", fontFamily: "'Cinzel',serif",
                       textShadow: `0 0 4px ${fac.accent}`,
                       marginLeft: -4 * s,
                     }}>{valueText}</span>
@@ -622,9 +622,9 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
               const desc = getSpellKeywordDesc(spellKw, fakeCard, tokens);
               return (
                 <div key={`sk_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
-                  <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={18 * s} keyword={`spell_${spellKw.id}`} /></span>
+                  <span style={{ flexShrink: 0, filter: keywordModeFilter("spell") ?? undefined }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={18 * s} keyword={`spell_${spellKw.id}`} /></span>
                   <div>
-                    <div style={{ fontSize: 14 * s, color: fac.accent, fontWeight: 700 }}>{label}</div>
+                    <div style={{ fontSize: 14 * s, color: keywordModeColor("spell") ?? fac.accent, fontWeight: 700 }}>{label}</div>
                     <div style={{ fontSize: 12 * s, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>
                   </div>
                 </div>
@@ -680,7 +680,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                 <div key={`cxd_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
                   <span style={{ position: "relative", flexShrink: 0, display: "inline-flex" }}><span style={{ display: "inline-flex", lineHeight: 0, filter: keywordModeFilter(cmode) ?? undefined }}><KeywordIcon symbol={ic.symbol} size={18 * s} keyword={ic.keyword} /></span><ComposedMarker mode={cmode} size={9 * s} /></span>
                   <div>
-                    {nm && <div style={{ fontSize: 14 * s, color: "#d8b25a", fontWeight: 700 }}>{nm}</div>}
+                    {nm && <div style={{ fontSize: 14 * s, color: keywordModeColor(cmode) ?? "#fff", fontWeight: 700 }}>{nm}</div>}
                     <div style={{ fontSize: 12 * s, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{describeComposedCap(cap, tokens)}</div>
                   </div>
                 </div>

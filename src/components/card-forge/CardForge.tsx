@@ -3191,7 +3191,7 @@ export default function CardForge() {
                                 {(["play", "death", "tap", "return", "end_of_turn", "attack"] as const).map(mode => {
                                   const allowed = mode === "play" || CURATED_KEYWORD_MODES[id].has(mode);
                                   const active = mode === "play" ? !keywordModes[id] : keywordModes[id] === mode;
-                                  const color = mode === "play" ? fac.color : mode === "death" ? "#a83232" : mode === "tap" ? "#d4a800" : mode === "return" ? "#3a7dd4" : mode === "attack" ? "#9b59b6" : "#2faa3f";
+                                  const color = mode === "play" ? fac.color : mode === "death" ? "#a83232" : mode === "tap" ? "#F68D09" : mode === "return" ? "#3a7dd4" : mode === "attack" ? "#9b59b6" : "#2faa3f";
                                   const label = mode === "play" ? "⚡" : mode === "death" ? "💀" : mode === "tap" ? "⟲" : mode === "return" ? "↩" : mode === "attack" ? "⚔" : "⌛";
                                   return (
                                     <button

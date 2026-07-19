@@ -154,23 +154,28 @@ export function composedKeywordName(cap: Capability, t?: SafeT): string {
 }
 
 /** Mode (au sens couleur d'icône) déduit du déclencheur de la capacité :
- *  entrée/résolution → blanc (undefined), mort → rouge, retour → bleu,
- *  activation → jaune. Réutilise keywordModeColor/keywordModeFilter. */
+ *  arrivée en jeu (on_play) ET sort (spell_resolution) → jaune (même moment :
+ *  invocation), mort → rouge, retour → bleu, activation → orange, attaque →
+ *  magenta, fin de tour → vert. Seul le passif (automatic) reste neutre
+ *  (undefined → blanc). Réutilise keywordModeColor/keywordModeFilter. */
 export function composedTriggerMode(cap: Capability): KeywordMode | undefined {
   switch (cap.trigger) {
+    case "on_play": return "entry"; // arrivée en jeu → argent bleuté (distinct du passif blanc)
     case "on_death": return "death";
     case "on_return": return "return";
     case "on_activation": return "tap";
     case "on_attack": return "attack";
     case "on_end_of_turn": return "end_of_turn";
-    default: return undefined; // on_play / spell_resolution → blanc
+    case "spell_resolution": return "spell"; // sort (résolution immédiate) → gris
+    default: return undefined; // automatic (passif/permanent) → blanc
   }
 }
 
-/** Couleur du marqueur ✦ d'un effet composé, selon le déclencheur (mort=rouge,
- *  tap=jaune, retour=bleu, attaque=violet…). BLANC par défaut (on_play / sort) :
- *  dans ce mode l'icône n'est pas teintée (elle reste blanche), le ✦ doit donc
- *  matcher — même règle que la teinte de l'icône (keywordModeColor null ⇒ blanc). */
+/** Couleur du marqueur ✦ d'un effet composé, selon le déclencheur (arrivée &
+ *  sort=jaune, mort=rouge, tap=orange, retour=bleu, attaque=magenta…). BLANC
+ *  seulement par défaut (passif automatic) : dans ce mode l'icône n'est
+ *  pas teintée (elle reste blanche), le ✦ doit donc matcher — même règle que la
+ *  teinte de l'icône (keywordModeColor null ⇒ blanc). */
 export function composedMarkerColor(mode: KeywordMode | undefined): string {
   return keywordModeColor(mode) ?? "#ffffff";
 }
@@ -272,15 +277,16 @@ function describeScatter(eff: ComposedEffect, t?: SafeT): string | null {
 export function describeComposedCap(cap: Capability, tokens?: TokenTemplate[], t?: SafeT): string {
   const eff = cap.composed;
   if (!eff) return "";
-  const prefix = cap.trigger ? frag(t, `trigger.${cap.trigger}`) : "";
+  // Pas de préfixe de déclencheur (« À l'entrée : », « À la fin du tour : », « Au
+  // retour en main : »…) : la couleur de l'icône transmet désormais le moment de
+  // déclenchement, le texte reste ainsi allégé.
   // Exhumation : la phrase de contenu décrit déjà le nombre + la zone (cimetière)
   // → on n'y accole pas le descripteur de cible générique (qui dirait « à N unités
   // alliées du cimetière au choix », redondant).
   const skipTarget = eff.content === "exhumation";
   const body = describeScatter(eff, t)
     ?? [describeContent(eff, tokens, t), skipTarget ? "" : describeTarget(eff.target, t)].filter(Boolean).join(" ");
-  const sentence = prefix ? `${prefix} : ${body}` : body;
-  return sentence.charAt(0).toUpperCase() + sentence.slice(1) + ".";
+  return body.charAt(0).toUpperCase() + body.slice(1) + ".";
 }
 
 /** Capacités composées portées par une carte (pour les renderers). */

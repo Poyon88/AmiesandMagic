@@ -114,8 +114,8 @@ export default function TargetingArrow({
       const color = m === "attack" ? "#ef4444"
         : m === "attack_power" ? "#9D00FF"
         : m === "creature" ? "#2ecc71"
-        : m === "hero_power" ? "#eab308"
-        : m === "tap" ? "#d4a800"
+        : m === "hero_power" ? "#F68D09"
+        : m === "tap" ? "#F68D09"
         : "#a855f7";
       pathRef.current.setAttribute("stroke", color);
       glowPathRef.current.setAttribute("stroke", color);
