@@ -218,17 +218,17 @@ function MulliganCard({
               const modeFilter = keywordModeFilter(mode);
               return (
               <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} title={displayTitle} style={{
-                minWidth: 20, height: 20,
+                minWidth: 34, height: 34,
                 padding: x != null ? "0 3px" : 0,
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2,
                 fontSize: 11,
               }}>
                 <span style={{ display: "inline-flex", filter: modeFilter ?? undefined, lineHeight: 0 }}>
-                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 11, height: 11, flexShrink: 0 }}>
-                    <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={11} keyword={kw} fill />
+                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 26, height: 26, flexShrink: 0 }}>
+                    <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={26} keyword={kw} fill />
                   </span>
                 </span>
-                {x != null && <span style={{ fontSize: 8, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}` }}>{xNumeral(x)}</span>}
+                {x != null && <span style={{ fontSize: 13, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}` }}>{xNumeral(x)}</span>}
               </div>
               );
             })}
@@ -254,16 +254,16 @@ function MulliganCard({
                 : usesAmount ? xNumeral(spellKw.amount ?? 1) : null;
               return (
               <div key={`sk_${i}`} title={displayTitle} style={{
-                minWidth: 20, height: 20,
+                minWidth: 34, height: 34,
                 padding: hasValue ? "0 3px" : 0,
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2,
                 fontSize: 11,
               }}>
-                <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 11, height: 11, flexShrink: 0 }}>
-                  <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={11} keyword={`spell_${spellKw.id}`} fill />
+                <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 26, height: 26, flexShrink: 0 }}>
+                  <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={26} keyword={`spell_${spellKw.id}`} fill />
                 </span>
                 {valueText && <span style={{
-                  fontSize: 8, fontWeight: 900, color: "#fff",
+                  fontSize: 13, fontWeight: 900, color: "#fff",
                   fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}`,
                 }}>{valueText}</span>}
               </div>
@@ -282,9 +282,9 @@ function MulliganCard({
               const val = composedValueText(cap);
               const tint = keywordModeColor(composedTriggerMode(cap)) ?? accentColor;
               return (
-                <div key={`cx-${i}`} title={vocab.composedDesc(cap, tokenTemplates)} style={{ minWidth: 24, height: 24, padding: val ? "0 3px" : 0, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 }}>
-                  <span style={{ position: "relative", display: "inline-flex", lineHeight: 0 }}><span style={{ display: "inline-flex", lineHeight: 0, filter: keywordModeFilter(cmode) ?? undefined }}><KeywordIcon symbol={ic.symbol} size={14} keyword={ic.keyword} /></span><ComposedMarker mode={cmode} size={7} /></span>
-                  {val && <span style={{ fontSize: 8, fontWeight: 900, color: keywordModeColor(composedTriggerMode(cap)) ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}`, marginLeft: -3 }}>{val}</span>}
+                <div key={`cx-${i}`} title={vocab.composedDesc(cap, tokenTemplates)} style={{ minWidth: 38, height: 38, padding: val ? "0 3px" : 0, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 }}>
+                  <span style={{ position: "relative", display: "inline-flex", lineHeight: 0 }}><span style={{ display: "inline-flex", lineHeight: 0, filter: keywordModeFilter(cmode) ?? undefined }}><KeywordIcon symbol={ic.symbol} size={26} keyword={ic.keyword} /></span><ComposedMarker mode={cmode} size={13} /></span>
+                  {val && <span style={{ fontSize: 13, fontWeight: 900, color: keywordModeColor(composedTriggerMode(cap)) ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}`, marginLeft: 1 }}>{val}</span>}
                 </div>
               );
             })}
