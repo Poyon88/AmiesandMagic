@@ -1,7 +1,7 @@
 -- Renommage de clans (2026-07-19)
 -- ---------------------------------------------------------------------------
 -- Met à jour les noms de clans (identifiants FR-canoniques, stockés dans la
--- colonne `clan` de public.cards / public.heroes / public.boards) suite au
+-- colonne `clan` de public.cards / public.heroes / public.game_boards) suite au
 -- second passage de renommage. Les ids de faction/race NE changent PAS.
 --
 -- Renommages :
@@ -32,7 +32,7 @@ do $$
 declare
   t text;
 begin
-  foreach t in array array['cards', 'heroes', 'boards']
+  foreach t in array array['cards', 'heroes', 'game_boards']
   loop
     -- Clans à identifiant long et non ambigu (pas besoin de garde faction).
     execute format('update public.%I set clan = %L where clan = %L', t, 'Les Seigneurs Fauves',  'La Cour Pourpre');
