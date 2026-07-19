@@ -264,7 +264,7 @@ function MulliganCard({
                 </span>
                 {valueText && <span style={{
                   fontSize: 13, fontWeight: 900, color: keywordModeColor("spell") ?? "#fff",
-                  fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}`,
+                  fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}, ${TEXT_CONTRAST_HALO}`,
                 }}>{valueText}</span>}
               </div>
               );

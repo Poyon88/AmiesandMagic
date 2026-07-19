@@ -426,7 +426,7 @@ export default function GameCard({
                 </span>
                 {valueText && <span style={{
                   fontSize: 15 * s, fontWeight: 900, color: keywordModeColor("spell") ?? "#fff",
-                  fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}`,
+                  fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}, ${TEXT_CONTRAST_HALO}`,
                   marginLeft: 1 * s,
                 }}>{valueText}</span>}
               </div>

@@ -388,7 +388,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                     <span style={{
                       fontSize: 10 * s, fontWeight: 900, lineHeight: 1,
                       color: "#fff", fontFamily: "'Cinzel',serif",
-                      textShadow: `0 0 4px ${fac.accent}`,
+                      textShadow: `0 0 4px ${fac.accent}, ${TEXT_CONTRAST_HALO}`,
                       marginLeft: -4 * s,
                     }}>{xNumeral(xVal)}</span>
                   )}
@@ -436,7 +436,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                     <span style={{
                       fontSize: 10 * s, fontWeight: 900, lineHeight: 1,
                       color: keywordModeColor("spell") ?? "#fff", fontFamily: "'Cinzel',serif",
-                      textShadow: `0 0 4px ${fac.accent}`,
+                      textShadow: `0 0 4px ${fac.accent}, ${TEXT_CONTRAST_HALO}`,
                       marginLeft: -4 * s,
                     }}>{valueText}</span>
                   )}
