@@ -49,7 +49,7 @@ function loadSetRegistry(): Promise<CardSet[]> {
     });
   return _setRegistryPromise;
 }
-import { KEYWORD_SYMBOLS as keywordSymbols, toRoman, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
+import { KEYWORD_SYMBOLS as keywordSymbols, xNumeral, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import KeywordIcon from "@/components/shared/KeywordIcon";
@@ -353,7 +353,7 @@ export default function GameCard({
             return entries.map((entry, idx) => {
               const { kw, x, mode } = entry;
               const label = vocab.keywordLabel(kw);
-              const baseTitle = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
+              const baseTitle = x != null ? label.replace(/ X$/, ` ${xNumeral(x)}`) : label;
               const modeSuffix = mode === "death" ? " · à la mort" : mode === "tap" ? " · tap" : mode === "return" ? " · retour en main" : mode === "end_of_turn" ? " · fin du tour" : "";
               // On a spell, these keywords are CONFERRED to creature(s). The
               // "all allies" scope gets a visible GREEN chip (fill + border)
@@ -382,7 +382,7 @@ export default function GameCard({
                     <KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={33 * icoS} keyword={kw} fill />
                   </span>
                 </span>
-                {x != null && <span style={{ fontSize: 10 * s, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}`, marginLeft: -6 * s }}>{toRoman(x)}</span>}
+                {x != null && <span style={{ fontSize: 10 * s, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}`, marginLeft: -6 * s }}>{xNumeral(x)}</span>}
               </div>
               );
             });
@@ -406,7 +406,7 @@ export default function GameCard({
                 ? useStatBuffFormat
                   ? `+${spellKw.attack ?? 0}/+${spellKw.health ?? 0}`
                   : `${spellKw.attack ?? 0}/${spellKw.health ?? 0}`
-                : usesAmount ? toRoman(spellKw.amount ?? 1) : null;
+                : usesAmount ? xNumeral(spellKw.amount ?? 1) : null;
               const spellKey = `spell_${spellKw.id}`;
               const hasImg = !!iconOverrides[spellKey];
               return (
@@ -529,7 +529,7 @@ export default function GameCard({
             {entries.map((entry, idx) => {
               const { kw, x, mode } = entry;
               const label = vocab.keywordLabel(kw);
-              const baseLabel = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
+              const baseLabel = x != null ? label.replace(/ X$/, ` ${xNumeral(x)}`) : label;
               const modeSuffix = mode === "death" ? " · à la mort" : mode === "tap" ? " · tap" : mode === "return" ? " · retour en main" : mode === "end_of_turn" ? " · fin du tour" : "";
               const displayLabel = baseLabel + modeSuffix;
               let desc = vocab.keywordDesc(kw, x);

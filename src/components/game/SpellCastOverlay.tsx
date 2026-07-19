@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useGameStore, type SpellCastEvent } from "@/lib/store/gameStore";
 import {
   KEYWORD_SYMBOLS,
-  toRoman,
+  xNumeral,
   parseXValuesFromEffectText,
   cleanEffectText,
 } from "@/lib/game/keyword-labels";
@@ -286,7 +286,7 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
                     {visibleKws.map((kw) => {
                       const x = (xVals as Record<string, number>)[kw];
                       const label = vocab.keywordLabel(kw);
-                      const displayLabel = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
+                      const displayLabel = x != null ? label.replace(/ X$/, ` ${xNumeral(x)}`) : label;
                       const desc = vocab.keywordDesc(kw, x);
                       // Conferred keyword scope shown via the label note + colour;
                       // the icon itself is left intact (no destructive recolour).
