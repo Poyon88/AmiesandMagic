@@ -24,14 +24,9 @@ const FR_LABEL_TO_ID: Record<string, string> = Object.fromEntries(
 
 // ─── KEYWORD → SYMBOL MAP ───────────────────────────────────────────────────
 
-function toRoman(n: number): string {
-  const vals = [10, 9, 5, 4, 1];
-  const syms = ["X", "IX", "V", "IV", "I"];
-  let result = "";
-  for (let i = 0; i < vals.length; i++) {
-    while (n >= vals[i]) { result += syms[i]; n -= vals[i]; }
-  }
-  return result || "0";
+// Valeur X en chiffres arabes (compact) — cf. xNumeral dans keyword-labels.ts.
+function xNumeral(n: number): string {
+  return String(n);
 }
 
 export const KEYWORD_SYMBOLS: Record<string, string> = {
@@ -355,7 +350,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
           <div style={{ display: "flex", gap: 4 * s, flexWrap: "wrap" }}>
             {card!.keywords.filter(kw => !isCreatureKwShadowedBySpell(kw, card!.spellKeywords)).map(kw => {
               const xVal = card!.keywordXValues?.[kw];
-              let displayName = xVal != null ? kw.replace(/ X$/, ` ${toRoman(xVal)}`) : kw;
+              let displayName = xVal != null ? kw.replace(/ X$/, ` ${xNumeral(xVal)}`) : kw;
               let displayDesc = xVal != null ? KEYWORDS[kw]?.desc.replace(/X/g, String(xVal)) : KEYWORDS[kw]?.desc;
               if (kw === "Convocation X" && card!.convocationTokenId) {
                 const tokenLabel = card!.convocationTokenName || "token";
@@ -395,7 +390,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                       color: "#fff", fontFamily: "'Cinzel',serif",
                       textShadow: `0 0 4px ${fac.accent}`,
                       marginLeft: -4 * s,
-                    }}>{toRoman(xVal)}</span>
+                    }}>{xNumeral(xVal)}</span>
                   )}
                 </div>
               );
@@ -423,7 +418,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                   : useStatDebuffFormat
                     ? `-${spellKw.attack ?? 0}/-${spellKw.health ?? 0}`
                     : `${spellKw.attack ?? 0}/${spellKw.health ?? 0}`
-                : usesAmount ? toRoman(spellKw.amount ?? 1) : null;
+                : usesAmount ? xNumeral(spellKw.amount ?? 1) : null;
               return (
                 <div key={`sk_${i}`} title={`${label}: ${desc}`} style={{
                   minWidth: 19 * s, height: 19 * s, borderRadius: 6 * s,
@@ -582,7 +577,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
           <div style={{ display: "flex", flexDirection: "column", gap: 6 * s }}>
             {card!.keywords.filter(kw => !isCreatureKwShadowedBySpell(kw, card!.spellKeywords)).map(kw => {
               const xVal = card!.keywordXValues?.[kw];
-              let displayName = xVal != null ? kw.replace(/ X$/, ` ${toRoman(xVal)}`) : kw;
+              let displayName = xVal != null ? kw.replace(/ X$/, ` ${xNumeral(xVal)}`) : kw;
               let displayDesc = xVal != null ? KEYWORDS[kw]?.desc.replace(/X/g, String(xVal)) : KEYWORDS[kw]?.desc;
               if (kw === "Convocation X" && card!.convocationTokenId) {
                 const tokenLabel = card!.convocationTokenName || "token";

@@ -7,7 +7,7 @@ import Image from "next/image";
 import type { CardInstance } from "@/lib/game/types";
 import { useGameStore } from "@/lib/store/gameStore";
 import type { DragEvent } from "react";
-import { KEYWORD_SYMBOLS, toRoman, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
+import { KEYWORD_SYMBOLS, xNumeral, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell, getEntraideReduction, getTokenManaCost } from "@/lib/game/abilities";
 import { persistentStats } from "@/lib/game/engine";
@@ -579,7 +579,7 @@ function HandCard({
                           <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={14} keyword={kw} fill />
                         </span>
                       </span>
-                      {x != null && <span style={{ fontSize: 8, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}` }}>{toRoman(x)}</span>}
+                      {x != null && <span style={{ fontSize: 8, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}` }}>{xNumeral(x)}</span>}
                     </div>
                   );
                 });
@@ -597,7 +597,7 @@ function HandCard({
                 ? useStatBuffFormat
                   ? `+${spellKw.attack ?? 0}/+${spellKw.health ?? 0}`
                   : `${spellKw.attack ?? 0}/${spellKw.health ?? 0}`
-                : usesAmount ? toRoman(spellKw.amount ?? 1) : null;
+                : usesAmount ? xNumeral(spellKw.amount ?? 1) : null;
               const spellKey = `spell_${spellKw.id}`;
               const hasImg = !!iconOverrides[spellKey];
               return (
@@ -723,7 +723,7 @@ function HandCard({
                 const { kw, x, mode } = entry;
                 const label = vocab.keywordLabel(kw);
                 const baseLabel = x != null
-                  ? label.replace(/ X$/, ` ${toRoman(x)}`)
+                  ? label.replace(/ X$/, ` ${xNumeral(x)}`)
                   : kw === "entraide" && card.entraide_race
                     ? `${label} (${card.entraide_race})`
                     : label;

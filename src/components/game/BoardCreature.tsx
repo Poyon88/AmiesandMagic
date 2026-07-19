@@ -7,7 +7,7 @@ import type { CardInstance, GameAction } from "@/lib/game/types";
 import { useGameStore, selectPowerTargetingColor } from "@/lib/store/gameStore";
 import { tapKeywordNeedsTarget, getCreatureTapComposedUid } from "@/lib/game/engine";
 import { getTokenManaCost } from "@/lib/game/abilities";
-import { KEYWORD_SYMBOLS, toRoman, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
+import { KEYWORD_SYMBOLS, xNumeral, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { composedCapsOf, composedIcon, composedTriggerMode, composedValueText } from "@/lib/game/composed-display";
@@ -682,7 +682,7 @@ function BoardCreature({
                     <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={14} keyword={kw} fill />
                   </span>
                 </span>
-                {x != null && <span style={{ fontSize: 8, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}` }}>{toRoman(x)}</span>}
+                {x != null && <span style={{ fontSize: 8, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}` }}>{xNumeral(x)}</span>}
               </div>
               );
             });
@@ -848,7 +848,7 @@ function BoardCreature({
               const x = entry.x ?? grantedX[kw];
               const label = vocab.keywordLabel(kw);
               const baseLabel = x != null
-                ? label.replace(/ X$/, ` ${toRoman(x)}`)
+                ? label.replace(/ X$/, ` ${xNumeral(x)}`)
                 : kw === "entraide" && card.entraide_race
                   ? `${label} (${card.entraide_race})`
                   : label;

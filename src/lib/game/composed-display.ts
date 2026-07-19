@@ -7,7 +7,7 @@
 // graine du générateur vocab). Sans traducteur (store, tests) → FR.
 
 import { ABILITIES, creatureEngineId } from "./abilities";
-import { toRoman, keywordModeColor, KEYWORD_LABELS } from "./keyword-labels";
+import { xNumeral, keywordModeColor, KEYWORD_LABELS } from "./keyword-labels";
 import type { Capability, ComposedEffect, KeywordMode, TargetSpec, TokenTemplate } from "./types";
 import type { SafeT } from "@/i18n/config";
 
@@ -101,7 +101,7 @@ export function composedValueText(cap: Capability): string | null {
   if (cap.composed!.content === "buff" || cap.composed!.content === "debuff") {
     return (m.x != null || m.y != null) ? `${m.x ?? 0}/${m.y ?? 0}` : null;
   }
-  return (m.x != null && m.x > 0) ? toRoman(m.x) : null;
+  return (m.x != null && m.x > 0) ? xNumeral(m.x) : null;
 }
 
 /** Icône (emoji de repli) + clé d'icône (pour une éventuelle icône uploadée).

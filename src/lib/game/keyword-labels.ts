@@ -91,14 +91,11 @@ export function buildKeywordDisplayEntries(
 }
 
 /** Convert an integer to Roman numerals (1–10) */
-export function toRoman(n: number): string {
-  const vals = [10, 9, 5, 4, 1];
-  const syms = ["X", "IX", "V", "IV", "I"];
-  let result = "";
-  for (let i = 0; i < vals.length; i++) {
-    while (n >= vals[i]) { result += syms[i]; n -= vals[i]; }
-  }
-  return result || "0";
+// Numéral affiché pour la valeur X d'un mot-clé (ex. « Rassemblement 3 »).
+// Chiffres arabes : plus compacts que les romains sur les badges de carte
+// quand une carte porte plusieurs pouvoirs.
+export function xNumeral(n: number): string {
+  return String(n);
 }
 
 /**

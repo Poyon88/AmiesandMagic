@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import type { CardInstance } from "@/lib/game/types";
-import { KEYWORD_SYMBOLS, toRoman, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
+import { KEYWORD_SYMBOLS, xNumeral, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import KeywordIcon from "@/components/shared/KeywordIcon";
@@ -211,7 +211,7 @@ function MulliganCard({
             {entries.map((entry, idx) => {
               const { kw, x, mode } = entry;
               const label = vocab.keywordLabel(kw);
-              const baseTitle = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
+              const baseTitle = x != null ? label.replace(/ X$/, ` ${xNumeral(x)}`) : label;
               const modeSuffix = vocab.modeSuffix(mode);
               const displayTitle = baseTitle + modeSuffix;
               const modeColor = keywordModeColor(mode);
@@ -228,7 +228,7 @@ function MulliganCard({
                     <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={11} keyword={kw} fill />
                   </span>
                 </span>
-                {x != null && <span style={{ fontSize: 8, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}` }}>{toRoman(x)}</span>}
+                {x != null && <span style={{ fontSize: 8, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}` }}>{xNumeral(x)}</span>}
               </div>
               );
             })}
@@ -251,7 +251,7 @@ function MulliganCard({
                 ? useStatBuffFormat
                   ? `+${spellKw.attack ?? 0}/+${spellKw.health ?? 0}`
                   : `${spellKw.attack ?? 0}/${spellKw.health ?? 0}`
-                : usesAmount ? toRoman(spellKw.amount ?? 1) : null;
+                : usesAmount ? xNumeral(spellKw.amount ?? 1) : null;
               return (
               <div key={`sk_${i}`} title={displayTitle} style={{
                 minWidth: 20, height: 20,
@@ -351,7 +351,7 @@ function MulliganCard({
             {entries.map((entry, idx) => {
               const { kw, x, mode } = entry;
               const label = vocab.keywordLabel(kw);
-              const baseLabel = x != null ? label.replace(/ X$/, ` ${toRoman(x)}`) : label;
+              const baseLabel = x != null ? label.replace(/ X$/, ` ${xNumeral(x)}`) : label;
               const modeSuffix = vocab.modeSuffix(mode);
               const displayLabel = baseLabel + modeSuffix;
               const desc = vocab.keywordDesc(kw, x);
