@@ -181,15 +181,17 @@ function MulliganCard({
         boxShadow: "0 0 8px #74b9ff55",
       }}>{card.mana_cost}</div>
 
-      {/* Name — top bar (ocre, 2 lignes, ombre) ; padding gauche pour dégager
-          l'orbe de mana. Taille alignée sur l'échelle iPad (* d). */}
+      {/* Name — top bar (ocre, jusqu'à 3 lignes, ombre) ; padding gauche pour
+          dégager l'orbe de mana. Taille alignée sur l'échelle iPad (* d). Clamp
+          à 3 lignes pour afficher en entier les noms longs (ex. « Gardien de
+          Forge Runique ») au lieu de les tronquer par « … ». */}
       <div style={{
         position: "absolute", top: 0, left: 0, right: 0, zIndex: 2,
         padding: "6px 34px 8px",
-        background: "linear-gradient(180deg, #0d0d1add 0%, #0d0d1a88 45%, transparent 78%)",
+        background: "linear-gradient(180deg, #0d0d1aee 0%, #0d0d1abb 55%, transparent 85%)",
         fontSize: 12 * d, color: "#d8b25a", fontWeight: 700, textAlign: "center",
         overflow: "hidden", textOverflow: "ellipsis", lineHeight: 1.15,
-        display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 2,
+        display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 3,
         fontFamily: "'Cinzel', serif",
         textShadow: "0 1px 2px #000, 0 0 3px #000, 0 0 5px #000",
       }}>{localizeName(card)}</div>
@@ -218,17 +220,17 @@ function MulliganCard({
               const modeFilter = keywordModeFilter(mode);
               return (
               <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} title={displayTitle} style={{
-                minWidth: 20, height: 20,
+                minWidth: 34, height: 34,
                 padding: x != null ? "0 3px" : 0,
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2,
                 fontSize: 11,
               }}>
                 <span style={{ display: "inline-flex", filter: modeFilter ?? undefined, lineHeight: 0 }}>
-                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 11, height: 11, flexShrink: 0 }}>
-                    <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={11} keyword={kw} fill />
+                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 26, height: 26, flexShrink: 0 }}>
+                    <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={26} keyword={kw} fill />
                   </span>
                 </span>
-                {x != null && <span style={{ fontSize: 8, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}` }}>{xNumeral(x)}</span>}
+                {x != null && <span style={{ fontSize: 13, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}` }}>{xNumeral(x)}</span>}
               </div>
               );
             })}
@@ -254,16 +256,16 @@ function MulliganCard({
                 : usesAmount ? xNumeral(spellKw.amount ?? 1) : null;
               return (
               <div key={`sk_${i}`} title={displayTitle} style={{
-                minWidth: 20, height: 20,
+                minWidth: 34, height: 34,
                 padding: hasValue ? "0 3px" : 0,
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2,
                 fontSize: 11,
               }}>
-                <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 11, height: 11, flexShrink: 0 }}>
-                  <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={11} keyword={`spell_${spellKw.id}`} fill />
+                <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 26, height: 26, flexShrink: 0 }}>
+                  <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={26} keyword={`spell_${spellKw.id}`} fill />
                 </span>
                 {valueText && <span style={{
-                  fontSize: 8, fontWeight: 900, color: "#fff",
+                  fontSize: 13, fontWeight: 900, color: "#fff",
                   fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}`,
                 }}>{valueText}</span>}
               </div>
@@ -282,9 +284,9 @@ function MulliganCard({
               const val = composedValueText(cap);
               const tint = keywordModeColor(composedTriggerMode(cap)) ?? accentColor;
               return (
-                <div key={`cx-${i}`} title={vocab.composedDesc(cap, tokenTemplates)} style={{ minWidth: 24, height: 24, padding: val ? "0 3px" : 0, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 }}>
-                  <span style={{ position: "relative", display: "inline-flex", lineHeight: 0 }}><span style={{ display: "inline-flex", lineHeight: 0, filter: keywordModeFilter(cmode) ?? undefined }}><KeywordIcon symbol={ic.symbol} size={14} keyword={ic.keyword} /></span><ComposedMarker mode={cmode} size={7} /></span>
-                  {val && <span style={{ fontSize: 8, fontWeight: 900, color: keywordModeColor(composedTriggerMode(cap)) ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}`, marginLeft: -3 }}>{val}</span>}
+                <div key={`cx-${i}`} title={vocab.composedDesc(cap, tokenTemplates)} style={{ minWidth: 38, height: 38, padding: val ? "0 3px" : 0, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 }}>
+                  <span style={{ position: "relative", display: "inline-flex", lineHeight: 0 }}><span style={{ display: "inline-flex", lineHeight: 0, filter: keywordModeFilter(cmode) ?? undefined }}><KeywordIcon symbol={ic.symbol} size={26} keyword={ic.keyword} /></span><ComposedMarker mode={cmode} size={13} /></span>
+                  {val && <span style={{ fontSize: 13, fontWeight: 900, color: keywordModeColor(composedTriggerMode(cap)) ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}`, marginLeft: 1 }}>{val}</span>}
                 </div>
               );
             })}

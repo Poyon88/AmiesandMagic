@@ -567,19 +567,19 @@ function HandCard({
                   const isAllAllies = grantScope === "all_allies";
                   return (
                     <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{
-                      minWidth: 24, height: 24, borderRadius: 3,
+                      minWidth: 32, height: 32, borderRadius: 3,
                       padding: x != null ? "0 2px" : 0,
                       background: isAllAllies ? "#27ae6055" : (hasImg ? "transparent" : `${accentColor}33`),
                       border: isAllAllies ? "1px solid #27ae60" : (hasImg ? "none" : `1px solid ${accentColor}66`),
                       display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1,
-                      fontSize: 8, overflow: "hidden",
+                      fontSize: 8, overflow: "visible",
                     }}>
                       <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", filter: modeFilter ?? undefined, lineHeight: 0 }}>
-                        <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 14, height: 14, flexShrink: 0 }}>
-                          <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={14} keyword={kw} fill />
+                        <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, flexShrink: 0 }}>
+                          <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={20} keyword={kw} fill />
                         </span>
                       </span>
-                      {x != null && <span style={{ fontSize: 8, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}` }}>{xNumeral(x)}</span>}
+                      {x != null && <span style={{ fontSize: 12, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}` }}>{xNumeral(x)}</span>}
                     </div>
                   );
                 });
@@ -602,18 +602,18 @@ function HandCard({
               const hasImg = !!iconOverrides[spellKey];
               return (
               <div key={`sk_${i}`} title={displayTitle} style={{
-                minWidth: 24, height: 24, borderRadius: 3,
+                minWidth: 32, height: 32, borderRadius: 3,
                 padding: hasValue ? "0 2px" : 0,
                 background: hasImg ? "transparent" : `${accentColor}33`,
                 border: hasImg ? "none" : `1px solid ${accentColor}66`,
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1,
-                fontSize: 8, overflow: "hidden",
+                fontSize: 8, overflow: "visible",
               }}>
-                <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 14, height: 14, flexShrink: 0 }}>
-                  <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={14} keyword={spellKey} fill />
+                <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, flexShrink: 0 }}>
+                  <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={20} keyword={spellKey} fill />
                 </span>
                 {valueText && <span style={{
-                  fontSize: 8, fontWeight: 900, color: "#fff",
+                  fontSize: 12, fontWeight: 900, color: "#fff",
                   fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}`,
                 }}>{valueText}</span>}
               </div>
@@ -629,8 +629,8 @@ function HandCard({
               const hasImg = !!iconOverrides[ic.keyword];
               return (
                 <div key={`cx-${i}`} title={vocab.composedDesc(cap, tokenTemplates)} style={{
-                  minWidth: 24, height: 24, padding: val ? "0 2px" : 0,
-                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, overflow: "hidden",
+                  minWidth: 32, height: 32, padding: val ? "0 2px" : 0,
+                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, overflow: "visible",
                 }}>
                   <span style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0 }}>
                     <span style={{ display: "inline-flex", lineHeight: 0, filter: keywordModeFilter(cmode) ?? undefined }}>
@@ -638,14 +638,14 @@ function HandCard({
                       // 14×14 to match the keyword-chip icon size — was 24×24,
                       // which made composed-effect icons on hand cards render
                       // bigger than the same keyword shown as a chip in play.
-                      <div style={{ width: 14, height: 14, flexShrink: 0 }}><KeywordIcon symbol={ic.symbol} size={14} keyword={ic.keyword} fill /></div>
+                      <div style={{ width: 20, height: 20, flexShrink: 0 }}><KeywordIcon symbol={ic.symbol} size={20} keyword={ic.keyword} fill /></div>
                     ) : (
-                      <KeywordIcon symbol={ic.symbol} size={14} keyword={ic.keyword} />
+                      <KeywordIcon symbol={ic.symbol} size={20} keyword={ic.keyword} />
                     )}
                     </span>
-                    <ComposedMarker mode={cmode} size={7} />
+                    <ComposedMarker mode={cmode} size={10} />
                   </span>
-                  {val && <span style={{ fontSize: 8, fontWeight: 900, color: keywordModeColor(composedTriggerMode(cap)) ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}`, marginLeft: -3 }}>{val}</span>}
+                  {val && <span style={{ fontSize: 12, fontWeight: 900, color: keywordModeColor(composedTriggerMode(cap)) ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}`, marginLeft: 1 }}>{val}</span>}
                 </div>
               );
             })}
