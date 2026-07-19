@@ -245,6 +245,10 @@
         "label": "変身",
         "desc": "召喚時：対象ユニットの完全なコピー（ATK／HP／能力）になる。"
       },
+      "dedoublement": {
+        "label": "分身",
+        "desc": "召喚：このクリーチャーの完全なコピーをフィールドに生成する。"
+      },
       "tactique": {
         "label": "戦術 X",
         "desc": "召喚時：対象の味方ユニット1体に、選んだ能力をX個永続付与する。"
@@ -399,10 +403,6 @@
       "declenchement": {
         "label": "誘発",
         "desc": "召喚：場にいる他の味方の複合誘発効果（登場／死亡／ターン終了／帰還）を一度再発動する。"
-      },
-      "dedoublement": {
-        "label": "分身",
-        "desc": "召喚：このクリーチャーの完全なコピーをフィールドに生成する。"
       }
     },
     "spell_keywords": {
@@ -622,6 +622,14 @@
         "displayName": "鍛冶の兄弟団",
         "description": "堅固で耐久力抜群：防御、粘り強さ、鍛冶、そしてノーム工学。"
       },
+      "EmpireDuMilieu": {
+        "displayName": "中央帝国",
+        "description": "戦略と制圧：規律、陣形、神秘主義、そして隠密。"
+      },
+      "RoyaumesDuSoleil": {
+        "displayName": "太陽の王国群",
+        "description": "太陽、砂漠、精霊：儀式の炎、略奪する遊牧民、そして召喚師。"
+      },
       "Humains": {
         "displayName": "自由王国連合",
         "description": "旧大陸：名誉、鋼鉄、そして英雄的な勇者たち。"
@@ -645,14 +653,6 @@
       "Elfes Noirs": {
         "displayName": "混沌軍団",
         "description": "混沌のあらゆる力が結集：組織化された大群、悪魔の宮廷、毒に侵された者、そして堕落したエリート。"
-      },
-      "EmpireDuMilieu": {
-        "displayName": "中央帝国",
-        "description": "戦略と制圧：規律、陣形、神秘主義、そして隠密。"
-      },
-      "RoyaumesDuSoleil": {
-        "displayName": "太陽の王国群",
-        "description": "太陽、砂漠、精霊：儀式の炎、略奪する遊牧民、そして召喚師。"
       }
     },
     "rarities": {
@@ -663,14 +663,9 @@
       "Légendaire": "レジェンド"
     },
     "clans": {
-      "Feu": "炎",
-      "Terre": "大地",
-      "Eau": "水",
-      "Air": "風",
       "Les Sylvains": "森人衆",
       "Les Hauts-Elfes": "ハイエルフ",
       "La Forêt d'Émeraude": "翠玉の森",
-      "Les Hobbits": "ホビット族",
       "Les Gardiens de la Montagne": "山の守護者",
       "La Forge Ardente": "烈火の鍛冶場",
       "Les Sentinelles d'Airain": "真鍮の歩哨",
@@ -684,18 +679,23 @@
       "Le Royaume du Nord": "北方王国",
       "L'Ordre de l'Aube": "暁の騎士団",
       "Les Guerrières du Vent": "風の戦士団",
-      "La Cour Pourpre": "紫の宮廷",
       "Les Enfants de la Lune": "月の子ら",
       "Le Pacte des Griffes": "鉤爪の盟約",
       "La Harde Sauvage": "野生の群れ",
       "Les Rangs Silencieux": "沈黙の列陣",
       "Le Voile Hurlant": "咆哮の帷",
       "La Cour Écarlate": "緋色の宮廷",
-      "Le Conclave d'Ossements": "骸骨の評議会",
       "Les Cohortes Sanglantes": "血塗られた大隊",
-      "La Cour Infernale": "冥府の宮廷",
       "La Forêt Maudite": "呪われた森",
-      "La Garde Noire": "黒の衛兵団"
+      "La Garde Noire": "黒の衛兵団",
+      "La Combe Verte": "緑の谷",
+      "Les Seigneurs Fauves": "野獣の君主たち",
+      "La Colère des Flammes": "炎の怒り",
+      "Le Socle du Monde": "世界の礎",
+      "La Vague Sans Fin": "終わりなき波",
+      "Le Souffle des Cimes": "峰々の息吹",
+      "Le Cénacle Nécromant": "死霊術師の密会",
+      "Les Princes des Abîmes": "奈落の王子たち"
     },
     "races": {
       "Elfes": "エルフ",
@@ -705,6 +705,7 @@
       "Hommes-Arbres": "樹人",
       "Nains": "ドワーフ",
       "Golems": "ゴーレム",
+      "Gnomes": "ノーム",
       "Humains": "人間",
       "Hommes-Loups": "狼人間",
       "Hommes-Ours": "熊人間",
@@ -737,7 +738,6 @@
       "Gobelins": "ゴブリン",
       "Trolls": "トロル",
       "Wargs": "ワーグ",
-      "Gnomes": "ノーム",
       "Guerriers du Chaos": "カオスの戦士"
     },
     "alignments": {

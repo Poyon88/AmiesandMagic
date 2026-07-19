@@ -86,13 +86,13 @@ export const GRANULAR_RACE_DESCRIPTORS: Record<string, string> = {
   'Mimis':
     'An adorable little beast-folk — small rounded humanoid silhouette, oversized soft fur, big innocent eyes, tiny twitching nose, stubby paws, an endearingly cute and harmless expression that belies a brave little warrior.',
   // Élémentaires faction
-  'Feu':
+  'La Colère des Flammes':
     'A humanoid fire elemental warrior — clearly bipedal humanoid silhouette, skin of glowing embers and flowing flame, hair made of living fire, eyes like burning coals.',
-  'Terre':
+  'Le Socle du Monde':
     'A humanoid earth elemental warrior — bipedal humanoid silhouette, rocky stone-textured skin, mossy beard, glowing crystal veins running across the chest and brow.',
-  'Eau':
+  'La Vague Sans Fin':
     'A humanoid water elemental warrior — bipedal humanoid silhouette, translucent flowing skin like rippling water, hair of cascading water droplets, calm deep-blue eyes.',
-  'Air':
+  'Le Souffle des Cimes':
     'A humanoid storm elemental warrior — bipedal humanoid silhouette, windswept wispy form with cloud-like hair, faint lightning veins crackling across the skin, fierce sky-blue eyes.',
   // Mercenaires faction
   'Géants':

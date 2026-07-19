@@ -76,9 +76,9 @@ describe("deriveRaceForClan — race persistée par le mana", () => {
   });
 
   it("clan Hobbits : Hobbits <= 5, Hommes-Arbres >= 6", () => {
-    expect(deriveRaceForClan("Elfes", "Les Hobbits", 3)).toBe("Hobbits");
-    expect(deriveRaceForClan("Elfes", "Les Hobbits", 5)).toBe("Hobbits");
-    expect(deriveRaceForClan("Elfes", "Les Hobbits", 6)).toBe("Hommes-Arbres");
+    expect(deriveRaceForClan("Elfes", "La Combe Verte", 3)).toBe("Hobbits");
+    expect(deriveRaceForClan("Elfes", "La Combe Verte", 5)).toBe("Hobbits");
+    expect(deriveRaceForClan("Elfes", "La Combe Verte", 6)).toBe("Hommes-Arbres");
   });
 
   it("renvoie null pour un clan sans bandes", () => {

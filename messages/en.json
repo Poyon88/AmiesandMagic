@@ -245,6 +245,10 @@
         "label": "Metamorphosis",
         "desc": "Battlecry: this unit becomes an exact copy (ATK / HP / abilities) of a target unit."
       },
+      "dedoublement": {
+        "label": "Doubling",
+        "desc": "Summon: creates an exact copy of this creature in play."
+      },
       "tactique": {
         "label": "Tactics X",
         "desc": "Battlecry: permanently grant X chosen ability(ies) to a target allied unit."
@@ -399,10 +403,6 @@
       "declenchement": {
         "label": "Trigger",
         "desc": "Summon: replay once the triggered compound effects of other allies in play, for a fixed subset of triggers (enter / death / end of turn / return)."
-      },
-      "dedoublement": {
-        "label": "Doubling",
-        "desc": "Summon: creates an exact copy of this creature in play."
       }
     },
     "spell_keywords": {
@@ -622,6 +622,14 @@
         "displayName": "The Forge Brotherhood",
         "description": "Sturdy and resilient: defense, tenacity, forging, and gnome engineering."
       },
+      "EmpireDuMilieu": {
+        "displayName": "The Middle Empire",
+        "description": "Strategy and control: discipline, formations, mysticism, and stealth."
+      },
+      "RoyaumesDuSoleil": {
+        "displayName": "The Sun Kingdoms",
+        "description": "Sun, desert, and spirits: ritual fire, raiding nomads, and summoners."
+      },
       "Humains": {
         "displayName": "The Free Kingdoms",
         "description": "The old continent: honor, steel, and heroic champions."
@@ -645,14 +653,6 @@
       "Elfes Noirs": {
         "displayName": "The Chaos Legions",
         "description": "All the forces of Chaos united: organized horde, demonic court, poison-corrupted, and fallen elite."
-      },
-      "EmpireDuMilieu": {
-        "displayName": "The Middle Empire",
-        "description": "Strategy and control: discipline, formations, mysticism, and stealth."
-      },
-      "RoyaumesDuSoleil": {
-        "displayName": "The Sun Kingdoms",
-        "description": "Sun, desert, and spirits: ritual fire, raiding nomads, and summoners."
       }
     },
     "rarities": {
@@ -663,14 +663,9 @@
       "Légendaire": "Legendary"
     },
     "clans": {
-      "Feu": "Fire",
-      "Terre": "Earth",
-      "Eau": "Water",
-      "Air": "Air",
       "Les Sylvains": "The Sylvans",
       "Les Hauts-Elfes": "The High Elves",
       "La Forêt d'Émeraude": "The Emerald Forest",
-      "Les Hobbits": "The Hobbits",
       "Les Gardiens de la Montagne": "The Mountain Wardens",
       "La Forge Ardente": "The Blazing Forge",
       "Les Sentinelles d'Airain": "The Bronze Sentinels",
@@ -684,18 +679,23 @@
       "Le Royaume du Nord": "The Northern Kingdom",
       "L'Ordre de l'Aube": "The Order of the Dawn",
       "Les Guerrières du Vent": "The Wind Warriors",
-      "La Cour Pourpre": "The Crimson Court",
       "Les Enfants de la Lune": "The Children of the Moon",
       "Le Pacte des Griffes": "The Claw Pact",
       "La Harde Sauvage": "The Wild Pack",
       "Les Rangs Silencieux": "The Silent Ranks",
       "Le Voile Hurlant": "The Howling Veil",
       "La Cour Écarlate": "The Scarlet Court",
-      "Le Conclave d'Ossements": "The Bone Conclave",
       "Les Cohortes Sanglantes": "The Bloodied Cohorts",
-      "La Cour Infernale": "The Infernal Court",
       "La Forêt Maudite": "The Cursed Forest",
-      "La Garde Noire": "The Black Guard"
+      "La Garde Noire": "The Black Guard",
+      "La Combe Verte": "The Green Vale",
+      "Les Seigneurs Fauves": "The Tawny Lords",
+      "La Colère des Flammes": "The Wrath of Flames",
+      "Le Socle du Monde": "The Foundation of the World",
+      "La Vague Sans Fin": "The Endless Wave",
+      "Le Souffle des Cimes": "The Breath of the Peaks",
+      "Le Cénacle Nécromant": "The Necromancer Conclave",
+      "Les Princes des Abîmes": "The Princes of the Abyss"
     },
     "races": {
       "Elfes": "Elves",
@@ -705,6 +705,7 @@
       "Hommes-Arbres": "Treefolk",
       "Nains": "Dwarves",
       "Golems": "Golems",
+      "Gnomes": "Gnomes",
       "Humains": "Humans",
       "Hommes-Loups": "Werewolves",
       "Hommes-Ours": "Werebears",
@@ -737,7 +738,6 @@
       "Gobelins": "Goblins",
       "Trolls": "Trolls",
       "Wargs": "Wargs",
-      "Gnomes": "Gnomes",
       "Guerriers du Chaos": "Chaos Warriors"
     },
     "alignments": {
