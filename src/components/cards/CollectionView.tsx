@@ -298,7 +298,7 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
               >
                 <option value="">{t("all_fem")}</option>
                 {factions.map((f) => (
-                  <option key={f} value={f}>{vocab.factionName(f)}</option>
+                  <option key={f} value={f}>{vocab.factionNameWithRaces(f)}</option>
                 ))}
               </select>
             </div>
@@ -385,7 +385,7 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
               >
                 <option value="">{t("all_masc")}</option>
                 {clans.map((c) => (
-                  <option key={c} value={c}>{vocab.clanName(c)}</option>
+                  <option key={c} value={c}>{vocab.clanNameWithRaces(c)}</option>
                 ))}
               </select>
             </div>

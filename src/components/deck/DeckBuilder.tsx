@@ -883,7 +883,7 @@ export default function DeckBuilder({
           >
             <option value="">{t("all_clans")}</option>
             {clans.map((c) => (
-              <option key={c} value={c}>{vocab.clanName(c)}</option>
+              <option key={c} value={c}>{vocab.clanNameWithRaces(c)}</option>
             ))}
           </select>
           <select
@@ -997,7 +997,7 @@ export default function DeckBuilder({
               >
                 <option value="">{t("choose_faction")}</option>
                 {FACTION_OPTIONS.map((f) => (
-                  <option key={f} value={f}>{vocab.factionName(f)} — {f}</option>
+                  <option key={f} value={f}>{vocab.factionNameWithRaces(f)}</option>
                 ))}
               </select>
               <p className="mt-1.5 text-[11px] text-am-ink-faint font-[family-name:var(--font-crimson),serif] italic">{t("faction_hint")}</p>

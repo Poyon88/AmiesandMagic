@@ -423,6 +423,37 @@ export function getClanNamesForRace(
   return [...out];
 }
 
+// Races déclarées d'une faction, dans l'ordre (principales d'abord). Pour
+// l'affichage : libellés de filtre « Faction (Race1, Race2…) ».
+export function getRacesForFaction(factionId: string | null | undefined): string[] {
+  if (!factionId) return [];
+  return FACTIONS[factionId]?.races ?? [];
+}
+
+// Races « principales » d'un clan, pour l'affichage. Les noms de clan étant
+// uniques, on cherche le clan dans toutes les factions :
+//   - clan à bandes de mana (clanRaceBands) → les races de ses bandes ;
+//   - groupe `appliesTo: "all"` (clan transversal) → toutes les races de la faction ;
+//   - sinon → la/les race(s) ciblée(s) par les `appliesTo` correspondants.
+export function getRacesForClan(clanId: string | null | undefined): string[] {
+  if (!clanId) return [];
+  for (const def of Object.values(FACTIONS)) {
+    const bands = def.clanRaceBands?.[clanId];
+    if (bands && bands.length) {
+      return [...new Set(bands.flatMap((b) => b.races.map((r) => r.race)))];
+    }
+    const groups = (def.clans ?? []).filter((g) => g.names.includes(clanId));
+    if (groups.length === 0) continue;
+    const out = new Set<string>();
+    for (const g of groups) {
+      if (g.appliesTo === "all" || !g.appliesTo) def.races.forEach((r) => out.add(r));
+      else out.add(g.appliesTo);
+    }
+    return [...out];
+  }
+  return [];
+}
+
 // Race RÉELLEMENT stockée d'une carte de `clan` selon son coût en `mana`, pour
 // les clans « à sous-races » (cf. FACTIONS[].clanRaceBands). Les bandes sont
 // évaluées par mana croissant ; la race est tirée de façon pondérée dans la

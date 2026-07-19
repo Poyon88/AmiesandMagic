@@ -10,6 +10,8 @@ import {
   getAlignmentLabel,
   getClanName,
   getFactionDisplayName,
+  getRacesForClan,
+  getRacesForFaction,
   getRarityLabel,
   getRaceName,
   KEYWORDS,
@@ -42,8 +44,15 @@ export interface Vocab {
   composedName: (cap: Capability) => string;
   composedDesc: (cap: Capability, tokens?: TokenTemplate[]) => string;
   factionName: (faction: string | null | undefined) => string;
+  // Comme `factionName`, mais suffixé de ses principales races entre
+  // parenthèses (ex. « L'Alliance Céleste (Elfes, Fées, Aigles Géants…) »),
+  // pour faciliter la navigation dans les sélecteurs. Cap à 3 races + « … ».
+  factionNameWithRaces: (faction: string | null | undefined) => string;
   rarityLabel: (rarity: string | null | undefined) => string;
   clanName: (clan: string | null | undefined) => string;
+  // Comme `clanName`, mais suffixé des races du clan entre parenthèses
+  // (ex. « Les Sylvains (Elfes) »). Cap à 3 races + « … ».
+  clanNameWithRaces: (clan: string | null | undefined) => string;
   raceName: (race: string | null | undefined) => string;
   alignmentLabel: (alignment: string | null | undefined) => string;
   // Nom de set localisé, indexé par le `code` stable du set (les sets sont des
@@ -77,6 +86,18 @@ const MODE_SUFFIX_FR: Record<string, string> = {
   return: " · retour en main",
   end_of_turn: " · fin du tour",
 };
+
+// Nombre max de races affichées entre parenthèses dans un libellé de sélecteur.
+const MAX_RACES_LABEL = 3;
+
+// « Base (Race1, Race2, Race3…) » — races localisées, tronquées à
+// MAX_RACES_LABEL avec « … » si la faction/le clan en compte davantage.
+function labelWithRaces(base: string, raceIds: string[], safe: SafeT): string {
+  if (!base || raceIds.length === 0) return base;
+  const shown = raceIds.slice(0, MAX_RACES_LABEL).map((r) => getRaceName(r, safe));
+  const ellipsis = raceIds.length > MAX_RACES_LABEL ? "…" : "";
+  return `${base} (${shown.join(", ")}${ellipsis})`;
+}
 
 export function useVocab(): Vocab {
   const t = useTranslations();
@@ -121,9 +142,13 @@ export function useVocab(): Vocab {
         describeComposedCap(cap, tokens, safe),
       factionName: (faction: string | null | undefined) =>
         getFactionDisplayName(faction, safe),
+      factionNameWithRaces: (faction: string | null | undefined) =>
+        labelWithRaces(getFactionDisplayName(faction, safe), getRacesForFaction(faction), safe),
       rarityLabel: (rarity: string | null | undefined) =>
         getRarityLabel(rarity, safe),
       clanName: (clan: string | null | undefined) => getClanName(clan, safe),
+      clanNameWithRaces: (clan: string | null | undefined) =>
+        labelWithRaces(getClanName(clan, safe), getRacesForClan(clan), safe),
       raceName: (race: string | null | undefined) => getRaceName(race, safe),
       alignmentLabel: (alignment: string | null | undefined) =>
         getAlignmentLabel(alignment, safe),
