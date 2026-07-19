@@ -3,21 +3,38 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { KEYWORD_LABELS, KEYWORD_SYMBOLS } from "@/lib/game/keyword-labels";
 import { ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
+import { POLYMORPHIC_ICON_KEY_FALLBACK } from "@/lib/game/abilities";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import type { Keyword } from "@/lib/game/types";
 
-// Liste unifiée des icônes gérables : mots-clés de créature (clé = id) ET
-// mots-clés de sort (clé de stockage = `spell_<id>`, cf. GameCard / overrides).
-type IconEntry = { key: string; label: string; symbol: string; kind: "creature" | "spell" };
+// Liste unifiée des icônes gérables. Une capacité peut vivre côté créature
+// (clé = id), côté sort (clé de stockage = `spell_<id>`), ou LES DEUX
+// (polymorphe). Pour les polymorphes, on n'affiche qu'UNE ligne (clé créature
+// canonique) : l'upload/échelle s'y applique et se propage à la forme sort via
+// POLYMORPHIC_ICON_KEY_FALLBACK (miroir déjà en place dans le store + le rendu).
+type IconEntry = { key: string; label: string; symbol: string; kind: "creature" | "spell" | "both" };
 
-const ICON_ENTRIES: IconEntry[] = [
-  ...(Object.entries(KEYWORD_LABELS) as [Keyword, string][]).map(
+const ICON_ENTRIES: IconEntry[] = (() => {
+  const creature = (Object.entries(KEYWORD_LABELS) as [Keyword, string][]).map(
     ([kw, label]): IconEntry => ({ key: kw, label, symbol: KEYWORD_SYMBOLS[kw], kind: "creature" }),
-  ),
-  ...ALL_SPELL_KEYWORDS.map(
-    (id): IconEntry => ({ key: `spell_${id}`, label: SPELL_KEYWORD_LABELS[id], symbol: SPELL_KEYWORD_SYMBOLS[id], kind: "spell" }),
-  ),
-];
+  );
+  const creatureKeys = new Set(creature.map((e) => e.key));
+
+  const spell: IconEntry[] = [];
+  for (const id of ALL_SPELL_KEYWORDS) {
+    const spellKey = `spell_${id}`;
+    // Polymorphe : si la forme sort a une sœur créature déjà listée, on ne crée
+    // pas de ligne « sort » distincte — on marque la ligne créature « both ».
+    const sibling = POLYMORPHIC_ICON_KEY_FALLBACK[spellKey];
+    if (sibling && creatureKeys.has(sibling)) {
+      const row = creature.find((e) => e.key === sibling);
+      if (row) row.kind = "both";
+      continue;
+    }
+    spell.push({ key: spellKey, label: SPELL_KEYWORD_LABELS[id], symbol: SPELL_KEYWORD_SYMBOLS[id], kind: "spell" });
+  }
+  return [...creature, ...spell];
+})();
 
 // Libellé par clé de stockage, pour les messages (couvre créatures + sorts).
 const LABEL_BY_KEY: Record<string, string> = Object.fromEntries(
@@ -47,6 +64,13 @@ export default function KeywordIconManager() {
     for (const icon of (data.icons ?? []) as CustomIcon[]) {
       map[icon.keyword] = icon.icon_url;
       scaleMap[icon.keyword] = icon.scale != null ? Number(icon.scale) : 1;
+    }
+    // Miroir polymorphe (comme le store) : une capacité créature+sort partage
+    // son icône/échelle, quelle que soit la clé sous laquelle elle est stockée.
+    // La ligne unifiée « both » reflète ainsi l'upload existant.
+    for (const [key, sibling] of Object.entries(POLYMORPHIC_ICON_KEY_FALLBACK)) {
+      if (!map[key] && map[sibling]) map[key] = map[sibling];
+      if (scaleMap[key] == null && scaleMap[sibling] != null) scaleMap[key] = scaleMap[sibling];
     }
     setCustomIcons(map);
     setScales(scaleMap);
@@ -174,7 +198,9 @@ export default function KeywordIconManager() {
               const isImage = customUrl || defaultSymbol.startsWith("/");
               const displayUrl = customUrl || (defaultSymbol.startsWith("/") ? defaultSymbol : null);
               const isUploading = uploading === kw;
-              const isSpell = kind === "spell";
+              const badge = kind === "spell" ? { text: "SORT", fg: "#6a4bb5", bg: "#efe9fb", bd: "#d6c9f2" }
+                : kind === "both" ? { text: "CRÉ. + SORT", fg: "#1d7a6c", bg: "#e3f5f1", bd: "#bfe6dd" }
+                : null;
 
               return (
                 <div
@@ -217,9 +243,9 @@ export default function KeywordIconManager() {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 600, color: "#333", fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
                       {label}
-                      {isSpell && (
-                        <span style={{ fontSize: 10, fontWeight: 700, color: "#6a4bb5", background: "#efe9fb", border: "1px solid #d6c9f2", borderRadius: 4, padding: "1px 6px", letterSpacing: 0.3 }}>
-                          SORT
+                      {badge && (
+                        <span style={{ fontSize: 10, fontWeight: 700, color: badge.fg, background: badge.bg, border: `1px solid ${badge.bd}`, borderRadius: 4, padding: "1px 6px", letterSpacing: 0.3 }}>
+                          {badge.text}
                         </span>
                       )}
                     </div>
