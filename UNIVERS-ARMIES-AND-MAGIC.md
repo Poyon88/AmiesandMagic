@@ -9,9 +9,9 @@
 > Refonte achevée sur le principe : chaque faction a un petit nombre de clans (souvent 3–4), et **chaque clan a un profil distinct** (poids de stats + table de pouvoirs propre), comme les clans élémentaires.
 >
 > **✅ Toutes les factions sont finalisées :**
-> - **Royaumes Libres** (code `Humains`) → Le Royaume du Nord, L'Ordre de l'Aube, Les Guerrières du Vent
-> - **Empire du Milieu** (code `EmpireDuMilieu`) → Les Hordes des Steppes, L'Empire de Jade, Les Lames de l'Ombre
-> - **Royaumes du Soleil** (code `RoyaumesDuSoleil`) → Les Enfants du Soleil, Les Seigneurs des Dunes, Le Royaume des Masques
+> - **Royaumes Libres** (code `Humains`) → Le Royaume du Nord, L'Ordre de l'Aube, Les Guerrières du Vent, La Sublime Porte
+> - **Empire du Milieu** (code `EmpireDuMilieu`) → Les Hordes des Steppes, L'Empire de Jade, Les Lames de l'Ombre, Les Défenseurs d'Ivoire
+> - **Royaumes du Soleil** (code `RoyaumesDuSoleil`) → Les Enfants du Soleil, Les Seigneurs des Dunes, Le Royaume des Masques, Les Fils du Volcan
 > - **Elfes / L'Alliance Céleste** → Les Sylvains, Les Hauts-Elfes, La Forêt d'Émeraude, **La Combe Verte** (la faction Hobbits est absorbée ici) ; Aigles Géants = race libre
 > - **Nains / La Confrérie de la Forge** → Les Gardiens de la Montagne, La Forge Ardente, Les Sentinelles d'Airain (Golems), **La Guilde des Ingénieurs** (Gnomes — nouvelle race). *Les Marteaux des Collines sont dissous (2 clans nains max).*
 > - **Hommes-Bêtes / La Meute** → Les Seigneurs Fauves, Les Enfants de la Lune, Le Pacte des Griffes, La Harde Sauvage + **Les Mignons** (clan bonus caché)
@@ -88,14 +88,14 @@ Chaque faction a un **nom de code interne** (utilisé en base et dans le moteur,
 
 ### 3.3 ⚔️ Royaumes Libres — code interne `Humains` — *Neutre*
 - **Races** : Humains
-- **Clans** : **Le Royaume du Nord** (ex-Nordiques), **L'Ordre de l'Aube** (ex-Templiers), **Les Guerrières du Vent** (ex-Amazones) — profils distincts en §5.2
+- **Clans** : **Le Royaume du Nord** (ex-Nordiques), **L'Ordre de l'Aube** (ex-Templiers), **Les Guerrières du Vent** (ex-Amazones), **La Sublime Porte** (Empire ottoman — élite à poudre) — profils distincts en §5.2
 - **Philosophie** : Le vieux continent. Honneur, acier et champions héroïques. Équilibrés et polyvalents, synergies de groupe. Poids stats faction (ombrelle) : équilibré (1.00 / 1.00).
 - **Pouvoirs privilégiés (ombrelle)** : Loyauté (0.55), Commandement (0.55), Bravoure (0.50), Bénédiction (0.45), Bouclier (0.45), Première Frappe (0.45), Tactique X (0.35), Héritage X (0.30), Provocation (0.30), Convocation X (0.30).
 - **Pouvoirs interdits** : Poison, Corruption, Maléfice, Pacte de sang, Nécrophagie.
 
 ### 3.4 🏯 Empire du Milieu — code interne `EmpireDuMilieu` — *Neutre* *(nouvelle)*
 - **Races** : Humains
-- **Clans** : **Les Hordes des Steppes** (Mongols), **L'Empire de Jade** (Chine antique), **Les Lames de l'Ombre** (Japon féodal — samouraïs & ninjas) — profils distincts en §5.2
+- **Clans** : **Les Hordes des Steppes** (Mongols), **L'Empire de Jade** (Chine antique), **Les Lames de l'Ombre** (Japon féodal — samouraïs & ninjas), **Les Défenseurs d'Ivoire** (Khmer/Angkor — éléphants de guerre) — profils distincts en §5.2
 - **Philosophie** : Stratégie et contrôle. Discipline, formations, mysticisme et furtivité — la faction qui joue au tour d'avance. Poids stats faction (ombrelle) : légèrement défensif (0.95 / 1.10).
 - **Pouvoirs privilégiés (ombrelle)** : Tactique X (0.50), Divination (0.45), Contresort (0.40), Provocation (0.40), Première Frappe (0.40), Augure (0.35), Convocation X (0.35), Célérité (0.30), Traque (0.30).
 - **Pouvoirs interdits** : Poison, Corruption, Maléfice, Pacte de sang, Nécrophagie.
@@ -103,7 +103,7 @@ Chaque faction a un **nom de code interne** (utilisé en base et dans le moteur,
 
 ### 3.5 ☀️ Royaumes du Soleil — code interne `RoyaumesDuSoleil` — *Neutre* *(nouvelle)*
 - **Races** : Humains
-- **Clans** : **Les Enfants du Soleil** (Incas — rituel/sacrifice), **Les Seigneurs des Dunes** (Touaregs — razzia/mobilité), **Le Royaume des Masques** (Yoruba/Bénin — esprits/soutien) — profils distincts en §5.2
+- **Clans** : **Les Enfants du Soleil** (Incas — rituel/sacrifice), **Les Seigneurs des Dunes** (Touaregs — razzia/mobilité), **Le Royaume des Masques** (Yoruba/Bénin — esprits/soutien), **Les Fils du Volcan** (Polynésie — feu tribal) — profils distincts en §5.2
 - **Philosophie** : Soleil, désert et esprits. Trois voies marquées : le brasier rituel qui sacrifie ses unités, le nomade qui harcèle et pille, l'invocateur qui appelle les esprits. Poids stats faction (ombrelle) : équilibré (1.02 / 1.03).
 - **Pouvoirs privilégiés (ombrelle)** : Bénédiction (0.45), Convocation X (0.45), Bravoure (0.40), Sacrifice (0.35), Héritage X (0.35), Résistance X (0.35), Divination (0.30), Pillage X (0.30).
 - **Pouvoirs interdits** : Poison, Corruption, Maléfice, Pacte de sang, Nécrophagie.
@@ -194,6 +194,7 @@ Certaines factions différencient leurs races par un profil de pouvoirs propre (
 | ❄️ **Le Royaume du Nord** | Nordiques/vikings | 1.15/0.90 | Bélier agressif, raids | Berserk (0.55), Bravoure (0.50), Raid (0.50), Première Frappe (0.45), Célérité (0.40), Pillage X (0.35), Combustion (0.30), Commandement (0.30) |
 | ✝️ **L'Ordre de l'Aube** | Templiers | 0.90/1.20 | Pilier défensif, foi | Bouclier (0.60), Bénédiction (0.55), Provocation (0.50), Résistance X (0.50), Première Frappe (0.40), Commandement (0.40), Bravoure (0.35) |
 | 🌬️ **Les Guerrières du Vent** | Amazones | 1.15/0.85 | Aile mobile, précision | Précision (0.55), Esquive (0.55), Traque (0.50), Première Frappe (0.45), Célérité (0.45), Bravoure (0.40) |
+| 🕌 **La Sublime Porte** | Empire ottoman | 1.10/1.05 | Élite à poudre, ordre | Commandement (0.60), Première Frappe (0.50), Combustion (0.50), Précision (0.45), Bravoure (0.45), Tactique X (0.40), Bouclier (0.35) |
 
 **🏯 Empire du Milieu**
 
@@ -202,6 +203,7 @@ Certaines factions différencient leurs races par un profil de pouvoirs propre (
 | 🐎 **Les Hordes des Steppes** | Mongols | 1.15/0.90 | Harcèlement mobile | Célérité (0.55), Traque (0.55), Raid (0.50), Première Frappe (0.45), Persécution X (0.40), Pillage X (0.35) |
 | 🐉 **L'Empire de Jade** | Chine antique | 0.90/1.20 | Contrôle et stratégie | Tactique X (0.55), Divination (0.50), Contresort (0.45), Provocation (0.45), Commandement (0.40), Convocation X (0.40), Augure (0.35) |
 | 🥷 **Les Lames de l'Ombre** | Japon (samouraïs/ninjas) | 1.20/0.80 | Tempo furtif, remontée | Ombre (0.60), Invisible (0.55), Traque (0.55), Esquive (0.50), Célérité (0.45), Première Frappe (0.45), Précision (0.40), Remontée (0.35) |
+| 🐘 **Les Défenseurs d'Ivoire** | Khmer / Angkor | 1.15/1.15 | Colosses tank-trample | Piétinement (0.60), Provocation (0.55), Armure (0.50), Résistance X (0.50), Bravoure (0.40), Riposte X (0.40), Commandement (0.35), Indestructible (0.25) |
 
 **☀️ Royaumes du Soleil**
 
@@ -210,6 +212,7 @@ Certaines factions différencient leurs races par un profil de pouvoirs propre (
 | 🌞 **Les Enfants du Soleil** | Incas | 1.10/0.95 | Moteur à sacrifice | Sacrifice (0.55), Héritage X (0.50), Martyr (0.45), Bravoure (0.45), Bénédiction (0.40), Convocation X (0.40) |
 | 🏜️ **Les Seigneurs des Dunes** | Touaregs | 1.05/1.00 | Harceleur-pilleur | Pillage X (0.55), Traque (0.50), Esquive (0.50), Célérité (0.45), Résistance X (0.45), Persécution X (0.40) |
 | 🎭 **Le Royaume des Masques** | Yoruba/Bénin | 0.90/1.15 | Invocateur-soutien | Convocation X (0.60), Divination (0.50), Prescience X (0.45), Augure (0.45), Bénédiction (0.40), Totem (0.40), Régénération (0.35) |
+| 🌋 **Les Fils du Volcan** | Polynésie | 1.25/0.85 | Feu tribal agressif | Combustion (0.60), Fureur (0.55), Berserk (0.50), Souffle de feu X (0.45), Bravoure (0.45), Raid (0.40), Sacrifice (0.40), Célérité (0.35) |
 
 ### 5.3 Elfes — L'Alliance Céleste (profils distincts)
 
@@ -467,9 +470,9 @@ Les pouvoirs héroïques réutilisent le registre de capacités unifié (`abilit
 |---|---|---|---|
 | 🌿 Elfes (Alliance Céleste) | Bon | Bon peuple des bois : elfes, fées, hobbits | Sylvains, Hauts-Elfes, Forêt d'Émeraude, Hobbits |
 | ⚒️ Nains | Bon | Mur défensif, forge et ingénierie | Gardiens de la Montagne, Forge Ardente, Sentinelles d'Airain, Guilde des Ingénieurs |
-| ⚔️ Royaumes Libres | Neutre | Le vieux continent, honneur et champions | Royaume du Nord, Ordre de l'Aube, Guerrières du Vent |
-| 🏯 Empire du Milieu | Neutre | Stratégie, contrôle et furtivité | Hordes des Steppes, Empire de Jade, Lames de l'Ombre |
-| ☀️ Royaumes du Soleil | Neutre | Soleil, désert et esprits | Enfants du Soleil, Seigneurs des Dunes, Royaume des Masques |
+| ⚔️ Royaumes Libres | Neutre | Le vieux continent, honneur et champions | Royaume du Nord, Ordre de l'Aube, Guerrières du Vent, Sublime Porte |
+| 🏯 Empire du Milieu | Neutre | Stratégie, contrôle et furtivité | Hordes des Steppes, Empire de Jade, Lames de l'Ombre, Défenseurs d'Ivoire |
+| ☀️ Royaumes du Soleil | Neutre | Soleil, désert et esprits | Enfants du Soleil, Seigneurs des Dunes, Royaume des Masques, Fils du Volcan |
 | 🐺 Hommes-Bêtes | Neutre | Agression sauvage et bestiaire | Seigneurs Fauves, Enfants de la Lune, Pacte des Griffes, Harde Sauvage (+ Mignons bonus) |
 | 🌀 Élémentaires | Neutre | 4 styles selon l'élément | La Colère des Flammes, Le Socle du Monde, La Vague Sans Fin, Le Souffle des Cimes |
 | 💰 Mercenaires | Spéciale | Polyvalents, jouables partout | — |
