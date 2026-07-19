@@ -292,8 +292,11 @@ function MulliganCard({
         )}
 
         {/* Stats */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ fontSize: 8, color: "#ffffff44", textTransform: "uppercase" }}>{card.card_type}</span>
+        {/* Le type (créature/sort) n'est plus affiché : l'illustration, la
+            couleur d'accent et la présence même des stats le disent déjà.
+            `flex-end` remplace `space-between`, qui ne tenait que par la
+            présence du libellé à gauche. */}
+        <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center" }}>
           {isCreature && (
             <div style={{ display: "flex", gap: 6 }}>
               <div style={{
