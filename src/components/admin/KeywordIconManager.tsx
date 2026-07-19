@@ -54,6 +54,11 @@ export default function KeywordIconManager() {
   const [uploading, setUploading] = useState<string | null>(null);
   const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
   const [search, setSearch] = useState("");
+  // Décalage global, en points d'échelle, appliqué à TOUTES les icônes d'un
+  // coup. Additif (et non multiplicatif) pour préserver les écarts existants.
+  // Tant qu'il n'est pas appliqué, il ne sert que d'aperçu.
+  const [bulkDelta, setBulkDelta] = useState(0);
+  const [applyingBulk, setApplyingBulk] = useState(false);
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   const fetchIcons = useCallback(async () => {
@@ -90,6 +95,41 @@ export default function KeywordIconManager() {
       setMessage({ text: `Échelle de "${LABEL_BY_KEY[keyword] ?? keyword}" : ×${scale.toFixed(2)}`, type: "success" });
       useKeywordIconStore.getState().reload();
     }
+  }
+
+  // Échelle telle qu'elle sera écrite si le décalage global est appliqué.
+  // Sert à l'aperçu des vignettes ET au libellé du curseur, pour que les deux
+  // racontent la même chose.
+  const previewScale = useCallback(
+    (kw: string) => Math.min(2.5, Math.max(0.5, (scales[kw] ?? 1) + bulkDelta)),
+    [scales, bulkDelta],
+  );
+
+  // Applique le décalage à toutes les icônes en une seule requête.
+  async function handleBulkScale() {
+    if (!bulkDelta) return;
+    setApplyingBulk(true);
+    setMessage(null);
+    const formData = new FormData();
+    formData.append("scaleDelta", String(bulkDelta));
+    const res = await fetch("/api/keyword-icons", { method: "POST", body: formData });
+    const data = await res.json();
+    if (data.error) {
+      setMessage({ text: data.error, type: "error" });
+    } else {
+      const sign = bulkDelta > 0 ? "+" : "";
+      const clampedNote = data.clamped
+        ? ` — ${data.clamped} bloquée${data.clamped > 1 ? "s" : ""} à la borne (leur écart avec les autres a changé)`
+        : "";
+      setMessage({
+        text: `${sign}${bulkDelta.toFixed(2)} appliqué à ${data.count} icône${data.count > 1 ? "s" : ""}${clampedNote}`,
+        type: "success",
+      });
+      setBulkDelta(0);
+      await fetchIcons();
+      useKeywordIconStore.getState().reload();
+    }
+    setApplyingBulk(false);
   }
 
   useEffect(() => {
@@ -189,6 +229,72 @@ export default function KeywordIconManager() {
           }}
         />
 
+        {/* Ajustement global : décale toutes les icônes du même nombre de
+            points, sans toucher aux écarts entre elles. */}
+        <div
+          style={{
+            display: "flex", alignItems: "center", gap: 12,
+            padding: "12px 14px", marginBottom: 16,
+            background: bulkDelta ? "#eef4ff" : "#fafafa",
+            border: `1px solid ${bulkDelta ? "#b9cdf5" : "#eee"}`,
+            borderRadius: 8,
+          }}
+        >
+          <div style={{ flexShrink: 0 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "#333" }}>Ajuster toutes les icônes</div>
+            <div style={{ fontSize: 11, color: "#888" }}>Décale chaque échelle du même nombre de points</div>
+          </div>
+          <input
+            type="range"
+            min={-0.5}
+            max={0.5}
+            step={0.05}
+            value={bulkDelta}
+            onChange={(e) => setBulkDelta(Number(e.target.value))}
+            disabled={applyingBulk}
+            title="Décalage appliqué à toutes les icônes"
+            style={{ flex: 1, minWidth: 120 }}
+          />
+          <span
+            style={{
+              fontSize: 13, fontWeight: 700, width: 48, textAlign: "right",
+              fontVariantNumeric: "tabular-nums",
+              color: bulkDelta === 0 ? "#999" : bulkDelta < 0 ? "#c0392b" : "#1d7a6c",
+            }}
+          >
+            {bulkDelta > 0 ? "+" : ""}{bulkDelta.toFixed(2)}
+          </span>
+          <button
+            onClick={handleBulkScale}
+            disabled={!bulkDelta || applyingBulk}
+            style={{
+              padding: "7px 14px", borderRadius: 6, border: "none",
+              background: !bulkDelta || applyingBulk ? "#ccc" : "#2563eb",
+              color: "#fff", fontSize: 13, fontWeight: 600,
+              cursor: !bulkDelta || applyingBulk ? "default" : "pointer",
+              flexShrink: 0,
+            }}
+          >
+            {applyingBulk ? "Application..." : "Appliquer"}
+          </button>
+          {bulkDelta !== 0 && !applyingBulk && (
+            <button
+              onClick={() => setBulkDelta(0)}
+              style={{
+                padding: "7px 10px", borderRadius: 6, border: "1px solid #ddd",
+                background: "#fff", color: "#666", fontSize: 13, cursor: "pointer", flexShrink: 0,
+              }}
+            >
+              Annuler
+            </button>
+          )}
+        </div>
+        {bulkDelta !== 0 && (
+          <div style={{ fontSize: 11, color: "#8a6d3b", marginTop: -8, marginBottom: 14 }}>
+            Aperçu uniquement — rien n&apos;est enregistré tant que tu n&apos;as pas cliqué sur « Appliquer ».
+          </div>
+        )}
+
         {loading ? (
           <div style={{ textAlign: "center", padding: 20, color: "#999" }}>Chargement...</div>
         ) : (
@@ -232,7 +338,7 @@ export default function KeywordIconManager() {
                       <img
                         src={displayUrl}
                         alt={label}
-                        style={{ width: 28, height: 28, objectFit: "contain", transform: `scale(${scales[kw] ?? 1})` }}
+                        style={{ width: 28, height: 28, objectFit: "contain", transform: `scale(${previewScale(kw)})` }}
                       />
                     ) : (
                       <span style={{ fontSize: 20 }}>{defaultSymbol}</span>
@@ -262,15 +368,22 @@ export default function KeywordIconManager() {
                         min={0.5}
                         max={2.5}
                         step={0.05}
-                        value={scales[kw] ?? 1}
+                        value={previewScale(kw)}
                         onChange={(e) => setScales((prev) => ({ ...prev, [kw]: Number(e.target.value) }))}
                         onPointerUp={() => handleScale(kw, scales[kw] ?? 1)}
                         onKeyUp={() => handleScale(kw, scales[kw] ?? 1)}
-                        title="Taille d'affichage de l'icône"
+                        // Pendant l'aperçu global, ce curseur affiche la valeur
+                        // DÉCALÉE : la manipuler enregistrerait ce décalage
+                        // comme échelle de base, qui serait ensuite recompté à
+                        // l'application. On le neutralise le temps de l'aperçu.
+                        disabled={bulkDelta !== 0}
+                        title={bulkDelta !== 0
+                          ? "Applique ou annule l'ajustement global pour régler cette icône"
+                          : "Taille d'affichage de l'icône"}
                         style={{ flex: 1 }}
                       />
                       <span style={{ fontSize: 11, color: "#666", width: 34, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
-                        ×{(scales[kw] ?? 1).toFixed(2)}
+                        ×{previewScale(kw).toFixed(2)}
                       </span>
                     </div>
                   )}

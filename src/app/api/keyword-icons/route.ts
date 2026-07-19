@@ -62,6 +62,41 @@ export async function POST(request: Request) {
   const keyword = formData.get('keyword') as string;
   const file = formData.get('file') as File | null;
   const scaleRaw = formData.get('scale');
+  const deltaRaw = formData.get('scaleDelta');
+
+  // Ajustement GROUPÉ : décale l'échelle de TOUTES les icônes du même nombre de
+  // points (ex. -0.1). Un décalage additif préserve les écarts entre icônes,
+  // là où un facteur multiplicatif les amplifierait. Pas de `keyword` ici.
+  if (deltaRaw != null && deltaRaw !== '') {
+    const d = Number(deltaRaw);
+    if (!Number.isFinite(d)) return NextResponse.json({ error: 'scaleDelta invalide' }, { status: 400 });
+
+    const { data: rows, error: readErr } = await supabase
+      .from('keyword_icons')
+      .select('keyword, icon_url, scale');
+    if (readErr) return NextResponse.json({ error: readErr.message }, { status: 500 });
+    if (!rows?.length) return NextResponse.json({ success: true, count: 0, clamped: 0 });
+
+    // Bornes alignées sur le curseur individuel de l'admin.
+    const MIN = 0.5, MAX = 2.5;
+    let clamped = 0;
+    const updated = rows.map((r) => {
+      const current = r.scale != null ? Number(r.scale) : 1;
+      const raw = current + d;
+      const next = Math.min(MAX, Math.max(MIN, raw));
+      // Une icône bloquée à la borne ne suit plus le décalage : l'écart avec
+      // les autres change. On le compte pour pouvoir le signaler à l'admin.
+      if (next !== raw) clamped++;
+      return { keyword: r.keyword, icon_url: r.icon_url, scale: next, updated_at: new Date().toISOString() };
+    });
+
+    const { error } = await supabase
+      .from('keyword_icons')
+      .upsert(updated, { onConflict: 'keyword' });
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    return NextResponse.json({ success: true, count: updated.length, clamped });
+  }
 
   if (!keyword) return NextResponse.json({ error: 'keyword requis' }, { status: 400 });
 
