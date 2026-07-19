@@ -375,7 +375,7 @@ export default function GameCard({
                 background: isAllAllies ? "#27ae6055" : (hasImg ? "transparent" : `${accentColor}33`),
                 border: isAllAllies ? `1px solid #27ae60` : (hasImg ? "none" : `1px solid ${accentColor}66`),
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 * s,
-                fontSize: 10 * s, overflow: "hidden",
+                fontSize: 10 * s, overflow: "visible",
               }}>
                 <span style={{ display: "inline-flex", filter: modeFilter ?? undefined, lineHeight: 0 }}>
                   <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 33 * icoS, height: 33 * icoS, flexShrink: 0 }}>
@@ -416,7 +416,7 @@ export default function GameCard({
                 background: hasImg ? "transparent" : `${accentColor}33`,
                 border: hasImg ? "none" : `1px solid ${accentColor}66`,
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 * s,
-                fontSize: 10 * s, overflow: "hidden",
+                fontSize: 10 * s, overflow: "visible",
               }}>
                 <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 33 * icoS, height: 33 * icoS, flexShrink: 0 }}>
                   <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={33 * icoS} keyword={spellKey} fill />

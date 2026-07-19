@@ -4,7 +4,7 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import type { Card, Keyword, CardSet, GameFormat, DeckMode, DeckExtent } from "@/lib/game/types";
+import type { Card, Keyword, CardSet, GameFormat, DeckMode, DeckExtent, SpellKeywordInstance } from "@/lib/game/types";
 import { getFormatFilter, parseFormatCode } from "@/lib/game/format-legality";
 import { isCardOwned } from "@/lib/game/collection";
 import { DECK_SIZE, MAX_SAME_CAPABILITY, CAPABILITY_LIMIT_EXEMPT } from "@/lib/game/constants";
@@ -107,7 +107,12 @@ const RACE_ICONS: Record<string, string> = {
 };
 
 import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
+import { ALL_SPELL_KEYWORDS } from "@/lib/game/spell-keywords";
 const KEYWORDS = [...ALL_KEYWORDS].sort((a, b) => KEYWORD_LABELS[a].localeCompare(KEYWORD_LABELS[b], "fr"));
+// Mots-clés de SORT seuls (le filtre teste keywords ET spell_keywords ; les
+// polymorphes, même id des deux côtés, sont déjà couverts par la liste créature).
+const CREATURE_KEYWORD_SET = new Set<string>(ALL_KEYWORDS);
+const SPELL_ONLY_KEYWORDS = ALL_SPELL_KEYWORDS.filter((id) => !CREATURE_KEYWORD_SET.has(id));
 
 // Une ligne de carte sélectionnée dans la liste de droite (« deck list »).
 // Look proche d'une liste de deck Hearthstone : illustration de la carte en
@@ -326,7 +331,7 @@ export default function DeckBuilder({
   const [search, setSearch] = useState("");
   const [manaCostFilter, setManaCostFilter] = useState<number | null>(null);
   const [typeFilter, setTypeFilter] = useState<"creature" | "spell" | null>(null);
-  const [keywordFilter, setKeywordFilter] = useState<Keyword | null>(null);
+  const [keywordFilter, setKeywordFilter] = useState<string | null>(null);
   const [rarityFilter, setRarityFilter] = useState<string | null>(null);
   const [expertOnly, setExpertOnly] = useState(false);
   const [raceFilter, setRaceFilter] = useState<string | null>(null);
@@ -378,7 +383,7 @@ export default function DeckBuilder({
         // Keywords live in two places: `keywords` text[] and `spell_keywords`
         // jsonb[] (id-tagged). Renfort Royal on a spell sits in the latter,
         // so the filter must consider both.
-        const inKeywords = card.keywords.includes(keywordFilter);
+        const inKeywords = (card.keywords as string[]).includes(keywordFilter);
         const inSpellKeywords = Array.isArray(card.spell_keywords)
           && card.spell_keywords.some((sk) => sk?.id === keywordFilter);
         if (!inKeywords && !inSpellKeywords) return false;
@@ -852,19 +857,18 @@ export default function DeckBuilder({
           </button>
           <select
             value={keywordFilter ?? ""}
-            onChange={(e) =>
-              setKeywordFilter(
-                e.target.value ? (e.target.value as Keyword) : null
-              )
-            }
+            onChange={(e) => setKeywordFilter(e.target.value || null)}
             className="am-gild-border px-2 py-1 bg-am-bg-2 rounded-md text-xs text-am-ink-soft focus:outline-none focus:ring-2 focus:ring-am-gold/60 focus:ring-offset-2 focus:ring-offset-am-bg-0"
           >
             <option value="">{t("all_capabilities")}</option>
-            {KEYWORDS.map((kw) => (
-              <option key={kw} value={kw}>
-                {vocab.keywordLabel(kw)}
-              </option>
-            ))}
+            {[
+              ...KEYWORDS.map((kw) => ({ id: kw as string, label: vocab.keywordLabel(kw) })),
+              ...SPELL_ONLY_KEYWORDS.map((id) => ({ id: id as string, label: vocab.spellKeywordLabel({ id } as SpellKeywordInstance) })),
+            ]
+              .sort((a, b) => a.label.localeCompare(b.label, "fr"))
+              .map((o) => (
+                <option key={o.id} value={o.id}>{o.label}</option>
+              ))}
           </select>
           <select
             value={raceFilter ?? ""}
