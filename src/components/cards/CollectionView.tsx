@@ -29,7 +29,14 @@ interface CollectionViewProps {
 }
 
 import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
+import { ALL_SPELL_KEYWORDS } from "@/lib/game/spell-keywords";
+import type { SpellKeywordInstance } from "@/lib/game/types";
 const KEYWORDS = [...ALL_KEYWORDS].sort((a, b) => KEYWORD_LABELS[a].localeCompare(KEYWORD_LABELS[b], "fr"));
+// Mots-clés de SORT seuls (non partagés avec une forme créature) : les
+// polymorphes (même id des deux côtés, ex. rassemblement) sont déjà couverts
+// par la liste créature, le filtre teste `keywords` ET `spell_keywords`.
+const CREATURE_KEYWORD_SET = new Set<string>(ALL_KEYWORDS);
+const SPELL_ONLY_KEYWORDS = ALL_SPELL_KEYWORDS.filter((id) => !CREATURE_KEYWORD_SET.has(id));
 
 const RARITIES = ["Commune", "Peu Commune", "Rare", "Épique", "Légendaire"];
 const RARITY_COLORS: Record<string, string> = {
@@ -54,7 +61,7 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
   const [search, setSearch] = useState("");
   const [manaCostFilter, setManaCostFilter] = useState<number | null>(null);
   const [typeFilter, setTypeFilter] = useState<"creature" | "spell" | null>(null);
-  const [keywordFilter, setKeywordFilter] = useState<Keyword | null>(null);
+  const [keywordFilter, setKeywordFilter] = useState<string | null>(null);
   const [factionFilter, setFactionFilter] = useState<string | null>(null);
   const [rarityFilter, setRarityFilter] = useState<string | null>(null);
   const [expertOnly, setExpertOnly] = useState(false);
@@ -123,7 +130,7 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
         // Keywords live in two places: `keywords` text[] and `spell_keywords`
         // jsonb[] (id-tagged). Renfort Royal on a spell sits in the latter,
         // so the filter must consider both.
-        const inKeywords = card.keywords.includes(keywordFilter);
+        const inKeywords = (card.keywords as string[]).includes(keywordFilter);
         const inSpellKeywords = Array.isArray(card.spell_keywords)
           && card.spell_keywords.some((sk) => sk?.id === keywordFilter);
         if (!inKeywords && !inSpellKeywords) return false;
@@ -346,17 +353,18 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
               <span className={FILTER_LABEL_CLS}>{t("capability_label")}</span>
               <select
                 value={keywordFilter ?? ""}
-                onChange={(e) =>
-                  setKeywordFilter(e.target.value ? (e.target.value as Keyword) : null)
-                }
+                onChange={(e) => setKeywordFilter(e.target.value || null)}
                 className={SELECT_CLS}
               >
                 <option value="">{t("all_fem")}</option>
-                {KEYWORDS.map((kw) => (
-                  <option key={kw} value={kw}>
-                    {vocab.keywordLabel(kw)}
-                  </option>
-                ))}
+                {[
+                  ...KEYWORDS.map((kw) => ({ id: kw as string, label: vocab.keywordLabel(kw) })),
+                  ...SPELL_ONLY_KEYWORDS.map((id) => ({ id: id as string, label: vocab.spellKeywordLabel({ id } as SpellKeywordInstance) })),
+                ]
+                  .sort((a, b) => a.label.localeCompare(b.label, "fr"))
+                  .map((o) => (
+                    <option key={o.id} value={o.id}>{o.label}</option>
+                  ))}
               </select>
             </div>
 
