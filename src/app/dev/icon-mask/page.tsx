@@ -30,26 +30,33 @@ const HALO =
 
 const SIZE = 40;
 
+/**
+ * Le halo DOIT être porté par un élément parent, pas par l'élément masqué :
+ * dans l'ordre de rendu CSS, `filter` s'applique AVANT `mask`. Sur le même
+ * élément, le drop-shadow serait calculé sur le carré plein puis découpé par
+ * le masque — donc invisible. Le parent filtre le résultat déjà masqué.
+ */
 function MaskIcon({ src, color, scale }: { src: string; color: string; scale: number }) {
   return (
-    <span
-      style={{
-        display: "inline-block",
-        width: SIZE,
-        height: SIZE,
-        backgroundColor: color,
-        maskImage: `url(${src})`,
-        WebkitMaskImage: `url(${src})`,
-        maskRepeat: "no-repeat",
-        WebkitMaskRepeat: "no-repeat",
-        maskPosition: "center",
-        WebkitMaskPosition: "center",
-        maskSize: "contain",
-        WebkitMaskSize: "contain",
-        filter: HALO,
-        transform: scale !== 1 ? `scale(${scale})` : undefined,
-      }}
-    />
+    <span style={{ display: "inline-flex", filter: HALO, lineHeight: 0 }}>
+      <span
+        style={{
+          display: "inline-block",
+          width: SIZE,
+          height: SIZE,
+          backgroundColor: color,
+          maskImage: `url(${src})`,
+          WebkitMaskImage: `url(${src})`,
+          maskRepeat: "no-repeat",
+          WebkitMaskRepeat: "no-repeat",
+          maskPosition: "center",
+          WebkitMaskPosition: "center",
+          maskSize: "contain",
+          WebkitMaskSize: "contain",
+          transform: scale !== 1 ? `scale(${scale})` : undefined,
+        }}
+      />
+    </span>
   );
 }
 
