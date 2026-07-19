@@ -399,6 +399,10 @@
       "declenchement": {
         "label": "誘発",
         "desc": "召喚：場にいる他の味方の複合誘発効果（登場／死亡／ターン終了／帰還）を一度再発動する。"
+      },
+      "dedoublement": {
+        "label": "分身",
+        "desc": "召喚：このクリーチャーの完全なコピーをフィールドに生成する。"
       }
     },
     "spell_keywords": {
@@ -612,23 +616,19 @@
     "factions": {
       "Elfes": {
         "displayName": "天界同盟",
-        "description": "機敏で隠密。速度と回避を得意とする。巨大な鷲を擁する。"
+        "description": "森の民の同盟：隠密エルフ、魔法の妖精、狡猾なホビット、そして巨人ツリーフォーク。"
       },
       "Nains": {
         "displayName": "鍛冶の兄弟団",
-        "description": "堅固で耐久力抜群。防御と粘り強さを重視する。"
-      },
-      "Hobbits": {
-        "displayName": "森の盟約",
-        "description": "小柄だが狡猾。回避と相互援助を得意とする。"
+        "description": "堅固で耐久力抜群：防御、粘り強さ、鍛冶、そしてノーム工学。"
       },
       "Humains": {
         "displayName": "自由王国連合",
-        "description": "バランスと汎用性を兼ね備える。集団シナジーが強み。"
+        "description": "旧大陸：名誉、鋼鉄、そして英雄的な勇者たち。"
       },
       "Hommes-Bêtes": {
         "displayName": "群れ",
-        "description": "野性的で凶暴。素早く攻撃し、再生し、激怒する。"
+        "description": "野蛮で獰猛：素早く攻撃し、再生し、狂乱に陥る。"
       },
       "Élémentaires": {
         "displayName": "原初の者たち",
@@ -638,17 +638,21 @@
         "displayName": "傭兵",
         "description": "忠誠なき雇われ兵。汎用性が高く、あらゆるデッキで使用可能。"
       },
-      "Orcs": {
-        "displayName": "大群",
-        "description": "残忍な大軍団。素早く使い捨て可能なゴブリン。粗暴で攻撃的なオーク。屈強なトロル。俊足のワーグ。"
-      },
       "Morts-Vivants": {
         "displayName": "死都",
-        "description": "飽くなき腐敗の軍勢。蘇生とライフドレインを操る。"
+        "description": "飽くなき腐敗：復活、生命吸収、そして墓場の魔法。"
       },
       "Elfes Noirs": {
-        "displayName": "混沌の眷属",
-        "description": "陰険で毒を持つ。毒、影、腐敗を操る。"
+        "displayName": "混沌軍団",
+        "description": "混沌のあらゆる力が結集：組織化された大群、悪魔の宮廷、毒に侵された者、そして堕落したエリート。"
+      },
+      "EmpireDuMilieu": {
+        "displayName": "中央帝国",
+        "description": "戦略と制圧：規律、陣形、神秘主義、そして隠密。"
+      },
+      "RoyaumesDuSoleil": {
+        "displayName": "太陽の王国群",
+        "description": "太陽、砂漠、精霊：儀式の炎、略奪する遊牧民、そして召喚師。"
       }
     },
     "rarities": {
@@ -659,46 +663,48 @@
       "Légendaire": "レジェンド"
     },
     "clans": {
-      "Sylvains": "森のエルフ",
-      "Hauts-Elfes": "ハイエルフ",
-      "Elfes des Mers": "海のエルフ",
-      "Émeraudes": "エメラルド族",
-      "Cimes Éternelles": "永遠の峰",
-      "Montagnes": "山岳族",
-      "Collines": "丘陵",
-      "Lave": "溶岩",
-      "Plaines": "平原",
-      "Rivièrains": "川辺の民",
-      "Landes": "荒野",
-      "Nordiques": "北方の民",
-      "Orientaux": "東方の民",
-      "Templiers": "聖堂騎士団",
-      "Amazones": "アマゾン",
-      "Incas": "インカ",
-      "Touaregs": "トゥアレグ",
-      "Forêt": "森林",
-      "Toundra": "ツンドラ",
-      "Savane": "サバンナ",
-      "Jungle": "密林",
-      "Mignons": "キュート族",
-      "Pacte des Griffes": "鉤爪の盟約",
       "Feu": "炎",
       "Terre": "大地",
       "Eau": "水",
       "Air": "風",
-      "Marais": "沼地",
-      "Abysses souterrains": "地底の深淵",
-      "Forêt maudite": "呪われた森",
-      "Cités de cendres": "灰の都市"
+      "Les Sylvains": "森人衆",
+      "Les Hauts-Elfes": "ハイエルフ",
+      "La Forêt d'Émeraude": "翠玉の森",
+      "Les Hobbits": "ホビット族",
+      "Les Gardiens de la Montagne": "山の守護者",
+      "La Forge Ardente": "烈火の鍛冶場",
+      "Les Sentinelles d'Airain": "真鍮の歩哨",
+      "La Guilde des Ingénieurs": "技師ギルド",
+      "Les Hordes des Steppes": "草原の大軍団",
+      "L'Empire de Jade": "翡翠帝国",
+      "Les Lames de l'Ombre": "影の刃",
+      "Les Enfants du Soleil": "太陽の子ら",
+      "Les Seigneurs des Dunes": "砂丘の覇者",
+      "Le Royaume des Masques": "仮面の王国",
+      "Le Royaume du Nord": "北方王国",
+      "L'Ordre de l'Aube": "暁の騎士団",
+      "Les Guerrières du Vent": "風の戦士団",
+      "La Cour Pourpre": "紫の宮廷",
+      "Les Enfants de la Lune": "月の子ら",
+      "Le Pacte des Griffes": "鉤爪の盟約",
+      "La Harde Sauvage": "野生の群れ",
+      "Les Rangs Silencieux": "沈黙の列陣",
+      "Le Voile Hurlant": "咆哮の帷",
+      "La Cour Écarlate": "緋色の宮廷",
+      "Le Conclave d'Ossements": "骸骨の評議会",
+      "Les Cohortes Sanglantes": "血塗られた大隊",
+      "La Cour Infernale": "冥府の宮廷",
+      "La Forêt Maudite": "呪われた森",
+      "La Garde Noire": "黒の衛兵団"
     },
     "races": {
       "Elfes": "エルフ",
-      "Aigles Géants": "大鷲",
       "Fées": "妖精",
-      "Nains": "ドワーフ",
-      "Golems": "ゴーレム",
+      "Aigles Géants": "大鷲",
       "Hobbits": "ホビット",
       "Hommes-Arbres": "樹人",
+      "Nains": "ドワーフ",
+      "Golems": "ゴーレム",
       "Humains": "人間",
       "Hommes-Loups": "狼人間",
       "Hommes-Ours": "熊人間",
@@ -718,10 +724,6 @@
       "Ours": "熊",
       "Loups": "狼",
       "Fauves": "野獣",
-      "Orcs": "オーク",
-      "Gobelins": "ゴブリン",
-      "Trolls": "トロル",
-      "Wargs": "ワーグ",
       "Squelettes": "スケルトン",
       "Zombies": "ゾンビ",
       "Spectres": "スペクター",
@@ -730,7 +732,13 @@
       "Banshees": "バンシー",
       "Elfes Corrompus": "堕落したエルフ",
       "Araignées Géantes": "巨大蜘蛛",
-      "Démons": "デーモン"
+      "Démons": "デーモン",
+      "Orcs": "オーク",
+      "Gobelins": "ゴブリン",
+      "Trolls": "トロル",
+      "Wargs": "ワーグ",
+      "Gnomes": "ノーム",
+      "Guerriers du Chaos": "カオスの戦士"
     },
     "alignments": {
       "bon": "善",
@@ -746,37 +754,6 @@
       "expert-etendu": "エキスパート・エクステンデッド",
       "classique-etendu": "クラシック・エクステンデッド",
       "classique-standard": "クラシック・スタンダード"
-    },
-    "tokens": {
-      "3": "巨大鷲",
-      "4": "風のエレメンタル",
-      "5": "軍用犬",
-      "6": "巨大蜘蛛",
-      "8": "ツリーフォーク",
-      "9": "人間",
-      "10": "ドラゴン",
-      "11": "オオカミ",
-      "13": "クマ",
-      "14": "エルフ",
-      "15": "ケンタウロス",
-      "16": "天使",
-      "18": "ホビット（基本）",
-      "19": "神殿の兵士",
-      "20": "ゴブリン",
-      "21": "勇敢な若きホビット",
-      "22": "ゾンビ",
-      "23": "ヴァイキング戦士",
-      "24": "インカ",
-      "25": "ヒョウ",
-      "26": "アンチャンチュ",
-      "27": "人間",
-      "28": "トラ",
-      "29": "うさぎ",
-      "30": "リス",
-      "31": "子グマ",
-      "32": "下級デーモン",
-      "33": "かわいい犬",
-      "34": "スケルトン"
     }
   },
   "home": {
@@ -1553,6 +1530,7 @@
     "no_ability_match": "「{query}」に一致する能力はありません。"
   },
   "deck": {
+    "alignment_incompatible": "善と悪のアライメントは共存できません",
     "max_mercenaires_current": "傭兵は最大{max}枚（現在{current}枚）",
     "max_capability_current": "「{label}」能力は最大{max}枚（現在{count}枚）",
     "card_not_owned": "未所持のカード",
@@ -1666,8 +1644,7 @@
     "format_label": "フォーマット：",
     "set_label": "セット：",
     "year_label": "年：",
-    "no_cards_match": "フィルターに一致するカードはありません",
-    "alignment_incompatible": "善と悪のアライメントは共存できません"
+    "no_cards_match": "フィルターに一致するカードはありません"
   },
   "cardBacks": {
     "eyebrow": "スタイルを見せよう",

@@ -399,6 +399,10 @@
       "declenchement": {
         "label": "Auslösung",
         "desc": "Beschwörung: Löse die zusammengesetzten Triggereffekte der anderen verbündeten Einheiten im Spiel einmalig erneut aus, für eine festgelegte Teilmenge von Auslösern (Einzug / Tod / Zugende / Rückkehr)."
+      },
+      "dedoublement": {
+        "label": "Verdoppelung",
+        "desc": "Beschwörung: Erstellt eine exakte Kopie dieser Kreatur im Spiel."
       }
     },
     "spell_keywords": {
@@ -612,23 +616,19 @@
     "factions": {
       "Elfes": {
         "displayName": "Das Himmelsbündnis",
-        "description": "Wendig und heimlich. Setzen auf Geschwindigkeit und Ausweichen. Riesenadler in ihren Reihen."
+        "description": "Das Bündnis des guten Waldvolks: lautlose Elfen, Feenmagier, verschlagene Hobbits und ihre kolossalen Baumherren."
       },
       "Nains": {
         "displayName": "Die Schmiedebruderschaft",
-        "description": "Solide und widerstandsfähig. Setzen auf Verteidigung und Zähigkeit."
-      },
-      "Hobbits": {
-        "displayName": "Der Waldpakt",
-        "description": "Klein, aber gerissen. Ausweichen und gegenseitige Unterstützung."
+        "description": "Solide und zäh: Verteidigung, Unnachgiebigkeit, Schmiedekunst und Gnomingenieurswesen."
       },
       "Humains": {
         "displayName": "Die Freien Königreiche",
-        "description": "Ausgewogen und vielseitig. Gruppensynergien."
+        "description": "Der alte Kontinent: Ehre, Stahl und heroische Helden."
       },
       "Hommes-Bêtes": {
         "displayName": "Das Rudel",
-        "description": "Wild und grausam. Greifen schnell an, regenerieren sich und verfallen in Raserei."
+        "description": "Wild und brutal: greift schnell an, regeneriert sich, verfällt in Raserei."
       },
       "Élémentaires": {
         "displayName": "Die Urgewalten",
@@ -638,17 +638,21 @@
         "displayName": "Söldner",
         "description": "Glückssoldaten ohne Bündnistreue. Vielseitig und für alle Decks verfügbar."
       },
-      "Orcs": {
-        "displayName": "Die Horde",
-        "description": "Brutale Horde. Schnelle und entbehrliche Goblins. Rohe und aggressive Orks. Widerstandsfähige Trolle. Schnelle Wargs."
-      },
       "Morts-Vivants": {
         "displayName": "Die Nekropole",
-        "description": "Unersättlich und verdorben. Auferstehung und Lebenskraft-Entzug."
+        "description": "Unersättlich und verdorben: Auferstehung, Lebensraub und Friedhofsmagie."
       },
       "Elfes Noirs": {
-        "displayName": "Die Ausgeburt des Chaos",
-        "description": "Hinterlistig und giftig. Gift, Schatten und Verderbnis."
+        "displayName": "Die Legionen des Chaos",
+        "description": "Alle Mächte des Chaos vereint: geordnete Horde, dämonischer Hof, Giftverseuchte und gefallene Elite."
+      },
+      "EmpireDuMilieu": {
+        "displayName": "Das Mittlere Kaiserreich",
+        "description": "Strategie und Kontrolle: Disziplin, Formationen, Mystizismus und Heimlichkeit."
+      },
+      "RoyaumesDuSoleil": {
+        "displayName": "Die Sonnenreiche",
+        "description": "Sonne, Wüste und Geister: rituelle Flammen, plündernde Nomaden und Beschwörer."
       }
     },
     "rarities": {
@@ -659,46 +663,48 @@
       "Légendaire": "Legendär"
     },
     "clans": {
-      "Sylvains": "Waldbewohner",
-      "Hauts-Elfes": "Hochelfen",
-      "Elfes des Mers": "Meerelfen",
-      "Émeraudes": "Smaragde",
-      "Cimes Éternelles": "Ewige Gipfel",
-      "Montagnes": "Berge",
-      "Collines": "Hügel",
-      "Lave": "Lava",
-      "Plaines": "Ebenen",
-      "Rivièrains": "Flussbewohner",
-      "Landes": "Heideland",
-      "Nordiques": "Nordländer",
-      "Orientaux": "Östliche Völker",
-      "Templiers": "Templer",
-      "Amazones": "Amazonen",
-      "Incas": "Inkas",
-      "Touaregs": "Tuareg",
-      "Forêt": "Wald",
-      "Toundra": "Tundra",
-      "Savane": "Savanne",
-      "Jungle": "Dschungel",
-      "Mignons": "Niedliche",
-      "Pacte des Griffes": "Krallenpakt",
       "Feu": "Feuer",
       "Terre": "Erde",
       "Eau": "Wasser",
       "Air": "Luft",
-      "Marais": "Sumpf",
-      "Abysses souterrains": "Unterirdische Abgründe",
-      "Forêt maudite": "Verfluchter Wald",
-      "Cités de cendres": "Aschestädte"
+      "Les Sylvains": "Die Waldläufer",
+      "Les Hauts-Elfes": "Die Hochelfen",
+      "La Forêt d'Émeraude": "Der Smaragdwald",
+      "Les Hobbits": "Die Hobbits",
+      "Les Gardiens de la Montagne": "Die Bergwächter",
+      "La Forge Ardente": "Die Glühende Schmiede",
+      "Les Sentinelles d'Airain": "Die Erzwächter",
+      "La Guilde des Ingénieurs": "Die Ingildsgilde",
+      "Les Hordes des Steppes": "Die Steppenhoriden",
+      "L'Empire de Jade": "Das Jadekaisertum",
+      "Les Lames de l'Ombre": "Die Klingen des Schattens",
+      "Les Enfants du Soleil": "Die Kinder der Sonne",
+      "Les Seigneurs des Dunes": "Die Herren der Dünen",
+      "Le Royaume des Masques": "Das Reich der Masken",
+      "Le Royaume du Nord": "Das Nordreich",
+      "L'Ordre de l'Aube": "Der Orden der Morgenröte",
+      "Les Guerrières du Vent": "Die Kriegerinnen des Windes",
+      "La Cour Pourpre": "Der Purpurhof",
+      "Les Enfants de la Lune": "Die Kinder des Mondes",
+      "Le Pacte des Griffes": "Der Klauenpakt",
+      "La Harde Sauvage": "Die Wilde Meute",
+      "Les Rangs Silencieux": "Die Schweigenden Reihen",
+      "Le Voile Hurlant": "Der Heulende Schleier",
+      "La Cour Écarlate": "Der Scharlachrote Hof",
+      "Le Conclave d'Ossements": "Das Knochenkonklave",
+      "Les Cohortes Sanglantes": "Die Blutigen Kohorten",
+      "La Cour Infernale": "Der Höllische Hof",
+      "La Forêt Maudite": "Der Verfluchte Wald",
+      "La Garde Noire": "Die Schwarze Garde"
     },
     "races": {
       "Elfes": "Elfen",
-      "Aigles Géants": "Riesenadler",
       "Fées": "Feen",
-      "Nains": "Zwerge",
-      "Golems": "Golems",
+      "Aigles Géants": "Riesenadler",
       "Hobbits": "Hobbits",
       "Hommes-Arbres": "Baummenschen",
+      "Nains": "Zwerge",
+      "Golems": "Golems",
       "Humains": "Menschen",
       "Hommes-Loups": "Wolfsmenschen",
       "Hommes-Ours": "Bärenmenschen",
@@ -718,10 +724,6 @@
       "Ours": "Bären",
       "Loups": "Wölfe",
       "Fauves": "Raubtiere",
-      "Orcs": "Orks",
-      "Gobelins": "Goblins",
-      "Trolls": "Trolle",
-      "Wargs": "Wargs",
       "Squelettes": "Skelette",
       "Zombies": "Zombies",
       "Spectres": "Gespenster",
@@ -730,7 +732,13 @@
       "Banshees": "Banshees",
       "Elfes Corrompus": "Verderbte Elfen",
       "Araignées Géantes": "Riesenspinnen",
-      "Démons": "Dämonen"
+      "Démons": "Dämonen",
+      "Orcs": "Orks",
+      "Gobelins": "Goblins",
+      "Trolls": "Trolle",
+      "Wargs": "Wargs",
+      "Gnomes": "Gnome",
+      "Guerriers du Chaos": "Chaoskämpfer"
     },
     "alignments": {
       "bon": "Gut",
@@ -746,37 +754,6 @@
       "expert-etendu": "Experte · Erweitert",
       "classique-etendu": "Klassisch · Erweitert",
       "classique-standard": "Klassisch · Standard"
-    },
-    "tokens": {
-      "3": "Riesenadler",
-      "4": "Luftelementar",
-      "5": "Kampfhund",
-      "6": "Riesenspinne",
-      "8": "Baummensch",
-      "9": "Mensch",
-      "10": "Drachen",
-      "11": "Wölfe",
-      "13": "Bären",
-      "14": "Elfe",
-      "15": "Zentaur",
-      "16": "Engel",
-      "18": "Hobbits Basis",
-      "19": "Tempelsoldat",
-      "20": "Kobolde",
-      "21": "Tapferer junger Hobbit",
-      "22": "Zombies",
-      "23": "Wikingerkrieger",
-      "24": "Inkas",
-      "25": "Panther",
-      "26": "Anchanchu",
-      "27": "Menschen",
-      "28": "Tiger",
-      "29": "Häschen",
-      "30": "Eichhörnchen",
-      "31": "Bärenjunges",
-      "32": "Kleiner Dämon",
-      "33": "Süße Hunde",
-      "34": "Skelette"
     }
   },
   "home": {

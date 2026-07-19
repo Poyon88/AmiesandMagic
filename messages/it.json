@@ -399,6 +399,10 @@
       "declenchement": {
         "label": "Attivazione",
         "desc": "Evocazione: riattiva una volta gli effetti composti attivati degli altri alleati in gioco, per un sottoinsieme fisso di attivatori (entrata / morte / fine turno / ritorno)."
+      },
+      "dedoublement": {
+        "label": "Sdoppiamento",
+        "desc": "Evocazione: crea in gioco una copia esatta di questa creatura."
       }
     },
     "spell_keywords": {
@@ -612,23 +616,19 @@
     "factions": {
       "Elfes": {
         "displayName": "L'Alleanza Celeste",
-        "description": "Agili e furtivi. Prediligono velocità e schivata. Aquile giganti tra le loro fila."
+        "description": "L'alleanza del buon popolo dei boschi: elfi furtivi, fate maghe, hobbit astuti e i loro colossi Uomini-Albero."
       },
       "Nains": {
         "displayName": "La Confraternita della Forgia",
-        "description": "Solidi e resistenti. Prediligono difesa e tenacia."
-      },
-      "Hobbits": {
-        "displayName": "Il Patto dei Boschi",
-        "description": "Piccoli ma astuti. Schivata e mutuo soccorso."
+        "description": "Solidi e resistenti: difesa, tenacia, forgia e ingegneria gnome."
       },
       "Humains": {
         "displayName": "I Regni Liberi",
-        "description": "Equilibrati e versatili. Sinergie di gruppo."
+        "description": "Il vecchio continente: onore, acciaio e campioni eroici."
       },
       "Hommes-Bêtes": {
         "displayName": "Il Branco",
-        "description": "Selvaggi e feroci. Attaccano veloci, si rigenerano, vanno in furia."
+        "description": "Selvaggi e feroci: attaccano veloci, si rigenerano, entrano in furia."
       },
       "Élémentaires": {
         "displayName": "I Primordiali",
@@ -638,17 +638,21 @@
         "displayName": "Mercenari",
         "description": "Soldati di ventura senza fedeltà. Versatili e disponibili per tutti i mazzi."
       },
-      "Orcs": {
-        "displayName": "L'Orda",
-        "description": "Orda brutale. Goblin veloci e sacrificabili. Orchi bruti e aggressivi. Troll resistenti. Warg rapidi."
-      },
       "Morts-Vivants": {
         "displayName": "La Necropoli",
-        "description": "Insaziabili e corrotti. Resurrezione e drenaggio vitale."
+        "description": "Insaziabili e corrotti: resurrezione, drenaggio vitale e magia del cimitero."
       },
       "Elfes Noirs": {
-        "displayName": "La Progenie del Caos",
-        "description": "Subdoli e velenosi. Veleno, ombra e corruzione."
+        "displayName": "Le Legioni del Caos",
+        "description": "Tutte le forze del Caos unite: orda organizzata, corte demoniaca, corrotti del veleno ed élite caduta."
+      },
+      "EmpireDuMilieu": {
+        "displayName": "L'Impero di Mezzo",
+        "description": "Strategia e controllo: disciplina, formazioni, misticismo e furtività."
+      },
+      "RoyaumesDuSoleil": {
+        "displayName": "I Regni del Sole",
+        "description": "Sole, deserto e spiriti: braciere rituale, nomadi predatori e invocatori."
       }
     },
     "rarities": {
@@ -659,46 +663,48 @@
       "Légendaire": "Leggendaria"
     },
     "clans": {
-      "Sylvains": "Silvani",
-      "Hauts-Elfes": "Alti Elfi",
-      "Elfes des Mers": "Elfi dei Mari",
-      "Émeraudes": "Smeraldi",
-      "Cimes Éternelles": "Vette Eterne",
-      "Montagnes": "Montagne",
-      "Collines": "Colline",
-      "Lave": "Lava",
-      "Plaines": "Pianure",
-      "Rivièrains": "Rivieraschi",
-      "Landes": "Lande",
-      "Nordiques": "Nordici",
-      "Orientaux": "Orientali",
-      "Templiers": "Templari",
-      "Amazones": "Amazzoni",
-      "Incas": "Inca",
-      "Touaregs": "Tuareg",
-      "Forêt": "Foresta",
-      "Toundra": "Tundra",
-      "Savane": "Savana",
-      "Jungle": "Giungla",
-      "Mignons": "Teneri",
-      "Pacte des Griffes": "Patto degli Artigli",
       "Feu": "Fuoco",
       "Terre": "Terra",
       "Eau": "Acqua",
       "Air": "Aria",
-      "Marais": "Paludi",
-      "Abysses souterrains": "Abissi Sotterranei",
-      "Forêt maudite": "Foresta Maledetta",
-      "Cités de cendres": "Città di Cenere"
+      "Les Sylvains": "I Silvani",
+      "Les Hauts-Elfes": "Gli Alti Elfi",
+      "La Forêt d'Émeraude": "La Foresta di Smeraldo",
+      "Les Hobbits": "Gli Hobbit",
+      "Les Gardiens de la Montagne": "I Guardiani della Montagna",
+      "La Forge Ardente": "La Forgia Ardente",
+      "Les Sentinelles d'Airain": "Le Sentinelle di Bronzo",
+      "La Guilde des Ingénieurs": "La Gilda degli Ingegneri",
+      "Les Hordes des Steppes": "Le Orde delle Steppe",
+      "L'Empire de Jade": "L'Impero di Giada",
+      "Les Lames de l'Ombre": "Le Lame dell'Ombra",
+      "Les Enfants du Soleil": "I Figli del Sole",
+      "Les Seigneurs des Dunes": "I Signori delle Dune",
+      "Le Royaume des Masques": "Il Regno delle Maschere",
+      "Le Royaume du Nord": "Il Regno del Nord",
+      "L'Ordre de l'Aube": "L'Ordine dell'Alba",
+      "Les Guerrières du Vent": "Le Guerriere del Vento",
+      "La Cour Pourpre": "La Corte Porpora",
+      "Les Enfants de la Lune": "I Figli della Luna",
+      "Le Pacte des Griffes": "Il Patto degli Artigli",
+      "La Harde Sauvage": "Il Branco Selvaggio",
+      "Les Rangs Silencieux": "I Ranghi Silenziosi",
+      "Le Voile Hurlant": "Il Velo Urlante",
+      "La Cour Écarlate": "La Corte Scarlatta",
+      "Le Conclave d'Ossements": "Il Conclave delle Ossa",
+      "Les Cohortes Sanglantes": "Le Coorti Sanguinarie",
+      "La Cour Infernale": "La Corte Infernale",
+      "La Forêt Maudite": "La Foresta Maledetta",
+      "La Garde Noire": "La Guardia Nera"
     },
     "races": {
       "Elfes": "Elfi",
-      "Aigles Géants": "Aquile Giganti",
       "Fées": "Fate",
-      "Nains": "Nani",
-      "Golems": "Golem",
+      "Aigles Géants": "Aquile Giganti",
       "Hobbits": "Hobbit",
       "Hommes-Arbres": "Uomini-Albero",
+      "Nains": "Nani",
+      "Golems": "Golem",
       "Humains": "Umani",
       "Hommes-Loups": "Uomini-Lupo",
       "Hommes-Ours": "Uomini-Orso",
@@ -718,10 +724,6 @@
       "Ours": "Orsi",
       "Loups": "Lupi",
       "Fauves": "Fiere",
-      "Orcs": "Orchi",
-      "Gobelins": "Goblin",
-      "Trolls": "Troll",
-      "Wargs": "Warg",
       "Squelettes": "Scheletri",
       "Zombies": "Zombie",
       "Spectres": "Spettri",
@@ -730,7 +732,13 @@
       "Banshees": "Banshee",
       "Elfes Corrompus": "Elfi Corrotti",
       "Araignées Géantes": "Ragni Giganti",
-      "Démons": "Demoni"
+      "Démons": "Demoni",
+      "Orcs": "Orchi",
+      "Gobelins": "Goblin",
+      "Trolls": "Troll",
+      "Wargs": "Warg",
+      "Gnomes": "Gnomi",
+      "Guerriers du Chaos": "Guerrieri del Caos"
     },
     "alignments": {
       "bon": "Buono",
@@ -746,37 +754,6 @@
       "expert-etendu": "Expert · Esteso",
       "classique-etendu": "Classico · Esteso",
       "classique-standard": "Classico · Standard"
-    },
-    "tokens": {
-      "3": "Aquile Giganti",
-      "4": "Elementale dell'Aria",
-      "5": "Cane da combattimento",
-      "6": "Ragno Gigante",
-      "8": "Uomo-Albero",
-      "9": "Umano",
-      "10": "Draghi",
-      "11": "Lupi",
-      "13": "Orsi",
-      "14": "Elfo",
-      "15": "Centauro",
-      "16": "Angelo",
-      "18": "Hobbit Base",
-      "19": "Soldato del Tempio",
-      "20": "Goblin",
-      "21": "Giovane Hobbit Valoroso",
-      "22": "Zombie",
-      "23": "Guerriero Vichingo",
-      "24": "Inca",
-      "25": "Pantera",
-      "26": "Anchanchu",
-      "27": "Umani",
-      "28": "Tigre",
-      "29": "Coniglietto",
-      "30": "Scoiattolo",
-      "31": "Orsetto",
-      "32": "Demone minore",
-      "33": "Cagnolini Carini",
-      "34": "Scheletri"
     }
   },
   "home": {

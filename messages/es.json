@@ -399,6 +399,10 @@
       "declenchement": {
         "label": "Activación",
         "desc": "Invocación: vuelve a activar una vez los efectos compuestos desencadenados de los demás aliados en juego, para un subconjunto fijo de activadores (entrada / muerte / fin de turno / regreso)."
+      },
+      "dedoublement": {
+        "label": "Desdoblamiento",
+        "desc": "Invocación: crea en juego una copia exacta de esta criatura."
       }
     },
     "spell_keywords": {
@@ -612,23 +616,19 @@
     "factions": {
       "Elfes": {
         "displayName": "La Alianza Celestial",
-        "description": "Ágiles y sigilosos. Favorecen la velocidad y la esquiva. Águilas gigantes entre sus filas."
+        "description": "La alianza del buen pueblo del bosque: elfos furtivos, hadas magas, hobbits astutos y sus colosos Hombres-Árbol."
       },
       "Nains": {
         "displayName": "La Hermandad de la Forja",
-        "description": "Sólidos y resistentes. Favorecen la defensa y la tenacidad."
-      },
-      "Hobbits": {
-        "displayName": "El Pacto de los Bosques",
-        "description": "Pequeños pero astutos. Esquiva y apoyo mutuo."
+        "description": "Sólidos y resistentes: defensa, tenacidad, forja e ingeniería gnoma."
       },
       "Humains": {
         "displayName": "Los Reinos Libres",
-        "description": "Equilibrados y versátiles. Sinergias de grupo."
+        "description": "El viejo continente: honor, acero y campeones heroicos."
       },
       "Hommes-Bêtes": {
         "displayName": "La Manada",
-        "description": "Salvajes y feroces. Atacan rápido, se regeneran y entran en furia."
+        "description": "Salvajes y feroces: atacan rápido, se regeneran y entran en furia."
       },
       "Élémentaires": {
         "displayName": "Los Primordiales",
@@ -638,17 +638,21 @@
         "displayName": "Mercenarios",
         "description": "Soldados de fortuna sin lealtad. Versátiles y disponibles para cualquier mazo."
       },
-      "Orcs": {
-        "displayName": "La Horda",
-        "description": "Horda brutal. Goblins rápidos y prescindibles. Orcos brutos y agresivos. Trols resistentes. Wargs veloces."
-      },
       "Morts-Vivants": {
         "displayName": "La Necrópolis",
-        "description": "Insaciables y corrompidos. Resurrección y drenaje de vida."
+        "description": "Insaciables y corrompidos: resurrección, drenaje de vida y magia del cementerio."
       },
       "Elfes Noirs": {
-        "displayName": "La Progenie del Caos",
-        "description": "Traicioneros y venenosos. Veneno, sombra y corrupción."
+        "displayName": "Las Legiones del Caos",
+        "description": "Todas las fuerzas del Caos unidas: horda organizada, corte demoníaca, corrompidos del veneno y élite caída."
+      },
+      "EmpireDuMilieu": {
+        "displayName": "El Imperio del Centro",
+        "description": "Estrategia y control: disciplina, formaciones, misticismo y sigilo."
+      },
+      "RoyaumesDuSoleil": {
+        "displayName": "Los Reinos del Sol",
+        "description": "Sol, desierto y espíritus: hoguera ritual, nómadas saqueadores e invocadores."
       }
     },
     "rarities": {
@@ -659,46 +663,48 @@
       "Légendaire": "Legendaria"
     },
     "clans": {
-      "Sylvains": "Silvanos",
-      "Hauts-Elfes": "Altos Elfos",
-      "Elfes des Mers": "Elfos del Mar",
-      "Émeraudes": "Esmeraldas",
-      "Cimes Éternelles": "Cimas Eternas",
-      "Montagnes": "Montañas",
-      "Collines": "Colinas",
-      "Lave": "Lava",
-      "Plaines": "Llanuras",
-      "Rivièrains": "Ribereños",
-      "Landes": "Páramos",
-      "Nordiques": "Nórdicos",
-      "Orientaux": "Orientales",
-      "Templiers": "Templarios",
-      "Amazones": "Amazonas",
-      "Incas": "Incas",
-      "Touaregs": "Tuareg",
-      "Forêt": "Bosque",
-      "Toundra": "Tundra",
-      "Savane": "Sabana",
-      "Jungle": "Jungla",
-      "Mignons": "Adorables",
-      "Pacte des Griffes": "Pacto de las Garras",
       "Feu": "Fuego",
       "Terre": "Tierra",
       "Eau": "Agua",
       "Air": "Aire",
-      "Marais": "Pantano",
-      "Abysses souterrains": "Abismos Subterráneos",
-      "Forêt maudite": "Bosque Maldito",
-      "Cités de cendres": "Ciudades de Ceniza"
+      "Les Sylvains": "Los Silvanos",
+      "Les Hauts-Elfes": "Los Altos Elfos",
+      "La Forêt d'Émeraude": "El Bosque de Esmeralda",
+      "Les Hobbits": "Los Hobbits",
+      "Les Gardiens de la Montagne": "Los Guardianes de la Montaña",
+      "La Forge Ardente": "La Forja Ardiente",
+      "Les Sentinelles d'Airain": "Las Centinelas de Bronce",
+      "La Guilde des Ingénieurs": "El Gremio de Ingenieros",
+      "Les Hordes des Steppes": "Las Hordas de las Estepas",
+      "L'Empire de Jade": "El Imperio de Jade",
+      "Les Lames de l'Ombre": "Las Cuchillas de la Sombra",
+      "Les Enfants du Soleil": "Los Hijos del Sol",
+      "Les Seigneurs des Dunes": "Los Señores de las Dunas",
+      "Le Royaume des Masques": "El Reino de las Máscaras",
+      "Le Royaume du Nord": "El Reino del Norte",
+      "L'Ordre de l'Aube": "La Orden del Alba",
+      "Les Guerrières du Vent": "Las Guerreras del Viento",
+      "La Cour Pourpre": "La Corte Púrpura",
+      "Les Enfants de la Lune": "Los Hijos de la Luna",
+      "Le Pacte des Griffes": "El Pacto de las Garras",
+      "La Harde Sauvage": "La Manada Salvaje",
+      "Les Rangs Silencieux": "Las Filas Silenciosas",
+      "Le Voile Hurlant": "El Velo Aullante",
+      "La Cour Écarlate": "La Corte Escarlata",
+      "Le Conclave d'Ossements": "El Cónclave de Huesos",
+      "Les Cohortes Sanglantes": "Las Cohortes Sangrientas",
+      "La Cour Infernale": "La Corte Infernal",
+      "La Forêt Maudite": "El Bosque Maldito",
+      "La Garde Noire": "La Guardia Negra"
     },
     "races": {
       "Elfes": "Elfos",
-      "Aigles Géants": "Águilas Gigantes",
       "Fées": "Hadas",
-      "Nains": "Enanos",
-      "Golems": "Golems",
+      "Aigles Géants": "Águilas Gigantes",
       "Hobbits": "Hobbits",
       "Hommes-Arbres": "Hombres-Árbol",
+      "Nains": "Enanos",
+      "Golems": "Golems",
       "Humains": "Humanos",
       "Hommes-Loups": "Hombres-Lobo",
       "Hommes-Ours": "Hombres-Oso",
@@ -718,10 +724,6 @@
       "Ours": "Osos",
       "Loups": "Lobos",
       "Fauves": "Fieras",
-      "Orcs": "Orcos",
-      "Gobelins": "Goblins",
-      "Trolls": "Trols",
-      "Wargs": "Wargs",
       "Squelettes": "Esqueletos",
       "Zombies": "Zombis",
       "Spectres": "Espectros",
@@ -730,7 +732,13 @@
       "Banshees": "Banshees",
       "Elfes Corrompus": "Elfos Corruptos",
       "Araignées Géantes": "Arañas Gigantes",
-      "Démons": "Demonios"
+      "Démons": "Demonios",
+      "Orcs": "Orcos",
+      "Gobelins": "Goblins",
+      "Trolls": "Trols",
+      "Wargs": "Wargs",
+      "Gnomes": "Gnomos",
+      "Guerriers du Chaos": "Guerreros del Caos"
     },
     "alignments": {
       "bon": "Bueno",
@@ -746,37 +754,6 @@
       "expert-etendu": "Experto · Extendido",
       "classique-etendu": "Clásico · Extendido",
       "classique-standard": "Clásico · Estándar"
-    },
-    "tokens": {
-      "3": "Águilas Gigantes",
-      "4": "Elemental del Aire",
-      "5": "Perro de combate",
-      "6": "Araña Gigante",
-      "8": "Hombre Árbol",
-      "9": "Humano",
-      "10": "Dragones",
-      "11": "Lobos",
-      "13": "Osos",
-      "14": "Elfo",
-      "15": "Centauro",
-      "16": "Ángel",
-      "18": "Hobbits Base",
-      "19": "Soldado del Templo",
-      "20": "Goblins",
-      "21": "Joven Hobbit Valiente",
-      "22": "Zombis",
-      "23": "Guerrero Vikingo",
-      "24": "Incas",
-      "25": "Pantera",
-      "26": "Anchanchu",
-      "27": "Humanos",
-      "28": "Tigre",
-      "29": "Conejito",
-      "30": "Ardilla",
-      "31": "Osito",
-      "32": "Demonio menor",
-      "33": "Perros Monos",
-      "34": "Esqueletos"
     }
   },
   "home": {

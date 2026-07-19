@@ -399,6 +399,10 @@
       "declenchement": {
         "label": "触发",
         "desc": "召唤：将场上其他友方单位的复合触发效果重新触发一次，适用于固定的触发子集（入场/死亡/回合结束/返回）。"
+      },
+      "dedoublement": {
+        "label": "分身",
+        "desc": "召唤：在场上生成该生物的一个完整副本。"
       }
     },
     "spell_keywords": {
@@ -612,23 +616,19 @@
     "factions": {
       "Elfes": {
         "displayName": "天界联盟",
-        "description": "敏捷而隐秘。擅长速度与闪避。巨鹰列于其阵。"
+        "description": "善良林地之民的联盟：隐匿精灵、法师仙灵、狡黠霍比特人及其树人巨像。"
       },
       "Nains": {
         "displayName": "熔炉兄弟会",
-        "description": "坚实耐久。擅长防御与韧性。"
-      },
-      "Hobbits": {
-        "displayName": "林地契约",
-        "description": "身形虽小，足智多谋。闪避与互助。"
+        "description": "坚固耐久：防御、韧性、锻造与侏儒工程。"
       },
       "Humains": {
         "displayName": "自由王国",
-        "description": "均衡而多能。擅长团队协同。"
+        "description": "古老大陆：荣耀、钢铁与英雄斗士。"
       },
       "Hommes-Bêtes": {
         "displayName": "兽群",
-        "description": "野性凶猛。出击迅速，自我再生，狂暴嗜战。"
+        "description": "野蛮凶猛：出手迅速、再生恢复、陷入狂怒。"
       },
       "Élémentaires": {
         "displayName": "太初之灵",
@@ -638,17 +638,21 @@
         "displayName": "雇佣兵",
         "description": "无归属的战争贩子。灵活多变，适配任意牌组。"
       },
-      "Orcs": {
-        "displayName": "兽族部落",
-        "description": "蛮横的游牧大军。哥布林行动迅捷可随意牺牲。兽人粗野好斗。巨魔坚韧耐打。座狼速度奇快。"
-      },
       "Morts-Vivants": {
         "displayName": "亡者之城",
-        "description": "贪婪而腐化。复活与生命汲取。"
+        "description": "贪婪腐化：复活、生命汲取与墓园魔法。"
       },
       "Elfes Noirs": {
-        "displayName": "混沌孽种",
-        "description": "阴险毒辣。毒素、暗影与腐化。"
+        "displayName": "混沌军团",
+        "description": "混沌诸力合而为一：组织化的兽群、恶魔宫廷、毒化堕落者与堕落精英。"
+      },
+      "EmpireDuMilieu": {
+        "displayName": "中央帝国",
+        "description": "谋略与掌控：纪律、阵型、神秘主义与潜行。"
+      },
+      "RoyaumesDuSoleil": {
+        "displayName": "太阳王国",
+        "description": "烈日、沙漠与灵魂：祭祀烈焰、掠夺游牧民与召唤师。"
       }
     },
     "rarities": {
@@ -659,46 +663,48 @@
       "Légendaire": "传说"
     },
     "clans": {
-      "Sylvains": "林地精灵",
-      "Hauts-Elfes": "高等精灵",
-      "Elfes des Mers": "海洋精灵",
-      "Émeraudes": "翡翠氏族",
-      "Cimes Éternelles": "永恒之巅",
-      "Montagnes": "山岳氏族",
-      "Collines": "丘陵",
-      "Lave": "熔岩",
-      "Plaines": "平原",
-      "Rivièrains": "河岸",
-      "Landes": "荒原",
-      "Nordiques": "北境",
-      "Orientaux": "东方",
-      "Templiers": "圣殿",
-      "Amazones": "亚马逊",
-      "Incas": "印加",
-      "Touaregs": "图阿雷格",
-      "Forêt": "森林",
-      "Toundra": "苔原",
-      "Savane": "草原",
-      "Jungle": "丛林",
-      "Mignons": "萌宠",
-      "Pacte des Griffes": "利爪契约",
       "Feu": "火焰",
       "Terre": "大地",
       "Eau": "水流",
       "Air": "风空",
-      "Marais": "沼泽",
-      "Abysses souterrains": "地下深渊",
-      "Forêt maudite": "诅咒森林",
-      "Cités de cendres": "灰烬之城"
+      "Les Sylvains": "林地族",
+      "Les Hauts-Elfes": "高等精灵",
+      "La Forêt d'Émeraude": "翡翠森林",
+      "Les Hobbits": "霍比特人",
+      "Les Gardiens de la Montagne": "山岳守卫",
+      "La Forge Ardente": "烈焰熔炉",
+      "Les Sentinelles d'Airain": "青铜哨兵",
+      "La Guilde des Ingénieurs": "工程师公会",
+      "Les Hordes des Steppes": "草原游牧军团",
+      "L'Empire de Jade": "玉石帝国",
+      "Les Lames de l'Ombre": "暗影刀锋",
+      "Les Enfants du Soleil": "太阳之子",
+      "Les Seigneurs des Dunes": "沙丘领主",
+      "Le Royaume des Masques": "假面王国",
+      "Le Royaume du Nord": "北方王国",
+      "L'Ordre de l'Aube": "黎明骑士团",
+      "Les Guerrières du Vent": "风之女战士",
+      "La Cour Pourpre": "紫宫廷",
+      "Les Enfants de la Lune": "月之子",
+      "Le Pacte des Griffes": "爪契盟约",
+      "La Harde Sauvage": "野性兽群",
+      "Les Rangs Silencieux": "沉默军阵",
+      "Le Voile Hurlant": "嚎啸之幕",
+      "La Cour Écarlate": "猩红宫廷",
+      "Le Conclave d'Ossements": "白骨议会",
+      "Les Cohortes Sanglantes": "血腥军团",
+      "La Cour Infernale": "地狱宫廷",
+      "La Forêt Maudite": "诅咒森林",
+      "La Garde Noire": "黑色卫队"
     },
     "races": {
       "Elfes": "精灵",
-      "Aigles Géants": "巨鹰",
       "Fées": "仙灵",
-      "Nains": "矮人",
-      "Golems": "魔像",
+      "Aigles Géants": "巨鹰",
       "Hobbits": "霍比特人",
       "Hommes-Arbres": "树人",
+      "Nains": "矮人",
+      "Golems": "魔像",
       "Humains": "人类",
       "Hommes-Loups": "狼人",
       "Hommes-Ours": "熊人",
@@ -718,10 +724,6 @@
       "Ours": "熊",
       "Loups": "狼",
       "Fauves": "野兽",
-      "Orcs": "兽人",
-      "Gobelins": "哥布林",
-      "Trolls": "巨魔",
-      "Wargs": "座狼",
       "Squelettes": "骷髅",
       "Zombies": "僵尸",
       "Spectres": "幽灵",
@@ -730,7 +732,13 @@
       "Banshees": "女妖",
       "Elfes Corrompus": "堕落精灵",
       "Araignées Géantes": "巨型蜘蛛",
-      "Démons": "恶魔"
+      "Démons": "恶魔",
+      "Orcs": "兽人",
+      "Gobelins": "哥布林",
+      "Trolls": "巨魔",
+      "Wargs": "座狼",
+      "Gnomes": "侏儒",
+      "Guerriers du Chaos": "混沌战士"
     },
     "alignments": {
       "bon": "善良",
@@ -746,37 +754,6 @@
       "expert-etendu": "专家·扩展",
       "classique-etendu": "经典·扩展",
       "classique-standard": "经典·标准"
-    },
-    "tokens": {
-      "3": "巨鹰",
-      "4": "气元素",
-      "5": "战犬",
-      "6": "巨型蜘蛛",
-      "8": "树人",
-      "9": "人类",
-      "10": "龙",
-      "11": "狼群",
-      "13": "熊",
-      "14": "精灵",
-      "15": "半人马",
-      "16": "天使",
-      "18": "霍比特人（基础）",
-      "19": "圣殿战士",
-      "20": "哥布林",
-      "21": "勇敢的霍比特少年",
-      "22": "僵尸",
-      "23": "维京战士",
-      "24": "印加人",
-      "25": "黑豹",
-      "26": "安查楚",
-      "27": "人类",
-      "28": "老虎",
-      "29": "小兔子",
-      "30": "松鼠",
-      "31": "小熊崽",
-      "32": "小恶魔",
-      "33": "可爱小狗",
-      "34": "骷髅"
     }
   },
   "home": {
