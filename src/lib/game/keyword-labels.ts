@@ -40,8 +40,16 @@ export function keywordModeColor(mode: KeywordMode | undefined): string | null {
  *  ou doré, une teinte unie (jaune, argent, blanc) se noierait sans ce halo.
  *  Appliqué APRÈS la conversion de teinte dans la même chaîne `filter` — sinon
  *  la teinte recolorerait le halo. */
-const ICON_CONTRAST_HALO =
+export const ICON_CONTRAST_HALO =
   "drop-shadow(0 0 1.2px rgba(0,0,0,.95)) drop-shadow(0 0 1.2px rgba(0,0,0,.95)) drop-shadow(0 1px 1px rgba(0,0,0,.85))";
+
+/** Équivalent `text-shadow` d'ICON_CONTRAST_HALO, pour le TEXTE posé à côté
+ *  d'une icône teintée (valeur X, nom de capacité). Sans lui, le chiffre n'a
+ *  qu'un halo coloré qui le délave, alors que l'icône est cernée de noir : à
+ *  hex identique, les deux ne se lisent pas de la même couleur. Se compose
+ *  APRÈS la lueur colorée : `${glow}, ${TEXT_CONTRAST_HALO}`. */
+export const TEXT_CONTRAST_HALO =
+  "0 0 1.2px rgba(0,0,0,.95), 0 0 1.2px rgba(0,0,0,.95), 0 1px 1px rgba(0,0,0,.85)";
 
 /** Chaîne `filter` complète d'une icône : teinte de mode (si présente) SUIVIE du
  *  halo de contraste, toujours appliqué. Renvoie donc toujours une valeur (jamais

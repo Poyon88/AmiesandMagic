@@ -10,7 +10,6 @@ import {
   xNumeral,
   parseXValuesFromEffectText,
   cleanEffectText,
-  keywordModeFilter,
   keywordModeColor,
 } from "@/lib/game/keyword-labels";
 import {
@@ -322,8 +321,8 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
                       const desc = vocab.spellKeywordDesc(spellKw, card, tokenTemplates);
                       return (
                         <div key={`sk_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 6 }}>
-                          <span style={{ flexShrink: 0, filter: keywordModeFilter("spell") ?? undefined }}>
-                            <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={16} keyword={`spell_${spellKw.id}`} />
+                          <span style={{ flexShrink: 0 }}>
+                            <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={16} keyword={`spell_${spellKw.id}`} mode="spell" />
                           </span>
                           <div>
                             <div style={{ fontSize: "0.8rem", color: keywordModeColor("spell") ?? accentColor, fontWeight: 700, textShadow: "0 1px 2px rgba(0,0,0,0.9)" }}>{label}</div>
