@@ -7,8 +7,8 @@
 // graine du générateur vocab). Sans traducteur (store, tests) → FR.
 
 import { ABILITIES, creatureEngineId } from "./abilities";
-import { xNumeral, keywordModeColor, KEYWORD_LABELS } from "./keyword-labels";
-import type { Capability, ComposedEffect, KeywordMode, TargetSpec, TokenTemplate } from "./types";
+import { xNumeral, keywordModeColor, KEYWORD_LABELS, KEYWORD_SYMBOLS } from "./keyword-labels";
+import type { Capability, ComposedEffect, Keyword, KeywordMode, TargetSpec, TokenTemplate } from "./types";
 import type { SafeT } from "@/i18n/config";
 
 // ─── fragments FR (source unique : repli runtime + graine vocab.composed) ────
@@ -107,6 +107,18 @@ export function composedValueText(cap: Capability): string | null {
 /** Icône (emoji de repli) + clé d'icône (pour une éventuelle icône uploadée).
  *  La clé pointe vers un keyword existant quand l'effet en réutilise l'icône, ou
  *  vers un id propre (ex. conferer) pour les nouveaux. */
+/** Id moteur de la capacité conférée par un effet `grant_keyword`.
+ *  `grantAbilityId` peut être soit un id moteur de créature (ce que produit la
+ *  forge via GRANTABLE), soit une clé d'ABILITIES : on accepte les deux, comme
+ *  le fait déjà la description. Renvoie undefined si rien n'est résoluble. */
+function grantedEngineId(eff: ComposedEffect): Keyword | undefined {
+  const id = eff.grantAbilityId;
+  if (!id) return undefined;
+  const def = ABILITIES[id];
+  const engineId = def ? creatureEngineId(def) : id;
+  return engineId as Keyword;
+}
+
 export function composedIcon(cap: Capability): { symbol: string; keyword: string } {
   const eff = cap.composed;
   if (!eff) return { symbol: "✦", keyword: "" };
@@ -125,7 +137,16 @@ export function composedIcon(cap: Capability): { symbol: string; keyword: string
     case "destroy": return { symbol: "☠️", keyword: "spell_execution" };
     case "bounce": return { symbol: "🔼", keyword: "spell_remontee" };
     case "paralyze": return { symbol: "⛓️", keyword: "spell_entrave" };
-    case "grant_keyword": return { symbol: "✋", keyword: "conferer" };
+    // Une capacité conférée s'affiche avec l'icône de LA capacité conférée
+    // (ex. Armure), pas avec l'icône générique « Conférer » : c'est ce que la
+    // créature gagne qui compte, pas le fait qu'on le lui donne. L'astérisque
+    // des composés reste posée par ComposedMarker, côté rendu.
+    case "grant_keyword": {
+      const granted = grantedEngineId(eff);
+      if (granted && KEYWORD_SYMBOLS[granted]) return { symbol: KEYWORD_SYMBOLS[granted], keyword: granted };
+      // Repli : capacité inconnue ou sans symbole propre → icône générique.
+      return { symbol: "✋", keyword: "conferer" };
+    }
     case "draw_cards": return { symbol: "📖", keyword: "spell_inspiration" };
     case "discard": return { symbol: "💰", keyword: "pillage" };
     case "summon_token": return { symbol: "📣", keyword: "spell_invocation" };
