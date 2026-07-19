@@ -2,8 +2,27 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { KEYWORD_LABELS, KEYWORD_SYMBOLS } from "@/lib/game/keyword-labels";
+import { ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import type { Keyword } from "@/lib/game/types";
+
+// Liste unifiée des icônes gérables : mots-clés de créature (clé = id) ET
+// mots-clés de sort (clé de stockage = `spell_<id>`, cf. GameCard / overrides).
+type IconEntry = { key: string; label: string; symbol: string; kind: "creature" | "spell" };
+
+const ICON_ENTRIES: IconEntry[] = [
+  ...(Object.entries(KEYWORD_LABELS) as [Keyword, string][]).map(
+    ([kw, label]): IconEntry => ({ key: kw, label, symbol: KEYWORD_SYMBOLS[kw], kind: "creature" }),
+  ),
+  ...ALL_SPELL_KEYWORDS.map(
+    (id): IconEntry => ({ key: `spell_${id}`, label: SPELL_KEYWORD_LABELS[id], symbol: SPELL_KEYWORD_SYMBOLS[id], kind: "spell" }),
+  ),
+];
+
+// Libellé par clé de stockage, pour les messages (couvre créatures + sorts).
+const LABEL_BY_KEY: Record<string, string> = Object.fromEntries(
+  ICON_ENTRIES.map((e) => [e.key, e.label]),
+);
 
 interface CustomIcon {
   keyword: string;
@@ -44,7 +63,7 @@ export default function KeywordIconManager() {
     if (data.error) {
       setMessage({ text: data.error, type: "error" });
     } else {
-      setMessage({ text: `Échelle de "${KEYWORD_LABELS[keyword as Keyword]}" : ×${scale.toFixed(2)}`, type: "success" });
+      setMessage({ text: `Échelle de "${LABEL_BY_KEY[keyword] ?? keyword}" : ×${scale.toFixed(2)}`, type: "success" });
       useKeywordIconStore.getState().reload();
     }
   }
@@ -70,7 +89,7 @@ export default function KeywordIconManager() {
     if (data.error) {
       setMessage({ text: data.error, type: "error" });
     } else {
-      setMessage({ text: `Icône de "${KEYWORD_LABELS[keyword as Keyword]}" mise à jour`, type: "success" });
+      setMessage({ text: `Icône de "${LABEL_BY_KEY[keyword] ?? keyword}" mise à jour`, type: "success" });
       fetchIcons();
       // Refresh the shared override store so the rest of the app (forge
       // preview, in-game cards…) reflects the new icon without a reload.
@@ -90,17 +109,16 @@ export default function KeywordIconManager() {
     if (data.error) {
       setMessage({ text: data.error, type: "error" });
     } else {
-      setMessage({ text: `Icône de "${KEYWORD_LABELS[keyword as Keyword]}" réinitialisée`, type: "success" });
+      setMessage({ text: `Icône de "${LABEL_BY_KEY[keyword] ?? keyword}" réinitialisée`, type: "success" });
       fetchIcons();
       useKeywordIconStore.getState().reload();
     }
   }
 
-  const allKeywords = (Object.entries(KEYWORD_LABELS) as [Keyword, string][])
-    .sort((a, b) => a[1].localeCompare(b[1], "fr"));
+  const sorted = [...ICON_ENTRIES].sort((a, b) => a.label.localeCompare(b.label, "fr"));
   const filtered = search
-    ? allKeywords.filter(([, label]) => label.toLowerCase().includes(search.toLowerCase()))
-    : allKeywords;
+    ? sorted.filter((e) => e.label.toLowerCase().includes(search.toLowerCase()))
+    : sorted;
 
   return (
     <div style={{ padding: 24, maxWidth: 900, margin: "0 auto" }}>
@@ -151,12 +169,12 @@ export default function KeywordIconManager() {
           <div style={{ textAlign: "center", padding: 20, color: "#999" }}>Chargement...</div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            {filtered.map(([kw, label]) => {
-              const defaultSymbol = KEYWORD_SYMBOLS[kw];
+            {filtered.map(({ key: kw, label, symbol: defaultSymbol, kind }) => {
               const customUrl = customIcons[kw];
               const isImage = customUrl || defaultSymbol.startsWith("/");
               const displayUrl = customUrl || (defaultSymbol.startsWith("/") ? defaultSymbol : null);
               const isUploading = uploading === kw;
+              const isSpell = kind === "spell";
 
               return (
                 <div
@@ -197,7 +215,14 @@ export default function KeywordIconManager() {
 
                   {/* Name */}
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 600, color: "#333", fontSize: 14 }}>{label}</div>
+                    <div style={{ fontWeight: 600, color: "#333", fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
+                      {label}
+                      {isSpell && (
+                        <span style={{ fontSize: 10, fontWeight: 700, color: "#6a4bb5", background: "#efe9fb", border: "1px solid #d6c9f2", borderRadius: 4, padding: "1px 6px", letterSpacing: 0.3 }}>
+                          SORT
+                        </span>
+                      )}
+                    </div>
                     <div style={{ fontSize: 11, color: "#999" }}>
                       {customUrl ? "Image personnalisée" : isImage ? "Image locale" : `Emoji: ${defaultSymbol}`}
                     </div>
