@@ -49,7 +49,7 @@ function loadSetRegistry(): Promise<CardSet[]> {
     });
   return _setRegistryPromise;
 }
-import { KEYWORD_SYMBOLS as keywordSymbols, xNumeral, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor } from "@/lib/game/keyword-labels";
+import { KEYWORD_SYMBOLS as keywordSymbols, xNumeral, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import KeywordIcon from "@/components/shared/KeywordIcon";
@@ -385,7 +385,7 @@ export default function GameCard({
                     <KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={33 * icoS} keyword={kw} fill mode={mode} />
                   </span>
                 </span>
-                {x != null && <span style={{ fontSize: 15 * s, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}`, marginLeft: 1 * s }}>{xNumeral(x)}</span>}
+                {x != null && <span style={{ fontSize: 15 * s, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}, ${TEXT_CONTRAST_HALO}`, marginLeft: 1 * s }}>{xNumeral(x)}</span>}
               </div>
               );
             });
@@ -453,7 +453,7 @@ export default function GameCard({
                   </span>
                   <ComposedMarker mode={cmode} size={11 * icoS} />
                 </span>
-                {val && <span style={{ fontSize: 15 * s, fontWeight: 900, color: keywordModeColor(composedTriggerMode(cap)) ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}`, marginLeft: 1 * s }}>{val}</span>}
+                {val && <span style={{ fontSize: 15 * s, fontWeight: 900, color: keywordModeColor(composedTriggerMode(cap)) ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}, ${TEXT_CONTRAST_HALO}`, marginLeft: 1 * s }}>{val}</span>}
               </div>
             );
           })}

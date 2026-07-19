@@ -6,7 +6,7 @@ import { KEYWORDS, FACTIONS, RARITY_MAP } from '@/lib/card-engine/constants';
 import KeywordIcon from '@/components/shared/KeywordIcon';
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, getSpellKeywordDesc, getSpellKeywordLabel, formatConvocationTokens } from '@/lib/game/spell-keywords';
 import { isCreatureKwShadowedBySpell } from '@/lib/game/abilities';
-import { KEYWORD_LABELS, keywordModeColor } from '@/lib/game/keyword-labels';
+import { KEYWORD_LABELS, keywordModeColor, TEXT_CONTRAST_HALO } from '@/lib/game/keyword-labels';
 import { composedCapsOf, composedIcon, composedKeywordName, composedTriggerMode, composedValueText, describeComposedCap } from '@/lib/game/composed-display';
 import ComposedMarker from '@/components/cards/ComposedMarker';
 import type { Capability } from '@/lib/game/types';
@@ -464,7 +464,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                     <span style={{ display: "inline-flex", lineHeight: 0 }}><KeywordIcon symbol={ic.symbol} keyword={ic.keyword} mode={cmode} /></span>
                     <ComposedMarker mode={cmode} size={8 * s} />
                   </span>
-                  {val && <span style={{ fontSize: 10 * s, fontWeight: 900, color: keywordModeColor(composedTriggerMode(cap)) ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 4px ${fac.accent}`, marginLeft: -3 * s }}>{val}</span>}
+                  {val && <span style={{ fontSize: 10 * s, fontWeight: 900, color: keywordModeColor(composedTriggerMode(cap)) ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 4px ${fac.accent}, ${TEXT_CONTRAST_HALO}`, marginLeft: -3 * s }}>{val}</span>}
                 </div>
               );
             })}
