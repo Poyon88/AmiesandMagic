@@ -49,7 +49,7 @@ function loadSetRegistry(): Promise<CardSet[]> {
     });
   return _setRegistryPromise;
 }
-import { KEYWORD_SYMBOLS as keywordSymbols, xNumeral, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
+import { KEYWORD_SYMBOLS as keywordSymbols, xNumeral, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor } from "@/lib/game/keyword-labels";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import KeywordIcon from "@/components/shared/KeywordIcon";
@@ -371,7 +371,6 @@ export default function GameCard({
               const displayTitle = baseTitle + grantSuffix;
               const hasImg = !!iconOverrides[kw];
               const modeColor = keywordModeColor(mode);
-              const modeFilter = keywordModeFilter(mode);
               return (
               <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} title={displayTitle} style={{
                 minWidth: 40 * icoS, height: 40 * icoS, borderRadius: 4 * s,
@@ -381,9 +380,9 @@ export default function GameCard({
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 * s,
                 fontSize: 10 * s, overflow: "visible",
               }}>
-                <span style={{ display: "inline-flex", filter: modeFilter ?? undefined, lineHeight: 0 }}>
+                <span style={{ display: "inline-flex", lineHeight: 0 }}>
                   <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 33 * icoS, height: 33 * icoS, flexShrink: 0 }}>
-                    <KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={33 * icoS} keyword={kw} fill />
+                    <KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={33 * icoS} keyword={kw} fill mode={mode} />
                   </span>
                 </span>
                 {x != null && <span style={{ fontSize: 15 * s, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}`, marginLeft: 1 * s }}>{xNumeral(x)}</span>}
@@ -422,8 +421,8 @@ export default function GameCard({
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 * s,
                 fontSize: 10 * s, overflow: "visible",
               }}>
-                <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 33 * icoS, height: 33 * icoS, flexShrink: 0, filter: keywordModeFilter("spell") ?? undefined }}>
-                  <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={33 * icoS} keyword={spellKey} fill />
+                <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 33 * icoS, height: 33 * icoS, flexShrink: 0 }}>
+                  <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={33 * icoS} keyword={spellKey} fill mode="spell" />
                 </span>
                 {valueText && <span style={{
                   fontSize: 15 * s, fontWeight: 900, color: keywordModeColor("spell") ?? "#fff",
@@ -445,11 +444,11 @@ export default function GameCard({
             return (
               <div key={`cx-${i}`} title={vocab.composedDesc(cap, effectiveTokens)} style={{ minWidth: 40 * icoS, height: 40 * icoS, padding: val ? `0 ${4 * s}px` : 0, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 * s }}>
                 <span style={{ position: "relative", display: "inline-flex", lineHeight: 0 }}>
-                  <span style={{ display: "inline-flex", lineHeight: 0, filter: keywordModeFilter(cmode) ?? undefined }}>
+                  <span style={{ display: "inline-flex", lineHeight: 0 }}>
                   {hasImg ? (
-                    <div style={{ width: 40 * icoS, height: 40 * icoS, flexShrink: 0 }}><KeywordIcon symbol={ic.symbol} size={22 * icoS} keyword={ic.keyword} fill /></div>
+                    <div style={{ width: 40 * icoS, height: 40 * icoS, flexShrink: 0 }}><KeywordIcon symbol={ic.symbol} size={22 * icoS} keyword={ic.keyword} fill mode={cmode} /></div>
                   ) : (
-                    <KeywordIcon symbol={ic.symbol} size={22 * icoS} keyword={ic.keyword} />
+                    <KeywordIcon symbol={ic.symbol} size={22 * icoS} keyword={ic.keyword} mode={cmode} />
                   )}
                   </span>
                   <ComposedMarker mode={cmode} size={11 * icoS} />
@@ -551,13 +550,12 @@ export default function GameCard({
                 ? "Conférée à toutes les unités alliées."
                 : grantScope === "target" ? "Conférée à la créature ciblée." : null;
               const modeColor = keywordModeColor(mode);
-              const modeFilter = keywordModeFilter(mode);
               // Nom = couleur de l'icône : teinte de mode si présente, sinon BLANC
               // (l'icône d'un effet persistant/passif est une silhouette blanche).
               const labelColor = grantScope === "all_allies" ? "#2ecc71" : (modeColor ?? "#fff");
               return (
               <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
-                <span style={{ flexShrink: 0, display: "inline-flex", filter: modeFilter ?? undefined, lineHeight: 0 }}><KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={18 * s} keyword={kw} /></span>
+                <span style={{ flexShrink: 0, display: "inline-flex", lineHeight: 0 }}><KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={18 * s} keyword={kw} mode={mode} /></span>
                 <div>
                   <div style={{ fontSize: 14 * so, color: labelColor, fontWeight: 700 }}>{displayLabel}</div>
                   {scopeNote && <div style={{ fontSize: 11.5 * so, color: grantScope === "all_allies" ? "#2ecc71" : "#9fb0c0", fontStyle: "italic", fontFamily: "'Crimson Text',serif" }}>{scopeNote}</div>}
@@ -578,7 +576,7 @@ export default function GameCard({
               const desc = vocab.spellKeywordDesc(spellKw, card, effectiveTokens);
               return (
               <div key={`sk_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
-                <span style={{ flexShrink: 0, filter: keywordModeFilter("spell") ?? undefined }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={18 * s} keyword={`spell_${spellKw.id}`} /></span>
+                <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={18 * s} keyword={`spell_${spellKw.id}`} mode="spell" /></span>
                 <div>
                   <div style={{ fontSize: 14 * so, color: keywordModeColor("spell") ?? accentColor, fontWeight: 700 }}>{label}</div>
                   <div style={{ fontSize: 12 * so, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>
@@ -598,7 +596,7 @@ export default function GameCard({
               const nm = vocab.composedName(cap);
               return (
                 <div key={`cxd-${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
-                  <span style={{ position: "relative", flexShrink: 0, display: "inline-flex", lineHeight: 0 }}><span style={{ display: "inline-flex", lineHeight: 0, filter: keywordModeFilter(cmode) ?? undefined }}><KeywordIcon symbol={ic.symbol} size={18 * s} keyword={ic.keyword} /></span><ComposedMarker mode={cmode} size={9 * s} /></span>
+                  <span style={{ position: "relative", flexShrink: 0, display: "inline-flex", lineHeight: 0 }}><span style={{ display: "inline-flex", lineHeight: 0 }}><KeywordIcon symbol={ic.symbol} size={18 * s} keyword={ic.keyword} mode={cmode} /></span><ComposedMarker mode={cmode} size={9 * s} /></span>
                   <div>
                     {nm && <div style={{ fontSize: 14 * so, color: keywordModeColor(cmode) ?? "#fff", fontWeight: 700 }}>{nm}</div>}
                     <div style={{ fontSize: 12 * so, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{vocab.composedDesc(cap, effectiveTokens)}</div>

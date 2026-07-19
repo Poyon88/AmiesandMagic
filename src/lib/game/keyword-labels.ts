@@ -40,7 +40,7 @@ export function keywordModeColor(mode: KeywordMode | undefined): string | null {
  *  ou doré, une teinte unie (jaune, argent, blanc) se noierait sans ce halo.
  *  Appliqué APRÈS la conversion de teinte dans la même chaîne `filter` — sinon
  *  la teinte recolorerait le halo. */
-const ICON_CONTRAST_HALO =
+export const ICON_CONTRAST_HALO =
   "drop-shadow(0 0 1.2px rgba(0,0,0,.95)) drop-shadow(0 0 1.2px rgba(0,0,0,.95)) drop-shadow(0 1px 1px rgba(0,0,0,.85))";
 
 /** Chaîne `filter` complète d'une icône : teinte de mode (si présente) SUIVIE du

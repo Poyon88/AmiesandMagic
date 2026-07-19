@@ -7,7 +7,7 @@ import type { CardInstance, GameAction } from "@/lib/game/types";
 import { useGameStore, selectPowerTargetingColor } from "@/lib/store/gameStore";
 import { tapKeywordNeedsTarget, getCreatureTapComposedUid } from "@/lib/game/engine";
 import { getTokenManaCost } from "@/lib/game/abilities";
-import { KEYWORD_SYMBOLS, xNumeral, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
+import { KEYWORD_SYMBOLS, xNumeral, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor } from "@/lib/game/keyword-labels";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { composedCapsOf, composedIcon, composedTriggerMode, composedValueText } from "@/lib/game/composed-display";
@@ -666,7 +666,6 @@ function BoardCreature({
               const x = entry.x ?? grantedX[kw];
               const hasImg = !!iconOverrides[kw];
               const modeColor = keywordModeColor(mode);
-              const modeFilter = keywordModeFilter(mode);
               const tint = modeColor ?? accentColor;
               return (
               <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{
@@ -677,9 +676,9 @@ function BoardCreature({
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1,
                 fontSize: 8, overflow: "visible",
               }}>
-                <span style={{ display: "inline-flex", filter: modeFilter ?? undefined }}>
+                <span style={{ display: "inline-flex" }}>
                   <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, flexShrink: 0 }}>
-                    <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={20} keyword={kw} fill />
+                    <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={20} keyword={kw} fill mode={mode} />
                   </span>
                 </span>
                 {x != null && <span style={{ fontSize: 12, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}` }}>{xNumeral(x)}</span>}
@@ -700,14 +699,14 @@ function BoardCreature({
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, overflow: "visible",
               }}>
                 <span style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0 }}>
-                  <span style={{ display: "inline-flex", lineHeight: 0, filter: keywordModeFilter(cmode) ?? undefined }}>
+                  <span style={{ display: "inline-flex", lineHeight: 0 }}>
                   {hasImg ? (
                     // 14×14 to match the keyword-chip icon size — was 24×24,
                     // which made composed-effect icons render bigger than the
                     // same keyword shown as a chip.
-                    <div style={{ width: 20, height: 20, flexShrink: 0 }}><KeywordIcon symbol={ic.symbol} size={20} keyword={ic.keyword} fill /></div>
+                    <div style={{ width: 20, height: 20, flexShrink: 0 }}><KeywordIcon symbol={ic.symbol} size={20} keyword={ic.keyword} fill mode={cmode} /></div>
                   ) : (
-                    <KeywordIcon symbol={ic.symbol} size={20} keyword={ic.keyword} />
+                    <KeywordIcon symbol={ic.symbol} size={20} keyword={ic.keyword} mode={cmode} />
                   )}
                   </span>
                   <ComposedMarker mode={cmode} size={10} />
@@ -862,10 +861,9 @@ function BoardCreature({
                 if (tokenStr) desc = vocab.convocationPrefix(tokenStr);
               }
               const modeColor = keywordModeColor(mode);
-              const modeFilter = keywordModeFilter(mode);
               return (
               <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
-                <span style={{ flexShrink: 0, display: "inline-flex", filter: modeFilter ?? undefined }}><KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={10} keyword={kw} /></span>
+                <span style={{ flexShrink: 0, display: "inline-flex" }}><KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={10} keyword={kw} mode={mode} /></span>
                 <div>
                   <div style={{ fontSize: 8 * d, color: modeColor ?? "#fff", fontWeight: 600 }}>{displayLabel}</div>
                   {desc && <div style={{ fontSize: 7 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
@@ -887,8 +885,8 @@ function BoardCreature({
               return (
                 <div key={`cxd-${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
                   <span style={{ position: "relative", flexShrink: 0, display: "inline-flex", lineHeight: 0 }}>
-                    <span style={{ display: "inline-flex", lineHeight: 0, filter: keywordModeFilter(cmode) ?? undefined }}>
-                      <KeywordIcon symbol={ic.symbol} size={10} keyword={ic.keyword} />
+                    <span style={{ display: "inline-flex", lineHeight: 0 }}>
+                      <KeywordIcon symbol={ic.symbol} size={10} keyword={ic.keyword} mode={cmode} />
                     </span>
                     <ComposedMarker mode={cmode} size={6} />
                   </span>

@@ -7,7 +7,7 @@ import Image from "next/image";
 import type { CardInstance } from "@/lib/game/types";
 import { useGameStore } from "@/lib/store/gameStore";
 import type { DragEvent } from "react";
-import { KEYWORD_SYMBOLS, xNumeral, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordModeFilter } from "@/lib/game/keyword-labels";
+import { KEYWORD_SYMBOLS, xNumeral, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor } from "@/lib/game/keyword-labels";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell, getEntraideReduction, getTokenManaCost } from "@/lib/game/abilities";
 import { persistentStats } from "@/lib/game/engine";
@@ -557,7 +557,6 @@ function HandCard({
                   const { kw, x, mode } = entry;
                   const hasImg = !!iconOverrides[kw];
                   const modeColor = keywordModeColor(mode);
-                  const modeFilter = keywordModeFilter(mode);
                   // On a spell, keywords are CONFERRED — "all allies" gets a
                   // visible green chip behind the icon (a glow was clipped by
                   // overflow:hidden); single target keeps the default look.
@@ -574,9 +573,9 @@ function HandCard({
                       display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1,
                       fontSize: 8, overflow: "visible",
                     }}>
-                      <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", filter: modeFilter ?? undefined, lineHeight: 0 }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0 }}>
                         <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, flexShrink: 0 }}>
-                          <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={20} keyword={kw} fill />
+                          <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={20} keyword={kw} fill mode={mode} />
                         </span>
                       </span>
                       {x != null && <span style={{ fontSize: 12, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}` }}>{xNumeral(x)}</span>}
@@ -609,8 +608,8 @@ function HandCard({
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1,
                 fontSize: 8, overflow: "visible",
               }}>
-                <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, flexShrink: 0, filter: keywordModeFilter("spell") ?? undefined }}>
-                  <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={20} keyword={spellKey} fill />
+                <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, flexShrink: 0 }}>
+                  <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={20} keyword={spellKey} fill mode="spell" />
                 </span>
                 {valueText && <span style={{
                   fontSize: 12, fontWeight: 900, color: keywordModeColor("spell") ?? "#fff",
@@ -633,14 +632,14 @@ function HandCard({
                   display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, overflow: "visible",
                 }}>
                   <span style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0 }}>
-                    <span style={{ display: "inline-flex", lineHeight: 0, filter: keywordModeFilter(cmode) ?? undefined }}>
+                    <span style={{ display: "inline-flex", lineHeight: 0 }}>
                     {hasImg ? (
                       // 14×14 to match the keyword-chip icon size — was 24×24,
                       // which made composed-effect icons on hand cards render
                       // bigger than the same keyword shown as a chip in play.
-                      <div style={{ width: 20, height: 20, flexShrink: 0 }}><KeywordIcon symbol={ic.symbol} size={20} keyword={ic.keyword} fill /></div>
+                      <div style={{ width: 20, height: 20, flexShrink: 0 }}><KeywordIcon symbol={ic.symbol} size={20} keyword={ic.keyword} fill mode={cmode} /></div>
                     ) : (
-                      <KeywordIcon symbol={ic.symbol} size={20} keyword={ic.keyword} />
+                      <KeywordIcon symbol={ic.symbol} size={20} keyword={ic.keyword} mode={cmode} />
                     )}
                     </span>
                     <ComposedMarker mode={cmode} size={10} />
@@ -737,11 +736,10 @@ function HandCard({
                   if (tokenStr) desc = vocab.convocationPrefix(tokenStr);
                 }
                 const modeColor = keywordModeColor(mode);
-                const modeFilter = keywordModeFilter(mode);
                 return (
                 <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
-                  <span style={{ flexShrink: 0, filter: modeFilter ?? undefined, lineHeight: 0 }}>
-                    <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={9} keyword={kw} />
+                  <span style={{ flexShrink: 0, lineHeight: 0 }}>
+                    <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={9} keyword={kw} mode={mode} />
                   </span>
                   <div>
                     <div style={{ fontSize: 7 * d, color: modeColor ?? "#fff", fontWeight: 600 }}>{displayLabel}</div>
@@ -762,7 +760,7 @@ function HandCard({
                 const desc = vocab.spellKeywordDesc(spellKw, card, tokenTemplates);
                 return (
                 <div key={`sk_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
-                  <span style={{ flexShrink: 0, filter: keywordModeFilter("spell") ?? undefined }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={9} keyword={`spell_${spellKw.id}`} /></span>
+                  <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={9} keyword={`spell_${spellKw.id}`} mode="spell" /></span>
                   <div>
                     <div style={{ fontSize: 7 * d, color: keywordModeColor("spell") ?? accentColor, fontWeight: 600 }}>{label}</div>
                     <div style={{ fontSize: 6 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>
@@ -782,7 +780,7 @@ function HandCard({
                 const nm = vocab.composedName(cap);
                 return (
                   <div key={`cxd-${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
-                    <span style={{ position: "relative", flexShrink: 0, display: "inline-flex", lineHeight: 0 }}><span style={{ display: "inline-flex", lineHeight: 0, filter: keywordModeFilter(cmode) ?? undefined }}><KeywordIcon symbol={ic.symbol} size={9} keyword={ic.keyword} /></span><ComposedMarker mode={cmode} size={6} /></span>
+                    <span style={{ position: "relative", flexShrink: 0, display: "inline-flex", lineHeight: 0 }}><span style={{ display: "inline-flex", lineHeight: 0 }}><KeywordIcon symbol={ic.symbol} size={9} keyword={ic.keyword} mode={cmode} /></span><ComposedMarker mode={cmode} size={6} /></span>
                     <div>
                       {nm && <div style={{ fontSize: 7 * d, color: keywordModeColor(cmode) ?? "#fff", fontWeight: 600 }}>{nm}</div>}
                       <div style={{ fontSize: 6 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{vocab.composedDesc(cap, tokenTemplates)}</div>
