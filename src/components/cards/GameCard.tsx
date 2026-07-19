@@ -445,8 +445,12 @@ export default function GameCard({
               <div key={`cx-${i}`} title={vocab.composedDesc(cap, effectiveTokens)} style={{ minWidth: 40 * icoS, height: 40 * icoS, padding: val ? `0 ${4 * s}px` : 0, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 * s }}>
                 <span style={{ position: "relative", display: "inline-flex", lineHeight: 0 }}>
                   <span style={{ display: "inline-flex", lineHeight: 0 }}>
+                  {/* Boîte image alignée sur celle des mots-clés normaux
+                      (33·icoS). La pastille englobante fait bien 40·icoS des
+                      deux côtés, mais l'image des composés y occupait 40
+                      contre 33 — soit ~21 % de plus à l'écran. */}
                   {hasImg ? (
-                    <div style={{ width: 40 * icoS, height: 40 * icoS, flexShrink: 0 }}><KeywordIcon symbol={ic.symbol} size={22 * icoS} keyword={ic.keyword} fill mode={cmode} /></div>
+                    <div style={{ width: 33 * icoS, height: 33 * icoS, flexShrink: 0 }}><KeywordIcon symbol={ic.symbol} size={33 * icoS} keyword={ic.keyword} fill mode={cmode} /></div>
                   ) : (
                     <KeywordIcon symbol={ic.symbol} size={22 * icoS} keyword={ic.keyword} mode={cmode} />
                   )}
