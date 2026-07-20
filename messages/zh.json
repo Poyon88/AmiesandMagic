@@ -23,11 +23,11 @@
       },
       "convocations_multiples": {
         "label": "多重召唤",
-        "desc": "根据配置生成多个衍生物。"
+        "desc": "创造{tokens}。"
       },
       "loyaute": {
         "label": "忠义",
-        "desc": "场上每有一个同族盟友，获得+1攻击力和+1生命值。"
+        "desc": "每有一个{race_bare}盟友在场，+1/+1。"
       },
       "ancre": {
         "label": "锚定",
@@ -83,7 +83,7 @@
       },
       "pillage": {
         "label": "掠夺 X",
-        "desc": "对手随机弃掉手牌中的 X 张牌。"
+        "desc": "对手随机弃置X张手牌。"
       },
       "riposte": {
         "label": "反击 X",
@@ -91,11 +91,11 @@
       },
       "rappel": {
         "label": "召回",
-        "desc": "将你墓地中目标牌取回手牌。"
+        "desc": "将你墓地中一张目标卡牌放回手牌。"
       },
       "combustion": {
         "label": "燃烧",
-        "desc": "弃掉手中一张牌，然后抽两张牌。"
+        "desc": "弃置你手牌中的一张卡牌，然后抽两张牌。"
       },
       "terreur": {
         "label": "恐惧",
@@ -103,7 +103,7 @@
       },
       "pauvrete": {
         "label": "贫困 X",
-        "desc": "此单位失去的力量等同于对手手牌数量（X = 对手当前手牌数，动态计算）。"
+        "desc": "损失的ATK等同于对手手牌数量（动态）。"
       },
       "armure": {
         "label": "护甲",
@@ -111,11 +111,11 @@
       },
       "commandement": {
         "label": "统率",
-        "desc": "同阵营的友方单位获得 +1/+1。"
+        "desc": "你的{faction_de}盟友获得+1/+1。"
       },
       "fureur": {
         "label": "狂怒",
-        "desc": "受到伤害后，立即攻击一个随机敌方单位（若无单位则攻击英雄）。每回合最多触发一次。"
+        "desc": "受到伤害后，攻击一个随机敌方单位（若无则攻击敌方英雄）。每回合一次。"
       },
       "double_attaque": {
         "label": "双重攻击",
@@ -131,19 +131,19 @@
       },
       "contresort": {
         "label": "反制法术",
-        "desc": "取消对手下一个法术。"
+        "desc": "抵消对手的下一个法术。"
       },
       "convocation": {
         "label": "召唤 X",
-        "desc": "生成一个指定种族的 X/X 衍生物。"
+        "desc": "创造{token}。"
       },
       "convocation_simple": {
         "label": "召唤",
-        "desc": "生成已配置的衍生物。"
+        "desc": "创造{token}。"
       },
       "malediction": {
         "label": "诅咒",
-        "desc": "指定一个敌方单位，该单位在对手下一回合结束时被放逐。"
+        "desc": "指定一个敌方单位，将其在对手下一回合结束时放逐。"
       },
       "necrophagie": {
         "label": "食腐",
@@ -155,15 +155,15 @@
       },
       "sacrifice_demoniaque": {
         "label": "恶魔献祭 X",
-        "desc": "此单位死亡时，随机将 X 次费用削减（每次 -1 点法力）分配给手牌中的恶魔。恶魔费用最低为 1。"
+        "desc": "死亡时，将X次-1法力减免分配给你手牌中的恶魔（至少1个）。"
       },
       "paralysie": {
         "label": "麻痹",
-        "desc": "被此生物造成伤害的单位，在其控制者的下一回合结束前无法攻击或使用主动技能。"
+        "desc": "被其伤害的单位在其下一回合结束前无法攻击或激活技能。"
       },
       "permutation": {
         "label": "置换",
-        "desc": "交换一个友方单位与一个敌方单位当前的生命值。"
+        "desc": "交换两个目标单位（一个我方一个敌方）的当前生命值。"
       },
       "persecution": {
         "label": "迫害 X",
@@ -171,35 +171,35 @@
       },
       "pietinement": {
         "label": "践踏",
-        "desc": "此单位攻击生物时，超出目标剩余生命值的多余伤害将对敌方英雄造成。"
+        "desc": "攻击时，超出目标生物生命值的伤害将施加给对方英雄。"
       },
       "catalyse": {
         "label": "催化",
-        "desc": "将手牌中所有同族单位的法力费用降低 1。"
+        "desc": "你手牌中的{race_pl}减少1点法力消耗。"
       },
       "ombre_du_passe": {
         "label": "往昔之影",
-        "desc": "墓地中每有一个同族单位，此单位获得 +1 攻击 和 +1 生命值。"
+        "desc": "你墓地中每有一个{race_bare}单位，+1/+1。"
       },
       "profanation": {
         "label": "亵渎 X",
-        "desc": "放逐墓地中最后 X 张牌，为此单位提供最多 +X/+X。"
+        "desc": "放逐你墓地中最后X张卡牌，为该单位提供最多+X/+X。"
       },
       "prescience": {
         "label": "预知 X",
-        "desc": "持续抽牌，直到手牌达到 X 张。"
+        "desc": "抽牌直到你手牌数达到X张。"
       },
       "suprematie": {
         "label": "霸权",
-        "desc": "召唤时手牌中每有一张牌，此单位获得 +1 攻击 和 +1 生命值。"
+        "desc": "召唤时，根据你手牌数量获得+1 ATK和+1生命值。"
       },
       "divination": {
         "label": "占卜",
-        "desc": "揭示牌库顶的 3 张牌，将其中 1 张放回顶部，另外 2 张按选定顺序放回底部。"
+        "desc": "展示牌库顶3张卡；按你选择的顺序将1张放回顶部，2张放到底部。"
       },
       "savant": {
         "label": "学者",
-        "desc": "墓地中每有一张法术牌，此单位获得 +1 攻击 和 +1 生命值。"
+        "desc": "你墓地中每有一个法术，获得+1 ATK和+1生命值。"
       },
       "liaison_de_vie": {
         "label": "生命链接",
@@ -211,7 +211,7 @@
       },
       "sacrifice": {
         "label": "献祭",
-        "desc": "摧毁一个友方单位，永久获得其生命值和攻击力。"
+        "desc": "摧毁一个盟友，永久获得其生命值和ATK。"
       },
       "malefice": {
         "label": "诅咒",
@@ -231,39 +231,39 @@
       },
       "carnage": {
         "label": "屠戮 X",
-        "desc": "对场上所有单位（友方与敌方）造成 X 点伤害。"
+        "desc": "对场上所有单位（我方与敌方）造成X点伤害。"
       },
       "heritage": {
         "label": "传承 X",
-        "desc": "场上每个友方单位永久获得 +X 攻击 和 +X 生命值。"
+        "desc": "场上每个我方单位永久获得+X ATK和+X生命值。"
       },
       "mimique": {
         "label": "拟态",
-        "desc": "复制目标单位的所有技能，并永久赋予此单位。"
+        "desc": "复制目标单位的所有技能，并将其永久赋予该单位。"
       },
       "metamorphose": {
         "label": "变形",
-        "desc": "此单位变为目标单位的完全复制（攻击/生命/能力）。"
+        "desc": "该单位变为目标单位的完全复制（ATK／生命值／技能）。"
       },
       "dedoublement": {
         "label": "分身",
-        "desc": "在场上生成该生物的一个完整副本。"
+        "desc": "在场上创造这个生物的一个完全复制体。"
       },
       "tactique": {
         "label": "战术 X",
-        "desc": "永久赋予目标友方单位 X 个选定的能力。"
+        "desc": "将X个所选技能永久赋予一个目标我方单位。"
       },
       "exhumation": {
         "label": "掘墓 X",
-        "desc": "复活你墓地中法力费用等于或低于 X 的一个单位。"
+        "desc": "复活你墓地中法力消耗等于或小于X的一个单位。"
       },
       "heritage_du_cimetiere": {
         "label": "墓地传承",
-        "desc": "将你墓地中目标单位的能力赋予此单位。"
+        "desc": "将你墓地中一个目标单位的技能赋予该单位。"
       },
       "pacte_de_sang": {
         "label": "血之契约",
-        "desc": "此单位死亡时，召唤两个同种族的 1/1 衍生物。"
+        "desc": "死亡时，召唤两个1/1的同种衍生物。"
       },
       "souffle_de_feu": {
         "label": "烈焰吐息 X",
@@ -283,11 +283,11 @@
       },
       "vampirisme": {
         "label": "吸血 X",
-        "desc": "从目标敌方单位吸取 X 点生命值，并将其加到此单位的生命值上。"
+        "desc": "从一个目标敌方单位处窃取X点生命值，并将其加到该单位的生命值上。"
       },
       "traque_du_destin": {
         "label": "命运追踪 X",
-        "desc": "揭示你牌库顶的 X 张牌，取其中一张加入手牌，其余以随机顺序置于牌库底。"
+        "desc": "展示牌库顶X张卡；留一张入手牌，其余随机放回牌库底部。"
       },
       "sang_mele": {
         "label": "混血",
@@ -295,75 +295,75 @@
       },
       "fierte_du_clan": {
         "label": "氏族荣耀",
-        "desc": "此单位在场时，同氏族单位召唤时额外附带 +1/+1。"
+        "desc": "只要它在场，你召唤的{clan_de}单位都会以+1/+1进场。"
       },
       "solidarite": {
         "label": "团结 X",
-        "desc": "若你控制另外 2 个同种族单位，则摸 X 张牌。"
+        "desc": "若你控制另外2个{race_bare}单位，抽X张牌。"
       },
       "entraide": {
         "label": "互助",
-        "desc": "场上每有一个所选种族的友方单位，法力费用降低 1 点（可累积，最低 0 点）。"
+        "desc": "每有一个{race_bare}盟友在场，减少1点法力消耗（可叠加，最低为0）。"
       },
       "cycle_eternel": {
         "label": "永恒轮回",
-        "desc": "将此牌的一个副本加入你的牌库；若摸到此牌，直接将其置入战场。"
+        "desc": "在你的牌库中加入这张卡的一个复制；若被抽到，直接将其置入场上。"
       },
       "martyr": {
         "label": "殉道者",
-        "desc": "你场上所有同种族单位永久获得 +1/+1。"
+        "desc": "你场上的{race_pl}永久获得+1/+1。"
       },
       "instinct_de_meute": {
         "label": "群狼本能 X",
-        "desc": "若本回合内有一个同阵营友方单位从战场进入了墓地，则此单位获得 +X 攻击和 +X 生命值。"
+        "desc": "如果一个{faction_de}盟友本回合死亡，则+X/+X。"
       },
       "totem": {
         "label": "图腾",
-        "desc": "此单位获得场上所有同种族友方单位的能力。"
+        "desc": "获得场上你的{race_pl}的技能。"
       },
       "appel_du_clan": {
         "label": "氏族召唤 X",
-        "desc": "从你牌库顶找出第一张费用等于或低于 X 的同氏族单位，免费将其置入战场。"
+        "desc": "免费将你牌库顶部费用≤X的第一个{clan_de}单位置入场上。"
       },
       "appel_supreme": {
         "label": "至高召唤",
-        "desc": "将你牌库中所选种族里法力消耗最高的生物加入手牌（费用相同时随机选取）。"
+        "desc": "将你牌库中费用最高的{race}加入手牌（若费用相同则随机选择）。"
       },
       "rassemblement": {
         "label": "集结 X",
-        "desc": "揭示牌库顶的X张牌；将其中所有同种族单位加入手牌，其余弃置。"
+        "desc": "展示牌库顶部X张卡；保留{race_pl}至手牌，其余弃置。"
       },
       "selection": {
         "label": "抉择 X",
-        "desc": "从与本卡阵营相同的派系中随机揭示3张费用≤X的普通牌；选择其中一张加入手牌。"
+        "desc": "展示3张费用≤X的{alignment}普通卡；选择一张加入手牌。"
       },
       "selection_magique": {
         "label": "魔法抉择 X",
-        "desc": "从与本卡阵营相同的派系中随机揭示3张费用≤X的普通法术；选择其中一张加入手牌。"
+        "desc": "展示3张费用≤X的{alignment}普通法术；选择一张加入手牌。"
       },
       "renfort_royal": {
         "label": "皇家抉择 X",
-        "desc": "从你的限定版牌（需≥30张；否则从同阵营普通牌中）随机揭示3张费用≤X的牌；选择其中一张加入手牌。"
+        "desc": "展示你牌库中3张费用≤X的限定版卡（需要≥30张；否则展示3张{alignment}普通卡）；保留一张。"
       },
       "lycanthropie": {
         "label": "狼人变身 X",
-        "desc": "变形为一个具有追踪的X/X衍生物。"
+        "desc": "变身为拥有追踪的{lycanthrope}。"
       },
       "relancer": {
         "label": "重铸 X",
-        "desc": "以随机目标重新施放最近X个已施放的法术。"
+        "desc": "以随机目标重新施放最近施放的X个法术。"
       },
       "tempete": {
         "label": "风暴 X",
-        "desc": "将X点伤害随机分配给各敌方单位。"
+        "desc": "对敌方单位随机分配，共造成X点伤害。"
       },
       "cataclysme": {
         "label": "灾变 X",
-        "desc": "对所有生物（友方及敌方）各造成X点伤害。"
+        "desc": "对所有生物（包括友方和敌方）造成X点伤害。"
       },
       "affaiblissement": {
         "label": "削弱 -X/-Y",
-        "desc": "使目标敌方生物获得-X攻击力和-Y生命值。"
+        "desc": "使目标敌方生物-X攻击力和-Y生命值。"
       },
       "renforcement": {
         "label": "强化 +X/+Y",
@@ -379,11 +379,11 @@
       },
       "inspiration": {
         "label": "启示 X",
-        "desc": "抽X张牌。"
+        "desc": "抽X张卡。"
       },
       "concentration": {
         "label": "专注 X",
-        "desc": "将手牌中每个法术替换为一个费用高X点的随机法术（全派系）；新法术的费用降低X点。"
+        "desc": "手牌中的每张法术都变为一张费用+X、再减少X的随机法术（不限阵营）。"
       },
       "remontee": {
         "label": "回弹",
@@ -391,19 +391,19 @@
       },
       "renforcement_multiple": {
         "label": "群体强化",
-        "desc": "使你所有选定种族或氏族的生物获得+X/+Y。"
+        "desc": "使你所选种族或氏族的生物获得+X/+Y。"
       },
       "entrainement": {
         "label": "训练 X",
-        "desc": "使你手牌中同派系的生物获得+X/+X。"
+        "desc": "使你手牌中的{faction_de}生物获得+X/+X。"
       },
       "conferer": {
         "label": "赋予",
-        "desc": "将所选能力赋予一个（或所有）友方单位。"
+        "desc": "赋予{ability}{scope}。"
       },
       "declenchement": {
         "label": "触发",
-        "desc": "将场上其他友方单位的复合触发效果重新触发一次，适用于固定的触发子集（入场/死亡/回合结束/返回）。"
+        "desc": "使你其他盟友的复合效果（入场/死亡/回合结束/返场）额外触发一次。"
       }
     },
     "spell_keywords": {
@@ -417,19 +417,19 @@
       },
       "convocation_simple": {
         "label": "召唤",
-        "desc": "生成已配置的衍生物。"
+        "desc": "创建{token}。"
       },
       "appel_du_clan": {
         "label": "族群召唤 X",
-        "desc": "从你的牌库中免费召唤与此法术同族、费用不超过X的第一张单位牌。"
+        "desc": "免费将你牌库中费用≤X的第一个{clan_de}单位置入场上。"
       },
       "appel_supreme": {
         "label": "至高召唤",
-        "desc": "将你牌库中所选种族费用最高的生物加入手牌（费用相同时随机选取）。"
+        "desc": "将你牌库中费用最高的{race}加入手牌（若费用相同则随机选择）。"
       },
       "rassemblement": {
         "label": "集结 X",
-        "desc": "揭示你牌库顶的X张牌；将与此法术同种族的单位牌加入手牌，其余弃置。"
+        "desc": "展示牌库顶部X张卡；保留{race_pl}至手牌，其余弃置。"
       },
       "rappel": {
         "label": "召回",
@@ -441,15 +441,15 @@
       },
       "selection": {
         "label": "甄选 X",
-        "desc": "从与此法术同阵营的3张随机普通牌（费用≤X）中选择一张加入手牌。"
+        "desc": "展示3张费用≤X的{alignment}普通卡；选择一张加入手牌"
       },
       "selection_magique": {
         "label": "魔法甄选 X",
-        "desc": "从与此法术同阵营的3张随机普通法术（费用≤X）中选择一张加入手牌。"
+        "desc": "展示3张费用≤X的{alignment}普通法术；选择一张加入手牌"
       },
       "renfort_royal": {
         "label": "皇家甄选 X",
-        "desc": "从你的限定版牌（需≥30张；否则从同阵营普通牌中）随机选3张费用≤X的牌，选择一张加入手牌。"
+        "desc": "展示你牌库中3张费用≤X的限定版卡（需要≥30张；否则展示3张{alignment}普通卡）；保留一张"
       },
       "relancer": {
         "label": "重施 X",
@@ -505,19 +505,19 @@
       },
       "renforcement_multiple": {
         "label": "群体强化",
-        "desc": "为所选种族或氏族的所有己方生物给予 +X/+Y。"
+        "desc": "使你所选种族或氏族的生物获得+X/+Y。"
       },
       "entrainement": {
         "label": "训练 X",
-        "desc": "为手牌中同阵营的己方生物给予 +X/+X。"
+        "desc": "使你手牌中的{faction_de}生物获得+X/+X。"
       },
       "concentration": {
         "label": "专注 X",
-        "desc": "将手中每张法术替换为费用高 X 的随机法术（全阵营）；新法术费用降低 X。"
+        "desc": "手牌中的每张法术都变为一张费用+X、再减少X的随机法术（不限阵营）。"
       },
       "invocation_multiple": {
         "label": "多重召唤",
-        "desc": "按卡牌配置生成多个衍生物。"
+        "desc": "创建{tokens}。"
       },
       "tempete": {
         "label": "风暴 X",
@@ -612,6 +612,26 @@
         "grant_keyword": "选择一个赋予能力的生物",
         "exhumation": "选择一个复活的生物",
         "default": "选择一个目标"
+      },
+      "self": {
+        "deal_damage_one": "对自身造成{x}点伤害",
+        "deal_damage_many": "对自身造成{x}点伤害",
+        "heal": "为自身恢复{x}点生命值",
+        "buff": "为自身赋予+{x}/+{y}",
+        "debuff": "对自身造成-{x}/-{y}",
+        "destroy": "自我摧毁",
+        "bounce": "将自身弹回手牌",
+        "paralyze": "使自身麻痹",
+        "grant_keyword": "为自身赋予{ability}"
+      },
+      "targetd": {
+        "count_all": "所有单位",
+        "count_one": "一个单位",
+        "count_n": "{n}个单位",
+        "hero_ally": "你的英雄",
+        "hero_enemy": "敌方英雄",
+        "both_all": "所有单位和{side}英雄",
+        "both_one": "一个目标(单位或英雄){side}"
       }
     },
     "factions": {
@@ -675,12 +695,15 @@
       "Les Hordes des Steppes": "草原游牧军团",
       "L'Empire de Jade": "玉石帝国",
       "Les Lames de l'Ombre": "暗影刀锋",
+      "Les Défenseurs d'Ivoire": "象牙守护者",
       "Les Enfants du Soleil": "太阳之子",
       "Les Seigneurs des Dunes": "沙丘领主",
       "Le Royaume des Masques": "假面王国",
+      "Les Fils du Volcan": "火山之子",
       "Le Royaume du Nord": "北方王国",
       "L'Ordre de l'Aube": "黎明骑士团",
       "Les Guerrières du Vent": "风之女战士",
+      "La Sublime Porte": "崇高之门",
       "Les Seigneurs Fauves": "野兽领主",
       "Les Enfants de la Lune": "月之子",
       "Le Pacte des Griffes": "爪契盟约",
@@ -696,10 +719,7 @@
       "Les Cohortes Sanglantes": "血腥军团",
       "Les Princes des Abîmes": "深渊王侯",
       "La Forêt Maudite": "诅咒森林",
-      "La Garde Noire": "黑色卫队",
-      "Les Défenseurs d'Ivoire": "象牙守护者",
-      "Les Fils du Volcan": "火山之子",
-      "La Sublime Porte": "崇高之门"
+      "La Garde Noire": "黑色卫队"
     },
     "races": {
       "Elfes": "精灵",
@@ -749,6 +769,283 @@
       "neutre": "中立",
       "maléfique": "邪恶",
       "spéciale": "特殊"
+    },
+    "races_forms": {
+      "Elfes": {
+        "def": "精灵",
+        "bare": "精灵",
+        "de": "精灵的"
+      },
+      "Fées": {
+        "def": "妖精",
+        "bare": "妖精",
+        "de": "妖精的"
+      },
+      "Aigles Géants": {
+        "def": "巨鹰",
+        "bare": "巨鹰",
+        "de": "巨鹰的"
+      },
+      "Hobbits": {
+        "def": "霍比特人",
+        "bare": "霍比特人",
+        "de": "霍比特人的"
+      },
+      "Hommes-Arbres": {
+        "def": "树人",
+        "bare": "树人",
+        "de": "树人的"
+      },
+      "Nains": {
+        "def": "矮人",
+        "bare": "矮人",
+        "de": "矮人的"
+      },
+      "Golems": {
+        "def": "魔像",
+        "bare": "魔像",
+        "de": "魔像的"
+      },
+      "Gnomes": {
+        "def": "侏儒",
+        "bare": "侏儒",
+        "de": "侏儒的"
+      },
+      "Humains": {
+        "def": "人类",
+        "bare": "人类",
+        "de": "人类的"
+      },
+      "Hommes-Loups": {
+        "def": "狼人",
+        "bare": "狼人",
+        "de": "狼人的"
+      },
+      "Hommes-Ours": {
+        "def": "熊人",
+        "bare": "熊人",
+        "de": "熊人的"
+      },
+      "Hommes-Félins": {
+        "def": "猫人",
+        "bare": "猫人",
+        "de": "猫人的"
+      },
+      "Centaures": {
+        "def": "半人马",
+        "bare": "半人马",
+        "de": "半人马的"
+      },
+      "Mimis": {
+        "def": "米米",
+        "bare": "米米",
+        "de": "米米的"
+      },
+      "Hommes-Chiens": {
+        "def": "犬人",
+        "bare": "犬人",
+        "de": "犬人的"
+      },
+      "Hommes-Renards": {
+        "def": "狐人",
+        "bare": "狐人",
+        "de": "狐人的"
+      },
+      "Hommes-Cerfs": {
+        "def": "鹿人",
+        "bare": "鹿人",
+        "de": "鹿人的"
+      },
+      "Élémentaire": {
+        "def": "元素",
+        "bare": "元素",
+        "de": "元素的",
+        "pl": "元素"
+      },
+      "Géants": {
+        "def": "巨人",
+        "bare": "巨人",
+        "de": "巨人的"
+      },
+      "Ogres": {
+        "def": "食人魔",
+        "bare": "食人魔",
+        "de": "食人魔的"
+      },
+      "Dragons": {
+        "def": "龙",
+        "bare": "龙",
+        "de": "龙的"
+      },
+      "Chiens": {
+        "def": "狗",
+        "bare": "狗",
+        "de": "狗的"
+      },
+      "Phoenix": {
+        "def": "凤凰",
+        "bare": "凤凰",
+        "de": "凤凰的"
+      },
+      "Anges": {
+        "def": "天使",
+        "bare": "天使",
+        "de": "天使的"
+      },
+      "Ours": {
+        "def": "熊",
+        "bare": "熊",
+        "de": "熊的"
+      },
+      "Loups": {
+        "def": "狼",
+        "bare": "狼",
+        "de": "狼的"
+      },
+      "Fauves": {
+        "def": "野兽",
+        "bare": "野兽",
+        "de": "野兽的"
+      },
+      "Squelettes": {
+        "def": "骷髅",
+        "bare": "骷髅",
+        "de": "骷髅的"
+      },
+      "Zombies": {
+        "def": "僵尸",
+        "bare": "僵尸",
+        "de": "僵尸的"
+      },
+      "Spectres": {
+        "def": "幽灵",
+        "bare": "幽灵",
+        "de": "幽灵"
+      },
+      "Vampires": {
+        "def": "吸血鬼",
+        "bare": "吸血鬼",
+        "de": "吸血鬼"
+      },
+      "Lich": {
+        "def": "巫妖",
+        "bare": "巫妖",
+        "de": "巫妖"
+      },
+      "Banshees": {
+        "def": "女妖",
+        "bare": "女妖",
+        "de": "女妖"
+      },
+      "Elfes Corrompus": {
+        "def": "堕落精灵",
+        "bare": "堕落精灵",
+        "de": "堕落精灵"
+      },
+      "Araignées Géantes": {
+        "def": "巨蛛",
+        "bare": "巨蛛",
+        "de": "巨蛛"
+      },
+      "Démons": {
+        "def": "恶魔",
+        "bare": "恶魔",
+        "de": "恶魔"
+      },
+      "Orcs": {
+        "def": "兽人",
+        "bare": "兽人",
+        "de": "兽人"
+      },
+      "Gobelins": {
+        "def": "哥布林",
+        "bare": "哥布林",
+        "de": "哥布林"
+      },
+      "Trolls": {
+        "def": "巨魔",
+        "bare": "巨魔",
+        "de": "巨魔"
+      },
+      "Wargs": {
+        "def": "座狼",
+        "bare": "座狼",
+        "de": "座狼"
+      },
+      "Guerriers du Chaos": {
+        "def": "混沌战士",
+        "bare": "混沌战士",
+        "de": "混沌战士"
+      }
+    },
+    "clans_forms": {
+      "Les Sylvains": "林地精灵",
+      "Les Hauts-Elfes": "高等精灵",
+      "La Forêt d'Émeraude": "翡翠森林",
+      "La Combe Verte": "绿谷",
+      "Les Gardiens de la Montagne": "山岳守护者",
+      "La Forge Ardente": "熾焰锻炉",
+      "Les Sentinelles d'Airain": "青铜哨兵",
+      "La Guilde des Ingénieurs": "工程师公会",
+      "Les Hordes des Steppes": "草原部落",
+      "L'Empire de Jade": "玉之帝国",
+      "Les Lames de l'Ombre": "暗影之刃",
+      "Les Défenseurs d'Ivoire": "象牙守卫",
+      "Les Enfants du Soleil": "太阳之子",
+      "Les Seigneurs des Dunes": "沙丘领主",
+      "Le Royaume des Masques": "面具王国",
+      "Les Fils du Volcan": "火山之子",
+      "Le Royaume du Nord": "北方王国",
+      "L'Ordre de l'Aube": "黎明教团",
+      "Les Guerrières du Vent": "风之女战士",
+      "La Sublime Porte": "崇高之门",
+      "Les Seigneurs Fauves": "猛兽领主",
+      "Les Enfants de la Lune": "月之子",
+      "Le Pacte des Griffes": "爪之盟约",
+      "La Harde Sauvage": "狂野兽群",
+      "La Colère des Flammes": "烈焰之怒",
+      "Le Socle du Monde": "世界之基",
+      "La Vague Sans Fin": "无尽之潮",
+      "Le Souffle des Cimes": "山巅之息",
+      "Les Rangs Silencieux": "沉默之列",
+      "Le Voile Hurlant": "嘶吼之幕",
+      "La Cour Écarlate": "猩红宫廷",
+      "Le Cénacle Nécromant": "死灵密会",
+      "Les Cohortes Sanglantes": "血色军团",
+      "Les Princes des Abîmes": "深渊王子",
+      "La Forêt Maudite": "诅咒森林",
+      "La Garde Noire": "黑暗禁卫"
+    },
+    "factions_forms": {
+      "Elfes": "天穹联盟",
+      "Nains": "熔炉兄弟会",
+      "EmpireDuMilieu": "中原帝国",
+      "RoyaumesDuSoleil": "太阳王国",
+      "Humains": "自由王国",
+      "Hommes-Bêtes": "兽群",
+      "Élémentaires": "元初者",
+      "Mercenaires": "佣兵团",
+      "Morts-Vivants": "死城",
+      "Elfes Noirs": "混沌军团的"
+    },
+    "markers": {
+      "race": "所选种族的生物",
+      "race_bare": "同种族",
+      "race_de": "同种族的",
+      "race_pl": "同种族的单位",
+      "clan": "你的氏族",
+      "clan_de": "同氏族的",
+      "faction": "你的阵营",
+      "faction_de": "同阵营的",
+      "alignment": "同立场的",
+      "alignment_of": "立场为{a}的",
+      "token": "已设置的指示物",
+      "tokens": "多个指示物",
+      "lycanthrope": "一个X/X指示物",
+      "ability": "一项能力",
+      "scope": "给一个友方单位（或全部）",
+      "scope_target": "给一个友方单位",
+      "scope_all": "给你所有的单位"
     },
     "sets": {
       "1": "基础系列"
@@ -1463,7 +1760,7 @@
     "zone_deck_opponent": "对手的牌库",
     "zone_graveyard_yours": "你的墓地",
     "zone_graveyard_opponent": "对手的墓地",
-    "convocation_prefix": "创建 {content}",
+    "convocation_prefix": "生成{content}",
     "convocation_create_list": "创建 {content}",
     "convocation_token_one": "一个 {token} {atk}/{hp} token",
     "convocation_token_many": "{count} 个 {token} {atk}/{hp} token",

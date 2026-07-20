@@ -845,21 +845,11 @@ function BoardCreature({
             {entries.map((entry, idx) => {
               const { kw, mode } = entry;
               const x = entry.x ?? grantedX[kw];
-              const label = vocab.keywordLabel(kw);
-              const baseLabel = x != null
-                ? label.replace(/ X$/, ` ${xNumeral(x)}`)
-                : kw === "entraide" && card.entraide_race
-                  ? `${label} (${card.entraide_race})`
-                  : label;
+              const ctx = { card, instance: entry.instance, x, tokens: tokenTemplates };
+              const label = vocab.keywordLabelFor(kw, ctx);
               // Plus d'annotation de déclencheur : la couleur transmet le moment.
-              const displayLabel = baseLabel;
-              let desc = vocab.keywordDesc(kw, x);
-              if (kw === "convocations_multiples" && card.convocation_tokens?.length) {
-                desc = vocab.convocationPrefix(vocab.convocationTokens(card.convocation_tokens, tokenTemplates));
-              } else if (kw === "convocation" || kw === "convocation_simple") {
-                const tokenStr = vocab.convocationToken(card.convocation_token_id, tokenTemplates, kw === "convocation" ? x : null);
-                if (tokenStr) desc = vocab.convocationPrefix(tokenStr);
-              }
+              const displayLabel = x != null ? label.replace(/ X$/, ` ${xNumeral(x)}`) : label;
+              const desc = vocab.keywordDesc(kw, ctx);
               const modeColor = keywordModeColor(mode);
               return (
               <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>

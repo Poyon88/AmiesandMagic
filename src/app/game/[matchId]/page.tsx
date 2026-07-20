@@ -12,6 +12,7 @@ import OrientationLock from "@/components/shared/OrientationLock";
 import type { Card, GameAction, GameState, HeroDefinition, HeroPowerEffect, Race } from "@/lib/game/types";
 import { syncHash, reconcileVerdict } from "@/lib/game/stateHash";
 import { FACTIONS } from "@/lib/card-engine/constants";
+import { MANA_SPARK_NAMES } from "@/lib/game/mana-spark";
 import { useTranslations } from "next-intl";
 
 // Colonnes de `cards` réellement consommées par le moteur en partie. Projection
@@ -266,7 +267,9 @@ export default function GamePage() {
         // supabase-js ne peut pas inférer la forme des lignes — on la fournit.
         const [factionCardsRes, manaSparkRes, allSpellsRes] = await Promise.all([
           supabase.from("cards").select(GAME_CARD_COLUMNS).in("faction", Array.from(selectionFactions)).returns<Card[]>(),
-          supabase.from("cards").select(GAME_CARD_COLUMNS).eq("name", "Mana Spark").eq("card_type", "spell").limit(1).returns<Card[]>(),
+          // `.in(...)` et non `.eq(...)` : le nom exact de la ligne dépend de la
+          // saisie admin dans la forge (cf. MANA_SPARK_NAMES).
+          supabase.from("cards").select(GAME_CARD_COLUMNS).in("name", MANA_SPARK_NAMES as unknown as string[]).eq("card_type", "spell").limit(1).returns<Card[]>(),
           // Concentration X: needs every spell across every faction/set, not
           // just the deck-faction subset that factionCardPool covers.
           supabase.from("cards").select(GAME_CARD_COLUMNS).eq("card_type", "spell").returns<Card[]>(),
@@ -276,6 +279,13 @@ export default function GamePage() {
         const manaSpark = manaSparkRes.data?.[0];
         if (manaSpark && !factionCards.find((c) => c.id === manaSpark.id)) {
           factionCards.push(manaSpark);
+        }
+        if (!manaSpark) {
+          // Sans cette ligne, le moteur sert un repli sans illustration et
+          // introuvable dans card_translations : autant que ça se voie.
+          console.warn(
+            "[match] Étincelle de Mana introuvable en base — repli dégradé servi au 2e joueur.",
+          );
         }
         const allSpells = allSpellsRes.data ?? [];
 

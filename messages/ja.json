@@ -23,11 +23,11 @@
       },
       "convocations_multiples": {
         "label": "複数召喚",
-        "desc": "設定に応じて複数のトークンを生成する。"
+        "desc": "{tokens}を作成する。"
       },
       "loyaute": {
         "label": "忠誠",
-        "desc": "場にいる同種族の味方1体につきATK+1・HP+1を得る。"
+        "desc": "場にいる{race_bare}の味方1体につき+1/+1。"
       },
       "ancre": {
         "label": "固定",
@@ -83,7 +83,7 @@
       },
       "pillage": {
         "label": "略奪 X",
-        "desc": "相手はランダムに手札をX枚捨てる。"
+        "desc": "相手は手札からランダムにX枚を捨てる。"
       },
       "riposte": {
         "label": "反撃 X",
@@ -91,11 +91,11 @@
       },
       "rappel": {
         "label": "帰還",
-        "desc": "自分の墓地から対象のカード1枚を手札に戻す。"
+        "desc": "対象の墓地のカード1枚を手札に戻す。"
       },
       "combustion": {
         "label": "燃焼",
-        "desc": "手札を1枚捨て、カードを2枚引く。"
+        "desc": "手札を1枚捨て、その後カードを2枚引く。"
       },
       "terreur": {
         "label": "恐怖",
@@ -103,7 +103,7 @@
       },
       "pauvrete": {
         "label": "貧困 X",
-        "desc": "このユニットの力は相手の手札枚数分だけ減少する（X＝相手の手札枚数、動的）。"
+        "desc": "相手の手札の枚数だけATKが減少する（変動）。"
       },
       "armure": {
         "label": "装甲",
@@ -111,11 +111,11 @@
       },
       "commandement": {
         "label": "指揮",
-        "desc": "同じ派閥の味方ユニット全体が+1/+1を得る。"
+        "desc": "{faction_de}の味方に+1/+1。"
       },
       "fureur": {
         "label": "激怒",
-        "desc": "ダメージを受けた後、ランダムな相手ユニット（ユニットがいない場合はヒーロー）に即座に攻撃する。1ターンに1度のみ発動。"
+        "desc": "ダメージを受けた後、ランダムな敵ユニットを攻撃する（いなければヒーロー）。ターンに1回。"
       },
       "double_attaque": {
         "label": "二段攻撃",
@@ -131,19 +131,19 @@
       },
       "contresort": {
         "label": "呪文封じ",
-        "desc": "相手の次の呪文を打ち消す。"
+        "desc": "相手の次の呪文を無効化する。"
       },
       "convocation": {
         "label": "召喚 X",
-        "desc": "指定された種族のX/Xトークンを生成する。"
+        "desc": "{token}を作成する。"
       },
       "convocation_simple": {
         "label": "召喚",
-        "desc": "設定されたトークンを生成する。"
+        "desc": "{token}を作成する。"
       },
       "malediction": {
         "label": "呪い",
-        "desc": "敵ユニット1体を対象にする。そのユニットは次の相手ターン終了時に追放される。"
+        "desc": "敵ユニット1体を対象にする。相手の次のターン終了時に追放される。"
       },
       "necrophagie": {
         "label": "死肉食らい",
@@ -155,15 +155,15 @@
       },
       "sacrifice_demoniaque": {
         "label": "悪魔の生贄 X",
-        "desc": "このユニットが死亡したとき、手札のデーモンにコスト軽減（各-1マナ）をランダムにX回分配する。デーモンのコストは最小1。"
+        "desc": "死亡時、手札のデーモンにX個の-1マナ軽減を分配する（最低1）。"
       },
       "paralysie": {
         "label": "麻痺",
-        "desc": "このクリーチャーからダメージを受けたユニットは、そのオーナーの次のターン終了まで攻撃もアクティブ能力の使用もできない。"
+        "desc": "傷つけたユニットは、次のターン終了時まで攻撃も能力の発動もできない。"
       },
       "permutation": {
         "label": "入れ替え",
-        "desc": "対象の2体のユニット（味方1体と敵1体）の現在HPを入れ替える。"
+        "desc": "対象の2体（味方1体と敵1体）の現在のPVを入れ替える。"
       },
       "persecution": {
         "label": "迫害 X",
@@ -171,19 +171,19 @@
       },
       "pietinement": {
         "label": "踏みにじり",
-        "desc": "このユニットがクリーチャーを攻撃した際、超過ダメージ（対象の残りHPを上回る分）を相手ヒーローに与える。"
+        "desc": "攻撃時、対象クリーチャーのPVを超えるダメージは相手のヒーローに与えられる。"
       },
       "catalyse": {
         "label": "触媒",
-        "desc": "手札にある同じ種族のユニット全てのマナコストを1減らす。"
+        "desc": "手札の{race_pl}のコストが1マナ減少する。"
       },
       "ombre_du_passe": {
         "label": "過去の影",
-        "desc": "墓地にある同じ種族のユニット1体につき+1 ATK、+1 HPを得る。"
+        "desc": "墓地の{race_bare}ユニット1体につき+1/+1。"
       },
       "profanation": {
         "label": "冒涜 X",
-        "desc": "墓地の末尾X枚のカードを追放し、このユニットに最大+X/+Xを付与する。"
+        "desc": "墓地の最後のX枚を追放し、そのユニットに最大+X/+Xを与える。"
       },
       "prescience": {
         "label": "予知 X",
@@ -191,15 +191,15 @@
       },
       "suprematie": {
         "label": "覇権",
-        "desc": "召喚時点の手札1枚につき+1 ATK、+1 HPを得る。"
+        "desc": "召喚時、手札のカード1枚につき+1ATKと+1PVを得る。"
       },
       "divination": {
         "label": "占術",
-        "desc": "デッキの上から3枚を公開し、1枚を一番上に、残り2枚を好きな順番で一番下に置く。"
+        "desc": "デッキの上から3枚を公開する。任意の順序で1枚を一番上に、2枚を一番下に戻す。"
       },
       "savant": {
         "label": "賢者",
-        "desc": "墓地にある呪文1枚につき+1 ATK、+1 HPを得る。"
+        "desc": "墓地の呪文1枚につき+1ATKと+1PVを得る。"
       },
       "liaison_de_vie": {
         "label": "生命の絆",
@@ -211,7 +211,7 @@
       },
       "sacrifice": {
         "label": "生贄",
-        "desc": "味方1体を破壊し、そのHPとATKを永続的に獲得する。"
+        "desc": "味方1体を破壊し、そのPVとATKを永続的に得る。"
       },
       "malefice": {
         "label": "呪詛",
@@ -231,31 +231,31 @@
       },
       "carnage": {
         "label": "大虐殺 X",
-        "desc": "場にいる全ユニット（味方・敵問わず）にXダメージを与える。"
+        "desc": "場の全ユニット（味方と敵）にXダメージを与える。"
       },
       "heritage": {
         "label": "遺産 X",
-        "desc": "場にいる味方ユニット全てが永続的に+X ATK、+X HPを得る。"
+        "desc": "場の味方ユニットすべてが永続的に+XATKと+XPVを得る。"
       },
       "mimique": {
         "label": "模倣",
-        "desc": "対象のユニットが持つ全アビリティをコピーし、このユニットに永続的に付与する。"
+        "desc": "対象ユニットの全能力をコピーし、このユニットに永続的に付与する。"
       },
       "metamorphose": {
         "label": "変身",
-        "desc": "対象ユニットの完全なコピー（ATK／HP／能力）になる。"
+        "desc": "このユニットは対象ユニットの完全なコピー（ATK／PV／能力）になる。"
       },
       "dedoublement": {
         "label": "分身",
-        "desc": "このクリーチャーの完全なコピーをフィールドに生成する。"
+        "desc": "このクリーチャーの完全なコピーを場に生成する。"
       },
       "tactique": {
         "label": "戦術 X",
-        "desc": "対象の味方ユニット1体に、選んだ能力をX個永続付与する。"
+        "desc": "選択したX個の能力を対象の味方ユニットに永続的に付与する。"
       },
       "exhumation": {
         "label": "発掘 X",
-        "desc": "墓地にある、マナコストがX以下のユニット1体を復活させる。"
+        "desc": "マナコストがX以下の墓地のユニット1体を蘇生する。"
       },
       "heritage_du_cimetiere": {
         "label": "墓地の遺産",
@@ -263,7 +263,7 @@
       },
       "pacte_de_sang": {
         "label": "血の契約",
-        "desc": "このユニットが死亡したとき、同じ種族の1/1トークンを2体召喚する。"
+        "desc": "死亡時、同種族の1/1トークンを2体召喚する。"
       },
       "souffle_de_feu": {
         "label": "ファイアブレス X",
@@ -283,11 +283,11 @@
       },
       "vampirisme": {
         "label": "吸血 X",
-        "desc": "対象の敵ユニットからXHPを奪い、このユニットのHPに加算する。"
+        "desc": "対象の敵ユニットからXPVを奪い、このユニットのPVに加える。"
       },
       "traque_du_destin": {
         "label": "運命追跡 X",
-        "desc": "デッキの上からX枚を公開し、1枚を手札に加え、残りをランダムな順でデッキ下に置く。"
+        "desc": "デッキの上からX枚を公開する。1枚を手札に加え、残りをランダムに一番下に戻す。"
       },
       "sang_mele": {
         "label": "混血",
@@ -295,75 +295,75 @@
       },
       "fierte_du_clan": {
         "label": "一族の誇り",
-        "desc": "このユニットが場にいる間、同じクランのユニットは+1/+1の状態で召喚される。"
+        "desc": "場にいる限り、召喚される{clan_de}ユニットは+1/+1の状態で場に出る。"
       },
       "solidarite": {
         "label": "連帯 X",
-        "desc": "同じ種族の他のユニットを2体以上コントロールしていれば、カードをX枚引く。"
+        "desc": "他に{race_bare}ユニットを2体コントロールしていれば、カードをX枚引く。"
       },
       "entraide": {
         "label": "助け合い",
-        "desc": "場にいる選択した種族の味方ユニット1体につきマナコストが1減少する（累積、最小0）。"
+        "desc": "場の{race_bare}の味方1体につきコストが1マナ減少する（重複可、最低0）。"
       },
       "cycle_eternel": {
         "label": "永遠の輪廻",
-        "desc": "このカードのコピーをデッキに加える。そのカードを引いた場合、直接場に出す。"
+        "desc": "このカードのコピーをデッキに加える。それが引かれた場合、直接場に出す。"
       },
       "martyr": {
         "label": "殉教者",
-        "desc": "場にいる同じ種族の味方ユニットすべてに永続+1/+1を付与する。"
+        "desc": "場の{race_pl}に永続的に+1/+1。"
       },
       "instinct_de_meute": {
         "label": "群れの本能 X",
-        "desc": "このターン中に同じ派閥の味方ユニットが場から墓地へ送られていれば、+X ATKと+X HPを得る。"
+        "desc": "{faction_de}の味方がこのターン死亡していれば+X/+X。"
       },
       "totem": {
         "label": "トーテム",
-        "desc": "場にいる同じ種族の味方ユニット全員の能力を得る。"
+        "desc": "場にいる自分の{race_pl}の能力を得る。"
       },
       "appel_du_clan": {
         "label": "一族の呼び声 X",
-        "desc": "デッキの上から、コストがX以下の同じクランのユニット1体を無料で場に出す。"
+        "desc": "自分のデッキの上から、コストX以下の最初の{clan_de}ユニットを無料で場に出す。"
       },
       "appel_supreme": {
         "label": "至高の召喚",
-        "desc": "デッキに残る選択した種族の中で最もマナコストが高いクリーチャーを手札に加える（同コストの場合はランダム）。"
+        "desc": "自分のデッキの中で最もコストが高い{race}を手札に加える(同点の場合はランダム)。"
       },
       "rassemblement": {
         "label": "集結 X",
-        "desc": "デッキの上からX枚を公開し、同じ種族のユニットをすべて手札に加え、残りを捨てる。"
+        "desc": "デッキの上からX枚を公開し、{race_pl}を手札に残して残りを捨てる。"
       },
       "selection": {
         "label": "選択 X",
-        "desc": "このカードと同じ陣営のコスト≤Xのランダムなコモンカード3枚を公開し、1枚を手札に加える。"
+        "desc": "コストX以下の{alignment}のコモンを3枚公開し、その中から1枚を手札に加える。"
       },
       "selection_magique": {
         "label": "魔法選択 X",
-        "desc": "このカードと同じ陣営のコスト≤Xのランダムなコモン呪文3枚を公開し、1枚を手札に加える。"
+        "desc": "コストX以下の{alignment}のコモン呪文を3枚公開し、その中から1枚を手札に加える。"
       },
       "renfort_royal": {
         "label": "王室選択 X",
-        "desc": "コスト≤Xの限定版カードからランダムに3枚公開する（30枚以上必要；足りない場合は同じ陣営のコモンから）。1枚を手札に加える。"
+        "desc": "コストX以下の限定カードを3枚公開する(デッキが30枚以上必要。それ未満の場合は{alignment}のコモンを3枚)。その中から1枚を残す。"
       },
       "lycanthropie": {
         "label": "獣人変化 X",
-        "desc": "追跡を持つX/Xトークンに変身する。"
+        "desc": "追跡を持つ{lycanthrope}に変身する。"
       },
       "relancer": {
         "label": "再詠唱 X",
-        "desc": "最後に唱えたX個の呪文をランダムな対象で再使用する。"
+        "desc": "直近に使用したX個の呪文を、対象をランダムにして再発動する。"
       },
       "tempete": {
         "label": "嵐 X",
-        "desc": "敵ユニットにランダムに分散してXダメージを与える。"
+        "desc": "敵ユニットにランダムに分配してX点のダメージを与える。"
       },
       "cataclysme": {
         "label": "大災害 X",
-        "desc": "すべてのクリーチャー（味方・敵問わず）にXダメージを与える。"
+        "desc": "すべてのクリーチャー(味方・敵とも)にX点のダメージを与える。"
       },
       "affaiblissement": {
         "label": "弱体化 -X/-Y",
-        "desc": "対象の敵クリーチャーのATKを-X、HPを-Yする。"
+        "desc": "対象の敵クリーチャーに-X攻撃力と-YHPを与える。"
       },
       "renforcement": {
         "label": "強化 +X/+Y",
@@ -375,7 +375,7 @@
       },
       "douleur": {
         "label": "苦痛 X",
-        "desc": "自分のヒーローにXダメージを与える。"
+        "desc": "自分のヒーローにX点のダメージを与える。"
       },
       "inspiration": {
         "label": "霊感 X",
@@ -383,7 +383,7 @@
       },
       "concentration": {
         "label": "集中 X",
-        "desc": "手札の各呪文を、コストがXだけ高いランダムな呪文（全派閥）と入れ替える。新しい呪文のコストはXだけ減少する。"
+        "desc": "手札の呪文はすべて、コスト+Xのランダムな呪文(全陣営)に変化し、コストがX軽減される。"
       },
       "remontee": {
         "label": "帰還",
@@ -391,19 +391,19 @@
       },
       "renforcement_multiple": {
         "label": "集団強化",
-        "desc": "選択した種族またはクランのすべての自軍クリーチャーに+X/+Yを付与する。"
+        "desc": "選択した種族またはクランの自分のクリーチャーに+X/+Y。"
       },
       "entrainement": {
         "label": "訓練 X",
-        "desc": "手札にある同じ派閥のクリーチャーに+X/+Xを付与する。"
+        "desc": "手札にある自分の{faction_de}クリーチャーに+X/+X。"
       },
       "conferer": {
         "label": "付与",
-        "desc": "選択した能力を味方ユニット1体（またはすべて）に付与する。"
+        "desc": "{scope}に{ability}を付与する。"
       },
       "declenchement": {
         "label": "誘発",
-        "desc": "場にいる他の味方の複合誘発効果（登場／死亡／ターン終了／帰還）を一度再発動する。"
+        "desc": "他の味方の複合効果(登場時/死亡時/ターン終了時/帰還時)を1回再発動する。"
       }
     },
     "spell_keywords": {
@@ -417,19 +417,19 @@
       },
       "convocation_simple": {
         "label": "召喚",
-        "desc": "設定されたトークンを生成する。"
+        "desc": "{token}を生成する。"
       },
       "appel_du_clan": {
         "label": "氏族の呼び声 X",
-        "desc": "デッキからこの呪文と同じ氏族を持つコストX以下のユニット1体を無償で場に出す。"
+        "desc": "自分のデッキから、コストX以下の最初の{clan_de}ユニットを無料で場に出す。"
       },
       "appel_supreme": {
         "label": "至高の召喚",
-        "desc": "デッキに残る選択した種族のうち最もコストが高いクリーチャーを手札に加える（同コストの場合はランダム）。"
+        "desc": "自分のデッキの中で最もコストが高い{race}を手札に加える(同点の場合はランダム)。"
       },
       "rassemblement": {
         "label": "結集 X",
-        "desc": "デッキの上からX枚を公開し、この呪文と同じ種族のユニットを手札に加え、残りを捨てる。"
+        "desc": "デッキの上からX枚を公開し、{race_pl}を手札に残して残りを捨てる。"
       },
       "rappel": {
         "label": "帰還",
@@ -441,15 +441,15 @@
       },
       "selection": {
         "label": "選択 X",
-        "desc": "この呪文と同じ陣営のコモンカード3枚（コスト≤X）からランダムに1枚選んで手札に加える。"
+        "desc": "コストX以下の{alignment}のコモンを3枚公開し、その中から1枚を手札に加える"
       },
       "selection_magique": {
         "label": "魔法の選択 X",
-        "desc": "この呪文と同じ陣営のコモン呪文3枚（コスト≤X）からランダムに1枚選んで手札に加える。"
+        "desc": "コストX以下の{alignment}のコモン呪文を3枚公開し、その中から1枚を手札に加える"
       },
       "renfort_royal": {
         "label": "王家の選択 X",
-        "desc": "限定版カード（30枚以上必要、不足時は同陣営コモン）からコスト≤Xのランダムな3枚のうち1枚を選んで手札に加える。"
+        "desc": "コストX以下の限定カードを3枚公開する(デッキが30枚以上必要。それ未満の場合は{alignment}のコモンを3枚)。その中から1枚を残す"
       },
       "relancer": {
         "label": "再詠唱 X",
@@ -505,19 +505,19 @@
       },
       "renforcement_multiple": {
         "label": "集団強化",
-        "desc": "選択した種族またはクランの自軍クリーチャー全体に+X/+Yを与える。"
+        "desc": "選択した種族またはクランの自分のクリーチャーに+X/+Y。"
       },
       "entrainement": {
         "label": "鍛錬 X",
-        "desc": "手札にある同一ファクションのクリーチャーに+X/+Xを与える。"
+        "desc": "手札にある自分の{faction_de}クリーチャーに+X/+X。"
       },
       "concentration": {
         "label": "集中 X",
-        "desc": "手札の呪文をそれぞれコストがXだけ高いランダムな呪文（全ファクション）と交換する。新しい呪文のコストはXだけ減少する。"
+        "desc": "手札の呪文はすべて、コスト+Xのランダムな呪文(全陣営)に変化し、コストがX軽減される。"
       },
       "invocation_multiple": {
         "label": "複数召喚",
-        "desc": "カードの設定に応じて複数のトークンを生成する。"
+        "desc": "{tokens}を生成する。"
       },
       "tempete": {
         "label": "嵐 X",
@@ -612,6 +612,26 @@
         "grant_keyword": "能力を付与するクリーチャーを選んでください",
         "exhumation": "蘇生するクリーチャーを選んでください",
         "default": "対象を選んでください"
+      },
+      "self": {
+        "deal_damage_one": "自身に{x}ダメージを与える",
+        "deal_damage_many": "自身に{x}ダメージを与える",
+        "heal": "自身のHPを{x}回復する",
+        "buff": "自身に+{x}/+{y}を付与する",
+        "debuff": "自身に-{x}/-{y}を与える",
+        "destroy": "自身を破壊する",
+        "bounce": "自身を手札に戻す",
+        "paralyze": "自身を麻痺させる",
+        "grant_keyword": "自身に{ability}を付与する"
+      },
+      "targetd": {
+        "count_all": "すべてのユニット",
+        "count_one": "ユニット1体",
+        "count_n": "ユニット{n}体",
+        "hero_ally": "あなたのヒーロー",
+        "hero_enemy": "敵ヒーロー",
+        "both_all": "すべてのユニットと{side}ヒーロー",
+        "both_one": "対象1つ(ユニットまたはヒーロー){side}"
       }
     },
     "factions": {
@@ -675,12 +695,15 @@
       "Les Hordes des Steppes": "草原の大軍団",
       "L'Empire de Jade": "翡翠帝国",
       "Les Lames de l'Ombre": "影の刃",
+      "Les Défenseurs d'Ivoire": "象牙の守護者",
       "Les Enfants du Soleil": "太陽の子ら",
       "Les Seigneurs des Dunes": "砂丘の覇者",
       "Le Royaume des Masques": "仮面の王国",
+      "Les Fils du Volcan": "火山の子らよ",
       "Le Royaume du Nord": "北方王国",
       "L'Ordre de l'Aube": "暁の騎士団",
       "Les Guerrières du Vent": "風の戦士団",
+      "La Sublime Porte": "崇高なる門",
       "Les Seigneurs Fauves": "野獣の君主たち",
       "Les Enfants de la Lune": "月の子ら",
       "Le Pacte des Griffes": "鉤爪の盟約",
@@ -696,10 +719,7 @@
       "Les Cohortes Sanglantes": "血塗られた大隊",
       "Les Princes des Abîmes": "奈落の王子たち",
       "La Forêt Maudite": "呪われた森",
-      "La Garde Noire": "黒の衛兵団",
-      "Les Défenseurs d'Ivoire": "象牙の守護者",
-      "Les Fils du Volcan": "火山の子らよ",
-      "La Sublime Porte": "崇高なる門"
+      "La Garde Noire": "黒の衛兵団"
     },
     "races": {
       "Elfes": "エルフ",
@@ -749,6 +769,283 @@
       "neutre": "中立",
       "maléfique": "悪",
       "spéciale": "特殊"
+    },
+    "races_forms": {
+      "Elfes": {
+        "def": "エルフ",
+        "bare": "エルフ",
+        "de": "エルフ"
+      },
+      "Fées": {
+        "def": "妖精",
+        "bare": "妖精",
+        "de": "妖精"
+      },
+      "Aigles Géants": {
+        "def": "巨大鷲",
+        "bare": "巨大鷲",
+        "de": "巨大鷲"
+      },
+      "Hobbits": {
+        "def": "ホビット",
+        "bare": "ホビット",
+        "de": "ホビット"
+      },
+      "Hommes-Arbres": {
+        "def": "トレント",
+        "bare": "トレント",
+        "de": "トレント"
+      },
+      "Nains": {
+        "def": "ドワーフ",
+        "bare": "ドワーフ",
+        "de": "ドワーフ"
+      },
+      "Golems": {
+        "def": "ゴーレム",
+        "bare": "ゴーレム",
+        "de": "ゴーレム"
+      },
+      "Gnomes": {
+        "def": "ノーム",
+        "bare": "ノーム",
+        "de": "ノーム"
+      },
+      "Humains": {
+        "def": "人間",
+        "bare": "人間",
+        "de": "人間"
+      },
+      "Hommes-Loups": {
+        "def": "狼男",
+        "bare": "狼男",
+        "de": "狼男"
+      },
+      "Hommes-Ours": {
+        "def": "熊男",
+        "bare": "熊男",
+        "de": "熊男"
+      },
+      "Hommes-Félins": {
+        "def": "猫男",
+        "bare": "猫男",
+        "de": "猫男"
+      },
+      "Centaures": {
+        "def": "ケンタウロス",
+        "bare": "ケンタウロス",
+        "de": "ケンタウロス"
+      },
+      "Mimis": {
+        "def": "ミミック",
+        "bare": "ミミック",
+        "de": "ミミック"
+      },
+      "Hommes-Chiens": {
+        "def": "犬男",
+        "bare": "犬男",
+        "de": "犬男"
+      },
+      "Hommes-Renards": {
+        "def": "狐男",
+        "bare": "狐男",
+        "de": "狐男"
+      },
+      "Hommes-Cerfs": {
+        "def": "鹿男",
+        "bare": "鹿人",
+        "de": "鹿人"
+      },
+      "Élémentaire": {
+        "def": "エレメンタル",
+        "bare": "エレメンタル",
+        "de": "エレメンタル",
+        "pl": "エレメンタル"
+      },
+      "Géants": {
+        "def": "巨人",
+        "bare": "巨人",
+        "de": "巨人"
+      },
+      "Ogres": {
+        "def": "オーガ",
+        "bare": "オーガ",
+        "de": "オーガ"
+      },
+      "Dragons": {
+        "def": "ドラゴン",
+        "bare": "ドラゴン",
+        "de": "ドラゴン"
+      },
+      "Chiens": {
+        "def": "犬",
+        "bare": "犬",
+        "de": "犬"
+      },
+      "Phoenix": {
+        "def": "フェニックス",
+        "bare": "フェニックス",
+        "de": "フェニックス"
+      },
+      "Anges": {
+        "def": "天使",
+        "bare": "天使",
+        "de": "天使"
+      },
+      "Ours": {
+        "def": "熊",
+        "bare": "熊",
+        "de": "熊"
+      },
+      "Loups": {
+        "def": "狼",
+        "bare": "狼",
+        "de": "狼"
+      },
+      "Fauves": {
+        "def": "猛獣",
+        "bare": "猛獣",
+        "de": "猛獣"
+      },
+      "Squelettes": {
+        "def": "スケルトン",
+        "bare": "スケルトン",
+        "de": "スケルトン"
+      },
+      "Zombies": {
+        "def": "ゾンビ",
+        "bare": "ゾンビ",
+        "de": "ゾンビ"
+      },
+      "Spectres": {
+        "def": "スペクター",
+        "bare": "スペクター",
+        "de": "スペクターの"
+      },
+      "Vampires": {
+        "def": "ヴァンパイア",
+        "bare": "ヴァンパイア",
+        "de": "ヴァンパイアの"
+      },
+      "Lich": {
+        "def": "リッチ",
+        "bare": "リッチ",
+        "de": "リッチの"
+      },
+      "Banshees": {
+        "def": "バンシー",
+        "bare": "バンシー",
+        "de": "バンシーの"
+      },
+      "Elfes Corrompus": {
+        "def": "堕落したエルフ",
+        "bare": "堕落したエルフ",
+        "de": "堕落したエルフの"
+      },
+      "Araignées Géantes": {
+        "def": "巨大蜘蛛",
+        "bare": "巨大蜘蛛",
+        "de": "巨大蜘蛛の"
+      },
+      "Démons": {
+        "def": "デーモン",
+        "bare": "デーモン",
+        "de": "デーモンの"
+      },
+      "Orcs": {
+        "def": "オーク",
+        "bare": "オーク",
+        "de": "オークの"
+      },
+      "Gobelins": {
+        "def": "ゴブリン",
+        "bare": "ゴブリン",
+        "de": "ゴブリンの"
+      },
+      "Trolls": {
+        "def": "トロール",
+        "bare": "トロール",
+        "de": "トロールの"
+      },
+      "Wargs": {
+        "def": "ワーグ",
+        "bare": "ワーグ",
+        "de": "ワーグの"
+      },
+      "Guerriers du Chaos": {
+        "def": "カオス戦士",
+        "bare": "カオス戦士",
+        "de": "カオス戦士の"
+      }
+    },
+    "clans_forms": {
+      "Les Sylvains": "シルヴァンの",
+      "Les Hauts-Elfes": "ハイエルフの",
+      "La Forêt d'Émeraude": "エメラルドの森の",
+      "La Combe Verte": "緑の谷の",
+      "Les Gardiens de la Montagne": "山の守護者の",
+      "La Forge Ardente": "灼熱の鍛冶場",
+      "Les Sentinelles d'Airain": "青銅の哨兵",
+      "La Guilde des Ingénieurs": "技師ギルド",
+      "Les Hordes des Steppes": "草原の大群",
+      "L'Empire de Jade": "翡翠帝国",
+      "Les Lames de l'Ombre": "影の刃",
+      "Les Défenseurs d'Ivoire": "象牙の守護者",
+      "Les Enfants du Soleil": "太陽の子",
+      "Les Seigneurs des Dunes": "砂丘の領主",
+      "Le Royaume des Masques": "仮面の王国",
+      "Les Fils du Volcan": "火山の子ら",
+      "Le Royaume du Nord": "北方王国",
+      "L'Ordre de l'Aube": "暁の教団",
+      "Les Guerrières du Vent": "風の戦士たち",
+      "La Sublime Porte": "崇高なる門",
+      "Les Seigneurs Fauves": "猛獣の王",
+      "Les Enfants de la Lune": "月の子ら",
+      "Le Pacte des Griffes": "鉤爪の盟約",
+      "La Harde Sauvage": "野生の群れ",
+      "La Colère des Flammes": "炎の怒り",
+      "Le Socle du Monde": "世界の礎",
+      "La Vague Sans Fin": "果てなき波",
+      "Le Souffle des Cimes": "頂の息吹",
+      "Les Rangs Silencieux": "静寂の隊列",
+      "Le Voile Hurlant": "咆哮の帳",
+      "La Cour Écarlate": "緋色の宮廷",
+      "Le Cénacle Nécromant": "死霊術師の会",
+      "Les Cohortes Sanglantes": "血まみれの軍団",
+      "Les Princes des Abîmes": "深淵の王子たち",
+      "La Forêt Maudite": "呪われし森",
+      "La Garde Noire": "黒の親衛隊"
+    },
+    "factions_forms": {
+      "Elfes": "天空の同盟",
+      "Nains": "鍛冶の同胞団",
+      "EmpireDuMilieu": "中央帝国",
+      "RoyaumesDuSoleil": "太陽の王国たち",
+      "Humains": "自由王国",
+      "Hommes-Bêtes": "群れ",
+      "Élémentaires": "原初の者たち",
+      "Mercenaires": "傭兵団",
+      "Morts-Vivants": "ネクロポリス",
+      "Elfes Noirs": "カオス軍団"
+    },
+    "markers": {
+      "race": "選ばれた種族のクリーチャー",
+      "race_bare": "同じ種族の",
+      "race_de": "同じ種族の",
+      "race_pl": "同じ種族のユニット",
+      "clan": "あなたのクラン",
+      "clan_de": "同じクランの",
+      "faction": "あなたの陣営",
+      "faction_de": "同じ陣営の",
+      "alignment": "同じ属性の",
+      "alignment_of": "{a}属性の",
+      "token": "設定されたトークン",
+      "tokens": "複数のトークン",
+      "lycanthrope": "X/Xのトークン",
+      "ability": "能力",
+      "scope": "味方ユニット1体（または全体）に",
+      "scope_target": "味方ユニット1体に",
+      "scope_all": "あなたの全ユニットに"
     },
     "sets": {
       "1": "基本セット"
@@ -1463,7 +1760,7 @@
     "zone_deck_opponent": "相手のデッキ",
     "zone_graveyard_yours": "自分の墓地",
     "zone_graveyard_opponent": "相手の墓地",
-    "convocation_prefix": "{content} を生成",
+    "convocation_prefix": "{content}を生成",
     "convocation_create_list": "{content} を生成",
     "convocation_token_one": "{token} {atk}/{hp} トークン×1",
     "convocation_token_many": "{token} {atk}/{hp} トークン×{count}",

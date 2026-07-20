@@ -47,7 +47,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               "Bombe",
               "Enragé",
               "Mur",
-              "Mana Spark",
+              "Etincelle de Mana",
             ],
             "handCount": 5,
             "hero": {
@@ -111,7 +111,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               "Bombe",
               "Enragé",
               "Mur",
-              "Mana Spark",
+              "Etincelle de Mana",
               "Enragé",
             ],
             "handCount": 6,
@@ -171,7 +171,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 47,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
             ],
             "hand": [
               "Spectre",
@@ -283,7 +283,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 47,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
             ],
             "hand": [
               "Spectre",
@@ -395,7 +395,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 47,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
             ],
             "hand": [
               "Spectre",
@@ -508,7 +508,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 47,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
             ],
             "hand": [
               "Spectre",
@@ -621,7 +621,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 46,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
             ],
             "hand": [
               "Spectre",
@@ -735,7 +735,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 46,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
             ],
             "hand": [
               "Spectre",
@@ -850,7 +850,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 46,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
             ],
             "hand": [
               "Spectre",
@@ -1010,7 +1010,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 46,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
             ],
             "hand": [
               "Spectre",
@@ -1170,7 +1170,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 45,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
             ],
             "hand": [
               "Spectre",
@@ -1376,7 +1376,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 45,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
             ],
             "hand": [
               "Bombe",
@@ -1581,7 +1581,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 45,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
             ],
             "hand": [
               "Bombe",
@@ -1787,7 +1787,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 45,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
             ],
             "hand": [
               "Bombe",
@@ -1994,7 +1994,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 45,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
             ],
             "hand": [
               "Bombe",
@@ -2110,7 +2110,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 45,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
             ],
             "hand": [
@@ -2227,7 +2227,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 44,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
             ],
             "hand": [
@@ -2390,7 +2390,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 44,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
             ],
             "hand": [
@@ -2552,7 +2552,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 44,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
             ],
             "hand": [
@@ -2715,7 +2715,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 44,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
             ],
             "hand": [
@@ -2923,7 +2923,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 44,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
             ],
             "hand": [
@@ -3131,7 +3131,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 43,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
             ],
             "hand": [
@@ -3385,7 +3385,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 43,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
             ],
             "hand": [
@@ -3593,7 +3593,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 43,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
             ],
@@ -3712,7 +3712,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 43,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -3833,7 +3833,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 43,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -3908,7 +3908,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 43,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -3984,7 +3984,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 43,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -4060,7 +4060,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 42,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -4183,7 +4183,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 42,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -4305,7 +4305,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 42,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -4428,7 +4428,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 42,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -4596,7 +4596,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 42,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -4765,7 +4765,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 42,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -4934,7 +4934,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 41,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -5149,7 +5149,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 41,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -5408,7 +5408,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 41,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -5575,7 +5575,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 41,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -5744,7 +5744,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 41,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -5958,7 +5958,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 41,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -6216,7 +6216,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 41,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -6474,7 +6474,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 40,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -6778,7 +6778,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 40,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -7081,7 +7081,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 40,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -7339,7 +7339,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 40,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -7509,7 +7509,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 40,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -7681,7 +7681,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 40,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -7897,7 +7897,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 40,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -8157,7 +8157,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 40,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -8417,7 +8417,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 40,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -8677,7 +8677,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 39,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -8983,7 +8983,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 39,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -9333,7 +9333,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 39,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -9682,7 +9682,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 39,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -10032,7 +10032,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 39,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -10337,7 +10337,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 39,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -10642,7 +10642,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 39,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -10947,7 +10947,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 39,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -11207,7 +11207,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 39,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -11468,7 +11468,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 39,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -11729,7 +11729,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 38,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -12036,7 +12036,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 38,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -12387,7 +12387,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 38,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -12647,7 +12647,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 38,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -12910,7 +12910,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 38,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -13216,7 +13216,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 38,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -13478,7 +13478,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 38,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -13651,7 +13651,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 38,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -13825,7 +13825,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 37,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -14001,7 +14001,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 37,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -14131,7 +14131,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 37,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -14263,7 +14263,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 37,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -14439,7 +14439,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 37,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -14615,7 +14615,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 36,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -14838,7 +14838,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 36,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -14969,7 +14969,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 36,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -15103,7 +15103,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 36,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -15281,7 +15281,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 36,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -15459,7 +15459,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 35,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -15684,7 +15684,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 35,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -15862,7 +15862,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 35,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -16042,7 +16042,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 35,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -16266,7 +16266,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 35,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -16490,7 +16490,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 34,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -16761,7 +16761,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 34,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -16985,7 +16985,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 34,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -17120,7 +17120,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 34,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -17258,7 +17258,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 34,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -17440,7 +17440,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 34,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -17622,7 +17622,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 33,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -17851,7 +17851,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 32,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -18125,7 +18125,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 32,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -18397,7 +18397,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 32,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -18671,7 +18671,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 32,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -18988,7 +18988,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 32,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -19346,7 +19346,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 32,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -19705,7 +19705,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 31,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -20111,7 +20111,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 31,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -20426,7 +20426,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 31,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -20742,7 +20742,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 31,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -20970,7 +20970,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 31,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -21199,7 +21199,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 31,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -21428,7 +21428,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 31,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -21659,7 +21659,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 31,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -21934,7 +21934,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 31,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -22209,7 +22209,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 30,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -22486,7 +22486,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 30,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -22759,7 +22759,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 30,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -22948,7 +22948,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 30,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -23095,7 +23095,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 30,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -23244,7 +23244,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 30,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -23346,7 +23346,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 30,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -23449,7 +23449,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 29,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -23600,7 +23600,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 29,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -23751,7 +23751,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 29,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -23946,7 +23946,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 29,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -24141,7 +24141,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 28,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -24383,7 +24383,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 28,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -24533,7 +24533,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 28,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -24686,7 +24686,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 28,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -24883,7 +24883,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 28,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -25080,7 +25080,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 27,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -25324,7 +25324,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 27,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -25566,7 +25566,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 27,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -25810,7 +25810,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 27,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -26097,7 +26097,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 27,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -26295,7 +26295,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 27,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -26494,7 +26494,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 26,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -26740,7 +26740,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 26,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -26894,7 +26894,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 26,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -27051,7 +27051,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 26,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -27252,7 +27252,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 26,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -27453,7 +27453,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 25,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -27699,7 +27699,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 25,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -27898,7 +27898,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 25,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -28100,7 +28100,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 25,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -28345,7 +28345,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 25,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -28590,7 +28590,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 25,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -28835,7 +28835,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 24,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -29127,7 +29127,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 24,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -29374,7 +29374,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 24,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -29624,7 +29624,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 24,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -29917,7 +29917,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 24,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -30210,7 +30210,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 24,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -30457,7 +30457,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 24,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -30705,7 +30705,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 23,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -30822,7 +30822,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 23,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -30940,7 +30940,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 23,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -31102,7 +31102,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 23,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -31264,7 +31264,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 22,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -31474,7 +31474,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 22,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -31684,7 +31684,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 22,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -31847,7 +31847,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 22,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -32011,7 +32011,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 22,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -32175,7 +32175,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 21,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -32387,7 +32387,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 21,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -32599,7 +32599,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 21,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -32854,7 +32854,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 21,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -33019,7 +33019,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 21,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -33185,7 +33185,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 21,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -33351,7 +33351,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 20,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -33521,7 +33521,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 20,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -33690,7 +33690,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 20,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -33859,7 +33859,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 20,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -34028,7 +34028,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 19,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -34200,7 +34200,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 19,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -34413,7 +34413,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 19,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -34626,7 +34626,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 19,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -34839,7 +34839,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 18,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -35055,7 +35055,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 18,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -35314,7 +35314,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 18,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -35573,7 +35573,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 18,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -35832,7 +35832,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 18,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -36091,7 +36091,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 17,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -36397,7 +36397,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 17,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -36702,7 +36702,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 17,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -37008,7 +37008,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 17,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -37314,7 +37314,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 17,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -37621,7 +37621,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 17,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -37971,7 +37971,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 17,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -38277,7 +38277,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 17,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -38541,7 +38541,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 17,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -38761,7 +38761,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 17,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",
@@ -38981,7 +38981,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "deckCount": 16,
             "fatigueDamage": 0,
             "graveyard": [
-              "Mana Spark",
+              "Etincelle de Mana",
               "Mur",
               "Spectre",
               "Bombe",

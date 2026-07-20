@@ -534,25 +534,16 @@ export default function GameCard({
           return (
           <div style={{ display: "flex", flexDirection: "column", gap: 6 * s }}>
             {entries.map((entry, idx) => {
-              const { kw, x, mode } = entry;
-              const label = vocab.keywordLabel(kw);
+              const { kw, x, mode, instance } = entry;
+              const ctx = { card, instance, x, tokens: effectiveTokens };
+              const label = vocab.keywordLabelFor(kw, ctx);
               // Plus d'annotation de déclencheur (« · fin du tour »…) dans le label :
               // la couleur de l'icône/du texte la transmet, le descriptif est allégé.
               const displayLabel = x != null ? label.replace(/ X$/, ` ${xNumeral(x)}`) : label;
-              let desc = vocab.keywordDesc(kw, x);
-              if (kw === "convocations_multiples" && card.convocation_tokens?.length) {
-                desc = vocab.convocationPrefix(vocab.convocationTokens(card.convocation_tokens, effectiveTokens));
-              } else if (kw === "convocation" || kw === "convocation_simple") {
-                const tokenStr = vocab.convocationToken(card.convocation_token_id, effectiveTokens, kw === "convocation" ? x : null);
-                if (tokenStr) desc = vocab.convocationPrefix(tokenStr);
-              }
+              const desc = vocab.keywordDesc(kw, ctx);
               // Conferred-keyword scope on a spell: green for "all allies".
-              const grantScope = !isCreature
-                ? (card.keyword_instances?.find((k) => k.id === kw)?.grantScope ?? "target")
-                : null;
-              const scopeNote = grantScope === "all_allies"
-                ? "Conférée à toutes les unités alliées."
-                : grantScope === "target" ? "Conférée à la créature ciblée." : null;
+              const grantScope = !isCreature ? (instance?.grantScope ?? "target") : null;
+              const scopeNote = vocab.keywordScopeNote(grantScope);
               const modeColor = keywordModeColor(mode);
               // Nom = couleur de l'icône : teinte de mode si présente, sinon BLANC
               // (l'icône d'un effet persistant/passif est une silhouette blanche).

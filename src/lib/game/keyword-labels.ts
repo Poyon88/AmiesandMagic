@@ -112,6 +112,11 @@ export interface KeywordDisplayEntry {
    *  (tap activation). Undefined for legacy entries derived from the
    *  `keywords` string array only. */
   instanceIdx?: number;
+  /** Instance source, NON tronquée : porte race/clan ciblés, grantScope et
+   *  grantAbilityId dont les descriptions ont besoin pour nommer la valeur
+   *  concrète (cf. keyword-display.ts). Undefined pour les entrées legacy
+   *  issues du tableau `keywords` — c'est le cas de repli générique. */
+  instance?: KeywordInstance;
 }
 
 /** Build the per-icon display list for a creature card. Each entry maps
@@ -134,6 +139,7 @@ export function buildKeywordDisplayEntries(
       x: inst.x ?? (inst.mode === undefined ? xFromText[inst.id] : undefined),
       mode: inst.mode ?? defaultDisplayMode(inst.id),
       instanceIdx: i,
+      instance: inst,
     });
   }
   for (const kw of card.keywords) {

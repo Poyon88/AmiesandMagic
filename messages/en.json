@@ -23,11 +23,11 @@
       },
       "convocations_multiples": {
         "label": "Multi-Summon",
-        "desc": "Creates multiple tokens based on configuration."
+        "desc": "Creates {tokens}."
       },
       "loyaute": {
         "label": "Loyalty",
-        "desc": "+1 ATK and +1 HP for each allied unit of the same race in play."
+        "desc": "+1/+1 per {race_bare} ally in play."
       },
       "ancre": {
         "label": "Anchored",
@@ -91,7 +91,7 @@
       },
       "rappel": {
         "label": "Recall",
-        "desc": "Return a target card from your graveyard to your hand."
+        "desc": "Return a targeted card from your graveyard to your hand."
       },
       "combustion": {
         "label": "Combustion",
@@ -103,7 +103,7 @@
       },
       "pauvrete": {
         "label": "Poverty X",
-        "desc": "This unit loses ATK equal to the number of cards in the opponent's hand (X = opponent's hand size, dynamic)."
+        "desc": "Loses as much ATK as the opponent has cards in hand (dynamic)."
       },
       "armure": {
         "label": "Armor",
@@ -111,11 +111,11 @@
       },
       "commandement": {
         "label": "Command",
-        "desc": "Allied units of the same faction gain +1/+1."
+        "desc": "+1/+1 to your {faction_de} allies."
       },
       "fureur": {
         "label": "Fury",
-        "desc": "After taking damage, immediately attacks a random enemy unit (or the hero if none remain). Triggers at most once per turn."
+        "desc": "After taking damage, attacks a random enemy unit (the hero if none). Once per turn."
       },
       "double_attaque": {
         "label": "Double Strike",
@@ -131,15 +131,15 @@
       },
       "contresort": {
         "label": "Counterspell",
-        "desc": "Counters the next enemy spell."
+        "desc": "Cancels the next enemy spell."
       },
       "convocation": {
         "label": "Summon X",
-        "desc": "Creates an X/X token of the indicated race."
+        "desc": "Creates {token}."
       },
       "convocation_simple": {
         "label": "Summon",
-        "desc": "Creates the configured token."
+        "desc": "Creates {token}."
       },
       "malediction": {
         "label": "Curse",
@@ -155,15 +155,15 @@
       },
       "sacrifice_demoniaque": {
         "label": "Demonic Sacrifice X",
-        "desc": "When this unit dies, randomly distributes X cost reductions (-1 mana each) among the Demons in your hand. A Demon cannot cost less than 1."
+        "desc": "On death, distributes X -1 mana reductions among the Demons in your hand (min. 1)."
       },
       "paralysie": {
         "label": "Paralysis",
-        "desc": "Units damaged by this creature cannot attack or use active abilities until the end of their controller's next turn."
+        "desc": "Units it damages can neither attack nor activate abilities until the end of their next turn."
       },
       "permutation": {
         "label": "Permutation",
-        "desc": "Swap the current HP of two target units (one ally and one enemy)."
+        "desc": "Swaps the current HP of two targeted units (one ally and one enemy)."
       },
       "persecution": {
         "label": "Persecution X",
@@ -171,19 +171,19 @@
       },
       "pietinement": {
         "label": "Trample",
-        "desc": "When this unit attacks a creature, excess damage (beyond the target's remaining HP) is dealt to the enemy hero."
+        "desc": "When attacking, damage exceeding the targeted creature's HP is dealt to the enemy hero."
       },
       "catalyse": {
         "label": "Catalysis",
-        "desc": "Reduce the mana cost of all units of the same race in your hand by 1."
+        "desc": "Your {race_pl} in hand cost 1 less mana."
       },
       "ombre_du_passe": {
         "label": "Shadow of the Past",
-        "desc": "Gain +1 ATK and +1 HP for each unit of the same race in your graveyard."
+        "desc": "+1/+1 per {race_bare} unit in your graveyard."
       },
       "profanation": {
         "label": "Desecration X",
-        "desc": "Exile the last X cards from your graveyard to grant up to +X/+X to the unit."
+        "desc": "Exiles the last X cards from your graveyard to grant up to +X/+X to the unit."
       },
       "prescience": {
         "label": "Prescience X",
@@ -191,15 +191,15 @@
       },
       "suprematie": {
         "label": "Supremacy",
-        "desc": "Gain +1 ATK and +1 HP for each card in your hand at the time of summoning."
+        "desc": "Gains +1 ATK and +1 HP per card in your hand at the time of summoning."
       },
       "divination": {
         "label": "Divination",
-        "desc": "Reveal the top 3 cards of your deck; place one on top and the other 2 at the bottom in any order."
+        "desc": "Reveals the top 3 cards of your deck; place 1 back on top and 2 on the bottom, in the chosen order."
       },
       "savant": {
         "label": "Savant",
-        "desc": "Gain +1 ATK and +1 HP for each spell in your graveyard."
+        "desc": "Gains +1 ATK and +1 HP per spell in your graveyard."
       },
       "liaison_de_vie": {
         "label": "Lifebond",
@@ -231,7 +231,7 @@
       },
       "carnage": {
         "label": "Carnage X",
-        "desc": "Deal X damage to all units in play (allies and enemies)."
+        "desc": "Deals X damage to all units in play (allied and enemy)."
       },
       "heritage": {
         "label": "Legacy X",
@@ -239,11 +239,11 @@
       },
       "mimique": {
         "label": "Mimic",
-        "desc": "Copy all abilities of a target unit and permanently grant them to this unit."
+        "desc": "Copies all abilities of a targeted unit and permanently grants them to this unit."
       },
       "metamorphose": {
         "label": "Metamorphosis",
-        "desc": "This unit becomes an exact copy (ATK / HP / abilities) of a target unit."
+        "desc": "This unit becomes an exact copy (ATK / HP / abilities) of a targeted unit."
       },
       "dedoublement": {
         "label": "Doubling",
@@ -251,19 +251,19 @@
       },
       "tactique": {
         "label": "Tactics X",
-        "desc": "Permanently grant X chosen ability(ies) to a target allied unit."
+        "desc": "Permanently grants X chosen ability(ies) to a targeted allied unit."
       },
       "exhumation": {
         "label": "Exhumation X",
-        "desc": "Resurrect a unit from your graveyard with a mana cost equal to or less than X."
+        "desc": "Resurrects a unit from your graveyard whose mana cost is equal to or less than X."
       },
       "heritage_du_cimetiere": {
         "label": "Graveyard Legacy",
-        "desc": "Grant this unit the abilities of a target unit in your graveyard."
+        "desc": "Grants this unit the abilities of a targeted unit in your graveyard."
       },
       "pacte_de_sang": {
         "label": "Blood Pact",
-        "desc": "When this unit dies, summon two 1/1 tokens of its race."
+        "desc": "On death, summons two 1/1 tokens of its race."
       },
       "souffle_de_feu": {
         "label": "Fire Breath X",
@@ -283,11 +283,11 @@
       },
       "vampirisme": {
         "label": "Vampirism X",
-        "desc": "Steal X HP from a target enemy unit and add them to this unit's HP."
+        "desc": "Steals X HP from a targeted enemy unit and adds it to this unit's HP."
       },
       "traque_du_destin": {
         "label": "Fate Hunt X",
-        "desc": "Reveal the top X cards of your deck, take one into your hand and place the rest at the bottom in a random order."
+        "desc": "Reveals the top X cards of your deck; keep one in hand, place the rest back on the bottom at random."
       },
       "sang_mele": {
         "label": "Mixed Blood",
@@ -295,75 +295,75 @@
       },
       "fierte_du_clan": {
         "label": "Clan Pride",
-        "desc": "While this unit is in play, units of the same clan enter with +1/+1."
+        "desc": "While in play, your summoned {clan_de} units arrive with +1/+1."
       },
       "solidarite": {
         "label": "Solidarity X",
-        "desc": "Draw X cards if you control 2 other units of the same race."
+        "desc": "Draw X cards if you control 2 other {race_bare} units."
       },
       "entraide": {
         "label": "Mutual Aid",
-        "desc": "Costs 1 less mana per allied unit of the chosen race in play (cumulative, minimum 0)."
+        "desc": "Costs 1 less mana per {race_bare} ally in play (stackable, min. 0)."
       },
       "cycle_eternel": {
         "label": "Eternal Cycle",
-        "desc": "Add a copy of this card to your deck; if drawn, put it directly into play."
+        "desc": "Adds a copy of this card to your deck; if drawn, put it directly into play."
       },
       "martyr": {
         "label": "Martyr",
-        "desc": "All your units of the same race in play permanently gain +1/+1."
+        "desc": "Permanent +1/+1 to your {race_pl} in play."
       },
       "instinct_de_meute": {
         "label": "Pack Instinct X",
-        "desc": "Gain +X ATK and +X HP if an allied unit of the same faction went from play to the graveyard this turn."
+        "desc": "+X/+X if a {faction_de} ally died this turn."
       },
       "totem": {
         "label": "Totem",
-        "desc": "This unit gains the abilities of all allied units of the same race in play."
+        "desc": "Gains the abilities of your {race_pl} in play."
       },
       "appel_du_clan": {
         "label": "Clan Call X",
-        "desc": "Put the first unit of the same clan with a cost equal to or less than X from the top of your deck into play for free."
+        "desc": "Puts into play for free the 1st {clan_de} unit with cost ≤ X from the top of your deck."
       },
       "appel_supreme": {
         "label": "Supreme Call",
-        "desc": "Add to your hand the highest mana cost unit of the chosen race remaining in your deck (random if tied)."
+        "desc": "Adds {race} with the highest cost from your deck to your hand (random if tied)."
       },
       "rassemblement": {
         "label": "Rally X",
-        "desc": "Reveal the top X cards of your deck; add all units of the same race to your hand and discard the rest."
+        "desc": "Reveal the top X cards of your deck; keep the {race_pl} in hand, discard the rest."
       },
       "selection": {
         "label": "Selection X",
-        "desc": "Reveal 3 random common cards with cost ≤ X from factions sharing this card's alignment; add one to your hand."
+        "desc": "Reveal 3 {alignment} commons with cost ≤ X; add one to your hand."
       },
       "selection_magique": {
         "label": "Arcane Selection X",
-        "desc": "Reveal 3 random common spells with cost ≤ X from factions sharing this card's alignment; add one to your hand."
+        "desc": "Reveal 3 {alignment} common spells with cost ≤ X; add one to your hand."
       },
       "renfort_royal": {
         "label": "Royal Selection X",
-        "desc": "Reveal 3 random cards from your limited editions (≥30 required; otherwise from commons of the same alignment) with cost ≤ X; add one to your hand."
+        "desc": "Reveal 3 of your limited editions with cost ≤ X (≥30 required; otherwise 3 {alignment} commons); keep one."
       },
       "lycanthropie": {
         "label": "Lycanthropy X",
-        "desc": "Transforms into an X/X token with Stalk."
+        "desc": "Transforms into {lycanthrope} with Hunt."
       },
       "relancer": {
         "label": "Reroll X",
-        "desc": "Replay the last X spells cast with random targets."
+        "desc": "Replays the last X spells cast with random targets."
       },
       "tempete": {
         "label": "Storm X",
-        "desc": "Deal X damage distributed randomly among enemy units."
+        "desc": "Deals X damage randomly distributed among enemy units."
       },
       "cataclysme": {
         "label": "Cataclysm X",
-        "desc": "Deal X damage to all creatures (allied AND enemy)."
+        "desc": "Deals X damage to all creatures (allied AND enemy)."
       },
       "affaiblissement": {
         "label": "Weaken -X/-Y",
-        "desc": "Give -X ATK and -Y HP to a targeted enemy creature."
+        "desc": "Gives -X ATK and -Y HP to a targeted enemy creature."
       },
       "renforcement": {
         "label": "Strengthen +X/+Y",
@@ -375,7 +375,7 @@
       },
       "douleur": {
         "label": "Pain X",
-        "desc": "Deal X damage to your hero."
+        "desc": "Deals X damage to your hero."
       },
       "inspiration": {
         "label": "Inspiration X",
@@ -383,7 +383,7 @@
       },
       "concentration": {
         "label": "Focus X",
-        "desc": "Replace each spell in hand with a random spell (any faction) costing X more; reduce the new spell's cost by X."
+        "desc": "Each spell in hand becomes a random spell with cost +X, reduced by X (all factions)."
       },
       "remontee": {
         "label": "Comeback",
@@ -391,19 +391,19 @@
       },
       "renforcement_multiple": {
         "label": "Multi-Strengthen",
-        "desc": "Grant +X/+Y to all your creatures of the selected race or clan."
+        "desc": "+X/+Y to your creatures of the chosen race or clan."
       },
       "entrainement": {
         "label": "Training X",
-        "desc": "Grant +X/+X to your creatures of the same faction in hand."
+        "desc": "+X/+X to your {faction_de} creatures in hand."
       },
       "conferer": {
         "label": "Bestow",
-        "desc": "Grant a chosen ability to an allied unit (or to all of them)."
+        "desc": "Grants {ability} {scope}."
       },
       "declenchement": {
         "label": "Trigger",
-        "desc": "Replay once the triggered compound effects of other allies in play, for a fixed subset of triggers (enter / death / end of turn / return)."
+        "desc": "Replays once the compound effects of your other allies (entry / death / end of turn / return)."
       }
     },
     "spell_keywords": {
@@ -417,19 +417,19 @@
       },
       "convocation_simple": {
         "label": "Summon",
-        "desc": "Creates the configured token."
+        "desc": "Creates {token}."
       },
       "appel_du_clan": {
         "label": "Clan Call X",
-        "desc": "Deploy for free the first unit of the same clan as this spell, with a cost equal to or less than X, from your deck."
+        "desc": "Puts into play for free the 1st {clan_de} unit with cost ≤ X from your deck."
       },
       "appel_supreme": {
         "label": "Supreme Call",
-        "desc": "Add to your hand the highest-cost creature of the chosen race remaining in your deck (random if tied)."
+        "desc": "Adds {race} with the highest cost from your deck to your hand (random if tied)."
       },
       "rassemblement": {
         "label": "Rally X",
-        "desc": "Reveal the top X cards of your deck; add units of the same race as this spell to your hand and discard the rest."
+        "desc": "Reveal the top X cards of your deck; keep the {race_pl} in hand, discard the rest."
       },
       "rappel": {
         "label": "Recall",
@@ -441,15 +441,15 @@
       },
       "selection": {
         "label": "Selection X",
-        "desc": "Choose one card from 3 random commons with cost ≤ X, from factions of the same alignment as this spell, to add to your hand."
+        "desc": "Reveal 3 {alignment} commons with cost ≤ X; add one to your hand"
       },
       "selection_magique": {
         "label": "Magic Selection X",
-        "desc": "Choose one spell from 3 random common spells with cost ≤ X, from factions of the same alignment as this spell, to add to your hand."
+        "desc": "Reveal 3 {alignment} common spells with cost ≤ X; add one to your hand"
       },
       "renfort_royal": {
         "label": "Royal Selection X",
-        "desc": "Choose one card from 3 random cards from your limited editions (≥30 required; otherwise from commons of the same alignment) with cost ≤ X to add to your hand."
+        "desc": "Reveal 3 of your limited editions with cost ≤ X (≥30 required; otherwise 3 {alignment} commons); keep one"
       },
       "relancer": {
         "label": "Recast X",
@@ -505,19 +505,19 @@
       },
       "renforcement_multiple": {
         "label": "Mass Reinforcement",
-        "desc": "Grants +X/+Y to all your creatures of the selected race or clan."
+        "desc": "+X/+Y to your creatures of the chosen race or clan."
       },
       "entrainement": {
         "label": "Training X",
-        "desc": "Grants +X/+X to your creatures of the same faction in hand."
+        "desc": "+X/+X to your {faction_de} creatures in hand."
       },
       "concentration": {
         "label": "Concentration X",
-        "desc": "Replaces each spell in hand with a random spell (any faction) costing X more; the new spell's cost is reduced by X."
+        "desc": "Each spell in hand becomes a random spell with cost +X, reduced by X (all factions)."
       },
       "invocation_multiple": {
         "label": "Mass Summon",
-        "desc": "Creates multiple tokens as defined by the card's configuration."
+        "desc": "Creates {tokens}."
       },
       "tempete": {
         "label": "Storm X",
@@ -612,6 +612,26 @@
         "grant_keyword": "choose a creature to grant the ability to",
         "exhumation": "choose a creature to resurrect",
         "default": "choose a target"
+      },
+      "self": {
+        "deal_damage_one": "deals {x} damage to itself",
+        "deal_damage_many": "deals {x} damage to itself",
+        "heal": "heals itself for {x} HP",
+        "buff": "grants itself +{x}/+{y}",
+        "debuff": "inflicts -{x}/-{y} on itself",
+        "destroy": "destroys itself",
+        "bounce": "returns itself to hand",
+        "paralyze": "paralyzes itself",
+        "grant_keyword": "grants itself {ability}"
+      },
+      "targetd": {
+        "count_all": "all units",
+        "count_one": "a unit",
+        "count_n": "{n} units",
+        "hero_ally": "your hero",
+        "hero_enemy": "the enemy hero",
+        "both_all": "all units and the {side} hero",
+        "both_one": "a target (unit or hero){side}"
       }
     },
     "factions": {
@@ -675,12 +695,15 @@
       "Les Hordes des Steppes": "The Steppe Hordes",
       "L'Empire de Jade": "The Jade Empire",
       "Les Lames de l'Ombre": "The Shadow Blades",
+      "Les Défenseurs d'Ivoire": "The Ivory Defenders",
       "Les Enfants du Soleil": "The Children of the Sun",
       "Les Seigneurs des Dunes": "The Dune Lords",
       "Le Royaume des Masques": "The Kingdom of Masks",
+      "Les Fils du Volcan": "The Sons of the Volcano",
       "Le Royaume du Nord": "The Northern Kingdom",
       "L'Ordre de l'Aube": "The Order of the Dawn",
       "Les Guerrières du Vent": "The Wind Warriors",
+      "La Sublime Porte": "The Sublime Gate",
       "Les Seigneurs Fauves": "The Tawny Lords",
       "Les Enfants de la Lune": "The Children of the Moon",
       "Le Pacte des Griffes": "The Claw Pact",
@@ -696,10 +719,7 @@
       "Les Cohortes Sanglantes": "The Bloodied Cohorts",
       "Les Princes des Abîmes": "The Princes of the Abyss",
       "La Forêt Maudite": "The Cursed Forest",
-      "La Garde Noire": "The Black Guard",
-      "Les Défenseurs d'Ivoire": "The Ivory Defenders",
-      "Les Fils du Volcan": "The Sons of the Volcano",
-      "La Sublime Porte": "The Sublime Gate"
+      "La Garde Noire": "The Black Guard"
     },
     "races": {
       "Elfes": "Elves",
@@ -749,6 +769,283 @@
       "neutre": "Neutral",
       "maléfique": "Evil",
       "spéciale": "Special"
+    },
+    "races_forms": {
+      "Elfes": {
+        "def": "the Elf",
+        "bare": "Elf",
+        "de": "of the Elf"
+      },
+      "Fées": {
+        "def": "the Fae",
+        "bare": "Fae",
+        "de": "of the Fae"
+      },
+      "Aigles Géants": {
+        "def": "the Giant Eagle",
+        "bare": "Giant Eagle",
+        "de": "of the Giant Eagle"
+      },
+      "Hobbits": {
+        "def": "the Hobbit",
+        "bare": "Hobbit",
+        "de": "of the Hobbit"
+      },
+      "Hommes-Arbres": {
+        "def": "the Treeman",
+        "bare": "Treeman",
+        "de": "of the Treeman"
+      },
+      "Nains": {
+        "def": "the Dwarf",
+        "bare": "Dwarf",
+        "de": "of the Dwarf"
+      },
+      "Golems": {
+        "def": "the Golem",
+        "bare": "Golem",
+        "de": "of the Golem"
+      },
+      "Gnomes": {
+        "def": "the Gnome",
+        "bare": "Gnome",
+        "de": "of the Gnome"
+      },
+      "Humains": {
+        "def": "the Human",
+        "bare": "Human",
+        "de": "of the Human"
+      },
+      "Hommes-Loups": {
+        "def": "the Werewolf",
+        "bare": "Werewolf",
+        "de": "of the Werewolf"
+      },
+      "Hommes-Ours": {
+        "def": "the Werebear",
+        "bare": "Werebear",
+        "de": "of the Werebear"
+      },
+      "Hommes-Félins": {
+        "def": "the Werecat",
+        "bare": "Werecat",
+        "de": "of the Werecat"
+      },
+      "Centaures": {
+        "def": "the Centaur",
+        "bare": "Centaur",
+        "de": "of the Centaur"
+      },
+      "Mimis": {
+        "def": "the Mimi",
+        "bare": "Mimi",
+        "de": "of the Mimi"
+      },
+      "Hommes-Chiens": {
+        "def": "the Dogman",
+        "bare": "Dogman",
+        "de": "of the Dogman"
+      },
+      "Hommes-Renards": {
+        "def": "the Werefox",
+        "bare": "Werefox",
+        "de": "of the Werefox"
+      },
+      "Hommes-Cerfs": {
+        "def": "the Werestag",
+        "bare": "Deer-Man",
+        "de": "of the Deer-Man"
+      },
+      "Élémentaire": {
+        "def": "the Elemental",
+        "bare": "Elemental",
+        "de": "of the Elemental",
+        "pl": "Elementals"
+      },
+      "Géants": {
+        "def": "the Giant",
+        "bare": "Giant",
+        "de": "of the Giant"
+      },
+      "Ogres": {
+        "def": "the Ogre",
+        "bare": "Ogre",
+        "de": "of the Ogre"
+      },
+      "Dragons": {
+        "def": "the Dragon",
+        "bare": "Dragon",
+        "de": "of the Dragon"
+      },
+      "Chiens": {
+        "def": "the Dog",
+        "bare": "Dog",
+        "de": "of the Dog"
+      },
+      "Phoenix": {
+        "def": "the Phoenix",
+        "bare": "Phoenix",
+        "de": "of the Phoenix"
+      },
+      "Anges": {
+        "def": "the Angel",
+        "bare": "Angel",
+        "de": "of the Angel"
+      },
+      "Ours": {
+        "def": "the Bear",
+        "bare": "Bear",
+        "de": "of the Bear"
+      },
+      "Loups": {
+        "def": "the Wolf",
+        "bare": "Wolf",
+        "de": "of the Wolf"
+      },
+      "Fauves": {
+        "def": "the Beast",
+        "bare": "Beast",
+        "de": "of the Beast"
+      },
+      "Squelettes": {
+        "def": "the Skeleton",
+        "bare": "Skeleton",
+        "de": "of the Skeleton"
+      },
+      "Zombies": {
+        "def": "the Zombie",
+        "bare": "Zombie",
+        "de": "of the Zombie"
+      },
+      "Spectres": {
+        "def": "the Specter",
+        "bare": "Spectre",
+        "de": "of the Spectre"
+      },
+      "Vampires": {
+        "def": "the Vampire",
+        "bare": "Vampire",
+        "de": "of the Vampire"
+      },
+      "Lich": {
+        "def": "the Lich",
+        "bare": "Lich",
+        "de": "of the Lich"
+      },
+      "Banshees": {
+        "def": "the Banshee",
+        "bare": "Banshee",
+        "de": "of the Banshee"
+      },
+      "Elfes Corrompus": {
+        "def": "the Corrupted Elf",
+        "bare": "Corrupted Elf",
+        "de": "of the Corrupted Elf"
+      },
+      "Araignées Géantes": {
+        "def": "the Giant Spider",
+        "bare": "Giant Spider",
+        "de": "of the Giant Spider"
+      },
+      "Démons": {
+        "def": "the Demon",
+        "bare": "Demon",
+        "de": "of the Demon"
+      },
+      "Orcs": {
+        "def": "the Orc",
+        "bare": "Orc",
+        "de": "of the Orc"
+      },
+      "Gobelins": {
+        "def": "the Goblin",
+        "bare": "Goblin",
+        "de": "of the Goblin"
+      },
+      "Trolls": {
+        "def": "the Troll",
+        "bare": "Troll",
+        "de": "of the Troll"
+      },
+      "Wargs": {
+        "def": "the Warg",
+        "bare": "Warg",
+        "de": "of the Warg"
+      },
+      "Guerriers du Chaos": {
+        "def": "the Chaos Warrior",
+        "bare": "Chaos Warrior",
+        "de": "of the Chaos Warrior"
+      }
+    },
+    "clans_forms": {
+      "Les Sylvains": "of the Sylvans",
+      "Les Hauts-Elfes": "of the High Elves",
+      "La Forêt d'Émeraude": "of the Emerald Forest",
+      "La Combe Verte": "of the Green Vale",
+      "Les Gardiens de la Montagne": "of the Mountain Guardians",
+      "La Forge Ardente": "of the Ardent Forge",
+      "Les Sentinelles d'Airain": "of the Brass Sentinels",
+      "La Guilde des Ingénieurs": "of the Engineers' Guild",
+      "Les Hordes des Steppes": "of the Steppe Hordes",
+      "L'Empire de Jade": "of the Jade Empire",
+      "Les Lames de l'Ombre": "of the Shadow Blades",
+      "Les Défenseurs d'Ivoire": "of the Ivory Defenders",
+      "Les Enfants du Soleil": "of the Children of the Sun",
+      "Les Seigneurs des Dunes": "of the Lords of the Dunes",
+      "Le Royaume des Masques": "of the Kingdom of Masks",
+      "Les Fils du Volcan": "of the Sons of the Volcano",
+      "Le Royaume du Nord": "of the Northern Kingdom",
+      "L'Ordre de l'Aube": "of the Order of Dawn",
+      "Les Guerrières du Vent": "of the Wind Warriors",
+      "La Sublime Porte": "of the Sublime Porte",
+      "Les Seigneurs Fauves": "of the Feral Lords",
+      "Les Enfants de la Lune": "of the Children of the Moon",
+      "Le Pacte des Griffes": "of the Pact of Claws",
+      "La Harde Sauvage": "of the Wild Herd",
+      "La Colère des Flammes": "of the Wrath of Flames",
+      "Le Socle du Monde": "of the World's Foundation",
+      "La Vague Sans Fin": "of the Endless Wave",
+      "Le Souffle des Cimes": "of the Breath of the Peaks",
+      "Les Rangs Silencieux": "of the Silent Ranks",
+      "Le Voile Hurlant": "of the Howling Veil",
+      "La Cour Écarlate": "of the Scarlet Court",
+      "Le Cénacle Nécromant": "of the Necromantic Circle",
+      "Les Cohortes Sanglantes": "of the Bloody Cohorts",
+      "Les Princes des Abîmes": "of the Princes of the Abyss",
+      "La Forêt Maudite": "of the Cursed Forest",
+      "La Garde Noire": "of the Black Guard"
+    },
+    "factions_forms": {
+      "Elfes": "of the Celestial Alliance",
+      "Nains": "of the Brotherhood of the Forge",
+      "EmpireDuMilieu": "of the Middle Kingdom",
+      "RoyaumesDuSoleil": "of the Sun Kingdoms",
+      "Humains": "of the Free Kingdoms",
+      "Hommes-Bêtes": "of the Pack",
+      "Élémentaires": "of the Primordials",
+      "Mercenaires": "of the Mercenaries",
+      "Morts-Vivants": "of the Necropolis",
+      "Elfes Noirs": "of the Legions of Chaos"
+    },
+    "markers": {
+      "race": "the creature of the chosen race",
+      "race_bare": "of the same race",
+      "race_de": "of the same race",
+      "race_pl": "units of the same race",
+      "clan": "your clan",
+      "clan_de": "of the same clan",
+      "faction": "your faction",
+      "faction_de": "of the same faction",
+      "alignment": "of the same alignment",
+      "alignment_of": "of {a} alignment",
+      "token": "the configured token",
+      "tokens": "several tokens",
+      "lycanthrope": "an X/X token",
+      "ability": "an ability",
+      "scope": "to an allied unit (or to all)",
+      "scope_target": "to an allied unit",
+      "scope_all": "to all your units"
     },
     "sets": {
       "1": "Base Set"

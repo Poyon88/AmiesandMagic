@@ -4,7 +4,8 @@ import { useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import type { Keyword, SpellKeywordInstance, Card, TokenTemplate, Capability, ConvocationTokenDef } from "@/lib/game/types";
 import { getKeywordDisplayLabel, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
-import { getSpellKeywordLabel, getSpellKeywordDesc, formatConvocationTokens, formatConvocationToken } from "@/lib/game/spell-keywords";
+import { getSpellKeywordLabel, getSpellKeywordDesc, formatConvocationTokens, formatConvocationToken, convocationPrefix } from "@/lib/game/spell-keywords";
+import { describeKeyword, describeKeywordLabel, keywordScopeNote, type KeywordDescCtx } from "@/lib/game/keyword-display";
 import { composedKeywordName, describeComposedCap } from "@/lib/game/composed-display";
 import {
   getAlignmentLabel,
@@ -28,10 +29,15 @@ import type { SafeT } from "./config";
 //
 export interface Vocab {
   keywordLabel: (kw: Keyword) => string;
-  // Description d'un mot-clé, localisée. `x` (valeur X de l'instance) est
-  // substituée aux gabarits « X » comme le fait le moteur. Fallback FR =
-  // KEYWORDS[label].desc. Renvoie null si aucune description.
-  keywordDesc: (kw: Keyword, x?: number | null) => string | null;
+  // Description d'un mot-clé, localisée, avec les valeurs concrètes de la
+  // carte (race/clan/token/capacité conférée) résolues depuis le contexte.
+  // Renvoie null si aucune description. Cf. keyword-display.ts.
+  keywordDesc: (kw: Keyword, ctx?: KeywordDescCtx) => string | null;
+  // Libellé d'un mot-clé, suffixé de sa cible quand la carte la porte
+  // (« Entraide (Elfes) »). Remplace la concaténation brute des composants.
+  keywordLabelFor: (kw: Keyword, ctx?: KeywordDescCtx) => string;
+  // Suffixe de portée d'un mot-clé conféré par un sort (« · à tous les alliés »).
+  keywordScopeNote: (grantScope: "target" | "all_allies" | null | undefined) => string | null;
   // Mots-clés de SORT (registre distinct). Label/desc localisés avec
   // substitution X/Y/amount ; fallback FR intégré.
   spellKeywordLabel: (kw: SpellKeywordInstance) => string;
@@ -112,15 +118,12 @@ export function useVocab(): Vocab {
   return useMemo(
     () => ({
       keywordLabel: (kw: Keyword) => getKeywordDisplayLabel(kw, safe),
-      keywordDesc: (kw: Keyword, x?: number | null) => {
-        const forgeKey = KEYWORD_LABELS[kw];
-        const fallback =
-          (forgeKey ? KEYWORDS[forgeKey]?.desc : undefined) ??
-          KEYWORD_DESC_BY_ID[kw];
-        const tmpl = safe(`vocab.keywords.${kw}.desc`) ?? fallback;
-        if (!tmpl) return null;
-        return x != null ? tmpl.replace(/X/g, String(x)) : tmpl;
-      },
+      keywordDesc: (kw: Keyword, ctx?: KeywordDescCtx) =>
+        describeKeyword(kw, ctx ?? {}, safe),
+      keywordLabelFor: (kw: Keyword, ctx?: KeywordDescCtx) =>
+        describeKeywordLabel(kw, ctx ?? {}, safe),
+      keywordScopeNote: (grantScope: "target" | "all_allies" | null | undefined) =>
+        keywordScopeNote(grantScope, safe),
       spellKeywordLabel: (kw: SpellKeywordInstance) =>
         getSpellKeywordLabel(kw, safe),
       spellKeywordDesc: (
@@ -156,9 +159,7 @@ export function useVocab(): Vocab {
         registry?: TokenTemplate[],
         statOverride?: number | null,
       ) => formatConvocationToken(tokenId, registry, statOverride, safe),
-      convocationPrefix: (content: string) =>
-        (safe("game.convocation_prefix")?.replace(/\{content\}/g, content)) ??
-        `Crée ${content}`,
+      convocationPrefix: (content: string) => convocationPrefix(content, safe),
     }),
     [safe],
   );

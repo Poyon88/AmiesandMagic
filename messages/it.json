@@ -23,11 +23,11 @@
       },
       "convocations_multiples": {
         "label": "Convocazioni multiple",
-        "desc": "Crea più token in base alla configurazione."
+        "desc": "Crea {tokens}."
       },
       "loyaute": {
         "label": "Lealtà",
-        "desc": "+1 ATK e +1 PV per ogni alleato della stessa razza in gioco."
+        "desc": "+1/+1 per alleato {race_bare} in gioco."
       },
       "ancre": {
         "label": "Ancorato",
@@ -91,7 +91,7 @@
       },
       "rappel": {
         "label": "Richiamo",
-        "desc": "Rimetti una carta bersaglio dal tuo cimitero in mano."
+        "desc": "Rimetti una carta bersaglio dal tuo cimitero alla tua mano."
       },
       "combustion": {
         "label": "Combustione",
@@ -103,7 +103,7 @@
       },
       "pauvrete": {
         "label": "Povertà X",
-        "desc": "Questa unità perde tanta Forza quante sono le carte in mano all'avversario (X = dimensione della mano avversaria, dinamico)."
+        "desc": "Perde tanto ATK quante sono le carte in mano all'avversario (dinamico)."
       },
       "armure": {
         "label": "Armatura",
@@ -111,11 +111,11 @@
       },
       "commandement": {
         "label": "Comando",
-        "desc": "Gli alleati della stessa fazione guadagnano +1/+1."
+        "desc": "+1/+1 ai tuoi alleati {faction_de}."
       },
       "fureur": {
         "label": "Furia",
-        "desc": "Dopo aver subito danni, attacca immediatamente un'unità avversaria casuale (l'eroe se non ci sono altre unità). Si attiva al massimo una volta per turno."
+        "desc": "Dopo aver subito danni, attacca un'unità avversaria a caso (l'eroe in mancanza d'altro). 1 volta per turno."
       },
       "double_attaque": {
         "label": "Doppio Attacco",
@@ -131,19 +131,19 @@
       },
       "contresort": {
         "label": "Contromalia",
-        "desc": "Annulla la prossima magia avversaria."
+        "desc": "Annulla il prossimo incantesimo avversario."
       },
       "convocation": {
         "label": "Convocazione X",
-        "desc": "Crea un token X/X della razza indicata."
+        "desc": "Crea {token}."
       },
       "convocation_simple": {
         "label": "Convocazione",
-        "desc": "Crea il token configurato."
+        "desc": "Crea {token}."
       },
       "malediction": {
         "label": "Maledizione",
-        "desc": "Prendi di mira un'unità nemica; viene esiliata alla fine del prossimo turno avversario."
+        "desc": "Scegli come bersaglio un'unità nemica: viene esiliata alla fine del prossimo turno avversario."
       },
       "necrophagie": {
         "label": "Necrofagia",
@@ -155,11 +155,11 @@
       },
       "sacrifice_demoniaque": {
         "label": "Sacrificio demoniaco X",
-        "desc": "Alla morte di questa unità, distribuisce casualmente X riduzioni di costo (-1 mana ciascuna) tra i Demoni nella tua mano. Un Demone non può costare meno di 1."
+        "desc": "Alla sua morte, distribuisce X riduzioni di -1 mana tra i Demoni nella tua mano (min. 1)."
       },
       "paralysie": {
         "label": "Paralisi",
-        "desc": "Le unità che subiscono danni da questa creatura non possono attaccare né usare capacità attive fino alla fine del prossimo turno del loro proprietario."
+        "desc": "Le unità che ferisce non possono attaccare né attivare capacità fino alla fine del loro prossimo turno."
       },
       "permutation": {
         "label": "Permutazione",
@@ -171,19 +171,19 @@
       },
       "pietinement": {
         "label": "Calpestio",
-        "desc": "Quando questa unità attacca una creatura, i danni in eccesso (oltre i PV rimanenti del bersaglio) vengono inflitti all'eroe avversario."
+        "desc": "In attacco, i danni che eccedono i PV della creatura bersaglio vanno all'eroe avversario."
       },
       "catalyse": {
         "label": "Catalisi",
-        "desc": "Riduce di 1 il costo in mana di tutte le unità della stessa razza nella tua mano."
+        "desc": "I tuoi {race_pl} in mano costano 1 mana in meno."
       },
       "ombre_du_passe": {
         "label": "Ombra del passato",
-        "desc": "Guadagna +1 ATK e +1 PV per ogni unità della stessa razza nel tuo cimitero."
+        "desc": "+1/+1 per unità {race_bare} nel tuo cimitero."
       },
       "profanation": {
         "label": "Profanazione X",
-        "desc": "Esilia le ultime X carte del tuo cimitero per conferire fino a +X/+X all'unità."
+        "desc": "Esilia le ultime X carte dal tuo cimitero per concedere fino a +X/+X all'unità."
       },
       "prescience": {
         "label": "Prescienza X",
@@ -191,15 +191,15 @@
       },
       "suprematie": {
         "label": "Supremazia",
-        "desc": "Guadagna +1 ATK e +1 PV per ogni carta in mano al momento dell'evocazione."
+        "desc": "Ottiene +1 ATK e +1 PV per carta nella tua mano al momento dell'evocazione."
       },
       "divination": {
         "label": "Divinazione",
-        "desc": "Rivela le prime 3 carte del tuo mazzo; mettine una in cima e le altre 2 in fondo nell'ordine scelto."
+        "desc": "Rivela le prime 3 carte del mazzo; rimettine 1 sopra e 2 sotto, nell'ordine scelto."
       },
       "savant": {
         "label": "Sapiente",
-        "desc": "Guadagna +1 ATK e +1 PV per ogni magia nel tuo cimitero."
+        "desc": "Ottiene +1 ATK e +1 PV per incantesimo nel tuo cimitero."
       },
       "liaison_de_vie": {
         "label": "Legame vitale",
@@ -211,7 +211,7 @@
       },
       "sacrifice": {
         "label": "Sacrificio",
-        "desc": "Distruggi un alleato per guadagnarne i PV e l'ATK in modo permanente."
+        "desc": "Distruggi un alleato per guadagnare permanentemente i suoi PV e il suo ATK."
       },
       "malefice": {
         "label": "Maleficio",
@@ -235,15 +235,15 @@
       },
       "heritage": {
         "label": "Eredità X",
-        "desc": "Ogni unità alleata in gioco guadagna +X ATK e +X PV in modo permanente."
+        "desc": "Ogni unità alleata in gioco guadagna permanentemente +X ATK e +X PV."
       },
       "mimique": {
         "label": "Mimica",
-        "desc": "Copia tutte le abilità di un'unità bersaglio e le attribuisce a questa unità in modo permanente."
+        "desc": "Copia tutte le capacità di un'unità bersaglio e le attribuisce a questa unità in modo permanente."
       },
       "metamorphose": {
         "label": "Metamorfosi",
-        "desc": "Questa unità diventa una copia esatta (ATK / PV / abilità) di un'unità bersaglio."
+        "desc": "Questa unità diventa una copia esatta (ATK / PV / capacità) di un'unità bersaglio."
       },
       "dedoublement": {
         "label": "Sdoppiamento",
@@ -251,19 +251,19 @@
       },
       "tactique": {
         "label": "Tattica X",
-        "desc": "Attribuisce X abilità a scelta a un'unità alleata bersaglio in modo permanente."
+        "desc": "Attribuisce X capacità scelte a un'unità alleata bersaglio in modo permanente."
       },
       "exhumation": {
         "label": "Esumazione X",
-        "desc": "Resuscita un'unità dal tuo cimitero con costo in mana uguale o inferiore a X."
+        "desc": "Resuscita un'unità dal tuo cimitero il cui costo in mana è pari o inferiore a X."
       },
       "heritage_du_cimetiere": {
         "label": "Eredità del cimitero",
-        "desc": "Attribuisce a questa unità le abilità di un'unità bersaglio nel tuo cimitero."
+        "desc": "Attribuisce a questa unità le capacità di un'unità bersaglio nel tuo cimitero."
       },
       "pacte_de_sang": {
         "label": "Patto di sangue",
-        "desc": "Quando questa unità muore, evoca due token 1/1 della sua razza."
+        "desc": "Alla sua morte, evoca due token 1/1 della sua razza."
       },
       "souffle_de_feu": {
         "label": "Soffio di fuoco X",
@@ -287,7 +287,7 @@
       },
       "traque_du_destin": {
         "label": "Caccia al destino X",
-        "desc": "Rivela le prime X carte del tuo mazzo, prendine una in mano e metti le altre in fondo in ordine casuale."
+        "desc": "Rivela le prime X carte del mazzo; tienine una in mano, rimetti le altre sotto a caso."
       },
       "sang_mele": {
         "label": "Sangue misto",
@@ -295,63 +295,63 @@
       },
       "fierte_du_clan": {
         "label": "Orgoglio del clan",
-        "desc": "Finché questa unità è in gioco, le unità dello stesso clan evocate entrano con +1/+1."
+        "desc": "Finché è in gioco, le tue unità {clan_de} evocate arrivano con +1/+1."
       },
       "solidarite": {
         "label": "Solidarietà X",
-        "desc": "Pesca X carte se controlli altre 2 unità della stessa razza."
+        "desc": "Pesca X carte se controlli altre 2 unità {race_bare}."
       },
       "entraide": {
         "label": "Mutuo soccorso",
-        "desc": "Costa 1 mana in meno per ogni unità alleata della razza scelta in gioco (cumulabile, minimo 0)."
+        "desc": "Costa 1 mana in meno per alleato {race_bare} in gioco (cumulabile, min. 0)."
       },
       "cycle_eternel": {
         "label": "Ciclo eterno",
-        "desc": "Aggiungi una copia di questa carta nel tuo mazzo; se viene pescata, mettila direttamente in gioco."
+        "desc": "Aggiungi una copia di questa carta al tuo mazzo; se viene pescata, mettila direttamente in gioco."
       },
       "martyr": {
         "label": "Martire",
-        "desc": "Tutte le tue unità della stessa razza in gioco guadagnano +1/+1 permanente."
+        "desc": "+1/+1 permanente ai tuoi {race_pl} in gioco."
       },
       "instinct_de_meute": {
         "label": "Istinto del branco X",
-        "desc": "Guadagna +X ATK e +X PV se un'unità alleata della stessa fazione è passata dal gioco al cimitero in questo turno."
+        "desc": "+X/+X se un alleato {faction_de} è morto questo turno."
       },
       "totem": {
         "label": "Totem",
-        "desc": "Questa unità acquisisce le abilità di tutte le unità alleate della stessa razza in gioco."
+        "desc": "Ottiene le abilità dei tuoi {race_pl} in gioco."
       },
       "appel_du_clan": {
         "label": "Richiamo del clan X",
-        "desc": "Metti in gioco gratuitamente la prima unità dello stesso clan con costo uguale o inferiore a X dalla cima del tuo mazzo."
+        "desc": "Mette in gioco gratuitamente la prima unità {clan_de} di costo ≤ X dalla cima del tuo mazzo."
       },
       "appel_supreme": {
         "label": "Richiamo Supremo",
-        "desc": "Aggiunge alla tua mano la creatura della razza scelta con il costo in mana più alto rimasta nel tuo mazzo (casuale in caso di parità)."
+        "desc": "Aggiunge in mano {race} dal costo più alto del tuo mazzo (a caso in caso di parità)."
       },
       "rassemblement": {
         "label": "Raduno X",
-        "desc": "Rivela le prime X carte del mazzo; aggiungi alla tua mano tutte le unità della stessa razza e scarta il resto."
+        "desc": "Rivela le prime X carte del mazzo; tieni i {race_pl} in mano, scarta il resto."
       },
       "selection": {
         "label": "Selezione X",
-        "desc": "Rivela 3 carte comuni casuali di costo ≤ X tra le fazioni dello stesso allineamento di questa carta; aggiungine una alla tua mano."
+        "desc": "Rivela 3 comuni {alignment} di costo ≤ X; aggiungine una in mano."
       },
       "selection_magique": {
         "label": "Selezione Magica X",
-        "desc": "Rivela 3 incantesimi comuni casuali di costo ≤ X tra le fazioni dello stesso allineamento di questa carta; aggiungine uno alla tua mano."
+        "desc": "Rivela 3 incantesimi comuni {alignment} di costo ≤ X; aggiungine uno in mano."
       },
       "renfort_royal": {
         "label": "Selezione Reale X",
-        "desc": "Rivela 3 carte casuali tra le tue edizioni limitate (≥30 richieste; altrimenti tra le comuni dello stesso allineamento) di costo ≤ X; aggiungine una alla tua mano."
+        "desc": "Rivela 3 delle tue edizioni limitate di costo ≤ X (richieste ≥30; altrimenti 3 comuni {alignment}); tienine una."
       },
       "lycanthropie": {
         "label": "Licantropia X",
-        "desc": "Si trasforma in un token X/X con Caccia."
+        "desc": "Si trasforma in {lycanthrope} con Caccia."
       },
       "relancer": {
         "label": "Rilanciare X",
-        "desc": "Rilancia gli X ultimi incantesimi giocati con bersagli casuali."
+        "desc": "Rilancia gli ultimi X incantesimi lanciati con bersagli casuali."
       },
       "tempete": {
         "label": "Tempesta X",
@@ -363,7 +363,7 @@
       },
       "affaiblissement": {
         "label": "Indebolimento -X/-Y",
-        "desc": "Conferisce -X ATK e -Y PV a una creatura nemica bersagliata."
+        "desc": "Dà -X ATT e -Y PV a una creatura nemica bersaglio."
       },
       "renforcement": {
         "label": "Potenziamento +X/+Y",
@@ -383,7 +383,7 @@
       },
       "concentration": {
         "label": "Concentrazione X",
-        "desc": "Sostituisce ogni incantesimo in mano con un incantesimo casuale (tutte le fazioni) di costo superiore di X; il costo del nuovo incantesimo è ridotto di X."
+        "desc": "Ogni incantesimo in mano diventa un incantesimo casuale di costo +X, ridotto di X (tutte le fazioni)."
       },
       "remontee": {
         "label": "Rimonta",
@@ -391,19 +391,19 @@
       },
       "renforcement_multiple": {
         "label": "Potenziamento Multiplo",
-        "desc": "Conferisce +X/+Y a tutte le tue creature della razza o del clan selezionato."
+        "desc": "+X/+Y alle tue creature della razza o del clan scelto."
       },
       "entrainement": {
         "label": "Allenamento X",
-        "desc": "Conferisce +X/+X alle tue creature in mano della stessa fazione."
+        "desc": "+X/+X alle tue creature {faction_de} in mano."
       },
       "conferer": {
         "label": "Conferire",
-        "desc": "Conferisce una capacità scelta a un'unità alleata (o a tutte)."
+        "desc": "Conferisce {ability} {scope}."
       },
       "declenchement": {
         "label": "Attivazione",
-        "desc": "Riattiva una volta gli effetti composti attivati degli altri alleati in gioco, per un sottoinsieme fisso di attivatori (entrata / morte / fine turno / ritorno)."
+        "desc": "Riattiva una volta gli effetti combinati dei tuoi altri alleati (entrata / morte / fine turno / ritorno)."
       }
     },
     "spell_keywords": {
@@ -417,19 +417,19 @@
       },
       "convocation_simple": {
         "label": "Convocazione",
-        "desc": "Crea il token configurato."
+        "desc": "Crea {token}."
       },
       "appel_du_clan": {
         "label": "Richiamo del Clan X",
-        "desc": "Schiera gratuitamente la prima unità dello stesso clan di questo incantesimo con costo inferiore o uguale a X dal tuo deck."
+        "desc": "Mette in gioco gratuitamente la prima unità {clan_de} di costo ≤ X dal tuo mazzo."
       },
       "appel_supreme": {
         "label": "Richiamo Supremo",
-        "desc": "Aggiunge alla tua mano la creatura della razza scelta con il costo più alto rimasta nel tuo deck (casuale in caso di parità)."
+        "desc": "Aggiunge in mano {race} dal costo più alto del tuo mazzo (a caso in caso di parità)."
       },
       "rassemblement": {
         "label": "Raduno X",
-        "desc": "Rivela le prime X carte del tuo deck; aggiungi alla tua mano le unità della stessa razza di questo incantesimo e scarta il resto."
+        "desc": "Rivela le prime X carte del mazzo; tieni i {race_pl} in mano, scarta il resto."
       },
       "rappel": {
         "label": "Richiamo",
@@ -441,15 +441,15 @@
       },
       "selection": {
         "label": "Selezione X",
-        "desc": "Scegli una carta tra 3 carte comuni casuali di costo ≤ X, delle fazioni dello stesso allineamento di questo incantesimo, da aggiungere in mano"
+        "desc": "Rivela 3 comuni {alignment} di costo ≤ X; aggiungine una in mano"
       },
       "selection_magique": {
         "label": "Selezione Magica X",
-        "desc": "Scegli un incantesimo tra 3 incantesimi comuni casuali di costo ≤ X, delle fazioni dello stesso allineamento di questo incantesimo, da aggiungere in mano"
+        "desc": "Rivela 3 incantesimi comuni {alignment} di costo ≤ X; aggiungine uno in mano"
       },
       "renfort_royal": {
         "label": "Selezione Reale X",
-        "desc": "Scegli una carta tra 3 carte casuali delle tue edizioni limitate (≥30 richieste; altrimenti tra comuni dello stesso allineamento) di costo ≤ X da aggiungere in mano"
+        "desc": "Rivela 3 delle tue edizioni limitate di costo ≤ X (richieste ≥30; altrimenti 3 comuni {alignment}); tienine una"
       },
       "relancer": {
         "label": "Rilanciare X",
@@ -505,19 +505,19 @@
       },
       "renforcement_multiple": {
         "label": "Potenziamento multiplo",
-        "desc": "Conferisce +X/+Y a tutte le tue creature della razza o del clan selezionato."
+        "desc": "+X/+Y alle tue creature della razza o del clan scelto."
       },
       "entrainement": {
         "label": "Addestramento X",
-        "desc": "Conferisce +X/+X alle tue creature in mano della stessa fazione."
+        "desc": "+X/+X alle tue creature {faction_de} in mano."
       },
       "concentration": {
         "label": "Concentrazione X",
-        "desc": "Sostituisce ogni incantesimo in mano con un incantesimo casuale (tutte le fazioni) di costo superiore di X; il costo del nuovo incantesimo è ridotto di X."
+        "desc": "Ogni incantesimo in mano diventa un incantesimo casuale di costo +X, ridotto di X (tutte le fazioni)."
       },
       "invocation_multiple": {
         "label": "Convocazioni multiple",
-        "desc": "Crea più token in base alla configurazione della carta."
+        "desc": "Crea {tokens}."
       },
       "tempete": {
         "label": "Tempesta X",
@@ -612,6 +612,26 @@
         "grant_keyword": "scegli una creatura a cui conferire l'abilità",
         "exhumation": "scegli una creatura da resuscitare",
         "default": "scegli un bersaglio"
+      },
+      "self": {
+        "deal_damage_one": "subisce {x} danno",
+        "deal_damage_many": "subisce {x} danni",
+        "heal": "recupera {x} PV",
+        "buff": "ottiene +{x}/+{y}",
+        "debuff": "subisce -{x}/-{y}",
+        "destroy": "si distrugge",
+        "bounce": "torna in mano",
+        "paralyze": "si paralizza",
+        "grant_keyword": "si conferisce {ability}"
+      },
+      "targetd": {
+        "count_all": "tutte le unità",
+        "count_one": "un'unità",
+        "count_n": "{n} unità",
+        "hero_ally": "il tuo eroe",
+        "hero_enemy": "l'eroe avversario",
+        "both_all": "tutte le unità e l'eroe {side}",
+        "both_one": "un bersaglio (unità o eroe){side}"
       }
     },
     "factions": {
@@ -675,12 +695,15 @@
       "Les Hordes des Steppes": "Le Orde delle Steppe",
       "L'Empire de Jade": "L'Impero di Giada",
       "Les Lames de l'Ombre": "Le Lame dell'Ombra",
+      "Les Défenseurs d'Ivoire": "I Difensori d'Avorio",
       "Les Enfants du Soleil": "I Figli del Sole",
       "Les Seigneurs des Dunes": "I Signori delle Dune",
       "Le Royaume des Masques": "Il Regno delle Maschere",
+      "Les Fils du Volcan": "I Figli del Vulcano",
       "Le Royaume du Nord": "Il Regno del Nord",
       "L'Ordre de l'Aube": "L'Ordine dell'Alba",
       "Les Guerrières du Vent": "Le Guerriere del Vento",
+      "La Sublime Porte": "La Sublime Porta",
       "Les Seigneurs Fauves": "I Signori Selvaggi",
       "Les Enfants de la Lune": "I Figli della Luna",
       "Le Pacte des Griffes": "Il Patto degli Artigli",
@@ -696,10 +719,7 @@
       "Les Cohortes Sanglantes": "Le Coorti Sanguinarie",
       "Les Princes des Abîmes": "I Principi degli Abissi",
       "La Forêt Maudite": "La Foresta Maledetta",
-      "La Garde Noire": "La Guardia Nera",
-      "Les Défenseurs d'Ivoire": "I Difensori d'Avorio",
-      "Les Fils du Volcan": "I Figli del Vulcano",
-      "La Sublime Porte": "La Sublime Porta"
+      "La Garde Noire": "La Guardia Nera"
     },
     "races": {
       "Elfes": "Elfi",
@@ -749,6 +769,283 @@
       "neutre": "Neutro",
       "maléfique": "Malvagio",
       "spéciale": "Speciale"
+    },
+    "races_forms": {
+      "Elfes": {
+        "def": "l'Elfo",
+        "bare": "Elfo",
+        "de": "dell'Elfo"
+      },
+      "Fées": {
+        "def": "la Fata",
+        "bare": "Fata",
+        "de": "della Fata"
+      },
+      "Aigles Géants": {
+        "def": "l'Aquila Gigante",
+        "bare": "Aquila Gigante",
+        "de": "dell'Aquila Gigante"
+      },
+      "Hobbits": {
+        "def": "lo Hobbit",
+        "bare": "Hobbit",
+        "de": "dello Hobbit"
+      },
+      "Hommes-Arbres": {
+        "def": "l'Uomo-Albero",
+        "bare": "Uomo-Albero",
+        "de": "dell'Uomo-Albero"
+      },
+      "Nains": {
+        "def": "il Nano",
+        "bare": "Nano",
+        "de": "del Nano"
+      },
+      "Golems": {
+        "def": "il Golem",
+        "bare": "Golem",
+        "de": "del Golem"
+      },
+      "Gnomes": {
+        "def": "lo Gnomo",
+        "bare": "Gnomo",
+        "de": "dello Gnomo"
+      },
+      "Humains": {
+        "def": "l'Umano",
+        "bare": "Umano",
+        "de": "dell'Umano"
+      },
+      "Hommes-Loups": {
+        "def": "l'Uomo-Lupo",
+        "bare": "Uomo-Lupo",
+        "de": "dell'Uomo-Lupo"
+      },
+      "Hommes-Ours": {
+        "def": "l'Uomo-Orso",
+        "bare": "Uomo-Orso",
+        "de": "dell'Uomo-Orso"
+      },
+      "Hommes-Félins": {
+        "def": "l'Uomo-Felino",
+        "bare": "Uomo-Felino",
+        "de": "dell'Uomo-Felino"
+      },
+      "Centaures": {
+        "def": "il Centauro",
+        "bare": "Centauro",
+        "de": "del Centauro"
+      },
+      "Mimis": {
+        "def": "il Mimic",
+        "bare": "Mimic",
+        "de": "del Mimic"
+      },
+      "Hommes-Chiens": {
+        "def": "l'Uomo-Cane",
+        "bare": "Uomo-Cane",
+        "de": "dell'Uomo-Cane"
+      },
+      "Hommes-Renards": {
+        "def": "l'Uomo-Volpe",
+        "bare": "Uomo-Volpe",
+        "de": "dell'Uomo-Volpe"
+      },
+      "Hommes-Cerfs": {
+        "def": "l'Uomo-Cervo",
+        "bare": "Uomo-Cervo",
+        "de": "dell'Uomo-Cervo"
+      },
+      "Élémentaire": {
+        "def": "l'Elementale",
+        "bare": "Elementale",
+        "de": "dell'Elementale",
+        "pl": "Elementali"
+      },
+      "Géants": {
+        "def": "il Gigante",
+        "bare": "Gigante",
+        "de": "del Gigante"
+      },
+      "Ogres": {
+        "def": "l'Orco",
+        "bare": "Orco",
+        "de": "dell'Orco"
+      },
+      "Dragons": {
+        "def": "il Drago",
+        "bare": "Drago",
+        "de": "del Drago"
+      },
+      "Chiens": {
+        "def": "il Cane",
+        "bare": "Cane",
+        "de": "del Cane"
+      },
+      "Phoenix": {
+        "def": "la Fenice",
+        "bare": "Fenice",
+        "de": "della Fenice"
+      },
+      "Anges": {
+        "def": "l'Angelo",
+        "bare": "Angelo",
+        "de": "dell'Angelo"
+      },
+      "Ours": {
+        "def": "l'Orso",
+        "bare": "Orso",
+        "de": "dell'Orso"
+      },
+      "Loups": {
+        "def": "il Lupo",
+        "bare": "Lupo",
+        "de": "del Lupo"
+      },
+      "Fauves": {
+        "def": "la Belva",
+        "bare": "Belva",
+        "de": "della Belva"
+      },
+      "Squelettes": {
+        "def": "lo Scheletro",
+        "bare": "Scheletro",
+        "de": "dello Scheletro"
+      },
+      "Zombies": {
+        "def": "lo Zombie",
+        "bare": "Zombie",
+        "de": "dello Zombie"
+      },
+      "Spectres": {
+        "def": "lo Spettro",
+        "bare": "Spettro",
+        "de": "dello Spettro"
+      },
+      "Vampires": {
+        "def": "il Vampiro",
+        "bare": "Vampiro",
+        "de": "del Vampiro"
+      },
+      "Lich": {
+        "def": "la Lich",
+        "bare": "Lich",
+        "de": "della Lich"
+      },
+      "Banshees": {
+        "def": "la Banshee",
+        "bare": "Banshee",
+        "de": "della Banshee"
+      },
+      "Elfes Corrompus": {
+        "def": "l'Elfo Corrotto",
+        "bare": "Elfo Corrotto",
+        "de": "dell'Elfo Corrotto"
+      },
+      "Araignées Géantes": {
+        "def": "il Ragno Gigante",
+        "bare": "Ragno Gigante",
+        "de": "del Ragno Gigante"
+      },
+      "Démons": {
+        "def": "il Demone",
+        "bare": "Demone",
+        "de": "del Demone"
+      },
+      "Orcs": {
+        "def": "l'Orco",
+        "bare": "Orco",
+        "de": "dell'Orco"
+      },
+      "Gobelins": {
+        "def": "il Goblin",
+        "bare": "Goblin",
+        "de": "del Goblin"
+      },
+      "Trolls": {
+        "def": "il Troll",
+        "bare": "Troll",
+        "de": "del Troll"
+      },
+      "Wargs": {
+        "def": "il Warg",
+        "bare": "Warg",
+        "de": "del Warg"
+      },
+      "Guerriers du Chaos": {
+        "def": "il Guerriero del Caos",
+        "bare": "Guerriero del Caos",
+        "de": "del Guerriero del Caos"
+      }
+    },
+    "clans_forms": {
+      "Les Sylvains": "dei Silvani",
+      "Les Hauts-Elfes": "degli Alti Elfi",
+      "La Forêt d'Émeraude": "della Foresta di Smeraldo",
+      "La Combe Verte": "della Valle Verde",
+      "Les Gardiens de la Montagne": "dei Guardiani della Montagna",
+      "La Forge Ardente": "della Forgia Ardente",
+      "Les Sentinelles d'Airain": "delle Sentinelle di Bronzo",
+      "La Guilde des Ingénieurs": "della Gilda degli Ingegneri",
+      "Les Hordes des Steppes": "delle Orde delle Steppe",
+      "L'Empire de Jade": "dell'Impero di Giada",
+      "Les Lames de l'Ombre": "delle Lame dell'Ombra",
+      "Les Défenseurs d'Ivoire": "dei Difensori d'Avorio",
+      "Les Enfants du Soleil": "dei Figli del Sole",
+      "Les Seigneurs des Dunes": "dei Signori delle Dune",
+      "Le Royaume des Masques": "del Regno delle Maschere",
+      "Les Fils du Volcan": "dei Figli del Vulcano",
+      "Le Royaume du Nord": "del Regno del Nord",
+      "L'Ordre de l'Aube": "dell'Ordine dell'Alba",
+      "Les Guerrières du Vent": "delle Guerriere del Vento",
+      "La Sublime Porte": "della Sublime Porta",
+      "Les Seigneurs Fauves": "dei Signori Ferini",
+      "Les Enfants de la Lune": "dei Figli della Luna",
+      "Le Pacte des Griffes": "del Patto degli Artigli",
+      "La Harde Sauvage": "del Branco Selvaggio",
+      "La Colère des Flammes": "dell'Ira delle Fiamme",
+      "Le Socle du Monde": "del Basamento del Mondo",
+      "La Vague Sans Fin": "dell'Onda Senza Fine",
+      "Le Souffle des Cimes": "del Soffio delle Cime",
+      "Les Rangs Silencieux": "dei Ranghi Silenziosi",
+      "Le Voile Hurlant": "del Velo Ululante",
+      "La Cour Écarlate": "della Corte Scarlatta",
+      "Le Cénacle Nécromant": "del Cenacolo Necromante",
+      "Les Cohortes Sanglantes": "delle Coorti Sanguinarie",
+      "Les Princes des Abîmes": "dei Principi degli Abissi",
+      "La Forêt Maudite": "della Foresta Maledetta",
+      "La Garde Noire": "della Guardia Nera"
+    },
+    "factions_forms": {
+      "Elfes": "dell'Alleanza Celeste",
+      "Nains": "della Confraternita della Forgia",
+      "EmpireDuMilieu": "dell'Impero di Mezzo",
+      "RoyaumesDuSoleil": "dei Regni del Sole",
+      "Humains": "dei Regni Liberi",
+      "Hommes-Bêtes": "del Branco",
+      "Élémentaires": "dei Primordiali",
+      "Mercenaires": "dei Mercenari",
+      "Morts-Vivants": "della Necropoli",
+      "Elfes Noirs": "delle Legioni del Caos"
+    },
+    "markers": {
+      "race": "la creatura della razza scelta",
+      "race_bare": "della stessa razza",
+      "race_de": "della stessa razza",
+      "race_pl": "unità della stessa razza",
+      "clan": "il vostro clan",
+      "clan_de": "dello stesso clan",
+      "faction": "la vostra fazione",
+      "faction_de": "della stessa fazione",
+      "alignment": "dello stesso allineamento",
+      "alignment_of": "di allineamento {a}",
+      "token": "il token configurato",
+      "tokens": "più token",
+      "lycanthrope": "un token X/X",
+      "ability": "una capacità",
+      "scope": "a un'unità alleata (o a tutte)",
+      "scope_target": "a un'unità alleata",
+      "scope_all": "a tutte le vostre unità"
     },
     "sets": {
       "1": "Set Base"

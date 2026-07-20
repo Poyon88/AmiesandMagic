@@ -353,10 +353,11 @@ function MulliganCard({
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             {entries.map((entry, idx) => {
               const { kw, x, mode } = entry;
-              const label = vocab.keywordLabel(kw);
+              const ctx = { card, instance: entry.instance, x, tokens: tokenTemplates };
+              const label = vocab.keywordLabelFor(kw, ctx);
               // Plus d'annotation de déclencheur : la couleur transmet le moment.
               const displayLabel = x != null ? label.replace(/ X$/, ` ${xNumeral(x)}`) : label;
-              const desc = vocab.keywordDesc(kw, x);
+              const desc = vocab.keywordDesc(kw, ctx);
               const modeColor = keywordModeColor(mode);
               return (
               <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ display: "flex", alignItems: "flex-start", gap: 5 }}>
