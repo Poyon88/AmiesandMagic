@@ -1,6 +1,7 @@
 import type { SpellKeywordId, SpellKeywordInstance, SpellTargetType, Card, ConvocationTokenDef, TokenTemplate } from "./types";
 import { SPELL_KEYWORDS as ABILITIES_SPELL_KEYWORDS, ABILITIES, type DerivedSpellKeywordDef } from "./abilities";
 import type { SafeT } from "@/i18n/config";
+import { resolveMarkers } from "./desc-markers";
 
 // Single source of truth lives in `src/lib/game/abilities.ts` (unified
 // registry shared with creature keywords). The map below is re-exported
@@ -141,6 +142,15 @@ export function getSpellKeywordDesc(
   // Gabarit localisé (vocab.spell_keywords.{id}.desc) ; repli FR = def.desc.
   // La substitution X/Y/amount et les surcharges d'invocation restent en aval.
   let desc = t?.(`vocab.spell_keywords.${kw.id}.desc`) ?? def.desc;
+
+  // Marqueurs nommés ({race}, {clan_de}, {alignment}…). Une capacité comme
+  // Sélection ou Appel Suprême existe côté créature ET côté sort avec la même
+  // description : sans ce passage, la version sort affichait « {alignment} »
+  // brut au joueur.
+  desc = resolveMarkers(desc, String(kw.id), {
+    card,
+    instance: { race: kw.race, clan: kw.clan },
+  }, t);
 
   // Replace X/Y from params
   if (def.params.includes("attack")) desc = desc.replace(/X/g, String(kw.attack ?? 0));

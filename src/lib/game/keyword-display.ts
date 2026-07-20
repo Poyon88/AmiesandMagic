@@ -1,8 +1,9 @@
-import type { Card, Keyword, KeywordInstance, TokenTemplate } from "./types";
+import type { Keyword } from "./types";
 import type { SafeT } from "@/i18n/config";
-import { KEYWORDS, KEYWORD_DESC_BY_ID, getEffectiveAlignment, getAlignmentLabel, getClanName } from "@/lib/card-engine/constants";
-import { getRaceForm, getClanForm, getFactionForm } from "@/lib/card-engine/race-forms";
+import { KEYWORDS, KEYWORD_DESC_BY_ID } from "@/lib/card-engine/constants";
+import { getRaceForm } from "@/lib/card-engine/race-forms";
 import { KEYWORD_LABELS, getKeywordDisplayLabel } from "./keyword-labels";
+import { resolveMarkers, type MarkerCtx, type Resolver } from "./desc-markers";
 import {
   convocationPrefix,
   formatConvocationToken,
@@ -22,93 +23,12 @@ import {
 // via `t.raw`, sinon next-intl lèverait FORMATTING_ERROR sur les marqueurs non
 // fournis (cf. useVocab.ts).
 
-export interface KeywordDescCtx {
-  /** Carte porteuse. Null en l'absence de contexte (tooltips de registre). */
-  card?: Pick<
-    Card,
-    | "race" | "clan" | "faction" | "card_alignment" | "entraide_race"
-    | "convocation_token_id" | "convocation_tokens" | "lycanthropie_token_id"
-  > | null;
-  /** Instance du mot-clé : porte la race/clan CIBLÉS et la capacité conférée. */
-  instance?: KeywordInstance | null;
-  x?: number | null;
-  y?: number | null;
-  /** Registre des tokens, pour résoudre les convocations. */
-  tokens?: TokenTemplate[];
-}
+export type KeywordDescCtx = MarkerCtx;
 
-// Replis génériques, employés quand la carte ne porte pas encore la valeur
-// (carte en cours de création dans la forge, entrée legacy sans instance).
-// Le texte FR est volontairement l'ANCIENNE formulation générique : le repli ne
-// coûte donc aucune rédaction et la forge garde son comportement d'origine.
-// Source unique + graine du générateur de vocab, comme COMPOSED_FR.
-export const MARKERS_FR: Record<string, string> = {
-  // Phrase nominale entière — « Ajoute en main {race} » .
-  "race": "la créature de la race choisie",
-  // Qualificatif POST-NOMINAL — « par allié {race_bare} ». Le repli doit se
-  // placer au même endroit que la valeur concrète, d'où « de même race » et
-  // non « allié de même race » (qui doublerait le nom).
-  "race_bare": "de même race",
-  "race_de": "de même race",
-  // Après déterminant — « vos {race_pl} ».
-  "race_pl": "unités de même race",
-  "clan": "votre clan",
-  "clan_de": "de même clan",
-  "faction": "votre faction",
-  "faction_de": "de même faction",
-  "alignment": "du même alignement",
-  // Gabarit de l'alignement concret : localisable, contrairement à une
-  // préposition recollée dans le résolveur.
-  "alignment_of": "d'alignement {a}",
-  "token": "le token configuré",
-  "tokens": "plusieurs tokens",
-  "lycanthrope": "un token X/X",
-  "ability": "une capacité",
-  "scope": "à une unité alliée (ou à toutes)",
-  "scope_target": "à une unité alliée",
-  "scope_all": "à toutes vos unités",
-};
-
-function marker(key: string, t?: SafeT): string | undefined {
-  return t?.(`vocab.markers.${key}`) ?? MARKERS_FR[key];
-}
-
-// Race ciblée par CE mot-clé. Priorité à l'instance (Appel Suprême,
-// Renforcement multiple stockent leur cible sur l'instance), puis au champ
-// dédié d'Entraide, puis à la race de la carte elle-même (Loyauté, Martyr…).
-function targetRace(kw: Keyword, ctx: KeywordDescCtx): string | null | undefined {
-  if (kw === "entraide") return ctx.card?.entraide_race ?? ctx.instance?.race;
-  return ctx.instance?.race ?? ctx.card?.race;
-}
-
-function targetClan(ctx: KeywordDescCtx): string | null | undefined {
-  return ctx.instance?.clan ?? ctx.card?.clan;
-}
-
-type Resolver = (kw: Keyword, ctx: KeywordDescCtx, t?: SafeT) => string | null;
-
-const RESOLVERS: Record<string, Resolver> = {
-  race: (kw, ctx, t) => getRaceForm(targetRace(kw, ctx), "def", t),
-  race_bare: (kw, ctx, t) => getRaceForm(targetRace(kw, ctx), "bare", t),
-  race_de: (kw, ctx, t) => getRaceForm(targetRace(kw, ctx), "de", t),
-  race_pl: (kw, ctx, t) => getRaceForm(targetRace(kw, ctx), "pl", t),
-  clan: (_kw, ctx, t) => {
-    const c = targetClan(ctx);
-    return c ? getClanName(c, t) : null;
-  },
-  clan_de: (_kw, ctx, t) => getClanForm(targetClan(ctx), t),
-  faction: (_kw, ctx, t) => {
-    const f = ctx.card?.faction;
-    return f ? getFactionForm(f, t) : null;
-  },
-  faction_de: (_kw, ctx, t) => getFactionForm(ctx.card?.faction, t),
-  alignment: (_kw, ctx, t) => {
-    if (!ctx.card) return null;
-    const a = getEffectiveAlignment(ctx.card);
-    if (!a) return null;
-    const tmpl = marker("alignment_of", t) ?? "d'alignement {a}";
-    return tmpl.replace(/\{a\}/g, getAlignmentLabel(a, t));
-  },
+// Résolveurs propres aux mots-clés CRÉATURE : les convocations ont besoin du
+// registre de tokens, que desc-markers.ts ne peut pas importer sans créer un
+// cycle avec spell-keywords.ts. Ils s'ajoutent aux résolveurs de base.
+const TOKEN_RESOLVERS: Record<string, Resolver> = {
   token: (kw, ctx, t) =>
     formatConvocationToken(
       ctx.card?.convocation_token_id,
@@ -123,16 +43,6 @@ const RESOLVERS: Record<string, Resolver> = {
       : null,
   lycanthrope: (_kw, ctx, t) =>
     formatConvocationToken(ctx.card?.lycanthropie_token_id, ctx.tokens, ctx.x, t),
-  ability: (_kw, ctx, t) => {
-    const id = ctx.instance?.grantAbilityId;
-    return id ? getKeywordDisplayLabel(id as Keyword, t) : null;
-  },
-  scope: (_kw, ctx, t) => {
-    const sc = ctx.instance?.grantScope;
-    if (sc === "all_allies") return marker("scope_all", t) ?? null;
-    if (sc === "target") return marker("scope_target", t) ?? null;
-    return null;
-  },
 };
 
 /**
@@ -170,22 +80,9 @@ export function describeKeyword(
   ctx: KeywordDescCtx = {},
   t?: SafeT,
 ): string | null {
-  let s = template(kw, t);
-  if (!s) return null;
-
-  // Marqueurs D'ABORD. Un marqueur sans valeur retombe sur sa forme générique ;
-  // un marqueur inconnu reste littéral plutôt que de produire « undefined ».
-  s = s.replace(/\{(\w+)\}/g, (literal, key: string) => {
-    const resolved = RESOLVERS[key]?.(kw, ctx, t);
-    return resolved ?? marker(key, t) ?? literal;
-  });
-
-  // X/Y ENSUITE : certains replis portent eux-mêmes un gabarit (« un token
-  // X/X »), qui resterait littéral si l'ordre était inversé. Les résolveurs
-  // consomment ctx.x directement, jamais la chaîne.
-  if (ctx.x != null) s = s.replace(/X/g, String(ctx.x));
-  const y = ctx.y ?? ctx.instance?.y;
-  if (y != null) s = s.replace(/Y/g, String(y));
+  const tmpl = template(kw, t);
+  if (!tmpl) return null;
+  const s = resolveMarkers(tmpl, kw, ctx, t, TOKEN_RESOLVERS);
 
   // Convocations multiples : phrase entièrement composée, pas un simple
   // remplacement (la liste groupe les tokens identiques).

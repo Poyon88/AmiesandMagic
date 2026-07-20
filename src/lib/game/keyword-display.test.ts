@@ -1,7 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { describeKeyword, describeKeywordLabel, MARKERS_FR } from "./keyword-display";
+import { describeKeyword, describeKeywordLabel } from "./keyword-display";
+import { MARKERS_FR } from "./desc-markers";
 import { RACE_FORMS_FR } from "@/lib/card-engine/race-forms";
-import { KEYWORD_DESC_BY_ID } from "./abilities";
+import { KEYWORD_DESC_BY_ID, SPELL_KEYWORDS } from "./abilities";
+import { getSpellKeywordDesc } from "./spell-keywords";
 import type { Card, TokenTemplate } from "./types";
 
 const card = (over: Partial<Card> = {}) => over as Card;
@@ -53,7 +55,7 @@ describe("describeKeyword — valeurs concrètes", () => {
   it("la race de l'instance prime sur celle de la carte", () => {
     const d = describeKeyword("appel_supreme", {
       card: card({ race: "Démons" }),
-      instance: { id: "appel_supreme", race: "Nains" },
+      instance: { race: "Nains" },
     });
     expect(d).toContain("le Nain");
     expect(d).not.toContain("Démon");
@@ -167,6 +169,28 @@ describe("contrat des descriptions", () => {
       .map((kw) => [kw, describeKeyword(kw as never, ctx) ?? ""] as const)
       .filter(([, d]) => d.length > 120);
     expect(long.map(([kw, d]) => `${kw} (${d.length})`)).toEqual([]);
+  });
+
+  // Le bug qui a motivé ce test : une capacité existant côté créature ET côté
+  // sort partage sa description, mais seul le chemin créature résolvait les
+  // marqueurs — la carte sort affichait « {alignment} » brut au joueur.
+  it("le chemin SORT résout aussi les marqueurs", () => {
+    const card = {
+      faction: "Elfes", race: "Démons", clan: "Les Sylvains",
+    } as unknown as Card;
+    const leaked: string[] = [];
+    for (const id of Object.keys(SPELL_KEYWORDS)) {
+      const out = getSpellKeywordDesc({ id, amount: 2 } as never, card, []);
+      if (/\{\w+\}/.test(out)) leaked.push(`${id}: ${out}`);
+    }
+    expect(leaked).toEqual([]);
+  });
+
+  it("sort — Sélection nomme l'alignement au lieu du marqueur", () => {
+    const card = { faction: "Morts-Vivants" } as unknown as Card;
+    const out = getSpellKeywordDesc({ id: "selection", amount: 3 } as never, card, []);
+    expect(out).toContain("d'alignement");
+    expect(out).not.toContain("{alignment}");
   });
 
   it("chaque race connue a ses formes fléchies", () => {

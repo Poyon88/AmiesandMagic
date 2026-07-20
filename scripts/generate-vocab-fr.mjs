@@ -27,7 +27,7 @@ export { SPELL_KEYWORDS } from "@/lib/game/spell-keywords";
 export { COMPOSED_FR } from "@/lib/game/composed-display";
 export { FACTIONS, RARITIES, KEYWORDS, KEYWORD_DESC_BY_ID, ALIGNMENTS } from "@/lib/card-engine/constants";
 export { RACE_FORMS_FR, CLAN_FORMS_FR, FACTION_FORMS_FR } from "@/lib/card-engine/race-forms";
-export { MARKERS_FR } from "@/lib/game/keyword-display";
+export { MARKERS_FR } from "@/lib/game/desc-markers";
 `;
 
 const built = await esbuild.build({

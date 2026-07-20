@@ -20,13 +20,16 @@ describe("catalogues traduits — marqueurs", () => {
   it.each(LOCALES)("%s conserve exactement les marqueurs du FR", (loc) => {
     const cat = load(loc);
     const drift: string[] = [];
-    for (const [id, entry] of Object.entries(fr.vocab.keywords) as [string, { desc?: string }][]) {
-      if (!entry.desc) continue;
-      const target = cat.vocab.keywords?.[id]?.desc;
-      if (typeof target !== "string") continue;
-      // Détecte un {race} traduit en {raza}, ou un marqueur perdu/ajouté.
-      if (markersOf(entry.desc) !== markersOf(target)) {
-        drift.push(`${id}: FR[${markersOf(entry.desc)}] ≠ ${loc}[${markersOf(target)}]`);
+    // Les DEUX registres : une capacité créature/sort partage sa description.
+    for (const section of ["keywords", "spell_keywords"] as const) {
+      for (const [id, entry] of Object.entries(fr.vocab[section]) as [string, { desc?: string }][]) {
+        if (!entry.desc) continue;
+        const target = cat.vocab[section]?.[id]?.desc;
+        if (typeof target !== "string") continue;
+        // Détecte un {race} traduit en {raza}, ou un marqueur perdu/ajouté.
+        if (markersOf(entry.desc) !== markersOf(target)) {
+          drift.push(`${section}.${id}: FR[${markersOf(entry.desc)}] ≠ ${loc}[${markersOf(target)}]`);
+        }
       }
     }
     expect(drift).toEqual([]);
@@ -81,10 +84,12 @@ describe("catalogues traduits — pas de déterminant dupliqué", () => {
     // pour un « o {race} » fautif.
     const re = new RegExp(`(?<!\\p{L})(${dets})\\s+\\{(race|clan|faction|alignment)\\}`, "giu");
     const offenders: string[] = [];
-    for (const [id, entry] of Object.entries(cat.vocab.keywords) as [string, { desc?: string }][]) {
-      if (typeof entry.desc !== "string") continue;
-      const hit = entry.desc.match(re);
-      if (hit) offenders.push(`${id}: « ${hit.join(" / ")} » dans « ${entry.desc} »`);
+    for (const section of ["keywords", "spell_keywords"] as const) {
+      for (const [id, entry] of Object.entries(cat.vocab[section]) as [string, { desc?: string }][]) {
+        if (typeof entry.desc !== "string") continue;
+        const hit = entry.desc.match(re);
+        if (hit) offenders.push(`${section}.${id}: « ${hit.join(" / ")} » dans « ${entry.desc} »`);
+      }
     }
     expect(offenders).toEqual([]);
   });
