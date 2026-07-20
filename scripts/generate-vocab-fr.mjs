@@ -25,7 +25,7 @@ const entry = `
 export { KEYWORD_LABELS } from "@/lib/game/keyword-labels";
 export { SPELL_KEYWORDS } from "@/lib/game/spell-keywords";
 export { COMPOSED_FR } from "@/lib/game/composed-display";
-export { FACTIONS, RARITIES, KEYWORDS, ALIGNMENTS } from "@/lib/card-engine/constants";
+export { FACTIONS, RARITIES, KEYWORDS, KEYWORD_DESC_BY_ID, ALIGNMENTS } from "@/lib/card-engine/constants";
 `;
 
 const built = await esbuild.build({
@@ -40,9 +40,9 @@ const built = await esbuild.build({
 
 const tmp = path.join(ROOT, "scripts", ".vocab-bundle.mjs");
 fs.writeFileSync(tmp, built.outputFiles[0].text);
-let KEYWORD_LABELS, SPELL_KEYWORDS, COMPOSED_FR, FACTIONS, RARITIES, KEYWORDS, ALIGNMENTS;
+let KEYWORD_LABELS, SPELL_KEYWORDS, COMPOSED_FR, FACTIONS, RARITIES, KEYWORDS, KEYWORD_DESC_BY_ID, ALIGNMENTS;
 try {
-  ({ KEYWORD_LABELS, SPELL_KEYWORDS, COMPOSED_FR, FACTIONS, RARITIES, KEYWORDS, ALIGNMENTS } = await import(`file://${tmp}?t=${Date.now()}`));
+  ({ KEYWORD_LABELS, SPELL_KEYWORDS, COMPOSED_FR, FACTIONS, RARITIES, KEYWORDS, KEYWORD_DESC_BY_ID, ALIGNMENTS } = await import(`file://${tmp}?t=${Date.now()}`));
 } finally {
   fs.rmSync(tmp, { force: true });
 }
@@ -66,7 +66,9 @@ for (const [id, label] of Object.entries(KEYWORD_LABELS)) {
   vocab.keywords[id] = { label };
   // Description affichée (même source que le runtime : KEYWORDS[label].desc,
   // conserve les gabarits X/Y substitués à l'exécution). Traduite par le pipeline.
-  const desc = KEYWORDS?.[label]?.desc;
+  // Repli par id moteur : KEYWORDS est keyé par le libellé forge, qui peut
+  // diverger du libellé d'affichage (cf. KEYWORD_DESC_BY_ID dans abilities.ts).
+  const desc = KEYWORDS?.[label]?.desc ?? KEYWORD_DESC_BY_ID?.[id];
   if (desc) vocab.keywords[id].desc = desc;
 }
 

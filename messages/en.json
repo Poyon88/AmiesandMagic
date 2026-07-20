@@ -23,11 +23,11 @@
       },
       "convocations_multiples": {
         "label": "Multi-Summon",
-        "desc": "Summon: creates multiple tokens based on configuration."
+        "desc": "Creates multiple tokens based on configuration."
       },
       "loyaute": {
         "label": "Loyalty",
-        "desc": "Summon: +1 ATK and +1 HP for each allied unit of the same race in play."
+        "desc": "+1 ATK and +1 HP for each allied unit of the same race in play."
       },
       "ancre": {
         "label": "Anchored",
@@ -83,7 +83,7 @@
       },
       "pillage": {
         "label": "Plunder X",
-        "desc": "Summon: the opponent discards X random cards from their hand."
+        "desc": "The opponent discards X random cards from their hand."
       },
       "riposte": {
         "label": "Riposte X",
@@ -91,11 +91,11 @@
       },
       "rappel": {
         "label": "Recall",
-        "desc": "Summon: return a target card from your graveyard to your hand."
+        "desc": "Return a target card from your graveyard to your hand."
       },
       "combustion": {
         "label": "Combustion",
-        "desc": "Summon: discard a card from your hand, then draw two cards."
+        "desc": "Discard a card from your hand, then draw two cards."
       },
       "terreur": {
         "label": "Terror",
@@ -131,19 +131,19 @@
       },
       "contresort": {
         "label": "Counterspell",
-        "desc": "Summon: counters the next enemy spell."
+        "desc": "Counters the next enemy spell."
       },
       "convocation": {
         "label": "Summon X",
-        "desc": "Summon: creates an X/X token of the indicated race."
+        "desc": "Creates an X/X token of the indicated race."
       },
       "convocation_simple": {
         "label": "Summon",
-        "desc": "Summon: creates the configured token."
+        "desc": "Creates the configured token."
       },
       "malediction": {
         "label": "Curse",
-        "desc": "Summon: target an enemy unit; it is exiled at the end of the opponent's next turn."
+        "desc": "Target an enemy unit; it is exiled at the end of the opponent's next turn."
       },
       "necrophagie": {
         "label": "Necrophagy",
@@ -163,7 +163,7 @@
       },
       "permutation": {
         "label": "Permutation",
-        "desc": "Battlecry: swap the current HP of two target units (one ally and one enemy)."
+        "desc": "Swap the current HP of two target units (one ally and one enemy)."
       },
       "persecution": {
         "label": "Persecution X",
@@ -175,31 +175,31 @@
       },
       "catalyse": {
         "label": "Catalysis",
-        "desc": "Battlecry: reduce the mana cost of all units of the same race in your hand by 1."
+        "desc": "Reduce the mana cost of all units of the same race in your hand by 1."
       },
       "ombre_du_passe": {
         "label": "Shadow of the Past",
-        "desc": "Battlecry: gain +1 ATK and +1 HP for each unit of the same race in your graveyard."
+        "desc": "Gain +1 ATK and +1 HP for each unit of the same race in your graveyard."
       },
       "profanation": {
         "label": "Desecration X",
-        "desc": "Battlecry: exile the last X cards from your graveyard to grant up to +X/+X to the unit."
+        "desc": "Exile the last X cards from your graveyard to grant up to +X/+X to the unit."
       },
       "prescience": {
         "label": "Prescience X",
-        "desc": "Battlecry: draw cards until you have X cards in hand."
+        "desc": "Draw cards until you have X cards in hand."
       },
       "suprematie": {
         "label": "Supremacy",
-        "desc": "Battlecry: gain +1 ATK and +1 HP for each card in your hand at the time of summoning."
+        "desc": "Gain +1 ATK and +1 HP for each card in your hand at the time of summoning."
       },
       "divination": {
         "label": "Divination",
-        "desc": "Battlecry: reveal the top 3 cards of your deck; place one on top and the other 2 at the bottom in any order."
+        "desc": "Reveal the top 3 cards of your deck; place one on top and the other 2 at the bottom in any order."
       },
       "savant": {
         "label": "Savant",
-        "desc": "Battlecry: gain +1 ATK and +1 HP for each spell in your graveyard."
+        "desc": "Gain +1 ATK and +1 HP for each spell in your graveyard."
       },
       "liaison_de_vie": {
         "label": "Lifebond",
@@ -211,7 +211,7 @@
       },
       "sacrifice": {
         "label": "Sacrifice",
-        "desc": "Battlecry: destroy an ally to permanently gain its HP and ATK."
+        "desc": "Destroy an ally to permanently gain its HP and ATK."
       },
       "malefice": {
         "label": "Hex",
@@ -231,35 +231,35 @@
       },
       "carnage": {
         "label": "Carnage X",
-        "desc": "On death: deal X damage to all units in play (allies and enemies)."
+        "desc": "Deal X damage to all units in play (allies and enemies)."
       },
       "heritage": {
         "label": "Legacy X",
-        "desc": "On death: each allied unit in play permanently gains +X ATK and +X HP."
+        "desc": "Each allied unit in play permanently gains +X ATK and +X HP."
       },
       "mimique": {
         "label": "Mimic",
-        "desc": "Battlecry: copy all abilities of a target unit and permanently grant them to this unit."
+        "desc": "Copy all abilities of a target unit and permanently grant them to this unit."
       },
       "metamorphose": {
         "label": "Metamorphosis",
-        "desc": "Battlecry: this unit becomes an exact copy (ATK / HP / abilities) of a target unit."
+        "desc": "This unit becomes an exact copy (ATK / HP / abilities) of a target unit."
       },
       "dedoublement": {
         "label": "Doubling",
-        "desc": "Summon: creates an exact copy of this creature in play."
+        "desc": "Creates an exact copy of this creature in play."
       },
       "tactique": {
         "label": "Tactics X",
-        "desc": "Battlecry: permanently grant X chosen ability(ies) to a target allied unit."
+        "desc": "Permanently grant X chosen ability(ies) to a target allied unit."
       },
       "exhumation": {
         "label": "Exhumation X",
-        "desc": "Battlecry: resurrect a unit from your graveyard with a mana cost equal to or less than X."
+        "desc": "Resurrect a unit from your graveyard with a mana cost equal to or less than X."
       },
       "heritage_du_cimetiere": {
         "label": "Graveyard Legacy",
-        "desc": "Battlecry: grant this unit the abilities of a target unit in your graveyard."
+        "desc": "Grant this unit the abilities of a target unit in your graveyard."
       },
       "pacte_de_sang": {
         "label": "Blood Pact",
@@ -283,11 +283,11 @@
       },
       "vampirisme": {
         "label": "Vampirism X",
-        "desc": "Battlecry: steal X HP from a target enemy unit and add them to this unit's HP."
+        "desc": "Steal X HP from a target enemy unit and add them to this unit's HP."
       },
       "traque_du_destin": {
         "label": "Fate Hunt X",
-        "desc": "Battlecry: reveal the top X cards of your deck, take one into your hand and place the rest at the bottom in a random order."
+        "desc": "Reveal the top X cards of your deck, take one into your hand and place the rest at the bottom in a random order."
       },
       "sang_mele": {
         "label": "Mixed Blood",
@@ -299,22 +299,23 @@
       },
       "solidarite": {
         "label": "Solidarity X",
-        "desc": "Battlecry: draw X cards if you control 2 other units of the same race."
+        "desc": "Draw X cards if you control 2 other units of the same race."
       },
       "entraide": {
-        "label": "Mutual Aid"
+        "label": "Mutual Aid",
+        "desc": "Costs 1 less mana per allied unit of the chosen race in play (cumulative, minimum 0)."
       },
       "cycle_eternel": {
         "label": "Eternal Cycle",
-        "desc": "On death: add a copy of this card to your deck; if drawn, put it directly into play."
+        "desc": "Add a copy of this card to your deck; if drawn, put it directly into play."
       },
       "martyr": {
         "label": "Martyr",
-        "desc": "On death: all your units of the same race in play permanently gain +1/+1."
+        "desc": "All your units of the same race in play permanently gain +1/+1."
       },
       "instinct_de_meute": {
         "label": "Pack Instinct X",
-        "desc": "Battlecry: gain +X ATK and +X HP if an allied unit of the same faction went from play to the graveyard this turn."
+        "desc": "Gain +X ATK and +X HP if an allied unit of the same faction went from play to the graveyard this turn."
       },
       "totem": {
         "label": "Totem",
@@ -322,47 +323,47 @@
       },
       "appel_du_clan": {
         "label": "Clan Call X",
-        "desc": "Battlecry: put the first unit of the same clan with a cost equal to or less than X from the top of your deck into play for free."
+        "desc": "Put the first unit of the same clan with a cost equal to or less than X from the top of your deck into play for free."
       },
       "appel_supreme": {
         "label": "Supreme Call",
-        "desc": "Battlecry: add to your hand the highest mana cost unit of the chosen race remaining in your deck (random if tied)."
+        "desc": "Add to your hand the highest mana cost unit of the chosen race remaining in your deck (random if tied)."
       },
       "rassemblement": {
         "label": "Rally X",
-        "desc": "Summon: reveal the top X cards of your deck; add all units of the same race to your hand and discard the rest."
+        "desc": "Reveal the top X cards of your deck; add all units of the same race to your hand and discard the rest."
       },
       "selection": {
         "label": "Selection X",
-        "desc": "Summon: reveal 3 random common cards with cost ≤ X from factions sharing this card's alignment (good/neutral/evil); add one to your hand. No cost limit if X is undefined."
+        "desc": "Reveal 3 random common cards with cost ≤ X from factions sharing this card's alignment; add one to your hand."
       },
       "selection_magique": {
         "label": "Arcane Selection X",
-        "desc": "Summon: reveal 3 random common spells with cost ≤ X from factions sharing this card's alignment (good/neutral/evil); add one to your hand. No cost limit if X is undefined."
+        "desc": "Reveal 3 random common spells with cost ≤ X from factions sharing this card's alignment; add one to your hand."
       },
       "renfort_royal": {
         "label": "Royal Selection X",
-        "desc": "Summon: reveal 3 random cards from your limited editions (≥30 required; otherwise from commons of the same alignment) with cost ≤ X; add one to your hand. No cost limit if X is undefined."
+        "desc": "Reveal 3 random cards from your limited editions (≥30 required; otherwise from commons of the same alignment) with cost ≤ X; add one to your hand."
       },
       "lycanthropie": {
         "label": "Lycanthropy X",
-        "desc": "Start of turn: transforms into an X/X token with Stalk."
+        "desc": "Transforms into an X/X token with Stalk."
       },
       "relancer": {
         "label": "Reroll X",
-        "desc": "Summon: replay the last X spells cast with random targets."
+        "desc": "Replay the last X spells cast with random targets."
       },
       "tempete": {
         "label": "Storm X",
-        "desc": "Summon: deal X damage distributed randomly among enemy units."
+        "desc": "Deal X damage distributed randomly among enemy units."
       },
       "cataclysme": {
         "label": "Cataclysm X",
-        "desc": "Summon: deal X damage to all creatures (allied AND enemy)."
+        "desc": "Deal X damage to all creatures (allied AND enemy)."
       },
       "affaiblissement": {
         "label": "Weaken -X/-Y",
-        "desc": "Summon: give -X ATK and -Y HP to a targeted enemy creature."
+        "desc": "Give -X ATK and -Y HP to a targeted enemy creature."
       },
       "renforcement": {
         "label": "Strengthen +X/+Y",
@@ -374,15 +375,15 @@
       },
       "douleur": {
         "label": "Pain X",
-        "desc": "Summon: deal X damage to your hero."
+        "desc": "Deal X damage to your hero."
       },
       "inspiration": {
         "label": "Inspiration X",
-        "desc": "Summon: draw X cards."
+        "desc": "Draw X cards."
       },
       "concentration": {
         "label": "Focus X",
-        "desc": "Summon: replace each spell in hand with a random spell (any faction) costing X more; reduce the new spell's cost by X."
+        "desc": "Replace each spell in hand with a random spell (any faction) costing X more; reduce the new spell's cost by X."
       },
       "remontee": {
         "label": "Comeback",
@@ -398,11 +399,11 @@
       },
       "conferer": {
         "label": "Bestow",
-        "desc": "Summon: grant a chosen ability to an allied unit (or to all of them)."
+        "desc": "Grant a chosen ability to an allied unit (or to all of them)."
       },
       "declenchement": {
         "label": "Trigger",
-        "desc": "Summon: replay once the triggered compound effects of other allies in play, for a fixed subset of triggers (enter / death / end of turn / return)."
+        "desc": "Replay once the triggered compound effects of other allies in play, for a fixed subset of triggers (enter / death / end of turn / return)."
       }
     },
     "spell_keywords": {
@@ -440,15 +441,15 @@
       },
       "selection": {
         "label": "Selection X",
-        "desc": "Choose one card from 3 random commons with cost ≤ X (no limit if X is undefined), from factions of the same alignment as this spell, to add to your hand."
+        "desc": "Choose one card from 3 random commons with cost ≤ X, from factions of the same alignment as this spell, to add to your hand."
       },
       "selection_magique": {
         "label": "Magic Selection X",
-        "desc": "Choose one spell from 3 random common spells with cost ≤ X (no limit if X is undefined), from factions of the same alignment as this spell, to add to your hand."
+        "desc": "Choose one spell from 3 random common spells with cost ≤ X, from factions of the same alignment as this spell, to add to your hand."
       },
       "renfort_royal": {
         "label": "Royal Selection X",
-        "desc": "Choose one card from 3 random cards from your limited editions (≥30 required; otherwise from commons of the same alignment) with cost ≤ X (no limit if X is undefined) to add to your hand."
+        "desc": "Choose one card from 3 random cards from your limited editions (≥30 required; otherwise from commons of the same alignment) with cost ≤ X to add to your hand."
       },
       "relancer": {
         "label": "Recast X",
@@ -1462,7 +1463,7 @@
     "zone_deck_opponent": "Opponent's Deck",
     "zone_graveyard_yours": "Your Graveyard",
     "zone_graveyard_opponent": "Opponent's Graveyard",
-    "convocation_prefix": "Summon: creates {content}",
+    "convocation_prefix": "Creates {content}",
     "convocation_create_list": "Creates {content}",
     "convocation_token_one": "a {token} token {atk}/{hp}",
     "convocation_token_many": "{count} {token} tokens {atk}/{hp}",
