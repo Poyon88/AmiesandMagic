@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { describeKeyword, describeKeywordLabel } from "./keyword-display";
 import { MARKERS_FR } from "./desc-markers";
 import { RACE_FORMS_FR } from "@/lib/card-engine/race-forms";
-import { KEYWORD_DESC_BY_ID, SPELL_KEYWORDS } from "./abilities";
+import { KEYWORD_DESC_BY_ID, SPELL_KEYWORDS, KEYWORDS, CREATURE_LABEL_TO_ENGINE_ID } from "./abilities";
 import { getSpellKeywordDesc } from "./spell-keywords";
 import type { Card, TokenTemplate } from "./types";
 
@@ -191,6 +191,20 @@ describe("contrat des descriptions", () => {
     const out = getSpellKeywordDesc({ id: "selection", amount: 3 } as never, card, []);
     expect(out).toContain("d'alignement");
     expect(out).not.toContain("{alignment}");
+  });
+
+  // La forge indexe par LIBELLÉ FORGE (« Entraide (Race) ») là où le reste du
+  // code emploie le libellé d'affichage (« Entraide »). Quand les deux
+  // divergent, la résolution échoue EN SILENCE — c'est ce qui privait Entraide
+  // de description partout, et son icône personnalisée dans l'aperçu.
+  it("chaque libellé forge se résout en un id moteur décrit", () => {
+    const orphans: string[] = [];
+    for (const forgeLabel of Object.keys(KEYWORDS)) {
+      const id = CREATURE_LABEL_TO_ENGINE_ID[forgeLabel];
+      if (!id) orphans.push(`${forgeLabel} → aucun id`);
+      else if (!KEYWORD_DESC_BY_ID[id]) orphans.push(`${forgeLabel} → ${id} sans desc`);
+    }
+    expect(orphans).toEqual([]);
   });
 
   it("chaque race connue a ses formes fléchies", () => {

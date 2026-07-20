@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { KEYWORDS, FACTIONS, RARITY_MAP } from '@/lib/card-engine/constants';
+import { FACTIONS, RARITY_MAP } from '@/lib/card-engine/constants';
 import KeywordIcon from '@/components/shared/KeywordIcon';
-import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, getSpellKeywordDesc, getSpellKeywordLabel, formatConvocationTokens } from '@/lib/game/spell-keywords';
-import { isCreatureKwShadowedBySpell } from '@/lib/game/abilities';
+import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, getSpellKeywordDesc, getSpellKeywordLabel } from '@/lib/game/spell-keywords';
+import { isCreatureKwShadowedBySpell, CREATURE_LABEL_TO_ENGINE_ID } from '@/lib/game/abilities';
+import { useVocab } from '@/i18n/useVocab';
 import { KEYWORD_LABELS, keywordModeColor, TEXT_CONTRAST_HALO } from '@/lib/game/keyword-labels';
 import { composedCapsOf, composedIcon, composedKeywordName, composedTriggerMode, composedValueText, describeComposedCap } from '@/lib/game/composed-display';
 import ComposedMarker from '@/components/cards/ComposedMarker';
@@ -21,6 +22,15 @@ import type { SpellKeywordInstance, TokenTemplate } from '@/lib/game/types';
 const FR_LABEL_TO_ID: Record<string, string> = Object.fromEntries(
   Object.entries(KEYWORD_LABELS).map(([id, label]) => [label, id]),
 );
+
+// Libellé FORGE → id moteur. CREATURE_LABEL_TO_ENGINE_ID est dérivé de la même
+// source que KEYWORDS (`creature.label ?? label`), donc il couvre les libellés
+// que KEYWORD_LABELS ignore — « Entraide (Race) » vs « Entraide ». Sans lui,
+// l'id restait introuvable et l'icône personnalisée d'Entraide ne s'appliquait
+// jamais dans l'aperçu. FR_LABEL_TO_ID reste en repli.
+function forgeKeywordId(kw: string): string {
+  return CREATURE_LABEL_TO_ENGINE_ID[kw] ?? FR_LABEL_TO_ID[kw] ?? kw;
+}
 
 // ─── KEYWORD → SYMBOL MAP ───────────────────────────────────────────────────
 
@@ -167,6 +177,45 @@ interface CardData {
 export default function CardVisual({ card, loading, compact = false, imageUrl, onImageChange, tokens }: { card: CardData | null; loading: boolean; compact?: boolean; imageUrl?: string | null; onImageChange?: (url: string) => void; tokens?: TokenTemplate[] }) {
   const [hovered, setHovered] = useState(false);
   const t = useTranslations("forge");
+  const vocab = useVocab();
+
+  // Adaptateur brouillon-forge → contexte de description. Le brouillon est en
+  // camelCase et n'est pas encore une Card ; les champs absents déclenchent les
+  // replis génériques de describeKeyword, ce qui est le comportement attendu
+  // tant que l'admin n'a pas choisi la race/le clan/le token.
+  const descCtx = (kw: string) => ({
+    card: {
+      race: card?.race,
+      clan: card?.clan,
+      faction: card?.faction,
+      card_alignment: card?.cardAlignment,
+      entraide_race: card?.entraideRace,
+      convocation_token_id: card?.convocationTokenId,
+      convocation_tokens: card?.convocationTokens,
+      lycanthropie_token_id: card?.lycanthropieTokenId,
+    },
+    instance: card?.keywordGrantScope?.[kw]
+      ? ({ grantScope: card.keywordGrantScope[kw] } as const)
+      : null,
+    x: card?.keywordXValues?.[kw] ?? null,
+    tokens,
+  });
+
+  // Libellé + description d'un mot-clé de l'aperçu, via le MÊME chemin que le
+  // jeu (describeKeyword) : la forge lisait KEYWORDS[kw].desc en dur, sans
+  // localisation, avec quatre blocs FR codés en dur et dupliqués deux fois.
+  const forgeKeyword = (kw: string) => {
+    const id = forgeKeywordId(kw);
+    const xVal = card?.keywordXValues?.[kw];
+    const ctx = descCtx(kw);
+    const label = vocab.keywordLabelFor(id as never, ctx as never);
+    return {
+      id,
+      xVal,
+      displayName: xVal != null ? label.replace(/ X$/, ` ${xNumeral(xVal)}`) : label,
+      displayDesc: vocab.keywordDesc(id as never, ctx as never) ?? "",
+    };
+  };
   const W = compact ? 180 : 300;
   const H = compact ? 252 : 420;
   const s = compact ? 0.6 : 1;
@@ -349,24 +398,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
         {card!.keywords?.length > 0 && (
           <div style={{ display: "flex", gap: 4 * s, flexWrap: "wrap" }}>
             {card!.keywords.filter(kw => !isCreatureKwShadowedBySpell(kw, card!.spellKeywords)).map(kw => {
-              const xVal = card!.keywordXValues?.[kw];
-              let displayName = xVal != null ? kw.replace(/ X$/, ` ${xNumeral(xVal)}`) : kw;
-              let displayDesc = xVal != null ? KEYWORDS[kw]?.desc.replace(/X/g, String(xVal)) : KEYWORDS[kw]?.desc;
-              if (kw === "Convocation X" && card!.convocationTokenId) {
-                const tokenLabel = card!.convocationTokenName || "token";
-                displayDesc = `Crée un token ${tokenLabel} ${xVal ?? "X"}/${xVal ?? "X"}.`;
-              }
-              if (kw === "Convocations multiples" && card!.convocationTokens?.length) {
-                displayDesc = `Crée ${formatConvocationTokens(card!.convocationTokens, tokens)}.`;
-              }
-              if (kw === "Lycanthropie X" && card!.lycanthropieTokenId) {
-                const tokenLabel = card!.lycanthropieTokenName || "forme transformée";
-                displayDesc = `Début de tour : se transforme en ${tokenLabel} ${xVal ?? "X"}/${xVal ?? "X"} avec Traque.`;
-              }
-              if (kw === "Entraide (Race)" && card!.entraideRace) {
-                displayName = `Entraide (${card!.entraideRace})`;
-                displayDesc = `En main : coûte 1 mana de moins par allié ${card!.entraideRace} présent en jeu (cumulable, plancher 0).`;
-              }
+              const { xVal, displayName, displayDesc } = forgeKeyword(kw);
               const grantScope = card!.type !== "Unité"
                 ? (card!.keywordGrantScope?.[kw] === "all_allies" ? "all_allies" : "target")
                 : null;
@@ -382,7 +414,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                   transition: "all 0.2s",
                 }}>
                   <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 15 * s, height: 15 * s, flexShrink: 0 }}>
-                    <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} keyword={FR_LABEL_TO_ID[kw] ?? kw} size={15 * s} fill />
+                    <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} keyword={forgeKeywordId(kw)} size={15 * s} fill />
                   </span>
                   {xVal != null && (
                     <span style={{
@@ -576,31 +608,14 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
         {card!.keywords?.length > 0 && (
           <div style={{ display: "flex", flexDirection: "column", gap: 6 * s }}>
             {card!.keywords.filter(kw => !isCreatureKwShadowedBySpell(kw, card!.spellKeywords)).map(kw => {
-              const xVal = card!.keywordXValues?.[kw];
-              let displayName = xVal != null ? kw.replace(/ X$/, ` ${xNumeral(xVal)}`) : kw;
-              let displayDesc = xVal != null ? KEYWORDS[kw]?.desc.replace(/X/g, String(xVal)) : KEYWORDS[kw]?.desc;
-              if (kw === "Convocation X" && card!.convocationTokenId) {
-                const tokenLabel = card!.convocationTokenName || "token";
-                displayDesc = `Crée un token ${tokenLabel} ${xVal ?? "X"}/${xVal ?? "X"}.`;
-              }
-              if (kw === "Convocations multiples" && card!.convocationTokens?.length) {
-                displayDesc = `Crée ${formatConvocationTokens(card!.convocationTokens, tokens)}.`;
-              }
-              if (kw === "Lycanthropie X" && card!.lycanthropieTokenId) {
-                const tokenLabel = card!.lycanthropieTokenName || "forme transformée";
-                displayDesc = `Début de tour : se transforme en ${tokenLabel} ${xVal ?? "X"}/${xVal ?? "X"} avec Traque.`;
-              }
-              if (kw === "Entraide (Race)" && card!.entraideRace) {
-                displayName = `Entraide (${card!.entraideRace})`;
-                displayDesc = `En main : coûte 1 mana de moins par allié ${card!.entraideRace} présent en jeu (cumulable, plancher 0).`;
-              }
+              const { displayName, displayDesc } = forgeKeyword(kw);
               const detailScope = card!.type !== "Unité"
                 ? (card!.keywordGrantScope?.[kw] === "all_allies" ? "all_allies" : "target")
                 : null;
               const detailNote = detailScope === "all_allies" ? t('detail_note_all_allies') : detailScope === "target" ? t('detail_note_target') : "";
               return (
                 <div key={kw} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
-                  <span style={{ flexShrink: 0 }}><KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={18 * s} keyword={FR_LABEL_TO_ID[kw] ?? kw} /></span>
+                  <span style={{ flexShrink: 0 }}><KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={18 * s} keyword={forgeKeywordId(kw)} /></span>
                   <div>
                     <div style={{ fontSize: 14 * s, color: detailScope === "all_allies" ? "#27ae60" : fac.accent, fontWeight: 700 }}>{displayName}{detailNote}</div>
                     <div style={{ fontSize: 12 * s, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{displayDesc}</div>
