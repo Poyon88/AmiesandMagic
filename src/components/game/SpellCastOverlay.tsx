@@ -16,6 +16,7 @@ import {
   SPELL_KEYWORD_SYMBOLS,
 } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
+import { buildKeywordDisplayEntries } from "@/lib/game/keyword-labels";
 import { emitImpact } from "@/lib/fx/impactFx";
 import { OVERLAY, cardRevealInitial, cardRevealAnimate, cardRevealTransition, findInstanceEl, curvedPath, overlayRect } from "@/lib/fx/overlayMotion";
 import { RadialFlash, HaloBloom, ExpandingRing, OrbitingSparkles } from "@/components/game/OverlayPrimitives";
@@ -280,21 +281,27 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
 
                 {/* Keyword details */}
                 {card.keywords && card.keywords.length > 0 && (() => {
-                  const visibleKws = card.keywords.filter((kw) => !isCreatureKwShadowedBySpell(kw, card.spell_keywords));
-                  if (visibleKws.length === 0) return null;
+                  // Passe par buildKeywordDisplayEntries (comme les autres surfaces)
+                  // pour récupérer l'instance : les descriptions en ont besoin
+                  // pour nommer la race/le clan ciblés.
+                  const entries = buildKeywordDisplayEntries(card)
+                    .filter((e) => !isCreatureKwShadowedBySpell(e.kw, card.spell_keywords));
+                  if (entries.length === 0) return null;
                   return (
                   <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-                    {visibleKws.map((kw) => {
-                      const x = (xVals as Record<string, number>)[kw];
-                      const label = vocab.keywordLabel(kw);
+                    {entries.map((entry, idx) => {
+                      const { kw, instance } = entry;
+                      const x = entry.x ?? (xVals as Record<string, number>)[kw];
+                      const ctx = { card, instance, x, tokens: tokenTemplates };
+                      const label = vocab.keywordLabelFor(kw, ctx);
                       const displayLabel = x != null ? label.replace(/ X$/, ` ${xNumeral(x)}`) : label;
-                      const desc = vocab.keywordDesc(kw, x);
+                      const desc = vocab.keywordDesc(kw, ctx);
                       // Conferred keyword scope shown via the label note + colour;
                       // the icon itself is left intact (no destructive recolour).
-                      const grantScope = card.keyword_instances?.find((k) => k.id === kw)?.grantScope ?? "target";
+                      const grantScope = instance?.grantScope ?? "target";
                       const grantNote = grantScope === "all_allies" ? t('spell_grant_all_allies') : t('spell_grant_target');
                       return (
-                        <div key={kw} style={{ display: "flex", alignItems: "flex-start", gap: 6 }}>
+                        <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ display: "flex", alignItems: "flex-start", gap: 6 }}>
                           <span style={{ flexShrink: 0 }}>
                             <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={16} keyword={kw} />
                           </span>

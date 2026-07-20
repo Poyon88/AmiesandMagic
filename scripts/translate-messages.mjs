@@ -23,7 +23,7 @@ const HASH_FILE = path.join(ROOT, ".i18n-hashes.json");
 const SOURCE_LOCALE = "fr";
 const TARGET_LOCALES = ["en", "es", "de", "it", "pt", "ja", "zh"];
 const LANG_NAMES = { en: "English", es: "Spanish", de: "German", it: "Italian", pt: "Portuguese", ja: "Japanese", zh: "Simplified Chinese" };
-const MODEL = "claude-sonnet-4-6";
+const MODEL = "claude-sonnet-5";
 
 const args = process.argv.slice(2);
 const only = (args.find((a) => a.startsWith("--only=")) || "").split("=")[1];
@@ -92,6 +92,9 @@ You receive one entry per line: a key, a TAB, then the French value. Rules:
 - Preserve EXACTLY every placeholder like {name}, {count}, {n} and any ICU syntax (plural/select blocks, #). Do not translate text inside {…}.
 - Keep the literal sequence \\n (backslash + n) intact where present — it marks a line break.
 - Keep it concise; this is UI chrome (buttons, labels, menus).
+- Keys under vocab.races_forms.* / vocab.clans_forms.* / vocab.factions_forms.* are GRAMMATICAL SURFACE FORMS of one same noun: "def" = singular with definite article, "bare" = singular with no article, "de" = genitive/"of the" form, "pl" = plural. Keep them mutually consistent and correctly inflected for the target language. If the language has no articles or no case marking, the forms may legitimately be identical.
+- CRITICAL: the {race}, {clan}, {faction} and {alignment} placeholders ALREADY CONTAIN their own article/determiner (French "le Démon", English "the Demon"). NEVER write an article directly before such a placeholder — write "Adds {race} to your hand", never "Adds the {race} to your hand".
+- Keys under vocab.markers.* are generic FALLBACK fragments substituted INSIDE a sentence in place of a concrete noun. Translate them so they remain grammatical in that slot; keep them the same part of speech as the French.
 
 OUTPUT FORMAT — follow exactly:
 - Output ONE line per entry, same order, nothing else (no header, no commentary, no code fences).

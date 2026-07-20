@@ -23,11 +23,11 @@
       },
       "convocations_multiples": {
         "label": "Mehrfachbeschwörung",
-        "desc": "Erstellt mehrere Token gemäß der Konfiguration."
+        "desc": "Erschafft {tokens}."
       },
       "loyaute": {
         "label": "Loyalität",
-        "desc": "+1 ATK und +1 LP für jeden verbündeten Einheit derselben Rasse im Spiel."
+        "desc": "+1/+1 pro {race_bare}-Verbündeten im Spiel."
       },
       "ancre": {
         "label": "Verankert",
@@ -91,11 +91,11 @@
       },
       "rappel": {
         "label": "Rückruf",
-        "desc": "Nehmen Sie eine Zielkarte aus Ihrem Friedhof auf die Hand zurück."
+        "desc": "Legt eine anvisierte Karte aus eurem Friedhof zurück auf eure Hand."
       },
       "combustion": {
         "label": "Verbrennung",
-        "desc": "Werfen Sie eine Karte aus Ihrer Hand ab und ziehen Sie dann zwei Karten."
+        "desc": "Wirft eine Karte aus eurer Hand ab und zieht dann zwei Karten."
       },
       "terreur": {
         "label": "Schrecken",
@@ -103,7 +103,7 @@
       },
       "pauvrete": {
         "label": "Verarmung X",
-        "desc": "Diese Einheit verliert so viel Stärke, wie der Gegner Karten auf der Hand hat (X = aktuelle Handgröße des Gegners, dynamisch)."
+        "desc": "Verliert so viel ATK wie der Gegner Karten auf der Hand hat (dynamisch)."
       },
       "armure": {
         "label": "Rüstung",
@@ -111,11 +111,11 @@
       },
       "commandement": {
         "label": "Kommando",
-        "desc": "Verbündete derselben Fraktion erhalten +1/+1."
+        "desc": "+1/+1 für eure Verbündeten {faction_de}."
       },
       "fureur": {
         "label": "Raserei",
-        "desc": "Nachdem diese Einheit Schaden erlitten hat, greift sie sofort eine zufällige feindliche Einheit an (den Helden, falls keine Einheiten mehr vorhanden). Löst höchstens einmal pro Runde aus."
+        "desc": "Nachdem sie Schaden erlitten hat, greift sie eine zufällige gegnerische Einheit an (ersatzweise den Helden). 1 Mal pro Runde."
       },
       "double_attaque": {
         "label": "Doppelangriff",
@@ -131,19 +131,19 @@
       },
       "contresort": {
         "label": "Gegenzauber",
-        "desc": "Hebt den nächsten gegnerischen Zauber auf."
+        "desc": "Neutralisiert den nächsten gegnerischen Zauber."
       },
       "convocation": {
         "label": "Beschwörung X",
-        "desc": "Erstellt einen X/X-Token der angegebenen Rasse."
+        "desc": "Erschafft {token}."
       },
       "convocation_simple": {
         "label": "Beschwörung",
-        "desc": "Erstellt den konfigurierten Token."
+        "desc": "Erschafft {token}."
       },
       "malediction": {
         "label": "Fluch",
-        "desc": "Wählt eine feindliche Einheit – sie wird am Ende des nächsten gegnerischen Zuges verbannt."
+        "desc": "Zielt auf eine gegnerische Einheit; sie wird am Ende der nächsten gegnerischen Runde verbannt."
       },
       "necrophagie": {
         "label": "Nekrophagie",
@@ -155,15 +155,15 @@
       },
       "sacrifice_demoniaque": {
         "label": "Dämonopfer X",
-        "desc": "Beim Tod dieser Einheit werden X Kostenreduzierungen (-1 Mana je) zufällig auf die Dämonen in Ihrer Hand verteilt. Ein Dämon kann nicht weniger als 1 kosten."
+        "desc": "Verteilt beim Tod X Mal -1 Mana-Reduktion auf die Dämonen in eurer Hand (mind. 1)."
       },
       "paralysie": {
         "label": "Lähmung",
-        "desc": "Einheiten, die von dieser Kreatur Schaden erleiden, können bis zum Ende des nächsten Zuges ihres Besitzers weder angreifen noch aktive Fähigkeiten nutzen."
+        "desc": "Einheiten, die sie verletzt, können bis zum Ende ihrer nächsten Runde weder angreifen noch Fähigkeiten aktivieren."
       },
       "permutation": {
         "label": "Permutation",
-        "desc": "Tauscht die aktuellen LP zweier ausgewählter Einheiten (eine verbündete und eine feindliche)."
+        "desc": "Tauscht die aktuellen LP zweier anvisierter Einheiten (eine verbündete und eine gegnerische)."
       },
       "persecution": {
         "label": "Verfolgung X",
@@ -171,35 +171,35 @@
       },
       "pietinement": {
         "label": "Niedertrampeln",
-        "desc": "Wenn diese Einheit eine Kreatur angreift, wird überschüssiger Schaden (über die verbleibenden LP des Ziels hinaus) dem gegnerischen Helden zugefügt."
+        "desc": "Beim Angriff geht Schaden, der die LP der anvisierten Kreatur übersteigt, an den gegnerischen Helden."
       },
       "catalyse": {
         "label": "Katalyse",
-        "desc": "Reduziert die Manakosten aller Einheiten derselben Rasse auf deiner Hand um 1."
+        "desc": "Eure {race_pl} auf der Hand kosten 1 Mana weniger."
       },
       "ombre_du_passe": {
         "label": "Schatten der Vergangenheit",
-        "desc": "Erhält +1 ATK und +1 LP für jede Einheit derselben Rasse auf deinem Friedhof."
+        "desc": "+1/+1 pro {race_bare}-Einheit in eurem Friedhof."
       },
       "profanation": {
         "label": "Entweihung X",
-        "desc": "Verbannt die letzten X Karten deines Friedhofs, um der Einheit bis zu +X/+X zu gewähren."
+        "desc": "Verbannt die letzten X Karten aus eurem Friedhof, um der Einheit bis zu +X/+X zu gewähren."
       },
       "prescience": {
         "label": "Präszienz X",
-        "desc": "Ziehe Karten, bis du X Karten auf der Hand hast."
+        "desc": "Zieht Karten, bis ihr X Karten auf der Hand habt."
       },
       "suprematie": {
         "label": "Vorherrschaft",
-        "desc": "Erhält +1 ATK und +1 LP für jede Karte auf deiner Hand zum Zeitpunkt der Beschwörung."
+        "desc": "Erhält +1 ATK und +1 LP pro Karte auf eurer Hand zum Zeitpunkt der Beschwörung."
       },
       "divination": {
         "label": "Divination",
-        "desc": "Decke die obersten 3 Karten deines Decks auf; lege eine davon oben und die anderen 2 in gewählter Reihenfolge unten ab."
+        "desc": "Deckt die obersten 3 Karten des Decks auf; legt 1 davon oben und 2 unten in gewählter Reihenfolge zurück."
       },
       "savant": {
         "label": "Gelehrter",
-        "desc": "Erhält +1 ATK und +1 LP für jeden Zauber auf deinem Friedhof."
+        "desc": "Erhält +1 ATK und +1 LP pro Zauber in eurem Friedhof."
       },
       "liaison_de_vie": {
         "label": "Lebensband",
@@ -211,7 +211,7 @@
       },
       "sacrifice": {
         "label": "Opferung",
-        "desc": "Zerstöre einen Verbündeten, um dessen LP und ATK dauerhaft zu erhalten."
+        "desc": "Zerstört einen Verbündeten, um dauerhaft dessen LP und ATK zu erhalten."
       },
       "malefice": {
         "label": "Übeltat",
@@ -231,7 +231,7 @@
       },
       "carnage": {
         "label": "Gemetzel X",
-        "desc": "Fügt allen Einheiten im Spiel (Verbündeten und Feinden) X Schaden zu."
+        "desc": "Fügt allen Einheiten im Spiel X Schaden zu (verbündet und gegnerisch)."
       },
       "heritage": {
         "label": "Erbe X",
@@ -239,31 +239,31 @@
       },
       "mimique": {
         "label": "Mimikry",
-        "desc": "Kopiert alle Fähigkeiten einer ausgewählten Einheit und überträgt sie dauerhaft auf diese Einheit."
+        "desc": "Kopiert alle Fähigkeiten einer anvisierten Einheit und verleiht sie dieser Einheit dauerhaft."
       },
       "metamorphose": {
         "label": "Metamorphose",
-        "desc": "Diese Einheit wird zu einer exakten Kopie (ATK / LP / Fähigkeiten) einer ausgewählten Einheit."
+        "desc": "Diese Einheit wird zu einer exakten Kopie (ATK/LP/Fähigkeiten) einer anvisierten Einheit."
       },
       "dedoublement": {
         "label": "Verdoppelung",
-        "desc": "Erstellt eine exakte Kopie dieser Kreatur im Spiel."
+        "desc": "Erschafft eine exakte Kopie dieser Kreatur im Spiel."
       },
       "tactique": {
         "label": "Taktik X",
-        "desc": "Verleiht einer ausgewählten verbündeten Einheit dauerhaft X gewählte Fähigkeit(en)."
+        "desc": "Verleiht einer anvisierten verbündeten Einheit dauerhaft X gewählte Fähigkeit(en)."
       },
       "exhumation": {
         "label": "Exhumierung X",
-        "desc": "Erweckt eine Einheit von deinem Friedhof wieder, deren Manakosten X oder weniger betragen."
+        "desc": "Erweckt eine Einheit aus eurem Friedhof mit Manakosten von X oder weniger."
       },
       "heritage_du_cimetiere": {
         "label": "Erbe des Friedhofs",
-        "desc": "Überträgt die Fähigkeiten einer ausgewählten Einheit auf deinem Friedhof dauerhaft auf diese Einheit."
+        "desc": "Verleiht dieser Einheit die Fähigkeiten einer anvisierten Einheit in eurem Friedhof."
       },
       "pacte_de_sang": {
         "label": "Blutpakt",
-        "desc": "Wenn diese Einheit stirbt, werden zwei 1/1-Token ihrer Rasse beschworen."
+        "desc": "Beschwört bei ihrem Tod zwei 1/1-Tokens ihrer Rasse."
       },
       "souffle_de_feu": {
         "label": "Feueratem X",
@@ -283,11 +283,11 @@
       },
       "vampirisme": {
         "label": "Vampirismus X",
-        "desc": "Stiehlt X LP von einer ausgewählten feindlichen Einheit und fügt sie den LP dieser Einheit hinzu."
+        "desc": "Stiehlt X LP von einer anvisierten gegnerischen Einheit und fügt sie den eigenen LP hinzu."
       },
       "traque_du_destin": {
         "label": "Schicksalsjagd X",
-        "desc": "Decke die obersten X Karten deines Decks auf, nimm eine davon auf die Hand und lege die übrigen in zufälliger Reihenfolge unten ab."
+        "desc": "Deckt die obersten X Karten des Decks auf; behaltet eine auf der Hand und legt die restlichen zufällig unten zurück."
       },
       "sang_mele": {
         "label": "Mischblut",
@@ -295,75 +295,75 @@
       },
       "fierte_du_clan": {
         "label": "Clanstolz",
-        "desc": "Solange diese Einheit im Spiel ist, werden Einheiten desselben Clans mit +1/+1 beschworen."
+        "desc": "Solange sie im Spiel ist, erhalten eure beschworenen Einheiten {clan_de} +1/+1."
       },
       "solidarite": {
         "label": "Solidarität X",
-        "desc": "Ziehe X Karten, wenn du 2 weitere Einheiten derselben Rasse kontrollierst."
+        "desc": "Zieht X Karten, wenn ihr 2 weitere {race_bare}-Einheiten kontrolliert."
       },
       "entraide": {
         "label": "Gegenseitige Hilfe",
-        "desc": "Kostet 1 Mana weniger pro verbündeter Einheit der gewählten Rasse im Spiel (kumulierbar, mindestens 0)."
+        "desc": "Kostet 1 Mana weniger pro {race_bare}-Verbündetem im Spiel (stapelbar, mind. 0)."
       },
       "cycle_eternel": {
         "label": "Ewiger Kreislauf",
-        "desc": "Füge eine Kopie dieser Karte deinem Deck hinzu; wird sie gezogen, kommt sie direkt ins Spiel."
+        "desc": "Fügt eurem Deck eine Kopie dieser Karte hinzu; wird sie gezogen, kommt sie direkt ins Spiel."
       },
       "martyr": {
         "label": "Märtyrer",
-        "desc": "Alle deine Einheiten derselben Rasse im Spiel erhalten dauerhaft +1/+1."
+        "desc": "+1/+1 dauerhaft für eure {race_pl} im Spiel."
       },
       "instinct_de_meute": {
         "label": "Rudelinstinkt X",
-        "desc": "Erhält +X ATK und +X LP, wenn eine verbündete Einheit derselben Fraktion in diesem Zug vom Spielfeld auf den Friedhof gelegt wurde."
+        "desc": "+X/+X, wenn ein Verbündeter {faction_de} in dieser Runde gestorben ist."
       },
       "totem": {
         "label": "Totem",
-        "desc": "Diese Einheit erhält die Fähigkeiten aller verbündeten Einheiten derselben Rasse im Spiel."
+        "desc": "Erhält die Fähigkeiten deiner {race_pl} im Spiel."
       },
       "appel_du_clan": {
         "label": "Ruf des Clans X",
-        "desc": "Bringe die erste Einheit desselben Clans mit Kosten von X oder weniger von der Oberseite deines Decks kostenlos ins Spiel."
+        "desc": "Spielt kostenlos die erste Einheit {clan_de} mit Kosten ≤ X von oben deines Decks aus."
       },
       "appel_supreme": {
         "label": "Oberster Ruf",
-        "desc": "Füge der gewählten Rasse die Kreatur mit den höchsten Manakosten aus deinem Deck deiner Hand hinzu (bei Gleichstand zufällig)."
+        "desc": "Fügt {race} mit den höchsten Kosten aus deinem Deck deiner Hand hinzu (bei Gleichstand zufällig)."
       },
       "rassemblement": {
         "label": "Sammlung X",
-        "desc": "Decke die obersten X Karten des Decks auf; füge alle Einheiten derselben Rasse deiner Hand hinzu und lege den Rest ab."
+        "desc": "Deckt die obersten X Karten des Decks auf; behalte die {race_pl} auf der Hand, wirf den Rest ab."
       },
       "selection": {
         "label": "Auswahl X",
-        "desc": "Enthülle 3 zufällige gewöhnliche Karten mit Kosten ≤ X aus Fraktionen derselben Ausrichtung wie diese Karte; füge eine davon deiner Hand hinzu."
+        "desc": "Deckt 3 gewöhnliche Karten {alignment} mit Kosten ≤ X auf; füge eine davon deiner Hand hinzu."
       },
       "selection_magique": {
         "label": "Magische Auswahl X",
-        "desc": "Enthülle 3 zufällige gewöhnliche Zauber mit Kosten ≤ X aus Fraktionen derselben Ausrichtung wie diese Karte; füge einen davon deiner Hand hinzu."
+        "desc": "Deckt 3 gewöhnliche Zauber {alignment} mit Kosten ≤ X auf; füge einen davon deiner Hand hinzu."
       },
       "renfort_royal": {
         "label": "Königliche Auswahl X",
-        "desc": "Enthülle 3 zufällige Karten aus deinen limitierten Editionen (mind. 30 erforderlich; sonst gewöhnliche Karten derselben Ausrichtung) mit Kosten ≤ X; füge eine davon deiner Hand hinzu."
+        "desc": "Deckt 3 deiner limitierten Editionen mit Kosten ≤ X auf (≥30 erforderlich; andernfalls 3 gewöhnliche Karten {alignment}); behalte eine davon."
       },
       "lycanthropie": {
         "label": "Lykanthropie X",
-        "desc": "Verwandelt sich in einen X/X-Token mit Fährte."
+        "desc": "Verwandelt sich mit Jagd in {lycanthrope}."
       },
       "relancer": {
         "label": "Neu würfeln X",
-        "desc": "Spiele die letzten X gewirkten Zauber mit zufälligen Zielen erneut."
+        "desc": "Wiederholt die letzten X gewirkten Zauber mit zufälligen Zielen."
       },
       "tempete": {
         "label": "Sturm X",
-        "desc": "Verteile X Schaden zufällig auf gegnerische Einheiten."
+        "desc": "Fügt X Schaden zufällig verteilt auf gegnerische Einheiten zu."
       },
       "cataclysme": {
         "label": "Katastrophe X",
-        "desc": "Füge allen Kreaturen (verbündeten UND gegnerischen) X Schaden zu."
+        "desc": "Fügt allen Kreaturen (verbündeten UND gegnerischen) X Schaden zu."
       },
       "affaiblissement": {
         "label": "Schwächung -X/-Y",
-        "desc": "Gib einer gezielten gegnerischen Kreatur -X ATK und -Y LP."
+        "desc": "Gibt einer anvisierten gegnerischen Kreatur -X ANG und -Y LP."
       },
       "renforcement": {
         "label": "Stärkung +X/+Y",
@@ -383,7 +383,7 @@
       },
       "concentration": {
         "label": "Konzentration X",
-        "desc": "Ersetze jeden Zauber in der Hand durch einen zufälligen Zauber (alle Fraktionen) mit um X höheren Kosten; die Kosten des neuen Zaubers werden um X reduziert."
+        "desc": "Jeder Zauber auf der Hand wird zu einem zufälligen Zauber mit Kosten +X, reduziert um X (alle Fraktionen)."
       },
       "remontee": {
         "label": "Aufschwung",
@@ -391,19 +391,19 @@
       },
       "renforcement_multiple": {
         "label": "Mehrfachstärkung",
-        "desc": "Verleiht allen deinen Kreaturen der gewählten Rasse oder des gewählten Clans +X/+Y."
+        "desc": "+X/+Y für deine Kreaturen der gewählten Rasse oder des gewählten Clans."
       },
       "entrainement": {
         "label": "Training X",
-        "desc": "Verleiht deinen Kreaturen in der Hand derselben Fraktion +X/+X."
+        "desc": "+X/+X für deine Kreaturen {faction_de} auf der Hand."
       },
       "conferer": {
         "label": "Verleihen",
-        "desc": "Verleiht einer verbündeten Einheit (oder allen) eine gewählte Fähigkeit."
+        "desc": "Verleiht {ability} {scope}."
       },
       "declenchement": {
         "label": "Auslösung",
-        "desc": "Löse die zusammengesetzten Triggereffekte der anderen verbündeten Einheiten im Spiel einmalig erneut aus, für eine festgelegte Teilmenge von Auslösern (Einzug / Tod / Zugende / Rückkehr)."
+        "desc": "Löst die zusammengesetzten Effekte deiner anderen Verbündeten einmal erneut aus (Eintritt / Tod / Rundenende / Rückkehr)."
       }
     },
     "spell_keywords": {
@@ -417,19 +417,19 @@
       },
       "convocation_simple": {
         "label": "Beschwörung",
-        "desc": "Erstellt den konfigurierten Token."
+        "desc": "Erschafft {token}."
       },
       "appel_du_clan": {
         "label": "Clanruf X",
-        "desc": "Spiele die erste Einheit desselben Clans wie dieser Zauber mit Kosten von höchstens X kostenlos aus deinem Deck aus."
+        "desc": "Spielt kostenlos die erste Einheit {clan_de} mit Kosten ≤ X aus deinem Deck aus."
       },
       "appel_supreme": {
         "label": "Supremer Ruf",
-        "desc": "Fügt deiner Hand die Kreatur der gewählten Rasse mit den höchsten verbleibenden Kosten in deinem Deck hinzu (bei Gleichstand zufällig)."
+        "desc": "Fügt {race} mit den höchsten Kosten aus deinem Deck deiner Hand hinzu (bei Gleichstand zufällig)."
       },
       "rassemblement": {
         "label": "Sammlung X",
-        "desc": "Enthülle die ersten X Karten deines Decks; füge Einheiten derselben Rasse wie dieser Zauber deiner Hand hinzu und lege den Rest ab."
+        "desc": "Deckt die obersten X Karten des Decks auf; behalte die {race_pl} auf der Hand, wirf den Rest ab."
       },
       "rappel": {
         "label": "Rückruf",
@@ -441,15 +441,15 @@
       },
       "selection": {
         "label": "Auswahl X",
-        "desc": "Wähle eine Karte aus 3 zufälligen gewöhnlichen Karten mit Kosten ≤ X aus Fraktionen derselben Gesinnung wie dieser Zauber, um sie auf die Hand zu nehmen."
+        "desc": "Deckt 3 gewöhnliche Karten {alignment} mit Kosten ≤ X auf; füge eine davon deiner Hand hinzu"
       },
       "selection_magique": {
         "label": "Magische Auswahl X",
-        "desc": "Wähle einen Zauber aus 3 zufälligen gewöhnlichen Zaubern mit Kosten ≤ X aus Fraktionen derselben Gesinnung wie dieser Zauber, um ihn auf die Hand zu nehmen."
+        "desc": "Deckt 3 gewöhnliche Zauber {alignment} mit Kosten ≤ X auf; füge einen davon deiner Hand hinzu"
       },
       "renfort_royal": {
         "label": "Königliche Auswahl X",
-        "desc": "Wähle eine Karte aus 3 zufälligen Karten deiner limitierten Editionen (≥30 erforderlich; sonst aus gewöhnlichen derselben Gesinnung) mit Kosten ≤ X, um sie auf die Hand zu nehmen."
+        "desc": "Deckt 3 deiner limitierten Editionen mit Kosten ≤ X auf (≥30 erforderlich; andernfalls 3 gewöhnliche Karten {alignment}); behalte eine davon"
       },
       "relancer": {
         "label": "Wiederholen X",
@@ -505,19 +505,19 @@
       },
       "renforcement_multiple": {
         "label": "Mehrfachstärkung",
-        "desc": "Gewährt allen deinen Kreaturen der gewählten Rasse oder des gewählten Clans +X/+Y."
+        "desc": "+X/+Y für deine Kreaturen der gewählten Rasse oder des gewählten Clans."
       },
       "entrainement": {
         "label": "Training X",
-        "desc": "Gewährt deinen Kreaturen auf der Hand derselben Fraktion +X/+X."
+        "desc": "+X/+X für deine Kreaturen {faction_de} auf der Hand."
       },
       "concentration": {
         "label": "Konzentration X",
-        "desc": "Ersetzt jeden Zauber auf der Hand durch einen zufälligen Zauber (alle Fraktionen) mit um X höheren Kosten; die Kosten des neuen Zaubers werden um X reduziert."
+        "desc": "Jeder Zauber auf der Hand wird zu einem zufälligen Zauber mit Kosten +X, reduziert um X (alle Fraktionen)."
       },
       "invocation_multiple": {
         "label": "Mehrfachbeschwörung",
-        "desc": "Erzeugt mehrere Tokens gemäß der Kartenkonfiguration."
+        "desc": "Erschafft {tokens}."
       },
       "tempete": {
         "label": "Sturm X",
@@ -675,12 +675,15 @@
       "Les Hordes des Steppes": "Die Steppenhoriden",
       "L'Empire de Jade": "Das Jadekaisertum",
       "Les Lames de l'Ombre": "Die Klingen des Schattens",
+      "Les Défenseurs d'Ivoire": "Die Elfenbeinverteidiger",
       "Les Enfants du Soleil": "Die Kinder der Sonne",
       "Les Seigneurs des Dunes": "Die Herren der Dünen",
       "Le Royaume des Masques": "Das Reich der Masken",
+      "Les Fils du Volcan": "Die Söhne des Vulkans",
       "Le Royaume du Nord": "Das Nordreich",
       "L'Ordre de l'Aube": "Der Orden der Morgenröte",
       "Les Guerrières du Vent": "Die Kriegerinnen des Windes",
+      "La Sublime Porte": "Die Hohe Pforte",
       "Les Seigneurs Fauves": "Die Wilden Herren",
       "Les Enfants de la Lune": "Die Kinder des Mondes",
       "Le Pacte des Griffes": "Der Klauenpakt",
@@ -696,10 +699,7 @@
       "Les Cohortes Sanglantes": "Die Blutigen Kohorten",
       "Les Princes des Abîmes": "Die Fürsten der Abgründe",
       "La Forêt Maudite": "Der Verfluchte Wald",
-      "La Garde Noire": "Die Schwarze Garde",
-      "Les Défenseurs d'Ivoire": "Die Elfenbeinverteidiger",
-      "Les Fils du Volcan": "Die Söhne des Vulkans",
-      "La Sublime Porte": "Die Hohe Pforte"
+      "La Garde Noire": "Die Schwarze Garde"
     },
     "races": {
       "Elfes": "Elfen",
@@ -758,6 +758,283 @@
       "expert-etendu": "Experte · Erweitert",
       "classique-etendu": "Klassisch · Erweitert",
       "classique-standard": "Klassisch · Standard"
+    },
+    "races_forms": {
+      "Elfes": {
+        "def": "der Elf",
+        "bare": "Elf",
+        "de": "des Elfen"
+      },
+      "Fées": {
+        "def": "die Fee",
+        "bare": "Fee",
+        "de": "der Fee"
+      },
+      "Aigles Géants": {
+        "def": "der Riesenadler",
+        "bare": "Riesenadler",
+        "de": "des Riesenadlers"
+      },
+      "Hobbits": {
+        "def": "der Hobbit",
+        "bare": "Hobbit",
+        "de": "des Hobbits"
+      },
+      "Hommes-Arbres": {
+        "def": "der Baummensch",
+        "bare": "Baummensch",
+        "de": "des Baummenschen"
+      },
+      "Nains": {
+        "def": "der Zwerg",
+        "bare": "Zwerg",
+        "de": "des Zwergs"
+      },
+      "Golems": {
+        "def": "der Golem",
+        "bare": "Golem",
+        "de": "des Golems"
+      },
+      "Gnomes": {
+        "def": "der Gnom",
+        "bare": "Gnom",
+        "de": "des Gnoms"
+      },
+      "Humains": {
+        "def": "der Mensch",
+        "bare": "Mensch",
+        "de": "des Menschen"
+      },
+      "Hommes-Loups": {
+        "def": "der Werwolf",
+        "bare": "Werwolf",
+        "de": "des Werwolfs"
+      },
+      "Hommes-Ours": {
+        "def": "der Werbär",
+        "bare": "Werbär",
+        "de": "des Werbären"
+      },
+      "Hommes-Félins": {
+        "def": "der Katzenmensch",
+        "bare": "Katzenmensch",
+        "de": "des Katzenmenschen"
+      },
+      "Centaures": {
+        "def": "der Zentaur",
+        "bare": "Zentaur",
+        "de": "des Zentauren"
+      },
+      "Mimis": {
+        "def": "der Mimi",
+        "bare": "Mimi",
+        "de": "des Mimis"
+      },
+      "Hommes-Chiens": {
+        "def": "der Hundemensch",
+        "bare": "Hundemensch",
+        "de": "des Hundemenschen"
+      },
+      "Hommes-Renards": {
+        "def": "der Fuchsmensch",
+        "bare": "Fuchsmensch",
+        "de": "des Fuchsmenschen"
+      },
+      "Hommes-Cerfs": {
+        "def": "der Hirschmensch",
+        "bare": "Hirschmensch",
+        "de": "des Hirschmenschen"
+      },
+      "Élémentaire": {
+        "def": "der Elementar",
+        "bare": "Elementar",
+        "de": "des Elementars",
+        "pl": "Elementare"
+      },
+      "Géants": {
+        "def": "der Riese",
+        "bare": "Riese",
+        "de": "des Riesen"
+      },
+      "Ogres": {
+        "def": "der Oger",
+        "bare": "Oger",
+        "de": "des Ogers"
+      },
+      "Dragons": {
+        "def": "der Drache",
+        "bare": "Drache",
+        "de": "des Drachen"
+      },
+      "Chiens": {
+        "def": "der Hund",
+        "bare": "Hund",
+        "de": "des Hundes"
+      },
+      "Phoenix": {
+        "def": "der Phönix",
+        "bare": "Phönix",
+        "de": "des Phönix"
+      },
+      "Anges": {
+        "def": "der Engel",
+        "bare": "Engel",
+        "de": "des Engels"
+      },
+      "Ours": {
+        "def": "der Bär",
+        "bare": "Bär",
+        "de": "des Bären"
+      },
+      "Loups": {
+        "def": "der Wolf",
+        "bare": "Wolf",
+        "de": "des Wolfes"
+      },
+      "Fauves": {
+        "def": "das Raubtier",
+        "bare": "Raubtier",
+        "de": "des Raubtiers"
+      },
+      "Squelettes": {
+        "def": "das Skelett",
+        "bare": "Skelett",
+        "de": "des Skeletts"
+      },
+      "Zombies": {
+        "def": "der Zombie",
+        "bare": "Zombie",
+        "de": "des Zombies"
+      },
+      "Spectres": {
+        "def": "das Gespenst",
+        "bare": "Gespenst",
+        "de": "des Gespenstes"
+      },
+      "Vampires": {
+        "def": "der Vampir",
+        "bare": "Vampir",
+        "de": "des Vampirs"
+      },
+      "Lich": {
+        "def": "der Lich",
+        "bare": "Lich",
+        "de": "des Lichs"
+      },
+      "Banshees": {
+        "def": "die Banshee",
+        "bare": "Banshee",
+        "de": "der Banshee"
+      },
+      "Elfes Corrompus": {
+        "def": "der Verdorbene Elf",
+        "bare": "Verdorbener Elf",
+        "de": "des Verdorbenen Elfen"
+      },
+      "Araignées Géantes": {
+        "def": "die Riesenspinne",
+        "bare": "Riesenspinne",
+        "de": "der Riesenspinne"
+      },
+      "Démons": {
+        "def": "der Dämon",
+        "bare": "Dämon",
+        "de": "des Dämons"
+      },
+      "Orcs": {
+        "def": "der Ork",
+        "bare": "Ork",
+        "de": "des Orks"
+      },
+      "Gobelins": {
+        "def": "der Goblin",
+        "bare": "Goblin",
+        "de": "des Goblins"
+      },
+      "Trolls": {
+        "def": "der Troll",
+        "bare": "Troll",
+        "de": "des Trolls"
+      },
+      "Wargs": {
+        "def": "der Warg",
+        "bare": "Warg",
+        "de": "des Wargs"
+      },
+      "Guerriers du Chaos": {
+        "def": "der Chaoskrieger",
+        "bare": "Chaoskrieger",
+        "de": "des Chaoskriegers"
+      }
+    },
+    "clans_forms": {
+      "Les Sylvains": "der Sylvaner",
+      "Les Hauts-Elfes": "der Hochelfen",
+      "La Forêt d'Émeraude": "des Smaragdwaldes",
+      "La Combe Verte": "des Grünen Tals",
+      "Les Gardiens de la Montagne": "der Bergwächter",
+      "La Forge Ardente": "der Lodernden Schmiede",
+      "Les Sentinelles d'Airain": "der Bronzenen Wächter",
+      "La Guilde des Ingénieurs": "der Gilde der Ingenieure",
+      "Les Hordes des Steppes": "der Horden der Steppen",
+      "L'Empire de Jade": "des Jadeimperiums",
+      "Les Lames de l'Ombre": "der Klingen des Schattens",
+      "Les Défenseurs d'Ivoire": "der Elfenbeinverteidiger",
+      "Les Enfants du Soleil": "der Kinder der Sonne",
+      "Les Seigneurs des Dunes": "der Herren der Dünen",
+      "Le Royaume des Masques": "des Königreichs der Masken",
+      "Les Fils du Volcan": "der Söhne des Vulkans",
+      "Le Royaume du Nord": "des Königreichs des Nordens",
+      "L'Ordre de l'Aube": "des Ordens der Morgenröte",
+      "Les Guerrières du Vent": "der Kriegerinnen des Windes",
+      "La Sublime Porte": "der Erhabenen Pforte",
+      "Les Seigneurs Fauves": "der Wilden Herren",
+      "Les Enfants de la Lune": "der Kinder des Mondes",
+      "Le Pacte des Griffes": "des Paktes der Krallen",
+      "La Harde Sauvage": "der Wilden Herde",
+      "La Colère des Flammes": "des Zorns der Flammen",
+      "Le Socle du Monde": "des Sockels der Welt",
+      "La Vague Sans Fin": "der Endlosen Welle",
+      "Le Souffle des Cimes": "des Atems der Gipfel",
+      "Les Rangs Silencieux": "der Stillen Reihen",
+      "Le Voile Hurlant": "des Heulenden Schleiers",
+      "La Cour Écarlate": "des Scharlachroten Hofes",
+      "Le Cénacle Nécromant": "des Nekromantischen Zirkels",
+      "Les Cohortes Sanglantes": "der Blutigen Kohorten",
+      "Les Princes des Abîmes": "der Fürsten der Abgründe",
+      "La Forêt Maudite": "des Verfluchten Waldes",
+      "La Garde Noire": "der Schwarzen Garde"
+    },
+    "factions_forms": {
+      "Elfes": "der Himmlischen Allianz",
+      "Nains": "der Bruderschaft der Schmiede",
+      "EmpireDuMilieu": "des Reichs der Mitte",
+      "RoyaumesDuSoleil": "der Königreiche der Sonne",
+      "Humains": "der Freien Königreiche",
+      "Hommes-Bêtes": "des Rudels",
+      "Élémentaires": "der Urwesen",
+      "Mercenaires": "der Söldner",
+      "Morts-Vivants": "der Nekropole",
+      "Elfes Noirs": "der Chaos-Legionen"
+    },
+    "markers": {
+      "race": "die Kreatur der gewählten Rasse",
+      "race_bare": "gleicher Rasse",
+      "race_de": "gleicher Rasse",
+      "race_pl": "Einheiten gleicher Rasse",
+      "clan": "dein Clan",
+      "clan_de": "gleichen Clans",
+      "faction": "deine Fraktion",
+      "faction_de": "gleicher Fraktion",
+      "alignment": "gleicher Gesinnung",
+      "alignment_of": "mit Gesinnung {a}",
+      "token": "das konfigurierte Token",
+      "tokens": "mehrere Token",
+      "lycanthrope": "ein X/X-Token",
+      "ability": "eine Fähigkeit",
+      "scope": "auf eine verbündete Einheit (oder auf alle)",
+      "scope_target": "auf eine verbündete Einheit",
+      "scope_all": "auf alle deine Einheiten"
     }
   },
   "home": {

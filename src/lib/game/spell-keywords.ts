@@ -119,6 +119,13 @@ export function formatConvocationToken(
   return cfrag(t, "game.convocation_token_one", `un token ${name} ${atk}/${hp}`, { token: name, atk, hp }) + tokenKeywordSuffix(tmpl, t);
 }
 
+// Phrase de convocation (« Crée un token X 1/1 »). Helper PUR — vit ici et non
+// dans useVocab pour que keyword-display.ts n'ait pas de dépendance React.
+// `useVocab.convocationPrefix` n'en est plus qu'un habillage.
+export function convocationPrefix(content: string, t?: SafeT): string {
+  return cfrag(t, "game.convocation_prefix", `Crée ${content}`, { content });
+}
+
 /** Get the display description for a spell keyword, with token details for invocation_multiple */
 export function getSpellKeywordDesc(
   kw: SpellKeywordInstance,

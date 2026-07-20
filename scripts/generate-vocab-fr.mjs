@@ -26,6 +26,8 @@ export { KEYWORD_LABELS } from "@/lib/game/keyword-labels";
 export { SPELL_KEYWORDS } from "@/lib/game/spell-keywords";
 export { COMPOSED_FR } from "@/lib/game/composed-display";
 export { FACTIONS, RARITIES, KEYWORDS, KEYWORD_DESC_BY_ID, ALIGNMENTS } from "@/lib/card-engine/constants";
+export { RACE_FORMS_FR, CLAN_FORMS_FR, FACTION_FORMS_FR } from "@/lib/card-engine/race-forms";
+export { MARKERS_FR } from "@/lib/game/keyword-display";
 `;
 
 const built = await esbuild.build({
@@ -41,8 +43,10 @@ const built = await esbuild.build({
 const tmp = path.join(ROOT, "scripts", ".vocab-bundle.mjs");
 fs.writeFileSync(tmp, built.outputFiles[0].text);
 let KEYWORD_LABELS, SPELL_KEYWORDS, COMPOSED_FR, FACTIONS, RARITIES, KEYWORDS, KEYWORD_DESC_BY_ID, ALIGNMENTS;
+let RACE_FORMS_FR, CLAN_FORMS_FR, FACTION_FORMS_FR, MARKERS_FR;
 try {
-  ({ KEYWORD_LABELS, SPELL_KEYWORDS, COMPOSED_FR, FACTIONS, RARITIES, KEYWORDS, KEYWORD_DESC_BY_ID, ALIGNMENTS } = await import(`file://${tmp}?t=${Date.now()}`));
+  ({ KEYWORD_LABELS, SPELL_KEYWORDS, COMPOSED_FR, FACTIONS, RARITIES, KEYWORDS, KEYWORD_DESC_BY_ID, ALIGNMENTS,
+     RACE_FORMS_FR, CLAN_FORMS_FR, FACTION_FORMS_FR, MARKERS_FR } = await import(`file://${tmp}?t=${Date.now()}`));
 } finally {
   fs.rmSync(tmp, { force: true });
 }
@@ -60,7 +64,8 @@ function unflatten(flatMap) {
 }
 
 // ─── construit vocab.* ──────────────────────────────────────────────────────
-const vocab = { keywords: {}, spell_keywords: {}, composed: {}, factions: {}, rarities: {}, clans: {}, races: {}, alignments: {} };
+const vocab = { keywords: {}, spell_keywords: {}, composed: {}, factions: {}, rarities: {}, clans: {}, races: {}, alignments: {},
+  races_forms: {}, clans_forms: {}, factions_forms: {}, markers: {} };
 
 for (const [id, label] of Object.entries(KEYWORD_LABELS)) {
   vocab.keywords[id] = { label };
@@ -94,6 +99,17 @@ for (const [id, def] of Object.entries(FACTIONS)) {
   // Races déclarées par la faction (identité FR → traduite par le pipeline).
   for (const race of def.races ?? []) vocab.races[race] = race;
 }
+
+// Formes fléchies (singulier défini / nu / complément du nom) pour que les
+// descriptions nomment la valeur concrète de la carte — cf. race-forms.ts.
+// Traduites par le pipeline : le genre est implicite dans la chaîne.
+vocab.races_forms = { ...(RACE_FORMS_FR ?? {}) };
+for (const [clan, de] of Object.entries(CLAN_FORMS_FR ?? {})) vocab.clans_forms[clan] = de;
+for (const [id, de] of Object.entries(FACTION_FORMS_FR ?? {})) vocab.factions_forms[id] = de;
+
+// Replis génériques des marqueurs de description (« de même race »…). Sans ça
+// les locales non-FR afficheraient le repli EN FRANÇAIS.
+vocab.markers = { ...(MARKERS_FR ?? {}) };
 
 for (const r of RARITIES) {
   vocab.rarities[r.id] = r.label;
@@ -135,6 +151,10 @@ fs.writeFileSync(FR_PATH, JSON.stringify(fr, null, 2) + "\n");
 const counts = {
   keywords: Object.keys(vocab.keywords).length,
   keyword_descs: Object.values(vocab.keywords).filter((k) => k.desc).length,
+  races_forms: Object.keys(vocab.races_forms).length,
+  markers: Object.keys(vocab.markers).length,
+  clans_forms: Object.keys(vocab.clans_forms).length,
+  factions_forms: Object.keys(vocab.factions_forms).length,
   spell_keywords: Object.keys(vocab.spell_keywords).length,
   spell_keyword_descs: Object.values(vocab.spell_keywords).filter((k) => k.desc).length,
   factions: Object.keys(vocab.factions).length,
