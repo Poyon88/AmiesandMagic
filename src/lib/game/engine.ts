@@ -30,6 +30,7 @@ import type {
 } from "./types";
 import { SPELL_KEYWORDS } from "./spell-keywords";
 import { getEntraideReduction, getTokenManaCost, isCreatureKwShadowedBySpell } from "./abilities";
+import { isManaSpark, MANA_SPARK_FALLBACK } from "./mana-spark";
 import { getCapabilities } from "./capability-adapter";
 import { parseXValuesFromEffectText } from "./keyword-labels";
 import {
@@ -5620,16 +5621,11 @@ export function applyMulligan(state: GameState, action: MulliganAction): GameSta
     newState.players[1].deck = shuffleArray(newState.players[1].deck);
 
     const secondPlayerIndex = newState.currentPlayerIndex === 0 ? 1 : 0;
-    // Use Mana Spark from factionCardPool if available, otherwise fallback
-    const poolManaSpark = newState.factionCardPool?.find(c => c.name === "Mana Spark" && c.card_type === "spell");
-    const manaSpark: Card = poolManaSpark ?? {
-      id: -1, name: "Mana Spark", mana_cost: 0, card_type: "spell",
-      attack: null, health: null, effect_text: "Gain 1 mana this turn",
-      keywords: [],
-      spell_keywords: [{ id: "afflux", amount: 1 }],
-      spell_effects: null,
-      image_url: null,
-    };
+    // Étincelle de Mana depuis le pool (porte l'illustration et le nom FR de la
+    // base) ; sinon repli dégradé. Voir mana-spark.ts pour la tolérance aux
+    // variantes d'écriture — une égalité stricte sur "Mana Spark" échouait.
+    const poolManaSpark = newState.factionCardPool?.find(isManaSpark);
+    const manaSpark: Card = poolManaSpark ?? MANA_SPARK_FALLBACK;
     newState.players[secondPlayerIndex].hand.push(createCardInstance(manaSpark));
     newState.phase = "playing";
     return startTurn(newState);
