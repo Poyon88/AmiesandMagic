@@ -15,6 +15,7 @@ import {
   getRarityLabel,
   getRaceName,
   KEYWORDS,
+  KEYWORD_DESC_BY_ID,
 } from "@/lib/card-engine/constants";
 import type { SafeT } from "./config";
 
@@ -65,7 +66,7 @@ export interface Vocab {
   // token via `card.token_id`). Fallback : le nom FR canonique fourni.
   tokenName: (id: number | null | undefined, fallbackName: string) => string;
   // Descriptions de convocation localisées (nom du token + phrase). Le préfixe
-  // « Invocation : crée … » et la liste sont composés côté helper avec SafeT.
+  // « Crée … » et la liste sont composés côté helper avec SafeT.
   convocationTokens: (tokens: ConvocationTokenDef[], registry?: TokenTemplate[]) => string;
   convocationToken: (
     tokenId: number | null | undefined,
@@ -113,7 +114,9 @@ export function useVocab(): Vocab {
       keywordLabel: (kw: Keyword) => getKeywordDisplayLabel(kw, safe),
       keywordDesc: (kw: Keyword, x?: number | null) => {
         const forgeKey = KEYWORD_LABELS[kw];
-        const fallback = forgeKey ? KEYWORDS[forgeKey]?.desc : undefined;
+        const fallback =
+          (forgeKey ? KEYWORDS[forgeKey]?.desc : undefined) ??
+          KEYWORD_DESC_BY_ID[kw];
         const tmpl = safe(`vocab.keywords.${kw}.desc`) ?? fallback;
         if (!tmpl) return null;
         return x != null ? tmpl.replace(/X/g, String(x)) : tmpl;
@@ -155,7 +158,7 @@ export function useVocab(): Vocab {
       ) => formatConvocationToken(tokenId, registry, statOverride, safe),
       convocationPrefix: (content: string) =>
         (safe("game.convocation_prefix")?.replace(/\{content\}/g, content)) ??
-        `Invocation : crée ${content}`,
+        `Crée ${content}`,
     }),
     [safe],
   );

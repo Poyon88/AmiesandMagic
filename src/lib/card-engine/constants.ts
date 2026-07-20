@@ -27,7 +27,7 @@ export const LIMITED_PRINT_COUNTS: Record<string, number> = {
 // working unchanged.
 
 export type { KeywordZone } from "@/lib/game/abilities";
-export { KEYWORDS, CREATURE_LABEL_TO_ENGINE_ID } from "@/lib/game/abilities";
+export { KEYWORDS, KEYWORD_DESC_BY_ID, CREATURE_LABEL_TO_ENGINE_ID } from "@/lib/game/abilities";
 
 // FR-label → set of trigger modes that keyword can opt into beyond the
 // default on-play. The engine (resolveCuratedKeywordEffect) mirrors this:

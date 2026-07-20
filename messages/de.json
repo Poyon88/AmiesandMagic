@@ -23,11 +23,11 @@
       },
       "convocations_multiples": {
         "label": "Mehrfachbeschwörung",
-        "desc": "Beschwörung: Erstellt mehrere Token gemäß der Konfiguration."
+        "desc": "Erstellt mehrere Token gemäß der Konfiguration."
       },
       "loyaute": {
         "label": "Loyalität",
-        "desc": "Beschwörung: +1 ATK und +1 LP für jeden verbündeten Einheit derselben Rasse im Spiel."
+        "desc": "+1 ATK und +1 LP für jeden verbündeten Einheit derselben Rasse im Spiel."
       },
       "ancre": {
         "label": "Verankert",
@@ -83,7 +83,7 @@
       },
       "pillage": {
         "label": "Plünderung X",
-        "desc": "Beschwörung: Der Gegner wirft X zufällige Karten aus seiner Hand ab."
+        "desc": "Der Gegner wirft X zufällige Karten aus seiner Hand ab."
       },
       "riposte": {
         "label": "Vergeltung X",
@@ -91,11 +91,11 @@
       },
       "rappel": {
         "label": "Rückruf",
-        "desc": "Beschwörung: Nehmen Sie eine Zielkarte aus Ihrem Friedhof auf die Hand zurück."
+        "desc": "Nehmen Sie eine Zielkarte aus Ihrem Friedhof auf die Hand zurück."
       },
       "combustion": {
         "label": "Verbrennung",
-        "desc": "Beschwörung: Werfen Sie eine Karte aus Ihrer Hand ab und ziehen Sie dann zwei Karten."
+        "desc": "Werfen Sie eine Karte aus Ihrer Hand ab und ziehen Sie dann zwei Karten."
       },
       "terreur": {
         "label": "Schrecken",
@@ -131,19 +131,19 @@
       },
       "contresort": {
         "label": "Gegenzauber",
-        "desc": "Beschwörung: Hebt den nächsten gegnerischen Zauber auf."
+        "desc": "Hebt den nächsten gegnerischen Zauber auf."
       },
       "convocation": {
         "label": "Beschwörung X",
-        "desc": "Beschwörung: Erstellt einen X/X-Token der angegebenen Rasse."
+        "desc": "Erstellt einen X/X-Token der angegebenen Rasse."
       },
       "convocation_simple": {
         "label": "Beschwörung",
-        "desc": "Beschwörung: Erstellt den konfigurierten Token."
+        "desc": "Erstellt den konfigurierten Token."
       },
       "malediction": {
         "label": "Fluch",
-        "desc": "Beschwörung: Wählt eine feindliche Einheit – sie wird am Ende des nächsten gegnerischen Zuges verbannt."
+        "desc": "Wählt eine feindliche Einheit – sie wird am Ende des nächsten gegnerischen Zuges verbannt."
       },
       "necrophagie": {
         "label": "Nekrophagie",
@@ -163,7 +163,7 @@
       },
       "permutation": {
         "label": "Permutation",
-        "desc": "Beschwörung: Tauscht die aktuellen LP zweier ausgewählter Einheiten (eine verbündete und eine feindliche)."
+        "desc": "Tauscht die aktuellen LP zweier ausgewählter Einheiten (eine verbündete und eine feindliche)."
       },
       "persecution": {
         "label": "Verfolgung X",
@@ -175,31 +175,31 @@
       },
       "catalyse": {
         "label": "Katalyse",
-        "desc": "Beschwörung: Reduziert die Manakosten aller Einheiten derselben Rasse auf deiner Hand um 1."
+        "desc": "Reduziert die Manakosten aller Einheiten derselben Rasse auf deiner Hand um 1."
       },
       "ombre_du_passe": {
         "label": "Schatten der Vergangenheit",
-        "desc": "Beschwörung: Erhält +1 ATK und +1 LP für jede Einheit derselben Rasse auf deinem Friedhof."
+        "desc": "Erhält +1 ATK und +1 LP für jede Einheit derselben Rasse auf deinem Friedhof."
       },
       "profanation": {
         "label": "Entweihung X",
-        "desc": "Beschwörung: Verbannt die letzten X Karten deines Friedhofs, um der Einheit bis zu +X/+X zu gewähren."
+        "desc": "Verbannt die letzten X Karten deines Friedhofs, um der Einheit bis zu +X/+X zu gewähren."
       },
       "prescience": {
         "label": "Präszienz X",
-        "desc": "Beschwörung: Ziehe Karten, bis du X Karten auf der Hand hast."
+        "desc": "Ziehe Karten, bis du X Karten auf der Hand hast."
       },
       "suprematie": {
         "label": "Vorherrschaft",
-        "desc": "Beschwörung: Erhält +1 ATK und +1 LP für jede Karte auf deiner Hand zum Zeitpunkt der Beschwörung."
+        "desc": "Erhält +1 ATK und +1 LP für jede Karte auf deiner Hand zum Zeitpunkt der Beschwörung."
       },
       "divination": {
         "label": "Divination",
-        "desc": "Beschwörung: Decke die obersten 3 Karten deines Decks auf; lege eine davon oben und die anderen 2 in gewählter Reihenfolge unten ab."
+        "desc": "Decke die obersten 3 Karten deines Decks auf; lege eine davon oben und die anderen 2 in gewählter Reihenfolge unten ab."
       },
       "savant": {
         "label": "Gelehrter",
-        "desc": "Beschwörung: Erhält +1 ATK und +1 LP für jeden Zauber auf deinem Friedhof."
+        "desc": "Erhält +1 ATK und +1 LP für jeden Zauber auf deinem Friedhof."
       },
       "liaison_de_vie": {
         "label": "Lebensband",
@@ -211,7 +211,7 @@
       },
       "sacrifice": {
         "label": "Opferung",
-        "desc": "Beschwörung: Zerstöre einen Verbündeten, um dessen LP und ATK dauerhaft zu erhalten."
+        "desc": "Zerstöre einen Verbündeten, um dessen LP und ATK dauerhaft zu erhalten."
       },
       "malefice": {
         "label": "Übeltat",
@@ -231,35 +231,35 @@
       },
       "carnage": {
         "label": "Gemetzel X",
-        "desc": "Tod: Fügt allen Einheiten im Spiel (Verbündeten und Feinden) X Schaden zu."
+        "desc": "Fügt allen Einheiten im Spiel (Verbündeten und Feinden) X Schaden zu."
       },
       "heritage": {
         "label": "Erbe X",
-        "desc": "Tod: Jede verbündete Einheit im Spiel erhält dauerhaft +X ATK und +X LP."
+        "desc": "Jede verbündete Einheit im Spiel erhält dauerhaft +X ATK und +X LP."
       },
       "mimique": {
         "label": "Mimikry",
-        "desc": "Beschwörung: Kopiert alle Fähigkeiten einer ausgewählten Einheit und überträgt sie dauerhaft auf diese Einheit."
+        "desc": "Kopiert alle Fähigkeiten einer ausgewählten Einheit und überträgt sie dauerhaft auf diese Einheit."
       },
       "metamorphose": {
         "label": "Metamorphose",
-        "desc": "Beschwörung: Diese Einheit wird zu einer exakten Kopie (ATK / LP / Fähigkeiten) einer ausgewählten Einheit."
+        "desc": "Diese Einheit wird zu einer exakten Kopie (ATK / LP / Fähigkeiten) einer ausgewählten Einheit."
       },
       "dedoublement": {
         "label": "Verdoppelung",
-        "desc": "Beschwörung: Erstellt eine exakte Kopie dieser Kreatur im Spiel."
+        "desc": "Erstellt eine exakte Kopie dieser Kreatur im Spiel."
       },
       "tactique": {
         "label": "Taktik X",
-        "desc": "Beschwörung: Verleiht einer ausgewählten verbündeten Einheit dauerhaft X gewählte Fähigkeit(en)."
+        "desc": "Verleiht einer ausgewählten verbündeten Einheit dauerhaft X gewählte Fähigkeit(en)."
       },
       "exhumation": {
         "label": "Exhumierung X",
-        "desc": "Beschwörung: Erweckt eine Einheit von deinem Friedhof wieder, deren Manakosten X oder weniger betragen."
+        "desc": "Erweckt eine Einheit von deinem Friedhof wieder, deren Manakosten X oder weniger betragen."
       },
       "heritage_du_cimetiere": {
         "label": "Erbe des Friedhofs",
-        "desc": "Beschwörung: Überträgt die Fähigkeiten einer ausgewählten Einheit auf deinem Friedhof dauerhaft auf diese Einheit."
+        "desc": "Überträgt die Fähigkeiten einer ausgewählten Einheit auf deinem Friedhof dauerhaft auf diese Einheit."
       },
       "pacte_de_sang": {
         "label": "Blutpakt",
@@ -283,11 +283,11 @@
       },
       "vampirisme": {
         "label": "Vampirismus X",
-        "desc": "Beschwörung: Stiehlt X LP von einer ausgewählten feindlichen Einheit und fügt sie den LP dieser Einheit hinzu."
+        "desc": "Stiehlt X LP von einer ausgewählten feindlichen Einheit und fügt sie den LP dieser Einheit hinzu."
       },
       "traque_du_destin": {
         "label": "Schicksalsjagd X",
-        "desc": "Beschwörung: Decke die obersten X Karten deines Decks auf, nimm eine davon auf die Hand und lege die übrigen in zufälliger Reihenfolge unten ab."
+        "desc": "Decke die obersten X Karten deines Decks auf, nimm eine davon auf die Hand und lege die übrigen in zufälliger Reihenfolge unten ab."
       },
       "sang_mele": {
         "label": "Mischblut",
@@ -299,22 +299,23 @@
       },
       "solidarite": {
         "label": "Solidarität X",
-        "desc": "Beschwörung: Ziehe X Karten, wenn du 2 weitere Einheiten derselben Rasse kontrollierst."
+        "desc": "Ziehe X Karten, wenn du 2 weitere Einheiten derselben Rasse kontrollierst."
       },
       "entraide": {
-        "label": "Gegenseitige Hilfe"
+        "label": "Gegenseitige Hilfe",
+        "desc": "Kostet 1 Mana weniger pro verbündeter Einheit der gewählten Rasse im Spiel (kumulierbar, mindestens 0)."
       },
       "cycle_eternel": {
         "label": "Ewiger Kreislauf",
-        "desc": "Tod: Füge eine Kopie dieser Karte deinem Deck hinzu; wird sie gezogen, kommt sie direkt ins Spiel."
+        "desc": "Füge eine Kopie dieser Karte deinem Deck hinzu; wird sie gezogen, kommt sie direkt ins Spiel."
       },
       "martyr": {
         "label": "Märtyrer",
-        "desc": "Tod: Alle deine Einheiten derselben Rasse im Spiel erhalten dauerhaft +1/+1."
+        "desc": "Alle deine Einheiten derselben Rasse im Spiel erhalten dauerhaft +1/+1."
       },
       "instinct_de_meute": {
         "label": "Rudelinstinkt X",
-        "desc": "Beschwörung: Erhält +X ATK und +X LP, wenn eine verbündete Einheit derselben Fraktion in diesem Zug vom Spielfeld auf den Friedhof gelegt wurde."
+        "desc": "Erhält +X ATK und +X LP, wenn eine verbündete Einheit derselben Fraktion in diesem Zug vom Spielfeld auf den Friedhof gelegt wurde."
       },
       "totem": {
         "label": "Totem",
@@ -322,47 +323,47 @@
       },
       "appel_du_clan": {
         "label": "Ruf des Clans X",
-        "desc": "Beschwörung: Bringe die erste Einheit desselben Clans mit Kosten von X oder weniger von der Oberseite deines Decks kostenlos ins Spiel."
+        "desc": "Bringe die erste Einheit desselben Clans mit Kosten von X oder weniger von der Oberseite deines Decks kostenlos ins Spiel."
       },
       "appel_supreme": {
         "label": "Oberster Ruf",
-        "desc": "Beschwörung: Füge der gewählten Rasse die Kreatur mit den höchsten Manakosten aus deinem Deck deiner Hand hinzu (bei Gleichstand zufällig)."
+        "desc": "Füge der gewählten Rasse die Kreatur mit den höchsten Manakosten aus deinem Deck deiner Hand hinzu (bei Gleichstand zufällig)."
       },
       "rassemblement": {
         "label": "Sammlung X",
-        "desc": "Beschwörung: Decke die obersten X Karten des Decks auf; füge alle Einheiten derselben Rasse deiner Hand hinzu und lege den Rest ab."
+        "desc": "Decke die obersten X Karten des Decks auf; füge alle Einheiten derselben Rasse deiner Hand hinzu und lege den Rest ab."
       },
       "selection": {
         "label": "Auswahl X",
-        "desc": "Beschwörung: Enthülle 3 zufällige gewöhnliche Karten mit Kosten ≤ X aus Fraktionen desselben Ausrichtung (gut/neutral/böse) wie diese Karte; füge eine davon deiner Hand hinzu. Keine Kostenbegrenzung, falls X nicht definiert."
+        "desc": "Enthülle 3 zufällige gewöhnliche Karten mit Kosten ≤ X aus Fraktionen derselben Ausrichtung wie diese Karte; füge eine davon deiner Hand hinzu."
       },
       "selection_magique": {
         "label": "Magische Auswahl X",
-        "desc": "Beschwörung: Enthülle 3 zufällige gewöhnliche Zauber mit Kosten ≤ X aus Fraktionen derselben Ausrichtung (gut/neutral/böse) wie diese Karte; füge einen davon deiner Hand hinzu. Keine Kostenbegrenzung, falls X nicht definiert."
+        "desc": "Enthülle 3 zufällige gewöhnliche Zauber mit Kosten ≤ X aus Fraktionen derselben Ausrichtung wie diese Karte; füge einen davon deiner Hand hinzu."
       },
       "renfort_royal": {
         "label": "Königliche Auswahl X",
-        "desc": "Beschwörung: Enthülle 3 zufällige Karten aus deinen limitierten Editionen (mind. 30 erforderlich; sonst gewöhnliche Karten derselben Ausrichtung) mit Kosten ≤ X; füge eine davon deiner Hand hinzu. Keine Kostenbegrenzung, falls X nicht definiert."
+        "desc": "Enthülle 3 zufällige Karten aus deinen limitierten Editionen (mind. 30 erforderlich; sonst gewöhnliche Karten derselben Ausrichtung) mit Kosten ≤ X; füge eine davon deiner Hand hinzu."
       },
       "lycanthropie": {
         "label": "Lykanthropie X",
-        "desc": "Zugebinn: Verwandelt sich in einen X/X-Token mit Fährte."
+        "desc": "Verwandelt sich in einen X/X-Token mit Fährte."
       },
       "relancer": {
         "label": "Neu würfeln X",
-        "desc": "Beschwörung: Spiele die letzten X gewirkten Zauber mit zufälligen Zielen erneut."
+        "desc": "Spiele die letzten X gewirkten Zauber mit zufälligen Zielen erneut."
       },
       "tempete": {
         "label": "Sturm X",
-        "desc": "Beschwörung: Verteile X Schaden zufällig auf gegnerische Einheiten."
+        "desc": "Verteile X Schaden zufällig auf gegnerische Einheiten."
       },
       "cataclysme": {
         "label": "Katastrophe X",
-        "desc": "Beschwörung: Füge allen Kreaturen (verbündeten UND gegnerischen) X Schaden zu."
+        "desc": "Füge allen Kreaturen (verbündeten UND gegnerischen) X Schaden zu."
       },
       "affaiblissement": {
         "label": "Schwächung -X/-Y",
-        "desc": "Beschwörung: Gib einer gezielten gegnerischen Kreatur -X ATK und -Y LP."
+        "desc": "Gib einer gezielten gegnerischen Kreatur -X ATK und -Y LP."
       },
       "renforcement": {
         "label": "Stärkung +X/+Y",
@@ -374,15 +375,15 @@
       },
       "douleur": {
         "label": "Schmerz X",
-        "desc": "Beschwörung: Fügt deinem Helden X Schaden zu."
+        "desc": "Fügt deinem Helden X Schaden zu."
       },
       "inspiration": {
         "label": "Inspiration X",
-        "desc": "Beschwörung: Ziehe X Karten."
+        "desc": "Ziehe X Karten."
       },
       "concentration": {
         "label": "Konzentration X",
-        "desc": "Beschwörung: Ersetze jeden Zauber in der Hand durch einen zufälligen Zauber (alle Fraktionen) mit um X höheren Kosten; die Kosten des neuen Zaubers werden um X reduziert."
+        "desc": "Ersetze jeden Zauber in der Hand durch einen zufälligen Zauber (alle Fraktionen) mit um X höheren Kosten; die Kosten des neuen Zaubers werden um X reduziert."
       },
       "remontee": {
         "label": "Aufschwung",
@@ -398,11 +399,11 @@
       },
       "conferer": {
         "label": "Verleihen",
-        "desc": "Beschwörung: Verleiht einer verbündeten Einheit (oder allen) eine gewählte Fähigkeit."
+        "desc": "Verleiht einer verbündeten Einheit (oder allen) eine gewählte Fähigkeit."
       },
       "declenchement": {
         "label": "Auslösung",
-        "desc": "Beschwörung: Löse die zusammengesetzten Triggereffekte der anderen verbündeten Einheiten im Spiel einmalig erneut aus, für eine festgelegte Teilmenge von Auslösern (Einzug / Tod / Zugende / Rückkehr)."
+        "desc": "Löse die zusammengesetzten Triggereffekte der anderen verbündeten Einheiten im Spiel einmalig erneut aus, für eine festgelegte Teilmenge von Auslösern (Einzug / Tod / Zugende / Rückkehr)."
       }
     },
     "spell_keywords": {
@@ -440,15 +441,15 @@
       },
       "selection": {
         "label": "Auswahl X",
-        "desc": "Wähle eine Karte aus 3 zufälligen gewöhnlichen Karten mit Kosten ≤ X (unbegrenzt, falls X nicht definiert) aus Fraktionen derselben Gesinnung wie dieser Zauber, um sie auf die Hand zu nehmen."
+        "desc": "Wähle eine Karte aus 3 zufälligen gewöhnlichen Karten mit Kosten ≤ X aus Fraktionen derselben Gesinnung wie dieser Zauber, um sie auf die Hand zu nehmen."
       },
       "selection_magique": {
         "label": "Magische Auswahl X",
-        "desc": "Wähle einen Zauber aus 3 zufälligen gewöhnlichen Zaubern mit Kosten ≤ X (unbegrenzt, falls X nicht definiert) aus Fraktionen derselben Gesinnung wie dieser Zauber, um ihn auf die Hand zu nehmen."
+        "desc": "Wähle einen Zauber aus 3 zufälligen gewöhnlichen Zaubern mit Kosten ≤ X aus Fraktionen derselben Gesinnung wie dieser Zauber, um ihn auf die Hand zu nehmen."
       },
       "renfort_royal": {
         "label": "Königliche Auswahl X",
-        "desc": "Wähle eine Karte aus 3 zufälligen Karten deiner limitierten Editionen (≥30 erforderlich; sonst aus gewöhnlichen derselben Gesinnung) mit Kosten ≤ X (unbegrenzt, falls X nicht definiert), um sie auf die Hand zu nehmen."
+        "desc": "Wähle eine Karte aus 3 zufälligen Karten deiner limitierten Editionen (≥30 erforderlich; sonst aus gewöhnlichen derselben Gesinnung) mit Kosten ≤ X, um sie auf die Hand zu nehmen."
       },
       "relancer": {
         "label": "Wiederholen X",
@@ -1462,7 +1463,7 @@
     "zone_deck_opponent": "Nachziehstapel des Gegners",
     "zone_graveyard_yours": "Ihr Friedhof",
     "zone_graveyard_opponent": "Friedhof des Gegners",
-    "convocation_prefix": "Beschwörung: Erschafft {content}",
+    "convocation_prefix": "Erschafft {content}",
     "convocation_create_list": "Erschafft {content}",
     "convocation_token_one": "ein {token}-Token {atk}/{hp}",
     "convocation_token_many": "{count} {token}-Tokens {atk}/{hp}",

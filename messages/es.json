@@ -23,11 +23,11 @@
       },
       "convocations_multiples": {
         "label": "Invocaciones múltiples",
-        "desc": "Invocación: crea varios tokens según la configuración."
+        "desc": "Crea varios tokens según la configuración."
       },
       "loyaute": {
         "label": "Lealtad",
-        "desc": "Invocación: +1 ATK y +1 PV por cada aliado de la misma raza en juego."
+        "desc": "+1 ATK y +1 PV por cada aliado de la misma raza en juego."
       },
       "ancre": {
         "label": "Anclado",
@@ -83,7 +83,7 @@
       },
       "pillage": {
         "label": "Pillaje X",
-        "desc": "Invocación: el rival descarta X cartas aleatorias de su mano."
+        "desc": "El rival descarta X cartas aleatorias de su mano."
       },
       "riposte": {
         "label": "Represalia X",
@@ -91,11 +91,11 @@
       },
       "rappel": {
         "label": "Llamada",
-        "desc": "Invocación: devuelve una carta objetivo de tu cementerio a tu mano."
+        "desc": "Devuelve una carta objetivo de tu cementerio a tu mano."
       },
       "combustion": {
         "label": "Combustión",
-        "desc": "Invocación: descarta una carta de tu mano y luego roba dos cartas."
+        "desc": "Descarta una carta de tu mano y luego roba dos cartas."
       },
       "terreur": {
         "label": "Terror",
@@ -131,19 +131,19 @@
       },
       "contresort": {
         "label": "Contrahechizo",
-        "desc": "Invocación: cancela el próximo hechizo enemigo."
+        "desc": "Cancela el próximo hechizo enemigo."
       },
       "convocation": {
         "label": "Invocación X",
-        "desc": "Invocación: crea un token X/X de la raza indicada."
+        "desc": "Crea un token X/X de la raza indicada."
       },
       "convocation_simple": {
         "label": "Invocación",
-        "desc": "Invocación: crea el token configurado."
+        "desc": "Crea el token configurado."
       },
       "malediction": {
         "label": "Maldición",
-        "desc": "Invocación: elige una unidad enemiga; es exiliada al final del próximo turno rival."
+        "desc": "Elige una unidad enemiga; es exiliada al final del próximo turno rival."
       },
       "necrophagie": {
         "label": "Necrofagia",
@@ -163,7 +163,7 @@
       },
       "permutation": {
         "label": "Permutación",
-        "desc": "Invocación: intercambia los PV actuales de dos unidades objetivo (una aliada y una enemiga)."
+        "desc": "Intercambia los PV actuales de dos unidades objetivo (una aliada y una enemiga)."
       },
       "persecution": {
         "label": "Persecución X",
@@ -175,31 +175,31 @@
       },
       "catalyse": {
         "label": "Catálisis",
-        "desc": "Invocación: reduce en 1 el coste de maná de todas las unidades de la misma raza en tu mano."
+        "desc": "Reduce en 1 el coste de maná de todas las unidades de la misma raza en tu mano."
       },
       "ombre_du_passe": {
         "label": "Sombra del pasado",
-        "desc": "Invocación: gana +1 ATK y +1 PV por cada unidad de la misma raza en tu cementerio."
+        "desc": "Gana +1 ATK y +1 PV por cada unidad de la misma raza en tu cementerio."
       },
       "profanation": {
         "label": "Profanación X",
-        "desc": "Invocación: exilia las últimas X cartas de tu cementerio para otorgar hasta +X/+X a la unidad."
+        "desc": "Exilia las últimas X cartas de tu cementerio para otorgar hasta +X/+X a la unidad."
       },
       "prescience": {
         "label": "Presciencia X",
-        "desc": "Invocación: roba cartas hasta tener X cartas en mano."
+        "desc": "Roba cartas hasta tener X cartas en mano."
       },
       "suprematie": {
         "label": "Supremacía",
-        "desc": "Invocación: gana +1 ATK y +1 PV por cada carta en tu mano en el momento de la invocación."
+        "desc": "Gana +1 ATK y +1 PV por cada carta en tu mano en el momento de la invocación."
       },
       "divination": {
         "label": "Adivinación",
-        "desc": "Invocación: revela las 3 primeras cartas de tu mazo; coloca una encima y las otras 2 debajo en el orden que elijas."
+        "desc": "Revela las 3 primeras cartas de tu mazo; coloca una encima y las otras 2 debajo en el orden que elijas."
       },
       "savant": {
         "label": "Sabio",
-        "desc": "Invocación: gana +1 ATK y +1 PV por cada hechizo en tu cementerio."
+        "desc": "Gana +1 ATK y +1 PV por cada hechizo en tu cementerio."
       },
       "liaison_de_vie": {
         "label": "Vínculo vital",
@@ -211,7 +211,7 @@
       },
       "sacrifice": {
         "label": "Sacrificio",
-        "desc": "Invocación: destruye un aliado para ganar sus PV y su ATK de forma permanente."
+        "desc": "Destruye un aliado para ganar sus PV y su ATK de forma permanente."
       },
       "malefice": {
         "label": "Maleficio",
@@ -231,35 +231,35 @@
       },
       "carnage": {
         "label": "Carnicería X",
-        "desc": "Muerte: inflige X de daño a todas las unidades en juego (aliadas y enemigas)."
+        "desc": "Inflige X de daño a todas las unidades en juego (aliadas y enemigas)."
       },
       "heritage": {
         "label": "Herencia X",
-        "desc": "Muerte: cada unidad aliada en juego gana +X ATK y +X PV de forma permanente."
+        "desc": "Cada unidad aliada en juego gana +X ATK y +X PV de forma permanente."
       },
       "mimique": {
         "label": "Mímica",
-        "desc": "Invocación: copia todas las habilidades de una unidad objetivo y las otorga a esta unidad de forma permanente."
+        "desc": "Copia todas las habilidades de una unidad objetivo y las otorga a esta unidad de forma permanente."
       },
       "metamorphose": {
         "label": "Metamorfosis",
-        "desc": "Invocación: esta unidad se convierte en una copia exacta (ATK / PV / habilidades) de una unidad objetivo."
+        "desc": "Esta unidad se convierte en una copia exacta (ATK / PV / habilidades) de una unidad objetivo."
       },
       "dedoublement": {
         "label": "Desdoblamiento",
-        "desc": "Invocación: crea en juego una copia exacta de esta criatura."
+        "desc": "Crea en juego una copia exacta de esta criatura."
       },
       "tactique": {
         "label": "Táctica X",
-        "desc": "Invocación: otorga X habilidad(es) a elección a una unidad aliada objetivo de forma permanente."
+        "desc": "Otorga X habilidad(es) a elección a una unidad aliada objetivo de forma permanente."
       },
       "exhumation": {
         "label": "Exhumación X",
-        "desc": "Invocación: resucita una unidad de tu cementerio con coste de maná igual o inferior a X."
+        "desc": "Resucita una unidad de tu cementerio con coste de maná igual o inferior a X."
       },
       "heritage_du_cimetiere": {
         "label": "Herencia del cementerio",
-        "desc": "Invocación: otorga a esta unidad las habilidades de una unidad objetivo en tu cementerio."
+        "desc": "Otorga a esta unidad las habilidades de una unidad objetivo en tu cementerio."
       },
       "pacte_de_sang": {
         "label": "Pacto de sangre",
@@ -283,11 +283,11 @@
       },
       "vampirisme": {
         "label": "Vampirismo X",
-        "desc": "Invocación: roba X PV a una unidad enemiga objetivo y los añade a los PV de esta unidad."
+        "desc": "Roba X PV a una unidad enemiga objetivo y los añade a los PV de esta unidad."
       },
       "traque_du_destin": {
         "label": "Acecho del destino X",
-        "desc": "Invocación: revela las X primeras cartas de tu mazo, toma una en mano y coloca las demás debajo en orden aleatorio."
+        "desc": "Revela las X primeras cartas de tu mazo, toma una en mano y coloca las demás debajo en orden aleatorio."
       },
       "sang_mele": {
         "label": "Sangre mezclada",
@@ -299,22 +299,23 @@
       },
       "solidarite": {
         "label": "Solidaridad X",
-        "desc": "Invocación: roba X cartas si controlas otras 2 unidades de la misma raza."
+        "desc": "Roba X cartas si controlas otras 2 unidades de la misma raza."
       },
       "entraide": {
-        "label": "Ayuda mutua"
+        "label": "Ayuda mutua",
+        "desc": "Cuesta 1 maná menos por cada unidad aliada de la raza elegida en juego (acumulable, mínimo 0)."
       },
       "cycle_eternel": {
         "label": "Ciclo eterno",
-        "desc": "Muerte: añade una copia de esta carta a tu mazo; si la robas, ponla directamente en juego."
+        "desc": "Añade una copia de esta carta a tu mazo; si la robas, ponla directamente en juego."
       },
       "martyr": {
         "label": "Mártir",
-        "desc": "Muerte: todas tus unidades de la misma raza en juego ganan +1/+1 permanente."
+        "desc": "Todas tus unidades de la misma raza en juego ganan +1/+1 permanente."
       },
       "instinct_de_meute": {
         "label": "Instinto de manada X",
-        "desc": "Invocación: gana +X ATK y +X PV si una unidad aliada de la misma facción ha pasado del juego al cementerio este turno."
+        "desc": "Gana +X ATK y +X PV si una unidad aliada de la misma facción ha pasado del juego al cementerio este turno."
       },
       "totem": {
         "label": "Tótem",
@@ -322,47 +323,47 @@
       },
       "appel_du_clan": {
         "label": "Llamada del clan X",
-        "desc": "Invocación: pon en juego gratuitamente la primera unidad del mismo clan con coste igual o inferior a X desde la cima de tu mazo."
+        "desc": "Pon en juego gratuitamente la primera unidad del mismo clan con coste igual o inferior a X desde la cima de tu mazo."
       },
       "appel_supreme": {
         "label": "Llamada Suprema",
-        "desc": "Invocación: añade a tu mano la criatura de la raza elegida con el mayor coste de maná restante en tu mazo (aleatoria en caso de empate)."
+        "desc": "Añade a tu mano la criatura de la raza elegida con el mayor coste de maná restante en tu mazo (aleatoria en caso de empate)."
       },
       "rassemblement": {
         "label": "Reunión X",
-        "desc": "Invocación: revela las X primeras cartas del mazo; añade a tu mano todas las unidades de la misma raza y descarta el resto."
+        "desc": "Revela las X primeras cartas del mazo; añade a tu mano todas las unidades de la misma raza y descarta el resto."
       },
       "selection": {
         "label": "Selección X",
-        "desc": "Invocación: revela 3 cartas comunes aleatorias de coste ≤ X entre las facciones del mismo alineamiento (bueno/neutral/maligno) que esta carta; añade una a tu mano. Sin límite de coste si X no está definida."
+        "desc": "Revela 3 cartas comunes aleatorias de coste ≤ X entre las facciones del mismo alineamiento que esta carta; añade una a tu mano."
       },
       "selection_magique": {
         "label": "Selección mágica X",
-        "desc": "Invocación: revela 3 hechizos comunes aleatorios de coste ≤ X entre las facciones del mismo alineamiento (bueno/neutral/maligno) que esta carta; añade uno a tu mano. Sin límite de coste si X no está definida."
+        "desc": "Revela 3 hechizos comunes aleatorios de coste ≤ X entre las facciones del mismo alineamiento que esta carta; añade uno a tu mano."
       },
       "renfort_royal": {
         "label": "Selección Real X",
-        "desc": "Invocación: revela 3 cartas aleatorias entre tus ediciones limitadas (se requieren ≥30; si no, entre cartas comunes del mismo alineamiento) de coste ≤ X; añade una a tu mano. Sin límite de coste si X no está definida."
+        "desc": "Revela 3 cartas aleatorias entre tus ediciones limitadas (se requieren ≥30; si no, entre cartas comunes del mismo alineamiento) de coste ≤ X; añade una a tu mano."
       },
       "lycanthropie": {
         "label": "Licantropía X",
-        "desc": "Inicio de turno: se transforma en un token X/X con Rastreo."
+        "desc": "Se transforma en un token X/X con Rastreo."
       },
       "relancer": {
         "label": "Relanzar X",
-        "desc": "Invocación: vuelve a lanzar los X últimos hechizos con objetivos aleatorios."
+        "desc": "Vuelve a lanzar los X últimos hechizos con objetivos aleatorios."
       },
       "tempete": {
         "label": "Tempestad X",
-        "desc": "Invocación: inflige X daños repartidos aleatoriamente entre las unidades enemigas."
+        "desc": "Inflige X daños repartidos aleatoriamente entre las unidades enemigas."
       },
       "cataclysme": {
         "label": "Cataclismo X",
-        "desc": "Invocación: inflige X daños a todas las criaturas (aliadas Y enemigas)."
+        "desc": "Inflige X daños a todas las criaturas (aliadas Y enemigas)."
       },
       "affaiblissement": {
         "label": "Debilitamiento -X/-Y",
-        "desc": "Invocación: otorga -X ATK y -Y PV a una criatura enemiga objetivo."
+        "desc": "Otorga -X ATK y -Y PV a una criatura enemiga objetivo."
       },
       "renforcement": {
         "label": "Refuerzo +X/+Y",
@@ -374,15 +375,15 @@
       },
       "douleur": {
         "label": "Dolor X",
-        "desc": "Invocación: inflige X daños a tu héroe."
+        "desc": "Inflige X daños a tu héroe."
       },
       "inspiration": {
         "label": "Inspiración X",
-        "desc": "Invocación: roba X cartas."
+        "desc": "Roba X cartas."
       },
       "concentration": {
         "label": "Concentración X",
-        "desc": "Invocación: reemplaza cada hechizo en mano por un hechizo aleatorio (de cualquier facción) de coste superior en X; el coste del nuevo hechizo se reduce en X."
+        "desc": "Reemplaza cada hechizo en mano por un hechizo aleatorio (de cualquier facción) de coste superior en X; el coste del nuevo hechizo se reduce en X."
       },
       "remontee": {
         "label": "Remontada",
@@ -398,11 +399,11 @@
       },
       "conferer": {
         "label": "Conferir",
-        "desc": "Invocación: confiere una habilidad elegida a una unidad aliada (o a todas)."
+        "desc": "Confiere una habilidad elegida a una unidad aliada (o a todas)."
       },
       "declenchement": {
         "label": "Activación",
-        "desc": "Invocación: vuelve a activar una vez los efectos compuestos desencadenados de los demás aliados en juego, para un subconjunto fijo de activadores (entrada / muerte / fin de turno / regreso)."
+        "desc": "Vuelve a activar una vez los efectos compuestos desencadenados de los demás aliados en juego, para un subconjunto fijo de activadores (entrada / muerte / fin de turno / regreso)."
       }
     },
     "spell_keywords": {
@@ -440,15 +441,15 @@
       },
       "selection": {
         "label": "Selección X",
-        "desc": "Elige una carta entre 3 cartas comunes aleatorias de coste ≤ X (sin límite si X no está definido), de facciones del mismo alineamiento que este hechizo, para añadir a tu mano."
+        "desc": "Elige una carta entre 3 cartas comunes aleatorias de coste ≤ X, de facciones del mismo alineamiento que este hechizo, para añadir a tu mano."
       },
       "selection_magique": {
         "label": "Selección mágica X",
-        "desc": "Elige un hechizo entre 3 hechizos comunes aleatorios de coste ≤ X (sin límite si X no está definido), de facciones del mismo alineamiento que este hechizo, para añadir a tu mano."
+        "desc": "Elige un hechizo entre 3 hechizos comunes aleatorios de coste ≤ X, de facciones del mismo alineamiento que este hechizo, para añadir a tu mano."
       },
       "renfort_royal": {
         "label": "Selección Real X",
-        "desc": "Elige una carta entre 3 cartas aleatorias de tus ediciones limitadas (se requieren ≥30; si no, entre comunes del mismo alineamiento) de coste ≤ X (sin límite si X no está definido) para añadir a tu mano."
+        "desc": "Elige una carta entre 3 cartas aleatorias de tus ediciones limitadas (se requieren ≥30; si no, entre comunes del mismo alineamiento) de coste ≤ X para añadir a tu mano."
       },
       "relancer": {
         "label": "Relanzar X",
@@ -1462,7 +1463,7 @@
     "zone_deck_opponent": "Mazo rival",
     "zone_graveyard_yours": "Tu cementerio",
     "zone_graveyard_opponent": "Cementerio rival",
-    "convocation_prefix": "Invocación: crea {content}",
+    "convocation_prefix": "Crea {content}",
     "convocation_create_list": "Crea {content}",
     "convocation_token_one": "un token {token} {atk}/{hp}",
     "convocation_token_many": "{count} tokens {token} {atk}/{hp}",

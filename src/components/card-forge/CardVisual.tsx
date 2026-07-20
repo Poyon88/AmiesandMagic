@@ -354,10 +354,10 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
               let displayDesc = xVal != null ? KEYWORDS[kw]?.desc.replace(/X/g, String(xVal)) : KEYWORDS[kw]?.desc;
               if (kw === "Convocation X" && card!.convocationTokenId) {
                 const tokenLabel = card!.convocationTokenName || "token";
-                displayDesc = `Invocation : crée un token ${tokenLabel} ${xVal ?? "X"}/${xVal ?? "X"}.`;
+                displayDesc = `Crée un token ${tokenLabel} ${xVal ?? "X"}/${xVal ?? "X"}.`;
               }
               if (kw === "Convocations multiples" && card!.convocationTokens?.length) {
-                displayDesc = `Invocation : crée ${formatConvocationTokens(card!.convocationTokens, tokens)}.`;
+                displayDesc = `Crée ${formatConvocationTokens(card!.convocationTokens, tokens)}.`;
               }
               if (kw === "Lycanthropie X" && card!.lycanthropieTokenId) {
                 const tokenLabel = card!.lycanthropieTokenName || "forme transformée";
@@ -581,10 +581,10 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
               let displayDesc = xVal != null ? KEYWORDS[kw]?.desc.replace(/X/g, String(xVal)) : KEYWORDS[kw]?.desc;
               if (kw === "Convocation X" && card!.convocationTokenId) {
                 const tokenLabel = card!.convocationTokenName || "token";
-                displayDesc = `Invocation : crée un token ${tokenLabel} ${xVal ?? "X"}/${xVal ?? "X"}.`;
+                displayDesc = `Crée un token ${tokenLabel} ${xVal ?? "X"}/${xVal ?? "X"}.`;
               }
               if (kw === "Convocations multiples" && card!.convocationTokens?.length) {
-                displayDesc = `Invocation : crée ${formatConvocationTokens(card!.convocationTokens, tokens)}.`;
+                displayDesc = `Crée ${formatConvocationTokens(card!.convocationTokens, tokens)}.`;
               }
               if (kw === "Lycanthropie X" && card!.lycanthropieTokenId) {
                 const tokenLabel = card!.lycanthropieTokenName || "forme transformée";

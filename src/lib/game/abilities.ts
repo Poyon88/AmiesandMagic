@@ -112,7 +112,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
   // ─── Creature-only — Tier 0 ───────────────────────────────────────────────
   loyaute: {
     id: "loyaute", label: "Loyauté", symbol: "🤝",
-    desc: "Invocation : +1 ATK et +1 PV pour chaque allié de même race en jeu.",
+    desc: "+1 ATK et +1 PV pour chaque allié de même race en jeu.",
     applicable_to: ["creature"],
     creature: { cost: 2, costPerX: 0, se: 0.5, minTier: 0, scalable: false, zone: "Terrain" },
   },
@@ -227,7 +227,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["creature", "spell"],
     creature: {
       cost: 8, costPerX: 5, se: 3.0, minTier: 1, scalable: true, zone: "Terrain",
-      desc: "Invocation : l'adversaire défausse X cartes aléatoires de sa main.",
+      desc: "L'adversaire défausse X cartes aléatoires de sa main.",
     },
     spell: { params: ["amount"], needsTarget: false },
   },
@@ -239,7 +239,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   combustion: {
     id: "combustion", label: "Combustion", symbol: "🔥",
-    desc: "Invocation : défaussez une carte de votre main, puis piochez deux cartes.",
+    desc: "Défaussez une carte de votre main, puis piochez deux cartes.",
     applicable_to: ["creature"],
     creature: { cost: 7, costPerX: 0, se: 1.5, minTier: 1, scalable: false, zone: "Main" },
   },
@@ -308,25 +308,25 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   catalyse: {
     id: "catalyse", label: "Catalyse", symbol: "⚗️",
-    desc: "Invocation : réduit de 1 le coût en mana de toutes les unités de même race dans votre main.",
+    desc: "Réduit de 1 le coût en mana de toutes les unités de même race dans votre main.",
     applicable_to: ["creature"],
     creature: { cost: 11, costPerX: 0, se: 2.5, minTier: 2, scalable: false, zone: "Main" },
   },
   entraide: {
     id: "entraide", label: "Entraide (Race)", symbol: "🤝",
-    desc: "En main : coûte 1 mana de moins par allié de la race choisie présent en jeu (cumulable, plancher 0).",
+    desc: "Coûte 1 mana de moins par allié de la race choisie présent en jeu (cumulable, plancher 0).",
     applicable_to: ["creature"],
     creature: { cost: 11, costPerX: 0, se: 2.5, minTier: 2, scalable: false, zone: "Main" },
   },
   contresort: {
     id: "contresort", label: "Contresort", symbol: "🚫",
-    desc: "Invocation : annule le prochain sort adverse.",
+    desc: "Annule le prochain sort adverse.",
     applicable_to: ["creature"],
     creature: { cost: 13, costPerX: 0, se: 3.0, minTier: 2, scalable: false, zone: "Terrain" },
   },
   convocation: {
     id: "convocation", label: "Convocation X", symbol: "📣",
-    desc: "Invocation : crée un token X/X de la race indiquée.",
+    desc: "Crée un token X/X de la race indiquée.",
     applicable_to: ["creature"],
     creature: { cost: 8, costPerX: 5, se: 3.0, minTier: 2, scalable: true, zone: "Terrain" },
   },
@@ -336,13 +336,13 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["creature", "spell"],
     creature: {
       cost: 8, costPerX: 0, se: 3.0, minTier: 2, scalable: false, zone: "Terrain",
-      desc: "Invocation : crée le token configuré.",
+      desc: "Crée le token configuré.",
     },
     spell: { params: [], needsTarget: false },
   },
   lycanthropie: {
     id: "lycanthropie", label: "Lycanthropie X", symbol: "🐺",
-    desc: "Début de tour : se transforme en un token X/X avec Traque.",
+    desc: "Se transforme en un token X/X avec Traque.",
     applicable_to: ["creature"],
     creature: { cost: 12, costPerX: 5, se: 3.5, minTier: 2, scalable: true, zone: "Terrain" },
   },
@@ -355,7 +355,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
   // "Convocations multiples" on the creature path.
   malediction: {
     id: "malediction", label: "Malédiction", symbol: "💀",
-    desc: "Invocation : ciblez une unité ennemie, elle est exilée à la fin du prochain tour adverse.",
+    desc: "Ciblez une unité ennemie, elle est exilée à la fin du prochain tour adverse.",
     applicable_to: ["creature"],
     creature: { cost: 16, costPerX: 0, se: 3.5, minTier: 2, scalable: false, zone: "Terrain" },
   },
@@ -373,7 +373,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   permutation: {
     id: "permutation", label: "Permutation", symbol: "🔀",
-    desc: "Invocation : échange les PV actuels de deux unités ciblées (une alliée et une ennemie).",
+    desc: "Échange les PV actuels de deux unités ciblées (une alliée et une ennemie).",
     applicable_to: ["creature"],
     creature: { cost: 16, costPerX: 0, se: 3.5, minTier: 2, scalable: false, zone: "Terrain" },
   },
@@ -391,37 +391,37 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   ombre_du_passe: {
     id: "ombre_du_passe", label: "Ombre du passé", symbol: "👤",
-    desc: "Invocation : gagne +1 ATK et +1 PV par unité de même race dans votre cimetière.",
+    desc: "Gagne +1 ATK et +1 PV par unité de même race dans votre cimetière.",
     applicable_to: ["creature"],
     creature: { cost: 11, costPerX: 0, se: 2.5, minTier: 2, scalable: false, zone: "Cimetière" },
   },
   savant: {
     id: "savant", label: "Savant", symbol: "📚",
-    desc: "Invocation : gagne +1 ATK et +1 PV par sort dans votre cimetière.",
+    desc: "Gagne +1 ATK et +1 PV par sort dans votre cimetière.",
     applicable_to: ["creature"],
     creature: { cost: 10, costPerX: 0, se: 2.5, minTier: 2, scalable: false, zone: "Cimetière" },
   },
   profanation: {
     id: "profanation", label: "Profanation X", symbol: "⚰️",
-    desc: "Invocation : exile les X dernières cartes de votre cimetière pour accorder jusqu'à +X/+X à l'unité.",
+    desc: "Exile les X dernières cartes de votre cimetière pour accorder jusqu'à +X/+X à l'unité.",
     applicable_to: ["creature"],
     creature: { cost: 7, costPerX: 3, se: 2.5, minTier: 2, scalable: true, zone: "Cimetière" },
   },
   prescience: {
     id: "prescience", label: "Prescience X", symbol: "🃏",
-    desc: "Invocation : piochez des cartes jusqu'à avoir X cartes en main.",
+    desc: "Piochez des cartes jusqu'à avoir X cartes en main.",
     applicable_to: ["creature"],
     creature: { cost: 9, costPerX: 4, se: 3.0, minTier: 2, scalable: true, zone: "Main" },
   },
   suprematie: {
     id: "suprematie", label: "Suprématie", symbol: "👊",
-    desc: "Invocation : gagne +1 ATK et +1 PV par carte dans votre main au moment de l'invocation.",
+    desc: "Gagne +1 ATK et +1 PV par carte dans votre main au moment de l'invocation.",
     applicable_to: ["creature"],
     creature: { cost: 13, costPerX: 0, se: 3.0, minTier: 2, scalable: false, zone: "Main" },
   },
   divination: {
     id: "divination", label: "Divination", symbol: "🔍",
-    desc: "Invocation : révèle les 3 premières cartes de votre pioche ; placez-en une sur le dessus et les 2 autres en dessous dans l'ordre choisi.",
+    desc: "Révèle les 3 premières cartes de votre pioche ; placez-en une sur le dessus et les 2 autres en dessous dans l'ordre choisi.",
     applicable_to: ["creature"],
     creature: { cost: 11, costPerX: 0, se: 2.5, minTier: 2, scalable: false, zone: "Mixte" },
   },
@@ -441,7 +441,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   sacrifice: {
     id: "sacrifice", label: "Sacrifice", symbol: "💔",
-    desc: "Invocation : détruisez un allié pour gagner ses PV et son ATK de manière permanente.",
+    desc: "Détruisez un allié pour gagner ses PV et son ATK de manière permanente.",
     applicable_to: ["creature"],
     creature: { cost: 18, costPerX: 0, se: 4.0, minTier: 3, scalable: false, zone: "Terrain" },
   },
@@ -471,43 +471,43 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   carnage: {
     id: "carnage", label: "Carnage X", symbol: "💥",
-    desc: "Mort : inflige X dégâts à toutes les unités en jeu (alliées et ennemies).",
+    desc: "Inflige X dégâts à toutes les unités en jeu (alliées et ennemies).",
     applicable_to: ["creature"],
     creature: { cost: 12, costPerX: 5, se: 4.0, minTier: 3, scalable: true, zone: "Terrain" },
   },
   heritage: {
     id: "heritage", label: "Héritage X", symbol: "📜",
-    desc: "Mort : chaque unité alliée en jeu gagne +X ATK et +X PV de manière permanente.",
+    desc: "Chaque unité alliée en jeu gagne +X ATK et +X PV de manière permanente.",
     applicable_to: ["creature"],
     creature: { cost: 14, costPerX: 6, se: 4.5, minTier: 3, scalable: true, zone: "Terrain" },
   },
   mimique: {
     id: "mimique", label: "Mimique", symbol: "🪞",
-    desc: "Invocation : copie toutes les capacités d'une unité ciblée et les attribue à cette unité de manière permanente.",
+    desc: "Copie toutes les capacités d'une unité ciblée et les attribue à cette unité de manière permanente.",
     applicable_to: ["creature"],
     creature: { cost: 20, costPerX: 0, se: 4.5, minTier: 3, scalable: false, zone: "Terrain" },
   },
   metamorphose: {
     id: "metamorphose", label: "Métamorphose", symbol: "🦎",
-    desc: "Invocation : cette unité devient une copie exacte (ATK / PV / capacités) d'une unité ciblée.",
+    desc: "Cette unité devient une copie exacte (ATK / PV / capacités) d'une unité ciblée.",
     applicable_to: ["creature"],
     creature: { cost: 20, costPerX: 0, se: 4.5, minTier: 3, scalable: false, zone: "Terrain" },
   },
   dedoublement: {
     id: "dedoublement", label: "Dédoublement", symbol: "👯",
-    desc: "Invocation : crée en jeu une copie exacte de cette créature.",
+    desc: "Crée en jeu une copie exacte de cette créature.",
     applicable_to: ["creature"],
     creature: { cost: 22, costPerX: 0, se: 5.0, minTier: 3, scalable: false, zone: "Terrain" },
   },
   tactique: {
     id: "tactique", label: "Tactique X", symbol: "📋",
-    desc: "Invocation : attribue X capacité(s) choisie(s) à une unité alliée ciblée de manière permanente.",
+    desc: "Attribue X capacité(s) choisie(s) à une unité alliée ciblée de manière permanente.",
     applicable_to: ["creature"],
     creature: { cost: 11, costPerX: 7, se: 4.0, minTier: 3, scalable: true, zone: "Terrain" },
   },
   heritage_du_cimetiere: {
     id: "heritage_du_cimetiere", label: "Héritage du cimetière", symbol: "🏚️",
-    desc: "Invocation : attribue à cette unité les capacités d'une unité ciblée dans votre cimetière.",
+    desc: "Attribue à cette unité les capacités d'une unité ciblée dans votre cimetière.",
     applicable_to: ["creature"],
     creature: { cost: 16, costPerX: 0, se: 3.5, minTier: 3, scalable: false, zone: "Cimetière" },
   },
@@ -554,7 +554,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   vampirisme: {
     id: "vampirisme", label: "Vampirisme X", symbol: "🧛",
-    desc: "Invocation : vole X PV à une unité ennemie ciblée et les ajoute aux PV de cette unité.",
+    desc: "Vole X PV à une unité ennemie ciblée et les ajoute aux PV de cette unité.",
     applicable_to: ["creature"],
     creature: { cost: 20, costPerX: 5, se: 5.5, minTier: 4, scalable: true, zone: "Terrain" },
   },
@@ -562,13 +562,13 @@ export const ABILITIES: Record<string, AbilityDef> = {
   // ─── Creature-only — Deck / Race / Clan ───────────────────────────────────
   traque_du_destin: {
     id: "traque_du_destin", label: "Traque du destin X", symbol: "🔮",
-    desc: "Invocation : révèle les X premières cartes de votre deck, prenez-en une en main et placez les autres en dessous dans un ordre aléatoire.",
+    desc: "Révèle les X premières cartes de votre deck, prenez-en une en main et placez les autres en dessous dans un ordre aléatoire.",
     applicable_to: ["creature"],
     creature: { cost: 11, costPerX: 4, se: 3.0, minTier: 2, scalable: true, zone: "Deck" },
   },
   cycle_eternel: {
     id: "cycle_eternel", label: "Cycle éternel", symbol: "♻️",
-    desc: "Mort : ajoutez une copie de cette carte dans votre deck ; si elle est piochée, mettez-la directement en jeu.",
+    desc: "Ajoutez une copie de cette carte dans votre deck ; si elle est piochée, mettez-la directement en jeu.",
     applicable_to: ["creature"],
     creature: { cost: 18, costPerX: 0, se: 4.0, minTier: 3, scalable: false, zone: "Deck" },
   },
@@ -580,13 +580,13 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   martyr: {
     id: "martyr", label: "Martyr", symbol: "⚱️",
-    desc: "Mort : toutes vos unités de même race en jeu gagnent +1/+1 permanent.",
+    desc: "Toutes vos unités de même race en jeu gagnent +1/+1 permanent.",
     applicable_to: ["creature"],
     creature: { cost: 18, costPerX: 0, se: 4.0, minTier: 3, scalable: false, zone: "Race" },
   },
   instinct_de_meute: {
     id: "instinct_de_meute", label: "Instinct de meute X", symbol: "🐺",
-    desc: "Invocation : gagne +X ATK et +X PV si une unité alliée de même faction a rejoint le cimetière depuis le jeu ce tour.",
+    desc: "Gagne +X ATK et +X PV si une unité alliée de même faction a rejoint le cimetière depuis le jeu ce tour.",
     applicable_to: ["creature"],
     creature: { cost: 14, costPerX: 5, se: 4.0, minTier: 3, scalable: true, zone: "Race" },
   },
@@ -604,7 +604,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   appel_du_clan: {
     id: "appel_du_clan", label: "Appel du clan X", symbol: "📯",
-    desc: "Invocation : mettez en jeu gratuitement la première unité de même clan avec un coût inférieur ou égal à X depuis le dessus de votre deck.",
+    desc: "Mettez en jeu gratuitement la première unité de même clan avec un coût inférieur ou égal à X depuis le dessus de votre deck.",
     applicable_to: ["creature", "spell"],
     creature: { cost: 16, costPerX: 5, se: 4.5, minTier: 3, scalable: true, zone: "Clan" },
     spell: {
@@ -618,7 +618,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["creature", "spell"],
     creature: {
       cost: 10, costPerX: 0, se: 3.5, minTier: 2, scalable: false, zone: "Deck",
-      desc: "Invocation : ajoute à votre main la créature de la race choisie au coût en mana le plus élevé restante dans votre deck (au hasard si égalité).",
+      desc: "Ajoute à votre main la créature de la race choisie au coût en mana le plus élevé restante dans votre deck (au hasard si égalité).",
     },
     spell: {
       desc: "Ajoute à votre main la créature de la race choisie au coût le plus élevé restante dans votre deck (au hasard si égalité).",
@@ -627,7 +627,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   solidarite: {
     id: "solidarite", label: "Solidarité X", symbol: "🤜",
-    desc: "Invocation : piochez X cartes si vous contrôlez 2 autres unités de même race.",
+    desc: "Piochez X cartes si vous contrôlez 2 autres unités de même race.",
     applicable_to: ["creature"],
     creature: { cost: 9, costPerX: 4, se: 2.5, minTier: 2, scalable: true, zone: "Race" },
   },
@@ -637,7 +637,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["creature", "spell"],
     creature: {
       cost: 14, costPerX: 4, se: 4.0, minTier: 3, scalable: true, zone: "Mixte",
-      desc: "Invocation : révèle les X premières cartes du deck ; ajoutez à votre main toutes les unités de même race et défaussez le reste.",
+      desc: "Révèle les X premières cartes du deck ; ajoutez à votre main toutes les unités de même race et défaussez le reste.",
     },
     spell: {
       desc: "Révèle les X premières cartes de votre deck ; ajoutez à votre main les unités de la même race que ce sort et défaussez le reste.",
@@ -652,7 +652,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["creature", "spell"],
     creature: {
       cost: 7, costPerX: 0, se: 1.5, minTier: 1, scalable: false, zone: "Cimetière",
-      desc: "Invocation : remettez une carte ciblée de votre cimetière dans votre main.",
+      desc: "Remettez une carte ciblée de votre cimetière dans votre main.",
     },
     spell: {
       desc: "Renvoie une créature de votre cimetière dans votre main",
@@ -665,7 +665,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["creature", "spell"],
     creature: {
       cost: 14, costPerX: 4, se: 4.0, minTier: 3, scalable: true, zone: "Cimetière",
-      desc: "Invocation : ressuscite une unité de votre cimetière dont le coût en mana est égal ou inférieur à X.",
+      desc: "Ressuscite une unité de votre cimetière dont le coût en mana est égal ou inférieur à X.",
     },
     spell: {
       desc: "Ressuscite une créature (coût ≤ X) de votre cimetière sur le terrain",
@@ -674,40 +674,40 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   selection: {
     id: "selection", label: "Sélection X", symbol: "🎴",
-    desc: "Choisissez une carte parmi 3 communes aléatoires de coût ≤ X (sans limite de coût si X non défini), issues des factions du même alignement (bon/neutre/maléfique) que cette carte, à ajouter en main.",
+    desc: "Choisissez une carte parmi 3 communes aléatoires de coût ≤ X, issues des factions du même alignement que cette carte, à ajouter en main.",
     applicable_to: ["creature", "spell"],
     creature: {
       cost: 9, costPerX: 4, se: 2.5, minTier: 2, scalable: true, zone: "Mixte",
-      desc: "Invocation : révèle 3 cartes communes aléatoires de coût ≤ X parmi les factions du même alignement (bon/neutre/maléfique) que cette carte ; ajoutez-en une à votre main. Sans limite de coût si X non défini.",
+      desc: "Révèle 3 cartes communes aléatoires de coût ≤ X parmi les factions du même alignement que cette carte ; ajoutez-en une à votre main.",
     },
     spell: {
-      desc: "Choisissez une carte parmi 3 communes aléatoires de coût ≤ X (sans limite si X non défini), issues des factions du même alignement que ce sort, à ajouter en main",
+      desc: "Choisissez une carte parmi 3 communes aléatoires de coût ≤ X, issues des factions du même alignement que ce sort, à ajouter en main",
       params: ["amount"], needsTarget: false,
     },
   },
   selection_magique: {
     id: "selection_magique", label: "Sélection magique X", symbol: "🪄",
-    desc: "Choisissez un sort parmi 3 sorts communs aléatoires de coût ≤ X (sans limite si X non défini), issus des factions du même alignement (bon/neutre/maléfique) que cette carte, à ajouter en main.",
+    desc: "Choisissez un sort parmi 3 sorts communs aléatoires de coût ≤ X, issus des factions du même alignement que cette carte, à ajouter en main.",
     applicable_to: ["creature", "spell"],
     creature: {
       cost: 11, costPerX: 4, se: 3.0, minTier: 2, scalable: true, zone: "Mixte",
-      desc: "Invocation : révèle 3 sorts communs aléatoires de coût ≤ X parmi les factions du même alignement (bon/neutre/maléfique) que cette carte ; ajoutez-en un à votre main. Sans limite de coût si X non défini.",
+      desc: "Révèle 3 sorts communs aléatoires de coût ≤ X parmi les factions du même alignement que cette carte ; ajoutez-en un à votre main.",
     },
     spell: {
-      desc: "Choisissez un sort parmi 3 sorts communs aléatoires de coût ≤ X (sans limite si X non défini), issus des factions du même alignement que ce sort, à ajouter en main",
+      desc: "Choisissez un sort parmi 3 sorts communs aléatoires de coût ≤ X, issus des factions du même alignement que ce sort, à ajouter en main",
       params: ["amount"], needsTarget: false,
     },
   },
   renfort_royal: {
     id: "renfort_royal", label: "Sélection Royale X", symbol: "👑",
-    desc: "Choisissez une carte parmi 3 éditions limitées que vous possédez (≥30 requises ; sinon parmi des communes du même alignement), de coût ≤ X (sans limite si X non défini).",
+    desc: "Choisissez une carte parmi 3 éditions limitées que vous possédez (≥30 requises ; sinon parmi des communes du même alignement), de coût ≤ X.",
     applicable_to: ["creature", "spell"],
     creature: {
       cost: 14, costPerX: 5, se: 3.5, minTier: 3, scalable: true, zone: "Mixte",
-      desc: "Invocation : révèle 3 cartes aléatoires parmi vos éditions limitées (≥30 requises ; sinon parmi des communes du même alignement) de coût ≤ X ; ajoutez-en une à votre main. Sans limite de coût si X non défini.",
+      desc: "Révèle 3 cartes aléatoires parmi vos éditions limitées (≥30 requises ; sinon parmi des communes du même alignement) de coût ≤ X ; ajoutez-en une à votre main.",
     },
     spell: {
-      desc: "Choisissez une carte parmi 3 cartes aléatoires de vos éditions limitées (≥30 requises ; sinon parmi des communes du même alignement) de coût ≤ X (sans limite si X non défini) à ajouter en main",
+      desc: "Choisissez une carte parmi 3 cartes aléatoires de vos éditions limitées (≥30 requises ; sinon parmi des communes du même alignement) de coût ≤ X à ajouter en main",
       params: ["amount"], needsTarget: false,
     },
   },
@@ -717,7 +717,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["creature", "spell"],
     creature: {
       cost: 12, costPerX: 8, se: 5.0, minTier: 3, scalable: true, zone: "Terrain",
-      desc: "Invocation : rejoue les X derniers sorts lancés avec des cibles aléatoires.",
+      desc: "Rejoue les X derniers sorts lancés avec des cibles aléatoires.",
     },
     spell: {
       desc: "Rejoue les X derniers sorts lancés avec des cibles aléatoires",
@@ -788,7 +788,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["creature", "spell"],
     creature: {
       cost: 14, costPerX: 5, se: 3.5, minTier: 2, scalable: true, zone: "Terrain",
-      desc: "Invocation : donne -X ATK et -Y PV à une créature ennemie ciblée.",
+      desc: "Donne -X ATK et -Y PV à une créature ennemie ciblée.",
     },
     spell: {
       desc: "Donne -X ATK et -Y PV à une créature ennemie ciblée.",
@@ -807,7 +807,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["creature", "spell"],
     creature: {
       cost: 9, costPerX: 5, se: 2.5, minTier: 2, scalable: true, zone: "Main",
-      desc: "Invocation : piochez X cartes.",
+      desc: "Piochez X cartes.",
     },
     spell: {
       desc: "Piochez X cartes",
@@ -859,7 +859,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["creature", "spell"],
     creature: {
       cost: 12, costPerX: 6, se: 3.5, minTier: 3, scalable: true, zone: "Main",
-      desc: "Invocation : remplace chaque sort en main par un sort aléatoire (toutes factions) de coût supérieur de X ; le coût du nouveau sort est réduit de X.",
+      desc: "Remplace chaque sort en main par un sort aléatoire (toutes factions) de coût supérieur de X ; le coût du nouveau sort est réduit de X.",
     },
     spell: {
       desc: "Remplace chaque sort en main par un sort aléatoire (toutes factions) de coût supérieur de X ; le coût du nouveau sort est réduit de X.",
@@ -873,7 +873,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     creature: {
       id: "convocations_multiples",
       cost: 12, costPerX: 0, se: 4.0, minTier: 2, scalable: false, zone: "Terrain",
-      desc: "Invocation : crée plusieurs tokens selon la configuration.",
+      desc: "Crée plusieurs tokens selon la configuration.",
     },
     spell: { params: [], needsTarget: false },
   },
@@ -883,7 +883,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["creature", "spell"],
     creature: {
       cost: 10, costPerX: 4, se: 3.5, minTier: 2, scalable: true, zone: "Terrain",
-      desc: "Invocation : inflige X dégâts répartis aléatoirement entre les unités ennemies.",
+      desc: "Inflige X dégâts répartis aléatoirement entre les unités ennemies.",
     },
     spell: { params: ["amount"], needsTarget: false },
   },
@@ -893,7 +893,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["creature", "spell"],
     creature: {
       cost: 11, costPerX: 4, se: 3.5, minTier: 2, scalable: true, zone: "Terrain",
-      desc: "Invocation : inflige X dégâts à toutes les créatures (alliées ET ennemies).",
+      desc: "Inflige X dégâts à toutes les créatures (alliées ET ennemies).",
     },
     spell: { params: ["amount"], needsTarget: false },
   },
@@ -909,7 +909,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["creature", "spell"],
     creature: {
       cost: -3, costPerX: -3, se: -1.0, minTier: 0, scalable: true, zone: "Terrain",
-      desc: "Invocation : inflige X dégâts à votre héros.",
+      desc: "Inflige X dégâts à votre héros.",
     },
     spell: {
       desc: "Au lancement, inflige X dégâts à votre héros.",
@@ -924,13 +924,13 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   conferer: {
     id: "conferer", label: "Conférer", symbol: "✋",
-    desc: "Invocation : confère une capacité choisie à une unité alliée (ou à toutes).",
+    desc: "Confère une capacité choisie à une unité alliée (ou à toutes).",
     applicable_to: ["creature"],
     creature: { cost: 8, costPerX: 0, se: 2.0, minTier: 2, scalable: false, zone: "Terrain" },
   },
   declenchement: {
     id: "declenchement", label: "Déclenchement", symbol: "🔂",
-    desc: "Invocation : rejoue une fois les effets composés déclenchés des autres alliés en jeu, pour un sous-ensemble figé de déclencheurs (entrée / mort / fin de tour / retour).",
+    desc: "Rejoue une fois les effets composés déclenchés des autres alliés en jeu, pour un sous-ensemble figé de déclencheurs (entrée / mort / fin de tour / retour).",
     applicable_to: ["creature"],
     creature: { cost: 8, costPerX: 0, se: 2.0, minTier: 3, scalable: false, zone: "Terrain" },
   },
@@ -969,6 +969,21 @@ export const KEYWORDS: Record<string, {
       desc: a.creature.desc ?? a.desc,
       tokenAllowed: a.creature.tokenAllowed ?? false,
     };
+  }
+  return out;
+})();
+
+// Descriptions créature indexées par ID MOTEUR (et non par libellé). KEYWORDS
+// est keyé par le libellé forge (`creature.label ?? label`), qui peut diverger
+// du libellé d'affichage de KEYWORD_LABELS — c'était le cas d'`entraide`
+// ("Entraide (Race)" vs "Entraide"), dont la description ne se résolvait ni au
+// runtime ni dans le générateur de vocab. Passer par l'id supprime ce couplage.
+export const KEYWORD_DESC_BY_ID: Record<string, string> = (() => {
+  const out: Record<string, string> = {};
+  for (const a of Object.values(ABILITIES)) {
+    if (!a.creature) continue;
+    const desc = a.creature.desc ?? a.desc;
+    if (desc) out[a.creature.id ?? a.id] = desc;
   }
   return out;
 })();

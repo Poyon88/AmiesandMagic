@@ -54,9 +54,36 @@ export default function GraveyardOverlay({
     ? cards.find((c) => c.instanceId === previewInstanceId)
     : null;
 
+  // Sortie de l'aperçu. Sur pointeur grossier (iPad) il n'y a ni mouseleave ni
+  // clic droit : sans ça, le zoom ne se ferme qu'en re-tapant deux fois LA MÊME
+  // carte, et comme l'aperçu `lg` ancré à droite recouvre le bouton Fermer,
+  // l'écran devenait un cul-de-sac. Tout tap hors d'une carte le referme.
+  const dismissPreview = () => {
+    setPreviewInstanceId(null);
+    setDetailsForId(null);
+  };
+
   return (
-    <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-8">
-      <div className="bg-secondary rounded-xl border border-card-border max-w-4xl w-full max-h-[80vh] flex flex-col">
+    <div
+      className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-8"
+      // Clic sur le fond (hors du panneau) : ferme l'aperçu s'il y en a un,
+      // sinon ferme l'overlay. `e.target === e.currentTarget` isole le fond des
+      // clics remontés depuis le panneau.
+      onClick={(e) => {
+        if (e.target !== e.currentTarget) return;
+        if (previewInstanceId) dismissPreview();
+        else onClose();
+      }}
+    >
+      <div
+        className="bg-secondary rounded-xl border border-card-border max-w-4xl w-full max-h-[80vh] flex flex-col"
+        // Clic dans le panneau mais hors d'une carte (marges, en-tête, vide
+        // sous la grille) : referme l'aperçu. Les cartes stoppent la
+        // propagation pour ne pas annuler le tap qui vient de l'ouvrir.
+        onClick={() => {
+          if (previewInstanceId) dismissPreview();
+        }}
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-card-border">
           <h2 className="text-lg font-bold text-foreground">
@@ -109,7 +136,10 @@ export default function GraveyardOverlay({
                       // image side (less surprising than a sticky toggle).
                       setDetailsForId((curr) => (curr === id ? null : curr));
                     }}
-                    onClick={() => {
+                    onClick={(e) => {
+                      // Ne pas laisser le panneau refermer l'aperçu que ce tap
+                      // vient d'ouvrir.
+                      e.stopPropagation();
                       if (isSelectable && onSelectCard) {
                         onSelectCard(id);
                         return;
