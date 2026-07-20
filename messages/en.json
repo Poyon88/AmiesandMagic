@@ -612,6 +612,26 @@
         "grant_keyword": "choose a creature to grant the ability to",
         "exhumation": "choose a creature to resurrect",
         "default": "choose a target"
+      },
+      "self": {
+        "deal_damage_one": "deals {x} damage to itself",
+        "deal_damage_many": "deals {x} damage to itself",
+        "heal": "heals itself for {x} HP",
+        "buff": "grants itself +{x}/+{y}",
+        "debuff": "inflicts -{x}/-{y} on itself",
+        "destroy": "destroys itself",
+        "bounce": "returns itself to hand",
+        "paralyze": "paralyzes itself",
+        "grant_keyword": "grants itself {ability}"
+      },
+      "targetd": {
+        "count_all": "all units",
+        "count_one": "a unit",
+        "count_n": "{n} units",
+        "hero_ally": "your hero",
+        "hero_enemy": "the enemy hero",
+        "both_all": "all units and the {side} hero",
+        "both_one": "a target (unit or hero){side}"
       }
     },
     "factions": {
@@ -749,15 +769,6 @@
       "neutre": "Neutral",
       "maléfique": "Evil",
       "spéciale": "Special"
-    },
-    "sets": {
-      "1": "Base Set"
-    },
-    "formats": {
-      "expert-standard": "Expert · Standard",
-      "expert-etendu": "Expert · Extended",
-      "classique-etendu": "Classic · Extended",
-      "classique-standard": "Classic · Standard"
     },
     "races_forms": {
       "Elfes": {
@@ -1035,6 +1046,15 @@
       "scope": "to an allied unit (or to all)",
       "scope_target": "to an allied unit",
       "scope_all": "to all your units"
+    },
+    "sets": {
+      "1": "Base Set"
+    },
+    "formats": {
+      "expert-standard": "Expert · Standard",
+      "expert-etendu": "Expert · Extended",
+      "classique-etendu": "Classic · Extended",
+      "classique-standard": "Classic · Standard"
     }
   },
   "home": {

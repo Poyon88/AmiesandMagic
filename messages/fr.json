@@ -570,6 +570,26 @@
         "exhum_all": "toutes les créatures",
         "exhum_upto": "jusqu'à {n} créatures"
       },
+      "self": {
+        "deal_damage_one": "s'inflige {x} dégât",
+        "deal_damage_many": "s'inflige {x} dégâts",
+        "heal": "se soigne de {x} PV",
+        "buff": "s'octroie +{x}/+{y}",
+        "debuff": "s'inflige -{x}/-{y}",
+        "destroy": "se détruit",
+        "bounce": "se renvoie en main",
+        "paralyze": "se paralyse",
+        "grant_keyword": "se confère {ability}"
+      },
+      "targetd": {
+        "count_all": "toutes les unités",
+        "count_one": "une unité",
+        "count_n": "{n} unités",
+        "hero_ally": "votre héros",
+        "hero_enemy": "le héros adverse",
+        "both_all": "toutes les unités et le héros {side}",
+        "both_one": "une cible (unité ou héros){side}"
+      },
       "target": {
         "self": "à elle-même",
         "hero_ally": "à votre héros",

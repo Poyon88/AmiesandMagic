@@ -612,6 +612,26 @@
         "grant_keyword": "wähle eine Kreatur, der die Fähigkeit verliehen werden soll",
         "exhumation": "wähle eine Kreatur zum Wiederbeleben",
         "default": "wähle ein Ziel"
+      },
+      "self": {
+        "deal_damage_one": "fügt sich selbst {x} Schaden zu",
+        "deal_damage_many": "fügt sich selbst {x} Schaden zu",
+        "heal": "heilt sich selbst um {x} LP",
+        "buff": "verleiht sich selbst +{x}/+{y}",
+        "debuff": "fügt sich selbst -{x}/-{y} zu",
+        "destroy": "zerstört sich selbst",
+        "bounce": "kehrt auf die Hand zurück",
+        "paralyze": "paralysiert sich selbst",
+        "grant_keyword": "verleiht sich selbst {ability}"
+      },
+      "targetd": {
+        "count_all": "alle Einheiten",
+        "count_one": "eine Einheit",
+        "count_n": "{n} Einheiten",
+        "hero_ally": "euer Held",
+        "hero_enemy": "der gegnerische Held",
+        "both_all": "alle Einheiten und der Held {side}",
+        "both_one": "ein Ziel (Einheit oder Held){side}"
       }
     },
     "factions": {
@@ -749,15 +769,6 @@
       "neutre": "Neutral",
       "maléfique": "Böse",
       "spéciale": "Spezial"
-    },
-    "sets": {
-      "1": "Basis-Set"
-    },
-    "formats": {
-      "expert-standard": "Experte · Standard",
-      "expert-etendu": "Experte · Erweitert",
-      "classique-etendu": "Klassisch · Erweitert",
-      "classique-standard": "Klassisch · Standard"
     },
     "races_forms": {
       "Elfes": {
@@ -1035,6 +1046,15 @@
       "scope": "auf eine verbündete Einheit (oder auf alle)",
       "scope_target": "auf eine verbündete Einheit",
       "scope_all": "auf alle deine Einheiten"
+    },
+    "sets": {
+      "1": "Basis-Set"
+    },
+    "formats": {
+      "expert-standard": "Experte · Standard",
+      "expert-etendu": "Experte · Erweitert",
+      "classique-etendu": "Klassisch · Erweitert",
+      "classique-standard": "Klassisch · Standard"
     }
   },
   "home": {

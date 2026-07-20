@@ -612,6 +612,26 @@
         "grant_keyword": "选择一个赋予能力的生物",
         "exhumation": "选择一个复活的生物",
         "default": "选择一个目标"
+      },
+      "self": {
+        "deal_damage_one": "对自身造成{x}点伤害",
+        "deal_damage_many": "对自身造成{x}点伤害",
+        "heal": "为自身恢复{x}点生命值",
+        "buff": "为自身赋予+{x}/+{y}",
+        "debuff": "对自身造成-{x}/-{y}",
+        "destroy": "自我摧毁",
+        "bounce": "将自身弹回手牌",
+        "paralyze": "使自身麻痹",
+        "grant_keyword": "为自身赋予{ability}"
+      },
+      "targetd": {
+        "count_all": "所有单位",
+        "count_one": "一个单位",
+        "count_n": "{n}个单位",
+        "hero_ally": "你的英雄",
+        "hero_enemy": "敌方英雄",
+        "both_all": "所有单位和{side}英雄",
+        "both_one": "一个目标(单位或英雄){side}"
       }
     },
     "factions": {
@@ -749,15 +769,6 @@
       "neutre": "中立",
       "maléfique": "邪恶",
       "spéciale": "特殊"
-    },
-    "sets": {
-      "1": "基础系列"
-    },
-    "formats": {
-      "expert-standard": "专家·标准",
-      "expert-etendu": "专家·扩展",
-      "classique-etendu": "经典·扩展",
-      "classique-standard": "经典·标准"
     },
     "races_forms": {
       "Elfes": {
@@ -1035,6 +1046,15 @@
       "scope": "给一个友方单位（或全部）",
       "scope_target": "给一个友方单位",
       "scope_all": "给你所有的单位"
+    },
+    "sets": {
+      "1": "基础系列"
+    },
+    "formats": {
+      "expert-standard": "专家·标准",
+      "expert-etendu": "专家·扩展",
+      "classique-etendu": "经典·扩展",
+      "classique-standard": "经典·标准"
     }
   },
   "home": {

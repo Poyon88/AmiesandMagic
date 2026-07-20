@@ -612,6 +612,26 @@
         "grant_keyword": "能力を付与するクリーチャーを選んでください",
         "exhumation": "蘇生するクリーチャーを選んでください",
         "default": "対象を選んでください"
+      },
+      "self": {
+        "deal_damage_one": "自身に{x}ダメージを与える",
+        "deal_damage_many": "自身に{x}ダメージを与える",
+        "heal": "自身のHPを{x}回復する",
+        "buff": "自身に+{x}/+{y}を付与する",
+        "debuff": "自身に-{x}/-{y}を与える",
+        "destroy": "自身を破壊する",
+        "bounce": "自身を手札に戻す",
+        "paralyze": "自身を麻痺させる",
+        "grant_keyword": "自身に{ability}を付与する"
+      },
+      "targetd": {
+        "count_all": "すべてのユニット",
+        "count_one": "ユニット1体",
+        "count_n": "ユニット{n}体",
+        "hero_ally": "あなたのヒーロー",
+        "hero_enemy": "敵ヒーロー",
+        "both_all": "すべてのユニットと{side}ヒーロー",
+        "both_one": "対象1つ(ユニットまたはヒーロー){side}"
       }
     },
     "factions": {
@@ -749,15 +769,6 @@
       "neutre": "中立",
       "maléfique": "悪",
       "spéciale": "特殊"
-    },
-    "sets": {
-      "1": "基本セット"
-    },
-    "formats": {
-      "expert-standard": "エキスパート・スタンダード",
-      "expert-etendu": "エキスパート・エクステンデッド",
-      "classique-etendu": "クラシック・エクステンデッド",
-      "classique-standard": "クラシック・スタンダード"
     },
     "races_forms": {
       "Elfes": {
@@ -1035,6 +1046,15 @@
       "scope": "味方ユニット1体（または全体）に",
       "scope_target": "味方ユニット1体に",
       "scope_all": "あなたの全ユニットに"
+    },
+    "sets": {
+      "1": "基本セット"
+    },
+    "formats": {
+      "expert-standard": "エキスパート・スタンダード",
+      "expert-etendu": "エキスパート・エクステンデッド",
+      "classique-etendu": "クラシック・エクステンデッド",
+      "classique-standard": "クラシック・スタンダード"
     }
   },
   "home": {

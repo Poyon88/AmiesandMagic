@@ -612,6 +612,26 @@
         "grant_keyword": "escolha uma criatura para receber a habilidade",
         "exhumation": "escolha uma criatura para ressuscitar",
         "default": "escolha um alvo"
+      },
+      "self": {
+        "deal_damage_one": "sofre {x} de dano",
+        "deal_damage_many": "sofre {x} de dano",
+        "heal": "cura-se em {x} PV",
+        "buff": "concede a si mesmo +{x}/+{y}",
+        "debuff": "sofre -{x}/-{y}",
+        "destroy": "destrói-se",
+        "bounce": "retorna à mão",
+        "paralyze": "paralisa-se",
+        "grant_keyword": "concede-se {ability}"
+      },
+      "targetd": {
+        "count_all": "todas as unidades",
+        "count_one": "uma unidade",
+        "count_n": "{n} unidades",
+        "hero_ally": "seu herói",
+        "hero_enemy": "o herói adversário",
+        "both_all": "todas as unidades e o herói {side}",
+        "both_one": "um alvo (unidade ou herói){side}"
       }
     },
     "factions": {
@@ -749,15 +769,6 @@
       "neutre": "Neutro",
       "maléfique": "Maléfico",
       "spéciale": "Especial"
-    },
-    "sets": {
-      "1": "Set Básico"
-    },
-    "formats": {
-      "expert-standard": "Expert · Standard",
-      "expert-etendu": "Expert · Estendido",
-      "classique-etendu": "Clássico · Estendido",
-      "classique-standard": "Clássico · Standard"
     },
     "races_forms": {
       "Elfes": {
@@ -1035,6 +1046,15 @@
       "scope": "a uma unidade aliada (ou a todas)",
       "scope_target": "a uma unidade aliada",
       "scope_all": "a todas as suas unidades"
+    },
+    "sets": {
+      "1": "Set Básico"
+    },
+    "formats": {
+      "expert-standard": "Expert · Standard",
+      "expert-etendu": "Expert · Estendido",
+      "classique-etendu": "Clássico · Estendido",
+      "classique-standard": "Clássico · Standard"
     }
   },
   "home": {

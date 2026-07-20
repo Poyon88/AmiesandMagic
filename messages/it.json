@@ -612,6 +612,26 @@
         "grant_keyword": "scegli una creatura a cui conferire l'abilità",
         "exhumation": "scegli una creatura da resuscitare",
         "default": "scegli un bersaglio"
+      },
+      "self": {
+        "deal_damage_one": "subisce {x} danno",
+        "deal_damage_many": "subisce {x} danni",
+        "heal": "recupera {x} PV",
+        "buff": "ottiene +{x}/+{y}",
+        "debuff": "subisce -{x}/-{y}",
+        "destroy": "si distrugge",
+        "bounce": "torna in mano",
+        "paralyze": "si paralizza",
+        "grant_keyword": "si conferisce {ability}"
+      },
+      "targetd": {
+        "count_all": "tutte le unità",
+        "count_one": "un'unità",
+        "count_n": "{n} unità",
+        "hero_ally": "il tuo eroe",
+        "hero_enemy": "l'eroe avversario",
+        "both_all": "tutte le unità e l'eroe {side}",
+        "both_one": "un bersaglio (unità o eroe){side}"
       }
     },
     "factions": {
@@ -749,15 +769,6 @@
       "neutre": "Neutro",
       "maléfique": "Malvagio",
       "spéciale": "Speciale"
-    },
-    "sets": {
-      "1": "Set Base"
-    },
-    "formats": {
-      "expert-standard": "Expert · Standard",
-      "expert-etendu": "Expert · Esteso",
-      "classique-etendu": "Classico · Esteso",
-      "classique-standard": "Classico · Standard"
     },
     "races_forms": {
       "Elfes": {
@@ -1035,6 +1046,15 @@
       "scope": "a un'unità alleata (o a tutte)",
       "scope_target": "a un'unità alleata",
       "scope_all": "a tutte le vostre unità"
+    },
+    "sets": {
+      "1": "Set Base"
+    },
+    "formats": {
+      "expert-standard": "Expert · Standard",
+      "expert-etendu": "Expert · Esteso",
+      "classique-etendu": "Classico · Esteso",
+      "classique-standard": "Classico · Standard"
     }
   },
   "home": {

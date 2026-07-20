@@ -44,6 +44,33 @@ export const COMPOSED_FR: Record<string, string> = {
   "content.exhum_all": "toutes les créatures",
   "content.exhum_upto": "jusqu'à {n} créatures",
 
+  // Cible « soi-même » : le français veut une tournure RÉFLÉCHIE, pas un
+  // complément accolé — « Se renvoie en main », et non « Renvoie en main à
+  // elle-même ». Ces fragments remplacent le couple contenu + cible quand la
+  // capacité se vise elle-même ; `target.self` reste le repli pour les
+  // contenus sans forme réfléchie déclarée.
+  "self.deal_damage_one": "s'inflige {x} dégât",
+  "self.deal_damage_many": "s'inflige {x} dégâts",
+  "self.heal": "se soigne de {x} PV",
+  "self.buff": "s'octroie +{x}/+{y}",
+  "self.debuff": "s'inflige -{x}/-{y}",
+  "self.destroy": "se détruit",
+  "self.bounce": "se renvoie en main",
+  "self.paralyze": "se paralyse",
+  "self.grant_keyword": "se confère {ability}",
+
+  // Variantes SANS préposition, pour les verbes transitifs directs (détruit,
+  // renvoie, paralyse) : « Détruit une unité ennemie », et non « Détruit À une
+  // unité ennemie ». Seuls les fragments porteurs de « à/au » sont dupliqués ;
+  // camp, appartenance, zone et désignation sont communs aux deux formes.
+  "targetd.count_all": "toutes les unités",
+  "targetd.count_one": "une unité",
+  "targetd.count_n": "{n} unités",
+  "targetd.hero_ally": "votre héros",
+  "targetd.hero_enemy": "le héros adverse",
+  "targetd.both_all": "toutes les unités et le héros {side}",
+  "targetd.both_one": "une cible (unité ou héros){side}",
+
   "target.self": "à elle-même",
   "target.hero_ally": "à votre héros",
   "target.hero_enemy": "au héros adverse",
@@ -243,6 +270,30 @@ function describeContent(eff: ComposedEffect, tokens: TokenTemplate[] | undefine
   }
 }
 
+// Forme réfléchie du contenu quand la capacité se cible elle-même. Renvoie
+// null si le contenu n'en a pas : on retombe alors sur « contenu + à elle-même ».
+function describeSelfContent(eff: ComposedEffect, t?: SafeT): string | null {
+  const x = eff.magnitude?.x ?? 0;
+  const y = eff.magnitude?.y ?? 0;
+  switch (eff.content) {
+    case "deal_damage": return frag(t, x > 1 ? "self.deal_damage_many" : "self.deal_damage_one", { x });
+    case "heal": return frag(t, "self.heal", { x });
+    case "buff": return frag(t, "self.buff", { x, y });
+    case "debuff": return frag(t, "self.debuff", { x, y });
+    case "destroy": return frag(t, "self.destroy");
+    case "bounce": return frag(t, "self.bounce");
+    case "paralyze": return frag(t, "self.paralyze");
+    case "grant_keyword": {
+      const id = eff.grantAbilityId;
+      const a = id ? (ABILITIES[id] ?? Object.values(ABILITIES).find((d) => creatureEngineId(d) === id)) : undefined;
+      const ability = (id ? t?.(`vocab.keywords.${id}.label`) : undefined)
+        ?? a?.label ?? id ?? frag(t, "content.ability_generic");
+      return frag(t, "self.grant_keyword", { ability });
+    }
+    default: return null;
+  }
+}
+
 // Adjectif de camp accordé en genre/nombre (alliée/alliées/ennemie/ennemies).
 function sideAdj(t: SafeT | undefined, side: string | undefined, many: boolean): string {
   if (side === "ally") return frag(t, many ? "target.side_ally_many" : "target.side_ally_one");
@@ -250,18 +301,24 @@ function sideAdj(t: SafeT | undefined, side: string | undefined, many: boolean):
   return "";
 }
 
-function describeTarget(t: TargetSpec | undefined, tr?: SafeT): string {
+// Contenus dont le verbe est TRANSITIF DIRECT : ils prennent leur cible sans
+// préposition. Les autres (« inflige … à », « octroie … à ») gardent « à ».
+const DIRECT_OBJECT_CONTENT = new Set(["destroy", "bounce", "paralyze"]);
+
+function describeTarget(t: TargetSpec | undefined, tr?: SafeT, direct = false): string {
   if (!t) return "";
+  // `p` sélectionne le jeu de fragments : avec ou sans préposition.
+  const p = direct ? "targetd" : "target";
   if (t.entity === "self") return frag(tr, "target.self");
-  if (t.entity === "hero") return t.side === "ally" ? frag(tr, "target.hero_ally") : frag(tr, "target.hero_enemy");
+  if (t.entity === "hero") return t.side === "ally" ? frag(tr, `${p}.hero_ally`) : frag(tr, `${p}.hero_enemy`);
   if (t.entity === "both") {
     const sideTxt = t.side === "ally" ? frag(tr, "target.both_side_ally") : t.side === "enemy" ? frag(tr, "target.both_side_enemy") : "";
     return t.count === "all"
-      ? frag(tr, "target.both_all", { side: sideTxt }).replace(/\s+$/, "")
-      : frag(tr, "target.both_one", { side: sideTxt ? ` ${sideTxt}` : "" });
+      ? frag(tr, `${p}.both_all`, { side: sideTxt }).replace(/\s+$/, "")
+      : frag(tr, `${p}.both_one`, { side: sideTxt ? ` ${sideTxt}` : "" });
   }
   const many = t.count === "all" || (typeof t.count === "number" && t.count > 1);
-  const count = t.count === "all" ? frag(tr, "target.count_all") : t.count === 1 ? frag(tr, "target.count_one") : frag(tr, "target.count_n", { n: t.count });
+  const count = t.count === "all" ? frag(tr, `${p}.count_all`) : t.count === 1 ? frag(tr, `${p}.count_one`) : frag(tr, `${p}.count_n`, { n: t.count });
   const sideTxt = sideAdj(tr, t.side, many);
   const memb = t.membership;
   const mtxt = memb ? [...(memb.race ?? []), ...(memb.clan ?? []), ...(memb.faction ?? [])].join("/") : "";
@@ -305,8 +362,16 @@ export function describeComposedCap(cap: Capability, tokens?: TokenTemplate[], t
   // → on n'y accole pas le descripteur de cible générique (qui dirait « à N unités
   // alliées du cimetière au choix », redondant).
   const skipTarget = eff.content === "exhumation";
-  const body = describeScatter(eff, t)
-    ?? [describeContent(eff, tokens, t), skipTarget ? "" : describeTarget(eff.target, t)].filter(Boolean).join(" ");
+  // Capacité qui se vise elle-même : tournure réfléchie, sans complément de
+  // cible (« Se renvoie en main. »). Les contenus sans forme réfléchie
+  // déclarée gardent l'assemblage contenu + « à elle-même ».
+  const selfBody = eff.target?.entity === "self" ? describeSelfContent(eff, t) : null;
+  const body = selfBody
+    ?? describeScatter(eff, t)
+    ?? [
+      describeContent(eff, tokens, t),
+      skipTarget ? "" : describeTarget(eff.target, t, DIRECT_OBJECT_CONTENT.has(eff.content)),
+    ].filter(Boolean).join(" ");
   return body.charAt(0).toUpperCase() + body.slice(1) + ".";
 }
 
