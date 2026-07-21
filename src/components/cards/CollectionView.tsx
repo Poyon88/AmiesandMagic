@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import type { Card, Keyword, CardSet, GameFormat } from "@/lib/game/types";
 import { getFormatFilter } from "@/lib/game/format-legality";
-import { isCardOwned } from "@/lib/game/collection";
+import { isCardOwned, type Entitlements, type OwnershipContext } from "@/lib/game/collection";
 import { useVocab } from "@/i18n/useVocab";
 import GameCard from "./GameCard";
 import ExpertCardFrame from "./ExpertCardFrame";
@@ -25,6 +25,8 @@ interface CollectionViewProps {
   formats: GameFormat[];
   collectedCardIds: number[];
   isTester: boolean;
+  /** Droits issus de `profiles` : socle de faction et option payante. */
+  entitlements: Entitlements;
   ownedPrints?: OwnedPrint[];
 }
 
@@ -53,8 +55,12 @@ const SELECT_CLS =
 const FILTER_LABEL_CLS =
   "mr-1 font-[family-name:var(--font-crimson),serif] text-sm italic text-am-ink-faint";
 
-export default function CollectionView({ cards, sets, formats, collectedCardIds, isTester, ownedPrints = [] }: CollectionViewProps) {
+export default function CollectionView({ cards, sets, formats, collectedCardIds, isTester, entitlements, ownedPrints = [] }: CollectionViewProps) {
   const ownedSet = useMemo(() => new Set(collectedCardIds), [collectedCardIds]);
+  const ownership = useMemo<OwnershipContext>(
+    () => ({ ownsEverything: isTester, collectedCardIds: ownedSet, ...entitlements }),
+    [isTester, ownedSet, entitlements],
+  );
   const vocab = useVocab();
   const t = useTranslations("deck");
   const router = useRouter();
@@ -119,7 +125,7 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
 
   const filteredCards = useMemo(() => {
     return cards.filter((card) => {
-      if (!isCardOwned(card, ownedSet, isTester)) return false;
+      if (!isCardOwned(card, ownership)) return false;
       if (formatPredicate && !formatPredicate(card)) return false;
       if (search && !card.name.toLowerCase().includes(search.toLowerCase()))
         return false;
@@ -151,7 +157,7 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
         return false;
       return true;
     });
-  }, [cards, ownedSet, isTester, formatPredicate, search, manaCostFilter, typeFilter, keywordFilter, factionFilter, rarityFilter, expertOnly, raceFilter, clanFilter, filterSet, filterYear]);
+  }, [cards, ownership, formatPredicate, search, manaCostFilter, typeFilter, keywordFilter, factionFilter, rarityFilter, expertOnly, raceFilter, clanFilter, filterSet, filterYear]);
 
   // For normal players: expand cards to show each print separately
   const displayItems = useMemo(() => {

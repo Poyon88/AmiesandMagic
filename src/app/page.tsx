@@ -28,6 +28,20 @@ export default async function HomePage() {
     redirect("/onboarding/pseudo");
   }
 
+  // Choix de la faction offerte. Deux gardes indispensables :
+  //   • `legacy_full_access` — un compte grand-père a déjà accès à tout ;
+  //     l'envoyer choisir une faction lui RETIRERAIT des cartes ;
+  //   • `=== false` explicite — tant que la migration des droits n'est pas
+  //     appliquée la colonne est absente, et TOUS les joueurs seraient
+  //     détournés vers un écran qui ne peut rien enregistrer.
+  if (
+    profile &&
+    profile.legacy_full_access === false &&
+    profile.starter_faction == null
+  ) {
+    redirect("/onboarding/faction");
+  }
+
   // Le portefeuille est créé paresseusement à la première transaction
   // (adjust_wallet_balance fait un upsert) : son absence est normale pour un
   // compte neuf et vaut zéro.

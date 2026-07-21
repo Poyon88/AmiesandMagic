@@ -16,20 +16,31 @@ function safeNext(raw: string | null): string {
   return raw;
 }
 
-/** Le joueur doit-il encore choisir son pseudo ? Ne répond `true` que sur un
- *  `false` explicite : tant que la migration ajoutant `username_confirmed`
- *  n'est pas appliquée, la colonne est absente et personne ne doit être
- *  détourné vers l'écran de choix. */
-async function needsUsername(
+/** Première étape d'onboarding qui reste à faire, ou `null` si le joueur peut
+ *  entrer directement.
+ *
+ *  Chaque test exige une valeur EXPLICITE : tant que les migrations ne sont pas
+ *  appliquées, les colonnes sont absentes et personne ne doit être détourné
+ *  vers un écran incapable d'enregistrer quoi que ce soit.
+ *
+ *  `legacy_full_access` court-circuite le choix de faction : un compte
+ *  grand-père a déjà accès à tout, lui en faire choisir une lui retirerait
+ *  des cartes. */
+async function nextOnboardingStep(
   supabase: Awaited<ReturnType<typeof createClient>>,
   userId: string,
-): Promise<boolean> {
+): Promise<string | null> {
   const { data } = await supabase
     .from("profiles")
-    .select("username_confirmed")
+    .select("*")
     .eq("id", userId)
     .single();
-  return data?.username_confirmed === false;
+  if (!data) return null;
+  if (data.username_confirmed === false) return "/onboarding/pseudo";
+  if (data.legacy_full_access === false && data.starter_faction == null) {
+    return "/onboarding/faction";
+  }
+  return null;
 }
 
 export async function GET(request: Request) {
@@ -53,12 +64,13 @@ export async function GET(request: Request) {
     const supabase = await createClient();
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      // Choix du pseudo, premier des deux points d'aiguillage (l'autre est la
-      // page d'accueil). On ne détourne PAS un `next` explicite : la
+      // Onboarding, premier des deux points d'aiguillage (l'autre est la page
+      // d'accueil). On ne détourne PAS un `next` explicite : la
       // réinitialisation de mot de passe passe par ici et doit aboutir sur son
       // formulaire, pas sur un écran de bienvenue.
-      if (next === "/" && data.user && (await needsUsername(supabase, data.user.id))) {
-        return NextResponse.redirect(`${origin}/onboarding/pseudo`);
+      if (next === "/" && data.user) {
+        const step = await nextOnboardingStep(supabase, data.user.id);
+        if (step) return NextResponse.redirect(`${origin}${step}`);
       }
       return NextResponse.redirect(`${origin}${next}`);
     }

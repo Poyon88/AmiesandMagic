@@ -1314,7 +1314,14 @@
     "username_invalid_chars": "Lettres, chiffres, tiret et souligné uniquement — pas d'espace ni d'accent.",
     "username_reserved": "Ce nom est réservé, choisis-en un autre.",
     "username_taken": "Ce nom est déjà pris. Essaie une variante.",
-    "username_required": "Choisis un nom de joueur."
+    "username_required": "Choisis un nom de joueur.",
+    "faction_title": "Choisis ta faction",
+    "faction_sub": "Tu reçois gratuitement toutes les cartes communes de la faction choisie. Les autres factions restent déblocables plus tard.",
+    "faction_warning": "⚠ Ce choix est définitif : il ne pourra plus être modifié.",
+    "faction_submit": "Rejoindre cette faction",
+    "faction_required": "Choisis une faction.",
+    "faction_invalid_faction": "Cette faction n'existe pas.",
+    "faction_already_chosen": "Ta faction est déjà choisie."
   },
   "common": {
     "settings_title": "Réglages",
