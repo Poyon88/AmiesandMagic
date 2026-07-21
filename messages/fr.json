@@ -1321,7 +1321,14 @@
     "faction_submit": "Rejoindre cette faction",
     "faction_required": "Choisis une faction.",
     "faction_invalid_faction": "Cette faction n'existe pas.",
-    "faction_already_chosen": "Ta faction est déjà choisie."
+    "faction_already_chosen": "Ta faction est déjà choisie.",
+    "error_email_rate_limit": "Trop d'emails envoyés en peu de temps. Patiente quelques minutes avant de réessayer.",
+    "error_invalid_credentials": "Email ou mot de passe incorrect.",
+    "error_email_not_confirmed": "Ton compte n'est pas encore confirmé. Clique sur le lien reçu par email.",
+    "error_weak_password": "Ce mot de passe est trop faible. Choisis-en un plus long.",
+    "error_user_already_exists": "Un compte existe déjà avec cette adresse.",
+    "error_signups_disabled": "Les inscriptions sont momentanément fermées.",
+    "error_database_error": "La création du compte a échoué de notre côté. Réessaie dans un instant ; si le problème persiste, contacte-nous."
   },
   "common": {
     "settings_title": "Réglages",

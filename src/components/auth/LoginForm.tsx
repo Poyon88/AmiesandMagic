@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter, useSearchParams } from "next/navigation";
 import AuthShell, { authFieldClass, authLabelClass } from "@/components/auth/AuthShell";
 import { USERNAME_MAX, normalizeUsername, validateUsername } from "@/lib/auth/username";
+import { authErrorKey } from "@/lib/auth/authErrors";
 
 /** Codes que /auth/callback pose dans `?error=`. Liste close : un code inconnu
  *  retombe sur le message générique plutôt que d'afficher une clé i18n brute. */
@@ -60,6 +61,18 @@ export default function LoginForm() {
     return () => clearTimeout(id);
   }, [resendIn]);
 
+  /** Message affichable pour une erreur Supabase. Les libellés bruts
+   *  (« email rate limit exceeded ») sont de l'anglais technique : illisibles
+   *  pour un joueur, et surtout sans indication de ce qu'il peut faire. */
+  const describeError = useCallback(
+    (err: unknown) => {
+      const key = authErrorKey(err);
+      if (key) return t(`error_${key}`);
+      return err instanceof Error ? err.message : t("generic_error");
+    },
+    [t],
+  );
+
   const emailRedirectTo = useCallback(
     () => `${window.location.origin}/auth/callback`,
     [],
@@ -80,7 +93,7 @@ export default function LoginForm() {
       if (resetErr) throw resetErr;
       setInfo(t("forgot_email_sent", { email }));
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t("forgot_send_error"));
+      setError(describeError(err) || t("forgot_send_error"));
     } finally {
       setForgotLoading(false);
     }
@@ -100,7 +113,7 @@ export default function LoginForm() {
       setInfo(t("signup_resent", { email: pendingEmail }));
       setResendIn(RESEND_COOLDOWN_S);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t("signup_resend_error"));
+      setError(describeError(err) || t("signup_resend_error"));
     } finally {
       setResending(false);
     }
@@ -185,7 +198,7 @@ export default function LoginForm() {
       router.push("/");
       router.refresh();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t("generic_error"));
+      setError(describeError(err));
     } finally {
       setLoading(false);
     }
