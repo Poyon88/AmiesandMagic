@@ -10,10 +10,22 @@ export default async function HomePage() {
 
   if (!user) redirect("/login");
 
-  const [{ data: profile }, { data: wallet }] = await Promise.all([
+  const [profileResult, { data: wallet }] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", user.id).single(),
     supabase.from("wallets").select("balance").eq("user_id", user.id).single(),
   ]);
+  let profile = profileResult.data;
+
+  // Filet : un compte sans profil est bloqué partout — aucun aiguillage vers
+  // l'onboarding (les gardes ci-dessous exigent une ligne), aucune carte, et un
+  // choix de faction qui ne modifierait rien. Le trigger a été vu en échec en
+  // production, on ne dépend donc pas de sa réussite. Sans effet dans le cas
+  // normal : `ensureProfile` n'écrit que si la ligne manque.
+  if (!profile) {
+    const { ensureProfile } = await import("@/lib/auth/ensureProfile");
+    await ensureProfile(user);
+    ({ data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single());
+  }
 
   // Second point d'aiguillage vers le choix de pseudo (le premier est
   // /auth/callback). Le menu principal est le passage obligé après connexion :

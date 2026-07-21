@@ -51,15 +51,21 @@ export async function POST(request: Request) {
 
   const supabase = getAdminClient();
 
-  const { data: profile, error: readError } = await supabase
+  const { data: profile } = await supabase
     .from("profiles")
     .select("starter_faction")
     .eq("id", user.id)
     .single();
 
-  if (readError) {
-    return NextResponse.json({ error: "server_error" }, { status: 500 });
+  // Aucun profil : le trigger a échoué à l'inscription. Sans cette réparation,
+  // l'update plus bas ne toucherait aucune ligne et serait interprété comme
+  // « faction déjà choisie » — le joueur repartirait vers l'accueil convaincu
+  // d'avoir choisi, sans que rien n'ait été enregistré.
+  if (!profile) {
+    const { ensureProfile } = await import("@/lib/auth/ensureProfile");
+    await ensureProfile(user);
   }
+
   if (profile?.starter_faction) {
     // Déjà choisie. 409 plutôt que 403 : ce n'est pas un défaut de droit, c'est
     // un état qui rend l'opération sans objet.
