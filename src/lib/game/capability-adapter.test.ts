@@ -107,7 +107,7 @@ describe("deriveCapabilities — sorts", () => {
   it("un sort qui confère un keyword créature → effectKind grant + slot de don (scope target)", () => {
     const c = card({
       card_type: "spell",
-      keywords: ["berserk"] as Card["keywords"],
+      keywords: ["gloire"] as Card["keywords"],
     });
     const caps = deriveCapabilities(c);
     expect(caps).toHaveLength(1);
@@ -115,7 +115,7 @@ describe("deriveCapabilities — sorts", () => {
       uid: "grant_0",
       trigger: "spell_resolution",
       effectKind: "grant",
-      abilityId: "berserk",
+      abilityId: "gloire",
       grantScope: "target",
     });
     expect(caps[0].targets).toEqual([{ type: "friendly_creature", label: "Cible du don" }]);
@@ -124,8 +124,8 @@ describe("deriveCapabilities — sorts", () => {
   it("grant scope all_allies → pas de slot de cible", () => {
     const c = card({
       card_type: "spell",
-      keywords: ["berserk"] as Card["keywords"],
-      keyword_instances: [{ id: "berserk", grantScope: "all_allies" }] as KeywordInstance[],
+      keywords: ["gloire"] as Card["keywords"],
+      keyword_instances: [{ id: "gloire", grantScope: "all_allies" }] as KeywordInstance[],
     });
     const [cap] = deriveCapabilities(c);
     expect(cap.grantScope).toBe("all_allies");

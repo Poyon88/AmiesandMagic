@@ -26,7 +26,7 @@ function mkInstance(card: Card): CardInstance {
     currentAttack: card.attack ?? 0, currentHealth: card.health ?? 1, maxHealth: card.health ?? 1,
     hasAttacked: false, hasSummoningSickness: false, hasDivineShield: false, attacksRemaining: 1,
     isPoisoned: false, hasUsedResurrection: false, tapped: false,
-    fureurActive: false, fureurATKBonus: 0, berserkActive: false, berserkATKBonus: 0,
+    fureurActive: false, fureurATKBonus: 0, gloireStacks: 0,
     targetsAttackedThisTurn: [], esquiveUsedThisTurn: false, ombreRevealed: false,
     corruptionStolenIds: [], contresortActive: false, maledictionTargetId: null, isParalyzed: false,
     loyauteATKBonus: 0, loyautePVBonus: 0, summonBonusATK: 0, auraHealthBonus: 0, sangMeleHealthBonus: 0,
@@ -123,10 +123,20 @@ describe("interpréteur composé — contenus d'effet", () => {
   });
 
   it("grant_keyword confère un mot-clé aux alliés", () => {
-    const creature = mkCard({ capabilities: [composedCap("on_play", { content: "grant_keyword", grantAbilityId: "berserk", target: { entity: "unit", count: "all", side: "ally", location: "board", designation: "random" } })] });
+    const creature = mkCard({ capabilities: [composedCap("on_play", { content: "grant_keyword", grantAbilityId: "gloire", target: { entity: "unit", count: "all", side: "ally", location: "board", designation: "random" } })] });
     const s = play(mkState(), mkInstance(creature));
     const self = s.players[0].board[0];
-    expect((self.card.keywords as string[]).includes("berserk")).toBe(true);
+    expect((self.card.keywords as string[]).includes("gloire")).toBe(true);
+  });
+
+  it("grant_keyword d'une capacité à couple transporte X ET Y (Gloire +X/+Y)", () => {
+    // Régression : l'amplitude du forge ne transportait que X, donc une Gloire
+    // conférée retombait sur le +Y=1 par défaut quelle que soit la saisie.
+    const creature = mkCard({ capabilities: [composedCap("on_play", { content: "grant_keyword", grantAbilityId: "gloire", magnitude: { x: 3, y: 2 }, target: { entity: "unit", count: "all", side: "ally", location: "board", designation: "random" } })] });
+    const s = play(mkState(), mkInstance(creature));
+    const self = s.players[0].board[0];
+    expect(self.grantedKeywordX["gloire"]).toBe(3);
+    expect(self.grantedKeywordY?.["gloire"]).toBe(2);
   });
 
   it("désignation hasard : exactement une cible touchée, déterministe (RNG semée)", () => {
@@ -171,11 +181,39 @@ describe("interpréteur composé — contenus d'effet", () => {
     s0.players[0].board = [ally];
     const creature = mkInstance(mkCard({
       attack: 1, health: 1, keywords: ["conferer"],
-      keyword_instances: [{ id: "conferer", grantAbilityId: "berserk", grantScope: "all_allies" }],
+      keyword_instances: [{ id: "conferer", grantAbilityId: "gloire", grantScope: "all_allies" }],
     }));
     const s = play(s0, creature);
     const a = s.players[0].board.find((c) => c.card.id === ally.card.id)!;
-    expect((a.card.keywords as string[]).includes("berserk")).toBe(true);
+    expect((a.card.keywords as string[]).includes("gloire")).toBe(true);
+  });
+
+  it("Conférer (créature) : ses x/y sont l'amplitude de la capacité donnée", () => {
+    const s0 = mkState();
+    const ally = mkInstance(mkCard({ attack: 1, health: 1 }));
+    s0.players[0].board = [ally];
+    const creature = mkInstance(mkCard({
+      attack: 1, health: 1, keywords: ["conferer"],
+      keyword_instances: [{ id: "conferer", grantAbilityId: "gloire", grantScope: "all_allies", x: 3, y: 2 }],
+    }));
+    const s = play(s0, creature);
+    const a = s.players[0].board.find((c) => c.card.id === ally.card.id)!;
+    expect(a.grantedKeywordX["gloire"]).toBe(3);
+    expect(a.grantedKeywordY?.["gloire"]).toBe(2);
+  });
+
+  it("Gloire portée par un SORT : le don transporte X ET Y", () => {
+    const s0 = mkState();
+    const ally = mkInstance(mkCard({ attack: 1, health: 1 }));
+    s0.players[0].board = [ally];
+    const spell = mkCard({
+      card_type: "spell", attack: null, health: null,
+      keywords: ["gloire"], keyword_instances: [{ id: "gloire", x: 3, y: 2, grantScope: "all_allies" }],
+    });
+    const s = play(s0, mkInstance(spell));
+    const a = s.players[0].board.find((c) => c.card.id === ally.card.id)!;
+    expect(a.grantedKeywordX["gloire"]).toBe(3);
+    expect(a.grantedKeywordY?.["gloire"]).toBe(2);
   });
 
   it("ciblage au choix multi (count 2) : 2 slots, 2 cibles touchées", () => {

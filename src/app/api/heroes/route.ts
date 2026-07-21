@@ -12,7 +12,7 @@ const ALLOWED_POWER_MODES = new Set(['grant_keyword', 'spell_trigger', 'aura', '
 type PowerEffectV2 = {
   mode: string;
   keywordId: string;
-  params?: { amount?: number; attack?: number; health?: number };
+  params?: { amount?: number; amountY?: number; attack?: number; health?: number };
   tokenId?: number | null;
   race?: string;
   clan?: string;
@@ -53,12 +53,21 @@ function validatePowerEffect(
   const params = obj.params as Record<string, unknown> | undefined;
   const validated: PowerEffectV2 = { mode, keywordId };
   if (params && typeof params === 'object') {
-    const out: { amount?: number; attack?: number; health?: number } = {};
+    // Liste blanche stricte : un param absent d'ici est SILENCIEUSEMENT jeté.
+    // C'est ce qui perdait `amountY` (le +Y des capacités conférées à couple,
+    // Gloire +X/+Y) entre l'éditeur de héros et la base.
+    const out: { amount?: number; amountY?: number; attack?: number; health?: number } = {};
     if (params.amount !== undefined) {
       if (typeof params.amount !== 'number' || params.amount < 0) {
         return { ok: false, error: 'powerEffect.params.amount doit être un nombre ≥ 0' };
       }
       out.amount = params.amount;
+    }
+    if (params.amountY !== undefined) {
+      if (typeof params.amountY !== 'number' || params.amountY < 0) {
+        return { ok: false, error: 'powerEffect.params.amountY doit être un nombre ≥ 0' };
+      }
+      out.amountY = params.amountY;
     }
     if (params.attack !== undefined) {
       if (typeof params.attack !== 'number' || params.attack < 0) {

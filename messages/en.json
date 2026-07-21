@@ -41,10 +41,6 @@
         "label": "First Strike",
         "desc": "When this unit attacks, it deals its damage first; the opposing unit only strikes back if it survives."
       },
-      "berserk": {
-        "label": "Berserk",
-        "desc": "Doubles its ATK if its current HP are below its original HP value (on the card)."
-      },
       "vol": {
         "label": "Flight",
         "desc": "Ignores enemy Taunt."
@@ -404,6 +400,10 @@
       "declenchement": {
         "label": "Trigger",
         "desc": "Replays once the compound effects of your other allies (entry / death / end of turn / return)."
+      },
+      "gloire": {
+        "label": "Glory +X/+Y",
+        "desc": "Whenever this unit survives combat damage, it permanently gains +X/+Y."
       }
     },
     "spell_keywords": {
@@ -570,6 +570,26 @@
         "exhum_all": "all creatures",
         "exhum_upto": "up to {n} creatures"
       },
+      "self": {
+        "deal_damage_one": "deals {x} damage to itself",
+        "deal_damage_many": "deals {x} damage to itself",
+        "heal": "heals itself for {x} HP",
+        "buff": "grants itself +{x}/+{y}",
+        "debuff": "inflicts -{x}/-{y} on itself",
+        "destroy": "destroys itself",
+        "bounce": "returns itself to hand",
+        "paralyze": "paralyzes itself",
+        "grant_keyword": "grants itself {ability}"
+      },
+      "targetd": {
+        "count_all": "all units",
+        "count_one": "a unit",
+        "count_n": "{n} units",
+        "hero_ally": "your hero",
+        "hero_enemy": "the enemy hero",
+        "both_all": "all units and the {side} hero",
+        "both_one": "a target (unit or hero){side}"
+      },
       "target": {
         "self": "to itself",
         "hero_ally": "to your hero",
@@ -612,26 +632,6 @@
         "grant_keyword": "choose a creature to grant the ability to",
         "exhumation": "choose a creature to resurrect",
         "default": "choose a target"
-      },
-      "self": {
-        "deal_damage_one": "deals {x} damage to itself",
-        "deal_damage_many": "deals {x} damage to itself",
-        "heal": "heals itself for {x} HP",
-        "buff": "grants itself +{x}/+{y}",
-        "debuff": "inflicts -{x}/-{y} on itself",
-        "destroy": "destroys itself",
-        "bounce": "returns itself to hand",
-        "paralyze": "paralyzes itself",
-        "grant_keyword": "grants itself {ability}"
-      },
-      "targetd": {
-        "count_all": "all units",
-        "count_one": "a unit",
-        "count_n": "{n} units",
-        "hero_ally": "your hero",
-        "hero_enemy": "the enemy hero",
-        "both_all": "all units and the {side} hero",
-        "both_one": "a target (unit or hero){side}"
       }
     },
     "factions": {

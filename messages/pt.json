@@ -41,10 +41,6 @@
         "label": "Primeiro Ataque",
         "desc": "Quando esta unidade ataca, causa seu dano primeiro; a unidade adversária só reage se sobreviver."
       },
-      "berserk": {
-        "label": "Berserk",
-        "desc": "Dobra seu ATK se seus PV atuais forem inferiores ao valor de PV original (na carta)."
-      },
       "vol": {
         "label": "Voo",
         "desc": "Ignora as provocações adversárias."
@@ -404,6 +400,10 @@
       "declenchement": {
         "label": "Ativação",
         "desc": "Repete uma vez os efeitos combinados dos seus outros aliados (entrada / morte / fim de turno / retorno)."
+      },
+      "gloire": {
+        "label": "Glória +X/+Y",
+        "desc": "Sempre que esta unidade sobrevive a dano de combate, ela ganha +X/+Y permanentemente."
       }
     },
     "spell_keywords": {
@@ -570,6 +570,26 @@
         "exhum_all": "todas as criaturas",
         "exhum_upto": "até {n} criaturas"
       },
+      "self": {
+        "deal_damage_one": "sofre {x} de dano",
+        "deal_damage_many": "sofre {x} de dano",
+        "heal": "cura-se em {x} PV",
+        "buff": "concede a si mesmo +{x}/+{y}",
+        "debuff": "sofre -{x}/-{y}",
+        "destroy": "destrói-se",
+        "bounce": "retorna à mão",
+        "paralyze": "paralisa-se",
+        "grant_keyword": "concede-se {ability}"
+      },
+      "targetd": {
+        "count_all": "todas as unidades",
+        "count_one": "uma unidade",
+        "count_n": "{n} unidades",
+        "hero_ally": "seu herói",
+        "hero_enemy": "o herói adversário",
+        "both_all": "todas as unidades e o herói {side}",
+        "both_one": "um alvo (unidade ou herói){side}"
+      },
       "target": {
         "self": "a si mesma",
         "hero_ally": "ao seu herói",
@@ -612,26 +632,6 @@
         "grant_keyword": "escolha uma criatura para receber a habilidade",
         "exhumation": "escolha uma criatura para ressuscitar",
         "default": "escolha um alvo"
-      },
-      "self": {
-        "deal_damage_one": "sofre {x} de dano",
-        "deal_damage_many": "sofre {x} de dano",
-        "heal": "cura-se em {x} PV",
-        "buff": "concede a si mesmo +{x}/+{y}",
-        "debuff": "sofre -{x}/-{y}",
-        "destroy": "destrói-se",
-        "bounce": "retorna à mão",
-        "paralyze": "paralisa-se",
-        "grant_keyword": "concede-se {ability}"
-      },
-      "targetd": {
-        "count_all": "todas as unidades",
-        "count_one": "uma unidade",
-        "count_n": "{n} unidades",
-        "hero_ally": "seu herói",
-        "hero_enemy": "o herói adversário",
-        "both_all": "todas as unidades e o herói {side}",
-        "both_one": "um alvo (unidade ou herói){side}"
       }
     },
     "factions": {

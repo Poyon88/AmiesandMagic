@@ -29,7 +29,7 @@ import type {
   StackFrame,
 } from "./types";
 import { SPELL_KEYWORDS } from "./spell-keywords";
-import { getEntraideReduction, getTokenManaCost, isCreatureKwShadowedBySpell } from "./abilities";
+import { getEntraideReduction, getTokenManaCost, isCreatureKwShadowedBySpell, XY_ABILITY_IDS } from "./abilities";
 import { isManaSpark, MANA_SPARK_FALLBACK } from "./mana-spark";
 import { getCapabilities } from "./capability-adapter";
 import { parseXValuesFromEffectText } from "./keyword-labels";
@@ -281,7 +281,7 @@ const CREATURE_KEYWORD_HERO_POWER_TARGET: Record<
 function applyGrantedKeyword(
   creature: CardInstance,
   kwId: string,
-  params?: { amount?: number; attack?: number; health?: number },
+  params?: { amount?: number; amountY?: number; attack?: number; health?: number },
 ) {
   const list = creature.card.keywords as string[];
   if (!list.includes(kwId)) {
@@ -307,6 +307,31 @@ function applyGrantedKeyword(
       [kwId]: params.amount,
     };
   }
+  // Idem pour le Y des mots-clés à couple X/Y (Gloire +X/+Y) : sans ce canal,
+  // une Gloire conférée retombait sur le +Y=1 par défaut quelle que soit la
+  // valeur saisie dans le forge.
+  if (typeof params?.amountY === "number") {
+    creature.grantedKeywordY = {
+      ...creature.grantedKeywordY,
+      [kwId]: params.amountY,
+    };
+  }
+}
+
+/** Paramètres à transmettre à `applyGrantedKeyword` pour un don d'amplitude
+ *  (x, et y pour les mots-clés à couple — cf. XY_ABILITY_IDS). Centralisé :
+ *  les trois chemins de don (effet composé, mot-clé créature « Conférer »,
+ *  mot-clé créature porté par un sort) partagent la même règle, sinon l'un
+ *  d'eux perd silencieusement le Y et retombe sur le repli 1. */
+function grantParamsFor(
+  abilityId: string,
+  x: number | undefined,
+  y: number | undefined,
+): { amount?: number; amountY?: number } | undefined {
+  const out: { amount?: number; amountY?: number } = {};
+  if (x != null && x > 0) out.amount = x;
+  if (y != null && XY_ABILITY_IDS.has(abilityId)) out.amountY = y;
+  return Object.keys(out).length > 0 ? out : undefined;
 }
 
 /** Applique une capacité de type « grant » (conférer `cap.abilityId` à une
@@ -321,7 +346,7 @@ function applyGrantCapability(
   targetMap: Record<string, string>,
 ) {
   const scope = cap.grantScope ?? "target";
-  const params = cap.params?.x != null ? { amount: cap.params.x } : undefined;
+  const params = grantParamsFor(cap.abilityId, cap.params?.x, cap.params?.y);
   if (scope === "all_allies") {
     for (const ally of owner.board) applyGrantedKeyword(ally, cap.abilityId, params);
     return;
@@ -448,7 +473,9 @@ function applyComposedToUnit(
     case "paralyze": u.isParalyzed = true; break;
     case "bounce": resolveRemontee(u.instanceId, source?.instanceId ?? null, owner, opponent, fromSpell); break;
     case "grant_keyword":
-      if (composed.grantAbilityId) applyGrantedKeyword(u, composed.grantAbilityId, x > 0 ? { amount: x } : undefined);
+      if (composed.grantAbilityId) {
+        applyGrantedKeyword(u, composed.grantAbilityId, grantParamsFor(composed.grantAbilityId, x, y));
+      }
       break;
     default: break;
   }
@@ -854,8 +881,7 @@ function createCardInstance(card: Card): CardInstance {
     tapped: false,
     fureurActive: false,
     fureurATKBonus: 0,
-    berserkActive: false,
-    berserkATKBonus: 0,
+    gloireStacks: 0,
     targetsAttackedThisTurn: [],
     esquiveUsedThisTurn: false,
     summonBonusATK: 0,
@@ -920,7 +946,7 @@ function makeDedoublementClone(source: CardInstance): CardInstance {
 /** Stats EFFECTIVES « permanentes » d'une instance = base de la carte + tous les
  *  bonus +ATK/+PV CONSERVÉS à travers les zones (loyauté, summon, nécrophagie,
  *  richesse, martyr, instinct). EXCLUT les bonus transitoires recalculés sur le
- *  plateau (auras, berserk, fureur). Source unique : recompose les stats en
+ *  plateau (auras, fureur). Source unique : recompose les stats en
  *  sortie de zone (returnInstanceToPlay) ET pilote l'affichage hors-plateau
  *  (cimetière / main) pour qu'il reflète l'état réel — au même titre que les
  *  buffs génériques, déjà cuits dans `card.attack`/`card.health`. */
@@ -945,8 +971,8 @@ function returnInstanceToPlay(inst: CardInstance): void {
   inst.sangMeleHealthBonus = 0;
 
   // ATK = base + bonus ATK permanents conservés (même formule que
-  // recalculateAuras, qui la reconfirmera une fois sur le plateau). Berserk /
-  // Fureur sont remis inactifs ci-dessous donc exclus, comme dans recalc.
+  // recalculateAuras, qui la reconfirmera une fois sur le plateau). Fureur est
+  // remise inactive ci-dessous donc exclue, comme dans recalc.
   inst.currentAttack = attack;
 
   // États transitoires / de tour réinitialisés.
@@ -966,8 +992,10 @@ function returnInstanceToPlay(inst: CardInstance): void {
   inst.contresortActive = false;
   inst.fureurActive = false;
   inst.fureurATKBonus = 0;
-  inst.berserkActive = false;
-  inst.berserkATKBonus = 0;
+  // gloireStacks N'EST PAS remis à zéro : le bonus +X/+Y correspondant est fondu
+  // dans les stats permanentes de l'instance, qui survivent au passage
+  // main/cimetière (règle de persistance des buffs). Remettre le compteur à 0
+  // afficherait « pas de Gloire » sur une unité qui en porte pourtant le gain.
   inst.diedOnTurn = null;
   inst.hasUsedResurrection = false;
   inst.hasTransformedLycanthropie = false;
@@ -1142,7 +1170,6 @@ export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
     let atk = c.card.attack ?? 0;
     atk += c.loyauteATKBonus;
     atk += c.summonBonusATK;
-    if (c.berserkActive) atk += c.berserkATKBonus;
     atk += c.necrophagieATKBonus;
     atk += c.richesseATKBonus;
     atk += c.martyrATKBonus;
@@ -1153,7 +1180,6 @@ export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
     let atk = c.card.attack ?? 0;
     atk += c.loyauteATKBonus;
     atk += c.summonBonusATK;
-    if (c.berserkActive) atk += c.berserkATKBonus;
     atk += c.necrophagieATKBonus;
     atk += c.richesseATKBonus;
     atk += c.martyrATKBonus;
@@ -1238,29 +1264,21 @@ export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
   for (const p of [player, opponent]) {
     for (const aura of p.hero.activeAuras ?? []) {
       if (aura.keywordId === "commandement" || aura.keywordId === "terreur") continue;
+      // Même règle d'amplitude que les autres dons : sans elle, une aura de
+      // Gloire accordait +1/+1 quelles que soient les valeurs du pouvoir.
+      const params = grantParamsFor(aura.keywordId, aura.params?.amount, aura.params?.amountY);
       for (const ally of p.board) {
-        applyGrantedKeyword(ally, aura.keywordId);
+        applyGrantedKeyword(ally, aura.keywordId, params);
       }
     }
   }
 
-  // Berserk: double ATK si PV actuels < PV originaux (sur la carte)
-  for (const board of [player.board, opponent.board]) {
-    for (const c of board) {
-      if (hasKw(c, "berserk")) {
-        const shouldBeActive = c.currentHealth < c.maxHealth;
-        if (shouldBeActive && !c.berserkActive) {
-          c.berserkActive = true;
-          c.berserkATKBonus = c.currentAttack; // double = add current once more
-          c.currentAttack += c.berserkATKBonus;
-        } else if (!shouldBeActive && c.berserkActive) {
-          c.berserkActive = false;
-          c.currentAttack -= c.berserkATKBonus;
-          c.berserkATKBonus = 0;
-        }
-      }
-    }
-  }
+  // Gloire +X/+Y n'a RIEN à faire ici : contrairement à l'ancien Berserk (état
+  // conditionnel recalculé à chaque passage), c'est un buff permanent appliqué
+  // une fois pour toutes au moment où l'unité survit à des dégâts de combat
+  // (cf. dealDamageToCreature). Le bonus vit donc dans les stats de base de
+  // l'instance, comme Renforcement — le reset d'ATK en tête de fonction le
+  // conserve naturellement.
 
   // Sang mêlé: +1 ATK et +1 PV par type de race différent parmi vos alliés.
   // Aura DYNAMIQUE (comme Commandement) : l'ATK est recalculé (reset ci-dessus),
@@ -2428,11 +2446,14 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       const abilityId = inst?.grantAbilityId;
       if (abilityId) {
         const scope = inst?.grantScope ?? "target";
+        // L'instance « conferer » n'a pas de X à elle : ses x/y portent
+        // l'amplitude de la capacité CONFÉRÉE (Conférer → Gloire +2/+1).
+        const params = grantParamsFor(abilityId, inst?.x, inst?.y);
         if (scope === "all_allies") {
-          for (const ally of player.board) applyGrantedKeyword(ally, abilityId);
+          for (const ally of player.board) applyGrantedKeyword(ally, abilityId, params);
         } else if (action.targetInstanceId) {
           const t = findCreatureOnBoard(player, action.targetInstanceId);
-          if (t) applyGrantedKeyword(t, abilityId);
+          if (t) applyGrantedKeyword(t, abilityId, params);
         }
       }
     }
@@ -2965,8 +2986,9 @@ function resolveSpellKeywords(
             target.isParalyzed = false;
             target.fureurActive = false;
             target.fureurATKBonus = 0;
-            target.berserkActive = false;
-            target.berserkATKBonus = 0;
+            // gloireStacks conservé : le Silence retire le mot-clé (plus aucun
+            // gain futur) mais ne reprend pas les +X/+Y déjà acquis, qui sont
+            // des stats permanentes — même traitement que Renforcement.
           }
         }
         break;
@@ -3862,7 +3884,7 @@ export function attack(state: GameState, action: AttackAction): GameState {
 
     if (hasFirstStrike) {
       const targetHpBefore = target.currentHealth;
-      dealDamageToCreature(target, attackPower, attackerHasPrecision, false, attacker);
+      dealDamageToCreature(target, attackPower, attackerHasPrecision, false, attacker, undefined, true);
 
       if (attackerHasTrample && target.currentHealth < 0 && targetHpBefore > 0) {
         dealDamageToHero(opponent.hero, -target.currentHealth);
@@ -3877,9 +3899,12 @@ export function attack(state: GameState, action: AttackAction): GameState {
         target.isParalyzed = true;
       }
 
-      // If target survived, it retaliates
+      // If target survived, it retaliates. NB : Première Frappe est séquentielle
+      // par définition — si la cible a gagné une Gloire en encaissant le premier
+      // coup, elle riposte donc avec son ATK déjà buffée. C'est voulu : c'est le
+      // prix de frapper une unité qui grandit en survivant.
       if (target.currentHealth > 0) {
-        dealDamageToCreature(attacker, target.currentAttack, false, false, target);
+        dealDamageToCreature(attacker, target.currentAttack, false, false, target, undefined, true);
         if (hasKw(target, "poison") && attacker.currentHealth > 0) {
           attacker.isPoisoned = true;
         }
@@ -3892,13 +3917,17 @@ export function attack(state: GameState, action: AttackAction): GameState {
       // damage; the retaliation is unchanged.
       const finalAttackPower = hasDoubleAttack ? attackPower * 2 : attackPower;
       const targetHpBefore = target.currentHealth;
-      dealDamageToCreature(target, finalAttackPower, attackerHasPrecision, false, attacker);
+      // Riposte figée AVANT les dégâts : l'échange est simultané, la cible ne
+      // doit donc pas riposter avec une ATK gonflée par la Gloire qu'elle vient
+      // de gagner en survivant à ce même coup.
+      const retaliationPower = target.currentAttack;
+      dealDamageToCreature(target, finalAttackPower, attackerHasPrecision, false, attacker, undefined, true);
 
       if (attackerHasTrample && target.currentHealth < 0 && targetHpBefore > 0) {
         dealDamageToHero(opponent.hero, -target.currentHealth);
       }
 
-      dealDamageToCreature(attacker, target.currentAttack, hasKw(target, "precision"), false, target);
+      dealDamageToCreature(attacker, retaliationPower, hasKw(target, "precision"), false, target, undefined, true);
 
       // Poison application
       if (hasKw(attacker, "poison") && target.currentHealth > 0) target.isPoisoned = true;
@@ -3942,8 +3971,8 @@ export function attack(state: GameState, action: AttackAction): GameState {
     // aucune unité). C'est un vrai échange — la victime riposte aussi —
     // pour que Fureur reste un effet risqué et pas un coup gratuit. Le
     // flag fureurActive borne le trigger à une fois par tour (reset en
-    // endTurn). Pas de bonus d'ATK persistant : c'est Berserk qui double
-    // l'ATK quand les PV sont entamés.
+    // endTurn). Pas de bonus d'ATK persistant côté Fureur elle-même : c'est
+    // Gloire qui récompense la survie à ces échanges (+X/+Y permanent).
     // Defender side: chain hits enemies on the attacker's board.
     const playerHeroIdx = newState.players.indexOf(player);
     runFureurChain(target, player.board, player.hero, `__hero_${playerHeroIdx}__`, null, newState);
@@ -4017,9 +4046,12 @@ function runFureurChain(
       break;
     }
     const victim = enemies[Math.floor(rng() * enemies.length)];
-    dealDamageToCreature(victim, creature.currentAttack, false, false, creature);
-    if (creature.currentHealth > 0 && victim.currentAttack > 0) {
-      dealDamageToCreature(creature, victim.currentAttack, false, false, victim);
+    // Assaut Fureur = vrai échange de combat (il nourrit donc Gloire), et lui
+    // aussi simultané : la riposte est figée avant les dégâts.
+    const victimRetaliation = victim.currentAttack;
+    dealDamageToCreature(victim, creature.currentAttack, false, false, creature, undefined, true);
+    if (creature.currentHealth > 0 && victimRetaliation > 0) {
+      dealDamageToCreature(creature, victimRetaliation, false, false, victim, undefined, true);
     }
     (state.fureurStrikes ??= []).push({
       attackerInstanceId: creature.instanceId,
@@ -4059,6 +4091,12 @@ function dealDamageToCreature(
   // drapeau distingue la vraie source-sort. undefined ⇒ on retombe sur
   // isSpellDamage (compat : les vrais sorts passent déjà isSpellDamage=true).
   fromSpell?: boolean,
+  // Dégâts d'un VRAI échange de combat (attaque + riposte du défenseur, ou
+  // assaut Fureur). Volontairement plus étroit que `!isSpellDamage` : les
+  // capacités de créature (Souffle de feu, Carnage, Maléfice, Piétinement…)
+  // ne sont ni des sorts ni du combat, et ne doivent donc pas nourrir Gloire.
+  // Seuls les sites d'appel du flux d'attaque passent `true`.
+  isCombatDamage = false,
 ) {
   if (damage <= 0) return;
 
@@ -4095,6 +4133,16 @@ function dealDamageToCreature(
 
   if (damage <= 0) return;
   creature.currentHealth -= damage;
+
+  // Gloire +X/+Y : l'unité qui encaisse des dégâts de COMBAT et y survit gagne
+  // +X/+Y de façon permanente, cumulable à chaque survie. On se place après
+  // toutes les réductions (Bouclier / Résistance / Armure) et après la
+  // soustraction des PV : « survivre » se juge sur les dégâts réellement subis.
+  // Un Bouclier qui absorbe tout ne déclenche donc rien — il n'y a pas eu de
+  // blessure à surmonter.
+  if (isCombatDamage && creature.currentHealth > 0 && hasKw(creature, "gloire")) {
+    applyGloire(creature);
+  }
 
   // Riposte X : dès que cette unité subit RÉELLEMENT des dégâts (on est passé
   // après Bouclier / Résistance / Armure / immunités), elle renvoie X dégâts à
@@ -4730,6 +4778,24 @@ function applyRenforcementSelf(inst: CardInstance, x: number, y: number): void {
   inst.currentHealth += y;
   inst.maxHealth += y;
   inst.lastBuffMode = composedStrikeMode; // couleur de l'effet → teinte du popup
+}
+
+// Gloire +X/+Y : récompense permanente d'une survie à des dégâts de combat.
+// Réutilise exactement le buff de Renforcement (stats cuites dans `card`), donc
+// le gain survit à recalculateAuras, au passage en main/cimetière et au Silence.
+//
+// Résolution de X/Y, dans l'ordre :
+//   1. l'instance de mot-clé de la carte (forge : +X = ATK, +Y = PV) ;
+//   2. `grantedKeywordX` / `grantedKeywordY` quand la Gloire a été CONFÉRÉE à
+//      l'exécution (sort « Rage Gobeline », aura de héros Sigurd…) ;
+//   3. 1/1 par défaut, valeur de repli des mots-clés scalables du moteur.
+function applyGloire(inst: CardInstance): void {
+  const kwInst = inst.card.keyword_instances?.find(i => i.id === "gloire");
+  const x = kwInst?.x ?? inst.grantedKeywordX["gloire"] ?? 1;
+  const y = kwInst?.y ?? inst.grantedKeywordY?.["gloire"] ?? 1;
+  if (x <= 0 && y <= 0) return;
+  applyRenforcementSelf(inst, Math.max(0, x), Math.max(0, y));
+  inst.gloireStacks = (inst.gloireStacks ?? 0) + 1;
 }
 
 // Renforcement multiple : +X/+Y permanent à toutes les créatures du contrôleur

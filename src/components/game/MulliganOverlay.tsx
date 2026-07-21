@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import type { CardInstance } from "@/lib/game/types";
-import { KEYWORD_SYMBOLS, xNumeral, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
+import { KEYWORD_SYMBOLS, xNumeral, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordBadgeValue, applyKeywordValueToLabel, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import KeywordIcon from "@/components/shared/KeywordIcon";
@@ -214,7 +214,7 @@ function MulliganCard({
               const { kw, x, mode } = entry;
               const label = vocab.keywordLabel(kw);
               // Plus d'annotation de déclencheur : la couleur transmet le moment.
-              const displayTitle = x != null ? label.replace(/ X$/, ` ${xNumeral(x)}`) : label;
+              const displayTitle = applyKeywordValueToLabel(kw, label, x, entry.instance);
               const modeColor = keywordModeColor(mode);
               return (
               <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} title={displayTitle} style={{
@@ -228,7 +228,7 @@ function MulliganCard({
                     <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={26} keyword={kw} fill mode={mode} />
                   </span>
                 </span>
-                {x != null && <span style={{ fontSize: 13, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}, ${TEXT_CONTRAST_HALO}` }}>{xNumeral(x)}</span>}
+                {keywordBadgeValue(kw, x, entry.instance) != null && <span style={{ fontSize: 13, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}, ${TEXT_CONTRAST_HALO}` }}>{keywordBadgeValue(kw, x, entry.instance)}</span>}
               </div>
               );
             })}
@@ -356,7 +356,7 @@ function MulliganCard({
               const ctx = { card, instance: entry.instance, x, tokens: tokenTemplates };
               const label = vocab.keywordLabelFor(kw, ctx);
               // Plus d'annotation de déclencheur : la couleur transmet le moment.
-              const displayLabel = x != null ? label.replace(/ X$/, ` ${xNumeral(x)}`) : label;
+              const displayLabel = applyKeywordValueToLabel(kw, label, x, entry.instance);
               const desc = vocab.keywordDesc(kw, ctx);
               const modeColor = keywordModeColor(mode);
               return (

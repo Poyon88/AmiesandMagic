@@ -7,6 +7,14 @@
 // depuis le moteur LEGACY ; après le refactor, ces snapshots doivent rester
 // identiques.
 //
+// RE-BASELINE 2026-07-21 — Berserk → Gloire +X/+Y. Le golden a été régénéré une
+// fois, volontairement : le remplacement de Berserk (doublement conditionnel de
+// l'ATK) par Gloire (+X/+Y permanent à chaque survie au combat) change les
+// dégâts de la partie scriptée, donc les morts, donc la consommation de la RNG —
+// toute la trace diverge en cascade. Ce n'est PAS une régression du refactor de
+// capacités ; le comportement de Gloire lui-même est verrouillé par gloire.test.ts.
+// Hors changement de règle assumé, ce golden doit rester figé.
+//
 // Déterminisme : RNG semée via initializeGame(seed) ; shuffleArray utilise cette
 // RNG ; l'auto-player fournit TOUJOURS des cibles explicites pour éviter le
 // `Math.random()` d'auto-ciblage (engine.ts ~1802) ; `turnStartedAt` (Date.now)
@@ -76,7 +84,11 @@ function buildLibrary() {
     charge: creature("Chargeur", 3, 3, 2, { keywords: ["charge"], race: "humains" }),
     taunt: creature("Mur", 2, 1, 5, { keywords: ["taunt"], race: "nains" }),
     firstStrike: creature("Lancier", 3, 3, 3, { keywords: ["premiere_frappe"], race: "humains" }),
-    berserk: creature("Berserker", 4, 4, 5, { keywords: ["berserk"], race: "orcs" }),
+    gloire: creature("Glorieux", 4, 4, 5, {
+      keywords: ["gloire"],
+      keyword_instances: [{ id: "gloire", x: 1, y: 1 }],
+      race: "orcs",
+    }),
     command: creature("Capitaine", 4, 2, 4, { keywords: ["commandement"], race: "humains", faction: "ordre" }),
     terror: creature("Spectre", 3, 2, 2, { keywords: ["terreur"], race: "morts_vivants" }),
     fureur: creature("Enragé", 4, 3, 4, { keywords: ["fureur"], race: "orcs" }),
@@ -128,7 +140,7 @@ function buildLibrary() {
     guerison: spell("Soin", 1, {
       spell_keywords: [{ id: "guerison", amount: 3 }] as SpellKeywordInstance[],
     }),
-    grantBerserk: spell("Rage", 2, { keywords: ["berserk"] }),
+    grantGloire: spell("Rage", 2, { keywords: ["gloire"] }),
   };
 }
 
@@ -250,8 +262,7 @@ function compactInstance(ci: GameState["players"][0]["board"][0]) {
     tapped: ci.tapped,
     fureurActive: ci.fureurActive,
     fureurATKBonus: ci.fureurATKBonus,
-    berserkActive: ci.berserkActive,
-    berserkATKBonus: ci.berserkATKBonus,
+    gloireStacks: ci.gloireStacks ?? 0,
     esquiveUsedThisTurn: ci.esquiveUsedThisTurn,
     ombreRevealed: ci.ombreRevealed,
     contresortActive: ci.contresortActive,

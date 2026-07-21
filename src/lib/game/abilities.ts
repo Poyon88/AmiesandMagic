@@ -152,11 +152,11 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["creature"],
     creature: { cost: 7, costPerX: 0, se: 1.5, minTier: 0, scalable: false, zone: "Terrain" },
   },
-  berserk: {
-    id: "berserk", label: "Berserk", symbol: "😤",
-    desc: "Double son ATK si ses PV actuels sont inférieurs à sa valeur de PV originale (sur la carte).",
+  gloire: {
+    id: "gloire", label: "Gloire +X/+Y", symbol: "🏅",
+    desc: "Chaque fois que cette unité survit à des dégâts de combat, elle gagne +X/+Y de façon permanente.",
     applicable_to: ["creature"],
-    creature: { cost: 11, costPerX: 0, se: 2.5, minTier: 0, scalable: false, zone: "Terrain" },
+    creature: { cost: 11, costPerX: 4, se: 2.5, minTier: 0, scalable: true, zone: "Terrain" },
   },
   divine_shield: {
     id: "divine_shield", label: "Bouclier", symbol: "🔰",
@@ -1179,16 +1179,27 @@ export const AUTOMATIC_ABILITY_IDS: ReadonlySet<string> = new Set([
   // Auras / présence continue
   "terreur", "commandement", "fierte_du_clan", "sang_mele", "totem", "pauvrete",
   // Passifs de combat / statiques
-  "berserk", "premiere_frappe", "double_attaque", "esquive", "armure",
+  "premiere_frappe", "double_attaque", "esquive", "armure",
   "resistance", "precision", "indestructible", "transcendance", "invisible",
   "ombre", "taunt", "vol", "ranged", "ancre", "divine_shield", "celerite",
   "charge", "raid", "drain_de_vie", "bravoure",
   // Réactifs (déclenchés au combat / à la mort d'autrui / à la défausse)
-  "augure", "fureur", "riposte", "persecution", "souffle_de_feu", "pietinement",
+  "augure", "fureur", "gloire", "riposte", "persecution", "souffle_de_feu", "pietinement",
   "liaison_de_vie", "paralysie", "poison", "necrophagie", "richesse",
   // Début de tour / calcul de coût
   "regeneration", "canalisation", "entraide",
 ]);
+
+/** Ids moteur des capacités dont la valeur est un COUPLE X/Y (ATK/PV) et non un
+ *  simple X — « Gloire +X/+Y », « Renforcement +X/+Y », « Affaiblissement -X/-Y ».
+ *  Dérivé du libellé du registre plutôt que saisi en dur : une nouvelle capacité
+ *  X/Y est prise en compte sans liste à maintenir en double (même leçon que le
+ *  mapping label→id du forge, où le doublon perdait des capacités en silence). */
+export const XY_ABILITY_IDS: ReadonlySet<string> = new Set(
+  Object.values(ABILITIES)
+    .filter((a) => /X\s*\/\s*[+-]?Y/.test(a.label))
+    .map((a) => creatureEngineId(a)),
+);
 
 /** Dérive la taxonomie déclencheur/effet d'une ability depuis les jeux d'ids.
  *  Centralisé (pas saisi à la main par entrée) pour rester cohérent et testable. */

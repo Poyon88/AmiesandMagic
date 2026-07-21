@@ -14,7 +14,7 @@ import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 import RaceClanPicker from "@/components/admin/RaceClanPicker";
 import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
 import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
-import { ABILITIES, abilityIconKeys, creatureEngineId, type AbilityDef } from "@/lib/game/abilities";
+import { ABILITIES, abilityIconKeys, creatureEngineId, XY_ABILITY_IDS, type AbilityDef } from "@/lib/game/abilities";
 import type { SpellKeywordId, Capability, CapabilityTrigger } from "@/lib/game/types";
 import CardEditor from "@/components/admin/CardEditor";
 import { CARD_BACK_FRAMES, autoTrimDarkBorders, composeCardBack, getCardBackFrame } from "@/lib/card-back-frames";
@@ -76,6 +76,8 @@ interface ForgeCard {
   power: number | null;
   keywords: string[];
   keywordXValues?: Record<string, number>;
+  /** +Y des mots-clés en paire de stats (Gloire, Renforcement, …) — cf. CardVisual. */
+  keywordYValues?: Record<string, number>;
   keywordGrantScope?: Record<string, "all_allies">;
   ability: string;
   flavorText: string;
@@ -1587,8 +1589,12 @@ export default function CardForge() {
   // Missing entry = "target" (single allied creature); "all_allies" = every
   // allied creature on cast. Saved into card.keyword_instances.grantScope.
   const [keywordGrantScope, setKeywordGrantScope] = useState<Record<string, "all_allies">>({});
-  // Conférer (mot-clé créature paramétrique) : ability conférée choisie.
+  // Conférer (mot-clé créature paramétrique) : ability conférée choisie, et son
+  // amplitude. « Conférer » n'a pas de X à lui : les x/y de son instance portent
+  // celle de la capacité DONNÉE (Conférer → Résistance 2, → Gloire +2/+1).
   const [conferAbilityId, setConferAbilityId] = useState<string>("");
+  const [conferX, setConferX] = useState(1);
+  const [conferY, setConferY] = useState(1);
   // Déclenchement (mot-clé créature paramétrique) : sous-ensemble figé de
   // déclencheurs dont les effets composés des autres alliés sont rejoués.
   const [declenchementTriggers, setDeclenchementTriggers] = useState<CapabilityTrigger[]>([]);
@@ -1604,6 +1610,8 @@ export default function CardForge() {
   const [afY, setAfY] = useState<number>(1);
   // Renforcement +X/+Y (créature, self-buff) : le +PV (Y) dédié (le +ATK = la valeur X).
   const [rfY, setRfY] = useState<number>(1);
+  // Gloire +X/+Y (créature) : le +PV (Y) dédié (le +ATK = la valeur X).
+  const [glY, setGlY] = useState<number>(1);
   const [rmRace, setRmRace] = useState<string>("");
   const [rmClan, setRmClan] = useState<string>("");
   // Appel Suprême : race ciblée fixée sur la carte (créature). Persistée dans
@@ -1667,6 +1675,15 @@ export default function CardForge() {
     power: type !== "Unité" ? manualPower : null,
     keywords: manualKeywords,
     keywordXValues,
+    // Les quatre mots-clés « paire de stats » gardent leur +Y dans un état
+    // dédié (pas dans keywordXValues) : on le transmet à l'aperçu pour qu'il
+    // peigne « +2/+1 » et non le seul X.
+    keywordYValues: {
+      "Gloire +X/+Y": glY,
+      "Renforcement +X/+Y": rfY,
+      "Renforcement multiple": rmY,
+      "Affaiblissement -X/-Y": afY,
+    },
     keywordGrantScope: type !== "Unité" ? keywordGrantScope : undefined,
     ability: manualAbility,
     flavorText: manualFlavorText,
@@ -1881,7 +1898,7 @@ export default function CardForge() {
     setManualPower(2); setManualAbility(""); setManualFlavorText("");
     setManualIllustrationPrompt(""); setManualExtraContext(""); setManualKeywords([]); setKeywordXValues({}); setKeywordModes({}); setCard(null);
     setEditedPrompt(null); setSaveResult(null);
-    setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setAfY(1); setRfY(1); setRmRace(""); setRmClan(""); setAsRace(""); setConferAbilityId(""); setDeclenchementTriggers([]); setComposedCaps([]);
+    setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setAfY(1); setRfY(1); setGlY(1); setRmRace(""); setRmClan(""); setAsRace(""); setConferAbilityId(""); setConferX(1); setConferY(1); setDeclenchementTriggers([]); setComposedCaps([]);
     setManualLifeCost(0); setManualDiscardCost(0); setManualSacrificeCost(0);
     setCardImages(prev => Object.fromEntries(Object.entries(prev).filter(([k]) => k !== "manual_preview")));
   }, []);
@@ -2030,7 +2047,10 @@ export default function CardForge() {
     "Raid": "raid", "Convocations multiples": "convocations_multiples", "Traque": "charge", "Provocation": "taunt", "Bouclier": "divine_shield", "Vol": "ranged",
     // Tier 0
     "Loyauté": "loyaute", "Ancré": "ancre", "Résistance X": "resistance",
-    "Première Frappe": "premiere_frappe", "Berserk": "berserk",
+    "Première Frappe": "premiere_frappe",
+    // Alias legacy : brouillons de forge (localStorage / JSON exportés) créés
+    // avant le renommage Berserk → Gloire +X/+Y.
+    "Berserk": "gloire",
     // Tier 1 — Terrain
     "Précision": "precision", "Drain de vie": "drain_de_vie", "Esquive": "esquive",
     "Poison": "poison", "Célérité": "celerite",
@@ -2188,6 +2208,13 @@ export default function CardForge() {
           if (id === "renforcement" && !isSpellCard) {
             return { id, ...(mode ? { mode } : {}), x: x ?? 0, y: rfY };
           }
+          // Gloire : porte +X (ATK générique) / +Y (PV dédié). Émise aussi sur
+          // un SORT, qui la CONFÈRE — sans le Y persisté, le don retombait sur
+          // le +Y=1 de repli quelle que soit la saisie (la portée doit alors
+          // suivre, ce que la branche générique faisait seule jusqu'ici).
+          if (id === "gloire") {
+            return { id, ...(mode ? { mode } : {}), x: x ?? 0, y: glY, ...(grantScope ? { grantScope } : {}) };
+          }
           // Appel Suprême (créature) : porte la race ciblée ; toujours émis.
           if (id === "appel_supreme" && !isSpellCard) {
             return { id, ...(mode ? { mode } : {}), ...(asRace ? { race: asRace } : {}) };
@@ -2195,7 +2222,10 @@ export default function CardForge() {
           // Conférer (créature) : porte l'ability conférée + la portée ; toujours émis.
           if (id === "conferer" && !isSpellCard) {
             const scope = keywordGrantScope["Conférer"] === "all_allies" ? "all_allies" as const : undefined;
-            return { id, ...(mode ? { mode } : {}), ...(conferAbilityId ? { grantAbilityId: conferAbilityId } : {}), ...(scope ? { grantScope: scope } : {}) };
+            // x/y = amplitude de la capacité conférée (y seulement si elle
+            // porte un couple, sinon l'instance stockerait un Y sans sens).
+            const xy = XY_ABILITY_IDS.has(conferAbilityId);
+            return { id, ...(mode ? { mode } : {}), ...(conferAbilityId ? { grantAbilityId: conferAbilityId } : {}), x: conferX, ...(xy ? { y: conferY } : {}), ...(scope ? { grantScope: scope } : {}) };
           }
           // Déclenchement (créature) : porte le sous-ensemble figé de déclencheurs ; toujours émis.
           if (id === "declenchement" && !isSpellCard) {
@@ -2287,7 +2317,7 @@ export default function CardForge() {
     } finally {
       setSaving(false);
     }
-  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, keywordModes, keywordGrantScope, rmY, afY, rfY, rmRace, rmClan, asRace, composedCaps, conferAbilityId, declenchementTriggers]);
+  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, keywordModes, keywordGrantScope, rmY, afY, rfY, glY, rmRace, rmClan, asRace, composedCaps, conferAbilityId, conferX, conferY, declenchementTriggers]);
 
   const [generatingImage, setGeneratingImage] = useState(false);
   const [editedPrompt, setEditedPrompt] = useState<string | null>(null);
@@ -3168,7 +3198,7 @@ export default function CardForge() {
                                 fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: selected ? 700 : 400,
                                 transition: "all 0.15s",
                               }}>{id.replace(/ X$/, "")}{isScalable && !selected && / X$/.test(id) ? " X" : ""}</button>
-                            {isScalable && selected && id !== "Renforcement +X/+Y" && (
+                            {isScalable && selected && id !== "Renforcement +X/+Y" && id !== "Gloire +X/+Y" && (
                               <input
                                 type="number" min={1} max={10}
                                 value={keywordXValues[id] ?? 1}
@@ -3349,6 +3379,24 @@ export default function CardForge() {
                         </div>
                       </div>
                     )}
+                    {/* Gloire — +ATK (X) et +PV (Y) gagnés à chaque survie en combat */}
+                    {manualKeywords.includes("Gloire +X/+Y") && (
+                      <div style={{ marginTop: 6, padding: 6, borderRadius: 6, border: "1px solid #f0d9a8", background: "#fffaf0" }}>
+                        <div style={{ fontSize: 8, color: "#a67c11", letterSpacing: 1, fontWeight: 700, marginBottom: 4 }}>🏅 GLOIRE (SURVIE AU COMBAT)</div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <span style={{ fontSize: 9, color: "#b8860b" }}>+ATK (X)</span>
+                          <input type="number" min={0} max={20} value={keywordXValues["Gloire +X/+Y"] ?? 1}
+                            onChange={e => setKeywordXValues(prev => ({ ...prev, ["Gloire +X/+Y"]: Math.max(0, Math.min(20, parseInt(e.target.value) || 0)) }))}
+                            style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: "1px solid #f0d9a8", fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }}
+                          />
+                          <span style={{ fontSize: 9, color: "#b8860b" }}>+PV (Y)</span>
+                          <input type="number" min={0} max={20} value={glY}
+                            onChange={e => setGlY(Math.max(0, parseInt(e.target.value) || 0))}
+                            style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: "1px solid #f0d9a8", fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }}
+                          />
+                        </div>
+                      </div>
+                    )}
                     {/* Appel Suprême — race ciblée (récupère la créature de cette race au plus haut coût) */}
                     {manualKeywords.includes("Appel Suprême") && (
                       <div style={{ marginTop: 6, padding: 6, borderRadius: 6, border: `1px solid ${asRace ? "#10b98144" : "#e74c3c"}`, background: "#f0fdf4" }}>
@@ -3375,6 +3423,18 @@ export default function CardForge() {
                             <option key={creatureEngineId(a)} value={creatureEngineId(a)}>{a.creature?.label ?? a.label}</option>
                           ))}
                         </select>
+                        {/* Amplitude de la capacité conférée : X seul, ou X/Y
+                            pour les capacités à couple (Gloire +X/+Y). */}
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                          <span style={{ fontSize: 9, color: "#8a6d3b" }}>{XY_ABILITY_IDS.has(conferAbilityId) ? "+ATK (X)" : "X"}</span>
+                          <input type="number" min={0} max={20} value={conferX} onChange={e => setConferX(Math.max(0, Math.min(20, parseInt(e.target.value) || 0)))}
+                            style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: "1px solid #8a6d3b44", fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
+                          {XY_ABILITY_IDS.has(conferAbilityId) && (<>
+                            <span style={{ fontSize: 9, color: "#8a6d3b" }}>+PV (Y)</span>
+                            <input type="number" min={0} max={20} value={conferY} onChange={e => setConferY(Math.max(0, Math.min(20, parseInt(e.target.value) || 0)))}
+                              style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: "1px solid #8a6d3b44", fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
+                          </>)}
+                        </div>
                         <div style={{ display: "inline-flex", gap: 6 }}>
                           {([["target", tf('scope_one_ally')], ["all_allies", tf('scope_all_allies')]] as const).map(([val, txt]) => {
                             const active = (keywordGrantScope["Conférer"] === "all_allies" ? "all_allies" : "target") === val;
@@ -3681,7 +3741,7 @@ export default function CardForge() {
                             <span style={labelStyle}>{tf('effect_label')}</span>
                             <span style={{ ...valStyle, display: "flex", alignItems: "center", gap: 8 }}>
                               {def?.creature?.desc ?? def?.desc ?? label}
-                              {scalable && label !== "Renforcement +X/+Y" && (
+                              {scalable && label !== "Renforcement +X/+Y" && label !== "Gloire +X/+Y" && (
                                 <input type="number" min={1} max={10} value={keywordXValues[label] ?? 1}
                                   onChange={e => setKeywordXValues(prev => ({ ...prev, [label]: Math.max(1, Math.min(10, parseInt(e.target.value) || 1)) }))}
                                   style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: `1px solid ${fac.color}`, background: `${fac.color}11`, color: fac.color, fontSize: 11, textAlign: "center", fontWeight: 700, fontFamily: "'Cinzel',serif" }}
@@ -3742,6 +3802,17 @@ export default function CardForge() {
                                 <input type="number" min={0} max={20} value={keywordXValues[label] ?? 1} onChange={e => setKeywordXValues(prev => ({ ...prev, [label]: Math.max(0, Math.min(20, parseInt(e.target.value) || 0)) }))} style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: cardBorder, fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
                                 <span style={{ fontSize: 9, color: "#27ae60" }}>+PV</span>
                                 <input type="number" min={0} max={20} value={rfY} onChange={e => setRfY(Math.max(0, parseInt(e.target.value) || 0))} style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: cardBorder, fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
+                              </div>
+                            </div>
+                          )}
+                          {label === "Gloire +X/+Y" && (
+                            <div style={{ marginTop: 8 }}>
+                              <div style={{ ...labelStyle, color: "#a67c11", marginBottom: 3 }}>🏅 +ATK (X) / +PV (Y) <span style={{ color: "#888", fontWeight: 400 }}>{tf('on_self')}</span></div>
+                              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                <span style={{ fontSize: 9, color: "#b8860b" }}>+ATK</span>
+                                <input type="number" min={0} max={20} value={keywordXValues[label] ?? 1} onChange={e => setKeywordXValues(prev => ({ ...prev, [label]: Math.max(0, Math.min(20, parseInt(e.target.value) || 0)) }))} style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: cardBorder, fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
+                                <span style={{ fontSize: 9, color: "#b8860b" }}>+PV</span>
+                                <input type="number" min={0} max={20} value={glY} onChange={e => setGlY(Math.max(0, parseInt(e.target.value) || 0))} style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: cardBorder, fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
                               </div>
                             </div>
                           )}

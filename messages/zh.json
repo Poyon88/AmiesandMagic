@@ -41,10 +41,6 @@
         "label": "先手",
         "desc": "此单位攻击时先行造成伤害；敌方单位仅在存活时才能反击。"
       },
-      "berserk": {
-        "label": "狂暴",
-        "desc": "若当前生命值低于卡牌原始生命值，攻击力翻倍。"
-      },
       "vol": {
         "label": "飞行",
         "desc": "无视敌方嘲讽。"
@@ -404,6 +400,10 @@
       "declenchement": {
         "label": "触发",
         "desc": "使你其他盟友的复合效果（入场/死亡/回合结束/返场）额外触发一次。"
+      },
+      "gloire": {
+        "label": "荣耀 +X/+Y",
+        "desc": "每当这个单位在战斗伤害中存活下来，它将永久获得+X/+Y。"
       }
     },
     "spell_keywords": {
@@ -570,6 +570,26 @@
         "exhum_all": "所有生物",
         "exhum_upto": "至多 {n} 个生物"
       },
+      "self": {
+        "deal_damage_one": "对自身造成{x}点伤害",
+        "deal_damage_many": "对自身造成{x}点伤害",
+        "heal": "为自身恢复{x}点生命值",
+        "buff": "为自身赋予+{x}/+{y}",
+        "debuff": "对自身造成-{x}/-{y}",
+        "destroy": "自我摧毁",
+        "bounce": "将自身弹回手牌",
+        "paralyze": "使自身麻痹",
+        "grant_keyword": "为自身赋予{ability}"
+      },
+      "targetd": {
+        "count_all": "所有单位",
+        "count_one": "一个单位",
+        "count_n": "{n}个单位",
+        "hero_ally": "你的英雄",
+        "hero_enemy": "敌方英雄",
+        "both_all": "所有单位和{side}英雄",
+        "both_one": "一个目标(单位或英雄){side}"
+      },
       "target": {
         "self": "对自身",
         "hero_ally": "对你的英雄",
@@ -612,26 +632,6 @@
         "grant_keyword": "选择一个赋予能力的生物",
         "exhumation": "选择一个复活的生物",
         "default": "选择一个目标"
-      },
-      "self": {
-        "deal_damage_one": "对自身造成{x}点伤害",
-        "deal_damage_many": "对自身造成{x}点伤害",
-        "heal": "为自身恢复{x}点生命值",
-        "buff": "为自身赋予+{x}/+{y}",
-        "debuff": "对自身造成-{x}/-{y}",
-        "destroy": "自我摧毁",
-        "bounce": "将自身弹回手牌",
-        "paralyze": "使自身麻痹",
-        "grant_keyword": "为自身赋予{ability}"
-      },
-      "targetd": {
-        "count_all": "所有单位",
-        "count_one": "一个单位",
-        "count_n": "{n}个单位",
-        "hero_ally": "你的英雄",
-        "hero_enemy": "敌方英雄",
-        "both_all": "所有单位和{side}英雄",
-        "both_one": "一个目标(单位或英雄){side}"
       }
     },
     "factions": {

@@ -41,9 +41,9 @@
         "label": "Première Frappe",
         "desc": "Lorsque cette unité attaque, inflige ses dégâts en premier ; l'unité adverse ne riposte que si elle survit."
       },
-      "berserk": {
-        "label": "Berserk",
-        "desc": "Double son ATK si ses PV actuels sont inférieurs à sa valeur de PV originale (sur la carte)."
+      "gloire": {
+        "label": "Gloire +X/+Y",
+        "desc": "Chaque fois que cette unité survit à des dégâts de combat, elle gagne +X/+Y de façon permanente."
       },
       "vol": {
         "label": "Vol",

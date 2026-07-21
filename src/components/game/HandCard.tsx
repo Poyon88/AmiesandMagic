@@ -7,7 +7,7 @@ import Image from "next/image";
 import type { CardInstance } from "@/lib/game/types";
 import { useGameStore } from "@/lib/store/gameStore";
 import type { DragEvent } from "react";
-import { KEYWORD_SYMBOLS, xNumeral, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
+import { KEYWORD_SYMBOLS, xNumeral, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordBadgeValue, applyKeywordValueToLabel, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell, getEntraideReduction, getTokenManaCost } from "@/lib/game/abilities";
 import { persistentStats } from "@/lib/game/engine";
@@ -578,7 +578,7 @@ function HandCard({
                           <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={20} keyword={kw} fill mode={mode} />
                         </span>
                       </span>
-                      {x != null && <span style={{ fontSize: 12, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}, ${TEXT_CONTRAST_HALO}` }}>{xNumeral(x)}</span>}
+                      {keywordBadgeValue(kw, x, entry.instance) != null && <span style={{ fontSize: 12, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}, ${TEXT_CONTRAST_HALO}` }}>{keywordBadgeValue(kw, x, entry.instance)}</span>}
                     </div>
                   );
                 });
@@ -723,7 +723,7 @@ function HandCard({
                 const ctx = { card, instance: entry.instance, x, tokens: tokenTemplates };
                 const label = vocab.keywordLabelFor(kw, ctx);
                 // Plus d'annotation de déclencheur : la couleur transmet le moment.
-                const displayLabel = x != null ? label.replace(/ X$/, ` ${xNumeral(x)}`) : label;
+                const displayLabel = applyKeywordValueToLabel(kw, label, x, entry.instance);
                 const desc = vocab.keywordDesc(kw, ctx);
                 const modeColor = keywordModeColor(mode);
                 return (

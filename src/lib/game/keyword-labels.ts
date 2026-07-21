@@ -233,7 +233,7 @@ export function parseXValuesFromEffectText(effectText: string | null | undefined
 
 export const ALL_KEYWORDS: Keyword[] = [
   "charge", "taunt", "divine_shield", "ranged",
-  "raid", "loyaute", "ancre", "resistance", "premiere_frappe", "berserk",
+  "raid", "loyaute", "ancre", "resistance", "premiere_frappe", "gloire",
   "convocations_multiples",
   // NOTE: "vol" is a legacy duplicate of "ranged" (both = "Vol" 🦅, treated
   // identically in combat). The forge emits "ranged" and every card uses it
@@ -277,7 +277,7 @@ export const ALL_KEYWORDS: Keyword[] = [
 export const KEYWORD_LABELS: Record<Keyword, string> = {
   charge: "Traque", taunt: "Provocation", divine_shield: "Bouclier", ranged: "Vol",
   raid: "Raid", convocations_multiples: "Convocations multiples", loyaute: "Loyauté", ancre: "Ancré", resistance: "Résistance X", premiere_frappe: "Première Frappe",
-  berserk: "Berserk", vol: "Vol", precision: "Précision", drain_de_vie: "Drain de vie", esquive: "Esquive",
+  gloire: "Gloire +X/+Y", vol: "Vol", precision: "Précision", drain_de_vie: "Drain de vie", esquive: "Esquive",
   poison: "Poison", celerite: "Célérité",
   augure: "Augure", benediction: "Bénédiction", bravoure: "Bravoure",
   pillage: "Pillage X", riposte: "Riposte X",
@@ -340,10 +340,83 @@ export function getKeywordDisplayLabel(kw: Keyword, t?: SafeT): string {
   return t?.(`vocab.keywords.${kw}.label`) ?? KEYWORD_LABELS[kw] ?? kw;
 }
 
+// ─── Valeurs affichées : X simple vs PAIRE de stats ────────────────────────
+//
+// La plupart des mots-clés scalables portent un seul nombre (« Carnage 3 »).
+// Quatre portent une PAIRE : Renforcement +X/+Y, Renforcement multiple,
+// Affaiblissement -X/-Y et Gloire +X/+Y. Le côté SORT savait déjà les rendre
+// « +2/+2 » (cf. spell_keywords, qui a des champs attack/health dédiés) ; le
+// côté CRÉATURE, lui, n'affichait que le X — une Gloire +2/+1 s'affichait « 2 »,
+// donnant à croire que le bonus de PV n'existait pas. Ces deux helpers sont la
+// source unique du formatage côté créature, pour que tous les rendus (badges de
+// carte, infobulles, listes) restent d'accord.
+//
+// Liste EXPLICITE, et non une regex sur le libellé : `renforcement_multiple`
+// s'affiche « Renforcement multiple », sans marqueur +X/+Y, alors qu'il porte
+// bien une paire. Une détection par libellé le manquait silencieusement — et
+// aurait aussi cassé sur toute locale reformulant le marqueur.
+const STAT_PAIR_KEYWORDS: ReadonlySet<string> = new Set([
+  "gloire", "renforcement", "renforcement_multiple", "affaiblissement",
+]);
+
+/** Paires à valeurs NÉGATIVES (débuff) — le signe s'applique aux deux membres. */
+const NEGATIVE_STAT_PAIRS: ReadonlySet<string> = new Set(["affaiblissement"]);
+
+/** Ce mot-clé porte-t-il une paire de stats (+X/+Y ou -X/-Y) plutôt qu'un X ? */
+export function isStatPairKeyword(kw: Keyword): boolean {
+  return STAT_PAIR_KEYWORDS.has(kw);
+}
+
+/** Valeur à peindre sur le badge d'un mot-clé de créature : « +2/+1 » pour une
+ *  paire de stats, « 3 » sinon. Renvoie null quand il n'y a rien à afficher
+ *  (mot-clé non scalable et sans instance). */
+export function keywordBadgeValue(
+  kw: Keyword,
+  x: number | undefined,
+  inst?: KeywordInstance,
+): string | null {
+  // « Conférer » n'est pas scalable : les x/y de son instance portent
+  // l'amplitude de la capacité CONFÉRÉE, pas la sienne. Les peindre sur son
+  // badge afficherait un « Conférer I » trompeur — la valeur appartient au
+  // libellé de la capacité donnée, que la description résout déjà.
+  if (kw === "conferer") return null;
+  if (!isStatPairKeyword(kw)) return x != null ? xNumeral(x) : null;
+  const sign = NEGATIVE_STAT_PAIRS.has(kw) ? "-" : "+";
+  return `${sign}${x ?? inst?.x ?? 0}/${sign}${inst?.y ?? 0}`;
+}
+
+/** Injecte la valeur dans un libellé DÉJÀ résolu/localisé (les appelants passent
+ *  par la couche `vocab`, qu'il ne faut pas court-circuiter) : « Gloire +2/+1 »,
+ *  « Carnage 3 », « Provocation ».
+ *
+ *  Remplace l'ancien `label.replace(/ X$/, …)` disséminé sur les surfaces, qui
+ *  ne mordait pas sur les labels en +X/+Y — ceux-ci ne se terminent pas par
+ *  « X », donc l'infobulle affichait littéralement « Gloire +X/+Y ».
+ *
+ *  Deux formes de libellé cohabitent chez les paires : celles qui portent le
+ *  marqueur (« Gloire +X/+Y ») où l'on SUBSTITUE, et celles qui ne l'ont pas
+ *  (« Renforcement multiple », et toute locale qui reformule) où l'on SUFFIXE.
+ *  Dans les deux cas la valeur finit visible — jamais avalée. */
+export function applyKeywordValueToLabel(
+  kw: Keyword,
+  label: string,
+  x: number | undefined,
+  inst?: KeywordInstance,
+): string {
+  if (isStatPairKeyword(kw)) {
+    const value = keywordBadgeValue(kw, x, inst);
+    if (!value) return label;
+    return /[+-]X\/[+-]Y/.test(label)
+      ? label.replace(/[+-]X\/[+-]Y/, value)
+      : `${label} ${value}`;
+  }
+  return x != null ? label.replace(/ X$/, ` ${xNumeral(x)}`) : label;
+}
+
 export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
   charge: "⚡", taunt: "🎯", divine_shield: "🔰", ranged: "🦅",
   raid: "⚔️", convocations_multiples: "📣📣", loyaute: "🤝", ancre: "⚓", resistance: "🛡️", premiere_frappe: "🗡️",
-  berserk: "😤", vol: "🦅", precision: "🏹", drain_de_vie: "🩸", esquive: "💨",
+  gloire: "🏅", vol: "🦅", precision: "🏹", drain_de_vie: "🩸", esquive: "💨",
   poison: "☠️", celerite: "💫",
   augure: "/icons/augure.png", benediction: "✝️", bravoure: "🦁",
   pillage: "💰", riposte: "↩️",

@@ -41,10 +41,6 @@
         "label": "Erster Angriff",
         "desc": "Wenn diese Einheit angreift, fügt sie zuerst Schaden zu; die gegnerische Einheit schlägt nur zurück, wenn sie überlebt."
       },
-      "berserk": {
-        "label": "Berserker",
-        "desc": "Verdoppelt seinen ATK, wenn seine aktuellen LP unter dem ursprünglichen LP-Wert der Karte liegen."
-      },
       "vol": {
         "label": "Flug",
         "desc": "Ignoriert feindliche Provokationen."
@@ -404,6 +400,10 @@
       "declenchement": {
         "label": "Auslösung",
         "desc": "Löst die zusammengesetzten Effekte deiner anderen Verbündeten einmal erneut aus (Eintritt / Tod / Rundenende / Rückkehr)."
+      },
+      "gloire": {
+        "label": "Ruhm +X/+Y",
+        "desc": "Immer wenn diese Einheit Kampfschaden überlebt, erhält sie dauerhaft +X/+Y."
       }
     },
     "spell_keywords": {
@@ -570,6 +570,26 @@
         "exhum_all": "alle Kreaturen",
         "exhum_upto": "bis zu {n} Kreaturen"
       },
+      "self": {
+        "deal_damage_one": "fügt sich selbst {x} Schaden zu",
+        "deal_damage_many": "fügt sich selbst {x} Schaden zu",
+        "heal": "heilt sich selbst um {x} LP",
+        "buff": "verleiht sich selbst +{x}/+{y}",
+        "debuff": "fügt sich selbst -{x}/-{y} zu",
+        "destroy": "zerstört sich selbst",
+        "bounce": "kehrt auf die Hand zurück",
+        "paralyze": "paralysiert sich selbst",
+        "grant_keyword": "verleiht sich selbst {ability}"
+      },
+      "targetd": {
+        "count_all": "alle Einheiten",
+        "count_one": "eine Einheit",
+        "count_n": "{n} Einheiten",
+        "hero_ally": "euer Held",
+        "hero_enemy": "der gegnerische Held",
+        "both_all": "alle Einheiten und der Held {side}",
+        "both_one": "ein Ziel (Einheit oder Held){side}"
+      },
       "target": {
         "self": "sich selbst",
         "hero_ally": "eurem Helden",
@@ -612,26 +632,6 @@
         "grant_keyword": "wähle eine Kreatur, der die Fähigkeit verliehen werden soll",
         "exhumation": "wähle eine Kreatur zum Wiederbeleben",
         "default": "wähle ein Ziel"
-      },
-      "self": {
-        "deal_damage_one": "fügt sich selbst {x} Schaden zu",
-        "deal_damage_many": "fügt sich selbst {x} Schaden zu",
-        "heal": "heilt sich selbst um {x} LP",
-        "buff": "verleiht sich selbst +{x}/+{y}",
-        "debuff": "fügt sich selbst -{x}/-{y} zu",
-        "destroy": "zerstört sich selbst",
-        "bounce": "kehrt auf die Hand zurück",
-        "paralyze": "paralysiert sich selbst",
-        "grant_keyword": "verleiht sich selbst {ability}"
-      },
-      "targetd": {
-        "count_all": "alle Einheiten",
-        "count_one": "eine Einheit",
-        "count_n": "{n} Einheiten",
-        "hero_ally": "euer Held",
-        "hero_enemy": "der gegnerische Held",
-        "both_all": "alle Einheiten und der Held {side}",
-        "both_one": "ein Ziel (Einheit oder Held){side}"
       }
     },
     "factions": {

@@ -7,7 +7,8 @@ import type { TokenTemplate, Capability, ComposedEffect } from "@/lib/game/types
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 import ComposedEffectsEditor from "@/components/card-forge/ComposedEffectsEditor";
 import { FACTIONS, getFactionDisplayName, getClanNamesForRace } from "@/lib/card-engine/constants";
-import { ABILITIES } from "@/lib/game/abilities";
+import { ABILITIES, XY_ABILITY_IDS } from "@/lib/game/abilities";
+import { applyKeywordValueToLabel } from "@/lib/game/keyword-labels";
 import { autoTrimDarkBorders } from "@/lib/card-back-frames";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- utilisé uniquement comme type (typeof RACES[number])
@@ -186,6 +187,9 @@ export default function HeroManager() {
   const [powerComposed, setPowerComposed] = useState<Capability[]>([defaultHeroComposedCap()]);
   const [powerKeywordId, setPowerKeywordId] = useState<string>("divine_shield");
   const [powerParamAmount, setPowerParamAmount] = useState<number>(1);
+  // Second membre (Y) des capacités CONFÉRÉES à couple — Gloire +X/+Y. Distinct
+  // de attack/health, qui sont les params d'un effet de SORT (Renforcement).
+  const [powerParamAmountY, setPowerParamAmountY] = useState<number>(1);
   const [powerParamAttack, setPowerParamAttack] = useState<number>(0);
   const [powerParamHealth, setPowerParamHealth] = useState<number>(0);
   // Appel Suprême (pouvoir) : race ciblée fixée sur le pouvoir.
@@ -351,6 +355,7 @@ export default function HeroManager() {
     setPowerComposed([defaultHeroComposedCap()]);
     setPowerKeywordId("divine_shield");
     setPowerParamAmount(1);
+    setPowerParamAmountY(1);
     setPowerParamAttack(0);
     setPowerParamHealth(0);
     setPowerParamRace("");
@@ -400,6 +405,7 @@ export default function HeroManager() {
     setPowerKeywordId(kwid);
     const params = (pe.params ?? {}) as Record<string, unknown>;
     setPowerParamAmount(typeof params.amount === "number" ? params.amount : 1);
+    setPowerParamAmountY(typeof params.amountY === "number" ? params.amountY : 1);
     setPowerParamAttack(typeof params.attack === "number" ? params.attack : 0);
     setPowerParamHealth(typeof params.health === "number" ? params.health : 0);
     setPowerParamRace(typeof pe.race === "string" ? pe.race : "");
@@ -722,13 +728,16 @@ export default function HeroManager() {
         || !!ability?.creature?.scalable;
       const wantsAttack = !!ability?.spell?.params?.includes("attack");
       const wantsHealth = !!ability?.spell?.params?.includes("health");
-      const params: { amount?: number; attack?: number; health?: number } = {};
+      // Capacité conférée à couple (Gloire +X/+Y) : le Y accompagne le X.
+      const wantsAmountY = XY_ABILITY_IDS.has(powerKeywordId);
+      const params: { amount?: number; amountY?: number; attack?: number; health?: number } = {};
       if (wantsAmount) params.amount = powerParamAmount;
+      if (wantsAmountY) params.amountY = powerParamAmountY;
       if (wantsAttack) params.attack = powerParamAttack;
       if (wantsHealth) params.health = powerParamHealth;
       // Mode 3 (aura) also benefits from a stack-multiplier value even on
       // keywords that don't formally declare a scalable param.
-      if (!wantsAmount && !wantsAttack && !wantsHealth && powerMode === "aura" && powerParamAmount > 0) {
+      if (!wantsAmount && !wantsAmountY && !wantsAttack && !wantsHealth && powerMode === "aura" && powerParamAmount > 0) {
         params.amount = powerParamAmount;
       }
       powerEffect = {
@@ -971,6 +980,8 @@ export default function HeroManager() {
               // input for those too, in addition to spell-side params.
               const isCreatureScalable = !!ability?.creature?.scalable;
               const showAmount = ww.includes("amount") || isCreatureScalable || powerMode === "aura";
+              // Capacité à couple (Gloire +X/+Y) : le X seul ne suffit pas.
+              const showAmountY = XY_ABILITY_IDS.has(powerKeywordId);
               const showAttack = ww.includes("attack");
               const showHealth = ww.includes("health");
               const isConvocation = powerKeywordId === "convocation" || powerKeywordId === "convocation_simple";
@@ -978,7 +989,15 @@ export default function HeroManager() {
               const abilityEntries = Object.values(ABILITIES)
                 .map(a => ({ id: a.id, label: a.label, desc: a.desc }))
                 .sort((a, b) => a.label.localeCompare(b.label, "fr"));
-              const previewLabel = ability?.label ?? powerKeywordId;
+              // Valeurs injectées dans le libellé : l'aperçu (et le bouton
+              // « Remplir depuis l'aperçu ») doit lire « Gloire +3/+2 », pas le
+              // gabarit « Gloire +X/+Y » du registre.
+              const previewLabel = applyKeywordValueToLabel(
+                powerKeywordId as Parameters<typeof applyKeywordValueToLabel>[0],
+                ability?.label ?? powerKeywordId,
+                showAmount ? powerParamAmount : undefined,
+                showAmountY ? { id: powerKeywordId as Parameters<typeof applyKeywordValueToLabel>[0], y: powerParamAmountY } : undefined,
+              );
               const previewDesc = ability?.desc ?? "—";
               const composedSummary = (() => {
                 const eff = powerComposed[0]?.composed;
@@ -1074,14 +1093,23 @@ export default function HeroManager() {
                     </select>
                   </div>
 
-                  {(showAmount || showAttack || showHealth) && (
+                  {(showAmount || showAmountY || showAttack || showHealth) && (
                     <div style={{ display: "grid", gridTemplateColumns: showAttack && showHealth ? "1fr 1fr 1fr" : "1fr 1fr", gap: 8, marginTop: 10 }}>
                       {showAmount && (
                         <div>
-                          <label style={STYLE.label}>Quantité (X)</label>
+                          <label style={STYLE.label}>{showAmountY ? "+ATK (X)" : "Quantité (X)"}</label>
                           <input type="number" min={0} max={20}
                             value={powerParamAmount}
                             onChange={(e) => setPowerParamAmount(Number(e.target.value))}
+                            style={STYLE.input} />
+                        </div>
+                      )}
+                      {showAmountY && (
+                        <div>
+                          <label style={STYLE.label}>+PV (Y)</label>
+                          <input type="number" min={0} max={20}
+                            value={powerParamAmountY}
+                            onChange={(e) => setPowerParamAmountY(Number(e.target.value))}
                             style={STYLE.input} />
                         </div>
                       )}

@@ -15,7 +15,7 @@ forge, puis adapter les 98 capacités existantes :
 1. **Contenant** : unité / sort / mixte (implicite via `card_type`).
 2. **Déclencheur** (unités) : `entrée` (défaut) · `mort` · `remontée en main` · `activation` ·
    `automatique/conditionnel` (augure, commandement…). Sorts : toujours `à la résolution`.
-3. **Type d'effet** : `immédiat` (ex. infliger X dégâts) · `conférer une capacité` (ex. donner Berserk).
+3. **Type d'effet** : `immédiat` (ex. infliger X dégâts) · `conférer une capacité` (ex. donner Gloire).
 4. **Cible(s)** : 0, 1 ou N sélections.
 
 ### Décisions validées avec l'utilisateur
@@ -23,11 +23,11 @@ forge, puis adapter les 98 capacités existantes :
   trois structures actuelles. *(NB : choix assumé de privilégier la propreté long-terme plutôt
   que la préférence habituelle « moindre risque d'abord » — d'où le rollout phasé + adaptateur
   ci-dessous pour réintroduire de la sécurité.)*
-- **Automatique = set curé** : les passifs/réactifs (augure, commandement, berserk, fureur,
+- **Automatique = set curé** : les passifs/réactifs (augure, commandement, gloire, fureur,
   terreur, regeneration…) restent **câblés en dur** dans le moteur, juste **référencés par id**
   et **catégorisés** sous le déclencheur `automatic`. Pas de moteur de conditions générique.
 - **Conférer généralisé** : « conférer une capacité » devient un type d'effet de 1ʳᵉ classe
-  pour **tous** les contenants et déclencheurs (une unité peut conférer Berserk à un allié).
+  pour **tous** les contenants et déclencheurs (une unité peut conférer Gloire à un allié).
 - **Iso-comportement** : les 98 capacités existantes doivent se comporter **à l'identique**.
   C'est une re-catégorisation + changement de représentation, pas un rééquilibrage.
 - **Rollout phasé + adaptateur** : nouvelle colonne, adaptateur ancien→nouveau, backfill, le
@@ -41,7 +41,7 @@ forge, puis adapter les 98 capacités existantes :
 La taxonomie a 5 déclencheurs unité, mais le moteur dispatche en plus :
 - **Triggers de combat** (augure, fureur, riposte, persecution, drain_de_vie, bravoure,
   souffle_de_feu, pietinement, liaison_de_vie) → classés `automatic`, handlers conservés dans `attack()`.
-- **Auras continues** (terreur, commandement, fierte_du_clan, berserk, sang_mele, totem,
+- **Auras continues** (terreur, commandement, fierte_du_clan, sang_mele, totem,
   regeneration, canalisation, entraide) → `automatic`, conservées dans `recalculateAuras`/`startTurn`.
 - **Capacités à la fois passives et on-play** (fierte_du_clan, necrophagie) → classées par leur
   **nature** (`automatic`) ; le moteur découvre les `automatic` ids **quel que soit** le trigger.
@@ -149,7 +149,7 @@ cf. CLAUDE.md), avec mode dry-run (diff adaptateur vs colonnes).
 2. **Golden-master moteur** (B, gate principale) : batterie de séquences `GameAction` à RNG semée,
    comparer `GameState` profond entre lecture legacy et lecture capabilities après chaque action.
 3. **Playtests ciblés** (D) sur les hotspots : augure, fureur en chaîne, riposte/persecution, maths
-   d'auras (commandement/terreur/berserk), fierte_du_clan, Convocation on-play+on-tap, remontée
+   d’auras (commandement/terreur), fierte_du_clan, Convocation on-play+on-tap, remontée
    (pending-trigger), silence (effacement), totem/mimique (fusion), douleur (létalité),
    renforcement_multiple (clan>race), pickers selection*, pouvoir héros (3 modes).
 4. Exécuter sur le dev server (flux de match semé) ; inspecter `capabilities` via Supabase MCP après sauvegardes forge.

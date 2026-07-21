@@ -7,7 +7,7 @@ import type { CardInstance, GameAction } from "@/lib/game/types";
 import { useGameStore, selectPowerTargetingColor } from "@/lib/store/gameStore";
 import { tapKeywordNeedsTarget, getCreatureTapComposedUid } from "@/lib/game/engine";
 import { getTokenManaCost } from "@/lib/game/abilities";
-import { KEYWORD_SYMBOLS, xNumeral, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
+import { KEYWORD_SYMBOLS, xNumeral, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordBadgeValue, applyKeywordValueToLabel, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { composedCapsOf, composedIcon, composedTriggerMode, composedValueText } from "@/lib/game/composed-display";
@@ -621,13 +621,13 @@ function BoardCreature({
         }} />
       )}
 
-      {/* Berserk active indicator */}
-      {creature.berserkActive && (
+      {/* Gloire : liseré doré dès que l'unité a survécu à un combat au moins une fois */}
+      {(creature.gloireStacks ?? 0) > 0 && (
         <div style={{
           position: "absolute", inset: -1, borderRadius: 11,
-          border: "2px solid #ef444488",
+          border: "2px solid #d4a80088",
           pointerEvents: "none", zIndex: 1,
-          animation: "berserk-pulse 1s ease-in-out infinite",
+          animation: "gloire-pulse 1s ease-in-out infinite",
         }} />
       )}
 
@@ -681,7 +681,7 @@ function BoardCreature({
                     <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={20} keyword={kw} fill mode={mode} />
                   </span>
                 </span>
-                {x != null && <span style={{ fontSize: 12, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}, ${TEXT_CONTRAST_HALO}` }}>{xNumeral(x)}</span>}
+                {keywordBadgeValue(kw, x, entry.instance) != null && <span style={{ fontSize: 12, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}, ${TEXT_CONTRAST_HALO}` }}>{keywordBadgeValue(kw, x, entry.instance)}</span>}
               </div>
               );
             });
@@ -800,7 +800,7 @@ function BoardCreature({
             Only renders when at least one is active so it doesn't take up
             vertical space on plain creatures. Mirrors the corner pips
             (poison ☠️, paralysie ⛓️, bouclier 🔰, contresort 🚫, mal
-            d'invocation 💤, fureur 💢, berserk 😤, ombre 🌑) so the
+            d'invocation 💤, fureur 💢, gloire 🏅, ombre 🌑) so the
             right-click view is the single source of truth for what's
             currently affecting the creature. */}
         {(() => {
@@ -810,7 +810,9 @@ function BoardCreature({
           if (creature.hasDivineShield) statuses.push({ emoji: "🔰", label: "Bouclier divin", color: "#f1c40f" });
           if (creature.contresortActive) statuses.push({ emoji: "🚫", label: "Contresort prêt", color: "#3b82f6" });
           if (creature.fureurActive) statuses.push({ emoji: "💢", label: "Fureur", color: "#f97316" });
-          if (creature.berserkActive) statuses.push({ emoji: "😤", label: "Berserk", color: "#dc2626" });
+          if ((creature.gloireStacks ?? 0) > 0) {
+            statuses.push({ emoji: "🏅", label: `Gloire ×${creature.gloireStacks}`, color: "#d4a800" });
+          }
           if (card.keywords.includes("ombre" as import("@/lib/game/types").Keyword) && !creature.ombreRevealed) {
             statuses.push({ emoji: "🌑", label: "Ombre (furtif)", color: "#6b7280" });
           }
@@ -848,7 +850,7 @@ function BoardCreature({
               const ctx = { card, instance: entry.instance, x, tokens: tokenTemplates };
               const label = vocab.keywordLabelFor(kw, ctx);
               // Plus d'annotation de déclencheur : la couleur transmet le moment.
-              const displayLabel = x != null ? label.replace(/ X$/, ` ${xNumeral(x)}`) : label;
+              const displayLabel = applyKeywordValueToLabel(kw, label, x, entry.instance);
               const desc = vocab.keywordDesc(kw, ctx);
               const modeColor = keywordModeColor(mode);
               return (

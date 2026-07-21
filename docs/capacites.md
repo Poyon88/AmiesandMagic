@@ -12,7 +12,7 @@
 - ⚔️ **Raid** — Peut attaquer une créature ennemie dès son invocation (mais pas le héros).
 - ⚡ **Traque** — Peut attaquer et utiliser son pouvoir activable dès son invocation.
 - 🗡️ **Première Frappe** — Lorsque cette unité attaque, inflige ses dégâts en premier ; l'unité adverse ne riposte que si elle survit.
-- 😤 **Berserk** — Double son ATK si ses PV actuels sont inférieurs à sa valeur de PV originale (sur la carte).
+- 🏅 **Gloire +X/+Y** — Chaque fois que cette unité survit à des dégâts de combat, elle gagne +X/+Y de façon permanente.
 - 🔰 **Bouclier** — Absorbe une première attaque sans dégâts.
 - 🦅 **Vol** — Ignore les provocations adverses.
 - 🏹 **Précision** — Ignore la Résistance, l'Armure et le Bouclier.
