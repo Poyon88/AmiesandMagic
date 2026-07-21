@@ -1288,7 +1288,19 @@
     "confirm_label": "Confirmer",
     "confirm_placeholder": "Retapez le mot de passe",
     "updating": "Mise à jour...",
-    "update": "Mettre à jour"
+    "update": "Mettre à jour",
+    "signup_check_email_title": "Vérifie ta boîte mail",
+    "signup_check_email": "Nous avons envoyé un lien de confirmation à {email}. Clique dessus pour activer ton compte.",
+    "signup_check_spam": "Rien reçu ? Regarde dans les indésirables — le mail peut mettre une minute à arriver.",
+    "signup_resend": "Renvoyer l'email",
+    "signup_resend_wait": "Renvoyer dans {seconds} s",
+    "signup_resent": "Email renvoyé à {email}.",
+    "signup_resend_error": "Impossible de renvoyer l'email de confirmation.",
+    "signup_back_to_login": "← Revenir à la connexion",
+    "error_oauth_cancelled": "Connexion annulée. Tu peux réessayer ou utiliser ton email.",
+    "error_oauth_failed": "La connexion avec ce service a échoué. Réessaie ou utilise ton email.",
+    "error_link_expired": "Ce lien a expiré ou a déjà été utilisé. Demande-en un nouveau.",
+    "error_auth_failed": "La connexion n'a pas abouti. Réessaie."
   },
   "common": {
     "settings_title": "Réglages",

@@ -1,6 +1,24 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+// Chemins accessibles SANS être connecté. Tout le reste est renvoyé vers
+// /login par la garde plus bas.
+//
+// `/landing` en faisait partie par nature — c'est la page de présentation
+// publique — mais était absent de la liste : un visiteur non connecté se
+// retrouvait renvoyé vers /login, dont le pied de page propose pourtant
+// « ← Retour au site » vers /landing. La vitrine du jeu était donc invisible
+// pour exactement le public qu'elle vise, et le lien rebondissait en boucle.
+//
+// Toute nouvelle page publique (mentions légales, CGU…) doit être ajoutée ici.
+const PUBLIC_PATH_PREFIXES = ["/login", "/auth", "/api", "/landing", "/legal"];
+
+function isPublicPath(pathname: string): boolean {
+  return PUBLIC_PATH_PREFIXES.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`),
+  );
+}
+
 export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
@@ -33,13 +51,8 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Redirect unauthenticated users to login (except for login page, auth callbacks, and API routes)
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith("/login") &&
-    !request.nextUrl.pathname.startsWith("/auth") &&
-    !request.nextUrl.pathname.startsWith("/api")
-  ) {
+  // Redirect unauthenticated users to login (except on public pages)
+  if (!user && !isPublicPath(request.nextUrl.pathname)) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
