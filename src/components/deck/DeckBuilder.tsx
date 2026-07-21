@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { Card, Keyword, CardSet, GameFormat, DeckMode, DeckExtent, SpellKeywordInstance } from "@/lib/game/types";
 import { getFormatFilter, parseFormatCode } from "@/lib/game/format-legality";
-import { isCardOwned } from "@/lib/game/collection";
+import { isCardOwned, type Entitlements, type OwnershipContext } from "@/lib/game/collection";
 import { DECK_SIZE, MAX_SAME_CAPABILITY, CAPABILITY_LIMIT_EXEMPT } from "@/lib/game/constants";
 import { ABILITIES } from "@/lib/game/abilities";
 import { namedCreatureCapabilityIds, creatureCapabilityCounts, capabilityLimitViolations } from "@/lib/game/deck-rules";
@@ -88,6 +88,8 @@ interface DeckBuilderProps {
   formats: GameFormat[];
   collectedCardIds: number[];
   isTester: boolean;
+  /** Droits issus de `profiles` : socle de faction et option payante. */
+  entitlements: Entitlements;
   boards: BoardRow[];
   ownedBoardPrints: OwnedBoardPrint[];
   cardBacks: CardBackRow[];
@@ -183,6 +185,7 @@ export default function DeckBuilder({
   formats,
   collectedCardIds,
   isTester,
+  entitlements,
   boards,
   ownedBoardPrints,
   cardBacks,
@@ -191,6 +194,10 @@ export default function DeckBuilder({
   const router = useRouter();
   const supabase = createClient();
   const ownedSet = useMemo(() => new Set(collectedCardIds), [collectedCardIds]);
+  const ownership = useMemo<OwnershipContext>(
+    () => ({ ownsEverything: isTester, collectedCardIds: ownedSet, ...entitlements }),
+    [isTester, ownedSet, entitlements],
+  );
   const vocab = useVocab();
   const heroText = useHeroText();
   const t = useTranslations("deck");
@@ -568,7 +575,7 @@ export default function DeckBuilder({
   }, [slotAllocation]);
 
   function canAddCard(card: Card): string | null {
-    if (!isCardOwned(card, ownedSet, isTester)) return t("card_not_owned");
+    if (!isCardOwned(card, ownership)) return t("card_not_owned");
     if (totalCards >= DECK_SIZE) return t("deck_full");
     const existing = deckCards.get(card.id);
     // Peu Commune, Rare, Épique, Légendaire : 1 exemplaire max. Commune : 3 max.
@@ -702,10 +709,14 @@ export default function DeckBuilder({
       }
     }
 
-    // Verify ownership of collectible cards
+    // Verify ownership of collectible cards.
+    // Repasse par isCardOwned : ce contrôle dupliquait l'ancienne règle
+    // (« hors set et non acquise »), ce qui laissait passer les communes d'une
+    // AUTRE faction — pourtant refusées à l'ajout, ligne ~571. Deux règles pour
+    // la même question finissent toujours par diverger.
     if (!isTester) {
       const unownedCards = Array.from(deckCards.values())
-        .filter(({ card }) => card.set_id == null && !ownedSet.has(card.id));
+        .filter(({ card }) => !isCardOwned(card, ownership));
       if (unownedCards.length > 0) {
         setError(t("deck_contains_unowned"));
         return;

@@ -1,5 +1,7 @@
 "use client";
 
+import { STARTER_FACTION_IDS } from "@/lib/auth/starterFaction";
+
 import { useState, useEffect, useCallback } from "react";
 
 interface Player {
@@ -14,6 +16,11 @@ interface Player {
   prints_owned: number;
   last_sign_in: string | null;
   created_at: string;
+  /** Modèle de droits. `legacy_full_access === null` ⇒ migration non appliquée :
+   *  le bloc correspondant reste masqué plutôt que d'afficher des faux zéros. */
+  starter_faction: string | null;
+  all_commons_unlocked: boolean;
+  legacy_full_access: boolean | null;
 }
 
 const ROLE_COLORS: Record<string, string> = {
@@ -246,6 +253,50 @@ export default function PlayerManager() {
                 }}
               >
                 <h3 style={{ fontSize: 15, fontWeight: 600, color: "#333", marginBottom: 16 }}>Actions</h3>
+
+                {/* Droits de collection — masqué tant que la migration
+                    supabase-migration-faction-entitlements.sql n'est pas
+                    appliquée (legacy_full_access absent ⇒ null). */}
+                {selectedPlayer.legacy_full_access !== null && (
+                  <div style={actionRow}>
+                    <label style={labelStyle}>Collection</label>
+                    {selectedPlayer.legacy_full_access ? (
+                      <p style={{ fontSize: 12, color: "#888", margin: 0 }}>
+                        Compte antérieur au modèle « une faction » : accès complet conservé.
+                      </p>
+                    ) : (
+                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                          <select
+                            value={selectedPlayer.starter_faction ?? ""}
+                            onChange={(e) => performAction("change_starter_faction", e.target.value)}
+                            disabled={actionLoading}
+                            style={{ ...inputStyle, flex: 1, marginBottom: 0 }}
+                          >
+                            <option value="" disabled>— Faction offerte —</option>
+                            {STARTER_FACTION_IDS.map((id) => (
+                              <option key={id} value={id}>{id}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <button
+                          onClick={() =>
+                            performAction(
+                              "set_all_commons_unlocked",
+                              selectedPlayer.all_commons_unlocked ? "false" : "true",
+                            )
+                          }
+                          disabled={actionLoading}
+                          style={actionBtn(selectedPlayer.all_commons_unlocked ? "#e67e22" : "#8e44ad", actionLoading)}
+                        >
+                          {selectedPlayer.all_commons_unlocked
+                            ? "Retirer le déblocage des communes"
+                            : "Débloquer toutes les communes (offre 19,90 €)"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Change username */}
                 <div style={actionRow}>

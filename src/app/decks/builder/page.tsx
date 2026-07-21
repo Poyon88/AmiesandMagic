@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { entitlementsFromProfile } from "@/lib/game/collection";
 import { redirect } from "next/navigation";
 import { getLocale } from "next-intl/server";
 import DeckBuilder from "@/components/deck/DeckBuilder";
@@ -41,7 +42,10 @@ export default async function DeckBuilderPage({
       .order("id"),
     supabase
       .from("profiles")
-      .select("role")
+      // select("*") volontaire : tant que la migration du modèle de droits
+      // n'est pas appliquée, nommer les colonnes ferait ÉCHOUER la requête
+      // entière — et le joueur perdrait aussi son `role` au passage.
+      .select("*")
       .eq("id", user.id)
       .single(),
     supabase
@@ -117,6 +121,7 @@ export default async function DeckBuilderPage({
       formats={formats ?? []}
       collectedCardIds={collectedCardIds}
       isTester={isTester}
+      entitlements={entitlementsFromProfile(profile)}
       boards={allBoards ?? []}
       ownedBoardPrints={ownedBoardPrints ?? []}
       cardBacks={allCardBacks ?? []}

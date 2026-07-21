@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { entitlementsFromProfile } from "@/lib/game/collection";
 import { redirect } from "next/navigation";
 import { getLocale } from "next-intl/server";
 import CollectionView from "@/components/cards/CollectionView";
@@ -32,7 +33,10 @@ export default async function CollectionPage() {
       .order("id"),
     supabase
       .from("profiles")
-      .select("role")
+      // select("*") volontaire : tant que la migration du modèle de droits
+      // n'est pas appliquée, nommer les colonnes ferait ÉCHOUER la requête
+      // entière — et le joueur perdrait aussi son `role` au passage.
+      .select("*")
       .eq("id", user.id)
       .single(),
     supabase
@@ -66,6 +70,7 @@ export default async function CollectionPage() {
       formats={formats ?? []}
       collectedCardIds={collectedCardIds}
       isTester={isSpecialRole}
+      entitlements={entitlementsFromProfile(profile)}
       ownedPrints={isSpecialRole ? [] : (ownedPrints ?? []).map(p => ({
         id: p.id,
         card_id: p.card_id,

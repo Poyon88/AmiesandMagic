@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import { motion, useScroll, useTransform, useInView, useMotionValue, useSpring, type MotionValue } from "framer-motion";
 import type { Card } from "@/lib/game/types";
 import GameCard from "@/components/cards/GameCard";
@@ -181,7 +182,9 @@ export default function LandingPage({ showcaseCards, factionHeroUrls }: LandingP
   // Le dico du landing vit désormais dans le namespace `landing` des catalogues
   // next-intl (rempli par le pipeline). useMessages() renvoie l'objet brut de la
   // locale active — même forme que l'ancien Dict, donc passé tel quel aux enfants.
-  const txt = (useMessages() as unknown as { landing: Dict }).landing;
+  const messages = useMessages() as unknown as { landing: Dict; legal: Record<string, string> };
+  const txt = messages.landing;
+  const legalTxt = messages.legal;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50);
@@ -289,6 +292,22 @@ export default function LandingPage({ showcaseCards, factionHeroUrls }: LandingP
         >
           {txt.footer} — {new Date().getFullYear()}
         </p>
+        {/* Accès aux mentions légales depuis la vitrine publique : c'est la
+            seule page qu'un visiteur non connecté atteint avant /login. */}
+        <div className="mt-3 flex flex-wrap justify-center gap-x-5 gap-y-1">
+          {[
+            { href: "/legal/cgu", label: legalTxt.cgu_title },
+            { href: "/legal/confidentialite", label: legalTxt.privacy_title },
+          ].map(({ href, label }) => (
+            <Link
+              key={href}
+              href={href}
+              className="font-[family-name:var(--font-crimson),serif] text-xs text-[#e0e0e0]/30 hover:text-[#d8b25a] transition-colors"
+            >
+              {label}
+            </Link>
+          ))}
+        </div>
       </footer>
 
       {/* ── Global CSS keyframes ────────────────────────────────────── */}

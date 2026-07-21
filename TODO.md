@@ -4,6 +4,12 @@ Reliquat de l'audit nocturne (voir `AUDIT-NUIT.md`). Tout le reste (sécurité,
 moteur, perf GameBoard, rate-limit IA, egress, ciblage composé, lint sûr, tests
 logique argent) est **mergé en prod sur `main`**. Aucun de ces points n'est urgent.
 
+## Ouverture des inscriptions
+- [ ] **Prérequis avant d'ouvrir au public** → voir `docs/OUVERTURE-INSCRIPTION.md`.
+      Deux bloquants : brancher un **SMTP tiers**, puis **réactiver « Confirm
+      email »** (désactivé pour les tests le 2026-07-21). Plus : rédiger les CGU,
+      propager les 7 locales, réparer 2 comptes orphelins.
+
 ## Actions (hors code)
 - [ ] **Vérifier `CRON_SECRET` en prod Netlify.** Le code fail-close déjà si le
       secret est absent, mais il est nécessaire pour que le settle **cron**
