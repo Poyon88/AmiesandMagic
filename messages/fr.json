@@ -1300,7 +1300,11 @@
     "error_oauth_cancelled": "Connexion annulée. Tu peux réessayer ou utiliser ton email.",
     "error_oauth_failed": "La connexion avec ce service a échoué. Réessaie ou utilise ton email.",
     "error_link_expired": "Ce lien a expiré ou a déjà été utilisé. Demande-en un nouveau.",
-    "error_auth_failed": "La connexion n'a pas abouti. Réessaie."
+    "error_auth_failed": "La connexion n'a pas abouti. Réessaie.",
+    "cgu_accept": "J'accepte les conditions générales d'utilisation et la politique de confidentialité.",
+    "cgu_link": "Lire les conditions générales",
+    "privacy_link": "Lire la politique de confidentialité",
+    "cgu_required": "Tu dois accepter les conditions pour créer un compte."
   },
   "common": {
     "settings_title": "Réglages",
@@ -1982,5 +1986,32 @@
     "equipped": "Équipé",
     "default_badge": "Par défaut",
     "not_owned": "non possédé"
+  },
+  "legal": {
+    "back_to_site": "← Retour au site",
+    "draft_warning": "⚠ Document en cours de rédaction — il n'a aucune valeur contractuelle en l'état.",
+    "todo": "À COMPLÉTER — section à rédiger avant toute ouverture au public.",
+    "updated": "Dernière mise à jour : {date}",
+    "cgu_title": "Conditions Générales d'Utilisation",
+    "cgu_s1": "Objet et acceptation",
+    "cgu_s2": "Accès au service et création de compte",
+    "cgu_s3": "Âge minimum requis",
+    "cgu_s4": "Monnaie de jeu, cartes et achats",
+    "cgu_s5": "Règles de conduite et sanctions",
+    "cgu_s6": "Propriété intellectuelle",
+    "cgu_s7": "Disponibilité, évolutions et fin du service",
+    "cgu_s8": "Responsabilité",
+    "cgu_s9": "Suppression du compte",
+    "cgu_s10": "Droit applicable et contact",
+    "privacy_title": "Politique de confidentialité",
+    "privacy_s1": "Responsable du traitement",
+    "privacy_s2": "Données collectées",
+    "privacy_s3": "Finalités et bases légales",
+    "privacy_s4": "Sous-traitants et hébergement",
+    "privacy_s5": "Durées de conservation",
+    "privacy_s6": "Cookies et traceurs",
+    "privacy_s7": "Vos droits (RGPD)",
+    "privacy_s8": "Sécurité",
+    "privacy_s9": "Contact et réclamation"
   }
 }

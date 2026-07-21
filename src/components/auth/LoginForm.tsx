@@ -44,6 +44,9 @@ export default function LoginForm() {
   // on remplace le formulaire par l'écran d'attente plutôt que de rediriger
   // vers `/`, qui renverrait aussitôt ici faute de session.
   const [pendingEmail, setPendingEmail] = useState("");
+  // Consentement CGU — inscription uniquement. Non pré-coché : une case cochée
+  // par défaut ne vaut pas consentement (RGPD, acte positif clair).
+  const [cguAccepted, setCguAccepted] = useState(false);
   const [resendIn, setResendIn] = useState(0);
   const [resending, setResending] = useState(false);
   const router = useRouter();
@@ -115,6 +118,15 @@ export default function LoginForm() {
           setLoading(false);
           return;
         }
+        // Doublon volontaire du `required` du champ : le bouton est déjà
+        // désactivé sans la case, mais un submit clavier ou une extension
+        // pourrait contourner l'attribut. Le consentement ne doit jamais être
+        // déduit — s'il n'est pas explicite, on n'inscrit pas.
+        if (!cguAccepted) {
+          setError(t("cgu_required"));
+          setLoading(false);
+          return;
+        }
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -122,7 +134,13 @@ export default function LoginForm() {
             // Sans ce champ, le lien de confirmation pointe vers la Site URL du
             // projet : en développement local on atterrissait donc en prod.
             emailRedirectTo: emailRedirectTo(),
-            data: { username: username || `Player_${Date.now().toString(36)}` },
+            data: {
+              username: username || `Player_${Date.now().toString(36)}`,
+              // Horodatage du consentement, à recopier dans `profiles` par le
+              // trigger `on_auth_user_created` (§3) : la preuve d'acceptation
+              // doit survivre à la session, sinon elle ne prouve rien.
+              cgu_accepted_at: new Date().toISOString(),
+            },
           },
         });
         if (error) throw error;
@@ -337,9 +355,43 @@ export default function LoginForm() {
             placeholder={isRegister ? t("password_min_placeholder") : t("password_placeholder_login")}
           />
         </div>
+        {isRegister && (
+          <div>
+            {/* Les liens sont HORS du <label> : imbriqués, un clic dessus
+                basculerait la case en plus d'ouvrir la page. Ils s'ouvrent dans
+                un nouvel onglet pour ne pas perdre le formulaire en cours. */}
+            <label className="flex items-start gap-2.5 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={cguAccepted}
+                onChange={(e) => setCguAccepted(e.target.checked)}
+                className="mt-0.5 h-4 w-4 shrink-0 accent-[color:var(--am-gold)] cursor-pointer"
+              />
+              <span className="text-sm text-am-ink-soft font-[family-name:var(--font-crimson),serif]">
+                {t("cgu_accept")}
+              </span>
+            </label>
+            <div className="mt-1.5 ml-[26px] flex flex-wrap gap-x-4 gap-y-1">
+              {[
+                { href: "/legal/cgu", label: t("cgu_link") },
+                { href: "/legal/confidentialite", label: t("privacy_link") },
+              ].map(({ href, label }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-am-gold hover:underline font-[family-name:var(--font-crimson),serif]"
+                >
+                  {label} ↗
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || (isRegister && !cguAccepted)}
           className="am-btn am-btn-gold am-btn-sheen w-full py-3 text-base disabled:opacity-50"
         >
           {loading ? t("loading") : isRegister ? t("create_account") : t("sign_in")}
