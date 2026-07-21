@@ -384,10 +384,10 @@ body {
   50% { background: rgba(30, 30, 60, 0.35); }
 }
 
-/* Berserk rage ring pulse */
-@keyframes berserk-pulse {
-  0%, 100% { border-color: rgba(239, 68, 68, 0.3); box-shadow: 0 0 4px rgba(239, 68, 68, 0.2); }
-  50% { border-color: rgba(239, 68, 68, 0.7); box-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
+/* Gloire — liseré doré pulsé des unités qui ont survécu au combat */
+@keyframes gloire-pulse {
+  0%, 100% { border-color: rgba(212, 168, 0, 0.3); box-shadow: 0 0 4px rgba(212, 168, 0, 0.2); }
+  50% { border-color: rgba(212, 168, 0, 0.7); box-shadow: 0 0 10px rgba(212, 168, 0, 0.4); }
 }
 
 /* Hide scrollbar in scrollable containers (e.g. card hover overlays) —

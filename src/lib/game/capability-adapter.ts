@@ -137,7 +137,7 @@ function deriveCreatureCapabilities(card: Card): Capability[] {
     }
 
     let params: Capability["params"];
-    if (id === "renforcement_multiple") {
+    if (id === "renforcement_multiple" || id === "gloire") {
       // x = bonus ATK (+X), y = bonus PV (+Y).
       params = pruneParams({ attack: x, health: inst.y });
     } else {

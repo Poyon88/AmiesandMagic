@@ -41,10 +41,6 @@
         "label": "先制攻撃",
         "desc": "このユニットが攻撃すると先にダメージを与える。相手ユニットは生き残った場合のみ反撃できる。"
       },
-      "berserk": {
-        "label": "狂戦士",
-        "desc": "現在のHPが元のHP値（カード記載）を下回っている場合、ATKが2倍になる。"
-      },
       "vol": {
         "label": "飛行",
         "desc": "相手の挑発を無視する。"
@@ -404,6 +400,10 @@
       "declenchement": {
         "label": "誘発",
         "desc": "他の味方の複合効果(登場時/死亡時/ターン終了時/帰還時)を1回再発動する。"
+      },
+      "gloire": {
+        "label": "栄光 +X/+Y",
+        "desc": "このユニットが戦闘ダメージを受けて生き残るたびに、永続的に+X/+Yを得る。"
       }
     },
     "spell_keywords": {
@@ -570,6 +570,26 @@
         "exhum_all": "すべてのクリーチャー",
         "exhum_upto": "クリーチャー{n}体まで"
       },
+      "self": {
+        "deal_damage_one": "自身に{x}ダメージを与える",
+        "deal_damage_many": "自身に{x}ダメージを与える",
+        "heal": "自身のHPを{x}回復する",
+        "buff": "自身に+{x}/+{y}を付与する",
+        "debuff": "自身に-{x}/-{y}を与える",
+        "destroy": "自身を破壊する",
+        "bounce": "自身を手札に戻す",
+        "paralyze": "自身を麻痺させる",
+        "grant_keyword": "自身に{ability}を付与する"
+      },
+      "targetd": {
+        "count_all": "すべてのユニット",
+        "count_one": "ユニット1体",
+        "count_n": "ユニット{n}体",
+        "hero_ally": "あなたのヒーロー",
+        "hero_enemy": "敵ヒーロー",
+        "both_all": "すべてのユニットと{side}ヒーロー",
+        "both_one": "対象1つ(ユニットまたはヒーロー){side}"
+      },
       "target": {
         "self": "自身に",
         "hero_ally": "自分のヒーローに",
@@ -612,26 +632,6 @@
         "grant_keyword": "能力を付与するクリーチャーを選んでください",
         "exhumation": "蘇生するクリーチャーを選んでください",
         "default": "対象を選んでください"
-      },
-      "self": {
-        "deal_damage_one": "自身に{x}ダメージを与える",
-        "deal_damage_many": "自身に{x}ダメージを与える",
-        "heal": "自身のHPを{x}回復する",
-        "buff": "自身に+{x}/+{y}を付与する",
-        "debuff": "自身に-{x}/-{y}を与える",
-        "destroy": "自身を破壊する",
-        "bounce": "自身を手札に戻す",
-        "paralyze": "自身を麻痺させる",
-        "grant_keyword": "自身に{ability}を付与する"
-      },
-      "targetd": {
-        "count_all": "すべてのユニット",
-        "count_one": "ユニット1体",
-        "count_n": "ユニット{n}体",
-        "hero_ally": "あなたのヒーロー",
-        "hero_enemy": "敵ヒーロー",
-        "both_all": "すべてのユニットと{side}ヒーロー",
-        "both_one": "対象1つ(ユニットまたはヒーロー){side}"
       }
     },
     "factions": {

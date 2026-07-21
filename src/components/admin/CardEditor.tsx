@@ -108,6 +108,9 @@ export default function CardEditor() {
   // Renforcement +X/+Y (créature, self-buff) : le +PV (Y) dédié. Le +ATK (X)
   // réutilise keywordXValues ; sérialisé dans keyword_instances comme la Forge.
   const [rfY, setRfY] = useState<number>(1);
+  // Gloire +X/+Y (créature) : le +PV (Y) dédié. Le +ATK (X) réutilise
+  // keywordXValues ; sérialisé dans keyword_instances comme la Forge.
+  const [glY, setGlY] = useState<number>(1);
   // Affaiblissement -X/-Y (créature) : le -PV (Y) dédié. Le -ATK (X) réutilise
   // keywordXValues ; sérialisé dans keyword_instances comme la Forge.
   const [afY, setAfY] = useState<number>(1);
@@ -216,7 +219,7 @@ export default function CardEditor() {
     // sidecar; the effect_text bracket is the legacy fallback for X.
     const modes: Record<string, KeywordMode> = {};
     const grantScopes: Record<string, "all_allies"> = {};
-    let rmYLoaded = 1, rmRaceLoaded = "", rmClanLoaded = "", rfYLoaded = 1, afYLoaded = 1;
+    let rmYLoaded = 1, rmRaceLoaded = "", rmClanLoaded = "", rfYLoaded = 1, afYLoaded = 1, glYLoaded = 1;
     for (const inst of card.keyword_instances ?? []) {
       if (inst.mode) modes[inst.id] = inst.mode;
       if (inst.x != null) parsedX[inst.id] = inst.x;
@@ -226,8 +229,9 @@ export default function CardEditor() {
       }
       if (inst.id === "renforcement") rfYLoaded = inst.y ?? 1;
       if (inst.id === "affaiblissement") afYLoaded = inst.y ?? 1;
+      if (inst.id === "gloire") glYLoaded = inst.y ?? 1;
     }
-    setRmY(rmYLoaded); setRmRace(rmRaceLoaded); setRmClan(rmClanLoaded); setRfY(rfYLoaded); setAfY(afYLoaded);
+    setRmY(rmYLoaded); setRmRace(rmRaceLoaded); setRmClan(rmClanLoaded); setRfY(rfYLoaded); setAfY(afYLoaded); setGlY(glYLoaded);
     setKeywordModes(modes);
     setKeywordXValues(parsedX);
     setKeywordGrantScope(grantScopes);
@@ -373,6 +377,10 @@ export default function CardEditor() {
           if (id === "renforcement" && !isSpellCard) {
             return { id: id as Keyword, ...(mode ? { mode } : {}), x: x ?? 0, y: rfY };
           }
+          // Gloire +X/+Y (créature) : porte +X (ATK) / +Y (PV) ; toujours émis.
+          if (id === "gloire" && !isSpellCard) {
+            return { id: id as Keyword, ...(mode ? { mode } : {}), x: x ?? 0, y: glY };
+          }
           // Affaiblissement -X/-Y (créature) : porte -X (ATK) / -Y (PV) ; toujours émis.
           if (id === "affaiblissement" && !isSpellCard) {
             return { id: id as Keyword, ...(mode ? { mode } : {}), x: x ?? 0, y: afY };
@@ -449,7 +457,7 @@ export default function CardEditor() {
       console.warn("[card-save] refresh failed after successful save:", err);
     }
     setSaving(false);
-  }, [selectedCard, editFields, newImageFile, keywordXValues, keywordModes, keywordGrantScope, rmY, rmRace, rmClan, rfY, afY, composedCaps]);
+  }, [selectedCard, editFields, newImageFile, keywordXValues, keywordModes, keywordGrantScope, rmY, rmRace, rmClan, rfY, afY, glY, composedCaps]);
 
   // Delete
   const handleDelete = useCallback(async (id: number) => {
@@ -1015,6 +1023,41 @@ export default function CardEditor() {
                   );
                 })}
               </div>
+
+              {/* Mots-clés ORPHELINS : présents sur la carte mais absents du
+                  registre courant (id renommé ou retiré depuis la création de la
+                  carte — ex. « berserk » après son passage en « gloire »). Sans
+                  ces puces, la valeur reste en base et l'admin n'a AUCUN moyen de
+                  la retirer : la boucle ci-dessus n'itère que le registre, donc
+                  aucune puce ne s'affiche pour elle. On les rend en rouge, elles
+                  ne sont que déselectionnables, et `deriveCapabilities` cesse de
+                  fabriquer une capacité morte dès qu'on les enlève. */}
+              {(() => {
+                const known = new Set<string>(visibleKeywords);
+                const orphans = activeCreatureKws.filter(kw => !known.has(kw));
+                if (orphans.length === 0) return null;
+                return (
+                  <div style={{ marginTop: 6, padding: "6px 8px", borderRadius: 6, border: "1px solid #f5b7b1", background: "#fdf3f2" }}>
+                    <div style={{ ...S.label, color: "#c0392b", marginBottom: 4 }}>
+                      ⚠️ Mots-clés inconnus du registre ({orphans.length})
+                      <span style={{ fontWeight: 400, fontSize: 9, marginLeft: 6, color: "#a04030" }}>
+                        — id renommé ou supprimé. Sans effet en jeu. Cliquez pour retirer.
+                      </span>
+                    </div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
+                      {orphans.map(kw => (
+                        <button key={kw} onClick={() => toggleKeyword(kw)} title="Retirer ce mot-clé obsolète"
+                          style={{
+                            padding: "2px 6px", borderRadius: 4, fontSize: 8, fontFamily: "'Cinzel',serif", fontWeight: 700,
+                            border: "1px solid #c0392b", background: "#c0392b", color: "#fff", cursor: "pointer",
+                          }}>
+                          {kw} ✕
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
               );
             })()}
@@ -1025,7 +1068,10 @@ export default function CardEditor() {
                 const label = KEYWORD_LABELS[kw as Keyword];
                 // renforcement / affaiblissement (créature) : leur X est réglé
                 // dans le bloc unifié dédié (avec le Y). Pas ici.
-                if ((kw === "renforcement" || kw === "affaiblissement") && editFields.card_type === "creature") return false;
+                // Ces mots-clés portent un +X/+Y (ou -X/-Y) : leur X vit dans un
+                // bloc dédié à deux champs plus bas, pas dans ce panneau à un
+                // seul champ — qui laisserait croire qu'ils n'ont qu'une valeur.
+                if ((kw === "renforcement" || kw === "affaiblissement" || kw === "gloire") && editFields.card_type === "creature") return false;
                 return label && KEYWORD_DEFS[label]?.scalable;
               });
               if (activeScalable.length === 0) return null;
@@ -1392,6 +1438,28 @@ export default function CardEditor() {
                     type="number" min={0} max={20} value={rfY}
                     onChange={e => setRfY(Math.max(0, parseInt(e.target.value) || 0))}
                     style={{ width: 48, padding: "2px 6px", borderRadius: 4, border: "1px solid #cfe8d4", fontSize: 11, textAlign: "center" }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Gloire (créature) — bloc unifié +ATK (X) / +PV (Y), identique à
+                la Forge de création. Gain accordé à chaque survie au combat. */}
+            {((editFields.keywords as string[]) || []).includes("gloire") && editFields.card_type === "creature" && (
+              <div style={{ marginBottom: 8, padding: "8px 10px", borderRadius: 6, border: "1px solid #f0d9a8", background: "#fffaf0" }}>
+                <div style={{ ...S.label, color: "#a67c11", marginBottom: 6 }}>🏅 GLOIRE (SURVIE AU COMBAT)</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 9, color: "#b8860b" }}>+ATK (X)</span>
+                  <input
+                    type="number" min={0} max={20} value={keywordXValues["gloire"] ?? 1}
+                    onChange={e => setKeywordXValues(prev => ({ ...prev, ["gloire"]: Math.max(0, Math.min(20, parseInt(e.target.value) || 0)) }))}
+                    style={{ width: 48, padding: "2px 6px", borderRadius: 4, border: "1px solid #f0d9a8", fontSize: 11, textAlign: "center" }}
+                  />
+                  <span style={{ fontSize: 9, color: "#b8860b" }}>+PV (Y)</span>
+                  <input
+                    type="number" min={0} max={20} value={glY}
+                    onChange={e => setGlY(Math.max(0, parseInt(e.target.value) || 0))}
+                    style={{ width: 48, padding: "2px 6px", borderRadius: 4, border: "1px solid #f0d9a8", fontSize: 11, textAlign: "center" }}
                   />
                 </div>
               </div>

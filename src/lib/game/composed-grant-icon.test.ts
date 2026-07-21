@@ -23,9 +23,9 @@ describe("composedIcon — capacité conférée", () => {
   });
 
   it("fonctionne aussi pour une capacité à symbole emoji", () => {
-    const { symbol, keyword } = composedIcon(grantCap("berserk"));
-    expect(keyword).toBe("berserk");
-    expect(symbol).toBe(KEYWORD_SYMBOLS.berserk);
+    const { symbol, keyword } = composedIcon(grantCap("gloire"));
+    expect(keyword).toBe("gloire");
+    expect(symbol).toBe(KEYWORD_SYMBOLS.gloire);
   });
 
   it("le nom affiché suit l'icône (dérivé de la même source)", () => {

@@ -373,7 +373,7 @@ function getElementCenter(targetId: string): { x: number; y: number } {
 // generic "empower" (capability acquired) detection so we don't double up.
 const EMPOWER_SKIP = new Set(["divine_shield", "poison", "paralysie"]);
 
-// Build a readable "🐺 Berserk" label for a freshly-granted keyword. Image-path
+// Build a readable "🏅 Gloire" label for a freshly-granted keyword. Image-path
 // symbols (e.g. /icons/augure.png) fall back to a generic rune glyph; numeric
 // keywords drop their trailing " X" placeholder.
 function keywordGrantLabel(kw: string): string | null {

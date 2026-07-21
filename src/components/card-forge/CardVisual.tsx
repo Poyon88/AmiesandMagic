@@ -7,7 +7,7 @@ import KeywordIcon from '@/components/shared/KeywordIcon';
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, getSpellKeywordDesc, getSpellKeywordLabel } from '@/lib/game/spell-keywords';
 import { isCreatureKwShadowedBySpell, CREATURE_LABEL_TO_ENGINE_ID } from '@/lib/game/abilities';
 import { useVocab } from '@/i18n/useVocab';
-import { KEYWORD_LABELS, keywordModeColor, TEXT_CONTRAST_HALO } from '@/lib/game/keyword-labels';
+import { KEYWORD_LABELS, keywordModeColor, isStatPairKeyword, TEXT_CONTRAST_HALO } from '@/lib/game/keyword-labels';
 import { composedCapsOf, composedIcon, composedKeywordName, composedTriggerMode, composedValueText, describeComposedCap } from '@/lib/game/composed-display';
 import ComposedMarker from '@/components/cards/ComposedMarker';
 import type { Capability } from '@/lib/game/types';
@@ -48,7 +48,7 @@ export const KEYWORD_SYMBOLS: Record<string, string> = {
   "Provocation":      "🎯",
   "Traque":           "⚡",
   "Première Frappe":  "🗡️",
-  "Berserk":          "😤",
+  "Gloire +X/+Y":     "🏅",
   "Bouclier":         "🔰",
   // Tier 1
   "Vol":              "🦅",
@@ -144,6 +144,11 @@ interface CardData {
   power: number | null;
   keywords: string[];
   keywordXValues?: Record<string, number>;
+  /** Mots-clés « paire de stats » (Gloire +X/+Y, Renforcement +X/+Y,
+   *  Renforcement multiple, Affaiblissement -X/-Y) : le +Y dédié, keyé comme
+   *  keywordXValues (libellé forge). Sans lui l'aperçu n'affiche que le X, ce
+   *  qui laisse croire que le bonus de PV n'existe pas. */
+  keywordYValues?: Record<string, number>;
   // Spell-only: per-conferred-keyword grant scope (FR-label keyed). Tints the
   // keyword icon green (all allies) vs white (single targeted creature).
   keywordGrantScope?: Record<string, "all_allies">;
@@ -209,10 +214,21 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
     const xVal = card?.keywordXValues?.[kw];
     const ctx = descCtx(kw);
     const label = vocab.keywordLabelFor(id as never, ctx as never);
+    // Paire de stats (+X/+Y / -X/-Y) : on peint « +2/+1 », pas le seul X. On
+    // interroge le jeu par ID MOTEUR (isStatPairKeyword) plutôt que de tester le
+    // libellé forge : « Renforcement multiple » ne porte aucun marqueur alors
+    // qu'il est bien une paire, et une regex sur le libellé le manquerait.
+    const isPair = isStatPairKeyword(id as never);
+    const badgeText = isPair
+      ? `${kw.includes("-X/-Y") ? "-" : "+"}${xVal ?? 0}/${kw.includes("-X/-Y") ? "-" : "+"}${card?.keywordYValues?.[kw] ?? 0}`
+      : xVal != null ? xNumeral(xVal) : null;
     return {
       id,
       xVal,
-      displayName: xVal != null ? label.replace(/ X$/, ` ${xNumeral(xVal)}`) : label,
+      badgeText,
+      displayName: isPair && badgeText
+        ? (/[+-]X\/[+-]Y/.test(label) ? label.replace(/[+-]X\/[+-]Y/, badgeText) : `${label} ${badgeText}`)
+        : xVal != null ? label.replace(/ X$/, ` ${xNumeral(xVal)}`) : label,
       displayDesc: vocab.keywordDesc(id as never, ctx as never) ?? "",
     };
   };
@@ -398,7 +414,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
         {card!.keywords?.length > 0 && (
           <div style={{ display: "flex", gap: 4 * s, flexWrap: "wrap" }}>
             {card!.keywords.filter(kw => !isCreatureKwShadowedBySpell(kw, card!.spellKeywords)).map(kw => {
-              const { xVal, displayName, displayDesc } = forgeKeyword(kw);
+              const { xVal, badgeText, displayName, displayDesc } = forgeKeyword(kw);
               const grantScope = card!.type !== "Unité"
                 ? (card!.keywordGrantScope?.[kw] === "all_allies" ? "all_allies" : "target")
                 : null;
@@ -406,7 +422,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
               return (
                 <div key={kw} title={`${displayName}: ${displayDesc}`} style={{
                   minWidth: 19 * s, height: 19 * s, borderRadius: 6 * s,
-                  padding: `0 ${xVal != null ? 5 * s : 0}px`,
+                  padding: `0 ${badgeText != null ? 5 * s : 0}px`,
                   background: `${badgeColor}33`, border: `1px solid ${badgeColor}88`,
                   display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 0,
                   fontSize: 13 * s, cursor: "default",
@@ -416,13 +432,13 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                   <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 15 * s, height: 15 * s, flexShrink: 0 }}>
                     <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} keyword={forgeKeywordId(kw)} size={15 * s} fill />
                   </span>
-                  {xVal != null && (
+                  {badgeText != null && (
                     <span style={{
                       fontSize: 10 * s, fontWeight: 900, lineHeight: 1,
                       color: "#fff", fontFamily: "'Cinzel',serif",
                       textShadow: `0 0 4px ${fac.accent}, ${TEXT_CONTRAST_HALO}`,
                       marginLeft: -4 * s,
-                    }}>{xNumeral(xVal)}</span>
+                    }}>{badgeText}</span>
                   )}
                 </div>
               );

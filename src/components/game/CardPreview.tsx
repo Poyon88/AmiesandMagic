@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { CardInstance } from "@/lib/game/types";
-import { xNumeral, parseXValuesFromEffectText, cleanEffectText } from "@/lib/game/keyword-labels";
+import { xNumeral, parseXValuesFromEffectText, cleanEffectText, applyKeywordValueToLabel } from "@/lib/game/keyword-labels";
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import { composedCapsOf, composedIcon, composedTriggerMode } from "@/lib/game/composed-display";
 import ComposedMarker from "@/components/cards/ComposedMarker";
@@ -120,7 +120,7 @@ export default function CardPreview({ cardInstance, anchorRef, position = "above
             {visibleKws.map((kw) => {
               const x = xVals[kw];
               const label = vocab.keywordLabel(kw);
-              const displayLabel = x != null ? label.replace(/ X$/, ` ${xNumeral(x)}`) : label;
+              const displayLabel = applyKeywordValueToLabel(kw, label, x, card.keyword_instances?.find(k => k.id === kw));
               // On a spell, conferred keywords show their grant scope: green
               // text = all allies, default = single targeted creature.
               const grantAll = card.card_type === "spell"

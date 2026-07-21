@@ -77,13 +77,13 @@ Chaque faction a un **nom de code interne** (utilisé en base et dans le moteur,
 - **Clans** : Les Sylvains, Les Hauts-Elfes (Elfes) · La Forêt d'Émeraude (Fées) · La Combe Verte (Hobbits + Hommes-Arbres) — profils distincts en §5.3
 - **Philosophie** : L'alliance du bon peuple des bois — elfes agiles et furtifs, fées mages, et désormais les hobbits rusés et leurs colosses Hommes-Arbres. Poids stats faction (ombrelle) : 1.05 / 0.85.
 - **Pouvoirs privilégiés (ombrelle)** : Traque (0.50), Esquive (0.50), Précision (0.45), Divination (0.45), Augure (0.40), Canalisation (0.40), Invisible (0.40), Contresort (0.35), Première Frappe (0.35), Loyauté (0.35), Bénédiction (0.30), Vol (0.20).
-- **Pouvoirs interdits** : Armure, Berserk, Nécrophagie, Pillage X, Carnage X. *(Ancré et Provocation, autrefois interdits, sont désormais autorisés pour accueillir les Hommes-Arbres.)*
+- **Pouvoirs interdits** : Armure, Gloire +X/+Y, Nécrophagie, Pillage X, Carnage X. *(Ancré et Provocation, autrefois interdits, sont désormais autorisés pour accueillir les Hommes-Arbres.)*
 
 ### 3.2 ⚒️ Nains — « La Confrérie de la Forge » — *Bon*
 - **Races** : Nains · Golems · **Gnomes**
 - **Clans** : Les Gardiens de la Montagne, La Forge Ardente (Nains) · Les Sentinelles d'Airain (Golems) · **La Guilde des Ingénieurs** (Gnomes) — profils distincts en §5.4. *Les Marteaux des Collines sont dissous (limite de 2 clans nains).*
 - **Philosophie** : Solides et résistants. Défense et ténacité avant tout. Poids stats faction (ombrelle) : ATK faible, défense très élevée (0.85 / 1.40).
-- **Pouvoirs privilégiés (ombrelle)** : Armure (0.70), Résistance X (0.65), Bouclier (0.50), Riposte X (0.50), Ancré (0.45), Provocation (0.40), Bravoure (0.40), Catalyse (0.40), Berserk (0.35), Tactique X (0.25).
+- **Pouvoirs privilégiés (ombrelle)** : Armure (0.70), Résistance X (0.65), Bouclier (0.50), Riposte X (0.50), Ancré (0.45), Provocation (0.40), Bravoure (0.40), Catalyse (0.40), Gloire +X/+Y (0.35), Tactique X (0.25).
 - **Pouvoirs interdits** : Vol, Invisible, Esquive, Ombre, Traque, Pillage X.
 
 ### 3.3 ⚔️ Royaumes Libres — code interne `Humains` — *Neutre*
@@ -112,7 +112,7 @@ Chaque faction a un **nom de code interne** (utilisé en base et dans le moteur,
 - **Races** : Hommes-Loups · Hommes-Ours · Hommes-Félins · Centaures · Mimis · Hommes-Chiens · Hommes-Renards · Hommes-Cerfs
 - **Clans** : Les Seigneurs Fauves (Félins), Les Enfants de la Lune (Ours + Loups), Le Pacte des Griffes (Chiens + Renards, ouvert à toutes races), La Harde Sauvage (Centaures + Cerfs) · **Les Mignons** (Mimis — clan bonus caché) — profils distincts en §5.5
 - **Philosophie** : Sauvages et féroces. Attaquent vite, régénèrent, entrent en rage. Poids stats faction (ombrelle) : ATK élevée (1.20 / 1.00).
-- **Pouvoirs privilégiés (ombrelle)** : Traque (0.65), Berserk (0.55), Fureur (0.55), Première Frappe (0.45), Régénération (0.40), Bravoure (0.40), Combustion (0.35), Esquive (0.35), Persécution X (0.30), Augure (0.30), Vol (0.20).
+- **Pouvoirs privilégiés (ombrelle)** : Traque (0.65), Gloire +X/+Y (0.55), Fureur (0.55), Première Frappe (0.45), Régénération (0.40), Bravoure (0.40), Combustion (0.35), Esquive (0.35), Persécution X (0.30), Augure (0.30), Vol (0.20).
 - **Pouvoirs interdits** : Armure, Commandement, Invisible, Ancré, Canalisation, Contresort.
 
 ### 3.7 🌀 Élémentaires — « Les Primordiaux » — *Neutre*
@@ -126,7 +126,7 @@ Chaque faction a un **nom de code interne** (utilisé en base et dans le moteur,
 - **Races** : Géants · Ogres · Dragons · Chiens · Phoenix · Anges · Ours · Loups · Fauves
 - **Clans** : aucun *(reste sans clan — à confirmer)*
 - **Philosophie** : Soldats de fortune sans allégeance, disponibles pour **tous** les decks (dans la limite du quota Mercenaires). Chaque race a un profil marqué (voir §4). Poids stats : équilibré (1.05 / 1.05). L'alignement se choisit carte par carte (`card_alignment`).
-- **Pouvoirs privilégiés (niveau faction)** : Mimique (0.40), Métamorphose (0.40), Traque (0.40), Première Frappe (0.40), Précision (0.35), Bravoure (0.30), Esquive (0.30), Berserk (0.30), Fureur (0.25), Bouclier (0.25), Combustion (0.25), Vol (0.15).
+- **Pouvoirs privilégiés (niveau faction)** : Mimique (0.40), Métamorphose (0.40), Traque (0.40), Première Frappe (0.40), Précision (0.35), Bravoure (0.30), Esquive (0.30), Gloire +X/+Y (0.30), Fureur (0.25), Bouclier (0.25), Combustion (0.25), Vol (0.15).
 - **Pouvoirs interdits** : Commandement, Loyauté, Domination, Corruption.
 
 ### 3.9 💀 Morts-Vivants — « La Nécropole » — *Maléfique*
@@ -140,7 +140,7 @@ Chaque faction a un **nom de code interne** (utilisé en base et dans le moteur,
 - **Races** : Orcs · Gobelins · Trolls · Wargs · Démons · Elfes Corrompus · Araignées Géantes · **Guerriers du Chaos** (nouvelle race)
 - **Clans** : **Les Cohortes Sanglantes** (Orcs + Gobelins + Trolls + Wargs), **Les Princes des Abîmes** (Démons), **La Forêt Maudite** (Elfes Corrompus + Araignées Géantes), **La Garde Noire** (Guerriers du Chaos) — profils distincts en §5.7
 - **Philosophie** : Toutes les forces du Chaos rassemblées sous une même bannière : la horde organisée qui déferle par vagues, la cour démoniaque du sacrifice et de la terreur, les corrompus du poison et de l'ombre, et l'élite lourde des champions déchus. Poids stats faction (ombrelle) : offensif (1.15 / 0.90).
-- **Pouvoirs privilégiés (ombrelle)** : Fureur (0.50), Traque (0.50), Berserk (0.45), Poison (0.45), Sacrifice (0.45), Terreur (0.45), Invisible (0.40), Ombre (0.40), Malédiction (0.40), Pillage X (0.40), Persécution X (0.40), Carnage X (0.35), Maléfice (0.35), Pacte de sang (0.35), Drain de vie (0.35), Corruption (0.30), Convocation X (0.30), Domination (0.30), Vol (0.20).
+- **Pouvoirs privilégiés (ombrelle)** : Fureur (0.50), Traque (0.50), Gloire +X/+Y (0.45), Poison (0.45), Sacrifice (0.45), Terreur (0.45), Invisible (0.40), Ombre (0.40), Malédiction (0.40), Pillage X (0.40), Persécution X (0.40), Carnage X (0.35), Maléfice (0.35), Pacte de sang (0.35), Drain de vie (0.35), Corruption (0.30), Convocation X (0.30), Domination (0.30), Vol (0.20).
 - **Pouvoirs interdits** : Loyauté, Commandement, Bouclier, Bénédiction, Bravoure. *(Provocation et Régénération, autrefois interdites côté Elfes Noirs/Orcs, sont désormais **autorisées** — notamment pour les Trolls et la Garde Noire.)*
 - **Migration** : les anciennes cartes de la faction **Orcs** basculent vers **Les Cohortes Sanglantes** ; les anciens clans transversaux (Abysses souterrains, Cités de cendres) sont dissous ; la Forêt maudite est recyclée comme clan des Elfes Corrompus.
 
@@ -157,14 +157,14 @@ Certaines factions différencient leurs races par un profil de pouvoirs propre (
 | Elfes | **Hommes-Arbres** | 0.90 / 1.50 | Provocation (0.60), Ancré (0.55), Régénération (0.40), Riposte X (0.35) |
 | Nains | **Golems** | 0.90 / 1.60 | Ancré (0.80), Armure (0.75), Provocation (0.60), Riposte X (0.45), Indestructible (0.30) |
 | Mercenaires | **Géants** | 1.15 / 1.30 | Provocation (0.65), Résistance X (0.60), Armure (0.55), Indestructible (0.45), Terreur (0.40), Carnage X (0.30) |
-| Mercenaires | **Ogres** | 1.25 / 1.10 | Berserk (0.55), Fureur (0.50), Provocation (0.40), Résistance X (0.35), Pillage X (0.30) |
+| Mercenaires | **Ogres** | 1.25 / 1.10 | Gloire +X/+Y (0.55), Fureur (0.50), Provocation (0.40), Résistance X (0.35), Pillage X (0.30) |
 | Mercenaires | **Dragons** | 1.40 / 0.90 | Vol (0.90), Souffle de feu X (0.70), Terreur (0.60), Fureur (0.50), Indestructible (0.40), Transcendance (0.35), Vampirisme X (0.25) |
-| Mercenaires | **Chiens** | 1.10 / 0.80 | Raid (0.70), Instinct de meute X (0.60), Traque (0.55), Loyauté (0.50), Esquive (0.40), Berserk (0.35), Première Frappe (0.30) |
-| Mercenaires | **Phoenix** | 1.20 / 0.95 | Vol (0.80), Résurrection (0.70), Souffle de feu X (0.55), Régénération (0.50), Cycle éternel (0.45), Bouclier (0.40), Berserk (0.35), Fureur (0.30) |
+| Mercenaires | **Chiens** | 1.10 / 0.80 | Raid (0.70), Instinct de meute X (0.60), Traque (0.55), Loyauté (0.50), Esquive (0.40), Gloire +X/+Y (0.35), Première Frappe (0.30) |
+| Mercenaires | **Phoenix** | 1.20 / 0.95 | Vol (0.80), Résurrection (0.70), Souffle de feu X (0.55), Régénération (0.50), Cycle éternel (0.45), Bouclier (0.40), Gloire +X/+Y (0.35), Fureur (0.30) |
 | Mercenaires | **Anges** | 1.10 / 1.15 | Vol (0.85), Bouclier (0.60), Bénédiction (0.55), Commandement (0.50), Première Frappe (0.45), Drain de vie (0.40), Provocation (0.35), Résistance X (0.30) |
-| Mercenaires | **Ours** | 1.20 / 1.25 | Provocation (0.55), Berserk (0.50), Résistance X (0.45), Lycanthropie X (0.45), Fureur (0.40), Régénération (0.35) |
-| Mercenaires | **Loups** | 1.15 / 0.90 | Traque (0.60), Raid (0.55), Instinct de meute X (0.50), Lycanthropie X (0.45), Esquive (0.40), Berserk (0.35) |
-| Mercenaires | **Fauves** | 1.20 / 0.95 | Traque (0.65), Esquive (0.55), Première Frappe (0.50), Précision (0.45), Bravoure (0.40), Berserk (0.35), Raid (0.30), Invisible (0.25) |
+| Mercenaires | **Ours** | 1.20 / 1.25 | Provocation (0.55), Gloire +X/+Y (0.50), Résistance X (0.45), Lycanthropie X (0.45), Fureur (0.40), Régénération (0.35) |
+| Mercenaires | **Loups** | 1.15 / 0.90 | Traque (0.60), Raid (0.55), Instinct de meute X (0.50), Lycanthropie X (0.45), Esquive (0.40), Gloire +X/+Y (0.35) |
+| Mercenaires | **Fauves** | 1.20 / 0.95 | Traque (0.65), Esquive (0.55), Première Frappe (0.50), Précision (0.45), Bravoure (0.40), Gloire +X/+Y (0.35), Raid (0.30), Invisible (0.25) |
 | Légions du Chaos | **Démons** | 1.35 / 0.80 | Fureur (0.65), Sacrifice (0.55), Terreur (0.50), Persécution X (0.45), Ombre (0.45), Carnage X (0.40), Vol (0.30) |
 | Légions du Chaos | **Araignées Géantes** | 1.10 / 0.90 | Poison (0.75), Esquive (0.50), Invisible (0.45) |
 
@@ -180,7 +180,7 @@ Certaines factions différencient leurs races par un profil de pouvoirs propre (
 
 | Clan | Style (ATK/DEF) | Pouvoirs signature |
 |---|---|---|
-| 🔥 **La Colère des Flammes** *(Feu)* | 1.40 / 0.75 | Fureur (0.70), Souffle de feu X (0.60), Berserk (0.50), Combustion (0.50), Carnage X (0.40), Sacrifice (0.35) |
+| 🔥 **La Colère des Flammes** *(Feu)* | 1.40 / 0.75 | Fureur (0.70), Souffle de feu X (0.60), Gloire +X/+Y (0.50), Combustion (0.50), Carnage X (0.40), Sacrifice (0.35) |
 | 🪨 **Le Socle du Monde** *(Terre)* | 0.85 / 1.50 | Provocation (0.70), Armure (0.65), Ancré (0.60), Résistance X (0.55), Riposte X (0.45), Indestructible (0.30) |
 | 💧 **La Vague Sans Fin** *(Eau)* | 0.90 / 1.10 | Régénération (0.65), Drain de vie (0.55), Paralysie (0.50), Esquive (0.50), Résistance X (0.40), Bénédiction (0.35) |
 | 🌬️ **Le Souffle des Cimes** *(Air)* | 1.15 / 0.85 | Vol (0.80), Traque (0.65), Célérité (0.50), Esquive (0.45), Première Frappe (0.40), Augure (0.35) |
@@ -191,7 +191,7 @@ Certaines factions différencient leurs races par un profil de pouvoirs propre (
 
 | Clan | Inspiration | Style | Identité | Pouvoirs signature |
 |---|---|---|---|---|
-| ❄️ **Le Royaume du Nord** | Nordiques/vikings | 1.15/0.90 | Bélier agressif, raids | Berserk (0.55), Bravoure (0.50), Raid (0.50), Première Frappe (0.45), Célérité (0.40), Pillage X (0.35), Combustion (0.30), Commandement (0.30) |
+| ❄️ **Le Royaume du Nord** | Nordiques/vikings | 1.15/0.90 | Bélier agressif, raids | Gloire +X/+Y (0.55), Bravoure (0.50), Raid (0.50), Première Frappe (0.45), Célérité (0.40), Pillage X (0.35), Combustion (0.30), Commandement (0.30) |
 | ✝️ **L'Ordre de l'Aube** | Templiers | 0.90/1.20 | Pilier défensif, foi | Bouclier (0.60), Bénédiction (0.55), Provocation (0.50), Résistance X (0.50), Première Frappe (0.40), Commandement (0.40), Bravoure (0.35) |
 | 🌬️ **Les Guerrières du Vent** | Amazones | 1.15/0.85 | Aile mobile, précision | Précision (0.55), Esquive (0.55), Traque (0.50), Première Frappe (0.45), Célérité (0.45), Bravoure (0.40) |
 | 🕌 **La Sublime Porte** | Empire ottoman | 1.10/1.05 | Élite à poudre, ordre | Commandement (0.60), Première Frappe (0.50), Combustion (0.50), Précision (0.45), Bravoure (0.45), Tactique X (0.40), Bouclier (0.35) |
@@ -212,7 +212,7 @@ Certaines factions différencient leurs races par un profil de pouvoirs propre (
 | 🌞 **Les Enfants du Soleil** | Incas | 1.10/0.95 | Moteur à sacrifice | Sacrifice (0.55), Héritage X (0.50), Martyr (0.45), Bravoure (0.45), Bénédiction (0.40), Convocation X (0.40) |
 | 🏜️ **Les Seigneurs des Dunes** | Touaregs | 1.05/1.00 | Harceleur-pilleur | Pillage X (0.55), Traque (0.50), Esquive (0.50), Célérité (0.45), Résistance X (0.45), Persécution X (0.40) |
 | 🎭 **Le Royaume des Masques** | Yoruba/Bénin | 0.90/1.15 | Invocateur-soutien | Convocation X (0.60), Divination (0.50), Prescience X (0.45), Augure (0.45), Bénédiction (0.40), Totem (0.40), Régénération (0.35) |
-| 🌋 **Les Fils du Volcan** | Polynésie | 1.25/0.85 | Feu tribal agressif | Combustion (0.60), Fureur (0.55), Berserk (0.50), Souffle de feu X (0.45), Bravoure (0.45), Raid (0.40), Sacrifice (0.40), Célérité (0.35) |
+| 🌋 **Les Fils du Volcan** | Polynésie | 1.25/0.85 | Feu tribal agressif | Combustion (0.60), Fureur (0.55), Gloire +X/+Y (0.50), Souffle de feu X (0.45), Bravoure (0.45), Raid (0.40), Sacrifice (0.40), Célérité (0.35) |
 
 ### 5.3 Elfes — L'Alliance Céleste (profils distincts)
 
@@ -230,7 +230,7 @@ Certaines factions différencient leurs races par un profil de pouvoirs propre (
 | Clan | Race(s) | Style | Identité | Pouvoirs signature |
 |---|---|---|---|---|
 | ⛰️ **Les Gardiens de la Montagne** | Nains | 0.85/1.45 | Forteresse, contre-attaque | Armure (0.65), Résistance X (0.60), Provocation (0.55), Bouclier (0.50), Ancré (0.45), Riposte X (0.45) |
-| 🌋 **La Forge Ardente** | Nains | 1.15/1.05 | Forgerons du magma, agression | Combustion (0.50), Berserk (0.50), Fureur (0.45), Riposte X (0.40), Catalyse (0.40), Bravoure (0.35) |
+| 🌋 **La Forge Ardente** | Nains | 1.15/1.05 | Forgerons du magma, agression | Combustion (0.50), Gloire +X/+Y (0.50), Fureur (0.45), Riposte X (0.40), Catalyse (0.40), Bravoure (0.35) |
 | 🗿 **Les Sentinelles d'Airain** | Golems | 0.90/1.60 | Colosses inébranlables | Ancré (0.80), Armure (0.75), Provocation (0.60), Résistance X (0.50), Riposte X (0.45), Indestructible (0.35) |
 | ⚙️ **La Guilde des Ingénieurs** | Gnomes | 0.80/1.00 | Ingénieurs, machines et astuce | Convocation X (0.55 — tokens mécaniques), Catalyse (0.50), Divination (0.45), Tactique X (0.40), Inspiration X (0.40), Contresort (0.35), Riposte X (0.30) |
 
@@ -241,7 +241,7 @@ Certaines factions différencient leurs races par un profil de pouvoirs propre (
 | Clan | Race(s) | Style | Identité / mécanique | Pouvoirs signature |
 |---|---|---|---|---|
 | 🐯 **Les Seigneurs Fauves** | Hommes-Félins | 1.30/0.85 | Splendeur maharadjah — *bonus à l'attaque* | Persécution X (0.55), Célérité (0.50), Traque (0.50), Bravoure (0.45), Première Frappe (0.45), Double Attaque (0.40) |
-| 🌙 **Les Enfants de la Lune** | Hommes-Ours + Hommes-Loups | 1.25/1.00 | Lycanthropes — *transformation* | Lycanthropie X (0.55), Berserk (0.50), Fureur (0.50), Traque (0.45), Régénération (0.40), Résistance X (0.40) |
+| 🌙 **Les Enfants de la Lune** | Hommes-Ours + Hommes-Loups | 1.25/1.00 | Lycanthropes — *transformation* | Lycanthropie X (0.55), Gloire +X/+Y (0.50), Fureur (0.50), Traque (0.45), Régénération (0.40), Résistance X (0.40) |
 | 🐾 **Le Pacte des Griffes** | Hommes-Chiens + Hommes-Renards (ouvert à toutes races) | 1.15/0.95 | Alliance — *bonus si plusieurs races sur le board* | Sang mêlé (0.60), Solidarité X (0.50), Loyauté (0.45), Instinct de meute X (0.45), Bravoure (0.40), Traque (0.40) |
 | 🐴 **La Harde Sauvage** | Centaures + Hommes-Cerfs | 1.20/0.95 | Charge & tir des plaines | Célérité (0.50), Raid (0.50), Piétinement (0.45), Précision (0.45), Traque (0.45), Bravoure (0.40) |
 | 🧸 **Les Mignons** *(bonus)* | Mimis | 0.85/0.90 | Nuée fidèle et increvable | Loyauté (0.55), Combustion (0.40), Régénération (0.40), Solidarité X (0.40), Bénédiction (0.35) |
@@ -261,7 +261,7 @@ Certaines factions différencient leurs races par un profil de pouvoirs propre (
 
 | Clan | Race(s) | Style | Identité / mécanique | Pouvoirs signature |
 |---|---|---|---|---|
-| ⚔️ **Les Cohortes Sanglantes** | Orcs + Gobelins + Trolls + Wargs | 1.25/0.90 | Armée organisée — *vagues préparées en main* | Traque (0.55), Entrainement X (0.50), Berserk (0.50), Fureur (0.45), Catalyse (0.45), Convocation X (0.40), Entraide (Race) (0.40), Régénération (0.35 — Trolls), Provocation (0.35 — Trolls), Célérité (0.35 — Wargs), Sacrifice (0.30) |
+| ⚔️ **Les Cohortes Sanglantes** | Orcs + Gobelins + Trolls + Wargs | 1.25/0.90 | Armée organisée — *vagues préparées en main* | Traque (0.55), Entrainement X (0.50), Gloire +X/+Y (0.50), Fureur (0.45), Catalyse (0.45), Convocation X (0.40), Entraide (Race) (0.40), Régénération (0.35 — Trolls), Provocation (0.35 — Trolls), Célérité (0.35 — Wargs), Sacrifice (0.30) |
 | 👹 **Les Princes des Abîmes** | Démons | 1.35/0.80 | Sacrifice et terreur | Fureur (0.65), Sacrifice (0.55), Terreur (0.50), Persécution X (0.45), Pacte de sang (0.40), Carnage X (0.40), Vol (0.30) |
 | 🕸️ **La Forêt Maudite** | Elfes Corrompus + Araignées Géantes | 1.10/0.90 | Poison et ombre | Poison (0.65), Invisible (0.55), Ombre (0.50), Malédiction (0.50), Esquive (0.45), Drain de vie (0.40) |
 | 🛡️ **La Garde Noire** | Guerriers du Chaos | 1.10/1.15 | Élite lourde corrompue | Armure (0.60), Résistance X (0.55), Fureur (0.45), Provocation (0.45), Maléfice (0.40), Riposte X (0.40) |
@@ -323,7 +323,7 @@ Les cartes **datées** (séries limitées / éditions forgées) existent en nomb
 | ⚔️ Raid | 0 | Peut attaquer une **créature** ennemie dès l'invocation (pas le héros). |
 | ⚡ Traque | 0 | Peut attaquer et utiliser son pouvoir dès l'invocation. |
 | 🗡️ Première Frappe | 0 | Inflige ses dégâts en premier ; la cible ne riposte que si elle survit. |
-| 😤 Berserk | 0 | Double son ATK si ses PV actuels < PV d'origine. |
+| 🏅 Gloire +X/+Y | 0 | Chaque fois qu’elle survit à des dégâts de combat, gagne +X/+Y de façon permanente. |
 | 🔰 Bouclier | 0 | Absorbe une première attaque sans dégâts. |
 | 🦅 Vol | 1 | Ignore les Provocations adverses. |
 | 🏹 Précision | 1 | Ignore Résistance, Armure et Bouclier. |
@@ -456,7 +456,7 @@ Chaque capacité « à effet » peut, selon la configuration de la carte, se dé
 ## 9. Héros et pouvoirs héroïques
 
 Chaque héros appartient à une faction et possède un **pouvoir activable** qui suit la même taxonomie que les capacités de carte :
-- **conférer une capacité** (grant) — ex. donner Berserk à un allié ;
+- **conférer une capacité** (grant) — ex. donner Gloire à un allié ;
 - **effet immédiat** (spell trigger) — ex. infliger des dégâts ;
 - **aura** (automatique/passif).
 

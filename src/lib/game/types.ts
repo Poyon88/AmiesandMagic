@@ -5,7 +5,7 @@ export type Keyword =
   // Legacy (backward compat with existing DB)
   | "charge" | "taunt" | "divine_shield" | "ranged"
   // Tier 0
-  | "raid" | "loyaute" | "ancre" | "resistance" | "premiere_frappe" | "berserk"
+  | "raid" | "loyaute" | "ancre" | "resistance" | "premiere_frappe" | "gloire"
   | "convocations_multiples"
   // Tier 1 — Terrain
   | "vol" | "precision" | "drain_de_vie" | "esquive" | "poison" | "celerite"
@@ -567,8 +567,12 @@ export interface CardInstance {
   tapped: boolean;
   fureurActive: boolean;
   fureurATKBonus: number;
-  berserkActive: boolean;
-  berserkATKBonus: number;
+  /** Gloire +X/+Y : nombre de fois où l'unité a survécu à des dégâts de combat.
+   *  Purement informatif (indicateur de plateau) — le bonus lui-même est déjà
+   *  fondu dans les stats permanentes de l'instance (cf. applyRenforcementSelf).
+   *  Optionnel : les snapshots `match_state` d'avant la refonte ne le portent
+   *  pas, tout lecteur doit donc faire `?? 0`. */
+  gloireStacks?: number;
   targetsAttackedThisTurn: string[];
   // Esquive: auto-dodge first attack each turn (reset at turn start)
   esquiveUsedThisTurn: boolean;

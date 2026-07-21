@@ -41,10 +41,6 @@
         "label": "Primo Colpo",
         "desc": "Quando questa unità attacca, infligge i suoi danni per prima; l'unità avversaria risponde solo se sopravvive."
       },
-      "berserk": {
-        "label": "Berserk",
-        "desc": "Raddoppia il suo ATK se i suoi PV attuali sono inferiori al valore di PV originale (sulla carta)."
-      },
       "vol": {
         "label": "Volo",
         "desc": "Ignora le provocazioni avversarie."
@@ -404,6 +400,10 @@
       "declenchement": {
         "label": "Attivazione",
         "desc": "Riattiva una volta gli effetti combinati dei tuoi altri alleati (entrata / morte / fine turno / ritorno)."
+      },
+      "gloire": {
+        "label": "Gloria +X/+Y",
+        "desc": "Ogni volta che questa unità sopravvive a danni da combattimento, guadagna +X/+Y in modo permanente."
       }
     },
     "spell_keywords": {
@@ -570,6 +570,26 @@
         "exhum_all": "tutte le creature",
         "exhum_upto": "fino a {n} creature"
       },
+      "self": {
+        "deal_damage_one": "subisce {x} danno",
+        "deal_damage_many": "subisce {x} danni",
+        "heal": "recupera {x} PV",
+        "buff": "ottiene +{x}/+{y}",
+        "debuff": "subisce -{x}/-{y}",
+        "destroy": "si distrugge",
+        "bounce": "torna in mano",
+        "paralyze": "si paralizza",
+        "grant_keyword": "si conferisce {ability}"
+      },
+      "targetd": {
+        "count_all": "tutte le unità",
+        "count_one": "un'unità",
+        "count_n": "{n} unità",
+        "hero_ally": "il tuo eroe",
+        "hero_enemy": "l'eroe avversario",
+        "both_all": "tutte le unità e l'eroe {side}",
+        "both_one": "un bersaglio (unità o eroe){side}"
+      },
       "target": {
         "self": "a se stessa",
         "hero_ally": "al tuo eroe",
@@ -612,26 +632,6 @@
         "grant_keyword": "scegli una creatura a cui conferire l'abilità",
         "exhumation": "scegli una creatura da resuscitare",
         "default": "scegli un bersaglio"
-      },
-      "self": {
-        "deal_damage_one": "subisce {x} danno",
-        "deal_damage_many": "subisce {x} danni",
-        "heal": "recupera {x} PV",
-        "buff": "ottiene +{x}/+{y}",
-        "debuff": "subisce -{x}/-{y}",
-        "destroy": "si distrugge",
-        "bounce": "torna in mano",
-        "paralyze": "si paralizza",
-        "grant_keyword": "si conferisce {ability}"
-      },
-      "targetd": {
-        "count_all": "tutte le unità",
-        "count_one": "un'unità",
-        "count_n": "{n} unità",
-        "hero_ally": "il tuo eroe",
-        "hero_enemy": "l'eroe avversario",
-        "both_all": "tutte le unità e l'eroe {side}",
-        "both_one": "un bersaglio (unità o eroe){side}"
       }
     },
     "factions": {

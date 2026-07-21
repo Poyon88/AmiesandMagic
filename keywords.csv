@@ -5,7 +5,7 @@ Résistance;0;Non;Terrain;Réduit les dégâts reçus de 1.
 Provocation;0;Non;Terrain;Les ennemis doivent attaquer cette unité en priorité.
 Traque;0;Non;Terrain;Peut attaquer dès son invocation.
 Première Frappe;0;Non;Terrain;Lorsque cette unité attaque, inflige ses dégâts en premier ; l'unité adverse ne riposte que si elle survit.
-Berserk;0;Non;Terrain;Double son ATK si ses PV actuels sont inférieurs à sa valeur de PV originale (sur la carte).
+Gloire +X/+Y;0;Oui;Terrain;Chaque fois que cette unité survit à des dégâts de combat, elle gagne +X/+Y de façon permanente.
 Bouclier;0;Non;Terrain;Absorbe une première attaque sans dégâts.
 Vol;1;Non;Terrain;Ignore les provocations adverses qui n'ont pas Vol.
 Précision;1;Non;Terrain;Ignore la Résistance, l'Armure et le Bouclier.

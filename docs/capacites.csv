@@ -6,7 +6,7 @@ id_registre,id_creature,label,symbole,hotes,description_creature,description_sor
 "raid","raid","Raid","⚔️","creature","Peut attaquer une créature ennemie dès son invocation (mais pas le héros).",""
 "charge","charge","Traque","⚡","creature","Peut attaquer et utiliser son pouvoir activable dès son invocation.",""
 "premiere_frappe","premiere_frappe","Première Frappe","🗡️","creature","Lorsque cette unité attaque, inflige ses dégâts en premier ; l'unité adverse ne riposte que si elle survit.",""
-"berserk","berserk","Berserk","😤","creature","Double son ATK si ses PV actuels sont inférieurs à sa valeur de PV originale (sur la carte).",""
+"gloire","gloire","Gloire +X/+Y","🏅","creature","Chaque fois que cette unité survit à des dégâts de combat, elle gagne +X/+Y de façon permanente.",""
 "divine_shield","divine_shield","Bouclier","🔰","creature","Absorbe une première attaque sans dégâts.",""
 "vol","vol","Vol","🦅","creature","Ignore les provocations adverses.",""
 "precision","precision","Précision","🏹","creature","Ignore la Résistance, l'Armure et le Bouclier.",""

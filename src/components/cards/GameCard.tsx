@@ -49,7 +49,7 @@ function loadSetRegistry(): Promise<CardSet[]> {
     });
   return _setRegistryPromise;
 }
-import { KEYWORD_SYMBOLS as keywordSymbols, xNumeral, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
+import { KEYWORD_SYMBOLS as keywordSymbols, xNumeral, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordBadgeValue, applyKeywordValueToLabel, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import KeywordIcon from "@/components/shared/KeywordIcon";
@@ -354,9 +354,9 @@ export default function GameCard({
             const entries = buildKeywordDisplayEntries(card)
               .filter((e) => !isCreatureKwShadowedBySpell(e.kw, card.spell_keywords));
             return entries.map((entry, idx) => {
-              const { kw, x, mode } = entry;
+              const { kw, x, mode, instance } = entry;
               const label = vocab.keywordLabel(kw);
-              const baseTitle = x != null ? label.replace(/ X$/, ` ${xNumeral(x)}`) : label;
+              const baseTitle = applyKeywordValueToLabel(kw, label, x, instance);
               // Pas d'annotation de déclencheur (« · fin du tour »…) : la couleur de
               // l'icône la transmet désormais.
               // On a spell, these keywords are CONFERRED to creature(s). The
@@ -385,7 +385,7 @@ export default function GameCard({
                     <KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={33 * icoS} keyword={kw} fill mode={mode} />
                   </span>
                 </span>
-                {x != null && <span style={{ fontSize: 15 * s, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}, ${TEXT_CONTRAST_HALO}`, marginLeft: 1 * s }}>{xNumeral(x)}</span>}
+                {keywordBadgeValue(kw, x, instance) != null && <span style={{ fontSize: 15 * s, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}, ${TEXT_CONTRAST_HALO}`, marginLeft: 1 * s }}>{keywordBadgeValue(kw, x, instance)}</span>}
               </div>
               );
             });
@@ -539,7 +539,7 @@ export default function GameCard({
               const label = vocab.keywordLabelFor(kw, ctx);
               // Plus d'annotation de déclencheur (« · fin du tour »…) dans le label :
               // la couleur de l'icône/du texte la transmet, le descriptif est allégé.
-              const displayLabel = x != null ? label.replace(/ X$/, ` ${xNumeral(x)}`) : label;
+              const displayLabel = applyKeywordValueToLabel(kw, label, x, instance);
               const desc = vocab.keywordDesc(kw, ctx);
               // Conferred-keyword scope on a spell: green for "all allies".
               const grantScope = !isCreature ? (instance?.grantScope ?? "target") : null;

@@ -18,12 +18,12 @@ function creatures(kw: string, n: number) {
 
 describe("namedCreatureCapabilityIds", () => {
   it("retourne l'id de capacité nommé d'une créature", () => {
-    expect(namedCreatureCapabilityIds(mkCard({ keywords: ["berserk"] as unknown as Card["keywords"] }))).toEqual(["berserk"]);
+    expect(namedCreatureCapabilityIds(mkCard({ keywords: ["gloire"] as unknown as Card["keywords"] }))).toEqual(["gloire"]);
   });
   it("dédoublonne une capacité présente deux fois sur une même carte", () => {
-    const cap = (uid: string): Capability => ({ uid, trigger: "on_play", effectKind: "immediate", abilityId: "berserk" });
+    const cap = (uid: string): Capability => ({ uid, trigger: "on_play", effectKind: "immediate", abilityId: "gloire" });
     const card = mkCard({ capabilities: [cap("a"), cap("b")] });
-    expect(namedCreatureCapabilityIds(card)).toEqual(["berserk"]);
+    expect(namedCreatureCapabilityIds(card)).toEqual(["gloire"]);
   });
   it("ignore les effets composés (_composed absent du registre ABILITIES)", () => {
     const composed: Capability = { uid: "c1", trigger: "on_play", effectKind: "immediate", abilityId: "_composed",
@@ -31,32 +31,32 @@ describe("namedCreatureCapabilityIds", () => {
     expect(namedCreatureCapabilityIds(mkCard({ capabilities: [composed] }))).toEqual([]);
   });
   it("retourne [] pour un sort", () => {
-    expect(namedCreatureCapabilityIds(mkCard({ card_type: "spell", attack: null, health: null, keywords: ["berserk"] as unknown as Card["keywords"] }))).toEqual([]);
+    expect(namedCreatureCapabilityIds(mkCard({ card_type: "spell", attack: null, health: null, keywords: ["gloire"] as unknown as Card["keywords"] }))).toEqual([]);
   });
 });
 
 describe("creatureCapabilityCounts + capabilityLimitViolations", () => {
-  it("13 créatures « berserk » → violation (count 13)", () => {
-    const counts = creatureCapabilityCounts(creatures("berserk", 13));
-    expect(counts.get("berserk")).toBe(13);
+  it("13 créatures « gloire » → violation (count 13)", () => {
+    const counts = creatureCapabilityCounts(creatures("gloire", 13));
+    expect(counts.get("gloire")).toBe(13);
     const v = capabilityLimitViolations(counts);
     expect(v).toHaveLength(1);
-    expect(v[0]).toMatchObject({ id: "berserk", count: 13 });
+    expect(v[0]).toMatchObject({ id: "gloire", count: 13 });
   });
 
-  it("exactement 12 « berserk » → aucune violation (seuil inclusif)", () => {
-    expect(capabilityLimitViolations(creatureCapabilityCounts(creatures("berserk", 12)))).toEqual([]);
+  it("exactement 12 « gloire » → aucune violation (seuil inclusif)", () => {
+    expect(capabilityLimitViolations(creatureCapabilityCounts(creatures("gloire", 12)))).toEqual([]);
   });
 
   it("le comptage est pondéré par la quantité", () => {
     const entries = [
-      { card: mkCard({ keywords: ["berserk"] as unknown as Card["keywords"] }), quantity: 3 },
-      { card: mkCard({ keywords: ["berserk"] as unknown as Card["keywords"] }), quantity: 3 },
-      { card: mkCard({ keywords: ["berserk"] as unknown as Card["keywords"] }), quantity: 3 },
-      { card: mkCard({ keywords: ["berserk"] as unknown as Card["keywords"] }), quantity: 3 },
-      { card: mkCard({ keywords: ["berserk"] as unknown as Card["keywords"] }), quantity: 3 },
+      { card: mkCard({ keywords: ["gloire"] as unknown as Card["keywords"] }), quantity: 3 },
+      { card: mkCard({ keywords: ["gloire"] as unknown as Card["keywords"] }), quantity: 3 },
+      { card: mkCard({ keywords: ["gloire"] as unknown as Card["keywords"] }), quantity: 3 },
+      { card: mkCard({ keywords: ["gloire"] as unknown as Card["keywords"] }), quantity: 3 },
+      { card: mkCard({ keywords: ["gloire"] as unknown as Card["keywords"] }), quantity: 3 },
     ];
-    expect(creatureCapabilityCounts(entries).get("berserk")).toBe(15);
+    expect(creatureCapabilityCounts(entries).get("gloire")).toBe(15);
     expect(capabilityLimitViolations(creatureCapabilityCounts(entries))).toHaveLength(1);
   });
 
@@ -73,7 +73,7 @@ describe("creatureCapabilityCounts + capabilityLimitViolations", () => {
   });
 
   it("les sorts portant un mot-clé sont ignorés (créatures uniquement)", () => {
-    const entries = Array.from({ length: 11 }, () => ({ card: mkCard({ card_type: "spell", attack: null, health: null, keywords: ["berserk"] as unknown as Card["keywords"] }), quantity: 1 }));
+    const entries = Array.from({ length: 11 }, () => ({ card: mkCard({ card_type: "spell", attack: null, health: null, keywords: ["gloire"] as unknown as Card["keywords"] }), quantity: 1 }));
     expect(capabilityLimitViolations(creatureCapabilityCounts(entries))).toEqual([]);
   });
 });

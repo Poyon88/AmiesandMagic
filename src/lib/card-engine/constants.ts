@@ -151,7 +151,7 @@ export const FACTIONS: Record<string, {
     statWeights: { atk: 1.05, def: 0.85 },
     guaranteedKeywords: [],
     likelyKeywords: { "Traque": 0.50, "Esquive": 0.50, "Précision": 0.45, "Divination": 0.45, "Augure": 0.40, "Canalisation": 0.40, "Invisible": 0.40, "Contresort": 0.35, "Première Frappe": 0.35, "Loyauté": 0.35, "Bénédiction": 0.30, "Vol": 0.20 },
-    forbiddenKeywords: ["Armure", "Berserk", "Nécrophagie", "Pillage X", "Carnage X"],
+    forbiddenKeywords: ["Armure", "Gloire +X/+Y", "Nécrophagie", "Pillage X", "Carnage X"],
     description: "L'alliance du bon peuple des bois : elfes furtifs, fées mages, hobbits rusés et leurs colosses Hommes-Arbres.",
     raceProfiles: {
       "Aigles Géants": { statWeights: { atk: 1.20, def: 0.70 }, likelyKeywords: { "Vol": 0.90, "Traque": 0.60, "Première Frappe": 0.50, "Augure": 0.40 } },
@@ -182,7 +182,7 @@ export const FACTIONS: Record<string, {
     ],
     statWeights: { atk: 0.85, def: 1.40 },
     guaranteedKeywords: [],
-    likelyKeywords: { "Armure": 0.70, "Résistance X": 0.65, "Bouclier": 0.50, "Riposte X": 0.50, "Ancré": 0.45, "Provocation": 0.40, "Bravoure": 0.40, "Catalyse": 0.40, "Berserk": 0.35, "Tactique X": 0.25 },
+    likelyKeywords: { "Armure": 0.70, "Résistance X": 0.65, "Bouclier": 0.50, "Riposte X": 0.50, "Ancré": 0.45, "Provocation": 0.40, "Bravoure": 0.40, "Catalyse": 0.40, "Gloire +X/+Y": 0.35, "Tactique X": 0.25 },
     forbiddenKeywords: ["Vol", "Invisible", "Esquive", "Ombre", "Traque", "Pillage X"],
     description: "Solides et résistants : défense, ténacité, forge et ingénierie gnome.",
     raceProfiles: {
@@ -190,7 +190,7 @@ export const FACTIONS: Record<string, {
     },
     clanProfiles: {
       "Les Gardiens de la Montagne": { statWeights: { atk: 0.85, def: 1.45 }, likelyKeywords: { "Armure": 0.65, "Résistance X": 0.60, "Provocation": 0.55, "Bouclier": 0.50, "Ancré": 0.45, "Riposte X": 0.45 } },
-      "La Forge Ardente": { statWeights: { atk: 1.15, def: 1.05 }, likelyKeywords: { "Combustion": 0.50, "Berserk": 0.50, "Fureur": 0.45, "Riposte X": 0.40, "Catalyse": 0.40, "Bravoure": 0.35 } },
+      "La Forge Ardente": { statWeights: { atk: 1.15, def: 1.05 }, likelyKeywords: { "Combustion": 0.50, "Gloire +X/+Y": 0.50, "Fureur": 0.45, "Riposte X": 0.40, "Catalyse": 0.40, "Bravoure": 0.35 } },
       "Les Sentinelles d'Airain": { statWeights: { atk: 0.90, def: 1.60 }, likelyKeywords: { "Ancré": 0.80, "Armure": 0.75, "Provocation": 0.60, "Résistance X": 0.50, "Riposte X": 0.45, "Indestructible": 0.35 } },
       "La Guilde des Ingénieurs": { statWeights: { atk: 0.80, def: 1.00 }, likelyKeywords: { "Convocation X": 0.55, "Catalyse": 0.50, "Divination": 0.45, "Tactique X": 0.40, "Inspiration X": 0.40, "Contresort": 0.35, "Riposte X": 0.30 } },
     },
@@ -226,7 +226,7 @@ export const FACTIONS: Record<string, {
       "Les Enfants du Soleil": { statWeights: { atk: 1.10, def: 0.95 }, likelyKeywords: { "Sacrifice": 0.55, "Héritage X": 0.50, "Martyr": 0.45, "Bravoure": 0.45, "Bénédiction": 0.40, "Convocation X": 0.40 } },
       "Les Seigneurs des Dunes": { statWeights: { atk: 1.05, def: 1.00 }, likelyKeywords: { "Pillage X": 0.55, "Traque": 0.50, "Esquive": 0.50, "Célérité": 0.45, "Résistance X": 0.45, "Persécution X": 0.40 } },
       "Le Royaume des Masques": { statWeights: { atk: 0.90, def: 1.15 }, likelyKeywords: { "Convocation X": 0.60, "Divination": 0.50, "Prescience X": 0.45, "Augure": 0.45, "Bénédiction": 0.40, "Totem": 0.40, "Régénération": 0.35 } },
-      "Les Fils du Volcan": { statWeights: { atk: 1.25, def: 0.85 }, likelyKeywords: { "Combustion": 0.60, "Fureur": 0.55, "Berserk": 0.50, "Souffle de feu X": 0.45, "Bravoure": 0.45, "Raid": 0.40, "Sacrifice": 0.40, "Célérité": 0.35 } },
+      "Les Fils du Volcan": { statWeights: { atk: 1.25, def: 0.85 }, likelyKeywords: { "Combustion": 0.60, "Fureur": 0.55, "Gloire +X/+Y": 0.50, "Souffle de feu X": 0.45, "Bravoure": 0.45, "Raid": 0.40, "Sacrifice": 0.40, "Célérité": 0.35 } },
     },
   },
   Humains: {
@@ -240,7 +240,7 @@ export const FACTIONS: Record<string, {
     forbiddenKeywords: ["Poison", "Corruption", "Maléfice", "Pacte de sang", "Nécrophagie"],
     description: "Le vieux continent : honneur, acier et champions héroïques.",
     clanProfiles: {
-      "Le Royaume du Nord": { statWeights: { atk: 1.15, def: 0.90 }, likelyKeywords: { "Berserk": 0.55, "Bravoure": 0.50, "Raid": 0.50, "Première Frappe": 0.45, "Célérité": 0.40, "Pillage X": 0.35, "Combustion": 0.30, "Commandement": 0.30 } },
+      "Le Royaume du Nord": { statWeights: { atk: 1.15, def: 0.90 }, likelyKeywords: { "Gloire +X/+Y": 0.55, "Bravoure": 0.50, "Raid": 0.50, "Première Frappe": 0.45, "Célérité": 0.40, "Pillage X": 0.35, "Combustion": 0.30, "Commandement": 0.30 } },
       "L'Ordre de l'Aube": { statWeights: { atk: 0.90, def: 1.20 }, likelyKeywords: { "Bouclier": 0.60, "Bénédiction": 0.55, "Provocation": 0.50, "Résistance X": 0.50, "Première Frappe": 0.40, "Commandement": 0.40, "Bravoure": 0.35 } },
       "Les Guerrières du Vent": { statWeights: { atk: 1.15, def: 0.85 }, likelyKeywords: { "Précision": 0.55, "Esquive": 0.55, "Traque": 0.50, "Première Frappe": 0.45, "Célérité": 0.45, "Bravoure": 0.40 } },
       "La Sublime Porte": { statWeights: { atk: 1.10, def: 1.05 }, likelyKeywords: { "Commandement": 0.60, "Première Frappe": 0.50, "Combustion": 0.50, "Précision": 0.45, "Bravoure": 0.45, "Tactique X": 0.40, "Bouclier": 0.35 } },
@@ -260,12 +260,12 @@ export const FACTIONS: Record<string, {
     ],
     statWeights: { atk: 1.20, def: 1.00 },
     guaranteedKeywords: [],
-    likelyKeywords: { "Traque": 0.65, "Berserk": 0.55, "Fureur": 0.55, "Première Frappe": 0.45, "Régénération": 0.40, "Bravoure": 0.40, "Combustion": 0.35, "Esquive": 0.35, "Persécution X": 0.30, "Augure": 0.30, "Vol": 0.20 },
+    likelyKeywords: { "Traque": 0.65, "Gloire +X/+Y": 0.55, "Fureur": 0.55, "Première Frappe": 0.45, "Régénération": 0.40, "Bravoure": 0.40, "Combustion": 0.35, "Esquive": 0.35, "Persécution X": 0.30, "Augure": 0.30, "Vol": 0.20 },
     forbiddenKeywords: ["Armure", "Commandement", "Invisible", "Ancré", "Canalisation", "Contresort"],
     description: "Sauvages et féroces : attaquent vite, régénèrent, entrent en rage.",
     clanProfiles: {
       "Les Seigneurs Fauves": { statWeights: { atk: 1.30, def: 0.85 }, likelyKeywords: { "Persécution X": 0.55, "Célérité": 0.50, "Traque": 0.50, "Bravoure": 0.45, "Première Frappe": 0.45, "Double Attaque": 0.40 } },
-      "Les Enfants de la Lune": { statWeights: { atk: 1.25, def: 1.00 }, likelyKeywords: { "Lycanthropie X": 0.55, "Berserk": 0.50, "Fureur": 0.50, "Traque": 0.45, "Régénération": 0.40, "Résistance X": 0.40 } },
+      "Les Enfants de la Lune": { statWeights: { atk: 1.25, def: 1.00 }, likelyKeywords: { "Lycanthropie X": 0.55, "Gloire +X/+Y": 0.50, "Fureur": 0.50, "Traque": 0.45, "Régénération": 0.40, "Résistance X": 0.40 } },
       "Le Pacte des Griffes": { statWeights: { atk: 1.15, def: 0.95 }, likelyKeywords: { "Sang mêlé": 0.60, "Solidarité X": 0.50, "Loyauté": 0.45, "Instinct de meute X": 0.45, "Bravoure": 0.40, "Traque": 0.40 } },
       "La Harde Sauvage": { statWeights: { atk: 1.20, def: 0.95 }, likelyKeywords: { "Célérité": 0.50, "Raid": 0.50, "Piétinement": 0.45, "Précision": 0.45, "Traque": 0.45, "Bravoure": 0.40 } },
       "Les Mignons": { statWeights: { atk: 0.85, def: 0.90 }, likelyKeywords: { "Loyauté": 0.55, "Combustion": 0.40, "Régénération": 0.40, "Solidarité X": 0.40, "Bénédiction": 0.35 } },
@@ -286,7 +286,7 @@ export const FACTIONS: Record<string, {
     // their distinct playstyles live in clanProfiles (consumed by the
     // generator). "Le Souffle des Cimes" was formerly the race "Air/Tempête".
     clanProfiles: {
-      "La Colère des Flammes": { statWeights: { atk: 1.40, def: 0.75 }, likelyKeywords: { "Fureur": 0.70, "Souffle de feu X": 0.60, "Berserk": 0.50, "Sacrifice": 0.35, "Combustion": 0.50, "Carnage X": 0.40 } },
+      "La Colère des Flammes": { statWeights: { atk: 1.40, def: 0.75 }, likelyKeywords: { "Fureur": 0.70, "Souffle de feu X": 0.60, "Gloire +X/+Y": 0.50, "Sacrifice": 0.35, "Combustion": 0.50, "Carnage X": 0.40 } },
       "Le Socle du Monde": { statWeights: { atk: 0.85, def: 1.50 }, likelyKeywords: { "Provocation": 0.70, "Armure": 0.65, "Ancré": 0.60, "Résistance X": 0.55, "Indestructible": 0.30, "Riposte X": 0.45 } },
       "La Vague Sans Fin": { statWeights: { atk: 0.90, def: 1.10 }, likelyKeywords: { "Régénération": 0.65, "Drain de vie": 0.55, "Esquive": 0.50, "Résistance X": 0.40, "Paralysie": 0.50, "Bénédiction": 0.35 } },
       "Le Souffle des Cimes": { statWeights: { atk: 1.15, def: 0.85 }, likelyKeywords: { "Vol": 0.80, "Traque": 0.65, "Célérité": 0.50, "Esquive": 0.45, "Première Frappe": 0.40, "Augure": 0.35 } },
@@ -298,20 +298,20 @@ export const FACTIONS: Record<string, {
     races: ["Géants", "Ogres", "Dragons", "Chiens", "Phoenix", "Anges", "Ours", "Loups", "Fauves"],
     statWeights: { atk: 1.05, def: 1.05 },
     guaranteedKeywords: [],
-    likelyKeywords: { "Traque": 0.40, "Première Frappe": 0.40, "Précision": 0.35, "Esquive": 0.30, "Berserk": 0.30, "Bouclier": 0.25, "Fureur": 0.25, "Vol": 0.15,
+    likelyKeywords: { "Traque": 0.40, "Première Frappe": 0.40, "Précision": 0.35, "Esquive": 0.30, "Gloire +X/+Y": 0.30, "Bouclier": 0.25, "Fureur": 0.25, "Vol": 0.15,
       "Mimique": 0.40, "Métamorphose": 0.40, "Bravoure": 0.30, "Combustion": 0.25 },
     forbiddenKeywords: ["Commandement", "Loyauté", "Domination", "Corruption"],
     description: "Soldats de fortune sans allégeance. Polyvalents et disponibles pour tous les decks.",
     raceProfiles: {
       "Géants": { statWeights: { atk: 1.15, def: 1.30 }, likelyKeywords: { "Provocation": 0.65, "Résistance X": 0.60, "Armure": 0.55, "Indestructible": 0.45, "Terreur": 0.40, "Carnage X": 0.30 } },
-      "Ogres": { statWeights: { atk: 1.25, def: 1.10 }, likelyKeywords: { "Berserk": 0.55, "Fureur": 0.50, "Provocation": 0.40, "Résistance X": 0.35, "Pillage X": 0.30 } },
+      "Ogres": { statWeights: { atk: 1.25, def: 1.10 }, likelyKeywords: { "Gloire +X/+Y": 0.55, "Fureur": 0.50, "Provocation": 0.40, "Résistance X": 0.35, "Pillage X": 0.30 } },
       "Dragons": { statWeights: { atk: 1.40, def: 0.90 }, likelyKeywords: { "Vol": 0.90, "Souffle de feu X": 0.70, "Terreur": 0.60, "Fureur": 0.50, "Indestructible": 0.40, "Transcendance": 0.35, "Vampirisme X": 0.25 } },
-      "Chiens": { statWeights: { atk: 1.10, def: 0.80 }, likelyKeywords: { "Raid": 0.70, "Traque": 0.55, "Instinct de meute X": 0.60, "Loyauté": 0.50, "Esquive": 0.40, "Berserk": 0.35, "Première Frappe": 0.30 } },
-      "Phoenix": { statWeights: { atk: 1.20, def: 0.95 }, likelyKeywords: { "Vol": 0.80, "Résurrection": 0.70, "Souffle de feu X": 0.55, "Régénération": 0.50, "Bouclier": 0.40, "Berserk": 0.35, "Fureur": 0.30, "Cycle éternel": 0.45 } },
+      "Chiens": { statWeights: { atk: 1.10, def: 0.80 }, likelyKeywords: { "Raid": 0.70, "Traque": 0.55, "Instinct de meute X": 0.60, "Loyauté": 0.50, "Esquive": 0.40, "Gloire +X/+Y": 0.35, "Première Frappe": 0.30 } },
+      "Phoenix": { statWeights: { atk: 1.20, def: 0.95 }, likelyKeywords: { "Vol": 0.80, "Résurrection": 0.70, "Souffle de feu X": 0.55, "Régénération": 0.50, "Bouclier": 0.40, "Gloire +X/+Y": 0.35, "Fureur": 0.30, "Cycle éternel": 0.45 } },
       "Anges": { statWeights: { atk: 1.10, def: 1.15 }, likelyKeywords: { "Vol": 0.85, "Bouclier": 0.60, "Bénédiction": 0.55, "Commandement": 0.50, "Première Frappe": 0.45, "Drain de vie": 0.40, "Provocation": 0.35, "Résistance X": 0.30 } },
-      "Ours": { statWeights: { atk: 1.20, def: 1.25 }, likelyKeywords: { "Provocation": 0.55, "Berserk": 0.50, "Résistance X": 0.45, "Fureur": 0.40, "Régénération": 0.35, "Lycanthropie X": 0.45 } },
-      "Loups": { statWeights: { atk: 1.15, def: 0.90 }, likelyKeywords: { "Traque": 0.60, "Raid": 0.55, "Instinct de meute X": 0.50, "Esquive": 0.40, "Berserk": 0.35, "Lycanthropie X": 0.45 } },
-      "Fauves": { statWeights: { atk: 1.20, def: 0.95 }, likelyKeywords: { "Traque": 0.65, "Esquive": 0.55, "Première Frappe": 0.50, "Précision": 0.45, "Bravoure": 0.40, "Berserk": 0.35, "Raid": 0.30, "Invisible": 0.25 } },
+      "Ours": { statWeights: { atk: 1.20, def: 1.25 }, likelyKeywords: { "Provocation": 0.55, "Gloire +X/+Y": 0.50, "Résistance X": 0.45, "Fureur": 0.40, "Régénération": 0.35, "Lycanthropie X": 0.45 } },
+      "Loups": { statWeights: { atk: 1.15, def: 0.90 }, likelyKeywords: { "Traque": 0.60, "Raid": 0.55, "Instinct de meute X": 0.50, "Esquive": 0.40, "Gloire +X/+Y": 0.35, "Lycanthropie X": 0.45 } },
+      "Fauves": { statWeights: { atk: 1.20, def: 0.95 }, likelyKeywords: { "Traque": 0.65, "Esquive": 0.55, "Première Frappe": 0.50, "Précision": 0.45, "Bravoure": 0.40, "Gloire +X/+Y": 0.35, "Raid": 0.30, "Invisible": 0.25 } },
     },
   },
   "Morts-Vivants": {
@@ -354,7 +354,7 @@ export const FACTIONS: Record<string, {
     ],
     statWeights: { atk: 1.15, def: 0.90 },
     guaranteedKeywords: [],
-    likelyKeywords: { "Fureur": 0.50, "Traque": 0.50, "Berserk": 0.45, "Poison": 0.45, "Sacrifice": 0.45, "Terreur": 0.45, "Invisible": 0.40, "Ombre": 0.40, "Malédiction": 0.40, "Pillage X": 0.40, "Persécution X": 0.40, "Carnage X": 0.35, "Maléfice": 0.35, "Pacte de sang": 0.35, "Drain de vie": 0.35, "Corruption": 0.30, "Convocation X": 0.30, "Domination": 0.30, "Vol": 0.20 },
+    likelyKeywords: { "Fureur": 0.50, "Traque": 0.50, "Gloire +X/+Y": 0.45, "Poison": 0.45, "Sacrifice": 0.45, "Terreur": 0.45, "Invisible": 0.40, "Ombre": 0.40, "Malédiction": 0.40, "Pillage X": 0.40, "Persécution X": 0.40, "Carnage X": 0.35, "Maléfice": 0.35, "Pacte de sang": 0.35, "Drain de vie": 0.35, "Corruption": 0.30, "Convocation X": 0.30, "Domination": 0.30, "Vol": 0.20 },
     forbiddenKeywords: ["Loyauté", "Commandement", "Bouclier", "Bénédiction", "Bravoure"],
     description: "Toutes les forces du Chaos unies : horde organisée, cour démoniaque, corrompus du poison et élite déchue.",
     raceProfiles: {
@@ -362,7 +362,7 @@ export const FACTIONS: Record<string, {
       "Araignées Géantes": { statWeights: { atk: 1.10, def: 0.90 }, likelyKeywords: { "Poison": 0.75, "Esquive": 0.50, "Invisible": 0.45 } },
     },
     clanProfiles: {
-      "Les Cohortes Sanglantes": { statWeights: { atk: 1.25, def: 0.90 }, likelyKeywords: { "Traque": 0.55, "Entrainement X": 0.50, "Berserk": 0.50, "Fureur": 0.45, "Catalyse": 0.45, "Convocation X": 0.40, "Entraide (Race)": 0.40, "Régénération": 0.35, "Provocation": 0.35, "Célérité": 0.35, "Sacrifice": 0.30 } },
+      "Les Cohortes Sanglantes": { statWeights: { atk: 1.25, def: 0.90 }, likelyKeywords: { "Traque": 0.55, "Entrainement X": 0.50, "Gloire +X/+Y": 0.50, "Fureur": 0.45, "Catalyse": 0.45, "Convocation X": 0.40, "Entraide (Race)": 0.40, "Régénération": 0.35, "Provocation": 0.35, "Célérité": 0.35, "Sacrifice": 0.30 } },
       "Les Princes des Abîmes": { statWeights: { atk: 1.35, def: 0.80 }, likelyKeywords: { "Fureur": 0.65, "Sacrifice": 0.55, "Terreur": 0.50, "Persécution X": 0.45, "Pacte de sang": 0.40, "Carnage X": 0.40, "Vol": 0.30 } },
       "La Forêt Maudite": { statWeights: { atk: 1.10, def: 0.90 }, likelyKeywords: { "Poison": 0.65, "Invisible": 0.55, "Ombre": 0.50, "Malédiction": 0.50, "Esquive": 0.45, "Drain de vie": 0.40 } },
       "La Garde Noire": { statWeights: { atk: 1.10, def: 1.15 }, likelyKeywords: { "Armure": 0.60, "Résistance X": 0.55, "Fureur": 0.45, "Provocation": 0.45, "Maléfice": 0.40, "Riposte X": 0.40 } },

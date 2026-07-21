@@ -16,7 +16,7 @@ import {
   SPELL_KEYWORD_SYMBOLS,
 } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
-import { buildKeywordDisplayEntries } from "@/lib/game/keyword-labels";
+import { buildKeywordDisplayEntries, applyKeywordValueToLabel } from "@/lib/game/keyword-labels";
 import { emitImpact } from "@/lib/fx/impactFx";
 import { OVERLAY, cardRevealInitial, cardRevealAnimate, cardRevealTransition, findInstanceEl, curvedPath, overlayRect } from "@/lib/fx/overlayMotion";
 import { RadialFlash, HaloBloom, ExpandingRing, OrbitingSparkles } from "@/components/game/OverlayPrimitives";
@@ -294,7 +294,7 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
                       const x = entry.x ?? (xVals as Record<string, number>)[kw];
                       const ctx = { card, instance, x, tokens: tokenTemplates };
                       const label = vocab.keywordLabelFor(kw, ctx);
-                      const displayLabel = x != null ? label.replace(/ X$/, ` ${xNumeral(x)}`) : label;
+                      const displayLabel = applyKeywordValueToLabel(kw, label, x, instance);
                       const desc = vocab.keywordDesc(kw, ctx);
                       // Conferred keyword scope shown via the label note + colour;
                       // the icon itself is left intact (no destructive recolour).

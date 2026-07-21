@@ -20,7 +20,7 @@ function mkInstance(card: Card): CardInstance {
     currentAttack: card.attack ?? 0, currentHealth: card.health ?? 1, maxHealth: card.health ?? 1,
     hasAttacked: false, hasSummoningSickness: false, hasDivineShield: false, attacksRemaining: 1,
     isPoisoned: false, hasUsedResurrection: false, tapped: false,
-    fureurActive: false, fureurATKBonus: 0, berserkActive: false, berserkATKBonus: 0,
+    fureurActive: false, fureurATKBonus: 0, gloireStacks: 0,
     targetsAttackedThisTurn: [], esquiveUsedThisTurn: false, ombreRevealed: false,
     corruptionStolenIds: [], contresortActive: false, maledictionTargetId: null, isParalyzed: false,
     loyauteATKBonus: 0, loyautePVBonus: 0, summonBonusATK: 0, auraHealthBonus: 0, sangMeleHealthBonus: 0,
