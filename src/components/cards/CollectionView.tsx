@@ -57,6 +57,11 @@ const FILTER_LABEL_CLS =
 
 export default function CollectionView({ cards, sets, formats, collectedCardIds, isTester, entitlements, ownedPrints = [] }: CollectionViewProps) {
   const ownedSet = useMemo(() => new Set(collectedCardIds), [collectedCardIds]);
+  // Les cartes non possédées restent AFFICHÉES, grisées : sans elles un joueur
+  // ne verrait jamais le reste du catalogue — ni ce que l'offre de déblocage
+  // apporte. Le deck builder, lui, continue de les refuser : voir n'est pas
+  // jouer.
+  const [showLocked, setShowLocked] = useState(true);
   const ownership = useMemo<OwnershipContext>(
     () => ({ ownsEverything: isTester, collectedCardIds: ownedSet, ...entitlements }),
     [isTester, ownedSet, entitlements],
@@ -125,7 +130,6 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
 
   const filteredCards = useMemo(() => {
     return cards.filter((card) => {
-      if (!isCardOwned(card, ownership)) return false;
       if (formatPredicate && !formatPredicate(card)) return false;
       if (search && !card.name.toLowerCase().includes(search.toLowerCase()))
         return false;
@@ -157,29 +161,54 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
         return false;
       return true;
     });
-  }, [cards, ownership, formatPredicate, search, manaCostFilter, typeFilter, keywordFilter, factionFilter, rarityFilter, expertOnly, raceFilter, clanFilter, filterSet, filterYear]);
+  }, [cards, formatPredicate, search, manaCostFilter, typeFilter, keywordFilter, factionFilter, rarityFilter, expertOnly, raceFilter, clanFilter, filterSet, filterYear]);
 
   // For normal players: expand cards to show each print separately
-  const displayItems = useMemo(() => {
-    if (!isNormalPlayer) {
-      // Admin/testeur: one card each, no print numbers
-      return filteredCards.map(card => ({ card, printNumber: undefined as number | undefined, maxPrints: undefined as number | undefined, key: `card-${card.id}` }));
-    }
-    const items: { card: Card; printNumber: number | undefined; maxPrints: number | undefined; key: string }[] = [];
+  type DisplayItem = {
+    card: Card;
+    printNumber: number | undefined;
+    maxPrints: number | undefined;
+    key: string;
+    /** false ⇒ affichée grisée, non utilisable en deck. */
+    owned: boolean;
+  };
+
+  const displayItems = useMemo<DisplayItem[]>(() => {
+    const items: DisplayItem[] = [];
     for (const card of filteredCards) {
+      if (!isCardOwned(card, ownership)) {
+        // Une carte verrouillée n'a par définition aucun exemplaire : jamais
+        // d'expansion par tirage, une seule vignette.
+        if (showLocked) {
+          items.push({ card, printNumber: undefined, maxPrints: undefined, key: `locked-${card.id}`, owned: false });
+        }
+        continue;
+      }
+      if (!isNormalPlayer) {
+        items.push({ card, printNumber: undefined, maxPrints: undefined, key: `card-${card.id}`, owned: true });
+        continue;
+      }
       const prints = printsByCard.get(card.id);
       if (prints && prints.length > 0) {
-        // Show each print as a separate card
         for (const p of prints) {
-          items.push({ card, printNumber: p.print_number, maxPrints: p.max_prints, key: `print-${p.id}` });
+          items.push({ card, printNumber: p.print_number, maxPrints: p.max_prints, key: `print-${p.id}`, owned: true });
         }
       } else {
-        // Card from user_collections (no prints) — show once without number
-        items.push({ card, printNumber: undefined, maxPrints: undefined, key: `card-${card.id}` });
+        items.push({ card, printNumber: undefined, maxPrints: undefined, key: `card-${card.id}`, owned: true });
       }
     }
     return items;
-  }, [filteredCards, isNormalPlayer, printsByCard]);
+  }, [filteredCards, isNormalPlayer, printsByCard, ownership, showLocked]);
+
+  // Compteur d'en-tête : ce que le joueur POSSÈDE. Les verrouillées sont
+  // comptées à part dans la bannière — les mélanger gonflerait artificiellement
+  // sa collection.
+  const ownedCount = useMemo(() => displayItems.filter((i) => i.owned).length, [displayItems]);
+
+  const lockedCount = useMemo(
+    () => filteredCards.reduce((n, c) => (isCardOwned(c, ownership) ? n : n + 1), 0),
+    [filteredCards, ownership],
+  );
 
   function resetFilters() {
     setSearch("");
@@ -214,7 +243,7 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
               {t("card_collection")}
             </h1>
             <p className="mt-2 font-[family-name:var(--font-crimson),serif] text-sm italic text-am-ink-soft">
-              {t("cards_count", { count: displayItems.length })}{isNormalPlayer ? "" : t("cards_of_total", { total: cards.length })}
+              {t("cards_count", { count: ownedCount })}{isNormalPlayer ? "" : t("cards_of_total", { total: cards.length })}
             </p>
           </div>
           <AmButton
@@ -452,6 +481,31 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
         </div>
 
         {/* Card Grid */}
+        {lockedCount > 0 && (
+          <div
+            className="am-glass am-animate-rise mb-6 flex flex-wrap items-center justify-between gap-3 px-5 py-3"
+            style={{ animationDelay: "0.14s" }}
+          >
+            <div className="min-w-0">
+              <p className="font-[family-name:var(--font-cinzel),serif] text-sm font-bold text-am-ink">
+                🔒 {t("locked_summary", { count: lockedCount })}
+              </p>
+              <p className="mt-0.5 font-[family-name:var(--font-crimson),serif] text-xs text-am-ink-faint">
+                {t("locked_hint")}
+              </p>
+            </div>
+            <label className="flex shrink-0 cursor-pointer items-center gap-2 text-xs text-am-ink-soft">
+              <input
+                type="checkbox"
+                checked={showLocked}
+                onChange={(e) => setShowLocked(e.target.checked)}
+                className="h-4 w-4 cursor-pointer accent-[color:var(--am-gold)]"
+              />
+              {t("show_locked")}
+            </label>
+          </div>
+        )}
+
         {displayItems.length === 0 ? (
           <div className="am-glass am-animate-rise px-6 py-20 text-center font-[family-name:var(--font-crimson),serif] text-xl italic text-am-ink-soft">
             {t("no_cards_match")}
@@ -474,31 +528,49 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
                       style: { animationDelay: `${0.02 * i + 0.05}s` } as const,
                     }
                   : { className: hoverLift };
-              if (isExpert) {
-                return (
-                  <div key={item.key} {...animProps}>
-                    <ExpertCardFrame rarity={rarity}>
-                      <GameCard
-                        card={item.card}
-                        size="md"
-                        printNumber={item.printNumber}
-                        maxPrints={item.maxPrints}
-                        disableHoverZoom
-                      />
-                    </ExpertCardFrame>
-                  </div>
-                );
-              }
-              return (
-                <div key={item.key} {...animProps}>
+              const inner = isExpert ? (
+                <ExpertCardFrame rarity={rarity}>
                   <GameCard
                     card={item.card}
                     size="md"
                     printNumber={item.printNumber}
                     maxPrints={item.maxPrints}
+                    disableHoverZoom
                   />
-                </div>
+                </ExpertCardFrame>
+              ) : (
+                <GameCard
+                  card={item.card}
+                  size="md"
+                  printNumber={item.printNumber}
+                  maxPrints={item.maxPrints}
+                />
               );
+
+              if (!item.owned) {
+                // Désaturée et assombrie plutôt que masquée. `pointer-events-none`
+                // coupe le zoom au survol : la carte se regarde, elle ne se
+                // manipule pas.
+                return (
+                  <div key={item.key} {...animProps} aria-disabled>
+                    <div className="relative">
+                      <div className="pointer-events-none opacity-40 grayscale">{inner}</div>
+                      <span
+                        className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-widest"
+                        style={{
+                          background: "rgba(8,7,15,0.82)",
+                          border: "1px solid var(--am-line-strong)",
+                          color: "var(--am-ink-soft)",
+                        }}
+                      >
+                        🔒 {t("locked_badge")}
+                      </span>
+                    </div>
+                  </div>
+                );
+              }
+
+              return <div key={item.key} {...animProps}>{inner}</div>;
             })}
           </div>
         )}

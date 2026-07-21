@@ -1978,7 +1978,11 @@
     "format_label": "Format:",
     "set_label": "Set:",
     "year_label": "Année:",
-    "no_cards_match": "Aucune carte ne correspond à vos filtres"
+    "no_cards_match": "Aucune carte ne correspond à vos filtres",
+    "show_locked": "Afficher les verrouillées",
+    "locked_badge": "Verrouillée",
+    "locked_summary": "{count, plural, one {# carte verrouillée} other {# cartes verrouillées}}",
+    "locked_hint": "Les communes des autres factions seront accessibles via l'offre de déblocage complet."
   },
   "cardBacks": {
     "eyebrow": "Affiche ton style",

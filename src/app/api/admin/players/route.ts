@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
+import { isValidStarterFaction } from '@/lib/auth/starterFaction';
 
 async function getAuthUser() {
   const cookieStore = await cookies();
@@ -52,7 +53,9 @@ export async function GET() {
   // Fetch profiles
   const { data: profiles, error } = await supabase
     .from('profiles')
-    .select('id, username, role, created_at')
+    // select('*') volontaire : nommer les colonnes du modèle de droits ferait
+    // échouer la requête entière tant que la migration n'est pas appliquée.
+    .select('*')
     .order('username');
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -101,6 +104,9 @@ export async function GET() {
       prints_owned: printCounts.get(p.id) ?? 0,
       last_sign_in: authUser?.last_sign_in_at ?? null,
       created_at: p.created_at,
+      starter_faction: p.starter_faction ?? null,
+      all_commons_unlocked: p.all_commons_unlocked ?? false,
+      legacy_full_access: p.legacy_full_access ?? null,
     };
   });
 
@@ -145,6 +151,39 @@ export async function POST(request: Request) {
         .eq('id', userId);
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
       return NextResponse.json({ success: true, message: `Rôle changé en ${value}` });
+    }
+
+    // Octroi manuel de l'offre « toutes les communes ». Tient lieu
+    // d'encaissement tant qu'aucun prestataire de paiement n'est intégré : un
+    // futur webhook n'aura qu'à basculer ce même drapeau, rien d'autre à
+    // reprendre.
+    case 'set_all_commons_unlocked': {
+      const unlocked = value === 'true';
+      const { error } = await supabase
+        .from('profiles')
+        .update({ all_commons_unlocked: unlocked })
+        .eq('id', userId);
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({
+        success: true,
+        message: unlocked ? 'Communes débloquées' : 'Déblocage retiré',
+      });
+    }
+
+    // Changement de faction — réservé à l'admin. Le joueur, lui, ne peut la
+    // choisir qu'UNE fois (/api/profile/faction refuse ensuite) : c'est ce qui
+    // donne sa valeur à l'offre payante. Cette porte de sortie existe pour les
+    // erreurs de manipulation et le support.
+    case 'change_starter_faction': {
+      if (!value || !isValidStarterFaction(value)) {
+        return NextResponse.json({ error: 'Faction invalide' }, { status: 400 });
+      }
+      const { error } = await supabase
+        .from('profiles')
+        .update({ starter_faction: value })
+        .eq('id', userId);
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ success: true, message: `Faction changée en ${value}` });
     }
 
     case 'suspend': {
