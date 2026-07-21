@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter, useSearchParams } from "next/navigation";
 import AuthShell, { authFieldClass, authLabelClass } from "@/components/auth/AuthShell";
+import { USERNAME_MAX, normalizeUsername, validateUsername } from "@/lib/auth/username";
 
 /** Codes que /auth/callback pose dans `?error=`. Liste close : un code inconnu
  *  retombe sur le message générique plutôt que d'afficher une clé i18n brute. */
@@ -127,6 +128,17 @@ export default function LoginForm() {
           setLoading(false);
           return;
         }
+        // Le pseudo devient obligatoire : le formulaire n'en invente plus. Un
+        // `username` absent des métadonnées signifie désormais « ce compte n'en
+        // a pas choisi » (donc OAuth), ce que le trigger exploite pour savoir à
+        // qui proposer l'écran de choix.
+        const wantedUsername = normalizeUsername(username);
+        const invalidUsername = validateUsername(wantedUsername);
+        if (invalidUsername) {
+          setError(t(`username_${invalidUsername}`));
+          setLoading(false);
+          return;
+        }
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -135,7 +147,7 @@ export default function LoginForm() {
             // projet : en développement local on atterrissait donc en prod.
             emailRedirectTo: emailRedirectTo(),
             data: {
-              username: username || `Player_${Date.now().toString(36)}`,
+              username: wantedUsername,
               // Horodatage du consentement, à recopier dans `profiles` par le
               // trigger `on_auth_user_created` (§3) : la preuve d'acceptation
               // doit survivre à la session, sinon elle ne prouve rien.
@@ -315,9 +327,14 @@ export default function LoginForm() {
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              required
+              maxLength={USERNAME_MAX}
               className={authFieldClass}
               placeholder={t("username_placeholder")}
             />
+            <p className="mt-1.5 text-xs text-am-ink-faint font-[family-name:var(--font-crimson),serif]">
+              {t("username_rules")}
+            </p>
           </div>
         )}
         <div>

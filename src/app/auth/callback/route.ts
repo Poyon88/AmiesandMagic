@@ -16,6 +16,22 @@ function safeNext(raw: string | null): string {
   return raw;
 }
 
+/** Le joueur doit-il encore choisir son pseudo ? Ne répond `true` que sur un
+ *  `false` explicite : tant que la migration ajoutant `username_confirmed`
+ *  n'est pas appliquée, la colonne est absente et personne ne doit être
+ *  détourné vers l'écran de choix. */
+async function needsUsername(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+): Promise<boolean> {
+  const { data } = await supabase
+    .from("profiles")
+    .select("username_confirmed")
+    .eq("id", userId)
+    .single();
+  return data?.username_confirmed === false;
+}
+
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
@@ -35,8 +51,15 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
+      // Choix du pseudo, premier des deux points d'aiguillage (l'autre est la
+      // page d'accueil). On ne détourne PAS un `next` explicite : la
+      // réinitialisation de mot de passe passe par ici et doit aboutir sur son
+      // formulaire, pas sur un écran de bienvenue.
+      if (next === "/" && data.user && (await needsUsername(supabase, data.user.id))) {
+        return NextResponse.redirect(`${origin}/onboarding/pseudo`);
+      }
       return NextResponse.redirect(`${origin}${next}`);
     }
     // Code présent mais inutilisable : lien de confirmation déjà consommé ou

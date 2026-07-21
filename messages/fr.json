@@ -1304,7 +1304,17 @@
     "cgu_accept": "J'accepte les conditions générales d'utilisation et la politique de confidentialité.",
     "cgu_link": "Lire les conditions générales",
     "privacy_link": "Lire la politique de confidentialité",
-    "cgu_required": "Tu dois accepter les conditions pour créer un compte."
+    "cgu_required": "Tu dois accepter les conditions pour créer un compte.",
+    "onboarding_title": "Choisis ton nom de joueur",
+    "onboarding_sub": "Il sera visible des autres joueurs, sur les enchères et ton profil. Tu pourras en changer plus tard.",
+    "onboarding_submit": "Valider",
+    "username_rules": "3 à 20 caractères : lettres, chiffres, tiret ou souligné.",
+    "username_too_short": "Le nom doit faire au moins 3 caractères.",
+    "username_too_long": "Le nom ne peut pas dépasser 20 caractères.",
+    "username_invalid_chars": "Lettres, chiffres, tiret et souligné uniquement — pas d'espace ni d'accent.",
+    "username_reserved": "Ce nom est réservé, choisis-en un autre.",
+    "username_taken": "Ce nom est déjà pris. Essaie une variante.",
+    "username_required": "Choisis un nom de joueur."
   },
   "common": {
     "settings_title": "Réglages",
