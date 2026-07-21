@@ -44,18 +44,34 @@ export type Entitlements = Pick<
   "legacyFullAccess" | "starterFaction" | "allCommonsUnlocked"
 >;
 
-/** Droits d'un joueur dont le profil n'a pas encore les colonnes du nouveau
- *  modèle — c'est-à-dire tant que la migration n'est pas appliquée. On retombe
- *  sur `legacyFullAccess`, donc sur la règle d'AVANT : déployer le code sans la
- *  migration ne retire aucune carte à personne. */
+/** Profil PRÉSENT mais sans les colonnes du nouveau modèle : la migration n'est
+ *  pas encore appliquée. On retombe sur la règle d'AVANT, pour que déployer le
+ *  code sans la migration ne retire aucune carte à personne. */
 export const LEGACY_ENTITLEMENTS: Entitlements = {
   legacyFullAccess: true,
   starterFaction: null,
   allCommonsUnlocked: false,
 };
 
-/** Lit les droits depuis une ligne `profiles` éventuellement incomplète.
- *  Une colonne absente (migration non appliquée) ⇒ régime grand-père. */
+/** Profil ABSENT — état anormal : le compte existe dans `auth.users` mais sa
+ *  ligne `profiles` n'a jamais été créée (trigger en échec). Droits minimaux :
+ *  seule la collection personnelle subsiste.
+ *
+ *  Le repli permissif était un vrai défaut : un compte cassé obtenait le
+ *  CATALOGUE COMPLET, puisqu'aucune donnée ne venait le restreindre. Le plus
+ *  permissif est le mauvais défaut face à l'inconnu — d'autant qu'ici l'anomalie
+ *  se voyait d'autant moins qu'elle était généreuse. */
+export const NO_PROFILE_ENTITLEMENTS: Entitlements = {
+  legacyFullAccess: false,
+  starterFaction: null,
+  allCommonsUnlocked: false,
+};
+
+/** Lit les droits depuis une ligne `profiles`.
+ *
+ *  Distingue deux absences que l'on confondait :
+ *    • la LIGNE manque      ⇒ état cassé, droits minimaux ;
+ *    • la COLONNE manque    ⇒ migration en attente, régime grand-père. */
 export function entitlementsFromProfile(
   profile: {
     legacy_full_access?: boolean | null;
@@ -63,7 +79,8 @@ export function entitlementsFromProfile(
     all_commons_unlocked?: boolean | null;
   } | null | undefined,
 ): Entitlements {
-  if (!profile || profile.legacy_full_access == null) return LEGACY_ENTITLEMENTS;
+  if (!profile) return NO_PROFILE_ENTITLEMENTS;
+  if (profile.legacy_full_access == null) return LEGACY_ENTITLEMENTS;
   return {
     legacyFullAccess: profile.legacy_full_access,
     starterFaction: profile.starter_faction ?? null,

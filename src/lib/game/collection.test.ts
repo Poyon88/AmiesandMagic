@@ -10,7 +10,13 @@
 //   • nouveau modèle — communes de la faction choisie, option payante pour les
 //     communes de toutes les factions.
 import { describe, expect, it } from "vitest";
-import { isCardOwned, filterOwnedCards, NEUTRAL_FACTION, type OwnershipContext } from "./collection";
+import {
+  isCardOwned,
+  filterOwnedCards,
+  entitlementsFromProfile,
+  NEUTRAL_FACTION,
+  type OwnershipContext,
+} from "./collection";
 import type { Card } from "./types";
 
 function card(
@@ -136,5 +142,43 @@ describe("filterOwnedCards", () => {
       ctx({ starterFaction: "Elfes", collectedCardIds: new Set([4]) }),
     );
     expect(owned.map((c) => c.id)).toEqual([1, 4, 6]);
+  });
+});
+
+describe("entitlementsFromProfile — les deux absences ne se valent pas", () => {
+  it("LIGNE absente ⇒ droits minimaux, surtout PAS l'accès complet", () => {
+    // Régression : un compte dont le trigger a échoué existe dans auth.users
+    // sans profil. Le repli permissif lui offrait tout le catalogue — l'anomalie
+    // passait d'autant plus inaperçue qu'elle était généreuse.
+    for (const vide of [null, undefined]) {
+      const e = entitlementsFromProfile(vide);
+      expect(e.legacyFullAccess).toBe(false);
+      expect(e.starterFaction).toBeNull();
+      expect(e.allCommonsUnlocked).toBe(false);
+    }
+  });
+
+  it("COLONNE absente ⇒ régime grand-père : déployer avant la migration ne retire rien", () => {
+    expect(entitlementsFromProfile({}).legacyFullAccess).toBe(true);
+  });
+
+  it("profil complet ⇒ lu tel quel", () => {
+    expect(
+      entitlementsFromProfile({
+        legacy_full_access: false,
+        starter_faction: "Nains",
+        all_commons_unlocked: true,
+      }),
+    ).toEqual({ legacyFullAccess: false, starterFaction: "Nains", allCommonsUnlocked: true });
+  });
+
+  it("un profil sans ligne ne donne accès qu'à la collection personnelle", () => {
+    const c: OwnershipContext = {
+      ownsEverything: false,
+      collectedCardIds: new Set([42]),
+      ...entitlementsFromProfile(null),
+    };
+    expect(isCardOwned(card(42, 2, "Légendaire", "Nains"), c)).toBe(true);  // acquise
+    expect(isCardOwned(card(43, 2, "Commune", "Nains"), c)).toBe(false);    // rien d'autre
   });
 });
