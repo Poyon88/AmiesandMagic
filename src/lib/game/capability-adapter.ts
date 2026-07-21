@@ -31,10 +31,11 @@ import type {
 } from "./types";
 
 function pruneParams(
-  p: { x?: number | null; attack?: number | null; health?: number | null },
+  p: { x?: number | null; y?: number | null; attack?: number | null; health?: number | null },
 ): Capability["params"] {
-  const out: { x?: number; attack?: number; health?: number } = {};
+  const out: { x?: number; y?: number; attack?: number; health?: number } = {};
   if (p.x != null) out.x = p.x;
+  if (p.y != null) out.y = p.y;
   if (p.attack != null) out.attack = p.attack;
   if (p.health != null) out.health = p.health;
   return Object.keys(out).length > 0 ? out : undefined;
@@ -111,7 +112,9 @@ function deriveSpellCapabilities(card: Card): Capability[] {
       effectKind: "grant",
       abilityId: kw,
       grantScope: scope,
-      params: pruneParams({ x: inst?.x }),
+      // `y` : second membre des mots-clés à couple (Gloire +X/+Y). Sans lui le
+      // don retombait sur le +Y=1 de repli, quelle que soit la saisie du forge.
+      params: pruneParams({ x: inst?.x, y: inst?.y }),
       targets,
     });
   });

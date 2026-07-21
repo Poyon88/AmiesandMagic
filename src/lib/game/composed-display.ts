@@ -6,8 +6,8 @@
 // SafeT optionnel) avec repli FR intégré (COMPOSED_FR = source unique, aussi
 // graine du générateur vocab). Sans traducteur (store, tests) → FR.
 
-import { ABILITIES, creatureEngineId } from "./abilities";
-import { xNumeral, keywordModeColor, KEYWORD_LABELS, KEYWORD_SYMBOLS } from "./keyword-labels";
+import { ABILITIES, creatureEngineId, XY_ABILITY_IDS } from "./abilities";
+import { xNumeral, keywordModeColor, KEYWORD_LABELS, KEYWORD_SYMBOLS, applyKeywordValueToLabel } from "./keyword-labels";
 import type { Capability, ComposedEffect, Keyword, KeywordMode, TargetSpec, TokenTemplate } from "./types";
 import type { SafeT } from "@/i18n/config";
 
@@ -125,7 +125,10 @@ function frag(t: SafeT | undefined, key: string, params?: Record<string, string 
 export function composedValueText(cap: Capability): string | null {
   const m = cap.composed?.magnitude;
   if (!m) return null;
-  if (cap.composed!.content === "buff" || cap.composed!.content === "debuff") {
+  // Couple X/Y : buff/debuff, ou don d'une capacité à couple (Gloire +X/+Y).
+  const grantedXY = cap.composed!.content === "grant_keyword"
+    && XY_ABILITY_IDS.has(grantedEngineId(cap.composed!) ?? "");
+  if (cap.composed!.content === "buff" || cap.composed!.content === "debuff" || grantedXY) {
     return (m.x != null || m.y != null) ? `${m.x ?? 0}/${m.y ?? 0}` : null;
   }
   return (m.x != null && m.x > 0) ? xNumeral(m.x) : null;
@@ -228,6 +231,21 @@ export function composedMarkerColor(mode: KeywordMode | undefined): string {
   return keywordModeColor(mode) ?? "#ffffff";
 }
 
+/** Libellé de la capacité conférée par un `grant_keyword`, valeurs injectées :
+ *  « Gloire +2/+1 », « Résistance 3 », « Provocation ». Sans cette injection le
+ *  texte de carte affichait littéralement le marqueur du registre (« Gloire
+ *  +X/+Y »), l'amplitude saisie dans le forge restant invisible au joueur. */
+function grantedAbilityLabel(eff: ComposedEffect, x: number, y: number, t?: SafeT): string {
+  const id = eff.grantAbilityId;
+  const a = id ? (ABILITIES[id] ?? Object.values(ABILITIES).find((d) => creatureEngineId(d) === id)) : undefined;
+  // Nom de capacité localisé quand disponible (vocab.keywords), sinon label moteur.
+  const label = (id ? t?.(`vocab.keywords.${id}.label`) : undefined)
+    ?? a?.label ?? id ?? frag(t, "content.ability_generic");
+  const engineId = grantedEngineId(eff);
+  if (!engineId || (x <= 0 && y <= 0)) return label;
+  return applyKeywordValueToLabel(engineId, label, x, { id: engineId, y });
+}
+
 function describeContent(eff: ComposedEffect, tokens: TokenTemplate[] | undefined, t?: SafeT): string {
   const x = eff.magnitude?.x ?? 0;
   const y = eff.magnitude?.y ?? 0;
@@ -239,14 +257,7 @@ function describeContent(eff: ComposedEffect, tokens: TokenTemplate[] | undefine
     case "destroy": return frag(t, "content.destroy");
     case "bounce": return frag(t, "content.bounce");
     case "paralyze": return frag(t, "content.paralyze");
-    case "grant_keyword": {
-      const id = eff.grantAbilityId;
-      const a = id ? (ABILITIES[id] ?? Object.values(ABILITIES).find((d) => creatureEngineId(d) === id)) : undefined;
-      // Nom de capacité localisé quand disponible (vocab.keywords), sinon label moteur.
-      const ability = (id ? t?.(`vocab.keywords.${id}.label`) : undefined)
-        ?? a?.label ?? id ?? frag(t, "content.ability_generic");
-      return frag(t, "content.grant_keyword", { ability });
-    }
+    case "grant_keyword": return frag(t, "content.grant_keyword", { ability: grantedAbilityLabel(eff, x, y, t) });
     case "draw_cards": return frag(t, x > 1 ? "content.draw_cards_many" : "content.draw_cards_one", { x });
     case "discard": return frag(t, x > 1 ? "content.discard_many" : "content.discard_one", { x });
     case "summon_token": {
@@ -283,13 +294,7 @@ function describeSelfContent(eff: ComposedEffect, t?: SafeT): string | null {
     case "destroy": return frag(t, "self.destroy");
     case "bounce": return frag(t, "self.bounce");
     case "paralyze": return frag(t, "self.paralyze");
-    case "grant_keyword": {
-      const id = eff.grantAbilityId;
-      const a = id ? (ABILITIES[id] ?? Object.values(ABILITIES).find((d) => creatureEngineId(d) === id)) : undefined;
-      const ability = (id ? t?.(`vocab.keywords.${id}.label`) : undefined)
-        ?? a?.label ?? id ?? frag(t, "content.ability_generic");
-      return frag(t, "self.grant_keyword", { ability });
-    }
+    case "grant_keyword": return frag(t, "self.grant_keyword", { ability: grantedAbilityLabel(eff, x, y, t) });
     default: return null;
   }
 }

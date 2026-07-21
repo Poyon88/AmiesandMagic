@@ -1190,6 +1190,17 @@ export const AUTOMATIC_ABILITY_IDS: ReadonlySet<string> = new Set([
   "regeneration", "canalisation", "entraide",
 ]);
 
+/** Ids moteur des capacités dont la valeur est un COUPLE X/Y (ATK/PV) et non un
+ *  simple X — « Gloire +X/+Y », « Renforcement +X/+Y », « Affaiblissement -X/-Y ».
+ *  Dérivé du libellé du registre plutôt que saisi en dur : une nouvelle capacité
+ *  X/Y est prise en compte sans liste à maintenir en double (même leçon que le
+ *  mapping label→id du forge, où le doublon perdait des capacités en silence). */
+export const XY_ABILITY_IDS: ReadonlySet<string> = new Set(
+  Object.values(ABILITIES)
+    .filter((a) => /X\s*\/\s*[+-]?Y/.test(a.label))
+    .map((a) => creatureEngineId(a)),
+);
+
 /** Dérive la taxonomie déclencheur/effet d'une ability depuis les jeux d'ids.
  *  Centralisé (pas saisi à la main par entrée) pour rester cohérent et testable. */
 export function deriveAbilityTriggerMeta(a: AbilityDef): AbilityTriggerMeta {

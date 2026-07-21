@@ -10,7 +10,7 @@
 //   3. le bonus est PERMANENT et CUMULATIF (cuit dans les stats de l'instance,
 //      donc insensible à recalculateAuras et conservé entre les zones).
 import { describe, expect, it } from "vitest";
-import { attack, playCard } from "./engine";
+import { applyAction, attack, playCard } from "./engine";
 import { mkCard, mkInstance, mkState } from "./test-harness";
 import type { CardInstance } from "./types";
 
@@ -75,6 +75,25 @@ describe("Gloire — déclenchement", () => {
     expect(after.gloireStacks).toBe(2);
     expect(after.currentAttack).toBe(7);   // 3 + 2 + 2
     expect(after.maxHealth).toBe(22);      // 20 + 1 + 1
+  });
+
+  it("Gloire CONFÉRÉE : le X et le Y accordés priment sur le repli 1/1", () => {
+    const s = mkState();
+    const atk = mkInstance(mkCard({ name: "Attaquant", attack: 2, health: 10 }));
+    atk.hasSummoningSickness = false;
+    // Pas de keyword_instances : la Gloire vient d'un don à l'exécution
+    // (effet composé « Conférer une capacité », sort Rage Gobeline…).
+    const glo = mkInstance(mkCard({ name: "Béni", attack: 3, health: 10, keywords: ["gloire"] as never }));
+    glo.grantedKeywordX = { gloire: 3 };
+    glo.grantedKeywordY = { gloire: 2 };
+    s.players[0].board.push(atk);
+    s.players[1].board.push(glo);
+
+    const next = attack(s, { type: "attack", attackerInstanceId: atk.instanceId, targetInstanceId: glo.instanceId });
+    const after = next.players[1].board.find(c => c.instanceId === glo.instanceId)!;
+
+    expect(after.currentAttack).toBe(6);   // 3 + 3, pas 3 + 1
+    expect(after.maxHealth).toBe(12);      // 10 + 2, pas 10 + 1
   });
 
   it("l'échange simultané reste simultané : la riposte n'utilise pas l'ATK déjà gonflée", () => {
@@ -165,5 +184,36 @@ describe("Gloire — non-déclenchement", () => {
     expect(after.currentHealth).toBe(8); // souffle encaissé…
     expect(after.gloireStacks ?? 0).toBe(0); // …mais ce n'est pas du combat
     expect(after.currentAttack).toBe(3);
+  });
+});
+
+// Gloire CONFÉRÉE par un pouvoir de héros. Le canal params (amount/amountY) est
+// la seule source de X/Y ici : la cible n'a aucune keyword_instance.
+describe("Gloire — conférée par un pouvoir de héros", () => {
+  it("mode grant_keyword : le +X/+Y du pouvoir prime sur le repli 1/1", () => {
+    const s = mkState();
+    const target = mkInstance(mkCard({ name: "Cible", attack: 2, health: 10 }));
+    s.players[0].board.push(target);
+    s.players[0].hero.heroDefinition = {
+      id: 1, name: "Sigurd", race: "humans",
+      powerName: "Bénédiction", powerCost: 1,
+      powerEffect: { mode: "grant_keyword", keywordId: "gloire", params: { amount: 3, amountY: 2 } },
+      powerDescription: "",
+    };
+
+    const granted = applyAction(s, { type: "hero_power", targetInstanceId: target.instanceId });
+    const g = granted.players[0].board.find(c => c.instanceId === target.instanceId)!;
+    expect(g.grantedKeywordX["gloire"]).toBe(3);
+    expect(g.grantedKeywordY?.["gloire"]).toBe(2);
+
+    // …et le combat applique bien 3/2, pas 1/1.
+    const atk = mkInstance(mkCard({ name: "Attaquant", attack: 2, health: 10 }));
+    atk.hasSummoningSickness = false;
+    granted.players[1].board.push(atk);
+    granted.currentPlayerIndex = 1;
+    const after = attack(granted, { type: "attack", attackerInstanceId: atk.instanceId, targetInstanceId: target.instanceId })
+      .players[0].board.find(c => c.instanceId === target.instanceId)!;
+    expect(after.currentAttack).toBe(5); // 2 + 3
+    expect(after.maxHealth).toBe(12);    // 10 + 2
   });
 });

@@ -8,7 +8,7 @@
 import { useTranslations } from "next-intl";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 import RaceClanPicker from "@/components/admin/RaceClanPicker";
-import { ABILITIES, creatureEngineId } from "@/lib/game/abilities";
+import { ABILITIES, creatureEngineId, XY_ABILITY_IDS } from "@/lib/game/abilities";
 import type { Capability, ComposedEffect, ComposedEffectContent, CapabilityTrigger, TargetSpec, TokenTemplate } from "@/lib/game/types";
 
 const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" | "unit" | "unit_or_hero"; xy?: boolean }[] = [
@@ -87,6 +87,11 @@ export default function ComposedEffectsEditor({
       {value.map((cap, idx) => {
         const eff = cap.composed as ComposedEffect;
         const meta = COMPOSED_CONTENTS.find((c) => c.v === eff.content)!;
+        // « Conférer une capacité » : l'amplitude devient X/Y quand la capacité
+        // conférée porte un couple (Gloire +X/+Y), sinon X seul.
+        const grantedIsXY = eff.content === "grant_keyword"
+          && XY_ABILITY_IDS.has(eff.grantAbilityId ?? GRANTABLE[0]?.id ?? "");
+        const showY = meta.xy || grantedIsXY;
         const t = eff.target ?? DEFAULT_TARGET;
         const countMode = t.count === "all" ? "all" : t.count === 1 ? "1" : "N";
         return (
@@ -119,13 +124,20 @@ export default function ComposedEffectsEditor({
               <span style={labelStyle}>{tr('label_magnitude')}</span>
               <span style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
                 <label style={{ fontSize: 9, color: "#666" }}>X {numInput(eff.magnitude?.x ?? 0, (n) => patchEffect(idx, { magnitude: { ...eff.magnitude, x: n } }))}</label>
-                {meta.xy && <label style={{ fontSize: 9, color: "#666" }}>Y {numInput(eff.magnitude?.y ?? 0, (n) => patchEffect(idx, { magnitude: { ...eff.magnitude, y: n } }))}</label>}
+                {showY && <label style={{ fontSize: 9, color: "#666" }}>Y {numInput(eff.magnitude?.y ?? 0, (n) => patchEffect(idx, { magnitude: { ...eff.magnitude, y: n } }))}</label>}
               </span>
 
               {eff.content === "grant_keyword" && (
                 <>
                   <span style={labelStyle}>{tr('label_granted_ability')}</span>
-                  {sel(eff.grantAbilityId ?? GRANTABLE[0]?.id ?? "", GRANTABLE.map((g) => ({ v: g.id, l: g.label })), (v) => patchEffect(idx, { grantAbilityId: v }))}
+                  {sel(eff.grantAbilityId ?? GRANTABLE[0]?.id ?? "", GRANTABLE.map((g) => ({ v: g.id, l: g.label })), (v) => patchEffect(idx, {
+                    grantAbilityId: v,
+                    // Capacité à couple X/Y : amorcer Y à 1 (repli du moteur)
+                    // plutôt que 0, sinon la Gloire conférée n'accorde aucun PV.
+                    magnitude: XY_ABILITY_IDS.has(v) && eff.magnitude?.y == null
+                      ? { ...eff.magnitude, y: 1 }
+                      : eff.magnitude,
+                  }))}
                 </>
               )}
               {eff.content === "summon_token" && (

@@ -375,6 +375,11 @@ export function keywordBadgeValue(
   x: number | undefined,
   inst?: KeywordInstance,
 ): string | null {
+  // « Conférer » n'est pas scalable : les x/y de son instance portent
+  // l'amplitude de la capacité CONFÉRÉE, pas la sienne. Les peindre sur son
+  // badge afficherait un « Conférer I » trompeur — la valeur appartient au
+  // libellé de la capacité donnée, que la description résout déjà.
+  if (kw === "conferer") return null;
   if (!isStatPairKeyword(kw)) return x != null ? xNumeral(x) : null;
   const sign = NEGATIVE_STAT_PAIRS.has(kw) ? "-" : "+";
   return `${sign}${x ?? inst?.x ?? 0}/${sign}${inst?.y ?? 0}`;

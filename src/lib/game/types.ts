@@ -279,9 +279,12 @@ export interface Capability {
    *  - grant : l'id de la capacité CONFÉRÉE à l'unité. */
   abilityId: string;
   /** Paramètres numériques. `x` = scalaire générique (ancien
-   *  KeywordInstance.x / SpellKeywordInstance.amount) ; `attack`/`health` =
-   *  paire +X/+Y (renforcement, renforcement_multiple, invocation). */
-  params?: { x?: number; attack?: number; health?: number };
+   *  KeywordInstance.x / SpellKeywordInstance.amount) ; `y` = second membre du
+   *  couple quand `x` porte le premier (mots-clés créature à couple : Gloire
+   *  +X/+Y — cf. XY_ABILITY_IDS, calqué sur KeywordInstance.x/y) ;
+   *  `attack`/`health` = paire +X/+Y (renforcement, renforcement_multiple,
+   *  invocation). */
+  params?: { x?: number; y?: number; attack?: number; health?: number };
   /** Race/clan ciblé (renforcement_multiple, entraide, race du token). */
   race?: string;
   clan?: string;
@@ -642,6 +645,11 @@ export interface CardInstance {
   // avec leur valeur X. Lu en fallback par le résolveur combat et le rendu
   // du badge quand le keyword n'est pas inscrit dans card.effect_text.
   grantedKeywordX: Record<string, number>;
+  // Second paramètre (Y = PV) des mots-clés accordés qui portent un couple
+  // X/Y — Gloire +X/+Y aujourd'hui. Optionnel : les mots-clés à simple X
+  // n'en produisent jamais, et les instances sérialisées antérieures restent
+  // valides (repli sur 1 côté résolveur).
+  grantedKeywordY?: Record<string, number>;
   // Concentration: persistent mana_cost reduction stamped on the card when
   // it materialises in hand as the result of a Concentration X transform.
   // Cumulable with Canalisation / Entraide (those reduce on top of this
@@ -672,8 +680,10 @@ export interface HeroPowerEffect {
   composed?: ComposedEffect;
   // Optional numeric params for keywords that need them:
   //   amount → Impact X, Inspiration X, Convocation X, Renforcement (X part), …
+  //   amountY → second membre des capacités à couple CONFÉRÉES (Gloire +X/+Y) ;
+  //     `amount` porte le premier. Cf. XY_ABILITY_IDS.
   //   attack / health → Renforcement +X/+Y, summon_token override stats, …
-  params?: { amount?: number; attack?: number; health?: number };
+  params?: { amount?: number; amountY?: number; attack?: number; health?: number };
   // FK to token_templates.id when keywordId === "convocation".
   tokenId?: number | null;
   // Race/clan ciblé pour les capacités qui en portent une (Appel Suprême,
@@ -710,7 +720,7 @@ export interface HeroDefinition {
 // allows): same keywordId / params, just incremented count.
 export interface HeroActiveAura {
   keywordId: string;
-  params?: { amount?: number; attack?: number; health?: number };
+  params?: { amount?: number; amountY?: number; attack?: number; health?: number };
   stacks: number;
 }
 

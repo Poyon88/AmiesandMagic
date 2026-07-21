@@ -14,7 +14,7 @@ import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 import RaceClanPicker from "@/components/admin/RaceClanPicker";
 import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
 import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
-import { ABILITIES, abilityIconKeys, creatureEngineId, type AbilityDef } from "@/lib/game/abilities";
+import { ABILITIES, abilityIconKeys, creatureEngineId, XY_ABILITY_IDS, type AbilityDef } from "@/lib/game/abilities";
 import type { SpellKeywordId, Capability, CapabilityTrigger } from "@/lib/game/types";
 import CardEditor from "@/components/admin/CardEditor";
 import { CARD_BACK_FRAMES, autoTrimDarkBorders, composeCardBack, getCardBackFrame } from "@/lib/card-back-frames";
@@ -1589,8 +1589,12 @@ export default function CardForge() {
   // Missing entry = "target" (single allied creature); "all_allies" = every
   // allied creature on cast. Saved into card.keyword_instances.grantScope.
   const [keywordGrantScope, setKeywordGrantScope] = useState<Record<string, "all_allies">>({});
-  // Conférer (mot-clé créature paramétrique) : ability conférée choisie.
+  // Conférer (mot-clé créature paramétrique) : ability conférée choisie, et son
+  // amplitude. « Conférer » n'a pas de X à lui : les x/y de son instance portent
+  // celle de la capacité DONNÉE (Conférer → Résistance 2, → Gloire +2/+1).
   const [conferAbilityId, setConferAbilityId] = useState<string>("");
+  const [conferX, setConferX] = useState(1);
+  const [conferY, setConferY] = useState(1);
   // Déclenchement (mot-clé créature paramétrique) : sous-ensemble figé de
   // déclencheurs dont les effets composés des autres alliés sont rejoués.
   const [declenchementTriggers, setDeclenchementTriggers] = useState<CapabilityTrigger[]>([]);
@@ -1894,7 +1898,7 @@ export default function CardForge() {
     setManualPower(2); setManualAbility(""); setManualFlavorText("");
     setManualIllustrationPrompt(""); setManualExtraContext(""); setManualKeywords([]); setKeywordXValues({}); setKeywordModes({}); setCard(null);
     setEditedPrompt(null); setSaveResult(null);
-    setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setAfY(1); setRfY(1); setGlY(1); setRmRace(""); setRmClan(""); setAsRace(""); setConferAbilityId(""); setDeclenchementTriggers([]); setComposedCaps([]);
+    setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setAfY(1); setRfY(1); setGlY(1); setRmRace(""); setRmClan(""); setAsRace(""); setConferAbilityId(""); setConferX(1); setConferY(1); setDeclenchementTriggers([]); setComposedCaps([]);
     setManualLifeCost(0); setManualDiscardCost(0); setManualSacrificeCost(0);
     setCardImages(prev => Object.fromEntries(Object.entries(prev).filter(([k]) => k !== "manual_preview")));
   }, []);
@@ -2204,9 +2208,12 @@ export default function CardForge() {
           if (id === "renforcement" && !isSpellCard) {
             return { id, ...(mode ? { mode } : {}), x: x ?? 0, y: rfY };
           }
-          // Gloire (créature) : porte +X (ATK générique) / +Y (PV dédié).
-          if (id === "gloire" && !isSpellCard) {
-            return { id, ...(mode ? { mode } : {}), x: x ?? 0, y: glY };
+          // Gloire : porte +X (ATK générique) / +Y (PV dédié). Émise aussi sur
+          // un SORT, qui la CONFÈRE — sans le Y persisté, le don retombait sur
+          // le +Y=1 de repli quelle que soit la saisie (la portée doit alors
+          // suivre, ce que la branche générique faisait seule jusqu'ici).
+          if (id === "gloire") {
+            return { id, ...(mode ? { mode } : {}), x: x ?? 0, y: glY, ...(grantScope ? { grantScope } : {}) };
           }
           // Appel Suprême (créature) : porte la race ciblée ; toujours émis.
           if (id === "appel_supreme" && !isSpellCard) {
@@ -2215,7 +2222,10 @@ export default function CardForge() {
           // Conférer (créature) : porte l'ability conférée + la portée ; toujours émis.
           if (id === "conferer" && !isSpellCard) {
             const scope = keywordGrantScope["Conférer"] === "all_allies" ? "all_allies" as const : undefined;
-            return { id, ...(mode ? { mode } : {}), ...(conferAbilityId ? { grantAbilityId: conferAbilityId } : {}), ...(scope ? { grantScope: scope } : {}) };
+            // x/y = amplitude de la capacité conférée (y seulement si elle
+            // porte un couple, sinon l'instance stockerait un Y sans sens).
+            const xy = XY_ABILITY_IDS.has(conferAbilityId);
+            return { id, ...(mode ? { mode } : {}), ...(conferAbilityId ? { grantAbilityId: conferAbilityId } : {}), x: conferX, ...(xy ? { y: conferY } : {}), ...(scope ? { grantScope: scope } : {}) };
           }
           // Déclenchement (créature) : porte le sous-ensemble figé de déclencheurs ; toujours émis.
           if (id === "declenchement" && !isSpellCard) {
@@ -2307,7 +2317,7 @@ export default function CardForge() {
     } finally {
       setSaving(false);
     }
-  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, keywordModes, keywordGrantScope, rmY, afY, rfY, glY, rmRace, rmClan, asRace, composedCaps, conferAbilityId, declenchementTriggers]);
+  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, keywordModes, keywordGrantScope, rmY, afY, rfY, glY, rmRace, rmClan, asRace, composedCaps, conferAbilityId, conferX, conferY, declenchementTriggers]);
 
   const [generatingImage, setGeneratingImage] = useState(false);
   const [editedPrompt, setEditedPrompt] = useState<string | null>(null);
@@ -3413,6 +3423,18 @@ export default function CardForge() {
                             <option key={creatureEngineId(a)} value={creatureEngineId(a)}>{a.creature?.label ?? a.label}</option>
                           ))}
                         </select>
+                        {/* Amplitude de la capacité conférée : X seul, ou X/Y
+                            pour les capacités à couple (Gloire +X/+Y). */}
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                          <span style={{ fontSize: 9, color: "#8a6d3b" }}>{XY_ABILITY_IDS.has(conferAbilityId) ? "+ATK (X)" : "X"}</span>
+                          <input type="number" min={0} max={20} value={conferX} onChange={e => setConferX(Math.max(0, Math.min(20, parseInt(e.target.value) || 0)))}
+                            style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: "1px solid #8a6d3b44", fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
+                          {XY_ABILITY_IDS.has(conferAbilityId) && (<>
+                            <span style={{ fontSize: 9, color: "#8a6d3b" }}>+PV (Y)</span>
+                            <input type="number" min={0} max={20} value={conferY} onChange={e => setConferY(Math.max(0, Math.min(20, parseInt(e.target.value) || 0)))}
+                              style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: "1px solid #8a6d3b44", fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
+                          </>)}
+                        </div>
                         <div style={{ display: "inline-flex", gap: 6 }}>
                           {([["target", tf('scope_one_ally')], ["all_allies", tf('scope_all_allies')]] as const).map(([val, txt]) => {
                             const active = (keywordGrantScope["Conférer"] === "all_allies" ? "all_allies" : "target") === val;

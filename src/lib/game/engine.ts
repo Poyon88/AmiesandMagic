@@ -29,7 +29,7 @@ import type {
   StackFrame,
 } from "./types";
 import { SPELL_KEYWORDS } from "./spell-keywords";
-import { getEntraideReduction, getTokenManaCost, isCreatureKwShadowedBySpell } from "./abilities";
+import { getEntraideReduction, getTokenManaCost, isCreatureKwShadowedBySpell, XY_ABILITY_IDS } from "./abilities";
 import { isManaSpark, MANA_SPARK_FALLBACK } from "./mana-spark";
 import { getCapabilities } from "./capability-adapter";
 import { parseXValuesFromEffectText } from "./keyword-labels";
@@ -281,7 +281,7 @@ const CREATURE_KEYWORD_HERO_POWER_TARGET: Record<
 function applyGrantedKeyword(
   creature: CardInstance,
   kwId: string,
-  params?: { amount?: number; attack?: number; health?: number },
+  params?: { amount?: number; amountY?: number; attack?: number; health?: number },
 ) {
   const list = creature.card.keywords as string[];
   if (!list.includes(kwId)) {
@@ -307,6 +307,31 @@ function applyGrantedKeyword(
       [kwId]: params.amount,
     };
   }
+  // Idem pour le Y des mots-clés à couple X/Y (Gloire +X/+Y) : sans ce canal,
+  // une Gloire conférée retombait sur le +Y=1 par défaut quelle que soit la
+  // valeur saisie dans le forge.
+  if (typeof params?.amountY === "number") {
+    creature.grantedKeywordY = {
+      ...creature.grantedKeywordY,
+      [kwId]: params.amountY,
+    };
+  }
+}
+
+/** Paramètres à transmettre à `applyGrantedKeyword` pour un don d'amplitude
+ *  (x, et y pour les mots-clés à couple — cf. XY_ABILITY_IDS). Centralisé :
+ *  les trois chemins de don (effet composé, mot-clé créature « Conférer »,
+ *  mot-clé créature porté par un sort) partagent la même règle, sinon l'un
+ *  d'eux perd silencieusement le Y et retombe sur le repli 1. */
+function grantParamsFor(
+  abilityId: string,
+  x: number | undefined,
+  y: number | undefined,
+): { amount?: number; amountY?: number } | undefined {
+  const out: { amount?: number; amountY?: number } = {};
+  if (x != null && x > 0) out.amount = x;
+  if (y != null && XY_ABILITY_IDS.has(abilityId)) out.amountY = y;
+  return Object.keys(out).length > 0 ? out : undefined;
 }
 
 /** Applique une capacité de type « grant » (conférer `cap.abilityId` à une
@@ -321,7 +346,7 @@ function applyGrantCapability(
   targetMap: Record<string, string>,
 ) {
   const scope = cap.grantScope ?? "target";
-  const params = cap.params?.x != null ? { amount: cap.params.x } : undefined;
+  const params = grantParamsFor(cap.abilityId, cap.params?.x, cap.params?.y);
   if (scope === "all_allies") {
     for (const ally of owner.board) applyGrantedKeyword(ally, cap.abilityId, params);
     return;
@@ -448,7 +473,9 @@ function applyComposedToUnit(
     case "paralyze": u.isParalyzed = true; break;
     case "bounce": resolveRemontee(u.instanceId, source?.instanceId ?? null, owner, opponent, fromSpell); break;
     case "grant_keyword":
-      if (composed.grantAbilityId) applyGrantedKeyword(u, composed.grantAbilityId, x > 0 ? { amount: x } : undefined);
+      if (composed.grantAbilityId) {
+        applyGrantedKeyword(u, composed.grantAbilityId, grantParamsFor(composed.grantAbilityId, x, y));
+      }
       break;
     default: break;
   }
@@ -1237,8 +1264,11 @@ export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
   for (const p of [player, opponent]) {
     for (const aura of p.hero.activeAuras ?? []) {
       if (aura.keywordId === "commandement" || aura.keywordId === "terreur") continue;
+      // Même règle d'amplitude que les autres dons : sans elle, une aura de
+      // Gloire accordait +1/+1 quelles que soient les valeurs du pouvoir.
+      const params = grantParamsFor(aura.keywordId, aura.params?.amount, aura.params?.amountY);
       for (const ally of p.board) {
-        applyGrantedKeyword(ally, aura.keywordId);
+        applyGrantedKeyword(ally, aura.keywordId, params);
       }
     }
   }
@@ -2416,11 +2446,14 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       const abilityId = inst?.grantAbilityId;
       if (abilityId) {
         const scope = inst?.grantScope ?? "target";
+        // L'instance « conferer » n'a pas de X à elle : ses x/y portent
+        // l'amplitude de la capacité CONFÉRÉE (Conférer → Gloire +2/+1).
+        const params = grantParamsFor(abilityId, inst?.x, inst?.y);
         if (scope === "all_allies") {
-          for (const ally of player.board) applyGrantedKeyword(ally, abilityId);
+          for (const ally of player.board) applyGrantedKeyword(ally, abilityId, params);
         } else if (action.targetInstanceId) {
           const t = findCreatureOnBoard(player, action.targetInstanceId);
-          if (t) applyGrantedKeyword(t, abilityId);
+          if (t) applyGrantedKeyword(t, abilityId, params);
         }
       }
     }
@@ -4753,14 +4786,13 @@ function applyRenforcementSelf(inst: CardInstance, x: number, y: number): void {
 //
 // Résolution de X/Y, dans l'ordre :
 //   1. l'instance de mot-clé de la carte (forge : +X = ATK, +Y = PV) ;
-//   2. `grantedKeywordX` quand la Gloire a été CONFÉRÉE à l'exécution (sort
-//      « Rage Gobeline », aura de héros Sigurd…) — ce canal ne transporte pas
-//      de Y, d'où le repli sur 1 ;
+//   2. `grantedKeywordX` / `grantedKeywordY` quand la Gloire a été CONFÉRÉE à
+//      l'exécution (sort « Rage Gobeline », aura de héros Sigurd…) ;
 //   3. 1/1 par défaut, valeur de repli des mots-clés scalables du moteur.
 function applyGloire(inst: CardInstance): void {
   const kwInst = inst.card.keyword_instances?.find(i => i.id === "gloire");
   const x = kwInst?.x ?? inst.grantedKeywordX["gloire"] ?? 1;
-  const y = kwInst?.y ?? 1;
+  const y = kwInst?.y ?? inst.grantedKeywordY?.["gloire"] ?? 1;
   if (x <= 0 && y <= 0) return;
   applyRenforcementSelf(inst, Math.max(0, x), Math.max(0, y));
   inst.gloireStacks = (inst.gloireStacks ?? 0) + 1;
