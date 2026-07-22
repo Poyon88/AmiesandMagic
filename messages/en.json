@@ -41,6 +41,10 @@
         "label": "First Strike",
         "desc": "When this unit attacks, it deals its damage first; the opposing unit only strikes back if it survives."
       },
+      "gloire": {
+        "label": "Glory +X/+Y",
+        "desc": "Whenever this unit survives combat damage, it permanently gains +X/+Y."
+      },
       "vol": {
         "label": "Flight",
         "desc": "Ignores enemy Taunt."
@@ -400,10 +404,6 @@
       "declenchement": {
         "label": "Trigger",
         "desc": "Replays once the compound effects of your other allies (entry / death / end of turn / return)."
-      },
-      "gloire": {
-        "label": "Glory +X/+Y",
-        "desc": "Whenever this unit survives combat damage, it permanently gains +X/+Y."
       }
     },
     "spell_keywords": {
@@ -1288,7 +1288,48 @@
     "confirm_label": "Confirm",
     "confirm_placeholder": "Re-enter password",
     "updating": "Updating...",
-    "update": "Update"
+    "update": "Update",
+    "signup_check_email_title": "Check your inbox",
+    "signup_check_email": "We've sent a confirmation link to {email}. Click it to activate your account.",
+    "signup_check_spam": "Didn't get anything? Check your spam folder — the email may take a minute to arrive.",
+    "signup_resend": "Resend email",
+    "signup_resend_wait": "Resend in {seconds}s",
+    "signup_resent": "Email resent to {email}.",
+    "signup_resend_error": "Couldn't resend the confirmation email.",
+    "signup_back_to_login": "← Back to login",
+    "error_oauth_cancelled": "Login cancelled. You can try again or use your email.",
+    "error_oauth_failed": "Login with this service failed. Try again or use your email.",
+    "error_link_expired": "This link has expired or already been used. Request a new one.",
+    "error_auth_failed": "Login didn't go through. Try again.",
+    "cgu_accept": "I accept the terms of use and privacy policy.",
+    "cgu_link": "Read the terms of use",
+    "privacy_link": "Read the privacy policy",
+    "cgu_required": "You must accept the terms to create an account.",
+    "onboarding_title": "Choose your player name",
+    "onboarding_sub": "It will be visible to other players, on auctions and your profile. You can change it later.",
+    "onboarding_submit": "Confirm",
+    "username_rules": "3 to 20 characters: letters, numbers, hyphen or underscore.",
+    "username_too_short": "The name must be at least 3 characters long.",
+    "username_too_long": "The name can't exceed 20 characters.",
+    "username_invalid_chars": "Letters, numbers, hyphen and underscore only — no spaces or accents.",
+    "username_reserved": "This name is reserved, choose another one.",
+    "username_taken": "This name is already taken. Try a variant.",
+    "username_required": "Choose a player name.",
+    "faction_title": "Choose your faction",
+    "faction_sub": "You get all common cards of the chosen faction for free. Other factions can still be unlocked later.",
+    "faction_warning": "⚠ This choice is final: it cannot be changed later.",
+    "faction_submit": "Join this faction",
+    "faction_required": "Choose a faction.",
+    "faction_invalid_faction": "This faction doesn't exist.",
+    "faction_already_chosen": "Your faction has already been chosen.",
+    "error_email_rate_limit": "Too many emails sent in a short time. Wait a few minutes before trying again.",
+    "error_invalid_credentials": "Incorrect email or password.",
+    "error_email_not_confirmed": "Your account isn't confirmed yet. Click the link you received by email.",
+    "error_weak_password": "This password is too weak. Choose a longer one.",
+    "error_user_already_exists": "An account already exists with this email address.",
+    "error_signups_disabled": "Sign-ups are temporarily closed.",
+    "error_database_error": "Account creation failed on our end. Try again in a moment; if the problem persists, contact us.",
+    "error_captcha_failed": "The anti-bot verification failed or expired. Reload the page and try again."
   },
   "common": {
     "settings_title": "Settings",
@@ -1945,7 +1986,11 @@
     "format_label": "Format:",
     "set_label": "Set:",
     "year_label": "Year:",
-    "no_cards_match": "No cards match your filters"
+    "no_cards_match": "No cards match your filters",
+    "show_locked": "Show locked",
+    "locked_badge": "Locked",
+    "locked_summary": "{count, plural, one {# locked card} other {# locked cards}}",
+    "locked_hint": "Commons from other factions will become accessible via the full unlock offer."
   },
   "cardBacks": {
     "eyebrow": "Show your style",
@@ -1970,5 +2015,32 @@
     "equipped": "Equipped",
     "default_badge": "Default",
     "not_owned": "not owned"
+  },
+  "legal": {
+    "back_to_site": "← Back to site",
+    "draft_warning": "⚠ Document in progress — it has no contractual value as it stands.",
+    "todo": "TO BE COMPLETED — section to be written before any public launch.",
+    "updated": "Last updated: {date}",
+    "cgu_title": "Terms of Use",
+    "cgu_s1": "Purpose and Acceptance",
+    "cgu_s2": "Access to the Service and Account Creation",
+    "cgu_s3": "Minimum Required Age",
+    "cgu_s4": "Game Currency, Cards, and Purchases",
+    "cgu_s5": "Rules of Conduct and Sanctions",
+    "cgu_s6": "Intellectual Property",
+    "cgu_s7": "Availability, Updates, and End of Service",
+    "cgu_s8": "Liability",
+    "cgu_s9": "Account Deletion",
+    "cgu_s10": "Applicable Law and Contact",
+    "privacy_title": "Privacy Policy",
+    "privacy_s1": "Data Controller",
+    "privacy_s2": "Data Collected",
+    "privacy_s3": "Purposes and Legal Bases",
+    "privacy_s4": "Subprocessors and Hosting",
+    "privacy_s5": "Retention Periods",
+    "privacy_s6": "Cookies and Trackers",
+    "privacy_s7": "Your Rights (GDPR)",
+    "privacy_s8": "Security",
+    "privacy_s9": "Contact and Complaints"
   }
 }

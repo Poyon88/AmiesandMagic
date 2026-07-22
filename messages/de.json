@@ -41,6 +41,10 @@
         "label": "Erster Angriff",
         "desc": "Wenn diese Einheit angreift, fügt sie zuerst Schaden zu; die gegnerische Einheit schlägt nur zurück, wenn sie überlebt."
       },
+      "gloire": {
+        "label": "Ruhm +X/+Y",
+        "desc": "Immer wenn diese Einheit Kampfschaden überlebt, erhält sie dauerhaft +X/+Y."
+      },
       "vol": {
         "label": "Flug",
         "desc": "Ignoriert feindliche Provokationen."
@@ -400,10 +404,6 @@
       "declenchement": {
         "label": "Auslösung",
         "desc": "Löst die zusammengesetzten Effekte deiner anderen Verbündeten einmal erneut aus (Eintritt / Tod / Rundenende / Rückkehr)."
-      },
-      "gloire": {
-        "label": "Ruhm +X/+Y",
-        "desc": "Immer wenn diese Einheit Kampfschaden überlebt, erhält sie dauerhaft +X/+Y."
       }
     },
     "spell_keywords": {
@@ -1288,7 +1288,48 @@
     "confirm_label": "Bestätigen",
     "confirm_placeholder": "Passwort wiederholen",
     "updating": "Wird aktualisiert...",
-    "update": "Aktualisieren"
+    "update": "Aktualisieren",
+    "signup_check_email_title": "Überprüfe dein Postfach",
+    "signup_check_email": "Wir haben einen Bestätigungslink an {email} gesendet. Klicke darauf, um dein Konto zu aktivieren.",
+    "signup_check_spam": "Nichts erhalten? Schau im Spam-Ordner nach — die E-Mail kann eine Minute brauchen.",
+    "signup_resend": "E-Mail erneut senden",
+    "signup_resend_wait": "Erneut senden in {seconds} s",
+    "signup_resent": "E-Mail erneut an {email} gesendet.",
+    "signup_resend_error": "Die Bestätigungs-E-Mail konnte nicht erneut gesendet werden.",
+    "signup_back_to_login": "← Zurück zur Anmeldung",
+    "error_oauth_cancelled": "Anmeldung abgebrochen. Versuch es erneut oder nutze deine E-Mail-Adresse.",
+    "error_oauth_failed": "Die Anmeldung über diesen Dienst ist fehlgeschlagen. Versuch es erneut oder nutze deine E-Mail-Adresse.",
+    "error_link_expired": "Dieser Link ist abgelaufen oder wurde bereits verwendet. Fordere einen neuen an.",
+    "error_auth_failed": "Die Anmeldung ist fehlgeschlagen. Versuch es erneut.",
+    "cgu_accept": "Ich akzeptiere die allgemeinen Nutzungsbedingungen und die Datenschutzrichtlinie.",
+    "cgu_link": "Allgemeine Nutzungsbedingungen lesen",
+    "privacy_link": "Datenschutzrichtlinie lesen",
+    "cgu_required": "Du musst die Bedingungen akzeptieren, um ein Konto zu erstellen.",
+    "onboarding_title": "Wähle deinen Spielernamen",
+    "onboarding_sub": "Er ist für andere Spieler sichtbar, bei Auktionen und auf deinem Profil. Du kannst ihn später ändern.",
+    "onboarding_submit": "Bestätigen",
+    "username_rules": "3 bis 20 Zeichen: Buchstaben, Zahlen, Bindestrich oder Unterstrich.",
+    "username_too_short": "Der Name muss mindestens 3 Zeichen lang sein.",
+    "username_too_long": "Der Name darf höchstens 20 Zeichen lang sein.",
+    "username_invalid_chars": "Nur Buchstaben, Zahlen, Bindestrich und Unterstrich — keine Leerzeichen oder Akzente.",
+    "username_reserved": "Dieser Name ist reserviert, wähle einen anderen.",
+    "username_taken": "Dieser Name ist bereits vergeben. Versuch eine Variante.",
+    "username_required": "Wähle einen Spielernamen.",
+    "faction_title": "Wähle deine Fraktion",
+    "faction_sub": "Du erhältst kostenlos alle gewöhnlichen Karten der gewählten Fraktion. Die anderen Fraktionen kannst du später freischalten.",
+    "faction_warning": "⚠ Diese Wahl ist endgültig: Sie kann später nicht mehr geändert werden.",
+    "faction_submit": "Dieser Fraktion beitreten",
+    "faction_required": "Wähle eine Fraktion.",
+    "faction_invalid_faction": "Diese Fraktion existiert nicht.",
+    "faction_already_chosen": "Deine Fraktion wurde bereits gewählt.",
+    "error_email_rate_limit": "Zu viele E-Mails in kurzer Zeit versendet. Warte einige Minuten, bevor du es erneut versuchst.",
+    "error_invalid_credentials": "E-Mail oder Passwort falsch.",
+    "error_email_not_confirmed": "Dein Konto wurde noch nicht bestätigt. Klicke auf den Link in der erhaltenen E-Mail.",
+    "error_weak_password": "Dieses Passwort ist zu schwach. Wähle ein längeres.",
+    "error_user_already_exists": "Für diese Adresse existiert bereits ein Konto.",
+    "error_signups_disabled": "Neuanmeldungen sind derzeit geschlossen.",
+    "error_database_error": "Die Kontoerstellung ist auf unserer Seite fehlgeschlagen. Versuch es gleich noch einmal; falls das Problem weiterhin besteht, kontaktiere uns.",
+    "error_captcha_failed": "Die Anti-Bot-Überprüfung ist fehlgeschlagen oder abgelaufen. Lade die Seite neu und versuche es erneut."
   },
   "common": {
     "settings_title": "Einstellungen",
@@ -1945,7 +1986,11 @@
     "format_label": "Format:",
     "set_label": "Set:",
     "year_label": "Jahr:",
-    "no_cards_match": "Keine Karte entspricht deinen Filtern"
+    "no_cards_match": "Keine Karte entspricht deinen Filtern",
+    "show_locked": "Gesperrte anzeigen",
+    "locked_badge": "Gesperrt",
+    "locked_summary": "{count, plural, one {# gesperrte Karte} other {# gesperrte Karten}}",
+    "locked_hint": "Die gewöhnlichen Karten anderer Fraktionen werden über das Komplett-Freischaltangebot zugänglich sein."
   },
   "cardBacks": {
     "eyebrow": "Zeig deinen Stil",
@@ -1970,5 +2015,32 @@
     "equipped": "Ausgerüstet",
     "default_badge": "Standard",
     "not_owned": "nicht im Besitz"
+  },
+  "legal": {
+    "back_to_site": "← Zurück zur Website",
+    "draft_warning": "⚠ Dokument in Bearbeitung — es hat im aktuellen Zustand keinen rechtsverbindlichen Wert.",
+    "todo": "NOCH AUSZUFÜLLEN — Abschnitt vor jeder Veröffentlichung zu verfassen.",
+    "updated": "Letzte Aktualisierung: {date}",
+    "cgu_title": "Allgemeine Nutzungsbedingungen",
+    "cgu_s1": "Gegenstand und Annahme",
+    "cgu_s2": "Zugang zum Dienst und Kontoerstellung",
+    "cgu_s3": "Erforderliches Mindestalter",
+    "cgu_s4": "Spielwährung, Karten und Käufe",
+    "cgu_s5": "Verhaltensregeln und Sanktionen",
+    "cgu_s6": "Geistiges Eigentum",
+    "cgu_s7": "Verfügbarkeit, Weiterentwicklung und Beendigung des Dienstes",
+    "cgu_s8": "Haftung",
+    "cgu_s9": "Löschung des Kontos",
+    "cgu_s10": "Anwendbares Recht und Kontakt",
+    "privacy_title": "Datenschutzrichtlinie",
+    "privacy_s1": "Verantwortlicher für die Datenverarbeitung",
+    "privacy_s2": "Erhobene Daten",
+    "privacy_s3": "Zwecke und Rechtsgrundlagen",
+    "privacy_s4": "Auftragsverarbeiter und Hosting",
+    "privacy_s5": "Aufbewahrungsfristen",
+    "privacy_s6": "Cookies und Tracker",
+    "privacy_s7": "Ihre Rechte (DSGVO)",
+    "privacy_s8": "Sicherheit",
+    "privacy_s9": "Kontakt und Beschwerde"
   }
 }

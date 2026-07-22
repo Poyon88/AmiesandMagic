@@ -41,6 +41,10 @@
         "label": "先手",
         "desc": "此单位攻击时先行造成伤害；敌方单位仅在存活时才能反击。"
       },
+      "gloire": {
+        "label": "荣耀 +X/+Y",
+        "desc": "每当这个单位在战斗伤害中存活下来，它将永久获得+X/+Y。"
+      },
       "vol": {
         "label": "飞行",
         "desc": "无视敌方嘲讽。"
@@ -400,10 +404,6 @@
       "declenchement": {
         "label": "触发",
         "desc": "使你其他盟友的复合效果（入场/死亡/回合结束/返场）额外触发一次。"
-      },
-      "gloire": {
-        "label": "荣耀 +X/+Y",
-        "desc": "每当这个单位在战斗伤害中存活下来，它将永久获得+X/+Y。"
       }
     },
     "spell_keywords": {
@@ -1288,7 +1288,48 @@
     "confirm_label": "确认",
     "confirm_placeholder": "再次输入密码",
     "updating": "更新中...",
-    "update": "更新"
+    "update": "更新",
+    "signup_check_email_title": "查看你的邮箱",
+    "signup_check_email": "我们已向 {email} 发送了一封确认邮件。点击其中的链接以激活你的账号。",
+    "signup_check_spam": "没收到邮件？看看垃圾邮件文件夹——邮件可能需要一分钟才能送达。",
+    "signup_resend": "重新发送邮件",
+    "signup_resend_wait": "{seconds} 秒后可重新发送",
+    "signup_resent": "邮件已重新发送至 {email}。",
+    "signup_resend_error": "无法重新发送确认邮件。",
+    "signup_back_to_login": "← 返回登录",
+    "error_oauth_cancelled": "登录已取消。你可以重试，或使用邮箱登录。",
+    "error_oauth_failed": "使用该服务登录失败。请重试或使用邮箱登录。",
+    "error_link_expired": "此链接已过期或已被使用。请重新申请一个新链接。",
+    "error_auth_failed": "登录未成功。请重试。",
+    "cgu_accept": "我同意使用条款及隐私政策。",
+    "cgu_link": "查看使用条款",
+    "privacy_link": "查看隐私政策",
+    "cgu_required": "你必须同意条款才能创建账号。",
+    "onboarding_title": "选择你的玩家名",
+    "onboarding_sub": "其他玩家将在拍卖和你的个人资料中看到此名称。你之后可以修改。",
+    "onboarding_submit": "确认",
+    "username_rules": "3 到 20 个字符：字母、数字、连字符或下划线。",
+    "username_too_short": "名称至少需要 3 个字符。",
+    "username_too_long": "名称不能超过 20 个字符。",
+    "username_invalid_chars": "仅限字母、数字、连字符和下划线——不能有空格或重音符号。",
+    "username_reserved": "该名称已被保留，请换一个。",
+    "username_taken": "该名称已被使用，请换一个。",
+    "username_required": "请选择一个玩家名。",
+    "faction_title": "选择你的阵营",
+    "faction_sub": "你将免费获得所选阵营的所有普通卡牌。其他阵营之后仍可解锁。",
+    "faction_warning": "⚠ 此选择为最终决定，之后无法更改。",
+    "faction_submit": "加入该阵营",
+    "faction_required": "请选择一个阵营。",
+    "faction_invalid_faction": "该阵营不存在。",
+    "faction_already_chosen": "你已经选择过阵营。",
+    "error_email_rate_limit": "短时间内发送邮件过多。请稍等几分钟后再试。",
+    "error_invalid_credentials": "邮箱或密码不正确。",
+    "error_email_not_confirmed": "你的账号尚未确认。请点击邮件中收到的链接。",
+    "error_weak_password": "此密码强度太弱，请选择更长的密码。",
+    "error_user_already_exists": "该邮箱地址已存在账号。",
+    "error_signups_disabled": "注册功能暂时关闭。",
+    "error_database_error": "账号创建在我方出现问题。请稍后重试；如果问题持续，请联系我们。",
+    "error_captcha_failed": "反机器人验证失败或已过期。请刷新页面后重试。"
   },
   "common": {
     "settings_title": "设置",
@@ -1945,7 +1986,11 @@
     "format_label": "赛制：",
     "set_label": "系列：",
     "year_label": "年份：",
-    "no_cards_match": "没有卡牌符合筛选条件"
+    "no_cards_match": "没有卡牌符合筛选条件",
+    "show_locked": "显示已锁定的卡牌",
+    "locked_badge": "已锁定",
+    "locked_summary": "{count, plural, other {# 张已锁定的卡牌}}",
+    "locked_hint": "其他阵营的普通卡将可通过完整解锁礼包获取。"
   },
   "cardBacks": {
     "eyebrow": "展示你的风格",
@@ -1970,5 +2015,32 @@
     "equipped": "已装备",
     "default_badge": "默认",
     "not_owned": "未拥有"
+  },
+  "legal": {
+    "back_to_site": "← 返回网站",
+    "draft_warning": "⚠ 文档尚在编写中——现阶段不具备任何合同效力。",
+    "todo": "待补充——在正式公开前需完成本节内容。",
+    "updated": "最近更新时间：{date}",
+    "cgu_title": "用户使用条款",
+    "cgu_s1": "宗旨与接受条款",
+    "cgu_s2": "服务访问与账号创建",
+    "cgu_s3": "最低年龄要求",
+    "cgu_s4": "游戏货币、卡牌与购买",
+    "cgu_s5": "行为准则与处罚",
+    "cgu_s6": "知识产权",
+    "cgu_s7": "服务的可用性、更新与终止",
+    "cgu_s8": "责任",
+    "cgu_s9": "账号注销",
+    "cgu_s10": "适用法律与联系方式",
+    "privacy_title": "隐私政策",
+    "privacy_s1": "数据处理责任方",
+    "privacy_s2": "所收集的数据",
+    "privacy_s3": "处理目的与法律依据",
+    "privacy_s4": "分包商与托管服务",
+    "privacy_s5": "数据保留期限",
+    "privacy_s6": "Cookie 与追踪器",
+    "privacy_s7": "您的权利（GDPR）",
+    "privacy_s8": "安全性",
+    "privacy_s9": "联系与投诉方式"
   }
 }

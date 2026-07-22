@@ -41,6 +41,10 @@
         "label": "先制攻撃",
         "desc": "このユニットが攻撃すると先にダメージを与える。相手ユニットは生き残った場合のみ反撃できる。"
       },
+      "gloire": {
+        "label": "栄光 +X/+Y",
+        "desc": "このユニットが戦闘ダメージを受けて生き残るたびに、永続的に+X/+Yを得る。"
+      },
       "vol": {
         "label": "飛行",
         "desc": "相手の挑発を無視する。"
@@ -400,10 +404,6 @@
       "declenchement": {
         "label": "誘発",
         "desc": "他の味方の複合効果(登場時/死亡時/ターン終了時/帰還時)を1回再発動する。"
-      },
-      "gloire": {
-        "label": "栄光 +X/+Y",
-        "desc": "このユニットが戦闘ダメージを受けて生き残るたびに、永続的に+X/+Yを得る。"
       }
     },
     "spell_keywords": {
@@ -1288,7 +1288,48 @@
     "confirm_label": "確認",
     "confirm_placeholder": "パスワードを再入力",
     "updating": "更新中...",
-    "update": "更新"
+    "update": "更新",
+    "signup_check_email_title": "メールボックスを確認してください",
+    "signup_check_email": "{email} に確認リンクを送りました。リンクをクリックしてアカウントを有効化してください。",
+    "signup_check_spam": "届いていませんか？迷惑メールフォルダをご確認ください。届くまで数分かかることがあります。",
+    "signup_resend": "メールを再送する",
+    "signup_resend_wait": "{seconds}秒後に再送可能",
+    "signup_resent": "{email} にメールを再送しました。",
+    "signup_resend_error": "確認メールを再送できませんでした。",
+    "signup_back_to_login": "← ログインに戻る",
+    "error_oauth_cancelled": "ログインがキャンセルされました。もう一度試すか、メールアドレスでログインしてください。",
+    "error_oauth_failed": "このサービスでのログインに失敗しました。もう一度試すか、メールアドレスでログインしてください。",
+    "error_link_expired": "このリンクは期限切れか、すでに使用されています。新しいリンクをリクエストしてください。",
+    "error_auth_failed": "ログインできませんでした。もう一度お試しください。",
+    "cgu_accept": "利用規約とプライバシーポリシーに同意します。",
+    "cgu_link": "利用規約を読む",
+    "privacy_link": "プライバシーポリシーを読む",
+    "cgu_required": "アカウントを作成するには規約に同意する必要があります。",
+    "onboarding_title": "プレイヤー名を選んでください",
+    "onboarding_sub": "この名前は他のプレイヤーにオークションやプロフィールで表示されます。後で変更できます。",
+    "onboarding_submit": "決定",
+    "username_rules": "3〜20文字：英字、数字、ハイフン、アンダースコアが使えます。",
+    "username_too_short": "名前は3文字以上にしてください。",
+    "username_too_long": "名前は20文字以内にしてください。",
+    "username_invalid_chars": "使用できるのは英字、数字、ハイフン、アンダースコアのみです。空白やアクセント記号は使用できません。",
+    "username_reserved": "この名前は予約されています。別の名前を選んでください。",
+    "username_taken": "この名前はすでに使われています。別の名前を試してください。",
+    "username_required": "プレイヤー名を選んでください。",
+    "faction_title": "陣営を選んでください",
+    "faction_sub": "選んだ陣営のコモンカードをすべて無料で入手できます。他の陣営も後で解放できます。",
+    "faction_warning": "⚠ この選択は最終的なもので、後から変更できません。",
+    "faction_submit": "この陣営に加入する",
+    "faction_required": "陣営を選んでください。",
+    "faction_invalid_faction": "この陣営は存在しません。",
+    "faction_already_chosen": "陣営はすでに選択済みです。",
+    "error_email_rate_limit": "短時間に送信されたメールが多すぎます。数分待ってから再度お試しください。",
+    "error_invalid_credentials": "メールアドレスまたはパスワードが正しくありません。",
+    "error_email_not_confirmed": "アカウントがまだ確認されていません。メールに記載されたリンクをクリックしてください。",
+    "error_weak_password": "このパスワードは弱すぎます。より長いものを選んでください。",
+    "error_user_already_exists": "このメールアドレスのアカウントはすでに存在します。",
+    "error_signups_disabled": "新規登録は一時的に停止されています。",
+    "error_database_error": "こちら側でアカウント作成に失敗しました。しばらくしてから再度お試しください。問題が続く場合はお問い合わせください。",
+    "error_captcha_failed": "認証確認に失敗したか、有効期限が切れました。ページを再読み込みしてもう一度お試しください。"
   },
   "common": {
     "settings_title": "設定",
@@ -1945,7 +1986,11 @@
     "format_label": "フォーマット：",
     "set_label": "セット：",
     "year_label": "年：",
-    "no_cards_match": "フィルターに一致するカードはありません"
+    "no_cards_match": "フィルターに一致するカードはありません",
+    "show_locked": "ロック中のカードを表示",
+    "locked_badge": "ロック中",
+    "locked_summary": "{count, plural, other {ロック中のカード #枚}}",
+    "locked_hint": "他の勢力のコモンカードは、フル解放パッケージにより入手可能になります。"
   },
   "cardBacks": {
     "eyebrow": "スタイルを見せよう",
@@ -1970,5 +2015,32 @@
     "equipped": "装備中",
     "default_badge": "デフォルト",
     "not_owned": "未所持"
+  },
+  "legal": {
+    "back_to_site": "← サイトに戻る",
+    "draft_warning": "⚠ 本ドキュメントは作成中です — 現時点では法的効力を持ちません。",
+    "todo": "要記入 — 一般公開前に記載が必要なセクションです。",
+    "updated": "最終更新日：{date}",
+    "cgu_title": "利用規約",
+    "cgu_s1": "目的および同意",
+    "cgu_s2": "サービスへのアクセスおよびアカウント作成",
+    "cgu_s3": "必要最低年齢",
+    "cgu_s4": "ゲーム内通貨、カードおよび課金",
+    "cgu_s5": "行動規範および処罰",
+    "cgu_s6": "知的財産",
+    "cgu_s7": "サービスの提供、変更および終了",
+    "cgu_s8": "責任",
+    "cgu_s9": "アカウントの削除",
+    "cgu_s10": "準拠法およびお問い合わせ",
+    "privacy_title": "プライバシーポリシー",
+    "privacy_s1": "データ管理責任者",
+    "privacy_s2": "収集するデータ",
+    "privacy_s3": "利用目的および法的根拠",
+    "privacy_s4": "委託先およびホスティング",
+    "privacy_s5": "保存期間",
+    "privacy_s6": "Cookieおよびトラッキング技術",
+    "privacy_s7": "お客様の権利（GDPR）",
+    "privacy_s8": "セキュリティ",
+    "privacy_s9": "お問い合わせおよび苦情申立て"
   }
 }

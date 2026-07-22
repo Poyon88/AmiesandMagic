@@ -41,6 +41,10 @@
         "label": "Primeiro Ataque",
         "desc": "Quando esta unidade ataca, causa seu dano primeiro; a unidade adversária só reage se sobreviver."
       },
+      "gloire": {
+        "label": "Glória +X/+Y",
+        "desc": "Sempre que esta unidade sobrevive a dano de combate, ela ganha +X/+Y permanentemente."
+      },
       "vol": {
         "label": "Voo",
         "desc": "Ignora as provocações adversárias."
@@ -400,10 +404,6 @@
       "declenchement": {
         "label": "Ativação",
         "desc": "Repete uma vez os efeitos combinados dos seus outros aliados (entrada / morte / fim de turno / retorno)."
-      },
-      "gloire": {
-        "label": "Glória +X/+Y",
-        "desc": "Sempre que esta unidade sobrevive a dano de combate, ela ganha +X/+Y permanentemente."
       }
     },
     "spell_keywords": {
@@ -1288,7 +1288,48 @@
     "confirm_label": "Confirmar",
     "confirm_placeholder": "Redigite a senha",
     "updating": "Atualizando...",
-    "update": "Atualizar"
+    "update": "Atualizar",
+    "signup_check_email_title": "Verifique sua caixa de entrada",
+    "signup_check_email": "Enviamos um link de confirmação para {email}. Clique nele para ativar sua conta.",
+    "signup_check_spam": "Não recebeu nada? Confira o spam — o email pode levar um minuto para chegar.",
+    "signup_resend": "Reenviar email",
+    "signup_resend_wait": "Reenviar em {seconds} s",
+    "signup_resent": "Email reenviado para {email}.",
+    "signup_resend_error": "Não foi possível reenviar o email de confirmação.",
+    "signup_back_to_login": "← Voltar ao login",
+    "error_oauth_cancelled": "Conexão cancelada. Você pode tentar novamente ou usar seu email.",
+    "error_oauth_failed": "A conexão com esse serviço falhou. Tente novamente ou use seu email.",
+    "error_link_expired": "Este link expirou ou já foi usado. Solicite um novo.",
+    "error_auth_failed": "A conexão não foi concluída. Tente novamente.",
+    "cgu_accept": "Eu aceito os termos de uso e a política de privacidade.",
+    "cgu_link": "Ler os termos de uso",
+    "privacy_link": "Ler a política de privacidade",
+    "cgu_required": "Você precisa aceitar os termos para criar uma conta.",
+    "onboarding_title": "Escolha seu nome de jogador",
+    "onboarding_sub": "Ele ficará visível para outros jogadores, nos leilões e no seu perfil. Você poderá mudá-lo depois.",
+    "onboarding_submit": "Confirmar",
+    "username_rules": "3 a 20 caracteres: letras, números, hífen ou sublinhado.",
+    "username_too_short": "O nome deve ter pelo menos 3 caracteres.",
+    "username_too_long": "O nome não pode ultrapassar 20 caracteres.",
+    "username_invalid_chars": "Apenas letras, números, hífen e sublinhado — sem espaços ou acentos.",
+    "username_reserved": "Esse nome é reservado, escolha outro.",
+    "username_taken": "Esse nome já está em uso. Tente uma variante.",
+    "username_required": "Escolha um nome de jogador.",
+    "faction_title": "Escolha sua facção",
+    "faction_sub": "Você recebe gratuitamente todas as cartas comuns da facção escolhida. As outras facções continuam desbloqueáveis mais tarde.",
+    "faction_warning": "⚠ Essa escolha é definitiva: não poderá ser alterada depois.",
+    "faction_submit": "Entrar para essa facção",
+    "faction_required": "Escolha uma facção.",
+    "faction_invalid_faction": "Essa facção não existe.",
+    "faction_already_chosen": "Sua facção já foi escolhida.",
+    "error_email_rate_limit": "Muitos emails enviados em pouco tempo. Aguarde alguns minutos antes de tentar novamente.",
+    "error_invalid_credentials": "Email ou senha incorretos.",
+    "error_email_not_confirmed": "Sua conta ainda não foi confirmada. Clique no link recebido por email.",
+    "error_weak_password": "Essa senha é muito fraca. Escolha uma mais longa.",
+    "error_user_already_exists": "Já existe uma conta com esse endereço.",
+    "error_signups_disabled": "As inscrições estão temporariamente fechadas.",
+    "error_database_error": "A criação da conta falhou do nosso lado. Tente novamente em instantes; se o problema persistir, entre em contato conosco.",
+    "error_captcha_failed": "A verificação anti-robô falhou ou expirou. Recarregue a página e tente novamente."
   },
   "common": {
     "settings_title": "Configurações",
@@ -1945,7 +1986,11 @@
     "format_label": "Formato:",
     "set_label": "Set:",
     "year_label": "Ano:",
-    "no_cards_match": "Nenhuma carta corresponde aos seus filtros"
+    "no_cards_match": "Nenhuma carta corresponde aos seus filtros",
+    "show_locked": "Mostrar bloqueadas",
+    "locked_badge": "Bloqueada",
+    "locked_summary": "{count, plural, one {# carta bloqueada} other {# cartas bloqueadas}}",
+    "locked_hint": "As cartas comuns das outras facções ficarão acessíveis através da oferta de desbloqueio completo."
   },
   "cardBacks": {
     "eyebrow": "Mostre seu estilo",
@@ -1970,5 +2015,32 @@
     "equipped": "Equipado",
     "default_badge": "Padrão",
     "not_owned": "não possuído"
+  },
+  "legal": {
+    "back_to_site": "← Voltar ao site",
+    "draft_warning": "⚠ Documento em elaboração — não tem valor contratual no estado atual.",
+    "todo": "A COMPLETAR — seção a ser redigida antes de qualquer abertura ao público.",
+    "updated": "Última atualização: {date}",
+    "cgu_title": "Termos Gerais de Uso",
+    "cgu_s1": "Objeto e aceitação",
+    "cgu_s2": "Acesso ao serviço e criação de conta",
+    "cgu_s3": "Idade mínima exigida",
+    "cgu_s4": "Moeda do jogo, cartas e compras",
+    "cgu_s5": "Regras de conduta e sanções",
+    "cgu_s6": "Propriedade intelectual",
+    "cgu_s7": "Disponibilidade, mudanças e fim do serviço",
+    "cgu_s8": "Responsabilidade",
+    "cgu_s9": "Exclusão da conta",
+    "cgu_s10": "Lei aplicável e contato",
+    "privacy_title": "Política de privacidade",
+    "privacy_s1": "Responsável pelo tratamento",
+    "privacy_s2": "Dados coletados",
+    "privacy_s3": "Finalidades e bases legais",
+    "privacy_s4": "Subcontratados e hospedagem",
+    "privacy_s5": "Prazos de retenção",
+    "privacy_s6": "Cookies e rastreadores",
+    "privacy_s7": "Seus direitos (RGPD)",
+    "privacy_s8": "Segurança",
+    "privacy_s9": "Contato e reclamação"
   }
 }
