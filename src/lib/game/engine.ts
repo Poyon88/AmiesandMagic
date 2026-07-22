@@ -2301,8 +2301,10 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       }
     }
 
-    // Appel du clan X: met en jeu la première unité de même clan (coût ≤ X) depuis le deck
-    if (hasKw(cardInstance, "appel_du_clan") && cardInstance.card.clan && player.board.length < MAX_BOARD_SIZE) {
+    // Appel du clan X: met en jeu la première unité de même clan (coût ≤ X) depuis le deck.
+    // Gated sur hasKwOnPlay pour qu'une instance en mode mort/attaque/retour/fin-de-tour/
+    // tap ne se déclenche PAS à l'invocation ; elle passe alors par resolveCuratedKeywordEffect.
+    if (hasKwOnPlay(cardInstance, "appel_du_clan") && cardInstance.card.clan && player.board.length < MAX_BOARD_SIZE) {
       const adcXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
       const x = adcXVals["appel_du_clan"] || Math.max(1, cardInstance.card.mana_cost - 1);
       const idx = player.deck.findIndex(c => c.card.clan === cardInstance.card.clan && c.card.card_type === "creature" && c.card.mana_cost <= x);
@@ -5069,6 +5071,25 @@ function resolveCuratedKeywordEffect(
       // Capacité de créature → non bloquée par Transcendance (fromSpell=false).
       for (const c of [...opponent.board, ...owner.board]) {
         dealDamageToCreature(c, x, false, true, source, false);
+      }
+      break;
+    }
+    case "appel_du_clan": {
+      // Mort / attaque / retour / fin de tour / tap : rejoue l'effet
+      // d'invocation. Met en jeu gratuitement la 1re unité de même clan
+      // (coût ≤ X) trouvée dans le deck, avec mal d'invocation. No-op si la
+      // source n'a pas de clan ou si le plateau est plein — mêmes garde-fous
+      // que le chemin on-play (engine.ts:playCard). En mode curé, le X vient
+      // de l'instance (inst.x) ; à défaut on retombe sur max(1, coût − 1).
+      const clan = source.card.clan;
+      if (!clan || owner.board.length >= MAX_BOARD_SIZE) break;
+      const cost = inst?.x ?? Math.max(1, source.card.mana_cost - 1);
+      const idx = owner.deck.findIndex(c => c.card.clan === clan && c.card.card_type === "creature" && c.card.mana_cost <= cost);
+      if (idx >= 0) {
+        const [called] = owner.deck.splice(idx, 1);
+        const calledInstance = createCardInstance(called.card);
+        calledInstance.hasSummoningSickness = true;
+        owner.board.push(calledInstance);
       }
       break;
     }

@@ -45,6 +45,9 @@ type CuratedMode = "death" | "tap" | "return" | "end_of_turn" | "attack";
 export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
   "Convocation X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack"]),
   "Convocations multiples": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack"]),
+  // Appel du clan : invocation depuis le deck, aucun ciblage → tous les
+  // déclencheurs (mort, tap, retour, fin de tour, attaque) sont ouverts.
+  "Appel du clan X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack"]),
   "Inspiration X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack"]),
   "Pillage X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack"]),
   "Douleur X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack"]),

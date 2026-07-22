@@ -354,10 +354,10 @@ describe("registre — métadonnées de taxonomie", () => {
     for (const a of Object.values(ABILITIES)) {
       if (CURATED_MULTIMODE_IDS.has(creatureEngineId(a))) {
         expect(a.triggers!.curatedMultiMode, a.id).toBe(true);
-        // Entrainement et Dédoublement sont les exceptions : ils acceptent TOUS
-        // les déclencheurs habituels (dont fin-de-tour et attaque), pas
-        // seulement les 4 curés.
-        if (creatureEngineId(a) === "entrainement" || creatureEngineId(a) === "dedoublement") {
+        // Entrainement, Dédoublement et Appel du clan sont les exceptions : ils
+        // acceptent TOUS les déclencheurs habituels (dont fin-de-tour et attaque),
+        // pas seulement les 4 curés.
+        if (creatureEngineId(a) === "entrainement" || creatureEngineId(a) === "dedoublement" || creatureEngineId(a) === "appel_du_clan") {
           expect(a.triggers!.creatureTriggers).toEqual([
             "on_play",
             "on_death",

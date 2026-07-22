@@ -1157,7 +1157,7 @@ export function creatureEngineId(a: AbilityDef): string {
  *  donc load-bearing — l'adaptateur DOIT respecter le mode exact. Liste tirée
  *  des appels `hasKwOnPlay` et du switch `resolveCuratedKeywordEffect`. */
 export const CURATED_MULTIMODE_IDS: ReadonlySet<string> = new Set([
-  "combustion", "convocation", "convocations_multiples", "dedoublement", "douleur", "entrainement", "inspiration",
+  "appel_du_clan", "combustion", "convocation", "convocations_multiples", "dedoublement", "douleur", "entrainement", "inspiration",
   "ombre_du_passe", "pillage", "prescience", "remontee", "renforcement_multiple",
   "savant", "suprematie", "tempete", "vampirisme", "cataclysme", "renforcement", "impact",
 ]);
@@ -1219,7 +1219,7 @@ export function deriveAbilityTriggerMeta(a: AbilityDef): AbilityTriggerMeta {
     // Entrainement et Dédoublement acceptent TOUS les déclencheurs habituels
     // (dont fin-de-tour et attaque), là où le défaut curated multi-mode n'en
     // propose que 4.
-    if (cid === "entrainement" || cid === "dedoublement") creatureTriggers = ["on_play", "on_death", "on_activation", "on_return", "on_end_of_turn", "on_attack"];
+    if (cid === "entrainement" || cid === "dedoublement" || cid === "appel_du_clan") creatureTriggers = ["on_play", "on_death", "on_activation", "on_return", "on_end_of_turn", "on_attack"];
     else if (curatedMultiMode) creatureTriggers = ["on_play", "on_death", "on_activation", "on_return"];
     else if (deathNature) creatureTriggers = ["on_death"];
     else if (automatic) creatureTriggers = ["automatic"];
