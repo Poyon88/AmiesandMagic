@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
@@ -8,6 +8,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import AuthShell, { authFieldClass, authLabelClass } from "@/components/auth/AuthShell";
 import { USERNAME_MAX, normalizeUsername, validateUsername } from "@/lib/auth/username";
 import { authErrorKey } from "@/lib/auth/authErrors";
+import CaptchaField, { captchaEnabled } from "@/components/auth/CaptchaField";
+import type { TurnstileInstance } from "@marsidev/react-turnstile";
 
 /** Codes que /auth/callback pose dans `?error=`. Liste close : un code inconnu
  *  retombe sur le message générique plutôt que d'afficher une clé i18n brute. */
@@ -50,6 +52,10 @@ export default function LoginForm() {
   // par défaut ne vaut pas consentement (RGPD, acte positif clair).
   const [cguAccepted, setCguAccepted] = useState(false);
   const [resendIn, setResendIn] = useState(0);
+  // Jeton anti-robot. Supabase protège inscription, connexion ET
+  // réinitialisation : les trois appels doivent le transmettre.
+  const [captchaToken, setCaptchaToken] = useState("");
+  const captchaRef = useRef<TurnstileInstance>(undefined);
   const [resending, setResending] = useState(false);
   const router = useRouter();
   const supabase = createClient();
@@ -73,6 +79,16 @@ export default function LoginForm() {
     [t],
   );
 
+  /** Le jeton est à usage unique : après chaque tentative — réussie ou non — on
+   *  redemande au widget d'en produire un neuf. Sans cela, un second essai
+   *  échoue sur « timeout-or-duplicate », erreur que l'utilisateur ne peut pas
+   *  relier à son action. */
+  const consumeCaptcha = useCallback(() => {
+    if (!captchaEnabled) return;
+    setCaptchaToken("");
+    captchaRef.current?.reset();
+  }, []);
+
   const emailRedirectTo = useCallback(
     () => `${window.location.origin}/auth/callback`,
     [],
@@ -89,12 +105,14 @@ export default function LoginForm() {
     try {
       const { error: resetErr } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth/callback?next=/auth/reset-password`,
+        captchaToken,
       });
       if (resetErr) throw resetErr;
       setInfo(t("forgot_email_sent", { email }));
     } catch (err: unknown) {
       setError(describeError(err) || t("forgot_send_error"));
     } finally {
+      consumeCaptcha();
       setForgotLoading(false);
     }
   }
@@ -107,7 +125,7 @@ export default function LoginForm() {
       const { error: resendErr } = await supabase.auth.resend({
         type: "signup",
         email: pendingEmail,
-        options: { emailRedirectTo: emailRedirectTo() },
+        options: { emailRedirectTo: emailRedirectTo(), captchaToken },
       });
       if (resendErr) throw resendErr;
       setInfo(t("signup_resent", { email: pendingEmail }));
@@ -115,6 +133,7 @@ export default function LoginForm() {
     } catch (err: unknown) {
       setError(describeError(err) || t("signup_resend_error"));
     } finally {
+      consumeCaptcha();
       setResending(false);
     }
   }
@@ -159,6 +178,7 @@ export default function LoginForm() {
             // Sans ce champ, le lien de confirmation pointe vers la Site URL du
             // projet : en développement local on atterrissait donc en prod.
             emailRedirectTo: emailRedirectTo(),
+            captchaToken,
             data: {
               username: wantedUsername,
               // Horodatage du consentement, à recopier dans `profiles` par le
@@ -192,6 +212,7 @@ export default function LoginForm() {
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
+          options: { captchaToken },
         });
         if (error) throw error;
       }
@@ -200,6 +221,7 @@ export default function LoginForm() {
     } catch (err: unknown) {
       setError(describeError(err));
     } finally {
+      consumeCaptcha();
       setLoading(false);
     }
   }
@@ -213,6 +235,19 @@ export default function LoginForm() {
     });
     if (error) setError(error.message);
   }
+
+  // Rien ne sert de soumettre sans jeton : Supabase rejetterait la requête avec
+  // une erreur que l'utilisateur ne peut pas relier à son geste. On attend, le
+  // widget étant visible juste au-dessus du bouton.
+  const captchaPending = captchaEnabled && !captchaToken;
+
+  const captcha = (
+    <CaptchaField
+      ref={captchaRef}
+      onToken={setCaptchaToken}
+      onInvalid={() => setCaptchaToken("")}
+    />
+  );
 
   const errorBanner = error && (
     <div
@@ -251,10 +286,11 @@ export default function LoginForm() {
         <p className="text-xs text-am-ink-faint mb-6 font-[family-name:var(--font-crimson),serif]">
           {t("signup_check_spam")}
         </p>
+        {captcha}
         <button
           type="button"
           onClick={handleResend}
-          disabled={resending || resendIn > 0}
+          disabled={resending || resendIn > 0 || captchaPending}
           className="am-btn am-btn-gold am-btn-sheen w-full py-3 text-base disabled:opacity-50"
         >
           {resending
@@ -368,7 +404,7 @@ export default function LoginForm() {
               <button
                 type="button"
                 onClick={handleForgotPassword}
-                disabled={forgotLoading}
+                disabled={forgotLoading || captchaPending}
                 className="text-sm text-am-gold hover:underline disabled:opacity-50 py-1 px-2 -mr-2 font-[family-name:var(--font-crimson),serif]"
               >
                 {forgotLoading ? t("sending") : t("forgot_password")}
@@ -419,9 +455,10 @@ export default function LoginForm() {
             </div>
           </div>
         )}
+        {captcha}
         <button
           type="submit"
-          disabled={loading || (isRegister && !cguAccepted)}
+          disabled={loading || captchaPending || (isRegister && !cguAccepted)}
           className="am-btn am-btn-gold am-btn-sheen w-full py-3 text-base disabled:opacity-50"
         >
           {loading ? t("loading") : isRegister ? t("create_account") : t("sign_in")}
