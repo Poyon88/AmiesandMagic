@@ -18,7 +18,8 @@ export type AuthErrorKey =
   | "weak_password"
   | "user_already_exists"
   | "signups_disabled"
-  | "database_error";
+  | "database_error"
+  | "captcha_failed";
 
 const BY_CODE: Record<string, AuthErrorKey> = {
   over_email_send_rate_limit: "email_rate_limit",
@@ -30,6 +31,7 @@ const BY_CODE: Record<string, AuthErrorKey> = {
   email_exists: "user_already_exists",
   signup_disabled: "signups_disabled",
   unexpected_failure: "database_error",
+  captcha_failed: "captcha_failed",
 };
 
 const BY_MESSAGE: [RegExp, AuthErrorKey][] = [
@@ -43,6 +45,10 @@ const BY_MESSAGE: [RegExp, AuthErrorKey][] = [
   // puisse corriger — le message doit l'orienter vers le support, pas le laisser
   // retenter indéfiniment.
   [/database error/i, "database_error"],
+  // Jeton anti-robot absent, expiré ou déjà consommé. Le message brut de
+  // Supabase — « captcha protection: request disallowed » — ne dit rien au
+  // joueur de ce qu'il doit faire : recharger pour obtenir un jeton neuf.
+  [/captcha/i, "captcha_failed"],
 ];
 
 /** Clé i18n correspondant à une erreur d'authentification, ou `null` si elle

@@ -12,6 +12,7 @@ describe("authErrorKey — par code (source privilégiée)", () => {
       ["weak_password", "weak_password"],
       ["user_already_exists", "user_already_exists"],
       ["unexpected_failure", "database_error"],
+      ["captcha_failed", "captcha_failed"],
     ];
     for (const [code, attendu] of cas) {
       expect(authErrorKey({ code, message: "peu importe" })).toBe(attendu);
@@ -32,6 +33,7 @@ describe("authErrorKey — repli par message", () => {
       ["Password should be at least 6 characters", "weak_password"],
       ["User already registered", "user_already_exists"],
       ["Database error saving new user", "database_error"],
+      ["captcha protection: request disallowed (no captcha_token found)", "captcha_failed"],
     ];
     for (const [message, attendu] of cas) {
       expect(authErrorKey({ message })).toBe(attendu);
