@@ -50,14 +50,15 @@ const commune = (id: number, type: Card["card_type"] = "creature") =>
   mkCard({ id, faction: "Mercenaires", rarity: "Commune", card_type: type, attack: type === "spell" ? null : 1, health: type === "spell" ? null : 1 });
 
 describe("gating forge — modes des capacités Sélection", () => {
-  it("propose tap + fin de tour, jamais mort/retour", () => {
+  it("propose les 5 modes (chantier multi-déclencheurs : mort/retour → modale sur le tour du contrôleur, hasard sinon)", () => {
     for (const label of ["Sélection X", "Sélection magique X", "Sélection Royale X"]) {
       const modes = CURATED_KEYWORD_MODES[label];
       expect(modes, label).toBeDefined();
       expect(modes.has("tap")).toBe(true);
       expect(modes.has("end_of_turn")).toBe(true);
-      expect(modes.has("death")).toBe(false);
-      expect(modes.has("return")).toBe(false);
+      expect(modes.has("death")).toBe(true);
+      expect(modes.has("return")).toBe(true);
+      expect(modes.has("attack")).toBe(true);
     }
   });
 });

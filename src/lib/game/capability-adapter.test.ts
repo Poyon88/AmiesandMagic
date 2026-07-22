@@ -4,6 +4,7 @@ import {
   ABILITIES,
   AUTOMATIC_ABILITY_IDS,
   CURATED_MULTIMODE_IDS,
+  CURATED_ONBOARD_ONLY_IDS,
   CREATURE_LABEL_TO_ENGINE_ID,
   creatureEngineId,
 } from "./abilities";
@@ -350,29 +351,28 @@ describe("registre — métadonnées de taxonomie", () => {
     }
   });
 
-  it("les ids curés exposent les 4 déclencheurs unité et le flag curatedMultiMode", () => {
+  it("les ids curés exposent les 6 déclencheurs unité (4 « sur plateau » pour les restreints) et le flag curatedMultiMode", () => {
     for (const a of Object.values(ABILITIES)) {
       if (CURATED_MULTIMODE_IDS.has(creatureEngineId(a))) {
         expect(a.triggers!.curatedMultiMode, a.id).toBe(true);
-        // Entrainement, Dédoublement et Appel du clan sont les exceptions : ils
-        // acceptent TOUS les déclencheurs habituels (dont fin-de-tour et attaque),
-        // pas seulement les 4 curés.
-        if (creatureEngineId(a) === "entrainement" || creatureEngineId(a) === "dedoublement" || creatureEngineId(a) === "appel_du_clan") {
-          expect(a.triggers!.creatureTriggers).toEqual([
+        // Effets exigeant la source en jeu (Sacrifice, Mimique, Métamorphose…) :
+        // jamais mort ni retour en main — seulement les déclencheurs sur plateau.
+        if (CURATED_ONBOARD_ONLY_IDS.has(creatureEngineId(a))) {
+          expect(a.triggers!.creatureTriggers, a.id).toEqual([
             "on_play",
-            "on_death",
             "on_activation",
-            "on_return",
             "on_end_of_turn",
             "on_attack",
           ]);
           continue;
         }
-        expect(a.triggers!.creatureTriggers).toEqual([
+        expect(a.triggers!.creatureTriggers, a.id).toEqual([
           "on_play",
           "on_death",
           "on_activation",
           "on_return",
+          "on_end_of_turn",
+          "on_attack",
         ]);
       }
     }

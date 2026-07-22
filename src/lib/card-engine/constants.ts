@@ -42,44 +42,74 @@ export { KEYWORDS, KEYWORD_DESC_BY_ID, CREATURE_LABEL_TO_ENGINE_ID } from "@/lib
 // en mode "attack" de façon générique ; l'appartenance à ce map est le seul
 // verrou côté picker.
 type CuratedMode = "death" | "tap" | "return" | "end_of_turn" | "attack";
+// Chantier « tous déclencheurs » : tous les effets d'invocation sont
+// authorables sur les 5 modes supplémentaires. Règles transverses :
+//   - Pouvoirs CIBLÉS déclenchés pendant le tour adverse → cible AU HASARD
+//     (rng semée). Sur le tour du contrôleur → picker différé (pendingTriggers).
+//   - Mode "attack" (flux synchrone, sans pause) → toujours cible/choix au
+//     hasard, même sur son propre tour.
+//   - Les effets exigeant la source EN JEU (auto-transformation, gain de
+//     stats, marqueur porté…) n'offrent ni mort ni retour en main.
+const ALL_MODES = new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack"]);
+const ONBOARD_MODES = new Set<CuratedMode>(["tap", "end_of_turn", "attack"]);
 export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
-  "Convocation X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack"]),
-  "Convocations multiples": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack"]),
-  // Appel du clan : invocation depuis le deck, aucun ciblage → tous les
-  // déclencheurs (mort, tap, retour, fin de tour, attaque) sont ouverts.
-  "Appel du clan X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack"]),
-  "Inspiration X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack"]),
-  "Pillage X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack"]),
-  "Douleur X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack"]),
-  "Vampirisme X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
-  "Tempête X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack"]),
-  "Cataclysme X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack"]),
-  "Renforcement +X/+Y": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack"]),
-  // Impact / Remontée / Vampirisme lisent un targetInstanceId que le flux
-  // d'attaque (synchrone, pré-combat, sans pause) ne fournit pas : Impact et
-  // Remontée reporteraient leur picker APRÈS le combat, Vampirisme frapperait
-  // le héros au lieu d'une créature. Pas de mode "attack" tant qu'un vrai
-  // ciblage n'est pas câblé dans le flux d'attaque.
-  "Impact X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
-  "Prescience X": new Set<CuratedMode>(["tap", "return", "end_of_turn", "attack"]),
-  "Suprématie": new Set<CuratedMode>(["death", "return", "end_of_turn", "attack"]),
-  "Ombre du passé": new Set<CuratedMode>(["death", "return", "end_of_turn", "attack"]),
-  "Savant": new Set<CuratedMode>(["death", "return", "end_of_turn", "attack"]),
-  "Combustion": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack"]),
-  "Remontée": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn"]),
-  "Renforcement multiple": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack"]),
-  // Entrainement accepte TOUS les déclencheurs habituels, y compris l'attaque.
-  "Entrainement X": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack"]),
-  // Dédoublement : disponible sur tous les déclencheurs (entrée + mort, tap,
-  // retour en main, fin de tour, attaque).
-  "Dédoublement": new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack"]),
-  // Sélection : seuls tap et fin de tour (en plus de l'entrée). Pas de mort ni
-  // retour en main — ces deux-là surviennent pendant le tour adverse et la
-  // Sélection est interactive (modale « 1 parmi 3 »), qui doit rester sur le
-  // tour du contrôleur.
-  "Sélection X": new Set<CuratedMode>(["tap", "end_of_turn"]),
-  "Sélection magique X": new Set<CuratedMode>(["tap", "end_of_turn"]),
-  "Sélection Royale X": new Set<CuratedMode>(["tap", "end_of_turn"]),
+  "Convocation X": ALL_MODES,
+  "Convocations multiples": ALL_MODES,
+  "Appel du clan X": ALL_MODES,
+  "Inspiration X": ALL_MODES,
+  "Pillage X": ALL_MODES,
+  "Douleur X": ALL_MODES,
+  // Vampirisme à l'attaque : draine une créature ennemie au hasard (héros à
+  // défaut) — le flux d'attaque ne peut pas ouvrir de picker.
+  "Vampirisme X": ALL_MODES,
+  "Tempête X": ALL_MODES,
+  "Cataclysme X": ALL_MODES,
+  "Renforcement +X/+Y": ALL_MODES,
+  // Impact / Remontée à l'attaque : cible au hasard (pas de picker possible
+  // dans le flux synchrone) ; les autres modes gardent leur picker différé.
+  "Impact X": ALL_MODES,
+  "Prescience X": ALL_MODES,
+  "Suprématie": ALL_MODES,
+  "Ombre du passé": ALL_MODES,
+  "Savant": ALL_MODES,
+  "Combustion": ALL_MODES,
+  "Remontée": ALL_MODES,
+  "Renforcement multiple": ALL_MODES,
+  "Entrainement X": ALL_MODES,
+  "Dédoublement": ALL_MODES,
+  // Sélections : modale « 1 parmi 3 » sur le tour du contrôleur (picker
+  // différé) ; tirage au hasard parmi les options révélées pendant le tour
+  // adverse (mort/retour) et à l'attaque.
+  "Sélection X": ALL_MODES,
+  "Sélection magique X": ALL_MODES,
+  "Sélection Royale X": ALL_MODES,
+  // Nouveaux entrants du chantier (effets sans ciblage ou à repli aléatoire).
+  "Concentration X": ALL_MODES,
+  "Loyauté": ALL_MODES,
+  "Catalyse": ALL_MODES,
+  "Solidarité X": ALL_MODES,
+  "Appel Suprême": ALL_MODES,
+  "Rassemblement X": ALL_MODES,
+  "Instinct de meute X": ALL_MODES,
+  "Convocation": ALL_MODES,
+  "Domination": ALL_MODES,
+  "Corruption": ALL_MODES,
+  "Exhumation X": ALL_MODES,
+  "Rappel": ALL_MODES,
+  "Divination": ALL_MODES,
+  "Traque du destin X": ALL_MODES,
+  "Affaiblissement -X/-Y": ALL_MODES,
+  "Bénédiction": ALL_MODES,
+  "Tactique X": ALL_MODES,
+  // Effets exigeant la source en jeu → déclencheurs « sur plateau » seulement.
+  "Sacrifice": ONBOARD_MODES,
+  "Permutation": ONBOARD_MODES,
+  "Malédiction": ONBOARD_MODES,
+  "Mimique": ONBOARD_MODES,
+  "Métamorphose": ONBOARD_MODES,
+  "Contresort": ONBOARD_MODES,
+  "Profanation X": ONBOARD_MODES,
+  "Héritage du cimetière": ONBOARD_MODES,
 };
 
 // ─── FACTIONS ────────────────────────────────────────────────────────────────

@@ -90,6 +90,12 @@ let composedStrikeMode: import("./types").KeywordMode | undefined = undefined;
 // Ids des joueurs dans l'ordre de state.players (set dans applyAction). Sert à
 // résoudre l'index du sentinel héros `__hero_<idx>__` sans porter le state.
 let currentPlayerIds: string[] = [];
+// Pools de cartes de l'action en cours (set dans applyAction). Permet aux
+// résolveurs curés SANS accès au GameState (mort / retour en main) de générer
+// des options de Sélection ou de remplacer des sorts (Concentration). Même
+// patron que currentTokenTemplates. Absent (test appelant un handler en
+// direct) ⇒ les effets concernés fizzlent proprement (aucune option).
+let currentCardPools: { factionCardPool?: Card[]; allSpellsPool?: Card[] } = {};
 
 /** Pose le mode couleur ambiant le temps de résoudre une capacité composée
  *  (source des flèches de pouvoir), puis le restaure — sûr en ré-entrance. */
@@ -138,6 +144,7 @@ function capTriggerForMode(mode: import("./types").KeywordMode | undefined): imp
   if (mode === "tap") return "on_activation";
   if (mode === "return") return "on_return";
   if (mode === "end_of_turn") return "on_end_of_turn";
+  if (mode === "attack") return "on_attack";
   return "on_play";
 }
 
@@ -1806,14 +1813,14 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // Concentration X: remplace chaque sort en main par un sort aléatoire
     // (toutes factions) de coût supérieur de X ; le nouveau sort est marqué
     // d'une réduction permanente de coût égale à X.
-    if (hasKw(cardInstance, "concentration")) {
+    if (hasKwOnPlay(cardInstance, "concentration")) {
       const concXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
       const x = concXVals["concentration"] ?? Math.max(1, Math.floor(cardInstance.card.mana_cost / 3));
       applyConcentration(player, x, newState.allSpellsPool);
     }
 
     // Loyauté: +1 ATK et +1 PV permanent par allié de même race (effet d'invocation)
-    if (hasKw(cardInstance, "loyaute") && cardInstance.card.race) {
+    if (hasKwOnPlay(cardInstance, "loyaute") && cardInstance.card.race) {
       const sameRaceCount = player.board.filter(a => a !== cardInstance && a.card.race === cardInstance.card.race).length;
       if (sameRaceCount > 0) {
         cardInstance.loyauteATKBonus = sameRaceCount;
@@ -1824,7 +1831,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     }
 
     // Sacrifice: détruisez un allié pour gagner ses PV et ATK permanents
-    if (hasKw(cardInstance, "sacrifice") && action.targetInstanceId) {
+    if (hasKwOnPlay(cardInstance, "sacrifice") && action.targetInstanceId) {
       const sacrificed = player.board.find(c => c.instanceId === action.targetInstanceId && c !== cardInstance);
       if (sacrificed) {
         cardInstance.summonBonusATK += sacrificed.currentAttack;
@@ -1838,7 +1845,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     }
 
     // Corruption: vole une unité ennemie jusqu'à fin du tour, elle gagne Traque
-    if (hasKw(cardInstance, "corruption") && opponent.board.length > 0) {
+    if (hasKwOnPlay(cardInstance, "corruption") && opponent.board.length > 0) {
       const targetId = action.targetInstanceId;
       const stealTarget = targetId
         ? opponent.board.find(c => c.instanceId === targetId)
@@ -1856,7 +1863,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     }
 
     // Domination: take control of random enemy (permanent)
-    if (hasKw(cardInstance, "domination") && opponent.board.length > 0) {
+    if (hasKwOnPlay(cardInstance, "domination") && opponent.board.length > 0) {
       if (player.board.length < MAX_BOARD_SIZE) {
         const idx = Math.floor(rng() * opponent.board.length);
         const stolen = opponent.board.splice(idx, 1)[0];
@@ -1903,7 +1910,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     }
 
     // Contresort: annule le prochain sort adverse
-    if (hasKw(cardInstance, "contresort")) {
+    if (hasKwOnPlay(cardInstance, "contresort")) {
       cardInstance.contresortActive = true;
     }
 
@@ -1955,7 +1962,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // token configuré (`convocation_token_id`) avec ses stats par défaut, sans
     // formule X/X. Polymorphe : même mot-clé disponible côté sort dans
     // resolveSpellKeywords.
-    if (hasKw(cardInstance, "convocation_simple") && player.board.length < MAX_BOARD_SIZE) {
+    if (hasKwOnPlay(cardInstance, "convocation_simple") && player.board.length < MAX_BOARD_SIZE) {
       const tmpl = findTokenTemplate(cardInstance.card.convocation_token_id);
       if (!tmpl) {
         console.warn(
@@ -2017,7 +2024,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     }
 
     // Malédiction: cible une unité ennemie, exilée fin du prochain tour adverse
-    if (hasKw(cardInstance, "malediction") && action.targetInstanceId) {
+    if (hasKwOnPlay(cardInstance, "malediction") && action.targetInstanceId) {
       const cursedTarget = opponent.board.find(c => c.instanceId === action.targetInstanceId);
       if (cursedTarget) {
         cardInstance.maledictionTargetId = cursedTarget.instanceId;
@@ -2041,7 +2048,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // Paralysie: now a combat effect (applied when dealing damage, like poison)
 
     // Permutation: échange les PV de deux unités (une alliée, une ennemie)
-    if (hasKw(cardInstance, "permutation") && action.targetInstanceId) {
+    if (hasKwOnPlay(cardInstance, "permutation") && action.targetInstanceId) {
       // targetInstanceId = enemy, secondTargetInstanceId would be ally
       // Simplified: swap HP between this unit and targeted enemy
       const enemyTarget = opponent.board.find(c => c.instanceId === action.targetInstanceId);
@@ -2070,7 +2077,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     }
 
     // Mimique: copie toutes les capacités d'une unité ciblée
-    if (hasKw(cardInstance, "mimique") && action.targetInstanceId) {
+    if (hasKwOnPlay(cardInstance, "mimique") && action.targetInstanceId) {
       const mimicTarget = findCreatureOnBoard(player, action.targetInstanceId) ?? findCreatureOnBoard(opponent, action.targetInstanceId);
       if (mimicTarget) {
         const newKeywords = [...new Set([...cardInstance.card.keywords, ...mimicTarget.card.keywords])];
@@ -2083,7 +2090,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     }
 
     // Métamorphose: devient une copie exacte d'une unité ciblée
-    if (hasKw(cardInstance, "metamorphose") && action.targetInstanceId) {
+    if (hasKwOnPlay(cardInstance, "metamorphose") && action.targetInstanceId) {
       const morphTarget = findCreatureOnBoard(player, action.targetInstanceId) ?? findCreatureOnBoard(opponent, action.targetInstanceId);
       if (morphTarget) {
         cardInstance.card = { ...morphTarget.card };
@@ -2112,7 +2119,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     }
 
     // Catalyse: réduit de 1 le coût en mana des unités de même race en main
-    if (hasKw(cardInstance, "catalyse") && cardInstance.card.race) {
+    if (hasKwOnPlay(cardInstance, "catalyse") && cardInstance.card.race) {
       for (const handCard of player.hand) {
         if (handCard.card.race === cardInstance.card.race && handCard.card.card_type === "creature") {
           handCard.card = { ...handCard.card, mana_cost: Math.max(0, handCard.card.mana_cost - 1) };
@@ -2157,7 +2164,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     }
 
     // Profanation X: exile X cartes du cimetière, +1/+1 par carte
-    if (hasKw(cardInstance, "profanation")) {
+    if (hasKwOnPlay(cardInstance, "profanation")) {
       const profXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
       const x = profXVals["profanation"] || Math.max(1, Math.floor(cardInstance.card.mana_cost / 2));
       const toExile = Math.min(x, player.graveyard.length);
@@ -2171,7 +2178,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     }
 
     // Exhumation X: ressuscite une unité du cimetière (mana ≤ X)
-    if (hasKw(cardInstance, "exhumation")) {
+    if (hasKwOnPlay(cardInstance, "exhumation")) {
       const x = Math.max(1, cardInstance.card.mana_cost - 1);
       const resurrectable = player.graveyard.filter(c => c.card.card_type === "creature" && c.card.mana_cost <= x);
       if (resurrectable.length > 0 && player.board.length < MAX_BOARD_SIZE) {
@@ -2190,7 +2197,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     }
 
     // Héritage du cimetière: copie les capacités d'une unité du cimetière
-    if (hasKw(cardInstance, "heritage_du_cimetiere")) {
+    if (hasKwOnPlay(cardInstance, "heritage_du_cimetiere")) {
       const graveCreatures = player.graveyard.filter(c => c.card.card_type === "creature");
       if (graveCreatures.length > 0) {
         const graveTarget = (action.graveyardTargetInstanceId
@@ -2204,7 +2211,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     }
 
     // Rappel: remettre une carte du cimetière en main
-    if (hasKw(cardInstance, "rappel") && player.graveyard.length > 0) {
+    if (hasKwOnPlay(cardInstance, "rappel") && player.graveyard.length > 0) {
       const recallTarget = (action.graveyardTargetInstanceId
         ? player.graveyard.find(c => c.instanceId === action.graveyardTargetInstanceId)
         : player.graveyard[player.graveyard.length - 1]) ?? player.graveyard[player.graveyard.length - 1];
@@ -2219,7 +2226,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     }
 
     // Divination: reveal top 3 cards, player chooses 1 to keep on top
-    if (hasKw(cardInstance, "divination") && player.deck.length > 0) {
+    if (hasKwOnPlay(cardInstance, "divination") && player.deck.length > 0) {
       const count = Math.min(3, player.deck.length);
       const top3 = player.deck.splice(0, count);
       const chosenIdx = Math.min(action.divinationChoiceIndex ?? 0, top3.length - 1);
@@ -2246,7 +2253,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     }
 
     // Bénédiction: soigne complètement une unité ciblée
-    if (hasKw(cardInstance, "benediction") && action.targetInstanceId) {
+    if (hasKwOnPlay(cardInstance, "benediction") && action.targetInstanceId) {
       const healTarget = player.board.find(c => c.instanceId === action.targetInstanceId);
       if (healTarget) {
         healTarget.currentHealth = healTarget.maxHealth;
@@ -2257,7 +2264,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // Traque du destin X: révèle X premières cartes du deck, le joueur en
     // choisit une (action.divinationChoiceIndex — reuse of the divination
     // picker UI), reste en dessous dans un ordre aléatoire.
-    if (hasKw(cardInstance, "traque_du_destin") && player.deck.length > 0) {
+    if (hasKwOnPlay(cardInstance, "traque_du_destin") && player.deck.length > 0) {
       const x = getTraqueDuDestinX(cardInstance.card);
       const count = Math.min(x, player.deck.length);
       const revealed = player.deck.splice(0, count);
@@ -2292,7 +2299,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     }
 
     // Solidarité X: piochez X cartes si 2+ alliés de même race
-    if (hasKw(cardInstance, "solidarite") && cardInstance.card.race) {
+    if (hasKwOnPlay(cardInstance, "solidarite") && cardInstance.card.race) {
       const sameRaceCount = player.board.filter(a => a !== cardInstance && a.card.race === cardInstance.card.race).length;
       if (sameRaceCount >= 2) {
         const solXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
@@ -2319,13 +2326,13 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // Appel Suprême: récupère en main la créature de la race fixée au coût en
     // mana le plus élevé restante dans le deck (au hasard si égalité). La race
     // est portée par la capacité (keyword_instances[i].race).
-    if (hasKw(cardInstance, "appel_supreme")) {
+    if (hasKwOnPlay(cardInstance, "appel_supreme")) {
       const race = getCapabilities(cardInstance.card).find(c => c.abilityId === "appel_supreme")?.race;
       if (race) appelSupreme(player, race);
     }
 
     // Rassemblement X: révèle X premières cartes du deck, unités de même race en main, reste défaussé
-    if (hasKw(cardInstance, "rassemblement") && cardInstance.card.race && player.deck.length > 0) {
+    if (hasKwOnPlay(cardInstance, "rassemblement") && cardInstance.card.race && player.deck.length > 0) {
       const rasXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
       const x = rasXVals["rassemblement"] || Math.max(1, Math.floor(cardInstance.card.mana_cost / 2));
       const count = Math.min(x, player.deck.length);
@@ -2370,7 +2377,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // (owned by this player) joined the graveyard during the CURRENT
     // turn. Single +X/+X grant; does not stack with the number of dead
     // allies. Reads `diedOnTurn` stamped by cleanDeadCreatures.
-    if (hasKw(cardInstance, "instinct_de_meute")) {
+    if (hasKwOnPlay(cardInstance, "instinct_de_meute")) {
       const imXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
       const x = imXVals["instinct_de_meute"] || Math.max(1, Math.floor(cardInstance.card.mana_cost / 3));
       cardInstance.instinctDeMeuteX = x;
@@ -2421,7 +2428,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     }
 
     // Tactique X: attribue X capacités choisies à un allié (simplified: copy 1 keyword)
-    if (hasKw(cardInstance, "tactique") && action.targetInstanceId) {
+    if (hasKwOnPlay(cardInstance, "tactique") && action.targetInstanceId) {
       const tacticTarget = player.board.find(c => c.instanceId === action.targetInstanceId && c !== cardInstance);
       if (tacticTarget) {
         // Use player-chosen keywords if provided, else fallback to first grantable
@@ -4887,8 +4894,9 @@ function resolveCuratedKeywordEffect(
       }
       // Mort / retour : si c'est le tour du contrôleur ET qu'au moins une cible
       // valide existe, on DIFFÈRE le choix (déclencheur interactif en attente).
-      // Sinon (tour adverse, ou aucune cible) → cible aléatoire / fizzle.
-      if (owner.id === currentPlayerId && remonteeTargetIds(owner, opponent, source.instanceId).length > 0) {
+      // Sinon (tour adverse, mode attaque — flux synchrone sans pause — ou
+      // aucune cible) → cible aléatoire / fizzle.
+      if (inst?.mode !== "attack" && owner.id === currentPlayerId && remonteeTargetIds(owner, opponent, source.instanceId).length > 0) {
         pendingTriggerSink.push({
           id: source.instanceId,
           kw: "remontee",
@@ -4904,10 +4912,11 @@ function resolveCuratedKeywordEffect(
       // Tap (ou résolution différée) : cible explicite → dégâts immédiats.
       if (targetInstanceId) { applyImpactTo(targetInstanceId, x, source, owner, opponent); return; }
       // Mort / retour / fin de tour : sur le tour du contrôleur ET s'il existe
-      // une cible → on DIFFÈRE (picker interactif). Sur le tour adverse (ou pas
-      // de cible) → cible ALÉATOIRE déterministe (rng semée, comme Remontée).
+      // une cible → on DIFFÈRE (picker interactif). Sur le tour adverse, en
+      // mode attaque (flux synchrone sans pause) ou sans cible → cible
+      // ALÉATOIRE déterministe (rng semée, comme Remontée).
       const pool = impactTargetIds(owner, opponent);
-      if (owner.id === currentPlayerId && pool.length > 0) {
+      if (inst?.mode !== "attack" && owner.id === currentPlayerId && pool.length > 0) {
         pendingTriggerSink.push({ id: source.instanceId, kw: "impact", x, controllerId: owner.id, sourceInstanceId: source.instanceId });
         return;
       }
@@ -5028,6 +5037,19 @@ function resolveCuratedKeywordEffect(
           break;
         }
       }
+      // Mode attaque : draine une créature ennemie AU HASARD (le flux d'attaque
+      // ne peut pas ouvrir de picker) ; à défaut de créature, le héros adverse.
+      if (inst?.mode === "attack") {
+        const poolV = opponent.board.filter(c => c.currentHealth > 0 && !hasKw(c, "invisible") && !(hasKw(c, "ombre") && !c.ombreRevealed));
+        if (poolV.length > 0) {
+          const targetV = poolV[Math.floor(rng() * poolV.length)];
+          const stolenV = Math.min(x, targetV.currentHealth);
+          targetV.currentHealth -= stolenV;
+          source.currentHealth += stolenV;
+          source.maxHealth += stolenV;
+          break;
+        }
+      }
       const before = opponent.hero.hp;
       dealDamageToHero(opponent.hero, x);
       const dealt = before - opponent.hero.hp;
@@ -5093,12 +5115,429 @@ function resolveCuratedKeywordEffect(
       }
       break;
     }
+    // ─── Chantier « tous déclencheurs » : effets d'invocation rejoués depuis
+    // mort / attaque / retour / fin de tour / activation. Règle générale :
+    // cible explicite → résolution directe ; sinon, sur le tour du contrôleur
+    // (hors mode attaque, flux synchrone sans pause) le choix est DIFFÉRÉ
+    // (picker interactif) ; sur le tour adverse ou à l'attaque, cible AU
+    // HASARD (rng semée, déterministe entre clients). ───────────────────────
+    case "concentration": {
+      const xC = inst?.x ?? (parseXValuesFromEffectText(source.card.effect_text)["concentration"] || Math.max(1, Math.floor(source.card.mana_cost / 3)));
+      applyConcentration(owner, xC, currentCardPools.allSpellsPool);
+      return;
+    }
+    case "loyaute": {
+      // +1 ATK / +1 PV par allié de même race (recompte au déclenchement).
+      if (!source.card.race) return;
+      const n = owner.board.filter(a => a.instanceId !== source.instanceId && a.card.race === source.card.race).length;
+      if (n > 0) {
+        source.loyauteATKBonus += n;
+        source.loyautePVBonus += n;
+        source.currentHealth += n;
+        source.maxHealth += n;
+      }
+      return;
+    }
+    case "catalyse": {
+      if (!source.card.race) return;
+      for (const handCard of owner.hand) {
+        if (handCard.card.race === source.card.race && handCard.card.card_type === "creature") {
+          handCard.card = { ...handCard.card, mana_cost: Math.max(0, handCard.card.mana_cost - 1) };
+        }
+      }
+      return;
+    }
+    case "profanation": {
+      // Restreint aux déclencheurs « sur plateau » (tap / fin de tour / attaque)
+      // pour ne jamais auto-exiler la source depuis son propre cimetière.
+      const xP = inst?.x ?? (parseXValuesFromEffectText(source.card.effect_text)["profanation"] || Math.max(1, Math.floor(source.card.mana_cost / 2)));
+      const toExile = Math.min(xP, owner.graveyard.length);
+      for (let i = 0; i < toExile; i++) owner.graveyard.pop();
+      source.summonBonusATK += toExile;
+      source.currentAttack += toExile;
+      source.currentHealth += toExile;
+      source.maxHealth += toExile;
+      return;
+    }
+    case "contresort": {
+      source.contresortActive = true;
+      return;
+    }
+    case "solidarite": {
+      if (!source.card.race) return;
+      const sameRace = owner.board.filter(a => a.instanceId !== source.instanceId && a.card.race === source.card.race).length;
+      if (sameRace >= 2) {
+        const xS = inst?.x ?? (parseXValuesFromEffectText(source.card.effect_text)["solidarite"] || Math.max(1, Math.floor(source.card.mana_cost / 3)));
+        for (let i = 0; i < xS; i++) drawCard(owner);
+      }
+      return;
+    }
+    case "appel_supreme": {
+      const race = inst?.race ?? getCapabilities(source.card).find(c => c.abilityId === "appel_supreme")?.race;
+      if (race) appelSupreme(owner, race);
+      return;
+    }
+    case "rassemblement": {
+      if (!source.card.race || owner.deck.length === 0) return;
+      const xR = inst?.x ?? (parseXValuesFromEffectText(source.card.effect_text)["rassemblement"] || Math.max(1, Math.floor(source.card.mana_cost / 2)));
+      const count = Math.min(xR, owner.deck.length);
+      const revealed = owner.deck.splice(0, count);
+      for (const c of revealed) {
+        if (c.card.race === source.card.race && c.card.card_type === "creature" && owner.hand.length < MAX_HAND_SIZE) {
+          owner.hand.push(c);
+        } else {
+          owner.graveyard.push(c);
+        }
+      }
+      return;
+    }
+    case "instinct_de_meute": {
+      const xI = inst?.x ?? (parseXValuesFromEffectText(source.card.effect_text)["instinct_de_meute"] || Math.max(1, Math.floor(source.card.mana_cost / 3)));
+      source.instinctDeMeuteX = xI;
+      const died = source.card.faction
+        ? owner.graveyard.some(g => g.instanceId !== source.instanceId && g.diedOnTurn === currentTurnNumber && g.card.faction === source.card.faction)
+        : false;
+      if (died) {
+        source.instinctDeMeuteATKBonus += xI;
+        source.currentAttack += xI;
+        source.currentHealth += xI;
+        source.maxHealth += xI;
+      }
+      return;
+    }
+    case "convocation_simple": {
+      if (owner.board.length >= MAX_BOARD_SIZE) return;
+      const tmplS = findTokenTemplate(source.card.convocation_token_id);
+      if (!tmplS) return;
+      let tokenCardS: Card = {
+        id: -1, name: `Token ${tmplS.race}`.trim(),
+        mana_cost: 0, card_type: "creature",
+        attack: tmplS.attack, health: tmplS.health,
+        effect_text: "",
+        keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
+        race: tmplS.race,
+        faction: getFactionForRace(tmplS.race) ?? source.card.faction,
+        clan: source.card.clan,
+      };
+      tokenCardS = applyTokenTemplate(tokenCardS, tmplS);
+      const tokenS = createCardInstance(tokenCardS);
+      tokenS.hasSummoningSickness = true;
+      owner.board.push(tokenS);
+      return;
+    }
+    case "domination": {
+      // Prend le contrôle PERMANENT d'une unité ennemie au hasard (comme
+      // l'effet d'invocation — déjà aléatoire, aucun picker à différer).
+      if (opponent.board.length === 0 || owner.board.length >= MAX_BOARD_SIZE) return;
+      const idxD = Math.floor(rng() * opponent.board.length);
+      const stolen = opponent.board.splice(idxD, 1)[0];
+      stolen.hasSummoningSickness = true;
+      stolen.trueOwnerId = opponent.id;
+      owner.board.push(stolen);
+      return;
+    }
+    case "corruption": {
+      // Vole une unité ennemie AU HASARD (le fallback aléatoire existe déjà à
+      // l'invocation) ; elle gagne Traque et l'agressivité immédiate.
+      if (opponent.board.length === 0 || owner.board.length >= MAX_BOARD_SIZE) return;
+      const stealTarget = opponent.board[Math.floor(rng() * opponent.board.length)];
+      opponent.board = opponent.board.filter(c => c !== stealTarget);
+      stealTarget.originalOwnerId = opponent.id;
+      stealTarget.trueOwnerId = opponent.id;
+      stealTarget.hasSummoningSickness = false;
+      if (!stealTarget.card.keywords.includes("charge")) {
+        stealTarget.card = { ...stealTarget.card, keywords: [...stealTarget.card.keywords, "charge"] };
+      }
+      owner.board.push(stealTarget);
+      return;
+    }
+    case "exhumation": {
+      // Ressuscite une unité du cimetière (coût ≤ X) au hasard — la source est
+      // toujours EXCLUE (sinon une Exhumation-mort à X élevé se ressusciterait
+      // elle-même en boucle à chaque mort).
+      const xE = inst?.x ?? Math.max(1, source.card.mana_cost - 1);
+      const resurrectable = owner.graveyard.filter(c => c.instanceId !== source.instanceId && c.card.card_type === "creature" && c.card.mana_cost <= xE);
+      if (resurrectable.length === 0 || owner.board.length >= MAX_BOARD_SIZE) return;
+      const targetE = resurrectable[Math.floor(rng() * resurrectable.length)];
+      owner.graveyard = owner.graveyard.filter(c => c !== targetE);
+      returnInstanceToPlay(targetE);
+      targetE.instanceId = generateInstanceId();
+      targetE.hasSummoningSickness = !targetE.card.keywords.includes("charge");
+      owner.board.push(targetE);
+      return;
+    }
+    case "rappel": {
+      // Renvoie une carte du cimetière en main, au hasard, source exclue
+      // (le retour-de-soi à la mort est le rôle de Remontée/Résurrection).
+      const recallPool = owner.graveyard.filter(c => c.instanceId !== source.instanceId);
+      if (recallPool.length === 0 || owner.hand.length >= MAX_HAND_SIZE) return;
+      const targetR = recallPool[Math.floor(rng() * recallPool.length)];
+      owner.graveyard = owner.graveyard.filter(c => c !== targetR);
+      returnInstanceToPlay(targetR);
+      targetR.instanceId = generateInstanceId();
+      owner.hand.push(targetR);
+      if (targetR.card.card_type === "creature") triggerReturnToHand(targetR, owner, opponent);
+      return;
+    }
+    case "heritage_du_cimetiere": {
+      // Copie les capacités d'une unité du cimetière au hasard (source exclue).
+      const graveCreatures = owner.graveyard.filter(c => c.instanceId !== source.instanceId && c.card.card_type === "creature");
+      if (graveCreatures.length === 0) return;
+      const graveTarget = graveCreatures[Math.floor(rng() * graveCreatures.length)];
+      const hKeywords = [...new Set([...source.card.keywords, ...graveTarget.card.keywords])];
+      const hInstances = mergeKeywordInstances(source.card.keyword_instances, graveTarget.card.keyword_instances);
+      const hCapabilities = mergeComposedCapabilities(source.card.capabilities, graveTarget.card.capabilities);
+      source.card = { ...source.card, keywords: hKeywords, keyword_instances: hInstances, capabilities: hCapabilities };
+      return;
+    }
+    case "divination": {
+      // Révèle les 3 cartes du dessus, en garde une AU HASARD sur le dessus,
+      // replace les autres dessous (pas de modale hors invocation).
+      if (owner.deck.length === 0) return;
+      const countDiv = Math.min(3, owner.deck.length);
+      const topDiv = owner.deck.splice(0, countDiv);
+      const keepIdx = Math.floor(rng() * topDiv.length);
+      owner.deck.unshift(topDiv[keepIdx]);
+      for (let i = 0; i < topDiv.length; i++) {
+        if (i !== keepIdx) owner.deck.push(topDiv[i]);
+      }
+      return;
+    }
+    case "traque_du_destin": {
+      // Révèle X cartes, en ajoute une AU HASARD en main, replace le reste
+      // dessous dans un ordre aléatoire (pas de modale hors invocation).
+      if (owner.deck.length === 0) return;
+      const xT = inst?.x ?? getTraqueDuDestinX(source.card);
+      const countT = Math.min(xT, owner.deck.length);
+      const revealedT = owner.deck.splice(0, countT);
+      if (owner.hand.length < MAX_HAND_SIZE) {
+        const pickIdx = Math.floor(rng() * revealedT.length);
+        owner.hand.push(revealedT[pickIdx]);
+        revealedT.splice(pickIdx, 1);
+      }
+      shuffleArray(revealedT);
+      owner.deck.push(...revealedT);
+      return;
+    }
+    case "selection":
+    case "selection_magique":
+    case "renfort_royal": {
+      // Sélection « 1 parmi 3 » : modale sur le tour du contrôleur (déclencheur
+      // différé), tirage AU HASARD parmi les options révélées sinon (tour
+      // adverse ou mode attaque — la modale ne peut pas s'ouvrir).
+      const selState = {
+        factionCardPool: currentCardPools.factionCardPool,
+        allSpellsPool: currentCardPools.allSpellsPool,
+        players: [owner, opponent],
+        currentPlayerIndex: 0,
+      } as unknown as GameState;
+      const options = selectionCardsForKeyword(kw, selState, inst?.x ?? 0, source.card);
+      if (options.length === 0) return;
+      if (inst?.mode !== "attack" && owner.id === currentPlayerId) {
+        pendingTriggerSink.push({
+          id: `${source.instanceId}#${kw}`,
+          controllerId: owner.id,
+          sourceInstanceId: source.instanceId,
+          selectionType: kw,
+          selectionOptionIds: options.map(c => c.id),
+        });
+        return;
+      }
+      const picked = options[Math.floor(rng() * options.length)];
+      if (owner.hand.length < MAX_HAND_SIZE) owner.hand.push(createCardInstance(picked));
+      return;
+    }
+    case "affaiblissement": {
+      const ax = inst?.x ?? 0;
+      const ay = inst?.y ?? 0;
+      const resolveAff = (tid: string) => {
+        const t = opponent.board.find(c => c.instanceId === tid);
+        if (t) applyAffaiblissement(t, ax, ay);
+      };
+      if (targetInstanceId) { resolveAff(targetInstanceId); return; }
+      const tidA = deferOrRandomTarget(kw, source, owner, opponent, inst, ax, ay);
+      if (tidA) resolveAff(tidA);
+      return;
+    }
+    case "benediction": {
+      const resolveBen = (tid: string) => {
+        const t = owner.board.find(c => c.instanceId === tid);
+        if (t) { t.currentHealth = t.maxHealth; t.isPoisoned = false; }
+      };
+      if (targetInstanceId) { resolveBen(targetInstanceId); return; }
+      const tidB = deferOrRandomTarget(kw, source, owner, opponent, inst);
+      if (tidB) resolveBen(tidB);
+      return;
+    }
+    case "tactique": {
+      // Attribue la 1re capacité transmissible de la source à un allié (même
+      // repli que l'invocation sans choix explicite de capacités).
+      const resolveTac = (tid: string) => {
+        const t = owner.board.find(c => c.instanceId === tid && c.instanceId !== source.instanceId);
+        if (!t) return;
+        const kwsToGrant = source.card.keywords.filter(k => k !== "tactique" && !t.card.keywords.includes(k)).slice(0, 1);
+        for (const k of kwsToGrant) {
+          t.card = { ...t.card, keywords: [...t.card.keywords, k] };
+        }
+      };
+      if (targetInstanceId) { resolveTac(targetInstanceId); return; }
+      const tidT = deferOrRandomTarget(kw, source, owner, opponent, inst);
+      if (tidT) resolveTac(tidT);
+      return;
+    }
+    case "sacrifice": {
+      // Détruit un allié ciblé, la source gagne ses ATK/PV. Restreint aux
+      // déclencheurs « sur plateau » (la source doit profiter du gain).
+      const resolveSac = (tid: string) => {
+        const t = owner.board.find(c => c.instanceId === tid && c.instanceId !== source.instanceId);
+        if (!t) return;
+        source.summonBonusATK += t.currentAttack;
+        source.currentAttack += t.currentAttack;
+        source.currentHealth += t.currentHealth;
+        source.maxHealth += t.currentHealth;
+        owner.board = owner.board.filter(c => c !== t);
+        owner.graveyard.push(t);
+        processDeathTriggers([t], owner, opponent);
+      };
+      if (targetInstanceId) { resolveSac(targetInstanceId); return; }
+      const tidS = deferOrRandomTarget(kw, source, owner, opponent, inst);
+      if (tidS) resolveSac(tidS);
+      return;
+    }
+    case "permutation": {
+      // Échange les PV (courants + max) de la source et d'une unité ennemie.
+      // Restreint aux déclencheurs « sur plateau » (l'échange n'a de sens que
+      // si la source est vivante).
+      const resolvePerm = (tid: string) => {
+        const t = opponent.board.find(c => c.instanceId === tid);
+        if (!t) return;
+        const tempHP = source.currentHealth;
+        const tempMaxHP = source.maxHealth;
+        source.currentHealth = t.currentHealth;
+        source.maxHealth = t.maxHealth;
+        t.currentHealth = tempHP;
+        t.maxHealth = tempMaxHP;
+      };
+      if (targetInstanceId) { resolvePerm(targetInstanceId); return; }
+      const tidP = deferOrRandomTarget(kw, source, owner, opponent, inst);
+      if (tidP) resolvePerm(tidP);
+      return;
+    }
+    case "malediction": {
+      // Marque une unité ennemie (exil différé porté par la source — la source
+      // doit rester en jeu, d'où la restriction aux déclencheurs sur plateau).
+      const resolveMal = (tid: string) => {
+        const t = opponent.board.find(c => c.instanceId === tid);
+        if (t) source.maledictionTargetId = t.instanceId;
+      };
+      if (targetInstanceId) { resolveMal(targetInstanceId); return; }
+      const tidM = deferOrRandomTarget(kw, source, owner, opponent, inst);
+      if (tidM) resolveMal(tidM);
+      return;
+    }
+    case "mimique": {
+      // Copie les capacités d'une unité ciblée sur la source (sur plateau).
+      const resolveMim = (tid: string) => {
+        const t = findCreatureOnBoard(owner, tid) ?? findCreatureOnBoard(opponent, tid);
+        if (!t || t.instanceId === source.instanceId) return;
+        const mKeywords = [...new Set([...source.card.keywords, ...t.card.keywords])];
+        const mInstances = mergeKeywordInstances(source.card.keyword_instances, t.card.keyword_instances);
+        const mCapabilities = mergeComposedCapabilities(source.card.capabilities, t.card.capabilities);
+        source.card = { ...source.card, keywords: mKeywords, keyword_instances: mInstances, capabilities: mCapabilities };
+        if (t.hasDivineShield) source.hasDivineShield = true;
+      };
+      if (targetInstanceId) { resolveMim(targetInstanceId); return; }
+      const tidMi = deferOrRandomTarget(kw, source, owner, opponent, inst);
+      if (tidMi) resolveMim(tidMi);
+      return;
+    }
+    case "metamorphose": {
+      // La source devient une copie exacte d'une unité ciblée (sur plateau).
+      const resolveMet = (tid: string) => {
+        const t = findCreatureOnBoard(owner, tid) ?? findCreatureOnBoard(opponent, tid);
+        if (!t || t.instanceId === source.instanceId) return;
+        source.card = { ...t.card };
+        source.currentAttack = t.currentAttack;
+        source.currentHealth = t.currentHealth;
+        source.maxHealth = t.maxHealth;
+        source.hasDivineShield = t.hasDivineShield;
+      };
+      if (targetInstanceId) { resolveMet(targetInstanceId); return; }
+      const tidMe = deferOrRandomTarget(kw, source, owner, opponent, inst);
+      if (tidMe) resolveMet(tidMe);
+      return;
+    }
     default:
       // No-op for keywords not yet supported in non-play modes. The
       // Card Forge UI gates which keywords admins can put in death/tap
       // mode, so unsupported entries shouldn't appear in practice.
       break;
   }
+}
+
+/** Pool de cibles éligibles d'un mot-clé curé DIFFÉRÉ (picker interactif ou
+ *  tirage aléatoire). Partagé par resolveCuratedKeywordEffect (décision différer
+ *  vs hasard), autoResolvePendingTriggers (repli chrono), applyOnePendingTrigger
+ *  et l'overlay du store (cibles cliquables). */
+export function deferredKwTargetIds(
+  kw: Keyword | undefined,
+  controller: PlayerState,
+  other: PlayerState,
+  sourceInstanceId: string | null,
+): string[] {
+  const targetable = (c: CardInstance) => !hasKw(c, "invisible") && !(hasKw(c, "ombre") && !c.ombreRevealed);
+  switch (kw) {
+    case "remontee":
+      return remonteeTargetIds(controller, other, sourceInstanceId);
+    case "impact":
+      return impactTargetIds(controller, other);
+    case "affaiblissement":
+    case "permutation":
+    case "malediction":
+      return other.board.filter(targetable).map(c => c.instanceId);
+    case "benediction":
+      return controller.board.map(c => c.instanceId);
+    case "tactique":
+    case "sacrifice":
+      return controller.board.filter(c => c.instanceId !== sourceInstanceId).map(c => c.instanceId);
+    case "mimique":
+    case "metamorphose":
+      return [
+        ...controller.board.filter(c => c.instanceId !== sourceInstanceId),
+        ...other.board.filter(c => targetable(c) && c.instanceId !== sourceInstanceId),
+      ].map(c => c.instanceId);
+    default:
+      return [];
+  }
+}
+
+/** Décision « différer ou tirer au hasard » d'un mot-clé curé ciblé déclenché
+ *  sans cible explicite. Tour du contrôleur (hors mode attaque) → pousse un
+ *  déclencheur interactif et renvoie null. Sinon → renvoie une cible au hasard
+ *  (rng semée). Aucune cible possible → undefined (fizzle). */
+function deferOrRandomTarget(
+  kw: Keyword,
+  source: CardInstance,
+  owner: PlayerState,
+  opponent: PlayerState,
+  inst: KeywordInstance | undefined,
+  x?: number,
+  y?: number,
+): string | null | undefined {
+  const pool = deferredKwTargetIds(kw, owner, opponent, source.instanceId);
+  if (pool.length === 0) return undefined;
+  if (inst?.mode !== "attack" && owner.id === currentPlayerId) {
+    pendingTriggerSink.push({
+      id: `${source.instanceId}#${kw}`,
+      kw,
+      controllerId: owner.id,
+      sourceInstanceId: source.instanceId,
+      x,
+      y,
+    });
+    return null;
+  }
+  return pool[Math.floor(rng() * pool.length)];
 }
 
 // ============================================================
@@ -5258,6 +5697,27 @@ function applyOnePendingTrigger(
     if (controller && other) {
       applyImpactTo(choice.targetInstanceId, trigger.x ?? 0, null, controller, other);
     }
+  } else if (trigger.kw) {
+    // Mots-clés curés ciblés génériques (Affaiblissement, Bénédiction,
+    // Tactique, Sacrifice, Permutation, Malédiction, Mimique, Métamorphose…).
+    // La source est relocalisée plateau → cimetière → main (elle a pu mourir
+    // entre le déclenchement et le choix) ; introuvable ⇒ fizzle silencieux.
+    // La cible explicite court-circuite le defer dans resolveCuratedKeywordEffect.
+    if (controller && other && choice.targetInstanceId) {
+      const src = controller.board.find(c => c.instanceId === trigger.sourceInstanceId)
+        ?? controller.graveyard.find(c => c.instanceId === trigger.sourceInstanceId)
+        ?? controller.hand.find(c => c.instanceId === trigger.sourceInstanceId);
+      if (src) {
+        resolveCuratedKeywordEffect(
+          trigger.kw, trigger.x ?? 1, src, controller, other, choice.targetInstanceId,
+          { id: trigger.kw, x: trigger.x, y: trigger.y } as KeywordInstance,
+        );
+        const deadC = cleanDeadCreatures(controller);
+        const deadO = cleanDeadCreatures(other);
+        processDeathTriggers(deadC, controller, other);
+        processDeathTriggers(deadO, other, controller);
+      }
+    }
   }
 }
 
@@ -5290,18 +5750,13 @@ export function autoResolvePendingTriggers(state: GameState): GameState {
       } else if (trigger.capUid) {
         const targets = endOfTurnTriggerTargets(newState, trigger);
         if (targets.length > 0) choice = { targetInstanceId: targets[Math.floor(rng() * targets.length)] };
-      } else if (trigger.kw === "remontee") {
+      } else if (trigger.kw) {
+        // Pool générique par mot-clé (Remontée, Impact, et tous les curés
+        // ciblés du chantier multi-déclencheurs) — cf. deferredKwTargetIds.
         const controller = newState.players.find(p => p.id === trigger.controllerId);
         const other = newState.players.find(p => p.id !== trigger.controllerId);
         if (controller && other) {
-          const targets = remonteeTargetIds(controller, other, trigger.sourceInstanceId);
-          if (targets.length > 0) choice = { targetInstanceId: targets[Math.floor(rng() * targets.length)] };
-        }
-      } else if (trigger.kw === "impact") {
-        const controller = newState.players.find(p => p.id === trigger.controllerId);
-        const other = newState.players.find(p => p.id !== trigger.controllerId);
-        if (controller && other) {
-          const targets = impactTargetIds(controller, other);
+          const targets = deferredKwTargetIds(trigger.kw, controller, other, trigger.sourceInstanceId);
           if (targets.length > 0) choice = { targetInstanceId: targets[Math.floor(rng() * targets.length)] };
         }
       }
@@ -5334,6 +5789,14 @@ export function tapKeywordNeedsTarget(kw: Keyword): boolean {
     case "vampirisme":
     case "remontee":
     case "impact":
+    case "affaiblissement":
+    case "benediction":
+    case "tactique":
+    case "sacrifice":
+    case "permutation":
+    case "malediction":
+    case "mimique":
+    case "metamorphose":
       return true;
     default:
       return false;
@@ -5363,6 +5826,17 @@ export function getTapActivateTargets(state: GameState, kw: Keyword, sourceInsta
     case "impact":
       // Créature OU héros, tout bord.
       return impactTargetIds(player, opponent);
+    case "affaiblissement":
+    case "benediction":
+    case "tactique":
+    case "sacrifice":
+    case "permutation":
+    case "malediction":
+    case "mimique":
+    case "metamorphose":
+      // Mots-clés curés ciblés du chantier multi-déclencheurs : même pool que
+      // le picker différé (mort/fin de tour) pour une UX cohérente.
+      return deferredKwTargetIds(kw, player, opponent, sourceInstanceId ?? null);
     default:
       return null;
   }
@@ -5731,6 +6205,7 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   currentTurnNumber = state.turnNumber;
   currentPlayerId = state.players[state.currentPlayerIndex].id;
   currentPlayerIds = state.players.map(p => p.id);
+  currentCardPools = { factionCardPool: state.factionCardPool, allSpellsPool: state.allSpellsPool };
   pendingTriggerSink = [];
   sequentialHitsSink = [];
   powerStrikeSink = [];
@@ -6103,12 +6578,15 @@ const GRAVEYARD_TARGETING_KEYWORDS: Keyword[] = ["rappel", "heritage_du_cimetier
 
 export function creatureNeedsGraveyardTarget(card: Card): boolean {
   if (card.card_type !== "creature") return false;
-  return card.keywords.some(kw => GRAVEYARD_TARGETING_KEYWORDS.includes(kw));
+  // Mode-aware : un Rappel/Exhumation/Héritage en mode non-invocation ne doit
+  // pas ouvrir le sélecteur de cimetière à l'entrée en jeu.
+  return card.keywords.some(kw => GRAVEYARD_TARGETING_KEYWORDS.includes(kw) && cardHasKwOnPlay(card, kw));
 }
 
 export function getGraveyardTargets(state: GameState, card: Card): string[] {
   const player = state.players[state.currentPlayerIndex];
   for (const kw of card.keywords) {
+    if (!cardHasKwOnPlay(card, kw)) continue;
     if (kw === "rappel") {
       return player.graveyard.map(c => c.instanceId);
     }
@@ -6124,11 +6602,13 @@ export function getGraveyardTargets(state: GameState, card: Card): string[] {
 }
 
 export function creatureNeedsDivination(card: Card): boolean {
-  return card.card_type === "creature" && card.keywords.includes("divination" as Keyword);
+  // Gaté sur le mode on-play : une Divination en tap/mort/etc. ne doit pas
+  // ouvrir la modale à l'invocation (elle se résout au hasard au déclenchement).
+  return card.card_type === "creature" && cardHasKwOnPlay(card, "divination" as Keyword);
 }
 
 export function creatureNeedsTraqueDuDestin(card: Card): boolean {
-  return card.card_type === "creature" && card.keywords.includes("traque_du_destin" as Keyword);
+  return card.card_type === "creature" && cardHasKwOnPlay(card, "traque_du_destin" as Keyword);
 }
 
 /** Compute X for Traque du destin from the card's effect_text bracket
