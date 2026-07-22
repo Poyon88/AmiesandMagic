@@ -108,6 +108,36 @@ on conflict (id) do nothing;
 
 ---
 
+## URL Configuration — le réglage qui ne se voit qu'en production
+
+**Authentication → URL Configuration.** Supabase valide chaque `emailRedirectTo`
+contre une liste blanche. Si l'URL n'y figure pas, il ne renvoie **aucune
+erreur** : il retombe silencieusement sur la *Site URL* du projet.
+
+Rencontré le 2026-07-22 : un compte créé sur le site en ligne recevait bien son
+email de confirmation, mais le lien renvoyait vers `localhost:3000` — la Site URL
+étant restée sur sa valeur de développement. Le code était hors de cause,
+`emailRedirectTo` transmettant bien l'origine réelle.
+
+Doivent y figurer :
+
+- **Site URL** → l'adresse de production en `https://` ;
+- **Redirect URLs** → `https://<domaine-prod>/**` **et** `http://localhost:3000/**`,
+  faute de quoi le développement local casse à son tour.
+
+Le `/**` couvre les deux chemins utilisés par le code : `/auth/callback` et
+`/auth/callback?next=/auth/reset-password`.
+
+⚠️ La **réinitialisation de mot de passe** emprunte la même liste blanche. La
+tester en local ne prouve donc rien pour la production : `localhost` y est
+autorisé, le domaine de production peut ne pas l'être. Les deux flux doivent
+être vérifiés en ligne.
+
+Les emails **déjà envoyés** conservent leur ancien lien ; seuls les nouveaux
+prennent la bonne adresse.
+
+---
+
 ## Protection anti-robot (Turnstile)
 
 Active en production. Points à connaître avant d'y toucher :
