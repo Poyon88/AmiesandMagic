@@ -27,6 +27,8 @@ Parcours complet validé en conditions réelles sur la base de production :
   sans elles, l'offre de déblocage serait invisible.
 - **Octroi manuel** depuis l'admin (`set_all_commons_unlocked`), qui tient lieu
   d'encaissement en attendant un prestataire de paiement.
+- **Protection anti-robot Cloudflare Turnstile** sur les trois flux
+  d'authentification, active et vérifiée côté serveur.
 
 Migrations **appliquées en production** : `supabase-migration-signup-username.sql`
 puis `supabase-migration-faction-entitlements.sql`.
@@ -37,24 +39,27 @@ puis `supabase-migration-faction-entitlements.sql`.
 
 L'ordre compte : le point 2 dépend du point 1.
 
-### 1. Brancher un SMTP tiers — **bloquant**
+### ~~1. Brancher un SMTP tiers~~ — **FAIT** (2026-07-22)
 
-Le service d'email intégré de Supabase plafonne à quelques envois par heure et
-est explicitement prévu pour le développement. Rencontré en test :
-`email rate limit exceeded` après trois inscriptions.
+Le service intégré de Supabase plafonnait à quelques envois par heure — rencontré
+en test : `email rate limit exceeded` après trois inscriptions. Un prestataire
+tiers est branché, et la réinitialisation de mot de passe a été validée de bout
+en bout.
 
-→ Authentication → Emails → SMTP Settings (Resend, Brevo, Postmark…).
+**Piège associé, également traité** : brancher le SMTP ne relève PAS
+automatiquement le plafond appliqué par Supabase. Il se règle à part, dans
+Authentication → Rate Limits → « Rate limit for sending emails », et ce budget
+est **global** (confirmations + réinitialisations + changements d'adresse). Le
+champ n'est modifiable que lorsqu'un SMTP tiers est configuré — c'est d'ailleurs
+un bon indicateur que la configuration a pris.
 
-Sans cela, les premiers joueurs ne recevront tout simplement pas leur email de
-confirmation.
+### 2. Vérifier l'état de « Confirm email »
 
-### 2. Réactiver « Confirm email » — **bloquant**
+Authentication → Providers → Email → « Confirm email ».
 
-⚠️ **Il est DÉSACTIVÉ aujourd'hui**, volontairement, pour débloquer les tests
-(cf. point 1). En l'état, n'importe qui peut créer un compte avec une adresse
-inexistante.
-
-→ Authentication → Providers → Email → « Confirm email ».
+Il a été **désactivé temporairement** le 2026-07-21 pour débloquer les tests,
+puis l'état a changé sans être retracé. À confirmer avant l'ouverture : sans
+confirmation, n'importe qui crée un compte avec une adresse inexistante.
 
 Le code gère les deux cas sans modification : avec confirmation, l'écran
 « vérifie ta boîte mail » s'affiche, avec un renvoi verrouillé 60 s.
@@ -100,6 +105,42 @@ select u.id,
  where p.id is null
 on conflict (id) do nothing;
 ```
+
+---
+
+## Protection anti-robot (Turnstile)
+
+Active en production. Points à connaître avant d'y toucher :
+
+- **La protection Supabase n'est pas décomposable par point d'entrée.** L'activer
+  couvre inscription, connexion ET réinitialisation de mot de passe. Un widget
+  qui ne couvrirait que l'inscription rendrait la connexion impossible.
+- **Le jeton est à USAGE UNIQUE.** `consumeCaptcha()` réinitialise le widget
+  après chaque tentative ; sans cela le deuxième essai échoue sur
+  `timeout-or-duplicate`, erreur que l'utilisateur ne peut relier à son geste.
+  Ce défaut ne se voit **jamais au premier essai** — tout test doit en enchaîner
+  deux.
+- **Clé publique** dans `NEXT_PUBLIC_TURNSTILE_SITE_KEY` (`.env.local` **et**
+  Netlify, tous contextes). Étant `NEXT_PUBLIC_*`, elle est figée au build : une
+  variable ajoutée après coup exige un redéploiement.
+- **Clé secrète** uniquement dans Supabase. Nulle part ailleurs.
+- **Ordre d'activation** : déployer le code qui transmet le jeton AVANT
+  d'activer la protection côté Supabase. L'inverse casse l'authentification en
+  production — c'est arrivé le 2026-07-22.
+- **Retour arrière immédiat** en cas de problème : désactiver la protection dans
+  Supabase rend le site fonctionnel sans redéploiement.
+
+Sonde pour savoir si la protection est réellement active :
+
+```bash
+URL=$(grep -oE '^NEXT_PUBLIC_SUPABASE_URL=.*' .env.local | cut -d= -f2-)
+KEY=$(grep -oE '^NEXT_PUBLIC_SUPABASE_ANON_KEY=.*' .env.local | cut -d= -f2-)
+curl -s -X POST "$URL/auth/v1/token?grant_type=password" \
+  -H "apikey: $KEY" -H "Content-Type: application/json" \
+  -d '{"email":"sonde@example.invalid","password":"bidon"}'
+```
+
+`invalid_credentials` = inactive · `captcha_failed` = active.
 
 ---
 

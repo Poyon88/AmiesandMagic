@@ -6,9 +6,9 @@ logique argent) est **mergé en prod sur `main`**. Aucun de ces points n'est urg
 
 ## Ouverture des inscriptions
 - [ ] **Prérequis avant d'ouvrir au public** → voir `docs/OUVERTURE-INSCRIPTION.md`.
-      Deux bloquants : brancher un **SMTP tiers**, puis **réactiver « Confirm
-      email »** (désactivé pour les tests le 2026-07-21). Plus : rédiger les CGU,
-      propager les 7 locales, réparer 2 comptes orphelins.
+      SMTP tiers **fait** (2026-07-22), Turnstile **actif**. Restent : vérifier
+      l'état de « Confirm email », rédiger les CGU, propager les 7 locales,
+      réparer 2 comptes orphelins.
 
 ## Actions (hors code)
 - [ ] **Vérifier `CRON_SECRET` en prod Netlify.** Le code fail-close déjà si le
