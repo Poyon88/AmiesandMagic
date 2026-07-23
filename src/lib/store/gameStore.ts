@@ -44,8 +44,7 @@ import {
   getDiscardCost,
   getSacrificeCost,
   getTapActivateTargets,
-  remonteeTargetIds,
-  impactTargetIds,
+  deferredKwTargetIds,
   endOfTurnTriggerTargets,
 } from "@/lib/game/engine";
 
@@ -67,24 +66,33 @@ function pendingTriggerOverlay(
     if (ordered.length === 0) return none;
     return { targetingMode: "selection" as const, validTargets: [], pendingTriggerId: t.id, pendingTriggerPrompt: null, selectionCards: ordered };
   }
-  // Variante « fin de tour » (effet composé) vs mot-clé différé (remontée / impact).
+  // Variante « fin de tour » (effet composé) vs mot-clé curé différé
+  // (Remontée, Impact, et tous les curés ciblés du chantier multi-déclencheurs).
   const isEndOfTurn = !!t.capUid;
-  if (!isEndOfTurn && t.kw !== "remontee" && t.kw !== "impact") return none;
+  if (!isEndOfTurn && !t.kw) return none;
   const controller = gs!.players.find(p => p.id === t.controllerId);
   const other = gs!.players.find(p => p.id !== t.controllerId);
   if (!controller || !other) return none;
   const targets = isEndOfTurn
     ? endOfTurnTriggerTargets(gs!, t)
-    : t.kw === "impact"
-      ? impactTargetIds(controller, other)
-      : remonteeTargetIds(controller, other, t.sourceInstanceId);
+    : deferredKwTargetIds(t.kw, controller, other, t.sourceInstanceId);
   if (targets.length === 0) return none;
   // Le message du sélecteur doit refléter l'EFFET réel. Pour un effet composé de
   // fin de tour, on le dérive de la capability (ex. buff → « choisissez une
   // créature à renforcer ») au lieu du texte de Remontée qui était figé.
-  let prompt = t.kw === "impact"
-    ? `💥 Impact — choisissez une cible à frapper${t.x ? ` (${t.x})` : ""}`
-    : "🔼 Remontée — choisissez l'unité à renvoyer en main";
+  const KW_PROMPTS: Record<string, string> = {
+    impact: `💥 Impact — choisissez une cible à frapper${t.x ? ` (${t.x})` : ""}`,
+    remontee: "🔼 Remontée — choisissez l'unité à renvoyer en main",
+    affaiblissement: `🔻 Affaiblissement — choisissez la créature ennemie à affaiblir${t.x != null ? ` (-${t.x}/-${t.y ?? 0})` : ""}`,
+    benediction: "✝️ Bénédiction — choisissez l'unité alliée à soigner entièrement",
+    tactique: "📋 Tactique — choisissez l'allié qui reçoit la capacité",
+    sacrifice: "💔 Sacrifice — choisissez l'allié à sacrifier",
+    permutation: "🔀 Permutation — choisissez la créature ennemie dont échanger les PV",
+    malediction: "💀 Malédiction — choisissez la créature ennemie à maudire",
+    mimique: "🪞 Mimique — choisissez l'unité dont copier les capacités",
+    metamorphose: "🦎 Métamorphose — choisissez l'unité à copier entièrement",
+  };
+  let prompt = (t.kw && KW_PROMPTS[t.kw]) || "🎯 Choisissez une cible";
   if (isEndOfTurn) {
     const source = controller.board.find(c => c.instanceId === t.sourceInstanceId);
     const cap = source ? getCapabilities(source.card).find(c => c.uid === t.capUid && c.composed) : undefined;

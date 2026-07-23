@@ -1157,9 +1157,28 @@ export function creatureEngineId(a: AbilityDef): string {
  *  donc load-bearing — l'adaptateur DOIT respecter le mode exact. Liste tirée
  *  des appels `hasKwOnPlay` et du switch `resolveCuratedKeywordEffect`. */
 export const CURATED_MULTIMODE_IDS: ReadonlySet<string> = new Set([
-  "combustion", "convocation", "convocations_multiples", "dedoublement", "douleur", "entrainement", "inspiration",
+  "appel_du_clan", "combustion", "convocation", "convocations_multiples", "dedoublement", "douleur", "entrainement", "inspiration",
   "ombre_du_passe", "pillage", "prescience", "remontee", "renforcement_multiple",
   "savant", "suprematie", "tempete", "vampirisme", "cataclysme", "renforcement", "impact",
+  // Chantier « tous déclencheurs » : effets d'invocation rejoués depuis
+  // mort / attaque / retour / fin de tour / activation.
+  "concentration", "loyaute", "catalyse", "solidarite", "appel_supreme", "rassemblement",
+  "instinct_de_meute", "convocation_simple", "domination", "corruption", "exhumation",
+  "rappel", "divination", "traque_du_destin", "selection", "selection_magique", "renfort_royal",
+  "affaiblissement", "benediction", "tactique",
+  // Restreints aux déclencheurs « sur plateau » (cf. CURATED_ONBOARD_ONLY_IDS).
+  "sacrifice", "permutation", "malediction", "mimique", "metamorphose",
+  "contresort", "profanation", "heritage_du_cimetiere",
+]);
+
+/** Sous-ensemble des ids curés dont l'effet exige que la SOURCE soit en jeu
+ *  (auto-transformation, gain de stats, marqueur porté par la source, exil du
+ *  cimetière où la source vient d'arriver…). Ils ne proposent que les
+ *  déclencheurs « sur plateau » : invocation, activation, fin de tour, attaque
+ *  — jamais mort ni retour en main. */
+export const CURATED_ONBOARD_ONLY_IDS: ReadonlySet<string> = new Set([
+  "sacrifice", "permutation", "malediction", "mimique", "metamorphose",
+  "contresort", "profanation", "heritage_du_cimetiere",
 ]);
 
 /** Effets intrinsèques « à la mort » câblés dans processDeathTriggers via
@@ -1216,11 +1235,12 @@ export function deriveAbilityTriggerMeta(a: AbilityDef): AbilityTriggerMeta {
 
   let creatureTriggers: CapabilityTrigger[] | undefined;
   if (isCreature) {
-    // Entrainement et Dédoublement acceptent TOUS les déclencheurs habituels
-    // (dont fin-de-tour et attaque), là où le défaut curated multi-mode n'en
-    // propose que 4.
-    if (cid === "entrainement" || cid === "dedoublement") creatureTriggers = ["on_play", "on_death", "on_activation", "on_return", "on_end_of_turn", "on_attack"];
-    else if (curatedMultiMode) creatureTriggers = ["on_play", "on_death", "on_activation", "on_return"];
+    // Chantier « tous déclencheurs » : les mots-clés curés multi-mode acceptent
+    // TOUS les déclencheurs habituels (invocation, mort, activation, retour,
+    // fin de tour, attaque). Exception : les effets exigeant la source en jeu
+    // (CURATED_ONBOARD_ONLY_IDS) n'offrent ni mort ni retour en main.
+    if (CURATED_ONBOARD_ONLY_IDS.has(cid)) creatureTriggers = ["on_play", "on_activation", "on_end_of_turn", "on_attack"];
+    else if (curatedMultiMode) creatureTriggers = ["on_play", "on_death", "on_activation", "on_return", "on_end_of_turn", "on_attack"];
     else if (deathNature) creatureTriggers = ["on_death"];
     else if (automatic) creatureTriggers = ["automatic"];
     else creatureTriggers = ["on_play"];

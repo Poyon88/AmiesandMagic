@@ -986,6 +986,8 @@ export interface PendingTrigger {
   /** Montant porté par le trigger (ex. Impact X en mode différé mort/fin de
    *  tour : la source est au cimetière, on ne peut pas relire X du plateau). */
   x?: number;
+  /** Second membre d'un couple X/Y (ex. Affaiblissement -X/-Y différé). */
+  y?: number;
   /** Présent ⇒ variante « effet composé fin de tour » : uid de la capability
    *  on_end_of_turn à résoudre sur la cible choisie. Absent ⇒ remontée. */
   capUid?: string;
