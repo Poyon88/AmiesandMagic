@@ -1633,6 +1633,31 @@ export const useGameStore = create<GameStore>((set, get) => {
     }
     const hasSummons = newCreatureIds.size > 0;
 
+    // Invocations déclenchées PENDANT la vague de pouvoir « à l'attaque »
+    // (on_attack) : la créature est réinjectée dans powerImpactState et donc
+    // peinte à t=0 (cf. la boucle de réinjection plus bas). Son portail + son
+    // son d'invocation doivent jouer AVEC elle, à cette vague, et non à la
+    // phase d'invocation finale — sinon la carte apparaît avant son propre
+    // effet d'apparition (bug spécifique on_attack, ex. Appel du clan). On
+    // reprend exactement la condition de la réinjection : présente dans
+    // l'intermédiaire, absente de l'ancien plateau.
+    const powerWaveSummonIds = new Set<string>();
+    if (onAttackWave) {
+      for (let i = 0; i < 2; i++) {
+        const oldBoard = gameState.players[i].board;
+        for (const nc of onAttackWave.intermediate.players[i].board) {
+          if (nc.instanceId === playedId) continue;
+          if (!oldBoard.find((c) => c.instanceId === nc.instanceId)) {
+            powerWaveSummonIds.add(nc.instanceId);
+          }
+        }
+      }
+    }
+    // Invocations qui apparaissent PLUS TARD (entrée en jeu classique, ou
+    // invocation déclenchée en cours de combat / à la mort) : elles gardent
+    // leur portail + son à la phase d'invocation finale.
+    const lateSummonIds = [...newCreatureIds].filter((id) => !powerWaveSummonIds.has(id));
+
     // Créature JOUÉE depuis la main qui vient d'arriver sur le plateau (≠ sort,
     // ≠ invocation par effet) → entrée « douce » (fondu + légère montée). Vaut
     // null si le playedId est un sort ou n'est pas une créature nouvellement en jeu.
@@ -1979,7 +2004,16 @@ export const useGameStore = create<GameStore>((set, get) => {
 
     const phasePowerImpacts = () => {
       if (!powerImpactState) return;
-      set({ gameState: powerImpactState, damageEvents: powerDmgStaggered });
+      set({
+        gameState: powerImpactState,
+        damageEvents: powerDmgStaggered,
+        // Portail des créatures invoquées à cette vague : elles montent dans le
+        // même rendu, la couche Canvas résout leur position DOM et y fait éclore
+        // le portail — comme phaseSummons, mais synchronisé avec leur apparition.
+        ...(powerWaveSummonIds.size > 0 ? { summonEvents: Array.from(powerWaveSummonIds) } : {}),
+      });
+      // Son d'invocation joué ICI pour ces créatures (et non à la fin).
+      if (powerWaveSummonIds.size > 0) playSfxBatch(summonSfx);
     };
     const phasePowerDeaths = () => {
       if (powerDeathState) set({ gameState: powerDeathState });
@@ -2013,9 +2047,14 @@ export const useGameStore = create<GameStore>((set, get) => {
         ...(cycleEvent ? { cycleEternelEvent: cycleEvent } : {}),
         // FX: the new creatures mount in this same render — the Canvas layer
         // resolves each one's position from the DOM and bursts a portal there.
-        ...(newCreatureIds.size > 0 ? { summonEvents: Array.from(newCreatureIds) } : {}),
+        // On EXCLUT les invocations de la vague de pouvoir (déjà portées à
+        // phasePowerImpacts) : les réémettre ici ferait un second portail après
+        // que la couche FX ait purgé le premier (signature réinitialisée).
+        ...(lateSummonIds.length > 0 ? { summonEvents: lateSummonIds } : {}),
       });
-      playSfxBatch(summonSfx);
+      // Son d'invocation seulement pour les invocations tardives — celles de la
+      // vague de pouvoir l'ont déjà joué à phasePowerImpacts.
+      if (lateSummonIds.length > 0) playSfxBatch(summonSfx);
     };
 
     const phaseDiscard = () => {
