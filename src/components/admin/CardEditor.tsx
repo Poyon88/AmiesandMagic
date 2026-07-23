@@ -1235,7 +1235,7 @@ export default function CardEditor() {
                   </div>
                   {spellKws.map((kw, idx) => {
                     const def = SPELL_KEYWORDS[kw.id];
-                    const hasParams = def.params.length > 0 || kw.id === "invocation" || kw.id === "invocation_multiple";
+                    const hasParams = def.params.length > 0 || kw.id === "invocation_multiple";
                     if (!hasParams) return null;
                     return (
                       <div key={`${kw.id}-${idx}`} style={{ display: "flex", gap: 6, marginTop: 5, alignItems: "center", flexWrap: "wrap" }}>
@@ -1275,24 +1275,6 @@ export default function CardEditor() {
                                 setSpellKws(spellKws.map((k, i) => i === idx ? { ...k, health: val } : k));
                               }}
                               style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: "1px solid #f1c40f44", fontSize: 11, textAlign: "center", fontFamily: "'Cinzel',serif", color: "#f1c40f" }}
-                            />
-                          </div>
-                        )}
-                        {kw.id === "invocation" && (
-                          <div style={{ flexBasis: "100%", marginTop: 2 }}>
-                            <label style={{ fontSize: 7, color: "#27ae60", letterSpacing: 1, fontFamily: "'Cinzel',serif" }}>TOKEN À INVOQUER</label>
-                            <TokenCascadePicker
-                              value={kw.token_id ?? null}
-                              onChange={(newId) => {
-                                const tmpl = tokenTemplates.find(t => t.id === newId) ?? null;
-                                setSpellKws(spellKws.map((k, i) => i === idx ? {
-                                  ...k,
-                                  token_id: newId,
-                                  race: tmpl?.race ?? undefined,
-                                } : k));
-                              }}
-                              tokens={tokenTemplates}
-                              compact
                             />
                           </div>
                         )}

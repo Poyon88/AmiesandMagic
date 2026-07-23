@@ -26,7 +26,13 @@ export function parseFormatCode(code: FormatCode): { mode: DeckMode; extent: Dec
  * date d'édition de la carte (étendue).
  */
 export function getFormatFilter(format: GameFormat): (card: Card) => boolean {
-  const { mode, extent } = parseFormatCode(format.code);
+  return getFormatFilterByCode(format.code);
+}
+
+/** Variante par code seul — le moteur (Invocation X) ne transporte que le
+ *  `formatCode` dans GameState, pas l'objet GameFormat complet. */
+export function getFormatFilterByCode(code: FormatCode): (card: Card) => boolean {
+  const { mode, extent } = parseFormatCode(code);
 
   return (card: Card) => {
     // Mode : en Classique, seules les cartes Communes sont autorisées.

@@ -304,6 +304,7 @@ interface GameStore {
     player2Hero?: HeroDefinition | null,
     factionCardPool?: Card[],
     allSpellsPool?: Card[],
+    formatCode?: import("@/lib/game/types").FormatCode | null,
   ) => void;
   setGameState: (state: GameState) => void;
   setLocalPlayerId: (id: string) => void;
@@ -915,7 +916,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   boardDefeatMusicUrl: null,
   lastSfxEvents: [],
 
-  initGame: (player1Id, player2Id, player1Cards, player2Cards, firstPlayerIndex, seed, player1Hero, player2Hero, factionCardPool, allSpellsPool) => {
+  initGame: (player1Id, player2Id, player1Cards, player2Cards, firstPlayerIndex, seed, player1Hero, player2Hero, factionCardPool, allSpellsPool, formatCode) => {
     const state = initializeGame(
       player1Id,
       player2Id,
@@ -927,6 +928,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       player2Hero,
       factionCardPool,
       allSpellsPool,
+      formatCode,
     );
     // Inject token templates into GameState for engine access
     state.tokenTemplates = get().tokenTemplates;

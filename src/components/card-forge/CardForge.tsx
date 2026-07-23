@@ -3033,26 +3033,6 @@ export default function CardForge() {
                                   />
                                 </div>
                               )}
-                              {kw.id === "invocation" && (
-                                <div style={{ flexBasis: "100%", marginTop: 2 }}>
-                                  <label style={{ fontSize: 7, color: "#27ae60", letterSpacing: 1, fontFamily: "'Cinzel',serif" }}>{tf('token_to_summon')}</label>
-                                  <TokenCascadePicker
-                                    value={kw.token_id ?? null}
-                                    onChange={(newId) => {
-                                      const tmpl = tokenTemplates.find(t => t.id === newId) ?? null;
-                                      setSpellKeywords(prev => prev.map((k, i) => i === idx ? {
-                                        ...k,
-                                        token_id: newId,
-                                        // Keep race in sync with picked template for legacy
-                                        // readers (e.g. older descriptions / DB rows).
-                                        race: tmpl?.race ?? undefined,
-                                      } : k));
-                                    }}
-                                    tokens={tokenTemplates}
-                                    compact
-                                  />
-                                </div>
-                              )}
                               {kw.id === "invocation_multiple" && (
                                 <div style={{ fontSize: 8, color: "#9b59b6", marginTop: 2 }}>{tf('config_below_tokens')}</div>
                               )}
@@ -3873,12 +3853,6 @@ export default function CardForge() {
                                 <label style={{ fontSize: 9, color: "#c79a0a" }}>PV <input type="number" min={0} max={20} value={kw.health ?? 1} onChange={e => { const v = Math.max(0, parseInt(e.target.value) || 0); setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, health: v } : k)); }} style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: "1px solid #c79a0a44", fontSize: 11, textAlign: "center", fontFamily: "'Cinzel',serif", color: "#c79a0a" }} /></label>
                               )}
                             </span>
-                            {kw.id === "invocation" && (
-                              <>
-                                <span style={labelStyle}>TOKEN</span>
-                                <TokenCascadePicker value={kw.token_id ?? null} onChange={(newId) => { const tmpl = tokenTemplates.find(t => t.id === newId) ?? null; setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, token_id: newId, race: tmpl?.race ?? undefined } : k)); }} tokens={tokenTemplates} compact />
-                              </>
-                            )}
                             {kw.id === "renforcement_multiple" && (
                               <>
                                 <span style={labelStyle}>{tf('race_clan_label')}</span>

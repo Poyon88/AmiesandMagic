@@ -92,6 +92,9 @@ export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
   "Rassemblement X": ALL_MODES,
   "Instinct de meute X": ALL_MODES,
   "Convocation": ALL_MODES,
+  // Invocation X (créature) : invoque une créature aléatoire de la collection
+  // — tirage déjà aléatoire, aucun picker nécessaire quel que soit le mode.
+  "Invocation X": ALL_MODES,
   "Domination": ALL_MODES,
   "Corruption": ALL_MODES,
   "Exhumation X": ALL_MODES,

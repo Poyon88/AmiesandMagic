@@ -401,15 +401,20 @@ export default function GameCard({
               const usesAtkHp = def.params.includes("attack") && def.params.includes("health");
               const usesAmount = def.params.includes("amount");
               const hasValue = usesAmount || usesAtkHp;
-              // Renforcement is a stat buff (+X/+Y); invocation creates a
-              // token (X/Y, no plus sign). The label format in the registry
-              // tells us which convention to use.
+              // Renforcement is a stat buff (+X/+Y); Affaiblissement is a
+              // debuff (-X/-Y, minus signs baked in the label). The label
+              // format in the registry tells us which convention to use.
               const useStatBuffFormat = usesAtkHp && def.label.includes("+X");
+              // Invocation : X = coût de la créature invoquée. Repli legacy
+              // sur `attack` (sorts sauvés en « Invocation X/Y » token).
+              const amountValue = spellKw.id === "invocation"
+                ? (spellKw.amount ?? spellKw.attack ?? 1)
+                : (spellKw.amount ?? 1);
               const valueText = usesAtkHp
                 ? useStatBuffFormat
                   ? `+${spellKw.attack ?? 0}/+${spellKw.health ?? 0}`
                   : `${spellKw.attack ?? 0}/${spellKw.health ?? 0}`
-                : usesAmount ? xNumeral(spellKw.amount ?? 1) : null;
+                : usesAmount ? xNumeral(amountValue) : null;
               const spellKey = `spell_${spellKw.id}`;
               const hasImg = !!iconOverrides[spellKey];
               return (

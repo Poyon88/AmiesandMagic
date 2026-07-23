@@ -725,10 +725,14 @@ export const ABILITIES: Record<string, AbilityDef> = {
     },
   },
   invocation: {
-    id: "invocation", label: "Invocation X/Y", symbol: "📣",
-    desc: "Invoque un token X/Y",
-    applicable_to: ["spell"],
-    spell: { params: ["attack", "health"], needsTarget: false },
+    id: "invocation", label: "Invocation X", symbol: "📣",
+    desc: "Invoque une créature aléatoire de coût X de votre collection ({alignment}, format en cours).",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      cost: 10, costPerX: 5, se: 3.0, minTier: 2, scalable: true, zone: "Terrain",
+      desc: "Invoque une créature aléatoire de coût X de votre collection ({alignment}, format en cours).",
+    },
+    spell: { params: ["amount"], needsTarget: false },
   },
 
   // ─── Spell-only ───────────────────────────────────────────────────────────
@@ -1163,7 +1167,7 @@ export const CURATED_MULTIMODE_IDS: ReadonlySet<string> = new Set([
   // Chantier « tous déclencheurs » : effets d'invocation rejoués depuis
   // mort / attaque / retour / fin de tour / activation.
   "concentration", "loyaute", "catalyse", "solidarite", "appel_supreme", "rassemblement",
-  "instinct_de_meute", "convocation_simple", "domination", "corruption", "exhumation",
+  "instinct_de_meute", "convocation_simple", "invocation", "domination", "corruption", "exhumation",
   "rappel", "divination", "traque_du_destin", "selection", "selection_magique", "renfort_royal",
   "affaiblissement", "benediction", "tactique",
   // Restreints aux déclencheurs « sur plateau » (cf. CURATED_ONBOARD_ONLY_IDS).

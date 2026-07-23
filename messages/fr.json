@@ -141,6 +141,10 @@
         "label": "Convocation",
         "desc": "Crée {token}."
       },
+      "invocation": {
+        "label": "Invocation X",
+        "desc": "Invoque une créature aléatoire de coût X de votre collection ({alignment}, format en cours)."
+      },
       "malediction": {
         "label": "Malédiction",
         "desc": "Ciblez une unité ennemie, elle est exilée à la fin du prochain tour adverse."
@@ -456,8 +460,8 @@
         "desc": "Rejoue les X derniers sorts lancés avec des cibles aléatoires"
       },
       "invocation": {
-        "label": "Invocation X/Y",
-        "desc": "Invoque un token X/Y"
+        "label": "Invocation X",
+        "desc": "Invoque une créature aléatoire de coût X de votre collection ({alignment}, format en cours)."
       },
       "impact": {
         "label": "Impact X",

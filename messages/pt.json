@@ -141,6 +141,10 @@
         "label": "Convocação",
         "desc": "Cria {token}."
       },
+      "invocation": {
+        "label": "Invocação X",
+        "desc": "Invoca uma criatura aleatória de custo X da sua coleção ({alignment}, formato atual)."
+      },
       "malediction": {
         "label": "Maldição",
         "desc": "Escolha uma unidade inimiga como alvo, ela é exilada no final do próximo turno adversário."
@@ -456,8 +460,8 @@
         "desc": "Relança os X últimos feitiços conjurados com alvos aleatórios"
       },
       "invocation": {
-        "label": "Invocação X/Y",
-        "desc": "Invoca um token X/Y"
+        "label": "Invocação X",
+        "desc": "Invoca uma criatura aleatória de custo X da sua coleção ({alignment}, formato atual)."
       },
       "impact": {
         "label": "Impacto X",

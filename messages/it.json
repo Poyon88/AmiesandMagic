@@ -141,6 +141,10 @@
         "label": "Convocazione",
         "desc": "Crea {token}."
       },
+      "invocation": {
+        "label": "Invocazione X",
+        "desc": "Evoca una creatura casuale di costo X dalla tua collezione ({alignment}, formato attuale)."
+      },
       "malediction": {
         "label": "Maledizione",
         "desc": "Scegli come bersaglio un'unità nemica: viene esiliata alla fine del prossimo turno avversario."
@@ -456,8 +460,8 @@
         "desc": "Rilancia gli ultimi X incantesimi lanciati con bersagli casuali"
       },
       "invocation": {
-        "label": "Invocazione X/Y",
-        "desc": "Evoca un token X/Y"
+        "label": "Invocazione X",
+        "desc": "Evoca una creatura casuale di costo X dalla tua collezione ({alignment}, formato attuale)."
       },
       "impact": {
         "label": "Impatto X",

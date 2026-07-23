@@ -141,6 +141,10 @@
         "label": "Beschwörung",
         "desc": "Erschafft {token}."
       },
+      "invocation": {
+        "label": "Beschwörung X",
+        "desc": "Beschwört eine zufällige Kreatur mit Kosten X aus deiner Sammlung ({alignment}, aktuelles Format)."
+      },
       "malediction": {
         "label": "Fluch",
         "desc": "Zielt auf eine gegnerische Einheit; sie wird am Ende der nächsten gegnerischen Runde verbannt."
@@ -456,8 +460,8 @@
         "desc": "Spielt die letzten X gewirkten Zauber mit zufälligen Zielen erneut."
       },
       "invocation": {
-        "label": "Beschwörung X/Y",
-        "desc": "Beschwört einen X/Y-Token."
+        "label": "Beschwörung X",
+        "desc": "Beschwört eine zufällige Kreatur mit Kosten X aus deiner Sammlung ({alignment}, aktuelles Format)."
       },
       "impact": {
         "label": "Einschlag X",
