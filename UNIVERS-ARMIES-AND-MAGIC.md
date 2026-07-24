@@ -448,6 +448,7 @@ Les cartes **datées** (séries limitées / éditions forgées) existent en nomb
 | 🪄 Sélection magique X | Idem, restreint aux sorts. |
 | 👑 Sélection Royale X | Idem, parmi vos éditions limitées (≥30 requises). |
 | 🔁 Relancer X | Rejoue les X derniers sorts avec des cibles aléatoires. |
+| 🌋 Déchainement X/Y | Lance X sorts aléatoires de coût exactement Y de votre collection (même alignement, format en cours), avec des cibles aléatoires. |
 
 ### 8.8 Note sur les déclencheurs
 

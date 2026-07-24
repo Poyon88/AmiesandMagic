@@ -408,6 +408,10 @@
       "declenchement": {
         "label": "誘発",
         "desc": "他の味方の複合効果(登場時/死亡時/ターン終了時/帰還時)を1回再発動する。"
+      },
+      "dechainement": {
+        "label": "解放 X/Y",
+        "desc": "コレクションからコストYのランダムな呪文をX個、対象をランダムにして発動する（{alignment}）。"
       }
     },
     "spell_keywords": {
@@ -458,6 +462,10 @@
       "relancer": {
         "label": "再詠唱 X",
         "desc": "最後に唱えたX個の呪文をランダムな対象で再使用する。"
+      },
+      "dechainement": {
+        "label": "解放 X/Y",
+        "desc": "コレクションからコストYのランダムな呪文をX個、対象をランダムにして発動する（{alignment}）。"
       },
       "invocation": {
         "label": "召喚 X",
@@ -661,7 +669,7 @@
       },
       "Humains": {
         "displayName": "自由王国連合",
-        "description": "旧大陸：名誉、鋼鉄、そして英雄的な勇者たち。"
+        "description": "旧大陸：名誉、鋼鉄、英雄的な勇者たち、そして誇り高き翼の盟友グリフォンと隼。"
       },
       "Hommes-Bêtes": {
         "displayName": "群れ",
@@ -1525,6 +1533,8 @@
     "required_caps_f": "必須",
     "atk_is_x": "（＋ATK＝X値）",
     "neg_atk_is_x": "（－ATK＝X値）",
+    "spell_cost_y": "呪文のコスト（Y）",
+    "spell_count_is_x": "（呪文の数＝X値）",
     "choose_ability": "-- 能力を選択 --",
     "scope_one_ally": "味方1体を対象",
     "scope_all_allies": "全味方",

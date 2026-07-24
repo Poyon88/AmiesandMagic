@@ -733,6 +733,22 @@ export const ABILITIES: Record<string, AbilityDef> = {
       params: ["amount"], needsTarget: false,
     },
   },
+  // Déchainement X/Y : X sorts aléatoires de coût EXACTEMENT Y tirés de la
+  // collection (mêmes règles de pool qu'Invocation X : communes + limitées
+  // possédées, alignement de la source, format du match), lancés avec des
+  // cibles aléatoires (machinerie de Relancer X). Côté sort, le couple est
+  // porté par amount (X) / health (Y) — même plomberie d'affichage que les
+  // autres sorts à deux valeurs.
+  dechainement: {
+    id: "dechainement", label: "Déchainement X/Y", symbol: "🌋",
+    desc: "Lance X sorts aléatoires de coût Y de votre collection ({alignment}), avec des cibles aléatoires.",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      cost: 12, costPerX: 7, se: 4.5, minTier: 3, scalable: true, zone: "Terrain",
+      desc: "Lance X sorts aléatoires de coût Y de votre collection ({alignment}), avec des cibles aléatoires.",
+    },
+    spell: { params: ["amount", "health"], needsTarget: false },
+  },
   invocation: {
     id: "invocation", label: "Invocation X", symbol: "📣",
     desc: "Invoque une créature aléatoire de coût X de votre collection ({alignment}, format en cours).",

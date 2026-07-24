@@ -408,6 +408,10 @@
       "declenchement": {
         "label": "触发",
         "desc": "使你其他盟友的复合效果（入场/死亡/回合结束/返场）额外触发一次。"
+      },
+      "dechainement": {
+        "label": "倾泻 X/Y",
+        "desc": "从你的收藏中以随机目标施放X个费用为Y的随机法术（{alignment}）。"
       }
     },
     "spell_keywords": {
@@ -458,6 +462,10 @@
       "relancer": {
         "label": "重施 X",
         "desc": "以随机目标重新施放最近X个法术。"
+      },
+      "dechainement": {
+        "label": "倾泻 X/Y",
+        "desc": "从你的收藏中以随机目标施放X个费用为Y的随机法术（{alignment}）。"
       },
       "invocation": {
         "label": "召唤 X",
@@ -661,7 +669,7 @@
       },
       "Humains": {
         "displayName": "自由王国",
-        "description": "古老大陆：荣耀、钢铁与英雄斗士。"
+        "description": "古老大陆：荣耀、钢铁、英雄斗士，以及他们骄傲的飞翼盟友——狮鹫与猎鹰。"
       },
       "Hommes-Bêtes": {
         "displayName": "兽群",
@@ -1525,6 +1533,8 @@
     "required_caps_f": "必填",
     "atk_is_x": "（+攻击 = X值）",
     "neg_atk_is_x": "（-攻击 = X值）",
+    "spell_cost_y": "法术费用（Y）",
+    "spell_count_is_x": "（法术数量 = X值）",
     "choose_ability": "-- 选择技能 --",
     "scope_one_ally": "1个目标友方",
     "scope_all_allies": "所有友方",

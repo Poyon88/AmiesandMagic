@@ -124,6 +124,9 @@
 - 🔁 **Relancer X**
   - Créature : Invocation : rejoue les X derniers sorts lancés avec des cibles aléatoires.
   - Sort : Rejoue les X derniers sorts lancés avec des cibles aléatoires
+- 🌋 **Déchainement X/Y**
+  - Créature : Invocation : lance X sorts aléatoires de coût exactement Y de votre collection (communes + éditions limitées possédées, même alignement que cette carte, format en cours), avec des cibles aléatoires.
+  - Sort : Lance X sorts aléatoires de coût exactement Y de votre collection (mêmes règles de pool), avec des cibles aléatoires
 - 📖 **Inspiration X**
   - Créature : Invocation : piochez X cartes.
   - Sort : Piochez X cartes

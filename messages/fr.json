@@ -408,6 +408,10 @@
       "declenchement": {
         "label": "Déclenchement",
         "desc": "Rejoue une fois les effets composés de vos autres alliés (entrée / mort / fin de tour / retour)."
+      },
+      "dechainement": {
+        "label": "Déchainement X/Y",
+        "desc": "Lance X sorts aléatoires de coût Y de votre collection ({alignment}), avec des cibles aléatoires."
       }
     },
     "spell_keywords": {
@@ -462,6 +466,10 @@
       "relancer": {
         "label": "Relancer X",
         "desc": "Rejoue les X derniers sorts lancés avec des cibles aléatoires"
+      },
+      "dechainement": {
+        "label": "Déchainement X/Y",
+        "desc": "Lance X sorts aléatoires de coût Y de votre collection ({alignment}), avec des cibles aléatoires."
       },
       "invocation": {
         "label": "Invocation X",
@@ -661,7 +669,7 @@
       },
       "Humains": {
         "displayName": "Les Royaumes Libres",
-        "description": "Le vieux continent : honneur, acier et champions héroïques."
+        "description": "Le vieux continent : honneur, acier, champions héroïques et leurs fiers alliés ailés, griffons et faucons."
       },
       "Hommes-Bêtes": {
         "displayName": "La Meute",
@@ -1525,6 +1533,8 @@
     "required_caps_f": "Requise",
     "atk_is_x": "(le +ATK = la valeur X)",
     "neg_atk_is_x": "(le -ATK = la valeur X)",
+    "spell_cost_y": "COÛT DES SORTS (Y)",
+    "spell_count_is_x": "(le nombre de sorts = la valeur X)",
     "choose_ability": "-- Choisir une capacité --",
     "scope_one_ally": "1 allié ciblé",
     "scope_all_allies": "Tous les alliés",

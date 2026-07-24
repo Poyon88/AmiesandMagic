@@ -129,6 +129,9 @@ export default function CardEditor() {
   // Affaiblissement -X/-Y (créature) : le -PV (Y) dédié. Le -ATK (X) réutilise
   // keywordXValues ; sérialisé dans keyword_instances comme la Forge.
   const [afY, setAfY] = useState<number>(1);
+  // Déchainement X/Y (créature) : le coût Y des sorts lancés. Le X (nombre de
+  // sorts) réutilise keywordXValues ; sérialisé dans keyword_instances.
+  const [dcY, setDcY] = useState<number>(1);
   // Effets composés (modèle hybride) de la carte en cours d'édition.
   const [composedCaps, setComposedCaps] = useState<Capability[]>([]);
 
@@ -236,7 +239,7 @@ export default function CardEditor() {
     // sidecar; the effect_text bracket is the legacy fallback for X.
     const modes: Record<string, KeywordMode> = {};
     const grantScopes: Record<string, "all_allies"> = {};
-    let rmYLoaded = 1, rmRaceLoaded = "", rmClanLoaded = "", rfYLoaded = 1, afYLoaded = 1, glYLoaded = 1;
+    let rmYLoaded = 1, rmRaceLoaded = "", rmClanLoaded = "", rfYLoaded = 1, afYLoaded = 1, glYLoaded = 1, dcYLoaded = 1;
     for (const inst of card.keyword_instances ?? []) {
       if (inst.mode) modes[inst.id] = inst.mode;
       if (inst.x != null) parsedX[inst.id] = inst.x;
@@ -247,8 +250,9 @@ export default function CardEditor() {
       if (inst.id === "renforcement") rfYLoaded = inst.y ?? 1;
       if (inst.id === "affaiblissement") afYLoaded = inst.y ?? 1;
       if (inst.id === "gloire") glYLoaded = inst.y ?? 1;
+      if (inst.id === "dechainement") dcYLoaded = inst.y ?? 1;
     }
-    setRmY(rmYLoaded); setRmRace(rmRaceLoaded); setRmClan(rmClanLoaded); setRfY(rfYLoaded); setAfY(afYLoaded); setGlY(glYLoaded);
+    setRmY(rmYLoaded); setRmRace(rmRaceLoaded); setRmClan(rmClanLoaded); setRfY(rfYLoaded); setAfY(afYLoaded); setGlY(glYLoaded); setDcY(dcYLoaded);
     setKeywordModes(modes);
     setKeywordXValues(parsedX);
     setKeywordGrantScope(grantScopes);
@@ -402,6 +406,10 @@ export default function CardEditor() {
           if (id === "affaiblissement" && !isSpellCard) {
             return { id: id as Keyword, ...(mode ? { mode } : {}), x: x ?? 0, y: afY };
           }
+          // Déchainement X/Y (créature) : porte X (nombre de sorts) / Y (coût) ; toujours émis.
+          if (id === "dechainement" && !isSpellCard) {
+            return { id: id as Keyword, ...(mode ? { mode } : {}), x: x ?? 1, y: dcY };
+          }
           if (!mode && x == null && !grantScope) return null;
           return { id: id as Keyword, ...(mode ? { mode } : {}), ...(x != null ? { x } : {}), ...(grantScope ? { grantScope } : {}) };
         })
@@ -474,7 +482,7 @@ export default function CardEditor() {
       console.warn("[card-save] refresh failed after successful save:", err);
     }
     setSaving(false);
-  }, [selectedCard, editFields, newImageFile, keywordXValues, keywordModes, keywordGrantScope, rmY, rmRace, rmClan, rfY, afY, glY, composedCaps]);
+  }, [selectedCard, editFields, newImageFile, keywordXValues, keywordModes, keywordGrantScope, rmY, rmRace, rmClan, rfY, afY, glY, dcY, composedCaps]);
 
   // Delete
   const handleDelete = useCallback(async (id: number) => {
@@ -1096,7 +1104,7 @@ export default function CardEditor() {
                 // Ces mots-clés portent un +X/+Y (ou -X/-Y) : leur X vit dans un
                 // bloc dédié à deux champs plus bas, pas dans ce panneau à un
                 // seul champ — qui laisserait croire qu'ils n'ont qu'une valeur.
-                if ((kw === "renforcement" || kw === "affaiblissement" || kw === "gloire") && editFields.card_type === "creature") return false;
+                if ((kw === "renforcement" || kw === "affaiblissement" || kw === "gloire" || kw === "dechainement") && editFields.card_type === "creature") return false;
                 return label && KEYWORD_DEFS[label]?.scalable;
               });
               if (activeScalable.length === 0) return null;
@@ -1293,7 +1301,7 @@ export default function CardEditor() {
                         )}
                         {def.params.includes("health") && (
                           <div>
-                            <label style={{ fontSize: 7, color: "#f1c40f" }}>PV</label>
+                            <label style={{ fontSize: 7, color: "#f1c40f" }}>{kw.id === "dechainement" ? "Coût (Y)" : "PV"}</label>
                             <input type="number" min={0} max={20} value={kw.health ?? 1}
                               onChange={e => {
                                 const val = Math.max(0, parseInt(e.target.value) || 0);
@@ -1489,6 +1497,28 @@ export default function CardEditor() {
                     type="number" min={0} max={20} value={afY}
                     onChange={e => setAfY(Math.max(0, parseInt(e.target.value) || 0))}
                     style={{ width: 48, padding: "2px 6px", borderRadius: 4, border: "1px solid #f5cfcf", fontSize: 11, textAlign: "center" }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Déchainement (créature) — bloc unifié X (nombre de sorts) / Y (coût),
+                identique à la Forge de création. */}
+            {((editFields.keywords as string[]) || []).includes("dechainement") && editFields.card_type === "creature" && (
+              <div style={{ marginBottom: 8, padding: "8px 10px", borderRadius: 6, border: "1px solid #e8cfc0", background: "#fff6f0" }}>
+                <div style={{ ...S.label, color: "#b3541e", marginBottom: 6 }}>🌋 DÉCHAINEMENT</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 9, color: "#b3541e" }}>Sorts (X)</span>
+                  <input
+                    type="number" min={1} max={10} value={keywordXValues["dechainement"] ?? 1}
+                    onChange={e => setKeywordXValues(prev => ({ ...prev, ["dechainement"]: Math.max(1, Math.min(10, parseInt(e.target.value) || 1)) }))}
+                    style={{ width: 48, padding: "2px 6px", borderRadius: 4, border: "1px solid #e8cfc0", fontSize: 11, textAlign: "center" }}
+                  />
+                  <span style={{ fontSize: 9, color: "#b3541e" }}>Coût (Y)</span>
+                  <input
+                    type="number" min={1} max={10} value={dcY}
+                    onChange={e => setDcY(Math.max(1, Math.min(10, parseInt(e.target.value) || 1)))}
+                    style={{ width: 48, padding: "2px 6px", borderRadius: 4, border: "1px solid #e8cfc0", fontSize: 11, textAlign: "center" }}
                   />
                 </div>
               </div>

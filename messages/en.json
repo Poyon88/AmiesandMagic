@@ -408,6 +408,10 @@
       "declenchement": {
         "label": "Trigger",
         "desc": "Replays once the compound effects of your other allies (entry / death / end of turn / return)."
+      },
+      "dechainement": {
+        "label": "Unleash X/Y",
+        "desc": "Casts X random spells of cost Y from your collection ({alignment}), with random targets."
       }
     },
     "spell_keywords": {
@@ -458,6 +462,10 @@
       "relancer": {
         "label": "Recast X",
         "desc": "Replays the last X spells cast with random targets."
+      },
+      "dechainement": {
+        "label": "Unleash X/Y",
+        "desc": "Casts X random spells of cost Y from your collection ({alignment}), with random targets."
       },
       "invocation": {
         "label": "Invocation X",
@@ -661,7 +669,7 @@
       },
       "Humains": {
         "displayName": "The Free Kingdoms",
-        "description": "The old continent: honor, steel, and heroic champions."
+        "description": "The old continent: honor, steel, heroic champions and their proud winged allies, griffins and falcons."
       },
       "Hommes-Bêtes": {
         "displayName": "The Pack",
@@ -1525,6 +1533,8 @@
     "required_caps_f": "Required",
     "atk_is_x": "(+ATK = X value)",
     "neg_atk_is_x": "(-ATK = X value)",
+    "spell_cost_y": "SPELL COST (Y)",
+    "spell_count_is_x": "(the spell count = the X value)",
     "choose_ability": "-- Choose an ability --",
     "scope_one_ally": "1 targeted ally",
     "scope_all_allies": "All allies",

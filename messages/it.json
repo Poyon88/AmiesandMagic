@@ -408,6 +408,10 @@
       "declenchement": {
         "label": "Attivazione",
         "desc": "Riattiva una volta gli effetti combinati dei tuoi altri alleati (entrata / morte / fine turno / ritorno)."
+      },
+      "dechainement": {
+        "label": "Scatenamento X/Y",
+        "desc": "Lancia X incantesimi casuali di costo Y dalla tua collezione ({alignment}), con bersagli casuali."
       }
     },
     "spell_keywords": {
@@ -458,6 +462,10 @@
       "relancer": {
         "label": "Rilanciare X",
         "desc": "Rilancia gli ultimi X incantesimi lanciati con bersagli casuali"
+      },
+      "dechainement": {
+        "label": "Scatenamento X/Y",
+        "desc": "Lancia X incantesimi casuali di costo Y dalla tua collezione ({alignment}), con bersagli casuali."
       },
       "invocation": {
         "label": "Invocazione X",
@@ -661,7 +669,7 @@
       },
       "Humains": {
         "displayName": "I Regni Liberi",
-        "description": "Il vecchio continente: onore, acciaio e campioni eroici."
+        "description": "Il vecchio continente: onore, acciaio, campioni eroici e i loro fieri alleati alati, grifoni e falchi."
       },
       "Hommes-Bêtes": {
         "displayName": "Il Branco",
@@ -1525,6 +1533,8 @@
     "required_caps_f": "Richiesta",
     "atk_is_x": "(il +ATK = il valore X)",
     "neg_atk_is_x": "(il -ATK = il valore X)",
+    "spell_cost_y": "COSTO DEGLI INCANTESIMI (Y)",
+    "spell_count_is_x": "(il numero di incantesimi = il valore X)",
     "choose_ability": "-- Scegli una capacità --",
     "scope_one_ally": "1 alleato bersaglio",
     "scope_all_allies": "Tutti gli alleati",

@@ -39,6 +39,9 @@ export type Keyword =
   | "renfort_royal"
   // Tier 3 — Relancer
   | "relancer"
+  // Polymorphic — cast X random collection spells of cost Y (same alignment,
+  // current format), with random targets
+  | "dechainement"
   // Tier 2 — AoE random damage
   | "tempete"
   // Tier 2 — AoE full damage to BOTH boards (allies + enemies)
@@ -149,7 +152,8 @@ export type SpellKeywordId =
   | "pillage"
   | "entrainement"
   | "cataclysme"
-  | "affaiblissement";
+  | "affaiblissement"
+  | "dechainement";
 
 /** Trigger mode for a creature keyword (also reused to tint spell effects).
  *  Undefined = neutral default (passive / permanent effect, kept white).
