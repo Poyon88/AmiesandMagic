@@ -374,6 +374,16 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["creature"],
     creature: { cost: 18, costPerX: 0, se: 4.0, minTier: 2, scalable: false, zone: "Terrain" },
   },
+  // Aura conditionnelle DYNAMIQUE (modèle Sang mêlé) : le bonus s'allume tant
+  // que le cimetière du propriétaire compte 5 créatures ou plus, et retombe si
+  // la condition se rompt (Exhumation, Résurrection…). Recalculé dans
+  // recalculateAuras ; X/Y lus depuis keyword_instances (repli granted, puis 1/1).
+  force_des_ancetres: {
+    id: "force_des_ancetres", label: "Force des ancêtres +X/+Y", symbol: "🪬",
+    desc: "Tant que votre cimetière compte 5 créatures ou plus, gagne +X ATK et +Y PV.",
+    applicable_to: ["creature"],
+    creature: { cost: 10, costPerX: 4, se: 2.5, minTier: 1, scalable: true, zone: "Cimetière" },
+  },
   paralysie: {
     id: "paralysie", label: "Paralysie", symbol: "⛓️",
     desc: "Les unités qu'elle blesse ne peuvent ni attaquer ni activer de capacité jusqu'à la fin de leur prochain tour.",
@@ -732,6 +742,22 @@ export const ABILITIES: Record<string, AbilityDef> = {
       desc: "Rejoue les X derniers sorts lancés avec des cibles aléatoires",
       params: ["amount"], needsTarget: false,
     },
+  },
+  // Déchainement X/Y : X sorts aléatoires de coût EXACTEMENT Y tirés de la
+  // collection (mêmes règles de pool qu'Invocation X : communes + limitées
+  // possédées, alignement de la source, format du match), lancés avec des
+  // cibles aléatoires (machinerie de Relancer X). Côté sort, le couple est
+  // porté par amount (X) / health (Y) — même plomberie d'affichage que les
+  // autres sorts à deux valeurs.
+  dechainement: {
+    id: "dechainement", label: "Déchainement X/Y", symbol: "🌋",
+    desc: "Lance X sorts aléatoires de coût Y de votre collection ({alignment}), avec des cibles aléatoires.",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      cost: 12, costPerX: 7, se: 4.5, minTier: 3, scalable: true, zone: "Terrain",
+      desc: "Lance X sorts aléatoires de coût Y de votre collection ({alignment}), avec des cibles aléatoires.",
+    },
+    spell: { params: ["amount", "health"], needsTarget: false },
   },
   invocation: {
     id: "invocation", label: "Invocation X", symbol: "📣",
@@ -1210,6 +1236,7 @@ export const DEATH_NATURE_IDS: ReadonlySet<string> = new Set([
 export const AUTOMATIC_ABILITY_IDS: ReadonlySet<string> = new Set([
   // Auras / présence continue
   "terreur", "commandement", "fierte_du_clan", "sang_mele", "totem", "pauvrete",
+  "force_des_ancetres",
   // Passifs de combat / statiques
   "premiere_frappe", "double_attaque", "esquive", "armure",
   "resistance", "precision", "indestructible", "transcendance", "invisible",

@@ -272,6 +272,8 @@ export const ALL_KEYWORDS: Keyword[] = [
   "renforcement_multiple",
   "entrainement",
   "declenchement",
+  "dechainement",
+  "force_des_ancetres",
 ];
 
 export const KEYWORD_LABELS: Record<Keyword, string> = {
@@ -323,6 +325,8 @@ export const KEYWORD_LABELS: Record<Keyword, string> = {
   entrainement: "Entrainement X",
   conferer: "Conférer",
   declenchement: "Déclenchement",
+  dechainement: "Déchainement X/Y",
+  force_des_ancetres: "Force des ancêtres +X/+Y",
 };
 
 /**
@@ -357,10 +361,16 @@ export function getKeywordDisplayLabel(kw: Keyword, t?: SafeT): string {
 // aurait aussi cassé sur toute locale reformulant le marqueur.
 const STAT_PAIR_KEYWORDS: ReadonlySet<string> = new Set([
   "gloire", "renforcement", "renforcement_multiple", "affaiblissement",
+  "force_des_ancetres",
 ]);
 
 /** Paires à valeurs NÉGATIVES (débuff) — le signe s'applique aux deux membres. */
 const NEGATIVE_STAT_PAIRS: ReadonlySet<string> = new Set(["affaiblissement"]);
+
+/** Paires NEUTRES (« X/Y » sans signe) : le couple n'est pas un delta de stats
+ *  — Déchainement X/Y porte « X sorts de coût Y ». Badge « 2/3 », jamais
+ *  « +2/+3 » qui laisserait croire à un buff. */
+const NEUTRAL_PAIR_KEYWORDS: ReadonlySet<string> = new Set(["dechainement"]);
 
 /** Ce mot-clé porte-t-il une paire de stats (+X/+Y ou -X/-Y) plutôt qu'un X ? */
 export function isStatPairKeyword(kw: Keyword): boolean {
@@ -380,6 +390,9 @@ export function keywordBadgeValue(
   // badge afficherait un « Conférer I » trompeur — la valeur appartient au
   // libellé de la capacité donnée, que la description résout déjà.
   if (kw === "conferer") return null;
+  if (NEUTRAL_PAIR_KEYWORDS.has(kw)) {
+    return `${x ?? inst?.x ?? 0}/${inst?.y ?? 0}`;
+  }
   if (!isStatPairKeyword(kw)) return x != null ? xNumeral(x) : null;
   const sign = NEGATIVE_STAT_PAIRS.has(kw) ? "-" : "+";
   return `${sign}${x ?? inst?.x ?? 0}/${sign}${inst?.y ?? 0}`;
@@ -403,6 +416,11 @@ export function applyKeywordValueToLabel(
   x: number | undefined,
   inst?: KeywordInstance,
 ): string {
+  if (NEUTRAL_PAIR_KEYWORDS.has(kw)) {
+    const value = keywordBadgeValue(kw, x, inst);
+    if (!value) return label;
+    return /X\/Y/.test(label) ? label.replace(/X\/Y/, value) : `${label} ${value}`;
+  }
   if (isStatPairKeyword(kw)) {
     const value = keywordBadgeValue(kw, x, inst);
     if (!value) return label;
@@ -461,4 +479,6 @@ export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
   renforcement_multiple: "⏫",
   conferer: "✋",
   declenchement: "🔂",
+  dechainement: "🌋",
+  force_des_ancetres: "🪬",
 };

@@ -1612,6 +1612,11 @@ export default function CardForge() {
   const [rfY, setRfY] = useState<number>(1);
   // Gloire +X/+Y (créature) : le +PV (Y) dédié (le +ATK = la valeur X).
   const [glY, setGlY] = useState<number>(1);
+  // Déchainement X/Y (créature) : le coût Y des sorts lancés (le nombre de
+  // sorts = la valeur X générique).
+  const [dcY, setDcY] = useState<number>(1);
+  // Force des ancêtres +X/+Y (créature) : le +PV (Y) dédié (le +ATK = la valeur X).
+  const [fdaY, setFdaY] = useState<number>(1);
   const [rmRace, setRmRace] = useState<string>("");
   const [rmClan, setRmClan] = useState<string>("");
   // Appel Suprême : race ciblée fixée sur la carte (créature). Persistée dans
@@ -1683,6 +1688,8 @@ export default function CardForge() {
       "Renforcement +X/+Y": rfY,
       "Renforcement multiple": rmY,
       "Affaiblissement -X/-Y": afY,
+      "Déchainement X/Y": dcY,
+      "Force des ancêtres +X/+Y": fdaY,
     },
     keywordGrantScope: type !== "Unité" ? keywordGrantScope : undefined,
     ability: manualAbility,
@@ -1764,6 +1771,8 @@ export default function CardForge() {
       "Hobbits": "a halfling with bare hairy feet, round cheerful face, simple rustic clothing",
       "Hommes-Arbres": "a towering treant made of living wood, bark skin, branch limbs, leaves as hair, mossy and ancient",
       "Humains": "a human warrior in medieval armor, realistic proportions, heraldic symbols on shield",
+      "Griffons": "a majestic griffin with eagle head and front talons, lion hindquarters, broad feathered wings, heraldic harness",
+      "Faucons": "a swift hunting falcon with sleek streamlined plumage, sharp hooked beak, piercing eyes, wings spread mid-flight",
       "Hommes-Loups": "a werewolf humanoid with wolf head, fur-covered muscular body, feral eyes, claws and fangs",
       "Hommes-Ours": "a werebear humanoid, massive bear-headed figure, thick fur, enormous claws, towering",
       "Hommes-Félins": "a feline humanoid with panther features, lithe and agile body, slit pupils, sleek fur",
@@ -1898,7 +1907,7 @@ export default function CardForge() {
     setManualPower(2); setManualAbility(""); setManualFlavorText("");
     setManualIllustrationPrompt(""); setManualExtraContext(""); setManualKeywords([]); setKeywordXValues({}); setKeywordModes({}); setCard(null);
     setEditedPrompt(null); setSaveResult(null);
-    setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setAfY(1); setRfY(1); setGlY(1); setRmRace(""); setRmClan(""); setAsRace(""); setConferAbilityId(""); setConferX(1); setConferY(1); setDeclenchementTriggers([]); setComposedCaps([]);
+    setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setAfY(1); setRfY(1); setGlY(1); setDcY(1); setFdaY(1); setRmRace(""); setRmClan(""); setAsRace(""); setConferAbilityId(""); setConferX(1); setConferY(1); setDeclenchementTriggers([]); setComposedCaps([]);
     setManualLifeCost(0); setManualDiscardCost(0); setManualSacrificeCost(0);
     setCardImages(prev => Object.fromEntries(Object.entries(prev).filter(([k]) => k !== "manual_preview")));
   }, []);
@@ -2208,12 +2217,23 @@ export default function CardForge() {
           if (id === "renforcement" && !isSpellCard) {
             return { id, ...(mode ? { mode } : {}), x: x ?? 0, y: rfY };
           }
+          // Déchainement (créature) : porte X (nombre de sorts, valeur générique)
+          // / Y (coût des sorts, dédié) ; toujours émis — sans le Y persisté, le
+          // moteur retomberait sur coût 1 quelle que soit la saisie.
+          if (id === "dechainement" && !isSpellCard) {
+            return { id, ...(mode ? { mode } : {}), x: x ?? 1, y: dcY };
+          }
           // Gloire : porte +X (ATK générique) / +Y (PV dédié). Émise aussi sur
           // un SORT, qui la CONFÈRE — sans le Y persisté, le don retombait sur
           // le +Y=1 de repli quelle que soit la saisie (la portée doit alors
           // suivre, ce que la branche générique faisait seule jusqu'ici).
           if (id === "gloire") {
             return { id, ...(mode ? { mode } : {}), x: x ?? 0, y: glY, ...(grantScope ? { grantScope } : {}) };
+          }
+          // Force des ancêtres : porte +X (ATK générique) / +Y (PV dédié).
+          // Émise aussi sur un SORT (capacité conférée, mêmes raisons que Gloire).
+          if (id === "force_des_ancetres") {
+            return { id, ...(mode ? { mode } : {}), x: x ?? 1, y: fdaY, ...(grantScope ? { grantScope } : {}) };
           }
           // Appel Suprême (créature) : porte la race ciblée ; toujours émis.
           if (id === "appel_supreme" && !isSpellCard) {
@@ -2317,7 +2337,7 @@ export default function CardForge() {
     } finally {
       setSaving(false);
     }
-  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, keywordModes, keywordGrantScope, rmY, afY, rfY, glY, rmRace, rmClan, asRace, composedCaps, conferAbilityId, conferX, conferY, declenchementTriggers]);
+  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, keywordModes, keywordGrantScope, rmY, afY, rfY, glY, dcY, fdaY, rmRace, rmClan, asRace, composedCaps, conferAbilityId, conferX, conferY, declenchementTriggers]);
 
   const [generatingImage, setGeneratingImage] = useState(false);
   const [editedPrompt, setEditedPrompt] = useState<string | null>(null);
@@ -3023,7 +3043,7 @@ export default function CardForge() {
                               )}
                               {def.params.includes("health") && (
                                 <div>
-                                  <label style={{ fontSize: 7, color: "#f1c40f" }}>PV</label>
+                                  <label style={{ fontSize: 7, color: "#f1c40f" }}>{kw.id === "dechainement" ? "Coût (Y)" : "PV"}</label>
                                   <input type="number" min={0} max={20} value={kw.health ?? 1}
                                     onChange={e => {
                                       const val = Math.max(0, parseInt(e.target.value) || 0);
@@ -3178,7 +3198,7 @@ export default function CardForge() {
                                 fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: selected ? 700 : 400,
                                 transition: "all 0.15s",
                               }}>{id.replace(/ X$/, "")}{isScalable && !selected && / X$/.test(id) ? " X" : ""}</button>
-                            {isScalable && selected && id !== "Renforcement +X/+Y" && id !== "Gloire +X/+Y" && (
+                            {isScalable && selected && id !== "Renforcement +X/+Y" && id !== "Gloire +X/+Y" && id !== "Force des ancêtres +X/+Y" && (
                               <input
                                 type="number" min={1} max={10}
                                 value={keywordXValues[id] ?? 1}
@@ -3374,6 +3394,38 @@ export default function CardForge() {
                             onChange={e => setGlY(Math.max(0, parseInt(e.target.value) || 0))}
                             style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: "1px solid #f0d9a8", fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }}
                           />
+                        </div>
+                      </div>
+                    )}
+                    {/* Force des ancêtres — +ATK (X) / +PV (Y) tant que le cimetière compte ≥5 créatures */}
+                    {manualKeywords.includes("Force des ancêtres +X/+Y") && (
+                      <div style={{ marginTop: 6, padding: 6, borderRadius: 6, border: "1px solid #d9cfe8", background: "#f8f4ff" }}>
+                        <div style={{ fontSize: 8, color: "#6b4fa0", letterSpacing: 1, fontWeight: 700, marginBottom: 4 }}>🪬 FORCE DES ANCÊTRES {tf('fda_condition')}</div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <span style={{ fontSize: 9, color: "#6b4fa0" }}>+ATK (X)</span>
+                          <input type="number" min={0} max={20} value={keywordXValues["Force des ancêtres +X/+Y"] ?? 1}
+                            onChange={e => setKeywordXValues(prev => ({ ...prev, ["Force des ancêtres +X/+Y"]: Math.max(0, Math.min(20, parseInt(e.target.value) || 0)) }))}
+                            style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: "1px solid #d9cfe8", fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }}
+                          />
+                          <span style={{ fontSize: 9, color: "#6b4fa0" }}>+PV (Y)</span>
+                          <input type="number" min={0} max={20} value={fdaY}
+                            onChange={e => setFdaY(Math.max(0, parseInt(e.target.value) || 0))}
+                            style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: "1px solid #d9cfe8", fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    {/* Déchainement — coût Y des sorts lancés (le nombre de sorts = la valeur X) */}
+                    {manualKeywords.includes("Déchainement X/Y") && (
+                      <div style={{ marginTop: 6, padding: 6, borderRadius: 6, border: "1px solid #e8cfc0", background: "#fff6f0" }}>
+                        <div style={{ fontSize: 8, color: "#b3541e", letterSpacing: 1, fontWeight: 700, marginBottom: 4 }}>🌋 DÉCHAINEMENT</div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <span style={{ fontSize: 9, color: "#b3541e" }}>{tf('spell_cost_y')}</span>
+                          <input type="number" min={1} max={10} value={dcY}
+                            onChange={e => setDcY(Math.max(1, Math.min(10, parseInt(e.target.value) || 1)))}
+                            style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: "1px solid #e8cfc0", fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }}
+                          />
+                          <span style={{ fontSize: 8, color: "#888" }}>{tf('spell_count_is_x')}</span>
                         </div>
                       </div>
                     )}
@@ -3721,7 +3773,7 @@ export default function CardForge() {
                             <span style={labelStyle}>{tf('effect_label')}</span>
                             <span style={{ ...valStyle, display: "flex", alignItems: "center", gap: 8 }}>
                               {def?.creature?.desc ?? def?.desc ?? label}
-                              {scalable && label !== "Renforcement +X/+Y" && label !== "Gloire +X/+Y" && (
+                              {scalable && label !== "Renforcement +X/+Y" && label !== "Gloire +X/+Y" && label !== "Force des ancêtres +X/+Y" && (
                                 <input type="number" min={1} max={10} value={keywordXValues[label] ?? 1}
                                   onChange={e => setKeywordXValues(prev => ({ ...prev, [label]: Math.max(1, Math.min(10, parseInt(e.target.value) || 1)) }))}
                                   style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: `1px solid ${fac.color}`, background: `${fac.color}11`, color: fac.color, fontSize: 11, textAlign: "center", fontWeight: 700, fontFamily: "'Cinzel',serif" }}
@@ -3796,6 +3848,26 @@ export default function CardForge() {
                               </div>
                             </div>
                           )}
+                          {label === "Force des ancêtres +X/+Y" && (
+                            <div style={{ marginTop: 8 }}>
+                              <div style={{ ...labelStyle, color: "#6b4fa0", marginBottom: 3 }}>🪬 +ATK (X) / +PV (Y) <span style={{ color: "#888", fontWeight: 400 }}>{tf('fda_condition')}</span></div>
+                              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                <span style={{ fontSize: 9, color: "#6b4fa0" }}>+ATK</span>
+                                <input type="number" min={0} max={20} value={keywordXValues[label] ?? 1} onChange={e => setKeywordXValues(prev => ({ ...prev, [label]: Math.max(0, Math.min(20, parseInt(e.target.value) || 0)) }))} style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: cardBorder, fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
+                                <span style={{ fontSize: 9, color: "#6b4fa0" }}>+PV</span>
+                                <input type="number" min={0} max={20} value={fdaY} onChange={e => setFdaY(Math.max(0, parseInt(e.target.value) || 0))} style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: cardBorder, fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
+                              </div>
+                            </div>
+                          )}
+                          {label === "Déchainement X/Y" && (
+                            <div style={{ marginTop: 8 }}>
+                              <div style={{ ...labelStyle, color: "#b3541e", marginBottom: 3 }}>🌋 {tf('spell_cost_y')} <span style={{ color: "#888", fontWeight: 400 }}>{tf('spell_count_is_x')}</span></div>
+                              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                <span style={{ fontSize: 9, color: "#b3541e" }}>Y</span>
+                                <input type="number" min={1} max={10} value={dcY} onChange={e => setDcY(Math.max(1, Math.min(10, parseInt(e.target.value) || 1)))} style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: cardBorder, fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
+                              </div>
+                            </div>
+                          )}
                           {label === "Appel Suprême" && (
                             <div style={{ marginTop: 8 }}>
                               <div style={{ ...labelStyle, color: "#10b981", marginBottom: 3 }}>🎺 {tf('target_race_label')} {!asRace && <span style={{ color: "#e74c3c" }}>· {tf('required')}</span>}</div>
@@ -3850,7 +3922,7 @@ export default function CardForge() {
                                 <label style={{ fontSize: 9, color: "#e74c3c" }}>ATK <input type="number" min={0} max={20} value={kw.attack ?? 1} onChange={e => { const v = Math.max(0, parseInt(e.target.value) || 0); setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, attack: v } : k)); }} style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: "1px solid #e74c3c44", fontSize: 11, textAlign: "center", fontFamily: "'Cinzel',serif", color: "#e74c3c" }} /></label>
                               )}
                               {def.params.includes("health") && (
-                                <label style={{ fontSize: 9, color: "#c79a0a" }}>PV <input type="number" min={0} max={20} value={kw.health ?? 1} onChange={e => { const v = Math.max(0, parseInt(e.target.value) || 0); setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, health: v } : k)); }} style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: "1px solid #c79a0a44", fontSize: 11, textAlign: "center", fontFamily: "'Cinzel',serif", color: "#c79a0a" }} /></label>
+                                <label style={{ fontSize: 9, color: "#c79a0a" }}>{kw.id === "dechainement" ? "Coût (Y)" : "PV"} <input type="number" min={0} max={20} value={kw.health ?? 1} onChange={e => { const v = Math.max(0, parseInt(e.target.value) || 0); setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, health: v } : k)); }} style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: "1px solid #c79a0a44", fontSize: 11, textAlign: "center", fontFamily: "'Cinzel',serif", color: "#c79a0a" }} /></label>
                               )}
                             </span>
                             {kw.id === "renforcement_multiple" && (

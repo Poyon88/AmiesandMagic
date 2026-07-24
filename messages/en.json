@@ -153,6 +153,10 @@
         "label": "Necrophagy",
         "desc": "Gains +1 ATK and +1 HP whenever a unit (allied or enemy) dies."
       },
+      "force_des_ancetres": {
+        "label": "Ancestral Strength +X/+Y",
+        "desc": "While your graveyard holds 5 or more creatures, gains +X ATK and +Y HP."
+      },
       "richesse": {
         "label": "Wealth X",
         "desc": "Whenever any player discards a card from their hand, this unit permanently gains +X/+X."
@@ -408,6 +412,10 @@
       "declenchement": {
         "label": "Trigger",
         "desc": "Replays once the compound effects of your other allies (entry / death / end of turn / return)."
+      },
+      "dechainement": {
+        "label": "Unleash X/Y",
+        "desc": "Casts X random spells of cost Y from your collection ({alignment}), with random targets."
       }
     },
     "spell_keywords": {
@@ -458,6 +466,10 @@
       "relancer": {
         "label": "Recast X",
         "desc": "Replays the last X spells cast with random targets."
+      },
+      "dechainement": {
+        "label": "Unleash X/Y",
+        "desc": "Casts X random spells of cost Y from your collection ({alignment}), with random targets."
       },
       "invocation": {
         "label": "Invocation X",
@@ -661,7 +673,7 @@
       },
       "Humains": {
         "displayName": "The Free Kingdoms",
-        "description": "The old continent: honor, steel, and heroic champions."
+        "description": "The old continent: honor, steel, heroic champions and their proud winged allies, griffins and falcons."
       },
       "Hommes-Bêtes": {
         "displayName": "The Pack",
@@ -740,6 +752,8 @@
       "Golems": "Golems",
       "Gnomes": "Gnomes",
       "Humains": "Humans",
+      "Griffons": "Griffins",
+      "Faucons": "Falcons",
       "Hommes-Loups": "Werewolves",
       "Hommes-Ours": "Werebears",
       "Hommes-Félins": "Werecats",
@@ -824,6 +838,16 @@
         "def": "the Human",
         "bare": "Human",
         "de": "of the Human"
+      },
+      "Griffons": {
+        "def": "the Griffin",
+        "bare": "Griffin",
+        "de": "of the Griffin"
+      },
+      "Faucons": {
+        "def": "the Falcon",
+        "bare": "Falcon",
+        "de": "of the Falcon"
       },
       "Hommes-Loups": {
         "def": "the Werewolf",
@@ -1513,6 +1537,9 @@
     "required_caps_f": "Required",
     "atk_is_x": "(+ATK = X value)",
     "neg_atk_is_x": "(-ATK = X value)",
+    "spell_cost_y": "SPELL COST (Y)",
+    "spell_count_is_x": "(the spell count = the X value)",
+    "fda_condition": "(while ≥5 creatures in your graveyard)",
     "choose_ability": "-- Choose an ability --",
     "scope_one_ally": "1 targeted ally",
     "scope_all_allies": "All allies",

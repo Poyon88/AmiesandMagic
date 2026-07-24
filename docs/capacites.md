@@ -39,6 +39,7 @@
 - 🐺 **Lycanthropie X** — Début de tour : se transforme en un token X/X avec Traque.
 - 💀 **Malédiction** — Invocation : ciblez une unité ennemie, elle est exilée à la fin du prochain tour adverse.
 - 🦴 **Nécrophagie** — Gagne +1 ATK et +1 PV chaque fois qu'une unité (alliée ou ennemie) meurt.
+- 🪬 **Force des ancêtres +X/+Y** — Passif : tant que votre cimetière compte 5 créatures ou plus, gagne +X ATK et +Y PV. Le bonus retombe si la condition se rompt (Exhumation, Résurrection…).
 - 🤑 **Richesse X** — Gagne +X ATK et +X PV chaque fois qu'un joueur (allié ou ennemi) défausse une carte de sa main.
 - ⛓️ **Paralysie** — Les unités subissant des dégâts de cette créature ne peuvent attaquer ni utiliser de capacités actives avant la fin du prochain tour de leur propriétaire.
 - 🔀 **Permutation** — Invocation : échange les PV actuels de deux unités ciblées (une alliée et une ennemie).
@@ -124,6 +125,9 @@
 - 🔁 **Relancer X**
   - Créature : Invocation : rejoue les X derniers sorts lancés avec des cibles aléatoires.
   - Sort : Rejoue les X derniers sorts lancés avec des cibles aléatoires
+- 🌋 **Déchainement X/Y**
+  - Créature : Invocation : lance X sorts aléatoires de coût exactement Y de votre collection (communes + éditions limitées possédées, même alignement que cette carte, format en cours), avec des cibles aléatoires.
+  - Sort : Lance X sorts aléatoires de coût exactement Y de votre collection (mêmes règles de pool), avec des cibles aléatoires
 - 📖 **Inspiration X**
   - Créature : Invocation : piochez X cartes.
   - Sort : Piochez X cartes

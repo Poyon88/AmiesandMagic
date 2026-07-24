@@ -32,8 +32,10 @@ Catalyse;2;Non;Main;Invocation : réduit de 1 le coût en mana de toutes les uni
 Contresort;2;Non;Terrain;Invocation : annule le prochain sort adverse.
 Convocation X;2;Oui;Terrain;Invocation : crée un token X/X de même race et clan (si clan indiqué sur la carte).
 Invocation X;2;Oui;Terrain;Invocation : invoque une créature aléatoire de coût exactement X de votre collection (communes + éditions limitées possédées, même alignement, format en cours).
+Déchainement X/Y;3;Oui;Terrain;Invocation (unité) ou Lancement (sort) : lance X sorts aléatoires de coût exactement Y de votre collection (communes + éditions limitées possédées, même alignement, format en cours), avec des cibles aléatoires.
 Malédiction;2;Non;Terrain;Invocation : ciblez une unité ennemie, elle est exilée à la fin du prochain tour adverse.
 Nécrophagie;2;Non;Terrain;Gagne +1 ATK et +1 PV chaque fois qu'une unité (alliée ou ennemie) meurt.
+Force des ancêtres;1;Oui;Cimetière;Passif : tant que votre cimetière compte 5 créatures ou plus, gagne +X ATK et +Y PV.
 Richesse X;2;Oui;Terrain;Gagne +X ATK et +X PV chaque fois qu'un joueur défausse une carte de sa main.
 Paralysie;2;Non;Terrain;Invocation : une unité ennemie ciblée ne peut pas attaquer lors du prochain tour adverse.
 Permutation;2;Non;Terrain;Invocation : échange les PV actuels de deux unités ciblées (une alliée et une ennemie).
