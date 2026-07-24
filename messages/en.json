@@ -141,6 +141,10 @@
         "label": "Summon",
         "desc": "Creates {token}."
       },
+      "invocation": {
+        "label": "Invocation X",
+        "desc": "Summons a random creature of cost X from your collection ({alignment}, current format)."
+      },
       "malediction": {
         "label": "Curse",
         "desc": "Target an enemy unit; it is exiled at the end of the opponent's next turn."
@@ -456,8 +460,8 @@
         "desc": "Replays the last X spells cast with random targets."
       },
       "invocation": {
-        "label": "Invocation X/Y",
-        "desc": "Summons an X/Y token."
+        "label": "Invocation X",
+        "desc": "Summons a random creature of cost X from your collection ({alignment}, current format)."
       },
       "impact": {
         "label": "Impact X",

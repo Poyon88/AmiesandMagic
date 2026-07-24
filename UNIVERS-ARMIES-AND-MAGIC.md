@@ -416,12 +416,12 @@ Les cartes **datées** (séries limitées / éditions forgées) existent en nomb
 | 🏴 Rassemblement X *(mixte)* | — | Révèle X cartes du deck, garde les unités de même race, défausse le reste. |
 | 💰 Pillage X *(mixte)* | 1 | L'adversaire défausse X cartes aléatoires. |
 | 📖 Inspiration X *(mixte)* | 2 | Pioche X cartes. |
+| 📣 Invocation X *(mixte)* | 2 | Invoque une créature aléatoire de coût exactement X de votre collection (même alignement, format en cours). |
 
-### 8.6 Sorts purs (10)
+### 8.6 Sorts purs (9)
 
 | Sort | Effet |
 |---|---|
-| 📣 Invocation X/Y | Invoque un token X/Y. |
 | 💥 Impact X | Inflige X dégâts à une cible. |
 | 🌊 Déferlement X | Inflige X dégâts à toutes les créatures ennemies. |
 | 🩸 Siphon X | X dégâts à une cible + soigne votre héros d'autant. |

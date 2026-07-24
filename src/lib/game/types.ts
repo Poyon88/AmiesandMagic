@@ -61,6 +61,8 @@ export type Keyword =
   | "remontee"
   // Polymorphic — X damage to a chosen creature OR hero (any side), multi-trigger
   | "impact"
+  // Polymorphic — summon a random collection creature of cost X (same alignment, current format)
+  | "invocation"
   // Polymorphic — self-buff +X/+Y (creature) / target ally (spell), multi-trigger
   | "renforcement"
   // Polymorphic — +X/+Y to all controller's creatures of a selected race/clan
@@ -188,12 +190,12 @@ export interface KeywordInstance {
 
 export interface SpellKeywordInstance {
   id: SpellKeywordId;
-  amount?: number;   // X value for impact, deferlement, siphon, guerison, inspiration, afflux, pillage, cataclysme
-  attack?: number;   // for renforcement, renforcement_multiple, invocation
-  health?: number;   // for renforcement, renforcement_multiple, invocation
-  race?: string;     // for invocation (token race) and renforcement_multiple (race ciblée)
+  amount?: number;   // X value for impact, deferlement, siphon, guerison, inspiration, afflux, pillage, cataclysme, invocation (coût de la créature invoquée)
+  attack?: number;   // for renforcement, renforcement_multiple — et repli legacy d'invocation (ex-token X/Y : X devient le coût)
+  health?: number;   // for renforcement, renforcement_multiple — legacy invocation (ignoré)
+  race?: string;     // legacy invocation (race du token, ignoré) and renforcement_multiple (race ciblée)
   clan?: string;     // for renforcement_multiple (clan ciblé, prioritaire sur race)
-  token_id?: number | null; // for invocation — id from token_templates (preferred over race)
+  token_id?: number | null; // legacy invocation — ancien id token_templates (ignoré depuis la refonte)
 }
 
 // --- Convocation tokens config ---
@@ -787,6 +789,10 @@ export interface GameState {
   // spell of higher cost. Kept separate from factionCardPool because
   // Concentration must reach beyond the deck-faction subset.
   allSpellsPool?: Card[];
+  // Format du match (code du format des decks, ex. "expert-standard"). Sert à
+  // restreindre le pool d'Invocation X aux cartes légales dans le format en
+  // cours. Absent (parties historiques / decks sans format) ⇒ aucun filtre.
+  formatCode?: FormatCode | null;
   // Transient: each Fureur trigger fired during the last action is pushed
   // here so the store can sequence a follow-up attack-lunge animation and
   // delay the damage popups on the random victim. Cleared by the store

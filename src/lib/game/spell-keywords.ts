@@ -153,7 +153,11 @@ export function getSpellKeywordDesc(
   }, t);
 
   // Replace X/Y from params
-  if (def.params.includes("attack")) desc = desc.replace(/X/g, String(kw.attack ?? 0));
+  // Invocation : X = coût de la créature invoquée. Repli legacy sur `attack`
+  // pour les sorts sauvés avant la refonte (ex-« Invocation X/Y » token) —
+  // l'ancienne ATK est devenue le coût X.
+  if (kw.id === "invocation") desc = desc.replace(/X/g, String(kw.amount ?? kw.attack ?? 1));
+  else if (def.params.includes("attack")) desc = desc.replace(/X/g, String(kw.attack ?? 0));
   else if (def.params.includes("amount")) desc = desc.replace(/X/g, String(kw.amount ?? 1));
   if (def.params.includes("health")) desc = desc.replace(/Y/g, String(kw.health ?? 0));
 
@@ -165,23 +169,6 @@ export function getSpellKeywordDesc(
     desc = cfrag(t, "game.convocation_create_list", `Crée ${formatConvocationTokens(card.convocation_tokens, tokens, t)}`, {
       content: formatConvocationTokens(card.convocation_tokens, tokens, t),
     });
-  }
-
-  // Override for invocation — prefer the resolved token template name
-  // (multi-token-per-race safe); fall back to the raw race for legacy
-  // entries that only stored kw.race.
-  if (kw.id === "invocation") {
-    const tmpl = kw.token_id ? tokens?.find((tk) => tk.id === kw.token_id) : null;
-    if (tmpl) {
-      const name = tokenName(tmpl, t);
-      const atk = kw.attack ?? tmpl.attack ?? 1;
-      const hp = kw.health ?? tmpl.health ?? 1;
-      desc = cfrag(t, "game.convocation_invoke_one", `Invoque un ${name} ${atk}/${hp}`, { token: name, atk, hp }) + tokenKeywordSuffix(tmpl, t);
-    } else if (kw.race) {
-      const atk = kw.attack ?? 1;
-      const hp = kw.health ?? 1;
-      desc = cfrag(t, "game.convocation_invoke_race", `Invoque un ${kw.race} ${atk}/${hp}`, { race: kw.race, atk, hp });
-    }
   }
 
   // Override for convocation_simple : compose le nom du token et ses stats
@@ -203,7 +190,9 @@ export function getSpellKeywordLabel(kw: SpellKeywordInstance, t?: SafeT): strin
   const def = SPELL_KEYWORDS[kw.id];
   if (!def) return String(kw.id);
   let label = t?.(`vocab.spell_keywords.${kw.id}.label`) ?? def.label;
-  if (def.params.includes("attack")) label = label.replace(/X/, String(kw.attack ?? 0));
+  // Invocation : repli legacy sur `attack` (ex-« Invocation X/Y »), cf. desc.
+  if (kw.id === "invocation") label = label.replace(/X/, String(kw.amount ?? kw.attack ?? 1));
+  else if (def.params.includes("attack")) label = label.replace(/X/, String(kw.attack ?? 0));
   else if (def.params.includes("amount")) label = label.replace(/X/, String(kw.amount ?? 1));
   if (def.params.includes("health")) label = label.replace(/Y/, String(kw.health ?? 0));
   return label;

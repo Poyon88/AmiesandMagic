@@ -141,6 +141,10 @@
         "label": "召唤",
         "desc": "创造{token}。"
       },
+      "invocation": {
+        "label": "召唤 X",
+        "desc": "从你的收藏中随机召唤一个费用为X的生物（{alignment}，当前赛制）。"
+      },
       "malediction": {
         "label": "诅咒",
         "desc": "指定一个敌方单位，将其在对手下一回合结束时放逐。"
@@ -456,8 +460,8 @@
         "desc": "以随机目标重新施放最近X个法术。"
       },
       "invocation": {
-        "label": "召唤 X/Y",
-        "desc": "召唤一个X/Y衍生物。"
+        "label": "召唤 X",
+        "desc": "从你的收藏中随机召唤一个费用为X的生物（{alignment}，当前赛制）。"
       },
       "impact": {
         "label": "冲击 X",

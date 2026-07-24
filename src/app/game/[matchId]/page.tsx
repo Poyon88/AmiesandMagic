@@ -9,7 +9,7 @@ import SfxEngine from "@/lib/audio/SfxEngine";
 import GameBoard from "@/components/game/GameBoard";
 import CardTextProvider from "@/components/game/CardTextProvider";
 import OrientationLock from "@/components/shared/OrientationLock";
-import type { Card, GameAction, GameState, HeroDefinition, HeroPowerEffect, Race } from "@/lib/game/types";
+import type { Card, FormatCode, GameAction, GameState, HeroDefinition, HeroPowerEffect, Race } from "@/lib/game/types";
 import { syncHash, reconcileVerdict } from "@/lib/game/stateHash";
 import { FACTIONS } from "@/lib/card-engine/constants";
 import { MANA_SPARK_NAMES } from "@/lib/game/mana-spark";
@@ -112,6 +112,7 @@ export default function GamePage() {
     allSpells: Card[];
     p1OwnedLimitedIds: number[];
     p2OwnedLimitedIds: number[];
+    formatCode: FormatCode | null;
   } | null>(null);
   const gameInitializedRef = useRef(false);
   // Per-match monotonic action sequence. The sender increments and tags
@@ -190,12 +191,12 @@ export default function GamePage() {
             .eq("deck_id", match.player2_deck_id),
           supabase
             .from("decks")
-            .select("hero_id, board_id, card_back_id, heroes(*), card_back:card_back_id(image_url)")
+            .select("hero_id, board_id, card_back_id, format_id, heroes(*), card_back:card_back_id(image_url)")
             .eq("id", match.player1_deck_id)
             .single(),
           supabase
             .from("decks")
-            .select("hero_id, board_id, card_back_id, heroes(*), card_back:card_back_id(image_url)")
+            .select("hero_id, board_id, card_back_id, format_id, heroes(*), card_back:card_back_id(image_url)")
             .eq("id", match.player2_deck_id)
             .single(),
           fetch("/api/token-templates").then((r) => (r.ok ? r.json() : [])),
@@ -230,6 +231,24 @@ export default function GamePage() {
             card: dc.cards as unknown as Card,
             quantity: dc.quantity,
           }));
+
+        // Format du match : porté par les decks (le matchmaking apparie par
+        // format_id, les deux decks partagent donc le même). Résolu en code
+        // ("expert-standard"…) pour le moteur — Invocation X restreint son pool
+        // aux cartes légales dans ce format. Null (deck sans format / partie
+        // amicale) ⇒ aucun filtre.
+        const matchFormatId =
+          ((p1DeckData.data as { format_id?: number | null } | null)?.format_id ?? null)
+          ?? ((p2DeckData.data as { format_id?: number | null } | null)?.format_id ?? null);
+        let matchFormatCode: FormatCode | null = null;
+        if (matchFormatId != null) {
+          const { data: fmtRow } = await supabase
+            .from("formats")
+            .select("code")
+            .eq("id", matchFormatId)
+            .maybeSingle();
+          matchFormatCode = (fmtRow?.code as FormatCode | undefined) ?? null;
+        }
 
         // Map hero data
         const p1Hero = mapHeroRow(
@@ -366,7 +385,7 @@ export default function GamePage() {
         // Store match data for later initialization
         const p1OwnedLimitedIds = Array.isArray(p1CollectionsJson?.limitedCardIds) ? p1CollectionsJson.limitedCardIds : [];
         const p2OwnedLimitedIds = Array.isArray(p2CollectionsJson?.limitedCardIds) ? p2CollectionsJson.limitedCardIds : [];
-        matchDataRef.current = { match, p1Cards, p2Cards, p1Hero, p2Hero, factionCards: (factionCards ?? []) as unknown as Card[], allSpells, p1OwnedLimitedIds, p2OwnedLimitedIds };
+        matchDataRef.current = { match, p1Cards, p2Cards, p1Hero, p2Hero, factionCards: (factionCards ?? []) as unknown as Card[], allSpells, p1OwnedLimitedIds, p2OwnedLimitedIds, formatCode: matchFormatCode };
 
         // Join realtime channel with presence
         const channel = supabase.channel(`match:${matchId}`, {
@@ -650,10 +669,10 @@ export default function GamePage() {
           const playerCount = Object.keys(state).length;
           if (playerCount < 2) return;
           gameInitializedRef.current = true;
-          const { match: m, p1Cards: p1, p2Cards: p2, p1Hero, p2Hero, factionCards, allSpells, p1OwnedLimitedIds, p2OwnedLimitedIds } = matchDataRef.current;
+          const { match: m, p1Cards: p1, p2Cards: p2, p1Hero, p2Hero, factionCards, allSpells, p1OwnedLimitedIds, p2OwnedLimitedIds, formatCode } = matchDataRef.current;
           const seed = parseInt(matchId.replace(/-/g, "").slice(0, 8), 16);
           const firstPlayer: 0 | 1 = seed % 2 === 0 ? 0 : 1;
-          initGame(m.player1_id, m.player2_id, p1, p2, firstPlayer, seed, p1Hero, p2Hero, factionCards, allSpells);
+          initGame(m.player1_id, m.player2_id, p1, p2, firstPlayer, seed, p1Hero, p2Hero, factionCards, allSpells, formatCode);
           setOwnedLimitedCardIds(p1OwnedLimitedIds, p2OwnedLimitedIds);
           setPhase("playing");
           if (presencePollRef.current) {

@@ -1,6 +1,6 @@
 # Capacités — Créatures & Sorts
 
-> Généré depuis `src/lib/game/abilities.ts` (source unique de vérité). Total : 98 capacités — 72 créature, 10 sort, 16 mixtes.
+> Généré depuis `src/lib/game/abilities.ts` (source unique de vérité). Total : 98 capacités — 72 créature, 9 sort, 17 mixtes.
 > Le suffixe **X** (ou X/Y) indique une capacité paramétrable.
 
 ## Créature uniquement (72)
@@ -81,9 +81,8 @@
 - 📯 **Appel du clan X** — Invocation : mettez en jeu gratuitement la première unité de même clan avec un coût inférieur ou égal à X depuis le dessus de votre deck.
 - 🤜 **Solidarité X** — Invocation : piochez X cartes si vous contrôlez 2 autres unités de même race.
 
-## Sort uniquement (10)
+## Sort uniquement (9)
 
-- 📣 **Invocation X/Y** — Invoque un token X/Y
 - 💥 **Impact X** — Inflige X dégâts à une cible
 - 🌊 **Déferlement X** — Inflige X dégâts à toutes les créatures ennemies
 - 🩸 **Siphon X** — Inflige X dégâts à une cible et soigne votre héros du même montant
@@ -94,7 +93,7 @@
 - 💚 **Guérison X** — Restaure X PV à une cible
 - 💎 **Afflux X** — Gagnez X mana ce tour
 
-## Mixtes — créature et sort (16)
+## Mixtes — créature et sort (17)
 
 - ☠️ **Poison**
   - Créature : Les unités blessées perdent 1 PV par tour.
@@ -141,6 +140,9 @@
 - 📣📣 **Convocations multiples**
   - Créature : Invocation : crée plusieurs tokens selon la configuration.
   - Sort : Crée plusieurs tokens selon la configuration de la carte.
+- 📣 **Invocation X**
+  - Créature : Invocation : invoque une créature aléatoire de coût exactement X issue de votre collection (communes + éditions limitées possédées), du même alignement que cette carte et légale dans le format en cours. Rien ne se passe si aucune créature ne correspond.
+  - Sort : Invoque une créature aléatoire de coût exactement X issue de votre collection (communes + éditions limitées possédées), du même alignement que ce sort et légale dans le format en cours. Rien ne se passe si aucune créature ne correspond.
 - 🌩️ **Tempête X**
   - Créature : Invocation : inflige X dégâts répartis aléatoirement entre les unités ennemies.
   - Sort : Inflige X dégâts répartis aléatoirement entre les unités ennemies.

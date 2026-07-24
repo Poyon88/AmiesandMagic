@@ -27,7 +27,9 @@ import type {
   PendingTrigger,
   ResolvePendingTriggerAction,
   StackFrame,
+  FormatCode,
 } from "./types";
+import { getFormatFilterByCode } from "./format-legality";
 import { SPELL_KEYWORDS } from "./spell-keywords";
 import { getEntraideReduction, getTokenManaCost, isCreatureKwShadowedBySpell, XY_ABILITY_IDS } from "./abilities";
 import { isManaSpark, MANA_SPARK_FALLBACK } from "./mana-spark";
@@ -96,6 +98,11 @@ let currentPlayerIds: string[] = [];
 // patron que currentTokenTemplates. Absent (test appelant un handler en
 // direct) ⇒ les effets concernés fizzlent proprement (aucune option).
 let currentCardPools: { factionCardPool?: Card[]; allSpellsPool?: Card[] } = {};
+// Code du format du match (set dans applyAction depuis state.formatCode). Lu
+// par Invocation X pour restreindre le pool aux cartes légales dans le format
+// en cours, y compris depuis les déclencheurs curés sans accès au GameState.
+// Absent ⇒ aucun filtre de format (parties historiques / decks sans format).
+let currentFormatCode: FormatCode | null = null;
 
 /** Pose le mode couleur ambiant le temps de résoudre une capacité composée
  *  (source des flèches de pouvoir), puis le restaure — sûr en ré-entrance. */
@@ -1023,9 +1030,9 @@ function findTokenTemplate(id: number | null | undefined, templates?: TokenTempl
 }
 
 // Backwards-compat helper for legacy code paths that still spawn tokens by
-// race string (spell-keyword "invocation", atomic "summon_token", "pacte de
-// sang"). Picks the first template matching the race so the visual is at
-// least preserved; returns null if none exists.
+// race string (atomic "summon_token", "pacte de sang"). Picks the first
+// template matching the race so the visual is at least preserved; returns
+// null if none exists.
 function findTokenTemplateByRace(race: string | null | undefined, templates?: TokenTemplate[]): TokenTemplate | null {
   if (!race) return null;
   const tmpls = templates ?? currentTokenTemplates;
@@ -1083,6 +1090,7 @@ export function initializeGame(
   player2Hero?: HeroDefinition | null,
   factionCardPool?: Card[],
   allSpellsPool?: Card[],
+  formatCode?: FormatCode | null,
 ): GameState {
   if (seed !== undefined) initRNG(seed);
   const p1Deck = createDeckInstances(player1Cards);
@@ -1119,6 +1127,7 @@ export function initializeGame(
     // boundary makes the order independent of the caller's DB fetch order.
     factionCardPool: factionCardPool ? [...factionCardPool].sort((a, b) => a.id - b.id) : undefined,
     allSpellsPool: allSpellsPool ? [...allSpellsPool].sort((a, b) => a.id - b.id) : undefined,
+    formatCode: formatCode ?? null,
   };
 }
 
@@ -1956,6 +1965,15 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
         token.hasSummoningSickness = true;
         player.board.push(token);
       }
+    }
+
+    // Invocation X : invoque une créature aléatoire de coût exactement X issue
+    // de la collection du joueur (communes + éditions limitées possédées),
+    // même alignement que cette carte, légale dans le format du match.
+    // Polymorphe : même mot-clé disponible côté sort dans resolveSpellKeywords.
+    if (hasKwOnPlay(cardInstance, "invocation")) {
+      const x = getKwX(cardInstance, "invocation", undefined, 1);
+      resolveInvocationSummon(player, cardInstance.card, x, newState.factionCardPool, newState.formatCode ?? null);
     }
 
     // Convocation (sans X) : variante non scalable de Convocation X. Crée le
@@ -3048,27 +3066,11 @@ function resolveSpellKeywords(
         break;
       }
       case "invocation": {
-        if (ctx.caster.board.length < MAX_BOARD_SIZE) {
-          // Prefer id-based lookup (multi-tokens per race safe). Legacy
-          // cards saved with only `race` fall through to the race lookup
-          // which picks the first match — deterministic for single-token
-          // races, arbitrary otherwise.
-          const tmpl = findTokenTemplate(kw.token_id) ?? findTokenTemplateByRace(kw.race);
-          const resolvedRace = tmpl?.race ?? kw.race;
-          let tokenCard: Card = {
-            id: -1, name: resolvedRace ? `Token ${resolvedRace}` : "Token",
-            mana_cost: 0, card_type: "creature",
-            attack: kw.attack ?? 1, health: kw.health ?? 1,
-            effect_text: "",
-            keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
-            race: resolvedRace,
-            faction: getFactionForRace(resolvedRace) ?? ctx.card.faction,
-          };
-          tokenCard = applyTokenTemplate(tokenCard, tmpl);
-          const token = createCardInstance(tokenCard);
-          token.hasSummoningSickness = true;
-          ctx.caster.board.push(token);
-        }
+        // Invocation X : créature aléatoire de la collection au coût exact X.
+        // Migration legacy : les sorts sauvés en « Invocation X/Y » (token)
+        // n'ont pas de `amount` — leur ancienne ATK devient le coût X.
+        const x = kw.amount ?? kw.attack ?? 1;
+        resolveInvocationSummon(ctx.caster, ctx.card, x, ctx.state.factionCardPool, ctx.state.formatCode ?? null);
         break;
       }
       case "convocation_simple": {
@@ -5115,6 +5117,15 @@ function resolveCuratedKeywordEffect(
       }
       break;
     }
+    case "invocation": {
+      // Mort / attaque / retour / fin de tour / tap : rejoue l'effet
+      // d'invocation. Créature aléatoire de la collection au coût exact X
+      // (même alignement que la source, format du match). Le pool et le
+      // format viennent des vars module — ce résolveur n'a pas accès au
+      // GameState (même patron que Sélection / Concentration).
+      resolveInvocationSummon(owner, source.card, x, currentCardPools.factionCardPool, currentFormatCode);
+      break;
+    }
     // ─── Chantier « tous déclencheurs » : effets d'invocation rejoués depuis
     // mort / attaque / retour / fin de tour / activation. Règle générale :
     // cible explicite → résolution directe ; sinon, sur le tour du contrôleur
@@ -6206,6 +6217,7 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   currentPlayerId = state.players[state.currentPlayerIndex].id;
   currentPlayerIds = state.players.map(p => p.id);
   currentCardPools = { factionCardPool: state.factionCardPool, allSpellsPool: state.allSpellsPool };
+  currentFormatCode = state.formatCode ?? null;
   pendingTriggerSink = [];
   sequentialHitsSink = [];
   powerStrikeSink = [];
@@ -6665,6 +6677,43 @@ function factionsForSelectionAlignment(
     if (c.card.faction && c.card.faction !== "Mercenaires") allowed.add(c.card.faction);
   }
   return allowed;
+}
+
+/** Invocation X : invoque une créature aléatoire de coût EXACTEMENT X issue de
+ *  la « collection » du joueur — toutes les communes + les éditions limitées
+ *  qu'il possède réellement (ownedLimitedCardIds, même définition que Renfort
+ *  Royal : carte datée hors set) — restreinte aux factions du même alignement
+ *  que la carte source (repli : factions du deck + Mercenaires, comme
+ *  Sélection) et aux cartes légales dans le format du match. Tirage via le RNG
+ *  seedé partagé : la résolution a lieu dans applyAction, donc les deux clients
+ *  tirent la même carte. La créature arrive avec le mal d'invocation et SANS
+ *  déclencher ses effets d'arrivée (précédent Appel du Clan). No-op si le
+ *  plateau est plein ou si aucun candidat au coût exact — pas de repli ≤ X. */
+function resolveInvocationSummon(
+  owner: PlayerState,
+  sourceCard: Card,
+  x: number,
+  pool: Card[] | undefined,
+  formatCode: FormatCode | null,
+): void {
+  if (owner.board.length >= MAX_BOARD_SIZE) return;
+  if (!pool || pool.length === 0 || x <= 0) return;
+  const allowedFactions = factionsForSelectionAlignment(sourceCard, owner);
+  const legal = formatCode ? getFormatFilterByCode(formatCode) : null;
+  const ownedLimited = new Set(owner.ownedLimitedCardIds ?? []);
+  const candidates = pool.filter(c =>
+    c.card_type === "creature"
+    && c.mana_cost === x
+    && !!c.faction && allowedFactions.has(c.faction)
+    && ((c.rarity ?? "Commune") === "Commune"
+      || (c.card_year != null && c.set_id == null && ownedLimited.has(c.id)))
+    && (!legal || legal(c)),
+  );
+  if (candidates.length === 0) return;
+  const chosen = candidates[Math.floor(rng() * candidates.length)];
+  const summoned = createCardInstance(chosen);
+  summoned.hasSummoningSickness = true;
+  owner.board.push(summoned);
 }
 
 /** Renfort Royal : propose jusqu'à 3 cartes parmi les éditions limitées
