@@ -740,6 +740,8 @@
       "Golems": "Golem",
       "Gnomes": "Gnomi",
       "Humains": "Umani",
+      "Griffons": "Grifoni",
+      "Faucons": "Falchi",
       "Hommes-Loups": "Uomini-Lupo",
       "Hommes-Ours": "Uomini-Orso",
       "Hommes-Félins": "Uomini-Felino",
@@ -824,6 +826,16 @@
         "def": "l'Umano",
         "bare": "Umano",
         "de": "dell'Umano"
+      },
+      "Griffons": {
+        "def": "il Grifone",
+        "bare": "Grifone",
+        "de": "del Grifone"
+      },
+      "Faucons": {
+        "def": "il Falco",
+        "bare": "Falco",
+        "de": "del Falco"
       },
       "Hommes-Loups": {
         "def": "l'Uomo-Lupo",

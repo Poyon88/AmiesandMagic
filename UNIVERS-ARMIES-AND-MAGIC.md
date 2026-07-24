@@ -87,7 +87,7 @@ Chaque faction a un **nom de code interne** (utilisé en base et dans le moteur,
 - **Pouvoirs interdits** : Vol, Invisible, Esquive, Ombre, Traque, Pillage X.
 
 ### 3.3 ⚔️ Royaumes Libres — code interne `Humains` — *Neutre*
-- **Races** : Humains
+- **Races** : Humains · **Griffons** *(race libre, disponible dans tous les clans)* · **Faucons** *(race libre, disponible dans tous les clans)*
 - **Clans** : **Le Royaume du Nord** (ex-Nordiques), **L'Ordre de l'Aube** (ex-Templiers), **Les Guerrières du Vent** (ex-Amazones), **La Sublime Porte** (Empire ottoman — élite à poudre) — profils distincts en §5.2
 - **Philosophie** : Le vieux continent. Honneur, acier et champions héroïques. Équilibrés et polyvalents, synergies de groupe. Poids stats faction (ombrelle) : équilibré (1.00 / 1.00).
 - **Pouvoirs privilégiés (ombrelle)** : Loyauté (0.55), Commandement (0.55), Bravoure (0.50), Bénédiction (0.45), Bouclier (0.45), Première Frappe (0.45), Tactique X (0.35), Héritage X (0.30), Provocation (0.30), Convocation X (0.30).
@@ -153,6 +153,8 @@ Certaines factions différencient leurs races par un profil de pouvoirs propre (
 | Faction | Race | Style (ATK/DEF) | Pouvoirs signature |
 |---|---|---|---|
 | Elfes | **Aigles Géants** *(race libre)* | 1.20 / 0.70 | Vol (0.90), Traque (0.60), Première Frappe (0.50), Augure (0.40) |
+| Royaumes Libres | **Griffons** *(race libre)* | 1.25 / 1.05 | Vol (0.90), Bravoure (0.50), Première Frappe (0.50), Traque (0.45), Loyauté (0.40), Provocation (0.30) |
+| Royaumes Libres | **Faucons** *(race libre)* | 1.15 / 0.70 | Vol (0.90), Célérité (0.55), Précision (0.55), Traque (0.50), Esquive (0.45), Première Frappe (0.40) |
 | Elfes | **Fées** | 0.75 / 0.65 | Vol (0.85), Invisible (0.70), Esquive (0.65), Canalisation (0.60), Augure (0.55), Divination (0.50), Drain de vie (0.45), Contresort (0.40), Héritage X (0.35) |
 | Elfes | **Hommes-Arbres** | 0.90 / 1.50 | Provocation (0.60), Ancré (0.55), Régénération (0.40), Riposte X (0.35) |
 | Nains | **Golems** | 0.90 / 1.60 | Ancré (0.80), Armure (0.75), Provocation (0.60), Riposte X (0.45), Indestructible (0.30) |
@@ -195,6 +197,8 @@ Certaines factions différencient leurs races par un profil de pouvoirs propre (
 | ✝️ **L'Ordre de l'Aube** | Templiers | 0.90/1.20 | Pilier défensif, foi | Bouclier (0.60), Bénédiction (0.55), Provocation (0.50), Résistance X (0.50), Première Frappe (0.40), Commandement (0.40), Bravoure (0.35) |
 | 🌬️ **Les Guerrières du Vent** | Amazones | 1.15/0.85 | Aile mobile, précision | Précision (0.55), Esquive (0.55), Traque (0.50), Première Frappe (0.45), Célérité (0.45), Bravoure (0.40) |
 | 🕌 **La Sublime Porte** | Empire ottoman | 1.10/1.05 | Élite à poudre, ordre | Commandement (0.60), Première Frappe (0.50), Combustion (0.50), Précision (0.45), Bravoure (0.45), Tactique X (0.40), Bouclier (0.35) |
+
+> **Griffons** et **Faucons** = races libres : elles peuvent apparaître dans n'importe quel clan des Royaumes Libres (profils de race §4, Vol toujours garanti).
 
 **🏯 Empire du Milieu**
 

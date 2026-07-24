@@ -740,6 +740,8 @@
       "Golems": "ゴーレム",
       "Gnomes": "ノーム",
       "Humains": "人間",
+      "Griffons": "グリフォン",
+      "Faucons": "隼",
       "Hommes-Loups": "狼人間",
       "Hommes-Ours": "熊人間",
       "Hommes-Félins": "猫人間",
@@ -824,6 +826,16 @@
         "def": "人間",
         "bare": "人間",
         "de": "人間"
+      },
+      "Griffons": {
+        "def": "グリフォン",
+        "bare": "グリフォン",
+        "de": "グリフォン"
+      },
+      "Faucons": {
+        "def": "隼",
+        "bare": "隼",
+        "de": "隼"
       },
       "Hommes-Loups": {
         "def": "狼男",
