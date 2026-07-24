@@ -538,6 +538,10 @@
       "afflux": {
         "label": "魔力流入 X",
         "desc": "このターン、マナをX獲得する"
+      },
+      "precision": {
+        "label": "精密",
+        "desc": "対象のユニットは【精密】を得る。"
       }
     },
     "composed": {
@@ -1944,6 +1948,7 @@
     "mono_clan": "単一クラン",
     "clan_label": "クラン：",
     "no_clan": "クランなし",
+    "alignment_label": "属性:",
     "deck": "デッキ",
     "mana_curve_tooltip": "{label} マナ：{count, plural, one {# 枚} other {# 枚}}",
     "click_cards_to_add": "カードをクリックして追加",
@@ -1997,8 +2002,7 @@
     "show_locked": "ロック中のカードを表示",
     "locked_badge": "ロック中",
     "locked_summary": "{count, plural, other {ロック中のカード #枚}}",
-    "locked_hint": "他の勢力のコモンカードは、フル解放パッケージにより入手可能になります。",
-    "alignment_label": "属性:"
+    "locked_hint": "他の勢力のコモンカードは、フル解放パッケージにより入手可能になります。"
   },
   "cardBacks": {
     "eyebrow": "スタイルを見せよう",

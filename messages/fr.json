@@ -411,6 +411,10 @@
       }
     },
     "spell_keywords": {
+      "precision": {
+        "label": "Précision",
+        "desc": "L'unité ciblée gagne Précision."
+      },
       "poison": {
         "label": "Poison",
         "desc": "Les unités blessées perdent 1 PV par tour."

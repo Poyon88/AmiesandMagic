@@ -9,7 +9,7 @@ id_registre,id_creature,label,symbole,hotes,description_creature,description_sor
 "gloire","gloire","Gloire +X/+Y","🏅","creature","Chaque fois que cette unité survit à des dégâts de combat, elle gagne +X/+Y de façon permanente.",""
 "divine_shield","divine_shield","Bouclier","🔰","creature","Absorbe une première attaque sans dégâts.",""
 "vol","vol","Vol","🦅","creature","Ignore les provocations adverses.",""
-"precision","precision","Précision","🏹","creature","Ignore la Résistance, l'Armure et le Bouclier.",""
+"precision","precision","Précision","🏹","creature+spell","Ignore la Résistance, l'Armure et le Bouclier.","L'unité ciblée gagne Précision."
 "drain_de_vie","drain_de_vie","Drain de vie","🩸","creature","Soigne votre héros des dégâts infligés.",""
 "esquive","esquive","Esquive","💨","creature","Évite automatiquement la première attaque reçue chaque tour.",""
 "poison","poison","Poison","☠️","creature+spell","Les unités blessées perdent 1 PV par tour.","Les unités blessées perdent 1 PV par tour."

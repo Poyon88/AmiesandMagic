@@ -143,6 +143,7 @@ export type SpellKeywordId =
   | "concentration"
   | "selection_magique"
   | "poison"
+  | "precision"
   | "remontee"
   | "renforcement_multiple"
   | "pillage"

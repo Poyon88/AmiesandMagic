@@ -538,6 +538,10 @@
       "afflux": {
         "label": "Afluxo X",
         "desc": "Ganhe X de mana neste turno"
+      },
+      "precision": {
+        "label": "Precisão",
+        "desc": "A unidade alvo ganha Precisão."
       }
     },
     "composed": {
@@ -1944,6 +1948,7 @@
     "mono_clan": "Mono-clã",
     "clan_label": "Clã:",
     "no_clan": "Sem clã",
+    "alignment_label": "Alinhamento:",
     "deck": "Deck",
     "mana_curve_tooltip": "{label} mana : {count, plural, one {# carta} other {# cartas}}",
     "click_cards_to_add": "Clique nas cartas para adicioná-las",
@@ -1997,8 +2002,7 @@
     "show_locked": "Mostrar bloqueadas",
     "locked_badge": "Bloqueada",
     "locked_summary": "{count, plural, one {# carta bloqueada} other {# cartas bloqueadas}}",
-    "locked_hint": "As cartas comuns das outras facções ficarão acessíveis através da oferta de desbloqueio completo.",
-    "alignment_label": "Alinhamento:"
+    "locked_hint": "As cartas comuns das outras facções ficarão acessíveis através da oferta de desbloqueio completo."
   },
   "cardBacks": {
     "eyebrow": "Mostre seu estilo",

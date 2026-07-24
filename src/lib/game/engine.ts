@@ -2990,6 +2990,19 @@ function resolveSpellKeywords(
         }
         break;
       }
+      case "precision": {
+        // Spell-side Précision : confère le mot-clé de façon permanente à
+        // l'unité ciblée, des deux côtés du plateau (le picker autorise une
+        // cible alliée comme adverse). Passe par applyGrantedKeyword, le
+        // canal commun aux trois chemins de don — sans lui, le mot-clé
+        // n'atterrirait pas dans `card.keywords` et `hasKw` ne le verrait
+        // jamais au moment du calcul de dégâts.
+        if (targetId) {
+          const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
+          if (target) applyGrantedKeyword(target, "precision");
+        }
+        break;
+      }
       case "execution": {
         if (targetId) {
           const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
