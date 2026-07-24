@@ -94,4 +94,10 @@ describe("refonte factions & clans", () => {
     expect(validateRace("Gnomes", "Nains")).toEqual({ ok: true, race: "Gnomes" });
     expect(validateRace("Guerriers du Chaos", "Elfes Noirs")).toEqual({ ok: true, race: "Guerriers du Chaos" });
   });
+
+  it("rattache les races ailées Griffons et Faucons aux Royaumes Libres", () => {
+    expect(validateRace("Griffons", "Humains")).toEqual({ ok: true, race: "Griffons" });
+    expect(validateRace("Faucons", "Humains")).toEqual({ ok: true, race: "Faucons" });
+    expect(validateRace("Griffons", "Elfes")).toEqual({ ok: false, error: "Race invalide pour cette faction" });
+  });
 });

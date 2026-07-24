@@ -133,3 +133,22 @@ describe("clan des Mimis + race libre", () => {
     expect(getClanNamesForRace("Elfes", "Fées")).toEqual(["La Forêt d'Émeraude"]);
   });
 });
+
+describe("races ailées des Royaumes Libres (Griffons / Faucons)", () => {
+  it("appartiennent à la faction Humains et accèdent à ses quatre clans (transversaux)", () => {
+    expect(getFactionForRace("Griffons")).toBe("Humains");
+    expect(getFactionForRace("Faucons")).toBe("Humains");
+    const all = getAllClanNames("Humains");
+    expect(getClanNamesForRace("Humains", "Griffons").sort()).toEqual(all.sort());
+    expect(getClanNamesForRace("Humains", "Faucons").sort()).toEqual(all.sort());
+  });
+
+  it("le générateur leur garantit Vol, comme aux Dragons et Aigles Géants", () => {
+    const griffon = generateCardStats("Humains", "Unité", "Commune", 4, "Griffons");
+    expect(griffon.race).toBe("Griffons");
+    expect(griffon.keywords).toContain("Vol");
+    const faucon = generateCardStats("Humains", "Unité", "Commune", 2, "Faucons");
+    expect(faucon.race).toBe("Faucons");
+    expect(faucon.keywords).toContain("Vol");
+  });
+});

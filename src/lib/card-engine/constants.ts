@@ -268,13 +268,20 @@ export const FACTIONS: Record<string, {
   Humains: {
     displayName: "Les Royaumes Libres",
     color: "#2c5f8a", accent: "#74b9ff", emoji: "⚔️", bg: "#0a0f2a", alignment: "neutre",
-    races: ["Humains"],
+    races: ["Humains", "Griffons", "Faucons"],
     clans: [{ names: ["Le Royaume du Nord", "L'Ordre de l'Aube", "Les Guerrières du Vent", "La Sublime Porte"], appliesTo: "all" }],
     statWeights: { atk: 1.00, def: 1.00 },
     guaranteedKeywords: [],
     likelyKeywords: { "Loyauté": 0.55, "Commandement": 0.55, "Bravoure": 0.50, "Bénédiction": 0.45, "Bouclier": 0.45, "Première Frappe": 0.45, "Tactique X": 0.35, "Héritage X": 0.30, "Provocation": 0.30, "Convocation X": 0.30 },
     forbiddenKeywords: ["Poison", "Corruption", "Maléfice", "Pacte de sang", "Nécrophagie"],
-    description: "Le vieux continent : honneur, acier et champions héroïques.",
+    description: "Le vieux continent : honneur, acier, champions héroïques et leurs fiers alliés ailés, griffons et faucons.",
+    // Bestiaire ailé des Royaumes Libres : le griffon, monture noble et
+    // frappeur loyal ; le faucon, éclaireur véloce mais fragile. Vol garanti
+    // côté générateur (cf. generator.ts, même règle que les Aigles Géants).
+    raceProfiles: {
+      "Griffons": { statWeights: { atk: 1.25, def: 1.00 }, likelyKeywords: { "Vol": 0.90, "Première Frappe": 0.50, "Bravoure": 0.45, "Loyauté": 0.40, "Célérité": 0.35 } },
+      "Faucons": { statWeights: { atk: 1.15, def: 0.65 }, likelyKeywords: { "Vol": 0.90, "Célérité": 0.60, "Traque": 0.55, "Esquive": 0.50, "Précision": 0.45, "Augure": 0.35 } },
+    },
     clanProfiles: {
       "Le Royaume du Nord": { statWeights: { atk: 1.15, def: 0.90 }, likelyKeywords: { "Gloire +X/+Y": 0.55, "Bravoure": 0.50, "Raid": 0.50, "Première Frappe": 0.45, "Célérité": 0.40, "Pillage X": 0.35, "Combustion": 0.30, "Commandement": 0.30 } },
       "L'Ordre de l'Aube": { statWeights: { atk: 0.90, def: 1.20 }, likelyKeywords: { "Bouclier": 0.60, "Bénédiction": 0.55, "Provocation": 0.50, "Résistance X": 0.50, "Première Frappe": 0.40, "Commandement": 0.40, "Bravoure": 0.35 } },

@@ -87,9 +87,9 @@ Chaque faction a un **nom de code interne** (utilisé en base et dans le moteur,
 - **Pouvoirs interdits** : Vol, Invisible, Esquive, Ombre, Traque, Pillage X.
 
 ### 3.3 ⚔️ Royaumes Libres — code interne `Humains` — *Neutre*
-- **Races** : Humains
-- **Clans** : **Le Royaume du Nord** (ex-Nordiques), **L'Ordre de l'Aube** (ex-Templiers), **Les Guerrières du Vent** (ex-Amazones), **La Sublime Porte** (Empire ottoman — élite à poudre) — profils distincts en §5.2
-- **Philosophie** : Le vieux continent. Honneur, acier et champions héroïques. Équilibrés et polyvalents, synergies de groupe. Poids stats faction (ombrelle) : équilibré (1.00 / 1.00).
+- **Races** : Humains · **Griffons** · **Faucons** *(nouvelles races ailées — profils en §4)*
+- **Clans** : **Le Royaume du Nord** (ex-Nordiques), **L'Ordre de l'Aube** (ex-Templiers), **Les Guerrières du Vent** (ex-Amazones), **La Sublime Porte** (Empire ottoman — élite à poudre) — profils distincts en §5.2. Les clans étant transversaux (`appliesTo: "all"`), Griffons et Faucons sont jouables dans les quatre.
+- **Philosophie** : Le vieux continent. Honneur, acier et champions héroïques, épaulés par leurs alliés ailés : le griffon héraldique, monture noble des chevaliers, et le faucon de chasse, éclaireur des armées libres. Équilibrés et polyvalents, synergies de groupe. Poids stats faction (ombrelle) : équilibré (1.00 / 1.00).
 - **Pouvoirs privilégiés (ombrelle)** : Loyauté (0.55), Commandement (0.55), Bravoure (0.50), Bénédiction (0.45), Bouclier (0.45), Première Frappe (0.45), Tactique X (0.35), Héritage X (0.30), Provocation (0.30), Convocation X (0.30).
 - **Pouvoirs interdits** : Poison, Corruption, Maléfice, Pacte de sang, Nécrophagie.
 
@@ -156,6 +156,8 @@ Certaines factions différencient leurs races par un profil de pouvoirs propre (
 | Elfes | **Fées** | 0.75 / 0.65 | Vol (0.85), Invisible (0.70), Esquive (0.65), Canalisation (0.60), Augure (0.55), Divination (0.50), Drain de vie (0.45), Contresort (0.40), Héritage X (0.35) |
 | Elfes | **Hommes-Arbres** | 0.90 / 1.50 | Provocation (0.60), Ancré (0.55), Régénération (0.40), Riposte X (0.35) |
 | Nains | **Golems** | 0.90 / 1.60 | Ancré (0.80), Armure (0.75), Provocation (0.60), Riposte X (0.45), Indestructible (0.30) |
+| Royaumes Libres | **Griffons** | 1.25 / 1.00 | Vol (0.90 — garanti par le générateur), Première Frappe (0.50), Bravoure (0.45), Loyauté (0.40), Célérité (0.35) |
+| Royaumes Libres | **Faucons** | 1.15 / 0.65 | Vol (0.90 — garanti par le générateur), Célérité (0.60), Traque (0.55), Esquive (0.50), Précision (0.45), Augure (0.35) |
 | Mercenaires | **Géants** | 1.15 / 1.30 | Provocation (0.65), Résistance X (0.60), Armure (0.55), Indestructible (0.45), Terreur (0.40), Carnage X (0.30) |
 | Mercenaires | **Ogres** | 1.25 / 1.10 | Gloire +X/+Y (0.55), Fureur (0.50), Provocation (0.40), Résistance X (0.35), Pillage X (0.30) |
 | Mercenaires | **Dragons** | 1.40 / 0.90 | Vol (0.90), Souffle de feu X (0.70), Terreur (0.60), Fureur (0.50), Indestructible (0.40), Transcendance (0.35), Vampirisme X (0.25) |
