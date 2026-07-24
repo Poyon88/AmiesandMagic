@@ -94,4 +94,13 @@ describe("refonte factions & clans", () => {
     expect(validateRace("Gnomes", "Nains")).toEqual({ ok: true, race: "Gnomes" });
     expect(validateRace("Guerriers du Chaos", "Elfes Noirs")).toEqual({ ok: true, race: "Guerriers du Chaos" });
   });
+
+  it("accepte les Griffons et Faucons dans les Royaumes Libres uniquement", () => {
+    expect(validateRace("Griffons", "Humains")).toEqual({ ok: true, race: "Griffons" });
+    expect(validateRace("Faucons", "Humains")).toEqual({ ok: true, race: "Faucons" });
+    expect(validateRace("Griffons", "EmpireDuMilieu")).toEqual({ ok: false, error: "Race invalide pour cette faction" });
+    // Le groupe de clans des Royaumes Libres est `appliesTo: "all"` → les
+    // nouvelles races accèdent aux quatre clans.
+    expect(validateFactionClan("Humains", "L'Ordre de l'Aube")).toEqual({ ok: true, faction: "Humains", clan: "L'Ordre de l'Aube" });
+  });
 });

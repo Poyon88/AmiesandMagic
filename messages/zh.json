@@ -740,6 +740,8 @@
       "Golems": "魔像",
       "Gnomes": "侏儒",
       "Humains": "人类",
+      "Griffons": "狮鹫",
+      "Faucons": "猎鹰",
       "Hommes-Loups": "狼人",
       "Hommes-Ours": "熊人",
       "Hommes-Félins": "猫人",
@@ -824,6 +826,16 @@
         "def": "人类",
         "bare": "人类",
         "de": "人类的"
+      },
+      "Griffons": {
+        "def": "狮鹫",
+        "bare": "狮鹫",
+        "de": "狮鹫的"
+      },
+      "Faucons": {
+        "def": "猎鹰",
+        "bare": "猎鹰",
+        "de": "猎鹰的"
       },
       "Hommes-Loups": {
         "def": "狼人",

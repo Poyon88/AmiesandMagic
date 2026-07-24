@@ -740,6 +740,8 @@
       "Golems": "Golems",
       "Gnomes": "Gnome",
       "Humains": "Menschen",
+      "Griffons": "Greifen",
+      "Faucons": "Falken",
       "Hommes-Loups": "Wolfsmenschen",
       "Hommes-Ours": "Bärenmenschen",
       "Hommes-Félins": "Katzenmenschen",
@@ -824,6 +826,16 @@
         "def": "der Mensch",
         "bare": "Mensch",
         "de": "des Menschen"
+      },
+      "Griffons": {
+        "def": "der Greif",
+        "bare": "Greif",
+        "de": "des Greifen"
+      },
+      "Faucons": {
+        "def": "der Falke",
+        "bare": "Falke",
+        "de": "des Falken"
       },
       "Hommes-Loups": {
         "def": "der Werwolf",

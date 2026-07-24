@@ -74,6 +74,10 @@ export const GRANULAR_RACE_DESCRIPTORS: Record<string, string> = {
   // Humains faction
   'Humains':
     'A human warrior, expressive eyes, defined cheekbones, short trimmed beard, scar or mark of experience.',
+  'Griffons':
+    'A humanoid anthropomorphic griffin warrior — clearly bipedal humanoid silhouette, eagle-shaped feathered head with fierce golden eyes and sharp beak, tawny leonine fur over broad feathered shoulders, folded wings visible behind, talon-tipped hands.',
+  'Faucons':
+    'A humanoid anthropomorphic falcon warrior — clearly bipedal humanoid silhouette, falcon-shaped feathered head with keen dark eyes and hooked beak, sleek grey-and-cream barred plumage over agile shoulders, folded pointed wings visible behind, talon-tipped hands.',
   // Hommes-Bêtes faction
   'Hommes-Loups':
     'A humanoid werewolf warrior — bipedal humanoid silhouette, lupine head with snout, fangs, pointed ears, thick fur over the shoulders, intelligent amber eyes.',

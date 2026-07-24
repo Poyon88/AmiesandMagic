@@ -740,6 +740,8 @@
       "Golems": "Golems",
       "Gnomes": "Gnomes",
       "Humains": "Humans",
+      "Griffons": "Griffins",
+      "Faucons": "Falcons",
       "Hommes-Loups": "Werewolves",
       "Hommes-Ours": "Werebears",
       "Hommes-Félins": "Werecats",
@@ -824,6 +826,16 @@
         "def": "the Human",
         "bare": "Human",
         "de": "of the Human"
+      },
+      "Griffons": {
+        "def": "the Griffin",
+        "bare": "Griffin",
+        "de": "of the Griffin"
+      },
+      "Faucons": {
+        "def": "the Falcon",
+        "bare": "Falcon",
+        "de": "of the Falcon"
       },
       "Hommes-Loups": {
         "def": "the Werewolf",
