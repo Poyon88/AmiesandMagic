@@ -712,6 +712,7 @@
       "Les Enfants de la Lune": "月の子ら",
       "Le Pacte des Griffes": "鉤爪の盟約",
       "La Harde Sauvage": "野生の群れ",
+      "La Forêt Enchantée": "魅惑の森",
       "La Colère des Flammes": "炎の怒り",
       "Le Socle du Monde": "世界の礎",
       "La Vague Sans Fin": "終わりなき波",
@@ -1007,6 +1008,7 @@
       "Les Enfants de la Lune": "月の子ら",
       "Le Pacte des Griffes": "鉤爪の盟約",
       "La Harde Sauvage": "野生の群れ",
+      "La Forêt Enchantée": "魅惑の森の",
       "La Colère des Flammes": "炎の怒り",
       "Le Socle du Monde": "世界の礎",
       "La Vague Sans Fin": "果てなき波",
@@ -1941,6 +1943,7 @@
     "mono_faction": "単一陣営",
     "mono_clan": "単一クラン",
     "clan_label": "クラン：",
+    "no_clan": "クランなし",
     "deck": "デッキ",
     "mana_curve_tooltip": "{label} マナ：{count, plural, one {# 枚} other {# 枚}}",
     "click_cards_to_add": "カードをクリックして追加",
@@ -1994,7 +1997,8 @@
     "show_locked": "ロック中のカードを表示",
     "locked_badge": "ロック中",
     "locked_summary": "{count, plural, other {ロック中のカード #枚}}",
-    "locked_hint": "他の勢力のコモンカードは、フル解放パッケージにより入手可能になります。"
+    "locked_hint": "他の勢力のコモンカードは、フル解放パッケージにより入手可能になります。",
+    "alignment_label": "属性:"
   },
   "cardBacks": {
     "eyebrow": "スタイルを見せよう",

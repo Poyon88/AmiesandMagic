@@ -14,7 +14,7 @@
 > - **Royaumes du Soleil** (code `RoyaumesDuSoleil`) → Les Enfants du Soleil, Les Seigneurs des Dunes, Le Royaume des Masques, Les Fils du Volcan
 > - **Elfes / L'Alliance Céleste** → Les Sylvains, Les Hauts-Elfes, La Forêt d'Émeraude, **La Combe Verte** (la faction Hobbits est absorbée ici) ; Aigles Géants = race libre
 > - **Nains / La Confrérie de la Forge** → Les Gardiens de la Montagne, La Forge Ardente, Les Sentinelles d'Airain (Golems), **La Guilde des Ingénieurs** (Gnomes — nouvelle race). *Les Marteaux des Collines sont dissous (2 clans nains max).*
-> - **Hommes-Bêtes / La Meute** → Les Seigneurs Fauves, Les Enfants de la Lune, Le Pacte des Griffes, La Harde Sauvage + **Les Mignons** (clan bonus caché)
+> - **Hommes-Bêtes / La Meute** → Les Seigneurs Fauves, Les Enfants de la Lune, Le Pacte des Griffes, La Harde Sauvage, **La Forêt Enchantée** (Mimis)
 > - **Les Légions du Chaos** (ex-Elfes Noirs, **absorbe la faction Orcs**) → Les Cohortes Sanglantes (Orcs/Gobelins/Trolls/Wargs), Les Princes des Abîmes (Démons), La Forêt Maudite (Elfes Corrompus + Araignées), La Garde Noire (Guerriers du Chaos — nouvelle race)
 > - **Morts-Vivants / La Nécropole** → Les Rangs Silencieux, Le Voile Hurlant, La Cour Écarlate, Le Cénacle Nécromant
 > - **Élémentaires** → La Colère des Flammes (Feu), Le Socle du Monde (Terre), La Vague Sans Fin (Eau), Le Souffle des Cimes (Air)
@@ -110,7 +110,7 @@ Chaque faction a un **nom de code interne** (utilisé en base et dans le moteur,
 
 ### 3.6 🐺 Hommes-Bêtes — « La Meute » — *Neutre*
 - **Races** : Hommes-Loups · Hommes-Ours · Hommes-Félins · Centaures · Mimis · Hommes-Chiens · Hommes-Renards · Hommes-Cerfs
-- **Clans** : Les Seigneurs Fauves (Félins), Les Enfants de la Lune (Ours + Loups), Le Pacte des Griffes (Chiens + Renards, ouvert à toutes races), La Harde Sauvage (Centaures + Cerfs) · **Les Mignons** (Mimis — clan bonus caché) — profils distincts en §5.5
+- **Clans** : Les Seigneurs Fauves (Félins), Les Enfants de la Lune (Ours + Loups), Le Pacte des Griffes (Chiens + Renards, ouvert à toutes races), La Harde Sauvage (Centaures + Cerfs), **La Forêt Enchantée** (Mimis) — profils distincts en §5.5
 - **Philosophie** : Sauvages et féroces. Attaquent vite, régénèrent, entrent en rage. Poids stats faction (ombrelle) : ATK élevée (1.20 / 1.00).
 - **Pouvoirs privilégiés (ombrelle)** : Traque (0.65), Gloire +X/+Y (0.55), Fureur (0.55), Première Frappe (0.45), Régénération (0.40), Bravoure (0.40), Combustion (0.35), Esquive (0.35), Persécution X (0.30), Augure (0.30), Vol (0.20).
 - **Pouvoirs interdits** : Armure, Commandement, Invisible, Ancré, Canalisation, Contresort.
@@ -244,9 +244,9 @@ Certaines factions différencient leurs races par un profil de pouvoirs propre (
 | 🌙 **Les Enfants de la Lune** | Hommes-Ours + Hommes-Loups | 1.25/1.00 | Lycanthropes — *transformation* | Lycanthropie X (0.55), Gloire +X/+Y (0.50), Fureur (0.50), Traque (0.45), Régénération (0.40), Résistance X (0.40) |
 | 🐾 **Le Pacte des Griffes** | Hommes-Chiens + Hommes-Renards (ouvert à toutes races) | 1.15/0.95 | Alliance — *bonus si plusieurs races sur le board* | Sang mêlé (0.60), Solidarité X (0.50), Loyauté (0.45), Instinct de meute X (0.45), Bravoure (0.40), Traque (0.40) |
 | 🐴 **La Harde Sauvage** | Centaures + Hommes-Cerfs | 1.20/0.95 | Charge & tir des plaines | Célérité (0.50), Raid (0.50), Piétinement (0.45), Précision (0.45), Traque (0.45), Bravoure (0.40) |
-| 🧸 **Les Mignons** *(bonus)* | Mimis | 0.85/0.90 | Nuée fidèle et increvable | Loyauté (0.55), Combustion (0.40), Régénération (0.40), Solidarité X (0.40), Bénédiction (0.35) |
+| 🧸 **La Forêt Enchantée** | Mimis | 0.85/0.90 | Nuée fidèle et increvable | Loyauté (0.55), Combustion (0.40), Régénération (0.40), Solidarité X (0.40), Bénédiction (0.35) |
 
-> **Les Mignons** : clan **bonus caché**, débloquable en gagnant des tournois ou en réalisant des défis. Jouable **en mode amical uniquement** (interdit en tournoi).
+> **La Forêt Enchantée** : ex-« Les Mignons ». Traité comme clan bonus caché lors de la refonte (donc inerte : non listé, non assignable, clan vidé en base), il est depuis le 2026-07-24 un **clan normal** réservé aux Mimis, jouable dans tous les formats.
 
 ### 5.6 Morts-Vivants — La Nécropole (profils distincts)
 
@@ -284,7 +284,7 @@ Certaines factions différencient leurs races par un profil de pouvoirs propre (
 **Modes de jeu** :
 - **Classique** : uniquement des cartes **Communes** (50 slots Commune).
 - **Expert** : système de *slots par rareté* (2 / 4 / 6 / 8 → 20 cartes non-communes maximum), le reste en Communes.
-- **Amical** : autorise les clans bonus débloquables (ex. Les Mignons), interdits en tournoi.
+- **Amical** : autorise les clans bonus débloquables, interdits en tournoi. *(Aucun clan bonus n'existe actuellement — La Forêt Enchantée, le seul candidat, est devenue un clan normal le 2026-07-24.)*
 
 **Étendue (rotation)** :
 - **Standard** : rotation ~2 ans (cartes datées récentes ; les cartes non datées restent selon la règle du filtre).
@@ -473,7 +473,7 @@ Les pouvoirs héroïques réutilisent le registre de capacités unifié (`abilit
 | ⚔️ Royaumes Libres | Neutre | Le vieux continent, honneur et champions | Royaume du Nord, Ordre de l'Aube, Guerrières du Vent, Sublime Porte |
 | 🏯 Empire du Milieu | Neutre | Stratégie, contrôle et furtivité | Hordes des Steppes, Empire de Jade, Lames de l'Ombre, Défenseurs d'Ivoire |
 | ☀️ Royaumes du Soleil | Neutre | Soleil, désert et esprits | Enfants du Soleil, Seigneurs des Dunes, Royaume des Masques, Fils du Volcan |
-| 🐺 Hommes-Bêtes | Neutre | Agression sauvage et bestiaire | Seigneurs Fauves, Enfants de la Lune, Pacte des Griffes, Harde Sauvage (+ Mignons bonus) |
+| 🐺 Hommes-Bêtes | Neutre | Agression sauvage et bestiaire | Seigneurs Fauves, Enfants de la Lune, Pacte des Griffes, Harde Sauvage, La Forêt Enchantée |
 | 🌀 Élémentaires | Neutre | 4 styles selon l'élément | La Colère des Flammes, Le Socle du Monde, La Vague Sans Fin, Le Souffle des Cimes |
 | 💰 Mercenaires | Spéciale | Polyvalents, jouables partout | — |
 | 💀 Morts-Vivants | Maléfique | Recyclage du cimetière, drain, terreur | Rangs Silencieux, Voile Hurlant, Cour Écarlate, Cénacle Nécromant |
@@ -489,7 +489,7 @@ Les pouvoirs héroïques réutilisent le registre de capacités unifié (`abilit
 4. **Races** : intégrer Hobbits + Hommes-Arbres à `Elfes` ; faire des **Aigles Géants** une race libre de tous les clans elfes. Créer les nouvelles races **Gnomes** (`Nains`) et **Guerriers du Chaos** (Légions du Chaos). Rattacher Orcs/Gobelins/Trolls/Wargs aux Légions du Chaos avec répartition par mana dans les Cohortes Sanglantes (<3 → Gobelins, 3–5 → Orcs/Wargs, ≥6 → Trolls).
 5. **Pouvoirs interdits** : assouplir `Elfes` (autoriser Ancré/Provocation) et **Légions du Chaos** (autoriser Provocation et Régénération ; liste finale des interdits : Loyauté, Commandement, Bouclier, Bénédiction, Bravoure).
 6. **Alignements** : Elfes/Nains = Bon ; 3 factions humaines + Hommes-Bêtes + Élémentaires = Neutre ; Morts-Vivants + Légions du Chaos = Maléfique.
-7. **Mode Amical & déblocage** : gérer les **clans bonus cachés** (ex. Les Mignons) — déblocables par tournois/défis, autorisés en amical, interdits en tournoi.
+7. **Mode Amical & déblocage** : gérer les **clans bonus cachés** — déblocables par tournois/défis, autorisés en amical, interdits en tournoi. *(Chantier jamais entamé ; son unique candidat, ex-« Les Mignons », est devenu le clan normal La Forêt Enchantée le 2026-07-24.)*
 8. **Migration de données** : réattribuer les cartes des ex-clans (Nordiques→Le Royaume du Nord, Templiers→L'Ordre de l'Aube, Amazones→Les Guerrières du Vent, **Orientaux→Les Lames de l'Ombre**, Incas→Les Enfants du Soleil, Touaregs→Les Seigneurs des Dunes ; Elfes des Mers→Les Sylvains ; **Marteaux des Collines→Gardiens de la Montagne ou Forge Ardente selon profil** ; **toutes les cartes de l'ex-faction Orcs→Les Cohortes Sanglantes** ; anciennes cartes Elfes Noirs→La Forêt Maudite ou nouveau clan selon race ; anciens clans hommes-bêtes vers leurs nouveaux clans) et créer les cartes des nouveaux clans (Guilde des Ingénieurs, Garde Noire, les 4 clans de la Nécropole).
 
 ---

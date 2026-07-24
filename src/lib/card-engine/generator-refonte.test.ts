@@ -113,11 +113,17 @@ describe("interdits assouplis", () => {
   });
 });
 
-describe("clan bonus inerte + race libre", () => {
-  it("Les Mignons a un profil mais n'est pas un clan jouable", () => {
-    expect(FACTIONS["Hommes-Bêtes"].clanProfiles?.["Les Mignons"]).toBeDefined();
+describe("clan des Mimis + race libre", () => {
+  // Ex-« Les Mignons », clan bonus inerte depuis la refonte : réactivé comme
+  // clan normal et renommé « La Forêt Enchantée ».
+  it("La Forêt Enchantée est un clan jouable, réservé aux Mimis", () => {
+    expect(FACTIONS["Hommes-Bêtes"].clanProfiles?.["La Forêt Enchantée"]).toBeDefined();
+    expect(getAllClanNames("Hommes-Bêtes")).toContain("La Forêt Enchantée");
+    expect(getClanNamesForRace("Hommes-Bêtes", "Mimis")).toContain("La Forêt Enchantée");
+    // Réservé aux Mimis : une autre race de la faction n'y a pas accès.
+    expect(getClanNamesForRace("Hommes-Bêtes", "Hommes-Ours")).not.toContain("La Forêt Enchantée");
+    // L'ancien nom ne subsiste nulle part.
     expect(getAllClanNames("Hommes-Bêtes")).not.toContain("Les Mignons");
-    expect(getClanNamesForRace("Hommes-Bêtes", "Mimis")).not.toContain("Les Mignons");
   });
 
   it("Aigles Géants (race libre) accède à tous les clans elfes", () => {

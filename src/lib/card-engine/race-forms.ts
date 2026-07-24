@@ -104,6 +104,7 @@ export const CLAN_FORMS_FR: Record<string, string> = {
   "Les Enfants de la Lune": "des Enfants de la Lune",
   "Le Pacte des Griffes": "du Pacte des Griffes",
   "La Harde Sauvage": "de la Harde Sauvage",
+  "La Forêt Enchantée": "de la Forêt Enchantée",
   "La Colère des Flammes": "de la Colère des Flammes",
   "Le Socle du Monde": "du Socle du Monde",
   "La Vague Sans Fin": "de la Vague Sans Fin",

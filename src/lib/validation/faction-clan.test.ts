@@ -7,7 +7,8 @@ import { validateFactionClan, validateRace } from "./faction-clan";
 //   Hommes-Bêtes — races: Hommes-Loups, Hommes-Ours, Hommes-Félins, Centaures,
 //                         Mimis, Hommes-Chiens, Hommes-Renards, Hommes-Cerfs
 //                  clans: Cour Pourpre, Enfants de la Lune, Pacte des Griffes,
-//                         Harde Sauvage (Les Mignons = clan bonus inerte, non listé)
+//                         Harde Sauvage, La Forêt Enchantée (Mimis — ex-« Les
+//                         Mignons », clan bonus inerte réactivé et renommé)
 describe("validateFactionClan", () => {
   it("accepte faction + clan valides", () => {
     expect(validateFactionClan("Hommes-Bêtes", "Le Pacte des Griffes")).toEqual({ ok: true, faction: "Hommes-Bêtes", clan: "Le Pacte des Griffes" });
@@ -82,7 +83,8 @@ describe("refonte factions & clans", () => {
     expect(validateFactionClan("Nains", "La Guilde des Ingénieurs").ok).toBe(true);
   });
 
-  it("Les Mignons (clan bonus inerte) n'est pas un clan valide", () => {
+  it("La Forêt Enchantée (clan des Mimis) est valide, son ancien nom ne l'est plus", () => {
+    expect(validateFactionClan("Hommes-Bêtes", "La Forêt Enchantée")).toEqual({ ok: true, faction: "Hommes-Bêtes", clan: "La Forêt Enchantée" });
     expect(validateFactionClan("Hommes-Bêtes", "Les Mignons")).toEqual({ ok: false, error: "Clan invalide pour cette faction" });
   });
 
