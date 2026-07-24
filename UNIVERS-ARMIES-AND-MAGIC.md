@@ -87,8 +87,10 @@ Chaque faction a un **nom de code interne** (utilisé en base et dans le moteur,
 - **Pouvoirs interdits** : Vol, Invisible, Esquive, Ombre, Traque, Pillage X.
 
 ### 3.3 ⚔️ Royaumes Libres — code interne `Humains` — *Neutre*
-- **Races** : Humains
-- **Clans** : **Le Royaume du Nord** (ex-Nordiques), **L'Ordre de l'Aube** (ex-Templiers), **Les Guerrières du Vent** (ex-Amazones), **La Sublime Porte** (Empire ottoman — élite à poudre) — profils distincts en §5.2
+- **Races** : Humains · **Griffons** · **Faucons**
+- **Clans** : **Le Royaume du Nord** (ex-Nordiques), **L'Ordre de l'Aube** (ex-Templiers), **Les Guerrières du Vent** (ex-Amazones), **La Sublime Porte** (Empire ottoman — élite à poudre) — profils distincts en §5.2. Les clans étant transversaux, Griffons et Faucons y accèdent tous comme les Humains.
+- **Griffons** : montures royales et gardiens ailés des Royaumes Libres — Vol garanti, profil de frappeur loyal (ATK 1.25 / DEF 1.00 ; Bravoure, Première Frappe, Loyauté).
+- **Faucons** : oiseaux de chasse et éclaireurs des cours humaines — Vol garanti, profil rapide et fragile (ATK 1.15 / DEF 0.70 ; Célérité, Traque, Précision, Esquive).
 - **Philosophie** : Le vieux continent. Honneur, acier et champions héroïques. Équilibrés et polyvalents, synergies de groupe. Poids stats faction (ombrelle) : équilibré (1.00 / 1.00).
 - **Pouvoirs privilégiés (ombrelle)** : Loyauté (0.55), Commandement (0.55), Bravoure (0.50), Bénédiction (0.45), Bouclier (0.45), Première Frappe (0.45), Tactique X (0.35), Héritage X (0.30), Provocation (0.30), Convocation X (0.30).
 - **Pouvoirs interdits** : Poison, Corruption, Maléfice, Pacte de sang, Nécrophagie.

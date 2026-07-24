@@ -411,6 +411,10 @@
       }
     },
     "spell_keywords": {
+      "precision": {
+        "label": "Präzision",
+        "desc": "Die anvisierte Einheit erhält Präzision."
+      },
       "poison": {
         "label": "Gift",
         "desc": "Verwundete Einheiten verlieren 1 LP pro Runde."
@@ -538,10 +542,6 @@
       "afflux": {
         "label": "Zufluss X",
         "desc": "Erhalte X Mana in diesem Zug."
-      },
-      "precision": {
-        "label": "Präzision",
-        "desc": "Die anvisierte Einheit erhält Präzision."
       }
     },
     "composed": {
@@ -771,7 +771,9 @@
       "Gobelins": "Goblins",
       "Trolls": "Trolle",
       "Wargs": "Wargs",
-      "Guerriers du Chaos": "Chaoskämpfer"
+      "Guerriers du Chaos": "Chaoskämpfer",
+      "Griffons": "Greifen",
+      "Faucons": "Falken"
     },
     "alignments": {
       "bon": "Gut",
@@ -985,6 +987,16 @@
         "def": "der Chaoskrieger",
         "bare": "Chaoskrieger",
         "de": "des Chaoskriegers"
+      },
+      "Griffons": {
+        "def": "der Greif",
+        "bare": "Greif",
+        "de": "des Greifen"
+      },
+      "Faucons": {
+        "def": "der Falke",
+        "bare": "Falke",
+        "de": "des Falken"
       }
     },
     "clans_forms": {

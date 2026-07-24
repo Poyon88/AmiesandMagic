@@ -411,6 +411,10 @@
       }
     },
     "spell_keywords": {
+      "precision": {
+        "label": "Precisión",
+        "desc": "La unidad objetivo gana Precisión."
+      },
       "poison": {
         "label": "Veneno",
         "desc": "Las unidades heridas pierden 1 PV por turno."
@@ -538,10 +542,6 @@
       "afflux": {
         "label": "Afluencia X",
         "desc": "Gana X de maná este turno"
-      },
-      "precision": {
-        "label": "Precisión",
-        "desc": "La unidad objetivo gana Precisión."
       }
     },
     "composed": {
@@ -771,7 +771,9 @@
       "Gobelins": "Goblins",
       "Trolls": "Trols",
       "Wargs": "Wargs",
-      "Guerriers du Chaos": "Guerreros del Caos"
+      "Guerriers du Chaos": "Guerreros del Caos",
+      "Griffons": "Grifos",
+      "Faucons": "Halcones"
     },
     "alignments": {
       "bon": "Bueno",
@@ -985,6 +987,16 @@
         "def": "el Guerrero del Caos",
         "bare": "Guerrero del Caos",
         "de": "del Guerrero del Caos"
+      },
+      "Griffons": {
+        "def": "el Grifo",
+        "bare": "Grifo",
+        "de": "del Grifo"
+      },
+      "Faucons": {
+        "def": "el Halcón",
+        "bare": "Halcón",
+        "de": "del Halcón"
       }
     },
     "clans_forms": {

@@ -411,6 +411,10 @@
       }
     },
     "spell_keywords": {
+      "precision": {
+        "label": "Precision",
+        "desc": "The targeted unit gains Precision."
+      },
       "poison": {
         "label": "Poison",
         "desc": "Wounded units lose 1 HP per turn."
@@ -538,10 +542,6 @@
       "afflux": {
         "label": "Surge X",
         "desc": "Gain X mana this turn."
-      },
-      "precision": {
-        "label": "Precision",
-        "desc": "The targeted unit gains Precision."
       }
     },
     "composed": {
@@ -771,7 +771,9 @@
       "Gobelins": "Goblins",
       "Trolls": "Trolls",
       "Wargs": "Wargs",
-      "Guerriers du Chaos": "Chaos Warriors"
+      "Guerriers du Chaos": "Chaos Warriors",
+      "Griffons": "Griffins",
+      "Faucons": "Falcons"
     },
     "alignments": {
       "bon": "Good",
@@ -985,6 +987,16 @@
         "def": "the Chaos Warrior",
         "bare": "Chaos Warrior",
         "de": "of the Chaos Warrior"
+      },
+      "Griffons": {
+        "def": "the Griffin",
+        "bare": "Griffin",
+        "de": "of the Griffin"
+      },
+      "Faucons": {
+        "def": "the Falcon",
+        "bare": "Falcon",
+        "de": "of the Falcon"
       }
     },
     "clans_forms": {

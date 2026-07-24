@@ -411,6 +411,10 @@
       }
     },
     "spell_keywords": {
+      "precision": {
+        "label": "Precisione",
+        "desc": "L'unità bersaglio ottiene Precisione."
+      },
       "poison": {
         "label": "Veleno",
         "desc": "Le unità ferite perdono 1 PV per turno."
@@ -538,10 +542,6 @@
       "afflux": {
         "label": "Afflusso X",
         "desc": "Guadagna X mana questo turno"
-      },
-      "precision": {
-        "label": "Precisione",
-        "desc": "L'unità bersaglio ottiene Precisione."
       }
     },
     "composed": {
@@ -771,7 +771,9 @@
       "Gobelins": "Goblin",
       "Trolls": "Troll",
       "Wargs": "Warg",
-      "Guerriers du Chaos": "Guerrieri del Caos"
+      "Guerriers du Chaos": "Guerrieri del Caos",
+      "Griffons": "Grifoni",
+      "Faucons": "Falchi"
     },
     "alignments": {
       "bon": "Buono",
@@ -985,6 +987,16 @@
         "def": "il Guerriero del Caos",
         "bare": "Guerriero del Caos",
         "de": "del Guerriero del Caos"
+      },
+      "Griffons": {
+        "def": "il Grifone",
+        "bare": "Grifone",
+        "de": "del Grifone"
+      },
+      "Faucons": {
+        "def": "il Falco",
+        "bare": "Falco",
+        "de": "del Falco"
       }
     },
     "clans_forms": {

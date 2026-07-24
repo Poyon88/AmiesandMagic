@@ -411,6 +411,10 @@
       }
     },
     "spell_keywords": {
+      "precision": {
+        "label": "精准",
+        "desc": "目标单位获得“精准”。"
+      },
       "poison": {
         "label": "中毒",
         "desc": "受伤单位每回合失去1点生命值。"
@@ -538,10 +542,6 @@
       "afflux": {
         "label": "涌流 X",
         "desc": "本回合获得 X 点法力"
-      },
-      "precision": {
-        "label": "精准",
-        "desc": "目标单位获得“精准”。"
       }
     },
     "composed": {
@@ -771,7 +771,9 @@
       "Gobelins": "哥布林",
       "Trolls": "巨魔",
       "Wargs": "座狼",
-      "Guerriers du Chaos": "混沌战士"
+      "Guerriers du Chaos": "混沌战士",
+      "Griffons": "狮鹫",
+      "Faucons": "猎鹰"
     },
     "alignments": {
       "bon": "善良",
@@ -985,6 +987,16 @@
         "def": "混沌战士",
         "bare": "混沌战士",
         "de": "混沌战士"
+      },
+      "Griffons": {
+        "def": "狮鹫",
+        "bare": "狮鹫",
+        "de": "狮鹫的"
+      },
+      "Faucons": {
+        "def": "猎鹰",
+        "bare": "猎鹰",
+        "de": "猎鹰的"
       }
     },
     "clans_forms": {

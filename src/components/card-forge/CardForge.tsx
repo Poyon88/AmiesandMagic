@@ -1764,6 +1764,8 @@ export default function CardForge() {
       "Hobbits": "a halfling with bare hairy feet, round cheerful face, simple rustic clothing",
       "Hommes-Arbres": "a towering treant made of living wood, bark skin, branch limbs, leaves as hair, mossy and ancient",
       "Humains": "a human warrior in medieval armor, realistic proportions, heraldic symbols on shield",
+      "Griffons": "a majestic griffin with eagle head and hooked beak, powerful feathered wings, muscular lion body, sharp talons",
+      "Faucons": "a swift falcon of prey with sleek banded plumage, pointed wings, piercing amber eyes, razor talons",
       "Hommes-Loups": "a werewolf humanoid with wolf head, fur-covered muscular body, feral eyes, claws and fangs",
       "Hommes-Ours": "a werebear humanoid, massive bear-headed figure, thick fur, enormous claws, towering",
       "Hommes-Félins": "a feline humanoid with panther features, lithe and agile body, slit pupils, sleek fur",

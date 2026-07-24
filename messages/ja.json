@@ -411,6 +411,10 @@
       }
     },
     "spell_keywords": {
+      "precision": {
+        "label": "精密",
+        "desc": "対象のユニットは【精密】を得る。"
+      },
       "poison": {
         "label": "毒",
         "desc": "傷ついたユニットはターンごとにHP-1。"
@@ -538,10 +542,6 @@
       "afflux": {
         "label": "魔力流入 X",
         "desc": "このターン、マナをX獲得する"
-      },
-      "precision": {
-        "label": "精密",
-        "desc": "対象のユニットは【精密】を得る。"
       }
     },
     "composed": {
@@ -771,7 +771,9 @@
       "Gobelins": "ゴブリン",
       "Trolls": "トロル",
       "Wargs": "ワーグ",
-      "Guerriers du Chaos": "カオスの戦士"
+      "Guerriers du Chaos": "カオスの戦士",
+      "Griffons": "グリフォン",
+      "Faucons": "隼"
     },
     "alignments": {
       "bon": "善",
@@ -985,6 +987,16 @@
         "def": "カオス戦士",
         "bare": "カオス戦士",
         "de": "カオス戦士の"
+      },
+      "Griffons": {
+        "def": "グリフォン",
+        "bare": "グリフォン",
+        "de": "グリフォン"
+      },
+      "Faucons": {
+        "def": "隼",
+        "bare": "隼",
+        "de": "隼"
       }
     },
     "clans_forms": {

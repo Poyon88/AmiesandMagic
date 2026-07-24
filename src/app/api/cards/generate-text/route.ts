@@ -48,6 +48,8 @@ export async function POST(request: Request) {
     "Hommes-Arbres": "towering treant/ent creature made of living wood, bark skin, branch limbs, leaves as hair, mossy and ancient",
     // Humains
     "Humains": "human warrior/mage in medieval armor or robes, realistic proportions, heraldic symbols",
+    "Griffons": "majestic griffin with eagle head and hooked beak, powerful feathered wings, muscular lion body with tawny fur, sharp talons, regal bearing",
+    "Faucons": "swift falcon of prey with sleek grey-and-white banded plumage, pointed wings, piercing amber eyes, razor talons, sometimes wearing light heraldic harness",
     // Hommes-Bêtes
     "Hommes-Loups": "werewolf-like humanoid with wolf head, fur-covered muscular body, feral eyes, claws and fangs",
     "Hommes-Ours": "werebear-like humanoid, massive bear-headed figure, thick fur, enormous claws, towering and powerful",
@@ -198,6 +200,8 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
           "Hobbits": ["hobbit", "halfling", "halflings", "hobbits", "small folk", "small humanoid", "short humanoid", "small figure", "diminutive"],
           "Hommes-Arbres": ["treant", "ent", "tree creature", "homme-arbre", "treefolk"],
           "Humains": ["human", "humain"],
+          "Griffons": ["griffin", "gryphon", "griffon"],
+          "Faucons": ["falcon", "faucon", "hawk"],
           "Hommes-Loups": ["werewolf", "wolf-man", "homme-loup"],
           "Hommes-Ours": ["werebear", "bear-man", "homme-ours"],
           "Hommes-Félins": ["werecat", "cat-man", "homme-félin"],
