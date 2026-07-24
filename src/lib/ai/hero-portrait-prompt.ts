@@ -287,7 +287,7 @@ export const CLAN_ACCENTS: Record<string, string> = {
   Toundra: 'thick frost-covered fur cloak, ice-blue eye color, frost crystals on the brow',
   Savane: 'sun-bleached lion-mane mantle, ochre warpaint stripes',
   Marais: 'algae-stained leather, swamp-green skin tone, a bone-and-reed necklace',
-  Mignons:
+  'La Forêt Enchantée':
     'big round innocent eyes, soft fluffy oversized ears, pastel-toned downy fur, a tiny flower tucked behind the ear, an endearingly cute and harmless expression',
   // Elfes Noirs
   'Abysses souterrains':

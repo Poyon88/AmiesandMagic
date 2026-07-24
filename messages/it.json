@@ -712,6 +712,7 @@
       "Les Enfants de la Lune": "I Figli della Luna",
       "Le Pacte des Griffes": "Il Patto degli Artigli",
       "La Harde Sauvage": "Il Branco Selvaggio",
+      "La Forêt Enchantée": "La Foresta Incantata",
       "La Colère des Flammes": "L'Ira delle Fiamme",
       "Le Socle du Monde": "Il Basamento del Mondo",
       "La Vague Sans Fin": "L'Onda Senza Fine",
@@ -1007,6 +1008,7 @@
       "Les Enfants de la Lune": "dei Figli della Luna",
       "Le Pacte des Griffes": "del Patto degli Artigli",
       "La Harde Sauvage": "del Branco Selvaggio",
+      "La Forêt Enchantée": "della Foresta Incantata",
       "La Colère des Flammes": "dell'Ira delle Fiamme",
       "Le Socle du Monde": "del Basamento del Mondo",
       "La Vague Sans Fin": "dell'Onda Senza Fine",
@@ -1941,6 +1943,7 @@
     "mono_faction": "Mono-fazione",
     "mono_clan": "Mono-clan",
     "clan_label": "Clan:",
+    "no_clan": "Nessun clan",
     "deck": "Mazzo",
     "mana_curve_tooltip": "{label} mana: {count, plural, one {# carta} other {# carte}}",
     "click_cards_to_add": "Clicca sulle carte per aggiungerle",
@@ -1994,7 +1997,8 @@
     "show_locked": "Mostra le bloccate",
     "locked_badge": "Bloccata",
     "locked_summary": "{count, plural, one {# carta bloccata} other {# carte bloccate}}",
-    "locked_hint": "Le comuni delle altre fazioni saranno accessibili tramite l'offerta di sblocco completo."
+    "locked_hint": "Le comuni delle altre fazioni saranno accessibili tramite l'offerta di sblocco completo.",
+    "alignment_label": "Allineamento:"
   },
   "cardBacks": {
     "eyebrow": "Mostra il tuo stile",

@@ -293,6 +293,7 @@ export const FACTIONS: Record<string, {
       { names: ["Le Pacte des Griffes"], appliesTo: "all" },
       { names: ["La Harde Sauvage"], appliesTo: "Centaures" },
       { names: ["La Harde Sauvage"], appliesTo: "Hommes-Cerfs" },
+      { names: ["La Forêt Enchantée"], appliesTo: "Mimis" },
     ],
     statWeights: { atk: 1.20, def: 1.00 },
     guaranteedKeywords: [],
@@ -304,7 +305,7 @@ export const FACTIONS: Record<string, {
       "Les Enfants de la Lune": { statWeights: { atk: 1.25, def: 1.00 }, likelyKeywords: { "Lycanthropie X": 0.55, "Gloire +X/+Y": 0.50, "Fureur": 0.50, "Traque": 0.45, "Régénération": 0.40, "Résistance X": 0.40 } },
       "Le Pacte des Griffes": { statWeights: { atk: 1.15, def: 0.95 }, likelyKeywords: { "Sang mêlé": 0.60, "Solidarité X": 0.50, "Loyauté": 0.45, "Instinct de meute X": 0.45, "Bravoure": 0.40, "Traque": 0.40 } },
       "La Harde Sauvage": { statWeights: { atk: 1.20, def: 0.95 }, likelyKeywords: { "Célérité": 0.50, "Raid": 0.50, "Piétinement": 0.45, "Précision": 0.45, "Traque": 0.45, "Bravoure": 0.40 } },
-      "Les Mignons": { statWeights: { atk: 0.85, def: 0.90 }, likelyKeywords: { "Loyauté": 0.55, "Combustion": 0.40, "Régénération": 0.40, "Solidarité X": 0.40, "Bénédiction": 0.35 } },
+      "La Forêt Enchantée": { statWeights: { atk: 0.85, def: 0.90 }, likelyKeywords: { "Loyauté": 0.55, "Combustion": 0.40, "Régénération": 0.40, "Solidarité X": 0.40, "Bénédiction": 0.35 } },
     },
   },
   "Élémentaires": {

@@ -712,6 +712,7 @@
       "Les Enfants de la Lune": "Los Hijos de la Luna",
       "Le Pacte des Griffes": "El Pacto de las Garras",
       "La Harde Sauvage": "La Manada Salvaje",
+      "La Forêt Enchantée": "El Bosque Encantado",
       "La Colère des Flammes": "La Ira de las Llamas",
       "Le Socle du Monde": "El Pedestal del Mundo",
       "La Vague Sans Fin": "La Ola Sin Fin",
@@ -1007,6 +1008,7 @@
       "Les Enfants de la Lune": "de los Hijos de la Luna",
       "Le Pacte des Griffes": "del Pacto de las Garras",
       "La Harde Sauvage": "de la Manada Salvaje",
+      "La Forêt Enchantée": "del Bosque Encantado",
       "La Colère des Flammes": "de la Ira de las Llamas",
       "Le Socle du Monde": "de la Base del Mundo",
       "La Vague Sans Fin": "de la Ola Sin Fin",
@@ -1941,6 +1943,7 @@
     "mono_faction": "Monofacción",
     "mono_clan": "Monoclan",
     "clan_label": "Clan:",
+    "no_clan": "Sin clan",
     "deck": "Mazo",
     "mana_curve_tooltip": "{label} de maná: {count, plural, one {# carta} other {# cartas}}",
     "click_cards_to_add": "Haz clic en las cartas para añadirlas",
@@ -1994,7 +1997,8 @@
     "show_locked": "Mostrar bloqueadas",
     "locked_badge": "Bloqueada",
     "locked_summary": "{count, plural, one {# carta bloqueada} other {# cartas bloqueadas}}",
-    "locked_hint": "Las comunes de las demás facciones estarán disponibles mediante la oferta de desbloqueo completo."
+    "locked_hint": "Las comunes de las demás facciones estarán disponibles mediante la oferta de desbloqueo completo.",
+    "alignment_label": "Alineación:"
   },
   "cardBacks": {
     "eyebrow": "Muestra tu estilo",

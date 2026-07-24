@@ -712,6 +712,7 @@
       "Les Enfants de la Lune": "The Children of the Moon",
       "Le Pacte des Griffes": "The Claw Pact",
       "La Harde Sauvage": "The Wild Pack",
+      "La Forêt Enchantée": "The Enchanted Forest",
       "La Colère des Flammes": "The Wrath of Flames",
       "Le Socle du Monde": "The Foundation of the World",
       "La Vague Sans Fin": "The Endless Wave",
@@ -1007,6 +1008,7 @@
       "Les Enfants de la Lune": "of the Children of the Moon",
       "Le Pacte des Griffes": "of the Pact of Claws",
       "La Harde Sauvage": "of the Wild Herd",
+      "La Forêt Enchantée": "of the Enchanted Forest",
       "La Colère des Flammes": "of the Wrath of Flames",
       "Le Socle du Monde": "of the World's Foundation",
       "La Vague Sans Fin": "of the Endless Wave",
@@ -1941,6 +1943,7 @@
     "mono_faction": "Mono-faction",
     "mono_clan": "Mono-clan",
     "clan_label": "Clan:",
+    "no_clan": "No clan",
     "deck": "Deck",
     "mana_curve_tooltip": "{label} mana: {count, plural, one {# card} other {# cards}}",
     "click_cards_to_add": "Click cards to add them",
@@ -1994,7 +1997,8 @@
     "show_locked": "Show locked",
     "locked_badge": "Locked",
     "locked_summary": "{count, plural, one {# locked card} other {# locked cards}}",
-    "locked_hint": "Commons from other factions will become accessible via the full unlock offer."
+    "locked_hint": "Commons from other factions will become accessible via the full unlock offer.",
+    "alignment_label": "Alignment:"
   },
   "cardBacks": {
     "eyebrow": "Show your style",

@@ -712,6 +712,7 @@
       "Les Enfants de la Lune": "Die Kinder des Mondes",
       "Le Pacte des Griffes": "Der Klauenpakt",
       "La Harde Sauvage": "Die Wilde Meute",
+      "La Forêt Enchantée": "Der Verzauberte Wald",
       "La Colère des Flammes": "Der Zorn der Flammen",
       "Le Socle du Monde": "Das Fundament der Welt",
       "La Vague Sans Fin": "Die Endlose Welle",
@@ -1007,6 +1008,7 @@
       "Les Enfants de la Lune": "der Kinder des Mondes",
       "Le Pacte des Griffes": "des Paktes der Krallen",
       "La Harde Sauvage": "der Wilden Herde",
+      "La Forêt Enchantée": "des Verzauberten Waldes",
       "La Colère des Flammes": "des Zorns der Flammen",
       "Le Socle du Monde": "des Sockels der Welt",
       "La Vague Sans Fin": "der Endlosen Welle",
@@ -1941,6 +1943,7 @@
     "mono_faction": "Mono-Fraktion",
     "mono_clan": "Mono-Clan",
     "clan_label": "Clan:",
+    "no_clan": "Kein Klan",
     "deck": "Deck",
     "mana_curve_tooltip": "{label} Mana: {count, plural, one {# Karte} other {# Karten}}",
     "click_cards_to_add": "Karten anklicken zum Hinzufügen",
@@ -1994,7 +1997,8 @@
     "show_locked": "Gesperrte anzeigen",
     "locked_badge": "Gesperrt",
     "locked_summary": "{count, plural, one {# gesperrte Karte} other {# gesperrte Karten}}",
-    "locked_hint": "Die gewöhnlichen Karten anderer Fraktionen werden über das Komplett-Freischaltangebot zugänglich sein."
+    "locked_hint": "Die gewöhnlichen Karten anderer Fraktionen werden über das Komplett-Freischaltangebot zugänglich sein.",
+    "alignment_label": "Gesinnung:"
   },
   "cardBacks": {
     "eyebrow": "Zeig deinen Stil",

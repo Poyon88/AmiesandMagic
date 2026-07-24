@@ -4,12 +4,26 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import GameCard from "@/components/cards/GameCard";
 import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
-import { KEYWORDS as KEYWORD_DEFS, FACTIONS, getFactionDisplayName, getAllClanNames, CURATED_KEYWORD_MODES } from "@/lib/card-engine/constants";
+import { KEYWORDS as KEYWORD_DEFS, FACTIONS, getFactionDisplayName, getAllClanNames, getEffectiveAlignment, CURATED_KEYWORD_MODES } from "@/lib/card-engine/constants";
 import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS } from "@/lib/game/spell-keywords";
 import type { Card, Capability, Keyword, KeywordInstance, KeywordMode, SpellKeywordInstance, SpellComposableEffects, CardSet, TokenTemplate } from "@/lib/game/types";
 import ComposedEffectsEditor from "@/components/card-forge/ComposedEffectsEditor";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 import RaceClanPicker from "@/components/admin/RaceClanPicker";
+
+// Sentinelle du filtre Clan : "" = tous les clans, celle-ci = les cartes qui
+// n'ont pas de clan. Même clé que TokenCascadePicker.
+const NO_CLAN_KEY = "__no_clan__";
+
+// Alignements filtrables. L'alignement n'est PAS une colonne : il est dérivé de
+// la faction par getEffectiveAlignment (sauf Mercenaires, qui portent l'override
+// `card_alignment`). « spéciale » est donc exclu — la fonction ne le renvoie
+// jamais.
+const ALIGNMENT_FILTERS: { value: string; label: string }[] = [
+  { value: "bon", label: "Bon" },
+  { value: "neutre", label: "Neutre" },
+  { value: "maléfique", label: "Maléfique" },
+];
 
 interface DbCard {
   id: number;
@@ -81,6 +95,7 @@ export default function CardEditor() {
   const [rarityFilter, setRarityFilter] = useState<string | null>(null);
   const [raceFilter, setRaceFilter] = useState<string | null>(null);
   const [clanFilter, setClanFilter] = useState<string | null>(null);
+  const [alignmentFilter, setAlignmentFilter] = useState<string | null>(null);
   const [filterSet, setFilterSet] = useState("");
   const [filterYear, setFilterYear] = useState("");
   const [filterMonth, setFilterMonth] = useState("");
@@ -184,13 +199,15 @@ export default function CardEditor() {
       if (factionFilter !== null && card.faction !== factionFilter) return false;
       if (rarityFilter !== null && card.rarity !== rarityFilter) return false;
       if (raceFilter !== null && card.race !== raceFilter) return false;
-      if (clanFilter !== null && card.clan !== clanFilter) return false;
+      if (clanFilter === NO_CLAN_KEY) { if (card.clan) return false; }
+      else if (clanFilter !== null && card.clan !== clanFilter) return false;
+      if (alignmentFilter !== null && getEffectiveAlignment(card) !== alignmentFilter) return false;
       if (filterSet && card.set_id !== parseInt(filterSet)) return false;
       if (filterYear && String(card.card_year) !== filterYear) return false;
       if (filterMonth && String(card.card_month) !== filterMonth) return false;
       return true;
     }).sort((a, b) => a.mana_cost - b.mana_cost || a.name.localeCompare(b.name, "fr"));
-  }, [cards, search, manaCostFilter, typeFilter, keywordFilter, factionFilter, rarityFilter, raceFilter, clanFilter, filterSet, filterYear, filterMonth]);
+  }, [cards, search, manaCostFilter, typeFilter, keywordFilter, factionFilter, rarityFilter, raceFilter, clanFilter, alignmentFilter, filterSet, filterYear, filterMonth]);
 
   // Select card for editing
   const selectCard = useCallback((card: DbCard) => {
@@ -631,6 +648,7 @@ export default function CardEditor() {
   const clearFilters = () => {
     setSearch(""); setManaCostFilter(null); setTypeFilter(null); setKeywordFilter(null);
     setFactionFilter(null); setRarityFilter(null); setRaceFilter(null); setClanFilter(null);
+    setAlignmentFilter(null);
     setFilterSet(""); setFilterYear(""); setFilterMonth("");
   };
 
@@ -687,7 +705,14 @@ export default function CardEditor() {
         {/* Clan */}
         <select value={clanFilter || ""} onChange={e => setClanFilter(e.target.value || null)} style={{ ...S.select, width: 110 }}>
           <option value="">Clan...</option>
+          <option value={NO_CLAN_KEY}>Sans clan</option>
           {clans.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+
+        {/* Alignement — dérivé de la faction, pas d'une colonne. */}
+        <select value={alignmentFilter || ""} onChange={e => setAlignmentFilter(e.target.value || null)} style={{ ...S.select, width: 110 }}>
+          <option value="">Alignement...</option>
+          {ALIGNMENT_FILTERS.map(a => <option key={a.value} value={a.value}>{a.label}</option>)}
         </select>
 
         {/* Set */}
