@@ -175,8 +175,17 @@ export const ABILITIES: Record<string, AbilityDef> = {
   precision: {
     id: "precision", label: "Précision", symbol: "🏹",
     desc: "Ignore la Résistance, l'Armure et le Bouclier.",
-    applicable_to: ["creature"],
+    applicable_to: ["creature", "spell"],
     creature: { cost: 7, costPerX: 0, se: 1.5, minTier: 1, scalable: false, zone: "Terrain" },
+    // Forme sort : confère Précision de façon permanente à l'unité ciblée
+    // (même mécanique que Poison côté sort, qui pose son état sur la cible).
+    // Cible libre — un sort peut légitimement viser une unité alliée (buff)
+    // comme adverse (ex. combo/drawback) ; c'est l'auteur de la carte qui
+    // tranche via le picker.
+    spell: {
+      desc: "L'unité ciblée gagne Précision.",
+      params: [], needsTarget: true, targetType: "any_creature",
+    },
   },
   drain_de_vie: {
     id: "drain_de_vie", label: "Drain de vie", symbol: "🩸",

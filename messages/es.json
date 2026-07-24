@@ -538,6 +538,10 @@
       "afflux": {
         "label": "Afluencia X",
         "desc": "Gana X de maná este turno"
+      },
+      "precision": {
+        "label": "Precisión",
+        "desc": "La unidad objetivo gana Precisión."
       }
     },
     "composed": {
@@ -1944,6 +1948,7 @@
     "mono_clan": "Monoclan",
     "clan_label": "Clan:",
     "no_clan": "Sin clan",
+    "alignment_label": "Alineación:",
     "deck": "Mazo",
     "mana_curve_tooltip": "{label} de maná: {count, plural, one {# carta} other {# cartas}}",
     "click_cards_to_add": "Haz clic en las cartas para añadirlas",
@@ -1997,8 +2002,7 @@
     "show_locked": "Mostrar bloqueadas",
     "locked_badge": "Bloqueada",
     "locked_summary": "{count, plural, one {# carta bloqueada} other {# cartas bloqueadas}}",
-    "locked_hint": "Las comunes de las demás facciones estarán disponibles mediante la oferta de desbloqueo completo.",
-    "alignment_label": "Alineación:"
+    "locked_hint": "Las comunes de las demás facciones estarán disponibles mediante la oferta de desbloqueo completo."
   },
   "cardBacks": {
     "eyebrow": "Muestra tu estilo",

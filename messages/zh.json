@@ -538,6 +538,10 @@
       "afflux": {
         "label": "涌流 X",
         "desc": "本回合获得 X 点法力"
+      },
+      "precision": {
+        "label": "精准",
+        "desc": "目标单位获得“精准”。"
       }
     },
     "composed": {
@@ -1944,6 +1948,7 @@
     "mono_clan": "单一氏族",
     "clan_label": "氏族：",
     "no_clan": "无氏族",
+    "alignment_label": "阵营:",
     "deck": "牌组",
     "mana_curve_tooltip": "{label} 法力：{count, plural, one {# 张牌} other {# 张牌}}",
     "click_cards_to_add": "点击卡牌以添加",
@@ -1997,8 +2002,7 @@
     "show_locked": "显示已锁定的卡牌",
     "locked_badge": "已锁定",
     "locked_summary": "{count, plural, other {# 张已锁定的卡牌}}",
-    "locked_hint": "其他阵营的普通卡将可通过完整解锁礼包获取。",
-    "alignment_label": "阵营:"
+    "locked_hint": "其他阵营的普通卡将可通过完整解锁礼包获取。"
   },
   "cardBacks": {
     "eyebrow": "展示你的风格",

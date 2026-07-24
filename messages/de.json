@@ -538,6 +538,10 @@
       "afflux": {
         "label": "Zufluss X",
         "desc": "Erhalte X Mana in diesem Zug."
+      },
+      "precision": {
+        "label": "Präzision",
+        "desc": "Die anvisierte Einheit erhält Präzision."
       }
     },
     "composed": {
@@ -1944,6 +1948,7 @@
     "mono_clan": "Mono-Clan",
     "clan_label": "Clan:",
     "no_clan": "Kein Klan",
+    "alignment_label": "Gesinnung:",
     "deck": "Deck",
     "mana_curve_tooltip": "{label} Mana: {count, plural, one {# Karte} other {# Karten}}",
     "click_cards_to_add": "Karten anklicken zum Hinzufügen",
@@ -1997,8 +2002,7 @@
     "show_locked": "Gesperrte anzeigen",
     "locked_badge": "Gesperrt",
     "locked_summary": "{count, plural, one {# gesperrte Karte} other {# gesperrte Karten}}",
-    "locked_hint": "Die gewöhnlichen Karten anderer Fraktionen werden über das Komplett-Freischaltangebot zugänglich sein.",
-    "alignment_label": "Gesinnung:"
+    "locked_hint": "Die gewöhnlichen Karten anderer Fraktionen werden über das Komplett-Freischaltangebot zugänglich sein."
   },
   "cardBacks": {
     "eyebrow": "Zeig deinen Stil",

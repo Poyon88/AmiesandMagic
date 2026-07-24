@@ -538,6 +538,10 @@
       "afflux": {
         "label": "Surge X",
         "desc": "Gain X mana this turn."
+      },
+      "precision": {
+        "label": "Precision",
+        "desc": "The targeted unit gains Precision."
       }
     },
     "composed": {
@@ -1944,6 +1948,7 @@
     "mono_clan": "Mono-clan",
     "clan_label": "Clan:",
     "no_clan": "No clan",
+    "alignment_label": "Alignment:",
     "deck": "Deck",
     "mana_curve_tooltip": "{label} mana: {count, plural, one {# card} other {# cards}}",
     "click_cards_to_add": "Click cards to add them",
@@ -1997,8 +2002,7 @@
     "show_locked": "Show locked",
     "locked_badge": "Locked",
     "locked_summary": "{count, plural, one {# locked card} other {# locked cards}}",
-    "locked_hint": "Commons from other factions will become accessible via the full unlock offer.",
-    "alignment_label": "Alignment:"
+    "locked_hint": "Commons from other factions will become accessible via the full unlock offer."
   },
   "cardBacks": {
     "eyebrow": "Show your style",

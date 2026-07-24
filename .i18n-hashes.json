@@ -11559,5 +11559,19 @@
   "it:deck.alignment_label": "oovgn7",
   "pt:deck.alignment_label": "oovgn7",
   "ja:deck.alignment_label": "oovgn7",
-  "zh:deck.alignment_label": "oovgn7"
+  "zh:deck.alignment_label": "oovgn7",
+  "en:vocab.spell_keywords.precision.label": "1316yut",
+  "en:vocab.spell_keywords.precision.desc": "ihcvih",
+  "es:vocab.spell_keywords.precision.label": "1316yut",
+  "es:vocab.spell_keywords.precision.desc": "ihcvih",
+  "de:vocab.spell_keywords.precision.label": "1316yut",
+  "de:vocab.spell_keywords.precision.desc": "ihcvih",
+  "it:vocab.spell_keywords.precision.label": "1316yut",
+  "it:vocab.spell_keywords.precision.desc": "ihcvih",
+  "pt:vocab.spell_keywords.precision.label": "1316yut",
+  "pt:vocab.spell_keywords.precision.desc": "ihcvih",
+  "ja:vocab.spell_keywords.precision.label": "1316yut",
+  "ja:vocab.spell_keywords.precision.desc": "ihcvih",
+  "zh:vocab.spell_keywords.precision.label": "1316yut",
+  "zh:vocab.spell_keywords.precision.desc": "ihcvih"
 }

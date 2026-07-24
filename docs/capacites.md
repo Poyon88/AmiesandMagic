@@ -3,7 +3,7 @@
 > Généré depuis `src/lib/game/abilities.ts` (source unique de vérité). Total : 98 capacités — 72 créature, 9 sort, 17 mixtes.
 > Le suffixe **X** (ou X/Y) indique une capacité paramétrable.
 
-## Créature uniquement (72)
+## Créature uniquement (71)
 
 - 🤝 **Loyauté** — Invocation : +1 ATK et +1 PV pour chaque allié de même race en jeu.
 - ⚓ **Ancré** — Ne peut pas être déplacé ou exilé.
@@ -15,7 +15,6 @@
 - 🏅 **Gloire +X/+Y** — Chaque fois que cette unité survit à des dégâts de combat, elle gagne +X/+Y de façon permanente.
 - 🔰 **Bouclier** — Absorbe une première attaque sans dégâts.
 - 🦅 **Vol** — Ignore les provocations adverses.
-- 🏹 **Précision** — Ignore la Résistance, l'Armure et le Bouclier.
 - 🩸 **Drain de vie** — Soigne votre héros des dégâts infligés.
 - 💨 **Esquive** — Évite automatiquement la première attaque reçue chaque tour.
 - 💫 **Célérité** — Peut attaquer deux fois par tour.
@@ -93,11 +92,14 @@
 - 💚 **Guérison X** — Restaure X PV à une cible
 - 💎 **Afflux X** — Gagnez X mana ce tour
 
-## Mixtes — créature et sort (17)
+## Mixtes — créature et sort (18)
 
 - ☠️ **Poison**
   - Créature : Les unités blessées perdent 1 PV par tour.
   - Sort : Les unités blessées perdent 1 PV par tour.
+- 🏹 **Précision**
+  - Créature : Ignore la Résistance, l'Armure et le Bouclier.
+  - Sort : L'unité ciblée gagne Précision.
 - 📯 **Convocation**
   - Créature : Invocation : crée le token configuré.
   - Sort : Crée le token configuré.
