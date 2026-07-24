@@ -153,6 +153,10 @@
         "label": "食腐",
         "desc": "每当任意单位（友方或敌方）死亡时，获得 +1 攻击力和 +1 生命值。"
       },
+      "force_des_ancetres": {
+        "label": "先祖之力 +X/+Y",
+        "desc": "只要你的墓地中有5个或更多生物，便获得+X攻击力和+Y生命值。"
+      },
       "richesse": {
         "label": "财富 X",
         "desc": "每当任意玩家弃掉手牌中的一张牌时，此单位永久获得 +X/+X。"
@@ -1535,6 +1539,7 @@
     "neg_atk_is_x": "（-攻击 = X值）",
     "spell_cost_y": "法术费用（Y）",
     "spell_count_is_x": "（法术数量 = X值）",
+    "fda_condition": "（墓地中有5个或更多生物时）",
     "choose_ability": "-- 选择技能 --",
     "scope_one_ally": "1个目标友方",
     "scope_all_allies": "所有友方",

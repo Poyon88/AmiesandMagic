@@ -412,6 +412,10 @@
       "dechainement": {
         "label": "Déchainement X/Y",
         "desc": "Lance X sorts aléatoires de coût Y de votre collection ({alignment}), avec des cibles aléatoires."
+      },
+      "force_des_ancetres": {
+        "label": "Force des ancêtres +X/+Y",
+        "desc": "Tant que votre cimetière compte 5 créatures ou plus, gagne +X ATK et +Y PV."
       }
     },
     "spell_keywords": {
@@ -1535,6 +1539,7 @@
     "neg_atk_is_x": "(le -ATK = la valeur X)",
     "spell_cost_y": "COÛT DES SORTS (Y)",
     "spell_count_is_x": "(le nombre de sorts = la valeur X)",
+    "fda_condition": "(≥5 créatures au cimetière)",
     "choose_ability": "-- Choisir une capacité --",
     "scope_one_ally": "1 allié ciblé",
     "scope_all_allies": "Tous les alliés",

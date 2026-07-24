@@ -153,6 +153,10 @@
         "label": "死肉食らい",
         "desc": "ユニット（味方・敵問わず）が死亡するたびに+1 ATK、+1 PVを得る。"
       },
+      "force_des_ancetres": {
+        "label": "祖霊の力 +X/+Y",
+        "desc": "自分の墓地にクリーチャーが5体以上ある限り、+X ATKと+Y PVを得る。"
+      },
       "richesse": {
         "label": "富 X",
         "desc": "いずれかのプレイヤーが手札を捨てるたびに、このユニットは+X/+Xを得る（永続）。"
@@ -1535,6 +1539,7 @@
     "neg_atk_is_x": "（－ATK＝X値）",
     "spell_cost_y": "呪文のコスト（Y）",
     "spell_count_is_x": "（呪文の数＝X値）",
+    "fda_condition": "（墓地にクリーチャー5体以上の間）",
     "choose_ability": "-- 能力を選択 --",
     "scope_one_ally": "味方1体を対象",
     "scope_all_allies": "全味方",

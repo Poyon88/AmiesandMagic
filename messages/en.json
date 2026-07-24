@@ -153,6 +153,10 @@
         "label": "Necrophagy",
         "desc": "Gains +1 ATK and +1 HP whenever a unit (allied or enemy) dies."
       },
+      "force_des_ancetres": {
+        "label": "Ancestral Strength +X/+Y",
+        "desc": "While your graveyard holds 5 or more creatures, gains +X ATK and +Y HP."
+      },
       "richesse": {
         "label": "Wealth X",
         "desc": "Whenever any player discards a card from their hand, this unit permanently gains +X/+X."
@@ -1535,6 +1539,7 @@
     "neg_atk_is_x": "(-ATK = X value)",
     "spell_cost_y": "SPELL COST (Y)",
     "spell_count_is_x": "(the spell count = the X value)",
+    "fda_condition": "(while ≥5 creatures in your graveyard)",
     "choose_ability": "-- Choose an ability --",
     "scope_one_ally": "1 targeted ally",
     "scope_all_allies": "All allies",

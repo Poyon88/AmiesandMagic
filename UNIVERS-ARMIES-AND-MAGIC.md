@@ -419,6 +419,7 @@ Les cartes **datées** (séries limitées / éditions forgées) existent en nomb
 | 💰 Pillage X *(mixte)* | 1 | L'adversaire défausse X cartes aléatoires. |
 | 📖 Inspiration X *(mixte)* | 2 | Pioche X cartes. |
 | 📣 Invocation X *(mixte)* | 2 | Invoque une créature aléatoire de coût exactement X de votre collection (même alignement, format en cours). |
+| 🪬 Force des ancêtres +X/+Y | 1 | Passif : tant que votre cimetière compte 5 créatures ou plus, gagne +X ATK et +Y PV. |
 
 ### 8.6 Sorts purs (9)
 

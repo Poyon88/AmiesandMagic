@@ -153,6 +153,10 @@
         "label": "Necrofagia",
         "desc": "Gana +1 ATK y +1 PV cada vez que muere una unidad (aliada o enemiga)."
       },
+      "force_des_ancetres": {
+        "label": "Fuerza de los ancestros +X/+Y",
+        "desc": "Mientras tu cementerio contenga 5 o más criaturas, gana +X ATK y +Y PV."
+      },
       "richesse": {
         "label": "Riqueza X",
         "desc": "Cada vez que un jugador descarta una carta de su mano, esta unidad gana +X/+X (permanente)."
@@ -1535,6 +1539,7 @@
     "neg_atk_is_x": "(el -ATK = el valor X)",
     "spell_cost_y": "COSTE DE LOS HECHIZOS (Y)",
     "spell_count_is_x": "(el número de hechizos = el valor X)",
+    "fda_condition": "(mientras haya ≥5 criaturas en tu cementerio)",
     "choose_ability": "-- Elegir una capacidad --",
     "scope_one_ally": "1 aliado objetivo",
     "scope_all_allies": "Todos los aliados",

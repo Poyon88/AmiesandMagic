@@ -153,6 +153,10 @@
         "label": "Nekrophagie",
         "desc": "Erhält +1 ATK und +1 LP, wann immer eine Einheit (verbündet oder feindlich) stirbt."
       },
+      "force_des_ancetres": {
+        "label": "Kraft der Ahnen +X/+Y",
+        "desc": "Solange dein Friedhof 5 oder mehr Kreaturen enthält, erhält diese Einheit +X ATK und +Y LP."
+      },
       "richesse": {
         "label": "Reichtum X",
         "desc": "Wann immer ein Spieler eine Karte aus der Hand abwirft, erhält diese Einheit dauerhaft +X/+X."
@@ -1535,6 +1539,7 @@
     "neg_atk_is_x": "(-ATK = Wert X)",
     "spell_cost_y": "ZAUBERKOSTEN (Y)",
     "spell_count_is_x": "(die Anzahl der Zauber = Wert X)",
+    "fda_condition": "(solange ≥5 Kreaturen im Friedhof)",
     "choose_ability": "-- Fähigkeit wählen --",
     "scope_one_ally": "1 gezielter Verbündeter",
     "scope_all_allies": "Alle Verbündeten",

@@ -1180,6 +1180,20 @@ function discardFromHand(
 // AURA RECALCULATION
 // ============================================================
 
+// Force des ancêtres : seuil de créatures dans le cimetière du propriétaire à
+// partir duquel le bonus +X/+Y s'allume.
+export const FORCE_ANCETRES_GRAVEYARD_THRESHOLD = 5;
+
+// Résolution du couple X/Y de Force des ancêtres, dans l'ordre : instance de
+// mot-clé de la carte → valeurs conférées (grantedKeywordX/Y) → 1/1 par défaut.
+// Même cascade qu'applyGloire.
+function forceAncetresValues(inst: CardInstance): { x: number; y: number } {
+  const kwInst = inst.card.keyword_instances?.find(i => i.id === "force_des_ancetres");
+  const x = kwInst?.x ?? inst.grantedKeywordX["force_des_ancetres"] ?? 1;
+  const y = kwInst?.y ?? inst.grantedKeywordY?.["force_des_ancetres"] ?? 1;
+  return { x: Math.max(0, x), y: Math.max(0, y) };
+}
+
 export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
   // Reset ATK to base + permanent bonuses (not auras)
   for (const c of player.board) {
@@ -1320,6 +1334,34 @@ export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
         c.currentHealth += diff;
         if (c.currentHealth < 1 && uniqueRaces < oldHP) c.currentHealth = 1; // don't kill via aura removal
         c.sangMeleHealthBonus = uniqueRaces;
+      }
+    }
+  }
+
+  // Force des ancêtres +X/+Y : tant que le cimetière du PROPRIÉTAIRE compte
+  // FORCE_ANCETRES_GRAVEYARD_THRESHOLD créatures ou plus, l'unité gagne
+  // +X ATK / +Y PV. Aura DYNAMIQUE (modèle Sang mêlé) : l'ATK est ré-ajoutée
+  // ici (reset en tête de fonction), les PV suivent via
+  // forceAncetresHealthBonus avec diff pour monter/descendre quand la
+  // condition bascule (Exhumation / Résurrection vident le cimetière), avec
+  // la garde « ne pas tuer par retrait d'aura ». La réconciliation tourne
+  // pour TOUTE créature : sans le mot-clé (Silence) le bonus visé vaut 0 et
+  // les PV retombent.
+  for (const board of [player.board, opponent.board]) {
+    const owner = board === player.board ? player : opponent;
+    const graveCreatures = owner.graveyard.filter(g => g.card.card_type === "creature").length;
+    const conditionMet = graveCreatures >= FORCE_ANCETRES_GRAVEYARD_THRESHOLD;
+    for (const c of board) {
+      const active = conditionMet && hasKw(c, "force_des_ancetres");
+      const { x, y } = active ? forceAncetresValues(c) : { x: 0, y: 0 };
+      if (x > 0) c.currentAttack += x;
+      const oldHP = c.forceAncetresHealthBonus ?? 0;
+      if (y !== oldHP) {
+        const diff = y - oldHP;
+        c.maxHealth += diff;
+        c.currentHealth += diff;
+        if (c.currentHealth < 1 && y < oldHP) c.currentHealth = 1; // don't kill via aura removal
+        c.forceAncetresHealthBonus = y;
       }
     }
   }

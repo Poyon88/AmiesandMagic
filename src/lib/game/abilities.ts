@@ -374,6 +374,16 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["creature"],
     creature: { cost: 18, costPerX: 0, se: 4.0, minTier: 2, scalable: false, zone: "Terrain" },
   },
+  // Aura conditionnelle DYNAMIQUE (modèle Sang mêlé) : le bonus s'allume tant
+  // que le cimetière du propriétaire compte 5 créatures ou plus, et retombe si
+  // la condition se rompt (Exhumation, Résurrection…). Recalculé dans
+  // recalculateAuras ; X/Y lus depuis keyword_instances (repli granted, puis 1/1).
+  force_des_ancetres: {
+    id: "force_des_ancetres", label: "Force des ancêtres +X/+Y", symbol: "🪬",
+    desc: "Tant que votre cimetière compte 5 créatures ou plus, gagne +X ATK et +Y PV.",
+    applicable_to: ["creature"],
+    creature: { cost: 10, costPerX: 4, se: 2.5, minTier: 1, scalable: true, zone: "Cimetière" },
+  },
   paralysie: {
     id: "paralysie", label: "Paralysie", symbol: "⛓️",
     desc: "Les unités qu'elle blesse ne peuvent ni attaquer ni activer de capacité jusqu'à la fin de leur prochain tour.",
@@ -1226,6 +1236,7 @@ export const DEATH_NATURE_IDS: ReadonlySet<string> = new Set([
 export const AUTOMATIC_ABILITY_IDS: ReadonlySet<string> = new Set([
   // Auras / présence continue
   "terreur", "commandement", "fierte_du_clan", "sang_mele", "totem", "pauvrete",
+  "force_des_ancetres",
   // Passifs de combat / statiques
   "premiere_frappe", "double_attaque", "esquive", "armure",
   "resistance", "precision", "indestructible", "transcendance", "invisible",

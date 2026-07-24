@@ -153,6 +153,10 @@
         "label": "Necrofagia",
         "desc": "Guadagna +1 ATK e +1 PV ogni volta che un'unità (alleata o nemica) muore."
       },
+      "force_des_ancetres": {
+        "label": "Forza degli antenati +X/+Y",
+        "desc": "Finché il tuo cimitero contiene 5 o più creature, guadagna +X ATK e +Y PV."
+      },
       "richesse": {
         "label": "Ricchezza X",
         "desc": "Ogni volta che un giocatore scarta una carta dalla sua mano, questa unità guadagna +X/+X (permanente)."
@@ -1535,6 +1539,7 @@
     "neg_atk_is_x": "(il -ATK = il valore X)",
     "spell_cost_y": "COSTO DEGLI INCANTESIMI (Y)",
     "spell_count_is_x": "(il numero di incantesimi = il valore X)",
+    "fda_condition": "(finché ≥5 creature nel cimitero)",
     "choose_ability": "-- Scegli una capacità --",
     "scope_one_ally": "1 alleato bersaglio",
     "scope_all_allies": "Tutti gli alleati",

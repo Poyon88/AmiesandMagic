@@ -1615,6 +1615,8 @@ export default function CardForge() {
   // Déchainement X/Y (créature) : le coût Y des sorts lancés (le nombre de
   // sorts = la valeur X générique).
   const [dcY, setDcY] = useState<number>(1);
+  // Force des ancêtres +X/+Y (créature) : le +PV (Y) dédié (le +ATK = la valeur X).
+  const [fdaY, setFdaY] = useState<number>(1);
   const [rmRace, setRmRace] = useState<string>("");
   const [rmClan, setRmClan] = useState<string>("");
   // Appel Suprême : race ciblée fixée sur la carte (créature). Persistée dans
@@ -1687,6 +1689,7 @@ export default function CardForge() {
       "Renforcement multiple": rmY,
       "Affaiblissement -X/-Y": afY,
       "Déchainement X/Y": dcY,
+      "Force des ancêtres +X/+Y": fdaY,
     },
     keywordGrantScope: type !== "Unité" ? keywordGrantScope : undefined,
     ability: manualAbility,
@@ -1904,7 +1907,7 @@ export default function CardForge() {
     setManualPower(2); setManualAbility(""); setManualFlavorText("");
     setManualIllustrationPrompt(""); setManualExtraContext(""); setManualKeywords([]); setKeywordXValues({}); setKeywordModes({}); setCard(null);
     setEditedPrompt(null); setSaveResult(null);
-    setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setAfY(1); setRfY(1); setGlY(1); setDcY(1); setRmRace(""); setRmClan(""); setAsRace(""); setConferAbilityId(""); setConferX(1); setConferY(1); setDeclenchementTriggers([]); setComposedCaps([]);
+    setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setAfY(1); setRfY(1); setGlY(1); setDcY(1); setFdaY(1); setRmRace(""); setRmClan(""); setAsRace(""); setConferAbilityId(""); setConferX(1); setConferY(1); setDeclenchementTriggers([]); setComposedCaps([]);
     setManualLifeCost(0); setManualDiscardCost(0); setManualSacrificeCost(0);
     setCardImages(prev => Object.fromEntries(Object.entries(prev).filter(([k]) => k !== "manual_preview")));
   }, []);
@@ -2227,6 +2230,11 @@ export default function CardForge() {
           if (id === "gloire") {
             return { id, ...(mode ? { mode } : {}), x: x ?? 0, y: glY, ...(grantScope ? { grantScope } : {}) };
           }
+          // Force des ancêtres : porte +X (ATK générique) / +Y (PV dédié).
+          // Émise aussi sur un SORT (capacité conférée, mêmes raisons que Gloire).
+          if (id === "force_des_ancetres") {
+            return { id, ...(mode ? { mode } : {}), x: x ?? 1, y: fdaY, ...(grantScope ? { grantScope } : {}) };
+          }
           // Appel Suprême (créature) : porte la race ciblée ; toujours émis.
           if (id === "appel_supreme" && !isSpellCard) {
             return { id, ...(mode ? { mode } : {}), ...(asRace ? { race: asRace } : {}) };
@@ -2329,7 +2337,7 @@ export default function CardForge() {
     } finally {
       setSaving(false);
     }
-  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, keywordModes, keywordGrantScope, rmY, afY, rfY, glY, dcY, rmRace, rmClan, asRace, composedCaps, conferAbilityId, conferX, conferY, declenchementTriggers]);
+  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, keywordModes, keywordGrantScope, rmY, afY, rfY, glY, dcY, fdaY, rmRace, rmClan, asRace, composedCaps, conferAbilityId, conferX, conferY, declenchementTriggers]);
 
   const [generatingImage, setGeneratingImage] = useState(false);
   const [editedPrompt, setEditedPrompt] = useState<string | null>(null);
@@ -3190,7 +3198,7 @@ export default function CardForge() {
                                 fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: selected ? 700 : 400,
                                 transition: "all 0.15s",
                               }}>{id.replace(/ X$/, "")}{isScalable && !selected && / X$/.test(id) ? " X" : ""}</button>
-                            {isScalable && selected && id !== "Renforcement +X/+Y" && id !== "Gloire +X/+Y" && (
+                            {isScalable && selected && id !== "Renforcement +X/+Y" && id !== "Gloire +X/+Y" && id !== "Force des ancêtres +X/+Y" && (
                               <input
                                 type="number" min={1} max={10}
                                 value={keywordXValues[id] ?? 1}
@@ -3385,6 +3393,24 @@ export default function CardForge() {
                           <input type="number" min={0} max={20} value={glY}
                             onChange={e => setGlY(Math.max(0, parseInt(e.target.value) || 0))}
                             style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: "1px solid #f0d9a8", fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    {/* Force des ancêtres — +ATK (X) / +PV (Y) tant que le cimetière compte ≥5 créatures */}
+                    {manualKeywords.includes("Force des ancêtres +X/+Y") && (
+                      <div style={{ marginTop: 6, padding: 6, borderRadius: 6, border: "1px solid #d9cfe8", background: "#f8f4ff" }}>
+                        <div style={{ fontSize: 8, color: "#6b4fa0", letterSpacing: 1, fontWeight: 700, marginBottom: 4 }}>🪬 FORCE DES ANCÊTRES {tf('fda_condition')}</div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <span style={{ fontSize: 9, color: "#6b4fa0" }}>+ATK (X)</span>
+                          <input type="number" min={0} max={20} value={keywordXValues["Force des ancêtres +X/+Y"] ?? 1}
+                            onChange={e => setKeywordXValues(prev => ({ ...prev, ["Force des ancêtres +X/+Y"]: Math.max(0, Math.min(20, parseInt(e.target.value) || 0)) }))}
+                            style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: "1px solid #d9cfe8", fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }}
+                          />
+                          <span style={{ fontSize: 9, color: "#6b4fa0" }}>+PV (Y)</span>
+                          <input type="number" min={0} max={20} value={fdaY}
+                            onChange={e => setFdaY(Math.max(0, parseInt(e.target.value) || 0))}
+                            style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: "1px solid #d9cfe8", fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }}
                           />
                         </div>
                       </div>
@@ -3747,7 +3773,7 @@ export default function CardForge() {
                             <span style={labelStyle}>{tf('effect_label')}</span>
                             <span style={{ ...valStyle, display: "flex", alignItems: "center", gap: 8 }}>
                               {def?.creature?.desc ?? def?.desc ?? label}
-                              {scalable && label !== "Renforcement +X/+Y" && label !== "Gloire +X/+Y" && (
+                              {scalable && label !== "Renforcement +X/+Y" && label !== "Gloire +X/+Y" && label !== "Force des ancêtres +X/+Y" && (
                                 <input type="number" min={1} max={10} value={keywordXValues[label] ?? 1}
                                   onChange={e => setKeywordXValues(prev => ({ ...prev, [label]: Math.max(1, Math.min(10, parseInt(e.target.value) || 1)) }))}
                                   style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: `1px solid ${fac.color}`, background: `${fac.color}11`, color: fac.color, fontSize: 11, textAlign: "center", fontWeight: 700, fontFamily: "'Cinzel',serif" }}
@@ -3819,6 +3845,17 @@ export default function CardForge() {
                                 <input type="number" min={0} max={20} value={keywordXValues[label] ?? 1} onChange={e => setKeywordXValues(prev => ({ ...prev, [label]: Math.max(0, Math.min(20, parseInt(e.target.value) || 0)) }))} style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: cardBorder, fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
                                 <span style={{ fontSize: 9, color: "#b8860b" }}>+PV</span>
                                 <input type="number" min={0} max={20} value={glY} onChange={e => setGlY(Math.max(0, parseInt(e.target.value) || 0))} style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: cardBorder, fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
+                              </div>
+                            </div>
+                          )}
+                          {label === "Force des ancêtres +X/+Y" && (
+                            <div style={{ marginTop: 8 }}>
+                              <div style={{ ...labelStyle, color: "#6b4fa0", marginBottom: 3 }}>🪬 +ATK (X) / +PV (Y) <span style={{ color: "#888", fontWeight: 400 }}>{tf('fda_condition')}</span></div>
+                              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                <span style={{ fontSize: 9, color: "#6b4fa0" }}>+ATK</span>
+                                <input type="number" min={0} max={20} value={keywordXValues[label] ?? 1} onChange={e => setKeywordXValues(prev => ({ ...prev, [label]: Math.max(0, Math.min(20, parseInt(e.target.value) || 0)) }))} style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: cardBorder, fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
+                                <span style={{ fontSize: 9, color: "#6b4fa0" }}>+PV</span>
+                                <input type="number" min={0} max={20} value={fdaY} onChange={e => setFdaY(Math.max(0, parseInt(e.target.value) || 0))} style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: cardBorder, fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
                               </div>
                             </div>
                           )}

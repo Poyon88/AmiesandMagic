@@ -42,6 +42,8 @@ export type Keyword =
   // Polymorphic — cast X random collection spells of cost Y (same alignment,
   // current format), with random targets
   | "dechainement"
+  // Passive aura — +X ATK / +Y PV while the owner's graveyard holds ≥5 creatures
+  | "force_des_ancetres"
   // Tier 2 — AoE random damage
   | "tempete"
   // Tier 2 — AoE full damage to BOTH boards (allies + enemies)
@@ -606,6 +608,10 @@ export interface CardInstance {
   // Aura health bonus (sang mêlé) — dynamic PV bonus, tracked separately from
   // auraHealthBonus so the two dynamic +PV auras don't clobber each other.
   sangMeleHealthBonus: number;
+  // Aura health bonus (force des ancêtres) — +Y PV dynamique tant que le
+  // cimetière du propriétaire compte ≥5 créatures. Optionnel : les instances
+  // sérialisées avant l'ajout du champ n'en disposent pas (lire avec ?? 0).
+  forceAncetresHealthBonus?: number;
   // Nécrophagie: permanent buff tracker
   necrophagieATKBonus: number;
   necrophagiePVBonus: number;
