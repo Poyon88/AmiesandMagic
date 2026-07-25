@@ -677,3 +677,59 @@ describe("déterminisme des pools de sélection (tri canonique par id)", () => {
     expect(g.allSpellsPool?.map((c) => c.id)).toEqual([1, 3, 5]);
   });
 });
+
+describe("cibles composées — un cadavre en sursis n'est jamais reciblé", () => {
+  // Régression « Double assassinat » : deux effets composés « Détruire 1 unité
+  // au hasard » qui se résolvent en séquence. Le nettoyage (cleanDeadCreatures)
+  // n'a lieu qu'APRÈS la résolution complète du sort ; avant le correctif, la
+  // créature tuée par l'effet 1 restait dans le pool (currentHealth 0, encore
+  // sur le plateau) et l'effet 2 pouvait la retirer une 2e fois → une seule
+  // mort réelle sur un plateau de 2 créatures. Le pool « board » exclut
+  // désormais les unités à 0 PV, donc l'effet 2 vise forcément l'autre.
+  const doubleAssassinat = () =>
+    mkCard({
+      card_type: "spell", attack: null, health: null,
+      capabilities: [
+        composedCap("spell_resolution", { content: "destroy", magnitude: { x: 1 }, target: { entity: "unit", count: 1, side: "any", location: "board", designation: "random" } }),
+        composedCap("spell_resolution", { content: "destroy", magnitude: { x: 1 }, target: { entity: "unit", count: 1, side: "any", location: "board", designation: "random" } }),
+      ],
+    });
+
+  it("détruit DEUX créatures distinctes quand l'ennemi en a exactement deux", () => {
+    const s0 = mkState();
+    s0.players[1].board = [
+      mkInstance(mkCard({ name: "A", attack: 2, health: 4 })),
+      mkInstance(mkCard({ name: "B", attack: 2, health: 4 })),
+    ];
+
+    const s = play(s0, mkInstance(doubleAssassinat()));
+
+    expect(s.players[1].board).toHaveLength(0);
+    expect(s.players[1].graveyard.map((c) => c.card.name).sort()).toEqual(["A", "B"]);
+  });
+
+  it("tue toujours les deux, quelle que soit la graine RNG (plus aucun aléa)", () => {
+    for (const seed of [1, 2, 3, 7, 13, 42, 99, 256]) {
+      const s0 = mkState();
+      s0.players[1].board = [
+        mkInstance(mkCard({ name: "A", attack: 2, health: 4 })),
+        mkInstance(mkCard({ name: "B", attack: 2, health: 4 })),
+      ];
+      const spell = mkInstance(doubleAssassinat());
+      initRNG(seed);
+      s0.players[0].hand.push(spell);
+      const s = applyAction(s0, { type: "play_card", cardInstanceId: spell.instanceId });
+      expect(s.players[1].board, `graine ${seed}`).toHaveLength(0);
+    }
+  });
+
+  it("avec une seule créature, le second « détruire » fizzle proprement (pas de crash)", () => {
+    const s0 = mkState();
+    s0.players[1].board = [mkInstance(mkCard({ name: "Seule", attack: 2, health: 4 }))];
+
+    const s = play(s0, mkInstance(doubleAssassinat()));
+
+    expect(s.players[1].board).toHaveLength(0);
+    expect(s.players[1].graveyard.map((c) => c.card.name)).toEqual(["Seule"]);
+  });
+});

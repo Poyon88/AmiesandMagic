@@ -390,6 +390,17 @@ function composedTargetPool(
     spec.side === "ally" ? [...zoneOf(owner)]
       : spec.side === "enemy" ? [...zoneOf(opponent)]
         : [...zoneOf(owner), ...zoneOf(opponent)];
+  // Sur le PLATEAU, une unité déjà réduite à 0 PV est un cadavre en sursis : le
+  // retrait vers le cimetière (cleanDeadCreatures) n'a lieu qu'APRÈS la
+  // résolution complète du sort/capacité. Elle ne doit jamais compter comme une
+  // cible valide — sinon un effet multi-cibles « au hasard » (ex. Double
+  // assassinat = 2× « Détruire 1 unité au hasard ») peut retomber sur la
+  // créature que l'effet précédent vient de tuer, gaspillant la 2e destruction.
+  // On ne filtre QUE le plateau : cimetière/main/deck n'ont pas de notion de PV
+  // vivants (Exhumation, Résurrection… ciblent justement des cartes « mortes »).
+  if (spec.location === "board") {
+    pool = pool.filter((c) => c.currentHealth > 0);
+  }
   const m = spec.membership;
   if (m && (m.faction?.length || m.race?.length || m.clan?.length)) {
     pool = pool.filter((c) =>
