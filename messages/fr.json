@@ -421,7 +421,7 @@
     "spell_keywords": {
       "precision": {
         "label": "Précision",
-        "desc": "L'unité ciblée gagne Précision."
+        "desc": "Les dégâts de ce sort ignorent la Résistance, l'Armure et le Bouclier."
       },
       "poison": {
         "label": "Poison",

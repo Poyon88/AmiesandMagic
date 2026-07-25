@@ -100,7 +100,7 @@
   - Sort : Les unités blessées perdent 1 PV par tour.
 - 🏹 **Précision**
   - Créature : Ignore la Résistance, l'Armure et le Bouclier.
-  - Sort : L'unité ciblée gagne Précision.
+  - Sort : Les dégâts de ce sort ignorent la Résistance, l'Armure et le Bouclier.
 - 📯 **Convocation**
   - Créature : Invocation : crée le token configuré.
   - Sort : Crée le token configuré.

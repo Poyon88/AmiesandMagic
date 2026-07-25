@@ -553,7 +553,7 @@
       },
       "precision": {
         "label": "Precisione",
-        "desc": "L'unità bersaglio ottiene Precisione."
+        "desc": "I danni di questo incantesimo ignorano Resistenza, Armatura e Scudo."
       }
     },
     "composed": {

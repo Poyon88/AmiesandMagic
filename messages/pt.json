@@ -553,7 +553,7 @@
       },
       "precision": {
         "label": "Precisão",
-        "desc": "A unidade alvo ganha Precisão."
+        "desc": "O dano desta magia ignora Resistência, Armadura e Escudo."
       }
     },
     "composed": {

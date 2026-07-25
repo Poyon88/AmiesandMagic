@@ -553,7 +553,7 @@
       },
       "precision": {
         "label": "Precisión",
-        "desc": "La unidad objetivo gana Precisión."
+        "desc": "El daño de este hechizo ignora la Resistencia, la Armadura y el Escudo."
       }
     },
     "composed": {

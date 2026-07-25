@@ -177,14 +177,16 @@ export const ABILITIES: Record<string, AbilityDef> = {
     desc: "Ignore la Résistance, l'Armure et le Bouclier.",
     applicable_to: ["creature", "spell"],
     creature: { cost: 7, costPerX: 0, se: 1.5, minTier: 1, scalable: false, zone: "Terrain" },
-    // Forme sort : confère Précision de façon permanente à l'unité ciblée
-    // (même mécanique que Poison côté sort, qui pose son état sur la cible).
-    // Cible libre — un sort peut légitimement viser une unité alliée (buff)
-    // comme adverse (ex. combo/drawback) ; c'est l'auteur de la carte qui
-    // tranche via le picker.
+    // Forme sort : modificateur GLOBAL, pas un don. Le sort « a » Précision —
+    // tous les dégâts qu'il inflige aux créatures (Impact, Siphon, Déferlement,
+    // Cataclysme, Tempête) ignorent Résistance, Armure et Bouclier, exactement
+    // comme la Précision d'une créature perce les défenses de sa cible. Aucune
+    // cible propre : c'est un mot-clé à combiner avec un mot-clé de dégâts
+    // (ex. Tir de baliste = Impact + Précision). Conférer Précision à une unité
+    // par un sort reste possible via l'effet composé « Conférer une capacité ».
     spell: {
-      desc: "L'unité ciblée gagne Précision.",
-      params: [], needsTarget: true, targetType: "any_creature",
+      desc: "Les dégâts de ce sort ignorent la Résistance, l'Armure et le Bouclier.",
+      params: [], needsTarget: false,
     },
   },
   drain_de_vie: {
