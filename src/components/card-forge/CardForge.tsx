@@ -46,7 +46,11 @@ function pick<T>(arr: T[]): T { return arr[Math.floor(Math.random() * arr.length
 // the expected pattern. », là où Chrome est tolérant. On nettoie donc avant
 // `atob` : suppression des blancs, normalisation URL-safe (-_ → +/), padding.
 function base64ToBytes(base64: string) {
-  let clean = (base64 ?? "").replace(/\s/g, "").replace(/-/g, "+").replace(/_/g, "/");
+  let clean = (base64 ?? "")
+    // Certains chemins amont peuvent livrer une data-URL complète : le préfixe
+    // « data:image/…;base64, » ferait échouer atob (':' ';' ',' hors alphabet).
+    .replace(/^data:[^,]*,/, "")
+    .replace(/\s/g, "").replace(/-/g, "+").replace(/_/g, "/");
   const pad = clean.length % 4;
   if (pad) clean += "=".repeat(4 - pad);
   const bin = atob(clean);
@@ -57,6 +61,65 @@ function base64ToBytes(base64: string) {
 
 function base64ToBlobUrl(base64: string, mime: string): string {
   return URL.createObjectURL(new Blob([base64ToBytes(base64)], { type: mime }));
+}
+
+// Lit une réponse d'API de façon défensive. `res.json()` direct casse quand la
+// réponse n'est PAS du JSON — page d'erreur de la passerelle (timeout de
+// fonction Netlify sur la génération 2K, payload trop volumineux…) — et
+// Safari/WebKit remonte alors son message générique « The string did not match
+// the expected pattern. », incompréhensible pour l'admin. On lit donc le texte,
+// on tente le parse, et à défaut on compose une erreur lisible (statut HTTP +
+// début du corps).
+async function readApiResponse(res: Response, fallbackError: string): Promise<Record<string, unknown>> {
+  const raw = await res.text();
+  let data: Record<string, unknown> = {};
+  try {
+    data = JSON.parse(raw);
+  } catch {
+    // Réponse non-JSON : on ne garde que le début (page HTML de la passerelle).
+    if (!res.ok) {
+      const snippet = raw.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 140);
+      throw new Error(`${fallbackError} (HTTP ${res.status}${snippet ? ` — ${snippet}` : ""})`);
+    }
+  }
+  if (!res.ok) throw new Error((data.error as string) || `${fallbackError} (HTTP ${res.status})`);
+  return data;
+}
+
+// Recompresse une image base64 côté client (canvas, JPEG qualité 0.85, bord
+// max `maxSize` px) avant un envoi au serveur. Les images générées en 2K
+// (Imagen Ultra) pèsent plusieurs Mo une fois en base64 : postées brutes dans
+// un JSON, elles peuvent dépasser la limite de payload des fonctions Netlify,
+// qui répond alors par une page d'erreur non-JSON (cf. readApiResponse). Même
+// approche que la sauvegarde des cartes (saveToGame), qui compresse déjà à
+// 800 px. JPEG et non WebP : Safari ne sait pas ENCODER le webp via canvas et
+// retomberait silencieusement sur du PNG, plus lourd.
+async function compressBase64Image(
+  base64: string,
+  mime: string,
+  maxSize = 800,
+): Promise<{ base64: string; mime: string }> {
+  return new Promise((resolve, reject) => {
+    const img = new window.Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      let w = img.width, h = img.height;
+      if (w > maxSize || h > maxSize) {
+        const ratio = Math.min(maxSize / w, maxSize / h);
+        w = Math.round(w * ratio);
+        h = Math.round(h * ratio);
+      }
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) { resolve({ base64, mime }); return; }
+      ctx.drawImage(img, 0, 0, w, h);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+      resolve({ base64: dataUrl.split(",")[1], mime: "image/jpeg" });
+    };
+    img.onerror = reject;
+    img.src = `data:${mime};base64,${(base64 ?? "").replace(/^data:[^,]*,/, "").replace(/\s/g, "")}`;
+  });
 }
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
@@ -1840,13 +1903,12 @@ export default function CardForge() {
           highRes: true,
         }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || tf('generation_error'));
-      setTokenImageBase64(data.imageBase64);
-      setTokenImageMime(data.mimeType);
+      const data = await readApiResponse(res, tf('generation_error'));
+      setTokenImageBase64(data.imageBase64 as string);
+      setTokenImageMime(data.mimeType as string);
       // Convert to blob URL for preview (base64 nettoyé : robuste sur Safari).
-      setTokenImagePreview(base64ToBlobUrl(data.imageBase64, data.mimeType));
-      setTokenMessage({ ok: true, msg: tf('image_generated', { model: data.model }) });
+      setTokenImagePreview(base64ToBlobUrl(data.imageBase64 as string, data.mimeType as string));
+      setTokenMessage({ ok: true, msg: tf('image_generated', { model: data.model as string }) });
     } catch (err) {
       setTokenMessage({ ok: false, msg: err instanceof Error ? err.message : tf('error') });
     } finally {
@@ -1860,6 +1922,16 @@ export default function CardForge() {
     setTokenMessage(null);
     try {
       const gameKws = tokenKeywords.map(k => FORGE_TO_GAME_KEYWORD[k] || k).filter(Boolean);
+      // Compression AVANT envoi (parité avec la sauvegarde des cartes) : une
+      // image générée en 2K posterait plusieurs Mo de base64 dans le JSON et
+      // pourrait dépasser la limite de payload de la fonction serveur.
+      let imgB64 = tokenImageBase64, imgMime = tokenImageMime;
+      if (imgB64 && imgMime) {
+        try {
+          const compressed = await compressBase64Image(imgB64, imgMime);
+          imgB64 = compressed.base64; imgMime = compressed.mime;
+        } catch { /* image illisible → tentative d'envoi telle quelle */ }
+      }
       const res = await fetch('/api/token-templates', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1871,13 +1943,12 @@ export default function CardForge() {
           attack: tokenAttack,
           health: tokenHealth,
           keywords: gameKws,
-          imageBase64: tokenImageBase64,
-          imageMimeType: tokenImageMime,
+          imageBase64: imgB64,
+          imageMimeType: imgMime,
           updateId: tokenEditId || undefined,
         }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || tf('server_error'));
+      await readApiResponse(res, tf('server_error'));
       setTokenRace(""); setTokenFaction(""); setTokenClan(""); setTokenName(""); setTokenKeywords([]);
       setTokenAttack(1); setTokenHealth(1);
       setTokenImageBase64(null); setTokenImageMime(null);
