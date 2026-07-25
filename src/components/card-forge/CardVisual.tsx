@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { FACTIONS, RARITY_MAP } from '@/lib/card-engine/constants';
 import KeywordIcon from '@/components/shared/KeywordIcon';
-import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, getSpellKeywordDesc, getSpellKeywordLabel } from '@/lib/game/spell-keywords';
+import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, getSpellKeywordBadgeValue, getSpellKeywordDesc, getSpellKeywordLabel } from '@/lib/game/spell-keywords';
 import { isCreatureKwShadowedBySpell, CREATURE_LABEL_TO_ENGINE_ID } from '@/lib/game/abilities';
 import { useVocab } from '@/i18n/useVocab';
 import { KEYWORD_LABELS, keywordModeColor, isStatPairKeyword, TEXT_CONTRAST_HALO } from '@/lib/game/keyword-labels';
@@ -455,18 +455,10 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
               const fakeCard = { convocation_tokens: card!.convocationTokens?.map(t => ({ token_id: t.token_id, attack: t.attack, health: t.health })) } as import("@/lib/game/types").Card;
               const label = getSpellKeywordLabel(spellKw);
               const desc = getSpellKeywordDesc(spellKw, fakeCard, tokens);
-              const usesAtkHp = def.params.includes("attack") && def.params.includes("health");
-              const usesAmount = def.params.includes("amount");
-              const hasValue = usesAmount || usesAtkHp;
-              const useStatBuffFormat = usesAtkHp && def.label.includes("+X");
-              const useStatDebuffFormat = usesAtkHp && def.label.includes("-X");
-              const valueText = usesAtkHp
-                ? useStatBuffFormat
-                  ? `+${spellKw.attack ?? 0}/+${spellKw.health ?? 0}`
-                  : useStatDebuffFormat
-                    ? `-${spellKw.attack ?? 0}/-${spellKw.health ?? 0}`
-                    : `${spellKw.attack ?? 0}/${spellKw.health ?? 0}`
-                : usesAmount ? xNumeral(spellKw.amount ?? 1) : null;
+              // Format centralisé (cf. getSpellKeywordBadgeValue) — couvre la
+              // paire neutre amount+health de Déchainement X/Y.
+              const valueText = getSpellKeywordBadgeValue(spellKw);
+              const hasValue = valueText != null;
               return (
                 <div key={`sk_${i}`} title={`${label}: ${desc}`} style={{
                   minWidth: 19 * s, height: 19 * s, borderRadius: 6 * s,

@@ -198,6 +198,31 @@ export function getSpellKeywordLabel(kw: SpellKeywordInstance, t?: SafeT): strin
   return label;
 }
 
+/** Valeur à peindre sur le badge d'un mot-clé de SORT (à côté de l'icône).
+ *  Centralise le format des quatre rendus de carte (GameCard, HandCard,
+ *  MulliganOverlay, aperçu forge CardVisual) qui dupliquaient la logique — et
+ *  oubliaient le couple amount+health de Déchainement X/Y : seul le X
+ *  s'affichait, le coût Y disparaissait du badge.
+ *  - attack + health : paire de stats, signée d'après le libellé du registre
+ *    (« +X/+Y » → +2/+1, « -X/-Y » → -2/-1, sinon neutre 2/1) ;
+ *  - amount + health : paire neutre « X/Y » (Déchainement : X sorts de coût Y) ;
+ *  - amount seul : le X (repli legacy `attack` pour Invocation, ex-token X/Y) ;
+ *  - aucun paramètre : null (pas de valeur à afficher). */
+export function getSpellKeywordBadgeValue(kw: SpellKeywordInstance): string | null {
+  const def = SPELL_KEYWORDS[kw.id];
+  if (!def) return null;
+  const usesAttack = def.params.includes("attack");
+  const usesHealth = def.params.includes("health");
+  const usesAmount = def.params.includes("amount");
+  if (usesAttack && usesHealth) {
+    const sign = def.label.includes("+X") ? "+" : def.label.includes("-X") ? "-" : "";
+    return `${sign}${kw.attack ?? 0}/${sign}${kw.health ?? 0}`;
+  }
+  if (usesAmount && usesHealth) return `${kw.amount ?? 1}/${kw.health ?? 1}`;
+  if (usesAmount) return String(kw.id === "invocation" ? (kw.amount ?? kw.attack ?? 1) : (kw.amount ?? 1));
+  return null;
+}
+
 export function spellKeywordNeedsTarget(id: SpellKeywordId): boolean {
   return SPELL_KEYWORDS[id]?.needsTarget ?? false;
 }

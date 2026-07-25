@@ -49,8 +49,8 @@ function loadSetRegistry(): Promise<CardSet[]> {
     });
   return _setRegistryPromise;
 }
-import { KEYWORD_SYMBOLS as keywordSymbols, xNumeral, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordBadgeValue, applyKeywordValueToLabel, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
-import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
+import { KEYWORD_SYMBOLS as keywordSymbols, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordBadgeValue, applyKeywordValueToLabel, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
+import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, getSpellKeywordBadgeValue } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
@@ -398,23 +398,10 @@ export default function GameCard({
               // dropping a single icon is better than crashing the whole card.
               if (!def) return null;
               const displayTitle = vocab.spellKeywordLabel(spellKw);
-              const usesAtkHp = def.params.includes("attack") && def.params.includes("health");
-              const usesAmount = def.params.includes("amount");
-              const hasValue = usesAmount || usesAtkHp;
-              // Renforcement is a stat buff (+X/+Y); Affaiblissement is a
-              // debuff (-X/-Y, minus signs baked in the label). The label
-              // format in the registry tells us which convention to use.
-              const useStatBuffFormat = usesAtkHp && def.label.includes("+X");
-              // Invocation : X = coût de la créature invoquée. Repli legacy
-              // sur `attack` (sorts sauvés en « Invocation X/Y » token).
-              const amountValue = spellKw.id === "invocation"
-                ? (spellKw.amount ?? spellKw.attack ?? 1)
-                : (spellKw.amount ?? 1);
-              const valueText = usesAtkHp
-                ? useStatBuffFormat
-                  ? `+${spellKw.attack ?? 0}/+${spellKw.health ?? 0}`
-                  : `${spellKw.attack ?? 0}/${spellKw.health ?? 0}`
-                : usesAmount ? xNumeral(amountValue) : null;
+              // Format centralisé (signe ±X/±Y d'après le libellé, paire
+              // neutre amount+health de Déchainement, repli legacy Invocation).
+              const valueText = getSpellKeywordBadgeValue(spellKw);
+              const hasValue = valueText != null;
               const spellKey = `spell_${spellKw.id}`;
               const hasImg = !!iconOverrides[spellKey];
               return (

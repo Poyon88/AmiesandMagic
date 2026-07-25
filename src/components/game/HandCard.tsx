@@ -7,8 +7,8 @@ import Image from "next/image";
 import type { CardInstance } from "@/lib/game/types";
 import { useGameStore } from "@/lib/store/gameStore";
 import type { DragEvent } from "react";
-import { KEYWORD_SYMBOLS, xNumeral, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordBadgeValue, applyKeywordValueToLabel, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
-import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
+import { KEYWORD_SYMBOLS, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordBadgeValue, applyKeywordValueToLabel, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
+import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, getSpellKeywordBadgeValue } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell, getEntraideReduction, getTokenManaCost } from "@/lib/game/abilities";
 import { persistentStats } from "@/lib/game/engine";
 import KeywordIcon from "@/components/shared/KeywordIcon";
@@ -588,15 +588,10 @@ function HandCard({
               const def = SPELL_KEYWORDS[spellKw.id];
               if (!def) return null;
               const displayTitle = vocab.spellKeywordLabel(spellKw);
-              const usesAtkHp = def.params.includes("attack") && def.params.includes("health");
-              const usesAmount = def.params.includes("amount");
-              const hasValue = usesAmount || usesAtkHp;
-              const useStatBuffFormat = usesAtkHp && def.label.includes("+X");
-              const valueText = usesAtkHp
-                ? useStatBuffFormat
-                  ? `+${spellKw.attack ?? 0}/+${spellKw.health ?? 0}`
-                  : `${spellKw.attack ?? 0}/${spellKw.health ?? 0}`
-                : usesAmount ? xNumeral(spellKw.amount ?? 1) : null;
+              // Format centralisé (cf. getSpellKeywordBadgeValue) — couvre la
+              // paire neutre amount+health de Déchainement X/Y.
+              const valueText = getSpellKeywordBadgeValue(spellKw);
+              const hasValue = valueText != null;
               const spellKey = `spell_${spellKw.id}`;
               const hasImg = !!iconOverrides[spellKey];
               return (
