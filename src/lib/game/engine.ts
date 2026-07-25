@@ -1180,6 +1180,20 @@ function discardFromHand(
 // AURA RECALCULATION
 // ============================================================
 
+// Force des ancêtres : seuil de créatures dans le cimetière du propriétaire à
+// partir duquel le bonus +X/+Y s'allume.
+export const FORCE_ANCETRES_GRAVEYARD_THRESHOLD = 5;
+
+// Résolution du couple X/Y de Force des ancêtres, dans l'ordre : instance de
+// mot-clé de la carte → valeurs conférées (grantedKeywordX/Y) → 1/1 par défaut.
+// Même cascade qu'applyGloire.
+function forceAncetresValues(inst: CardInstance): { x: number; y: number } {
+  const kwInst = inst.card.keyword_instances?.find(i => i.id === "force_des_ancetres");
+  const x = kwInst?.x ?? inst.grantedKeywordX["force_des_ancetres"] ?? 1;
+  const y = kwInst?.y ?? inst.grantedKeywordY?.["force_des_ancetres"] ?? 1;
+  return { x: Math.max(0, x), y: Math.max(0, y) };
+}
+
 export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
   // Reset ATK to base + permanent bonuses (not auras)
   for (const c of player.board) {
@@ -1320,6 +1334,34 @@ export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
         c.currentHealth += diff;
         if (c.currentHealth < 1 && uniqueRaces < oldHP) c.currentHealth = 1; // don't kill via aura removal
         c.sangMeleHealthBonus = uniqueRaces;
+      }
+    }
+  }
+
+  // Force des ancêtres +X/+Y : tant que le cimetière du PROPRIÉTAIRE compte
+  // FORCE_ANCETRES_GRAVEYARD_THRESHOLD créatures ou plus, l'unité gagne
+  // +X ATK / +Y PV. Aura DYNAMIQUE (modèle Sang mêlé) : l'ATK est ré-ajoutée
+  // ici (reset en tête de fonction), les PV suivent via
+  // forceAncetresHealthBonus avec diff pour monter/descendre quand la
+  // condition bascule (Exhumation / Résurrection vident le cimetière), avec
+  // la garde « ne pas tuer par retrait d'aura ». La réconciliation tourne
+  // pour TOUTE créature : sans le mot-clé (Silence) le bonus visé vaut 0 et
+  // les PV retombent.
+  for (const board of [player.board, opponent.board]) {
+    const owner = board === player.board ? player : opponent;
+    const graveCreatures = owner.graveyard.filter(g => g.card.card_type === "creature").length;
+    const conditionMet = graveCreatures >= FORCE_ANCETRES_GRAVEYARD_THRESHOLD;
+    for (const c of board) {
+      const active = conditionMet && hasKw(c, "force_des_ancetres");
+      const { x, y } = active ? forceAncetresValues(c) : { x: 0, y: 0 };
+      if (x > 0) c.currentAttack += x;
+      const oldHP = c.forceAncetresHealthBonus ?? 0;
+      if (y !== oldHP) {
+        const diff = y - oldHP;
+        c.maxHealth += diff;
+        c.currentHealth += diff;
+        if (c.currentHealth < 1 && y < oldHP) c.currentHealth = 1; // don't kill via aura removal
+        c.forceAncetresHealthBonus = y;
       }
     }
   }
@@ -1974,6 +2016,17 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     if (hasKwOnPlay(cardInstance, "invocation")) {
       const x = getKwX(cardInstance, "invocation", undefined, 1);
       resolveInvocationSummon(player, cardInstance.card, x, newState.factionCardPool, newState.formatCode ?? null);
+    }
+
+    // Déchainement X/Y : lance X sorts aléatoires de coût exactement Y issus de
+    // la collection du joueur, même alignement que cette carte, cibles au
+    // hasard. X/Y lus depuis keyword_instances (patron Affaiblissement).
+    // Polymorphe : même mot-clé disponible côté sort dans resolveSpellKeywords.
+    if (hasKwOnPlay(cardInstance, "dechainement")) {
+      const inst = cardInstance.card.keyword_instances?.find(i => i.id === "dechainement" && !i.mode);
+      const x = inst?.x ?? getKwX(cardInstance, "dechainement", undefined, 1);
+      const y = inst?.y ?? 1;
+      resolveDechainement(newState, player, opponent, cardInstance.card, x, y);
     }
 
     // Convocation (sans X) : variante non scalable de Convocation X. Crée le
@@ -2781,80 +2834,95 @@ function recastSpells(
     // Skip spells that themselves have relancer (safety)
     if (card.spell_keywords?.some(kw => kw.id === "relancer")) continue;
 
-    // Build random target map
-    const targetMap: Record<string, string> = {};
-    // Vraies cibles du sort (pour l'animation « comme depuis la main »), hors
-    // fallback target_0 défensif ci-dessous — sinon un sort de zone afficherait
-    // une flèche parasite vers une créature aléatoire.
-    const realTargetIds: string[] = [];
-    if (card.spell_keywords?.length) {
-      for (let i = 0; i < card.spell_keywords.length; i++) {
-        const kw = card.spell_keywords[i];
-        const def = SPELL_KEYWORDS[kw.id];
-        if (!def) continue;
-        if (def.needsTarget) {
-          const target = pickRandomTarget(player, opponent, def.targetType);
-          if (target) { targetMap[`kw_${i}`] = target; realTargetIds.push(target); }
-        }
+    castSpellWithRandomTargets(state, player, opponent, card);
+  }
+}
+
+/** Lance `card` (un sort) comme s'il venait de la main, avec des cibles tirées
+ *  au hasard (RNG semé partagé) — corps commun de Relancer X (recastSpells) et
+ *  de Déchainement X/Y. Pousse l'événement d'animation `recastEvents` (overlay
+ *  + flèches vers les cibles réelles), résout les mots-clés de sort puis les
+ *  effets composables, et balaie les morts. N'ajoute PAS le sort à
+ *  l'historique (spellHistory ne trace que les sorts joués depuis la main). */
+function castSpellWithRandomTargets(
+  state: GameState,
+  player: PlayerState,
+  opponent: PlayerState,
+  card: Card,
+): void {
+  // Build random target map
+  const targetMap: Record<string, string> = {};
+  // Vraies cibles du sort (pour l'animation « comme depuis la main »), hors
+  // fallback target_0 défensif ci-dessous — sinon un sort de zone afficherait
+  // une flèche parasite vers une créature aléatoire.
+  const realTargetIds: string[] = [];
+  if (card.spell_keywords?.length) {
+    for (let i = 0; i < card.spell_keywords.length; i++) {
+      const kw = card.spell_keywords[i];
+      const def = SPELL_KEYWORDS[kw.id];
+      if (!def) continue;
+      if (def.needsTarget) {
+        const target = pickRandomTarget(player, opponent, def.targetType);
+        if (target) { targetMap[`kw_${i}`] = target; realTargetIds.push(target); }
       }
     }
-    // Also set target_0 for composable effects / legacy
-    if (card.spell_effects?.targets?.length) {
-      for (const slot of card.spell_effects.targets) {
-        const target = pickRandomTarget(player, opponent, slot.type as SpellTargetType);
-        if (target) { targetMap[slot.slot] = target; realTargetIds.push(target); }
-      }
+  }
+  // Also set target_0 for composable effects / legacy
+  if (card.spell_effects?.targets?.length) {
+    for (const slot of card.spell_effects.targets) {
+      const target = pickRandomTarget(player, opponent, slot.type as SpellTargetType);
+      if (target) { targetMap[slot.slot] = target; realTargetIds.push(target); }
     }
-    if (!targetMap["target_0"]) {
-      const fallback = pickRandomTarget(player, opponent, "any");
-      if (fallback) targetMap["target_0"] = fallback;
-    }
+  }
+  if (!targetMap["target_0"]) {
+    const fallback = pickRandomTarget(player, opponent, "any");
+    if (fallback) targetMap["target_0"] = fallback;
+  }
 
-    // Indice d'animation : rejoue le sort relancé comme s'il venait de la main
-    // (overlay + flèches vers ses cibles). Cibles héros caster-relatives →
-    // sentinelles absolues __hero_<idx>__ (traduites par POV côté store).
-    const pIdx = state.players.indexOf(player);
-    const oIdx = state.players.indexOf(opponent);
-    const animTargetIds = [...new Set(realTargetIds)].map(id =>
-      id === "enemy_hero" ? `__hero_${oIdx}__`
-      : id === "friendly_hero" ? `__hero_${pIdx}__`
-      : id,
-    );
-    (state.recastEvents ??= []).push({ card, targetIds: animTargetIds });
+  // Indice d'animation : rejoue le sort relancé comme s'il venait de la main
+  // (overlay + flèches vers ses cibles). Cibles héros caster-relatives →
+  // sentinelles absolues __hero_<idx>__ (traduites par POV côté store).
+  const pIdx = state.players.indexOf(player);
+  const oIdx = state.players.indexOf(opponent);
+  const animTargetIds = [...new Set(realTargetIds)].map(id =>
+    id === "enemy_hero" ? `__hero_${oIdx}__`
+    : id === "friendly_hero" ? `__hero_${pIdx}__`
+    : id,
+  );
+  (state.recastEvents ??= []).push({ card, targetIds: animTargetIds });
 
-    const ctx: SpellResolutionContext = {
-      state, caster: player, opponent, card, targetMap, results: {},
-    };
+  const ctx: SpellResolutionContext = {
+    state, caster: player, opponent, card, targetMap, results: {},
+  };
 
-    // Resolve spell keywords (lus depuis le modèle unifié)
-    const spellInstances2 = spellResolutionInstances(card);
-    if (spellInstances2.length) {
-      resolveSpellKeywords(ctx, spellInstances2);
-      const pDead = cleanDeadCreatures(player);
-      const oDead = cleanDeadCreatures(opponent);
-      for (const [slot, instanceId] of Object.entries(targetMap)) {
-        if ([...pDead, ...oDead].some(c => c.instanceId === instanceId)) {
-          ctx.results[`${slot}_destroyed`] = true;
-          ctx.results["target_destroyed"] = true;
-        }
-      }
-      processDeathTriggers(pDead, player, opponent);
-      processDeathTriggers(oDead, opponent, player);
-    }
-
-    // Resolve composable effects
-    if (card.spell_effects?.effects?.length) {
-      resolveComposableEffects(ctx, card.spell_effects.effects);
-    }
-
-    // Clean up deaths
+  // Resolve spell keywords (lus depuis le modèle unifié)
+  const spellInstances2 = spellResolutionInstances(card);
+  if (spellInstances2.length) {
+    resolveSpellKeywords(ctx, spellInstances2);
     const pDead = cleanDeadCreatures(player);
     const oDead = cleanDeadCreatures(opponent);
+    for (const [slot, instanceId] of Object.entries(targetMap)) {
+      if ([...pDead, ...oDead].some(c => c.instanceId === instanceId)) {
+        ctx.results[`${slot}_destroyed`] = true;
+        ctx.results["target_destroyed"] = true;
+      }
+    }
     processDeathTriggers(pDead, player, opponent);
     processDeathTriggers(oDead, opponent, player);
-
-    recalculateAuras(player, opponent);
   }
+
+  // Resolve composable effects
+  if (card.spell_effects?.effects?.length) {
+    resolveComposableEffects(ctx, card.spell_effects.effects);
+  }
+
+  // Clean up deaths
+  const pDead = cleanDeadCreatures(player);
+  const oDead = cleanDeadCreatures(opponent);
+  processDeathTriggers(pDead, player, opponent);
+  processDeathTriggers(oDead, opponent, player);
+
+  recalculateAuras(player, opponent);
 }
 
 // ============================================================
@@ -3084,6 +3152,14 @@ function resolveSpellKeywords(
         // n'ont pas de `amount` — leur ancienne ATK devient le coût X.
         const x = kw.amount ?? kw.attack ?? 1;
         resolveInvocationSummon(ctx.caster, ctx.card, x, ctx.state.factionCardPool, ctx.state.formatCode ?? null);
+        break;
+      }
+      case "dechainement": {
+        // Déchainement X/Y : lance X sorts aléatoires (amount) de coût
+        // exactement Y (health) de la collection, cibles au hasard.
+        const x = kw.amount ?? 1;
+        const y = kw.health ?? 1;
+        resolveDechainement(ctx.state, ctx.caster, ctx.opponent, ctx.card, x, y);
         break;
       }
       case "convocation_simple": {
@@ -6727,6 +6803,46 @@ function resolveInvocationSummon(
   const summoned = createCardInstance(chosen);
   summoned.hasSummoningSickness = true;
   owner.board.push(summoned);
+}
+
+/** Déchainement X/Y : lance X sorts aléatoires de coût EXACTEMENT Y issus de
+ *  la « collection » du joueur — mêmes règles de pool qu'Invocation X (toutes
+ *  les communes + les éditions limitées possédées, factions du même alignement
+ *  que la carte source, cartes légales dans le format du match) mais sur
+ *  `allSpellsPool` (sorts, toutes factions — le pool de Concentration /
+ *  Sélection magique). Chaque sort est lancé avec des cibles aléatoires via la
+ *  machinerie de Relancer X (castSpellWithRandomTargets) ; tirages AVEC remise
+ *  via le RNG semé partagé → déterministe sur les deux clients. Les sorts
+ *  porteurs de Déchainement (récursion infinie) ou de Relancer (rejouerait
+ *  l'historique — même garde que recastSpells) sont exclus du pool. No-op si
+ *  aucun candidat au coût exact — pas de repli ≤ Y. */
+function resolveDechainement(
+  state: GameState,
+  player: PlayerState,
+  opponent: PlayerState,
+  sourceCard: Card,
+  x: number,
+  y: number,
+): void {
+  const pool = state.allSpellsPool;
+  if (!pool || pool.length === 0 || x <= 0 || y <= 0) return;
+  const allowedFactions = factionsForSelectionAlignment(sourceCard, player);
+  const legal = state.formatCode ? getFormatFilterByCode(state.formatCode) : null;
+  const ownedLimited = new Set(player.ownedLimitedCardIds ?? []);
+  const candidates = pool.filter(c =>
+    c.card_type === "spell"
+    && c.mana_cost === y
+    && !!c.faction && allowedFactions.has(c.faction)
+    && ((c.rarity ?? "Commune") === "Commune"
+      || (c.card_year != null && c.set_id == null && ownedLimited.has(c.id)))
+    && (!legal || legal(c))
+    && !c.spell_keywords?.some(k => k.id === "dechainement" || k.id === "relancer"),
+  );
+  if (candidates.length === 0) return;
+  for (let i = 0; i < x; i++) {
+    const chosen = candidates[Math.floor(rng() * candidates.length)];
+    castSpellWithRandomTargets(state, player, opponent, chosen);
+  }
 }
 
 /** Renfort Royal : propose jusqu'à 3 cartes parmi les éditions limitées

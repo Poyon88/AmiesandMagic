@@ -153,6 +153,10 @@
         "label": "Necrofagia",
         "desc": "Gana +1 ATK y +1 PV cada vez que muere una unidad (aliada o enemiga)."
       },
+      "force_des_ancetres": {
+        "label": "Fuerza de los ancestros +X/+Y",
+        "desc": "Mientras tu cementerio contenga 5 o más criaturas, gana +X ATK y +Y PV."
+      },
       "richesse": {
         "label": "Riqueza X",
         "desc": "Cada vez que un jugador descarta una carta de su mano, esta unidad gana +X/+X (permanente)."
@@ -408,6 +412,10 @@
       "declenchement": {
         "label": "Activación",
         "desc": "Repite una vez los efectos compuestos de tus otros aliados (entrada / muerte / fin de turno / retorno)."
+      },
+      "dechainement": {
+        "label": "Desencadenamiento X/Y",
+        "desc": "Lanza X hechizos aleatorios de coste Y de tu colección ({alignment}), con objetivos aleatorios."
       }
     },
     "spell_keywords": {
@@ -458,6 +466,10 @@
       "relancer": {
         "label": "Relanzar X",
         "desc": "Vuelve a lanzar los X últimos hechizos lanzados con objetivos aleatorios."
+      },
+      "dechainement": {
+        "label": "Desencadenamiento X/Y",
+        "desc": "Lanza X hechizos aleatorios de coste Y de tu colección ({alignment}), con objetivos aleatorios."
       },
       "invocation": {
         "label": "Invocación X",
@@ -661,7 +673,7 @@
       },
       "Humains": {
         "displayName": "Los Reinos Libres",
-        "description": "El viejo continente: honor, acero y campeones heroicos."
+        "description": "El viejo continente: honor, acero, campeones heroicos y sus orgullosos aliados alados, grifos y halcones."
       },
       "Hommes-Bêtes": {
         "displayName": "La Manada",
@@ -740,6 +752,8 @@
       "Golems": "Golems",
       "Gnomes": "Gnomos",
       "Humains": "Humanos",
+      "Griffons": "Grifos",
+      "Faucons": "Halcones",
       "Hommes-Loups": "Hombres-Lobo",
       "Hommes-Ours": "Hombres-Oso",
       "Hommes-Félins": "Hombres-Felino",
@@ -824,6 +838,16 @@
         "def": "el Humano",
         "bare": "Humano",
         "de": "del Humano"
+      },
+      "Griffons": {
+        "def": "el Grifo",
+        "bare": "Grifo",
+        "de": "del Grifo"
+      },
+      "Faucons": {
+        "def": "el Halcón",
+        "bare": "Halcón",
+        "de": "del Halcón"
       },
       "Hommes-Loups": {
         "def": "el Hombre-Lobo",
@@ -1513,6 +1537,9 @@
     "required_caps_f": "Requerida",
     "atk_is_x": "(el +ATK = el valor X)",
     "neg_atk_is_x": "(el -ATK = el valor X)",
+    "spell_cost_y": "COSTE DE LOS HECHIZOS (Y)",
+    "spell_count_is_x": "(el número de hechizos = el valor X)",
+    "fda_condition": "(mientras haya ≥5 criaturas en tu cementerio)",
     "choose_ability": "-- Elegir una capacidad --",
     "scope_one_ally": "1 aliado objetivo",
     "scope_all_allies": "Todos los aliados",

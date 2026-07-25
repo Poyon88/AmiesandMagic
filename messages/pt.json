@@ -153,6 +153,10 @@
         "label": "Necrofagia",
         "desc": "Ganha +1 ATK e +1 PV cada vez que uma unidade (aliada ou inimiga) morre."
       },
+      "force_des_ancetres": {
+        "label": "Força dos ancestrais +X/+Y",
+        "desc": "Enquanto o teu cemitério contiver 5 ou mais criaturas, ganha +X ATK e +Y PV."
+      },
       "richesse": {
         "label": "Riqueza X",
         "desc": "Sempre que um jogador descarta uma carta de sua mão, esta unidade ganha +X/+X (permanente)."
@@ -408,6 +412,10 @@
       "declenchement": {
         "label": "Ativação",
         "desc": "Repete uma vez os efeitos combinados dos seus outros aliados (entrada / morte / fim de turno / retorno)."
+      },
+      "dechainement": {
+        "label": "Desencadeamento X/Y",
+        "desc": "Lança X feitiços aleatórios de custo Y da tua coleção ({alignment}), com alvos aleatórios."
       }
     },
     "spell_keywords": {
@@ -458,6 +466,10 @@
       "relancer": {
         "label": "Relançar X",
         "desc": "Relança os X últimos feitiços conjurados com alvos aleatórios"
+      },
+      "dechainement": {
+        "label": "Desencadeamento X/Y",
+        "desc": "Lança X feitiços aleatórios de custo Y da tua coleção ({alignment}), com alvos aleatórios."
       },
       "invocation": {
         "label": "Invocação X",
@@ -661,7 +673,7 @@
       },
       "Humains": {
         "displayName": "Os Reinos Livres",
-        "description": "O velho continente: honra, aço e campeões heroicos."
+        "description": "O velho continente: honra, aço, campeões heroicos e os seus orgulhosos aliados alados, grifos e falcões."
       },
       "Hommes-Bêtes": {
         "displayName": "A Matilha",
@@ -740,6 +752,8 @@
       "Golems": "Golens",
       "Gnomes": "Gnomos",
       "Humains": "Humanos",
+      "Griffons": "Grifos",
+      "Faucons": "Falcões",
       "Hommes-Loups": "Homens-Lobos",
       "Hommes-Ours": "Homens-Ursos",
       "Hommes-Félins": "Homens-Felinos",
@@ -824,6 +838,16 @@
         "def": "o Humano",
         "bare": "Humano",
         "de": "do Humano"
+      },
+      "Griffons": {
+        "def": "o Grifo",
+        "bare": "Grifo",
+        "de": "do Grifo"
+      },
+      "Faucons": {
+        "def": "o Falcão",
+        "bare": "Falcão",
+        "de": "do Falcão"
       },
       "Hommes-Loups": {
         "def": "o Homem-Lobo",
@@ -1513,6 +1537,9 @@
     "required_caps_f": "Obrigatória",
     "atk_is_x": "(o +ATK = o valor X)",
     "neg_atk_is_x": "(o -ATK = o valor X)",
+    "spell_cost_y": "CUSTO DOS FEITIÇOS (Y)",
+    "spell_count_is_x": "(o número de feitiços = o valor X)",
+    "fda_condition": "(enquanto ≥5 criaturas no cemitério)",
     "choose_ability": "-- Escolher uma habilidade --",
     "scope_one_ally": "1 aliado-alvo",
     "scope_all_allies": "Todos os aliados",

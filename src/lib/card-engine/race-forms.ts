@@ -40,6 +40,8 @@ export const RACE_FORMS_FR: Record<string, Inflected> = {
   "Golems": { def: "le Golem", bare: "Golem", de: "du Golem" },
   "Gnomes": { def: "le Gnome", bare: "Gnome", de: "du Gnome" },
   "Humains": { def: "l'Humain", bare: "Humain", de: "de l'Humain" },
+  "Griffons": { def: "le Griffon", bare: "Griffon", de: "du Griffon" },
+  "Faucons": { def: "le Faucon", bare: "Faucon", de: "du Faucon" },
   "Hommes-Loups": { def: "l'Homme-Loup", bare: "Homme-Loup", de: "de l'Homme-Loup" },
   "Hommes-Ours": { def: "l'Homme-Ours", bare: "Homme-Ours", de: "de l'Homme-Ours" },
   "Hommes-Félins": { def: "l'Homme-Félin", bare: "Homme-Félin", de: "de l'Homme-Félin" },

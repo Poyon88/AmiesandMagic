@@ -153,6 +153,10 @@
         "label": "Nekrophagie",
         "desc": "Erhält +1 ATK und +1 LP, wann immer eine Einheit (verbündet oder feindlich) stirbt."
       },
+      "force_des_ancetres": {
+        "label": "Kraft der Ahnen +X/+Y",
+        "desc": "Solange dein Friedhof 5 oder mehr Kreaturen enthält, erhält diese Einheit +X ATK und +Y LP."
+      },
       "richesse": {
         "label": "Reichtum X",
         "desc": "Wann immer ein Spieler eine Karte aus der Hand abwirft, erhält diese Einheit dauerhaft +X/+X."
@@ -408,6 +412,10 @@
       "declenchement": {
         "label": "Auslösung",
         "desc": "Löst die zusammengesetzten Effekte deiner anderen Verbündeten einmal erneut aus (Eintritt / Tod / Rundenende / Rückkehr)."
+      },
+      "dechainement": {
+        "label": "Entfesselung X/Y",
+        "desc": "Wirkt X zufällige Zauber mit Kosten Y aus deiner Sammlung ({alignment}), mit zufälligen Zielen."
       }
     },
     "spell_keywords": {
@@ -458,6 +466,10 @@
       "relancer": {
         "label": "Wiederholen X",
         "desc": "Spielt die letzten X gewirkten Zauber mit zufälligen Zielen erneut."
+      },
+      "dechainement": {
+        "label": "Entfesselung X/Y",
+        "desc": "Wirkt X zufällige Zauber mit Kosten Y aus deiner Sammlung ({alignment}), mit zufälligen Zielen."
       },
       "invocation": {
         "label": "Beschwörung X",
@@ -661,7 +673,7 @@
       },
       "Humains": {
         "displayName": "Die Freien Königreiche",
-        "description": "Der alte Kontinent: Ehre, Stahl und heroische Helden."
+        "description": "Der alte Kontinent: Ehre, Stahl, heroische Helden und ihre stolzen geflügelten Verbündeten, Greifen und Falken."
       },
       "Hommes-Bêtes": {
         "displayName": "Das Rudel",
@@ -740,6 +752,8 @@
       "Golems": "Golems",
       "Gnomes": "Gnome",
       "Humains": "Menschen",
+      "Griffons": "Greifen",
+      "Faucons": "Falken",
       "Hommes-Loups": "Wolfsmenschen",
       "Hommes-Ours": "Bärenmenschen",
       "Hommes-Félins": "Katzenmenschen",
@@ -824,6 +838,16 @@
         "def": "der Mensch",
         "bare": "Mensch",
         "de": "des Menschen"
+      },
+      "Griffons": {
+        "def": "der Greif",
+        "bare": "Greif",
+        "de": "des Greifen"
+      },
+      "Faucons": {
+        "def": "der Falke",
+        "bare": "Falke",
+        "de": "des Falken"
       },
       "Hommes-Loups": {
         "def": "der Werwolf",
@@ -1513,6 +1537,9 @@
     "required_caps_f": "Erforderlich",
     "atk_is_x": "(+ATK = Wert X)",
     "neg_atk_is_x": "(-ATK = Wert X)",
+    "spell_cost_y": "ZAUBERKOSTEN (Y)",
+    "spell_count_is_x": "(die Anzahl der Zauber = Wert X)",
+    "fda_condition": "(solange ≥5 Kreaturen im Friedhof)",
     "choose_ability": "-- Fähigkeit wählen --",
     "scope_one_ally": "1 gezielter Verbündeter",
     "scope_all_allies": "Alle Verbündeten",

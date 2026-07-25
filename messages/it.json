@@ -153,6 +153,10 @@
         "label": "Necrofagia",
         "desc": "Guadagna +1 ATK e +1 PV ogni volta che un'unità (alleata o nemica) muore."
       },
+      "force_des_ancetres": {
+        "label": "Forza degli antenati +X/+Y",
+        "desc": "Finché il tuo cimitero contiene 5 o più creature, guadagna +X ATK e +Y PV."
+      },
       "richesse": {
         "label": "Ricchezza X",
         "desc": "Ogni volta che un giocatore scarta una carta dalla sua mano, questa unità guadagna +X/+X (permanente)."
@@ -408,6 +412,10 @@
       "declenchement": {
         "label": "Attivazione",
         "desc": "Riattiva una volta gli effetti combinati dei tuoi altri alleati (entrata / morte / fine turno / ritorno)."
+      },
+      "dechainement": {
+        "label": "Scatenamento X/Y",
+        "desc": "Lancia X incantesimi casuali di costo Y dalla tua collezione ({alignment}), con bersagli casuali."
       }
     },
     "spell_keywords": {
@@ -458,6 +466,10 @@
       "relancer": {
         "label": "Rilanciare X",
         "desc": "Rilancia gli ultimi X incantesimi lanciati con bersagli casuali"
+      },
+      "dechainement": {
+        "label": "Scatenamento X/Y",
+        "desc": "Lancia X incantesimi casuali di costo Y dalla tua collezione ({alignment}), con bersagli casuali."
       },
       "invocation": {
         "label": "Invocazione X",
@@ -661,7 +673,7 @@
       },
       "Humains": {
         "displayName": "I Regni Liberi",
-        "description": "Il vecchio continente: onore, acciaio e campioni eroici."
+        "description": "Il vecchio continente: onore, acciaio, campioni eroici e i loro fieri alleati alati, grifoni e falchi."
       },
       "Hommes-Bêtes": {
         "displayName": "Il Branco",
@@ -740,6 +752,8 @@
       "Golems": "Golem",
       "Gnomes": "Gnomi",
       "Humains": "Umani",
+      "Griffons": "Grifoni",
+      "Faucons": "Falchi",
       "Hommes-Loups": "Uomini-Lupo",
       "Hommes-Ours": "Uomini-Orso",
       "Hommes-Félins": "Uomini-Felino",
@@ -824,6 +838,16 @@
         "def": "l'Umano",
         "bare": "Umano",
         "de": "dell'Umano"
+      },
+      "Griffons": {
+        "def": "il Grifone",
+        "bare": "Grifone",
+        "de": "del Grifone"
+      },
+      "Faucons": {
+        "def": "il Falco",
+        "bare": "Falco",
+        "de": "del Falco"
       },
       "Hommes-Loups": {
         "def": "l'Uomo-Lupo",
@@ -1513,6 +1537,9 @@
     "required_caps_f": "Richiesta",
     "atk_is_x": "(il +ATK = il valore X)",
     "neg_atk_is_x": "(il -ATK = il valore X)",
+    "spell_cost_y": "COSTO DEGLI INCANTESIMI (Y)",
+    "spell_count_is_x": "(il numero di incantesimi = il valore X)",
+    "fda_condition": "(finché ≥5 creature nel cimitero)",
     "choose_ability": "-- Scegli una capacità --",
     "scope_one_ally": "1 alleato bersaglio",
     "scope_all_allies": "Tutti gli alleati",
