@@ -553,7 +553,7 @@
       },
       "precision": {
         "label": "Präzision",
-        "desc": "Die anvisierte Einheit erhält Präzision."
+        "desc": "Der Schaden dieses Zaubers ignoriert Resistenz, Rüstung und Schild."
       }
     },
     "composed": {

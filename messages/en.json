@@ -553,7 +553,7 @@
       },
       "precision": {
         "label": "Precision",
-        "desc": "The targeted unit gains Precision."
+        "desc": "This spell's damage ignores Resistance, Armor, and Shield."
       }
     },
     "composed": {

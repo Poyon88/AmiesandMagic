@@ -2983,6 +2983,14 @@ function resolveSpellKeywords(
   ctx: SpellResolutionContext,
   keywords: SpellKeywordInstance[]
 ): void {
+  // Précision, forme SORT : modificateur GLOBAL du sort, pas un don. Sa seule
+  // présence dans la liste fait que TOUS les dégâts que ce sort inflige aux
+  // créatures (Impact, Siphon, Déferlement, Cataclysme, Tempête) ignorent la
+  // réduction — Résistance, Armure et Bouclier — via ignoreDR=true, exactement
+  // comme la Précision d'une créature perce les défenses de sa cible. Le sort
+  // « a » Précision ; il ne la confère à personne. Le picker ne demande donc
+  // aucune cible pour ce mot-clé (needsTarget:false dans le registre).
+  const spellPierces = keywords.some(k => k.id === "precision");
   for (let i = 0; i < keywords.length; i++) {
     const kw = keywords[i];
     const def = SPELL_KEYWORDS[kw.id];
@@ -3014,27 +3022,27 @@ function resolveSpellKeywords(
           dealDamageToHero(ctx.caster.hero, amount);
         } else if (targetId) {
           const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
-          if (target) dealDamageToCreature(target, amount, false, true, ctx.caster.hero);
+          if (target) dealDamageToCreature(target, amount, spellPierces, true, ctx.caster.hero);
         }
         break;
       }
       case "deferlement": {
         const amount = kw.amount ?? 0;
-        [...ctx.opponent.board].forEach(c => dealDamageToCreature(c, amount, false, true, ctx.caster.hero));
+        [...ctx.opponent.board].forEach(c => dealDamageToCreature(c, amount, spellPierces, true, ctx.caster.hero));
         break;
       }
       case "cataclysme": {
         // X dégâts à TOUTES les créatures des deux camps (vs Déferlement =
         // ennemis seuls). fromSpell non passé → vrai sort (respecte Transcendance).
         const amount = kw.amount ?? 0;
-        [...ctx.opponent.board, ...ctx.caster.board].forEach(c => dealDamageToCreature(c, amount, false, true, ctx.caster.hero));
+        [...ctx.opponent.board, ...ctx.caster.board].forEach(c => dealDamageToCreature(c, amount, spellPierces, true, ctx.caster.hero));
         break;
       }
       case "siphon": {
         const amount = kw.amount ?? 0;
         if (targetId && targetId !== "enemy_hero" && targetId !== "friendly_hero") {
           const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
-          if (target) dealDamageToCreature(target, amount, false, true, ctx.caster.hero);
+          if (target) dealDamageToCreature(target, amount, spellPierces, true, ctx.caster.hero);
         } else if (targetId === "enemy_hero") {
           dealDamageToHero(ctx.opponent.hero, amount);
         }
@@ -3059,16 +3067,13 @@ function resolveSpellKeywords(
         break;
       }
       case "precision": {
-        // Spell-side Précision : confère le mot-clé de façon permanente à
-        // l'unité ciblée, des deux côtés du plateau (le picker autorise une
-        // cible alliée comme adverse). Passe par applyGrantedKeyword, le
-        // canal commun aux trois chemins de don — sans lui, le mot-clé
-        // n'atterrirait pas dans `card.keywords` et `hasKw` ne le verrait
-        // jamais au moment du calcul de dégâts.
-        if (targetId) {
-          const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
-          if (target) applyGrantedKeyword(target, "precision");
-        }
+        // Spell-side Précision : simple MARQUEUR, sans effet ni cible propres.
+        // Sa présence a déjà été captée en amont dans `spellPierces` (voir en
+        // tête de fonction), qui fait que TOUS les dégâts infligés aux
+        // créatures par ce sort ignorent Résistance, Armure et Bouclier — le
+        // sort « a » Précision, il ne la confère pas. Conférer Précision à une
+        // unité via un sort reste possible par l'effet composé « Conférer une
+        // capacité » (precision fait partie des ids grantable).
         break;
       }
       case "execution": {
@@ -3249,7 +3254,7 @@ function resolveSpellKeywords(
           const alive = ctx.opponent.board.filter((u) => u.currentHealth > 0);
           if (alive.length === 0) break;
           const target = alive[Math.floor(rng() * alive.length)];
-          dealDamageToCreature(target, 1, false, true, ctx.caster.hero);
+          dealDamageToCreature(target, 1, spellPierces, true, ctx.caster.hero);
           sequentialHitsSink.push({ targetInstanceId: target.instanceId, type: "damage" });
         }
         break;
