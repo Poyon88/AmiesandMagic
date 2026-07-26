@@ -2400,7 +2400,9 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       if (idx >= 0) {
         const [called] = player.deck.splice(idx, 1);
         const calledInstance = createCardInstance(called.card);
-        calledInstance.hasSummoningSickness = true;
+        // Mal d'invocation par défaut, sauf Traque portée par l'appelée (même
+        // règle que la main / Exhumation / Invocation X).
+        calledInstance.hasSummoningSickness = !hasKw(calledInstance, "charge");
         player.board.push(calledInstance);
       }
     }
@@ -3375,7 +3377,8 @@ function resolveSpellKeywords(
         if (idx >= 0) {
           const [called] = ctx.caster.deck.splice(idx, 1);
           const calledInstance = createCardInstance(called.card);
-          calledInstance.hasSummoningSickness = true;
+          // Traque de l'appelée respectée (cf. chemin on-play / Invocation X).
+          calledInstance.hasSummoningSickness = !hasKw(calledInstance, "charge");
           ctx.caster.board.push(calledInstance);
         }
         break;
@@ -3645,7 +3648,9 @@ function resolveAtomicEffect(ctx: SpellResolutionContext, effect: AtomicEffect):
         creature.currentAttack = creature.card.attack ?? 0;
         creature.currentHealth = creature.card.health ?? 1;
         creature.maxHealth = creature.card.health ?? 1;
-        creature.hasSummoningSickness = true;
+        // Alignement sur Exhumation : une créature ramenée du cimetière garde
+        // sa Traque et peut donc attaquer dès son retour.
+        creature.hasSummoningSickness = !hasKw(creature, "charge");
         creature.instanceId = generateInstanceId();
         if (ctx.caster.board.length < MAX_BOARD_SIZE) ctx.caster.board.push(creature);
       }
@@ -5242,7 +5247,8 @@ function resolveCuratedKeywordEffect(
       if (idx >= 0) {
         const [called] = owner.deck.splice(idx, 1);
         const calledInstance = createCardInstance(called.card);
-        calledInstance.hasSummoningSickness = true;
+        // Traque de l'appelée respectée (cf. chemin on-play / Invocation X).
+        calledInstance.hasSummoningSickness = !hasKw(calledInstance, "charge");
         owner.board.push(calledInstance);
       }
       break;
