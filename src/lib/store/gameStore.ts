@@ -3,7 +3,7 @@ import type { GameState, GameAction, Card, CardInstance, DamageEvent, DeathFxEve
 import { useAudioStore } from "./audioStore";
 import SfxEngine from "@/lib/audio/SfxEngine";
 import { playAttackLunge } from "@/lib/game/animations";
-import { findInstanceEl, overlayRect } from "@/lib/fx/overlayMotion";
+import { findInstanceEl, overlayRect, OVERLAY } from "@/lib/fx/overlayMotion";
 import { parseXValuesFromEffectText, KEYWORD_LABELS, KEYWORD_SYMBOLS, keywordModeColor } from "@/lib/game/keyword-labels";
 import { composedCapsOf, composedTriggerMode, composedChoicePrompt } from "@/lib/game/composed-display";
 import { getCapabilities } from "@/lib/game/capability-adapter";
@@ -1162,10 +1162,16 @@ export const useGameStore = create<GameStore>((set, get) => {
     // On vide la liste transitoire après extraction (exclue du hash).
     const rawRecasts = newState.recastEvents ?? [];
     if (newState.recastEvents) newState.recastEvents = undefined;
-    const recastSpells: SpellCastEvent[] = rawRecasts.map((rc) => ({
+    const recastSpells: SpellCastEvent[] = rawRecasts.map((rc, i) => ({
       spellName: `♻️ ${rc.card.name}`,
       effectText: rc.card.effect_text,
-      timestamp: Date.now(),
+      // `timestamp` sert de CLÉ de montage à l'overlay (AnimatePresence). Tous
+      // ces évènements naissaient dans le même tick de dispatch, donc avec le
+      // même Date.now() — et une clé inchangée = pas de remontage : le 2ᵉ sort
+      // relancé remplaçait le contenu de la carte SANS rejouer la moindre
+      // animation (ni pop, ni flèches, ni FX). Le décalage par index rend
+      // chaque révélation distincte. Purement visuel, hors hash de synchro.
+      timestamp: Date.now() + 1 + i,
       card: rc.card,
       targetIds: rc.targetIds.map((id) => {
         const m = /^__hero_(\d)__$/.exec(id);
@@ -1858,7 +1864,11 @@ export const useGameStore = create<GameStore>((set, get) => {
     // so it doesn't drag the cast — the popup visually starts here and
     // continues fading while the spell overlay flies in.
     const COST_DISCARD_MS = 1000;
-    const RECAST_GAP_MS = 1200; // gap between recasts (tightened from 1800 — a 3-recast cascade was 5.4s of pure gap)
+    // Cadence des sorts : pilotée par OVERLAY.spell (cf. overlayMotion), pour
+    // que le store et l'overlay ne puissent pas diverger. L'écart entre deux
+    // relances vaut désormais la fenêtre de lecture pleine de la carte — avant,
+    // 1200ms pour 2000ms d'affichage, chaque relance était tronquée.
+    const RECAST_GAP_MS = OVERLAY.spell.recastGapMs;
 
     // Une attaque sur héros porte une sentinelle en POINT DE VUE DE L'ATTAQUANT
     // ("enemy_hero" = héros défenseur). Le lunge la résout via `data-target-id`,
@@ -2153,7 +2163,11 @@ export const useGameStore = create<GameStore>((set, get) => {
       }
     }
 
-    if (hasOverlay) cursor += OVERLAY_PRE_IMPACT_MS;
+    // Un sort laisse plus de temps avant l'impact que les autres overlays : il y
+    // a un texte d'effet à lire. Pouvoir de héros / souffle de feu gardent leur
+    // cadence d'origine (rien à lire, un ralentissement les rendrait mous).
+    if (spellEvent) cursor += OVERLAY.spell.preImpactMs;
+    else if (hasOverlay) cursor += OVERLAY_PRE_IMPACT_MS;
     else if (isAttack) cursor += ATTACK_LUNGE_PRE_IMPACT_MS;
     else if (powerArrowEvent) cursor += POWER_ARROW_PRE_IMPACT_MS;
 

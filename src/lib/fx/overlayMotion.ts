@@ -25,6 +25,26 @@ export const OVERLAY = {
   displayMs: 2000,
   /** Container cross-fade in/out. */
   containerFade: 0.25,
+  /** Résolution des SORTS — cadence dédiée, 2× plus lente que le reste des
+   *  overlays. Un sort porte du texte à lire (mots-clés + effet), et une carte
+   *  qui en relance d'autres (Relancer) enchaîne plusieurs révélations d'affilée :
+   *  à l'ancienne cadence chacune était coupée avant d'être lisible. Séparé de
+   *  `displayMs` pour ne PAS ralentir les pouvoirs de héros ni les flèches de
+   *  pouvoir, qui n'ont rien à lire. */
+  spell: {
+    /** Fenêtre d'affichage de la carte-sort révélée. */
+    displayMs: 4000,
+    /** Révélation → début des popups d'impact (dégâts, soins…). */
+    preImpactMs: 2300,
+    /** Écart entre deux révélations successives (sorts relancés). Tenu ≥ la
+     *  durée pendant laquelle la carte est pleinement opaque (0.6 × displayMs,
+     *  cf. `spellCardRevealTransition`) pour qu'aucune relance ne soit coupée
+     *  en pleine lecture — c'était le cas avant (1200ms pour 2000ms d'affichage). */
+    recastGapMs: 2400,
+    /** Rassemblement d'énergie arcanique sur chaque cible, calé juste avant
+     *  `preImpactMs` pour que les flèches « arrivent » avant les popups. */
+    targetGatherMs: 2000,
+  },
 };
 
 // ---- Reveal card (SpellCast + HeroPower shared this byte-for-byte) ----------
@@ -39,6 +59,18 @@ export const cardRevealTransition: Transition = {
   // Fade-out starts at 0.6 (was 0.82): the card popped, settled, then used to
   // sit motionless for ~1.7s. Compressed so the reveal reads as a beat.
   times: [0, 0.16, 0.26, 0.6, 1],
+  ease: EASE.cardReveal as unknown as Transition["ease"],
+};
+
+/** Variante SORT du reveal ci-dessus, sur la fenêtre allongée `OVERLAY.spell`.
+ *  Les `times` sont recalibrés, pas simplement hérités : à durée doublée les
+ *  ratios d'origine donneraient un pop mou de 640ms. On conserve l'entrée à
+ *  l'identique en millisecondes ABSOLUES (pop à 320ms, posée à 520ms) et on
+ *  n'allonge que la tenue lisible — pleine opacité jusqu'à 2400ms, puis sortie
+ *  en fondu. C'est le temps de lecture qui double, pas la vivacité de l'entrée. */
+export const spellCardRevealTransition: Transition = {
+  duration: OVERLAY.spell.displayMs / 1000,
+  times: [0, 0.08, 0.13, 0.6, 1],
   ease: EASE.cardReveal as unknown as Transition["ease"],
 };
 

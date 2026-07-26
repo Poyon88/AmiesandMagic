@@ -18,7 +18,7 @@ import {
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import { buildKeywordDisplayEntries, applyKeywordValueToLabel } from "@/lib/game/keyword-labels";
 import { emitImpact } from "@/lib/fx/impactFx";
-import { OVERLAY, cardRevealInitial, cardRevealAnimate, cardRevealTransition, findInstanceEl, curvedPath, overlayRect } from "@/lib/fx/overlayMotion";
+import { OVERLAY, cardRevealInitial, cardRevealAnimate, spellCardRevealTransition, findInstanceEl, curvedPath, overlayRect } from "@/lib/fx/overlayMotion";
 import { RadialFlash, HaloBloom, ExpandingRing, OrbitingSparkles } from "@/components/game/OverlayPrimitives";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { getFactionDisplayName } from "@/lib/card-engine/constants";
@@ -99,7 +99,10 @@ function SpellTargetArrows({
       }}
       initial={{ opacity: 0 }}
       animate={{ opacity: [0, 1, 1, 0] }}
-      transition={{ duration: OVERLAY.displayMs / 1000, times: [0, 0.2, 0.78, 1] }}
+      // Mêmes temps absolus qu'avant (apparition en ~400ms, sortie sur le
+      // dernier tiers) reportés sur la fenêtre allongée du sort — sinon les
+      // flèches mettraient 800ms à apparaître.
+      transition={{ duration: OVERLAY.spell.displayMs / 1000, times: [0, 0.1, 0.62, 1] }}
     >
       {targetIds.map((_, i) => (
         <g key={i}>
@@ -135,14 +138,14 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
 
   useEffect(() => {
     if (!event) return;
-    const timer = setTimeout(onComplete, OVERLAY.displayMs);
+    const timer = setTimeout(onComplete, OVERLAY.spell.displayMs);
     return () => clearTimeout(timer);
   }, [event, onComplete]);
 
   // Canvas FX: a release burst radiating from the spell card, then a gather of
   // arcane energy on each target right as the arrows arrive — landing just
-  // before the impact popups at OVERLAY_PRE_IMPACT_MS (1800ms). Visual-only,
-  // fires deterministically with the overlay on both clients.
+  // before the impact popups at OVERLAY.spell.preImpactMs. Visual-only, fires
+  // deterministically with the overlay on both clients.
   useEffect(() => {
     if (!event) return;
     const paletteKey = event.countered ? "spell_red" : "spell";
@@ -165,7 +168,7 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
           amount: 0, type: "cast_hit", dirX: 0, dirY: 0, big: false, paletteKey,
         });
       }
-    }, 1250);
+    }, OVERLAY.spell.targetGatherMs);
     return () => {
       clearTimeout(release);
       if (targets) clearTimeout(targets);
@@ -205,9 +208,13 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
           transition={{ duration: 0.25 }}
         >
           {/* Background flash · halo · shockwave ring · orbiting sparkles —
-              shared overlay chrome (see OverlayPrimitives). */}
-          <RadialFlash color={color} duration={3.0} />
-          <HaloBloom color={color} size={460} duration={3.2} peakTime={0.15} />
+              shared overlay chrome (see OverlayPrimitives). Le flash et le halo
+              sont l'ambiance de fond : étirés sur toute la fenêtre allongée,
+              sinon ils s'éteignent à 3s et la carte finit de se lire dans le
+              noir. L'onde et les étincelles, elles, sont l'à-coup du lancement
+              et restent calées sur le pop de la carte. */}
+          <RadialFlash color={color} duration={4.0} />
+          <HaloBloom color={color} size={460} duration={4.2} peakTime={0.12} />
           <ExpandingRing color={color} size={260} duration={1.6} />
           <OrbitingSparkles
             count={14}
@@ -238,7 +245,7 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
             }}
             initial={cardRevealInitial}
             animate={cardRevealAnimate}
-            transition={cardRevealTransition}
+            transition={spellCardRevealTransition}
           >
             {/* Description overlay (less opaque so the art shows through) */}
             <div style={{
