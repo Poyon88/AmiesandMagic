@@ -2878,6 +2878,31 @@ function castSpellWithRandomTargets(
       }
     }
   }
+  // Sélection / Renfort Royal / Sélection magique attendent un ID DE CARTE
+  // choisi par le joueur dans la modale « 1 parmi 3 » (slots nommés
+  // `selection_0` / `renfort_royal_0` / `selection_magique_0`). Un sort
+  // relancé n'a personne pour choisir : sans pré-tirage, resolveSpellKeywords
+  // ne trouve aucun slot et l'effet disparaît EN SILENCE (ex. « Renfort des
+  // Trois Peuples » relancé résolvait Tempête 3 mais pas Sélection 2). On tire
+  // au hasard parmi les options éligibles avec le RNG semé partagé — même
+  // parti pris que le chemin créature quand la modale ne peut pas s'ouvrir.
+  const SELECTION_KW_IDS = ["selection", "renfort_royal", "selection_magique"] as const;
+  for (const kw of card.spell_keywords ?? []) {
+    const selId = SELECTION_KW_IDS.find((id) => id === kw.id);
+    if (!selId) continue;
+    // Les getters d'options lisent players[currentPlayerIndex] : on leur
+    // présente une vue où le LANCEUR est le joueur courant (le reste de
+    // l'état — pools, turnNumber pour la graine — est conservé).
+    const selState = {
+      ...state,
+      players: [player, opponent],
+      currentPlayerIndex: 0,
+    } as GameState;
+    const options = selectionCardsForKeyword(selId, selState, kw.amount ?? 0, card);
+    if (options.length === 0) continue;
+    targetMap[`${selId}_0`] = String(options[Math.floor(rng() * options.length)].id);
+  }
+
   // Also set target_0 for composable effects / legacy
   if (card.spell_effects?.targets?.length) {
     for (const slot of card.spell_effects.targets) {
