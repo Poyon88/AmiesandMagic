@@ -6842,7 +6842,13 @@ function resolveInvocationSummon(
   if (candidates.length === 0) return;
   const chosen = candidates[Math.floor(rng() * candidates.length)];
   const summoned = createCardInstance(chosen);
-  summoned.hasSummoningSickness = true;
+  // Mal d'invocation par défaut (précédent Appel du Clan), MAIS la créature
+  // invoquée garde ses propres mots-clés : une Traque (id moteur `charge`) doit
+  // pouvoir attaquer le tour de son arrivée, comme quand elle est jouée depuis
+  // la main ou ressuscitée par Exhumation. `hasKw` plutôt que
+  // `keywords.includes` : il lit le modèle unifié, donc aussi une Traque portée
+  // par `keyword_instances` / `capabilities` seuls.
+  summoned.hasSummoningSickness = !hasKw(summoned, "charge");
   owner.board.push(summoned);
 }
 
