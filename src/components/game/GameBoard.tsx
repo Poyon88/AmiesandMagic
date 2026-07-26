@@ -20,6 +20,7 @@ import SelectionOverlay from "./SelectionOverlay";
 import TactiqueKeywordOverlay from "./TactiqueKeywordOverlay";
 import CostPaymentOverlay from "./CostPaymentOverlay";
 import EffectLog from "./EffectLog";
+import ActionHistoryStrip from "./ActionHistoryStrip";
 import TurnTimer from "./TurnTimer";
 import TargetingArrow from "./TargetingArrow";
 import DamageOverlay from "./DamageOverlay";
@@ -76,6 +77,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     tactiqueAvailableKeywords,
     tactiqueMaxSelections,
     effectLog,
+    actionHistory,
     dispatchAction,
     playCardDirect,
     selectCardInHand,
@@ -1353,6 +1355,12 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
           is just not rendered. Re-enable by removing the comment when
           we revisit the feature. */}
       {false && <EffectLog entries={effectLog} />}
+      {/* Bande d'historique : dernières actions en vignettes, bord gauche.
+          Masquée pendant un overlay plein écran (mulligan, sélection…) pour
+          ne pas encombrer une modale — elle n'a rien à dire à ce moment-là. */}
+      {!mulliganOverlayRequired && !isFinished && (
+        <ActionHistoryStrip entries={actionHistory} />
+      )}
       {isFinished && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center">
           <div className="text-center">

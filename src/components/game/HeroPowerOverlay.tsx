@@ -15,8 +15,10 @@ interface HeroPowerOverlayProps {
   onComplete: () => void;
 }
 
-// Race → hero portrait mapping (mirrors HeroPortrait).
-const HERO_IMAGES: Record<string, string> = {
+// Race → hero portrait mapping (mirrors HeroPortrait). Exporté : la bande
+// d'historique réutilise le même repli quand un héros n'a pas d'illustration
+// de pouvoir propre.
+export const HERO_IMAGES: Record<string, string> = {
   elves: "/images/heroes/elves.png",
   dwarves: "/images/heroes/dwarves.svg",
   halflings: "/images/heroes/halflings.svg",

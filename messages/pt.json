@@ -153,10 +153,6 @@
         "label": "Necrofagia",
         "desc": "Ganha +1 ATK e +1 PV cada vez que uma unidade (aliada ou inimiga) morre."
       },
-      "force_des_ancetres": {
-        "label": "Força dos ancestrais +X/+Y",
-        "desc": "Enquanto o teu cemitério contiver 5 ou mais criaturas, ganha +X ATK e +Y PV."
-      },
       "richesse": {
         "label": "Riqueza X",
         "desc": "Sempre que um jogador descarta uma carta de sua mão, esta unidade ganha +X/+X (permanente)."
@@ -416,9 +412,17 @@
       "dechainement": {
         "label": "Desencadeamento X/Y",
         "desc": "Lança X feitiços aleatórios de custo Y da tua coleção ({alignment}), com alvos aleatórios."
+      },
+      "force_des_ancetres": {
+        "label": "Força dos ancestrais +X/+Y",
+        "desc": "Enquanto o teu cemitério contiver 5 ou mais criaturas, ganha +X ATK e +Y PV."
       }
     },
     "spell_keywords": {
+      "precision": {
+        "label": "Precisão",
+        "desc": "Os danos deste feitiço ignoram a Resistência, a Armadura e o Escudo."
+      },
       "poison": {
         "label": "Veneno",
         "desc": "As unidades feridas perdem 1 PV por turno."
@@ -550,10 +554,6 @@
       "afflux": {
         "label": "Afluxo X",
         "desc": "Ganhe X de mana neste turno"
-      },
-      "precision": {
-        "label": "Precisão",
-        "desc": "O dano desta magia ignora Resistência, Armadura e Escudo."
       }
     },
     "composed": {
@@ -1838,6 +1838,22 @@
     "zone_deck_opponent": "Baralho adversário",
     "zone_graveyard_yours": "Seu cemitério",
     "zone_graveyard_opponent": "Cemitério adversário",
+    "history_title": "Últimas ações",
+    "history_hero_friendly": "seu herói",
+    "history_hero_enemy": "o herói adversário",
+    "history_spell": "{source} lançado",
+    "history_spell_on": "{source} lançado em {target}",
+    "history_spell_countered": "{source} anulado",
+    "history_attack": "{source} ataca {target}",
+    "history_attack_alone": "{source} ataca",
+    "history_death": "{source} destruído",
+    "history_power": "Poder de {source} sobre {target}",
+    "history_power_alone": "Poder de {source}",
+    "history_hero_power": "{hero} — {power}",
+    "history_amount": "{amount, plural, one {# dano} other {# danos}}",
+    "history_extra_targets": "{count, plural, one {+# outro alvo} other {+# outros alvos}}",
+    "history_expand": "{count, plural, one {Ver a ação anterior} other {Ver as # ações anteriores}}",
+    "history_collapse": "Recolher histórico",
     "convocation_prefix": "Cria {content}",
     "convocation_create_list": "Cria {content}",
     "convocation_token_one": "um token {token} {atk}/{hp}",
@@ -1868,7 +1884,8 @@
     "mode_suffix_death": " · até a morte",
     "mode_suffix_tap": " · tap",
     "mode_suffix_return": " · retorno à mão",
-    "mode_suffix_end_of_turn": " · fim do turno"
+    "mode_suffix_end_of_turn": " · fim do turno",
+    "history_bounce": "{source} devolvido à mão"
   },
   "tutorial": {
     "page_eyebrow": "Aprenda a arte do duelo",

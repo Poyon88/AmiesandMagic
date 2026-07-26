@@ -153,10 +153,6 @@
         "label": "死肉食らい",
         "desc": "ユニット（味方・敵問わず）が死亡するたびに+1 ATK、+1 PVを得る。"
       },
-      "force_des_ancetres": {
-        "label": "祖霊の力 +X/+Y",
-        "desc": "自分の墓地にクリーチャーが5体以上ある限り、+X ATKと+Y PVを得る。"
-      },
       "richesse": {
         "label": "富 X",
         "desc": "いずれかのプレイヤーが手札を捨てるたびに、このユニットは+X/+Xを得る（永続）。"
@@ -416,9 +412,17 @@
       "dechainement": {
         "label": "解放 X/Y",
         "desc": "コレクションからコストYのランダムな呪文をX個、対象をランダムにして発動する（{alignment}）。"
+      },
+      "force_des_ancetres": {
+        "label": "祖霊の力 +X/+Y",
+        "desc": "自分の墓地にクリーチャーが5体以上ある限り、+X ATKと+Y PVを得る。"
       }
     },
     "spell_keywords": {
+      "precision": {
+        "label": "精密",
+        "desc": "このスペルのダメージは、抵抗力、防具、シールドを無視する。"
+      },
       "poison": {
         "label": "毒",
         "desc": "傷ついたユニットはターンごとにHP-1。"
@@ -550,10 +554,6 @@
       "afflux": {
         "label": "魔力流入 X",
         "desc": "このターン、マナをX獲得する"
-      },
-      "precision": {
-        "label": "精密",
-        "desc": "この呪文のダメージは耐性・アーマー・盾を無視する。"
       }
     },
     "composed": {
@@ -1838,6 +1838,22 @@
     "zone_deck_opponent": "相手のデッキ",
     "zone_graveyard_yours": "自分の墓地",
     "zone_graveyard_opponent": "相手の墓地",
+    "history_title": "最近のアクション",
+    "history_hero_friendly": "あなたのヒーロー",
+    "history_hero_enemy": "敵のヒーロー",
+    "history_spell": "{source}を発動",
+    "history_spell_on": "{target}に{source}を発動",
+    "history_spell_countered": "{source}を無効化",
+    "history_attack": "{source}が{target}を攻撃",
+    "history_attack_alone": "{source}が攻撃",
+    "history_death": "{source}を破壊",
+    "history_power": "{target}への{source}の能力",
+    "history_power_alone": "{source}の能力",
+    "history_hero_power": "{hero} — {power}",
+    "history_amount": "{amount, plural, one {#ダメージ} other {#ダメージ}}",
+    "history_extra_targets": "{count, plural, one {+#他の対象} other {+#他の対象}}",
+    "history_expand": "{count, plural, one {前のアクションを見る} other {前の#件のアクションを見る}}",
+    "history_collapse": "履歴を折りたたむ",
     "convocation_prefix": "{content}を生成",
     "convocation_create_list": "{content} を生成",
     "convocation_token_one": "{token} {atk}/{hp} トークン×1",
@@ -1868,7 +1884,8 @@
     "mode_suffix_death": " · 死亡時",
     "mode_suffix_tap": " · タップ",
     "mode_suffix_return": " · 手札に戻す",
-    "mode_suffix_end_of_turn": " · ターン終了時"
+    "mode_suffix_end_of_turn": " · ターン終了時",
+    "history_bounce": "{source}が手札に戻された"
   },
   "tutorial": {
     "page_eyebrow": "決闘の極意を学べ",

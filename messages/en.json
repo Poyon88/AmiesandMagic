@@ -153,10 +153,6 @@
         "label": "Necrophagy",
         "desc": "Gains +1 ATK and +1 HP whenever a unit (allied or enemy) dies."
       },
-      "force_des_ancetres": {
-        "label": "Ancestral Strength +X/+Y",
-        "desc": "While your graveyard holds 5 or more creatures, gains +X ATK and +Y HP."
-      },
       "richesse": {
         "label": "Wealth X",
         "desc": "Whenever any player discards a card from their hand, this unit permanently gains +X/+X."
@@ -416,9 +412,17 @@
       "dechainement": {
         "label": "Unleash X/Y",
         "desc": "Casts X random spells of cost Y from your collection ({alignment}), with random targets."
+      },
+      "force_des_ancetres": {
+        "label": "Ancestral Strength +X/+Y",
+        "desc": "While your graveyard holds 5 or more creatures, gains +X ATK and +Y HP."
       }
     },
     "spell_keywords": {
+      "precision": {
+        "label": "Precision",
+        "desc": "This spell's damage ignores Resistance, Armor, and Shield."
+      },
       "poison": {
         "label": "Poison",
         "desc": "Wounded units lose 1 HP per turn."
@@ -550,10 +554,6 @@
       "afflux": {
         "label": "Surge X",
         "desc": "Gain X mana this turn."
-      },
-      "precision": {
-        "label": "Precision",
-        "desc": "This spell's damage ignores Resistance, Armor, and Shield."
       }
     },
     "composed": {
@@ -1838,6 +1838,22 @@
     "zone_deck_opponent": "Opponent's Deck",
     "zone_graveyard_yours": "Your Graveyard",
     "zone_graveyard_opponent": "Opponent's Graveyard",
+    "history_title": "Recent Actions",
+    "history_hero_friendly": "your hero",
+    "history_hero_enemy": "the enemy hero",
+    "history_spell": "{source} cast",
+    "history_spell_on": "{source} cast on {target}",
+    "history_spell_countered": "{source} countered",
+    "history_attack": "{source} attacks {target}",
+    "history_attack_alone": "{source} attacks",
+    "history_death": "{source} destroyed",
+    "history_power": "Power of {source} on {target}",
+    "history_power_alone": "Power of {source}",
+    "history_hero_power": "{hero} — {power}",
+    "history_amount": "{amount, plural, one {# damage} other {# damage}}",
+    "history_extra_targets": "{count, plural, one {+# other target} other {+# other targets}}",
+    "history_expand": "{count, plural, one {View the previous action} other {View the # previous actions}}",
+    "history_collapse": "Collapse history",
     "convocation_prefix": "Creates {content}",
     "convocation_create_list": "Creates {content}",
     "convocation_token_one": "a {token} token {atk}/{hp}",
@@ -1868,7 +1884,8 @@
     "mode_suffix_death": " · to the death",
     "mode_suffix_tap": " · tap",
     "mode_suffix_return": " · return to hand",
-    "mode_suffix_end_of_turn": " · end of turn"
+    "mode_suffix_end_of_turn": " · end of turn",
+    "history_bounce": "{source} returned to hand"
   },
   "tutorial": {
     "page_eyebrow": "Master the Art of the Duel",

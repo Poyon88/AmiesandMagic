@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { GameState, GameAction, Card, CardInstance, DamageEvent, DeathFxEvent, HeroDefinition, PlayerState, SpellTargetSlot, TokenTemplate } from "@/lib/game/types";
+import type { GameState, GameAction, Card, CardInstance, DamageEvent, DeathFxEvent, HeroDefinition, KeywordMode, PlayerState, SpellTargetSlot, TokenTemplate } from "@/lib/game/types";
 import { useAudioStore } from "./audioStore";
 import SfxEngine from "@/lib/audio/SfxEngine";
 import { playAttackLunge } from "@/lib/game/animations";
@@ -191,6 +191,47 @@ export interface DiscardFromHandEvent {
   timestamp: number;
 }
 
+// ── Historique d'actions (bande latérale « à la Hearthstone ») ──────────────
+// Journal STRUCTURÉ des dernières actions : contrairement aux champs d'overlay
+// ci-dessus (vidés par les clearXEvent dès l'animation finie), ces entrées
+// persistent pour être relues au calme. Purement client : rien n'entre dans
+// GameState, donc aucun impact sur le hash de synchro ni sur match_state.
+export type HistoryKind = "spell" | "attack" | "death" | "bounce" | "power" | "hero_power";
+
+export interface ActionHistoryEntry {
+  // `${timestamp}-${idx}` : plusieurs entrées naissent dans le MÊME tick, un
+  // timestamp nu ne serait pas une clé React unique (cf. le piège des sorts
+  // relancés, plus bas dans dispatchAction).
+  id: string;
+  kind: HistoryKind;
+  // Point de vue LOCAL : qui a agi (couleur de bord de la vignette).
+  side: "friendly" | "enemy";
+  // Carte affichée en vignette + en aperçu. Absente pour un pouvoir de héros.
+  card?: Card;
+  hero?: {
+    heroId: number;
+    heroName: string;
+    race: string;
+    powerName: string;
+    powerDescription: string;
+    powerImageUrl?: string | null;
+  };
+  // Cible principale : une carte en jeu, ou un héros (POV local).
+  targetCard?: Card;
+  targetIsHero?: "friendly" | "enemy" | null;
+  // Cibles supplémentaires au-delà de la première (« +2 »).
+  extraTargets?: number;
+  // Dégâts subis par la cible principale, quand connus.
+  amount?: number;
+  // kind === "power" : couleur du mode de déclenchement (keywordModeColor).
+  modeColor?: string;
+  countered?: boolean;
+  timestamp: number;
+}
+
+/** Nombre d'entrées conservées dans la bande latérale. */
+export const ACTION_HISTORY_MAX = 7;
+
 interface GameStore {
   // State
   gameState: GameState | null;
@@ -258,6 +299,9 @@ interface GameStore {
   } | null;
   tokenTemplates: TokenTemplate[];
   effectLog: { id: string; text: string; timestamp: number }[];
+  // Bande latérale d'historique — les ACTION_HISTORY_MAX dernières entrées,
+  // plus ancienne en tête (le composant inverse pour l'affichage).
+  actionHistory: ActionHistoryEntry[];
   damageEvents: DamageEvent[];
   deathEvents: DeathFxEvent[];
   summonEvents: string[]; // instanceIds of creatures summoned this action (FX)
@@ -754,6 +798,197 @@ function generateEffectLog(
   return entries;
 }
 
+/**
+ * Construit les entrées d'HISTORIQUE (bande latérale) d'une action résolue.
+ *
+ * Appelée depuis `dispatchAction` une fois toutes les dérivations faites (sorts,
+ * morts, dégâts, powerStrikes) : c'est le SEUL moment où source + cible + montant
+ * cohabitent. Surtout ne pas lire les champs d'overlay du store — ils sont vidés
+ * par les `clearXEvent` pour des raisons purement FX.
+ */
+function buildHistoryEntries(ctx: {
+  oldState: GameState;
+  newState: GameState;
+  action: GameAction;
+  localPlayerId: string | null;
+  spellEvent: SpellCastEvent | null;
+  recastSpells: SpellCastEvent[];
+  heroPowerEvent: HeroPowerCastEvent | null;
+  deadCreatures: CardInstance[];
+  deathOwnerIdx: Map<string, number>;
+  dmgEvents: DamageEvent[];
+  powerStrikes: { sourceId: string; targetId: string; mode: KeywordMode }[];
+}): ActionHistoryEntry[] {
+  const { oldState, newState, action, localPlayerId } = ctx;
+  const entries: ActionHistoryEntry[] = [];
+  const now = Date.now();
+  let idx = 0;
+  const push = (e: Omit<ActionHistoryEntry, "id" | "timestamp">) =>
+    entries.push({ ...e, id: `${now}-${idx++}`, timestamp: now });
+
+  const localIdx = Math.max(0, newState.players.findIndex((p) => p.id === localPlayerId));
+  const sideOf = (playerIdx: number): "friendly" | "enemy" =>
+    playerIdx === localIdx ? "friendly" : "enemy";
+
+  /** Retrouve une créature par instanceId, avant OU après l'action (une cible
+   *  tuée n'existe plus dans newState), avec l'index de son propriétaire. */
+  const findInstance = (id: string): { inst: CardInstance; ownerIdx: number } | null => {
+    for (const st of [oldState, newState]) {
+      for (let i = 0; i < 2; i++) {
+        const inst = st.players[i].board.find((c) => c.instanceId === id);
+        if (inst) return { inst, ownerIdx: i };
+      }
+    }
+    return null;
+  };
+
+  /** Dégâts agrégés subis par une cible. `dmgEvents` porte déjà des sentinelles
+   *  héros en repère LOCAL (detectDamageEvents), d'où la conversion en amont. */
+  const damageOn = (localTargetId: string): number | undefined => {
+    let total = 0;
+    for (const ev of ctx.dmgEvents) {
+      if (ev.targetId === localTargetId && ev.type === "damage") total += ev.amount ?? 0;
+    }
+    return total > 0 ? total : undefined;
+  };
+
+  /** Sentinelle héros ABSOLUE du moteur (`__hero_<idx>__`) → repère local. */
+  const heroIdxOfSentinel = (id: string): number | null => {
+    const m = /^__hero_(\d+)__$/.exec(id);
+    return m ? Number(m[1]) : null;
+  };
+
+  /** Décrit une cible (créature ou héros) à partir d'un id en repère ABSOLU :
+   *  instanceId de créature, ou index de joueur pour un héros. */
+  const describeTarget = (
+    creatureId: string | null,
+    heroPlayerIdx: number | null,
+  ): { targetCard?: Card; targetIsHero?: "friendly" | "enemy"; amount?: number } => {
+    if (heroPlayerIdx != null) {
+      const side = sideOf(heroPlayerIdx);
+      return { targetIsHero: side, amount: damageOn(side === "friendly" ? "friendly_hero" : "enemy_hero") };
+    }
+    if (!creatureId) return {};
+    const found = findInstance(creatureId);
+    if (!found) return {};
+    return { targetCard: found.inst.card, amount: damageOn(creatureId) };
+  };
+
+  // ── Sort lancé (et chaque relance de « Relancer ») ───────────────────────
+  // Les cibles d'un sort sont déclarées par le LANCEUR : ses sentinelles héros
+  // sont donc en POV lanceur, pas en POV local. On les repasse en absolu.
+  const casterIdx = oldState.currentPlayerIndex;
+  const oppOfCasterIdx = casterIdx === 0 ? 1 : 0;
+  const spellTargetToAbsolute = (id: string): { creatureId: string | null; heroPlayerIdx: number | null } => {
+    if (id === "friendly_hero") return { creatureId: null, heroPlayerIdx: casterIdx };
+    if (id === "enemy_hero") return { creatureId: null, heroPlayerIdx: oppOfCasterIdx };
+    const abs = heroIdxOfSentinel(id);
+    if (abs != null) return { creatureId: null, heroPlayerIdx: abs };
+    return { creatureId: id, heroPlayerIdx: null };
+  };
+
+  for (const spell of [ctx.spellEvent, ...ctx.recastSpells]) {
+    if (!spell?.card) continue;
+    const tgts = spell.targetIds ?? [];
+    const first = tgts.length > 0 ? spellTargetToAbsolute(tgts[0]) : null;
+    push({
+      kind: "spell",
+      side: sideOf(casterIdx),
+      card: spell.card,
+      countered: spell.countered,
+      extraTargets: tgts.length > 1 ? tgts.length - 1 : undefined,
+      ...(first ? describeTarget(first.creatureId, first.heroPlayerIdx) : {}),
+    });
+  }
+
+  // ── Pouvoir de héros ─────────────────────────────────────────────────────
+  if (ctx.heroPowerEvent) {
+    push({
+      kind: "hero_power",
+      side: sideOf(casterIdx),
+      hero: {
+        heroId: ctx.heroPowerEvent.heroId,
+        heroName: ctx.heroPowerEvent.heroName,
+        race: ctx.heroPowerEvent.race,
+        powerName: ctx.heroPowerEvent.powerName,
+        powerDescription: ctx.heroPowerEvent.powerDescription,
+        powerImageUrl: ctx.heroPowerEvent.powerImageUrl,
+      },
+    });
+  }
+
+  // ── Combat ───────────────────────────────────────────────────────────────
+  if (action.type === "attack") {
+    const attacker = findInstance(action.attackerInstanceId);
+    if (attacker) {
+      // `targetInstanceId` est en POV de l'ATTAQUANT : "enemy_hero" désigne le
+      // héros du joueur opposé à l'attaquant, quel que soit l'écran qui regarde.
+      const tgt = action.targetInstanceId;
+      const heroPlayerIdx =
+        tgt === "enemy_hero" ? (attacker.ownerIdx === 0 ? 1 : 0)
+        : tgt === "friendly_hero" ? attacker.ownerIdx
+        : heroIdxOfSentinel(tgt);
+      push({
+        kind: "attack",
+        side: sideOf(attacker.ownerIdx),
+        card: attacker.inst.card,
+        ...describeTarget(heroPlayerIdx == null ? tgt : null, heroPlayerIdx),
+      });
+    }
+  }
+
+  // ── Pouvoirs déclenchés (mort / retour / attaque / fin de tour) ──────────
+  // powerStrikes est la seule source portant source + cible + « pourquoi ».
+  // Regroupées par créature source pour ne pas noyer la bande.
+  const strikeGroups = new Map<string, { targets: string[]; mode: KeywordMode }>();
+  for (const st of ctx.powerStrikes) {
+    let g = strikeGroups.get(st.sourceId);
+    if (!g) { g = { targets: [], mode: st.mode }; strikeGroups.set(st.sourceId, g); }
+    if (st.targetId !== st.sourceId && !g.targets.includes(st.targetId)) g.targets.push(st.targetId);
+  }
+  for (const [sourceId, g] of strikeGroups) {
+    const source = findInstance(sourceId);
+    if (!source) continue; // source héros → déjà couvert par kind "hero_power"
+    const firstTarget = g.targets[0];
+    const heroPlayerIdx = firstTarget ? heroIdxOfSentinel(firstTarget) : null;
+    push({
+      kind: "power",
+      side: sideOf(source.ownerIdx),
+      card: source.inst.card,
+      modeColor: keywordModeColor(g.mode) ?? undefined,
+      extraTargets: g.targets.length > 1 ? g.targets.length - 1 : undefined,
+      ...(firstTarget ? describeTarget(heroPlayerIdx == null ? firstTarget : null, heroPlayerIdx) : {}),
+    });
+  }
+
+  // ── Départs du plateau : mort vs retour en main ──────────────────────────
+  // « Absent du nouveau plateau » ne veut PAS dire « détruit » : Remontée
+  // renvoie la MÊME instance en main (returnInstanceToPlay conserve l'objet),
+  // et une métamorphose/exil la fait disparaître des deux zones. On classe
+  // donc d'après la zone d'arrivée, sinon une unité renvoyée en main était
+  // annoncée « détruite ».
+  const zoneAfter = (instanceId: string): "graveyard" | "hand" | "gone" => {
+    for (let i = 0; i < 2; i++) {
+      if (newState.players[i].graveyard.some((c) => c.instanceId === instanceId)) return "graveyard";
+    }
+    for (let i = 0; i < 2; i++) {
+      if (newState.players[i].hand.some((c) => c.instanceId === instanceId)) return "hand";
+    }
+    return "gone";
+  };
+  for (const dead of ctx.deadCreatures) {
+    const zone = zoneAfter(dead.instanceId);
+    if (zone === "gone") continue; // transformée / exilée : ni morte, ni renvoyée
+    push({
+      kind: zone === "hand" ? "bounce" : "death",
+      side: sideOf(ctx.deathOwnerIdx.get(dead.instanceId) ?? 0),
+      card: dead.card,
+    });
+  }
+
+  return entries;
+}
+
 /** Couleur de surbrillance des cibles valides pendant le ciblage d'un POUVOIR
  *  ACTIVABLE (mode "tap"). Reprend la couleur d'icône du pouvoir activé
  *  (keywordModeColor du mode / trigger composé) pour que le bord des cibles
@@ -890,6 +1125,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   pendingCreatureChain: null,
   tokenTemplates: [],
   effectLog: [],
+  actionHistory: [],
   damageEvents: [],
   deathEvents: [],
   summonEvents: [],
@@ -1450,6 +1686,9 @@ export const useGameStore = create<GameStore>((set, get) => {
     // (2) Dégâts de pouvoir DÉCLENCHÉS (mort/retour/attaque/fin de tour),
     // enregistrés par le moteur avec leur mode → flèche colorée par mode
     // (rouge/bleu/violet/vert, via keywordModeColor). Regroupées par (source, couleur).
+    // Copie conservée pour l'historique : le bloc ci-dessous consomme
+    // `newState.powerStrikes` (indice d'animation, hors état).
+    const rawPowerStrikes = newState.powerStrikes ? [...newState.powerStrikes] : [];
     if (newState.powerStrikes && newState.powerStrikes.length > 0) {
       const groups = new Map<string, { sourceId: string; color: string; targets: Set<string> }>();
       for (const st of newState.powerStrikes) {
@@ -1500,6 +1739,47 @@ export const useGameStore = create<GameStore>((set, get) => {
         manaReductionEvent = { byInstance, timestamp: Date.now() };
       }
     }
+
+    // Historique latéral : construit ICI, une fois toutes les dérivations faites
+    // (sort + relances, pouvoir de héros, combat, pouvoirs déclenchés, morts) et
+    // AVANT que les champs d'overlay ne soient planifiés puis vidés.
+    //
+    // Attaque en DEUX VAGUES (pouvoir « à l'attaque ») : `deadCreatures` et
+    // `dmgEvents` diffent depuis `combatOld` (= plateau APRÈS le pouvoir), donc
+    // les victimes du pouvoir et leurs dégâts n'y figurent pas. On récupère la
+    // vague 1 séparément, sinon l'historique perd purement et simplement ces
+    // morts.
+    const historyDeaths: CardInstance[] = [];
+    const historyDeathOwnerIdx = new Map(deathOwnerIdx);
+    let historyDmgEvents = dmgEvents;
+    if (onAttackWave) {
+      const inter = onAttackWave.intermediate;
+      for (let i = 0; i < 2; i++) {
+        const interBoard = inter.players[i].board;
+        for (const oldC of gameState.players[i].board) {
+          if (!interBoard.find((c) => c.instanceId === oldC.instanceId)) {
+            historyDeaths.push(oldC);
+            historyDeathOwnerIdx.set(oldC.instanceId, i);
+          }
+        }
+      }
+      historyDmgEvents = [...detectDamageEvents(gameState, inter, localPlayerId), ...dmgEvents];
+    }
+    historyDeaths.push(...deadCreatures);
+
+    const historyEntries = buildHistoryEntries({
+      oldState: gameState,
+      newState,
+      action,
+      localPlayerId,
+      spellEvent,
+      recastSpells,
+      heroPowerEvent,
+      deadCreatures: historyDeaths,
+      deathOwnerIdx: historyDeathOwnerIdx,
+      dmgEvents: historyDmgEvents,
+      powerStrikes: rawPowerStrikes,
+    });
 
     // SFX from card draw (new cards in hand). The mulligan action is the one
     // exception: its pipeline fires ~1250ms after confirm, while the mulligan
@@ -1826,6 +2106,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         entryEvents: playedCreatureId ? [playedCreatureId] : [],
         lastSfxEvents: sfxEvents,
         effectLog: [...get().effectLog, ...logEntries].slice(-20),
+        actionHistory: [...get().actionHistory, ...historyEntries].slice(-ACTION_HISTORY_MAX),
       });
       playSfxBatch(sfxEvents);
       return action;
@@ -1890,6 +2171,9 @@ export const useGameStore = create<GameStore>((set, get) => {
     const phaseOverlay = () => {
       set((s) => ({
         effectLog: [...s.effectLog, ...logEntries].slice(-20),
+        // L'entrée d'historique apparaît EN MÊME TEMPS que l'animation, pas au
+        // moment du dispatch — sinon la bande spoile ce qui va être joué.
+        actionHistory: [...s.actionHistory, ...historyEntries].slice(-ACTION_HISTORY_MAX),
         ...(spellEvent ? { spellCastEvent: spellEvent } : {}),
         ...(fireEvent ? { fireBreathEvent: fireEvent } : {}),
         ...(heroPowerEvent ? { heroPowerCastEvent: heroPowerEvent } : {}),

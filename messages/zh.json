@@ -153,10 +153,6 @@
         "label": "食腐",
         "desc": "每当任意单位（友方或敌方）死亡时，获得 +1 攻击力和 +1 生命值。"
       },
-      "force_des_ancetres": {
-        "label": "先祖之力 +X/+Y",
-        "desc": "只要你的墓地中有5个或更多生物，便获得+X攻击力和+Y生命值。"
-      },
       "richesse": {
         "label": "财富 X",
         "desc": "每当任意玩家弃掉手牌中的一张牌时，此单位永久获得 +X/+X。"
@@ -416,9 +412,17 @@
       "dechainement": {
         "label": "倾泻 X/Y",
         "desc": "从你的收藏中以随机目标施放X个费用为Y的随机法术（{alignment}）。"
+      },
+      "force_des_ancetres": {
+        "label": "先祖之力 +X/+Y",
+        "desc": "只要你的墓地中有5个或更多生物，便获得+X攻击力和+Y生命值。"
       }
     },
     "spell_keywords": {
+      "precision": {
+        "label": "精准",
+        "desc": "此法术造成的伤害无视抗性、护甲和护盾。"
+      },
       "poison": {
         "label": "中毒",
         "desc": "受伤单位每回合失去1点生命值。"
@@ -550,10 +554,6 @@
       "afflux": {
         "label": "涌流 X",
         "desc": "本回合获得 X 点法力"
-      },
-      "precision": {
-        "label": "精准",
-        "desc": "此法术的伤害无视抗性、护甲和圣盾。"
       }
     },
     "composed": {
@@ -1838,6 +1838,22 @@
     "zone_deck_opponent": "对手的牌库",
     "zone_graveyard_yours": "你的墓地",
     "zone_graveyard_opponent": "对手的墓地",
+    "history_title": "最近动作",
+    "history_hero_friendly": "你的英雄",
+    "history_hero_enemy": "敌方英雄",
+    "history_spell": "{source} 已施放",
+    "history_spell_on": "{source} 施放于 {target}",
+    "history_spell_countered": "{source} 被反制",
+    "history_attack": "{source} 攻击 {target}",
+    "history_attack_alone": "{source} 发起攻击",
+    "history_death": "{source} 已被摧毁",
+    "history_power": "{source} 对 {target} 使用能力",
+    "history_power_alone": "{source} 的能力",
+    "history_hero_power": "{hero} — {power}",
+    "history_amount": "{amount, plural, other {#点伤害}}",
+    "history_extra_targets": "{count, plural, other {+#个其他目标}}",
+    "history_expand": "{count, plural, one {查看前一个动作} other {查看前 # 个动作}}",
+    "history_collapse": "收起历史记录",
     "convocation_prefix": "生成{content}",
     "convocation_create_list": "创建 {content}",
     "convocation_token_one": "一个 {token} {atk}/{hp} token",
@@ -1868,7 +1884,8 @@
     "mode_suffix_death": " · 死亡时",
     "mode_suffix_tap": " · 点击",
     "mode_suffix_return": " · 回手牌",
-    "mode_suffix_end_of_turn": " · 回合结束"
+    "mode_suffix_end_of_turn": " · 回合结束",
+    "history_bounce": "{source} 返回手牌"
   },
   "tutorial": {
     "page_eyebrow": "学习决斗之道",
