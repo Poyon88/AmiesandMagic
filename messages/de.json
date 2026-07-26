@@ -588,7 +588,9 @@
         "exhumation": "erweckt {who} aus eurem Friedhof (Kosten ≤ {x})",
         "exhum_one": "eine Kreatur",
         "exhum_all": "alle Kreaturen",
-        "exhum_upto": "bis zu {n} Kreaturen"
+        "exhum_upto": "bis zu {n} Kreaturen",
+        "selection": "deckt 3 Karten{filter} auf (Kosten ≤ {x}) und behält eine davon auf der Hand",
+        "renfort_royal": "deckt 3 Sammelkarten{filter} auf (Kosten ≤ {x}) und behält eine davon auf der Hand"
       },
       "self": {
         "deal_damage_one": "fügt sich selbst {x} Schaden zu",
@@ -652,6 +654,12 @@
         "grant_keyword": "wähle eine Kreatur, der die Fähigkeit verliehen werden soll",
         "exhumation": "wähle eine Kreatur zum Wiederbeleben",
         "default": "wähle ein Ziel"
+      },
+      "pool": {
+        "race": " der Rasse {v}",
+        "faction": " der Fraktion {v}",
+        "clan": " des Klans {v}",
+        "keyword": " mit {v}"
       }
     },
     "factions": {
@@ -1774,7 +1782,14 @@
     "card_added": "„{name}\" hinzugefügt!",
     "unknown_error": "Unbekannter Fehler",
     "illustration_generated": "Illustration generiert ({model})",
-    "import_error": "Importfehler"
+    "import_error": "Importfehler",
+    "content_selection": "Auswahl (1 von 3)",
+    "content_renfort_royal": "Königliche Auswahl (1 von 3)",
+    "label_pool_membership": "POOL — ZUGEHÖRIGKEIT",
+    "label_pool_faction": "POOL — FRAKTION",
+    "label_pool_keyword": "POOL — SCHLÜSSELWORT",
+    "pool_any": "Beliebig",
+    "pool_hint": "Kumulative Filter, zusätzlich zu den Grundregeln (Gewöhnlich, Kosten ≤ X, Gesinnung der Karte)."
   },
   "game": {
     "error_not_authenticated": "Nicht authentifiziert",
@@ -1847,6 +1862,7 @@
     "history_attack": "{source} greift {target} an",
     "history_attack_alone": "{source} greift an",
     "history_death": "{source} zerstört",
+    "history_bounce": "{source} auf die Hand zurückgeschickt",
     "history_power": "Fähigkeit von {source} auf {target}",
     "history_power_alone": "Fähigkeit von {source}",
     "history_hero_power": "{hero} — {power}",
@@ -1884,8 +1900,7 @@
     "mode_suffix_death": " · auf den Tod",
     "mode_suffix_tap": " · tap",
     "mode_suffix_return": " · zurück auf die Hand",
-    "mode_suffix_end_of_turn": " · Rundenende",
-    "history_bounce": "{source} auf die Hand zurückgeschickt"
+    "mode_suffix_end_of_turn": " · Rundenende"
   },
   "tutorial": {
     "page_eyebrow": "Lerne die Kunst des Duells",

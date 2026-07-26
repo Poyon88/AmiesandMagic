@@ -9,7 +9,8 @@ import { useTranslations } from "next-intl";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 import RaceClanPicker from "@/components/admin/RaceClanPicker";
 import { ABILITIES, creatureEngineId, XY_ABILITY_IDS } from "@/lib/game/abilities";
-import type { Capability, ComposedEffect, ComposedEffectContent, CapabilityTrigger, TargetSpec, TokenTemplate } from "@/lib/game/types";
+import { FACTIONS } from "@/lib/card-engine/constants";
+import type { Capability, ComposedEffect, ComposedEffectContent, ComposedPoolFilter, CapabilityTrigger, TargetSpec, TokenTemplate } from "@/lib/game/types";
 
 const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" | "unit" | "unit_or_hero"; xy?: boolean }[] = [
   { v: "deal_damage", l: "Infliger des dégâts", target: "unit_or_hero" },
@@ -25,7 +26,26 @@ const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" |
   { v: "summon_token", l: "Invoquer un token", target: "none" },
   { v: "gain_mana", l: "Gagner du mana", target: "none" },
   { v: "exhumation", l: "Ressusciter (cimetière)", target: "unit" },
+  // Sélections : pas de cible en jeu (on filtre un pool de cartes hors jeu),
+  // d'où target "none" — le bloc « Pool » ci-dessous les paramètre.
+  { v: "selection", l: "Sélection (1 parmi 3)", target: "none" },
+  { v: "renfort_royal", l: "Sélection Royale (1 parmi 3)", target: "none" },
 ];
+
+/** Contenus paramétrés par un filtre de pool (race / faction / clan / mot-clé).
+ *  Pour eux, X est un PLAFOND DE COÛT des cartes révélées (comme exhumation),
+ *  pas une amplitude. */
+const POOL_CONTENTS = new Set<ComposedEffectContent>(["selection", "renfort_royal"]);
+
+const FACTION_OPTIONS = Object.keys(FACTIONS).sort((a, b) => a.localeCompare(b, "fr"));
+
+// Mots-clés utilisables comme filtre « ne propose que les cartes portant … ».
+// Même dérivation d'id que GRANTABLE, mais sans la contrainte `grantable` :
+// on ne confère rien ici, on filtre sur la présence de la capacité.
+const POOL_KEYWORDS = Object.values(ABILITIES)
+  .filter((a) => a.applicable_to.includes("creature"))
+  .map((a) => ({ id: creatureEngineId(a), label: a.creature?.label ?? a.label }))
+  .sort((a, b) => a.label.localeCompare(b.label, "fr"));
 
 const GRANTABLE = Object.values(ABILITIES)
   .filter((a) => a.triggers?.grantable && a.applicable_to.includes("creature"))
@@ -61,6 +81,16 @@ export default function ComposedEffectsEditor({
   const removeComposed = (idx: number) => onChange(value.filter((_, i) => i !== idx));
   const patchCap = (idx: number, p: Partial<Capability>) => onChange(value.map((c, i) => i === idx ? { ...c, ...p } : c));
   const patchEffect = (idx: number, p: Partial<ComposedEffect>) => onChange(value.map((c, i) => i === idx ? { ...c, composed: { ...(c.composed as ComposedEffect), ...p } } : c));
+  // Filtre de pool : un champ vidé est SUPPRIMÉ (undefined) plutôt que laissé à
+  // "" — le moteur traite "" comme « pas de filtre », mais une chaîne vide
+  // persistée en base ferait du bruit dans les diffs de carte.
+  const patchPool = (idx: number, p: Partial<ComposedPoolFilter>) => onChange(value.map((c, i) => {
+    if (i !== idx) return c;
+    const eff = c.composed as ComposedEffect;
+    const next = { ...(eff.pool ?? {}), ...p };
+    for (const k of Object.keys(next) as (keyof ComposedPoolFilter)[]) if (!next[k]) delete next[k];
+    return { ...c, composed: { ...eff, pool: Object.keys(next).length > 0 ? next : undefined } };
+  }));
   const patchTarget = (idx: number, p: Partial<TargetSpec>) => onChange(value.map((c, i) => {
     if (i !== idx) return c;
     const eff = c.composed as ComposedEffect;
@@ -118,7 +148,13 @@ export default function ComposedEffectsEditor({
                   : v === "exhumation"
                     ? { entity: "unit" as const, count: 1 as const, side: "ally" as const, location: "graveyard" as const, designation: "choice" as const }
                     : (prev.designation === "scatter" && !scatterOk ? { ...prev, designation: "random" as const } : prev);
-                patchEffect(idx, { content: v, target: nextTarget, grantAbilityId: v === "grant_keyword" ? (eff.grantAbilityId ?? GRANTABLE[0]?.id) : undefined });
+                patchEffect(idx, {
+                  content: v, target: nextTarget,
+                  grantAbilityId: v === "grant_keyword" ? (eff.grantAbilityId ?? GRANTABLE[0]?.id) : undefined,
+                  // Le filtre de pool ne survit pas à un changement vers un
+                  // contenu qui n'en a pas (sinon champ fantôme en base).
+                  pool: POOL_CONTENTS.has(v) ? eff.pool : undefined,
+                });
               })}
 
               <span style={labelStyle}>{tr('label_magnitude')}</span>
@@ -144,6 +180,27 @@ export default function ComposedEffectsEditor({
                 <>
                   <span style={labelStyle}>{tr('label_token')}</span>
                   <TokenCascadePicker value={eff.tokenId ?? null} onChange={(id) => patchEffect(idx, { tokenId: id })} tokens={tokenTemplates} compact />
+                </>
+              )}
+              {POOL_CONTENTS.has(eff.content) && (
+                <>
+                  <span style={labelStyle}>{tr('label_pool_membership')}</span>
+                  <RaceClanPicker
+                    race={eff.pool?.race ?? ""}
+                    clan={eff.pool?.clan ?? ""}
+                    onChange={(r, c) => patchPool(idx, { race: r || undefined, clan: c || undefined })}
+                  />
+
+                  <span style={labelStyle}>{tr('label_pool_faction')}</span>
+                  {sel(eff.pool?.faction ?? "", [{ v: "", l: tr('pool_any') }, ...FACTION_OPTIONS.map((f) => ({ v: f, l: f }))],
+                    (v) => patchPool(idx, { faction: v || undefined }))}
+
+                  <span style={labelStyle}>{tr('label_pool_keyword')}</span>
+                  {sel(eff.pool?.keywordId ?? "", [{ v: "", l: tr('pool_any') }, ...POOL_KEYWORDS.map((k) => ({ v: k.id, l: k.label }))],
+                    (v) => patchPool(idx, { keywordId: v || undefined }))}
+
+                  <span style={labelStyle} />
+                  <span style={{ fontSize: 9, color: "#8a6d3b", fontStyle: "italic" }}>{tr('pool_hint')}</span>
                 </>
               )}
             </div>

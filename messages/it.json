@@ -588,7 +588,9 @@
         "exhumation": "resuscita {who} dal tuo cimitero (costo ≤ {x})",
         "exhum_one": "una creatura",
         "exhum_all": "tutte le creature",
-        "exhum_upto": "fino a {n} creature"
+        "exhum_upto": "fino a {n} creature",
+        "selection": "rivela 3 carte{filter} (costo ≤ {x}) e ne tiene una in mano",
+        "renfort_royal": "rivela 3 carte da collezione{filter} (costo ≤ {x}) e ne tiene una in mano"
       },
       "self": {
         "deal_damage_one": "subisce {x} danno",
@@ -652,6 +654,12 @@
         "grant_keyword": "scegli una creatura a cui conferire l'abilità",
         "exhumation": "scegli una creatura da resuscitare",
         "default": "scegli un bersaglio"
+      },
+      "pool": {
+        "race": " di razza {v}",
+        "faction": " della fazione {v}",
+        "clan": " del clan {v}",
+        "keyword": " con {v}"
       }
     },
     "factions": {
@@ -1774,7 +1782,14 @@
     "card_added": "« {name} » aggiunta!",
     "unknown_error": "Errore sconosciuto",
     "illustration_generated": "Illustrazione generata ({model})",
-    "import_error": "Errore di importazione"
+    "import_error": "Errore di importazione",
+    "content_selection": "Selezione (1 su 3)",
+    "content_renfort_royal": "Selezione Reale (1 su 3)",
+    "label_pool_membership": "POOL — APPARTENENZA",
+    "label_pool_faction": "POOL — FAZIONE",
+    "label_pool_keyword": "POOL — PAROLA CHIAVE",
+    "pool_any": "Indifferente",
+    "pool_hint": "Filtri cumulativi, in aggiunta alle regole base (Comune, costo ≤ X, allineamento della carta)."
   },
   "game": {
     "error_not_authenticated": "Non autenticato",
@@ -1847,6 +1862,7 @@
     "history_attack": "{source} attacca {target}",
     "history_attack_alone": "{source} attacca",
     "history_death": "{source} distrutto",
+    "history_bounce": "{source} tornato in mano",
     "history_power": "Potere di {source} su {target}",
     "history_power_alone": "Potere di {source}",
     "history_hero_power": "{hero} — {power}",
@@ -1884,8 +1900,7 @@
     "mode_suffix_death": " · a morte",
     "mode_suffix_tap": " · tap",
     "mode_suffix_return": " · ritorno in mano",
-    "mode_suffix_end_of_turn": " · fine del turno",
-    "history_bounce": "{source} tornato in mano"
+    "mode_suffix_end_of_turn": " · fine del turno"
   },
   "tutorial": {
     "page_eyebrow": "Impara l'arte del duello",

@@ -1,6 +1,7 @@
 import type {
   Card,
   CardInstance,
+  ComposedPoolFilter,
   GameState,
   PlayerState,
   PlayCardAction,
@@ -612,6 +613,10 @@ function resolveComposedEffect(
   // true ⇒ effet issu d'un sort (trigger spell_resolution) → respecte
   // Transcendance. Défaut false : une capacité de créature l'ignore.
   fromSpell = false,
+  // Contexte d'exécution — utile aux contenus qui doivent SUSPENDRE pour
+  // interroger le joueur (Sélection : modale « 1 parmi 3 »). Absent ⇒ contexte
+  // non interactif, l'effet se résout au hasard (RNG semé, déterministe).
+  opts?: { trigger?: import("./types").CapabilityTrigger; capUid?: string; noSuspend?: boolean },
 ): void {
   const x = composed.magnitude?.x ?? 0;
   const y = composed.magnitude?.y ?? 0;
@@ -683,6 +688,47 @@ function resolveComposedEffect(
           done++;
         }
       }
+      return;
+    }
+    case "selection":
+    case "renfort_royal": {
+      // Sélection composée : révèle 3 cartes de la collection, le joueur en
+      // garde 1. Même moteur de pool que le mot-clé curé (l'aiguillage
+      // selectionCardsForKeyword), plus le filtre `composed.pool`.
+      if (!source) return;
+      const selState = {
+        factionCardPool: currentCardPools.factionCardPool,
+        allSpellsPool: currentCardPools.allSpellsPool,
+        players: [owner, opponent],
+        currentPlayerIndex: 0,
+      } as unknown as GameState;
+      const options = selectionCardsForKeyword(composed.content, selState, x, source.card, composed.pool);
+      // Pool vide après filtrage : no-op assumé. On n'élargit JAMAIS le filtre
+      // en repli, sinon une carte « révèle 3 Hommes-Bêtes » proposerait
+      // silencieusement autre chose.
+      if (options.length === 0) return;
+      // La modale ne peut s'ouvrir que sur le tour du contrôleur, hors flux
+      // synchrone (attaque) et hors rejeu Déclenchement (noSuspend) — mêmes
+      // règles que le chemin curé.
+      const interactive = owner.id === currentPlayerId
+        && opts?.trigger !== "on_attack"
+        && !opts?.noSuspend;
+      if (interactive) {
+        // ⚠️ PAS de `capUid` sur ce trigger : applyOnePendingTrigger teste
+        // `if (trigger.capUid)` AVANT `else if (trigger.selectionType)`, et
+        // rappellerait donc resolveComposedEffect → nouveau trigger → boucle.
+        // L'unicité passe par `id` seul.
+        pendingTriggerSink.push({
+          id: `${source.instanceId}#${opts?.capUid ?? composed.content}`,
+          controllerId: owner.id,
+          sourceInstanceId: source.instanceId,
+          selectionType: composed.content,
+          selectionOptionIds: options.map(c => c.id),
+        });
+        return;
+      }
+      const picked = options[Math.floor(rng() * options.length)];
+      if (owner.hand.length < MAX_HAND_SIZE) owner.hand.push(createCardInstance(picked));
       return;
     }
     default: break;
@@ -784,7 +830,8 @@ function runComposedCapsForCard(
     }
     if (!chosen && fallbackTargetId) chosen = [fallbackTargetId];
     withComposedMode(triggerToKeywordMode(trigger), () =>
-      resolveComposedEffect(cap.composed!, source, owner, opponent, chosen, trigger === "spell_resolution"));
+      resolveComposedEffect(cap.composed!, source, owner, opponent, chosen, trigger === "spell_resolution",
+        { trigger, capUid: cap.uid }));
   }
 }
 
@@ -1692,7 +1739,8 @@ function advanceEndOfTurn(newState: GameState): GameState {
       continue; // aucune cible éligible → no-op (pas de soft-lock)
     }
     withComposedMode("end_of_turn", () =>
-      resolveComposedEffect(cap.composed!, creature, outgoing, opponent));
+      resolveComposedEffect(cap.composed!, creature, outgoing, opponent, undefined, false,
+        { trigger: "on_end_of_turn", capUid: cap.uid }));
   }
 
   // File épuisée : plus aucun effet fin-de-tour → finalisation.
@@ -4554,7 +4602,8 @@ function resolveFrame(state: GameState, frame: StackFrame): void {
   if (frame.kind === "composed" && frame.composed) {
     if (frame.valueMode && isSelfRemovalComposed(frame.composed)) return; // mode valeur : saute l'auto-suppression
     withComposedMode(triggerToKeywordMode(frame.trigger), () =>
-      resolveComposedEffect(frame.composed!, source, owner, opponent, frame.chosenTargetIds, frame.trigger === "spell_resolution"));
+      resolveComposedEffect(frame.composed!, source, owner, opponent, frame.chosenTargetIds, frame.trigger === "spell_resolution",
+        { trigger: frame.trigger, capUid: frame.capUid, noSuspend: frame.noSuspend }));
     return;
   }
   // curated / death_nature : producteurs branchés aux paliers (c)/(g).
@@ -5726,7 +5775,8 @@ export function tapActivate(state: GameState, action: TapActivateAction): GameSt
       if (multi.length) chosen = multi;
     }
     if (!chosen && action.targetInstanceId) chosen = [action.targetInstanceId];
-    resolveComposedEffect(cap.composed, source, player, opponent, chosen);
+    resolveComposedEffect(cap.composed, source, player, opponent, chosen, false,
+      { trigger: cap.trigger, capUid: cap.uid });
     const pDead = cleanDeadCreatures(player);
     const oDead = cleanDeadCreatures(opponent);
     processDeathTriggers(pDead, player, opponent);
@@ -5820,7 +5870,12 @@ function applyOnePendingTrigger(
       const cap = source ? getCapabilities(source.card).find(c => c.uid === trigger.capUid && c.composed) : undefined;
       if (cap?.composed) {
         withComposedMode(triggerToKeywordMode(cap.trigger), () =>
-          resolveComposedEffect(cap.composed!, source ?? null, controller, other, choice.targetInstanceId ? [choice.targetInstanceId] : undefined));
+          // noSuspend : on résout DÉJÀ un choix en attente — un contenu qui
+          // voudrait suspendre à son tour (Sélection) doit retomber sur le
+          // tirage aléatoire plutôt que d'empiler un second déclencheur.
+          resolveComposedEffect(cap.composed!, source ?? null, controller, other,
+            choice.targetInstanceId ? [choice.targetInstanceId] : undefined, false,
+            { trigger: cap.trigger, capUid: trigger.capUid, noSuspend: true }));
         const deadC = cleanDeadCreatures(controller);
         const deadO = cleanDeadCreatures(other);
         processDeathTriggers(deadC, controller, other);
@@ -6898,6 +6953,20 @@ function resolveDechainement(
   }
 }
 
+/** Filtre de pool d'une Sélection COMPOSÉE (race / faction / clan / mot-clé
+ *  porté). Cumulatif avec les règles de base (rareté, coût, alignement) : un
+ *  champ absent ne filtre rien, un champ présent restreint. Le mot-clé est lu
+ *  via le modèle unifié, donc une ability portée par `keyword_instances` ou
+ *  `capabilities` seuls compte aussi. */
+function matchesPoolFilter(card: Card, filter?: ComposedPoolFilter): boolean {
+  if (!filter) return true;
+  if (filter.race && card.race !== filter.race) return false;
+  if (filter.faction && card.faction !== filter.faction) return false;
+  if (filter.clan && card.clan !== filter.clan) return false;
+  if (filter.keywordId && !getCapabilities(card).some(c => c.abilityId === filter.keywordId)) return false;
+  return true;
+}
+
 /** Renfort Royal : propose jusqu'à 3 cartes parmi les éditions limitées
  *  que le joueur possède réellement (au moins 30 requises). X agit comme
  *  un plafond sur le coût en mana (mana_cost ≤ X) ; si X ≤ 0, aucun
@@ -6909,6 +6978,7 @@ export function getRenfortRoyalCards(
   state: GameState,
   maxManaCost: number,
   source?: { faction?: string | null; card_alignment?: string | null } | null,
+  filter?: ComposedPoolFilter,
 ): Card[] {
   const pool = state.factionCardPool;
   if (!pool || pool.length === 0) return [];
@@ -6919,12 +6989,15 @@ export function getRenfortRoyalCards(
     && c.set_id == null
     && ownedSet.has(c.id),
   );
+  // Seuil évalué AVANT le filtre de pool : c'est une condition de collection
+  // (« possède au moins N limitées »), pas une condition sur les candidats.
   if (ownedLimited.length < RENFORT_ROYAL_OWNERSHIP_THRESHOLD) {
-    return getSelectionCards(state, maxManaCost, source);
+    return getSelectionCards(state, maxManaCost, source, filter);
   }
-  const filtered = maxManaCost > 0
+  const filtered = (maxManaCost > 0
     ? ownedLimited.filter(c => c.mana_cost <= maxManaCost)
-    : ownedLimited;
+    : ownedLimited
+  ).filter(c => matchesPoolFilter(c, filter));
   if (filtered.length === 0) return [];
   // Same deterministic shuffle pattern as getSelectionCards so both
   // clients agree without burning the seeded RNG.
@@ -6956,6 +7029,7 @@ export function getSelectionCards(
   state: GameState,
   maxManaCost: number,
   source?: { faction?: string | null; card_alignment?: string | null } | null,
+  filter?: ComposedPoolFilter,
 ): Card[] {
   const pool = state.factionCardPool;
   if (!pool || pool.length === 0) return [];
@@ -6966,7 +7040,8 @@ export function getSelectionCards(
     c.faction
     && allowedFactions.has(c.faction)
     && c.rarity === "Commune"
-    && (maxManaCost <= 0 || c.mana_cost <= maxManaCost),
+    && (maxManaCost <= 0 || c.mana_cost <= maxManaCost)
+    && matchesPoolFilter(c, filter),
   );
   if (filtered.length === 0) return [];
 
@@ -6997,6 +7072,7 @@ export function getMagicalSelectionCards(
   state: GameState,
   maxManaCost: number,
   source?: { faction?: string | null; card_alignment?: string | null } | null,
+  filter?: ComposedPoolFilter,
 ): Card[] {
   const pool = state.allSpellsPool;
   if (!pool || pool.length === 0) return [];
@@ -7008,7 +7084,8 @@ export function getMagicalSelectionCards(
     && c.faction
     && allowedFactions.has(c.faction)
     && c.rarity === "Commune"
-    && (maxManaCost <= 0 || c.mana_cost <= maxManaCost),
+    && (maxManaCost <= 0 || c.mana_cost <= maxManaCost)
+    && matchesPoolFilter(c, filter),
   );
   if (filtered.length === 0) return [];
 
@@ -7033,10 +7110,11 @@ function selectionCardsForKeyword(
   state: GameState,
   maxManaCost: number,
   source?: { faction?: string | null; card_alignment?: string | null } | null,
+  filter?: ComposedPoolFilter,
 ): Card[] {
-  if (id === "selection_magique") return getMagicalSelectionCards(state, maxManaCost, source);
-  if (id === "renfort_royal") return getRenfortRoyalCards(state, maxManaCost, source);
-  return getSelectionCards(state, maxManaCost, source);
+  if (id === "selection_magique") return getMagicalSelectionCards(state, maxManaCost, source, filter);
+  if (id === "renfort_royal") return getRenfortRoyalCards(state, maxManaCost, source, filter);
+  return getSelectionCards(state, maxManaCost, source, filter);
 }
 
 export function getSpellTargets(state: GameState, card: Card, slotType?: SpellTargetType): string[] {

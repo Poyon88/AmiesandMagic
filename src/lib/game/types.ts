@@ -333,7 +333,12 @@ export type ComposedEffectContent =
   | "bounce"
   | "paralyze"
   | "grant_keyword"
-  | "exhumation";
+  | "exhumation"
+  // Révèle 3 cartes de la collection et en garde 1 en main. Comme exhumation,
+  // ces deux contenus existent AUSSI en mot-clé curé : la variante composée
+  // ajoute le filtre de pool (`ComposedEffect.pool`) et tous les déclencheurs.
+  | "selection"
+  | "renfort_royal";
 
 /** Spécification de cibles d'un effet composé. Les filtres par caractéristiques
  *  (coût/ATK/déf/rareté) et par capacités possédées sont prévus pour la v2. */
@@ -372,6 +377,23 @@ export interface ComposedEffect {
   grantAbilityId?: string;
   /** content === "summon_token" : token à invoquer. */
   tokenId?: number | null;
+  /** content === "selection" / "renfort_royal" : restriction du POOL de cartes
+   *  révélées, EN PLUS des règles de base (rareté Commune, coût ≤ X, factions de
+   *  l'alignement de la carte source). Volontairement distinct de `target` : on
+   *  ne désigne pas une entité en jeu mais on filtre des cartes candidates hors
+   *  jeu — un `TargetSpec` ferait suspendre la pile d'effets sur un choix de
+   *  cible plateau qui n'existe pas (cf. frameNeedsChoice). */
+  pool?: ComposedPoolFilter;
+}
+
+/** Filtre du pool de cartes proposées par une Sélection composée. Champs
+ *  cumulatifs (ET logique) ; un champ absent ne filtre rien. */
+export interface ComposedPoolFilter {
+  race?: string;
+  faction?: string;
+  clan?: string;
+  /** Id moteur d'une ability : ne garde que les cartes qui la portent. */
+  keywordId?: string;
 }
 
 // --- Composable effects ---

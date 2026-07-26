@@ -588,7 +588,9 @@
         "exhumation": "从你的墓地复活 {who}（费用 ≤ {x}）",
         "exhum_one": "一个生物",
         "exhum_all": "所有生物",
-        "exhum_upto": "至多 {n} 个生物"
+        "exhum_upto": "至多 {n} 个生物",
+        "selection": "展示3张{filter}卡牌（费用 ≤ {x}），并保留其中一张至手牌",
+        "renfort_royal": "展示3张{filter}收藏卡牌（费用 ≤ {x}），并保留其中一张至手牌"
       },
       "self": {
         "deal_damage_one": "对自身造成{x}点伤害",
@@ -652,6 +654,12 @@
         "grant_keyword": "选择一个赋予能力的生物",
         "exhumation": "选择一个复活的生物",
         "default": "选择一个目标"
+      },
+      "pool": {
+        "race": "种族为{v}的",
+        "faction": "阵营为{v}的",
+        "clan": "氏族为{v}的",
+        "keyword": "带有{v}的"
       }
     },
     "factions": {
@@ -1774,7 +1782,14 @@
     "card_added": "「{name}」已添加！",
     "unknown_error": "未知错误",
     "illustration_generated": "插图已生成（{model}）",
-    "import_error": "导入错误"
+    "import_error": "导入错误",
+    "content_selection": "选择（三选一）",
+    "content_renfort_royal": "皇家甄选（三选一）",
+    "label_pool_membership": "卡池 — 归属",
+    "label_pool_faction": "卡池 — 阵营",
+    "label_pool_keyword": "卡池 — 携带关键词",
+    "pool_any": "不限",
+    "pool_hint": "筛选条件可叠加，在基础规则（普通、费用 ≤ X、卡牌阵营）之外生效。"
   },
   "game": {
     "error_not_authenticated": "未登录",
@@ -1847,6 +1862,7 @@
     "history_attack": "{source} 攻击 {target}",
     "history_attack_alone": "{source} 发起攻击",
     "history_death": "{source} 已被摧毁",
+    "history_bounce": "{source} 返回手牌",
     "history_power": "{source} 对 {target} 使用能力",
     "history_power_alone": "{source} 的能力",
     "history_hero_power": "{hero} — {power}",
@@ -1884,8 +1900,7 @@
     "mode_suffix_death": " · 死亡时",
     "mode_suffix_tap": " · 点击",
     "mode_suffix_return": " · 回手牌",
-    "mode_suffix_end_of_turn": " · 回合结束",
-    "history_bounce": "{source} 返回手牌"
+    "mode_suffix_end_of_turn": " · 回合结束"
   },
   "tutorial": {
     "page_eyebrow": "学习决斗之道",

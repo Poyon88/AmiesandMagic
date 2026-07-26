@@ -43,6 +43,13 @@ export const COMPOSED_FR: Record<string, string> = {
   "content.exhum_one": "une créature",
   "content.exhum_all": "toutes les créatures",
   "content.exhum_upto": "jusqu'à {n} créatures",
+  // Sélection composée : {filter} porte la restriction de pool (vide si aucune).
+  "content.selection": "révèle 3 cartes{filter} (coût ≤ {x}) et en garde une en main",
+  "content.renfort_royal": "révèle 3 cartes de collection{filter} (coût ≤ {x}) et en garde une en main",
+  "pool.race": " de race {v}",
+  "pool.faction": " de la faction {v}",
+  "pool.clan": " du clan {v}",
+  "pool.keyword": " portant {v}",
 
   // Cible « soi-même » : le français veut une tournure RÉFLÉCHIE, pas un
   // complément accolé — « Se renvoie en main », et non « Renvoie en main à
@@ -182,6 +189,9 @@ export function composedIcon(cap: Capability): { symbol: string; keyword: string
     case "summon_token": return { symbol: "📣", keyword: "spell_invocation" };
     case "gain_mana": return { symbol: "💎", keyword: "spell_afflux" };
     case "exhumation": return { symbol: "🪦", keyword: "exhumation" };
+    // Mêmes symboles que les mots-clés curés homonymes (source unique).
+    case "selection": return { symbol: KEYWORD_SYMBOLS.selection, keyword: "selection" };
+    case "renfort_royal": return { symbol: KEYWORD_SYMBOLS.renfort_royal, keyword: "renfort_royal" };
     default: return { symbol: "✦", keyword: "" };
   }
 }
@@ -246,6 +256,29 @@ function grantedAbilityLabel(eff: ComposedEffect, x: number, y: number, t?: Safe
   return applyKeywordValueToLabel(engineId, label, x, { id: engineId, y });
 }
 
+/** Restriction de pool d'une Sélection composée, en fragment accolable au
+ *  contenu (« de race Hommes-Bêtes portant Traque »). "" si aucun filtre.
+ *  Race / faction / clan sont des libellés de données (déjà en FR canonique,
+ *  comme l'appartenance d'un TargetSpec) ; seul le mot-clé est localisé. */
+function describePoolFilter(eff: ComposedEffect, t?: SafeT): string {
+  const p = eff.pool;
+  if (!p) return "";
+  const parts: string[] = [];
+  if (p.race) parts.push(frag(t, "pool.race", { v: p.race }));
+  if (p.faction) parts.push(frag(t, "pool.faction", { v: p.faction }));
+  if (p.clan) parts.push(frag(t, "pool.clan", { v: p.clan }));
+  if (p.keywordId) {
+    const id = p.keywordId;
+    const a = ABILITIES[id] ?? Object.values(ABILITIES).find((d) => creatureEngineId(d) === id);
+    const label = t?.(`vocab.keywords.${id}.label`)
+      ?? a?.label
+      ?? KEYWORD_LABELS[id as keyof typeof KEYWORD_LABELS]
+      ?? id;
+    parts.push(frag(t, "pool.keyword", { v: label.replace(/\s*[-+]?X.*$/, "").trim() }));
+  }
+  return parts.join("");
+}
+
 function describeContent(eff: ComposedEffect, tokens: TokenTemplate[] | undefined, t?: SafeT): string {
   const x = eff.magnitude?.x ?? 0;
   const y = eff.magnitude?.y ?? 0;
@@ -277,6 +310,9 @@ function describeContent(eff: ComposedEffect, tokens: TokenTemplate[] | undefine
         : frag(t, "content.exhum_one");
       return frag(t, "content.exhumation", { who, x });
     }
+    case "selection":
+    case "renfort_royal":
+      return frag(t, `content.${eff.content}`, { x, filter: describePoolFilter(eff, t) });
     default: return String(eff.content);
   }
 }

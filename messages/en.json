@@ -588,7 +588,9 @@
         "exhumation": "resurrects {who} from your graveyard (cost ≤ {x})",
         "exhum_one": "a creature",
         "exhum_all": "all creatures",
-        "exhum_upto": "up to {n} creatures"
+        "exhum_upto": "up to {n} creatures",
+        "selection": "reveals 3 cards{filter} (cost ≤ {x}) and keeps one in hand",
+        "renfort_royal": "reveals 3 collection cards{filter} (cost ≤ {x}) and keeps one in hand"
       },
       "self": {
         "deal_damage_one": "deals {x} damage to itself",
@@ -652,6 +654,12 @@
         "grant_keyword": "choose a creature to grant the ability to",
         "exhumation": "choose a creature to resurrect",
         "default": "choose a target"
+      },
+      "pool": {
+        "race": " of race {v}",
+        "faction": " of faction {v}",
+        "clan": " of clan {v}",
+        "keyword": " bearing {v}"
       }
     },
     "factions": {
@@ -1774,7 +1782,14 @@
     "card_added": "\"{name}\" added!",
     "unknown_error": "Unknown error",
     "illustration_generated": "Illustration generated ({model})",
-    "import_error": "Import error"
+    "import_error": "Import error",
+    "content_selection": "Selection (1 of 3)",
+    "content_renfort_royal": "Royal Selection (1 of 3)",
+    "label_pool_membership": "POOL — MEMBERSHIP",
+    "label_pool_faction": "POOL — FACTION",
+    "label_pool_keyword": "POOL — KEYWORD",
+    "pool_any": "Any",
+    "pool_hint": "Cumulative filters, in addition to the base rules (Common, cost ≤ X, card alignment)."
   },
   "game": {
     "error_not_authenticated": "Not authenticated",
@@ -1847,6 +1862,7 @@
     "history_attack": "{source} attacks {target}",
     "history_attack_alone": "{source} attacks",
     "history_death": "{source} destroyed",
+    "history_bounce": "{source} returned to hand",
     "history_power": "Power of {source} on {target}",
     "history_power_alone": "Power of {source}",
     "history_hero_power": "{hero} — {power}",
@@ -1884,8 +1900,7 @@
     "mode_suffix_death": " · to the death",
     "mode_suffix_tap": " · tap",
     "mode_suffix_return": " · return to hand",
-    "mode_suffix_end_of_turn": " · end of turn",
-    "history_bounce": "{source} returned to hand"
+    "mode_suffix_end_of_turn": " · end of turn"
   },
   "tutorial": {
     "page_eyebrow": "Master the Art of the Duel",

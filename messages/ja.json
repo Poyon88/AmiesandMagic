@@ -588,7 +588,9 @@
         "exhumation": "墓地から{who}を蘇生する（コスト≤{x}）",
         "exhum_one": "クリーチャー1体",
         "exhum_all": "すべてのクリーチャー",
-        "exhum_upto": "クリーチャー{n}体まで"
+        "exhum_upto": "クリーチャー{n}体まで",
+        "selection": "3枚のカード{filter}（コスト{x}以下）を公開し、その中から1枚を手札に加える",
+        "renfort_royal": "コレクションから3枚のカード{filter}（コスト{x}以下）を公開し、その中から1枚を手札に加える"
       },
       "self": {
         "deal_damage_one": "自身に{x}ダメージを与える",
@@ -652,6 +654,12 @@
         "grant_keyword": "能力を付与するクリーチャーを選んでください",
         "exhumation": "蘇生するクリーチャーを選んでください",
         "default": "対象を選んでください"
+      },
+      "pool": {
+        "race": "（種族：{v}）",
+        "faction": "（陣営：{v}）",
+        "clan": "（氏族：{v}）",
+        "keyword": "（{v}を持つ）"
       }
     },
     "factions": {
@@ -1774,7 +1782,14 @@
     "card_added": "「{name}」を追加しました！",
     "unknown_error": "不明なエラー",
     "illustration_generated": "イラストを生成しました（{model}）",
-    "import_error": "インポートエラー"
+    "import_error": "インポートエラー",
+    "content_selection": "選択（3枚中1枚）",
+    "content_renfort_royal": "王家の選抜（3枚中1枚）",
+    "label_pool_membership": "プール — 所属",
+    "label_pool_faction": "プール — 陣営",
+    "label_pool_keyword": "プール — 保有キーワード",
+    "pool_any": "指定なし",
+    "pool_hint": "基本ルール（コモン、コスト≤X、カードの属性）に加え、フィルターは累積して適用されます。"
   },
   "game": {
     "error_not_authenticated": "未認証",
@@ -1847,6 +1862,7 @@
     "history_attack": "{source}が{target}を攻撃",
     "history_attack_alone": "{source}が攻撃",
     "history_death": "{source}を破壊",
+    "history_bounce": "{source}が手札に戻された",
     "history_power": "{target}への{source}の能力",
     "history_power_alone": "{source}の能力",
     "history_hero_power": "{hero} — {power}",
@@ -1884,8 +1900,7 @@
     "mode_suffix_death": " · 死亡時",
     "mode_suffix_tap": " · タップ",
     "mode_suffix_return": " · 手札に戻す",
-    "mode_suffix_end_of_turn": " · ターン終了時",
-    "history_bounce": "{source}が手札に戻された"
+    "mode_suffix_end_of_turn": " · ターン終了時"
   },
   "tutorial": {
     "page_eyebrow": "決闘の極意を学べ",

@@ -588,7 +588,15 @@
         "exhumation": "ressuscite {who} de votre cimetière (coût ≤ {x})",
         "exhum_one": "une créature",
         "exhum_all": "toutes les créatures",
-        "exhum_upto": "jusqu'à {n} créatures"
+        "exhum_upto": "jusqu'à {n} créatures",
+        "selection": "révèle 3 cartes{filter} (coût ≤ {x}) et en garde une en main",
+        "renfort_royal": "révèle 3 cartes de collection{filter} (coût ≤ {x}) et en garde une en main"
+      },
+      "pool": {
+        "race": " de race {v}",
+        "faction": " de la faction {v}",
+        "clan": " du clan {v}",
+        "keyword": " portant {v}"
       },
       "self": {
         "deal_damage_one": "s'inflige {x} dégât",
@@ -1415,6 +1423,13 @@
     "content_summon_token": "Invoquer un token",
     "content_gain_mana": "Gagner du mana",
     "content_exhumation": "Ressusciter (cimetière)",
+    "content_selection": "Sélection (1 parmi 3)",
+    "content_renfort_royal": "Sélection Royale (1 parmi 3)",
+    "label_pool_membership": "POOL — APPARTENANCE",
+    "label_pool_faction": "POOL — FACTION",
+    "label_pool_keyword": "POOL — MOT-CLÉ PORTÉ",
+    "pool_any": "Indifférent",
+    "pool_hint": "Filtres cumulatifs, en plus des règles de base (Commune, coût ≤ X, alignement de la carte).",
     "label_magnitude": "AMPLITUDE",
     "label_granted_ability": "CAPACITÉ CONFÉRÉE",
     "label_token": "TOKEN",
