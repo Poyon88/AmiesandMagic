@@ -6,7 +6,14 @@ import type { KeywordMode } from "@/lib/game/types";
  *  composé » (les mots-clés classiques n'en ont pas). À placer comme enfant d'un
  *  wrapper `position: relative` entourant l'icône. `size` = taille du glyphe (px),
  *  à échelonner grossièrement sur la taille de l'icône (~0,5×). */
-export default function ComposedMarker({ mode, size = 7 }: { mode: KeywordMode | undefined; size?: number }) {
+export default function ComposedMarker({ mode, size = 7, color }: {
+  mode: KeywordMode | undefined;
+  size?: number;
+  /** Couleur imposée. Sert au marqueur de PORTÉE (capacité conférée à tous les
+   *  alliés, en vert) : même signal discret dans le coin de l'icône, sans le
+   *  pavé de couleur qui écrasait l'icône. */
+  color?: string;
+}) {
   return (
     <span
       aria-hidden="true"
@@ -16,7 +23,7 @@ export default function ComposedMarker({ mode, size = 7 }: { mode: KeywordMode |
         right: 0,
         fontSize: size,
         lineHeight: 1,
-        color: composedMarkerColor(mode),
+        color: color ?? composedMarkerColor(mode),
         fontWeight: 900,
         pointerEvents: "none",
         // Ombre sombre + fine lueur : reste lisible sur fond clair comme foncé.

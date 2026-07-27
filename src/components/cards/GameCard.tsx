@@ -359,10 +359,10 @@ export default function GameCard({
               const baseTitle = applyKeywordValueToLabel(kw, label, x, instance);
               // Pas d'annotation de déclencheur (« · fin du tour »…) : la couleur de
               // l'icône la transmet désormais.
-              // On a spell, these keywords are CONFERRED to creature(s). The
-              // "all allies" scope gets a visible GREEN chip (fill + border)
-              // behind the icon — a glow alone was clipped by the card's
-              // overflow:hidden. Single-target keeps the default look.
+              // On a spell, these keywords are CONFERRED to creature(s). La portée
+              // « tous les alliés » ne repeint plus la pastille en vert (le pavé
+              // masquait l'icône) : l'icône reste classique et un marqueur ✦ vert
+              // dans le coin porte le signal, comme pour les effets composés.
               const grantScope = !isCreature
                 ? (card.keyword_instances?.find((k) => k.id === kw)?.grantScope ?? "target")
                 : null;
@@ -375,15 +375,16 @@ export default function GameCard({
               <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} title={displayTitle} style={{
                 minWidth: 40 * icoS, height: 40 * icoS, borderRadius: 4 * s,
                 padding: x != null ? `0 ${4 * s}px` : 0,
-                background: isAllAllies ? "#27ae6055" : (hasImg ? "transparent" : `${accentColor}33`),
-                border: isAllAllies ? `1px solid #27ae60` : (hasImg ? "none" : `1px solid ${accentColor}66`),
+                background: hasImg ? "transparent" : `${accentColor}33`,
+                border: hasImg ? "none" : `1px solid ${accentColor}66`,
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 * s,
                 fontSize: 10 * s, overflow: "visible",
               }}>
-                <span style={{ display: "inline-flex", lineHeight: 0 }}>
+                <span style={{ position: "relative", display: "inline-flex", lineHeight: 0 }}>
                   <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 33 * icoS, height: 33 * icoS, flexShrink: 0 }}>
                     <KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={33 * icoS} keyword={kw} fill mode={mode} />
                   </span>
+                  {isAllAllies && <ComposedMarker mode={undefined} color="#27ae60" size={15 * icoS} />}
                 </span>
                 {keywordBadgeValue(kw, x, instance) != null && <span style={{ fontSize: 15 * s, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}, ${TEXT_CONTRAST_HALO}`, marginLeft: 1 * s }}>{keywordBadgeValue(kw, x, instance)}</span>}
               </div>
