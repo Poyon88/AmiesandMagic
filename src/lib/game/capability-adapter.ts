@@ -242,6 +242,15 @@ export function getCapabilities(card: Card): Capability[] {
     const instList = card.keyword_instances ?? [];
     if (instList.length) {
       caps = caps.map((c) => {
+        // JAMAIS sur un DON (effectKind "grant") : sur un sort qui confère un
+        // mot-clé, l'instance porte x/y/grantScope mais pas de `mode` — et le
+        // mode d'un mot-clé conféré décrirait de toute façon son déclencheur une
+        // fois SUR la créature, pas le moment où le sort le donne. Sans cette
+        // exclusion, `spell_resolution` était réaligné en `automatic` et la
+        // phase de don de playCard ne trouvait plus rien : tout sort conférant
+        // un mot-clé passif (Force des ancêtres, Gloire, Résistance…) était
+        // silencieusement sans effet.
+        if (c.effectKind === "grant") return c;
         const valid = instList.filter((i) => i.id === c.abilityId).map((i) => triggerForCreatureMode(c.abilityId, i.mode));
         if (!valid.length || valid.includes(c.trigger)) return c;
         return { ...c, trigger: valid[0] };
