@@ -8,9 +8,12 @@
 import { useTranslations } from "next-intl";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 import RaceClanPicker from "@/components/admin/RaceClanPicker";
+import KeywordIcon from "@/components/shared/KeywordIcon";
 import { ABILITIES, creatureEngineId, XY_ABILITY_IDS } from "@/lib/game/abilities";
+import { ALL_SPELL_KEYWORDS, SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
+import { buildSpellEffectCatalog, instantiatePreset } from "@/lib/card-forge/spell-effect-catalog";
 import { FACTIONS } from "@/lib/card-engine/constants";
-import type { Capability, ComposedEffect, ComposedEffectContent, ComposedPoolFilter, CapabilityTrigger, TargetSpec, TokenTemplate } from "@/lib/game/types";
+import type { Capability, ComposedEffect, ComposedEffectContent, ComposedPoolFilter, CapabilityTrigger, SpellKeywordId, SpellKeywordInstance, TargetSpec, TokenTemplate } from "@/lib/game/types";
 
 const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" | "unit" | "unit_or_hero"; xy?: boolean }[] = [
   { v: "deal_damage", l: "Infliger des dégâts", target: "unit_or_hero" },
@@ -39,6 +42,8 @@ const POOL_CONTENTS = new Set<ComposedEffectContent>(["selection", "renfort_roya
 
 const FACTION_OPTIONS = Object.keys(FACTIONS).sort((a, b) => a.localeCompare(b, "fr"));
 
+const RACE_OPTIONS = Array.from(new Set(Object.values(FACTIONS).flatMap((f) => f.races))).sort((a, b) => a.localeCompare(b, "fr"));
+
 // Mots-clés utilisables comme filtre « ne propose que les cartes portant … ».
 // Même dérivation d'id que GRANTABLE, mais sans la contrainte `grantable` :
 // on ne confère rien ici, on filtre sur la présence de la capacité.
@@ -57,8 +62,11 @@ const DEFAULT_TARGET: TargetSpec = { entity: "unit", count: 1, side: "enemy", lo
 const cardBorder = "1px solid #e3d9c0";
 const labelStyle = { fontSize: 8, color: "#999", letterSpacing: 1, fontWeight: 700 } as const;
 
+const SPELL_CATALOG = buildSpellEffectCatalog(ALL_SPELL_KEYWORDS);
+
 export default function ComposedEffectsEditor({
   value, onChange, isUnit, tokenTemplates, singleEffect = false,
+  curated, onCuratedChange,
 }: {
   value: Capability[];
   onChange: (v: Capability[]) => void;
@@ -67,8 +75,14 @@ export default function ComposedEffectsEditor({
   // Un seul effet composé édité (ex. pouvoir de héros) : masque ajout/suppression
   // pour garantir le contrat « un seul ComposedEffect » sans perte silencieuse.
   singleEffect?: boolean;
+  // SORT : mécaniques curées (spell_keywords) éditées dans la MÊME liste que les
+  // effets composés. Absent ⇒ éditeur composé seul (créature, pouvoir de héros).
+  curated?: SpellKeywordInstance[];
+  onCuratedChange?: (v: SpellKeywordInstance[]) => void;
 }) {
   const tr = useTranslations("forge");
+  // Liste unifiée active seulement si l'appelant fournit le couple curated/onCuratedChange.
+  const unified = !!curated && !!onCuratedChange && !singleEffect;
   const triggers: { v: CapabilityTrigger; l: string }[] = isUnit
     ? [{ v: "on_play", l: tr('trigger_on_play') }, { v: "on_death", l: tr('trigger_on_death') }, { v: "on_return", l: tr('trigger_on_return') }, { v: "on_activation", l: tr('trigger_on_activation') }, { v: "on_attack", l: tr('trigger_on_attack') }, { v: "on_end_of_turn", l: tr('trigger_on_end_of_turn') }]
     : [{ v: "spell_resolution", l: tr('trigger_spell_resolution') }];
@@ -108,12 +122,93 @@ export default function ComposedEffectsEditor({
     );
   }
 
+  // ── Lignes curées (mécaniques de sort sans équivalent composé) ──────────────
+  const curatedRows = curated ?? [];
+  const patchCurated = (idx: number, p: Partial<SpellKeywordInstance>) =>
+    onCuratedChange?.(curatedRows.map((k, i) => (i === idx ? { ...k, ...p } : k)));
+  const removeCurated = (idx: number) => onCuratedChange?.(curatedRows.filter((_, i) => i !== idx));
+
+  /** Ajoute une ligne depuis le catalogue : preset composé, ou mécanique curée. */
+  const addFromCatalog = (entryId: string) => {
+    const entry = SPELL_CATALOG.find((e) => e.id === entryId);
+    if (!entry) return;
+    if (entry.kind === "composed") {
+      onChange([...value, {
+        uid: `c_${Math.random().toString(36).slice(2, 9)}`,
+        trigger: "spell_resolution", effectKind: "immediate", abilityId: "_composed",
+        composed: instantiatePreset(entry),
+      }]);
+      return;
+    }
+    // Curée : mêmes valeurs d'amorçage que l'ancien picker « + Effet du sort ».
+    const id = entry.id as SpellKeywordId;
+    if (curatedRows.some((k) => k.id === id)) return; // une seule instance par mécanique
+    const def = SPELL_KEYWORDS[id];
+    const init: SpellKeywordInstance = { id };
+    if (def?.params.includes("amount")) init.amount = 1;
+    if (def?.params.includes("attack")) init.attack = 1;
+    if (def?.params.includes("health")) init.health = 1;
+    onCuratedChange?.([...curatedRows, init]);
+  };
+
   return (
     <div>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-        <span style={{ fontFamily: "'Cinzel',serif", fontSize: 12, fontWeight: 700, color: "#8a6d3b" }}>🧩 {tr('composed_effects_heading')}</span>
-        <span style={{ fontSize: 9, color: "#aaa" }}>{tr('composed_effects_subtitle')}</span>
+        <span style={{ fontFamily: "'Cinzel',serif", fontSize: 12, fontWeight: 700, color: "#8a6d3b" }}>🧩 {tr(unified ? 'effects_heading' : 'composed_effects_heading')}</span>
+        <span style={{ fontSize: 9, color: "#aaa" }}>{tr(unified ? 'effects_subtitle' : 'composed_effects_subtitle')}</span>
       </div>
+
+      {/* Mécaniques curées : rendu volontairement resserré (pas de ciblage
+          générique — chacune porte ses propres paramètres et son résolveur
+          historique). Elles restent persistées dans spell_keywords. */}
+      {unified && curatedRows.map((kw, idx) => {
+        const def = SPELL_KEYWORDS[kw.id];
+        if (!def) return null;
+        return (
+          <div key={kw.id} style={{ border: cardBorder, borderRadius: 8, padding: 10, marginBottom: 8, background: "#fbf7ff" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+              <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[kw.id] || def.symbol || "✦"} size={16} keyword={`spell_${kw.id}`} />
+              <span style={{ fontFamily: "'Cinzel',serif", fontSize: 11, fontWeight: 700, color: "#9b59b6", flex: 1 }}>{SPELL_KEYWORD_LABELS[kw.id] ?? kw.id}</span>
+              <span style={{ fontSize: 8, color: "#9b59b6", letterSpacing: 1 }}>{tr('effect_kind_curated')}</span>
+              <button onClick={() => removeCurated(idx)} style={{ border: "none", background: "transparent", color: "#c0392b", cursor: "pointer", fontSize: 14 }} title={tr('remove')}>✕</button>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "6px 12px", alignItems: "center" }}>
+              <span style={labelStyle}>{tr('label_content')}</span>
+              <span style={{ fontSize: 11, color: "#444", fontFamily: "'Cinzel',serif", display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+                {def.desc}
+                {def.params.includes("amount") && (
+                  <label style={{ fontSize: 9, color: "#9b59b6" }}>X {numInput(kw.amount ?? 1, (n) => patchCurated(idx, { amount: Math.max(1, n) }), 1)}</label>
+                )}
+                {def.params.includes("attack") && (
+                  <label style={{ fontSize: 9, color: "#e74c3c" }}>ATK {numInput(kw.attack ?? 1, (n) => patchCurated(idx, { attack: n }))}</label>
+                )}
+                {def.params.includes("health") && (
+                  <label style={{ fontSize: 9, color: "#c79a0a" }}>{kw.id === "dechainement" ? tr('spell_cost_y') : "PV"} {numInput(kw.health ?? 1, (n) => patchCurated(idx, { health: n }))}</label>
+                )}
+              </span>
+              {kw.id === "renforcement_multiple" && (
+                <>
+                  <span style={labelStyle}>{tr('race_clan_label')}</span>
+                  <RaceClanPicker race={kw.race ?? ""} clan={kw.clan ?? ""}
+                    onChange={(r, c) => patchCurated(idx, { race: r || undefined, clan: c || undefined })} />
+                </>
+              )}
+              {kw.id === "appel_supreme" && (
+                <>
+                  <span style={labelStyle}>{tr('race_label')} {!kw.race && <span style={{ color: "#e74c3c" }}>· {tr('required')}</span>}</span>
+                  {sel(kw.race ?? "", [{ v: "", l: tr('race_dash') }, ...RACE_OPTIONS.map((r) => ({ v: r, l: r }))],
+                    (v) => patchCurated(idx, { race: v || undefined }))}
+                </>
+              )}
+              <span style={labelStyle}>{tr('label_targets')}</span>
+              <span style={{ fontSize: 11, color: "#444", fontFamily: "'Cinzel',serif" }}>
+                {def.needsTarget ? `${tr('one_target')}${def.targetType ? ` (${def.targetType})` : ""}` : "—"}
+              </span>
+            </div>
+          </div>
+        );
+      })}
+
       {value.map((cap, idx) => {
         const eff = cap.composed as ComposedEffect;
         const meta = COMPOSED_CONTENTS.find((c) => c.v === eff.content)!;
@@ -285,7 +380,28 @@ export default function ComposedEffectsEditor({
           </div>
         );
       })}
-      {!singleEffect && (
+      {/* Ajout : une seule porte d'entrée pour toute la carte. Le catalogue
+          mélange effets paramétrables (preset composé) et mécaniques curées ;
+          l'auteur choisit un EFFET, pas une technologie de stockage. */}
+      {unified ? (
+        <div style={{ marginTop: 6, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 11, color: "#666" }}>{tr('add_effect')}</span>
+          <select value="" onChange={(e) => { addFromCatalog(e.target.value); e.currentTarget.value = ""; }}
+            style={{ padding: "4px 10px", borderRadius: 5, border: cardBorder, fontSize: 11, fontFamily: "'Cinzel',serif", background: "#fff", maxWidth: 320 }}>
+            <option value="">{tr('spell_effect_dash')}</option>
+            <optgroup label={tr('group_composed')}>
+              {SPELL_CATALOG.filter((e) => e.kind === "composed").map((e) => (
+                <option key={e.id} value={e.id}>{e.symbol} {e.label}</option>
+              ))}
+            </optgroup>
+            <optgroup label={tr('group_curated')}>
+              {SPELL_CATALOG.filter((e) => e.kind === "curated" && !curatedRows.some((k) => k.id === e.id)).map((e) => (
+                <option key={e.id} value={e.id}>{e.symbol} {e.label}</option>
+              ))}
+            </optgroup>
+          </select>
+        </div>
+      ) : !singleEffect && (
         <button onClick={addComposed} style={{ marginTop: 4, padding: "5px 12px", borderRadius: 6, border: "1px dashed #b8a36a", background: "#fffdf6", color: "#8a6d3b", fontSize: 11, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>{tr('add_composed_effect')}</button>
       )}
     </div>

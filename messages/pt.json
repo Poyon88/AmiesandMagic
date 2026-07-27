@@ -592,6 +592,12 @@
         "selection": "revela 3 cartas{filter} (custo ≤ {x}) e mantém uma na mão",
         "renfort_royal": "revela 3 cartas de coleção{filter} (custo ≤ {x}) e mantém uma na mão"
       },
+      "pool": {
+        "race": " da raça {v}",
+        "faction": " da facção {v}",
+        "clan": " do clã {v}",
+        "keyword": " portando {v}"
+      },
       "self": {
         "deal_damage_one": "sofre {x} de dano",
         "deal_damage_many": "sofre {x} de dano",
@@ -654,12 +660,6 @@
         "grant_keyword": "escolha uma criatura para receber a habilidade",
         "exhumation": "escolha uma criatura para ressuscitar",
         "default": "escolha um alvo"
-      },
-      "pool": {
-        "race": " da raça {v}",
-        "faction": " da facção {v}",
-        "clan": " do clã {v}",
-        "keyword": " portando {v}"
       }
     },
     "factions": {
@@ -1423,6 +1423,13 @@
     "content_summon_token": "Invocar um token",
     "content_gain_mana": "Ganhar mana",
     "content_exhumation": "Ressuscitar (cemitério)",
+    "content_selection": "Seleção (1 de 3)",
+    "content_renfort_royal": "Seleção Real (1 de 3)",
+    "label_pool_membership": "POOL — PERTENÇA",
+    "label_pool_faction": "POOL — FACÇÃO",
+    "label_pool_keyword": "POOL — PALAVRA-CHAVE",
+    "pool_any": "Indiferente",
+    "pool_hint": "Filtros cumulativos, além das regras básicas (Comum, custo ≤ X, alinhamento da carta).",
     "label_magnitude": "MAGNITUDE",
     "label_granted_ability": "HABILIDADE CONCEDIDA",
     "label_token": "TOKEN",
@@ -1783,13 +1790,13 @@
     "unknown_error": "Erro desconhecido",
     "illustration_generated": "Ilustração gerada ({model})",
     "import_error": "Erro de importação",
-    "content_selection": "Seleção (1 de 3)",
-    "content_renfort_royal": "Seleção Real (1 de 3)",
-    "label_pool_membership": "POOL — PERTENÇA",
-    "label_pool_faction": "POOL — FACÇÃO",
-    "label_pool_keyword": "POOL — PALAVRA-CHAVE",
-    "pool_any": "Indiferente",
-    "pool_hint": "Filtros cumulativos, além das regras básicas (Comum, custo ≤ X, alinhamento da carta)."
+    "legacy_grants_heading": "Dons herdados (formato antigo) — converta-os para poder visar o adversário",
+    "convert_to_composed": "Converter",
+    "effects_heading": "Efeitos da carta",
+    "effects_subtitle": "todos os efeitos do feitiço, numa única lista",
+    "effect_kind_curated": "MECÂNICA",
+    "group_composed": "Efeitos configuráveis",
+    "group_curated": "Mecânicas específicas"
   },
   "game": {
     "error_not_authenticated": "Não autenticado",

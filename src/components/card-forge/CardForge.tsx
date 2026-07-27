@@ -12,7 +12,7 @@ import KeywordIcon from "@/components/shared/KeywordIcon";
 import type { CardType, Keyword, KeywordMode, SpellKeywordInstance, SpellComposableEffects, CardSet, GameFormat, TokenTemplate, ConvocationTokenDef } from "@/lib/game/types";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 import RaceClanPicker from "@/components/admin/RaceClanPicker";
-import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
+import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS } from "@/lib/game/spell-keywords";
 import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
 import { ABILITIES, abilityIconKeys, creatureEngineId, XY_ABILITY_IDS, type AbilityDef } from "@/lib/game/abilities";
 import type { SpellKeywordId, Capability, CapabilityTrigger } from "@/lib/game/types";
@@ -1779,6 +1779,15 @@ export default function CardForge() {
 
   // All races from all factions
   const allRaces = Object.values(FACTIONS).flatMap(f => f.races).sort();
+
+  // Capacités à couple +X/+Y dont le Y est réellement persisté quand un SORT les
+  // confère (cf. les branches `gloire` / `force_des_ancetres` de saveToGame, les
+  // seules sans garde `!isSpellCard`). Sert à n'afficher le champ +PV que là où
+  // il est enregistré.
+  const SPELL_CONFER_Y_STATE: Record<string, [number, (n: number) => void]> = {
+    "Gloire +X/+Y": [glY, setGlY],
+    "Force des ancêtres +X/+Y": [fdaY, setFdaY],
+  };
 
   const loadTokenTemplates = useCallback(async () => {
     try {
@@ -3774,15 +3783,8 @@ export default function CardForge() {
             setManualKeywords(prev => [...prev, label]);
             if (KEYWORDS[label]?.scalable) setKeywordXValues(prev => ({ ...prev, [label]: 1 }));
           };
-          const addSpellEffect = (kwId: string) => {
-            const def = SPELL_KEYWORDS[kwId as keyof typeof SPELL_KEYWORDS];
-            if (!def || spellKeywords.some(k => k.id === kwId)) return;
-            const init: SpellKeywordInstance = { id: kwId as SpellKeywordInstance["id"] };
-            if (def.params.includes("amount")) init.amount = 1;
-            if (def.params.includes("attack")) init.attack = 1;
-            if (def.params.includes("health")) init.health = 1;
-            setSpellKeywords(prev => [...prev, init]);
-          };
+          // (l'ajout d'un effet de sort est passé dans la liste unifiée —
+          //  cf. addFromCatalog dans ComposedEffectsEditor)
           const cardBorder = "1px solid #e3d9c0";
           const labelStyle = { fontSize: 8, color: "#999", letterSpacing: 1, fontWeight: 700 } as const;
           const valStyle = { fontSize: 11, color: "#444", fontFamily: "'Cinzel',serif" } as const;
@@ -3964,113 +3966,63 @@ export default function CardForge() {
                   </>
                 ) : (
                   <>
-                    {/* SORT : effets immédiats (spell_keywords) + capacités conférées (manualKeywords) */}
-                    {spellKeywords.length === 0 && manualKeywords.length === 0 && (
-                      <div style={{ fontSize: 11, color: "#aaa", fontStyle: "italic", padding: "12px 0" }}>{tf('no_ability_add_effect')}</div>
+                    {/* SORT : tout se règle désormais dans la LISTE UNIQUE d'effets
+                        plus bas (mécaniques curées + effets composés). Ne subsiste
+                        ici que le don HÉRITÉ (mot-clé de créature porté par un
+                        sort), pour les cartes d'avant la fusion : rendu tel quel,
+                        avec une conversion à la demande vers un effet composé
+                        « Conférer » — lequel n'est plus limité aux alliés. */}
+                    {manualKeywords.length > 0 && (
+                      <div style={{ marginBottom: 14 }}>
+                        <div style={{ fontSize: 9, color: "#b3541e", letterSpacing: 1, fontWeight: 700, marginBottom: 6 }}>
+                          ⚠ {tf('legacy_grants_heading')}
+                        </div>
+                        {manualKeywords.map(label => {
+                          const allAllies = keywordGrantScope[label] === "all_allies";
+                          const engineId = CREATURE_LABEL_TO_ENGINE_ID[label] ?? label;
+                          const yState = SPELL_CONFER_Y_STATE[label];
+                          const convert = () => {
+                            const x = keywordXValues[label];
+                            setComposedCaps(prev => [...prev, {
+                              uid: `c_${Math.random().toString(36).slice(2, 9)}`,
+                              trigger: "spell_resolution", effectKind: "immediate", abilityId: "_composed",
+                              composed: {
+                                content: "grant_keyword", grantAbilityId: engineId,
+                                ...(x != null || yState ? { magnitude: { ...(x != null ? { x } : {}), ...(yState ? { y: yState[0] } : {}) } } : {}),
+                                target: {
+                                  entity: "unit", side: "ally", location: "board",
+                                  count: allAllies ? "all" : 1,
+                                  designation: allAllies ? "automatic" : "choice",
+                                },
+                              },
+                            }]);
+                            removeCreatureCap(label);
+                          };
+                          return (
+                            <div key={label} style={{ border: "1px solid #e8cfc0", borderRadius: 8, padding: 8, marginBottom: 6, background: "#fff8f2", display: "flex", alignItems: "center", gap: 8 }}>
+                              <KeywordIcon symbol={KEYWORD_SYMBOLS[label] || "✦"} size={16} keyword={engineId} />
+                              <span style={{ fontFamily: "'Cinzel',serif", fontSize: 11, color: "#444", flex: 1 }}>
+                                {tf('confer_prefix')} {label} · {allAllies ? tf('all_allied_units') : tf('one_allied_unit')}
+                              </span>
+                              <button onClick={convert} style={{ padding: "3px 10px", borderRadius: 5, border: "1px solid #b3541e", background: "#fff", color: "#b3541e", fontSize: 10, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>
+                                {tf('convert_to_composed')}
+                              </button>
+                              <button onClick={() => removeCreatureCap(label)} style={{ border: "none", background: "transparent", color: "#c0392b", cursor: "pointer", fontSize: 14 }} title={tf('remove')}>✕</button>
+                            </div>
+                          );
+                        })}
+                      </div>
                     )}
-                    {spellKeywords.map((kw, idx) => {
-                      const def = SPELL_KEYWORDS[kw.id];
-                      if (!def) return null;
-                      return (
-                        <div key={kw.id} style={{ border: cardBorder, borderRadius: 8, padding: 10, marginBottom: 8, background: "#fbf7ff" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-                            <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[kw.id] || def.symbol || "✦"} size={16} keyword={`spell_${kw.id}`} />
-                            <span style={{ fontFamily: "'Cinzel',serif", fontSize: 12, fontWeight: 700, color: "#9b59b6", flex: 1 }}>{SPELL_KEYWORD_LABELS[kw.id] ?? kw.id}</span>
-                            <button onClick={() => setSpellKeywords(prev => prev.filter(k => k.id !== kw.id))} style={{ border: "none", background: "transparent", color: "#c0392b", cursor: "pointer", fontSize: 14 }} title={tf('remove')}>✕</button>
-                          </div>
-                          <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "6px 12px", alignItems: "center" }}>
-                            <span style={labelStyle}>{tf('label_trigger')}</span>
-                            <span style={valStyle}>{TRIGGER_FR.spell_resolution}</span>
-                            <span style={labelStyle}>{tf('effect_type_label')}</span>
-                            <span style={valStyle}>{tf('immediate_effect')}</span>
-                            <span style={labelStyle}>{tf('effect_label')}</span>
-                            <span style={{ ...valStyle, display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
-                              {def.desc}
-                              {def.params.includes("amount") && (
-                                <label style={{ fontSize: 9, color: "#9b59b6" }}>X <input type="number" min={1} max={20} value={kw.amount ?? 1} onChange={e => { const v = Math.max(1, parseInt(e.target.value) || 1); setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, amount: v } : k)); }} style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: "1px solid #9b59b644", fontSize: 11, textAlign: "center", fontFamily: "'Cinzel',serif" }} /></label>
-                              )}
-                              {def.params.includes("attack") && (
-                                <label style={{ fontSize: 9, color: "#e74c3c" }}>ATK <input type="number" min={0} max={20} value={kw.attack ?? 1} onChange={e => { const v = Math.max(0, parseInt(e.target.value) || 0); setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, attack: v } : k)); }} style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: "1px solid #e74c3c44", fontSize: 11, textAlign: "center", fontFamily: "'Cinzel',serif", color: "#e74c3c" }} /></label>
-                              )}
-                              {def.params.includes("health") && (
-                                <label style={{ fontSize: 9, color: "#c79a0a" }}>{kw.id === "dechainement" ? "Coût (Y)" : "PV"} <input type="number" min={0} max={20} value={kw.health ?? 1} onChange={e => { const v = Math.max(0, parseInt(e.target.value) || 0); setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, health: v } : k)); }} style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: "1px solid #c79a0a44", fontSize: 11, textAlign: "center", fontFamily: "'Cinzel',serif", color: "#c79a0a" }} /></label>
-                              )}
-                            </span>
-                            {kw.id === "renforcement_multiple" && (
-                              <>
-                                <span style={labelStyle}>{tf('race_clan_label')}</span>
-                                <RaceClanPicker race={kw.race ?? ""} clan={kw.clan ?? ""} onChange={(r, c) => setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, race: r || undefined, clan: c || undefined } : k))} />
-                              </>
-                            )}
-                            {kw.id === "appel_supreme" && (
-                              <>
-                                <span style={labelStyle}>{tf('race_label')} {!kw.race && <span style={{ color: "#e74c3c" }}>· {tf('required')}</span>}</span>
-                                <select value={kw.race ?? ""} onChange={e => setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, race: e.target.value || undefined } : k))}
-                                  style={{ padding: "3px 6px", borderRadius: 5, border: cardBorder, fontSize: 11, fontFamily: "'Cinzel',serif", background: "#fff" }}>
-                                  <option value="">{tf('race_dash')}</option>
-                                  {Array.from(new Set(Object.values(FACTIONS).flatMap(f => f.races))).sort().map(r => <option key={r} value={r}>{r}</option>)}
-                                </select>
-                              </>
-                            )}
-                            <span style={labelStyle}>{tf('targets_label2')}</span>
-                            <span style={valStyle}>{def.needsTarget ? `${tf('one_target')}${def.targetType ? ` (${def.targetType})` : ""}` : "—"}</span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                    {manualKeywords.map(label => {
-                      const allAllies = keywordGrantScope[label] === "all_allies";
-                      return (
-                        <div key={label} style={{ border: cardBorder, borderRadius: 8, padding: 10, marginBottom: 8, background: "#f5fff7" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-                            <KeywordIcon symbol={KEYWORD_SYMBOLS[label] || "✦"} size={16} keyword={CREATURE_LABEL_TO_ENGINE_ID[label] ?? label} />
-                            <span style={{ fontFamily: "'Cinzel',serif", fontSize: 12, fontWeight: 700, color: "#27ae60", flex: 1 }}>{tf('confer_prefix')} {label}</span>
-                            <button onClick={() => removeCreatureCap(label)} style={{ border: "none", background: "transparent", color: "#c0392b", cursor: "pointer", fontSize: 14 }} title={tf('remove')}>✕</button>
-                          </div>
-                          <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "6px 12px", alignItems: "center" }}>
-                            <span style={labelStyle}>{tf('label_trigger')}</span>
-                            <span style={valStyle}>{TRIGGER_FR.spell_resolution}</span>
-                            <span style={labelStyle}>{tf('effect_type_label')}</span>
-                            <span style={valStyle}>{tf('confer_ability_to_unit')}</span>
-                            <span style={labelStyle}>{tf('scope_label')}</span>
-                            <span style={{ display: "inline-flex", gap: 6 }}>
-                              {([["target", tf('scope_one_ally')], ["all_allies", tf('scope_all_allies')]] as const).map(([val, txt]) => {
-                                const active = (allAllies ? "all_allies" : "target") === val;
-                                return (
-                                  <button key={val} onClick={() => setKeywordGrantScope(prev => { const n = { ...prev }; if (val === "all_allies") n[label] = "all_allies"; else delete n[label]; return n; })}
-                                    style={{ padding: "3px 10px", borderRadius: 5, border: `1px solid ${active ? "#27ae60" : "#ddd"}`, background: active ? "#27ae6022" : "#fff", color: active ? "#27ae60" : "#999", fontSize: 10, fontFamily: "'Cinzel',serif", fontWeight: active ? 700 : 400, cursor: "pointer" }}>{txt}</button>
-                                );
-                              })}
-                            </span>
-                            <span style={labelStyle}>{tf('targets_label2')}</span>
-                            <span style={valStyle}>{allAllies ? tf('all_allied_units') : tf('one_allied_unit')}</span>
-                          </div>
-                        </div>
-                      );
-                    })}
-
-                    <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
-                      <span style={{ fontSize: 11, color: "#666" }}>{tf('add_effect')}</span>
-                      <select value="" onChange={e => addSpellEffect(e.target.value)} style={{ padding: "4px 10px", borderRadius: 5, border: cardBorder, fontSize: 11, fontFamily: "'Cinzel',serif", background: "#fff" }}>
-                        <option value="">{tf('spell_effect_dash')}</option>
-                        {ALL_SPELL_KEYWORDS.filter(id => !spellKeywords.some(k => k.id === id)).map(id => (
-                          <option key={id} value={id}>{SPELL_KEYWORD_LABELS[id] ?? id}</option>
-                        ))}
-                      </select>
-                      <span style={{ fontSize: 11, color: "#666", marginLeft: 8 }}>{tf('add_confer')}</span>
-                      <select value="" onChange={e => addCreatureCap(e.target.value)} style={{ padding: "4px 10px", borderRadius: 5, border: cardBorder, fontSize: 11, fontFamily: "'Cinzel',serif", background: "#fff" }}>
-                        <option value="">{tf('ability_to_confer_dash')}</option>
-                        {availableManualKeywords.filter(([id]) => !manualKeywords.includes(id)).map(([id]) => (
-                          <option key={id} value={id}>{id}</option>
-                        ))}
-                      </select>
-                    </div>
                   </>
                 )}
 
-                {/* ── Effets composés (avancé) ── */}
+                {/* ── Liste unique d'effets ── (sort : mécaniques curées + composés) */}
                 <div style={{ marginTop: 18, borderTop: "2px solid #efe7d2", paddingTop: 12 }}>
-                  <ComposedEffectsEditor value={composedCaps} onChange={setComposedCaps} isUnit={isUnit} tokenTemplates={tokenTemplates} />
+                  <ComposedEffectsEditor
+                    value={composedCaps} onChange={setComposedCaps}
+                    isUnit={isUnit} tokenTemplates={tokenTemplates}
+                    {...(isUnit ? {} : { curated: spellKeywords, onCuratedChange: setSpellKeywords })}
+                  />
                 </div>
 
                 <div style={{ marginTop: 16, fontSize: 10, color: "#999", fontStyle: "italic", borderTop: "1px solid #eee", paddingTop: 10 }}>

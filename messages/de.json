@@ -592,6 +592,12 @@
         "selection": "deckt 3 Karten{filter} auf (Kosten ≤ {x}) und behält eine davon auf der Hand",
         "renfort_royal": "deckt 3 Sammelkarten{filter} auf (Kosten ≤ {x}) und behält eine davon auf der Hand"
       },
+      "pool": {
+        "race": " der Rasse {v}",
+        "faction": " der Fraktion {v}",
+        "clan": " des Klans {v}",
+        "keyword": " mit {v}"
+      },
       "self": {
         "deal_damage_one": "fügt sich selbst {x} Schaden zu",
         "deal_damage_many": "fügt sich selbst {x} Schaden zu",
@@ -654,12 +660,6 @@
         "grant_keyword": "wähle eine Kreatur, der die Fähigkeit verliehen werden soll",
         "exhumation": "wähle eine Kreatur zum Wiederbeleben",
         "default": "wähle ein Ziel"
-      },
-      "pool": {
-        "race": " der Rasse {v}",
-        "faction": " der Fraktion {v}",
-        "clan": " des Klans {v}",
-        "keyword": " mit {v}"
       }
     },
     "factions": {
@@ -1423,6 +1423,13 @@
     "content_summon_token": "Token beschwören",
     "content_gain_mana": "Mana erhalten",
     "content_exhumation": "Wiederbeleben (Friedhof)",
+    "content_selection": "Auswahl (1 von 3)",
+    "content_renfort_royal": "Königliche Auswahl (1 von 3)",
+    "label_pool_membership": "POOL — ZUGEHÖRIGKEIT",
+    "label_pool_faction": "POOL — FRAKTION",
+    "label_pool_keyword": "POOL — SCHLÜSSELWORT",
+    "pool_any": "Beliebig",
+    "pool_hint": "Kumulative Filter, zusätzlich zu den Grundregeln (Gewöhnlich, Kosten ≤ X, Gesinnung der Karte).",
     "label_magnitude": "STÄRKE",
     "label_granted_ability": "VERLIEHENE FÄHIGKEIT",
     "label_token": "TOKEN",
@@ -1783,13 +1790,13 @@
     "unknown_error": "Unbekannter Fehler",
     "illustration_generated": "Illustration generiert ({model})",
     "import_error": "Importfehler",
-    "content_selection": "Auswahl (1 von 3)",
-    "content_renfort_royal": "Königliche Auswahl (1 von 3)",
-    "label_pool_membership": "POOL — ZUGEHÖRIGKEIT",
-    "label_pool_faction": "POOL — FRAKTION",
-    "label_pool_keyword": "POOL — SCHLÜSSELWORT",
-    "pool_any": "Beliebig",
-    "pool_hint": "Kumulative Filter, zusätzlich zu den Grundregeln (Gewöhnlich, Kosten ≤ X, Gesinnung der Karte)."
+    "legacy_grants_heading": "Vererbte Boni (altes Format) — konvertiere sie, um den Gegner anvisieren zu können",
+    "convert_to_composed": "Konvertieren",
+    "effects_heading": "Karteneffekte",
+    "effects_subtitle": "alle Effekte des Zaubers in einer einzigen Liste",
+    "effect_kind_curated": "MECHANIK",
+    "group_composed": "Konfigurierbare Effekte",
+    "group_curated": "Besondere Mechaniken"
   },
   "game": {
     "error_not_authenticated": "Nicht authentifiziert",

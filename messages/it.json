@@ -592,6 +592,12 @@
         "selection": "rivela 3 carte{filter} (costo ≤ {x}) e ne tiene una in mano",
         "renfort_royal": "rivela 3 carte da collezione{filter} (costo ≤ {x}) e ne tiene una in mano"
       },
+      "pool": {
+        "race": " di razza {v}",
+        "faction": " della fazione {v}",
+        "clan": " del clan {v}",
+        "keyword": " con {v}"
+      },
       "self": {
         "deal_damage_one": "subisce {x} danno",
         "deal_damage_many": "subisce {x} danni",
@@ -654,12 +660,6 @@
         "grant_keyword": "scegli una creatura a cui conferire l'abilità",
         "exhumation": "scegli una creatura da resuscitare",
         "default": "scegli un bersaglio"
-      },
-      "pool": {
-        "race": " di razza {v}",
-        "faction": " della fazione {v}",
-        "clan": " del clan {v}",
-        "keyword": " con {v}"
       }
     },
     "factions": {
@@ -1423,6 +1423,13 @@
     "content_summon_token": "Evocare un token",
     "content_gain_mana": "Guadagnare mana",
     "content_exhumation": "Resuscitare (cimitero)",
+    "content_selection": "Selezione (1 su 3)",
+    "content_renfort_royal": "Selezione Reale (1 su 3)",
+    "label_pool_membership": "POOL — APPARTENENZA",
+    "label_pool_faction": "POOL — FAZIONE",
+    "label_pool_keyword": "POOL — PAROLA CHIAVE",
+    "pool_any": "Indifferente",
+    "pool_hint": "Filtri cumulativi, in aggiunta alle regole base (Comune, costo ≤ X, allineamento della carta).",
     "label_magnitude": "AMPIEZZA",
     "label_granted_ability": "ABILITÀ CONFERITA",
     "label_token": "TOKEN",
@@ -1783,13 +1790,13 @@
     "unknown_error": "Errore sconosciuto",
     "illustration_generated": "Illustrazione generata ({model})",
     "import_error": "Errore di importazione",
-    "content_selection": "Selezione (1 su 3)",
-    "content_renfort_royal": "Selezione Reale (1 su 3)",
-    "label_pool_membership": "POOL — APPARTENENZA",
-    "label_pool_faction": "POOL — FAZIONE",
-    "label_pool_keyword": "POOL — PAROLA CHIAVE",
-    "pool_any": "Indifferente",
-    "pool_hint": "Filtri cumulativi, in aggiunta alle regole base (Comune, costo ≤ X, allineamento della carta)."
+    "legacy_grants_heading": "Doni ereditati (vecchio formato) — convertili per poterli indirizzare all'avversario",
+    "convert_to_composed": "Converti",
+    "effects_heading": "Effetti della carta",
+    "effects_subtitle": "tutti gli effetti dell'incantesimo, in un'unica lista",
+    "effect_kind_curated": "MECCANICA",
+    "group_composed": "Effetti configurabili",
+    "group_curated": "Meccaniche speciali"
   },
   "game": {
     "error_not_authenticated": "Non autenticato",

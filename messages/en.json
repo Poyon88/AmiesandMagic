@@ -592,6 +592,12 @@
         "selection": "reveals 3 cards{filter} (cost ≤ {x}) and keeps one in hand",
         "renfort_royal": "reveals 3 collection cards{filter} (cost ≤ {x}) and keeps one in hand"
       },
+      "pool": {
+        "race": " of race {v}",
+        "faction": " of faction {v}",
+        "clan": " of clan {v}",
+        "keyword": " bearing {v}"
+      },
       "self": {
         "deal_damage_one": "deals {x} damage to itself",
         "deal_damage_many": "deals {x} damage to itself",
@@ -654,12 +660,6 @@
         "grant_keyword": "choose a creature to grant the ability to",
         "exhumation": "choose a creature to resurrect",
         "default": "choose a target"
-      },
-      "pool": {
-        "race": " of race {v}",
-        "faction": " of faction {v}",
-        "clan": " of clan {v}",
-        "keyword": " bearing {v}"
       }
     },
     "factions": {
@@ -1423,6 +1423,13 @@
     "content_summon_token": "Summon a token",
     "content_gain_mana": "Gain mana",
     "content_exhumation": "Reanimate (graveyard)",
+    "content_selection": "Selection (1 of 3)",
+    "content_renfort_royal": "Royal Selection (1 of 3)",
+    "label_pool_membership": "POOL — MEMBERSHIP",
+    "label_pool_faction": "POOL — FACTION",
+    "label_pool_keyword": "POOL — KEYWORD",
+    "pool_any": "Any",
+    "pool_hint": "Cumulative filters, in addition to the base rules (Common, cost ≤ X, card alignment).",
     "label_magnitude": "MAGNITUDE",
     "label_granted_ability": "GRANTED ABILITY",
     "label_token": "TOKEN",
@@ -1783,13 +1790,13 @@
     "unknown_error": "Unknown error",
     "illustration_generated": "Illustration generated ({model})",
     "import_error": "Import error",
-    "content_selection": "Selection (1 of 3)",
-    "content_renfort_royal": "Royal Selection (1 of 3)",
-    "label_pool_membership": "POOL — MEMBERSHIP",
-    "label_pool_faction": "POOL — FACTION",
-    "label_pool_keyword": "POOL — KEYWORD",
-    "pool_any": "Any",
-    "pool_hint": "Cumulative filters, in addition to the base rules (Common, cost ≤ X, card alignment)."
+    "legacy_grants_heading": "Legacy grants (old format) — convert them to be able to target the opponent",
+    "convert_to_composed": "Convert",
+    "effects_heading": "Card effects",
+    "effects_subtitle": "all spell effects, in a single list",
+    "effect_kind_curated": "MECHANIC",
+    "group_composed": "Configurable effects",
+    "group_curated": "Special mechanics"
   },
   "game": {
     "error_not_authenticated": "Not authenticated",

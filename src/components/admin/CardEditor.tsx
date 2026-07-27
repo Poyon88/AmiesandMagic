@@ -402,9 +402,12 @@ export default function CardEditor() {
           if (id === "renforcement" && !isSpellCard) {
             return { id: id as Keyword, ...(mode ? { mode } : {}), x: x ?? 0, y: rfY };
           }
-          // Gloire +X/+Y (créature) : porte +X (ATK) / +Y (PV) ; toujours émis.
-          if (id === "gloire" && !isSpellCard) {
-            return { id: id as Keyword, ...(mode ? { mode } : {}), x: x ?? 0, y: glY };
+          // Gloire +X/+Y : porte +X (ATK) / +Y (PV) ; toujours émise. Émise aussi
+          // sur un SORT qui la confère — la forge le fait déjà, et sans ça une
+          // ré-édition ici retombait sur la branche générique {id, x} : le +Y
+          // saisi dans la forge disparaissait en silence à la sauvegarde.
+          if (id === "gloire") {
+            return { id: id as Keyword, ...(mode ? { mode } : {}), x: x ?? 0, y: glY, ...(grantScope ? { grantScope } : {}) };
           }
           // Affaiblissement -X/-Y (créature) : porte -X (ATK) / -Y (PV) ; toujours émis.
           if (id === "affaiblissement" && !isSpellCard) {
@@ -1467,9 +1470,10 @@ export default function CardEditor() {
               </div>
             )}
 
-            {/* Gloire (créature) — bloc unifié +ATK (X) / +PV (Y), identique à
-                la Forge de création. Gain accordé à chaque survie au combat. */}
-            {((editFields.keywords as string[]) || []).includes("gloire") && editFields.card_type === "creature" && (
+            {/* Gloire — bloc unifié +ATK (X) / +PV (Y), identique à la Forge.
+                Gain accordé à chaque survie au combat. Affiché aussi sur un SORT
+                qui la confère (son `y` est persisté, cf. plus haut). */}
+            {((editFields.keywords as string[]) || []).includes("gloire") && (
               <div style={{ marginBottom: 8, padding: "8px 10px", borderRadius: 6, border: "1px solid #f0d9a8", background: "#fffaf0" }}>
                 <div style={{ ...S.label, color: "#a67c11", marginBottom: 6 }}>🏅 GLOIRE (SURVIE AU COMBAT)</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -1511,9 +1515,13 @@ export default function CardEditor() {
               </div>
             )}
 
-            {/* Force des ancêtres (créature) — bloc unifié +ATK (X) / +PV (Y),
-                actif tant que le cimetière du propriétaire compte ≥5 créatures. */}
-            {((editFields.keywords as string[]) || []).includes("force_des_ancetres") && editFields.card_type === "creature" && (
+            {/* Force des ancêtres — bloc unifié +ATK (X) / +PV (Y), actif tant que
+                le cimetière du propriétaire compte ≥5 créatures. Affiché AUSSI sur
+                un SORT qui la confère : son `y` y est bel et bien persisté (cf. la
+                branche sans garde !isSpellCard plus haut), seul le champ manquait
+                — le +PV d'une carte comme « Éveil des Premiers-Nés » était donc
+                inaccessible depuis l'édition. */}
+            {((editFields.keywords as string[]) || []).includes("force_des_ancetres") && (
               <div style={{ marginBottom: 8, padding: "8px 10px", borderRadius: 6, border: "1px solid #d9cfe8", background: "#f8f4ff" }}>
                 <div style={{ ...S.label, color: "#6b4fa0", marginBottom: 6 }}>🪬 FORCE DES ANCÊTRES (≥5 créatures au cimetière)</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -1555,13 +1563,21 @@ export default function CardEditor() {
               </div>
             )}
 
-            {/* Effets composés (modèle hybride) — éditables sur carte existante */}
+            {/* Liste unique d'effets — sur un sort, elle héberge AUSSI les
+                mécaniques curées (spell_keywords), comme la forge. La grille de
+                cases au-dessus reste disponible (bascule rapide côté admin) :
+                les deux vues éditent le même editFields.spell_keywords, donc
+                elles restent synchronisées. */}
             <div style={{ marginTop: 10, borderTop: "1px solid #eee", paddingTop: 8 }}>
               <ComposedEffectsEditor
                 value={composedCaps}
                 onChange={setComposedCaps}
                 isUnit={editFields.card_type === "creature"}
                 tokenTemplates={tokenTemplates}
+                {...(editFields.card_type === "spell" ? {
+                  curated: (editFields.spell_keywords as SpellKeywordInstance[]) || [],
+                  onCuratedChange: (next: SpellKeywordInstance[]) => updateField("spell_keywords", next),
+                } : {})}
               />
             </div>
 

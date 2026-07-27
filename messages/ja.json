@@ -592,6 +592,12 @@
         "selection": "3枚のカード{filter}（コスト{x}以下）を公開し、その中から1枚を手札に加える",
         "renfort_royal": "コレクションから3枚のカード{filter}（コスト{x}以下）を公開し、その中から1枚を手札に加える"
       },
+      "pool": {
+        "race": "（種族：{v}）",
+        "faction": "（陣営：{v}）",
+        "clan": "（氏族：{v}）",
+        "keyword": "（{v}を持つ）"
+      },
       "self": {
         "deal_damage_one": "自身に{x}ダメージを与える",
         "deal_damage_many": "自身に{x}ダメージを与える",
@@ -654,12 +660,6 @@
         "grant_keyword": "能力を付与するクリーチャーを選んでください",
         "exhumation": "蘇生するクリーチャーを選んでください",
         "default": "対象を選んでください"
-      },
-      "pool": {
-        "race": "（種族：{v}）",
-        "faction": "（陣営：{v}）",
-        "clan": "（氏族：{v}）",
-        "keyword": "（{v}を持つ）"
       }
     },
     "factions": {
@@ -1423,6 +1423,13 @@
     "content_summon_token": "トークンを召喚する",
     "content_gain_mana": "マナを得る",
     "content_exhumation": "蘇生する（墓地）",
+    "content_selection": "選択（3枚中1枚）",
+    "content_renfort_royal": "王家の選抜（3枚中1枚）",
+    "label_pool_membership": "プール — 所属",
+    "label_pool_faction": "プール — 陣営",
+    "label_pool_keyword": "プール — 保有キーワード",
+    "pool_any": "指定なし",
+    "pool_hint": "基本ルール（コモン、コスト≤X、カードの属性）に加え、フィルターは累積して適用されます。",
     "label_magnitude": "強度",
     "label_granted_ability": "付与する能力",
     "label_token": "トークン",
@@ -1783,13 +1790,13 @@
     "unknown_error": "不明なエラー",
     "illustration_generated": "イラストを生成しました（{model}）",
     "import_error": "インポートエラー",
-    "content_selection": "選択（3枚中1枚）",
-    "content_renfort_royal": "王家の選抜（3枚中1枚）",
-    "label_pool_membership": "プール — 所属",
-    "label_pool_faction": "プール — 陣営",
-    "label_pool_keyword": "プール — 保有キーワード",
-    "pool_any": "指定なし",
-    "pool_hint": "基本ルール（コモン、コスト≤X、カードの属性）に加え、フィルターは累積して適用されます。"
+    "legacy_grants_heading": "継承された付与効果(旧形式) — 相手を対象にできるように変換してください",
+    "convert_to_composed": "変換",
+    "effects_heading": "カード効果",
+    "effects_subtitle": "呪文の全ての効果を1つのリストに",
+    "effect_kind_curated": "メカニクス",
+    "group_composed": "設定可能な効果",
+    "group_curated": "特殊メカニクス"
   },
   "game": {
     "error_not_authenticated": "未認証",

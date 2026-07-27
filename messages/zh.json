@@ -592,6 +592,12 @@
         "selection": "展示3张{filter}卡牌（费用 ≤ {x}），并保留其中一张至手牌",
         "renfort_royal": "展示3张{filter}收藏卡牌（费用 ≤ {x}），并保留其中一张至手牌"
       },
+      "pool": {
+        "race": "种族为{v}的",
+        "faction": "阵营为{v}的",
+        "clan": "氏族为{v}的",
+        "keyword": "带有{v}的"
+      },
       "self": {
         "deal_damage_one": "对自身造成{x}点伤害",
         "deal_damage_many": "对自身造成{x}点伤害",
@@ -654,12 +660,6 @@
         "grant_keyword": "选择一个赋予能力的生物",
         "exhumation": "选择一个复活的生物",
         "default": "选择一个目标"
-      },
-      "pool": {
-        "race": "种族为{v}的",
-        "faction": "阵营为{v}的",
-        "clan": "氏族为{v}的",
-        "keyword": "带有{v}的"
       }
     },
     "factions": {
@@ -1423,6 +1423,13 @@
     "content_summon_token": "召唤衍生物",
     "content_gain_mana": "获得法力",
     "content_exhumation": "复活（墓地）",
+    "content_selection": "选择（三选一）",
+    "content_renfort_royal": "皇家甄选（三选一）",
+    "label_pool_membership": "卡池 — 归属",
+    "label_pool_faction": "卡池 — 阵营",
+    "label_pool_keyword": "卡池 — 携带关键词",
+    "pool_any": "不限",
+    "pool_hint": "筛选条件可叠加，在基础规则（普通、费用 ≤ X、卡牌阵营）之外生效。",
     "label_magnitude": "幅度",
     "label_granted_ability": "赋予的异能",
     "label_token": "衍生物",
@@ -1783,13 +1790,13 @@
     "unknown_error": "未知错误",
     "illustration_generated": "插图已生成（{model}）",
     "import_error": "导入错误",
-    "content_selection": "选择（三选一）",
-    "content_renfort_royal": "皇家甄选（三选一）",
-    "label_pool_membership": "卡池 — 归属",
-    "label_pool_faction": "卡池 — 阵营",
-    "label_pool_keyword": "卡池 — 携带关键词",
-    "pool_any": "不限",
-    "pool_hint": "筛选条件可叠加，在基础规则（普通、费用 ≤ X、卡牌阵营）之外生效。"
+    "legacy_grants_heading": "遗留赠予效果(旧格式)——请转换以便可以指向对手",
+    "convert_to_composed": "转换",
+    "effects_heading": "卡牌效果",
+    "effects_subtitle": "法术的所有效果,汇于一份列表",
+    "effect_kind_curated": "机制",
+    "group_composed": "可配置效果",
+    "group_curated": "特殊机制"
   },
   "game": {
     "error_not_authenticated": "未登录",

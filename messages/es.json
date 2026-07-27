@@ -592,6 +592,12 @@
         "selection": "revela 3 cartas{filter} (coste ≤ {x}) y se queda una en mano",
         "renfort_royal": "revela 3 cartas de colección{filter} (coste ≤ {x}) y se queda una en mano"
       },
+      "pool": {
+        "race": " de raza {v}",
+        "faction": " de la facción {v}",
+        "clan": " del clan {v}",
+        "keyword": " con {v}"
+      },
       "self": {
         "deal_damage_one": "se inflige {x} punto de daño",
         "deal_damage_many": "se inflige {x} puntos de daño",
@@ -654,12 +660,6 @@
         "grant_keyword": "elige una criatura a la que otorgar la habilidad",
         "exhumation": "elige una criatura para resucitar",
         "default": "elige un objetivo"
-      },
-      "pool": {
-        "race": " de raza {v}",
-        "faction": " de la facción {v}",
-        "clan": " del clan {v}",
-        "keyword": " con {v}"
       }
     },
     "factions": {
@@ -1423,6 +1423,13 @@
     "content_summon_token": "Invocar un token",
     "content_gain_mana": "Ganar maná",
     "content_exhumation": "Resucitar (cementerio)",
+    "content_selection": "Selección (1 de 3)",
+    "content_renfort_royal": "Selección Real (1 de 3)",
+    "label_pool_membership": "POOL — PERTENENCIA",
+    "label_pool_faction": "POOL — FACCIÓN",
+    "label_pool_keyword": "POOL — PALABRA CLAVE",
+    "pool_any": "Indiferente",
+    "pool_hint": "Filtros acumulativos, además de las reglas básicas (Común, coste ≤ X, alineación de la carta).",
     "label_magnitude": "MAGNITUD",
     "label_granted_ability": "HABILIDAD OTORGADA",
     "label_token": "TOKEN",
@@ -1783,13 +1790,13 @@
     "unknown_error": "Error desconocido",
     "illustration_generated": "Ilustración generada ({model})",
     "import_error": "Error de importación",
-    "content_selection": "Selección (1 de 3)",
-    "content_renfort_royal": "Selección Real (1 de 3)",
-    "label_pool_membership": "POOL — PERTENENCIA",
-    "label_pool_faction": "POOL — FACCIÓN",
-    "label_pool_keyword": "POOL — PALABRA CLAVE",
-    "pool_any": "Indiferente",
-    "pool_hint": "Filtros acumulativos, además de las reglas básicas (Común, coste ≤ X, alineación de la carta)."
+    "legacy_grants_heading": "Dones heredados (formato antiguo) — conviértelos para poder apuntar al oponente",
+    "convert_to_composed": "Convertir",
+    "effects_heading": "Efectos de la carta",
+    "effects_subtitle": "todos los efectos del hechizo, en una sola lista",
+    "effect_kind_curated": "MECÁNICA",
+    "group_composed": "Efectos configurables",
+    "group_curated": "Mecánicas particulares"
   },
   "game": {
     "error_not_authenticated": "No autenticado",
