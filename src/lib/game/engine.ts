@@ -1587,7 +1587,7 @@ export function startTurn(state: GameState): GameState {
   return newState;
 }
 
-function drawCard(player: PlayerState): CardInstance | null {
+function drawCard(player: PlayerState, autoPlayDepth = 0): CardInstance | null {
   if (player.deck.length === 0) {
     player.fatigueDamage++;
     dealDamageToHero(player.hero, player.fatigueDamage);
@@ -1599,6 +1599,12 @@ function drawCard(player: PlayerState): CardInstance | null {
     card.cycleEternelAutoPlay = false;
     card.hasSummoningSickness = true;
     player.board.push(card);
+    // La créature recyclée ARRIVE EN JEU au lieu de rejoindre la main : elle ne
+    // doit donc pas consommer la pioche. On tire une carte de REMPLACEMENT.
+    // La chaîne s'arrête d'elle-même (plateau plein ⇒ plus d'auto-play, deck
+    // vide ⇒ fatigue) ; le compteur de profondeur reste un garde-fou explicite,
+    // borné par le nombre de places sur le plateau.
+    if (autoPlayDepth < MAX_BOARD_SIZE) drawCard(player, autoPlayDepth + 1);
     return card;
   }
   if (player.hand.length >= MAX_HAND_SIZE) {
