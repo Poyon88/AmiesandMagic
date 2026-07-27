@@ -1358,9 +1358,20 @@ export const useGameStore = create<GameStore>((set, get) => {
       const isLocal = newState.players[idx]?.id === localPlayerId;
       return { ...s, victimInstanceId: isLocal ? "friendly_hero" : "enemy_hero" };
     });
-    const FUREUR_LUNGE_GAP_MS = 1000;       // gap between successive Fureur lunges (ralenti pour lisibilité de la chaîne)
-    const FUREUR_FIRST_DELAY_MS = 900;      // gap between main lunge and first Fureur lunge
-    const FUREUR_DAMAGE_DELAY_MS = 1300;    // base delay added to victim damage popups
+    // Cadence de la chaîne Fureur. Règle à tenir : l'écart entre deux assauts
+    // doit dépasser la DURÉE VISIBLE d'un assaut (lunge ~650ms + son popup de
+    // dégâts, qui tombe ~1,1s après le départ du lunge). En dessous, le lunge
+    // suivant part alors que le popup précédent flotte encore et la chaîne se
+    // lit comme une bouillie — c'est le même piège que l'écart entre relances
+    // de sort, plus court que la fenêtre d'affichage (cf. OVERLAY.spell).
+    //
+    // L'écart entre FIRST_DELAY et DAMAGE_DELAY (400ms) est LOAD-BEARING : il
+    // fixe le moment du popup dans le lunge. Le déplacer désynchronise le
+    // chiffre de dégâts de l'impact ; pour ralentir, on bouge les trois
+    // ensemble en gardant cet écart.
+    const FUREUR_LUNGE_GAP_MS = 1600;       // écart entre deux assauts Fureur successifs
+    const FUREUR_FIRST_DELAY_MS = 1200;     // écart entre l'assaut principal et le 1er assaut Fureur
+    const FUREUR_DAMAGE_DELAY_MS = 1600;    // décalage de base des popups de dégâts (= FIRST + 400)
     const FUREUR_PHASE_EXTRA_MS = fureurStrikes.length > 0
       ? FUREUR_DAMAGE_DELAY_MS + (fureurStrikes.length - 1) * FUREUR_LUNGE_GAP_MS + 500
       : 0;
