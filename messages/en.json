@@ -337,6 +337,14 @@
         "label": "Rally X",
         "desc": "Reveal the top X cards of your deck; keep the {race_pl} in hand, discard the rest."
       },
+      "invocations_multiples": {
+        "label": "Multiple Summons",
+        "desc": "Summons {invocations}."
+      },
+      "touche_mortel": {
+        "label": "Deadly Touch",
+        "desc": "Any creature damaged by this unit dies, regardless of its HP."
+      },
       "selection": {
         "label": "Selection X",
         "desc": "Reveal 3 {alignment} commons with cost ≤ X; add one to your hand."
@@ -419,6 +427,10 @@
       }
     },
     "spell_keywords": {
+      "touche_mortel": {
+        "label": "Deadly Touch",
+        "desc": "Any creature damaged by this spell dies, regardless of its HP."
+      },
       "precision": {
         "label": "Precision",
         "desc": "This spell's damage ignores Resistance, Armor, and Shield."
@@ -535,6 +547,10 @@
         "label": "Concentration X",
         "desc": "Each spell in hand becomes a random spell with cost +X, reduced by X (all factions)."
       },
+      "invocations_multiples": {
+        "label": "Multiple Summons",
+        "desc": "Summons {invocations}."
+      },
       "invocation_multiple": {
         "label": "Mass Summon",
         "desc": "Creates {tokens}."
@@ -574,6 +590,7 @@
         "destroy": "destroys",
         "bounce": "returns to hand",
         "paralyze": "paralyzes",
+        "poison": "poisons",
         "grant_keyword": "grants {ability}",
         "ability_generic": "an ability",
         "draw_cards_one": "draw {x} card",
@@ -590,8 +607,7 @@
         "exhum_all": "all creatures",
         "exhum_upto": "up to {n} creatures",
         "selection": "reveals 3 cards{filter} (cost ≤ {x}) and keeps one in hand",
-        "renfort_royal": "reveals 3 collection cards{filter} (cost ≤ {x}) and keeps one in hand",
-        "poison": "poisons"
+        "renfort_royal": "reveals 3 collection cards{filter} (cost ≤ {x}) and keeps one in hand"
       },
       "pool": {
         "race": " of race {v}",
@@ -608,8 +624,8 @@
         "destroy": "destroys itself",
         "bounce": "returns itself to hand",
         "paralyze": "paralyzes itself",
-        "grant_keyword": "grants itself {ability}",
-        "poison": "poisons itself"
+        "poison": "poisons itself",
+        "grant_keyword": "grants itself {ability}"
       },
       "targetd": {
         "count_all": "all units",
@@ -659,10 +675,10 @@
         "destroy": "choose a creature to destroy",
         "bounce": "choose a creature to return to hand",
         "paralyze": "choose a creature to paralyze",
+        "poison": "choose a creature to poison",
         "grant_keyword": "choose a creature to grant the ability to",
         "exhumation": "choose a creature to resurrect",
-        "default": "choose a target",
-        "poison": "choose a creature to poison"
+        "default": "choose a target"
       }
     },
     "factions": {
@@ -1090,7 +1106,15 @@
       "ability": "an ability",
       "scope": "to an allied unit (or to all)",
       "scope_target": "to an allied unit",
-      "scope_all": "to all your units"
+      "scope_all": "to all your units",
+      "invocations": "several random creatures from your collection",
+      "invocations_first_one": "a random creature with cost {cost}",
+      "invocations_first_many": "{count} random creatures with cost {cost}",
+      "invocations_more_one": "one with cost {cost}",
+      "invocations_more_many": "{count} with cost {cost}",
+      "invocations_join": " and ",
+      "invocations_of_race": " (among the {v})",
+      "invocations_of_faction": " (among the {v} faction)"
     },
     "sets": {
       "1": "Base Set"
@@ -1420,6 +1444,14 @@
     "content_destroy": "Destroy",
     "content_bounce": "Return to hand",
     "content_paralyze": "Paralyze",
+    "content_poison": "Poison (−1 HP per turn)",
+    "invocation_costs_label": "SUMMON COSTS",
+    "invocation_costs_hint": "A random creature from your collection is summoned for each listed cost.",
+    "add_invocation": "+ Summon",
+    "invocation_pool_label": "INVOCATION POOL",
+    "invocation_pool_any_race": "— Any race —",
+    "invocation_pool_any_faction": "— Any faction —",
+    "invocation_pool_hint": "A random creature is summoned for each listed cost. Without a race or faction, the pool follows the card's alignment.",
     "content_grant_keyword": "Grant an ability",
     "content_draw_cards": "Draw cards",
     "content_discard": "Discard (opponent)",
@@ -1799,8 +1831,7 @@
     "card_added": "\"{name}\" added!",
     "unknown_error": "Unknown error",
     "illustration_generated": "Illustration generated ({model})",
-    "import_error": "Import error",
-    "content_poison": "Poison (−1 HP per turn)"
+    "import_error": "Import error"
   },
   "game": {
     "error_not_authenticated": "Not authenticated",

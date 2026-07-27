@@ -172,6 +172,19 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["creature"],
     creature: { cost: 7, costPerX: 0, se: 1.5, minTier: 1, scalable: false, zone: "Terrain" },
   },
+  touche_mortel: {
+    id: "touche_mortel", label: "Touché mortel", symbol: "💀⚔️",
+    desc: "Toute créature blessée par cette unité meurt, quels que soient ses PV.",
+    applicable_to: ["creature", "spell"],
+    creature: { cost: 14, costPerX: 0, se: 3.5, minTier: 3, scalable: false, zone: "Terrain" },
+    // Forme sort : modificateur GLOBAL, comme Précision. Le sort « a » Touché
+    // mortel — toute créature qu'il blesse meurt — il ne le confère pas. Pour
+    // donner la capacité à une unité, passer par l'effet composé « Conférer ».
+    spell: {
+      desc: "Toute créature blessée par ce sort meurt, quels que soient ses PV.",
+      params: [], needsTarget: false,
+    },
+  },
   precision: {
     id: "precision", label: "Précision", symbol: "🏹",
     desc: "Ignore la Résistance, l'Armure et le Bouclier.",
@@ -907,6 +920,19 @@ export const ABILITIES: Record<string, AbilityDef> = {
       params: ["amount"], needsTarget: false,
     },
   },
+  invocations_multiples: {
+    id: "invocations_multiples", label: "Invocations multiples", symbol: "📣✨",
+    desc: "Invoque {invocations}.",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      // Même famille de coût qu'Invocation X, majoré : plusieurs corps d'un coup,
+      // chacun à un palier choisi. `costPerX` reste nul, le prix réel dépend des
+      // coûts listés (à ajuster à l'usage).
+      cost: 16, costPerX: 0, se: 4.5, minTier: 3, scalable: false, zone: "Terrain",
+      desc: "Invoque {invocations}.",
+    },
+    spell: { params: [], needsTarget: false },
+  },
   invocation_multiple: {
     id: "invocation_multiple", label: "Convocations multiples", symbol: "📣📣",
     desc: "Crée {tokens}.",
@@ -1204,7 +1230,7 @@ export const CURATED_MULTIMODE_IDS: ReadonlySet<string> = new Set([
   // Chantier « tous déclencheurs » : effets d'invocation rejoués depuis
   // mort / attaque / retour / fin de tour / activation.
   "concentration", "loyaute", "catalyse", "solidarite", "appel_supreme", "rassemblement",
-  "instinct_de_meute", "convocation_simple", "invocation", "domination", "corruption", "exhumation",
+  "instinct_de_meute", "convocation_simple", "invocation", "invocations_multiples", "domination", "corruption", "exhumation",
   "rappel", "divination", "traque_du_destin", "selection", "selection_magique", "renfort_royal",
   "affaiblissement", "benediction", "tactique",
   // Restreints aux déclencheurs « sur plateau » (cf. CURATED_ONBOARD_ONLY_IDS).

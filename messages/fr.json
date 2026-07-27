@@ -337,6 +337,14 @@
         "label": "Rassemblement X",
         "desc": "Révèle les X premières cartes du deck ; gardez les {race_pl} en main, défaussez le reste."
       },
+      "invocations_multiples": {
+        "label": "Invocations multiples",
+        "desc": "Invoque {invocations}."
+      },
+      "touche_mortel": {
+        "label": "Touché mortel",
+        "desc": "Toute créature blessée par cette unité meurt, quels que soient ses PV."
+      },
       "selection": {
         "label": "Sélection X",
         "desc": "Révèle 3 communes {alignment} de coût ≤ X ; ajoutez-en une en main."
@@ -419,6 +427,10 @@
       }
     },
     "spell_keywords": {
+      "touche_mortel": {
+        "label": "Touché mortel",
+        "desc": "Toute créature blessée par ce sort meurt, quels que soient ses PV."
+      },
       "precision": {
         "label": "Précision",
         "desc": "Les dégâts de ce sort ignorent la Résistance, l'Armure et le Bouclier."
@@ -534,6 +546,10 @@
       "concentration": {
         "label": "Concentration X",
         "desc": "Chaque sort en main devient un sort au hasard de coût +X, réduit de X (toutes factions)."
+      },
+      "invocations_multiples": {
+        "label": "Invocations multiples",
+        "desc": "Invoque {invocations}."
       },
       "invocation_multiple": {
         "label": "Convocations multiples",
@@ -1086,6 +1102,14 @@
       "alignment_of": "d'alignement {a}",
       "token": "le token configuré",
       "tokens": "plusieurs tokens",
+      "invocations": "plusieurs créatures aléatoires de votre collection",
+      "invocations_first_one": "une créature aléatoire de coût {cost}",
+      "invocations_first_many": "{count} créatures aléatoires de coût {cost}",
+      "invocations_more_one": "une de coût {cost}",
+      "invocations_more_many": "{count} de coût {cost}",
+      "invocations_join": " et ",
+      "invocations_of_race": " (parmi les {v})",
+      "invocations_of_faction": " (parmi la faction {v})",
       "lycanthrope": "un token X/X",
       "ability": "une capacité",
       "scope": "à une unité alliée (ou à toutes)",
@@ -1421,6 +1445,13 @@
     "content_bounce": "Renvoyer en main",
     "content_paralyze": "Paralyser",
     "content_poison": "Empoisonner (−1 PV par tour)",
+    "invocation_costs_label": "COÛTS DES INVOCATIONS",
+    "invocation_costs_hint": "Une créature aléatoire de votre collection est invoquée pour chaque coût listé.",
+    "add_invocation": "+ Invocation",
+    "invocation_pool_label": "POOL DES INVOCATIONS",
+    "invocation_pool_any_race": "— Toute race —",
+    "invocation_pool_any_faction": "— Toute faction —",
+    "invocation_pool_hint": "Une créature aléatoire est invoquée pour chaque coût listé. Sans race ni faction, le pool suit l'alignement de la carte.",
     "content_grant_keyword": "Conférer une capacité",
     "content_draw_cards": "Piocher",
     "content_discard": "Défausser (adversaire)",

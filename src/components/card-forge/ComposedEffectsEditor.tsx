@@ -9,6 +9,7 @@ import { useTranslations } from "next-intl";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 import RaceClanPicker from "@/components/admin/RaceClanPicker";
 import KeywordIcon from "@/components/shared/KeywordIcon";
+import CostListEditor from "./CostListEditor";
 import { ABILITIES, creatureEngineId, XY_ABILITY_IDS } from "@/lib/game/abilities";
 import { ALL_SPELL_KEYWORDS, SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
 import { buildSpellEffectCatalog, instantiatePreset } from "@/lib/card-forge/spell-effect-catalog";
@@ -193,6 +194,16 @@ export default function ComposedEffectsEditor({
                   <span style={labelStyle}>{tr('race_clan_label')}</span>
                   <RaceClanPicker race={kw.race ?? ""} clan={kw.clan ?? ""}
                     onChange={(r, c) => patchCurated(idx, { race: r || undefined, clan: c || undefined })} />
+                </>
+              )}
+              {kw.id === "invocations_multiples" && (
+                <>
+                  <span style={labelStyle}>{tr('invocation_costs_label')}</span>
+                  <CostListEditor
+                    value={kw.costs ?? []} onChange={(costs) => patchCurated(idx, { costs })}
+                    race={kw.race ?? ""} faction={kw.faction ?? ""}
+                    onRestrictChange={(r) => patchCurated(idx, { race: r.race, faction: r.faction })}
+                  />
                 </>
               )}
               {kw.id === "appel_supreme" && (

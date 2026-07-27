@@ -337,6 +337,14 @@
         "label": "集結 X",
         "desc": "デッキの上からX枚を公開し、{race_pl}を手札に残して残りを捨てる。"
       },
+      "invocations_multiples": {
+        "label": "複数召喚",
+        "desc": "{invocations}を召喚する。"
+      },
+      "touche_mortel": {
+        "label": "必殺の一撃",
+        "desc": "このユニットによって傷を負ったクリーチャーは、HPに関わらず死亡する。"
+      },
       "selection": {
         "label": "選択 X",
         "desc": "コストX以下の{alignment}のコモンを3枚公開し、その中から1枚を手札に加える。"
@@ -419,6 +427,10 @@
       }
     },
     "spell_keywords": {
+      "touche_mortel": {
+        "label": "必殺の一撃",
+        "desc": "この呪文によって傷を負ったクリーチャーは、HPに関わらず死亡する。"
+      },
       "precision": {
         "label": "精密",
         "desc": "このスペルのダメージは、抵抗力、防具、シールドを無視する。"
@@ -535,6 +547,10 @@
         "label": "集中 X",
         "desc": "手札の呪文はすべて、コスト+Xのランダムな呪文(全陣営)に変化し、コストがX軽減される。"
       },
+      "invocations_multiples": {
+        "label": "複数召喚",
+        "desc": "{invocations}を召喚する。"
+      },
       "invocation_multiple": {
         "label": "複数召喚",
         "desc": "{tokens}を生成する。"
@@ -574,6 +590,7 @@
         "destroy": "破壊する",
         "bounce": "手札に戻す",
         "paralyze": "麻痺させる",
+        "poison": "毒を与える",
         "grant_keyword": "{ability}を付与する",
         "ability_generic": "能力",
         "draw_cards_one": "カードを{x}枚引く",
@@ -590,8 +607,7 @@
         "exhum_all": "すべてのクリーチャー",
         "exhum_upto": "クリーチャー{n}体まで",
         "selection": "3枚のカード{filter}（コスト{x}以下）を公開し、その中から1枚を手札に加える",
-        "renfort_royal": "コレクションから3枚のカード{filter}（コスト{x}以下）を公開し、その中から1枚を手札に加える",
-        "poison": "毒を与える"
+        "renfort_royal": "コレクションから3枚のカード{filter}（コスト{x}以下）を公開し、その中から1枚を手札に加える"
       },
       "pool": {
         "race": "（種族：{v}）",
@@ -608,8 +624,8 @@
         "destroy": "自身を破壊する",
         "bounce": "自身を手札に戻す",
         "paralyze": "自身を麻痺させる",
-        "grant_keyword": "自身に{ability}を付与する",
-        "poison": "自らを毒に冒す"
+        "poison": "自らを毒に冒す",
+        "grant_keyword": "自身に{ability}を付与する"
       },
       "targetd": {
         "count_all": "すべてのユニット",
@@ -659,10 +675,10 @@
         "destroy": "破壊するクリーチャーを選んでください",
         "bounce": "手札に戻すクリーチャーを選んでください",
         "paralyze": "麻痺させるクリーチャーを選んでください",
+        "poison": "毒を与えるクリーチャーを選択してください",
         "grant_keyword": "能力を付与するクリーチャーを選んでください",
         "exhumation": "蘇生するクリーチャーを選んでください",
-        "default": "対象を選んでください",
-        "poison": "毒を与えるクリーチャーを選択してください"
+        "default": "対象を選んでください"
       }
     },
     "factions": {
@@ -1090,7 +1106,15 @@
       "ability": "能力",
       "scope": "味方ユニット1体（または全体）に",
       "scope_target": "味方ユニット1体に",
-      "scope_all": "あなたの全ユニットに"
+      "scope_all": "あなたの全ユニットに",
+      "invocations": "あなたのコレクションからランダムな複数のクリーチャー",
+      "invocations_first_one": "コスト{cost}のランダムなクリーチャー1体",
+      "invocations_first_many": "コスト{cost}のランダムなクリーチャー{count}体",
+      "invocations_more_one": "コスト{cost}のもの1体",
+      "invocations_more_many": "コスト{cost}のもの{count}体",
+      "invocations_join": "と",
+      "invocations_of_race": "({v}の中から)",
+      "invocations_of_faction": "({v}派閥の中から)"
     },
     "sets": {
       "1": "基本セット"
@@ -1420,6 +1444,14 @@
     "content_destroy": "破壊する",
     "content_bounce": "手札に戻す",
     "content_paralyze": "麻痺させる",
+    "content_poison": "毒を与える(ターンごとにHP−1)",
+    "invocation_costs_label": "召喚コスト",
+    "invocation_costs_hint": "コレクションからランダムなクリーチャーが、記載された各コストにつき1体召喚される。",
+    "add_invocation": "＋召喚",
+    "invocation_pool_label": "召喚プール",
+    "invocation_pool_any_race": "— 全種族 —",
+    "invocation_pool_any_faction": "— 全陣営 —",
+    "invocation_pool_hint": "記載された各コストにつき、ランダムなクリーチャーが1体召喚されます。種族も陣営も指定されていない場合、プールはカードの属性に従います。",
     "content_grant_keyword": "能力を付与する",
     "content_draw_cards": "ドローする",
     "content_discard": "捨てさせる（相手）",
@@ -1799,8 +1831,7 @@
     "card_added": "「{name}」を追加しました！",
     "unknown_error": "不明なエラー",
     "illustration_generated": "イラストを生成しました（{model}）",
-    "import_error": "インポートエラー",
-    "content_poison": "毒を与える(ターンごとにHP−1)"
+    "import_error": "インポートエラー"
   },
   "game": {
     "error_not_authenticated": "未認証",

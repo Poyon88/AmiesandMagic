@@ -337,6 +337,14 @@
         "label": "Raduno X",
         "desc": "Rivela le prime X carte del mazzo; tieni i {race_pl} in mano, scarta il resto."
       },
+      "invocations_multiples": {
+        "label": "Invocazioni multiple",
+        "desc": "Evoca {invocations}."
+      },
+      "touche_mortel": {
+        "label": "Tocco letale",
+        "desc": "Qualsiasi creatura ferita da questa unità muore, indipendentemente dai suoi PV."
+      },
       "selection": {
         "label": "Selezione X",
         "desc": "Rivela 3 comuni {alignment} di costo ≤ X; aggiungine una in mano."
@@ -419,6 +427,10 @@
       }
     },
     "spell_keywords": {
+      "touche_mortel": {
+        "label": "Tocco letale",
+        "desc": "Qualsiasi creatura ferita da questo incantesimo muore, indipendentemente dai suoi PV."
+      },
       "precision": {
         "label": "Precisione",
         "desc": "I danni di questo incantesimo ignorano la Resistenza, l'Armatura e lo Scudo."
@@ -535,6 +547,10 @@
         "label": "Concentrazione X",
         "desc": "Ogni incantesimo in mano diventa un incantesimo casuale di costo +X, ridotto di X (tutte le fazioni)."
       },
+      "invocations_multiples": {
+        "label": "Invocazioni multiple",
+        "desc": "Evoca {invocations}."
+      },
       "invocation_multiple": {
         "label": "Convocazioni multiple",
         "desc": "Crea {tokens}."
@@ -574,6 +590,7 @@
         "destroy": "distrugge",
         "bounce": "rimanda in mano",
         "paralyze": "paralizza",
+        "poison": "avvelena",
         "grant_keyword": "conferisce {ability}",
         "ability_generic": "un'abilità",
         "draw_cards_one": "pesca {x} carta",
@@ -590,8 +607,7 @@
         "exhum_all": "tutte le creature",
         "exhum_upto": "fino a {n} creature",
         "selection": "rivela 3 carte{filter} (costo ≤ {x}) e ne tiene una in mano",
-        "renfort_royal": "rivela 3 carte da collezione{filter} (costo ≤ {x}) e ne tiene una in mano",
-        "poison": "avvelena"
+        "renfort_royal": "rivela 3 carte da collezione{filter} (costo ≤ {x}) e ne tiene una in mano"
       },
       "pool": {
         "race": " di razza {v}",
@@ -608,8 +624,8 @@
         "destroy": "si distrugge",
         "bounce": "torna in mano",
         "paralyze": "si paralizza",
-        "grant_keyword": "si conferisce {ability}",
-        "poison": "si avvelena"
+        "poison": "si avvelena",
+        "grant_keyword": "si conferisce {ability}"
       },
       "targetd": {
         "count_all": "tutte le unità",
@@ -659,10 +675,10 @@
         "destroy": "scegli una creatura da distruggere",
         "bounce": "scegli una creatura da rimandare in mano",
         "paralyze": "scegli una creatura da paralizzare",
+        "poison": "scegli una creatura da avvelenare",
         "grant_keyword": "scegli una creatura a cui conferire l'abilità",
         "exhumation": "scegli una creatura da resuscitare",
-        "default": "scegli un bersaglio",
-        "poison": "scegli una creatura da avvelenare"
+        "default": "scegli un bersaglio"
       }
     },
     "factions": {
@@ -1090,7 +1106,15 @@
       "ability": "una capacità",
       "scope": "a un'unità alleata (o a tutte)",
       "scope_target": "a un'unità alleata",
-      "scope_all": "a tutte le vostre unità"
+      "scope_all": "a tutte le vostre unità",
+      "invocations": "diverse creature casuali dalla tua collezione",
+      "invocations_first_one": "una creatura casuale di costo {cost}",
+      "invocations_first_many": "{count} creature casuali di costo {cost}",
+      "invocations_more_one": "una di costo {cost}",
+      "invocations_more_many": "{count} di costo {cost}",
+      "invocations_join": " e ",
+      "invocations_of_race": " (tra {v})",
+      "invocations_of_faction": " (tra la fazione {v})"
     },
     "sets": {
       "1": "Set Base"
@@ -1420,6 +1444,14 @@
     "content_destroy": "Distruggere",
     "content_bounce": "Rimandare in mano",
     "content_paralyze": "Paralizzare",
+    "content_poison": "Avvelenare (−1 PV a turno)",
+    "invocation_costs_label": "COSTI DELLE EVOCAZIONI",
+    "invocation_costs_hint": "Una creatura casuale della tua collezione viene evocata per ogni costo elencato.",
+    "add_invocation": "+ Evocazione",
+    "invocation_pool_label": "POOL DELLE INVOCAZIONI",
+    "invocation_pool_any_race": "— Qualsiasi razza —",
+    "invocation_pool_any_faction": "— Qualsiasi fazione —",
+    "invocation_pool_hint": "Una creatura casuale viene evocata per ogni costo elencato. Senza razza né fazione, il pool segue l'allineamento della carta.",
     "content_grant_keyword": "Conferire un'abilità",
     "content_draw_cards": "Pescare",
     "content_discard": "Scartare (avversario)",
@@ -1799,8 +1831,7 @@
     "card_added": "« {name} » aggiunta!",
     "unknown_error": "Errore sconosciuto",
     "illustration_generated": "Illustrazione generata ({model})",
-    "import_error": "Errore di importazione",
-    "content_poison": "Avvelenare (−1 PV a turno)"
+    "import_error": "Errore di importazione"
   },
   "game": {
     "error_not_authenticated": "Non autenticato",

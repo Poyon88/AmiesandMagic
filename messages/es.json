@@ -337,6 +337,14 @@
         "label": "Reunión X",
         "desc": "Revela las X primeras cartas del mazo; conserva los {race_pl} en la mano y descarta el resto."
       },
+      "invocations_multiples": {
+        "label": "Invocaciones múltiples",
+        "desc": "Invoca {invocations}."
+      },
+      "touche_mortel": {
+        "label": "Toque mortal",
+        "desc": "Toda criatura herida por esta unidad muere, sin importar sus PV."
+      },
       "selection": {
         "label": "Selección X",
         "desc": "Revela 3 comunes {alignment} de coste ≤ X; añade una a la mano."
@@ -419,6 +427,10 @@
       }
     },
     "spell_keywords": {
+      "touche_mortel": {
+        "label": "Toque mortal",
+        "desc": "Toda criatura herida por este hechizo muere, sin importar sus PV."
+      },
       "precision": {
         "label": "Precisión",
         "desc": "Los daños de este hechizo ignoran la Resistencia, la Armadura y el Escudo."
@@ -535,6 +547,10 @@
         "label": "Concentración X",
         "desc": "Cada hechizo en la mano se convierte en un hechizo al azar de coste +X, reducido en X (todas las facciones)."
       },
+      "invocations_multiples": {
+        "label": "Invocaciones múltiples",
+        "desc": "Invoca {invocations}."
+      },
       "invocation_multiple": {
         "label": "Convocaciones múltiples",
         "desc": "Crea {tokens}."
@@ -574,6 +590,7 @@
         "destroy": "destruye",
         "bounce": "devuelve a la mano",
         "paralyze": "paraliza",
+        "poison": "envenena",
         "grant_keyword": "otorga {ability}",
         "ability_generic": "una habilidad",
         "draw_cards_one": "roba {x} carta",
@@ -590,8 +607,7 @@
         "exhum_all": "todas las criaturas",
         "exhum_upto": "hasta {n} criaturas",
         "selection": "revela 3 cartas{filter} (coste ≤ {x}) y se queda una en mano",
-        "renfort_royal": "revela 3 cartas de colección{filter} (coste ≤ {x}) y se queda una en mano",
-        "poison": "envenena"
+        "renfort_royal": "revela 3 cartas de colección{filter} (coste ≤ {x}) y se queda una en mano"
       },
       "pool": {
         "race": " de raza {v}",
@@ -608,8 +624,8 @@
         "destroy": "se destruye",
         "bounce": "vuelve a la mano",
         "paralyze": "se paraliza",
-        "grant_keyword": "se otorga {ability}",
-        "poison": "se envenena"
+        "poison": "se envenena",
+        "grant_keyword": "se otorga {ability}"
       },
       "targetd": {
         "count_all": "todas las unidades",
@@ -659,10 +675,10 @@
         "destroy": "elige una criatura para destruir",
         "bounce": "elige una criatura para devolver a la mano",
         "paralyze": "elige una criatura para paralizar",
+        "poison": "elige una criatura para envenenar",
         "grant_keyword": "elige una criatura a la que otorgar la habilidad",
         "exhumation": "elige una criatura para resucitar",
-        "default": "elige un objetivo",
-        "poison": "elige una criatura para envenenar"
+        "default": "elige un objetivo"
       }
     },
     "factions": {
@@ -1090,7 +1106,15 @@
       "ability": "una habilidad",
       "scope": "a una unidad aliada (o a todas)",
       "scope_target": "a una unidad aliada",
-      "scope_all": "a todas tus unidades"
+      "scope_all": "a todas tus unidades",
+      "invocations": "varias criaturas aleatorias de tu colección",
+      "invocations_first_one": "una criatura aleatoria de coste {cost}",
+      "invocations_first_many": "{count} criaturas aleatorias de coste {cost}",
+      "invocations_more_one": "una de coste {cost}",
+      "invocations_more_many": "{count} de coste {cost}",
+      "invocations_join": " y ",
+      "invocations_of_race": " (entre los {v})",
+      "invocations_of_faction": " (entre la facción {v})"
     },
     "sets": {
       "1": "Set Base"
@@ -1420,6 +1444,14 @@
     "content_destroy": "Destruir",
     "content_bounce": "Devolver a la mano",
     "content_paralyze": "Paralizar",
+    "content_poison": "Envenenar (−1 PV por turno)",
+    "invocation_costs_label": "COSTES DE INVOCACIÓN",
+    "invocation_costs_hint": "Se invoca una criatura aleatoria de tu colección por cada coste indicado.",
+    "add_invocation": "+ Invocación",
+    "invocation_pool_label": "POOL DE INVOCACIONES",
+    "invocation_pool_any_race": "— Cualquier raza —",
+    "invocation_pool_any_faction": "— Cualquier facción —",
+    "invocation_pool_hint": "Se invoca una criatura aleatoria por cada coste indicado. Sin raza ni facción, el pool sigue la alineación de la carta.",
     "content_grant_keyword": "Otorgar una habilidad",
     "content_draw_cards": "Robar cartas",
     "content_discard": "Descartar (rival)",
@@ -1799,8 +1831,7 @@
     "card_added": "¡«{name}» añadida!",
     "unknown_error": "Error desconocido",
     "illustration_generated": "Ilustración generada ({model})",
-    "import_error": "Error de importación",
-    "content_poison": "Envenenar (−1 PV por turno)"
+    "import_error": "Error de importación"
   },
   "game": {
     "error_not_authenticated": "No autenticado",

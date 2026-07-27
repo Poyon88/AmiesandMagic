@@ -21,7 +21,7 @@ export interface MarkerCtx {
     | "convocation_token_id" | "convocation_tokens" | "lycanthropie_token_id"
   > | null;
   /** Instance : porte la race/clan CIBLÉS et la capacité conférée. */
-  instance?: Pick<KeywordInstance, "race" | "clan" | "grantScope" | "grantAbilityId" | "y"> | null;
+  instance?: Pick<KeywordInstance, "race" | "clan" | "grantScope" | "grantAbilityId" | "y" | "costs" | "faction"> | null;
   x?: number | null;
   y?: number | null;
   tokens?: TokenTemplate[];
@@ -52,6 +52,17 @@ export const MARKERS_FR: Record<string, string> = {
   "alignment_of": "d'alignement {a}",
   "token": "le token configuré",
   "tokens": "plusieurs tokens",
+  // Invocations multiples : phrase spécifique, à l'image de Convocations
+  // multiples (« Crée 2 tokens Loups 2/2 et un token Ours 3/3 »). Le repli
+  // générique ne sert qu'à la carte en cours de création, avant toute saisie.
+  "invocations": "plusieurs créatures aléatoires de votre collection",
+  "invocations_first_one": "une créature aléatoire de coût {cost}",
+  "invocations_first_many": "{count} créatures aléatoires de coût {cost}",
+  "invocations_more_one": "une de coût {cost}",
+  "invocations_more_many": "{count} de coût {cost}",
+  "invocations_join": " et ",
+  "invocations_of_race": " (parmi les {v})",
+  "invocations_of_faction": " (parmi la faction {v})",
   "lycanthrope": "un token X/X",
   "ability": "une capacité",
   "scope": "à une unité alliée (ou à toutes)",
@@ -108,6 +119,46 @@ export const BASE_RESOLVERS: Record<string, Resolver> = {
     if (sc === "all_allies") return marker("scope_all", t) ?? null;
     if (sc === "target") return marker("scope_target", t) ?? null;
     return null;
+  },
+  // Invocations multiples : énumère ce qui sera RÉELLEMENT invoqué — « une
+  // créature aléatoire de coût 4, une de coût 5 et une de coût 6 (parmi les
+  // Hommes-Bêtes) ». Les coûts identiques sont groupés, comme Convocations
+  // multiples groupe les tokens identiques. Sans liste saisie, on retombe sur
+  // le repli générique.
+  invocations: (_kw, ctx, t) => {
+    const list = (ctx.instance?.costs ?? []).filter((n) => typeof n === "number" && n > 0);
+    if (list.length === 0) return null;
+
+    // Groupement par coût, en conservant l'ordre de première apparition.
+    const groups: { cost: number; count: number }[] = [];
+    for (const cost of list) {
+      const g = groups.find((x) => x.cost === cost);
+      if (g) g.count++;
+      else groups.push({ cost, count: 1 });
+    }
+
+    const parts = groups.map((g, i) => {
+      const key = i === 0
+        ? (g.count > 1 ? "invocations_first_many" : "invocations_first_one")
+        : (g.count > 1 ? "invocations_more_many" : "invocations_more_one");
+      return (marker(key, t) ?? "")
+        .replace(/\{cost\}/g, String(g.cost))
+        .replace(/\{count\}/g, String(g.count));
+    });
+
+    const joined = parts.length === 1
+      ? parts[0]
+      : `${parts.slice(0, -1).join(", ")}${marker("invocations_join", t) ?? " et "}${parts[parts.length - 1]}`;
+
+    // Restriction de pool : race ou faction, sinon l'alignement (implicite, non dit).
+    const race = ctx.instance?.race;
+    const faction = ctx.instance?.faction;
+    const suffix = race
+      ? (marker("invocations_of_race", t) ?? "").replace(/\{v\}/g, race)
+      : faction
+        ? (marker("invocations_of_faction", t) ?? "").replace(/\{v\}/g, faction)
+        : "";
+    return joined + suffix;
   },
 };
 

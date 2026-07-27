@@ -113,6 +113,30 @@ function withComposedMode<T>(mode: import("./types").KeywordMode | undefined, fn
   try { return fn(); } finally { composedStrikeMode = prev; }
 }
 
+// Touché mortel porté par un SORT : modificateur GLOBAL du sort en cours de
+// résolution, comme `spellPierces` pour Précision. Un drapeau module est
+// nécessaire car les résolveurs de dégâts de sort passent le HÉROS lanceur en
+// source — impossible d'y retrouver la carte qui portait le mot-clé.
+let lethalSpellActive = false;
+function withLethalSpell<T>(active: boolean, fn: () => T): T {
+  const prev = lethalSpellActive;
+  lethalSpellActive = active;
+  try { return fn(); } finally { lethalSpellActive = prev; }
+}
+
+/** La carte (sort) porte-t-elle Touché mortel ? Lu via le modèle unifié pour
+ *  couvrir les deux représentations (spell_keywords et keywords). */
+function cardHasLethalTouch(card: Card): boolean {
+  return getCapabilities(card).some((c) => c.abilityId === "touche_mortel");
+}
+
+/** La source de ces dégâts tue-t-elle sa cible d'un seul coup ? Créature (ou
+ *  autre unité) portant Touché mortel, ou sort porteur en cours de résolution. */
+function isLethalTouch(source: CardInstance | import("./types").HeroState | null | undefined, isSpellDamage: boolean): boolean {
+  if (isSpellDamage && lethalSpellActive) return true;
+  return !!source && "instanceId" in source && hasKw(source, "touche_mortel");
+}
+
 /** Enregistre une frappe de pouvoir (flèche source→cible) pour un dégât composé,
  *  UNIQUEMENT pour les modes déclenchés colorés (mort/retour/attaque/fin de tour).
  *  Le tap et l'on-play (mode absent) sont ignorés ici. */
@@ -2088,6 +2112,11 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       resolveInvocationSummon(player, cardInstance.card, x, newState.factionCardPool, newState.formatCode ?? null);
     }
 
+    // Invocations multiples : une Invocation par coût listé, dans l'ordre.
+    if (hasKwOnPlay(cardInstance, "invocations_multiples")) {
+      resolveMultipleInvocations(player, cardInstance.card, newState.factionCardPool, newState.formatCode ?? null);
+    }
+
     // Déchainement X/Y : lance X sorts aléatoires de coût exactement Y issus de
     // la collection du joueur, même alignement que cette carte, cibles au
     // hasard. X/Y lus depuis keyword_instances (patron Affaiblissement).
@@ -2644,6 +2673,10 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       return newState;
     }
 
+    // Touché mortel porté par le SORT : modificateur global de sa résolution —
+    // toute créature qu'il blesse meurt. Remis à false au début de chaque action.
+    lethalSpellActive = cardHasLethalTouch(card);
+
     // Build target map from action
     const targetMap: Record<string, string> = { ...(action.targetMap ?? {}) };
     // Backward compat: single targetInstanceId → target_0
@@ -2992,6 +3025,10 @@ function castSpellWithRandomTargets(
     state, caster: player, opponent, card, targetMap, results: {},
   };
 
+  // Le sort RELANCÉ porte son propre Touché mortel (et seulement pendant sa
+  // résolution : withLethalSpell restaure l'état du sort englobant).
+  withLethalSpell(cardHasLethalTouch(card), () => {
+
   // Resolve spell keywords (lus depuis le modèle unifié)
   const spellInstances2 = spellResolutionInstances(card);
   if (spellInstances2.length) {
@@ -3020,6 +3057,7 @@ function castSpellWithRandomTargets(
   processDeathTriggers(oDead, opponent, player);
 
   recalculateAuras(player, opponent);
+  });
 }
 
 // ============================================================
@@ -3163,6 +3201,14 @@ function resolveSpellKeywords(
         }
         break;
       }
+      case "touche_mortel": {
+        // Marqueur, comme Précision : aucun effet ni cible propres. Sa présence
+        // a déjà été captée en amont (lethalSpellActive), ce qui rend MORTELS
+        // tous les dégâts que ce sort inflige aux créatures. Le sort « a »
+        // Touché mortel, il ne le confère pas — pour le donner à une unité,
+        // passer par l'effet composé « Conférer une capacité ».
+        break;
+      }
       case "precision": {
         // Spell-side Précision : simple MARQUEUR, sans effet ni cible propres.
         // Sa présence a déjà été captée en amont dans `spellPierces` (voir en
@@ -3254,6 +3300,11 @@ function resolveSpellKeywords(
         // n'ont pas de `amount` — leur ancienne ATK devient le coût X.
         const x = kw.amount ?? kw.attack ?? 1;
         resolveInvocationSummon(ctx.caster, ctx.card, x, ctx.state.factionCardPool, ctx.state.formatCode ?? null);
+        break;
+      }
+      case "invocations_multiples": {
+        // Une Invocation par coût listé (les coûts vivent sur l'instance de sort).
+        resolveMultipleInvocations(ctx.caster, ctx.card, ctx.state.factionCardPool, ctx.state.formatCode ?? null);
         break;
       }
       case "dechainement": {
@@ -4339,6 +4390,14 @@ function dealDamageToCreature(
   if (damage <= 0) return;
   creature.currentHealth -= damage;
 
+  // Touché mortel : la blessure est mortelle quels que soient les PV restants.
+  // Placé APRÈS toutes les immunités et réductions — un Bouclier qui absorbe
+  // tout, une Transcendance ou un Indestructible sortent plus haut sans dégât,
+  // donc sans mort : il faut avoir été RÉELLEMENT blessé.
+  if (creature.currentHealth > 0 && isLethalTouch(source, isSpellDamage)) {
+    creature.currentHealth = 0;
+  }
+
   // Gloire +X/+Y : l'unité qui encaisse des dégâts de COMBAT et y survit gagne
   // +X/+Y de façon permanente, cumulable à chaque survie. On se place après
   // toutes les réductions (Bouclier / Résistance / Armure) et après la
@@ -5167,6 +5226,13 @@ function resolveCuratedKeywordEffect(
       // pas de récursion (il n'est pas repassé par un flux de déclenchement).
       if (owner.board.length >= MAX_BOARD_SIZE) return;
       owner.board.push(makeDedoublementClone(source));
+      break;
+    }
+    case "invocations_multiples": {
+      // Mort / attaque / retour / fin de tour / activation : rejoue la série
+      // d'invocations. Pool et format viennent des vars module (ce résolveur
+      // n'a pas accès au GameState), comme pour "invocation".
+      resolveMultipleInvocations(owner, source.card, currentCardPools.factionCardPool, currentFormatCode);
       break;
     }
     case "convocations_multiples": {
@@ -6441,6 +6507,7 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   currentFormatCode = state.formatCode ?? null;
   pendingTriggerSink = [];
   sequentialHitsSink = [];
+  lethalSpellActive = false;
   powerStrikeSink = [];
   composedStrikeMode = undefined;
   // Indice cosmétique (hors hash) : on efface la provenance de buff sur toutes
@@ -6910,22 +6977,65 @@ function factionsForSelectionAlignment(
  *  tirent la même carte. La créature arrive avec le mal d'invocation et SANS
  *  déclencher ses effets d'arrivée (précédent Appel du Clan). No-op si le
  *  plateau est plein ou si aucun candidat au coût exact — pas de repli ≤ X. */
+/** Invocations multiples : liste des coûts portée par la carte (keyword_instances
+ *  côté créature, spell_keywords côté sort) — lue via le modèle unifié pour ne
+ *  pas dupliquer les deux chemins. Vide si la capacité n'est pas sur la carte. */
+function invocationSetupOf(card: Card): { costs: number[]; race?: string; faction?: string } {
+  const cap = getCapabilities(card).find((c) => c.abilityId === "invocations_multiples");
+  return {
+    costs: (cap?.costs ?? []).filter((n) => typeof n === "number" && n > 0),
+    race: cap?.race || undefined,
+    faction: cap?.faction || undefined,
+  };
+}
+
+/** Enchaîne une Invocation par coût listé, dans l'ordre. Chaque entrée suit les
+ *  règles d'Invocation X (créature aléatoire de la collection au coût EXACT,
+ *  alignement de la source, format du match) ; un coût sans candidat est sauté
+ *  sans bloquer les suivants. */
+function resolveMultipleInvocations(
+  owner: PlayerState,
+  sourceCard: Card,
+  pool: Card[] | undefined,
+  formatCode: FormatCode | null,
+): void {
+  const { costs, race, faction } = invocationSetupOf(sourceCard);
+  if (costs.length === 0) {
+    console.warn(
+      `[engine] Invocations multiples : aucun coût configuré pour « ${sourceCard.name} » — vérifiez l'onglet Capacités.`,
+    );
+    return;
+  }
+  for (const cost of costs) {
+    if (owner.board.length >= MAX_BOARD_SIZE) break;
+    resolveInvocationSummon(owner, sourceCard, cost, pool, formatCode, { race, faction });
+  }
+}
+
 function resolveInvocationSummon(
   owner: PlayerState,
   sourceCard: Card,
   x: number,
   pool: Card[] | undefined,
   formatCode: FormatCode | null,
+  // Restriction explicite du pool (Invocations multiples). Renseignée, elle
+  // REMPLACE le filtre d'alignement : « race Loups » doit pouvoir piocher hors
+  // de l'alignement de la carte source. Vide ⇒ comportement d'Invocation X.
+  restrict?: { race?: string; faction?: string },
 ): void {
   if (owner.board.length >= MAX_BOARD_SIZE) return;
   if (!pool || pool.length === 0 || x <= 0) return;
+  const restricted = !!(restrict?.race || restrict?.faction);
   const allowedFactions = factionsForSelectionAlignment(sourceCard, owner);
   const legal = formatCode ? getFormatFilterByCode(formatCode) : null;
   const ownedLimited = new Set(owner.ownedLimitedCardIds ?? []);
   const candidates = pool.filter(c =>
     c.card_type === "creature"
     && c.mana_cost === x
-    && !!c.faction && allowedFactions.has(c.faction)
+    && (restricted
+      ? ((!restrict!.faction || c.faction === restrict!.faction)
+        && (!restrict!.race || c.race === restrict!.race))
+      : (!!c.faction && allowedFactions.has(c.faction)))
     && ((c.rarity ?? "Commune") === "Commune"
       || (c.card_year != null && c.set_id == null && ownedLimited.has(c.id)))
     && (!legal || legal(c)),

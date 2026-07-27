@@ -337,6 +337,14 @@
         "label": "Sammlung X",
         "desc": "Deckt die obersten X Karten des Decks auf; behalte die {race_pl} auf der Hand, wirf den Rest ab."
       },
+      "invocations_multiples": {
+        "label": "Mehrfachbeschwörungen",
+        "desc": "Beschwört {invocations}."
+      },
+      "touche_mortel": {
+        "label": "Todesberührung",
+        "desc": "Jede Kreatur, die von dieser Einheit verwundet wird, stirbt, unabhängig von ihren LP."
+      },
       "selection": {
         "label": "Auswahl X",
         "desc": "Deckt 3 gewöhnliche Karten {alignment} mit Kosten ≤ X auf; füge eine davon deiner Hand hinzu."
@@ -419,6 +427,10 @@
       }
     },
     "spell_keywords": {
+      "touche_mortel": {
+        "label": "Todesberührung",
+        "desc": "Jede Kreatur, die von diesem Zauber verwundet wird, stirbt, unabhängig von ihren LP."
+      },
       "precision": {
         "label": "Präzision",
         "desc": "Der Schaden dieses Zaubers ignoriert Resistenz, Rüstung und Schild."
@@ -535,6 +547,10 @@
         "label": "Konzentration X",
         "desc": "Jeder Zauber auf der Hand wird zu einem zufälligen Zauber mit Kosten +X, reduziert um X (alle Fraktionen)."
       },
+      "invocations_multiples": {
+        "label": "Mehrfachbeschwörungen",
+        "desc": "Beschwört {invocations}."
+      },
       "invocation_multiple": {
         "label": "Mehrfachbeschwörung",
         "desc": "Erschafft {tokens}."
@@ -574,6 +590,7 @@
         "destroy": "vernichtet",
         "bounce": "zurück auf die Hand",
         "paralyze": "lähmt",
+        "poison": "vergiftet",
         "grant_keyword": "verleiht {ability}",
         "ability_generic": "eine Fähigkeit",
         "draw_cards_one": "zieht {x} Karte",
@@ -590,8 +607,7 @@
         "exhum_all": "alle Kreaturen",
         "exhum_upto": "bis zu {n} Kreaturen",
         "selection": "deckt 3 Karten{filter} auf (Kosten ≤ {x}) und behält eine davon auf der Hand",
-        "renfort_royal": "deckt 3 Sammelkarten{filter} auf (Kosten ≤ {x}) und behält eine davon auf der Hand",
-        "poison": "vergiftet"
+        "renfort_royal": "deckt 3 Sammelkarten{filter} auf (Kosten ≤ {x}) und behält eine davon auf der Hand"
       },
       "pool": {
         "race": " der Rasse {v}",
@@ -608,8 +624,8 @@
         "destroy": "zerstört sich selbst",
         "bounce": "kehrt auf die Hand zurück",
         "paralyze": "paralysiert sich selbst",
-        "grant_keyword": "verleiht sich selbst {ability}",
-        "poison": "vergiftet sich"
+        "poison": "vergiftet sich",
+        "grant_keyword": "verleiht sich selbst {ability}"
       },
       "targetd": {
         "count_all": "alle Einheiten",
@@ -659,10 +675,10 @@
         "destroy": "wähle eine Kreatur zum Zerstören",
         "bounce": "wähle eine Kreatur, um sie auf die Hand zurückzuschicken",
         "paralyze": "wähle eine Kreatur zum Lähmen",
+        "poison": "Wählt eine Kreatur zum Vergiften",
         "grant_keyword": "wähle eine Kreatur, der die Fähigkeit verliehen werden soll",
         "exhumation": "wähle eine Kreatur zum Wiederbeleben",
-        "default": "wähle ein Ziel",
-        "poison": "Wählt eine Kreatur zum Vergiften"
+        "default": "wähle ein Ziel"
       }
     },
     "factions": {
@@ -1090,7 +1106,15 @@
       "ability": "eine Fähigkeit",
       "scope": "auf eine verbündete Einheit (oder auf alle)",
       "scope_target": "auf eine verbündete Einheit",
-      "scope_all": "auf alle deine Einheiten"
+      "scope_all": "auf alle deine Einheiten",
+      "invocations": "mehrere zufällige Kreaturen aus deiner Sammlung",
+      "invocations_first_one": "eine zufällige Kreatur mit Kosten {cost}",
+      "invocations_first_many": "{count} zufällige Kreaturen mit Kosten {cost}",
+      "invocations_more_one": "eine mit Kosten {cost}",
+      "invocations_more_many": "{count} mit Kosten {cost}",
+      "invocations_join": " und ",
+      "invocations_of_race": " (unter {v})",
+      "invocations_of_faction": " (aus der Fraktion {v})"
     },
     "sets": {
       "1": "Basis-Set"
@@ -1420,6 +1444,14 @@
     "content_destroy": "Zerstören",
     "content_bounce": "Auf die Hand zurückschicken",
     "content_paralyze": "Lähmen",
+    "content_poison": "Vergiften (−1 LP pro Runde)",
+    "invocation_costs_label": "BESCHWÖRUNGSKOSTEN",
+    "invocation_costs_hint": "Für jede aufgelistete Kosten wird eine zufällige Kreatur aus deiner Sammlung beschworen.",
+    "add_invocation": "+ Beschwörung",
+    "invocation_pool_label": "BESCHWÖRUNGSPOOL",
+    "invocation_pool_any_race": "— Beliebige Rasse —",
+    "invocation_pool_any_faction": "— Beliebige Fraktion —",
+    "invocation_pool_hint": "Für jede aufgeführte Kosten wird eine zufällige Kreatur beschworen. Ohne Rasse oder Fraktion richtet sich der Pool nach der Gesinnung der Karte.",
     "content_grant_keyword": "Fähigkeit verleihen",
     "content_draw_cards": "Karten ziehen",
     "content_discard": "Abwerfen (Gegner)",
@@ -1799,8 +1831,7 @@
     "card_added": "„{name}\" hinzugefügt!",
     "unknown_error": "Unbekannter Fehler",
     "illustration_generated": "Illustration generiert ({model})",
-    "import_error": "Importfehler",
-    "content_poison": "Vergiften (−1 LP pro Runde)"
+    "import_error": "Importfehler"
   },
   "game": {
     "error_not_authenticated": "Nicht authentifiziert",

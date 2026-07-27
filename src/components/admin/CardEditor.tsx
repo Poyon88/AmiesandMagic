@@ -8,6 +8,7 @@ import { KEYWORDS as KEYWORD_DEFS, FACTIONS, getFactionDisplayName, getAllClanNa
 import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS } from "@/lib/game/spell-keywords";
 import type { Card, Capability, Keyword, KeywordInstance, KeywordMode, SpellKeywordInstance, SpellComposableEffects, CardSet, TokenTemplate } from "@/lib/game/types";
 import ComposedEffectsEditor from "@/components/card-forge/ComposedEffectsEditor";
+import CostListEditor from "@/components/card-forge/CostListEditor";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 import RaceClanPicker from "@/components/admin/RaceClanPicker";
 
@@ -135,6 +136,10 @@ export default function CardEditor() {
   // Force des ancêtres +X/+Y (créature) : le +PV (Y) dédié. Le +ATK (X)
   // réutilise keywordXValues ; sérialisé dans keyword_instances comme la Forge.
   const [fdaY, setFdaY] = useState<number>(1);
+  // Invocations multiples : liste des coûts (une invocation par entrée).
+  const [invocCosts, setInvocCosts] = useState<number[]>([]);
+  const [invocRace, setInvocRace] = useState<string>("");
+  const [invocFaction, setInvocFaction] = useState<string>("");
   // Effets composés (modèle hybride) de la carte en cours d'édition.
   const [composedCaps, setComposedCaps] = useState<Capability[]>([]);
 
@@ -243,6 +248,8 @@ export default function CardEditor() {
     const modes: Record<string, KeywordMode> = {};
     const grantScopes: Record<string, "all_allies"> = {};
     let rmYLoaded = 1, rmRaceLoaded = "", rmClanLoaded = "", rfYLoaded = 1, afYLoaded = 1, glYLoaded = 1, dcYLoaded = 1, fdaYLoaded = 1;
+    let invocCostsLoaded: number[] = [];
+    let invocRaceLoaded = "", invocFactionLoaded = "";
     for (const inst of card.keyword_instances ?? []) {
       if (inst.mode) modes[inst.id] = inst.mode;
       if (inst.x != null) parsedX[inst.id] = inst.x;
@@ -255,8 +262,14 @@ export default function CardEditor() {
       if (inst.id === "gloire") glYLoaded = inst.y ?? 1;
       if (inst.id === "dechainement") dcYLoaded = inst.y ?? 1;
       if (inst.id === "force_des_ancetres") fdaYLoaded = inst.y ?? 1;
+      if (inst.id === "invocations_multiples") {
+        invocCostsLoaded = inst.costs ?? [];
+        invocRaceLoaded = inst.race ?? "";
+        invocFactionLoaded = inst.faction ?? "";
+      }
     }
     setRmY(rmYLoaded); setRmRace(rmRaceLoaded); setRmClan(rmClanLoaded); setRfY(rfYLoaded); setAfY(afYLoaded); setGlY(glYLoaded); setDcY(dcYLoaded); setFdaY(fdaYLoaded);
+    setInvocCosts(invocCostsLoaded); setInvocRace(invocRaceLoaded); setInvocFaction(invocFactionLoaded);
     setKeywordModes(modes);
     setKeywordXValues(parsedX);
     setKeywordGrantScope(grantScopes);
@@ -417,6 +430,15 @@ export default function CardEditor() {
           if (id === "dechainement" && !isSpellCard) {
             return { id: id as Keyword, ...(mode ? { mode } : {}), x: x ?? 1, y: dcY };
           }
+          // Invocations multiples : porte la liste des coûts ; toujours émise.
+          if (id === "invocations_multiples") {
+            return {
+              id: id as Keyword, ...(mode ? { mode } : {}),
+              ...(invocCosts.length ? { costs: invocCosts } : {}),
+              ...(invocRace ? { race: invocRace } : {}),
+              ...(invocFaction ? { faction: invocFaction } : {}),
+            };
+          }
           // Force des ancêtres +X/+Y : porte +X (ATK) / +Y (PV) ; toujours émis
           // (sur sort aussi — capacité conférée, mêmes raisons que Gloire).
           if (id === "force_des_ancetres") {
@@ -494,7 +516,7 @@ export default function CardEditor() {
       console.warn("[card-save] refresh failed after successful save:", err);
     }
     setSaving(false);
-  }, [selectedCard, editFields, newImageFile, keywordXValues, keywordModes, keywordGrantScope, rmY, rmRace, rmClan, rfY, afY, glY, dcY, fdaY, composedCaps]);
+  }, [selectedCard, editFields, newImageFile, keywordXValues, keywordModes, keywordGrantScope, rmY, rmRace, rmClan, rfY, afY, glY, dcY, fdaY, invocCosts, invocRace, invocFaction, composedCaps]);
 
   // Delete
   const handleDelete = useCallback(async (id: number) => {
@@ -1467,6 +1489,18 @@ export default function CardEditor() {
                     style={{ width: 48, padding: "2px 6px", borderRadius: 4, border: "1px solid #cfe8d4", fontSize: 11, textAlign: "center" }}
                   />
                 </div>
+              </div>
+            )}
+
+            {/* Invocations multiples — un coût par invocation (créature). Côté
+                sort, la même donnée s'édite dans la liste unique d'effets. */}
+            {((editFields.keywords as string[]) || []).includes("invocations_multiples") && editFields.card_type === "creature" && (
+              <div style={{ marginBottom: 8 }}>
+                <CostListEditor
+                  value={invocCosts} onChange={setInvocCosts} accent="#8a6d3b"
+                  race={invocRace} faction={invocFaction}
+                  onRestrictChange={(r) => { setInvocRace(r.race ?? ""); setInvocFaction(r.faction ?? ""); }}
+                />
               </div>
             )}
 

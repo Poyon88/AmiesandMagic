@@ -337,6 +337,14 @@
         "label": "Reunião X",
         "desc": "Revela as X primeiras cartas do deck; mantenha os {race_pl} na mão, descarte o resto."
       },
+      "invocations_multiples": {
+        "label": "Invocações múltiplas",
+        "desc": "Invoca {invocations}."
+      },
+      "touche_mortel": {
+        "label": "Toque Mortal",
+        "desc": "Toda criatura ferida por esta unidade morre, independentemente de seus PV."
+      },
       "selection": {
         "label": "Seleção X",
         "desc": "Revela 3 comuns {alignment} de custo ≤ X; adicione uma à mão."
@@ -419,6 +427,10 @@
       }
     },
     "spell_keywords": {
+      "touche_mortel": {
+        "label": "Toque Mortal",
+        "desc": "Toda criatura ferida por esta magia morre, independentemente de seus PV."
+      },
       "precision": {
         "label": "Precisão",
         "desc": "Os danos deste feitiço ignoram a Resistência, a Armadura e o Escudo."
@@ -535,6 +547,10 @@
         "label": "Concentração X",
         "desc": "Cada feitiço na mão se torna um feitiço aleatório de custo +X, reduzido em X (todas as facções)."
       },
+      "invocations_multiples": {
+        "label": "Invocações múltiplas",
+        "desc": "Invoca {invocations}."
+      },
       "invocation_multiple": {
         "label": "Convocações Múltiplas",
         "desc": "Cria {tokens}."
@@ -574,6 +590,7 @@
         "destroy": "destrói",
         "bounce": "devolve à mão",
         "paralyze": "paralisa",
+        "poison": "envenena",
         "grant_keyword": "concede {ability}",
         "ability_generic": "uma habilidade",
         "draw_cards_one": "compre {x} carta",
@@ -590,8 +607,7 @@
         "exhum_all": "todas as criaturas",
         "exhum_upto": "até {n} criaturas",
         "selection": "revela 3 cartas{filter} (custo ≤ {x}) e mantém uma na mão",
-        "renfort_royal": "revela 3 cartas de coleção{filter} (custo ≤ {x}) e mantém uma na mão",
-        "poison": "envenena"
+        "renfort_royal": "revela 3 cartas de coleção{filter} (custo ≤ {x}) e mantém uma na mão"
       },
       "pool": {
         "race": " da raça {v}",
@@ -608,8 +624,8 @@
         "destroy": "destrói-se",
         "bounce": "retorna à mão",
         "paralyze": "paralisa-se",
-        "grant_keyword": "concede-se {ability}",
-        "poison": "se envenena"
+        "poison": "se envenena",
+        "grant_keyword": "concede-se {ability}"
       },
       "targetd": {
         "count_all": "todas as unidades",
@@ -659,10 +675,10 @@
         "destroy": "escolha uma criatura para destruir",
         "bounce": "escolha uma criatura para devolver à mão",
         "paralyze": "escolha uma criatura para paralisar",
+        "poison": "escolha uma criatura para envenenar",
         "grant_keyword": "escolha uma criatura para receber a habilidade",
         "exhumation": "escolha uma criatura para ressuscitar",
-        "default": "escolha um alvo",
-        "poison": "escolha uma criatura para envenenar"
+        "default": "escolha um alvo"
       }
     },
     "factions": {
@@ -1090,7 +1106,15 @@
       "ability": "uma habilidade",
       "scope": "a uma unidade aliada (ou a todas)",
       "scope_target": "a uma unidade aliada",
-      "scope_all": "a todas as suas unidades"
+      "scope_all": "a todas as suas unidades",
+      "invocations": "várias criaturas aleatórias da sua coleção",
+      "invocations_first_one": "uma criatura aleatória de custo {cost}",
+      "invocations_first_many": "{count} criaturas aleatórias de custo {cost}",
+      "invocations_more_one": "uma de custo {cost}",
+      "invocations_more_many": "{count} de custo {cost}",
+      "invocations_join": " e ",
+      "invocations_of_race": " (entre {v})",
+      "invocations_of_faction": " (dentro da facção {v})"
     },
     "sets": {
       "1": "Set Básico"
@@ -1420,6 +1444,14 @@
     "content_destroy": "Destruir",
     "content_bounce": "Devolver à mão",
     "content_paralyze": "Paralisar",
+    "content_poison": "Envenenar (−1 PV por turno)",
+    "invocation_costs_label": "CUSTOS DAS INVOCAÇÕES",
+    "invocation_costs_hint": "Uma criatura aleatória da sua coleção é invocada para cada custo listado.",
+    "add_invocation": "+ Invocação",
+    "invocation_pool_label": "POOL DE INVOCAÇÕES",
+    "invocation_pool_any_race": "— Qualquer raça —",
+    "invocation_pool_any_faction": "— Qualquer facção —",
+    "invocation_pool_hint": "Uma criatura aleatória é invocada para cada custo listado. Sem raça nem facção, o pool segue o alinhamento da carta.",
     "content_grant_keyword": "Conceder uma habilidade",
     "content_draw_cards": "Comprar cartas",
     "content_discard": "Descartar (adversário)",
@@ -1799,8 +1831,7 @@
     "card_added": "« {name} » adicionada!",
     "unknown_error": "Erro desconhecido",
     "illustration_generated": "Ilustração gerada ({model})",
-    "import_error": "Erro de importação",
-    "content_poison": "Envenenar (−1 PV por turno)"
+    "import_error": "Erro de importação"
   },
   "game": {
     "error_not_authenticated": "Não autenticado",

@@ -149,7 +149,9 @@ export function getSpellKeywordDesc(
   // brut au joueur.
   desc = resolveMarkers(desc, String(kw.id), {
     card,
-    instance: { race: kw.race, clan: kw.clan },
+    // `costs`/`faction` : Invocations multiples compose sa phrase à partir de la
+    // liste saisie — sans eux, la version SORT affichait le repli générique.
+    instance: { race: kw.race, clan: kw.clan, costs: kw.costs, faction: kw.faction },
   }, t);
 
   // Replace X/Y from params

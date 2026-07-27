@@ -337,6 +337,14 @@
         "label": "集结 X",
         "desc": "展示牌库顶部X张卡；保留{race_pl}至手牌，其余弃置。"
       },
+      "invocations_multiples": {
+        "label": "多重召唤",
+        "desc": "召唤{invocations}。"
+      },
+      "touche_mortel": {
+        "label": "死触",
+        "desc": "被该单位伤害的任何生物都会死亡，无论其生命值为多少。"
+      },
       "selection": {
         "label": "抉择 X",
         "desc": "展示3张费用≤X的{alignment}普通卡；选择一张加入手牌。"
@@ -419,6 +427,10 @@
       }
     },
     "spell_keywords": {
+      "touche_mortel": {
+        "label": "死触",
+        "desc": "被该法术伤害的任何生物都会死亡，无论其生命值为多少。"
+      },
       "precision": {
         "label": "精准",
         "desc": "此法术造成的伤害无视抗性、护甲和护盾。"
@@ -535,6 +547,10 @@
         "label": "专注 X",
         "desc": "手牌中的每张法术都变为一张费用+X、再减少X的随机法术（不限阵营）。"
       },
+      "invocations_multiples": {
+        "label": "多重召唤",
+        "desc": "召唤{invocations}。"
+      },
       "invocation_multiple": {
         "label": "多重召唤",
         "desc": "创建{tokens}。"
@@ -574,6 +590,7 @@
         "destroy": "消灭",
         "bounce": "返回手牌",
         "paralyze": "麻痹",
+        "poison": "中毒",
         "grant_keyword": "赋予 {ability}",
         "ability_generic": "一个能力",
         "draw_cards_one": "抽 {x} 张牌",
@@ -590,8 +607,7 @@
         "exhum_all": "所有生物",
         "exhum_upto": "至多 {n} 个生物",
         "selection": "展示3张{filter}卡牌（费用 ≤ {x}），并保留其中一张至手牌",
-        "renfort_royal": "展示3张{filter}收藏卡牌（费用 ≤ {x}），并保留其中一张至手牌",
-        "poison": "中毒"
+        "renfort_royal": "展示3张{filter}收藏卡牌（费用 ≤ {x}），并保留其中一张至手牌"
       },
       "pool": {
         "race": "种族为{v}的",
@@ -608,8 +624,8 @@
         "destroy": "自我摧毁",
         "bounce": "将自身弹回手牌",
         "paralyze": "使自身麻痹",
-        "grant_keyword": "为自身赋予{ability}",
-        "poison": "使自己中毒"
+        "poison": "使自己中毒",
+        "grant_keyword": "为自身赋予{ability}"
       },
       "targetd": {
         "count_all": "所有单位",
@@ -659,10 +675,10 @@
         "destroy": "选择一个消灭的生物",
         "bounce": "选择一个返回手牌的生物",
         "paralyze": "选择一个麻痹的生物",
+        "poison": "选择一个要使其中毒的生物",
         "grant_keyword": "选择一个赋予能力的生物",
         "exhumation": "选择一个复活的生物",
-        "default": "选择一个目标",
-        "poison": "选择一个要使其中毒的生物"
+        "default": "选择一个目标"
       }
     },
     "factions": {
@@ -1090,7 +1106,15 @@
       "ability": "一项能力",
       "scope": "给一个友方单位（或全部）",
       "scope_target": "给一个友方单位",
-      "scope_all": "给你所有的单位"
+      "scope_all": "给你所有的单位",
+      "invocations": "您收藏中的多个随机随从",
+      "invocations_first_one": "一个费用为{cost}的随机随从",
+      "invocations_first_many": "{count}个费用为{cost}的随机随从",
+      "invocations_more_one": "一个费用为{cost}的",
+      "invocations_more_many": "{count}个费用为{cost}的",
+      "invocations_join": " 和 ",
+      "invocations_of_race": "（{v}中）",
+      "invocations_of_faction": "（{v}阵营中）"
     },
     "sets": {
       "1": "基础系列"
@@ -1420,6 +1444,14 @@
     "content_destroy": "消灭",
     "content_bounce": "弹回手牌",
     "content_paralyze": "麻痹",
+    "content_poison": "中毒（每回合−1生命值）",
+    "invocation_costs_label": "召唤费用",
+    "invocation_costs_hint": "对于列出的每个费用，都会从你的收藏中召唤一个随机生物。",
+    "add_invocation": "+ 召唤",
+    "invocation_pool_label": "召唤池",
+    "invocation_pool_any_race": "— 任意种族 —",
+    "invocation_pool_any_faction": "— 任意阵营 —",
+    "invocation_pool_hint": "每个列出的费用都会召唤一个随机生物。若未指定种族或阵营，召唤池将遵循卡牌的阵营。",
     "content_grant_keyword": "赋予关键字异能",
     "content_draw_cards": "抽牌",
     "content_discard": "弃牌（对手）",
@@ -1799,8 +1831,7 @@
     "card_added": "「{name}」已添加！",
     "unknown_error": "未知错误",
     "illustration_generated": "插图已生成（{model}）",
-    "import_error": "导入错误",
-    "content_poison": "中毒（每回合−1生命值）"
+    "import_error": "导入错误"
   },
   "game": {
     "error_not_authenticated": "未登录",

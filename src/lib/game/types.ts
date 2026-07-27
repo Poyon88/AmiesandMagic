@@ -9,6 +9,9 @@ export type Keyword =
   | "convocations_multiples"
   // Tier 1 — Terrain
   | "vol" | "precision" | "drain_de_vie" | "esquive" | "poison" | "celerite"
+  // Toute créature blessée par la source meurt (combat, capacité, ou sort
+  // porteur du mot-clé). Modificateur, pas un effet à part entière.
+  | "touche_mortel"
   | "augure" | "benediction" | "bravoure" | "pillage" | "riposte"
   // Tier 1 — Cimetière / Main
   | "rappel" | "combustion"
@@ -68,6 +71,10 @@ export type Keyword =
   | "impact"
   // Polymorphic — summon a random collection creature of cost X (same alignment, current format)
   | "invocation"
+  // Polymorphic — plusieurs Invocations d'un coup, le coût de CHACUNE étant fixé
+  // à la création (liste `costs`). Convocations multiples fait le même travail
+  // avec des tokens configurés ; ici ce sont de vraies cartes de la collection.
+  | "invocations_multiples"
   // Polymorphic — self-buff +X/+Y (creature) / target ally (spell), multi-trigger
   | "renforcement"
   // Polymorphic — +X/+Y to all controller's creatures of a selected race/clan
@@ -131,6 +138,7 @@ export type SpellKeywordId =
   | "renforcement"
   | "guerison"
   | "invocation"
+  | "invocations_multiples"
   | "inspiration"
   | "afflux"
   | "invocation_multiple"
@@ -149,6 +157,7 @@ export type SpellKeywordId =
   | "selection_magique"
   | "poison"
   | "precision"
+  | "touche_mortel"
   | "remontee"
   | "renforcement_multiple"
   | "pillage"
@@ -189,6 +198,14 @@ export interface KeywordInstance {
   grantScope?: "target" | "all_allies";
   /** Mot-clé "conferer" : id de l'ability conférée à la/aux cible(s). */
   grantAbilityId?: string;
+  /** Mot-clé "invocations_multiples" : coût en mana de CHAQUE invocation, dans
+   *  l'ordre (ex. [3, 5] = une créature à 3 puis une à 5). Stocké dans la
+   *  colonne JSONB existante — aucune migration. */
+  costs?: number[];
+  /** Restriction de pool d'"invocations_multiples" : faction imposée. `race`
+   *  (ci-dessus) joue le même rôle. Les deux vides ⇒ repli sur les factions de
+   *  l'ALIGNEMENT de la carte source (comportement d'Invocation X). */
+  faction?: string;
   /** Mot-clé "declenchement" : sous-ensemble FIGÉ (à la création) de déclencheurs
    *  dont les capacités composées des AUTRES alliés sont rejouées une fois à
    *  l'entrée en jeu du porteur. ⊆ {on_play, on_death, on_end_of_turn, on_return}. */
@@ -203,6 +220,10 @@ export interface SpellKeywordInstance {
   race?: string;     // legacy invocation (race du token, ignoré) and renforcement_multiple (race ciblée)
   clan?: string;     // for renforcement_multiple (clan ciblé, prioritaire sur race)
   token_id?: number | null; // legacy invocation — ancien id token_templates (ignoré depuis la refonte)
+  /** invocations_multiples : coût en mana de CHAQUE invocation, dans l'ordre. */
+  costs?: number[];
+  /** invocations_multiples : faction imposée au pool (voir `race`). */
+  faction?: string;
 }
 
 // --- Convocation tokens config ---
@@ -301,6 +322,10 @@ export interface Capability {
   tokenId?: number | null;
   /** Config multi-tokens (convocations_multiples / invocation_multiple). */
   tokens?: ConvocationTokenDef[];
+  /** invocations_multiples : coût en mana de chaque invocation, dans l'ordre. */
+  costs?: number[];
+  /** invocations_multiples : faction imposée au pool (`race` joue le même rôle). */
+  faction?: string;
   /** GRANT uniquement : destinataires de la capacité conférée. */
   grantScope?: "target" | "all_allies";
   /** Slots de cibles (0/1/N). Vide = aucun ciblage. Ordre = ordre du picker. */

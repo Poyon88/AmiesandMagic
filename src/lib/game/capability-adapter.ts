@@ -91,6 +91,10 @@ function deriveSpellCapabilities(card: Card): Capability[] {
       params: pruneParams({ x: sk.amount, attack: sk.attack, health: sk.health }),
       race: sk.race,
       clan: sk.clan,
+      // invocations_multiples : liste des coûts + restriction de pool, portées
+      // par l'instance de sort.
+      costs: sk.costs,
+      faction: sk.faction,
       tokenId: sk.token_id ?? undefined,
       targets,
     });
@@ -172,6 +176,11 @@ function deriveCreatureCapabilities(card: Card): Capability[] {
       params,
       race,
       clan,
+      // invocations_multiples : la liste des coûts et la restriction de pool
+      // voyagent avec la capacité (elles vivent dans keyword_instances /
+      // spell_keywords, pas dans une colonne dédiée).
+      costs: inst.costs,
+      faction: inst.faction,
       tokenId,
       tokens,
       targets: [],

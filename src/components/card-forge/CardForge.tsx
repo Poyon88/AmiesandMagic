@@ -8,6 +8,7 @@ import { generateCardStats, pickRarity, buildId } from "@/lib/card-engine/genera
 import { RARITIES, FACTIONS, TYPES, KEYWORDS, CREATURE_LABEL_TO_ENGINE_ID, RARITY_WEIGHTS_BY_MANA, RARITY_MAP, ALIGNMENTS, CURATED_KEYWORD_MODES, getClanNamesForRace, getFactionForRace } from "@/lib/card-engine/constants";
 import CardVisual, { KEYWORD_SYMBOLS } from "./CardVisual";
 import ComposedEffectsEditor from "./ComposedEffectsEditor";
+import CostListEditor from "./CostListEditor";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import type { CardType, Keyword, KeywordMode, SpellKeywordInstance, SpellComposableEffects, CardSet, GameFormat, TokenTemplate, ConvocationTokenDef } from "@/lib/game/types";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
@@ -1655,6 +1656,12 @@ export default function CardForge() {
   // Conférer (mot-clé créature paramétrique) : ability conférée choisie, et son
   // amplitude. « Conférer » n'a pas de X à lui : les x/y de son instance portent
   // celle de la capacité DONNÉE (Conférer → Résistance 2, → Gloire +2/+1).
+  // Invocations multiples : coût en mana de chaque invocation, dans l'ordre.
+  // Vit dans keyword_instances (colonne JSONB existante) — pas de migration.
+  const [invocCosts, setInvocCosts] = useState<number[]>([]);
+  // Restriction de pool : race OU faction. Les deux vides ⇒ alignement de la carte.
+  const [invocRace, setInvocRace] = useState<string>("");
+  const [invocFaction, setInvocFaction] = useState<string>("");
   const [conferAbilityId, setConferAbilityId] = useState<string>("");
   const [conferX, setConferX] = useState(1);
   const [conferY, setConferY] = useState(1);
@@ -2315,6 +2322,16 @@ export default function CardForge() {
           if (id === "force_des_ancetres") {
             return { id, ...(mode ? { mode } : {}), x: x ?? 1, y: fdaY, ...(grantScope ? { grantScope } : {}) };
           }
+          // Invocations multiples : porte la liste des coûts ; toujours émise
+          // (sans elle le mot-clé n'aurait rien à invoquer).
+          if (id === "invocations_multiples") {
+            return {
+              id, ...(mode ? { mode } : {}),
+              ...(invocCosts.length ? { costs: invocCosts } : {}),
+              ...(invocRace ? { race: invocRace } : {}),
+              ...(invocFaction ? { faction: invocFaction } : {}),
+            };
+          }
           // Appel Suprême (créature) : porte la race ciblée ; toujours émis.
           if (id === "appel_supreme" && !isSpellCard) {
             return { id, ...(mode ? { mode } : {}), ...(asRace ? { race: asRace } : {}) };
@@ -2417,7 +2434,7 @@ export default function CardForge() {
     } finally {
       setSaving(false);
     }
-  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, keywordModes, keywordGrantScope, rmY, afY, rfY, glY, dcY, fdaY, rmRace, rmClan, asRace, composedCaps, conferAbilityId, conferX, conferY, declenchementTriggers]);
+  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, keywordModes, keywordGrantScope, rmY, afY, rfY, glY, dcY, fdaY, rmRace, rmClan, asRace, invocCosts, invocRace, invocFaction, composedCaps, conferAbilityId, conferX, conferY, declenchementTriggers]);
 
   const [generatingImage, setGeneratingImage] = useState(false);
   const [editedPrompt, setEditedPrompt] = useState<string | null>(null);
@@ -3161,6 +3178,23 @@ export default function CardForge() {
                         })}
                       </div>
 
+                      {/* Invocations multiples (sort) : la liste des coûts se saisit
+                          ICI, à côté du mot-clé qui vient d'être coché — c'est le
+                          seul endroit où l'auteur voit sa sélection depuis l'onglet
+                          ⚒ Forge. La ligne curée de l'onglet Capacités édite la
+                          même donnée (spell_keywords[i].costs). */}
+                      {spellKeywords.some(k => k.id === "invocations_multiples") && (
+                        <div style={{ marginTop: 6 }}>
+                          <CostListEditor
+                            value={spellKeywords.find(k => k.id === "invocations_multiples")?.costs ?? []}
+                            onChange={(costs) => setSpellKeywords(prev => prev.map(k => k.id === "invocations_multiples" ? { ...k, costs } : k))}
+                            race={spellKeywords.find(k => k.id === "invocations_multiples")?.race ?? ""}
+                            faction={spellKeywords.find(k => k.id === "invocations_multiples")?.faction ?? ""}
+                            onRestrictChange={(r) => setSpellKeywords(prev => prev.map(k => k.id === "invocations_multiples" ? { ...k, race: r.race, faction: r.faction } : k))}
+                          />
+                        </div>
+                      )}
+
                       {/* Token list for invocation_multiple spell keyword */}
                       {spellKeywords.some(k => k.id === "invocation_multiple") && (
                         <div style={{ marginTop: 6, border: "1px solid #9b59b633", borderRadius: 6, padding: 8, background: "#f0e8ff" }}>
@@ -3522,6 +3556,16 @@ export default function CardForge() {
                             <option key={r} value={r}>{r}</option>
                           ))}
                         </select>
+                      </div>
+                    )}
+                    {/* Invocations multiples — un coût par invocation */}
+                    {manualKeywords.includes("Invocations multiples") && (
+                      <div style={{ marginTop: 6 }}>
+                        <CostListEditor
+                          value={invocCosts} onChange={setInvocCosts} accent="#8a6d3b"
+                          race={invocRace} faction={invocFaction}
+                          onRestrictChange={(r) => { setInvocRace(r.race ?? ""); setInvocFaction(r.faction ?? ""); }}
+                        />
                       </div>
                     )}
                     {/* Conférer — capacité conférée + portée */}
