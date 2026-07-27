@@ -9,8 +9,8 @@ import { useGameStore } from "@/lib/store/gameStore";
 import type { DragEvent } from "react";
 import { KEYWORD_SYMBOLS, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordBadgeValue, applyKeywordValueToLabel, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, getSpellKeywordBadgeValue } from "@/lib/game/spell-keywords";
-import { isCreatureKwShadowedBySpell, getEntraideReduction, getTokenManaCost } from "@/lib/game/abilities";
-import { persistentStats } from "@/lib/game/engine";
+import { isCreatureKwShadowedBySpell, getTokenManaCost } from "@/lib/game/abilities";
+import { persistentStats, effectiveManaCost as engineEffectiveManaCost } from "@/lib/game/engine";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { composedCapsOf, composedIcon, composedTriggerMode, composedValueText } from "@/lib/game/composed-display";
@@ -76,20 +76,14 @@ function HandCard({
   // Baseline: tokens in hand cost floor((attack+health)/2) — see
   // getTokenManaCost — not the on-board 0.
   const baseManaCost = getTokenManaCost(card);
-  let effectiveManaCost = Math.max(0, baseManaCost - (cardInstance.manaCostReduction ?? 0));
-  if (gameState) {
-    const player = gameState.players.find(p => p.id === localPlayerId)
-      ?? gameState.players[gameState.currentPlayerIndex];
-    if (card.card_type === "spell") {
-      const canalisationCount = player.board.filter(c => c.card.keywords.includes("canalisation" as import("@/lib/game/types").Keyword)).length;
-      // Canalisation : plancher à 1 mana (sans augmenter un sort déjà à 0).
-      effectiveManaCost = Math.max(Math.min(1, effectiveManaCost), effectiveManaCost - canalisationCount);
-    }
-    if (card.card_type === "creature") {
-      effectiveManaCost -= getEntraideReduction(card, player.board);
-    }
-    effectiveManaCost = Math.max(0, effectiveManaCost);
-  }
+  // Coût affiché = coût RÉELLEMENT payé : on passe par le helper du moteur pour
+  // que la carte, la jauge de mana et la déduction ne puissent pas diverger.
+  const effectiveManaCost = gameState
+    ? engineEffectiveManaCost(
+        cardInstance,
+        gameState.players.find(p => p.id === localPlayerId) ?? gameState.players[gameState.currentPlayerIndex],
+      )
+    : Math.max(0, baseManaCost - (cardInstance.manaCostReduction ?? 0));
   const isCostReduced = effectiveManaCost < baseManaCost;
   const tokenTemplate = card.id === -1 && !card.image_url
     ? (card.token_id

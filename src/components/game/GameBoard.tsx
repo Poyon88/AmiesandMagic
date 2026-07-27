@@ -5,7 +5,7 @@ import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { useGameStore, selectPowerTargetingColor } from "@/lib/store/gameStore";
 import { useTranslations } from "next-intl";
-import { canPlayCard, canAttack, canUseHeroPower, getSpellTargets, getValidTargets, heroPowerNeedsTarget } from "@/lib/game/engine";
+import { canPlayCard, canAttack, canUseHeroPower, effectiveManaCost, getSpellTargets, getValidTargets, heroPowerNeedsTarget } from "@/lib/game/engine";
 import HeroPortrait from "./HeroPortrait";
 import Hero3DViewer from "./Hero3DViewer";
 import HeroPowerButton from "./HeroPowerButton";
@@ -68,6 +68,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     localPlayerId,
     selectedAttackerInstanceId,
     selectedCardInstanceId,
+    pendingCostCard,
     pendingTapSourceId,
     validTargets,
     targetingMode,
@@ -511,6 +512,25 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     const fallback = setTimeout(reveal, 10000);
     return () => clearTimeout(fallback);
   }, [gameState?.phase, localMulliganRevealDone, opponentMulliganRevealDone, mulliganOverlayRequired]);
+
+  // Mana ENGAGÉ par la carte en cours de jeu. Le moteur ne débite qu'au
+  // dispatch — c'est-à-dire une fois TOUS les choix faits (ciblage, sélection
+  // « 1 parmi 3 », paiement alternatif). Pendant ces écrans, la jauge affichait
+  // donc encore le mana plein alors que le sort était déjà engagé. On réserve
+  // visuellement son coût, calculé par le helper du moteur pour coller à ce qui
+  // sera réellement débité. Annuler le ciblage libère la réserve.
+  const reservedMana = (() => {
+    if (!gameState || !myPlayer || !myTurn) return 0;
+    const pendingId = pendingCostCard?.instanceId ?? selectedCardInstanceId;
+    if (!pendingId) return 0;
+    // Modes de ciblage qui appartiennent au flux « je joue une carte ». Une
+    // attaque, un pouvoir de héros ou une activation ne coûtent pas de mana de
+    // main : les exclure évite de réserver à tort.
+    const PLAY_FLOW = ["spell", "spell_multi", "creature", "graveyard", "divination", "selection", "tactique_keywords", "cost_payment"];
+    if (!PLAY_FLOW.includes(targetingMode)) return 0;
+    const inst = myPlayer.hand.find((c) => c.instanceId === pendingId);
+    return inst ? effectiveManaCost(inst, myPlayer) : 0;
+  })();
 
   // Long-press equivalent of the board-level right-click: backs out of a
   // multi-target spell slot or cancels the active targeting mode entirely.
@@ -1131,7 +1151,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
           {/* Le pouvoir héroïque tactile est rendu dans la colonne END TURN
               (bord droit, zone dégagée) pour ne pas être recouvert par une main
               pleine — cf. ce bloc plus bas. */}
-          <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} />
+          <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} />
         </div>
         )}
 
@@ -1165,7 +1185,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
                 droit dégagé) afin de ne pas être recouvert par une main pleine. */}
             {/* Mana orbs directly under the 3D hero, next to the HP number
                 rendered inside the canvas. */}
-            <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} />
+            <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} />
           </div>
         )}
 

@@ -1862,17 +1862,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
   // Tokens (token_id != null) override the baseline 0 mana_cost with
   // floor((attack+health)/2) so a token bounced/recalled into the hand isn't
   // free to re-cast.
-  let manaCost = Math.max(0, getTokenManaCost(card) - (cardInstance.manaCostReduction ?? 0));
-  if (card.card_type === "spell") {
-    const canalisationCount = player.board.filter(c => hasKw(c, "canalisation")).length;
-    // Canalisation ne peut jamais faire descendre un sort sous 1 mana. Le
-    // plancher est min(1, coût) pour ne pas *augmenter* un sort déjà à 0
-    // (ex. réduit par Concentration) tout en bloquant la réduction à 1 sinon.
-    manaCost = Math.max(Math.min(1, manaCost), manaCost - canalisationCount);
-  }
-  if (card.card_type === "creature") {
-    manaCost = Math.max(0, manaCost - getEntraideReduction(card, player.board));
-  }
+  const manaCost = effectiveManaCost(cardInstance, player);
 
   if (manaCost > player.mana) return state;
 
@@ -6578,6 +6568,29 @@ function concede(state: GameState, action: { playerId: string }): GameState {
 // QUERY HELPERS (for UI)
 // ============================================================
 
+/** Coût en mana RÉELLEMENT payé pour jouer cette carte depuis la main, toutes
+ *  réductions appliquées : Concentration (gravée sur l'instance), Canalisation
+ *  (sorts, plancher à 1) puis Entraide (créatures). Source unique — le moteur
+ *  la déduit, la main l'affiche et la jauge la réserve pendant un ciblage :
+ *  trois surfaces qui divergeaient dès qu'une règle changeait. */
+export function effectiveManaCost(cardInstance: CardInstance, player: PlayerState): number {
+  const card = cardInstance.card;
+  // Tokens (token_id != null) : la base en main est floor((atk+pv)/2), pas le 0
+  // du plateau — un token rebondi en main ne doit pas être gratuit à rejouer.
+  let manaCost = Math.max(0, getTokenManaCost(card) - (cardInstance.manaCostReduction ?? 0));
+  if (card.card_type === "spell") {
+    const canalisationCount = player.board.filter(c => hasKw(c, "canalisation")).length;
+    // Canalisation ne peut jamais faire descendre un sort sous 1 mana. Le
+    // plancher est min(1, coût) pour ne pas *augmenter* un sort déjà à 0
+    // (ex. réduit par Concentration) tout en bloquant la réduction à 1 sinon.
+    manaCost = Math.max(Math.min(1, manaCost), manaCost - canalisationCount);
+  }
+  if (card.card_type === "creature") {
+    manaCost = Math.max(0, manaCost - getEntraideReduction(card, player.board));
+  }
+  return manaCost;
+}
+
 export function canPlayCard(state: GameState, cardInstanceId: string): boolean {
   const player = state.players[state.currentPlayerIndex];
   const card = player.hand.find(c => c.instanceId === cardInstanceId);
@@ -6585,17 +6598,7 @@ export function canPlayCard(state: GameState, cardInstanceId: string): boolean {
   // Concentration baseline reduction (see playCard for full rationale).
   // Token baseline override (see getTokenManaCost): in-hand tokens cost
   // floor((attack+health)/2) instead of the on-board 0.
-  let manaCost = Math.max(0, getTokenManaCost(card.card) - (card.manaCostReduction ?? 0));
-  if (card.card.card_type === "spell") {
-    const canalisationCount = player.board.filter(c => hasKw(c, "canalisation")).length;
-    // Canalisation ne peut jamais faire descendre un sort sous 1 mana. Le
-    // plancher est min(1, coût) pour ne pas *augmenter* un sort déjà à 0
-    // (ex. réduit par Concentration) tout en bloquant la réduction à 1 sinon.
-    manaCost = Math.max(Math.min(1, manaCost), manaCost - canalisationCount);
-  }
-  if (card.card.card_type === "creature") {
-    manaCost = Math.max(0, manaCost - getEntraideReduction(card.card, player.board));
-  }
+  const manaCost = effectiveManaCost(card, player);
   if (manaCost > player.mana) return false;
   // Alternative costs — non-reducible. Note: canPlayCard checks the raw life
   // cost only; cumulative drains (e.g. life_cost + Douleur on the same card)
