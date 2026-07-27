@@ -4815,7 +4815,19 @@ function resolveCreatureDeath(c: CardInstance, owner: PlayerState, enemy: Player
         // (gravée dans son card). returnInstanceToPlay recompose maxHealth avec
         // les bonus conservés, puis on applique la règle propre à Résurrection :
         // revient à 1 PV (pas de soin complet pour ce mot-clé).
-        c.card = { ...c.card, keywords: newKeywords };
+        //
+        // La capacité doit être retirée des DEUX représentations : sur une carte
+        // backfillée, getCapabilities renvoie `capabilities` tel quel et ignore
+        // `keywords` — filtrer les seuls keywords laissait donc hasKw(…,
+        // "resurrection") vrai, l'icône affichée, et ne laissait que le drapeau
+        // d'instance pour empêcher une seconde résurrection.
+        c.card = {
+          ...c.card,
+          keywords: newKeywords,
+          capabilities: c.card.capabilities
+            ? c.card.capabilities.filter(cap => cap.abilityId !== "resurrection")
+            : c.card.capabilities,
+        };
         returnInstanceToPlay(c);
         c.instanceId = generateInstanceId();
         c.currentHealth = 1;
@@ -4865,7 +4877,14 @@ function resolveCreatureDeath(c: CardInstance, owner: PlayerState, enemy: Player
     // « Mort », puis on retire aussitôt la dépouille d'origine — sinon on
     // garderait à la fois la copie recyclée dans le deck ET un doublon au
     // cimetière.
-    if (hasKw(c, "cycle_eternel")) {
+    // `owner.graveyard.includes(c)` : même garde que la Remontée-mort plus bas.
+    // Sans elle, une créature DÉJÀ sortie du cimetière par la Résurrection
+    // (juste au-dessus) était en plus recyclée ici : le MÊME objet se
+    // retrouvait à la fois sur le plateau et dans le deck, et le
+    // returnInstanceToPlay ci-dessous remettait `hasUsedResurrection` à false
+    // → elle ressuscitait à chaque mort, indéfiniment. La première règle qui
+    // réclame la dépouille l'emporte.
+    if (hasKw(c, "cycle_eternel") && owner.graveyard.includes(c)) {
       // Réutilise l'instance pour CONSERVER ses bonus accumulés (au lieu d'une
       // copie neuve) ; nouvelle identité, marquée pour auto-play à la pioche.
       returnInstanceToPlay(c);
