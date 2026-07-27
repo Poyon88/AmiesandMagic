@@ -354,7 +354,12 @@ export default function CardBackManager() {
                     style={{ padding: "3px 8px", borderRadius: 4, border: "1px solid #e0e0e0", fontSize: 11 }}
                   >
                     <option value="">— Aucune —</option>
-                    {FACTION_IDS.map((f) => <option key={f} value={f}>{f}</option>)}
+                    {/* Nom réel de la faction (l'id technique reste en infobulle
+                        pour l'admin) — le formulaire d'ajout plus haut le fait
+                        déjà, seule cette liste affichait encore l'id brut. */}
+                    {FACTION_IDS.map((f) => (
+                      <option key={f} value={f} title={f}>{getFactionDisplayName(f)}</option>
+                    ))}
                   </select>
                 </div>
                 {(cb.rarity ?? "Commune") !== "Commune" && (

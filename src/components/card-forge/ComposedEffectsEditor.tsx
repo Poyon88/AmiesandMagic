@@ -13,7 +13,7 @@ import CostListEditor from "./CostListEditor";
 import { ABILITIES, creatureEngineId, XY_ABILITY_IDS } from "@/lib/game/abilities";
 import { ALL_SPELL_KEYWORDS, SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
 import { buildSpellEffectCatalog, instantiatePreset } from "@/lib/card-forge/spell-effect-catalog";
-import { FACTIONS } from "@/lib/card-engine/constants";
+import { FACTIONS, getFactionDisplayName } from "@/lib/card-engine/constants";
 import type { Capability, ComposedEffect, ComposedEffectContent, ComposedPoolFilter, CapabilityTrigger, SpellKeywordId, SpellKeywordInstance, TargetSpec, TokenTemplate } from "@/lib/game/types";
 
 const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" | "unit" | "unit_or_hero"; xy?: boolean }[] = [
@@ -300,7 +300,7 @@ export default function ComposedEffectsEditor({
                   />
 
                   <span style={labelStyle}>{tr('label_pool_faction')}</span>
-                  {sel(eff.pool?.faction ?? "", [{ v: "", l: tr('pool_any') }, ...FACTION_OPTIONS.map((f) => ({ v: f, l: f }))],
+                  {sel(eff.pool?.faction ?? "", [{ v: "", l: tr('pool_any') }, ...FACTION_OPTIONS.map((f) => ({ v: f, l: getFactionDisplayName(f) }))],
                     (v) => patchPool(idx, { faction: v || undefined }))}
 
                   <span style={labelStyle}>{tr('label_pool_keyword')}</span>

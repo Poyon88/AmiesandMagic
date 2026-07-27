@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import { generateCardStats, pickRarity, buildId } from "@/lib/card-engine/generator";
-import { RARITIES, FACTIONS, TYPES, KEYWORDS, CREATURE_LABEL_TO_ENGINE_ID, RARITY_WEIGHTS_BY_MANA, RARITY_MAP, ALIGNMENTS, CURATED_KEYWORD_MODES, getClanNamesForRace, getFactionForRace } from "@/lib/card-engine/constants";
+import { RARITIES, FACTIONS, TYPES, KEYWORDS, CREATURE_LABEL_TO_ENGINE_ID, RARITY_WEIGHTS_BY_MANA, RARITY_MAP, ALIGNMENTS, CURATED_KEYWORD_MODES, getClanNamesForRace, getFactionForRace, getFactionDisplayName } from "@/lib/card-engine/constants";
 import CardVisual, { KEYWORD_SYMBOLS } from "./CardVisual";
 import ComposedEffectsEditor from "./ComposedEffectsEditor";
 import CostListEditor from "./CostListEditor";
@@ -985,12 +985,12 @@ export default function CardForge() {
 
   const cbFactionDef = cbFaction ? FACTIONS[cbFaction as keyof typeof FACTIONS] : null;
   const cbFactionRaces = cbFactionDef?.races
-    ?? Object.values(FACTIONS).flatMap((f) => f.races).sort();
+    ?? Array.from(new Set(Object.values(FACTIONS).flatMap((f) => f.races))).sort();
   const cbFactionClans: string[] = getClanNamesForRace(cbFaction, cbRace);
 
   const bdFactionDef = bdFaction ? FACTIONS[bdFaction as keyof typeof FACTIONS] : null;
   const bdFactionRaces = bdFactionDef?.races
-    ?? Object.values(FACTIONS).flatMap((f) => f.races).sort();
+    ?? Array.from(new Set(Object.values(FACTIONS).flatMap((f) => f.races))).sort();
   const bdFactionClans: string[] = getClanNamesForRace(bdFaction, bdRace);
 
   function generateCardBackPrompt() {
@@ -1785,7 +1785,10 @@ export default function CardForge() {
   };
 
   // All races from all factions
-  const allRaces = Object.values(FACTIONS).flatMap(f => f.races).sort();
+  // Dédoublonné : une même race est déclarée par PLUSIEURS factions (Humains
+  // l'est par trois), et la liste brute la répétait autant de fois — options
+  // en double à l'écran, et clés React dupliquées.
+  const allRaces = Array.from(new Set(Object.values(FACTIONS).flatMap(f => f.races))).sort();
 
   // Capacités à couple +X/+Y dont le Y est réellement persisté quand un SORT les
   // confère (cf. les branches `gloire` / `force_des_ancetres` de saveToGame, les
@@ -1836,7 +1839,18 @@ export default function CardForge() {
   // retombe sur la faction déduite de la race (rétro-compat).
   const getAvailableTokenClans = useCallback((race: string): string[] => {
     if (!race) return [];
-    return getClanNamesForRace(tokenFaction || getFactionForRace(race), race);
+    // Faction explicitement choisie : on s'y tient (ciblage précis).
+    if (tokenFaction) return getClanNamesForRace(tokenFaction, race);
+    // Sinon, la race seule ne désigne PAS une faction unique : « Humains » est
+    // déclarée par trois d'entre elles. Se rabattre sur getFactionForRace (la
+    // première) rendait 8 des 12 clans humains inatteignables. On agrège donc
+    // les clans de toutes les factions qui déclarent cette race.
+    const out = new Set<string>();
+    for (const [factionId, def] of Object.entries(FACTIONS)) {
+      if (!def.races?.includes(race)) continue;
+      for (const c of getClanNamesForRace(factionId, race)) out.add(c);
+    }
+    return [...out];
   }, [tokenFaction]);
 
   const generateTokenPrompt = useCallback(() => {
@@ -4134,7 +4148,7 @@ export default function CardForge() {
                     style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }}>
                     <option value="">{tf('deduced_from_race')}</option>
                     {Object.keys(FACTIONS).map(f => (
-                      <option key={f} value={f}>{f}</option>
+                      <option key={f} value={f} title={f}>{getFactionDisplayName(f)}</option>
                     ))}
                   </select>
                 </div>

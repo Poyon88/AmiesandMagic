@@ -407,7 +407,10 @@ export default function BoardManager() {
                     style={{ padding: "3px 8px", borderRadius: 4, border: "1px solid #e0e0e0", fontSize: 11 }}
                   >
                     <option value="">— Aucune —</option>
-                    {FACTION_IDS.map((f) => <option key={f} value={f}>{f}</option>)}
+                    {/* Nom réel de la faction (id technique en infobulle). */}
+                    {FACTION_IDS.map((f) => (
+                      <option key={f} value={f} title={f}>{getFactionDisplayName(f)}</option>
+                    ))}
                   </select>
                 </div>
                 {(board.rarity ?? "Commune") !== "Commune" && (

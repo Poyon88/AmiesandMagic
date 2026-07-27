@@ -185,7 +185,9 @@ export default function CardEditor() {
     const editFaction = (typeof editFields?.faction === "string" ? editFields.faction : null) as string | null;
     const canonical: string[] = editFaction && FACTIONS[editFaction]
       ? FACTIONS[editFaction]!.races
-      : Object.values(FACTIONS).flatMap(f => f.races);
+      // Dédoublonné : une race déclarée par plusieurs factions (Humains ×3)
+      // apparaissait autant de fois dans la liste.
+      : Array.from(new Set(Object.values(FACTIONS).flatMap(f => f.races)));
     return [...new Set([...canonical, ...races])].sort();
   }, [races, editFields]);
   const years = useMemo(() => [...new Set(cards.map(c => c.card_year).filter(Boolean) as number[])].sort((a, b) => b - a), [cards]);

@@ -12,7 +12,7 @@
 // que les écrans se comportent à l'identique.
 
 import { useTranslations } from "next-intl";
-import { FACTIONS } from "@/lib/card-engine/constants";
+import { FACTIONS, getFactionDisplayName } from "@/lib/card-engine/constants";
 
 const FACTION_OPTIONS = Object.keys(FACTIONS).sort((a, b) => a.localeCompare(b, "fr"));
 const RACE_OPTIONS = Array.from(new Set(Object.values(FACTIONS).flatMap((f) => f.races)))
@@ -76,7 +76,7 @@ export default function CostListEditor({
             </select>
             <select value={faction} onChange={(e) => onRestrictChange({ race, faction: e.target.value || undefined })} style={selectStyle}>
               <option value="">{tf('invocation_pool_any_faction')}</option>
-              {FACTION_OPTIONS.map((f) => <option key={f} value={f}>{f}</option>)}
+              {FACTION_OPTIONS.map((f) => <option key={f} value={f} title={f}>{getFactionDisplayName(f)}</option>)}
             </select>
           </div>
         </div>
