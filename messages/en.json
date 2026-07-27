@@ -590,7 +590,8 @@
         "exhum_all": "all creatures",
         "exhum_upto": "up to {n} creatures",
         "selection": "reveals 3 cards{filter} (cost ≤ {x}) and keeps one in hand",
-        "renfort_royal": "reveals 3 collection cards{filter} (cost ≤ {x}) and keeps one in hand"
+        "renfort_royal": "reveals 3 collection cards{filter} (cost ≤ {x}) and keeps one in hand",
+        "poison": "poisons"
       },
       "pool": {
         "race": " of race {v}",
@@ -607,7 +608,8 @@
         "destroy": "destroys itself",
         "bounce": "returns itself to hand",
         "paralyze": "paralyzes itself",
-        "grant_keyword": "grants itself {ability}"
+        "grant_keyword": "grants itself {ability}",
+        "poison": "poisons itself"
       },
       "targetd": {
         "count_all": "all units",
@@ -659,7 +661,8 @@
         "paralyze": "choose a creature to paralyze",
         "grant_keyword": "choose a creature to grant the ability to",
         "exhumation": "choose a creature to resurrect",
-        "default": "choose a target"
+        "default": "choose a target",
+        "poison": "choose a creature to poison"
       }
     },
     "factions": {
@@ -1423,6 +1426,13 @@
     "content_summon_token": "Summon a token",
     "content_gain_mana": "Gain mana",
     "content_exhumation": "Reanimate (graveyard)",
+    "legacy_grants_heading": "Legacy grants (old format) — convert them to be able to target the opponent",
+    "convert_to_composed": "Convert",
+    "effects_heading": "Card effects",
+    "effects_subtitle": "all spell effects, in a single list",
+    "effect_kind_curated": "MECHANIC",
+    "group_composed": "Configurable effects",
+    "group_curated": "Special mechanics",
     "content_selection": "Selection (1 of 3)",
     "content_renfort_royal": "Royal Selection (1 of 3)",
     "label_pool_membership": "POOL — MEMBERSHIP",
@@ -1790,13 +1800,7 @@
     "unknown_error": "Unknown error",
     "illustration_generated": "Illustration generated ({model})",
     "import_error": "Import error",
-    "legacy_grants_heading": "Legacy grants (old format) — convert them to be able to target the opponent",
-    "convert_to_composed": "Convert",
-    "effects_heading": "Card effects",
-    "effects_subtitle": "all spell effects, in a single list",
-    "effect_kind_curated": "MECHANIC",
-    "group_composed": "Configurable effects",
-    "group_curated": "Special mechanics"
+    "content_poison": "Poison (−1 HP per turn)"
   },
   "game": {
     "error_not_authenticated": "Not authenticated",

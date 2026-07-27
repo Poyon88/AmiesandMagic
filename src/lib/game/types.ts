@@ -333,6 +333,10 @@ export type ComposedEffectContent =
   | "bounce"
   | "paralyze"
   | "grant_keyword"
+  // ÉTAT empoisonné posé sur la cible (−1 PV à chaque fin de tour), à distinguer
+  // du DON du mot-clé Poison via grant_keyword (qui, lui, rend la cible
+  // empoisonneuse). C'est l'équivalent composé du mot-clé de sort `poison`.
+  | "poison"
   | "exhumation"
   // Révèle 3 cartes de la collection et en garde 1 en main. Comme exhumation,
   // ces deux contenus existent AUSSI en mot-clé curé : la variante composée

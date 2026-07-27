@@ -590,7 +590,8 @@
         "exhum_all": "alle Kreaturen",
         "exhum_upto": "bis zu {n} Kreaturen",
         "selection": "deckt 3 Karten{filter} auf (Kosten ≤ {x}) und behält eine davon auf der Hand",
-        "renfort_royal": "deckt 3 Sammelkarten{filter} auf (Kosten ≤ {x}) und behält eine davon auf der Hand"
+        "renfort_royal": "deckt 3 Sammelkarten{filter} auf (Kosten ≤ {x}) und behält eine davon auf der Hand",
+        "poison": "vergiftet"
       },
       "pool": {
         "race": " der Rasse {v}",
@@ -607,7 +608,8 @@
         "destroy": "zerstört sich selbst",
         "bounce": "kehrt auf die Hand zurück",
         "paralyze": "paralysiert sich selbst",
-        "grant_keyword": "verleiht sich selbst {ability}"
+        "grant_keyword": "verleiht sich selbst {ability}",
+        "poison": "vergiftet sich"
       },
       "targetd": {
         "count_all": "alle Einheiten",
@@ -659,7 +661,8 @@
         "paralyze": "wähle eine Kreatur zum Lähmen",
         "grant_keyword": "wähle eine Kreatur, der die Fähigkeit verliehen werden soll",
         "exhumation": "wähle eine Kreatur zum Wiederbeleben",
-        "default": "wähle ein Ziel"
+        "default": "wähle ein Ziel",
+        "poison": "Wählt eine Kreatur zum Vergiften"
       }
     },
     "factions": {
@@ -1423,6 +1426,13 @@
     "content_summon_token": "Token beschwören",
     "content_gain_mana": "Mana erhalten",
     "content_exhumation": "Wiederbeleben (Friedhof)",
+    "legacy_grants_heading": "Vererbte Boni (altes Format) — konvertiere sie, um den Gegner anvisieren zu können",
+    "convert_to_composed": "Konvertieren",
+    "effects_heading": "Karteneffekte",
+    "effects_subtitle": "alle Effekte des Zaubers in einer einzigen Liste",
+    "effect_kind_curated": "MECHANIK",
+    "group_composed": "Konfigurierbare Effekte",
+    "group_curated": "Besondere Mechaniken",
     "content_selection": "Auswahl (1 von 3)",
     "content_renfort_royal": "Königliche Auswahl (1 von 3)",
     "label_pool_membership": "POOL — ZUGEHÖRIGKEIT",
@@ -1790,13 +1800,7 @@
     "unknown_error": "Unbekannter Fehler",
     "illustration_generated": "Illustration generiert ({model})",
     "import_error": "Importfehler",
-    "legacy_grants_heading": "Vererbte Boni (altes Format) — konvertiere sie, um den Gegner anvisieren zu können",
-    "convert_to_composed": "Konvertieren",
-    "effects_heading": "Karteneffekte",
-    "effects_subtitle": "alle Effekte des Zaubers in einer einzigen Liste",
-    "effect_kind_curated": "MECHANIK",
-    "group_composed": "Konfigurierbare Effekte",
-    "group_curated": "Besondere Mechaniken"
+    "content_poison": "Vergiften (−1 LP pro Runde)"
   },
   "game": {
     "error_not_authenticated": "Nicht authentifiziert",

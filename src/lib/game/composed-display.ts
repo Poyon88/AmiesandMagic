@@ -28,6 +28,7 @@ export const COMPOSED_FR: Record<string, string> = {
   "content.destroy": "détruit",
   "content.bounce": "renvoie en main",
   "content.paralyze": "paralyse",
+  "content.poison": "empoisonne",
   "content.grant_keyword": "confère {ability}",
   "content.ability_generic": "une capacité",
   "content.draw_cards_one": "piochez {x} carte",
@@ -64,6 +65,7 @@ export const COMPOSED_FR: Record<string, string> = {
   "self.destroy": "se détruit",
   "self.bounce": "se renvoie en main",
   "self.paralyze": "se paralyse",
+  "self.poison": "s'empoisonne",
   "self.grant_keyword": "se confère {ability}",
 
   // Variantes SANS préposition, pour les verbes transitifs directs (détruit,
@@ -114,6 +116,7 @@ export const COMPOSED_FR: Record<string, string> = {
   "choice.destroy": "choisissez une créature à détruire",
   "choice.bounce": "choisissez une créature à renvoyer en main",
   "choice.paralyze": "choisissez une créature à paralyser",
+  "choice.poison": "choisissez une créature à empoisonner",
   "choice.grant_keyword": "choisissez une créature à qui conférer la capacité",
   "choice.exhumation": "choisissez une créature à ressusciter",
   "choice.default": "choisissez une cible",
@@ -174,6 +177,7 @@ export function composedIcon(cap: Capability): { symbol: string; keyword: string
     case "destroy": return { symbol: "☠️", keyword: "spell_execution" };
     case "bounce": return { symbol: "🔼", keyword: "spell_remontee" };
     case "paralyze": return { symbol: "⛓️", keyword: "spell_entrave" };
+    case "poison": return { symbol: KEYWORD_SYMBOLS.poison, keyword: "poison" };
     // Une capacité conférée s'affiche avec l'icône de LA capacité conférée
     // (ex. Armure), pas avec l'icône générique « Conférer » : c'est ce que la
     // créature gagne qui compte, pas le fait qu'on le lui donne. L'astérisque
@@ -290,6 +294,7 @@ function describeContent(eff: ComposedEffect, tokens: TokenTemplate[] | undefine
     case "destroy": return frag(t, "content.destroy");
     case "bounce": return frag(t, "content.bounce");
     case "paralyze": return frag(t, "content.paralyze");
+    case "poison": return frag(t, "content.poison");
     case "grant_keyword": return frag(t, "content.grant_keyword", { ability: grantedAbilityLabel(eff, x, y, t) });
     case "draw_cards": return frag(t, x > 1 ? "content.draw_cards_many" : "content.draw_cards_one", { x });
     case "discard": return frag(t, x > 1 ? "content.discard_many" : "content.discard_one", { x });
@@ -330,6 +335,7 @@ function describeSelfContent(eff: ComposedEffect, t?: SafeT): string | null {
     case "destroy": return frag(t, "self.destroy");
     case "bounce": return frag(t, "self.bounce");
     case "paralyze": return frag(t, "self.paralyze");
+    case "poison": return frag(t, "self.poison");
     case "grant_keyword": return frag(t, "self.grant_keyword", { ability: grantedAbilityLabel(eff, x, y, t) });
     default: return null;
   }
@@ -344,7 +350,7 @@ function sideAdj(t: SafeT | undefined, side: string | undefined, many: boolean):
 
 // Contenus dont le verbe est TRANSITIF DIRECT : ils prennent leur cible sans
 // préposition. Les autres (« inflige … à », « octroie … à ») gardent « à ».
-const DIRECT_OBJECT_CONTENT = new Set(["destroy", "bounce", "paralyze"]);
+const DIRECT_OBJECT_CONTENT = new Set(["destroy", "bounce", "paralyze", "poison"]);
 
 function describeTarget(t: TargetSpec | undefined, tr?: SafeT, direct = false): string {
   if (!t) return "";
@@ -431,7 +437,7 @@ export function composedChoicePrompt(cap: Capability, t?: SafeT): string {
   if (!eff) return `🎯 ${frag(t, "choice.default")}`;
   const ic = composedIcon(cap).symbol;
   const icon = ic.startsWith("/") || ic.startsWith("http") ? "🎯" : ic;
-  const key = ["deal_damage", "heal", "buff", "debuff", "destroy", "bounce", "paralyze", "grant_keyword", "exhumation"].includes(eff.content)
+  const key = ["deal_damage", "heal", "buff", "debuff", "destroy", "bounce", "paralyze", "poison", "grant_keyword", "exhumation"].includes(eff.content)
     ? `choice.${eff.content}`
     : "choice.default";
   const body = frag(t, key);

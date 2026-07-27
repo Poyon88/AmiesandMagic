@@ -590,7 +590,8 @@
         "exhum_all": "todas las criaturas",
         "exhum_upto": "hasta {n} criaturas",
         "selection": "revela 3 cartas{filter} (coste ≤ {x}) y se queda una en mano",
-        "renfort_royal": "revela 3 cartas de colección{filter} (coste ≤ {x}) y se queda una en mano"
+        "renfort_royal": "revela 3 cartas de colección{filter} (coste ≤ {x}) y se queda una en mano",
+        "poison": "envenena"
       },
       "pool": {
         "race": " de raza {v}",
@@ -607,7 +608,8 @@
         "destroy": "se destruye",
         "bounce": "vuelve a la mano",
         "paralyze": "se paraliza",
-        "grant_keyword": "se otorga {ability}"
+        "grant_keyword": "se otorga {ability}",
+        "poison": "se envenena"
       },
       "targetd": {
         "count_all": "todas las unidades",
@@ -659,7 +661,8 @@
         "paralyze": "elige una criatura para paralizar",
         "grant_keyword": "elige una criatura a la que otorgar la habilidad",
         "exhumation": "elige una criatura para resucitar",
-        "default": "elige un objetivo"
+        "default": "elige un objetivo",
+        "poison": "elige una criatura para envenenar"
       }
     },
     "factions": {
@@ -1423,6 +1426,13 @@
     "content_summon_token": "Invocar un token",
     "content_gain_mana": "Ganar maná",
     "content_exhumation": "Resucitar (cementerio)",
+    "legacy_grants_heading": "Dones heredados (formato antiguo) — conviértelos para poder apuntar al oponente",
+    "convert_to_composed": "Convertir",
+    "effects_heading": "Efectos de la carta",
+    "effects_subtitle": "todos los efectos del hechizo, en una sola lista",
+    "effect_kind_curated": "MECÁNICA",
+    "group_composed": "Efectos configurables",
+    "group_curated": "Mecánicas particulares",
     "content_selection": "Selección (1 de 3)",
     "content_renfort_royal": "Selección Real (1 de 3)",
     "label_pool_membership": "POOL — PERTENENCIA",
@@ -1790,13 +1800,7 @@
     "unknown_error": "Error desconocido",
     "illustration_generated": "Ilustración generada ({model})",
     "import_error": "Error de importación",
-    "legacy_grants_heading": "Dones heredados (formato antiguo) — conviértelos para poder apuntar al oponente",
-    "convert_to_composed": "Convertir",
-    "effects_heading": "Efectos de la carta",
-    "effects_subtitle": "todos los efectos del hechizo, en una sola lista",
-    "effect_kind_curated": "MECÁNICA",
-    "group_composed": "Efectos configurables",
-    "group_curated": "Mecánicas particulares"
+    "content_poison": "Envenenar (−1 PV por turno)"
   },
   "game": {
     "error_not_authenticated": "No autenticado",

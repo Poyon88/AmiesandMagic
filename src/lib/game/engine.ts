@@ -497,6 +497,10 @@ function applyComposedToUnit(
       break;
     case "destroy": u.currentHealth = 0; break;
     case "paralyze": u.isParalyzed = true; break;
+    // ÉTAT empoisonné (1 PV perdu à chaque fin de tour), pas le mot-clé Poison :
+    // la cible subit le poison, elle ne devient pas empoisonneuse. Même effet
+    // que le mot-clé de sort `poison` (cf. resolveSpellKeywords).
+    case "poison": u.isPoisoned = true; break;
     case "bounce": resolveRemontee(u.instanceId, source?.instanceId ?? null, owner, opponent, fromSpell); break;
     case "grant_keyword":
       if (composed.grantAbilityId) {
@@ -778,7 +782,8 @@ function resolveComposedEffect(
   // lanceur (cf. selectComposedTargets).
   const harmful =
     composed.content === "deal_damage" || composed.content === "destroy" ||
-    composed.content === "debuff" || composed.content === "paralyze";
+    composed.content === "debuff" || composed.content === "paralyze" ||
+    composed.content === "poison";
   for (const t of selectComposedTargets(target, owner, opponent, chosenTargetIds, harmful)) {
     if (t.kind === "hero") {
       applyComposedToHero(composed.content, t.hero, x);

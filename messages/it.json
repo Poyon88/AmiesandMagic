@@ -590,7 +590,8 @@
         "exhum_all": "tutte le creature",
         "exhum_upto": "fino a {n} creature",
         "selection": "rivela 3 carte{filter} (costo ≤ {x}) e ne tiene una in mano",
-        "renfort_royal": "rivela 3 carte da collezione{filter} (costo ≤ {x}) e ne tiene una in mano"
+        "renfort_royal": "rivela 3 carte da collezione{filter} (costo ≤ {x}) e ne tiene una in mano",
+        "poison": "avvelena"
       },
       "pool": {
         "race": " di razza {v}",
@@ -607,7 +608,8 @@
         "destroy": "si distrugge",
         "bounce": "torna in mano",
         "paralyze": "si paralizza",
-        "grant_keyword": "si conferisce {ability}"
+        "grant_keyword": "si conferisce {ability}",
+        "poison": "si avvelena"
       },
       "targetd": {
         "count_all": "tutte le unità",
@@ -659,7 +661,8 @@
         "paralyze": "scegli una creatura da paralizzare",
         "grant_keyword": "scegli una creatura a cui conferire l'abilità",
         "exhumation": "scegli una creatura da resuscitare",
-        "default": "scegli un bersaglio"
+        "default": "scegli un bersaglio",
+        "poison": "scegli una creatura da avvelenare"
       }
     },
     "factions": {
@@ -1423,6 +1426,13 @@
     "content_summon_token": "Evocare un token",
     "content_gain_mana": "Guadagnare mana",
     "content_exhumation": "Resuscitare (cimitero)",
+    "legacy_grants_heading": "Doni ereditati (vecchio formato) — convertili per poterli indirizzare all'avversario",
+    "convert_to_composed": "Converti",
+    "effects_heading": "Effetti della carta",
+    "effects_subtitle": "tutti gli effetti dell'incantesimo, in un'unica lista",
+    "effect_kind_curated": "MECCANICA",
+    "group_composed": "Effetti configurabili",
+    "group_curated": "Meccaniche speciali",
     "content_selection": "Selezione (1 su 3)",
     "content_renfort_royal": "Selezione Reale (1 su 3)",
     "label_pool_membership": "POOL — APPARTENENZA",
@@ -1790,13 +1800,7 @@
     "unknown_error": "Errore sconosciuto",
     "illustration_generated": "Illustrazione generata ({model})",
     "import_error": "Errore di importazione",
-    "legacy_grants_heading": "Doni ereditati (vecchio formato) — convertili per poterli indirizzare all'avversario",
-    "convert_to_composed": "Converti",
-    "effects_heading": "Effetti della carta",
-    "effects_subtitle": "tutti gli effetti dell'incantesimo, in un'unica lista",
-    "effect_kind_curated": "MECCANICA",
-    "group_composed": "Effetti configurabili",
-    "group_curated": "Meccaniche speciali"
+    "content_poison": "Avvelenare (−1 PV a turno)"
   },
   "game": {
     "error_not_authenticated": "Non autenticato",

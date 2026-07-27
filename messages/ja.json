@@ -590,7 +590,8 @@
         "exhum_all": "すべてのクリーチャー",
         "exhum_upto": "クリーチャー{n}体まで",
         "selection": "3枚のカード{filter}（コスト{x}以下）を公開し、その中から1枚を手札に加える",
-        "renfort_royal": "コレクションから3枚のカード{filter}（コスト{x}以下）を公開し、その中から1枚を手札に加える"
+        "renfort_royal": "コレクションから3枚のカード{filter}（コスト{x}以下）を公開し、その中から1枚を手札に加える",
+        "poison": "毒を与える"
       },
       "pool": {
         "race": "（種族：{v}）",
@@ -607,7 +608,8 @@
         "destroy": "自身を破壊する",
         "bounce": "自身を手札に戻す",
         "paralyze": "自身を麻痺させる",
-        "grant_keyword": "自身に{ability}を付与する"
+        "grant_keyword": "自身に{ability}を付与する",
+        "poison": "自らを毒に冒す"
       },
       "targetd": {
         "count_all": "すべてのユニット",
@@ -659,7 +661,8 @@
         "paralyze": "麻痺させるクリーチャーを選んでください",
         "grant_keyword": "能力を付与するクリーチャーを選んでください",
         "exhumation": "蘇生するクリーチャーを選んでください",
-        "default": "対象を選んでください"
+        "default": "対象を選んでください",
+        "poison": "毒を与えるクリーチャーを選択してください"
       }
     },
     "factions": {
@@ -1423,6 +1426,13 @@
     "content_summon_token": "トークンを召喚する",
     "content_gain_mana": "マナを得る",
     "content_exhumation": "蘇生する（墓地）",
+    "legacy_grants_heading": "継承された付与効果(旧形式) — 相手を対象にできるように変換してください",
+    "convert_to_composed": "変換",
+    "effects_heading": "カード効果",
+    "effects_subtitle": "呪文の全ての効果を1つのリストに",
+    "effect_kind_curated": "メカニクス",
+    "group_composed": "設定可能な効果",
+    "group_curated": "特殊メカニクス",
     "content_selection": "選択（3枚中1枚）",
     "content_renfort_royal": "王家の選抜（3枚中1枚）",
     "label_pool_membership": "プール — 所属",
@@ -1790,13 +1800,7 @@
     "unknown_error": "不明なエラー",
     "illustration_generated": "イラストを生成しました（{model}）",
     "import_error": "インポートエラー",
-    "legacy_grants_heading": "継承された付与効果(旧形式) — 相手を対象にできるように変換してください",
-    "convert_to_composed": "変換",
-    "effects_heading": "カード効果",
-    "effects_subtitle": "呪文の全ての効果を1つのリストに",
-    "effect_kind_curated": "メカニクス",
-    "group_composed": "設定可能な効果",
-    "group_curated": "特殊メカニクス"
+    "content_poison": "毒を与える(ターンごとにHP−1)"
   },
   "game": {
     "error_not_authenticated": "未認証",

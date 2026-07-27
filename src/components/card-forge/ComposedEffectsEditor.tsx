@@ -23,6 +23,8 @@ const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" |
   { v: "destroy", l: "Détruire", target: "unit" },
   { v: "bounce", l: "Renvoyer en main", target: "unit" },
   { v: "paralyze", l: "Paralyser", target: "unit" },
+  // État empoisonné subi (−1 PV/fin de tour) ≠ don du mot-clé Poison.
+  { v: "poison", l: "Empoisonner", target: "unit" },
   { v: "grant_keyword", l: "Conférer une capacité", target: "unit" },
   { v: "draw_cards", l: "Piocher", target: "none" },
   { v: "discard", l: "Défausser (adversaire)", target: "none" },

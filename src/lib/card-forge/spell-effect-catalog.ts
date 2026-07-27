@@ -47,7 +47,10 @@ const COMPOSED_PRESETS: Partial<Record<SpellKeywordId, ComposedEffect>> = {
   renforcement: { content: "buff", magnitude: { x: 1, y: 1 }, target: board({ side: "ally" }) },
   affaiblissement: { content: "debuff", magnitude: { x: 1, y: 1 }, target: board({}) },
   guerison: { content: "heal", magnitude: { x: 1 }, target: board({ entity: "both", side: "ally" }) },
-  poison: { content: "grant_keyword", grantAbilityId: "poison", target: board({}) },
+  // Le mot-clé de sort Poison POSE l'état empoisonné sur sa cible ; il ne la
+  // rend pas empoisonneuse. Son équivalent composé est donc le contenu
+  // `poison`, surtout pas un `grant_keyword` du mot-clé du même nom.
+  poison: { content: "poison", target: board({}) },
   inspiration: { content: "draw_cards", magnitude: { x: 1 } },
   afflux: { content: "gain_mana", magnitude: { x: 1 } },
   pillage: { content: "discard", magnitude: { x: 1 } },

@@ -574,6 +574,7 @@
         "destroy": "détruit",
         "bounce": "renvoie en main",
         "paralyze": "paralyse",
+        "poison": "empoisonne",
         "grant_keyword": "confère {ability}",
         "ability_generic": "une capacité",
         "draw_cards_one": "piochez {x} carte",
@@ -607,6 +608,7 @@
         "destroy": "se détruit",
         "bounce": "se renvoie en main",
         "paralyze": "se paralyse",
+        "poison": "s'empoisonne",
         "grant_keyword": "se confère {ability}"
       },
       "targetd": {
@@ -657,6 +659,7 @@
         "destroy": "choisissez une créature à détruire",
         "bounce": "choisissez une créature à renvoyer en main",
         "paralyze": "choisissez une créature à paralyser",
+        "poison": "choisissez une créature à empoisonner",
         "grant_keyword": "choisissez une créature à qui conférer la capacité",
         "exhumation": "choisissez une créature à ressusciter",
         "default": "choisissez une cible"
@@ -1417,6 +1420,7 @@
     "content_destroy": "Détruire",
     "content_bounce": "Renvoyer en main",
     "content_paralyze": "Paralyser",
+    "content_poison": "Empoisonner (−1 PV par tour)",
     "content_grant_keyword": "Conférer une capacité",
     "content_draw_cards": "Piocher",
     "content_discard": "Défausser (adversaire)",
