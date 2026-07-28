@@ -1443,6 +1443,12 @@ export const useGameStore = create<GameStore>((set, get) => {
     // Find creatures that died (were on old board but not on new board).
     // Track owner index so cycle_eternel can fly the copy back to the right
     // deck (data-cycle-deck="my" vs "opponent").
+    //
+    // « Absente du plateau » ne veut PAS dire « morte » : une Remontée renvoie
+    // l'instance en MAIN, une métamorphose la fait disparaître. Sans ce test de
+    // zone d'arrivée, une créature renvoyée en main jouait son animation de mort
+    // — et si elle portait Cycle éternel, le fantôme partait vers le deck alors
+    // que le moteur, lui, n'avait rien recyclé du tout.
     const deadCreatures: CardInstance[] = [];
     const deathOwnerIdx = new Map<string, number>();
     for (let i = 0; i < 2; i++) {
@@ -1451,10 +1457,16 @@ export const useGameStore = create<GameStore>((set, get) => {
       const oldBoard = combatOld.players[i].board;
       const newBoard = newState.players[i].board;
       for (const oldC of oldBoard) {
-        if (!newBoard.find((c) => c.instanceId === oldC.instanceId)) {
-          deadCreatures.push(oldC);
-          deathOwnerIdx.set(oldC.instanceId, i);
-        }
+        if (newBoard.find((c) => c.instanceId === oldC.instanceId)) continue;
+        // Cycle éternel / Résurrection sortent la dépouille du cimetière dans
+        // la foulée : elles restent des MORTS. On ne disqualifie que ce qui a
+        // rejoint une main (renvoi) ou disparu sans laisser de corps.
+        // Cycle éternel / Résurrection ressortent la dépouille du cimetière dans
+        // la foulée : ce sont bien des MORTS. Seul un retour en MAIN disqualifie.
+        const returnedToHand = newState.players.some((p) => p.hand.some((c) => c.instanceId === oldC.instanceId));
+        if (returnedToHand) continue;
+        deadCreatures.push(oldC);
+        deathOwnerIdx.set(oldC.instanceId, i);
       }
     }
 
@@ -2888,6 +2900,15 @@ export const useGameStore = create<GameStore>((set, get) => {
 
       const targets = getSpellTargets(gameState, card.card, firstSlot.type);
 
+      // Aucune cible éligible (ex. un don « à une créature alliée » avec un
+      // plateau vide) : on ne DOIT PAS entrer en mode ciblage, sinon la flèche
+      // s'affiche, rien n'est cliquable, et le joueur reste bloqué jusqu'à
+      // « Annuler le ciblage ». Même repli que les branches cimetière
+      // ci-dessus : la carte se joue, les effets sans cible se résolvent.
+      if (targets.length === 0) {
+        return get().dispatchAction({ type: "play_card", cardInstanceId: instanceId });
+      }
+
       if (selectableSlots.length === 1) {
         // Single target — simple flow
         set({
@@ -3671,6 +3692,10 @@ export const useGameStore = create<GameStore>((set, get) => {
           }
         } else {
           const targets = getSpellTargets(gameState, card.card, firstSlot.type);
+          // Même garde que le chemin principal : pas de mode ciblage sans
+          // cible éligible, sinon la flèche s'affiche dans le vide — on laisse
+          // le flux retomber sur le dispatch direct plus bas.
+          if (targets.length > 0) {
           set({
             selectedCardInstanceId: instanceId,
             selectedAttackerInstanceId: null,
@@ -3681,6 +3706,7 @@ export const useGameStore = create<GameStore>((set, get) => {
             collectedTargetMap: {},
           });
           return null;
+          }
         }
       }
     }
