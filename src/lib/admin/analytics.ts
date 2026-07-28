@@ -40,7 +40,10 @@ export interface CardRow {
   race: string | null;
   clan: string | null;
   keywords: string[] | null;
-  spell_keywords: Array<{ keyword: string }> | null;
+  // Chaque entrée de la colonne `spell_keywords` est un SpellKeywordInstance :
+  // la clé est `id`. Le type déclarait `keyword`, un champ qui n'existe pas —
+  // les lectures ne renvoyaient donc jamais rien (cf. aggregateByAbility).
+  spell_keywords: Array<{ id: string }> | null;
   image_url: string | null;
 }
 
@@ -194,7 +197,10 @@ export function aggregateByHero(
   return finalize(map, minGames);
 }
 
-/** Per-ability/keyword winrate. Counts both `keywords` array and `spell_keywords[].keyword`. */
+/** Winrate par capacité. Agrège la colonne `keywords` (créatures) ET
+ *  `spell_keywords[].id` (sorts). Une capacité POLYMORPHE partage le même id
+ *  des deux côtés (poison, invocation, domination…) : ses deux formes sont donc
+ *  comptées sous une seule ligne — c'est bien « la capacité » que l'on mesure. */
 export function aggregateByAbility(
   snapshots: DeckSnapshot[],
   cards: Map<number, CardRow>,
@@ -208,7 +214,7 @@ export function aggregateByAbility(
       if (!card) continue;
       const keywords = new Set<string>();
       for (const k of card.keywords ?? []) if (k) keywords.add(k);
-      for (const sk of card.spell_keywords ?? []) if (sk?.keyword) keywords.add(sk.keyword);
+      for (const sk of card.spell_keywords ?? []) if (sk?.id) keywords.add(sk.id);
       for (const k of keywords) {
         let stat = map.get(k);
         if (!stat) {
@@ -336,7 +342,7 @@ export function evolutionFor(
         if (!card) continue;
         const set = new Set<string>();
         for (const k of card.keywords ?? []) if (k) set.add(k);
-        for (const sk of card.spell_keywords ?? []) if (sk?.keyword) set.add(sk.keyword);
+        for (const sk of card.spell_keywords ?? []) if (sk?.id) set.add(sk.id);
         if (set.has(entityKey)) { contribution += e.copies; appears = true; }
       }
     }
