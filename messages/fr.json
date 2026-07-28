@@ -447,6 +447,10 @@
         "label": "Convocation",
         "desc": "Crée {token}."
       },
+      "domination": {
+        "label": "Domination",
+        "desc": "Prend le contrôle de l'unité ennemie ciblée."
+      },
       "appel_du_clan": {
         "label": "Appel du clan X",
         "desc": "Met en jeu gratuitement la 1re unité {clan_de} de coût ≤ X de votre deck."
@@ -789,6 +793,9 @@
       "Hommes-Chiens": "Hommes-Chiens",
       "Hommes-Renards": "Hommes-Renards",
       "Hommes-Cerfs": "Hommes-Cerfs",
+      "Hommes-Singes": "Hommes-Singes",
+      "Hommes-Poissons": "Hommes-Poissons",
+      "Hommes-Oiseaux": "Hommes-Oiseaux",
       "Élémentaire": "Élémentaire",
       "Géants": "Géants",
       "Ogres": "Ogres",
@@ -799,6 +806,7 @@
       "Ours": "Ours",
       "Loups": "Loups",
       "Fauves": "Fauves",
+      "Éléphants": "Éléphants",
       "Squelettes": "Squelettes",
       "Zombies": "Zombies",
       "Spectres": "Spectres",
@@ -916,6 +924,21 @@
         "bare": "Homme-Cerf",
         "de": "de l'Homme-Cerf"
       },
+      "Hommes-Singes": {
+        "def": "l'Homme-Singe",
+        "bare": "Homme-Singe",
+        "de": "de l'Homme-Singe"
+      },
+      "Hommes-Poissons": {
+        "def": "l'Homme-Poisson",
+        "bare": "Homme-Poisson",
+        "de": "de l'Homme-Poisson"
+      },
+      "Hommes-Oiseaux": {
+        "def": "l'Homme-Oiseau",
+        "bare": "Homme-Oiseau",
+        "de": "de l'Homme-Oiseau"
+      },
       "Élémentaire": {
         "def": "l'Élémentaire",
         "bare": "Élémentaire",
@@ -936,6 +959,11 @@
         "def": "le Dragon",
         "bare": "Dragon",
         "de": "du Dragon"
+      },
+      "Éléphants": {
+        "def": "l'Éléphant",
+        "bare": "Éléphant",
+        "de": "de l'Éléphant"
       },
       "Chiens": {
         "def": "le Chien",

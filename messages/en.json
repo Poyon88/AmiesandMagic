@@ -570,6 +570,10 @@
       "afflux": {
         "label": "Surge X",
         "desc": "Gain X mana this turn."
+      },
+      "domination": {
+        "label": "Domination",
+        "desc": "Takes control of the targeted enemy unit."
       }
     },
     "composed": {
@@ -789,6 +793,9 @@
       "Hommes-Chiens": "Weredogs",
       "Hommes-Renards": "Werefoxes",
       "Hommes-Cerfs": "Weredeer",
+      "Hommes-Singes": "Ape-Men",
+      "Hommes-Poissons": "Fish-Men",
+      "Hommes-Oiseaux": "Bird-Men",
       "Élémentaire": "Elemental",
       "Géants": "Giants",
       "Ogres": "Ogres",
@@ -799,6 +806,7 @@
       "Ours": "Bears",
       "Loups": "Wolves",
       "Fauves": "Beasts",
+      "Éléphants": "Elephants",
       "Squelettes": "Skeletons",
       "Zombies": "Zombies",
       "Spectres": "Spectres",
@@ -916,6 +924,21 @@
         "bare": "Deer-Man",
         "de": "of the Deer-Man"
       },
+      "Hommes-Singes": {
+        "def": "the Ape-Man",
+        "bare": "Ape-Man",
+        "de": "of the Ape-Man"
+      },
+      "Hommes-Poissons": {
+        "def": "the Fish-Man",
+        "bare": "Fish-Man",
+        "de": "of the Fish-Man"
+      },
+      "Hommes-Oiseaux": {
+        "def": "the Bird-Man",
+        "bare": "Bird-Man",
+        "de": "of the Bird-Man"
+      },
       "Élémentaire": {
         "def": "the Elemental",
         "bare": "Elemental",
@@ -936,6 +959,11 @@
         "def": "the Dragon",
         "bare": "Dragon",
         "de": "of the Dragon"
+      },
+      "Éléphants": {
+        "def": "the Elephant",
+        "bare": "Elephant",
+        "de": "of the Elephant"
       },
       "Chiens": {
         "def": "the Dog",
@@ -1102,11 +1130,6 @@
       "alignment_of": "of {a} alignment",
       "token": "the configured token",
       "tokens": "several tokens",
-      "lycanthrope": "an X/X token",
-      "ability": "an ability",
-      "scope": "to an allied unit (or to all)",
-      "scope_target": "to an allied unit",
-      "scope_all": "to all your units",
       "invocations": "several random creatures from your collection",
       "invocations_first_one": "a random creature with cost {cost}",
       "invocations_first_many": "{count} random creatures with cost {cost}",
@@ -1114,7 +1137,12 @@
       "invocations_more_many": "{count} with cost {cost}",
       "invocations_join": " and ",
       "invocations_of_race": " (among the {v})",
-      "invocations_of_faction": " (among the {v} faction)"
+      "invocations_of_faction": " (among the {v} faction)",
+      "lycanthrope": "an X/X token",
+      "ability": "an ability",
+      "scope": "to an allied unit (or to all)",
+      "scope_target": "to an allied unit",
+      "scope_all": "to all your units"
     },
     "sets": {
       "1": "Base Set"

@@ -292,7 +292,7 @@ export const FACTIONS: Record<string, {
   "Hommes-Bêtes": {
     displayName: "La Meute",
     color: "#7B5B3A", accent: "#CD853F", emoji: "🐺", bg: "#1a1008", alignment: "neutre",
-    races: ["Hommes-Loups", "Hommes-Ours", "Hommes-Félins", "Centaures", "Mimis", "Hommes-Chiens", "Hommes-Renards", "Hommes-Cerfs"],
+    races: ["Hommes-Loups", "Hommes-Ours", "Hommes-Félins", "Centaures", "Mimis", "Hommes-Chiens", "Hommes-Renards", "Hommes-Cerfs", "Hommes-Singes", "Hommes-Poissons", "Hommes-Oiseaux"],
     clans: [
       { names: ["Les Seigneurs Fauves"], appliesTo: "Hommes-Félins" },
       { names: ["Les Enfants de la Lune"], appliesTo: "Hommes-Ours" },
@@ -339,7 +339,7 @@ export const FACTIONS: Record<string, {
   Mercenaires: {
     displayName: "Mercenaires",
     color: "#8B8B00", accent: "#D4D400", emoji: "💰", bg: "#1a1a08", alignment: "spéciale",
-    races: ["Géants", "Ogres", "Dragons", "Chiens", "Phoenix", "Anges", "Ours", "Loups", "Fauves"],
+    races: ["Géants", "Ogres", "Dragons", "Chiens", "Phoenix", "Anges", "Ours", "Loups", "Fauves", "Éléphants"],
     statWeights: { atk: 1.05, def: 1.05 },
     guaranteedKeywords: [],
     likelyKeywords: { "Traque": 0.40, "Première Frappe": 0.40, "Précision": 0.35, "Esquive": 0.30, "Gloire +X/+Y": 0.30, "Bouclier": 0.25, "Fureur": 0.25, "Vol": 0.15,
@@ -475,6 +475,23 @@ export function getClanNamesForRace(
 export function getRacesForFaction(factionId: string | null | undefined): string[] {
   if (!factionId) return [];
   return FACTIONS[factionId]?.races ?? [];
+}
+
+/** Races ASSIGNABLES à une carte de cette faction : les siennes, plus le pool
+ *  NEUTRE des Mercenaires (Géants, Ogres, Dragons, Chiens, Phoenix, Anges,
+ *  Ours, Loups, Fauves) — des races d'usage transverse, déjà employées hors
+ *  Mercenaires (ex. Fauves sur une carte de l'Empire du Milieu).
+ *
+ *  Sans ce pool, une race d'une AUTRE faction n'était proposée que si une carte
+ *  l'utilisait déjà : la toute première carte d'une telle race ne pouvait donc
+ *  jamais être créée depuis l'éditeur (« Chiens », déclarée mais portée par
+ *  zéro carte, restait invisible). Sans faction, on retombe sur toutes les races. */
+export function getAssignableRaces(factionId: string | null | undefined): string[] {
+  const neutral = FACTIONS["Mercenaires"]?.races ?? [];
+  if (!factionId || !FACTIONS[factionId]) {
+    return [...new Set(Object.values(FACTIONS).flatMap((f) => f.races))];
+  }
+  return [...new Set([...(FACTIONS[factionId]?.races ?? []), ...neutral])];
 }
 
 // Races « principales » d'un clan, pour l'affichage. Les noms de clan étant

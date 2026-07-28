@@ -570,6 +570,10 @@
       "afflux": {
         "label": "涌流 X",
         "desc": "本回合获得 X 点法力"
+      },
+      "domination": {
+        "label": "支配",
+        "desc": "夺取目标敌方单位的控制权。"
       }
     },
     "composed": {
@@ -789,6 +793,9 @@
       "Hommes-Chiens": "犬人",
       "Hommes-Renards": "狐人",
       "Hommes-Cerfs": "鹿人",
+      "Hommes-Singes": "猿人",
+      "Hommes-Poissons": "鱼人",
+      "Hommes-Oiseaux": "鸟人",
       "Élémentaire": "元素生物",
       "Géants": "巨人",
       "Ogres": "食人魔",
@@ -799,6 +806,7 @@
       "Ours": "熊",
       "Loups": "狼",
       "Fauves": "野兽",
+      "Éléphants": "大象",
       "Squelettes": "骷髅",
       "Zombies": "僵尸",
       "Spectres": "幽灵",
@@ -916,6 +924,21 @@
         "bare": "鹿人",
         "de": "鹿人的"
       },
+      "Hommes-Singes": {
+        "def": "猿人",
+        "bare": "猿人",
+        "de": "猿人的"
+      },
+      "Hommes-Poissons": {
+        "def": "鱼人",
+        "bare": "鱼人",
+        "de": "鱼人的"
+      },
+      "Hommes-Oiseaux": {
+        "def": "鸟人",
+        "bare": "鸟人",
+        "de": "鸟人的"
+      },
       "Élémentaire": {
         "def": "元素",
         "bare": "元素",
@@ -936,6 +959,11 @@
         "def": "龙",
         "bare": "龙",
         "de": "龙的"
+      },
+      "Éléphants": {
+        "def": "大象",
+        "bare": "大象",
+        "de": "大象的"
       },
       "Chiens": {
         "def": "狗",
@@ -1102,11 +1130,6 @@
       "alignment_of": "立场为{a}的",
       "token": "已设置的指示物",
       "tokens": "多个指示物",
-      "lycanthrope": "一个X/X指示物",
-      "ability": "一项能力",
-      "scope": "给一个友方单位（或全部）",
-      "scope_target": "给一个友方单位",
-      "scope_all": "给你所有的单位",
       "invocations": "您收藏中的多个随机随从",
       "invocations_first_one": "一个费用为{cost}的随机随从",
       "invocations_first_many": "{count}个费用为{cost}的随机随从",
@@ -1114,7 +1137,12 @@
       "invocations_more_many": "{count}个费用为{cost}的",
       "invocations_join": " 和 ",
       "invocations_of_race": "（{v}中）",
-      "invocations_of_faction": "（{v}阵营中）"
+      "invocations_of_faction": "（{v}阵营中）",
+      "lycanthrope": "一个X/X指示物",
+      "ability": "一项能力",
+      "scope": "给一个友方单位（或全部）",
+      "scope_target": "给一个友方单位",
+      "scope_all": "给你所有的单位"
     },
     "sets": {
       "1": "基础系列"

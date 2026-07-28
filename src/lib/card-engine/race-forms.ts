@@ -50,12 +50,17 @@ export const RACE_FORMS_FR: Record<string, Inflected> = {
   "Hommes-Chiens": { def: "l'Homme-Chien", bare: "Homme-Chien", de: "de l'Homme-Chien" },
   "Hommes-Renards": { def: "l'Homme-Renard", bare: "Homme-Renard", de: "de l'Homme-Renard" },
   "Hommes-Cerfs": { def: "l'Homme-Cerf", bare: "Homme-Cerf", de: "de l'Homme-Cerf" },
+  "Hommes-Singes": { def: "l'Homme-Singe", bare: "Homme-Singe", de: "de l'Homme-Singe" },
+  "Hommes-Poissons": { def: "l'Homme-Poisson", bare: "Homme-Poisson", de: "de l'Homme-Poisson" },
+  "Hommes-Oiseaux": { def: "l'Homme-Oiseau", bare: "Homme-Oiseau", de: "de l'Homme-Oiseau" },
   // Déjà au singulier en base — d'où le pluriel explicite, sans quoi on
   // afficherait « vos Élémentaire ».
   "Élémentaire": { def: "l'Élémentaire", bare: "Élémentaire", de: "de l'Élémentaire", pl: "Élémentaires" },
   "Géants": { def: "le Géant", bare: "Géant", de: "du Géant" },
   "Ogres": { def: "l'Ogre", bare: "Ogre", de: "de l'Ogre" },
   "Dragons": { def: "le Dragon", bare: "Dragon", de: "du Dragon" },
+  // Élision devant la voyelle : « l'Éléphant », « de l'Éléphant ».
+  "Éléphants": { def: "l'Éléphant", bare: "Éléphant", de: "de l'Éléphant" },
   "Chiens": { def: "le Chien", bare: "Chien", de: "du Chien" },
   // Invariable.
   "Phoenix": { def: "le Phoenix", bare: "Phoenix", de: "du Phoenix" },

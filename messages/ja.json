@@ -570,6 +570,10 @@
       "afflux": {
         "label": "魔力流入 X",
         "desc": "このターン、マナをX獲得する"
+      },
+      "domination": {
+        "label": "支配",
+        "desc": "対象の敵ユニットを支配下に置く。"
       }
     },
     "composed": {
@@ -789,6 +793,9 @@
       "Hommes-Chiens": "犬人間",
       "Hommes-Renards": "狐人間",
       "Hommes-Cerfs": "シカ人",
+      "Hommes-Singes": "猿人",
+      "Hommes-Poissons": "魚人",
+      "Hommes-Oiseaux": "鳥人",
       "Élémentaire": "エレメンタル",
       "Géants": "巨人",
       "Ogres": "オーガ",
@@ -799,6 +806,7 @@
       "Ours": "熊",
       "Loups": "狼",
       "Fauves": "野獣",
+      "Éléphants": "エレファント",
       "Squelettes": "スケルトン",
       "Zombies": "ゾンビ",
       "Spectres": "スペクター",
@@ -916,6 +924,21 @@
         "bare": "鹿人",
         "de": "鹿人"
       },
+      "Hommes-Singes": {
+        "def": "猿人",
+        "bare": "猿人",
+        "de": "猿人の"
+      },
+      "Hommes-Poissons": {
+        "def": "魚人",
+        "bare": "魚人",
+        "de": "魚人の"
+      },
+      "Hommes-Oiseaux": {
+        "def": "鳥人",
+        "bare": "鳥人",
+        "de": "鳥人の"
+      },
       "Élémentaire": {
         "def": "エレメンタル",
         "bare": "エレメンタル",
@@ -936,6 +959,11 @@
         "def": "ドラゴン",
         "bare": "ドラゴン",
         "de": "ドラゴン"
+      },
+      "Éléphants": {
+        "def": "エレファント",
+        "bare": "エレファント",
+        "de": "エレファント"
       },
       "Chiens": {
         "def": "犬",
@@ -1102,11 +1130,6 @@
       "alignment_of": "{a}属性の",
       "token": "設定されたトークン",
       "tokens": "複数のトークン",
-      "lycanthrope": "X/Xのトークン",
-      "ability": "能力",
-      "scope": "味方ユニット1体（または全体）に",
-      "scope_target": "味方ユニット1体に",
-      "scope_all": "あなたの全ユニットに",
       "invocations": "あなたのコレクションからランダムな複数のクリーチャー",
       "invocations_first_one": "コスト{cost}のランダムなクリーチャー1体",
       "invocations_first_many": "コスト{cost}のランダムなクリーチャー{count}体",
@@ -1114,7 +1137,12 @@
       "invocations_more_many": "コスト{cost}のもの{count}体",
       "invocations_join": "と",
       "invocations_of_race": "({v}の中から)",
-      "invocations_of_faction": "({v}派閥の中から)"
+      "invocations_of_faction": "({v}派閥の中から)",
+      "lycanthrope": "X/Xのトークン",
+      "ability": "能力",
+      "scope": "味方ユニット1体（または全体）に",
+      "scope_target": "味方ユニット1体に",
+      "scope_all": "あなたの全ユニットに"
     },
     "sets": {
       "1": "基本セット"

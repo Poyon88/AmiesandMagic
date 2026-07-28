@@ -570,6 +570,10 @@
       "afflux": {
         "label": "Afluencia X",
         "desc": "Gana X de maná este turno"
+      },
+      "domination": {
+        "label": "Dominación",
+        "desc": "Toma el control de la unidad enemiga seleccionada."
       }
     },
     "composed": {
@@ -789,6 +793,9 @@
       "Hommes-Chiens": "Hombres-Perro",
       "Hommes-Renards": "Hombres-Zorro",
       "Hommes-Cerfs": "Hombres-Ciervo",
+      "Hommes-Singes": "Hombres-Mono",
+      "Hommes-Poissons": "Hombres-Pez",
+      "Hommes-Oiseaux": "Hombres-Pájaro",
       "Élémentaire": "Elemental",
       "Géants": "Gigantes",
       "Ogres": "Ogros",
@@ -799,6 +806,7 @@
       "Ours": "Osos",
       "Loups": "Lobos",
       "Fauves": "Fieras",
+      "Éléphants": "Elefantes",
       "Squelettes": "Esqueletos",
       "Zombies": "Zombis",
       "Spectres": "Espectros",
@@ -916,6 +924,21 @@
         "bare": "Hombre-Ciervo",
         "de": "del Hombre-Ciervo"
       },
+      "Hommes-Singes": {
+        "def": "el Hombre-Mono",
+        "bare": "Hombre-Mono",
+        "de": "del Hombre-Mono"
+      },
+      "Hommes-Poissons": {
+        "def": "el Hombre-Pez",
+        "bare": "Hombre-Pez",
+        "de": "del Hombre-Pez"
+      },
+      "Hommes-Oiseaux": {
+        "def": "el Hombre-Pájaro",
+        "bare": "Hombre-Pájaro",
+        "de": "del Hombre-Pájaro"
+      },
       "Élémentaire": {
         "def": "el Elemental",
         "bare": "Elemental",
@@ -936,6 +959,11 @@
         "def": "el Dragón",
         "bare": "Dragón",
         "de": "del Dragón"
+      },
+      "Éléphants": {
+        "def": "el Elefante",
+        "bare": "Elefante",
+        "de": "del Elefante"
       },
       "Chiens": {
         "def": "el Perro",
@@ -1102,11 +1130,6 @@
       "alignment_of": "de alineación {a}",
       "token": "el token configurado",
       "tokens": "varios tokens",
-      "lycanthrope": "un token X/X",
-      "ability": "una habilidad",
-      "scope": "a una unidad aliada (o a todas)",
-      "scope_target": "a una unidad aliada",
-      "scope_all": "a todas tus unidades",
       "invocations": "varias criaturas aleatorias de tu colección",
       "invocations_first_one": "una criatura aleatoria de coste {cost}",
       "invocations_first_many": "{count} criaturas aleatorias de coste {cost}",
@@ -1114,7 +1137,12 @@
       "invocations_more_many": "{count} de coste {cost}",
       "invocations_join": " y ",
       "invocations_of_race": " (entre los {v})",
-      "invocations_of_faction": " (entre la facción {v})"
+      "invocations_of_faction": " (entre la facción {v})",
+      "lycanthrope": "un token X/X",
+      "ability": "una habilidad",
+      "scope": "a una unidad aliada (o a todas)",
+      "scope_target": "a una unidad aliada",
+      "scope_all": "a todas tus unidades"
     },
     "sets": {
       "1": "Set Base"

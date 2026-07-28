@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import GameCard from "@/components/cards/GameCard";
 import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
-import { KEYWORDS as KEYWORD_DEFS, FACTIONS, getFactionDisplayName, getAllClanNames, getEffectiveAlignment, CURATED_KEYWORD_MODES } from "@/lib/card-engine/constants";
+import { KEYWORDS as KEYWORD_DEFS, FACTIONS, getFactionDisplayName, getAllClanNames, getEffectiveAlignment, CURATED_KEYWORD_MODES, getAssignableRaces } from "@/lib/card-engine/constants";
 import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS } from "@/lib/game/spell-keywords";
 import type { Card, Capability, Keyword, KeywordInstance, KeywordMode, SpellKeywordInstance, SpellComposableEffects, CardSet, TokenTemplate } from "@/lib/game/types";
 import ComposedEffectsEditor from "@/components/card-forge/ComposedEffectsEditor";
@@ -183,11 +183,10 @@ export default function CardEditor() {
   }, [clans, editFields]);
   const editRaces = useMemo(() => {
     const editFaction = (typeof editFields?.faction === "string" ? editFields.faction : null) as string | null;
-    const canonical: string[] = editFaction && FACTIONS[editFaction]
-      ? FACTIONS[editFaction]!.races
-      // Dédoublonné : une race déclarée par plusieurs factions (Humains ×3)
-      // apparaissait autant de fois dans la liste.
-      : Array.from(new Set(Object.values(FACTIONS).flatMap(f => f.races)));
+    // Races de la faction + pool neutre des Mercenaires (cf. getAssignableRaces),
+    // dédoublonnées : sans le pool, une race déclarée ailleurs mais portée par
+    // aucune carte restait à jamais invisible ici.
+    const canonical: string[] = getAssignableRaces(editFaction);
     return [...new Set([...canonical, ...races])].sort();
   }, [races, editFields]);
   const years = useMemo(() => [...new Set(cards.map(c => c.card_year).filter(Boolean) as number[])].sort((a, b) => b - a), [cards]);

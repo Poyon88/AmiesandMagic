@@ -570,6 +570,10 @@
       "afflux": {
         "label": "Zufluss X",
         "desc": "Erhalte X Mana in diesem Zug."
+      },
+      "domination": {
+        "label": "Dominanz",
+        "desc": "Übernimmt die Kontrolle über die anvisierte gegnerische Einheit."
       }
     },
     "composed": {
@@ -789,6 +793,9 @@
       "Hommes-Chiens": "Hundsmenschen",
       "Hommes-Renards": "Fuchsmenschen",
       "Hommes-Cerfs": "Hirschmenschen",
+      "Hommes-Singes": "Affenmenschen",
+      "Hommes-Poissons": "Fischmenschen",
+      "Hommes-Oiseaux": "Vogelmenschen",
       "Élémentaire": "Elementare",
       "Géants": "Riesen",
       "Ogres": "Oger",
@@ -799,6 +806,7 @@
       "Ours": "Bären",
       "Loups": "Wölfe",
       "Fauves": "Raubtiere",
+      "Éléphants": "Elefanten",
       "Squelettes": "Skelette",
       "Zombies": "Zombies",
       "Spectres": "Gespenster",
@@ -916,6 +924,21 @@
         "bare": "Hirschmensch",
         "de": "des Hirschmenschen"
       },
+      "Hommes-Singes": {
+        "def": "der Affenmensch",
+        "bare": "Affenmensch",
+        "de": "des Affenmenschen"
+      },
+      "Hommes-Poissons": {
+        "def": "der Fischmensch",
+        "bare": "Fischmensch",
+        "de": "des Fischmenschen"
+      },
+      "Hommes-Oiseaux": {
+        "def": "der Vogelmensch",
+        "bare": "Vogelmensch",
+        "de": "des Vogelmenschen"
+      },
       "Élémentaire": {
         "def": "der Elementar",
         "bare": "Elementar",
@@ -936,6 +959,11 @@
         "def": "der Drache",
         "bare": "Drache",
         "de": "des Drachen"
+      },
+      "Éléphants": {
+        "def": "der Elefant",
+        "bare": "Elefant",
+        "de": "des Elefanten"
       },
       "Chiens": {
         "def": "der Hund",
@@ -1102,11 +1130,6 @@
       "alignment_of": "mit Gesinnung {a}",
       "token": "das konfigurierte Token",
       "tokens": "mehrere Token",
-      "lycanthrope": "ein X/X-Token",
-      "ability": "eine Fähigkeit",
-      "scope": "auf eine verbündete Einheit (oder auf alle)",
-      "scope_target": "auf eine verbündete Einheit",
-      "scope_all": "auf alle deine Einheiten",
       "invocations": "mehrere zufällige Kreaturen aus deiner Sammlung",
       "invocations_first_one": "eine zufällige Kreatur mit Kosten {cost}",
       "invocations_first_many": "{count} zufällige Kreaturen mit Kosten {cost}",
@@ -1114,7 +1137,12 @@
       "invocations_more_many": "{count} mit Kosten {cost}",
       "invocations_join": " und ",
       "invocations_of_race": " (unter {v})",
-      "invocations_of_faction": " (aus der Fraktion {v})"
+      "invocations_of_faction": " (aus der Fraktion {v})",
+      "lycanthrope": "ein X/X-Token",
+      "ability": "eine Fähigkeit",
+      "scope": "auf eine verbündete Einheit (oder auf alle)",
+      "scope_target": "auf eine verbündete Einheit",
+      "scope_all": "auf alle deine Einheiten"
     },
     "sets": {
       "1": "Basis-Set"

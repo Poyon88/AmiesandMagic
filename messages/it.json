@@ -570,6 +570,10 @@
       "afflux": {
         "label": "Afflusso X",
         "desc": "Guadagna X mana questo turno"
+      },
+      "domination": {
+        "label": "Dominazione",
+        "desc": "Prende il controllo dell'unità nemica bersaglio."
       }
     },
     "composed": {
@@ -789,6 +793,9 @@
       "Hommes-Chiens": "Uomini-Cane",
       "Hommes-Renards": "Uomini-Volpe",
       "Hommes-Cerfs": "Uomini-Cervo",
+      "Hommes-Singes": "Uomini-Scimmia",
+      "Hommes-Poissons": "Uomini-Pesce",
+      "Hommes-Oiseaux": "Uomini-Uccello",
       "Élémentaire": "Elementale",
       "Géants": "Giganti",
       "Ogres": "Orchi",
@@ -799,6 +806,7 @@
       "Ours": "Orsi",
       "Loups": "Lupi",
       "Fauves": "Fiere",
+      "Éléphants": "Elefanti",
       "Squelettes": "Scheletri",
       "Zombies": "Zombie",
       "Spectres": "Spettri",
@@ -916,6 +924,21 @@
         "bare": "Uomo-Cervo",
         "de": "dell'Uomo-Cervo"
       },
+      "Hommes-Singes": {
+        "def": "l'Uomo-Scimmia",
+        "bare": "Uomo-Scimmia",
+        "de": "dell'Uomo-Scimmia"
+      },
+      "Hommes-Poissons": {
+        "def": "l'Uomo-Pesce",
+        "bare": "Uomo-Pesce",
+        "de": "dell'Uomo-Pesce"
+      },
+      "Hommes-Oiseaux": {
+        "def": "l'Uomo-Uccello",
+        "bare": "Uomo-Uccello",
+        "de": "dell'Uomo-Uccello"
+      },
       "Élémentaire": {
         "def": "l'Elementale",
         "bare": "Elementale",
@@ -936,6 +959,11 @@
         "def": "il Drago",
         "bare": "Drago",
         "de": "del Drago"
+      },
+      "Éléphants": {
+        "def": "l'Elefante",
+        "bare": "Elefante",
+        "de": "dell'Elefante"
       },
       "Chiens": {
         "def": "il Cane",
@@ -1102,11 +1130,6 @@
       "alignment_of": "di allineamento {a}",
       "token": "il token configurato",
       "tokens": "più token",
-      "lycanthrope": "un token X/X",
-      "ability": "una capacità",
-      "scope": "a un'unità alleata (o a tutte)",
-      "scope_target": "a un'unità alleata",
-      "scope_all": "a tutte le vostre unità",
       "invocations": "diverse creature casuali dalla tua collezione",
       "invocations_first_one": "una creatura casuale di costo {cost}",
       "invocations_first_many": "{count} creature casuali di costo {cost}",
@@ -1114,7 +1137,12 @@
       "invocations_more_many": "{count} di costo {cost}",
       "invocations_join": " e ",
       "invocations_of_race": " (tra {v})",
-      "invocations_of_faction": " (tra la fazione {v})"
+      "invocations_of_faction": " (tra la fazione {v})",
+      "lycanthrope": "un token X/X",
+      "ability": "una capacità",
+      "scope": "a un'unità alleata (o a tutte)",
+      "scope_target": "a un'unità alleata",
+      "scope_all": "a tutte le vostre unità"
     },
     "sets": {
       "1": "Set Base"
