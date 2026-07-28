@@ -189,6 +189,12 @@ function hasKw(ci: CardInstance, kw: Keyword): boolean {
 /** Présence de l'ability sous un déclencheur donné. Ne concerne en pratique que
  *  le set curé multi-mode (seul à être routé par déclencheur) ; pour ces ids,
  *  l'adaptateur mappe le mode au déclencheur à l'identique. */
+/** Unité encore TAPIE dans l'ombre : intargetable tant qu'elle ne s'est pas
+ *  révélée (elle le fait en attaquant). */
+function isHiddenShadow(c: CardInstance): boolean {
+  return hasKw(c, "ombre") && !c.ombreRevealed;
+}
+
 function hasKwInMode(ci: CardInstance, kw: Keyword, mode: import("./types").KeywordMode | undefined): boolean {
   const trigger = capTriggerForMode(mode);
   return getCapabilities(ci.card).some(c => c.abilityId === kw && c.trigger === trigger);
@@ -3191,6 +3197,24 @@ function resolveSpellKeywords(
         }
         break;
       }
+      case "domination": {
+        // Le SORT prend lui-même le contrôle, sur la cible CHOISIE (la version
+        // créature tire au hasard à son invocation, faute d'interlocuteur).
+        // Sans cible explicite — sort relancé, cibles tirées au sort — on
+        // retombe sur un tirage, comme le reste du chemin « Relancer ».
+        if (ctx.caster.board.length >= MAX_BOARD_SIZE || ctx.opponent.board.length === 0) break;
+        const domIdx = targetId
+          ? ctx.opponent.board.findIndex(c => c.instanceId === targetId)
+          : Math.floor(rng() * ctx.opponent.board.length);
+        if (domIdx < 0) break;
+        const dominated = ctx.opponent.board.splice(domIdx, 1)[0];
+        dominated.hasSummoningSickness = true;
+        // Contrôle permanent, mais on mémorise le propriétaire d'origine pour
+        // que Remontée la renvoie dans la BONNE main (cf. version créature).
+        dominated.trueOwnerId = ctx.opponent.id;
+        ctx.caster.board.push(dominated);
+        break;
+      }
       case "touche_mortel": {
         // Marqueur, comme Précision : aucun effet ni cible propres. Sa présence
         // a déjà été captée en amont (lethalSpellActive), ce qui rend MORTELS
@@ -3962,9 +3986,14 @@ export function attack(state: GameState, action: AttackAction): GameState {
   // accepte les deux pour ne pas perdre le bénéfice selon la façon
   // dont la carte a été stockée.
   const attackerFlies = hasKw(attacker, "ranged") || hasKw(attacker, "vol");
+  // Une Provocation TAPIE dans l'ombre ne provoque pas : elle est intargetable
+  // tant qu'elle ne s'est pas révélée, si bien qu'elle interdisait toute
+  // attaque — ni sur elle (intargetable), ni ailleurs (sa provocation
+  // couvrait le reste). Situation de blocage total ; elle n'entre donc dans le
+  // calcul qu'une fois sortie de l'ombre.
   const relevantTaunts = attackerFlies
     ? []
-    : opponent.board.filter(c => hasKw(c, "taunt"));
+    : opponent.board.filter(c => hasKw(c, "taunt") && !isHiddenShadow(c));
   if (relevantTaunts.length > 0) {
     if (effectiveTarget === "enemy_hero") return state;
     const target = opponent.board.find(c => c.instanceId === effectiveTarget);
@@ -4478,15 +4507,7 @@ function canBeRemonteed(c: CardInstance, sourceInstanceId: string | null, source
     && !(hasKw(c, "ombre") && !c.ombreRevealed);
 }
 
-// Remontée réglée sur le déclencheur « mort ». Dans ce mode, le mot-clé n'est
-// PAS un renvoi ciblé (la source s'exclut elle-même via canBeRemonteed) mais un
-// auto-renvoi : « quand je meurs, je remonte en main ». Détecté ici pour le
-// traiter à part dans processDeathTriggers et le retirer de la boucle générique.
-function hasRemonteeDeathMode(c: CardInstance): boolean {
-  return (c.card.keyword_instances ?? []).some(i => i.id === "remontee" && i.mode === "death");
-}
-
-// Même intention via le modèle COMPOSÉ : une capacité « bounce » sur on_death
+// Auto-renvoi à la mort, exprimé par le modèle COMPOSÉ : une capacité « bounce » sur on_death
 // ciblant la créature elle-même (entity "self") = « quand je meurs, je remonte
 // en main » (cf. Ombre Insaisissable). Le chemin composé générique ne sait pas
 // la résoudre (la source est déjà au cimetière et resolveRemontee exclut la
@@ -4498,9 +4519,21 @@ function hasComposedSelfBounceOnDeath(c: CardInstance): boolean {
     && cap.composed?.target?.entity === "self");
 }
 
-// La créature morte doit-elle se renvoyer ELLE-MÊME en main ? (mot-clé OU composé)
+// La créature morte doit-elle se renvoyer ELLE-MÊME en main ?
+//
+// UNIQUEMENT via le modèle composé (bounce + entity "self" + on_death), qui
+// dit explicitement « c'est MOI que je renvoie » — cf. Lame Revenante, Ombre
+// Insaisissable. Le mot-clé curé `remontee` en mode mort, lui, signifie « à ma
+// mort, je renvoie une créature CIBLÉE » : il ouvre un sélecteur
+// (KW_PROMPTS.remontee, deferredKwTargetIds) et se résout au hasard quand la
+// modale ne peut pas s'ouvrir.
+//
+// Les deux intentions partageaient ce test, et l'auto-renvoi passant en
+// premier, il retirait la dépouille du cimetière avant que le sélecteur ne soit
+// proposé : le Ronin Dévoué se remontait systématiquement lui-même au lieu de
+// remonter la créature visée.
 function wantsSelfReturnOnDeath(c: CardInstance): boolean {
-  return hasRemonteeDeathMode(c) || hasComposedSelfBounceOnDeath(c);
+  return hasComposedSelfBounceOnDeath(c);
 }
 
 // Auto-renvoi en main d'une créature morte porteuse d'une remontée/bounce en
@@ -4975,9 +5008,10 @@ function resolveCreatureDeath(c: CardInstance, owner: PlayerState, enemy: Player
     const customDeathInstances = c.card.keyword_instances ?? [];
     for (const inst of customDeathInstances) {
       if (inst.mode === "death") {
-        // Remontée-mort = self-bounce déjà traité juste au-dessus : ne pas la
-        // repasser ici (sinon double effet — auto-renvoi PUIS renvoi ciblé).
-        if (inst.id === "remontee") continue;
+        // Remontée-mort passe désormais ICI comme les autres mots-clés curés :
+        // c'est un renvoi CIBLÉ (sélecteur sur le tour du contrôleur, tirage
+        // sinon). Elle était sautée tant que l'auto-renvoi la traitait plus
+        // haut ; sans ce retrait, le mot-clé ne ferait plus rien du tout.
         resolveCuratedKeywordEffect(inst.id, inst.x ?? 1, c, owner, enemy, undefined, inst);
       }
     }
@@ -6637,19 +6671,17 @@ export function getValidTargets(state: GameState, attackerInstanceId: string): s
 
   // Vol : ignore TOUTES les provocations adverses (cf. attackCreature).
   const attackerFlies2 = hasKw(attacker, "ranged") || hasKw(attacker, "vol");
+  // Provocation tapie dans l'ombre : ignorée tant qu'elle n'est pas révélée
+  // (cf. attackCreature — sinon plus aucune cible n'était proposée).
   const relevantTaunts2 = attackerFlies2
     ? []
-    : opponent.board.filter(c => hasKw(c, "taunt"));
+    : opponent.board.filter(c => hasKw(c, "taunt") && !isHiddenShadow(c));
 
   // Filter out Ombre (stealth) units that haven't acted yet
-  const targetableEnemies = opponent.board.filter(c =>
-    !(hasKw(c, "ombre") && !c.ombreRevealed)
-  );
+  const targetableEnemies = opponent.board.filter(c => !isHiddenShadow(c));
 
   if (relevantTaunts2.length > 0) {
-    return relevantTaunts2
-      .filter(c => !(hasKw(c, "ombre") && !c.ombreRevealed))
-      .map(c => c.instanceId);
+    return relevantTaunts2.map(c => c.instanceId);
   }
 
   // Raid with summoning sickness: can only target creatures, not hero

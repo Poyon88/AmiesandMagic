@@ -158,6 +158,7 @@ export type SpellKeywordId =
   | "poison"
   | "precision"
   | "touche_mortel"
+  | "domination"
   | "remontee"
   | "renforcement_multiple"
   | "pillage"

@@ -105,13 +105,24 @@ describe("Conservation des bonus — Rappel (cimetière → main)", () => {
   });
 });
 
-describe("Remontée en mode mort — auto-renvoi en main (pas au cimetière)", () => {
+// L'auto-renvoi à la mort s'exprime par le modèle COMPOSÉ (bounce/self/on_death).
+// Le mot-clé curé `remontee` en mode mort, lui, désigne un renvoi CIBLÉ — il a
+// son propre sélecteur (cf. remontee-death-target.test.ts). Ce test garde donc
+// sa vraie question — les bonus survivent-ils au passage plateau → main ? — en
+// la posant sur la représentation qui porte désormais l'auto-renvoi.
+describe("Auto-renvoi à la mort — bonus conservés au passage en main", () => {
   it("la créature qui meurt remonte ELLE-MÊME en main, bonus conservés, soin complet", () => {
     const s = mkState();
     const champ = mkInstance(mkCard({
       name: "Spectre", attack: 5, health: 5,
-      keyword_instances: [{ id: "remontee", mode: "death" }],
-    }));
+      capabilities: [{
+        uid: "cx_self", trigger: "on_death", abilityId: "_composed", effectKind: "immediate",
+        composed: {
+          content: "bounce",
+          target: { entity: "self", count: 1, side: "ally", location: "board", designation: "automatic" },
+        },
+      }],
+    } as Parameters<typeof mkCard>[0]));
     champ.necrophagieATKBonus = 2; // +2 ATK accumulé
     champ.necrophagiePVBonus = 2;  // +2 PV accumulé
     champ.currentHealth = 1;        // mourra de la riposte

@@ -571,8 +571,16 @@ export const ABILITIES: Record<string, AbilityDef> = {
   domination: {
     id: "domination", label: "Domination", symbol: "👁️‍🗨️",
     desc: "Prend le contrôle d'une unité ennemie au hasard à son invocation.",
-    applicable_to: ["creature"],
+    applicable_to: ["creature", "spell"],
     creature: { cost: 27, costPerX: 0, se: 6.0, minTier: 4, scalable: false, zone: "Terrain" },
+    // Forme SORT : le sort PREND lui-même le contrôle, il ne confère rien — et
+    // sur une cible CHOISIE, là où la version créature tire au hasard à son
+    // invocation (elle n'a personne à qui demander). Pour donner la capacité à
+    // une unité, passer par l'effet composé « Conférer une capacité ».
+    spell: {
+      desc: "Prend le contrôle de l'unité ennemie ciblée.",
+      params: [], needsTarget: true, targetType: "enemy_creature",
+    },
   },
   resurrection: {
     id: "resurrection", label: "Résurrection", symbol: "✨",
