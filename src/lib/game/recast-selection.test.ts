@@ -58,3 +58,52 @@ describe("Relancer — un sort relancé résout aussi sa Sélection", () => {
     expect(next.players[0].hand).toHaveLength(0);
   });
 });
+
+describe("Relancer — l'Exhumation relancée respecte le plafond de coût", () => {
+  it("ressuscite la créature ÉLIGIBLE, quelle que soit la graine", () => {
+    // Le tirage de cible d'un sort relancé piochait parmi TOUT le cimetière,
+    // sans appliquer le plafond de coût d'Exhumation X. Une créature trop chère
+    // tirée au sort faisait fizzler l'effet alors qu'une cible valide attendait
+    // à côté — environ une fois sur deux ici. On balaie donc plusieurs graines.
+    for (const seed of [1, 2, 3, 5, 8, 13, 21]) {
+      const s = mkState();
+      s.rngState = seed;
+      s.players[0].graveyard.push(
+        mkInstance(mkCard({ name: "Petit", mana_cost: 1, attack: 1, health: 1 })),
+        mkInstance(mkCard({ name: "Colosse", mana_cost: 9, attack: 9, health: 9 })),
+      );
+      s.players[0].spellHistory = [{
+        card: mkCard({
+          name: "Exhumation", card_type: "spell", attack: null, health: null,
+          spell_keywords: [{ id: "exhumation", amount: 1 }] as never,
+        }),
+        targetMap: {},
+      }];
+
+      const relancer = relancerSpell(1);
+      s.players[0].hand.push(relancer);
+      const next = playCard(s, { type: "play_card", cardInstanceId: relancer.instanceId });
+
+      expect(next.players[0].board.map((c) => c.card.name), `graine ${seed}`).toEqual(["Petit"]);
+    }
+  });
+
+  it("aucune créature sous le plafond : rien ne ressuscite", () => {
+    const s = mkState();
+    s.rngState = 5;
+    s.players[0].graveyard.push(mkInstance(mkCard({ name: "Colosse", mana_cost: 9, attack: 9, health: 9 })));
+    s.players[0].spellHistory = [{
+      card: mkCard({
+        name: "Exhumation", card_type: "spell", attack: null, health: null,
+        spell_keywords: [{ id: "exhumation", amount: 1 }] as never,
+      }),
+      targetMap: {},
+    }];
+
+    const relancer = relancerSpell(1);
+    s.players[0].hand.push(relancer);
+    const next = playCard(s, { type: "play_card", cardInstanceId: relancer.instanceId });
+
+    expect(next.players[0].board).toHaveLength(0);
+  });
+});

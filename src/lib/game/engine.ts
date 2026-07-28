@@ -2963,7 +2963,25 @@ function castSpellWithRandomTargets(
       const def = SPELL_KEYWORDS[kw.id];
       if (!def) continue;
       if (def.needsTarget) {
-        const target = pickRandomTarget(player, opponent, def.targetType);
+        // Cible cimetière : `pickRandomTarget` tire parmi TOUTES les créatures
+        // du cimetière, sans appliquer les règles d'éligibilité propres au
+        // mot-clé. Exhumation X plafonne le coût des ressuscitables : un tirage
+        // qui tombait sur une créature trop chère faisait fizzler l'effet alors
+        // qu'une cible valide attendait juste à côté (échec ~1 fois sur 2 selon
+        // la graine). On réutilise donc le provider du picker interactif, seule
+        // définition faisant autorité sur ce qui est ressuscitable.
+        const graveyardSlot = def.targetType === "friendly_graveyard"
+          || def.targetType === "friendly_graveyard_to_board";
+        let target: string | undefined;
+        if (graveyardSlot) {
+          const eligible = getSpellGraveyardTargets(
+            { players: [player, opponent], currentPlayerIndex: 0 } as unknown as GameState,
+            card, i,
+          );
+          target = eligible.length > 0 ? eligible[Math.floor(rng() * eligible.length)] : undefined;
+        } else {
+          target = pickRandomTarget(player, opponent, def.targetType);
+        }
         if (target) { targetMap[`kw_${i}`] = target; realTargetIds.push(target); }
       }
     }
@@ -3064,6 +3082,13 @@ function castSpellWithRandomTargets(
  *  modèle unifié, dans l'ordre — l'index i est conservé, donc les slots de
  *  cible `kw_${i}` restent valides. Permet à resolveSpellKeywords de consommer
  *  les capacités sans changer son corps ni le flux de ciblage. */
+/** ⚠️ COUPLAGE POSITIONNEL — le slot de cible `kw_${i}` est numéroté par
+ *  getSpellTargetSlots d'après la position dans `card.spell_keywords`, mais relu
+ *  par resolveSpellKeywords d'après la position dans CETTE liste. Les deux ne
+ *  coïncident que parce que l'adaptateur émet les mots-clés de sort en premier
+ *  et dans l'ordre, les dons ensuite (écartés ici par le filtre `immediate`), et
+ *  les composés en dernier. Réordonner les capacités ferait atterrir chaque
+ *  cible sur le mauvais effet, en silence. Verrouillé par spell-slot-index.test.ts. */
 function spellResolutionInstances(card: Card): SpellKeywordInstance[] {
   return getCapabilities(card)
     .filter((c) => c.trigger === "spell_resolution" && c.effectKind === "immediate")
@@ -3878,7 +3903,8 @@ function requiresPlayerSelection(targetType: SpellTargetType): boolean {
 export function getSpellTargetSlots(card: Card): SpellTargetSlot[] {
   const slots: SpellTargetSlot[] = [];
 
-  // From spell keywords
+  // From spell keywords — l'index `kw_${i}` doit rester aligné sur l'ordre de
+  // résolution (cf. spellResolutionInstances).
   if (card.spell_keywords) {
     card.spell_keywords.forEach((kw, i) => {
       const def = SPELL_KEYWORDS[kw.id];
