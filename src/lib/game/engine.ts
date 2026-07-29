@@ -5145,7 +5145,10 @@ function applyRenforcementMultiple(
 ): void {
   for (const ally of controller.board) {
     if (sourceInstanceId && ally.instanceId === sourceInstanceId) continue;
-    const match = clan ? ally.card.clan === clan : (race ? ally.card.race === race : false);
+    // Ni race ni clan ⇒ TOUTES les créatures alliées. Le repli était `false`,
+    // c'est-à-dire « personne » : un Renforcement multiple sans cible désignée
+    // ne faisait rien du tout, d'où la validation serveur qui l'interdisait.
+    const match = clan ? ally.card.clan === clan : (race ? ally.card.race === race : true);
     if (!match) continue;
     ally.card = { ...ally.card, attack: (ally.card.attack ?? 0) + x, health: (ally.card.health ?? 0) + y };
     ally.currentAttack += x;

@@ -891,14 +891,14 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   renforcement_multiple: {
     id: "renforcement_multiple", label: "Renforcement multiple", symbol: "⏫",
-    desc: "+X/+Y à vos créatures de la race ou du clan choisi.",
+    desc: "+X/+Y à vos créatures{rm_scope}.",
     applicable_to: ["creature", "spell"],
     creature: {
       cost: 16, costPerX: 6, se: 4.5, minTier: 3, scalable: true, zone: "Terrain",
-      desc: "+X/+Y à vos créatures de la race ou du clan choisi.",
+      desc: "+X/+Y à vos créatures{rm_scope}.",
     },
     spell: {
-      desc: "+X/+Y à vos créatures de la race ou du clan choisi.",
+      desc: "+X/+Y à vos créatures{rm_scope}.",
       params: ["attack", "health"], needsTarget: false,
     },
   },
