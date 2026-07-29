@@ -403,7 +403,7 @@
       },
       "renforcement_multiple": {
         "label": "Potenziamento Multiplo",
-        "desc": "+X/+Y alle tue creature della razza o del clan scelto."
+        "desc": "+X/+Y alle tue creature{rm_scope}."
       },
       "entrainement": {
         "label": "Allenamento X",
@@ -446,6 +446,10 @@
       "convocation_simple": {
         "label": "Convocazione",
         "desc": "Crea {token}."
+      },
+      "domination": {
+        "label": "Dominazione",
+        "desc": "Prende il controllo dell'unità nemica bersaglio."
       },
       "appel_du_clan": {
         "label": "Richiamo del Clan X",
@@ -537,7 +541,7 @@
       },
       "renforcement_multiple": {
         "label": "Potenziamento multiplo",
-        "desc": "+X/+Y alle tue creature della razza o del clan scelto."
+        "desc": "+X/+Y alle tue creature{rm_scope}."
       },
       "entrainement": {
         "label": "Addestramento X",
@@ -570,10 +574,6 @@
       "afflux": {
         "label": "Afflusso X",
         "desc": "Guadagna X mana questo turno"
-      },
-      "domination": {
-        "label": "Dominazione",
-        "desc": "Prende il controllo dell'unità nemica bersaglio."
       }
     },
     "composed": {
@@ -610,6 +610,7 @@
         "exhum_one": "una creatura",
         "exhum_all": "tutte le creature",
         "exhum_upto": "fino a {n} creature",
+        "invocation": "evoca una creatura casuale di costo {x}{filter}",
         "selection": "rivela 3 carte{filter} (costo ≤ {x}) e ne tiene una in mano",
         "renfort_royal": "rivela 3 carte da collezione{filter} (costo ≤ {x}) e ne tiene una in mano"
       },
@@ -1142,7 +1143,11 @@
       "ability": "una capacità",
       "scope": "a un'unità alleata (o a tutte)",
       "scope_target": "a un'unità alleata",
-      "scope_all": "a tutte le vostre unità"
+      "scope_all": "a tutte le vostre unità",
+      "rm_scope": " della razza o del clan scelto",
+      "rm_scope_race": " di razza {v}",
+      "rm_scope_clan": " del clan {v}",
+      "rm_scope_all": ""
     },
     "sets": {
       "1": "Set Base"
@@ -1493,6 +1498,8 @@
     "effect_kind_curated": "MECCANICA",
     "group_composed": "Effetti configurabili",
     "group_curated": "Meccaniche speciali",
+    "content_invocation": "Invocazione (creatura casuale)",
+    "pool_hint_invocation": "Filtri cumulativi. Senza di essi, il pool segue l'allineamento della carta; il costo evocato è ESATTAMENTE X.",
     "content_selection": "Selezione (1 su 3)",
     "content_renfort_royal": "Selezione Reale (1 su 3)",
     "label_pool_membership": "POOL — APPARTENENZA",

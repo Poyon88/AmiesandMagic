@@ -364,6 +364,9 @@ export type ComposedEffectContent =
   // empoisonneuse). C'est l'équivalent composé du mot-clé de sort `poison`.
   | "poison"
   | "exhumation"
+  // Invoque une créature aléatoire de la collection au coût EXACT X. Comme les
+  // Sélections, elle se paramètre par `pool` (race / faction / clan / mot-clé).
+  | "invocation"
   // Révèle 3 cartes de la collection et en garde 1 en main. Comme exhumation,
   // ces deux contenus existent AUSSI en mot-clé curé : la variante composée
   // ajoute le filtre de pool (`ComposedEffect.pool`) et tous les déclencheurs.

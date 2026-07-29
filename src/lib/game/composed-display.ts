@@ -45,6 +45,7 @@ export const COMPOSED_FR: Record<string, string> = {
   "content.exhum_all": "toutes les créatures",
   "content.exhum_upto": "jusqu'à {n} créatures",
   // Sélection composée : {filter} porte la restriction de pool (vide si aucune).
+  "content.invocation": "invoque une créature aléatoire de coût {x}{filter}",
   "content.selection": "révèle 3 cartes{filter} (coût ≤ {x}) et en garde une en main",
   "content.renfort_royal": "révèle 3 cartes de collection{filter} (coût ≤ {x}) et en garde une en main",
   "pool.race": " de race {v}",
@@ -194,6 +195,7 @@ export function composedIcon(cap: Capability): { symbol: string; keyword: string
     case "gain_mana": return { symbol: "💎", keyword: "spell_afflux" };
     case "exhumation": return { symbol: "🪦", keyword: "exhumation" };
     // Mêmes symboles que les mots-clés curés homonymes (source unique).
+    case "invocation": return { symbol: KEYWORD_SYMBOLS.invocation, keyword: "invocation" };
     case "selection": return { symbol: KEYWORD_SYMBOLS.selection, keyword: "selection" };
     case "renfort_royal": return { symbol: KEYWORD_SYMBOLS.renfort_royal, keyword: "renfort_royal" };
     default: return { symbol: "✦", keyword: "" };
@@ -315,6 +317,7 @@ function describeContent(eff: ComposedEffect, tokens: TokenTemplate[] | undefine
         : frag(t, "content.exhum_one");
       return frag(t, "content.exhumation", { who, x });
     }
+    case "invocation":
     case "selection":
     case "renfort_royal":
       return frag(t, `content.${eff.content}`, { x, filter: describePoolFilter(eff, t) });

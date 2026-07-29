@@ -403,7 +403,7 @@
       },
       "renforcement_multiple": {
         "label": "Reforço Múltiplo",
-        "desc": "+X/+Y às suas criaturas da raça ou clã escolhido."
+        "desc": "+X/+Y às suas criaturas{rm_scope}."
       },
       "entrainement": {
         "label": "Treinamento X",
@@ -446,6 +446,10 @@
       "convocation_simple": {
         "label": "Convocação",
         "desc": "Cria {token}."
+      },
+      "domination": {
+        "label": "Dominação",
+        "desc": "Assume o controle da unidade inimiga alvo."
       },
       "appel_du_clan": {
         "label": "Chamado do Clã X",
@@ -537,7 +541,7 @@
       },
       "renforcement_multiple": {
         "label": "Reforço Múltiplo",
-        "desc": "+X/+Y às suas criaturas da raça ou clã escolhido."
+        "desc": "+X/+Y às suas criaturas{rm_scope}."
       },
       "entrainement": {
         "label": "Treinamento X",
@@ -570,10 +574,6 @@
       "afflux": {
         "label": "Afluxo X",
         "desc": "Ganhe X de mana neste turno"
-      },
-      "domination": {
-        "label": "Dominação",
-        "desc": "Assume o controle da unidade inimiga alvo."
       }
     },
     "composed": {
@@ -610,6 +610,7 @@
         "exhum_one": "uma criatura",
         "exhum_all": "todas as criaturas",
         "exhum_upto": "até {n} criaturas",
+        "invocation": "invoca uma criatura aleatória de custo {x}{filter}",
         "selection": "revela 3 cartas{filter} (custo ≤ {x}) e mantém uma na mão",
         "renfort_royal": "revela 3 cartas de coleção{filter} (custo ≤ {x}) e mantém uma na mão"
       },
@@ -1142,7 +1143,11 @@
       "ability": "uma habilidade",
       "scope": "a uma unidade aliada (ou a todas)",
       "scope_target": "a uma unidade aliada",
-      "scope_all": "a todas as suas unidades"
+      "scope_all": "a todas as suas unidades",
+      "rm_scope": " da raça ou do clã escolhido",
+      "rm_scope_race": " da raça {v}",
+      "rm_scope_clan": " do clã {v}",
+      "rm_scope_all": ""
     },
     "sets": {
       "1": "Set Básico"
@@ -1493,6 +1498,8 @@
     "effect_kind_curated": "MECÂNICA",
     "group_composed": "Efeitos configuráveis",
     "group_curated": "Mecânicas específicas",
+    "content_invocation": "Invocação (criatura aleatória)",
+    "pool_hint_invocation": "Filtros cumulativos. Sem eles, o pool segue o alinhamento da carta; o custo invocado é EXATAMENTE X.",
     "content_selection": "Seleção (1 de 3)",
     "content_renfort_royal": "Seleção Real (1 de 3)",
     "label_pool_membership": "POOL — PERTENÇA",

@@ -403,7 +403,7 @@
       },
       "renforcement_multiple": {
         "label": "Multi-Strengthen",
-        "desc": "+X/+Y to your creatures of the chosen race or clan."
+        "desc": "+X/+Y to your creatures{rm_scope}."
       },
       "entrainement": {
         "label": "Training X",
@@ -446,6 +446,10 @@
       "convocation_simple": {
         "label": "Summon",
         "desc": "Creates {token}."
+      },
+      "domination": {
+        "label": "Domination",
+        "desc": "Takes control of the targeted enemy unit."
       },
       "appel_du_clan": {
         "label": "Clan Call X",
@@ -537,7 +541,7 @@
       },
       "renforcement_multiple": {
         "label": "Mass Reinforcement",
-        "desc": "+X/+Y to your creatures of the chosen race or clan."
+        "desc": "+X/+Y to your creatures{rm_scope}."
       },
       "entrainement": {
         "label": "Training X",
@@ -570,10 +574,6 @@
       "afflux": {
         "label": "Surge X",
         "desc": "Gain X mana this turn."
-      },
-      "domination": {
-        "label": "Domination",
-        "desc": "Takes control of the targeted enemy unit."
       }
     },
     "composed": {
@@ -610,6 +610,7 @@
         "exhum_one": "a creature",
         "exhum_all": "all creatures",
         "exhum_upto": "up to {n} creatures",
+        "invocation": "summons a random creature with cost {x}{filter}",
         "selection": "reveals 3 cards{filter} (cost ≤ {x}) and keeps one in hand",
         "renfort_royal": "reveals 3 collection cards{filter} (cost ≤ {x}) and keeps one in hand"
       },
@@ -1142,7 +1143,11 @@
       "ability": "an ability",
       "scope": "to an allied unit (or to all)",
       "scope_target": "to an allied unit",
-      "scope_all": "to all your units"
+      "scope_all": "to all your units",
+      "rm_scope": " of the chosen race or clan",
+      "rm_scope_race": " of race {v}",
+      "rm_scope_clan": " of clan {v}",
+      "rm_scope_all": ""
     },
     "sets": {
       "1": "Base Set"
@@ -1493,6 +1498,8 @@
     "effect_kind_curated": "MECHANIC",
     "group_composed": "Configurable effects",
     "group_curated": "Special mechanics",
+    "content_invocation": "Summon (random creature)",
+    "pool_hint_invocation": "Cumulative filters. Without them, the pool follows the card's alignment; the summoned cost is EXACTLY X.",
     "content_selection": "Selection (1 of 3)",
     "content_renfort_royal": "Royal Selection (1 of 3)",
     "label_pool_membership": "POOL — MEMBERSHIP",

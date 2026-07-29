@@ -403,7 +403,7 @@
       },
       "renforcement_multiple": {
         "label": "集団強化",
-        "desc": "選択した種族またはクランの自分のクリーチャーに+X/+Y。"
+        "desc": "自分の{rm_scope}クリーチャーに+X/+Y。"
       },
       "entrainement": {
         "label": "訓練 X",
@@ -446,6 +446,10 @@
       "convocation_simple": {
         "label": "召喚",
         "desc": "{token}を生成する。"
+      },
+      "domination": {
+        "label": "支配",
+        "desc": "対象の敵ユニットを支配下に置く。"
       },
       "appel_du_clan": {
         "label": "氏族の呼び声 X",
@@ -537,7 +541,7 @@
       },
       "renforcement_multiple": {
         "label": "集団強化",
-        "desc": "選択した種族またはクランの自分のクリーチャーに+X/+Y。"
+        "desc": "自分の{rm_scope}クリーチャーに+X/+Y。"
       },
       "entrainement": {
         "label": "鍛錬 X",
@@ -570,10 +574,6 @@
       "afflux": {
         "label": "魔力流入 X",
         "desc": "このターン、マナをX獲得する"
-      },
-      "domination": {
-        "label": "支配",
-        "desc": "対象の敵ユニットを支配下に置く。"
       }
     },
     "composed": {
@@ -610,6 +610,7 @@
         "exhum_one": "クリーチャー1体",
         "exhum_all": "すべてのクリーチャー",
         "exhum_upto": "クリーチャー{n}体まで",
+        "invocation": "コスト{x}{filter}のランダムなクリーチャーを召喚する",
         "selection": "3枚のカード{filter}（コスト{x}以下）を公開し、その中から1枚を手札に加える",
         "renfort_royal": "コレクションから3枚のカード{filter}（コスト{x}以下）を公開し、その中から1枚を手札に加える"
       },
@@ -1142,7 +1143,11 @@
       "ability": "能力",
       "scope": "味方ユニット1体（または全体）に",
       "scope_target": "味方ユニット1体に",
-      "scope_all": "あなたの全ユニットに"
+      "scope_all": "あなたの全ユニットに",
+      "rm_scope": "選択した種族またはクランの",
+      "rm_scope_race": "{v}種族の",
+      "rm_scope_clan": "{v}クランの",
+      "rm_scope_all": ""
     },
     "sets": {
       "1": "基本セット"
@@ -1493,6 +1498,8 @@
     "effect_kind_curated": "メカニクス",
     "group_composed": "設定可能な効果",
     "group_curated": "特殊メカニクス",
+    "content_invocation": "召喚(ランダムなクリーチャー)",
+    "pool_hint_invocation": "フィルターは累積します。フィルターがない場合、プールはカードの属性に従い、召喚されるコストは正確にXになります。",
     "content_selection": "選択（3枚中1枚）",
     "content_renfort_royal": "王家の選抜（3枚中1枚）",
     "label_pool_membership": "プール — 所属",

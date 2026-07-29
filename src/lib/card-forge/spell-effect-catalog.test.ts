@@ -12,7 +12,7 @@ import type { Capability, ComposedEffect } from "@/lib/game/types";
 const CONTENTS = new Set([
   "deal_damage", "heal", "buff", "debuff", "draw_cards", "discard", "summon_token",
   "gain_mana", "destroy", "bounce", "paralyze", "grant_keyword", "exhumation",
-  "selection", "renfort_royal", "poison",
+  "selection", "renfort_royal", "poison", "invocation",
 ]);
 
 const catalog = buildSpellEffectCatalog(ALL_SPELL_KEYWORDS);

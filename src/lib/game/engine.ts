@@ -650,7 +650,16 @@ function resolveComposedEffect(
   // Contexte d'exécution — utile aux contenus qui doivent SUSPENDRE pour
   // interroger le joueur (Sélection : modale « 1 parmi 3 »). Absent ⇒ contexte
   // non interactif, l'effet se résout au hasard (RNG semé, déterministe).
-  opts?: { trigger?: import("./types").CapabilityTrigger; capUid?: string; noSuspend?: boolean },
+  opts?: {
+    trigger?: import("./types").CapabilityTrigger;
+    capUid?: string;
+    noSuspend?: boolean;
+    /** Carte porteuse de l'effet. Les contenus qui piochent dans la COLLECTION
+     *  (invocation, sélections) en ont besoin pour l'alignement du pool — or un
+     *  SORT est joué avec `source: null` (il n'a pas d'unité sur le plateau),
+     *  d'où ce canal séparé. */
+    sourceCard?: Card;
+  },
 ): void {
   const x = composed.magnitude?.x ?? 0;
   const y = composed.magnitude?.y ?? 0;
@@ -724,19 +733,34 @@ function resolveComposedEffect(
       }
       return;
     }
+    case "invocation": {
+      // Créature aléatoire de la collection au coût EXACT x, mêmes règles
+      // qu'Invocation X (alignement de la carte, format, collection), plus le
+      // filtre de pool s'il est renseigné.
+      const invocCard = source?.card ?? opts?.sourceCard;
+      if (!invocCard) return;
+      resolveInvocationSummon(
+        owner, invocCard, x,
+        currentCardPools.factionCardPool, currentFormatCode,
+        composed.pool,
+      );
+      return;
+    }
     case "selection":
     case "renfort_royal": {
       // Sélection composée : révèle 3 cartes de la collection, le joueur en
       // garde 1. Même moteur de pool que le mot-clé curé (l'aiguillage
       // selectionCardsForKeyword), plus le filtre `composed.pool`.
-      if (!source) return;
+      // Même canal que l'invocation : un SORT arrive sans instance source.
+      const selCard = source?.card ?? opts?.sourceCard;
+      if (!selCard) return;
       const selState = {
         factionCardPool: currentCardPools.factionCardPool,
         allSpellsPool: currentCardPools.allSpellsPool,
         players: [owner, opponent],
         currentPlayerIndex: 0,
       } as unknown as GameState;
-      const options = selectionCardsForKeyword(composed.content, selState, x, source.card, composed.pool);
+      const options = selectionCardsForKeyword(composed.content, selState, x, selCard, composed.pool);
       // Pool vide après filtrage : no-op assumé. On n'élargit JAMAIS le filtre
       // en repli, sinon une carte « révèle 3 Hommes-Bêtes » proposerait
       // silencieusement autre chose.
@@ -744,7 +768,8 @@ function resolveComposedEffect(
       // La modale ne peut s'ouvrir que sur le tour du contrôleur, hors flux
       // synchrone (attaque) et hors rejeu Déclenchement (noSuspend) — mêmes
       // règles que le chemin curé.
-      const interactive = owner.id === currentPlayerId
+      const interactive = !!source
+        && owner.id === currentPlayerId
         && opts?.trigger !== "on_attack"
         && !opts?.noSuspend;
       if (interactive) {
@@ -753,9 +778,9 @@ function resolveComposedEffect(
         // rappellerait donc resolveComposedEffect → nouveau trigger → boucle.
         // L'unicité passe par `id` seul.
         pendingTriggerSink.push({
-          id: `${source.instanceId}#${opts?.capUid ?? composed.content}`,
+          id: `${source!.instanceId}#${opts?.capUid ?? composed.content}`,
           controllerId: owner.id,
-          sourceInstanceId: source.instanceId,
+          sourceInstanceId: source!.instanceId,
           selectionType: composed.content,
           selectionOptionIds: options.map(c => c.id),
         });
@@ -866,7 +891,7 @@ function runComposedCapsForCard(
     if (!chosen && fallbackTargetId) chosen = [fallbackTargetId];
     withComposedMode(triggerToKeywordMode(trigger), () =>
       resolveComposedEffect(cap.composed!, source, owner, opponent, chosen, trigger === "spell_resolution",
-        { trigger, capUid: cap.uid }));
+        { trigger, capUid: cap.uid, sourceCard: card }));
   }
 }
 
@@ -7082,14 +7107,15 @@ function resolveInvocationSummon(
   x: number,
   pool: Card[] | undefined,
   formatCode: FormatCode | null,
-  // Restriction explicite du pool (Invocations multiples). Renseignée, elle
-  // REMPLACE le filtre d'alignement : « race Loups » doit pouvoir piocher hors
-  // de l'alignement de la carte source. Vide ⇒ comportement d'Invocation X.
-  restrict?: { race?: string; faction?: string },
+  // Restriction explicite du pool (Invocations multiples, Invocation composée).
+  // Renseignée, elle REMPLACE le filtre d'alignement : « race Loups » doit
+  // pouvoir piocher hors de l'alignement de la carte source. Vide ⇒ comportement
+  // historique d'Invocation X (factions du même alignement).
+  restrict?: ComposedPoolFilter,
 ): void {
   if (owner.board.length >= MAX_BOARD_SIZE) return;
   if (!pool || pool.length === 0 || x <= 0) return;
-  const restricted = !!(restrict?.race || restrict?.faction);
+  const restricted = !!(restrict?.race || restrict?.faction || restrict?.clan || restrict?.keywordId);
   const allowedFactions = factionsForSelectionAlignment(sourceCard, owner);
   const legal = formatCode ? getFormatFilterByCode(formatCode) : null;
   const ownedLimited = new Set(owner.ownedLimitedCardIds ?? []);
@@ -7097,8 +7123,9 @@ function resolveInvocationSummon(
     c.card_type === "creature"
     && c.mana_cost === x
     && (restricted
-      ? ((!restrict!.faction || c.faction === restrict!.faction)
-        && (!restrict!.race || c.race === restrict!.race))
+      // matchesPoolFilter : même prédicat que les Sélections composées, donc
+      // clan et « mot-clé porté » deviennent utilisables ici aussi.
+      ? matchesPoolFilter(c, restrict)
       : (!!c.faction && allowedFactions.has(c.faction)))
     && ((c.rarity ?? "Commune") === "Commune"
       || (c.card_year != null && c.set_id == null && ownedLimited.has(c.id)))

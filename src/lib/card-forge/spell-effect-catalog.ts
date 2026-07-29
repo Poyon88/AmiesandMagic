@@ -56,6 +56,8 @@ const COMPOSED_PRESETS: Partial<Record<SpellKeywordId, ComposedEffect>> = {
   pillage: { content: "discard", magnitude: { x: 1 } },
   convocation_simple: { content: "summon_token", magnitude: { x: 1 }, tokenId: null },
   exhumation: { content: "exhumation", magnitude: { x: 1 }, target: board({ side: "ally", location: "graveyard" }) },
+  // Invocation X : le coût X est EXACT (pas un plafond) — cf. resolveInvocationSummon.
+  invocation: { content: "invocation", magnitude: { x: 1 } },
   selection: { content: "selection", magnitude: { x: 1 } },
   renfort_royal: { content: "renfort_royal", magnitude: { x: 1 } },
   // Le X/Y et la race/clan sont saisis ensuite dans la ligne (appartenance).

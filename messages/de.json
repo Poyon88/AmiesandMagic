@@ -403,7 +403,7 @@
       },
       "renforcement_multiple": {
         "label": "Mehrfachstärkung",
-        "desc": "+X/+Y für deine Kreaturen der gewählten Rasse oder des gewählten Clans."
+        "desc": "+X/+Y für deine Kreaturen{rm_scope}."
       },
       "entrainement": {
         "label": "Training X",
@@ -446,6 +446,10 @@
       "convocation_simple": {
         "label": "Beschwörung",
         "desc": "Erschafft {token}."
+      },
+      "domination": {
+        "label": "Dominanz",
+        "desc": "Übernimmt die Kontrolle über die anvisierte gegnerische Einheit."
       },
       "appel_du_clan": {
         "label": "Clanruf X",
@@ -537,7 +541,7 @@
       },
       "renforcement_multiple": {
         "label": "Mehrfachstärkung",
-        "desc": "+X/+Y für deine Kreaturen der gewählten Rasse oder des gewählten Clans."
+        "desc": "+X/+Y für deine Kreaturen{rm_scope}."
       },
       "entrainement": {
         "label": "Training X",
@@ -570,10 +574,6 @@
       "afflux": {
         "label": "Zufluss X",
         "desc": "Erhalte X Mana in diesem Zug."
-      },
-      "domination": {
-        "label": "Dominanz",
-        "desc": "Übernimmt die Kontrolle über die anvisierte gegnerische Einheit."
       }
     },
     "composed": {
@@ -610,6 +610,7 @@
         "exhum_one": "eine Kreatur",
         "exhum_all": "alle Kreaturen",
         "exhum_upto": "bis zu {n} Kreaturen",
+        "invocation": "beschwört eine zufällige Kreatur mit Kosten {x}{filter}",
         "selection": "deckt 3 Karten{filter} auf (Kosten ≤ {x}) und behält eine davon auf der Hand",
         "renfort_royal": "deckt 3 Sammelkarten{filter} auf (Kosten ≤ {x}) und behält eine davon auf der Hand"
       },
@@ -1142,7 +1143,11 @@
       "ability": "eine Fähigkeit",
       "scope": "auf eine verbündete Einheit (oder auf alle)",
       "scope_target": "auf eine verbündete Einheit",
-      "scope_all": "auf alle deine Einheiten"
+      "scope_all": "auf alle deine Einheiten",
+      "rm_scope": " der gewählten Rasse oder des gewählten Klans",
+      "rm_scope_race": " der Rasse {v}",
+      "rm_scope_clan": " des Klans {v}",
+      "rm_scope_all": ""
     },
     "sets": {
       "1": "Basis-Set"
@@ -1493,6 +1498,8 @@
     "effect_kind_curated": "MECHANIK",
     "group_composed": "Konfigurierbare Effekte",
     "group_curated": "Besondere Mechaniken",
+    "content_invocation": "Beschwörung (zufällige Kreatur)",
+    "pool_hint_invocation": "Kumulative Filter. Ohne sie folgt der Pool der Ausrichtung der Karte; die beschworenen Kosten betragen EXAKT X.",
     "content_selection": "Auswahl (1 von 3)",
     "content_renfort_royal": "Königliche Auswahl (1 von 3)",
     "label_pool_membership": "POOL — ZUGEHÖRIGKEIT",

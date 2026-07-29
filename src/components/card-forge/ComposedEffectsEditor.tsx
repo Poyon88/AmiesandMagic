@@ -34,6 +34,7 @@ const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" |
   { v: "exhumation", l: "Ressusciter (cimetière)", target: "unit" },
   // Sélections : pas de cible en jeu (on filtre un pool de cartes hors jeu),
   // d'où target "none" — le bloc « Pool » ci-dessous les paramètre.
+  { v: "invocation", l: "Invocation (créature aléatoire)", target: "none" },
   { v: "selection", l: "Sélection (1 parmi 3)", target: "none" },
   { v: "renfort_royal", l: "Sélection Royale (1 parmi 3)", target: "none" },
 ];
@@ -41,7 +42,7 @@ const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" |
 /** Contenus paramétrés par un filtre de pool (race / faction / clan / mot-clé).
  *  Pour eux, X est un PLAFOND DE COÛT des cartes révélées (comme exhumation),
  *  pas une amplitude. */
-const POOL_CONTENTS = new Set<ComposedEffectContent>(["selection", "renfort_royal"]);
+const POOL_CONTENTS = new Set<ComposedEffectContent>(["invocation", "selection", "renfort_royal"]);
 
 const FACTION_OPTIONS = Object.keys(FACTIONS).sort((a, b) => a.localeCompare(b, "fr"));
 
@@ -308,7 +309,9 @@ export default function ComposedEffectsEditor({
                     (v) => patchPool(idx, { keywordId: v || undefined }))}
 
                   <span style={labelStyle} />
-                  <span style={{ fontSize: 9, color: "#8a6d3b", fontStyle: "italic" }}>{tr('pool_hint')}</span>
+                  <span style={{ fontSize: 9, color: "#8a6d3b", fontStyle: "italic" }}>
+                    {tr(eff.content === "invocation" ? 'pool_hint_invocation' : 'pool_hint')}
+                  </span>
                 </>
               )}
             </div>

@@ -403,7 +403,7 @@
       },
       "renforcement_multiple": {
         "label": "群体强化",
-        "desc": "使你所选种族或氏族的生物获得+X/+Y。"
+        "desc": "使你的{rm_scope}生物获得+X/+Y。"
       },
       "entrainement": {
         "label": "训练 X",
@@ -446,6 +446,10 @@
       "convocation_simple": {
         "label": "召唤",
         "desc": "创建{token}。"
+      },
+      "domination": {
+        "label": "支配",
+        "desc": "夺取目标敌方单位的控制权。"
       },
       "appel_du_clan": {
         "label": "族群召唤 X",
@@ -537,7 +541,7 @@
       },
       "renforcement_multiple": {
         "label": "群体强化",
-        "desc": "使你所选种族或氏族的生物获得+X/+Y。"
+        "desc": "使你的{rm_scope}生物获得+X/+Y。"
       },
       "entrainement": {
         "label": "训练 X",
@@ -570,10 +574,6 @@
       "afflux": {
         "label": "涌流 X",
         "desc": "本回合获得 X 点法力"
-      },
-      "domination": {
-        "label": "支配",
-        "desc": "夺取目标敌方单位的控制权。"
       }
     },
     "composed": {
@@ -610,6 +610,7 @@
         "exhum_one": "一个生物",
         "exhum_all": "所有生物",
         "exhum_upto": "至多 {n} 个生物",
+        "invocation": "召唤一个费用为{x}{filter}的随机生物",
         "selection": "展示3张{filter}卡牌（费用 ≤ {x}），并保留其中一张至手牌",
         "renfort_royal": "展示3张{filter}收藏卡牌（费用 ≤ {x}），并保留其中一张至手牌"
       },
@@ -1142,7 +1143,11 @@
       "ability": "一项能力",
       "scope": "给一个友方单位（或全部）",
       "scope_target": "给一个友方单位",
-      "scope_all": "给你所有的单位"
+      "scope_all": "给你所有的单位",
+      "rm_scope": "所选种族或氏族的",
+      "rm_scope_race": "{v}种族的",
+      "rm_scope_clan": "{v}氏族的",
+      "rm_scope_all": ""
     },
     "sets": {
       "1": "基础系列"
@@ -1493,6 +1498,8 @@
     "effect_kind_curated": "机制",
     "group_composed": "可配置效果",
     "group_curated": "特殊机制",
+    "content_invocation": "召唤（随机生物）",
+    "pool_hint_invocation": "筛选条件可叠加。若不设置，卡池将遵循该卡牌的阵营；召唤的费用严格等于X。",
     "content_selection": "选择（三选一）",
     "content_renfort_royal": "皇家甄选（三选一）",
     "label_pool_membership": "卡池 — 归属",

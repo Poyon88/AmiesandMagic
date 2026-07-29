@@ -143,3 +143,28 @@ describe("Sélection Royale composée", () => {
     expect(offeredNames(next)).toEqual(["Loup"]);
   });
 });
+
+describe("Sélection composée portée par un SORT", () => {
+  it("propose bien des options (un sort n'a pas d'instance source)", () => {
+    // Régression : le contenu exigeait une instance source pour lire
+    // l'alignement du pool. Un SORT est résolu avec `source: null` — la
+    // Sélection composée d'un sort ne faisait donc jamais rien.
+    const s = mkState();
+    s.factionCardPool = [poolCard("Loup"), poolCard("Chat")];
+    const spell = mkInstance(mkCard({
+      name: "Appel des Ombres", card_type: "spell", attack: null, health: null,
+      capabilities: [{
+        uid: "cx_0", trigger: "spell_resolution", effectKind: "immediate", abilityId: "_composed",
+        composed: { content: "selection", magnitude: { x: 2 } },
+      }] as never,
+    }));
+    s.players[0].hand.push(spell);
+
+    const next = applyAction(s, { type: "play_card", cardInstanceId: spell.instanceId });
+
+    // Sans instance source, pas de sélecteur possible : le moteur tire une
+    // carte — mais l'effet a bien lieu.
+    expect(next.players[0].hand.length).toBeGreaterThan(0);
+    expect(next.players[0].hand.map((c) => c.card.name)).not.toContain("Appel des Ombres");
+  });
+});

@@ -403,7 +403,7 @@
       },
       "renforcement_multiple": {
         "label": "Renforcement multiple",
-        "desc": "+X/+Y à vos créatures de la race ou du clan choisi."
+        "desc": "+X/+Y à vos créatures{rm_scope}."
       },
       "entrainement": {
         "label": "Entrainement X",
@@ -541,7 +541,7 @@
       },
       "renforcement_multiple": {
         "label": "Renforcement multiple",
-        "desc": "+X/+Y à vos créatures de la race ou du clan choisi."
+        "desc": "+X/+Y à vos créatures{rm_scope}."
       },
       "entrainement": {
         "label": "Entrainement X",
@@ -610,6 +610,7 @@
         "exhum_one": "une créature",
         "exhum_all": "toutes les créatures",
         "exhum_upto": "jusqu'à {n} créatures",
+        "invocation": "invoque une créature aléatoire de coût {x}{filter}",
         "selection": "révèle 3 cartes{filter} (coût ≤ {x}) et en garde une en main",
         "renfort_royal": "révèle 3 cartes de collection{filter} (coût ≤ {x}) et en garde une en main"
       },
@@ -1141,6 +1142,10 @@
       "lycanthrope": "un token X/X",
       "ability": "une capacité",
       "scope": "à une unité alliée (ou à toutes)",
+      "rm_scope": " de la race ou du clan choisi",
+      "rm_scope_race": " de race {v}",
+      "rm_scope_clan": " du clan {v}",
+      "rm_scope_all": "",
       "scope_target": "à une unité alliée",
       "scope_all": "à toutes vos unités"
     },
@@ -1493,6 +1498,8 @@
     "effect_kind_curated": "MÉCANIQUE",
     "group_composed": "Effets paramétrables",
     "group_curated": "Mécaniques particulières",
+    "content_invocation": "Invocation (créature aléatoire)",
+    "pool_hint_invocation": "Filtres cumulatifs. Sans eux, le pool suit l'alignement de la carte ; le coût invoqué est EXACTEMENT X.",
     "content_selection": "Sélection (1 parmi 3)",
     "content_renfort_royal": "Sélection Royale (1 parmi 3)",
     "label_pool_membership": "POOL — APPARTENANCE",
