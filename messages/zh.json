@@ -393,6 +393,10 @@
         "label": "启示 X",
         "desc": "抽X张卡。"
       },
+      "epargne": {
+        "label": "储蓄 X",
+        "desc": "为你的储蓄计数器增加X点（上限10点）。"
+      },
       "concentration": {
         "label": "专注 X",
         "desc": "手牌中的每张法术都变为一张费用+X、再减少X的随机法术（不限阵营）。"
@@ -424,6 +428,26 @@
       "force_des_ancetres": {
         "label": "先祖之力 +X/+Y",
         "desc": "只要你的墓地中有5个或更多生物，便获得+X攻击力和+Y生命值。"
+      },
+      "seconde_vie": {
+        "label": "二次生命 X",
+        "desc": "可从你的墓地中支付X点法力值打出。此后失去二次生命。"
+      },
+      "incineration": {
+        "label": "焚烧 X",
+        "desc": "将目标墓地中随机X张卡牌放回其拥有者牌库底。"
+      },
+      "devoration": {
+        "label": "吞噬",
+        "desc": "摧毁一个目标单位；此生物永久获得其攻击力和生命值。"
+      },
+      "creuser": {
+        "label": "挖掘 X",
+        "desc": "查看你牌库底部的X张卡牌；将其中一张放到牌库顶。"
+      },
+      "retour_differe": {
+        "label": "延迟归还",
+        "desc": "将目标单位放到其拥有者牌库底。"
       }
     },
     "spell_keywords": {
@@ -535,6 +559,10 @@
         "label": "治愈 X",
         "desc": "为目标恢复 X PV"
       },
+      "epargne": {
+        "label": "储蓄 X",
+        "desc": "为你的储蓄计数器增加X点（上限10点）"
+      },
       "inspiration": {
         "label": "启示 X",
         "desc": "抽 X 张牌"
@@ -578,6 +606,18 @@
       "afflux": {
         "label": "涌流 X",
         "desc": "本回合获得 X 点法力"
+      },
+      "incineration": {
+        "label": "焚烧 X",
+        "desc": "将目标墓地中随机X张卡牌放回其拥有者牌库底"
+      },
+      "creuser": {
+        "label": "挖掘 X",
+        "desc": "查看你牌库底部的X张卡牌；将其中一张放到牌库顶"
+      },
+      "retour_differe": {
+        "label": "延迟归还",
+        "desc": "将目标单位放到其拥有者牌库底"
       }
     },
     "composed": {
@@ -615,9 +655,13 @@
         "exhum_all": "所有生物",
         "exhum_upto": "至多 {n} 个生物",
         "invocation": "召唤一个费用为{x}{filter}的随机生物",
+        "epargne": "为你的储蓄计数器增加{x}点",
         "selection": "展示3张{filter}卡牌（费用 ≤ {x}），并保留其中一张至手牌",
         "selection_magique": "展示3张{filter}法术（费用≤{x}），并留其中一张入手",
-        "renfort_royal": "展示3张{filter}收藏卡牌（费用 ≤ {x}），并保留其中一张至手牌"
+        "renfort_royal": "展示3张{filter}收藏卡牌（费用 ≤ {x}），并保留其中一张至手牌",
+        "incineration": "将目标墓地中的{x}张卡牌放回其牌库底",
+        "devoration": "吞噬",
+        "retour_differe": "放到其拥有者牌库底"
       },
       "pool": {
         "race": "种族为{v}的",
@@ -698,7 +742,7 @@
       },
       "Nains": {
         "displayName": "山岭大军",
-        "description": "坚固耐久：防御、韧性、锻造与侏儒工程。"
+        "description": "坚韧不拔：防御、顽强、锻造、地精工程与巅峰巨像。"
       },
       "EmpireDuMilieu": {
         "displayName": "中央帝国",
@@ -745,10 +789,10 @@
       "Les Hauts-Elfes": "高等精灵",
       "La Forêt d'Émeraude": "翡翠森林",
       "La Combe Verte": "翠谷",
-      "Les Gardiens de la Montagne": "山岳守卫",
       "La Forge Ardente": "烈焰熔炉",
-      "Les Sentinelles d'Airain": "青铜哨兵",
       "La Guilde des Ingénieurs": "工程师公会",
+      "Clan des Mille Tunnels": "千道隧道氏族",
+      "Clan des Premiers Géants": "初代巨人氏族",
       "Les Hordes des Steppes": "草原游牧军团",
       "L'Empire de Jade": "玉石帝国",
       "Les Lames de l'Ombre": "暗影刀锋",
@@ -790,6 +834,7 @@
       "Gnomes": "侏儒",
       "Machines": "机械",
       "Kobolds": "狗头人",
+      "Géants": "巨人",
       "Humains": "人类",
       "Griffons": "狮鹫",
       "Faucons": "猎鹰",
@@ -805,7 +850,6 @@
       "Hommes-Poissons": "鱼人",
       "Hommes-Oiseaux": "鸟人",
       "Élémentaire": "元素生物",
-      "Géants": "巨人",
       "Ogres": "食人魔",
       "Dragons": "龙",
       "Chiens": "犬",
@@ -876,6 +920,16 @@
         "def": "侏儒",
         "bare": "侏儒",
         "de": "侏儒的"
+      },
+      "Machines": {
+        "def": "机械",
+        "bare": "机械",
+        "de": "机械"
+      },
+      "Kobolds": {
+        "def": "狗头人",
+        "bare": "狗头人",
+        "de": "狗头人"
       },
       "Humains": {
         "def": "人类",

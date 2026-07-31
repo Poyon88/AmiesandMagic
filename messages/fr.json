@@ -393,6 +393,30 @@
         "label": "Inspiration X",
         "desc": "Piochez X cartes."
       },
+      "epargne": {
+        "label": "Épargne X",
+        "desc": "Ajoute X à votre compteur d'Épargne (maximum 10)."
+      },
+      "seconde_vie": {
+        "label": "Seconde vie X",
+        "desc": "Peut être jouée depuis votre cimetière pour X mana. Elle perd alors Seconde vie."
+      },
+      "incineration": {
+        "label": "Incinération X",
+        "desc": "Remet X cartes au hasard du cimetière ciblé sous le deck de son propriétaire."
+      },
+      "devoration": {
+        "label": "Dévoration",
+        "desc": "Détruit une unité ciblée ; cette créature gagne définitivement son ATK et ses PV."
+      },
+      "creuser": {
+        "label": "Creuser X",
+        "desc": "Regardez les X cartes du dessous de votre deck ; placez-en une sur le dessus."
+      },
+      "retour_differe": {
+        "label": "Retour différé",
+        "desc": "Place l'unité ciblée sous le deck de son propriétaire."
+      },
       "concentration": {
         "label": "Concentration X",
         "desc": "Chaque sort en main devient un sort au hasard de coût +X, réduit de X (toutes factions)."
@@ -535,6 +559,22 @@
         "label": "Guérison X",
         "desc": "Restaure X PV à une cible"
       },
+      "incineration": {
+        "label": "Incinération X",
+        "desc": "Remet X cartes au hasard du cimetière ciblé sous le deck de son propriétaire"
+      },
+      "creuser": {
+        "label": "Creuser X",
+        "desc": "Regardez les X cartes du dessous de votre deck ; placez-en une sur le dessus"
+      },
+      "retour_differe": {
+        "label": "Retour différé",
+        "desc": "Place l'unité ciblée sous le deck de son propriétaire"
+      },
+      "epargne": {
+        "label": "Épargne X",
+        "desc": "Ajoute X à votre compteur d'Épargne (maximum 10)"
+      },
       "inspiration": {
         "label": "Inspiration X",
         "desc": "Piochez X cartes"
@@ -615,6 +655,10 @@
         "exhum_all": "toutes les créatures",
         "exhum_upto": "jusqu'à {n} créatures",
         "invocation": "invoque une créature aléatoire de coût {x}{filter}",
+        "epargne": "ajoute {x} à votre compteur d'Épargne",
+        "incineration": "remet {x} cartes du cimetière visé sous son deck",
+        "devoration": "dévore",
+        "retour_differe": "place sous le deck de son propriétaire",
         "selection": "révèle 3 cartes{filter} (coût ≤ {x}) et en garde une en main",
         "selection_magique": "révèle 3 sorts{filter} (coût ≤ {x}) et en garde un en main",
         "renfort_royal": "révèle 3 cartes de collection{filter} (coût ≤ {x}) et en garde une en main"
@@ -698,7 +742,7 @@
       },
       "Nains": {
         "displayName": "Les Armées des Montagnes",
-        "description": "Solides et résistants : défense, ténacité, forge et ingénierie gnome."
+        "description": "Solides et résistants : défense, ténacité, forge, ingénierie gnome et colosses des cimes."
       },
       "EmpireDuMilieu": {
         "displayName": "L'Empire du Milieu",
@@ -745,10 +789,10 @@
       "Les Hauts-Elfes": "Les Hauts-Elfes",
       "La Forêt d'Émeraude": "La Forêt d'Émeraude",
       "La Combe Verte": "La Combe Verte",
-      "Les Gardiens de la Montagne": "Les Gardiens de la Montagne",
       "La Forge Ardente": "La Forge Ardente",
-      "Les Sentinelles d'Airain": "Les Sentinelles d'Airain",
       "La Guilde des Ingénieurs": "La Guilde des Ingénieurs",
+      "Clan des Mille Tunnels": "Clan des Mille Tunnels",
+      "Clan des Premiers Géants": "Clan des Premiers Géants",
       "Les Hordes des Steppes": "Les Hordes des Steppes",
       "L'Empire de Jade": "L'Empire de Jade",
       "Les Lames de l'Ombre": "Les Lames de l'Ombre",
@@ -790,6 +834,7 @@
       "Gnomes": "Gnomes",
       "Machines": "Machines",
       "Kobolds": "Kobolds",
+      "Géants": "Géants",
       "Humains": "Humains",
       "Griffons": "Griffons",
       "Faucons": "Faucons",
@@ -805,7 +850,6 @@
       "Hommes-Poissons": "Hommes-Poissons",
       "Hommes-Oiseaux": "Hommes-Oiseaux",
       "Élémentaire": "Élémentaire",
-      "Géants": "Géants",
       "Ogres": "Ogres",
       "Dragons": "Dragons",
       "Chiens": "Chiens",
@@ -876,6 +920,16 @@
         "def": "le Gnome",
         "bare": "Gnome",
         "de": "du Gnome"
+      },
+      "Machines": {
+        "def": "la Machine",
+        "bare": "Machine",
+        "de": "de la Machine"
+      },
+      "Kobolds": {
+        "def": "le Kobold",
+        "bare": "Kobold",
+        "de": "du Kobold"
       },
       "Humains": {
         "def": "l'Humain",

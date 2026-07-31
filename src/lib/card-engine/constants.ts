@@ -85,6 +85,15 @@ export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
   "Sélection Royale X": ALL_MODES,
   // Nouveaux entrants du chantier (effets sans ciblage ou à repli aléatoire).
   "Concentration X": ALL_MODES,
+  // Épargne alimente un compteur : aucun ciblage, aucune source en jeu requise
+  // → tous les déclencheurs sont ouverts.
+  "Épargne X": ALL_MODES,
+  "Incinération X": ALL_MODES,
+  "Creuser X": ALL_MODES,
+  "Retour différé": ALL_MODES,
+  // Dévoration absorbe les stats de sa victime : la source doit être EN JEU,
+  // donc ni mort ni retour en main (cf. CURATED_ONBOARD_ONLY_IDS).
+  "Dévoration": ONBOARD_MODES,
   "Loyauté": ALL_MODES,
   "Catalyse": ALL_MODES,
   "Solidarité X": ALL_MODES,

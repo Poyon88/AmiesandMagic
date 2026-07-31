@@ -11,6 +11,9 @@ export const MAX_HAND_SIZE = 8;
 export const MAX_BOARD_SIZE = 8;
 export const MAX_MANA = 10;
 export const STARTING_MANA = 0;
+/** Plafond du compteur d'Épargne. Le surplus est écrêté en silence : une
+ *  Épargne 3 sur un compteur à 9 le porte à 10, pas à 12. */
+export const MAX_EPARGNE = 10;
 export const CARDS_DRAWN_PER_TURN = 1;
 export const TURN_TIMER_SECONDS = 90;
 // Compte à rebours du mulligan (par client). À 0 → confirmation automatique de

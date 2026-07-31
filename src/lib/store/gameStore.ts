@@ -29,6 +29,8 @@ import {
   creatureNeedsGraveyardTarget,
   getGraveyardTargets,
   creatureNeedsDivination,
+  cardNeedsCreuser,
+  getCreuserCards,
   creatureNeedsTraqueDuDestin,
   getTraqueDuDestinX,
   creatureNeedsSelection,
@@ -47,6 +49,7 @@ import {
   deferredKwTargetIds,
   endOfTurnTriggerTargets,
 } from "@/lib/game/engine";
+import { MAX_HAND_SIZE } from "@/lib/game/constants";
 
 // Overlay de ciblage pour un déclencheur interactif en attente (Remontée mort/
 // retour au tour du contrôleur). Si le 1er pending appartient au joueur local
@@ -264,6 +267,9 @@ interface GameStore {
   // (selection / renfort_royal / selection_magique). The next selectTarget
   // call dispatches a hero_power action instead of a play_card.
   pendingHeroPowerSelection: boolean;
+  /** Le picker « 1 parmi 3 » ouvert est celui du compteur d'Épargne : le
+   *  dispatch à venir est un `spend_epargne`, pas un play_card. */
+  pendingEpargneSelection: boolean;
   pendingBoardPosition: number | null;
   divinationCards: CardInstance[];
   selectionCards: Card[];
@@ -391,6 +397,9 @@ interface GameStore {
   confirmCostPayment: () => GameAction | null;
   cancelCostPayment: () => void;
   activateHeroPower: () => GameAction | null;
+  /** Clic sur le compteur d'Épargne : ouvre le picker. Renvoie toujours null
+   *  (rien n'est diffusé tant que le joueur n'a pas choisi). */
+  openEpargnePicker: () => GameAction | null;
   activateTap: (sourceInstanceId: string, instanceIdx: number) => GameAction | null;
   activateTapComposed: (sourceInstanceId: string, capUid: string) => GameAction | null;
   confirmMulligan: (selectedInstanceIds: string[]) => GameAction | null;
@@ -1105,6 +1114,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   selectedDiscardIds: [],
   selectedSacrificeIds: [],
   pendingHeroPowerSelection: false,
+  pendingEpargneSelection: false,
   pendingBoardPosition: null,
   divinationCards: [],
   selectionCards: [],
@@ -2121,6 +2131,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         selectedDiscardIds: [],
         selectedSacrificeIds: [],
         pendingHeroPowerSelection: false,
+  pendingEpargneSelection: false,
         pendingTapSourceId: null,
         pendingTapInstanceIdx: null,
         pendingTapComposedUid: null,
@@ -2146,6 +2157,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       selectedDiscardIds: [],
       selectedSacrificeIds: [],
       pendingHeroPowerSelection: false,
+  pendingEpargneSelection: false,
       pendingTapSourceId: null,
       pendingTapInstanceIdx: null,
       pendingTapComposedUid: null,
@@ -2602,6 +2614,26 @@ export const useGameStore = create<GameStore>((set, get) => {
       }
     }
 
+    // CREUSER X : même picker que Divination, mais alimenté par le FOND du deck.
+    if (card && cardNeedsCreuser(card.card)) {
+      const xVals = parseXValuesFromEffectText(card.card.effect_text);
+      const x = card.card.card_type === "spell"
+        ? ((card.card.spell_keywords ?? []).find(kw => kw.id === "creuser")?.amount ?? 1)
+        : (xVals["creuser"] ?? 1);
+      const deckCards = getCreuserCards(player, x);
+      if (deckCards.length > 0) {
+        set({
+          selectedCardInstanceId: instanceId,
+          selectedAttackerInstanceId: null,
+          validTargets: [],
+          targetingMode: "divination",
+          divinationCards: deckCards,
+          pendingBoardPosition: boardPosition ?? null,
+        });
+        return null;
+      }
+    }
+
     if (card && creatureNeedsDivination(card.card)) {
       const deckCards = player.deck.slice(0, Math.min(3, player.deck.length));
       if (deckCards.length > 0) {
@@ -2741,6 +2773,26 @@ export const useGameStore = create<GameStore>((set, get) => {
           selectedAttackerInstanceId: null,
           validTargets: gravTargets,
           targetingMode: "graveyard",
+          pendingBoardPosition: null,
+        });
+        return null;
+      }
+    }
+
+    // CREUSER X : même picker que Divination, mais alimenté par le FOND du deck.
+    if (card && cardNeedsCreuser(card.card)) {
+      const xVals = parseXValuesFromEffectText(card.card.effect_text);
+      const x = card.card.card_type === "spell"
+        ? ((card.card.spell_keywords ?? []).find(kw => kw.id === "creuser")?.amount ?? 1)
+        : (xVals["creuser"] ?? 1);
+      const deckCards = getCreuserCards(player, x);
+      if (deckCards.length > 0) {
+        set({
+          selectedCardInstanceId: instanceId,
+          selectedAttackerInstanceId: null,
+          validTargets: [],
+          targetingMode: "divination",
+          divinationCards: deckCards,
           pendingBoardPosition: null,
         });
         return null;
@@ -3329,6 +3381,11 @@ export const useGameStore = create<GameStore>((set, get) => {
         triggerId: get().pendingTriggerId!,
         selectionCardId: cardId,
       });
+    } else if (targetingMode === "selection" && get().pendingEpargneSelection) {
+      // Picker d'Épargne : une seule action porte le choix, le moteur re-valide
+      // la carte et remet le compteur à zéro.
+      const cardId = parseInt(targetId) || 0;
+      return get().dispatchAction({ type: "spend_epargne", selectionCardId: cardId });
     } else if (targetingMode === "selection" && get().pendingHeroPowerSelection) {
       // Hero power picker — dispatch a hero_power action with the chosen
       // card id ; engine.ts mirrors it into targetMap for the selection /
@@ -3461,6 +3518,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       selectedDiscardIds: [],
       selectedSacrificeIds: [],
       pendingHeroPowerSelection: false,
+  pendingEpargneSelection: false,
     });
   },
 
@@ -3730,6 +3788,40 @@ export const useGameStore = create<GameStore>((set, get) => {
     });
   },
 
+  openEpargnePicker: () => {
+    const { gameState, targetingMode, isAnimating } = get();
+    if (!gameState || isAnimating) return null;
+    // Anti-réentrance : un picker « 1 parmi 3 » déjà ouvert ne doit pas être
+    // réarmé (même garde que le pouvoir de héros — sans elle, un second clic
+    // recalculerait l'offre et laisserait voir d'autres cartes gratuitement).
+    if (targetingMode === "selection") return null;
+    if (!get().isMyTurn()) return null;
+
+    const me = gameState.players[gameState.currentPlayerIndex];
+    const level = me.epargne ?? 0;
+    if (level < 1) return null;
+    if (me.hand.length >= MAX_HAND_SIZE) return null;
+
+    // Alignement dérivé de la faction du héros, comme pour un pouvoir de héros
+    // à sélection. `exactCost` : on ne révèle QUE des cartes valant exactement
+    // ce qui a été mis de côté.
+    const heroSource = { faction: me.hero.heroDefinition?.faction ?? null };
+    const choices = getSelectionCards(gameState, level, heroSource, undefined, true);
+    // Aucune carte à ce coût : le clic ne fait rien et l'épargne est conservée.
+    // On ne dispatche pas, donc rien ne part sur le réseau.
+    if (choices.length === 0) return null;
+
+    set({
+      selectedCardInstanceId: null,
+      selectedAttackerInstanceId: null,
+      validTargets: [],
+      targetingMode: "selection",
+      selectionCards: choices,
+      pendingEpargneSelection: true,
+    });
+    return null;
+  },
+
   activateHeroPower: () => {
     const { gameState } = get();
     if (!gameState) return null;
@@ -3860,6 +3952,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         pendingTapSourceId: sourceInstanceId,
         pendingTapInstanceIdx: instanceIdx,
         pendingHeroPowerSelection: false,
+  pendingEpargneSelection: false,
         pendingTriggerId: null,
       });
       return null;

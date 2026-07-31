@@ -35,6 +35,10 @@ const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" |
   // Sélections : pas de cible en jeu (on filtre un pool de cartes hors jeu),
   // d'où target "none" — le bloc « Pool » ci-dessous les paramètre.
   { v: "invocation", l: "Invocation (créature aléatoire)", target: "none" },
+  { v: "epargne", l: "Épargne (compteur)", target: "none" },
+  { v: "incineration", l: "Incinération (recycler un cimetière)", target: "unit_or_hero" },
+  { v: "devoration", l: "Dévoration (détruire et absorber)", target: "unit" },
+  { v: "retour_differe", l: "Retour différé (sous le deck)", target: "unit" },
   { v: "selection", l: "Sélection (1 parmi 3)", target: "none" },
   { v: "selection_magique", l: "Sélection magique (1 sort parmi 3)", target: "none" },
   { v: "renfort_royal", l: "Sélection Royale (1 parmi 3)", target: "none" },

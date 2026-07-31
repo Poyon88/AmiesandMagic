@@ -3,6 +3,8 @@
 import { useState, useCallback, useEffect, useRef, type DragEvent } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
+import { MAX_HAND_SIZE, MAX_BOARD_SIZE } from "@/lib/game/constants";
+import { secondeVieCost } from "@/lib/game/engine";
 import { useGameStore, selectPowerTargetingColor } from "@/lib/store/gameStore";
 import { useTranslations } from "next-intl";
 import { canPlayCard, canAttack, canUseHeroPower, effectiveManaCost, getSpellTargets, getValidTargets, heroPowerNeedsTarget } from "@/lib/game/engine";
@@ -115,6 +117,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     currentTargetSlotIndex,
     confirmMulligan,
     activateHeroPower,
+    openEpargnePicker,
     isMyTurn,
     getMyPlayerState,
     getOpponentPlayerState,
@@ -292,6 +295,12 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     const action = activateHeroPower();
     broadcast(action);
   }, [activateHeroPower, broadcast]);
+
+  // Épargne : le picker s'ouvre localement et ne renvoie jamais d'action —
+  // seul le choix final part sur le réseau (cf. openEpargnePicker).
+  const handleSpendEpargne = useCallback(() => {
+    broadcast(openEpargnePicker());
+  }, [openEpargnePicker, broadcast]);
 
   // Touch devices: the portrait double-tap (non-targeted powers) is unreliable
   // and creatures/hand cards can overlap the small portrait disc, so coarse-
@@ -571,6 +580,29 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
   const myHeroDef = myPlayer.hero.heroDefinition;
   const oppHeroDef = opponent.hero.heroDefinition;
   const heroPowerAvailable = myTurn && canUseHeroPower(gameState) && !!myHeroDef;
+  // Le compteur n'est cliquable qu'à son tour, avec au moins 1 d'épargne et de
+  // la place en main. Le moteur re-valide tout : ceci n'est que l'affordance.
+  const canSpendEpargne = myTurn
+    && (myPlayer.epargne ?? 0) >= 1
+    && myPlayer.hand.length < MAX_HAND_SIZE;
+
+  // SECONDE VIE : créatures de MON cimetière jouables maintenant (mon tour,
+  // mana suffisant, place sur le plateau). Le moteur re-valide tout.
+  // Valeurs dérivées SIMPLES, sans useMemo/useCallback : on se trouve après le
+  // return anticipé qui garde `myPlayer`, et un hook conditionnel casserait
+  // l'ordre des hooks entre deux rendus.
+  const secondeViePlayableIds = (myTurn && myPlayer.board.length < MAX_BOARD_SIZE)
+    ? myPlayer.graveyard
+        .filter((c) => c.card.card_type === "creature"
+          && c.card.keywords.includes("seconde_vie")
+          && secondeVieCost(c) <= myPlayer.mana)
+        .map((c) => c.instanceId)
+    : [];
+
+  const handlePlayFromGraveyard = (instanceId: string) => {
+    setGraveyardView(null);
+    broadcast(dispatchAction({ type: "play_card", cardInstanceId: instanceId, fromGraveyard: true }));
+  };
 
   // Une carte de la main ADVERSE vient d'être boostée (Entrainement côté
   // adverse). La main adverse est un simple paquet de dos (pas d'élément par
@@ -898,7 +930,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
                 : undefined
             }
           />
-          <ManaBar current={opponent.mana} max={opponent.maxMana} />
+          <ManaBar current={opponent.mana} max={opponent.maxMana} epargne={opponent.epargne} />
         </div>
         )}
 
@@ -928,7 +960,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             />
             {/* Mana orbs sit directly under the 3D hero so they read as
                 "next to the HP number" rendered inside the canvas. */}
-            <ManaBar current={opponent.mana} max={opponent.maxMana} />
+            <ManaBar current={opponent.mana} max={opponent.maxMana} epargne={opponent.epargne} />
           </div>
         )}
 
@@ -1151,7 +1183,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
           {/* Le pouvoir héroïque tactile est rendu dans la colonne END TURN
               (bord droit, zone dégagée) pour ne pas être recouvert par une main
               pleine — cf. ce bloc plus bas. */}
-          <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} />
+          <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} epargne={myPlayer.epargne} canSpendEpargne={canSpendEpargne} onSpendEpargne={handleSpendEpargne} />
         </div>
         )}
 
@@ -1185,7 +1217,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
                 droit dégagé) afin de ne pas être recouvert par une main pleine. */}
             {/* Mana orbs directly under the 3D hero, next to the HP number
                 rendered inside the canvas. */}
-            <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} />
+            <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} epargne={myPlayer.epargne} canSpendEpargne={canSpendEpargne} onSpendEpargne={handleSpendEpargne} />
           </div>
         )}
 
@@ -1325,6 +1357,8 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
               : t("zone_graveyard_opponent")
           }
           onClose={() => setGraveyardView(null)}
+          selectableInstanceIds={graveyardView === "my" ? secondeViePlayableIds : undefined}
+          onSelectCard={graveyardView === "my" ? handlePlayFromGraveyard : undefined}
         />
       )}
       {targetingMode === "graveyard" && !overlayPeeked && (

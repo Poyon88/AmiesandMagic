@@ -393,6 +393,10 @@
         "label": "霊感 X",
         "desc": "カードをX枚引く。"
       },
+      "epargne": {
+        "label": "貯蓄X",
+        "desc": "貯蓄カウンターに X を追加します（最大10）。"
+      },
       "concentration": {
         "label": "集中 X",
         "desc": "手札の呪文はすべて、コスト+Xのランダムな呪文(全陣営)に変化し、コストがX軽減される。"
@@ -424,6 +428,26 @@
       "force_des_ancetres": {
         "label": "祖霊の力 +X/+Y",
         "desc": "自分の墓地にクリーチャーが5体以上ある限り、+X ATKと+Y PVを得る。"
+      },
+      "seconde_vie": {
+        "label": "セカンドライフX",
+        "desc": "墓地からX魔力で使用できる。使用後、セカンドライフを失う。"
+      },
+      "incineration": {
+        "label": "焼却X",
+        "desc": "対象の墓地からカードをX枚ランダムに選び、所有者のデッキの一番下に戻す。"
+      },
+      "devoration": {
+        "label": "捕食",
+        "desc": "対象のユニットを1体破壊する。このクリーチャーはそのATKとPVを永久に得る。"
+      },
+      "creuser": {
+        "label": "発掘X",
+        "desc": "デッキの一番下からX枚のカードを見て、その中の1枚を一番上に置く。"
+      },
+      "retour_differe": {
+        "label": "遅延帰還",
+        "desc": "対象のユニットを所有者のデッキの一番下に置く。"
       }
     },
     "spell_keywords": {
@@ -535,6 +559,10 @@
         "label": "回復 X",
         "desc": "対象のPVをX回復する"
       },
+      "epargne": {
+        "label": "貯蓄X",
+        "desc": "貯蓄カウンターに X を追加します（最大10）"
+      },
       "inspiration": {
         "label": "鼓舞 X",
         "desc": "カードをX枚引く"
@@ -578,6 +606,18 @@
       "afflux": {
         "label": "魔力流入 X",
         "desc": "このターン、マナをX獲得する"
+      },
+      "incineration": {
+        "label": "焼却X",
+        "desc": "対象の墓地からカードをX枚ランダムに選び、所有者のデッキの一番下に戻す"
+      },
+      "creuser": {
+        "label": "発掘X",
+        "desc": "デッキの一番下からX枚のカードを見て、その中の1枚を一番上に置く"
+      },
+      "retour_differe": {
+        "label": "遅延帰還",
+        "desc": "対象のユニットを所有者のデッキの一番下に置く"
       }
     },
     "composed": {
@@ -615,9 +655,13 @@
         "exhum_all": "すべてのクリーチャー",
         "exhum_upto": "クリーチャー{n}体まで",
         "invocation": "コスト{x}{filter}のランダムなクリーチャーを召喚する",
+        "epargne": "貯蓄カウンターに{x}を追加",
         "selection": "3枚のカード{filter}（コスト{x}以下）を公開し、その中から1枚を手札に加える",
         "selection_magique": "呪文{filter}を3枚公開し(コスト{x}以下)、その中から1枚を手札に加える",
-        "renfort_royal": "コレクションから3枚のカード{filter}（コスト{x}以下）を公開し、その中から1枚を手札に加える"
+        "renfort_royal": "コレクションから3枚のカード{filter}（コスト{x}以下）を公開し、その中から1枚を手札に加える",
+        "incineration": "対象の墓地からカードを{x}枚所有者のデッキの一番下に戻す",
+        "devoration": "捕食する",
+        "retour_differe": "所有者のデッキの一番下に置く"
       },
       "pool": {
         "race": "（種族：{v}）",
@@ -698,7 +742,7 @@
       },
       "Nains": {
         "displayName": "山岳の軍勢",
-        "description": "堅固で耐久力抜群：防御、粘り強さ、鍛冶、そしてノーム工学。"
+        "description": "頑丈で屈強：防御、忍耐、鍛冶、ノーム工学、山頂の巨像。"
       },
       "EmpireDuMilieu": {
         "displayName": "中央帝国",
@@ -745,10 +789,10 @@
       "Les Hauts-Elfes": "ハイエルフ",
       "La Forêt d'Émeraude": "翠玉の森",
       "La Combe Verte": "緑の谷",
-      "Les Gardiens de la Montagne": "山の守護者",
       "La Forge Ardente": "烈火の鍛冶場",
-      "Les Sentinelles d'Airain": "真鍮の歩哨",
       "La Guilde des Ingénieurs": "技師ギルド",
+      "Clan des Mille Tunnels": "千坑道氏族",
+      "Clan des Premiers Géants": "始祖巨人氏族",
       "Les Hordes des Steppes": "草原の大軍団",
       "L'Empire de Jade": "翡翠帝国",
       "Les Lames de l'Ombre": "影の刃",
@@ -790,6 +834,7 @@
       "Gnomes": "ノーム",
       "Machines": "機械",
       "Kobolds": "コボルト",
+      "Géants": "巨人",
       "Humains": "人間",
       "Griffons": "グリフォン",
       "Faucons": "隼",
@@ -805,7 +850,6 @@
       "Hommes-Poissons": "魚人",
       "Hommes-Oiseaux": "鳥人",
       "Élémentaire": "エレメンタル",
-      "Géants": "巨人",
       "Ogres": "オーガ",
       "Dragons": "ドラゴン",
       "Chiens": "犬",
@@ -876,6 +920,16 @@
         "def": "ノーム",
         "bare": "ノーム",
         "de": "ノーム"
+      },
+      "Machines": {
+        "def": "機械",
+        "bare": "機械",
+        "de": "機械"
+      },
+      "Kobolds": {
+        "def": "コボルド",
+        "bare": "コボルド",
+        "de": "コボルド"
       },
       "Humains": {
         "def": "人間",

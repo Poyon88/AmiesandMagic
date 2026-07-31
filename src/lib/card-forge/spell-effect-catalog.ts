@@ -58,6 +58,9 @@ const COMPOSED_PRESETS: Partial<Record<SpellKeywordId, ComposedEffect>> = {
   exhumation: { content: "exhumation", magnitude: { x: 1 }, target: board({ side: "ally", location: "graveyard" }) },
   // Invocation X : le coût X est EXACT (pas un plafond) — cf. resolveInvocationSummon.
   invocation: { content: "invocation", magnitude: { x: 1 } },
+  epargne: { content: "epargne", magnitude: { x: 1 } },
+  incineration: { content: "incineration", magnitude: { x: 1 }, target: board({ entity: "hero", designation: "automatic" }) },
+  retour_differe: { content: "retour_differe", target: board({ side: "any" }) },
   selection: { content: "selection", magnitude: { x: 1 } },
   selection_magique: { content: "selection_magique", magnitude: { x: 1 } },
   renfort_royal: { content: "renfort_royal", magnitude: { x: 1 } },

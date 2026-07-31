@@ -393,6 +393,10 @@
         "label": "Inspiration X",
         "desc": "Draw X cards."
       },
+      "epargne": {
+        "label": "Thrift X",
+        "desc": "Adds X to your Thrift counter (max 10)."
+      },
       "concentration": {
         "label": "Focus X",
         "desc": "Each spell in hand becomes a random spell with cost +X, reduced by X (all factions)."
@@ -424,6 +428,26 @@
       "force_des_ancetres": {
         "label": "Ancestral Strength +X/+Y",
         "desc": "While your graveyard holds 5 or more creatures, gains +X ATK and +Y HP."
+      },
+      "seconde_vie": {
+        "label": "Second Life X",
+        "desc": "Can be played from your graveyard for X mana. It then loses Second Life."
+      },
+      "incineration": {
+        "label": "Incineration X",
+        "desc": "Puts X random cards from the targeted graveyard back under their owner's deck."
+      },
+      "devoration": {
+        "label": "Devouring",
+        "desc": "Destroys a targeted unit; this creature permanently gains its ATK and HP."
+      },
+      "creuser": {
+        "label": "Dig X",
+        "desc": "Look at the bottom X cards of your deck; place one of them on top."
+      },
+      "retour_differe": {
+        "label": "Delayed Return",
+        "desc": "Places the targeted unit under its owner's deck."
       }
     },
     "spell_keywords": {
@@ -535,6 +559,10 @@
         "label": "Healing X",
         "desc": "Restores X HP to a target."
       },
+      "epargne": {
+        "label": "Thrift X",
+        "desc": "Adds X to your Thrift counter (max 10)"
+      },
       "inspiration": {
         "label": "Inspiration X",
         "desc": "Draw X cards."
@@ -578,6 +606,18 @@
       "afflux": {
         "label": "Surge X",
         "desc": "Gain X mana this turn."
+      },
+      "incineration": {
+        "label": "Incineration X",
+        "desc": "Puts X random cards from the targeted graveyard back under their owner's deck"
+      },
+      "creuser": {
+        "label": "Dig X",
+        "desc": "Look at the bottom X cards of your deck; place one of them on top"
+      },
+      "retour_differe": {
+        "label": "Delayed Return",
+        "desc": "Places the targeted unit under its owner's deck"
       }
     },
     "composed": {
@@ -615,9 +655,13 @@
         "exhum_all": "all creatures",
         "exhum_upto": "up to {n} creatures",
         "invocation": "summons a random creature with cost {x}{filter}",
+        "epargne": "adds {x} to your Thrift counter",
         "selection": "reveals 3 cards{filter} (cost ≤ {x}) and keeps one in hand",
         "selection_magique": "reveals 3 spells{filter} (cost ≤ {x}) and keeps one in hand",
-        "renfort_royal": "reveals 3 collection cards{filter} (cost ≤ {x}) and keeps one in hand"
+        "renfort_royal": "reveals 3 collection cards{filter} (cost ≤ {x}) and keeps one in hand",
+        "incineration": "puts {x} cards from the targeted graveyard back under its deck",
+        "devoration": "devours",
+        "retour_differe": "places under its owner's deck"
       },
       "pool": {
         "race": " of race {v}",
@@ -698,7 +742,7 @@
       },
       "Nains": {
         "displayName": "The Armies of the Mountains",
-        "description": "Sturdy and resilient: defense, tenacity, forging, and gnome engineering."
+        "description": "Sturdy and resilient: defense, tenacity, forge-craft, gnomish engineering, and summit colossi."
       },
       "EmpireDuMilieu": {
         "displayName": "The Middle Empire",
@@ -745,10 +789,10 @@
       "Les Hauts-Elfes": "The High Elves",
       "La Forêt d'Émeraude": "The Emerald Forest",
       "La Combe Verte": "The Green Vale",
-      "Les Gardiens de la Montagne": "The Mountain Wardens",
       "La Forge Ardente": "The Blazing Forge",
-      "Les Sentinelles d'Airain": "The Bronze Sentinels",
       "La Guilde des Ingénieurs": "The Engineers' Guild",
+      "Clan des Mille Tunnels": "Clan of a Thousand Tunnels",
+      "Clan des Premiers Géants": "Clan of the First Giants",
       "Les Hordes des Steppes": "The Steppe Hordes",
       "L'Empire de Jade": "The Jade Empire",
       "Les Lames de l'Ombre": "The Shadow Blades",
@@ -790,6 +834,7 @@
       "Gnomes": "Gnomes",
       "Machines": "Machines",
       "Kobolds": "Kobolds",
+      "Géants": "Giants",
       "Humains": "Humans",
       "Griffons": "Griffins",
       "Faucons": "Falcons",
@@ -805,7 +850,6 @@
       "Hommes-Poissons": "Fish-Men",
       "Hommes-Oiseaux": "Bird-Men",
       "Élémentaire": "Elemental",
-      "Géants": "Giants",
       "Ogres": "Ogres",
       "Dragons": "Dragons",
       "Chiens": "Dogs",
@@ -876,6 +920,16 @@
         "def": "the Gnome",
         "bare": "Gnome",
         "de": "of the Gnome"
+      },
+      "Machines": {
+        "def": "the Machine",
+        "bare": "Machine",
+        "de": "of the Machine"
+      },
+      "Kobolds": {
+        "def": "the Kobold",
+        "bare": "Kobold",
+        "de": "of the Kobold"
       },
       "Humains": {
         "def": "the Human",

@@ -27,6 +27,7 @@ import type {
   TokenTemplate,
   PendingTrigger,
   ResolvePendingTriggerAction,
+  SpendEpargneAction,
   StackFrame,
   FormatCode,
 } from "./types";
@@ -42,6 +43,7 @@ import {
   MAX_HAND_SIZE,
   MAX_BOARD_SIZE,
   MAX_MANA,
+  MAX_EPARGNE,
 } from "./constants";
 import { getFactionForRace, getEffectiveAlignment, FACTIONS } from "@/lib/card-engine/constants";
 
@@ -503,6 +505,18 @@ function applyComposedToUnit(
   fromSpell = false,
 ): void {
   switch (composed.content) {
+    case "devoration": {
+      // Sans instance source (effet porté par un SORT), il n'y a personne pour
+      // absorber les stats : on ne détruit rien plutôt que de faire une
+      // destruction déguisée qui mentirait sur la capacité.
+      if (!source) return;
+      resolveDevoration(source, u.instanceId, owner, opponent);
+      return;
+    }
+    case "retour_differe": {
+      resolveRetourDiffere(u.instanceId, source?.instanceId ?? null, owner, opponent, fromSpell);
+      return;
+    }
     case "deal_damage": {
       // Riposte : la source à punir est la créature à l'origine de l'effet, sauf
       // quand l'effet vient d'un SORT (source = instance de sort, hors plateau)
@@ -680,6 +694,14 @@ function resolveComposedEffect(
   switch (composed.content) {
     case "draw_cards": for (let i = 0; i < x; i++) drawCard(owner); return;
     case "gain_mana": owner.mana += x; return;
+    // Épargne : alimente le compteur du contrôleur. Aucune cible, donc aucun
+    // besoin de `source` — un sort comme une créature y accèdent pareillement.
+    case "epargne": addEpargne(owner, x); return;
+    // Incinération : le camp visé vient de `target.side` — l'effet frappe un
+    // CIMETIÈRE entier, aucune unité n'est touchée individuellement.
+    case "incineration":
+      resolveIncineration(composed.target?.side === "ally" ? owner : opponent, x);
+      return;
     case "discard":
       for (let i = 0; i < x && owner.hand.length > 0; i++) {
         discardFromHand(owner, Math.floor(rng() * owner.hand.length), [owner, opponent]);
@@ -1043,7 +1065,7 @@ function createCardInstance(card: Card): CardInstance {
     necrophagiePVBonus: 0,
     richesseATKBonus: 0,
     richessePVBonus: 0,
-    martyrATKBonus: 0,
+    martyrATKBonus: 0, devorationATKBonus: 0, devorationPVBonus: 0,
     persecutionX: 0,
     riposteX: 0,
     carnageX: 0,
@@ -1099,9 +1121,11 @@ export function persistentStats(inst: CardInstance): { attack: number; health: n
   return {
     attack: (inst.card.attack ?? 0)
       + inst.loyauteATKBonus + inst.summonBonusATK + inst.necrophagieATKBonus
-      + inst.richesseATKBonus + inst.martyrATKBonus + inst.instinctDeMeuteATKBonus,
+      + inst.richesseATKBonus + inst.martyrATKBonus + inst.instinctDeMeuteATKBonus
+      + inst.devorationATKBonus,
     health: (inst.card.health ?? 1)
-      + inst.loyautePVBonus + inst.necrophagiePVBonus + inst.richessePVBonus,
+      + inst.loyautePVBonus + inst.necrophagiePVBonus + inst.richessePVBonus
+      + inst.devorationPVBonus,
   };
 }
 
@@ -1237,6 +1261,8 @@ export function initializeGame(
     spellHistory: [],
     fatigueDamage: 0,
     ownedLimitedCardIds: [],
+    // null = Épargne jamais déclenchée ⇒ compteur masqué (cf. PlayerState).
+    epargne: null,
   });
 
   return {
@@ -1335,6 +1361,7 @@ export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
     atk += c.richesseATKBonus;
     atk += c.martyrATKBonus;
     atk += c.instinctDeMeuteATKBonus;
+    atk += c.devorationATKBonus;
     c.currentAttack = atk;
   }
   for (const c of opponent.board) {
@@ -1345,6 +1372,7 @@ export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
     atk += c.richesseATKBonus;
     atk += c.martyrATKBonus;
     atk += c.instinctDeMeuteATKBonus;
+    atk += c.devorationATKBonus;
     c.currentAttack = atk;
   }
 
@@ -1890,11 +1918,24 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
   const player = newState.players[newState.currentPlayerIndex];
   const opponent = newState.players[newState.currentPlayerIndex === 0 ? 1 : 0];
 
-  const cardIndex = player.hand.findIndex(c => c.instanceId === action.cardInstanceId);
+  // SECONDE VIE X : la carte peut être jouée depuis le CIMETIÈRE pour son coût
+  // alternatif. Seule la zone SOURCE change — tout le flux d'invocation qui
+  // suit (coûts alternatifs, placement, effets d'arrivée en jeu) est commun,
+  // ce qui garantit que les déclencheurs se comportent « comme depuis la main »
+  // sans les redéclarer.
+  const fromGraveyard = action.fromGraveyard === true;
+  const zone = fromGraveyard ? player.graveyard : player.hand;
+  const cardIndex = zone.findIndex(c => c.instanceId === action.cardInstanceId);
   if (cardIndex === -1) return state;
 
-  const cardInstance = player.hand[cardIndex];
+  const cardInstance = zone[cardIndex];
   const card = cardInstance.card;
+
+  // Depuis le cimetière : réservé aux CRÉATURES portant encore Seconde vie.
+  // Re-validé ici parce que le moteur rejoue l'action chez l'adversaire.
+  if (fromGraveyard && (card.card_type !== "creature" || !hasKw(cardInstance, "seconde_vie"))) {
+    return state;
+  }
 
   // Canalisation: reduce spell cost by 1 per unit with Canalisation on board.
   // Entraide: reduce creature cost by 1 per allied creature whose race
@@ -1906,7 +1947,11 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
   // Tokens (token_id != null) override the baseline 0 mana_cost with
   // floor((attack+health)/2) so a token bounced/recalled into the hand isn't
   // free to re-cast.
-  const manaCost = effectiveManaCost(cardInstance, player);
+  // Depuis le cimetière, le coût est celui de Seconde vie — les réductions de
+  // coût de main (Canalisation, Entraide, Concentration) ne s'y appliquent pas.
+  const manaCost = fromGraveyard
+    ? getKwX(cardInstance, "seconde_vie", undefined, 1)
+    : effectiveManaCost(cardInstance, player);
 
   if (manaCost > player.mana) return state;
 
@@ -1937,7 +1982,16 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
   if (lifeCost > 0) player.hero.hp -= lifeCost;
   // Remove the played card from hand FIRST so it can never be its own discard
   // target and so hand-size checks downstream are accurate.
-  player.hand.splice(cardIndex, 1);
+  zone.splice(cardIndex, 1);
+  // La créature ressuscitée PERD Seconde vie : sans ça elle retournerait au
+  // cimetière avec sa capacité intacte et serait rejouable indéfiniment.
+  if (fromGraveyard) {
+    cardInstance.card = {
+      ...cardInstance.card,
+      keywords: cardInstance.card.keywords.filter(k => k !== "seconde_vie"),
+      keyword_instances: (cardInstance.card.keyword_instances ?? []).filter(k => k.id !== "seconde_vie"),
+    };
+  }
   // Discard chosen hand cards.
   for (const id of requestedDiscards) {
     const idx = player.hand.findIndex(c => c.instanceId === id);
@@ -1990,6 +2044,36 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       const inspXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
       const x = inspXVals["inspiration"] ?? 1;
       for (let i = 0; i < x; i++) drawCard(player);
+    }
+
+    // Incinération X : recycle X cartes du cimetière ciblé sous son deck. Le
+    // camp visé est déduit de la CIBLE choisie (une unité ou un héros) : viser
+    // son propre camp recycle son cimetière, viser l'adverse recycle le sien.
+    if (hasKwOnPlay(cardInstance, "incineration")) {
+      const victim = incinerationVictim(action.targetInstanceId, player, opponent);
+      resolveIncineration(victim, getKwX(cardInstance, "incineration", undefined, 1));
+    }
+
+    // Creuser X : regarde le dessous du deck du contrôleur, en remonte une.
+    if (hasKwOnPlay(cardInstance, "creuser")) {
+      resolveCreuser(player, getKwX(cardInstance, "creuser", undefined, 1), action.divinationChoiceIndex);
+    }
+
+    // Retour différé : l'unité ciblée repart sous le deck de son propriétaire.
+    if (hasKwOnPlay(cardInstance, "retour_differe")) {
+      resolveRetourDiffere(action.targetInstanceId, cardInstance.instanceId, player, opponent);
+    }
+
+    // Dévoration : détruit l'unité ciblée et absorbe ses stats.
+    if (hasKwOnPlay(cardInstance, "devoration")) {
+      resolveDevoration(cardInstance, action.targetInstanceId, player, opponent);
+    }
+
+    // Épargne X : alimente le compteur du contrôleur à l'invocation. Les autres
+    // modes (mort, tap, retour, fin de tour, attaque) passent par
+    // resolveCuratedKeywordEffect — ce bloc ne couvre QUE l'entrée en jeu.
+    if (hasKwOnPlay(cardInstance, "epargne")) {
+      addEpargne(player, getKwX(cardInstance, "epargne", undefined, 1));
     }
 
     // Concentration X: remplace chaque sort en main par un sort aléatoire
@@ -2719,6 +2803,13 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // Backward compat: single targetInstanceId → target_0
     if (action.targetInstanceId && !action.targetMap) {
       targetMap["target_0"] = action.targetInstanceId;
+    }
+    // CREUSER : le picker de choix « 1 parmi X » est le même que Divination et
+    // renvoie donc un `divinationChoiceIndex`. On le convertit ici dans le slot
+    // que lit la forme SORT, pour que les deux formes partagent un seul chemin
+    // d'interface au lieu d'en maintenir deux.
+    if (action.divinationChoiceIndex != null && targetMap["creuser_0"] == null) {
+      targetMap["creuser_0"] = String(action.divinationChoiceIndex);
     }
 
     // Track spell in history (exclude spells with "relancer" to prevent loops)
@@ -3480,6 +3571,27 @@ function resolveSpellKeywords(
       case "inspiration": {
         const amount = kw.amount ?? 1;
         for (let j = 0; j < amount; j++) drawCard(ctx.caster);
+        break;
+      }
+      case "epargne": {
+        addEpargne(ctx.caster, kw.amount ?? 1);
+        break;
+      }
+      case "incineration": {
+        resolveIncineration(incinerationVictim(targetId, ctx.caster, ctx.opponent), kw.amount ?? 1);
+        break;
+      }
+      case "creuser": {
+        // Le choix voyage dans targetMap sous un slot dédié, comme `selection_0`
+        // — le contexte de sort n'a pas à grossir d'un champ par mécanique.
+        const raw = ctx.targetMap["creuser_0"];
+        const idx = raw != null ? parseInt(raw, 10) : 0;
+        resolveCreuser(ctx.caster, kw.amount ?? 1, Number.isNaN(idx) ? 0 : idx);
+        break;
+      }
+      case "retour_differe": {
+        // Sort → respecte Transcendance, comme Remontée.
+        resolveRetourDiffere(targetId, null, ctx.caster, ctx.opponent, true);
         break;
       }
       case "pillage": {
@@ -4426,6 +4538,157 @@ function cloneStateForAction(state: GameState): GameState {
   const next = deepClone({ ...state, factionCardPool: undefined, allSpellsPool: undefined } as GameState);
   currentBoardPlayers = next.players;
   return next;
+}
+
+/** Camp dont le cimetière est visé par Incinération.
+ *
+ *  La cible désigne un CAMP, pas une carte : on vise une unité ou un héros, et
+ *  c'est le cimetière de son contrôleur qui est recyclé. Ça évite d'inventer un
+ *  type de ciblage « cimetière adverse » que le moteur ne connaît pas, tout en
+ *  laissant le choix des deux camps demandé par la règle.
+ *  Sans cible exploitable, on vise l'ADVERSAIRE : c'est l'usage offensif, et le
+ *  repli le moins surprenant pour un effet non ciblé (sort relancé, mode mort). */
+function incinerationVictim(
+  targetId: string | undefined,
+  controller: PlayerState,
+  other: PlayerState,
+): PlayerState {
+  if (!targetId) return other;
+  if (targetId === "friendly_hero") return controller;
+  if (targetId === "enemy_hero") return other;
+  if (findCreatureOnBoard(controller, targetId)) return controller;
+  if (findCreatureOnBoard(other, targetId)) return other;
+  return other;
+}
+
+/** INCINÉRATION X — renvoie X cartes prises AU HASARD dans le cimetière de
+ *  `victim` sous SON deck, dans un ordre lui aussi aléatoire.
+ *
+ *  Le tirage passe par `rng()` (flux partagé et sérialisé dans l'état) et non
+ *  par un PRNG local : contrairement aux offres de Sélection, cet effet est
+ *  résolu DANS `applyAction`, donc les deux clients consomment la même graine
+ *  au même moment. */
+function resolveIncineration(victim: PlayerState, x: number): void {
+  if (x <= 0 || victim.graveyard.length === 0) return;
+  const count = Math.min(x, victim.graveyard.length);
+  const picked: CardInstance[] = [];
+  for (let i = 0; i < count; i++) {
+    const idx = Math.floor(rng() * victim.graveyard.length);
+    picked.push(victim.graveyard.splice(idx, 1)[0]);
+  }
+  // Les cartes recyclées repartent « neuves » : sans cette remise à zéro, une
+  // créature repiochée traînerait ses dégâts et ses bonus de la partie d'avant.
+  for (const inst of picked) returnInstanceToPlay(inst);
+  shuffleArray(picked);
+  victim.deck.push(...picked);
+}
+
+/** RETOUR DIFFÉRÉ — place l'unité ciblée sous le deck de son PROPRIÉTAIRE.
+ *
+ *  Même parenté que Remontée (dont il reprend les règles de ciblage et
+ *  l'immunité Transcendance côté sort), mais la destination est le dessous du
+ *  deck et non la main : le propriétaire la reverra, beaucoup plus tard. */
+function resolveRetourDiffere(
+  targetInstanceId: string | undefined,
+  sourceInstanceId: string | null,
+  controller: PlayerState,
+  other: PlayerState,
+  sourceIsSpell = false,
+): void {
+  let target: CardInstance | undefined;
+  if (targetInstanceId) {
+    const cand = findCreatureOnBoard(controller, targetInstanceId)
+      ?? findCreatureOnBoard(other, targetInstanceId);
+    if (cand && canBeRemonteed(cand, sourceInstanceId, sourceIsSpell)) target = cand;
+  } else {
+    // Sans cible explicite (sort relancé, mode attaque) : tirage au sort, comme
+    // Remontée — le flux synchrone ne peut pas ouvrir de picker.
+    const pool = [...controller.board, ...other.board]
+      .filter(c => canBeRemonteed(c, sourceInstanceId, sourceIsSpell));
+    if (pool.length > 0) target = pool[Math.floor(rng() * pool.length)];
+  }
+  if (!target) return;
+
+  const holder = controller.board.includes(target) ? controller : other;
+  holder.board = holder.board.filter(c => c !== target);
+  // Propriétaire d'origine lu AVANT returnInstanceToPlay, qui efface trueOwnerId
+  // (une unité volée par Domination retourne dans SON deck, pas celui du voleur).
+  const owner = target.trueOwnerId
+    ? ([controller, other].find(p => p.id === target!.trueOwnerId) ?? holder)
+    : holder;
+  returnInstanceToPlay(target);
+  target.instanceId = generateInstanceId();
+  owner.deck.push(target);
+}
+
+/** CREUSER X — regarde les X cartes du DESSOUS du deck et en remonte une sur le
+ *  dessus ; les autres retournent au fond dans leur ordre initial.
+ *
+ *  `choiceIndex` indexe la tranche révélée (du haut de la liste affichée vers
+ *  le bas), pas le deck : deux exemplaires d'une même carte restent donc
+ *  distinguables, là où un id de carte serait ambigu. */
+function resolveCreuser(player: PlayerState, x: number, choiceIndex: number | undefined): void {
+  if (x <= 0 || player.deck.length === 0) return;
+  const count = Math.min(x, player.deck.length);
+  const bottom = player.deck.splice(player.deck.length - count, count);
+  const idx = Math.min(Math.max(0, choiceIndex ?? 0), bottom.length - 1);
+  const chosen = bottom[idx];
+  for (let i = 0; i < bottom.length; i++) {
+    if (i !== idx) player.deck.push(bottom[i]); // les autres repartent au fond
+  }
+  player.deck.unshift(chosen); // la carte choisie passe sur le dessus
+}
+
+/** DÉVORATION — détruit l'unité ciblée ; la source absorbe définitivement son
+ *  ATK et ses PV.
+ *
+ *  Les stats absorbées sont les stats COURANTES de la victime (buffs compris) :
+ *  c'est ce que le joueur voit sur la carte au moment de dévorer. */
+function resolveDevoration(
+  source: CardInstance,
+  targetInstanceId: string | undefined,
+  controller: PlayerState,
+  other: PlayerState,
+): void {
+  let target: CardInstance | undefined;
+  if (targetInstanceId) {
+    target = findCreatureOnBoard(controller, targetInstanceId)
+      ?? findCreatureOnBoard(other, targetInstanceId);
+  } else {
+    const pool = [...controller.board, ...other.board].filter(c => c !== source);
+    if (pool.length > 0) target = pool[Math.floor(rng() * pool.length)];
+  }
+  // On ne se dévore pas soi-même : le gain serait absurde et la source mourrait.
+  if (!target || target === source) return;
+
+  const gainedAtk = Math.max(0, target.currentAttack);
+  const gainedHp = Math.max(0, target.currentHealth);
+  // La victime meurt par mise à 0 des PV : elle passe donc par le traitement de
+  // mort normal (râles d'agonie compris), au lieu d'être escamotée du plateau.
+  target.currentHealth = 0;
+  // Bonus SUIVIS, puis report immédiat sur les stats courantes. Le champ dédié
+  // est indispensable : recalculateAuras rebâtit currentAttack depuis la base
+  // et effacerait un simple `+=`, et persistentStats le rejoue lors des
+  // changements de zone — c'est ce qui rend le gain réellement définitif.
+  source.devorationATKBonus += gainedAtk;
+  source.devorationPVBonus += gainedHp;
+  source.currentAttack += gainedAtk;
+  source.maxHealth += gainedHp;
+  source.currentHealth += gainedHp;
+}
+
+/** Alimente le compteur d'Épargne d'un joueur, écrêté à MAX_EPARGNE.
+ *
+ *  `null` (jamais déclenchée) devient un nombre au premier appel : c'est ce
+ *  passage qui fait APPARAÎTRE le compteur à l'écran, définitivement. Il ne
+ *  redeviendra jamais `null`, même une fois dépensé.
+ *
+ *  Point d'entrée UNIQUE des trois chemins (mot-clé de créature, mot-clé de
+ *  sort, effet composé) pour que l'écrêtage et la règle d'apparition ne
+ *  puissent pas diverger entre eux. */
+function addEpargne(player: PlayerState, x: number): void {
+  if (x <= 0) return;
+  player.epargne = Math.min(MAX_EPARGNE, (player.epargne ?? 0) + x);
 }
 
 /** Retrouve le contrôleur d'une instance dans l'état en cours de mutation.
@@ -5471,6 +5734,30 @@ function resolveCuratedKeywordEffect(
       for (let i = 0; i < x; i++) drawCard(owner);
       break;
     }
+    case "incineration": {
+      resolveIncineration(incinerationVictim(targetInstanceId, owner, opponent), x);
+      break;
+    }
+    case "creuser": {
+      // Modes curés : aucun picker possible (mort, attaque, tour adverse) — on
+      // remonte la première carte révélée, choix par défaut assumé.
+      resolveCreuser(owner, x, 0);
+      break;
+    }
+    case "retour_differe": {
+      resolveRetourDiffere(targetInstanceId, source.instanceId, owner, opponent);
+      break;
+    }
+    case "devoration": {
+      resolveDevoration(source, targetInstanceId, owner, opponent);
+      break;
+    }
+    case "epargne": {
+      // `owner` = contrôleur de la créature source, quel que soit le mode
+      // (invocation, mort, tap, retour, fin de tour, attaque).
+      addEpargne(owner, x);
+      break;
+    }
     case "pillage": {
       for (let i = 0; i < x && opponent.hand.length > 0; i++) {
         discardFromHand(opponent, Math.floor(rng() * opponent.hand.length), [owner, opponent]);
@@ -6092,6 +6379,50 @@ export function tapActivate(state: GameState, action: TapActivateAction): GameSt
 // Retire le déclencheur de la file, exécute l'effet (Remontée pour l'instant) ;
 // d'éventuels enchaînements s'empilent dans pendingTriggerSink (rattaché par
 // applyAction).
+/** Dépense du compteur d'Épargne : accorde la carte choisie et remet le
+ *  compteur à zéro.
+ *
+ *  TOUT est re-validé ici, sans exception : cette fonction s'exécute aussi chez
+ *  l'ADVERSAIRE au rejeu de l'action, et il n'existe aucune validation serveur
+ *  dans ce jeu (le moteur tourne en double, Supabase ne fait que transporter).
+ *  Un client modifié pourrait donc réclamer n'importe quelle carte ; les gardes
+ *  ci-dessous sont la seule barrière.
+ *
+ *  Chaque refus renvoie `state` inchangé — en particulier le compteur n'est
+ *  JAMAIS remis à zéro sur un refus : une épargne perdue sans contrepartie
+ *  serait le pire des échecs silencieux. */
+export function spendEpargne(state: GameState, action: SpendEpargneAction): GameState {
+  const player = state.players[state.currentPlayerIndex];
+  const level = player.epargne ?? 0;
+  // Compteur vide (ou capacité jamais déclenchée) : rien à dépenser.
+  if (level < 1) return state;
+  // Main pleine : on refuse AVANT de consommer, sinon l'épargne partirait en
+  // fumée pour une carte que le joueur ne recevrait pas.
+  if (player.hand.length >= MAX_HAND_SIZE) return state;
+
+  const pool = state.factionCardPool;
+  if (!pool || pool.length === 0) return state;
+  const card = pool.find(c => c.id === action.selectionCardId);
+  if (!card) return state;
+
+  // Mêmes règles de pool que l'offre construite côté client (getSelectionCards
+  // avec exactCost) : rareté, alignement, et coût EXACTEMENT égal au compteur.
+  if (card.rarity !== "Commune") return state;
+  if (card.mana_cost !== level) return state;
+  const heroSource = { faction: player.hero.heroDefinition?.faction ?? null };
+  if (!card.faction || !factionsForSelectionAlignment(heroSource, player).has(card.faction)) return state;
+
+  const newState = cloneStateForAction(state);
+  newState.factionCardPool = pool;
+  newState.allSpellsPool = state.allSpellsPool;
+
+  const me = newState.players[newState.currentPlayerIndex];
+  me.hand.push(createCardInstance(card));
+  me.epargne = 0; // reste à 0 (visible), ne redevient jamais null.
+  newState.lastAction = action;
+  return newState;
+}
+
 export function resolvePendingTrigger(state: GameState, action: ResolvePendingTriggerAction): GameState {
   const pool = state.factionCardPool;
   const allPool = state.allSpellsPool;
@@ -6714,6 +7045,7 @@ export function applyAction(state: GameState, action: GameAction): GameState {
     case "tap_activate": result = tapActivate(state, action); break;
     case "concede": result = concede(state, action); break;
     case "resolve_pending_trigger": result = resolvePendingTrigger(state, action); break;
+    case "spend_epargne": result = spendEpargne(state, action); break;
     case "auto_resolve_pending_triggers": result = autoResolvePendingTriggers(state); break;
     default: result = state;
   }
@@ -7056,6 +7388,21 @@ export function getCreatureTargets(state: GameState, card: Card): string[] {
         return [...player.board, ...opponent.board]
           .filter(c => canBeRemonteed(c, null))
           .map(c => c.instanceId);
+      case "retour_differe":
+        // Mêmes règles de ciblage que Remontée : seule la destination diffère
+        // (dessous du deck plutôt que la main).
+        return [...player.board, ...opponent.board]
+          .filter(c => canBeRemonteed(c, null))
+          .map(c => c.instanceId);
+      case "devoration":
+        // Toute unité des deux plateaux. La source n'est pas encore en jeu, elle
+        // ne peut donc pas figurer dans la liste : rien à exclure.
+        return [...player.board, ...filterEnemyTargetable2(opponent.board)]
+          .map(c => c.instanceId);
+      case "incineration":
+        // La cible désigne un CAMP, pas une carte : les deux héros suffisent et
+        // rendent le geste lisible (« je vise ce cimetière-là »).
+        return ["friendly_hero", "enemy_hero"];
     }
   }
   // Repli : cible d'un effet composé à l'entrée "au choix" (unité et/ou héros).
@@ -7097,6 +7444,33 @@ export function creatureNeedsDivination(card: Card): boolean {
   // Gaté sur le mode on-play : une Divination en tap/mort/etc. ne doit pas
   // ouvrir la modale à l'invocation (elle se résout au hasard au déclenchement).
   return card.card_type === "creature" && cardHasKwOnPlay(card, "divination" as Keyword);
+}
+
+/** SECONDE VIE X — coût alternatif pour rejouer cette instance depuis le
+ *  cimetière. Source unique, partagée par l'interface (qui grise ce qui n'est
+ *  pas payable) et par le moteur (qui débite) : un écart entre les deux
+ *  laisserait proposer des créatures injouables. */
+export function secondeVieCost(inst: CardInstance): number {
+  return getKwX(inst, "seconde_vie", undefined, 1);
+}
+
+/** CREUSER X — la carte doit-elle ouvrir le picker « 1 parmi X » à son entrée ?
+ *  Vaut pour les CRÉATURES (mot-clé en mode invocation) comme pour les SORTS.
+ *  Gaté sur le mode on-play : un Creuser réglé en mort/tap se résout tout seul. */
+export function cardNeedsCreuser(card: Card): boolean {
+  if (card.card_type === "spell") {
+    return (card.spell_keywords ?? []).some(kw => kw.id === "creuser");
+  }
+  return cardHasKwOnPlay(card, "creuser" as Keyword);
+}
+
+/** Les X cartes du DESSOUS du deck, dans l'ordre où le picker doit les montrer
+ *  (le fond du deck en premier) — même ordre que la tranche lue par
+ *  resolveCreuser, sans quoi l'index choisi désignerait une autre carte. */
+export function getCreuserCards(player: PlayerState, x: number): CardInstance[] {
+  if (x <= 0 || player.deck.length === 0) return [];
+  const count = Math.min(x, player.deck.length);
+  return player.deck.slice(player.deck.length - count);
 }
 
 export function creatureNeedsTraqueDuDestin(card: Card): boolean {
@@ -7364,6 +7738,10 @@ export function getSelectionCards(
   maxManaCost: number,
   source?: { faction?: string | null; card_alignment?: string | null } | null,
   filter?: ComposedPoolFilter,
+  // Épargne : le compteur désigne un coût EXACT, pas un plafond — on n'y gagne
+  // que des cartes valant précisément ce qu'on a mis de côté. Les Sélections
+  // gardent le comportement « plafond » par défaut.
+  exactCost = false,
 ): Card[] {
   const pool = state.factionCardPool;
   if (!pool || pool.length === 0) return [];
@@ -7374,7 +7752,7 @@ export function getSelectionCards(
     c.faction
     && allowedFactions.has(c.faction)
     && c.rarity === "Commune"
-    && (maxManaCost <= 0 || c.mana_cost <= maxManaCost)
+    && (exactCost ? c.mana_cost === maxManaCost : (maxManaCost <= 0 || c.mana_cost <= maxManaCost))
     && matchesPoolFilter(c, filter),
   );
   if (filtered.length === 0) return [];

@@ -393,6 +393,10 @@
         "label": "Inspiration X",
         "desc": "Ziehe X Karten."
       },
+      "epargne": {
+        "label": "Sparen X",
+        "desc": "Fügt X zu deinem Sparzähler hinzu (maximal 10)."
+      },
       "concentration": {
         "label": "Konzentration X",
         "desc": "Jeder Zauber auf der Hand wird zu einem zufälligen Zauber mit Kosten +X, reduziert um X (alle Fraktionen)."
@@ -424,6 +428,26 @@
       "force_des_ancetres": {
         "label": "Kraft der Ahnen +X/+Y",
         "desc": "Solange dein Friedhof 5 oder mehr Kreaturen enthält, erhält diese Einheit +X ATK und +Y LP."
+      },
+      "seconde_vie": {
+        "label": "Zweites Leben X",
+        "desc": "Kann für X Mana aus deinem Friedhof gespielt werden. Sie verliert danach Zweites Leben."
+      },
+      "incineration": {
+        "label": "Einäscherung X",
+        "desc": "Legt X zufällige Karten des anvisierten Friedhofs unter das Deck ihres Besitzers."
+      },
+      "devoration": {
+        "label": "Verschlingen",
+        "desc": "Zerstört eine anvisierte Einheit; diese Kreatur erhält dauerhaft deren ATK und LP."
+      },
+      "creuser": {
+        "label": "Graben X",
+        "desc": "Sieh dir die untersten X Karten deines Decks an; lege eine davon oben auf."
+      },
+      "retour_differe": {
+        "label": "Verzögerte Rückkehr",
+        "desc": "Legt die anvisierte Einheit unter das Deck ihres Besitzers."
       }
     },
     "spell_keywords": {
@@ -535,6 +559,10 @@
         "label": "Heilung X",
         "desc": "Stellt einer Zieleinheit X LP wieder her."
       },
+      "epargne": {
+        "label": "Sparen X",
+        "desc": "Fügt X zu deinem Sparzähler hinzu (maximal 10)"
+      },
       "inspiration": {
         "label": "Inspiration X",
         "desc": "Ziehe X Karten."
@@ -578,6 +606,18 @@
       "afflux": {
         "label": "Zufluss X",
         "desc": "Erhalte X Mana in diesem Zug."
+      },
+      "incineration": {
+        "label": "Einäscherung X",
+        "desc": "Legt X zufällige Karten des anvisierten Friedhofs unter das Deck ihres Besitzers"
+      },
+      "creuser": {
+        "label": "Graben X",
+        "desc": "Sieh dir die untersten X Karten deines Decks an; lege eine davon oben auf"
+      },
+      "retour_differe": {
+        "label": "Verzögerte Rückkehr",
+        "desc": "Legt die anvisierte Einheit unter das Deck ihres Besitzers"
       }
     },
     "composed": {
@@ -615,9 +655,13 @@
         "exhum_all": "alle Kreaturen",
         "exhum_upto": "bis zu {n} Kreaturen",
         "invocation": "beschwört eine zufällige Kreatur mit Kosten {x}{filter}",
+        "epargne": "fügt {x} zu deinem Sparzähler hinzu",
         "selection": "deckt 3 Karten{filter} auf (Kosten ≤ {x}) und behält eine davon auf der Hand",
         "selection_magique": "deckt 3 Zauber{filter} auf (Kosten ≤ {x}) und behält einen davon auf der Hand",
-        "renfort_royal": "deckt 3 Sammelkarten{filter} auf (Kosten ≤ {x}) und behält eine davon auf der Hand"
+        "renfort_royal": "deckt 3 Sammelkarten{filter} auf (Kosten ≤ {x}) und behält eine davon auf der Hand",
+        "incineration": "legt {x} Karten des anvisierten Friedhofs unter dessen Deck",
+        "devoration": "verschlingt",
+        "retour_differe": "legt unter das Deck ihres Besitzers"
       },
       "pool": {
         "race": " der Rasse {v}",
@@ -698,7 +742,7 @@
       },
       "Nains": {
         "displayName": "Die Armeen der Berge",
-        "description": "Solide und zäh: Verteidigung, Unnachgiebigkeit, Schmiedekunst und Gnomingenieurswesen."
+        "description": "Robust und widerstandsfähig: Verteidigung, Zähigkeit, Schmiedekunst, gnomische Ingenieurskunst und Gipfelkolosse."
       },
       "EmpireDuMilieu": {
         "displayName": "Das Mittlere Kaiserreich",
@@ -745,10 +789,10 @@
       "Les Hauts-Elfes": "Die Hochelfen",
       "La Forêt d'Émeraude": "Der Smaragdwald",
       "La Combe Verte": "Das Grüne Tal",
-      "Les Gardiens de la Montagne": "Die Bergwächter",
       "La Forge Ardente": "Die Glühende Schmiede",
-      "Les Sentinelles d'Airain": "Die Erzwächter",
       "La Guilde des Ingénieurs": "Die Ingildsgilde",
+      "Clan des Mille Tunnels": "Clan der Tausend Tunnel",
+      "Clan des Premiers Géants": "Clan der Ersten Riesen",
       "Les Hordes des Steppes": "Die Steppenhoriden",
       "L'Empire de Jade": "Das Jadekaisertum",
       "Les Lames de l'Ombre": "Die Klingen des Schattens",
@@ -790,6 +834,7 @@
       "Gnomes": "Gnome",
       "Machines": "Maschinen",
       "Kobolds": "Kobolde",
+      "Géants": "Riesen",
       "Humains": "Menschen",
       "Griffons": "Greifen",
       "Faucons": "Falken",
@@ -805,7 +850,6 @@
       "Hommes-Poissons": "Fischmenschen",
       "Hommes-Oiseaux": "Vogelmenschen",
       "Élémentaire": "Elementare",
-      "Géants": "Riesen",
       "Ogres": "Oger",
       "Dragons": "Drachen",
       "Chiens": "Hunde",
@@ -876,6 +920,16 @@
         "def": "der Gnom",
         "bare": "Gnom",
         "de": "des Gnoms"
+      },
+      "Machines": {
+        "def": "die Maschine",
+        "bare": "Maschine",
+        "de": "der Maschine"
+      },
+      "Kobolds": {
+        "def": "der Kobold",
+        "bare": "Kobold",
+        "de": "des Kobolds"
       },
       "Humains": {
         "def": "der Mensch",

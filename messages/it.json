@@ -393,6 +393,10 @@
         "label": "Ispirazione X",
         "desc": "Pesca X carte."
       },
+      "epargne": {
+        "label": "Risparmio X",
+        "desc": "Aggiunge X al tuo contatore Risparmio (massimo 10)."
+      },
       "concentration": {
         "label": "Concentrazione X",
         "desc": "Ogni incantesimo in mano diventa un incantesimo casuale di costo +X, ridotto di X (tutte le fazioni)."
@@ -424,6 +428,26 @@
       "force_des_ancetres": {
         "label": "Forza degli antenati +X/+Y",
         "desc": "Finché il tuo cimitero contiene 5 o più creature, guadagna +X ATK e +Y PV."
+      },
+      "seconde_vie": {
+        "label": "Seconda vita X",
+        "desc": "Può essere giocata dal vostro cimitero per X mana. Perde quindi Seconda vita."
+      },
+      "incineration": {
+        "label": "Incenerimento X",
+        "desc": "Rimette X carte a caso dal cimitero bersaglio sotto il deck del proprietario."
+      },
+      "devoration": {
+        "label": "Divorazione",
+        "desc": "Distrugge un'unità bersaglio; questa creatura guadagna definitivamente il suo ATK e i suoi PV."
+      },
+      "creuser": {
+        "label": "Scavare X",
+        "desc": "Guardate le X carte in fondo al vostro deck; mettetene una in cima."
+      },
+      "retour_differe": {
+        "label": "Ritorno differito",
+        "desc": "Mette l'unità bersaglio sotto il deck del proprietario."
       }
     },
     "spell_keywords": {
@@ -535,6 +559,10 @@
         "label": "Guarigione X",
         "desc": "Ripristina X PV a un bersaglio"
       },
+      "epargne": {
+        "label": "Risparmio X",
+        "desc": "Aggiunge X al tuo contatore Risparmio (massimo 10)"
+      },
       "inspiration": {
         "label": "Ispirazione X",
         "desc": "Pesca X carte"
@@ -578,6 +606,18 @@
       "afflux": {
         "label": "Afflusso X",
         "desc": "Guadagna X mana questo turno"
+      },
+      "incineration": {
+        "label": "Incenerimento X",
+        "desc": "Rimette X carte a caso dal cimitero bersaglio sotto il deck del proprietario"
+      },
+      "creuser": {
+        "label": "Scavare X",
+        "desc": "Guardate le X carte in fondo al vostro deck; mettetene una in cima"
+      },
+      "retour_differe": {
+        "label": "Ritorno differito",
+        "desc": "Mette l'unità bersaglio sotto il deck del proprietario"
       }
     },
     "composed": {
@@ -615,9 +655,13 @@
         "exhum_all": "tutte le creature",
         "exhum_upto": "fino a {n} creature",
         "invocation": "evoca una creatura casuale di costo {x}{filter}",
+        "epargne": "aggiunge {x} al tuo contatore Risparmio",
         "selection": "rivela 3 carte{filter} (costo ≤ {x}) e ne tiene una in mano",
         "selection_magique": "rivela 3 incantesimi{filter} (costo ≤ {x}) e ne tiene uno in mano",
-        "renfort_royal": "rivela 3 carte da collezione{filter} (costo ≤ {x}) e ne tiene una in mano"
+        "renfort_royal": "rivela 3 carte da collezione{filter} (costo ≤ {x}) e ne tiene una in mano",
+        "incineration": "rimette {x} carte dal cimitero bersaglio sotto il suo deck",
+        "devoration": "divora",
+        "retour_differe": "mette sotto il deck del proprietario"
       },
       "pool": {
         "race": " di razza {v}",
@@ -698,7 +742,7 @@
       },
       "Nains": {
         "displayName": "Le Armate delle Montagne",
-        "description": "Solidi e resistenti: difesa, tenacia, forgia e ingegneria gnome."
+        "description": "Solidi e resistenti: difesa, tenacia, forgia, ingegneria gnoma e colossi delle vette."
       },
       "EmpireDuMilieu": {
         "displayName": "L'Impero di Mezzo",
@@ -745,10 +789,10 @@
       "Les Hauts-Elfes": "Gli Alti Elfi",
       "La Forêt d'Émeraude": "La Foresta di Smeraldo",
       "La Combe Verte": "La Valle Verde",
-      "Les Gardiens de la Montagne": "I Guardiani della Montagna",
       "La Forge Ardente": "La Forgia Ardente",
-      "Les Sentinelles d'Airain": "Le Sentinelle di Bronzo",
       "La Guilde des Ingénieurs": "La Gilda degli Ingegneri",
+      "Clan des Mille Tunnels": "Clan dei Mille Tunnel",
+      "Clan des Premiers Géants": "Clan dei Primi Giganti",
       "Les Hordes des Steppes": "Le Orde delle Steppe",
       "L'Empire de Jade": "L'Impero di Giada",
       "Les Lames de l'Ombre": "Le Lame dell'Ombra",
@@ -790,6 +834,7 @@
       "Gnomes": "Gnomi",
       "Machines": "Macchine",
       "Kobolds": "Kobold",
+      "Géants": "Giganti",
       "Humains": "Umani",
       "Griffons": "Grifoni",
       "Faucons": "Falchi",
@@ -805,7 +850,6 @@
       "Hommes-Poissons": "Uomini-Pesce",
       "Hommes-Oiseaux": "Uomini-Uccello",
       "Élémentaire": "Elementale",
-      "Géants": "Giganti",
       "Ogres": "Orchi",
       "Dragons": "Draghi",
       "Chiens": "Cani",
@@ -876,6 +920,16 @@
         "def": "lo Gnomo",
         "bare": "Gnomo",
         "de": "dello Gnomo"
+      },
+      "Machines": {
+        "def": "la Macchina",
+        "bare": "Macchina",
+        "de": "della Macchina"
+      },
+      "Kobolds": {
+        "def": "il Kobold",
+        "bare": "Kobold",
+        "de": "del Kobold"
       },
       "Humains": {
         "def": "l'Umano",

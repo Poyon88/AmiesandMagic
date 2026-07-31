@@ -63,6 +63,17 @@ export type Keyword =
   | "sacrifice_demoniaque"
   // Polymorphic — draw X cards
   | "inspiration"
+  | "epargne"
+  // Jouable depuis le cimetière pour un coût alternatif
+  | "seconde_vie"
+  // Recycle X cartes d'un cimetière sous le deck de son propriétaire
+  | "incineration"
+  // Détruit une unité et absorbe définitivement ses stats
+  | "devoration"
+  // Regarde les X cartes du dessous du deck, en remonte une
+  | "creuser"
+  // Place l'unité ciblée sous le deck de son propriétaire
+  | "retour_differe"
   // Polymorphic — replace each spell in hand with a random higher-cost spell, discounted
   | "concentration"
   // Polymorphic — bounce a unit to its true owner's hand (4 trigger modes)
@@ -140,6 +151,10 @@ export type SpellKeywordId =
   | "invocation"
   | "invocations_multiples"
   | "inspiration"
+  | "epargne"
+  | "incineration"
+  | "creuser"
+  | "retour_differe"
   | "afflux"
   | "invocation_multiple"
   | "convocation_simple"
@@ -371,6 +386,17 @@ export type ComposedEffectContent =
   // Révèle 3 cartes de la collection et en garde 1 en main. Comme exhumation,
   // ces deux contenus existent AUSSI en mot-clé curé : la variante composée
   // ajoute le filtre de pool (`ComposedEffect.pool`) et tous les déclencheurs.
+  // Alimente le compteur d'Épargne du contrôleur (plafond MAX_EPARGNE). Aucune
+  // cible : `magnitude.x` porte le montant ajouté.
+  | "epargne"
+  // Recycle X cartes du cimetière du camp VISÉ sous son deck. Le camp vient de
+  // `target.side` (aucune unité n'est touchée individuellement).
+  | "incineration"
+  // Détruit l'unité ciblée ; la SOURCE absorbe définitivement ses stats. Sans
+  // instance source (effet porté par un sort), l'effet ne fait rien.
+  | "devoration"
+  // Place l'unité ciblée sous le deck de son propriétaire.
+  | "retour_differe"
   | "selection"
   // Même mécanique, pool restreint aux SORTS. Le filtre `pool` (race / faction
   // / clan / mot-clé) ne sait pas exprimer un type de carte : c'est donc un
@@ -682,6 +708,13 @@ export interface CardInstance {
   // tracked separately from currentAttack so recalculateAuras() doesn't
   // erase it on its next pass.
   martyrATKBonus: number;
+  /** DÉVORATION : ATK et PV absorbés définitivement sur les unités dévorées.
+   *  Champs dédiés — et non une mutation directe de currentAttack — parce que
+   *  recalculateAuras reconstruit les stats à chaque recalcul depuis
+   *  `card.attack` + les bonus SUIVIS : un `currentAttack +=` serait effacé au
+   *  premier recalcul d'aura. */
+  devorationATKBonus: number;
+  devorationPVBonus: number;
   // Persécution X: damage to hero on attack
   persecutionX: number;
   // Riposte X: counter-damage
@@ -826,6 +859,19 @@ export interface PlayerState {
    *  series). Drives the Renfort Royal pool: ≥30 owned → pick from these,
    *  otherwise fall back to common-rarity selection. */
   ownedLimitedCardIds: number[];
+  /** Compteur d'Épargne, plafonné à MAX_EPARGNE.
+   *
+   *  `null` = la capacité ne s'est JAMAIS déclenchée pour ce joueur : le
+   *  compteur est alors masqué à l'écran. Dès le premier déclenchement il
+   *  devient un nombre et le reste jusqu'à la fin de la partie, y compris à 0
+   *  après avoir été dépensé — le joueur garde ainsi le repère visuel de sa
+   *  ressource. Un seul champ porte donc la valeur ET la visibilité, sans
+   *  booléen parallèle à tenir synchronisé.
+   *
+   *  Entre dans le hash de synchro comme tout champ de PlayerState : il est
+   *  piloté exclusivement par des actions journalisées, donc identique sur les
+   *  deux clients. */
+  epargne: number | null;
 }
 
 export type GamePhase = "mulligan" | "playing" | "finished";
@@ -938,6 +984,10 @@ export type GameActionType = "play_card" | "attack" | "end_turn" | "spell_target
 
 export interface PlayCardAction {
   type: "play_card";
+  /** SECONDE VIE : la carte est jouée depuis le CIMETIÈRE, pour son coût
+   *  alternatif, et non depuis la main. Le moteur re-valide qu'il s'agit bien
+   *  d'une créature portant encore la capacité. */
+  fromGraveyard?: boolean;
   cardInstanceId: string;
   targetInstanceId?: string;
   targetMap?: Record<string, string>;  // multi-target: slot -> instanceId
@@ -1037,7 +1087,21 @@ export interface AutoResolvePendingTriggersAction {
   type: "auto_resolve_pending_triggers";
 }
 
-export type GameAction = PlayCardAction | AttackAction | EndTurnAction | MulliganAction | HeroPowerAction | TapActivateAction | ConcedeAction | ResolvePendingTriggerAction | AutoResolvePendingTriggersAction;
+/** Dépense du compteur d'Épargne : le joueur a cliqué son compteur, vu les 3
+ *  cartes révélées et choisi celle qu'il garde.
+ *
+ *  Une seule action porte tout le choix — l'état intermédiaire du picker ne
+ *  quitte jamais le client, comme pour le pouvoir de héros. Le joueur concerné
+ *  est TOUJOURS `players[currentPlayerIndex]` : la règle « seulement à son
+ *  tour » découle donc de la structure, sans champ à falsifier. */
+export interface SpendEpargneAction {
+  type: "spend_epargne";
+  /** Carte choisie parmi les 3 révélées. Le moteur la re-valide (rareté,
+   *  alignement, coût EXACTEMENT égal au compteur) avant de l'accorder. */
+  selectionCardId: number;
+}
+
+export type GameAction = PlayCardAction | AttackAction | EndTurnAction | MulliganAction | HeroPowerAction | TapActivateAction | ConcedeAction | ResolvePendingTriggerAction | AutoResolvePendingTriggersAction | SpendEpargneAction;
 
 /** Déclencheur interactif en attente : le contrôleur doit choisir une cible
  *  avant que le jeu ne continue. Porté par l'état pour rester déterministe et

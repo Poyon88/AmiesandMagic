@@ -870,6 +870,70 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["spell"],
     spell: { params: ["amount"], needsTarget: true, targetType: "any" },
   },
+  seconde_vie: {
+    id: "seconde_vie", label: "Seconde vie X", symbol: "🕰️",
+    desc: "Peut être jouée depuis votre cimetière pour X mana. Elle perd alors Seconde vie.",
+    applicable_to: ["creature"],
+    creature: { cost: 14, costPerX: -2, se: 3.5, minTier: 2, scalable: true, zone: "Cimetière" },
+  },
+  incineration: {
+    id: "incineration", label: "Incinération X", symbol: "🧨",
+    desc: "Remet X cartes au hasard du cimetière ciblé sous le deck de son propriétaire, dans un ordre aléatoire.",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      cost: 8, costPerX: 3, se: 2.5, minTier: 1, scalable: true, zone: "Cimetière",
+      desc: "Remet X cartes au hasard du cimetière ciblé sous le deck de son propriétaire.",
+    },
+    spell: {
+      desc: "Remet X cartes au hasard du cimetière ciblé sous le deck de son propriétaire",
+      params: ["amount"], needsTarget: true, targetType: "any",
+    },
+  },
+  devoration: {
+    id: "devoration", label: "Dévoration", symbol: "🦷",
+    desc: "Détruit une unité ciblée ; cette créature gagne définitivement son ATK et ses PV.",
+    applicable_to: ["creature"],
+    creature: { cost: 22, costPerX: 0, se: 5.0, minTier: 3, scalable: false, zone: "Terrain" },
+  },
+  creuser: {
+    id: "creuser", label: "Creuser X", symbol: "⛏️",
+    desc: "Regardez les X cartes du DESSOUS de votre deck ; placez-en une sur le dessus.",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      cost: 9, costPerX: 2, se: 2.5, minTier: 1, scalable: true, zone: "Mixte",
+      desc: "Regardez les X cartes du dessous de votre deck ; placez-en une sur le dessus.",
+    },
+    spell: {
+      desc: "Regardez les X cartes du dessous de votre deck ; placez-en une sur le dessus",
+      params: ["amount"], needsTarget: false,
+    },
+  },
+  retour_differe: {
+    id: "retour_differe", label: "Retour différé", symbol: "🌀",
+    desc: "Place l'unité ciblée sous le deck de son propriétaire.",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      cost: 16, costPerX: 0, se: 4.0, minTier: 2, scalable: false, zone: "Terrain",
+      desc: "Place l'unité ciblée sous le deck de son propriétaire.",
+    },
+    spell: {
+      desc: "Place l'unité ciblée sous le deck de son propriétaire",
+      params: [], needsTarget: true, targetType: "any_creature",
+    },
+  },
+  epargne: {
+    id: "epargne", label: "Épargne X", symbol: "🪙",
+    desc: "Ajoute X à votre compteur d'Épargne (maximum 10).",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      cost: 7, costPerX: 4, se: 2.0, minTier: 1, scalable: true, zone: "Terrain",
+      desc: "Ajoute X à votre compteur d'Épargne (maximum 10).",
+    },
+    spell: {
+      desc: "Ajoute X à votre compteur d'Épargne (maximum 10)",
+      params: ["amount"], needsTarget: false,
+    },
+  },
   inspiration: {
     id: "inspiration", label: "Inspiration X", symbol: "📖",
     desc: "Piochez X cartes.",
@@ -1247,7 +1311,8 @@ export const CURATED_MULTIMODE_IDS: ReadonlySet<string> = new Set([
   "concentration", "loyaute", "catalyse", "solidarite", "appel_supreme", "rassemblement",
   "instinct_de_meute", "convocation_simple", "invocation", "invocations_multiples", "domination", "corruption", "exhumation",
   "rappel", "divination", "traque_du_destin", "selection", "selection_magique", "renfort_royal",
-  "affaiblissement", "benediction", "tactique",
+  "affaiblissement", "benediction", "tactique", "epargne",
+  "incineration", "creuser", "retour_differe", "devoration",
   // Restreints aux déclencheurs « sur plateau » (cf. CURATED_ONBOARD_ONLY_IDS).
   "sacrifice", "permutation", "malediction", "mimique", "metamorphose",
   "contresort", "profanation", "heritage_du_cimetiere",
@@ -1259,6 +1324,8 @@ export const CURATED_MULTIMODE_IDS: ReadonlySet<string> = new Set([
  *  déclencheurs « sur plateau » : invocation, activation, fin de tour, attaque
  *  — jamais mort ni retour en main. */
 export const CURATED_ONBOARD_ONLY_IDS: ReadonlySet<string> = new Set([
+  // Dévoration absorbe les stats de sa victime : la source doit être en jeu.
+  "devoration",
   "sacrifice", "permutation", "malediction", "mimique", "metamorphose",
   "contresort", "profanation", "heritage_du_cimetiere",
 ]);

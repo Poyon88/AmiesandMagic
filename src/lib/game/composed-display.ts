@@ -46,6 +46,10 @@ export const COMPOSED_FR: Record<string, string> = {
   "content.exhum_upto": "jusqu'à {n} créatures",
   // Sélection composée : {filter} porte la restriction de pool (vide si aucune).
   "content.invocation": "invoque une créature aléatoire de coût {x}{filter}",
+  "content.epargne": "ajoute {x} à votre compteur d'Épargne",
+  "content.incineration": "remet {x} cartes du cimetière visé sous son deck",
+  "content.devoration": "dévore",
+  "content.retour_differe": "place sous le deck de son propriétaire",
   "content.selection": "révèle 3 cartes{filter} (coût ≤ {x}) et en garde une en main",
   "content.selection_magique": "révèle 3 sorts{filter} (coût ≤ {x}) et en garde un en main",
   "content.renfort_royal": "révèle 3 cartes de collection{filter} (coût ≤ {x}) et en garde une en main",
@@ -197,6 +201,10 @@ export function composedIcon(cap: Capability): { symbol: string; keyword: string
     case "exhumation": return { symbol: "🪦", keyword: "exhumation" };
     // Mêmes symboles que les mots-clés curés homonymes (source unique).
     case "invocation": return { symbol: KEYWORD_SYMBOLS.invocation, keyword: "invocation" };
+    case "epargne": return { symbol: KEYWORD_SYMBOLS.epargne, keyword: "epargne" };
+    case "incineration": return { symbol: KEYWORD_SYMBOLS.incineration, keyword: "incineration" };
+    case "devoration": return { symbol: KEYWORD_SYMBOLS.devoration, keyword: "devoration" };
+    case "retour_differe": return { symbol: KEYWORD_SYMBOLS.retour_differe, keyword: "retour_differe" };
     case "selection": return { symbol: KEYWORD_SYMBOLS.selection, keyword: "selection" };
     case "selection_magique": return { symbol: KEYWORD_SYMBOLS.selection_magique, keyword: "selection_magique" };
     case "renfort_royal": return { symbol: KEYWORD_SYMBOLS.renfort_royal, keyword: "renfort_royal" };
@@ -312,6 +320,11 @@ function describeContent(eff: ComposedEffect, tokens: TokenTemplate[] | undefine
       return frag(t, x > 1 ? "content.summon_many" : "content.summon_one", { x, token: label });
     }
     case "gain_mana": return frag(t, "content.gain_mana", { x });
+    case "epargne": return frag(t, "content.epargne", { x });
+    case "incineration": return frag(t, "content.incineration", { x });
+    // Verbes transitifs directs : « Dévore une unité ennemie », sans préposition.
+    case "devoration": return frag(t, "content.devoration");
+    case "retour_differe": return frag(t, "content.retour_differe");
     case "exhumation": {
       const n = eff.target?.count;
       const who = typeof n === "number" && n > 1 ? frag(t, "content.exhum_upto", { n })
