@@ -1861,6 +1861,8 @@ export default function CardForge() {
       "Fées": "a luminous fairy with translucent butterfly wings, glowing aura, ethereal and delicate",
       "Nains": "a stout dwarven warrior with thick beard, heavy plate armor, runes engraved on equipment",
       "Golems": "a stone or metal construct with glowing runes carved into its body, hulking and mechanical",
+      "Machines": "a clockwork automaton of brass and iron, exposed gears and pistons, steam vents, riveted plating, glowing forge-lit core",
+      "Kobolds": "a small scaly reptilian humanoid with a snout and short horns, lantern-lit eyes, scavenged mismatched armour, crude pickaxe, wiry and quick",
       "Hobbits": "a halfling with bare hairy feet, round cheerful face, simple rustic clothing",
       "Hommes-Arbres": "a towering treant made of living wood, bark skin, branch limbs, leaves as hair, mossy and ancient",
       "Humains": "a human warrior in medieval armor, realistic proportions, heraldic symbols on shield",

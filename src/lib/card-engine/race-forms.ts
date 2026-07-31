@@ -39,6 +39,8 @@ export const RACE_FORMS_FR: Record<string, Inflected> = {
   "Nains": { def: "le Nain", bare: "Nain", de: "du Nain" },
   "Golems": { def: "le Golem", bare: "Golem", de: "du Golem" },
   "Gnomes": { def: "le Gnome", bare: "Gnome", de: "du Gnome" },
+  "Machines": { def: "la Machine", bare: "Machine", de: "de la Machine" },
+  "Kobolds": { def: "le Kobold", bare: "Kobold", de: "du Kobold" },
   "Humains": { def: "l'Humain", bare: "Humain", de: "de l'Humain" },
   "Griffons": { def: "le Griffon", bare: "Griffon", de: "du Griffon" },
   "Faucons": { def: "le Faucon", bare: "Faucon", de: "du Faucon" },
@@ -130,7 +132,7 @@ export const CLAN_FORMS_FR: Record<string, string> = {
 // d'affichage (« L'Alliance Céleste » → « de L'Alliance Céleste »).
 export const FACTION_FORMS_FR: Record<string, string> = {
   "Elfes": "de l'Alliance Céleste",
-  "Nains": "de la Confrérie de la Forge",
+  "Nains": "des Armées des Montagnes",
   "EmpireDuMilieu": "de l'Empire du Milieu",
   "RoyaumesDuSoleil": "des Royaumes du Soleil",
   "Humains": "des Royaumes Libres",

@@ -43,6 +43,8 @@ export async function POST(request: Request) {
     // Nains
     "Nains": "stout dwarven warrior with thick beard, heavy plate armor, runes engraved on equipment, stocky and muscular",
     "Golems": "massive stone or metal construct, glowing runes carved into body, hulking and mechanical, no organic features",
+    "Machines": "articulated clockwork automaton of brass and iron, exposed gears and pistons, steam vents, riveted plating, glowing forge-lit core, engineered rather than sculpted",
+    "Kobolds": "small scaly reptilian humanoid, snout and short horns, lantern-lit eyes adapted to deep tunnels, scavenged mismatched armour, crude pickaxe or trap, wiry and quick, waist-high to a dwarf",
     // Hobbits
     "Hobbits": "small halfling with bare hairy feet, round cheerful face, simple rustic clothing, shorter than a dwarf",
     "Hommes-Arbres": "towering treant/ent creature made of living wood, bark skin, branch limbs, leaves as hair, mossy and ancient",
@@ -197,6 +199,8 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
           "Fées": ["fairy", "faerie", "fée"],
           "Nains": ["dwarf", "dwarven", "nain"],
           "Golems": ["golem"],
+          "Machines": ["automaton", "automata", "clockwork", "machine", "mechanism", "construct"],
+          "Kobolds": ["kobold", "kobolds"],
           "Hobbits": ["hobbit", "halfling", "halflings", "hobbits", "small folk", "small humanoid", "short humanoid", "small figure", "diminutive"],
           "Hommes-Arbres": ["treant", "ent", "tree creature", "homme-arbre", "treefolk"],
           "Humains": ["human", "humain"],

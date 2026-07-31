@@ -697,7 +697,7 @@
         "description": "善良林地之民的联盟：隐匿精灵、法师仙灵、狡黠霍比特人及其树人巨像。"
       },
       "Nains": {
-        "displayName": "熔炉兄弟会",
+        "displayName": "山岭大军",
         "description": "坚固耐久：防御、韧性、锻造与侏儒工程。"
       },
       "EmpireDuMilieu": {
@@ -788,6 +788,8 @@
       "Nains": "矮人",
       "Golems": "魔像",
       "Gnomes": "侏儒",
+      "Machines": "机械",
+      "Kobolds": "狗头人",
       "Humains": "人类",
       "Griffons": "狮鹫",
       "Faucons": "猎鹰",
@@ -1113,7 +1115,7 @@
     },
     "factions_forms": {
       "Elfes": "天穹联盟",
-      "Nains": "熔炉兄弟会",
+      "Nains": "山岭大军",
       "EmpireDuMilieu": "中原帝国",
       "RoyaumesDuSoleil": "太阳王国",
       "Humains": "自由王国",
@@ -1237,7 +1239,7 @@
         "tagline": "永恒林木的守护者"
       },
       "dwarves": {
-        "name": "锻造兄弟会",
+        "name": "山岭大军",
         "tagline": "生于岩石"
       },
       "halflings": {

@@ -697,7 +697,7 @@
         "description": "L'alleanza del buon popolo dei boschi: elfi furtivi, fate maghe, hobbit astuti e i loro colossi Uomini-Albero."
       },
       "Nains": {
-        "displayName": "La Confraternita della Forgia",
+        "displayName": "Le Armate delle Montagne",
         "description": "Solidi e resistenti: difesa, tenacia, forgia e ingegneria gnome."
       },
       "EmpireDuMilieu": {
@@ -788,6 +788,8 @@
       "Nains": "Nani",
       "Golems": "Golem",
       "Gnomes": "Gnomi",
+      "Machines": "Macchine",
+      "Kobolds": "Kobold",
       "Humains": "Umani",
       "Griffons": "Grifoni",
       "Faucons": "Falchi",
@@ -1113,7 +1115,7 @@
     },
     "factions_forms": {
       "Elfes": "dell'Alleanza Celeste",
-      "Nains": "della Confraternita della Forgia",
+      "Nains": "delle Armate delle Montagne",
       "EmpireDuMilieu": "dell'Impero di Mezzo",
       "RoyaumesDuSoleil": "dei Regni del Sole",
       "Humains": "dei Regni Liberi",
@@ -1237,7 +1239,7 @@
         "tagline": "Custodi del bosco eterno"
       },
       "dwarves": {
-        "name": "La Confraternita della Forgia",
+        "name": "Le Armate delle Montagne",
         "tagline": "Forgiati nella pietra"
       },
       "halflings": {

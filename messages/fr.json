@@ -697,7 +697,7 @@
         "description": "L'alliance du bon peuple des bois : elfes furtifs, fées mages, hobbits rusés et leurs colosses Hommes-Arbres."
       },
       "Nains": {
-        "displayName": "La Confrérie de la Forge",
+        "displayName": "Les Armées des Montagnes",
         "description": "Solides et résistants : défense, ténacité, forge et ingénierie gnome."
       },
       "EmpireDuMilieu": {
@@ -788,6 +788,8 @@
       "Nains": "Nains",
       "Golems": "Golems",
       "Gnomes": "Gnomes",
+      "Machines": "Machines",
+      "Kobolds": "Kobolds",
       "Humains": "Humains",
       "Griffons": "Griffons",
       "Faucons": "Faucons",
@@ -1113,7 +1115,7 @@
     },
     "factions_forms": {
       "Elfes": "de l'Alliance Céleste",
-      "Nains": "de la Confrérie de la Forge",
+      "Nains": "des Armées des Montagnes",
       "EmpireDuMilieu": "de l'Empire du Milieu",
       "RoyaumesDuSoleil": "des Royaumes du Soleil",
       "Humains": "des Royaumes Libres",
@@ -1237,7 +1239,7 @@
         "tagline": "Gardiens de la sylve éternelle"
       },
       "dwarves": {
-        "name": "La Confrérie de la Forge",
+        "name": "Les Armées des Montagnes",
         "tagline": "Forgés dans la pierre"
       },
       "halflings": {

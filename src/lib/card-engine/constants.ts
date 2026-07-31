@@ -208,26 +208,42 @@ export const FACTIONS: Record<string, {
     },
   },
   Nains: {
-    displayName: "La Confrérie de la Forge",
+    displayName: "Les Armées des Montagnes",
     color: "#b87333", accent: "#ff9f43", emoji: "⚒️", bg: "#2a1a0a", alignment: "bon",
-    races: ["Nains", "Golems", "Gnomes"],
+    races: ["Nains", "Golems", "Gnomes", "Machines", "Kobolds", "Géants"],
+    // Un clan par race « peuple ». Les constructs (Golems, Machines) n'ont pas
+    // de clan propre : déclarés `freeRaces`, ils sont accueillis par TOUS les
+    // clans de la faction — même mécanisme que les Aigles Géants chez les Elfes.
     clans: [
-      { names: ["Les Gardiens de la Montagne", "La Forge Ardente"], appliesTo: "Nains" },
-      { names: ["Les Sentinelles d'Airain"], appliesTo: "Golems" },
+      { names: ["La Forge Ardente"], appliesTo: "Nains" },
       { names: ["La Guilde des Ingénieurs"], appliesTo: "Gnomes" },
+      { names: ["Clan des Mille Tunnels"], appliesTo: "Kobolds" },
+      { names: ["Clan des Premiers Géants"], appliesTo: "Géants" },
     ],
+    freeRaces: ["Golems", "Machines"],
     statWeights: { atk: 0.85, def: 1.40 },
     guaranteedKeywords: [],
     likelyKeywords: { "Armure": 0.70, "Résistance X": 0.65, "Bouclier": 0.50, "Riposte X": 0.50, "Ancré": 0.45, "Provocation": 0.40, "Bravoure": 0.40, "Catalyse": 0.40, "Gloire +X/+Y": 0.35, "Tactique X": 0.25 },
     forbiddenKeywords: ["Vol", "Invisible", "Esquive", "Ombre", "Traque", "Pillage X"],
-    description: "Solides et résistants : défense, ténacité, forge et ingénierie gnome.",
+    description: "Solides et résistants : défense, ténacité, forge, ingénierie gnome et colosses des cimes.",
     raceProfiles: {
       "Golems": { statWeights: { atk: 0.90, def: 1.60 }, likelyKeywords: { "Ancré": 0.80, "Armure": 0.75, "Provocation": 0.60, "Indestructible": 0.30, "Riposte X": 0.45 } },
+      // Machines : constructs d'atelier, plus offensifs et mobiles que les
+      // Golems (qui restent les murs de la faction), plus robustes que les
+      // Gnomes. Aucun mot-clé interdit de la faction n'est sollicité.
+      "Machines": { statWeights: { atk: 1.05, def: 1.25 }, likelyKeywords: { "Armure": 0.70, "Riposte X": 0.50, "Résistance X": 0.45, "Convocation X": 0.45, "Catalyse": 0.40, "Ancré": 0.35, "Indestructible": 0.25 } },
+      // Kobolds : l'exception fragile d'une faction bâtie sur la défense. Ils
+      // ne tiennent pas seuls (def sous la moyenne) et compensent par le
+      // nombre — d'où les mots-clés de groupe plutôt que de blindage.
+      "Kobolds": { statWeights: { atk: 0.95, def: 0.85 }, likelyKeywords: { "Rassemblement X": 0.60, "Solidarité X": 0.55, "Instinct de meute X": 0.50, "Convocation X": 0.45, "Bravoure": 0.40, "Fureur": 0.35, "Combustion": 0.30 } },
+      // Géants : profil repris tel quel des Mercenaires, qu'ils quittent. Aucun
+      // de ses mots-clés ne figure dans les interdits de la faction.
+      "Géants": { statWeights: { atk: 1.15, def: 1.30 }, likelyKeywords: { "Provocation": 0.65, "Résistance X": 0.60, "Armure": 0.55, "Indestructible": 0.45, "Terreur": 0.40, "Carnage X": 0.30 } },
     },
     clanProfiles: {
-      "Les Gardiens de la Montagne": { statWeights: { atk: 0.85, def: 1.45 }, likelyKeywords: { "Armure": 0.65, "Résistance X": 0.60, "Provocation": 0.55, "Bouclier": 0.50, "Ancré": 0.45, "Riposte X": 0.45 } },
       "La Forge Ardente": { statWeights: { atk: 1.15, def: 1.05 }, likelyKeywords: { "Combustion": 0.50, "Gloire +X/+Y": 0.50, "Fureur": 0.45, "Riposte X": 0.40, "Catalyse": 0.40, "Bravoure": 0.35 } },
-      "Les Sentinelles d'Airain": { statWeights: { atk: 0.90, def: 1.60 }, likelyKeywords: { "Ancré": 0.80, "Armure": 0.75, "Provocation": 0.60, "Résistance X": 0.50, "Riposte X": 0.45, "Indestructible": 0.35 } },
+      "Clan des Mille Tunnels": { statWeights: { atk: 0.95, def: 0.90 }, likelyKeywords: { "Rassemblement X": 0.60, "Solidarité X": 0.55, "Instinct de meute X": 0.50, "Convocation X": 0.45, "Bravoure": 0.35, "Combustion": 0.30 } },
+      "Clan des Premiers Géants": { statWeights: { atk: 1.15, def: 1.35 }, likelyKeywords: { "Provocation": 0.65, "Résistance X": 0.60, "Armure": 0.55, "Ancré": 0.45, "Indestructible": 0.40, "Terreur": 0.35 } },
       "La Guilde des Ingénieurs": { statWeights: { atk: 0.80, def: 1.00 }, likelyKeywords: { "Convocation X": 0.55, "Catalyse": 0.50, "Divination": 0.45, "Tactique X": 0.40, "Inspiration X": 0.40, "Contresort": 0.35, "Riposte X": 0.30 } },
     },
   },
@@ -339,7 +355,7 @@ export const FACTIONS: Record<string, {
   Mercenaires: {
     displayName: "Mercenaires",
     color: "#8B8B00", accent: "#D4D400", emoji: "💰", bg: "#1a1a08", alignment: "spéciale",
-    races: ["Géants", "Ogres", "Dragons", "Chiens", "Phoenix", "Anges", "Ours", "Loups", "Fauves", "Éléphants"],
+    races: ["Ogres", "Dragons", "Chiens", "Phoenix", "Anges", "Ours", "Loups", "Fauves", "Éléphants"],
     statWeights: { atk: 1.05, def: 1.05 },
     guaranteedKeywords: [],
     likelyKeywords: { "Traque": 0.40, "Première Frappe": 0.40, "Précision": 0.35, "Esquive": 0.30, "Gloire +X/+Y": 0.30, "Bouclier": 0.25, "Fureur": 0.25, "Vol": 0.15,
@@ -347,7 +363,6 @@ export const FACTIONS: Record<string, {
     forbiddenKeywords: ["Commandement", "Loyauté", "Domination", "Corruption"],
     description: "Soldats de fortune sans allégeance. Polyvalents et disponibles pour tous les decks.",
     raceProfiles: {
-      "Géants": { statWeights: { atk: 1.15, def: 1.30 }, likelyKeywords: { "Provocation": 0.65, "Résistance X": 0.60, "Armure": 0.55, "Indestructible": 0.45, "Terreur": 0.40, "Carnage X": 0.30 } },
       "Ogres": { statWeights: { atk: 1.25, def: 1.10 }, likelyKeywords: { "Gloire +X/+Y": 0.55, "Fureur": 0.50, "Provocation": 0.40, "Résistance X": 0.35, "Pillage X": 0.30 } },
       "Dragons": { statWeights: { atk: 1.40, def: 0.90 }, likelyKeywords: { "Vol": 0.90, "Souffle de feu X": 0.70, "Terreur": 0.60, "Fureur": 0.50, "Indestructible": 0.40, "Transcendance": 0.35, "Vampirisme X": 0.25 } },
       "Chiens": { statWeights: { atk: 1.10, def: 0.80 }, likelyKeywords: { "Raid": 0.70, "Traque": 0.55, "Instinct de meute X": 0.60, "Loyauté": 0.50, "Esquive": 0.40, "Gloire +X/+Y": 0.35, "Première Frappe": 0.30 } },

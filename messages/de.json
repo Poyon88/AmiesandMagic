@@ -697,7 +697,7 @@
         "description": "Das Bündnis des guten Waldvolks: lautlose Elfen, Feenmagier, verschlagene Hobbits und ihre kolossalen Baumherren."
       },
       "Nains": {
-        "displayName": "Die Schmiedebruderschaft",
+        "displayName": "Die Armeen der Berge",
         "description": "Solide und zäh: Verteidigung, Unnachgiebigkeit, Schmiedekunst und Gnomingenieurswesen."
       },
       "EmpireDuMilieu": {
@@ -788,6 +788,8 @@
       "Nains": "Zwerge",
       "Golems": "Golems",
       "Gnomes": "Gnome",
+      "Machines": "Maschinen",
+      "Kobolds": "Kobolde",
       "Humains": "Menschen",
       "Griffons": "Greifen",
       "Faucons": "Falken",
@@ -1113,7 +1115,7 @@
     },
     "factions_forms": {
       "Elfes": "der Himmlischen Allianz",
-      "Nains": "der Bruderschaft der Schmiede",
+      "Nains": "der Armeen der Berge",
       "EmpireDuMilieu": "des Reichs der Mitte",
       "RoyaumesDuSoleil": "der Königreiche der Sonne",
       "Humains": "der Freien Königreiche",
@@ -1237,7 +1239,7 @@
         "tagline": "Hüter des ewigen Waldes"
       },
       "dwarves": {
-        "name": "Die Bruderschaft der Esse",
+        "name": "Die Armeen der Berge",
         "tagline": "Im Stein geschmiedet"
       },
       "halflings": {

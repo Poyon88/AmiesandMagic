@@ -697,7 +697,7 @@
         "description": "森の民の同盟：隠密エルフ、魔法の妖精、狡猾なホビット、そして巨人ツリーフォーク。"
       },
       "Nains": {
-        "displayName": "鍛冶の兄弟団",
+        "displayName": "山岳の軍勢",
         "description": "堅固で耐久力抜群：防御、粘り強さ、鍛冶、そしてノーム工学。"
       },
       "EmpireDuMilieu": {
@@ -788,6 +788,8 @@
       "Nains": "ドワーフ",
       "Golems": "ゴーレム",
       "Gnomes": "ノーム",
+      "Machines": "機械",
+      "Kobolds": "コボルト",
       "Humains": "人間",
       "Griffons": "グリフォン",
       "Faucons": "隼",
@@ -1113,7 +1115,7 @@
     },
     "factions_forms": {
       "Elfes": "天空の同盟",
-      "Nains": "鍛冶の同胞団",
+      "Nains": "山岳の軍勢",
       "EmpireDuMilieu": "中央帝国",
       "RoyaumesDuSoleil": "太陽の王国たち",
       "Humains": "自由王国",
@@ -1237,7 +1239,7 @@
         "tagline": "永遠の森の守護者"
       },
       "dwarves": {
-        "name": "鍛冶兄弟団",
+        "name": "山岳の軍勢",
         "tagline": "岩石に鍛えられし者たち"
       },
       "halflings": {

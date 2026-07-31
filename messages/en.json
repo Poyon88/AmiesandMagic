@@ -697,7 +697,7 @@
         "description": "An alliance of the good folk of the woods: stealthy elves, mage faeries, cunning hobbits, and their colossal Treemen."
       },
       "Nains": {
-        "displayName": "The Forge Brotherhood",
+        "displayName": "The Armies of the Mountains",
         "description": "Sturdy and resilient: defense, tenacity, forging, and gnome engineering."
       },
       "EmpireDuMilieu": {
@@ -788,6 +788,8 @@
       "Nains": "Dwarves",
       "Golems": "Golems",
       "Gnomes": "Gnomes",
+      "Machines": "Machines",
+      "Kobolds": "Kobolds",
       "Humains": "Humans",
       "Griffons": "Griffins",
       "Faucons": "Falcons",
@@ -1113,7 +1115,7 @@
     },
     "factions_forms": {
       "Elfes": "of the Celestial Alliance",
-      "Nains": "of the Brotherhood of the Forge",
+      "Nains": "of the Armies of the Mountains",
       "EmpireDuMilieu": "of the Middle Kingdom",
       "RoyaumesDuSoleil": "of the Sun Kingdoms",
       "Humains": "of the Free Kingdoms",
@@ -1237,7 +1239,7 @@
         "tagline": "Keepers of the eternal wood"
       },
       "dwarves": {
-        "name": "La Confrérie de la Forge",
+        "name": "Les Armées des Montagnes",
         "tagline": "Forged in stone"
       },
       "halflings": {

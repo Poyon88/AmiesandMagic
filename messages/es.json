@@ -697,7 +697,7 @@
         "description": "La alianza del buen pueblo del bosque: elfos furtivos, hadas magas, hobbits astutos y sus colosos Hombres-Árbol."
       },
       "Nains": {
-        "displayName": "La Hermandad de la Forja",
+        "displayName": "Los Ejércitos de las Montañas",
         "description": "Sólidos y resistentes: defensa, tenacidad, forja e ingeniería gnoma."
       },
       "EmpireDuMilieu": {
@@ -788,6 +788,8 @@
       "Nains": "Enanos",
       "Golems": "Golems",
       "Gnomes": "Gnomos",
+      "Machines": "Máquinas",
+      "Kobolds": "Kobolds",
       "Humains": "Humanos",
       "Griffons": "Grifos",
       "Faucons": "Halcones",
@@ -1113,7 +1115,7 @@
     },
     "factions_forms": {
       "Elfes": "de la Alianza Celestial",
-      "Nains": "de la Hermandad de la Forja",
+      "Nains": "de los Ejércitos de las Montañas",
       "EmpireDuMilieu": "del Imperio Medio",
       "RoyaumesDuSoleil": "de los Reinos del Sol",
       "Humains": "de los Reinos Libres",
@@ -1237,7 +1239,7 @@
         "tagline": "Guardianes del bosque eterno"
       },
       "dwarves": {
-        "name": "La Cofradía de la Forja",
+        "name": "Los Ejércitos de las Montañas",
         "tagline": "Forjados en la piedra"
       },
       "halflings": {
