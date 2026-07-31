@@ -447,6 +447,10 @@
         "label": "Beschwörung",
         "desc": "Erschafft {token}."
       },
+      "corruption": {
+        "label": "Korruption",
+        "desc": "Bekehrt die anvisierte gegnerische Einheit bis zum Ende der Runde auf Ihre Seite; sie erhält Verfolgung."
+      },
       "domination": {
         "label": "Dominanz",
         "desc": "Übernimmt die Kontrolle über die anvisierte gegnerische Einheit."
@@ -574,10 +578,6 @@
       "afflux": {
         "label": "Zufluss X",
         "desc": "Erhalte X Mana in diesem Zug."
-      },
-      "corruption": {
-        "label": "Korruption",
-        "desc": "Bekehrt die anvisierte gegnerische Einheit bis zum Ende der Runde auf Ihre Seite; sie erhält Verfolgung."
       }
     },
     "composed": {
@@ -616,6 +616,7 @@
         "exhum_upto": "bis zu {n} Kreaturen",
         "invocation": "beschwört eine zufällige Kreatur mit Kosten {x}{filter}",
         "selection": "deckt 3 Karten{filter} auf (Kosten ≤ {x}) und behält eine davon auf der Hand",
+        "selection_magique": "deckt 3 Zauber{filter} auf (Kosten ≤ {x}) und behält einen davon auf der Hand",
         "renfort_royal": "deckt 3 Sammelkarten{filter} auf (Kosten ≤ {x}) und behält eine davon auf der Hand"
       },
       "pool": {

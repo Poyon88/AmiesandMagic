@@ -447,6 +447,10 @@
         "label": "Summon",
         "desc": "Creates {token}."
       },
+      "corruption": {
+        "label": "Corruption",
+        "desc": "Converts the targeted enemy unit to your side until the end of the turn; it gains Charge."
+      },
       "domination": {
         "label": "Domination",
         "desc": "Takes control of the targeted enemy unit."
@@ -574,10 +578,6 @@
       "afflux": {
         "label": "Surge X",
         "desc": "Gain X mana this turn."
-      },
-      "corruption": {
-        "label": "Corruption",
-        "desc": "Converts the targeted enemy unit to your side until the end of the turn; it gains Charge."
       }
     },
     "composed": {
@@ -616,6 +616,7 @@
         "exhum_upto": "up to {n} creatures",
         "invocation": "summons a random creature with cost {x}{filter}",
         "selection": "reveals 3 cards{filter} (cost ≤ {x}) and keeps one in hand",
+        "selection_magique": "reveals 3 spells{filter} (cost ≤ {x}) and keeps one in hand",
         "renfort_royal": "reveals 3 collection cards{filter} (cost ≤ {x}) and keeps one in hand"
       },
       "pool": {

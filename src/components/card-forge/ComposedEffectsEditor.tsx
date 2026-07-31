@@ -36,13 +36,14 @@ const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" |
   // d'où target "none" — le bloc « Pool » ci-dessous les paramètre.
   { v: "invocation", l: "Invocation (créature aléatoire)", target: "none" },
   { v: "selection", l: "Sélection (1 parmi 3)", target: "none" },
+  { v: "selection_magique", l: "Sélection magique (1 sort parmi 3)", target: "none" },
   { v: "renfort_royal", l: "Sélection Royale (1 parmi 3)", target: "none" },
 ];
 
 /** Contenus paramétrés par un filtre de pool (race / faction / clan / mot-clé).
  *  Pour eux, X est un PLAFOND DE COÛT des cartes révélées (comme exhumation),
  *  pas une amplitude. */
-const POOL_CONTENTS = new Set<ComposedEffectContent>(["invocation", "selection", "renfort_royal"]);
+const POOL_CONTENTS = new Set<ComposedEffectContent>(["invocation", "selection", "selection_magique", "renfort_royal"]);
 
 const FACTION_OPTIONS = Object.keys(FACTIONS).sort((a, b) => a.localeCompare(b, "fr"));
 

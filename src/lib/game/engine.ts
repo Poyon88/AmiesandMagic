@@ -759,6 +759,7 @@ function resolveComposedEffect(
       return;
     }
     case "selection":
+    case "selection_magique":
     case "renfort_royal": {
       // Sélection composée : révèle 3 cartes de la collection, le joueur en
       // garde 1. Même moteur de pool que le mot-clé curé (l'aiguillage

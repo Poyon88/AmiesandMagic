@@ -372,6 +372,10 @@ export type ComposedEffectContent =
   // ces deux contenus existent AUSSI en mot-clé curé : la variante composée
   // ajoute le filtre de pool (`ComposedEffect.pool`) et tous les déclencheurs.
   | "selection"
+  // Même mécanique, pool restreint aux SORTS. Le filtre `pool` (race / faction
+  // / clan / mot-clé) ne sait pas exprimer un type de carte : c'est donc un
+  // contenu distinct, comme `renfort_royal` l'est de `selection`.
+  | "selection_magique"
   | "renfort_royal";
 
 /** Spécification de cibles d'un effet composé. Les filtres par caractéristiques

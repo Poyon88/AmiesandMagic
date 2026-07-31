@@ -616,6 +616,7 @@
         "exhum_upto": "jusqu'à {n} créatures",
         "invocation": "invoque une créature aléatoire de coût {x}{filter}",
         "selection": "révèle 3 cartes{filter} (coût ≤ {x}) et en garde une en main",
+        "selection_magique": "révèle 3 sorts{filter} (coût ≤ {x}) et en garde un en main",
         "renfort_royal": "révèle 3 cartes de collection{filter} (coût ≤ {x}) et en garde une en main"
       },
       "pool": {

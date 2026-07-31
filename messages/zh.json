@@ -447,6 +447,10 @@
         "label": "召唤",
         "desc": "创建{token}。"
       },
+      "corruption": {
+        "label": "腐化",
+        "desc": "将目标敌方单位转化至我方阵营，直到本回合结束；其获得“追猎”。"
+      },
       "domination": {
         "label": "支配",
         "desc": "夺取目标敌方单位的控制权。"
@@ -574,10 +578,6 @@
       "afflux": {
         "label": "涌流 X",
         "desc": "本回合获得 X 点法力"
-      },
-      "corruption": {
-        "label": "腐化",
-        "desc": "将目标敌方单位转化至我方阵营，直到本回合结束；其获得“追猎”。"
       }
     },
     "composed": {
@@ -616,6 +616,7 @@
         "exhum_upto": "至多 {n} 个生物",
         "invocation": "召唤一个费用为{x}{filter}的随机生物",
         "selection": "展示3张{filter}卡牌（费用 ≤ {x}），并保留其中一张至手牌",
+        "selection_magique": "展示3张{filter}法术（费用≤{x}），并留其中一张入手",
         "renfort_royal": "展示3张{filter}收藏卡牌（费用 ≤ {x}），并保留其中一张至手牌"
       },
       "pool": {

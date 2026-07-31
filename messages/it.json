@@ -447,6 +447,10 @@
         "label": "Convocazione",
         "desc": "Crea {token}."
       },
+      "corruption": {
+        "label": "Corruzione",
+        "desc": "Converte l'unità nemica bersaglio al vostro schieramento fino alla fine del turno; guadagna Caccia."
+      },
       "domination": {
         "label": "Dominazione",
         "desc": "Prende il controllo dell'unità nemica bersaglio."
@@ -574,10 +578,6 @@
       "afflux": {
         "label": "Afflusso X",
         "desc": "Guadagna X mana questo turno"
-      },
-      "corruption": {
-        "label": "Corruzione",
-        "desc": "Converte l'unità nemica bersaglio al vostro schieramento fino alla fine del turno; guadagna Caccia."
       }
     },
     "composed": {
@@ -616,6 +616,7 @@
         "exhum_upto": "fino a {n} creature",
         "invocation": "evoca una creatura casuale di costo {x}{filter}",
         "selection": "rivela 3 carte{filter} (costo ≤ {x}) e ne tiene una in mano",
+        "selection_magique": "rivela 3 incantesimi{filter} (costo ≤ {x}) e ne tiene uno in mano",
         "renfort_royal": "rivela 3 carte da collezione{filter} (costo ≤ {x}) e ne tiene una in mano"
       },
       "pool": {

@@ -447,6 +447,10 @@
         "label": "Convocação",
         "desc": "Cria {token}."
       },
+      "corruption": {
+        "label": "Corrupção",
+        "desc": "Converte a unidade inimiga alvo para o seu lado até o final do turno; ela ganha Perseguição."
+      },
       "domination": {
         "label": "Dominação",
         "desc": "Assume o controle da unidade inimiga alvo."
@@ -574,10 +578,6 @@
       "afflux": {
         "label": "Afluxo X",
         "desc": "Ganhe X de mana neste turno"
-      },
-      "corruption": {
-        "label": "Corrupção",
-        "desc": "Converte a unidade inimiga alvo para o seu lado até o final do turno; ela ganha Perseguição."
       }
     },
     "composed": {
@@ -616,6 +616,7 @@
         "exhum_upto": "até {n} criaturas",
         "invocation": "invoca uma criatura aleatória de custo {x}{filter}",
         "selection": "revela 3 cartas{filter} (custo ≤ {x}) e mantém uma na mão",
+        "selection_magique": "revela 3 feitiços{filter} (custo ≤ {x}) e mantém um na mão",
         "renfort_royal": "revela 3 cartas de coleção{filter} (custo ≤ {x}) e mantém uma na mão"
       },
       "pool": {

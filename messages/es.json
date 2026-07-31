@@ -447,6 +447,10 @@
         "label": "Convocación",
         "desc": "Crea {token}."
       },
+      "corruption": {
+        "label": "Corrupción",
+        "desc": "Convierte a la unidad enemiga objetivo a tu bando hasta el final del turno; gana Acecho."
+      },
       "domination": {
         "label": "Dominación",
         "desc": "Toma el control de la unidad enemiga seleccionada."
@@ -574,10 +578,6 @@
       "afflux": {
         "label": "Afluencia X",
         "desc": "Gana X de maná este turno"
-      },
-      "corruption": {
-        "label": "Corrupción",
-        "desc": "Convierte a la unidad enemiga objetivo a tu bando hasta el final del turno; gana Acecho."
       }
     },
     "composed": {
@@ -616,6 +616,7 @@
         "exhum_upto": "hasta {n} criaturas",
         "invocation": "invoca una criatura aleatoria de coste {x}{filter}",
         "selection": "revela 3 cartas{filter} (coste ≤ {x}) y se queda una en mano",
+        "selection_magique": "revela 3 hechizos{filter} (coste ≤ {x}) y conserva uno en mano",
         "renfort_royal": "revela 3 cartas de colección{filter} (coste ≤ {x}) y se queda una en mano"
       },
       "pool": {
