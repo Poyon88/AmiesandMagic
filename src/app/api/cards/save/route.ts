@@ -43,6 +43,45 @@ const CAPABILITY_FIELDS = [
 ] as const;
 
 
+/** Cherche une carte homonyme (comparaison insensible à la casse, aux accents
+ *  résiduels d'espacement et aux espaces de bord — la base contient déjà des
+ *  noms à espace final). `exceptId` exclut la carte en cours de renommage.
+ *
+ *  On charge `id, name` pour toute la table (quelques centaines de lignes) au
+ *  lieu d'un `ilike` : le `trim` doit s'appliquer des DEUX côtés, ce qu'un
+ *  filtre PostgREST ne sait pas faire sans fonction SQL dédiée. */
+async function findNameCollision(
+  supabaseAdmin: SupabaseClient,
+  name: unknown,
+  exceptId?: number,
+): Promise<{ id: number; name: string } | null> {
+  if (typeof name !== 'string' || !name.trim()) return null;
+  const needle = name.trim().toLowerCase();
+  const { data } = await supabaseAdmin.from('cards').select('id, name');
+  for (const row of (data ?? []) as { id: number; name: string | null }[]) {
+    if (exceptId != null && row.id === exceptId) continue;
+    if ((row.name ?? '').trim().toLowerCase() === needle) {
+      return { id: row.id, name: row.name ?? '' };
+    }
+  }
+  return null;
+}
+
+/** Réponse 409 commune : le client (forge) la reconnaît via `code` et propose
+ *  de forcer la sauvegarde avec `allowDuplicateName: true`. Le message est
+ *  auto-porteur (il inclut la question) pour que l'appelant n'ait aucun texte
+ *  à composer — le reste de cette route renvoie déjà ses erreurs en français. */
+function duplicateNameResponse(existing: { id: number; name: string }) {
+  return NextResponse.json(
+    {
+      error: `Une carte nommée « ${existing.name.trim()} » existe déjà (id ${existing.id}). Enregistrer quand même ?`,
+      code: 'duplicate_name',
+      existingId: existing.id,
+    },
+    { status: 409 },
+  );
+}
+
 async function getAuthUser() {
   const cookieStore = await cookies();
   const supabaseAuth = createServerClient(
@@ -87,7 +126,7 @@ export async function POST(request: Request) {
   const supabaseAdmin = auth.supabase;
 
   try {
-    const { card, imageBase64, imageMimeType, updateId, sfxPlayBase64, sfxPlayMimeType, sfxDeathBase64, sfxDeathMimeType, partial, composed_capabilities } = await request.json();
+    const { card, imageBase64, imageMimeType, updateId, sfxPlayBase64, sfxPlayMimeType, sfxDeathBase64, sfxDeathMimeType, partial, composed_capabilities, allowDuplicateName } = await request.json();
     const composedCaps = sanitizeComposed(composed_capabilities);
 
     // Partial update path: only update the fields explicitly present in
@@ -113,6 +152,11 @@ export async function POST(request: Request) {
       }
       if (Object.keys(patch).length === 0) {
         return NextResponse.json({ success: true, updated: true, noop: true });
+      }
+      // Un renommage partiel peut lui aussi créer un homonyme.
+      if ('name' in patch && !allowDuplicateName) {
+        const clash = await findNameCollision(supabaseAdmin, patch.name, updateId);
+        if (clash) return duplicateNameResponse(clash);
       }
       // Dual-write : si le patch touche un champ dont dépendent les capacités,
       // on recharge la ligne, on fusionne et on recalcule `capabilities`.
@@ -159,6 +203,19 @@ export async function POST(request: Request) {
     // eux, le bonus s'applique à toutes les créatures alliées. La validation
     // qui les exigeait n'avait de sens que parce que le moteur ne savait pas
     // traiter ce cas (il ne buffait alors personne).
+
+    // Garde anti-homonyme (création ET renommage). Volontairement AVANT tout
+    // upload : un refus ne doit pas laisser d'image ni de SFX orphelins dans le
+    // storage. `allowDuplicateName` permet à l'admin de forcer en connaissance
+    // de cause (des homonymes légitimes existent déjà en base).
+    if (!allowDuplicateName) {
+      const clash = await findNameCollision(
+        supabaseAdmin,
+        card?.name,
+        typeof updateId === 'number' ? updateId : undefined,
+      );
+      if (clash) return duplicateNameResponse(clash);
+    }
 
     // Upload image if provided
     let image_url: string | null = null;

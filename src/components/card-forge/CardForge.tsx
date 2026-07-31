@@ -2222,6 +2222,63 @@ export default function CardForge() {
     Object.entries(FORGE_TO_GAME_KEYWORD).map(([k, v]) => [v, k])
   );
 
+  /** Vide le formulaire après un enregistrement réussi.
+   *
+   *  Sans cela, TOUT l'état de la carte précédente survit : nom, coût, stats,
+   *  mots-clés et leurs modes/X, effets composés, jetons. Il suffisait alors de
+   *  régénérer une illustration et de re-sauvegarder pour insérer un clone
+   *  intégral de la carte précédente sous un nouvel id (la forge n'envoie
+   *  jamais d'`updateId` : elle insère toujours). C'est ainsi que sont nés les
+   *  deux « Archidémon » identiques (ids 395 et 400, à 61 min d'intervalle).
+   *
+   *  On conserve délibérément le CONTEXTE de lot — faction, race, clan,
+   *  alignement, type, rareté, set/année/mois : on forge par séries thématiques,
+   *  et le redemander à chaque carte serait une régression d'ergonomie. Seul ce
+   *  qui identifie la carte elle-même est remis à zéro. */
+  const resetCardForm = useCallback((previewId: string) => {
+    setCard(null);
+    // Identité et texte
+    setManualName("");
+    setManualAbility("");
+    setManualFlavorText("");
+    setManualIllustrationPrompt("");
+    setManualExtraContext("");
+    // Coûts et statistiques
+    setManualMana(3);
+    setManualAttack(3);
+    setManualDefense(3);
+    setManualPower(2);
+    setManualLifeCost(0);
+    setManualDiscardCost(0);
+    setManualSacrificeCost(0);
+    // Mots-clés et leur paramétrage
+    setManualKeywords([]);
+    setKeywordXValues({});
+    setKeywordModes({});
+    setKeywordGrantScope({});
+    setSpellKeywords([]);
+    setSpellEffectsData(null);
+    setComposedCaps([]);
+    setDeclenchementTriggers([]);
+    // Paramètres Y / race / faction portés par des états dédiés
+    setRmY(1); setAfY(1); setRfY(1); setGlY(1); setDcY(1); setFdaY(1);
+    setRmRace(""); setRmClan(""); setAsRace("");
+    setInvocCosts([]); setInvocRace(""); setInvocFaction("");
+    setConferAbilityId(""); setConferX(1); setConferY(1);
+    // Jetons et races ciblées
+    setConvocationTokenId(null);
+    setConvocationTokens([]);
+    setLycanthropieTokenId(null);
+    setEntraideRace("");
+    // Médias
+    setSfxPlayFile(null);
+    setSfxDeathFile(null);
+    setCardImages(prev => {
+      const next = { ...prev };
+      delete next[previewId];
+      return next;
+    });
+  }, []);
 
   const saveToGame = useCallback(async (forgeCard: ForgeCard) => {
     setSaving(true);
@@ -2400,10 +2457,13 @@ export default function CardForge() {
       }
       // If blobUrl is an external URL (e.g. Supabase), skip re-upload — image already in storage
 
-      const response = await fetch('/api/cards/save', {
+      // `allowDuplicateName` reste faux au premier essai : le serveur refuse
+      // (409) si le nom existe déjà, et on ne réessaie qu'après confirmation.
+      const postCard = (allowDuplicateName: boolean) => fetch('/api/cards/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          allowDuplicateName,
           card: {
             name: forgeCard.name,
             mana_cost: forgeCard.mana,
@@ -2443,16 +2503,33 @@ export default function CardForge() {
         }),
       });
 
-      const data = await response.json();
+      let response = await postCard(false);
+      let data = await response.json();
+
+      // 409 = homonyme détecté. Le message du serveur est auto-porteur (il pose
+      // déjà la question), on le relaie tel quel plutôt que de composer un texte
+      // ici — comme pour les autres validations serveur de cette route.
+      if (response.status === 409 && data?.code === 'duplicate_name') {
+        if (!confirm(data.error)) {
+          setSaveResult({ ok: false, msg: data.error });
+          return;
+        }
+        response = await postCard(true);
+        data = await response.json();
+      }
+
       if (!response.ok) throw new Error(data.error || tf('server_error'));
 
       setSaveResult({ ok: true, msg: tf('card_added', { name: forgeCard.name }) });
+      // Vide le formulaire : sans cela la prochaine sauvegarde recrée à
+      // l'identique la carte qu'on vient d'enregistrer (cf. resetCardForm).
+      resetCardForm(forgeCard.id);
     } catch (err) {
       setSaveResult({ ok: false, msg: err instanceof Error ? err.message : tf('unknown_error') });
     } finally {
       setSaving(false);
     }
-  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, keywordModes, keywordGrantScope, rmY, afY, rfY, glY, dcY, fdaY, rmRace, rmClan, asRace, invocCosts, invocRace, invocFaction, composedCaps, conferAbilityId, conferX, conferY, declenchementTriggers]);
+  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, keywordModes, keywordGrantScope, rmY, afY, rfY, glY, dcY, fdaY, rmRace, rmClan, asRace, invocCosts, invocRace, invocFaction, composedCaps, conferAbilityId, conferX, conferY, declenchementTriggers, resetCardForm]);
 
   const [generatingImage, setGeneratingImage] = useState(false);
   const [editedPrompt, setEditedPrompt] = useState<string | null>(null);
