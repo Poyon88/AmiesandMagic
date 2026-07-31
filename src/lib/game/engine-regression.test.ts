@@ -15,6 +15,16 @@
 // capacités ; le comportement de Gloire lui-même est verrouillé par gloire.test.ts.
 // Hors changement de règle assumé, ce golden doit rester figé.
 //
+// RE-BASELINE 2026-07-31 — Drain de vie centralisé. Le mot-clé ne soignait que
+// dans le flux d'attaque alors que son texte ne l'a jamais restreint ; il est
+// désormais déclenché par TOUTE source de dégât de la créature (cf.
+// applyLifesteal). Divergence mesurée sur cette partie scriptée : le Vampire
+// passe de 4 drains (total 11) à 5 drains (total 14), soit +3 PV au héros de P2
+// — le drain supplémentaire vient d'un chemin de dégât qui contournait
+// entièrement l'ancien bloc de combat. D'où la cascade : P2 survit un tour de
+// plus (182 → 183 étapes) et toute la trace suit. Ce n'est PAS une régression ;
+// la règle elle-même est verrouillée par lifesteal.test.ts.
+//
 // Déterminisme : RNG semée via initializeGame(seed) ; shuffleArray utilise cette
 // RNG ; l'auto-player fournit TOUJOURS des cibles explicites pour éviter le
 // `Math.random()` d'auto-ciblage (engine.ts ~1802) ; `turnStartedAt` (Date.now)

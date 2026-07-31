@@ -93,6 +93,13 @@ let composedStrikeMode: import("./types").KeywordMode | undefined = undefined;
 // Ids des joueurs dans l'ordre de state.players (set dans applyAction). Sert à
 // résoudre l'index du sentinel héros `__hero_<idx>__` sans porter le state.
 let currentPlayerIds: string[] = [];
+// Joueurs de l'état EN COURS DE MUTATION (set par cloneStateForAction, juste
+// après le clone du handler). Les fonctions de dégât ne reçoivent pas le state
+// mais doivent pouvoir remonter d'une créature source à SON héros pour Drain
+// de vie. Volontairement vidé en tête d'applyAction : si des dégâts tombaient
+// avant tout clone, mieux vaut ne rien soigner que muter l'état de l'action
+// précédente, que l'appelant détient peut-être encore.
+let currentBoardPlayers: PlayerState[] = [];
 // Pools de cartes de l'action en cours (set dans applyAction). Permet aux
 // résolveurs curés SANS accès au GameState (mort / retour en main) de générer
 // des options de Sélection ou de remplacer des sorts (Concentration). Même
@@ -472,8 +479,13 @@ function composedChoiceTargetIds(
   return ids;
 }
 
-function applyComposedToHero(content: import("./types").ComposedEffectContent, hero: import("./types").HeroState, x: number): void {
-  if (content === "deal_damage") dealDamageToHero(hero, x);
+function applyComposedToHero(
+  content: import("./types").ComposedEffectContent,
+  hero: import("./types").HeroState,
+  x: number,
+  source?: CardInstance | null,
+): void {
+  if (content === "deal_damage") dealDamageToHero(hero, x, source);
   else if (content === "heal") hero.hp = Math.min(hero.maxHp, hero.hp + x);
 }
 
@@ -819,7 +831,7 @@ function resolveComposedEffect(
       if (pool.length === 0) break;
       const ref = pool[Math.floor(rng() * pool.length)];
       if (ref.kind === "hero") {
-        applyComposedToHero(composed.content, ref.hero, 1);
+        applyComposedToHero(composed.content, ref.hero, 1, source);
         const heroOwner = ref.hero === owner.hero ? owner : opponent;
         const idx = currentPlayerIds.indexOf(heroOwner.id);
         sequentialHitsSink.push({ targetInstanceId: `__hero_${idx}__`, type: seqType });
@@ -841,7 +853,7 @@ function resolveComposedEffect(
     composed.content === "poison";
   for (const t of selectComposedTargets(target, owner, opponent, chosenTargetIds, harmful)) {
     if (t.kind === "hero") {
-      applyComposedToHero(composed.content, t.hero, x);
+      applyComposedToHero(composed.content, t.hero, x, source);
       recordPowerStrike(source, heroStrikeSentinel(t.hero, owner, opponent), composed.content, x);
     } else {
       applyComposedToUnit(composed, t.unit, x, y, source, owner, opponent, fromSpell);
@@ -1509,7 +1521,7 @@ export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
 export function startTurn(state: GameState): GameState {
   const pool = state.factionCardPool;
   const allPool = state.allSpellsPool;
-  const newState = deepClone({ ...state, factionCardPool: undefined, allSpellsPool: undefined } as GameState);
+  const newState = cloneStateForAction(state);
   newState.factionCardPool = pool;
   newState.allSpellsPool = allPool;
   const player = newState.players[newState.currentPlayerIndex];
@@ -1694,7 +1706,7 @@ function applyConcentration(player: PlayerState, x: number, pool: Card[] | undef
 export function endTurn(state: GameState): GameState {
   const pool = state.factionCardPool;
   const allPool = state.allSpellsPool;
-  const newState = deepClone({ ...state, factionCardPool: undefined, allSpellsPool: undefined } as GameState);
+  const newState = cloneStateForAction(state);
   newState.factionCardPool = pool;
   newState.allSpellsPool = allPool;
 
@@ -1871,7 +1883,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
   // Exclude factionCardPool and allSpellsPool from deep clone for performance — both are read-only
   const pool = state.factionCardPool;
   const allPool = state.allSpellsPool;
-  const newState = deepClone({ ...state, factionCardPool: undefined, allSpellsPool: undefined } as GameState);
+  const newState = cloneStateForAction(state);
   newState.factionCardPool = pool;
   newState.allSpellsPool = allPool;
   const player = newState.players[newState.currentPlayerIndex];
@@ -1966,7 +1978,10 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     if (hasKwOnPlay(cardInstance, "douleur")) {
       const douleurXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
       const x = douleurXVals["douleur"] ?? 1;
-      dealDamageToHero(player.hero, x);
+      // Source passée pour l'uniformité : c'est un COÛT payé sur son propre
+      // héros, donc la restriction « camp adverse » d'applyLifesteal l'empêche
+      // de se rembourser via Drain de vie.
+      dealDamageToHero(player.hero, x, cardInstance);
     }
 
     // Inspiration X: pioche X cartes à l'invocation.
@@ -4033,7 +4048,7 @@ function composedSlotType(t: import("./types").TargetSpec): SpellTargetType | un
 export function attack(state: GameState, action: AttackAction): GameState {
   const pool = state.factionCardPool;
   const allPool = state.allSpellsPool;
-  const newState = deepClone({ ...state, factionCardPool: undefined, allSpellsPool: undefined } as GameState);
+  const newState = cloneStateForAction(state);
   newState.factionCardPool = pool;
   newState.allSpellsPool = allPool;
   const player = newState.players[newState.currentPlayerIndex];
@@ -4157,18 +4172,15 @@ export function attack(state: GameState, action: AttackAction): GameState {
       [...opponent.board].forEach(c => dealDamageToCreature(c, fireX, false, false, attacker));
     }
 
-    dealDamageToHero(opponent.hero, attackPower);
+    dealDamageToHero(opponent.hero, attackPower, attacker);
     // Double Attaque: second hit (mirrors the creature combat path).
     if (hasKw(attacker, "double_attaque")) {
-      dealDamageToHero(opponent.hero, attackPower);
+      dealDamageToHero(opponent.hero, attackPower, attacker);
     }
 
-    // Drain de vie: heal own hero. Doubled when paired with Double
-    // Attaque since two hits land.
-    if (hasKw(attacker, "drain_de_vie")) {
-      const drained = hasKw(attacker, "double_attaque") ? attackPower * 2 : attackPower;
-      player.hero.hp += drained;
-    }
+    // Drain de vie : plus de bloc dédié ici — centralisé dans dealDamageToHero
+    // via la source passée ci-dessus. Double Attaque le double naturellement
+    // (deux frappes = deux soins), sans multiplication explicite.
 
     // Augure: piochez une carte quand dégâts au héros adverse
     if (hasKw(attacker, "augure")) {
@@ -4177,7 +4189,7 @@ export function attack(state: GameState, action: AttackAction): GameState {
 
     // Persécution X: dégâts bonus au héros adverse
     if (hasKw(attacker, "persecution") && attacker.persecutionX > 0) {
-      dealDamageToHero(opponent.hero, attacker.persecutionX);
+      dealDamageToHero(opponent.hero, attacker.persecutionX, attacker);
     }
 
     attacker.attacksRemaining--;
@@ -4234,7 +4246,7 @@ export function attack(state: GameState, action: AttackAction): GameState {
       dealDamageToCreature(target, attackPower, attackerHasPrecision, false, attacker, undefined, true);
 
       if (attackerHasTrample && target.currentHealth < 0 && targetHpBefore > 0) {
-        dealDamageToHero(opponent.hero, -target.currentHealth);
+        dealDamageToHero(opponent.hero, -target.currentHealth, attacker);
       }
 
       // Apply poison from attacker
@@ -4271,7 +4283,7 @@ export function attack(state: GameState, action: AttackAction): GameState {
       dealDamageToCreature(target, finalAttackPower, attackerHasPrecision, false, attacker, undefined, true);
 
       if (attackerHasTrample && target.currentHealth < 0 && targetHpBefore > 0) {
-        dealDamageToHero(opponent.hero, -target.currentHealth);
+        dealDamageToHero(opponent.hero, -target.currentHealth, attacker);
       }
 
       dealDamageToCreature(attacker, retaliationPower, hasKw(target, "precision"), false, target, undefined, true);
@@ -4293,19 +4305,15 @@ export function attack(state: GameState, action: AttackAction): GameState {
       [...opponent.board].forEach(c => dealDamageToCreature(c, fireX, false, false, attacker));
     }
 
-    // Drain de vie: heal own hero for damage dealt
-    if (hasKw(attacker, "drain_de_vie")) {
-      player.hero.hp += attackPower;
-    }
-
-    // Drain de vie (defender): heal opponent hero for counter-damage dealt
-    if (hasKw(target, "drain_de_vie")) {
-      opponent.hero.hp += target.currentAttack;
-    }
+    // Drain de vie (attaquant ET défenseur) : plus de bloc dédié ici — les deux
+    // sont centralisés dans dealDamageToCreature, qui reçoit déjà `attacker`
+    // puis `target` comme source des deux volets de l'échange. Le soin porte
+    // désormais sur les dégâts NETS (après Bouclier / Résistance / Armure) et
+    // non plus sur l'ATK brute.
 
     // Liaison de vie: damage taken shared with enemy hero
     if (hasKw(target, "liaison_de_vie")) {
-      dealDamageToHero(player.hero, attackPower);
+      dealDamageToHero(player.hero, attackPower, target);
     }
 
     // Riposte X : désormais centralisée dans dealDamageToCreature (déclenchée
@@ -4331,7 +4339,7 @@ export function attack(state: GameState, action: AttackAction): GameState {
     // Augure: if attacker hits hero (doesn't apply in creature combat)
     // Persécution X: X dégâts au héros adverse on each attack
     if (hasKw(attacker, "persecution") && attacker.persecutionX > 0) {
-      dealDamageToHero(opponent.hero, attacker.persecutionX);
+      dealDamageToHero(opponent.hero, attacker.persecutionX, attacker);
     }
 
     attacker.attacksRemaining--;
@@ -4385,7 +4393,7 @@ function runFureurChain(
     const enemies = enemyBoard.filter(c => c.currentHealth > 0 && c.instanceId !== exclude);
     if (enemies.length === 0) {
       // Hero hit terminates the chain (no retaliation possible).
-      dealDamageToHero(enemyHero, creature.currentAttack);
+      dealDamageToHero(enemyHero, creature.currentAttack, creature);
       (state.fureurStrikes ??= []).push({
         attackerInstanceId: creature.instanceId,
         victimInstanceId: enemyHeroSentinel,
@@ -4408,11 +4416,74 @@ function runFureurChain(
   }
 }
 
-function dealDamageToHero(hero: import("./types").HeroState, damage: number) {
+/** Clone d'entrée de handler. Identique au `deepClone` qu'il remplace (les
+ *  pools de cartes sont écartés : volumineux, immuables, relus du state
+ *  d'origine), mais publie en plus le plateau cloné dans `currentBoardPlayers`.
+ *  C'est le seul point où cette référence est posée — elle pointe donc toujours
+ *  sur les objets RÉELLEMENT mutés par l'action en cours. */
+function cloneStateForAction(state: GameState): GameState {
+  const next = deepClone({ ...state, factionCardPool: undefined, allSpellsPool: undefined } as GameState);
+  currentBoardPlayers = next.players;
+  return next;
+}
+
+/** Retrouve le contrôleur d'une instance dans l'état en cours de mutation.
+ *  Le cimetière est inclus : un râle d'agonie (Maléfice, Carnage) est résolu
+ *  alors que sa créature source y a DÉJÀ été déplacée. */
+function findControllerOf(inst: CardInstance): PlayerState | undefined {
+  return currentBoardPlayers.find(
+    p => p.board.some(c => c.instanceId === inst.instanceId)
+      || p.graveyard.some(c => c.instanceId === inst.instanceId)
+  );
+}
+
+/** Drain de vie, centralisé : toute source qui BLESSE réellement une entité
+ *  adverse soigne le héros de son contrôleur du montant réellement infligé.
+ *
+ *  Centralisé plutôt que réparti sur chaque capacité — même choix que Riposte —
+ *  parce que le texte du mot-clé (« Soigne votre héros des dégâts infligés »)
+ *  n'a jamais restreint au combat, alors que l'implémentation, elle, ne vivait
+ *  que dans le flux d'attaque : Impact, Souffle de feu, Tempête, Carnage,
+ *  Cataclysme et Maléfice ne soignaient rien.
+ *
+ *  Restriction au camp ADVERSE : sans elle, le coût de Douleur (la créature
+ *  blesse SON propre héros à l'invocation) se rembourserait tout seul, et
+ *  Cataclysme / Maléfice, qui frappent aussi les alliés, soigneraient pour les
+ *  dégâts infligés à son propre camp. */
+function applyLifesteal(
+  source: CardInstance | import("./types").HeroState | null | undefined,
+  victim: CardInstance | import("./types").HeroState,
+  dealt: number,
+): void {
+  if (!source || dealt <= 0) return;
+  // Un héros ne porte pas de mot-clé de créature.
+  if (!("instanceId" in source)) return;
+  if (source === victim) return;
+  if (!hasKw(source, "drain_de_vie")) return;
+
+  const owner = findControllerOf(source);
+  if (!owner) return;
+  if ("instanceId" in victim) {
+    if (owner.board.some(c => c.instanceId === victim.instanceId)) return;
+  } else if (owner.hero === victim) {
+    return;
+  }
+  owner.hero.hp += dealt;
+}
+
+// `source` = ce qui inflige les dégâts. Optionnel : les sources sans agresseur
+// (fatigue, effets qui écrivent directement les PV) ne le passent pas et ne
+// déclenchent donc pas Drain de vie.
+function dealDamageToHero(
+  hero: import("./types").HeroState,
+  damage: number,
+  source?: CardInstance | import("./types").HeroState | null,
+) {
   if (damage <= 0) return;
   if (hero.armor > 0) {
     if (hero.armor >= damage) {
       hero.armor -= damage;
+      // Intégralement absorbé : aucun dégât infligé, donc rien à drainer.
       return;
     } else {
       damage -= hero.armor;
@@ -4420,6 +4491,7 @@ function dealDamageToHero(hero: import("./types").HeroState, damage: number) {
     }
   }
   hero.hp -= damage;
+  applyLifesteal(source, hero, damage);
 }
 
 // `source` = ce qui inflige les dégâts (unité OU héros). Optionnel : les sources
@@ -4509,9 +4581,15 @@ function dealDamageToCreature(
     if ("instanceId" in source) {
       dealDamageToCreature(source, creature.riposteX);
     } else {
-      dealDamageToHero(source, creature.riposteX);
+      dealDamageToHero(source, creature.riposteX, creature);
     }
   }
+
+  // Drain de vie : après toutes les réductions et la soustraction des PV, on
+  // soigne du montant RÉELLEMENT infligé. Un Bouclier divin qui absorbe tout,
+  // une Transcendance ou un Indestructible sortent plus haut sans dégât — donc
+  // sans soin. Placé en dernier pour que `damage` soit la valeur nette.
+  applyLifesteal(source, creature, damage);
 }
 
 // ============================================================
@@ -4932,7 +5010,7 @@ function resolveCreatureDeath(c: CardInstance, owner: PlayerState, enemy: Player
     // Maléfice: inflige X dégâts à TOUTES les unités (alliés et ennemis), X = ATK
     if (hasKw(c, "malefice")) {
       const maleficeDmg = c.card.attack ?? 0;
-      dealDamageToHero(enemy.hero, maleficeDmg);
+      dealDamageToHero(enemy.hero, maleficeDmg, c);
       // Capacités de créature (Maléfice/Carnage) : non bloquées par Transcendance.
       [...enemy.board].forEach(e => dealDamageToCreature(e, maleficeDmg, false, true, c, false));
       [...owner.board].forEach(e => dealDamageToCreature(e, maleficeDmg, false, true, c, false));
@@ -5402,7 +5480,7 @@ function resolveCuratedKeywordEffect(
       // In on-play, Douleur damages the OWN hero (cost). In the new
       // death/tap modes the trigger represents the creature lashing out,
       // so we point it at the OPPONENT's hero — more interesting design.
-      dealDamageToHero(opponent.hero, x);
+      dealDamageToHero(opponent.hero, x, source);
       break;
     }
     case "vampirisme": {
@@ -5432,7 +5510,7 @@ function resolveCuratedKeywordEffect(
         }
       }
       const before = opponent.hero.hp;
-      dealDamageToHero(opponent.hero, x);
+      dealDamageToHero(opponent.hero, x, source);
       const dealt = before - opponent.hero.hp;
       owner.hero.hp += dealt;
       break;
@@ -5938,7 +6016,7 @@ function deferOrRandomTarget(
 export function tapActivate(state: GameState, action: TapActivateAction): GameState {
   const pool = state.factionCardPool;
   const allPool = state.allSpellsPool;
-  const newState = deepClone({ ...state, factionCardPool: undefined, allSpellsPool: undefined } as GameState);
+  const newState = cloneStateForAction(state);
   newState.factionCardPool = pool;
   newState.allSpellsPool = allPool;
 
@@ -6016,7 +6094,7 @@ export function tapActivate(state: GameState, action: TapActivateAction): GameSt
 export function resolvePendingTrigger(state: GameState, action: ResolvePendingTriggerAction): GameState {
   const pool = state.factionCardPool;
   const allPool = state.allSpellsPool;
-  const newState = deepClone({ ...state, factionCardPool: undefined, allSpellsPool: undefined } as GameState);
+  const newState = cloneStateForAction(state);
   newState.factionCardPool = pool;
   newState.allSpellsPool = allPool;
 
@@ -6124,7 +6202,7 @@ function applyOnePendingTrigger(
 export function autoResolvePendingTriggers(state: GameState): GameState {
   const pool = state.factionCardPool;
   const allPool = state.allSpellsPool;
-  const newState = deepClone({ ...state, factionCardPool: undefined, allSpellsPool: undefined } as GameState);
+  const newState = cloneStateForAction(state);
   newState.factionCardPool = pool;
   newState.allSpellsPool = allPool;
 
@@ -6292,7 +6370,7 @@ export function heroPowerComposedChoice(
 export function useHeroPower(state: GameState, action: HeroPowerAction): GameState {
   const pool = state.factionCardPool;
   const allPool = state.allSpellsPool;
-  const newState = deepClone({ ...state, factionCardPool: undefined, allSpellsPool: undefined } as GameState);
+  const newState = cloneStateForAction(state);
   newState.factionCardPool = pool;
   newState.allSpellsPool = allPool;
   const player = newState.players[newState.currentPlayerIndex];
@@ -6557,7 +6635,7 @@ export function getHeroPowerTargets(state: GameState, heroDef: HeroDefinition): 
 export function applyMulligan(state: GameState, action: MulliganAction): GameState {
   const pool = state.factionCardPool;
   const allPool = state.allSpellsPool;
-  const newState = deepClone({ ...state, factionCardPool: undefined, allSpellsPool: undefined } as GameState);
+  const newState = cloneStateForAction(state);
   newState.factionCardPool = pool;
   newState.allSpellsPool = allPool;
   const playerIndex = newState.players.findIndex(p => p.id === action.playerId);
@@ -6602,6 +6680,9 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   currentTurnNumber = state.turnNumber;
   currentPlayerId = state.players[state.currentPlayerIndex].id;
   currentPlayerIds = state.players.map(p => p.id);
+  // Vidé ici, repositionné par cloneStateForAction dans chaque handler : jamais
+  // de référence héritée de l'action précédente (cf. la déclaration).
+  currentBoardPlayers = [];
   currentCardPools = { factionCardPool: state.factionCardPool, allSpellsPool: state.allSpellsPool };
   currentFormatCode = state.formatCode ?? null;
   pendingTriggerSink = [];
@@ -6925,8 +7006,8 @@ export function impactTargetIds(controller: PlayerState, other: PlayerState): st
  *  fromSpell=false → non bloquée par Transcendance (comme Cataclysme/Tempête). */
 function applyImpactTo(targetId: string | undefined, x: number, source: CardInstance | null, controller: PlayerState, other: PlayerState): void {
   if (!targetId || x <= 0) return;
-  if (targetId === "enemy_hero") { dealDamageToHero(other.hero, x); return; }
-  if (targetId === "friendly_hero") { dealDamageToHero(controller.hero, x); return; }
+  if (targetId === "enemy_hero") { dealDamageToHero(other.hero, x, source); return; }
+  if (targetId === "friendly_hero") { dealDamageToHero(controller.hero, x, source); return; }
   const target = findCreatureOnBoard(controller, targetId) ?? findCreatureOnBoard(other, targetId);
   if (target) dealDamageToCreature(target, x, false, true, source, false);
 }
