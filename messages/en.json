@@ -231,7 +231,7 @@
       },
       "corruption": {
         "label": "Corruption",
-        "desc": "Convert a target enemy unit to your side until end of turn; it gains Traque until end of turn."
+        "desc": "Convert a target enemy unit to your side until end of turn; it gains Charge until end of turn."
       },
       "carnage": {
         "label": "Carnage X",
@@ -577,7 +577,7 @@
       },
       "corruption": {
         "label": "Corruption",
-        "desc": "Converts the targeted enemy unit to your side until the end of the turn; it gains Hunt."
+        "desc": "Converts the targeted enemy unit to your side until the end of the turn; it gains Charge."
       }
     },
     "composed": {
