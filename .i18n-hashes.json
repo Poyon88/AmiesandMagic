@@ -12329,5 +12329,19 @@
   "zh:vocab.markers.rm_scope": "1t1a380",
   "zh:vocab.markers.rm_scope_race": "1goypj",
   "zh:vocab.markers.rm_scope_clan": "1f9xkbu",
-  "zh:vocab.markers.rm_scope_all": "45h"
+  "zh:vocab.markers.rm_scope_all": "45h",
+  "en:vocab.spell_keywords.corruption.label": "pleaxm",
+  "en:vocab.spell_keywords.corruption.desc": "15xcalg",
+  "es:vocab.spell_keywords.corruption.label": "pleaxm",
+  "es:vocab.spell_keywords.corruption.desc": "15xcalg",
+  "de:vocab.spell_keywords.corruption.label": "pleaxm",
+  "de:vocab.spell_keywords.corruption.desc": "15xcalg",
+  "it:vocab.spell_keywords.corruption.label": "pleaxm",
+  "it:vocab.spell_keywords.corruption.desc": "15xcalg",
+  "pt:vocab.spell_keywords.corruption.label": "pleaxm",
+  "pt:vocab.spell_keywords.corruption.desc": "15xcalg",
+  "ja:vocab.spell_keywords.corruption.label": "pleaxm",
+  "ja:vocab.spell_keywords.corruption.desc": "15xcalg",
+  "zh:vocab.spell_keywords.corruption.label": "pleaxm",
+  "zh:vocab.spell_keywords.corruption.desc": "15xcalg"
 }

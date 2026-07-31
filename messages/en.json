@@ -574,6 +574,10 @@
       "afflux": {
         "label": "Surge X",
         "desc": "Gain X mana this turn."
+      },
+      "corruption": {
+        "label": "Corruption",
+        "desc": "Converts the targeted enemy unit to your side until the end of the turn; it gains Hunt."
       }
     },
     "composed": {
@@ -1142,12 +1146,12 @@
       "lycanthrope": "an X/X token",
       "ability": "an ability",
       "scope": "to an allied unit (or to all)",
-      "scope_target": "to an allied unit",
-      "scope_all": "to all your units",
       "rm_scope": " of the chosen race or clan",
       "rm_scope_race": " of race {v}",
       "rm_scope_clan": " of clan {v}",
-      "rm_scope_all": ""
+      "rm_scope_all": "",
+      "scope_target": "to an allied unit",
+      "scope_all": "to all your units"
     },
     "sets": {
       "1": "Base Set"

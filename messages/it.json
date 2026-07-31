@@ -574,6 +574,10 @@
       "afflux": {
         "label": "Afflusso X",
         "desc": "Guadagna X mana questo turno"
+      },
+      "corruption": {
+        "label": "Corruzione",
+        "desc": "Converte l'unità nemica bersaglio al vostro schieramento fino alla fine del turno; guadagna Caccia."
       }
     },
     "composed": {
@@ -1142,12 +1146,12 @@
       "lycanthrope": "un token X/X",
       "ability": "una capacità",
       "scope": "a un'unità alleata (o a tutte)",
-      "scope_target": "a un'unità alleata",
-      "scope_all": "a tutte le vostre unità",
       "rm_scope": " della razza o del clan scelto",
       "rm_scope_race": " di razza {v}",
       "rm_scope_clan": " del clan {v}",
-      "rm_scope_all": ""
+      "rm_scope_all": "",
+      "scope_target": "a un'unità alleata",
+      "scope_all": "a tutte le vostre unità"
     },
     "sets": {
       "1": "Set Base"

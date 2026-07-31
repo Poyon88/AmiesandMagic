@@ -574,6 +574,10 @@
       "afflux": {
         "label": "Zufluss X",
         "desc": "Erhalte X Mana in diesem Zug."
+      },
+      "corruption": {
+        "label": "Korruption",
+        "desc": "Bekehrt die anvisierte gegnerische Einheit bis zum Ende der Runde auf Ihre Seite; sie erhält Verfolgung."
       }
     },
     "composed": {
@@ -1142,12 +1146,12 @@
       "lycanthrope": "ein X/X-Token",
       "ability": "eine Fähigkeit",
       "scope": "auf eine verbündete Einheit (oder auf alle)",
-      "scope_target": "auf eine verbündete Einheit",
-      "scope_all": "auf alle deine Einheiten",
       "rm_scope": " der gewählten Rasse oder des gewählten Klans",
       "rm_scope_race": " der Rasse {v}",
       "rm_scope_clan": " des Klans {v}",
-      "rm_scope_all": ""
+      "rm_scope_all": "",
+      "scope_target": "auf eine verbündete Einheit",
+      "scope_all": "auf alle deine Einheiten"
     },
     "sets": {
       "1": "Basis-Set"

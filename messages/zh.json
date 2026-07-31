@@ -574,6 +574,10 @@
       "afflux": {
         "label": "涌流 X",
         "desc": "本回合获得 X 点法力"
+      },
+      "corruption": {
+        "label": "腐化",
+        "desc": "将目标敌方单位转化至我方阵营，直到本回合结束；其获得“追猎”。"
       }
     },
     "composed": {
@@ -1142,12 +1146,12 @@
       "lycanthrope": "一个X/X指示物",
       "ability": "一项能力",
       "scope": "给一个友方单位（或全部）",
-      "scope_target": "给一个友方单位",
-      "scope_all": "给你所有的单位",
       "rm_scope": "所选种族或氏族的",
       "rm_scope_race": "{v}种族的",
       "rm_scope_clan": "{v}氏族的",
-      "rm_scope_all": ""
+      "rm_scope_all": "",
+      "scope_target": "给一个友方单位",
+      "scope_all": "给你所有的单位"
     },
     "sets": {
       "1": "基础系列"

@@ -3247,6 +3247,27 @@ function resolveSpellKeywords(
         }
         break;
       }
+      case "corruption": {
+        // Le SORT convertit lui-même la cible CHOISIE. Contrôle TEMPORAIRE :
+        // `originalOwnerId` la fait repartir chez son propriétaire au début de
+        // son tour (cf. startTurn) — seule différence avec Domination, qui ne
+        // pose que `trueOwnerId` et garde l'unité définitivement.
+        // Sans cible explicite (sort relancé), tirage — comme le chemin créature.
+        if (ctx.caster.board.length >= MAX_BOARD_SIZE || ctx.opponent.board.length === 0) break;
+        const corrupted = targetId
+          ? ctx.opponent.board.find(c => c.instanceId === targetId)
+          : ctx.opponent.board[Math.floor(rng() * ctx.opponent.board.length)];
+        if (!corrupted) break;
+        ctx.opponent.board = ctx.opponent.board.filter(c => c !== corrupted);
+        corrupted.originalOwnerId = ctx.opponent.id;
+        corrupted.trueOwnerId = ctx.opponent.id;
+        corrupted.hasSummoningSickness = false; // Traque
+        if (!corrupted.card.keywords.includes("charge")) {
+          corrupted.card = { ...corrupted.card, keywords: [...corrupted.card.keywords, "charge"] };
+        }
+        ctx.caster.board.push(corrupted);
+        break;
+      }
       case "domination": {
         // Le SORT prend lui-même le contrôle, sur la cible CHOISIE (la version
         // créature tire au hasard à son invocation, faute d'interlocuteur).

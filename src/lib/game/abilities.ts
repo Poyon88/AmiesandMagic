@@ -500,8 +500,15 @@ export const ABILITIES: Record<string, AbilityDef> = {
   corruption: {
     id: "corruption", label: "Corruption", symbol: "🖤",
     desc: "Convertit l'unité ennemie sélectionnée à votre camp jusqu'à la fin du tour ; elle gagne Traque jusqu'à la fin du tour.",
-    applicable_to: ["creature"],
+    applicable_to: ["creature", "spell"],
     creature: { cost: 27, costPerX: 0, se: 6.0, minTier: 4, scalable: false, zone: "Terrain" },
+    // Forme SORT : le sort convertit lui-même, il ne confère rien. Contrôle
+    // TEMPORAIRE (l'unité repart chez son propriétaire au début de son tour) —
+    // c'est ce qui la distingue de Domination, définitive.
+    spell: {
+      desc: "Convertit l'unité ennemie ciblée à votre camp jusqu'à la fin du tour ; elle gagne Traque.",
+      params: [], needsTarget: true, targetType: "enemy_creature",
+    },
   },
   carnage: {
     id: "carnage", label: "Carnage X", symbol: "💥",

@@ -574,6 +574,10 @@
       "afflux": {
         "label": "Afluencia X",
         "desc": "Gana X de maná este turno"
+      },
+      "corruption": {
+        "label": "Corrupción",
+        "desc": "Convierte a la unidad enemiga objetivo a tu bando hasta el final del turno; gana Acecho."
       }
     },
     "composed": {
@@ -1142,12 +1146,12 @@
       "lycanthrope": "un token X/X",
       "ability": "una habilidad",
       "scope": "a una unidad aliada (o a todas)",
-      "scope_target": "a una unidad aliada",
-      "scope_all": "a todas tus unidades",
       "rm_scope": " de la raza o clan elegido",
       "rm_scope_race": " de raza {v}",
       "rm_scope_clan": " del clan {v}",
-      "rm_scope_all": ""
+      "rm_scope_all": "",
+      "scope_target": "a una unidad aliada",
+      "scope_all": "a todas tus unidades"
     },
     "sets": {
       "1": "Set Base"

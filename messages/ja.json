@@ -574,6 +574,10 @@
       "afflux": {
         "label": "魔力流入 X",
         "desc": "このターン、マナをX獲得する"
+      },
+      "corruption": {
+        "label": "堕落",
+        "desc": "対象の敵ユニットをターン終了時まで自軍に寝返らせる。そのユニットは「追跡」を獲得する。"
       }
     },
     "composed": {
@@ -1142,12 +1146,12 @@
       "lycanthrope": "X/Xのトークン",
       "ability": "能力",
       "scope": "味方ユニット1体（または全体）に",
-      "scope_target": "味方ユニット1体に",
-      "scope_all": "あなたの全ユニットに",
       "rm_scope": "選択した種族またはクランの",
       "rm_scope_race": "{v}種族の",
       "rm_scope_clan": "{v}クランの",
-      "rm_scope_all": ""
+      "rm_scope_all": "",
+      "scope_target": "味方ユニット1体に",
+      "scope_all": "あなたの全ユニットに"
     },
     "sets": {
       "1": "基本セット"

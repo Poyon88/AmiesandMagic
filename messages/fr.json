@@ -447,6 +447,10 @@
         "label": "Convocation",
         "desc": "Crée {token}."
       },
+      "corruption": {
+        "label": "Corruption",
+        "desc": "Convertit l'unité ennemie ciblée à votre camp jusqu'à la fin du tour ; elle gagne Traque."
+      },
       "domination": {
         "label": "Domination",
         "desc": "Prend le contrôle de l'unité ennemie ciblée."
