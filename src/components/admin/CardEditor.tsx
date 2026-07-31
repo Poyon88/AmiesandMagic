@@ -72,6 +72,25 @@ const S = {
 const RARITIES = ["Commune", "Peu Commune", "Rare", "Épique", "Légendaire"];
 const SORTED_KEYWORDS = [...ALL_KEYWORDS].sort((a, b) => KEYWORD_LABELS[a].localeCompare(KEYWORD_LABELS[b], "fr"));
 
+/** Options du FILTRE « Mot-clé… » : union des mécaniques de créature et de
+ *  sort. `SORTED_KEYWORDS` ne couvre que les premières, si bien que les
+ *  mécaniques réservées aux sorts (Guérison, Déferlement, Entrave…) étaient
+ *  introuvables au filtre — alors que `filteredCards` interroge DÉJÀ
+ *  `spell_keywords` et savait donc les traiter. Ne pas réutiliser cette liste
+ *  pour le picker de mots-clés de la fiche : lui reste volontairement créature. */
+const FILTER_KEYWORDS: { id: string; label: string }[] = (() => {
+  const byId = new Map<string, string>();
+  for (const kw of ALL_KEYWORDS) byId.set(kw, KEYWORD_LABELS[kw]);
+  // Les polymorphes (Impact, Invocation…) sont déjà présents : on garde le
+  // libellé créature, qui fait foi côté forge.
+  for (const id of ALL_SPELL_KEYWORDS) {
+    if (!byId.has(id)) byId.set(id, SPELL_KEYWORD_LABELS[id] ?? id);
+  }
+  return [...byId]
+    .map(([id, label]) => ({ id, label }))
+    .sort((a, b) => a.label.localeCompare(b.label, "fr"));
+})();
+
 export default function CardEditor() {
   // Data
   const [cards, setCards] = useState<DbCard[]>([]);
@@ -91,7 +110,9 @@ export default function CardEditor() {
   const [search, setSearch] = useState("");
   const [manaCostFilter, setManaCostFilter] = useState<number | null>(null);
   const [typeFilter, setTypeFilter] = useState<"creature" | "spell" | null>(null);
-  const [keywordFilter, setKeywordFilter] = useState<Keyword | null>(null);
+  // `string` et non `Keyword` : le filtre accepte aussi les mécaniques
+  // réservées aux sorts (cf. FILTER_KEYWORDS), qui ne sont pas des `Keyword`.
+  const [keywordFilter, setKeywordFilter] = useState<string | null>(null);
   const [factionFilter, setFactionFilter] = useState<string | null>(null);
   const [rarityFilter, setRarityFilter] = useState<string | null>(null);
   const [raceFilter, setRaceFilter] = useState<string | null>(null);
@@ -726,10 +747,10 @@ export default function CardEditor() {
         </div>
 
         {/* Keyword */}
-        <select value={keywordFilter || ""} onChange={e => setKeywordFilter((e.target.value || null) as Keyword | null)} style={{ ...S.select, width: 130 }}>
+        <select value={keywordFilter || ""} onChange={e => setKeywordFilter(e.target.value || null)} style={{ ...S.select, width: 130 }}>
           <option value="">Mot-clé...</option>
-          {SORTED_KEYWORDS.map(kw => (
-            <option key={kw} value={kw}>{KEYWORD_LABELS[kw]}</option>
+          {FILTER_KEYWORDS.map(({ id, label }) => (
+            <option key={id} value={id}>{label}</option>
           ))}
         </select>
 
