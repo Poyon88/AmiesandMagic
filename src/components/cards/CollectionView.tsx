@@ -107,11 +107,28 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
     return Array.from(set).sort();
   }, [cards]);
 
+  // Clans restreints à la faction sélectionnée : seuls les clans réellement
+  // portés par des cartes de cette faction sont proposés. Sans faction, on
+  // offre tous les clans présents. Même principe que HeroesPage.
   const clans = useMemo(() => {
     const set = new Set<string>();
-    cards.forEach(c => { if (c.clan) set.add(c.clan); });
+    cards.forEach(c => {
+      if (!c.clan) return;
+      if (factionFilter !== null && c.faction !== factionFilter) return;
+      set.add(c.clan);
+    });
     return Array.from(set).sort();
-  }, [cards]);
+  }, [cards, factionFilter]);
+
+  // Changer de faction remet le clan à zéro : le clan précédent appartient
+  // rarement à la nouvelle faction, et la grille se viderait sans que le
+  // sélecteur (qui ne propose plus ce clan) n'explique pourquoi. Piloté par
+  // l'événement et non par un effet — la règle `set-state-in-effect` du lint
+  // interdit le second, et un effet provoquerait un rendu en cascade.
+  const selectFaction = (next: string | null) => {
+    setFactionFilter(next);
+    setClanFilter(null);
+  };
 
   const years = useMemo(() => {
     return [...new Set(cards.filter(c => c.card_year).map(c => String(c.card_year)))].sort();
@@ -352,7 +369,7 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
               <span className={FILTER_LABEL_CLS}>{t("faction_label")}</span>
               <select
                 value={factionFilter ?? ""}
-                onChange={(e) => setFactionFilter(e.target.value || null)}
+                onChange={(e) => selectFaction(e.target.value || null)}
                 className={SELECT_CLS}
               >
                 <option value="">{t("all_fem")}</option>

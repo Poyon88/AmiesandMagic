@@ -190,7 +190,19 @@ export default function CardEditor() {
   // Dynamic filter options
   const factions = useMemo(() => [...new Set(cards.map(c => c.faction).filter(Boolean) as string[])].sort(), [cards]);
   const races = useMemo(() => [...new Set(cards.map(c => c.race).filter(Boolean) as string[])].sort(), [cards]);
-  const clans = useMemo(() => [...new Set(cards.map(c => c.clan).filter(Boolean) as string[])].sort(), [cards]);
+  // Tous les clans portés par au moins une carte, sans restriction. Sert de
+  // filet à l'ÉDITION (`editClans`) : un clan hors FACTIONS resterait sinon
+  // invisible.
+  const allClans = useMemo(() => [...new Set(cards.map(c => c.clan).filter(Boolean) as string[])].sort(), [cards]);
+  // Clans du FILTRE : restreints à la faction filtrée, pour ne proposer que des
+  // clans qui rendront des résultats. Distinct d'`allClans` à dessein — narrower
+  // ici, large à l'édition.
+  const clans = useMemo(() => [...new Set(
+    cards
+      .filter(c => factionFilter === null || c.faction === factionFilter)
+      .map(c => c.clan)
+      .filter(Boolean) as string[],
+  )].sort(), [cards, factionFilter]);
   // Clans proposés dans l'édition : union des clans déjà utilisés ET des
   // clans canoniques déclarés dans FACTIONS pour la faction sélectionnée.
   // Sans ça, un nouveau clan (ex: "Incas") n'apparaît jamais en suggestion
@@ -200,8 +212,8 @@ export default function CardEditor() {
     const canonical: string[] = editFaction
       ? getAllClanNames(editFaction)
       : Object.keys(FACTIONS).flatMap(getAllClanNames);
-    return [...new Set([...canonical, ...clans])].sort();
-  }, [clans, editFields]);
+    return [...new Set([...canonical, ...allClans])].sort();
+  }, [allClans, editFields]);
   const editRaces = useMemo(() => {
     const editFaction = (typeof editFields?.faction === "string" ? editFields.faction : null) as string | null;
     // Races de la faction + pool neutre des Mercenaires (cf. getAssignableRaces),
@@ -755,7 +767,7 @@ export default function CardEditor() {
         </select>
 
         {/* Faction */}
-        <select value={factionFilter || ""} onChange={e => setFactionFilter(e.target.value || null)} style={{ ...S.select, width: 110 }}>
+        <select value={factionFilter || ""} onChange={e => { setFactionFilter(e.target.value || null); setClanFilter(null); }} style={{ ...S.select, width: 110 }}>
           <option value="">Faction...</option>
           {factions.map(f => <option key={f} value={f}>{getFactionDisplayName(f)}</option>)}
         </select>

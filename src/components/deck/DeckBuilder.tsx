@@ -305,6 +305,10 @@ export default function DeckBuilder({
   // Changer de faction vide les cartes/héros/plateau/dos incompatibles.
   function changeFaction(faction: string | null) {
     setSelectedFaction(faction);
+    // Le clan retenu n'appartient presque jamais à la nouvelle faction, et il
+    // ne figure plus dans le sélecteur : sans remise à zéro, la grille se vide
+    // sans explication visible.
+    setClanFilter(null);
     if (!faction) return;
     setDeckCards((prev) => {
       const next = new Map<number, DeckEntry>();
@@ -352,11 +356,19 @@ export default function DeckBuilder({
     return Array.from(set).sort();
   }, [cards]);
 
+  // Clans restreints au pool réellement constructible : la faction choisie plus
+  // les Mercenaires (et les cartes sans faction), exactement le prédicat du
+  // filtrage ci-dessous. Proposer un clan hors pool ne pouvait que vider la
+  // grille.
   const clans = useMemo(() => {
     const set = new Set<string>();
-    cards.forEach(c => { if (c.clan) set.add(c.clan); });
+    cards.forEach(c => {
+      if (!c.clan) return;
+      if (selectedFaction && c.faction && c.faction !== selectedFaction && c.faction !== "Mercenaires") return;
+      set.add(c.clan);
+    });
     return Array.from(set).sort();
-  }, [cards]);
+  }, [cards, selectedFaction]);
 
   const years = useMemo(() => {
     return [...new Set(cards.filter(c => c.card_year).map(c => String(c.card_year)))].sort();
