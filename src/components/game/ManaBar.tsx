@@ -18,10 +18,15 @@ interface ManaBarProps {
    *  Faux ⇒ la pastille reste lisible mais inerte. */
   canSpendEpargne?: boolean;
   onSpendEpargne?: () => void;
+  /** Camp de cette barre. Sert d'ancre DOM (`data-epargne-badge`) à
+   *  EpargneGainOverlay, qui vient poser le « +N » sur le losange. La barre est
+   *  montée en double (variantes de gabarit) : l'overlay retient celle qui est
+   *  réellement visible. */
+  side?: "mine" | "theirs";
 }
 
 export default function ManaBar({
-  current, max, reserved = 0, epargne = null, canSpendEpargne = false, onSpendEpargne,
+  current, max, reserved = 0, epargne = null, canSpendEpargne = false, onSpendEpargne, side,
 }: ManaBarProps) {
   const held = Math.max(0, Math.min(reserved, current));
   const available = current - held;
@@ -57,6 +62,7 @@ export default function ManaBar({
         // les deux ne se confondent pas d'un coup d'œil.
         <button
           type="button"
+          data-epargne-badge={side}
           onClick={canSpendEpargne ? onSpendEpargne : undefined}
           disabled={!canSpendEpargne}
           aria-label={`Épargne : ${epargne}`}

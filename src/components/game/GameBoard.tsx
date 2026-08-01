@@ -36,6 +36,7 @@ import GraveyardAffectOverlay from "./GraveyardAffectOverlay";
 import DiscardFromHandOverlay from "./DiscardFromHandOverlay";
 import TempeteOverlay from "./TempeteOverlay";
 import ManaReductionOverlay from "./ManaReductionOverlay";
+import EpargneGainOverlay from "./EpargneGainOverlay";
 import ArenaDeckGraveyardCluster from "./ArenaDeckGraveyardCluster";
 import MulliganOverlay from "./MulliganOverlay";
 import SettingsModal from "@/components/shared/SettingsModal";
@@ -74,6 +75,8 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     pendingTapSourceId,
     validTargets,
     targetingMode,
+    pendingComposedGraveyard,
+    creatureComposedCollected,
     pendingTriggerPrompt,
     divinationCards,
     selectionCards,
@@ -112,6 +115,8 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     clearTempeteEvent,
     manaReductionEvent,
     clearManaReductionEvent,
+    epargneGainEvent,
+    clearEpargneGainEvent,
     isAnimating,
     spellTargetSlots,
     currentTargetSlotIndex,
@@ -599,6 +604,20 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
         .map((c) => c.instanceId)
     : [];
 
+  // « (2/3) » quand une carte enchaîne PLUSIEURS choix de cimetière (ex. les
+  // trois Exhumations de Légion des Damnés). Sans ce repère, les pickers
+  // successifs sont indiscernables et on croit avoir mal cliqué. Muet sur un
+  // choix unique, qui n'a pas besoin d'être compté.
+  const graveyardPickProgress = (() => {
+    const p = pendingComposedGraveyard;
+    if (!p) return null;
+    const total = p.caps.reduce((sum, c) => sum + c.count, 0);
+    if (total <= 1) return null;
+    const done = Object.values(p.picked).reduce((sum, ids) => sum + ids.length, 0)
+      + creatureComposedCollected.length;
+    return `(${Math.min(done + 1, total)}/${total})`;
+  })();
+
   const handlePlayFromGraveyard = (instanceId: string) => {
     setGraveyardView(null);
     broadcast(dispatchAction({ type: "play_card", cardInstanceId: instanceId, fromGraveyard: true }));
@@ -930,7 +949,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
                 : undefined
             }
           />
-          <ManaBar current={opponent.mana} max={opponent.maxMana} epargne={opponent.epargne} />
+          <ManaBar current={opponent.mana} max={opponent.maxMana} epargne={opponent.epargne} side="theirs" />
         </div>
         )}
 
@@ -960,7 +979,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             />
             {/* Mana orbs sit directly under the 3D hero so they read as
                 "next to the HP number" rendered inside the canvas. */}
-            <ManaBar current={opponent.mana} max={opponent.maxMana} epargne={opponent.epargne} />
+            <ManaBar current={opponent.mana} max={opponent.maxMana} epargne={opponent.epargne} side="theirs" />
           </div>
         )}
 
@@ -1183,7 +1202,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
           {/* Le pouvoir héroïque tactile est rendu dans la colonne END TURN
               (bord droit, zone dégagée) pour ne pas être recouvert par une main
               pleine — cf. ce bloc plus bas. */}
-          <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} epargne={myPlayer.epargne} canSpendEpargne={canSpendEpargne} onSpendEpargne={handleSpendEpargne} />
+          <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} epargne={myPlayer.epargne} canSpendEpargne={canSpendEpargne} onSpendEpargne={handleSpendEpargne} side="mine" />
         </div>
         )}
 
@@ -1217,7 +1236,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
                 droit dégagé) afin de ne pas être recouvert par une main pleine. */}
             {/* Mana orbs directly under the 3D hero, next to the HP number
                 rendered inside the canvas. */}
-            <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} epargne={myPlayer.epargne} canSpendEpargne={canSpendEpargne} onSpendEpargne={handleSpendEpargne} />
+            <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} epargne={myPlayer.epargne} canSpendEpargne={canSpendEpargne} onSpendEpargne={handleSpendEpargne} side="mine" />
           </div>
         )}
 
@@ -1364,7 +1383,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
       {targetingMode === "graveyard" && !overlayPeeked && (
         <GraveyardOverlay
           cards={myPlayer.graveyard}
-          title={t("choose_card")}
+          title={graveyardPickProgress ? `${t("choose_card")} ${graveyardPickProgress}` : t("choose_card")}
           onClose={clearSelection}
           selectableInstanceIds={validTargets}
           onSelectCard={(id) => {
@@ -1467,6 +1486,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
       <DiscardFromHandOverlay event={discardFromHandEvent} onComplete={clearDiscardFromHandEvent} />
       <TempeteOverlay event={tempeteEvent} onComplete={clearTempeteEvent} />
       <ManaReductionOverlay event={manaReductionEvent} onComplete={clearManaReductionEvent} />
+      <EpargneGainOverlay event={epargneGainEvent} onComplete={clearEpargneGainEvent} />
 
       {/* Targeting arrow overlay */}
       <TargetingArrow

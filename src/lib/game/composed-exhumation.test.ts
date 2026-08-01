@@ -226,3 +226,40 @@ describe("exhumation composée — câblage picker (fonctions pures)", () => {
     expect(ids).toEqual([rat.instanceId, goule.instanceId]); // Dragon (8) exclu
   });
 });
+
+// ─── Plusieurs capacités Exhumation sur une même carte ─────────────────────
+// « Légion des Damnés » porte 3 Exhumations INDÉPENDANTES (cx_0/cx_1/cx_2,
+// count 1 chacune) et non une seule à count 3. Le moteur doit honorer les trois
+// cibles choisies ; le picker qui les collecte est testé côté store
+// (multi-exhumation-pick.test.ts).
+describe("exhumation composée — plusieurs capacités sur une carte", () => {
+  /** Sort à N capacités exhumation indépendantes, comme la forge les produit. */
+  function multiExhumSpell(n: number, x: number): { card: Card; uids: string[] } {
+    const caps = Array.from({ length: n }, () =>
+      composedCap("spell_resolution", { content: "exhumation", magnitude: { x }, target: { ...GRAVE_TARGET, count: 1 } }));
+    const card = mkCard({ card_type: "spell", attack: null, health: null, capabilities: caps });
+    return { card, uids: caps.map(c => c.uid) };
+  }
+
+  it("un slot de cible PAR capacité", () => {
+    const { card, uids } = multiExhumSpell(3, 10);
+    expect(getSpellTargetSlots(card).map(s => s.slot)).toEqual(uids.map(u => `${u}#0`));
+  });
+
+  it("ressuscite les 3 créatures choisies, une par capacité", () => {
+    const s0 = mkState();
+    const a = mkInstance(mkCard({ name: "A", mana_cost: 2, attack: 2, health: 2 }));
+    const b = mkInstance(mkCard({ name: "B", mana_cost: 3, attack: 3, health: 3 }));
+    const c = mkInstance(mkCard({ name: "C", mana_cost: 1, attack: 1, health: 1 }));
+    const d = mkInstance(mkCard({ name: "D", mana_cost: 9, attack: 9, health: 9 }));
+    s0.players[0].graveyard = [a, b, c, d];
+    const { card, uids } = multiExhumSpell(3, 10);
+    const s = play(s0, mkInstance(card), {
+      [`${uids[0]}#0`]: a.instanceId, [`${uids[1]}#0`]: b.instanceId, [`${uids[2]}#0`]: c.instanceId,
+    });
+    expect(s.players[0].board.map(x => x.card.name).sort()).toEqual(["A", "B", "C"]);
+    // D, la plus chère, restait remontée par le repli déterministe quand les
+    // capacités 2 et 3 partaient sans cible.
+    expect(s.players[0].graveyard.filter(x => x.card.card_type === "creature").map(x => x.card.name)).toEqual(["D"]);
+  });
+});

@@ -165,6 +165,15 @@ export interface ManaReductionEvent {
   timestamp: number;
 }
 
+/** Gain de compteur d'Épargne à animer, par camp (point de vue local). Le
+ *  montant est un DIFF d'état côté store : il couvre donc tous les chemins
+ *  d'alimentation (invocation, fin de tour, sort, effet composé) sans que le
+ *  moteur ait à émettre quoi que ce soit. */
+export interface EpargneGainEvent {
+  bySide: Partial<Record<"mine" | "theirs", number>>;
+  timestamp: number;
+}
+
 export interface HeroPowerCastEvent {
   // Purely an FX payload (not part of hashed GameState). heroId lets the
   // overlay localise name / power via useHeroText at render time.
@@ -285,10 +294,19 @@ interface GameStore {
   // Pouvoir de héros composé en cours de ciblage : uid de la capacité + nombre
   // de cibles à collecter (réutilise creatureComposedCollected pour l'accu).
   pendingHeroPowerComposed: { uid: string; count: number } | null;
-  // Exhumation composée en cours de ciblage cimetière : uid de la capacité +
-  // contexte de dispatch (le picker cimetière est partagé, ce flag route l'action
-  // finale). count toujours 1 (exhumation = 1 cible).
-  pendingComposedGraveyard: { uid: string; count: number; context: "spell" | "creature" | "hero_power" } | null;
+  // Exhumation composée en cours de ciblage cimetière. `caps` est une FILE : une
+  // carte peut porter plusieurs Exhumations composées (une capacité par
+  // résurrection, ex. « Légion des Damnés » et ses 3 cx_N), et chacune réclame
+  // son propre choix. On les enchaîne dans l'ordre des capacités ; sans file,
+  // seule la première était choisie et les autres retombaient sur le repli
+  // déterministe « plus hauts coûts d'abord » du moteur.
+  // `context` route l'action finale (le picker cimetière est partagé).
+  pendingComposedGraveyard: {
+    caps: { uid: string; count: number }[];
+    capIndex: number;
+    picked: Record<string, string[]>;
+    context: "spell" | "creature" | "hero_power";
+  } | null;
   // Attaque avec pouvoir composé "à l'attaque" en désignation "au choix" : la
   // cible d'attaque est mémorisée pendant qu'on collecte les cibles du pouvoir.
   pendingAttackDefenderId: string | null;
@@ -318,6 +336,7 @@ interface GameStore {
   tempeteEvent: TempeteEvent | null;
   powerArrowEvent: PowerArrowEvent | null;
   manaReductionEvent: ManaReductionEvent | null;
+  epargneGainEvent: EpargneGainEvent | null;
   heroPowerCastEvent: HeroPowerCastEvent | null;
   graveyardAffectEvent: GraveyardAffectEvent | null;
   discardFromHandEvent: DiscardFromHandEvent | null;
@@ -389,6 +408,7 @@ interface GameStore {
   clearTempeteEvent: () => void;
   clearPowerArrowEvent: () => void;
   clearManaReductionEvent: () => void;
+  clearEpargneGainEvent: () => void;
   clearHeroPowerCastEvent: () => void;
   clearGraveyardAffectEvent: () => void;
   clearDiscardFromHandEvent: () => void;
@@ -1146,6 +1166,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   tempeteEvent: null,
   powerArrowEvent: null,
   manaReductionEvent: null,
+  epargneGainEvent: null,
   heroPowerCastEvent: null,
   graveyardAffectEvent: null,
   discardFromHandEvent: null,
@@ -1228,6 +1249,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         tempeteEvent: null,
         powerArrowEvent: null,
         manaReductionEvent: null,
+        epargneGainEvent: null,
       });
       return action;
     }
@@ -1773,6 +1795,28 @@ export const useGameStore = create<GameStore>((set, get) => {
       }
     }
 
+    // Épargne : même patron de diff pur (aucun changement moteur). Couvre donc
+    // les quatre chemins d'alimentation d'un coup — mot-clé de créature à
+    // l'invocation, déclencheur fin de tour / mort / tap, mot-clé de sort,
+    // effet composé. `null` (jamais déclenchée) compte pour 0 : le tout premier
+    // gain est ainsi animé comme les suivants, alors que c'est justement lui
+    // qui fait APPARAÎTRE le losange.
+    let epargneGainEvent: EpargneGainEvent | null = null;
+    {
+      const bySide: Partial<Record<"mine" | "theirs", number>> = {};
+      for (let i = 0; i < 2; i++) {
+        const delta = (newState.players[i].epargne ?? 0) - (gameState.players[i].epargne ?? 0);
+        if (delta > 0) bySide[newState.players[i].id === localPlayerId ? "mine" : "theirs"] = delta;
+      }
+      if (Object.keys(bySide).length > 0) {
+        epargneGainEvent = { bySide, timestamp: Date.now() };
+        // Pas de son dédié en base (`sfx_tracks`) : on réutilise `buff`, qui est
+        // déjà la signature sonore d'un gain de ressource. Dédoublonné — un même
+        // tour peut aussi contenir un vrai buff.
+        if (!sfxEvents.some(e => e.type === "buff")) sfxEvents.push({ type: "buff" });
+      }
+    }
+
     // Historique latéral : construit ICI, une fois toutes les dérivations faites
     // (sort + relances, pouvoir de héros, combat, pouvoirs déclenchés, morts) et
     // AVANT que les champs d'overlay ne soient planifiés puis vidés.
@@ -1997,7 +2041,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     ];
     const hasDraws = drawnCounts[0] + drawnCounts[1] > 0;
 
-    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!powerArrowEvent || !!manaReductionEvent;
+    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!powerArrowEvent || !!manaReductionEvent || !!epargneGainEvent;
 
     // Deep clone helper — factionCardPool / allSpellsPool carry non-serialisable refs, keep them aside.
     const cloneState = (state: GameState): GameState => {
@@ -2357,6 +2401,10 @@ export const useGameStore = create<GameStore>((set, get) => {
         lastSfxEvents: impactSfx,
         ...(graveyardAffectEvent ? { graveyardAffectEvent } : {}),
         ...(tempeteEvent ? { tempeteEvent } : {}),
+        // Épargne posée ICI et pas en phase morts : cette phase est la seule à
+        // être planifiée inconditionnellement, et un gain d'Épargne ne tue
+        // personne (une Épargne « fin de tour » n'aurait rien animé du tout).
+        ...(epargneGainEvent ? { epargneGainEvent } : {}),
       });
       playSfxBatch(impactSfx);
     };
@@ -2594,7 +2642,15 @@ export const useGameStore = create<GameStore>((set, get) => {
           targetingMode: "graveyard",
           pendingBoardPosition: boardPosition ?? null,
           creatureComposedCollected: [],
-          pendingComposedGraveyard: { uid: choice.uid, count: Math.min(choice.count, gravTargets.length), context: "creature" },
+          pendingComposedGraveyard: {
+            // Côté créature, le moteur ne remonte que la PREMIÈRE capacité
+            // composée « au choix » (firstOnPlayComposedChoiceCap) : la file
+            // n'a donc qu'un élément ici. Cf. getCreatureComposedGraveyardChoice.
+            caps: [{ uid: choice.uid, count: Math.min(choice.count, gravTargets.length) }],
+            capIndex: 0,
+            picked: {},
+            context: "creature",
+          },
         });
         return null;
       }
@@ -2913,19 +2969,37 @@ export const useGameStore = create<GameStore>((set, get) => {
         // Slot composé (clé `${uid}#i`) → exhumation composée : provider filtré
         // par coût + flag de dispatch. Distinct des slots mot-clé `kw_N`.
         if (firstSlot.slot.includes("#")) {
-          const uid = firstSlot.slot.split("#")[0];
-          const gravTargets = getComposedGraveyardTargets(gameState, card.card, uid);
-          if (gravTargets.length > 0) {
-            // Nombre de cibles = count configuré (nb de slots `${uid}#i`), borné
-            // par les créatures éligibles disponibles (« jusqu'à N »).
-            const slotCount = selectableSlots.filter(s => s.slot.startsWith(`${uid}#`)).length;
+          // File de TOUTES les capacités composées à cible cimetière, dans
+          // l'ordre des slots (donc l'ordre des capacités, cf.
+          // getSpellTargetSlots). Chacune a son propre lot de slots `${uid}#i`,
+          // donc son propre nombre de cibles à choisir.
+          const uids: string[] = [];
+          for (const s of selectableSlots) {
+            if (s.type !== "friendly_graveyard" && s.type !== "friendly_graveyard_to_board") continue;
+            if (!s.slot.includes("#")) continue;
+            const u = s.slot.split("#")[0];
+            if (!uids.includes(u)) uids.push(u);
+          }
+          const caps = uids
+            .map(u => ({
+              uid: u,
+              // Nombre de cibles = count configuré (nb de slots `${u}#i`), borné
+              // par les créatures éligibles disponibles (« jusqu'à N »).
+              count: Math.min(
+                selectableSlots.filter(s => s.slot.startsWith(`${u}#`)).length,
+                getComposedGraveyardTargets(gameState, card.card, u).length,
+              ),
+            }))
+            .filter(c => c.count > 0);
+          const firstTargets = caps.length > 0 ? getComposedGraveyardTargets(gameState, card.card, caps[0].uid) : [];
+          if (caps.length > 0 && firstTargets.length > 0) {
             set({
               selectedCardInstanceId: instanceId,
               selectedAttackerInstanceId: null,
-              validTargets: gravTargets,
+              validTargets: firstTargets,
               targetingMode: "graveyard",
               creatureComposedCollected: [],
-              pendingComposedGraveyard: { uid, count: Math.min(slotCount, gravTargets.length), context: "spell" },
+              pendingComposedGraveyard: { caps, capIndex: 0, picked: {}, context: "spell" },
             });
             return null;
           }
@@ -3262,17 +3336,43 @@ export const useGameStore = create<GameStore>((set, get) => {
       // qui ne s'exécute que si le flag est null → garde de non-régression.
       // Couvre aussi le pouvoir de héros (selectedCardInstanceId null), que la
       // branche suivante n'atteindrait pas.
-      const { uid, count, context } = pendingComposedGraveyard;
+      const { caps, capIndex, picked, context } = pendingComposedGraveyard;
+      const currentCap = caps[capIndex];
       const collected = [...get().creatureComposedCollected, targetId];
-      if (collected.length < count) {
+      if (collected.length < currentCap.count) {
         set({
           creatureComposedCollected: collected,
           validTargets: get().validTargets.filter(t => t !== targetId), // pas de double-pick
         });
-        return null; // on continue à collecter
+        return null; // on continue à collecter pour CETTE capacité
       }
+      const nextPicked = { ...picked, [currentCap.uid]: collected };
+
+      // Capacité suivante qui a encore de quoi choisir. Un cadavre déjà retenu
+      // est exclu de TOUTES les capacités suivantes : il ne quittera le
+      // cimetière qu'à la résolution, donc rien côté état ne l'empêcherait
+      // d'être proposé — et donc « ressuscité » deux fois — sans ce filtre.
+      const alreadyPicked = new Set(Object.values(nextPicked).flat());
+      const gsNow = get().gameState;
+      const selCard = gsNow?.players[gsNow.currentPlayerIndex].hand
+        .find(c => c.instanceId === get().selectedCardInstanceId);
+      for (let j = capIndex + 1; j < caps.length; j++) {
+        const pool = (gsNow && selCard)
+          ? getComposedGraveyardTargets(gsNow, selCard.card, caps[j].uid).filter(id => !alreadyPicked.has(id))
+          : [];
+        if (pool.length === 0) continue; // plus rien d'éligible → capacité sautée
+        set({
+          creatureComposedCollected: [],
+          validTargets: pool,
+          pendingComposedGraveyard: { caps, capIndex: j, picked: nextPicked, context },
+        });
+        return null; // on passe à la résurrection suivante
+      }
+
       const targetMap: Record<string, string> = {};
-      collected.forEach((id, i) => { targetMap[`${uid}#${i}`] = id; });
+      for (const cap of caps) {
+        (nextPicked[cap.uid] ?? []).forEach((id, i) => { targetMap[`${cap.uid}#${i}`] = id; });
+      }
       const boardPos = get().pendingBoardPosition;
       const selId = get().selectedCardInstanceId;
       set({ creatureComposedCollected: [], pendingComposedGraveyard: null });
@@ -3548,6 +3648,10 @@ export const useGameStore = create<GameStore>((set, get) => {
 
   clearManaReductionEvent: () => {
     set({ manaReductionEvent: null });
+  },
+
+  clearEpargneGainEvent: () => {
+    set({ epargneGainEvent: null });
   },
 
   clearDeathEvents: () => {
@@ -3887,7 +3991,14 @@ export const useGameStore = create<GameStore>((set, get) => {
           validTargets: gravTargets,
           targetingMode: "graveyard",
           creatureComposedCollected: [],
-          pendingComposedGraveyard: { uid: choice.uid, count: Math.min(choice.count, gravTargets.length), context: "hero_power" },
+          pendingComposedGraveyard: {
+            // Un pouvoir de héros n'expose qu'une capacité composée à la fois
+            // (heroPowerComposedChoice) → file à un seul élément.
+            caps: [{ uid: choice.uid, count: Math.min(choice.count, gravTargets.length) }],
+            capIndex: 0,
+            picked: {},
+            context: "hero_power",
+          },
         });
         return null;
       }
