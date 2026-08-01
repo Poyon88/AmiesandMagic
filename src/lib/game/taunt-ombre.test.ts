@@ -77,3 +77,72 @@ describe("Provocation tapie dans l'ombre", () => {
     expect(next.players[1].board.find((c) => c.card.name === "Cible")!.currentHealth).toBe(5);
   });
 });
+
+// ─── Révélation par le POUVOIR (et pas seulement par l'attaque) ─────────────
+// Le libellé du mot-clé dit « tant qu'elle n'a pas effectué une action (attaque
+// OU capacité) », mais seule l'attaque révélait. Vu avec « Flûtiste des Vents
+// Sacrés » (Convocation simple au tap) : elle activait son pouvoir tour après
+// tour en restant intouchable.
+describe("Ombre révélée en activant son pouvoir", () => {
+  /** Créature Ombre avec un pouvoir activable au tap (mode "tap"). */
+  function shadowTapper(): CardInstance {
+    const c = mkInstance(mkCard({
+      name: "Flûtiste des Vents Sacrés", mana_cost: 3, attack: 1, health: 3,
+      keywords: ["convocation_simple", "ombre"] as never,
+      keyword_instances: [{ id: "convocation_simple", mode: "tap" }] as never,
+    }));
+    c.hasSummoningSickness = false;
+    return c;
+  }
+
+  it("activer son pouvoir la révèle — elle devient ciblable", () => {
+    const s = mkState();
+    const flutiste = shadowTapper();
+    s.players[0].board.push(flutiste);
+    expect(flutiste.ombreRevealed).toBe(false);
+
+    const next = applyAction(s, {
+      type: "tap_activate", sourceInstanceId: flutiste.instanceId, instanceIdx: 0,
+    });
+
+    const after = next.players[0].board.find(c => c.card.name === "Flûtiste des Vents Sacrés")!;
+    expect(after.ombreRevealed).toBe(true);
+    expect(after.tapped).toBe(true);
+    // Elle entre bien dans les cibles d'attaque offertes à l'adversaire
+    // (getValidTargets raisonne depuis currentPlayerIndex : on bascule le POV).
+    const foe = attacker();
+    next.players[1].board.push(foe);
+    const advPov = { ...next, currentPlayerIndex: 1 as const };
+    expect(getValidTargets(advPov, foe.instanceId)).toContain(after.instanceId);
+  });
+
+  it("une activation REFUSÉE ne révèle rien (déjà tapée)", () => {
+    const s = mkState();
+    const flutiste = shadowTapper();
+    flutiste.tapped = true; // la garde `if (source.tapped) return state`
+    s.players[0].board.push(flutiste);
+
+    const next = applyAction(s, {
+      type: "tap_activate", sourceInstanceId: flutiste.instanceId, instanceIdx: 0,
+    });
+
+    expect(next.players[0].board[0].ombreRevealed).toBe(false);
+    const foe2 = attacker();
+    next.players[1].board.push(foe2);
+    const advPov2 = { ...next, currentPlayerIndex: 1 as const };
+    expect(getValidTargets(advPov2, foe2.instanceId)).not.toContain(flutiste.instanceId);
+  });
+
+  it("paralysée : l'activation échoue, l'Ombre tient toujours", () => {
+    const s = mkState();
+    const flutiste = shadowTapper();
+    flutiste.isParalyzed = true;
+    s.players[0].board.push(flutiste);
+
+    const next = applyAction(s, {
+      type: "tap_activate", sourceInstanceId: flutiste.instanceId, instanceIdx: 0,
+    });
+
+    expect(next.players[0].board[0].ombreRevealed).toBe(false);
+  });
+});

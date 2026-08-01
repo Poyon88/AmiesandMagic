@@ -2818,55 +2818,14 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       player.spellHistory.push({ card, targetMap: { ...targetMap } });
     }
 
-    const ctx: SpellResolutionContext = {
-      state: newState, caster: player, opponent, card, targetMap, results: {},
-    };
+    // Corps de résolution PARTAGÉ avec les sorts relancés / déchaînés. Le repli
+    // legacy garde `action.targetInstanceId` : sur ce chemin il n'existe pas de
+    // targetMap moderne, et les deux ne coïncident que par la compatibilité
+    // ascendante posée plus haut (`targetMap["target_0"] = targetInstanceId`).
+    const ctx = resolveSpellCard(newState, player, opponent, card, targetMap, action.targetInstanceId);
 
-    // Phase 1: Resolve spell keywords (lus depuis le modèle unifié)
-    const spellInstances1 = spellResolutionInstances(card);
-    if (spellInstances1.length) {
-      resolveSpellKeywords(ctx, spellInstances1);
-      // Intermediate death processing to detect target_destroyed
-      const pDead = cleanDeadCreatures(player);
-      const oDead = cleanDeadCreatures(opponent);
-      for (const [slot, instanceId] of Object.entries(targetMap)) {
-        if ([...pDead, ...oDead].some(c => c.instanceId === instanceId)) {
-          ctx.results[`${slot}_destroyed`] = true;
-          ctx.results["target_destroyed"] = true;
-        }
-      }
-      processDeathTriggers(pDead, player, opponent);
-      processDeathTriggers(oDead, opponent, player);
-    }
-
-    // Phase 2: Resolve composable effects
-    if (card.spell_effects?.effects?.length) {
-      resolveComposableEffects(ctx, card.spell_effects.effects);
-    }
-
-    // Phase 3 : Don des capacités conférées par le sort (effectKind "grant"),
-    // lu depuis le modèle unifié. L'adaptateur a déjà appliqué l'exclusion
-    // polymorphe (isCreatureKwShadowedBySpell) et le grantScope ; le don passe
-    // par la fonction générique applyGrantCapability (réutilisée à terme par les
-    // dons d'unités). applyGrantedKeyword gère bouclier/traque et grantedKeywordX.
-    for (const cap of getCapabilities(card)) {
-      if (cap.trigger === "spell_resolution" && cap.effectKind === "grant") {
-        applyGrantCapability(cap, player, targetMap);
-      }
-    }
-
-    // Effets composés à la résolution du sort (modèle hybride).
-    runComposedCapsForCard(card, "spell_resolution", null, player, opponent, targetMap);
-
-    // Legacy fallback for old spell_effect (temporary)
-    if (card.spell_effect && !card.spell_keywords?.length && !card.spell_effects?.effects?.length) {
-      resolveSpellEffect(newState, card.spell_effect, player, opponent, action.targetInstanceId);
-    }
-
-    const playerDead = cleanDeadCreatures(player);
-    const opponentDead = cleanDeadCreatures(opponent);
-    processDeathTriggers(playerDead, player, opponent);
-    processDeathTriggers(opponentDead, opponent, player);
+    // Morts causées par les phases 2/3, les composés et le repli legacy.
+    settleSpellDeaths(ctx);
     player.graveyard.push(cardInstance);
     recalculateAuras(player, opponent);
   }
@@ -3167,43 +3126,9 @@ function castSpellWithRandomTargets(
   );
   (state.recastEvents ??= []).push({ card, targetIds: animTargetIds });
 
-  const ctx: SpellResolutionContext = {
-    state, caster: player, opponent, card, targetMap, results: {},
-  };
-
-  // Le sort RELANCÉ porte son propre Touché mortel (et seulement pendant sa
-  // résolution : withLethalSpell restaure l'état du sort englobant).
-  withLethalSpell(cardHasLethalTouch(card), () => {
-
-  // Resolve spell keywords (lus depuis le modèle unifié)
-  const spellInstances2 = spellResolutionInstances(card);
-  if (spellInstances2.length) {
-    resolveSpellKeywords(ctx, spellInstances2);
-    const pDead = cleanDeadCreatures(player);
-    const oDead = cleanDeadCreatures(opponent);
-    for (const [slot, instanceId] of Object.entries(targetMap)) {
-      if ([...pDead, ...oDead].some(c => c.instanceId === instanceId)) {
-        ctx.results[`${slot}_destroyed`] = true;
-        ctx.results["target_destroyed"] = true;
-      }
-    }
-    processDeathTriggers(pDead, player, opponent);
-    processDeathTriggers(oDead, opponent, player);
-  }
-
-  // Resolve composable effects
-  if (card.spell_effects?.effects?.length) {
-    resolveComposableEffects(ctx, card.spell_effects.effects);
-  }
-
-  // Clean up deaths
-  const pDead = cleanDeadCreatures(player);
-  const oDead = cleanDeadCreatures(opponent);
-  processDeathTriggers(pDead, player, opponent);
-  processDeathTriggers(oDead, opponent, player);
-
-  recalculateAuras(player, opponent);
-  });
+  // Résolution COMPLÈTE, identique à un sort joué depuis la main : le sort
+  // imbriqué garde ses effets composés et ses dons, qu'il perdait avant.
+  resolveSpellCard(state, player, opponent, card, targetMap);
 }
 
 // ============================================================
@@ -3233,6 +3158,69 @@ function spellResolutionInstances(card: Card): SpellKeywordInstance[] {
       clan: c.clan,
       token_id: c.tokenId ?? null,
     }));
+}
+
+/** Résolution COMPLÈTE d'un sort, indépendante de sa provenance : joué depuis
+ *  la main, relancé par Relancer X, ou tiré par Déchainement X/Y. Enchaîne
+ *  mots-clés → effets composables → dons → effets composés `spell_resolution`,
+ *  avec règlement des morts après CHAQUE effet (cf. settleSpellDeaths).
+ *
+ *  Avant l'extraction, le chemin « sort imbriqué » ne faisait que les deux
+ *  premières phases : un sort tiré par Déchainement perdait silencieusement ses
+ *  effets composés ET ses dons. Un seul corps pour les deux appelants est la
+ *  seule façon d'empêcher cet écart de revenir.
+ *
+ *  Restent chez l'appelant, car propres au fait de JOUER une carte : coût en
+ *  mana, Contresort, `spellHistory`, mise au cimetière, construction du
+ *  targetMap. Un sort relancé ne paie rien et n'a pas de carte à défausser.
+ *
+ *  `withLethalSpell` est ré-entrant : un sort imbriqué porte son propre Touché
+ *  mortel sans contaminer le sort englobant. */
+function resolveSpellCard(
+  state: GameState,
+  caster: PlayerState,
+  opponent: PlayerState,
+  card: Card,
+  targetMap: Record<string, string>,
+  legacyTargetId?: string,
+): SpellResolutionContext {
+  const ctx: SpellResolutionContext = { state, caster, opponent, card, targetMap, results: {} };
+  withLethalSpell(cardHasLethalTouch(card), () => {
+    // Phase 1 — mots-clés de sort (règlent leurs morts effet par effet).
+    const instances = spellResolutionInstances(card);
+    if (instances.length) {
+      resolveSpellKeywords(ctx, instances);
+      settleSpellDeaths(ctx); // filet : la boucle a déjà réglé au fil de l'eau
+    }
+
+    // Phase 2 — effets composables (ancien système spell_effects).
+    if (card.spell_effects?.effects?.length) {
+      resolveComposableEffects(ctx, card.spell_effects.effects);
+      settleSpellDeaths(ctx);
+    }
+
+    // Phase 3 — dons conférés par le sort (effectKind "grant"), lus depuis le
+    // modèle unifié. L'adaptateur a déjà appliqué l'exclusion polymorphe
+    // (isCreatureKwShadowedBySpell) et le grantScope.
+    for (const cap of getCapabilities(card)) {
+      if (cap.trigger === "spell_resolution" && cap.effectKind === "grant") {
+        applyGrantCapability(cap, caster, targetMap);
+      }
+    }
+
+    // Phase 4 — effets composés à la résolution du sort (modèle hybride).
+    runComposedCapsForCard(card, "spell_resolution", null, caster, opponent, targetMap);
+    settleSpellDeaths(ctx);
+
+    // Repli legacy (cartes sans mots-clés ni effets composables).
+    if (card.spell_effect && !card.spell_keywords?.length && !card.spell_effects?.effects?.length) {
+      resolveSpellEffect(state, card.spell_effect, caster, opponent, legacyTargetId ?? targetMap["target_0"]);
+      settleSpellDeaths(ctx);
+    }
+
+    recalculateAuras(caster, opponent);
+  });
+  return ctx;
 }
 
 // Appel Suprême (créature on-play + sort) : déplace du deck vers la main la
@@ -3265,6 +3253,40 @@ function applyAffaiblissement(target: CardInstance, x: number, y: number): void 
   target.currentAttack = Math.max(0, target.currentAttack - x);
   if (y > 0) { target.currentHealth -= y; target.maxHealth = target.maxHealth - y; }
   target.lastBuffMode = composedStrikeMode; // couleur de l'effet → teinte du popup
+}
+
+/** FRONTIÈRE D'EFFET — règle les morts en attente AU MILIEU de la résolution
+ *  d'une carte : balaie les deux camps, marque dans `ctx.results` les slots de
+ *  cible dont l'occupant vient de mourir, joue les râles d'agonie, recalcule
+ *  les auras. Retourne le nombre de morts réglées ; à 0 il ne fait rien du
+ *  tout, ce qui le rend appelable inconditionnellement.
+ *
+ *  ⚠️ C'est ICI — et non plus dans un bloc post-boucle — que se fait le
+ *  marquage `${slot}_destroyed`. Ce marquage lit la VALEUR DE RETOUR de
+ *  `cleanDeadCreatures`, pas l'absence du plateau : un balayage intermédiaire
+ *  viderait la liste du balayage suivant, et le drapeau ne serait plus jamais
+ *  posé — toutes les conditions « si la cible est détruite » casseraient en
+ *  silence. Déplacer le balayage sans déplacer le marquage est le piège
+ *  principal de ce chemin.
+ *
+ *  Ordre `caster` puis `opponent` : `processDeathTriggers` consomme du `rng()`
+ *  (Cycle éternel, Sacrifice démoniaque…), l'inverser décalerait le flux
+ *  aléatoire et ferait diverger les deux clients d'une partie en ligne. */
+function settleSpellDeaths(ctx: SpellResolutionContext): number {
+  const pDead = cleanDeadCreatures(ctx.caster);
+  const oDead = cleanDeadCreatures(ctx.opponent);
+  if (pDead.length === 0 && oDead.length === 0) return 0;
+  const deadIds = new Set([...pDead, ...oDead].map(c => c.instanceId));
+  for (const [slot, instanceId] of Object.entries(ctx.targetMap)) {
+    if (deadIds.has(instanceId)) {
+      ctx.results[`${slot}_destroyed`] = true;
+      ctx.results["target_destroyed"] = true;
+    }
+  }
+  processDeathTriggers(pDead, ctx.caster, ctx.opponent);
+  processDeathTriggers(oDead, ctx.opponent, ctx.caster);
+  recalculateAuras(ctx.caster, ctx.opponent);
+  return pDead.length + oDead.length;
 }
 
 function resolveSpellKeywords(
@@ -3741,6 +3763,14 @@ function resolveSpellKeywords(
         break;
       }
     }
+
+    // FRONTIÈRE D'EFFET. Les morts causées par CE mot-clé — et leurs râles
+    // d'agonie, cascades comprises — sont réglées avant que le suivant ne
+    // choisisse ses cibles. C'est la règle « Tempête 3 se résout entièrement
+    // avant Déchainement » : sans elle, l'effet suivant travaille sur un
+    // plateau jonché de cadavres à 0 PV (et `cataclysme` / `deferlement`, qui
+    // itèrent le plateau sans filtre de vie, les frappent).
+    settleSpellDeaths(ctx);
   }
 }
 
@@ -6322,6 +6352,17 @@ export function tapActivate(state: GameState, action: TapActivateAction): GameSt
   // Traque est gagnée en cours de tour (où hasSummoningSickness peut rester vrai).
   if (source.hasSummoningSickness && !hasKw(source, "charge")) return state;
 
+  // Ombre : activer son pouvoir révèle la créature, au même titre qu'attaquer.
+  // Le libellé du mot-clé dit « tant qu'elle n'a pas effectué une action
+  // (attaque OU capacité) » ; seule l'attaque révélait, si bien qu'une Ombre
+  // pouvait taper son pouvoir tour après tour en restant intouchable.
+  // Posé APRÈS les gardes (tapped / paralysie / mal d'invocation) et AVANT les
+  // deux branches d'activation : une activation refusée ne doit rien révéler,
+  // et les chemins composé comme curé doivent révéler pareillement.
+  if (hasKw(source, "ombre")) {
+    source.ombreRevealed = true;
+  }
+
   // Effet composé activable (on_activation) — référencé par uid.
   if (action.composedUid) {
     const cap = getCapabilities(source.card).find(
@@ -7652,7 +7693,12 @@ function resolveDechainement(
     && ((c.rarity ?? "Commune") === "Commune"
       || (c.card_year != null && c.set_id == null && ownedLimited.has(c.id)))
     && (!legal || legal(c))
-    && !c.spell_keywords?.some(k => k.id === "dechainement" || k.id === "relancer"),
+    // Modèle unifié, et non `spell_keywords` : la RÉSOLUTION passe par
+    // `getCapabilities`, donc un Déchainement backfillé qui ne vivrait que dans
+    // `capabilities` franchissait ce filtre puis se relançait quand même. Le
+    // trou n'était que théorique tant que les sorts imbriqués étaient amputés
+    // de leurs capacités ; il devient réel dès qu'ils les résolvent.
+    && !getCapabilities(c).some(k => k.abilityId === "dechainement" || k.abilityId === "relancer"),
   );
   if (candidates.length === 0) return;
   for (let i = 0; i < x; i++) {

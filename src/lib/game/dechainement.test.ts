@@ -162,3 +162,77 @@ describe("Déchainement X/Y — créature (à l'invocation)", () => {
     expect(totalDamage).toBe(2);
   });
 });
+
+// ─── Résolution COMPLÈTE des sorts imbriqués ───────────────────────────────
+// castSpellWithRandomTargets ne faisait que les mots-clés et les effets
+// composables : un sort tiré par Déchainement perdait silencieusement ses
+// effets COMPOSÉS et ses DONS. Les deux appelants partagent désormais
+// `resolveSpellCard`, ce qui rend l'écart impossible à réintroduire.
+describe("Déchainement — le sort tiré se résout INTÉGRALEMENT", () => {
+  it("applique les effets composés (spell_resolution) du sort tiré", () => {
+    const s = withSpellPool([
+      poolSpell({
+        name: "Composé", mana_cost: 1,
+        spell_keywords: null,
+        capabilities: [{
+          uid: "cx_0", trigger: "spell_resolution", effectKind: "immediate", abilityId: "_composed",
+          composed: {
+            content: "draw_cards", magnitude: { x: 2 },
+            target: { entity: "self", count: 1, side: "ally", location: "board", designation: "automatic" },
+          },
+        }] as never,
+      }),
+    ]);
+    fillDeck(s, 5);
+    const spell = mkDechainementSpell(1, 1);
+    s.players[0].hand.push(spell);
+
+    const next = playCard(s, { type: "play_card", cardInstanceId: spell.instanceId });
+
+    // 2 pioches par l'effet composé du sort tiré. Avant : 0.
+    expect(next.players[0].hand.length).toBe(2);
+  });
+
+  it("applique les dons (effectKind grant) du sort tiré", () => {
+    const s = withSpellPool([
+      poolSpell({
+        name: "Donneur", mana_cost: 1,
+        spell_keywords: null,
+        keywords: ["taunt"] as never,
+        capabilities: [{
+          uid: "grant_0", trigger: "spell_resolution", effectKind: "grant",
+          abilityId: "taunt", grantScope: "all_allies", targets: [],
+        }] as never,
+      }),
+    ]);
+    const allie = mkInstance(mkCard({ name: "Allié", attack: 2, health: 3 }));
+    s.players[0].board.push(allie);
+    const spell = mkDechainementSpell(1, 1);
+    s.players[0].hand.push(spell);
+
+    const next = playCard(s, { type: "play_card", cardInstanceId: spell.instanceId });
+
+    // L'allié a reçu Provocation du sort tiré. Avant : rien.
+    expect(next.players[0].board[0].card.keywords).toContain("taunt");
+  });
+
+  it("exclut du pool un Déchainement porté UNIQUEMENT par capabilities", () => {
+    const s = withSpellPool([
+      // Pas de spell_keywords : l'ancien filtre ne voyait rien et le laissait
+      // passer, alors que la résolution (getCapabilities) l'aurait relancé.
+      poolSpell({
+        name: "RécursifCaché", mana_cost: 1,
+        spell_keywords: null,
+        capabilities: [{
+          uid: "sk_0", trigger: "spell_resolution", effectKind: "immediate",
+          abilityId: "dechainement", params: { x: 1, health: 1 }, targets: [],
+        }] as never,
+      }),
+    ]);
+    const spell = mkDechainementSpell(1, 1);
+    s.players[0].hand.push(spell);
+
+    // Aucun candidat éligible → no-op, et surtout pas de récursion.
+    expect(() => playCard(s, { type: "play_card", cardInstanceId: spell.instanceId })).not.toThrow();
+  });
+});
