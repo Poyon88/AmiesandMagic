@@ -1625,6 +1625,32 @@ export default function CardForge() {
   // ─── MANUAL MODE ───────────────────────────────────────────────────────────
   const [forgeMode, setForgeMode] = useState<"auto" | "manuel">("auto");
   const [manualName, setManualName] = useState("");
+  // Homonyme détecté EN AMONT. La sauvegarde refuse déjà les doublons (409),
+  // mais elle ne le fait qu'après la génération de l'illustration — et comme
+  // le garde serveur est placé avant l'upload, un refus fait tout perdre.
+  // On prévient donc dès la saisie. `null` = pas de collision connue.
+  const [nameTaken, setNameTaken] = useState<{ id: number; name: string } | null>(null);
+
+  // Interroge /api/cards/name-check à la frappe (débounce 400 ms). La réponse
+  // périmée est ignorée via `abort` : sans cela, une requête lente sur un
+  // ancien nom pourrait écraser le verdict du nom courant.
+  useEffect(() => {
+    const needle = manualName.trim();
+    if (!needle) { setNameTaken(null); return; }
+    const ctrl = new AbortController();
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/cards/name-check?name=${encodeURIComponent(needle)}`, { signal: ctrl.signal });
+        if (!res.ok) return;
+        const data = await res.json();
+        setNameTaken(data?.taken ? data.existing : null);
+      } catch {
+        // Réseau coupé ou requête annulée : on reste silencieux, le garde
+        // serveur de la sauvegarde reste le filet de sécurité.
+      }
+    }, 400);
+    return () => { clearTimeout(timer); ctrl.abort(); };
+  }, [manualName]);
   const [manualMana, setManualMana] = useState(3);
   const [manualAttack, setManualAttack] = useState(3);
   const [manualDefense, setManualDefense] = useState(3);
@@ -3071,8 +3097,13 @@ export default function CardForge() {
                     <label style={{ fontSize: 9, color: "#666", letterSpacing: 1 }}>{tf('name_label')}</label>
                     <input type="text" value={manualName} onChange={e => setManualName(e.target.value)}
                       placeholder={tf('card_name_placeholder')}
-                      style={{ width: "100%", padding: "6px 10px", borderRadius: 6, border: "1px solid #e0e0e0", background: "#fff", color: "#333", fontFamily: "'Crimson Text',serif", fontSize: 13, marginTop: 3 }}
+                      style={{ width: "100%", padding: "6px 10px", borderRadius: 6, border: `1px solid ${nameTaken ? "#e74c3c" : "#e0e0e0"}`, background: "#fff", color: "#333", fontFamily: "'Crimson Text',serif", fontSize: 13, marginTop: 3 }}
                     />
+                    {nameTaken && (
+                      <div style={{ marginTop: 4, fontSize: 10, color: "#e74c3c", lineHeight: 1.4 }}>
+                        ⚠ {tf('name_taken', { name: nameTaken.name.trim(), id: nameTaken.id })}
+                      </div>
+                    )}
                   </div>
 
                   {/* Mana + Stats */}

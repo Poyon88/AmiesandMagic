@@ -8,6 +8,7 @@ import { deriveCapabilities } from '@/lib/game/capability-adapter';
 import type { Capability, Card } from '@/lib/game/types';
 import { requireAdmin } from '@/lib/admin/requireAdmin';
 import { upsertCardTranslations } from '@/lib/cards/cardTranslations';
+import { findNameCollision } from '@/lib/cards/nameCollision';
 
 // Planifie (hors du chemin de réponse, via `after`) la (re)traduction nom +
 // ambiance d'une carte vers les 5 langues. i18n : seuls nom/ambiance sont
@@ -42,30 +43,6 @@ const CAPABILITY_FIELDS = [
   'convocation_token_id', 'convocation_tokens', 'lycanthropie_token_id', 'entraide_race',
 ] as const;
 
-
-/** Cherche une carte homonyme (comparaison insensible à la casse, aux accents
- *  résiduels d'espacement et aux espaces de bord — la base contient déjà des
- *  noms à espace final). `exceptId` exclut la carte en cours de renommage.
- *
- *  On charge `id, name` pour toute la table (quelques centaines de lignes) au
- *  lieu d'un `ilike` : le `trim` doit s'appliquer des DEUX côtés, ce qu'un
- *  filtre PostgREST ne sait pas faire sans fonction SQL dédiée. */
-async function findNameCollision(
-  supabaseAdmin: SupabaseClient,
-  name: unknown,
-  exceptId?: number,
-): Promise<{ id: number; name: string } | null> {
-  if (typeof name !== 'string' || !name.trim()) return null;
-  const needle = name.trim().toLowerCase();
-  const { data } = await supabaseAdmin.from('cards').select('id, name');
-  for (const row of (data ?? []) as { id: number; name: string | null }[]) {
-    if (exceptId != null && row.id === exceptId) continue;
-    if ((row.name ?? '').trim().toLowerCase() === needle) {
-      return { id: row.id, name: row.name ?? '' };
-    }
-  }
-  return null;
-}
 
 /** Réponse 409 commune : le client (forge) la reconnaît via `code` et propose
  *  de forcer la sauvegarde avec `allowDuplicateName: true`. Le message est

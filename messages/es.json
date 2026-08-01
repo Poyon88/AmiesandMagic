@@ -397,6 +397,26 @@
         "label": "Ahorro X",
         "desc": "Añade X a tu contador de Ahorro (máximo 10)."
       },
+      "seconde_vie": {
+        "label": "Segunda vida X",
+        "desc": "Puede jugarse desde tu cementerio por X de maná. Entonces pierde Segunda vida."
+      },
+      "incineration": {
+        "label": "Incineración X",
+        "desc": "Devuelve X cartas al azar del cementerio objetivo bajo el mazo de su propietario."
+      },
+      "devoration": {
+        "label": "Devoración",
+        "desc": "Destruye una unidad objetivo; esta criatura gana permanentemente su ATQ y sus PV."
+      },
+      "creuser": {
+        "label": "Excavar X",
+        "desc": "Mira las X cartas de la parte inferior de tu mazo; coloca una en la parte superior."
+      },
+      "retour_differe": {
+        "label": "Regreso diferido",
+        "desc": "Coloca la unidad objetivo bajo el mazo de su propietario."
+      },
       "concentration": {
         "label": "Concentración X",
         "desc": "Cada hechizo en la mano se convierte en un hechizo al azar de coste +X, reducido en X (todas las facciones)."
@@ -428,26 +448,6 @@
       "force_des_ancetres": {
         "label": "Fuerza de los ancestros +X/+Y",
         "desc": "Mientras tu cementerio contenga 5 o más criaturas, gana +X ATK y +Y PV."
-      },
-      "seconde_vie": {
-        "label": "Segunda vida X",
-        "desc": "Puede jugarse desde tu cementerio por X de maná. Entonces pierde Segunda vida."
-      },
-      "incineration": {
-        "label": "Incineración X",
-        "desc": "Devuelve X cartas al azar del cementerio objetivo bajo el mazo de su propietario."
-      },
-      "devoration": {
-        "label": "Devoración",
-        "desc": "Destruye una unidad objetivo; esta criatura gana permanentemente su ATQ y sus PV."
-      },
-      "creuser": {
-        "label": "Excavar X",
-        "desc": "Mira las X cartas de la parte inferior de tu mazo; coloca una en la parte superior."
-      },
-      "retour_differe": {
-        "label": "Regreso diferido",
-        "desc": "Coloca la unidad objetivo bajo el mazo de su propietario."
       }
     },
     "spell_keywords": {
@@ -559,6 +559,18 @@
         "label": "Curación X",
         "desc": "Restaura X PV a un objetivo"
       },
+      "incineration": {
+        "label": "Incineración X",
+        "desc": "Devuelve X cartas al azar del cementerio objetivo bajo el mazo de su propietario"
+      },
+      "creuser": {
+        "label": "Excavar X",
+        "desc": "Mira las X cartas de la parte inferior de tu mazo; coloca una en la parte superior"
+      },
+      "retour_differe": {
+        "label": "Regreso diferido",
+        "desc": "Coloca la unidad objetivo bajo el mazo de su propietario"
+      },
       "epargne": {
         "label": "Ahorro X",
         "desc": "Añade X a tu contador de Ahorro (máximo 10)"
@@ -606,18 +618,6 @@
       "afflux": {
         "label": "Afluencia X",
         "desc": "Gana X de maná este turno"
-      },
-      "incineration": {
-        "label": "Incineración X",
-        "desc": "Devuelve X cartas al azar del cementerio objetivo bajo el mazo de su propietario"
-      },
-      "creuser": {
-        "label": "Excavar X",
-        "desc": "Mira las X cartas de la parte inferior de tu mazo; coloca una en la parte superior"
-      },
-      "retour_differe": {
-        "label": "Regreso diferido",
-        "desc": "Coloca la unidad objetivo bajo el mazo de su propietario"
       }
     },
     "composed": {
@@ -656,12 +656,12 @@
         "exhum_upto": "hasta {n} criaturas",
         "invocation": "invoca una criatura aleatoria de coste {x}{filter}",
         "epargne": "añade {x} a tu contador de Ahorro",
-        "selection": "revela 3 cartas{filter} (coste ≤ {x}) y se queda una en mano",
-        "selection_magique": "revela 3 hechizos{filter} (coste ≤ {x}) y conserva uno en mano",
-        "renfort_royal": "revela 3 cartas de colección{filter} (coste ≤ {x}) y se queda una en mano",
         "incineration": "devuelve {x} cartas del cementerio objetivo bajo su mazo",
         "devoration": "devora",
-        "retour_differe": "coloca bajo el mazo de su propietario"
+        "retour_differe": "coloca bajo el mazo de su propietario",
+        "selection": "revela 3 cartas{filter} (coste ≤ {x}) y se queda una en mano",
+        "selection_magique": "revela 3 hechizos{filter} (coste ≤ {x}) y conserva uno en mano",
+        "renfort_royal": "revela 3 cartas de colección{filter} (coste ≤ {x}) y se queda una en mano"
       },
       "pool": {
         "race": " de raza {v}",
@@ -1927,7 +1927,8 @@
     "card_added": "¡«{name}» añadida!",
     "unknown_error": "Error desconocido",
     "illustration_generated": "Ilustración generada ({model})",
-    "import_error": "Error de importación"
+    "import_error": "Error de importación",
+    "name_taken": "Este nombre ya lo lleva «{name}» (id {id}). Al guardar se pedirá confirmación."
   },
   "game": {
     "error_not_authenticated": "No autenticado",

@@ -397,6 +397,26 @@
         "label": "Thrift X",
         "desc": "Adds X to your Thrift counter (max 10)."
       },
+      "seconde_vie": {
+        "label": "Second Life X",
+        "desc": "Can be played from your graveyard for X mana. It then loses Second Life."
+      },
+      "incineration": {
+        "label": "Incineration X",
+        "desc": "Puts X random cards from the targeted graveyard back under their owner's deck."
+      },
+      "devoration": {
+        "label": "Devouring",
+        "desc": "Destroys a targeted unit; this creature permanently gains its ATK and HP."
+      },
+      "creuser": {
+        "label": "Dig X",
+        "desc": "Look at the bottom X cards of your deck; place one of them on top."
+      },
+      "retour_differe": {
+        "label": "Delayed Return",
+        "desc": "Places the targeted unit under its owner's deck."
+      },
       "concentration": {
         "label": "Focus X",
         "desc": "Each spell in hand becomes a random spell with cost +X, reduced by X (all factions)."
@@ -428,26 +448,6 @@
       "force_des_ancetres": {
         "label": "Ancestral Strength +X/+Y",
         "desc": "While your graveyard holds 5 or more creatures, gains +X ATK and +Y HP."
-      },
-      "seconde_vie": {
-        "label": "Second Life X",
-        "desc": "Can be played from your graveyard for X mana. It then loses Second Life."
-      },
-      "incineration": {
-        "label": "Incineration X",
-        "desc": "Puts X random cards from the targeted graveyard back under their owner's deck."
-      },
-      "devoration": {
-        "label": "Devouring",
-        "desc": "Destroys a targeted unit; this creature permanently gains its ATK and HP."
-      },
-      "creuser": {
-        "label": "Dig X",
-        "desc": "Look at the bottom X cards of your deck; place one of them on top."
-      },
-      "retour_differe": {
-        "label": "Delayed Return",
-        "desc": "Places the targeted unit under its owner's deck."
       }
     },
     "spell_keywords": {
@@ -559,6 +559,18 @@
         "label": "Healing X",
         "desc": "Restores X HP to a target."
       },
+      "incineration": {
+        "label": "Incineration X",
+        "desc": "Puts X random cards from the targeted graveyard back under their owner's deck"
+      },
+      "creuser": {
+        "label": "Dig X",
+        "desc": "Look at the bottom X cards of your deck; place one of them on top"
+      },
+      "retour_differe": {
+        "label": "Delayed Return",
+        "desc": "Places the targeted unit under its owner's deck"
+      },
       "epargne": {
         "label": "Thrift X",
         "desc": "Adds X to your Thrift counter (max 10)"
@@ -606,18 +618,6 @@
       "afflux": {
         "label": "Surge X",
         "desc": "Gain X mana this turn."
-      },
-      "incineration": {
-        "label": "Incineration X",
-        "desc": "Puts X random cards from the targeted graveyard back under their owner's deck"
-      },
-      "creuser": {
-        "label": "Dig X",
-        "desc": "Look at the bottom X cards of your deck; place one of them on top"
-      },
-      "retour_differe": {
-        "label": "Delayed Return",
-        "desc": "Places the targeted unit under its owner's deck"
       }
     },
     "composed": {
@@ -656,12 +656,12 @@
         "exhum_upto": "up to {n} creatures",
         "invocation": "summons a random creature with cost {x}{filter}",
         "epargne": "adds {x} to your Thrift counter",
-        "selection": "reveals 3 cards{filter} (cost ≤ {x}) and keeps one in hand",
-        "selection_magique": "reveals 3 spells{filter} (cost ≤ {x}) and keeps one in hand",
-        "renfort_royal": "reveals 3 collection cards{filter} (cost ≤ {x}) and keeps one in hand",
         "incineration": "puts {x} cards from the targeted graveyard back under its deck",
         "devoration": "devours",
-        "retour_differe": "places under its owner's deck"
+        "retour_differe": "places under its owner's deck",
+        "selection": "reveals 3 cards{filter} (cost ≤ {x}) and keeps one in hand",
+        "selection_magique": "reveals 3 spells{filter} (cost ≤ {x}) and keeps one in hand",
+        "renfort_royal": "reveals 3 collection cards{filter} (cost ≤ {x}) and keeps one in hand"
       },
       "pool": {
         "race": " of race {v}",
@@ -1927,7 +1927,8 @@
     "card_added": "\"{name}\" added!",
     "unknown_error": "Unknown error",
     "illustration_generated": "Illustration generated ({model})",
-    "import_error": "Import error"
+    "import_error": "Import error",
+    "name_taken": "This name is already taken by \"{name}\" (id {id}). Saving will require confirmation."
   },
   "game": {
     "error_not_authenticated": "Not authenticated",

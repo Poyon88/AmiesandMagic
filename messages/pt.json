@@ -397,6 +397,26 @@
         "label": "Poupança X",
         "desc": "Adiciona X ao seu contador de Poupança (máximo 10)."
       },
+      "seconde_vie": {
+        "label": "Segunda Vida X",
+        "desc": "Pode ser jogada do seu cemitério por X de mana. Ela perde então Segunda Vida."
+      },
+      "incineration": {
+        "label": "Incineração X",
+        "desc": "Devolve X cartas aleatórias do cemitério alvo para debaixo do deck de seu dono."
+      },
+      "devoration": {
+        "label": "Devoração",
+        "desc": "Destrói uma unidade alvo; esta criatura ganha permanentemente seu ATK e seus PV."
+      },
+      "creuser": {
+        "label": "Escavar X",
+        "desc": "Veja as X cartas do fundo do seu deck; coloque uma delas no topo."
+      },
+      "retour_differe": {
+        "label": "Retorno Diferido",
+        "desc": "Coloca a unidade alvo debaixo do deck de seu dono."
+      },
       "concentration": {
         "label": "Concentração X",
         "desc": "Cada feitiço na mão se torna um feitiço aleatório de custo +X, reduzido em X (todas as facções)."
@@ -428,26 +448,6 @@
       "force_des_ancetres": {
         "label": "Força dos ancestrais +X/+Y",
         "desc": "Enquanto o teu cemitério contiver 5 ou mais criaturas, ganha +X ATK e +Y PV."
-      },
-      "seconde_vie": {
-        "label": "Segunda Vida X",
-        "desc": "Pode ser jogada do seu cemitério por X de mana. Ela perde então Segunda Vida."
-      },
-      "incineration": {
-        "label": "Incineração X",
-        "desc": "Devolve X cartas aleatórias do cemitério alvo para debaixo do deck de seu dono."
-      },
-      "devoration": {
-        "label": "Devoração",
-        "desc": "Destrói uma unidade alvo; esta criatura ganha permanentemente seu ATK e seus PV."
-      },
-      "creuser": {
-        "label": "Escavar X",
-        "desc": "Veja as X cartas do fundo do seu deck; coloque uma delas no topo."
-      },
-      "retour_differe": {
-        "label": "Retorno Diferido",
-        "desc": "Coloca a unidade alvo debaixo do deck de seu dono."
       }
     },
     "spell_keywords": {
@@ -559,6 +559,18 @@
         "label": "Cura X",
         "desc": "Restaura X PV a um alvo"
       },
+      "incineration": {
+        "label": "Incineração X",
+        "desc": "Devolve X cartas aleatórias do cemitério alvo para debaixo do deck de seu dono"
+      },
+      "creuser": {
+        "label": "Escavar X",
+        "desc": "Veja as X cartas do fundo do seu deck; coloque uma delas no topo"
+      },
+      "retour_differe": {
+        "label": "Retorno Diferido",
+        "desc": "Coloca a unidade alvo debaixo do deck de seu dono"
+      },
       "epargne": {
         "label": "Poupança X",
         "desc": "Adiciona X ao seu contador de Poupança (máximo 10)"
@@ -606,18 +618,6 @@
       "afflux": {
         "label": "Afluxo X",
         "desc": "Ganhe X de mana neste turno"
-      },
-      "incineration": {
-        "label": "Incineração X",
-        "desc": "Devolve X cartas aleatórias do cemitério alvo para debaixo do deck de seu dono"
-      },
-      "creuser": {
-        "label": "Escavar X",
-        "desc": "Veja as X cartas do fundo do seu deck; coloque uma delas no topo"
-      },
-      "retour_differe": {
-        "label": "Retorno Diferido",
-        "desc": "Coloca a unidade alvo debaixo do deck de seu dono"
       }
     },
     "composed": {
@@ -656,12 +656,12 @@
         "exhum_upto": "até {n} criaturas",
         "invocation": "invoca uma criatura aleatória de custo {x}{filter}",
         "epargne": "adiciona {x} ao seu contador de Poupança",
-        "selection": "revela 3 cartas{filter} (custo ≤ {x}) e mantém uma na mão",
-        "selection_magique": "revela 3 feitiços{filter} (custo ≤ {x}) e mantém um na mão",
-        "renfort_royal": "revela 3 cartas de coleção{filter} (custo ≤ {x}) e mantém uma na mão",
         "incineration": "devolve {x} cartas do cemitério alvo para debaixo do deck",
         "devoration": "devora",
-        "retour_differe": "coloca debaixo do deck de seu dono"
+        "retour_differe": "coloca debaixo do deck de seu dono",
+        "selection": "revela 3 cartas{filter} (custo ≤ {x}) e mantém uma na mão",
+        "selection_magique": "revela 3 feitiços{filter} (custo ≤ {x}) e mantém um na mão",
+        "renfort_royal": "revela 3 cartas de coleção{filter} (custo ≤ {x}) e mantém uma na mão"
       },
       "pool": {
         "race": " da raça {v}",
@@ -1927,7 +1927,8 @@
     "card_added": "« {name} » adicionada!",
     "unknown_error": "Erro desconhecido",
     "illustration_generated": "Ilustração gerada ({model})",
-    "import_error": "Erro de importação"
+    "import_error": "Erro de importação",
+    "name_taken": "Este nome já é usado por « {name} » (id {id}). O salvamento pedirá confirmação."
   },
   "game": {
     "error_not_authenticated": "Não autenticado",

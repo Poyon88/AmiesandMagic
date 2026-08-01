@@ -397,6 +397,26 @@
         "label": "储蓄 X",
         "desc": "为你的储蓄计数器增加X点（上限10点）。"
       },
+      "seconde_vie": {
+        "label": "二次生命 X",
+        "desc": "可从你的墓地中支付X点法力值打出。此后失去二次生命。"
+      },
+      "incineration": {
+        "label": "焚烧 X",
+        "desc": "将目标墓地中随机X张卡牌放回其拥有者牌库底。"
+      },
+      "devoration": {
+        "label": "吞噬",
+        "desc": "摧毁一个目标单位；此生物永久获得其攻击力和生命值。"
+      },
+      "creuser": {
+        "label": "挖掘 X",
+        "desc": "查看你牌库底部的X张卡牌；将其中一张放到牌库顶。"
+      },
+      "retour_differe": {
+        "label": "延迟归还",
+        "desc": "将目标单位放到其拥有者牌库底。"
+      },
       "concentration": {
         "label": "专注 X",
         "desc": "手牌中的每张法术都变为一张费用+X、再减少X的随机法术（不限阵营）。"
@@ -428,26 +448,6 @@
       "force_des_ancetres": {
         "label": "先祖之力 +X/+Y",
         "desc": "只要你的墓地中有5个或更多生物，便获得+X攻击力和+Y生命值。"
-      },
-      "seconde_vie": {
-        "label": "二次生命 X",
-        "desc": "可从你的墓地中支付X点法力值打出。此后失去二次生命。"
-      },
-      "incineration": {
-        "label": "焚烧 X",
-        "desc": "将目标墓地中随机X张卡牌放回其拥有者牌库底。"
-      },
-      "devoration": {
-        "label": "吞噬",
-        "desc": "摧毁一个目标单位；此生物永久获得其攻击力和生命值。"
-      },
-      "creuser": {
-        "label": "挖掘 X",
-        "desc": "查看你牌库底部的X张卡牌；将其中一张放到牌库顶。"
-      },
-      "retour_differe": {
-        "label": "延迟归还",
-        "desc": "将目标单位放到其拥有者牌库底。"
       }
     },
     "spell_keywords": {
@@ -559,6 +559,18 @@
         "label": "治愈 X",
         "desc": "为目标恢复 X PV"
       },
+      "incineration": {
+        "label": "焚烧 X",
+        "desc": "将目标墓地中随机X张卡牌放回其拥有者牌库底"
+      },
+      "creuser": {
+        "label": "挖掘 X",
+        "desc": "查看你牌库底部的X张卡牌；将其中一张放到牌库顶"
+      },
+      "retour_differe": {
+        "label": "延迟归还",
+        "desc": "将目标单位放到其拥有者牌库底"
+      },
       "epargne": {
         "label": "储蓄 X",
         "desc": "为你的储蓄计数器增加X点（上限10点）"
@@ -606,18 +618,6 @@
       "afflux": {
         "label": "涌流 X",
         "desc": "本回合获得 X 点法力"
-      },
-      "incineration": {
-        "label": "焚烧 X",
-        "desc": "将目标墓地中随机X张卡牌放回其拥有者牌库底"
-      },
-      "creuser": {
-        "label": "挖掘 X",
-        "desc": "查看你牌库底部的X张卡牌；将其中一张放到牌库顶"
-      },
-      "retour_differe": {
-        "label": "延迟归还",
-        "desc": "将目标单位放到其拥有者牌库底"
       }
     },
     "composed": {
@@ -656,12 +656,12 @@
         "exhum_upto": "至多 {n} 个生物",
         "invocation": "召唤一个费用为{x}{filter}的随机生物",
         "epargne": "为你的储蓄计数器增加{x}点",
-        "selection": "展示3张{filter}卡牌（费用 ≤ {x}），并保留其中一张至手牌",
-        "selection_magique": "展示3张{filter}法术（费用≤{x}），并留其中一张入手",
-        "renfort_royal": "展示3张{filter}收藏卡牌（费用 ≤ {x}），并保留其中一张至手牌",
         "incineration": "将目标墓地中的{x}张卡牌放回其牌库底",
         "devoration": "吞噬",
-        "retour_differe": "放到其拥有者牌库底"
+        "retour_differe": "放到其拥有者牌库底",
+        "selection": "展示3张{filter}卡牌（费用 ≤ {x}），并保留其中一张至手牌",
+        "selection_magique": "展示3张{filter}法术（费用≤{x}），并留其中一张入手",
+        "renfort_royal": "展示3张{filter}收藏卡牌（费用 ≤ {x}），并保留其中一张至手牌"
       },
       "pool": {
         "race": "种族为{v}的",
@@ -1927,7 +1927,8 @@
     "card_added": "「{name}」已添加！",
     "unknown_error": "未知错误",
     "illustration_generated": "插图已生成（{model}）",
-    "import_error": "导入错误"
+    "import_error": "导入错误",
+    "name_taken": "该名称已被「{name}」（id {id}）使用。保存时将需要确认。"
   },
   "game": {
     "error_not_authenticated": "未登录",

@@ -1652,6 +1652,7 @@
     "edition_label": "ÉDITION",
     "name_label": "NOM",
     "card_name_placeholder": "Nom de la carte",
+    "name_taken": "Ce nom est déjà porté par « {name} » (id {id}). La sauvegarde demandera confirmation.",
     "mana_label": "MANA",
     "power_label": "PUISSANCE",
     "life_cost_hint": "Points de vie payés par le héros à l'invocation. La carte est non-jouable si la somme tomberait à 0 PV.",

@@ -397,6 +397,26 @@
         "label": "Risparmio X",
         "desc": "Aggiunge X al tuo contatore Risparmio (massimo 10)."
       },
+      "seconde_vie": {
+        "label": "Seconda vita X",
+        "desc": "Può essere giocata dal vostro cimitero per X mana. Perde quindi Seconda vita."
+      },
+      "incineration": {
+        "label": "Incenerimento X",
+        "desc": "Rimette X carte a caso dal cimitero bersaglio sotto il deck del proprietario."
+      },
+      "devoration": {
+        "label": "Divorazione",
+        "desc": "Distrugge un'unità bersaglio; questa creatura guadagna definitivamente il suo ATK e i suoi PV."
+      },
+      "creuser": {
+        "label": "Scavare X",
+        "desc": "Guardate le X carte in fondo al vostro deck; mettetene una in cima."
+      },
+      "retour_differe": {
+        "label": "Ritorno differito",
+        "desc": "Mette l'unità bersaglio sotto il deck del proprietario."
+      },
       "concentration": {
         "label": "Concentrazione X",
         "desc": "Ogni incantesimo in mano diventa un incantesimo casuale di costo +X, ridotto di X (tutte le fazioni)."
@@ -428,26 +448,6 @@
       "force_des_ancetres": {
         "label": "Forza degli antenati +X/+Y",
         "desc": "Finché il tuo cimitero contiene 5 o più creature, guadagna +X ATK e +Y PV."
-      },
-      "seconde_vie": {
-        "label": "Seconda vita X",
-        "desc": "Può essere giocata dal vostro cimitero per X mana. Perde quindi Seconda vita."
-      },
-      "incineration": {
-        "label": "Incenerimento X",
-        "desc": "Rimette X carte a caso dal cimitero bersaglio sotto il deck del proprietario."
-      },
-      "devoration": {
-        "label": "Divorazione",
-        "desc": "Distrugge un'unità bersaglio; questa creatura guadagna definitivamente il suo ATK e i suoi PV."
-      },
-      "creuser": {
-        "label": "Scavare X",
-        "desc": "Guardate le X carte in fondo al vostro deck; mettetene una in cima."
-      },
-      "retour_differe": {
-        "label": "Ritorno differito",
-        "desc": "Mette l'unità bersaglio sotto il deck del proprietario."
       }
     },
     "spell_keywords": {
@@ -559,6 +559,18 @@
         "label": "Guarigione X",
         "desc": "Ripristina X PV a un bersaglio"
       },
+      "incineration": {
+        "label": "Incenerimento X",
+        "desc": "Rimette X carte a caso dal cimitero bersaglio sotto il deck del proprietario"
+      },
+      "creuser": {
+        "label": "Scavare X",
+        "desc": "Guardate le X carte in fondo al vostro deck; mettetene una in cima"
+      },
+      "retour_differe": {
+        "label": "Ritorno differito",
+        "desc": "Mette l'unità bersaglio sotto il deck del proprietario"
+      },
       "epargne": {
         "label": "Risparmio X",
         "desc": "Aggiunge X al tuo contatore Risparmio (massimo 10)"
@@ -606,18 +618,6 @@
       "afflux": {
         "label": "Afflusso X",
         "desc": "Guadagna X mana questo turno"
-      },
-      "incineration": {
-        "label": "Incenerimento X",
-        "desc": "Rimette X carte a caso dal cimitero bersaglio sotto il deck del proprietario"
-      },
-      "creuser": {
-        "label": "Scavare X",
-        "desc": "Guardate le X carte in fondo al vostro deck; mettetene una in cima"
-      },
-      "retour_differe": {
-        "label": "Ritorno differito",
-        "desc": "Mette l'unità bersaglio sotto il deck del proprietario"
       }
     },
     "composed": {
@@ -656,12 +656,12 @@
         "exhum_upto": "fino a {n} creature",
         "invocation": "evoca una creatura casuale di costo {x}{filter}",
         "epargne": "aggiunge {x} al tuo contatore Risparmio",
-        "selection": "rivela 3 carte{filter} (costo ≤ {x}) e ne tiene una in mano",
-        "selection_magique": "rivela 3 incantesimi{filter} (costo ≤ {x}) e ne tiene uno in mano",
-        "renfort_royal": "rivela 3 carte da collezione{filter} (costo ≤ {x}) e ne tiene una in mano",
         "incineration": "rimette {x} carte dal cimitero bersaglio sotto il suo deck",
         "devoration": "divora",
-        "retour_differe": "mette sotto il deck del proprietario"
+        "retour_differe": "mette sotto il deck del proprietario",
+        "selection": "rivela 3 carte{filter} (costo ≤ {x}) e ne tiene una in mano",
+        "selection_magique": "rivela 3 incantesimi{filter} (costo ≤ {x}) e ne tiene uno in mano",
+        "renfort_royal": "rivela 3 carte da collezione{filter} (costo ≤ {x}) e ne tiene una in mano"
       },
       "pool": {
         "race": " di razza {v}",
@@ -1927,7 +1927,8 @@
     "card_added": "« {name} » aggiunta!",
     "unknown_error": "Errore sconosciuto",
     "illustration_generated": "Illustrazione generata ({model})",
-    "import_error": "Errore di importazione"
+    "import_error": "Errore di importazione",
+    "name_taken": "Questo nome è già utilizzato da «{name}» (id {id}). Il salvataggio richiederà una conferma."
   },
   "game": {
     "error_not_authenticated": "Non autenticato",

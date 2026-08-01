@@ -397,6 +397,26 @@
         "label": "貯蓄X",
         "desc": "貯蓄カウンターに X を追加します（最大10）。"
       },
+      "seconde_vie": {
+        "label": "セカンドライフX",
+        "desc": "墓地からX魔力で使用できる。使用後、セカンドライフを失う。"
+      },
+      "incineration": {
+        "label": "焼却X",
+        "desc": "対象の墓地からカードをX枚ランダムに選び、所有者のデッキの一番下に戻す。"
+      },
+      "devoration": {
+        "label": "捕食",
+        "desc": "対象のユニットを1体破壊する。このクリーチャーはそのATKとPVを永久に得る。"
+      },
+      "creuser": {
+        "label": "発掘X",
+        "desc": "デッキの一番下からX枚のカードを見て、その中の1枚を一番上に置く。"
+      },
+      "retour_differe": {
+        "label": "遅延帰還",
+        "desc": "対象のユニットを所有者のデッキの一番下に置く。"
+      },
       "concentration": {
         "label": "集中 X",
         "desc": "手札の呪文はすべて、コスト+Xのランダムな呪文(全陣営)に変化し、コストがX軽減される。"
@@ -428,26 +448,6 @@
       "force_des_ancetres": {
         "label": "祖霊の力 +X/+Y",
         "desc": "自分の墓地にクリーチャーが5体以上ある限り、+X ATKと+Y PVを得る。"
-      },
-      "seconde_vie": {
-        "label": "セカンドライフX",
-        "desc": "墓地からX魔力で使用できる。使用後、セカンドライフを失う。"
-      },
-      "incineration": {
-        "label": "焼却X",
-        "desc": "対象の墓地からカードをX枚ランダムに選び、所有者のデッキの一番下に戻す。"
-      },
-      "devoration": {
-        "label": "捕食",
-        "desc": "対象のユニットを1体破壊する。このクリーチャーはそのATKとPVを永久に得る。"
-      },
-      "creuser": {
-        "label": "発掘X",
-        "desc": "デッキの一番下からX枚のカードを見て、その中の1枚を一番上に置く。"
-      },
-      "retour_differe": {
-        "label": "遅延帰還",
-        "desc": "対象のユニットを所有者のデッキの一番下に置く。"
       }
     },
     "spell_keywords": {
@@ -559,6 +559,18 @@
         "label": "回復 X",
         "desc": "対象のPVをX回復する"
       },
+      "incineration": {
+        "label": "焼却X",
+        "desc": "対象の墓地からカードをX枚ランダムに選び、所有者のデッキの一番下に戻す"
+      },
+      "creuser": {
+        "label": "発掘X",
+        "desc": "デッキの一番下からX枚のカードを見て、その中の1枚を一番上に置く"
+      },
+      "retour_differe": {
+        "label": "遅延帰還",
+        "desc": "対象のユニットを所有者のデッキの一番下に置く"
+      },
       "epargne": {
         "label": "貯蓄X",
         "desc": "貯蓄カウンターに X を追加します（最大10）"
@@ -606,18 +618,6 @@
       "afflux": {
         "label": "魔力流入 X",
         "desc": "このターン、マナをX獲得する"
-      },
-      "incineration": {
-        "label": "焼却X",
-        "desc": "対象の墓地からカードをX枚ランダムに選び、所有者のデッキの一番下に戻す"
-      },
-      "creuser": {
-        "label": "発掘X",
-        "desc": "デッキの一番下からX枚のカードを見て、その中の1枚を一番上に置く"
-      },
-      "retour_differe": {
-        "label": "遅延帰還",
-        "desc": "対象のユニットを所有者のデッキの一番下に置く"
       }
     },
     "composed": {
@@ -656,12 +656,12 @@
         "exhum_upto": "クリーチャー{n}体まで",
         "invocation": "コスト{x}{filter}のランダムなクリーチャーを召喚する",
         "epargne": "貯蓄カウンターに{x}を追加",
-        "selection": "3枚のカード{filter}（コスト{x}以下）を公開し、その中から1枚を手札に加える",
-        "selection_magique": "呪文{filter}を3枚公開し(コスト{x}以下)、その中から1枚を手札に加える",
-        "renfort_royal": "コレクションから3枚のカード{filter}（コスト{x}以下）を公開し、その中から1枚を手札に加える",
         "incineration": "対象の墓地からカードを{x}枚所有者のデッキの一番下に戻す",
         "devoration": "捕食する",
-        "retour_differe": "所有者のデッキの一番下に置く"
+        "retour_differe": "所有者のデッキの一番下に置く",
+        "selection": "3枚のカード{filter}（コスト{x}以下）を公開し、その中から1枚を手札に加える",
+        "selection_magique": "呪文{filter}を3枚公開し(コスト{x}以下)、その中から1枚を手札に加える",
+        "renfort_royal": "コレクションから3枚のカード{filter}（コスト{x}以下）を公開し、その中から1枚を手札に加える"
       },
       "pool": {
         "race": "（種族：{v}）",
@@ -1927,7 +1927,8 @@
     "card_added": "「{name}」を追加しました！",
     "unknown_error": "不明なエラー",
     "illustration_generated": "イラストを生成しました（{model}）",
-    "import_error": "インポートエラー"
+    "import_error": "インポートエラー",
+    "name_taken": "この名前はすでに「{name}」(id {id}) によって使用されています。保存時に確認が必要になります。"
   },
   "game": {
     "error_not_authenticated": "未認証",
