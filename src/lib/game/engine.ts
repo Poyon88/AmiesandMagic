@@ -7797,30 +7797,138 @@ const RENFORT_ROYAL_OWNERSHIP_THRESHOLD = 30;
 // now a mana-cost ceiling on the offered pool — see getSelectionCards.
 const SELECTION_OFFER_COUNT = 3;
 
-// Détermine l'ensemble des factions autorisées pour Sélection X /
-// Sélection magique X : factions dont l'alignement correspond à celui de la
-// source. Fallback : factions présentes dans le deck du joueur +
-// Mercenaires (comportement historique) si la source ou son alignement est
-// indéterminable.
+/** Factions éligibles à un tirage d'alignement, réparties en DEUX paniers.
+ *
+ *  `propre` = les factions du même alignement que la source ; `neutre` = les
+ *  factions neutres, ouvertes en RENFORT aux alignements tranchés.
+ *
+ *  Pourquoi ce renfort : bon et maléfique ne comptent que 2 factions chacun
+ *  quand le neutre en compte 5 — les camps tranchés étaient de loin les plus
+ *  pauvres, au point qu'une Invocation X pouvait ne rien trouver au coût
+ *  demandé. Le neutre, lui, ne gagne rien : c'est le terrain commun, pas un
+ *  camp. L'asymétrie est assumée.
+ *
+ *  Les deux paniers restent SÉPARÉS parce que le tirage est pondéré : une carte
+ *  de l'alignement propre pèse deux fois une neutre. Fondus en un seul pool, la
+ *  Découverte d'une carte maléfique afficherait ~73 % de neutre et cesserait de
+ *  « sentir » la faction.
+ *
+ *  Mercenaires (alignement « spéciale ») n'entre dans AUCUN panier : il reste
+ *  atteignable par le seul repli hors-alignement. Choix assumé, pas un oubli.
+ *
+ *  Repli (source sans alignement déterminable) : factions du deck +
+ *  Mercenaires, comportement historique — tout va dans `propre`, la pondération
+ *  n'a alors aucun effet. */
+function selectionFactionBuckets(
+  source: { faction?: string | null; card_alignment?: string | null } | null,
+  player: PlayerState,
+): { propre: Set<string>; neutre: Set<string> } {
+  const alignment = source ? getEffectiveAlignment(source) : null;
+  if (alignment) {
+    const propre = new Set<string>();
+    const neutre = new Set<string>();
+    for (const [factionId, def] of Object.entries(FACTIONS)) {
+      if (def.alignment === alignment) propre.add(factionId);
+      // Le neutre n'est un renfort que pour les alignements TRANCHÉS : pour une
+      // source neutre, ses factions sont déjà dans `propre`.
+      else if (def.alignment === "neutre") neutre.add(factionId);
+    }
+    return { propre, neutre };
+  }
+  // Fallback : deck factions + Mercenaires
+  const propre = new Set<string>();
+  propre.add("Mercenaires");
+  for (const c of [...player.hand, ...player.board, ...player.deck, ...player.graveyard]) {
+    if (c.card.faction && c.card.faction !== "Mercenaires") propre.add(c.card.faction);
+  }
+  return { propre, neutre: new Set<string>() };
+}
+
+/** Union des deux paniers — pour les simples tests d'APPARTENANCE (« cette
+ *  carte est-elle atteignable ? »), qui n'ont pas à connaître la pondération.
+ *  Seul consommateur aujourd'hui : la validation de `spendEpargne`. */
 function factionsForSelectionAlignment(
   source: { faction?: string | null; card_alignment?: string | null } | null,
   player: PlayerState,
 ): Set<string> {
-  const alignment = source ? getEffectiveAlignment(source) : null;
-  if (alignment) {
-    const allowed = new Set<string>();
-    for (const [factionId, def] of Object.entries(FACTIONS)) {
-      if (def.alignment === alignment) allowed.add(factionId);
+  const { propre, neutre } = selectionFactionBuckets(source, player);
+  return new Set([...propre, ...neutre]);
+}
+
+/** Répartit des candidats déjà filtrés selon les deux paniers d'alignement. */
+function partitionParAlignement<T extends { faction?: string | null }>(
+  candidats: T[],
+  buckets: { propre: Set<string>; neutre: Set<string> },
+): { propre: T[]; neutre: T[] } {
+  const propre: T[] = [];
+  const neutre: T[] = [];
+  for (const c of candidats) {
+    if (c.faction && buckets.neutre.has(c.faction)) neutre.push(c);
+    else propre.push(c);
+  }
+  return { propre, neutre };
+}
+
+/** Nombre de cartes NEUTRES tolérées dans une offre de `n` cartes : une sur
+ *  trois, soit le ratio 2:1 de la règle. Toujours ≥ 1 dès qu'on propose au
+ *  moins une carte, sinon le renfort neutre n'apparaîtrait jamais. */
+function quotaNeutre(n: number): number {
+  return Math.max(1, Math.floor(n / SELECTION_OFFER_COUNT));
+}
+
+/** OFFRE pondérée (familles « révèle N, garde 1 »). Au plus `quotaNeutre(n)`
+ *  cartes neutres ; le reste vient de l'alignement propre, et le neutre COMBLE
+ *  si le propre n'a pas assez de candidats — on ne rend jamais moins de cartes
+ *  qu'avant l'ouverture du pool.
+ *
+ *  `melanger` est injecté : les appelants tirent avec le pseudo-RNG semé sur
+ *  l'état, PAS avec `rng()`. C'est ce qui permet aux deux clients de voir la
+ *  même offre sans consommer la RNG partagée. */
+function offrePonderee<T extends { faction?: string | null }>(
+  candidats: T[],
+  buckets: { propre: Set<string>; neutre: Set<string> },
+  n: number,
+  melanger: (arr: T[]) => T[],
+): T[] {
+  const { propre, neutre } = partitionParAlignement(candidats, buckets);
+  if (neutre.length === 0) return melanger(propre).slice(0, n);
+
+  const maxNeutre = Math.min(quotaNeutre(n), neutre.length);
+  const propreMelange = melanger(propre);
+  const neutreMelange = melanger(neutre);
+  const retenus = propreMelange.slice(0, n - maxNeutre);
+  retenus.push(...neutreMelange.slice(0, n - retenus.length));
+  // Alignement propre trop pauvre : le neutre comble le reliquat.
+  if (retenus.length < n) {
+    const dejaPris = new Set(retenus);
+    for (const c of [...propreMelange, ...neutreMelange]) {
+      if (retenus.length >= n) break;
+      if (!dejaPris.has(c)) { retenus.push(c); dejaPris.add(c); }
     }
-    return allowed;
   }
-  // Fallback : deck factions + Mercenaires
-  const allowed = new Set<string>();
-  allowed.add("Mercenaires");
-  for (const c of [...player.hand, ...player.board, ...player.deck, ...player.graveyard]) {
-    if (c.card.faction && c.card.faction !== "Mercenaires") allowed.add(c.card.faction);
+  return retenus;
+}
+
+/** TIRAGE DIRECT pondéré (Invocation X, Déchainement) : une carte de
+ *  l'alignement propre a deux fois plus de chances qu'une neutre.
+ *
+ *  Consomme EXACTEMENT un `rng()`, quel que soit le contenu des paniers : le
+ *  nombre d'appels doit être identique chez les deux clients, sinon leurs flux
+ *  aléatoires se décalent pour tout le reste de la partie. */
+function tirageUniquePondere<T extends { faction?: string | null }>(
+  candidats: T[],
+  buckets: { propre: Set<string>; neutre: Set<string> },
+): T | undefined {
+  if (candidats.length === 0) return undefined;
+  const { propre, neutre } = partitionParAlignement(candidats, buckets);
+  if (propre.length === 0 || neutre.length === 0) {
+    return candidats[Math.floor(rng() * candidats.length)];
   }
-  return allowed;
+  const poids = propre.length * 2 + neutre.length;
+  const tir = rng() * poids;
+  return tir < propre.length * 2
+    ? propre[Math.floor(tir / 2)]
+    : neutre[Math.min(neutre.length - 1, Math.floor(tir - propre.length * 2))];
 }
 
 /** Invocation X : invoque une créature aléatoire de coût EXACTEMENT X issue de
@@ -7883,7 +7991,8 @@ function resolveInvocationSummon(
   if (owner.board.length >= MAX_BOARD_SIZE) return;
   if (!pool || pool.length === 0 || x <= 0) return;
   const restricted = !!(restrict?.race || restrict?.faction || restrict?.clan || restrict?.keywordId);
-  const allowedFactions = factionsForSelectionAlignment(sourceCard, owner);
+  const buckets = selectionFactionBuckets(sourceCard, owner);
+  const allowedFactions = new Set([...buckets.propre, ...buckets.neutre]);
   const legal = formatCode ? getFormatFilterByCode(formatCode) : null;
   const ownedLimited = new Set(owner.ownedLimitedCardIds ?? []);
   const candidates = pool.filter(c =>
@@ -7899,7 +8008,12 @@ function resolveInvocationSummon(
     && (!legal || legal(c)),
   );
   if (candidates.length === 0) return;
-  const chosen = candidates[Math.floor(rng() * candidates.length)];
+  // Pondération 2:1 en faveur de l'alignement propre — sauf quand `restrict`
+  // a REMPLACÉ le filtre d'alignement : « invoque un Loup » ne doit pas se voir
+  // réintroduire une préférence d'alignement par la bande.
+  const chosen = restricted
+    ? candidates[Math.floor(rng() * candidates.length)]
+    : tirageUniquePondere(candidates, buckets)!;
   const summoned = createCardInstance(chosen);
   // Mal d'invocation par défaut (précédent Appel du Clan), MAIS la créature
   // invoquée garde ses propres mots-clés : une Traque (id moteur `charge`) doit
@@ -7932,7 +8046,8 @@ function resolveDechainement(
 ): void {
   const pool = state.allSpellsPool;
   if (!pool || pool.length === 0 || x <= 0 || y <= 0) return;
-  const allowedFactions = factionsForSelectionAlignment(sourceCard, player);
+  const buckets = selectionFactionBuckets(sourceCard, player);
+  const allowedFactions = new Set([...buckets.propre, ...buckets.neutre]);
   const legal = state.formatCode ? getFormatFilterByCode(state.formatCode) : null;
   const ownedLimited = new Set(player.ownedLimitedCardIds ?? []);
   const candidates = pool.filter(c =>
@@ -7951,7 +8066,9 @@ function resolveDechainement(
   );
   if (candidates.length === 0) return;
   for (let i = 0; i < x; i++) {
-    const chosen = candidates[Math.floor(rng() * candidates.length)];
+    // Un `rng()` par sort, pondéré — le COMPTE d'appels reste identique chez
+    // les deux clients, ce qui préserve la synchro du flux aléatoire.
+    const chosen = tirageUniquePondere(candidates, buckets)!;
     castSpellWithRandomTargets(state, player, opponent, chosen);
   }
 }
@@ -8042,7 +8159,8 @@ export function getSelectionCards(
   if (!pool || pool.length === 0) return [];
 
   const player = state.players[state.currentPlayerIndex];
-  const allowedFactions = factionsForSelectionAlignment(source ?? null, player);
+  const buckets = selectionFactionBuckets(source ?? null, player);
+  const allowedFactions = new Set([...buckets.propre, ...buckets.neutre]);
   const filtered = pool.filter(c =>
     c.faction
     && allowedFactions.has(c.faction)
@@ -8060,12 +8178,18 @@ export function getSelectionCards(
     hash = (hash * 16807 + 12345) & 0x7fffffff;
     return (hash & 0xfffffff) / 0x10000000;
   };
-  const shuffled = [...filtered];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(pseudoRng() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  return shuffled.slice(0, Math.min(SELECTION_OFFER_COUNT, shuffled.length));
+  // Mélange déterministe semé sur l'état : les deux clients voient la MÊME
+  // offre sans consommer la RNG partagée. L'offre est PONDÉRÉE — au plus une
+  // carte neutre sur trois, le reste de l'alignement propre.
+  const melanger = (arr: Card[]): Card[] => {
+    const out = [...arr];
+    for (let i = out.length - 1; i > 0; i--) {
+      const j = Math.floor(pseudoRng() * (i + 1));
+      [out[i], out[j]] = [out[j], out[i]];
+    }
+    return out;
+  };
+  return offrePonderee(filtered, buckets, Math.min(SELECTION_OFFER_COUNT, filtered.length), melanger);
 }
 
 /** Sélection magique : propose jusqu'à 3 sorts communs partageant
@@ -8085,7 +8209,8 @@ export function getMagicalSelectionCards(
   if (!pool || pool.length === 0) return [];
 
   const player = state.players[state.currentPlayerIndex];
-  const allowedFactions = factionsForSelectionAlignment(source ?? null, player);
+  const buckets = selectionFactionBuckets(source ?? null, player);
+  const allowedFactions = new Set([...buckets.propre, ...buckets.neutre]);
   const filtered = pool.filter(c =>
     c.card_type === "spell"
     && c.faction
@@ -8103,12 +8228,18 @@ export function getMagicalSelectionCards(
     hash = (hash * 16807 + 12345) & 0x7fffffff;
     return (hash & 0xfffffff) / 0x10000000;
   };
-  const shuffled = [...filtered];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(pseudoRng() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  return shuffled.slice(0, Math.min(SELECTION_OFFER_COUNT, shuffled.length));
+  // Mélange déterministe semé sur l'état : les deux clients voient la MÊME
+  // offre sans consommer la RNG partagée. L'offre est PONDÉRÉE — au plus une
+  // carte neutre sur trois, le reste de l'alignement propre.
+  const melanger = (arr: Card[]): Card[] => {
+    const out = [...arr];
+    for (let i = out.length - 1; i > 0; i--) {
+      const j = Math.floor(pseudoRng() * (i + 1));
+      [out[i], out[j]] = [out[j], out[i]];
+    }
+    return out;
+  };
+  return offrePonderee(filtered, buckets, Math.min(SELECTION_OFFER_COUNT, filtered.length), melanger);
 }
 
 /** Aiguille vers le bon builder de cartes selon la famille de Sélection. */

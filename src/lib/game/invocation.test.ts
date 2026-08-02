@@ -10,7 +10,11 @@ import { playCard } from "./engine";
 import { mkCard, mkInstance, mkState } from "./test-harness";
 import type { Card, FormatCode } from "./types";
 
-// Elfes = alignement « bon », Humains = « neutre » (cf. FACTIONS).
+// Elfes = alignement « bon », Morts-Vivants = « maléfique » (cf. FACTIONS).
+// NB : depuis l'ouverture du pool neutre en renfort des alignements tranchés,
+// une faction NEUTRE n'est plus un bon témoin d'exclusion — elle est désormais
+// invocable par une source bonne. Les témoins ci-dessous sont donc pris dans
+// l'alignement OPPOSÉ, qui reste hors de portée.
 function poolCreature(partial: Partial<Card>): Card {
   return mkCard({ card_type: "creature", faction: "Elfes", rarity: "Commune", attack: 2, health: 2, ...partial });
 }
@@ -36,7 +40,7 @@ describe("Invocation X — sort", () => {
     const s = withPool([
       c4,
       poolCreature({ name: "Cout3", mana_cost: 3 }),
-      poolCreature({ name: "Neutre4", mana_cost: 4, faction: "Humains" }), // autre alignement
+      poolCreature({ name: "Malefique4", mana_cost: 4, faction: "Morts-Vivants" }), // alignement opposé
     ]);
     const spell = mkInvocationSpell(4);
     s.players[0].hand.push(spell);

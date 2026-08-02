@@ -276,9 +276,17 @@ export default function GamePage() {
           const al = FACTIONS[f]?.alignment;
           if (al && al !== "spéciale") deckAlignments.add(al);
         }
+        // Les alignements TRANCHÉS (bon, maléfique) reçoivent en renfort le pool
+        // NEUTRE : il faut donc charger les factions neutres dès que le deck
+        // porte l'un des deux. Sans cet élargissement, le moteur aurait beau
+        // autoriser le neutre, les cartes ne seraient pas en mémoire et
+        // l'ouverture serait TOTALEMENT sans effet pour un joueur mono-faction
+        // — sans la moindre erreur pour le signaler.
+        const renfortNeutre = deckAlignments.has("bon") || deckAlignments.has("maléfique");
         const selectionFactions = new Set(deckFactions);
         for (const [factionId, def] of Object.entries(FACTIONS)) {
-          if (def.alignment !== "spéciale" && deckAlignments.has(def.alignment)) {
+          if (def.alignment === "spéciale") continue;
+          if (deckAlignments.has(def.alignment) || (renfortNeutre && def.alignment === "neutre")) {
             selectionFactions.add(factionId);
           }
         }
