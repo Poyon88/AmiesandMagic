@@ -88,3 +88,88 @@ describe("Fin de tour — ordre strict gauche→droite tous régimes confondus",
     expect(p3.endTurnPending ?? false).toBe(false);
   });
 });
+
+// ─── Ordre gauche→droite : tous les CANAUX, pas seulement les composés ──────
+// Les deux cas ci-dessus prouvent l'entrelacement interactif/automatique sur des
+// effets COMPOSÉS. Un effet de fin de tour peut aussi venir d'un mot-clé CURÉ
+// (keyword_instances en mode "end_of_turn"), et les deux canaux alimentent la
+// même file. On le vérifie avec un effet dont l'ordre est OBSERVABLE : chaque
+// créature pioche une carte, donc l'ordre de la main révèle la séquence.
+describe("Fin de tour — ordre gauche→droite sur tous les canaux", () => {
+  const DRAW1: ComposedEffect = { content: "draw_cards", magnitude: { x: 1 } };
+
+  /** Créature dont l'effet de fin de tour est COMPOSÉ. */
+  function composee(nom: string) {
+    return mkInstance(mkCard({
+      name: nom, attack: 1, health: 3,
+      capabilities: [{ ...composedCap("on_end_of_turn", DRAW1), uid: `cx_${nom}` }],
+    }));
+  }
+  /** Créature dont l'effet de fin de tour est un mot-clé CURÉ (Inspiration 1). */
+  function curee(nom: string) {
+    return mkInstance(mkCard({
+      name: nom, attack: 1, health: 3,
+      keywords: ["inspiration"] as never,
+      keyword_instances: [{ id: "inspiration", x: 1, mode: "end_of_turn" } as never],
+    }));
+  }
+
+  /** Joue la fin de tour et rend la main de P0 : son ORDRE est l'ordre de
+   *  résolution, puisque toutes les créatures piochent dans le même deck. */
+  function ordreDeResolution(board: ReturnType<typeof composee>[]): string[] {
+    const s = mkState();
+    s.players[0].board.push(...board);
+    s.players[0].deck = ["1er", "2e", "3e", "4e"].map(n => mkInstance(mkCard({ name: n })));
+    s.players[1].deck = [mkInstance(mkCard({ name: "Z" }))];
+    return applyAction(s, { type: "end_turn" }).players[0].hand.map(c => c.card.name);
+  }
+
+  it("trois effets COMPOSÉS se résolvent de gauche à droite", () => {
+    expect(ordreDeResolution([composee("G"), composee("M"), composee("D")]))
+      .toEqual(["1er", "2e", "3e"]);
+  });
+
+  it("trois mots-clés CURÉS aussi", () => {
+    expect(ordreDeResolution([curee("G"), curee("M"), curee("D")]))
+      .toEqual(["1er", "2e", "3e"]);
+  });
+
+  it("un plateau MIXTE curé/composé garde l'ordre du plateau, pas l'ordre des canaux", () => {
+    // Le piège serait de traiter tous les curés puis tous les composés : la
+    // position sur le plateau doit primer sur la nature de l'effet.
+    expect(ordreDeResolution([curee("G"), composee("M"), curee("D")]))
+      .toEqual(["1er", "2e", "3e"]);
+    expect(ordreDeResolution([composee("G"), curee("M"), composee("D")]))
+      .toEqual(["1er", "2e", "3e"]);
+  });
+
+  it("une créature portant les DEUX canaux les déclenche tous les deux", () => {
+    const double = mkInstance(mkCard({
+      name: "Double", attack: 1, health: 3,
+      keywords: ["inspiration"] as never,
+      keyword_instances: [{ id: "inspiration", x: 1, mode: "end_of_turn" } as never],
+      capabilities: [{ ...composedCap("on_end_of_turn", DRAW1), uid: "cx_double" }],
+    }));
+    expect(ordreDeResolution([double])).toEqual(["1er", "2e"]);
+  });
+
+  it("la POSITION d'arrivée sur le plateau décide de l'ordre, pas l'ordre de jeu", () => {
+    // `boardPosition` insère la carte où le joueur l'a lâchée (splice) ; le
+    // rendu suit l'ordre du tableau. Une créature posée À GAUCHE d'une autre
+    // déjà en jeu doit donc agir AVANT elle, même si elle est jouée après.
+    const s = mkState();
+    s.players[0].board.push(composee("DejaLa"));
+    const nouvelle = composee("Nouvelle");
+    s.players[0].hand.push(nouvelle);
+    s.players[0].deck = ["1er", "2e"].map(n => mkInstance(mkCard({ name: n })));
+    s.players[1].deck = [mkInstance(mkCard({ name: "Z" }))];
+
+    // Posée en position 0 → à gauche de « DejaLa ».
+    let st = applyAction(s, { type: "play_card", cardInstanceId: nouvelle.instanceId, boardPosition: 0 });
+    expect(st.players[0].board.map(c => c.card.name)).toEqual(["Nouvelle", "DejaLa"]);
+
+    st = applyAction(st, { type: "end_turn" });
+    const piochees = st.players[0].hand.filter(c => ["1er", "2e"].includes(c.card.name)).map(c => c.card.name);
+    expect(piochees).toEqual(["1er", "2e"]); // « Nouvelle » a pioché la première
+  });
+});

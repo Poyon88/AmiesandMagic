@@ -802,7 +802,7 @@ function resolveComposedEffect(
         // moindre erreur pour le signaler.
         turnNumber: currentTurnNumber,
       } as unknown as GameState;
-      const options = selectionCardsForKeyword(composed.content, selState, x, selCard, composed.pool);
+      const options = selectionCardsForKeyword(composed.content, selState, x, selCard, composed.pool, source?.instanceId);
       // Pool vide après filtrage : no-op assumé. On n'élargit JAMAIS le filtre
       // en repli, sinon une carte « révèle 3 Hommes-Bêtes » proposerait
       // silencieusement autre chose.
@@ -2025,7 +2025,7 @@ function advanceEndOfTurn(newState: GameState): GameState {
       // Sélection / Sélection magique / Renfort Royal : interactif (modale
       // « 1 parmi 3 »). File seulement s'il existe une carte éligible.
       if (inst.id === "selection" || inst.id === "selection_magique" || inst.id === "renfort_royal") {
-        const options = selectionCardsForKeyword(inst.id, newState, inst.x ?? 0, creature.card);
+        const options = selectionCardsForKeyword(inst.id, newState, inst.x ?? 0, creature.card, undefined, creature.instanceId);
         if (options.length > 0) {
           (newState.pendingTriggers ??= []).push({
             id: `${creature.instanceId}#${inst.id}`,
@@ -6322,7 +6322,7 @@ function resolveCuratedKeywordEffect(
         // moindre erreur pour le signaler.
         turnNumber: currentTurnNumber,
       } as unknown as GameState;
-      const options = selectionCardsForKeyword(kw, selState, inst?.x ?? 0, source.card);
+      const options = selectionCardsForKeyword(kw, selState, inst?.x ?? 0, source.card, undefined, source.instanceId);
       if (options.length === 0) return;
       // "attack" et "draw" : flux SYNCHRONE, sans point de pause possible (le
   // premier est au milieu du flux de combat, le second au milieu de startTurn
@@ -7793,6 +7793,25 @@ export function creatureNeedsMagicalSelection(card: Card): boolean {
 }
 
 const RENFORT_ROYAL_OWNERSHIP_THRESHOLD = 30;
+/** Contribution de la SOURCE au germe d'un tirage de Sélection.
+ *
+ *  Sans elle, deux exemplaires de la même carte résolus au même instant tirent
+ *  le même germe — donc la même offre. Vu en partie : deux « Esprit aux Mille
+ *  Perles » proposant les trois mêmes cartes. Le germe ne repose que sur l'état
+ *  du joueur (tour, main, plateau, deck, cimetière, mana), identique pour les
+ *  deux, et la file de fin de tour ne met PAS le tour en pause sur une Sélection
+ *  (son effet composé n'a pas de `target`) : les deux offres sont calculées coup
+ *  sur coup, sur un état rigoureusement inchangé.
+ *
+ *  `instanceId` est produit par la RNG semée à la création de l'instance : il
+ *  est donc identique chez les deux clients, et le tirage reste reproductible. */
+function saltDeSource(seedSalt: string | undefined): number {
+  if (!seedSalt) return 0;
+  let h = 0;
+  for (let i = 0; i < seedSalt.length; i++) h = (h * 31 + seedSalt.charCodeAt(i)) & 0x7fffffff;
+  return h;
+}
+
 // Sélection X / Renfort Royal X always offer up to this many cards. X is
 // now a mana-cost ceiling on the offered pool — see getSelectionCards.
 const SELECTION_OFFER_COUNT = 3;
@@ -8099,6 +8118,9 @@ export function getRenfortRoyalCards(
   maxManaCost: number,
   source?: { faction?: string | null; card_alignment?: string | null } | null,
   filter?: ComposedPoolFilter,
+  // Identifiant de la source : distingue deux exemplaires de la MÊME carte
+  // résolus au même instant (cf. saltDeSource).
+  seedSalt?: string,
 ): Card[] {
   const pool = state.factionCardPool;
   if (!pool || pool.length === 0) return [];
@@ -8122,7 +8144,7 @@ export function getRenfortRoyalCards(
   // Same deterministic shuffle pattern as getSelectionCards so both
   // clients agree without burning the seeded RNG.
   const entropy = player.hand.length * 7 + player.board.length * 13 + player.deck.length * 3 + player.graveyard.length * 17 + player.mana * 11;
-  const seed = state.turnNumber * 1000 + state.currentPlayerIndex * 100 + entropy + 999;
+  const seed = state.turnNumber * 1000 + state.currentPlayerIndex * 100 + entropy + 999 + saltDeSource(seedSalt);
   let hash = seed;
   const pseudoRng = () => {
     hash = (hash * 16807 + 12345) & 0x7fffffff;
@@ -8154,6 +8176,9 @@ export function getSelectionCards(
   // que des cartes valant précisément ce qu'on a mis de côté. Les Sélections
   // gardent le comportement « plafond » par défaut.
   exactCost = false,
+  // Identifiant de la source : distingue deux exemplaires de la MÊME carte
+  // résolus au même instant (cf. saltDeSource).
+  seedSalt?: string,
 ): Card[] {
   const pool = state.factionCardPool;
   if (!pool || pool.length === 0) return [];
@@ -8172,7 +8197,7 @@ export function getSelectionCards(
 
   // Deterministic seed based on game state — varies each time within a turn
   const entropy = player.hand.length * 7 + player.board.length * 13 + player.deck.length * 3 + player.graveyard.length * 17 + player.mana * 11;
-  const seed = state.turnNumber * 1000 + state.currentPlayerIndex * 100 + entropy;
+  const seed = state.turnNumber * 1000 + state.currentPlayerIndex * 100 + entropy + saltDeSource(seedSalt);
   let hash = seed;
   const pseudoRng = () => {
     hash = (hash * 16807 + 12345) & 0x7fffffff;
@@ -8204,6 +8229,9 @@ export function getMagicalSelectionCards(
   maxManaCost: number,
   source?: { faction?: string | null; card_alignment?: string | null } | null,
   filter?: ComposedPoolFilter,
+  // Identifiant de la source : distingue deux exemplaires de la MÊME carte
+  // résolus au même instant (cf. saltDeSource).
+  seedSalt?: string,
 ): Card[] {
   const pool = state.allSpellsPool;
   if (!pool || pool.length === 0) return [];
@@ -8222,7 +8250,7 @@ export function getMagicalSelectionCards(
   if (filtered.length === 0) return [];
 
   const entropy = player.hand.length * 7 + player.board.length * 13 + player.deck.length * 3 + player.graveyard.length * 17 + player.mana * 11;
-  const seed = state.turnNumber * 1000 + state.currentPlayerIndex * 100 + entropy + 1999;
+  const seed = state.turnNumber * 1000 + state.currentPlayerIndex * 100 + entropy + 1999 + saltDeSource(seedSalt);
   let hash = seed;
   const pseudoRng = () => {
     hash = (hash * 16807 + 12345) & 0x7fffffff;
@@ -8249,10 +8277,11 @@ function selectionCardsForKeyword(
   maxManaCost: number,
   source?: { faction?: string | null; card_alignment?: string | null } | null,
   filter?: ComposedPoolFilter,
+  seedSalt?: string,
 ): Card[] {
-  if (id === "selection_magique") return getMagicalSelectionCards(state, maxManaCost, source, filter);
-  if (id === "renfort_royal") return getRenfortRoyalCards(state, maxManaCost, source, filter);
-  return getSelectionCards(state, maxManaCost, source, filter);
+  if (id === "selection_magique") return getMagicalSelectionCards(state, maxManaCost, source, filter, seedSalt);
+  if (id === "renfort_royal") return getRenfortRoyalCards(state, maxManaCost, source, filter, seedSalt);
+  return getSelectionCards(state, maxManaCost, source, filter, false, seedSalt);
 }
 
 export function getSpellTargets(state: GameState, card: Card, slotType?: SpellTargetType): string[] {

@@ -131,3 +131,58 @@ describe("getSelectionCards — le germe dépend bien du tour", () => {
       .toEqual(getSelectionCards(synth(), 3, src).map(c => c.id));
   });
 });
+
+// ─── Deux exemplaires de la MÊME carte, au même instant ─────────────────────
+// Signalé en partie : deux « Esprit aux Mille Perles » sur le plateau ont
+// proposé les trois mêmes cartes.
+//
+// Le germe ne reposait que sur l'état du JOUEUR (tour, main, plateau, deck,
+// cimetière, mana) — rigoureusement identique pour les deux créatures. Et la
+// file de fin de tour ne met pas le tour en pause sur une Sélection : son effet
+// composé n'a pas de `target`, donc les deux offres sont calculées coup sur
+// coup, sur un état inchangé. Le germe intègre désormais l'identifiant de la
+// SOURCE (cf. saltDeSource), produit par la RNG semée — donc identique chez les
+// deux clients, le tirage reste reproductible.
+describe("Sélection — deux sources distinctes, deux offres distinctes", () => {
+  function espritSelection(nom: string) {
+    return mkInstance(mkCard({
+      name: nom, attack: 2, health: 3, faction: "Nains",
+      capabilities: [capSelection(3)],
+    }));
+  }
+
+  function plateauDeuxEsprits(): GameState {
+    const s = mkState();
+    s.factionCardPool = poolCommunes(60);
+    s.allSpellsPool = [];
+    s.players[0].board.push(espritSelection("Perles1"), espritSelection("Perles2"));
+    s.players[0].deck = [mkInstance(mkCard({ name: "D" }))];
+    s.players[1].deck = [mkInstance(mkCard({ name: "Z" }))];
+    return s;
+  }
+
+  function offresDe(depart: GameState): string[] {
+    const st = applyAction(depart, { type: "end_turn" });
+    const offres = (st.pendingTriggers ?? [])
+      .filter(t => t.selectionType)
+      .map(t => (t.selectionOptionIds ?? []).join(","));
+    expect(offres.length, "les deux créatures doivent chacune poser leur Sélection").toBe(2);
+    return offres;
+  }
+
+  it("les deux Sélections du même tour ne proposent pas la même chose", () => {
+    const [a, b] = offresDe(plateauDeuxEsprits());
+    expect(a.length).toBeGreaterThan(0);
+    expect(b, `offre 1 : ${a} — offre 2 : ${b}`).not.toEqual(a);
+  });
+
+  it("…tout en restant REPRODUCTIBLE (les deux clients voient la même paire)", () => {
+    // Le sel est l'`instanceId`, qui VIT DANS L'ÉTAT PARTAGÉ : les deux clients
+    // manipulent les mêmes instances, donc calculent les mêmes offres. On rejoue
+    // donc la même action depuis le MÊME état de départ (applyAction clone, il
+    // ne mute pas son entrée) — refabriquer le plateau donnerait de nouveaux
+    // identifiants, ce qui ne teste rien du contrat réel.
+    const depart = plateauDeuxEsprits();
+    expect(offresDe(depart)).toEqual(offresDe(depart));
+  });
+});

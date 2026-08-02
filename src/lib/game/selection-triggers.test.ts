@@ -193,8 +193,16 @@ describe("Repli automatique à l'expiration du chrono (auto_resolve_pending_trig
   });
 
   it("est déterministe : même état initial ⇒ même carte choisie", () => {
-    const a = applyAction(stateWithPendingSelection([901, 902, 903]), { type: "auto_resolve_pending_triggers" });
-    const b = applyAction(stateWithPendingSelection([901, 902, 903]), { type: "auto_resolve_pending_triggers" });
+    // Le MÊME état, rejoué deux fois — et non deux états sosies. Depuis que le
+    // germe du tirage intègre l'`instanceId` de la source (pour que deux
+    // exemplaires d'une même carte ne proposent pas la même offre), deux
+    // plateaux reconstruits n'ont plus les mêmes identifiants et n'ont aucune
+    // raison de coïncider. Le contrat qui compte est celui du multijoueur :
+    // deux clients partagent les mêmes instances, donc le même résultat.
+    // `applyAction` clone son entrée, l'état de départ reste intact.
+    const depart = stateWithPendingSelection([901, 902, 903]);
+    const a = applyAction(depart, { type: "auto_resolve_pending_triggers" });
+    const b = applyAction(depart, { type: "auto_resolve_pending_triggers" });
     expect(a.players[0].hand[0].card.id).toBe(b.players[0].hand[0].card.id);
   });
 
