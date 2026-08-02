@@ -1031,9 +1031,39 @@ function generateInstanceId(): string {
   return rng().toString(36).substring(2, 10) + rng().toString(36).substring(2, 10);
 }
 
+/** X des capacités dont la valeur est FIGÉE sur l'instance à sa naissance, au
+ *  lieu d'être relue à la résolution : Persécution, Riposte, Carnage, Sacrifice
+ *  démoniaque et Héritage. Les résolveurs lisent `inst.<kw>X` et exigent `> 0`,
+ *  donc une valeur non posée = capacité INERTE, en silence.
+ *
+ *  Trois sources, dans l'ordre :
+ *   1. le sidecar `keyword_instances` (canal structuré : cartes ET tokens) ;
+ *   2. la notation `[Keyword X]` de `effect_text` (repli legacy des cartes) ;
+ *   3. une formule dérivée du coût en mana.
+ *
+ *  Appelé depuis createCardInstance — donc pour TOUTE instance, y compris les
+ *  jetons, qui ne passent jamais par `playCard`. C'était le trou : un token
+ *  Carnage X gardait carnageX = 0 et son râle ne partait pas, quelle que soit
+ *  la valeur saisie dans la forge. La formule de repli n'aurait de toute façon
+ *  rien donné : elle dérive du coût en mana, nul sur un jeton. */
+function stampKeywordXValues(inst: CardInstance): void {
+  const parsed = parseXValuesFromEffectText(inst.card.effect_text);
+  const mana = inst.card.mana_cost;
+  const xOf = (id: Keyword, fallback: number): number => {
+    const fromSidecar = inst.card.keyword_instances?.find(k => k.id === id)?.x;
+    if (fromSidecar != null) return fromSidecar;
+    return parsed[id] || fallback;
+  };
+  if (hasKw(inst, "persecution")) inst.persecutionX = xOf("persecution", Math.max(1, Math.floor(mana / 3)));
+  if (hasKw(inst, "riposte")) inst.riposteX = xOf("riposte", Math.max(1, Math.floor(mana / 3)));
+  if (hasKw(inst, "carnage")) inst.carnageX = xOf("carnage", Math.max(1, Math.floor(mana / 2)));
+  if (hasKw(inst, "sacrifice_demoniaque")) inst.sacrificeDemoniaqueX = xOf("sacrifice_demoniaque", Math.max(1, Math.floor(mana / 3)));
+  if (hasKw(inst, "heritage")) inst.heritageX = xOf("heritage", Math.max(1, Math.floor(mana / 3)));
+}
+
 function createCardInstance(card: Card): CardInstance {
   const noSickness = card.keywords.includes("charge");
-  return {
+  const inst: CardInstance = {
     instanceId: generateInstanceId(),
     card,
     baseAttack: card.attack ?? 0,
@@ -1083,6 +1113,11 @@ function createCardInstance(card: Card): CardInstance {
     grantedKeywordX: {},
     manaCostReduction: 0,
   };
+  // Valeurs figées à la naissance de l'instance. `playCard` les repose à
+  // l'identique pour une carte jouée depuis la main (mêmes entrées, même
+  // résultat) ; ce passage-ci est le SEUL que voient les jetons.
+  stampKeywordXValues(inst);
+  return inst;
 }
 
 // Dédoublement : fabrique une « copie exacte » de la créature `source` prête à
@@ -1256,6 +1291,14 @@ function applyTokenTemplate(tokenCard: Card, tmpl: TokenTemplate | null): Card {
     name: tmpl.name,
     image_url: tmpl.image_url,
     keywords: tmpl.keywords?.length ? tmpl.keywords : tokenCard.keywords,
+    // Sidecar des capacités (X/Y, et à terme le mode). Rien d'autre à faire
+    // côté moteur : `getCapabilities` dérive depuis keywords + keyword_instances
+    // dès que `capabilities` est null, exactement comme pour une créature.
+    // Recopié seulement s'il est non vide, pour ne pas écraser par `null` un
+    // sidecar déjà posé par l'appelant.
+    keyword_instances: tmpl.keyword_instances?.length
+      ? tmpl.keyword_instances
+      : tokenCard.keyword_instances,
     race: tmpl.race,
     // Faction explicite du template prioritaire ; sinon on conserve celle déjà
     // posée par l'appelant (déduite de la race via getFactionForRace, avec repli
@@ -2741,36 +2784,11 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       }
     }
 
-    // Set Persécution X value
-    if (hasKw(cardInstance, "persecution")) {
-      const persXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
-      cardInstance.persecutionX = persXVals["persecution"] || Math.max(1, Math.floor(cardInstance.card.mana_cost / 3));
-    }
-
-    // Set Riposte X value
-    if (hasKw(cardInstance, "riposte")) {
-      const ripXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
-      cardInstance.riposteX = ripXVals["riposte"] || Math.max(1, Math.floor(cardInstance.card.mana_cost / 3));
-    }
-
-    // Set Carnage X value
-    if (hasKw(cardInstance, "carnage")) {
-      const carnXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
-      cardInstance.carnageX = carnXVals["carnage"] || Math.max(1, Math.floor(cardInstance.card.mana_cost / 2));
-    }
-
-    // Set Sacrifice démoniaque X (effet à la mort) — caché à l'invocation,
-    // comme Carnage X.
-    if (hasKw(cardInstance, "sacrifice_demoniaque")) {
-      const sdVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
-      cardInstance.sacrificeDemoniaqueX = sdVals["sacrifice_demoniaque"] || Math.max(1, Math.floor(cardInstance.card.mana_cost / 3));
-    }
-
-    // Set Héritage X value
-    if (hasKw(cardInstance, "heritage")) {
-      const herXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
-      cardInstance.heritageX = herXVals["heritage"] || Math.max(1, Math.floor(cardInstance.card.mana_cost / 3));
-    }
+    // Persécution / Riposte / Carnage / Sacrifice démoniaque / Héritage : X
+    // figés sur l'instance. Reposés ici — après les dons éventuels de cette
+    // entrée en jeu, qui peuvent avoir ajouté un de ces mots-clés — par le
+    // MÊME helper qu'à la création de l'instance (cf. stampKeywordXValues).
+    stampKeywordXValues(cardInstance);
 
     // Tactique X: attribue X capacités choisies à un allié (simplified: copy 1 keyword)
     if (hasKwOnPlay(cardInstance, "tactique") && action.targetInstanceId) {

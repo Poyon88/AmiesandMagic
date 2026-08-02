@@ -49,7 +49,6 @@ export interface AbilityCreatureMeta {
   zone: KeywordZone;
   /** true ⇒ proposable sur un token dans la forge, même si minTier > 1
    *  (le picker de tokens n'autorise sinon que les mots-clés minTier ≤ 1). */
-  tokenAllowed?: boolean;
 }
 
 export interface AbilitySpellMeta {
@@ -567,7 +566,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     id: "sacrifice_demoniaque", label: "Sacrifice démoniaque X", symbol: "👹",
     desc: "À sa mort, répartit X réductions de -1 mana entre les Démons de votre main (min. 1).",
     applicable_to: ["creature"],
-    creature: { cost: 8, costPerX: 5, se: 3.0, minTier: 3, scalable: true, zone: "Terrain", tokenAllowed: true },
+    creature: { cost: 8, costPerX: 5, se: 3.0, minTier: 3, scalable: true, zone: "Terrain" },
   },
   souffle_de_feu: {
     id: "souffle_de_feu", label: "Souffle de feu X", symbol: "🐲",
@@ -1096,11 +1095,10 @@ export const KEYWORDS: Record<string, {
   scalable: boolean;
   zone: KeywordZone;
   desc: string;
-  tokenAllowed: boolean;
 }> = (() => {
   const out: Record<string, {
     cost: number; costPerX: number; se: number; minTier: number;
-    scalable: boolean; zone: KeywordZone; desc: string; tokenAllowed: boolean;
+    scalable: boolean; zone: KeywordZone; desc: string;
   }> = {};
   for (const a of Object.values(ABILITIES)) {
     if (!a.creature) continue;
@@ -1113,7 +1111,6 @@ export const KEYWORDS: Record<string, {
       scalable: a.creature.scalable,
       zone: a.creature.zone,
       desc: a.creature.desc ?? a.desc,
-      tokenAllowed: a.creature.tokenAllowed ?? false,
     };
   }
   return out;
@@ -1329,6 +1326,73 @@ export const CURATED_ONBOARD_ONLY_IDS: ReadonlySet<string> = new Set([
   "sacrifice", "permutation", "malediction", "mimique", "metamorphose",
   "contresort", "profanation", "heritage_du_cimetiere",
 ]);
+
+/** Capacités qu'un TEMPLATE DE TOKEN ne peut pas encore porter, parce que leur
+ *  effet dépend d'une donnée que le template ne stocke pas. Le critère est
+ *  objectif — « le moteur ne trouverait rien et l'effet serait un no-op
+ *  SILENCIEUX » — et non un jugement d'équilibrage : le reste du catalogue est
+ *  proposé, à charge pour l'admin de doser.
+ *
+ *  Deux familles :
+ *   1. donnée portée par une COLONNE de `cards` absente de `token_templates`
+ *      (`convocation_token_id`, `convocation_tokens`, `lycanthropie_token_id`,
+ *      `entraide_race`) ;
+ *   2. donnée portée par l'instance de mot-clé, mais sans champ dédié dans
+ *      l'éditeur de tokens (coûts d'Invocations multiples, race d'Appel
+ *      Suprême, capacité de Conférer, déclencheurs de Déclenchement).
+ *
+ *  Les lever, c'est le lot « données annexes » du chantier tokens. */
+export const TOKEN_UNSUPPORTED_IDS: ReadonlySet<string> = new Set([
+  // 1. colonnes de `cards`
+  // « Convocation X » (convocation) ET « Convocation » (convocation_simple)
+  // lisent la MÊME colonne `convocation_token_id` : deux libellés distincts
+  // dans la forge, deux ids distincts, un seul oubli possible — le second
+  // s'était glissé dans le catalogue jusqu'au tri alphabétique.
+  "convocation", "convocation_simple", "convocations_multiples",
+  "lycanthropie", "entraide",
+  // 2. annexes d'instance sans champ dans l'éditeur de tokens
+  "invocations_multiples", "appel_supreme", "conferer", "declenchement",
+]);
+
+/** LE point dur des capacités sur un jeton : un token est poussé directement
+ *  sur le plateau (createCardInstance + push), sans passer par le dispatch
+ *  d'entrée en jeu de `playCard`. Ses effets « à l'invocation » ne partent donc
+ *  JAMAIS. Tous les AUTRES déclencheurs, eux, balaient le plateau et le
+ *  trouvent normalement — mort, activation, retour en main, fin de tour et
+ *  attaque ont été vérifiés un par un sur un jeton réel (X du sidecar compris).
+ *
+ *  D'où la règle : une capacité curée multi-mode n'est utilisable sur un token
+ *  qu'avec un mode EXPLICITE pris dans cet ensemble. Sans mode, elle serait
+ *  authorable en apparence et morte en jeu. */
+export const TOKEN_FIRING_MODES: ReadonlySet<string> = new Set([
+  "death", "tap", "return", "end_of_turn", "attack",
+]);
+
+/** La capacité exige-t-elle un mode explicite pour vivre sur un token ?
+ *  Vrai pour les curées multi-mode, dont le déclencheur NATUREL est
+ *  l'invocation — le seul qui ne parte pas sur un jeton. Les passifs (auras,
+ *  réactifs de combat) et les râles d'agonie se déclenchent tels quels. */
+export function tokenRequiresMode(engineId: string): boolean {
+  return CURATED_MULTIMODE_IDS.has(engineId)
+    && !AUTOMATIC_ABILITY_IDS.has(engineId)
+    && !DEATH_NATURE_IDS.has(engineId);
+}
+
+/** Une capacité est-elle AUTHORABLE sur un template de token ?
+ *
+ *  Dérivé de la taxonomie du moteur, pas d'une liste tenue à la main :
+ *   - passifs / auras / réactifs de combat et râles d'agonie → tels quels ;
+ *   - curées multi-mode → oui, mais elles réclament un mode (tokenRequiresMode) ;
+ *   - hors de ces trois familles, le déclencheur naturel est l'invocation et
+ *     rien ne peut le déplacer → jamais authorable ;
+ *   - et dans tous les cas, la donnée annexe doit être stockable sur un
+ *     template (cf. TOKEN_UNSUPPORTED_IDS). */
+export function isTokenAuthorable(engineId: string): boolean {
+  if (TOKEN_UNSUPPORTED_IDS.has(engineId)) return false;
+  return AUTOMATIC_ABILITY_IDS.has(engineId)
+    || DEATH_NATURE_IDS.has(engineId)
+    || CURATED_MULTIMODE_IDS.has(engineId);
+}
 
 /** Effets intrinsèques « à la mort » câblés dans processDeathTriggers via
  *  `hasKw` (any-trigger). Stockés mode-undefined en legacy mais conceptuellement

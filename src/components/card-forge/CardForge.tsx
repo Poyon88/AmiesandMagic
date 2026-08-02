@@ -15,7 +15,8 @@ import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 import RaceClanPicker from "@/components/admin/RaceClanPicker";
 import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS } from "@/lib/game/spell-keywords";
 import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
-import { ABILITIES, abilityIconKeys, creatureEngineId, XY_ABILITY_IDS, type AbilityDef } from "@/lib/game/abilities";
+import { ABILITIES, abilityIconKeys, creatureEngineId, XY_ABILITY_IDS, isTokenAuthorable, tokenRequiresMode, TOKEN_FIRING_MODES, type AbilityDef } from "@/lib/game/abilities";
+import { FORGE_TO_GAME_KEYWORD, GAME_TO_FORGE_KEYWORD, buildKeywordInstances } from "@/lib/card-forge/keyword-instances";
 import type { SpellKeywordId, Capability, CapabilityTrigger } from "@/lib/game/types";
 import CardEditor from "@/components/admin/CardEditor";
 import { CARD_BACK_FRAMES, autoTrimDarkBorders, composeCardBack, getCardBackFrame } from "@/lib/card-back-frames";
@@ -224,6 +225,16 @@ export default function CardForge() {
   const [tokenSaving, setTokenSaving] = useState(false);
   const [tokenEditId, setTokenEditId] = useState<number | null>(null);
   const [tokenKeywords, setTokenKeywords] = useState<string[]>([]);
+  // X / Y par LIBELLÉ forge des capacités scalables du token (le Y ne concerne
+  // que les capacités à couple, cf. XY_ABILITY_IDS). Persistés en
+  // `keyword_instances` sur le template — sans eux, le moteur retombe sur un
+  // défaut dérivé du coût en mana, qui vaut 0 pour un jeton.
+  const [tokenXValues, setTokenXValues] = useState<Record<string, number>>({});
+  const [tokenYValues, setTokenYValues] = useState<Record<string, number>>({});
+  /** Déclencheur par LIBELLÉ forge. Obligatoire pour les capacités curées :
+   *  sans lui elles resteraient « à l'invocation », le seul mode qui ne parte
+   *  jamais sur un jeton. */
+  const [tokenModes, setTokenModes] = useState<Record<string, KeywordMode>>({});
   const [tokenPrompt, setTokenPrompt] = useState("");
   const [tokenGenerating, setTokenGenerating] = useState(false);
   const [tokenMessage, setTokenMessage] = useState<{ ok: boolean; msg: string } | null>(null);
@@ -1980,10 +1991,40 @@ export default function CardForge() {
 
   const saveTokenTemplate = useCallback(async () => {
     if (!tokenRace || !tokenName) return;
+    // Refus AVANT l'appel : une capacité curée sans déclencheur resterait « à
+    // l'invocation », le seul mode qui ne parte pas sur un jeton. La laisser
+    // passer produirait un template d'apparence correcte et mort en jeu — le
+    // no-op silencieux qu'on cherche justement à éliminer.
+    const sansDeclencheur = tokenKeywords.filter(
+      k => tokenRequiresMode(FORGE_TO_GAME_KEYWORD[k] ?? k) && !tokenModes[k],
+    );
+    if (sansDeclencheur.length > 0) {
+      setTokenMessage({
+        ok: false,
+        msg: `Déclencheur manquant : ${sansDeclencheur.join(", ")}. Sur un jeton, ces capacités ne partent qu'en mort / activation / retour / fin de tour / attaque.`,
+      });
+      return;
+    }
     setTokenSaving(true);
     setTokenMessage(null);
     try {
       const gameKws = tokenKeywords.map(k => FORGE_TO_GAME_KEYWORD[k] || k).filter(Boolean);
+      // Sidecar des X/Y, construit par le MÊME constructeur que les cartes.
+      // Les capacités à donnée annexe sont hors du picker (TOKEN_UNSUPPORTED_IDS),
+      // donc aucun `extras` à fournir ici hors les seconds membres X/Y.
+      const tokenKeywordInstances = buildKeywordInstances({
+        labels: tokenKeywords,
+        xValues: tokenXValues,
+        modes: tokenModes,
+        extras: {
+          rmY: tokenYValues["Renforcement multiple"],
+          afY: tokenYValues["Affaiblissement -X/-Y"],
+          rfY: tokenYValues["Renforcement +X/+Y"],
+          dcY: tokenYValues["Déchainement X/Y"],
+          glY: tokenYValues["Gloire +X/+Y"],
+          fdaY: tokenYValues["Force des ancêtres +X/+Y"],
+        },
+      });
       // Compression AVANT envoi (parité avec la sauvegarde des cartes) : une
       // image générée en 2K posterait plusieurs Mo de base64 dans le JSON et
       // pourrait dépasser la limite de payload de la fonction serveur.
@@ -2005,6 +2046,7 @@ export default function CardForge() {
           attack: tokenAttack,
           health: tokenHealth,
           keywords: gameKws,
+          keyword_instances: tokenKeywordInstances.length > 0 ? tokenKeywordInstances : null,
           imageBase64: imgB64,
           imageMimeType: imgMime,
           updateId: tokenEditId || undefined,
@@ -2012,6 +2054,7 @@ export default function CardForge() {
       });
       await readApiResponse(res, tf('server_error'));
       setTokenRace(""); setTokenFaction(""); setTokenClan(""); setTokenName(""); setTokenKeywords([]);
+      setTokenXValues({}); setTokenYValues({}); setTokenModes({});
       setTokenAttack(1); setTokenHealth(1);
       setTokenImageBase64(null); setTokenImageMime(null);
       setTokenImagePreview(null); setTokenEditId(null); setTokenPrompt("");
@@ -2022,7 +2065,7 @@ export default function CardForge() {
     } finally {
       setTokenSaving(false);
     }
-  }, [tokenRace, tokenFaction, tokenClan, tokenName, tokenAttack, tokenHealth, tokenKeywords, tokenImageBase64, tokenImageMime, tokenEditId, loadTokenTemplates]);
+  }, [tokenRace, tokenFaction, tokenClan, tokenName, tokenAttack, tokenHealth, tokenKeywords, tokenXValues, tokenYValues, tokenModes, tokenImageBase64, tokenImageMime, tokenEditId, loadTokenTemplates]);
 
   const deleteTokenTemplate = useCallback(async (id: number) => {
     try {
@@ -2181,74 +2224,11 @@ export default function CardForge() {
     "Unité": "creature", "Sort": "spell", "Artefact": "spell", "Magie": "spell",
   };
 
-  const FORGE_TO_GAME_KEYWORD: Record<string, Keyword> = {
-    // Base dérivée de KEYWORDS (libellé FR créature → id moteur), exhaustive par
-    // construction. Les alias legacy ci-dessous l'emportent (spread en dernier).
-    ...(CREATURE_LABEL_TO_ENGINE_ID as Record<string, Keyword>),
-    // Legacy aliases
-    "Raid": "raid", "Convocations multiples": "convocations_multiples", "Traque": "charge", "Provocation": "taunt", "Bouclier": "divine_shield", "Vol": "ranged",
-    // Tier 0
-    "Loyauté": "loyaute", "Ancré": "ancre", "Résistance X": "resistance",
-    "Première Frappe": "premiere_frappe",
-    // Alias legacy : brouillons de forge (localStorage / JSON exportés) créés
-    // avant le renommage Berserk → Gloire +X/+Y.
-    "Berserk": "gloire",
-    // Tier 1 — Terrain
-    "Précision": "precision", "Drain de vie": "drain_de_vie", "Esquive": "esquive",
-    "Poison": "poison", "Célérité": "celerite",
-    "Augure": "augure", "Bénédiction": "benediction", "Bravoure": "bravoure",
-    "Pillage X": "pillage", "Riposte X": "riposte",
-    // Tier 1 — Cimetière / Main
-    "Rappel": "rappel", "Combustion": "combustion",
-    // Tier 2 — Terrain
-    "Terreur": "terreur", "Pauvreté X": "pauvrete", "Armure": "armure", "Commandement": "commandement",
-    "Fureur": "fureur", "Double Attaque": "double_attaque", "Invisible": "invisible",
-    "Canalisation": "canalisation", "Contresort": "contresort",
-    "Conférer": "conferer",
-    "Déclenchement": "declenchement",
-    "Convocation X": "convocation", "Malédiction": "malediction",
-    "Nécrophagie": "necrophagie", "Richesse X": "richesse", "Sacrifice démoniaque X": "sacrifice_demoniaque", "Paralysie": "paralysie",
-    "Permutation": "permutation", "Persécution X": "persecution",
-    "Piétinement": "pietinement",
-    // Tier 2 — Cimetière / Main / Mixte
-    "Catalyse": "catalyse", "Ombre du passé": "ombre_du_passe",
-    "Profanation X": "profanation", "Prescience X": "prescience",
-    "Suprématie": "suprematie", "Divination": "divination",
-    // Tier 3
-    "Liaison de vie": "liaison_de_vie", "Ombre": "ombre",
-    "Sacrifice": "sacrifice", "Maléfice": "malefice",
-    "Indestructible": "indestructible", "Régénération": "regeneration", "Corruption": "corruption",
-    "Carnage X": "carnage", "Héritage X": "heritage", "Mimique": "mimique",
-    "Métamorphose": "metamorphose", "Tactique X": "tactique",
-    "Exhumation X": "exhumation", "Héritage du cimetière": "heritage_du_cimetiere",
-    // Tier 4
-    "Pacte de sang": "pacte_de_sang", "Souffle de feu X": "souffle_de_feu",
-    "Domination": "domination", "Résurrection": "resurrection", "Transcendance": "transcendance",
-    "Vampirisme X": "vampirisme",
-    // Deck / Race / Clan
-    "Traque du destin X": "traque_du_destin", "Sang mêlé": "sang_mele",
-    "Fierté du clan": "fierte_du_clan", "Solidarité X": "solidarite",
-    "Entraide (Race)": "entraide",
-    "Cycle éternel": "cycle_eternel", "Martyr": "martyr",
-    "Instinct de meute X": "instinct_de_meute", "Totem": "totem",
-    "Appel du clan X": "appel_du_clan", "Appel Suprême": "appel_supreme", "Rassemblement X": "rassemblement",
-    "Sélection X": "selection",
-    "Lycanthropie X": "lycanthropie",
-    "Tempête X": "tempete",
-    "Cataclysme X": "cataclysme",
-    "Douleur X": "douleur",
-    "Inspiration X": "inspiration",
-  };
-
   const [saving, setSaving] = useState(false);
   const [sfxPlayFile, setSfxPlayFile] = useState<{ base64: string; mimeType: string } | null>(null);
   const [sfxDeathFile, setSfxDeathFile] = useState<{ base64: string; mimeType: string } | null>(null);
   const [saveResult, setSaveResult] = useState<{ ok: boolean; msg: string } | null>(null);
 
-
-  const GAME_TO_FORGE_KEYWORD: Record<string, string> = Object.fromEntries(
-    Object.entries(FORGE_TO_GAME_KEYWORD).map(([k, v]) => [v, k])
-  );
 
   /** Vide le formulaire après un enregistrement réussi.
    *
@@ -2385,76 +2365,21 @@ export default function CardForge() {
       // sidecar to route effects to the death/tap pipelines and to source
       // per-instance X (the bracket notation in effect_text remains the
       // legacy fallback for cards without instances).
+      // Constructeur PARTAGÉ avec l'éditeur de tokens (cf. lib/card-forge) :
+      // deux copies divergeraient et perdraient des capacités en silence.
       const isSpellCard = FORGE_TO_GAME_TYPE[forgeCard.type] === "spell";
-      const keywordInstances = forgeCard.keywords
-        .map((label) => {
-          const id = FORGE_TO_GAME_KEYWORD[label];
-          if (!id) return null;
-          const mode = keywordModes[label];
-          const x = forgeCard.keywordXValues?.[label];
-          // On a spell, a conferred keyword set to "all_allies" must persist
-          // its scope even with no mode/X. "target" is the default → no field.
-          const grantScope = isSpellCard && keywordGrantScope[label] === "all_allies" ? "all_allies" as const : undefined;
-          // Renforcement multiple (créature) : porte +X/+Y et race/clan ; toujours émis.
-          if (id === "renforcement_multiple" && !isSpellCard) {
-            return { id, ...(mode ? { mode } : {}), x: x ?? 0, y: rmY, ...(rmRace ? { race: rmRace } : {}), ...(rmClan ? { clan: rmClan } : {}) };
-          }
-          // Affaiblissement (créature) : porte -X (ATK, valeur générique) / -Y (PV dédié).
-          if (id === "affaiblissement" && !isSpellCard) {
-            return { id, ...(mode ? { mode } : {}), x: x ?? 0, y: afY };
-          }
-          // Renforcement (créature, self-buff) : porte +X (ATK générique) / +Y (PV dédié).
-          if (id === "renforcement" && !isSpellCard) {
-            return { id, ...(mode ? { mode } : {}), x: x ?? 0, y: rfY };
-          }
-          // Déchainement (créature) : porte X (nombre de sorts, valeur générique)
-          // / Y (coût des sorts, dédié) ; toujours émis — sans le Y persisté, le
-          // moteur retomberait sur coût 1 quelle que soit la saisie.
-          if (id === "dechainement" && !isSpellCard) {
-            return { id, ...(mode ? { mode } : {}), x: x ?? 1, y: dcY };
-          }
-          // Gloire : porte +X (ATK générique) / +Y (PV dédié). Émise aussi sur
-          // un SORT, qui la CONFÈRE — sans le Y persisté, le don retombait sur
-          // le +Y=1 de repli quelle que soit la saisie (la portée doit alors
-          // suivre, ce que la branche générique faisait seule jusqu'ici).
-          if (id === "gloire") {
-            return { id, ...(mode ? { mode } : {}), x: x ?? 0, y: glY, ...(grantScope ? { grantScope } : {}) };
-          }
-          // Force des ancêtres : porte +X (ATK générique) / +Y (PV dédié).
-          // Émise aussi sur un SORT (capacité conférée, mêmes raisons que Gloire).
-          if (id === "force_des_ancetres") {
-            return { id, ...(mode ? { mode } : {}), x: x ?? 1, y: fdaY, ...(grantScope ? { grantScope } : {}) };
-          }
-          // Invocations multiples : porte la liste des coûts ; toujours émise
-          // (sans elle le mot-clé n'aurait rien à invoquer).
-          if (id === "invocations_multiples") {
-            return {
-              id, ...(mode ? { mode } : {}),
-              ...(invocCosts.length ? { costs: invocCosts } : {}),
-              ...(invocRace ? { race: invocRace } : {}),
-              ...(invocFaction ? { faction: invocFaction } : {}),
-            };
-          }
-          // Appel Suprême (créature) : porte la race ciblée ; toujours émis.
-          if (id === "appel_supreme" && !isSpellCard) {
-            return { id, ...(mode ? { mode } : {}), ...(asRace ? { race: asRace } : {}) };
-          }
-          // Conférer (créature) : porte l'ability conférée + la portée ; toujours émis.
-          if (id === "conferer" && !isSpellCard) {
-            const scope = keywordGrantScope["Conférer"] === "all_allies" ? "all_allies" as const : undefined;
-            // x/y = amplitude de la capacité conférée (y seulement si elle
-            // porte un couple, sinon l'instance stockerait un Y sans sens).
-            const xy = XY_ABILITY_IDS.has(conferAbilityId);
-            return { id, ...(mode ? { mode } : {}), ...(conferAbilityId ? { grantAbilityId: conferAbilityId } : {}), x: conferX, ...(xy ? { y: conferY } : {}), ...(scope ? { grantScope: scope } : {}) };
-          }
-          // Déclenchement (créature) : porte le sous-ensemble figé de déclencheurs ; toujours émis.
-          if (id === "declenchement" && !isSpellCard) {
-            return { id, ...(mode ? { mode } : {}), ...(declenchementTriggers.length ? { replayTriggers: declenchementTriggers } : {}) };
-          }
-          if (!mode && x == null && !grantScope) return null; // pure play + no X + default scope → nothing to store
-          return { id, ...(mode ? { mode } : {}), ...(x != null ? { x } : {}), ...(grantScope ? { grantScope } : {}) };
-        })
-        .filter(Boolean);
+      const keywordInstances = buildKeywordInstances({
+        labels: forgeCard.keywords,
+        xValues: forgeCard.keywordXValues,
+        modes: keywordModes,
+        grantScopes: keywordGrantScope,
+        isSpellCard,
+        extras: {
+          rmY, rmRace, rmClan, afY, rfY, dcY, glY, fdaY,
+          invocCosts, invocRace, invocFaction, asRace,
+          conferAbilityId, conferX, conferY, declenchementTriggers,
+        },
+      });
 
       let imageBase64: string | null = null;
       let imageMimeType: string | null = null;
@@ -4335,25 +4260,143 @@ export default function CardForge() {
                 {/* Keywords */}
                 <div style={{ marginTop: 10, position: "relative" }}>
                   <label style={{ fontSize: 8, color: "#888", letterSpacing: 1 }}>{tf('token_abilities')}</label>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginTop: 4 }}>
-                    {Object.entries(KEYWORDS).filter(([, kw]) => kw.minTier <= 1 || kw.tokenAllowed).map(([kwName]) => {
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginTop: 4, alignItems: "center" }}>
+                    {/* Catalogue ouvert à tout ce qui se déclenche sur un
+                        jeton : passifs/auras, râles d'agonie, et les capacités
+                        curées à condition de leur donner un DÉCLENCHEUR
+                        explicite (💀 mort, ⟲ activation, ↩ retour, ⌛ fin de
+                        tour, ⚔ attaque). Le mode « à l'invocation » n'existe
+                        pas ici : un token est poussé sur le plateau sans passer
+                        par le dispatch d'entrée en jeu, l'effet serait un no-op
+                        SILENCIEUX. Le palier reste lisible au survol : à
+                        l'admin de doser, un token étant gratuit et souvent
+                        produit en série. */}
+                    {Object.entries(KEYWORDS)
+                      // On affiche aussi ce qui est DÉJÀ posé sur le template
+                      // même si ce n'est plus authorable : sans ça la capacité
+                      // resterait en base, invisible et impossible à retirer
+                      // depuis le formulaire.
+                      .filter(([kwName]) => isTokenAuthorable(FORGE_TO_GAME_KEYWORD[kwName] ?? kwName) || tokenKeywords.includes(kwName))
+                      // Tri alphabétique FR : `localeCompare` avec la locale
+                      // explicite, sinon les libellés accentués (Épargne,
+                      // Héritage, Métamorphose…) partent en fin de liste sur un
+                      // tri binaire. `numeric` n'a pas lieu d'être ici, les X
+                      // sont des marqueurs, pas des valeurs.
+                      .sort(([a], [b]) => a.localeCompare(b, "fr", { sensitivity: "base" }))
+                      .map(([kwName, kwDef]) => {
                       const active = tokenKeywords.includes(kwName);
+                      const engineIdChip = FORGE_TO_GAME_KEYWORD[kwName] ?? kwName;
+                      const besoinMode = tokenRequiresMode(engineIdChip);
+                      // Inerte = ne partira jamais sur ce jeton : soit la
+                      // capacité n'est plus authorable, soit c'est une curée
+                      // laissée sans déclencheur (elle resterait « à
+                      // l'invocation », le seul mode qui ne part pas).
+                      const inerte = !isTokenAuthorable(engineIdChip)
+                        || (active && besoinMode && !tokenModes[kwName]);
+                      // Palier ≥2 : liseré ambre pour signaler une capacité
+                      // taillée pour une carte payante, pas pour un jeton.
+                      const highTier = kwDef.minTier >= 2;
+                      const scalable = kwDef.scalable;
+                      const engineId = FORGE_TO_GAME_KEYWORD[kwName] ?? kwName;
+                      const isXY = XY_ABILITY_IDS.has(engineId);
                       return (
-                        <button key={kwName} onClick={() => {
+                        <span key={kwName} style={{ display: "inline-flex", alignItems: "center" }}>
+                        <button onClick={() => {
                           setTokenKeywords(prev => active ? prev.filter(k => k !== kwName) : [...prev, kwName]);
+                          // À la sélection d'une capacité curée, on pose
+                          // d'office le premier déclencheur autorisé : laisser
+                          // « à l'invocation » (l'implicite côté carte) donnerait
+                          // une capacité morte sur un jeton. Désélection → on
+                          // nettoie le mode pour ne pas le ressusciter plus tard.
+                          setTokenModes(prev => {
+                            const next = { ...prev };
+                            if (active) { delete next[kwName]; return next; }
+                            if (besoinMode && !next[kwName]) {
+                              const dispo = [...(CURATED_KEYWORD_MODES[kwName] ?? new Set<string>())]
+                                .filter(m => TOKEN_FIRING_MODES.has(m));
+                              if (dispo.length) next[kwName] = dispo[0];
+                            }
+                            return next;
+                          });
                         }}
                           onMouseEnter={(e) => {
                             const rect = e.currentTarget.getBoundingClientRect();
                             setHoveredKw({ id: kwName, rect });
                           }}
                           onMouseLeave={() => setHoveredKw(null)}
+                          title={inerte ? "Ne se déclenche PAS sur un jeton (effet à l'invocation) — à retirer" : undefined}
                           style={{
-                            padding: "2px 6px", borderRadius: 4, cursor: "pointer", fontSize: 8,
+                            padding: "2px 6px", cursor: "pointer", fontSize: 8,
+                            borderRadius: active && scalable ? "4px 0 0 4px" : 4,
                             fontFamily: "'Cinzel',serif", fontWeight: active ? 700 : 400,
-                            background: active ? "#33333318" : "#fff",
-                            border: `1px solid ${active ? "#333" : "#e0e0e0"}`,
-                            color: active ? "#333" : "#aaa",
+                            background: inerte ? "#c0392b18" : active ? "#33333318" : "#fff",
+                            border: `1px solid ${inerte ? "#c0392b" : active ? "#333" : highTier ? "#e0c070" : "#e0e0e0"}`,
+                            color: inerte ? "#c0392b" : active ? "#333" : highTier ? "#b08a30" : "#aaa",
+                            textDecoration: inerte ? "line-through" : undefined,
                           }}>{kwName}</button>
+                        {/* X (et Y pour les capacités à couple) — persistés dans
+                            keyword_instances. Sans eux le moteur retombe sur un
+                            défaut dérivé du coût en mana, nul pour un token. */}
+                        {active && scalable && (
+                          <input
+                            type="number" min={0} max={20}
+                            title={isXY ? "X (ATK)" : "X"}
+                            value={tokenXValues[kwName] ?? 1}
+                            onChange={e => setTokenXValues(prev => ({ ...prev, [kwName]: Math.max(0, Math.min(20, parseInt(e.target.value) || 0)) }))}
+                            style={{
+                              width: 30, padding: "2px 3px", borderRadius: isXY ? 0 : "0 4px 4px 0",
+                              border: "1px solid #333", borderLeft: "none",
+                              background: "#33333308", color: "#333",
+                              fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: 700,
+                              textAlign: "center", outline: "none",
+                            }}
+                          />
+                        )}
+                        {active && scalable && isXY && (
+                          <input
+                            type="number" min={0} max={20}
+                            title="Y (PV)"
+                            value={tokenYValues[kwName] ?? 1}
+                            onChange={e => setTokenYValues(prev => ({ ...prev, [kwName]: Math.max(0, Math.min(20, parseInt(e.target.value) || 0)) }))}
+                            style={{
+                              width: 30, padding: "2px 3px", borderRadius: "0 4px 4px 0",
+                              border: "1px solid #333", borderLeft: "none",
+                              background: "#f1c40f18", color: "#8a6d0b",
+                              fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: 700,
+                              textAlign: "center", outline: "none",
+                            }}
+                          />
+                        )}
+                        {/* Déclencheur — mêmes symboles et mêmes couleurs que le
+                            picker des cartes, moins ⚡ « à l'invocation » qui ne
+                            part pas sur un jeton. L'ensemble autorisé vient de
+                            CURATED_KEYWORD_MODES (qui applique déjà la
+                            restriction « sur plateau » des capacités exigeant
+                            leur source en jeu). */}
+                        {active && besoinMode && (
+                          <span style={{ display: "inline-flex", gap: 2, marginLeft: 4 }}>
+                            {(["death", "tap", "return", "end_of_turn", "attack"] as const).map(mode => {
+                              const autorise = (CURATED_KEYWORD_MODES[kwName]?.has(mode) ?? false) && TOKEN_FIRING_MODES.has(mode);
+                              const actif = tokenModes[kwName] === mode;
+                              const couleur = mode === "death" ? "#a83232" : mode === "tap" ? "#F68D09" : mode === "return" ? "#3a7dd4" : mode === "attack" ? "#9b59b6" : "#2faa3f";
+                              const sym = mode === "death" ? "💀" : mode === "tap" ? "⟲" : mode === "return" ? "↩" : mode === "attack" ? "⚔" : "⌛";
+                              const titre = mode === "death" ? tf('mode_title_death') : mode === "tap" ? tf('mode_title_tap') : mode === "return" ? tf('mode_title_return') : mode === "attack" ? tf('mode_title_attack') : tf('mode_title_end_of_turn');
+                              return (
+                                <button key={mode} disabled={!autorise} title={titre}
+                                  onClick={() => setTokenModes(prev => ({ ...prev, [kwName]: mode }))}
+                                  style={{
+                                    width: 18, height: 18, borderRadius: 3,
+                                    background: actif ? couleur : "transparent",
+                                    border: `1px solid ${autorise ? couleur : "#ddd"}`,
+                                    color: actif ? "#fff" : (autorise ? couleur : "#ccc"),
+                                    fontSize: 9, fontWeight: 700, cursor: autorise ? "pointer" : "not-allowed",
+                                    padding: 0, lineHeight: 1, opacity: autorise ? 1 : 0.4,
+                                  }}>{sym}</button>
+                              );
+                            })}
+                          </span>
+                        )}
+                        </span>
                       );
                     })}
                   </div>
@@ -4496,7 +4539,21 @@ export default function CardForge() {
                           <span style={{ color: "#f1c40f" }}>{t.health}</span>
                         </div>
                         <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
-                          <button onClick={() => { setTokenEditId(t.id); setTokenRace(t.race); setTokenFaction(t.faction ?? ""); setTokenClan(t.clan ?? ""); setTokenName(t.name); setTokenAttack(t.attack ?? 1); setTokenHealth(t.health ?? 1); setTokenKeywords(t.keywords?.map(k => GAME_TO_FORGE_KEYWORD[k] || k) ?? []); setTokenImagePreview(t.image_url); setTokenImageBase64(null); setTokenImageMime(null); setTokenPrompt(""); }}
+                          <button onClick={() => { setTokenEditId(t.id); setTokenRace(t.race); setTokenFaction(t.faction ?? ""); setTokenClan(t.clan ?? ""); setTokenName(t.name); setTokenAttack(t.attack ?? 1); setTokenHealth(t.health ?? 1); setTokenKeywords(t.keywords?.map(k => GAME_TO_FORGE_KEYWORD[k] || k) ?? []);
+                            // Rechargement des X/Y : keyword_instances est keyé
+                            // par id MOTEUR, la grille du picker par libellé forge.
+                            {
+                              const xs: Record<string, number> = {}; const ys: Record<string, number> = {};
+                              const ms: Record<string, KeywordMode> = {};
+                              for (const inst of t.keyword_instances ?? []) {
+                                const label = GAME_TO_FORGE_KEYWORD[inst.id] ?? inst.id;
+                                if (inst.x != null) xs[label] = inst.x;
+                                if (inst.y != null) ys[label] = inst.y;
+                                if (inst.mode) ms[label] = inst.mode;
+                              }
+                              setTokenXValues(xs); setTokenYValues(ys); setTokenModes(ms);
+                            }
+                            setTokenImagePreview(t.image_url); setTokenImageBase64(null); setTokenImageMime(null); setTokenPrompt(""); }}
                             style={{ fontSize: 8, padding: "2px 8px", borderRadius: 4, border: "1px solid #ddd", background: "#fff", color: "#666", cursor: "pointer", fontFamily: "'Cinzel',serif" }}>
                             {tf('edit')}
                           </button>

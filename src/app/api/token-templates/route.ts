@@ -48,7 +48,7 @@ export async function POST(request: Request) {
   const supabase = auth.supabase;
 
   try {
-    const { race, clan, faction, name, attack, health, keywords, imageBase64, imageMimeType, updateId } = await request.json();
+    const { race, clan, faction, name, attack, health, keywords, keyword_instances, imageBase64, imageMimeType, updateId } = await request.json();
     if (!race || !name) return NextResponse.json({ error: 'Race et nom requis' }, { status: 400 });
     const atk = typeof attack === 'number' && attack >= 0 ? Math.floor(attack) : 1;
     const hp = typeof health === 'number' && health >= 1 ? Math.floor(health) : 1;
@@ -75,6 +75,16 @@ export async function POST(request: Request) {
       attack: atk,
       health: hp,
       keywords: keywords || [],
+      // Sidecar X/Y des capacités. Écrit MÊME à null : sur une mise à jour,
+      // désélectionner la dernière capacité scalable doit effacer l'ancien
+      // sidecar, sinon le template garderait un X fantôme invisible dans le
+      // formulaire. Seules les entrées bien formées ({id}) sont retenues.
+      keyword_instances: Array.isArray(keyword_instances)
+        ? (keyword_instances.filter(
+            (k: unknown): k is { id: string } =>
+              !!k && typeof k === 'object' && typeof (k as { id?: unknown }).id === 'string',
+          ).length ? keyword_instances : null)
+        : null,
     };
     if (image_url) templateData.image_url = image_url;
 

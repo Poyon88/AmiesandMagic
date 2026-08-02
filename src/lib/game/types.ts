@@ -268,6 +268,13 @@ export interface TokenTemplate {
   health: number;
   image_url: string | null;
   keywords: Keyword[];
+  /** Sidecar des capacités du token — même forme que `cards.keyword_instances` :
+   *  X/Y par mot-clé (et, à terme, le mode/déclencheur). Recopié tel quel sur la
+   *  carte de l'instance invoquée (cf. applyTokenTemplate), où l'adaptateur de
+   *  capacités le lit comme pour n'importe quelle créature.
+   *  Optionnel : les templates créés avant la colonne n'en ont pas — leurs
+   *  mots-clés gardent alors leur déclencheur naturel et un X par défaut. */
+  keyword_instances?: KeywordInstance[] | null;
 }
 
 // --- Multi-target system ---
