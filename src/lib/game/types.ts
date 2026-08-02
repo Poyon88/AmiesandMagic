@@ -191,7 +191,7 @@ export type SpellKeywordId =
  *  ability, tinted orange so it stays distinct from an on-play effect that may
  *  sit on the same creature. "death" = on-death rattle. Only a curated subset
  *  of keywords accept non-play modes — see plan. */
-export type KeywordMode = "entry" | "spell" | "death" | "tap" | "return" | "attack" | "end_of_turn";
+export type KeywordMode = "entry" | "spell" | "death" | "tap" | "return" | "attack" | "end_of_turn" | "draw";
 
 /** Per-instance metadata for a creature keyword. Lives in
  *  `Card.keywordInstances` alongside the string `keywords` array so each
@@ -309,6 +309,10 @@ export type CapabilityTrigger =
   | "on_activation"
   | "on_attack"
   | "on_end_of_turn"
+  /** Au moment où la carte est PIOCHÉE — la source est alors en main, pas en
+   *  jeu (même zone que `on_return`). Ne concerne que la carte tirée
+   *  elle-même : ce n'est pas un réactif « chaque fois que vous piochez ». */
+  | "on_draw"
   | "automatic"
   | "spell_resolution";
 
@@ -1077,6 +1081,10 @@ export interface TapActivateAction {
    *  capacité Sélection (selection / selection_magique / renfort_royal). Le
    *  moteur la cherche dans factionCardPool / allSpellsPool et l'ajoute en main. */
   selectionCardId?: number;
+  /** Index de la carte gardée sur le dessus quand le keyword tap est une
+   *  Divination. Porté par l'action (et non tiré au sort) pour que les deux
+   *  clients rejouent le même ordre de deck. */
+  divinationChoiceIndex?: number;
 }
 
 export interface ConcedeAction {
@@ -1093,6 +1101,11 @@ export interface ResolvePendingTriggerAction {
   /** Cible choisie pour une remontée / un effet composé fin de tour. Absent pour
    *  une Sélection en fin de tour (qui passe par `selectionCardId`). */
   targetInstanceId?: string;
+  /** Cibles choisies quand l'effet en demande PLUSIEURS (TargetSpec.count > 1
+   *  en désignation « au choix »). Prime sur `targetInstanceId`, conservé pour
+   *  les actions à cible unique — dont celles déjà journalisées d'une partie en
+   *  cours, qu'un client à jour doit continuer à rejouer. */
+  targetInstanceIds?: string[];
   /** Carte choisie pour une Sélection en fin de tour (selectionType présent). */
   selectionCardId?: number;
 }

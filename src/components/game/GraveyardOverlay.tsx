@@ -26,6 +26,10 @@ interface GraveyardOverlayProps {
   onClose: () => void;
   // Selection mode
   selectableInstanceIds?: string[];
+  /** Cartes DÉJÀ retenues dans une désignation à plusieurs cibles. Elles
+   *  restent sélectionnables (re-cliquer les retire) mais se distinguent des
+   *  candidates encore libres. */
+  highlightedInstanceIds?: string[];
   onSelectCard?: (instanceId: string) => void;
 }
 
@@ -34,6 +38,7 @@ export default function GraveyardOverlay({
   title,
   onClose,
   selectableInstanceIds,
+  highlightedInstanceIds,
   onSelectCard,
 }: GraveyardOverlayProps) {
   const t = useTranslations("game");
@@ -125,6 +130,7 @@ export default function GraveyardOverlay({
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
               {cards.map((cardInstance, i) => {
                 const isSelectable = selectableInstanceIds?.includes(cardInstance.instanceId);
+                const isPicked = highlightedInstanceIds?.includes(cardInstance.instanceId);
                 const id = cardInstance.instanceId;
                 return (
                   <div
@@ -162,8 +168,11 @@ export default function GraveyardOverlay({
                       cursor: isSelectable ? "pointer" : "default",
                       opacity: isSelectionMode && !isSelectable ? 0.35 : 1,
                       borderRadius: 10,
-                      border: isSelectable ? "2px solid #2ecc71" : "2px solid transparent",
-                      boxShadow: isSelectable ? "0 0 12px #2ecc7155" : "none",
+                      // Retenue → ambre plein ; candidate libre → vert ; le
+                      // reste, transparent. Sans ce contraste, un choix à 4
+                      // cartes ne montre pas où on en est.
+                      border: isPicked ? "2px solid #e8b923" : isSelectable ? "2px solid #2ecc71" : "2px solid transparent",
+                      boxShadow: isPicked ? "0 0 16px #e8b923aa" : isSelectable ? "0 0 12px #2ecc7155" : "none",
                       transition: "all 0.2s",
                     }}
                   >

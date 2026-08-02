@@ -1454,7 +1454,7 @@ export function deriveAbilityTriggerMeta(a: AbilityDef): AbilityTriggerMeta {
     // fin de tour, attaque). Exception : les effets exigeant la source en jeu
     // (CURATED_ONBOARD_ONLY_IDS) n'offrent ni mort ni retour en main.
     if (CURATED_ONBOARD_ONLY_IDS.has(cid)) creatureTriggers = ["on_play", "on_activation", "on_end_of_turn", "on_attack"];
-    else if (curatedMultiMode) creatureTriggers = ["on_play", "on_death", "on_activation", "on_return", "on_end_of_turn", "on_attack"];
+    else if (curatedMultiMode) creatureTriggers = ["on_play", "on_death", "on_activation", "on_return", "on_end_of_turn", "on_attack", "on_draw"];
     else if (deathNature) creatureTriggers = ["on_death"];
     else if (automatic) creatureTriggers = ["automatic"];
     else creatureTriggers = ["on_play"];

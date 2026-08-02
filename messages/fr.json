@@ -627,7 +627,8 @@
         "on_return": "Au retour en main",
         "on_activation": "À l'activation",
         "on_attack": "À l'attaque",
-        "on_end_of_turn": "À la fin du tour"
+        "on_end_of_turn": "À la fin du tour",
+        "on_draw": "Quand cette carte est piochée"
       },
       "content": {
         "deal_damage_one": "inflige {x} dégât",
@@ -836,6 +837,7 @@
       "Kobolds": "Kobolds",
       "Géants": "Géants",
       "Humains": "Humains",
+      "Esprits": "Esprits",
       "Griffons": "Griffons",
       "Faucons": "Faucons",
       "Hommes-Loups": "Hommes-Loups",
@@ -935,6 +937,11 @@
         "def": "l'Humain",
         "bare": "Humain",
         "de": "de l'Humain"
+      },
+      "Esprits": {
+        "def": "l'Esprit",
+        "bare": "Esprit",
+        "de": "de l'Esprit"
       },
       "Griffons": {
         "def": "le Griffon",
@@ -1524,6 +1531,7 @@
     "trigger_on_activation": "Pouvoir activable (tap)",
     "trigger_on_attack": "À l'attaque",
     "trigger_on_end_of_turn": "À la fin du tour",
+    "trigger_on_draw": "Quand cette carte est piochée",
     "trigger_spell_resolution": "À la résolution",
     "composed_effects_heading": "Effets composés (avancé)",
     "composed_effects_subtitle": "contenu + amplitude + cibles",
@@ -1683,6 +1691,7 @@
     "mode_title_return": "Au retour en main",
     "mode_title_attack": "À l'attaque",
     "mode_title_end_of_turn": "À la fin du tour",
+    "mode_title_draw": "Quand cette carte est piochée",
     "grant_scope_target": "Conférée à la créature ciblée",
     "grant_scope_all_allies": "Conférée à toutes les unités alliées",
     "required_caps": "Requis",

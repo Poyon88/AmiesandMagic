@@ -19,6 +19,7 @@ export const COMPOSED_FR: Record<string, string> = {
   "trigger.on_activation": "À l'activation",
   "trigger.on_attack": "À l'attaque",
   "trigger.on_end_of_turn": "À la fin du tour",
+  "trigger.on_draw": "Quand cette carte est piochée",
 
   "content.deal_damage_one": "inflige {x} dégât",
   "content.deal_damage_many": "inflige {x} dégâts",
@@ -243,6 +244,7 @@ export function composedTriggerMode(cap: Capability): KeywordMode | undefined {
     case "on_activation": return "tap";
     case "on_attack": return "attack";
     case "on_end_of_turn": return "end_of_turn";
+    case "on_draw": return "draw";
     case "spell_resolution": return "spell"; // sort (résolution immédiate) → gris
     default: return undefined; // automatic (passif/permanent) → blanc
   }

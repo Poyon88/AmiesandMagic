@@ -32,6 +32,7 @@ export function keywordModeColor(mode: KeywordMode | undefined): string | null {
   if (mode === "return") return "#3a7dd4"; // blue (retour en main)
   if (mode === "attack") return "#E735F6"; // magenta (à l'attaque)
   if (mode === "end_of_turn") return "#2faa3f"; // green (fin du tour)
+  if (mode === "draw") return "#17b6c4"; // cyan (à la pioche) — seule teinte encore libre
   return null;
 }
 

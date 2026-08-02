@@ -351,7 +351,7 @@ describe("registre — métadonnées de taxonomie", () => {
     }
   });
 
-  it("les ids curés exposent les 6 déclencheurs unité (4 « sur plateau » pour les restreints) et le flag curatedMultiMode", () => {
+  it("les ids curés exposent les 7 déclencheurs unité (4 « sur plateau » pour les restreints) et le flag curatedMultiMode", () => {
     for (const a of Object.values(ABILITIES)) {
       if (CURATED_MULTIMODE_IDS.has(creatureEngineId(a))) {
         expect(a.triggers!.curatedMultiMode, a.id).toBe(true);
@@ -373,6 +373,9 @@ describe("registre — métadonnées de taxonomie", () => {
           "on_return",
           "on_end_of_turn",
           "on_attack",
+          // « à la pioche » : la source est en MAIN, donc réservé aux curés NON
+          // restreints au plateau — même règle que on_return.
+          "on_draw",
         ]);
       }
     }

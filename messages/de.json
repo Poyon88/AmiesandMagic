@@ -627,7 +627,8 @@
         "on_return": "Bei Rückkehr auf die Hand",
         "on_activation": "Bei Aktivierung",
         "on_attack": "Beim Angriff",
-        "on_end_of_turn": "Am Rundenende"
+        "on_end_of_turn": "Am Rundenende",
+        "on_draw": "Beim Ziehen"
       },
       "content": {
         "deal_damage_one": "verursacht {x} Schaden",
@@ -836,6 +837,7 @@
       "Kobolds": "Kobolde",
       "Géants": "Riesen",
       "Humains": "Menschen",
+      "Esprits": "Geister",
       "Griffons": "Greifen",
       "Faucons": "Falken",
       "Hommes-Loups": "Wolfsmenschen",
@@ -935,6 +937,11 @@
         "def": "der Mensch",
         "bare": "Mensch",
         "de": "des Menschen"
+      },
+      "Esprits": {
+        "def": "der Geist",
+        "bare": "Geist",
+        "de": "des Geistes"
       },
       "Griffons": {
         "def": "der Greif",
@@ -1524,6 +1531,7 @@
     "trigger_on_activation": "Aktivierbarer Effekt (tap)",
     "trigger_on_attack": "Beim Angriff",
     "trigger_on_end_of_turn": "Am Zugende",
+    "trigger_on_draw": "Wenn diese Karte gezogen wird",
     "trigger_spell_resolution": "Bei der Auflösung",
     "composed_effects_heading": "Zusammengesetzte Effekte (erweitert)",
     "composed_effects_subtitle": "Inhalt + Stärke + Ziele",
@@ -1682,6 +1690,7 @@
     "mode_title_return": "Bei Rückkehr auf die Hand",
     "mode_title_attack": "Bei Angriff",
     "mode_title_end_of_turn": "Am Rundenende",
+    "mode_title_draw": "Wenn diese Karte gezogen wird",
     "grant_scope_target": "Dem Zielgeschöpf verliehen",
     "grant_scope_all_allies": "Allen verbündeten Einheiten verliehen",
     "required_caps": "Erforderlich",

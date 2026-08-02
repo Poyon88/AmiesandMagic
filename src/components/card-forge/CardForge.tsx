@@ -3385,11 +3385,11 @@ export default function CardForge() {
                                 and present in CURATED_KEYWORD_MODES. */}
                             {selected && CURATED_KEYWORD_MODES[id] && (
                               <div style={{ display: "inline-flex", gap: 2, marginLeft: 4 }}>
-                                {(["play", "death", "tap", "return", "end_of_turn", "attack"] as const).map(mode => {
+                                {(["play", "death", "tap", "return", "end_of_turn", "attack", "draw"] as const).map(mode => {
                                   const allowed = mode === "play" || CURATED_KEYWORD_MODES[id].has(mode);
                                   const active = mode === "play" ? !keywordModes[id] : keywordModes[id] === mode;
-                                  const color = mode === "play" ? fac.color : mode === "death" ? "#a83232" : mode === "tap" ? "#F68D09" : mode === "return" ? "#3a7dd4" : mode === "attack" ? "#9b59b6" : "#2faa3f";
-                                  const label = mode === "play" ? "⚡" : mode === "death" ? "💀" : mode === "tap" ? "⟲" : mode === "return" ? "↩" : mode === "attack" ? "⚔" : "⌛";
+                                  const color = mode === "play" ? fac.color : mode === "death" ? "#a83232" : mode === "tap" ? "#F68D09" : mode === "return" ? "#3a7dd4" : mode === "attack" ? "#9b59b6" : mode === "draw" ? "#17b6c4" : "#2faa3f";
+                                  const label = mode === "play" ? "⚡" : mode === "death" ? "💀" : mode === "tap" ? "⟲" : mode === "return" ? "↩" : mode === "attack" ? "⚔" : mode === "draw" ? "📥" : "⌛";
                                   return (
                                     <button
                                       key={mode}
@@ -3402,7 +3402,7 @@ export default function CardForge() {
                                           return next;
                                         });
                                       }}
-                                      title={mode === "play" ? tf('mode_title_play') : mode === "death" ? tf('mode_title_death') : mode === "tap" ? tf('mode_title_tap') : mode === "return" ? tf('mode_title_return') : mode === "attack" ? tf('mode_title_attack') : tf('mode_title_end_of_turn')}
+                                      title={mode === "play" ? tf('mode_title_play') : mode === "death" ? tf('mode_title_death') : mode === "tap" ? tf('mode_title_tap') : mode === "return" ? tf('mode_title_return') : mode === "attack" ? tf('mode_title_attack') : mode === "draw" ? tf('mode_title_draw') : tf('mode_title_end_of_turn')}
                                       style={{
                                         width: 18, height: 18, borderRadius: 3,
                                         background: active ? color : "transparent",

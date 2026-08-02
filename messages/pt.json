@@ -627,7 +627,8 @@
         "on_return": "Ao retornar à mão",
         "on_activation": "Ao ativar",
         "on_attack": "Ao atacar",
-        "on_end_of_turn": "No fim do turno"
+        "on_end_of_turn": "No fim do turno",
+        "on_draw": "Ao ser comprada"
       },
       "content": {
         "deal_damage_one": "causa {x} de dano",
@@ -836,6 +837,7 @@
       "Kobolds": "Kobolds",
       "Géants": "Gigantes",
       "Humains": "Humanos",
+      "Esprits": "Espíritos",
       "Griffons": "Grifos",
       "Faucons": "Falcões",
       "Hommes-Loups": "Homens-Lobos",
@@ -935,6 +937,11 @@
         "def": "o Humano",
         "bare": "Humano",
         "de": "do Humano"
+      },
+      "Esprits": {
+        "def": "o Espírito",
+        "bare": "Espírito",
+        "de": "do Espírito"
       },
       "Griffons": {
         "def": "o Grifo",
@@ -1524,6 +1531,7 @@
     "trigger_on_activation": "Habilidade ativável (tap)",
     "trigger_on_attack": "Ao atacar",
     "trigger_on_end_of_turn": "No fim do turno",
+    "trigger_on_draw": "Quando esta carta é comprada",
     "trigger_spell_resolution": "Ao resolver",
     "composed_effects_heading": "Efeitos compostos (avançado)",
     "composed_effects_subtitle": "conteúdo + amplitude + alvos",
@@ -1682,6 +1690,7 @@
     "mode_title_return": "Ao retornar à mão",
     "mode_title_attack": "Ao atacar",
     "mode_title_end_of_turn": "Ao fim do turno",
+    "mode_title_draw": "Quando esta carta é comprada",
     "grant_scope_target": "Concedida à criatura-alvo",
     "grant_scope_all_allies": "Concedida a todas as unidades aliadas",
     "required_caps": "Obrigatório",

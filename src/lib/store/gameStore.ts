@@ -57,8 +57,8 @@ import { MAX_HAND_SIZE } from "@/lib/game/constants";
 function pendingTriggerOverlay(
   gs: GameState | null,
   localPlayerId: string | null,
-): { targetingMode: "pending_trigger" | "selection" | "none"; validTargets: string[]; pendingTriggerId: string | null; pendingTriggerPrompt: string | null; selectionCards?: Card[] } {
-  const none = { targetingMode: "none" as const, validTargets: [], pendingTriggerId: null, pendingTriggerPrompt: null };
+): { targetingMode: "pending_trigger" | "selection" | "none"; validTargets: string[]; pendingTriggerId: string | null; pendingTriggerPrompt: string | null; pendingTriggerNeeded: number; pendingTriggerPicked: string[]; selectionCards?: Card[] } {
+  const none = { targetingMode: "none" as const, validTargets: [], pendingTriggerId: null, pendingTriggerPrompt: null, pendingTriggerNeeded: 1, pendingTriggerPicked: [] };
   const t = gs?.pendingTriggers?.[0];
   if (!t || !localPlayerId || t.controllerId !== localPlayerId) return none;
   // Variante « Sélection en fin de tour » : ouvre la modale « 1 parmi 3 » (les
@@ -67,7 +67,7 @@ function pendingTriggerOverlay(
     const byId = new Map([...(gs!.factionCardPool ?? []), ...(gs!.allSpellsPool ?? [])].map(c => [c.id, c] as const));
     const ordered = (t.selectionOptionIds ?? []).map(id => byId.get(id)).filter((c): c is Card => !!c);
     if (ordered.length === 0) return none;
-    return { targetingMode: "selection" as const, validTargets: [], pendingTriggerId: t.id, pendingTriggerPrompt: null, selectionCards: ordered };
+    return { targetingMode: "selection" as const, validTargets: [], pendingTriggerId: t.id, pendingTriggerPrompt: null, pendingTriggerNeeded: 1, pendingTriggerPicked: [], selectionCards: ordered };
   }
   // Variante « fin de tour » (effet composé) vs mot-clé curé différé
   // (Remontée, Impact, et tous les curés ciblés du chantier multi-déclencheurs).
@@ -101,7 +101,19 @@ function pendingTriggerOverlay(
     const cap = source ? getCapabilities(source.card).find(c => c.uid === t.capUid && c.composed) : undefined;
     prompt = cap ? composedChoicePrompt(cap) : "🎯 Choisissez une cible";
   }
-  return { targetingMode: "pending_trigger", validTargets: targets, pendingTriggerId: t.id, pendingTriggerPrompt: prompt };
+  // Nombre de cibles à désigner. `count` du TargetSpec, écrêté au nombre de
+  // cibles réellement disponibles — sinon un effet « 4 cartes » sur un cimetière
+  // qui n'en compte que 2 attendrait indéfiniment un 3e clic impossible.
+  let needed = 1;
+  if (isEndOfTurn) {
+    const source = controller.board.find(c => c.instanceId === t.sourceInstanceId);
+    const cap = source ? getCapabilities(source.card).find(c => c.uid === t.capUid && c.composed) : undefined;
+    const count = cap?.composed?.target?.count;
+    if (count === "all") needed = targets.length;
+    else if (typeof count === "number") needed = Math.max(1, count);
+  }
+  needed = Math.min(needed, targets.length);
+  return { targetingMode: "pending_trigger", validTargets: targets, pendingTriggerId: t.id, pendingTriggerPrompt: prompt, pendingTriggerNeeded: needed, pendingTriggerPicked: [] };
 }
 
 export interface SpellCastEvent {
@@ -259,6 +271,10 @@ interface GameStore {
   // (ex. buff de fin de tour → « choisissez une créature à renforcer »). null
   // hors du mode pending_trigger.
   pendingTriggerPrompt: string | null;
+  /** Nombre de cibles que le déclencheur en attente réclame (TargetSpec.count,
+   *  écrêté au pool disponible), et celles déjà désignées. */
+  pendingTriggerNeeded: number;
+  pendingTriggerPicked: string[];
   // Tap-activation targeting context — set when the player clicks Activer
   // on a creature whose tap-mode keyword needs a target (e.g. Vampirisme).
   // Both fields stay null outside of tap targeting.
@@ -1136,6 +1152,8 @@ export const useGameStore = create<GameStore>((set, get) => {
   pendingHeroPowerSelection: false,
   pendingEpargneSelection: false,
   pendingBoardPosition: null,
+  pendingTriggerNeeded: 1,
+  pendingTriggerPicked: [],
   divinationCards: [],
   selectionCards: [],
   tactiqueAvailableKeywords: [],
@@ -3448,6 +3466,16 @@ export const useGameStore = create<GameStore>((set, get) => {
         graveyardTargetInstanceId: targetId,
         boardPosition: pendingBoardPosition ?? undefined,
       });
+    } else if (targetingMode === "divination" && get().pendingTapSourceId !== null && get().pendingTapInstanceIdx !== null) {
+      // Divination déclenchée par un TAP : le choix part avec l'action, il n'y
+      // a pas de carte en cours de pose. Branche placée AVANT celle du jeu de
+      // carte, qui exige `selectedCardInstanceId` (null dans ce flux).
+      return get().dispatchAction({
+        type: "tap_activate",
+        sourceInstanceId: get().pendingTapSourceId!,
+        instanceIdx: get().pendingTapInstanceIdx!,
+        divinationChoiceIndex: parseInt(targetId) || 0,
+      });
     } else if (targetingMode === "divination" && selectedCardInstanceId) {
       const { pendingBoardPosition, gameState: gs } = get();
       const choiceIndex = parseInt(targetId) || 0;
@@ -3564,12 +3592,29 @@ export const useGameStore = create<GameStore>((set, get) => {
         targetInstanceId: targetId,
       });
     } else if (targetingMode === "pending_trigger") {
-      const { pendingTriggerId } = get();
+      const { pendingTriggerId, pendingTriggerNeeded, pendingTriggerPicked, validTargets: vt } = get();
       if (!pendingTriggerId) return null;
+      // Un clic sur une cible DÉJÀ retenue la retire — sans ça, un mauvais clic
+      // dans une désignation à 4 cartes ne se rattrape plus (le déclencheur est
+      // obligatoire, on ne peut pas annuler pour recommencer).
+      if (pendingTriggerPicked.includes(targetId)) {
+        set({ pendingTriggerPicked: pendingTriggerPicked.filter(id => id !== targetId) });
+        return null;
+      }
+      const picked = [...pendingTriggerPicked, targetId];
+      // Il reste des cibles à désigner ET des candidates non retenues → on
+      // attend le clic suivant. La seconde condition évite de bloquer sur un
+      // pool épuisé quand `needed` dépasse ce que le plateau/cimetière offre.
+      if (picked.length < pendingTriggerNeeded && picked.length < vt.length) {
+        set({ pendingTriggerPicked: picked });
+        return null;
+      }
       return get().dispatchAction({
         type: "resolve_pending_trigger",
         triggerId: pendingTriggerId,
-        targetInstanceId: targetId,
+        // Cible unique → on garde le champ historique, pour que rien ne change
+        // pour les effets à une seule cible (et leurs actions déjà en journal).
+        ...(picked.length > 1 ? { targetInstanceIds: picked } : { targetInstanceId: picked[0] }),
       });
     }
     return null;
@@ -4065,6 +4110,27 @@ export const useGameStore = create<GameStore>((set, get) => {
         pendingHeroPowerSelection: false,
   pendingEpargneSelection: false,
         pendingTriggerId: null,
+      });
+      return null;
+    }
+
+    // Divination au tap : ouvre la modale « 3 cartes » (même flux qu'à
+    // l'invocation). Sans elle le pouvoir se résolvait au hasard et sans aucun
+    // retour visuel — indiscernable d'un pouvoir inerte.
+    if (instance.id === "divination") {
+      const deckCards = player.deck.slice(0, Math.min(3, player.deck.length));
+      if (deckCards.length === 0) {
+        // Deck vide → on engage quand même la créature (fizzle), comme Sélection.
+        return get().dispatchAction({ type: "tap_activate", sourceInstanceId, instanceIdx });
+      }
+      set({
+        selectedCardInstanceId: null,
+        selectedAttackerInstanceId: null,
+        validTargets: [],
+        targetingMode: "divination",
+        divinationCards: deckCards,
+        pendingTapSourceId: sourceInstanceId,
+        pendingTapInstanceIdx: instanceIdx,
       });
       return null;
     }

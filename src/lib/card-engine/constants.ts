@@ -41,7 +41,7 @@ export { KEYWORDS, KEYWORD_DESC_BY_ID, CREATURE_LABEL_TO_ENGINE_ID } from "@/lib
 // (engine.ts, boucle du flux d'attaque) exécute n'importe quel mot-clé curé
 // en mode "attack" de façon générique ; l'appartenance à ce map est le seul
 // verrou côté picker.
-type CuratedMode = "death" | "tap" | "return" | "end_of_turn" | "attack";
+type CuratedMode = "death" | "tap" | "return" | "end_of_turn" | "attack" | "draw";
 // Chantier « tous déclencheurs » : tous les effets d'invocation sont
 // authorables sur les 5 modes supplémentaires. Règles transverses :
 //   - Pouvoirs CIBLÉS déclenchés pendant le tour adverse → cible AU HASARD
@@ -50,7 +50,9 @@ type CuratedMode = "death" | "tap" | "return" | "end_of_turn" | "attack";
 //     hasard, même sur son propre tour.
 //   - Les effets exigeant la source EN JEU (auto-transformation, gain de
 //     stats, marqueur porté…) n'offrent ni mort ni retour en main.
-const ALL_MODES = new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack"]);
+// "draw" rejoint ALL_MODES et PAS ONBOARD_MODES : à la pioche la source est en
+// MAIN, pas en jeu — même restriction que "return" et "death".
+const ALL_MODES = new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack", "draw"]);
 const ONBOARD_MODES = new Set<CuratedMode>(["tap", "end_of_turn", "attack"]);
 export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
   "Convocation X": ALL_MODES,
@@ -276,13 +278,36 @@ export const FACTIONS: Record<string, {
   RoyaumesDuSoleil: {
     displayName: "Les Royaumes du Soleil",
     color: "#e1a100", accent: "#ffd54f", emoji: "☀️", bg: "#1a1206", alignment: "neutre",
-    races: ["Humains"],
-    clans: [{ names: ["Les Enfants du Soleil", "Les Seigneurs des Dunes", "Le Royaume des Masques", "Les Fils du Volcan"], appliesTo: "all" }],
+    races: ["Humains", "Esprits"],
+    // Deux groupes plutôt qu'un seul « all » : les quatre clans restent ouverts
+    // aux Humains, tandis que les Esprits n'existent QUE dans le Royaume des
+    // Masques. Même patron que les Elfes (clans par race). Conséquence voulue :
+    // sans race choisie, le sélecteur de clan reste vide jusqu'à ce qu'on en
+    // désigne une — il n'y a plus de clan transversal dans cette faction.
+    clans: [
+      { names: ["Les Enfants du Soleil", "Les Seigneurs des Dunes", "Le Royaume des Masques", "Les Fils du Volcan"], appliesTo: "Humains" },
+      { names: ["Le Royaume des Masques"], appliesTo: "Esprits" },
+    ],
     statWeights: { atk: 1.02, def: 1.03 },
     guaranteedKeywords: [],
     likelyKeywords: { "Bénédiction": 0.45, "Convocation X": 0.45, "Bravoure": 0.40, "Sacrifice": 0.35, "Héritage X": 0.35, "Résistance X": 0.35, "Divination": 0.30, "Pillage X": 0.30 },
     forbiddenKeywords: ["Poison", "Corruption", "Maléfice", "Pacte de sang", "Nécrophagie"],
     description: "Soleil, désert et esprits : brasier rituel, nomades pilleurs et invocateurs.",
+    // Les Esprits COMPLÈTENT le profil du clan, ils ne le remplacent pas : la
+    // cascade des mots-clés est clan > race > faction, comblée MOT-CLÉ PAR
+    // MOT-CLÉ. Le Royaume des Masques garde donc la main sur Convocation,
+    // Divination, Prescience, Augure, Totem et Régénération ; la race ajoute
+    // par-dessus ce que le clan ne dit pas — l'incorporel.
+    // Les `statWeights` de race sont en revanche INERTES ici : sur les stats la
+    // cascade prend le profil de clan en bloc, et les Esprits ne vivent que
+    // dans ce clan. Ils sont posés pour rester cohérents si la race s'ouvrait
+    // un jour ailleurs, pas pour agir aujourd'hui.
+    raceProfiles: {
+      "Esprits": {
+        statWeights: { atk: 0.85, def: 0.95 },
+        likelyKeywords: { "Invisible": 0.55, "Ombre": 0.50, "Esquive": 0.50, "Vol": 0.45, "Transcendance": 0.30, "Contresort": 0.30 },
+      },
+    },
     clanProfiles: {
       "Les Enfants du Soleil": { statWeights: { atk: 1.10, def: 0.95 }, likelyKeywords: { "Sacrifice": 0.55, "Héritage X": 0.50, "Martyr": 0.45, "Bravoure": 0.45, "Bénédiction": 0.40, "Convocation X": 0.40 } },
       "Les Seigneurs des Dunes": { statWeights: { atk: 1.05, def: 1.00 }, likelyKeywords: { "Pillage X": 0.55, "Traque": 0.50, "Esquive": 0.50, "Célérité": 0.45, "Résistance X": 0.45, "Persécution X": 0.40 } },

@@ -627,7 +627,8 @@
         "on_return": "回手时",
         "on_activation": "激活时",
         "on_attack": "攻击时",
-        "on_end_of_turn": "回合结束时"
+        "on_end_of_turn": "回合结束时",
+        "on_draw": "被抽到时"
       },
       "content": {
         "deal_damage_one": "造成 {x} 点伤害",
@@ -836,6 +837,7 @@
       "Kobolds": "狗头人",
       "Géants": "巨人",
       "Humains": "人类",
+      "Esprits": "灵体",
       "Griffons": "狮鹫",
       "Faucons": "猎鹰",
       "Hommes-Loups": "狼人",
@@ -935,6 +937,11 @@
         "def": "人类",
         "bare": "人类",
         "de": "人类的"
+      },
+      "Esprits": {
+        "def": "灵体",
+        "bare": "灵体",
+        "de": "灵体的"
       },
       "Griffons": {
         "def": "狮鹫",
@@ -1524,6 +1531,7 @@
     "trigger_on_activation": "激活异能（横置）",
     "trigger_on_attack": "攻击时",
     "trigger_on_end_of_turn": "回合结束时",
+    "trigger_on_draw": "当此牌被抽到时",
     "trigger_spell_resolution": "结算时",
     "composed_effects_heading": "复合效果（高级）",
     "composed_effects_subtitle": "内容 + 幅度 + 目标",
@@ -1682,6 +1690,7 @@
     "mode_title_return": "返回手牌时",
     "mode_title_attack": "攻击时",
     "mode_title_end_of_turn": "回合结束时",
+    "mode_title_draw": "当此牌被抽到时",
     "grant_scope_target": "赋予目标生物",
     "grant_scope_all_allies": "赋予所有我方单位",
     "required_caps": "必填",

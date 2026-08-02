@@ -627,7 +627,8 @@
         "on_return": "Al volver a la mano",
         "on_activation": "Al activarse",
         "on_attack": "Al atacar",
-        "on_end_of_turn": "Al final del turno"
+        "on_end_of_turn": "Al final del turno",
+        "on_draw": "Al robarse"
       },
       "content": {
         "deal_damage_one": "inflige {x} daño",
@@ -836,6 +837,7 @@
       "Kobolds": "Kobolds",
       "Géants": "Gigantes",
       "Humains": "Humanos",
+      "Esprits": "Espíritus",
       "Griffons": "Grifos",
       "Faucons": "Halcones",
       "Hommes-Loups": "Hombres-Lobo",
@@ -935,6 +937,11 @@
         "def": "el Humano",
         "bare": "Humano",
         "de": "del Humano"
+      },
+      "Esprits": {
+        "def": "el Espíritu",
+        "bare": "Espíritu",
+        "de": "del Espíritu"
       },
       "Griffons": {
         "def": "el Grifo",
@@ -1524,6 +1531,7 @@
     "trigger_on_activation": "Habilidad activada (tap)",
     "trigger_on_attack": "Al atacar",
     "trigger_on_end_of_turn": "Al final del turno",
+    "trigger_on_draw": "Cuando se roba esta carta",
     "trigger_spell_resolution": "Al resolver",
     "composed_effects_heading": "Efectos compuestos (avanzado)",
     "composed_effects_subtitle": "contenido + amplitud + objetivos",
@@ -1682,6 +1690,7 @@
     "mode_title_return": "Al volver a la mano",
     "mode_title_attack": "Al atacar",
     "mode_title_end_of_turn": "Al final del turno",
+    "mode_title_draw": "Cuando se roba esta carta",
     "grant_scope_target": "Otorgada a la criatura objetivo",
     "grant_scope_all_allies": "Otorgada a todas las unidades aliadas",
     "required_caps": "Requerido",

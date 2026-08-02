@@ -627,7 +627,8 @@
         "on_return": "On Return to Hand",
         "on_activation": "On Activation",
         "on_attack": "On Attack",
-        "on_end_of_turn": "At End of Turn"
+        "on_end_of_turn": "At End of Turn",
+        "on_draw": "When Drawn"
       },
       "content": {
         "deal_damage_one": "deals {x} damage",
@@ -836,6 +837,7 @@
       "Kobolds": "Kobolds",
       "Géants": "Giants",
       "Humains": "Humans",
+      "Esprits": "Spirits",
       "Griffons": "Griffins",
       "Faucons": "Falcons",
       "Hommes-Loups": "Werewolves",
@@ -935,6 +937,11 @@
         "def": "the Human",
         "bare": "Human",
         "de": "of the Human"
+      },
+      "Esprits": {
+        "def": "the Spirit",
+        "bare": "Spirit",
+        "de": "of the Spirit"
       },
       "Griffons": {
         "def": "the Griffin",
@@ -1524,6 +1531,7 @@
     "trigger_on_activation": "Activated Ability (tap)",
     "trigger_on_attack": "On Attack",
     "trigger_on_end_of_turn": "At End of Turn",
+    "trigger_on_draw": "When this card is drawn",
     "trigger_spell_resolution": "On Resolution",
     "composed_effects_heading": "Composed Effects (Advanced)",
     "composed_effects_subtitle": "content + magnitude + targets",
@@ -1682,6 +1690,7 @@
     "mode_title_return": "On return to hand",
     "mode_title_attack": "On attack",
     "mode_title_end_of_turn": "At end of turn",
+    "mode_title_draw": "When this card is drawn",
     "grant_scope_target": "Granted to the targeted creature",
     "grant_scope_all_allies": "Granted to all allied units",
     "required_caps": "Required",

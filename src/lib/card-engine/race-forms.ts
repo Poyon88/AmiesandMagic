@@ -42,6 +42,7 @@ export const RACE_FORMS_FR: Record<string, Inflected> = {
   "Machines": { def: "la Machine", bare: "Machine", de: "de la Machine" },
   "Kobolds": { def: "le Kobold", bare: "Kobold", de: "du Kobold" },
   "Humains": { def: "l'Humain", bare: "Humain", de: "de l'Humain" },
+  "Esprits": { def: "l'Esprit", bare: "Esprit", de: "de l'Esprit" },
   "Griffons": { def: "le Griffon", bare: "Griffon", de: "du Griffon" },
   "Faucons": { def: "le Faucon", bare: "Faucon", de: "du Faucon" },
   "Hommes-Loups": { def: "l'Homme-Loup", bare: "Homme-Loup", de: "de l'Homme-Loup" },

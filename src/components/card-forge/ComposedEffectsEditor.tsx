@@ -93,8 +93,13 @@ export default function ComposedEffectsEditor({
   // Liste unifiée active seulement si l'appelant fournit le couple curated/onCuratedChange.
   const unified = !!curated && !!onCuratedChange && !singleEffect;
   const triggers: { v: CapabilityTrigger; l: string }[] = isUnit
-    ? [{ v: "on_play", l: tr('trigger_on_play') }, { v: "on_death", l: tr('trigger_on_death') }, { v: "on_return", l: tr('trigger_on_return') }, { v: "on_activation", l: tr('trigger_on_activation') }, { v: "on_attack", l: tr('trigger_on_attack') }, { v: "on_end_of_turn", l: tr('trigger_on_end_of_turn') }]
-    : [{ v: "spell_resolution", l: tr('trigger_spell_resolution') }];
+    ? [{ v: "on_play", l: tr('trigger_on_play') }, { v: "on_death", l: tr('trigger_on_death') }, { v: "on_return", l: tr('trigger_on_return') }, { v: "on_activation", l: tr('trigger_on_activation') }, { v: "on_attack", l: tr('trigger_on_attack') }, { v: "on_end_of_turn", l: tr('trigger_on_end_of_turn') }, { v: "on_draw", l: tr('trigger_on_draw') }]
+    // Un SORT n'a que deux moments possibles : sa résolution (quand on le lance)
+    // et sa PIOCHE. Le mode « draw » des mots-clés ne lui est pas ouvert — sur un
+    // sort, `keyword_instances` décrit les capacités CONFÉRÉES à une cible, un
+    // mode y désignerait le déclencheur du don une fois posé sur la créature.
+    // Un sort qui agit à la pioche passe donc forcément par un effet composé.
+    : [{ v: "spell_resolution", l: tr('trigger_spell_resolution') }, { v: "on_draw", l: tr('trigger_on_draw') }];
 
   const addComposed = () => onChange([...value, {
     uid: `c_${Math.random().toString(36).slice(2, 9)}`, trigger: isUnit ? "on_play" : "spell_resolution",

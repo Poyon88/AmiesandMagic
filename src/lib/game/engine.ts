@@ -186,6 +186,7 @@ function capTriggerForMode(mode: import("./types").KeywordMode | undefined): imp
   if (mode === "return") return "on_return";
   if (mode === "end_of_turn") return "on_end_of_turn";
   if (mode === "attack") return "on_attack";
+  if (mode === "draw") return "on_draw";
   return "on_play";
 }
 
@@ -794,6 +795,12 @@ function resolveComposedEffect(
         allSpellsPool: currentCardPools.allSpellsPool,
         players: [owner, opponent],
         currentPlayerIndex: 0,
+        // `turnNumber` EST load-bearing : c'est la seule part du germe de tirage
+        // qui bouge d'une activation à l'autre. Absent, `state.turnNumber * 1000`
+        // vaut NaN, et `NaN & 0xfffffff` vaut 0 — le pseudo-RNG rend alors 0 à
+        // chaque appel et propose éternellement les 3 MÊMES cartes, sans la
+        // moindre erreur pour le signaler.
+        turnNumber: currentTurnNumber,
       } as unknown as GameState;
       const options = selectionCardsForKeyword(composed.content, selState, x, selCard, composed.pool);
       // Pool vide après filtrage : no-op assumé. On n'élargit JAMAIS le filtre
@@ -952,7 +959,7 @@ function resolveCreatureKeywordAsHeroPower(
       opponent.board = opponent.board.filter(c => c !== target);
       target.originalOwnerId = opponent.id;
       target.trueOwnerId = opponent.id;
-      target.hasSummoningSickness = false;
+      resetTurnStateForNewController(target);
       const list = target.card.keywords as string[];
       if (!list.includes("charge")) {
         target.card = {
@@ -1029,6 +1036,50 @@ function maxAttacksFor(ci: CardInstance): number {
 
 function generateInstanceId(): string {
   return rng().toString(36).substring(2, 10) + rng().toString(36).substring(2, 10);
+}
+
+/** Règlement des morts sur les DEUX camps : balayage puis râles d'agonie.
+ *
+ *  Ordre contrôleur → adversaire, non négociable : `processDeathTriggers`
+ *  consomme de la RNG (Cycle éternel, Sacrifice démoniaque…) et l'inverser
+ *  ferait diverger les deux clients d'une partie en ligne.
+ *
+ *  Ne recalcule PAS les auras : les appelants le font de toute façon, y compris
+ *  quand personne ne meurt (un effet qui ne fait que buffer en a besoin).
+ *
+ *  Existe parce que l'oubli est invisible : une unité à 0 PV reste simplement
+ *  affichée sur le plateau, sans erreur ni log. Deux fois de suite le même
+ *  symptôme — un pouvoir de tap curé (Baliste à Répétition) et un effet à la
+ *  pioche — pour la même cause. */
+function settleDeathsBothSides(owner: PlayerState, opponent: PlayerState): void {
+  const ownerDead = cleanDeadCreatures(owner);
+  const oppDead = cleanDeadCreatures(opponent);
+  if (ownerDead.length === 0 && oppDead.length === 0) return;
+  processDeathTriggers(ownerDead, owner, opponent);
+  processDeathTriggers(oppDead, opponent, owner);
+}
+
+/** Une unité qui CHANGE DE CAMP (Corruption, Domination, prise de contrôle)
+ *  arrive prête à agir — c'est tout le sens de la Traque que ces effets lui
+ *  posent au passage.
+ *
+ *  Lever le seul `hasSummoningSickness` ne suffit pas : la créature volée
+ *  traîne les COMPTEURS DE TOUR de son ancien contrôleur. Une unité adverse a
+ *  presque toujours déjà attaqué ou tapé pendant SON tour, donc elle arrive
+ *  avec `attacksRemaining = 0` (ou `tapped`), et `canAttack` la refuse sur ces
+ *  gardes-là bien AVANT de regarder le mot-clé. Symptôme vu en partie : un
+ *  Intendant Suprême volé par la Corruption de Velkyn, affichant Traque, et
+ *  incapable d'attaquer.
+ *
+ *  `esquiveUsedThisTurn` n'est PAS remis à zéro : l'esquive est une ressource
+ *  défensive du tour, pas une permission d'agir. `isParalyzed` non plus — une
+ *  paralysie est un malus qui doit survivre au changement de camp. */
+function resetTurnStateForNewController(inst: CardInstance): void {
+  inst.hasSummoningSickness = false;
+  inst.tapped = false;
+  inst.hasAttacked = false;
+  inst.attacksRemaining = maxAttacksFor(inst);
+  inst.targetsAttackedThisTurn = [];
 }
 
 /** X des capacités dont la valeur est FIGÉE sur l'instance à sa naissance, au
@@ -1803,7 +1854,81 @@ function drawCard(player: PlayerState, autoPlayDepth = 0): CardInstance | null {
     return null;
   }
   player.hand.push(card);
+  // La carte a ATTEINT LA MAIN : c'est la seule situation où le déclencheur
+  // « à la pioche » part (cf. triggerOnDraw pour les trois sorties écartées
+  // au-dessus : fatigue, main pleine, auto-jeu de Cycle éternel).
+  triggerOnDraw(card, player);
   return card;
+}
+
+/** Profondeur maximale d'ENCHAÎNEMENT des déclencheurs « à la pioche ».
+ *
+ *  Un effet « à la pioche : piochez une carte » se rappelle par un chemin que
+ *  le paramètre `autoPlayDepth` de `drawCard` ne voit pas : l'effet repart d'un
+ *  résolveur, qui appelle `drawCard` à neuf, à profondeur 0. Il faut donc un
+ *  compteur de RÉ-ENTRANCE, tenu ici.
+ *
+ *  Sans lui, la chaîne ne s'arrête aujourd'hui que par accident — main pleine
+ *  ou deck vide. Une carte qui se remet elle-même dans le deck (Retour différé,
+ *  Creuser) tournerait sans fin.
+ *
+ *  8 : une profondeur déjà absurde en jeu, assez basse pour couper net. */
+const MAX_DRAW_TRIGGER_DEPTH = 8;
+let drawTriggerDepth = 0;
+
+/** Déclencheur « À LA PIOCHE » : exécute les effets de la carte tirée dont le
+ *  mode vaut "draw". Même patron que `triggerReturnToHand` — la source est en
+ *  MAIN, pas en jeu.
+ *
+ *  Ne concerne QUE la carte qui vient d'être tirée : ce n'est pas un réactif
+ *  « chaque fois que vous piochez » porté par une unité du plateau.
+ *
+ *  Trois pioches ne le déclenchent PAS, et c'est voulu :
+ *   - la fatigue (aucune carte n'est tirée) ;
+ *   - la main pleine (la carte part au cimetière — elle n'atteint pas la main) ;
+ *   - l'auto-jeu de Cycle éternel (la carte arrive sur le PLATEAU).
+ *  Même règle que `on_return`, qui ne se déclenche que si la créature atteint
+ *  effectivement la main. La main de départ et le mulligan n'en relèvent pas
+ *  non plus : ils prennent leurs cartes par `deck.splice`, sans passer ici.
+ *
+ *  `opponent` est retrouvé via `currentBoardPlayers`, publié par
+ *  `cloneStateForAction` — `drawCard` ne reçoit que son joueur, et les 16 sites
+ *  d'appel n'ont pas à changer de signature pour autant. Hors action (test
+ *  appelant un handler en direct) la référence est vide : le déclencheur
+ *  fizzle proprement, comme le fait déjà `currentCardPools`.
+ *
+ *  L'enchaînement est borné par `drawTriggerDepth` (cf. MAX_DRAW_TRIGGER_DEPTH). */
+function triggerOnDraw(ci: CardInstance, owner: PlayerState): void {
+  if (drawTriggerDepth >= MAX_DRAW_TRIGGER_DEPTH) return;
+  const insts = (ci.card.keyword_instances ?? []).filter(k => k.mode === "draw");
+  const composedCaps = getCapabilities(ci.card).some(c => c.composed && c.trigger === "on_draw");
+  if (insts.length === 0 && !composedCaps) return;
+
+  const opponent = currentBoardPlayers.find(p => p !== owner);
+  if (!opponent) return; // hors action : rien à résoudre proprement
+
+  drawTriggerDepth++;
+  try {
+    for (const inst of insts) {
+      resolveCuratedKeywordEffect(inst.id, inst.x ?? 1, ci, owner, opponent, undefined, inst);
+    }
+    // Effets composés à la pioche (modèle hybride).
+    runComposedCapsForCard(ci.card, "on_draw", ci, owner, opponent);
+  } finally {
+    drawTriggerDepth--;
+  }
+
+  // Règlement des morts, sur les DEUX camps. Indispensable ici et pas
+  // délégable à l'appelant : la pioche principale a lieu dans `startTurn`, qui
+  // ne balaie que le plateau du joueur actif (ses morts par poison). Un effet
+  // à la pioche qui tue une unité ADVERSE laissait donc un cadavre à 0 PV sur
+  // le plateau — vu en partie avec « Présage du Masque Courroucé ».
+  // Même forme et même ORDRE que les autres sites autonomes (tapActivate,
+  // settleSpellDeaths) : propriétaire d'abord, adversaire ensuite, parce que
+  // `processDeathTriggers` consomme de la RNG et qu'inverser les deux ferait
+  // diverger les clients d'une partie en ligne.
+  settleDeathsBothSides(owner, opponent);
+  recalculateAuras(owner, opponent);
 }
 
 // Concentration X: replace each spell currently in `player.hand` with a
@@ -2215,7 +2340,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
         opponent.board = opponent.board.filter(c => c !== stealTarget);
         stealTarget.originalOwnerId = opponent.id;
         stealTarget.trueOwnerId = opponent.id;
-        stealTarget.hasSummoningSickness = false; // Traque
+        resetTurnStateForNewController(stealTarget); // Traque + compteurs de tour
         if (!stealTarget.card.keywords.includes("charge")) {
           stealTarget.card = { ...stealTarget.card, keywords: [...stealTarget.card.keywords, "charge"] };
         }
@@ -3460,7 +3585,7 @@ function resolveSpellKeywords(
         ctx.opponent.board = ctx.opponent.board.filter(c => c !== corrupted);
         corrupted.originalOwnerId = ctx.opponent.id;
         corrupted.trueOwnerId = ctx.opponent.id;
-        corrupted.hasSummoningSickness = false; // Traque
+        resetTurnStateForNewController(corrupted); // Traque + compteurs de tour
         if (!corrupted.card.keywords.includes("charge")) {
           corrupted.card = { ...corrupted.card, keywords: [...corrupted.card.keywords, "charge"] };
         }
@@ -4107,7 +4232,7 @@ function resolveAtomicEffect(ctx: SpellResolutionContext, effect: AtomicEffect):
             ctx.opponent.board.splice(idx, 1);
             target.originalOwnerId = ctx.opponent.id;
             target.trueOwnerId = ctx.opponent.id;
-            target.hasSummoningSickness = false;
+            resetTurnStateForNewController(target);
             ctx.caster.board.push(target);
           }
         }
@@ -6104,7 +6229,7 @@ function resolveCuratedKeywordEffect(
       opponent.board = opponent.board.filter(c => c !== stealTarget);
       stealTarget.originalOwnerId = opponent.id;
       stealTarget.trueOwnerId = opponent.id;
-      stealTarget.hasSummoningSickness = false;
+      resetTurnStateForNewController(stealTarget);
       if (!stealTarget.card.keywords.includes("charge")) {
         stealTarget.card = { ...stealTarget.card, keywords: [...stealTarget.card.keywords, "charge"] };
       }
@@ -6190,10 +6315,20 @@ function resolveCuratedKeywordEffect(
         allSpellsPool: currentCardPools.allSpellsPool,
         players: [owner, opponent],
         currentPlayerIndex: 0,
+        // `turnNumber` EST load-bearing : c'est la seule part du germe de tirage
+        // qui bouge d'une activation à l'autre. Absent, `state.turnNumber * 1000`
+        // vaut NaN, et `NaN & 0xfffffff` vaut 0 — le pseudo-RNG rend alors 0 à
+        // chaque appel et propose éternellement les 3 MÊMES cartes, sans la
+        // moindre erreur pour le signaler.
+        turnNumber: currentTurnNumber,
       } as unknown as GameState;
       const options = selectionCardsForKeyword(kw, selState, inst?.x ?? 0, source.card);
       if (options.length === 0) return;
-      if (inst?.mode !== "attack" && owner.id === currentPlayerId) {
+      // "attack" et "draw" : flux SYNCHRONE, sans point de pause possible (le
+  // premier est au milieu du flux de combat, le second au milieu de startTurn
+  // ou d'un autre effet). On tire donc toujours au hasard, via la RNG semée —
+  // donc à l'identique sur les deux clients.
+  if (inst?.mode !== "attack" && inst?.mode !== "draw" && owner.id === currentPlayerId) {
         pendingTriggerSink.push({
           id: `${source.instanceId}#${kw}`,
           controllerId: owner.id,
@@ -6452,10 +6587,7 @@ export function tapActivate(state: GameState, action: TapActivateAction): GameSt
     if (!chosen && action.targetInstanceId) chosen = [action.targetInstanceId];
     resolveComposedEffect(cap.composed, source, player, opponent, chosen, false,
       { trigger: cap.trigger, capUid: cap.uid });
-    const pDead = cleanDeadCreatures(player);
-    const oDead = cleanDeadCreatures(opponent);
-    processDeathTriggers(pDead, player, opponent);
-    processDeathTriggers(oDead, opponent, player);
+    settleDeathsBothSides(player, opponent);
     recalculateAuras(player, opponent);
     newState.lastAction = action;
     checkWinCondition(newState);
@@ -6467,7 +6599,24 @@ export function tapActivate(state: GameState, action: TapActivateAction): GameSt
   if (!instance || instance.mode !== "tap") return state;
 
   source.tapped = true;
-  if (instance.id === "selection" || instance.id === "selection_magique" || instance.id === "renfort_royal") {
+  if (instance.id === "divination") {
+    // Divination AU TAP : même règle qu'à l'invocation — le joueur garde la
+    // carte de son choix sur le dessus, les autres passent dessous. Le
+    // résolveur curé, lui, tire au hasard (« pas de modale hors invocation ») ;
+    // c'était indiscernable d'un pouvoir qui ne fait rien, et contraire au
+    // texte du mot-clé, qui promet « dans l'ordre choisi ».
+    // Index absent (client sans modale, deck trop court) → 0 : on garde la
+    // première carte. Déterministe, donc rejouable à l'identique par le pair.
+    const countDiv = Math.min(3, player.deck.length);
+    if (countDiv > 0) {
+      const topDiv = player.deck.splice(0, countDiv);
+      const idxDiv = Math.min(Math.max(0, action.divinationChoiceIndex ?? 0), topDiv.length - 1);
+      player.deck.unshift(topDiv[idxDiv]);
+      for (let i = 0; i < topDiv.length; i++) {
+        if (i !== idxDiv) player.deck.push(topDiv[i]);
+      }
+    }
+  } else if (instance.id === "selection" || instance.id === "selection_magique" || instance.id === "renfort_royal") {
     // Sélection au tap : la carte choisie (modale « 1 parmi 3 ») est ajoutée en
     // main. Lookup dans les deux pools comme pour l'invocation.
     if (action.selectionCardId != null && player.hand.length < MAX_HAND_SIZE) {
@@ -6479,6 +6628,10 @@ export function tapActivate(state: GameState, action: TapActivateAction): GameSt
     resolveCuratedKeywordEffect(instance.id, instance.x ?? 1, source, player, opponent, action.targetInstanceId, instance);
   }
 
+  // Le pouvoir curé peut TUER (Impact, Souffle de feu, Douleur…). La branche
+  // composée ci-dessus réglait ses morts, pas celle-ci : une unité abattue par
+  // une Baliste à Répétition restait affichée à 0 PV.
+  settleDeathsBothSides(player, opponent);
   recalculateAuras(player, opponent);
   newState.lastAction = action;
   checkWinCondition(newState);
@@ -6551,7 +6704,11 @@ export function resolvePendingTrigger(state: GameState, action: ResolvePendingTr
   queue.splice(idx, 1);
   newState.pendingTriggers = queue;
 
-  applyOnePendingTrigger(newState, trigger, { targetInstanceId: action.targetInstanceId, selectionCardId: action.selectionCardId });
+  applyOnePendingTrigger(newState, trigger, {
+    targetInstanceId: action.targetInstanceId,
+    targetInstanceIds: action.targetInstanceIds,
+    selectionCardId: action.selectionCardId,
+  });
 
   recalculateAuras(newState.players[0], newState.players[1]);
   newState.lastAction = action;
@@ -6571,13 +6728,24 @@ export function resolvePendingTrigger(state: GameState, action: ResolvePendingTr
   return newState;
 }
 
+/** Cibles désignées d'un déclencheur en attente : la LISTE si l'effet en
+ *  demandait plusieurs, sinon la cible unique. `undefined` quand rien n'a été
+ *  choisi — et surtout jamais un tableau vide, que `selectComposedTargets`
+ *  interpréterait comme « choix fourni », court-circuitant son repli. */
+function pendingChoiceIds(
+  choice: { targetInstanceId?: string; targetInstanceIds?: string[] },
+): string[] | undefined {
+  if (choice.targetInstanceIds?.length) return choice.targetInstanceIds;
+  return choice.targetInstanceId ? [choice.targetInstanceId] : undefined;
+}
+
 /** Résout UN déclencheur interactif sur un choix donné (cible / carte). Partagé
  *  par la résolution manuelle (resolvePendingTrigger) et le repli automatique
  *  (autoResolvePendingTriggers). `newState` est déjà cloné, pools rattachés. */
 function applyOnePendingTrigger(
   newState: GameState,
   trigger: import("./types").PendingTrigger,
-  choice: { targetInstanceId?: string; selectionCardId?: number },
+  choice: { targetInstanceId?: string; targetInstanceIds?: string[]; selectionCardId?: number },
 ): void {
   const controller = newState.players.find(p => p.id === trigger.controllerId);
   const other = newState.players.find(p => p.id !== trigger.controllerId);
@@ -6593,7 +6761,11 @@ function applyOnePendingTrigger(
           // voudrait suspendre à son tour (Sélection) doit retomber sur le
           // tirage aléatoire plutôt que d'empiler un second déclencheur.
           resolveComposedEffect(cap.composed!, source ?? null, controller, other,
-            choice.targetInstanceId ? [choice.targetInstanceId] : undefined, false,
+            // Liste d'abord (effet à plusieurs cibles), repli sur la cible
+            // unique historique. Vide ⇒ undefined, pour que selectComposedTargets
+            // retombe sur son chemin « choix sans désignation » au lieu de
+            // croire qu'on lui a passé une liste de zéro cible.
+            pendingChoiceIds(choice), false,
             { trigger: cap.trigger, capUid: trigger.capUid, noSuspend: true }));
         const deadC = cleanDeadCreatures(controller);
         const deadO = cleanDeadCreatures(other);
@@ -7129,6 +7301,10 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   // Vidé ici, repositionné par cloneStateForAction dans chaque handler : jamais
   // de référence héritée de l'action précédente (cf. la déclaration).
   currentBoardPlayers = [];
+  // Filet : le try/finally de triggerOnDraw le ramène déjà à 0, mais une action
+  // qui jetterait en plein enchaînement laisserait sinon le compteur en l'air
+  // et brûlerait la marge de la SUIVANTE.
+  drawTriggerDepth = 0;
   currentCardPools = { factionCardPool: state.factionCardPool, allSpellsPool: state.allSpellsPool };
   currentFormatCode = state.formatCode ?? null;
   pendingTriggerSink = [];

@@ -1261,11 +1261,11 @@ export default function CardEditor() {
                         <div key={kw} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           <span style={{ fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: 600, color: "#333", flex: 1 }}>{label}</span>
                           <div style={{ display: "inline-flex", gap: 3 }}>
-                            {(["play", "death", "tap", "return", "end_of_turn", "attack"] as const).map(mode => {
+                            {(["play", "death", "tap", "return", "end_of_turn", "attack", "draw"] as const).map(mode => {
                               const allowed = mode === "play" || allowedModes.has(mode);
                               const active = mode === "play" ? !keywordModes[kw] : keywordModes[kw] === mode;
-                              const color = mode === "play" ? "#333" : mode === "death" ? "#a83232" : mode === "tap" ? "#F68D09" : mode === "return" ? "#3a7dd4" : mode === "attack" ? "#9b59b6" : "#2faa3f";
-                              const glyph = mode === "play" ? "⚡" : mode === "death" ? "💀" : mode === "tap" ? "⟲" : mode === "return" ? "↩" : mode === "attack" ? "⚔" : "⌛";
+                              const color = mode === "play" ? "#333" : mode === "death" ? "#a83232" : mode === "tap" ? "#F68D09" : mode === "return" ? "#3a7dd4" : mode === "attack" ? "#9b59b6" : mode === "draw" ? "#17b6c4" : "#2faa3f";
+                              const glyph = mode === "play" ? "⚡" : mode === "death" ? "💀" : mode === "tap" ? "⟲" : mode === "return" ? "↩" : mode === "attack" ? "⚔" : mode === "draw" ? "📥" : "⌛";
                               return (
                                 <button
                                   key={mode}
@@ -1276,7 +1276,7 @@ export default function CardEditor() {
                                     else next[kw] = mode;
                                     return next;
                                   })}
-                                  title={mode === "play" ? "À l'arrivée en jeu (défaut)" : mode === "death" ? "À la mort (deathrattle)" : mode === "tap" ? "Activable (tap / engagement)" : mode === "return" ? "Au retour en main" : mode === "attack" ? "À l'attaque" : "À la fin du tour"}
+                                  title={mode === "play" ? "À l'arrivée en jeu (défaut)" : mode === "death" ? "À la mort (deathrattle)" : mode === "tap" ? "Activable (tap / engagement)" : mode === "return" ? "Au retour en main" : mode === "attack" ? "À l'attaque" : mode === "draw" ? "Quand cette carte est piochée" : "À la fin du tour"}
                                   style={{
                                     width: 22, height: 22, borderRadius: 4,
                                     background: active ? color : "transparent",

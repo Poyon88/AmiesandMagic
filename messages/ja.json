@@ -627,7 +627,8 @@
         "on_return": "手札に戻ったとき",
         "on_activation": "起動時",
         "on_attack": "攻撃時",
-        "on_end_of_turn": "ターン終了時"
+        "on_end_of_turn": "ターン終了時",
+        "on_draw": "引かれたとき"
       },
       "content": {
         "deal_damage_one": "{x}ダメージを与える",
@@ -836,6 +837,7 @@
       "Kobolds": "コボルト",
       "Géants": "巨人",
       "Humains": "人間",
+      "Esprits": "精霊",
       "Griffons": "グリフォン",
       "Faucons": "隼",
       "Hommes-Loups": "狼人間",
@@ -935,6 +937,11 @@
         "def": "人間",
         "bare": "人間",
         "de": "人間"
+      },
+      "Esprits": {
+        "def": "精霊",
+        "bare": "精霊",
+        "de": "精霊の"
       },
       "Griffons": {
         "def": "グリフォン",
@@ -1524,6 +1531,7 @@
     "trigger_on_activation": "起動能力（タップ）",
     "trigger_on_attack": "攻撃時",
     "trigger_on_end_of_turn": "ターン終了時",
+    "trigger_on_draw": "このカードが引かれたとき",
     "trigger_spell_resolution": "解決時",
     "composed_effects_heading": "複合エフェクト（上級）",
     "composed_effects_subtitle": "内容＋強度＋対象",
@@ -1682,6 +1690,7 @@
     "mode_title_return": "手札に戻ったとき",
     "mode_title_attack": "攻撃時",
     "mode_title_end_of_turn": "ターン終了時",
+    "mode_title_draw": "このカードが引かれたとき",
     "grant_scope_target": "対象クリーチャーに付与",
     "grant_scope_all_allies": "全味方ユニットに付与",
     "required_caps": "必須",

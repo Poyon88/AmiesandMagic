@@ -78,6 +78,8 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     pendingComposedGraveyard,
     creatureComposedCollected,
     pendingTriggerPrompt,
+    pendingTriggerNeeded,
+    pendingTriggerPicked,
     divinationCards,
     selectionCards,
     tactiqueAvailableKeywords,
@@ -616,6 +618,19 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     const done = Object.values(p.picked).reduce((sum, ids) => sum + ids.length, 0)
       + creatureComposedCollected.length;
     return `(${Math.min(done + 1, total)}/${total})`;
+  })();
+
+  // Cimetière concerné par un déclencheur en attente : celui où se trouvent
+  // RÉELLEMENT les cibles valides. On ne déduit pas le camp du TargetSpec (le
+  // store ne l'expose pas) mais de la présence des ids — robuste même pour un
+  // effet qui viserait les deux cimetières.
+  const pendingTriggerGraveyard = (() => {
+    if (targetingMode !== "pending_trigger" || validTargets.length === 0) return null;
+    const inMine = myPlayer.graveyard.some(c => validTargets.includes(c.instanceId));
+    const inTheirs = opponent.graveyard.some(c => validTargets.includes(c.instanceId));
+    if (!inMine && !inTheirs) return null; // cibles sur le plateau → surlignage habituel
+    const cards = inTheirs ? opponent.graveyard : myPlayer.graveyard;
+    return { cards, side: inTheirs ? ("theirs" as const) : ("mine" as const) };
   })();
 
   const handlePlayFromGraveyard = (instanceId: string) => {
@@ -1378,6 +1393,30 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
           onClose={() => setGraveyardView(null)}
           selectableInstanceIds={graveyardView === "my" ? secondeViePlayableIds : undefined}
           onSelectCard={graveyardView === "my" ? handlePlayFromGraveyard : undefined}
+        />
+      )}
+      {/* Déclencheur en attente dont les cibles vivent dans un CIMETIÈRE (ex.
+          Incinération « 4 cartes du cimetière adverse » en fin de tour). Le mode
+          pending_trigger ne surligne que le plateau : sans ce sélecteur, le jeu
+          réclamait une cible qu'aucun écran ne permettait de désigner, et seul
+          le chrono en sortait, au hasard. Le CAMP est déduit de l'endroit où
+          vivent réellement les `validTargets` — pas supposé. */}
+      {targetingMode === "pending_trigger" && !overlayPeeked && pendingTriggerGraveyard && (
+        <GraveyardOverlay
+          cards={pendingTriggerGraveyard.cards}
+          title={`${pendingTriggerPrompt ?? t("choose_card")}${
+            pendingTriggerNeeded > 1 ? ` (${pendingTriggerPicked.length}/${pendingTriggerNeeded})` : ""
+          }`}
+          onClose={clearSelection}
+          // Les cartes déjà retenues restent cliquables : un second clic les
+          // retire (cf. selectTarget), seul moyen de corriger une erreur sur un
+          // choix obligatoire.
+          selectableInstanceIds={validTargets}
+          highlightedInstanceIds={pendingTriggerPicked}
+          onSelectCard={(id) => {
+            const action = selectTarget(id);
+            if (action) broadcast(action);
+          }}
         />
       )}
       {targetingMode === "graveyard" && !overlayPeeked && (

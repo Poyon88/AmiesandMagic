@@ -9,6 +9,7 @@ import {
   getAllClanNames,
   getClanNamesForRace,
   getFactionForRace,
+  getRacesForClan,
 } from "./constants";
 import { generateCardStats } from "./generator";
 
@@ -150,5 +151,47 @@ describe("races ailées des Royaumes Libres (Griffons / Faucons)", () => {
     const faucon = generateCardStats("Humains", "Unité", "Commune", 2, "Faucons");
     expect(faucon.race).toBe("Faucons");
     expect(faucon.keywords).toContain("Vol");
+  });
+});
+
+// ─── Race « Esprits » (Royaumes du Soleil) ──────────────────────────────────
+// Une race rattachée à UN SEUL clan : le Royaume des Masques. Le modèle
+// l'exprime par un second groupe `clans` ciblant la race, comme les Elfes.
+describe("race Esprits — rattachement au Royaume des Masques", () => {
+  it("les Esprits n'ouvrent QUE le Royaume des Masques", () => {
+    expect(getClanNamesForRace("RoyaumesDuSoleil", "Esprits")).toEqual(["Le Royaume des Masques"]);
+  });
+
+  it("les Humains de la faction gardent bien leurs quatre clans", () => {
+    // Le passage de `appliesTo: "all"` à `appliesTo: "Humains"` ne doit rien
+    // retirer à la race historique de la faction.
+    expect(getClanNamesForRace("RoyaumesDuSoleil", "Humains")).toEqual([
+      "Les Enfants du Soleil",
+      "Les Seigneurs des Dunes",
+      "Le Royaume des Masques",
+      "Les Fils du Volcan",
+    ]);
+  });
+
+  it("le Royaume des Masques accepte les deux races, les autres clans non", () => {
+    expect(getRacesForClan("Le Royaume des Masques").sort()).toEqual(["Esprits", "Humains"]);
+    expect(getRacesForClan("Les Fils du Volcan")).toEqual(["Humains"]);
+  });
+
+  it("la race est rattachée sans ambiguïté à sa faction", () => {
+    // « Humains » est déclarée par plusieurs factions ; « Esprits » par une
+    // seule, donc getFactionForRace est déterministe pour elle.
+    expect(getFactionForRace("Esprits")).toBe("RoyaumesDuSoleil");
+  });
+
+  it("le profil de race COMPLÈTE celui du clan sans l'écraser", () => {
+    // Cascade clan > race > faction, comblée mot-clé par mot-clé : le clan
+    // garde la main sur Convocation, la race ajoute l'incorporel.
+    const def = FACTIONS["RoyaumesDuSoleil"];
+    const clanKws = def.clanProfiles?.["Le Royaume des Masques"]?.likelyKeywords ?? {};
+    const raceKws = def.raceProfiles?.["Esprits"]?.likelyKeywords ?? {};
+    expect(clanKws["Convocation X"]).toBeGreaterThan(0);
+    expect(raceKws["Convocation X"]).toBeUndefined(); // pas de doublon concurrent
+    expect(raceKws["Invisible"]).toBeGreaterThan(0);
   });
 });

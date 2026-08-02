@@ -627,7 +627,8 @@
         "on_return": "Al ritorno in mano",
         "on_activation": "All'attivazione",
         "on_attack": "All'attacco",
-        "on_end_of_turn": "Alla fine del turno"
+        "on_end_of_turn": "Alla fine del turno",
+        "on_draw": "Quando viene pescata"
       },
       "content": {
         "deal_damage_one": "infligge {x} danno",
@@ -836,6 +837,7 @@
       "Kobolds": "Kobold",
       "Géants": "Giganti",
       "Humains": "Umani",
+      "Esprits": "Spiriti",
       "Griffons": "Grifoni",
       "Faucons": "Falchi",
       "Hommes-Loups": "Uomini-Lupo",
@@ -935,6 +937,11 @@
         "def": "l'Umano",
         "bare": "Umano",
         "de": "dell'Umano"
+      },
+      "Esprits": {
+        "def": "lo Spirito",
+        "bare": "Spirito",
+        "de": "dello Spirito"
       },
       "Griffons": {
         "def": "il Grifone",
@@ -1524,6 +1531,7 @@
     "trigger_on_activation": "Potere attivabile (tap)",
     "trigger_on_attack": "All'attacco",
     "trigger_on_end_of_turn": "Alla fine del turno",
+    "trigger_on_draw": "Quando questa carta viene pescata",
     "trigger_spell_resolution": "Alla risoluzione",
     "composed_effects_heading": "Effetti composti (avanzato)",
     "composed_effects_subtitle": "contenuto + ampiezza + bersagli",
@@ -1682,6 +1690,7 @@
     "mode_title_return": "Al ritorno in mano",
     "mode_title_attack": "All'attacco",
     "mode_title_end_of_turn": "Alla fine del turno",
+    "mode_title_draw": "Quando questa carta viene pescata",
     "grant_scope_target": "Conferita alla creatura bersaglio",
     "grant_scope_all_allies": "Conferita a tutte le unità alleate",
     "required_caps": "Richiesto",
