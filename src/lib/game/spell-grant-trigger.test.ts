@@ -9,7 +9,7 @@
 // plus rien. Tout sort conférant un mot-clé passif était silencieusement sans
 // effet (cas vu en partie : « Éveil des Premiers-Nés », carte 522).
 import { describe, expect, it } from "vitest";
-import { applyAction } from "./engine";
+import { applyAction, FORCE_ANCETRES_GRAVEYARD_THRESHOLD } from "./engine";
 import { getCapabilities } from "./capability-adapter";
 import { mkCard, mkInstance, mkState } from "./test-harness";
 import type { CardInstance, GameState } from "./types";
@@ -58,8 +58,11 @@ describe("Sort conférant un mot-clé", () => {
   it("le bonus conditionnel s'applique quand sa condition est remplie", () => {
     const s = mkState();
     s.players[0].board.push(mkInstance(mkCard({ name: "Aigles", attack: 1, health: 1 })));
-    // Force des ancêtres : actif à partir de 5 créatures au cimetière.
-    for (let i = 0; i < 6; i++) s.players[0].graveyard.push(mkInstance(mkCard({ name: `Mort${i}` })));
+    // Force des ancêtres : actif au seuil du moteur (lu, pas recopié en dur —
+    // le test doit suivre un rééquilibrage du seuil sans être réécrit).
+    for (let i = 0; i < FORCE_ANCETRES_GRAVEYARD_THRESHOLD; i++) {
+      s.players[0].graveyard.push(mkInstance(mkCard({ name: `Mort${i}` })));
+    }
 
     const next = cast(s, grantSpell("force_des_ancetres", 3, 3));
     const a = next.players[0].board[0];

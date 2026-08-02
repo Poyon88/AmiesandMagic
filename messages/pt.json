@@ -395,7 +395,7 @@
       },
       "epargne": {
         "label": "Poupança X",
-        "desc": "Adiciona X ao seu contador de Poupança (máximo 10)."
+        "desc": "Adiciona X ao seu contador de Poupança (máximo 8)."
       },
       "seconde_vie": {
         "label": "Segunda Vida X",
@@ -447,7 +447,7 @@
       },
       "force_des_ancetres": {
         "label": "Força dos ancestrais +X/+Y",
-        "desc": "Enquanto o teu cemitério contiver 5 ou mais criaturas, ganha +X ATK e +Y PV."
+        "desc": "Enquanto o teu cemitério contiver 7 ou mais criaturas, ganha +X ATK e +Y PV."
       }
     },
     "spell_keywords": {
@@ -545,7 +545,7 @@
       },
       "silence": {
         "label": "Silêncio",
-        "desc": "Remove todas as palavras-chave de uma criatura alvo"
+        "desc": "Remove todas as palavras-chave de uma criatura alvo e redefine os seus atributos para os valores originais"
       },
       "renforcement": {
         "label": "Reforço +X/+Y",
@@ -573,7 +573,7 @@
       },
       "epargne": {
         "label": "Poupança X",
-        "desc": "Adiciona X ao seu contador de Poupança (máximo 10)"
+        "desc": "Adiciona X ao seu contador de Poupança (máximo 8)"
       },
       "inspiration": {
         "label": "Inspiração X",
@@ -1692,7 +1692,7 @@
     "neg_atk_is_x": "(o -ATK = o valor X)",
     "spell_cost_y": "CUSTO DOS FEITIÇOS (Y)",
     "spell_count_is_x": "(o número de feitiços = o valor X)",
-    "fda_condition": "(enquanto ≥5 criaturas no cemitério)",
+    "fda_condition": "(enquanto ≥7 criaturas no cemitério)",
     "choose_ability": "-- Escolher uma habilidade --",
     "scope_one_ally": "1 aliado-alvo",
     "scope_all_allies": "Todos os aliados",

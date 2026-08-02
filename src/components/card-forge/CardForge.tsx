@@ -3639,7 +3639,7 @@ export default function CardForge() {
                         </div>
                       </div>
                     )}
-                    {/* Force des ancêtres — +ATK (X) / +PV (Y) tant que le cimetière compte ≥5 créatures */}
+                    {/* Force des ancêtres — +ATK (X) / +PV (Y) tant que le cimetière compte ≥7 créatures */}
                     {manualKeywords.includes("Force des ancêtres +X/+Y") && (
                       <div style={{ marginTop: 6, padding: 6, borderRadius: 6, border: "1px solid #d9cfe8", background: "#f8f4ff" }}>
                         <div style={{ fontSize: 8, color: "#6b4fa0", letterSpacing: 1, fontWeight: 700, marginBottom: 4 }}>🪬 FORCE DES ANCÊTRES {tf('fda_condition')}</div>

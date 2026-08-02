@@ -395,7 +395,7 @@
       },
       "epargne": {
         "label": "Thrift X",
-        "desc": "Adds X to your Thrift counter (max 10)."
+        "desc": "Adds X to your Thrift counter (max 8)."
       },
       "seconde_vie": {
         "label": "Second Life X",
@@ -447,7 +447,7 @@
       },
       "force_des_ancetres": {
         "label": "Ancestral Strength +X/+Y",
-        "desc": "While your graveyard holds 5 or more creatures, gains +X ATK and +Y HP."
+        "desc": "While your graveyard holds 7 or more creatures, gains +X ATK and +Y HP."
       }
     },
     "spell_keywords": {
@@ -545,7 +545,7 @@
       },
       "silence": {
         "label": "Silence",
-        "desc": "Remove all keywords from a targeted creature."
+        "desc": "Remove all keywords from a targeted creature and reset its stats to their original values."
       },
       "renforcement": {
         "label": "Reinforcement +X/+Y",
@@ -573,7 +573,7 @@
       },
       "epargne": {
         "label": "Thrift X",
-        "desc": "Adds X to your Thrift counter (max 10)"
+        "desc": "Adds X to your Thrift counter (max 8)"
       },
       "inspiration": {
         "label": "Inspiration X",
@@ -1692,7 +1692,7 @@
     "neg_atk_is_x": "(-ATK = X value)",
     "spell_cost_y": "SPELL COST (Y)",
     "spell_count_is_x": "(the spell count = the X value)",
-    "fda_condition": "(while ≥5 creatures in your graveyard)",
+    "fda_condition": "(while ≥7 creatures in your graveyard)",
     "choose_ability": "-- Choose an ability --",
     "scope_one_ally": "1 targeted ally",
     "scope_all_allies": "All allies",

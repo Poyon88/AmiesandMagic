@@ -16,6 +16,7 @@ export function mkCard(partial: Partial<Card>): Card {
 export function mkInstance(card: Card): CardInstance {
   return {
     instanceId: `i_${seq++}`, card,
+    baseAttack: card.attack ?? 0, baseHealth: card.health ?? 1,
     currentAttack: card.attack ?? 0, currentHealth: card.health ?? 1, maxHealth: card.health ?? 1,
     hasAttacked: false, hasSummoningSickness: false, hasDivineShield: false, attacksRemaining: 1,
     isPoisoned: false, hasUsedResurrection: false, tapped: false,

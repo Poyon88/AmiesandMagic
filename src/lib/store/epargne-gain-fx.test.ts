@@ -9,6 +9,7 @@
 import { describe, expect, it, beforeEach, vi, afterEach } from "vitest";
 import { useGameStore } from "./gameStore";
 import { mkCard, mkInstance, mkState } from "@/lib/game/test-harness";
+import { MAX_EPARGNE } from "@/lib/game/constants";
 import type { CardInstance } from "@/lib/game/types";
 
 /** Créature à Épargne X déclenchée en FIN DE TOUR (la carte de la capture). */
@@ -71,7 +72,7 @@ describe("FX du compteur d'Épargne", () => {
   it("compteur déjà au plafond : aucun gain, donc aucune animation", () => {
     const s = mkState();
     s.players[0].board = [porteCoffre(1)];
-    s.players[0].epargne = 10; // MAX_EPARGNE — le surplus est écrêté en silence
+    s.players[0].epargne = MAX_EPARGNE; // au plafond — le surplus est écrêté en silence
     useGameStore.setState({ gameState: s, localPlayerId: "P1" });
 
     useGameStore.getState().dispatchAction({ type: "end_turn" });

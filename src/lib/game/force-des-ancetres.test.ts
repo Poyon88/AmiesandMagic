@@ -1,5 +1,5 @@
 // Force des ancêtres +X/+Y : aura conditionnelle DYNAMIQUE — tant que le
-// cimetière du PROPRIÉTAIRE compte 5 créatures ou plus, la porteuse gagne
+// cimetière du PROPRIÉTAIRE compte 7 créatures ou plus, la porteuse gagne
 // +X ATK / +Y PV ; le bonus retombe quand la condition se rompt (cimetière
 // vidé par Exhumation/Résurrection) ou que le mot-clé disparaît. Couvre le
 // seuil (5), le décompte créatures-seulement (les sorts ne comptent pas), le
@@ -24,7 +24,7 @@ function fillGraveyard(s: ReturnType<typeof mkState>, playerIdx: 0 | 1, n: numbe
 }
 
 describe("Force des ancêtres +X/+Y", () => {
-  it("accorde +X/+Y quand le cimetière du propriétaire compte 5 créatures", () => {
+  it("accorde +X/+Y quand le cimetière du propriétaire compte 7 créatures", () => {
     const s = mkState();
     const bearer = mkBearer(3, 2);
     s.players[0].board.push(bearer);

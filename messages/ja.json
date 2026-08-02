@@ -395,7 +395,7 @@
       },
       "epargne": {
         "label": "貯蓄X",
-        "desc": "貯蓄カウンターに X を追加します（最大10）。"
+        "desc": "貯蓄カウンターに X を追加します（最大8）。"
       },
       "seconde_vie": {
         "label": "セカンドライフX",
@@ -447,7 +447,7 @@
       },
       "force_des_ancetres": {
         "label": "祖霊の力 +X/+Y",
-        "desc": "自分の墓地にクリーチャーが5体以上ある限り、+X ATKと+Y PVを得る。"
+        "desc": "自分の墓地にクリーチャーが7体以上ある限り、+X ATKと+Y PVを得る。"
       }
     },
     "spell_keywords": {
@@ -545,7 +545,7 @@
       },
       "silence": {
         "label": "沈黙",
-        "desc": "対象のクリーチャー1体のキーワードをすべて取り除く。"
+        "desc": "対象のクリーチャー1体のキーワードをすべて取り除き、その能力値を元の値に戻す。"
       },
       "renforcement": {
         "label": "強化 +X/+Y",
@@ -573,7 +573,7 @@
       },
       "epargne": {
         "label": "貯蓄X",
-        "desc": "貯蓄カウンターに X を追加します（最大10）"
+        "desc": "貯蓄カウンターに X を追加します（最大8）"
       },
       "inspiration": {
         "label": "鼓舞 X",
@@ -1692,7 +1692,7 @@
     "neg_atk_is_x": "（－ATK＝X値）",
     "spell_cost_y": "呪文のコスト（Y）",
     "spell_count_is_x": "（呪文の数＝X値）",
-    "fda_condition": "（墓地にクリーチャー5体以上の間）",
+    "fda_condition": "（墓地にクリーチャー7体以上の間）",
     "choose_ability": "-- 能力を選択 --",
     "scope_one_ally": "味方1体を対象",
     "scope_all_allies": "全味方",

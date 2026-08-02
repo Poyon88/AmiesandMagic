@@ -1584,14 +1584,14 @@ export default function CardEditor() {
             )}
 
             {/* Force des ancêtres — bloc unifié +ATK (X) / +PV (Y), actif tant que
-                le cimetière du propriétaire compte ≥5 créatures. Affiché AUSSI sur
+                le cimetière du propriétaire compte ≥7 créatures. Affiché AUSSI sur
                 un SORT qui la confère : son `y` y est bel et bien persisté (cf. la
                 branche sans garde !isSpellCard plus haut), seul le champ manquait
                 — le +PV d'une carte comme « Éveil des Premiers-Nés » était donc
                 inaccessible depuis l'édition. */}
             {((editFields.keywords as string[]) || []).includes("force_des_ancetres") && (
               <div style={{ marginBottom: 8, padding: "8px 10px", borderRadius: 6, border: "1px solid #d9cfe8", background: "#f8f4ff" }}>
-                <div style={{ ...S.label, color: "#6b4fa0", marginBottom: 6 }}>🪬 FORCE DES ANCÊTRES (≥5 créatures au cimetière)</div>
+                <div style={{ ...S.label, color: "#6b4fa0", marginBottom: 6 }}>🪬 FORCE DES ANCÊTRES (≥7 créatures au cimetière)</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 9, color: "#6b4fa0" }}>+ATK (X)</span>
                   <input

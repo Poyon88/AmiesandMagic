@@ -390,12 +390,12 @@ export const ABILITIES: Record<string, AbilityDef> = {
     creature: { cost: 18, costPerX: 0, se: 4.0, minTier: 2, scalable: false, zone: "Terrain" },
   },
   // Aura conditionnelle DYNAMIQUE (modèle Sang mêlé) : le bonus s'allume tant
-  // que le cimetière du propriétaire compte 5 créatures ou plus, et retombe si
+  // que le cimetière du propriétaire compte 7 créatures ou plus, et retombe si
   // la condition se rompt (Exhumation, Résurrection…). Recalculé dans
   // recalculateAuras ; X/Y lus depuis keyword_instances (repli granted, puis 1/1).
   force_des_ancetres: {
     id: "force_des_ancetres", label: "Force des ancêtres +X/+Y", symbol: "🪬",
-    desc: "Tant que votre cimetière compte 5 créatures ou plus, gagne +X ATK et +Y PV.",
+    desc: "Tant que votre cimetière compte 7 créatures ou plus, gagne +X ATK et +Y PV.",
     applicable_to: ["creature"],
     creature: { cost: 10, costPerX: 4, se: 2.5, minTier: 1, scalable: true, zone: "Cimetière" },
   },
@@ -837,7 +837,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   silence: {
     id: "silence", label: "Silence", symbol: "🤫",
-    desc: "Retire tous les mots-clés d'une créature ciblée",
+    desc: "Retire tous les mots-clés d'une créature ciblée et ramène ses stats à leur valeur d'origine",
     applicable_to: ["spell"],
     spell: { params: [], needsTarget: true, targetType: "any_creature" },
   },
@@ -923,14 +923,14 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   epargne: {
     id: "epargne", label: "Épargne X", symbol: "🪙",
-    desc: "Ajoute X à votre compteur d'Épargne (maximum 10).",
+    desc: "Ajoute X à votre compteur d'Épargne (maximum 8).",
     applicable_to: ["creature", "spell"],
     creature: {
       cost: 7, costPerX: 4, se: 2.0, minTier: 1, scalable: true, zone: "Terrain",
-      desc: "Ajoute X à votre compteur d'Épargne (maximum 10).",
+      desc: "Ajoute X à votre compteur d'Épargne (maximum 8).",
     },
     spell: {
-      desc: "Ajoute X à votre compteur d'Épargne (maximum 10)",
+      desc: "Ajoute X à votre compteur d'Épargne (maximum 8)",
       params: ["amount"], needsTarget: false,
     },
   },

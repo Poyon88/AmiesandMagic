@@ -1036,6 +1036,8 @@ function createCardInstance(card: Card): CardInstance {
   return {
     instanceId: generateInstanceId(),
     card,
+    baseAttack: card.attack ?? 0,
+    baseHealth: card.health ?? 1,
     currentAttack: card.attack ?? 0,
     currentHealth: card.health ?? 1,
     maxHealth: card.health ?? 1,
@@ -1127,6 +1129,56 @@ export function persistentStats(inst: CardInstance): { attack: number; health: n
       + inst.loyautePVBonus + inst.necrophagiePVBonus + inst.richessePVBonus
       + inst.devorationPVBonus,
   };
+}
+
+/** SILENCE — ramène une unité à ses ATK/PV IMPRIMÉS en effaçant TOUS ses gains
+ *  de stats personnels, quelle qu'en soit la source :
+ *   - les buffs cuits dans `card` (Renforcement, Gloire, Entrainement, buff
+ *     composé, Affaiblissement) → restaurés depuis `baseAttack`/`baseHealth` ;
+ *   - les bonus permanents suivis (loyauté, invocation, nécrophagie, richesse,
+ *     martyr, instinct de meute, dévoration) → remis à zéro.
+ *
+ *  Ce qui n'est PAS touché : les bonus d'AURA (`auraHealthBonus` de
+ *  Commandement, `sangMeleHealthBonus`, `forceAncetresHealthBonus`). Ils
+ *  appartiennent à la comptabilité par différentiel de recalculateAuras et sont
+ *  donc réintégrés tels quels dans les PV max ; le recalcul qui suit le sort
+ *  les réconcilie seul — en particulier il fait retomber Sang mêlé et Force des
+ *  ancêtres, dont le mot-clé vient d'être retiré. Les remettre à zéro ici
+ *  décalerait le différentiel et SOIGNERAIT la créature au recalcul suivant.
+ *
+ *  Les PV courants sont écrêtés au nouveau maximum : le Silence ne soigne pas,
+ *  et ne peut pas tuer non plus (les PV imprimés valent au moins 1). */
+function stripBoostsToBase(inst: CardInstance): void {
+  const baseAtk = inst.baseAttack ?? inst.card.attack ?? 0;
+  const baseHp = inst.baseHealth ?? inst.card.health ?? 1;
+
+  // Stats de la carte : on efface les buffs qui y ont été cuits. `card` est
+  // remplacée (pas mutée) — cf. capability-adapter, qui mémoïse sur l'objet.
+  inst.card = { ...inst.card, attack: baseAtk, health: baseHp };
+
+  inst.loyauteATKBonus = 0;
+  inst.loyautePVBonus = 0;
+  inst.summonBonusATK = 0;
+  inst.necrophagieATKBonus = 0;
+  inst.necrophagiePVBonus = 0;
+  inst.richesseATKBonus = 0;
+  inst.richessePVBonus = 0;
+  inst.martyrATKBonus = 0;
+  inst.instinctDeMeuteATKBonus = 0;
+  inst.devorationATKBonus = 0;
+  inst.devorationPVBonus = 0;
+  // Compteur de Gloire remis à zéro : son gain +X/+Y vient d'être effacé avec
+  // le reste, l'indicateur de plateau ne doit plus l'annoncer.
+  inst.gloireStacks = 0;
+
+  // ATK : base seule ; recalculateAuras (systématique en fin de résolution de
+  // sort) y rajoute les auras encore en vigueur.
+  inst.currentAttack = baseAtk;
+  inst.maxHealth = baseHp
+    + inst.auraHealthBonus
+    + inst.sangMeleHealthBonus
+    + (inst.forceAncetresHealthBonus ?? 0);
+  inst.currentHealth = Math.min(inst.currentHealth, inst.maxHealth);
 }
 
 function returnInstanceToPlay(inst: CardInstance): void {
@@ -1339,7 +1391,7 @@ function discardFromHand(
 
 // Force des ancêtres : seuil de créatures dans le cimetière du propriétaire à
 // partir duquel le bonus +X/+Y s'allume.
-export const FORCE_ANCETRES_GRAVEYARD_THRESHOLD = 5;
+export const FORCE_ANCETRES_GRAVEYARD_THRESHOLD = 7;
 
 // Résolution du couple X/Y de Force des ancêtres, dans l'ordre : instance de
 // mot-clé de la carte → valeurs conférées (grantedKeywordX/Y) → 1/1 par défaut.
@@ -3456,9 +3508,10 @@ function resolveSpellKeywords(
             target.isParalyzed = false;
             target.fureurActive = false;
             target.fureurATKBonus = 0;
-            // gloireStacks conservé : le Silence retire le mot-clé (plus aucun
-            // gain futur) mais ne reprend pas les +X/+Y déjà acquis, qui sont
-            // des stats permanentes — même traitement que Renforcement.
+            // …et retour aux ATK/PV IMPRIMÉS : le Silence ne coupe pas que les
+            // pouvoirs, il reprend TOUS les gains de stats accumulés (dont les
+            // +X/+Y de Gloire et de Renforcement, cuits dans `card`).
+            stripBoostsToBase(target);
           }
         }
         break;
@@ -5534,7 +5587,9 @@ function applyRenforcementSelf(inst: CardInstance, x: number, y: number): void {
 
 // Gloire +X/+Y : récompense permanente d'une survie à des dégâts de combat.
 // Réutilise exactement le buff de Renforcement (stats cuites dans `card`), donc
-// le gain survit à recalculateAuras, au passage en main/cimetière et au Silence.
+// le gain survit à recalculateAuras et au passage en main/cimetière. En
+// revanche il NE survit PAS au Silence, qui rend l'unité à ses stats imprimées
+// (cf. stripBoostsToBase).
 //
 // Résolution de X/Y, dans l'ordre :
 //   1. l'instance de mot-clé de la carte (forge : +X = ATK, +Y = PV) ;

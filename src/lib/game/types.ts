@@ -45,7 +45,7 @@ export type Keyword =
   // Polymorphic — cast X random collection spells of cost Y (same alignment,
   // current format), with random targets
   | "dechainement"
-  // Passive aura — +X ATK / +Y PV while the owner's graveyard holds ≥5 creatures
+  // Passive aura — +X ATK / +Y PV while the owner's graveyard holds ≥7 creatures
   | "force_des_ancetres"
   // Tier 2 — AoE random damage
   | "tempete"
@@ -641,6 +641,18 @@ export interface FormatSet {
 export interface CardInstance {
   instanceId: string;
   card: Card;
+  /** ATK / PV IMPRIMÉS de la carte, figés à la création de l'instance.
+   *  Indispensables parce que `card.attack` / `card.health` NE SONT PAS la base :
+   *  tous les buffs permanents (Renforcement, Gloire, Entrainement, buff composé,
+   *  Affaiblissement) y sont cuits, si bien que la valeur d'origine serait sinon
+   *  définitivement perdue. Seul consommateur aujourd'hui : le Silence, qui
+   *  ramène l'unité à ces valeurs (cf. stripBoostsToBase).
+   *  Optionnels : les snapshots `match_state` d'avant l'ajout ne les portent pas
+   *  — tout lecteur doit se replier sur `card.attack` / `card.health`.
+   *  NB : un clone de Dédoublement naît de la carte DÉJÀ buffée de sa source,
+   *  donc sa « base » à lui inclut ces buffs — cohérent avec la règle du clone. */
+  baseAttack?: number;
+  baseHealth?: number;
   currentAttack: number;
   currentHealth: number;
   maxHealth: number;
@@ -695,7 +707,7 @@ export interface CardInstance {
   // auraHealthBonus so the two dynamic +PV auras don't clobber each other.
   sangMeleHealthBonus: number;
   // Aura health bonus (force des ancêtres) — +Y PV dynamique tant que le
-  // cimetière du propriétaire compte ≥5 créatures. Optionnel : les instances
+  // cimetière du propriétaire compte ≥7 créatures. Optionnel : les instances
   // sérialisées avant l'ajout du champ n'en disposent pas (lire avec ?? 0).
   forceAncetresHealthBonus?: number;
   // Nécrophagie: permanent buff tracker

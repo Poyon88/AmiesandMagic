@@ -395,7 +395,7 @@
       },
       "epargne": {
         "label": "Sparen X",
-        "desc": "Fügt X zu deinem Sparzähler hinzu (maximal 10)."
+        "desc": "Fügt X zu deinem Sparzähler hinzu (maximal 8)."
       },
       "seconde_vie": {
         "label": "Zweites Leben X",
@@ -447,7 +447,7 @@
       },
       "force_des_ancetres": {
         "label": "Kraft der Ahnen +X/+Y",
-        "desc": "Solange dein Friedhof 5 oder mehr Kreaturen enthält, erhält diese Einheit +X ATK und +Y LP."
+        "desc": "Solange dein Friedhof 7 oder mehr Kreaturen enthält, erhält diese Einheit +X ATK und +Y LP."
       }
     },
     "spell_keywords": {
@@ -545,7 +545,7 @@
       },
       "silence": {
         "label": "Stille",
-        "desc": "Entfernt alle Schlüsselwörter einer anvisierten Kreatur."
+        "desc": "Entfernt alle Schlüsselwörter einer anvisierten Kreatur und setzt ihre Werte auf die Ursprungswerte zurück."
       },
       "renforcement": {
         "label": "Stärkung +X/+Y",
@@ -573,7 +573,7 @@
       },
       "epargne": {
         "label": "Sparen X",
-        "desc": "Fügt X zu deinem Sparzähler hinzu (maximal 10)"
+        "desc": "Fügt X zu deinem Sparzähler hinzu (maximal 8)"
       },
       "inspiration": {
         "label": "Inspiration X",
@@ -1692,7 +1692,7 @@
     "neg_atk_is_x": "(-ATK = Wert X)",
     "spell_cost_y": "ZAUBERKOSTEN (Y)",
     "spell_count_is_x": "(die Anzahl der Zauber = Wert X)",
-    "fda_condition": "(solange ≥5 Kreaturen im Friedhof)",
+    "fda_condition": "(solange ≥7 Kreaturen im Friedhof)",
     "choose_ability": "-- Fähigkeit wählen --",
     "scope_one_ally": "1 gezielter Verbündeter",
     "scope_all_allies": "Alle Verbündeten",

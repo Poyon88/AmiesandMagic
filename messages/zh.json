@@ -395,7 +395,7 @@
       },
       "epargne": {
         "label": "储蓄 X",
-        "desc": "为你的储蓄计数器增加X点（上限10点）。"
+        "desc": "为你的储蓄计数器增加X点（上限8点）。"
       },
       "seconde_vie": {
         "label": "二次生命 X",
@@ -447,7 +447,7 @@
       },
       "force_des_ancetres": {
         "label": "先祖之力 +X/+Y",
-        "desc": "只要你的墓地中有5个或更多生物，便获得+X攻击力和+Y生命值。"
+        "desc": "只要你的墓地中有7个或更多生物，便获得+X攻击力和+Y生命值。"
       }
     },
     "spell_keywords": {
@@ -545,7 +545,7 @@
       },
       "silence": {
         "label": "沉默",
-        "desc": "移除目标生物的所有关键词。"
+        "desc": "移除目标生物的所有关键词，并将其属性重置为初始数值。"
       },
       "renforcement": {
         "label": "强化 +X/+Y",
@@ -573,7 +573,7 @@
       },
       "epargne": {
         "label": "储蓄 X",
-        "desc": "为你的储蓄计数器增加X点（上限10点）"
+        "desc": "为你的储蓄计数器增加X点（上限8点）"
       },
       "inspiration": {
         "label": "启示 X",
@@ -1692,7 +1692,7 @@
     "neg_atk_is_x": "（-攻击 = X值）",
     "spell_cost_y": "法术费用（Y）",
     "spell_count_is_x": "（法术数量 = X值）",
-    "fda_condition": "（墓地中有5个或更多生物时）",
+    "fda_condition": "（墓地中有7个或更多生物时）",
     "choose_ability": "-- 选择技能 --",
     "scope_one_ally": "1个目标友方",
     "scope_all_allies": "所有友方",

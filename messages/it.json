@@ -395,7 +395,7 @@
       },
       "epargne": {
         "label": "Risparmio X",
-        "desc": "Aggiunge X al tuo contatore Risparmio (massimo 10)."
+        "desc": "Aggiunge X al tuo contatore Risparmio (massimo 8)."
       },
       "seconde_vie": {
         "label": "Seconda vita X",
@@ -447,7 +447,7 @@
       },
       "force_des_ancetres": {
         "label": "Forza degli antenati +X/+Y",
-        "desc": "Finché il tuo cimitero contiene 5 o più creature, guadagna +X ATK e +Y PV."
+        "desc": "Finché il tuo cimitero contiene 7 o più creature, guadagna +X ATK e +Y PV."
       }
     },
     "spell_keywords": {
@@ -545,7 +545,7 @@
       },
       "silence": {
         "label": "Silenzio",
-        "desc": "Rimuove tutte le parole chiave da una creatura bersagliata"
+        "desc": "Rimuove tutte le parole chiave da una creatura bersagliata e riporta le sue statistiche ai valori originali"
       },
       "renforcement": {
         "label": "Potenziamento +X/+Y",
@@ -573,7 +573,7 @@
       },
       "epargne": {
         "label": "Risparmio X",
-        "desc": "Aggiunge X al tuo contatore Risparmio (massimo 10)"
+        "desc": "Aggiunge X al tuo contatore Risparmio (massimo 8)"
       },
       "inspiration": {
         "label": "Ispirazione X",
@@ -1692,7 +1692,7 @@
     "neg_atk_is_x": "(il -ATK = il valore X)",
     "spell_cost_y": "COSTO DEGLI INCANTESIMI (Y)",
     "spell_count_is_x": "(il numero di incantesimi = il valore X)",
-    "fda_condition": "(finché ≥5 creature nel cimitero)",
+    "fda_condition": "(finché ≥7 creature nel cimitero)",
     "choose_ability": "-- Scegli una capacità --",
     "scope_one_ally": "1 alleato bersaglio",
     "scope_all_allies": "Tutti gli alleati",
