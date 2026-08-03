@@ -276,6 +276,7 @@ export const ALL_KEYWORDS: Keyword[] = [
   "declenchement",
   "dechainement",
   "force_des_ancetres",
+  "seuil_sacrificiel",
 ];
 
 export const KEYWORD_LABELS: Record<Keyword, string> = {
@@ -332,6 +333,7 @@ export const KEYWORD_LABELS: Record<Keyword, string> = {
   declenchement: "Déclenchement",
   dechainement: "Déchainement X/Y",
   force_des_ancetres: "Force des ancêtres +X/+Y",
+  seuil_sacrificiel: "Seuil Sacrificiel +X/+Y",
 };
 
 /**
@@ -366,7 +368,7 @@ export function getKeywordDisplayLabel(kw: Keyword, t?: SafeT): string {
 // aurait aussi cassé sur toute locale reformulant le marqueur.
 const STAT_PAIR_KEYWORDS: ReadonlySet<string> = new Set([
   "gloire", "renforcement", "renforcement_multiple", "affaiblissement",
-  "force_des_ancetres",
+  "force_des_ancetres", "seuil_sacrificiel",
 ]);
 
 /** Paires à valeurs NÉGATIVES (débuff) — le signe s'applique aux deux membres. */
@@ -489,4 +491,5 @@ export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
   declenchement: "🔂",
   dechainement: "🌋",
   force_des_ancetres: "🪬",
+  seuil_sacrificiel: "📉",
 };

@@ -448,6 +448,10 @@
       "force_des_ancetres": {
         "label": "先祖之力 +X/+Y",
         "desc": "只要你的墓地中有7个或更多生物，便获得+X攻击力和+Y生命值。"
+      },
+      "seuil_sacrificiel": {
+        "label": "牺牲阈值 +X/+Y",
+        "desc": "只要你的牌库中有25张或更少的牌，便获得+X攻击力和+Y生命值。"
       }
     },
     "spell_keywords": {
@@ -458,6 +462,10 @@
       "precision": {
         "label": "精准",
         "desc": "此法术造成的伤害无视抗性、护甲和护盾。"
+      },
+      "seuil_colere": {
+        "label": "愤怒阈值 X",
+        "desc": "如果你的牌库中有25张或更少的牌，此法术将造成X点额外伤害。"
       },
       "poison": {
         "label": "中毒",
@@ -1523,6 +1531,7 @@
     "life_cost_title": "生命消耗：{life}",
     "discard_cost_title": "弃置 {count, plural, one {# 张牌} other {# 张牌}}",
     "sacrifice_cost_title": "献祭 {count, plural, one {# 个生物} other {# 个生物}}",
+    "exile_cost_title": "从你的牌库顶部放逐{count}张牌",
     "detail_note_all_allies": "（对所有友方）",
     "detail_note_target": "（对目标生物）",
     "trigger_on_play": "入场时",
@@ -1667,7 +1676,9 @@
     "discard_cost_hint": "出此牌时玩家须从手牌弃置的卡牌数量。",
     "discard_label": "弃牌",
     "sacrifice_cost_hint": "出此牌时玩家须牺牲的我方生物数量。",
+    "exile_cost_hint": "从玩家牌库顶部移除的牌数。被放逐的牌不会进入墓地，且无法回收。",
     "sacrifice_label": "牺牲",
+    "exile_label": "放逐",
     "spell_effects_label": "法术效果",
     "spell_keywords_label": "法术关键词",
     "token_to_summon": "待召唤衍生物",
@@ -2056,6 +2067,7 @@
     "page_title": "如何游玩",
     "track_beginner": "新手 — 完整指南",
     "track_tcg": "TCG玩家 — 核心要点",
+    "track_factions": "阵营与氏族",
     "goal_title": "游戏目标",
     "stat_hero_start": "英雄初始状态",
     "stat_starting_hand": "起始手牌",

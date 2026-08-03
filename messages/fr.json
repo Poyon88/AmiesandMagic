@@ -448,6 +448,10 @@
       "force_des_ancetres": {
         "label": "Force des ancêtres +X/+Y",
         "desc": "Tant que votre cimetière compte 7 créatures ou plus, gagne +X ATK et +Y PV."
+      },
+      "seuil_sacrificiel": {
+        "label": "Seuil Sacrificiel +X/+Y",
+        "desc": "Tant que votre deck compte 25 cartes ou moins, gagne +X ATK et +Y PV."
       }
     },
     "spell_keywords": {
@@ -470,6 +474,10 @@
       "convocation_simple": {
         "label": "Convocation",
         "desc": "Crée {token}."
+      },
+      "seuil_colere": {
+        "label": "Seuil de colère X",
+        "desc": "Si votre deck compte 25 cartes ou moins, ce sort inflige X dégâts supplémentaires."
       },
       "corruption": {
         "label": "Corruption",
@@ -1523,6 +1531,7 @@
     "life_cost_title": "Coût en vie : {life}",
     "discard_cost_title": "Défaussez {count, plural, one {# carte} other {# cartes}}",
     "sacrifice_cost_title": "Sacrifiez {count, plural, one {# créature} other {# créatures}}",
+    "exile_cost_title": "Exilez {count, plural, one {# carte} other {# cartes}} du dessus de votre deck",
     "detail_note_all_allies": " (à tous les alliés)",
     "detail_note_target": " (à la créature ciblée)",
     "trigger_on_play": "À l'entrée",
@@ -1668,7 +1677,9 @@
     "discard_cost_hint": "Nombre de cartes que le joueur doit défausser de sa main pour jouer cette carte.",
     "discard_label": "DISCARD",
     "sacrifice_cost_hint": "Nombre de créatures alliées que le joueur doit sacrifier pour jouer cette carte.",
+    "exile_cost_hint": "Nombre de cartes retirées du dessus du deck du joueur. Exilées : elles ne rejoignent pas le cimetière et sont irrécupérables.",
     "sacrifice_label": "SACRIFICE",
+    "exile_label": "EXIL",
     "spell_effects_label": "EFFETS DU SORT",
     "spell_keywords_label": "MOTS-CLÉS DE SORT",
     "token_to_summon": "TOKEN À INVOQUER",
@@ -2056,6 +2067,7 @@
     "page_title": "Comment jouer",
     "track_beginner": "Débutant — guide complet",
     "track_tcg": "Joueur de TCG — l'essentiel",
+    "track_factions": "Factions & clans",
     "goal_title": "Le but du jeu",
     "stat_hero_start": "Héros au départ",
     "stat_starting_hand": "Main de départ",

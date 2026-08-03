@@ -47,6 +47,10 @@ export type Keyword =
   | "dechainement"
   // Passive aura — +X ATK / +Y PV while the owner's graveyard holds ≥7 creatures
   | "force_des_ancetres"
+  // Passive aura — +X ATK / +Y PV while the owner's DECK is down to the
+  // threshold (SEUIL_DECK_THRESHOLD). Jumelle de force_des_ancetres, mais
+  // adossée à la bibliothèque plutôt qu'au cimetière.
+  | "seuil_sacrificiel"
   // Tier 2 — AoE random damage
   | "tempete"
   // Tier 2 — AoE full damage to BOTH boards (allies + enemies)
@@ -172,6 +176,7 @@ export type SpellKeywordId =
   | "selection_magique"
   | "poison"
   | "precision"
+  | "seuil_colere"
   | "touche_mortel"
   | "domination"
   | "corruption"
@@ -616,6 +621,10 @@ export interface Card {
   life_cost?: number | null;
   discard_cost?: number | null;
   sacrifice_cost?: number | null;
+  /** EXIL : nombre de cartes retirées du dessus de VOTRE deck. Elles ne
+   *  rejoignent pas le cimetière — ni Exhumation, ni Résurrection, ni Rappel ne
+   *  peuvent les récupérer. Rapproche d'autant la fatigue. */
+  exile_cost?: number | null;
 }
 
 export interface CardSet {
@@ -721,6 +730,10 @@ export interface CardInstance {
   // cimetière du propriétaire compte ≥7 créatures. Optionnel : les instances
   // sérialisées avant l'ajout du champ n'en disposent pas (lire avec ?? 0).
   forceAncetresHealthBonus?: number;
+  /** Bonus de PV de Seuil Sacrificiel, même comptabilité par différentiel que
+   *  `forceAncetresHealthBonus`. Optionnel : les instances sérialisées avant
+   *  l'ajout du champ n'en disposent pas (lire avec ?? 0). */
+  seuilSacrificielHealthBonus?: number;
   // Nécrophagie: permanent buff tracker
   necrophagieATKBonus: number;
   necrophagiePVBonus: number;

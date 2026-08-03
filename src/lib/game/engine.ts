@@ -44,6 +44,7 @@ import {
   MAX_BOARD_SIZE,
   MAX_MANA,
   MAX_EPARGNE,
+  SEUIL_DECK_THRESHOLD,
 } from "./constants";
 import { getFactionForRace, getEffectiveAlignment, FACTIONS } from "@/lib/card-engine/constants";
 
@@ -131,6 +132,28 @@ function withLethalSpell<T>(active: boolean, fn: () => T): T {
   const prev = lethalSpellActive;
   lethalSpellActive = active;
   try { return fn(); } finally { lethalSpellActive = prev; }
+}
+
+// Seuil de colère porté par un SORT : bonus de dégâts GLOBAL, posé pour toute la
+// résolution comme `lethalSpellActive`. Un COMPTEUR et non un booléen, parce que
+// le bonus ne s'applique qu'UNE fois — au premier paquet de dégâts du sort, pas
+// à chacun : une Tempête 3 avec Colère 2 inflige 3, puis 1, puis 1.
+let wrathPending = 0;
+function withWrathThreshold<T>(x: number, fn: () => T): T {
+  const prev = wrathPending;
+  wrathPending = x;
+  try { return fn(); } finally { wrathPending = prev; }
+}
+/** Prélève le bonus de colère s'il en reste : le premier appelant le consomme. */
+function consumeWrathBonus(): number {
+  const bonus = wrathPending;
+  wrathPending = 0;
+  return bonus;
+}
+/** X de Seuil de colère porté par ce sort, 0 s'il ne l'a pas. */
+function cardWrathAmount(card: Card): number {
+  const cap = getCapabilities(card).find(c => c.abilityId === "seuil_colere");
+  return Math.max(0, cap?.params?.x ?? 0);
 }
 
 /** La carte (sort) porte-t-elle Touché mortel ? Lu via le modèle unifié pour
@@ -307,6 +330,10 @@ export function getDiscardCost(card: Card): number {
 }
 export function getSacrificeCost(card: Card): number {
   return Math.max(0, card.sacrifice_cost ?? 0);
+}
+/** EXIL : cartes retirées du dessus du deck du joueur pour jouer la carte. */
+export function getExileCost(card: Card): number {
+  return Math.max(0, card.exile_cost ?? 0);
 }
 
 // Add a keyword to a creature at runtime (e.g. spell granting Bouclier
@@ -1263,7 +1290,8 @@ function stripBoostsToBase(inst: CardInstance): void {
   inst.maxHealth = baseHp
     + inst.auraHealthBonus
     + inst.sangMeleHealthBonus
-    + (inst.forceAncetresHealthBonus ?? 0);
+    + (inst.forceAncetresHealthBonus ?? 0)
+    + (inst.seuilSacrificielHealthBonus ?? 0);
   inst.currentHealth = Math.min(inst.currentHealth, inst.maxHealth);
 }
 
@@ -1497,6 +1525,14 @@ function forceAncetresValues(inst: CardInstance): { x: number; y: number } {
   return { x: Math.max(0, x), y: Math.max(0, y) };
 }
 
+/** X/Y de Seuil Sacrificiel : instance de mot-clé → valeurs conférées → 1/1. */
+function seuilSacrificielValues(inst: CardInstance): { x: number; y: number } {
+  const kwInst = inst.card.keyword_instances?.find(i => i.id === "seuil_sacrificiel");
+  const x = kwInst?.x ?? inst.grantedKeywordX["seuil_sacrificiel"] ?? 1;
+  const y = kwInst?.y ?? inst.grantedKeywordY?.["seuil_sacrificiel"] ?? 1;
+  return { x: Math.max(0, x), y: Math.max(0, y) };
+}
+
 export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
   // Reset ATK to base + permanent bonuses (not auras)
   for (const c of player.board) {
@@ -1667,6 +1703,32 @@ export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
         c.currentHealth += diff;
         if (c.currentHealth < 1 && y < oldHP) c.currentHealth = 1; // don't kill via aura removal
         c.forceAncetresHealthBonus = y;
+      }
+    }
+  }
+
+  // Seuil Sacrificiel +X/+Y : jumelle de Force des ancêtres, adossée au DECK.
+  // Tant que le deck du PROPRIÉTAIRE est descendu à SEUIL_DECK_THRESHOLD cartes
+  // ou moins, l'unité gagne +X ATK / +Y PV. Même comptabilité par différentiel :
+  // l'ATK est ré-ajoutée ici (reset en tête de fonction), les PV suivent via
+  // seuilSacrificielHealthBonus pour monter ET redescendre — le seuil se
+  // refranchit dans les deux sens, Incinération et Retour différé remettant des
+  // cartes sous le deck. La réconciliation tourne pour TOUTE créature : sans le
+  // mot-clé (Silence) le bonus visé vaut 0 et les PV retombent.
+  for (const board of [player.board, opponent.board]) {
+    const owner = board === player.board ? player : opponent;
+    const conditionMet = owner.deck.length <= SEUIL_DECK_THRESHOLD;
+    for (const c of board) {
+      const active = conditionMet && hasKw(c, "seuil_sacrificiel");
+      const { x, y } = active ? seuilSacrificielValues(c) : { x: 0, y: 0 };
+      if (x > 0) c.currentAttack += x;
+      const oldHP = c.seuilSacrificielHealthBonus ?? 0;
+      if (y !== oldHP) {
+        const diff = y - oldHP;
+        c.maxHealth += diff;
+        c.currentHealth += diff;
+        if (c.currentHealth < 1 && y < oldHP) c.currentHealth = 1; // don't kill via aura removal
+        c.seuilSacrificielHealthBonus = y;
       }
     }
   }
@@ -2018,6 +2080,15 @@ function advanceEndOfTurn(newState: GameState): GameState {
     const creature = outgoing.board.find(c => c.instanceId === step.sourceInstanceId);
     // Source partie du plateau entre pause et reprise → on saute ses effets.
     if (!creature) { queue.shift(); continue; }
+    // Source ABATTUE par un effet situé à sa GAUCHE : elle ne parle plus. Les
+    // morts n'étant balayées qu'à la fin de la séquence (finalizeEndOfTurn),
+    // elle est encore physiquement sur le plateau — d'où ce test explicite sur
+    // les PV. Sans lui, une créature tuée par son voisin résolvait quand même
+    // son propre effet avant de rejoindre le cimetière.
+    // Même doctrine que le ciblage, qui écarte déjà les unités à 0 PV du
+    // plateau comme des « cadavres en sursis », et que la résolution des sorts,
+    // qui règle ses morts après chaque effet.
+    if (creature.currentHealth <= 0) { queue.shift(); continue; }
 
     if (step.curated) {
       const inst = step.curated;
@@ -2180,9 +2251,14 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
   const lifeCost = getLifeCost(card);
   const discardCost = getDiscardCost(card);
   const sacrificeCost = getSacrificeCost(card);
+  const exileCost = getExileCost(card);
   const requestedDiscards = action.discardInstanceIds ?? [];
   const requestedSacrifices = action.sacrificeInstanceIds ?? [];
   if (lifeCost > 0 && player.hero.hp - lifeCost <= 0) return state;
+  // Un coût qui ne peut pas être payé INTÉGRALEMENT interdit de jouer la carte —
+  // même règle que le coût en PV, qu'on ne paie pas « autant que possible ».
+  // Le deck est donc un vrai plafond : plus rien à exiler, plus de carte à jouer.
+  if (exileCost > 0 && player.deck.length < exileCost) return state;
   if (requestedDiscards.length !== discardCost) return state;
   if (requestedSacrifices.length !== sacrificeCost) return state;
   // The card being played cannot be selected as its own discard cost — even
@@ -2200,6 +2276,10 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
   // Pay life cost directly — armor protects from damage, not voluntary
   // self-payment. Coherent with canPlayCard's `hp - life_cost > 0` check.
   if (lifeCost > 0) player.hero.hp -= lifeCost;
+  // EXIL : les cartes quittent le deck sans rejoindre AUCUNE zone. Un simple
+  // `splice` suffit donc — les pousser au cimetière les rendrait récupérables
+  // (Exhumation, Résurrection, Rappel), ce qui viderait le coût de son sens.
+  if (exileCost > 0) player.deck.splice(0, exileCost);
   // Remove the played card from hand FIRST so it can never be its own discard
   // target and so hand-size checks downstream are accurate.
   zone.splice(cardIndex, 1);
@@ -3380,6 +3460,11 @@ function resolveSpellCard(
   legacyTargetId?: string,
 ): SpellResolutionContext {
   const ctx: SpellResolutionContext = { state, caster, opponent, card, targetMap, results: {} };
+  // Seuil de colère : évalué UNE fois, à la résolution — le deck du lanceur peut
+  // bouger pendant le sort (Incinération, pioche), la condition ne doit pas se
+  // ré-évaluer en cours de route.
+  const wrath = caster.deck.length <= SEUIL_DECK_THRESHOLD ? cardWrathAmount(card) : 0;
+  withWrathThreshold(wrath, () =>
   withLethalSpell(cardHasLethalTouch(card), () => {
     // Phase 1 — mots-clés de sort (règlent leurs morts effet par effet).
     const instances = spellResolutionInstances(card);
@@ -3414,7 +3499,7 @@ function resolveSpellCard(
     }
 
     recalculateAuras(caster, opponent);
-  });
+  }));
   return ctx;
 }
 
@@ -4970,6 +5055,14 @@ function dealDamageToHero(
   source?: CardInstance | import("./types").HeroState | null,
 ) {
   if (damage <= 0) return;
+  // Seuil de colère, versant héros. Pas de garde `fromSpell` ici : cette
+  // fonction n'en prend pas, et le compteur n'est non nul QUE pendant la
+  // résolution d'un sort — les 28 autres sites d'appel (fatigue, Douleur,
+  // Persécution, combat) sont hors de cette fenêtre.
+  // Un râle d'agonie déclenché par le sort ne peut pas le voler non plus : les
+  // morts ne sont réglées qu'aux frontières d'effet (settleSpellDeaths), donc
+  // les dégâts du sort ont déjà consommé le bonus quand le râle part.
+  if (wrathPending > 0) damage += consumeWrathBonus();
   if (hero.armor > 0) {
     if (hero.armor >= damage) {
       hero.armor -= damage;
@@ -5008,6 +5101,16 @@ function dealDamageToCreature(
   isCombatDamage = false,
 ) {
   if (damage <= 0) return;
+
+  // Seuil de colère : le premier paquet de dégâts DU SORT emporte le bonus.
+  // Garde `(fromSpell ?? isSpellDamage)`, le même idiome que Transcendance juste
+  // en dessous : les dégâts de sort passent `isSpellDamage: true` sans préciser
+  // `fromSpell`, tandis que les capacités de créature qui empruntent le canal
+  // « sort » pour percer Armure/Indestructible (Carnage, Maléfice) passent
+  // `fromSpell: false` — elles sont donc exclues, comme voulu.
+  if ((fromSpell ?? isSpellDamage) && wrathPending > 0) {
+    damage += consumeWrathBonus();
+  }
 
   // Transcendance: immunité totale aux sorts (y compris zone), mais pas aux
   // capacités de créatures.
@@ -7422,6 +7525,8 @@ export function canPlayCard(state: GameState, cardInstanceId: string): boolean {
   if (player.hand.length - 1 < discardCost) return false;
   const sacrificeCost = getSacrificeCost(card.card);
   if (player.board.length < sacrificeCost) return false;
+  // Même règle que dans playCard : sans assez de cartes à exiler, injouable.
+  if (getExileCost(card.card) > player.deck.length) return false;
   // Sacrifices free up board slots, so the test compares the final board size.
   if (card.card.card_type === "creature" &&
       player.board.length - sacrificeCost + 1 > MAX_BOARD_SIZE) return false;

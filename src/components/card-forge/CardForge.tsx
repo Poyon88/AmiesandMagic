@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from "react";
+import ExileGlyph from "@/components/cards/ExileGlyph";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
@@ -164,6 +165,8 @@ interface ForgeCard {
   lifeCost?: number;
   discardCost?: number;
   sacrificeCost?: number;
+  /** EXIL : cartes retirées du dessus du deck pour jouer la carte. */
+  exileCost?: number;
   // Effets composés (modèle hybride) — pour l'aperçu CardVisual.
   capabilities?: Capability[] | null;
 }
@@ -1669,6 +1672,7 @@ export default function CardForge() {
   const [manualLifeCost, setManualLifeCost] = useState(0);
   const [manualDiscardCost, setManualDiscardCost] = useState(0);
   const [manualSacrificeCost, setManualSacrificeCost] = useState(0);
+  const [manualExileCost, setManualExileCost] = useState(0);
   const [manualAbility, setManualAbility] = useState("");
   const [manualFlavorText, setManualFlavorText] = useState("");
   const [manualIllustrationPrompt, setManualIllustrationPrompt] = useState("");
@@ -1819,6 +1823,7 @@ export default function CardForge() {
     lifeCost: manualLifeCost || undefined,
     discardCost: manualDiscardCost || undefined,
     sacrificeCost: manualSacrificeCost || undefined,
+    exileCost: manualExileCost || undefined,
   };
 
   // All races from all factions
@@ -2084,7 +2089,7 @@ export default function CardForge() {
     setManualIllustrationPrompt(""); setManualExtraContext(""); setManualKeywords([]); setKeywordXValues({}); setKeywordModes({}); setCard(null);
     setEditedPrompt(null); setSaveResult(null);
     setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setAfY(1); setRfY(1); setGlY(1); setDcY(1); setFdaY(1); setRmRace(""); setRmClan(""); setAsRace(""); setConferAbilityId(""); setConferX(1); setConferY(1); setDeclenchementTriggers([]); setComposedCaps([]);
-    setManualLifeCost(0); setManualDiscardCost(0); setManualSacrificeCost(0);
+    setManualLifeCost(0); setManualDiscardCost(0); setManualSacrificeCost(0); setManualExileCost(0);
     setCardImages(prev => Object.fromEntries(Object.entries(prev).filter(([k]) => k !== "manual_preview")));
   }, []);
 
@@ -2259,6 +2264,7 @@ export default function CardForge() {
     setManualLifeCost(0);
     setManualDiscardCost(0);
     setManualSacrificeCost(0);
+    setManualExileCost(0);
     // Mots-clés et leur paramétrage
     setManualKeywords([]);
     setKeywordXValues({});
@@ -2444,6 +2450,7 @@ export default function CardForge() {
             life_cost: forgeCard.lifeCost ?? 0,
             discard_cost: forgeCard.discardCost ?? 0,
             sacrifice_cost: forgeCard.sacrificeCost ?? 0,
+            exile_cost: forgeCard.exileCost ?? 0,
           },
           imageBase64,
           imageMimeType,
@@ -3084,6 +3091,12 @@ export default function CardForge() {
                       <label style={{ fontSize: 8, color: "#a060a0", letterSpacing: 1 }} title={tf('sacrifice_cost_hint')}>☠ {tf('sacrifice_label')}</label>
                       <input type="number" min={0} max={5} value={manualSacrificeCost} onChange={e => setManualSacrificeCost(Math.max(0, Math.min(5, parseInt(e.target.value) || 0)))}
                         style={{ width: "100%", padding: "5px 4px", borderRadius: 6, border: "1px solid #a060a044", background: "#fff", color: "#a060a0", fontFamily: "'Cinzel',serif", fontSize: 14, textAlign: "center", marginTop: 3 }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 8, color: "#7f8fa6", letterSpacing: 1 }} title={tf('exile_cost_hint')}><ExileGlyph size={10} color="#7f8fa6" /> {tf('exile_label')}</label>
+                      <input type="number" min={0} max={5} value={manualExileCost} onChange={e => setManualExileCost(Math.max(0, Math.min(5, parseInt(e.target.value) || 0)))}
+                        style={{ width: "100%", padding: "5px 4px", borderRadius: 6, border: "1px solid #7f8fa644", background: "#fff", color: "#5a6b80", fontFamily: "'Cinzel',serif", fontSize: 14, textAlign: "center", marginTop: 3 }}
                       />
                     </div>
                   </div>

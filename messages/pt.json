@@ -448,6 +448,10 @@
       "force_des_ancetres": {
         "label": "Força dos ancestrais +X/+Y",
         "desc": "Enquanto o teu cemitério contiver 7 ou mais criaturas, ganha +X ATK e +Y PV."
+      },
+      "seuil_sacrificiel": {
+        "label": "Limiar de sacrifício +X/+Y",
+        "desc": "Enquanto o teu baralho tiver 25 cartas ou menos, ganha +X ATK e +Y PV."
       }
     },
     "spell_keywords": {
@@ -458,6 +462,10 @@
       "precision": {
         "label": "Precisão",
         "desc": "Os danos deste feitiço ignoram a Resistência, a Armadura e o Escudo."
+      },
+      "seuil_colere": {
+        "label": "Limiar de ira X",
+        "desc": "Se o teu baralho tiver 25 cartas ou menos, este feitiço causa X de dano adicional."
       },
       "poison": {
         "label": "Veneno",
@@ -1523,6 +1531,7 @@
     "life_cost_title": "Custo de vida: {life}",
     "discard_cost_title": "Descarte {count, plural, one {# carta} other {# cartas}}",
     "sacrifice_cost_title": "Sacrifique {count, plural, one {# criatura} other {# criaturas}}",
+    "exile_cost_title": "Exila {count, plural, one {# carta} other {# cartas}} do topo do teu baralho",
     "detail_note_all_allies": " (a todos os aliados)",
     "detail_note_target": " (à criatura alvo)",
     "trigger_on_play": "Ao entrar",
@@ -1667,7 +1676,9 @@
     "discard_cost_hint": "Número de cartas que o jogador deve descartar da mão para jogar esta carta.",
     "discard_label": "DESCARTE",
     "sacrifice_cost_hint": "Número de criaturas aliadas que o jogador deve sacrificar para jogar esta carta.",
+    "exile_cost_hint": "Número de cartas removidas do topo do baralho do jogador. Exiladas: não vão para o cemitério e não podem ser recuperadas.",
     "sacrifice_label": "SACRIFÍCIO",
+    "exile_label": "EXÍLIO",
     "spell_effects_label": "EFEITOS DO FEITIÇO",
     "spell_keywords_label": "PALAVRAS-CHAVE DE FEITIÇO",
     "token_to_summon": "TOKEN A INVOCAR",
@@ -2056,6 +2067,7 @@
     "page_title": "Como jogar",
     "track_beginner": "Iniciante — guia completo",
     "track_tcg": "Jogador de TCG — o essencial",
+    "track_factions": "Fações e clãs",
     "goal_title": "O objetivo do jogo",
     "stat_hero_start": "Herói no início",
     "stat_starting_hand": "Mão inicial",

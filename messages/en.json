@@ -448,6 +448,10 @@
       "force_des_ancetres": {
         "label": "Ancestral Strength +X/+Y",
         "desc": "While your graveyard holds 7 or more creatures, gains +X ATK and +Y HP."
+      },
+      "seuil_sacrificiel": {
+        "label": "Sacrificial Threshold +X/+Y",
+        "desc": "While your deck holds 25 cards or fewer, gains +X ATK and +Y HP."
       }
     },
     "spell_keywords": {
@@ -458,6 +462,10 @@
       "precision": {
         "label": "Precision",
         "desc": "This spell's damage ignores Resistance, Armor, and Shield."
+      },
+      "seuil_colere": {
+        "label": "Wrath Threshold X",
+        "desc": "If your deck holds 25 cards or fewer, this spell deals X extra damage."
       },
       "poison": {
         "label": "Poison",
@@ -1523,6 +1531,7 @@
     "life_cost_title": "Life Cost: {life}",
     "discard_cost_title": "Discard {count, plural, one {# card} other {# cards}}",
     "sacrifice_cost_title": "Sacrifice {count, plural, one {# creature} other {# creatures}}",
+    "exile_cost_title": "Exile {count, plural, one {# card} other {# cards}} from the top of your deck",
     "detail_note_all_allies": " (to all allies)",
     "detail_note_target": " (to the targeted creature)",
     "trigger_on_play": "On Enter",
@@ -1667,7 +1676,9 @@
     "discard_cost_hint": "Number of cards the player must discard from hand to play this card.",
     "discard_label": "DISCARD",
     "sacrifice_cost_hint": "Number of allied creatures the player must sacrifice to play this card.",
+    "exile_cost_hint": "Number of cards removed from the top of the player's deck. Exiled: they never reach the graveyard and cannot be recovered.",
     "sacrifice_label": "SACRIFICE",
+    "exile_label": "EXILE",
     "spell_effects_label": "SPELL EFFECTS",
     "spell_keywords_label": "SPELL KEYWORDS",
     "token_to_summon": "TOKEN TO SUMMON",
@@ -2056,6 +2067,7 @@
     "page_title": "How to Play",
     "track_beginner": "Beginner — Full Guide",
     "track_tcg": "TCG Player — The Essentials",
+    "track_factions": "Factions & clans",
     "goal_title": "Goal of the Game",
     "stat_hero_start": "Starting Hero",
     "stat_starting_hand": "Starting Hand",

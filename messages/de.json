@@ -448,6 +448,10 @@
       "force_des_ancetres": {
         "label": "Kraft der Ahnen +X/+Y",
         "desc": "Solange dein Friedhof 7 oder mehr Kreaturen enthält, erhält diese Einheit +X ATK und +Y LP."
+      },
+      "seuil_sacrificiel": {
+        "label": "Opferschwelle +X/+Y",
+        "desc": "Solange dein Deck 25 Karten oder weniger enthält, erhält diese Einheit +X ATK und +Y LP."
       }
     },
     "spell_keywords": {
@@ -458,6 +462,10 @@
       "precision": {
         "label": "Präzision",
         "desc": "Der Schaden dieses Zaubers ignoriert Resistenz, Rüstung und Schild."
+      },
+      "seuil_colere": {
+        "label": "Zornschwelle X",
+        "desc": "Wenn dein Deck 25 Karten oder weniger enthält, verursacht dieser Zauber X zusätzlichen Schaden."
       },
       "poison": {
         "label": "Gift",
@@ -1523,6 +1531,7 @@
     "life_cost_title": "Lebenskosten: {life}",
     "discard_cost_title": "Legt {count, plural, one {# Karte} other {# Karten}} ab",
     "sacrifice_cost_title": "Opfert {count, plural, one {# Kreatur} other {# Kreaturen}}",
+    "exile_cost_title": "Verbanne {count, plural, one {# Karte} other {# Karten}} von der Oberseite deines Decks",
     "detail_note_all_allies": " (an alle Verbündeten)",
     "detail_note_target": " (an die Zielkreatur)",
     "trigger_on_play": "Beim Ausspielen",
@@ -1667,7 +1676,9 @@
     "discard_cost_hint": "Anzahl der Karten, die der Spieler aus seiner Hand abwerfen muss, um diese Karte zu spielen.",
     "discard_label": "ABWURF",
     "sacrifice_cost_hint": "Anzahl der verbündeten Kreaturen, die der Spieler opfern muss, um diese Karte zu spielen.",
+    "exile_cost_hint": "Anzahl der Karten, die oben vom Deck des Spielers entfernt werden. Verbannt: Sie landen nicht auf dem Friedhof und sind unwiederbringlich.",
     "sacrifice_label": "OPFER",
+    "exile_label": "EXIL",
     "spell_effects_label": "ZAUBEREFFEKTE",
     "spell_keywords_label": "ZAUBERSCHLÜSSELWÖRTER",
     "token_to_summon": "ZU BESCHWÖRENDER TOKEN",
@@ -2056,6 +2067,7 @@
     "page_title": "Spielanleitung",
     "track_beginner": "Einsteiger — vollständige Anleitung",
     "track_tcg": "TCG-Spieler — das Wesentliche",
+    "track_factions": "Fraktionen & Klans",
     "goal_title": "Das Spielziel",
     "stat_hero_start": "Held zu Beginn",
     "stat_starting_hand": "Starthand",

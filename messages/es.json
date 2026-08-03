@@ -448,6 +448,10 @@
       "force_des_ancetres": {
         "label": "Fuerza de los ancestros +X/+Y",
         "desc": "Mientras tu cementerio contenga 7 o más criaturas, gana +X ATK y +Y PV."
+      },
+      "seuil_sacrificiel": {
+        "label": "Umbral de sacrificio +X/+Y",
+        "desc": "Mientras tu mazo tenga 25 cartas o menos, gana +X ATK y +Y PV."
       }
     },
     "spell_keywords": {
@@ -458,6 +462,10 @@
       "precision": {
         "label": "Precisión",
         "desc": "Los daños de este hechizo ignoran la Resistencia, la Armadura y el Escudo."
+      },
+      "seuil_colere": {
+        "label": "Umbral de ira X",
+        "desc": "Si tu mazo tiene 25 cartas o menos, este hechizo inflige X daño adicional."
       },
       "poison": {
         "label": "Veneno",
@@ -1523,6 +1531,7 @@
     "life_cost_title": "Coste de vida: {life}",
     "discard_cost_title": "Descarta {count, plural, one {# carta} other {# cartas}}",
     "sacrifice_cost_title": "Sacrifica {count, plural, one {# criatura} other {# criaturas}}",
+    "exile_cost_title": "Exilia {count, plural, one {# carta} other {# cartas}} de la parte superior de tu mazo",
     "detail_note_all_allies": " (a todos los aliados)",
     "detail_note_target": " (a la criatura objetivo)",
     "trigger_on_play": "Al entrar",
@@ -1667,7 +1676,9 @@
     "discard_cost_hint": "Número de cartas que el jugador debe descartar de su mano para jugar esta carta.",
     "discard_label": "DESCARTE",
     "sacrifice_cost_hint": "Número de criaturas aliadas que el jugador debe sacrificar para jugar esta carta.",
+    "exile_cost_hint": "Número de cartas retiradas de la parte superior del mazo del jugador. Exiliadas: no van al cementerio y no se pueden recuperar.",
     "sacrifice_label": "SACRIFICIO",
+    "exile_label": "EXILIO",
     "spell_effects_label": "EFECTOS DEL HECHIZO",
     "spell_keywords_label": "PALABRAS CLAVE DEL HECHIZO",
     "token_to_summon": "TOKEN A INVOCAR",
@@ -2056,6 +2067,7 @@
     "page_title": "Cómo jugar",
     "track_beginner": "Principiante — guía completa",
     "track_tcg": "Jugador de TCG — lo esencial",
+    "track_factions": "Facciones y clanes",
     "goal_title": "El objetivo del juego",
     "stat_hero_start": "Héroe al inicio",
     "stat_starting_hand": "Mano inicial",

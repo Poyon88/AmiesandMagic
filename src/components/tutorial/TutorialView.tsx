@@ -12,7 +12,9 @@ import AmAtmosphere from "@/components/ui/AmAtmosphere";
 import AmHeading from "@/components/ui/AmHeading";
 import AmPanel from "@/components/ui/AmPanel";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 import { CREATURE_ABILITIES, SPELL_ABILITIES } from "@/lib/game/abilities";
+import { FACTIONS, getAllClanNames } from "@/lib/card-engine/constants";
 import {
   HERO_MAX_HP,
   DECK_SIZE,
@@ -21,20 +23,33 @@ import {
   MAX_BOARD_SIZE,
   MAX_MANA,
   STARTING_MANA,
+  MAX_SAME_CAPABILITY,
 } from "@/lib/game/constants";
 
 // ── Design tokens (Arcane War-Codex design system) ────────────────────────────
 const cinzel = "font-[family-name:var(--font-cinzel),serif]";
 const crimson = "font-[family-name:var(--font-crimson),serif]";
 
+/** Carte « vitrine » illustrant un clan ou une faction, choisie côté serveur. */
+export interface ClanVisual {
+  id: number;
+  name: string;
+  imageUrl: string;
+  rarity?: string | null;
+}
+
 interface TutorialViewProps {
   username: string;
   goldBalance: number;
+  clanVisuals?: Record<string, ClanVisual>;
+  factionVisuals?: Record<string, ClanVisual[]>;
 }
 
-type Track = "beginner" | "tcg";
+type Track = "beginner" | "tcg" | "factions";
 
-export default function TutorialView({ username, goldBalance }: TutorialViewProps) {
+export default function TutorialView({
+  username, goldBalance, clanVisuals = {}, factionVisuals = {},
+}: TutorialViewProps) {
   const t = useTranslations("home");
   const tt = useTranslations("tutorial");
   const [track, setTrack] = useState<Track>("beginner");
@@ -69,14 +84,19 @@ export default function TutorialView({ username, goldBalance }: TutorialViewProp
         <div className="flex justify-center gap-3 mb-10 am-animate-fade" style={{ animationDelay: "120ms" }}>
           <TrackButton active={track === "beginner"} onClick={() => setTrack("beginner")} label={tt('track_beginner')} />
           <TrackButton active={track === "tcg"} onClick={() => setTrack("tcg")} label={tt('track_tcg')} />
+          <TrackButton active={track === "factions"} onClick={() => setTrack("factions")} label={tt('track_factions')} />
         </div>
 
         <div className="max-w-4xl mx-auto">
-          {track === "beginner" ? <BeginnerGuide /> : <TcgGuide />}
+          {track === "beginner" && <BeginnerGuide />}
+          {track === "tcg" && <TcgGuide />}
+          {track === "factions" && (
+            <FactionsGuide clanVisuals={clanVisuals} factionVisuals={factionVisuals} />
+          )}
 
-          {/* Keyword reference — auto-generated from the ability registry, shown
-              in both tracks. Always in sync with the game. */}
-          <KeywordReference />
+          {/* Keyword reference — auto-generated from the ability registry. Hors
+              de l'onglet Factions, qui décrit des camps et non des mots-clés. */}
+          {track !== "factions" && <KeywordReference />}
         </div>
       </main>
     </div>
@@ -191,7 +211,7 @@ function BeginnerGuide() {
         <P>
           Une créature a une <Hi>attaque (ATK)</Hi> et des <Hi>points de vie (PV)</Hi>. Quand vous l'invoquez, elle
           arrive avec le <Hi>mal d'invocation</Hi> : elle ne peut pas attaquer le tour où elle est posée (sauf si elle
-          possède la capacité <Hi>Charge</Hi>). Dès le tour suivant, elle peut attaquer une créature ennemie ou le
+          possède la capacité <Hi>Traque</Hi>). Dès le tour suivant, elle peut attaquer une créature ennemie ou le
           héros adverse. Le terrain accueille jusqu'à <Hi>{MAX_BOARD_SIZE} créatures</Hi>.
         </P>
       </Section>
@@ -212,7 +232,7 @@ function BeginnerGuide() {
         </P>
         <Bullets items={[
           <><Hi>Provocation</Hi> : vous devez d'abord attaquer les créatures ennemies qui ont Provocation… sauf avec une créature qui a <Hi>Vol</Hi>.</>,
-          <><Hi>Bouclier divin</Hi> : absorbe la première blessure subie.</>,
+          <><Hi>Bouclier</Hi> : absorbe la première blessure subie.</>,
           <><Hi>Première Frappe</Hi> : frappe avant l'adversaire (qui ne riposte que s'il survit).</>,
           <><Hi>Résistance X</Hi> réduit les dégâts reçus, <Hi>Armure</Hi> divise par deux les dégâts de combat.</>,
           <><Hi>Esquive</Hi> évite la première attaque du tour.</>,
@@ -240,12 +260,20 @@ function BeginnerGuide() {
         <P>Un deck contient exactement <Hi>{DECK_SIZE} cartes</Hi> et suit ces règles :</P>
         <Bullets items={[
           <>Une <Hi>seule faction</Hi> principale par deck.</>,
-          <>Au maximum <Hi>2 clans</Hi> différents.</>,
-          <>Jusqu'à <Hi>4 cartes Mercenaires</Hi> (elles s'ajoutent à n'importe quel deck).</>,
+          <>Un <Hi>seul clan</Hi> : c'est lui qui définit votre style de jeu.</>,
+          <>Jusqu'à <Hi>4 cartes Mercenaires</Hi> (sans clan ni allégeance, elles s'ajoutent à n'importe quel deck).</>,
           <>Répartition par rareté : <Hi>2 Légendaires, 4 Épiques, 6 Rares, 8 Peu Communes, 30 Communes</Hi>.</>,
           <>Copies : <Hi>1 exemplaire</Hi> par carte non-commune, <Hi>3 exemplaires</Hi> par commune.</>,
+          <>Une même capacité nommée ne peut pas figurer plus de <Hi>{MAX_SAME_CAPABILITY} fois</Hi> dans le deck
+            (Vol excepté) : impossible d'empiler cinquante fois le même effet.</>,
           <>On ne mélange pas une faction <Hi>Bonne</Hi> et une faction <Hi>Maléfique</Hi> dans le même deck.</>,
         ]} />
+        <P>
+          Deux <Hi>formats</Hi> encadrent enfin ce que vous pouvez jouer. Le mode <Hi>Classique</Hi> n'autorise que les
+          Communes — {DECK_SIZE} cartes à égalité de puissance ; le mode <Hi>Expert</Hi> ouvre les slots de rareté
+          ci-dessus. L'étendue <Hi>Standard</Hi> ne retient que les cartes des deux dernières années, l'étendue
+          <Hi> Étendu</Hi> accepte toute la collection.
+        </P>
       </Section>
     </>
   );
@@ -271,27 +299,30 @@ function TcgGuide() {
           <>Victoire : héros adverse à <Hi>0 PV</Hi>. Deck vide → <Hi>fatigue</Hi> croissante.</>,
           <>Terrain et main plafonnés à <Hi>{MAX_BOARD_SIZE}</Hi>.</>,
           <>Le joueur en second reçoit une <Hi>Étincelle de mana</Hi> (+1 mana au tour 1).</>,
-          <><Hi>Mal d'invocation</Hi> par défaut ; <Hi>Charge</Hi> l'annule, <Hi>Raid</Hi> autorise l'attaque (créatures uniquement) en étant « malade ».</>,
+          <><Hi>Mal d'invocation</Hi> par défaut ; <Hi>Traque</Hi> l'annule, <Hi>Raid</Hi> autorise l'attaque (créatures uniquement, jamais le héros) en étant « malade ».</>,
         ]} />
       </Section>
 
       <Section title={tt('tcg_deckbuilding_title')}>
         <Bullets items={[
-          <><Hi>Mono-faction</Hi>, <Hi>≤ 2 clans</Hi>, <Hi>≤ 4 Mercenaires</Hi>.</>,
+          <><Hi>Mono-faction</Hi>, <Hi>mono-clan</Hi>, <Hi>≤ 4 Mercenaires</Hi>.</>,
           <>Slots de rareté : <Hi>2 / 4 / 6 / 8 / 30</Hi> (Lég / Épique / Rare / Peu Commune / Commune).</>,
           <>Copies : non-communes <Hi>×1</Hi>, communes <Hi>×3</Hi>.</>,
+          <>Une même capacité nommée : <Hi>{MAX_SAME_CAPABILITY} occurrences</Hi> maximum (Vol exempté).</>,
           <>Interdit de mélanger <Hi>Bon</Hi> et <Hi>Maléfique</Hi>.</>,
-          <>Faction = race(s) + clan(s). Ex. Élémentaires : race « Élémentaire », clans Feu / Terre / Eau / Air.</>,
+          <>Formats : mode <Hi>Classique</Hi> (communes seules) ou <Hi>Expert</Hi> (slots de rareté) × étendue
+            <Hi> Standard</Hi> (rotation ~2 ans) ou <Hi>Étendu</Hi>.</>,
+          <>Faction = race(s) + clan(s). Ex. Les Primordiaux : race « Élémentaire », un clan par élément.</>,
         ]} />
       </Section>
 
       <Section title={tt('tcg_combat_title')}>
         <Bullets items={[
           <>Échange <Hi>simultané</Hi> par défaut ; <Hi>Première Frappe</Hi> frappe avant.</>,
-          <>Défense : <Hi>Bouclier divin</Hi> (absorbe 1 coup), <Hi>Résistance X</Hi> (−X, min 1), <Hi>Armure</Hi> (½ dégâts de combat), <Hi>Indestructible</Hi> (immunise le combat), <Hi>Transcendance</Hi> (immunise les sorts), <Hi>Esquive</Hi>.</>,
+          <>Défense : <Hi>Bouclier</Hi> (absorbe 1 coup), <Hi>Résistance X</Hi> (−X, min 1), <Hi>Armure</Hi> (½ dégâts de combat), <Hi>Indestructible</Hi> (immunise le combat), <Hi>Transcendance</Hi> (immunise les sorts), <Hi>Esquive</Hi>.</>,
           <>Contournement : <Hi>Vol</Hi> ignore Provocation ; <Hi>Ombre</Hi> = furtif tant qu'il n'a pas agi.</>,
-          <>Offensif : <Hi>Double Attaque / Célérité</Hi>, <Hi>Piétinement</Hi>, <Hi>Souffle de feu X</Hi>, <Hi>Persécution X</Hi>, <Hi>Drain de vie</Hi>, <Hi>Poison</Hi>, <Hi>Paralysie</Hi>, <Hi>Riposte X</Hi>, <Hi>Fureur</Hi>.</>,
-          <><Hi>Précision</Hi> ignore le Bouclier divin.</>,
+          <>Offensif : <Hi>Double Attaque</Hi> / <Hi>Célérité</Hi>, <Hi>Piétinement</Hi>, <Hi>Souffle de feu X</Hi>, <Hi>Persécution X</Hi>, <Hi>Drain de vie</Hi>, <Hi>Poison</Hi>, <Hi>Paralysie</Hi>, <Hi>Riposte X</Hi>, <Hi>Fureur</Hi>.</>,
+          <><Hi>Précision</Hi> ignore <Hi>Résistance</Hi>, <Hi>Armure</Hi> et <Hi>Bouclier</Hi>.</>,
         ]} />
       </Section>
 
@@ -304,6 +335,186 @@ function TcgGuide() {
         ]} />
       </Section>
     </>
+  );
+}
+
+// ── Factions & clans ──────────────────────────────────────────────────────────
+// Les factions, leurs races et leurs clans viennent du REGISTRE (FACTIONS) :
+// renommer un clan dans le moteur le renomme ici. Seules les phrases de
+// caractérisation sont écrites à la main — elles décrivent le profil réel de
+// chaque clan (poids de stats + mots-clés les plus probables du générateur),
+// pas une intention littéraire.
+
+/** Clan volontairement ABSENT de cette page : il se découvre en jouant. */
+const CLANS_CACHES = new Set(["La Forêt Enchantée"]);
+
+/** Une ligne par clan, fidèle à son `clanProfile` (statWeights + likelyKeywords). */
+const CLAN_BLURBS: Record<string, string> = {
+  // L'Alliance Céleste
+  "Les Sylvains": "Embuscade et précision : ils frappent les premiers, esquivent et restent introuvables.",
+  "Les Hauts-Elfes": "Les mages du savoir : canalisation, divination et contresorts pour dicter le rythme.",
+  "La Forêt d'Émeraude": "Les fées : fragiles mais insaisissables, elles volent et manipulent la magie.",
+  "La Combe Verte": "Hobbits et Hommes-Arbres : loyauté, bénédictions et une ténacité qui use l'adversaire.",
+  // Les Armées des Montagnes
+  "La Forge Ardente": "Le feu du métal : combustion, fureur et ripostes qui punissent chaque coup reçu.",
+  "La Guilde des Ingénieurs": "Machines et gnomes : convocations, catalyse et pioche pour bâtir sa position.",
+  "Clan des Mille Tunnels": "Les kobolds en nombre : rassemblement, solidarité, la force du groupe.",
+  "Clan des Premiers Géants": "Le mur des cimes : provocation, armure et résistance — presque rien ne passe.",
+  // L'Empire du Milieu
+  "Les Hordes des Steppes": "Cavalerie rapide : célérité, traque et raids qui frappent avant l'installation.",
+  "L'Empire de Jade": "Discipline et contrôle : tactique, divination, contresorts et commandement.",
+  "Les Lames de l'Ombre": "Assassins : ombre et invisibilité jusqu'au premier coup, mortel.",
+  "Les Défenseurs d'Ivoire": "Éléphants de guerre : piétinement, armure et provocation, l'avance inarrêtable.",
+  // Les Royaumes du Soleil
+  "Les Enfants du Soleil": "Le brasier rituel : sacrifice, martyr et héritage — mourir sert le camp.",
+  "Les Seigneurs des Dunes": "Nomades pilleurs : pillage, traque et esquive, ils prennent et disparaissent.",
+  "Le Royaume des Masques": "Invocateurs et esprits : convocation, divination et prescience.",
+  "Les Fils du Volcan": "La rage de la lave : combustion, fureur et souffle de feu, tout en attaque.",
+  // Les Royaumes Libres
+  "Le Royaume du Nord": "Champions héroïques : gloire cumulative, bravoure et raids.",
+  "L'Ordre de l'Aube": "La lumière protectrice : boucliers, bénédictions et provocation.",
+  "Les Guerrières du Vent": "Griffons et faucons : précision, esquive et frappe initiale.",
+  "La Sublime Porte": "L'armée d'apparat : commandement, première frappe et discipline de rang.",
+  // La Meute
+  "Les Seigneurs Fauves": "Les félins : persécution et célérité, la pression permanente.",
+  "Les Enfants de la Lune": "Loups-garous : lycanthropie, fureur et régénération, ils grandissent en combattant.",
+  "Le Pacte des Griffes": "L'alliance des races : sang mêlé, solidarité et loyauté.",
+  "La Harde Sauvage": "La charge des sabots : célérité, raid et piétinement.",
+  // Les Primordiaux
+  "La Colère des Flammes": "Le feu pur : la plus forte attaque du jeu, la plus faible défense.",
+  "Le Socle du Monde": "La terre : provocation, armure et ancrage — le mur des Primordiaux.",
+  "La Vague Sans Fin": "L'eau : régénération, drain de vie et paralysie, la victoire par l'usure.",
+  "Le Souffle des Cimes": "L'air : vol, célérité et esquive, insaisissable.",
+  // La Nécropole
+  "Les Rangs Silencieux": "La piétaille sans fin : nécrophagie, exhumation et rappel du cimetière.",
+  "Le Voile Hurlant": "Spectres et banshees : terreur, ombre et maléfices.",
+  "La Cour Écarlate": "Les vampires : drain de vie, vampirisme et célérité.",
+  "Le Cénacle Nécromant": "Les maîtres de la mort : résurrection, héritage du cimetière et savoir interdit.",
+  // Les Légions du Chaos
+  "Les Cohortes Sanglantes": "La horde organisée : traque, entrainement et gloire au fil des combats.",
+  "Les Princes des Abîmes": "La cour démoniaque : fureur, sacrifice et terreur, à tout prix.",
+  "La Forêt Maudite": "Les corrompus : poison, malédiction et embuscade.",
+  "La Garde Noire": "L'élite déchue : armure, résistance et maléfices — solide et rancunière.",
+};
+
+const ALIGN_LABEL: Record<string, string> = {
+  bon: "Bon", neutre: "Neutre", "maléfique": "Maléfique", "spéciale": "Spéciale",
+};
+
+/** Ordre de présentation : les camps tranchés encadrent les neutres. */
+const ORDRE_ALIGNEMENT = ["bon", "neutre", "maléfique", "spéciale"];
+
+function FactionsGuide({
+  clanVisuals, factionVisuals,
+}: { clanVisuals: Record<string, ClanVisual>; factionVisuals: Record<string, ClanVisual[]> }) {
+  const factions = Object.entries(FACTIONS).sort(
+    (a, b) => ORDRE_ALIGNEMENT.indexOf(a[1].alignment) - ORDRE_ALIGNEMENT.indexOf(b[1].alignment),
+  );
+
+  return (
+    <>
+      <Section title="Choisir son camp">
+        <P>
+          Chaque carte appartient à une <Hi>faction</Hi>, elle-même divisée en <Hi>clans</Hi>. La faction donne
+          l'univers et l'<Hi>alignement</Hi> — Bon, Neutre ou Maléfique ; le clan donne le style de jeu.
+        </P>
+        <P>
+          Un deck se construit sur <Hi>une seule faction</Hi> et <Hi>un seul clan</Hi>, plus jusqu'à
+          <Hi> 4 cartes Mercenaires</Hi>, qui n'ont ni clan ni allégeance et s'invitent partout. Le choix du clan est
+          donc la vraie décision : c'est lui qui décide de votre plan de jeu.
+        </P>
+      </Section>
+
+      {factions.map(([id, f]) => {
+        const clans = getAllClanNames(id).filter((c) => !CLANS_CACHES.has(c));
+        const vitrines = factionVisuals[id] ?? [];
+        return (
+          <Section key={id} title={`${f.emoji} ${f.displayName}`}>
+            <div className="flex flex-wrap items-center gap-2 mb-4">
+              <span
+                className={`${cinzel} am-gild-border rounded-full px-3 py-1 text-am-ink-soft`}
+                style={{ fontSize: 12 }}
+              >
+                {ALIGN_LABEL[f.alignment] ?? f.alignment}
+              </span>
+              <span className={`${crimson} italic text-am-ink-faint`} style={{ fontSize: 14 }}>
+                {f.races.join(" · ")}
+              </span>
+            </div>
+
+            <P>{f.description}</P>
+
+            {clans.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-5">
+                {clans.map((clan) => (
+                  <ClanCard key={clan} clan={clan} blurb={CLAN_BLURBS[clan]} visual={clanVisuals[clan]} />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-3 gap-3 mt-5">
+                {vitrines.map((v) => (
+                  <Vignette key={v.id} visual={v} />
+                ))}
+              </div>
+            )}
+          </Section>
+        );
+      })}
+    </>
+  );
+}
+
+function ClanCard({ clan, blurb, visual }: { clan: string; blurb?: string; visual?: ClanVisual }) {
+  return (
+    <div className="am-gild-border rounded-[var(--am-r-md)] bg-am-bg-1 p-3 flex gap-3">
+      <div className="shrink-0 w-[76px]">
+        {visual ? <Vignette visual={visual} /> : <VignetteVide />}
+      </div>
+      <div className="min-w-0">
+        <div className={`${cinzel} am-foil-text font-bold mb-1`} style={{ fontSize: 15 }}>{clan}</div>
+        <p className={`${crimson} text-am-ink/85 leading-[1.6]`} style={{ fontSize: 14 }}>
+          {blurb ?? "Style de jeu à préciser."}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function Vignette({ visual }: { visual: ClanVisual }) {
+  return (
+    <figure className="m-0">
+      <div className="relative w-full aspect-[3/4] rounded-[var(--am-r-sm)] overflow-hidden am-gild-border">
+        <Image
+          src={visual.imageUrl}
+          alt={visual.name}
+          fill
+          className="object-cover"
+          sizes="120px"
+          unoptimized
+        />
+      </div>
+      <figcaption className={`${crimson} italic text-am-ink-faint mt-1 text-center leading-tight`} style={{ fontSize: 11 }}>
+        {visual.name}
+      </figcaption>
+    </figure>
+  );
+}
+
+/** Cadre en attente : ce clan n'a pas encore de carte illustrée. La place est
+ *  réservée pour que la grille ne bouge pas le jour où l'illustration arrive. */
+function VignetteVide() {
+  return (
+    <figure className="m-0">
+      <div
+        className="relative w-full aspect-[3/4] rounded-[var(--am-r-sm)] border border-dashed border-am-gold/30 bg-am-bg-0/60 flex items-center justify-center"
+        aria-label="Illustration à venir"
+      >
+        <span className="text-am-gold/40" style={{ fontSize: 20 }} aria-hidden="true">◆</span>
+      </div>
+      <figcaption className={`${crimson} italic text-am-ink-faint mt-1 text-center leading-tight`} style={{ fontSize: 11 }}>
+        à venir
+      </figcaption>
+    </figure>
   );
 }
 

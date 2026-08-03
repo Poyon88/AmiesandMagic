@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import ExileGlyph from "@/components/cards/ExileGlyph";
 import { useTranslations } from 'next-intl';
 import { FACTIONS, RARITY_MAP } from '@/lib/card-engine/constants';
 import KeywordIcon from '@/components/shared/KeywordIcon';
@@ -175,6 +176,7 @@ interface CardData {
   lifeCost?: number;
   discardCost?: number;
   sacrificeCost?: number;
+  exileCost?: number;
 }
 
 // ─── COMPONENT ───────────────────────────────────────────────────────────────
@@ -398,6 +400,22 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
             }}>
               <span style={{ position: "absolute", top: -2 * s, right: -2 * s, fontSize: 11 * s, filter: "drop-shadow(0 0 2px #000)" }}>☠</span>
               {card!.sacrificeCost}
+            </div>
+          ) : null}
+          {card!.exileCost && card!.exileCost > 0 ? (
+            <div title={t('exile_cost_title', { count: card!.exileCost })} style={{
+              width: 28 * s, height: 28 * s, borderRadius: "50%",
+              background: "radial-gradient(circle,#1e2a3a,#0c131c)",
+              border: `${2 * s}px solid #7f8fa6`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 13 * s, color: "#cfd8e3", fontWeight: 700,
+              boxShadow: "0 0 8px #7f8fa666",
+              position: "relative",
+            }}>
+              <span style={{ position: "absolute", top: -3 * s, right: -3 * s, lineHeight: 1, filter: "drop-shadow(0 0 2px #000)" }}>
+                <ExileGlyph size={11 * s} color="#cfd8e3" />
+              </span>
+              {card!.exileCost}
             </div>
           ) : null}
         </div>

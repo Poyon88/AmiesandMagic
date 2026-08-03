@@ -448,6 +448,10 @@
       "force_des_ancetres": {
         "label": "Forza degli antenati +X/+Y",
         "desc": "Finché il tuo cimitero contiene 7 o più creature, guadagna +X ATK e +Y PV."
+      },
+      "seuil_sacrificiel": {
+        "label": "Soglia sacrificale +X/+Y",
+        "desc": "Finché il tuo mazzo contiene 25 carte o meno, guadagna +X ATK e +Y PV."
       }
     },
     "spell_keywords": {
@@ -458,6 +462,10 @@
       "precision": {
         "label": "Precisione",
         "desc": "I danni di questo incantesimo ignorano la Resistenza, l'Armatura e lo Scudo."
+      },
+      "seuil_colere": {
+        "label": "Soglia d'ira X",
+        "desc": "Se il tuo mazzo contiene 25 carte o meno, questa magia infligge X danni aggiuntivi."
       },
       "poison": {
         "label": "Veleno",
@@ -1523,6 +1531,7 @@
     "life_cost_title": "Costo in vita: {life}",
     "discard_cost_title": "Scarta {count, plural, one {# carta} other {# carte}}",
     "sacrifice_cost_title": "Sacrifica {count, plural, one {# creatura} other {# creature}}",
+    "exile_cost_title": "Esilia {count, plural, one {# carta} other {# carte}} dalla cima del tuo mazzo",
     "detail_note_all_allies": " (a tutti gli alleati)",
     "detail_note_target": " (alla creatura bersaglio)",
     "trigger_on_play": "All'entrata",
@@ -1667,7 +1676,9 @@
     "discard_cost_hint": "Numero di carte che il giocatore deve scartare dalla mano per giocare questa carta.",
     "discard_label": "SCARTO",
     "sacrifice_cost_hint": "Numero di creature alleate che il giocatore deve sacrificare per giocare questa carta.",
+    "exile_cost_hint": "Numero di carte rimosse dalla cima del mazzo del giocatore. Esiliate: non finiscono nel cimitero e non sono recuperabili.",
     "sacrifice_label": "SACRIFICIO",
+    "exile_label": "ESILIO",
     "spell_effects_label": "EFFETTI DELL'INCANTESIMO",
     "spell_keywords_label": "PAROLE CHIAVE DELL'INCANTESIMO",
     "token_to_summon": "TOKEN DA EVOCARE",
@@ -2056,6 +2067,7 @@
     "page_title": "Come si gioca",
     "track_beginner": "Principiante — guida completa",
     "track_tcg": "Giocatore di TCG — l'essenziale",
+    "track_factions": "Fazioni e clan",
     "goal_title": "L'obiettivo del gioco",
     "stat_hero_start": "Eroe all'inizio",
     "stat_starting_hand": "Mano iniziale",

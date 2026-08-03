@@ -448,6 +448,10 @@
       "force_des_ancetres": {
         "label": "祖霊の力 +X/+Y",
         "desc": "自分の墓地にクリーチャーが7体以上ある限り、+X ATKと+Y PVを得る。"
+      },
+      "seuil_sacrificiel": {
+        "label": "犠牲の閾値 +X/+Y",
+        "desc": "自分のデッキが25枚以下である限り、+X ATKと+Y PVを得る。"
       }
     },
     "spell_keywords": {
@@ -458,6 +462,10 @@
       "precision": {
         "label": "精密",
         "desc": "このスペルのダメージは、抵抗力、防具、シールドを無視する。"
+      },
+      "seuil_colere": {
+        "label": "憤怒の閾値 X",
+        "desc": "自分のデッキが25枚以下なら、この呪文はX点の追加ダメージを与える。"
       },
       "poison": {
         "label": "毒",
@@ -1523,6 +1531,7 @@
     "life_cost_title": "ライフコスト：{life}",
     "discard_cost_title": "{count, plural, one {カードを#枚捨てる} other {カードを#枚捨てる}}",
     "sacrifice_cost_title": "{count, plural, one {クリーチャーを#体生贄に捧げる} other {クリーチャーを#体生贄に捧げる}}",
+    "exile_cost_title": "デッキの上から{count}枚のカードを追放する",
     "detail_note_all_allies": "（全ての味方に）",
     "detail_note_target": "（対象のクリーチャーに）",
     "trigger_on_play": "場に出たとき",
@@ -1667,7 +1676,9 @@
     "discard_cost_hint": "このカードをプレイするために手札から捨てるカード枚数。",
     "discard_label": "ディスカード",
     "sacrifice_cost_hint": "このカードをプレイするために生け贄に捧げる味方クリーチャーの数。",
+    "exile_cost_hint": "プレイヤーのデッキの上から取り除かれるカードの枚数。追放されたカードは墓地に置かれず、回収できません。",
     "sacrifice_label": "サクリファイス",
+    "exile_label": "追放",
     "spell_effects_label": "スペル効果",
     "spell_keywords_label": "スペルキーワード",
     "token_to_summon": "召喚するトークン",
@@ -2056,6 +2067,7 @@
     "page_title": "遊び方",
     "track_beginner": "初心者 — 完全ガイド",
     "track_tcg": "TCGプレイヤー — 要点のみ",
+    "track_factions": "勢力とクラン",
     "goal_title": "ゲームの目的",
     "stat_hero_start": "開始時のヒーロー",
     "stat_starting_hand": "初期手札",

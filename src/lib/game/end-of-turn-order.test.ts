@@ -173,3 +173,49 @@ describe("Fin de tour — ordre gauche→droite sur tous les canaux", () => {
     expect(piochees).toEqual(["1er", "2e"]); // « Nouvelle » a pioché la première
   });
 });
+
+// ─── Une créature abattue pendant la séquence ne parle plus ─────────────────
+// Les morts ne sont balayées qu'à la FIN de la séquence : une créature tuée par
+// un effet situé à sa gauche est encore physiquement sur le plateau quand vient
+// son tour de parole. Elle résolvait donc son propre effet avant de rejoindre
+// le cimetière. Même doctrine que le ciblage (« cadavres en sursis ») et que la
+// résolution des sorts, qui règle ses morts après chaque effet.
+describe("Fin de tour — une source abattue à sa gauche ne se déclenche plus", () => {
+  const DRAW1: ComposedEffect = { content: "draw_cards", magnitude: { x: 1 } };
+  /** Frappe TOUS les alliés — donc son voisin de droite. */
+  const FRAPPE_ALLIES: ComposedEffect = {
+    content: "deal_damage", magnitude: { x: 9 },
+    target: { entity: "unit", count: "all", side: "ally", location: "board", designation: "random" },
+  };
+
+  function plateau(pvVictime: number) {
+    const s = mkState();
+    const bourreau = mkInstance(mkCard({
+      name: "Bourreau", attack: 1, health: 20,
+      capabilities: [{ ...composedCap("on_end_of_turn", FRAPPE_ALLIES), uid: "cx_bourreau" }],
+    }));
+    const victime = mkInstance(mkCard({
+      name: "Victime", attack: 1, health: pvVictime,
+      capabilities: [{ ...composedCap("on_end_of_turn", DRAW1), uid: "cx_victime" }],
+    }));
+    s.players[0].board.push(bourreau, victime);
+    s.players[0].deck = [mkInstance(mkCard({ name: "Carte" }))];
+    s.players[1].deck = [mkInstance(mkCard({ name: "Z" }))];
+    return applyAction(s, { type: "end_turn" });
+  }
+
+  it("tombée à 0 PV par l'effet de son voisin de gauche : son effet ne part pas", () => {
+    const st = plateau(1); // 1 PV → abattue par les 9 dégâts
+    expect(st.players[0].hand.some(c => c.card.name === "Carte")).toBe(false);
+    // Elle est bien morte pour autant : le balayage de fin de séquence a eu lieu.
+    expect(st.players[0].graveyard.some(c => c.card.name === "Victime")).toBe(true);
+  });
+
+  it("SURVIVANTE, elle se déclenche normalement", () => {
+    // Contre-épreuve : sans elle, un test qui « passe » ne prouverait rien —
+    // il suffirait que l'effet ne parte jamais.
+    const st = plateau(30); // encaisse les 9 dégâts et survit
+    expect(st.players[0].hand.some(c => c.card.name === "Carte")).toBe(true);
+    expect(st.players[0].board.some(c => c.card.name === "Victime")).toBe(true);
+  });
+});

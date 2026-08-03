@@ -398,6 +398,26 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["creature"],
     creature: { cost: 10, costPerX: 4, se: 2.5, minTier: 1, scalable: true, zone: "Cimetière" },
   },
+  // Jumelle de Force des ancêtres, adossée au DECK plutôt qu'au cimetière. Le
+  // libellé doit garder la forme « +X/+Y » : XY_ABILITY_IDS est dérivé d'une
+  // regex sur ce marqueur, et c'est lui qui fait apparaître les deux champs
+  // dans la forge.
+  seuil_sacrificiel: {
+    id: "seuil_sacrificiel", label: "Seuil Sacrificiel +X/+Y", symbol: "📉",
+    desc: "Tant que votre deck compte 25 cartes ou moins, gagne +X ATK et +Y PV.",
+    applicable_to: ["creature"],
+    creature: { cost: 10, costPerX: 4, se: 2.5, minTier: 1, scalable: true, zone: "Terrain" },
+  },
+  // Modificateur GLOBAL de sort, sans cible propre — même famille que Précision
+  // et Touché mortel. À combiner avec un mot-clé de dégâts (Impact, Tempête…) :
+  // seul, il ne fait rien. Le bonus s'applique UNE fois, au premier paquet de
+  // dégâts du sort, et non à chacun.
+  seuil_colere: {
+    id: "seuil_colere", label: "Seuil de colère X", symbol: "🌋",
+    desc: "Si votre deck compte 25 cartes ou moins, ce sort inflige X dégâts supplémentaires.",
+    applicable_to: ["spell"],
+    spell: { params: ["amount"], needsTarget: false },
+  },
   paralysie: {
     id: "paralysie", label: "Paralysie", symbol: "⛓️",
     desc: "Les unités qu'elle blesse ne peuvent ni attaquer ni activer de capacité jusqu'à la fin de leur prochain tour.",
@@ -1410,7 +1430,7 @@ export const DEATH_NATURE_IDS: ReadonlySet<string> = new Set([
 export const AUTOMATIC_ABILITY_IDS: ReadonlySet<string> = new Set([
   // Auras / présence continue
   "terreur", "commandement", "fierte_du_clan", "sang_mele", "totem", "pauvrete",
-  "force_des_ancetres",
+  "force_des_ancetres", "seuil_sacrificiel",
   // Passifs de combat / statiques
   "premiere_frappe", "double_attaque", "esquive", "armure",
   "resistance", "precision", "indestructible", "transcendance", "invisible",

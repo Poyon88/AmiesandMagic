@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
+import ExileGlyph from "@/components/cards/ExileGlyph";
 import Image from "next/image";
 import GameCard from "@/components/cards/GameCard";
 import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
@@ -56,6 +57,7 @@ interface DbCard {
   life_cost: number | null;
   discard_cost: number | null;
   sacrifice_cost: number | null;
+  exile_cost: number | null;
   capabilities: Capability[] | null;
 }
 
@@ -339,6 +341,7 @@ export default function CardEditor() {
       life_cost: card.life_cost ?? 0,
       discard_cost: card.discard_cost ?? 0,
       sacrifice_cost: card.sacrifice_cost ?? 0,
+      exile_cost: card.exile_cost ?? 0,
     });
     setNewImageFile(null);
     setNewImagePreview(null);
@@ -511,6 +514,7 @@ export default function CardEditor() {
         life_cost: (editFields.life_cost as number) || 0,
         discard_cost: (editFields.discard_cost as number) || 0,
         sacrifice_cost: (editFields.sacrifice_cost as number) || 0,
+        exile_cost: (editFields.exile_cost as number) || 0,
       };
 
       const body: Record<string, unknown> = { card: cardData, updateId: selectedCard.id, composed_capabilities: composedCaps };
@@ -982,6 +986,10 @@ export default function CardEditor() {
               <div style={{ flex: 1 }}>
                 <div style={S.label} title="Nombre de créatures alliées que le joueur doit sacrifier pour jouer cette carte.">Coût ☠ Sacrifice</div>
                 <input type="number" min={0} max={5} value={(editFields.sacrifice_cost as number) ?? 0} onChange={e => updateField("sacrifice_cost", parseInt(e.target.value) || 0)} style={S.input} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={S.label} title="Nombre de cartes retirées du dessus du deck du joueur (exilées : elles ne vont PAS au cimetière et sont irrécupérables).">Coût <ExileGlyph size={11} color="#7f8fa6" /> Exil</div>
+                <input type="number" min={0} max={5} value={(editFields.exile_cost as number) ?? 0} onChange={e => updateField("exile_cost", parseInt(e.target.value) || 0)} style={S.input} />
               </div>
             </div>
 
