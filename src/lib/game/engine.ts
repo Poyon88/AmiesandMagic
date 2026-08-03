@@ -7530,6 +7530,28 @@ export function canPlayCard(state: GameState, cardInstanceId: string): boolean {
   // Sacrifices free up board slots, so the test compares the final board size.
   if (card.card.card_type === "creature" &&
       player.board.length - sacrificeCost + 1 > MAX_BOARD_SIZE) return false;
+  // Un SORT qui réclame une cible et n'en trouve AUCUNE ne partirait que dans le
+  // vide : il se consumerait sans effet, et le joueur perdrait carte et mana
+  // sans rien obtenir. Vu en partie avec « Marque de Faiblesse » (Affaiblissement
+  // sur une créature ennemie) alors que la seule unité adverse était tapie dans
+  // l'Ombre, donc intargetable.
+  //
+  // On exige que TOUS les slots soient vides : un sort à plusieurs cibles dont
+  // une seule est servie reste jouable, son effet partiel valant mieux que rien.
+  //
+  // Restreint aux SORTS : une créature garde son corps même si son effet
+  // d'invocation ne trouve personne — la poser reste un jeu légitime.
+  //
+  // Garde d'INTERFACE seulement. `playCard` ne la reprend pas volontairement :
+  // il rejoue aussi les actions journalisées chez l'adversaire, et une Ombre
+  // révélée à un instant différent des deux côtés y ferait diverger le verdict.
+  if (card.card.card_type === "spell") {
+    const slots = getSpellTargetSlots(card.card);
+    if (slots.length > 0
+      && slots.every(sl => getSpellTargets(state, card.card, sl.type).length === 0)) {
+      return false;
+    }
+  }
   return true;
 }
 

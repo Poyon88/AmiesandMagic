@@ -5,6 +5,13 @@
 // Vu avec « Décret de Conquête » (confère Domination à une créature ALLIÉE)
 // joué avec un plateau vide. Les branches cimetière avaient déjà ce repli ;
 // la branche plateau ne l'avait pas.
+//
+// MISE À JOUR — le repli d'alors JOUAIT la carte : plus de blocage, mais le
+// sort se consumait dans le vide, carte et mana perdus pour rien. Signalé en
+// partie avec « Marque de Faiblesse » lancée alors que la seule unité adverse
+// était tapie dans l'Ombre, donc intargetable. Un tel sort est désormais
+// INJOUABLE (canPlayCard le refuse), ce qui règle les deux problèmes à la fois :
+// ni flèche dans le vide, ni carte gaspillée.
 import { describe, expect, it, beforeEach } from "vitest";
 import { useGameStore } from "./gameStore";
 import { mkCard, mkInstance, mkState } from "@/lib/game/test-harness";
@@ -31,7 +38,7 @@ describe("Sort à cible unique sans candidat", () => {
     });
   });
 
-  it("plateau allié vide : pas de mode ciblage, la carte se joue", () => {
+  it("plateau allié vide : la carte est INJOUABLE, rien n'est émis", () => {
     const s = mkState();
     const spell = grantSpell();
     s.players[0].hand.push(spell);
@@ -40,11 +47,12 @@ describe("Sort à cible unique sans candidat", () => {
     const action = useGameStore.getState().selectCardInHand(spell.instanceId);
 
     const st = useGameStore.getState();
+    // Ni ciblage à vide…
     expect(st.targetingMode).toBe("none");
     expect(st.validTargets).toEqual([]);
-    // La carte est bien PARTIE au dispatch (le commit d'état passe par le
-    // pipeline d'animation, d'où la vérification sur l'action émise).
-    expect(action).toMatchObject({ type: "play_card", cardInstanceId: spell.instanceId });
+    // …ni carte consumée pour rien.
+    expect(action).toBeNull();
+    expect(s.players[0].hand.some(c => c.instanceId === spell.instanceId)).toBe(true);
   });
 
   it("avec une créature alliée : le mode ciblage s'ouvre normalement", () => {
