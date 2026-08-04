@@ -725,11 +725,28 @@ function resolveComposedEffect(
     // Épargne : alimente le compteur du contrôleur. Aucune cible, donc aucun
     // besoin de `source` — un sort comme une créature y accèdent pareillement.
     case "epargne": addEpargne(owner, x); return;
-    // Incinération : le camp visé vient de `target.side` — l'effet frappe un
-    // CIMETIÈRE entier, aucune unité n'est touchée individuellement.
-    case "incineration":
-      resolveIncineration(composed.target?.side === "ally" ? owner : opponent, x);
+    // Incinération. Deux écritures possibles, et la désignation prime :
+    //   • cible AU CHOIX dans un cimetière (« recyclez 4 cartes au choix ») →
+    //     ce sont EXACTEMENT les cartes cliquées qui repartent sous le deck ;
+    //   • cible qui nomme seulement un camp → tirage au hasard dans ce
+    //     cimetière, comme le mot-clé.
+    // Le camp se lit sur la cible réellement désignée : `target.side` ne suffit
+    // pas, car à `side: "any"` c'est le joueur qui tranche.
+    case "incineration": {
+      const spec = composed.target;
+      const chosen = chosenTargetIds ?? [];
+      const victim =
+        spec?.side === "ally" ? owner
+        : spec?.side === "enemy" ? opponent
+        : graveyardOwnerOf(chosen[0], owner, opponent)
+          ?? incinerationVictim(chosen[0], owner, opponent);
+      if (spec?.location === "graveyard" && chosen.length > 0) {
+        resolveIncinerationChosen(victim, chosen, x);
+      } else {
+        resolveIncineration(victim, x);
+      }
       return;
+    }
     case "discard":
       for (let i = 0; i < x && owner.hand.length > 0; i++) {
         discardFromHand(owner, Math.floor(rng() * owner.hand.length), [owner, opponent]);
@@ -4889,6 +4906,46 @@ function resolveIncineration(victim: PlayerState, x: number): void {
   }
   // Les cartes recyclées repartent « neuves » : sans cette remise à zéro, une
   // créature repiochée traînerait ses dégâts et ses bonus de la partie d'avant.
+  for (const inst of picked) returnInstanceToPlay(inst);
+  shuffleArray(picked);
+  victim.deck.push(...picked);
+}
+
+/** Camp propriétaire du CIMETIÈRE où se trouve `id`.
+ *
+ *  `incinerationVictim` ne sait lire que le plateau et les sentinelles de héros :
+ *  une cible désignée dans un cimetière lui est invisible et retombait sur son
+ *  repli « adversaire ». */
+function graveyardOwnerOf(
+  id: string | undefined,
+  a: PlayerState,
+  b: PlayerState,
+): PlayerState | null {
+  if (!id) return null;
+  if (a.graveyard.some(c => c.instanceId === id)) return a;
+  if (b.graveyard.some(c => c.instanceId === id)) return b;
+  return null;
+}
+
+/** INCINÉRATION X, forme DÉSIGNÉE — renvoie sous le deck les cartes que le
+ *  joueur a lui-même cliquées dans le cimetière, et elles seules.
+ *
+ *  Aucun complément au hasard si le joueur en désigne moins que X : c'est la
+ *  convention déjà retenue pour les autres contenus à cibles multiples (une
+ *  désignation partielle vaut renoncement, pas tirage). L'ordre d'arrivée sous
+ *  le deck reste mélangé pour ne pas divulguer l'ordre des clics. */
+function resolveIncinerationChosen(
+  victim: PlayerState,
+  ids: string[],
+  x: number,
+): void {
+  if (x <= 0) return;
+  const picked: CardInstance[] = [];
+  for (const id of ids.slice(0, x)) {
+    const idx = victim.graveyard.findIndex(c => c.instanceId === id);
+    if (idx >= 0) picked.push(victim.graveyard.splice(idx, 1)[0]);
+  }
+  if (picked.length === 0) return;
   for (const inst of picked) returnInstanceToPlay(inst);
   shuffleArray(picked);
   victim.deck.push(...picked);

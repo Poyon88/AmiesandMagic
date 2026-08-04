@@ -111,13 +111,11 @@ describe("cibles dans le CIMETIÈRE adverse", () => {
     expect(endOfTurnTriggerTargets(st, st.pendingTriggers![0]).sort()).toEqual([...ids].sort());
   });
 
-  it("PIÈGE D'ÉCRITURE : Incinération ignore totalement les désignations", () => {
-    // Le contenu `incineration` vise un CAMP (`target.side`) et recycle `x`
-    // cartes de son cimetière, choisies par le moteur. Il est résolu UNE fois,
-    // hors de la boucle sur les cibles : ni les cartes désignées ni leur NOMBRE
-    // n'ont d'effet. Une carte réglée sur « 4 cartes au choix, x=1 » fait donc
-    // cliquer le joueur quatre fois pour recycler… une seule carte.
-    // Bonne écriture : x = 4, et une cible qui nomme juste le camp.
+  it("`x` PLAFONNE les désignations : 4 cliquées, x=1 → une seule recyclée", () => {
+    // Signalé en partie sur « Esprit du Masque Silencieux » : le joueur désigne
+    // des cartes précises et ce sont d'AUTRES qui repartent sous le deck. Les
+    // désignations font foi désormais ; `x` ne fait plus que borner le volume.
+    // Écriture saine d'une carte « N cartes au choix » : x = N = count.
     const { s, ids } = etatIncineration(4);
     let st = finDeTour(s);
 
@@ -127,11 +125,54 @@ describe("cibles dans le CIMETIÈRE adverse", () => {
       targetInstanceIds: ids.slice(0, 4),
     });
 
-    expect(st.players[1].graveyard.length).toBe(4); // 5 - x(=1), et non 5 - 4
+    expect(st.players[1].graveyard.length).toBe(4); // 5 - x(=1)
+    // …et la carte partie est la PREMIÈRE désignée, pas un tirage au hasard.
+    expect(st.players[1].graveyard.map(c => c.instanceId)).not.toContain(ids[0]);
   });
 
-  it("c'est bien `x` qui pilote le volume recyclé", () => {
-    // Le pendant du test précédent : à désignation identique, seul x bouge.
+  it("les cartes DÉSIGNÉES sont celles qui repartent sous le deck", () => {
+    // Le cas réel de la carte : x = count = 4 sur un cimetière de 5. La seule
+    // survivante doit être celle que le joueur n'a PAS cliquée.
+    const s = mkState();
+    s.players[0].board.push(porteur({
+      content: "incineration", magnitude: { x: 4 },
+      target: cible({ count: 4, location: "graveyard" }),
+    }));
+    s.players[1].graveyard = Array.from({ length: 5 }, (_, i) =>
+      mkInstance(mkCard({ name: `C${i}`, card_type: "creature", attack: 1, health: 1 })));
+    s.players[1].deck = [];
+    const ids = s.players[1].graveyard.map(c => c.instanceId);
+    let st = finDeTour(s);
+
+    st = applyAction(st, {
+      type: "resolve_pending_trigger",
+      triggerId: st.pendingTriggers![0].id,
+      targetInstanceIds: [ids[0], ids[1], ids[3], ids[4]],
+    });
+
+    expect(st.players[1].graveyard.map(c => c.card.name)).toEqual(["C2"]);
+  });
+
+  it("sans désignation, le tirage au hasard reste le repli", () => {
+    // Modes non interactifs (mort, relance, tour adverse) : aucune cible ne
+    // remonte, l'effet doit rester résolu et non silencieusement annulé.
+    const { s } = etatIncineration(4, 5);
+    let st = finDeTour(s);
+
+    st = applyAction(st, {
+      type: "resolve_pending_trigger",
+      triggerId: st.pendingTriggers![0].id,
+      targetInstanceIds: [],
+    });
+
+    expect(st.players[1].graveyard.length).toBe(4); // 5 - x(=1), au hasard
+  });
+
+  it("désigner MOINS que x ne complète pas au hasard", () => {
+    // x=3 mais une seule carte cliquée (forme historique à cible unique) : on
+    // recycle cette carte-là, un point c'est tout. Même convention que
+    // `deal_damage` plus haut — une désignation partielle vaut renoncement, pas
+    // tirage. Compléter au hasard reviendrait à réintroduire le bug corrigé.
     const s = mkState();
     s.players[0].board.push(porteur({
       content: "incineration", magnitude: { x: 3 },
@@ -148,10 +189,10 @@ describe("cibles dans le CIMETIÈRE adverse", () => {
       targetInstanceId: st.players[1].graveyard[0].instanceId,
     });
 
-    expect(st.players[1].graveyard.length).toBe(2); // 5 - 3
-    // Les 3 recyclées repartent sous le deck — mais la main passe aussitôt à P1,
-    // qui en pioche une. On compte donc deck + main, pas le deck seul.
-    expect(st.players[1].deck.length + st.players[1].hand.length).toBe(3);
+    expect(st.players[1].graveyard.map(c => c.card.name)).toEqual(["C1", "C2", "C3", "C4"]);
+    // La recyclée repart sous le deck — mais la main passe aussitôt à P1, qui
+    // en pioche une. On compte donc deck + main, pas le deck seul.
+    expect(st.players[1].deck.length + st.players[1].hand.length).toBe(1);
   });
 });
 
