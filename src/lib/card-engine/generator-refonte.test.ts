@@ -155,11 +155,15 @@ describe("races ailées des Royaumes Libres (Griffons / Faucons)", () => {
 });
 
 // ─── Race « Esprits » (Royaumes du Soleil) ──────────────────────────────────
-// Une race rattachée à UN SEUL clan : le Royaume des Masques. Le modèle
-// l'exprime par un second groupe `clans` ciblant la race, comme les Elfes.
-describe("race Esprits — rattachement au Royaume des Masques", () => {
-  it("les Esprits n'ouvrent QUE le Royaume des Masques", () => {
-    expect(getClanNamesForRace("RoyaumesDuSoleil", "Esprits")).toEqual(["Le Royaume des Masques"]);
+// Une race rattachée à DEUX clans : le Royaume des Masques et les Fils du
+// Volcan. Le modèle l'exprime par un second groupe `clans` ciblant la race,
+// comme les Elfes — les deux autres clans de la faction lui restent fermés.
+describe("race Esprits — rattachement au Royaume des Masques et aux Fils du Volcan", () => {
+  it("les Esprits n'ouvrent que leurs deux clans", () => {
+    expect(getClanNamesForRace("RoyaumesDuSoleil", "Esprits")).toEqual([
+      "Le Royaume des Masques",
+      "Les Fils du Volcan",
+    ]);
   });
 
   it("les Humains de la faction gardent bien leurs quatre clans", () => {
@@ -173,9 +177,13 @@ describe("race Esprits — rattachement au Royaume des Masques", () => {
     ]);
   });
 
-  it("le Royaume des Masques accepte les deux races, les autres clans non", () => {
+  it("les deux clans d'Esprits acceptent les deux races, les autres clans non", () => {
     expect(getRacesForClan("Le Royaume des Masques").sort()).toEqual(["Esprits", "Humains"]);
-    expect(getRacesForClan("Les Fils du Volcan")).toEqual(["Humains"]);
+    expect(getRacesForClan("Les Fils du Volcan").sort()).toEqual(["Esprits", "Humains"]);
+    // Les deux clans restés purement humains verrouillent la contrepartie :
+    // ouvrir la race ne doit pas l'ouvrir partout.
+    expect(getRacesForClan("Les Enfants du Soleil")).toEqual(["Humains"]);
+    expect(getRacesForClan("Les Seigneurs des Dunes")).toEqual(["Humains"]);
   });
 
   it("la race est rattachée sans ambiguïté à sa faction", () => {

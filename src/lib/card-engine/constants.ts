@@ -280,13 +280,14 @@ export const FACTIONS: Record<string, {
     color: "#e1a100", accent: "#ffd54f", emoji: "☀️", bg: "#1a1206", alignment: "neutre",
     races: ["Humains", "Esprits"],
     // Deux groupes plutôt qu'un seul « all » : les quatre clans restent ouverts
-    // aux Humains, tandis que les Esprits n'existent QUE dans le Royaume des
-    // Masques. Même patron que les Elfes (clans par race). Conséquence voulue :
-    // sans race choisie, le sélecteur de clan reste vide jusqu'à ce qu'on en
-    // désigne une — il n'y a plus de clan transversal dans cette faction.
+    // aux Humains, tandis que les Esprits ne s'ouvrent qu'aux clans nommés ici
+    // — le Royaume des Masques et les Fils du Volcan. Même patron que les Elfes
+    // (clans par race). Conséquence voulue : sans race choisie, le sélecteur de
+    // clan reste vide jusqu'à ce qu'on en désigne une — il n'y a plus de clan
+    // transversal dans cette faction.
     clans: [
       { names: ["Les Enfants du Soleil", "Les Seigneurs des Dunes", "Le Royaume des Masques", "Les Fils du Volcan"], appliesTo: "Humains" },
-      { names: ["Le Royaume des Masques"], appliesTo: "Esprits" },
+      { names: ["Le Royaume des Masques", "Les Fils du Volcan"], appliesTo: "Esprits" },
     ],
     statWeights: { atk: 1.02, def: 1.03 },
     guaranteedKeywords: [],
@@ -296,12 +297,13 @@ export const FACTIONS: Record<string, {
     // Les Esprits COMPLÈTENT le profil du clan, ils ne le remplacent pas : la
     // cascade des mots-clés est clan > race > faction, comblée MOT-CLÉ PAR
     // MOT-CLÉ. Le Royaume des Masques garde donc la main sur Convocation,
-    // Divination, Prescience, Augure, Totem et Régénération ; la race ajoute
+    // Divination, Prescience, Augure, Totem et Régénération ; les Fils du
+    // Volcan sur Combustion, Fureur et Souffle de feu ; la race ajoute
     // par-dessus ce que le clan ne dit pas — l'incorporel.
-    // Les `statWeights` de race sont en revanche INERTES ici : sur les stats la
-    // cascade prend le profil de clan en bloc, et les Esprits ne vivent que
-    // dans ce clan. Ils sont posés pour rester cohérents si la race s'ouvrait
-    // un jour ailleurs, pas pour agir aujourd'hui.
+    // Les `statWeights` de race restent en revanche INERTES : sur les stats la
+    // cascade prend le profil de clan EN BLOC, sans jamais mélanger. Un Esprit
+    // des Fils du Volcan hérite donc du gabarit offensif du clan (1.25/0.85) et
+    // non du gabarit fragile de la race — c'est voulu : le clan prime.
     raceProfiles: {
       "Esprits": {
         statWeights: { atk: 0.85, def: 0.95 },
