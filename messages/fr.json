@@ -485,7 +485,7 @@
       },
       "chant": {
         "label": "Chant X",
-        "desc": "Si vous contrôlez une créature avec Chant, tous les X de ce sort sont augmentés de X."
+        "desc": "Si vous contrôlez une créature avec Chant, toutes les valeurs de ce sort sont augmentées de X."
       },
       "corruption": {
         "label": "Corruption",
@@ -1893,6 +1893,12 @@
     "set_code_placeholder": "Code (ex: BASE)",
     "icon_placeholder": "Icône",
     "release_date": "Date de sortie",
+    "set_icon_import": "Importer une icône",
+    "set_icon_change": "Changer",
+    "set_icon_clear": "Retirer l'icône importée",
+    "set_type_base": "Set de base",
+    "set_type_special": "Spécial",
+    "set_type_hint": "Un set spécial reste jouable et collectionnable, mais ses cartes n'apparaissent jamais dans les tirages aléatoires ou semi-aléatoires (Sélection, Invocation, Déchainement, Concentration, Épargne).",
     "existing_sets": "SETS EXISTANTS ({count})",
     "no_set_created": "Aucun set créé",
     "error": "Erreur",

@@ -27,6 +27,29 @@ function getAdminClient() {
   );
 }
 
+/** Téléverse l'icône d'un set et rend son URL publique.
+ *
+ *  Réutilise le bucket des icônes de mots-clés plutôt que d'en créer un
+ *  nouveau : un bucket de plus, c'est une manipulation Supabase manuelle de
+ *  plus à ne pas oublier avant le déploiement. Le préfixe `set_` suffit à les
+ *  distinguer. */
+async function uploadSetIcon(
+  supabase: ReturnType<typeof getAdminClient>,
+  code: string,
+  iconBase64: string,
+  iconMimeType: string,
+): Promise<string> {
+  const buffer = Buffer.from(iconBase64, 'base64');
+  const ext = iconMimeType.split('/')[1] || 'webp';
+  const safeCode = (code || 'set').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const filePath = `set_${safeCode}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}.${ext}`;
+  const { error } = await supabase.storage
+    .from('keyword-icon-images')
+    .upload(filePath, buffer, { upsert: true, contentType: iconMimeType, cacheControl: '31536000' });
+  if (error) throw new Error(`Icône : ${error.message}`);
+  return supabase.storage.from('keyword-icon-images').getPublicUrl(filePath).data.publicUrl;
+}
+
 export async function GET() {
   const user = await getAuthUser();
   if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
@@ -48,10 +71,16 @@ export async function POST(request: Request) {
   const supabase = auth.supabase;
 
   try {
-    const { name, code, icon, released_at } = await request.json();
+    const { name, code, icon, released_at, type, iconBase64, iconMimeType } = await request.json();
     if (!name || !code) return NextResponse.json({ error: 'Nom et code requis' }, { status: 400 });
+    const icon_url = iconBase64 && iconMimeType
+      ? await uploadSetIcon(supabase, code, iconBase64, iconMimeType)
+      : null;
+    // Valeur inconnue → 'base'. La contrainte SQL refuserait la ligne, autant
+    // ne pas dépendre d'une erreur 500 pour une faute de frappe côté client.
+    const setType = type === 'special' ? 'special' : 'base';
 
-    const { error } = await supabase.from('sets').insert({ name, code: code.toUpperCase(), icon: icon || '⚔️', released_at: released_at || null });
+    const { error } = await supabase.from('sets').insert({ name, code: code.toUpperCase(), icon: icon || '⚔️', released_at: released_at || null, type: setType, icon_url });
     if (error) throw new Error(error.message);
 
     return NextResponse.json({ success: true });
@@ -70,10 +99,21 @@ export async function PUT(request: Request) {
   const supabase = auth.supabase;
 
   try {
-    const { id, name, code, icon, released_at } = await request.json();
+    const { id, name, code, icon, released_at, type, iconBase64, iconMimeType, clearIcon } = await request.json();
     if (!id) return NextResponse.json({ error: 'ID requis' }, { status: 400 });
+    // Trois cas distincts : nouvelle image, retrait explicite, ou rien à
+    // changer. Le troisième doit laisser la colonne intacte — un `?? null`
+    // effacerait l'icône à chaque simple renommage.
+    const iconUrlPatch = iconBase64 && iconMimeType
+      ? { icon_url: await uploadSetIcon(supabase, code ?? '', iconBase64, iconMimeType) }
+      : clearIcon ? { icon_url: null } : {};
 
-    const { error } = await supabase.from('sets').update({ name, code: code?.toUpperCase(), icon, released_at: released_at ?? null }).eq('id', id);
+    const { error } = await supabase.from('sets').update({
+      name, code: code?.toUpperCase(), icon, released_at: released_at ?? null,
+      // `type` absent du corps ⇒ on n'y touche pas (mise à jour partielle).
+      ...(type === undefined ? {} : { type: type === 'special' ? 'special' : 'base' }),
+      ...iconUrlPatch,
+    }).eq('id', id);
     if (error) throw new Error(error.message);
 
     return NextResponse.json({ success: true });

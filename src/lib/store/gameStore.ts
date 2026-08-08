@@ -31,6 +31,7 @@ import {
   creatureNeedsDivination,
   cardNeedsCreuser,
   getCreuserCards,
+  chantBonusForSpell,
   creatureNeedsTraqueDuDestin,
   getTraqueDuDestinX,
   creatureNeedsSelection,
@@ -1118,7 +1119,8 @@ export const useGameStore = create<GameStore>((set, get) => {
     const tryOpen = (kwId: string, getter: (x: number) => Card[]): boolean => {
       const found = cardInst.card.spell_keywords!.find(k => k.id === kwId);
       if (!found) return false;
-      const x = found.amount ?? 0;
+      // Plafond de coût de l'offre = X + bonus de Chant, comme à la résolution.
+      const x = (found.amount ?? 0) + chantBonusForSpell(gs, cardInst.card);
       const choices = getter(x);
       if (choices.length === 0) return false;
       set({
@@ -2797,6 +2799,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       const xVals = parseXValuesFromEffectText(card.card.effect_text);
       const x = card.card.card_type === "spell"
         ? ((card.card.spell_keywords ?? []).find(kw => kw.id === "creuser")?.amount ?? 1)
+          + chantBonusForSpell(gameState, card.card)
         : (xVals["creuser"] ?? 1);
       const deckCards = getCreuserCards(player, x);
       if (deckCards.length > 0) {
@@ -2962,6 +2965,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       const xVals = parseXValuesFromEffectText(card.card.effect_text);
       const x = card.card.card_type === "spell"
         ? ((card.card.spell_keywords ?? []).find(kw => kw.id === "creuser")?.amount ?? 1)
+          + chantBonusForSpell(gameState, card.card)
         : (xVals["creuser"] ?? 1);
       const deckCards = getCreuserCards(player, x);
       if (deckCards.length > 0) {

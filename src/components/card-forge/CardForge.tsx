@@ -1848,6 +1848,27 @@ export default function CardForge() {
     } catch { /* ignore */ }
   }, []);
 
+  // Type du set en cours de création. « spécial » = ses cartes n'entrent pas
+  // dans les tirages aléatoires/semi-aléatoires de la collection.
+  const [newSetType, setNewSetType] = useState<"base" | "special">("base");
+  // Icône IMPORTÉE du set en cours de création (base64 + type MIME), à côté de
+  // l'emoji. Les deux coexistent : les <option> HTML ne savent afficher que du
+  // texte, l'emoji y reste donc le repli.
+  const [newSetIconFile, setNewSetIconFile] = useState<{ base64: string; mime: string; preview: string } | null>(null);
+
+  /** Lit un fichier image en base64 pour l'envoyer au endpoint (même patron que
+   *  les icônes de mots-clés). */
+  const readIconFile = useCallback((file: File): Promise<{ base64: string; mime: string; preview: string }> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = String(reader.result);
+        resolve({ base64: dataUrl.split(",")[1] ?? "", mime: file.type || "image/png", preview: dataUrl });
+      };
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(file);
+    }), []);
+
   const loadSets = useCallback(async () => {
     try {
       const res = await fetch('/api/sets');
@@ -2770,7 +2791,15 @@ export default function CardForge() {
                 <select value={cardSetId ?? ""} onChange={e => { const v = e.target.value; setCardSetId(v ? parseInt(v) : null); if (v) { setCardYear(null); setCardMonth(null); } }}
                   style={{ width: "100%", padding: "5px 8px", borderRadius: 5, border: "1px solid #e0e0e0", fontSize: 10, fontFamily: "'Cinzel',serif", marginBottom: 4 }}>
                   <option value="">{tf('no_set')}</option>
-                  {sets.map(s => <option key={s.id} value={s.id}>{s.icon} {s.name} ({s.code})</option>)}
+                  {/* Le type est rappelé DANS l'option : une fois plusieurs sets
+                      créés, rien d'autre ne distingue un set spécial ici, et
+                      c'est pourtant au moment de choisir le set qu'on décide si
+                      la carte sortira des tirages. */}
+                  {sets.map(s => (
+                    <option key={s.id} value={s.id}>
+                      {s.icon} {s.name} ({s.code}){s.type === "special" ? ` — ${tf('set_type_special')}` : ""}
+                    </option>
+                  ))}
                 </select>
                 <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                   <span style={{ fontSize: 8, color: "#888" }}>{tf('or_month_year')}</span>
@@ -5495,10 +5524,34 @@ export default function CardForge() {
                   style={{ width: 40, padding: "6px", borderRadius: 5, border: "1px solid #e0e0e0", fontSize: 14, textAlign: "center" }} />
                 <input type="date" value={newSetReleasedAt} onChange={e => setNewSetReleasedAt(e.target.value)} title={tf('release_date')}
                   style={{ padding: "6px 10px", borderRadius: 5, border: "1px solid #e0e0e0", fontSize: 11, fontFamily: "'Cinzel',serif" }} />
+                <label title={tf('set_icon_import')}
+                  style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 10px", borderRadius: 5, border: "1px dashed #c9c0b0", fontSize: 10, fontFamily: "'Cinzel',serif", cursor: "pointer", background: "#fafafa" }}>
+                  {newSetIconFile
+                    // eslint-disable-next-line @next/next/no-img-element
+                    ? <img src={newSetIconFile.preview} alt="" style={{ width: 18, height: 18, objectFit: "contain" }} />
+                    : <span style={{ fontSize: 12 }}>🖼️</span>}
+                  {newSetIconFile ? tf('set_icon_change') : tf('set_icon_import')}
+                  <input type="file" accept="image/*" style={{ display: "none" }}
+                    onChange={async e => {
+                      // `currentTarget` est remis à null par React dès que le
+                      // handler rend la main : on capture l'input AVANT le
+                      // premier await, sinon le reset plante en TypeError.
+                      const input = e.currentTarget;
+                      const f = input.files?.[0];
+                      input.value = "";
+                      if (f) setNewSetIconFile(await readIconFile(f));
+                    }} />
+                </label>
+                <select value={newSetType} onChange={e => setNewSetType(e.target.value as "base" | "special")}
+                  title={tf('set_type_hint')}
+                  style={{ padding: "6px 10px", borderRadius: 5, border: "1px solid #e0e0e0", fontSize: 11, fontFamily: "'Cinzel',serif", background: "#fff" }}>
+                  <option value="base">{tf('set_type_base')}</option>
+                  <option value="special">{tf('set_type_special')}</option>
+                </select>
                 <button onClick={async () => {
                   if (!newSetName || !newSetCode) return;
-                  const res = await fetch('/api/sets', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newSetName, code: newSetCode, icon: newSetIcon, released_at: newSetReleasedAt || null }) });
-                  if (res.ok) { setNewSetName(""); setNewSetCode(""); setNewSetIcon("⚔️"); setNewSetReleasedAt(""); loadSets(); }
+                  const res = await fetch('/api/sets', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newSetName, code: newSetCode, icon: newSetIcon, released_at: newSetReleasedAt || null, type: newSetType, ...(newSetIconFile ? { iconBase64: newSetIconFile.base64, iconMimeType: newSetIconFile.mime } : {}) }) });
+                  if (res.ok) { setNewSetName(""); setNewSetCode(""); setNewSetIcon("⚔️"); setNewSetReleasedAt(""); setNewSetType("base"); setNewSetIconFile(null); loadSets(); }
                 }} disabled={!newSetName || !newSetCode}
                   style={{ padding: "6px 16px", borderRadius: 6, border: "none", background: "#333", color: "#fff", fontSize: 10, fontFamily: "'Cinzel',serif", fontWeight: 700, cursor: "pointer", opacity: (!newSetName || !newSetCode) ? 0.4 : 1 }}>
                   {tf('create2')}
@@ -5513,11 +5566,56 @@ export default function CardForge() {
               {sets.length === 0 && <p style={{ fontSize: 10, color: "#aaa" }}>{tf('no_set_created')}</p>}
               {sets.map(s => (
                 <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: "1px solid #f0f0f0" }}>
-                  <span style={{ fontSize: 18 }}>{s.icon}</span>
+                  <label title={tf('set_icon_import')} style={{ cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", width: 26, height: 26 }}>
+                    {s.icon_url
+                      // eslint-disable-next-line @next/next/no-img-element
+                      ? <img src={s.icon_url} alt="" style={{ width: 24, height: 24, objectFit: "contain" }} />
+                      : <span style={{ fontSize: 18 }}>{s.icon}</span>}
+                    <input type="file" accept="image/*" style={{ display: "none" }}
+                      onChange={async e => {
+                        const input = e.currentTarget; // cf. ci-dessus : capturer avant tout await
+                        const f = input.files?.[0];
+                        input.value = "";
+                        if (!f) return;
+                        const img = await readIconFile(f);
+                        const res = await fetch('/api/sets', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: s.id, name: s.name, code: s.code, icon: s.icon, released_at: s.released_at ?? null, iconBase64: img.base64, iconMimeType: img.mime }) });
+                        if (res.ok) loadSets(); else alert(tf('error'));
+                      }} />
+                  </label>
+                  {s.icon_url && (
+                    <button title={tf('set_icon_clear')}
+                      onClick={async () => {
+                        const res = await fetch('/api/sets', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: s.id, name: s.name, code: s.code, icon: s.icon, released_at: s.released_at ?? null, clearIcon: true }) });
+                        if (res.ok) loadSets(); else alert(tf('error'));
+                      }}
+                      style={{ fontSize: 8, padding: "2px 6px", borderRadius: 4, border: "1px solid #e0e0e0", background: "#fff", color: "#888", cursor: "pointer" }}>
+                      ✕
+                    </button>
+                  )}
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, fontFamily: "'Cinzel',serif" }}>{s.name}</div>
+                    <div style={{ fontSize: 11, fontWeight: 700, fontFamily: "'Cinzel',serif", display: "flex", alignItems: "center", gap: 6 }}>
+                      {s.name}
+                      {s.type === "special" && (
+                        <span title={tf('set_type_hint')}
+                          style={{ fontSize: 8, padding: "1px 6px", borderRadius: 3, background: "#f3e8ff", color: "#7c3aed", border: "1px solid #ddd0f5", fontWeight: 700, letterSpacing: 0.5 }}>
+                          {tf('set_type_special')}
+                        </span>
+                      )}
+                    </div>
                     <div style={{ fontSize: 9, color: "#888" }}>{s.code}{s.released_at ? ` — ${s.released_at}` : ''}</div>
                   </div>
+                  {/* Bascule du type sur un set EXISTANT : le premier set de base
+                      a été créé avant l'existence du type, et un set peut changer
+                      de nature après coup. */}
+                  <select value={s.type ?? "base"}
+                    onChange={async e => {
+                      const res = await fetch('/api/sets', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: s.id, name: s.name, code: s.code, icon: s.icon, released_at: s.released_at ?? null, type: e.target.value }) });
+                      if (res.ok) loadSets();
+                    }}
+                    style={{ padding: "3px 6px", borderRadius: 4, border: "1px solid #e0e0e0", fontSize: 9, fontFamily: "'Cinzel',serif", background: "#fff" }}>
+                    <option value="base">{tf('set_type_base')}</option>
+                    <option value="special">{tf('set_type_special')}</option>
+                  </select>
                   <button onClick={async () => {
                     const res = await fetch('/api/sets', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: s.id }) });
                     const data = await res.json();

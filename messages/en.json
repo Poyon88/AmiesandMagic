@@ -485,7 +485,7 @@
       },
       "chant": {
         "label": "Chant X",
-        "desc": "If you control a creature with Chant, all X values of this spell are increased by X."
+        "desc": "If you control a creature with Chant, all values of this spell are increased by X."
       },
       "corruption": {
         "label": "Corruption",
@@ -1893,6 +1893,9 @@
     "set_code_placeholder": "Code (e.g.: BASE)",
     "icon_placeholder": "Icon",
     "release_date": "Release Date",
+    "set_type_base": "Base Set",
+    "set_type_special": "Special",
+    "set_type_hint": "A special set remains playable and collectible, but its cards never appear in random or semi-random draws (Selection, Summoning, Unleashing, Concentration, Sparing).",
     "existing_sets": "EXISTING SETS ({count})",
     "no_set_created": "No sets created",
     "error": "Error",
@@ -1959,7 +1962,10 @@
     "card_added": "\"{name}\" added!",
     "unknown_error": "Unknown error",
     "illustration_generated": "Illustration generated ({model})",
-    "import_error": "Import error"
+    "import_error": "Import error",
+    "set_icon_import": "Import an icon",
+    "set_icon_change": "Change",
+    "set_icon_clear": "Remove imported icon"
   },
   "game": {
     "error_not_authenticated": "Not authenticated",

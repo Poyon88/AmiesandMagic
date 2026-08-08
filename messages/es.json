@@ -485,7 +485,7 @@
       },
       "chant": {
         "label": "Canto X",
-        "desc": "Si controlas una criatura con Canto, todos los X de este hechizo aumentan en X."
+        "desc": "Si controlas una criatura con Canto, todos los valores de este hechizo aumentan en X."
       },
       "corruption": {
         "label": "Corrupción",
@@ -1893,6 +1893,9 @@
     "set_code_placeholder": "Código (ej: BASE)",
     "icon_placeholder": "Icono",
     "release_date": "Fecha de lanzamiento",
+    "set_type_base": "Set base",
+    "set_type_special": "Especial",
+    "set_type_hint": "Un set especial sigue siendo jugable y coleccionable, pero sus cartas nunca aparecen en los sorteos aleatorios o semialeatorios (Selección, Invocación, Desatado, Concentración, Clemencia).",
     "existing_sets": "SETS EXISTENTES ({count})",
     "no_set_created": "Ningún set creado",
     "error": "Error",
@@ -1959,7 +1962,10 @@
     "card_added": "¡«{name}» añadida!",
     "unknown_error": "Error desconocido",
     "illustration_generated": "Ilustración generada ({model})",
-    "import_error": "Error de importación"
+    "import_error": "Error de importación",
+    "set_icon_import": "Importar un icono",
+    "set_icon_change": "Cambiar",
+    "set_icon_clear": "Quitar el icono importado"
   },
   "game": {
     "error_not_authenticated": "No autenticado",

@@ -640,11 +640,24 @@ export interface Card {
   exile_cost?: number | null;
 }
 
+/** Type de set. `special` = ses cartes sont écartées des tirages aléatoires et
+ *  semi-aléatoires de la COLLECTION (Sélection, Invocation, Déchainement,
+ *  Concentration, Épargne). Elles restent jouables et deck-ables : la
+ *  restriction ne porte que sur les offres que le joueur n'a pas construites.
+ *  D'autres particularités viendront — d'où un type plutôt qu'un booléen. */
+export type CardSetType = "base" | "special";
+
 export interface CardSet {
   id: number;
   name: string;
   code: string;
   icon: string;
+  /** Absent sur les lignes antérieures à la migration ⇒ traité comme "base". */
+  type?: CardSetType;
+  /** Icône IMPORTÉE (URL publique). Prioritaire sur `icon` là où une image peut
+   *  être rendue. Les `<option>` HTML n'acceptant que du texte, ils continuent
+   *  d'afficher l'emoji — d'où la coexistence des deux champs. */
+  icon_url?: string | null;
   released_at?: string | null;
 }
 

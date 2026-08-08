@@ -13,7 +13,7 @@ import AmHeading from "@/components/ui/AmHeading";
 import AmPanel from "@/components/ui/AmPanel";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { CREATURE_ABILITIES, SPELL_ABILITIES } from "@/lib/game/abilities";
+import { ABILITIES, CREATURE_ABILITIES, SPELL_ABILITIES } from "@/lib/game/abilities";
 import { FACTIONS, getAllClanNames } from "@/lib/card-engine/constants";
 import {
   HERO_MAX_HP,
@@ -24,6 +24,7 @@ import {
   MAX_MANA,
   STARTING_MANA,
   MAX_SAME_CAPABILITY,
+  CAPABILITY_LIMIT_OVERRIDES,
 } from "@/lib/game/constants";
 
 // ── Design tokens (Arcane War-Codex design system) ────────────────────────────
@@ -46,6 +47,13 @@ interface TutorialViewProps {
 }
 
 type Track = "beginner" | "tcg" | "factions";
+
+/** « Chant : 24 » — liste lisible des capacités qui dérogent au plafond commun.
+ *  DÉRIVÉE de CAPABILITY_LIMIT_OVERRIDES, jamais recopiée : une dérogation
+ *  ajoutée au moteur sans être annoncée ici ferait mentir les règles du jeu. */
+const DEROGATIONS_PLAFOND = [...CAPABILITY_LIMIT_OVERRIDES]
+  .map(([id, max]) => `${ABILITIES[id]?.creature?.label ?? ABILITIES[id]?.label ?? id} : ${max}`)
+  .join(", ");
 
 export default function TutorialView({
   username, goldBalance, clanVisuals = {}, factionVisuals = {},
@@ -265,7 +273,8 @@ function BeginnerGuide() {
           <>Répartition par rareté : <Hi>2 Légendaires, 4 Épiques, 6 Rares, 8 Peu Communes, 30 Communes</Hi>.</>,
           <>Copies : <Hi>1 exemplaire</Hi> par carte non-commune, <Hi>3 exemplaires</Hi> par commune.</>,
           <>Une même capacité nommée ne peut pas figurer plus de <Hi>{MAX_SAME_CAPABILITY} fois</Hi> dans le deck
-            (Vol excepté) : impossible d'empiler cinquante fois le même effet.</>,
+            (Vol excepté{DEROGATIONS_PLAFOND && <> ; <Hi>{DEROGATIONS_PLAFOND}</Hi></>}) : impossible d'empiler
+            cinquante fois le même effet.</>,
           <>On ne mélange pas une faction <Hi>Bonne</Hi> et une faction <Hi>Maléfique</Hi> dans le même deck.</>,
         ]} />
         <P>
@@ -308,7 +317,7 @@ function TcgGuide() {
           <><Hi>Mono-faction</Hi>, <Hi>mono-clan</Hi>, <Hi>≤ 4 Mercenaires</Hi>.</>,
           <>Slots de rareté : <Hi>2 / 4 / 6 / 8 / 30</Hi> (Lég / Épique / Rare / Peu Commune / Commune).</>,
           <>Copies : non-communes <Hi>×1</Hi>, communes <Hi>×3</Hi>.</>,
-          <>Une même capacité nommée : <Hi>{MAX_SAME_CAPABILITY} occurrences</Hi> maximum (Vol exempté).</>,
+          <>Une même capacité nommée : <Hi>{MAX_SAME_CAPABILITY} occurrences</Hi> maximum (Vol exempté{DEROGATIONS_PLAFOND && <> ; <Hi>{DEROGATIONS_PLAFOND}</Hi></>}).</>,
           <>Interdit de mélanger <Hi>Bon</Hi> et <Hi>Maléfique</Hi>.</>,
           <>Formats : mode <Hi>Classique</Hi> (communes seules) ou <Hi>Expert</Hi> (slots de rareté) × étendue
             <Hi> Standard</Hi> (rotation ~2 ans) ou <Hi>Étendu</Hi>.</>,

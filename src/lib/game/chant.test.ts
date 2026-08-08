@@ -10,10 +10,11 @@
 // partie. Les cas correspondants sont verrouillés ici pour que le choix reste
 // VISIBLE si on veut un jour le restreindre.
 import { describe, expect, it } from "vitest";
-import { applyAction } from "./engine";
+import { applyAction, getSpellGraveyardTargets } from "./engine";
 import { MAX_EPARGNE } from "./constants";
+import { getSpellKeywordDesc } from "./spell-keywords";
 import { mkCard, mkInstance, mkState } from "./test-harness";
-import type { Capability, GameAction, GameState, SpellKeywordInstance } from "./types";
+import type { Capability, Card, GameAction, GameState, SpellKeywordInstance } from "./types";
 
 /** Créature dont la seule fonction est d'activer les sorts Chant. */
 function chanteuse(nom = "Barde") {
@@ -239,5 +240,132 @@ describe("Chant X — conséquences ASSUMÉES du périmètre « tout X »", () =
     // getCapabilities garde les deux ; cardChantAmount prend le premier.
     const st = lancer(s, sortChant(2, { id: "impact", amount: 2 }), { targetInstanceId: cible.instanceId });
     expect(pv(st)).toBe(16); // 2 + 2, jamais 2 + 4
+  });
+});
+
+describe("Chant X — Invocations multiples : le coût de CHAQUE invocation", () => {
+  // « Chant des Deux Pirogues » (carte 695) : invoque 2 créatures de coût 3,
+  // + Chant 2 ⇒ coût 5 chacune. Ce X-là échappait au bonus : il ne vit pas dans
+  // `params.x` mais dans un TABLEAU `costs`, lu directement sur la capacité par
+  // `invocationSetupOf` — donc hors de `spellResolutionInstances`, où passent
+  // tous les autres. Le sort invoquait toujours du coût 3.
+  function pool(): Card[] {
+    return [3, 4, 5].flatMap((c) => [
+      mkCard({ name: `C${c}`, card_type: "creature", mana_cost: c, attack: 1, health: 1,
+        faction: "Mercenaires", rarity: "Commune" }),
+    ]);
+  }
+
+  function pirogues(avecChanteuse: boolean) {
+    const s = mkState();
+    s.factionCardPool = pool();
+    if (avecChanteuse) s.players[0].board.push(chanteuse());
+    const spell = mkInstance(mkCard({
+      name: "Chant des Deux Pirogues", card_type: "spell", attack: null, health: null,
+      spell_keywords: [
+        { id: "invocations_multiples", costs: [3, 3] },
+        { id: "chant", amount: 2 },
+      ] as never,
+    }));
+    s.players[0].hand.push(spell);
+    const st = applyAction(s, { type: "play_card", cardInstanceId: spell.instanceId });
+    return st.players[0].board
+      .filter((c) => c.card.name.startsWith("C"))
+      .map((c) => c.card.mana_cost)
+      .sort();
+  }
+
+  it("sans chanteuse : coûts d'origine", () => {
+    expect(pirogues(false)).toEqual([3, 3]);
+  });
+
+  it("avec chanteuse : CHAQUE coût est majoré", () => {
+    expect(pirogues(true)).toEqual([5, 5]);
+  });
+
+  it("le bonus ne fuit PAS vers l'invocation multiple d'une créature", () => {
+    // Le même résolveur sert les créatures. Une créature qui entre en jeu
+    // pendant un sort Chant ne doit pas voir ses propres coûts majorés.
+    const s = mkState();
+    s.factionCardPool = pool();
+    s.players[0].board.push(chanteuse());
+    const porteuse = mkInstance(mkCard({
+      name: "Porteuse", mana_cost: 2, attack: 1, health: 1,
+      keywords: ["invocations_multiples"] as never,
+      keyword_instances: [{ id: "invocations_multiples", costs: [3, 3] }] as never,
+    }));
+    s.players[0].hand.push(porteuse);
+    const st = applyAction(s, { type: "play_card", cardInstanceId: porteuse.instanceId });
+    const couts = st.players[0].board
+      .filter((c) => c.card.name.startsWith("C"))
+      .map((c) => c.card.mana_cost)
+      .sort();
+    expect(couts).toEqual([3, 3]);
+  });
+});
+
+describe("Chant X — texte de la carte", () => {
+  it("un seul X substitué : « augmentées de 2 », pas « toutes les 2 »", () => {
+    // getSpellKeywordDesc fait un replace(/X/g) GLOBAL : une desc portant deux
+    // X voyait la première occurrence — qui désignait la LETTRE — remplacée
+    // elle aussi (« tous les 2 de ce sort sont augmentés de 2 »).
+    const desc = getSpellKeywordDesc({ id: "chant", amount: 2 } as never);
+    expect(desc).toContain("augmentées de 2");
+    expect(desc).not.toMatch(/toutes les 2\b/);
+    expect(desc).not.toContain("X");
+  });
+});
+
+describe("Chant X — Exhumation : le PICKER doit offrir ce que le moteur accepte", () => {
+  // « Chant des Fleurs Rouges » (carte 692) : Exhumation 2 + Chant 4 ⇒ plafond
+  // de coût 6. Le moteur l'appliquait déjà (Exhumation passe par
+  // spellResolutionInstances), mais le picker recalculait le plafond de son
+  // côté, SANS le bonus : il ne proposait que les créatures à 2, si bien que le
+  // joueur ne pouvait jamais atteindre les 6 que la résolution aurait acceptés.
+  // La propriété qui compte n'est pas « le moteur a raison » mais « les deux
+  // sont d'accord ».
+  function fleursRouges(avecChanteuse: boolean) {
+    const s = mkState();
+    if (avecChanteuse) s.players[0].board.push(chanteuse());
+    for (const c of [2, 4, 6]) {
+      s.players[0].graveyard.push(mkInstance(mkCard({
+        name: `Mort${c}`, card_type: "creature", mana_cost: c, attack: 1, health: 1,
+      })));
+    }
+    const spell = mkInstance(mkCard({
+      name: "Chant des Fleurs Rouges", card_type: "spell", attack: null, health: null, mana_cost: 1,
+      spell_keywords: [{ id: "exhumation", amount: 2 }, { id: "chant", amount: 4 }] as SpellKeywordInstance[],
+    }));
+    s.players[0].hand.push(spell);
+    return { s, spell };
+  }
+
+  const nomsProposes = (s: GameState, spell: ReturnType<typeof mkInstance>) =>
+    getSpellGraveyardTargets(s, spell.card, 0)
+      .map((id) => s.players[0].graveyard.find((c) => c.instanceId === id)!.card.name)
+      .sort();
+
+  it("sans chanteuse : plafond 2, et une cible hors plafond ne ressuscite pas", () => {
+    const { s, spell } = fleursRouges(false);
+    expect(nomsProposes(s, spell)).toEqual(["Mort2"]);
+
+    const cible = s.players[0].graveyard.find((c) => c.card.name === "Mort6")!;
+    const st = applyAction(s, {
+      type: "play_card", cardInstanceId: spell.instanceId,
+      targetMap: { kw_0: cible.instanceId },
+    });
+    expect(st.players[0].board.map((c) => c.card.name)).not.toContain("Mort6");
+  });
+
+  it("avec chanteuse : plafond 6 côté PICKER comme côté moteur", () => {
+    const { s, spell } = fleursRouges(true);
+    expect(nomsProposes(s, spell)).toEqual(["Mort2", "Mort4", "Mort6"]);
+
+    const cible = s.players[0].graveyard.find((c) => c.card.name === "Mort6")!;
+    const st = applyAction(s, {
+      type: "play_card", cardInstanceId: spell.instanceId,
+      targetMap: { kw_0: cible.instanceId },
+    });
+    expect(st.players[0].board.map((c) => c.card.name)).toContain("Mort6");
   });
 });

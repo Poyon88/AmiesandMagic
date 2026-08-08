@@ -654,7 +654,16 @@ export default function GameCard({
                 fontFamily: "'Cinzel',serif", letterSpacing: 0.5,
                 textShadow: "0 1px 2px rgba(0,0,0,0.8)",
               }}>
-                {cardSet.icon ? `${cardSet.icon} ` : ""}{vocab.setName(cardSet.code, cardSet.name)}
+                {/* Icône IMPORTÉE en priorité, emoji sinon. Sans ce test, une
+                    icône téléversée s'imprimerait telle quelle — l'URL complète
+                    en toutes lettres dans le coin de la carte. */}
+                {cardSet.icon_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={cardSet.icon_url} alt="" style={{
+                    display: "inline-block", height: 9 * s, width: "auto",
+                    verticalAlign: "-1px", marginRight: 3 * s, objectFit: "contain",
+                  }} />
+                ) : cardSet.icon ? `${cardSet.icon} ` : ""}{vocab.setName(cardSet.code, cardSet.name)}
               </div>
             );
           }

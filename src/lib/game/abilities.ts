@@ -424,7 +424,11 @@ export const ABILITIES: Record<string, AbilityDef> = {
   // propre, sa valeur est d'habiliter les sorts), côté sort le X du bonus.
   chant: {
     id: "chant", label: "Chant X", symbol: "🎵",
-    desc: "Si vous contrôlez une créature avec Chant, tous les X de ce sort sont augmentés de X.",
+    // UN SEUL « X » dans la phrase : getSpellKeywordDesc fait un
+    // `replace(/X/g, valeur)` GLOBAL. La rédaction « tous les X … augmentés de
+    // X » rendait « tous les 2 … augmentés de 2 » — la première occurrence
+    // désignait pourtant la lettre, pas la valeur.
+    desc: "Si vous contrôlez une créature avec Chant, toutes les valeurs de ce sort sont augmentées de X.",
     applicable_to: ["creature", "spell"],
     // Prix de l'HABILITATION : la créature n'a aucun effet propre, mais elle
     // débloque le bonus de tous les sorts Chant de la main. Valeur de départ à

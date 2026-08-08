@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import type { Card, Keyword, CardSet, GameFormat, DeckMode, DeckExtent, SpellKeywordInstance } from "@/lib/game/types";
 import { getFormatFilter, parseFormatCode } from "@/lib/game/format-legality";
 import { isCardOwned, type Entitlements, type OwnershipContext } from "@/lib/game/collection";
-import { DECK_SIZE, MAX_SAME_CAPABILITY, CAPABILITY_LIMIT_EXEMPT } from "@/lib/game/constants";
+import { DECK_SIZE, CAPABILITY_LIMIT_EXEMPT, capabilityLimitFor } from "@/lib/game/constants";
 import { ABILITIES } from "@/lib/game/abilities";
 import { namedCreatureCapabilityIds, creatureCapabilityCounts, capabilityLimitViolations } from "@/lib/game/deck-rules";
 import { FACTIONS, ALIGNMENTS, getFactionForRace } from "@/lib/card-engine/constants";
@@ -501,10 +501,12 @@ export default function DeckBuilder({
     const violations: string[] = [];
     if (alignmentConflict) violations.push(t("alignment_incompatible"));
     if (mercenairesCount > maxMercenaires) violations.push(t("max_mercenaires_current", { max: maxMercenaires, current: mercenairesCount }));
-    // Limite : pas plus de MAX_SAME_CAPABILITY fois une même capacité nommée (sauf Vol).
+    // Limite par capacité nommée (Vol exempté). Le plafond n'est plus unique :
+    // certaines capacités ont une dérogation (cf. capabilityLimitFor), d'où le
+    // `v.max` — annoncer 12 là où 24 s'applique serait un mensonge d'interface.
     const capabilityCounts = creatureCapabilityCounts(deckCards.values());
     for (const v of capabilityLimitViolations(capabilityCounts)) {
-      violations.push(t("max_capability_current", { max: MAX_SAME_CAPABILITY, label: v.label, count: v.count }));
+      violations.push(t("max_capability_current", { max: v.max, label: v.label, count: v.count }));
     }
 
     return { factions: factionSet, allFactions, clans: clanSet, alignments: alignmentSet, violations, alignmentConflict, mercenairesCount, maxMercenaires, capabilityCounts };
@@ -619,13 +621,14 @@ export default function DeckBuilder({
     }
     if (!hasSlot) return t("no_slot_available");
 
-    // Limite : une même capacité nommée ne peut dépasser MAX_SAME_CAPABILITY
-    // exemplaires dans le deck (Vol exempté). +1 simule l'ajout de cette carte.
+    // Limite : une même capacité nommée ne peut dépasser SON plafond dans le
+    // deck (Vol exempté). +1 simule l'ajout de cette carte.
     const capCounts = creatureCapabilityCounts(deckCards.values());
     for (const id of namedCreatureCapabilityIds(card)) {
       if (CAPABILITY_LIMIT_EXEMPT.has(id)) continue;
-      if ((capCounts.get(id) ?? 0) + 1 > MAX_SAME_CAPABILITY) {
-        return t("max_capability", { max: MAX_SAME_CAPABILITY, label: ABILITIES[id]?.label ?? id });
+      const max = capabilityLimitFor(id);
+      if ((capCounts.get(id) ?? 0) + 1 > max) {
+        return t("max_capability", { max, label: ABILITIES[id]?.label ?? id });
       }
     }
 
@@ -1336,18 +1339,19 @@ export default function DeckBuilder({
         </div>
 
         {/* Récap mots-clés — décompte par capacité nommée présente dans le deck.
-            Nombre en rouge (am-ember) une fois la limite MAX_SAME_CAPABILITY
-            atteinte, pour signaler qu'on ne peut plus en ajouter. */}
+            Nombre en rouge (am-ember) une fois SON plafond atteint (variable
+            selon la capacité), pour signaler qu'on ne peut plus en ajouter. */}
         {keywordTally.length > 0 && (
           <div className="px-3 py-2 border-t border-am-gold/30 flex-shrink-0 bg-am-bg-1/60">
             <div className="text-[9px] text-am-gold font-bold uppercase tracking-[0.2em] mb-1.5 font-[family-name:var(--font-cinzel),serif]">{t("keywords")}</div>
             <div className="flex flex-wrap gap-x-3 gap-y-1.5">
               {keywordTally.map(({ id, count, iconKey, symbol, label }) => {
-                const atLimit = count >= MAX_SAME_CAPABILITY;
+                const max = capabilityLimitFor(id);
+                const atLimit = count >= max;
                 return (
                   <div
                     key={id}
-                    title={`${label} : ${count}${atLimit ? ` ${t("max_suffix", { max: MAX_SAME_CAPABILITY })}` : ""}`}
+                    title={`${label} : ${count}${atLimit ? ` ${t("max_suffix", { max })}` : ""}`}
                     className="flex items-center gap-1"
                   >
                     <span className="inline-flex items-center justify-center" style={{ width: 18, height: 18 }}>

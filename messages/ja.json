@@ -485,7 +485,7 @@
       },
       "chant": {
         "label": "詠唱 X",
-        "desc": "「詠唱」を持つクリーチャーを支配している場合、この呪文のXはすべてX増加する。"
+        "desc": "詠唱を持つクリーチャーをコントロールしている場合、このスペルのすべての値がXだけ増加する。"
       },
       "corruption": {
         "label": "堕落",
@@ -1893,6 +1893,9 @@
     "set_code_placeholder": "コード（例：BASE）",
     "icon_placeholder": "アイコン",
     "release_date": "リリース日",
+    "set_type_base": "基本セット",
+    "set_type_special": "特別",
+    "set_type_hint": "特別セットはプレイ可能かつコレクション対象のままですが、そのカードはランダムまたは準ランダムな抽選（選択、召喚、解放、集中、温存）には決して出現しません。",
     "existing_sets": "既存セット（{count}）",
     "no_set_created": "セットなし",
     "error": "エラー",
@@ -1959,7 +1962,10 @@
     "card_added": "「{name}」を追加しました！",
     "unknown_error": "不明なエラー",
     "illustration_generated": "イラストを生成しました（{model}）",
-    "import_error": "インポートエラー"
+    "import_error": "インポートエラー",
+    "set_icon_import": "アイコンをインポート",
+    "set_icon_change": "変更",
+    "set_icon_clear": "インポートしたアイコンを削除"
   },
   "game": {
     "error_not_authenticated": "未認証",

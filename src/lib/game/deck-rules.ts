@@ -5,7 +5,7 @@
 import type { Card } from "./types";
 import { ABILITIES } from "./abilities";
 import { getCapabilities } from "./capability-adapter";
-import { MAX_SAME_CAPABILITY, CAPABILITY_LIMIT_EXEMPT } from "./constants";
+import { CAPABILITY_LIMIT_EXEMPT, capabilityLimitFor } from "./constants";
 
 /** Ids de capacités NOMMÉES portées par une carte créature, dédupliqués. Une
  *  capacité est « nommée » si son `abilityId` existe dans le registre ABILITIES,
@@ -36,14 +36,39 @@ export function creatureCapabilityCounts(
   return counts;
 }
 
-/** Capacités dépassant la limite (count > MAX_SAME_CAPABILITY), avec un libellé
- *  lisible pour les messages d'erreur de l'UI. */
+/** Capacités dépassant LEUR plafond, avec un libellé lisible et le plafond en
+ *  question — les messages d'erreur doivent citer la valeur réellement
+ *  appliquée, qui n'est plus la même pour toutes (cf. capabilityLimitFor). */
 export function capabilityLimitViolations(
   counts: Map<string, number>,
-): { id: string; label: string; count: number }[] {
-  const out: { id: string; label: string; count: number }[] = [];
+): { id: string; label: string; count: number; max: number }[] {
+  const out: { id: string; label: string; count: number; max: number }[] = [];
   for (const [id, count] of counts) {
-    if (count > MAX_SAME_CAPABILITY) out.push({ id, label: ABILITIES[id]?.label ?? id, count });
+    const max = capabilityLimitFor(id);
+    if (count > max) out.push({ id, label: ABILITIES[id]?.label ?? id, count, max });
   }
   return out;
+}
+
+
+/** Ids des sets « spéciaux ». Chargé une fois par match ; `undefined` ⇒ aucun. */
+export type SpecialSetIds = ReadonlySet<number>;
+
+/** Écarte des POOLS DE COLLECTION les cartes issues d'un set spécial.
+ *
+ *  Point de passage UNIQUE, appliqué à la CONSTRUCTION des pools plutôt qu'aux
+ *  ~8 résolveurs qui y puisent (Sélection ×3, Invocation, Invocations
+ *  multiples, Déchainement, Concentration, Épargne). Un résolveur ajouté
+ *  demain hérite donc de la règle sans qu'on ait à y penser — c'est exactement
+ *  le genre d'inventaire dupliqué qui a déjà dérivé plusieurs fois ici.
+ *
+ *  Ce filtre ne touche QUE les tirages : une carte de set spécial reste
+ *  collectionnable, deck-able, piochable et jouable. Seules les offres que le
+ *  joueur n'a pas construites lui-même l'ignorent. */
+export function excludeSpecialSets<T extends { set_id?: number | null }>(
+  cards: T[],
+  specialSetIds: SpecialSetIds | undefined,
+): T[] {
+  if (!specialSetIds || specialSetIds.size === 0) return cards;
+  return cards.filter((c) => c.set_id == null || !specialSetIds.has(c.set_id));
 }

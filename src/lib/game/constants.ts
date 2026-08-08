@@ -6,6 +6,23 @@ export const MAX_SAME_CAPABILITY = 12;
 // Capacités exemptées de cette limite (Vol — `ranged` en est le doublon legacy
 // effectivement stocké sur les cartes).
 export const CAPABILITY_LIMIT_EXEMPT: ReadonlySet<string> = new Set(["vol", "ranged"]);
+/** Plafonds PROPRES à certaines capacités, en dérogation à MAX_SAME_CAPABILITY.
+ *
+ *  Chant : c'est la mécanique identitaire des Fils du Volcan, et elle a besoin
+ *  d'une créature chanteuse EN JEU pour que les sorts du deck se renforcent.
+ *  Le plafond commun étouffait donc le clan qu'il était censé équilibrer : il
+ *  faut assez d'exemplaires pour en tirer une de façon fiable. */
+export const CAPABILITY_LIMIT_OVERRIDES: ReadonlyMap<string, number> = new Map([
+  ["chant", 24],
+]);
+/** Plafond applicable à une capacité nommée : sa dérogation si elle en a une,
+ *  le plafond commun sinon. Point de passage UNIQUE — la validation live, la
+ *  validation de sauvegarde et le badge de décompte doivent lire la même
+ *  valeur, sinon l'un des trois annonce une limite que les autres n'appliquent
+ *  pas. */
+export function capabilityLimitFor(abilityId: string): number {
+  return CAPABILITY_LIMIT_OVERRIDES.get(abilityId) ?? MAX_SAME_CAPABILITY;
+}
 export const STARTING_HAND_SIZE = 4;
 export const MAX_HAND_SIZE = 8;
 export const MAX_BOARD_SIZE = 8;

@@ -485,7 +485,7 @@
       },
       "chant": {
         "label": "Gesang X",
-        "desc": "Wenn ihr eine Kreatur mit Gesang kontrolliert, werden alle X-Werte dieses Zauberspruchs um X erhöht."
+        "desc": "Wenn du eine Kreatur mit Gesang kontrollierst, werden alle Werte dieses Zauberspruchs um X erhöht."
       },
       "corruption": {
         "label": "Korruption",
@@ -1893,6 +1893,9 @@
     "set_code_placeholder": "Code (z. B.: BASIS)",
     "icon_placeholder": "Symbol",
     "release_date": "Erscheinungsdatum",
+    "set_type_base": "Basis-Set",
+    "set_type_special": "Spezial",
+    "set_type_hint": "Ein Spezial-Set bleibt spielbar und sammelbar, aber seine Karten erscheinen niemals in zufälligen oder halbzufälligen Ziehungen (Auswahl, Beschwörung, Entfesselung, Konzentration, Schonung).",
     "existing_sets": "VORHANDENE SETS ({count})",
     "no_set_created": "Kein Set erstellt",
     "error": "Fehler",
@@ -1959,7 +1962,10 @@
     "card_added": "„{name}\" hinzugefügt!",
     "unknown_error": "Unbekannter Fehler",
     "illustration_generated": "Illustration generiert ({model})",
-    "import_error": "Importfehler"
+    "import_error": "Importfehler",
+    "set_icon_import": "Icon importieren",
+    "set_icon_change": "Ändern",
+    "set_icon_clear": "Importiertes Icon entfernen"
   },
   "game": {
     "error_not_authenticated": "Nicht authentifiziert",

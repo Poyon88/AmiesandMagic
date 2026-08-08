@@ -7,6 +7,7 @@ import GameCard from "@/components/cards/GameCard";
 import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
 import { KEYWORDS as KEYWORD_DEFS, FACTIONS, getFactionDisplayName, getAllClanNames, getEffectiveAlignment, CURATED_KEYWORD_MODES, getAssignableRaces } from "@/lib/card-engine/constants";
 import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS } from "@/lib/game/spell-keywords";
+import { SEUIL_DECK_THRESHOLD } from "@/lib/game/constants";
 import type { Card, Capability, Keyword, KeywordInstance, KeywordMode, SpellKeywordInstance, SpellComposableEffects, CardSet, TokenTemplate } from "@/lib/game/types";
 import ComposedEffectsEditor from "@/components/card-forge/ComposedEffectsEditor";
 import CostListEditor from "@/components/card-forge/CostListEditor";
@@ -159,6 +160,11 @@ export default function CardEditor() {
   // Force des ancêtres +X/+Y (créature) : le +PV (Y) dédié. Le +ATK (X)
   // réutilise keywordXValues ; sérialisé dans keyword_instances comme la Forge.
   const [fdaY, setFdaY] = useState<number>(1);
+  // Jumeau de Force des ancêtres : même forme +X/+Y, même palier. Son champ Y
+  // manquait aux QUATRE endroits (état, chargement, sauvegarde, rendu), si bien
+  // que toute carte éditée ici repartait avec le défaut moteur (y = 1) — en
+  // silence, puisque rien ne l'affichait.
+  const [ssY, setSsY] = useState<number>(1);
   // Invocations multiples : liste des coûts (une invocation par entrée).
   const [invocCosts, setInvocCosts] = useState<number[]>([]);
   const [invocRace, setInvocRace] = useState<string>("");
@@ -283,7 +289,7 @@ export default function CardEditor() {
     // sidecar; the effect_text bracket is the legacy fallback for X.
     const modes: Record<string, KeywordMode> = {};
     const grantScopes: Record<string, "all_allies"> = {};
-    let rmYLoaded = 1, rmRaceLoaded = "", rmClanLoaded = "", rfYLoaded = 1, afYLoaded = 1, glYLoaded = 1, dcYLoaded = 1, fdaYLoaded = 1;
+    let rmYLoaded = 1, rmRaceLoaded = "", rmClanLoaded = "", rfYLoaded = 1, afYLoaded = 1, glYLoaded = 1, dcYLoaded = 1, fdaYLoaded = 1, ssYLoaded = 1;
     let invocCostsLoaded: number[] = [];
     let invocRaceLoaded = "", invocFactionLoaded = "";
     for (const inst of card.keyword_instances ?? []) {
@@ -298,13 +304,14 @@ export default function CardEditor() {
       if (inst.id === "gloire") glYLoaded = inst.y ?? 1;
       if (inst.id === "dechainement") dcYLoaded = inst.y ?? 1;
       if (inst.id === "force_des_ancetres") fdaYLoaded = inst.y ?? 1;
+      if (inst.id === "seuil_sacrificiel") ssYLoaded = inst.y ?? 1;
       if (inst.id === "invocations_multiples") {
         invocCostsLoaded = inst.costs ?? [];
         invocRaceLoaded = inst.race ?? "";
         invocFactionLoaded = inst.faction ?? "";
       }
     }
-    setRmY(rmYLoaded); setRmRace(rmRaceLoaded); setRmClan(rmClanLoaded); setRfY(rfYLoaded); setAfY(afYLoaded); setGlY(glYLoaded); setDcY(dcYLoaded); setFdaY(fdaYLoaded);
+    setRmY(rmYLoaded); setRmRace(rmRaceLoaded); setRmClan(rmClanLoaded); setRfY(rfYLoaded); setAfY(afYLoaded); setGlY(glYLoaded); setDcY(dcYLoaded); setFdaY(fdaYLoaded); setSsY(ssYLoaded);
     setInvocCosts(invocCostsLoaded); setInvocRace(invocRaceLoaded); setInvocFaction(invocFactionLoaded);
     setKeywordModes(modes);
     setKeywordXValues(parsedX);
@@ -481,6 +488,12 @@ export default function CardEditor() {
           if (id === "force_des_ancetres") {
             return { id: id as Keyword, ...(mode ? { mode } : {}), x: x ?? 1, y: fdaY, ...(grantScope ? { grantScope } : {}) };
           }
+          // Seuil Sacrificiel +X/+Y : même traitement que Force des ancêtres,
+          // sans la garde !isSpellCard — un sort peut la CONFÉRER, et son `y`
+          // doit alors survivre à une ré-édition ici (cf. Gloire).
+          if (id === "seuil_sacrificiel") {
+            return { id: id as Keyword, ...(mode ? { mode } : {}), x: x ?? 1, y: ssY, ...(grantScope ? { grantScope } : {}) };
+          }
           if (!mode && x == null && !grantScope) return null;
           return { id: id as Keyword, ...(mode ? { mode } : {}), ...(x != null ? { x } : {}), ...(grantScope ? { grantScope } : {}) };
         })
@@ -554,7 +567,7 @@ export default function CardEditor() {
       console.warn("[card-save] refresh failed after successful save:", err);
     }
     setSaving(false);
-  }, [selectedCard, editFields, newImageFile, keywordXValues, keywordModes, keywordGrantScope, rmY, rmRace, rmClan, rfY, afY, glY, dcY, fdaY, invocCosts, invocRace, invocFaction, composedCaps]);
+  }, [selectedCard, editFields, newImageFile, keywordXValues, keywordModes, keywordGrantScope, rmY, rmRace, rmClan, rfY, afY, glY, dcY, fdaY, ssY, invocCosts, invocRace, invocFaction, composedCaps]);
 
   // Delete
   const handleDelete = useCallback(async (id: number) => {
@@ -1611,6 +1624,31 @@ export default function CardEditor() {
                   <input
                     type="number" min={0} max={20} value={fdaY}
                     onChange={e => setFdaY(Math.max(0, parseInt(e.target.value) || 0))}
+                    style={{ width: 48, padding: "2px 6px", borderRadius: 4, border: "1px solid #d9cfe8", fontSize: 11, textAlign: "center" }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Seuil Sacrificiel — jumeau du bloc ci-dessus (même paire +X/+Y,
+                condition sur le DECK au lieu du cimetière). Le champ Y était
+                absent : le panneau « Valeurs X » générique n'affiche qu'un seul
+                nombre, et le moteur retombait donc sur son défaut y = 1 pour
+                toute carte passée par cet éditeur. */}
+            {((editFields.keywords as string[]) || []).includes("seuil_sacrificiel") && (
+              <div style={{ marginBottom: 8, padding: "8px 10px", borderRadius: 6, border: "1px solid #d9cfe8", background: "#f8f4ff" }}>
+                <div style={{ ...S.label, color: "#6b4fa0", marginBottom: 6 }}>📉 SEUIL SACRIFICIEL (deck ≤ {SEUIL_DECK_THRESHOLD} cartes)</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 9, color: "#6b4fa0" }}>+ATK (X)</span>
+                  <input
+                    type="number" min={0} max={20} value={keywordXValues["seuil_sacrificiel"] ?? 1}
+                    onChange={e => setKeywordXValues(prev => ({ ...prev, ["seuil_sacrificiel"]: Math.max(0, Math.min(20, parseInt(e.target.value) || 0)) }))}
+                    style={{ width: 48, padding: "2px 6px", borderRadius: 4, border: "1px solid #d9cfe8", fontSize: 11, textAlign: "center" }}
+                  />
+                  <span style={{ fontSize: 9, color: "#6b4fa0" }}>+PV (Y)</span>
+                  <input
+                    type="number" min={0} max={20} value={ssY}
+                    onChange={e => setSsY(Math.max(0, parseInt(e.target.value) || 0))}
                     style={{ width: 48, padding: "2px 6px", borderRadius: 4, border: "1px solid #d9cfe8", fontSize: 11, textAlign: "center" }}
                   />
                 </div>

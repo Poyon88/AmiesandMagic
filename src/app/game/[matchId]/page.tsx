@@ -13,6 +13,7 @@ import type { Card, FormatCode, GameAction, GameState, HeroDefinition, HeroPower
 import { syncHash, reconcileVerdict } from "@/lib/game/stateHash";
 import { FACTIONS } from "@/lib/card-engine/constants";
 import { MANA_SPARK_NAMES } from "@/lib/game/mana-spark";
+import { excludeSpecialSets } from "@/lib/game/deck-rules";
 import { useTranslations } from "next-intl";
 
 // Colonnes de `cards` réellement consommées par le moteur en partie. Projection
@@ -292,7 +293,7 @@ export default function GamePage() {
         }
         // `.returns<Card[]>()` : la projection est une string dynamique, donc
         // supabase-js ne peut pas inférer la forme des lignes — on la fournit.
-        const [factionCardsRes, manaSparkRes, allSpellsRes] = await Promise.all([
+        const [factionCardsRes, manaSparkRes, allSpellsRes, specialSetsRes] = await Promise.all([
           supabase.from("cards").select(GAME_CARD_COLUMNS).in("faction", Array.from(selectionFactions)).returns<Card[]>(),
           // `.in(...)` et non `.eq(...)` : le nom exact de la ligne dépend de la
           // saisie admin dans la forge (cf. MANA_SPARK_NAMES).
@@ -300,8 +301,17 @@ export default function GamePage() {
           // Concentration X: needs every spell across every faction/set, not
           // just the deck-faction subset that factionCardPool covers.
           supabase.from("cards").select(GAME_CARD_COLUMNS).eq("card_type", "spell").returns<Card[]>(),
+          // Sets « spéciaux » : leurs cartes sont écartées des pools de tirage
+          // (cf. excludeSpecialSets). Requête à part plutôt qu'un filtre dans
+          // les deux requêtes ci-dessus — PostgREST ne sait pas faire un
+          // anti-join, et la liste tient en quelques ids.
+          supabase.from("sets").select("id").eq("type", "special").returns<{ id: number }[]>(),
         ]);
-        const factionCards = factionCardsRes.data ?? [];
+        // Les deux clients interrogent la même base au démarrage du match : ils
+        // bâtissent donc des pools identiques, condition de la synchro des
+        // tirages semés.
+        const specialSetIds = new Set((specialSetsRes.data ?? []).map((r) => r.id));
+        const factionCards = excludeSpecialSets(factionCardsRes.data ?? [], specialSetIds);
         // Ensure Mana Spark is in the pool (may not be if Humains not in deck factions)
         const manaSpark = manaSparkRes.data?.[0];
         if (manaSpark && !factionCards.find((c) => c.id === manaSpark.id)) {
@@ -314,7 +324,7 @@ export default function GamePage() {
             "[match] Étincelle de Mana introuvable en base — repli dégradé servi au 2e joueur.",
           );
         }
-        const allSpells = allSpellsRes.data ?? [];
+        const allSpells = excludeSpecialSets(allSpellsRes.data ?? [], specialSetIds);
 
         // Determine which board the match uses: the second player's deck board,
         // falling back to the admin-chosen default board.

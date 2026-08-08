@@ -202,6 +202,17 @@ function cardChantAmount(card: Card): number {
 function boardHasChanter(p: PlayerState): boolean {
   return p.board.some(c => hasKw(c, "chant") && c.currentHealth > 0);
 }
+/** Bonus de Chant d'un sort AVANT sa résolution, calculé depuis l'état seul.
+ *
+ *  Même règle que `withChant`, mais utilisable HORS résolution : c'est ce qui
+ *  permet aux PICKERS de proposer exactement ce que la résolution acceptera.
+ *  Sans lui, l'interface et le moteur divergent — une Exhumation 2 + Chant 4
+ *  ne laissait choisir que des créatures à 2 alors que le moteur en acceptait
+ *  jusqu'à 6, et le joueur ne voyait jamais son bonus. */
+export function chantBonusForSpell(state: GameState, card: Card): number {
+  const caster = state.players[state.currentPlayerIndex];
+  return boardHasChanter(caster) ? cardChantAmount(card) : 0;
+}
 /** Applique le bonus de Chant à une amplitude du sort en cours.
  *
  *  `undefined` reste `undefined` : un champ absent (le Y d'un mot-clé qui n'en
@@ -4060,7 +4071,7 @@ function resolveSpellKeywords(
       }
       case "invocations_multiples": {
         // Une Invocation par coût listé (les coûts vivent sur l'instance de sort).
-        resolveMultipleInvocations(ctx.caster, ctx.card, ctx.state.factionCardPool, ctx.state.formatCode ?? null);
+        resolveMultipleInvocations(ctx.caster, ctx.card, ctx.state.factionCardPool, ctx.state.formatCode ?? null, chantBonus);
         break;
       }
       case "dechainement": {
@@ -5278,7 +5289,12 @@ function resolveDevoration(
     target = findCreatureOnBoard(controller, targetInstanceId)
       ?? findCreatureOnBoard(other, targetInstanceId);
   } else {
-    const pool = [...controller.board, ...other.board].filter(c => c !== source);
+    // Repli sans cible désignée (râle d'agonie, attaque, tour adverse) : ENNEMIS
+    // uniquement. Le joueur peut CHOISIR de dévorer son propre allié — sacrifier
+    // une grosse unité pour en gonfler une autre est une option légitime — mais
+    // un tirage au sort qui mange son propre camp n'est jamais voulu, et c'est
+    // ce que faisait le pool à deux plateaux.
+    const pool = other.board.filter(c => c !== source && c.currentHealth > 0);
     if (pool.length > 0) target = pool[Math.floor(rng() * pool.length)];
   }
   // On ne se dévore pas soi-même : le gain serait absurde et la source mourrait.
@@ -7973,6 +7989,11 @@ const CREATURE_TARGETING_KEYWORDS: Keyword[] = [
   "sacrifice", "corruption", "malediction", "affaiblissement", "impact",
   "permutation", "vampirisme", "mimique", "metamorphose",
   "benediction", "tactique", "remontee", "conferer",
+  // Dévoration : `getCreatureTargets` savait DÉJÀ bâtir sa liste de cibles,
+  // mais son absence ici rendait `creatureNeedsTarget` faux — le picker ne
+  // s'ouvrait jamais et le moteur retombait sur le tirage au sort. Deux listes
+  // à tenir d'accord, une seule mise à jour.
+  "devoration",
 ];
 
 /** Première capacité composée à l'entrée demandant un ciblage interactif :
@@ -8447,10 +8468,17 @@ function tirageUniquePondere<T extends { faction?: string | null }>(
 /** Invocations multiples : liste des coûts portée par la carte (keyword_instances
  *  côté créature, spell_keywords côté sort) — lue via le modèle unifié pour ne
  *  pas dupliquer les deux chemins. Vide si la capacité n'est pas sur la carte. */
-function invocationSetupOf(card: Card): { costs: number[]; race?: string; faction?: string } {
+function invocationSetupOf(card: Card, costBonus = 0): { costs: number[]; race?: string; faction?: string } {
   const cap = getCapabilities(card).find((c) => c.abilityId === "invocations_multiples");
   return {
-    costs: (cap?.costs ?? []).filter((n) => typeof n === "number" && n > 0),
+    // `costs` est le SEUL X de sort qui ne transite pas par
+    // `spellResolutionInstances` (il est lu directement sur la capacité, en
+    // tableau) : Chant devait donc être appliqué ici en plus. Le filtre
+    // « > 0 » porte sur la valeur d'ORIGINE — un coût laissé à 0 dans la forge
+    // reste une entrée vide, ce n'est pas au bonus de le réveiller.
+    costs: (cap?.costs ?? [])
+      .filter((n) => typeof n === "number" && n > 0)
+      .map((n) => n + costBonus),
     race: cap?.race || undefined,
     faction: cap?.faction || undefined,
   };
@@ -8465,8 +8493,13 @@ function resolveMultipleInvocations(
   sourceCard: Card,
   pool: Card[] | undefined,
   formatCode: FormatCode | null,
+  // Bonus de Chant, passé EXPLICITEMENT par le chemin sort. On ne lit pas
+  // `chantBonus` ici : ce résolveur sert aussi les créatures (entrée en jeu,
+  // râle d'agonie…), qui peuvent se résoudre PENDANT un sort — elles
+  // hériteraient alors d'un bonus qui ne les concerne pas.
+  costBonus = 0,
 ): void {
-  const { costs, race, faction } = invocationSetupOf(sourceCard);
+  const { costs, race, faction } = invocationSetupOf(sourceCard, costBonus);
   if (costs.length === 0) {
     console.warn(
       `[engine] Invocations multiples : aucun coût configuré pour « ${sourceCard.name} » — vérifiez l'onglet Capacités.`,
@@ -8837,7 +8870,10 @@ export function getSpellGraveyardTargets(state: GameState, card: Card, slotIndex
       .map(c => c.instanceId);
   }
   if (kw.id === "exhumation") {
-    const maxCost = kw.amount ?? 1;
+    // Plafond de coût = X du mot-clé + bonus de Chant. Le moteur applique déjà
+    // le bonus (via spellResolutionInstances) : sans le même calcul ici, le
+    // picker proposait strictement moins que ce que la résolution acceptait.
+    const maxCost = (kw.amount ?? 1) + chantBonusForSpell(state, card);
     return player.graveyard
       .filter(c => c.card.card_type === "creature" && c.card.mana_cost <= maxCost)
       .map(c => c.instanceId);
@@ -8853,7 +8889,10 @@ export function getSpellGraveyardTargets(state: GameState, card: Card, slotIndex
 export function getComposedGraveyardTargets(state: GameState, card: Card, capUid: string): string[] {
   const player = state.players[state.currentPlayerIndex];
   const cap = getCapabilities(card).find(c => c.uid === capUid && c.composed);
-  const x = cap?.composed?.magnitude?.x ?? 0;
+  // Même plafond que la résolution, bonus de Chant compris (cf.
+  // chantBonusForSpell) — sinon le picker et le moteur ne s'accordent pas.
+  const x = (cap?.composed?.magnitude?.x ?? 0)
+    + (card.card_type === "spell" ? chantBonusForSpell(state, card) : 0);
   return player.graveyard
     .filter(c => c.card.card_type === "creature" && c.card.mana_cost <= x)
     .map(c => c.instanceId);

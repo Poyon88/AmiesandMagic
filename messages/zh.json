@@ -485,7 +485,7 @@
       },
       "chant": {
         "label": "咏唱 X",
-        "desc": "如果你控制一个带有“咏唱”的生物，此法术中所有的 X 都会增加 X。"
+        "desc": "如果你控制一个拥有\"吟唱\"的随从，此法术的所有数值提升X点。"
       },
       "corruption": {
         "label": "腐化",
@@ -1893,6 +1893,9 @@
     "set_code_placeholder": "代码（例：BASE）",
     "icon_placeholder": "图标",
     "release_date": "发行日期",
+    "set_type_base": "基础系列",
+    "set_type_special": "特殊",
+    "set_type_hint": "特殊系列仍可游玩和收藏，但其卡牌永远不会出现在随机或半随机抽取中（选择、召唤、解放、集中、节省）。",
     "existing_sets": "现有系列（{count}）",
     "no_set_created": "暂无系列",
     "error": "错误",
@@ -1959,7 +1962,10 @@
     "card_added": "「{name}」已添加！",
     "unknown_error": "未知错误",
     "illustration_generated": "插图已生成（{model}）",
-    "import_error": "导入错误"
+    "import_error": "导入错误",
+    "set_icon_import": "导入图标",
+    "set_icon_change": "更改",
+    "set_icon_clear": "移除已导入的图标"
   },
   "game": {
     "error_not_authenticated": "未登录",
