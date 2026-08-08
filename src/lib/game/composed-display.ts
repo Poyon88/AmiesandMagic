@@ -82,6 +82,7 @@ export const COMPOSED_FR: Record<string, string> = {
   "targetd.count_all": "toutes les unités",
   "targetd.count_one": "une unité",
   "targetd.count_n": "{n} unités",
+  "targetd.count_scatter": "au plus {n} unités",
   "targetd.hero_ally": "votre héros",
   "targetd.hero_enemy": "le héros adverse",
   "targetd.both_all": "toutes les unités et le héros {side}",
@@ -97,6 +98,7 @@ export const COMPOSED_FR: Record<string, string> = {
   "target.count_all": "à toutes les unités",
   "target.count_one": "à une unité",
   "target.count_n": "à {n} unités",
+  "target.count_scatter": "à au plus {n} unités",
   "target.side_ally_one": "alliée",
   "target.side_ally_many": "alliées",
   "target.side_enemy_one": "ennemie",
@@ -386,12 +388,20 @@ function describeTarget(t: TargetSpec | undefined, tr?: SafeT, direct = false): 
       : frag(tr, `${p}.both_one`, { side: sideTxt ? ` ${sideTxt}` : "" });
   }
   const many = t.count === "all" || (typeof t.count === "number" && t.count > 1);
-  const count = t.count === "all" ? frag(tr, `${p}.count_all`) : t.count === 1 ? frag(tr, `${p}.count_one`) : frag(tr, `${p}.count_n`, { n: t.count });
+  // Répartition au hasard hors dégâts/soin (ceux-là passent par describeScatter) :
+  // les `n` passes sont tirées AVEC REMISE, le nombre de cibles distinctes va
+  // donc de 1 à n. Annoncer « n unités » mentirait — d'où la fourchette. À n = 1
+  // la fourchette n'a pas lieu d'être et on retombe sur la tournure normale.
+  const scatterRange = t.designation === "scatter" && typeof t.count === "number" && t.count > 1;
+  const count = scatterRange ? frag(tr, `${p}.count_scatter`, { n: t.count })
+    : t.count === "all" ? frag(tr, `${p}.count_all`)
+    : t.count === 1 ? frag(tr, `${p}.count_one`)
+    : frag(tr, `${p}.count_n`, { n: t.count });
   const sideTxt = sideAdj(tr, t.side, many);
   const memb = t.membership;
   const mtxt = memb ? [...(memb.race ?? []), ...(memb.clan ?? []), ...(memb.faction ?? [])].join("/") : "";
   const locTxt = t.location === "hand" ? frag(tr, "target.loc_hand") : t.location === "deck" ? frag(tr, "target.loc_deck") : t.location === "graveyard" ? frag(tr, "target.loc_graveyard") : "";
-  const desTxt = t.designation === "random" ? frag(tr, "target.des_random")
+  const desTxt = t.designation === "random" || t.designation === "scatter" ? frag(tr, "target.des_random")
     : t.designation === "automatic" ? (t.count !== "all" ? frag(tr, "target.des_automatic") : "")
     : (t.count !== "all" ? frag(tr, "target.des_choice") : "");
   return [count, sideTxt, mtxt && `(${mtxt})`, locTxt, desTxt].filter(Boolean).join(" ");

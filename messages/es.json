@@ -463,10 +463,6 @@
         "label": "Precisión",
         "desc": "Los daños de este hechizo ignoran la Resistencia, la Armadura y el Escudo."
       },
-      "seuil_colere": {
-        "label": "Umbral de ira X",
-        "desc": "Si tu mazo tiene 25 cartas o menos, este hechizo inflige X daño adicional."
-      },
       "poison": {
         "label": "Veneno",
         "desc": "Las unidades heridas pierden 1 PV por turno."
@@ -478,6 +474,10 @@
       "convocation_simple": {
         "label": "Convocación",
         "desc": "Crea {token}."
+      },
+      "seuil_colere": {
+        "label": "Umbral de ira X",
+        "desc": "Si tu mazo tiene 25 cartas o menos, este hechizo inflige X daño adicional."
       },
       "corruption": {
         "label": "Corrupción",
@@ -697,7 +697,8 @@
         "hero_ally": "tu héroe",
         "hero_enemy": "el héroe enemigo",
         "both_all": "todas las unidades y el héroe {side}",
-        "both_one": "un objetivo (unidad o héroe){side}"
+        "both_one": "un objetivo (unidad o héroe){side}",
+        "count_scatter": "como máximo {n} unidades"
       },
       "target": {
         "self": "a sí misma",
@@ -719,7 +720,8 @@
         "loc_graveyard": "del cementerio",
         "des_random": "al azar",
         "des_automatic": "automáticamente",
-        "des_choice": "a elegir"
+        "des_choice": "a elegir",
+        "count_scatter": "a como máximo {n} unidades"
       },
       "scatter": {
         "action_damage": "inflige",
@@ -1610,7 +1612,7 @@
     "label_designation": "DESIGNACIÓN",
     "designation_choice": "A elegir",
     "designation_random": "Al azar",
-    "designation_scatter": "Distribuido al azar (por punto)",
+    "designation_scatter": "Repartido al azar (con reemplazo)",
     "designation_automatic": "Automático",
     "add_composed_effect": "+ Añadir un efecto compuesto",
     "tab_forge": "Forja",
@@ -1669,6 +1671,7 @@
     "edition_label": "EDICIÓN",
     "name_label": "NOMBRE",
     "card_name_placeholder": "Nombre de la carta",
+    "name_taken": "Este nombre ya lo lleva «{name}» (id {id}). Al guardar se pedirá confirmación.",
     "mana_label": "MANÁ",
     "power_label": "PODER",
     "life_cost_hint": "Puntos de vida que paga el héroe al invocar. La carta no es jugable si la suma llegaría a 0 PV.",
@@ -1948,7 +1951,7 @@
     "unknown_error": "Error desconocido",
     "illustration_generated": "Ilustración generada ({model})",
     "import_error": "Error de importación",
-    "name_taken": "Este nombre ya lo lleva «{name}» (id {id}). Al guardar se pedirá confirmación."
+    "scatter_passes_hint": "{n} sorteos con reemplazo → como máximo {n} objetivos distintos"
   },
   "game": {
     "error_not_authenticated": "No autenticado",
@@ -2040,6 +2043,8 @@
     "convocation_and": "{a} y {b}",
     "convocation_keywords": " ({keywords})",
     "spell_countered": "🛡️ ¡Contrahechizo!",
+    "draw_trigger_self": "🃏 Efecto activado con tu robo",
+    "draw_trigger_opponent": "🃏 Efecto activado con el robo del rival",
     "spell_grant_all_allies": " · a todos los aliados",
     "spell_grant_target": " · a la criatura objetivo",
     "fire_breath_label": "Aliento de Fuego",

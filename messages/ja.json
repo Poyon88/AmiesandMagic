@@ -463,10 +463,6 @@
         "label": "精密",
         "desc": "このスペルのダメージは、抵抗力、防具、シールドを無視する。"
       },
-      "seuil_colere": {
-        "label": "憤怒の閾値 X",
-        "desc": "自分のデッキが25枚以下なら、この呪文はX点の追加ダメージを与える。"
-      },
       "poison": {
         "label": "毒",
         "desc": "傷ついたユニットはターンごとにHP-1。"
@@ -478,6 +474,10 @@
       "convocation_simple": {
         "label": "召喚",
         "desc": "{token}を生成する。"
+      },
+      "seuil_colere": {
+        "label": "憤怒の閾値 X",
+        "desc": "自分のデッキが25枚以下なら、この呪文はX点の追加ダメージを与える。"
       },
       "corruption": {
         "label": "堕落",
@@ -697,7 +697,8 @@
         "hero_ally": "あなたのヒーロー",
         "hero_enemy": "敵ヒーロー",
         "both_all": "すべてのユニットと{side}ヒーロー",
-        "both_one": "対象1つ(ユニットまたはヒーロー){side}"
+        "both_one": "対象1つ(ユニットまたはヒーロー){side}",
+        "count_scatter": "最大{n}体のユニット"
       },
       "target": {
         "self": "自身に",
@@ -719,7 +720,8 @@
         "loc_graveyard": "墓地の",
         "des_random": "ランダムに",
         "des_automatic": "自動的に",
-        "des_choice": "任意に"
+        "des_choice": "任意に",
+        "count_scatter": "最大{n}体のユニットに"
       },
       "scatter": {
         "action_damage": "与える",
@@ -1610,7 +1612,7 @@
     "label_designation": "指定",
     "designation_choice": "任意選択",
     "designation_random": "ランダム",
-    "designation_scatter": "ランダム分配（ポイント単位）",
+    "designation_scatter": "ランダムに分配（復元あり）",
     "designation_automatic": "自動",
     "add_composed_effect": "＋複合エフェクトを追加",
     "tab_forge": "フォージ",
@@ -1669,6 +1671,7 @@
     "edition_label": "エディション",
     "name_label": "名前",
     "card_name_placeholder": "カード名",
+    "name_taken": "この名前はすでに「{name}」(id {id}) によって使用されています。保存時に確認が必要になります。",
     "mana_label": "マナ",
     "power_label": "パワー",
     "life_cost_hint": "召喚時にヒーローが支払うライフポイント。合計が0HPになる場合、このカードはプレイ不可。",
@@ -1948,7 +1951,7 @@
     "unknown_error": "不明なエラー",
     "illustration_generated": "イラストを生成しました（{model}）",
     "import_error": "インポートエラー",
-    "name_taken": "この名前はすでに「{name}」(id {id}) によって使用されています。保存時に確認が必要になります。"
+    "scatter_passes_hint": "{n}回の復元抽選 → 最大{n}体の異なる対象"
   },
   "game": {
     "error_not_authenticated": "未認証",
@@ -2040,6 +2043,8 @@
     "convocation_and": "{a}と{b}",
     "convocation_keywords": " ({keywords})",
     "spell_countered": "🛡️ 呪文無効！",
+    "draw_trigger_self": "🃏 あなたのドロー時に発動する効果",
+    "draw_trigger_opponent": "🃏 相手のドロー時に発動する効果",
     "spell_grant_all_allies": " · 全味方クリーチャーに",
     "spell_grant_target": " · 対象クリーチャーに",
     "fire_breath_label": "炎のブレス",

@@ -82,6 +82,22 @@ let pendingTriggerSink: PendingTrigger[] = [];
 // passe par un sink module-level — comme pendingTriggerSink — pour éviter de
 // threader le state dans resolveComposedEffect et tous ses appelants.
 let sequentialHitsSink: Array<{ targetInstanceId: string; type: "damage" | "heal" }> = [];
+// Registre de TOUS les paquets de dégâts réellement appliqués à une créature
+// pendant l'action (après immunités, Bouclier, Résistance, Armure). Le store
+// diffe les PV pour animer les survivants, mais une créature TUÉE quitte le
+// plateau : le diff ne la voit plus et son popup de dégâts disparaissait — un
+// Cataclysme qui nettoie le plateau n'animait alors plus rien. Ce registre
+// donne au store le montant exact pour ces mortes. Volontairement alimenté au
+// seul point de mutation `currentHealth -= damage` : un `destroy` (PV mis à 0
+// sans dégât) n'y entre pas et ne fait donc pas flotter de faux chiffre.
+// Vidé au début d'applyAction, rattaché à state.damageLedger ; hors hash.
+let damageLedgerSink: Array<{ targetInstanceId: string; amount: number }> = [];
+// Cartes dont le déclencheur « à la pioche » a RÉELLEMENT résolu quelque chose
+// pendant l'action. Indice d'animation : la carte part en main sans jamais être
+// jouée, donc rien à l'écran n'expliquait l'effet — l'adversaire voyait des
+// dégâts surgir de nulle part. Le store la révèle comme un sort lancé.
+// Vidé au début d'applyAction, rattaché à state.drawTriggerEvents ; hors hash.
+let drawTriggerSink: Array<{ card: Card; ownerId: string }> = [];
 // Flèches source→cible des dégâts de pouvoir DÉCLENCHÉS (mort/retour/attaque/fin
 // de tour). Rempli via l'enregistrement dans resolveComposedEffect, en lisant le
 // « mode » ambiant posé autour de chaque résolution de capacité (cf.
@@ -846,7 +862,14 @@ function resolveComposedEffect(
         // moindre erreur pour le signaler.
         turnNumber: currentTurnNumber,
       } as unknown as GameState;
-      const options = selectionCardsForKeyword(composed.content, selState, x, selCard, composed.pool, source?.instanceId);
+      // Germe du tirage. Sans source d'instance (SORT / pouvoir de héros), le
+      // sel retombe sur l'uid de la capacité : deux Sélections portées par la
+      // MÊME carte partagent sinon tout leur germe et proposent les trois mêmes
+      // cartes (cf. saltDeSource, même symptôme que deux exemplaires d'une carte
+      // résolus au même instant). L'uid est une donnée de carte, donc identique
+      // sur les deux clients — aucun risque de désync.
+      const seedSalt = source?.instanceId ?? opts?.capUid;
+      const options = selectionCardsForKeyword(composed.content, selState, x, selCard, composed.pool, seedSalt);
       // Pool vide après filtrage : no-op assumé. On n'élargit JAMAIS le filtre
       // en repli, sinon une carte « révèle 3 Hommes-Bêtes » proposerait
       // silencieusement autre chose.
@@ -854,7 +877,16 @@ function resolveComposedEffect(
       // La modale ne peut s'ouvrir que sur le tour du contrôleur, hors flux
       // synchrone (attaque) et hors rejeu Déclenchement (noSuspend) — mêmes
       // règles que le chemin curé.
-      const interactive = !!source
+      //
+      // Un SORT (et un pouvoir de héros composé) se résout avec `source: null` :
+      // il n'a pas d'unité sur le plateau. Exiger une instance source excluait
+      // donc TOUS les sorts du chemin interactif — la modale ne s'ouvrait jamais
+      // et la carte tombait dans le repli aléatoire, atterrissant directement en
+      // main. On autorise explicitement `spell_resolution`, le seul déclencheur
+      // à arriver sans source ; le trigger n'a de toute façon besoin que du
+      // contrôleur (cf. la branche `selectionType` d'applyOnePendingTrigger, qui
+      // ne lit jamais sourceInstanceId).
+      const interactive = (!!source || opts?.trigger === "spell_resolution")
         && owner.id === currentPlayerId
         && opts?.trigger !== "on_attack"
         && !opts?.noSuspend;
@@ -862,11 +894,13 @@ function resolveComposedEffect(
         // ⚠️ PAS de `capUid` sur ce trigger : applyOnePendingTrigger teste
         // `if (trigger.capUid)` AVANT `else if (trigger.selectionType)`, et
         // rappellerait donc resolveComposedEffect → nouveau trigger → boucle.
-        // L'unicité passe par `id` seul.
+        // L'unicité passe par `id` seul — d'où l'uid de la capacité dans la clé
+        // côté sort : deux Sélections d'une même carte doivent produire DEUX
+        // déclencheurs distincts, donc deux modales successives.
         pendingTriggerSink.push({
-          id: `${source!.instanceId}#${opts?.capUid ?? composed.content}`,
+          id: `${source?.instanceId ?? `spell_${selCard.id}`}#${opts?.capUid ?? composed.content}`,
           controllerId: owner.id,
-          sourceInstanceId: source!.instanceId,
+          sourceInstanceId: source?.instanceId ?? null,
           selectionType: composed.content,
           selectionOptionIds: options.map(c => c.id),
         });
@@ -889,31 +923,61 @@ function resolveComposedEffect(
     return;
   }
 
-  // "scatter" : répartition point par point. Les `x` points de dégâts/soin sont
-  // distribués un à un, au hasard (tirage avec remise) sur le pool éligible — une
-  // même cible VIVANTE peut donc en cumuler plusieurs. `count` est ignoré.
-  // Résolution SÉQUENTIELLE : le pool est reconstruit AVANT chaque point et les
-  // unités tuées par un point précédent en sont exclues (currentHealth ≤ 0), pour
-  // ne pas gaspiller un point sur une cible déjà morte (cf. Danseuse du Vent : 2
-  // points sur une créature à 1 PV → le 2e doit partir ailleurs, ou se perdre).
-  if (target.designation === "scatter" && (composed.content === "deal_damage" || composed.content === "heal")) {
-    const points = Math.max(0, x);
+  // "scatter" : répartition au hasard, passe par passe, avec REMISE. Deux
+  // passes peuvent retomber sur la même cible : le nombre de cibles DISTINCTES
+  // varie donc de 1 au nombre de passes — c'est exactement l'intérêt de la
+  // désignation (« 1 à 2 créatures », pas « 2 »).
+  //
+  // Le nombre de passes dépend du contenu, parce que `x` n'y désigne pas la
+  // même chose :
+  //   • deal_damage / heal : `x` EST le total de points, servis 1 par passe.
+  //     `count` est ignoré (le champ est d'ailleurs masqué dans la forge).
+  //   • tout autre contenu : `x` est l'amplitude de l'effet (buff +X/+Y…) ou
+  //     n'a aucun sens (paralyze, destroy, bounce) — on ne peut donc pas le
+  //     découper. Le nombre de passes vient de `count` et chaque passe applique
+  //     l'effet ENTIER. Le hasard sur le nombre de cibles vient alors des
+  //     doublons : une 2ᵉ passe sur une créature déjà paralysée ne fait rien.
+  //
+  // Résolution SÉQUENTIELLE : le pool est reconstruit AVANT chaque passe et les
+  // unités mortes en sont exclues (currentHealth ≤ 0), pour ne pas gaspiller une
+  // passe sur un cadavre (cf. Danseuse du Vent : 2 points sur une créature à
+  // 1 PV → le 2e doit partir ailleurs, ou se perdre). Corollaire pour
+  // `destroy` : la victime quitte le pool dès la passe suivante, donc chaque
+  // passe touche forcément une cible neuve — pas de doublon, pas de hasard sur
+  // le nombre. Assumé : on ne détruit pas deux fois la même créature.
+  if (target.designation === "scatter") {
+    const pointwise = composed.content === "deal_damage" || composed.content === "heal";
+    // "all" n'a pas de sens ici (scatter tire AVEC remise, il lui faut un nombre
+    // de passes fini) : on retombe sur une passe unique plutôt que sur zéro,
+    // qui rendrait l'effet silencieusement inerte.
+    const passes = pointwise
+      ? Math.max(0, x)
+      : Math.max(1, typeof target.count === "number" ? target.count : 1);
+    // Montant servi par passe : 1 point en régime « point par point », l'effet
+    // plein sinon.
+    const px = pointwise ? 1 : x;
+    const py = pointwise ? 0 : y;
     const seqType = composed.content === "heal" ? "heal" : "damage";
-    for (let i = 0; i < points; i++) {
+    for (let i = 0; i < passes; i++) {
       const pool = buildComposedPool(target, owner, opponent)
         .filter((ref) => ref.kind === "hero" || ref.unit.currentHealth > 0);
       if (pool.length === 0) break;
       const ref = pool[Math.floor(rng() * pool.length)];
       if (ref.kind === "hero") {
-        applyComposedToHero(composed.content, ref.hero, 1, source);
+        // applyComposedToHero ne connaît que dégâts et soin : les autres
+        // contenus tirés sur un héros sont des passes perdues, comme un doublon.
+        applyComposedToHero(composed.content, ref.hero, px, source);
         const heroOwner = ref.hero === owner.hero ? owner : opponent;
         const idx = currentPlayerIds.indexOf(heroOwner.id);
-        sequentialHitsSink.push({ targetInstanceId: `__hero_${idx}__`, type: seqType });
-        recordPowerStrike(source, `__hero_${idx}__`, composed.content, 1);
+        // Les points séquentiels ne portent qu'un popup de dégât/soin. Pour les
+        // autres contenus, le store rend déjà le buff/état par diff d'état — y
+        // pousser une entrée afficherait un faux « -1 ».
+        if (pointwise) sequentialHitsSink.push({ targetInstanceId: `__hero_${idx}__`, type: seqType });
+        recordPowerStrike(source, `__hero_${idx}__`, composed.content, px);
       } else {
-        applyComposedToUnit(composed, ref.unit, 1, 0, source, owner, opponent, fromSpell);
-        sequentialHitsSink.push({ targetInstanceId: ref.unit.instanceId, type: seqType });
-        recordPowerStrike(source, ref.unit.instanceId, composed.content, 1);
+        applyComposedToUnit(composed, ref.unit, px, py, source, owner, opponent, fromSpell);
+        if (pointwise) sequentialHitsSink.push({ targetInstanceId: ref.unit.instanceId, type: seqType });
+        recordPowerStrike(source, ref.unit.instanceId, composed.content, px);
       }
     }
     return;
@@ -1985,6 +2049,10 @@ function triggerOnDraw(ci: CardInstance, owner: PlayerState): void {
 
   const opponent = currentBoardPlayers.find(p => p !== owner);
   if (!opponent) return; // hors action : rien à résoudre proprement
+
+  // Poussé APRÈS toutes les sorties sèches : on n'annonce que les pioches dont
+  // l'effet part vraiment (une carte sans mode "draw" ne révèle rien).
+  drawTriggerSink.push({ card: ci.card, ownerId: owner.id });
 
   drawTriggerDepth++;
   try {
@@ -5202,6 +5270,7 @@ function dealDamageToCreature(
 
   if (damage <= 0) return;
   creature.currentHealth -= damage;
+  damageLedgerSink.push({ targetInstanceId: creature.instanceId, amount: damage });
 
   // Touché mortel : la blessure est mortelle quels que soient les PV restants.
   // Placé APRÈS toutes les immunités et réductions — un Bouclier qui absorbe
@@ -7469,6 +7538,8 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   currentFormatCode = state.formatCode ?? null;
   pendingTriggerSink = [];
   sequentialHitsSink = [];
+  damageLedgerSink = [];
+  drawTriggerSink = [];
   lethalSpellActive = false;
   powerStrikeSink = [];
   composedStrikeMode = undefined;
@@ -7515,6 +7586,17 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   // dans l'ordre, pour que le store anime un popup + un burst par point.
   if (sequentialHitsSink.length > 0 && result !== state) {
     result.sequentialHits = [...(result.sequentialHits ?? []), ...sequentialHitsSink];
+  }
+  // Rattache le registre des dégâts appliqués : le store s'en sert UNIQUEMENT
+  // pour les créatures mortes pendant l'action (les survivantes restent
+  // couvertes par le diff de PV, qui gère aussi les baisses non-dégât).
+  if (damageLedgerSink.length > 0 && result !== state) {
+    result.damageLedger = [...(result.damageLedger ?? []), ...damageLedgerSink];
+  }
+  // Rattache les cartes dont l'effet « à la pioche » a résolu, dans l'ordre de
+  // pioche, pour que le store les révèle comme des sorts lancés.
+  if (drawTriggerSink.length > 0 && result !== state) {
+    result.drawTriggerEvents = [...(result.drawTriggerEvents ?? []), ...drawTriggerSink];
   }
   // Rattache les frappes de pouvoir déclenchées (flèches source→cible colorées
   // par mode) émises pendant l'action.

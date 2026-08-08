@@ -49,6 +49,26 @@ const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" |
  *  pas une amplitude. */
 const POOL_CONTENTS = new Set<ComposedEffectContent>(["invocation", "selection", "selection_magique", "renfort_royal"]);
 
+/** Contenus incompatibles avec la répartition au hasard, malgré un bloc de
+ *  cibles à l'écran : Exhumation puise dans le CIMETIÈRE (le tirage n'accepte
+ *  que des unités vivantes, le pool serait toujours vide) et Incinération vise
+ *  un CAMP entier, pas des unités — son contenu se résout avant même le bloc de
+ *  ciblage. */
+const SCATTER_EXCLUDED = new Set<ComposedEffectContent>(["exhumation", "incineration"]);
+
+/** La répartition au hasard tire des cibles VIVANTES sur le plateau, passe par
+ *  passe. Hors plateau, il n'y a rien à répartir. */
+function scatterAllowed(content: ComposedEffectContent, location: TargetSpec["location"]): boolean {
+  return location === "board" && !SCATTER_EXCLUDED.has(content);
+}
+
+/** Régime « point par point » : seuls les dégâts et le soin découpent leur
+ *  amplitude X en passes de 1. Pour tous les autres contenus, X est l'amplitude
+ *  de l'effet (ou n'a pas de sens) et c'est NOMBRE qui donne le nombre de passes. */
+function scatterIsPointwise(content: ComposedEffectContent): boolean {
+  return content === "deal_damage" || content === "heal";
+}
+
 const FACTION_OPTIONS = Object.keys(FACTIONS).sort((a, b) => a.localeCompare(b, "fr"));
 
 const RACE_OPTIONS = Array.from(new Set(Object.values(FACTIONS).flatMap((f) => f.races))).sort((a, b) => a.localeCompare(b, "fr"));
@@ -259,8 +279,7 @@ export default function ComposedEffectsEditor({
               {sel(eff.content, COMPOSED_CONTENTS.map((o) => ({ v: o.v, l: tr(`content_${o.v}`) })), (v) => {
                 const m = COMPOSED_CONTENTS.find((c) => c.v === v)!;
                 const prev = eff.target ?? { ...DEFAULT_TARGET, entity: "unit" };
-                // "scatter" (répartition point par point) n'a de sens que pour dégâts/soin.
-                const scatterOk = v === "deal_damage" || v === "heal";
+                const scatterOk = scatterAllowed(v, prev.location);
                 // Exhumation : cible pré-remplie cimetière allié « au choix » (sinon
                 // composedSlotType ne produirait pas de picker). Champs éditables ensuite.
                 const nextTarget = m.target === "none" ? undefined
@@ -356,7 +375,13 @@ export default function ComposedEffectsEditor({
 
                   {(t.entity === "unit" || t.entity === "both") && (
                     <>
-                      {t.designation === "scatter" ? (
+                      {/* En répartition « point par point » (dégâts / soin), c'est
+                          X qui porte le nombre de passes : NOMBRE n'a plus de rôle
+                          et laisse place au rappel. Pour tout autre contenu réparti,
+                          X reste l'amplitude et NOMBRE devient le nombre de tirages
+                          — d'où un sélecteur bien visible, doublé de son propre
+                          rappel (« au plus N cibles distinctes »). */}
+                      {t.designation === "scatter" && scatterIsPointwise(eff.content) ? (
                         <>
                           <span style={labelStyle}>{tr('label_count')}</span>
                           <span style={{ fontSize: 9, color: "#8a6d3b", fontStyle: "italic" }}>
@@ -366,15 +391,28 @@ export default function ComposedEffectsEditor({
                       ) : (
                         <>
                           <span style={labelStyle}>{tr('label_count')}</span>
-                          <span style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
-                            {sel(countMode, [{ v: "1", l: "1" }, { v: "N", l: "N" }, { v: "all", l: tr('count_all') }], (v) => patchTarget(idx, { count: v === "all" ? "all" : v === "1" ? 1 : 2 }))}
+                          <span style={{ display: "inline-flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                            {sel(countMode, [{ v: "1", l: "1" }, { v: "N", l: "N" }, ...(t.designation === "scatter" ? [] : [{ v: "all", l: tr('count_all') }])], (v) => patchTarget(idx, { count: v === "all" ? "all" : v === "1" ? 1 : 2 }))}
                             {countMode === "N" && numInput(typeof t.count === "number" ? t.count : 2, (n) => patchTarget(idx, { count: Math.max(1, n) }), 1, 8)}
+                            {t.designation === "scatter" && (
+                              <span style={{ fontSize: 9, color: "#8a6d3b", fontStyle: "italic" }}>
+                                {tr('scatter_passes_hint', { n: typeof t.count === "number" ? t.count : 1 })}
+                              </span>
+                            )}
                           </span>
                         </>
                       )}
 
                       <span style={labelStyle}>{tr('label_location')}</span>
-                      {sel(t.location, [{ v: "board", l: tr('location_board') }, { v: "hand", l: tr('location_hand') }, { v: "deck", l: tr('location_deck') }, { v: "graveyard", l: tr('location_graveyard') }], (v) => patchTarget(idx, { location: v as TargetSpec["location"] }))}
+                      {sel(t.location, [{ v: "board", l: tr('location_board') }, { v: "hand", l: tr('location_hand') }, { v: "deck", l: tr('location_deck') }, { v: "graveyard", l: tr('location_graveyard') }], (v) => {
+                        const location = v as TargetSpec["location"];
+                        // Quitter le plateau invalide la répartition (elle ne tire
+                        // que des unités vivantes en jeu) : on la ramène au tirage
+                        // simple plutôt que de laisser une désignation morte en base.
+                        patchTarget(idx, t.designation === "scatter" && !scatterAllowed(eff.content, location)
+                          ? { location, designation: "random" }
+                          : { location });
+                      })}
 
                       <span style={labelStyle}>{tr('label_membership')}</span>
                       <RaceClanPicker
@@ -389,13 +427,21 @@ export default function ComposedEffectsEditor({
                         [
                           { v: "choice", l: tr('designation_choice') },
                           { v: "random", l: tr('designation_random') },
-                          // Répartition point par point : dégâts/soin uniquement.
-                          ...((eff.content === "deal_damage" || eff.content === "heal")
+                          // Répartition au hasard : toute cible vivante du plateau.
+                          ...(scatterAllowed(eff.content, t.location)
                             ? [{ v: "scatter" as const, l: tr('designation_scatter') }]
                             : []),
                           { v: "automatic", l: tr('designation_automatic') },
                         ],
-                        (v) => patchTarget(idx, { designation: v as TargetSpec["designation"] }),
+                        (v) => {
+                          const designation = v as TargetSpec["designation"];
+                          // La répartition tire AVEC REMISE : il lui faut un nombre
+                          // de passes fini. « Toutes » n'en est pas un — on retombe
+                          // sur 2, la première valeur où la fourchette a du sens.
+                          patchTarget(idx, designation === "scatter" && t.count === "all"
+                            ? { designation, count: 2 }
+                            : { designation });
+                        },
                       )}
                     </>
                   )}

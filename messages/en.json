@@ -463,10 +463,6 @@
         "label": "Precision",
         "desc": "This spell's damage ignores Resistance, Armor, and Shield."
       },
-      "seuil_colere": {
-        "label": "Wrath Threshold X",
-        "desc": "If your deck holds 25 cards or fewer, this spell deals X extra damage."
-      },
       "poison": {
         "label": "Poison",
         "desc": "Wounded units lose 1 HP per turn."
@@ -478,6 +474,10 @@
       "convocation_simple": {
         "label": "Summon",
         "desc": "Creates {token}."
+      },
+      "seuil_colere": {
+        "label": "Wrath Threshold X",
+        "desc": "If your deck holds 25 cards or fewer, this spell deals X extra damage."
       },
       "corruption": {
         "label": "Corruption",
@@ -697,7 +697,8 @@
         "hero_ally": "your hero",
         "hero_enemy": "the enemy hero",
         "both_all": "all units and the {side} hero",
-        "both_one": "a target (unit or hero){side}"
+        "both_one": "a target (unit or hero){side}",
+        "count_scatter": "at most {n} units"
       },
       "target": {
         "self": "to itself",
@@ -719,7 +720,8 @@
         "loc_graveyard": "from the graveyard",
         "des_random": "at random",
         "des_automatic": "automatically",
-        "des_choice": "of your choice"
+        "des_choice": "of your choice",
+        "count_scatter": "to at most {n} units"
       },
       "scatter": {
         "action_damage": "deals",
@@ -1610,7 +1612,7 @@
     "label_designation": "DESIGNATION",
     "designation_choice": "Player's choice",
     "designation_random": "Random",
-    "designation_scatter": "Scattered randomly (per point)",
+    "designation_scatter": "Randomly distributed (with replacement)",
     "designation_automatic": "Automatic",
     "add_composed_effect": "+ Add a Composed Effect",
     "tab_forge": "Forge",
@@ -1669,6 +1671,7 @@
     "edition_label": "EDITION",
     "name_label": "NAME",
     "card_name_placeholder": "Card name",
+    "name_taken": "This name is already taken by \"{name}\" (id {id}). Saving will require confirmation.",
     "mana_label": "MANA",
     "power_label": "POWER",
     "life_cost_hint": "Life points paid by the hero on summon. The card cannot be played if doing so would reduce HP to 0.",
@@ -1948,7 +1951,7 @@
     "unknown_error": "Unknown error",
     "illustration_generated": "Illustration generated ({model})",
     "import_error": "Import error",
-    "name_taken": "This name is already taken by \"{name}\" (id {id}). Saving will require confirmation."
+    "scatter_passes_hint": "{n} draws with replacement → at most {n} distinct targets"
   },
   "game": {
     "error_not_authenticated": "Not authenticated",
@@ -2040,6 +2043,8 @@
     "convocation_and": "{a} and {b}",
     "convocation_keywords": " ({keywords})",
     "spell_countered": "🛡️ Counterspell!",
+    "draw_trigger_self": "🃏 Effect triggered on your draw",
+    "draw_trigger_opponent": "🃏 Effect triggered on opponent's draw",
     "spell_grant_all_allies": " · to all allies",
     "spell_grant_target": " · to the targeted creature",
     "fire_breath_label": "Fire Breath",

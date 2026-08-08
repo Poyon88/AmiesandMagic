@@ -274,6 +274,24 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
               {event.spellName}
             </div>
 
+            {/* Bannière « à la pioche » : la carte n'est pas jouée, elle rejoint
+                la main. Sans elle, la révélation se lirait comme un sort lancé —
+                exactement le contresens à éviter. Cyan = couleur du mode "draw"
+                (keywordModeColor), la même que partout ailleurs dans le jeu. */}
+            {event.drawTrigger && (
+              <div style={{
+                fontSize: "0.72rem",
+                color: keywordModeColor("draw") ?? "#17b6c4",
+                fontWeight: 700,
+                textAlign: "center",
+                letterSpacing: "0.04em",
+                textShadow: "0 1px 3px rgba(0,0,0,0.95)",
+                marginTop: -2,
+              }}>
+                {event.drawTrigger === "self" ? t('draw_trigger_self') : t('draw_trigger_opponent')}
+              </div>
+            )}
+
             {card && (
               <>
                 {/* Mana + Faction */}

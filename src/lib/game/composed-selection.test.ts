@@ -145,10 +145,16 @@ describe("Sélection Royale composée", () => {
 });
 
 describe("Sélection composée portée par un SORT", () => {
-  it("propose bien des options (un sort n'a pas d'instance source)", () => {
-    // Régression : le contenu exigeait une instance source pour lire
-    // l'alignement du pool. Un SORT est résolu avec `source: null` — la
-    // Sélection composée d'un sort ne faisait donc jamais rien.
+  it("ouvre le sélecteur (un sort n'a pas d'instance source)", () => {
+    // Deux régressions successives sur le même point aveugle — un SORT est
+    // résolu avec `source: null` :
+    //   1. le contenu exigeait une instance source pour lire l'alignement du
+    //      pool ⇒ la Sélection d'un sort ne faisait rien du tout ;
+    //   2. le chemin INTERACTIF l'exigeait aussi ⇒ la modale ne s'ouvrait
+    //      jamais et la carte tirée au hasard atterrissait direct en main.
+    // Le sort doit désormais suspendre sur un déclencheur de sélection, comme
+    // une créature (cf. composed-selection-spell.test.ts pour le cas à deux
+    // effets d'« Héritage des Ancêtres »).
     const s = mkState();
     s.factionCardPool = [poolCard("Loup"), poolCard("Chat")];
     const spell = mkInstance(mkCard({
@@ -162,9 +168,12 @@ describe("Sélection composée portée par un SORT", () => {
 
     const next = applyAction(s, { type: "play_card", cardInstanceId: spell.instanceId });
 
-    // Sans instance source, pas de sélecteur possible : le moteur tire une
-    // carte — mais l'effet a bien lieu.
-    expect(next.players[0].hand.length).toBeGreaterThan(0);
-    expect(next.players[0].hand.map((c) => c.card.name)).not.toContain("Appel des Ombres");
+    const trig = (next.pendingTriggers ?? []).find((t) => t.selectionType === "selection");
+    expect(trig).toBeDefined();
+    expect(offeredNames(next)).toEqual(["Chat", "Loup"]);
+    // Rien en main tant que le joueur n'a pas choisi — et surtout pas le sort
+    // lui-même, qui part au cimetière.
+    expect(next.players[0].hand).toHaveLength(0);
+    expect(next.players[0].graveyard.map((c) => c.card.name)).toContain("Appel des Ombres");
   });
 });

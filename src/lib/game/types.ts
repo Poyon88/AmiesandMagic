@@ -440,10 +440,18 @@ export interface TargetSpec {
    *  - "random"    : `count` cibles tirées au sort, chacune subit l'effet plein ;
    *  - "automatic" : le moteur applique l'effet à tout le pool filtré sans choix
    *                  ni hasard (pertinent pour count = "all") ;
-   *  - "scatter"   : RÉPARTITION POINT PAR POINT (deal_damage / heal seulement).
-   *                  L'amplitude `x` est le nombre de points distribués un à un,
-   *                  au hasard, sur le pool éligible (tirage avec remise → une
-   *                  même cible peut en cumuler plusieurs). `count` est ignoré. */
+   *  - "scatter"   : RÉPARTITION AU HASARD, passe par passe, avec REMISE — deux
+   *                  passes peuvent retomber sur la même cible, si bien que le
+   *                  nombre de cibles DISTINCTES varie de 1 au nombre de passes.
+   *                  C'est là tout l'intérêt : « 1 à 2 créatures », pas « 2 ».
+   *                  Le nombre de passes dépend du contenu, car `x` n'y désigne
+   *                  pas la même chose :
+   *                    • deal_damage / heal : `x` EST le total de points, servis
+   *                      1 par passe (`count` ignoré) ;
+   *                    • tout autre contenu : `x` est l'amplitude de l'effet
+   *                      (buff +X/+Y…) ou n'a pas de sens (paralyze, destroy) —
+   *                      le nombre de passes vient de `count`, et chaque passe
+   *                      applique l'effet ENTIER. */
   designation: "choice" | "random" | "automatic" | "scatter";
 }
 
@@ -962,6 +970,28 @@ export interface GameState {
   sequentialHits?: Array<{
     targetInstanceId: string;
     type: "damage" | "heal";
+  }>;
+  // Transient : chaque paquet de dégâts RÉELLEMENT appliqué à une créature
+  // pendant l'action (après immunités / Bouclier / Résistance / Armure). Le
+  // store n'en lit que les entrées des créatures MORTES : une créature tuée
+  // quitte le plateau, donc le diff de PV ne la voit plus et son popup de
+  // dégâts était perdu (plateau nettoyé par un Cataclysme = aucune animation).
+  // Les survivantes restent couvertes par le diff. Un `destroy` n'y figure pas
+  // (il met les PV à 0 sans passer par les dégâts) : pas de faux chiffre.
+  // Vidé par le store après planification ; exclu du hash d'état.
+  damageLedger?: Array<{
+    targetInstanceId: string;
+    amount: number;
+  }>;
+  // Transient : chaque carte dont le déclencheur « à la pioche » a résolu un
+  // effet pendant l'action, dans l'ordre de pioche. La carte rejoint la MAIN
+  // sans jamais être jouée : sans cet indice, rien à l'écran n'expliquait ses
+  // dégâts / invocations, surtout pour l'adversaire (qui ne voit même pas la
+  // carte). Le store la révèle avec l'overlay de lancement de sort.
+  // Vidé par le store après planification ; exclu du hash d'état.
+  drawTriggerEvents?: Array<{
+    card: Card;
+    ownerId: string;
   }>;
   // Transient: chaque dégât infligé par un effet composé DÉCLENCHÉ (mort/retour/
   // attaque/fin de tour — PAS tap/on-play) est poussé ici {source, cible, mode}

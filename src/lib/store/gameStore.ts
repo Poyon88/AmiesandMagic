@@ -123,6 +123,11 @@ export interface SpellCastEvent {
   countered?: boolean;
   card?: Card | null;
   targetIds?: string[];
+  // Révélation d'une carte dont l'effet « à la pioche » vient de partir (elle
+  // n'est PAS jouée : elle rejoint la main). Porte le point de vue du client
+  // local pour que la bannière dise qui a pioché — c'est tout l'intérêt côté
+  // adversaire, qui ne voit pas la carte entrer dans la main d'en face.
+  drawTrigger?: "self" | "opponent";
 }
 
 // Flèche source→cible tracée depuis la CRÉATURE qui active un pouvoir (tap)
@@ -480,6 +485,46 @@ function keywordGrantLabel(kw: string): string | null {
   const sym = (KEYWORD_SYMBOLS as Record<string, string>)[kw];
   const glyph = sym && !sym.startsWith("/") ? sym : "✦";
   return `${glyph} ${label.replace(/ X$/, "")}`;
+}
+
+// Popups de dégâts des créatures TUÉES pendant l'action. `detectDamageEvents`
+// ne diffe que les créatures encore présentes sur le nouveau plateau : une
+// morte n'y figure plus, donc son chiffre de dégâts n'était jamais émis — un
+// Cataclysme qui nettoie le plateau n'animait alors AUCUN dégât, juste des
+// morts. Le montant vient du registre moteur `damageLedger` (dégâts réellement
+// appliqués, après immunités et réductions) : un `destroy` / sacrifice, qui met
+// les PV à 0 sans passer par les dégâts, n'y a pas d'entrée et ne fait donc
+// flotter aucun chiffre — comportement inchangé.
+//
+// Écrêtage par la perte de PV RÉELLE de cette vague (`dead` porte les PV du
+// début de vague, la dépouille au cimetière les PV finaux, négatifs en cas de
+// surtuerie) : sur une attaque à deux vagues, une créature blessée par le
+// pouvoir puis achevée au combat a déjà vu son premier popup à la vague 1 ;
+// sans l'écrêtage, le registre cumulé le recompterait à la vague 2.
+function lethalDamageEvents(
+  dead: CardInstance[],
+  waveEnd: GameState,
+  ledger: Map<string, number>,
+): DamageEvent[] {
+  const events: DamageEvent[] = [];
+  for (const c of dead) {
+    const dealt = ledger.get(c.instanceId) ?? 0;
+    if (dealt <= 0) continue;
+    const corpse = waveEnd.players
+      .flatMap((p) => p.graveyard)
+      .find((g) => g.instanceId === c.instanceId);
+    // Dépouille introuvable (exil, métamorphose) → on fait confiance au registre.
+    const hpDrop = corpse ? c.currentHealth - corpse.currentHealth : dealt;
+    const amount = Math.min(dealt, Math.max(0, hpDrop));
+    if (amount <= 0) continue;
+    events.push({
+      targetId: c.instanceId,
+      amount,
+      type: c.isPoisoned && amount === 1 ? "poison" : "damage",
+      ...getElementCenter(c.instanceId),
+    });
+  }
+  return events;
 }
 
 function detectDamageEvents(
@@ -1478,6 +1523,25 @@ export const useGameStore = create<GameStore>((set, get) => {
       }),
     }));
 
+    // Effets « à la pioche » : le moteur a noté chaque carte dont le
+    // déclencheur a résolu. Elle n'est PAS jouée — elle rejoint la main — donc
+    // rien à l'écran n'expliquait ses dégâts ou ses invocations, et l'adversaire
+    // ne voit même pas la carte arriver. On la révèle avec l'overlay de sort,
+    // juste avant les impacts, exactement comme un sort relancé. La liste
+    // transitoire est vidée après extraction (exclue du hash).
+    const rawDrawTriggers = newState.drawTriggerEvents ?? [];
+    if (newState.drawTriggerEvents) newState.drawTriggerEvents = undefined;
+    const drawTriggerSpells: SpellCastEvent[] = rawDrawTriggers.map((dt, i) => ({
+      spellName: dt.card.name,
+      effectText: dt.card.effect_text,
+      // Clé de montage distincte de celles des relances (même piège qu'elles :
+      // deux overlays nés dans le même tick partageraient une clé et le second
+      // ne serait jamais remonté). On prolonge donc leur numérotation.
+      timestamp: Date.now() + 1 + recastSpells.length + i,
+      card: dt.card,
+      drawTrigger: dt.ownerId === localPlayerId ? "self" : "opponent",
+    }));
+
     // Detect if a spell was countered (contresort)
     if (spellEvent && action.type === "play_card") {
       const opponentIdx = gameState.currentPlayerIndex === 0 ? 1 : 0;
@@ -1489,6 +1553,16 @@ export const useGameStore = create<GameStore>((set, get) => {
         spellEvent = { ...spellEvent, countered: true, effectText: "Contré !" };
       }
     }
+
+    // Registre moteur des dégâts appliqués (hors hash), cumulé par cible et
+    // vidé après extraction comme sequentialHits. Sert UNIQUEMENT aux popups
+    // des créatures mortes (cf. lethalDamageEvents) ; les survivantes restent
+    // couvertes par le diff de PV.
+    const damageLedger = new Map<string, number>();
+    for (const entry of newState.damageLedger ?? []) {
+      damageLedger.set(entry.targetInstanceId, (damageLedger.get(entry.targetInstanceId) ?? 0) + entry.amount);
+    }
+    if (newState.damageLedger) newState.damageLedger = undefined;
 
     // Find creatures that died (were on old board but not on new board).
     // Track owner index so cycle_eternel can fly the copy back to the right
@@ -1528,6 +1602,12 @@ export const useGameStore = create<GameStore>((set, get) => {
       const pos = getElementCenter(dead.instanceId);
       return { instanceId: dead.instanceId, x: pos.x, y: pos.y, poisoned: !!dead.isPoisoned };
     });
+
+    // Chiffres de dégâts des mortes de cette vague — même capture DOM que les
+    // deathFxEvents (les dépouilles sont encore montées à cet instant). Ils
+    // rejoignent dmgEvents pour être décalés et peints à la phase d'impact,
+    // donc AVANT que la phase de mort ne les retire du plateau.
+    dmgEvents.push(...lethalDamageEvents(deadCreatures, newState, damageLedger));
 
     // Cycle éternel — one entry per dead creature carrying the keyword. The
     // engine has already inserted a copy at a random position in the owner's
@@ -2059,7 +2139,10 @@ export const useGameStore = create<GameStore>((set, get) => {
     ];
     const hasDraws = drawnCounts[0] + drawnCounts[1] > 0;
 
-    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!powerArrowEvent || !!manaReductionEvent || !!epargneGainEvent;
+    // NB : drawTriggerSpells compte ici mais PAS dans `hasOverlay` — ce dernier
+    // pilote aussi le décalage avant impact (OVERLAY_PRE_IMPACT_MS), déjà couvert
+    // par le RECAST_GAP_MS que chaque révélation « pioche » réserve elle-même.
+    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!powerArrowEvent || !!manaReductionEvent || !!epargneGainEvent || drawTriggerSpells.length > 0;
 
     // Deep clone helper — factionCardPool / allSpellsPool carry non-serialisable refs, keep them aside.
     const cloneState = (state: GameState): GameState => {
@@ -2392,7 +2475,22 @@ export const useGameStore = create<GameStore>((set, get) => {
       // The intermediate already has power-dead creatures removed → it IS the
       // post-power-death state.
       powerDeathState = cloneState(inter);
-      powerDmgStaggered = staggerByTarget(detectDamageEvents(gameState, inter, localPlayerId));
+      // Mortes DE CETTE VAGUE : absentes du plateau intermédiaire sans être
+      // reparties en main (même distinction que deadCreatures). Elles n'entrent
+      // pas dans deadCreatures (bâti depuis combatOld = l'intermédiaire), donc
+      // aucun risque de double popup entre les deux vagues.
+      const powerDead: CardInstance[] = [];
+      for (let i = 0; i < 2; i++) {
+        for (const oldC of gameState.players[i].board) {
+          if (inter.players[i].board.find((c) => c.instanceId === oldC.instanceId)) continue;
+          if (inter.players.some((p) => p.hand.some((c) => c.instanceId === oldC.instanceId))) continue;
+          powerDead.push(oldC);
+        }
+      }
+      powerDmgStaggered = staggerByTarget([
+        ...detectDamageEvents(gameState, inter, localPlayerId),
+        ...lethalDamageEvents(powerDead, inter, damageLedger),
+      ]);
     }
 
     const phasePowerImpacts = () => {
@@ -2561,12 +2659,13 @@ export const useGameStore = create<GameStore>((set, get) => {
     // damage paints. Without this re-order, recast HP changes landed at
     // OVERLAY_PRE_IMPACT_MS while the recast spell visuals only played
     // out at the tail of the sequence — visually disconnected.
-    if (recastSpells.length > 0) {
-      for (let i = 0; i < recastSpells.length; i++) {
-        const recast = recastSpells[i];
-        setTimeout(() => set({ spellCastEvent: recast }), cursor);
-        cursor += RECAST_GAP_MS;
-      }
+    // Les révélations « à la pioche » suivent la même règle et pour la même
+    // raison : la carte doit être lue AVANT que son effet ne peigne ses dégâts.
+    // Elles passent après les relances (aucune action ne produit les deux
+    // aujourd'hui, mais l'ordre reste défini si cela arrivait).
+    for (const reveal of [...recastSpells, ...drawTriggerSpells]) {
+      setTimeout(() => set({ spellCastEvent: reveal }), cursor);
+      cursor += RECAST_GAP_MS;
     }
 
     // Phase B (Impacts) — always run if there's anything beyond the overlay.

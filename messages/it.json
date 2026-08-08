@@ -463,10 +463,6 @@
         "label": "Precisione",
         "desc": "I danni di questo incantesimo ignorano la Resistenza, l'Armatura e lo Scudo."
       },
-      "seuil_colere": {
-        "label": "Soglia d'ira X",
-        "desc": "Se il tuo mazzo contiene 25 carte o meno, questa magia infligge X danni aggiuntivi."
-      },
       "poison": {
         "label": "Veleno",
         "desc": "Le unità ferite perdono 1 PV per turno."
@@ -478,6 +474,10 @@
       "convocation_simple": {
         "label": "Convocazione",
         "desc": "Crea {token}."
+      },
+      "seuil_colere": {
+        "label": "Soglia d'ira X",
+        "desc": "Se il tuo mazzo contiene 25 carte o meno, questa magia infligge X danni aggiuntivi."
       },
       "corruption": {
         "label": "Corruzione",
@@ -697,7 +697,8 @@
         "hero_ally": "il tuo eroe",
         "hero_enemy": "l'eroe avversario",
         "both_all": "tutte le unità e l'eroe {side}",
-        "both_one": "un bersaglio (unità o eroe){side}"
+        "both_one": "un bersaglio (unità o eroe){side}",
+        "count_scatter": "al massimo {n} unità"
       },
       "target": {
         "self": "a se stessa",
@@ -719,7 +720,8 @@
         "loc_graveyard": "dal cimitero",
         "des_random": "a caso",
         "des_automatic": "automaticamente",
-        "des_choice": "a scelta"
+        "des_choice": "a scelta",
+        "count_scatter": "ad al massimo {n} unità"
       },
       "scatter": {
         "action_damage": "infligge",
@@ -1610,7 +1612,7 @@
     "label_designation": "DESIGNAZIONE",
     "designation_choice": "A scelta",
     "designation_random": "A caso",
-    "designation_scatter": "Distribuito a caso (per punto)",
+    "designation_scatter": "Distribuito a caso (con reinserimento)",
     "designation_automatic": "Automatico",
     "add_composed_effect": "+ Aggiungi un effetto composto",
     "tab_forge": "Forgia",
@@ -1669,6 +1671,7 @@
     "edition_label": "EDIZIONE",
     "name_label": "NOME",
     "card_name_placeholder": "Nome della carta",
+    "name_taken": "Questo nome è già utilizzato da «{name}» (id {id}). Il salvataggio richiederà una conferma.",
     "mana_label": "MANA",
     "power_label": "POTENZA",
     "life_cost_hint": "Punti vita pagati dall'eroe all'evocazione. La carta non è giocabile se la somma scenderebbe a 0 PV.",
@@ -1948,7 +1951,7 @@
     "unknown_error": "Errore sconosciuto",
     "illustration_generated": "Illustrazione generata ({model})",
     "import_error": "Errore di importazione",
-    "name_taken": "Questo nome è già utilizzato da «{name}» (id {id}). Il salvataggio richiederà una conferma."
+    "scatter_passes_hint": "{n} estrazioni con reinserimento → al massimo {n} bersagli distinti"
   },
   "game": {
     "error_not_authenticated": "Non autenticato",
@@ -2040,6 +2043,8 @@
     "convocation_and": "{a} e {b}",
     "convocation_keywords": " ({keywords})",
     "spell_countered": "🛡️ Contromagia!",
+    "draw_trigger_self": "🃏 Effetto attivato alla vostra pesca",
+    "draw_trigger_opponent": "🃏 Effetto attivato alla pesca avversaria",
     "spell_grant_all_allies": " · a tutti gli alleati",
     "spell_grant_target": " · alla creatura bersaglio",
     "fire_breath_label": "Soffio di Fuoco",

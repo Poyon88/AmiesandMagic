@@ -85,7 +85,7 @@ describe("Sélection magique composée — résolution moteur", () => {
     return s;
   }
 
-  it("ne met JAMAIS une créature en main, seulement un sort", () => {
+  it("ne propose JAMAIS une créature, seulement des sorts", () => {
     const s = stateAvecPool();
     const porteur = mkInstance(mkCard({
       name: "Grimoire", card_type: "spell", attack: null, health: null,
@@ -99,12 +99,18 @@ describe("Sélection magique composée — résolution moteur", () => {
     s.players[0].hand.push(porteur);
 
     const next = applyAction(s, { type: "play_card", cardInstanceId: porteur.instanceId });
-    const enMain = next.players[0].hand.map((c) => c.card.name);
 
-    expect(enMain.some((n) => n.startsWith("Créature "))).toBe(false);
-    expect(enMain.some((n) => n.startsWith("Sort "))).toBe(true);
+    // Le sort suspend sur la modale « 1 parmi 3 » : c'est l'OFFRE qu'on inspecte
+    // (rien ne rejoint la main avant le choix du joueur).
+    const trig = (next.pendingTriggers ?? []).find((t) => t.selectionType === "selection_magique");
+    expect(trig).toBeDefined();
+    const byId = new Map((s.allSpellsPool ?? []).map((c) => [c.id, c] as const));
+    const offerts = (trig!.selectionOptionIds ?? []).map((id) => byId.get(id)!);
+    expect(offerts.length).toBeGreaterThan(0);
+    expect(offerts.every((c) => c.card_type === "spell")).toBe(true);
+    expect(offerts.some((c) => c.name.startsWith("Créature "))).toBe(false);
     // Le plafond X=3 est respecté : tous les sorts du pool y satisfont ici.
-    const ajoute = next.players[0].hand.find((c) => c.card.name.startsWith("Sort "))!;
-    expect(ajoute.card.mana_cost).toBeLessThanOrEqual(3);
+    expect(offerts.every((c) => c.mana_cost <= 3)).toBe(true);
+    expect(next.players[0].hand).toHaveLength(0);
   });
 });

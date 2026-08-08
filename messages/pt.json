@@ -463,10 +463,6 @@
         "label": "Precisão",
         "desc": "Os danos deste feitiço ignoram a Resistência, a Armadura e o Escudo."
       },
-      "seuil_colere": {
-        "label": "Limiar de ira X",
-        "desc": "Se o teu baralho tiver 25 cartas ou menos, este feitiço causa X de dano adicional."
-      },
       "poison": {
         "label": "Veneno",
         "desc": "As unidades feridas perdem 1 PV por turno."
@@ -478,6 +474,10 @@
       "convocation_simple": {
         "label": "Convocação",
         "desc": "Cria {token}."
+      },
+      "seuil_colere": {
+        "label": "Limiar de ira X",
+        "desc": "Se o teu baralho tiver 25 cartas ou menos, este feitiço causa X de dano adicional."
       },
       "corruption": {
         "label": "Corrupção",
@@ -697,7 +697,8 @@
         "hero_ally": "seu herói",
         "hero_enemy": "o herói adversário",
         "both_all": "todas as unidades e o herói {side}",
-        "both_one": "um alvo (unidade ou herói){side}"
+        "both_one": "um alvo (unidade ou herói){side}",
+        "count_scatter": "no máximo {n} unidades"
       },
       "target": {
         "self": "a si mesma",
@@ -719,7 +720,8 @@
         "loc_graveyard": "do cemitério",
         "des_random": "aleatoriamente",
         "des_automatic": "automaticamente",
-        "des_choice": "à escolha"
+        "des_choice": "à escolha",
+        "count_scatter": "a no máximo {n} unidades"
       },
       "scatter": {
         "action_damage": "causa",
@@ -1610,7 +1612,7 @@
     "label_designation": "DESIGNAÇÃO",
     "designation_choice": "À escolha",
     "designation_random": "Aleatório",
-    "designation_scatter": "Distribuído aleatoriamente (por ponto)",
+    "designation_scatter": "Distribuído aleatoriamente (com reposição)",
     "designation_automatic": "Automático",
     "add_composed_effect": "+ Adicionar um efeito composto",
     "tab_forge": "Forja",
@@ -1669,6 +1671,7 @@
     "edition_label": "EDIÇÃO",
     "name_label": "NOME",
     "card_name_placeholder": "Nome da carta",
+    "name_taken": "Este nome já é usado por « {name} » (id {id}). O salvamento pedirá confirmação.",
     "mana_label": "MANA",
     "power_label": "PODER",
     "life_cost_hint": "Pontos de vida pagos pelo herói ao invocar. A carta é injogável se a soma chegar a 0 PV.",
@@ -1948,7 +1951,7 @@
     "unknown_error": "Erro desconhecido",
     "illustration_generated": "Ilustração gerada ({model})",
     "import_error": "Erro de importação",
-    "name_taken": "Este nome já é usado por « {name} » (id {id}). O salvamento pedirá confirmação."
+    "scatter_passes_hint": "{n} sorteios com reposição → no máximo {n} alvos distintos"
   },
   "game": {
     "error_not_authenticated": "Não autenticado",
@@ -2040,6 +2043,8 @@
     "convocation_and": "{a} e {b}",
     "convocation_keywords": " ({keywords})",
     "spell_countered": "🛡️ Contramagia!",
+    "draw_trigger_self": "🃏 Efeito ativado quando você compra uma carta",
+    "draw_trigger_opponent": "🃏 Efeito ativado quando o adversário compra",
     "spell_grant_all_allies": " · a todos os aliados",
     "spell_grant_target": " · à criatura alvo",
     "fire_breath_label": "Sopro de Fogo",

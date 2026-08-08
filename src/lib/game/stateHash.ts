@@ -21,7 +21,8 @@ import type { GameState } from "./types";
 //    the snapshot too; each client re-attaches its own copy.
 //  - turnStartedAt : a wall-clock Date.now() stamped per client in startTurn;
 //    legitimately differs between clients and never affects gameplay.
-//  - fureurStrikes / onAttackWave / sequentialHits : transient animation hints,
+//  - fureurStrikes / onAttackWave / sequentialHits / damageLedger /
+//    drawTriggerEvents : transient animation hints,
 //    cleared by the store after scheduling; not part of the durable game truth.
 //  - stackOverflowCount : deterministic effect-stack guard telemetry; both
 //    clients compute it identically but it must never drive a desync verdict.
@@ -35,6 +36,8 @@ const VOLATILE_KEYS = new Set([
   "fureurStrikes",
   "onAttackWave",
   "sequentialHits",
+  "damageLedger",
+  "drawTriggerEvents",
   "powerStrikes",
   "recastEvents",
   "stackOverflowCount",

@@ -463,10 +463,6 @@
         "label": "Präzision",
         "desc": "Der Schaden dieses Zaubers ignoriert Resistenz, Rüstung und Schild."
       },
-      "seuil_colere": {
-        "label": "Zornschwelle X",
-        "desc": "Wenn dein Deck 25 Karten oder weniger enthält, verursacht dieser Zauber X zusätzlichen Schaden."
-      },
       "poison": {
         "label": "Gift",
         "desc": "Verwundete Einheiten verlieren 1 LP pro Runde."
@@ -478,6 +474,10 @@
       "convocation_simple": {
         "label": "Beschwörung",
         "desc": "Erschafft {token}."
+      },
+      "seuil_colere": {
+        "label": "Zornschwelle X",
+        "desc": "Wenn dein Deck 25 Karten oder weniger enthält, verursacht dieser Zauber X zusätzlichen Schaden."
       },
       "corruption": {
         "label": "Korruption",
@@ -697,7 +697,8 @@
         "hero_ally": "euer Held",
         "hero_enemy": "der gegnerische Held",
         "both_all": "alle Einheiten und der Held {side}",
-        "both_one": "ein Ziel (Einheit oder Held){side}"
+        "both_one": "ein Ziel (Einheit oder Held){side}",
+        "count_scatter": "höchstens {n} Einheiten"
       },
       "target": {
         "self": "sich selbst",
@@ -719,7 +720,8 @@
         "loc_graveyard": "aus dem Friedhof",
         "des_random": "zufällig",
         "des_automatic": "automatisch",
-        "des_choice": "nach Wahl"
+        "des_choice": "nach Wahl",
+        "count_scatter": "an höchstens {n} Einheiten"
       },
       "scatter": {
         "action_damage": "verursacht",
@@ -1610,7 +1612,7 @@
     "label_designation": "AUSWAHL",
     "designation_choice": "Nach Wahl",
     "designation_random": "Zufällig",
-    "designation_scatter": "Zufällig verteilt (pro Punkt)",
+    "designation_scatter": "Zufällig verteilt (mit Zurücklegen)",
     "designation_automatic": "Automatisch",
     "add_composed_effect": "+ Zusammengesetzten Effekt hinzufügen",
     "tab_forge": "Schmiede",
@@ -1669,6 +1671,7 @@
     "edition_label": "EDITION",
     "name_label": "NAME",
     "card_name_placeholder": "Kartenname",
+    "name_taken": "Dieser Name wird bereits von „{name}“ (ID {id}) verwendet. Beim Speichern wird eine Bestätigung angefordert.",
     "mana_label": "MANA",
     "power_label": "STÄRKE",
     "life_cost_hint": "Lebenspunkte, die der Held bei der Beschwörung zahlt. Die Karte ist nicht spielbar, wenn die Summe auf 0 LP fallen würde.",
@@ -1948,7 +1951,7 @@
     "unknown_error": "Unbekannter Fehler",
     "illustration_generated": "Illustration generiert ({model})",
     "import_error": "Importfehler",
-    "name_taken": "Dieser Name wird bereits von „{name}“ (ID {id}) verwendet. Beim Speichern wird eine Bestätigung angefordert."
+    "scatter_passes_hint": "{n} Ziehungen mit Zurücklegen → höchstens {n} unterschiedliche Ziele"
   },
   "game": {
     "error_not_authenticated": "Nicht authentifiziert",
@@ -2040,6 +2043,8 @@
     "convocation_and": "{a} und {b}",
     "convocation_keywords": " ({keywords})",
     "spell_countered": "🛡️ Gegenzauber!",
+    "draw_trigger_self": "🃏 Effekt bei deinem Kartenziehen ausgelöst",
+    "draw_trigger_opponent": "🃏 Effekt beim gegnerischen Kartenziehen ausgelöst",
     "spell_grant_all_allies": " · an alle Verbündeten",
     "spell_grant_target": " · an die Zielkreatur",
     "fire_breath_label": "Feueratem",

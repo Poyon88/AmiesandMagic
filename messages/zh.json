@@ -463,10 +463,6 @@
         "label": "精准",
         "desc": "此法术造成的伤害无视抗性、护甲和护盾。"
       },
-      "seuil_colere": {
-        "label": "愤怒阈值 X",
-        "desc": "如果你的牌库中有25张或更少的牌，此法术将造成X点额外伤害。"
-      },
       "poison": {
         "label": "中毒",
         "desc": "受伤单位每回合失去1点生命值。"
@@ -478,6 +474,10 @@
       "convocation_simple": {
         "label": "召唤",
         "desc": "创建{token}。"
+      },
+      "seuil_colere": {
+        "label": "愤怒阈值 X",
+        "desc": "如果你的牌库中有25张或更少的牌，此法术将造成X点额外伤害。"
       },
       "corruption": {
         "label": "腐化",
@@ -697,7 +697,8 @@
         "hero_ally": "你的英雄",
         "hero_enemy": "敌方英雄",
         "both_all": "所有单位和{side}英雄",
-        "both_one": "一个目标(单位或英雄){side}"
+        "both_one": "一个目标(单位或英雄){side}",
+        "count_scatter": "至多{n}个单位"
       },
       "target": {
         "self": "对自身",
@@ -719,7 +720,8 @@
         "loc_graveyard": "墓地中",
         "des_random": "随机",
         "des_automatic": "自动",
-        "des_choice": "自选"
+        "des_choice": "自选",
+        "count_scatter": "向至多{n}个单位"
       },
       "scatter": {
         "action_damage": "造成",
@@ -1610,7 +1612,7 @@
     "label_designation": "指定方式",
     "designation_choice": "自选",
     "designation_random": "随机",
-    "designation_scatter": "随机分配（按点数）",
+    "designation_scatter": "随机分配（可重复）",
     "designation_automatic": "自动",
     "add_composed_effect": "+ 添加复合效果",
     "tab_forge": "锻造",
@@ -1669,6 +1671,7 @@
     "edition_label": "版本",
     "name_label": "名称",
     "card_name_placeholder": "卡牌名称",
+    "name_taken": "该名称已被「{name}」（id {id}）使用。保存时将需要确认。",
     "mana_label": "法力",
     "power_label": "战力",
     "life_cost_hint": "召唤时英雄支付的生命值。若总量将降至0，则该牌不可出牌。",
@@ -1948,7 +1951,7 @@
     "unknown_error": "未知错误",
     "illustration_generated": "插图已生成（{model}）",
     "import_error": "导入错误",
-    "name_taken": "该名称已被「{name}」（id {id}）使用。保存时将需要确认。"
+    "scatter_passes_hint": "{n}次抽取（可重复）→ 至多{n}个不同目标"
   },
   "game": {
     "error_not_authenticated": "未登录",
@@ -2040,6 +2043,8 @@
     "convocation_and": "{a} 和 {b}",
     "convocation_keywords": " ({keywords})",
     "spell_countered": "🛡️ 反制！",
+    "draw_trigger_self": "🃏 效果在你抽牌时触发",
+    "draw_trigger_opponent": "🃏 效果在对手抽牌时触发",
     "spell_grant_all_allies": " · 对所有友方单位",
     "spell_grant_target": " · 对目标生物",
     "fire_breath_label": "烈焰吐息",
