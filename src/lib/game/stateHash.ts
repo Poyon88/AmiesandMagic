@@ -19,7 +19,7 @@ import type { GameState } from "./types";
 // Fields excluded from the hash:
 //  - factionCardPool / allSpellsPool / tokenTemplates : static, stripped from
 //    the snapshot too; each client re-attaches its own copy.
-//  - turnStartedAt : a wall-clock Date.now() stamped per client in startTurn;
+//  - turnStartedAt / choiceStartedAt : wall-clock Date.now() stamped per client;
 //    legitimately differs between clients and never affects gameplay.
 //  - fureurStrikes / onAttackWave / sequentialHits / damageLedger /
 //    drawTriggerEvents : transient animation hints,
@@ -33,6 +33,7 @@ const VOLATILE_KEYS = new Set([
   "allSpellsPool",
   "tokenTemplates",
   "turnStartedAt",
+  "choiceStartedAt",
   "fureurStrikes",
   "onAttackWave",
   "sequentialHits",

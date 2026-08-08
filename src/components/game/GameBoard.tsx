@@ -1271,12 +1271,17 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             </button>
           )}
           <TurnTimer
-            isMyTurn={myTurn}
+            // `isMyTurn()` BRUT, et non `myTurn` (qui vaut faux pendant toute
+            // animation) : c'est ce filtre qui empêchait le repli automatique de
+            // partir et laissait la partie plantée sur un choix en attente. Les
+            // deux poignées revérifient `isAnimating` de leur côté.
+            isMyTurn={isMyTurn()}
             onTimeUp={handleEndTurn}
             turnNumber={gameState.turnNumber}
             turnStartedAt={Math.max(gameState.turnStartedAt, boardRevealedAt)}
             isPaused={isAutoAttacking}
             hasPendingTriggers={(gameState.pendingTriggers?.length ?? 0) > 0}
+            choiceStartedAt={gameState.choiceStartedAt}
             onPendingTimeout={handleAutoResolvePending}
           />
           <button

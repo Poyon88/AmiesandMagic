@@ -89,6 +89,10 @@
         "label": "反撃 X",
         "desc": "このユニットがダメージを受けたとき、攻撃源（ユニットまたはヒーロー）にXダメージを与える。"
       },
+      "chant": {
+        "label": "詠唱",
+        "desc": "このユニットが場に出ている限り、「詠唱」を持つあなたの呪文は強化される。"
+      },
       "rappel": {
         "label": "帰還",
         "desc": "対象の墓地のカード1枚を手札に戻す。"
@@ -479,6 +483,10 @@
         "label": "憤怒の閾値 X",
         "desc": "自分のデッキが25枚以下なら、この呪文はX点の追加ダメージを与える。"
       },
+      "chant": {
+        "label": "詠唱 X",
+        "desc": "「詠唱」を持つクリーチャーを支配している場合、この呪文のXはすべてX増加する。"
+      },
       "corruption": {
         "label": "堕落",
         "desc": "対象の敵ユニットをターン終了時まで自軍に寝返らせる。そのユニットは「追跡」を獲得する。"
@@ -694,11 +702,11 @@
         "count_all": "すべてのユニット",
         "count_one": "ユニット1体",
         "count_n": "ユニット{n}体",
+        "count_scatter": "最大{n}体のユニット",
         "hero_ally": "あなたのヒーロー",
         "hero_enemy": "敵ヒーロー",
         "both_all": "すべてのユニットと{side}ヒーロー",
-        "both_one": "対象1つ(ユニットまたはヒーロー){side}",
-        "count_scatter": "最大{n}体のユニット"
+        "both_one": "対象1つ(ユニットまたはヒーロー){side}"
       },
       "target": {
         "self": "自身に",
@@ -711,6 +719,7 @@
         "count_all": "すべてのユニットに",
         "count_one": "ユニット1体に",
         "count_n": "{n}体のユニットに",
+        "count_scatter": "最大{n}体のユニットに",
         "side_ally_one": "味方の",
         "side_ally_many": "味方の",
         "side_enemy_one": "敵の",
@@ -720,8 +729,7 @@
         "loc_graveyard": "墓地の",
         "des_random": "ランダムに",
         "des_automatic": "自動的に",
-        "des_choice": "任意に",
-        "count_scatter": "最大{n}体のユニットに"
+        "des_choice": "任意に"
       },
       "scatter": {
         "action_damage": "与える",
@@ -1602,6 +1610,7 @@
     "side_any": "どちらでも",
     "label_count": "数量",
     "scatter_points_hint": "X（{x}）ポイントをプール上にランダム分配",
+    "scatter_passes_hint": "{n}回の復元抽選 → 最大{n}体の異なる対象",
     "count_all": "すべて",
     "label_location": "場所",
     "location_board": "ボード",
@@ -1950,8 +1959,7 @@
     "card_added": "「{name}」を追加しました！",
     "unknown_error": "不明なエラー",
     "illustration_generated": "イラストを生成しました（{model}）",
-    "import_error": "インポートエラー",
-    "scatter_passes_hint": "{n}回の復元抽選 → 最大{n}体の異なる対象"
+    "import_error": "インポートエラー"
   },
   "game": {
     "error_not_authenticated": "未認証",

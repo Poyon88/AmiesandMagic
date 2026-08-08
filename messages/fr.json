@@ -89,6 +89,10 @@
         "label": "Riposte X",
         "desc": "Quand cette unité subit des dégâts, inflige X dégâts à la source de l'attaque (unité ou héros)."
       },
+      "chant": {
+        "label": "Chant",
+        "desc": "Vos sorts avec Chant sont renforcés tant que cette unité est en jeu."
+      },
       "rappel": {
         "label": "Rappel",
         "desc": "Remettez une carte ciblée de votre cimetière dans votre main."
@@ -478,6 +482,10 @@
       "seuil_colere": {
         "label": "Seuil de colère X",
         "desc": "Si votre deck compte 25 cartes ou moins, ce sort inflige X dégâts supplémentaires."
+      },
+      "chant": {
+        "label": "Chant X",
+        "desc": "Si vous contrôlez une créature avec Chant, tous les X de ce sort sont augmentés de X."
       },
       "corruption": {
         "label": "Corruption",

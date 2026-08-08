@@ -89,6 +89,10 @@
         "label": "反击 X",
         "desc": "此单位受到伤害时，对攻击来源（单位或英雄）造成 X 点伤害。"
       },
+      "chant": {
+        "label": "咏唱",
+        "desc": "只要这个单位在场，你带有“咏唱”的法术就会得到强化。"
+      },
       "rappel": {
         "label": "召回",
         "desc": "将你墓地中一张目标卡牌放回手牌。"
@@ -479,6 +483,10 @@
         "label": "愤怒阈值 X",
         "desc": "如果你的牌库中有25张或更少的牌，此法术将造成X点额外伤害。"
       },
+      "chant": {
+        "label": "咏唱 X",
+        "desc": "如果你控制一个带有“咏唱”的生物，此法术中所有的 X 都会增加 X。"
+      },
       "corruption": {
         "label": "腐化",
         "desc": "将目标敌方单位转化至我方阵营，直到本回合结束；其获得“追猎”。"
@@ -694,11 +702,11 @@
         "count_all": "所有单位",
         "count_one": "一个单位",
         "count_n": "{n}个单位",
+        "count_scatter": "至多{n}个单位",
         "hero_ally": "你的英雄",
         "hero_enemy": "敌方英雄",
         "both_all": "所有单位和{side}英雄",
-        "both_one": "一个目标(单位或英雄){side}",
-        "count_scatter": "至多{n}个单位"
+        "both_one": "一个目标(单位或英雄){side}"
       },
       "target": {
         "self": "对自身",
@@ -711,6 +719,7 @@
         "count_all": "对所有单位",
         "count_one": "对一个单位",
         "count_n": "对 {n} 个单位",
+        "count_scatter": "向至多{n}个单位",
         "side_ally_one": "友方",
         "side_ally_many": "友方",
         "side_enemy_one": "敌方",
@@ -720,8 +729,7 @@
         "loc_graveyard": "墓地中",
         "des_random": "随机",
         "des_automatic": "自动",
-        "des_choice": "自选",
-        "count_scatter": "向至多{n}个单位"
+        "des_choice": "自选"
       },
       "scatter": {
         "action_damage": "造成",
@@ -1602,6 +1610,7 @@
     "side_any": "不限",
     "label_count": "数量",
     "scatter_points_hint": "X（{x}）点随机分配至池",
+    "scatter_passes_hint": "{n}次抽取（可重复）→ 至多{n}个不同目标",
     "count_all": "全部",
     "label_location": "位置",
     "location_board": "战场",
@@ -1950,8 +1959,7 @@
     "card_added": "「{name}」已添加！",
     "unknown_error": "未知错误",
     "illustration_generated": "插图已生成（{model}）",
-    "import_error": "导入错误",
-    "scatter_passes_hint": "{n}次抽取（可重复）→ 至多{n}个不同目标"
+    "import_error": "导入错误"
   },
   "game": {
     "error_not_authenticated": "未登录",

@@ -21,6 +21,13 @@ export const MAX_EPARGNE = 8;
 export const SEUIL_DECK_THRESHOLD = 25;
 export const CARDS_DRAWN_PER_TURN = 1;
 export const TURN_TIMER_SECONDS = 90;
+/** Fenêtre accordée pour trancher UN choix interactif en attente (déclencheur
+ *  « fin de tour », Remontée à la mort…). Volontairement DÉTACHÉE du chrono de
+ *  tour : la pause se produit souvent parce que le chrono vient d'expirer, et
+ *  se rabattre sur son reliquat laissait alors ~0 seconde — la modale
+ *  s'affichait puis le repli aléatoire tranchait à la place du joueur. Repart
+ *  de zéro à chaque nouveau choix. */
+export const CHOICE_TIMER_SECONDS = 15;
 // Compte à rebours du mulligan (par client). À 0 → confirmation automatique de
 // la sélection courante (garder tout si rien n'est sélectionné).
 export const MULLIGAN_TIMER_SECONDS = 45;

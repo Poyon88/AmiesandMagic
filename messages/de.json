@@ -89,6 +89,10 @@
         "label": "Vergeltung X",
         "desc": "Wenn diese Einheit Schaden erleidet, fügt sie der Schadensquelle (Einheit oder Held) X Schaden zu."
       },
+      "chant": {
+        "label": "Gesang",
+        "desc": "Eure Zaubersprüche mit Gesang werden verstärkt, solange diese Einheit im Spiel ist."
+      },
       "rappel": {
         "label": "Rückruf",
         "desc": "Legt eine anvisierte Karte aus eurem Friedhof zurück auf eure Hand."
@@ -479,6 +483,10 @@
         "label": "Zornschwelle X",
         "desc": "Wenn dein Deck 25 Karten oder weniger enthält, verursacht dieser Zauber X zusätzlichen Schaden."
       },
+      "chant": {
+        "label": "Gesang X",
+        "desc": "Wenn ihr eine Kreatur mit Gesang kontrolliert, werden alle X-Werte dieses Zauberspruchs um X erhöht."
+      },
       "corruption": {
         "label": "Korruption",
         "desc": "Bekehrt die anvisierte gegnerische Einheit bis zum Ende der Runde auf Ihre Seite; sie erhält Verfolgung."
@@ -694,11 +702,11 @@
         "count_all": "alle Einheiten",
         "count_one": "eine Einheit",
         "count_n": "{n} Einheiten",
+        "count_scatter": "höchstens {n} Einheiten",
         "hero_ally": "euer Held",
         "hero_enemy": "der gegnerische Held",
         "both_all": "alle Einheiten und der Held {side}",
-        "both_one": "ein Ziel (Einheit oder Held){side}",
-        "count_scatter": "höchstens {n} Einheiten"
+        "both_one": "ein Ziel (Einheit oder Held){side}"
       },
       "target": {
         "self": "sich selbst",
@@ -711,6 +719,7 @@
         "count_all": "an alle Einheiten",
         "count_one": "an eine Einheit",
         "count_n": "an {n} Einheiten",
+        "count_scatter": "an höchstens {n} Einheiten",
         "side_ally_one": "verbündeten",
         "side_ally_many": "verbündete",
         "side_enemy_one": "feindliche",
@@ -720,8 +729,7 @@
         "loc_graveyard": "aus dem Friedhof",
         "des_random": "zufällig",
         "des_automatic": "automatisch",
-        "des_choice": "nach Wahl",
-        "count_scatter": "an höchstens {n} Einheiten"
+        "des_choice": "nach Wahl"
       },
       "scatter": {
         "action_damage": "verursacht",
@@ -1602,6 +1610,7 @@
     "side_any": "Beliebig",
     "label_count": "ANZAHL",
     "scatter_points_hint": "X ({x}) zufällig auf den Pool verteilte Punkte",
+    "scatter_passes_hint": "{n} Ziehungen mit Zurücklegen → höchstens {n} unterschiedliche Ziele",
     "count_all": "Alle",
     "label_location": "ORT",
     "location_board": "Spielfeld",
@@ -1950,8 +1959,7 @@
     "card_added": "„{name}\" hinzugefügt!",
     "unknown_error": "Unbekannter Fehler",
     "illustration_generated": "Illustration generiert ({model})",
-    "import_error": "Importfehler",
-    "scatter_passes_hint": "{n} Ziehungen mit Zurücklegen → höchstens {n} unterschiedliche Ziele"
+    "import_error": "Importfehler"
   },
   "game": {
     "error_not_authenticated": "Nicht authentifiziert",

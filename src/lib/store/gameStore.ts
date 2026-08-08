@@ -1330,6 +1330,11 @@ export const useGameStore = create<GameStore>((set, get) => {
     if ((gameState.pendingTriggers?.length ?? 0) > 0
       && action.type !== "resolve_pending_trigger"
       && action.type !== "auto_resolve_pending_triggers") {
+      // Refus SILENCIEUX jusqu'ici : c'est ce qui rendait le blocage
+      // incompréhensible en partie (le plateau reste cliquable, END TURN aussi,
+      // et rien ne se passe). Le moteur purge désormais les déclencheurs
+      // insolubles, mais on trace le refus pour que le cas suivant soit lisible.
+      console.warn(`[end-turn] action « ${action.type} » refusée : ${gameState.pendingTriggers!.length} choix en attente (${gameState.pendingTriggers!.map(t => t.id).join(", ")})`);
       return null;
     }
 

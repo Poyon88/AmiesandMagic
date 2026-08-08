@@ -89,6 +89,10 @@
         "label": "Represalia X",
         "desc": "Cuando esta unidad recibe daño, inflige X de daño a la fuente del ataque (unidad o héroe)."
       },
+      "chant": {
+        "label": "Canto",
+        "desc": "Tus hechizos con Canto se ven reforzados mientras esta unidad esté en juego."
+      },
       "rappel": {
         "label": "Llamada",
         "desc": "Devuelve una carta objetivo de tu cementerio a tu mano."
@@ -479,6 +483,10 @@
         "label": "Umbral de ira X",
         "desc": "Si tu mazo tiene 25 cartas o menos, este hechizo inflige X daño adicional."
       },
+      "chant": {
+        "label": "Canto X",
+        "desc": "Si controlas una criatura con Canto, todos los X de este hechizo aumentan en X."
+      },
       "corruption": {
         "label": "Corrupción",
         "desc": "Convierte a la unidad enemiga objetivo a tu bando hasta el final del turno; gana Acecho."
@@ -694,11 +702,11 @@
         "count_all": "todas las unidades",
         "count_one": "una unidad",
         "count_n": "{n} unidades",
+        "count_scatter": "como máximo {n} unidades",
         "hero_ally": "tu héroe",
         "hero_enemy": "el héroe enemigo",
         "both_all": "todas las unidades y el héroe {side}",
-        "both_one": "un objetivo (unidad o héroe){side}",
-        "count_scatter": "como máximo {n} unidades"
+        "both_one": "un objetivo (unidad o héroe){side}"
       },
       "target": {
         "self": "a sí misma",
@@ -711,6 +719,7 @@
         "count_all": "a todas las unidades",
         "count_one": "a una unidad",
         "count_n": "a {n} unidades",
+        "count_scatter": "a como máximo {n} unidades",
         "side_ally_one": "aliada",
         "side_ally_many": "aliadas",
         "side_enemy_one": "enemiga",
@@ -720,8 +729,7 @@
         "loc_graveyard": "del cementerio",
         "des_random": "al azar",
         "des_automatic": "automáticamente",
-        "des_choice": "a elegir",
-        "count_scatter": "a como máximo {n} unidades"
+        "des_choice": "a elegir"
       },
       "scatter": {
         "action_damage": "inflige",
@@ -1602,6 +1610,7 @@
     "side_any": "Indiferente",
     "label_count": "CANTIDAD",
     "scatter_points_hint": "X ({x}) puntos distribuidos al azar en el grupo",
+    "scatter_passes_hint": "{n} sorteos con reemplazo → como máximo {n} objetivos distintos",
     "count_all": "Todos",
     "label_location": "LOCALIZACIÓN",
     "location_board": "Tablero",
@@ -1950,8 +1959,7 @@
     "card_added": "¡«{name}» añadida!",
     "unknown_error": "Error desconocido",
     "illustration_generated": "Ilustración generada ({model})",
-    "import_error": "Error de importación",
-    "scatter_passes_hint": "{n} sorteos con reemplazo → como máximo {n} objetivos distintos"
+    "import_error": "Error de importación"
   },
   "game": {
     "error_not_authenticated": "No autenticado",

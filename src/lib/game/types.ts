@@ -57,6 +57,10 @@ export type Keyword =
   | "cataclysme"
   // Tier 2 — targeted enemy debuff -X/-Y
   | "affaiblissement"
+  // Conditionnel de plateau — marqueur côté CRÉATURE (aucun effet propre), et
+  // côté SORT bonus X sur toutes les amplitudes si le lanceur contrôle une
+  // créature portant Chant.
+  | "chant"
   // Drawback — self-damage on ETB / cast
   | "douleur"
   // Drawback — self ATK reduced by opponent's hand size (dynamic aura)
@@ -186,6 +190,7 @@ export type SpellKeywordId =
   | "entrainement"
   | "cataclysme"
   | "affaiblissement"
+  | "chant"
   | "dechainement";
 
 /** Trigger mode for a creature keyword (also reused to tint spell effects).
@@ -929,6 +934,15 @@ export interface GameState {
    *  clients render the same countdown without drifting from their own
    *  setInterval timing. Initialized to 0 until the first turn starts. */
   turnStartedAt: number;
+  /** Horloge du CHOIX en cours (`Date.now()` du client, comme turnStartedAt) :
+   *  posée quand la file `pendingTriggers` reçoit une nouvelle tête, remise à
+   *  zéro quand elle se vide. Le compte à rebours du choix en dérive.
+   *
+   *  Pourquoi une horloge à part : la pause survient le plus souvent parce que
+   *  le chrono de tour vient d'expirer. S'en remettre à son reliquat laissait
+   *  alors ~0 seconde — la modale s'affichait puis le repli aléatoire tranchait
+   *  à la place du joueur. Hors hash (heure murale, propre à chaque client). */
+  choiceStartedAt?: number;
   phase: GamePhase;
   winner: string | null;
   lastAction: GameAction | null;

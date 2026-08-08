@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { TURN_TIMER_SECONDS } from "@/lib/game/constants";
+import { TURN_TIMER_SECONDS, CHOICE_TIMER_SECONDS } from "@/lib/game/constants";
 import { useAudioStore } from "@/lib/store/audioStore";
 import SfxEngine from "@/lib/audio/SfxEngine";
 import AudioEngine from "@/lib/audio/AudioEngine";
@@ -27,15 +27,21 @@ interface TurnTimerProps {
    *  ne déclenche PAS onTimeUp (end_turn, bloqué de toute façon) mais
    *  onPendingTimeout (repli automatique au hasard). */
   hasPendingTriggers?: boolean;
+  /** Ancre du compte à rebours du CHOIX (`gameState.choiceStartedAt`). Tant
+   *  qu'un choix est en attente, le compteur bascule sur cette horloge et sur
+   *  CHOICE_TIMER_SECONDS au lieu du chrono de tour : la pause naît le plus
+   *  souvent de l'expiration du chrono, et le reliquat valait alors ~0 s — la
+   *  modale s'affichait puis le repli tranchait à la place du joueur. */
+  choiceStartedAt?: number;
   /** Appelé une fois quand le chrono atteint 0 alors que des pendingTriggers
    *  restent — le joueur n'a pas choisi à temps, on résout au hasard. */
   onPendingTimeout?: () => void;
 }
 
-function computeTimeLeft(turnStartedAt: number, offsetMs = 0): number {
-  if (!turnStartedAt) return TURN_TIMER_SECONDS;
-  const elapsed = Math.floor((Date.now() - turnStartedAt - offsetMs) / 1000);
-  return Math.max(0, Math.min(TURN_TIMER_SECONDS, TURN_TIMER_SECONDS - elapsed));
+function computeTimeLeft(anchor: number, offsetMs = 0, duration = TURN_TIMER_SECONDS): number {
+  if (!anchor) return duration;
+  const elapsed = Math.floor((Date.now() - anchor - offsetMs) / 1000);
+  return Math.max(0, Math.min(duration, duration - elapsed));
 }
 
 export default function TurnTimer({
@@ -45,11 +51,16 @@ export default function TurnTimer({
   turnStartedAt,
   isPaused = false,
   hasPendingTriggers = false,
+  choiceStartedAt,
   onPendingTimeout,
 }: TurnTimerProps) {
+  // Deux régimes, une seule mécanique : on ne change QUE l'ancre et la durée.
+  const inChoice = hasPendingTriggers && !!choiceStartedAt;
+  const anchor = inChoice ? choiceStartedAt! : turnStartedAt;
+  const duration = inChoice ? CHOICE_TIMER_SECONDS : TURN_TIMER_SECONDS;
   const pauseStartedAtRef = useRef<number | null>(null);
   const pauseOffsetMsRef = useRef(0);
-  const [timeLeft, setTimeLeft] = useState(() => computeTimeLeft(turnStartedAt));
+  const [timeLeft, setTimeLeft] = useState(() => computeTimeLeft(anchor, 0, duration));
   const onTimeUpRef = useRef(onTimeUp);
   onTimeUpRef.current = onTimeUp;
   const onPendingTimeoutRef = useRef(onPendingTimeout);
@@ -58,7 +69,6 @@ export default function TurnTimer({
   hasPendingTriggersRef.current = hasPendingTriggers;
 
   const hasFiredWarningRef = useRef(false);
-  const hasFiredTimeUpRef = useRef(false);
   const warningAudioRef = useRef<HTMLAudioElement | null>(null);
 
   // Single source of truth for "what should we display now". Wraps the
@@ -67,7 +77,7 @@ export default function TurnTimer({
   // recomputes share the exact same logic.
   const tick = useCallback(() => {
     if (isPaused) return;
-    const next = computeTimeLeft(turnStartedAt, pauseOffsetMsRef.current);
+    const next = computeTimeLeft(anchor, pauseOffsetMsRef.current, duration);
     setTimeLeft(next);
     if (next <= 0 && isMyTurn) {
       // Des effets « fin de tour » non résolus restent en file : on déclenche le
@@ -76,14 +86,20 @@ export default function TurnTimer({
       // tick : l'action draine toute la file en une fois et est idempotente
       // (dispatch no-op pendant une animation ; la condition s'éteint dès que la
       // file est vidée), ce qui couvre le cas « tour terminé PAR le timeout ».
+      // PAS de verrou « déjà tiré » : les deux poignées sont refusées en silence
+      // quand une animation tourne (cf. handleEndTurn / handleAutoResolvePending),
+      // et un verrou transformait ce refus en abandon définitif — le tour restait
+      // planté à 0. On re-tente donc à chaque tick ; c'est sûr parce que les deux
+      // actions sont idempotentes côté moteur (end_turn sur une fin de tour déjà
+      // en pause est un no-op) et que la condition s'éteint d'elle-même dès que le
+      // tour bascule.
       if (hasPendingTriggersRef.current) {
         setTimeout(() => onPendingTimeoutRef.current?.(), 0);
-      } else if (!hasFiredTimeUpRef.current) {
-        hasFiredTimeUpRef.current = true;
+      } else {
         setTimeout(() => onTimeUpRef.current(), 0);
       }
     }
-  }, [turnStartedAt, isMyTurn, isPaused]);
+  }, [anchor, duration, isMyTurn, isPaused]);
 
   // Pause tracking — when isPaused flips true we anchor the moment; when
   // it flips false we add the elapsed pause to the offset so subsequent
@@ -94,28 +110,22 @@ export default function TurnTimer({
     } else if (pauseStartedAtRef.current !== null) {
       pauseOffsetMsRef.current += Date.now() - pauseStartedAtRef.current;
       pauseStartedAtRef.current = null;
-      const recomputed = computeTimeLeft(turnStartedAt, pauseOffsetMsRef.current);
-      // Race guard: a tick that landed in the same task as the click that
-      // triggered the pause might have already latched the time-up flag.
-      // Clear it if the (offset-corrected) clock still has time, otherwise
-      // the timer would silently freeze at 0 with no auto-end-turn.
-      if (recomputed > 0) hasFiredTimeUpRef.current = false;
+      const recomputed = computeTimeLeft(anchor, pauseOffsetMsRef.current, duration);
       setTimeLeft(recomputed);
     }
-  }, [isPaused, turnStartedAt]);
+  }, [isPaused, anchor, duration]);
 
   // Reset audio + flags when the actual turn changes; recompute display
   // from the new anchor.
   useEffect(() => {
     AudioEngine.getInstance().resume();
     hasFiredWarningRef.current = false;
-    hasFiredTimeUpRef.current = false;
     SfxEngine.getInstance().stop(warningAudioRef.current);
     warningAudioRef.current = null;
     pauseOffsetMsRef.current = 0;
     pauseStartedAtRef.current = null;
-    setTimeLeft(computeTimeLeft(turnStartedAt));
-  }, [turnNumber, turnStartedAt]);
+    setTimeLeft(computeTimeLeft(anchor, 0, duration));
+  }, [turnNumber, anchor, duration]);
 
   // 1 Hz interval ticking the display. The browser may throttle this when
   // the window is unfocused (Chrome especially), so we don't rely on it as
@@ -153,7 +163,7 @@ export default function TurnTimer({
     AudioEngine.getInstance().pause();
   }, [timeLeft, isMyTurn]);
 
-  const percentage = (timeLeft / TURN_TIMER_SECONDS) * 100;
+  const percentage = (timeLeft / duration) * 100;
   const isLow = timeLeft <= WARNING_THRESHOLD;
 
   return (

@@ -418,6 +418,28 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["spell"],
     spell: { params: ["amount"], needsTarget: false },
   },
+  // Chant : la seule mécanique qui adosse la puissance d'un SORT à ce que le
+  // lanceur tient sur le PLATEAU. Les deux faces sont volontairement
+  // asymétriques — côté créature un marqueur inerte (elle n'a aucun effet
+  // propre, sa valeur est d'habiliter les sorts), côté sort le X du bonus.
+  chant: {
+    id: "chant", label: "Chant X", symbol: "🎵",
+    desc: "Si vous contrôlez une créature avec Chant, tous les X de ce sort sont augmentés de X.",
+    applicable_to: ["creature", "spell"],
+    // Prix de l'HABILITATION : la créature n'a aucun effet propre, mais elle
+    // débloque le bonus de tous les sorts Chant de la main. Valeur de départ à
+    // réajuster après essai — le budget forge est linéaire et ne sait pas voir
+    // que le gain croît avec le nombre d'effets des sorts joués.
+    creature: {
+      // Libellé SANS « X » : côté créature Chant est un marqueur, il n'y a
+      // aucune valeur à afficher (le X vit sur le sort). Sans cet override, la
+      // carte annoncerait « Chant X » puis « Chant I » via le repli de badge.
+      label: "Chant",
+      cost: 6, costPerX: 0, se: 1.0, minTier: 1, scalable: false, zone: "Terrain",
+      desc: "Vos sorts avec Chant sont renforcés tant que cette unité est en jeu.",
+    },
+    spell: { params: ["amount"], needsTarget: false },
+  },
   paralysie: {
     id: "paralysie", label: "Paralysie", symbol: "⛓️",
     desc: "Les unités qu'elle blesse ne peuvent ni attaquer ni activer de capacité jusqu'à la fin de leur prochain tour.",
@@ -1431,6 +1453,11 @@ export const AUTOMATIC_ABILITY_IDS: ReadonlySet<string> = new Set([
   // Auras / présence continue
   "terreur", "commandement", "fierte_du_clan", "sang_mele", "totem", "pauvrete",
   "force_des_ancetres", "seuil_sacrificiel",
+  // Chant côté créature : présence continue pure. Aucun effet propre, aucun
+  // déclencheur — le moteur la cherche par `hasKw` au moment où un sort Chant
+  // se résout. Sa place ici la rend aussi authorable sur un token, ce qui est
+  // voulu : un token chanteur habilite les sorts comme n'importe quelle unité.
+  "chant",
   // Passifs de combat / statiques
   "premiere_frappe", "double_attaque", "esquive", "armure",
   "resistance", "precision", "indestructible", "transcendance", "invisible",

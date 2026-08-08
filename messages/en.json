@@ -89,6 +89,10 @@
         "label": "Riposte X",
         "desc": "When this unit takes damage, deals X damage to the source of the attack (unit or hero)."
       },
+      "chant": {
+        "label": "Chant",
+        "desc": "Your spells with Chant are strengthened while this unit is in play."
+      },
       "rappel": {
         "label": "Recall",
         "desc": "Return a targeted card from your graveyard to your hand."
@@ -479,6 +483,10 @@
         "label": "Wrath Threshold X",
         "desc": "If your deck holds 25 cards or fewer, this spell deals X extra damage."
       },
+      "chant": {
+        "label": "Chant X",
+        "desc": "If you control a creature with Chant, all X values of this spell are increased by X."
+      },
       "corruption": {
         "label": "Corruption",
         "desc": "Converts the targeted enemy unit to your side until the end of the turn; it gains Charge."
@@ -694,11 +702,11 @@
         "count_all": "all units",
         "count_one": "a unit",
         "count_n": "{n} units",
+        "count_scatter": "at most {n} units",
         "hero_ally": "your hero",
         "hero_enemy": "the enemy hero",
         "both_all": "all units and the {side} hero",
-        "both_one": "a target (unit or hero){side}",
-        "count_scatter": "at most {n} units"
+        "both_one": "a target (unit or hero){side}"
       },
       "target": {
         "self": "to itself",
@@ -711,6 +719,7 @@
         "count_all": "to all units",
         "count_one": "to one unit",
         "count_n": "to {n} units",
+        "count_scatter": "to at most {n} units",
         "side_ally_one": "friendly",
         "side_ally_many": "allied",
         "side_enemy_one": "enemy",
@@ -720,8 +729,7 @@
         "loc_graveyard": "from the graveyard",
         "des_random": "at random",
         "des_automatic": "automatically",
-        "des_choice": "of your choice",
-        "count_scatter": "to at most {n} units"
+        "des_choice": "of your choice"
       },
       "scatter": {
         "action_damage": "deals",
@@ -1602,6 +1610,7 @@
     "side_any": "Any",
     "label_count": "COUNT",
     "scatter_points_hint": "X ({x}) points scattered randomly across the pool",
+    "scatter_passes_hint": "{n} draws with replacement → at most {n} distinct targets",
     "count_all": "All",
     "label_location": "LOCATION",
     "location_board": "Board",
@@ -1950,8 +1959,7 @@
     "card_added": "\"{name}\" added!",
     "unknown_error": "Unknown error",
     "illustration_generated": "Illustration generated ({model})",
-    "import_error": "Import error",
-    "scatter_passes_hint": "{n} draws with replacement → at most {n} distinct targets"
+    "import_error": "Import error"
   },
   "game": {
     "error_not_authenticated": "Not authenticated",

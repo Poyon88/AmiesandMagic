@@ -172,6 +172,49 @@ function cardWrathAmount(card: Card): number {
   return Math.max(0, cap?.params?.x ?? 0);
 }
 
+// ── Chant X ────────────────────────────────────────────────────────────────
+// Bonus de plateau porté par un SORT : si le lanceur contrôle au moins une
+// créature portant Chant, TOUTES les amplitudes du sort gagnent +X. Même patron
+// de drapeau que Seuil de colère, à trois différences près :
+//   • le bonus ne se CONSOMME pas — il s'applique à chaque X du sort, pas au
+//     premier paquet de dégâts (d'où un simple nombre, sans consume) ;
+//   • il touche aussi bien le X que le Y des couples (Renforcement +X/+Y) ;
+//   • il est BINAIRE côté déclencheur : une chanteuse ou dix, le bonus vaut X.
+//
+// Périmètre assumé : TOUT X, y compris ceux qui ne sont pas des amplitudes
+// (Douleur = auto-dégâts, Invocation = coût EXACT, Sélection/Exhumation =
+// plafond de coût, Déchainement = nombre et coût des sorts tirés). Choix du
+// concepteur, pris en connaissance de cause. Le repli tient dans un `Set` d'ids
+// exclus consulté par `chanted` — aucune migration, aucune carte à retoucher.
+let chantBonus = 0;
+function withChant<T>(x: number, fn: () => T): T {
+  const prev = chantBonus;
+  chantBonus = x;
+  try { return fn(); } finally { chantBonus = prev; }
+}
+/** X de Chant porté par ce sort, 0 s'il ne l'a pas. */
+function cardChantAmount(card: Card): number {
+  const cap = getCapabilities(card).find(c => c.abilityId === "chant");
+  return Math.max(0, cap?.params?.x ?? 0);
+}
+/** Le camp tient-il une chanteuse VIVANTE en jeu ? Binaire : le nombre de
+ *  chanteuses n'entre pas dans le calcul. */
+function boardHasChanter(p: PlayerState): boolean {
+  return p.board.some(c => hasKw(c, "chant") && c.currentHealth > 0);
+}
+/** Applique le bonus de Chant à une amplitude du sort en cours.
+ *
+ *  `undefined` reste `undefined` : un champ absent (le Y d'un mot-clé qui n'en
+ *  a pas) ne doit pas naître à `chantBonus`, sinon on inventerait une valeur là
+ *  où le résolveur attend un repli.
+ *
+ *  Chant s'exclut lui-même : son X EST le bonus, l'auto-référence n'aurait
+ *  aucun sens. */
+function chanted(abilityId: string, value: number | undefined): number | undefined {
+  if (chantBonus <= 0 || value == null || abilityId === "chant") return value;
+  return value + chantBonus;
+}
+
 /** La carte (sort) porte-t-elle Touché mortel ? Lu via le modèle unifié pour
  *  couvrir les deux représentations (spell_keywords et keywords). */
 function cardHasLethalTouch(card: Card): boolean {
@@ -376,10 +419,45 @@ const CREATURE_KEYWORD_HERO_POWER_TARGET: Record<
   domination: "none", // random enemy
 };
 
+/** Capacités « à usage » : leur effet se CONSOMME (Ombre révélée, esquive
+ *  dépensée, Résurrection utilisée, Contresort déclenché). Regagner la capacité
+ *  doit la RÉARMER, sinon le don n'ajoute qu'une ligne inerte au texte de la
+ *  carte. Symptôme vu en partie : une unité Ombre déjà révélée, re-dotée
+ *  d'Ombre par « Fumée Protectrice », restait attaquable.
+ *
+ *  Réservé aux dons PONCTUELS. Les AURAS de héros repassent par
+ *  `applyGrantedKeyword` à CHAQUE `recalculateAuras` (19 sites d'appel) : y
+ *  réarmer rendrait la cible indéfiniment intouchable — elle replongerait dans
+ *  l'ombre aussitôt après avoir attaqué. D'où le drapeau `rearm`, faux par
+ *  défaut, que seuls les cinq chemins de don ponctuel passent à vrai.
+ *
+ *  Hors périmètre, volontairement :
+ *   • `lycanthropie` — transformation permanente à sens unique, pas une
+ *     ressource ; la rejouer réécrirait les stats de l'unité déjà transformée ;
+ *   • `fureurActive` — garde de RÉ-ENTRANCE de la chaîne d'assauts (remise à
+ *     zéro en fin de tour), pas un usage consommé ; la lever en pleine chaîne
+ *     rouvrirait la boucle. */
+function rearmGrantedKeyword(creature: CardInstance, kwId: string): void {
+  switch (kwId) {
+    case "ombre": creature.ombreRevealed = false; break;
+    case "esquive": creature.esquiveUsedThisTurn = false; break;
+    case "resurrection": creature.hasUsedResurrection = false; break;
+    // Contresort s'ARME à l'entrée en jeu (cf. playCard) : sans ce miroir, le
+    // don posait le mot-clé sans jamais activer la garde — inerte jusqu'à ce
+    // que l'unité repasse par un retour en jeu.
+    case "contresort": creature.contresortActive = true; break;
+    default: break;
+  }
+}
+
 function applyGrantedKeyword(
   creature: CardInstance,
   kwId: string,
   params?: { amount?: number; amountY?: number; attack?: number; health?: number },
+  // Don PONCTUEL (sort, effet composé, Conférer, pouvoir de héros) → réarme les
+  // capacités à usage. Les auras laissent ce drapeau à faux (cf.
+  // rearmGrantedKeyword).
+  rearm = false,
 ) {
   const list = creature.card.keywords as string[];
   if (!list.includes(kwId)) {
@@ -390,12 +468,17 @@ function applyGrantedKeyword(
       keywords: [...list, kwId] as unknown as Keyword[],
     };
   }
+  // Bouclier et Traque se réarment sur TOUS les chemins, auras comprises —
+  // comportement historique, laissé tel quel pour ne pas changer la puissance
+  // des auras de héros existantes. Voir la note de rearmGrantedKeyword : une
+  // aura de Bouclier régénère donc l'absorption à chaque recalcul.
   if (kwId === "divine_shield") {
     creature.hasDivineShield = true;
   }
   if (kwId === "charge") {
     creature.hasSummoningSickness = false;
   }
+  if (rearm) rearmGrantedKeyword(creature, kwId);
   // Mémoriser le X du keyword accordé (Résistance 2, Persécution 3, …) pour
   // que les résolveurs et le badge UI le retrouvent — le `card.effect_text`
   // n'est pas réécrit avec la notation [Keyword X] côté hero power.
@@ -444,15 +527,18 @@ function applyGrantCapability(
   targetMap: Record<string, string>,
 ) {
   const scope = cap.grantScope ?? "target";
-  const params = grantParamsFor(cap.abilityId, cap.params?.x, cap.params?.y);
+  // Chant majore l'amplitude de la capacité CONFÉRÉE (Conférer → Gloire +2/+1).
+  // Ce résolveur n'est appelé que depuis la phase 3 d'un sort : le drapeau ne
+  // peut donc pas fuir vers un don de créature.
+  const params = grantParamsFor(cap.abilityId, chanted(cap.abilityId, cap.params?.x), chanted(cap.abilityId, cap.params?.y));
   if (scope === "all_allies") {
-    for (const ally of owner.board) applyGrantedKeyword(ally, cap.abilityId, params);
+    for (const ally of owner.board) applyGrantedKeyword(ally, cap.abilityId, params, true);
     return;
   }
   const id = targetMap["grant_target"] ?? targetMap["kw_0"] ?? targetMap["target_0"];
   const target =
     id && id !== "enemy_hero" && id !== "friendly_hero" ? findCreatureOnBoard(owner, id) : null;
-  if (target) applyGrantedKeyword(target, cap.abilityId, params);
+  if (target) applyGrantedKeyword(target, cap.abilityId, params, true);
 }
 
 // ── Interpréteur d'effets composés (modèle hybride) ─────────────────────────
@@ -604,7 +690,7 @@ function applyComposedToUnit(
     case "bounce": resolveRemontee(u.instanceId, source?.instanceId ?? null, owner, opponent, fromSpell); break;
     case "grant_keyword":
       if (composed.grantAbilityId) {
-        applyGrantedKeyword(u, composed.grantAbilityId, grantParamsFor(composed.grantAbilityId, x, y));
+        applyGrantedKeyword(u, composed.grantAbilityId, grantParamsFor(composed.grantAbilityId, x, y), true);
       }
       break;
     default: break;
@@ -731,8 +817,14 @@ function resolveComposedEffect(
     sourceCard?: Card;
   },
 ): void {
-  const x = composed.magnitude?.x ?? 0;
-  const y = composed.magnitude?.y ?? 0;
+  // Chant : le bonus ne vaut QUE pour les effets du sort lui-même. La garde sur
+  // le déclencheur est load-bearing — `settleSpellDeaths` tourne à l'intérieur
+  // du `withChant`, si bien qu'un râle d'agonie déclenché par les dégâts du
+  // sort résout ses propres effets composés drapeau posé. Sans ce test, la
+  // capacité d'une créature tuée par le sort serait boostée elle aussi.
+  const chantX = opts?.trigger === "spell_resolution" ? chantBonus : 0;
+  const x = (composed.magnitude?.x ?? 0) + (composed.magnitude?.x != null ? chantX : 0);
+  const y = (composed.magnitude?.y ?? 0) + (composed.magnitude?.y != null ? chantX : 0);
 
   // Effets sur le contrôleur (sans ciblage d'entité)
   switch (composed.content) {
@@ -1720,6 +1812,10 @@ export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
       // Gloire accordait +1/+1 quelles que soient les valeurs du pouvoir.
       const params = grantParamsFor(aura.keywordId, aura.params?.amount, aura.params?.amountY);
       for (const ally of p.board) {
+        // PAS de réarmement ici : cette boucle retourne à chaque
+        // recalculateAuras. Réarmer une Ombre y renverrait l'unité dans
+        // l'ombre juste après son attaque, pour toujours (cf.
+        // rearmGrantedKeyword).
         applyGrantedKeyword(ally, aura.keywordId, params);
       }
     }
@@ -2100,6 +2196,17 @@ function applyConcentration(player: PlayerState, x: number, pool: Card[] | undef
 }
 
 export function endTurn(state: GameState): GameState {
+  // IDEMPOTENCE. Une fin de tour déjà EN PAUSE sur un choix ne doit jamais être
+  // relancée : `endTurn` reconstruit la file depuis zéro, donc un second
+  // `end_turn` rejouait TOUTE la séquence et ré-empilait ses déclencheurs
+  // (constaté : pending=1 → pending=2, effets de fin de tour doublés).
+  // La garde du store (« aucune action tant que pendingTriggers n'est pas
+  // vide ») ne suffit pas : elle n'est pas autoritaire, et le rejeu d'actions
+  // (gap-recovery, resync) entre directement ici.
+  if (state.endTurnPending) {
+    console.warn("[end-turn] end_turn ignoré : une fin de tour est déjà en pause sur un choix");
+    return state;
+  }
   const pool = state.factionCardPool;
   const allPool = state.allSpellsPool;
   const newState = cloneStateForAction(state);
@@ -2231,6 +2338,53 @@ function advanceEndOfTurn(newState: GameState): GameState {
   return finalizeEndOfTurn(newState);
 }
 
+/** Un déclencheur en attente offre-t-il ENCORE un choix au joueur ?
+ *
+ *  `advanceEndOfTurn` vérifie l'éligibilité AVANT d'empiler, mais les cibles
+ *  peuvent s'évaporer entre la mise en file et la résolution : un effet
+ *  automatique situé plus à droite dans la même file tue le dernier allié
+ *  éligible, une Sélection voit son pool disparaître… Le déclencheur devient
+ *  alors ORPHELIN — et c'était un blocage total : côté client
+ *  `pendingTriggerOverlay` n'a rien à proposer (aucune modale, aucun surlignage)
+ *  pendant que la garde de `dispatchAction` refuse en silence toute action tant
+ *  que la file n'est pas vide. Le plateau restait cliquable et inerte.
+ *
+ *  On le teste donc côté MOTEUR, seul endroit autoritaire, et les orphelins
+ *  sont purgés (cf. pruneUnresolvableTriggers). */
+function triggerIsResolvable(state: GameState, trigger: import("./types").PendingTrigger): boolean {
+  if (trigger.selectionType) {
+    const ids = new Set([
+      ...(state.factionCardPool ?? []).map(c => c.id),
+      ...(state.allSpellsPool ?? []).map(c => c.id),
+    ]);
+    return (trigger.selectionOptionIds ?? []).some(id => ids.has(id));
+  }
+  if (trigger.capUid) return endOfTurnTriggerTargets(state, trigger).length > 0;
+  if (trigger.kw) {
+    const controller = state.players.find(p => p.id === trigger.controllerId);
+    const other = state.players.find(p => p.id !== trigger.controllerId);
+    if (!controller || !other) return false;
+    return deferredKwTargetIds(trigger.kw, controller, other, trigger.sourceInstanceId).length > 0;
+  }
+  // Ni sélection, ni capacité, ni mot-clé : rien à demander au joueur. Le
+  // client n'en ferait rien non plus — on ne le garde pas en file.
+  return false;
+}
+
+/** Retire de la file les déclencheurs devenus insolubles. Retourne true si la
+ *  file a changé, pour que l'appelant relance la séquence. */
+function pruneUnresolvableTriggers(state: GameState): boolean {
+  const queue = state.pendingTriggers;
+  if (!queue || queue.length === 0) return false;
+  const kept = queue.filter(t => triggerIsResolvable(state, t));
+  if (kept.length === queue.length) return false;
+  for (const t of queue) {
+    if (!kept.includes(t)) console.warn(`[end-turn] déclencheur orphelin purgé (plus aucun choix possible) : ${t.id}`);
+  }
+  state.pendingTriggers = kept;
+  return true;
+}
+
 /** Finalise la fin de tour une fois TOUS les effets fin-de-tour traités :
  *  nettoyage des morts + râles d'agonie (deux camps), auras, victoire. Si des
  *  choix interactifs (ex. Remontée à la mort) restent, on diffère la bascule ;
@@ -2245,6 +2399,10 @@ function finalizeEndOfTurn(newState: GameState): GameState {
   recalculateAuras(outgoing, opponent);
   checkWinCondition(newState);
 
+  // Les râles d'agonie ci-dessus peuvent avoir empilé des choix devenus
+  // insolubles (leur cible est morte dans la même fournée). Différer la bascule
+  // sur un tel déclencheur, c'est bloquer la partie : on purge d'abord.
+  pruneUnresolvableTriggers(newState);
   if ((newState.pendingTriggers?.length ?? 0) > 0) {
     newState.endTurnPending = true;
     return newState;
@@ -2276,6 +2434,11 @@ function finishEndTurn(newState: GameState): GameState {
   }
 
   newState.currentPlayerIndex = newState.currentPlayerIndex === 0 ? 1 : 0;
+  // Trace de la SEULE bascule de tour du moteur. Le symptôme « le joueur rejoue
+  // un tour » n'a pas pu être reproduit hors partie : ce repère permet de voir,
+  // dans la console des deux clients, si la bascule part deux fois ou revient en
+  // arrière — et lequel des deux a divergé.
+  console.info(`[end-turn] bascule ${outgoing.id} → ${newState.players[newState.currentPlayerIndex].id} (tour ${newState.turnNumber})`);
   newState.lastAction = { type: "end_turn" };
   return startTurn(newState);
 }
@@ -3112,10 +3275,10 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
         // l'amplitude de la capacité CONFÉRÉE (Conférer → Gloire +2/+1).
         const params = grantParamsFor(abilityId, inst?.x, inst?.y);
         if (scope === "all_allies") {
-          for (const ally of player.board) applyGrantedKeyword(ally, abilityId, params);
+          for (const ally of player.board) applyGrantedKeyword(ally, abilityId, params, true);
         } else if (action.targetInstanceId) {
           const t = findCreatureOnBoard(player, action.targetInstanceId);
-          if (t) applyGrantedKeyword(t, abilityId, params);
+          if (t) applyGrantedKeyword(t, abilityId, params, true);
         }
       }
     }
@@ -3272,10 +3435,10 @@ function resolveSpellEffect(
       if (targetInstanceId && effect.keyword) {
         const target = findCreatureOnBoard(caster, targetInstanceId);
         if (target) {
-          if (effect.keyword === "divine_shield") target.hasDivineShield = true;
-          if (!target.card.keywords.includes(effect.keyword)) {
-            target.card = { ...target.card, keywords: [...target.card.keywords, effect.keyword] };
-          }
+          // Don PONCTUEL : passe par le chemin commun pour réarmer les
+          // capacités à usage (Ombre révélée, esquive dépensée…) au lieu de
+          // ne poser que le mot-clé.
+          applyGrantedKeyword(target, effect.keyword, undefined, true);
         }
       }
       break;
@@ -3509,11 +3672,14 @@ function castSpellWithRandomTargets(
 function spellResolutionInstances(card: Card): SpellKeywordInstance[] {
   return getCapabilities(card)
     .filter((c) => c.trigger === "spell_resolution" && c.effectKind === "immediate")
+    // `chanted` : Chant X majore ici les trois porteurs d'amplitude. Les couples
+    // X/Y ne passent pas tous par les mêmes champs — Renforcement utilise
+    // (attack, health), Déchainement (amount, health) — d'où les trois.
     .map((c) => ({
       id: c.abilityId as SpellKeywordInstance["id"],
-      amount: c.params?.x,
-      attack: c.params?.attack,
-      health: c.params?.health,
+      amount: chanted(c.abilityId, c.params?.x),
+      attack: chanted(c.abilityId, c.params?.attack),
+      health: chanted(c.abilityId, c.params?.health),
       race: c.race,
       clan: c.clan,
       token_id: c.tokenId ?? null,
@@ -3549,6 +3715,16 @@ function resolveSpellCard(
   // bouger pendant le sort (Incinération, pioche), la condition ne doit pas se
   // ré-évaluer en cours de route.
   const wrath = caster.deck.length <= SEUIL_DECK_THRESHOLD ? cardWrathAmount(card) : 0;
+  // Chant : même règle d'INSTANTANÉ que Seuil de colère, et pour une raison plus
+  // aiguë encore — un sort peut tuer sa propre chanteuse (Cataclysme frappe les
+  // deux camps). Ré-évaluer en cours de route retirerait le bonus au milieu de
+  // la résolution, avec des effets boostés avant et pas après.
+  //
+  // Ré-entrance : un sort imbriqué (Relancer, Déchainement) repasse par
+  // resolveSpellCard, pose SON propre bonus et restaure celui-ci en sortant. Un
+  // sort relancé sans Chant n'hérite donc de rien.
+  const chant = boardHasChanter(caster) ? cardChantAmount(card) : 0;
+  withChant(chant, () =>
   withWrathThreshold(wrath, () =>
   withLethalSpell(cardHasLethalTouch(card), () => {
     // Phase 1 — mots-clés de sort (règlent leurs morts effet par effet).
@@ -3584,7 +3760,7 @@ function resolveSpellCard(
     }
 
     recalculateAuras(caster, opponent);
-  }));
+  })));
   return ctx;
 }
 
@@ -4246,7 +4422,18 @@ function evaluateCondition(ctx: SpellResolutionContext, cond: SpellCondition): b
   }
 }
 
-function resolveAtomicEffect(ctx: SpellResolutionContext, effect: AtomicEffect): void {
+function resolveAtomicEffect(ctx: SpellResolutionContext, rawEffect: AtomicEffect): void {
+  // Chant majore les amplitudes ici plutôt qu'au fil des ~20 `case` : une copie
+  // boostée en tête, et tout le corps en dessous reste inchangé. Ce chemin
+  // n'est atteint que depuis la phase 2 d'un sort, jamais par une créature.
+  const effect: AtomicEffect = chantBonus > 0
+    ? {
+      ...rawEffect,
+      amount: chanted(rawEffect.type, rawEffect.amount),
+      attack: chanted(rawEffect.type, rawEffect.attack),
+      health: chanted(rawEffect.type, rawEffect.health),
+    }
+    : rawEffect;
   const targetId = effect.target_slot ? ctx.targetMap[effect.target_slot] : undefined;
 
   switch (effect.type) {
@@ -4318,10 +4505,10 @@ function resolveAtomicEffect(ctx: SpellResolutionContext, effect: AtomicEffect):
       if (targetId && effect.keyword) {
         const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
         if (target) {
-          if (effect.keyword === "divine_shield") target.hasDivineShield = true;
-          if (!target.card.keywords.includes(effect.keyword)) {
-            target.card = { ...target.card, keywords: [...target.card.keywords, effect.keyword] };
-          }
+          // Don PONCTUEL : passe par le chemin commun pour réarmer les
+          // capacités à usage (Ombre révélée, esquive dépensée…) au lieu de
+          // ne poser que le mot-clé.
+          applyGrantedKeyword(target, effect.keyword, undefined, true);
         }
       }
       break;
@@ -6942,6 +7129,8 @@ export function resolvePendingTrigger(state: GameState, action: ResolvePendingTr
   recalculateAuras(newState.players[0], newState.players[1]);
   newState.lastAction = action;
   checkWinCondition(newState);
+  // Le choix qui vient d'être tranché a pu vider le pool du choix SUIVANT.
+  pruneUnresolvableTriggers(newState);
 
   // Reprise de la séquence de fin de tour dans l'ordre strict du plateau : s'il
   // reste des effets fin-de-tour en file, on les traite (automatiques compris)
@@ -7061,45 +7250,63 @@ export function autoResolvePendingTriggers(state: GameState): GameState {
   // avant). Le garde borne la boucle (chaque itération retire ≥1 effet).
   newState.lastAction = { type: "auto_resolve_pending_triggers" };
   let guard = 0;
-  while ((newState.pendingTriggers?.length ?? 0) > 0 && guard++ < 500) {
-    const queue = newState.pendingTriggers ?? [];
-    newState.pendingTriggers = [];
+  pruneUnresolvableTriggers(newState);
+  // ⚠️ `st` est RÉASSIGNÉ : `advanceEndOfTurn` peut aboutir à `finishEndTurn`,
+  // qui termine par `return startTurn(...)` — et `startTurn` CLONE l'état.
+  // Ignorer ce retour (ce que faisait cette boucle) revenait à jeter tout le
+  // début de tour du joueur entrant : bascule d'index appliquée, mais NI
+  // incrément de tour, NI mana rechargé, NI pioche, NI purge des statuts, NI
+  // remise à zéro de `turnStartedAt`. Le joueur entrant héritait donc d'un
+  // chrono DÉJÀ expiré, rendait la main aussitôt, et le tour repartait au
+  // joueur précédent — le « il rejoue un tour, et encore, et encore »
+  // rapporté en partie (Esprit des Cauris Dispersés, renvoi en main au choix).
+  let st = newState;
+  while ((st.pendingTriggers?.length ?? 0) > 0 && guard++ < 500) {
+    const queue = st.pendingTriggers ?? [];
+    st.pendingTriggers = [];
     for (const trigger of queue) {
       let choice: { targetInstanceId?: string; selectionCardId?: number } = {};
       if (trigger.selectionType) {
         const opts = trigger.selectionOptionIds ?? [];
         if (opts.length > 0) choice = { selectionCardId: opts[Math.floor(rng() * opts.length)] };
       } else if (trigger.capUid) {
-        const targets = endOfTurnTriggerTargets(newState, trigger);
+        const targets = endOfTurnTriggerTargets(st, trigger);
         if (targets.length > 0) choice = { targetInstanceId: targets[Math.floor(rng() * targets.length)] };
       } else if (trigger.kw) {
         // Pool générique par mot-clé (Remontée, Impact, et tous les curés
         // ciblés du chantier multi-déclencheurs) — cf. deferredKwTargetIds.
-        const controller = newState.players.find(p => p.id === trigger.controllerId);
-        const other = newState.players.find(p => p.id !== trigger.controllerId);
+        const controller = st.players.find(p => p.id === trigger.controllerId);
+        const other = st.players.find(p => p.id !== trigger.controllerId);
         if (controller && other) {
           const targets = deferredKwTargetIds(trigger.kw, controller, other, trigger.sourceInstanceId);
           if (targets.length > 0) choice = { targetInstanceId: targets[Math.floor(rng() * targets.length)] };
         }
       }
-      applyOnePendingTrigger(newState, trigger, choice);
+      applyOnePendingTrigger(st, trigger, choice);
     }
-    recalculateAuras(newState.players[0], newState.players[1]);
-    checkWinCondition(newState);
+    recalculateAuras(st.players[0], st.players[1]);
+    checkWinCondition(st);
+    pruneUnresolvableTriggers(st);
     // Reprise de la file fin-de-tour : résout les automatiques suivants et met
     // éventuellement le prochain interactif en file (nouvelle itération) ou
     // finalise + bascule le tour (finishEndTurn).
-    if (newState.endTurnPending && newState.endOfTurnQueue !== undefined) {
-      advanceEndOfTurn(newState);
-    }
+    st = st.endTurnPending && st.endOfTurnQueue !== undefined
+      ? advanceEndOfTurn(st)
+      : st;
   }
 
-  // Sécurité : file d'effets épuisée mais bascule pas encore faite (queue de
-  // finalisation / Remontée mort vidée) → on termine le tour.
-  if (newState.endTurnPending && newState.endOfTurnQueue === undefined && (newState.pendingTriggers?.length ?? 0) === 0) {
-    return finishEndTurn(newState);
+  // Sécurité : plus aucun choix en attente mais la bascule n'est pas faite. Deux
+  // situations, et l'ancienne version n'en couvrait qu'une : `endOfTurnQueue`
+  // encore DÉFINIE (fût-elle vide) signifie qu'on est au milieu de la séquence
+  // d'effets — il faut la reprendre, pas la court-circuiter. Le test
+  // `=== undefined` ratait ce cas et laissait le tour en pause pour toujours dès
+  // que la file se vidait par PURGE plutôt que par résolution.
+  if (st.endTurnPending && (st.pendingTriggers?.length ?? 0) === 0) {
+    return st.endOfTurnQueue !== undefined
+      ? advanceEndOfTurn(st)
+      : finishEndTurn(st);
   }
-  return newState;
+  return st;
 }
 
 /** Whether the tap-mode activation of `kw` requires a target. Mirrors
@@ -7246,7 +7453,7 @@ export function useHeroPower(state: GameState, action: HeroPowerAction): GameSta
         findCreatureOnBoard(player, targetId)
         ?? findCreatureOnBoard(opponent, targetId);
       if (!target) break;
-      applyGrantedKeyword(target, effect.keywordId, effect.params);
+      applyGrantedKeyword(target, effect.keywordId, effect.params, true);
       break;
     }
 
@@ -7602,6 +7809,17 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   // par mode) émises pendant l'action.
   if (powerStrikeSink.length > 0 && result !== state) {
     result.powerStrikes = [...(result.powerStrikes ?? []), ...powerStrikeSink];
+  }
+  // Horloge du CHOIX en cours. Posée ici, au seul endroit qui voit TOUS les
+  // producteurs de déclencheurs (fin de tour, râle d'agonie, sort…), plutôt
+  // qu'à chaque site d'empilage. Remise à zéro dès que la tête de file change :
+  // chaque choix repart avec sa fenêtre pleine, y compris le 3ᵉ d'affilée.
+  // Heure murale locale, comme turnStartedAt — exclue du hash de synchro.
+  if (result !== state) {
+    const head = result.pendingTriggers?.[0]?.id;
+    const prevHead = state.pendingTriggers?.[0]?.id;
+    if (head && head !== prevHead) result.choiceStartedAt = Date.now();
+    else if (!head) result.choiceStartedAt = undefined;
   }
   // Persist the advanced RNG position into the returned state so the next
   // action (here or on the other client) resumes the same stream.

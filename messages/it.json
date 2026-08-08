@@ -89,6 +89,10 @@
         "label": "Risposta X",
         "desc": "Quando questa unità subisce danni, infligge X danni alla fonte dell'attacco (unità o eroe)."
       },
+      "chant": {
+        "label": "Canto",
+        "desc": "I tuoi incantesimi con Canto sono potenziati finché questa unità è in gioco."
+      },
       "rappel": {
         "label": "Richiamo",
         "desc": "Rimetti una carta bersaglio dal tuo cimitero alla tua mano."
@@ -479,6 +483,10 @@
         "label": "Soglia d'ira X",
         "desc": "Se il tuo mazzo contiene 25 carte o meno, questa magia infligge X danni aggiuntivi."
       },
+      "chant": {
+        "label": "Canto X",
+        "desc": "Se controlli una creatura con Canto, tutti gli X di questo incantesimo sono aumentati di X."
+      },
       "corruption": {
         "label": "Corruzione",
         "desc": "Converte l'unità nemica bersaglio al vostro schieramento fino alla fine del turno; guadagna Caccia."
@@ -694,11 +702,11 @@
         "count_all": "tutte le unità",
         "count_one": "un'unità",
         "count_n": "{n} unità",
+        "count_scatter": "al massimo {n} unità",
         "hero_ally": "il tuo eroe",
         "hero_enemy": "l'eroe avversario",
         "both_all": "tutte le unità e l'eroe {side}",
-        "both_one": "un bersaglio (unità o eroe){side}",
-        "count_scatter": "al massimo {n} unità"
+        "both_one": "un bersaglio (unità o eroe){side}"
       },
       "target": {
         "self": "a se stessa",
@@ -711,6 +719,7 @@
         "count_all": "a tutte le unità",
         "count_one": "a un'unità",
         "count_n": "a {n} unità",
+        "count_scatter": "ad al massimo {n} unità",
         "side_ally_one": "alleata",
         "side_ally_many": "alleate",
         "side_enemy_one": "nemica",
@@ -720,8 +729,7 @@
         "loc_graveyard": "dal cimitero",
         "des_random": "a caso",
         "des_automatic": "automaticamente",
-        "des_choice": "a scelta",
-        "count_scatter": "ad al massimo {n} unità"
+        "des_choice": "a scelta"
       },
       "scatter": {
         "action_damage": "infligge",
@@ -1602,6 +1610,7 @@
     "side_any": "Indifferente",
     "label_count": "NUMERO",
     "scatter_points_hint": "X ({x}) punti distribuiti casualmente nel pool",
+    "scatter_passes_hint": "{n} estrazioni con reinserimento → al massimo {n} bersagli distinti",
     "count_all": "Tutti",
     "label_location": "POSIZIONE",
     "location_board": "Campo",
@@ -1950,8 +1959,7 @@
     "card_added": "« {name} » aggiunta!",
     "unknown_error": "Errore sconosciuto",
     "illustration_generated": "Illustrazione generata ({model})",
-    "import_error": "Errore di importazione",
-    "scatter_passes_hint": "{n} estrazioni con reinserimento → al massimo {n} bersagli distinti"
+    "import_error": "Errore di importazione"
   },
   "game": {
     "error_not_authenticated": "Non autenticato",

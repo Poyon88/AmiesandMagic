@@ -89,6 +89,10 @@
         "label": "Riposte X",
         "desc": "Quando esta unidade sofre dano, causa X de dano à fonte do ataque (unidade ou herói)."
       },
+      "chant": {
+        "label": "Cântico",
+        "desc": "Seus feitiços com Canto são fortalecidos enquanto esta unidade estiver em jogo."
+      },
       "rappel": {
         "label": "Retorno",
         "desc": "Devolva uma carta alvo do seu cemitério para sua mão."
@@ -479,6 +483,10 @@
         "label": "Limiar de ira X",
         "desc": "Se o teu baralho tiver 25 cartas ou menos, este feitiço causa X de dano adicional."
       },
+      "chant": {
+        "label": "Canto X",
+        "desc": "Se você controla uma criatura com Canto, todos os X deste feitiço são aumentados em X."
+      },
       "corruption": {
         "label": "Corrupção",
         "desc": "Converte a unidade inimiga alvo para o seu lado até o final do turno; ela ganha Perseguição."
@@ -694,11 +702,11 @@
         "count_all": "todas as unidades",
         "count_one": "uma unidade",
         "count_n": "{n} unidades",
+        "count_scatter": "no máximo {n} unidades",
         "hero_ally": "seu herói",
         "hero_enemy": "o herói adversário",
         "both_all": "todas as unidades e o herói {side}",
-        "both_one": "um alvo (unidade ou herói){side}",
-        "count_scatter": "no máximo {n} unidades"
+        "both_one": "um alvo (unidade ou herói){side}"
       },
       "target": {
         "self": "a si mesma",
@@ -711,6 +719,7 @@
         "count_all": "a todas as unidades",
         "count_one": "a uma unidade",
         "count_n": "a {n} unidades",
+        "count_scatter": "a no máximo {n} unidades",
         "side_ally_one": "aliada",
         "side_ally_many": "aliadas",
         "side_enemy_one": "inimiga",
@@ -720,8 +729,7 @@
         "loc_graveyard": "do cemitério",
         "des_random": "aleatoriamente",
         "des_automatic": "automaticamente",
-        "des_choice": "à escolha",
-        "count_scatter": "a no máximo {n} unidades"
+        "des_choice": "à escolha"
       },
       "scatter": {
         "action_damage": "causa",
@@ -1602,6 +1610,7 @@
     "side_any": "Indiferente",
     "label_count": "QUANTIDADE",
     "scatter_points_hint": "X ({x}) pontos distribuídos aleatoriamente no pool",
+    "scatter_passes_hint": "{n} sorteios com reposição → no máximo {n} alvos distintos",
     "count_all": "Todos",
     "label_location": "LOCALIZAÇÃO",
     "location_board": "Tabuleiro",
@@ -1950,8 +1959,7 @@
     "card_added": "« {name} » adicionada!",
     "unknown_error": "Erro desconhecido",
     "illustration_generated": "Ilustração gerada ({model})",
-    "import_error": "Erro de importação",
-    "scatter_passes_hint": "{n} sorteios com reposição → no máximo {n} alvos distintos"
+    "import_error": "Erro de importação"
   },
   "game": {
     "error_not_authenticated": "Não autenticado",
