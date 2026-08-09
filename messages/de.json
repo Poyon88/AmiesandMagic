@@ -456,6 +456,10 @@
       "seuil_sacrificiel": {
         "label": "Opferschwelle +X/+Y",
         "desc": "Solange dein Deck 25 Karten oder weniger enthält, erhält diese Einheit +X ATK und +Y LP."
+      },
+      "purete": {
+        "label": "Reinheit +X/+Y",
+        "desc": "Solange euer Friedhof leer ist, erhält sie +X ATK und +Y LP."
       }
     },
     "spell_keywords": {
@@ -1661,6 +1665,7 @@
     "reset_button": "ZURÜCKSETZEN",
     "summon_sound": "Beschwörungston",
     "death_sound": "Todeston",
+    "exile_sound": "Klang der Verbannungskosten",
     "reroll": "Re-roll",
     "new_card": "Neue Karte",
     "illustration_prompt_label": "ILLUSTRATIONSANWEISUNG",
@@ -1965,8 +1970,7 @@
     "card_added": "„{name}\" hinzugefügt!",
     "unknown_error": "Unbekannter Fehler",
     "illustration_generated": "Illustration generiert ({model})",
-    "import_error": "Importfehler",
-    "exile_sound": "Klang der Verbannungskosten"
+    "import_error": "Importfehler"
   },
   "game": {
     "error_not_authenticated": "Nicht authentifiziert",

@@ -165,6 +165,8 @@ export default function CardEditor() {
   // que toute carte éditée ici repartait avec le défaut moteur (y = 1) — en
   // silence, puisque rien ne l'affichait.
   const [ssY, setSsY] = useState<number>(1);
+  // Pureté +X/+Y — miroir de Force des ancêtres (cimetière VIDE).
+  const [purY, setPurY] = useState<number>(1);
   // Invocations multiples : liste des coûts (une invocation par entrée).
   const [invocCosts, setInvocCosts] = useState<number[]>([]);
   const [invocRace, setInvocRace] = useState<string>("");
@@ -289,7 +291,7 @@ export default function CardEditor() {
     // sidecar; the effect_text bracket is the legacy fallback for X.
     const modes: Record<string, KeywordMode> = {};
     const grantScopes: Record<string, "all_allies"> = {};
-    let rmYLoaded = 1, rmRaceLoaded = "", rmClanLoaded = "", rfYLoaded = 1, afYLoaded = 1, glYLoaded = 1, dcYLoaded = 1, fdaYLoaded = 1, ssYLoaded = 1;
+    let rmYLoaded = 1, rmRaceLoaded = "", rmClanLoaded = "", rfYLoaded = 1, afYLoaded = 1, glYLoaded = 1, dcYLoaded = 1, fdaYLoaded = 1, ssYLoaded = 1, purYLoaded = 1;
     let invocCostsLoaded: number[] = [];
     let invocRaceLoaded = "", invocFactionLoaded = "";
     for (const inst of card.keyword_instances ?? []) {
@@ -305,13 +307,14 @@ export default function CardEditor() {
       if (inst.id === "dechainement") dcYLoaded = inst.y ?? 1;
       if (inst.id === "force_des_ancetres") fdaYLoaded = inst.y ?? 1;
       if (inst.id === "seuil_sacrificiel") ssYLoaded = inst.y ?? 1;
+      if (inst.id === "purete") purYLoaded = inst.y ?? 1;
       if (inst.id === "invocations_multiples") {
         invocCostsLoaded = inst.costs ?? [];
         invocRaceLoaded = inst.race ?? "";
         invocFactionLoaded = inst.faction ?? "";
       }
     }
-    setRmY(rmYLoaded); setRmRace(rmRaceLoaded); setRmClan(rmClanLoaded); setRfY(rfYLoaded); setAfY(afYLoaded); setGlY(glYLoaded); setDcY(dcYLoaded); setFdaY(fdaYLoaded); setSsY(ssYLoaded);
+    setRmY(rmYLoaded); setRmRace(rmRaceLoaded); setRmClan(rmClanLoaded); setRfY(rfYLoaded); setAfY(afYLoaded); setGlY(glYLoaded); setDcY(dcYLoaded); setFdaY(fdaYLoaded); setSsY(ssYLoaded); setPurY(purYLoaded);
     setInvocCosts(invocCostsLoaded); setInvocRace(invocRaceLoaded); setInvocFaction(invocFactionLoaded);
     setKeywordModes(modes);
     setKeywordXValues(parsedX);
@@ -494,6 +497,11 @@ export default function CardEditor() {
           if (id === "seuil_sacrificiel") {
             return { id: id as Keyword, ...(mode ? { mode } : {}), x: x ?? 1, y: ssY, ...(grantScope ? { grantScope } : {}) };
           }
+          // Pureté +X/+Y : même traitement que ses jumelles (sans garde
+          // !isSpellCard — un sort peut la conférer, son `y` doit survivre).
+          if (id === "purete") {
+            return { id: id as Keyword, ...(mode ? { mode } : {}), x: x ?? 1, y: purY, ...(grantScope ? { grantScope } : {}) };
+          }
           if (!mode && x == null && !grantScope) return null;
           return { id: id as Keyword, ...(mode ? { mode } : {}), ...(x != null ? { x } : {}), ...(grantScope ? { grantScope } : {}) };
         })
@@ -567,7 +575,7 @@ export default function CardEditor() {
       console.warn("[card-save] refresh failed after successful save:", err);
     }
     setSaving(false);
-  }, [selectedCard, editFields, newImageFile, keywordXValues, keywordModes, keywordGrantScope, rmY, rmRace, rmClan, rfY, afY, glY, dcY, fdaY, ssY, invocCosts, invocRace, invocFaction, composedCaps]);
+  }, [selectedCard, editFields, newImageFile, keywordXValues, keywordModes, keywordGrantScope, rmY, rmRace, rmClan, rfY, afY, glY, dcY, fdaY, ssY, purY, invocCosts, invocRace, invocFaction, composedCaps]);
 
   // Delete
   const handleDelete = useCallback(async (id: number) => {
@@ -1649,6 +1657,29 @@ export default function CardEditor() {
                   <input
                     type="number" min={0} max={20} value={ssY}
                     onChange={e => setSsY(Math.max(0, parseInt(e.target.value) || 0))}
+                    style={{ width: 48, padding: "2px 6px", borderRadius: 4, border: "1px solid #d9cfe8", fontSize: 11, textAlign: "center" }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Pureté — jumelle des deux blocs ci-dessus, condition inverse :
+                cimetière VIDE. Même piège, mêmes quatre morceaux (état,
+                chargement, sauvegarde, champ) — cf. xy-editor-coverage.test.ts. */}
+            {((editFields.keywords as string[]) || []).includes("purete") && (
+              <div style={{ marginBottom: 8, padding: "8px 10px", borderRadius: 6, border: "1px solid #d9cfe8", background: "#f8f4ff" }}>
+                <div style={{ ...S.label, color: "#6b4fa0", marginBottom: 6 }}>🕊️ PURETÉ (cimetière vide)</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 9, color: "#6b4fa0" }}>+ATK (X)</span>
+                  <input
+                    type="number" min={0} max={20} value={keywordXValues["purete"] ?? 1}
+                    onChange={e => setKeywordXValues(prev => ({ ...prev, ["purete"]: Math.max(0, Math.min(20, parseInt(e.target.value) || 0)) }))}
+                    style={{ width: 48, padding: "2px 6px", borderRadius: 4, border: "1px solid #d9cfe8", fontSize: 11, textAlign: "center" }}
+                  />
+                  <span style={{ fontSize: 9, color: "#6b4fa0" }}>+PV (Y)</span>
+                  <input
+                    type="number" min={0} max={20} value={purY}
+                    onChange={e => setPurY(Math.max(0, parseInt(e.target.value) || 0))}
                     style={{ width: 48, padding: "2px 6px", borderRadius: 4, border: "1px solid #d9cfe8", fontSize: 11, textAlign: "center" }}
                   />
                 </div>

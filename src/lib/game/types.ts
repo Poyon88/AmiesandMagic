@@ -47,6 +47,8 @@ export type Keyword =
   | "dechainement"
   // Passive aura — +X ATK / +Y PV while the owner's graveyard holds ≥7 creatures
   | "force_des_ancetres"
+  // Miroir du précédent : +X/+Y tant que le cimetière du contrôleur est VIDE.
+  | "purete"
   // Passive aura — +X ATK / +Y PV while the owner's DECK is down to the
   // threshold (SEUIL_DECK_THRESHOLD). Jumelle de force_des_ancetres, mais
   // adossée à la bibliothèque plutôt qu'au cimetière.
@@ -762,6 +764,10 @@ export interface CardInstance {
    *  `forceAncetresHealthBonus`. Optionnel : les instances sérialisées avant
    *  l'ajout du champ n'en disposent pas (lire avec ?? 0). */
   seuilSacrificielHealthBonus?: number;
+  /** Bonus de PV de Pureté, même comptabilité par différentiel que
+   *  `forceAncetresHealthBonus`. Optionnel : les instances sérialisées avant
+   *  l'ajout du champ n'en disposent pas (lire avec ?? 0). */
+  pureteHealthBonus?: number;
   // Nécrophagie: permanent buff tracker
   necrophagieATKBonus: number;
   necrophagiePVBonus: number;

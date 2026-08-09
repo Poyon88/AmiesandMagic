@@ -46,6 +46,7 @@ const GLOW_PALETTE: ReadonlyArray<{
 }> = [
   { abilityId: "force_des_ancetres", rgb: "168, 85, 247", label: "Force des ancêtres", benefitsOn: "creature" }, // violet spectral (cimetière)
   { abilityId: "seuil_sacrificiel", rgb: "190, 49, 68", label: "Seuil Sacrificiel", benefitsOn: "creature" },     // rouge sombre (deck qui s'épuise)
+  { abilityId: "purete", rgb: "236, 240, 245", label: "Pureté", benefitsOn: "creature" },                          // blanc nacré (cimetière intact)
   { abilityId: "seuil_colere", rgb: "232, 122, 24", label: "Seuil de colère", benefitsOn: "spell" },              // orange braise
   { abilityId: "chant", rgb: "23, 182, 196", label: "Chant", benefitsOn: "spell" },                               // cyan — teinte déjà associée à Chant
 ];
@@ -69,6 +70,11 @@ function conditionMet(abilityId: string, owner: PlayerState): boolean {
     // Prédicat du moteur, réutilisé tel quel (chanteuse vivante, côté lanceur).
     case "chant":
       return boardHasChanter(owner);
+    // « Vide » au sens STRICT — sorts compris, pas seulement les créatures.
+    // C'est ce qui distingue Pureté d'un seuil bas, et le halo doit dire la
+    // même chose que le moteur (cf. recalculateAuras).
+    case "purete":
+      return owner.graveyard.length === 0;
     default:
       return false;
   }

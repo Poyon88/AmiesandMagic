@@ -14,6 +14,9 @@ class AudioEngine {
   private fadeTimer: ReturnType<typeof setInterval> | null = null;
 
   private _volume = 0.5;
+  /** Pause DÉLIBÉRÉE (alerte du chrono), à distinguer d'un élément simplement
+   *  arrêté. Tant qu'elle dure, rien ne doit relancer la musique de soi-même. */
+  private _paused = false;
   private _muted = false;
   private _currentUrl = "";
   private _playlist: string[] = [];
@@ -48,8 +51,14 @@ class AudioEngine {
     this.clearPlaylist();
     const loop = options?.loop ?? true;
 
-    // Already playing this track
-    if (this._currentUrl === url && !this.activeElement.paused) return;
+    // Déjà sur ce morceau : ne rien faire. Le `_paused` couvre le cas d'une
+    // musique volontairement coupée par l'alerte du chrono — la relancer ici la
+    // ressusciterait au premier re-rendu du pilote audio.
+    if (this._currentUrl === url && (!this.activeElement.paused || this._paused)) return;
+
+    // Changement RÉEL de morceau (contexte victoire/défaite, bascule tendue…) :
+    // il prime sur la coupure du chrono, sinon la fin de partie resterait muette.
+    this._paused = false;
 
     if (!this.activeElement.paused && options?.fadeIn !== false) {
       this.crossfadeTo(url, loop);
@@ -89,7 +98,11 @@ class AudioEngine {
     const same =
       this._playlist.length === unique.length &&
       this._playlist.every((u, i) => u === unique[i]);
-    if (same && !this.activeElement.paused) return;
+    // Même playlist déjà en place : ne rien faire. Le test portait sur
+    // `!paused`, si bien qu'une playlist volontairement mise en pause par
+    // l'alerte du chrono était RELANCÉE — sur un autre morceau tiré au hasard —
+    // au premier re-rendu du pilote audio.
+    if (same && (!this.activeElement.paused || this._paused)) return;
 
     this._playlist = unique;
     const first = this.pickNext();
@@ -194,6 +207,9 @@ class AudioEngine {
   stopMusic(fadeOut = true) {
     this.clearPlaylist();
     this.stopFade();
+    // Arrêt explicite : la coupure du chrono n'a plus lieu d'être, et une
+    // lecture ultérieure ne doit pas être bloquée par un drapeau périmé.
+    this._paused = false;
 
     if (!fadeOut || this.activeElement.paused) {
       this._currentUrl = "";
@@ -242,7 +258,12 @@ class AudioEngine {
    * continue where we left off. No fade — meant for short dramatic silences.
    */
   pause() {
-    this.stopFade();
+    // Un fondu enchaîné fait jouer les DEUX éléments à la fois. `stopFade()`
+    // ne coupe que le minuteur : sans finir la bascule, on ne mettait en pause
+    // que le morceau SORTANT et l'entrant continuait — l'alerte des 15 s ne
+    // faisait alors pas taire la musique du plateau.
+    this.finishFadeNow();
+    this._paused = true;
     this.activeElement.pause();
   }
 
@@ -250,9 +271,31 @@ class AudioEngine {
    * Resume a paused track. Does nothing if no track is loaded.
    */
   resume() {
+    this._paused = false;
     if (!this.activeElement.src) return;
     this.applyVolume(this.activeElement);
     this.activeElement.play().catch(() => {});
+  }
+
+  /** La musique est-elle en pause DÉLIBÉRÉE (alerte du chrono) ? Distinct d'un
+   *  `activeElement.paused` fortuit : c'est ce qui permet de ne pas la faire
+   *  repartir toute seule. */
+  get isDucked(): boolean {
+    return this._paused;
+  }
+
+  /** Termine immédiatement un fondu en cours : le morceau ENTRANT devient
+   *  l'actif, le sortant est coupé. Sans ça, toute opération qui ne touche que
+   *  `activeElement` (pause, volume) rate la moitié du son en vol. */
+  private finishFadeNow() {
+    if (!this.fadeTimer) return;
+    this.stopFade();
+    this.activeElement.pause();
+    this.activeElement.src = "";
+    const tmp = this.activeElement;
+    this.activeElement = this.nextElement;
+    this.nextElement = tmp;
+    this.applyVolume(this.activeElement);
   }
 
   get currentSrc(): string {

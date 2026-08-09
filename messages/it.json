@@ -456,6 +456,10 @@
       "seuil_sacrificiel": {
         "label": "Soglia sacrificale +X/+Y",
         "desc": "Finché il tuo mazzo contiene 25 carte o meno, guadagna +X ATK e +Y PV."
+      },
+      "purete": {
+        "label": "Purezza +X/+Y",
+        "desc": "Finché il vostro cimitero è vuoto, guadagna +X ATK e +Y PV."
       }
     },
     "spell_keywords": {
@@ -1661,6 +1665,7 @@
     "reset_button": "REIMPOSTA",
     "summon_sound": "Suono di evocazione",
     "death_sound": "Suono di morte",
+    "exile_sound": "Suono del costo di esilio",
     "reroll": "Re-roll",
     "new_card": "Nuova carta",
     "illustration_prompt_label": "PROMPT ILLUSTRAZIONE",
@@ -1965,8 +1970,7 @@
     "card_added": "« {name} » aggiunta!",
     "unknown_error": "Errore sconosciuto",
     "illustration_generated": "Illustrazione generata ({model})",
-    "import_error": "Errore di importazione",
-    "exile_sound": "Suono del costo di esilio"
+    "import_error": "Errore di importazione"
   },
   "game": {
     "error_not_authenticated": "Non autenticato",

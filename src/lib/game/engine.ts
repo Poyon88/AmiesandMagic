@@ -1517,6 +1517,7 @@ function stripBoostsToBase(inst: CardInstance): void {
     + inst.auraHealthBonus
     + inst.sangMeleHealthBonus
     + (inst.forceAncetresHealthBonus ?? 0)
+    + (inst.pureteHealthBonus ?? 0)
     + (inst.seuilSacrificielHealthBonus ?? 0);
   inst.currentHealth = Math.min(inst.currentHealth, inst.maxHealth);
 }
@@ -1751,6 +1752,14 @@ function forceAncetresValues(inst: CardInstance): { x: number; y: number } {
   return { x: Math.max(0, x), y: Math.max(0, y) };
 }
 
+/** X/Y de Pureté : instance de mot-clé → valeurs conférées → 1/1. */
+function pureteValues(inst: CardInstance): { x: number; y: number } {
+  const kwInst = inst.card.keyword_instances?.find(i => i.id === "purete");
+  const x = kwInst?.x ?? inst.grantedKeywordX["purete"] ?? 1;
+  const y = kwInst?.y ?? inst.grantedKeywordY?.["purete"] ?? 1;
+  return { x: Math.max(0, x), y: Math.max(0, y) };
+}
+
 /** X/Y de Seuil Sacrificiel : instance de mot-clé → valeurs conférées → 1/1. */
 function seuilSacrificielValues(inst: CardInstance): { x: number; y: number } {
   const kwInst = inst.card.keyword_instances?.find(i => i.id === "seuil_sacrificiel");
@@ -1933,6 +1942,31 @@ export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
         c.currentHealth += diff;
         if (c.currentHealth < 1 && y < oldHP) c.currentHealth = 1; // don't kill via aura removal
         c.forceAncetresHealthBonus = y;
+      }
+    }
+  }
+
+  // Pureté +X/+Y : miroir de Force des ancêtres — le bonus tient tant que le
+  // cimetière du propriétaire est VIDE, et tombe à la première carte qui y
+  // arrive. « Vide » au sens strict : sorts compris, pas seulement les
+  // créatures — c'est ce qui distingue Pureté d'un simple seuil bas.
+  // Même comptabilité par différentiel que sa jumelle : l'ATK est ré-ajoutée ici
+  // (reset en tête de fonction), les PV suivent via `pureteHealthBonus` pour
+  // monter ET redescendre, avec la garde « ne pas tuer par retrait d'aura ».
+  for (const board of [player.board, opponent.board]) {
+    const owner = board === player.board ? player : opponent;
+    const conditionMet = owner.graveyard.length === 0;
+    for (const c of board) {
+      const active = conditionMet && hasKw(c, "purete");
+      const { x, y } = active ? pureteValues(c) : { x: 0, y: 0 };
+      if (x > 0) c.currentAttack += x;
+      const oldHP = c.pureteHealthBonus ?? 0;
+      if (y !== oldHP) {
+        const diff = y - oldHP;
+        c.maxHealth += diff;
+        c.currentHealth += diff;
+        if (c.currentHealth < 1 && y < oldHP) c.currentHealth = 1; // don't kill via aura removal
+        c.pureteHealthBonus = y;
       }
     }
   }

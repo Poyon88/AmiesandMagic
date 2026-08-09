@@ -456,6 +456,10 @@
       "seuil_sacrificiel": {
         "label": "Limiar de sacrifício +X/+Y",
         "desc": "Enquanto o teu baralho tiver 25 cartas ou menos, ganha +X ATK e +Y PV."
+      },
+      "purete": {
+        "label": "Pureza +X/+Y",
+        "desc": "Enquanto seu cemitério estiver vazio, ganha +X ATK e +Y PV."
       }
     },
     "spell_keywords": {
@@ -1661,6 +1665,7 @@
     "reset_button": "REDEFINIR",
     "summon_sound": "Som de invocação",
     "death_sound": "Som de morte",
+    "exile_sound": "Som do custo de exílio",
     "reroll": "Re-roll",
     "new_card": "Nova carta",
     "illustration_prompt_label": "PROMPT DE ILUSTRAÇÃO",
@@ -1965,8 +1970,7 @@
     "card_added": "« {name} » adicionada!",
     "unknown_error": "Erro desconhecido",
     "illustration_generated": "Ilustração gerada ({model})",
-    "import_error": "Erro de importação",
-    "exile_sound": "Som do custo de exílio"
+    "import_error": "Erro de importação"
   },
   "game": {
     "error_not_authenticated": "Não autenticado",

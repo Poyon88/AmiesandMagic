@@ -456,6 +456,10 @@
       "seuil_sacrificiel": {
         "label": "牺牲阈值 +X/+Y",
         "desc": "只要你的牌库中有25张或更少的牌，便获得+X攻击力和+Y生命值。"
+      },
+      "purete": {
+        "label": "纯净 +X/+Y",
+        "desc": "只要你的墓地为空，获得+X攻击力和+Y生命值。"
       }
     },
     "spell_keywords": {
@@ -1661,6 +1665,7 @@
     "reset_button": "重置",
     "summon_sound": "召唤音效",
     "death_sound": "死亡音效",
+    "exile_sound": "放逐消耗音效",
     "reroll": "重新随机",
     "new_card": "新卡牌",
     "illustration_prompt_label": "插图提示词",
@@ -1965,8 +1970,7 @@
     "card_added": "「{name}」已添加！",
     "unknown_error": "未知错误",
     "illustration_generated": "插图已生成（{model}）",
-    "import_error": "导入错误",
-    "exile_sound": "放逐消耗音效"
+    "import_error": "导入错误"
   },
   "game": {
     "error_not_authenticated": "未登录",

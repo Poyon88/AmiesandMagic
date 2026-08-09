@@ -456,6 +456,10 @@
       "seuil_sacrificiel": {
         "label": "犠牲の閾値 +X/+Y",
         "desc": "自分のデッキが25枚以下である限り、+X ATKと+Y PVを得る。"
+      },
+      "purete": {
+        "label": "純粋 +X/+Y",
+        "desc": "自分の墓地が空である限り、+X ATKと+Y HPを得る。"
       }
     },
     "spell_keywords": {
@@ -1661,6 +1665,7 @@
     "reset_button": "リセット",
     "summon_sound": "召喚音",
     "death_sound": "死亡音",
+    "exile_sound": "除外コストの音",
     "reroll": "リロール",
     "new_card": "新しいカード",
     "illustration_prompt_label": "イラストプロンプト",
@@ -1965,8 +1970,7 @@
     "card_added": "「{name}」を追加しました！",
     "unknown_error": "不明なエラー",
     "illustration_generated": "イラストを生成しました（{model}）",
-    "import_error": "インポートエラー",
-    "exile_sound": "除外コストの音"
+    "import_error": "インポートエラー"
   },
   "game": {
     "error_not_authenticated": "未認証",

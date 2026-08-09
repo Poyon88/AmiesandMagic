@@ -456,6 +456,10 @@
       "seuil_sacrificiel": {
         "label": "Umbral de sacrificio +X/+Y",
         "desc": "Mientras tu mazo tenga 25 cartas o menos, gana +X ATK y +Y PV."
+      },
+      "purete": {
+        "label": "Pureza +X/+Y",
+        "desc": "Mientras tu cementerio esté vacío, gana +X ATK y +Y PV."
       }
     },
     "spell_keywords": {
@@ -1661,6 +1665,7 @@
     "reset_button": "RESTABLECER",
     "summon_sound": "Sonido de invocación",
     "death_sound": "Sonido de muerte",
+    "exile_sound": "Sonido del coste de exilio",
     "reroll": "Re-roll",
     "new_card": "Nueva carta",
     "illustration_prompt_label": "PROMPT DE ILUSTRACIÓN",
@@ -1965,8 +1970,7 @@
     "card_added": "¡«{name}» añadida!",
     "unknown_error": "Error desconocido",
     "illustration_generated": "Ilustración generada ({model})",
-    "import_error": "Error de importación",
-    "exile_sound": "Sonido del coste de exilio"
+    "import_error": "Error de importación"
   },
   "game": {
     "error_not_authenticated": "No autenticado",

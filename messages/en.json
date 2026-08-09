@@ -456,6 +456,10 @@
       "seuil_sacrificiel": {
         "label": "Sacrificial Threshold +X/+Y",
         "desc": "While your deck holds 25 cards or fewer, gains +X ATK and +Y HP."
+      },
+      "purete": {
+        "label": "Purity +X/+Y",
+        "desc": "While your graveyard is empty, gains +X ATK and +Y HP."
       }
     },
     "spell_keywords": {
@@ -1661,6 +1665,7 @@
     "reset_button": "RESET",
     "summon_sound": "Summon Sound",
     "death_sound": "Death Sound",
+    "exile_sound": "Exile cost sound",
     "reroll": "Reroll",
     "new_card": "New Card",
     "illustration_prompt_label": "ILLUSTRATION PROMPT",
@@ -1965,8 +1970,7 @@
     "card_added": "\"{name}\" added!",
     "unknown_error": "Unknown error",
     "illustration_generated": "Illustration generated ({model})",
-    "import_error": "Import error",
-    "exile_sound": "Exile cost sound"
+    "import_error": "Import error"
   },
   "game": {
     "error_not_authenticated": "Not authenticated",

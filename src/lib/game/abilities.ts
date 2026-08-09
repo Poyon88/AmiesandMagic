@@ -398,6 +398,17 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["creature"],
     creature: { cost: 10, costPerX: 4, se: 2.5, minTier: 1, scalable: true, zone: "Cimetière" },
   },
+  // Miroir de Force des ancêtres : celle-ci récompense un cimetière PLEIN,
+  // Pureté un cimetière intact. Condition volontairement stricte — cimetière
+  // littéralement vide, sorts compris : « pur » ne se négocie pas, et un seuil
+  // (« moins de N ») en ferait une troisième variante de Force des ancêtres.
+  // Se rompt donc à la première perte, ce qui est tout son propos.
+  purete: {
+    id: "purete", label: "Pureté +X/+Y", symbol: "🕊️",
+    desc: "Tant que votre cimetière est vide, gagne +X ATK et +Y PV.",
+    applicable_to: ["creature"],
+    creature: { cost: 9, costPerX: 4, se: 2.5, minTier: 1, scalable: true, zone: "Cimetière" },
+  },
   // Jumelle de Force des ancêtres, adossée au DECK plutôt qu'au cimetière. Le
   // libellé doit garder la forme « +X/+Y » : XY_ABILITY_IDS est dérivé d'une
   // regex sur ce marqueur, et c'est lui qui fait apparaître les deux champs
@@ -1456,7 +1467,7 @@ export const DEATH_NATURE_IDS: ReadonlySet<string> = new Set([
 export const AUTOMATIC_ABILITY_IDS: ReadonlySet<string> = new Set([
   // Auras / présence continue
   "terreur", "commandement", "fierte_du_clan", "sang_mele", "totem", "pauvrete",
-  "force_des_ancetres", "seuil_sacrificiel",
+  "force_des_ancetres", "seuil_sacrificiel", "purete",
   // Chant côté créature : présence continue pure. Aucun effet propre, aucun
   // déclencheur — le moteur la cherche par `hasKw` au moment où un sort Chant
   // se résout. Sa place ici la rend aussi authorable sur un token, ce qui est

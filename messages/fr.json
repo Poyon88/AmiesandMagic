@@ -453,6 +453,10 @@
         "label": "Force des ancêtres +X/+Y",
         "desc": "Tant que votre cimetière compte 7 créatures ou plus, gagne +X ATK et +Y PV."
       },
+      "purete": {
+        "label": "Pureté +X/+Y",
+        "desc": "Tant que votre cimetière est vide, gagne +X ATK et +Y PV."
+      },
       "seuil_sacrificiel": {
         "label": "Seuil Sacrificiel +X/+Y",
         "desc": "Tant que votre deck compte 25 cartes ou moins, gagne +X ATK et +Y PV."
