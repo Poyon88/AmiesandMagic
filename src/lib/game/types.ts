@@ -881,6 +881,9 @@ export interface HeroDefinition {
   glbUrl?: string | null;
   thumbnailUrl?: string | null;
   powerImageUrl?: string | null;
+  /** Bruitage du pouvoir de CE héros. Absent ⇒ repli sur le son global
+   *  `hero_power`, commun à tous les héros. */
+  powerSfxUrl?: string | null;
 }
 
 // One active aura instance on a hero, set when mode === "aura" is activated.
@@ -1019,6 +1022,16 @@ export interface GameState {
   drawTriggerEvents?: Array<{
     card: Card;
     ownerId: string;
+  }>;
+  // Transient : capacités NOMMÉES ayant résolu pendant l'action, avec leur
+  // déclencheur. Le store en tire un bruitage par capacité (table
+  // `keyword_sfx`) ; le déclencheur décide de la phase d'animation où le son
+  // s'enchaîne — après le son de pose pour une entrée en jeu, après le son de
+  // mort pour un râle d'agonie, jamais par-dessus.
+  // Vidé par le store après planification ; exclu du hash d'état.
+  abilitySfxEvents?: Array<{
+    abilityId: string;
+    trigger: CapabilityTrigger;
   }>;
   // Transient: chaque dégât infligé par un effet composé DÉCLENCHÉ (mort/retour/
   // attaque/fin de tour — PAS tap/on-play) est poussé ici {source, cible, mode}

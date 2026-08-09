@@ -98,6 +98,23 @@ let damageLedgerSink: Array<{ targetInstanceId: string; amount: number }> = [];
 // dégâts surgir de nulle part. Le store la révèle comme un sort lancé.
 // Vidé au début d'applyAction, rattaché à state.drawTriggerEvents ; hors hash.
 let drawTriggerSink: Array<{ card: Card; ownerId: string }> = [];
+// Capacités NOMMÉES qui ont réellement résolu pendant l'action, avec leur
+// déclencheur. Le store en tire un bruitage par capacité (table `keyword_sfx`),
+// et le `trigger` décide de la PHASE d'animation où le son s'enchaîne — après
+// le son de pose pour une entrée en jeu, après le son de mort pour un râle.
+//
+// Les effets composés sur mesure (`abilityId === "_composed"`) sont volontairement
+// ABSENTS : ils n'ont pas d'ability nommée, et leur donner le son de leur contenu
+// ferait sonner deux mécaniques différentes à l'identique.
+// Vidé au début d'applyAction, rattaché à state.abilitySfxEvents ; hors hash.
+let abilitySfxSink: Array<{ abilityId: string; trigger: import("./types").CapabilityTrigger }> = [];
+/** Signale qu'une capacité nommée vient de résoudre. Dédoublonné par
+ *  (id, déclencheur) : deux Tempête dans la même action ne sonnent qu'une fois. */
+function noteAbilitySfx(abilityId: string, trigger: import("./types").CapabilityTrigger): void {
+  if (!abilityId || abilityId === "_composed") return;
+  if (abilitySfxSink.some(e => e.abilityId === abilityId && e.trigger === trigger)) return;
+  abilitySfxSink.push({ abilityId, trigger });
+}
 // Flèches source→cible des dégâts de pouvoir DÉCLENCHÉS (mort/retour/attaque/fin
 // de tour). Rempli via l'enregistrement dans resolveComposedEffect, en lisant le
 // « mode » ambiant posé autour de chaque résolution de capacité (cf.
@@ -199,7 +216,7 @@ function cardChantAmount(card: Card): number {
 }
 /** Le camp tient-il une chanteuse VIVANTE en jeu ? Binaire : le nombre de
  *  chanteuses n'entre pas dans le calcul. */
-function boardHasChanter(p: PlayerState): boolean {
+export function boardHasChanter(p: PlayerState): boolean {
   return p.board.some(c => hasKw(c, "chant") && c.currentHealth > 0);
 }
 /** Bonus de Chant d'un sort AVANT sa résolution, calculé depuis l'état seul.
@@ -1103,6 +1120,23 @@ function resolveComposedEffect(
   }
 }
 
+/** Mode d'une instance de mot-clé → déclencheur. Inverse de
+ *  `triggerToKeywordMode`. Mode absent ⇒ "on_activation" : `resolveCuratedKeywordEffect`
+ *  n'est atteint que par les déclencheurs curés HORS entrée en jeu (l'on-play a
+ *  ses propres blocs en ligne dans playCard), et le tap est leur cas par défaut. */
+function keywordModeToTrigger(mode: import("./types").KeywordMode | undefined): import("./types").CapabilityTrigger {
+  switch (mode) {
+    case "death": return "on_death";
+    case "return": return "on_return";
+    case "attack": return "on_attack";
+    case "end_of_turn": return "on_end_of_turn";
+    case "draw": return "on_draw";
+    case "entry": return "on_play";
+    case "spell": return "spell_resolution";
+    default: return "on_activation";
+  }
+}
+
 /** Déclencheur → mode couleur (miroir de composedTriggerMode, gardé local pour
  *  éviter un import croisé). on_play / spell_resolution → undefined (pas de
  *  flèche). */
@@ -1133,6 +1167,9 @@ function runComposedCapsForCard(
 ): void {
   for (const cap of getCapabilities(card)) {
     if (!cap.composed || cap.trigger !== trigger) continue;
+    // no-op pour les effets sur mesure (`_composed`), qui n'ont pas d'ability
+    // nommée — cf. noteAbilitySfx.
+    noteAbilitySfx(cap.abilityId, trigger);
     let chosen: string[] | undefined;
     if (targetMap) {
       // Multi-cibles : slots `${uid}#0`, `${uid}#1`, … ; sinon slot unique `${uid}`.
@@ -3294,6 +3331,20 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       }
     }
 
+    // Bruitage des capacités CURÉES à l'entrée en jeu. Émis ici, en un point,
+    // plutôt qu'aux ~40 blocs `if (hasKwOnPlay(...))` qui précèdent : ils n'ont
+    // aucun point de passage commun, et quarante sites à tenir d'accord est
+    // exactement le motif d'inventaire dupliqué qui a déjà dérivé plusieurs fois
+    // ici. On balaie donc les capacités déclarées on_play de la carte.
+    //
+    // Nuance ASSUMÉE : une capacité qui fizzle (aucune cible, plateau plein…)
+    // sonnera quand même. Pour un bruitage, le faux positif est préférable au
+    // silence — et l'alternative coûterait quarante instrumentations.
+    // Les composés sont exclus ici : ils sonnent depuis buildComposedFrames.
+    for (const cap of getCapabilities(cardInstance.card)) {
+      if (cap.trigger === "on_play" && !cap.composed) noteAbilitySfx(cap.abilityId, "on_play");
+    }
+
     // Effets composés à l'entrée en jeu (modèle hybride) → pile LIFO. Un effet
     // poussé pendant la résolution (ex. mort déclenchée par un dégât on_play) se
     // résout avant la frame sœur suivante (interruption). Les morts sont
@@ -3857,6 +3908,7 @@ function resolveSpellKeywords(
     const kw = keywords[i];
     const def = SPELL_KEYWORDS[kw.id];
     if (!def) continue;
+    noteAbilitySfx(kw.id, "spell_resolution");
     // Resolve target: use keyword's implicit slot or first target slot
     const slot = def.needsTarget ? `kw_${i}` : undefined;
     const targetId = slot ? (ctx.targetMap[slot] ?? ctx.targetMap["target_0"]) : undefined;
@@ -5859,6 +5911,8 @@ function buildComposedFrames(
   let seq = 0;
   for (const cap of getCapabilities(card)) {
     if (!cap.composed || cap.trigger !== trigger) continue;
+    // Chemin pile LIFO : mêmes capacités, autre mécanique d'exécution.
+    noteAbilitySfx(cap.abilityId, trigger);
     let chosen: string[] | undefined;
     if (targetMap) {
       const multi: string[] = [];
@@ -6239,6 +6293,11 @@ function resolveCuratedKeywordEffect(
   targetInstanceId?: string,
   inst?: KeywordInstance,
 ): void {
+  // Bruitage de la capacité. Ici plutôt qu'aux 9 appelants : ce résolveur est le
+  // point de passage de TOUS les déclencheurs curés hors entrée en jeu (tap,
+  // mort, retour, fin de tour, attaque, pioche). `inst.mode` porte le
+  // déclencheur réel.
+  noteAbilitySfx(kw, keywordModeToTrigger(inst?.mode));
   switch (kw) {
     case "renforcement_multiple": {
       // Tap / mort / retour : lit +X/+Y et race/clan depuis l'instance du mot-clé.
@@ -7763,6 +7822,7 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   sequentialHitsSink = [];
   damageLedgerSink = [];
   drawTriggerSink = [];
+  abilitySfxSink = [];
   lethalSpellActive = false;
   powerStrikeSink = [];
   composedStrikeMode = undefined;
@@ -7820,6 +7880,10 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   // pioche, pour que le store les révèle comme des sorts lancés.
   if (drawTriggerSink.length > 0 && result !== state) {
     result.drawTriggerEvents = [...(result.drawTriggerEvents ?? []), ...drawTriggerSink];
+  }
+  // Rattache les capacités qui ont sonné (bruitage par capacité).
+  if (abilitySfxSink.length > 0 && result !== state) {
+    result.abilitySfxEvents = [...(result.abilitySfxEvents ?? []), ...abilitySfxSink];
   }
   // Rattache les frappes de pouvoir déclenchées (flèches source→cible colorées
   // par mode) émises pendant l'action.

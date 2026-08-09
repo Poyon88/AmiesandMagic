@@ -196,6 +196,7 @@ export async function POST(request: Request) {
       glbBase64, glbMimeType, glbUrl,
       thumbnailBase64, thumbnailMimeType,
       powerImageBase64, powerImageMimeType,
+      powerSfxBase64, powerSfxMimeType,
       rarity, max_prints, is_default, is_active,
     } = body as Record<string, unknown>;
 
@@ -237,6 +238,15 @@ export async function POST(request: Request) {
       );
     }
 
+    // Bruitage du pouvoir : bucket `sfx-tracks` comme tous les autres sons, et
+    // non `hero-models` — c'est de l'audio, pas un visuel de héros.
+    let finalPowerSfxUrl: string | null = null;
+    if (typeof powerSfxBase64 === 'string' && typeof powerSfxMimeType === 'string') {
+      finalPowerSfxUrl = await uploadToBucket(
+        supabase, 'sfx-tracks', powerSfxBase64, powerSfxMimeType, 'heroes/power_sfx',
+      );
+    }
+
     // The hero needs at least one visual: a 3D model (GLB) OR a 2D image.
     // The in-game viewer routes on `glb_url` so without either the player
     // ends up with a faceless emoji placeholder.
@@ -255,6 +265,7 @@ export async function POST(request: Request) {
       glb_url: finalGlbUrl,
       thumbnail_url: finalThumbnailUrl,
       power_image_url: finalPowerImageUrl,
+      power_sfx_url: finalPowerSfxUrl,
     };
 
     if (typeof power_name === 'string') insert.power_name = power_name;
@@ -306,6 +317,7 @@ export async function PUT(request: Request) {
       glbBase64, glbMimeType, glbUrl,
       thumbnailBase64, thumbnailMimeType,
       powerImageBase64, powerImageMimeType,
+      powerSfxBase64, powerSfxMimeType,
       rarity, max_prints, is_default, is_active,
     } = body as Record<string, unknown>;
 
@@ -355,6 +367,12 @@ export async function PUT(request: Request) {
     if (typeof powerImageBase64 === 'string' && typeof powerImageMimeType === 'string') {
       updates.power_image_url = await uploadToBucket(
         supabase, 'hero-models', powerImageBase64, powerImageMimeType, 'power_image',
+      );
+    }
+
+    if (typeof powerSfxBase64 === 'string' && typeof powerSfxMimeType === 'string') {
+      updates.power_sfx_url = await uploadToBucket(
+        supabase, 'sfx-tracks', powerSfxBase64, powerSfxMimeType, 'heroes/power_sfx',
       );
     }
 

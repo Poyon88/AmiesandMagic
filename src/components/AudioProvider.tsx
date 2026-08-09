@@ -27,6 +27,7 @@ export default function AudioProvider() {
     setUserHasInteracted,
     setContextTracks,
     setStandardSfxUrls,
+    setAbilitySfxUrls,
   } = useAudioStore();
 
   // Load context tracks once
@@ -64,6 +65,20 @@ export default function AudioProvider() {
       })
       .catch(() => {});
   }, [setStandardSfxUrls]);
+
+  // Bruitages par CAPACITÉ. Préchargés comme les sons standards : sans cela, le
+  // premier déclenchement de chaque capacité arriverait en retard sur son
+  // animation, le fichier n'étant demandé qu'à cet instant.
+  useEffect(() => {
+    fetch("/api/keyword-sfx", { cache: "no-store" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (!data || typeof data !== "object" || Array.isArray(data)) return;
+        setAbilitySfxUrls(data as Record<string, string>);
+        SfxEngine.getInstance().preload(Object.values(data as Record<string, string>));
+      })
+      .catch(() => {});
+  }, [setAbilitySfxUrls]);
 
   // Sync SFX volume/mute
   useEffect(() => {

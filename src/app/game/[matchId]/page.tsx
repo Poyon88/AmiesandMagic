@@ -42,6 +42,7 @@ interface HeroRow {
   glb_url?: string | null;
   thumbnail_url?: string | null;
   power_image_url?: string | null;
+  power_sfx_url?: string | null;
 }
 
 interface MatchData {
@@ -67,6 +68,7 @@ function mapHeroRow(row: HeroRow | null): HeroDefinition | null {
     glbUrl: row.glb_url ?? null,
     thumbnailUrl: row.thumbnail_url ?? null,
     powerImageUrl: row.power_image_url ?? null,
+    powerSfxUrl: row.power_sfx_url ?? null,
   };
 }
 

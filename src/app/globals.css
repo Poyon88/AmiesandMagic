@@ -390,6 +390,31 @@ body {
   50% { border-color: rgba(212, 168, 0, 0.7); box-shadow: 0 0 10px rgba(212, 168, 0, 0.4); }
 }
 
+/* Capacités à SEUIL (Seuil Sacrificiel, Force des ancêtres, Seuil de colère,
+   Chant) — halo qui respire tant que la condition est remplie.
+   La couleur vient d'une variable, une seule animation servant les quatre
+   capacités : `--glow-rgb` est posée en ligne par le composant.
+   Battement volontairement LENT (2,4 s) — c'est un état permanent, pas un
+   évènement : à la cadence de Gloire (1 s) quatre unités allumées donneraient
+   un plateau clignotant. */
+@keyframes threshold-glow-pulse {
+  0%, 100% {
+    border-color: rgba(var(--glow-rgb), 0.6);
+    box-shadow: 0 0 6px rgba(var(--glow-rgb), 0.3), inset 0 0 6px rgba(var(--glow-rgb), 0.12);
+  }
+  50% {
+    border-color: rgba(var(--glow-rgb), 0.95);
+    box-shadow: 0 0 16px 2px rgba(var(--glow-rgb), 0.55), inset 0 0 10px rgba(var(--glow-rgb), 0.25);
+  }
+}
+
+/* Version « carte en main » : auréole DERRIÈRE la carte plutôt qu'un liseré —
+   la carte de main est plus grande et un simple bord s'y perdrait. */
+@keyframes threshold-glow-halo {
+  0%, 100% { opacity: 0.4; transform: scale(0.97); }
+  50% { opacity: 0.95; transform: scale(1.02); }
+}
+
 /* Hide scrollbar in scrollable containers (e.g. card hover overlays) —
    scrolling still works with wheel/touch but no visible bar. */
 .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }

@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useRef, useEffect, memo } from "react";
+import { useState, useRef, useEffect, useMemo, memo } from "react";
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import type { CardInstance } from "@/lib/game/types";
 import { useGameStore } from "@/lib/store/gameStore";
+import { primaryThresholdGlow } from "@/lib/game/threshold-glow";
 import type { DragEvent } from "react";
 import { KEYWORD_SYMBOLS, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordBadgeValue, applyKeywordValueToLabel, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, getSpellKeywordBadgeValue } from "@/lib/game/spell-keywords";
@@ -51,6 +52,15 @@ function HandCard({
   const pendingCostCard = useGameStore(s => s.pendingCostCard);
   const selectedDiscardIds = useGameStore(s => s.selectedDiscardIds);
   const toggleDiscardSelection = useGameStore(s => s.toggleDiscardSelection);
+
+  // Halo des capacités à SEUIL. C'est en main qu'il porte l'essentiel de sa
+  // valeur : Seuil de colère et Chant sont des capacités de SORT — ils ne vont
+  // jamais sur le plateau, et sans ce halo rien n'indiquerait que le sort est
+  // renforcé au moment de décider de le jouer.
+  const thresholdGlow = useMemo(
+    () => primaryThresholdGlow(card, gameState, localPlayerId),
+    [card, gameState, localPlayerId],
+  );
 
   const isCostPaymentMode = targetingMode === "cost_payment";
   const isPendingCostSource = pendingCostCard?.instanceId === cardInstance.instanceId;
@@ -146,9 +156,15 @@ function HandCard({
   const accentColor = isCreature ? "#74b9ff" : "#ce93d8";
   // Cost-payment visuals override the normal selection styling: red border
   // when picked for discard, gold glow on the source card being played.
+  // Le cadre porte la couleur du SEUIL quand une capacité conditionnelle est
+  // active : c'est ce que l'œil lit en premier, et un halo diffus derrière la
+  // carte se perdait derrière le vert « jouable » qui domine toute la main.
+  // Les états d'ACTION en cours (défausse, paiement, sélection) restent
+  // prioritaires — ils disent ce qui se passe maintenant, pas un état de fond.
   const borderColor = isSelectedForDiscard ? "#e74c3c"
     : (isCostPaymentMode && isPendingCostSource) ? "#c8a84e"
     : isSelected ? "#c8a84e"
+    : thresholdGlow ? `rgb(${thresholdGlow.rgb})`
     : (canPlay && !isCostPaymentMode) ? "#2ecc71"
     : isCreature ? "#3d3d5c" : "#6c3483";
   const iconOverrides = useKeywordIconStore((st) => st.overrides);
@@ -331,6 +347,25 @@ function HandCard({
       data-zoom={1.41}
       style={{ width: W, height: H, position: "relative", zoom: 1.41 }}
     >
+      {/* Halo de SEUIL — état permanent, distinct du halo de boost ci-dessous
+          qui est un évènement ponctuel. Les deux coexistent : un sort renforcé
+          qui reçoit un buff ne doit pas perdre son halo le temps de l'animation.
+          Auréole derrière la carte plutôt qu'un liseré — la carte de main est
+          grande, un simple bord s'y perdrait. */}
+      {thresholdGlow && (
+        <div
+          aria-hidden
+          title={thresholdGlow.label}
+          style={{
+            position: "absolute", inset: "-14%", borderRadius: 24,
+            pointerEvents: "none", zIndex: -2,
+            background: `radial-gradient(closest-side, rgba(${thresholdGlow.rgb},0.85), rgba(${thresholdGlow.rgb},0) 72%)`,
+            boxShadow: `0 0 30px 8px rgba(${thresholdGlow.rgb},0.4)`,
+            animation: "threshold-glow-halo 2.4s ease-in-out infinite",
+          }}
+        />
+      )}
+
       {/* Halo de boost — enfle puis s'estompe DERRIÈRE la carte (zIndex -1),
           auréole dorée qui déborde des bords. Miroir de BoardCreature. */}
       <motion.div
@@ -425,8 +460,18 @@ function HandCard({
           boxShadow: isSelectedForDiscard ? "0 0 14px #e74c3c88"
             : (isCostPaymentMode && isPendingCostSource) ? "0 0 14px #c8a84e88"
             : isSelected ? "0 0 12px #c8a84e44"
+            : thresholdGlow ? undefined // piloté par l'animation ci-dessous
             : (canPlay && !isCostPaymentMode) ? "0 0 12px #2ecc7166"
             : "none",
+          // Battement lent : c'est un état permanent, pas un évènement. Sans
+          // pulsation, la couleur de seuil passerait pour une simple variante
+          // du cadre et ne se remarquerait pas.
+          ...(thresholdGlow
+            ? {
+              ["--glow-rgb" as string]: thresholdGlow.rgb,
+              animation: "threshold-glow-pulse 2.4s ease-in-out infinite",
+            }
+            : {}),
           // overflow: visible so the RarityFrame (inset: -4) can extend
           // past the card edges. The art div below now carries its own
           // border-radius + overflow: hidden to keep the image rounded.

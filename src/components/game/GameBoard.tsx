@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef, type DragEvent } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef, type DragEvent } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { MAX_HAND_SIZE, MAX_BOARD_SIZE } from "@/lib/game/constants";
@@ -40,10 +40,11 @@ import EpargneGainOverlay from "./EpargneGainOverlay";
 import ArenaDeckGraveyardCluster from "./ArenaDeckGraveyardCluster";
 import MulliganOverlay from "./MulliganOverlay";
 import SettingsModal from "@/components/shared/SettingsModal";
-import type { GameAction, DamageEvent, HeroDefinition } from "@/lib/game/types";
+import type { GameAction, CardInstance, DamageEvent, HeroDefinition } from "@/lib/game/types";
 import useGameMusic from "@/hooks/useGameMusic";
 import { useAudioStore } from "@/lib/store/audioStore";
 import SfxEngine from "@/lib/audio/SfxEngine";
+import { onPlaySfxChain } from "@/lib/game/on-play-sfx";
 import useLongPress from "@/hooks/useLongPress";
 import { useScreenShake } from "@/hooks/useScreenShake";
 
@@ -61,6 +62,23 @@ interface GameBoardProps {
 }
 
 
+/** Créature posée mais dont la capacité d'entrée attend encore un choix.
+ *
+ *  Volontairement INERTE (aucun clic, aucune cible) et légèrement estompée : la
+ *  pose n'est pas encore validée côté moteur, et le joueur peut toujours annuler
+ *  son ciblage. Elle sert à rétablir l'ordre du récit — la créature arrive, PUIS
+ *  son effet se résout — que la collecte des choix avant dispatch inversait. */
+function PendingCreaturePreview({ instance }: { instance: CardInstance }) {
+  return (
+    <div
+      aria-hidden
+      style={{ opacity: 0.55, filter: "saturate(0.7)", pointerEvents: "none" }}
+    >
+      <BoardCreature creature={instance} isOwn entering />
+    </div>
+  );
+}
+
 export default function GameBoard({ onAction, onMulliganRevealDone, opponentMulliganRevealDone = false }: GameBoardProps) {
   useGameMusic();
   const t = useTranslations("game");
@@ -71,6 +89,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     localPlayerId,
     selectedAttackerInstanceId,
     selectedCardInstanceId,
+    pendingBoardPosition,
     pendingCostCard,
     pendingTapSourceId,
     validTargets,
@@ -186,6 +205,54 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
   // power instantly cancelling the targeting that the first click opened.
   const justOpenedHeroTargetingRef = useRef<number>(0);
   const myBoardRef = useRef<HTMLDivElement>(null);
+
+  // APERÇU de la créature en cours de pose. Les choix d'une capacité d'entrée en
+  // jeu (cible, cimetière, Creuser, Sélection…) sont collectés AVANT que
+  // l'action ne parte au moteur — la carte reste donc en main pendant que sa
+  // modale s'ouvre, et l'effet semblait se déclencher avant l'arrivée de la
+  // créature. Le moteur, lui, a le bon ordre : la créature est posée sur le
+  // plateau (playCard) PUIS ses effets d'entrée résolvent.
+  //
+  // On rétablit donc la narration à l'écran en peignant la créature à sa place
+  // dès l'ouverture du picker. `cost_payment` est exclu : une défausse ou un
+  // sacrifice se paie AVANT de jouer la carte, la créature n'est pas encore
+  // censée être là.
+  const pendingPreview = useMemo(() => {
+    if (!gameState || !selectedCardInstanceId) return null;
+    if (targetingMode === "none" || targetingMode === "cost_payment") return null;
+    const me = gameState.players.find(p => p.id === localPlayerId);
+    const inst = me?.hand.find(c => c.instanceId === selectedCardInstanceId);
+    if (!inst || inst.card.card_type !== "creature") return null;
+    return { inst, position: pendingBoardPosition ?? me!.board.length };
+  }, [gameState, localPlayerId, selectedCardInstanceId, pendingBoardPosition, targetingMode]);
+
+  // Les bruitages suivent l'APERÇU, pas le dispatch. Sans cela, la créature se
+  // posait en silence et l'on entendait son arrivée — puis son effet — une fois
+  // la fenêtre de choix refermée, c'est-à-dire longtemps après ce qu'ils étaient
+  // censés accompagner. `playChain` les enchaîne sans les superposer : la
+  // créature arrive, puis l'effet se déclenche avec l'ouverture de la fenêtre.
+  const markOnPlaySfxAnnounced = useGameStore(s => s.markOnPlaySfxAnnounced);
+  const previewSfxKeyRef = useRef<string | null>(null);
+  useEffect(() => {
+    const key = pendingPreview?.inst.instanceId ?? null;
+    // Un seul déclenchement par pose : cet effet re-tourne à chaque frappe du
+    // chrono ou changement d'état, et rejouerait sinon la chaîne en boucle.
+    if (key === previewSfxKeyRef.current) return;
+    previewSfxKeyRef.current = key;
+    if (!key || !pendingPreview) return;
+
+    const audio = useAudioStore.getState();
+    if (!audio.userHasInteracted || audio.settings.sfxMuted) return;
+    const chain = onPlaySfxChain(
+      pendingPreview.inst.card,
+      audio.abilitySfxUrls,
+      audio.standardSfxUrls["play_card"],
+    );
+    if (chain.length === 0) return;
+    SfxEngine.getInstance().playChain(chain);
+    // Le dispatch qui suivra ne doit pas les rejouer.
+    markOnPlaySfxAnnounced(key);
+  }, [pendingPreview, markOnPlaySfxAnnounced]);
   // Clear hover when targeting ends
   useEffect(() => {
     if (targetingMode === "none") setHoveredTargetId(null);
@@ -1085,7 +1152,11 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
           className="absolute top-[46%] left-0 right-0 h-[24%] flex items-center justify-center px-8 transition-all overflow-visible"
         >
           <div ref={myBoardRef} className="flex justify-center gap-2 min-h-[88px] items-center">
-          {myPlayer.board.length === 0 && !isDragOver ? (
+          {myPlayer.board.length === 0 && pendingPreview ? (
+            // Plateau vide : sans ce cas, l'aperçu serait avalé par le message
+            // « glissez une carte ici » et la créature n'apparaîtrait jamais.
+            <PendingCreaturePreview instance={pendingPreview.inst} />
+          ) : myPlayer.board.length === 0 && !isDragOver ? (
             <div className="text-foreground/10 text-sm">
               {t("drag_hint")}
             </div>
@@ -1104,6 +1175,11 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
                     items.push(
                       <div key={`drop-${i}`} className="w-1 h-20 rounded-full bg-success shadow-[0_0_8px_rgba(34,197,94,0.6)] shrink-0" />
                     );
+                  }
+                  // Aperçu inséré À SA PLACE dans la file, pas en bout : la
+                  // position choisie au dépôt est celle où la créature arrivera.
+                  if (pendingPreview && pendingPreview.position === i) {
+                    items.push(<PendingCreaturePreview key="pending-preview" instance={pendingPreview.inst} />);
                   }
                   items.push(
                     <BoardCreature
@@ -1142,6 +1218,11 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
                   return items;
                 })}
               </AnimatePresence>
+              {/* Aperçu déposé en BOUT de file : la boucle ci-dessus ne peut pas
+                  l'insérer, sa position valant board.length. */}
+              {pendingPreview && pendingPreview.position >= myPlayer.board.length && (
+                <PendingCreaturePreview instance={pendingPreview.inst} />
+              )}
               {isDragOver && dropIndex === myPlayer.board.length && (
                 <div className="w-1 h-20 rounded-full bg-success shadow-[0_0_8px_rgba(34,197,94,0.6)] shrink-0" />
               )}

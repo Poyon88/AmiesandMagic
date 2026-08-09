@@ -302,6 +302,12 @@ interface GameStore {
    *  dispatch à venir est un `spend_epargne`, pas un play_card. */
   pendingEpargneSelection: boolean;
   pendingBoardPosition: number | null;
+  /** Instance dont les sons d'ENTRÉE EN JEU ont déjà été joués au moment de
+   *  l'aperçu (créature posée, picker de capacité ouvert). Le dispatch qui suit
+   *  ne doit pas les rejouer : ils seraient entendus deux fois, la seconde après
+   *  la fermeture de la fenêtre — soit très loin de ce qu'ils accompagnent. */
+  sfxPreAnnouncedInstanceId: string | null;
+  markOnPlaySfxAnnounced: (instanceId: string) => void;
   divinationCards: CardInstance[];
   selectionCards: Card[];
   tactiqueAvailableKeywords: string[];
@@ -1199,6 +1205,8 @@ export const useGameStore = create<GameStore>((set, get) => {
   pendingHeroPowerSelection: false,
   pendingEpargneSelection: false,
   pendingBoardPosition: null,
+  sfxPreAnnouncedInstanceId: null,
+  markOnPlaySfxAnnounced: (instanceId) => set({ sfxPreAnnouncedInstanceId: instanceId }),
   pendingTriggerNeeded: 1,
   pendingTriggerPicked: [],
   divinationCards: [],
@@ -1631,6 +1639,13 @@ export const useGameStore = create<GameStore>((set, get) => {
       ? { entries: cycleEntries, timestamp: Date.now() }
       : null;
 
+    // Sons d'entrée en jeu déjà joués à l'APERÇU (créature posée, picker ouvert) :
+    // on ne les rejoue pas ici, sinon on les entendrait une seconde fois après
+    // la fermeture de la fenêtre — soit très loin de ce qu'ils accompagnent.
+    const suppressOnPlaySfx =
+      action.type === "play_card" && get().sfxPreAnnouncedInstanceId === action.cardInstanceId;
+    if (get().sfxPreAnnouncedInstanceId) set({ sfxPreAnnouncedInstanceId: null });
+
     // Build SFX events
     const sfxEvents: { type: string; cardSfxUrl?: string }[] = [];
 
@@ -1640,7 +1655,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       if (cardInst) {
         if (cardInst.card.card_type === "spell") {
           sfxEvents.push({ type: "spell_cast" });
-        } else {
+        } else if (!suppressOnPlaySfx) {
           sfxEvents.push({ type: "play_card", cardSfxUrl: cardInst.card.sfx_play_url ?? undefined });
         }
       }
@@ -1649,7 +1664,10 @@ export const useGameStore = create<GameStore>((set, get) => {
     } else if (action.type === "end_turn") {
       sfxEvents.push({ type: "end_turn" });
     } else if (action.type === "hero_power") {
-      sfxEvents.push({ type: "hero_power" });
+      // Son propre au héros s'il en a un, son global sinon — même priorité que
+      // le son de carte à la pose (`cardSfxUrl || standardSfxUrls[type]`).
+      const heroDef = gameState.players[gameState.currentPlayerIndex].hero.heroDefinition;
+      sfxEvents.push({ type: "hero_power", cardSfxUrl: heroDef?.powerSfxUrl ?? undefined });
     }
 
     // SFX from damage events (deduplicate by type)
@@ -1981,6 +1999,27 @@ export const useGameStore = create<GameStore>((set, get) => {
     // ============================================================
 
     // Bucket SFX by phase so each sound fires at the right moment.
+    // Bruitages par CAPACITÉ. Le moteur a noté celles qui ont réellement résolu ;
+    // leur `trigger` décide de la phase où le son s'enchaîne — après le son de
+    // pose pour une entrée en jeu, après le son de mort pour un râle d'agonie.
+    // On vide la liste transitoire après extraction (exclue du hash).
+    const rawAbilitySfx = newState.abilitySfxEvents ?? [];
+    if (newState.abilitySfxEvents) newState.abilitySfxEvents = undefined;
+    const abilitySfxByPhase = { overlay: [] as string[], death: [] as string[] };
+    {
+      const urls = useAudioStore.getState().abilitySfxUrls;
+      for (const ev of rawAbilitySfx) {
+        if (suppressOnPlaySfx && ev.trigger === "on_play") continue;
+        const url = urls[ev.abilityId];
+        if (!url) continue;
+        // Seule la mort a sa propre phase sonore ; tout le reste (entrée en jeu,
+        // tap, attaque, fin de tour, retour, pioche, sort) s'enchaîne après le
+        // son d'ouverture de l'action.
+        const bucket = ev.trigger === "on_death" ? abilitySfxByPhase.death : abilitySfxByPhase.overlay;
+        if (!bucket.includes(url)) bucket.push(url);
+      }
+    }
+
     type SfxEvt = { type: string; cardSfxUrl?: string };
     const overlaySfx: SfxEvt[] = [];
     const impactSfx: SfxEvt[] = [];
@@ -2003,15 +2042,29 @@ export const useGameStore = create<GameStore>((set, get) => {
       }
     }
 
-    const playSfxBatch = (events: SfxEvt[]) => {
-      if (events.length === 0 || typeof window === "undefined") return;
+    /** Joue les sons d'une phase. `chained` (les bruitages de capacité) ne se
+     *  superpose PAS au reste : le premier son de la phase sert d'ancre et les
+     *  bruitages s'enchaînent derrière lui (cf. SfxEngine.playChain). Sans quoi
+     *  le son d'une capacité d'entrée en jeu couvrirait celui de la carte. */
+    const playSfxBatch = (events: SfxEvt[], chained: string[] = []) => {
+      if (typeof window === "undefined") return;
+      if (events.length === 0 && chained.length === 0) return;
       const audioState = useAudioStore.getState();
       if (!audioState.userHasInteracted || audioState.settings.sfxMuted) return;
       const engine = SfxEngine.getInstance();
-      for (const evt of events) {
-        const url = evt.cardSfxUrl || audioState.standardSfxUrls[evt.type];
-        if (url) engine.play(url);
+      const resolved = events
+        .map((evt) => evt.cardSfxUrl || audioState.standardSfxUrls[evt.type])
+        .filter(Boolean) as string[];
+      if (chained.length === 0) {
+        for (const url of resolved) engine.play(url);
+        return;
       }
+      // Ancre = premier son de la phase, puis les bruitages de capacité. Les
+      // sons restants gardent leur lecture simultanée : seule la relation
+      // « carte → capacité » demandait un enchaînement.
+      const [anchor, ...rest] = resolved;
+      for (const url of rest) engine.play(url);
+      engine.playChain(anchor ? [anchor, ...chained] : chained);
     };
 
     // Identify what kind of visible events this action produces.
@@ -2294,7 +2347,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         effectLog: [...get().effectLog, ...logEntries].slice(-20),
         actionHistory: [...get().actionHistory, ...historyEntries].slice(-ACTION_HISTORY_MAX),
       });
-      playSfxBatch(sfxEvents);
+      playSfxBatch(sfxEvents, [...abilitySfxByPhase.overlay, ...abilitySfxByPhase.death]);
       return action;
     }
 
@@ -2370,7 +2423,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         // cumulatif (plus bas) — on ne pousse pas le lot complet ici.
         ...(powerArrowEvent && !staggerEndTurnArrows ? { powerArrowEvent } : {}),
       }));
-      playSfxBatch(overlaySfx);
+      playSfxBatch(overlaySfx, abilitySfxByPhase.overlay);
       // Attack lunge plays on BOTH the active and passive client, since this
       // runs inside dispatchAction which remote broadcasts go through too.
       if (isAttack && action.type === "attack") {
@@ -2539,7 +2592,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         // Le « -N » mana flotte au moment de la mort (Sacrifice démoniaque).
         ...(manaReductionEvent ? { manaReductionEvent } : {}),
       });
-      playSfxBatch(deathSfx);
+      playSfxBatch(deathSfx, abilitySfxByPhase.death);
     };
 
     const phaseSummons = () => {

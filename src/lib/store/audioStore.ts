@@ -34,6 +34,12 @@ interface AudioStore {
   standardSfxUrls: Record<string, string>;
   setStandardSfxUrls: (urls: Record<string, string>) => void;
 
+  /** Bruitage par CAPACITÉ : `abilityId` → URL (table `keyword_sfx`). Vaut pour
+   *  toutes les cartes qui portent la capacité, indépendamment des sons de
+   *  carte (`sfx_play_url`) et des sons globaux par évènement. */
+  abilitySfxUrls: Record<string, string>;
+  setAbilitySfxUrls: (urls: Record<string, string>) => void;
+
   // Actions
   setMusicContext: (ctx: MusicContext | null, trackUrl?: string, playlistUrls?: string[]) => void;
   setUserHasInteracted: () => void;
@@ -74,6 +80,8 @@ export const useAudioStore = create<AudioStore>()(
       // Standard SFX
       standardSfxUrls: {},
       setStandardSfxUrls: (urls) => set({ standardSfxUrls: urls }),
+      abilitySfxUrls: {},
+      setAbilitySfxUrls: (urls) => set({ abilitySfxUrls: urls }),
 
       // Context tracks
       menuTrackUrl: null,

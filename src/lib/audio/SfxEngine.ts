@@ -5,6 +5,14 @@
 
 const INITIAL_POOL_SIZE = 8;
 const MAX_POOL_SIZE = 16;
+/** Maillons max d'une chaîne (cf. playChain) — au-delà, on tronque. */
+const MAX_CHAIN_LENGTH = 4;
+/** Blanc entre deux maillons : sans lui, les sons se touchent et se confondent. */
+const CHAIN_GAP_MS = 60;
+/** Durée supposée quand les métadonnées manquent. */
+const CHAIN_FALLBACK_MS = 1200;
+/** Plafond par maillon : un fichier très long ne doit pas bloquer la chaîne. */
+const CHAIN_MAX_STEP_MS = 4000;
 
 class SfxEngine {
   private static instance: SfxEngine;
@@ -13,6 +21,11 @@ class SfxEngine {
   private preloaded = new Map<string, HTMLAudioElement>();
   private _volume = 0.5;
   private _muted = false;
+  /** Chaîne en cours (cf. playChain). Le jeton invalide les rappels d'une
+   *  chaîne annulée : sans lui, un `ended` en retard relancerait sa suite. */
+  private chainToken = 0;
+  private chainTimer: ReturnType<typeof setTimeout> | null = null;
+  private chainEl: HTMLAudioElement | null = null;
 
   private constructor() {
     for (let i = 0; i < INITIAL_POOL_SIZE; i++) {
@@ -58,6 +71,62 @@ class SfxEngine {
     el.volume = this._volume;
     el.play().catch(() => {});
     return el;
+  }
+
+  /** Joue des sons À LA SUITE, sans chevauchement : chaque maillon démarre
+   *  quand le précédent se termine.
+   *
+   *  Sert au bruitage des capacités : le son de pose (ou de mort) de la carte
+   *  passe d'abord, celui de la capacité s'enchaîne juste après. `play()`
+   *  resterait concurrent et les superposerait.
+   *
+   *  Trois garde-fous, tous nécessaires :
+   *   • un CHRONO DE SECOURS par maillon — un fichier qui ne charge pas, ou dont
+   *     `ended` ne part jamais (onglet en arrière-plan, lecture refusée), gèlerait
+   *     sinon toute la suite de la chaîne ;
+   *   • une seule chaîne à la fois — la précédente est coupée, sinon les sons
+   *     s'empilent d'une action sur l'autre ;
+   *   • une longueur BORNÉE — une fin de tour à huit capacités ne doit pas jouer
+   *     une minute de bruitages.
+   */
+  playChain(urls: string[]): void {
+    this.cancelChain();
+    const list = urls.filter(Boolean).slice(0, MAX_CHAIN_LENGTH);
+    if (list.length === 0 || this._muted || this._volume <= 0) return;
+
+    const token = ++this.chainToken;
+    const step = (i: number) => {
+      if (i >= list.length || token !== this.chainToken) return;
+      const el = this.play(list[i]);
+      if (!el) return step(i + 1); // son injouable : on n'interrompt pas la chaîne
+      this.chainEl = el;
+
+      let advanced = false;
+      const next = () => {
+        if (advanced || token !== this.chainToken) return;
+        advanced = true;
+        clearTimeout(timer);
+        el.removeEventListener("ended", next);
+        step(i + 1);
+      };
+      el.addEventListener("ended", next);
+      // `duration` est NaN tant que les métadonnées ne sont pas chargées : le
+      // repli fixe couvre ce cas comme celui d'un fichier muet ou bloqué.
+      const durationMs = Number.isFinite(el.duration) && el.duration > 0
+        ? el.duration * 1000 + CHAIN_GAP_MS
+        : CHAIN_FALLBACK_MS;
+      const timer = setTimeout(next, Math.min(durationMs, CHAIN_MAX_STEP_MS));
+      this.chainTimer = timer;
+    };
+    step(0);
+  }
+
+  /** Coupe la chaîne en cours (le son déjà lancé va au bout, seule la SUITE est
+   *  abandonnée — couper net un son en cours s'entendrait comme un défaut). */
+  cancelChain(): void {
+    this.chainToken++;
+    if (this.chainTimer) { clearTimeout(this.chainTimer); this.chainTimer = null; }
+    this.chainEl = null;
   }
 
   /** Stop and reset a tracked SFX audio element returned by `play()`. */

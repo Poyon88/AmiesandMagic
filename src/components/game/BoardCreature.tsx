@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import type { CardInstance, GameAction } from "@/lib/game/types";
 import { useGameStore, selectPowerTargetingColor } from "@/lib/store/gameStore";
+import { primaryThresholdGlow } from "@/lib/game/threshold-glow";
 import { tapKeywordNeedsTarget, getCreatureTapComposedUid } from "@/lib/game/engine";
 import { getTokenManaCost } from "@/lib/game/abilities";
 import { KEYWORD_SYMBOLS, xNumeral, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordBadgeValue, applyKeywordValueToLabel, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
@@ -72,6 +73,14 @@ function BoardCreature({
   // pouvoir : reprend la couleur de l'icône du pouvoir (jaune pour activable,
   // etc.). null hors ciblage de pouvoir → repli sur le rouge habituel.
   const powerTargetColor = useGameStore(selectPowerTargetingColor);
+  // Halo des capacités à SEUIL. La condition porte sur le CONTRÔLEUR de l'unité,
+  // pas sur le joueur local : une créature adverse à seuil actif doit luire pour
+  // les deux joueurs, avec le deck et le cimetière de son propre camp.
+  const thresholdGlow = useGameStore(s => {
+    if (!s.gameState) return null;
+    const owner = s.gameState.players.find(p => p.board.some(c => c.instanceId === creature.instanceId));
+    return owner ? primaryThresholdGlow(creature.card, s.gameState, owner.id) : null;
+  });
   const selectedSacrificeIds = useGameStore(s => s.selectedSacrificeIds);
   const toggleSacrificeSelection = useGameStore(s => s.toggleSacrificeSelection);
   const activateTap = useGameStore(s => s.activateTap);
@@ -619,6 +628,25 @@ function BoardCreature({
           pointerEvents: "none",
           animation: "ombre-pulse 3s ease-in-out infinite",
         }} />
+      )}
+
+      {/* Capacité à SEUIL active (Seuil Sacrificiel, Force des ancêtres) : liseré
+          qui respire, couleur propre à la capacité. Un seul anneau même si deux
+          seuils sont actifs — le second serait invisible sous le premier, d'où
+          la priorité fixée dans la palette (cf. threshold-glow.ts). */}
+      {thresholdGlow && (
+        <div
+          title={thresholdGlow.label}
+          style={{
+            position: "absolute", inset: -2, borderRadius: 12,
+            border: "2px solid transparent",
+            pointerEvents: "none", zIndex: 1,
+            // Lue par les keyframes `threshold-glow-pulse` : une seule animation
+            // sert les quatre capacités.
+            ["--glow-rgb" as string]: thresholdGlow.rgb,
+            animation: "threshold-glow-pulse 2.4s ease-in-out infinite",
+          }}
+        />
       )}
 
       {/* Gloire : liseré doré dès que l'unité a survécu à un combat au moins une fois */}

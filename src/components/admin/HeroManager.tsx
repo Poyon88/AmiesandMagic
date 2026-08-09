@@ -180,6 +180,11 @@ export default function HeroManager() {
   const [powerImageMime, setPowerImageMime] = useState<string | null>(null);
   const [powerImagePreview, setPowerImagePreview] = useState<string | null>(null);
   const [powerImageError, setPowerImageError] = useState<string | null>(null);
+  // Bruitage du pouvoir de CE héros. Absent ⇒ repli sur le son global
+  // `hero_power`, commun à tous les héros.
+  const [powerSfxBase64, setPowerSfxBase64] = useState<string | null>(null);
+  const [powerSfxMime, setPowerSfxMime] = useState<string | null>(null);
+  const [powerSfxName, setPowerSfxName] = useState<string | null>(null);
   const [powerName, setPowerName] = useState("");
   const [powerCost, setPowerCost] = useState<number>(2);
   // V2 power system : (mode, keywordId, params).
@@ -349,6 +354,7 @@ export default function HeroManager() {
     setPowerImageMime(null);
     setPowerImagePreview(null);
     setPowerImageError(null);
+    setPowerSfxBase64(null); setPowerSfxMime(null); setPowerSfxName(null);
     setPowerName("");
     setPowerCost(2);
     setPowerMode("grant_keyword");
@@ -422,6 +428,9 @@ export default function HeroManager() {
     setPowerImageBase64(null);
     setPowerImageMime(null);
     setPowerImagePreview(hero.power_image_url ?? null);
+    // Le son déjà enregistré n'est pas rechargé en aperçu (pas de lecteur ici) :
+    // seul un NOUVEAU fichier est envoyé, l'existant reste en base.
+    setPowerSfxBase64(null); setPowerSfxMime(null); setPowerSfxName(null);
 
     if (glbPreviewUrl?.startsWith("blob:")) URL.revokeObjectURL(glbPreviewUrl);
     setGlbFile(null);
@@ -823,6 +832,12 @@ export default function HeroManager() {
         const p = await compressBase64Image(powerImageBase64, powerImageMime, 768);
         body.powerImageBase64 = p.base64;
         body.powerImageMimeType = p.mime;
+      }
+      // Audio : pas de compression (compressBase64Image ne sait traiter que des
+      // images) — le fichier part tel quel.
+      if (powerSfxBase64 && powerSfxMime) {
+        body.powerSfxBase64 = powerSfxBase64;
+        body.powerSfxMimeType = powerSfxMime;
       }
 
       if (isEditing && editingHeroId !== null) {
@@ -1434,6 +1449,51 @@ export default function HeroManager() {
                       Visuel actuel — uploader ou régénérer pour remplacer.
                     </div>
                   )}
+
+                  {/* Bruitage du pouvoir. Sans fichier, le héros garde le son
+                      global `hero_power`, identique pour tous. */}
+                  <div style={{ borderTop: "1px dashed #eee", paddingTop: 8, marginTop: 8 }}>
+                    <div style={{ fontSize: 9, color: "#999", fontFamily: "'Cinzel',serif", letterSpacing: 1, marginBottom: 4, fontWeight: 700 }}>
+                      BRUITAGE DU POUVOIR
+                    </div>
+                    <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                      <label style={{ ...STYLE.button, cursor: "pointer" }}>
+                        {powerSfxName ? "Remplacer" : "Choisir un son"}
+                        <input type="file" accept="audio/*" style={{ display: "none" }}
+                          onChange={e => {
+                            // `currentTarget` est nul après le premier await :
+                            // on capture l'input avant toute lecture asynchrone.
+                            const input = e.currentTarget;
+                            const f = input.files?.[0];
+                            input.value = "";
+                            if (!f) return;
+                            if (f.size > 5 * 1024 * 1024) { alert("Fichier trop volumineux (max 5 Mo)"); return; }
+                            const reader = new FileReader();
+                            reader.onload = () => {
+                              setPowerSfxBase64(String(reader.result).split(",")[1] ?? "");
+                              setPowerSfxMime(f.type || "audio/mpeg");
+                              setPowerSfxName(f.name);
+                            };
+                            reader.readAsDataURL(f);
+                          }} />
+                      </label>
+                      {powerSfxName && (
+                        <>
+                          <span style={{ fontSize: 10, color: "#666", fontFamily: "'Crimson Text',serif" }}>{powerSfxName}</span>
+                          <button type="button"
+                            onClick={() => { setPowerSfxBase64(null); setPowerSfxMime(null); setPowerSfxName(null); }}
+                            style={{ ...STYLE.button, background: "#e74c3c" }}>
+                            Annuler
+                          </button>
+                        </>
+                      )}
+                      {!powerSfxName && (
+                        <span style={{ fontSize: 9, color: "#999", fontStyle: "italic", fontFamily: "'Crimson Text',serif" }}>
+                          Sans son propre, le pouvoir joue le bruitage générique.
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
                 <div style={{ borderTop: "1px dashed #eee", paddingTop: 8, marginTop: 6 }}>
