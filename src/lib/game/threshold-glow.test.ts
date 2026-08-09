@@ -163,3 +163,42 @@ describe("cartes RÉELLES — modèle `capabilities` sans keyword_instances", ()
     expect(primaryThresholdGlow(sortChant, s, "MOI")?.rgb).toBe("23, 182, 196"); // cyan
   });
 });
+
+describe("asymétrie : le halo va à la carte qui PROFITE du bonus", () => {
+  // Chant est le seul cas polymorphe, et il est asymétrique : côté créature
+  // c'est un marqueur inerte (la chanteuse ne gagne rien, elle habilite les
+  // sorts), côté sort c'est le X du bonus. Faire luire la chanteuse annonçait un
+  // renfort qui n'existe pas — constaté en partie sur « Chœur des Porte-Braises »
+  // et « Jeune Voix du Rivage », toutes deux créatures.
+  it("une CRÉATURE Chant ne luit pas, même entourée de chanteuses", () => {
+    const chanteuse = mkCard({
+      name: "Chœur des Porte-Braises", card_type: "creature", attack: 2, health: 3,
+      keywords: ["chant"] as never,
+    });
+    expect(allume(chanteuse, etat({ chanteuse: true }))).toEqual([]);
+  });
+
+  it("un SORT Chant luit dans la même situation", () => {
+    const sort = mkCard({
+      name: "Chant des esprits oubliés", card_type: "spell", attack: null, health: null,
+      spell_keywords: [{ id: "renfort_royal", amount: 3 }, { id: "chant", amount: 2 }] as never,
+    });
+    expect(allume(sort, etat({ chanteuse: true }))).toEqual(["chant"]);
+  });
+
+  it("chaque entrée de la palette déclare la face qui en profite", () => {
+    const s = etat({ deck: 0, graveCreatures: 20, chanteuse: true });
+    // Un porteur de TOUTES les capacités ne récolte que celles de sa face.
+    const creature = mkCard({
+      name: "Tout", card_type: "creature", attack: 1, health: 1,
+      keywords: ["seuil_sacrificiel", "force_des_ancetres", "chant"] as never,
+    });
+    expect(allume(creature, s)).toEqual(["force_des_ancetres", "seuil_sacrificiel"]);
+
+    const sort = mkCard({
+      name: "Tout sort", card_type: "spell", attack: null, health: null,
+      spell_keywords: [{ id: "seuil_colere", amount: 2 }, { id: "chant", amount: 1 }] as never,
+    });
+    expect(allume(sort, s)).toEqual(["seuil_colere", "chant"]);
+  });
+});

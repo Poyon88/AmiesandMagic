@@ -19,6 +19,8 @@ import { FORCE_ANCETRES_GRAVEYARD_THRESHOLD, boardHasChanter } from "./engine";
 export interface ThresholdGlow {
   /** Id de l'ability du registre — sert de clé de rendu. */
   abilityId: string;
+  /** Face de la carte qui reçoit RÉELLEMENT le bonus (cf. GLOW_PALETTE). */
+  benefitsOn: "creature" | "spell";
   /** Composantes `r, g, b` (pour composer des rgba() à l'opacité voulue). */
   rgb: string;
   /** Libellé court, pour l'infobulle. */
@@ -28,12 +30,24 @@ export interface ThresholdGlow {
 /** Palette et ORDRE de priorité. L'ordre compte : deux capacités peuvent être
  *  actives sur la même unité (Seuil Sacrificiel + Force des ancêtres est un cas
  *  réel), et l'anneau ne peut porter qu'une couleur — c'est la première de
- *  cette liste qui gagne. */
-const GLOW_PALETTE: ReadonlyArray<{ abilityId: string; rgb: string; label: string }> = [
-  { abilityId: "force_des_ancetres", rgb: "168, 85, 247", label: "Force des ancêtres" }, // violet spectral (cimetière)
-  { abilityId: "seuil_sacrificiel", rgb: "190, 49, 68", label: "Seuil Sacrificiel" },     // rouge sombre (deck qui s'épuise)
-  { abilityId: "seuil_colere", rgb: "232, 122, 24", label: "Seuil de colère" },           // orange braise
-  { abilityId: "chant", rgb: "23, 182, 196", label: "Chant" },                            // cyan — teinte déjà associée à Chant
+ *  cette liste qui gagne.
+ *
+ *  `benefitsOn` dit QUI reçoit réellement le bonus, et n'est pas décoratif :
+ *  **Chant est asymétrique**. Côté créature c'est un marqueur inerte — la
+ *  chanteuse ne gagne rien, elle habilite les SORTS. La faire luire annonçait un
+ *  renfort qui n'existe pas, et détournait le signal de la carte qui en profite
+ *  vraiment. Les trois autres sont mono-face, mais on le déclare pour toutes :
+ *  une capacité polymorphe ajoutée demain devra trancher ce point. */
+const GLOW_PALETTE: ReadonlyArray<{
+  abilityId: string;
+  rgb: string;
+  label: string;
+  benefitsOn: "creature" | "spell";
+}> = [
+  { abilityId: "force_des_ancetres", rgb: "168, 85, 247", label: "Force des ancêtres", benefitsOn: "creature" }, // violet spectral (cimetière)
+  { abilityId: "seuil_sacrificiel", rgb: "190, 49, 68", label: "Seuil Sacrificiel", benefitsOn: "creature" },     // rouge sombre (deck qui s'épuise)
+  { abilityId: "seuil_colere", rgb: "232, 122, 24", label: "Seuil de colère", benefitsOn: "spell" },              // orange braise
+  { abilityId: "chant", rgb: "23, 182, 196", label: "Chant", benefitsOn: "spell" },                               // cyan — teinte déjà associée à Chant
 ];
 
 /** La condition de CHAQUE capacité, évaluée sur le contrôleur de la carte.
@@ -75,7 +89,10 @@ export function activeThresholdGlows(
   if (!owner) return [];
 
   const carried = new Set(getCapabilities(card).map(c => c.abilityId));
-  return GLOW_PALETTE.filter(g => carried.has(g.abilityId) && conditionMet(g.abilityId, owner));
+  return GLOW_PALETTE.filter(g =>
+    carried.has(g.abilityId)
+    && g.benefitsOn === card.card_type
+    && conditionMet(g.abilityId, owner));
 }
 
 /** Halo à peindre, ou `null`. L'anneau ne portant qu'une couleur, c'est la
