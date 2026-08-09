@@ -1363,7 +1363,14 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             onTimeUp={handleEndTurn}
             turnNumber={gameState.turnNumber}
             turnStartedAt={Math.max(gameState.turnStartedAt, boardRevealedAt)}
-            isPaused={isAutoAttacking}
+            // Gelé pendant les ANIMATIONS : le joueur ne peut rien faire tant
+            // qu'elles tournent, et laisser le compteur descendre lui volait un
+            // temps qu'il n'a jamais eu — l'alarme pouvait sonner, voire le tour
+            // se terminer d'office, pendant qu'il regardait le plateau bouger.
+            // C'est aussi ce qui creusait l'écart entre les deux clients : les
+            // actions distantes reçues en pleine animation sont mises en file,
+            // si bien que le client passif démarrait son tour en retard.
+            isPaused={isAutoAttacking || isAnimating}
             hasPendingTriggers={(gameState.pendingTriggers?.length ?? 0) > 0}
             choiceStartedAt={gameState.choiceStartedAt}
             onPendingTimeout={handleAutoResolvePending}

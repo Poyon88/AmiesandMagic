@@ -115,17 +115,39 @@ export default function TurnTimer({
     }
   }, [isPaused, anchor, duration]);
 
-  // Reset audio + flags when the actual turn changes; recompute display
-  // from the new anchor.
+  // Remise à zéro AUDIO — au changement de TOUR seulement.
+  //
+  // Surtout pas à chaque changement d'ancre : l'ouverture d'une fenêtre de choix
+  // bascule le compteur sur l'horloge de choix, et relancer l'audio ici faisait
+  // reprendre la musique puis la couper aussitôt, tandis que l'alarme repartait
+  // du début. Sur un tour à plusieurs choix, la bande-son faisait le yoyo alors
+  // que le tour, lui, ne s'était jamais interrompu.
   useEffect(() => {
     AudioEngine.getInstance().resume();
     hasFiredWarningRef.current = false;
     SfxEngine.getInstance().stop(warningAudioRef.current);
     warningAudioRef.current = null;
+  }, [turnNumber]);
+
+  // Démontage : couper l'alarme et rendre la musique. Le chrono disparaît à la
+  // fin de partie (et à la sortie du match), mais `SfxEngine` joue sur des
+  // éléments MUTUALISÉS, hors du cycle de vie React — sans ce nettoyage, le
+  // tic-tac continuait par-dessus la musique de victoire ou de défaite, et la
+  // musique restait coupée si l'alerte des 15 s venait de la mettre en pause.
+  useEffect(() => () => {
+    SfxEngine.getInstance().stop(warningAudioRef.current);
+    warningAudioRef.current = null;
+    AudioEngine.getInstance().resume();
+  }, []);
+
+  // Remise à zéro de l'AFFICHAGE — à chaque changement d'horloge (tour ↔ choix).
+  // Le décompte de pause (auto-attaque) appartient à l'horloge courante et ne
+  // doit pas être reporté sur la suivante.
+  useEffect(() => {
     pauseOffsetMsRef.current = 0;
     pauseStartedAtRef.current = null;
     setTimeLeft(computeTimeLeft(anchor, 0, duration));
-  }, [turnNumber, anchor, duration]);
+  }, [anchor, duration]);
 
   // 1 Hz interval ticking the display. The browser may throttle this when
   // the window is unfocused (Chrome especially), so we don't rely on it as
@@ -152,8 +174,24 @@ export default function TurnTimer({
   // the first time the countdown crosses the threshold (player's turn only).
   useEffect(() => {
     if (!isMyTurn) return;
+    // L'alarme annonce la fin du TOUR. Pendant une fenêtre de choix elle serait
+    // un mensonge : cette horloge dure exactement WARNING_THRESHOLD secondes,
+    // si bien qu'elle démarre déjà « sous le seuil » — l'alerte sonnait donc dès
+    // la première seconde d'une fenêtre pourtant entière.
+    if (inChoice) return;
     if (hasFiredWarningRef.current) return;
-    if (timeLeft > WARNING_THRESHOLD) return;
+    // Temps restant RECALCULÉ, et non `timeLeft` tel que rendu.
+    //
+    // Au basculement de tour, `anchor` porte déjà la nouvelle valeur alors que
+    // `timeLeft` traîne encore celle du rendu précédent : le compteur affichait
+    // le décompte du joueur SORTANT. Le joueur entrant héritait donc d'une
+    // valeur basse — celle de la fin du tour d'en face — pendant que la remise à
+    // zéro venait de réarmer l'alarme, et le tic-tac partait dès la première
+    // seconde de son tour, avec 90 secondes devant lui.
+    //
+    // `anchor` étant calculé pendant le rendu, il est TOUJOURS à jour ici : ce
+    // recalcul neutralise toute la famille des courses sur l'état rendu.
+    if (computeTimeLeft(anchor, pauseOffsetMsRef.current, duration) > WARNING_THRESHOLD) return;
     hasFiredWarningRef.current = true;
     const audio = useAudioStore.getState();
     const url = audio.standardSfxUrls["timer_warning"];
@@ -161,7 +199,7 @@ export default function TurnTimer({
       warningAudioRef.current = SfxEngine.getInstance().play(url);
     }
     AudioEngine.getInstance().pause();
-  }, [timeLeft, isMyTurn]);
+  }, [timeLeft, isMyTurn, inChoice, anchor, duration]);
 
   const percentage = (timeLeft / duration) * 100;
   const isLow = timeLeft <= WARNING_THRESHOLD;
