@@ -31,6 +31,7 @@ const EVENT_TYPES = [
   { value: "buff", label: "Buff" },
   { value: "debuff", label: "Debuff" },
   { value: "summon", label: "Invocation" },
+  { value: "exile_cost", label: "Coût d'exil — cartes déchirées" },
   { value: "timer_warning", label: "Timer — alerte 15s" },
   { value: "mulligan_flip", label: "Mulligan — retournement de carte" },
   { value: "mulligan_pick", label: "Mulligan — sélection de carte" },

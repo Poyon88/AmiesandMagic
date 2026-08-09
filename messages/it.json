@@ -1893,6 +1893,9 @@
     "set_code_placeholder": "Codice (es: BASE)",
     "icon_placeholder": "Icona",
     "release_date": "Data di uscita",
+    "set_icon_import": "Importa un'icona",
+    "set_icon_change": "Cambia",
+    "set_icon_clear": "Rimuovi l'icona importata",
     "set_type_base": "Set base",
     "set_type_special": "Speciale",
     "set_type_hint": "Un set speciale resta giocabile e collezionabile, ma le sue carte non appaiono mai nei pescaggi casuali o semi-casuali (Selezione, Invocazione, Scatenamento, Concentrazione, Risparmio).",
@@ -1963,9 +1966,7 @@
     "unknown_error": "Errore sconosciuto",
     "illustration_generated": "Illustrazione generata ({model})",
     "import_error": "Errore di importazione",
-    "set_icon_import": "Importa un'icona",
-    "set_icon_change": "Cambia",
-    "set_icon_clear": "Rimuovi l'icona importata"
+    "exile_sound": "Suono del costo di esilio"
   },
   "game": {
     "error_not_authenticated": "Non autenticato",

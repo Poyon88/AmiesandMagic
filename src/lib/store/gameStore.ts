@@ -166,6 +166,21 @@ export interface CycleEternelEvent {
   timestamp: number;
 }
 
+/** Coût d'EXIL payé : X cartes retirées du dessus d'un deck. Elles ne rejoignent
+ *  aucune zone et personne ne peut les récupérer — sans animation, seul le
+ *  compteur du deck baissait, sans lien visible avec la carte jouée. */
+export interface ExileCostEvent {
+  count: number;
+  /** Deck du joueur LOCAL ou de l'adversaire — décide de la pile visée. */
+  isLocal: boolean;
+  /** Dos de carte de ce deck, pour que les moitiés déchirées en aient l'air. */
+  cardBackUrl: string | null;
+  /** Son propre à la carte qui paie ce coût. Absent ⇒ repli sur le son global
+   *  `exile_cost` s'il en existe un. */
+  sfxUrl?: string | null;
+  timestamp: number;
+}
+
 // Tempête X — lightning rain animation. Driven by the per-target damage
 // events the engine emits during the resolved action; we collect those
 // here so the overlay can stagger one bolt per drop.
@@ -361,6 +376,8 @@ interface GameStore {
   spellCastEvent: SpellCastEvent | null;
   fireBreathEvent: FireBreathEvent | null;
   cycleEternelEvent: CycleEternelEvent | null;
+  exileCostEvent: ExileCostEvent | null;
+  clearExileCostEvent: () => void;
   tempeteEvent: TempeteEvent | null;
   powerArrowEvent: PowerArrowEvent | null;
   manaReductionEvent: ManaReductionEvent | null;
@@ -1236,6 +1253,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   spellCastEvent: null,
   fireBreathEvent: null,
   cycleEternelEvent: null,
+  exileCostEvent: null,
   tempeteEvent: null,
   powerArrowEvent: null,
   manaReductionEvent: null,
@@ -1637,6 +1655,29 @@ export const useGameStore = create<GameStore>((set, get) => {
     }
     const cycleEvent: CycleEternelEvent | null = cycleEntries.length > 0
       ? { entries: cycleEntries, timestamp: Date.now() }
+      : null;
+
+    // Coût d'EXIL payé pendant l'action. Le moteur a noté combien de cartes ont
+    // quitté quel deck ; on y ajoute le POINT DE VUE local (quelle pile viser)
+    // et le dos de carte correspondant. On vide la liste transitoire après
+    // extraction (exclue du hash).
+    const rawExile = newState.exileCostEvents ?? [];
+    if (newState.exileCostEvents) newState.exileCostEvents = undefined;
+    const exileTotal = rawExile.reduce((n, e) => n + e.count, 0);
+    const exileIsLocal = rawExile[0]?.ownerId === localPlayerId;
+    const exileCostEvent: ExileCostEvent | null = exileTotal > 0
+      ? {
+        count: exileTotal,
+        isLocal: exileIsLocal,
+        cardBackUrl: exileIsLocal ? get().myCardBackUrl : get().opponentCardBackUrl,
+        // Le son suit la CARTE JOUÉE, celle dont le coût est payé — pas les
+        // cartes exilées, qui sont anonymes et jamais révélées.
+        sfxUrl: action.type === "play_card"
+          ? gameState.players[gameState.currentPlayerIndex].hand
+            .find((c) => c.instanceId === action.cardInstanceId)?.card.sfx_exile_url ?? null
+          : null,
+        timestamp: Date.now(),
+      }
       : null;
 
     // Sons d'entrée en jeu déjà joués à l'APERÇU (créature posée, picker ouvert) :
@@ -2202,7 +2243,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     // NB : drawTriggerSpells compte ici mais PAS dans `hasOverlay` — ce dernier
     // pilote aussi le décalage avant impact (OVERLAY_PRE_IMPACT_MS), déjà couvert
     // par le RECAST_GAP_MS que chaque révélation « pioche » réserve elle-même.
-    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!powerArrowEvent || !!manaReductionEvent || !!epargneGainEvent || drawTriggerSpells.length > 0;
+    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!powerArrowEvent || !!manaReductionEvent || !!epargneGainEvent || !!exileCostEvent || drawTriggerSpells.length > 0;
 
     // Deep clone helper — factionCardPool / allSpellsPool carry non-serialisable refs, keep them aside.
     const cloneState = (state: GameState): GameState => {
@@ -2347,6 +2388,9 @@ export const useGameStore = create<GameStore>((set, get) => {
         effectLog: [...get().effectLog, ...logEntries].slice(-20),
         actionHistory: [...get().actionHistory, ...historyEntries].slice(-ACTION_HISTORY_MAX),
       });
+      // Pas d'exil ici : `hasAnything` en tient compte, donc une action qui en
+      // porte un ne prend jamais ce chemin rapide (TypeScript le déduit seul et
+      // rendait le bloc précédent mort).
       playSfxBatch(sfxEvents, [...abilitySfxByPhase.overlay, ...abilitySfxByPhase.death]);
       return action;
     }
@@ -2624,6 +2668,14 @@ export const useGameStore = create<GameStore>((set, get) => {
       // the very start, before the spell overlay, so the discarded card
       // reads as a prerequisite of the cast (which it is, in the engine).
       if (costDiscardEvent) set({ discardFromHandEvent: costDiscardEvent });
+      // L'exil est un COÛT lui aussi : il se paie avant que la carte n'agisse,
+      // et la déchirure doit donc précéder l'overlay du sort.
+      if (exileCostEvent) {
+        set({ exileCostEvent });
+        // Son propre à la carte, repli sur le son global `exile_cost` — même
+        // priorité que le son de pose (`cardSfxUrl || standardSfxUrls[type]`).
+        playSfxBatch([{ type: "exile_cost", cardSfxUrl: exileCostEvent.sfxUrl ?? undefined }]);
+      }
     };
 
     const phaseDraws = () => {
@@ -2679,7 +2731,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     }
     // Phase 0 (Cost discard) — runs before the overlay so the discarded
     // card reads as a paid prerequisite, not a consequence of the spell.
-    if (costDiscardEvent) {
+    if (costDiscardEvent || exileCostEvent) {
       if (cursor === 0) phaseCostDiscard();
       else setTimeout(phaseCostDiscard, cursor);
       cursor += COST_DISCARD_MS;
@@ -3842,6 +3894,10 @@ export const useGameStore = create<GameStore>((set, get) => {
 
   clearFireBreathEvent: () => {
     set({ fireBreathEvent: null });
+  },
+
+  clearExileCostEvent: () => {
+    set({ exileCostEvent: null });
   },
 
   clearCycleEternelEvent: () => {

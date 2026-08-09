@@ -1661,6 +1661,7 @@
     "reset_button": "RÉINITIALISER",
     "summon_sound": "Son d'invocation",
     "death_sound": "Son de mort",
+    "exile_sound": "Son du coût d'exil",
     "reroll": "Re-roll",
     "new_card": "Nouvelle carte",
     "illustration_prompt_label": "PROMPT D'ILLUSTRATION",

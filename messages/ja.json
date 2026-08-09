@@ -1893,6 +1893,9 @@
     "set_code_placeholder": "コード（例：BASE）",
     "icon_placeholder": "アイコン",
     "release_date": "リリース日",
+    "set_icon_import": "アイコンをインポート",
+    "set_icon_change": "変更",
+    "set_icon_clear": "インポートしたアイコンを削除",
     "set_type_base": "基本セット",
     "set_type_special": "特別",
     "set_type_hint": "特別セットはプレイ可能かつコレクション対象のままですが、そのカードはランダムまたは準ランダムな抽選（選択、召喚、解放、集中、温存）には決して出現しません。",
@@ -1963,9 +1966,7 @@
     "unknown_error": "不明なエラー",
     "illustration_generated": "イラストを生成しました（{model}）",
     "import_error": "インポートエラー",
-    "set_icon_import": "アイコンをインポート",
-    "set_icon_change": "変更",
-    "set_icon_clear": "インポートしたアイコンを削除"
+    "exile_sound": "除外コストの音"
   },
   "game": {
     "error_not_authenticated": "未認証",

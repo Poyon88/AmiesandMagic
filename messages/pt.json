@@ -1893,6 +1893,9 @@
     "set_code_placeholder": "Código (ex: BASE)",
     "icon_placeholder": "Ícone",
     "release_date": "Data de lançamento",
+    "set_icon_import": "Importar um ícone",
+    "set_icon_change": "Alterar",
+    "set_icon_clear": "Remover ícone importado",
     "set_type_base": "Set base",
     "set_type_special": "Especial",
     "set_type_hint": "Um set especial continua jogável e coleccionável, mas as suas cartas nunca aparecem em sorteios aleatórios ou semialeatórios (Seleção, Invocação, Desencadeamento, Concentração, Poupança).",
@@ -1963,9 +1966,7 @@
     "unknown_error": "Erro desconhecido",
     "illustration_generated": "Ilustração gerada ({model})",
     "import_error": "Erro de importação",
-    "set_icon_import": "Importar um ícone",
-    "set_icon_change": "Alterar",
-    "set_icon_clear": "Remover ícone importado"
+    "exile_sound": "Som do custo de exílio"
   },
   "game": {
     "error_not_authenticated": "Não autenticado",

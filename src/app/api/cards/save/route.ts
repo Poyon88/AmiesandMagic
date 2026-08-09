@@ -89,7 +89,7 @@ export async function GET() {
   const supabaseAdmin = getAdminClient();
   const { data, error } = await supabaseAdmin
     .from('cards')
-    .select('id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, keywords, keyword_instances, spell_keywords, spell_effects, capabilities, image_url, illustration_prompt, faction, race, clan, rarity, card_alignment, convocation_token_id, convocation_tokens, lycanthropie_token_id, entraide_race, set_id, card_year, card_month, sfx_play_url, sfx_death_url, life_cost, discard_cost, sacrifice_cost, exile_cost')
+    .select('id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, keywords, keyword_instances, spell_keywords, spell_effects, capabilities, image_url, illustration_prompt, faction, race, clan, rarity, card_alignment, convocation_token_id, convocation_tokens, lycanthropie_token_id, entraide_race, set_id, card_year, card_month, sfx_play_url, sfx_death_url, sfx_exile_url, life_cost, discard_cost, sacrifice_cost, exile_cost')
     .order('name');
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -103,7 +103,7 @@ export async function POST(request: Request) {
   const supabaseAdmin = auth.supabase;
 
   try {
-    const { card, imageBase64, imageMimeType, updateId, sfxPlayBase64, sfxPlayMimeType, sfxDeathBase64, sfxDeathMimeType, partial, composed_capabilities, allowDuplicateName } = await request.json();
+    const { card, imageBase64, imageMimeType, updateId, sfxPlayBase64, sfxPlayMimeType, sfxDeathBase64, sfxDeathMimeType, sfxExileBase64, sfxExileMimeType, partial, composed_capabilities, allowDuplicateName } = await request.json();
     const composedCaps = sanitizeComposed(composed_capabilities);
 
     // Partial update path: only update the fields explicitly present in
@@ -248,9 +248,16 @@ export async function POST(request: Request) {
     for (const [base64Key, mimeKey, urlKey] of [
       ['sfxPlayBase64', 'sfxPlayMimeType', 'sfx_play_url'],
       ['sfxDeathBase64', 'sfxDeathMimeType', 'sfx_death_url'],
+      ['sfxExileBase64', 'sfxExileMimeType', 'sfx_exile_url'],
     ] as const) {
-      const b64 = base64Key === 'sfxPlayBase64' ? sfxPlayBase64 : sfxDeathBase64;
-      const mime = mimeKey === 'sfxPlayMimeType' ? sfxPlayMimeType : sfxDeathMimeType;
+      // Aiguillage explicite : les trois sons partagent le même chemin d'upload,
+      // seule la source du base64 change.
+      const b64 = base64Key === 'sfxPlayBase64' ? sfxPlayBase64
+        : base64Key === 'sfxDeathBase64' ? sfxDeathBase64
+        : sfxExileBase64;
+      const mime = mimeKey === 'sfxPlayMimeType' ? sfxPlayMimeType
+        : mimeKey === 'sfxDeathMimeType' ? sfxDeathMimeType
+        : sfxExileMimeType;
       if (b64 && mime) {
         const buf = Buffer.from(b64, 'base64');
         const ext = mime.split('/')[1]?.replace('mpeg', 'mp3') || 'mp3';

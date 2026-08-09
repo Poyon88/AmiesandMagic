@@ -12805,5 +12805,12 @@
   "ja:forge.set_icon_clear": "1hv6641",
   "zh:forge.set_icon_import": "1tvkhzm",
   "zh:forge.set_icon_change": "9oyge5",
-  "zh:forge.set_icon_clear": "1hv6641"
+  "zh:forge.set_icon_clear": "1hv6641",
+  "en:forge.exile_sound": "146hg4s",
+  "es:forge.exile_sound": "146hg4s",
+  "de:forge.exile_sound": "146hg4s",
+  "it:forge.exile_sound": "146hg4s",
+  "pt:forge.exile_sound": "146hg4s",
+  "ja:forge.exile_sound": "146hg4s",
+  "zh:forge.exile_sound": "146hg4s"
 }

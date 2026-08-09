@@ -130,3 +130,58 @@ describe("coût d'exil — sorts et fatigue", () => {
     expect(st.players[0].hero.hp).toBeLessThan(pvAvant);
   });
 });
+
+describe("coût d'exil — signalé pour l'ANIMATION", () => {
+  // Les cartes exilées ne rejoignent aucune zone : rien à l'écran ne les montrait
+  // partir, seul le compteur du deck baissait — sans que le joueur relie cette
+  // baisse à la carte qu'il venait de jouer. `exileCostEvents` alimente la
+  // déchirure jouée sur la pile.
+  it("l'évènement porte le nombre exact et le propriétaire du deck", () => {
+    const { s, carte } = etat(["A", "B", "C", "D"], 3);
+    s.players[0].id = "MOI";
+
+    const st = applyAction(s, { type: "play_card", cardInstanceId: carte.instanceId });
+
+    expect(st.exileCostEvents).toEqual([{ ownerId: "MOI", count: 3 }]);
+  });
+
+  it("une carte sans coût d'exil ne signale rien", () => {
+    const { s, carte } = etat(["A", "B"], 0);
+    const st = applyAction(s, { type: "play_card", cardInstanceId: carte.instanceId });
+    expect(st.exileCostEvents).toBeUndefined();
+  });
+
+  it("un coût REFUSÉ ne signale rien non plus (rien n'a été exilé)", () => {
+    const { s, carte } = etat(["A"], 2);
+    const st = applyAction(s, { type: "play_card", cardInstanceId: carte.instanceId });
+    expect(st.exileCostEvents).toBeUndefined();
+  });
+
+  it("exclu du hash de synchro — indice d'animation, pas vérité de jeu", async () => {
+    const { syncHash } = await import("./stateHash");
+    const { s } = etat(["A", "B"], 0);
+    const b: GameState = { ...s, exileCostEvents: [{ ownerId: s.players[0].id, count: 2 }] };
+    expect(syncHash(s)).toBe(syncHash(b));
+  });
+});
+
+describe("coût d'exil — bruitage par carte", () => {
+  // Le son suit la carte JOUÉE, celle dont le coût est payé. Les cartes exilées
+  // sont anonymes et jamais révélées : leur donner la parole n'aurait pas de sens.
+  it("l'URL du son de la carte jouée voyage jusqu'à l'animation", () => {
+    const s = mkState();
+    s.players[0].deck = ["A", "B"].map(n => mkInstance(mkCard({ name: n })));
+    const carte = mkInstance(mkCard({
+      name: "Pacte", mana_cost: 1, attack: 2, health: 2, exile_cost: 2,
+      sfx_exile_url: "dechirure.mp3",
+    }));
+    s.players[0].hand.push(carte);
+
+    const st = applyAction(s, { type: "play_card", cardInstanceId: carte.instanceId });
+
+    // Côté moteur, seul le COMPTE circule : le son est rattaché côté store, à
+    // partir de la carte jouée (le moteur n'a pas à connaître les URL d'audio).
+    expect(st.exileCostEvents).toEqual([{ ownerId: s.players[0].id, count: 2 }]);
+    expect(carte.card.sfx_exile_url).toBe("dechirure.mp3");
+  });
+});

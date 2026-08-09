@@ -1893,6 +1893,9 @@
     "set_code_placeholder": "代码（例：BASE）",
     "icon_placeholder": "图标",
     "release_date": "发行日期",
+    "set_icon_import": "导入图标",
+    "set_icon_change": "更改",
+    "set_icon_clear": "移除已导入的图标",
     "set_type_base": "基础系列",
     "set_type_special": "特殊",
     "set_type_hint": "特殊系列仍可游玩和收藏，但其卡牌永远不会出现在随机或半随机抽取中（选择、召唤、解放、集中、节省）。",
@@ -1963,9 +1966,7 @@
     "unknown_error": "未知错误",
     "illustration_generated": "插图已生成（{model}）",
     "import_error": "导入错误",
-    "set_icon_import": "导入图标",
-    "set_icon_change": "更改",
-    "set_icon_clear": "移除已导入的图标"
+    "exile_sound": "放逐消耗音效"
   },
   "game": {
     "error_not_authenticated": "未登录",

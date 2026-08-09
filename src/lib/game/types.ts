@@ -629,6 +629,8 @@ export interface Card {
   card_month?: number | null;
   sfx_play_url?: string | null;
   sfx_death_url?: string | null;
+  /** Bruitage du paiement du coût d'EXIL (cartes déchirées au deck). */
+  sfx_exile_url?: string | null;
   // Alternative costs (additional, cumulative with mana_cost). Null/0 = inactive.
   // Not reducible by Canalisation/Entraide — those touch only mana_cost.
   life_cost?: number | null;
@@ -1032,6 +1034,15 @@ export interface GameState {
   abilitySfxEvents?: Array<{
     abilityId: string;
     trigger: CapabilityTrigger;
+  }>;
+  // Transient : cartes retirées du dessus d'un deck pour payer un coût d'EXIL.
+  // Elles ne rejoignent AUCUNE zone — ni cimetière, ni main — donc rien à
+  // l'écran ne les montrait partir : seul le compteur du deck baissait, sans
+  // que le joueur relie cette baisse à la carte qu'il venait de jouer.
+  // Vidé par le store après planification ; exclu du hash d'état.
+  exileCostEvents?: Array<{
+    ownerId: string;
+    count: number;
   }>;
   // Transient: chaque dégât infligé par un effet composé DÉCLENCHÉ (mort/retour/
   // attaque/fin de tour — PAS tap/on-play) est poussé ici {source, cible, mode}

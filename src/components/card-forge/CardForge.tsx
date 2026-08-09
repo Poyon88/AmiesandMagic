@@ -2253,6 +2253,8 @@ export default function CardForge() {
   const [saving, setSaving] = useState(false);
   const [sfxPlayFile, setSfxPlayFile] = useState<{ base64: string; mimeType: string } | null>(null);
   const [sfxDeathFile, setSfxDeathFile] = useState<{ base64: string; mimeType: string } | null>(null);
+  // Bruitage du paiement du coût d'EXIL (cartes déchirées au deck).
+  const [sfxExileFile, setSfxExileFile] = useState<{ base64: string; mimeType: string } | null>(null);
   const [saveResult, setSaveResult] = useState<{ ok: boolean; msg: string } | null>(null);
 
 
@@ -2308,6 +2310,7 @@ export default function CardForge() {
     // Médias
     setSfxPlayFile(null);
     setSfxDeathFile(null);
+    setSfxExileFile(null);
     setCardImages(prev => {
       const next = { ...prev };
       delete next[previewId];
@@ -2481,6 +2484,8 @@ export default function CardForge() {
           sfxPlayMimeType: sfxPlayFile?.mimeType || null,
           sfxDeathBase64: sfxDeathFile?.base64 || null,
           sfxDeathMimeType: sfxDeathFile?.mimeType || null,
+          sfxExileBase64: sfxExileFile?.base64 || null,
+          sfxExileMimeType: sfxExileFile?.mimeType || null,
         }),
       });
 
@@ -2510,7 +2515,7 @@ export default function CardForge() {
     } finally {
       setSaving(false);
     }
-  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, keywordModes, keywordGrantScope, rmY, afY, rfY, glY, dcY, fdaY, rmRace, rmClan, asRace, invocCosts, invocRace, invocFaction, composedCaps, conferAbilityId, conferX, conferY, declenchementTriggers, resetCardForm]);
+  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, sfxExileFile, keywordModes, keywordGrantScope, rmY, afY, rfY, glY, dcY, fdaY, rmRace, rmClan, asRace, invocCosts, invocRace, invocFaction, composedCaps, conferAbilityId, conferX, conferY, declenchementTriggers, resetCardForm]);
 
   const [generatingImage, setGeneratingImage] = useState(false);
   const [editedPrompt, setEditedPrompt] = useState<string | null>(null);
@@ -2924,6 +2929,29 @@ export default function CardForge() {
                       style={{ width: "100%", fontSize: 9, marginTop: 2 }}
                     />
                   </div>
+                  {/* Son du coût d'EXIL — proposé seulement si la carte en a un :
+                      offrir le champ sur une carte sans coût d'exil laisserait
+                      téléverser un fichier qui ne se déclencherait jamais. */}
+                  {manualExileCost > 0 && (
+                    <div style={{ flex: 1, minWidth: 140 }}>
+                      <label style={{ fontSize: 9, color: "#888", fontFamily: "'Cinzel',serif" }}>{tf('exile_sound')}</label>
+                      <input
+                        type="file"
+                        accept="audio/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          const reader = new FileReader();
+                          reader.onload = () => {
+                            const result = reader.result as string;
+                            setSfxExileFile({ base64: result.split(",")[1], mimeType: file.type });
+                          };
+                          reader.readAsDataURL(file);
+                        }}
+                        style={{ width: "100%", fontSize: 9, marginTop: 2 }}
+                      />
+                    </div>
+                  )}
                 </div>
               )}
               {(card || (forgeMode === "manuel" && manualName)) && !loading && (

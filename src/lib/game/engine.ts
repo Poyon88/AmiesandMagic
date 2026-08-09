@@ -108,6 +108,11 @@ let drawTriggerSink: Array<{ card: Card; ownerId: string }> = [];
 // ferait sonner deux mécaniques différentes à l'identique.
 // Vidé au début d'applyAction, rattaché à state.abilitySfxEvents ; hors hash.
 let abilitySfxSink: Array<{ abilityId: string; trigger: import("./types").CapabilityTrigger }> = [];
+// Cartes EXILÉES du dessus du deck pour payer un coût d'exil. Indice
+// d'animation : elles ne rejoignent aucune zone (ni cimetière, ni main), donc
+// rien à l'écran ne les montrait partir — seul le compteur du deck baissait.
+// Vidé au début d'applyAction, rattaché à state.exileCostEvents ; hors hash.
+let exileCostSink: Array<{ ownerId: string; count: number }> = [];
 /** Signale qu'une capacité nommée vient de résoudre. Dédoublonné par
  *  (id, déclencheur) : deux Tempête dans la même action ne sonnent qu'une fois. */
 function noteAbilitySfx(abilityId: string, trigger: import("./types").CapabilityTrigger): void {
@@ -2575,7 +2580,10 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
   // EXIL : les cartes quittent le deck sans rejoindre AUCUNE zone. Un simple
   // `splice` suffit donc — les pousser au cimetière les rendrait récupérables
   // (Exhumation, Résurrection, Rappel), ce qui viderait le coût de son sens.
-  if (exileCost > 0) player.deck.splice(0, exileCost);
+  if (exileCost > 0) {
+    player.deck.splice(0, exileCost);
+    exileCostSink.push({ ownerId: player.id, count: exileCost });
+  }
   // Remove the played card from hand FIRST so it can never be its own discard
   // target and so hand-size checks downstream are accurate.
   zone.splice(cardIndex, 1);
@@ -7823,6 +7831,7 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   damageLedgerSink = [];
   drawTriggerSink = [];
   abilitySfxSink = [];
+  exileCostSink = [];
   lethalSpellActive = false;
   powerStrikeSink = [];
   composedStrikeMode = undefined;
@@ -7884,6 +7893,10 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   // Rattache les capacités qui ont sonné (bruitage par capacité).
   if (abilitySfxSink.length > 0 && result !== state) {
     result.abilitySfxEvents = [...(result.abilitySfxEvents ?? []), ...abilitySfxSink];
+  }
+  // Rattache l'exil payé pendant l'action (animation de déchirure au deck).
+  if (exileCostSink.length > 0 && result !== state) {
+    result.exileCostEvents = [...(result.exileCostEvents ?? []), ...exileCostSink];
   }
   // Rattache les frappes de pouvoir déclenchées (flèches source→cible colorées
   // par mode) émises pendant l'action.

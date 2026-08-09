@@ -40,6 +40,7 @@ const VOLATILE_KEYS = new Set([
   "damageLedger",
   "drawTriggerEvents",
   "abilitySfxEvents",
+  "exileCostEvents",
   "powerStrikes",
   "recastEvents",
   "stackOverflowCount",

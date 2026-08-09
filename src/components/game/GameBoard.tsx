@@ -31,6 +31,7 @@ import SpellCastOverlay from "./SpellCastOverlay";
 import PowerArrowOverlay from "./PowerArrowOverlay";
 import FireBreathOverlay from "./FireBreathOverlay";
 import CycleEternelOverlay from "./CycleEternelOverlay";
+import ExileCostOverlay from "./ExileCostOverlay";
 import HeroPowerOverlay from "./HeroPowerOverlay";
 import GraveyardAffectOverlay from "./GraveyardAffectOverlay";
 import DiscardFromHandOverlay from "./DiscardFromHandOverlay";
@@ -126,6 +127,8 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     clearFireBreathEvent,
     cycleEternelEvent,
     clearCycleEternelEvent,
+    exileCostEvent,
+    clearExileCostEvent,
     heroPowerCastEvent,
     clearHeroPowerCastEvent,
     graveyardAffectEvent,
@@ -1606,6 +1609,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
       <PowerArrowOverlay event={powerArrowEvent} onComplete={clearPowerArrowEvent} />
       <FireBreathOverlay event={fireBreathEvent} onComplete={clearFireBreathEvent} />
       <CycleEternelOverlay event={cycleEternelEvent} onComplete={clearCycleEternelEvent} />
+      <ExileCostOverlay event={exileCostEvent} onComplete={clearExileCostEvent} />
       <HeroPowerOverlay event={heroPowerCastEvent} onComplete={clearHeroPowerCastEvent} />
       <GraveyardAffectOverlay event={graveyardAffectEvent} onComplete={clearGraveyardAffectEvent} />
       <DiscardFromHandOverlay event={discardFromHandEvent} onComplete={clearDiscardFromHandEvent} />
