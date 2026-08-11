@@ -200,6 +200,32 @@ function Btn({ onClick, label, color }: { onClick: () => void; label: string; co
   );
 }
 
+// Couples +X/+Y dont le second membre a un état React DÉDIÉ (rmY, afY, rfY, glY,
+// dcY, fdaY) et un panneau écrit à la main. Tous les AUTRES couples du registre
+// sont pilotés génériquement par `keywordYValues` + le panneau dérivé.
+//
+// Une entrée oubliée ici est sans conséquence : la capacité tombe dans le
+// traitement générique, qui affiche et persiste son Y. Le sens inverse était le
+// piège — sans traitement générique, Pureté et Seuil Sacrificiel n'avaient
+// AUCUN champ +PV dans la forge et repartaient avec le défaut moteur y = 1.
+const XY_LABELS_Y_DEDIE: ReadonlySet<string> = new Set([
+  "Renforcement multiple", "Affaiblissement -X/-Y", "Renforcement +X/+Y",
+  "Gloire +X/+Y", "Déchainement X/Y", "Force des ancêtres +X/+Y",
+]);
+
+/** Couples dont le panneau dédié porte DÉJÀ le X : le laisser aussi sur la puce
+ *  donnerait deux champs pour la même valeur. Les autres (Renforcement multiple,
+ *  Affaiblissement, Déchainement) gardent leur X sur la puce. */
+const XY_LABELS_X_DANS_PANNEAU: ReadonlySet<string> = new Set([
+  "Renforcement +X/+Y", "Gloire +X/+Y", "Force des ancêtres +X/+Y",
+]);
+
+/** Ce libellé est-il un couple +X/+Y traité GÉNÉRIQUEMENT (X et Y saisis dans le
+ *  panneau dérivé, pas dans un bloc écrit à la main) ? */
+function isCoupleXYGenerique(label: string): boolean {
+  return XY_ABILITY_IDS.has(FORGE_TO_GAME_KEYWORD[label] ?? label) && !XY_LABELS_Y_DEDIE.has(label);
+}
+
 // ─── MAIN COMPONENT ──────────────────────────────────────────────────────────
 
 export default function CardForge() {
@@ -1728,6 +1754,11 @@ export default function CardForge() {
   const [dcY, setDcY] = useState<number>(1);
   // Force des ancêtres +X/+Y (créature) : le +PV (Y) dédié (le +ATK = la valeur X).
   const [fdaY, setFdaY] = useState<number>(1);
+  // Second membre des couples +X/+Y qui n'ont PAS d'état dédié ci-dessus, keyé
+  // par libellé forge. Les six états nommés sont un héritage : toute paire
+  // ajoutée au registre depuis passe par cette grille, et son champ apparaît
+  // donc à l'écran sans une ligne de code de plus (cf. XY_LABELS_Y_DEDIE).
+  const [keywordYValues, setKeywordYValues] = useState<Record<string, number>>({});
   const [rmRace, setRmRace] = useState<string>("");
   const [rmClan, setRmClan] = useState<string>("");
   // Appel Suprême : race ciblée fixée sur la carte (créature). Persistée dans
@@ -1791,10 +1822,12 @@ export default function CardForge() {
     power: type !== "Unité" ? manualPower : null,
     keywords: manualKeywords,
     keywordXValues,
-    // Les quatre mots-clés « paire de stats » gardent leur +Y dans un état
-    // dédié (pas dans keywordXValues) : on le transmet à l'aperçu pour qu'il
-    // peigne « +2/+1 » et non le seul X.
+    // Les mots-clés « paire de stats » gardent leur +Y hors de keywordXValues :
+    // on le transmet à l'aperçu pour qu'il peigne « +2/+1 » et non le seul X.
+    // La grille générique d'abord, les six états dédiés ensuite (ils font foi
+    // pour leurs libellés).
     keywordYValues: {
+      ...keywordYValues,
       "Gloire +X/+Y": glY,
       "Renforcement +X/+Y": rfY,
       "Renforcement multiple": rmY,
@@ -1839,6 +1872,16 @@ export default function CardForge() {
   const SPELL_CONFER_Y_STATE: Record<string, [number, (n: number) => void]> = {
     "Gloire +X/+Y": [glY, setGlY],
     "Force des ancêtres +X/+Y": [fdaY, setFdaY],
+    // Couples sans état dédié : leur Y est désormais persisté lui aussi (branche
+    // générique de buildKeywordInstances), le champ a donc sa place ici.
+    ...Object.fromEntries(
+      Object.keys(KEYWORDS)
+        .filter(isCoupleXYGenerique)
+        .map((label): [string, [number, (n: number) => void]] => [
+          label,
+          [keywordYValues[label] ?? 1, (n: number) => setKeywordYValues(prev => ({ ...prev, [label]: n }))],
+        ]),
+    ),
   };
 
   const loadTokenTemplates = useCallback(async () => {
@@ -2041,6 +2084,10 @@ export default function CardForge() {
       const tokenKeywordInstances = buildKeywordInstances({
         labels: tokenKeywords,
         xValues: tokenXValues,
+        // La grille de l'éditeur de tokens est déjà générique : on la passe telle
+        // quelle, et les six libellés à champ dédié sont recopiés dans `extras`
+        // juste en dessous (le constructeur les y lit encore).
+        yValues: tokenYValues,
         modes: tokenModes,
         extras: {
           rmY: tokenYValues["Renforcement multiple"],
@@ -2299,6 +2346,7 @@ export default function CardForge() {
     setDeclenchementTriggers([]);
     // Paramètres Y / race / faction portés par des états dédiés
     setRmY(1); setAfY(1); setRfY(1); setGlY(1); setDcY(1); setFdaY(1);
+    setKeywordYValues({});
     setRmRace(""); setRmClan(""); setAsRace("");
     setInvocCosts([]); setInvocRace(""); setInvocFaction("");
     setConferAbilityId(""); setConferX(1); setConferY(1);
@@ -2401,6 +2449,7 @@ export default function CardForge() {
       const keywordInstances = buildKeywordInstances({
         labels: forgeCard.keywords,
         xValues: forgeCard.keywordXValues,
+        yValues: keywordYValues,
         modes: keywordModes,
         grantScopes: keywordGrantScope,
         isSpellCard,
@@ -2515,7 +2564,7 @@ export default function CardForge() {
     } finally {
       setSaving(false);
     }
-  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, sfxExileFile, keywordModes, keywordGrantScope, rmY, afY, rfY, glY, dcY, fdaY, rmRace, rmClan, asRace, invocCosts, invocRace, invocFaction, composedCaps, conferAbilityId, conferX, conferY, declenchementTriggers, resetCardForm]);
+  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, sfxExileFile, keywordModes, keywordGrantScope, keywordYValues, rmY, afY, rfY, glY, dcY, fdaY, rmRace, rmClan, asRace, invocCosts, invocRace, invocFaction, composedCaps, conferAbilityId, conferX, conferY, declenchementTriggers, resetCardForm]);
 
   const [generatingImage, setGeneratingImage] = useState(false);
   const [editedPrompt, setEditedPrompt] = useState<string | null>(null);
@@ -3408,6 +3457,10 @@ export default function CardForge() {
                         // when it grants to all allies, faction-colored otherwise.
                         const grantAll = type !== "Unité" && selected && keywordGrantScope[id] === "all_allies";
                         const selColor = grantAll ? "#27ae60" : fac.color;
+                        // Le X vit sur la puce, sauf quand un panneau dédié ou
+                        // générique le porte déjà : la puce reste alors ronde.
+                        const coupleGenerique = isCoupleXYGenerique(id);
+                        const xSurPuce = isScalable && selected && !XY_LABELS_X_DANS_PANNEAU.has(id) && !coupleGenerique;
                         return (
                           <div key={id} style={{ display: "inline-flex", alignItems: "center", gap: 2, position: "relative" }}
                             onMouseEnter={e => {
@@ -3423,19 +3476,32 @@ export default function CardForge() {
                               } else if (!selected && isScalable) {
                                 setKeywordXValues(prev => ({ ...prev, [id]: 1 }));
                               }
+                              // Second membre des couples génériques : posé/retiré
+                              // avec la capacité, pour ne pas traîner la valeur
+                              // d'une capacité désélectionnée jusqu'à la sauvegarde.
+                              if (coupleGenerique) {
+                                setKeywordYValues(prev => {
+                                  const next = { ...prev };
+                                  if (selected) delete next[id]; else next[id] = 1;
+                                  return next;
+                                });
+                              }
                               if (selected) {
                                 setKeywordGrantScope(prev => { const next = { ...prev }; delete next[id]; return next; });
                               }
                             }}
                               style={{
-                                padding: "3px 7px", borderRadius: isScalable && selected ? "5px 0 0 5px" : 5, cursor: "pointer",
+                                padding: "3px 7px", borderRadius: xSurPuce ? "5px 0 0 5px" : 5, cursor: "pointer",
                                 background: selected ? `${selColor}22` : "#fff",
                                 border: `1px solid ${selected ? selColor : "#e0e0e0"}`,
                                 color: selected ? selColor : "#999",
                                 fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: selected ? 700 : 400,
                                 transition: "all 0.15s",
                               }}>{id.replace(/ X$/, "")}{isScalable && !selected && / X$/.test(id) ? " X" : ""}</button>
-                            {isScalable && selected && id !== "Renforcement +X/+Y" && id !== "Gloire +X/+Y" && id !== "Force des ancêtres +X/+Y" && (
+                            {/* X sur la puce, SAUF pour les couples dont le
+                                panneau plus bas porte déjà le X (sinon deux
+                                champs pour la même valeur). */}
+                            {xSurPuce && (
                               <input
                                 type="number" min={1} max={10}
                                 value={keywordXValues[id] ?? 1}
@@ -3652,6 +3718,40 @@ export default function CardForge() {
                         </div>
                       </div>
                     )}
+                    {/* Couples +X/+Y sans champ dédié (Seuil Sacrificiel, Pureté,
+                        et toute paire ajoutée au registre ensuite). Panneau
+                        DÉRIVÉ de XY_ABILITY_IDS : aucune ligne à écrire pour la
+                        prochaine, là où les six blocs ci-dessus ont chacun coûté
+                        un état, un champ et une branche de sauvegarde. */}
+                    {manualKeywords.filter(isCoupleXYGenerique).map(label => {
+                      const engineId = FORGE_TO_GAME_KEYWORD[label] ?? label;
+                      // KEYWORD_SYMBOLS est keyé par LIBELLÉ et écrit à la main :
+                      // une capacité récente n'y figure pas. Repli sur le symbole
+                      // du registre, qui est, lui, exhaustif par construction.
+                      const symbole = KEYWORD_SYMBOLS[label] ?? ABILITIES[engineId]?.symbol ?? "✦";
+                      return (
+                        <div key={label} style={{ marginTop: 6, padding: 6, borderRadius: 6, border: "1px solid #cfe4e8", background: "#f2fbfd" }}>
+                          <div style={{ fontSize: 8, color: "#2b6d7a", letterSpacing: 1, fontWeight: 700, marginBottom: 4 }}>
+                            {symbole} {label.replace(/\s*[+-]X\/[+-]Y$/, "").toUpperCase()}
+                          </div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <span style={{ fontSize: 9, color: "#2b6d7a" }}>+ATK (X)</span>
+                            <input type="number" min={0} max={20} value={keywordXValues[label] ?? 1}
+                              onChange={e => setKeywordXValues(prev => ({ ...prev, [label]: Math.max(0, Math.min(20, parseInt(e.target.value) || 0)) }))}
+                              style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: "1px solid #cfe4e8", fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }}
+                            />
+                            <span style={{ fontSize: 9, color: "#2b6d7a" }}>+PV (Y)</span>
+                            <input type="number" min={0} max={20} value={keywordYValues[label] ?? 1}
+                              onChange={e => setKeywordYValues(prev => ({ ...prev, [label]: Math.max(0, Math.min(20, parseInt(e.target.value) || 0)) }))}
+                              style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: "1px solid #cfe4e8", fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }}
+                            />
+                          </div>
+                          {KEYWORDS[label]?.desc && (
+                            <div style={{ fontSize: 8, color: "#888", marginTop: 3 }}>{KEYWORDS[label].desc}</div>
+                          )}
+                        </div>
+                      );
+                    })}
                     {/* Déchainement — coût Y des sorts lancés (le nombre de sorts = la valeur X) */}
                     {manualKeywords.includes("Déchainement X/Y") && (
                       <div style={{ marginTop: 6, padding: 6, borderRadius: 6, border: "1px solid #e8cfc0", background: "#fff6f0" }}>
@@ -4013,7 +4113,7 @@ export default function CardForge() {
                             <span style={labelStyle}>{tf('effect_label')}</span>
                             <span style={{ ...valStyle, display: "flex", alignItems: "center", gap: 8 }}>
                               {def?.creature?.desc ?? def?.desc ?? label}
-                              {scalable && label !== "Renforcement +X/+Y" && label !== "Gloire +X/+Y" && label !== "Force des ancêtres +X/+Y" && (
+                              {scalable && !XY_LABELS_X_DANS_PANNEAU.has(label) && !isCoupleXYGenerique(label) && (
                                 <input type="number" min={1} max={10} value={keywordXValues[label] ?? 1}
                                   onChange={e => setKeywordXValues(prev => ({ ...prev, [label]: Math.max(1, Math.min(10, parseInt(e.target.value) || 1)) }))}
                                   style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: `1px solid ${fac.color}`, background: `${fac.color}11`, color: fac.color, fontSize: 11, textAlign: "center", fontWeight: 700, fontFamily: "'Cinzel',serif" }}
@@ -4096,6 +4196,19 @@ export default function CardForge() {
                                 <input type="number" min={0} max={20} value={keywordXValues[label] ?? 1} onChange={e => setKeywordXValues(prev => ({ ...prev, [label]: Math.max(0, Math.min(20, parseInt(e.target.value) || 0)) }))} style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: cardBorder, fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
                                 <span style={{ fontSize: 9, color: "#6b4fa0" }}>+PV</span>
                                 <input type="number" min={0} max={20} value={fdaY} onChange={e => setFdaY(Math.max(0, parseInt(e.target.value) || 0))} style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: cardBorder, fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
+                              </div>
+                            </div>
+                          )}
+                          {/* Couples +X/+Y sans champ dédié — dérivé du registre,
+                              même rôle que le panneau homonyme de l'onglet Forge. */}
+                          {isCoupleXYGenerique(label) && (
+                            <div style={{ marginTop: 8 }}>
+                              <div style={{ ...labelStyle, color: "#2b6d7a", marginBottom: 3 }}>{KEYWORD_SYMBOLS[label] ?? def?.symbol ?? "✦"} +ATK (X) / +PV (Y)</div>
+                              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                <span style={{ fontSize: 9, color: "#2b6d7a" }}>+ATK</span>
+                                <input type="number" min={0} max={20} value={keywordXValues[label] ?? 1} onChange={e => setKeywordXValues(prev => ({ ...prev, [label]: Math.max(0, Math.min(20, parseInt(e.target.value) || 0)) }))} style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: cardBorder, fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
+                                <span style={{ fontSize: 9, color: "#2b6d7a" }}>+PV</span>
+                                <input type="number" min={0} max={20} value={keywordYValues[label] ?? 1} onChange={e => setKeywordYValues(prev => ({ ...prev, [label]: Math.max(0, Math.min(20, parseInt(e.target.value) || 0)) }))} style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: cardBorder, fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
                               </div>
                             </div>
                           )}

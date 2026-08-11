@@ -1,4 +1,5 @@
-// Toute capacité à COUPLE +X/+Y doit être saisissable dans l'onglet Édition.
+// Toute capacité à COUPLE +X/+Y doit être saisissable dans les DEUX formulaires
+// qui produisent des capacités de créature : l'onglet Édition et la Forge.
 //
 // `CardEditor` traite chaque paire par un bloc écrit à la main — un `useState`,
 // une branche de chargement, une branche de sauvegarde et un champ de saisie.
@@ -14,6 +15,7 @@ import { describe, expect, it } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
 import { XY_ABILITY_IDS } from "./abilities";
+import { GAME_TO_FORGE_KEYWORD, buildKeywordInstances } from "@/lib/card-forge/keyword-instances";
 
 const SOURCE = fs.readFileSync(
   path.join(process.cwd(), "src/components/admin/CardEditor.tsx"),
@@ -45,4 +47,25 @@ describe("couverture des capacités +X/+Y dans l'éditeur", () => {
     );
     expect(brancheSauvegarde.test(SOURCE), `sauvegarde du y de ${id}`).toBe(true);
   });
+
+  // La FORGE est le second formulaire, et il avait exactement la même faille :
+  // Pureté et Seuil Sacrificiel n'y montraient qu'un seul nombre, et
+  // `buildKeywordInstances` les faisait tomber dans la branche générique — celle
+  // qui n'émet PAS de `y`. On ne vérifie plus la présence d'un bloc écrit à la
+  // main (il n'y en a plus besoin), mais le contrat de sortie : l'instance
+  // construite porte un `y` égal à la saisie.
+  it.each(ids)("« %s » persiste son Y depuis la forge", (id) => {
+    const label = GAME_TO_FORGE_KEYWORD[id];
+    expect(label, `libellé forge de ${id}`).toBeTruthy();
+    const [instance] = buildKeywordInstances({
+      labels: [label],
+      xValues: { [label]: 4 },
+      yValues: { [label]: 7 },
+      extras: { rmY: 7, afY: 7, rfY: 7, dcY: 7, glY: 7, fdaY: 7 },
+    });
+    expect(instance, `instance construite pour ${label}`).toBeTruthy();
+    expect(instance.id).toBe(id);
+    expect(instance.y, `y persisté pour ${label}`).toBe(7);
+  });
+
 });

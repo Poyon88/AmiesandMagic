@@ -102,11 +102,27 @@ export interface ForgeKeywordExtras {
   declenchementTriggers?: CapabilityTrigger[];
 }
 
+/** Couples X/Y traités par une branche DÉDIÉE ci-dessous (leur second membre
+ *  vient d'un champ nommé de `extras`, pour des raisons historiques). Tout autre
+ *  couple du registre passe par la branche GÉNÉRIQUE, qui lit `yValues`.
+ *
+ *  Oublier une entrée ici est sans danger — le couple retombe simplement sur la
+ *  branche générique, qui persiste bien son Y. C'est l'inverse qui coûtait cher :
+ *  avant cette branche, une capacité +X/+Y absente de la liste repartait SANS
+ *  `y`, et le moteur lui appliquait son défaut 1 en silence (Pureté et Seuil
+ *  Sacrificiel ont vécu ainsi). */
+const XY_IDS_A_BRANCHE_DEDIEE: ReadonlySet<string> = new Set([
+  "renforcement_multiple", "affaiblissement", "renforcement",
+  "dechainement", "gloire", "force_des_ancetres",
+]);
+
 export interface BuildKeywordInstancesInput {
   /** Libellés forge sélectionnés (l'ordre est conservé). */
   labels: string[];
   /** X par libellé. */
   xValues?: Record<string, number>;
+  /** Y par libellé, pour les couples X/Y sans champ dédié dans `extras`. */
+  yValues?: Record<string, number>;
   /** Mode (déclencheur) par libellé ; absent = à l'invocation. */
   modes?: Record<string, KeywordMode>;
   /** Portée du don, sorts uniquement. */
@@ -119,7 +135,7 @@ export interface BuildKeywordInstancesInput {
 /** Construit les `keyword_instances` à persister. Fonction PURE — aucun accès à
  *  l'état React — pour être testable et réutilisable côté tokens. */
 export function buildKeywordInstances(input: BuildKeywordInstancesInput): KeywordInstance[] {
-  const { labels, xValues = {}, modes = {}, grantScopes = {}, isSpellCard = false, extras = {} } = input;
+  const { labels, xValues = {}, yValues = {}, modes = {}, grantScopes = {}, isSpellCard = false, extras = {} } = input;
 
   return labels
     .map((label): KeywordInstance | null => {
@@ -160,6 +176,13 @@ export function buildKeywordInstances(input: BuildKeywordInstancesInput): Keywor
       // Émise aussi sur un SORT (capacité conférée, mêmes raisons que Gloire).
       if (id === "force_des_ancetres") {
         return { id, ...(mode ? { mode } : {}), x: x ?? 1, y: extras.fdaY ?? 1, ...(grantScope ? { grantScope } : {}) };
+      }
+      // Tout AUTRE couple +X/+Y du registre (Seuil Sacrificiel, Pureté, et les
+      // suivants) : Y pris dans la grille générique, jamais dans un champ nommé.
+      // Toujours émis — c'est cette branche qui garantit qu'une capacité à
+      // couple n'arrive pas en base sans son second membre.
+      if (XY_ABILITY_IDS.has(id) && !XY_IDS_A_BRANCHE_DEDIEE.has(id)) {
+        return { id, ...(mode ? { mode } : {}), x: x ?? 1, y: yValues[label] ?? 1, ...(grantScope ? { grantScope } : {}) };
       }
       // Invocations multiples : porte la liste des coûts ; toujours émise
       // (sans elle le mot-clé n'aurait rien à invoquer).
