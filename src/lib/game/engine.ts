@@ -8255,6 +8255,12 @@ const CREATURE_TARGETING_KEYWORDS: Keyword[] = [
   // s'ouvrait jamais et le moteur retombait sur le tirage au sort. Deux listes
   // à tenir d'accord, une seule mise à jour.
   "devoration",
+  // Même panne, deux mots-clés de plus, constatés en partie : Incinération
+  // recyclait TOUJOURS le cimetière adverse (repli `incinerationVictim`), et
+  // Retour différé renvoyait une unité AU HASARD des deux plateaux (repli de
+  // `resolveRetourDiffere`). Les deux savaient pourtant se faire cibler.
+  // `creature-targeting-coverage.test.ts` interdit désormais la récidive.
+  "incineration", "retour_differe",
 ];
 
 /** Première capacité composée à l'entrée demandant un ciblage interactif :
