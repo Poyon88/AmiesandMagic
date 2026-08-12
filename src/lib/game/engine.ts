@@ -722,7 +722,14 @@ function applyComposedToUnit(
     // la cible subit le poison, elle ne devient pas empoisonneuse. Même effet
     // que le mot-clé de sort `poison` (cf. resolveSpellKeywords).
     case "poison": u.isPoisoned = true; break;
-    case "bounce": resolveRemontee(u.instanceId, source?.instanceId ?? null, owner, opponent, fromSpell); break;
+    // « Se renvoie en main » (entity "self") passe par l'auto-renvoi : le chemin
+    // Remontée exclut la source et ne ferait RIEN, en silence. Le cas était déjà
+    // routé à part pour la mort (wantsSelfReturnOnDeath) mais pour elle seule —
+    // à l'attaque, à l'entrée ou en fin de tour, la capacité était inerte.
+    case "bounce":
+      if (source && u.instanceId === source.instanceId) resolveSelfBounce(u, owner, opponent);
+      else resolveRemontee(u.instanceId, source?.instanceId ?? null, owner, opponent, fromSpell);
+      break;
     case "grant_keyword":
       if (composed.grantAbilityId) {
         applyGrantedKeyword(u, composed.grantAbilityId, grantParamsFor(composed.grantAbilityId, x, y), true);
@@ -5785,14 +5792,25 @@ function resolveRemontee(
     if (pool.length > 0) target = pool[Math.floor(rng() * pool.length)];
   }
   if (!target) return;
+  moveBoardUnitToOwnerHand(target, controller, other);
+}
 
+/** Retire une unité du PLATEAU et la met dans la main de son propriétaire
+ *  d'origine. Cœur commun de Remontée (cible désignée ou tirée) et de
+ *  l'auto-renvoi `entity: "self"` — les deux ne diffèrent que par le CHOIX de la
+ *  cible, jamais par le déplacement lui-même. */
+function moveBoardUnitToOwnerHand(
+  target: CardInstance,
+  controller: PlayerState,
+  other: PlayerState,
+): void {
   const holder = controller.board.includes(target) ? controller : other;
   holder.board = holder.board.filter(c => c !== target);
 
   // Propriétaire d'origine (trueOwnerId), sinon le détenteur actuel. À lire
   // AVANT returnInstanceToPlay, qui remet trueOwnerId à null.
   const owner = target.trueOwnerId
-    ? ([controller, other].find(p => p.id === target!.trueOwnerId) ?? holder)
+    ? ([controller, other].find(p => p.id === target.trueOwnerId) ?? holder)
     : holder;
   const ownerOpponent = owner === controller ? other : controller;
 
@@ -5806,6 +5824,28 @@ function resolveRemontee(
   } else {
     owner.graveyard.push(target);
   }
+}
+
+/** AUTO-RENVOI depuis le plateau : « Se renvoie en main » (`bounce` + `entity:
+ *  "self"`), pour tout déclencheur autre que la mort.
+ *
+ *  Ne passe PAS par `resolveRemontee`, qui exclurait la cible : `canBeRemonteed`
+ *  écarte la source, ainsi qu'Ombre non révélée, Invisible et Transcendance. Ces
+ *  garde-fous répondent à la question « une AUTRE carte peut-elle me viser ? »,
+ *  qui n'a aucun sens quand la carte se vise elle-même — et la Louve kiptchake
+ *  les cumulait (Ombre + auto-renvoi), donc échouait deux fois.
+ *
+ *  Ancré reste respecté : la capacité dit « je me renvoie », Ancré dit « je ne
+ *  quitte pas le plateau » ; c'est la seule des cinq conditions qui porte sur le
+ *  déplacement lui-même et non sur le ciblage par autrui. */
+function resolveSelfBounce(
+  self: CardInstance,
+  controller: PlayerState,
+  other: PlayerState,
+): void {
+  if (hasKw(self, "ancre")) return;
+  if (!controller.board.includes(self) && !other.board.includes(self)) return;
+  moveBoardUnitToOwnerHand(self, controller, other);
 }
 
 // Sacrifice démoniaque X : répartit X réductions de -1 mana parmi les Démons
