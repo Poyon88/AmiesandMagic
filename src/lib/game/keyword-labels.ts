@@ -282,6 +282,8 @@ export const ALL_KEYWORDS: Keyword[] = [
   "remontee",
   "renforcement_multiple",
   "entrainement",
+  "fortifier",
+  "preincanter",
   "declenchement",
   "dechainement",
   "force_des_ancetres",
@@ -339,6 +341,8 @@ export const KEYWORD_LABELS: Record<Keyword, string> = {
   remontee: "Remontée",
   renforcement_multiple: "Renforcement multiple",
   entrainement: "Entrainement X",
+  fortifier: "Fortifier +X/+Y",
+  preincanter: "Préincanter X",
   conferer: "Conférer",
   declenchement: "Déclenchement",
   dechainement: "Déchainement X/Y",
@@ -378,7 +382,7 @@ export function getKeywordDisplayLabel(kw: Keyword, t?: SafeT): string {
 // aurait aussi cassé sur toute locale reformulant le marqueur.
 const STAT_PAIR_KEYWORDS: ReadonlySet<string> = new Set([
   "gloire", "renforcement", "renforcement_multiple", "affaiblissement",
-  "force_des_ancetres", "seuil_sacrificiel", "purete",
+  "force_des_ancetres", "seuil_sacrificiel", "purete", "fortifier",
 ]);
 
 /** Paires à valeurs NÉGATIVES (débuff) — le signe s'applique aux deux membres. */
@@ -495,6 +499,8 @@ export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
   seconde_vie: "🕰️", incineration: "🧨", devoration: "🦷", creuser: "⛏️", retour_differe: "🌀",
   concentration: "🎯",
   entrainement: "🏋️",
+  fortifier: "🛠️",
+  preincanter: "🕯️",
   remontee: "🔼",
   renforcement_multiple: "⏫",
   conferer: "✋",

@@ -437,6 +437,14 @@
         "label": "Training X",
         "desc": "+X/+X für deine Kreaturen {faction_de} auf der Hand."
       },
+      "fortifier": {
+        "label": "Festigen +X/+Y",
+        "desc": "Die erste Kreatur von oben in deinem Deck erhält dauerhaft +X ATK und +Y LP."
+      },
+      "preincanter": {
+        "label": "Vorzaubern X",
+        "desc": "Der erste Zauber von oben in deinem Deck kostet dauerhaft X Mana weniger (mindestens 1)."
+      },
       "conferer": {
         "label": "Verleihen",
         "desc": "Verleiht {ability} {scope}."
@@ -610,6 +618,14 @@
       "entrainement": {
         "label": "Training X",
         "desc": "+X/+X für deine Kreaturen {faction_de} auf der Hand."
+      },
+      "fortifier": {
+        "label": "Festigen +X/+Y",
+        "desc": "Die erste Kreatur von oben in deinem Deck erhält dauerhaft +X ATK und +Y LP."
+      },
+      "preincanter": {
+        "label": "Vorzaubern X",
+        "desc": "Der erste Zauber von oben in deinem Deck kostet dauerhaft X Mana weniger (mindestens 1)."
       },
       "concentration": {
         "label": "Konzentration X",

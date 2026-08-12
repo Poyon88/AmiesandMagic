@@ -80,6 +80,10 @@ export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
   "Remontée": ALL_MODES,
   "Renforcement multiple": ALL_MODES,
   "Entrainement X": ALL_MODES,
+  // Effets « deck » (Fortifier / Préincanter) : la cible vit dans le deck du
+  // contrôleur, aucun ciblage ni source en jeu requise → tous les déclencheurs.
+  "Fortifier +X/+Y": ALL_MODES,
+  "Préincanter X": ALL_MODES,
   "Dédoublement": ALL_MODES,
   // Sélections : modale « 1 parmi 3 » sur le tour du contrôleur (picker
   // différé) ; tirage au hasard parmi les options révélées pendant le tour

@@ -102,6 +102,12 @@ export type Keyword =
   | "renforcement_multiple"
   // +X/+X aux créatures en main de la même faction que la source (multi-trigger)
   | "entrainement"
+  // Polymorphic — +X/+Y PERMANENT à la 1re créature du DECK du propriétaire en
+  // partant du dessus (multi-trigger, silencieux — aucune révélation)
+  | "fortifier"
+  // Polymorphic — le 1er SORT du deck coûte X de moins (plancher : coût
+  // effectif 1), via manaCostReduction (multi-trigger, silencieux)
+  | "preincanter"
   // Confère une capacité choisie à une/aux unité(s) alliée(s) (mot-clé paramétrique)
   | "conferer"
   // Rejoue à l'entrée en jeu les effets composés déclenchés des AUTRES alliés,
@@ -190,6 +196,8 @@ export type SpellKeywordId =
   | "renforcement_multiple"
   | "pillage"
   | "entrainement"
+  | "fortifier"
+  | "preincanter"
   | "cataclysme"
   | "affaiblissement"
   | "chant"

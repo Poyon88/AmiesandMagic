@@ -437,6 +437,14 @@
         "label": "Treinamento X",
         "desc": "+X/+X às suas criaturas {faction_de} na mão."
       },
+      "fortifier": {
+        "label": "Fortificar +X/+Y",
+        "desc": "A primeira criatura do topo do seu baralho ganha +X ATK e +Y PV permanentemente."
+      },
+      "preincanter": {
+        "label": "Pré-encantar X",
+        "desc": "O primeiro feitiço do topo do seu baralho custa X de mana a menos (mínimo 1), permanentemente."
+      },
       "conferer": {
         "label": "Conferir",
         "desc": "Concede {ability} {scope}."
@@ -610,6 +618,14 @@
       "entrainement": {
         "label": "Treinamento X",
         "desc": "+X/+X às suas criaturas {faction_de} na mão."
+      },
+      "fortifier": {
+        "label": "Fortificar +X/+Y",
+        "desc": "A primeira criatura do topo do seu baralho ganha +X ATK e +Y PV permanentemente."
+      },
+      "preincanter": {
+        "label": "Pré-encantar X",
+        "desc": "O primeiro feitiço do topo do seu baralho custa X de mana a menos (mínimo 1), permanentemente."
       },
       "concentration": {
         "label": "Concentração X",

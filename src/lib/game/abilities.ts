@@ -1042,6 +1042,37 @@ export const ABILITIES: Record<string, AbilityDef> = {
       params: ["amount"], needsTarget: false,
     },
   },
+  fortifier: {
+    id: "fortifier", label: "Fortifier +X/+Y", symbol: "🛠️",
+    desc: "La première créature de votre deck en partant du dessus gagne +X ATK et +Y PV de façon permanente.",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      // AJUSTABLE — calibrage initial : ~75 % de Renforcement (8/4/3.0), car
+      // l'effet est différé (la cible est dans le deck, peut ne jamais être
+      // piochée), non choisi, et perdu si le deck n'a plus de créature.
+      cost: 6, costPerX: 3, se: 2.5, minTier: 1, scalable: true, zone: "Deck",
+      desc: "La première créature de votre deck en partant du dessus gagne +X ATK et +Y PV de façon permanente.",
+    },
+    spell: {
+      desc: "La première créature de votre deck en partant du dessus gagne +X ATK et +Y PV de façon permanente.",
+      params: ["attack", "health"], needsTarget: false,
+    },
+  },
+  preincanter: {
+    id: "preincanter", label: "Préincanter X", symbol: "🕯️",
+    desc: "Le premier sort de votre deck en partant du dessus coûte X mana de moins (son coût ne peut pas descendre sous 1), de façon permanente.",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      // AJUSTABLE — calé sous Épargne X (7/4/2.0) : mana différé (il faut
+      // piocher le sort), one-shot, et écrêté pour que le coût reste ≥ 1.
+      cost: 6, costPerX: 3, se: 2.0, minTier: 1, scalable: true, zone: "Deck",
+      desc: "Le premier sort de votre deck en partant du dessus coûte X mana de moins (minimum 1), de façon permanente.",
+    },
+    spell: {
+      desc: "Le premier sort de votre deck en partant du dessus coûte X mana de moins (minimum 1), de façon permanente.",
+      params: ["amount"], needsTarget: false,
+    },
+  },
   concentration: {
     id: "concentration", label: "Concentration X", symbol: "🎯",
     desc: "Chaque sort en main devient un sort au hasard de coût +X, réduit de X (toutes factions).",
@@ -1367,6 +1398,9 @@ export const CURATED_MULTIMODE_IDS: ReadonlySet<string> = new Set([
   "rappel", "divination", "traque_du_destin", "selection", "selection_magique", "renfort_royal",
   "affaiblissement", "benediction", "tactique", "epargne",
   "incineration", "creuser", "retour_differe", "devoration",
+  // Effets « deck » : la cible est dans le deck du contrôleur, la source n'a
+  // pas besoin d'être en jeu → tous les déclencheurs sont légitimes.
+  "fortifier", "preincanter",
   // Restreints aux déclencheurs « sur plateau » (cf. CURATED_ONBOARD_ONLY_IDS).
   "sacrifice", "permutation", "malediction", "mimique", "metamorphose",
   "contresort", "profanation", "heritage_du_cimetiere",

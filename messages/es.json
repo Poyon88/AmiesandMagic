@@ -437,6 +437,14 @@
         "label": "Entrenamiento X",
         "desc": "+X/+X a tus criaturas {faction_de} en la mano."
       },
+      "fortifier": {
+        "label": "Fortalecer +X/+Y",
+        "desc": "La primera criatura de tu mazo empezando por arriba gana +X ATK y +Y PV de forma permanente."
+      },
+      "preincanter": {
+        "label": "Preencantar X",
+        "desc": "El primer hechizo de tu mazo empezando por arriba cuesta X maná menos (mínimo 1), de forma permanente."
+      },
       "conferer": {
         "label": "Conferir",
         "desc": "Otorga {ability} {scope}."
@@ -610,6 +618,14 @@
       "entrainement": {
         "label": "Entrenamiento X",
         "desc": "+X/+X a tus criaturas {faction_de} en la mano."
+      },
+      "fortifier": {
+        "label": "Fortalecer +X/+Y",
+        "desc": "La primera criatura de tu mazo empezando por arriba gana +X ATK y +Y PV de forma permanente."
+      },
+      "preincanter": {
+        "label": "Preencantar X",
+        "desc": "El primer hechizo de tu mazo empezando por arriba cuesta X maná menos (mínimo 1), de forma permanente."
       },
       "concentration": {
         "label": "Concentración X",

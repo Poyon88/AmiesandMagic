@@ -2806,6 +2806,17 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       applyEntrainement(player, cardInstance.card.faction, getKwX(cardInstance, "entrainement", undefined, 1), cardInstance.instanceId);
     }
 
+    // Fortifier +X/+Y (invocation) : buff permanent de la 1re créature du deck.
+    if (hasKwOnPlay(cardInstance, "fortifier")) {
+      const fo = cardInstance.card.keyword_instances?.find(i => i.id === "fortifier" && !i.mode);
+      applyFortifier(player, fo?.x ?? 0, fo?.y ?? 0);
+    }
+
+    // Préincanter X (invocation) : le 1er sort du deck coûte X de moins (min 1).
+    if (hasKwOnPlay(cardInstance, "preincanter")) {
+      applyPreincanter(player, getKwX(cardInstance, "preincanter", undefined, 1));
+    }
+
     // Pillage X: l'adversaire défausse X cartes aléatoires de sa main.
     // Gated on hasKwOnPlay pour qu'une instance en mode death/tap/return ne
     // se déclenche pas aussi à l'invocation (elle passe par
@@ -4145,6 +4156,18 @@ function resolveSpellKeywords(
       case "entrainement": {
         // +X/+X aux créatures en main du lanceur de la même faction que le sort.
         applyEntrainement(ctx.caster, ctx.card.faction, kw.amount ?? 0);
+        break;
+      }
+      case "fortifier": {
+        // Sans cible : +X/+Y permanent à la 1re créature du deck du LANCEUR.
+        // attack/health transportés par spellResolutionInstances (majorés par
+        // Chant, comme Renforcement).
+        applyFortifier(ctx.caster, kw.attack ?? 0, kw.health ?? 0);
+        break;
+      }
+      case "preincanter": {
+        // Sans cible : le 1er sort du deck du lanceur coûte X de moins (min 1).
+        applyPreincanter(ctx.caster, kw.amount ?? 0);
         break;
       }
       case "guerison": {
@@ -6394,6 +6417,42 @@ function applyEntrainement(
   }
 }
 
+// Fortifier +X/+Y : buff PERMANENT de la PREMIÈRE créature du deck du
+// propriétaire en partant du dessus (deck[0] = dessus — les sorts au-dessus
+// sont sautés). SILENCIEUX : aucune révélation ni animation (décision
+// produit), le joueur découvre le bonus en piochant. Deck vide ou sans
+// créature → effet perdu sans bruit. Cumulable (deux Fortifier s'empilent).
+// Spread OBLIGATOIRE : les exemplaires d'une même carte du deck PARTAGENT le
+// même objet Card (createDeckInstances) — muter en place bufferait tous les
+// doubles. Le buff voyage avec l'instance à la pioche (drawCard shift→push).
+function applyFortifier(owner: PlayerState, x: number, y: number): void {
+  if (x <= 0 && y <= 0) return;
+  const target = owner.deck.find(c => c.card.card_type === "creature");
+  if (!target) return;
+  target.card = { ...target.card, attack: (target.card.attack ?? 0) + x, health: (target.card.health ?? 0) + y };
+  target.currentAttack += x;
+  target.currentHealth += y;
+  target.maxHealth += y;
+  target.lastBuffMode = composedStrikeMode; // teinte du popup si révélée plus tard
+}
+
+// Préincanter X : réduction PERMANENTE du coût du PREMIER sort du deck en
+// partant du dessus, via manaCostReduction (survit à la pioche : même
+// instance). Écrêtage À LA SOURCE (patron distributeDemonCostReductions) :
+// le coût effectif ne descend jamais sous 1 ; un sort déjà à coût effectif
+// ≤ 1 CONSOMME l'effet sans changement — on ne passe PAS au sort suivant
+// (décision produit). Un sort à 0 reste à 0 (pas de réduction négative).
+// Silencieux, cumulable jusqu'au plancher.
+function applyPreincanter(owner: PlayerState, x: number): void {
+  if (x <= 0) return;
+  const target = owner.deck.find(c => c.card.card_type === "spell");
+  if (!target) return;
+  const effective = Math.max(0, getTokenManaCost(target.card) - (target.manaCostReduction ?? 0));
+  const applied = Math.min(x, Math.max(0, effective - 1));
+  if (applied <= 0) return; // déjà à ≤1 : effet consommé, aucun changement
+  target.manaCostReduction = (target.manaCostReduction ?? 0) + applied;
+}
+
 function resolveCuratedKeywordEffect(
   kw: Keyword,
   x: number,
@@ -6429,6 +6488,20 @@ function resolveCuratedKeywordEffect(
       // retour, où elle vient de rejoindre la main).
       withComposedMode(inst?.mode, () =>
         applyEntrainement(owner, source.card.faction, inst?.x ?? x, source.instanceId));
+      return;
+    }
+    case "fortifier": {
+      // Mort / tap / retour / fin de tour / attaque / pioche / low_hp :
+      // +X/+Y permanent à la 1re créature du deck du contrôleur — l'effet ne
+      // dépend pas de la présence de la source en jeu.
+      withComposedMode(inst?.mode, () =>
+        applyFortifier(owner, inst?.x ?? 0, inst?.y ?? 0));
+      return;
+    }
+    case "preincanter": {
+      // Idem : le 1er sort du deck du contrôleur coûte X de moins (min 1).
+      withComposedMode(inst?.mode, () =>
+        applyPreincanter(owner, inst?.x ?? x));
       return;
     }
     case "remontee": {

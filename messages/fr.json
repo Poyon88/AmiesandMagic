@@ -437,6 +437,14 @@
         "label": "Entrainement X",
         "desc": "+X/+X à vos créatures {faction_de} en main."
       },
+      "fortifier": {
+        "label": "Fortifier +X/+Y",
+        "desc": "La première créature de votre deck en partant du dessus gagne +X ATK et +Y PV de façon permanente."
+      },
+      "preincanter": {
+        "label": "Préincanter X",
+        "desc": "Le premier sort de votre deck en partant du dessus coûte X mana de moins (minimum 1), de façon permanente."
+      },
       "conferer": {
         "label": "Conférer",
         "desc": "Confère {ability} {scope}."
@@ -610,6 +618,14 @@
       "entrainement": {
         "label": "Entrainement X",
         "desc": "+X/+X à vos créatures {faction_de} en main."
+      },
+      "fortifier": {
+        "label": "Fortifier +X/+Y",
+        "desc": "La première créature de votre deck en partant du dessus gagne +X ATK et +Y PV de façon permanente."
+      },
+      "preincanter": {
+        "label": "Préincanter X",
+        "desc": "Le premier sort de votre deck en partant du dessus coûte X mana de moins (minimum 1), de façon permanente."
       },
       "concentration": {
         "label": "Concentration X",

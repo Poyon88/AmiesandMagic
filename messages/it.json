@@ -437,6 +437,14 @@
         "label": "Allenamento X",
         "desc": "+X/+X alle tue creature {faction_de} in mano."
       },
+      "fortifier": {
+        "label": "Fortificare +X/+Y",
+        "desc": "La prima creatura del tuo mazzo partendo dall'alto guadagna +X ATK e +Y PV in modo permanente."
+      },
+      "preincanter": {
+        "label": "Preincantare X",
+        "desc": "La prima magia del tuo mazzo partendo dall'alto costa X mana in meno (minimo 1), in modo permanente."
+      },
       "conferer": {
         "label": "Conferire",
         "desc": "Conferisce {ability} {scope}."
@@ -610,6 +618,14 @@
       "entrainement": {
         "label": "Addestramento X",
         "desc": "+X/+X alle tue creature {faction_de} in mano."
+      },
+      "fortifier": {
+        "label": "Fortificare +X/+Y",
+        "desc": "La prima creatura del tuo mazzo partendo dall'alto guadagna +X ATK e +Y PV in modo permanente."
+      },
+      "preincanter": {
+        "label": "Preincantare X",
+        "desc": "La prima magia del tuo mazzo partendo dall'alto costa X mana in meno (minimo 1), in modo permanente."
       },
       "concentration": {
         "label": "Concentrazione X",

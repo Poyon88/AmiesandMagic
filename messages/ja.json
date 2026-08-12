@@ -437,6 +437,14 @@
         "label": "訓練 X",
         "desc": "手札にある自分の{faction_de}クリーチャーに+X/+X。"
       },
+      "fortifier": {
+        "label": "要塞化 +X/+Y",
+        "desc": "自分のデッキの上から最初のクリーチャーはATKを+X、HPを+Y永続的に得る。"
+      },
+      "preincanter": {
+        "label": "事前詠唱 X",
+        "desc": "自分のデッキの上から最初の呪文のコストが永続的にXマナ減る（最低1）。"
+      },
       "conferer": {
         "label": "付与",
         "desc": "{scope}に{ability}を付与する。"
@@ -610,6 +618,14 @@
       "entrainement": {
         "label": "鍛錬 X",
         "desc": "手札にある自分の{faction_de}クリーチャーに+X/+X。"
+      },
+      "fortifier": {
+        "label": "要塞化 +X/+Y",
+        "desc": "自分のデッキの上から最初のクリーチャーはATKを+X、HPを+Y永続的に得る。"
+      },
+      "preincanter": {
+        "label": "事前詠唱 X",
+        "desc": "自分のデッキの上から最初の呪文のコストが永続的にXマナ減る（最低1）。"
       },
       "concentration": {
         "label": "集中 X",

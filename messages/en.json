@@ -437,6 +437,14 @@
         "label": "Training X",
         "desc": "+X/+X to your {faction_de} creatures in hand."
       },
+      "fortifier": {
+        "label": "Fortify +X/+Y",
+        "desc": "The first creature from the top of your deck permanently gains +X ATK and +Y HP."
+      },
+      "preincanter": {
+        "label": "Precast X",
+        "desc": "The first spell from the top of your deck costs X less mana (minimum 1), permanently."
+      },
       "conferer": {
         "label": "Bestow",
         "desc": "Grants {ability} {scope}."
@@ -610,6 +618,14 @@
       "entrainement": {
         "label": "Training X",
         "desc": "+X/+X to your {faction_de} creatures in hand."
+      },
+      "fortifier": {
+        "label": "Fortify +X/+Y",
+        "desc": "The first creature from the top of your deck permanently gains +X ATK and +Y HP."
+      },
+      "preincanter": {
+        "label": "Precast X",
+        "desc": "The first spell from the top of your deck costs X less mana (minimum 1), permanently."
       },
       "concentration": {
         "label": "Concentration X",

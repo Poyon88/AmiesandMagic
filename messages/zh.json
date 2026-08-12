@@ -437,6 +437,14 @@
         "label": "训练 X",
         "desc": "使你手牌中的{faction_de}生物获得+X/+X。"
       },
+      "fortifier": {
+        "label": "加固 +X/+Y",
+        "desc": "使你牌库中从顶部数起的第一个生物永久获得+X攻击力和+Y生命值。"
+      },
+      "preincanter": {
+        "label": "预施法 X",
+        "desc": "使你牌库中从顶部数起的第一张法术牌的法力消耗永久减少X点（最低为1）。"
+      },
       "conferer": {
         "label": "赋予",
         "desc": "赋予{ability}{scope}。"
@@ -610,6 +618,14 @@
       "entrainement": {
         "label": "训练 X",
         "desc": "使你手牌中的{faction_de}生物获得+X/+X。"
+      },
+      "fortifier": {
+        "label": "加固 +X/+Y",
+        "desc": "使你牌库中从顶部数起的第一个生物永久获得+X攻击力和+Y生命值。"
+      },
+      "preincanter": {
+        "label": "预施法 X",
+        "desc": "使你牌库中从顶部数起的第一张法术牌的法力消耗永久减少X点（最低为1）。"
       },
       "concentration": {
         "label": "专注 X",
