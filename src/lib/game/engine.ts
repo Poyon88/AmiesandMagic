@@ -45,6 +45,7 @@ import {
   MAX_MANA,
   MAX_EPARGNE,
   SEUIL_DECK_THRESHOLD,
+  LOW_HP_TRIGGER_THRESHOLD,
 } from "./constants";
 import { getFactionForRace, getEffectiveAlignment, FACTIONS } from "@/lib/card-engine/constants";
 
@@ -302,6 +303,7 @@ function capTriggerForMode(mode: import("./types").KeywordMode | undefined): imp
   if (mode === "end_of_turn") return "on_end_of_turn";
   if (mode === "attack") return "on_attack";
   if (mode === "draw") return "on_draw";
+  if (mode === "low_hp") return "on_low_hp";
   return "on_play";
 }
 
@@ -1136,6 +1138,7 @@ function keywordModeToTrigger(mode: import("./types").KeywordMode | undefined): 
     case "attack": return "on_attack";
     case "end_of_turn": return "on_end_of_turn";
     case "draw": return "on_draw";
+    case "low_hp": return "on_low_hp";
     case "entry": return "on_play";
     case "spell": return "spell_resolution";
     default: return "on_activation";
@@ -1152,6 +1155,7 @@ function triggerToKeywordMode(trigger: import("./types").CapabilityTrigger): imp
     case "on_activation": return "tap";
     case "on_attack": return "attack";
     case "on_end_of_turn": return "end_of_turn";
+    case "on_low_hp": return "low_hp";
     case "on_play": return "entry"; // arrivée en jeu → jaune (cohérence flèche/icône)
     case "spell_resolution": return "spell"; // sort → jaune (cohérence flèche/icône)
     default: return undefined;
@@ -5929,6 +5933,9 @@ function drainStack(state: GameState, opts?: { fizzleUnresolvedChoices?: boolean
     resolveFrame(state, top);
     settleDeaths(state, top.depth);
     recalculateAuras(state.players[0], state.players[1]);
+    // « Sous 15 PV » : une frame vient peut-être de faire franchir le seuil à
+    // un héros — interruption LIFO avec profondeur héritée (garde unifiée).
+    checkLowHpTriggers(state, top.depth + 1);
   }
   if (stack.length === 0) delete state.effectStack;
 }
@@ -5979,6 +5986,67 @@ function buildComposedFrames(
     });
   }
   return frames;
+}
+
+/** Déclencheur « SOUS 15 PV » (on_low_hp / mode "low_hp") : balayage idempotent.
+ *
+ *  Pour chaque joueur encore vivant dont le héros est STRICTEMENT sous
+ *  LOW_HP_TRIGGER_THRESHOLD, déclenche les cartes de SON plateau portant une
+ *  capacité on_low_hp et pas encore parties (flag one-shot
+ *  `CardInstance.lowHpTriggerFired`, jamais réarmé — même resoigné au-dessus
+ *  du seuil, la capacité ne repart pas).
+ *
+ *  Balayage plutôt que détection de franchissement : le flag rend l'appel
+ *  idempotent, donc deux points d'ancrage suffisent (fin d'applyAction + après
+ *  chaque frame de drainStack) sans instrumenter les écritures de `hero.hp`
+ *  une à une — et une carte posée alors que son contrôleur est DÉJÀ sous le
+ *  seuil se déclenche au balayage suivant (règle voulue). Les deux seules
+ *  écritures qui BAISSENT les PV (dealDamageToHero et le coût en vie de
+ *  playCard) sont couvertes par ces deux points.
+ *
+ *  Le flag est posé AVANT résolution : un effet low_hp qui blesse son propre
+ *  héros ne se re-déclenche pas. Les cascades (effet low_hp → dégâts → autre
+ *  low_hp…) passent par la pile LIFO avec `depth` hérité, bornées par la garde
+ *  unifiée MAX_STACK_DEPTH de pushFrames.
+ *
+ *  Ordre déterministe entre clients : joueurs dans l'ordre du tableau
+ *  `players`, plateau de gauche à droite. Le ciblage suit la règle commune :
+ *  tour du contrôleur → choix différé (frameNeedsChoice / deferOrRandomTarget),
+ *  tour adverse → cible aléatoire (rng semée). */
+function checkLowHpTriggers(state: GameState, depth = 0): void {
+  if (state.phase === "finished" || state.winner) return;
+  for (const p of state.players) {
+    // Héros mort : checkWinCondition tranche, pas de « dernier souffle » à 0 PV.
+    if (p.hero.hp <= 0 || p.hero.hp >= LOW_HP_TRIGGER_THRESHOLD) continue;
+    const frames: StackFrame[] = [];
+    for (const ci of p.board) {
+      if (ci.lowHpTriggerFired) continue;
+      const insts = (ci.card.keyword_instances ?? []).filter(k => k.mode === "low_hp");
+      const hasComposed = getCapabilities(ci.card).some(c => c.composed && c.trigger === "on_low_hp");
+      if (insts.length === 0 && !hasComposed) continue;
+      ci.lowHpTriggerFired = true; // AVANT résolution (anti ré-entrance)
+      frames.push(...buildComposedFrames(ci.card, "on_low_hp", ci, p.id, undefined, undefined, { depth }));
+      // Mots-clés curés en mode "low_hp" : une frame par instance.
+      // resolveCuratedKeywordEffect (via resolveFrame) gère bruitage et
+      // ciblage différé/aléatoire (deferOrRandomTarget).
+      let seq = 0;
+      for (const inst of insts) {
+        frames.push({
+          frameId: `${ci.instanceId}#on_low_hp#kw${seq++}`,
+          kind: "curated",
+          ownerId: p.id,
+          sourceInstanceId: ci.instanceId,
+          trigger: "on_low_hp",
+          curatedKw: inst.id,
+          curatedX: inst.x ?? 1,
+          curatedInst: inst,
+          depth,
+          originTag: `${ci.instanceId}#on_low_hp`,
+        });
+      }
+    }
+    pushFrames(state, frames);
+  }
 }
 
 /** Lit le sous-ensemble de déclencheurs rejoués par Déclenchement (capabilities
@@ -7897,11 +7965,20 @@ export function applyAction(state: GameState, action: GameAction): GameState {
     default: result = state;
   }
 
+  // « Sous 15 PV » : balayage post-action (couvre dégâts au héros, coût en
+  // vie, fatigue… quel que soit le handler). Les frames poussées sont résolues
+  // par le drainStack juste en dessous.
+  if (result !== state) checkLowHpTriggers(result);
+
   // Vide la pile d'effets LIFO produite pendant l'action (interruption +
   // résolution des morts via settleDeaths). No-op tant qu'aucun producteur n'a
   // poussé de frame (migration incrémentale). Suspend si un choix joueur reste
   // requis (la pile persiste alors dans l'état).
   if (result !== state) drainStack(result);
+
+  // Un effet « Sous 15 PV » résolu dans ce drain peut avoir tué un héros — les
+  // handlers ont déjà tranché AVANT ce drain, il faut re-vérifier après.
+  if (result !== state && result.phase === "playing") checkWinCondition(result);
 
   // Rattache les déclencheurs interactifs créés pendant cette action (mort /
   // retour de Remontée au tour du contrôleur) à l'état retourné.

@@ -203,7 +203,7 @@ export type SpellKeywordId =
  *  ability, tinted orange so it stays distinct from an on-play effect that may
  *  sit on the same creature. "death" = on-death rattle. Only a curated subset
  *  of keywords accept non-play modes — see plan. */
-export type KeywordMode = "entry" | "spell" | "death" | "tap" | "return" | "attack" | "end_of_turn" | "draw";
+export type KeywordMode = "entry" | "spell" | "death" | "tap" | "return" | "attack" | "end_of_turn" | "draw" | "low_hp";
 
 /** Per-instance metadata for a creature keyword. Lives in
  *  `Card.keywordInstances` alongside the string `keywords` array so each
@@ -325,6 +325,12 @@ export type CapabilityTrigger =
    *  jeu (même zone que `on_return`). Ne concerne que la carte tirée
    *  elle-même : ce n'est pas un réactif « chaque fois que vous piochez ». */
   | "on_draw"
+  /** Quand le CONTRÔLEUR de la carte passe sous LOW_HP_TRIGGER_THRESHOLD PV
+   *  (transition stricte < 15), quelle que soit la cause (dégâts, coût en vie).
+   *  Une seule fois par instance (CardInstance.lowHpTriggerFired), jamais
+   *  réarmé par un soin. Une carte posée alors que son contrôleur est déjà
+   *  sous le seuil se déclenche immédiatement. */
+  | "on_low_hp"
   | "automatic"
   | "spell_resolution";
 
@@ -720,6 +726,11 @@ export interface CardInstance {
   attacksRemaining: number;
   isPoisoned: boolean;
   hasUsedResurrection: boolean;
+  /** Déclencheur « Sous 15 PV » (on_low_hp) : une seule fois par instance,
+   *  jamais réarmé (même si le héros est resoigné au-dessus du seuil). Champ
+   *  optionnel : undefined ⇒ pas encore déclenché (snapshots antérieurs).
+   *  Vérité de jeu durable — hashée, mutée uniquement sous applyAction. */
+  lowHpTriggerFired?: boolean;
   // Tap state — true while the creature is "engaged" (MTG-style 45°
   // rotation). Set when the creature attacks OR when it tap-activates a
   // keyword; reset in startTurn for the outgoing player. Untapped state

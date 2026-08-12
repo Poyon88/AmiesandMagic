@@ -648,7 +648,8 @@
         "on_activation": "Al activarse",
         "on_attack": "Al atacar",
         "on_end_of_turn": "Al final del turno",
-        "on_draw": "Al robarse"
+        "on_draw": "Al robarse",
+        "on_low_hp": "Menos de 15 PV"
       },
       "content": {
         "deal_damage_one": "inflige {x} daño",
@@ -1555,6 +1556,7 @@
     "trigger_on_attack": "Al atacar",
     "trigger_on_end_of_turn": "Al final del turno",
     "trigger_on_draw": "Cuando se roba esta carta",
+    "trigger_on_low_hp": "Menos de 15 PV",
     "trigger_spell_resolution": "Al resolver",
     "composed_effects_heading": "Efectos compuestos (avanzado)",
     "composed_effects_subtitle": "contenido + amplitud + objetivos",
@@ -1719,6 +1721,7 @@
     "mode_title_attack": "Al atacar",
     "mode_title_end_of_turn": "Al final del turno",
     "mode_title_draw": "Cuando se roba esta carta",
+    "mode_title_low_hp": "Cuando tu héroe cae por debajo de 15 PV (solo una vez)",
     "grant_scope_target": "Otorgada a la criatura objetivo",
     "grant_scope_all_allies": "Otorgada a todas las unidades aliadas",
     "required_caps": "Requerido",

@@ -1290,11 +1290,13 @@ export default function CardEditor() {
                         <div key={kw} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           <span style={{ fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: 600, color: "#333", flex: 1 }}>{label}</span>
                           <div style={{ display: "inline-flex", gap: 3 }}>
-                            {(["play", "death", "tap", "return", "end_of_turn", "attack", "draw"] as const).map(mode => {
+                            {(["play", "death", "tap", "return", "end_of_turn", "attack", "draw", "low_hp"] as const).map(mode => {
                               const allowed = mode === "play" || allowedModes.has(mode);
                               const active = mode === "play" ? !keywordModes[kw] : keywordModes[kw] === mode;
-                              const color = mode === "play" ? "#333" : mode === "death" ? "#a83232" : mode === "tap" ? "#F68D09" : mode === "return" ? "#3a7dd4" : mode === "attack" ? "#9b59b6" : mode === "draw" ? "#17b6c4" : "#2faa3f";
-                              const glyph = mode === "play" ? "⚡" : mode === "death" ? "💀" : mode === "tap" ? "⟲" : mode === "return" ? "↩" : mode === "attack" ? "⚔" : mode === "draw" ? "📥" : "⌛";
+                              // attack = #E735F6 : la couleur réelle de l'icône en jeu
+                              // (l'ancien #9b59b6 violet se confondait avec low_hp #8B5CF6).
+                              const color = mode === "play" ? "#333" : mode === "death" ? "#a83232" : mode === "tap" ? "#F68D09" : mode === "return" ? "#3a7dd4" : mode === "attack" ? "#E735F6" : mode === "draw" ? "#17b6c4" : mode === "low_hp" ? "#8B5CF6" : "#2faa3f";
+                              const glyph = mode === "play" ? "⚡" : mode === "death" ? "💀" : mode === "tap" ? "⟲" : mode === "return" ? "↩" : mode === "attack" ? "⚔" : mode === "draw" ? "📥" : mode === "low_hp" ? "🩸" : "⌛";
                               return (
                                 <button
                                   key={mode}
@@ -1305,7 +1307,7 @@ export default function CardEditor() {
                                     else next[kw] = mode;
                                     return next;
                                   })}
-                                  title={mode === "play" ? "À l'arrivée en jeu (défaut)" : mode === "death" ? "À la mort (deathrattle)" : mode === "tap" ? "Activable (tap / engagement)" : mode === "return" ? "Au retour en main" : mode === "attack" ? "À l'attaque" : mode === "draw" ? "Quand cette carte est piochée" : "À la fin du tour"}
+                                  title={mode === "play" ? "À l'arrivée en jeu (défaut)" : mode === "death" ? "À la mort (deathrattle)" : mode === "tap" ? "Activable (tap / engagement)" : mode === "return" ? "Au retour en main" : mode === "attack" ? "À l'attaque" : mode === "draw" ? "Quand cette carte est piochée" : mode === "low_hp" ? "Quand votre héros passe sous 15 PV (une seule fois)" : "À la fin du tour"}
                                   style={{
                                     width: 22, height: 22, borderRadius: 4,
                                     background: active ? color : "transparent",

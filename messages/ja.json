@@ -648,7 +648,8 @@
         "on_activation": "起動時",
         "on_attack": "攻撃時",
         "on_end_of_turn": "ターン終了時",
-        "on_draw": "引かれたとき"
+        "on_draw": "引かれたとき",
+        "on_low_hp": "HP15未満"
       },
       "content": {
         "deal_damage_one": "{x}ダメージを与える",
@@ -1555,6 +1556,7 @@
     "trigger_on_attack": "攻撃時",
     "trigger_on_end_of_turn": "ターン終了時",
     "trigger_on_draw": "このカードが引かれたとき",
+    "trigger_on_low_hp": "HP15未満",
     "trigger_spell_resolution": "解決時",
     "composed_effects_heading": "複合エフェクト（上級）",
     "composed_effects_subtitle": "内容＋強度＋対象",
@@ -1719,6 +1721,7 @@
     "mode_title_attack": "攻撃時",
     "mode_title_end_of_turn": "ターン終了時",
     "mode_title_draw": "このカードが引かれたとき",
+    "mode_title_low_hp": "自分のヒーローのHPが15未満になったとき（1回のみ）",
     "grant_scope_target": "対象クリーチャーに付与",
     "grant_scope_all_allies": "全味方ユニットに付与",
     "required_caps": "必須",

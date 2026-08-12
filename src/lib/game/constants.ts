@@ -36,6 +36,10 @@ export const MAX_EPARGNE = 8;
  *  Sacrificiel (créature) et Seuil de colère (sort) — une seule valeur à
  *  rééquilibrer, et une règle qui se raconte en une phrase au joueur. */
 export const SEUIL_DECK_THRESHOLD = 25;
+/** Seuil de PV du déclencheur « Sous 15 PV » (on_low_hp) : la capacité part
+ *  quand le CONTRÔLEUR de la carte passe STRICTEMENT sous ce nombre de PV
+ *  (la moitié de HERO_MAX_HP). Une seule valeur à rééquilibrer. */
+export const LOW_HP_TRIGGER_THRESHOLD = 15;
 export const CARDS_DRAWN_PER_TURN = 1;
 export const TURN_TIMER_SECONDS = 90;
 /** Fenêtre accordée pour trancher UN choix interactif en attente (déclencheur

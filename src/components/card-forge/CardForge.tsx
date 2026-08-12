@@ -3521,11 +3521,14 @@ export default function CardForge() {
                                 and present in CURATED_KEYWORD_MODES. */}
                             {selected && CURATED_KEYWORD_MODES[id] && (
                               <div style={{ display: "inline-flex", gap: 2, marginLeft: 4 }}>
-                                {(["play", "death", "tap", "return", "end_of_turn", "attack", "draw"] as const).map(mode => {
+                                {(["play", "death", "tap", "return", "end_of_turn", "attack", "draw", "low_hp"] as const).map(mode => {
                                   const allowed = mode === "play" || CURATED_KEYWORD_MODES[id].has(mode);
                                   const active = mode === "play" ? !keywordModes[id] : keywordModes[id] === mode;
-                                  const color = mode === "play" ? fac.color : mode === "death" ? "#a83232" : mode === "tap" ? "#F68D09" : mode === "return" ? "#3a7dd4" : mode === "attack" ? "#9b59b6" : mode === "draw" ? "#17b6c4" : "#2faa3f";
-                                  const label = mode === "play" ? "⚡" : mode === "death" ? "💀" : mode === "tap" ? "⟲" : mode === "return" ? "↩" : mode === "attack" ? "⚔" : mode === "draw" ? "📥" : "⌛";
+                                  // attack = #E735F6 : la couleur RÉELLE de l'icône en jeu
+                                  // (keywordModeColor) — l'ancien #9b59b6 violet prêtait à
+                                  // confusion avec le nouveau mode low_hp (#8B5CF6).
+                                  const color = mode === "play" ? fac.color : mode === "death" ? "#a83232" : mode === "tap" ? "#F68D09" : mode === "return" ? "#3a7dd4" : mode === "attack" ? "#E735F6" : mode === "draw" ? "#17b6c4" : mode === "low_hp" ? "#8B5CF6" : "#2faa3f";
+                                  const label = mode === "play" ? "⚡" : mode === "death" ? "💀" : mode === "tap" ? "⟲" : mode === "return" ? "↩" : mode === "attack" ? "⚔" : mode === "draw" ? "📥" : mode === "low_hp" ? "🩸" : "⌛";
                                   return (
                                     <button
                                       key={mode}
@@ -3538,7 +3541,7 @@ export default function CardForge() {
                                           return next;
                                         });
                                       }}
-                                      title={mode === "play" ? tf('mode_title_play') : mode === "death" ? tf('mode_title_death') : mode === "tap" ? tf('mode_title_tap') : mode === "return" ? tf('mode_title_return') : mode === "attack" ? tf('mode_title_attack') : mode === "draw" ? tf('mode_title_draw') : tf('mode_title_end_of_turn')}
+                                      title={mode === "play" ? tf('mode_title_play') : mode === "death" ? tf('mode_title_death') : mode === "tap" ? tf('mode_title_tap') : mode === "return" ? tf('mode_title_return') : mode === "attack" ? tf('mode_title_attack') : mode === "draw" ? tf('mode_title_draw') : mode === "low_hp" ? tf('mode_title_low_hp') : tf('mode_title_end_of_turn')}
                                       style={{
                                         width: 18, height: 18, borderRadius: 3,
                                         background: active ? color : "transparent",
@@ -4558,12 +4561,12 @@ export default function CardForge() {
                             leur source en jeu). */}
                         {active && besoinMode && (
                           <span style={{ display: "inline-flex", gap: 2, marginLeft: 4 }}>
-                            {(["death", "tap", "return", "end_of_turn", "attack"] as const).map(mode => {
+                            {(["death", "tap", "return", "end_of_turn", "attack", "low_hp"] as const).map(mode => {
                               const autorise = (CURATED_KEYWORD_MODES[kwName]?.has(mode) ?? false) && TOKEN_FIRING_MODES.has(mode);
                               const actif = tokenModes[kwName] === mode;
-                              const couleur = mode === "death" ? "#a83232" : mode === "tap" ? "#F68D09" : mode === "return" ? "#3a7dd4" : mode === "attack" ? "#9b59b6" : "#2faa3f";
-                              const sym = mode === "death" ? "💀" : mode === "tap" ? "⟲" : mode === "return" ? "↩" : mode === "attack" ? "⚔" : "⌛";
-                              const titre = mode === "death" ? tf('mode_title_death') : mode === "tap" ? tf('mode_title_tap') : mode === "return" ? tf('mode_title_return') : mode === "attack" ? tf('mode_title_attack') : tf('mode_title_end_of_turn');
+                              const couleur = mode === "death" ? "#a83232" : mode === "tap" ? "#F68D09" : mode === "return" ? "#3a7dd4" : mode === "attack" ? "#E735F6" : mode === "low_hp" ? "#8B5CF6" : "#2faa3f";
+                              const sym = mode === "death" ? "💀" : mode === "tap" ? "⟲" : mode === "return" ? "↩" : mode === "attack" ? "⚔" : mode === "low_hp" ? "🩸" : "⌛";
+                              const titre = mode === "death" ? tf('mode_title_death') : mode === "tap" ? tf('mode_title_tap') : mode === "return" ? tf('mode_title_return') : mode === "attack" ? tf('mode_title_attack') : mode === "low_hp" ? tf('mode_title_low_hp') : tf('mode_title_end_of_turn');
                               return (
                                 <button key={mode} disabled={!autorise} title={titre}
                                   onClick={() => setTokenModes(prev => ({ ...prev, [kwName]: mode }))}

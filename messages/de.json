@@ -648,7 +648,8 @@
         "on_activation": "Bei Aktivierung",
         "on_attack": "Beim Angriff",
         "on_end_of_turn": "Am Rundenende",
-        "on_draw": "Beim Ziehen"
+        "on_draw": "Beim Ziehen",
+        "on_low_hp": "Unter 15 LP"
       },
       "content": {
         "deal_damage_one": "verursacht {x} Schaden",
@@ -1555,6 +1556,7 @@
     "trigger_on_attack": "Beim Angriff",
     "trigger_on_end_of_turn": "Am Zugende",
     "trigger_on_draw": "Wenn diese Karte gezogen wird",
+    "trigger_on_low_hp": "Unter 15 LP",
     "trigger_spell_resolution": "Bei der Auflösung",
     "composed_effects_heading": "Zusammengesetzte Effekte (erweitert)",
     "composed_effects_subtitle": "Inhalt + Stärke + Ziele",
@@ -1719,6 +1721,7 @@
     "mode_title_attack": "Bei Angriff",
     "mode_title_end_of_turn": "Am Rundenende",
     "mode_title_draw": "Wenn diese Karte gezogen wird",
+    "mode_title_low_hp": "Wenn Ihr Held unter 15 LP fällt (nur einmal)",
     "grant_scope_target": "Dem Zielgeschöpf verliehen",
     "grant_scope_all_allies": "Allen verbündeten Einheiten verliehen",
     "required_caps": "Erforderlich",

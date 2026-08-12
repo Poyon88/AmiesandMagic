@@ -32,7 +32,8 @@ export function keywordModeColor(mode: KeywordMode | undefined): string | null {
   if (mode === "return") return "#3a7dd4"; // blue (retour en main)
   if (mode === "attack") return "#E735F6"; // magenta (à l'attaque)
   if (mode === "end_of_turn") return "#2faa3f"; // green (fin du tour)
-  if (mode === "draw") return "#17b6c4"; // cyan (à la pioche) — seule teinte encore libre
+  if (mode === "draw") return "#17b6c4"; // cyan (à la pioche)
+  if (mode === "low_hp") return "#8B5CF6"; // violet (« Sous 15 PV »)
   return null;
 }
 
@@ -100,6 +101,13 @@ function keywordModeTint(mode: KeywordMode | undefined): string | null {
   if (mode === "end_of_turn") {
     // → #2faa3f green (fin du tour)
     return "brightness(0) saturate(100%) invert(48%) sepia(92%) saturate(389%) hue-rotate(73deg) brightness(94%) contrast(90%)";
+  }
+  if (mode === "low_hp") {
+    // → #8B5CF6 violet (« Sous 15 PV »). Chaîne résolue par simulation de la
+    // pipeline filter (rendu #8c5bf5, Δ≈1) avec un saturate MODÉRÉ (588%) —
+    // même leçon que "attack" : une saturation extrême rend violet sur Blink
+    // mais dérive sur WebKit/iOS. Garder en phase avec keywordModeColor.
+    return "brightness(0) saturate(100%) invert(53%) sepia(75%) saturate(588%) hue-rotate(212deg) brightness(78%) contrast(165%)";
   }
   return null;
 }

@@ -51,6 +51,7 @@ function triggerForCreatureMode(id: string, mode: KeywordMode | undefined): Capa
   if (mode === "end_of_turn") return "on_end_of_turn";
   if (mode === "attack") return "on_attack";
   if (mode === "draw") return "on_draw";
+  if (mode === "low_hp") return "on_low_hp";
   // mode === undefined
   if (CURATED_MULTIMODE_IDS.has(id)) return "on_play";
   if (DEATH_NATURE_IDS.has(id)) return "on_death";

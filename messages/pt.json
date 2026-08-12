@@ -648,7 +648,8 @@
         "on_activation": "Ao ativar",
         "on_attack": "Ao atacar",
         "on_end_of_turn": "No fim do turno",
-        "on_draw": "Ao ser comprada"
+        "on_draw": "Ao ser comprada",
+        "on_low_hp": "Abaixo de 15 PV"
       },
       "content": {
         "deal_damage_one": "causa {x} de dano",
@@ -1555,6 +1556,7 @@
     "trigger_on_attack": "Ao atacar",
     "trigger_on_end_of_turn": "No fim do turno",
     "trigger_on_draw": "Quando esta carta é comprada",
+    "trigger_on_low_hp": "Abaixo de 15 PV",
     "trigger_spell_resolution": "Ao resolver",
     "composed_effects_heading": "Efeitos compostos (avançado)",
     "composed_effects_subtitle": "conteúdo + amplitude + alvos",
@@ -1719,6 +1721,7 @@
     "mode_title_attack": "Ao atacar",
     "mode_title_end_of_turn": "Ao fim do turno",
     "mode_title_draw": "Quando esta carta é comprada",
+    "mode_title_low_hp": "Quando seu herói cai abaixo de 15 PV (apenas uma vez)",
     "grant_scope_target": "Concedida à criatura-alvo",
     "grant_scope_all_allies": "Concedida a todas as unidades aliadas",
     "required_caps": "Obrigatório",

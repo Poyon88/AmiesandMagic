@@ -648,7 +648,8 @@
         "on_activation": "All'attivazione",
         "on_attack": "All'attacco",
         "on_end_of_turn": "Alla fine del turno",
-        "on_draw": "Quando viene pescata"
+        "on_draw": "Quando viene pescata",
+        "on_low_hp": "Sotto i 15 PV"
       },
       "content": {
         "deal_damage_one": "infligge {x} danno",
@@ -1555,6 +1556,7 @@
     "trigger_on_attack": "All'attacco",
     "trigger_on_end_of_turn": "Alla fine del turno",
     "trigger_on_draw": "Quando questa carta viene pescata",
+    "trigger_on_low_hp": "Sotto i 15 PV",
     "trigger_spell_resolution": "Alla risoluzione",
     "composed_effects_heading": "Effetti composti (avanzato)",
     "composed_effects_subtitle": "contenuto + ampiezza + bersagli",
@@ -1719,6 +1721,7 @@
     "mode_title_attack": "All'attacco",
     "mode_title_end_of_turn": "Alla fine del turno",
     "mode_title_draw": "Quando questa carta viene pescata",
+    "mode_title_low_hp": "Quando il tuo eroe scende sotto i 15 PV (solo una volta)",
     "grant_scope_target": "Conferita alla creatura bersaglio",
     "grant_scope_all_allies": "Conferita a tutte le unità alleate",
     "required_caps": "Richiesto",

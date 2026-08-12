@@ -41,7 +41,7 @@ export { KEYWORDS, KEYWORD_DESC_BY_ID, CREATURE_LABEL_TO_ENGINE_ID } from "@/lib
 // (engine.ts, boucle du flux d'attaque) exécute n'importe quel mot-clé curé
 // en mode "attack" de façon générique ; l'appartenance à ce map est le seul
 // verrou côté picker.
-type CuratedMode = "death" | "tap" | "return" | "end_of_turn" | "attack" | "draw";
+type CuratedMode = "death" | "tap" | "return" | "end_of_turn" | "attack" | "draw" | "low_hp";
 // Chantier « tous déclencheurs » : tous les effets d'invocation sont
 // authorables sur les 5 modes supplémentaires. Règles transverses :
 //   - Pouvoirs CIBLÉS déclenchés pendant le tour adverse → cible AU HASARD
@@ -52,8 +52,10 @@ type CuratedMode = "death" | "tap" | "return" | "end_of_turn" | "attack" | "draw
 //     stats, marqueur porté…) n'offrent ni mort ni retour en main.
 // "draw" rejoint ALL_MODES et PAS ONBOARD_MODES : à la pioche la source est en
 // MAIN, pas en jeu — même restriction que "return" et "death".
-const ALL_MODES = new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack", "draw"]);
-const ONBOARD_MODES = new Set<CuratedMode>(["tap", "end_of_turn", "attack"]);
+// "low_hp" (« Sous 15 PV ») rejoint LES DEUX : la source est en jeu au moment
+// du déclenchement (le sweep ne balaye que le plateau).
+const ALL_MODES = new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack", "draw", "low_hp"]);
+const ONBOARD_MODES = new Set<CuratedMode>(["tap", "end_of_turn", "attack", "low_hp"]);
 export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
   "Convocation X": ALL_MODES,
   "Convocations multiples": ALL_MODES,

@@ -194,6 +194,16 @@ describe("deriveCapabilities — créatures", () => {
     expect(caps.map((c2) => c2.params?.x)).toEqual([1, 3]);
   });
 
+  it("curated en mode low_hp → on_low_hp", () => {
+    const c = card({
+      keywords: ["convocation"] as Card["keywords"],
+      keyword_instances: [{ id: "convocation", mode: "low_hp", x: 2 }] as KeywordInstance[],
+    });
+    const [cap] = deriveCapabilities(c);
+    expect(cap.trigger).toBe("on_low_hp");
+    expect(cap.params).toEqual({ x: 2 });
+  });
+
   it("curated on_play + tap (deux instances) → deux capacités distinctes", () => {
     const c = card({
       keywords: ["convocation"] as Card["keywords"],
@@ -351,18 +361,20 @@ describe("registre — métadonnées de taxonomie", () => {
     }
   });
 
-  it("les ids curés exposent les 7 déclencheurs unité (4 « sur plateau » pour les restreints) et le flag curatedMultiMode", () => {
+  it("les ids curés exposent les 8 déclencheurs unité (5 « sur plateau » pour les restreints) et le flag curatedMultiMode", () => {
     for (const a of Object.values(ABILITIES)) {
       if (CURATED_MULTIMODE_IDS.has(creatureEngineId(a))) {
         expect(a.triggers!.curatedMultiMode, a.id).toBe(true);
         // Effets exigeant la source en jeu (Sacrifice, Mimique, Métamorphose…) :
-        // jamais mort ni retour en main — seulement les déclencheurs sur plateau.
+        // jamais mort ni retour en main — seulement les déclencheurs sur plateau
+        // (« Sous 15 PV » en fait partie : la source est en jeu au balayage).
         if (CURATED_ONBOARD_ONLY_IDS.has(creatureEngineId(a))) {
           expect(a.triggers!.creatureTriggers, a.id).toEqual([
             "on_play",
             "on_activation",
             "on_end_of_turn",
             "on_attack",
+            "on_low_hp",
           ]);
           continue;
         }
@@ -376,6 +388,7 @@ describe("registre — métadonnées de taxonomie", () => {
           // « à la pioche » : la source est en MAIN, donc réservé aux curés NON
           // restreints au plateau — même règle que on_return.
           "on_draw",
+          "on_low_hp",
         ]);
       }
     }

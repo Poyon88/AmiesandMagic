@@ -648,7 +648,8 @@
         "on_activation": "À l'activation",
         "on_attack": "À l'attaque",
         "on_end_of_turn": "À la fin du tour",
-        "on_draw": "Quand cette carte est piochée"
+        "on_draw": "Quand cette carte est piochée",
+        "on_low_hp": "Sous 15 PV"
       },
       "content": {
         "deal_damage_one": "inflige {x} dégât",
@@ -1555,6 +1556,7 @@
     "trigger_on_attack": "À l'attaque",
     "trigger_on_end_of_turn": "À la fin du tour",
     "trigger_on_draw": "Quand cette carte est piochée",
+    "trigger_on_low_hp": "Sous 15 PV",
     "trigger_spell_resolution": "À la résolution",
     "composed_effects_heading": "Effets composés (avancé)",
     "composed_effects_subtitle": "contenu + amplitude + cibles",
@@ -1719,6 +1721,7 @@
     "mode_title_attack": "À l'attaque",
     "mode_title_end_of_turn": "À la fin du tour",
     "mode_title_draw": "Quand cette carte est piochée",
+    "mode_title_low_hp": "Quand votre héros passe sous 15 PV (une seule fois)",
     "grant_scope_target": "Conférée à la créature ciblée",
     "grant_scope_all_allies": "Conférée à toutes les unités alliées",
     "required_caps": "Requis",

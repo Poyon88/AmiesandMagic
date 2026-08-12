@@ -648,7 +648,8 @@
         "on_activation": "激活时",
         "on_attack": "攻击时",
         "on_end_of_turn": "回合结束时",
-        "on_draw": "被抽到时"
+        "on_draw": "被抽到时",
+        "on_low_hp": "生命值低于15"
       },
       "content": {
         "deal_damage_one": "造成 {x} 点伤害",
@@ -1555,6 +1556,7 @@
     "trigger_on_attack": "攻击时",
     "trigger_on_end_of_turn": "回合结束时",
     "trigger_on_draw": "当此牌被抽到时",
+    "trigger_on_low_hp": "生命值低于15",
     "trigger_spell_resolution": "结算时",
     "composed_effects_heading": "复合效果（高级）",
     "composed_effects_subtitle": "内容 + 幅度 + 目标",
@@ -1719,6 +1721,7 @@
     "mode_title_attack": "攻击时",
     "mode_title_end_of_turn": "回合结束时",
     "mode_title_draw": "当此牌被抽到时",
+    "mode_title_low_hp": "当你的英雄生命值低于15时（仅一次）",
     "grant_scope_target": "赋予目标生物",
     "grant_scope_all_allies": "赋予所有我方单位",
     "required_caps": "必填",
