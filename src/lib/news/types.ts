@@ -26,6 +26,10 @@ export interface NewsItem {
   image_style: string | null;
   image_prompt: string | null;
   translations: Partial<Record<Locale, NewsTranslation>>;
+  /** Section du jeu visée par le bouton d'action en pied de page — clé de
+   *  GAME_SECTIONS, `null` si la news n'en propose pas. Le libellé du bouton est
+   *  dérivé (labelKey + messages), donc il n'est PAS dans `translations`. */
+  cta_section: string | null;
   active: boolean;
   sort_order: number;
   created_at: string;

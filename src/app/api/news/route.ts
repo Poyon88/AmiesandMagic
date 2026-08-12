@@ -4,9 +4,26 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/requireAdmin';
 import { NEWS_SLUG_RE } from '@/lib/news/types';
+import { GAME_SECTIONS, findGameSection } from '@/lib/game-sections';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 const BUCKET = 'news-images';
+
+/** Valide la section du bouton d'action. Rend une réponse d'erreur, ou `null` si
+ *  tout va bien. On REJETTE une clé inconnue au lieu de la ranger en base en
+ *  silence : le bouton disparaîtrait de la page sans un mot, et l'admin croirait
+ *  l'avoir posé (le motif « liste blanche serveur qui jette sans rien dire »
+ *  a déjà coûté cher ici). Vide/absent/null = pas de bouton, ce qui est licite. */
+function validerSection(cta_section: string | null | undefined): NextResponse | null {
+  if (cta_section === undefined || cta_section === null || cta_section === '') return null;
+  if (findGameSection(cta_section)) return null;
+  return NextResponse.json(
+    {
+      error: `cta_section « ${cta_section} » inconnue (attendu : ${GAME_SECTIONS.map((s) => s.key).join(', ')})`,
+    },
+    { status: 400 },
+  );
+}
 
 /** Upload d'un visuel base64 → URL publique (pattern api/cards/save). */
 async function uploadImage(
@@ -53,10 +70,10 @@ export async function POST(request: Request) {
   if (auth.error) return auth.error;
 
   const body = await request.json();
-  const { slug, title, teaser, body_md, image_style, image_prompt, imageBase64, imageMimeType } =
+  const { slug, title, teaser, body_md, image_style, image_prompt, cta_section, imageBase64, imageMimeType } =
     body as {
       slug?: string; title?: string; teaser?: string; body_md?: string;
-      image_style?: string; image_prompt?: string;
+      image_style?: string; image_prompt?: string; cta_section?: string | null;
       imageBase64?: string; imageMimeType?: string;
     };
 
@@ -64,6 +81,8 @@ export async function POST(request: Request) {
   if (!slug || !NEWS_SLUG_RE.test(slug)) {
     return NextResponse.json({ error: 'slug invalide (attendu : a-z, 0-9, tirets)' }, { status: 400 });
   }
+  const ctaErreur = validerSection(cta_section);
+  if (ctaErreur) return ctaErreur;
 
   try {
     let image_url: string | null = null;
@@ -90,6 +109,7 @@ export async function POST(request: Request) {
         image_url,
         image_style: image_style ?? null,
         image_prompt: image_prompt ?? null,
+        cta_section: cta_section || null,
         sort_order: (maxRow?.sort_order ?? -1) + 1,
       })
       .select('*')
@@ -122,16 +142,18 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ success: true });
   }
 
-  const { id, slug, title, teaser, body_md, image_style, image_prompt, active, imageBase64, imageMimeType } =
+  const { id, slug, title, teaser, body_md, image_style, image_prompt, cta_section, active, imageBase64, imageMimeType } =
     body as {
       id?: number; slug?: string; title?: string; teaser?: string; body_md?: string;
-      image_style?: string | null; image_prompt?: string | null; active?: boolean;
-      imageBase64?: string; imageMimeType?: string;
+      image_style?: string | null; image_prompt?: string | null; cta_section?: string | null;
+      active?: boolean; imageBase64?: string; imageMimeType?: string;
     };
   if (!id) return NextResponse.json({ error: 'id requis' }, { status: 400 });
   if (slug !== undefined && !NEWS_SLUG_RE.test(slug)) {
     return NextResponse.json({ error: 'slug invalide (attendu : a-z, 0-9, tirets)' }, { status: 400 });
   }
+  const ctaErreur = validerSection(cta_section);
+  if (ctaErreur) return ctaErreur;
 
   try {
     const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
@@ -141,6 +163,9 @@ export async function PATCH(request: Request) {
     if (body_md !== undefined) patch.body_md = body_md;
     if (image_style !== undefined) patch.image_style = image_style;
     if (image_prompt !== undefined) patch.image_prompt = image_prompt;
+    // '' (choix « Aucun » du formulaire) doit REMETTRE à null, pas être ignoré :
+    // sans ça on ne pourrait plus jamais retirer un bouton déjà posé.
+    if (cta_section !== undefined) patch.cta_section = cta_section || null;
     if (active !== undefined) patch.active = active;
 
     if (imageBase64 && imageMimeType) {

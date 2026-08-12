@@ -465,3 +465,34 @@ img {
   transition: color 0.15s ease;
 }
 .am-news-link:hover { color: var(--am-gold-bright); }
+
+/* Bouton d'action en pied de news (« Marché → »). Doré et cerné plutôt que
+   plein : il doit appeler l'œil sans rivaliser avec les tuiles du menu, qui
+   sont, elles, illustrées. */
+.am-news-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  padding: 0.7em 1.6em;
+  border: 1px solid var(--am-gild-strong);
+  border-radius: var(--am-r-md);
+  background: linear-gradient(180deg, rgba(200, 168, 78, 0.16), rgba(200, 168, 78, 0.06));
+  color: var(--am-gold-bright);
+  font-family: var(--font-cinzel), serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+.am-news-cta:hover {
+  background: linear-gradient(180deg, rgba(200, 168, 78, 0.28), rgba(200, 168, 78, 0.12));
+  border-color: var(--am-gold);
+  transform: translateY(-1px);
+}
+/* Respecte le réglage système : pas de translation pour qui a demandé moins
+   d'animations (même règle que le reste des transitions du jeu). */
+@media (prefers-reduced-motion: reduce) {
+  .am-news-cta { transition: none; }
+  .am-news-cta:hover { transform: none; }
+}

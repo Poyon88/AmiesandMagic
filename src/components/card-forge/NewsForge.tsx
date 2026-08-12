@@ -9,8 +9,9 @@
 // français en dur, comme les autres panneaux admin (précédent : CardEditor).
 // Le visuel est généré SANS texte (préfixe anti-texte du pipeline) : le titre
 // est superposé en HTML par le bandeau joueur, dans la langue du joueur.
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { NEWS_TARGET_LOCALES, slugifyNewsTitle, type NewsItem } from "@/lib/news/types";
+import { GAME_SECTIONS, gameSectionMarkdownLink } from "@/lib/game-sections";
 import type { Locale } from "@/i18n/config";
 
 const NEWS_STYLES: { id: string; label: string; hints: string }[] = [
@@ -41,6 +42,12 @@ export default function NewsForge() {
   const [title, setTitle] = useState("");
   const [teaser, setTeaser] = useState("");
   const [bodyMd, setBodyMd] = useState("");
+  // Section visée par le bouton d'action ("" = aucun bouton).
+  const [ctaSection, setCtaSection] = useState("");
+  // Référence du textarea du corps : l'insertion d'un lien se fait à la position
+  // du curseur, pas en fin de texte — sinon le lien atterrit loin de la phrase
+  // qu'on est en train d'écrire.
+  const bodyRef = useRef<HTMLTextAreaElement | null>(null);
   const [slug, setSlug] = useState("");
   const [slugTouched, setSlugTouched] = useState(false);
   const [styleId, setStyleId] = useState(NEWS_STYLES[0].id);
@@ -68,9 +75,31 @@ export default function NewsForge() {
     loadList();
   }, [loadList]);
 
+  /** Insère un lien Markdown vers une section à la position du curseur. Si du
+   *  texte est sélectionné, il sert de libellé — on garde ainsi la formulation
+   *  de l'auteur (« la salle des ventes ») plutôt que d'imposer le nom du menu. */
+  function insertSectionLink(section: (typeof GAME_SECTIONS)[number]) {
+    const ta = bodyRef.current;
+    const debut = ta?.selectionStart ?? bodyMd.length;
+    const fin = ta?.selectionEnd ?? bodyMd.length;
+    const selection = bodyMd.slice(debut, fin).trim();
+    const lien = selection
+      ? `[${selection}](${section.href})`
+      : gameSectionMarkdownLink(section);
+    setBodyMd(bodyMd.slice(0, debut) + lien + bodyMd.slice(fin));
+    // Curseur juste après le lien inséré, au tour de rendu suivant (l'état n'est
+    // pas encore appliqué au DOM à cet instant).
+    requestAnimationFrame(() => {
+      const pos = debut + lien.length;
+      ta?.focus();
+      ta?.setSelectionRange(pos, pos);
+    });
+  }
+
   function resetForm() {
     setEditingId(null);
     setTitle(""); setTeaser(""); setBodyMd(""); setSlug(""); setSlugTouched(false);
+    setCtaSection("");
     setStyleId(NEWS_STYLES[0].id); setPromptText("");
     setCurrentImageUrl(null); setPendingImage(null); setVariations([]);
   }
@@ -84,6 +113,7 @@ export default function NewsForge() {
   function openEdit(n: NewsItem) {
     setEditingId(n.id);
     setTitle(n.title); setTeaser(n.teaser); setBodyMd(n.body_md);
+    setCtaSection(n.cta_section ?? "");
     setSlug(n.slug); setSlugTouched(true);
     setStyleId(n.image_style ?? NEWS_STYLES[0].id);
     setPromptText(n.image_prompt ?? "");
@@ -156,6 +186,7 @@ export default function NewsForge() {
     try {
       const payload: Record<string, unknown> = {
         slug, title, teaser, body_md: bodyMd, image_style: styleId, image_prompt: promptText,
+        cta_section: ctaSection,
         ...(pendingImage ? { imageBase64: pendingImage.base64, imageMimeType: pendingImage.mime } : {}),
       };
       const res = await fetch("/api/news", {
@@ -353,10 +384,48 @@ export default function NewsForge() {
           <div style={{ marginBottom: 14 }}>
             <label style={S.label}>Corps de la page (Markdown : titres #, **gras**, listes -, liens [texte](url))</label>
             <textarea
+              ref={bodyRef}
               style={{ ...S.input, fontFamily: "monospace", fontSize: 12, minHeight: 160, resize: "vertical" }}
               value={bodyMd}
               onChange={(e) => setBodyMd(e.target.value)}
             />
+            {/* Insertion de liens internes — la liste vient de GAME_SECTIONS, donc
+                les routes sont justes par construction (test de garde) : plus
+                besoin de se souvenir que le marché est en /auction au singulier. */}
+            <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginTop: 6 }}>
+              <span style={{ fontSize: 10, color: "#888", fontFamily: "'Cinzel',serif" }}>
+                Insérer un lien vers :
+              </span>
+              {GAME_SECTIONS.map((s) => (
+                <button
+                  key={s.key}
+                  onClick={() => insertSectionLink(s)}
+                  title={`Insère [${s.frLabel}](${s.href}) au curseur — ou transforme le texte sélectionné en lien`}
+                  style={{ ...S.btnGhost, padding: "3px 8px", fontSize: 11 }}
+                >
+                  {s.frLabel}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* ── Bouton d'action ── */}
+          <div style={{ marginBottom: 14 }}>
+            <label style={S.label}>Bouton d&apos;action en pied de page (facultatif)</label>
+            <select
+              style={{ ...S.input, maxWidth: 280 }}
+              value={ctaSection}
+              onChange={(e) => setCtaSection(e.target.value)}
+            >
+              <option value="">— Aucun bouton —</option>
+              {GAME_SECTIONS.map((s) => (
+                <option key={s.key} value={s.key}>{s.frLabel}</option>
+              ))}
+            </select>
+            <div style={{ fontSize: 10, color: "#888", marginTop: 4 }}>
+              Bouton doré sous l&apos;article. Son libellé est celui du menu, donc
+              déjà traduit dans les 8 langues — rien à retraduire.
+            </div>
           </div>
 
           {/* ── Visuel ── */}

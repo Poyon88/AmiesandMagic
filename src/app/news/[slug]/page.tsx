@@ -10,6 +10,7 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { normalizeLocale } from "@/i18n/config";
 import { resolveNewsLocale, type NewsItem } from "@/lib/news/types";
+import { findGameSection } from "@/lib/game-sections";
 import { renderMarkdown } from "@/lib/markdown/renderMarkdown";
 import AmAtmosphere from "@/components/ui/AmAtmosphere";
 
@@ -49,6 +50,7 @@ export default async function NewsPage({ params }: { params: Promise<{ slug: str
   const locale = normalizeLocale(await getLocale());
   const t = await getTranslations("home");
   const { title, teaser, bodyMd } = resolveNewsLocale(news, locale);
+  const ctaSection = findGameSection(news.cta_section);
   const dateLabel = new Date(news.created_at).toLocaleDateString(locale, {
     year: "numeric",
     month: "long",
@@ -102,6 +104,20 @@ export default async function NewsPage({ params }: { params: Promise<{ slug: str
           <div className="am-news-prose text-am-ink-soft font-[family-name:var(--font-crimson),serif] leading-relaxed text-[17px]">
             {renderMarkdown(bodyMd)}
           </div>
+
+          {/* Bouton d'action vers une section du jeu. Le libellé est celui du
+              menu (labelKey), donc déjà traduit : on affiche le nom de la
+              section seule, sans phrase porteuse — « Voir le/la <section> » se
+              serait cassé sur les genres et les articles des 8 langues. Une clé
+              devenue orpheline rend `undefined` et le bouton disparaît. */}
+          {ctaSection && (
+            <div className="mt-12 flex justify-center">
+              <Link href={ctaSection.href} className="am-news-cta">
+                {t(ctaSection.labelKey)}
+                <span aria-hidden="true">→</span>
+              </Link>
+            </div>
+          )}
 
           <div className="mt-14 pt-6 border-t" style={{ borderColor: "var(--am-line-strong)" }}>
             <Link href="/" className="text-sm text-am-ink-faint hover:text-am-gold transition-colors">
