@@ -11,7 +11,7 @@ import { NextResponse, type NextRequest } from "next/server";
 // pour exactement le public qu'elle vise, et le lien rebondissait en boucle.
 //
 // Toute nouvelle page publique (mentions légales, CGU…) doit être ajoutée ici.
-const PUBLIC_PATH_PREFIXES = ["/login", "/auth", "/api", "/landing", "/legal"];
+const PUBLIC_PATH_PREFIXES = ["/login", "/auth", "/api", "/landing", "/legal", "/news"];
 
 function isPublicPath(pathname: string): boolean {
   return PUBLIC_PATH_PREFIXES.some(

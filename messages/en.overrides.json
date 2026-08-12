@@ -35,7 +35,12 @@
     "heroes_label_rarity": "Rarity",
     "heroes_loading": "Loading…",
     "heroes_load_error": "Could not load your heroes.",
-    "hero_power": "Power"
+    "hero_power": "Power",
+    "news_banner_label": "News",
+    "news_banner_open": "Show the news",
+    "news_banner_collapse": "Collapse the news",
+    "news_read_more": "Read more",
+    "news_back_home": "Back to home"
   },
   "landing": {
     "nav_play": "Play",

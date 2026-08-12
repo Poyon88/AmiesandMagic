@@ -431,3 +431,37 @@ img {
   user-select: none;
   -webkit-user-select: none;
 }
+
+/* ── Prose des news (/news/<slug>) ─────────────────────────────────────────
+   Style du corps Markdown rendu par renderMarkdown (h2/h3/h4, p, listes,
+   liens .am-news-link). Sobre, même famille visuelle que les pages légales :
+   Crimson pour le corps, Cinzel pour les intertitres, liens dorés. */
+.am-news-prose h2,
+.am-news-prose h3,
+.am-news-prose h4 {
+  font-family: var(--font-cinzel), serif;
+  font-weight: 700;
+  color: var(--am-ink);
+  margin: 1.6em 0 0.5em;
+  line-height: 1.25;
+}
+.am-news-prose h2 { font-size: 1.25rem; }
+.am-news-prose h3 { font-size: 1.1rem; }
+.am-news-prose h4 { font-size: 1rem; }
+.am-news-prose p { margin: 0 0 0.9em; }
+.am-news-prose ul,
+.am-news-prose ol {
+  margin: 0 0 0.9em;
+  padding-left: 1.4em;
+}
+.am-news-prose ul { list-style: disc; }
+.am-news-prose ol { list-style: decimal; }
+.am-news-prose li { margin: 0.25em 0; }
+.am-news-link {
+  color: var(--am-gold);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--am-gild-strong);
+  transition: color 0.15s ease;
+}
+.am-news-link:hover { color: var(--am-gold-bright); }

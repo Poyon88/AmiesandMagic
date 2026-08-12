@@ -3,15 +3,17 @@
 import HomeHeader from "@/components/home/HomeHeader";
 import MenuTile from "@/components/home/MenuTile";
 import AmAtmosphere from "@/components/ui/AmAtmosphere";
+import NewsBanner, { type BannerNews } from "@/components/NewsBanner";
 import { useTranslations } from "next-intl";
 import { isPlayerSellingEnabled } from "@/lib/auction/flags";
 
 interface MainMenuProps {
   username: string;
   goldBalance: number;
+  news?: BannerNews[];
 }
 
-export default function MainMenu({ username, goldBalance }: MainMenuProps) {
+export default function MainMenu({ username, goldBalance, news = [] }: MainMenuProps) {
   const t = useTranslations("home");
 
   return (
@@ -52,6 +54,11 @@ export default function MainMenu({ username, goldBalance }: MainMenuProps) {
             style={{ animationDelay: "0.3s" }}
             aria-hidden="true"
           />
+        </div>
+
+        {/* Bandeau de news (rotation puis réduction en barre fine). */}
+        <div className="am-animate-rise" style={{ animationDelay: "0.32s" }}>
+          <NewsBanner news={news} />
         </div>
 
         {/* 2×2 grid (1 column on small mobile) */}

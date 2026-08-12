@@ -20,6 +20,7 @@ import { ABILITIES, abilityIconKeys, creatureEngineId, XY_ABILITY_IDS, isTokenAu
 import { FORGE_TO_GAME_KEYWORD, GAME_TO_FORGE_KEYWORD, buildKeywordInstances } from "@/lib/card-forge/keyword-instances";
 import type { SpellKeywordId, Capability, CapabilityTrigger } from "@/lib/game/types";
 import CardEditor from "@/components/admin/CardEditor";
+import NewsForge from "@/components/card-forge/NewsForge";
 import { CARD_BACK_FRAMES, autoTrimDarkBorders, composeCardBack, getCardBackFrame } from "@/lib/card-back-frames";
 
 // ─── API CALL ────────────────────────────────────────────────────────────────
@@ -2689,7 +2690,7 @@ export default function CardForge() {
             <span style={{ fontSize: 8, color: "#aaa", letterSpacing: 2 }}>ARMIES & MAGIC</span>
           </div>
           <div style={{ display: "flex", gap: 4 }}>
-            {([["forge", `⚒ ${tf('tab_forge')}`], ["capacites", `✨ ${tf('tab_capacities')}`], ["edition", `✏ ${tf('tab_edition')}`], ["tokens", `🎭 ${tf('tab_tokens')}`], ["card-backs", `🎴 ${tf('tab_card_backs')}`], ["boards", `🗺 ${tf('tab_boards')}`], ["kw-icons", `🪄 ${tf('tab_icons')}`], ["sets", `📦 ${tf('tab_sets')}`], ["formats", `🎮 ${tf('tab_formats')}`], ["bulk", `📦 ${tf('tab_bulk')}`], ["budget", `⚖ ${tf('tab_budget')}`], ["schema", `📋 ${tf('tab_schema')}`], ["prints", `🏷 ${tf('tab_prints')}`]] as const).map(([t, l]) => (
+            {([["forge", `⚒ ${tf('tab_forge')}`], ["capacites", `✨ ${tf('tab_capacities')}`], ["edition", `✏ ${tf('tab_edition')}`], ["tokens", `🎭 ${tf('tab_tokens')}`], ["card-backs", `🎴 ${tf('tab_card_backs')}`], ["boards", `🗺 ${tf('tab_boards')}`], ["kw-icons", `🪄 ${tf('tab_icons')}`], ["sets", `📦 ${tf('tab_sets')}`], ["formats", `🎮 ${tf('tab_formats')}`], ["bulk", `📦 ${tf('tab_bulk')}`], ["budget", `⚖ ${tf('tab_budget')}`], ["schema", `📋 ${tf('tab_schema')}`], ["prints", `🏷 ${tf('tab_prints')}`], ["news", `📰 ${tf('tab_news')}`]] as const).map(([t, l]) => (
               <button key={t} onClick={() => { setTab(t); if (t === "sets") loadSets(); if (t === "formats") loadFormats(); if (t === "prints") loadPrintsData(); if (t === "kw-icons") loadKwAssets(); }} style={{
                 padding: "5px 14px", borderRadius: 6, cursor: "pointer",
                 background: tab === t ? "#333" : "transparent",
@@ -6156,6 +6157,13 @@ export default function CardForge() {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* ── NEWS ── */}
+        {tab === "news" && (
+          <div style={{ flex: 1, padding: 22, overflowY: "auto" }}>
+            <NewsForge />
           </div>
         )}
 

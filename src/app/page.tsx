@@ -1,6 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { getLocale } from "next-intl/server";
 import MainMenu from "@/components/MainMenu";
+import { normalizeLocale } from "@/i18n/config";
+import { resolveNewsLocale, type NewsItem } from "@/lib/news/types";
+import type { BannerNews } from "@/components/NewsBanner";
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -10,9 +14,18 @@ export default async function HomePage() {
 
   if (!user) redirect("/login");
 
-  const [profileResult, { data: wallet }] = await Promise.all([
+  const [profileResult, { data: wallet }, { data: activeNews }, locale] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", user.id).single(),
     supabase.from("wallets").select("balance").eq("user_id", user.id).single(),
+    // News actives du bandeau (RLS : lecture publique). Résolues dans la
+    // locale du joueur ICI, côté serveur — le client reçoit du prêt-à-afficher.
+    supabase
+      .from("news")
+      .select("id, slug, title, teaser, body_md, image_url, translations")
+      .eq("active", true)
+      .order("sort_order")
+      .order("id"),
+    getLocale(),
   ]);
   let profile = profileResult.data;
 
@@ -57,10 +70,17 @@ export default async function HomePage() {
   // Le portefeuille est créé paresseusement à la première transaction
   // (adjust_wallet_balance fait un upsert) : son absence est normale pour un
   // compte neuf et vaut zéro.
+  const loc = normalizeLocale(locale);
+  const news: BannerNews[] = ((activeNews ?? []) as NewsItem[]).map((n) => {
+    const { title, teaser } = resolveNewsLocale(n, loc);
+    return { id: n.id, slug: n.slug, title, teaser, imageUrl: n.image_url };
+  });
+
   return (
     <MainMenu
       username={profile?.username ?? "Player"}
       goldBalance={wallet?.balance ?? 0}
+      news={news}
     />
   );
 }
