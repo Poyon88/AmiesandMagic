@@ -204,6 +204,45 @@ export function deriveCapabilities(card: Card): Capability[] {
     : deriveCreatureCapabilities(card);
 }
 
+/** Réordonne les capacités d'une CRÉATURE selon `keywords[]`, l'ordre composé par
+ *  l'auteur — celui que la forge affiche dans « Déclenchement des pouvoirs ».
+ *
+ *  Appliqué APRÈS le choix de la source, donc aussi bien aux capacités
+ *  PERSISTÉES qu'aux dérivées. C'est indispensable : `getCapabilities` privilégie
+ *  `card.capabilities` quand la colonne existe — c'est-à-dire pour toutes les
+ *  cartes de la forge — et cette colonne a été écrite AVANT que la dérivation ne
+ *  respecte `keywords[]`. Corriger la seule dérivation ne changeait donc rien aux
+ *  cartes réellement en jeu : sur « Devin du Ciel Fendu », Préincanter se
+ *  résolvait toujours avant Divination, et ne pouvait donc pas voir le sort que
+ *  Divination venait de placer sur le dessus du deck.
+ *
+ *  Réordonner à la LECTURE plutôt que réécrire la base : aucune migration, les
+ *  699 cartes existantes sont corrigées d'un coup, et les `uid` — qui servent de
+ *  clé aux pickers composés — restent inchangés.
+ *
+ *  Les SORTS sont laissés tels quels : leurs `sk_${i}` suivent l'ordre de
+ *  `spell_keywords`, qui EST l'ordre d'auteur.
+ *
+ *  Tri STABLE : une capacité dont l'abilityId n'est pas dans `keywords[]`
+ *  (effet composé `_composed`, mot-clé conféré au runtime) garde sa place
+ *  relative, en queue — exactement ce que produit déjà la sauvegarde
+ *  (`[...deriveCapabilities(), ...keptComposed]`). */
+function orderCreatureCapsByKeywords(card: Card, caps: Capability[]): Capability[] {
+  if (card.card_type !== "creature") return caps;
+  const kws = (card.keywords ?? []) as unknown as string[];
+  if (kws.length < 2 || caps.length < 2) return caps;
+
+  const rang = new Map<string, number>();
+  kws.forEach((kw, i) => { if (!rang.has(kw)) rang.set(kw, i); });
+
+  return caps
+    .map((c, i) => ({ c, i, r: rang.get(c.abilityId) ?? Number.POSITIVE_INFINITY }))
+    // Comparaison et non soustraction : `Infinity - Infinity` vaut NaN, ce qui
+    // rendrait le tri instable pour toutes les capacités hors `keywords[]`.
+    .sort((a, b) => (a.r === b.r ? a.i - b.i : a.r < b.r ? -1 : 1))
+    .map((x) => x.c);
+}
+
 // Mémoïsation par objet `card`. Le moteur remplace toujours `card` par une copie
 // immuable quand il mute les keywords (grant / silence / corruption), donc une
 // nouvelle identité d'objet ⇒ re-dérivation correcte. Évite de re-dériver à
@@ -267,6 +306,7 @@ export function getCapabilities(card: Card): Capability[] {
     caps = deriveCapabilities(card);
   }
 
+  caps = orderCreatureCapsByKeywords(card, caps);
   capabilitiesMemo.set(card, caps);
   return caps;
 }
