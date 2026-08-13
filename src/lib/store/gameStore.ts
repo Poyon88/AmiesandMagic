@@ -1163,6 +1163,43 @@ export const useGameStore = create<GameStore>((set, get) => {
     );
   };
 
+  /** Pendant de `openSelectionPickerIfNeeded` pour le picker de DECK (Creuser X,
+   *  qui réutilise la modale de Divination alimentée par le fond du deck).
+   *
+   *  Même raison d'être : sur un sort qui porte À LA FOIS une cible et un picker,
+   *  la cible doit être collectée d'ABORD. Ouvert en premier, le picker de deck
+   *  court-circuitait la collecte — « Corde tendue » (Impact 2 + Creuser 3) ne
+   *  demandait jamais la cible de son Impact, qui partait donc sans cible et ne
+   *  faisait rien, en silence.
+   *
+   *  `carriedMap` est reversé dans `collectedTargetMap` pour que la résolution du
+   *  picker parte avec les cibles déjà choisies.
+   *
+   *  Rend true quand un picker a été ouvert — l'appelant ne doit alors PAS
+   *  dispatcher. */
+  const openDeckPickerIfNeeded = (
+    gs: GameState,
+    instanceId: string,
+    carriedMap: Record<string, string>,
+  ): boolean => {
+    const player = gs.players[gs.currentPlayerIndex];
+    const cardInst = player.hand.find(c => c.instanceId === instanceId);
+    if (!cardInst || cardInst.card.card_type !== "spell") return false;
+    if (!cardNeedsCreuser(cardInst.card)) return false;
+    // Même plafond qu'à la résolution : X + bonus de Chant.
+    const x = ((cardInst.card.spell_keywords ?? []).find(k => k.id === "creuser")?.amount ?? 1)
+      + chantBonusForSpell(gs, cardInst.card);
+    const deckCards = getCreuserCards(player, x);
+    if (deckCards.length === 0) return false;
+    set({
+      targetingMode: "divination",
+      divinationCards: deckCards,
+      validTargets: [],
+      collectedTargetMap: carriedMap,
+    });
+    return true;
+  };
+
   // Creature counterpart of openSelectionPickerIfNeeded. After the user
   // resolves a creature's target / graveyard / divination picker, this
   // checks whether the same creature ALSO carries a selection-style
@@ -3066,7 +3103,15 @@ export const useGameStore = create<GameStore>((set, get) => {
     }
 
     // CREUSER X : même picker que Divination, mais alimenté par le FOND du deck.
-    if (card && cardNeedsCreuser(card.card)) {
+    //
+    // Sauf sur un SORT qui réclame AUSSI une cible : ouvrir ce picker d'abord
+    // court-circuitait la collecte de cible, et l'autre effet partait sans la
+    // sienne — « Corde tendue » (Impact 2 + Creuser 3) ne proposait jamais de
+    // cibler son Impact, qui ne faisait donc rien, en silence. Dans ce cas la
+    // cible est collectée par le bloc de ciblage plus bas, puis ce même picker
+    // est ouvert depuis `selectTarget` via `openDeckPickerIfNeeded`.
+    const creuserApresCiblage = card.card.card_type === "spell" && needsTarget(card.card);
+    if (card && cardNeedsCreuser(card.card) && !creuserApresCiblage) {
       const xVals = parseXValuesFromEffectText(card.card.effect_text);
       const x = card.card.card_type === "spell"
         ? ((card.card.spell_keywords ?? []).find(kw => kw.id === "creuser")?.amount ?? 1)
@@ -3443,6 +3488,10 @@ export const useGameStore = create<GameStore>((set, get) => {
       if (gs && openSelectionPickerIfNeeded(gs, selectedCardInstanceId, collectedMap)) {
         return null;
       }
+      // Picker de DECK (Creuser) : même chaînage, cibles emportées.
+      if (gs && openDeckPickerIfNeeded(gs, selectedCardInstanceId, collectedMap)) {
+        return null;
+      }
       return get().dispatchAction({
         type: "play_card",
         cardInstanceId: selectedCardInstanceId,
@@ -3456,6 +3505,9 @@ export const useGameStore = create<GameStore>((set, get) => {
 
       if (nextIndex >= spellTargetSlots.length) {
         if (gs && openSelectionPickerIfNeeded(gs, selectedCardInstanceId, newMap)) {
+          return null;
+        }
+        if (gs && openDeckPickerIfNeeded(gs, selectedCardInstanceId, newMap)) {
           return null;
         }
         return get().dispatchAction({
@@ -3659,6 +3711,9 @@ export const useGameStore = create<GameStore>((set, get) => {
         if (gs && openSelectionPickerIfNeeded(gs, selectedCardInstanceId, newMap)) {
           return null;
         }
+        if (gs && openDeckPickerIfNeeded(gs, selectedCardInstanceId, newMap)) {
+          return null;
+        }
         return get().dispatchAction({
           type: "play_card",
           cardInstanceId: selectedCardInstanceId,
@@ -3699,10 +3754,16 @@ export const useGameStore = create<GameStore>((set, get) => {
       })) {
         return null;
       }
+      // Les cibles déjà collectées voyagent avec l'action : sur un sort qui porte
+      // une cible ET un picker de deck (Impact + Creuser), le picker se résout en
+      // DERNIER, et sans ce report la cible collectée juste avant serait perdue —
+      // l'effet ciblé repartait à vide.
+      const carte = get().collectedTargetMap;
       return get().dispatchAction({
         type: "play_card",
         cardInstanceId: selectedCardInstanceId,
         divinationChoiceIndex: choiceIndex,
+        ...(Object.keys(carte).length > 0 ? { targetMap: carte } : {}),
         boardPosition: pendingBoardPosition ?? undefined,
       });
     } else if (targetingMode === "selection" && get().pendingTapSourceId !== null && get().pendingTapInstanceIdx !== null) {
