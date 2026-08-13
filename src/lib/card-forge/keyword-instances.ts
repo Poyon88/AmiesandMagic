@@ -100,6 +100,8 @@ export interface ForgeKeywordExtras {
   conferAbilityId?: string; conferX?: number; conferY?: number;
   /** Déclenchement : sous-ensemble figé de déclencheurs rejoués. */
   declenchementTriggers?: CapabilityTrigger[];
+  /** Compagnons : ids des cartes liées mélangées dans le deck (doublons permis). */
+  compagnonsCardIds?: number[];
 }
 
 /** Couples X/Y traités par une branche DÉDIÉE ci-dessous (leur second membre
@@ -209,6 +211,12 @@ export function buildKeywordInstances(input: BuildKeywordInstancesInput): Keywor
       // Déclenchement (créature) : porte le sous-ensemble figé de déclencheurs ; toujours émis.
       if (id === "declenchement" && !isSpellCard) {
         return { id, ...(mode ? { mode } : {}), ...(extras.declenchementTriggers?.length ? { replayTriggers: extras.declenchementTriggers } : {}) };
+      }
+      // Compagnons (créature) : porte la liste des cartes liées ; toujours émis
+      // (sans elle le mot-clé n'aurait rien à mélanger). Côté SORT, la donnée
+      // vit dans spell_keywords[i].linkedCardIds, pas ici.
+      if (id === "compagnons" && !isSpellCard) {
+        return { id, ...(mode ? { mode } : {}), ...(extras.compagnonsCardIds?.length ? { linkedCardIds: extras.compagnonsCardIds } : {}) };
       }
       if (!mode && x == null && !grantScope) return null; // pure play + no X + default scope → nothing to store
       return { id, ...(mode ? { mode } : {}), ...(x != null ? { x } : {}), ...(grantScope ? { grantScope } : {}) };

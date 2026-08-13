@@ -11,6 +11,7 @@ import { SEUIL_DECK_THRESHOLD } from "@/lib/game/constants";
 import type { Card, Capability, Keyword, KeywordInstance, KeywordMode, SpellKeywordInstance, SpellComposableEffects, CardSet, TokenTemplate } from "@/lib/game/types";
 import ComposedEffectsEditor from "@/components/card-forge/ComposedEffectsEditor";
 import CostListEditor from "@/components/card-forge/CostListEditor";
+import LinkedCardsPicker from "@/components/card-forge/LinkedCardsPicker";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 import RaceClanPicker from "@/components/admin/RaceClanPicker";
 import { movePowerInKeywords } from "@/lib/card-forge/power-order";
@@ -175,6 +176,8 @@ export default function CardEditor() {
   const [invocCosts, setInvocCosts] = useState<number[]>([]);
   const [invocRace, setInvocRace] = useState<string>("");
   const [invocFaction, setInvocFaction] = useState<string>("");
+  // Compagnons : ids des cartes liées mélangées dans le deck (doublons permis).
+  const [compagnonsCardIds, setCompagnonsCardIds] = useState<number[]>([]);
   // Effets composés (modèle hybride) de la carte en cours d'édition.
   const [composedCaps, setComposedCaps] = useState<Capability[]>([]);
 
@@ -298,6 +301,7 @@ export default function CardEditor() {
     let rmYLoaded = 1, rmRaceLoaded = "", rmClanLoaded = "", rfYLoaded = 1, afYLoaded = 1, glYLoaded = 1, dcYLoaded = 1, fdaYLoaded = 1, ssYLoaded = 1, purYLoaded = 1, foYLoaded = 1;
     let invocCostsLoaded: number[] = [];
     let invocRaceLoaded = "", invocFactionLoaded = "";
+    let compagnonsLoaded: number[] = [];
     for (const inst of card.keyword_instances ?? []) {
       if (inst.mode) modes[inst.id] = inst.mode;
       if (inst.x != null) parsedX[inst.id] = inst.x;
@@ -318,9 +322,11 @@ export default function CardEditor() {
         invocRaceLoaded = inst.race ?? "";
         invocFactionLoaded = inst.faction ?? "";
       }
+      if (inst.id === "compagnons") compagnonsLoaded = inst.linkedCardIds ?? [];
     }
     setRmY(rmYLoaded); setRmRace(rmRaceLoaded); setRmClan(rmClanLoaded); setRfY(rfYLoaded); setAfY(afYLoaded); setGlY(glYLoaded); setDcY(dcYLoaded); setFdaY(fdaYLoaded); setSsY(ssYLoaded); setPurY(purYLoaded); setFoY(foYLoaded);
     setInvocCosts(invocCostsLoaded); setInvocRace(invocRaceLoaded); setInvocFaction(invocFactionLoaded);
+    setCompagnonsCardIds(compagnonsLoaded);
     setKeywordModes(modes);
     setKeywordXValues(parsedX);
     setKeywordGrantScope(grantScopes);
@@ -448,6 +454,21 @@ export default function CardEditor() {
         setSaving(false);
         return;
       }
+      // Compagnons : sans carte liée le moteur n'aurait rien à mélanger
+      // (no-op silencieux) — même famille de guards que les tokens requis.
+      if (activeKeywords.includes("compagnons") && editFields.card_type === "creature" && compagnonsCardIds.length === 0) {
+        setSaveResult({ ok: false, msg: "Compagnons : choisissez au moins une carte liée avant de sauvegarder." });
+        setSaving(false);
+        return;
+      }
+      if (
+        spellKws.some((k) => k.id === "compagnons") &&
+        !spellKws.find((k) => k.id === "compagnons")?.linkedCardIds?.length
+      ) {
+        setSaveResult({ ok: false, msg: "Compagnons (sort) : choisissez au moins une carte liée avant de sauvegarder." });
+        setSaving(false);
+        return;
+      }
 
       const xParts = Object.entries(keywordXValues)
         .filter(([kw]) => activeKeywords.includes(kw))
@@ -497,6 +518,14 @@ export default function CardEditor() {
               ...(invocCosts.length ? { costs: invocCosts } : {}),
               ...(invocRace ? { race: invocRace } : {}),
               ...(invocFaction ? { faction: invocFaction } : {}),
+            };
+          }
+          // Compagnons (créature) : porte la liste des cartes liées ; toujours
+          // émis. Côté sort, la donnée vit dans spell_keywords[i].linkedCardIds.
+          if (id === "compagnons" && !isSpellCard) {
+            return {
+              id: id as Keyword, ...(mode ? { mode } : {}),
+              ...(compagnonsCardIds.length ? { linkedCardIds: compagnonsCardIds } : {}),
             };
           }
           // Force des ancêtres +X/+Y : porte +X (ATK) / +Y (PV) ; toujours émis
@@ -594,7 +623,7 @@ export default function CardEditor() {
       console.warn("[card-save] refresh failed after successful save:", err);
     }
     setSaving(false);
-  }, [selectedCard, editFields, newImageFile, keywordXValues, keywordModes, keywordGrantScope, rmY, rmRace, rmClan, rfY, afY, glY, dcY, fdaY, ssY, purY, foY, invocCosts, invocRace, invocFaction, composedCaps]);
+  }, [selectedCard, editFields, newImageFile, keywordXValues, keywordModes, keywordGrantScope, rmY, rmRace, rmClan, rfY, afY, glY, dcY, fdaY, ssY, purY, foY, invocCosts, invocRace, invocFaction, compagnonsCardIds, composedCaps]);
 
   // Delete
   const handleDelete = useCallback(async (id: number) => {
@@ -1633,6 +1662,14 @@ export default function CardEditor() {
                     style={{ width: 48, padding: "2px 6px", borderRadius: 4, border: "1px solid #d4d9e8", fontSize: 11, textAlign: "center" }}
                   />
                 </div>
+              </div>
+            )}
+
+            {/* Compagnons — cartes liées mélangées dans le deck (créature). Côté
+                sort, la même donnée s'édite dans la liste unique d'effets. */}
+            {((editFields.keywords as string[]) || []).includes("compagnons") && editFields.card_type === "creature" && (
+              <div style={{ marginBottom: 8 }}>
+                <LinkedCardsPicker value={compagnonsCardIds} onChange={setCompagnonsCardIds} accent="#8a6d3b" />
               </div>
             )}
 

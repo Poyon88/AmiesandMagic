@@ -10,6 +10,7 @@ import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 import RaceClanPicker from "@/components/admin/RaceClanPicker";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import CostListEditor from "./CostListEditor";
+import LinkedCardsPicker from "./LinkedCardsPicker";
 import { ABILITIES, creatureEngineId, XY_ABILITY_IDS } from "@/lib/game/abilities";
 import { ALL_SPELL_KEYWORDS, SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
 import { buildSpellEffectCatalog, instantiatePreset } from "@/lib/card-forge/spell-effect-catalog";
@@ -242,6 +243,16 @@ export default function ComposedEffectsEditor({
                   <span style={labelStyle}>{tr('race_label')} {!kw.race && <span style={{ color: "#e74c3c" }}>· {tr('required')}</span>}</span>
                   {sel(kw.race ?? "", [{ v: "", l: tr('race_dash') }, ...RACE_OPTIONS.map((r) => ({ v: r, l: r }))],
                     (v) => patchCurated(idx, { race: v || undefined }))}
+                </>
+              )}
+              {kw.id === "compagnons" && (
+                <>
+                  <span style={labelStyle}>🐾</span>
+                  <LinkedCardsPicker
+                    value={kw.linkedCardIds ?? []}
+                    onChange={(linked) => patchCurated(idx, { linkedCardIds: linked })}
+                    accent="#9b59b6"
+                  />
                 </>
               )}
               <span style={labelStyle}>{tr('label_targets')}</span>
