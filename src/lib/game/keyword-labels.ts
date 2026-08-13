@@ -128,35 +128,93 @@ export interface KeywordDisplayEntry {
   instance?: KeywordInstance;
 }
 
+/** Un mot-clé de créature, replacé dans l'ordre qui fait AUTORITÉ. */
+export interface OrderedKeywordSlot {
+  id: Keyword;
+  /** Instance porteuse des données (x, y, mode, race…). Absente quand le mot-clé
+   *  n'a rien à stocker — un pouvoir sans X, typiquement. */
+  instance?: KeywordInstance;
+  /** Index d'ORIGINE dans `card.keyword_instances`, préservé à travers le tri :
+   *  il sert de clé React stable côté affichage. Absent sans instance. */
+  instanceIdx?: number;
+}
+
+/** Mots-clés d'une créature dans l'ordre de `keywords[]` — le seul qui fasse
+ *  autorité, puisque c'est celui que l'auteur compose dans la forge.
+ *
+ *  SOURCE UNIQUE de ce tri. Il était écrit deux fois, à l'identique et de façon
+ *  identiquement fausse : ici pour l'affichage, et dans `capability-adapter`
+ *  pour la résolution. Les deux concaténaient `[...keyword_instances,
+ *  ...mots-clés sans instance]`, ce qui reléguait en queue tout pouvoir sans X
+ *  (rien à stocker ⇒ pas d'instance). Sur « Devin du Ciel Fendu » (Divination,
+ *  Préincanter 2, Inspiration 1), Divination se résolvait et s'affichait donc en
+ *  DERNIER alors qu'elle est déclarée en premier.
+ *
+ *  `keyword_instances` est une source de DONNÉES, jamais un ordre. */
+export function orderedKeywordSlots(
+  card: { keywords: Keyword[]; keyword_instances?: KeywordInstance[] | null },
+): OrderedKeywordSlot[] {
+  const instances = card.keyword_instances ?? [];
+  const kws = card.keywords ?? [];
+  if (instances.length === 0) {
+    return kws.map((id) => ({ id }));
+  }
+
+  // Toutes les instances d'un id, dans leur ordre d'origine : un même mot-clé
+  // peut en porter deux (une par mode), et une Map id→instance unique en
+  // perdrait une — donc une icône, et un effet.
+  const parId = new Map<Keyword, { inst: KeywordInstance; idx: number }[]>();
+  instances.forEach((inst, idx) => {
+    const dejaVues = parId.get(inst.id);
+    if (dejaVues) dejaVues.push({ inst, idx });
+    else parId.set(inst.id, [{ inst, idx }]);
+  });
+
+  const slots: OrderedKeywordSlot[] = [];
+  const traites = new Set<Keyword>();
+  for (const id of kws) {
+    if (traites.has(id)) continue; // `keywords[]` dédoublonné au passage
+    traites.add(id);
+    const trouvees = parId.get(id);
+    if (trouvees) {
+      for (const { inst, idx } of trouvees) slots.push({ id, instance: inst, instanceIdx: idx });
+    } else {
+      slots.push({ id });
+    }
+  }
+  // Instance dont l'id ne figure PAS dans `keywords[]` (donnée héritée) : gardée
+  // en queue plutôt que perdue en silence.
+  instances.forEach((inst, idx) => {
+    if (!traites.has(inst.id)) slots.push({ id: inst.id, instance: inst, instanceIdx: idx });
+  });
+  return slots;
+}
+
 /** Build the per-icon display list for a creature card. Each entry maps
  *  to ONE icon — same keyword in two modes yields two entries so the
  *  player sees one icon per mode (e.g. Convocation X play + Convocation X
  *  tap = 2 icons, the latter coloured yellow). Falls back to the legacy
- *  `keywords` string array for cards without per-instance metadata. */
+ *  `keywords` string array for cards without per-instance metadata.
+ *
+ *  L'ordre est celui de `orderedKeywordSlots` : les icônes de la carte suivent
+ *  donc l'ordre de résolution, ce qui est le seul lisible quand un pouvoir
+ *  prépare le terrain d'un autre. */
 export function buildKeywordDisplayEntries(
   card: { keywords: Keyword[]; keyword_instances?: KeywordInstance[] | null; effect_text: string },
 ): KeywordDisplayEntry[] {
-  const out: KeywordDisplayEntry[] = [];
-  const instances = card.keyword_instances ?? [];
   const xFromText = parseXValuesFromEffectText(card.effect_text);
-  const idsCovered = new Set<Keyword>();
-  for (let i = 0; i < instances.length; i++) {
-    const inst = instances[i];
-    idsCovered.add(inst.id);
-    out.push({
-      kw: inst.id,
-      x: inst.x ?? (inst.mode === undefined ? xFromText[inst.id] : undefined),
-      mode: inst.mode ?? defaultDisplayMode(inst.id),
-      instanceIdx: i,
-      instance: inst,
-    });
-  }
-  for (const kw of card.keywords) {
-    if (!idsCovered.has(kw)) {
-      out.push({ kw, x: xFromText[kw], mode: defaultDisplayMode(kw) });
+  return orderedKeywordSlots(card).map(({ id, instance, instanceIdx }) => {
+    if (!instance) {
+      return { kw: id, x: xFromText[id], mode: defaultDisplayMode(id) };
     }
-  }
-  return out;
+    return {
+      kw: id,
+      x: instance.x ?? (instance.mode === undefined ? xFromText[id] : undefined),
+      mode: instance.mode ?? defaultDisplayMode(id),
+      instanceIdx,
+      instance,
+    };
+  });
 }
 
 /** Convert an integer to Roman numerals (1–10) */

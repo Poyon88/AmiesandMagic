@@ -20,7 +20,7 @@ import {
   SPELL_KEYWORDS,
   isCreatureKwShadowedBySpell,
 } from "./abilities";
-import { parseXValuesFromEffectText } from "./keyword-labels";
+import { orderedKeywordSlots, parseXValuesFromEffectText } from "./keyword-labels";
 import type {
   Capability,
   CapabilityTargetSlot,
@@ -65,16 +65,12 @@ function triggerForCreatureMode(id: string, mode: KeywordMode | undefined): Capa
  *  (métadonnée jamais peuplée). Sans `keyword_instances`, chaque `keywords[]`
  *  est traité comme on-play. */
 function effectiveCreatureInstances(card: Card): KeywordInstance[] {
-  const insts = card.keyword_instances;
-  const kws = (card.keywords ?? []) as unknown as string[];
-  if (insts && insts.length > 0) {
-    const idsWithInstance = new Set(insts.map((k) => k.id));
-    const synth = kws
-      .filter((kw) => !idsWithInstance.has(kw as KeywordInstance["id"]))
-      .map((kw) => ({ id: kw } as KeywordInstance));
-    return [...insts, ...synth];
-  }
-  return kws.map((kw) => ({ id: kw } as KeywordInstance));
+  // Tri MUTUALISÉ avec l'affichage (`buildKeywordDisplayEntries`) : les icônes de
+  // la carte et l'ordre de résolution du moteur sont ainsi le même ordre par
+  // construction, et non par coïncidence — ils avaient précisément divergé.
+  return orderedKeywordSlots(card).map(
+    ({ id, instance }) => instance ?? ({ id } as KeywordInstance),
+  );
 }
 
 function deriveSpellCapabilities(card: Card): Capability[] {
