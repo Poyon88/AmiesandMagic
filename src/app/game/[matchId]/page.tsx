@@ -328,6 +328,46 @@ export default function GamePage() {
         }
         const allSpells = excludeSpecialSets(allSpellsRes.data ?? [], specialSetIds);
 
+        // Compagnons : les cartes LIÉES (linkedCardIds) doivent être résolvables
+        // par id au déclenchement, or elles peuvent tomber hors des pools déjà
+        // chargés (autre faction / alignement, set spécial). On balaie tout ce
+        // qui est en mémoire (decks + pools) et on complète factionCardPool avec
+        // les manquantes — une seule passe : une carte liée qui porterait
+        // elle-même des Compagnons hors pool resterait irrésolue (warn moteur).
+        // Requête et tri déterministes : les deux clients bâtissent le même pool.
+        const linkedIds = new Set<number>();
+        const collectLinked = (c: Card) => {
+          for (const inst of c.keyword_instances ?? []) {
+            if (inst.id === "compagnons") for (const id of inst.linkedCardIds ?? []) linkedIds.add(id);
+          }
+          for (const sk of c.spell_keywords ?? []) {
+            if (sk.id === "compagnons") for (const id of sk.linkedCardIds ?? []) linkedIds.add(id);
+          }
+          for (const cap of c.capabilities ?? []) {
+            if (cap.abilityId === "compagnons") for (const id of cap.linkedCardIds ?? []) linkedIds.add(id);
+          }
+        };
+        [...p1Cards, ...p2Cards].forEach(({ card }) => collectLinked(card));
+        factionCards.forEach(collectLinked);
+        allSpells.forEach(collectLinked);
+        const loadedCardIds = new Set([...factionCards, ...allSpells].map((c) => c.id));
+        const missingLinkedIds = Array.from(linkedIds)
+          .filter((id) => !loadedCardIds.has(id))
+          .sort((a, b) => a - b);
+        if (missingLinkedIds.length > 0) {
+          const { data: linkedRows, error: linkedErr } = await supabase
+            .from("cards")
+            .select(GAME_CARD_COLUMNS)
+            .in("id", missingLinkedIds)
+            .order("id")
+            .returns<Card[]>();
+          if (linkedErr) console.warn("[match] Compagnons : chargement des cartes liées en échec :", linkedErr);
+          // Pas d'excludeSpecialSets ici : une carte liée est une désignation
+          // EXPLICITE de l'auteur, pas un tirage — elle doit se résoudre même
+          // hors des pools aléatoires.
+          factionCards.push(...(linkedRows ?? []));
+        }
+
         // Determine which board the match uses: the second player's deck board,
         // falling back to the admin-chosen default board.
         const seed = parseInt(matchId.replace(/-/g, "").slice(0, 8), 16);

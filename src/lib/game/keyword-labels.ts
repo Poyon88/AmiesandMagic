@@ -347,6 +347,7 @@ export const ALL_KEYWORDS: Keyword[] = [
   "force_des_ancetres",
   "purete",
   "seuil_sacrificiel",
+  "compagnons",
 ];
 
 export const KEYWORD_LABELS: Record<Keyword, string> = {
@@ -406,6 +407,7 @@ export const KEYWORD_LABELS: Record<Keyword, string> = {
   dechainement: "Déchainement X/Y",
   force_des_ancetres: "Force des ancêtres +X/+Y", purete: "Pureté +X/+Y",
   seuil_sacrificiel: "Seuil Sacrificiel +X/+Y",
+  compagnons: "Compagnons",
 };
 
 /**
@@ -566,4 +568,5 @@ export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
   dechainement: "🌋",
   force_des_ancetres: "🪬", purete: "🕊️",
   seuil_sacrificiel: "📉",
+  compagnons: "🐾",
 };

@@ -2898,6 +2898,14 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       resolveMultipleInvocations(player, cardInstance.card, newState.factionCardPool, newState.formatCode ?? null);
     }
 
+    // Compagnons : mélange les cartes liées (choisies à la création) dans le
+    // deck du contrôleur, puis remélange tout le deck. Une seule fois par
+    // instance (garde compagnonsFired, jamais réarmée).
+    if (hasKwOnPlay(cardInstance, "compagnons") && !cardInstance.compagnonsFired) {
+      cardInstance.compagnonsFired = true;
+      resolveCompagnons(player, cardInstance.card, newState.factionCardPool, newState.allSpellsPool);
+    }
+
     // Déchainement X/Y : lance X sorts aléatoires de coût exactement Y issus de
     // la collection du joueur, même alignement que cette carte, cibles au
     // hasard. X/Y lus depuis keyword_instances (patron Affaiblissement).
@@ -4200,6 +4208,13 @@ function resolveSpellKeywords(
       case "invocations_multiples": {
         // Une Invocation par coût listé (les coûts vivent sur l'instance de sort).
         resolveMultipleInvocations(ctx.caster, ctx.card, ctx.state.factionCardPool, ctx.state.formatCode ?? null, chantBonus);
+        break;
+      }
+      case "compagnons": {
+        // Mélange les cartes liées dans le deck du LANCEUR, puis remélange le
+        // deck. Les ids vivent sur la capacité (lus via getCapabilities), pas
+        // sur l'instance de résolution — comme les coûts d'Invocations multiples.
+        resolveCompagnons(ctx.caster, ctx.card, ctx.state.factionCardPool, ctx.state.allSpellsPool);
         break;
       }
       case "dechainement": {
@@ -6626,6 +6641,15 @@ function resolveCuratedKeywordEffect(
       resolveMultipleInvocations(owner, source.card, currentCardPools.factionCardPool, currentFormatCode);
       break;
     }
+    case "compagnons": {
+      // Mort / attaque / retour / fin de tour / activation / pioche : mélange
+      // les cartes liées dans le deck du contrôleur. Une seule fois par
+      // instance (même patron que lowHpTriggerFired — jamais réarmé).
+      if (source.compagnonsFired) return;
+      source.compagnonsFired = true;
+      resolveCompagnons(owner, source.card, currentCardPools.factionCardPool, currentCardPools.allSpellsPool);
+      break;
+    }
     case "convocations_multiples": {
       // Crée tous les tokens configurés (mêmes que l'effet on-play) lors d'un
       // déclenchement mort / tap / retour en main.
@@ -8804,6 +8828,51 @@ function invocationSetupOf(card: Card, costBonus = 0): { costs: number[]; race?:
     race: cap?.race || undefined,
     faction: cap?.faction || undefined,
   };
+}
+
+/** Compagnons : crée une instance de chaque carte LIÉE (linkedCardIds, choisis
+ *  à la création dans la forge), les ajoute au deck du contrôleur puis
+ *  REMÉLANGE tout le deck (shuffleArray semé — les deux clients tirent le même
+ *  ordre). Les cartes liées sont résolues par id dans les pools du match
+ *  (factionCardPool + allSpellsPool, complétés au chargement du match par les
+ *  cartes liées hors pool — cf. page du match) ; un id introuvable est sauté
+ *  avec un warn, sans bloquer les autres. La garde « une seule fois »
+ *  (compagnonsFired) appartient aux APPELANTS : côté sort il n'y a pas
+ *  d'instance durable à marquer. */
+function resolveCompagnons(
+  owner: PlayerState,
+  sourceCard: Card,
+  factionPool: Card[] | undefined,
+  spellsPool: Card[] | undefined,
+): void {
+  const cap = getCapabilities(sourceCard).find((c) => c.abilityId === "compagnons");
+  const ids = (cap?.linkedCardIds ?? []).filter((n) => typeof n === "number" && n > 0);
+  if (ids.length === 0) {
+    console.warn(
+      `[engine] Compagnons : aucune carte liée configurée pour « ${sourceCard.name} » — vérifiez la forge.`,
+    );
+    return;
+  }
+  const byId = new Map<number, Card>();
+  for (const c of [...(factionPool ?? []), ...(spellsPool ?? [])]) {
+    if (!byId.has(c.id)) byId.set(c.id, c);
+  }
+  const added: CardInstance[] = [];
+  for (const id of ids) {
+    const def = byId.get(id);
+    if (!def) {
+      // Un pool incomplet serait sinon un no-op TOTALEMENT silencieux (même
+      // leçon que le renfort neutre de Sélection) : autant que ça se voie.
+      console.warn(
+        `[engine] Compagnons : carte liée id=${id} introuvable dans les pools du match pour « ${sourceCard.name} » — entrée sautée.`,
+      );
+      continue;
+    }
+    added.push(createCardInstance(def));
+  }
+  if (added.length === 0) return;
+  owner.deck.push(...added);
+  owner.deck = shuffleArray(owner.deck);
 }
 
 /** Enchaîne une Invocation par coût listé, dans l'ordre. Chaque entrée suit les

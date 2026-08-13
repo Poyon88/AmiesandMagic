@@ -1167,6 +1167,18 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["creature"],
     creature: { cost: 8, costPerX: 0, se: 2.0, minTier: 3, scalable: false, zone: "Terrain" },
   },
+  compagnons: {
+    id: "compagnons", label: "Compagnons", symbol: "🐾",
+    desc: "Mélange ses compagnons (cartes liées, choisies à la création) dans votre deck, puis remélange le deck. Une seule fois.",
+    applicable_to: ["creature", "spell"],
+    // `costPerX` non nul mais scalable:false — le X n'est pas saisi par
+    // l'auteur, c'est le NOMBRE de cartes liées ; le budget de la forge le
+    // dérive de la liste (cf. manualBudgetUsed dans CardForge). minTier 2 :
+    // comme les autres capacités à donnée annexe non stockable sur un token
+    // (TOKEN_UNSUPPORTED_IDS), le palier ≤1 exigerait l'authorabilité token.
+    creature: { cost: 8, costPerX: 3, se: 2.0, minTier: 2, scalable: false, zone: "Deck" },
+    spell: { params: [], needsTarget: false },
+  },
 };
 
 // ─── Derived views ──────────────────────────────────────────────────────────
@@ -1400,7 +1412,7 @@ export const CURATED_MULTIMODE_IDS: ReadonlySet<string> = new Set([
   "incineration", "creuser", "retour_differe", "devoration",
   // Effets « deck » : la cible est dans le deck du contrôleur, la source n'a
   // pas besoin d'être en jeu → tous les déclencheurs sont légitimes.
-  "fortifier", "preincanter",
+  "fortifier", "preincanter", "compagnons",
   // Restreints aux déclencheurs « sur plateau » (cf. CURATED_ONBOARD_ONLY_IDS).
   "sacrifice", "permutation", "malediction", "mimique", "metamorphose",
   "contresort", "profanation", "heritage_du_cimetiere",
@@ -1443,6 +1455,9 @@ export const TOKEN_UNSUPPORTED_IDS: ReadonlySet<string> = new Set([
   "lycanthropie", "entraide",
   // 2. annexes d'instance sans champ dans l'éditeur de tokens
   "invocations_multiples", "appel_supreme", "conferer", "declenchement",
+  // Compagnons : les cartes liées (linkedCardIds) n'ont pas de champ dans
+  // l'éditeur de tokens — le mot-clé y serait un no-op silencieux.
+  "compagnons",
 ]);
 
 /** LE point dur des capacités sur un jeton : un token est poussé directement

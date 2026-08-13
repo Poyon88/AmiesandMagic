@@ -10,6 +10,7 @@ import { RARITIES, FACTIONS, TYPES, KEYWORDS, CREATURE_LABEL_TO_ENGINE_ID, RARIT
 import CardVisual, { KEYWORD_SYMBOLS } from "./CardVisual";
 import ComposedEffectsEditor from "./ComposedEffectsEditor";
 import CostListEditor from "./CostListEditor";
+import LinkedCardsPicker from "./LinkedCardsPicker";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import type { CardType, Keyword, KeywordMode, SpellKeywordInstance, SpellComposableEffects, CardSet, GameFormat, TokenTemplate, ConvocationTokenDef } from "@/lib/game/types";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
@@ -1730,6 +1731,9 @@ export default function CardForge() {
   // Restriction de pool : race OU faction. Les deux vides ⇒ alignement de la carte.
   const [invocRace, setInvocRace] = useState<string>("");
   const [invocFaction, setInvocFaction] = useState<string>("");
+  // Compagnons : ids des cartes liées mélangées dans le deck au déclenchement
+  // (doublons permis). Vit dans keyword_instances — pas de migration.
+  const [compagnonsCardIds, setCompagnonsCardIds] = useState<number[]>([]);
   const [conferAbilityId, setConferAbilityId] = useState<string>("");
   const [conferX, setConferX] = useState(1);
   const [conferY, setConferY] = useState(1);
@@ -1805,7 +1809,10 @@ export default function CardForge() {
     + manualKeywords.reduce((sum, kw) => {
       const kwDef = KEYWORDS[kw];
       if (!kwDef) return sum;
-      const x = keywordXValues[kw] ?? 1;
+      // Compagnons : le « X » du budget est le NOMBRE de cartes liées (la
+      // capacité n'a pas de X saisi — coût de base + costPerX par carte au-delà
+      // de la première).
+      const x = kw === "Compagnons" ? Math.max(1, compagnonsCardIds.length) : keywordXValues[kw] ?? 1;
       return sum + kwDef.cost + kwDef.costPerX * Math.max(0, x - 1);
     }, 0)
   );
@@ -2350,6 +2357,7 @@ export default function CardForge() {
     setKeywordYValues({});
     setRmRace(""); setRmClan(""); setAsRace("");
     setInvocCosts([]); setInvocRace(""); setInvocFaction("");
+    setCompagnonsCardIds([]);
     setConferAbilityId(""); setConferX(1); setConferY(1);
     // Jetons et races ciblées
     setConvocationTokenId(null);
@@ -2412,6 +2420,13 @@ export default function CardForge() {
         setSaving(false);
         return;
       }
+      // Compagnons (créature) : au moins une carte liée — sans elle le moteur
+      // n'aurait rien à mélanger (no-op silencieux, même famille de guards).
+      if (gameKeywords.includes("compagnons") && compagnonsCardIds.length === 0) {
+        setSaveResult({ ok: false, msg: "Compagnons : choisissez au moins une carte liée." });
+        setSaving(false);
+        return;
+      }
       // Same guard on the spell side: a sort with `invocation_multiple`
       // (= "Convocations multiples" in the picker) must carry the token
       // list — without it the engine's case fires but spawns nothing.
@@ -2428,6 +2443,16 @@ export default function CardForge() {
         !convocationTokenId
       ) {
         setSaveResult({ ok: false, msg: tf('validation_convocation_spell') });
+        setSaving(false);
+        return;
+      }
+      // Compagnons côté SORT : même guard — la liste vit sur l'instance de
+      // spell_keywords, pas dans l'état créature compagnonsCardIds.
+      if (
+        spellKeywords.some((k) => k.id === "compagnons") &&
+        !spellKeywords.find((k) => k.id === "compagnons")?.linkedCardIds?.length
+      ) {
+        setSaveResult({ ok: false, msg: "Compagnons : choisissez au moins une carte liée." });
         setSaving(false);
         return;
       }
@@ -2458,6 +2483,7 @@ export default function CardForge() {
           rmY, rmRace, rmClan, afY, rfY, dcY, glY, fdaY,
           invocCosts, invocRace, invocFaction, asRace,
           conferAbilityId, conferX, conferY, declenchementTriggers,
+          compagnonsCardIds,
         },
       });
 
@@ -2565,7 +2591,7 @@ export default function CardForge() {
     } finally {
       setSaving(false);
     }
-  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, sfxExileFile, keywordModes, keywordGrantScope, keywordYValues, rmY, afY, rfY, glY, dcY, fdaY, rmRace, rmClan, asRace, invocCosts, invocRace, invocFaction, composedCaps, conferAbilityId, conferX, conferY, declenchementTriggers, resetCardForm]);
+  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, sfxExileFile, keywordModes, keywordGrantScope, keywordYValues, rmY, afY, rfY, glY, dcY, fdaY, rmRace, rmClan, asRace, invocCosts, invocRace, invocFaction, compagnonsCardIds, composedCaps, conferAbilityId, conferX, conferY, declenchementTriggers, resetCardForm]);
 
   const [generatingImage, setGeneratingImage] = useState(false);
   const [editedPrompt, setEditedPrompt] = useState<string | null>(null);
@@ -3368,6 +3394,19 @@ export default function CardForge() {
                         </div>
                       )}
 
+                      {/* Compagnons (sort) : les cartes liées se choisissent ici,
+                          sur l'instance de spell_keywords — même donnée que le
+                          moteur lit à la résolution (linkedCardIds). */}
+                      {spellKeywords.some(k => k.id === "compagnons") && (
+                        <div style={{ marginTop: 6 }}>
+                          <LinkedCardsPicker
+                            value={spellKeywords.find(k => k.id === "compagnons")?.linkedCardIds ?? []}
+                            onChange={(linked) => setSpellKeywords(prev => prev.map(k => k.id === "compagnons" ? { ...k, linkedCardIds: linked } : k))}
+                            accent="#9b59b6"
+                          />
+                        </div>
+                      )}
+
                       {/* Token list for invocation_multiple spell keyword */}
                       {spellKeywords.some(k => k.id === "invocation_multiple") && (
                         <div style={{ marginTop: 6, border: "1px solid #9b59b633", borderRadius: 6, padding: 8, background: "#f0e8ff" }}>
@@ -3793,6 +3832,12 @@ export default function CardForge() {
                           race={invocRace} faction={invocFaction}
                           onRestrictChange={(r) => { setInvocRace(r.race ?? ""); setInvocFaction(r.faction ?? ""); }}
                         />
+                      </div>
+                    )}
+                    {/* Compagnons — cartes liées mélangées dans le deck au déclenchement */}
+                    {manualKeywords.includes("Compagnons") && (
+                      <div style={{ marginTop: 6 }}>
+                        <LinkedCardsPicker value={compagnonsCardIds} onChange={setCompagnonsCardIds} accent="#8a6d3b" />
                       </div>
                     )}
                     {/* Conférer — capacité conférée + portée */}

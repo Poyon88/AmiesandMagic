@@ -468,6 +468,10 @@
       "seuil_sacrificiel": {
         "label": "Seuil Sacrificiel +X/+Y",
         "desc": "Tant que votre deck compte 25 cartes ou moins, gagne +X ATK et +Y PV."
+      },
+      "compagnons": {
+        "label": "Compagnons",
+        "desc": "Mélange ses compagnons (cartes liées, choisies à la création) dans votre deck, puis remélange le deck. Une seule fois."
       }
     },
     "spell_keywords": {
@@ -654,6 +658,10 @@
       "afflux": {
         "label": "Afflux X",
         "desc": "Gagnez X mana ce tour"
+      },
+      "compagnons": {
+        "label": "Compagnons",
+        "desc": "Mélange ses compagnons (cartes liées, choisies à la création) dans votre deck, puis remélange le deck. Une seule fois."
       }
     },
     "composed": {

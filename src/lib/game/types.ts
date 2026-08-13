@@ -112,7 +112,11 @@ export type Keyword =
   | "conferer"
   // Rejoue à l'entrée en jeu les effets composés déclenchés des AUTRES alliés,
   // pour un sous-ensemble figé de déclencheurs (cf. replayTriggers).
-  | "declenchement";
+  | "declenchement"
+  // Polymorphe — mélange dans le deck du contrôleur les cartes LIÉES (choisies
+  // à la création, cf. linkedCardIds), puis remélange tout le deck. Une seule
+  // fois par instance (CardInstance.compagnonsFired).
+  | "compagnons";
 
 export type SpellTargetType =
   | "any"
@@ -201,7 +205,8 @@ export type SpellKeywordId =
   | "cataclysme"
   | "affaiblissement"
   | "chant"
-  | "dechainement";
+  | "dechainement"
+  | "compagnons";
 
 /** Trigger mode for a creature keyword (also reused to tint spell effects).
  *  Undefined = neutral default (passive / permanent effect, kept white).
@@ -247,6 +252,11 @@ export interface KeywordInstance {
    *  dont les capacités composées des AUTRES alliés sont rejouées une fois à
    *  l'entrée en jeu du porteur. ⊆ {on_play, on_death, on_end_of_turn, on_return}. */
   replayTriggers?: CapabilityTrigger[];
+  /** Mot-clé "compagnons" : ids des cartes LIÉES (table `cards`) mélangées dans
+   *  le deck du contrôleur au déclenchement. Choisies à la création, doublons
+   *  autorisés (ordre sans effet — le deck est remélangé). Stocké dans la
+   *  colonne JSONB existante — aucune migration. */
+  linkedCardIds?: number[];
 }
 
 export interface SpellKeywordInstance {
@@ -261,6 +271,8 @@ export interface SpellKeywordInstance {
   costs?: number[];
   /** invocations_multiples : faction imposée au pool (voir `race`). */
   faction?: string;
+  /** compagnons : ids des cartes liées mélangées dans le deck du lanceur. */
+  linkedCardIds?: number[];
 }
 
 // --- Convocation tokens config ---
@@ -391,6 +403,9 @@ export interface Capability {
   /** Mot-clé "declenchement" uniquement : cf. KeywordInstance.replayTriggers
    *  (reporté sur la capability backfillée pour survivre au modèle unifié). */
   replayTriggers?: CapabilityTrigger[];
+  /** Mot-clé "compagnons" uniquement : ids des cartes liées mélangées dans le
+   *  deck du contrôleur (cf. KeywordInstance.linkedCardIds). */
+  linkedCardIds?: number[];
 }
 
 // ─── Capacités composables (modèle hybride) ─────────────────────────────────
@@ -827,6 +842,10 @@ export interface CardInstance {
   diedOnTurn: number | null;
   // Cycle éternel: flag for auto-play when drawn
   cycleEternelAutoPlay: boolean;
+  /** Compagnons : une seule fois par instance, jamais réarmé (même patron que
+   *  `lowHpTriggerFired`). Optionnel : undefined ⇒ pas encore déclenché
+   *  (snapshots antérieurs au champ). Hashé, muté uniquement sous applyAction. */
+  compagnonsFired?: boolean;
   // Owner tracking (for Corruption end-of-turn return)
   originalOwnerId: string | null;
   // Vrai propriétaire d'origine, persistant à travers un changement de camp

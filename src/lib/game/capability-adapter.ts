@@ -93,6 +93,8 @@ function deriveSpellCapabilities(card: Card): Capability[] {
       // par l'instance de sort.
       costs: sk.costs,
       faction: sk.faction,
+      // compagnons : cartes liées mélangées dans le deck du lanceur.
+      linkedCardIds: sk.linkedCardIds,
       tokenId: sk.token_id ?? undefined,
       targets,
     });
@@ -179,6 +181,8 @@ function deriveCreatureCapabilities(card: Card): Capability[] {
       // spell_keywords, pas dans une colonne dédiée).
       costs: inst.costs,
       faction: inst.faction,
+      // compagnons : ids des cartes liées, même logement JSONB.
+      linkedCardIds: inst.linkedCardIds,
       tokenId,
       tokens,
       targets: [],
