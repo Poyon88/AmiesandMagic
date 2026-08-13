@@ -13,6 +13,7 @@ import ComposedEffectsEditor from "@/components/card-forge/ComposedEffectsEditor
 import CostListEditor from "@/components/card-forge/CostListEditor";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 import RaceClanPicker from "@/components/admin/RaceClanPicker";
+import { movePowerInKeywords } from "@/lib/card-forge/power-order";
 
 // Sentinelle du filtre Clan : "" = tous les clans, celle-ci = les cartes qui
 // n'ont pas de clan. Même clé que TokenCascadePicker.
@@ -382,6 +383,14 @@ export default function CardEditor() {
         setKeywordXValues(prev => ({ ...prev, [kw]: 1 }));
       }
     }
+  };
+
+  /** Déplace un pouvoir d'un rang dans l'ordre de RÉSOLUTION. Le calcul vit dans
+   *  `movePowerInKeywords` (fonction pure, testée) : il doit préserver les
+   *  passifs intercalés, que le panneau n'affiche pas. */
+  const deplacerPouvoir = (kw: string, sens: -1 | 1, voisins: string[]) => {
+    const kws = (editFields.keywords as string[]) || [];
+    updateField("keywords", movePowerInKeywords(kws, kw, sens, voisins));
   };
 
   // Save
@@ -1292,13 +1301,51 @@ export default function CardEditor() {
               return (
                 <div style={{ marginBottom: 8, padding: "8px 10px", borderRadius: 6, background: "#fffaf2", border: "1px solid #f0e2c8" }}>
                   <div style={{ ...S.label, color: "#b8860b", marginBottom: 6 }}>Déclenchement des pouvoirs</div>
+                  {activeCurated.length > 1 && (
+                    <div style={{ fontSize: 8.5, color: "#a08a5b", marginBottom: 6, lineHeight: 1.35 }}>
+                      De haut en bas : l&apos;ordre dans lequel les pouvoirs se
+                      résolvent. Il compte dès qu&apos;un pouvoir prépare le
+                      terrain d&apos;un autre.
+                    </div>
+                  )}
                   <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                    {activeCurated.map(kw => {
+                    {activeCurated.map((kw, rang) => {
                       const label = KEYWORD_LABELS[kw as Keyword];
                       const allowedModes = CURATED_KEYWORD_MODES[label];
                       return (
                         <div key={kw} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                          <span style={{ fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: 600, color: "#333", flex: 1 }}>{label}</span>
+                          {/* Réordonnancement — masqué s'il n'y a qu'un pouvoir,
+                              où il n'aurait aucun sens. */}
+                          {activeCurated.length > 1 && (
+                            <div style={{ display: "inline-flex", flexDirection: "column", gap: 1 }}>
+                              {([-1, 1] as const).map(sens => {
+                                const possible = sens === -1 ? rang > 0 : rang < activeCurated.length - 1;
+                                return (
+                                  <button
+                                    key={sens}
+                                    disabled={!possible}
+                                    onClick={() => deplacerPouvoir(kw, sens, activeCurated)}
+                                    title={sens === -1 ? "Résoudre plus tôt" : "Résoudre plus tard"}
+                                    style={{
+                                      width: 18, height: 11, borderRadius: 3, padding: 0,
+                                      display: "flex", alignItems: "center", justifyContent: "center",
+                                      border: `1px solid ${possible ? "#d8c48a" : "#eee"}`,
+                                      background: possible ? "#fff" : "transparent",
+                                      color: possible ? "#b8860b" : "#ddd",
+                                      fontSize: 7, lineHeight: 1,
+                                      cursor: possible ? "pointer" : "not-allowed",
+                                    }}
+                                  >{sens === -1 ? "▲" : "▼"}</button>
+                                );
+                              })}
+                            </div>
+                          )}
+                          <span style={{ fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: 600, color: "#333", flex: 1 }}>
+                            {activeCurated.length > 1 && (
+                              <span style={{ color: "#b8860b", fontWeight: 700, marginRight: 4 }}>{rang + 1}.</span>
+                            )}
+                            {label}
+                          </span>
                           <div style={{ display: "inline-flex", gap: 3 }}>
                             {(["play", "death", "tap", "return", "end_of_turn", "attack", "draw", "low_hp"] as const).map(mode => {
                               const allowed = mode === "play" || allowedModes.has(mode);
