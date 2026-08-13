@@ -14,7 +14,7 @@ import {
   canAttack,
   getValidTargets,
   needsTarget,
-  getSpellTargets,
+  getSpellSlotTargets,
   getSpellTargetSlots,
   canUseHeroPower,
   heroPowerNeedsTarget,
@@ -3255,7 +3255,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         return get().dispatchAction({ type: "play_card", cardInstanceId: instanceId });
       }
 
-      const targets = getSpellTargets(gameState, card.card, firstSlot.type);
+      const targets = getSpellSlotTargets(gameState, card.card, firstSlot);
 
       // Aucune cible éligible (ex. un don « à une créature alliée » avec un
       // plateau vide) : on ne DOIT PAS entrer en mode ciblage, sinon la flèche
@@ -3479,7 +3479,7 @@ export const useGameStore = create<GameStore>((set, get) => {
           });
           return null;
         }
-        const nextTargets = card ? getSpellTargets(gs!, card.card, nextSlot.type) : [];
+        const nextTargets = card ? getSpellSlotTargets(gs!, card.card, nextSlot) : [];
         set({
           validTargets: nextTargets,
           currentTargetSlotIndex: nextIndex,
@@ -3641,7 +3641,7 @@ export const useGameStore = create<GameStore>((set, get) => {
               // targetingMode stays "graveyard"
             });
           } else {
-            const nextTargets = gs ? getSpellTargets(gs, cardInHand.card, nextSlot.type) : [];
+            const nextTargets = gs ? getSpellSlotTargets(gs, cardInHand.card, nextSlot) : [];
             set({
               validTargets: nextTargets,
               currentTargetSlotIndex: nextIndex,
@@ -4115,7 +4115,7 @@ export const useGameStore = create<GameStore>((set, get) => {
             return null;
           }
         } else {
-          const targets = getSpellTargets(gameState, card.card, firstSlot.type);
+          const targets = getSpellSlotTargets(gameState, card.card, firstSlot);
           // Même garde que le chemin principal : pas de mode ciblage sans
           // cible éligible, sinon la flèche s'affiche dans le vide — on laisse
           // le flux retomber sur le dispatch direct plus bas.

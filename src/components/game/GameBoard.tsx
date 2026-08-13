@@ -7,7 +7,7 @@ import { MAX_HAND_SIZE, MAX_BOARD_SIZE } from "@/lib/game/constants";
 import { secondeVieCost } from "@/lib/game/engine";
 import { useGameStore, selectPowerTargetingColor } from "@/lib/store/gameStore";
 import { useTranslations } from "next-intl";
-import { canPlayCard, canAttack, canUseHeroPower, effectiveManaCost, getSpellTargets, getValidTargets, heroPowerNeedsTarget } from "@/lib/game/engine";
+import { canPlayCard, canAttack, canUseHeroPower, effectiveManaCost, getSpellTargets, getValidTargets, heroPowerNeedsTarget, isIncinerationSlot, creatureTargetsIncinerationCamp } from "@/lib/game/engine";
 import HeroPortrait from "./HeroPortrait";
 import Hero3DViewer from "./Hero3DViewer";
 import HeroPowerButton from "./HeroPowerButton";
@@ -228,6 +228,34 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     if (!inst || inst.card.card_type !== "creature") return null;
     return { inst, position: pendingBoardPosition ?? me!.board.length };
   }, [gameState, localPlayerId, selectedCardInstanceId, pendingBoardPosition, targetingMode]);
+
+  // Une carte attend-elle la cible d'une INCINÉRATION ? Sa cible désigne un camp :
+  // héros, unité, ou n'importe quelle carte du cimetière convoité. Ce dernier
+  // geste est celui que les joueurs tentent spontanément, mais il se fait dans le
+  // VISUALISEUR de cimetière — une modale de consultation, dont les cartes sont
+  // inertes par défaut. On la rend donc sélectionnante pendant ce ciblage.
+  //
+  // Les deux formes sont couvertes : le SORT, qui porte l'Incinération dans un
+  // créneau de cible (« Lame consacrée »), et la CRÉATURE, dont l'effet part à
+  // l'entrée en jeu (« Porte-flamme du Matin »). La créature avait la même
+  // impasse — flèche affichée, cartes du cimetière inertes.
+  const incinerationSlotActive = useMemo(() => {
+    if (!gameState || !selectedCardInstanceId) return false;
+    const inst = gameState.players
+      .find(p => p.id === localPlayerId)?.hand
+      .find(c => c.instanceId === selectedCardInstanceId);
+    if (!inst) return false;
+
+    if (targetingMode === "spell" || targetingMode === "spell_multi") {
+      if (spellTargetSlots.length === 0) return false;
+      const slot = spellTargetSlots[currentTargetSlotIndex] ?? spellTargetSlots[0];
+      return !!slot && isIncinerationSlot(inst.card, slot);
+    }
+    if (targetingMode === "creature") {
+      return creatureTargetsIncinerationCamp(inst.card);
+    }
+    return false;
+  }, [targetingMode, gameState, localPlayerId, selectedCardInstanceId, spellTargetSlots, currentTargetSlotIndex]);
 
   // Les bruitages suivent l'APERÇU, pas le dispatch. Sans cela, la créature se
   // posait en silence et l'on entendait son arrivée — puis son effet — une fois
@@ -1487,8 +1515,23 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
               : t("zone_graveyard_opponent")
           }
           onClose={() => setGraveyardView(null)}
-          selectableInstanceIds={graveyardView === "my" ? secondeViePlayableIds : undefined}
-          onSelectCard={graveyardView === "my" ? handlePlayFromGraveyard : undefined}
+          // Pendant un créneau d'Incinération, les cartes désignent le CAMP dont
+          // on recycle la pile : elles prennent le pas sur la sélection Seconde
+          // vie, qui n'a de sens qu'en consultation libre.
+          selectableInstanceIds={
+            incinerationSlotActive
+              ? validTargets
+              : graveyardView === "my" ? secondeViePlayableIds : undefined
+          }
+          onSelectCard={
+            incinerationSlotActive
+              ? (id) => {
+                  const action = selectTarget(id);
+                  if (action) broadcast(action);
+                  setGraveyardView(null);
+                }
+              : graveyardView === "my" ? handlePlayFromGraveyard : undefined
+          }
         />
       )}
       {/* Déclencheur en attente dont les cibles vivent dans un CIMETIÈRE (ex.

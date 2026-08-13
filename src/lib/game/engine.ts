@@ -5264,10 +5264,18 @@ function cloneStateForAction(state: GameState): GameState {
 
 /** Camp dont le cimetière est visé par Incinération.
  *
- *  La cible désigne un CAMP, pas une carte : on vise une unité ou un héros, et
- *  c'est le cimetière de son contrôleur qui est recyclé. Ça évite d'inventer un
- *  type de ciblage « cimetière adverse » que le moteur ne connaît pas, tout en
- *  laissant le choix des deux camps demandé par la règle.
+ *  La cible désigne un CAMP, pas une carte : on vise une unité, un héros, ou
+ *  n'importe quelle carte du cimetière convoité — et c'est le cimetière du camp
+ *  ainsi désigné qui est recyclé. Ça évite d'inventer un type de ciblage
+ *  « cimetière adverse » que le moteur ne connaît pas, tout en laissant le choix
+ *  des deux camps demandé par la règle.
+ *
+ *  Le clic DANS le cimetière est le geste que les joueurs tentent d'eux-mêmes
+ *  (« je ne peux pas cibler la carte ») : cliquer un héros pour recycler une pile
+ *  de cartes ne va pas de soi. Sans cette lecture, un id de cimetière tombait
+ *  dans le repli et frappait l'adversaire — donc l'inverse de l'intention quand
+ *  on visait sa PROPRE pile.
+ *
  *  Sans cible exploitable, on vise l'ADVERSAIRE : c'est l'usage offensif, et le
  *  repli le moins surprenant pour un effet non ciblé (sort relancé, mode mort). */
 function incinerationVictim(
@@ -5280,7 +5288,7 @@ function incinerationVictim(
   if (targetId === "enemy_hero") return other;
   if (findCreatureOnBoard(controller, targetId)) return controller;
   if (findCreatureOnBoard(other, targetId)) return other;
-  return other;
+  return graveyardOwnerOf(targetId, controller, other) ?? other;
 }
 
 /** INCINÉRATION X — renvoie X cartes prises AU HASARD dans le cimetière de
@@ -8502,9 +8510,16 @@ export function getCreatureTargets(state: GameState, card: Card): string[] {
         return [...player.board, ...filterEnemyTargetable2(opponent.board)]
           .map(c => c.instanceId);
       case "incineration":
-        // La cible désigne un CAMP, pas une carte : les deux héros suffisent et
-        // rendent le geste lisible (« je vise ce cimetière-là »).
-        return ["friendly_hero", "enemy_hero"];
+        // La cible désigne un CAMP, pas une carte. Les deux héros l'expriment,
+        // mais cliquer une carte DU cimetière convoité est le geste que les
+        // joueurs tentent d'eux-mêmes — on l'accepte donc aussi, comme sur la
+        // forme SORT. `incinerationVictim` en déduit le camp via
+        // `graveyardOwnerOf`.
+        return [
+          "friendly_hero", "enemy_hero",
+          ...player.graveyard.map(c => c.instanceId),
+          ...opponent.graveyard.map(c => c.instanceId),
+        ];
     }
   }
   // Repli : cible d'un effet composé à l'entrée "au choix" (unité et/ou héros).
@@ -9106,6 +9121,46 @@ function selectionCardsForKeyword(
   if (id === "selection_magique") return getMagicalSelectionCards(state, maxManaCost, source, filter, seedSalt);
   if (id === "renfort_royal") return getRenfortRoyalCards(state, maxManaCost, source, filter, seedSalt);
   return getSelectionCards(state, maxManaCost, source, filter, false, seedSalt);
+}
+
+/** Ce créneau de cible est-il celui d'une Incinération ?
+ *
+ *  `kw_${i}` indexe `spell_keywords` — l'alignement est garanti par
+ *  `getSpellTargetSlots`, qui numérote dans le même ordre. On lit l'id du mot-clé
+ *  plutôt que le libellé du créneau : le libellé est localisé et change. */
+export function isIncinerationSlot(card: Card, slot: SpellTargetSlot): boolean {
+  const m = /^kw_(\d+)$/.exec(slot.slot);
+  if (!m) return false;
+  return card.spell_keywords?.[Number(m[1])]?.id === "incineration";
+}
+
+/** Cette CRÉATURE désigne-t-elle un camp d'Incinération à son entrée en jeu ?
+ *
+ *  Pendant de `isIncinerationSlot` pour la forme créature (« Porte-flamme du
+ *  Matin »). Exporté pour l'UI seule : c'est ce qui lui permet de rendre les
+ *  cartes du cimetière cliquables pendant le ciblage, `cardHasKwOnPlay` restant
+ *  interne au moteur. */
+export function creatureTargetsIncinerationCamp(card: Card): boolean {
+  return card.card_type === "creature" && cardHasKwOnPlay(card, "incineration");
+}
+
+/** Cibles valides d'un CRÉNEAU de sort.
+ *
+ *  Identique à `getSpellTargets` pour le type du créneau, PLUS les cartes des
+ *  deux cimetières quand le créneau est celui d'une Incinération : sa cible
+ *  désigne un camp, et cliquer une carte du cimetière convoité est le geste
+ *  naturel (cf. `incinerationVictim`, qui en déduit le camp). Les héros et les
+ *  unités restent proposés — les deux gestes mènent au même résultat. */
+export function getSpellSlotTargets(state: GameState, card: Card, slot: SpellTargetSlot): string[] {
+  const base = getSpellTargets(state, card, slot.type);
+  if (!isIncinerationSlot(card, slot)) return base;
+  const player = state.players[state.currentPlayerIndex];
+  const opponent = state.players[state.currentPlayerIndex === 0 ? 1 : 0];
+  return [
+    ...base,
+    ...player.graveyard.map(c => c.instanceId),
+    ...opponent.graveyard.map(c => c.instanceId),
+  ];
 }
 
 export function getSpellTargets(state: GameState, card: Card, slotType?: SpellTargetType): string[] {
