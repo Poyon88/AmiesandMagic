@@ -23,6 +23,7 @@ import { RadialFlash, HaloBloom, ExpandingRing, OrbitingSparkles } from "@/compo
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { getFactionDisplayName } from "@/lib/card-engine/constants";
 import { useVocab } from "@/i18n/useVocab";
+import CompagnonsNames from "@/components/cards/CompagnonsNames";
 
 interface SpellCastOverlayProps {
   event: SpellCastEvent | null;
@@ -337,6 +338,8 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
                                 {desc}
                               </div>
                             )}
+                            {/* Compagnons : cartes liées nommées, verso au survol. */}
+                            {kw === "compagnons" && <CompagnonsNames ids={entry.instance?.linkedCardIds} scale={0.95} />}
                           </div>
                         </div>
                       );
@@ -361,6 +364,8 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
                             <div style={{ fontSize: "0.7rem", color: "#eee", lineHeight: 1.35, fontFamily: "'Crimson Text', serif", textShadow: "0 1px 2px rgba(0,0,0,0.9)" }}>
                               {desc}
                             </div>
+                            {/* Compagnons (sort) : les cartes liées, nommées. */}
+                            {spellKw.id === "compagnons" && <CompagnonsNames ids={spellKw.linkedCardIds} scale={0.95} />}
                           </div>
                         </div>
                       );

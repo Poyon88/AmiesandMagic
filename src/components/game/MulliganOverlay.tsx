@@ -17,6 +17,7 @@ import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
 import useCoarsePointer from "@/hooks/useCoarsePointer";
 import { useCardText } from "./CardTextProvider";
 import { useVocab } from "@/i18n/useVocab";
+import CompagnonsNames from "@/components/cards/CompagnonsNames";
 
 function playStandardSfx(eventType: string) {
   if (typeof window === "undefined") return;
@@ -360,6 +361,8 @@ function MulliganCard({
                 <div>
                   <div style={{ fontSize: 10 * d, color: modeColor ?? "#fff", fontWeight: 600 }}>{displayLabel}</div>
                   {desc && <div style={{ fontSize: 8 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
+                  {/* Compagnons : les cartes liées, nommées, avec leur verso au survol. */}
+                  {kw === "compagnons" && <CompagnonsNames ids={entry.instance?.linkedCardIds} scale={d * 0.2} />}
                 </div>
               </div>
               );
@@ -384,6 +387,8 @@ function MulliganCard({
                   <div>
                     <div style={{ fontSize: 10 * d, color: keywordModeColor("spell") ?? accentColor, fontWeight: 600 }}>{label}</div>
                     <div style={{ fontSize: 8 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>
+                    {/* Compagnons (sort) : les cartes liées, nommées. */}
+                    {spellKw.id === "compagnons" && <CompagnonsNames ids={spellKw.linkedCardIds} scale={d * 0.2} />}
                   </div>
                 </div>
               );

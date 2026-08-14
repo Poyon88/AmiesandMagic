@@ -20,6 +20,7 @@ import { isBigHit } from "@/lib/fx/impactFx";
 import { SPRINGS } from "@/lib/fx/overlayMotion";
 import { useCardText } from "./CardTextProvider";
 import { useVocab } from "@/i18n/useVocab";
+import CompagnonsNames from "@/components/cards/CompagnonsNames";
 
 interface BoardCreatureProps {
   creature: CardInstance;
@@ -887,6 +888,8 @@ function BoardCreature({
                 <div>
                   <div style={{ fontSize: 8 * d, color: modeColor ?? "#fff", fontWeight: 600 }}>{displayLabel}</div>
                   {desc && <div style={{ fontSize: 7 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
+                  {/* Compagnons : les cartes liées, nommées, avec leur verso au survol. */}
+                  {kw === "compagnons" && <CompagnonsNames ids={entry.instance?.linkedCardIds} scale={d * 0.18} />}
                 </div>
               </div>
               );

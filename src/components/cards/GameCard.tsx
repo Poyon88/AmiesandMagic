@@ -60,6 +60,7 @@ import { LIMITED_PRINT_COUNTS, ALIGNMENTS, getEffectiveAlignment } from "@/lib/c
 import RarityFrame from "./RarityFrame";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
 import useCoarsePointer from "@/hooks/useCoarsePointer";
+import CompagnonsNames from "./CompagnonsNames";
 
 interface GameCardProps {
   card: Card;
@@ -548,6 +549,8 @@ export default function GameCard({
                   <div style={{ fontSize: 14 * so, color: labelColor, fontWeight: 700 }}>{displayLabel}</div>
                   {scopeNote && <div style={{ fontSize: 11.5 * so, color: grantScope === "all_allies" ? "#2ecc71" : "#9fb0c0", fontStyle: "italic", fontFamily: "'Crimson Text',serif" }}>{scopeNote}</div>}
                   {desc && <div style={{ fontSize: 12 * so, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
+                  {/* Compagnons : les cartes liées, nommées, avec leur verso au survol. */}
+                  {kw === "compagnons" && <CompagnonsNames ids={instance?.linkedCardIds} scale={s} />}
                 </div>
               </div>
               );
@@ -568,6 +571,8 @@ export default function GameCard({
                 <div>
                   <div style={{ fontSize: 14 * so, color: keywordModeColor("spell") ?? accentColor, fontWeight: 700 }}>{label}</div>
                   <div style={{ fontSize: 12 * so, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>
+                  {/* Compagnons (sort) : les cartes liées vivent sur l'instance de mot-clé. */}
+                  {spellKw.id === "compagnons" && <CompagnonsNames ids={spellKw.linkedCardIds} scale={s} />}
                 </div>
               </div>
               );
