@@ -39,6 +39,7 @@ import TempeteOverlay from "./TempeteOverlay";
 import ManaReductionOverlay from "./ManaReductionOverlay";
 import EpargneGainOverlay from "./EpargneGainOverlay";
 import ArenaDeckGraveyardCluster from "./ArenaDeckGraveyardCluster";
+import DeckEffectOverlay from "./DeckEffectOverlay";
 import MulliganOverlay from "./MulliganOverlay";
 import SettingsModal from "@/components/shared/SettingsModal";
 import type { GameAction, CardInstance, DamageEvent, HeroDefinition } from "@/lib/game/types";
@@ -128,6 +129,8 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     cycleEternelEvent,
     clearCycleEternelEvent,
     exileCostEvent,
+    deckEffectEvent,
+    clearDeckEffectEvent,
     clearExileCostEvent,
     heroPowerCastEvent,
     clearHeroPowerCastEvent,
@@ -1665,6 +1668,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
       <DiscardFromHandOverlay event={discardFromHandEvent} onComplete={clearDiscardFromHandEvent} />
       <TempeteOverlay event={tempeteEvent} onComplete={clearTempeteEvent} />
       <ManaReductionOverlay event={manaReductionEvent} onComplete={clearManaReductionEvent} />
+      <DeckEffectOverlay event={deckEffectEvent} onComplete={clearDeckEffectEvent} />
       <EpargneGainOverlay event={epargneGainEvent} onComplete={clearEpargneGainEvent} />
 
       {/* Targeting arrow overlay */}

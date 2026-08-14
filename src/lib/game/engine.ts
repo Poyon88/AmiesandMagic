@@ -114,6 +114,24 @@ let abilitySfxSink: Array<{ abilityId: string; trigger: import("./types").Capabi
 // rien à l'écran ne les montrait partir — seul le compteur du deck baissait.
 // Vidé au début d'applyAction, rattaché à state.exileCostEvents ; hors hash.
 let exileCostSink: Array<{ ownerId: string; count: number }> = [];
+// Effets « DECK » silencieux (Préincanter, Fortifier) : ils préparent une carte
+// DANS le deck, donc rien à l'écran ne montrait qu'ils avaient agi — ni au
+// joueur, ni à l'adversaire. Indice d'animation : un badge s'élève de la pile de
+// deck avec l'amplitude. On NE dit PAS quelle carte : la capacité tient à ne pas
+// divulguer le sommet du deck, et l'animation ne doit pas trahir ce choix.
+// Vidé au début d'applyAction, rattaché à state.deckEffectEvents ; hors hash.
+let deckEffectSink: Array<{ ownerId: string; abilityId: "preincanter" | "fortifier"; x: number; y: number }> = [];
+/** Signale qu'un effet « deck » a réellement modifié une carte. À n'appeler que
+ *  si quelque chose a changé : un no-op (aucun sort dans le deck, réduction déjà
+ *  au plancher) ne doit rien animer, sinon le badge mentirait. */
+function noteDeckEffect(
+  ownerId: string,
+  abilityId: "preincanter" | "fortifier",
+  x: number,
+  y = 0,
+): void {
+  deckEffectSink.push({ ownerId, abilityId, x, y });
+}
 /** Signale qu'une capacité nommée vient de résoudre. Dédoublonné par
  *  (id, déclencheur) : deux Tempête dans la même action ne sonnent qu'une fois. */
 function noteAbilitySfx(abilityId: string, trigger: import("./types").CapabilityTrigger): void {
@@ -6594,6 +6612,8 @@ function applyFortifier(owner: PlayerState, x: number, y: number): void {
   target.currentHealth += y;
   target.maxHealth += y;
   target.lastBuffMode = composedStrikeMode; // teinte du popup si révélée plus tard
+  // Une créature a bien été préparée : le badge peut le dire (sans dire laquelle).
+  noteDeckEffect(owner.id, "fortifier", x, y);
 }
 
 // Préincanter X : réduction PERMANENTE du coût du PREMIER sort du deck en
@@ -6611,6 +6631,9 @@ function applyPreincanter(owner: PlayerState, x: number): void {
   const applied = Math.min(x, Math.max(0, effective - 1));
   if (applied <= 0) return; // déjà à ≤1 : effet consommé, aucun changement
   target.manaCostReduction = (target.manaCostReduction ?? 0) + applied;
+  // `applied` et non `x` : le badge affiche la réduction RÉELLEMENT accordée,
+  // écrêtée au plancher de 1 mana. Annoncer −3 pour une remise de −1 mentirait.
+  noteDeckEffect(owner.id, "preincanter", applied);
 }
 
 function resolveCuratedKeywordEffect(
@@ -8176,6 +8199,7 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   drawTriggerSink = [];
   abilitySfxSink = [];
   exileCostSink = [];
+  deckEffectSink = [];
   lethalSpellActive = false;
   powerStrikeSink = [];
   composedStrikeMode = undefined;
@@ -8250,6 +8274,10 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   // Rattache l'exil payé pendant l'action (animation de déchirure au deck).
   if (exileCostSink.length > 0 && result !== state) {
     result.exileCostEvents = [...(result.exileCostEvents ?? []), ...exileCostSink];
+  }
+  // Rattache les effets « deck » silencieux (badge sur la pile).
+  if (deckEffectSink.length > 0 && result !== state) {
+    result.deckEffectEvents = [...(result.deckEffectEvents ?? []), ...deckEffectSink];
   }
   // Rattache les frappes de pouvoir déclenchées (flèches source→cible colorées
   // par mode) émises pendant l'action.

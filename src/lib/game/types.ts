@@ -1091,6 +1091,20 @@ export interface GameState {
     ownerId: string;
     count: number;
   }>;
+  // Transient : effets « deck » SILENCIEUX ayant réellement modifié une carte du
+  // deck (Préincanter, Fortifier). Ces capacités préparent une carte que personne
+  // ne voit : sans cet indice, rien à l'écran ne disait qu'elles avaient agi.
+  // Le store en tire un badge qui s'élève de la pile de deck. On ne transmet
+  // JAMAIS la carte visée — la capacité tient à ne pas divulguer le sommet du
+  // deck. `x`/`y` portent l'amplitude réellement accordée (Préincanter est écrêté
+  // au plancher de 1 mana).
+  // Vidé par le store après planification ; exclu du hash d'état.
+  deckEffectEvents?: Array<{
+    ownerId: string;
+    abilityId: "preincanter" | "fortifier";
+    x: number;
+    y: number;
+  }>;
   // Transient: chaque dégât infligé par un effet composé DÉCLENCHÉ (mort/retour/
   // attaque/fin de tour — PAS tap/on-play) est poussé ici {source, cible, mode}
   // pour que le store trace une flèche source→cible colorée par mode (vert fin de

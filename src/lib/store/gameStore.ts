@@ -169,6 +169,22 @@ export interface CycleEternelEvent {
 /** Coût d'EXIL payé : X cartes retirées du dessus d'un deck. Elles ne rejoignent
  *  aucune zone et personne ne peut les récupérer — sans animation, seul le
  *  compteur du deck baissait, sans lien visible avec la carte jouée. */
+/** Effet « deck » silencieux (Préincanter / Fortifier) ayant réellement modifié
+ *  une carte du deck. Un badge s'élève de la pile visée.
+ *
+ *  Ne porte PAS la carte affectée : la capacité tient à ne pas divulguer le
+ *  sommet du deck, et l'animation respecte ce choix — on montre QU'il s'est
+ *  passé quelque chose, jamais SUR QUOI. */
+export interface DeckEffectEvent {
+  abilityId: "preincanter" | "fortifier";
+  /** Amplitude RÉELLEMENT accordée (Préincanter est écrêté au plancher de 1 mana). */
+  x: number;
+  y: number;
+  /** Deck du joueur LOCAL ou de l'adversaire — décide de la pile visée. */
+  isLocal: boolean;
+  timestamp: number;
+}
+
 export interface ExileCostEvent {
   count: number;
   /** Deck du joueur LOCAL ou de l'adversaire — décide de la pile visée. */
@@ -377,7 +393,9 @@ interface GameStore {
   fireBreathEvent: FireBreathEvent | null;
   cycleEternelEvent: CycleEternelEvent | null;
   exileCostEvent: ExileCostEvent | null;
+  deckEffectEvent: DeckEffectEvent | null;
   clearExileCostEvent: () => void;
+  clearDeckEffectEvent: () => void;
   tempeteEvent: TempeteEvent | null;
   powerArrowEvent: PowerArrowEvent | null;
   manaReductionEvent: ManaReductionEvent | null;
@@ -1291,6 +1309,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   fireBreathEvent: null,
   cycleEternelEvent: null,
   exileCostEvent: null,
+  deckEffectEvent: null,
   tempeteEvent: null,
   powerArrowEvent: null,
   manaReductionEvent: null,
@@ -1713,6 +1732,27 @@ export const useGameStore = create<GameStore>((set, get) => {
           ? gameState.players[gameState.currentPlayerIndex].hand
             .find((c) => c.instanceId === action.cardInstanceId)?.card.sfx_exile_url ?? null
           : null,
+        timestamp: Date.now(),
+      }
+      : null;
+
+    // Effets « deck » silencieux (Préincanter / Fortifier). Le moteur n'en note
+    // un que s'il a RÉELLEMENT modifié une carte : un no-op n'anime rien, sinon
+    // le badge annoncerait un effet qui n'a pas eu lieu.
+    //
+    // Plusieurs dans la même action (deux Préincanter) : on n'en montre qu'UN, en
+    // cumulant les amplitudes par capacité — deux badges superposés sur la même
+    // pile seraient illisibles. Le premier gagne quand les capacités diffèrent :
+    // les enchaîner ferait attendre le joueur pour une information secondaire.
+    const rawDeckFx = newState.deckEffectEvents ?? [];
+    if (newState.deckEffectEvents) newState.deckEffectEvents = undefined;
+    const premierFx = rawDeckFx[0];
+    const deckEffectEvent: DeckEffectEvent | null = premierFx
+      ? {
+        abilityId: premierFx.abilityId,
+        x: rawDeckFx.filter((e) => e.abilityId === premierFx.abilityId).reduce((n, e) => n + e.x, 0),
+        y: rawDeckFx.filter((e) => e.abilityId === premierFx.abilityId).reduce((n, e) => n + e.y, 0),
+        isLocal: premierFx.ownerId === localPlayerId,
         timestamp: Date.now(),
       }
       : null;
@@ -2280,7 +2320,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     // NB : drawTriggerSpells compte ici mais PAS dans `hasOverlay` — ce dernier
     // pilote aussi le décalage avant impact (OVERLAY_PRE_IMPACT_MS), déjà couvert
     // par le RECAST_GAP_MS que chaque révélation « pioche » réserve elle-même.
-    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!powerArrowEvent || !!manaReductionEvent || !!epargneGainEvent || !!exileCostEvent || drawTriggerSpells.length > 0;
+    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!powerArrowEvent || !!manaReductionEvent || !!epargneGainEvent || !!exileCostEvent || !!deckEffectEvent || drawTriggerSpells.length > 0;
 
     // Deep clone helper — factionCardPool / allSpellsPool carry non-serialisable refs, keep them aside.
     const cloneState = (state: GameState): GameState => {
@@ -2718,6 +2758,11 @@ export const useGameStore = create<GameStore>((set, get) => {
     const phaseDraws = () => {
       set({ gameState: newState });
       playSfxBatch(drawSfx);
+      // Badge des effets « deck » : posé APRÈS la pioche, sinon il s'afficherait
+      // sur une pile dont le compteur n'a pas encore bougé — et sur « Devin du
+      // Ciel Fendu » (Divination + Préincanter + Inspiration), le joueur verrait
+      // le badge avant la carte piochée qui, souvent, EST celle qu'il prépare.
+      if (deckEffectEvent) set({ deckEffectEvent });
     };
 
     const phaseFinalize = () => {
@@ -3959,6 +4004,10 @@ export const useGameStore = create<GameStore>((set, get) => {
 
   clearExileCostEvent: () => {
     set({ exileCostEvent: null });
+  },
+
+  clearDeckEffectEvent: () => {
+    set({ deckEffectEvent: null });
   },
 
   clearCycleEternelEvent: () => {
