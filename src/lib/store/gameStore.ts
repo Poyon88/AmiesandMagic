@@ -2767,11 +2767,6 @@ export const useGameStore = create<GameStore>((set, get) => {
     const phaseDraws = () => {
       set({ gameState: newState });
       playSfxBatch(drawSfx);
-      // Badge des effets « deck » : posé APRÈS la pioche, sinon il s'afficherait
-      // sur une pile dont le compteur n'a pas encore bougé — et sur « Devin du
-      // Ciel Fendu » (Divination + Préincanter + Inspiration), le joueur verrait
-      // le badge avant la carte piochée qui, souvent, EST celle qu'il prépare.
-      if (deckEffectEvent) set({ deckEffectEvent });
     };
 
     const phaseFinalize = () => {
@@ -2903,6 +2898,16 @@ export const useGameStore = create<GameStore>((set, get) => {
     if (hasDraws) {
       setTimeout(phaseDraws, cursor);
       cursor += DRAW_MS;
+    }
+
+    // Badge des effets « deck » (Préincanter / Fortifier). Phase PROPRE, et non
+    // greffée sur la pioche : `phaseDraws` ne tourne que s'il y a une carte
+    // piochée, si bien que le badge ne s'affichait QUE dans ce cas — jamais sur
+    // un pouvoir de héros, ni sur une simple pose de créature à Fortifier.
+    // Placé après la pioche quand il y en a une, pour que la pile ait déjà bougé.
+    if (deckEffectEvent) {
+      setTimeout(() => set({ deckEffectEvent }), cursor);
+      cursor += 120;
     }
 
     setTimeout(phaseUnlock, cursor);
