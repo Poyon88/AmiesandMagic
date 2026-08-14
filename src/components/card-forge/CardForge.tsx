@@ -10,7 +10,7 @@ import { RARITIES, FACTIONS, TYPES, KEYWORDS, CREATURE_LABEL_TO_ENGINE_ID, RARIT
 import CardVisual, { KEYWORD_SYMBOLS } from "./CardVisual";
 import ComposedEffectsEditor from "./ComposedEffectsEditor";
 import CostListEditor from "./CostListEditor";
-import LinkedCardsPicker from "./LinkedCardsPicker";
+import LinkedCardsPicker, { invalidateLinkedCardsCatalog } from "./LinkedCardsPicker";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import type { CardType, Keyword, KeywordMode, SpellKeywordInstance, SpellComposableEffects, CardSet, GameFormat, TokenTemplate, ConvocationTokenDef } from "@/lib/game/types";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
@@ -2603,6 +2603,10 @@ export default function CardForge() {
 
       if (!response.ok) throw new Error(data.error || tf('server_error'));
 
+      // La carte qu'on vient de créer doit être immédiatement liable comme
+      // Compagnon : le catalogue du sélecteur est mis en cache au niveau du
+      // module et ne se rafraîchit pas tout seul.
+      invalidateLinkedCardsCatalog();
       setSaveResult({ ok: true, msg: tf('card_added', { name: forgeCard.name }) });
       // Vide le formulaire : sans cela la prochaine sauvegarde recrée à
       // l'identique la carte qu'on vient d'enregistrer (cf. resetCardForm).

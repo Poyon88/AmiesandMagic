@@ -14,6 +14,7 @@ import CostListEditor from "@/components/card-forge/CostListEditor";
 import LinkedCardsPicker from "@/components/card-forge/LinkedCardsPicker";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 import RaceClanPicker from "@/components/admin/RaceClanPicker";
+import { invalidateLinkedCardsCatalog } from "@/components/card-forge/LinkedCardsPicker";
 import { movePowerInKeywords } from "@/lib/card-forge/power-order";
 
 // Sentinelle du filtre Clan : "" = tous les clans, celle-ci = les cartes qui
@@ -605,6 +606,9 @@ export default function CardEditor() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
 
+      // Nom, coût ou stats ont pu changer : le sélecteur de Compagnons affiche
+      // ces valeurs dans ses étiquettes, son cache doit repartir de zéro.
+      invalidateLinkedCardsCatalog();
       setSaveResult({ ok: true, msg: "Carte mise à jour" });
       setNewImageFile(null);
       setNewImagePreview(null);
@@ -646,6 +650,8 @@ export default function CardEditor() {
         setEditFields({});
       }
       setDeleteConfirmId(null);
+      // Une carte supprimée ne doit plus être proposée comme Compagnon.
+      invalidateLinkedCardsCatalog();
       setSaveResult({ ok: true, msg: "Carte supprimée" });
     } catch (err) {
       setSaveResult({ ok: false, msg: err instanceof Error ? err.message : "Erreur suppression" });

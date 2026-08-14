@@ -28,6 +28,18 @@ interface PickableCard {
 let catalogCache: PickableCard[] | null = null;
 let catalogPromise: Promise<PickableCard[]> | null = null;
 
+/** Vide le catalogue partagé. À appeler après CHAQUE création ou modification de
+ *  carte : sans cela, une carte forgée pendant la session reste introuvable dans
+ *  le sélecteur de Compagnons jusqu'au rechargement complet de la page — le cache
+ *  vit au niveau du module, il survit donc au démontage du composant.
+ *
+ *  Symptôme constaté : « Mila, Bouclier Dévoué », créée puis cherchée dans la
+ *  foulée, n'apparaissait pas. */
+export function invalidateLinkedCardsCatalog(): void {
+  catalogCache = null;
+  catalogPromise = null;
+}
+
 async function loadCatalog(): Promise<PickableCard[]> {
   if (catalogCache) return catalogCache;
   if (!catalogPromise) {
