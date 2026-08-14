@@ -994,11 +994,36 @@ export default function HeroManager() {
               // an X parameter through `creature.scalable`. We surface a Quantité
               // input for those too, in addition to spell-side params.
               const isCreatureScalable = !!ability?.creature?.scalable;
-              const showAmount = ww.includes("amount") || isCreatureScalable || powerMode === "aura";
+              // Un couple de stats a DEUX encodages dans `params` :
+              //   * `amount` / `amountY` — lus par le DON et par l'AURA
+              //     (applyGrantedKeyword → grantedKeywordX/Y) ;
+              //   * `attack` / `health` — lus par le DÉCLENCHEMENT de sort
+              //     (l'instance construite par useHeroPower, cf. la branche
+              //     fortifier de resolveSpellKeywords).
+              //
+              // Quatre capacités déclarent les DEUX (Renforcement, Affaiblissement,
+              // Renforcement multiple, Fortifier) : l'éditeur affichait donc quatre
+              // champs pour un seul couple, dont deux que le mode choisi n'allait
+              // jamais lire — et l'aperçu se trompait de source, annonçant
+              // « Fortifier +0/+0 » pendant que la description disait +1/+1.
+              //
+              // On ne masque QUE le doublon, et on garde l'encodage réellement lu
+              // par le mode sélectionné. Une capacité qui ne déclare qu'un seul
+              // encodage garde ses champs, quel que soit le mode.
+              const brutAmount = ww.includes("amount") || isCreatureScalable || powerMode === "aura";
+              const brutAmountY = XY_ABILITY_IDS.has(powerKeywordId);
+              const brutAttack = ww.includes("attack");
+              const brutHealth = ww.includes("health");
+              const doublonCouple = (brutAmount || brutAmountY) && brutAttack && brutHealth;
+              const coupleViaAttackHealth = doublonCouple
+                ? powerMode === "spell_trigger"
+                : brutAttack && brutHealth;
+
+              const showAmount = brutAmount && !(doublonCouple && coupleViaAttackHealth);
               // Capacité à couple (Gloire +X/+Y) : le X seul ne suffit pas.
-              const showAmountY = XY_ABILITY_IDS.has(powerKeywordId);
-              const showAttack = ww.includes("attack");
-              const showHealth = ww.includes("health");
+              const showAmountY = brutAmountY && !(doublonCouple && coupleViaAttackHealth);
+              const showAttack = brutAttack && (!doublonCouple || coupleViaAttackHealth);
+              const showHealth = brutHealth && (!doublonCouple || coupleViaAttackHealth);
               const isConvocation = powerKeywordId === "convocation" || powerKeywordId === "convocation_simple";
               // Sorted ABILITIES list, label-first, for the picker
               const abilityEntries = Object.values(ABILITIES)
@@ -1007,11 +1032,16 @@ export default function HeroManager() {
               // Valeurs injectées dans le libellé : l'aperçu (et le bouton
               // « Remplir depuis l'aperçu ») doit lire « Gloire +3/+2 », pas le
               // gabarit « Gloire +X/+Y » du registre.
+              // L'aperçu lit le couple RÉELLEMENT utilisé par le mode, et non
+              // toujours amount/amountY : c'est ce décalage qui lui faisait
+              // annoncer « +0/+0 » sur un pouvoir réglé à +1/+1.
+              const xApercu = coupleViaAttackHealth ? powerParamAttack : powerParamAmount;
+              const yApercu = coupleViaAttackHealth ? powerParamHealth : powerParamAmountY;
               const previewLabel = applyKeywordValueToLabel(
                 powerKeywordId as Parameters<typeof applyKeywordValueToLabel>[0],
                 ability?.label ?? powerKeywordId,
-                showAmount ? powerParamAmount : undefined,
-                showAmountY ? { id: powerKeywordId as Parameters<typeof applyKeywordValueToLabel>[0], y: powerParamAmountY } : undefined,
+                (showAmount || showAttack) ? xApercu : undefined,
+                (showAmountY || showHealth) ? { id: powerKeywordId as Parameters<typeof applyKeywordValueToLabel>[0], y: yApercu } : undefined,
               );
               const previewDesc = ability?.desc ?? "—";
               const composedSummary = (() => {
