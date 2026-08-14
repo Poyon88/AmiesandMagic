@@ -946,7 +946,7 @@ function resolveComposedEffect(
         };
         base = applyTokenTemplate(base, tmpl);
         const tok = createCardInstance(base);
-        tok.hasSummoningSickness = true;
+        tok.hasSummoningSickness = !hasKw(tok, "charge");
         owner.board.push(tok);
       }
       return;
@@ -2943,7 +2943,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
         };
         tokenCard = applyTokenTemplate(tokenCard, tmpl);
         const token = createCardInstance(tokenCard);
-        token.hasSummoningSickness = true;
+        token.hasSummoningSickness = !hasKw(token, "charge");
         player.board.push(token);
       }
     }
@@ -3006,7 +3006,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
         };
         tokenCard = applyTokenTemplate(tokenCard, tmpl);
         const token = createCardInstance(tokenCard);
-        token.hasSummoningSickness = true;
+        token.hasSummoningSickness = !hasKw(token, "charge");
         player.board.push(token);
       }
     }
@@ -3041,7 +3041,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
         };
         tokenCard = applyTokenTemplate(tokenCard, tmpl);
         const token = createCardInstance(tokenCard);
-        token.hasSummoningSickness = true;
+        token.hasSummoningSickness = !hasKw(token, "charge");
         player.board.push(token);
       }
     }
@@ -4304,7 +4304,7 @@ function resolveSpellKeywords(
         };
         tokenCard = applyTokenTemplate(tokenCard, tmpl);
         const token = createCardInstance(tokenCard);
-        token.hasSummoningSickness = true;
+        token.hasSummoningSickness = !hasKw(token, "charge");
         ctx.caster.board.push(token);
         break;
       }
@@ -4337,7 +4337,7 @@ function resolveSpellKeywords(
           };
           tokenCard = applyTokenTemplate(tokenCard, tmpl);
           const token = createCardInstance(tokenCard);
-          token.hasSummoningSickness = true;
+          token.hasSummoningSickness = !hasKw(token, "charge");
           ctx.caster.board.push(token);
         }
         break;
@@ -4748,7 +4748,7 @@ function resolveAtomicEffect(ctx: SpellResolutionContext, rawEffect: AtomicEffec
         };
         tokenCard = applyTokenTemplate(tokenCard, tmpl);
         const token = createCardInstance(tokenCard);
-        token.hasSummoningSickness = true;
+        token.hasSummoningSickness = !hasKw(token, "charge");
         ctx.caster.board.push(token);
       }
       break;
@@ -6351,7 +6351,7 @@ function resolveCreatureDeath(c: CardInstance, owner: PlayerState, enemy: Player
         };
         tokenCard = applyTokenTemplate(tokenCard, findTokenTemplateByRace(c.card.race));
         const token = createCardInstance(tokenCard);
-        token.hasSummoningSickness = true;
+        token.hasSummoningSickness = !hasKw(token, "charge");
         owner.board.push(token);
       }
     }
@@ -6706,7 +6706,7 @@ function resolveCuratedKeywordEffect(
       };
       tokenCard = applyTokenTemplate(tokenCard, tmpl);
       const token = createCardInstance(tokenCard);
-      token.hasSummoningSickness = true;
+      token.hasSummoningSickness = !hasKw(token, "charge");
       owner.board.push(token);
       break;
     }
@@ -6754,7 +6754,7 @@ function resolveCuratedKeywordEffect(
         };
         tokenCard = applyTokenTemplate(tokenCard, tmpl);
         const token = createCardInstance(tokenCard);
-        token.hasSummoningSickness = true;
+        token.hasSummoningSickness = !hasKw(token, "charge");
         owner.board.push(token);
       }
       break;
@@ -7036,7 +7036,7 @@ function resolveCuratedKeywordEffect(
       };
       tokenCardS = applyTokenTemplate(tokenCardS, tmplS);
       const tokenS = createCardInstance(tokenCardS);
-      tokenS.hasSummoningSickness = true;
+      tokenS.hasSummoningSickness = !hasKw(tokenS, "charge");
       owner.board.push(tokenS);
       return;
     }
@@ -7912,7 +7912,7 @@ export function useHeroPower(state: GameState, action: HeroPowerAction): GameSta
             };
             tokenCard = applyTokenTemplate(tokenCard, tmpl);
             const token = createCardInstance(tokenCard);
-            token.hasSummoningSickness = true;
+            token.hasSummoningSickness = !hasKw(token, "charge");
             player.board.push(token);
           }
         }
