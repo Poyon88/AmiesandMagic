@@ -563,6 +563,10 @@
         "label": "Déferlement X",
         "desc": "Inflige X dégâts à toutes les créatures ennemies"
       },
+      "boomerang": {
+        "label": "Boomerang",
+        "desc": "Après sa résolution, ce sort est mélangé dans votre deck au lieu d'aller au cimetière."
+      },
       "siphon": {
         "label": "Siphon X",
         "desc": "Inflige X dégâts à une cible et soigne votre héros du même montant"

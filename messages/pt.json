@@ -559,6 +559,10 @@
         "label": "Devastação X",
         "desc": "Causa X de dano a todas as criaturas inimigas"
       },
+      "boomerang": {
+        "label": "Bumerangue",
+        "desc": "Após ser resolvido, este feitiço é embaralhado no seu deck em vez de ir para o cemitério."
+      },
       "siphon": {
         "label": "Sifão X",
         "desc": "Causa X de dano a um alvo e cura seu herói na mesma quantidade"

@@ -873,6 +873,18 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["spell"],
     spell: { params: ["amount"], needsTarget: false },
   },
+  // Modificateur GLOBAL du sort, sans cible ni valeur propre — même famille que
+  // Précision et Touché mortel : il ne fait rien seul, il change ce qu'il advient
+  // du sort une fois RÉSOLU. Le sort est remélangé dans le deck au lieu de partir
+  // au cimetière ; il n'y transite donc jamais, ce qui le rend invisible aux
+  // effets qui comptent ou fouillent le cimetière (Nécrophagie, Exhumation,
+  // Force des ancêtres…).
+  boomerang: {
+    id: "boomerang", label: "Boomerang", symbol: "🪃",
+    desc: "Après sa résolution, ce sort est mélangé dans votre deck au lieu d'aller au cimetière.",
+    applicable_to: ["spell"],
+    spell: { params: [], needsTarget: false },
+  },
   siphon: {
     id: "siphon", label: "Siphon X", symbol: "🩸",
     desc: "Inflige X dégâts à une cible et soigne votre héros du même montant",

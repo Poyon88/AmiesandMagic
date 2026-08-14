@@ -3483,7 +3483,10 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
 
     // Morts causées par les phases 2/3, les composés et le repli legacy.
     settleSpellDeaths(ctx);
-    player.graveyard.push(cardInstance);
+    // BOOMERANG : le sort repart dans le deck plutôt qu'au cimetière. Il n'y
+    // transite JAMAIS — aucun effet de cimetière ne le voit passer.
+    if (spellHasBoomerang(card)) resolveBoomerang(player, cardInstance);
+    else player.graveyard.push(cardInstance);
     recalculateAuras(player, opponent);
   }
 
@@ -5404,6 +5407,34 @@ function resolveRetourDiffere(
   returnInstanceToPlay(target);
   target.instanceId = generateInstanceId();
   owner.deck.push(target);
+}
+
+/** Ce sort porte-t-il BOOMERANG ?
+ *
+ *  Lu sur `spell_keywords`, comme les autres modificateurs globaux du sort
+ *  (Précision, Touché mortel) : ce n'est pas un effet à résoudre, mais une
+ *  propriété de la carte. */
+function spellHasBoomerang(card: Card): boolean {
+  return (card.spell_keywords ?? []).some(kw => kw.id === "boomerang");
+}
+
+/** BOOMERANG — le sort résolu est remélangé dans le deck de son lanceur.
+ *
+ *  Position tirée par `rng()`, le flux SÉRIALISÉ dans l'état : les deux clients
+ *  consomment la même graine au même moment, donc obtiennent la même position.
+ *  Un `Math.random()` local désynchroniserait la partie.
+ *
+ *  `splice` à un index de 0 à `deck.length` inclus : la borne haute autorise le
+ *  fond du deck, qu'un `% deck.length` aurait exclu.
+ *
+ *  AUCUNE remise à zéro de l'instance, contrairement aux retours en main de
+ *  créature (`returnInstanceToPlay`) : un sort n'a jamais été en jeu, il n'a donc
+ *  ni dégâts ni états de tour à purger. Et sa `manaCostReduction` doit SURVIVRE —
+ *  Préincanter la promet « de façon permanente », l'effacer au passage
+ *  contredirait la carte. */
+function resolveBoomerang(player: PlayerState, spell: CardInstance): void {
+  const idx = Math.floor(rng() * (player.deck.length + 1));
+  player.deck.splice(idx, 0, spell);
 }
 
 /** CREUSER X — regarde les X cartes du DESSOUS du deck et en remonte une sur le

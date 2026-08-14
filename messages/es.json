@@ -559,6 +559,10 @@
         "label": "Oleada X",
         "desc": "Inflige X de daño a todas las criaturas enemigas."
       },
+      "boomerang": {
+        "label": "Bumerán",
+        "desc": "Tras resolverse, este hechizo se baraja en tu mazo en lugar de ir al cementerio."
+      },
       "siphon": {
         "label": "Sifón X",
         "desc": "Inflige X de daño a un objetivo y cura a tu héroe por la misma cantidad."

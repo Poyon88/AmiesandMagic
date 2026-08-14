@@ -559,6 +559,10 @@
         "label": "Ondata X",
         "desc": "Infligge X danni a tutte le creature nemiche"
       },
+      "boomerang": {
+        "label": "Boomerang",
+        "desc": "Dopo essersi risolto, questa magia viene mischiata nel tuo mazzo invece di finire nel cimitero."
+      },
       "siphon": {
         "label": "Sifone X",
         "desc": "Infligge X danni a un bersaglio e cura il tuo eroe della stessa quantità"

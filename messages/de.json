@@ -559,6 +559,10 @@
         "label": "Ansturm X",
         "desc": "Fügt allen feindlichen Kreaturen X Schaden zu."
       },
+      "boomerang": {
+        "label": "Bumerang",
+        "desc": "Nach seiner Auflösung wird dieser Zauber in dein Deck gemischt, statt auf den Friedhof zu gehen."
+      },
       "siphon": {
         "label": "Siphon X",
         "desc": "Fügt einem Ziel X Schaden zu und heilt deinen Helden um denselben Betrag."

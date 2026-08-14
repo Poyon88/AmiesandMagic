@@ -559,6 +559,10 @@
         "label": "Surge X",
         "desc": "Deal X damage to all enemy creatures."
       },
+      "boomerang": {
+        "label": "Boomerang",
+        "desc": "After it resolves, this spell is shuffled into your deck instead of going to the graveyard."
+      },
       "siphon": {
         "label": "Siphon X",
         "desc": "Deal X damage to a target and heal your hero for the same amount."

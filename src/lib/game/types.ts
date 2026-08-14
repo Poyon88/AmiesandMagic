@@ -162,6 +162,9 @@ export interface SpellEffect {
 export type SpellKeywordId =
   | "impact"
   | "deferlement"
+  // Modificateur global : après résolution, le sort est remélangé dans le deck
+  // de son lanceur au lieu d'aller au cimetière (il n'y transite jamais).
+  | "boomerang"
   | "siphon"
   | "entrave"
   | "execution"
