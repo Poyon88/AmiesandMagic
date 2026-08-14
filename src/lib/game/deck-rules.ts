@@ -72,3 +72,22 @@ export function excludeSpecialSets<T extends { set_id?: number | null }>(
   if (!specialSetIds || specialSetIds.size === 0) return cards;
   return cards.filter((c) => c.set_id == null || !specialSetIds.has(c.set_id));
 }
+
+/** Écarte des POOLS DE TIRAGE les cartes marquées NON DÉCOUVRABLES.
+ *
+ *  Même intention que `excludeSpecialSets`, à la carte plutôt qu'au set, et même
+ *  point de passage : la CONSTRUCTION des pools, pas les ~8 résolveurs qui y
+ *  puisent. Un résolveur ajouté demain hérite de la règle sans qu'on y pense.
+ *
+ *  Ce filtre ne touche QUE les tirages : une carte non découvrable reste
+ *  collectionnable, deck-able, piochable et jouable. Seules les offres que le
+ *  joueur n'a pas construites lui-même l'ignorent.
+ *
+ *  `undefined` vaut DÉCOUVRABLE : les cartes chargées par un chemin qui ne
+ *  sélectionne pas encore la colonne ne doivent pas disparaître des pools en
+ *  silence. Seul un `false` explicite exclut. */
+export function excludeNonDiscoverable<T extends { discoverable?: boolean | null }>(
+  cards: T[],
+): T[] {
+  return cards.filter((c) => c.discoverable !== false);
+}

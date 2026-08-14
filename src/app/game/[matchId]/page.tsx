@@ -13,7 +13,7 @@ import type { Card, FormatCode, GameAction, GameState, HeroDefinition, HeroPower
 import { syncHash, reconcileVerdict } from "@/lib/game/stateHash";
 import { FACTIONS } from "@/lib/card-engine/constants";
 import { MANA_SPARK_NAMES } from "@/lib/game/mana-spark";
-import { excludeSpecialSets } from "@/lib/game/deck-rules";
+import { excludeSpecialSets, excludeNonDiscoverable } from "@/lib/game/deck-rules";
 import { useTranslations } from "next-intl";
 
 // Colonnes de `cards` réellement consommées par le moteur en partie. Projection
@@ -26,7 +26,7 @@ const GAME_CARD_COLUMNS =
   "keywords, keyword_instances, spell_keywords, spell_effects, capabilities, " +
   "image_url, faction, race, clan, rarity, card_alignment, convocation_token_id, " +
   "convocation_tokens, lycanthropie_token_id, entraide_race, set_id, card_year, " +
-  "card_month, sfx_play_url, sfx_death_url, sfx_exile_url, life_cost, discard_cost, sacrifice_cost, exile_cost";
+  "card_month, sfx_play_url, sfx_death_url, sfx_exile_url, life_cost, discard_cost, sacrifice_cost, exile_cost, discoverable";
 
 interface HeroRow {
   id: number;
@@ -313,7 +313,7 @@ export default function GamePage() {
         // bâtissent donc des pools identiques, condition de la synchro des
         // tirages semés.
         const specialSetIds = new Set((specialSetsRes.data ?? []).map((r) => r.id));
-        const factionCards = excludeSpecialSets(factionCardsRes.data ?? [], specialSetIds);
+        const factionCards = excludeNonDiscoverable(excludeSpecialSets(factionCardsRes.data ?? [], specialSetIds));
         // Ensure Mana Spark is in the pool (may not be if Humains not in deck factions)
         const manaSpark = manaSparkRes.data?.[0];
         if (manaSpark && !factionCards.find((c) => c.id === manaSpark.id)) {
@@ -326,7 +326,7 @@ export default function GamePage() {
             "[match] Étincelle de Mana introuvable en base — repli dégradé servi au 2e joueur.",
           );
         }
-        const allSpells = excludeSpecialSets(allSpellsRes.data ?? [], specialSetIds);
+        const allSpells = excludeNonDiscoverable(excludeSpecialSets(allSpellsRes.data ?? [], specialSetIds));
 
         // Compagnons : les cartes LIÉES (linkedCardIds) doivent être résolvables
         // par id au déclenchement, or elles peuvent tomber hors des pools déjà

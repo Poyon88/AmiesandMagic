@@ -659,6 +659,12 @@ export interface Card {
   // visual / name without guessing by race.
   token_id?: number | null;
   set_id?: number | null;
+  /** Carte proposée par les TIRAGES (Sélection, Invocation X, Concentration…) ?
+   *  `false` l'en écarte, sans cesser d'être collectionnable, deck-able,
+   *  piochable ni jouable — cf. `excludeNonDiscoverable`. `undefined` vaut
+   *  découvrable : un chemin qui ne sélectionne pas la colonne ne doit pas faire
+   *  disparaître la carte des pools en silence. */
+  discoverable?: boolean | null;
   card_year?: number | null;
   card_month?: number | null;
   sfx_play_url?: string | null;

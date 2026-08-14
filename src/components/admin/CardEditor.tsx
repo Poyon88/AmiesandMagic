@@ -55,6 +55,7 @@ interface DbCard {
   lycanthropie_token_id: number | null;
   entraide_race: string | null;
   set_id: number | null;
+  discoverable?: boolean | null;
   card_year: number | null;
   card_month: number | null;
   life_cost: number | null;
@@ -357,6 +358,9 @@ export default function CardEditor() {
       lycanthropie_token_id: card.lycanthropie_token_id ?? null,
       entraide_race: card.entraide_race || null,
       set_id: card.set_id,
+      // `?? true` : les cartes d'avant la colonne remontent `undefined` et
+      // doivent rester découvrables, pas basculer en « non » par accident.
+      discoverable: card.discoverable ?? true,
       card_year: card.card_year,
       card_month: card.card_month,
       life_cost: card.life_cost ?? 0,
@@ -578,6 +582,7 @@ export default function CardEditor() {
         lycanthropie_token_id: editFields.lycanthropie_token_id ?? null,
         entraide_race: activeKeywords.includes("entraide") ? (editFields.entraide_race || null) : null,
         set_id: editFields.set_id || null,
+        discoverable: editFields.discoverable ?? true,
         card_year: editFields.card_year || null,
         card_month: editFields.card_month || null,
         life_cost: (editFields.life_cost as number) || 0,
@@ -666,6 +671,7 @@ export default function CardEditor() {
           card_month: editFields.card_month || null,
           rarity: editFields.rarity || null,
           set_id: editFields.set_id || null,
+          discoverable: editFields.discoverable ?? true,
         },
         updateId: cardId,
         partial: true,
@@ -1123,6 +1129,31 @@ export default function CardEditor() {
               <div style={{ flex: 1 }}>
                 <div style={S.label}>Mois</div>
                 <input type="number" min={1} max={12} value={(editFields.card_month as number) || ""} onChange={e => updateField("card_month", e.target.value ? parseInt(e.target.value) : null)} style={S.input} />
+              </div>
+            </div>
+
+            {/* Découvrabilité — placée près du set : un set « spécial » produit
+                déjà cet effet pour toutes ses cartes, c'est donc le même moment
+                de décision. */}
+            <div style={{ marginBottom: 8 }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+                <input
+                  type="checkbox"
+                  checked={(editFields.discoverable as boolean) ?? true}
+                  onChange={e => updateField("discoverable", e.target.checked)}
+                  style={{ cursor: "pointer" }}
+                />
+                <span style={{
+                  fontSize: 10, fontFamily: "'Cinzel',serif", fontWeight: 700,
+                  color: ((editFields.discoverable as boolean) ?? true) ? "#2e7d32" : "#c0392b",
+                }}>
+                  {((editFields.discoverable as boolean) ?? true) ? "Découvrable (O)" : "Non découvrable (N)"}
+                </span>
+              </label>
+              <div style={{ fontSize: 8, color: "#888", marginTop: 3, lineHeight: 1.5 }}>
+                Décochée, la carte n&apos;est plus proposée par les TIRAGES (Sélection,
+                Invocation X, Concentration…). Elle reste collectionnable, jouable en
+                deck et piochable.
               </div>
             </div>
 

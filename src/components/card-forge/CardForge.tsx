@@ -1770,6 +1770,11 @@ export default function CardForge() {
   // keyword_instances[i].race (créature) / spell_keywords[i].race (sort).
   const [asRace, setAsRace] = useState<string>("");
   const [cardSetId, setCardSetId] = useState<number | null>(null);
+  // Carte proposée par les TIRAGES (Sélection, Invocation X, Concentration…) ?
+  // Défaut OUI : une carte créée sans y penser reste découvrable. La mettre à NON
+  // l'écarte des offres sans cesser d'être collectionnable, deck-able, piochable
+  // ni jouable — même portée que les sets « spéciaux », à la carte.
+  const [cardDiscoverable, setCardDiscoverable] = useState(true);
   const [cardYear, setCardYear] = useState<number | null>(null);
   const [cardMonth, setCardMonth] = useState<number | null>(null);
   const [sets, setSets] = useState<CardSet[]>([]);
@@ -2369,6 +2374,7 @@ export default function CardForge() {
     // Paramètres Y / race / faction portés par des états dédiés
     setRmY(1); setAfY(1); setRfY(1); setGlY(1); setDcY(1); setFdaY(1);
     setKeywordYValues({});
+    setCardDiscoverable(true);
     setRmRace(""); setRmClan(""); setAsRace("");
     setInvocCosts([]); setInvocRace(""); setInvocFaction("");
     setCompagnonsCardIds([]);
@@ -2559,6 +2565,7 @@ export default function CardForge() {
             lycanthropie_token_id: lycanthropieTokenId,
             entraide_race: gameKeywords.includes("entraide") ? (entraideRace || null) : null,
             set_id: cardSetId || null,
+            discoverable: cardDiscoverable,
             card_year: cardYear || null,
             card_month: cardMonth || null,
             life_cost: forgeCard.lifeCost ?? 0,
@@ -2910,6 +2917,29 @@ export default function CardForge() {
                     onChange={e => { const v = e.target.value ? parseInt(e.target.value) : null; setCardYear(v); if (v) setCardSetId(null); }}
                     disabled={!!cardSetId}
                     style={{ width: 60, padding: "3px 6px", borderRadius: 4, border: "1px solid #e0e0e0", fontSize: 10, fontFamily: "'Cinzel',serif", opacity: cardSetId ? 0.4 : 1 }} />
+                </div>
+              </Sec>
+
+              {/* Découvrabilité — voisine du set : c'est au même moment qu'on
+                  décide si la carte sortira des tirages, et un set « spécial »
+                  produit déjà cet effet pour toutes ses cartes. */}
+              <Sec title="Découvrabilité">
+                <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+                  <input
+                    type="checkbox"
+                    checked={cardDiscoverable}
+                    onChange={e => setCardDiscoverable(e.target.checked)}
+                    style={{ cursor: "pointer" }}
+                  />
+                  <span style={{ fontSize: 10, fontFamily: "'Cinzel',serif", color: cardDiscoverable ? "#2e7d32" : "#c0392b", fontWeight: 700 }}>
+                    {cardDiscoverable ? "Découvrable (O)" : "Non découvrable (N)"}
+                  </span>
+                </label>
+                <div style={{ fontSize: 8, color: "#888", marginTop: 4, lineHeight: 1.5 }}>
+                  Décochée, la carte n&apos;est plus proposée par les TIRAGES —
+                  Sélection, Invocation X, Invocations multiples, Déchainement,
+                  Concentration, Épargne. Elle reste collectionnable, jouable dans
+                  un deck et piochable normalement.
                 </div>
               </Sec>
 

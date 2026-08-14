@@ -89,7 +89,7 @@ export async function GET() {
   const supabaseAdmin = getAdminClient();
   const { data, error } = await supabaseAdmin
     .from('cards')
-    .select('id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, keywords, keyword_instances, spell_keywords, spell_effects, capabilities, image_url, illustration_prompt, faction, race, clan, rarity, card_alignment, convocation_token_id, convocation_tokens, lycanthropie_token_id, entraide_race, set_id, card_year, card_month, sfx_play_url, sfx_death_url, sfx_exile_url, life_cost, discard_cost, sacrifice_cost, exile_cost')
+    .select('id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, keywords, keyword_instances, spell_keywords, spell_effects, capabilities, image_url, illustration_prompt, faction, race, clan, rarity, card_alignment, convocation_token_id, convocation_tokens, lycanthropie_token_id, entraide_race, set_id, card_year, card_month, sfx_play_url, sfx_death_url, sfx_exile_url, life_cost, discard_cost, sacrifice_cost, exile_cost, discoverable')
     .order('name');
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -122,6 +122,10 @@ export async function POST(request: Request) {
         'lycanthropie_token_id', 'entraide_race',
         'set_id', 'card_year', 'card_month',
         'life_cost', 'discard_cost', 'sacrifice_cost', 'exile_cost',
+        // Carte écartée des tirages (Sélection, Invocation…) sans cesser d'être
+        // collectionnable ni jouable. Absente de cette liste blanche, la case
+        // serait silencieusement ignorée à l'édition.
+        'discoverable',
       ]);
       const patch: Record<string, unknown> = {};
       for (const [k, v] of Object.entries(card ?? {})) {
@@ -229,6 +233,8 @@ export async function POST(request: Request) {
       lycanthropie_token_id: card.lycanthropie_token_id ?? null,
       entraide_race: carriesEntraide ? (card.entraide_race ?? null) : null,
       set_id: card.set_id || null,
+      // Défaut DÉCOUVRABLE : une carte créée sans y penser reste dans les tirages.
+      discoverable: card.discoverable ?? true,
       card_year: card.card_year || null,
       card_month: card.card_month || null,
       rarity: card.rarity || null,
