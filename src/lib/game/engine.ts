@@ -394,6 +394,38 @@ function mergeComposedCapabilities(
 /** Card-level (no CardInstance) mode check used by UI helpers like
  *  `creatureNeedsTarget` that operate on hand cards before they hit the
  *  board. Mirrors `hasKwInMode(_, kw, undefined)` semantics. */
+/** Mots-clés « deck » dont l'ordre RELATIF à l'entrée en jeu change le résultat.
+ *  Tous lisent ou remanient le deck du contrôleur. */
+const ON_PLAY_DECK_EFFECTS = ["divination", "creuser", "fortifier", "preincanter", "inspiration"] as const;
+type OnPlayDeckEffect = (typeof ON_PLAY_DECK_EFFECTS)[number];
+
+/** Ceux que porte cette carte, dans l'ordre COMPOSÉ PAR L'AUTEUR.
+ *
+ *  L'ordre vient de `getCapabilities`, donc de `keywords[]` — celui que la forge
+ *  montre dans « Déclenchement des pouvoirs » et que les flèches réordonnent.
+ *  Un mot-clé réglé sur un autre déclencheur (mort, tap…) est écarté : il passe
+ *  par `resolveCuratedKeywordEffect`, pas par l'entrée en jeu.
+ *
+ *  Repli sur l'ordre de `ON_PLAY_DECK_EFFECTS` pour un mot-clé qu'aucune
+ *  capacité ne mentionne (donnée héritée) : mieux vaut le résoudre à une place
+ *  arbitraire que pas du tout. */
+function onPlayDeckEffectsInOrder(card: Card): OnPlayDeckEffect[] {
+  const portes = ON_PLAY_DECK_EFFECTS.filter(kw => cardHasKwOnPlay(card, kw as Keyword));
+  if (portes.length < 2) return portes;
+
+  const rang = new Map<string, number>();
+  getCapabilities(card).forEach((c, i) => {
+    if (!rang.has(c.abilityId)) rang.set(c.abilityId, i);
+  });
+  return [...portes].sort((a, b) => {
+    const ra = rang.get(a) ?? Number.POSITIVE_INFINITY;
+    const rb = rang.get(b) ?? Number.POSITIVE_INFINITY;
+    // Comparaison, pas soustraction : Infinity - Infinity vaut NaN.
+    if (ra === rb) return ON_PLAY_DECK_EFFECTS.indexOf(a) - ON_PLAY_DECK_EFFECTS.indexOf(b);
+    return ra < rb ? -1 : 1;
+  });
+}
+
 function cardHasKwOnPlay(card: Card, kw: Keyword): boolean {
   // getCapabilities réaligne désormais les triggers périmés des capabilities[]
   // backfillées sur le mode autoritaire de keyword_instances (cf. adapter), donc
@@ -2689,10 +2721,57 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     }
 
     // Inspiration X: pioche X cartes à l'invocation.
-    if (hasKwOnPlay(cardInstance, "inspiration")) {
-      const inspXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
-      const x = inspXVals["inspiration"] ?? 1;
-      for (let i = 0; i < x; i++) drawCard(player);
+    // ── Effets « DECK » à l'entrée en jeu, dans l'ORDRE DE LA CARTE ──────────
+    //
+    // Divination, Creuser, Fortifier, Préincanter et Inspiration lisent ou
+    // remanient tous le deck du contrôleur, et leur ordre RELATIF change le
+    // résultat : Divination remonte une carte sur le dessus, Préincanter et
+    // Fortifier agissent sur « la première du deck », Inspiration en pioche une.
+    //
+    // Ils étaient résolus par cinq `if` DISPERSÉS dans cette fonction, donc dans
+    // l'ordre du FICHIER — Inspiration (~2692), Préincanter (~2823), Divination
+    // (~3188) — quel que soit l'ordre composé par l'auteur. Sur « Devin du Ciel
+    // Fendu » (Divination · Préincanter 2 · Inspiration 1), cela donnait deux
+    // symptômes signalés en partie :
+    //   * on piochait AVANT que Divination n'ait remonté la carte choisie, donc
+    //     une autre carte ;
+    //   * Préincanter réduisait le sort déjà sur le dessus, jamais celui que
+    //     Divination venait d'y placer.
+    //
+    // Ordonner les `capabilities` (cf. capability-adapter) ne suffisait pas :
+    // ce chemin ne les itère pas, il exécute une cascade figée. D'où cette passe
+    // unique, qui les remet dans l'ordre d'auteur les uns par rapport aux autres.
+    for (const kw of onPlayDeckEffectsInOrder(cardInstance.card)) {
+      switch (kw) {
+        case "divination": {
+          if (player.deck.length === 0) break;
+          const count = Math.min(3, player.deck.length);
+          const top3 = player.deck.splice(0, count);
+          const chosenIdx = Math.min(action.divinationChoiceIndex ?? 0, top3.length - 1);
+          player.deck.unshift(top3[chosenIdx]); // la carte choisie sur le dessus
+          for (let i = 0; i < top3.length; i++) {
+            if (i !== chosenIdx) player.deck.push(top3[i]); // les autres au fond
+          }
+          break;
+        }
+        case "creuser":
+          resolveCreuser(player, getKwX(cardInstance, "creuser", undefined, 1), action.divinationChoiceIndex);
+          break;
+        case "fortifier": {
+          const fo = cardInstance.card.keyword_instances?.find(i => i.id === "fortifier" && !i.mode);
+          applyFortifier(player, fo?.x ?? 0, fo?.y ?? 0);
+          break;
+        }
+        case "preincanter":
+          applyPreincanter(player, getKwX(cardInstance, "preincanter", undefined, 1));
+          break;
+        case "inspiration": {
+          const inspXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
+          const x = inspXVals["inspiration"] ?? 1;
+          for (let i = 0; i < x; i++) drawCard(player);
+          break;
+        }
+      }
     }
 
     // Incinération X : recycle X cartes du cimetière ciblé sous son deck. Le
@@ -2701,11 +2780,6 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     if (hasKwOnPlay(cardInstance, "incineration")) {
       const victim = incinerationVictim(action.targetInstanceId, player, opponent);
       resolveIncineration(victim, getKwX(cardInstance, "incineration", undefined, 1));
-    }
-
-    // Creuser X : regarde le dessous du deck du contrôleur, en remonte une.
-    if (hasKwOnPlay(cardInstance, "creuser")) {
-      resolveCreuser(player, getKwX(cardInstance, "creuser", undefined, 1), action.divinationChoiceIndex);
     }
 
     // Retour différé : l'unité ciblée repart sous le deck de son propriétaire.
@@ -2814,16 +2888,6 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     }
 
     // Fortifier +X/+Y (invocation) : buff permanent de la 1re créature du deck.
-    if (hasKwOnPlay(cardInstance, "fortifier")) {
-      const fo = cardInstance.card.keyword_instances?.find(i => i.id === "fortifier" && !i.mode);
-      applyFortifier(player, fo?.x ?? 0, fo?.y ?? 0);
-    }
-
-    // Préincanter X (invocation) : le 1er sort du deck coûte X de moins (min 1).
-    if (hasKwOnPlay(cardInstance, "preincanter")) {
-      applyPreincanter(player, getKwX(cardInstance, "preincanter", undefined, 1));
-    }
-
     // Pillage X: l'adversaire défausse X cartes aléatoires de sa main.
     // Gated on hasKwOnPlay pour qu'une instance en mode death/tap/return ne
     // se déclenche pas aussi à l'invocation (elle passe par
@@ -3181,17 +3245,6 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
         recallTarget.instanceId = generateInstanceId();
         player.hand.push(recallTarget);
         triggerReturnToHand(recallTarget, player, opponent);
-      }
-    }
-
-    // Divination: reveal top 3 cards, player chooses 1 to keep on top
-    if (hasKwOnPlay(cardInstance, "divination") && player.deck.length > 0) {
-      const count = Math.min(3, player.deck.length);
-      const top3 = player.deck.splice(0, count);
-      const chosenIdx = Math.min(action.divinationChoiceIndex ?? 0, top3.length - 1);
-      player.deck.unshift(top3[chosenIdx]); // chosen goes on top
-      for (let i = 0; i < top3.length; i++) {
-        if (i !== chosenIdx) player.deck.push(top3[i]); // rest on bottom
       }
     }
 
