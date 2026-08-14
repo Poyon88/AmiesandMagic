@@ -2063,6 +2063,7 @@
     "convocation_title": "📣 Convocation",
     "convocation_subtitle": "Choisissez la race du token à invoquer",
     "cycle_eternel_caption": "♻ Cycle Éternel",
+    "compagnons_caption": "🐾 Compagnons",
     "discard_label": "🔥 {count, plural, one {Défaussée — # carte} other {Défaussée — # cartes}}",
     "graveyard_affect_label": "🪦 {count, plural, one {Cimetière — # carte} other {Cimetière — # cartes}}",
     "zone_deck": "Pioche",

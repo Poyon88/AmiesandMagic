@@ -128,7 +128,9 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     fireBreathEvent,
     clearFireBreathEvent,
     cycleEternelEvent,
+    compagnonsEvent,
     clearCycleEternelEvent,
+    clearCompagnonsEvent,
     exileCostEvent,
     deckEffectEvent,
     clearDeckEffectEvent,
@@ -1713,6 +1715,9 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
       <PowerArrowOverlay event={powerArrowEvent} onComplete={clearPowerArrowEvent} />
       <FireBreathOverlay event={fireBreathEvent} onComplete={clearFireBreathEvent} />
       <CycleEternelOverlay event={cycleEternelEvent} onComplete={clearCycleEternelEvent} />
+      {/* Compagnons — même mise en scène, habillage ambre : les cartes liées
+          filent vers la pile de deck du contrôleur. */}
+      <CycleEternelOverlay event={compagnonsEvent} onComplete={clearCompagnonsEvent} variant="compagnons" />
       <ExileCostOverlay event={exileCostEvent} onComplete={clearExileCostEvent} />
       <HeroPowerOverlay event={heroPowerCastEvent} onComplete={clearHeroPowerCastEvent} />
       <GraveyardAffectOverlay event={graveyardAffectEvent} onComplete={clearGraveyardAffectEvent} />

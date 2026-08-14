@@ -2055,6 +2055,7 @@
     "convocation_title": "📣 Beschwörung",
     "convocation_subtitle": "Wähle die Rasse des zu beschworenen Tokens",
     "cycle_eternel_caption": "♻ Ewiger Kreislauf",
+    "compagnons_caption": "🐾 Gefährten",
     "discard_label": "🔥 {count, plural, one {Abgeworfen — # Karte} other {Abgeworfen — # Karten}}",
     "graveyard_affect_label": "🪦 {count, plural, one {Friedhof — # Karte} other {Friedhof — # Karten}}",
     "zone_deck": "Nachziehstapel",

@@ -2055,6 +2055,7 @@
     "convocation_title": "📣 Convocation",
     "convocation_subtitle": "Choose the race of the token to summon",
     "cycle_eternel_caption": "♻ Eternal Cycle",
+    "compagnons_caption": "🐾 Companions",
     "discard_label": "🔥 {count, plural, one {Discarded — # card} other {Discarded — # cards}}",
     "graveyard_affect_label": "🪦 {count, plural, one {Graveyard — # card} other {Graveyard — # cards}}",
     "zone_deck": "Deck",

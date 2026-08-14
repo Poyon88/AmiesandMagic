@@ -2055,6 +2055,7 @@
     "convocation_title": "📣 召喚",
     "convocation_subtitle": "召喚するトークンの種族を選んでください",
     "cycle_eternel_caption": "♻ 永遠のサイクル",
+    "compagnons_caption": "🐾 仲間",
     "discard_label": "🔥 {count, plural, one {捨て札 — # 枚} other {捨て札 — # 枚}}",
     "graveyard_affect_label": "🪦 {count, plural, one {墓地 — # 枚} other {墓地 — # 枚}}",
     "zone_deck": "デッキ",

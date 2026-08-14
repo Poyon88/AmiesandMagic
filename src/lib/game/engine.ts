@@ -121,6 +121,14 @@ let exileCostSink: Array<{ ownerId: string; count: number }> = [];
 // divulguer le sommet du deck, et l'animation ne doit pas trahir ce choix.
 // Vidé au début d'applyAction, rattaché à state.deckEffectEvents ; hors hash.
 let deckEffectSink: Array<{ ownerId: string; abilityId: "preincanter" | "fortifier"; x: number; y: number }> = [];
+// COMPAGNONS : cartes liées mélangées dans le deck du contrôleur. Elles ne
+// transitent par aucune zone visible — le compteur du deck monte, sans que rien
+// ne dise QUOI y est entré. Indice d'animation : les cartes filent vers la pile,
+// comme Cycle éternel. Contrairement aux effets « deck » silencieux, on transmet
+// ICI les cartes : elles sont choisies par l'auteur de la carte, pas tirées du
+// deck du joueur — les révéler ne divulgue donc rien de sa pioche.
+// Vidé au début d'applyAction, rattaché à state.compagnonsEvents ; hors hash.
+let compagnonsSink: Array<{ ownerId: string; cards: Card[] }> = [];
 /** Signale qu'un effet « deck » a réellement modifié une carte. À n'appeler que
  *  si quelque chose a changé : un no-op (aucun sort dans le deck, réduction déjà
  *  au plancher) ne doit rien animer, sinon le badge mentirait. */
@@ -8200,6 +8208,7 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   abilitySfxSink = [];
   exileCostSink = [];
   deckEffectSink = [];
+  compagnonsSink = [];
   lethalSpellActive = false;
   powerStrikeSink = [];
   composedStrikeMode = undefined;
@@ -8278,6 +8287,10 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   // Rattache les effets « deck » silencieux (badge sur la pile).
   if (deckEffectSink.length > 0 && result !== state) {
     result.deckEffectEvents = [...(result.deckEffectEvents ?? []), ...deckEffectSink];
+  }
+  // Rattache les Compagnons mélangés au deck (cartes qui filent vers la pile).
+  if (compagnonsSink.length > 0 && result !== state) {
+    result.compagnonsEvents = [...(result.compagnonsEvents ?? []), ...compagnonsSink];
   }
   // Rattache les frappes de pouvoir déclenchées (flèches source→cible colorées
   // par mode) émises pendant l'action.
@@ -8998,6 +9011,8 @@ function resolveCompagnons(
   if (added.length === 0) return;
   owner.deck.push(...added);
   owner.deck = shuffleArray(owner.deck);
+  // Après l'ajout : une liste vide (aucune carte liée résolue) n'anime rien.
+  compagnonsSink.push({ ownerId: owner.id, cards: added.map((i) => i.card) });
 }
 
 /** Enchaîne une Invocation par coût listé, dans l'ordre. Chaque entrée suit les

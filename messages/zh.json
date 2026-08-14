@@ -2055,6 +2055,7 @@
     "convocation_title": "📣 召唤",
     "convocation_subtitle": "选择要召唤的token种族",
     "cycle_eternel_caption": "♻ 永恒循环",
+    "compagnons_caption": "🐾 同伴",
     "discard_label": "🔥 {count, plural, one {弃牌 — # 张} other {弃牌 — # 张}}",
     "graveyard_affect_label": "🪦 {count, plural, one {墓地 — # 张} other {墓地 — # 张}}",
     "zone_deck": "牌库",

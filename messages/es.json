@@ -2055,6 +2055,7 @@
     "convocation_title": "📣 Convocación",
     "convocation_subtitle": "Elige la raza del token a invocar",
     "cycle_eternel_caption": "♻ Ciclo Eterno",
+    "compagnons_caption": "🐾 Compañeros",
     "discard_label": "🔥 {count, plural, one {Descartada — # carta} other {Descartada — # cartas}}",
     "graveyard_affect_label": "🪦 {count, plural, one {Cementerio — # carta} other {Cementerio — # cartas}}",
     "zone_deck": "Mazo",

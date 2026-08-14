@@ -1111,6 +1111,16 @@ export interface GameState {
     x: number;
     y: number;
   }>;
+  // Transient : cartes liées qu'un COMPAGNONS vient de mélanger dans un deck.
+  // Elles ne transitent par aucune zone visible — seul le compteur du deck monte.
+  // Le store les fait filer vers la pile, comme Cycle éternel. Les révéler ne
+  // divulgue rien : elles sont choisies par l'auteur de la carte, pas tirées du
+  // deck du joueur.
+  // Vidé par le store après planification ; exclu du hash d'état.
+  compagnonsEvents?: Array<{
+    ownerId: string;
+    cards: Card[];
+  }>;
   // Transient: chaque dégât infligé par un effet composé DÉCLENCHÉ (mort/retour/
   // attaque/fin de tour — PAS tap/on-play) est poussé ici {source, cible, mode}
   // pour que le store trace une flèche source→cible colorée par mode (vert fin de

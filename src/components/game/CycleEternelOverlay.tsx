@@ -10,7 +10,40 @@ import { useCardText } from "./CardTextProvider";
 interface CycleEternelOverlayProps {
   event: CycleEternelEvent | null;
   onComplete: () => void;
+  /** Habillage. Défaut `cycle` — le comportement historique est inchangé. */
+  variant?: DeckReturnVariant;
 }
+
+/** Deux capacités envoient des cartes REJOINDRE LE DECK, avec la même mise en
+ *  scène : un anneau au point d'apparition, la carte qui file vers la pile, des
+ *  particules. Seuls la teinte et le libellé changent — d'où une palette
+ *  paramétrée plutôt qu'un second fichier qui dupliquerait l'animation.
+ *
+ *  `cycle` : vert recyclage (Cycle éternel, la dépouille qui repart dans le deck).
+ *  `compagnons` : ambre fauve (les cartes liées qu'on mélange au deck). */
+export type DeckReturnVariant = "cycle" | "compagnons";
+
+const PALETTES: Record<DeckReturnVariant, {
+  vif: string; profond: string; clair: string; fond: string;
+  teinteParticule: number; captionKey: string;
+}> = {
+  cycle: {
+    vif: "120, 220, 160",
+    profond: "80, 200, 140",
+    clair: "160, 240, 180",
+    fond: "linear-gradient(135deg, #1a2a1f 0%, #2d4435 60%, #15281d 100%)",
+    teinteParticule: 130,
+    captionKey: "cycle_eternel_caption",
+  },
+  compagnons: {
+    vif: "230, 180, 90",
+    profond: "200, 140, 60",
+    clair: "245, 210, 150",
+    fond: "linear-gradient(135deg, #2a2016 0%, #443318 60%, #1d160c 100%)",
+    teinteParticule: 35,
+    captionKey: "compagnons_caption",
+  },
+};
 
 const ENTRY_DURATION_MS = 1800;
 const ENTRY_STAGGER_MS = 350;
@@ -22,7 +55,7 @@ type Resolved = {
   index: number;
 };
 
-export default function CycleEternelOverlay({ event, onComplete }: CycleEternelOverlayProps) {
+export default function CycleEternelOverlay({ event, onComplete, variant = "cycle" }: CycleEternelOverlayProps) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
@@ -72,7 +105,7 @@ export default function CycleEternelOverlay({ event, onComplete }: CycleEternelO
           transition={{ duration: 0.2 }}
         >
           {resolved.map((entry) => (
-            <CycleEntry key={`${event.timestamp}-${entry.index}`} entry={entry} />
+            <CycleEntry key={`${event.timestamp}-${entry.index}`} entry={entry} variant={variant} />
           ))}
         </motion.div>
       )}
@@ -81,7 +114,8 @@ export default function CycleEternelOverlay({ event, onComplete }: CycleEternelO
   );
 }
 
-function CycleEntry({ entry }: { entry: Resolved }) {
+function CycleEntry({ entry, variant }: { entry: Resolved; variant: DeckReturnVariant }) {
+  const pal = PALETTES[variant];
   const t = useTranslations("game");
   const { localizeName } = useCardText();
   const startX = window.innerWidth / 2;
@@ -97,7 +131,7 @@ function CycleEntry({ entry }: { entry: Resolved }) {
         dx: (Math.random() - 0.5) * 30,
         dy: (Math.random() - 0.5) * 30,
         size: 4 + Math.random() * 4,
-        hue: 130 + Math.random() * 30,
+        hue: pal.teinteParticule + Math.random() * 30,
         lightness: 60 + Math.random() * 20,
       })),
     [],
@@ -114,8 +148,8 @@ function CycleEntry({ entry }: { entry: Resolved }) {
           width: 160,
           height: 160,
           borderRadius: "50%",
-          border: "3px solid rgba(120, 220, 160, 0.7)",
-          boxShadow: "0 0 30px rgba(120, 220, 160, 0.6), inset 0 0 20px rgba(120, 220, 160, 0.3)",
+          border: `3px solid rgba(${pal.vif}, 0.7)`,
+          boxShadow: `0 0 30px rgba(${pal.vif}, 0.6), inset 0 0 20px rgba(${pal.vif}, 0.3)`,
           pointerEvents: "none",
         }}
         initial={{ scale: 0.3, opacity: 0, rotate: 0 }}
@@ -145,11 +179,11 @@ function CycleEntry({ entry }: { entry: Resolved }) {
           borderRadius: 8,
           overflow: "hidden",
           boxShadow:
-            "0 0 24px rgba(120, 220, 160, 0.8), 0 0 48px rgba(80, 200, 140, 0.4), 0 8px 24px rgba(0,0,0,0.6)",
-          border: "2px solid rgba(160, 240, 180, 0.9)",
+            `0 0 24px rgba(${pal.vif}, 0.8), 0 0 48px rgba(${pal.profond}, 0.4), 0 8px 24px rgba(0,0,0,0.6)`,
+          border: `2px solid rgba(${pal.clair}, 0.9)`,
           background: entry.card.image_url
             ? `url(${entry.card.image_url}) center/cover`
-            : "linear-gradient(135deg, #1a2a1f 0%, #2d4435 60%, #15281d 100%)",
+            : pal.fond,
         }}
         initial={{
           x: 0,
@@ -188,7 +222,7 @@ function CycleEntry({ entry }: { entry: Resolved }) {
             fontFamily: "'Cinzel', serif",
             letterSpacing: 0.5,
             textAlign: "center",
-            textShadow: "0 0 6px rgba(120, 220, 160, 0.9), 0 1px 2px rgba(0,0,0,0.9)",
+            textShadow: `0 0 6px rgba(${pal.vif}, 0.9), 0 1px 2px rgba(0,0,0,0.9)`,
             whiteSpace: "nowrap",
             overflow: "hidden",
             textOverflow: "ellipsis",
@@ -218,7 +252,7 @@ function CycleEntry({ entry }: { entry: Resolved }) {
           fontFamily: "'Cinzel', serif",
           letterSpacing: 2,
           textShadow:
-            "0 0 12px rgba(120, 220, 160, 0.9), 0 0 24px rgba(80, 200, 140, 0.6), 0 2px 4px rgba(0,0,0,0.8)",
+            `0 0 12px rgba(${pal.vif}, 0.9), 0 0 24px rgba(${pal.profond}, 0.6), 0 2px 4px rgba(0,0,0,0.8)`,
           pointerEvents: "none",
           whiteSpace: "nowrap",
         }}
@@ -235,7 +269,7 @@ function CycleEntry({ entry }: { entry: Resolved }) {
           delay,
         }}
       >
-        {t('cycle_eternel_caption')}
+        {t(pal.captionKey)}
       </motion.div>
 
       {/* Particle trail toward the deck */}
@@ -254,7 +288,7 @@ function CycleEntry({ entry }: { entry: Resolved }) {
               height: p.size,
               borderRadius: "50%",
               background: `hsl(${p.hue}, 80%, ${p.lightness}%)`,
-              boxShadow: "0 0 8px rgba(120, 220, 160, 0.9)",
+              boxShadow: `0 0 8px rgba(${pal.vif}, 0.9)`,
             }}
             initial={{ opacity: 0, scale: 0 }}
             animate={{ opacity: [0, 1, 0], scale: [0.5, 1.2, 0.4] }}

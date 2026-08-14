@@ -394,6 +394,7 @@ interface GameStore {
   spellCastEvent: SpellCastEvent | null;
   fireBreathEvent: FireBreathEvent | null;
   cycleEternelEvent: CycleEternelEvent | null;
+  compagnonsEvent: CycleEternelEvent | null;
   exileCostEvent: ExileCostEvent | null;
   deckEffectEvent: DeckEffectEvent | null;
   clearExileCostEvent: () => void;
@@ -470,6 +471,7 @@ interface GameStore {
   clearSpellCastEvent: () => void;
   clearFireBreathEvent: () => void;
   clearCycleEternelEvent: () => void;
+  clearCompagnonsEvent: () => void;
   clearTempeteEvent: () => void;
   clearPowerArrowEvent: () => void;
   clearManaReductionEvent: () => void;
@@ -1310,6 +1312,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   spellCastEvent: null,
   fireBreathEvent: null,
   cycleEternelEvent: null,
+  compagnonsEvent: null,
   exileCostEvent: null,
   deckEffectEvent: null,
   tempeteEvent: null,
@@ -1722,6 +1725,18 @@ export const useGameStore = create<GameStore>((set, get) => {
     }
     const cycleEvent: CycleEternelEvent | null = cycleEntries.length > 0
       ? { entries: cycleEntries, timestamp: Date.now() }
+      : null;
+
+    // COMPAGNONS : mêmes entrées que Cycle éternel (carte + camp), donc même
+    // overlay, dans un autre habillage. Le moteur ne note que les cartes
+    // RÉELLEMENT mélangées : une carte liée introuvable dans les pools est
+    // sautée et n'anime rien.
+    const rawCompagnons = newState.compagnonsEvents ?? [];
+    if (newState.compagnonsEvents) newState.compagnonsEvents = undefined;
+    const compagnonsEntries: CycleEternelEntry[] = rawCompagnons.flatMap((e) =>
+      e.cards.map((card) => ({ card, ownerIsLocal: e.ownerId === localPlayerId })));
+    const compagnonsEvent: CycleEternelEvent | null = compagnonsEntries.length > 0
+      ? { entries: compagnonsEntries, timestamp: Date.now() }
       : null;
 
     // Coût d'EXIL payé pendant l'action. Le moteur a noté combien de cartes ont
@@ -2340,7 +2355,12 @@ export const useGameStore = create<GameStore>((set, get) => {
     // NB : drawTriggerSpells compte ici mais PAS dans `hasOverlay` — ce dernier
     // pilote aussi le décalage avant impact (OVERLAY_PRE_IMPACT_MS), déjà couvert
     // par le RECAST_GAP_MS que chaque révélation « pioche » réserve elle-même.
-    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!powerArrowEvent || !!manaReductionEvent || !!epargneGainEvent || !!exileCostEvent || !!deckEffectEvent || drawTriggerSpells.length > 0;
+    // NB : `cycleEvent` et `compagnonsEvent` sont les deux SEULS événements dont
+    // rien d'autre ne garantit la présence. Cycle éternel accompagne toujours
+    // une mort (hasDeaths) — mais Compagnons ne bouge QUE le deck : sur une
+    // créature vanille, aucun des autres drapeaux ne lève, l'action prenait le
+    // chemin rapide et les phases — donc l'animation — n'existaient jamais.
+    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!powerArrowEvent || !!manaReductionEvent || !!epargneGainEvent || !!exileCostEvent || !!deckEffectEvent || !!cycleEvent || !!compagnonsEvent || drawTriggerSpells.length > 0;
 
     // Deep clone helper — factionCardPool / allSpellsPool carry non-serialisable refs, keep them aside.
     const cloneState = (state: GameState): GameState => {
@@ -2742,6 +2762,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         gameState: preDrawState,
         ...(staggeredTriggerEvents.length > 0 ? { damageEvents: staggeredTriggerEvents } : {}),
         ...(cycleEvent ? { cycleEternelEvent: cycleEvent } : {}),
+        ...(compagnonsEvent ? { compagnonsEvent } : {}),
         // FX: the new creatures mount in this same render — the Canvas layer
         // resolves each one's position from the DOM and bursts a portal there.
         // On EXCLUT les invocations de la vague de pouvoir (déjà portées à
@@ -2787,6 +2808,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         gameState: preDrawState,
         ...(staggeredTriggerEvents.length > 0 ? { damageEvents: staggeredTriggerEvents } : {}),
         ...(cycleEvent ? { cycleEternelEvent: cycleEvent } : {}),
+        ...(compagnonsEvent ? { compagnonsEvent } : {}),
       });
     };
 
@@ -4059,6 +4081,10 @@ export const useGameStore = create<GameStore>((set, get) => {
 
   clearCycleEternelEvent: () => {
     set({ cycleEternelEvent: null });
+  },
+
+  clearCompagnonsEvent: () => {
+    set({ compagnonsEvent: null });
   },
 
   clearTempeteEvent: () => {
