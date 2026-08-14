@@ -15,7 +15,7 @@
 // `getSpellSlotTargets` ajoute les cartes des deux cimetières aux cibles valides
 // du créneau. Les héros et les unités restent proposés.
 import { describe, expect, it } from "vitest";
-import { applyAction, creatureNeedsTarget, creatureTargetsIncinerationCamp, getCreatureTargets, getSpellSlotTargets, getSpellTargetSlots, isIncinerationSlot } from "./engine";
+import { applyAction, canPlayCard, creatureNeedsTarget, creatureTargetsIncinerationCamp, getCreatureTargets, getSpellSlotTargets, getSpellTargetSlots, isIncinerationSlot } from "./engine";
 import { mkCard, mkInstance, mkState } from "./test-harness";
 import type { Capability, GameState } from "./types";
 
@@ -199,5 +199,72 @@ describe("Incinération, forme créature — le cimetière est cliquable aussi",
   it("un prédicat d'UI faux sur une créature sans Incinération", () => {
     const banal = mkInstance(mkCard({ name: "Banal", attack: 1, health: 1 }));
     expect(creatureTargetsIncinerationCamp(banal.card)).toBe(false);
+  });
+});
+
+// ─── Cimetières VIDES ──────────────────────────────────────────────────────
+// Signalé en partie : « impossible de jouer le Porte-flamme du Matin quand il n'y
+// a pas de carte dans un cimetière ». La modale affichait « Choisissez une carte
+// du cimetière » au-dessus de « Aucune carte dans le cimetière » — impasse
+// apparente. Le camp existe pourtant même sans carte : la capacité doit rester
+// jouable, son effet devenant simplement sans objet.
+describe("Incinération — cimetières vides", () => {
+  const porteFlamme = () => mkInstance(mkCard({
+    name: "Porte-flamme du Matin", mana_cost: 1, attack: 2, health: 1,
+    keywords: ["incineration"] as never,
+    capabilities: [
+      { uid: "cw_0", params: { x: 3 }, targets: [], trigger: "on_play", abilityId: "incineration", effectKind: "immediate" },
+    ] as unknown as Capability[],
+  }));
+
+  /** Table SANS aucune carte dans les deux cimetières. */
+  function tableVide(): GameState {
+    const s = mkState();
+    s.players[0].id = "MOI";
+    s.players[1].id = "LUI";
+    s.players[0].mana = 10;
+    return s;
+  }
+
+  it("la carte reste JOUABLE : les deux camps sont proposés via les héros", () => {
+    const s = tableVide();
+    const c = porteFlamme();
+    s.players[0].hand.push(c);
+
+    expect(canPlayCard(s, c.instanceId)).toBe(true);
+    const ids = getCreatureTargets(s, c.card);
+    expect(ids).toContain("friendly_hero");
+    expect(ids).toContain("enemy_hero");
+  });
+
+  it("jouée sur un cimetière vide, elle entre en jeu et l'effet est sans objet", () => {
+    const s = tableVide();
+    const c = porteFlamme();
+    s.players[0].hand.push(c);
+
+    const st = applyAction(s, {
+      type: "play_card", cardInstanceId: c.instanceId, targetInstanceId: "friendly_hero",
+    });
+
+    // La créature est bien arrivée sur le plateau…
+    expect(st.players[0].board.map((x) => x.card.name)).toContain("Porte-flamme du Matin");
+    // …et rien n'a bougé côté decks ni cimetières.
+    expect(st.players[0].graveyard).toHaveLength(0);
+    expect(st.players[1].graveyard).toHaveLength(0);
+  });
+
+  it("un seul cimetière garni : viser le VIDE est licite et sans effet", () => {
+    const s = tableVide();
+    s.players[1].graveyard.push(mkInstance(mkCard({ name: "SonMort" })));
+    const c = porteFlamme();
+    s.players[0].hand.push(c);
+
+    const st = applyAction(s, {
+      type: "play_card", cardInstanceId: c.instanceId, targetInstanceId: "friendly_hero",
+    });
+
+    expect(st.players[0].board.map((x) => x.card.name)).toContain("Porte-flamme du Matin");
+    // Le cimetière adverse, non visé, est intact.
+    expect(st.players[1].graveyard).toHaveLength(1);
   });
 });

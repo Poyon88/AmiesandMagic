@@ -42,7 +42,13 @@ export default function GraveyardOverlay({
   onSelectCard,
 }: GraveyardOverlayProps) {
   const t = useTranslations("game");
-  const isSelectionMode = selectableInstanceIds && selectableInstanceIds.length > 0;
+  // Mode sélection : il faut des ids sélectionnables qui désignent réellement une
+  // carte AFFICHÉE ici. Compter les ids bruts suffisait tant qu'ils étaient tous
+  // des cartes du cimetière ; depuis qu'Incinération y mêle les sentinelles de
+  // héros (elle désigne un CAMP), un cimetière VIDE affichait « Choisissez une
+  // carte du cimetière » juste au-dessus de « Aucune carte dans le cimetière ».
+  const isSelectionMode = !!selectableInstanceIds
+    && cards.some((c) => selectableInstanceIds.includes(c.instanceId));
   // Touch devices have neither hover (to open the preview) nor right-click (to
   // flip to the description). On a coarse pointer we drive everything from tap.
   const coarse = useCoarsePointer();

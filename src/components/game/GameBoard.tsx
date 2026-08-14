@@ -378,6 +378,19 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     [onAction]
   );
 
+  // Pendant un ciblage d'INCINÉRATION, la pile de cimetière désigne son CAMP —
+  // c'est le geste que tu fais naturellement, et le seul qui marche quand la pile
+  // est VIDE : il n'y a alors aucune carte à cliquer, mais le camp existe
+  // toujours. Les sentinelles de héros restent la valeur envoyée au moteur.
+  const cliquerPileCimetiere = useCallback((camp: "my" | "opponent") => {
+    if (incinerationSlotActive) {
+      const action = selectTarget(camp === "my" ? "friendly_hero" : "enemy_hero");
+      if (action) broadcast(action);
+      return;
+    }
+    setGraveyardView(camp);
+  }, [incinerationSlotActive, selectTarget, broadcast]);
+
   const handleEndTurn = useCallback(() => {
     // Guard: read the live state (not React's closure) so we never double-fire
     // end_turn (timer expiring + user clicking, or drain dispatch races).
@@ -1131,7 +1144,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
               graveyard={opponent.graveyard}
               emptyGraveyardImageUrl={boardGraveyardImageUrl}
               isOpponent={true}
-              onGraveyardClick={() => setGraveyardView("opponent")}
+              onGraveyardClick={() => cliquerPileCimetiere("opponent")}
             />
           </div>
         )}
@@ -1292,7 +1305,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
               graveyard={myPlayer.graveyard}
               emptyGraveyardImageUrl={boardGraveyardImageUrl}
               isOpponent={false}
-              onGraveyardClick={() => setGraveyardView("my")}
+              onGraveyardClick={() => cliquerPileCimetiere("my")}
             />
           </div>
         )}
