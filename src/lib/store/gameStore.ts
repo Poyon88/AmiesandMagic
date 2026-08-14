@@ -1678,6 +1678,15 @@ export const useGameStore = create<GameStore>((set, get) => {
         // la foulée : ce sont bien des MORTS. Seul un retour en MAIN disqualifie.
         const returnedToHand = newState.players.some((p) => p.hand.some((c) => c.instanceId === oldC.instanceId));
         if (returnedToHand) continue;
+        // CHANGEMENT DE CONTRÔLEUR (Corruption, Domination) : la boucle ne
+        // compare qu'au plateau de MÊME index, donc une créature volée
+        // « disparaissait » de son plateau d'origine et passait pour morte. Elle
+        // jouait son animation de mort, et si elle portait Cycle éternel, le
+        // fantôme filait vers le deck alors que le moteur n'avait rien recyclé.
+        // Même erreur que le renvoi en main juste au-dessus, sur l'autre zone
+        // d'arrivée : la même instance est simplement passée sur l'AUTRE plateau.
+        const aChangeDeCamp = newState.players.some((p) => p.board.some((c) => c.instanceId === oldC.instanceId));
+        if (aChangeDeCamp) continue;
         deadCreatures.push(oldC);
         deathOwnerIdx.set(oldC.instanceId, i);
       }
