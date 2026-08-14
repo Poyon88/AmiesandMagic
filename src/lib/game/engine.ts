@@ -1574,6 +1574,19 @@ function returnInstanceToPlay(inst: CardInstance): void {
   inst.currentHealth = inst.maxHealth;
   inst.auraHealthBonus = 0;
   inst.sangMeleHealthBonus = 0;
+  // Bonus de PV CONDITIONNELS (Force des ancêtres, Pureté, Seuil Sacrificiel).
+  // Ils tiennent une comptabilité par DIFFÉRENTIEL dans recalculateAuras : le
+  // champ mémorise ce qui est déjà intégré aux PV max, et seul l'écart est
+  // appliqué. Or `persistentStats` ci-dessus les EXCLUT — les PV max repartent
+  // donc de la base. Les laisser garnis faisait mentir le champ :
+  //   * condition toujours remplie au retour ⇒ écart nul ⇒ le bonus n'était
+  //     JAMAIS réintégré (Inquisiteur de l'Aube reposé en 5/4 au lieu de 5/6) ;
+  //   * condition devenue fausse ⇒ écart négatif ⇒ la créature PERDAIT des PV
+  //     qu'elle n'avait pas (3/2 au lieu de 3/4).
+  // Remis à zéro, le différentiel repart de zéro et le recalcul les réintègre.
+  inst.forceAncetresHealthBonus = 0;
+  inst.pureteHealthBonus = 0;
+  inst.seuilSacrificielHealthBonus = 0;
 
   // ATK = base + bonus ATK permanents conservés (même formule que
   // recalculateAuras, qui la reconfirmera une fois sur le plateau). Fureur est
