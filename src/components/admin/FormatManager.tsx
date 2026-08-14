@@ -21,6 +21,19 @@ export default function FormatManager() {
   const [formats, setFormats] = useState<GameFormat[]>([]);
   const [loading, setLoading] = useState(true);
 
+  /** Bascule la diffusion d'un format (cf. l'onglet Formats de la forge, qui
+   *  porte le même bouton — les deux écrans montrent la même donnée). */
+  const toggleActif = useCallback(async (fmt: GameFormat) => {
+    const res = await fetch("/api/formats", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: fmt.id, is_active: !fmt.is_active }),
+    });
+    if (!res.ok) return;
+    const maj = (await res.json()) as GameFormat;
+    setFormats(prev => prev.map(f => (f.id === maj.id ? maj : f)));
+  }, []);
+
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
@@ -53,14 +66,21 @@ export default function FormatManager() {
         <div key={fmt.id} style={STYLE.card}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
             <h2 style={{ ...STYLE.title, margin: 0 }}>{fmt.name}</h2>
-            <span style={{
-              ...STYLE.badge,
-              background: fmt.is_active ? "#e8f5e9" : "#fde8e8",
-              color: fmt.is_active ? "#2e7d32" : "#e74c3c",
-              border: `1px solid ${fmt.is_active ? "#a5d6a7" : "#f5a3a3"}`,
-            }}>
+            <button
+              onClick={() => toggleActif(fmt)}
+              title={fmt.is_active
+                ? "Diffusé aux joueurs — cliquer pour le masquer de l'écran « Jouer »"
+                : "Masqué — cliquer pour le diffuser à nouveau"}
+              style={{
+                ...STYLE.badge,
+                background: fmt.is_active ? "#e8f5e9" : "#fde8e8",
+                color: fmt.is_active ? "#2e7d32" : "#e74c3c",
+                border: `1px solid ${fmt.is_active ? "#a5d6a7" : "#f5a3a3"}`,
+                cursor: "pointer",
+              }}
+            >
               {fmt.is_active ? "Actif" : "Inactif"}
-            </span>
+            </button>
           </div>
 
           <div style={{ fontSize: 10, color: "#666", lineHeight: 1.6 }}>

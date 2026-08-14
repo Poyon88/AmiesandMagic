@@ -1934,6 +1934,20 @@ export default function CardForge() {
   // picker would just show "Aucun" with all dropdowns disabled.
   useEffect(() => { loadTokenTemplates(); }, [loadTokenTemplates]);
 
+  /** Bascule la diffusion d'un format. Inactif = absent de l'écran « Jouer »,
+   *  sans rien supprimer : les decks et les parties qui le référencent restent
+   *  valides. C'est ainsi qu'on masque les Étendus. */
+  const toggleFormatActif = useCallback(async (fmt: GameFormat) => {
+    const res = await fetch('/api/formats', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: fmt.id, is_active: !fmt.is_active }),
+    });
+    if (!res.ok) return;
+    const maj = await res.json() as GameFormat;
+    setFormats(prev => prev.map(f => (f.id === maj.id ? maj : f)));
+  }, []);
+
   const loadFormats = useCallback(async () => {
     try {
       const [fmtRes, setsRes] = await Promise.all([
@@ -5834,14 +5848,21 @@ export default function CardForge() {
                   <h3 style={{ fontSize: 12, fontFamily: "'Cinzel',serif", fontWeight: 700, color: "#333", letterSpacing: 1, margin: 0 }}>
                     {fmt.name}
                   </h3>
-                  <span style={{
-                    fontSize: 8, padding: "2px 8px", borderRadius: 4, fontFamily: "'Cinzel',serif", fontWeight: 700,
-                    background: fmt.is_active ? "#e8f5e9" : "#fde8e8",
-                    color: fmt.is_active ? "#2e7d32" : "#e74c3c",
-                    border: `1px solid ${fmt.is_active ? "#a5d6a7" : "#f5a3a3"}`,
-                  }}>
+                  <button
+                    onClick={() => toggleFormatActif(fmt)}
+                    title={fmt.is_active
+                      ? "Diffusé aux joueurs — cliquer pour le masquer de l'écran « Jouer »"
+                      : "Masqué — cliquer pour le diffuser à nouveau"}
+                    style={{
+                      fontSize: 8, padding: "2px 8px", borderRadius: 4, fontFamily: "'Cinzel',serif", fontWeight: 700,
+                      background: fmt.is_active ? "#e8f5e9" : "#fde8e8",
+                      color: fmt.is_active ? "#2e7d32" : "#e74c3c",
+                      border: `1px solid ${fmt.is_active ? "#a5d6a7" : "#f5a3a3"}`,
+                      cursor: "pointer",
+                    }}
+                  >
                     {fmt.is_active ? tf('active_m') : tf('inactive')}
-                  </span>
+                  </button>
                 </div>
                 {fmt.description && <p style={{ fontSize: 9, color: "#888", marginBottom: 8 }}>{fmt.description}</p>}
 

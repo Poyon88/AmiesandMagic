@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { defaultFormatId, orderFormatsForPlay } from "@/lib/game/format-order";
 import { useVocab } from "@/i18n/useVocab";
 import { createClient } from "@/lib/supabase/client";
 import type { GameFormat } from "@/lib/game/types";
@@ -39,8 +40,12 @@ export default function MatchmakingQueue({
   const vocab = useVocab();
   const router = useRouter();
   const supabase = createClient();
+  // Ordre d'affichage ET format présélectionné viennent de la MÊME source
+  // (format-order) : sans ça, le premier bouton de la liste et celui qui est
+  // coché pouvaient différer.
+  const formatsAffiches = orderFormatsForPlay(formats);
   const [selectedFormatId, setSelectedFormatId] = useState<number | null>(
-    formats.find(f => f.code === 'expert-standard')?.id ?? formats[0]?.id ?? null
+    defaultFormatId(formats)
   );
   const formatDecks = validDecks.filter(d => !selectedFormatId || d.format_id === selectedFormatId);
   const [selectedDeckId, setSelectedDeckId] = useState<number | null>(
@@ -287,7 +292,7 @@ export default function MatchmakingQueue({
                         {t('queue_format_label')}
                       </label>
                       <div className="flex gap-2 flex-wrap">
-                        {formats.map((f) => (
+                        {formatsAffiches.map((f) => (
                           <button
                             key={f.id}
                             onClick={() => {
