@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useMemo, useRef, type DragEvent } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
-import { MAX_HAND_SIZE, MAX_BOARD_SIZE } from "@/lib/game/constants";
+import { MAX_HAND_SIZE, MAX_BOARD_SIZE, TURN_TIMER_SECONDS, CHOICE_TIMER_SECONDS } from "@/lib/game/constants";
 import { secondeVieCost } from "@/lib/game/engine";
 import { useGameStore, selectPowerTargetingColor } from "@/lib/store/gameStore";
 import { useTranslations } from "next-intl";
@@ -24,6 +24,7 @@ import CostPaymentOverlay from "./CostPaymentOverlay";
 import EffectLog from "./EffectLog";
 import ActionHistoryStrip from "./ActionHistoryStrip";
 import TurnTimer from "./TurnTimer";
+import ChoiceTimerBadge from "./ChoiceTimerBadge";
 import TargetingArrow from "./TargetingArrow";
 import DamageOverlay from "./DamageOverlay";
 import ImpactFxLayer from "./ImpactFxLayer";
@@ -231,6 +232,30 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     if (!inst || inst.card.card_type !== "creature") return null;
     return { inst, position: pendingBoardPosition ?? me!.board.length };
   }, [gameState, localPlayerId, selectedCardInstanceId, pendingBoardPosition, targetingMode]);
+
+  // Fenêtre de CHOIX ouverte : Sélection, Divination, mots-clés de Tactique, ou
+  // déclencheur de fin de tour à trancher. Ces modales assombrissent le plateau
+  // et masquent le chrono, au moment précis où il compte.
+  //
+  // L'ancrage reprend la règle de TurnTimer, sans la dupliquer autrement : chrono
+  // de CHOIX dédié quand un déclencheur est en attente, chrono de TOUR sinon —
+  // une Sélection à l'entrée en jeu, par exemple, se joue bien sur le temps du
+  // tour. Rien à afficher hors de son propre tour : le compte à rebours ne
+  // s'applique qu'à celui qui doit choisir.
+  const choiceTimer = useMemo(() => {
+    if (!gameState) return null;
+    const enChoix = targetingMode === "selection"
+      || targetingMode === "divination"
+      || targetingMode === "tactique_keywords"
+      || targetingMode === "pending_trigger";
+    if (!enChoix || overlayPeeked) return null;
+    if (gameState.players[gameState.currentPlayerIndex].id !== localPlayerId) return null;
+
+    const enAttente = (gameState.pendingTriggers?.length ?? 0) > 0;
+    return enAttente && gameState.choiceStartedAt
+      ? { startedAt: gameState.choiceStartedAt, seconds: CHOICE_TIMER_SECONDS }
+      : { startedAt: gameState.turnStartedAt, seconds: TURN_TIMER_SECONDS };
+  }, [gameState, targetingMode, overlayPeeked, localPlayerId]);
 
   // Une carte attend-elle la cible d'une INCINÉRATION ? Sa cible désigne un camp :
   // héros, unité, ou n'importe quelle carte du cimetière convoité. Ce dernier
@@ -1556,6 +1581,19 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
           réclamait une cible qu'aucun écran ne permettait de désigner, et seul
           le chrono en sortait, au hasard. Le CAMP est déduit de l'endroit où
           vivent réellement les `validTargets` — pas supposé. */}
+      {/* Compte à rebours des fenêtres de CHOIX. Le chrono du plateau est masqué
+          par la modale au moment précis où le joueur en a besoin : passé le
+          délai, le choix est tranché au hasard à sa place. Même règle d'ancrage
+          que TurnTimer — chrono de choix dédié s'il y a un déclencheur en
+          attente, chrono de tour sinon — et même gel pendant les animations. */}
+      {choiceTimer && (
+        <ChoiceTimerBadge
+          startedAt={choiceTimer.startedAt}
+          seconds={choiceTimer.seconds}
+          paused={isAutoAttacking || isAnimating}
+        />
+      )}
+
       {targetingMode === "pending_trigger" && !overlayPeeked && pendingTriggerGraveyard && (
         <GraveyardOverlay
           cards={pendingTriggerGraveyard.cards}

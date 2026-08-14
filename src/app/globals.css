@@ -496,3 +496,12 @@ img {
   .am-news-cta { transition: none; }
   .am-news-cta:hover { transform: none; }
 }
+
+/* Battement du badge de compte à rebours des choix, sous 5 secondes. */
+@keyframes am-choice-timer-pulse {
+  0%, 100% { transform: translateX(-50%) scale(1); }
+  50%      { transform: translateX(-50%) scale(1.06); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [role="timer"] { animation: none !important; }
+}
