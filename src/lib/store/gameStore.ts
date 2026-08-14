@@ -51,6 +51,8 @@ import {
   endOfTurnTriggerTargets,
 } from "@/lib/game/engine";
 import { MAX_HAND_SIZE } from "@/lib/game/constants";
+import { attackerRemovedItself } from "@/lib/game/attack-wave-order";
+import { drawnCardIds } from "@/lib/game/drawn-cards";
 
 // Overlay de ciblage pour un déclencheur interactif en attente (Remontée mort/
 // retour au tour du contrôleur). Si le 1er pending appartient au joueur local
@@ -2320,10 +2322,19 @@ export const useGameStore = create<GameStore>((set, get) => {
 
     // How many cards each player drew this action — we hold them out of the
     // hand until the final "draw" phase so the animation is clearly separated.
-    const drawnCounts: [number, number] = [
-      Math.max(0, newState.players[0].hand.length - gameState.players[0].hand.length),
-      Math.max(0, newState.players[1].hand.length - gameState.players[1].hand.length),
-    ];
+    //
+    // Comptées par IDENTITÉ, et non par différence de taille de main : une carte
+    // RENVOYÉE en main (Remontée, « Se renvoie en main ») fait elle aussi grossir
+    // la main, elle était donc prise pour une pioche et retenue hors des états
+    // intermédiaires. La Louve kiptchake arrivait en main, disparaissait le temps
+    // des phases d'impact, puis réapparaissait au commit final — un clignotement.
+    //
+    // Une carte déjà présente sur un PLATEAU avant l'action n'est pas une pioche :
+    // elle en revient. Les cartes surgies d'un pool (Sélection) restent comptées,
+    // comme avant — elles arrivent bien de nulle part et gagnent à être révélées
+    // dans la phase dédiée.
+    const drawnIds = drawnCardIds(gameState, newState);
+    const drawnCounts: [number, number] = [drawnIds[0].size, drawnIds[1].size];
     const hasDraws = drawnCounts[0] + drawnCounts[1] > 0;
 
     // NB : drawTriggerSpells compte ici mais PAS dans `hasOverlay` — ce dernier
@@ -2412,10 +2423,11 @@ export const useGameStore = create<GameStore>((set, get) => {
     // hand, so we slice the tail.
     const trimDrawsFromHand = (state: GameState) => {
       for (let i = 0; i < 2; i++) {
-        if (drawnCounts[i] > 0) {
-          const h = state.players[i].hand;
-          state.players[i].hand = h.slice(0, Math.max(0, h.length - drawnCounts[i]));
-        }
+        if (drawnIds[i].size === 0) continue;
+        // Retrait par IDENTITÉ plutôt que par découpe de la queue : la queue
+        // contenait aussi les cartes revenues du plateau, qui ne sont pas des
+        // pioches et doivent rester visibles.
+        state.players[i].hand = state.players[i].hand.filter((c) => !drawnIds[i].has(c.instanceId));
       }
     };
     trimDrawsFromHand(impactState);
@@ -2807,7 +2819,16 @@ export const useGameStore = create<GameStore>((set, get) => {
     // Wave 1 (on-attack power) — plays BEFORE the attack lunge/combat: the
     // power's damage popups, then its deaths, so the player sees the power
     // resolve fully before combat.
-    if (onAttackWave) {
+    //
+    // EXCEPTION — un pouvoir « à l'attaque » qui RETIRE L'ATTAQUANT lui-même
+    // (« Se renvoie en main » de la Louve kiptchake). Jouer la vague d'abord
+    // effaçait l'attaquant du plateau AVANT son assaut : on la voyait repartir en
+    // main, puis un lunge sans personne pour le porter. L'assaut passe donc en
+    // premier, et le retrait le suit — l'ordre que le joueur attend.
+    const attaquantSeRetire = action.type === "attack"
+      && attackerRemovedItself(onAttackWave?.intermediate, action.attackerInstanceId);
+
+    if (onAttackWave && !attaquantSeRetire) {
       phasePowerImpacts(); // t=0
       cursor += IMPACT_MS;
       if (powerHasDeaths) {
@@ -2851,6 +2872,18 @@ export const useGameStore = create<GameStore>((set, get) => {
     else if (hasOverlay) cursor += OVERLAY_PRE_IMPACT_MS;
     else if (isAttack) cursor += ATTACK_LUNGE_PRE_IMPACT_MS;
     else if (powerArrowEvent) cursor += POWER_ARROW_PRE_IMPACT_MS;
+
+    // Vague de pouvoir DIFFÉRÉE : l'attaquant s'est retiré lui-même, on a laissé
+    // son assaut se jouer d'abord (cf. l'exception plus haut). Le retrait tombe
+    // maintenant, juste après le lunge.
+    if (attaquantSeRetire) {
+      setTimeout(phasePowerImpacts, cursor);
+      cursor += IMPACT_MS;
+      if (powerHasDeaths) {
+        setTimeout(phasePowerDeaths, cursor);
+        cursor += DEATH_MS;
+      }
+    }
 
     // Recast spell overlays must appear BEFORE phaseImpacts so each
     // recasted spell is shown casting *before* its (already-applied)
