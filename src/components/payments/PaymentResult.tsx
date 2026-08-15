@@ -10,6 +10,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import AmPanel from "@/components/ui/AmPanel";
+import GoldCoin from "@/components/shared/GoldCoin";
 import AmHeading from "@/components/ui/AmHeading";
 import { AmLinkButton } from "@/components/ui/AmButton";
 
@@ -77,7 +78,7 @@ export default function PaymentResult({ sessionId }: { sessionId: string | null 
             <AmHeading eyebrow="Merci">Paiement confirmé</AmHeading>
             <p className="mt-4 text-am-ink-2">
               {info!.type === "gold_pack"
-                ? <>Vos <strong className="text-am-gold">{info!.gold_amount} 🪙</strong> ont été crédités.</>
+                ? <>Vos <strong className="text-am-gold">{info!.gold_amount}</strong> <GoldCoin size={16} /> ont été crédités.</>
                 : <>Votre inscription au tournoi est enregistrée.</>}
             </p>
           </>

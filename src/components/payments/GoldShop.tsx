@@ -7,6 +7,7 @@
 // une faille — c'est précisément ce que Checkout hébergé évite.
 import { useEffect, useState } from "react";
 import AmPanel from "@/components/ui/AmPanel";
+import GoldCoin from "@/components/shared/GoldCoin";
 import AmHeading from "@/components/ui/AmHeading";
 import { AmButton } from "@/components/ui/AmButton";
 
@@ -68,7 +69,7 @@ export default function GoldShop({ packs }: { packs: PublicPack[] }) {
       {debt > 0 && (
         <AmPanel className="mt-8 p-5 border border-red-500/40">
           <p className="text-sm text-red-300">
-            Vous devez <strong>{debt} 🪙</strong> à la suite d&apos;un remboursement. Vos enchères
+            Vous devez <strong>{debt}</strong> <GoldCoin size={14} /> à la suite d&apos;un remboursement. Vos enchères
             restent bloquées, et tout gain ou achat épongera cette dette en priorité.
           </p>
         </AmPanel>
@@ -84,7 +85,10 @@ export default function GoldShop({ packs }: { packs: PublicPack[] }) {
             <span className="font-display text-sm uppercase tracking-[0.24em] text-am-arcane-bright/80">
               {p.label}
             </span>
-            <span className="text-4xl font-bold text-am-gold">{p.gold} 🪙</span>
+            <span className="flex items-center gap-2 text-4xl font-bold text-am-gold">
+              {p.gold}
+              <GoldCoin size={30} />
+            </span>
             <span className="text-lg text-am-ink-2">{euros(p.displayPriceCents)}</span>
             <AmButton
               onClick={() => buy(p.code)}

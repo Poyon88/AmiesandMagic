@@ -138,7 +138,7 @@ export default function HomeHeader({ username, goldBalance, goldDebt = 0, backHr
             href="/boutique"
             className={`px-3 py-1.5 rounded-lg bg-am-bg-0/60 ${goldDebt > 0 ? "border border-red-500/60" : "am-gild-border"}`}
             aria-label={goldDebt > 0 ? `${goldBalance} or, dette de ${goldDebt}` : `${goldBalance} or`}
-            title={goldDebt > 0 ? `Dette de ${goldDebt} 🪙 — enchères bloquées` : undefined}
+            title={goldDebt > 0 ? `Dette de ${goldDebt} pièces d'or — enchères bloquées` : undefined}
           >
             <GoldBalance amount={goldBalance} size="sm" />
             {goldDebt > 0 && (

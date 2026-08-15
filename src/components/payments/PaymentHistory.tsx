@@ -7,6 +7,7 @@
 // libre-service qui n'existe pas.
 import { useEffect, useState } from "react";
 import AmPanel from "@/components/ui/AmPanel";
+import GoldCoin from "@/components/shared/GoldCoin";
 
 interface PaymentRow {
   id: string;
@@ -64,9 +65,11 @@ export default function PaymentHistory() {
                 {new Date(p.created_at).toLocaleDateString("fr-FR")}
               </td>
               <td className="px-4 py-3 text-am-ink-2">
-                {p.type === "gold_pack"
-                  ? `Pack de ${p.gold_amount} 🪙`
-                  : "Inscription à un tournoi"}
+                {p.type === "gold_pack" ? (
+                  <span className="inline-flex items-center gap-1">
+                    Pack de {p.gold_amount} <GoldCoin size={13} />
+                  </span>
+                ) : "Inscription à un tournoi"}
               </td>
               <td className="px-4 py-3 text-right tabular-nums text-am-ink-2">
                 {new Intl.NumberFormat("fr-FR", {
