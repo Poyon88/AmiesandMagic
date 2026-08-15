@@ -197,7 +197,9 @@ export async function POST(request: Request) {
       thumbnailBase64, thumbnailMimeType,
       powerImageBase64, powerImageMimeType,
       powerSfxBase64, powerSfxMimeType,
-      rarity, max_prints, is_default, is_active,
+      rarity, max_prints, is_active,
+      // Les trois drapeaux « défaut » se lisent sur `body` dans la boucle
+      // d'unicité plus bas — un seul endroit pour les trois niveaux.
     } = body as Record<string, unknown>;
 
     if (typeof name !== 'string' || !name.trim()) {
@@ -278,12 +280,18 @@ export async function POST(request: Request) {
     if (typeof max_prints === 'number') insert.max_prints = max_prints;
     if (typeof is_active === 'boolean') insert.is_active = is_active;
 
-    if (is_default === true) {
-      // Partial unique index enforces one default per race — clear existing
-      // default on this race first.
-      await supabase.from('heroes').update({ is_default: false })
-        .eq('race', race).eq('is_default', true);
-      insert.is_default = true;
+    // Trois niveaux de « défaut », indépendants : race, clan, faction. Chacun a
+    // son index partiel d'unicité — on libère donc le titulaire précédent avant
+    // de poser le drapeau, sinon l'insertion est rejetée par la base.
+    for (const [champ, colonne, valeur] of [
+      ['is_default', 'race', race],
+      ['is_default_clan', 'clan', clan],
+      ['is_default_faction', 'faction', faction],
+    ] as const) {
+      if (body[champ] !== true || !valeur) continue;
+      await supabase.from('heroes').update({ [champ]: false })
+        .eq(colonne, valeur).eq(champ, true);
+      insert[champ] = true;
     }
 
     const { data, error } = await supabase
@@ -318,7 +326,9 @@ export async function PUT(request: Request) {
       thumbnailBase64, thumbnailMimeType,
       powerImageBase64, powerImageMimeType,
       powerSfxBase64, powerSfxMimeType,
-      rarity, max_prints, is_default, is_active,
+      rarity, max_prints, is_active,
+      // Les trois drapeaux « défaut » se lisent sur `body` dans la boucle
+      // d'unicité plus bas — un seul endroit pour les trois niveaux.
     } = body as Record<string, unknown>;
 
     if (typeof id !== 'number') {
@@ -376,16 +386,30 @@ export async function PUT(request: Request) {
       );
     }
 
-    if (is_default === true) {
-      // Need race to enforce the partial unique index — read from DB.
-      const { data: row } = await supabase.from('heroes').select('race').eq('id', id).single();
-      if (row?.race) {
-        await supabase.from('heroes').update({ is_default: false })
-          .eq('race', row.race).eq('is_default', true).neq('id', id);
+    // Même règle qu'à la création, pour les trois niveaux. On relit la ligne
+    // plutôt que de faire confiance au corps de la requête : le clan ou la
+    // faction d'un héros peuvent ne pas y figurer.
+    const veutUnDefaut = ([ 'is_default', 'is_default_clan', 'is_default_faction' ] as const)
+      .some((champ) => typeof body[champ] === 'boolean');
+    if (veutUnDefaut) {
+      const { data: row } = await supabase
+        .from('heroes').select('race, clan, faction').eq('id', id).single();
+      for (const [champ, colonne] of [
+        ['is_default', 'race'],
+        ['is_default_clan', 'clan'],
+        ['is_default_faction', 'faction'],
+      ] as const) {
+        if (body[champ] === true) {
+          const valeur = (row as Record<string, string | null> | null)?.[colonne];
+          if (valeur) {
+            await supabase.from('heroes').update({ [champ]: false })
+              .eq(colonne, valeur).eq(champ, true).neq('id', id);
+          }
+          updates[champ] = true;
+        } else if (body[champ] === false) {
+          updates[champ] = false;
+        }
       }
-      updates.is_default = true;
-    } else if (is_default === false) {
-      updates.is_default = false;
     }
 
     if (Object.keys(updates).length > 0) {

@@ -39,6 +39,22 @@ const FACTION_IDS = Object.keys(FACTIONS);
 
 // Map a race string (granular like "Aigles Géants" or legacy simplified like
 // "elves") to the user-facing label. Granular races already are the label.
+/** Une case « par défaut ». Trois usages identiques : race, clan, faction. */
+function CaseDefaut({
+  cochee, libelle, onChange,
+}: {
+  cochee: boolean;
+  libelle: string;
+  onChange: (v: boolean) => void;
+}) {
+  return (
+    <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 10, color: "#333", cursor: "pointer" }}>
+      <input type="checkbox" checked={cochee} onChange={(e) => onChange(e.target.checked)} />
+      {libelle}
+    </label>
+  );
+}
+
 function raceDisplayLabel(r: string): string {
   if (r in RACE_LABELS) return RACE_LABELS[r as Race];
   return r;
@@ -131,7 +147,11 @@ interface HeroRow {
   is_active: boolean;
   rarity: string | null;
   max_prints: number | null;
+  /** Visage par défaut de sa RACE. Historique — les deux niveaux au-dessus
+   *  sont indépendants, un héros peut porter les trois. */
   is_default: boolean;
+  is_default_clan: boolean;
+  is_default_faction: boolean;
   created_at: string;
 }
 
@@ -285,9 +305,21 @@ export default function HeroManager() {
     }
   }, [availableRaces, race, isEditing]);
 
-  // Reset clan when it's no longer valid for the selected faction.
+  // La faction et la race sont-elles connues du moteur ? Une valeur héritée —
+  // slug anglais (`elves`), faction absorbée par la refonte (`Hobbits`) — ne
+  // correspond à aucun groupe de clans, et le menu reste vide sans que rien ne
+  // dise pourquoi. Le champ Race étant verrouillé en édition, l'écran n'offrait
+  // aucune issue.
+  const factionInconnue = !!faction && !FACTIONS[faction];
+  const raceInconnue = !!faction && !!race && !factionInconnue
+    && !FACTIONS[faction].races.includes(race);
+
+  // Remise à zéro du clan quand il n'est plus valide POUR UNE FACTION QUI EN
+  // DÉCLARE. Sans cette condition, ouvrir la fiche d'un héros à la race
+  // héritée effaçait son clan en silence — la liste était vide, donc tout clan
+  // en était « absent ». Elendil a perdu « Hauts-Elfes » ainsi.
   useEffect(() => {
-    if (clan && !availableClans.includes(clan)) {
+    if (clan && availableClans.length > 0 && !availableClans.includes(clan)) {
       setClan("");
     }
   }, [availableClans, clan]);
@@ -968,7 +1000,20 @@ export default function HeroManager() {
                   style={{ ...STYLE.input, opacity: availableClans.length === 0 ? 0.5 : 1 }}>
                   <option value="">{availableClans.length === 0 ? "(aucun clan)" : "— Aucun —"}</option>
                   {availableClans.map(c => <option key={c} value={c}>{c}</option>)}
+                  {/* Le clan enregistré n'est plus proposé : on le garde tout de
+                      même dans la liste, sinon le <select> l'afficherait vide et
+                      la première sauvegarde le perdrait. */}
+                  {clan && !availableClans.includes(clan) && (
+                    <option value={clan}>{clan} (valeur actuelle)</option>
+                  )}
                 </select>
+                {(factionInconnue || raceInconnue) && (
+                  <div style={{ fontSize: 10, color: "#a05000", marginTop: 4, fontFamily: "'Crimson Text',serif" }}>
+                    {factionInconnue
+                      ? `Faction « ${faction} » inconnue du moteur — absorbée par la refonte. Aucun clan ne peut être proposé.`
+                      : `Race « ${race} » inconnue de ${getFactionDisplayName(faction)} — valeur héritée. Aucun clan ne peut être proposé.`}
+                  </div>
+                )}
               </div>
             </div>
             {rarity !== "Commune" ? (
@@ -1703,7 +1748,17 @@ export default function HeroManager() {
                 </span>
                 {hero.is_default && (
                   <span style={{ ...STYLE.badge, background: "#fff5e0", color: "#a07000", border: "1px solid #e8d094" }}>
-                    Défaut
+                    Défaut race
+                  </span>
+                )}
+                {hero.is_default_clan && (
+                  <span style={{ ...STYLE.badge, background: "#eaf6ec", color: "#2b6b39", border: "1px solid #b6ddc0" }}>
+                    Défaut clan
+                  </span>
+                )}
+                {hero.is_default_faction && (
+                  <span style={{ ...STYLE.badge, background: "#f2ecfa", color: "#5b3a8e", border: "1px solid #cfbde8" }}>
+                    Défaut faction
                   </span>
                 )}
               </div>
@@ -1737,12 +1792,34 @@ export default function HeroManager() {
                       style={{ width: 70, padding: "3px 8px", borderRadius: 4, border: "1px solid #e0e0e0", fontSize: 11 }} />
                   </div>
                 )}
+                {/* Trois niveaux indépendants. Un héros peut représenter sa
+                    race, son clan et sa faction à la fois — c'est le cas quand
+                    une faction n'a qu'un clan pourvu. Les cases n'apparaissent
+                    que là où le héros a la valeur correspondante : cocher
+                    « défaut de clan » sur un héros sans clan ne voudrait rien
+                    dire, et l'index d'unicité l'ignorerait. */}
                 {(hero.rarity ?? "Commune") === "Commune" && (
-                  <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 10, color: "#333", cursor: "pointer" }}>
-                    <input type="checkbox" checked={hero.is_default}
-                      onChange={(e) => handleUpdateField(hero, { is_default: e.target.checked })} />
-                    Défaut pour {raceDisplayLabel(hero.race)}
-                  </label>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                    <CaseDefaut
+                      cochee={hero.is_default}
+                      libelle={`Défaut pour la race ${raceDisplayLabel(hero.race)}`}
+                      onChange={(v) => handleUpdateField(hero, { is_default: v })}
+                    />
+                    {hero.clan && (
+                      <CaseDefaut
+                        cochee={hero.is_default_clan}
+                        libelle={`Défaut pour le clan ${hero.clan}`}
+                        onChange={(v) => handleUpdateField(hero, { is_default_clan: v })}
+                      />
+                    )}
+                    {hero.faction && (
+                      <CaseDefaut
+                        cochee={hero.is_default_faction}
+                        libelle={`Défaut pour la faction ${getFactionDisplayName(hero.faction)}`}
+                        onChange={(v) => handleUpdateField(hero, { is_default_faction: v })}
+                      />
+                    )}
+                  </div>
                 )}
               </div>
 

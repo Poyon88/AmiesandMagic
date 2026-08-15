@@ -58,11 +58,10 @@ export default async function Landing() {
       .order("sort_order"),
     supabase
       .from("heroes")
-      // PAS de filtre `is_default` : on le préfère, mais on se rabat sur
-      // n'importe quel héros de la faction. L'Empire du Milieu a trois héros et
-      // aucun par défaut — la vignette manquait, et la carte tombait sur le
-      // blason générique alors que l'illustration existait.
-      .select("race, faction, thumbnail_url, is_default")
+      // PAS de filtre : on PRÉFÈRE, mais on se rabat. L'Empire du Milieu a
+      // trois héros et aucun par défaut — la vignette manquait, et la carte
+      // tombait sur le blason générique alors que l'illustration existait.
+      .select("race, faction, thumbnail_url, is_default, is_default_faction")
       .not("thumbnail_url", "is", null)
       // Ordre EXPLICITE : deux factions ont plusieurs héros par défaut (Les
       // Légions du Chaos en ont deux). Sans tri, laquelle s'affiche dépend de
@@ -81,13 +80,22 @@ export default async function Landing() {
   const locale = normalizeLocale(await getLocale());
   const showcaseCards = await localizeCardsInPlace(supabase, showcaseCardsFr, locale);
 
-  // Portrait par faction : le héros PAR DÉFAUT d'abord — c'est le visage voulu
-  // de la faction — puis, à défaut, le premier héros venu. Deux passes plutôt
-  // qu'un tri, pour que l'ordre renvoyé par la base reste sans importance.
+  // Portrait par faction, par ordre de préférence :
+  //   1. le héros désigné DÉFAUT DE FACTION — c'est exactement ce que la case
+  //      de l'admin veut dire, et elle prime sur tout ;
+  //   2. sinon le défaut de sa race, faute de mieux ;
+  //   3. sinon le premier héros venu, pour ne pas retomber sur le blason.
+  // Trois passes plutôt qu'un tri, pour que l'ordre renvoyé par la base reste
+  // sans importance.
   const factionHeroUrls: Record<string, string> = {};
-  for (const parDefaut of [true, false]) {
+  const rangs = [
+    (h: { is_default: boolean; is_default_faction: boolean }) => !!h.is_default_faction,
+    (h: { is_default: boolean; is_default_faction: boolean }) => !h.is_default_faction && !!h.is_default,
+    (h: { is_default: boolean; is_default_faction: boolean }) => !h.is_default_faction && !h.is_default,
+  ];
+  for (const retient of rangs) {
     for (const h of heroesData ?? []) {
-      if (!!h.is_default !== parDefaut || !h.thumbnail_url) continue;
+      if (!retient(h) || !h.thumbnail_url) continue;
       const id = factionDuHeros(h.faction, h.race);
       if (!id || factionHeroUrls[id]) continue;
       factionHeroUrls[id] = h.thumbnail_url;
