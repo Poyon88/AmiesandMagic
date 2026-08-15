@@ -11,12 +11,13 @@
 // capacités emblématiques, penchant offensif/défensif. Aucune prose à écrire,
 // donc rien qui se désaccorde au premier rééquilibrage.
 
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { motion, useInView } from "framer-motion";
 import { useTranslations, useMessages } from "next-intl";
 import { useVocab } from "@/i18n/useVocab";
+import { useHeroText } from "@/i18n/useHeroText";
 import GameCard from "@/components/cards/GameCard";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { FACTIONS } from "@/lib/card-engine/constants";
@@ -30,12 +31,24 @@ import type { AdditionalCost, CoutKind } from "@/lib/game/clan-costs";
 import { jaugeDilatee, type StatProfile } from "@/lib/game/clan-stat-profile";
 import ExileGlyph from "@/components/cards/ExileGlyph";
 import type { Card } from "@/lib/game/types";
-import { overlayRect } from "@/lib/fx/overlayMotion";
+import { useEncartSurvol } from "./useEncartSurvol";
 
 const OR = "#c8a84e";
 
 /** Au-delà, la liste de races déborde : Le Pacte des Griffes en accueille onze. */
 const RACES_AFFICHEES = 4;
+
+/** Le héros qui représente un clan, tel que la page l'affiche. */
+export interface HeroDeClan {
+  id: number;
+  name: string;
+  thumbnail_url: string | null;
+  power_name: string | null;
+  power_cost: number | null;
+  power_description: string | null;
+  /** Illustration du pouvoir — celle que le jeu peint à l'activation. */
+  power_image_url: string | null;
+}
 
 interface Section {
   profil: ClanProfile;
@@ -48,6 +61,8 @@ interface Section {
   /** Penchant offensif / défensif MESURÉ sur les créatures du clan. `null`
    *  quand il y en a trop peu pour que le partage veuille dire quelque chose. */
   stats: StatProfile | null;
+  /** Visage du clan. `null` tant qu'aucun héros ne lui est rattaché. */
+  hero: HeroDeClan | null;
 }
 
 /** Glyphe d'un coût additionnel — les mêmes qu'en haut à gauche des cartes,
@@ -314,8 +329,9 @@ function ClanSection({
           animate={vu ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, ease: "easeOut" }}
         >
-          {/* Titre du clan + décompte */}
-          <div className="flex items-baseline gap-4 flex-wrap">
+          {/* Titre du clan + décompte, précédés du visage du clan */}
+          <div className="flex items-center gap-4 flex-wrap">
+            {section.hero && <PortraitHero hero={section.hero} couleur={accent} />}
             <h2
               className="font-[family-name:var(--font-cinzel),serif] font-bold"
               style={{ fontSize: "clamp(21px, 3vw, 32px)", color: accent, letterSpacing: "0.05em" }}
@@ -528,6 +544,102 @@ function Pastille({ children, couleur }: { children: React.ReactNode; couleur: s
   );
 }
 
+/** Le VISAGE d'un clan : son héros, et son pouvoir au survol.
+ *
+ *  L'encart montre l'illustration du pouvoir — celle que le jeu peint à
+ *  l'activation — parce qu'un nom de pouvoir seul ne dit rien à qui découvre la
+ *  faction, et que c'est cette image qu'il reverra en partie.
+ *
+ *  Portail, comme le reste de la page : la section est peinte dans un flux qui
+ *  rognerait un encart débordant vers le haut. */
+function PortraitHero({ hero, couleur }: { hero: HeroDeClan; couleur: string }) {
+  const { heroName, powerName, powerDesc } = useHeroText();
+  // Marge haute plus large que pour les pastilles : cet encart porte une
+  // illustration, il est donc bien plus haut et sortirait de l'écran plus tôt.
+  const encart = useEncartSurvol<true>(340);
+  const ref = useRef<HTMLButtonElement>(null);
+  const montrer = () => encart.montrer(true, ref.current);
+  const ouvert = encart.ouverte !== null;
+
+  const nom = heroName(hero);
+  const pouvoir = powerName(hero);
+  const desc = powerDesc(hero);
+
+  return (
+    <>
+      <button
+        ref={ref}
+        type="button"
+        onMouseEnter={montrer}
+        onMouseLeave={encart.fermer}
+        onFocus={montrer}
+        onBlur={encart.fermer}
+        onClick={() => (ouvert ? encart.fermer() : montrer())}
+        aria-label={nom}
+        className="transition-transform"
+        style={{
+          width: 54, height: 54, borderRadius: "50%", flexShrink: 0,
+          border: `1px solid ${couleur}77`,
+          background: "#ffffff08",
+          padding: 0, cursor: "help", overflow: "hidden",
+          transform: ouvert ? "scale(1.06)" : undefined,
+        }}
+      >
+        {hero.thumbnail_url ? (
+          // Portraits servis depuis Supabase Storage : `next/image` refuserait
+          // l'hôte sans configuration, et l'optimisation n'apporte rien sur une
+          // vignette déjà taillée.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={hero.thumbnail_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        ) : (
+          <span style={{ fontSize: 20 }} aria-hidden="true">👤</span>
+        )}
+      </button>
+
+      {ouvert && typeof document !== "undefined" && createPortal(
+        <div
+          role="tooltip"
+          style={{
+            ...encart.stylePosition(320),
+            borderRadius: 10,
+            background: "#12122a",
+            border: `1px solid ${couleur}77`,
+            boxShadow: "0 12px 34px rgba(0,0,0,0.75)",
+            overflow: "hidden",
+          }}
+        >
+          {hero.power_image_url && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={hero.power_image_url} alt="" style={{ width: "100%", height: 128, objectFit: "cover", display: "block" }} />
+          )}
+          <div style={{ padding: "11px 13px" }}>
+            <div style={{ fontSize: 13, color: couleur, fontWeight: 700, fontFamily: "var(--font-cinzel), serif" }}>
+              {nom}
+            </div>
+            {pouvoir && (
+              <div style={{ fontSize: 12, color: OR, marginTop: 5, fontFamily: "var(--font-cinzel), serif" }}>
+                ⚡ {pouvoir}
+                {typeof hero.power_cost === "number" && (
+                  <span style={{ color: "#e0e0e077" }}> · {hero.power_cost} mana</span>
+                )}
+              </div>
+            )}
+            {desc && (
+              <div
+                className="font-[family-name:var(--font-crimson),serif]"
+                style={{ fontSize: 12.5, lineHeight: 1.5, color: "#e0e0e0cc", marginTop: 5 }}
+              >
+                {desc}
+              </div>
+            )}
+          </div>
+        </div>,
+        document.body,
+      )}
+    </>
+  );
+}
+
 /** Une part du profil de jeu.
  *
  *  La BARRE est dilatée : les partages réels de tous les clans tiennent entre
@@ -594,20 +706,8 @@ function ListeSurvolable({
   elements: ElementSurvolable[];
   couleur: string;
 }) {
-  const [ouverte, setOuverte] = useState<ElementSurvolable | null>(null);
-  const [ancre, setAncre] = useState<{ x: number; y: number; dessous: boolean } | null>(null);
+  const encart = useEncartSurvol<ElementSurvolable>();
   const refs = useRef(new Map<string, HTMLElement>());
-
-  const montrer = (e: ElementSurvolable) => {
-    const el = refs.current.get(e.cle);
-    if (!el) return;
-    const r = overlayRect(el);
-    // Au-dessus par défaut ; en dessous quand le haut de fenêtre est trop
-    // proche — la première section de clan est haute dans la page.
-    const dessous = r.top < 210;
-    setAncre({ x: r.left + r.width / 2, y: dessous ? r.top + r.height : r.top, dessous });
-    setOuverte(e);
-  };
 
   return (
     <div className="flex flex-wrap gap-x-4 gap-y-2">
@@ -616,12 +716,14 @@ function ListeSurvolable({
           key={e.cle}
           type="button"
           ref={(el) => { if (el) refs.current.set(e.cle, el); }}
-          onMouseEnter={() => montrer(e)}
-          onMouseLeave={() => setOuverte(null)}
+          onMouseEnter={() => encart.montrer(e, refs.current.get(e.cle) ?? null)}
+          onMouseLeave={encart.fermer}
           // Clavier et tactile : sans ça, l'encart n'existerait qu'à la souris.
-          onFocus={() => montrer(e)}
-          onBlur={() => setOuverte(null)}
-          onClick={() => (ouverte?.cle === e.cle ? setOuverte(null) : montrer(e))}
+          onFocus={() => encart.montrer(e, refs.current.get(e.cle) ?? null)}
+          onBlur={encart.fermer}
+          onClick={() => (encart.estOuvert((o) => o.cle === e.cle)
+            ? encart.fermer()
+            : encart.montrer(e, refs.current.get(e.cle) ?? null))}
           className="inline-flex items-center gap-1.5 transition-colors"
           style={{
             fontSize: 12.5,
@@ -634,6 +736,9 @@ function ListeSurvolable({
           }}
         >
           {e.icone}
+          {/* Pas de mot du déclencheur dans la LISTE : elle doit rester
+              parcourable d'un coup d'œil. La couleur suffit à le signaler ;
+              le mot, lui, attend l'encart. */}
           {e.libelle}
           {/* Le décompte rend le classement vérifiable : le visiteur voit
               combien de cartes sont concernées, plutôt qu'un palmarès qu'il
@@ -642,35 +747,29 @@ function ListeSurvolable({
         </button>
       ))}
 
-      {ouverte && ancre && typeof document !== "undefined" && createPortal(
+      {encart.ouverte && typeof document !== "undefined" && createPortal(
         <div
           role="tooltip"
           style={{
-            position: "fixed",
-            left: Math.min(Math.max(ancre.x, 150), (typeof window !== "undefined" ? window.innerWidth : 1200) - 150),
-            top: ancre.y + (ancre.dessous ? 9 : -9),
-            transform: `translate(-50%, ${ancre.dessous ? "0" : "-100%"})`,
-            zIndex: 60,
-            width: 280,
+            ...encart.stylePosition(280),
             padding: "11px 13px",
             borderRadius: 9,
             background: "#12122a",
             border: `1px solid ${couleur}77`,
             boxShadow: "0 10px 30px rgba(0,0,0,0.7)",
-            pointerEvents: "none",
           }}
         >
           <div className="flex items-center gap-2" style={{ marginBottom: 6 }}>
-            {ouverte.icone}
-            <span style={{ fontSize: 13, color: ouverte.couleur ?? "#fff", fontWeight: 700, fontFamily: "var(--font-cinzel), serif" }}>
-              {ouverte.titre}
+            {encart.ouverte.icone}
+            <span style={{ fontSize: 13, color: encart.ouverte.couleur ?? "#fff", fontWeight: 700, fontFamily: "var(--font-cinzel), serif" }}>
+              {encart.ouverte.titre}
             </span>
           </div>
           <div
             className="font-[family-name:var(--font-crimson),serif]"
             style={{ fontSize: 12.5, lineHeight: 1.5, color: "#e0e0e0cc" }}
           >
-            {ouverte.desc}
+            {encart.ouverte.desc}
           </div>
         </div>,
         document.body,

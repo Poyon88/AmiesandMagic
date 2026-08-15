@@ -208,20 +208,69 @@ describe("Coûts additionnels", () => {
   });
 });
 
-describe("L'encart au survol est PARTAGÉ", () => {
+describe("L'ancrage des encarts est PARTAGÉ", () => {
   const VUE_ = fs.readFileSync(
     path.join(process.cwd(), "src/components/factions/FactionClansPage.tsx"), "utf8");
+  const HOOK = fs.readFileSync(
+    path.join(process.cwd(), "src/components/factions/useEncartSurvol.ts"), "utf8");
 
   it("capacités et coûts passent par la même liste", () => {
-    // Deux encarts, c'était deux fois la logique de placement du portail
-    // (bascule au-dessus/en dessous, recadrage horizontal) — et la garantie
-    // qu'ils divergeraient.
     expect(VUE_.match(/<ListeSurvolable/g)).toHaveLength(2);
   });
 
-  it("le portail n'est monté qu'UNE fois", () => {
-    expect(VUE_.match(/createPortal\(/g)).toHaveLength(1);
-    expect(VUE_.match(/role="tooltip"/g)).toHaveLength(1);
+  it("la MÉCANIQUE de placement n'existe qu'en un exemplaire", () => {
+    // Ce qui se partage, c'est la bascule au-dessus/en dessous, le recadrage
+    // horizontal et le portail — pas le contenu : une pastille de capacité et
+    // une fiche de héros n'ont ni la même forme ni les mêmes champs. Les forcer
+    // dans un composant unique aurait demandé une poignée de champs optionnels
+    // servant chacun un seul appelant.
+    expect(HOOK).toContain("dessous");
+    expect(HOOK).toContain("Math.min(Math.max(");
+    // Aucun encart ne recalcule son ancrage dans son coin.
+    expect(VUE_).not.toContain("overlayRect(");
+    expect(VUE_.match(/encart\.stylePosition\(/g)!.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("chaque encart reste un portail — la grille rognerait sinon", () => {
+    expect(VUE_.match(/createPortal\(/g)).toHaveLength(2);
+    expect(VUE_.match(/role="tooltip"/g)).toHaveLength(2);
+  });
+});
+
+describe("Le visage d'un clan", () => {
+  const VUE__ = fs.readFileSync(
+    path.join(process.cwd(), "src/components/factions/FactionClansPage.tsx"), "utf8");
+  const PAGE___ = fs.readFileSync(
+    path.join(process.cwd(), "src/app/factions/[slug]/page.tsx"), "utf8");
+
+  it("préfère le héros DÉSIGNÉ, puis se rabat", () => {
+    // Cinq clans seulement ont la case cochée : sans repli, la vignette
+    // manquerait partout ailleurs.
+    expect(PAGE___).toContain("is_default_clan");
+    expect(PAGE___).toContain("for (const prefere of [true, false])");
+  });
+
+  it("ramène de quoi peindre le pouvoir, illustration comprise", () => {
+    for (const c of ["power_name", "power_cost", "power_description", "power_image_url"]) {
+      expect(PAGE___, c).toContain(c);
+    }
+  });
+
+  it("ordonne les héros — plusieurs peuvent partager un clan", () => {
+    // Sans tri, celui qui s'affiche dépend de l'ordre que rend la base, et la
+    // page changerait de visage sans qu'on y touche.
+    const bloc = PAGE___.slice(PAGE___.indexOf('.from("heroes")'));
+    expect(bloc.slice(0, 700)).toContain('.order("name")');
+  });
+
+  it("localise le nom et le pouvoir", () => {
+    // Le contenu des héros est traduit par `useHeroText`, pas affiché brut.
+    expect(VUE__).toContain("useHeroText()");
+    expect(VUE__).toContain("heroName(hero)");
+  });
+
+  it("n'affiche rien quand aucun héros ne représente le clan", () => {
+    expect(VUE__).toContain("{section.hero && <PortraitHero");
   });
 });
 
