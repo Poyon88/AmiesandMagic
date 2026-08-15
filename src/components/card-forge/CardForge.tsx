@@ -1800,12 +1800,19 @@ export default function CardForge() {
     };
   }
 
+  // En mode manuel, la palette est ENTIÈRE.
+  //
+  // Le palier de rareté (`minTier`) et les interdits de faction sont des
+  // garde-fous du GÉNÉRATEUR : ils existent pour qu'un tirage aléatoire reste
+  // cohérent avec le profil d'une faction. Les appliquer à la main retirait des
+  // capacités de l'écran sans dire lesquelles ni pourquoi — un auteur qui pose
+  // délibérément une carte n'a pas besoin d'être protégé de son propre choix.
+  //
+  // L'information reste accessible : le palier s'affiche au survol de la puce,
+  // et la liste des interdits de la faction reste sur le panneau de faction.
+  //
+  // Ni la race ni le clan n'ont jamais filtré cette liste.
   const availableManualKeywords = Object.entries(KEYWORDS)
-    .filter(([id, kw]) => {
-      const tier = RARITY_MAP[rarity]?.tier ?? 0;
-      const forbidden = FACTIONS[faction]?.forbiddenKeywords ?? [];
-      return kw.minTier <= tier && !forbidden.includes(id);
-    })
     .sort(([a], [b]) => a.localeCompare(b, 'fr'));
 
   const manualBudgetTotal = Math.round(manualMana * 10 * (RARITY_MAP[rarity]?.multiplier ?? 1));
