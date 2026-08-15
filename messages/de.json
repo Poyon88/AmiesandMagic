@@ -2350,6 +2350,15 @@
     "free_commons": "{count, plural, one {# gewöhnliche Karte} other {# gewöhnliche Karten}} · {clans, plural, one {# Klan} other {# Klane}} — ab dem ersten Tag kostenlos.",
     "no_clan_title": "Für alle Klane offen",
     "no_clan_desc": "Diese Karten gehören keinem Klan an: Sie passen in jedes Deck der Fraktion, gleich um welchen Klan du es baust.",
-    "other_factions": "Die anderen Fraktionen ansehen"
+    "other_factions": "Die anderen Fraktionen ansehen",
+    "costs": "Zusätzliche Kosten",
+    "cost_life": "Lebenspunkte",
+    "cost_discard": "Abwerfen",
+    "cost_sacrifice": "Opferung",
+    "cost_exile": "Verbannung",
+    "cost_life_desc": "Diese Karten kosten zusätzlich Lebenspunkte deines Helden, neben ihren Manakosten.",
+    "cost_discard_desc": "Diese Karten verlangen, Karten aus deiner Hand abzuwerfen, neben ihren Manakosten.",
+    "cost_sacrifice_desc": "Diese Karten verlangen, von dir kontrollierte Kreaturen zu opfern, neben ihren Manakosten.",
+    "cost_exile_desc": "Diese Karten verbannen Karten von deiner Deckoberseite, neben ihren Manakosten."
   }
 }

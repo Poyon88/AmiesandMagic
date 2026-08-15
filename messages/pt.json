@@ -2350,6 +2350,15 @@
     "free_commons": "{count, plural, one {# carta comum} other {# cartas comuns}} · {clans, plural, one {# clã} other {# clãs}} — suas desde o primeiro dia.",
     "no_clan_title": "Abertas a todos os clãs",
     "no_clan_desc": "Estas cartas não pertencem a nenhum clã: entram em qualquer deck da facção, seja qual for o clã em torno do qual o monta.",
-    "other_factions": "Ver as outras facções"
+    "other_factions": "Ver as outras facções",
+    "costs": "Custos adicionais",
+    "cost_life": "Pontos de vida",
+    "cost_discard": "Descarte",
+    "cost_sacrifice": "Sacrifício",
+    "cost_exile": "Exílio",
+    "cost_life_desc": "Estas cartas também custam pontos de vida do seu herói, além do custo em mana.",
+    "cost_discard_desc": "Estas cartas exigem descartar cartas da sua mão, além do custo em mana.",
+    "cost_sacrifice_desc": "Estas cartas exigem sacrificar criaturas que controla, além do custo em mana.",
+    "cost_exile_desc": "Estas cartas exilam cartas do topo do seu deck, além do custo em mana."
   }
 }

@@ -2350,6 +2350,15 @@
     "free_commons": "{count, plural, one {# common card} other {# common cards}} · {clans, plural, one {# clan} other {# clans}} — yours from day one.",
     "no_clan_title": "Open to every clan",
     "no_clan_desc": "These cards belong to no clan: they fit any deck of the faction, whichever clan you build it around.",
-    "other_factions": "See the other factions"
+    "other_factions": "See the other factions",
+    "costs": "Additional costs",
+    "cost_life": "Life",
+    "cost_discard": "Discard",
+    "cost_sacrifice": "Sacrifice",
+    "cost_exile": "Exile",
+    "cost_life_desc": "These cards also cost your hero's life points, on top of their mana cost.",
+    "cost_discard_desc": "These cards require discarding cards from your hand, on top of their mana cost.",
+    "cost_sacrifice_desc": "These cards require sacrificing creatures you control, on top of their mana cost.",
+    "cost_exile_desc": "These cards exile cards from the top of your deck, on top of their mana cost."
   }
 }

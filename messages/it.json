@@ -2350,6 +2350,15 @@
     "free_commons": "{count, plural, one {# carta comune} other {# carte comuni}} · {clans, plural, one {# clan} other {# clan}} — tue fin dal primo giorno.",
     "no_clan_title": "Aperte a tutti i clan",
     "no_clan_desc": "Queste carte non appartengono ad alcun clan: entrano in qualsiasi mazzo della fazione, qualunque sia il clan attorno al quale lo costruisci.",
-    "other_factions": "Vedi le altre fazioni"
+    "other_factions": "Vedi le altre fazioni",
+    "costs": "Costi aggiuntivi",
+    "cost_life": "Punti vita",
+    "cost_discard": "Scarto",
+    "cost_sacrifice": "Sacrificio",
+    "cost_exile": "Esilio",
+    "cost_life_desc": "Queste carte si pagano anche con i punti vita del tuo eroe, oltre al costo in mana.",
+    "cost_discard_desc": "Queste carte richiedono di scartare carte dalla tua mano, oltre al costo in mana.",
+    "cost_sacrifice_desc": "Queste carte richiedono di sacrificare creature che controlli, oltre al costo in mana.",
+    "cost_exile_desc": "Queste carte esiliano carte dalla cima del tuo mazzo, oltre al costo in mana."
   }
 }

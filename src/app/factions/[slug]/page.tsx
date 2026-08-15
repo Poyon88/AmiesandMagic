@@ -13,7 +13,9 @@ import { normalizeLocale } from "@/i18n/config";
 import { FACTIONS } from "@/lib/card-engine/constants";
 import { factionFromSlug, showcaseFactionSlugs } from "@/lib/game/faction-slug";
 import { clansOfFaction } from "@/lib/game/clan-profile";
-import { signatureFromCards } from "@/lib/game/clan-signature";
+import { signatureFromCards, type CarteComptable } from "@/lib/game/clan-signature";
+import { additionalCostsFromCards } from "@/lib/game/clan-costs";
+import { statProfileFromCards } from "@/lib/game/clan-stat-profile";
 import FactionClansPage from "@/components/factions/FactionClansPage";
 import type { Card } from "@/lib/game/types";
 
@@ -68,7 +70,10 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
     .order("name"),
     supabase
       .from("cards")
-      .select("clan, keywords, spell_keywords")
+      // `capabilities` porte les effets COMPOSÉS, invisibles des deux autres
+      // colonnes et pourtant bien des capacités du clan.
+      // `attack`/`health` servent au profil de jeu, mesuré sur les créatures.
+      .select("clan, keywords, spell_keywords, capabilities, keyword_instances, card_type, attack, health")
       .eq("faction", factionId)
       .not("clan", "is", null),
   ]);
@@ -91,8 +96,8 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
   }
 
   // Capacités réellement portées, par clan, toutes raretés confondues.
-  const aCompter = new Map<string, { keywords?: string[] | null; spell_keywords?: { id?: string }[] | null }[]>();
-  for (const c of (pourCompter ?? []) as { clan: string | null; keywords?: string[] | null; spell_keywords?: { id?: string }[] | null }[]) {
+  const aCompter = new Map<string, CarteComptable[]>();
+  for (const c of (pourCompter ?? []) as unknown as (CarteComptable & { clan: string | null })[]) {
     if (!c.clan) continue;
     const liste = aCompter.get(c.clan);
     if (liste) liste.push(c);
@@ -104,6 +109,13 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
       profil,
       cartes: parClan.get(profil.nom) ?? [],
       signature: signatureFromCards(aCompter.get(profil.nom) ?? []),
+      // Les coûts se comptent sur le pool COMMUN — celui que la page montre —
+      // et non sur toutes les raretés comme la signature : c'est une promesse
+      // faite au joueur sur les cartes qu'il reçoit.
+      couts: additionalCostsFromCards(parClan.get(profil.nom) ?? []),
+      // Le penchant se mesure sur TOUTES les créatures du clan, comme la
+      // signature : il décrit le clan, pas seulement ce que la page montre.
+      stats: statProfileFromCards(aCompter.get(profil.nom) ?? []),
     }))
     // Choix retenu : un clan SANS AUCUNE carte n'apparaît pas. La Sublime Porte
     // et La Garde Noire n'en ont pas encore — mieux vaut ne rien montrer qu'un

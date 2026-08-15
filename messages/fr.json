@@ -2350,6 +2350,15 @@
     "free_commons": "{count, plural, one {# carte commune} other {# cartes communes}} · {clans, plural, one {# clan} other {# clans}} — offertes dès le premier jour.",
     "no_clan_title": "Ouvertes à tous les clans",
     "no_clan_desc": "Ces cartes n'appartiennent à aucun clan : elles rejoignent n'importe quel deck de la faction, quel que soit le clan autour duquel vous le construisez.",
-    "other_factions": "Voir les autres factions"
+    "other_factions": "Voir les autres factions",
+    "costs": "Coûts additionnels",
+    "cost_life": "Points de vie",
+    "cost_discard": "Défausse",
+    "cost_sacrifice": "Sacrifice",
+    "cost_exile": "Exil",
+    "cost_life_desc": "Ces cartes se paient aussi en points de vie du héros, en plus de leur coût en mana.",
+    "cost_discard_desc": "Ces cartes exigent de défausser des cartes de votre main, en plus de leur coût en mana.",
+    "cost_sacrifice_desc": "Ces cartes exigent de sacrifier des créatures que vous contrôlez, en plus de leur coût en mana.",
+    "cost_exile_desc": "Ces cartes exilent des cartes du dessus de votre deck, en plus de leur coût en mana."
   }
 }

@@ -67,13 +67,13 @@ describe("Portrait de clan", () => {
     expect(nord.races).toEqual(FACTIONS["Humains"].races);
   });
 
-  it("garde les jauges dans [0, 1]", () => {
+  it("ne rend QUE le rattachement — plus aucun jugement de jeu", () => {
+    // Le penchant offensif/défensif se lisait ici, dans `statWeights`. Il se
+    // mesure désormais sur les cartes : jusqu'à 11,6 points d'écart avec
+    // l'intention déclarée, et toujours dans le même sens.
     for (const id of PRESENTEES)
       for (const c of clansOfFaction(id)) {
-        expect(c.offensif).toBeGreaterThanOrEqual(0);
-        expect(c.offensif).toBeLessThanOrEqual(1);
-        expect(c.defensif).toBeGreaterThanOrEqual(0);
-        expect(c.defensif).toBeLessThanOrEqual(1);
+        expect(Object.keys(c).sort()).toEqual(["nom", "races"]);
       }
   });
 
@@ -110,6 +110,32 @@ describe("Descriptifs des capacités emblématiques", () => {
     }
   });
 
+  it("le nom porte la couleur de son déclencheur, et le mot qui va avec", () => {
+    // Même convention qu'au dos des cartes. La signature en a besoin autant :
+    // « Renforcement » à l'attaque et « Renforcement » à l'entrée ne racontent
+    // pas la même chose, et seule la couleur + le mot le disent.
+    const src = fs.readFileSync(
+      path.join(process.cwd(), "src/components/factions/FactionClansPage.tsx"), "utf8");
+    expect(src).toContain('couleur: d?.color ?? "#fff"');
+    // Une ÉGALITÉ n'affirme rien : pas de mot du tout, surtout pas « Permanent ».
+    expect(src).toContain('e.dominant === null ? null : vocab.triggerBadge(modeDe(e))');
+  });
+
+  it("le MOT du déclencheur n'apparaît qu'au survol, pas dans la liste", () => {
+    // La liste doit rester parcourable d'un coup d'œil : six noms suivis de
+    // « (Permanent) » la noient. La couleur y suffit ; le mot attend l'encart.
+    //
+    // Les deux vivent maintenant sur la même entrée : `libelle` est ce que la
+    // liste peint, `titre` ce que l'encart affiche.
+    const src = fs.readFileSync(
+      path.join(process.cwd(), "src/components/factions/FactionClansPage.tsx"), "utf8");
+    expect(src).toContain("libelle: nomCap(e),");
+    expect(src).toContain("titre: d ? `${nomCap(e)} (${d.label})` : nomCap(e),");
+    // Et la liste elle-même ne peint QUE le libellé.
+    const liste = src.slice(src.indexOf("{e.icone}"), src.indexOf("×{e.compte}"));
+    expect(liste).not.toContain("titre");
+  });
+
   it("l'encart lit les DEUX registres", () => {
     const src = fs.readFileSync(
       path.join(process.cwd(), "src/components/factions/FactionClansPage.tsx"), "utf8");
@@ -121,6 +147,81 @@ describe("Descriptifs des capacités emblématiques", () => {
     // Clavier et tactile, pas seulement la souris.
     expect(src).toContain("onFocus=");
     expect(src).toContain("onClick=");
+  });
+});
+
+describe("Profil de jeu", () => {
+  const VUE__ = fs.readFileSync(
+    path.join(process.cwd(), "src/components/factions/FactionClansPage.tsx"), "utf8");
+  const PAGE__ = fs.readFileSync(
+    path.join(process.cwd(), "src/app/factions/[slug]/page.tsx"), "utf8");
+
+  it("se mesure sur les cartes, pas sur les statWeights déclarés", () => {
+    expect(PAGE__).toContain("statProfileFromCards(aCompter.get(profil.nom) ?? [])");
+    // Les statistiques doivent être ramenées de la base, sinon le profil est
+    // toujours nul et la section disparaît partout en silence.
+    expect(PAGE__).toContain("card_type, attack, health");
+  });
+
+  it("la barre est DILATÉE mais le pourcentage exact est écrit", () => {
+    // C'est le chiffre qui empêche la barre d'exagérer l'écart qu'elle rend
+    // lisible : sans lui, une barre à 15 % face à une à 69 % ferait croire à
+    // un gouffre entre 39,6 % et 55,8 %.
+    expect(VUE__).toContain("jaugeDilatee(part)");
+    expect(VUE__).toContain("{Math.round(part * 100)}");
+  });
+
+  it("la section disparaît quand le clan a trop peu de créatures", () => {
+    expect(VUE__).toContain("{section.stats && (");
+  });
+});
+
+describe("Coûts additionnels", () => {
+  const LOC = ["fr", "en", "es", "de", "it", "pt", "ja", "zh"];
+  const VUE = fs.readFileSync(
+    path.join(process.cwd(), "src/components/factions/FactionClansPage.tsx"), "utf8");
+  const PAGE_ = fs.readFileSync(
+    path.join(process.cwd(), "src/app/factions/[slug]/page.tsx"), "utf8");
+
+  it("se comptent sur le pool COMMUN, pas sur toutes les raretés", () => {
+    // La signature décrit le clan et lit donc toutes ses cartes ; les coûts,
+    // eux, portent sur ce que le joueur reçoit — les communes que la page
+    // montre. Les lire ailleurs promettrait autre chose que ce qui est affiché.
+    expect(PAGE_).toContain("additionalCostsFromCards(parClan.get(profil.nom) ?? [])");
+  });
+
+  it("la section disparaît quand le clan n'en a pas l'habitude", () => {
+    // Sans cette garde, chaque clan afficherait une rubrique vide.
+    expect(VUE).toContain("{section.couts.length > 0 && (");
+  });
+
+  it.each(LOC)("%s nomme la section et les quatre coûts", (loc) => {
+    const p = JSON.parse(
+      fs.readFileSync(path.join(process.cwd(), `messages/${loc}.json`), "utf8"),
+    ).factions_page;
+    expect(p.costs?.trim(), `${loc} / costs`).toBeTruthy();
+    for (const k of ["cost_life", "cost_discard", "cost_sacrifice", "cost_exile"]) {
+      expect(p[k]?.trim(), `${loc} / ${k}`).toBeTruthy();
+      // Et son descriptif, affiché au survol — le titre de section n'en a pas.
+      expect(p[`${k}_desc`]?.trim(), `${loc} / ${k}_desc`).toBeTruthy();
+    }
+  });
+});
+
+describe("L'encart au survol est PARTAGÉ", () => {
+  const VUE_ = fs.readFileSync(
+    path.join(process.cwd(), "src/components/factions/FactionClansPage.tsx"), "utf8");
+
+  it("capacités et coûts passent par la même liste", () => {
+    // Deux encarts, c'était deux fois la logique de placement du portail
+    // (bascule au-dessus/en dessous, recadrage horizontal) — et la garantie
+    // qu'ils divergeraient.
+    expect(VUE_.match(/<ListeSurvolable/g)).toHaveLength(2);
+  });
+
+  it("le portail n'est monté qu'UNE fois", () => {
+    expect(VUE_.match(/createPortal\(/g)).toHaveLength(1);
+    expect(VUE_.match(/role="tooltip"/g)).toHaveLength(1);
   });
 });
 
@@ -137,10 +238,12 @@ describe("Les communes SANS clan", () => {
     //
     // On ne vise que la requête d'affichage : celle du COMPTAGE, elle, écarte
     // légitimement les cartes sans clan — on y classe les capacités par clan.
-    const affichage = PAGE.slice(
-      PAGE.indexOf(".select(COLONNES_CARTE)"),
-      PAGE.indexOf('.select("clan, keywords, spell_keywords")'),
-    );
+    // Ancré sur la SECONDE lecture de `cards`, pas sur le texte de son
+    // `select` : celui-ci change à chaque colonne ajoutée, et le test cassait
+    // alors pour une raison sans rapport avec ce qu'il vérifie.
+    const debutComptage = PAGE.indexOf('.from("cards")', PAGE.indexOf('.from("cards")') + 1);
+    expect(debutComptage).toBeGreaterThan(-1);
+    const affichage = PAGE.slice(PAGE.indexOf(".select(COLONNES_CARTE)"), debutComptage);
     expect(affichage).not.toContain('.not("clan", "is", null)');
     expect(PAGE).toContain("const sansClan: Card[] = []");
   });

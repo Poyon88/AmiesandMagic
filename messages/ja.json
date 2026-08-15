@@ -2350,6 +2350,15 @@
     "free_commons": "コモンカード{count}枚 ・ {clans}クラン — 初日からすべて無料。",
     "no_clan_title": "すべてのクランで使える",
     "no_clan_desc": "これらのカードはどのクランにも属しません。どのクランを軸に組んでも、この勢力のデッキに入れられます。",
-    "other_factions": "ほかの勢力を見る"
+    "other_factions": "ほかの勢力を見る",
+    "costs": "追加コスト",
+    "cost_life": "ライフ",
+    "cost_discard": "手札を捨てる",
+    "cost_sacrifice": "生け贄",
+    "cost_exile": "追放",
+    "cost_life_desc": "これらのカードは、マナに加えてヒーローのライフも支払います。",
+    "cost_discard_desc": "これらのカードは、マナに加えて手札を捨てることを求めます。",
+    "cost_sacrifice_desc": "これらのカードは、マナに加えて自分のクリーチャーを生け贄に捧げることを求めます。",
+    "cost_exile_desc": "これらのカードは、マナに加えてデッキの上からカードを追放します。"
   }
 }

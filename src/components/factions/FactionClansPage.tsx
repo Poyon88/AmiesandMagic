@@ -16,15 +16,19 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import { motion, useInView } from "framer-motion";
 import { useTranslations, useMessages } from "next-intl";
+import { useVocab } from "@/i18n/useVocab";
 import GameCard from "@/components/cards/GameCard";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { FACTIONS } from "@/lib/card-engine/constants";
 import { KEYWORD_SYMBOLS } from "@/lib/game/keyword-labels";
 import { SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
-import type { SpellKeywordId } from "@/lib/game/types";
+import type { SpellKeywordId, KeywordMode } from "@/lib/game/types";
 import type { Keyword } from "@/lib/game/types";
 import type { ClanProfile } from "@/lib/game/clan-profile";
 import type { SignatureEntry } from "@/lib/game/clan-signature";
+import type { AdditionalCost, CoutKind } from "@/lib/game/clan-costs";
+import { jaugeDilatee, type StatProfile } from "@/lib/game/clan-stat-profile";
+import ExileGlyph from "@/components/cards/ExileGlyph";
 import type { Card } from "@/lib/game/types";
 import { overlayRect } from "@/lib/fx/overlayMotion";
 
@@ -38,12 +42,55 @@ interface Section {
   cartes: Card[];
   /** Capacités les plus portées par les cartes du clan, toutes raretés. */
   signature: SignatureEntry[];
+  /** Coûts additionnels assez répandus pour caractériser le clan. Vide le plus
+   *  souvent : la section n'apparaît alors pas. */
+  couts: AdditionalCost[];
+  /** Penchant offensif / défensif MESURÉ sur les créatures du clan. `null`
+   *  quand il y en a trop peu pour que le partage veuille dire quelque chose. */
+  stats: StatProfile | null;
 }
+
+/** Glyphe d'un coût additionnel — les mêmes qu'en haut à gauche des cartes,
+ *  pour qu'on les reconnaisse sans légende. */
+function GlypheCout({ kind }: { kind: CoutKind }) {
+  const teintes: Record<CoutKind, string> = {
+    life: "#e74c3c", discard: "#bbbbbb", sacrifice: "#a060a0", exile: "#7f8fa6",
+  };
+  const couleur = teintes[kind];
+  // Même gabarit que `KeywordIcon` dans la liste des capacités (15 px) : les
+  // deux listes se lisent l'une sous l'autre, un décalage de taille se voit.
+  const TAILLE = 15;
+  if (kind === "exile") {
+    return <span style={{ display: "inline-flex", lineHeight: 0 }}><ExileGlyph size={TAILLE} color={couleur} /></span>;
+  }
+  const glyphe = kind === "life" ? "♥" : kind === "discard" ? "🃏" : "☠";
+  return (
+    <span
+      aria-hidden="true"
+      style={{
+        color: couleur, fontSize: TAILLE, lineHeight: 1,
+        display: "inline-flex", alignItems: "center", justifyContent: "center",
+        width: TAILLE, height: TAILLE,
+      }}
+    >
+      {glyphe}
+    </span>
+  );
+}
+
+/** Teinte d'une entrée : seul un vrai déclencheur en porte une. */
+const modeDe = (e: SignatureEntry): KeywordMode | undefined =>
+  e.dominant && e.dominant !== "permanent" ? e.dominant : undefined;
 
 /** Clé stable d'une capacité, les deux registres confondus. */
 const cle = (e: SignatureEntry) => `${e.spell ? "s" : "c"}:${e.id}`;
 
-/** L'icône d'une capacité, prise dans le bon registre. */
+/** L'icône d'une capacité, prise dans le bon registre et teintée par le
+ *  déclencheur DOMINANT du clan.
+ *
+ *  Une capacité n'a pas de couleur en soi : un Renforcement à l'attaque n'est
+ *  pas un Renforcement à l'entrée, et c'est l'usage du clan qui tranche. En cas
+ *  d'égalité, `mode` est absent et l'icône reste blanche. */
 function Icone({ entree, size }: { entree: SignatureEntry; size: number }) {
   const symbole = entree.spell
     ? SPELL_KEYWORD_SYMBOLS[entree.id as SpellKeywordId]
@@ -55,7 +102,7 @@ function Icone({ entree, size }: { entree: SignatureEntry; size: number }) {
       // Les surcharges d'icône en base préfixent les sorts — même convention
       // que le verso des cartes.
       keyword={entree.spell ? `spell_${entree.id}` : entree.id}
-      mode={entree.spell ? "spell" : undefined}
+      mode={modeDe(entree)}
     />
   );
 }
@@ -297,14 +344,42 @@ function ClanSection({
               </div>
             </Bloc>
 
-            <Bloc titre={t("signature")}>
-              <Signature entrees={section.signature} nomCap={nomCap} descCap={descCap} couleur={couleur} />
-            </Bloc>
+            <div>
+              <Bloc titre={t("signature")}>
+                <Signature entrees={section.signature} nomCap={nomCap} descCap={descCap} couleur={couleur} />
+              </Bloc>
+              {/* Sous les capacités, et seulement quand le clan en a vraiment
+                  l'habitude : un coût isolé n'est pas une identité. */}
+              {section.couts.length > 0 && (
+                <div style={{ marginTop: 18 }}>
+                  <Bloc titre={t("costs")}>
+                    <ListeSurvolable
+                      couleur={couleur}
+                      elements={section.couts.map((c) => ({
+                        cle: c.kind,
+                        icone: <GlypheCout kind={c.kind} />,
+                        // Pas de montant dans la liste : il varie d'une carte à
+                        // l'autre, et « 2–3 » alourdit sans rien apprendre. Ce
+                        // qui compte est QUE le clan paie ainsi.
+                        libelle: t(`cost_${c.kind}`),
+                        compte: c.count,
+                        titre: t(`cost_${c.kind}`),
+                        desc: t(`cost_${c.kind}_desc`),
+                      }))}
+                    />
+                  </Bloc>
+                </div>
+              )}
+            </div>
 
-            <Bloc titre={t("profile")}>
-              <Jauge libelle={t("offense")} valeur={profil.offensif} couleur="#e07a5f" />
-              <Jauge libelle={t("defense")} valeur={profil.defensif} couleur="#5f9ee0" />
-            </Bloc>
+            {/* Rien à montrer quand le clan n'a pas assez de créatures : un
+                partage tiré d'une ou deux cartes ne dit rien. */}
+            {section.stats && (
+              <Bloc titre={t("profile")}>
+                <Jauge libelle={t("offense")} part={section.stats.offensif} couleur="#e07a5f" />
+                <Jauge libelle={t("defense")} part={section.stats.defensif} couleur="#5f9ee0" />
+              </Bloc>
+            )}
           </div>
 
           {/* Toutes les communes du clan */}
@@ -453,21 +528,30 @@ function Pastille({ children, couleur }: { children: React.ReactNode; couleur: s
   );
 }
 
-function Jauge({ libelle, valeur, couleur }: { libelle: string; valeur: number; couleur: string }) {
+/** Une part du profil de jeu.
+ *
+ *  La BARRE est dilatée : les partages réels de tous les clans tiennent entre
+ *  39,6 % et 55,8 %, et des barres proportionnelles se ressembleraient toutes.
+ *  Le POURCENTAGE EXACT est écrit à côté — c'est lui qui empêche la barre
+ *  d'exagérer l'écart qu'elle rend lisible. */
+function Jauge({ libelle, part, couleur }: { libelle: string; part: number; couleur: string }) {
   return (
     <div className="flex items-center gap-3" style={{ marginBottom: 7 }}>
       <span style={{ fontSize: 11.5, color: "#e0e0e099", width: 62, flexShrink: 0 }}>{libelle}</span>
-      <div style={{ flex: 1, height: 5, borderRadius: 3, background: "#ffffff12", overflow: "hidden", maxWidth: 190 }}>
+      <div style={{ flex: 1, height: 5, borderRadius: 3, background: "#ffffff12", overflow: "hidden", maxWidth: 150 }}>
         <div
           style={{
             height: "100%",
-            width: `${Math.round(valeur * 100)}%`,
+            width: `${Math.round(jaugeDilatee(part) * 100)}%`,
             background: couleur,
             borderRadius: 3,
             boxShadow: `0 0 8px ${couleur}88`,
           }}
         />
       </div>
+      <span style={{ fontSize: 11, color: "#e0e0e077", width: 38, flexShrink: 0, textAlign: "right" }}>
+        {Math.round(part * 100)}&nbsp;%
+      </span>
     </div>
   );
 }
@@ -481,20 +565,41 @@ function Jauge({ libelle, valeur, couleur }: { libelle: string; valeur: number; 
  *
  *  L'encart est monté en PORTAIL : les blocs de portrait vivent dans une grille,
  *  et un survol en bord de colonne se ferait rogner par le débordement. */
-function Signature({
-  entrees, nomCap, descCap, couleur,
+/** Un élément d'une liste survolable : ce qu'on voit, et ce que dit l'encart. */
+interface ElementSurvolable {
+  cle: string;
+  icone: React.ReactNode;
+  libelle: string;
+  /** Couleur du libellé dans la liste. Blanc cassé par défaut. */
+  couleur?: string;
+  compte: number;
+  /** Titre de l'encart — peut porter une précision que la liste n'affiche pas. */
+  titre: string;
+  desc: string;
+}
+
+/** Liste de pastilles dont chacune déplie son descriptif au survol.
+ *
+ *  PARTAGÉE par les capacités emblématiques et les coûts additionnels. Les deux
+ *  se lisent pareil et méritent le même encart ; en écrire deux, c'était
+ *  garantir qu'ils divergeraient — la logique de placement du portail à elle
+ *  seule (bascule au-dessus/en dessous, recadrage horizontal) n'a aucune raison
+ *  d'exister en double.
+ *
+ *  L'encart est monté en PORTAIL : les blocs vivent dans une grille, et un
+ *  survol en bord de colonne se ferait rogner par le débordement. */
+function ListeSurvolable({
+  elements, couleur,
 }: {
-  entrees: SignatureEntry[];
-  nomCap: (e: SignatureEntry) => string;
-  descCap: (e: SignatureEntry) => string;
+  elements: ElementSurvolable[];
   couleur: string;
 }) {
-  const [ouverte, setOuverte] = useState<SignatureEntry | null>(null);
+  const [ouverte, setOuverte] = useState<ElementSurvolable | null>(null);
   const [ancre, setAncre] = useState<{ x: number; y: number; dessous: boolean } | null>(null);
   const refs = useRef(new Map<string, HTMLElement>());
 
-  const montrer = (e: SignatureEntry) => {
-    const el = refs.current.get(cle(e));
+  const montrer = (e: ElementSurvolable) => {
+    const el = refs.current.get(e.cle);
     if (!el) return;
     const r = overlayRect(el);
     // Au-dessus par défaut ; en dessous quand le haut de fenêtre est trop
@@ -506,21 +611,21 @@ function Signature({
 
   return (
     <div className="flex flex-wrap gap-x-4 gap-y-2">
-      {entrees.map((e) => (
+      {elements.map((e) => (
         <button
-          key={cle(e)}
+          key={e.cle}
           type="button"
-          ref={(el) => { if (el) refs.current.set(cle(e), el); }}
+          ref={(el) => { if (el) refs.current.set(e.cle, el); }}
           onMouseEnter={() => montrer(e)}
           onMouseLeave={() => setOuverte(null)}
           // Clavier et tactile : sans ça, l'encart n'existerait qu'à la souris.
           onFocus={() => montrer(e)}
           onBlur={() => setOuverte(null)}
-          onClick={() => (ouverte && cle(ouverte) === cle(e) ? setOuverte(null) : montrer(e))}
+          onClick={() => (ouverte?.cle === e.cle ? setOuverte(null) : montrer(e))}
           className="inline-flex items-center gap-1.5 transition-colors"
           style={{
             fontSize: 12.5,
-            color: ouverte && cle(ouverte) === cle(e) ? "#fff" : "#e0e0e0cc",
+            color: e.couleur ?? "#e0e0e0cc",
             background: "none",
             border: "none",
             padding: 0,
@@ -528,12 +633,12 @@ function Signature({
             borderBottom: `1px dotted ${couleur}88`,
           }}
         >
-          <Icone entree={e} size={15} />
-          {nomCap(e)}
+          {e.icone}
+          {e.libelle}
           {/* Le décompte rend le classement vérifiable : le visiteur voit
-              combien de cartes portent la capacité, plutôt qu'un palmarès
-              qu'il devrait croire sur parole. */}
-          <span style={{ fontSize: 10.5, color: `${couleur}dd`, letterSpacing: "0.03em" }}>×{e.count}</span>
+              combien de cartes sont concernées, plutôt qu'un palmarès qu'il
+              devrait croire sur parole. */}
+          <span style={{ fontSize: 10.5, color: `${couleur}dd`, letterSpacing: "0.03em" }}>×{e.compte}</span>
         </button>
       ))}
 
@@ -556,20 +661,62 @@ function Signature({
           }}
         >
           <div className="flex items-center gap-2" style={{ marginBottom: 6 }}>
-            <Icone entree={ouverte} size={16} />
-            <span style={{ fontSize: 13, color: OR, fontWeight: 700, fontFamily: "var(--font-cinzel), serif" }}>
-              {nomCap(ouverte)}
+            {ouverte.icone}
+            <span style={{ fontSize: 13, color: ouverte.couleur ?? "#fff", fontWeight: 700, fontFamily: "var(--font-cinzel), serif" }}>
+              {ouverte.titre}
             </span>
           </div>
           <div
             className="font-[family-name:var(--font-crimson),serif]"
             style={{ fontSize: 12.5, lineHeight: 1.5, color: "#e0e0e0cc" }}
           >
-            {descCap(ouverte)}
+            {ouverte.desc}
           </div>
         </div>,
         document.body,
       )}
     </div>
+  );
+}
+
+/** Les capacités emblématiques d'un clan, chacune dépliant son descriptif.
+ *
+ *  Nommer une capacité ne suffit pas à qui découvre le jeu : « Persécution X »
+ *  ou « Sang mêlé » ne disent rien hors contexte. Le texte vient de
+ *  `vocab.keywords`, celui-là même que le jeu affiche au dos des cartes — donc
+ *  traduit, et jamais un second texte à tenir à jour. */
+function Signature({
+  entrees, nomCap, descCap, couleur,
+}: {
+  entrees: SignatureEntry[];
+  nomCap: (e: SignatureEntry) => string;
+  descCap: (e: SignatureEntry) => string;
+  couleur: string;
+}) {
+  const vocab = useVocab();
+  // Le mot du déclencheur, comme au dos des cartes — sauf en cas d'ÉGALITÉ, où
+  // il n'y a rien à affirmer.
+  const badge = (e: SignatureEntry) =>
+    e.dominant === null ? null : vocab.triggerBadge(modeDe(e));
+
+  return (
+    <ListeSurvolable
+      couleur={couleur}
+      elements={entrees.map((e) => {
+        const d = badge(e);
+        return {
+          cle: cle(e),
+          icone: <Icone entree={e} size={15} />,
+          // Pas de mot du déclencheur dans la LISTE : elle doit rester
+          // parcourable d'un coup d'œil. La couleur suffit à le signaler ;
+          // le mot, lui, attend l'encart.
+          libelle: nomCap(e),
+          couleur: d?.color ?? "#fff",
+          compte: e.count,
+          titre: d ? `${nomCap(e)} (${d.label})` : nomCap(e),
+          desc: descCap(e),
+        };
+      })}
+    />
   );
 }

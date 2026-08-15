@@ -2350,6 +2350,15 @@
     "free_commons": "{count} 张普通卡 · {clans} 个氏族 —— 开局即免费拥有。",
     "no_clan_title": "所有氏族通用",
     "no_clan_desc": "这些卡牌不属于任何氏族：无论你围绕哪个氏族构筑，都能编入该阵营的牌组。",
-    "other_factions": "查看其他阵营"
+    "other_factions": "查看其他阵营",
+    "costs": "额外代价",
+    "cost_life": "生命值",
+    "cost_discard": "弃牌",
+    "cost_sacrifice": "献祭",
+    "cost_exile": "放逐",
+    "cost_life_desc": "除法力值外，这些卡牌还需支付英雄的生命值。",
+    "cost_discard_desc": "除法力值外，这些卡牌还需从手牌中弃牌。",
+    "cost_sacrifice_desc": "除法力值外，这些卡牌还需献祭你操控的生物。",
+    "cost_exile_desc": "除法力值外，这些卡牌还会放逐你牌组顶部的卡牌。"
   }
 }
