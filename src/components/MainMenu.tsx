@@ -10,16 +10,18 @@ import { isPlayerSellingEnabled } from "@/lib/auction/flags";
 interface MainMenuProps {
   username: string;
   goldBalance: number;
+  /** Dette de pièces d'or (remboursement dont l'or était déjà dépensé). */
+  goldDebt?: number;
   news?: BannerNews[];
 }
 
-export default function MainMenu({ username, goldBalance, news = [] }: MainMenuProps) {
+export default function MainMenu({ username, goldBalance, goldDebt = 0, news = [] }: MainMenuProps) {
   const t = useTranslations("home");
 
   return (
     <div className="min-h-screen text-am-ink">
       <AmAtmosphere />
-      <HomeHeader username={username} goldBalance={goldBalance} />
+      <HomeHeader username={username} goldBalance={goldBalance} goldDebt={goldDebt} />
 
       <main
         id="main-content"
@@ -98,6 +100,25 @@ export default function MainMenu({ username, goldBalance, news = [] }: MainMenuP
                 label={t('decks_label')}
                 description={t('decks_desc')}
                 bgImage="/images/home/decks-bg.png"
+              />
+            </li>
+            {/* Circuit payant. Libellés en dur et non traduits : les 8 locales
+                seront alimentées quand le moteur de tournoi existera et que le
+                vocabulaire sera arrêté — traduire maintenant reviendrait à
+                retraduire. */}
+            <li>
+              <MenuTile
+                href="/tournois"
+                accent="market"
+                label="Tournois"
+                description="Le circuit payant. Entrée 2,50 €, gains en pièces d'or."
+                glyph={
+                  <svg width="52" height="52" viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 10h24v10a12 12 0 0 1-24 0V10Z" />
+                    <path d="M20 14h-8v4a8 8 0 0 0 8 8M44 14h8v4a8 8 0 0 1-8 8" />
+                    <path d="M32 32v12M24 52h16M28 44h8" />
+                  </svg>
+                }
               />
             </li>
             <li>

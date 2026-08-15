@@ -52,9 +52,13 @@ export async function GET(request: Request) {
   }
 
   const supabase = getAdminClient();
+  // `gold_debt` : reliquat d'un remboursement Stripe dont l'or avait déjà été
+  // dépensé. Tant qu'il n'est pas résorbé, le joueur ne peut rien dépenser —
+  // d'où `spendable`, exposé pour que l'écran dise la même chose que la règle
+  // plutôt que de la recalculer de son côté.
   const { data, error } = await supabase
     .from('wallets')
-    .select('balance')
+    .select('balance, gold_debt')
     .eq('user_id', targetUserId)
     .single();
 
@@ -62,5 +66,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ balance: data?.balance ?? 0 });
+  const balance = data?.balance ?? 0;
+  const debt = data?.gold_debt ?? 0;
+  return NextResponse.json({ balance, debt, spendable: debt > 0 ? 0 : balance });
 }

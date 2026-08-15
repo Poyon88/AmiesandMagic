@@ -16,6 +16,26 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Paiements (Stripe)
+
+Le circuit payant — inscriptions aux tournois et achats de pièces d'or — est
+documenté dans **[docs/PAIEMENTS-STRIPE.md](docs/PAIEMENTS-STRIPE.md)** :
+variables d'environnement, création des produits Stripe, test des webhooks en
+local (`stripe listen`), cartes de test, et politique de remboursement.
+
+Deux points à connaître avant d'y toucher :
+
+- **Le webhook fait foi.** Rien n'est crédité sur la redirection de succès.
+- **Le circuit est fermé.** L'argent entre, il ne sort pas. Aucun payout, aucun
+  retrait, aucune conversion pièces→euros — voir la note de conformité en tête
+  de `supabase-migration-stripe-payments.sql`.
+
+Pour tester les webhooks en local :
+
+```bash
+stripe listen --forward-to localhost:3000/api/stripe/webhook
+```
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.

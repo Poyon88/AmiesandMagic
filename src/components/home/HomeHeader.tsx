@@ -13,6 +13,11 @@ import { useTranslations } from "next-intl";
 interface HomeHeaderProps {
   username: string;
   goldBalance: number;
+  /** Dette de pièces d'or : reliquat d'un remboursement Stripe dont l'or avait
+   *  déjà été dépensé. Tant qu'elle est non nulle, le joueur ne peut rien
+   *  dépenser (cf. gold_spendable). Défaut 0 — les appelants qui ne la
+   *  connaissent pas affichent le solde comme avant. */
+  goldDebt?: number;
   /** When set, an "← back" link is shown at the far left, taking
    *  precedence over the title. Used by /collection-hub and /heroes. */
   backHref?: string;
@@ -23,7 +28,7 @@ interface HomeHeaderProps {
 // landing's navbar pattern (translucent → opaque at scroll, Cinzel
 // title in gold) so the visual transition feels continuous. All
 // interactive items expose aria-labels for screen readers.
-export default function HomeHeader({ username, goldBalance, backHref, backLabel }: HomeHeaderProps) {
+export default function HomeHeader({ username, goldBalance, goldDebt = 0, backHref, backLabel }: HomeHeaderProps) {
   const router = useRouter();
   const supabase = createClient();
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -124,12 +129,22 @@ export default function HomeHeader({ username, goldBalance, backHref, backLabel 
             </span>
           </span>
 
-          <div
-            className="px-3 py-1.5 rounded-lg am-gild-border bg-am-bg-0/60"
-            aria-label={`${goldBalance} or`}
+          {/* Le solde mène à la boutique : c'est là qu'on en rajoute. Une dette
+              (reliquat d'un remboursement dont l'or était déjà dépensé) se
+              signale ici même — c'est le seul endroit que le joueur regarde
+              pour connaître sa bourse, et taire la dette rendrait
+              incompréhensible le blocage de ses enchères. */}
+          <Link
+            href="/boutique"
+            className={`px-3 py-1.5 rounded-lg bg-am-bg-0/60 ${goldDebt > 0 ? "border border-red-500/60" : "am-gild-border"}`}
+            aria-label={goldDebt > 0 ? `${goldBalance} or, dette de ${goldDebt}` : `${goldBalance} or`}
+            title={goldDebt > 0 ? `Dette de ${goldDebt} 🪙 — enchères bloquées` : undefined}
           >
             <GoldBalance amount={goldBalance} size="sm" />
-          </div>
+            {goldDebt > 0 && (
+              <span className="ml-1.5 text-xs font-semibold text-red-400">−{goldDebt}</span>
+            )}
+          </Link>
 
           <NotificationBell />
 

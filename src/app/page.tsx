@@ -16,7 +16,7 @@ export default async function HomePage() {
 
   const [profileResult, { data: wallet }, { data: activeNews }, locale] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", user.id).single(),
-    supabase.from("wallets").select("balance").eq("user_id", user.id).single(),
+    supabase.from("wallets").select("balance, gold_debt").eq("user_id", user.id).single(),
     // News actives du bandeau (RLS : lecture publique). Résolues dans la
     // locale du joueur ICI, côté serveur — le client reçoit du prêt-à-afficher.
     supabase
@@ -80,6 +80,7 @@ export default async function HomePage() {
     <MainMenu
       username={profile?.username ?? "Player"}
       goldBalance={wallet?.balance ?? 0}
+      goldDebt={wallet?.gold_debt ?? 0}
       news={news}
     />
   );
