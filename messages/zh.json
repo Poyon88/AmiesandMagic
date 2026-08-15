@@ -1276,6 +1276,17 @@
       "expert-etendu": "专家·扩展",
       "classique-etendu": "经典·扩展",
       "classique-standard": "经典·标准"
+    },
+    "triggers": {
+      "permanent": "常驻",
+      "entry": "入场时",
+      "attack": "攻击时",
+      "death": "死亡时",
+      "return": "返回时",
+      "tap": "可激活",
+      "end_of_turn": "回合结束时",
+      "draw": "抽牌时",
+      "low_hp": "{n} 点生命以下"
     }
   },
   "home": {

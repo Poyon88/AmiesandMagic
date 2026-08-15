@@ -1276,6 +1276,17 @@
       "expert-etendu": "Expert · Estendido",
       "classique-etendu": "Clássico · Estendido",
       "classique-standard": "Clássico · Standard"
+    },
+    "triggers": {
+      "permanent": "Permanente",
+      "entry": "Entrada",
+      "attack": "Ataque",
+      "death": "Morte",
+      "return": "Retorno",
+      "tap": "Ativável",
+      "end_of_turn": "Fim de turno",
+      "draw": "Compra",
+      "low_hp": "Abaixo de {n} PV"
     }
   },
   "home": {

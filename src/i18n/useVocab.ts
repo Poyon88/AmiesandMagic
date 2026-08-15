@@ -2,10 +2,10 @@
 
 import { useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
-import type { Keyword, SpellKeywordInstance, Card, TokenTemplate, Capability, ConvocationTokenDef } from "@/lib/game/types";
+import type { Keyword, KeywordInstance, KeywordMode, SpellKeywordInstance, Card, TokenTemplate, Capability, ConvocationTokenDef } from "@/lib/game/types";
 import { getKeywordDisplayLabel, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
 import { getSpellKeywordLabel, getSpellKeywordDesc, formatConvocationTokens, formatConvocationToken, convocationPrefix } from "@/lib/game/spell-keywords";
-import { describeKeyword, describeKeywordLabel, keywordScopeNote, type KeywordDescCtx } from "@/lib/game/keyword-display";
+import { describeKeyword, describeKeywordLabel, keywordScopeNote, keywordTriggerBadge, triggerBadge, type TriggerBadge, type KeywordDescCtx } from "@/lib/game/keyword-display";
 import { composedKeywordName, describeComposedCap } from "@/lib/game/composed-display";
 import {
   getAlignmentLabel,
@@ -38,6 +38,10 @@ export interface Vocab {
   keywordLabelFor: (kw: Keyword, ctx?: KeywordDescCtx) => string;
   // Suffixe de portée d'un mot-clé conféré par un sort (« · à tous les alliés »).
   keywordScopeNote: (grantScope: "target" | "all_allies" | null | undefined) => string | null;
+  /** Déclencheur annoncé après le nom d'un pouvoir : le mot ET sa couleur. */
+  keywordTrigger: (kw: Keyword, inst?: KeywordInstance) => TriggerBadge | null;
+  /** Badge d'un mode de déclencheur — effets composés, signatures de clan… */
+  triggerBadge: (mode: KeywordMode | undefined) => TriggerBadge | null;
   // Mots-clés de SORT (registre distinct). Label/desc localisés avec
   // substitution X/Y/amount ; fallback FR intégré.
   spellKeywordLabel: (kw: SpellKeywordInstance) => string;
@@ -124,6 +128,9 @@ export function useVocab(): Vocab {
         describeKeywordLabel(kw, ctx ?? {}, safe),
       keywordScopeNote: (grantScope: "target" | "all_allies" | null | undefined) =>
         keywordScopeNote(grantScope, safe),
+      keywordTrigger: (kw: Keyword, inst?: KeywordInstance) =>
+        keywordTriggerBadge(kw, inst, safe),
+      triggerBadge: (mode: KeywordMode | undefined) => triggerBadge(mode, safe),
       spellKeywordLabel: (kw: SpellKeywordInstance) =>
         getSpellKeywordLabel(kw, safe),
       spellKeywordDesc: (

@@ -1,8 +1,10 @@
-import type { Keyword } from "./types";
+import type { Keyword, KeywordInstance, KeywordMode } from "./types";
 import type { SafeT } from "@/i18n/config";
 import { KEYWORDS, KEYWORD_DESC_BY_ID } from "@/lib/card-engine/constants";
 import { getRaceForm } from "@/lib/card-engine/race-forms";
-import { KEYWORD_LABELS, getKeywordDisplayLabel } from "./keyword-labels";
+import { KEYWORD_LABELS, getKeywordDisplayLabel, keywordModeColor } from "./keyword-labels";
+import { AUTOMATIC_ABILITY_IDS, CURATED_MULTIMODE_IDS, DEATH_NATURE_IDS } from "./abilities";
+import { LOW_HP_TRIGGER_THRESHOLD } from "./constants";
 import { resolveMarkers, type MarkerCtx, type Resolver } from "./desc-markers";
 import {
   convocationPrefix,
@@ -50,6 +52,83 @@ const TOKEN_RESOLVERS: Record<string, Resolver> = {
  * Réutilise les clés déjà employées par SpellCastOverlay — GameCard portait la
  * même note en français codé en dur, faute de traducteur dans ce composant.
  */
+/** Le DÉCLENCHEUR annoncé après le nom d'un pouvoir : le mot ET sa couleur.
+ *
+ *  Les deux vont ENSEMBLE, et c'est le point : « (Mort) » doit être rouge,
+ *  « (Entrée) » jaune, « (Permanent) » blanc. Les calculer séparément, dans
+ *  cinq renderers, c'était garantir qu'ils finiraient par se contredire. */
+export interface TriggerBadge {
+  label: string;
+  color: string;
+}
+
+/** Badge d'un mode d'affichage. Sert tel quel aux effets COMPOSÉS, dont le
+ *  déclencheur est déjà un mode (cf. `composedTriggerMode`). */
+export function triggerBadge(mode: KeywordMode | undefined, t?: SafeT): TriggerBadge | null {
+  // `spell` ne désigne pas un déclencheur de créature mais la résolution du
+  // sort porteur : aucun mot ne lui a été attribué.
+  if (mode === "spell") return null;
+
+  const cle = mode ?? "permanent";
+  const brut = t?.(`vocab.triggers.${cle}`) ?? REPLI_FR[cle];
+  if (!brut) return null;
+  return {
+    // SafeT rend la chaîne BRUTE (pas de formatage ICU) : la substitution est à
+    // notre charge, comme partout dans ce module.
+    label: brut.replace("{n}", String(LOW_HP_TRIGGER_THRESHOLD)),
+    // Blanc pour un permanent — même règle que l'icône non teintée.
+    color: keywordModeColor(mode) ?? "#fff",
+  };
+}
+
+/** Badge d'un mot-clé de créature. */
+export function keywordTriggerBadge(
+  kw: Keyword,
+  inst?: KeywordInstance,
+  t?: SafeT,
+): TriggerBadge | null {
+  return triggerBadge(keywordTriggerMode(kw, inst), t);
+}
+
+/** Le mot seul, sans sa couleur. Conservé pour les appels qui n'affichent pas. */
+export function keywordTriggerLabel(
+  kw: Keyword,
+  inst?: KeywordInstance,
+  t?: SafeT,
+): string | null {
+  return keywordTriggerBadge(kw, inst, t)?.label ?? null;
+}
+
+/** Déclencheur RÉEL d'un mot-clé, mode explicite d'abord.
+ *
+ *  Miroir de `defaultDisplayMode` (keyword-labels) à une correction près, qui
+ *  est tout l'intérêt de cette fonction : les capacités « à la mort »
+ *  INTRINSÈQUES (Carnage, Héritage, Maléfice, Martyr, Pacte de sang,
+ *  Résurrection, Cycle éternel, Sacrifice démoniaque) sont stockées sans mode.
+ *  `defaultDisplayMode` les laisse neutres pour garder leur ICÔNE blanche —
+ *  choix d'affichage assumé — mais les annoncer « Permanent » serait faux :
+ *  elles se déclenchent à la mort. Le mot et sa couleur suivent donc la
+ *  réalité, l'icône garde sa neutralité. */
+export function keywordTriggerMode(kw: Keyword, inst?: KeywordInstance): KeywordMode | undefined {
+  if (inst?.mode) return inst.mode;
+  if (CURATED_MULTIMODE_IDS.has(kw)) return "entry";
+  if (DEATH_NATURE_IDS.has(kw)) return "death";
+  if (AUTOMATIC_ABILITY_IDS.has(kw)) return undefined; // passif → « Permanent »
+  return "entry";
+}
+
+const REPLI_FR: Record<string, string> = {
+  permanent: "Permanent",
+  entry: "Entrée",
+  attack: "Attaque",
+  death: "Mort",
+  return: "Remontée",
+  tap: "Activable",
+  end_of_turn: "Fin de tour",
+  draw: "Pioche",
+  low_hp: "Sous {n} PV",
+};
+
 export function keywordScopeNote(
   grantScope: "target" | "all_allies" | null | undefined,
   t?: SafeT,

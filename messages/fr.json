@@ -1276,6 +1276,17 @@
       "expert-etendu": "Expert · Étendu",
       "classique-etendu": "Classique · Étendu",
       "classique-standard": "Classique · Standard"
+    },
+    "triggers": {
+      "permanent": "Permanent",
+      "entry": "Entrée",
+      "attack": "Attaque",
+      "death": "Mort",
+      "return": "Remontée",
+      "tap": "Activable",
+      "end_of_turn": "Fin de tour",
+      "draw": "Pioche",
+      "low_hp": "Sous {n} PV"
     }
   },
   "home": {

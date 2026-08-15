@@ -1276,6 +1276,17 @@
       "expert-etendu": "Experte · Erweitert",
       "classique-etendu": "Klassisch · Erweitert",
       "classique-standard": "Klassisch · Standard"
+    },
+    "triggers": {
+      "permanent": "Permanent",
+      "entry": "Eintritt",
+      "attack": "Angriff",
+      "death": "Tod",
+      "return": "Rückkehr",
+      "tap": "Aktivierbar",
+      "end_of_turn": "Rundenende",
+      "draw": "Ziehen",
+      "low_hp": "Unter {n} LP"
     }
   },
   "home": {

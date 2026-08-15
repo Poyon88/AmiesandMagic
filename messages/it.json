@@ -1276,6 +1276,17 @@
       "expert-etendu": "Expert · Esteso",
       "classique-etendu": "Classico · Esteso",
       "classique-standard": "Classico · Standard"
+    },
+    "triggers": {
+      "permanent": "Permanente",
+      "entry": "Entrata",
+      "attack": "Attacco",
+      "death": "Morte",
+      "return": "Ritorno",
+      "tap": "Attivabile",
+      "end_of_turn": "Fine turno",
+      "draw": "Pesca",
+      "low_hp": "Sotto {n} PV"
     }
   },
   "home": {

@@ -359,7 +359,7 @@ function MulliganCard({
               <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ display: "flex", alignItems: "flex-start", gap: 5 }}>
                 <span style={{ flexShrink: 0, display: "inline-flex", lineHeight: 0 }}><KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={12} keyword={kw} mode={mode} /></span>
                 <div>
-                  <div style={{ fontSize: 10 * d, color: modeColor ?? "#fff", fontWeight: 600 }}>{displayLabel}</div>
+                  <div style={{ fontSize: 10 * d, color: modeColor ?? "#fff", fontWeight: 600 }}>{displayLabel}{(() => { const d = vocab.keywordTrigger(kw, entry.instance); return d ? <span style={{ color: d.color }}> ({d.label})</span> : null; })()}</div>
                   {desc && <div style={{ fontSize: 8 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
                   {/* Compagnons : les cartes liées, nommées, avec leur verso au survol. */}
                   {kw === "compagnons" && <CompagnonsNames ids={entry.instance?.linkedCardIds} scale={d * 0.2} />}
@@ -407,7 +407,7 @@ function MulliganCard({
                 <div key={`cxd-${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 5 }}>
                   <span style={{ position: "relative", flexShrink: 0, display: "inline-flex", lineHeight: 0 }}><span style={{ display: "inline-flex", lineHeight: 0 }}><KeywordIcon symbol={ic.symbol} size={12} keyword={ic.keyword} mode={cmode} /></span><ComposedMarker mode={cmode} size={7} /></span>
                   <div>
-                    {nm && <div style={{ fontSize: 10 * d, color: keywordModeColor(cmode) ?? "#fff", fontWeight: 600 }}>{nm}</div>}
+                    {nm && <div style={{ fontSize: 10 * d, color: keywordModeColor(cmode) ?? "#fff", fontWeight: 600 }}>{nm}{(() => { const d = vocab.triggerBadge(cmode); return d ? <span style={{ color: d.color }}> ({d.label})</span> : null; })()}</div>}
                     <div style={{ fontSize: 8 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{vocab.composedDesc(cap, tokenTemplates)}</div>
                   </div>
                 </div>

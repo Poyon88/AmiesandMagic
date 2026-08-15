@@ -886,7 +886,7 @@ function BoardCreature({
               <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
                 <span style={{ flexShrink: 0, display: "inline-flex" }}><KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={10} keyword={kw} mode={mode} /></span>
                 <div>
-                  <div style={{ fontSize: 8 * d, color: modeColor ?? "#fff", fontWeight: 600 }}>{displayLabel}</div>
+                  <div style={{ fontSize: 8 * d, color: modeColor ?? "#fff", fontWeight: 600 }}>{displayLabel}{(() => { const d = vocab.keywordTrigger(kw, entry.instance); return d ? <span style={{ color: d.color }}> ({d.label})</span> : null; })()}</div>
                   {desc && <div style={{ fontSize: 7 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
                   {/* Compagnons : les cartes liées, nommées, avec leur verso au survol. */}
                   {kw === "compagnons" && <CompagnonsNames ids={entry.instance?.linkedCardIds} scale={d * 0.18} />}
@@ -914,7 +914,7 @@ function BoardCreature({
                     <ComposedMarker mode={cmode} size={6} />
                   </span>
                   <div>
-                    {nm && <div style={{ fontSize: 8 * d, color: keywordModeColor(cmode) ?? "#fff", fontWeight: 600 }}>{nm}</div>}
+                    {nm && <div style={{ fontSize: 8 * d, color: keywordModeColor(cmode) ?? "#fff", fontWeight: 600 }}>{nm}{(() => { const d = vocab.triggerBadge(cmode); return d ? <span style={{ color: d.color }}> ({d.label})</span> : null; })()}</div>}
                     <div style={{ fontSize: 7 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{vocab.composedDesc(cap, tokenTemplates)}</div>
                   </div>
                 </div>

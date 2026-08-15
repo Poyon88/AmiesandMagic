@@ -546,7 +546,7 @@ export default function GameCard({
               <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
                 <span style={{ flexShrink: 0, display: "inline-flex", lineHeight: 0 }}><KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={18 * s} keyword={kw} mode={mode} /></span>
                 <div>
-                  <div style={{ fontSize: 14 * so, color: labelColor, fontWeight: 700 }}>{displayLabel}</div>
+                  <div style={{ fontSize: 14 * so, color: labelColor, fontWeight: 700 }}>{displayLabel}{(() => { const d = vocab.keywordTrigger(kw, instance); return d ? <span style={{ color: d.color }}> ({d.label})</span> : null; })()}</div>
                   {scopeNote && <div style={{ fontSize: 11.5 * so, color: grantScope === "all_allies" ? "#2ecc71" : "#9fb0c0", fontStyle: "italic", fontFamily: "'Crimson Text',serif" }}>{scopeNote}</div>}
                   {desc && <div style={{ fontSize: 12 * so, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
                   {/* Compagnons : les cartes liées, nommées, avec leur verso au survol. */}
@@ -591,7 +591,7 @@ export default function GameCard({
                 <div key={`cxd-${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
                   <span style={{ position: "relative", flexShrink: 0, display: "inline-flex", lineHeight: 0 }}><span style={{ display: "inline-flex", lineHeight: 0 }}><KeywordIcon symbol={ic.symbol} size={18 * s} keyword={ic.keyword} mode={cmode} /></span><ComposedMarker mode={cmode} size={9 * s} /></span>
                   <div>
-                    {nm && <div style={{ fontSize: 14 * so, color: keywordModeColor(cmode) ?? "#fff", fontWeight: 700 }}>{nm}</div>}
+                    {nm && <div style={{ fontSize: 14 * so, color: keywordModeColor(cmode) ?? "#fff", fontWeight: 700 }}>{nm}{(() => { const d = vocab.triggerBadge(cmode); return d ? <span style={{ color: d.color }}> ({d.label})</span> : null; })()}</div>}
                     <div style={{ fontSize: 12 * so, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{vocab.composedDesc(cap, effectiveTokens)}</div>
                   </div>
                 </div>

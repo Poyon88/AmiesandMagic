@@ -1276,6 +1276,17 @@
       "expert-etendu": "エキスパート・エクステンデッド",
       "classique-etendu": "クラシック・エクステンデッド",
       "classique-standard": "クラシック・スタンダード"
+    },
+    "triggers": {
+      "permanent": "常在",
+      "entry": "登場時",
+      "attack": "攻撃時",
+      "death": "死亡時",
+      "return": "手札に戻る時",
+      "tap": "起動",
+      "end_of_turn": "ターン終了時",
+      "draw": "ドロー時",
+      "low_hp": "{n}PV以下"
     }
   },
   "home": {
