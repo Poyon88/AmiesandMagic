@@ -263,6 +263,26 @@ describe("Le visage d'un clan", () => {
     expect(bloc.slice(0, 700)).toContain('.order("name")');
   });
 
+  it("montre l'illustration du pouvoir EN ENTIER", () => {
+    // `cover` sur une hauteur fixe la rognait haut et bas. Elle est là pour
+    // être vue : c'est celle que le jeu peint à l'activation.
+    const bloc = VUE__.slice(VUE__.indexOf("hero.power_image_url && ("));
+    expect(bloc.slice(0, 400)).toContain('height: "auto"');
+    expect(bloc.slice(0, 400)).not.toContain("objectFit");
+  });
+
+  it("annonce la limite d'activations quand il y en a une", () => {
+    // « une fois par partie » n'est pas « à volonté » : sans ce nombre, la
+    // fiche laisse croire au second.
+    expect(VUE__).toContain("power_usage_limit");
+    // Libellé REPRIS du jeu, pour que le joueur lise la même phrase ici et en
+    // partie — et qu'il n'y ait pas deux textes à tenir à jour.
+    expect(VUE__).toContain('tJeu("power_usage_limit"');
+    const PAGE = fs.readFileSync(
+      path.join(process.cwd(), "src/app/factions/[slug]/page.tsx"), "utf8");
+    expect(PAGE).toContain("power_usage_limit");
+  });
+
   it("localise le nom et le pouvoir", () => {
     // Le contenu des héros est traduit par `useHeroText`, pas affiché brut.
     expect(VUE__).toContain("useHeroText()");

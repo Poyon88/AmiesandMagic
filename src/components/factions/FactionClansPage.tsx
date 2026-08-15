@@ -15,9 +15,10 @@ import { useRef } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { motion, useInView } from "framer-motion";
-import { useTranslations, useMessages } from "next-intl";
+import { useMessages } from "next-intl";
 import { useVocab } from "@/i18n/useVocab";
 import { useHeroText } from "@/i18n/useHeroText";
+import { useTranslations } from "next-intl";
 import GameCard from "@/components/cards/GameCard";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { FACTIONS } from "@/lib/card-engine/constants";
@@ -48,6 +49,8 @@ export interface HeroDeClan {
   power_description: string | null;
   /** Illustration du pouvoir — celle que le jeu peint à l'activation. */
   power_image_url: string | null;
+  /** Activations autorisées par partie. `null` = illimité. */
+  power_usage_limit: number | null;
 }
 
 interface Section {
@@ -554,6 +557,7 @@ function Pastille({ children, couleur }: { children: React.ReactNode; couleur: s
  *  rognerait un encart débordant vers le haut. */
 function PortraitHero({ hero, couleur }: { hero: HeroDeClan; couleur: string }) {
   const { heroName, powerName, powerDesc } = useHeroText();
+  const tJeu = useTranslations("game");
   // Marge haute plus large que pour les pastilles : cet encart porte une
   // illustration, il est donc bien plus haut et sortirait de l'écran plus tôt.
   const encart = useEncartSurvol<true>(340);
@@ -609,8 +613,11 @@ function PortraitHero({ hero, couleur }: { hero: HeroDeClan; couleur: string }) 
           }}
         >
           {hero.power_image_url && (
+            // Hauteur LIBRE : `cover` sur 128 px rognait l'illustration haut et
+            // bas. Elle est ici pour être vue en entier — c'est la même image
+            // que le jeu peint à l'activation du pouvoir.
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={hero.power_image_url} alt="" style={{ width: "100%", height: 128, objectFit: "cover", display: "block" }} />
+            <img src={hero.power_image_url} alt="" style={{ width: "100%", height: "auto", display: "block" }} />
           )}
           <div style={{ padding: "11px 13px" }}>
             <div style={{ fontSize: 13, color: couleur, fontWeight: 700, fontFamily: "var(--font-cinzel), serif" }}>
@@ -621,6 +628,15 @@ function PortraitHero({ hero, couleur }: { hero: HeroDeClan; couleur: string }) 
                 ⚡ {pouvoir}
                 {typeof hero.power_cost === "number" && (
                   <span style={{ color: "#e0e0e077" }}> · {hero.power_cost} mana</span>
+                )}
+                {/* Une limite d'activations change tout à la lecture d'un
+                    pouvoir : « une fois par partie » n'est pas « à volonté ».
+                    Libellé repris du jeu, pour que le joueur lise la même
+                    phrase ici et en partie. */}
+                {typeof hero.power_usage_limit === "number" && (
+                  <span style={{ color: "#e0e0e077" }}>
+                    {" · "}{tJeu("power_usage_limit", { limit: hero.power_usage_limit })}
+                  </span>
                 )}
               </div>
             )}

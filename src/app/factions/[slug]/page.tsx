@@ -79,7 +79,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
     // Les héros de la faction, pour donner un visage à chaque clan.
     supabase
       .from("heroes")
-      .select("id, name, clan, thumbnail_url, power_name, power_cost, power_description, power_image_url, is_default_clan")
+      .select("id, name, clan, thumbnail_url, power_name, power_cost, power_description, power_image_url, power_usage_limit, is_default_clan")
       .eq("faction", factionId)
       .eq("is_active", true)
       .not("clan", "is", null)
