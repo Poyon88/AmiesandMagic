@@ -505,3 +505,37 @@ img {
 @media (prefers-reduced-motion: reduce) {
   [role="timer"] { animation: none !important; }
 }
+
+/* ── Lisibilité des champs de l'ADMINISTRATION ──────────────────────────────
+ *
+ * L'administration est peinte sur fond blanc, alors que `--am-ink` (#efe8d6)
+ * est une teinte parchemin conçue pour les fonds sombres du jeu. Un champ qui
+ * n'impose pas sa couleur l'hérite, et la valeur saisie devient presque
+ * invisible : c'est ce qui rendait « Durgrim » ou « dwarves » illisibles dans
+ * l'écran des héros.
+ *
+ * Règle de FEUILLE DE STYLE, donc surchargée par n'importe quel `style` en
+ * ligne : les champs qui ont déjà leur couleur gardent la leur. C'est ce qui
+ * permet de corriger la centaine de champs de l'admin sans en éditer un seul.
+ */
+.am-admin input,
+.am-admin select,
+.am-admin textarea {
+  color: #1a1a1a;
+  background-color: #fff;
+}
+
+/* Un texte de substitution doit rester DISTINCT de la valeur saisie — sinon on
+ * ne sait plus si le champ est rempli. */
+.am-admin input::placeholder,
+.am-admin textarea::placeholder {
+  color: #9a9a9a;
+  opacity: 1; /* Firefox l'atténue par défaut, ce qui l'efface presque */
+}
+
+/* Les cases et boutons radio n'ont pas de texte : leur imposer un fond blanc
+ * écraserait la coche elle-même sur certains navigateurs. */
+.am-admin input[type="checkbox"],
+.am-admin input[type="radio"] {
+  background-color: initial;
+}

@@ -158,8 +158,16 @@ interface HeroRow {
 const STYLE = {
   card: { background: "#fff", borderRadius: 8, border: "1px solid #e0e0e0", padding: 16, marginBottom: 14 } as React.CSSProperties,
   title: { fontSize: 13, fontFamily: "'Cinzel',serif", fontWeight: 700, color: "#333", marginBottom: 12, letterSpacing: 1 } as React.CSSProperties,
-  label: { fontSize: 10, color: "#888", fontFamily: "'Cinzel',serif", letterSpacing: 0.5 } as React.CSSProperties,
-  input: { width: "100%", padding: "6px 10px", borderRadius: 5, border: "1px solid #e0e0e0", fontSize: 12, marginTop: 4, fontFamily: "'Crimson Text',serif" } as React.CSSProperties,
+  label: { fontSize: 10.5, color: "#5a5a5a", fontFamily: "'Cinzel',serif", letterSpacing: 0.5 } as React.CSSProperties,
+  // Un champ impose SA couleur et SON fond. Sans ça il hérite de `--am-ink`
+  // (#efe8d6), une teinte parchemin prévue pour les fonds sombres du jeu — sur
+  // une carte blanche, la valeur saisie devenait illisible. Un contrôle de
+  // formulaire ne doit rien devoir à l'ambiance de la page qui l'accueille.
+  input: {
+    width: "100%", padding: "7px 10px", borderRadius: 5,
+    border: "1px solid #c9c9c9", background: "#fff", color: "#1a1a1a",
+    fontSize: 13.5, marginTop: 4, fontFamily: "'Crimson Text',serif",
+  } as React.CSSProperties,
   badge: { fontSize: 9, padding: "2px 8px", borderRadius: 4, fontFamily: "'Cinzel',serif", fontWeight: 700 } as React.CSSProperties,
   button: { padding: "6px 20px", borderRadius: 6, border: "none", background: "#333", color: "#fff", fontSize: 10, fontFamily: "'Cinzel',serif", fontWeight: 700, cursor: "pointer" } as React.CSSProperties,
 };
@@ -1780,7 +1788,7 @@ export default function HeroManager() {
                       const mp = newR === "Commune" ? null : (hero.max_prints ?? DEFAULT_MAX_PRINTS[newR] ?? null);
                       handleUpdateField(hero, { rarity: newR, max_prints: mp, ...(newR !== "Commune" && hero.is_default ? { is_default: false } : {}) });
                     }}
-                    style={{ padding: "3px 8px", borderRadius: 4, border: "1px solid #e0e0e0", fontSize: 11 }}>
+                    style={{ padding: "4px 8px", borderRadius: 4, border: "1px solid #c9c9c9", background: "#fff", color: "#1a1a1a", fontSize: 12 }}>
                     {RARITIES.map(r => <option key={r} value={r}>{r}</option>)}
                   </select>
                 </div>
@@ -1789,7 +1797,7 @@ export default function HeroManager() {
                     <span style={STYLE.label}>Exemplaires : </span>
                     <input type="number" min={1} value={hero.max_prints ?? ""}
                       onChange={(e) => handleUpdateField(hero, { max_prints: e.target.value ? Number(e.target.value) : null })}
-                      style={{ width: 70, padding: "3px 8px", borderRadius: 4, border: "1px solid #e0e0e0", fontSize: 11 }} />
+                      style={{ width: 70, padding: "4px 8px", borderRadius: 4, border: "1px solid #c9c9c9", background: "#fff", color: "#1a1a1a", fontSize: 12 }} />
                   </div>
                 )}
                 {/* Trois niveaux indépendants. Un héros peut représenter sa
