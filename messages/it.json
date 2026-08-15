@@ -468,6 +468,10 @@
       "purete": {
         "label": "Purezza +X/+Y",
         "desc": "Finché il vostro cimitero è vuoto, guadagna +X ATK e +Y PV."
+      },
+      "compagnons": {
+        "label": "Compagni",
+        "desc": "Mescola i suoi compagni (carte collegate, scelte alla creazione) nel tuo mazzo, poi rimescola il mazzo. Una sola volta."
       }
     },
     "spell_keywords": {
@@ -658,6 +662,10 @@
       "afflux": {
         "label": "Afflusso X",
         "desc": "Guadagna X mana questo turno"
+      },
+      "compagnons": {
+        "label": "Compagni",
+        "desc": "Mescola i suoi compagni (carte collegate, scelte alla creazione) nel tuo mazzo, poi rimescola il mazzo. Una sola volta."
       }
     },
     "composed": {
@@ -2318,5 +2326,19 @@
     "privacy_s7": "I tuoi diritti (GDPR)",
     "privacy_s8": "Sicurezza",
     "privacy_s9": "Contatti e reclami"
+  },
+  "factions_page": {
+    "back": "Torna alla home",
+    "races": "Razze",
+    "signature": "Abilità distintive",
+    "profile": "Profilo di gioco",
+    "offense": "Offensivo",
+    "defense": "Difensivo",
+    "commons": "{count, plural, one {# comune} other {# comuni}}",
+    "more_races": "+{count}",
+    "free_commons": "{count, plural, one {# carta comune} other {# carte comuni}} · {clans, plural, one {# clan} other {# clan}} — tue fin dal primo giorno.",
+    "no_clan_title": "Aperte a tutti i clan",
+    "no_clan_desc": "Queste carte non appartengono ad alcun clan: entrano in qualsiasi mazzo della fazione, qualunque sia il clan attorno al quale lo costruisci.",
+    "other_factions": "Vedi le altre fazioni"
   }
 }

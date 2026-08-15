@@ -468,6 +468,10 @@
       "purete": {
         "label": "纯净 +X/+Y",
         "desc": "只要你的墓地为空，获得+X攻击力和+Y生命值。"
+      },
+      "compagnons": {
+        "label": "同伴",
+        "desc": "将其同伴（创建时指定的关联卡牌）洗入你的牌组，然后重洗牌组。仅一次。"
       }
     },
     "spell_keywords": {
@@ -658,6 +662,10 @@
       "afflux": {
         "label": "涌流 X",
         "desc": "本回合获得 X 点法力"
+      },
+      "compagnons": {
+        "label": "同伴",
+        "desc": "将其同伴（创建时指定的关联卡牌）洗入你的牌组，然后重洗牌组。仅一次。"
       }
     },
     "composed": {
@@ -2318,5 +2326,19 @@
     "privacy_s7": "您的权利（GDPR）",
     "privacy_s8": "安全性",
     "privacy_s9": "联系与投诉方式"
+  },
+  "factions_page": {
+    "back": "返回首页",
+    "races": "种族",
+    "signature": "标志性能力",
+    "profile": "战斗风格",
+    "offense": "攻击",
+    "defense": "防御",
+    "commons": "{count} 张普通卡",
+    "more_races": "+{count}",
+    "free_commons": "{count} 张普通卡 · {clans} 个氏族 —— 开局即免费拥有。",
+    "no_clan_title": "所有氏族通用",
+    "no_clan_desc": "这些卡牌不属于任何氏族：无论你围绕哪个氏族构筑，都能编入该阵营的牌组。",
+    "other_factions": "查看其他阵营"
   }
 }

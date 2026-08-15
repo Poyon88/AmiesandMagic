@@ -468,6 +468,10 @@
       "purete": {
         "label": "Pureza +X/+Y",
         "desc": "Mientras tu cementerio esté vacío, gana +X ATK y +Y PV."
+      },
+      "compagnons": {
+        "label": "Compañeros",
+        "desc": "Baraja sus compañeros (cartas vinculadas, elegidas en la creación) en tu mazo y luego lo vuelve a barajar. Una sola vez."
       }
     },
     "spell_keywords": {
@@ -658,6 +662,10 @@
       "afflux": {
         "label": "Afluencia X",
         "desc": "Gana X de maná este turno"
+      },
+      "compagnons": {
+        "label": "Compañeros",
+        "desc": "Baraja sus compañeros (cartas vinculadas, elegidas en la creación) en tu mazo y luego lo vuelve a barajar. Una sola vez."
       }
     },
     "composed": {
@@ -2318,5 +2326,19 @@
     "privacy_s7": "Tus derechos (RGPD)",
     "privacy_s8": "Seguridad",
     "privacy_s9": "Contacto y reclamaciones"
+  },
+  "factions_page": {
+    "back": "Volver al inicio",
+    "races": "Razas",
+    "signature": "Capacidades emblemáticas",
+    "profile": "Perfil de juego",
+    "offense": "Ofensivo",
+    "defense": "Defensivo",
+    "commons": "{count, plural, one {# común} other {# comunes}}",
+    "more_races": "+{count}",
+    "free_commons": "{count, plural, one {# carta común} other {# cartas comunes}} · {clans, plural, one {# clan} other {# clanes}} — tuyas desde el primer día.",
+    "no_clan_title": "Abiertas a todos los clanes",
+    "no_clan_desc": "Estas cartas no pertenecen a ningún clan: encajan en cualquier mazo de la facción, sea cual sea el clan en torno al que lo construyas.",
+    "other_factions": "Ver las demás facciones"
   }
 }

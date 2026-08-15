@@ -2326,5 +2326,19 @@
     "privacy_s7": "Vos droits (RGPD)",
     "privacy_s8": "Sécurité",
     "privacy_s9": "Contact et réclamation"
+  },
+  "factions_page": {
+    "back": "Retour à l'accueil",
+    "races": "Races",
+    "signature": "Capacités emblématiques",
+    "profile": "Profil de jeu",
+    "offense": "Offensif",
+    "defense": "Défensif",
+    "commons": "{count, plural, one {# commune} other {# communes}}",
+    "more_races": "+{count}",
+    "free_commons": "{count, plural, one {# carte commune} other {# cartes communes}} · {clans, plural, one {# clan} other {# clans}} — offertes dès le premier jour.",
+    "no_clan_title": "Ouvertes à tous les clans",
+    "no_clan_desc": "Ces cartes n'appartiennent à aucun clan : elles rejoignent n'importe quel deck de la faction, quel que soit le clan autour duquel vous le construisez.",
+    "other_factions": "Voir les autres factions"
   }
 }

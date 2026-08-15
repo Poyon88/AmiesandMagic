@@ -468,6 +468,10 @@
       "purete": {
         "label": "Purity +X/+Y",
         "desc": "While your graveyard is empty, gains +X ATK and +Y HP."
+      },
+      "compagnons": {
+        "label": "Companions",
+        "desc": "Shuffles its companions (linked cards, chosen at creation) into your deck, then reshuffles the deck. Once only."
       }
     },
     "spell_keywords": {
@@ -658,6 +662,10 @@
       "afflux": {
         "label": "Surge X",
         "desc": "Gain X mana this turn."
+      },
+      "compagnons": {
+        "label": "Companions",
+        "desc": "Shuffles its companions (linked cards, chosen at creation) into your deck, then reshuffles the deck. Once only."
       }
     },
     "composed": {
@@ -2318,5 +2326,19 @@
     "privacy_s7": "Your Rights (GDPR)",
     "privacy_s8": "Security",
     "privacy_s9": "Contact and Complaints"
+  },
+  "factions_page": {
+    "back": "Back to home",
+    "races": "Races",
+    "signature": "Signature abilities",
+    "profile": "Play profile",
+    "offense": "Offense",
+    "defense": "Defense",
+    "commons": "{count, plural, one {# common} other {# commons}}",
+    "more_races": "+{count}",
+    "free_commons": "{count, plural, one {# common card} other {# common cards}} · {clans, plural, one {# clan} other {# clans}} — yours from day one.",
+    "no_clan_title": "Open to every clan",
+    "no_clan_desc": "These cards belong to no clan: they fit any deck of the faction, whichever clan you build it around.",
+    "other_factions": "See the other factions"
   }
 }

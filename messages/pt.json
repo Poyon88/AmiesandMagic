@@ -468,6 +468,10 @@
       "purete": {
         "label": "Pureza +X/+Y",
         "desc": "Enquanto seu cemitério estiver vazio, ganha +X ATK e +Y PV."
+      },
+      "compagnons": {
+        "label": "Companheiros",
+        "desc": "Baralha os seus companheiros (cartas ligadas, escolhidas na criação) no seu deck e depois volta a baralhá-lo. Apenas uma vez."
       }
     },
     "spell_keywords": {
@@ -658,6 +662,10 @@
       "afflux": {
         "label": "Afluxo X",
         "desc": "Ganhe X de mana neste turno"
+      },
+      "compagnons": {
+        "label": "Companheiros",
+        "desc": "Baralha os seus companheiros (cartas ligadas, escolhidas na criação) no seu deck e depois volta a baralhá-lo. Apenas uma vez."
       }
     },
     "composed": {
@@ -2318,5 +2326,19 @@
     "privacy_s7": "Seus direitos (RGPD)",
     "privacy_s8": "Segurança",
     "privacy_s9": "Contato e reclamação"
+  },
+  "factions_page": {
+    "back": "Voltar ao início",
+    "races": "Raças",
+    "signature": "Habilidades emblemáticas",
+    "profile": "Perfil de jogo",
+    "offense": "Ofensivo",
+    "defense": "Defensivo",
+    "commons": "{count, plural, one {# comum} other {# comuns}}",
+    "more_races": "+{count}",
+    "free_commons": "{count, plural, one {# carta comum} other {# cartas comuns}} · {clans, plural, one {# clã} other {# clãs}} — suas desde o primeiro dia.",
+    "no_clan_title": "Abertas a todos os clãs",
+    "no_clan_desc": "Estas cartas não pertencem a nenhum clã: entram em qualquer deck da facção, seja qual for o clã em torno do qual o monta.",
+    "other_factions": "Ver as outras facções"
   }
 }

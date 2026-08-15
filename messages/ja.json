@@ -468,6 +468,10 @@
       "purete": {
         "label": "純粋 +X/+Y",
         "desc": "自分の墓地が空である限り、+X ATKと+Y HPを得る。"
+      },
+      "compagnons": {
+        "label": "仲間",
+        "desc": "自分の仲間（作成時に選ばれた関連カード）をデッキに加えて混ぜ、その後デッキを切り直す。一度だけ。"
       }
     },
     "spell_keywords": {
@@ -658,6 +662,10 @@
       "afflux": {
         "label": "魔力流入 X",
         "desc": "このターン、マナをX獲得する"
+      },
+      "compagnons": {
+        "label": "仲間",
+        "desc": "自分の仲間（作成時に選ばれた関連カード）をデッキに加えて混ぜ、その後デッキを切り直す。一度だけ。"
       }
     },
     "composed": {
@@ -2318,5 +2326,19 @@
     "privacy_s7": "お客様の権利（GDPR）",
     "privacy_s8": "セキュリティ",
     "privacy_s9": "お問い合わせおよび苦情申立て"
+  },
+  "factions_page": {
+    "back": "ホームに戻る",
+    "races": "種族",
+    "signature": "象徴的な能力",
+    "profile": "戦闘傾向",
+    "offense": "攻撃",
+    "defense": "防御",
+    "commons": "コモン{count}枚",
+    "more_races": "他{count}",
+    "free_commons": "コモンカード{count}枚 ・ {clans}クラン — 初日からすべて無料。",
+    "no_clan_title": "すべてのクランで使える",
+    "no_clan_desc": "これらのカードはどのクランにも属しません。どのクランを軸に組んでも、この勢力のデッキに入れられます。",
+    "other_factions": "ほかの勢力を見る"
   }
 }

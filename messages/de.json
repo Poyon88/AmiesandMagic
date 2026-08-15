@@ -468,6 +468,10 @@
       "purete": {
         "label": "Reinheit +X/+Y",
         "desc": "Solange euer Friedhof leer ist, erhält sie +X ATK und +Y LP."
+      },
+      "compagnons": {
+        "label": "Gefährten",
+        "desc": "Mischt seine Gefährten (verknüpfte Karten, bei der Erstellung gewählt) in dein Deck und mischt es danach erneut. Nur einmal."
       }
     },
     "spell_keywords": {
@@ -658,6 +662,10 @@
       "afflux": {
         "label": "Zufluss X",
         "desc": "Erhalte X Mana in diesem Zug."
+      },
+      "compagnons": {
+        "label": "Gefährten",
+        "desc": "Mischt seine Gefährten (verknüpfte Karten, bei der Erstellung gewählt) in dein Deck und mischt es danach erneut. Nur einmal."
       }
     },
     "composed": {
@@ -2318,5 +2326,19 @@
     "privacy_s7": "Ihre Rechte (DSGVO)",
     "privacy_s8": "Sicherheit",
     "privacy_s9": "Kontakt und Beschwerde"
+  },
+  "factions_page": {
+    "back": "Zurück zur Startseite",
+    "races": "Völker",
+    "signature": "Kennzeichnende Fähigkeiten",
+    "profile": "Spielprofil",
+    "offense": "Offensiv",
+    "defense": "Defensiv",
+    "commons": "{count, plural, one {# gewöhnliche} other {# gewöhnliche}}",
+    "more_races": "+{count}",
+    "free_commons": "{count, plural, one {# gewöhnliche Karte} other {# gewöhnliche Karten}} · {clans, plural, one {# Klan} other {# Klane}} — ab dem ersten Tag kostenlos.",
+    "no_clan_title": "Für alle Klane offen",
+    "no_clan_desc": "Diese Karten gehören keinem Klan an: Sie passen in jedes Deck der Fraktion, gleich um welchen Klan du es baust.",
+    "other_factions": "Die anderen Fraktionen ansehen"
   }
 }

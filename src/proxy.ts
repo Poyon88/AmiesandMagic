@@ -11,7 +11,10 @@ import { NextResponse, type NextRequest } from "next/server";
 // pour exactement le public qu'elle vise, et le lien rebondissait en boucle.
 //
 // Toute nouvelle page publique (mentions légales, CGU…) doit être ajoutée ici.
-const PUBLIC_PATH_PREFIXES = ["/login", "/auth", "/api", "/landing", "/legal", "/news"];
+// `/factions` prolonge `/landing` : on y arrive en cliquant une faction de la
+// vitrine. L'oublier ici renverrait vers /login au premier clic — précisément
+// le rebond décrit plus haut.
+const PUBLIC_PATH_PREFIXES = ["/login", "/auth", "/api", "/landing", "/legal", "/news", "/factions"];
 
 function isPublicPath(pathname: string): boolean {
   return PUBLIC_PATH_PREFIXES.some(
