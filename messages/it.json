@@ -385,6 +385,10 @@
         "label": "Potenziamento +X/+Y",
         "desc": "Guadagna +X ATK e +Y PV in modo permanente."
       },
+      "discipline": {
+        "label": "Disciplina +X/+Y",
+        "desc": "Se tutte le tue creature in gioco hanno un costo della stessa parità del suo, guadagna +X ATK e +Y PV in modo permanente."
+      },
       "impact": {
         "label": "Impatto X",
         "desc": "Infligge X danni a un bersaglio scelto (creatura o eroe, qualsiasi lato)."
@@ -586,6 +590,10 @@
       "renforcement": {
         "label": "Potenziamento +X/+Y",
         "desc": "+X/+Y a una creatura alleata bersagliata."
+      },
+      "discipline": {
+        "label": "Disciplina +X/+Y",
+        "desc": "Se tutte le tue creature in gioco hanno un costo della stessa parità di questa magia, +X/+Y a una creatura alleata bersagliata."
       },
       "affaiblissement": {
         "label": "Indebolimento -X/-Y",

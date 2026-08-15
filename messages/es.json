@@ -385,6 +385,10 @@
         "label": "Refuerzo +X/+Y",
         "desc": "Gana +X ATK y +Y PV de forma permanente."
       },
+      "discipline": {
+        "label": "Disciplina +X/+Y",
+        "desc": "Si todas tus criaturas en juego tienen un coste de la misma paridad que el suyo, gana +X ATK y +Y PV de forma permanente."
+      },
       "impact": {
         "label": "Impacto X",
         "desc": "Inflige X daños a un objetivo (criatura o héroe, en cualquier lado)."
@@ -586,6 +590,10 @@
       "renforcement": {
         "label": "Refuerzo +X/+Y",
         "desc": "+X/+Y a una criatura aliada objetivo."
+      },
+      "discipline": {
+        "label": "Disciplina +X/+Y",
+        "desc": "Si todas tus criaturas en juego tienen un coste de la misma paridad que el de este hechizo, +X/+Y a una criatura aliada objetivo."
       },
       "affaiblissement": {
         "label": "Debilitamiento -X/-Y",

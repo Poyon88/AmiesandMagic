@@ -80,7 +80,7 @@ function BoardCreature({
   const thresholdGlow = useGameStore(s => {
     if (!s.gameState) return null;
     const owner = s.gameState.players.find(p => p.board.some(c => c.instanceId === creature.instanceId));
-    return owner ? primaryThresholdGlow(creature.card, s.gameState, owner.id) : null;
+    return owner ? primaryThresholdGlow(creature.card, s.gameState, owner.id, creature.manaCostReduction ?? 0) : null;
   });
   const selectedSacrificeIds = useGameStore(s => s.selectedSacrificeIds);
   const toggleSacrificeSelection = useGameStore(s => s.toggleSacrificeSelection);

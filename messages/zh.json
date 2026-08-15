@@ -385,6 +385,10 @@
         "label": "强化 +X/+Y",
         "desc": "永久获得+X攻击力和+Y生命值。"
       },
+      "discipline": {
+        "label": "纪律 +X/+Y",
+        "desc": "若你场上所有生物的费用奇偶性与其自身相同，永久获得+X攻击力和+Y生命值。"
+      },
       "impact": {
         "label": "冲击 X",
         "desc": "对目标（任意一方的生物或英雄）造成X点伤害。"
@@ -586,6 +590,10 @@
       "renforcement": {
         "label": "强化 +X/+Y",
         "desc": "使目标友方生物获得+X/+Y。"
+      },
+      "discipline": {
+        "label": "纪律 +X/+Y",
+        "desc": "若你场上所有生物的费用奇偶性与本法术相同，使目标友方生物获得+X/+Y。"
       },
       "affaiblissement": {
         "label": "弱化 -X/-Y",

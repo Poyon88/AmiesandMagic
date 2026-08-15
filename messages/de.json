@@ -385,6 +385,10 @@
         "label": "Stärkung +X/+Y",
         "desc": "Erhält dauerhaft +X ATK und +Y LP."
       },
+      "discipline": {
+        "label": "Disziplin +X/+Y",
+        "desc": "Wenn alle deine Kreaturen im Spiel Kosten derselben Parität wie ihre eigenen haben, erhält sie dauerhaft +X ATK und +Y LP."
+      },
       "impact": {
         "label": "Wucht X",
         "desc": "Fügt einem gezielten Ziel (Kreatur oder Held, beliebige Seite) X Schaden zu."
@@ -586,6 +590,10 @@
       "renforcement": {
         "label": "Stärkung +X/+Y",
         "desc": "+X/+Y für eine anvisierte verbündete Kreatur."
+      },
+      "discipline": {
+        "label": "Disziplin +X/+Y",
+        "desc": "Wenn alle deine Kreaturen im Spiel Kosten derselben Parität wie dieser Zauber haben, +X/+Y für eine anvisierte verbündete Kreatur."
       },
       "affaiblissement": {
         "label": "Schwächung -X/-Y",

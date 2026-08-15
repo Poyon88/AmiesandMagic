@@ -919,6 +919,36 @@ export const ABILITIES: Record<string, AbilityDef> = {
     },
     spell: { desc: "+X/+Y à une créature alliée ciblée.", params: ["attack", "health"], needsTarget: true, targetType: "friendly_creature" },
   },
+  // Renforcement SOUS CONDITION : mêmes deux faces (créature → elle-même,
+  // sort → une alliée ciblée), mais le bonus ne tombe que si le plateau du
+  // déclencheur est « discipliné » — tous ses coûts de même parité que celui de
+  // la carte qui déclenche.
+  //
+  // Contrairement aux quatre capacités conditionnelles existantes (Pureté,
+  // Force des ancêtres, Seuil Sacrificiel, Seuil de colère) ce n'est PAS une
+  // aura : la condition est lue une seule fois, au déclenchement, et le gain
+  // obtenu est définitif. Elle n'a donc rien à faire dans recalculateAuras, et
+  // sa place est dans CURATED_MULTIMODE_IDS auprès de Renforcement.
+  //
+  // Le coût lu est le coût RÉEL du moment (effectiveManaCost : Concentration,
+  // Canalisation, Entraide), pas le coût imprimé — arbitré avec l'auteur. La
+  // parité d'une créature en jeu peut donc bouger quand le plateau change,
+  // puisqu'Entraide se recalcule sur le plateau courant.
+  discipline: {
+    id: "discipline", label: "Discipline +X/+Y", symbol: "🎖️",
+    desc: "Sort : +X/+Y à une créature alliée. Créature : +X/+Y à elle-même. Uniquement si tous les coûts de votre plateau ont la même parité que le sien.",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      // ~⅔ de Renforcement (8 / +4) : même effet, mais sous une condition que
+      // le plateau peut rompre à tout moment. À réajuster après essai.
+      cost: 5, costPerX: 3, se: 2.5, minTier: 1, scalable: true, zone: "Terrain",
+      desc: "Si toutes vos créatures en jeu ont un coût de même parité que le sien, gagne +X ATK et +Y PV de façon permanente.",
+    },
+    spell: {
+      desc: "Si toutes vos créatures en jeu ont un coût de même parité que celui de ce sort, +X/+Y à une créature alliée ciblée.",
+      params: ["attack", "health"], needsTarget: true, targetType: "friendly_creature",
+    },
+  },
   affaiblissement: {
     id: "affaiblissement", label: "Affaiblissement -X/-Y", symbol: "🔻",
     desc: "Donne -X ATK et -Y PV à une créature ennemie ciblée",
@@ -1414,7 +1444,7 @@ export function creatureEngineId(a: AbilityDef): string {
 export const CURATED_MULTIMODE_IDS: ReadonlySet<string> = new Set([
   "appel_du_clan", "combustion", "convocation", "convocations_multiples", "dedoublement", "douleur", "entrainement", "inspiration",
   "ombre_du_passe", "pillage", "prescience", "remontee", "renforcement_multiple",
-  "savant", "suprematie", "tempete", "vampirisme", "cataclysme", "renforcement", "impact",
+  "savant", "suprematie", "tempete", "vampirisme", "cataclysme", "renforcement", "discipline", "impact",
   // Chantier « tous déclencheurs » : effets d'invocation rejoués depuis
   // mort / attaque / retour / fin de tour / activation.
   "concentration", "loyaute", "catalyse", "solidarite", "appel_supreme", "rassemblement",

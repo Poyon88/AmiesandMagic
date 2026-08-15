@@ -331,6 +331,7 @@ export const ALL_KEYWORDS: Keyword[] = [
   "cataclysme",
   "affaiblissement",
   "renforcement",
+  "discipline",
   "impact",
   "chant",
   "douleur",
@@ -392,6 +393,7 @@ export const KEYWORD_LABELS: Record<Keyword, string> = {
   cataclysme: "Cataclysme X",
   affaiblissement: "Affaiblissement -X/-Y",
   renforcement: "Renforcement +X/+Y",
+  discipline: "Discipline +X/+Y",
   impact: "Impact X",
   douleur: "Douleur X",
   inspiration: "Inspiration X", epargne: "Épargne X",
@@ -443,6 +445,7 @@ export function getKeywordDisplayLabel(kw: Keyword, t?: SafeT): string {
 const STAT_PAIR_KEYWORDS: ReadonlySet<string> = new Set([
   "gloire", "renforcement", "renforcement_multiple", "affaiblissement",
   "force_des_ancetres", "seuil_sacrificiel", "purete", "fortifier",
+  "discipline",
 ]);
 
 /** Paires à valeurs NÉGATIVES (débuff) — le signe s'applique aux deux membres. */
@@ -553,6 +556,7 @@ export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
   cataclysme: "☄️",
   affaiblissement: "🔻",
   renforcement: "⬆️",
+  discipline: "🎖️",
   impact: "💥",
   douleur: "🤕",
   inspiration: "📖", epargne: "🪙",

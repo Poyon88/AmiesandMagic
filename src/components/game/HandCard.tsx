@@ -59,8 +59,10 @@ function HandCard({
   // jamais sur le plateau, et sans ce halo rien n'indiquerait que le sort est
   // renforcé au moment de décider de le jouer.
   const thresholdGlow = useMemo(
-    () => primaryThresholdGlow(card, gameState, localPlayerId),
-    [card, gameState, localPlayerId],
+    // La remise de Concentration vit sur l'INSTANCE : sans elle, le halo de
+    // Discipline lirait la parité du coût imprimé au lieu du coût à payer.
+    () => primaryThresholdGlow(card, gameState, localPlayerId, cardInstance.manaCostReduction ?? 0),
+    [card, gameState, localPlayerId, cardInstance.manaCostReduction],
   );
 
   const isCostPaymentMode = targetingMode === "cost_payment";

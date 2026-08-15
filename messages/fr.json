@@ -385,6 +385,10 @@
         "label": "Renforcement +X/+Y",
         "desc": "Gagne +X ATK et +Y PV de façon permanente."
       },
+      "discipline": {
+        "label": "Discipline +X/+Y",
+        "desc": "Si toutes vos créatures en jeu ont un coût de même parité que le sien, gagne +X ATK et +Y PV de façon permanente."
+      },
       "impact": {
         "label": "Impact X",
         "desc": "Inflige X dégâts à une cible ciblée (créature ou héros, n'importe quel bord)."
@@ -586,6 +590,10 @@
       "renforcement": {
         "label": "Renforcement +X/+Y",
         "desc": "+X/+Y à une créature alliée ciblée."
+      },
+      "discipline": {
+        "label": "Discipline +X/+Y",
+        "desc": "Si toutes vos créatures en jeu ont un coût de même parité que celui de ce sort, +X/+Y à une créature alliée ciblée."
       },
       "affaiblissement": {
         "label": "Affaiblissement -X/-Y",

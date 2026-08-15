@@ -385,6 +385,10 @@
         "label": "Strengthen +X/+Y",
         "desc": "Permanently gains +X ATK and +Y HP."
       },
+      "discipline": {
+        "label": "Discipline +X/+Y",
+        "desc": "If every creature you control has a cost of the same parity as its own, permanently gains +X ATK and +Y HP."
+      },
       "impact": {
         "label": "Impact X",
         "desc": "Deal X damage to a target (creature or hero, either side)."
@@ -586,6 +590,10 @@
       "renforcement": {
         "label": "Reinforcement +X/+Y",
         "desc": "+X/+Y to a targeted allied creature."
+      },
+      "discipline": {
+        "label": "Discipline +X/+Y",
+        "desc": "If every creature you control has a cost of the same parity as this spell's, +X/+Y to a targeted allied creature."
       },
       "affaiblissement": {
         "label": "Weakening -X/-Y",

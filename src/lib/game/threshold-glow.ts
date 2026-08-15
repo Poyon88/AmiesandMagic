@@ -14,13 +14,14 @@
 import type { Card, GameState, PlayerState } from "./types";
 import { getCapabilities } from "./capability-adapter";
 import { SEUIL_DECK_THRESHOLD } from "./constants";
-import { FORCE_ANCETRES_GRAVEYARD_THRESHOLD, boardHasChanter } from "./engine";
+import { FORCE_ANCETRES_GRAVEYARD_THRESHOLD, boardHasChanter, boardIsDisciplined, effectiveManaCost } from "./engine";
 
 export interface ThresholdGlow {
   /** Id de l'ability du registre — sert de clé de rendu. */
   abilityId: string;
-  /** Face de la carte qui reçoit RÉELLEMENT le bonus (cf. GLOW_PALETTE). */
-  benefitsOn: "creature" | "spell";
+  /** Face de la carte qui reçoit RÉELLEMENT le bonus (cf. GLOW_PALETTE).
+   *  "both" pour une capacité dont les DEUX faces profitent du bonus. */
+  benefitsOn: "creature" | "spell" | "both";
   /** Composantes `r, g, b` (pour composer des rgba() à l'opacité voulue). */
   rgb: string;
   /** Libellé court, pour l'infobulle. */
@@ -42,11 +43,17 @@ const GLOW_PALETTE: ReadonlyArray<{
   abilityId: string;
   rgb: string;
   label: string;
-  benefitsOn: "creature" | "spell";
+  benefitsOn: "creature" | "spell" | "both";
 }> = [
   { abilityId: "force_des_ancetres", rgb: "168, 85, 247", label: "Force des ancêtres", benefitsOn: "creature" }, // violet spectral (cimetière)
   { abilityId: "seuil_sacrificiel", rgb: "190, 49, 68", label: "Seuil Sacrificiel", benefitsOn: "creature" },     // rouge sombre (deck qui s'épuise)
   { abilityId: "purete", rgb: "236, 240, 245", label: "Pureté", benefitsOn: "creature" },                          // blanc nacré (cimetière intact)
+  // Première capacité à luire sur ses DEUX faces, et à bon droit : la créature
+  // se renforce elle-même, le sort renforce une alliée — l'une comme l'autre
+  // profite de la condition. Le halo reste honnête en main, car une créature
+  // qui arrive sur un plateau discipliné y ajoute sa PROPRE parité : la
+  // condition vraie avant la pose l'est encore après.
+  { abilityId: "discipline", rgb: "70, 118, 190", label: "Discipline", benefitsOn: "both" },                       // bleu acier (rang tenu)
   { abilityId: "seuil_colere", rgb: "232, 122, 24", label: "Seuil de colère", benefitsOn: "spell" },              // orange braise
   { abilityId: "chant", rgb: "23, 182, 196", label: "Chant", benefitsOn: "spell" },                               // cyan — teinte déjà associée à Chant
 ];
@@ -56,7 +63,17 @@ const GLOW_PALETTE: ReadonlyArray<{
  *  `owner` est le contrôleur, jamais le joueur local : une créature ADVERSE à
  *  seuil actif doit luire pour les deux joueurs, avec le deck et le cimetière de
  *  son propre camp. */
-function conditionMet(abilityId: string, owner: PlayerState): boolean {
+function conditionMet(
+  abilityId: string,
+  owner: PlayerState,
+  // Discipline est la première condition à dépendre de la CARTE et pas
+  // seulement du joueur : sa parité de référence est le coût de la carte
+  // elle-même. `manaCostReduction` vient de l'instance quand l'appelant l'a
+  // sous la main (Concentration grave sa remise dessus) — sans lui, le halo
+  // annoncerait la parité du coût imprimé, donc parfois la mauvaise.
+  card: Card,
+  manaCostReduction: number,
+): boolean {
   switch (abilityId) {
     // Deux capacités adossées au même seuil de deck (cf. recalculateAuras et
     // resolveSpellCard, qui lisent la même constante).
@@ -75,6 +92,10 @@ function conditionMet(abilityId: string, owner: PlayerState): boolean {
     // même chose que le moteur (cf. recalculateAuras).
     case "purete":
       return owner.graveyard.length === 0;
+    // Prédicat du moteur, réutilisé tel quel — coût RÉEL des deux côtés de la
+    // comparaison, exactement comme au déclenchement (cf. boardIsDisciplined).
+    case "discipline":
+      return boardIsDisciplined(owner, effectiveManaCost({ card, manaCostReduction }, owner));
     default:
       return false;
   }
@@ -89,6 +110,9 @@ export function activeThresholdGlows(
   card: Card,
   state: GameState | null | undefined,
   ownerId: string | null | undefined,
+  /** Remise de Concentration gravée sur l'INSTANCE, quand l'appelant en a une.
+   *  Ne sert qu'à Discipline, dont la condition se lit sur le coût réel. */
+  manaCostReduction = 0,
 ): ThresholdGlow[] {
   if (!state || !ownerId) return [];
   const owner = state.players.find(p => p.id === ownerId);
@@ -97,8 +121,8 @@ export function activeThresholdGlows(
   const carried = new Set(getCapabilities(card).map(c => c.abilityId));
   return GLOW_PALETTE.filter(g =>
     carried.has(g.abilityId)
-    && g.benefitsOn === card.card_type
-    && conditionMet(g.abilityId, owner));
+    && (g.benefitsOn === "both" || g.benefitsOn === card.card_type)
+    && conditionMet(g.abilityId, owner, card, manaCostReduction));
 }
 
 /** Halo à peindre, ou `null`. L'anneau ne portant qu'une couleur, c'est la
@@ -108,6 +132,7 @@ export function primaryThresholdGlow(
   card: Card,
   state: GameState | null | undefined,
   ownerId: string | null | undefined,
+  manaCostReduction = 0,
 ): ThresholdGlow | null {
-  return activeThresholdGlows(card, state, ownerId)[0] ?? null;
+  return activeThresholdGlows(card, state, ownerId, manaCostReduction)[0] ?? null;
 }

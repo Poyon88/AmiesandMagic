@@ -385,6 +385,10 @@
         "label": "Reforço +X/+Y",
         "desc": "Ganha +X ATK e +Y PV permanentemente."
       },
+      "discipline": {
+        "label": "Disciplina +X/+Y",
+        "desc": "Se todas as suas criaturas em jogo tiverem um custo da mesma paridade que o dela, ganha +X ATK e +Y PV permanentemente."
+      },
       "impact": {
         "label": "Impacto X",
         "desc": "Causa X de dano a um alvo escolhido (criatura ou herói, qualquer lado)."
@@ -586,6 +590,10 @@
       "renforcement": {
         "label": "Reforço +X/+Y",
         "desc": "+X/+Y a uma criatura aliada alvo."
+      },
+      "discipline": {
+        "label": "Disciplina +X/+Y",
+        "desc": "Se todas as suas criaturas em jogo tiverem um custo da mesma paridade que o desta magia, +X/+Y a uma criatura aliada alvo."
       },
       "affaiblissement": {
         "label": "Enfraquecimento -X/-Y",

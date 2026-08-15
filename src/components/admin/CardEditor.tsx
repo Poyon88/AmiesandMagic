@@ -152,6 +152,10 @@ export default function CardEditor() {
   // Renforcement +X/+Y (créature, self-buff) : le +PV (Y) dédié. Le +ATK (X)
   // réutilise keywordXValues ; sérialisé dans keyword_instances comme la Forge.
   const [rfY, setRfY] = useState<number>(1);
+  // Discipline +X/+Y (créature) : Renforcement sous condition de parité. Même
+  // couple ATK/PV, donc même panneau dédié — le +ATK (X) réutilise
+  // keywordXValues, le +PV (Y) vit ici.
+  const [dscY, setDscY] = useState<number>(1);
   // Gloire +X/+Y (créature) : le +PV (Y) dédié. Le +ATK (X) réutilise
   // keywordXValues ; sérialisé dans keyword_instances comme la Forge.
   const [glY, setGlY] = useState<number>(1);
@@ -300,7 +304,7 @@ export default function CardEditor() {
     // sidecar; the effect_text bracket is the legacy fallback for X.
     const modes: Record<string, KeywordMode> = {};
     const grantScopes: Record<string, "all_allies"> = {};
-    let rmYLoaded = 1, rmRaceLoaded = "", rmClanLoaded = "", rfYLoaded = 1, afYLoaded = 1, glYLoaded = 1, dcYLoaded = 1, fdaYLoaded = 1, ssYLoaded = 1, purYLoaded = 1, foYLoaded = 1;
+    let rmYLoaded = 1, rmRaceLoaded = "", rmClanLoaded = "", rfYLoaded = 1, afYLoaded = 1, glYLoaded = 1, dcYLoaded = 1, fdaYLoaded = 1, ssYLoaded = 1, purYLoaded = 1, foYLoaded = 1, dscYLoaded = 1;
     let invocCostsLoaded: number[] = [];
     let invocRaceLoaded = "", invocFactionLoaded = "";
     let compagnonsLoaded: number[] = [];
@@ -312,6 +316,7 @@ export default function CardEditor() {
         rmYLoaded = inst.y ?? 1; rmRaceLoaded = inst.race ?? ""; rmClanLoaded = inst.clan ?? "";
       }
       if (inst.id === "renforcement") rfYLoaded = inst.y ?? 1;
+      if (inst.id === "discipline") dscYLoaded = inst.y ?? 1;
       if (inst.id === "affaiblissement") afYLoaded = inst.y ?? 1;
       if (inst.id === "gloire") glYLoaded = inst.y ?? 1;
       if (inst.id === "dechainement") dcYLoaded = inst.y ?? 1;
@@ -326,7 +331,7 @@ export default function CardEditor() {
       }
       if (inst.id === "compagnons") compagnonsLoaded = inst.linkedCardIds ?? [];
     }
-    setRmY(rmYLoaded); setRmRace(rmRaceLoaded); setRmClan(rmClanLoaded); setRfY(rfYLoaded); setAfY(afYLoaded); setGlY(glYLoaded); setDcY(dcYLoaded); setFdaY(fdaYLoaded); setSsY(ssYLoaded); setPurY(purYLoaded); setFoY(foYLoaded);
+    setRmY(rmYLoaded); setRmRace(rmRaceLoaded); setRmClan(rmClanLoaded); setRfY(rfYLoaded); setAfY(afYLoaded); setGlY(glYLoaded); setDcY(dcYLoaded); setFdaY(fdaYLoaded); setSsY(ssYLoaded); setPurY(purYLoaded); setFoY(foYLoaded); setDscY(dscYLoaded);
     setInvocCosts(invocCostsLoaded); setInvocRace(invocRaceLoaded); setInvocFaction(invocFactionLoaded);
     setCompagnonsCardIds(compagnonsLoaded);
     setKeywordModes(modes);
@@ -501,6 +506,11 @@ export default function CardEditor() {
           if (id === "renforcement" && !isSpellCard) {
             return { id: id as Keyword, ...(mode ? { mode } : {}), x: x ?? 0, y: rfY };
           }
+          // Discipline +X/+Y (créature, self-buff conditionnel) : même couple
+          // ATK/PV que Renforcement ; toujours émis.
+          if (id === "discipline" && !isSpellCard) {
+            return { id: id as Keyword, ...(mode ? { mode } : {}), x: x ?? 0, y: dscY };
+          }
           // Gloire +X/+Y : porte +X (ATK) / +Y (PV) ; toujours émise. Émise aussi
           // sur un SORT qui la confère — la forge le fait déjà, et sans ça une
           // ré-édition ici retombait sur la branche générique {id, x} : le +Y
@@ -632,7 +642,7 @@ export default function CardEditor() {
       console.warn("[card-save] refresh failed after successful save:", err);
     }
     setSaving(false);
-  }, [selectedCard, editFields, newImageFile, keywordXValues, keywordModes, keywordGrantScope, rmY, rmRace, rmClan, rfY, afY, glY, dcY, fdaY, ssY, purY, foY, invocCosts, invocRace, invocFaction, compagnonsCardIds, composedCaps]);
+  }, [selectedCard, editFields, newImageFile, keywordXValues, keywordModes, keywordGrantScope, rmY, rmRace, rmClan, rfY, dscY, afY, glY, dcY, fdaY, ssY, purY, foY, invocCosts, invocRace, invocFaction, compagnonsCardIds, composedCaps]);
 
   // Delete
   const handleDelete = useCallback(async (id: number) => {
@@ -1286,7 +1296,7 @@ export default function CardEditor() {
                 // Ces mots-clés portent un +X/+Y (ou -X/-Y) : leur X vit dans un
                 // bloc dédié à deux champs plus bas, pas dans ce panneau à un
                 // seul champ — qui laisserait croire qu'ils n'ont qu'une valeur.
-                if ((kw === "renforcement" || kw === "affaiblissement" || kw === "gloire" || kw === "dechainement" || kw === "force_des_ancetres") && editFields.card_type === "creature") return false;
+                if ((kw === "renforcement" || kw === "discipline" || kw === "affaiblissement" || kw === "gloire" || kw === "dechainement" || kw === "force_des_ancetres") && editFields.card_type === "creature") return false;
                 return label && KEYWORD_DEFS[label]?.scalable;
               });
               if (activeScalable.length === 0) return null;
@@ -1675,6 +1685,28 @@ export default function CardEditor() {
                     type="number" min={0} max={20} value={rfY}
                     onChange={e => setRfY(Math.max(0, parseInt(e.target.value) || 0))}
                     style={{ width: 48, padding: "2px 6px", borderRadius: 4, border: "1px solid #cfe8d4", fontSize: 11, textAlign: "center" }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Discipline +X/+Y — Renforcement sur soi, mais seulement si tous
+                les coûts du plateau ont la même parité que le sien. */}
+            {((editFields.keywords as string[]) || []).includes("discipline") && editFields.card_type === "creature" && (
+              <div style={{ marginBottom: 8, padding: "8px 10px", borderRadius: 6, border: "1px solid #c8d4e6", background: "#eff5ff" }}>
+                <div style={{ ...S.label, color: "#2c4f7c", marginBottom: 6 }}>🎖️ DISCIPLINE (SUR SOI, PARITÉ DU PLATEAU)</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 9, color: "#3d6da8" }}>+ATK (X)</span>
+                  <input
+                    type="number" min={0} max={20} value={keywordXValues["discipline"] ?? 1}
+                    onChange={e => setKeywordXValues(prev => ({ ...prev, ["discipline"]: Math.max(0, Math.min(20, parseInt(e.target.value) || 0)) }))}
+                    style={{ width: 48, padding: "2px 6px", borderRadius: 4, border: "1px solid #c8d4e6", fontSize: 11, textAlign: "center" }}
+                  />
+                  <span style={{ fontSize: 9, color: "#3d6da8" }}>+PV (Y)</span>
+                  <input
+                    type="number" min={0} max={20} value={dscY}
+                    onChange={e => setDscY(Math.max(0, parseInt(e.target.value) || 0))}
+                    style={{ width: 48, padding: "2px 6px", borderRadius: 4, border: "1px solid #c8d4e6", fontSize: 11, textAlign: "center" }}
                   />
                 </div>
               </div>

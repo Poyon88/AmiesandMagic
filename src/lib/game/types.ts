@@ -98,6 +98,9 @@ export type Keyword =
   | "invocations_multiples"
   // Polymorphic — self-buff +X/+Y (creature) / target ally (spell), multi-trigger
   | "renforcement"
+  // Renforcement sous CONDITION de parité : le bonus ne tombe que si tous les
+  // coûts RÉELS du plateau du déclencheur ont la même parité que le sien.
+  | "discipline"
   // Polymorphic — +X/+Y to all controller's creatures of a selected race/clan
   | "renforcement_multiple"
   // +X/+X aux créatures en main de la même faction que la source (multi-trigger)
@@ -170,6 +173,7 @@ export type SpellKeywordId =
   | "execution"
   | "silence"
   | "renforcement"
+  | "discipline"
   | "guerison"
   | "invocation"
   | "invocations_multiples"
@@ -611,6 +615,13 @@ export interface SpellResolutionContext {
   card: Card;                          // the spell card being played
   targetMap: Record<string, string>;
   results: Record<string, boolean>;
+  /** Coût en mana RÉELLEMENT payé pour ce sort, toutes réductions appliquées.
+   *  Lu par Discipline, qui compare sa parité à celle du plateau du lanceur.
+   *  Le `Card` seul ne suffit pas : Concentration grave sa réduction sur
+   *  l'INSTANCE, laquelle a déjà quitté la main quand le sort se résout.
+   *  Sur un sort relancé ou déchaîné, rien n'a été payé — c'est alors le coût
+   *  qu'il aurait coûté depuis la main, sans réduction d'instance. */
+  realManaCost: number;
 }
 
 export interface Card {

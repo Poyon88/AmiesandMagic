@@ -2921,6 +2921,20 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       applyRenforcementSelf(cardInstance, rf?.x ?? 0, rf?.y ?? 0);
     }
 
+    // Discipline (invocation) : Renforcement d'elle-même SOUS CONDITION de
+    // parité. La créature a déjà été posée sur le plateau (splice plus haut),
+    // son propre coût entre donc dans le test — une Discipline qui arrive seule
+    // en jeu est disciplinée.
+    //
+    // On réutilise `manaCost`, le coût que playCard vient de calculer et de
+    // faire payer, plutôt que de le recalculer : c'est LE coût réel de ce
+    // déclenchement, et il couvre au passage l'entrée depuis le cimetière
+    // (Seconde vie), où les réductions de main ne s'appliquent pas.
+    if (hasKwOnPlay(cardInstance, "discipline")) {
+      const { x, y } = disciplineValues(cardInstance, undefined);
+      if (boardIsDisciplined(player, manaCost)) applyRenforcementSelf(cardInstance, x, y);
+    }
+
     // Entrainement X (invocation) : +X/+X aux créatures en main de même faction.
     if (hasKwOnPlay(cardInstance, "entrainement")) {
       applyEntrainement(player, cardInstance.card.faction, getKwX(cardInstance, "entrainement", undefined, 1), cardInstance.instanceId);
@@ -3571,7 +3585,10 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // legacy garde `action.targetInstanceId` : sur ce chemin il n'existe pas de
     // targetMap moderne, et les deux ne coïncident que par la compatibilité
     // ascendante posée plus haut (`targetMap["target_0"] = targetInstanceId`).
-    const ctx = resolveSpellCard(newState, player, opponent, card, targetMap, action.targetInstanceId);
+    // `manaCost` = ce que ce sort vient RÉELLEMENT de coûter (Concentration
+    // gravée sur l'instance comprise). Discipline en lit la parité, et
+    // l'instance n'est plus atteignable une fois la résolution commencée.
+    const ctx = resolveSpellCard(newState, player, opponent, card, targetMap, action.targetInstanceId, manaCost);
 
     // Morts causées par les phases 2/3, les composés et le repli legacy.
     settleSpellDeaths(ctx);
@@ -3938,8 +3955,16 @@ function resolveSpellCard(
   card: Card,
   targetMap: Record<string, string>,
   legacyTargetId?: string,
+  // Coût réellement payé, transmis par playCard qui vient de le calculer. Absent
+  // sur les sorts relancés / déchaînés : ceux-là n'ont rien coûté, on retombe
+  // sur le coût qu'ils auraient depuis la main (Canalisation comprise, car elle
+  // se lit sur le plateau et non sur l'instance).
+  realManaCost?: number,
 ): SpellResolutionContext {
-  const ctx: SpellResolutionContext = { state, caster, opponent, card, targetMap, results: {} };
+  const ctx: SpellResolutionContext = {
+    state, caster, opponent, card, targetMap, results: {},
+    realManaCost: realManaCost ?? effectiveManaCost({ card }, caster),
+  };
   // Seuil de colère : évalué UNE fois, à la résolution — le deck du lanceur peut
   // bouger pendant le sort (Incinération, pioche), la condition ne doit pas se
   // ré-évaluer en cours de route.
@@ -4247,6 +4272,23 @@ function resolveSpellKeywords(
             target.maxHealth += hpBuff;
           }
         }
+        break;
+      }
+      // Discipline (sort) : Renforcement de la cible SOUS CONDITION. La parité
+      // se lit sur le coût réellement payé (ctx.realManaCost) et sur le plateau
+      // du LANCEUR — jamais celui de l'adversaire.
+      //
+      // Ordre load-bearing : la condition est évaluée AVANT d'appliquer quoi que
+      // ce soit. La cible est forcément une alliée (targetType
+      // "friendly_creature"), elle est donc déjà comptée dans le plateau testé ;
+      // l'évaluer après le buff ne changerait rien au coût, mais la lecture
+      // resterait ambiguë.
+      case "discipline": {
+        if (!targetId) break;
+        if (!boardIsDisciplined(ctx.caster, ctx.realManaCost)) break;
+        const target = findCreatureOnBoard(ctx.caster, targetId);
+        if (!target) break;
+        applyRenforcementSelf(target, kw.attack ?? 0, kw.health ?? 0);
         break;
       }
       case "affaiblissement": {
@@ -6533,6 +6575,53 @@ function applyRenforcementSelf(inst: CardInstance, x: number, y: number): void {
   inst.lastBuffMode = composedStrikeMode; // couleur de l'effet → teinte du popup
 }
 
+// ─── Discipline +X/+Y : la condition de parité ──────────────────────────────
+//
+// Discipline est un Renforcement SOUS CONDITION : mêmes deux faces (créature →
+// elle-même, sort → une alliée ciblée), mais le bonus ne tombe que si le
+// plateau du déclencheur est « discipliné ».
+//
+// ⚠️ Ce n'est PAS une aura. Les quatre capacités conditionnelles existantes
+// (Pureté, Force des ancêtres, Seuil Sacrificiel, Seuil de colère) se
+// recalculent en continu dans recalculateAuras et leur bonus va et vient.
+// Discipline lit sa condition UNE FOIS, au déclenchement, et le gain est
+// définitif — c'est ce qui a été arbitré avec l'auteur, et c'est pourquoi elle
+// vit ici, auprès de Renforcement, et non dans recalculateAuras.
+
+/** Le plateau de `owner` est-il « discipliné » vis-à-vis de `triggerCost` :
+ *  tous les coûts RÉELS du moment y ont-ils la même parité que lui ?
+ *
+ *  **Coût RÉEL et non imprimé** (arbitré avec l'auteur) : on passe par
+ *  `effectiveManaCost`, la source unique du moteur, donc Concentration,
+ *  Canalisation et Entraide comptent. Conséquence assumée : Entraide se
+ *  recalcule sur le plateau COURANT, la parité d'une créature déjà en jeu peut
+ *  donc basculer sans qu'elle bouge. C'est le sens de « au moment du
+ *  déclenchement » — la condition ne se lit jamais à l'avance.
+ *
+ *  Le porteur n'est pas exclu du plateau. C'est sans effet dans la quasi-
+ *  totalité des cas (il partage sa propre parité par construction), mais ça
+ *  tranche le cas de la créature SEULE en jeu : elle est disciplinée.
+ *
+ *  Plateau VIDE ⇒ vrai, faute de contre-exemple. Le cas ne survient que sur un
+ *  déclencheur absent du plateau — un sort sans créature à cibler, ou une
+ *  créature déjà retirée en mode « mort » : dans les deux cas il n'y a personne
+ *  à renforcer, la valeur de vérité ne décide de rien. */
+export function boardIsDisciplined(owner: PlayerState, triggerCost: number): boolean {
+  const parite = triggerCost % 2;
+  return owner.board.every(c => effectiveManaCost(c, owner) % 2 === parite);
+}
+
+/** +X/+Y de l'instance de Discipline portée par `source`, repli sur les valeurs
+ *  conférées à l'exécution puis sur 0/0 (Renforcement fait de même : une
+ *  Discipline sans valeur ne doit rien donner, pas inventer un 1/1). */
+function disciplineValues(source: CardInstance, mode: import("./types").KeywordMode | undefined): { x: number; y: number } {
+  const inst = source.card.keyword_instances?.find(i => i.id === "discipline" && i.mode === mode);
+  return {
+    x: inst?.x ?? source.grantedKeywordX["discipline"] ?? 0,
+    y: inst?.y ?? source.grantedKeywordY?.["discipline"] ?? 0,
+  };
+}
+
 // Gloire +X/+Y : récompense permanente d'une survie à des dégâts de combat.
 // Réutilise exactement le buff de Renforcement (stats cuites dans `card`), donc
 // le gain survit à recalculateAuras et au passage en main/cimetière. En
@@ -6671,6 +6760,21 @@ function resolveCuratedKeywordEffect(
       // Tap / mort / retour / fin de tour : +X/+Y permanent à la source elle-même.
       withComposedMode(inst?.mode, () =>
         applyRenforcementSelf(source, inst?.x ?? 0, inst?.y ?? 0));
+      return;
+    }
+    case "discipline": {
+      // Mort / attaque / tap / retour / fin de tour / pioche / PV bas : même
+      // buff que Renforcement, mais seulement si le plateau du contrôleur est
+      // discipliné au coût RÉEL de la source, lu à cet instant précis.
+      //
+      // En mode « mort » la source a déjà quitté le plateau : son coût ne
+      // participe donc plus au test, et le gain part avec elle. Ce n'est pas un
+      // oubli — Renforcement a exactement la même limite, et l'auteur l'a
+      // validée en connaissance de cause.
+      const { x, y } = disciplineValues(source, inst?.mode);
+      if (boardIsDisciplined(owner, effectiveManaCost(source, owner))) {
+        withComposedMode(inst?.mode, () => applyRenforcementSelf(source, x, y));
+      }
       return;
     }
     case "entrainement": {
@@ -8013,6 +8117,10 @@ export function useHeroPower(state: GameState, action: HeroPowerAction): GameSta
           },
           targetMap,
           results: {},
+          // Un pouvoir de héros n'est pas une carte : son « coût réel » est son
+          // coût d'activation, que ni Canalisation ni Concentration ne touchent.
+          // C'est donc lui que Discipline compare au plateau si un héros la porte.
+          realManaCost: heroDef.powerCost,
         };
         resolveSpellKeywords(ctx, [instance]);
       } else {
@@ -8333,7 +8441,14 @@ function concede(state: GameState, action: { playerId: string }): GameState {
  *  (sorts, plancher à 1) puis Entraide (créatures). Source unique — le moteur
  *  la déduit, la main l'affiche et la jauge la réserve pendant un ciblage :
  *  trois surfaces qui divergeaient dès qu'une règle changeait. */
-export function effectiveManaCost(cardInstance: CardInstance, player: PlayerState): number {
+export function effectiveManaCost(
+  // Volontairement STRUCTUREL et non `CardInstance` : la condition de Discipline
+  // doit chiffrer un SORT en cours de résolution, or le contexte de résolution
+  // ne porte que la `Card` — l'instance a déjà quitté la main. Toute
+  // `CardInstance` reste acceptée telle quelle.
+  cardInstance: { card: Card; manaCostReduction?: number },
+  player: PlayerState,
+): number {
   const card = cardInstance.card;
   // Tokens (token_id != null) : la base en main est floor((atk+pv)/2), pas le 0
   // du plateau — un token rebondi en main ne doit pas être gratuit à rejouer.
