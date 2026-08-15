@@ -44,7 +44,19 @@ next-env.d.ts
 .netlify
 
 # Claude Code local artefacts (per-machine skill installs + lock file)
-.claude/
+#
+# EXCEPTION : `goon`. La commande doit suivre le dépôt pour exister dans la
+# version web, qui travaille sur un clone — un fichier resté local n'y serait
+# jamais. Les autres skills sont des installations par machine, et l'une d'elles
+# pèse 1,7 Mo : elles restent ignorées.
+#
+# Les quatre lignes sont nécessaires dans cet ordre : git ne redescend pas dans
+# un dossier exclu, il faut donc rouvrir chaque niveau avant d'en réexclure le
+# contenu.
+.claude/*
+!.claude/skills/
+.claude/skills/*
+!.claude/skills/goon/
 skills-lock.json
 
 # Generated docs (regenerate from generate-keywords-pdf.py if needed)
