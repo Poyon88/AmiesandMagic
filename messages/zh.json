@@ -1324,8 +1324,8 @@
     "features_title": "为何选择 Armies & Magic",
     "f1_title": "传奇的深度。",
     "f1_desc": "Armies & Magic 将经典 TCG 的策略精髓与专为当代玩家打造的机制融为一体。",
-    "f2_title": "全部卡牌。首局即享。",
-    "f2_desc": "经典模式安装即完整开放。游戏伊始即可免费获得逾400张卡牌，打造属于您的专属牌组。",
+    "f2_title": "开局即拥有尽可能多的卡牌。",
+    "f2_desc": "免费获得您所选阵营的全部经典卡牌（约500张）。并以传统集换式卡牌游戏零头的花费，集齐所有阵营。",
     "f3_title": "每套专家牌组，皆为孤品。",
     "f3_desc": "限量发行的卡牌让每套专家牌组独一无二。统一配额确保胜负只取决于您的策略。",
     "f4_title": "移动竞技场，终于名副其实。",
@@ -1339,41 +1339,32 @@
     "cta_btn": "开启冒险",
     "footer": "Armies & Magic — 保留所有权利",
     "factions": {
-      "humans": {
-        "name": "自由王国",
+      "Humains": {
         "tagline": "同旗并肩"
       },
-      "elves": {
-        "name": "天空联盟",
+      "Elfes": {
         "tagline": "永恒林木的守护者"
       },
-      "dwarves": {
-        "name": "山岭大军",
+      "Nains": {
         "tagline": "生于岩石"
       },
-      "halflings": {
-        "name": "林地契约",
-        "tagline": "身形虽小，心志弥坚"
-      },
-      "beastmen": {
-        "name": "兽群",
+      "Hommes-Bêtes": {
         "tagline": "蛮荒之地的怒火"
       },
-      "giants": {
-        "name": "原初者",
+      "Élémentaires": {
         "tagline": "元素苏醒"
       },
-      "dark_elves": {
-        "name": "混沌孽裔",
+      "Elfes Noirs": {
         "tagline": "暗影有其名"
       },
-      "orcs_goblins": {
-        "name": "大部落",
-        "tagline": "部落的怒吼"
-      },
-      "undead": {
-        "name": "亡者之都",
+      "Morts-Vivants": {
         "tagline": "墓冢的沉寂已被打破"
+      },
+      "EmpireDuMilieu": {
+        "tagline": "先有法度，后有锋芒"
+      },
+      "RoyaumesDuSoleil": {
+        "tagline": "大漠仍记得它的君王"
       }
     }
   },

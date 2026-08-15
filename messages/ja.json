@@ -1324,8 +1324,8 @@
     "features_title": "Armies & Magicを選ぶ理由",
     "f1_title": "伝説の深み。",
     "f1_desc": "Armies & Magicは、名作TCGの戦略性と、現代のチャンピオンのために設計されたメカニクスを融合させます。",
-    "f2_title": "全カード。初戦から。",
-    "f2_desc": "クラシックモードはインストール直後から完全解放。400枚以上のカードを最初から無料で使い、自分だけのデッキを構築しましょう。",
+    "f2_title": "最初から、できるだけ多くのカードを。",
+    "f2_desc": "お好きな勢力のクラシックカードをすべて無料で入手できます（約500枚）。さらに、従来のTCGのほんの一部の費用で全勢力を揃えられます。",
     "f3_title": "エキスパートデッキは、それぞれが唯一の作品。",
     "f3_desc": "限定カードがエキスパートデッキに個性をもたらします。共通枠の仕組みにより、勝敗を決めるのはあなたの戦略のみ。",
     "f4_title": "モバイルアリーナが、ついに本気になった。",
@@ -1339,41 +1339,32 @@
     "cta_btn": "冒険を始める",
     "footer": "Armies & Magic — 無断転載禁止",
     "factions": {
-      "humans": {
-        "name": "自由王国連合",
+      "Humains": {
         "tagline": "旗印のもとに団結せよ"
       },
-      "elves": {
-        "name": "天空同盟",
+      "Elfes": {
         "tagline": "永遠の森の守護者"
       },
-      "dwarves": {
-        "name": "山岳の軍勢",
+      "Nains": {
         "tagline": "岩石に鍛えられし者たち"
       },
-      "halflings": {
-        "name": "森の盟約",
-        "tagline": "小さき身体、大きき心"
-      },
-      "beastmen": {
-        "name": "群狼",
+      "Hommes-Bêtes": {
         "tagline": "荒野の怒り"
       },
-      "giants": {
-        "name": "原初の者たち",
+      "Élémentaires": {
         "tagline": "元素が目覚める"
       },
-      "dark_elves": {
-        "name": "混沌の眷属",
+      "Elfes Noirs": {
         "tagline": "闇には名がある"
       },
-      "orcs_goblins": {
-        "name": "大群勢",
-        "tagline": "大群の咆哮"
-      },
-      "undead": {
-        "name": "死都",
+      "Morts-Vivants": {
         "tagline": "墓所の沈黙が破られた"
+      },
+      "EmpireDuMilieu": {
+        "tagline": "猛りより、律を"
+      },
+      "RoyaumesDuSoleil": {
+        "tagline": "砂漠は王の名を忘れない"
       }
     }
   },

@@ -9,11 +9,17 @@ import type { Card } from "@/lib/game/types";
 import GameCard from "@/components/cards/GameCard";
 import LanguageSelector from "@/components/shared/LanguageSelector";
 import { useMessages } from "next-intl";
+import { FACTIONS } from "@/lib/card-engine/constants";
+import { factionSlug } from "@/lib/game/faction-slug";
 
 // ─── Translations ───────────────────────────────────────────────────────────
 
+// La page de garde ne porte plus QUE l'accroche. Le nom de la faction vient du
+// catalogue `vocab.factions`, traduit dans les 8 locales et déjà utilisé par le
+// jeu — le dico du landing en tenait une copie, et c'est cette copie qui a
+// dérivé (« L'Engeance du Chaos » pour Les Légions du Chaos, et des noms restés
+// en français dans la version anglaise).
 type FactionDict = {
-  name: string;
   tagline: string;
 };
 
@@ -38,35 +44,41 @@ type Dict = {
   cta_sub: string;
   cta_btn: string;
   footer: string;
-  factions: {
-    humans: FactionDict;
-    elves: FactionDict;
-    dwarves: FactionDict;
-    halflings: FactionDict;
-    beastmen: FactionDict;
-    giants: FactionDict;
-    dark_elves: FactionDict;
-    orcs_goblins: FactionDict;
-    undead: FactionDict;
-  };
+  /** Accroches, clés par ID DE FACTION (`FACTIONS`), pas par slug maison. */
+  factions: Record<string, FactionDict>;
 };
-
-
-type FactionKey = keyof Dict["factions"];
 
 // ─── Factions catalog ──────────────────────────────────────────────────────
 
-const FACTION_ORDER: { key: FactionKey; heroExt: "svg" | "png"; bannerExt: "svg" }[] = [
-  { key: "humans", heroExt: "svg", bannerExt: "svg" },
-  { key: "elves", heroExt: "png", bannerExt: "svg" },
-  { key: "dwarves", heroExt: "svg", bannerExt: "svg" },
-  { key: "halflings", heroExt: "svg", bannerExt: "svg" },
-  { key: "beastmen", heroExt: "svg", bannerExt: "svg" },
-  { key: "giants", heroExt: "svg", bannerExt: "svg" },
-  { key: "dark_elves", heroExt: "svg", bannerExt: "svg" },
-  { key: "orcs_goblins", heroExt: "svg", bannerExt: "svg" },
-  { key: "undead", heroExt: "png", bannerExt: "svg" },
-];
+/** Illustrations de REPLI, par id de faction : servent quand la base ne fournit
+ *  pas de portrait de héros. Les fichiers portent d'anciens slugs (`giants`
+ *  pour Les Primordiaux, hérité des Géants) — on ne renomme pas des assets pour
+ *  ça. Une faction sans entrée retombe sur le blason générique.
+ *
+ *  C'est la seule chose que la page de garde garde en propre. La LISTE, elle,
+ *  est dérivée juste en dessous. */
+const LANDING_ART: Record<string, { slug: string; heroExt: "svg" | "png" }> = {
+  Humains: { slug: "humans", heroExt: "svg" },
+  Elfes: { slug: "elves", heroExt: "png" },
+  Nains: { slug: "dwarves", heroExt: "svg" },
+  "Hommes-Bêtes": { slug: "beastmen", heroExt: "svg" },
+  "Élémentaires": { slug: "giants", heroExt: "svg" },
+  "Elfes Noirs": { slug: "dark_elves", heroExt: "svg" },
+  "Morts-Vivants": { slug: "undead", heroExt: "png" },
+};
+
+/** Les factions présentées, dans l'ordre où le jeu les déclare.
+ *
+ *  DÉRIVÉE, jamais recopiée. La liste tenue à la main avait dérivé : Le Pacte
+ *  des Bois et La Horde y vivaient encore après l'absorption des Hobbits et des
+ *  Orcs, et les deux factions ajoutées depuis (L'Empire du Milieu, Les Royaumes
+ *  du Soleil) n'y avaient jamais été inscrites.
+ *
+ *  Mercenaires est écarté par son alignement « spéciale » : c'est un vivier
+ *  partagé, ouvert à tous les decks, pas une armée qu'on choisit. */
+const SHOWCASE_FACTIONS: string[] = Object.entries(FACTIONS)
+  .filter(([, def]) => def.alignment !== "spéciale")
+  .map(([id]) => id);
 
 // ─── Particle Canvas ───────────────────────────────────────────────────────
 
@@ -182,7 +194,12 @@ export default function LandingPage({ showcaseCards, factionHeroUrls }: LandingP
   // Le dico du landing vit désormais dans le namespace `landing` des catalogues
   // next-intl (rempli par le pipeline). useMessages() renvoie l'objet brut de la
   // locale active — même forme que l'ancien Dict, donc passé tel quel aux enfants.
-  const messages = useMessages() as unknown as { landing: Dict; legal: Record<string, string> };
+  const messages = useMessages() as unknown as {
+    landing: Dict;
+    legal: Record<string, string>;
+    // Le catalogue des factions, partagé avec le jeu : c'est lui qui nomme.
+    vocab?: { factions?: Record<string, { displayName?: string }> };
+  };
   const txt = messages.landing;
   const legalTxt = messages.legal;
 
@@ -264,7 +281,8 @@ export default function LandingPage({ showcaseCards, factionHeroUrls }: LandingP
       <FactionsSection
         title={txt.factions_title}
         subtitle={txt.factions_sub}
-        factionLabels={txt.factions}
+        factionTaglines={txt.factions}
+        factionNames={messages.vocab?.factions}
         factionHeroUrls={factionHeroUrls}
       />
 
@@ -882,15 +900,22 @@ function FeatureGlyph({ accent }: { accent: string }) {
 interface FactionsSectionProps {
   title: string;
   subtitle: string;
-  factionLabels: Dict["factions"];
+  /** Accroches maison, par id de faction. */
+  factionTaglines: Dict["factions"];
+  /** Noms canoniques, traduits — `vocab.factions` du catalogue partagé. */
+  factionNames?: Record<string, { displayName?: string }>;
   factionHeroUrls?: Record<string, string>;
 }
 
-function FactionsSection({ title, subtitle, factionLabels, factionHeroUrls }: FactionsSectionProps) {
+function FactionsSection({ title, subtitle, factionTaglines, factionNames, factionHeroUrls }: FactionsSectionProps) {
   return (
     <section
+      // Cible du « Voir les autres factions » depuis une page de faction : on
+      // revient à la grille, pas en haut de l'accueil.
+      id="factions"
       className="relative px-6 md:px-10 py-24 md:py-32"
       style={{
+        scrollMarginTop: 24,
         background:
           "radial-gradient(ellipse at 50% 40%, #151533 0%, #0a0a18 75%)",
       }}
@@ -926,16 +951,17 @@ function FactionsSection({ title, subtitle, factionLabels, factionHeroUrls }: Fa
       </motion.p>
 
       <div className="max-w-6xl mx-auto mt-14 md:mt-20 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-7">
-        {FACTION_ORDER.map((f, i) => (
+        {SHOWCASE_FACTIONS.map((id, i) => (
           <FactionCard
-            key={f.key}
+            key={id}
             index={i}
-            factionKey={f.key}
-            heroExt={f.heroExt}
-            bannerExt={f.bannerExt}
-            name={factionLabels[f.key].name}
-            tagline={factionLabels[f.key].tagline}
-            heroUrl={factionHeroUrls?.[f.key]}
+            factionId={id}
+            art={LANDING_ART[id]}
+            // Repli sur le nom FR du moteur si la locale n'a pas l'entrée : une
+            // faction fraîchement ajoutée s'affiche, elle n'échoue pas.
+            name={factionNames?.[id]?.displayName ?? FACTIONS[id].displayName}
+            tagline={factionTaglines[id]?.tagline ?? ""}
+            heroUrl={factionHeroUrls?.[id]}
           />
         ))}
       </div>
@@ -945,25 +971,32 @@ function FactionsSection({ title, subtitle, factionLabels, factionHeroUrls }: Fa
 
 function FactionCard({
   index,
-  factionKey,
-  heroExt,
-  bannerExt,
+  factionId,
+  art,
   name,
   tagline,
   heroUrl,
 }: {
   index: number;
-  factionKey: FactionKey;
-  heroExt: "svg" | "png";
-  bannerExt: "svg";
+  /** Id de faction : l'adresse de sa page en est dérivée, jamais du nom
+   *  affiché — celui-ci change avec la langue du visiteur. */
+  factionId: string;
+  /** Illustrations de repli. Absent pour une faction sans art dédié : la carte
+   *  se rabat alors sur le blason générique, jamais sur une image manquante. */
+  art?: { slug: string; heroExt: "svg" | "png" };
   name: string;
   tagline: string;
   heroUrl?: string;
 }) {
+  const banner = art ? `/images/banners/${art.slug}.svg` : "/images/banners/default.svg";
+  const portraitDeRepli = art ? `/images/heroes/${art.slug}.${art.heroExt}` : banner;
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-60px" });
 
   return (
+    // Toute la tuile est cliquable, pas seulement son titre : cible confortable
+    // au doigt, et le survol garde son animation.
+    <Link href={`/factions/${factionSlug(factionId)}`} className="block">
     <motion.div
       ref={ref}
       initial={{ opacity: 0, y: 30 }}
@@ -982,7 +1015,7 @@ function FactionCard({
         style={{ mixBlendMode: "luminosity" }}
       >
         <Image
-          src={`/images/banners/${factionKey}.${bannerExt}`}
+          src={banner}
           alt=""
           fill
           sizes="(max-width: 768px) 100vw, 33vw"
@@ -1020,7 +1053,7 @@ function FactionCard({
             style={{ filter: "drop-shadow(0 10px 20px rgba(0,0,0,0.7))" }}
           >
             <Image
-              src={heroUrl ?? `/images/heroes/${factionKey}.${heroExt}`}
+              src={heroUrl ?? portraitDeRepli}
               alt={name}
               fill
               sizes="280px"
@@ -1050,6 +1083,7 @@ function FactionCard({
         </div>
       </div>
     </motion.div>
+    </Link>
   );
 }
 

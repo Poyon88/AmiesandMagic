@@ -1324,8 +1324,8 @@
     "features_title": "Warum Armies & Magic",
     "f1_title": "Die Tiefe der Legenden.",
     "f1_desc": "Armies & Magic verbindet die Strategie kultiger TCGs mit Mechaniken, die für die Champions von heute entwickelt wurden.",
-    "f2_title": "Alle Karten. Ab der ersten Partie.",
-    "f2_desc": "Der Klassik-Modus ist von Anfang an vollständig verfügbar. Spiele von Beginn an kostenlos mit über 400 Karten und schmieде das Deck, das zu dir passt.",
+    "f2_title": "So viele Karten wie möglich, von Anfang an.",
+    "f2_desc": "Erhalte kostenlos alle klassischen Karten der Fraktion deiner Wahl (rund 500 Karten). Und alle Fraktionen zusammen für einen Bruchteil der Kosten eines klassischen TCG.",
     "f3_title": "Jedes Experten-Deck ein Unikat.",
     "f3_desc": "Limitierte Karten machen jedes Experten-Deck einzigartig. Das gemeinsame Kontingent stellt sicher, dass allein deine Strategie entscheidet.",
     "f4_title": "Die mobile Arena — endlich auf Augenhöhe.",
@@ -1339,41 +1339,32 @@
     "cta_btn": "Abenteuer beginnen",
     "footer": "Armies & Magic — Alle Rechte vorbehalten",
     "factions": {
-      "humans": {
-        "name": "Die Freien Königreiche",
+      "Humains": {
         "tagline": "Vereint unter dem Banner"
       },
-      "elves": {
-        "name": "Das Himmelsbündnis",
+      "Elfes": {
         "tagline": "Hüter des ewigen Waldes"
       },
-      "dwarves": {
-        "name": "Die Armeen der Berge",
+      "Nains": {
         "tagline": "Im Stein geschmiedet"
       },
-      "halflings": {
-        "name": "Der Pakt der Wälder",
-        "tagline": "Klein an Statur, groß im Herzen"
-      },
-      "beastmen": {
-        "name": "Das Rudel",
+      "Hommes-Bêtes": {
         "tagline": "Furor der Wildlande"
       },
-      "giants": {
-        "name": "Die Urgewaltigen",
+      "Élémentaires": {
         "tagline": "Die Elemente erwachen"
       },
-      "dark_elves": {
-        "name": "Die Ausgeburt des Chaos",
+      "Elfes Noirs": {
         "tagline": "Die Schatten tragen einen Namen"
       },
-      "orcs_goblins": {
-        "name": "Die Horde",
-        "tagline": "Der Schlachtruf der Horden"
-      },
-      "undead": {
-        "name": "Die Nekropole",
+      "Morts-Vivants": {
         "tagline": "Die Stille der Gräber ist gebrochen"
+      },
+      "EmpireDuMilieu": {
+        "tagline": "Disziplin vor Raserei"
+      },
+      "RoyaumesDuSoleil": {
+        "tagline": "Die Wüste erinnert sich ihrer Könige"
       }
     }
   },
