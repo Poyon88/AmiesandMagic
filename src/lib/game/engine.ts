@@ -2125,6 +2125,21 @@ export function startTurn(state: GameState): GameState {
 
   if (player.maxMana < MAX_MANA) player.maxMana++;
   player.mana = player.maxMana;
+
+  // Qui était DÉJÀ en jeu au lever du tour.
+  //
+  // La boucle de réveil, plus bas, retire le mal d'invocation à tout le
+  // plateau. Or plusieurs choses ajoutent des créatures ENTRE ce point et
+  // elle — l'effet « à la pioche » qui invoque (Présage de l'Esprit Éveillé),
+  // et le retour d'une unité volée par Corruption. Ces créatures arrivaient
+  // avec leur mal d'invocation, que la boucle leur retirait aussitôt : elles
+  // pouvaient attaquer le tour même de leur arrivée.
+  //
+  // On fige donc la liste ici : le réveil ne concernera que ceux qui étaient
+  // là avant. Une créature apparue depuis garde ce que son invocation lui a
+  // posé — mal d'invocation, ou pas de mal si elle a Traque.
+  const dejaEnJeu = new Set(player.board.map((c) => c.instanceId));
+
   drawCard(player);
 
   // Return Corruption-stolen units to opponent at start of owner's turn
@@ -2156,7 +2171,9 @@ export function startTurn(state: GameState): GameState {
 
   for (const creature of player.board) {
     creature.hasAttacked = false;
-    creature.hasSummoningSickness = false;
+    // Cf. `dejaEnJeu` : une créature arrivée depuis le début de ce tour n'est
+    // pas « réveillée », elle vient de naître.
+    if (dejaEnJeu.has(creature.instanceId)) creature.hasSummoningSickness = false;
     creature.attacksRemaining = maxAttacksFor(creature);
     creature.targetsAttackedThisTurn = [];
     // Untap at the start of OWNER's turn — MTG-strict semantics.
