@@ -23,7 +23,29 @@ export const CAPABILITY_LIMIT_OVERRIDES: ReadonlyMap<string, number> = new Map([
 export function capabilityLimitFor(abilityId: string): number {
   return CAPABILITY_LIMIT_OVERRIDES.get(abilityId) ?? MAX_SAME_CAPABILITY;
 }
+/** Main de départ du joueur qui commence EN SECOND. */
 export const STARTING_HAND_SIZE = 4;
+
+/** Main de départ du joueur qui commence EN PREMIER — une carte de moins.
+ *
+ *  L'initiative vaut cher : le premier joueur pose sa créature avant l'autre,
+ *  attaque un tour plus tôt, et pioche dès son premier tour. Le jeu compensait
+ *  déjà ce déséquilibre côté MANA, en donnant une Étincelle de mana au second
+ *  joueur (cf. applyMulligan) ; il le compense désormais aussi côté CARTES.
+ *
+ *  Deux constantes plutôt qu'un `- 1` au point de distribution : le chiffre est
+ *  un réglage d'équilibrage, il doit être visible et modifiable ici, à côté de
+ *  son jumeau. */
+export const FIRST_PLAYER_HAND_SIZE = 3;
+
+/** Taille de la main de départ d'un joueur, selon qu'il commence ou non.
+ *
+ *  Source UNIQUE : le moteur distribue avec, et le tutoriel annonce avec. Un
+ *  écran qui recopierait le chiffre finirait par mentir au premier
+ *  rééquilibrage. */
+export function startingHandSizeFor(playerIndex: 0 | 1, firstPlayerIndex: 0 | 1): number {
+  return playerIndex === firstPlayerIndex ? FIRST_PLAYER_HAND_SIZE : STARTING_HAND_SIZE;
+}
 export const MAX_HAND_SIZE = 8;
 export const MAX_BOARD_SIZE = 8;
 export const MAX_MANA = 10;

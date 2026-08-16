@@ -25,6 +25,18 @@
 // plus (182 → 183 étapes) et toute la trace suit. Ce n'est PAS une régression ;
 // la règle elle-même est verrouillée par lifesteal.test.ts.
 //
+// RE-BASELINE 2026-08-16 — Main de départ asymétrique. Le joueur qui COMMENCE
+// reçoit désormais 3 cartes au lieu de 4 (cf. startingHandSizeFor), pour
+// compenser l'initiative comme l'Étincelle de mana le fait déjà côté mana. La
+// divergence est double, et la seconde n'est pas évidente : outre la carte en
+// moins dans la main de P1, son deck compte une carte de PLUS au moment du
+// mélange d'après-mulligan — or `shuffleArray` consomme un appel de RNG par
+// carte. Le flux aléatoire est donc décalé d'un cran dès le mulligan, et toute
+// la trace suit (183 → 84 étapes). La partie se termine toujours par la mort
+// d'un héros (`finished: true`) ; ce n'est PAS un blocage. La règle elle-même
+// est verrouillée par first-player-hand.test.ts, y compris son déterminisme
+// réseau — ce golden n'en est que l'empreinte sur une partie particulière.
+//
 // Déterminisme : RNG semée via initializeGame(seed) ; shuffleArray utilise cette
 // RNG ; l'auto-player fournit TOUJOURS des cibles explicites pour éviter le
 // `Math.random()` d'auto-ciblage (engine.ts ~1802) ; `turnStartedAt` (Date.now)

@@ -19,6 +19,7 @@ import {
   HERO_MAX_HP,
   DECK_SIZE,
   STARTING_HAND_SIZE,
+  FIRST_PLAYER_HAND_SIZE,
   MAX_HAND_SIZE,
   MAX_BOARD_SIZE,
   MAX_MANA,
@@ -185,7 +186,7 @@ function BeginnerGuide() {
         </P>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
           <Stat value={`${HERO_MAX_HP} PV`} label={tt('stat_hero_start')} />
-          <Stat value={`${STARTING_HAND_SIZE} cartes`} label={tt('stat_starting_hand')} />
+          <Stat value={`${FIRST_PLAYER_HAND_SIZE} ou ${STARTING_HAND_SIZE} cartes`} label={tt('stat_starting_hand')} />
           <Stat value={`${STARTING_MANA} → ${MAX_MANA}`} label={tt('stat_mana_growth')} />
           <Stat value={`${MAX_BOARD_SIZE}`} label={tt('stat_max_board')} />
         </div>
@@ -201,14 +202,17 @@ function BeginnerGuide() {
         ]} />
         <P>
           La <Hi>première</Hi> partie commence à {STARTING_MANA} mana : le mana est la ressource clé, et elle grandit
-          à chaque tour. Le joueur qui commence en second reçoit une <Hi>Étincelle de mana</Hi> (+1 mana pour son
-          premier tour) afin de compenser le désavantage d'initiative.
+          à chaque tour. Commencer est un avantage — on pose sa créature avant l'autre et on attaque un tour plus
+          tôt — alors le jeu le compense de deux façons : le joueur qui commence <Hi>en second</Hi> reçoit une
+          <Hi> Étincelle de mana</Hi> (+1 mana pour son premier tour), et le joueur qui commence en premier démarre
+          avec <Hi>une carte de moins</Hi>.
         </P>
       </Section>
 
       <Section title={tt('hand_title')}>
         <P>
-          Vous démarrez avec <Hi>{STARTING_HAND_SIZE} cartes</Hi> et pouvez en remplacer autant que vous voulez lors
+          Vous démarrez avec <Hi>{STARTING_HAND_SIZE} cartes</Hi> — ou <Hi>{FIRST_PLAYER_HAND_SIZE}</Hi> si c'est
+          vous qui commencez — et pouvez en remplacer autant que vous voulez lors
           du <Hi>mulligan</Hi> (avant le début de la partie). Votre main peut contenir au maximum
           <Hi> {MAX_HAND_SIZE} cartes</Hi> — au-delà, les cartes piochées sont perdues. Si votre deck est vide et que
           vous devez piocher, vous subissez des dégâts de <Hi>fatigue</Hi> croissants.
@@ -297,7 +301,7 @@ function TcgGuide() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Stat value={`${HERO_MAX_HP}`} label={tt('stat_hero_hp')} />
           <Stat value={`${DECK_SIZE}`} label={tt('stat_deck_exact')} />
-          <Stat value={`${STARTING_HAND_SIZE} → ${MAX_HAND_SIZE}`} label={tt('stat_hand_range')} />
+          <Stat value={`${FIRST_PLAYER_HAND_SIZE}–${STARTING_HAND_SIZE} → ${MAX_HAND_SIZE}`} label={tt('stat_hand_range')} />
           <Stat value={`${STARTING_MANA} → ${MAX_MANA}`} label={tt('stat_mana_per_turn')} />
         </div>
       </Section>

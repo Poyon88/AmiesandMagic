@@ -39,7 +39,7 @@ import { getCapabilities } from "./capability-adapter";
 import { parseXValuesFromEffectText } from "./keyword-labels";
 import {
   HERO_MAX_HP,
-  STARTING_HAND_SIZE,
+  startingHandSizeFor,
   MAX_HAND_SIZE,
   MAX_BOARD_SIZE,
   MAX_MANA,
@@ -1733,8 +1733,12 @@ export function initializeGame(
   if (seed !== undefined) initRNG(seed);
   const p1Deck = createDeckInstances(player1Cards);
   const p2Deck = createDeckInstances(player2Cards);
-  const p1Hand = p1Deck.splice(0, STARTING_HAND_SIZE);
-  const p2Hand = p2Deck.splice(0, STARTING_HAND_SIZE);
+  // Le joueur qui COMMENCE reçoit une carte de moins (cf. startingHandSizeFor).
+  // Le tirage se fait toujours dans le même ordre — p1 puis p2 — et `splice`
+  // ne consomme pas la RNG : distribuer 3 au lieu de 4 ne décale donc pas le
+  // flux aléatoire partagé par les deux clients.
+  const p1Hand = p1Deck.splice(0, startingHandSizeFor(0, firstPlayerIndex));
+  const p2Hand = p2Deck.splice(0, startingHandSizeFor(1, firstPlayerIndex));
 
   const makePlayer = (id: string, hand: CardInstance[], deck: CardInstance[], hero?: HeroDefinition | null): PlayerState => ({
     id,
