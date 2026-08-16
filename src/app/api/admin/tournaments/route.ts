@@ -20,7 +20,51 @@ export async function GET() {
     .order("created_at", { ascending: false });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ tournaments: data ?? [] });
+
+  // Nombre d'inscrits par tournoi. Une seule requête pour tout le monde plutôt
+  // qu'un comptage par ligne : l'écran en affiche une quinzaine, et N+1 requêtes
+  // pour un chiffre est le genre de détail qui ne se voit qu'en production.
+  const { data: entries } = await auth.supabase
+    .from("tournament_entries")
+    .select("tournament_id");
+
+  const counts = new Map<string, number>();
+  for (const e of entries ?? []) {
+    counts.set(e.tournament_id, (counts.get(e.tournament_id) ?? 0) + 1);
+  }
+
+  return NextResponse.json({
+    tournaments: (data ?? []).map((t) => ({ ...t, entries_count: counts.get(t.id) ?? 0 })),
+  });
+}
+
+/** Suppression réservée aux tournois SANS AUCUN INSCRIT — pour effacer une
+ *  coquille, pas pour défaire une vente. Un tournoi qui a des inscrits a des
+ *  paiements derrière lui : le supprimer romprait la traçabilité de l'argent
+ *  encaissé. Pour fermer un tournoi vendu, on l'ANNULE (status `cancelled`) et
+ *  on rembourse depuis Stripe. */
+export async function DELETE(request: Request) {
+  const auth = await requireAdmin();
+  if (auth.error) return auth.error;
+
+  const id = new URL(request.url).searchParams.get("id");
+  if (!id) return NextResponse.json({ error: "id requis" }, { status: 400 });
+
+  const { count } = await auth.supabase
+    .from("tournament_entries")
+    .select("id", { count: "exact", head: true })
+    .eq("tournament_id", id);
+
+  if ((count ?? 0) > 0) {
+    return NextResponse.json(
+      { error: `Impossible : ${count} inscription(s) enregistrée(s). Annulez le tournoi plutôt que de le supprimer.` },
+      { status: 409 },
+    );
+  }
+
+  const { error } = await auth.supabase.from("tournaments").delete().eq("id", id);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ deleted: true });
 }
 
 export async function POST(request: Request) {
