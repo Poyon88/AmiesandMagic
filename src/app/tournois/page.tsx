@@ -4,6 +4,7 @@ import Link from "next/link";
 import AmPanel from "@/components/ui/AmPanel";
 import AmHeading from "@/components/ui/AmHeading";
 import TournamentSignup from "@/components/payments/TournamentSignup";
+import PageChrome from "@/components/shared/PageChrome";
 
 export const metadata = { title: "Tournois — Armies & Magic" };
 
@@ -66,8 +67,8 @@ export default async function TournoisPage() {
   const debt = wallet?.ticket_debt ?? 0;
 
   return (
-    <div className="min-h-screen bg-am-bg-0">
-      <div className="mx-auto max-w-4xl px-4 py-12">
+    <PageChrome>
+      <div className="mx-auto max-w-4xl px-4 pb-16">
         <AmHeading
           eyebrow="Circuit payant"
           subtitle="Un ticket ouvre l'entrée d'un tournoi. Les gains sont versés en pièces d'or, dépensables dans les enchères."
@@ -119,6 +120,6 @@ export default async function TournoisPage() {
           </div>
         )}
       </div>
-    </div>
+    </PageChrome>
   );
 }

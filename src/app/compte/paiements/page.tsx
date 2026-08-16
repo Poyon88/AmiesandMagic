@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import AmHeading from "@/components/ui/AmHeading";
 import PaymentHistory from "@/components/payments/PaymentHistory";
+import PageChrome from "@/components/shared/PageChrome";
 
 export const metadata = { title: "Mes paiements — Armies & Magic" };
 
@@ -11,11 +12,11 @@ export default async function PaiementsPage() {
   if (!user) redirect("/login");
 
   return (
-    <div className="min-h-screen bg-am-bg-0">
-      <div className="mx-auto max-w-3xl px-4 py-12">
+    <PageChrome>
+      <div className="mx-auto max-w-3xl px-4 pb-16">
         <AmHeading
           eyebrow="Compte"
-          subtitle="Vos achats de pièces d'or et vos inscriptions aux tournois payants."
+          subtitle="Vos achats de tickets de tournoi et de pièces d'or."
         >
           Mes paiements
         </AmHeading>
@@ -27,6 +28,6 @@ export default async function PaiementsPage() {
           pas convertibles en euros ; seul le paiement d&apos;origine peut être remboursé.
         </p>
       </div>
-    </div>
+    </PageChrome>
   );
 }

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import TicketShop from "@/components/payments/TicketShop";
 import GoldShop from "@/components/payments/GoldShop";
 import { publicGoldPacks, publicTicketPacks } from "@/lib/payments/config";
+import PageChrome from "@/components/shared/PageChrome";
 
 export const metadata = { title: "Boutique — Armies & Magic" };
 
@@ -18,12 +19,12 @@ export default async function BoutiquePage() {
   // Les tickets d'abord : c'est le seul moyen d'entrer en tournoi, donc la
   // raison la plus fréquente de venir ici. L'or ne sert qu'aux enchères.
   return (
-    <div className="min-h-screen bg-am-bg-0">
+    <PageChrome>
       <TicketShop packs={publicTicketPacks()} />
       <div className="mx-auto max-w-5xl px-4">
         <div className="am-rule-diamond mx-auto w-40" aria-hidden="true" />
       </div>
       <GoldShop packs={publicGoldPacks()} />
-    </div>
+    </PageChrome>
   );
 }

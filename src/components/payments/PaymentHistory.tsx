@@ -78,10 +78,15 @@ export default function PaymentHistory() {
                 )}
               </td>
               <td className="px-4 py-3 text-right tabular-nums text-am-ink-2">
-                {new Intl.NumberFormat("fr-FR", {
-                  style: "currency",
-                  currency: (p.currency || "eur").toUpperCase(),
-                }).format(p.amount_cents / 100)}
+                {/* Un paiement en attente n'a pas encore de montant : il n'est
+                    copié depuis Stripe qu'à la confirmation. Afficher « 0,00 € »
+                    laisserait croire à un achat gratuit. */}
+                {p.status === "pending"
+                  ? <span className="text-am-ink-3">—</span>
+                  : new Intl.NumberFormat("fr-FR", {
+                      style: "currency",
+                      currency: (p.currency || "eur").toUpperCase(),
+                    }).format(p.amount_cents / 100)}
               </td>
               <td className={`px-4 py-3 font-semibold ${STATUS_CLASS[p.status]}`}>
                 {STATUS_LABEL[p.status]}
