@@ -20,9 +20,12 @@ const read = (p: string) => readFileSync(join(ROOT, p), "utf8");
 describe("empilement au survol", () => {
   it("la carte d'enchère porte le relèvement en plus de l'animation", () => {
     const src = read("src/components/auction/AuctionHouse.tsx");
-    expect(src, "l'enveloppe de carte a perdu am-hover-lift").toMatch(
-      /className="am-animate-rise am-hover-lift"/,
-    );
+    // On vérifie la PRÉSENCE des deux classes, pas leur ordre ni leur
+    // voisinage : une troisième classe légitime (h-full) ne doit pas faire
+    // tomber le garde-fou.
+    const enveloppe = src.match(/className="([^"]*am-animate-rise[^"]*)"[\s\S]{0,120}AuctionCard/);
+    expect(enveloppe, "enveloppe de carte introuvable").not.toBeNull();
+    expect(enveloppe![1], "l'enveloppe de carte a perdu am-hover-lift").toContain('am-hover-lift');
   });
 
   it("la classe existe, positionne l'élément, et monte au survol", () => {

@@ -52,8 +52,14 @@ export default function AuctionCard({ auction }: AuctionCardProps) {
   return (
     <div
       style={{
-        background: "#2a2a45",
-        border: "1px solid #3d3d5c",
+        // Fond assombri, aligné sur les panneaux du reste du site (.am-glass).
+        // Le précédent, plus clair, avalait le bord doré : un or à 30 %
+        // d'opacité ne se voit que sur une surface sombre.
+        background: "linear-gradient(160deg, rgba(34,28,56,0.92) 0%, rgba(15,13,26,0.96) 100%)",
+        // Bord doré franc — c'est lui qui doit encadrer la vignette. Le liseré
+        // intérieur lui donne l'épaisseur d'un cadre sans épaissir le trait.
+        border: "1px solid rgba(216,178,90,0.55)",
+        boxShadow: "inset 0 0 0 1px rgba(216,178,90,0.10), var(--am-shadow-sm)",
         borderRadius: 12,
         padding: 16,
         opacity: isExpired ? 0.6 : 1,
@@ -61,12 +67,17 @@ export default function AuctionCard({ auction }: AuctionCardProps) {
         flexDirection: "column",
         alignItems: "center",
         gap: 12,
+        // Hauteur pleine : les panneaux d'une même rangée s'alignent, quel que
+        // soit le nombre de lignes du nom (cf. la réserve de deux lignes plus
+        // bas). Sans cela, un nom long allongeait un seul panneau.
+        height: "100%",
+        boxSizing: "border-box",
       }}
     >
       {/* Item visual */}
       <div style={{ position: "relative", width: 180, height: 252, flexShrink: 0 }}>
         {mainCard ? (
-          <GameCard card={mainCard} size="sm" />
+          <GameCard card={mainCard} size="sm" forceRarityFrame />
         ) : mainBoard ? (
           <div
             style={{
@@ -121,11 +132,24 @@ export default function AuctionCard({ auction }: AuctionCardProps) {
       {/* Auction info — clickable to navigate */}
       <div
         onClick={() => router.push(`/auction/${auction.id}`)}
-        style={{ width: "100%", cursor: "pointer" }}
+        style={{
+          width: "100%", cursor: "pointer",
+          // Occupe la hauteur restante et pousse la ligne « Vendeur » en bas :
+          // les pieds de panneau s'alignent d'une carte à l'autre.
+          flex: 1, display: "flex", flexDirection: "column",
+        }}
       >
         {/* Time remaining */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-          <div style={{ fontSize: 13, color: "#e0e0e0", fontWeight: 600 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 8 }}>
+          {/* Deux lignes RÉSERVÉES, occupées ou non. C'est ce qui met le prix
+              à la même hauteur sur toute la rangée : sans cette réserve, un nom
+              qui passe à la ligne décale tout ce qui suit. */}
+          <div style={{
+            fontSize: 13, color: "#e0e0e0", fontWeight: 600,
+            minHeight: "2.6em", lineHeight: 1.3,
+            display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 2,
+            overflow: "hidden",
+          }}>
             {itemName}
           </div>
           <div
@@ -167,7 +191,7 @@ export default function AuctionCard({ auction }: AuctionCardProps) {
         </div>
 
         {/* Seller */}
-        <div style={{ fontSize: 10, color: "#666", marginTop: 8, borderTop: "1px solid #3d3d5c33", paddingTop: 6 }}>
+        <div style={{ fontSize: 10, color: "#666", marginTop: "auto", paddingTop: 8, borderTop: "1px solid rgba(216,178,90,0.22)" }}>
           {t("seller")} {auction.seller_username ?? t("system")}
         </div>
       </div>
