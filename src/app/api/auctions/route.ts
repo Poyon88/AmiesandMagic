@@ -5,6 +5,8 @@ import { cookies } from 'next/headers';
 import type { CreateAuctionPayload } from '@/lib/auction/types';
 import { isPlayerSellingEnabled } from '@/lib/auction/flags';
 import { minStartingBidForLot, forbiddenRarities } from '@/lib/auction/pricing';
+import { ALL_KEYWORDS } from '@/lib/game/keyword-labels';
+import type { Keyword } from '@/lib/game/types';
 
 async function getAuthUser() {
   const cookieStore = await cookies();
@@ -39,6 +41,9 @@ export async function GET(request: Request) {
   const faction = searchParams.get('faction');
   const rarity = searchParams.get('rarity');
   const cardType = searchParams.get('cardType');
+  const clan = searchParams.get('clan');
+  const ability = searchParams.get('ability');
+  const printNumber = searchParams.get('printNumber');
   const minPrice = searchParams.get('minPrice');
   const maxPrice = searchParams.get('maxPrice');
   const search = searchParams.get('search');
@@ -76,25 +81,83 @@ export async function GET(request: Request) {
     `, { count: 'exact' })
     .eq('status', status);
 
-  // Filter by card attributes via auction_items
-  if (faction || rarity || cardType || search) {
-    // Get auction IDs that match card filters
+  // ─── Filtres portant sur les OBJETS de l'enchère ──────────────────────────
+  //
+  // Chaque critère produit un ensemble d'`auction_id`, et on garde
+  // l'INTERSECTION : demander « clan X » ET « capacité Y » doit rendre les
+  // enchères qui satisfont les deux, pas leur union. Les critères ne peuvent pas
+  // être empilés sur une seule requête, parce qu'ils ne portent pas tous sur la
+  // même table (la carte pour les uns, le tirage pour le numéro d'exemplaire).
+  const ensembles: string[][] = [];
+
+  if (faction || rarity || cardType || search || clan) {
     let cardQuery = supabase
       .from('auction_items')
-      .select('auction_id, card:cards!inner(name, faction, rarity, card_type)');
+      .select('auction_id, card:cards!inner(name, faction, rarity, card_type, clan)');
 
     if (faction) cardQuery = cardQuery.eq('card.faction', faction);
     if (rarity) cardQuery = cardQuery.eq('card.rarity', rarity);
     if (cardType) cardQuery = cardQuery.eq('card.card_type', cardType);
+    if (clan) cardQuery = cardQuery.eq('card.clan', clan);
     if (search) cardQuery = cardQuery.ilike('card.name', `%${search}%`);
 
     const { data: matchingItems } = await cardQuery;
-    const auctionIds = [...new Set((matchingItems ?? []).map(i => i.auction_id))];
+    ensembles.push([...new Set((matchingItems ?? []).map(i => i.auction_id))]);
+  }
 
-    if (auctionIds.length === 0) {
+  // CAPACITÉ. Deux colonnes à interroger : `keywords` (tableau de texte, côté
+  // créature) et `spell_keywords` (jsonb d'objets `{id}`, côté sort). Une carte
+  // ne peut donc pas être trouvée par une seule condition.
+  //
+  // ⚠️ `ability` est injecté dans une chaîne `.or()`, donc VALIDÉ contre le
+  // registre avant : une valeur libre y serait une injection PostgREST.
+  if (ability) {
+    if (!ALL_KEYWORDS.includes(ability as Keyword)) {
+      return NextResponse.json({ error: 'Capacité inconnue' }, { status: 400 });
+    }
+    const { data: cardRows } = await supabase
+      .from('cards')
+      .select('id')
+      .or(`keywords.cs.{${ability}},spell_keywords.cs.[{"id":"${ability}"}]`);
+
+    const cardIds = (cardRows ?? []).map((c) => c.id as number);
+    if (cardIds.length === 0) {
       return NextResponse.json({ auctions: [], total: 0, page, limit });
     }
-    query = query.in('id', auctionIds);
+    const { data: items } = await supabase
+      .from('auction_items').select('auction_id').in('card_id', cardIds);
+    ensembles.push([...new Set((items ?? []).map(i => i.auction_id as string))]);
+  }
+
+  // NUMÉRO D'EXEMPLAIRE dans la série. Il vit sur le TIRAGE (`card_prints`), pas
+  // sur la carte : une enchère système (`source_type = 'admin'`) n'en a aucun et
+  // sort donc légitimement des résultats dès que ce filtre est posé.
+  if (printNumber) {
+    const n = parseInt(printNumber, 10);
+    if (!Number.isFinite(n) || n < 1) {
+      return NextResponse.json({ error: "Numéro d'exemplaire invalide" }, { status: 400 });
+    }
+    const { data: prints } = await supabase
+      .from('card_prints').select('id').eq('print_number', n);
+    const printIds = (prints ?? []).map((p) => p.id as number);
+    if (printIds.length === 0) {
+      return NextResponse.json({ auctions: [], total: 0, page, limit });
+    }
+    const { data: items } = await supabase
+      .from('auction_items').select('auction_id')
+      .eq('source_type', 'print').in('source_id', printIds);
+    ensembles.push([...new Set((items ?? []).map(i => i.auction_id as string))]);
+  }
+
+  if (ensembles.length > 0) {
+    const intersection = ensembles.reduce((acc, cur) => {
+      const s = new Set(cur);
+      return acc.filter((id) => s.has(id));
+    });
+    if (intersection.length === 0) {
+      return NextResponse.json({ auctions: [], total: 0, page, limit });
+    }
+    query = query.in('id', intersection);
   }
 
   // Price filters

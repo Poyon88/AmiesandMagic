@@ -45,6 +45,17 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
   const [faction, setFaction] = useState("");
   const [rarity, setRarity] = useState("");
   const [cardType, setCardType] = useState("");
+  const [clan, setClan] = useState("");
+  const [ability, setAbility] = useState("");
+  const [printNumber, setPrintNumber] = useState("");
+
+  // Valeurs RÉELLEMENT présentes dans les enchères actives : les menus ne
+  // proposent que ce qui peut rendre un résultat (cf. /api/auctions/filters).
+  const [options, setOptions] = useState<{
+    clans: string[];
+    abilities: { id: string; label: string }[];
+    printNumbers: number[];
+  }>({ clans: [], abilities: [], printNumbers: [] });
 
   const fetchAuctions = useCallback(async () => {
     setLoading(true);
@@ -57,6 +68,9 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
     if (faction) params.set("faction", faction);
     if (rarity) params.set("rarity", rarity);
     if (cardType) params.set("cardType", cardType);
+    if (clan) params.set("clan", clan);
+    if (ability) params.set("ability", ability);
+    if (printNumber) params.set("printNumber", printNumber);
 
     const res = await fetch(`/api/auctions?${params}`);
     const data = await res.json();
@@ -65,7 +79,14 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
       setTotal(data.total);
     }
     setLoading(false);
-  }, [filters, search, faction, rarity, cardType]);
+  }, [filters, search, faction, rarity, cardType, clan, ability, printNumber]);
+
+  useEffect(() => {
+    fetch("/api/auctions/filters")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d && setOptions(d))
+      .catch(() => { /* menus vides : les filtres restent simplement inactifs */ });
+  }, []);
 
   useEffect(() => {
     fetch("/api/auctions/settings")
@@ -184,6 +205,64 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
               <option value="creature">{t("type_creature")}</option>
               <option value="spell">{t("type_spell")}</option>
             </select>
+
+            {/* Clan — n'apparaît que si au moins une enchère en porte un.
+                Un menu de 36 clans dont 35 ne rendent rien ferait perdre du
+                temps à chaque essai. */}
+            {options.clans.length > 0 && (
+              <select
+                value={clan}
+                onChange={(e) => {
+                  setClan(e.target.value);
+                  setFilters((f) => ({ ...f, page: 1 }));
+                }}
+                className={SELECT_CLASS}
+                aria-label="Filtrer par clan"
+              >
+                <option value="">Tous clans</option>
+                {options.clans.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            )}
+
+            {/* Capacité — même principe. Le libellé est résolu côté serveur :
+                le navigateur n'a pas à embarquer le registre des capacités. */}
+            {options.abilities.length > 0 && (
+              <select
+                value={ability}
+                onChange={(e) => {
+                  setAbility(e.target.value);
+                  setFilters((f) => ({ ...f, page: 1 }));
+                }}
+                className={SELECT_CLASS}
+                aria-label="Filtrer par capacité"
+              >
+                <option value="">Toutes capacités</option>
+                {options.abilities.map((a) => (
+                  <option key={a.id} value={a.id}>{a.label}</option>
+                ))}
+              </select>
+            )}
+
+            {/* Numéro d'exemplaire dans la série. Une SAISIE et non un menu :
+                les numéros sont dispersés (un #7/100 ici, un #1/1 là) et une
+                liste n'en dirait rien d'utile. Poser ce filtre écarte les
+                enchères système, qui n'ont pas de tirage numéroté. */}
+            {options.printNumbers.length > 0 && (
+              <input
+                type="number"
+                min={1}
+                value={printNumber}
+                onChange={(e) => {
+                  setPrintNumber(e.target.value);
+                  setFilters((f) => ({ ...f, page: 1 }));
+                }}
+                placeholder="N° d'exemplaire"
+                className={SELECT_CLASS}
+                aria-label="Filtrer par numéro d'exemplaire dans la série"
+              />
+            )}
             <select
               value={filters.sort}
               onChange={(e) =>
