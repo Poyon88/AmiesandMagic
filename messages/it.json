@@ -1565,7 +1565,9 @@
     "error_user_already_exists": "Esiste già un account con questo indirizzo.",
     "error_signups_disabled": "Le registrazioni sono momentaneamente chiuse.",
     "error_database_error": "La creazione dell'account non è riuscita da parte nostra. Riprova tra poco; se il problema persiste, contattaci.",
-    "error_captcha_failed": "La verifica anti-robot è fallita o è scaduta. Ricarica la pagina e riprova."
+    "error_captcha_failed": "La verifica anti-robot è fallita o è scaduta. Ricarica la pagina e riprova.",
+    "faction_see_cards": "Guarda le carte di {faction} prima di decidere →",
+    "faction_browse": "Indeciso? Scopri ogni fazione e le sue carte →"
   },
   "common": {
     "settings_title": "Impostazioni",
@@ -2371,6 +2373,33 @@
     "cost_life_desc": "Queste carte si pagano anche con i punti vita del tuo eroe, oltre al costo in mana.",
     "cost_discard_desc": "Queste carte richiedono di scartare carte dalla tua mano, oltre al costo in mana.",
     "cost_sacrifice_desc": "Queste carte richiedono di sacrificare creature che controlli, oltre al costo in mana.",
-    "cost_exile_desc": "Queste carte esiliano carte dalla cima del tuo mazzo, oltre al costo in mana."
+    "cost_exile_desc": "Queste carte esiliano carte dalla cima del tuo mazzo, oltre al costo in mana.",
+    "commons_count": "{count, plural, one {# carta comune} other {# carte comuni}} · {clans, plural, one {# clan} other {# clan}}"
+  },
+  "faction_action": {
+    "visitor_pitch": "Crea il tuo account per iniziare con {faction}: tutte le sue carte comuni saranno tue.",
+    "visitor_cta": "CREA UN ACCOUNT",
+    "owned_just_chosen": "{faction} è la tua fazione",
+    "owned_bundle": "Inclusa nel tuo pacchetto",
+    "owned_starter": "La tua fazione iniziale",
+    "owned_bought": "Fazione acquisita",
+    "owned_note": "Tutte le carte comuni qui sotto sono nella tua collezione.",
+    "enter_game": "ENTRA NEL GIOCO",
+    "see_collection": "VEDI LA MIA COLLEZIONE",
+    "free_pitch": "Non hai ancora scelto la tua fazione iniziale. Inizia con <strong>{faction}</strong> e ricevi tutte le sue carte comuni, gratis.",
+    "free_cta": "INIZIA CON QUESTA FAZIONE",
+    "free_warning": "Questa scelta è definitiva: non potrai cambiarla, solo acquisire altre fazioni in seguito.",
+    "free_confirm": "CONFERMA — {faction}",
+    "cancel": "ANNULLA",
+    "buy_pitch": "Aggiungi {faction} alla tua collezione: tutte le sue carte comuni, per sempre.",
+    "your_balance": "(hai {balance})",
+    "debt_blocks": "Il tuo debito di {debt} oro va saldato prima di ogni nuovo acquisto.",
+    "not_enough_gold": "ORO INSUFFICIENTE",
+    "buy_cta": "SBLOCCA QUESTA FAZIONE",
+    "err_already_chosen": "Hai già scelto la tua fazione iniziale.",
+    "err_choice": "La scelta non è stata salvata.",
+    "err_purchase": "L’acquisto non è andato a buon fine.",
+    "badge_starter": "INIZIALE",
+    "badge_owned": "ACQUISITA"
   }
 }

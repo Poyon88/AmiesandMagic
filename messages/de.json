@@ -1565,7 +1565,9 @@
     "error_user_already_exists": "Für diese Adresse existiert bereits ein Konto.",
     "error_signups_disabled": "Neuanmeldungen sind derzeit geschlossen.",
     "error_database_error": "Die Kontoerstellung ist auf unserer Seite fehlgeschlagen. Versuch es gleich noch einmal; falls das Problem weiterhin besteht, kontaktiere uns.",
-    "error_captcha_failed": "Die Anti-Bot-Überprüfung ist fehlgeschlagen oder abgelaufen. Lade die Seite neu und versuche es erneut."
+    "error_captcha_failed": "Die Anti-Bot-Überprüfung ist fehlgeschlagen oder abgelaufen. Lade die Seite neu und versuche es erneut.",
+    "faction_see_cards": "Die Karten von {faction} ansehen, bevor du dich entscheidest →",
+    "faction_browse": "Unsicher? Entdecke jede Fraktion und ihre Karten →"
   },
   "common": {
     "settings_title": "Einstellungen",
@@ -2371,6 +2373,33 @@
     "cost_life_desc": "Diese Karten kosten zusätzlich Lebenspunkte deines Helden, neben ihren Manakosten.",
     "cost_discard_desc": "Diese Karten verlangen, Karten aus deiner Hand abzuwerfen, neben ihren Manakosten.",
     "cost_sacrifice_desc": "Diese Karten verlangen, von dir kontrollierte Kreaturen zu opfern, neben ihren Manakosten.",
-    "cost_exile_desc": "Diese Karten verbannen Karten von deiner Deckoberseite, neben ihren Manakosten."
+    "cost_exile_desc": "Diese Karten verbannen Karten von deiner Deckoberseite, neben ihren Manakosten.",
+    "commons_count": "{count, plural, one {# gewöhnliche Karte} other {# gewöhnliche Karten}} · {clans, plural, one {# Klan} other {# Klans}}"
+  },
+  "faction_action": {
+    "visitor_pitch": "Erstelle dein Konto, um mit {faction} zu beginnen: alle gewöhnlichen Karten gehören dann dir.",
+    "visitor_cta": "KONTO ERSTELLEN",
+    "owned_just_chosen": "{faction} ist deine Fraktion",
+    "owned_bundle": "In deinem Paket enthalten",
+    "owned_starter": "Deine Startfraktion",
+    "owned_bought": "Fraktion erworben",
+    "owned_note": "Alle gewöhnlichen Karten unten sind in deiner Sammlung.",
+    "enter_game": "INS SPIEL",
+    "see_collection": "MEINE SAMMLUNG",
+    "free_pitch": "Du hast deine Startfraktion noch nicht gewählt. Beginne mit <strong>{faction}</strong> und erhalte alle ihre gewöhnlichen Karten, kostenlos.",
+    "free_cta": "MIT DIESER FRAKTION BEGINNEN",
+    "free_warning": "Diese Wahl ist endgültig: du kannst sie nicht mehr ändern, sondern später nur weitere Fraktionen erwerben.",
+    "free_confirm": "BESTÄTIGEN — {faction}",
+    "cancel": "ABBRECHEN",
+    "buy_pitch": "Füge {faction} deiner Sammlung hinzu: alle gewöhnlichen Karten, dauerhaft.",
+    "your_balance": "(du hast {balance})",
+    "debt_blocks": "Deine Schuld von {debt} Gold muss vor jedem neuen Kauf beglichen werden.",
+    "not_enough_gold": "NICHT GENUG GOLD",
+    "buy_cta": "DIESE FRAKTION FREISCHALTEN",
+    "err_already_chosen": "Du hast deine Startfraktion bereits gewählt.",
+    "err_choice": "Die Wahl konnte nicht gespeichert werden.",
+    "err_purchase": "Der Kauf konnte nicht abgeschlossen werden.",
+    "badge_starter": "START",
+    "badge_owned": "ERWORBEN"
   }
 }

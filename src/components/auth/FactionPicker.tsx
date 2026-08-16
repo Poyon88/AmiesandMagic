@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import AuthShell from "@/components/auth/AuthShell";
 import { FACTIONS, getFactionDisplayName } from "@/lib/card-engine/constants";
 import { STARTER_FACTION_IDS } from "@/lib/auth/starterFaction";
+import { factionSlug } from "@/lib/game/faction-slug";
 
 /** Codes renvoyés par POST /api/profile/faction. Liste close : un code inconnu
  *  retombe sur le message générique plutôt que d'afficher une clé i18n brute. */
@@ -101,6 +103,30 @@ export default function FactionPicker() {
           );
         })}
       </div>
+
+      {/* Le choix est définitif, et cette grille ne montre que des noms. Le
+          joueur doit pouvoir aller VOIR les cartes avant de trancher — la page
+          d'une faction lui permet d'ailleurs de choisir directement depuis
+          là, sans revenir ici. */}
+      <p className="mb-4 text-center text-xs font-[family-name:var(--font-crimson),serif]">
+        {selected ? (
+          <Link
+            href={`/factions/${factionSlug(selected)}`}
+            className="underline underline-offset-2 transition-opacity hover:opacity-80"
+            style={{ color: "var(--am-gold)" }}
+          >
+            {t("faction_see_cards", { faction: getFactionDisplayName(selected) })}
+          </Link>
+        ) : (
+          <Link
+            href="/landing#factions"
+            className="underline underline-offset-2 transition-opacity hover:opacity-80"
+            style={{ color: "var(--am-gold)" }}
+          >
+            {t("faction_browse")}
+          </Link>
+        )}
+      </p>
 
       <p className="mb-4 text-xs text-am-ember font-[family-name:var(--font-crimson),serif]">
         {t("faction_warning")}

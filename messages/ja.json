@@ -1565,7 +1565,9 @@
     "error_user_already_exists": "このメールアドレスのアカウントはすでに存在します。",
     "error_signups_disabled": "新規登録は一時的に停止されています。",
     "error_database_error": "こちら側でアカウント作成に失敗しました。しばらくしてから再度お試しください。問題が続く場合はお問い合わせください。",
-    "error_captcha_failed": "認証確認に失敗したか、有効期限が切れました。ページを再読み込みしてもう一度お試しください。"
+    "error_captcha_failed": "認証確認に失敗したか、有効期限が切れました。ページを再読み込みしてもう一度お試しください。",
+    "faction_see_cards": "決める前に{faction}のカードを見る →",
+    "faction_browse": "迷っていますか？ 各勢力とそのカードを見る →"
   },
   "common": {
     "settings_title": "設定",
@@ -2371,6 +2373,33 @@
     "cost_life_desc": "これらのカードは、マナに加えてヒーローのライフも支払います。",
     "cost_discard_desc": "これらのカードは、マナに加えて手札を捨てることを求めます。",
     "cost_sacrifice_desc": "これらのカードは、マナに加えて自分のクリーチャーを生け贄に捧げることを求めます。",
-    "cost_exile_desc": "これらのカードは、マナに加えてデッキの上からカードを追放します。"
+    "cost_exile_desc": "これらのカードは、マナに加えてデッキの上からカードを追放します。",
+    "commons_count": "コモンカード {count} 枚 ・ {clans} クラン"
+  },
+  "faction_action": {
+    "visitor_pitch": "アカウントを作成して{faction}で始めましょう。そのコモンカードがすべて手に入ります。",
+    "visitor_cta": "アカウントを作成",
+    "owned_just_chosen": "{faction}があなたの勢力です",
+    "owned_bundle": "パックに含まれています",
+    "owned_starter": "あなたの開始勢力",
+    "owned_bought": "取得済みの勢力",
+    "owned_note": "以下のコモンカードはすべてコレクションに入っています。",
+    "enter_game": "ゲームへ",
+    "see_collection": "コレクションを見る",
+    "free_pitch": "開始勢力がまだ選ばれていません。<strong>{faction}</strong>で始めれば、そのコモンカードをすべて無料で受け取れます。",
+    "free_cta": "この勢力で始める",
+    "free_warning": "この選択は最終決定です。後から変更はできず、他の勢力を追加で入手することのみ可能です。",
+    "free_confirm": "確定 — {faction}",
+    "cancel": "キャンセル",
+    "buy_pitch": "{faction}をコレクションに追加します。そのコモンカードがすべて永久に手に入ります。",
+    "your_balance": "（所持: {balance}）",
+    "debt_blocks": "新たに購入する前に、{debt} ゴールドの負債を清算する必要があります。",
+    "not_enough_gold": "ゴールドが不足",
+    "buy_cta": "この勢力を解放",
+    "err_already_chosen": "開始勢力はすでに選択済みです。",
+    "err_choice": "選択を保存できませんでした。",
+    "err_purchase": "購入を完了できませんでした。",
+    "badge_starter": "開始",
+    "badge_owned": "取得済"
   }
 }

@@ -1565,7 +1565,9 @@
     "error_user_already_exists": "An account already exists with this email address.",
     "error_signups_disabled": "Sign-ups are temporarily closed.",
     "error_database_error": "Account creation failed on our end. Try again in a moment; if the problem persists, contact us.",
-    "error_captcha_failed": "The anti-bot verification failed or expired. Reload the page and try again."
+    "error_captcha_failed": "The anti-bot verification failed or expired. Reload the page and try again.",
+    "faction_see_cards": "See {faction}'s cards before deciding →",
+    "faction_browse": "Unsure? Explore every faction and its cards →"
   },
   "common": {
     "settings_title": "Settings",
@@ -2371,6 +2373,33 @@
     "cost_life_desc": "These cards also cost your hero's life points, on top of their mana cost.",
     "cost_discard_desc": "These cards require discarding cards from your hand, on top of their mana cost.",
     "cost_sacrifice_desc": "These cards require sacrificing creatures you control, on top of their mana cost.",
-    "cost_exile_desc": "These cards exile cards from the top of your deck, on top of their mana cost."
+    "cost_exile_desc": "These cards exile cards from the top of your deck, on top of their mana cost.",
+    "commons_count": "{count, plural, one {# common card} other {# common cards}} · {clans, plural, one {# clan} other {# clans}}"
+  },
+  "faction_action": {
+    "visitor_pitch": "Create your account to start with {faction}: all of its common cards will be yours.",
+    "visitor_cta": "CREATE AN ACCOUNT",
+    "owned_just_chosen": "{faction} is your faction",
+    "owned_bundle": "Included in your bundle",
+    "owned_starter": "Your starting faction",
+    "owned_bought": "Faction acquired",
+    "owned_note": "Every common card below is in your collection.",
+    "enter_game": "ENTER THE GAME",
+    "see_collection": "VIEW MY COLLECTION",
+    "free_pitch": "You have not chosen your starting faction yet. Begin with <strong>{faction}</strong> and receive all of its common cards, free.",
+    "free_cta": "START WITH THIS FACTION",
+    "free_warning": "This choice is final: you will not be able to change it, only acquire other factions later.",
+    "free_confirm": "CONFIRM — {faction}",
+    "cancel": "CANCEL",
+    "buy_pitch": "Add {faction} to your collection: all of its common cards, for good.",
+    "your_balance": "(you have {balance})",
+    "debt_blocks": "Your debt of {debt} gold must be settled before any new purchase.",
+    "not_enough_gold": "NOT ENOUGH GOLD",
+    "buy_cta": "UNLOCK THIS FACTION",
+    "err_already_chosen": "You have already chosen your starting faction.",
+    "err_choice": "The choice could not be saved.",
+    "err_purchase": "The purchase could not be completed.",
+    "badge_starter": "STARTER",
+    "badge_owned": "OWNED"
   }
 }

@@ -19,6 +19,7 @@ import { useMessages } from "next-intl";
 import { useVocab } from "@/i18n/useVocab";
 import { useHeroText } from "@/i18n/useHeroText";
 import { useTranslations } from "next-intl";
+import FactionActionBar from "./FactionActionBar";
 import GameCard from "@/components/cards/GameCard";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { FACTIONS } from "@/lib/card-engine/constants";
@@ -211,8 +212,17 @@ export default function FactionClansPage({
             {descFaction}
           </p>
           <p style={{ marginTop: 22, fontSize: 13, color: `${OR}cc`, letterSpacing: "0.05em" }}>
-            {t("free_commons", { count: total, clans: sections.length })}
+            {t("commons_count", { count: total, clans: sections.length })}
           </p>
+
+          {/* La décision se prend ICI, sous les cartes qu'elle engage. La bande
+              sait seule ce qu'elle doit proposer — choix gratuit, achat, ou
+              rien — et reste muette tant qu'elle l'ignore. */}
+          <FactionActionBar
+            factionId={factionId}
+            nomFaction={nomFaction}
+            accent={faction.accent}
+          />
         </div>
 
         {/* Sommaire des clans — la page est longue, on doit pouvoir sauter. */}

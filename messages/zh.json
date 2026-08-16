@@ -1565,7 +1565,9 @@
     "error_user_already_exists": "该邮箱地址已存在账号。",
     "error_signups_disabled": "注册功能暂时关闭。",
     "error_database_error": "账号创建在我方出现问题。请稍后重试；如果问题持续，请联系我们。",
-    "error_captcha_failed": "反机器人验证失败或已过期。请刷新页面后重试。"
+    "error_captcha_failed": "反机器人验证失败或已过期。请刷新页面后重试。",
+    "faction_see_cards": "决定前先查看{faction}的卡牌 →",
+    "faction_browse": "还在犹豫？ 浏览每个阵营及其卡牌 →"
   },
   "common": {
     "settings_title": "设置",
@@ -2371,6 +2373,33 @@
     "cost_life_desc": "除法力值外，这些卡牌还需支付英雄的生命值。",
     "cost_discard_desc": "除法力值外，这些卡牌还需从手牌中弃牌。",
     "cost_sacrifice_desc": "除法力值外，这些卡牌还需献祭你操控的生物。",
-    "cost_exile_desc": "除法力值外，这些卡牌还会放逐你牌组顶部的卡牌。"
+    "cost_exile_desc": "除法力值外，这些卡牌还会放逐你牌组顶部的卡牌。",
+    "commons_count": "普通卡牌 {count} 张 · {clans} 个氏族"
+  },
+  "faction_action": {
+    "visitor_pitch": "创建账号即可以{faction}起步：其全部普通卡牌都归你所有。",
+    "visitor_cta": "创建账号",
+    "owned_just_chosen": "{faction}已成为你的阵营",
+    "owned_bundle": "已包含在你的套装中",
+    "owned_starter": "你的初始阵营",
+    "owned_bought": "已获得的阵营",
+    "owned_note": "下方所有普通卡牌都已在你的收藏中。",
+    "enter_game": "进入游戏",
+    "see_collection": "查看我的收藏",
+    "free_pitch": "你尚未选择初始阵营。选择<strong>{faction}</strong>起步，免费获得其全部普通卡牌。",
+    "free_cta": "以此阵营起步",
+    "free_warning": "此选择不可更改：日后只能额外获取其他阵营。",
+    "free_confirm": "确认 — {faction}",
+    "cancel": "取消",
+    "buy_pitch": "将{faction}加入你的收藏：其全部普通卡牌，永久拥有。",
+    "your_balance": "（你拥有 {balance}）",
+    "debt_blocks": "你需先清偿 {debt} 金币的欠款，才能进行新的购买。",
+    "not_enough_gold": "金币不足",
+    "buy_cta": "解锁该阵营",
+    "err_already_chosen": "你已经选择了初始阵营。",
+    "err_choice": "未能保存选择。",
+    "err_purchase": "未能完成购买。",
+    "badge_starter": "初始",
+    "badge_owned": "已获得"
   }
 }

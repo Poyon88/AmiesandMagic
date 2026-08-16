@@ -1565,7 +1565,9 @@
     "error_user_already_exists": "Ya existe una cuenta con esta dirección.",
     "error_signups_disabled": "Los registros están cerrados temporalmente.",
     "error_database_error": "La creación de la cuenta ha fallado por nuestra parte. Inténtalo de nuevo en un momento; si el problema persiste, contáctanos.",
-    "error_captcha_failed": "La verificación anti-robots ha fallado o ha expirado. Recarga la página e inténtalo de nuevo."
+    "error_captcha_failed": "La verificación anti-robots ha fallado o ha expirado. Recarga la página e inténtalo de nuevo.",
+    "faction_see_cards": "Ver las cartas de {faction} antes de decidir →",
+    "faction_browse": "¿Dudas? Descubre cada facción y sus cartas →"
   },
   "common": {
     "settings_title": "Ajustes",
@@ -2371,6 +2373,33 @@
     "cost_life_desc": "Estas cartas también se pagan con puntos de vida de tu héroe, además de su coste de maná.",
     "cost_discard_desc": "Estas cartas exigen descartar cartas de tu mano, además de su coste de maná.",
     "cost_sacrifice_desc": "Estas cartas exigen sacrificar criaturas que controlas, además de su coste de maná.",
-    "cost_exile_desc": "Estas cartas exilian cartas de la parte superior de tu mazo, además de su coste de maná."
+    "cost_exile_desc": "Estas cartas exilian cartas de la parte superior de tu mazo, además de su coste de maná.",
+    "commons_count": "{count, plural, one {# carta común} other {# cartas comunes}} · {clans, plural, one {# clan} other {# clanes}}"
+  },
+  "faction_action": {
+    "visitor_pitch": "Crea tu cuenta para empezar con {faction}: todas sus cartas comunes serán tuyas.",
+    "visitor_cta": "CREAR UNA CUENTA",
+    "owned_just_chosen": "{faction} es tu facción",
+    "owned_bundle": "Incluida en tu paquete",
+    "owned_starter": "Tu facción inicial",
+    "owned_bought": "Facción adquirida",
+    "owned_note": "Todas las cartas comunes de abajo están en tu colección.",
+    "enter_game": "ENTRAR EN EL JUEGO",
+    "see_collection": "VER MI COLECCIÓN",
+    "free_pitch": "Aún no has elegido tu facción inicial. Empieza con <strong>{faction}</strong> y recibe todas sus cartas comunes, gratis.",
+    "free_cta": "EMPEZAR CON ESTA FACCIÓN",
+    "free_warning": "Esta elección es definitiva: no podrás cambiarla, solo adquirir otras facciones más adelante.",
+    "free_confirm": "CONFIRMAR — {faction}",
+    "cancel": "CANCELAR",
+    "buy_pitch": "Añade {faction} a tu colección: todas sus cartas comunes, para siempre.",
+    "your_balance": "(tienes {balance})",
+    "debt_blocks": "Tu deuda de {debt} de oro debe saldarse antes de cualquier nueva compra.",
+    "not_enough_gold": "ORO INSUFICIENTE",
+    "buy_cta": "DESBLOQUEAR ESTA FACCIÓN",
+    "err_already_chosen": "Ya has elegido tu facción inicial.",
+    "err_choice": "No se ha podido guardar la elección.",
+    "err_purchase": "No se ha podido completar la compra.",
+    "badge_starter": "INICIAL",
+    "badge_owned": "ADQUIRIDA"
   }
 }

@@ -8,9 +8,10 @@ import { motion, useScroll, useTransform, useInView, useMotionValue, useSpring, 
 import type { Card } from "@/lib/game/types";
 import GameCard from "@/components/cards/GameCard";
 import LanguageSelector from "@/components/shared/LanguageSelector";
-import { useMessages } from "next-intl";
+import { useMessages, useTranslations } from "next-intl";
 import { FACTIONS } from "@/lib/card-engine/constants";
 import { factionSlug } from "@/lib/game/faction-slug";
+import { useFactionOwnership, type Possession } from "@/components/factions/useFactionOwnership";
 
 // ─── Translations ───────────────────────────────────────────────────────────
 
@@ -908,6 +909,9 @@ interface FactionsSectionProps {
 }
 
 function FactionsSection({ title, subtitle, factionTaglines, factionNames, factionHeroUrls }: FactionsSectionProps) {
+  // UNE requête pour les neuf tuiles. Silencieuse pour un visiteur anonyme :
+  // sans compte, il n'y a aucune possession à montrer.
+  const possession = useFactionOwnership();
   return (
     <section
       // Cible du « Voir les autres factions » depuis une page de faction : on
@@ -956,6 +960,7 @@ function FactionsSection({ title, subtitle, factionTaglines, factionNames, facti
             key={id}
             index={i}
             factionId={id}
+            possession={possession?.get(id)}
             art={LANDING_ART[id]}
             // Repli sur le nom FR du moteur si la locale n'a pas l'entrée : une
             // faction fraîchement ajoutée s'affiche, elle n'échoue pas.
@@ -976,6 +981,7 @@ function FactionCard({
   name,
   tagline,
   heroUrl,
+  possession,
 }: {
   index: number;
   /** Id de faction : l'adresse de sa page en est dérivée, jamais du nom
@@ -987,7 +993,11 @@ function FactionCard({
   name: string;
   tagline: string;
   heroUrl?: string;
+  /** Absent = inconnu (visiteur, ou réponse pas encore là) : la tuile ne
+   *  porte alors aucun badge plutôt qu'un badge faux. */
+  possession?: Possession;
 }) {
+  const tBadge = useTranslations("faction_action");
   const banner = art ? `/images/banners/${art.slug}.svg` : "/images/banners/default.svg";
   const portraitDeRepli = art ? `/images/heroes/${art.slug}.${art.heroExt}` : banner;
   const ref = useRef<HTMLDivElement>(null);
@@ -1031,6 +1041,23 @@ function FactionCard({
             "linear-gradient(180deg, rgba(10,10,24,0.3) 0%, rgba(10,10,24,0.85) 80%)",
         }}
       />
+
+      {/* Badge de possession — coin haut droit, au-dessus des voiles. Ne
+          s'affiche que si l'on SAIT : pour un visiteur, la tuile reste nue. */}
+      {possession?.owned && (
+        <div
+          className="absolute right-3 top-3 z-[3] rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-wider"
+          style={{
+            background: "rgba(200,168,78,0.18)",
+            border: "1px solid rgba(200,168,78,0.55)",
+            color: "#e8cf8a",
+            fontFamily: "var(--font-cinzel), serif",
+            backdropFilter: "blur(4px)",
+          }}
+        >
+          {possession.starter ? `★ ${tBadge("badge_starter")}` : `★ ${tBadge("badge_owned")}`}
+        </div>
+      )}
 
       {/* Glow on hover */}
       <div
