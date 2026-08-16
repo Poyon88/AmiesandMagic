@@ -2294,7 +2294,10 @@
     "show_locked": "Afficher les verrouillées",
     "locked_badge": "Verrouillée",
     "locked_summary": "{count, plural, one {# carte verrouillée} other {# cartes verrouillées}}",
-    "locked_hint": "Les communes des autres factions seront accessibles via l'offre de déblocage complet."
+    "locked_hint": "Les communes des autres factions seront accessibles via l'offre de déblocage complet.",
+    "unplayable_badge": "{count} carte(s) manquante(s)",
+    "unplayable_reason": "Ce deck contient des cartes de faction(s) que vous ne possédez plus : {factions}. Il reste intact — récupérez la faction pour le rejouer.",
+    "unplayable_rebuy": "Récupérer en boutique"
   },
   "cardBacks": {
     "eyebrow": "Affiche ton style",

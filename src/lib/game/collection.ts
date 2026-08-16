@@ -30,8 +30,23 @@ export interface OwnershipContext {
    *  existant ne devienne injouable. */
   legacyFullAccess: boolean;
   /** Faction choisie à l'inscription. `null` tant qu'elle ne l'est pas : le
-   *  joueur ne possède alors que sa collection personnelle et le neutre. */
+   *  joueur ne possède alors que sa collection personnelle et le neutre.
+   *
+   *  ⚠️ CONSERVÉ mais plus autoritaire : depuis la boutique de factions, c'est
+   *  `unlockedFactions` qui fait foi, et la faction offerte n'y est qu'une
+   *  entrée parmi d'autres. Ce champ reste pour l'onboarding, qui écrit encore
+   *  `profiles.starter_faction`, et pour les profils dont la migration de la
+   *  table n'a pas encore été jouée. */
   starterFaction: string | null;
+  /** TOUTES les factions dont le joueur détient les communes : celle offerte à
+   *  l'inscription ET celles achetées en boutique, lues dans
+   *  `user_faction_unlocks`.
+   *
+   *  OPTIONNELLE à dessein : un appelant qui ne l'a pas encore branchée retombe
+   *  sur `starterFaction`, et ne retire donc aucune carte. Un champ obligatoire
+   *  aurait forcé chaque site de construction à écrire `new Set()`, c'est-à-dire
+   *  exactement le contraire — plus aucune faction. */
+  unlockedFactions?: ReadonlySet<string>;
   /** Option payante : les communes de TOUTES les factions, définitivement. */
   allCommonsUnlocked: boolean;
 }
@@ -41,7 +56,7 @@ export interface OwnershipContext {
  *  collection sont déjà passés séparément par les deux surfaces. */
 export type Entitlements = Pick<
   OwnershipContext,
-  "legacyFullAccess" | "starterFaction" | "allCommonsUnlocked"
+  "legacyFullAccess" | "starterFaction" | "allCommonsUnlocked" | "unlockedFactions"
 >;
 
 /** Profil PRÉSENT mais sans les colonnes du nouveau modèle : la migration n'est
@@ -51,6 +66,7 @@ export const LEGACY_ENTITLEMENTS: Entitlements = {
   legacyFullAccess: true,
   starterFaction: null,
   allCommonsUnlocked: false,
+  unlockedFactions: new Set(),
 };
 
 /** Profil ABSENT — état anormal : le compte existe dans `auth.users` mais sa
@@ -65,6 +81,7 @@ export const NO_PROFILE_ENTITLEMENTS: Entitlements = {
   legacyFullAccess: false,
   starterFaction: null,
   allCommonsUnlocked: false,
+  unlockedFactions: new Set(),
 };
 
 /** Lit les droits depuis une ligne `profiles`.
@@ -78,13 +95,24 @@ export function entitlementsFromProfile(
     starter_faction?: string | null;
     all_commons_unlocked?: boolean | null;
   } | null | undefined,
+  /** Factions débloquées, lues dans `user_faction_unlocks`. Omise ⇒ on retombe
+   *  sur la seule faction de départ : c'est le cas d'un appelant qui n'a pas
+   *  encore été branché sur la table, et il ne doit RIEN perdre pour autant. */
+  unlockedFactions?: Iterable<string>,
 ): Entitlements {
   if (!profile) return NO_PROFILE_ENTITLEMENTS;
   if (profile.legacy_full_access == null) return LEGACY_ENTITLEMENTS;
+  const starter = profile.starter_faction ?? null;
+  // La faction de départ est TOUJOURS incluse, même si la table ne la contient
+  // pas encore : déployer le code avant la migration ne doit retirer aucune
+  // carte à personne.
+  const unlocked = new Set(unlockedFactions ?? []);
+  if (starter) unlocked.add(starter);
   return {
     legacyFullAccess: profile.legacy_full_access,
-    starterFaction: profile.starter_faction ?? null,
+    starterFaction: starter,
     allCommonsUnlocked: profile.all_commons_unlocked ?? false,
+    unlockedFactions: unlocked,
   };
 }
 
@@ -118,6 +146,12 @@ export function isCardOwned(card: Card, ctx: OwnershipContext): boolean {
 
   const faction = card.faction ?? null;
   if (faction === NEUTRAL_FACTION) return true;
+  if (faction == null) return false;
+  // `unlockedFactions` contient la faction offerte ET les factions achetées.
+  // Le repli sur `starterFaction` couvre les appelants pas encore branchés sur
+  // la table : sans lui, un déploiement partiel retirerait sa faction au
+  // joueur.
+  if (ctx.unlockedFactions?.has(faction)) return true;
   return ctx.starterFaction != null && faction === ctx.starterFaction;
 }
 

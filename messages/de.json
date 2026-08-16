@@ -2294,7 +2294,10 @@
     "show_locked": "Gesperrte anzeigen",
     "locked_badge": "Gesperrt",
     "locked_summary": "{count, plural, one {# gesperrte Karte} other {# gesperrte Karten}}",
-    "locked_hint": "Die gewöhnlichen Karten anderer Fraktionen werden über das Komplett-Freischaltangebot zugänglich sein."
+    "locked_hint": "Die gewöhnlichen Karten anderer Fraktionen werden über das Komplett-Freischaltangebot zugänglich sein.",
+    "unplayable_badge": "{count} fehlende Karte(n)",
+    "unplayable_reason": "Dieses Deck enthaelt Karten aus Fraktion(en), die du nicht mehr besitzt: {factions}. Es bleibt unveraendert - hole dir die Fraktion zurueck, um es wieder zu spielen.",
+    "unplayable_rebuy": "Im Shop zurueckholen"
   },
   "cardBacks": {
     "eyebrow": "Zeig deinen Stil",

@@ -2294,7 +2294,10 @@
     "show_locked": "Mostrar bloqueadas",
     "locked_badge": "Bloqueada",
     "locked_summary": "{count, plural, one {# carta bloqueada} other {# cartas bloqueadas}}",
-    "locked_hint": "Las comunes de las demás facciones estarán disponibles mediante la oferta de desbloqueo completo."
+    "locked_hint": "Las comunes de las demás facciones estarán disponibles mediante la oferta de desbloqueo completo.",
+    "unplayable_badge": "{count} carta(s) que faltan",
+    "unplayable_reason": "Este mazo contiene cartas de faccion(es) que ya no posees: {factions}. Sigue intacto: recupera la faccion para volver a jugarlo.",
+    "unplayable_rebuy": "Recuperar en la tienda"
   },
   "cardBacks": {
     "eyebrow": "Muestra tu estilo",

@@ -169,7 +169,33 @@ describe("entitlementsFromProfile — les deux absences ne se valent pas", () =>
         starter_faction: "Nains",
         all_commons_unlocked: true,
       }),
-    ).toEqual({ legacyFullAccess: false, starterFaction: "Nains", allCommonsUnlocked: true });
+    ).toEqual({
+      legacyFullAccess: false,
+      starterFaction: "Nains",
+      allCommonsUnlocked: true,
+      // La faction de départ figure TOUJOURS parmi les débloquées, même sans
+      // que la table soit fournie : déployer le code avant la migration ne doit
+      // retirer aucune carte.
+      unlockedFactions: new Set(["Nains"]),
+    });
+  });
+
+  it("les factions ACHETÉES s'ajoutent à celle de départ", () => {
+    const e = entitlementsFromProfile(
+      { legacy_full_access: false, starter_faction: "Nains", all_commons_unlocked: false },
+      ["Elfes", "Humains"],
+    );
+    expect(e.unlockedFactions).toEqual(new Set(["Nains", "Elfes", "Humains"]));
+  });
+
+  it("la faction de départ n'est pas perdue si la table ne la contient pas encore", () => {
+    // Cas du déploiement partiel : le code lit la table, la migration n'a pas
+    // encore recopié les factions de départ.
+    const e = entitlementsFromProfile(
+      { legacy_full_access: false, starter_faction: "Nains", all_commons_unlocked: false },
+      [],
+    );
+    expect(e.unlockedFactions).toEqual(new Set(["Nains"]));
   });
 
   it("un profil sans ligne ne donne accès qu'à la collection personnelle", () => {

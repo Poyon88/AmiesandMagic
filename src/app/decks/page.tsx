@@ -1,6 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import DeckList from "@/components/deck/DeckList";
+import { entitlementsFromProfile } from "@/lib/game/collection";
+import { readFactionUnlocks } from "@/lib/game/factionUnlocks";
+import { deckPlayability } from "@/lib/game/deckPlayability";
 
 export const dynamic = "force-dynamic";
 
@@ -18,12 +21,72 @@ export default async function DecksPage() {
       `
       *,
       deck_cards (
+        card_id,
         quantity
       )
     `
     )
     .eq("user_id", user.id)
     .order("updated_at", { ascending: false });
+
+  // JOUABILITÉ — un deck n'est construit qu'avec des cartes possédées, mais une
+  // faction reprise après remboursement peut le rendre injouable APRÈS coup. On
+  // le garde, on le signale, et on dit quoi racheter.
+  //
+  // Le rôle spécial (testeur/admin) possède tout par construction : inutile de
+  // charger quoi que ce soit pour lui, et le calcul l'aurait de toute façon
+  // déclaré jouable.
+  const { data: profile } = await supabase
+    .from("profiles")
+    // select("*") comme les autres écrans : nommer les colonnes ferait échouer
+    // la requête entière tant que la migration des droits n'est pas appliquée.
+    .select("*")
+    .eq("id", user.id)
+    .single();
+
+  const role = profile?.role ?? "player";
+  const ownsEverything = role === "testeur" || role === "admin";
+
+  const playabilityByDeck = new Map<number, ReturnType<typeof deckPlayability>>();
+
+  if (!ownsEverything) {
+    const deckCardIds = [
+      ...new Set(
+        (decks ?? []).flatMap((d) =>
+          (d.deck_cards as { card_id: number }[]).map((dc) => dc.card_id),
+        ),
+      ),
+    ];
+
+    if (deckCardIds.length > 0) {
+      const [{ data: deckCards }, { data: userCollection }, { data: ownedPrints }, factionUnlocks] =
+        await Promise.all([
+          supabase.from("cards").select("id, faction, rarity, set_id").in("id", deckCardIds),
+          supabase.from("user_collections").select("card_id").eq("user_id", user.id),
+          supabase.from("card_prints").select("card_id").eq("owner_id", user.id),
+          readFactionUnlocks(supabase, user.id),
+        ]);
+
+      const cardById = new Map(
+        (deckCards ?? []).map((c) => [c.id as number, c as Parameters<typeof deckPlayability>[0][number]]),
+      );
+      const ctx = {
+        ownsEverything: false,
+        collectedCardIds: new Set([
+          ...(userCollection ?? []).map((r) => r.card_id as number),
+          ...(ownedPrints ?? []).map((r) => r.card_id as number),
+        ]),
+        ...entitlementsFromProfile(profile, factionUnlocks),
+      };
+
+      for (const deck of decks ?? []) {
+        const cards = (deck.deck_cards as { card_id: number }[])
+          .map((dc) => cardById.get(dc.card_id))
+          .filter((c): c is NonNullable<typeof c> => c != null);
+        playabilityByDeck.set(deck.id as number, deckPlayability(cards, ctx));
+      }
+    }
+  }
 
   // Format names for the per-deck badge + the format filter. Separate lookup
   // (not an embedded FK join) per the project's Supabase guidelines. `code` is
@@ -70,6 +133,10 @@ export default async function DecksPage() {
       formatId,
       formatCode: formatId != null ? formatById.get(formatId)?.code ?? null : null,
       formatName: formatId != null ? formatById.get(formatId)?.name ?? null : null,
+      // Absent de la table ⇒ jouable : c'est le cas de l'immense majorité, et
+      // le défaut ne doit jamais être « injouable ».
+      missingFactions: playabilityByDeck.get(deck.id as number)?.missingFactions ?? [],
+      missingCount: playabilityByDeck.get(deck.id as number)?.missingCount ?? 0,
     };
   });
 

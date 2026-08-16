@@ -2294,7 +2294,10 @@
     "show_locked": "显示已锁定的卡牌",
     "locked_badge": "已锁定",
     "locked_summary": "{count, plural, other {# 张已锁定的卡牌}}",
-    "locked_hint": "其他阵营的普通卡将可通过完整解锁礼包获取。"
+    "locked_hint": "其他阵营的普通卡将可通过完整解锁礼包获取。",
+    "unplayable_badge": "缺少 {count} 张卡牌",
+    "unplayable_reason": "此套牌包含你已不再拥有的阵营卡牌：{factions}。套牌完好保留——重新获得该阵营即可再次使用。",
+    "unplayable_rebuy": "前往商店取回"
   },
   "cardBacks": {
     "eyebrow": "展示你的风格",

@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { entitlementsFromProfile } from "@/lib/game/collection";
+import { readFactionUnlocks } from "@/lib/game/factionUnlocks";
 import { redirect } from "next/navigation";
 import { getLocale } from "next-intl/server";
 import CollectionView from "@/components/cards/CollectionView";
@@ -55,6 +56,11 @@ export default async function CollectionPage() {
   const locale = normalizeLocale(await getLocale());
   const localizedCards = await localizeCardsInPlace(supabase, cards ?? [], locale);
 
+  // Les factions achetées en boutique, en plus de celle offerte. Lecture
+  // séparée : elle tolère une table absente (migration non appliquée) sans
+  // faire tomber la page.
+  const factionUnlocks = await readFactionUnlocks(supabase, user.id);
+
   const role = profile?.role ?? "player";
   const isSpecialRole = role === "testeur" || role === "admin";
   const printCardIds = (ownedPrints ?? []).map(r => r.card_id);
@@ -70,7 +76,7 @@ export default async function CollectionPage() {
       formats={formats ?? []}
       collectedCardIds={collectedCardIds}
       isTester={isSpecialRole}
-      entitlements={entitlementsFromProfile(profile)}
+      entitlements={entitlementsFromProfile(profile, factionUnlocks)}
       ownedPrints={isSpecialRole ? [] : (ownedPrints ?? []).map(p => ({
         id: p.id,
         card_id: p.card_id,

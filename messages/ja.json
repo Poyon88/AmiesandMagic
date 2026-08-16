@@ -2294,7 +2294,10 @@
     "show_locked": "ロック中のカードを表示",
     "locked_badge": "ロック中",
     "locked_summary": "{count, plural, other {ロック中のカード #枚}}",
-    "locked_hint": "他の勢力のコモンカードは、フル解放パッケージにより入手可能になります。"
+    "locked_hint": "他の勢力のコモンカードは、フル解放パッケージにより入手可能になります。",
+    "unplayable_badge": "不足カード {count} 枚",
+    "unplayable_reason": "このデッキには、現在所持していない勢力のカードが含まれています：{factions}。デッキはそのまま残っています。勢力を取り戻せば再び使用できます。",
+    "unplayable_rebuy": "ショップで取り戻す"
   },
   "cardBacks": {
     "eyebrow": "スタイルを見せよう",

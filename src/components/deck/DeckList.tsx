@@ -18,6 +18,11 @@ interface DeckWithCount {
   formatId?: number | null;
   formatCode?: string | null;
   formatName?: string | null;
+  /** Factions à racheter pour rendre le deck jouable. Vide = rien à faire.
+   *  Non vide seulement après une reprise de faction (remboursement Stripe). */
+  missingFactions?: string[];
+  /** Cartes du deck que le joueur ne possède plus. */
+  missingCount?: number;
 }
 
 const ALL = "__all__";
@@ -168,6 +173,11 @@ export default function DeckList({ decks }: { decks: DeckWithCount[] }) {
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filteredDecks.map((deck, i) => {
               const isValid = deck.cardCount === DECK_SIZE;
+              // Un deck peut être complet ET injouable : la taille et la
+              // possession sont deux conditions distinctes, et les confondre
+              // afficherait un deck « valide » que le joueur ne peut pas lancer.
+              const missing = deck.missingCount ?? 0;
+              const aRacheter = deck.missingFactions ?? [];
               return (
                 <div
                   key={deck.id}
@@ -210,7 +220,27 @@ export default function DeckList({ decks }: { decks: DeckWithCount[] }) {
                         {vocab.formatName(deck.formatCode, deck.formatName)}
                       </span>
                     )}
+                    {missing > 0 && (
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-red-500/50 bg-red-500/10 px-3 py-1 text-xs font-semibold text-red-300">
+                        <span className="h-1.5 w-1.5 rounded-full bg-red-400" />
+                        {t("unplayable_badge", { count: missing })}
+                      </span>
+                    )}
                   </div>
+
+                  {aRacheter.length > 0 && (
+                    <div className="mb-4 rounded-lg border border-red-500/30 bg-red-500/5 p-3">
+                      <p className="text-xs text-am-ink-2">
+                        {t("unplayable_reason", { factions: aRacheter.join(", ") })}
+                      </p>
+                      <button
+                        onClick={() => router.push("/boutique")}
+                        className="mt-2 w-full rounded-lg bg-am-gold/15 py-1.5 text-xs font-medium text-am-gold transition-colors hover:bg-am-gold/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-am-gold focus-visible:ring-offset-2 focus-visible:ring-offset-am-bg-0"
+                      >
+                        {t("unplayable_rebuy")}
+                      </button>
+                    </div>
+                  )}
 
                   <div className="am-rule mb-4 opacity-60" />
 

@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { entitlementsFromProfile } from "@/lib/game/collection";
+import { readFactionUnlocks } from "@/lib/game/factionUnlocks";
 import { redirect } from "next/navigation";
 import { getLocale } from "next-intl/server";
 import DeckBuilder from "@/components/deck/DeckBuilder";
@@ -79,6 +80,11 @@ export default async function DeckBuilderPage({
   const locale = normalizeLocale(await getLocale());
   const localizedCards = await localizeCardsInPlace(supabase, cards ?? [], locale);
 
+  // Les factions achetées en boutique, en plus de celle offerte. Même lecture
+  // que la collection : les deux écrans doivent voir exactement les mêmes
+  // cartes possédées, sinon une carte visible ici serait refusée à la sauvegarde.
+  const factionUnlocks = await readFactionUnlocks(supabase, user.id);
+
   const isTester = profile?.role === "testeur";
   const printCardIds = (ownedPrints ?? []).map(r => r.card_id);
   const collectedCardIds = [...new Set([
@@ -121,7 +127,7 @@ export default async function DeckBuilderPage({
       formats={formats ?? []}
       collectedCardIds={collectedCardIds}
       isTester={isTester}
-      entitlements={entitlementsFromProfile(profile)}
+      entitlements={entitlementsFromProfile(profile, factionUnlocks)}
       boards={allBoards ?? []}
       ownedBoardPrints={ownedBoardPrints ?? []}
       cardBacks={allCardBacks ?? []}

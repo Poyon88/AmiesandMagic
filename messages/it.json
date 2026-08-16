@@ -2294,7 +2294,10 @@
     "show_locked": "Mostra le bloccate",
     "locked_badge": "Bloccata",
     "locked_summary": "{count, plural, one {# carta bloccata} other {# carte bloccate}}",
-    "locked_hint": "Le comuni delle altre fazioni saranno accessibili tramite l'offerta di sblocco completo."
+    "locked_hint": "Le comuni delle altre fazioni saranno accessibili tramite l'offerta di sblocco completo.",
+    "unplayable_badge": "{count} carta/e mancante/i",
+    "unplayable_reason": "Questo mazzo contiene carte di fazione/i che non possiedi piu: {factions}. Resta intatto: riprendi la fazione per rigiocarlo.",
+    "unplayable_rebuy": "Riprendi nel negozio"
   },
   "cardBacks": {
     "eyebrow": "Mostra il tuo stile",

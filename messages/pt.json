@@ -2294,7 +2294,10 @@
     "show_locked": "Mostrar bloqueadas",
     "locked_badge": "Bloqueada",
     "locked_summary": "{count, plural, one {# carta bloqueada} other {# cartas bloqueadas}}",
-    "locked_hint": "As cartas comuns das outras facções ficarão acessíveis através da oferta de desbloqueio completo."
+    "locked_hint": "As cartas comuns das outras facções ficarão acessíveis através da oferta de desbloqueio completo.",
+    "unplayable_badge": "{count} carta(s) em falta",
+    "unplayable_reason": "Este baralho contem cartas de faccao(oes) que voce ja nao possui: {factions}. Continua intacto - recupere a faccao para voltar a joga-lo.",
+    "unplayable_rebuy": "Recuperar na loja"
   },
   "cardBacks": {
     "eyebrow": "Mostre seu estilo",
