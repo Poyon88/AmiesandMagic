@@ -42,6 +42,7 @@ export async function GET(request: Request) {
   const rarity = searchParams.get('rarity');
   const cardType = searchParams.get('cardType');
   const clan = searchParams.get('clan');
+  const manaCost = searchParams.get('manaCost');
   const ability = searchParams.get('ability');
   const printNumber = searchParams.get('printNumber');
   const minPrice = searchParams.get('minPrice');
@@ -90,15 +91,24 @@ export async function GET(request: Request) {
   // même table (la carte pour les uns, le tirage pour le numéro d'exemplaire).
   const ensembles: string[][] = [];
 
-  if (faction || rarity || cardType || search || clan) {
+  if (faction || rarity || cardType || search || clan || manaCost) {
     let cardQuery = supabase
       .from('auction_items')
-      .select('auction_id, card:cards!inner(name, faction, rarity, card_type, clan)');
+      .select('auction_id, card:cards!inner(name, faction, rarity, card_type, clan, mana_cost)');
 
     if (faction) cardQuery = cardQuery.eq('card.faction', faction);
     if (rarity) cardQuery = cardQuery.eq('card.rarity', rarity);
     if (cardType) cardQuery = cardQuery.eq('card.card_type', cardType);
     if (clan) cardQuery = cardQuery.eq('card.clan', clan);
+    // Valeur liée par `.eq`, jamais interpolée : pas de liste blanche requise,
+    // contrairement au filtre par capacité. On borne tout de même la saisie.
+    if (manaCost) {
+      const n = parseInt(manaCost, 10);
+      if (!Number.isFinite(n) || n < 0 || n > 99) {
+        return NextResponse.json({ error: 'Coût de mana invalide' }, { status: 400 });
+      }
+      cardQuery = cardQuery.eq('card.mana_cost', n);
+    }
     if (search) cardQuery = cardQuery.ilike('card.name', `%${search}%`);
 
     const { data: matchingItems } = await cardQuery;

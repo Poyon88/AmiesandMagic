@@ -23,6 +23,7 @@ function getAdminClient() {
 
 interface CardBrief {
   clan: string | null;
+  mana_cost: number | null;
   keywords: string[] | null;
   spell_keywords: Array<{ id?: string }> | null;
 }
@@ -34,7 +35,7 @@ export async function GET() {
   // marché ouvert — quelques dizaines de lignes, pas un catalogue.
   const { data, error } = await supabase
     .from('auction_items')
-    .select('auction:auctions!inner(status), card:cards(clan, keywords, spell_keywords), source_type, source_id')
+    .select('auction:auctions!inner(status), card:cards(clan, mana_cost, keywords, spell_keywords), source_type, source_id')
     .eq('auction.status', 'active');
 
   if (error) {
@@ -46,10 +47,13 @@ export async function GET() {
 
   const clans = new Set<string>();
   const abilities = new Set<string>();
+  const manaCosts = new Set<number>();
   const printIds: number[] = [];
 
   for (const r of rows) {
     if (r.card?.clan) clans.add(r.card.clan);
+    // 0 est un coût LÉGITIME (jetons) : tester la nullité, pas la vérité.
+    if (r.card?.mana_cost != null) manaCosts.add(r.card.mana_cost);
     for (const k of r.card?.keywords ?? []) abilities.add(k);
     for (const sk of r.card?.spell_keywords ?? []) if (sk?.id) abilities.add(sk.id);
     if (r.source_type === 'print' && r.source_id != null) printIds.push(r.source_id);
@@ -74,5 +78,6 @@ export async function GET() {
       .map((id) => ({ id, label: KEYWORD_LABELS[id as Keyword] ?? id }))
       .sort((a, b) => a.label.localeCompare(b.label, 'fr')),
     printNumbers,
+    manaCosts: [...manaCosts].sort((a, b) => a - b),
   });
 }

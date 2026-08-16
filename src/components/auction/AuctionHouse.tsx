@@ -48,6 +48,7 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
   const [clan, setClan] = useState("");
   const [ability, setAbility] = useState("");
   const [printNumber, setPrintNumber] = useState("");
+  const [manaCost, setManaCost] = useState("");
 
   // Valeurs RÉELLEMENT présentes dans les enchères actives : les menus ne
   // proposent que ce qui peut rendre un résultat (cf. /api/auctions/filters).
@@ -55,7 +56,8 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
     clans: string[];
     abilities: { id: string; label: string }[];
     printNumbers: number[];
-  }>({ clans: [], abilities: [], printNumbers: [] });
+    manaCosts: number[];
+  }>({ clans: [], abilities: [], printNumbers: [], manaCosts: [] });
 
   const fetchAuctions = useCallback(async () => {
     setLoading(true);
@@ -71,6 +73,7 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
     if (clan) params.set("clan", clan);
     if (ability) params.set("ability", ability);
     if (printNumber) params.set("printNumber", printNumber);
+    if (manaCost) params.set("manaCost", manaCost);
 
     const res = await fetch(`/api/auctions?${params}`);
     const data = await res.json();
@@ -79,7 +82,7 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
       setTotal(data.total);
     }
     setLoading(false);
-  }, [filters, search, faction, rarity, cardType, clan, ability, printNumber]);
+  }, [filters, search, faction, rarity, cardType, clan, ability, printNumber, manaCost]);
 
   useEffect(() => {
     fetch("/api/auctions/filters")
@@ -178,6 +181,26 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
                 <option key={f} value={f}>{f}</option>
               ))}
             </select>
+
+            {/* Clan — n'apparaît que si au moins une enchère en porte un.
+                Un menu de 36 clans dont 35 ne rendent rien ferait perdre du
+                temps à chaque essai. */}
+            {options.clans.length > 0 && (
+              <select
+                value={clan}
+                onChange={(e) => {
+                  setClan(e.target.value);
+                  setFilters((f) => ({ ...f, page: 1 }));
+                }}
+                className={SELECT_CLASS}
+                aria-label="Filtrer par clan"
+              >
+                <option value="">Tous clans</option>
+                {options.clans.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            )}
             <select
               value={rarity}
               onChange={(e) => {
@@ -206,22 +229,22 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
               <option value="spell">{t("type_spell")}</option>
             </select>
 
-            {/* Clan — n'apparaît que si au moins une enchère en porte un.
-                Un menu de 36 clans dont 35 ne rendent rien ferait perdre du
-                temps à chaque essai. */}
-            {options.clans.length > 0 && (
+            {/* Coût de mana — mêmes valeurs que ce qui est réellement en vente.
+                Un menu de 0 à 10 dont trois valeurs seulement rendent quelque
+                chose ferait tâtonner pour rien. */}
+            {options.manaCosts.length > 0 && (
               <select
-                value={clan}
+                value={manaCost}
                 onChange={(e) => {
-                  setClan(e.target.value);
+                  setManaCost(e.target.value);
                   setFilters((f) => ({ ...f, page: 1 }));
                 }}
                 className={SELECT_CLASS}
-                aria-label="Filtrer par clan"
+                aria-label="Filtrer par coût de mana"
               >
-                <option value="">Tous clans</option>
-                {options.clans.map((c) => (
-                  <option key={c} value={c}>{c}</option>
+                <option value="">Tous coûts</option>
+                {options.manaCosts.map((c) => (
+                  <option key={c} value={c}>{c} mana</option>
                 ))}
               </select>
             )}
