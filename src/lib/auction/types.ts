@@ -75,7 +75,11 @@ export interface AuctionItemWithCard extends AuctionItem {
   card: import("@/lib/game/types").Card | null;
   board?: AuctionBoardSummary | null;
   card_back?: AuctionCardBackSummary | null;
+  /** Numéro d'exemplaire dans la série limitée, et taille de la série.
+   *  Renseignés par `attachPrintNumbers` ; absents pour une enchère système,
+   *  qui ne porte pas encore de tirage attribué. */
   print_number?: number | null;
+  max_prints?: number | null;
 }
 
 export interface AuctionBid {

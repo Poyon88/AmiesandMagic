@@ -206,7 +206,14 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
             {auction.items.map((item) => (
               <div key={item.id} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
                 {item.card ? (
-                  <GameCard card={item.card} size="md" count={item.quantity > 1 ? item.quantity : undefined} />
+                  <GameCard
+                    card={item.card}
+                    size="md"
+                    count={item.quantity > 1 ? item.quantity : undefined}
+                    forceRarityFrame
+                    printNumber={item.print_number ?? undefined}
+                    maxPrints={item.max_prints ?? undefined}
+                  />
                 ) : item.board ? (
                   <div style={{
                     width: 260, height: 146, borderRadius: 10, overflow: "hidden",

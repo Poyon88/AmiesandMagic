@@ -77,7 +77,15 @@ export default function AuctionCard({ auction }: AuctionCardProps) {
       {/* Item visual */}
       <div style={{ position: "relative", width: 180, height: 252, flexShrink: 0 }}>
         {mainCard ? (
-          <GameCard card={mainCard} size="sm" forceRarityFrame />
+          <GameCard
+            card={mainCard}
+            size="sm"
+            forceRarityFrame
+            // Numéro d'exemplaire de la série limitée. Absent sur une enchère
+            // système, qui ne porte pas encore de tirage attribué.
+            printNumber={mainItem?.print_number ?? undefined}
+            maxPrints={mainItem?.max_prints ?? undefined}
+          />
         ) : mainBoard ? (
           <div
             style={{

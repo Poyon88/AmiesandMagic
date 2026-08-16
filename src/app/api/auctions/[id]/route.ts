@@ -3,6 +3,7 @@ import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 
+import { attachPrintNumbers } from '@/lib/auction/prints';
 async function getAuthUser() {
   const cookieStore = await cookies();
   const supabaseAuth = createServerClient(
@@ -64,6 +65,10 @@ export async function GET(
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   if (!data) return NextResponse.json({ error: 'Enchère introuvable' }, { status: 404 });
+
+  // Même enrichissement que la liste : le numéro d'exemplaire ne peut pas être
+  // embarqué par la requête (cf. attachPrintNumbers).
+  await attachPrintNumbers(supabase, [data]);
 
   // Fetch seller username
   const { data: sellerProfile } = await supabase

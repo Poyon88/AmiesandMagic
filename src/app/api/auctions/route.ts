@@ -6,6 +6,7 @@ import type { CreateAuctionPayload } from '@/lib/auction/types';
 import { isPlayerSellingEnabled } from '@/lib/auction/flags';
 import { minStartingBidForLot, forbiddenRarities } from '@/lib/auction/pricing';
 import { ALL_KEYWORDS } from '@/lib/game/keyword-labels';
+import { attachPrintNumbers } from '@/lib/auction/prints';
 import type { Keyword } from '@/lib/game/types';
 
 async function getAuthUser() {
@@ -212,6 +213,10 @@ export async function GET(request: Request) {
     ...a,
     seller_username: usernameMap.get(a.seller_id) ?? null,
   }));
+
+  // Numéro d'exemplaire : jointure impossible (source_id est polymorphe),
+  // d'où un enrichissement en une requête pour toute la page.
+  await attachPrintNumbers(supabase, auctions);
 
   return NextResponse.json({ auctions, total: count ?? 0, page, limit });
 }
