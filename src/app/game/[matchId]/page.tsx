@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
+import { firstPlayerIndexForMatch, seedForMatch } from "@/lib/game/first-player";
 import { useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useGameStore } from "@/lib/store/gameStore";
@@ -370,8 +371,7 @@ export default function GamePage() {
 
         // Determine which board the match uses: the second player's deck board,
         // falling back to the admin-chosen default board.
-        const seed = parseInt(matchId.replace(/-/g, "").slice(0, 8), 16);
-        const firstPlayerIdx: 0 | 1 = seed % 2 === 0 ? 0 : 1;
+        const firstPlayerIdx = firstPlayerIndexForMatch(matchId);
         const secondPlayerIdx = firstPlayerIdx === 0 ? 1 : 0;
         const secondPlayerDeck = [p1DeckData.data, p2DeckData.data][secondPlayerIdx] as
           | { board_id: number | null }
@@ -730,8 +730,8 @@ export default function GamePage() {
           if (playerCount < 2) return;
           gameInitializedRef.current = true;
           const { match: m, p1Cards: p1, p2Cards: p2, p1Hero, p2Hero, factionCards, allSpells, p1OwnedLimitedIds, p2OwnedLimitedIds, formatCode } = matchDataRef.current;
-          const seed = parseInt(matchId.replace(/-/g, "").slice(0, 8), 16);
-          const firstPlayer: 0 | 1 = seed % 2 === 0 ? 0 : 1;
+          const seed = seedForMatch(matchId);
+          const firstPlayer = firstPlayerIndexForMatch(matchId);
           initGame(m.player1_id, m.player2_id, p1, p2, firstPlayer, seed, p1Hero, p2Hero, factionCards, allSpells, formatCode);
           setOwnedLimitedCardIds(p1OwnedLimitedIds, p2OwnedLimitedIds);
           setPhase("playing");

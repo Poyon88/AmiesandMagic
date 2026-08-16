@@ -6,8 +6,9 @@ import EntityBarChart from "./EntityBarChart";
 import EvolutionChart from "./EvolutionChart";
 import MatchupHeatmap from "./MatchupHeatmap";
 import BackfillButton from "./BackfillButton";
+import TurnOrderPanel, { type TurnOrderReport } from "./TurnOrderPanel";
 
-type EntityKind = "factions" | "races" | "clans" | "cards" | "heroes" | "abilities" | "matchups" | "matchupsClan";
+type EntityKind = "factions" | "races" | "clans" | "cards" | "heroes" | "abilities" | "matchups" | "matchupsClan" | "turnOrder";
 
 const TABS: Array<{ id: EntityKind; label: string; icon: string }> = [
   { id: "factions", label: "Factions", icon: "🏛️" },
@@ -18,9 +19,14 @@ const TABS: Array<{ id: EntityKind; label: string; icon: string }> = [
   { id: "abilities", label: "Capacités", icon: "✨" },
   { id: "matchups", label: "Matchups Factions", icon: "⚔️" },
   { id: "matchupsClan", label: "Matchups Clans", icon: "🆚" },
+  { id: "turnOrder", label: "Initiative", icon: "🎲" },
 ];
 
 const MATCHUP_TABS: EntityKind[] = ["matchups", "matchupsClan"];
+
+/** Onglets qui ne listent PAS des entités : ni seuil de parties, ni tableau, ni
+ *  courbe d'évolution ne s'y appliquent. */
+const SPECIAL_TABS: EntityKind[] = ["matchups", "matchupsClan", "turnOrder"];
 
 const PERIODS = [
   { id: "7d", label: "7 jours" },
@@ -31,7 +37,9 @@ const PERIODS = [
 
 type Period = typeof PERIODS[number]["id"];
 
-const ENTITY_MAP: Record<Exclude<EntityKind, "matchups" | "matchupsClan">, "card" | "hero" | "faction" | "race" | "clan" | "ability"> = {
+// L'onglet Initiative ne porte pas d'entité : il n'a ni tableau, ni courbe
+// d'évolution, donc rien à mapper ici.
+const ENTITY_MAP: Record<Exclude<EntityKind, "matchups" | "matchupsClan" | "turnOrder">, "card" | "hero" | "faction" | "race" | "clan" | "ability"> = {
   factions: "faction",
   races: "race",
   clans: "clan",
@@ -47,6 +55,7 @@ export default function AnalyticsTabs() {
   const [showLowSample, setShowLowSample] = useState(false);
   const [stats, setStats] = useState<EntityStat[] | null>(null);
   const [totalMatches, setTotalMatches] = useState(0);
+  const [turnOrder, setTurnOrder] = useState<TurnOrderReport | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<EntityStat | null>(null);
   const [matchups, setMatchups] = useState<{ factions: string[]; cells: Parameters<typeof MatchupHeatmap>[0]["cells"] } | null>(null);
@@ -54,11 +63,18 @@ export default function AnalyticsTabs() {
   const fetchData = useCallback(async () => {
     setStats(null);
     setMatchups(null);
+    setTurnOrder(null);
     setError(null);
     setSelected(null);
     const effMin = showLowSample ? 1 : minGames;
     try {
-      if (MATCHUP_TABS.includes(tab)) {
+      if (tab === "turnOrder") {
+        const r = await fetch(`/api/admin/analytics/turn-order?period=${period}`);
+        const j = await r.json();
+        if (!r.ok) throw new Error(j.error ?? `HTTP ${r.status}`);
+        setTurnOrder(j as TurnOrderReport);
+        setTotalMatches(j.total_matches ?? 0);
+      } else if (MATCHUP_TABS.includes(tab)) {
         const by = tab === "matchupsClan" ? "clan" : "faction";
         const r = await fetch(`/api/admin/analytics/matchups?period=${period}&by=${by}`);
         const j = await r.json();
@@ -131,7 +147,7 @@ export default function AnalyticsTabs() {
             >{p.label}</button>
           ))}
         </div>
-        {!MATCHUP_TABS.includes(tab) && (
+        {!SPECIAL_TABS.includes(tab) && (
           <>
             <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#ccc" }}>
               Seuil min :
@@ -166,7 +182,9 @@ export default function AnalyticsTabs() {
         </div>
       )}
 
-      {MATCHUP_TABS.includes(tab) ? (
+      {tab === "turnOrder" ? (
+        turnOrder ? <TurnOrderPanel report={turnOrder} /> : <div style={{ color: "#888" }}>Chargement…</div>
+      ) : MATCHUP_TABS.includes(tab) ? (
         matchups ? (
           <MatchupHeatmap
             factions={matchups.factions}
@@ -193,7 +211,7 @@ export default function AnalyticsTabs() {
               />
               {selected && (
                 <EvolutionChart
-                  entity={ENTITY_MAP[tab as Exclude<EntityKind, "matchups" | "matchupsClan">]}
+                  entity={ENTITY_MAP[tab as Exclude<EntityKind, "matchups" | "matchupsClan" | "turnOrder">]}
                   entityKey={selected.key}
                   entityLabel={selected.label}
                   period={period}

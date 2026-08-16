@@ -1,4 +1,5 @@
 import { SupabaseClient } from '@supabase/supabase-js';
+import { didPlayerStart } from "@/lib/game/first-player";
 
 export type Period = '7d' | '30d' | '90d' | 'all';
 
@@ -374,4 +375,84 @@ function isoWeek(d: Date): string {
   const yearStart = new Date(Date.UTC(target.getUTCFullYear(), 0, 1));
   const weekNo = Math.ceil((((target.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
   return `${target.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
+}
+
+// ─── Initiative : qui commence gagne-t-il plus souvent ? ─────────────────────
+//
+// La question que ce bloc sert à trancher : le fait de commencer avantage-t-il
+// ou désavantage-t-il ? Elle est devenue mesurable le jour où le premier joueur
+// a cessé de recevoir autant de cartes que le second.
+//
+// Aucune colonne n'a été ajoutée pour cela. Le premier joueur se DÉRIVE de
+// l'identifiant de la partie (cf. firstPlayerIndexForMatch), donc la statistique
+// se calcule rétroactivement sur toutes les parties déjà enregistrées.
+
+export interface MatchSides {
+  id: string;
+  player1_id: string;
+  player2_id: string;
+}
+
+export interface TurnOrderStat {
+  /** "first" = a commencé, "second" = a joué en second. */
+  key: 'first' | 'second';
+  label: string;
+  wins: number;
+  losses: number;
+  winrate: number;
+  games_count: number;
+}
+
+export interface TurnOrderReport {
+  stats: TurnOrderStat[];
+  /** Parties exploitables : celles dont les deux camps ont été identifiés. */
+  total_matches: number;
+  /** Instantanés écartés faute de partie correspondante ou de camp reconnu.
+   *  Exposé et non tu : une statistique d'équilibrage qui masque ce qu'elle
+   *  ignore est pire qu'une absence de statistique. */
+  skipped_snapshots: number;
+}
+
+/** Winrate selon l'ordre de jeu.
+ *
+ *  Fonction PURE : elle prend les instantanés et les camps, et ne va rien
+ *  chercher. C'est ce qui la rend testable sans base.
+ */
+export function aggregateByTurnOrder(
+  snapshots: DeckSnapshot[],
+  matches: MatchSides[],
+): TurnOrderReport {
+  const sides = new Map(matches.map((m) => [m.id, m]));
+  const tally = {
+    first: { wins: 0, losses: 0 },
+    second: { wins: 0, losses: 0 },
+  };
+  const seenMatches = new Set<string>();
+  let skipped = 0;
+
+  for (const snap of snapshots) {
+    const m = sides.get(snap.match_id);
+    if (!m) { skipped += 1; continue; }
+
+    const started = didPlayerStart(snap.match_id, snap.player_id, m.player1_id, m.player2_id);
+    if (started === null) { skipped += 1; continue; }
+
+    const bucket = started ? tally.first : tally.second;
+    if (snap.is_winner) bucket.wins += 1;
+    else bucket.losses += 1;
+    seenMatches.add(snap.match_id);
+  }
+
+  const build = (key: 'first' | 'second', label: string): TurnOrderStat => {
+    const b = tally[key];
+    const games = b.wins + b.losses;
+    return { key, label, wins: b.wins, losses: b.losses, games_count: games,
+             winrate: games > 0 ? b.wins / games : 0 };
+  };
+
+  return {
+    stats: [build('first', 'Commence'), build('second', 'Joue en second')],
+    total_matches: seenMatches.size,
+    skipped_snapshots: skipped,
+  };
 }
