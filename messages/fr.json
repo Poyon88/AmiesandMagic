@@ -2400,6 +2400,7 @@
     "err_choice": "Le choix n’a pas pu être enregistré.",
     "err_purchase": "L’achat n’a pas pu aboutir.",
     "badge_starter": "DÉPART",
-    "badge_owned": "ACQUISE"
+    "badge_owned": "ACQUISE",
+    "bundle_hint": "Ou prenez les {count} factions qu’il vous manque pour {price} or →"
   }
 }

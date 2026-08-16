@@ -11,6 +11,7 @@ type Etat = Parameters<typeof situationPour>[0];
 
 const etat = (p: Partial<NonNullable<Etat>> = {}): NonNullable<Etat> => ({
   factionPrice: 1200,
+  bundlePrice: 2300,
   balance: 5000,
   goldDebt: 0,
   ownsBundle: false,
@@ -63,7 +64,43 @@ describe("situationPour", () => {
 
   it("faction manquante et départ déjà fait ⇒ elle est à vendre", () => {
     const s = situationPour(etat(), "Elfes", false);
-    expect(s).toEqual({ quoi: "achetable", prix: 1200, solde: 5000, dette: 0 });
+    // Une seule faction manquante dans l'état par défaut : pas de forfait.
+    expect(s).toEqual({ quoi: "achetable", prix: 1200, solde: 5000, dette: 0, forfait: null });
+  });
+
+  it("le forfait est rappelé dès qu'il manque PLUSIEURS factions", () => {
+    // Sans ce rappel, le forfait n'existerait que dans la boutique : qui
+    // navigue de faction en faction ne le découvrirait jamais.
+    const s = situationPour(
+      etat({
+        factions: [
+          { id: "Nains", owned: true, isStarter: true },
+          { id: "Elfes", owned: false, isStarter: false },
+          { id: "Orcs", owned: false, isStarter: false },
+        ],
+      }),
+      "Elfes", false,
+    );
+    expect(s).toMatchObject({ forfait: { prix: 2300, manquantes: 2 } });
+  });
+
+  it("une SEULE faction manquante ⇒ pas de forfait : il coûterait plus cher", () => {
+    const s = situationPour(etat(), "Elfes", false);
+    expect(s).toMatchObject({ forfait: null });
+  });
+
+  it("sans tarif de forfait, aucun rappel", () => {
+    const s = situationPour(
+      etat({
+        bundlePrice: null,
+        factions: [
+          { id: "Elfes", owned: false, isStarter: false },
+          { id: "Orcs", owned: false, isStarter: false },
+        ],
+      }),
+      "Elfes", false,
+    );
+    expect(s).toMatchObject({ forfait: null });
   });
 
   it("l'or insuffisant reste une proposition d'achat — c'est l'écran qui la grise", () => {

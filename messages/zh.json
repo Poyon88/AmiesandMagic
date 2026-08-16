@@ -2400,6 +2400,7 @@
     "err_choice": "未能保存选择。",
     "err_purchase": "未能完成购买。",
     "badge_starter": "初始",
-    "badge_owned": "已获得"
+    "badge_owned": "已获得",
+    "bundle_hint": "或以 {price} 金币获得你缺少的 {count} 个阵营 →"
   }
 }

@@ -2400,6 +2400,7 @@
     "err_choice": "選択を保存できませんでした。",
     "err_purchase": "購入を完了できませんでした。",
     "badge_starter": "開始",
-    "badge_owned": "取得済"
+    "badge_owned": "取得済",
+    "bundle_hint": "または、不足している{count}勢力すべてを{price}ゴールドで →"
   }
 }

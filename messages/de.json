@@ -2400,6 +2400,7 @@
     "err_choice": "Die Wahl konnte nicht gespeichert werden.",
     "err_purchase": "Der Kauf konnte nicht abgeschlossen werden.",
     "badge_starter": "START",
-    "badge_owned": "ERWORBEN"
+    "badge_owned": "ERWORBEN",
+    "bundle_hint": "Oder nimm alle {count} fehlenden Fraktionen für {price} Gold →"
   }
 }

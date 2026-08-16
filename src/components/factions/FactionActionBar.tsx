@@ -22,6 +22,7 @@ const OR = "#d4af37";
 
 interface Etat {
   factionPrice: number | null;
+  bundlePrice: number | null;
   balance: number;
   goldDebt: number;
   ownsBundle: boolean;
@@ -36,7 +37,18 @@ type Situation =
   /** Aucune faction de départ encore choisie : celle-ci peut être OFFERTE. */
   | { quoi: "offrable" }
   | { quoi: "possedee"; parLeForfait: boolean; deDepart: boolean }
-  | { quoi: "achetable"; prix: number; solde: number; dette: number };
+  | {
+      quoi: "achetable";
+      prix: number;
+      solde: number;
+      dette: number;
+      /** Le forfait, quand il vaut mieux que d'acheter faction par faction.
+       *  `null` s'il n'a pas de sens ici — c'est la dernière faction manquante,
+       *  ou son tarif n'est pas connu. Sans ce rappel, le forfait n'existerait
+       *  QUE dans la boutique, et le joueur qui parcourt les factions ne le
+       *  découvrirait jamais. */
+      forfait: { prix: number; manquantes: number } | null;
+    };
 
 /** Décision pure, extraite du rendu : c'est la seule vraie logique du
  *  composant, et elle doit pouvoir être lue et testée sans React. */
@@ -57,11 +69,19 @@ export function situationPour(etat: Etat | null, factionId: string, anonyme: boo
   // Sans tarif (migration non appliquée), il n'y a rien à proposer.
   if (etat.factionPrice == null) return { quoi: "chargement" };
 
+  const manquantes = etat.factions.filter((f) => !f.owned).length;
+
   return {
     quoi: "achetable",
     prix: etat.factionPrice,
     solde: etat.balance,
     dette: etat.goldDebt,
+    // Une seule faction manquante ⇒ le forfait coûte plus cher qu'elle : le
+    // proposer serait un mauvais conseil, pas une opportunité.
+    forfait:
+      etat.bundlePrice != null && manquantes > 1
+        ? { prix: etat.bundlePrice, manquantes }
+        : null,
   };
 }
 
@@ -296,6 +316,24 @@ export default function FactionActionBar({
         {enCours ? "…" : solde < prix && dette === 0 ? t("not_enough_gold") : t("buy_cta")}
       </button>
       {erreur && <p style={{ fontSize: 13, color: "#e0533c", marginTop: 10 }}>{erreur}</p>}
+
+      {/* Le forfait se décide en regardant les NEUF factions, pas celle qu'on a
+          sous les yeux : on renvoie donc vers la boutique plutôt que de le
+          vendre ici. Mais il faut le mentionner, sinon il reste invisible à qui
+          navigue de faction en faction. */}
+      {situation.forfait && (
+        <p style={{ fontSize: 12.5, color: "#e0e0e0aa", marginTop: 12 }}>
+          <Link
+            href="/boutique"
+            style={{ color: OR, textDecoration: "underline", textUnderlineOffset: 3 }}
+          >
+            {t("bundle_hint", {
+              count: situation.forfait.manquantes,
+              price: situation.forfait.prix,
+            })}
+          </Link>
+        </p>
+      )}
     </div>
   );
 }

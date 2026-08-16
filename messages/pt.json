@@ -2400,6 +2400,7 @@
     "err_choice": "Não foi possível guardar a escolha.",
     "err_purchase": "Não foi possível concluir a compra.",
     "badge_starter": "INICIAL",
-    "badge_owned": "ADQUIRIDA"
+    "badge_owned": "ADQUIRIDA",
+    "bundle_hint": "Ou leve as {count} facções que lhe faltam por {price} de ouro →"
   }
 }

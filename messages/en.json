@@ -2400,6 +2400,7 @@
     "err_choice": "The choice could not be saved.",
     "err_purchase": "The purchase could not be completed.",
     "badge_starter": "STARTER",
-    "badge_owned": "OWNED"
+    "badge_owned": "OWNED",
+    "bundle_hint": "Or take all {count} factions you are missing for {price} gold →"
   }
 }

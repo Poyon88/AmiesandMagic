@@ -2400,6 +2400,7 @@
     "err_choice": "La scelta non è stata salvata.",
     "err_purchase": "L’acquisto non è andato a buon fine.",
     "badge_starter": "INIZIALE",
-    "badge_owned": "ACQUISITA"
+    "badge_owned": "ACQUISITA",
+    "bundle_hint": "Oppure prendi le {count} fazioni che ti mancano per {price} oro →"
   }
 }
