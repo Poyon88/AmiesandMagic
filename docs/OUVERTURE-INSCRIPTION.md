@@ -41,10 +41,29 @@ L'ordre compte : le point 2 dépend du point 1.
 
 ### ~~1. Brancher un SMTP tiers~~ — **FAIT** (2026-07-22)
 
+Le prestataire est **Resend**, branché en SMTP dans Supabase :
+**Authentication → Emails → SMTP Settings**.
+
 Le service intégré de Supabase plafonnait à quelques envois par heure — rencontré
-en test : `email rate limit exceeded` après trois inscriptions. Un prestataire
-tiers est branché, et la réinitialisation de mot de passe a été validée de bout
-en bout.
+en test : `email rate limit exceeded` après trois inscriptions. Resend l'a
+remplacé, et la réinitialisation de mot de passe a été validée de bout en bout.
+
+**Où chercher quand un email « ne part pas ».** Le jeu n'envoie AUCUN email
+lui-même : aucune dépendance d'envoi, aucune variable SMTP dans
+l'environnement. Tout part de Supabase Auth, déclenché depuis trois endroits
+seulement — `signUp`, `resetPasswordForEmail` et `auth.resend`
+(`src/components/auth/LoginForm.tsx`). Le code n'est donc presque jamais en
+cause, et il y a **trois** endroits à regarder, dans cet ordre :
+
+1. **Logs Auth de Supabase** — l'email a-t-il été DEMANDÉ ? Une action
+   `user_confirmation_requested` dans les *auth audit logs* le prouve. Une
+   panne SMTP y apparaîtrait en niveau `error`.
+2. **Tableau de bord Resend** — l'email a-t-il été REMIS ? C'est le seul
+   endroit qui montre les rebonds, les rejets de domaine et le classement en
+   spam. Les logs Supabase, eux, s'arrêtent à la remise au SMTP.
+3. **L'adresse elle-même**. Vérifié le 2026-08-16 : un essai visait
+   `…@gmail.lu`, domaine inexistant. Aucun prestataire ne peut livrer ça, et
+   rien dans les logs Supabase ne le signale.
 
 **Piège associé, également traité** : brancher le SMTP ne relève PAS
 automatiquement le plafond appliqué par Supabase. Il se règle à part, dans
@@ -53,13 +72,15 @@ est **global** (confirmations + réinitialisations + changements d'adresse). Le
 champ n'est modifiable que lorsqu'un SMTP tiers est configuré — c'est d'ailleurs
 un bon indicateur que la configuration a pris.
 
-### 2. Vérifier l'état de « Confirm email »
+### ~~2. Vérifier l'état de « Confirm email »~~ — **ACTIVÉ** (constaté 2026-08-16)
 
 Authentication → Providers → Email → « Confirm email ».
 
-Il a été **désactivé temporairement** le 2026-07-21 pour débloquer les tests,
-puis l'état a changé sans être retracé. À confirmer avant l'ouverture : sans
-confirmation, n'importe qui crée un compte avec une adresse inexistante.
+Il avait été **désactivé temporairement** le 2026-07-21 pour débloquer les
+tests, puis l'état a changé sans être retracé. Les logs Auth du 2026-08-16 le
+tranchent : trois refus `400: Email not confirmed` le même jour, que seul un
+réglage ACTIF peut produire. Constaté dans les logs, non relu dans l'écran —
+si le doute revient, c'est là qu'il faut regarder.
 
 Le code gère les deux cas sans modification : avec confirmation, l'écran
 « vérifie ta boîte mail » s'affiche, avec un renvoi verrouillé 60 s.
