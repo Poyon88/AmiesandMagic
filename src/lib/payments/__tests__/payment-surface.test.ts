@@ -61,7 +61,7 @@ describe("le catalogue ne fuit pas côté navigateur", () => {
 });
 
 describe("aucun montant ne peut venir du client", () => {
-  const routes = ["src/app/api/checkout/gold-pack/route.ts", "src/app/api/checkout/tournament/route.ts"];
+  const routes = ["src/app/api/checkout/gold-pack/route.ts", "src/app/api/checkout/ticket-pack/route.ts"];
 
   it.each(routes)("%s ne lit aucun montant dans le corps de la requête", (route) => {
     const src = read(route);
@@ -82,6 +82,32 @@ describe("aucun montant ne peut venir du client", () => {
     // `apply_checkout_completed` reçoit amount_cents depuis l'événement.
     const webhook = read("src/app/api/stripe/webhook/route.ts");
     expect(webhook).toMatch(/p_amount_cents:\s*session\.amount_total/);
+  });
+});
+
+describe("l'inscription ne coûte plus d'argent réel", () => {
+  it("aucune route de paiement ne vise un TOURNOI", () => {
+    // Le modèle par ticket est justement là pour ça : on achète des tickets,
+    // on les dépense ensuite. Rouvrir un chemin « payer pour CETTE place »
+    // ramènerait le cas « rempli pendant le paiement » et son remboursement
+    // automatique, que ce lot a supprimés.
+    const offenders = walk("src/app/api").filter((f) => /checkout\/tournament/.test(f));
+    expect(offenders).toEqual([]);
+  });
+
+  it("la route d'inscription ne touche jamais à Stripe", () => {
+    const src = read("src/app/api/tournaments/enter/route.ts");
+    expect(src).not.toMatch(/getStripe|stripe\./);
+    expect(src).not.toMatch(/checkout|price/i);
+    // Tout passe par la fonction transactionnelle : c'est elle qui garantit
+    // qu'un échec ne brûle pas de ticket.
+    expect(src).toContain("enter_tournament_with_ticket");
+  });
+
+  it("le nombre de tickets d'un pack ne vient jamais du client", () => {
+    const src = read("src/app/api/checkout/ticket-pack/route.ts");
+    expect(src).not.toMatch(/body[?.]*\.\s*(tickets|ticket_amount|count|quantity)/);
+    expect(src).toMatch(/ticket_amount:\s*pack\.tickets/);
   });
 });
 

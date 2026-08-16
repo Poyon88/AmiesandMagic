@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import AmPanel from "@/components/ui/AmPanel";
 import AmHeading from "@/components/ui/AmHeading";
 import TournamentSignup from "@/components/payments/TournamentSignup";
@@ -10,21 +11,25 @@ interface TournamentRow {
   id: string;
   name: string;
   status: string;
-  entry_price_cents: number;
+  kind: "weekly" | "free" | "special";
   capacity: number;
   starts_at: string | null;
 }
+
+const KIND_LABEL: Record<TournamentRow["kind"], string> = {
+  weekly: "Hebdomadaire",
+  free: "Gratuit",
+  special: "Spécial",
+};
 
 export default async function TournoisPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  // Les brouillons sont invisibles (policy RLS), les tournois publiés sont
-  // lisibles par tous.
   const { data: tournaments } = await supabase
     .from("tournaments")
-    .select("id, name, status, entry_price_cents, capacity, starts_at")
+    .select("id, name, status, kind, capacity, starts_at")
     .in("status", ["open", "running"])
     .order("starts_at", { ascending: true });
 
@@ -42,15 +47,39 @@ export default async function TournoisPage() {
     if (e.user_id === user.id) mine.add(e.tournament_id);
   }
 
+  // Tickets utilisables du joueur. Lus ici, côté serveur, pour que le premier
+  // rendu dise déjà la vérité — un décompte qui apparaît après coup ferait
+  // clignoter le bouton entre « obtenir un ticket » et « s'inscrire ».
+  const nowIso = new Date().toISOString();
+  const { count: ticketsAvailable } = await supabase
+    .from("tournament_tickets")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", user.id)
+    .is("spent_at", null)
+    .is("revoked_at", null)
+    .gt("expires_at", nowIso);
+
+  const { data: wallet } = await supabase
+    .from("wallets").select("ticket_debt").eq("user_id", user.id).maybeSingle();
+
+  const tickets = ticketsAvailable ?? 0;
+  const debt = wallet?.ticket_debt ?? 0;
+
   return (
     <div className="min-h-screen bg-am-bg-0">
       <div className="mx-auto max-w-4xl px-4 py-12">
         <AmHeading
           eyebrow="Circuit payant"
-          subtitle="Les gains sont versés en pièces d'or, dépensables dans les enchères de cartes en édition limitée."
+          subtitle="Un ticket ouvre l'entrée d'un tournoi. Les gains sont versés en pièces d'or, dépensables dans les enchères."
         >
           Tournois
         </AmHeading>
+
+        <p className="mt-6 text-center text-sm text-am-ink-2">
+          Vous détenez <strong className="text-am-gold">{tickets}</strong> ticket
+          {tickets > 1 ? "s" : ""} ·{" "}
+          <Link href="/boutique" className="underline hover:text-am-gold">en obtenir</Link>
+        </p>
 
         {rows.length === 0 ? (
           <p className="mt-12 text-center text-sm text-am-ink-3">
@@ -65,7 +94,7 @@ export default async function TournoisPage() {
                   <div>
                     <h3 className="font-display text-lg text-am-gold">{tr.name}</h3>
                     <p className="mt-1 text-xs text-am-ink-3">
-                      {tr.capacity} joueurs
+                      {KIND_LABEL[tr.kind]} · {tr.capacity} joueurs
                       {tr.starts_at && ` · ${new Date(tr.starts_at).toLocaleString("fr-FR")}`}
                       {tr.status === "running" && " · en cours"}
                     </p>
@@ -73,9 +102,13 @@ export default async function TournoisPage() {
                   {tr.status === "open" ? (
                     <TournamentSignup
                       tournamentId={tr.id}
-                      entryPriceCents={tr.entry_price_cents}
+                      // La règle « ce tournoi coûte-t-il un ticket ? » vient du
+                      // type, comme en base (tournament_requires_ticket).
+                      requiresTicket={tr.kind !== "free"}
                       seatsLeft={Math.max(0, tr.capacity - used)}
                       alreadyEntered={mine.has(tr.id)}
+                      ticketsAvailable={tickets}
+                      ticketDebt={debt}
                     />
                   ) : (
                     <span className="text-sm text-am-ink-3">Inscriptions closes</span>

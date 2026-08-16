@@ -11,12 +11,13 @@ import GoldCoin from "@/components/shared/GoldCoin";
 
 interface PaymentRow {
   id: string;
-  type: "tournament_entry" | "gold_pack";
+  type: "tournament_entry" | "gold_pack" | "ticket_pack";
   reference: string | null;
   amount_cents: number;
   currency: string;
   status: "pending" | "completed" | "refunded" | "failed";
   gold_amount: number;
+  ticket_amount: number;
   created_at: string;
 }
 
@@ -69,7 +70,12 @@ export default function PaymentHistory() {
                   <span className="inline-flex items-center gap-1">
                     Pack de {p.gold_amount} <GoldCoin size={13} />
                   </span>
-                ) : "Inscription à un tournoi"}
+                ) : p.type === "ticket_pack" ? (
+                  `${p.ticket_amount} ticket${p.ticket_amount > 1 ? "s" : ""} de tournoi`
+                ) : (
+                  // Chemin historique : plus aucun paiement de ce type n'est créé.
+                  "Inscription à un tournoi"
+                )}
               </td>
               <td className="px-4 py-3 text-right tabular-nums text-am-ink-2">
                 {new Intl.NumberFormat("fr-FR", {

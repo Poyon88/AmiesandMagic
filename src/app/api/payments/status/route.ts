@@ -19,7 +19,7 @@ export async function GET(request: Request) {
   const supabase = getAdminClient();
   const { data } = await supabase
     .from("payments")
-    .select("status, type, reference, amount_cents, currency, gold_amount, created_at")
+    .select("status, type, reference, amount_cents, currency, gold_amount, ticket_amount, created_at")
     .eq("stripe_session_id", sessionId)
     .eq("user_id", user.id)
     .maybeSingle();

@@ -34,9 +34,49 @@ export function findGoldPack(code: string): GoldPack | undefined {
   return GOLD_PACKS.find((p) => p.code === code);
 }
 
-/** Prix Stripe de l'entrée en tournoi payant (2,50 €). Un seul produit pour
- *  tous les tournois : le tarif est uniforme, et le tournoi visé voyage dans
- *  les metadata. */
+/** Packs de TICKETS DE TOURNOI.
+ *
+ *  Un ticket est un bien détenu : on l'achète, on le garde jusqu'à un an, et on
+ *  le dépense dans le tournoi de son choix. L'inscription elle-même ne passe
+ *  donc plus jamais par Stripe.
+ *
+ *  Le tarif dégressif est ici pour l'AFFICHAGE ; c'est le Price Stripe qui
+ *  facture. Les deux doivent rester d'accord à la main. */
+export interface TicketPack {
+  code: string;
+  label: string;
+  /** Nombre de tickets crédités à la réception du webhook. */
+  tickets: number;
+  displayPriceCents: number;
+  priceEnvVar: string;
+}
+
+export const TICKET_PACKS: readonly TicketPack[] = [
+  { code: "ticket_pack_s", label: "Ticket unique",   tickets: 1,  displayPriceCents: 250,  priceEnvVar: "STRIPE_PRICE_TICKET_PACK_S" },
+  { code: "ticket_pack_m", label: "Carnet de 5",     tickets: 5,  displayPriceCents: 1150, priceEnvVar: "STRIPE_PRICE_TICKET_PACK_M" },
+  { code: "ticket_pack_l", label: "Carnet de 12",    tickets: 12, displayPriceCents: 2500, priceEnvVar: "STRIPE_PRICE_TICKET_PACK_L" },
+];
+
+export function findTicketPack(code: string): TicketPack | undefined {
+  return TICKET_PACKS.find((p) => p.code === code);
+}
+
+export function publicTicketPacks() {
+  return TICKET_PACKS.map(({ code, label, tickets, displayPriceCents }) => ({
+    code, label, tickets, displayPriceCents,
+  }));
+}
+
+/** Durée de validité d'un ticket, en jours. La base porte la même valeur en
+ *  défaut de `grant_tournament_tickets` ; elle est passée explicitement à
+ *  chaque octroi pour que la règle se lise ici, du côté du catalogue. */
+export const TICKET_VALIDITY_DAYS = 365;
+
+/** Prix Stripe de l'entrée en tournoi — CHEMIN HISTORIQUE.
+ *
+ *  Plus aucun code n'ouvre de session avec ce prix : on n'achète plus une place,
+ *  on achète des tickets. Conservé pour que le Price Stripe existant reste
+ *  identifiable, et parce que des paiements passés le référencent. */
 export const TOURNAMENT_ENTRY_PRICE_ENV = "STRIPE_PRICE_TOURNAMENT_ENTRY";
 
 /** Durée de vie d'une session Checkout. Courte volontairement : au-delà, la

@@ -61,8 +61,8 @@ export default function GoldShop({ packs }: { packs: PublicPack[] }) {
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-12">
-      <AmHeading eyebrow="Trésorerie" subtitle="Les pièces d'or servent aux enchères de cartes en édition limitée.">
+    <section className="mx-auto max-w-5xl px-4 py-12">
+      <AmHeading eyebrow="Enchères" subtitle="Les pièces d'or servent aux enchères de cartes en édition limitée. Elles n'ouvrent aucun tournoi.">
         Bourses de pièces d&apos;or
       </AmHeading>
 
@@ -106,6 +106,6 @@ export default function GoldShop({ packs }: { packs: PublicPack[] }) {
         euros, ni transférables, ni remboursables — hors remboursement du paiement d&apos;origine.
         Paiement traité par Stripe : aucune donnée bancaire ne transite par Armies&nbsp;&amp;&nbsp;Magic.
       </p>
-    </div>
+    </section>
   );
 }

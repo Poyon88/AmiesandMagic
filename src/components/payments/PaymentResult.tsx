@@ -18,8 +18,9 @@ type Status = "pending" | "completed" | "refunded" | "failed";
 
 interface PaymentInfo {
   status: Status;
-  type: "tournament_entry" | "gold_pack";
+  type: "tournament_entry" | "gold_pack" | "ticket_pack";
   gold_amount: number;
+  ticket_amount: number;
 }
 
 /** Sondage court et espacé : le webhook arrive en général en quelques secondes,
@@ -77,9 +78,13 @@ export default function PaymentResult({ sessionId }: { sessionId: string | null 
           <>
             <AmHeading eyebrow="Merci">Paiement confirmé</AmHeading>
             <p className="mt-4 text-am-ink-2">
-              {info!.type === "gold_pack"
-                ? <>Vos <strong className="text-am-gold">{info!.gold_amount}</strong> <GoldCoin size={16} /> ont été crédités.</>
-                : <>Votre inscription au tournoi est enregistrée.</>}
+              {info!.type === "gold_pack" ? (
+                <>Vos <strong className="text-am-gold">{info!.gold_amount}</strong> <GoldCoin size={16} /> ont été crédités.</>
+              ) : info!.type === "ticket_pack" ? (
+                <>Vos <strong className="text-am-gold">{info!.ticket_amount} 🎟️</strong> vous attendent — valables un an, dans le tournoi de votre choix.</>
+              ) : (
+                <>Votre inscription au tournoi est enregistrée.</>
+              )}
             </p>
           </>
         ) : info?.status === "refunded" ? (

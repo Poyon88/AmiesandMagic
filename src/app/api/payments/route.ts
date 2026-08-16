@@ -12,7 +12,7 @@ export async function GET() {
   const supabase = getAdminClient();
   const { data, error } = await supabase
     .from("payments")
-    .select("id, type, reference, amount_cents, currency, status, gold_amount, created_at")
+    .select("id, type, reference, amount_cents, currency, status, gold_amount, ticket_amount, created_at")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
     .limit(100);

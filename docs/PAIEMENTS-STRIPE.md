@@ -49,7 +49,10 @@ redélivre ses événements ; un rejeu ne doit jamais recréditer.
 | `STRIPE_SECRET_KEY` | serveur | Clé secrète (`sk_test_…` en développement). **Jamais côté client.** |
 | `STRIPE_WEBHOOK_SECRET` | serveur | Secret de signature du webhook (`whsec_…`). |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | client | Clé publiable. Non utilisée par Checkout hébergé, prévue pour la suite. |
-| `STRIPE_PRICE_TOURNAMENT_ENTRY` | serveur | `price_…` de l'entrée en tournoi (2,50 €). |
+| `STRIPE_PRICE_TICKET_PACK_S` | serveur | `price_…` du ticket à l'unité (2,50 €). |
+| `STRIPE_PRICE_TICKET_PACK_M` | serveur | `price_…` du carnet de 5 (11,50 €). |
+| `STRIPE_PRICE_TICKET_PACK_L` | serveur | `price_…` du carnet de 12 (25,00 €). |
+| `STRIPE_PRICE_TOURNAMENT_ENTRY` | serveur | **Historique.** Plus aucun code ne l'utilise depuis le passage aux tickets. |
 | `STRIPE_PRICE_GOLD_PACK_S` | serveur | `price_…` du petit pack. |
 | `STRIPE_PRICE_GOLD_PACK_M` | serveur | `price_…` du pack moyen. |
 | `STRIPE_PRICE_GOLD_PACK_L` | serveur | `price_…` du grand pack. |
@@ -109,6 +112,43 @@ Pour rejouer un événement à la main (vérifier l'idempotence sans repayer) :
 stripe events resend evt_xxx
 ```
 
+## Tickets de tournoi
+
+**On n'achète pas une place, on achète un ticket.** Le ticket est un bien
+détenu : valable **365 jours**, dépensable dans le tournoi de son choix. C'est
+ce découplage qui fait qu'une inscription ne touche plus jamais Stripe — et qui
+a supprimé du même coup le cas « tournoi rempli pendant le paiement ».
+
+```
+Boutique   → achat de tickets           (Stripe, webhook, 365 jours de validité)
+Tournoi    → dépense d'un ticket        (aucun argent réel, une transaction SQL)
+```
+
+Un tournoi porte un **type** (`tournaments.kind`) qui dit ce qu'il coûte :
+
+| Type | Coût | Usage |
+|---|---|---|
+| `weekly` | 1 ticket | le circuit payant régulier |
+| `special` | 1 ticket | événements ponctuels |
+| `free` | rien | initiation, circuit gratuit |
+
+La règle vit **en base**, dans `tournament_requires_ticket(kind)` : les écrans la
+lisent, ils ne la recopient pas.
+
+**Consommation.** On dépense toujours le ticket qui **périme le plus tôt** —
+sinon un joueur laisserait expirer un ticket encore valable pendant qu'un autre
+dort. Un échec (tournoi complet, déjà inscrit, fermé) ne brûle jamais de ticket :
+tout est dans une transaction unique.
+
+**Péremption et affichage.** `expires_at` est une borne **exclusive**. Un ticket
+acheté le 16 août 2026 porte `expires_at = 2027-08-16` et se présente au joueur
+comme « valable jusqu'au **15 août 2027** ». Les écrans affichent `last_day`,
+jamais `expires_at`, sinon ils annonceraient un jour de trop.
+
+**Restitution.** Un tournoi annulé rend son ticket, **sans repousser la date
+d'expiration** — sinon s'inscrire puis se désinscrire deviendrait un moyen de
+rafraîchir un ticket indéfiniment.
+
 ## Remboursements
 
 Pas de libre-service en V1 : les remboursements se font **manuellement depuis le
@@ -118,10 +158,15 @@ tableau de bord Stripe**. Le webhook `charge.refunded` fait le reste :
   ce qui reste et le solde manquant devient une **dette**
   (`wallets.gold_debt`). Tant qu'elle n'est pas résorbée, le joueur ne peut
   rien dépenser, et tout gain ultérieur l'éponge en priorité.
-- **Inscription à un tournoi** — la place est rendue si le tournoi n'a pas
-  commencé. S'il est en cours, la place est conservée : la prestation a été
-  consommée, et retirer un joueur d'un arbre en cours casserait le tournoi des
-  autres.
+- **Pack de tickets** — dans cet ordre : les tickets **encore en main** sont
+  annulés ; s'il en manque, les **inscriptions à des tournois non commencés**
+  sont retirées et la place repart au pot ; s'il en manque encore, le reliquat
+  correspond à des tournois **réellement joués** et devient une **dette de
+  tickets** qui bloque toute inscription jusqu'à résorption. Un ticket **offert**
+  par l'administration n'est jamais repris : il n'est rattaché à aucun
+  encaissement.
+- **Inscription à un tournoi** (chemin historique) — la place est rendue si le
+  tournoi n'a pas commencé.
 
 > **Pourquoi une dette et non un solde négatif ?** `wallets.balance` porte un
 > `CHECK (balance >= 0)`, et ce contrôle est la **seule** chose qui empêche
@@ -145,6 +190,8 @@ npx vitest run src/lib/payments
 - `webhook-handlers.test.ts` — le vrai PL/pgSQL de production, exécuté dans un
   Postgres in-process (PGlite). Aucun bouchon : idempotence, tournoi complet,
   reprise d'or déjà dépensé, conservation de la monnaie.
+- `tickets.test.ts` — péremption, ordre de consommation, restitution, et les
+  trois étages du remboursement. Même banc PGlite, même absence de bouchon.
 - `payment-surface.test.ts` — les invariants que le SQL ne peut pas garder :
   aucun montant venu du client, aucune clé secrète côté navigateur, signature
   vérifiée sur le corps brut avant tout effet, aucune route de sortie d'argent.

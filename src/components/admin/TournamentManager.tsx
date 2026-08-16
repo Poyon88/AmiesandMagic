@@ -28,11 +28,19 @@ const S = {
 
 type Status = "draft" | "open" | "running" | "finished" | "cancelled";
 
+type Kind = "weekly" | "free" | "special";
+
+const KIND_LABEL: Record<Kind, string> = {
+  weekly: "Hebdomadaire — 1 ticket",
+  free: "Gratuit — sans ticket",
+  special: "Spécial — 1 ticket",
+};
+
 interface Tournament {
   id: string;
   name: string;
   status: Status;
-  entry_price_cents: number;
+  kind: Kind;
   capacity: number;
   starts_at: string | null;
   format_code: string | null;
@@ -71,8 +79,6 @@ function transitionsFor(t: { status: Status; entries_count: number }): Status[] 
   return list;
 }
 
-const euros = (c: number) => (c / 100).toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
-
 export default function TournamentManager() {
   const [rows, setRows] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
@@ -82,9 +88,9 @@ export default function TournamentManager() {
 
   const [name, setName] = useState("");
   const [capacity, setCapacity] = useState(32);
-  const [priceCents, setPriceCents] = useState(250);
   const [startsAt, setStartsAt] = useState("");
   const [formatCode, setFormatCode] = useState("");
+  const [kind, setKind] = useState<Kind>("weekly");
   const [saving, setSaving] = useState(false);
 
   const fetchTournaments = useCallback(async (): Promise<Tournament[]> => {
@@ -129,11 +135,11 @@ export default function TournamentManager() {
         body: JSON.stringify({
           name: name.trim(),
           capacity,
-          entry_price_cents: priceCents,
           // Créé en BROUILLON : un tournoi n'apparaît aux joueurs qu'une fois
           // ouvert explicitement. On ne met jamais quelque chose en vente par
           // le simple fait de l'avoir saisi.
           status: "draft",
+          kind,
           starts_at: startsAt ? new Date(startsAt).toISOString() : null,
           format_code: formatCode || null,
         }),
@@ -182,11 +188,11 @@ export default function TournamentManager() {
 
       <div style={{ ...S.card, background: "#fff8e1", border: "1px solid #ffe082" }}>
         <p style={{ fontSize: 11, color: "#6d4c00", margin: 0, lineHeight: 1.6 }}>
-          <strong>Le prix ne se règle pas ici.</strong> Le montant réellement facturé est celui du
-          Price Stripe <code style={{ background: "#fff", padding: "1px 4px", borderRadius: 3 }}>STRIPE_PRICE_TOURNAMENT_ENTRY</code>,
-          identique pour tous les tournois. Le champ ci-dessous ne sert qu&apos;à l&apos;affichage :
-          s&apos;il diverge du Price Stripe, l&apos;écran mentira au joueur mais la facture restera juste.
-          Pour changer le tarif, il faut créer un nouveau Price dans Stripe et mettre à jour la variable.
+          <strong>Un tournoi ne se vend pas.</strong> Ce sont les <strong>tickets</strong> qui
+          s&apos;achètent, en boutique, et le joueur les dépense dans le tournoi de son choix.
+          Un tournoi coûte donc <em>un ticket</em> ou <em>rien</em> — c&apos;est son TYPE qui le dit,
+          et il n&apos;y a aucun montant à régler ici. Pour changer le tarif des tickets, il faut
+          créer un nouveau Price dans Stripe et mettre à jour la variable correspondante.
         </p>
       </div>
 
@@ -199,7 +205,7 @@ export default function TournamentManager() {
       {/* ─── Création ─────────────────────────────────────────────────── */}
       <div style={S.card}>
         <h2 style={{ ...S.title, marginBottom: 12 }}>Nouveau tournoi</h2>
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 10, marginBottom: 10 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "3fr 1fr", gap: 10, marginBottom: 10 }}>
           <div>
             <label style={S.label} htmlFor="t-name">NOM</label>
             <input id="t-name" style={S.input} value={name} maxLength={80}
@@ -210,17 +216,20 @@ export default function TournamentManager() {
             <input id="t-cap" type="number" min={2} max={512} style={S.input} value={capacity}
               onChange={(e) => setCapacity(Math.max(2, Math.min(512, parseInt(e.target.value) || 32)))} />
           </div>
-          <div>
-            <label style={S.label} htmlFor="t-price">PRIX AFFICHÉ (centimes)</label>
-            <input id="t-price" type="number" min={0} max={100000} style={S.input} value={priceCents}
-              onChange={(e) => setPriceCents(Math.max(0, Math.min(100000, parseInt(e.target.value) || 0)))} />
-          </div>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 12 }}>
           <div>
             <label style={S.label} htmlFor="t-date">DÉBUT (facultatif)</label>
             <input id="t-date" type="datetime-local" style={S.input} value={startsAt}
               onChange={(e) => setStartsAt(e.target.value)} />
+          </div>
+          <div>
+            <label style={S.label} htmlFor="t-kind">TYPE</label>
+            <select id="t-kind" style={S.input} value={kind} onChange={(e) => setKind(e.target.value as Kind)}>
+              {(Object.keys(KIND_LABEL) as Kind[]).map((k) => (
+                <option key={k} value={k}>{KIND_LABEL[k]}</option>
+              ))}
+            </select>
           </div>
           <div>
             <label style={S.label} htmlFor="t-format">FORMAT (facultatif)</label>
@@ -259,7 +268,9 @@ export default function TournamentManager() {
                 <span style={{ fontSize: 11, color: full ? "#c62828" : "#555", fontWeight: full ? 700 : 400 }}>
                   {t.entries_count} / {t.capacity} inscrits{full ? " — complet" : ""}
                 </span>
-                <span style={{ fontSize: 11, color: "#555" }}>{euros(t.entry_price_cents)}</span>
+                <span style={{ fontSize: 11, color: "#555" }}>
+                  {t.kind === "free" ? "Gratuit" : "1 ticket"}
+                </span>
                 {t.starts_at && (
                   <span style={{ fontSize: 11, color: "#777" }}>
                     {new Date(t.starts_at).toLocaleString("fr-FR")}

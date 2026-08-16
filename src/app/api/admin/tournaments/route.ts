@@ -9,6 +9,10 @@ import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin/requireAdmin";
 
 const STATUSES = ["draft", "open", "running", "finished", "cancelled"] as const;
+/** Type de tournoi. `weekly` et `special` coûtent un ticket, `free` non — la
+ *  règle elle-même vit en base (`tournament_requires_ticket`), on ne la recopie
+ *  pas ici, on ne fait que valider la valeur saisie. */
+const KINDS = ["weekly", "free", "special"] as const;
 
 export async function GET() {
   const auth = await requireAdmin();
@@ -16,7 +20,7 @@ export async function GET() {
 
   const { data, error } = await auth.supabase
     .from("tournaments")
-    .select("id, name, status, entry_price_cents, capacity, starts_at, format_code, created_at")
+    .select("id, name, status, kind, entry_price_cents, capacity, starts_at, format_code, created_at")
     .order("created_at", { ascending: false });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -90,6 +94,7 @@ export async function POST(request: Request) {
   }
 
   const status = STATUSES.includes(body?.status) ? body.status : "draft";
+  const kind = KINDS.includes(body?.kind) ? body.kind : "weekly";
 
   const { data, error } = await auth.supabase
     .from("tournaments")
@@ -98,6 +103,7 @@ export async function POST(request: Request) {
       capacity,
       entry_price_cents: priceCents,
       status,
+      kind,
       starts_at: typeof body?.starts_at === "string" ? body.starts_at : null,
       format_code: typeof body?.format_code === "string" ? body.format_code : null,
     })
@@ -118,6 +124,7 @@ export async function PATCH(request: Request) {
 
   const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
   if (STATUSES.includes(body?.status)) patch.status = body.status;
+  if (KINDS.includes(body?.kind)) patch.kind = body.kind;
   if (typeof body?.name === "string" && body.name.trim()) patch.name = body.name.trim();
   if (typeof body?.starts_at === "string") patch.starts_at = body.starts_at;
 
