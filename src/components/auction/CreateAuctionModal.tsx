@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import type { AuctionSettings } from "@/lib/auction/types";
 import { getFactionDisplayName } from "@/lib/card-engine/constants";
 
+import { minStartingBidForLot, isAuctionableRarity } from "@/lib/auction/pricing";
 interface CardOption {
   kind: "card" | "board" | "card_back";
   id: number; // card_id | board_id | card_back_id
@@ -104,6 +105,12 @@ export default function CreateAuctionModal({ userId, settings, onClose, onCreate
       setError(t("error_invalid_bid"));
       return;
     }
+    // Message en français littéral et non traduit : le plancher est une règle
+    // récente, les 8 locales seront alimentées quand le vocabulaire sera figé.
+    if (plancher !== null && bid < plancher) {
+      setError(`La mise de départ doit être d'au moins ${plancher} or pour ce lot.`);
+      return;
+    }
 
     const buyout = buyoutPrice ? parseInt(buyoutPrice) : undefined;
     if (buyout !== undefined && buyout <= bid) {
@@ -142,9 +149,17 @@ export default function CreateAuctionModal({ userId, settings, onClose, onCreate
     }
   }
 
+  // Les communes ne sont jamais mises aux enchères : on ne les propose pas,
+  // plutôt que de laisser le joueur les choisir et se voir refuser à l'envoi.
+  const sellable = cards.filter((c) => isAuctionableRarity(c.rarity));
   const filteredCards = search
-    ? cards.filter((c) => c.name.toLowerCase().includes(search.toLowerCase()))
-    : cards;
+    ? sellable.filter((c) => c.name.toLowerCase().includes(search.toLowerCase()))
+    : sellable;
+
+  // Plancher du lot : la rareté la plus élevée décide (cf. pricing.ts).
+  const plancher = minStartingBidForLot(
+    cards.filter((c) => selected.has(cardKey(c))).map((c) => c.rarity),
+  );
 
   return (
     <div
@@ -278,12 +293,13 @@ export default function CreateAuctionModal({ userId, settings, onClose, onCreate
           <div>
             <label style={{ fontSize: 12, color: "#999", display: "block", marginBottom: 4 }}>
               {t("starting_bid_label")}
+              {plancher !== null && <span style={{ color: "#777" }}> — min. {plancher}</span>}
             </label>
             <input
               type="number"
               value={startingBid}
               onChange={(e) => setStartingBid(e.target.value)}
-              min={1}
+              min={plancher ?? 1}
               style={inputStyle}
             />
           </div>

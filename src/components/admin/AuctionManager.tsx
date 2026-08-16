@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import type { AuctionSettings, AuctionWithDetails } from "@/lib/auction/types";
 import { getFactionDisplayName } from "@/lib/card-engine/constants";
 
+import { minStartingBidForLot, isAuctionableRarity } from "@/lib/auction/pricing";
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   active: { label: "Active", color: "#c8a84e" },
   ended_sold: { label: "Vendue", color: "#2ecc71" },
@@ -115,6 +116,12 @@ export default function AuctionManager({ cards, firstAvailablePrint }: AuctionMa
       setMessage({ text: "Mise de départ invalide", type: "error" });
       return;
     }
+    // Même règle que le serveur, dite plus tôt : le serveur reste l'autorité,
+    // mais mieux vaut l'annoncer avant l'envoi que dans un message d'erreur.
+    if (plancher !== null && bid < plancher) {
+      setMessage({ text: `La mise de départ doit être d'au moins ${plancher} or pour ce lot.`, type: "error" });
+      return;
+    }
     const buyout = createBuyoutPrice ? parseInt(createBuyoutPrice) : undefined;
     if (buyout !== undefined && buyout <= bid) {
       setMessage({ text: "Le prix d'achat immédiat doit être supérieur à la mise de départ", type: "error" });
@@ -165,9 +172,19 @@ export default function AuctionManager({ cards, firstAvailablePrint }: AuctionMa
     setCreateLoading(false);
   }
 
+  // Les COMMUNES ne sont jamais mises aux enchères (décision de l'auteur) :
+  // elles sont retirées de la liste plutôt que refusées après coup, pour qu'on
+  // ne puisse pas les sélectionner et découvrir l'interdiction à l'envoi.
+  const auctionableCards = cards.filter((c) => isAuctionableRarity(c.rarity));
   const filteredCards = cardSearch
-    ? cards.filter((c) => c.name.toLowerCase().includes(cardSearch.toLowerCase()))
-    : cards;
+    ? auctionableCards.filter((c) => c.name.toLowerCase().includes(cardSearch.toLowerCase()))
+    : auctionableCards;
+
+  // Plancher du lot en cours de composition : la rareté la plus élevée décide.
+  const selectedRarities = cards
+    .filter((c) => selectedCardIds.has(c.id))
+    .map((c) => c.rarity);
+  const plancher = minStartingBidForLot(selectedRarities);
 
   async function handleSaveSettings() {
     setSettingsLoading(true);
@@ -446,13 +463,23 @@ export default function AuctionManager({ cards, firstAvailablePrint }: AuctionMa
             {/* Pricing & Duration */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 16 }}>
               <div>
-                <label style={labelStyle}>Mise de départ (or)</label>
+                <label style={labelStyle}>
+                  Mise de départ (or)
+                  {plancher !== null && (
+                    <span style={{ color: "#888", fontWeight: 400 }}> — minimum {plancher}</span>
+                  )}
+                </label>
                 <input
                   type="number"
                   value={createStartingBid}
                   onChange={(e) => setCreateStartingBid(e.target.value)}
-                  min={1}
-                  style={adminInputStyle}
+                  min={plancher ?? 1}
+                  style={{
+                    ...adminInputStyle,
+                    // Bordure rouge dès que la saisie passe sous le plancher :
+                    // l'erreur se voit en saisissant, pas au moment d'envoyer.
+                    borderColor: plancher !== null && parseInt(createStartingBid) < plancher ? "#e74c3c" : undefined,
+                  }}
                 />
               </div>
               <div>

@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import type { CreateAuctionPayload } from '@/lib/auction/types';
 import { isPlayerSellingEnabled } from '@/lib/auction/flags';
+import { minStartingBidForLot, forbiddenRarities } from '@/lib/auction/pricing';
 
 async function getAuthUser() {
   const cookieStore = await cookies();
@@ -182,6 +183,40 @@ export async function POST(request: Request) {
   }
   if (buyout_price !== undefined && buyout_price <= starting_bid) {
     return NextResponse.json({ error: 'Le prix d\'achat immédiat doit être supérieur à la mise de départ' }, { status: 400 });
+  }
+
+  // Plancher de mise selon la RARETÉ, et interdiction des communes.
+  //
+  // Garde SERVEUR : le formulaire d'administration borne déjà la saisie, mais
+  // c'est ici que la règle est opposable — une requête forgée contournerait
+  // l'écran sans difficulté.
+  //
+  // Ne concerne que les CARTES : les plateaux et les dos de cartes portent le
+  // même vocabulaire de rareté mais relèvent d'une autre grille, non arbitrée.
+  const cardIds = items.map((i) => i.card_id).filter((id): id is number => id != null);
+  if (cardIds.length > 0) {
+    const { data: rarityRows } = await supabase
+      .from('cards').select('id, rarity').in('id', cardIds);
+    const byId = new Map((rarityRows ?? []).map((r) => [r.id as number, r.rarity as string | null]));
+    // Une carte introuvable ressort en `undefined` et sera donc refusée : mieux
+    // vaut bloquer une vente douteuse que lui inventer un plancher.
+    const rarities = cardIds.map((id) => byId.get(id) ?? null);
+
+    const interdites = forbiddenRarities(rarities);
+    if (interdites.length > 0) {
+      return NextResponse.json(
+        { error: `Ces raretés ne peuvent pas être mises aux enchères : ${interdites.join(', ')}.` },
+        { status: 400 },
+      );
+    }
+
+    const plancher = minStartingBidForLot(rarities);
+    if (plancher !== null && starting_bid < plancher) {
+      return NextResponse.json(
+        { error: `La mise de départ doit être d'au moins ${plancher} or pour ce lot (rareté la plus élevée).` },
+        { status: 400 },
+      );
+    }
   }
   if (!settings.allowed_durations.includes(duration_minutes)) {
     return NextResponse.json({ error: 'Durée non autorisée' }, { status: 400 });

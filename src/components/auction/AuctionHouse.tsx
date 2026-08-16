@@ -10,6 +10,7 @@ import AmAtmosphere from "@/components/ui/AmAtmosphere";
 import { AmButton, AmLinkButton } from "@/components/ui/AmButton";
 import { isPlayerSellingEnabled } from "@/lib/auction/flags";
 
+import { AUCTIONABLE_RARITIES } from "@/lib/auction/pricing";
 interface AuctionHouseProps {
   userId: string;
 }
@@ -165,7 +166,9 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
               className={SELECT_CLASS}
             >
               <option value="">{t("all_rarities")}</option>
-              {["Commune", "Peu Commune", "Rare", "Épique", "Légendaire"].map((r) => (
+              {/* Les communes ne sont jamais mises en vente : les proposer au
+                  filtre ne rendrait jamais aucun résultat. */}
+              {AUCTIONABLE_RARITIES.map((r) => (
                 <option key={r} value={r}>{r}</option>
               ))}
             </select>
