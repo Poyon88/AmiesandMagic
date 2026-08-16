@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type { AuctionWithDetails, AuctionBid } from "@/lib/auction/types";
@@ -46,24 +46,74 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
   const [bidding, setBidding] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  // Incrément minimum du marché. Le pré-remplissage utilisait « +1 » en dur :
+  // dès que l'administrateur relève l'incrément, il proposait un montant que le
+  // serveur refuse.
+  const [minIncrement, setMinIncrement] = useState(1);
+  // Le pré-remplissage n'a lieu qu'au PREMIER chargement. Les rafraîchissements
+  // qui suivent ne doivent pas écraser ce que le joueur est en train de taper.
+  const prefilled = useRef(false);
 
   const fetchAuction = useCallback(async () => {
     const res = await fetch(`/api/auctions/${auctionId}`);
     const data = await res.json();
     if (data.auction) {
       setAuction(data.auction);
-      // Pre-fill next minimum bid
-      const minBid = data.auction.current_bid
-        ? data.auction.current_bid + 1
-        : data.auction.starting_bid;
-      setBidAmount(String(minBid));
+      if (!prefilled.current) {
+        prefilled.current = true;
+        const minBid = data.auction.current_bid
+          ? data.auction.current_bid + minIncrement
+          : data.auction.starting_bid;
+        setBidAmount(String(minBid));
+      }
     }
     setLoading(false);
-  }, [auctionId]);
+  }, [auctionId, minIncrement]);
 
   useEffect(() => {
     fetchAuction();
   }, [fetchAuction]);
+
+  useEffect(() => {
+    fetch("/api/auctions/settings")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d?.settings?.min_bid_increment && setMinIncrement(d.settings.min_bid_increment))
+      .catch(() => { /* on garde 1 : le serveur refusera et dira le bon montant */ });
+  }, []);
+
+  // ─── Rafraîchissement pendant que d'autres enchérissent ───────────────────
+  //
+  // Sans cela, la page reste sur l'instantané de son chargement : elle ignore
+  // les mises des autres, et surtout elle ignore que la fin a été REPOUSSÉE par
+  // la prolongation anti-sniping. Un joueur voyait donc « Terminée » sur une
+  // enchère encore ouverte — c'est exactement ce qui a été constaté.
+  //
+  // Cadence adaptative plutôt que fixe : dans la dernière minute, tout se joue,
+  // et découvrir une surenchère six secondes trop tard revient à ne pas la
+  // découvrir. Loin de la fin, sonder aussi souvent ne servirait qu'à charger
+  // le serveur.
+  const auctionEndsAt = auction?.ends_at;
+  const auctionStatus = auction?.status;
+  useEffect(() => {
+    if (!auctionEndsAt || auctionStatus !== "active") return;
+    let timer: ReturnType<typeof setTimeout>;
+    let stopped = false;
+
+    function planifier() {
+      const restant = new Date(auctionEndsAt!).getTime() - Date.now();
+      // Une enchère dont l'échéance est passée peut encore être prolongée par
+      // une mise de dernière seconde : on continue de sonder un moment plutôt
+      // que de conclure trop vite.
+      const delai = restant < 90_000 ? 2_000 : 6_000;
+      timer = setTimeout(async () => {
+        if (stopped) return;
+        await fetchAuction();
+        if (!stopped) planifier();
+      }, delai);
+    }
+    planifier();
+    return () => { stopped = true; clearTimeout(timer); };
+  }, [auctionEndsAt, auctionStatus, fetchAuction]);
 
   const timeLeft = useCountdown(auction?.ends_at ?? new Date().toISOString(), t("ended"));
   const isExpired = timeLeft === t("ended");
@@ -94,6 +144,9 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
       setError(data.error);
     } else {
       setSuccess(isBuyout ? t("buyout_success") : t("bid_placed"));
+      // Sa propre mise est le seul moment où réécrire le champ est légitime :
+      // la valeur qu'il contenait vient d'être consommée.
+      prefilled.current = false;
       fetchAuction();
     }
     setBidding(false);
