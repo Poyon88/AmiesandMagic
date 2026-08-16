@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useNotificationStore } from "@/lib/store/notificationStore";
 
@@ -10,6 +11,7 @@ export default function NotificationBell() {
     useNotificationStore();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   // Fetch on mount and poll every 30s
   useEffect(() => {
@@ -34,8 +36,26 @@ export default function NotificationBell() {
     if (!open) fetchNotifications();
   }
 
-  function handleClickNotif(id: string, isRead: boolean) {
+  /** Enchère visée par une notification, ou `null`.
+   *
+   *  Les cinq types d'enchère enregistrent déjà `auction_id` dans leurs
+   *  metadata — aucune migration n'a été nécessaire, l'information dormait là.
+   *  On la valide tout de même : une metadata est du JSON libre, et naviguer
+   *  vers `/auction/undefined` afficherait une page d'erreur au lieu de ne rien
+   *  faire. */
+  function auctionIdOf(notif: { metadata?: Record<string, unknown> }): string | null {
+    const id = notif.metadata?.auction_id;
+    return typeof id === "string" && id.length > 0 ? id : null;
+  }
+
+  function handleClickNotif(id: string, isRead: boolean, auctionId: string | null) {
     if (!isRead) markAsRead([id]);
+    if (auctionId) {
+      // Le panneau se ferme AVANT la navigation : sinon il reste ouvert
+      // par-dessus la page d'arrivée, la cloche n'ayant pas été cliquée.
+      setOpen(false);
+      router.push(`/auction/${auctionId}`);
+    }
   }
 
   const TYPE_ICONS: Record<string, string> = {
@@ -138,7 +158,15 @@ export default function NotificationBell() {
               {notifications.map((notif) => (
                 <div
                   key={notif.id}
-                  onClick={() => handleClickNotif(notif.id, notif.is_read)}
+                  onClick={() => handleClickNotif(notif.id, notif.is_read, auctionIdOf(notif))}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleClickNotif(notif.id, notif.is_read, auctionIdOf(notif));
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
                   style={{
                     padding: "10px 14px",
                     borderBottom: "1px solid #3d3d5c22",
@@ -164,6 +192,15 @@ export default function NotificationBell() {
                       <div style={{ fontSize: 10, color: "#555", marginTop: 4 }}>
                         {new Date(notif.created_at).toLocaleString("fr-FR")}
                       </div>
+                      {/* Affichée SEULEMENT quand la notification mène quelque
+                          part : toutes les lignes ont déjà `cursor: pointer`
+                          pour se marquer comme lues, et promettre une
+                          destination qui n'existe pas serait pire que rien. */}
+                      {auctionIdOf(notif) && (
+                        <div style={{ fontSize: 11, color: "#c8a84e", marginTop: 4, fontWeight: 600 }}>
+                          {t('see_auction')} →
+                        </div>
+                      )}
                     </div>
                     {!notif.is_read && (
                       <span
