@@ -87,7 +87,23 @@ BEGIN
   END IF;
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
+
+-- Une fonction de TRIGGER n'a rien à faire dans l'API REST. Supabase accorde
+-- EXECUTE à `anon` et `authenticated` par défaut, ce qui l'expose sur
+-- /rest/v1/rpc/ — sans danger réel (appelée hors trigger, elle échoue faute de
+-- NEW) mais c'est de la surface offerte pour rien, et l'audit de sécurité la
+-- signale. Le trigger, lui, l'appelle en interne : la révocation ne le gêne pas.
+-- Bloc tolérant : les rôles `anon` / `authenticated` sont propres à Supabase et
+-- n'existent pas dans un Postgres nu (les tests font tourner ce fichier tel quel
+-- sous PGlite). Leur absence ne doit pas faire échouer la migration.
+DO $revoke$
+BEGIN
+  REVOKE EXECUTE ON FUNCTION sync_starter_faction_unlock() FROM anon, authenticated;
+EXCEPTION WHEN undefined_object THEN
+  NULL;
+END
+$revoke$;
 
 DROP TRIGGER IF EXISTS trg_sync_starter_faction ON profiles;
 CREATE TRIGGER trg_sync_starter_faction
