@@ -101,6 +101,9 @@ export async function createAuctionDb(): Promise<AuctionDb> {
   await db.exec(PREAMBLE);
   await db.exec(loadSql("supabase-economy.sql"));
   await db.exec(loadSql("supabase-migration-auction.sql"));
+  // Redéfinit place_bid avec la prolongation anti-sniping : chargée dans le
+  // MÊME ordre qu'en production, pour éprouver la version réellement en service.
+  await db.exec(loadSql("supabase-migration-auction-antisnipe.sql"));
 
   const api: AuctionDb = {
     db,

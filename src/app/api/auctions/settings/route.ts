@@ -56,13 +56,40 @@ export async function PATCH(request: Request) {
   }
 
   const body = await request.json();
-  const allowedFields = ['commission_rate', 'min_bid_increment', 'allowed_durations', 'max_items_per_lot', 'is_marketplace_open'];
+  const allowedFields = ['commission_rate', 'min_bid_increment', 'allowed_durations', 'max_items_per_lot', 'is_marketplace_open', 'anti_snipe_seconds'];
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString(), updated_by: user.id };
 
   for (const field of allowedFields) {
     if (body[field] !== undefined) {
       updates[field] = body[field];
     }
+  }
+
+  // Borne explicite : la base a un CHECK >= 0, mais un délai démesuré rendrait
+  // les enchères interminables sans rien signaler. 0 = prolongation désactivée.
+  if (updates.anti_snipe_seconds !== undefined) {
+    const n = Number(updates.anti_snipe_seconds);
+    if (!Number.isInteger(n) || n < 0 || n > 3600) {
+      return NextResponse.json(
+        { error: 'La prolongation doit être un entier entre 0 et 3600 secondes' },
+        { status: 400 },
+      );
+    }
+    updates.anti_snipe_seconds = n;
+  }
+
+
+  // Borne explicite : la base a un CHECK >= 0, mais un délai démesuré rendrait
+  // les enchères interminables sans rien signaler. 0 = prolongation désactivée.
+  if (updates.anti_snipe_seconds !== undefined) {
+    const n = Number(updates.anti_snipe_seconds);
+    if (!Number.isInteger(n) || n < 0 || n > 3600) {
+      return NextResponse.json(
+        { error: 'La prolongation doit être un entier entre 0 et 3600 secondes' },
+        { status: 400 },
+      );
+    }
+    updates.anti_snipe_seconds = n;
   }
 
   const { data, error } = await supabase

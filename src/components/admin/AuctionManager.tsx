@@ -54,6 +54,12 @@ export default function AuctionManager({ cards, firstAvailablePrint }: AuctionMa
   const [commissionRate, setCommissionRate] = useState("");
   const [minBidIncrement, setMinBidIncrement] = useState("");
   const [maxItemsPerLot, setMaxItemsPerLot] = useState("");
+  const [antiSnipe, setAntiSnipe] = useState("30");
+  // La colonne `anti_snipe_seconds` arrive avec une migration. Tant qu'elle
+  // n'est pas appliquée, l'envoyer ferait échouer TOUT l'enregistrement des
+  // réglages — commission comprise. On ne la transmet donc que si la base l'a
+  // effectivement renvoyée, ce qui rend l'ordre code/migration indifférent.
+  const [antiSnipeDisponible, setAntiSnipeDisponible] = useState(false);
   const [marketplaceOpen, setMarketplaceOpen] = useState(true);
 
   // Create auction form state
@@ -74,6 +80,10 @@ export default function AuctionManager({ cards, firstAvailablePrint }: AuctionMa
           setCommissionRate(String(d.settings.commission_rate));
           setMinBidIncrement(String(d.settings.min_bid_increment));
           setMaxItemsPerLot(String(d.settings.max_items_per_lot));
+          if (d.settings.anti_snipe_seconds !== undefined && d.settings.anti_snipe_seconds !== null) {
+            setAntiSnipe(String(d.settings.anti_snipe_seconds));
+            setAntiSnipeDisponible(true);
+          }
           setMarketplaceOpen(d.settings.is_marketplace_open);
         }
       });
@@ -196,6 +206,7 @@ export default function AuctionManager({ cards, firstAvailablePrint }: AuctionMa
         commission_rate: parseFloat(commissionRate),
         min_bid_increment: parseInt(minBidIncrement),
         max_items_per_lot: parseInt(maxItemsPerLot),
+        ...(antiSnipeDisponible ? { anti_snipe_seconds: parseInt(antiSnipe) } : {}),
         is_marketplace_open: marketplaceOpen,
       }),
     });
@@ -274,7 +285,7 @@ export default function AuctionManager({ cards, firstAvailablePrint }: AuctionMa
         <h2 style={{ fontSize: 16, fontWeight: 600, color: "#333", marginBottom: 16 }}>
           Paramètres du marché
         </h2>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, marginBottom: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 16, marginBottom: 16 }}>
           <div>
             <label style={labelStyle}>Commission (%)</label>
             <input
@@ -308,6 +319,26 @@ export default function AuctionManager({ cards, firstAvailablePrint }: AuctionMa
               max="50"
             />
           </div>
+          {antiSnipeDisponible && (
+          <div>
+            <label style={labelStyle}>
+              Prolongation (s)
+              <span style={{ color: "#888", fontWeight: 400 }}> — 0 pour désactiver</span>
+            </label>
+            <input
+              type="number"
+              value={antiSnipe}
+              onChange={(e) => setAntiSnipe(e.target.value)}
+              style={adminInputStyle}
+              min="0"
+              max="3600"
+            />
+            <div style={{ fontSize: 10, color: "#888", marginTop: 4, lineHeight: 1.5 }}>
+              Une mise déposée alors qu&apos;il reste moins que ce délai repousse la fin d&apos;autant.
+              Empêche de remporter une enchère en misant à la dernière seconde.
+            </div>
+          </div>
+          )}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 16 }}>
           <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
