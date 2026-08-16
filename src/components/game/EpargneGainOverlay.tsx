@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { EpargneGainEvent } from "@/lib/store/gameStore";
 import { overlayRect } from "@/lib/fx/overlayMotion";
 
+import GoldCoin from "@/components/shared/GoldCoin";
 interface Props {
   event: EpargneGainEvent | null;
   onComplete: () => void;
@@ -34,7 +35,7 @@ interface Popup {
   amount: number;
 }
 
-// « +N 🪙 » doré qui jaillit du losange d'Épargne et s'élève en fondu, avec une
+// « +N pièces » doré qui jaillit du losange d'Épargne et s'élève en fondu, avec une
 // onde dorée sur le badge. Sans ce repère, une Épargne « fin de tour » créditait
 // le compteur en silence, hors du regard du joueur (qui suit le plateau, pas la
 // barre de mana) : le gain passait complètement inaperçu.
@@ -97,7 +98,7 @@ export default function EpargneGainOverlay({ event, onComplete }: Props) {
                   whiteSpace: "nowrap",
                 }}
               >
-                +{p.amount} 🪙
+                +{p.amount} <GoldCoin size={16} />
               </span>
             </motion.div>
           </div>

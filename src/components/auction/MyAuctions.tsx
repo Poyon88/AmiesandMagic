@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import type { AuctionWithDetails } from "@/lib/auction/types";
 import { isPlayerSellingEnabled } from "@/lib/auction/flags";
 
+import GoldCoin from "@/components/shared/GoldCoin";
 interface MyAuctionsProps {
   userId: string;
 }
@@ -142,7 +143,7 @@ export default function MyAuctions({ userId }: MyAuctionsProps) {
                 </div>
                 <div style={{ textAlign: "right" }}>
                   <div style={{ fontSize: 16, fontWeight: 600, color: "#ffd54f" }}>
-                    🪙 {(auction.current_bid ?? auction.starting_bid).toLocaleString("fr-FR")}
+                    <GoldCoin size={14} /> {(auction.current_bid ?? auction.starting_bid).toLocaleString("fr-FR")}
                   </div>
                   <span
                     style={{

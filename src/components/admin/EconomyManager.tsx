@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 
+import GoldCoin from "@/components/shared/GoldCoin";
 interface ProfileRow {
   id: string;
   username: string;
@@ -143,7 +144,7 @@ export default function EconomyManager({ profiles }: EconomyManagerProps) {
             padding: "8px 16px", borderRadius: 8,
             background: "#ffd70015", border: "1px solid #ffd70040",
           }}>
-            <span style={{ fontSize: 20 }}>🪙</span>
+            <GoldCoin size={20} />
             <span style={{ fontSize: 18, fontWeight: "bold", color: "#d4a017" }}>
               {balance.toLocaleString("fr-FR")}
             </span>
@@ -255,10 +256,10 @@ export default function EconomyManager({ profiles }: EconomyManagerProps) {
                           padding: "6px 8px", fontWeight: 700,
                           color: tx.amount >= 0 ? "#27ae60" : "#e74c3c",
                         }}>
-                          {tx.amount >= 0 ? "+" : ""}{tx.amount} 🪙
+                          {tx.amount >= 0 ? "+" : ""}{tx.amount} <GoldCoin size={12} />
                         </td>
                         <td style={{ padding: "6px 8px", fontWeight: 600 }}>
-                          {tx.balance_after.toLocaleString("fr-FR")} 🪙
+                          {tx.balance_after.toLocaleString("fr-FR")} <GoldCoin size={12} />
                         </td>
                         <td style={{ padding: "6px 8px", color: "#888" }}>
                           {tx.description ?? "—"}

@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import type { AuctionWithDetails } from "@/lib/auction/types";
 import GameCard from "@/components/cards/GameCard";
 
+import GoldCoin from "@/components/shared/GoldCoin";
 function useCountdown(endDate: string, endedLabel: string) {
   const [timeLeft, setTimeLeft] = useState("");
 
@@ -149,14 +150,14 @@ export default function AuctionCard({ auction }: AuctionCardProps) {
               {auction.current_bid ? t("current_bid") : t("starting_bid")}
             </div>
             <div style={{ fontSize: 18, fontWeight: 700, color: "#ffd54f", display: "flex", alignItems: "center", gap: 4 }}>
-              <span style={{ fontSize: 14 }}>🪙</span>
+              <GoldCoin size={15} />
               {(auction.current_bid ?? auction.starting_bid).toLocaleString("fr-FR")}
             </div>
           </div>
           <div style={{ textAlign: "right" }}>
             {auction.buyout_price && (
               <div style={{ fontSize: 11, color: "#4caf50" }}>
-                {t("buyout_short")} 🪙 {auction.buyout_price.toLocaleString("fr-FR")}
+                {t("buyout_short")} <GoldCoin size={11} /> {auction.buyout_price.toLocaleString("fr-FR")}
               </div>
             )}
             <div style={{ fontSize: 11, color: "#999", marginTop: 2 }}>

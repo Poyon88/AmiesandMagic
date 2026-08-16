@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import type { AuctionWithDetails, AuctionBid } from "@/lib/auction/types";
 import GameCard from "@/components/cards/GameCard";
 
+import GoldCoin from "@/components/shared/GoldCoin";
 function useCountdown(endDate: string, endedLabel: string) {
   const [timeLeft, setTimeLeft] = useState("");
 
@@ -224,7 +225,7 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
                   {auction.current_bid ? t("current_bid") : t("starting_bid")}
                 </div>
                 <div style={{ fontSize: 28, fontWeight: 700, color: "#ffd54f", display: "flex", alignItems: "center", gap: 6 }}>
-                  🪙 {(auction.current_bid ?? auction.starting_bid).toLocaleString("fr-FR")}
+                  <GoldCoin size={26} /> {(auction.current_bid ?? auction.starting_bid).toLocaleString("fr-FR")}
                 </div>
               </div>
               <div style={{ textAlign: "right" }}>
@@ -321,7 +322,7 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
                     minHeight: 44,
                   }}
                 >
-                  {t("buyout_immediate")} — 🪙 {auction.buyout_price.toLocaleString("fr-FR")}
+                  {t("buyout_immediate")} — <GoldCoin size={13} /> {auction.buyout_price.toLocaleString("fr-FR")}
                 </button>
               )}
             </div>
@@ -392,7 +393,7 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
                       {bid.is_buyout && <span style={{ color: "#2ecc71", marginLeft: 4 }}>{t("buyout_tag")}</span>}
                     </span>
                     <span style={{ color: "#ffd54f", fontWeight: 600 }}>
-                      🪙 {bid.amount.toLocaleString("fr-FR")}
+                      <GoldCoin size={13} /> {bid.amount.toLocaleString("fr-FR")}
                     </span>
                   </div>
                 ))}
