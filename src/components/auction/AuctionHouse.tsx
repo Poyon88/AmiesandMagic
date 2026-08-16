@@ -293,7 +293,7 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
               {auctions.map((auction, i) => (
                 <div
                   key={auction.id}
-                  className="am-animate-rise"
+                  className="am-animate-rise am-hover-lift"
                   style={{ animationDelay: `${Math.min(i * 40, 400)}ms` }}
                 >
                   <AuctionCard auction={auction} />

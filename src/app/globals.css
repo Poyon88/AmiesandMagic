@@ -325,6 +325,25 @@ body {
   opacity: 0;
   animation: am-rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
+/* Remonte un élément AU-DESSUS de ses frères pendant le survol.
+ *
+ * Nécessaire parce que `.am-animate-rise` laisse `transform: translateY(0)`
+ * appliqué après l'animation (`forwards`) : ce n'est pas `none`, donc l'élément
+ * reste un CONTEXTE D'EMPILEMENT à vie. Tout `z-index` posé à l'intérieur — le
+ * survol agrandi d'une carte, son descriptif — y est enfermé, et les frères
+ * suivants passent devant quoi qu'il arrive.
+ *
+ * On remonte donc la BOÎTE qui porte le contexte, pas son contenu. `focus-within`
+ * pour que la navigation au clavier en profite aussi. */
+.am-hover-lift {
+  position: relative;
+  z-index: 0;
+}
+.am-hover-lift:hover,
+.am-hover-lift:focus-within {
+  z-index: 40;
+}
+
 .am-animate-fade {
   opacity: 0;
   animation: am-fade 0.9s ease forwards;
