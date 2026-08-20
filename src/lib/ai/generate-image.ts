@@ -6,12 +6,22 @@
 // Imagen models are exhausted — fall back to Gemini multimodal which supports
 // reference-image conditioning but caps at ~1024px.
 
+// ORDRE = ORDRE D'ESSAI, du plus récent au plus ancien. La boucle s'arrête au
+// premier modèle qui répond : le premier de la liste est donc celui qui sert
+// réellement tant qu'il fonctionne, les suivants ne sont que des filets.
+//
+// La liste était rangée à l'envers (2.5 en tête) : dès qu'une image de référence
+// était jointe — seul cas qui emprunte ce chemin — c'était toujours 2.5 Flash
+// qui produisait l'illustration, et les modèles 3.x n'étaient jamais atteints.
+//
+// En ajouter un : le mettre EN TÊTE, pas à la suite.
 const GEMINI_MODELS = [
-  'gemini-2.5-flash-image',
   'gemini-3.1-flash-image-preview',
   'gemini-3-pro-image-preview',
+  'gemini-2.5-flash-image',
 ];
 
+// Même convention : le plus récent d'abord. Cette liste-ci l'était déjà.
 const IMAGEN_MODELS_2K = [
   'imagen-4.0-ultra-generate-001',
   'imagen-4.0-generate-001',
