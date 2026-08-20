@@ -1730,6 +1730,8 @@
     "reset_short": "zurücks.",
     "generating": "Generierung…",
     "illustrate": "Illustrieren",
+    "image_model_auto": "Modell: auto",
+    "image_model_hint": "Erzwungenes Bildmodell, um zwei Ergebnisse zu vergleichen. „Auto“ überlässt die Wahl der üblichen Kaskade. Ein erzwungenes Modell weicht auf kein anderes aus: sein Fehlschlag wird direkt gemeldet.",
     "history": "VERLAUF",
     "no_card": "Keine Karte",
     "edition_label": "EDITION",

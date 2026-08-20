@@ -1730,6 +1730,8 @@
     "reset_short": "リセット",
     "generating": "生成中…",
     "illustrate": "イラスト生成",
+    "image_model_auto": "モデル: 自動",
+    "image_model_hint": "2つの描画を比べるために画像モデルを指定します。「自動」は通常の順序に任せます。指定したモデルは他へフォールバックせず、失敗はそのまま表示されます。",
     "history": "履歴",
     "no_card": "カードなし",
     "edition_label": "エディション",

@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import ExileGlyph from "@/components/cards/ExileGlyph";
 import { REPLI_TEINTE, REPLI_GLYPHE } from "@/lib/game/repli-theme";
+import { SELECTABLE_IMAGE_MODELS } from "@/lib/ai/image-models";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
@@ -2633,6 +2634,11 @@ export default function CardForge() {
   }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, sfxExileFile, keywordModes, keywordGrantScope, keywordYValues, rmY, afY, rfY, glY, dcY, fdaY, rmRace, rmClan, asRace, invocCosts, invocRace, invocFaction, compagnonsCardIds, composedCaps, conferAbilityId, conferX, conferY, declenchementTriggers, resetCardForm]);
 
   const [generatingImage, setGeneratingImage] = useState(false);
+  // Modèle d'image IMPOSÉ pour comparer deux rendus sur la même carte. Vide =
+  // cascade automatique (le comportement d'avant). Volontairement NON persisté :
+  // c'est un outil de comparaison, pas un réglage — au rechargement on repart
+  // sur la cascade.
+  const [illusModel, setIllusModel] = useState("");
   // Édition manuelle du prompt affiché au centre, ATTACHÉE au texte source
   // dont elle est partie.
   //
@@ -2709,8 +2715,11 @@ export default function CardForge() {
           // :predict endpoint doesn't accept reference images, so the
           // route falls back to Gemini multimodal automatically when one
           // is present — keep highRes on for the no-ref case.
-          highRes: !hasRef,
+          // Un modèle imposé décide seul : pas de 2K à demander, et surtout
+          // pas de repli qui ferait passer le rendu d'un modèle pour l'autre.
+          highRes: !hasRef && !illusModel,
           aspectRatio: '3:4',
+          ...(illusModel ? { model: illusModel } : {}),
           ...(hasRef
             ? { referenceImageBase64: illusRefImageBase64, referenceImageMimeType: illusRefImageMime }
             : {}),
@@ -3180,6 +3189,21 @@ export default function CardForge() {
                           color: "#e74c3c", cursor: "pointer", fontFamily: "'Cinzel',serif",
                         }}>{`[${tf('reset_short')}]`}</button>
                       )}
+                      <select
+                        value={illusModel}
+                        onChange={e => setIllusModel(e.target.value)}
+                        title={tf('image_model_hint')}
+                        style={{
+                          fontSize: 9, fontFamily: "'Cinzel',serif", color: "#666",
+                          border: "1px solid #ddd", borderRadius: 6, padding: "3px 6px",
+                          background: "#fff", maxWidth: 150,
+                        }}
+                      >
+                        <option value="">{tf('image_model_auto')}</option>
+                        {SELECTABLE_IMAGE_MODELS.map(m => (
+                          <option key={m.id} value={m.id}>{m.label}</option>
+                        ))}
+                      </select>
                       <button
                         onClick={() => {
                           const c = card || manualCard;

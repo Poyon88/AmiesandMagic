@@ -34,6 +34,11 @@ export type GenerateImageOptions = {
   aspectRatio?: string;
   referenceImageBase64?: string;
   referenceImageMimeType?: string;
+  /** Modèle IMPOSÉ. Sans lui, la cascade habituelle s'applique. Avec lui, aucun
+   *  repli : comparer deux modèles n'a de sens que si l'on sait lequel a
+   *  répondu, et un repli silencieux ferait passer le rendu de l'un pour celui
+   *  de l'autre. Un échec est donc remonté tel quel. */
+  model?: string;
 };
 
 export type GenerateImageResult = {
@@ -151,10 +156,26 @@ export async function generateImage(opts: GenerateImageOptions): Promise<Generat
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new GenerateImageError('GEMINI_API_KEY non configurée', 500);
 
-  const promptText = `Generate an image with absolutely no text, no letters, no words, no writing, no captions, no labels, no watermarks anywhere in the image. The image must contain zero readable characters. Description: ${prompt}`;
+  const promptTexteBase = `Generate an image with absolutely no text, no letters, no words, no writing, no captions, no labels, no watermarks anywhere in the image. The image must contain zero readable characters. Description: ${prompt}`;
+  const promptText = promptTexteBase;
   const ratio = aspectRatio ?? '1:1';
   const hasReference = !!(referenceImageBase64 && referenceImageMimeType);
   const errorSink: string[] = [];
+
+  // MODÈLE IMPOSÉ (comparaison depuis la forge) : un seul essai, et l'échec
+  // remonte au lieu de glisser vers un autre modèle.
+  if (opts.model) {
+    const impose = opts.model;
+    const estImagen = impose.startsWith('imagen-');
+    const result = estImagen
+      ? await callImagen(impose, promptText, apiKey, ratio, '2K', errorSink)
+      : await callGemini(impose, promptText, apiKey, errorSink, referenceImageBase64, referenceImageMimeType);
+    if (result) return result;
+    throw new GenerateImageError(
+      `Le modèle « ${impose} » n'a rien renvoyé. Détails: ${errorSink.join(' | ') || '(aucune erreur capturée)'}`,
+      502,
+    );
+  }
 
   // Imagen path — high-res, no reference image. If a reference was attached,
   // skip Imagen entirely since its :predict endpoint doesn't accept inline
@@ -169,6 +190,14 @@ export async function generateImage(opts: GenerateImageOptions): Promise<Generat
         console.error(`[generate-image] Imagen ${model} failed:`, err);
       }
     }
+  }
+
+  // Imagen a été tenté et n'a rien donné : on le DIT. Ces échecs ne remontaient
+  // jusqu'ici que si Gemini échouait lui aussi — or c'est précisément quand
+  // Gemini réussit que le silence trompe : l'illustration part en résolution
+  // Gemini alors que l'auteur croit obtenir du 2K.
+  if (highRes && !hasReference && errorSink.length > 0) {
+    console.warn(`[generate-image] Imagen indisponible, repli sur Gemini. ${errorSink.join(' | ')}`);
   }
 
   // Gemini multimodal — supports reference images, lower max resolution.

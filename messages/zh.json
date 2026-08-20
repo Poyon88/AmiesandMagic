@@ -1730,6 +1730,8 @@
     "reset_short": "重置",
     "generating": "生成中…",
     "illustrate": "生成插图",
+    "image_model_auto": "模型：自动",
+    "image_model_hint": "指定图像模型以比较两种渲染效果。「自动」交由通常的顺序选择。指定的模型不会回退到其他模型，失败会如实报告。",
     "history": "历史记录",
     "no_card": "无卡牌",
     "edition_label": "版本",

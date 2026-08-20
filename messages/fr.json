@@ -1730,6 +1730,8 @@
     "reset_short": "réinit.",
     "generating": "Génération…",
     "illustrate": "Illustrer",
+    "image_model_auto": "Modèle : auto",
+    "image_model_hint": "Modèle d'image imposé pour comparer deux rendus. « Auto » laisse la cascade habituelle choisir. Un modèle imposé ne se replie sur aucun autre : son échec est signalé tel quel.",
     "history": "HISTORIQUE",
     "no_card": "Aucune carte",
     "edition_label": "ÉDITION",

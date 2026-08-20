@@ -1730,6 +1730,8 @@
     "reset_short": "reinic.",
     "generating": "Generando…",
     "illustrate": "Ilustrar",
+    "image_model_auto": "Modelo: auto",
+    "image_model_hint": "Modelo de imagen impuesto para comparar dos resultados. «Auto» deja elegir a la cascada habitual. Un modelo impuesto no recurre a ningún otro: su fallo se informa tal cual.",
     "history": "HISTORIAL",
     "no_card": "Sin carta",
     "edition_label": "EDICIÓN",

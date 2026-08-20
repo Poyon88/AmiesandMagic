@@ -1730,6 +1730,8 @@
     "reset_short": "reimposta",
     "generating": "Generazione…",
     "illustrate": "Illustra",
+    "image_model_auto": "Modello: auto",
+    "image_model_hint": "Modello di immagine imposto per confrontare due rese. «Auto» lascia scegliere alla cascata abituale. Un modello imposto non ripiega su nessun altro: il suo errore è segnalato tale quale.",
     "history": "CRONOLOGIA",
     "no_card": "Nessuna carta",
     "edition_label": "EDIZIONE",

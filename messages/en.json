@@ -1730,6 +1730,8 @@
     "reset_short": "reset",
     "generating": "Generating…",
     "illustrate": "Illustrate",
+    "image_model_auto": "Model: auto",
+    "image_model_hint": "Force an image model to compare two renders. “Auto” lets the usual cascade choose. A forced model never falls back to another: its failure is reported as-is.",
     "history": "HISTORY",
     "no_card": "No card",
     "edition_label": "EDITION",

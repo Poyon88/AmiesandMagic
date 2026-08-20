@@ -12,12 +12,14 @@ export async function POST(request: Request) {
     referenceImageMimeType,
     highRes,
     aspectRatio,
+    model,
   } = (await request.json()) as {
     prompt?: string;
     referenceImageBase64?: string;
     referenceImageMimeType?: string;
     highRes?: boolean;
     aspectRatio?: string;
+    model?: string;
   };
 
   try {
@@ -27,6 +29,7 @@ export async function POST(request: Request) {
       aspectRatio,
       referenceImageBase64,
       referenceImageMimeType,
+      model,
     });
     return NextResponse.json(result);
   } catch (err) {
