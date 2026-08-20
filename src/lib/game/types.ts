@@ -691,7 +691,35 @@ export interface Card {
    *  rejoignent pas le cimetière — ni Exhumation, ni Résurrection, ni Rappel ne
    *  peuvent les récupérer. Rapproche d'autant la fatigue. */
   exile_cost?: number | null;
+  /** REPLI : nombre de cartes de VOTRE MAIN replacées sur le dessus de votre
+   *  deck. Rien n'est perdu — on les repiochera : ce qui est payé, c'est le
+   *  tempo (la main rétrécit tout de suite, et la prochaine pioche est déjà
+   *  dépensée). La carte repliée n'est jamais révélée à l'adversaire. */
+  topdeck_cost?: number | null;
 }
+
+/** Frontière temporelle À L'INTÉRIEUR d'une action, pour l'animation seule.
+ *
+ *  `mort` : les créatures tuées ont quitté le plateau, leurs RÂLES D'AGONIE
+ *  n'ont pas encore résolu. Sans elle, les dégâts d'un râle étaient peints avec
+ *  la salve qui avait tué son porteur, donc AVANT l'animation de mort qui les
+ *  déclenche — alors que le SON du râle, lui, était déjà joué au bon moment :
+ *  le même effet sortait en deux moitiés inversées.
+ *
+ *  `pioche` : la carte piochée a rejoint la main, son déclencheur « à la pioche »
+ *  n'a pas encore résolu. Sépare ce qui précède la pioche (effets de fin de tour,
+ *  d'invocation…) de ce que la pioche a provoqué.
+ *
+ *  `effet` : un effet d'un sort à effets multiples vient d'être entièrement
+ *  résolu, morts et râles compris ; le suivant n'a pas commencé. C'est la règle
+ *  « Tempête 3 se résout entièrement avant Déchainement », que le moteur applique
+ *  depuis le 2026-08-01 mais que l'écran aplatissait encore.
+ *
+ *  Les frontières sont posées dans l'ORDRE CHRONOLOGIQUE de l'action, et le
+ *  store déroule les intervalles dans cet ordre. `mort` et `effet` se RÉPÈTENT
+ *  (un sort à trois effets en pose plusieurs) ; `pioche` reste unique — plusieurs
+ *  cartes piochées dans la même action partagent une seule révélation. */
+export type AnimationCheckpointLabel = "mort" | "effet" | "pioche";
 
 /** Type de set. `special` = ses cartes sont écartées des tirages aléatoires et
  *  semi-aléatoires de la COLLECTION (Sélection, Invocation, Déchainement,
@@ -1108,6 +1136,16 @@ export interface GameState {
     ownerId: string;
     count: number;
   }>;
+  // Transient : cartes replacées de la main sur le dessus d'un deck pour payer
+  // un coût de REPLI. Même besoin que l'exil — sans indice, la main rétrécit et
+  // la pile grossit sans que rien ne relie les deux à la carte jouée. On ne
+  // transmet que le NOMBRE : la carte repliée n'est jamais révélée, et le store
+  // n'anime qu'un dos de carte.
+  // Vidé par le store après planification ; exclu du hash d'état.
+  topdeckCostEvents?: Array<{
+    ownerId: string;
+    count: number;
+  }>;
   // Transient : effets « deck » SILENCIEUX ayant réellement modifié une carte du
   // deck (Préincanter, Fortifier). Ces capacités préparent une carte que personne
   // ne voit : sans cet indice, rien à l'écran ne disait qu'elles avaient agi.
@@ -1158,6 +1196,34 @@ export interface GameState {
   // power in a first wave (its damage/deaths) then combat in a second wave.
   // Cleared by the store after scheduling, like fureurStrikes. Pools stripped.
   onAttackWave?: { intermediate: GameState } | null;
+  // Transient : POINTS DE PASSAGE de l'animation — l'axe du temps INTERNE de
+  // l'action, que le store ne pouvait pas deviner.
+  //
+  // Le store ne compare que deux états, celui d'avant et celui d'après l'action.
+  // Il ignore donc QUAND, à l'intérieur de l'action, chaque point de vie a été
+  // perdu : tous les dégâts partaient dans une seule salve et toutes les morts
+  // dans une seule autre, quel que soit le nombre de moments que le moteur avait
+  // réellement traversés. Une révélation « à la pioche » passait ainsi devant des
+  // dégâts qui lui étaient ANTÉRIEURS (Diablotin Ricanant / Lances du Zénith).
+  //
+  // Le moteur pose donc un instantané ÉTIQUETÉ à chaque frontière connue, et le
+  // store déroule la file : une vague d'animation par intervalle.
+  // `onAttackWave` est l'ancêtre de ce mécanisme et reste tel quel — il porte
+  // une frontière que le store traite déjà, et le fusionner ici ne se justifiera
+  // que le jour où une action produira les deux.
+  // Vidé par le store après planification ; exclu du hash d'état.
+  animationCheckpoints?: Array<{
+    label: AnimationCheckpointLabel;
+    state: GameState;
+    /** Nombre de points SÉQUENTIELS (scatter, Tempête) déjà émis à cet instant.
+     *
+     *  Ces points ne se lisent pas dans l'état : ils viennent d'un registre plat
+     *  alimenté coup par coup, que comparer deux états ne permet donc pas de
+     *  couper. Sans ce rang, les dégâts d'un effet « à la pioche » en scatter
+     *  repartaient dans la PREMIÈRE vague — le défaut d'origine, déplacé d'un
+     *  cran. Le store tranche la liste ici. */
+    sequentialHitsBefore: number;
+  }>;
   // Transient : un end_turn est en pause sur des déclencheurs « fin de tour »
   // interactifs (cibles au choix). Tant que c'est vrai et que des
   // pendingTriggers restent, la bascule de tour est différée ; finishEndTurn
@@ -1209,6 +1275,12 @@ export interface PlayCardAction {
   // Sacrifice keyword to designate a buff target.
   discardInstanceIds?: string[];
   sacrificeInstanceIds?: string[];
+  /** REPLI : cartes de la main replacées sur le dessus du deck (longueur égale
+   *  à card.topdeck_cost). L'ORDRE COMPTE et fait partie de l'action : la
+   *  première désignée finit sur le dessus, donc c'est elle qu'on repiochera en
+   *  premier. Transmis tel quel à l'adversaire pour que les deux moteurs
+   *  reconstruisent le même deck. */
+  topdeckInstanceIds?: string[];
 }
 
 export interface AttackAction {

@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import type { GameAction } from "@/lib/game/types";
 import { useGameStore } from "@/lib/store/gameStore";
+import { REPLI_TEINTE } from "@/lib/game/repli-theme";
 import { useCardText } from "./CardTextProvider";
 
 interface Props {
@@ -22,6 +23,7 @@ export default function CostPaymentOverlay({ onConfirmedAction }: Props) {
   const pendingCostCard = useGameStore(s => s.pendingCostCard);
   const selectedDiscardIds = useGameStore(s => s.selectedDiscardIds);
   const selectedSacrificeIds = useGameStore(s => s.selectedSacrificeIds);
+  const selectedTopdeckIds = useGameStore(s => s.selectedTopdeckIds);
   const confirmCostPayment = useGameStore(s => s.confirmCostPayment);
   const cancelCostPayment = useGameStore(s => s.cancelCostPayment);
   const gameState = useGameStore(s => s.gameState);
@@ -35,7 +37,12 @@ export default function CostPaymentOverlay({ onConfirmedAction }: Props) {
 
   const discardOk = selectedDiscardIds.length === pendingCostCard.discardNeeded;
   const sacrificeOk = selectedSacrificeIds.length === pendingCostCard.sacrificeNeeded;
-  const canConfirm = discardOk && sacrificeOk;
+  const topdeckOk = selectedTopdeckIds.length === pendingCostCard.topdeckNeeded;
+  const canConfirm = discardOk && sacrificeOk && topdeckOk;
+  // Défausse ET repli sur la même carte : les deux puisent dans la main, et un
+  // clic ne peut pas payer les deux. HandCard remplit donc la défausse d'abord.
+  // Cette règle est invisible depuis la main — d'où la ligne d'explication.
+  const deuxCoutsDeMain = pendingCostCard.discardNeeded > 0 && pendingCostCard.topdeckNeeded > 0;
 
   return (
     <div style={{
@@ -71,6 +78,37 @@ export default function CostPaymentOverlay({ onConfirmedAction }: Props) {
           {t('cost_discard_label', { count: pendingCostCard.discardNeeded })}
           {" — "}
           <strong>{selectedDiscardIds.length}/{pendingCostCard.discardNeeded}</strong>
+        </div>
+      )}
+
+      {pendingCostCard.topdeckNeeded > 0 && (
+        <div style={{
+          fontSize: 13, color: topdeckOk ? "#2ecc71" : "#bbb",
+          fontFamily: "'Crimson Text',serif",
+          textAlign: "center",
+        }}>
+          <span style={{ color: REPLI_TEINTE }}>↥</span>{" "}
+          {t('cost_topdeck_label', { count: pendingCostCard.topdeckNeeded })}
+          {" — "}
+          <strong>{selectedTopdeckIds.length}/{pendingCostCard.topdeckNeeded}</strong>
+        </div>
+      )}
+
+      {pendingCostCard.topdeckNeeded > 1 && (
+        <div style={{
+          fontSize: 11, color: "#8a8a9a", fontStyle: "italic",
+          fontFamily: "'Crimson Text',serif", textAlign: "center",
+        }}>
+          {t('cost_topdeck_order_hint')}
+        </div>
+      )}
+
+      {deuxCoutsDeMain && (
+        <div style={{
+          fontSize: 11, color: "#8a8a9a", fontStyle: "italic",
+          fontFamily: "'Crimson Text',serif", textAlign: "center",
+        }}>
+          {t('cost_hand_order_hint')}
         </div>
       )}
 

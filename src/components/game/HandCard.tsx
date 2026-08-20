@@ -7,6 +7,7 @@ import Image from "next/image";
 import type { CardInstance } from "@/lib/game/types";
 import { useGameStore } from "@/lib/store/gameStore";
 import { primaryThresholdGlow } from "@/lib/game/threshold-glow";
+import { REPLI_TEINTE } from "@/lib/game/repli-theme";
 import type { DragEvent } from "react";
 import { KEYWORD_SYMBOLS, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordBadgeValue, applyKeywordValueToLabel, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, getSpellKeywordBadgeValue } from "@/lib/game/spell-keywords";
@@ -52,7 +53,9 @@ function HandCard({
   const targetingMode = useGameStore(s => s.targetingMode);
   const pendingCostCard = useGameStore(s => s.pendingCostCard);
   const selectedDiscardIds = useGameStore(s => s.selectedDiscardIds);
+  const selectedTopdeckIds = useGameStore(s => s.selectedTopdeckIds);
   const toggleDiscardSelection = useGameStore(s => s.toggleDiscardSelection);
+  const toggleTopdeckSelection = useGameStore(s => s.toggleTopdeckSelection);
 
   // Halo des capacités à SEUIL. C'est en main qu'il porte l'essentiel de sa
   // valeur : Seuil de colère et Chant sont des capacités de SORT — ils ne vont
@@ -68,6 +71,26 @@ function HandCard({
   const isCostPaymentMode = targetingMode === "cost_payment";
   const isPendingCostSource = pendingCostCard?.instanceId === cardInstance.instanceId;
   const isSelectedForDiscard = selectedDiscardIds.includes(cardInstance.instanceId);
+  const rangRepli = selectedTopdeckIds.indexOf(cardInstance.instanceId);
+  const isSelectedForTopdeck = rangRepli !== -1;
+
+  /** Un clic en mode paiement, quand la carte réclame DEUX coûts de main
+   *  (défausse ET repli). Un même clic ne peut pas payer les deux, et laisser
+   *  le joueur basculer d'un mode à l'autre demanderait un sélecteur de plus
+   *  au-dessus d'une modale déjà chargée. Règle retenue, annoncée par la
+   *  modale : on REMPLIT LA DÉFAUSSE D'ABORD, puis le repli. Décocher marche
+   *  toujours, quelle que soit la liste qui tient la carte — c'est le seul
+   *  moyen de corriger une désignation. */
+  const payerParClic = () => {
+    if (!pendingCostCard) return;
+    if (isSelectedForDiscard) { toggleDiscardSelection(cardInstance.instanceId); return; }
+    if (isSelectedForTopdeck) { toggleTopdeckSelection(cardInstance.instanceId); return; }
+    if (selectedDiscardIds.length < pendingCostCard.discardNeeded) {
+      toggleDiscardSelection(cardInstance.instanceId);
+    } else if (selectedTopdeckIds.length < pendingCostCard.topdeckNeeded) {
+      toggleTopdeckSelection(cardInstance.instanceId);
+    }
+  };
 
   // Flash de boost (mêmes réglages que BoardCreature) : or pour un buff de
   // stats, violet pour une capacité acquise.
@@ -165,6 +188,7 @@ function HandCard({
   // Les états d'ACTION en cours (défausse, paiement, sélection) restent
   // prioritaires — ils disent ce qui se passe maintenant, pas un état de fond.
   const borderColor = isSelectedForDiscard ? "#e74c3c"
+    : isSelectedForTopdeck ? REPLI_TEINTE
     : (isCostPaymentMode && isPendingCostSource) ? "#c8a84e"
     : isSelected ? "#c8a84e"
     : thresholdGlow ? `rgb(${thresholdGlow.rgb})`
@@ -443,7 +467,7 @@ function HandCard({
             return;
           }
           if (isCostPaymentMode) {
-            if (!isPendingCostSource) toggleDiscardSelection(cardInstance.instanceId);
+            if (!isPendingCostSource) payerParClic();
           } else if (canPlay) {
             onClick?.();
           }
@@ -461,6 +485,7 @@ function HandCard({
             : "linear-gradient(160deg, #1a0a2a, #0d0d1a)",
           border: `2px solid ${borderColor}`,
           boxShadow: isSelectedForDiscard ? "0 0 14px #e74c3c88"
+            : isSelectedForTopdeck ? `0 0 14px ${REPLI_TEINTE}88`
             : (isCostPaymentMode && isPendingCostSource) ? "0 0 14px #c8a84e88"
             : isSelected ? "0 0 12px #c8a84e44"
             : thresholdGlow ? undefined // piloté par l'animation ci-dessous
@@ -572,6 +597,27 @@ function HandCard({
             pointerEvents: "none",
           }}>
             <span style={{ fontSize: 60, color: "#e74c3c", filter: "drop-shadow(0 0 6px #000)" }}>✕</span>
+          </div>
+        )}
+        {isSelectedForTopdeck && (
+          <div style={{
+            position: "absolute", inset: 0, zIndex: 4,
+            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+            gap: 2,
+            background: `linear-gradient(135deg, ${REPLI_TEINTE}33, #00000022)`,
+            pointerEvents: "none",
+          }}>
+            <span style={{ fontSize: 52, lineHeight: 1, color: REPLI_TEINTE, filter: "drop-shadow(0 0 6px #000)" }}>↥</span>
+            {/* Le RANG, pas une simple coche : c'est lui qui dit quelle carte
+                finira sur le dessus, donc laquelle sera repiochée en premier.
+                Sans ce chiffre, deux replis seraient indiscernables. */}
+            {selectedTopdeckIds.length > 1 && (
+              <span style={{
+                fontSize: 11, fontWeight: 700, color: "#0d0d1a",
+                background: REPLI_TEINTE, borderRadius: 999, padding: "1px 7px",
+                fontFamily: "'Cinzel', serif",
+              }}>{rangRepli + 1}</span>
+            )}
           </div>
         )}
         {isCostPaymentMode && isPendingCostSource && (

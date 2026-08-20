@@ -2,6 +2,7 @@
 
 import type { Card } from "@/lib/game/types";
 import ExileGlyph from "./ExileGlyph";
+import { REPLI_TEINTE, REPLI_GLYPHE } from "@/lib/game/repli-theme";
 
 interface Props {
   card: Card;
@@ -23,16 +24,18 @@ export default function CostBadges({ card, size = 22, effectiveManaCost, isCostR
   const discardCost = card.discard_cost ?? 0;
   const sacrificeCost = card.sacrifice_cost ?? 0;
   const exileCost = card.exile_cost ?? 0;
+  const topdeckCost = card.topdeck_cost ?? 0;
 
   const showMana = manaCost > 0;
   const showLife = lifeCost > 0;
   const showDiscard = discardCost > 0;
   const showSacrifice = sacrificeCost > 0;
   const showExile = exileCost > 0;
+  const showTopdeck = topdeckCost > 0;
 
   // Edge case: a card declares no costs at all (rare — e.g. "0-cost token").
   // Still render the mana 0 pip so the slot doesn't look empty.
-  const renderEmpty = !showMana && !showLife && !showDiscard && !showSacrifice && !showExile;
+  const renderEmpty = !showMana && !showLife && !showDiscard && !showSacrifice && !showExile && !showTopdeck;
 
   const fontSize = Math.round(size * 0.6);
   const glyphSize = Math.round(size * 0.5);
@@ -125,6 +128,27 @@ export default function CostBadges({ card, size = 22, effectiveManaCost, isCostR
             filter: "drop-shadow(0 0 2px #000)",
           }}><ExileGlyph size={glyphSize} color="#cfd8e3" /></span>
           {exileCost}
+        </div>
+      )}
+      {showTopdeck && (
+        <div title={`Replacez ${topdeckCost} carte${topdeckCost > 1 ? "s" : ""} de votre main sur le dessus de votre deck`} style={{
+          // Bleu glacier : la sixième pastille devait rester discernable des
+          // cinq autres sur une main chargée (cf. repli-theme).
+          width: size * 0.85, height: size, borderRadius: size * 0.18,
+          background: "radial-gradient(circle, #16323d, #08161c)",
+          outline: `2px solid ${REPLI_TEINTE}`,
+          fontSize, color: "#d6f2fb", fontWeight: 700,
+          lineHeight: `${size}px`, textAlign: "center",
+          boxShadow: `0 0 6px ${REPLI_TEINTE}66`,
+          position: "relative",
+        }}>
+          <span style={{
+            position: "absolute", top: -size * 0.08, right: -size * 0.1,
+            fontSize: glyphSize, lineHeight: 1,
+            color: REPLI_TEINTE,
+            filter: "drop-shadow(0 0 2px #000)",
+          }}>{REPLI_GLYPHE}</span>
+          {topdeckCost}
         </div>
       )}
     </div>

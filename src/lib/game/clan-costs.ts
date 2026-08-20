@@ -1,8 +1,9 @@
 // Les COÛTS ADDITIONNELS habituels d'un clan.
 //
 // Une carte peut demander autre chose que du mana : des points de vie, une
-// défausse, le sacrifice d'une créature, l'exil de cartes du deck. Pris
-// isolément c'est une particularité de carte ; répété sur une poignée de
+// défausse, le sacrifice d'une créature, l'exil de cartes du deck, le repli de
+// cartes de la main sur le dessus du deck. Pris isolément c'est une
+// particularité de carte ; répété sur une poignée de
 // communes, ça devient une manière de jouer — Les Enfants du Soleil sacrifient,
 // Les Fils du Volcan exilent.
 //
@@ -12,8 +13,8 @@
 //
 // Module pur : il reçoit des cartes, il rend un constat.
 
-/** Les quatre coûts que le jeu sait demander en plus du mana. */
-export type CoutKind = "life" | "discard" | "sacrifice" | "exile";
+/** Les cinq coûts que le jeu sait demander en plus du mana. */
+export type CoutKind = "life" | "discard" | "sacrifice" | "exile" | "topdeck";
 
 export interface AdditionalCost {
   kind: CoutKind;
@@ -24,12 +25,13 @@ export interface AdditionalCost {
   max: number;
 }
 
-/** Forme minimale attendue — les quatre colonnes de coût, rien d'autre. */
+/** Forme minimale attendue — les cinq colonnes de coût, rien d'autre. */
 export interface CarteAvecCouts {
   life_cost?: number | null;
   discard_cost?: number | null;
   sacrifice_cost?: number | null;
   exile_cost?: number | null;
+  topdeck_cost?: number | null;
 }
 
 /** En dessous, ce n'est pas une habitude de clan mais une carte qui dépasse. */
@@ -42,6 +44,7 @@ const LECTEURS: ReadonlyArray<readonly [CoutKind, (c: CarteAvecCouts) => number]
   ["discard", (c) => c.discard_cost ?? 0],
   ["sacrifice", (c) => c.sacrifice_cost ?? 0],
   ["exile", (c) => c.exile_cost ?? 0],
+  ["topdeck", (c) => c.topdeck_cost ?? 0],
 ];
 
 /** Les coûts additionnels REPRÉSENTATIFS du pool fourni.

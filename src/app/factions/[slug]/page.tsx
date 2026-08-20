@@ -40,7 +40,7 @@ const COLONNES_CARTE =
   "keywords, keyword_instances, spell_keywords, spell_effects, capabilities, " +
   "image_url, faction, race, clan, rarity, card_alignment, convocation_token_id, " +
   "convocation_tokens, lycanthropie_token_id, entraide_race, set_id, card_year, " +
-  "card_month, life_cost, discard_cost, sacrifice_cost, exile_cost";
+  "card_month, life_cost, discard_cost, sacrifice_cost, exile_cost, topdeck_cost";
 
 export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

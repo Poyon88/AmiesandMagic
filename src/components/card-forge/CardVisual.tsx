@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { REPLI_TEINTE, REPLI_GLYPHE } from "@/lib/game/repli-theme";
 import ExileGlyph from "@/components/cards/ExileGlyph";
 import { useTranslations } from 'next-intl';
 import { FACTIONS, RARITY_MAP } from '@/lib/card-engine/constants';
@@ -177,6 +178,7 @@ interface CardData {
   discardCost?: number;
   sacrificeCost?: number;
   exileCost?: number;
+  topdeckCost?: number;
 }
 
 // ─── COMPONENT ───────────────────────────────────────────────────────────────
@@ -416,6 +418,22 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                 <ExileGlyph size={11 * s} color="#cfd8e3" />
               </span>
               {card!.exileCost}
+            </div>
+          ) : null}
+          {card!.topdeckCost && card!.topdeckCost > 0 ? (
+            <div title={t('topdeck_cost_title', { count: card!.topdeckCost })} style={{
+              width: 28 * s, height: 28 * s, borderRadius: "50%",
+              background: "radial-gradient(circle,#16323d,#08161c)",
+              border: `${2 * s}px solid ${REPLI_TEINTE}`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 13 * s, color: "#d6f2fb", fontWeight: 700,
+              boxShadow: `0 0 8px ${REPLI_TEINTE}66`,
+              position: "relative",
+            }}>
+              <span style={{ position: "absolute", top: -3 * s, right: -3 * s, lineHeight: 1, fontSize: 12 * s, color: REPLI_TEINTE, filter: "drop-shadow(0 0 2px #000)" }}>
+                {REPLI_GLYPHE}
+              </span>
+              {card!.topdeckCost}
             </div>
           ) : null}
         </div>

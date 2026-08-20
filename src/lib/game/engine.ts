@@ -114,6 +114,12 @@ let abilitySfxSink: Array<{ abilityId: string; trigger: import("./types").Capabi
 // rien à l'écran ne les montrait partir — seul le compteur du deck baissait.
 // Vidé au début d'applyAction, rattaché à state.exileCostEvents ; hors hash.
 let exileCostSink: Array<{ ownerId: string; count: number }> = [];
+// Cartes REPLIÉES de la main vers le dessus du deck pour payer un coût de repli.
+// Même angle mort que l'exil : la main rétrécit et la pile grossit sans que rien
+// ne relie les deux à la carte jouée. On ne note que le NOMBRE — la carte
+// repliée n'est jamais révélée, et l'animation ne montre qu'un dos.
+// Vidé au début d'applyAction, rattaché à state.topdeckCostEvents ; hors hash.
+let topdeckCostSink: Array<{ ownerId: string; count: number }> = [];
 // Effets « DECK » silencieux (Préincanter, Fortifier) : ils préparent une carte
 // DANS le deck, donc rien à l'écran ne montrait qu'ils avaient agi — ni au
 // joueur, ni à l'adversaire. Indice d'animation : un badge s'élève de la pile de
@@ -168,6 +174,68 @@ let currentPlayerIds: string[] = [];
 // avant tout clone, mieux vaut ne rien soigner que muter l'état de l'action
 // précédente, que l'appelant détient peut-être encore.
 let currentBoardPlayers: PlayerState[] = [];
+// État COMPLET en cours de mutation (même origine que currentBoardPlayers, posé
+// par cloneStateForAction). currentBoardPlayers ne donne que les joueurs, or un
+// instantané d'animation doit rendre un GameState entier — c'est lui que le
+// store affichera pendant sa vague.
+let currentActionState: GameState | null = null;
+// POINTS DE PASSAGE de l'animation posés pendant l'action (cf.
+// GameState.animationCheckpoints). Chaque étiquette n'est posée QU'UNE FOIS :
+// une action qui pioche trois cartes à déclencheur ne crée pas trois vagues,
+// elle sépare simplement « avant la pioche » de « ce que la pioche a fait ».
+// Vidé au début d'applyAction, rattaché à state.animationCheckpoints ; hors hash.
+let animationCheckpointSink: Array<{
+  label: import("./types").AnimationCheckpointLabel;
+  state: GameState;
+  sequentialHitsBefore: number;
+  /** Interne au moteur : sert à ne pas poser deux frontières qui n'encadrent
+   *  rien. Retiré avant d'attacher la file à l'état. */
+  empreinte: string;
+}> = [];
+
+/** Pose une frontière d'animation sur l'état en cours de mutation.
+ *
+ *  L'instantané est une COPIE : la suite de l'action continue de muter l'état
+ *  vivant sans le toucher. On écarte du clone les pools de cartes (volumineux,
+ *  immuables) et la vague d'attaque (qui contient déjà un état entier) — le
+ *  store ne diffe que les plateaux, les mains et les héros. */
+/** Empreinte BON MARCHÉ de ce qui a bougé de visible. Deux frontières
+ *  consécutives à empreinte identique n'encadrent rien : un `settleSpellDeaths`
+ *  qui ne tue personne, deux `processDeathTriggers` enchaînés dont le second n'a
+ *  pas de dépouille. On évite ainsi un clone d'état par appel à vide, sans avoir
+ *  à deviner en amont si l'effet produira quelque chose. */
+function empreinteVisible(s: GameState): string {
+  const p = s.players.map(pl =>
+    `${pl.hero.hp};${pl.board.length};${pl.hand.length};${pl.graveyard.length};${pl.deck.length};`
+    + pl.board.map(c => `${c.currentHealth},${c.currentAttack}`).join("/"),
+  ).join("|");
+  return `${sequentialHitsSink.length}#${damageLedgerSink.length}#${p}`;
+}
+
+/** Étiquettes dont UNE SEULE occurrence a du sens par action. Plusieurs cartes
+ *  piochées partagent une révélation, donc une frontière ; `mort` et `effet` se
+ *  répètent au contraire autant de fois que le moteur franchit ces seuils. */
+const CHECKPOINT_LABELS_UNIQUES = new Set<import("./types").AnimationCheckpointLabel>(["pioche"]);
+
+function markAnimationCheckpoint(label: import("./types").AnimationCheckpointLabel): void {
+  const live = currentActionState;
+  if (!live) return; // hors action (test appelant un handler en direct)
+  if (CHECKPOINT_LABELS_UNIQUES.has(label)
+    && animationCheckpointSink.some(c => c.label === label)) return;
+  const derniere = animationCheckpointSink[animationCheckpointSink.length - 1];
+  if (derniere && derniere.empreinte === empreinteVisible(live)) return;
+  const fp = live.factionCardPool, ap = live.allSpellsPool, wave = live.onAttackWave;
+  live.factionCardPool = undefined; live.allSpellsPool = undefined; live.onAttackWave = undefined;
+  animationCheckpointSink.push({
+    label,
+    empreinte: empreinteVisible(live),
+    state: deepClone(live),
+    // Rang dans le registre des points séquentiels : ce que ce registre contient
+    // déjà appartient à ce qui PRÉCÈDE la frontière.
+    sequentialHitsBefore: sequentialHitsSink.length,
+  });
+  live.factionCardPool = fp; live.allSpellsPool = ap; live.onAttackWave = wave;
+}
 // Pools de cartes de l'action en cours (set dans applyAction). Permet aux
 // résolveurs curés SANS accès au GameState (mort / retour en main) de générer
 // des options de Sélection ou de remplacer des sorts (Concentration). Même
@@ -486,6 +554,10 @@ export function getSacrificeCost(card: Card): number {
 /** EXIL : cartes retirées du dessus du deck du joueur pour jouer la carte. */
 export function getExileCost(card: Card): number {
   return Math.max(0, card.exile_cost ?? 0);
+}
+/** REPLI : cartes de la main replacées sur le dessus du deck du joueur. */
+export function getTopdeckCost(card: Card): number {
+  return Math.max(0, card.topdeck_cost ?? 0);
 }
 
 // Add a keyword to a creature at runtime (e.g. spell granting Bouclier
@@ -2340,6 +2412,13 @@ function triggerOnDraw(ci: CardInstance, owner: PlayerState): void {
   // l'effet part vraiment (une carte sans mode "draw" ne révèle rien).
   drawTriggerSink.push({ card: ci.card, ownerId: owner.id });
 
+  // FRONTIÈRE DE PIOCHE. Posée ici, et pas dans `drawCard` : seules les pioches
+  // dont un effet part vraiment méritent une vague à elles. La carte a déjà
+  // rejoint la main (drawCard la pousse avant d'appeler ce déclencheur), donc
+  // l'instantané montre la main complète et le plateau encore intact — ce que
+  // le joueur doit voir AVANT que l'effet ne frappe.
+  markAnimationCheckpoint("pioche");
+
   drawTriggerDepth++;
   try {
     for (const inst of insts) {
@@ -2690,8 +2769,10 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
   const discardCost = getDiscardCost(card);
   const sacrificeCost = getSacrificeCost(card);
   const exileCost = getExileCost(card);
+  const topdeckCost = getTopdeckCost(card);
   const requestedDiscards = action.discardInstanceIds ?? [];
   const requestedSacrifices = action.sacrificeInstanceIds ?? [];
+  const requestedTopdecks = action.topdeckInstanceIds ?? [];
   if (lifeCost > 0 && player.hero.hp - lifeCost <= 0) return state;
   // Un coût qui ne peut pas être payé INTÉGRALEMENT interdit de jouer la carte —
   // même règle que le coût en PV, qu'on ne paie pas « autant que possible ».
@@ -2699,11 +2780,26 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
   if (exileCost > 0 && player.deck.length < exileCost) return state;
   if (requestedDiscards.length !== discardCost) return state;
   if (requestedSacrifices.length !== sacrificeCost) return state;
+  if (requestedTopdecks.length !== topdeckCost) return state;
   // The card being played cannot be selected as its own discard cost — even
-  // though it still sits in the hand at this point.
+  // though it still sits in the hand at this point. Idem pour le repli : se
+  // replier soi-même reviendrait à ne pas jouer la carte du tout.
   if (requestedDiscards.includes(action.cardInstanceId)) return state;
+  if (requestedTopdecks.includes(action.cardInstanceId)) return state;
+  // Défausse et repli puisent dans la MÊME main : une carte ne peut pas payer
+  // les deux, et un doublon DANS le repli ferait replier deux fois la même
+  // carte — le second `findIndex` retomberait sur une autre, choisie par le
+  // moteur et non par le joueur.
+  const dejaEngagees = new Set(requestedDiscards);
+  for (const id of requestedTopdecks) {
+    if (dejaEngagees.has(id)) return state;
+    dejaEngagees.add(id);
+  }
   // All chosen IDs must exist on the relevant zones.
   for (const id of requestedDiscards) {
+    if (!player.hand.find(c => c.instanceId === id)) return state;
+  }
+  for (const id of requestedTopdecks) {
     if (!player.hand.find(c => c.instanceId === id)) return state;
   }
   for (const id of requestedSacrifices) {
@@ -2737,6 +2833,29 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
   for (const id of requestedDiscards) {
     const idx = player.hand.findIndex(c => c.instanceId === id);
     if (idx !== -1) discardFromHand(player, idx, [player, opponent]);
+  }
+  // REPLI : les cartes choisies quittent la main pour le DESSUS du deck.
+  //
+  // Elles ne passent par aucune autre zone : ni cimetière, ni exil. Ce n'est
+  // donc PAS une défausse — aucun déclencheur de défausse ne doit partir, et
+  // l'instance est conservée telle quelle (bonus compris, cf. la persistance des
+  // buffs entre zones) puisque c'est la MÊME carte qu'on repiochera.
+  //
+  // Parcours à REBOURS pour que la PREMIÈRE carte désignée finisse sur le
+  // dessus : chaque `unshift` repousse les précédentes d'un cran, donc la
+  // dernière insérée est celle qu'on repiochera en premier. C'est le seul ordre
+  // que le joueur peut prédire depuis la modale, où il les a désignées dans cet
+  // ordre-là.
+  if (requestedTopdecks.length > 0) {
+    let replies = 0;
+    for (let i = requestedTopdecks.length - 1; i >= 0; i--) {
+      const idx = player.hand.findIndex(c => c.instanceId === requestedTopdecks[i]);
+      if (idx === -1) continue;
+      const [carte] = player.hand.splice(idx, 1);
+      player.deck.unshift(carte);
+      replies++;
+    }
+    if (replies > 0) topdeckCostSink.push({ ownerId: player.id, count: replies });
   }
   // Sacrifice chosen board creatures, batching death triggers at the end.
   if (requestedSacrifices.length > 0) {
@@ -4625,6 +4744,11 @@ function resolveSpellKeywords(
     // plateau jonché de cadavres à 0 PV (et `cataclysme` / `deferlement`, qui
     // itèrent le plateau sans filtre de vie, les frappent).
     settleSpellDeaths(ctx);
+    // La même frontière, pour l'ÉCRAN : sans elle, les dégâts des trois effets
+    // d'un sort partaient dans une seule salve et leurs morts dans une seule
+    // autre, quel que soit l'ordre réel. L'empreinte écarte les effets qui n'ont
+    // rien produit de visible.
+    markAnimationCheckpoint("effet");
   }
 }
 
@@ -5432,6 +5556,7 @@ function runFureurChain(
 function cloneStateForAction(state: GameState): GameState {
   const next = deepClone({ ...state, factionCardPool: undefined, allSpellsPool: undefined } as GameState);
   currentBoardPlayers = next.players;
+  currentActionState = next;
   return next;
 }
 
@@ -6556,6 +6681,21 @@ function resolveCreatureDeath(c: CardInstance, owner: PlayerState, enemy: Player
  *  passent (dead, owner, enemy) — l'ancien 4e paramètre `depth` disparaît). */
 function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: PlayerState): void {
   if (dead.length === 0) return;
+  // FRONTIÈRE DE MORT. Les dépouilles ont déjà quitté le plateau
+  // (cleanDeadCreatures), aucun râle n'a encore résolu : c'est exactement
+  // l'instant que l'écran doit montrer entre l'animation de mort et les dégâts
+  // du râle.
+  //
+  // Le filtre est VOLONTAIREMENT large — une créature sans le moindre mot-clé ni
+  // capacité n'a rien à râler, et c'est le cas courant, mais au-delà on ne
+  // cherche pas à deviner quels râles produiront quelque chose : la liste des
+  // capacités concernées est longue et bougerait à chaque ajout. Une frontière
+  // posée pour rien ne coûte qu'un clone — le store écarte les vagues qui
+  // n'ont rien à peindre.
+  if (dead.some(c => (c.card.keywords?.length ?? 0) > 0
+    || getCapabilities(c.card).some(cap => cap.trigger === "on_death"))) {
+    markAnimationCheckpoint("mort");
+  }
   type DeathWork = { c: CardInstance; owner: PlayerState; enemy: PlayerState };
   const work: DeathWork[] = [];
   // dead[0] doit être traité en premier → empilé en dernier (pop = LIFO).
@@ -8336,6 +8476,9 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   drawTriggerSink = [];
   abilitySfxSink = [];
   exileCostSink = [];
+  topdeckCostSink = [];
+  animationCheckpointSink = [];
+  currentActionState = null;
   deckEffectSink = [];
   compagnonsSink = [];
   lethalSpellActive = false;
@@ -8412,6 +8555,23 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   // Rattache l'exil payé pendant l'action (animation de déchirure au deck).
   if (exileCostSink.length > 0 && result !== state) {
     result.exileCostEvents = [...(result.exileCostEvents ?? []), ...exileCostSink];
+  }
+  // Rattache les points de passage de l'animation (une vague par intervalle).
+  //
+  // On REMPLACE, là où les autres indices s'ajoutent : un instantané n'a de sens
+  // que pour l'action qui l'a posé. Le clone d'entrée recopie l'état précédent,
+  // sa file comprise — sans cet écrasement, une action en héritait, et comme un
+  // instantané pèse un état ENTIER, la chaîne grossissait à chaque tour et le
+  // store risquait de rejouer une vague périmée.
+  if (result !== state) {
+    result.animationCheckpoints = animationCheckpointSink.length > 0
+      ? animationCheckpointSink.map(({ label, state, sequentialHitsBefore }) =>
+        ({ label, state, sequentialHitsBefore }))
+      : undefined;
+  }
+  // Rattache le repli payé pendant l'action (dos de carte qui file vers le deck).
+  if (topdeckCostSink.length > 0 && result !== state) {
+    result.topdeckCostEvents = [...(result.topdeckCostEvents ?? []), ...topdeckCostSink];
   }
   // Rattache les effets « deck » silencieux (badge sur la pile).
   if (deckEffectSink.length > 0 && result !== state) {
@@ -8502,7 +8662,14 @@ export function canPlayCard(state: GameState, cardInstanceId: string): boolean {
   const lifeCost = getLifeCost(card.card);
   if (lifeCost > 0 && player.hero.hp - lifeCost <= 0) return false;
   const discardCost = getDiscardCost(card.card);
-  if (player.hand.length - 1 < discardCost) return false;
+  const topdeckCost = getTopdeckCost(card.card);
+  // Défausse et REPLI puisent dans la même main, et la carte jouée ne peut
+  // financer ni l'une ni l'autre : le test porte donc sur leur SOMME, main
+  // diminuée de la carte jouée. Les tester séparément laissait passer une carte
+  // à « défausser 1 + replier 1 » avec deux cartes en main — le moteur la
+  // refusait ensuite en silence, et le joueur voyait une carte jouable qui ne
+  // partait jamais.
+  if (player.hand.length - 1 < discardCost + topdeckCost) return false;
   const sacrificeCost = getSacrificeCost(card.card);
   if (player.board.length < sacrificeCost) return false;
   // Même règle que dans playCard : sans assez de cartes à exiler, injouable.

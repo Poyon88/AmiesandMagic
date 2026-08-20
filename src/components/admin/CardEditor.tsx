@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { REPLI_TEINTE, REPLI_GLYPHE } from "@/lib/game/repli-theme";
 import ExileGlyph from "@/components/cards/ExileGlyph";
 import Image from "next/image";
 import GameCard from "@/components/cards/GameCard";
@@ -63,6 +64,7 @@ interface DbCard {
   discard_cost: number | null;
   sacrifice_cost: number | null;
   exile_cost: number | null;
+  topdeck_cost: number | null;
   capabilities: Capability[] | null;
 }
 
@@ -373,6 +375,7 @@ export default function CardEditor() {
       discard_cost: card.discard_cost ?? 0,
       sacrifice_cost: card.sacrifice_cost ?? 0,
       exile_cost: card.exile_cost ?? 0,
+      topdeck_cost: card.topdeck_cost ?? 0,
     });
     setNewImageFile(null);
     setNewImagePreview(null);
@@ -600,6 +603,7 @@ export default function CardEditor() {
         discard_cost: (editFields.discard_cost as number) || 0,
         sacrifice_cost: (editFields.sacrifice_cost as number) || 0,
         exile_cost: (editFields.exile_cost as number) || 0,
+        topdeck_cost: (editFields.topdeck_cost as number) || 0,
       };
 
       const body: Record<string, unknown> = { card: cardData, updateId: selectedCard.id, composed_capabilities: composedCaps };
@@ -1081,6 +1085,10 @@ export default function CardEditor() {
               <div style={{ flex: 1 }}>
                 <div style={S.label} title="Nombre de cartes retirées du dessus du deck du joueur (exilées : elles ne vont PAS au cimetière et sont irrécupérables).">Coût <ExileGlyph size={11} color="#7f8fa6" /> Exil</div>
                 <input type="number" min={0} max={5} value={(editFields.exile_cost as number) ?? 0} onChange={e => updateField("exile_cost", parseInt(e.target.value) || 0)} style={S.input} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={S.label} title="REPLI : nombre de cartes que le joueur replace de sa main sur le DESSUS de son deck (elles ne vont pas au cimetière — il les repiochera). Coût de tempo, non réductible.">Coût <span style={{ color: REPLI_TEINTE }}>{REPLI_GLYPHE}</span> Repli</div>
+                <input type="number" min={0} max={5} value={(editFields.topdeck_cost as number) ?? 0} onChange={e => updateField("topdeck_cost", parseInt(e.target.value) || 0)} style={S.input} />
               </div>
             </div>
 

@@ -46,6 +46,7 @@ import {
   getCreatureComposedGraveyardChoice,
   getDiscardCost,
   getSacrificeCost,
+  getTopdeckCost,
   getTapActivateTargets,
   deferredKwTargetIds,
   endOfTurnTriggerTargets,
@@ -199,6 +200,20 @@ export interface ExileCostEvent {
   timestamp: number;
 }
 
+/** Coût de REPLI : N cartes quittent la main pour le dessus du deck.
+ *
+ *  On ne transporte QUE le nombre et le camp : la carte repliée n'est jamais
+ *  révélée — ni à l'adversaire, à qui elle donnerait la prochaine pioche, ni
+ *  même au joueur, qui vient de la désigner et n'a rien à réapprendre. */
+export interface TopdeckCostEvent {
+  count: number;
+  /** Deck du joueur LOCAL ou de l'adversaire — décide de la pile visée. */
+  isLocal: boolean;
+  /** Dos de carte de ce deck : c'est ce qu'on voit filer vers la pile. */
+  cardBackUrl: string | null;
+  timestamp: number;
+}
+
 // Tempête X — lightning rain animation. Driven by the per-target damage
 // events the engine emits during the resolved action; we collect those
 // here so the overlay can stagger one bolt per drop.
@@ -322,11 +337,16 @@ interface GameStore {
   // uid de l'effet composé activable en attente de cible (null sinon).
   pendingTapComposedUid: string | null;
   // Alternative-cost payment state — set when the player tries to play a card
-  // with a discard_cost or sacrifice_cost > 0. The player picks N cards from
-  // hand and/or N creatures from board, then confirms via CostPaymentOverlay.
-  pendingCostCard: { instanceId: string; discardNeeded: number; sacrificeNeeded: number; boardPosition: number | null } | null;
+  // with a discard_cost, sacrifice_cost or topdeck_cost > 0. The player picks N
+  // cards from hand (défausse et/ou repli) and/or N creatures from board, then
+  // confirms via CostPaymentOverlay.
+  pendingCostCard: { instanceId: string; discardNeeded: number; sacrificeNeeded: number; topdeckNeeded: number; boardPosition: number | null } | null;
   selectedDiscardIds: string[];
   selectedSacrificeIds: string[];
+  /** REPLI : cartes de la main désignées pour retourner sur le deck. L'ORDRE
+   *  est significatif — la première désignée finira sur le dessus — donc on
+   *  garde un tableau, jamais un Set. */
+  selectedTopdeckIds: string[];
   // True while the active selection overlay was opened by a hero power
   // (selection / renfort_royal / selection_magique). The next selectTarget
   // call dispatches a hero_power action instead of a play_card.
@@ -396,8 +416,10 @@ interface GameStore {
   cycleEternelEvent: CycleEternelEvent | null;
   compagnonsEvent: CycleEternelEvent | null;
   exileCostEvent: ExileCostEvent | null;
+  topdeckCostEvent: TopdeckCostEvent | null;
   deckEffectEvent: DeckEffectEvent | null;
   clearExileCostEvent: () => void;
+  clearTopdeckCostEvent: () => void;
   clearDeckEffectEvent: () => void;
   tempeteEvent: TempeteEvent | null;
   powerArrowEvent: PowerArrowEvent | null;
@@ -481,6 +503,7 @@ interface GameStore {
   clearDiscardFromHandEvent: () => void;
   toggleDiscardSelection: (instanceId: string) => void;
   toggleSacrificeSelection: (instanceId: string) => void;
+  toggleTopdeckSelection: (instanceId: string) => void;
   confirmCostPayment: () => GameAction | null;
   cancelCostPayment: () => void;
   activateHeroPower: () => GameAction | null;
@@ -1278,6 +1301,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   pendingCostCard: null,
   selectedDiscardIds: [],
   selectedSacrificeIds: [],
+  selectedTopdeckIds: [],
   pendingHeroPowerSelection: false,
   pendingEpargneSelection: false,
   pendingBoardPosition: null,
@@ -1314,6 +1338,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   cycleEternelEvent: null,
   compagnonsEvent: null,
   exileCostEvent: null,
+  topdeckCostEvent: null,
   deckEffectEvent: null,
   tempeteEvent: null,
   powerArrowEvent: null,
@@ -1427,16 +1452,20 @@ export const useGameStore = create<GameStore>((set, get) => {
       return null;
     }
 
-    // Merge any pending alternative-cost selections (discards / sacrifices)
-    // into the play_card action — single chokepoint so callers don't each
-    // have to remember to forward the IDs.
+    // Merge any pending alternative-cost selections (discards / sacrifices /
+    // replis) into the play_card action — single chokepoint so callers don't
+    // each have to remember to forward the IDs.
     if (action.type === "play_card") {
-      const { selectedDiscardIds, selectedSacrificeIds } = get();
-      if (selectedDiscardIds.length > 0 || selectedSacrificeIds.length > 0) {
+      const { selectedDiscardIds, selectedSacrificeIds, selectedTopdeckIds } = get();
+      if (selectedDiscardIds.length > 0 || selectedSacrificeIds.length > 0 || selectedTopdeckIds.length > 0) {
         action = {
           ...action,
           discardInstanceIds: action.discardInstanceIds ?? selectedDiscardIds,
           sacrificeInstanceIds: action.sacrificeInstanceIds ?? selectedSacrificeIds,
+          // L'ORDRE de selectedTopdeckIds est celui des clics du joueur, et il
+          // décide de la carte qui finit sur le dessus : on le transmet tel
+          // quel, l'adversaire rejouera la même pile.
+          topdeckInstanceIds: action.topdeckInstanceIds ?? selectedTopdeckIds,
         };
       }
     }
@@ -1513,7 +1542,47 @@ export const useGameStore = create<GameStore>((set, get) => {
     const onAttackWave = newState.onAttackWave ?? null;
     if (newState.onAttackWave) newState.onAttackWave = undefined;
     const combatOld = onAttackWave ? onAttackWave.intermediate : gameState;
-    const dmgEvents = detectDamageEvents(combatOld, newState, localPlayerId);
+
+    // FRONTIÈRE DE PIOCHE — l'axe du temps INTERNE de l'action (cf.
+    // GameState.animationCheckpoints). Le moteur a noté l'état au moment précis
+    // où la carte piochée a rejoint la main, avant que son effet ne frappe.
+    //
+    // Sans elle, tout ce que l'action a produit était peint d'un bloc : la
+    // révélation de la carte passait devant des dégâts ANTÉRIEURS à la pioche
+    // (Diablotin Ricanant / Lances du Zénith), et la carte n'arrivait en main
+    // qu'après avoir tué sa victime.
+    //
+    // Avec elle, la séquence se coupe en deux : tout ce qui précède la pioche est
+    // diffé jusqu'à `visualEnd`, la pioche s'anime, la carte se révèle, puis une
+    // dernière vague peint ce que son effet a fait.
+    // Le moteur pose ses frontières dans l'ordre chronologique de l'action ; on
+    // garde cet ordre, c'est lui qui définit les intervalles.
+    const frontieres = newState.animationCheckpoints ?? [];
+    if (newState.animationCheckpoints) newState.animationCheckpoints = undefined;
+    const drawWave = frontieres.find(c => c.label === "pioche") ?? null;
+    // Les frontières « mort » et « effet » se répètent ; seule « pioche » est
+    // unique. On sépare donc par POSITION, pas par étiquette : tout ce qui
+    // précède la pioche s'enchaîne à la suite de l'animation de mort, tout ce
+    // qui la suit se joue après que la carte est arrivée en main.
+    const idxPioche = drawWave ? frontieres.indexOf(drawWave) : -1;
+    const frontieresAvantPioche = idxPioche === -1 ? frontieres : frontieres.slice(0, idxPioche);
+    const frontieresDepuisPioche = idxPioche === -1 ? [] : frontieres.slice(idxPioche);
+    // Fin de la partie VISIBLE d'abord : la PREMIÈRE frontière. L'état
+    // RÉELLEMENT engagé reste `newState` — seul le diff d'animation s'arrête là.
+    const visualEnd = frontieres.length > 0 ? frontieres[0].state : newState;
+    /** État à la fin de l'intervalle ouvert par `f` : la frontière suivante,
+     *  ou l'état final s'il n'y en a plus. */
+    const finDeLIntervalle = (f: typeof frontieres[number]): GameState => {
+      const i = frontieres.indexOf(f);
+      return frontieres[i + 1]?.state ?? newState;
+    };
+    /** Rang du registre séquentiel à la fin de ce même intervalle. */
+    const seqFinDeLIntervalle = (f: typeof frontieres[number]): number | undefined => {
+      const i = frontieres.indexOf(f);
+      return frontieres[i + 1]?.sequentialHitsBefore;
+    };
+
+    const dmgEvents = detectDamageEvents(combatOld, visualEnd, localPlayerId);
     // Cosmetic: stamp the attacker centre onto combat-damage events so the FX
     // layer can shoot debris / kick the shake along the strike vector. Same
     // DOM-derived coords on both clients → no effect on game state or sync.
@@ -1570,8 +1639,17 @@ export const useGameStore = create<GameStore>((set, get) => {
     // fureurStrikes). On vide la liste transitoire après extraction. Désactivé
     // sur le chemin "à l'attaque" (onAttackWave) où ces dégâts vivent dans la
     // vague 1 — on retombe alors sur l'agrégat existant.
-    const rawSeqHits = (!onAttackWave && newState.sequentialHits) ? newState.sequentialHits : [];
+    const rawSeqHitsAll = (!onAttackWave && newState.sequentialHits) ? newState.sequentialHits : [];
     if (newState.sequentialHits) newState.sequentialHits = undefined;
+    // Coupe à la frontière de pioche : les points émis APRÈS elle appartiennent
+    // à la vague finale. Ils ne se déduisent pas d'un diff d'état (registre plat
+    // alimenté coup par coup), d'où le rang porté par la frontière.
+    const rawSeqHits = frontieres.length > 0
+      ? rawSeqHitsAll.slice(0, frontieres[0].sequentialHitsBefore)
+      : rawSeqHitsAll;
+    /** Tranche du registre séquentiel appartenant à l'intervalle de `f`. */
+    const seqHitsDeLIntervalle = (f: typeof frontieres[number]) =>
+      rawSeqHitsAll.slice(f.sequentialHitsBefore, seqFinDeLIntervalle(f));
     // Retraduit le sentinel héros `__hero_<idx>__` en repère local (cf. fureur).
     const seqHits = rawSeqHits.map((h) => {
       const m = /^__hero_(\d)__$/.exec(h.targetInstanceId);
@@ -1673,7 +1751,9 @@ export const useGameStore = create<GameStore>((set, get) => {
       // combatOld = post-power board on a two-wave attack, so combat deaths
       // exclude power-killed creatures (those animate in wave 1).
       const oldBoard = combatOld.players[i].board;
-      const newBoard = newState.players[i].board;
+      // `visualEnd` et non `newState` : une créature tuée par l'effet « à la
+      // pioche » meurt APRÈS la frontière et appartient à la vague finale.
+      const newBoard = visualEnd.players[i].board;
       for (const oldC of oldBoard) {
         if (newBoard.find((c) => c.instanceId === oldC.instanceId)) continue;
         // Cycle éternel / Résurrection sortent la dépouille du cimetière dans
@@ -1681,7 +1761,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         // rejoint une main (renvoi) ou disparu sans laisser de corps.
         // Cycle éternel / Résurrection ressortent la dépouille du cimetière dans
         // la foulée : ce sont bien des MORTS. Seul un retour en MAIN disqualifie.
-        const returnedToHand = newState.players.some((p) => p.hand.some((c) => c.instanceId === oldC.instanceId));
+        const returnedToHand = visualEnd.players.some((p) => p.hand.some((c) => c.instanceId === oldC.instanceId));
         if (returnedToHand) continue;
         // CHANGEMENT DE CONTRÔLEUR (Corruption, Domination) : la boucle ne
         // compare qu'au plateau de MÊME index, donc une créature volée
@@ -1690,7 +1770,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         // fantôme filait vers le deck alors que le moteur n'avait rien recyclé.
         // Même erreur que le renvoi en main juste au-dessus, sur l'autre zone
         // d'arrivée : la même instance est simplement passée sur l'AUTRE plateau.
-        const aChangeDeCamp = newState.players.some((p) => p.board.some((c) => c.instanceId === oldC.instanceId));
+        const aChangeDeCamp = visualEnd.players.some((p) => p.board.some((c) => c.instanceId === oldC.instanceId));
         if (aChangeDeCamp) continue;
         deadCreatures.push(oldC);
         deathOwnerIdx.set(oldC.instanceId, i);
@@ -1710,7 +1790,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     // deathFxEvents (les dépouilles sont encore montées à cet instant). Ils
     // rejoignent dmgEvents pour être décalés et peints à la phase d'impact,
     // donc AVANT que la phase de mort ne les retire du plateau.
-    dmgEvents.push(...lethalDamageEvents(deadCreatures, newState, damageLedger));
+    dmgEvents.push(...lethalDamageEvents(deadCreatures, visualEnd, damageLedger));
 
     // Cycle éternel — one entry per dead creature carrying the keyword. The
     // engine has already inserted a copy at a random position in the owner's
@@ -1758,6 +1838,24 @@ export const useGameStore = create<GameStore>((set, get) => {
           ? gameState.players[gameState.currentPlayerIndex].hand
             .find((c) => c.instanceId === action.cardInstanceId)?.card.sfx_exile_url ?? null
           : null,
+        timestamp: Date.now(),
+      }
+      : null;
+
+    // Coût de REPLI payé pendant l'action. Comme pour l'exil, le moteur n'a noté
+    // qu'un NOMBRE et un propriétaire : la carte repliée n'est jamais transmise,
+    // donc jamais révélée. On y ajoute le point de vue local (quelle pile viser)
+    // et le dos de carte correspondant. Liste transitoire vidée après extraction
+    // (exclue du hash).
+    const rawTopdeck = newState.topdeckCostEvents ?? [];
+    if (newState.topdeckCostEvents) newState.topdeckCostEvents = undefined;
+    const topdeckTotal = rawTopdeck.reduce((n, e) => n + e.count, 0);
+    const topdeckIsLocal = rawTopdeck[0]?.ownerId === localPlayerId;
+    const topdeckCostEvent: TopdeckCostEvent | null = topdeckTotal > 0
+      ? {
+        count: topdeckTotal,
+        isLocal: topdeckIsLocal,
+        cardBackUrl: topdeckIsLocal ? get().myCardBackUrl : get().opponentCardBackUrl,
         timestamp: Date.now(),
       }
       : null;
@@ -2291,7 +2389,10 @@ export const useGameStore = create<GameStore>((set, get) => {
     const playedId = action.type === "play_card" ? action.cardInstanceId : null;
     const newCreatureIds = new Set<string>();
     for (let i = 0; i < 2; i++) {
-      for (const nc of newState.players[i].board) {
+      // `visualEnd` : une créature invoquée par un effet « à la pioche » ne doit
+      // pas apparaître AVANT la pioche qui l'a produite. Elle est peinte avec la
+      // vague finale, qui réinjecte les nouvelles venues.
+      for (const nc of visualEnd.players[i].board) {
         if (nc.instanceId === playedId) continue;
         if (!gameState.players[i].board.find((c) => c.instanceId === nc.instanceId)) {
           newCreatureIds.add(nc.instanceId);
@@ -2360,7 +2461,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     // une mort (hasDeaths) — mais Compagnons ne bouge QUE le deck : sur une
     // créature vanille, aucun des autres drapeaux ne lève, l'action prenait le
     // chemin rapide et les phases — donc l'animation — n'existaient jamais.
-    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!powerArrowEvent || !!manaReductionEvent || !!epargneGainEvent || !!exileCostEvent || !!deckEffectEvent || !!cycleEvent || !!compagnonsEvent || drawTriggerSpells.length > 0;
+    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!powerArrowEvent || !!manaReductionEvent || !!epargneGainEvent || !!exileCostEvent || !!topdeckCostEvent || !!deckEffectEvent || !!cycleEvent || !!compagnonsEvent || drawTriggerSpells.length > 0;
 
     // Deep clone helper — factionCardPool / allSpellsPool carry non-serialisable refs, keep them aside.
     const cloneState = (state: GameState): GameState => {
@@ -2401,12 +2502,14 @@ export const useGameStore = create<GameStore>((set, get) => {
     // shown at 0 HP on their original slot, freshly summoned creatures NOT yet
     // on the board so they enter later with their own animation. Nécrophagie
     // buffs are rewound so they only appear after the death animation.
-    const impactState = cloneState(newState);
+    // Bâtis sur `visualEnd` : sur une action qui pioche, ces états s'arrêtent à
+    // la frontière de pioche, et la vague finale (plus bas) prend le relais.
+    const impactState = cloneState(visualEnd);
     for (let i = 0; i < 2; i++) {
       // combatOld baseline so the combat wave doesn't resurrect power-killed
       // creatures (already removed in wave 1) nor re-show their HP loss.
       const oldBoard = combatOld.players[i].board;
-      const newBoard = newState.players[i].board;
+      const newBoard = visualEnd.players[i].board;
       const deadIds = new Set(
         oldBoard
           .filter((c) => !newBoard.find((nc) => nc.instanceId === c.instanceId))
@@ -2431,9 +2534,9 @@ export const useGameStore = create<GameStore>((set, get) => {
 
     // Post-death state: dead creatures gone, new summons still absent, buffs
     // still rewound — the Nécrophagie +1/+1 lands in the final phase.
-    const postDeathState = cloneState(newState);
+    const postDeathState = cloneState(visualEnd);
     for (let i = 0; i < 2; i++) {
-      postDeathState.players[i].board = newState.players[i].board
+      postDeathState.players[i].board = visualEnd.players[i].board
         .filter((c) => !newCreatureIds.has(c.instanceId))
         .map((c) => rewindNecro(c));
     }
@@ -2455,7 +2558,10 @@ export const useGameStore = create<GameStore>((set, get) => {
 
     // Pre-draw state: dead + summons already resolved, buffs applied, but the
     // newly-drawn cards are still held back.
-    const preDrawState = cloneState(newState);
+    // État à l'instant de la PIOCHE : la frontière de pioche s'il y en a une
+    // (tout ce qui précède a déjà été peint, râles compris), sinon l'état final.
+    const etatAvantPioche = drawWave ? drawWave.state : newState;
+    const preDrawState = cloneState(etatAvantPioche);
     trimDrawsFromHand(preDrawState);
 
     // --- Fin de tour : garder l'identité du tour SORTANT sur les états
@@ -2494,6 +2600,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         pendingCostCard: null,
         selectedDiscardIds: [],
         selectedSacrificeIds: [],
+        selectedTopdeckIds: [],
         pendingHeroPowerSelection: false,
   pendingEpargneSelection: false,
         pendingTapSourceId: null,
@@ -2523,6 +2630,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       pendingCostCard: null,
       selectedDiscardIds: [],
       selectedSacrificeIds: [],
+      selectedTopdeckIds: [],
       pendingHeroPowerSelection: false,
   pendingEpargneSelection: false,
       pendingTapSourceId: null,
@@ -2715,6 +2823,116 @@ export const useGameStore = create<GameStore>((set, get) => {
       ]);
     }
 
+    // --- VAGUES D'INTERVALLE : une par frontière posée par le moteur ---------
+    //
+    // Même construction que la vague de pouvoir « à l'attaque », mais posée
+    // n'importe où dans la séquence : là-bas le point de passage décale le DÉBUT
+    // du diff principal, ici chaque frontière ouvre un intervalle qui se peint
+    // à son tour. Le diff principal, lui, s'arrête à la première (`visualEnd`).
+    type Vague = {
+      impactState: GameState;
+      /** État à la fin de l'intervalle — celui qu'on engage après la vague. */
+      finState: GameState;
+      dmg: DamageEvent[];
+      dead: CardInstance[];
+      hasDeaths: boolean;
+      /** Points séquentiels de l'intervalle : ils s'égrènent, la vague doit
+       *  durer assez pour tous les sortir avant la phase de mort. */
+      seqCount: number;
+    };
+
+    const construireVague = (f: typeof frontieres[number]): Vague => {
+      const bord = f.state;
+      const fin = finDeLIntervalle(f);
+      const impactState = cloneState(fin);
+      const dead: CardInstance[] = [];
+      let hasDeaths = false;
+
+      for (let i = 0; i < 2; i++) {
+        const bordBoard = bord.players[i].board;
+        const finBoard = fin.players[i].board;
+        const mortes = new Set(
+          bordBoard
+            .filter((c) => !finBoard.find((nc) => nc.instanceId === c.instanceId))
+            // Renvoyée en main ou passée sur l'autre plateau ⇒ pas une morte.
+            .filter((c) => !fin.players.some((p) =>
+              p.hand.some((h) => h.instanceId === c.instanceId)
+              || p.board.some((b) => b.instanceId === c.instanceId)))
+            .map((c) => c.instanceId),
+        );
+        if (mortes.size > 0) hasDeaths = true;
+        for (const c of bordBoard) if (mortes.has(c.instanceId)) dead.push(c);
+        // Les mortes restent affichées à 0 PV sur leur case le temps de la
+        // vague ; la phase suivante les retire.
+        impactState.players[i].board = bordBoard.map((c) =>
+          mortes.has(c.instanceId)
+            ? { ...c, currentHealth: 0 }
+            : (finBoard.find((nc) => nc.instanceId === c.instanceId) ?? c),
+        );
+        // Créatures apparues DANS cet intervalle (un râle ou un effet de pioche
+        // qui invoque) : elles montent avec la vague, pas avant.
+        for (const nc of finBoard) {
+          if (!impactState.players[i].board.find((c) => c.instanceId === nc.instanceId)) {
+            impactState.players[i].board.push(nc);
+          }
+        }
+      }
+
+      // Points séquentiels de l'intervalle (scatter, Tempête). Ils ne se lisent
+      // pas dans l'état — registre plat alimenté coup par coup — donc aucun diff
+      // ne les couperait : c'est le rang porté par la frontière qui les tranche.
+      const seq: DamageEvent[] = seqHitsDeLIntervalle(f).map((h, i) => {
+        const m = /^__hero_(\d)__$/.exec(h.targetInstanceId);
+        const targetId = m
+          ? (newState.players[+m[1]]?.id === localPlayerId ? "friendly_hero" : "enemy_hero")
+          : h.targetInstanceId;
+        return { targetId, amount: 1, type: h.type, ...getElementCenter(targetId), delayMs: i * SEQ_STEP_MS };
+      });
+      const seqCibles = new Set(seq.map((e) => e.targetId));
+      // Même règle qu'en vague 1 : pour une cible touchée point par point, on
+      // retire l'agrégat diffé et on garde les points, déjà décalés (les faire
+      // repasser par staggerByTarget écraserait leur delayMs).
+      const agregats = [
+        ...detectDamageEvents(bord, fin, localPlayerId),
+        ...lethalDamageEvents(dead, fin, damageLedger),
+      ].filter((ev) => !(seqCibles.has(ev.targetId) && (ev.type === "damage" || ev.type === "heal")));
+
+      return {
+        impactState,
+        finState: fin,
+        dmg: [...staggerByTarget(agregats), ...seq],
+        dead,
+        hasDeaths,
+        seqCount: seq.length,
+      };
+    };
+
+    const vaguesAvantPioche = frontieresAvantPioche.map(construireVague);
+    const vaguesDepuisPioche = frontieresDepuisPioche.map(construireVague);
+
+    /** Programme une vague d'intervalle et rend le curseur avancé. Une vague
+     *  SANS RIEN À PEINDRE n'occupe aucun temps : une frontière posée pour un
+     *  râle qui ne produit rien ne doit pas introduire de temps mort. */
+    const programmerVague = (v: Vague | null, at: number): number => {
+      if (!v) return at;
+      let c = at;
+      const aPeindre = v.dmg.length > 0 || v.hasDeaths;
+      if (!aPeindre) return c;
+      setTimeout(() => set({ gameState: v.impactState, damageEvents: v.dmg }), c);
+      c += IMPACT_MS + (v.seqCount > 0 ? (v.seqCount - 1) * SEQ_STEP_MS + 500 : 0);
+      if (v.hasDeaths) {
+        setTimeout(() => set({
+          gameState: v.finState,
+          deathEvents: v.dead.map((mort) => {
+            const pos = getElementCenter(mort.instanceId);
+            return { instanceId: mort.instanceId, x: pos.x, y: pos.y, poisoned: !!mort.isPoisoned };
+          }),
+        }), c);
+        c += DEATH_MS;
+      }
+      return c;
+    };
+
     const phasePowerImpacts = () => {
       if (!powerImpactState) return;
       set({
@@ -2789,6 +3007,10 @@ export const useGameStore = create<GameStore>((set, get) => {
       if (costDiscardEvent) set({ discardFromHandEvent: costDiscardEvent });
       // L'exil est un COÛT lui aussi : il se paie avant que la carte n'agisse,
       // et la déchirure doit donc précéder l'overlay du sort.
+      // Le REPLI est un coût du même rang : la carte remonte sur la pile avant
+      // que celle qu'on paie ne parte. Pas de son dédié — le geste est discret,
+      // là où l'exil déchire.
+      if (topdeckCostEvent) set({ topdeckCostEvent });
       if (exileCostEvent) {
         set({ exileCostEvent });
         // Son propre à la carte, repli sur le son global `exile_cost` — même
@@ -2798,7 +3020,10 @@ export const useGameStore = create<GameStore>((set, get) => {
     };
 
     const phaseDraws = () => {
-      set({ gameState: newState });
+      // Avec une frontière de pioche, on s'arrête à l'instant où la carte entre
+      // en main : son effet n'a pas encore frappé, et c'est la vague suivante
+      // qui le montrera. Sans frontière, rien ne change.
+      set({ gameState: etatAvantPioche });
       playSfxBatch(drawSfx);
     };
 
@@ -2860,7 +3085,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     }
     // Phase 0 (Cost discard) — runs before the overlay so the discarded
     // card reads as a paid prerequisite, not a consequence of the spell.
-    if (costDiscardEvent || exileCostEvent) {
+    if (costDiscardEvent || exileCostEvent || topdeckCostEvent) {
       if (cursor === 0) phaseCostDiscard();
       else setTimeout(phaseCostDiscard, cursor);
       cursor += COST_DISCARD_MS;
@@ -2916,7 +3141,11 @@ export const useGameStore = create<GameStore>((set, get) => {
     // raison : la carte doit être lue AVANT que son effet ne peigne ses dégâts.
     // Elles passent après les relances (aucune action ne produit les deux
     // aujourd'hui, mais l'ordre reste défini si cela arrivait).
-    for (const reveal of [...recastSpells, ...drawTriggerSpells]) {
+    // Une frontière de pioche déplace ces révélations APRÈS la pioche (voir la
+    // fin de la séquence) : les annoncer ici les ferait passer devant des dégâts
+    // qui leur sont antérieurs — le défaut signalé en partie.
+    const revelationsAvantImpacts = drawWave ? recastSpells : [...recastSpells, ...drawTriggerSpells];
+    for (const reveal of revelationsAvantImpacts) {
       setTimeout(() => set({ spellCastEvent: reveal }), cursor);
       cursor += RECAST_GAP_MS;
     }
@@ -2929,6 +3158,13 @@ export const useGameStore = create<GameStore>((set, get) => {
       setTimeout(phaseDeaths, cursor);
       cursor += DEATH_MS;
     }
+
+    // INTERVALLES ANTÉRIEURS À LA PIOCHE, dans l'ordre où le moteur les a
+    // franchis : râles d'agonie (leurs dégâts tombent après l'animation de mort
+    // qui les déclenche — le son du râle était déjà joué là, les deux moitiés du
+    // même effet se rejoignent enfin) et effets successifs d'un sort multiple
+    // (« Tempête 3 se résout entièrement avant Déchainement »).
+    for (const v of vaguesAvantPioche) cursor = programmerVague(v, cursor);
 
     if (hasSummons) {
       setTimeout(phaseSummons, cursor);
@@ -2955,6 +3191,25 @@ export const useGameStore = create<GameStore>((set, get) => {
       cursor += DRAW_MS;
     }
 
+    // --- Ce que l'effet « à la pioche » a provoqué ---------------------------
+    //
+    // Enfin dans l'ordre où le moteur l'a vécu : la carte est arrivée en main
+    // (phase ci-dessus), elle se révèle, puis ses dégâts et ses morts tombent.
+    if (drawWave) {
+      for (const reveal of drawTriggerSpells) {
+        setTimeout(() => set({ spellCastEvent: reveal }), cursor);
+        cursor += RECAST_GAP_MS;
+      }
+      const avant = cursor;
+      for (const v of vaguesDepuisPioche) cursor = programmerVague(v, cursor);
+      // Effet sans dégât ni mort : rien n'a été programmé, mais l'écran est
+      // resté sur la frontière — on engage l'état final.
+      if (cursor === avant) {
+        setTimeout(() => set({ gameState: newState }), cursor);
+        cursor += 50;
+      }
+    }
+
     // Badge des effets « deck » (Préincanter / Fortifier). Phase PROPRE, et non
     // greffée sur la pioche : `phaseDraws` ne tourne que s'il y a une carte
     // piochée, si bien que le badge ne s'affichait QUE dans ce cas — jamais sur
@@ -2977,18 +3232,20 @@ export const useGameStore = create<GameStore>((set, get) => {
 
     const player = gameState.players[gameState.currentPlayerIndex];
     const card = player.hand.find(c => c.instanceId === instanceId);
-    // Alternative-cost gating: if the card requires discards or sacrifices,
-    // open the cost-payment flow first. Targeting (creature/graveyard/etc.)
-    // resumes after confirmCostPayment.
+    // Alternative-cost gating: if the card requires discards, sacrifices or
+    // replis, open the cost-payment flow first. Targeting (creature/graveyard/
+    // etc.) resumes after confirmCostPayment.
     if (card) {
       const discardNeeded = getDiscardCost(card.card);
       const sacrificeNeeded = getSacrificeCost(card.card);
-      if (discardNeeded > 0 || sacrificeNeeded > 0) {
+      const topdeckNeeded = getTopdeckCost(card.card);
+      if (discardNeeded > 0 || sacrificeNeeded > 0 || topdeckNeeded > 0) {
         set({
           targetingMode: "cost_payment",
-          pendingCostCard: { instanceId, discardNeeded, sacrificeNeeded, boardPosition: boardPosition ?? null },
+          pendingCostCard: { instanceId, discardNeeded, sacrificeNeeded, topdeckNeeded, boardPosition: boardPosition ?? null },
           selectedDiscardIds: [],
           selectedSacrificeIds: [],
+          selectedTopdeckIds: [],
           selectedCardInstanceId: instanceId,
         });
         return null;
@@ -3174,12 +3431,14 @@ export const useGameStore = create<GameStore>((set, get) => {
     {
       const discardNeeded = getDiscardCost(card.card);
       const sacrificeNeeded = getSacrificeCost(card.card);
-      if (discardNeeded > 0 || sacrificeNeeded > 0) {
+      const topdeckNeeded = getTopdeckCost(card.card);
+      if (discardNeeded > 0 || sacrificeNeeded > 0 || topdeckNeeded > 0) {
         set({
           targetingMode: "cost_payment",
-          pendingCostCard: { instanceId, discardNeeded, sacrificeNeeded, boardPosition: null },
+          pendingCostCard: { instanceId, discardNeeded, sacrificeNeeded, topdeckNeeded, boardPosition: null },
           selectedDiscardIds: [],
           selectedSacrificeIds: [],
+          selectedTopdeckIds: [],
           selectedCardInstanceId: instanceId,
         });
         return null;
@@ -4050,6 +4309,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       pendingCostCard: null,
       selectedDiscardIds: [],
       selectedSacrificeIds: [],
+      selectedTopdeckIds: [],
       pendingHeroPowerSelection: false,
   pendingEpargneSelection: false,
     });
@@ -4069,6 +4329,10 @@ export const useGameStore = create<GameStore>((set, get) => {
 
   clearFireBreathEvent: () => {
     set({ fireBreathEvent: null });
+  },
+
+  clearTopdeckCostEvent: () => {
+    set({ topdeckCostEvent: null });
   },
 
   clearExileCostEvent: () => {
@@ -4120,7 +4384,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   },
 
   toggleDiscardSelection: (instanceId) => {
-    const { pendingCostCard, selectedDiscardIds } = get();
+    const { pendingCostCard, selectedDiscardIds, selectedTopdeckIds } = get();
     if (!pendingCostCard) return;
     if (instanceId === pendingCostCard.instanceId) return; // can't discard the card being played
     const idx = selectedDiscardIds.indexOf(instanceId);
@@ -4128,7 +4392,10 @@ export const useGameStore = create<GameStore>((set, get) => {
       const next = [...selectedDiscardIds];
       next.splice(idx, 1);
       set({ selectedDiscardIds: next });
-    } else if (selectedDiscardIds.length < pendingCostCard.discardNeeded) {
+    } else if (!selectedTopdeckIds.includes(instanceId)
+      && selectedDiscardIds.length < pendingCostCard.discardNeeded) {
+      // Une carte déjà promise au REPLI ne peut pas être défaussée en plus :
+      // même main, deux coûts, un seul exemplaire.
       set({ selectedDiscardIds: [...selectedDiscardIds, instanceId] });
     }
   },
@@ -4146,11 +4413,33 @@ export const useGameStore = create<GameStore>((set, get) => {
     }
   },
 
+  /** REPLI : désigne (ou retire) une carte de la main à replacer sur le deck.
+   *
+   *  L'ordre des clics est CONSERVÉ et significatif — la première désignée
+   *  finira sur le dessus de la pile. Une carte déjà promise à la défausse ne
+   *  peut pas être repliée : elle ne peut pas payer les deux coûts, et le
+   *  moteur rejetterait l'action en silence. */
+  toggleTopdeckSelection: (instanceId) => {
+    const { pendingCostCard, selectedTopdeckIds, selectedDiscardIds } = get();
+    if (!pendingCostCard) return;
+    if (instanceId === pendingCostCard.instanceId) return; // la carte jouée ne se replie pas elle-même
+    const idx = selectedTopdeckIds.indexOf(instanceId);
+    if (idx !== -1) {
+      const next = [...selectedTopdeckIds];
+      next.splice(idx, 1);
+      set({ selectedTopdeckIds: next });
+    } else if (!selectedDiscardIds.includes(instanceId)
+      && selectedTopdeckIds.length < pendingCostCard.topdeckNeeded) {
+      set({ selectedTopdeckIds: [...selectedTopdeckIds, instanceId] });
+    }
+  },
+
   confirmCostPayment: () => {
-    const { gameState, pendingCostCard, selectedDiscardIds, selectedSacrificeIds } = get();
+    const { gameState, pendingCostCard, selectedDiscardIds, selectedSacrificeIds, selectedTopdeckIds } = get();
     if (!gameState || !pendingCostCard) return null;
     if (selectedDiscardIds.length !== pendingCostCard.discardNeeded) return null;
     if (selectedSacrificeIds.length !== pendingCostCard.sacrificeNeeded) return null;
+    if (selectedTopdeckIds.length !== pendingCostCard.topdeckNeeded) return null;
 
     const player = gameState.players[gameState.currentPlayerIndex];
     const card = player.hand.find(c => c.instanceId === pendingCostCard.instanceId);
@@ -4168,6 +4457,21 @@ export const useGameStore = create<GameStore>((set, get) => {
     // Now route through the standard targeting checks (creature/graveyard/
     // divination/selection/spell), exactly like playCardDirect / selectCardInHand
     // do after their canPlayCard check. Mirroring keeps the flow consistent.
+
+    // Le REPLI se paie DANS le moteur, donc après ces pickers — mais il change
+    // le dessus du deck, que Divination et Traque du destin donnent justement à
+    // voir. Sans cette vue anticipée, le joueur choisissait parmi les cartes
+    // d'AVANT son repli, et le moteur appliquait son index à une pile qui avait
+    // bougé : une carte pour une autre. On reconstruit donc le deck tel qu'il
+    // sera, dans le même ordre que le moteur (première désignée sur le dessus).
+    const deckApresRepli = selectedTopdeckIds.length > 0
+      ? [
+        ...selectedTopdeckIds
+          .map(id => player.hand.find(c => c.instanceId === id))
+          .filter((c): c is NonNullable<typeof c> => !!c),
+        ...player.deck,
+      ]
+      : player.deck;
 
     if (creatureNeedsTarget(card.card)) {
       const targets = getCreatureTargets(gameState, card.card);
@@ -4196,7 +4500,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       }
     }
     if (creatureNeedsDivination(card.card)) {
-      const deckCards = player.deck.slice(0, Math.min(3, player.deck.length));
+      const deckCards = deckApresRepli.slice(0, Math.min(3, deckApresRepli.length));
       if (deckCards.length > 0) {
         set({
           selectedCardInstanceId: instanceId,
@@ -4211,7 +4515,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     }
     if (creatureNeedsTraqueDuDestin(card.card)) {
       const x = getTraqueDuDestinX(card.card);
-      const deckCards = player.deck.slice(0, Math.min(x, player.deck.length));
+      const deckCards = deckApresRepli.slice(0, Math.min(x, deckApresRepli.length));
       if (deckCards.length > 0) {
         set({
           selectedCardInstanceId: instanceId,
@@ -4333,6 +4637,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       pendingCostCard: null,
       selectedDiscardIds: [],
       selectedSacrificeIds: [],
+      selectedTopdeckIds: [],
       selectedCardInstanceId: null,
     });
   },
