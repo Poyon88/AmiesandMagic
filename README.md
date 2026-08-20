@@ -36,6 +36,18 @@ Pour tester les webhooks en local :
 stripe listen --forward-to localhost:3000/api/stripe/webhook
 ```
 
+## Illustrations (modèles d'image)
+
+Quelle IA dessine réellement les cartes, et pourquoi ce n'est pas celle que le
+code laisse croire : **[docs/MODELES-IMAGE.md](docs/MODELES-IMAGE.md)**.
+
+Deux points à connaître avant d'y toucher :
+
+- **Le drapeau `highRes` ne fait rien.** La clé du projet n'a accès à aucun
+  modèle Imagen : la génération retombe sur Gemini, jamais en 2K.
+- **L'ordre des listes est l'ordre d'essai**, du plus récent au plus ancien. Un
+  nouveau modèle se met EN TÊTE, pas à la suite.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
