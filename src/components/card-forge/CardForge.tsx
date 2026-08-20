@@ -2195,7 +2195,7 @@ export default function CardForge() {
     setManualIllustrationPrompt(""); setManualExtraContext(""); setManualKeywords([]); setKeywordXValues({}); setKeywordModes({}); setCard(null);
     setEditedPrompt(null); setSaveResult(null);
     setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setAfY(1); setRfY(1); setGlY(1); setDcY(1); setFdaY(1); setRmRace(""); setRmClan(""); setAsRace(""); setConferAbilityId(""); setConferX(1); setConferY(1); setDeclenchementTriggers([]); setComposedCaps([]);
-    setManualLifeCost(0); setManualDiscardCost(0); setManualSacrificeCost(0); setManualExileCost(0);
+    setManualLifeCost(0); setManualDiscardCost(0); setManualSacrificeCost(0); setManualExileCost(0); setManualTopdeckCost(0);
     setCardImages(prev => Object.fromEntries(Object.entries(prev).filter(([k]) => k !== "manual_preview")));
   }, []);
 
@@ -2358,6 +2358,7 @@ export default function CardForge() {
    *  qui identifie la carte elle-même est remis à zéro. */
   const resetCardForm = useCallback((previewId: string) => {
     setCard(null);
+    setEditedPrompt(null);
     // Identité et texte
     setManualName("");
     setManualAbility("");
@@ -2373,6 +2374,7 @@ export default function CardForge() {
     setManualDiscardCost(0);
     setManualSacrificeCost(0);
     setManualExileCost(0);
+    setManualTopdeckCost(0);
     // Mots-clés et leur paramétrage
     setManualKeywords([]);
     setKeywordXValues({});
@@ -2631,7 +2633,18 @@ export default function CardForge() {
   }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, sfxExileFile, keywordModes, keywordGrantScope, keywordYValues, rmY, afY, rfY, glY, dcY, fdaY, rmRace, rmClan, asRace, invocCosts, invocRace, invocFaction, compagnonsCardIds, composedCaps, conferAbilityId, conferX, conferY, declenchementTriggers, resetCardForm]);
 
   const [generatingImage, setGeneratingImage] = useState(false);
-  const [editedPrompt, setEditedPrompt] = useState<string | null>(null);
+  // Édition manuelle du prompt affiché au centre, ATTACHÉE au texte source
+  // dont elle est partie.
+  //
+  // C'était un simple `string | null` qui MASQUAIT la source tant qu'il n'était
+  // pas remis à null à la main — et `resetCardForm`, lancé après l'ajout d'une
+  // carte, l'oubliait. Signalé en partie : on colle un nouveau prompt dans le
+  // champ de droite et le centre affiche encore celui de la carte précédente.
+  // Le remettre à zéro dans ce reset-là n'aurait réglé qu'un chemin sur deux :
+  // éditer le centre puis coller à droite reproduisait le défaut sans aucun
+  // reset. En liant l'édition à SA source, elle se périme d'elle-même dès que
+  // la source change, quel que soit le chemin.
+  const [editedPrompt, setEditedPrompt] = useState<{ source: string; texte: string } | null>(null);
 
   // Optional reference image for card illustration generation.
   // Used to inspire pose / composition / mood, not to copy literally.
@@ -3110,13 +3123,16 @@ export default function CardForge() {
               )}
               {(card?.illustrationPrompt || manualCard.illustrationPrompt) && (() => {
                 const basePrompt = card?.illustrationPrompt || manualCard.illustrationPrompt || "";
-                const currentPrompt = editedPrompt ?? basePrompt;
+                // L'édition ne vaut que pour la source dont elle est issue.
+                const currentPrompt = editedPrompt && editedPrompt.source === basePrompt
+                  ? editedPrompt.texte
+                  : basePrompt;
                 return (
                   <div style={{ maxWidth: 380, padding: "10px 14px", borderRadius: 8, background: "#fff", border: "1px solid #e0e0e0", fontFamily: "'Crimson Text',serif", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
                     <div style={{ fontSize: 8, color: "#aaa", letterSpacing: 1.5, marginBottom: 4, fontFamily: "'Cinzel',serif" }}>{tf('illustration_prompt_label')}</div>
                     <textarea
                       value={currentPrompt}
-                      onChange={e => setEditedPrompt(e.target.value)}
+                      onChange={e => setEditedPrompt({ source: basePrompt, texte: e.target.value })}
                       rows={4}
                       style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #e0e0e0", background: "#f8f8f8", color: "#555", fontFamily: "'Crimson Text',serif", fontSize: 11, lineHeight: 1.5, resize: "vertical" }}
                     />
@@ -3158,7 +3174,7 @@ export default function CardForge() {
                         fontSize: 9, background: "none", border: "none",
                         color: "#27ae60", cursor: "pointer", fontFamily: "'Cinzel',serif",
                       }}>{`[${tf('copy')}]`}</button>
-                      {editedPrompt !== null && editedPrompt !== basePrompt && (
+                      {currentPrompt !== basePrompt && (
                         <button onClick={() => setEditedPrompt(null)} style={{
                           fontSize: 9, background: "none", border: "none",
                           color: "#e74c3c", cursor: "pointer", fontFamily: "'Cinzel',serif",
