@@ -31,6 +31,11 @@ import {
   creatureNeedsDivination,
   cardNeedsCreuser,
   getCreuserCards,
+  cardNeedsPresage,
+  PRESAGE_REVEAL_COUNT,
+  creatureCanCastLearnedSpell,
+  creatureNeedsApprentissage,
+  handSpellsFor,
   chantBonusForSpell,
   creatureNeedsTraqueDuDestin,
   getTraqueDuDestinX,
@@ -54,6 +59,98 @@ import {
 import { MAX_HAND_SIZE } from "@/lib/game/constants";
 import { attackerRemovedItself } from "@/lib/game/attack-wave-order";
 import { drawnCardIds } from "@/lib/game/drawn-cards";
+
+/** PRÉSAGE — prépare la modale : les cartes du dessus du deck DANS LE DÉSORDRE,
+ *  accompagnées de la table qui retraduit la position cliquée en index réel.
+ *
+ *  `Math.random()` est ici légitime, contrairement à la règle du moteur : cette
+ *  permutation est un habillage strictement LOCAL. Seul le contrôleur voit la
+ *  modale, et l'action diffusée ne porte que l'index RÉEL — elle n'entre donc
+ *  jamais dans l'état de jeu, ne touche pas `rngState`, et les deux clients
+ *  n'ont aucun besoin de tomber d'accord dessus.
+ *
+ *  Renvoie `null` quand il n'y a rien à révéler (deck vide) : l'appelant doit
+ *  alors laisser passer, sans ouvrir de modale vide. */
+function presagePickerState(
+  deck: CardInstance[],
+): { divinationCards: CardInstance[]; deckPickerOrder: number[] } | null {
+  const reelles = deck.slice(0, PRESAGE_REVEAL_COUNT);
+  if (reelles.length === 0) return null;
+  const ordre = reelles.map((_, i) => i);
+  for (let i = ordre.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [ordre[i], ordre[j]] = [ordre[j], ordre[i]];
+  }
+  return { divinationCards: ordre.map((i) => reelles[i]), deckPickerOrder: ordre };
+}
+
+/** Cadence des points SÉQUENTIELS, par type.
+ *
+ *  Les dégâts et les soins passent vite : leur popup est bref, 140 ms suffisent
+ *  à les distinguer à l'œil.
+ *
+ *  Les BOOSTS ont leur propre cadence, bien plus lente, et c'est délibéré :
+ *  `DamageOverlay` les fait déjà durer ~4,9 s (ralentis ×1,7 pour rester
+ *  lisibles). À 140 ms, les trois compteurs d'un Esprit de corps se
+ *  superposaient donc presque intégralement — on voyait une bouillie de « +1 »
+ *  au lieu de compter la troupe qui se renforce cran par cran.
+ *
+ *  C'est LE réglage à toucher pour accélérer ou ralentir l'animation des
+ *  boosts ; le son suit automatiquement, il lit les mêmes délais. */
+const SEQ_STEP_MS = 140;
+const SEQ_STEP_BUFF_MS = 550;
+
+const seqStepFor = (type: string): number => (type === "buff" ? SEQ_STEP_BUFF_MS : SEQ_STEP_MS);
+
+/** Décale une série de points selon la cadence propre à chacun, et rend le
+ *  délai du DERNIER — c'est lui qui décide du temps à réserver à la phase.
+ *  Un simple `i * pas` ne suffit plus dès que deux cadences se mélangent. */
+function echelonnerPoints(hits: Array<{ type: string }>): { delais: number[]; dernier: number } {
+  let cumul = 0;
+  const delais: number[] = [];
+  for (const h of hits) {
+    delais.push(cumul);
+    cumul += seqStepFor(h.type);
+  }
+  return { delais, dernier: delais.length > 0 ? delais[delais.length - 1] : 0 };
+}
+
+/** Retrouve une carte JOUABLE par son instanceId, quelle que soit sa provenance.
+ *
+ *  La main d'abord — le cas de tout le jeu. Puis les sorts MÉMORISÉS par les
+ *  créatures du plateau (Apprentissage) : ceux-là ne vivent dans aucune zone,
+ *  et toute la chaîne « sélectionner → payer les coûts → choisir les cibles →
+ *  envoyer » les cherchait en main, donc ne les trouvait jamais.
+ *
+ *  Un seul point de résolution plutôt qu'une quinzaine de `hand.find` élargis
+ *  un à un : c'est ce qui garantit qu'un chemin oublié se voie tout de suite
+ *  (la carte reste introuvable) au lieu de se comporter à moitié. */
+function carteJouable(player: PlayerState, instanceId: string | null | undefined): CardInstance | undefined {
+  if (!instanceId) return undefined;
+  const enMain = player.hand.find((c) => c.instanceId === instanceId);
+  if (enMain) return enMain;
+  for (const creature of player.board) {
+    if (creature.apprentissageSpell?.instanceId === instanceId) return creature.apprentissageSpell;
+  }
+  return undefined;
+}
+
+/** La créature qui a mémorisé ce sort, s'il en est un. Sert à estampiller
+ *  l'action sortante de `learnedFromInstanceId`. */
+function apprenanteDuSort(player: PlayerState, instanceId: string | null | undefined): CardInstance | undefined {
+  if (!instanceId) return undefined;
+  return player.board.find((c) => c.apprentissageSpell?.instanceId === instanceId);
+}
+
+/** Position cliquée dans la modale → index réel attendu par le moteur.
+ *  Sans table de permutation (Divination, Creuser, Traque), c'est l'identité. */
+export function indexReelDuPicker(
+  positionCliquee: number,
+  ordre: number[] | null,
+): number {
+  if (!ordre) return positionCliquee;
+  return ordre[positionCliquee] ?? positionCliquee;
+}
 
 // Overlay de ciblage pour un déclencheur interactif en attente (Remontée mort/
 // retour au tour du contrôleur). Si le 1er pending appartient au joueur local
@@ -362,6 +459,24 @@ interface GameStore {
   sfxPreAnnouncedInstanceId: string | null;
   markOnPlaySfxAnnounced: (instanceId: string) => void;
   divinationCards: CardInstance[];
+  /** PRÉSAGE — traduction « position AFFICHÉE → index RÉEL dans le deck ».
+   *
+   *  Présage montre les cartes DANS LE DÉSORDRE : sans cette table, l'index que
+   *  le joueur clique ne désignerait plus la même carte que celle que le moteur
+   *  lit dans `deck.splice(0, 3)`, et la bonne réponse deviendrait aléatoire.
+   *
+   *  `null` = ordre réel, c'est-à-dire le comportement inchangé de Divination,
+   *  Creuser et Traque du destin, qui partagent la même modale.
+   *
+   *  La permutation est purement LOCALE : seul le contrôleur voit la modale, et
+   *  l'action diffusée ne porte que l'index réel. Elle n'entre donc ni dans
+   *  l'état de jeu, ni dans le hash de synchro, et ne consomme pas la RNG
+   *  partagée. */
+  deckPickerOrder: number[] | null;
+  /** APPRENTISSAGE — la modale partagée sert ici à choisir un sort de la MAIN,
+   *  pas une carte du deck. Porte l'instanceId de la créature qui apprend ;
+   *  `null` = usage habituel (Divination, Creuser, Traque, Présage). */
+  learnPickerFor: string | null;
   selectionCards: Card[];
   tactiqueAvailableKeywords: string[];
   tactiqueMaxSelections: number;
@@ -510,6 +625,9 @@ interface GameStore {
   /** Clic sur le compteur d'Épargne : ouvre le picker. Renvoie toujours null
    *  (rien n'est diffusé tant que le joueur n'a pas choisi). */
   openEpargnePicker: () => GameAction | null;
+  /** APPRENTISSAGE — lance le sort mémorisé par cette créature (coûts et
+   *  ciblage passent par la chaîne habituelle des sorts). */
+  activateLearnedSpell: (creatureInstanceId: string) => GameAction | null;
   activateTap: (sourceInstanceId: string, instanceIdx: number) => GameAction | null;
   activateTapComposed: (sourceInstanceId: string, capUid: string) => GameAction | null;
   confirmMulligan: (selectedInstanceIds: string[]) => GameAction | null;
@@ -919,7 +1037,7 @@ function generateEffectLog(
 
   if (action.type === "play_card") {
     const player = oldState.players[oldState.currentPlayerIndex];
-    const cardInst = player.hand.find(c => c.instanceId === action.cardInstanceId);
+    const cardInst = carteJouable(player, action.cardInstanceId);
     if (cardInst) add(`📥 ${cardInst.card.name} joué`);
   }
 
@@ -1182,7 +1300,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     carriedMap: Record<string, string>,
   ): boolean => {
     const player = gs.players[gs.currentPlayerIndex];
-    const cardInst = player.hand.find(c => c.instanceId === instanceId);
+    const cardInst = carteJouable(player, instanceId);
     if (!cardInst || cardInst.card.card_type !== "spell" || !cardInst.card.spell_keywords) return false;
     const tryOpen = (kwId: string, getter: (x: number) => Card[]): boolean => {
       const found = cardInst.card.spell_keywords!.find(k => k.id === kwId);
@@ -1228,8 +1346,17 @@ export const useGameStore = create<GameStore>((set, get) => {
     carriedMap: Record<string, string>,
   ): boolean => {
     const player = gs.players[gs.currentPlayerIndex];
-    const cardInst = player.hand.find(c => c.instanceId === instanceId);
+    const cardInst = carteJouable(player, instanceId);
     if (!cardInst || cardInst.card.card_type !== "spell") return false;
+    // PRÉSAGE sur un sort : même modale, mais alimentée par le DESSUS du deck
+    // et dans le désordre. Testé avant Creuser — un sort ne porte jamais les
+    // deux (le champ d'action unique ne saurait pas les départager).
+    if (cardNeedsPresage(cardInst.card)) {
+      const picker = presagePickerState(player.deck);
+      if (!picker) return false;
+      set({ targetingMode: "divination", ...picker, validTargets: [], collectedTargetMap: carriedMap });
+      return true;
+    }
     if (!cardNeedsCreuser(cardInst.card)) return false;
     // Même plafond qu'à la résolution : X + bonus de Chant.
     const x = ((cardInst.card.spell_keywords ?? []).find(k => k.id === "creuser")?.amount ?? 1)
@@ -1239,6 +1366,8 @@ export const useGameStore = create<GameStore>((set, get) => {
     set({
       targetingMode: "divination",
       divinationCards: deckCards,
+      deckPickerOrder: null,
+      learnPickerFor: null,
       validTargets: [],
       collectedTargetMap: carriedMap,
     });
@@ -1265,7 +1394,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     },
   ): boolean => {
     const player = gs.players[gs.currentPlayerIndex];
-    const cardInst = player.hand.find(c => c.instanceId === instanceId);
+    const cardInst = carteJouable(player, instanceId);
     if (!cardInst || cardInst.card.card_type !== "creature") return false;
     const card = cardInst.card;
     let choices: Card[] | null = null;
@@ -1310,6 +1439,8 @@ export const useGameStore = create<GameStore>((set, get) => {
   pendingTriggerNeeded: 1,
   pendingTriggerPicked: [],
   divinationCards: [],
+  deckPickerOrder: null,
+  learnPickerFor: null,
   selectionCards: [],
   tactiqueAvailableKeywords: [],
   tactiqueMaxSelections: 0,
@@ -1455,6 +1586,19 @@ export const useGameStore = create<GameStore>((set, get) => {
     // Merge any pending alternative-cost selections (discards / sacrifices /
     // replis) into the play_card action — single chokepoint so callers don't
     // each have to remember to forward the IDs.
+    // APPRENTISSAGE — même point de passage unique : si la carte jouée est un
+    // sort MÉMORISÉ, l'action doit dire de quelle créature il vient. L'estampiller
+    // ici plutôt qu'à chaque appelant, c'est la garantie qu'aucun chemin (coûts,
+    // ciblage simple, ciblage multiple, enchaînement de pickers) ne l'oublie —
+    // et l'oublier ferait chercher le sort en main, où il n'est plus.
+    if (action.type === "play_card" && !action.learnedFromInstanceId) {
+      const source = apprenanteDuSort(
+        gameState.players[gameState.currentPlayerIndex],
+        action.cardInstanceId,
+      );
+      if (source) action = { ...action, learnedFromInstanceId: source.instanceId };
+    }
+
     if (action.type === "play_card") {
       const { selectedDiscardIds, selectedSacrificeIds, selectedTopdeckIds } = get();
       if (selectedDiscardIds.length > 0 || selectedSacrificeIds.length > 0 || selectedTopdeckIds.length > 0) {
@@ -1474,7 +1618,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     let spellEvent: SpellCastEvent | null = null;
     if (action.type === "play_card") {
       const player = gameState.players[gameState.currentPlayerIndex];
-      const cardInst = player.hand.find((c) => c.instanceId === action.cardInstanceId);
+      const cardInst = carteJouable(player, action.cardInstanceId);
       if (cardInst && cardInst.card.card_type === "spell") {
         // Collect every target this cast references so the overlay can draw
         // arrows from the spell card to each target on the board.
@@ -1657,16 +1801,32 @@ export const useGameStore = create<GameStore>((set, get) => {
       const isLocal = newState.players[+m[1]]?.id === localPlayerId;
       return { ...h, targetInstanceId: isLocal ? "friendly_hero" : "enemy_hero" };
     });
-    const SEQ_STEP_MS = 140; // décalage par point (~130–160ms = points distincts à l'œil)
     const seqTargets = new Set(seqHits.map((h) => h.targetInstanceId));
-    const seqEvents: DamageEvent[] = seqHits.map((h, i) => ({
-      targetId: h.targetInstanceId,
-      amount: 1,
-      type: h.type,
-      ...getElementCenter(h.targetInstanceId),
-      delayMs: i * SEQ_STEP_MS,
-    }));
-    const SEQ_PHASE_EXTRA_MS = seqEvents.length > 0 ? (seqEvents.length - 1) * SEQ_STEP_MS + 500 : 0;
+    const { delais: seqDelais, dernier: seqDernier } = echelonnerPoints(seqHits);
+    /** Teinte d'un boost séquentiel : la couleur du déclencheur, comme pour le
+     *  popup agrégé qu'il remplace (sinon un boost de fin de tour perdrait son
+     *  vert en passant par ce canal). */
+    const couleurBoost = (instanceId: string): string | undefined => {
+      for (const p of newState.players) {
+        const inst = p.board.find((c) => c.instanceId === instanceId)
+          ?? p.hand.find((c) => c.instanceId === instanceId);
+        if (inst) return keywordModeColor(inst.lastBuffMode) ?? undefined;
+      }
+      return undefined;
+    };
+    const seqEvents: DamageEvent[] = seqHits.map((h, i) => {
+      const couleur = h.type === "buff" ? couleurBoost(h.targetInstanceId) : undefined;
+      return {
+        targetId: h.targetInstanceId,
+        amount: 1,
+        type: h.type,
+        ...(h.label ? { label: h.label } : {}),
+        ...(couleur ? { color: couleur } : {}),
+        ...getElementCenter(h.targetInstanceId),
+        delayMs: seqDelais[i],
+      };
+    });
+    const SEQ_PHASE_EXTRA_MS = seqEvents.length > 0 ? seqDernier + 500 : 0;
 
     // Sorts relancés (capacité Relancer) : le moteur a enregistré chaque relance
     // dans newState.recastEvents {card, targetIds}, dans l'ordre de relance. On
@@ -1889,11 +2049,11 @@ export const useGameStore = create<GameStore>((set, get) => {
     if (get().sfxPreAnnouncedInstanceId) set({ sfxPreAnnouncedInstanceId: null });
 
     // Build SFX events
-    const sfxEvents: { type: string; cardSfxUrl?: string }[] = [];
+    const sfxEvents: { type: string; cardSfxUrl?: string; delayMs?: number }[] = [];
 
     if (action.type === "play_card") {
       const player = gameState.players[gameState.currentPlayerIndex];
-      const cardInst = player.hand.find((c) => c.instanceId === action.cardInstanceId);
+      const cardInst = carteJouable(player, action.cardInstanceId);
       if (cardInst) {
         if (cardInst.card.card_type === "spell") {
           sfxEvents.push({ type: "spell_cast" });
@@ -1913,13 +2073,27 @@ export const useGameStore = create<GameStore>((set, get) => {
     }
 
     // SFX from damage events (deduplicate by type)
+    //
+    // Exception : quand des BOOSTS séquentiels sont en jeu (Esprit de corps), le
+    // son unique de l'agrégat céderait sa place — on veut un son PAR compteur,
+    // décalé comme les popups. On le neutralise ici et on les pousse juste après.
+    const seqBuffs = seqHits.filter((h) => h.type === "buff");
     const dmgSfxSeen = new Set<string>();
+    if (seqBuffs.length > 0) dmgSfxSeen.add("buff");
     for (const de of dmgEvents) {
       const sfxType = de.type === "shield" ? "divine_shield" : de.type;
       if (["damage", "heal", "buff", "debuff", "divine_shield", "poison", "dodge", "paralyze", "resurrect"].includes(sfxType) && !dmgSfxSeen.has(sfxType)) {
         dmgSfxSeen.add(sfxType);
         sfxEvents.push({ type: sfxType });
       }
+    }
+    // Un son de boost par compteur, à la même cadence que les popups : c'est ce
+    // qui fait entendre la troupe se renforcer cran par cran plutôt qu'un seul
+    // « pling » pour trois points.
+    // On relit les délais des ÉVÉNEMENTS eux-mêmes plutôt que de les recalculer :
+    // un son qui dériverait du popup qu'il accompagne s'entendrait aussitôt.
+    for (const ev of seqEvents) {
+      if (ev.type === "buff") sfxEvents.push({ type: "buff", delayMs: ev.delayMs });
     }
 
     // SFX from dead creatures
@@ -1973,7 +2147,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       let carriesTempete = false;
       if (action.type === "play_card") {
         const player = gameState.players[gameState.currentPlayerIndex];
-        const playedCard = player.hand.find((c) => c.instanceId === action.cardInstanceId);
+        const playedCard = carteJouable(player, action.cardInstanceId);
         carriesTempete = playedCard
           ? playedCard.card.keywords.includes("tempete" as import("@/lib/game/types").Keyword) ||
             (playedCard.card.spell_keywords ?? []).some((k) => k.id === "tempete")
@@ -2262,7 +2436,10 @@ export const useGameStore = create<GameStore>((set, get) => {
       }
     }
 
-    type SfxEvt = { type: string; cardSfxUrl?: string };
+    /** `delayMs` : décalage de lecture. Sert aux séries (un son par compteur
+     *  d'Esprit de corps) — sans lui les N sons partiraient dans le même tick et
+     *  ne s'entendraient que comme un seul, plus fort. */
+    type SfxEvt = { type: string; cardSfxUrl?: string; delayMs?: number };
     const overlaySfx: SfxEvt[] = [];
     const impactSfx: SfxEvt[] = [];
     const deathSfx: SfxEvt[] = [];
@@ -2294,7 +2471,15 @@ export const useGameStore = create<GameStore>((set, get) => {
       const audioState = useAudioStore.getState();
       if (!audioState.userHasInteracted || audioState.settings.sfxMuted) return;
       const engine = SfxEngine.getInstance();
+      // Les sons DÉCALÉS sortent du lot : ils ne peuvent servir ni d'ancre de
+      // chaîne ni de lecture immédiate. On les programme à part.
+      for (const evt of events) {
+        if (!evt.delayMs) continue;
+        const url = evt.cardSfxUrl || audioState.standardSfxUrls[evt.type];
+        if (url) setTimeout(() => engine.play(url), evt.delayMs);
+      }
       const resolved = events
+        .filter((evt) => !evt.delayMs)
         .map((evt) => evt.cardSfxUrl || audioState.standardSfxUrls[evt.type])
         .filter(Boolean) as string[];
       if (chained.length === 0) {
@@ -2752,7 +2937,8 @@ export const useGameStore = create<GameStore>((set, get) => {
     // (qui NE repassent PAS par staggerByTarget, sinon leur delayMs serait
     // écrasé). Les autres types (shield/poison/empower) restent intacts.
     const nonSeqImpactEvents = impactOnlyEvents.filter(
-      (ev) => !(seqTargets.has(ev.targetId) && (ev.type === "damage" || ev.type === "heal")),
+      (ev) => !(seqTargets.has(ev.targetId)
+        && (ev.type === "damage" || ev.type === "heal" || ev.type === "buff")),
     );
     // Fin de tour : ordonner les popups par index plateau de la créature SOURCE
     // (gauche→droite, comme le moteur résout) plutôt que par ordre d'apparition
@@ -2839,6 +3025,10 @@ export const useGameStore = create<GameStore>((set, get) => {
       /** Points séquentiels de l'intervalle : ils s'égrènent, la vague doit
        *  durer assez pour tous les sortir avant la phase de mort. */
       seqCount: number;
+      /** Délai du DERNIER point de l'intervalle. Les cadences diffèrent selon
+       *  le type (les boosts sont bien plus lents que les dégâts) : un
+       *  `count × pas` mentirait dès qu'une vague les mélange. */
+      seqDuree: number;
     };
 
     const construireVague = (f: typeof frontieres[number]): Vague => {
@@ -2881,12 +3071,14 @@ export const useGameStore = create<GameStore>((set, get) => {
       // Points séquentiels de l'intervalle (scatter, Tempête). Ils ne se lisent
       // pas dans l'état — registre plat alimenté coup par coup — donc aucun diff
       // ne les couperait : c'est le rang porté par la frontière qui les tranche.
-      const seq: DamageEvent[] = seqHitsDeLIntervalle(f).map((h, i) => {
+      const pointsIntervalle = seqHitsDeLIntervalle(f);
+      const { delais: delaisIntervalle, dernier: dernierIntervalle } = echelonnerPoints(pointsIntervalle);
+      const seq: DamageEvent[] = pointsIntervalle.map((h, i) => {
         const m = /^__hero_(\d)__$/.exec(h.targetInstanceId);
         const targetId = m
           ? (newState.players[+m[1]]?.id === localPlayerId ? "friendly_hero" : "enemy_hero")
           : h.targetInstanceId;
-        return { targetId, amount: 1, type: h.type, ...getElementCenter(targetId), delayMs: i * SEQ_STEP_MS };
+        return { targetId, amount: 1, type: h.type, ...getElementCenter(targetId), delayMs: delaisIntervalle[i] };
       });
       const seqCibles = new Set(seq.map((e) => e.targetId));
       // Même règle qu'en vague 1 : pour une cible touchée point par point, on
@@ -2904,6 +3096,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         dead,
         hasDeaths,
         seqCount: seq.length,
+        seqDuree: dernierIntervalle,
       };
     };
 
@@ -2919,7 +3112,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       const aPeindre = v.dmg.length > 0 || v.hasDeaths;
       if (!aPeindre) return c;
       setTimeout(() => set({ gameState: v.impactState, damageEvents: v.dmg }), c);
-      c += IMPACT_MS + (v.seqCount > 0 ? (v.seqCount - 1) * SEQ_STEP_MS + 500 : 0);
+      c += IMPACT_MS + (v.seqCount > 0 ? v.seqDuree + 500 : 0);
       if (v.hasDeaths) {
         setTimeout(() => set({
           gameState: v.finState,
@@ -3228,10 +3421,15 @@ export const useGameStore = create<GameStore>((set, get) => {
   playCardDirect: (instanceId, boardPosition) => {
     const { gameState } = get();
     if (!gameState) return null;
-    if (!canPlayCard(gameState, instanceId)) return null;
+    const joueurCourant = gameState.players[gameState.currentPlayerIndex];
+    // Même dérogation qu'au-dessus pour un sort MÉMORISÉ.
+    const apprenanteDirecte = apprenanteDuSort(joueurCourant, instanceId);
+    if (apprenanteDirecte
+      ? !creatureCanCastLearnedSpell(gameState, apprenanteDirecte.instanceId)
+      : !canPlayCard(gameState, instanceId)) return null;
 
     const player = gameState.players[gameState.currentPlayerIndex];
-    const card = player.hand.find(c => c.instanceId === instanceId);
+    const card = carteJouable(player, instanceId);
     // Alternative-cost gating: if the card requires discards, sacrifices or
     // replis, open the cost-payment flow first. Targeting (creature/graveyard/
     // etc.) resumes after confirmCostPayment.
@@ -3322,6 +3520,23 @@ export const useGameStore = create<GameStore>((set, get) => {
           validTargets: [],
           targetingMode: "divination",
           divinationCards: deckCards,
+          deckPickerOrder: null,
+        learnPickerFor: null,
+          pendingBoardPosition: boardPosition ?? null,
+        });
+        return null;
+      }
+    }
+
+    if (card && cardNeedsPresage(card.card)) {
+      const picker = presagePickerState(player.deck);
+      if (picker) {
+        set({
+          selectedCardInstanceId: instanceId,
+          selectedAttackerInstanceId: null,
+          validTargets: [],
+          targetingMode: "divination",
+          ...picker,
           pendingBoardPosition: boardPosition ?? null,
         });
         return null;
@@ -3337,6 +3552,8 @@ export const useGameStore = create<GameStore>((set, get) => {
           validTargets: [],
           targetingMode: "divination",
           divinationCards: deckCards,
+          deckPickerOrder: null,
+        learnPickerFor: null,
           pendingBoardPosition: boardPosition ?? null,
         });
         return null;
@@ -3353,6 +3570,8 @@ export const useGameStore = create<GameStore>((set, get) => {
           validTargets: [],
           targetingMode: "divination",
           divinationCards: deckCards,
+          deckPickerOrder: null,
+        learnPickerFor: null,
           pendingBoardPosition: boardPosition ?? null,
         });
         return null;
@@ -3422,10 +3641,16 @@ export const useGameStore = create<GameStore>((set, get) => {
     if (!gameState) return null;
 
     const player = gameState.players[gameState.currentPlayerIndex];
-    const card = player.hand.find((c) => c.instanceId === instanceId);
+    const card = carteJouable(player, instanceId);
     if (!card) return null;
 
-    if (!canPlayCard(gameState, instanceId)) return null;
+    // APPRENTISSAGE : un sort mémorisé n'est pas en main, `canPlayCard` le
+    // déclarerait donc injouable. Son pendant vérifie les mêmes coûts PLUS les
+    // gardes d'activation de la créature (engagée, paralysée, mal d'invocation).
+    const apprenanteIci = apprenanteDuSort(player, instanceId);
+    if (apprenanteIci
+      ? !creatureCanCastLearnedSpell(gameState, apprenanteIci.instanceId)
+      : !canPlayCard(gameState, instanceId)) return null;
 
     // Alternative-cost gating — see playCardDirect for the same pattern.
     {
@@ -3498,6 +3723,49 @@ export const useGameStore = create<GameStore>((set, get) => {
           validTargets: [],
           targetingMode: "divination",
           divinationCards: deckCards,
+          deckPickerOrder: null,
+        learnPickerFor: null,
+          pendingBoardPosition: null,
+        });
+        return null;
+      }
+    }
+
+    // APPRENTISSAGE : la modale sert ici à choisir un sort de la MAIN à
+    // mémoriser. `learnPickerFor` la distingue des pickers de DECK, qui
+    // partagent le même mode d'affichage.
+    if (creatureNeedsApprentissage(card.card)) {
+      const sorts = handSpellsFor(player);
+      if (sorts.length > 0) {
+        set({
+          selectedCardInstanceId: instanceId,
+          selectedAttackerInstanceId: null,
+          validTargets: [],
+          targetingMode: "divination",
+          divinationCards: sorts,
+          deckPickerOrder: null,
+          learnPickerFor: instanceId,
+          pendingBoardPosition: null,
+        });
+        return null;
+      }
+      // Aucun sort en main : on pose la créature sans rien apprendre.
+    }
+
+    // PRÉSAGE : même modale que Divination, mais dans le DÉSORDRE. Sur un sort
+    // qui réclame aussi une cible, on laisse le bloc de ciblage passer d'abord
+    // et la modale est rouverte par `openDeckPickerIfNeeded` — même précaution
+    // que Creuser (bug « Corde tendue »).
+    const presageApresCiblage = card.card.card_type === "spell" && needsTarget(card.card);
+    if (cardNeedsPresage(card.card) && !presageApresCiblage) {
+      const picker = presagePickerState(player.deck);
+      if (picker) {
+        set({
+          selectedCardInstanceId: instanceId,
+          selectedAttackerInstanceId: null,
+          validTargets: [],
+          targetingMode: "divination",
+          ...picker,
           pendingBoardPosition: null,
         });
         return null;
@@ -3514,6 +3782,8 @@ export const useGameStore = create<GameStore>((set, get) => {
           validTargets: [],
           targetingMode: "divination",
           divinationCards: deckCards,
+          deckPickerOrder: null,
+        learnPickerFor: null,
           pendingBoardPosition: null,
         });
         return null;
@@ -3532,6 +3802,8 @@ export const useGameStore = create<GameStore>((set, get) => {
           validTargets: [],
           targetingMode: "divination",
           divinationCards: deckCards,
+          deckPickerOrder: null,
+        learnPickerFor: null,
           pendingBoardPosition: null,
         });
         return null;
@@ -3890,7 +4162,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         });
       } else {
         const nextSlot = spellTargetSlots[nextIndex];
-        const card = gs?.players[gs.currentPlayerIndex].hand.find(c => c.instanceId === selectedCardInstanceId);
+        const card = gs ? carteJouable(gs.players[gs.currentPlayerIndex], selectedCardInstanceId) : undefined;
         // If the next slot targets a graveyard, switch to graveyard mode
         // so the UI surfaces the cimetière picker instead of board targets.
         if (nextSlot.type === "friendly_graveyard" || nextSlot.type === "friendly_graveyard_to_board") {
@@ -3918,7 +4190,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       // Effet composé multi-cibles "au choix" : on collecte N cibles avant de jouer.
       if (gs) {
         const player0 = gs.players[gs.currentPlayerIndex];
-        const cardInst0 = player0.hand.find(c => c.instanceId === selectedCardInstanceId);
+        const cardInst0 = carteJouable(player0, selectedCardInstanceId);
         const choice = cardInst0 ? getCreatureComposedChoice(cardInst0.card) : null;
         if (choice && choice.count >= 2) {
           const collected = [...get().creatureComposedCollected, targetId];
@@ -3943,7 +4215,7 @@ export const useGameStore = create<GameStore>((set, get) => {
 
       if (gs) {
         const player = gs.players[gs.currentPlayerIndex];
-        const cardInst = player.hand.find(c => c.instanceId === selectedCardInstanceId);
+        const cardInst = carteJouable(player, selectedCardInstanceId);
         if (cardInst && cardInst.card.keywords.includes("tactique" as import("@/lib/game/types").Keyword)) {
           const grantable = cardInst.card.keywords.filter(kw => kw !== "tactique");
           const x = Math.max(1, Math.floor(cardInst.card.mana_cost / 3));
@@ -4044,7 +4316,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     } else if (targetingMode === "graveyard" && selectedCardInstanceId) {
       const { pendingBoardPosition, spellTargetSlots, currentTargetSlotIndex, collectedTargetMap, gameState: gs } = get();
       // Check if this is a spell graveyard targeting
-      const cardInHand = gs?.players[gs.currentPlayerIndex].hand.find(c => c.instanceId === selectedCardInstanceId);
+      const cardInHand = gs ? carteJouable(gs.players[gs.currentPlayerIndex], selectedCardInstanceId) : undefined;
       if (cardInHand?.card.card_type === "spell" && spellTargetSlots.length > 0) {
         const currentSlot = spellTargetSlots[currentTargetSlotIndex] ?? spellTargetSlots[0];
         const slot = currentSlot.slot ?? "kw_0";
@@ -4115,11 +4387,18 @@ export const useGameStore = create<GameStore>((set, get) => {
         type: "tap_activate",
         sourceInstanceId: get().pendingTapSourceId!,
         instanceIdx: get().pendingTapInstanceIdx!,
-        divinationChoiceIndex: parseInt(targetId) || 0,
+        // Présage montre les cartes dans le désordre : la position cliquée est
+        // retraduite en index réel du deck (identité pour les autres pickers).
+        divinationChoiceIndex: indexReelDuPicker(parseInt(targetId) || 0, get().deckPickerOrder),
+        // Apprentissage : c'est un SORT DE LA MAIN qui est désigné, pas une
+        // carte du deck — on transmet son instanceId, sans ambiguïté possible.
+        ...(get().learnPickerFor
+          ? { learnSpellInstanceId: get().divinationCards[parseInt(targetId) || 0]?.instanceId }
+          : {}),
       });
     } else if (targetingMode === "divination" && selectedCardInstanceId) {
       const { pendingBoardPosition, gameState: gs } = get();
-      const choiceIndex = parseInt(targetId) || 0;
+      const choiceIndex = indexReelDuPicker(parseInt(targetId) || 0, get().deckPickerOrder);
       // Chain into a creature-side selection picker if applicable.
       if (gs && openCreaturePickerIfNeeded(gs, selectedCardInstanceId, {
         divinationChoiceIndex: choiceIndex,
@@ -4132,10 +4411,14 @@ export const useGameStore = create<GameStore>((set, get) => {
       // DERNIER, et sans ce report la cible collectée juste avant serait perdue —
       // l'effet ciblé repartait à vide.
       const carte = get().collectedTargetMap;
+      const sortAppris = get().learnPickerFor
+        ? get().divinationCards[parseInt(targetId) || 0]?.instanceId
+        : undefined;
       return get().dispatchAction({
         type: "play_card",
         cardInstanceId: selectedCardInstanceId,
         divinationChoiceIndex: choiceIndex,
+        ...(sortAppris ? { learnSpellInstanceId: sortAppris } : {}),
         ...(Object.keys(carte).length > 0 ? { targetMap: carte } : {}),
         boardPosition: pendingBoardPosition ?? undefined,
       });
@@ -4172,7 +4455,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       });
     } else if (targetingMode === "selection" && selectedCardInstanceId) {
       const { pendingBoardPosition, gameState: gs, collectedTargetMap, pendingCreatureChain } = get();
-      const cardInHand = gs?.players[gs.currentPlayerIndex].hand.find(c => c.instanceId === selectedCardInstanceId);
+      const cardInHand = gs ? carteJouable(gs.players[gs.currentPlayerIndex], selectedCardInstanceId) : undefined;
       const cardId = parseInt(targetId) || 0;
       if (cardInHand?.card.card_type === "spell") {
         // Spell selection: pass card ID via targetMap. collectedTargetMap
@@ -4291,6 +4574,8 @@ export const useGameStore = create<GameStore>((set, get) => {
       targetingMode: "none",
       pendingBoardPosition: null,
       divinationCards: [],
+      deckPickerOrder: null,
+      learnPickerFor: null,
       tactiqueAvailableKeywords: [],
       tactiqueMaxSelections: 0,
       pendingTargetInstanceId: null,
@@ -4442,7 +4727,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     if (selectedTopdeckIds.length !== pendingCostCard.topdeckNeeded) return null;
 
     const player = gameState.players[gameState.currentPlayerIndex];
-    const card = player.hand.find(c => c.instanceId === pendingCostCard.instanceId);
+    const card = carteJouable(player, pendingCostCard.instanceId);
     if (!card) {
       get().cancelCostPayment();
       return null;
@@ -4499,6 +4784,22 @@ export const useGameStore = create<GameStore>((set, get) => {
         return null;
       }
     }
+    if (cardNeedsPresage(card.card)) {
+      // `deckApresRepli` et non `player.deck` : le Repli vient de remettre des
+      // cartes sur le DESSUS, et ce sont celles-là que Présage révélera.
+      const picker = presagePickerState(deckApresRepli);
+      if (picker) {
+        set({
+          selectedCardInstanceId: instanceId,
+          selectedAttackerInstanceId: null,
+          validTargets: [],
+          targetingMode: "divination",
+          ...picker,
+          pendingBoardPosition: boardPosition,
+        });
+        return null;
+      }
+    }
     if (creatureNeedsDivination(card.card)) {
       const deckCards = deckApresRepli.slice(0, Math.min(3, deckApresRepli.length));
       if (deckCards.length > 0) {
@@ -4508,6 +4809,8 @@ export const useGameStore = create<GameStore>((set, get) => {
           validTargets: [],
           targetingMode: "divination",
           divinationCards: deckCards,
+          deckPickerOrder: null,
+        learnPickerFor: null,
           pendingBoardPosition: boardPosition,
         });
         return null;
@@ -4523,6 +4826,8 @@ export const useGameStore = create<GameStore>((set, get) => {
           validTargets: [],
           targetingMode: "divination",
           divinationCards: deckCards,
+          deckPickerOrder: null,
+        learnPickerFor: null,
           pendingBoardPosition: boardPosition,
         });
         return null;
@@ -4777,6 +5082,20 @@ export const useGameStore = create<GameStore>((set, get) => {
     }
   },
 
+  activateLearnedSpell: (creatureInstanceId) => {
+    // APPRENTISSAGE — lancer le sort mémorisé. Rien de propre ici : on délègue à
+    // `selectCardInHand`, qui enchaîne déjà paiement des coûts puis ciblage puis
+    // envoi. C'est `carteJouable` qui rend le sort trouvable, et `dispatchAction`
+    // qui estampille l'action de sa créature d'origine.
+    const { gameState } = get();
+    if (!gameState) return null;
+    const player = gameState.players[gameState.currentPlayerIndex];
+    const source = player.board.find((c) => c.instanceId === creatureInstanceId);
+    if (!source?.apprentissageSpell) return null;
+    if (!creatureCanCastLearnedSpell(gameState, creatureInstanceId)) return null;
+    return get().selectCardInHand(source.apprentissageSpell.instanceId);
+  },
+
   activateTap: (sourceInstanceId, instanceIdx) => {
     // Resolve a creature's tap-mode keyword instance. If the keyword
     // needs a target (e.g. Vampirisme → enemy creature), open the
@@ -4822,6 +5141,43 @@ export const useGameStore = create<GameStore>((set, get) => {
     // Divination au tap : ouvre la modale « 3 cartes » (même flux qu'à
     // l'invocation). Sans elle le pouvoir se résolvait au hasard et sans aucun
     // retour visuel — indiscernable d'un pouvoir inerte.
+    if (instance.id === "apprentissage") {
+      const sorts = handSpellsFor(player);
+      if (sorts.length === 0) {
+        // Aucun sort en main → on engage quand même la créature (fizzle),
+        // comme Sélection et Divination.
+        return get().dispatchAction({ type: "tap_activate", sourceInstanceId, instanceIdx });
+      }
+      set({
+        selectedCardInstanceId: null,
+        selectedAttackerInstanceId: null,
+        validTargets: [],
+        targetingMode: "divination",
+        divinationCards: sorts,
+        deckPickerOrder: null,
+        learnPickerFor: sourceInstanceId,
+        pendingTapSourceId: sourceInstanceId,
+        pendingTapInstanceIdx: instanceIdx,
+      });
+      return null;
+    }
+    if (instance.id === "presage") {
+      const picker = presagePickerState(player.deck);
+      if (!picker) {
+        // Deck vide → on engage quand même la créature (fizzle), comme Divination.
+        return get().dispatchAction({ type: "tap_activate", sourceInstanceId, instanceIdx });
+      }
+      set({
+        selectedCardInstanceId: null,
+        selectedAttackerInstanceId: null,
+        validTargets: [],
+        targetingMode: "divination",
+        ...picker,
+        pendingTapSourceId: sourceInstanceId,
+        pendingTapInstanceIdx: instanceIdx,
+      });
+      return null;
+    }
     if (instance.id === "divination") {
       const deckCards = player.deck.slice(0, Math.min(3, player.deck.length));
       if (deckCards.length === 0) {
@@ -4834,6 +5190,8 @@ export const useGameStore = create<GameStore>((set, get) => {
         validTargets: [],
         targetingMode: "divination",
         divinationCards: deckCards,
+        deckPickerOrder: null,
+        learnPickerFor: null,
         pendingTapSourceId: sourceInstanceId,
         pendingTapInstanceIdx: instanceIdx,
       });

@@ -12,10 +12,24 @@ interface DivinationOverlayProps {
   onCancel: () => void;
 }
 
+/** Durée d'affichage de la réponse avant que l'action ne parte, en ms. */
+const PRESAGE_REVEAL_MS = 1400;
+
 export default function DivinationOverlay({ cards, onChoose, onCancel }: DivinationOverlayProps) {
   const t = useTranslations("game");
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const tokenTemplates = useGameStore((s) => s.tokenTemplates);
+  // PRÉSAGE — la table de permutation n'est posée QUE par lui : sa présence est
+  // donc le signal fiable qu'on est dans ce picker, sans avoir à retrouver la
+  // carte source (qui peut venir de la main, d'un tap ou d'un sort).
+  const deckPickerOrder = useGameStore((s) => s.deckPickerOrder);
+  const isPresage = deckPickerOrder !== null;
+  // APPRENTISSAGE — la même modale sert à choisir un sort de la MAIN à
+  // mémoriser. Le drapeau du store la distingue des pickers de deck.
+  const isApprentissage = useGameStore((s) => s.learnPickerFor !== null);
+  // Position AFFICHÉE de la carte qui était réellement au sommet du deck.
+  const bonneReponse = deckPickerOrder ? deckPickerOrder.indexOf(0) : -1;
+  const [choix, setChoix] = useState<number | null>(null);
   // The picker is shared between Divination (chosen card → top of deck) and
   // Traque du destin (chosen card → hand, rest shuffled to bottom). Branch on
   // the keyword of the card currently being summoned so the title/subtitle
@@ -29,10 +43,36 @@ export default function DivinationOverlay({ cards, onChoose, onCancel }: Divinat
     }
     return false;
   });
-  const title = isTraqueDuDestin ? t('divination_traque_title') : t('divination_title');
-  const subtitle = isTraqueDuDestin
-    ? t('divination_traque_subtitle')
-    : t('divination_subtitle');
+  const title = isApprentissage
+    ? t('apprentissage_title')
+    : isPresage
+      ? t('presage_title')
+      : isTraqueDuDestin ? t('divination_traque_title') : t('divination_title');
+  const subtitle = isApprentissage
+    ? t('apprentissage_subtitle')
+    : isPresage
+    ? (choix === null
+        ? t('presage_subtitle')
+        : choix === bonneReponse ? t('presage_hit') : t('presage_miss'))
+    : isTraqueDuDestin ? t('divination_traque_subtitle') : t('divination_subtitle');
+
+  // Présage annonce la réponse AVANT d'envoyer l'action : sans ce temps mort, le
+  // joueur voit sa carte arriver (ou pas) sans jamais savoir laquelle il fallait
+  // désigner. L'information ne coûte rien — le deck est remélangé dans la foulée.
+  const choisir = (i: number) => {
+    if (!isPresage) return onChoose(i);
+    if (choix !== null) return; // réponse en cours d'affichage : plus de clic
+    setChoix(i);
+    setTimeout(() => onChoose(i), PRESAGE_REVEAL_MS);
+  };
+
+  /** Bordure d'une carte : la bonne réponse en vert, la désignation ratée en
+   *  rouge, le survol en violet. */
+  const bordure = (i: number): string => {
+    if (choix !== null && i === bonneReponse) return "#22c55e";
+    if (choix === i) return "#ef4444";
+    return hoveredIndex === i ? "#a855f7" : "transparent";
+  };
 
   return (
     <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center">
@@ -54,16 +94,16 @@ export default function DivinationOverlay({ cards, onChoose, onCancel }: Divinat
           {cards.map((cardInstance, i) => (
             <div
               key={cardInstance.instanceId}
-              onClick={() => onChoose(i)}
+              onClick={() => choisir(i)}
               onMouseEnter={() => setHoveredIndex(i)}
               onMouseLeave={() => setHoveredIndex(null)}
               style={{
-                cursor: "pointer",
-                transform: hoveredIndex === i ? "translateY(-12px) scale(1.05)" : "none",
+                cursor: choix !== null ? "default" : "pointer",
+                transform: hoveredIndex === i && choix === null ? "translateY(-12px) scale(1.05)" : "none",
                 transition: "all 0.2s ease",
                 borderRadius: 12,
-                border: hoveredIndex === i ? "2px solid #a855f7" : "2px solid transparent",
-                boxShadow: hoveredIndex === i ? "0 0 20px #a855f766" : "0 4px 12px rgba(0,0,0,0.3)",
+                border: `2px solid ${bordure(i)}`,
+                boxShadow: bordure(i) === "transparent" ? "0 4px 12px rgba(0,0,0,0.3)" : `0 0 20px ${bordure(i)}66`,
               }}
             >
               <GameCard card={cardInstance.card} size="md" tokens={tokenTemplates} />
@@ -71,8 +111,11 @@ export default function DivinationOverlay({ cards, onChoose, onCancel }: Divinat
           ))}
         </div>
 
-        {/* Cancel */}
-        <button
+        {/* Annuler — JAMAIS pour Présage : pouvoir refermer la modale
+            reviendrait à regarder les 3 cartes gratuitement puis à rejouer,
+            exactement le « scouting » que la règle anti-annulation de Sélection
+            interdit déjà. */}
+        {!isPresage && <button
           onClick={onCancel}
           style={{
             padding: "8px 24px", borderRadius: 8,
@@ -82,7 +125,7 @@ export default function DivinationOverlay({ cards, onChoose, onCancel }: Divinat
           }}
         >
           {t('action_cancel')}
-        </button>
+        </button>}
       </div>
     </div>
   );

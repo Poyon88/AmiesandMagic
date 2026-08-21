@@ -12,7 +12,7 @@ import type { DragEvent } from "react";
 import { KEYWORD_SYMBOLS, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordBadgeValue, applyKeywordValueToLabel, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, getSpellKeywordBadgeValue } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell, getTokenManaCost } from "@/lib/game/abilities";
-import { persistentStats, effectiveManaCost as engineEffectiveManaCost } from "@/lib/game/engine";
+import { persistentStats, effectiveManaCost as engineEffectiveManaCost, espritDeCorpsPoints } from "@/lib/game/engine";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { composedCapsOf, composedIcon, composedTriggerMode, composedValueText } from "@/lib/game/composed-display";
@@ -67,6 +67,14 @@ function HandCard({
     () => primaryThresholdGlow(card, gameState, localPlayerId, cardInstance.manaCostReduction ?? 0),
     [card, gameState, localPlayerId, cardInstance.manaCostReduction],
   );
+
+  // Esprit de corps : combien de points cette carte gagnerait en arrivant.
+  // En main elle n'est pas encore comptée, donc le nombre affiché est le total
+  // complet — exactement ce qu'elle vaudra une fois posée.
+  const espritCount = useMemo(() => {
+    const owner = gameState?.players.find(p => p.id === localPlayerId);
+    return owner ? espritDeCorpsPoints(owner, card, cardInstance) : null;
+  }, [gameState, localPlayerId, card, cardInstance]);
 
   const isCostPaymentMode = targetingMode === "cost_payment";
   const isPendingCostSource = pendingCostCard?.instanceId === cardInstance.instanceId;
@@ -803,7 +811,7 @@ function HandCard({
             <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
               {visible.map((entry, idx) => {
                 const { kw, x, mode } = entry;
-                const ctx = { card, instance: entry.instance, x, tokens: tokenTemplates };
+                const ctx = { card, instance: entry.instance, x, tokens: tokenTemplates, espritCount };
                 const label = vocab.keywordLabelFor(kw, ctx);
                 // Plus d'annotation de déclencheur : la couleur transmet le moment.
                 const displayLabel = applyKeywordValueToLabel(kw, label, x, entry.instance);

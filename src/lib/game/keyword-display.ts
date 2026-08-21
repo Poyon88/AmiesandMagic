@@ -5,7 +5,8 @@ import { getRaceForm } from "@/lib/card-engine/race-forms";
 import { KEYWORD_LABELS, getKeywordDisplayLabel, keywordModeColor } from "./keyword-labels";
 import { AUTOMATIC_ABILITY_IDS, CURATED_MULTIMODE_IDS, DEATH_NATURE_IDS } from "./abilities";
 import { LOW_HP_TRIGGER_THRESHOLD } from "./constants";
-import { resolveMarkers, type MarkerCtx, type Resolver } from "./desc-markers";
+import { marker, resolveMarkers, type MarkerCtx, type Resolver } from "./desc-markers";
+import { getClanForm } from "@/lib/card-engine/race-forms";
 import {
   convocationPrefix,
   formatConvocationToken,
@@ -162,6 +163,22 @@ export function describeKeyword(
   const tmpl = template(kw, t);
   if (!tmpl) return null;
   const s = resolveMarkers(tmpl, kw, ctx, t, TOKEN_RESOLVERS);
+
+  // Esprit de corps EN PARTIE : phrase entièrement composée, elle aussi — la
+  // forme générique (« par créature de même clan… ») oblige le joueur à compter
+  // lui-même. Sans `espritCount` (forge, collection, mulligan) on garde la
+  // forme générique, qui reste vraie.
+  //
+  // 0 point retombe volontairement sur la forme générique : « Gagne 0 fois »
+  // serait la phrase la plus décourageante de la carte, alors que le compteur
+  // grimpera dès la prochaine posée.
+  if (kw === "esprit_de_corps" && (ctx.espritCount ?? 0) > 0) {
+    // `marker` retombe déjà sur MARKERS_FR quand la locale ne porte rien.
+    const tmpl = marker("edc_compte", t) ?? "";
+    return tmpl
+      .replace("{n}", String(ctx.espritCount))
+      .replace("{clan_de}", getClanForm(ctx.card?.clan, t) ?? "");
+  }
 
   // Convocations multiples : phrase entièrement composée, pas un simple
   // remplacement (la liste groupe les tokens identiques).

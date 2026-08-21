@@ -389,6 +389,10 @@
         "label": "Discipline +X/+Y",
         "desc": "Si toutes vos créatures en jeu ont un coût de même parité que le sien, gagne +X ATK et +Y PV de façon permanente."
       },
+      "esprit_de_corps": {
+        "label": "Esprit de corps",
+        "desc": "Gagne +1 ATK ou +1 PV au hasard par créature {clan_de} avec Esprit de corps déjà jouée."
+      },
       "impact": {
         "label": "Impact X",
         "desc": "Inflige X dégâts à une cible ciblée (créature ou héros, n'importe quel bord)."
@@ -420,6 +424,14 @@
       "creuser": {
         "label": "Creuser X",
         "desc": "Regardez les X cartes du dessous de votre deck ; placez-en une sur le dessus."
+      },
+      "presage": {
+        "label": "Présage",
+        "desc": "Révèle 3 cartes du dessus dans le désordre ; désignez celle du sommet pour la prendre en main, puis mélangez le deck."
+      },
+      "apprentissage": {
+        "label": "Apprentissage",
+        "desc": "Retire un sort de votre main et le mémorise : la créature peut le lancer en payant ses coûts."
       },
       "retour_differe": {
         "label": "Retour différé",
@@ -610,6 +622,10 @@
       "creuser": {
         "label": "Creuser X",
         "desc": "Regardez les X cartes du dessous de votre deck ; placez-en une sur le dessus"
+      },
+      "presage": {
+        "label": "Présage",
+        "desc": "Révèle 3 cartes du dessus dans le désordre ; désignez celle du sommet pour la prendre en main, puis mélangez le deck."
       },
       "retour_differe": {
         "label": "Retour différé",
@@ -1274,7 +1290,8 @@
       "rm_scope_clan": " du clan {v}",
       "rm_scope_all": "",
       "scope_target": "à une unité alliée",
-      "scope_all": "à toutes vos unités"
+      "scope_all": "à toutes vos unités",
+      "edc_compte": "Gagne {n} fois +1 ATK ou +1 PV au hasard (1 par créature {clan_de} avec Esprit de corps déjà jouée)."
     },
     "sets": {
       "1": "Set de Base"
@@ -2143,7 +2160,13 @@
     "mode_suffix_death": " · à la mort",
     "mode_suffix_tap": " · tap",
     "mode_suffix_return": " · retour en main",
-    "mode_suffix_end_of_turn": " · fin du tour"
+    "mode_suffix_end_of_turn": " · fin du tour",
+    "presage_title": "🌙 Présage",
+    "presage_subtitle": "Laquelle est la première carte de votre deck ?",
+    "presage_hit": "Bien vu — elle rejoint votre main.",
+    "presage_miss": "Raté. La bonne carte est en vert.",
+    "apprentissage_title": "📖 Apprentissage",
+    "apprentissage_subtitle": "Quel sort la créature doit-elle mémoriser ?"
   },
   "tutorial": {
     "page_eyebrow": "Apprends l'art du duel",

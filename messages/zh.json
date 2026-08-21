@@ -389,6 +389,10 @@
         "label": "纪律 +X/+Y",
         "desc": "若你场上所有生物的费用奇偶性与其自身相同，永久获得+X攻击力和+Y生命值。"
       },
+      "esprit_de_corps": {
+        "label": "团队精神",
+        "desc": "每有一个你已使用的{clan_de}团队精神生物，便随机获得+1攻击力或+1生命值。"
+      },
       "impact": {
         "label": "冲击 X",
         "desc": "对目标（任意一方的生物或英雄）造成X点伤害。"
@@ -420,6 +424,14 @@
       "creuser": {
         "label": "挖掘 X",
         "desc": "查看你牌库底部的X张卡牌；将其中一张放到牌库顶。"
+      },
+      "presage": {
+        "label": "预兆",
+        "desc": "以随机顺序展示牌库顶3张牌；指认最上方那张即可将其加入手牌，随后洗牌。"
+      },
+      "apprentissage": {
+        "label": "研习",
+        "desc": "从你的手牌移除一张法术并记住它：该生物可支付其费用来施放。"
       },
       "retour_differe": {
         "label": "延迟归还",
@@ -610,6 +622,10 @@
       "creuser": {
         "label": "挖掘 X",
         "desc": "查看你牌库底部的X张卡牌；将其中一张放到牌库顶"
+      },
+      "presage": {
+        "label": "预兆",
+        "desc": "以随机顺序展示牌库顶3张牌；指认最上方那张即可将其加入手牌，随后洗牌。"
       },
       "retour_differe": {
         "label": "延迟归还",
@@ -1274,7 +1290,8 @@
       "rm_scope_clan": "{v}氏族的",
       "rm_scope_all": "",
       "scope_target": "给一个友方单位",
-      "scope_all": "给你所有的单位"
+      "scope_all": "给你所有的单位",
+      "edc_compte": "随机获得{n}次+1攻击力或+1生命值（每有一个你已使用的{clan_de}团队精神生物便获得1次）。"
     },
     "sets": {
       "1": "基础系列"
@@ -2143,7 +2160,13 @@
     "mode_suffix_death": " · 死亡时",
     "mode_suffix_tap": " · 点击",
     "mode_suffix_return": " · 回手牌",
-    "mode_suffix_end_of_turn": " · 回合结束"
+    "mode_suffix_end_of_turn": " · 回合结束",
+    "presage_title": "🌙 预兆",
+    "presage_subtitle": "哪一张是你牌库顶的牌？",
+    "presage_hit": "猜中了 —— 它进入你的手牌。",
+    "presage_miss": "没猜中。正确的牌是绿框那张。",
+    "apprentissage_title": "📖 研习",
+    "apprentissage_subtitle": "这个生物要记住哪张法术？"
   },
   "tutorial": {
     "page_eyebrow": "学习决斗之道",

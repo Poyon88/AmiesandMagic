@@ -80,6 +80,8 @@
 - 🏰 **Fierté du clan** — Tant que cette unité est en jeu, les unités de même clan invoquées arrivent avec +1/+1.
 - 📯 **Appel du clan X** — Invocation : mettez en jeu gratuitement la première unité de même clan avec un coût inférieur ou égal à X depuis le dessus de votre deck.
 - 🤜 **Solidarité X** — Invocation : piochez X cartes si vous contrôlez 2 autres unités de même race.
+- 📖 **Apprentissage** — Retire un sort de votre main et le mémorise : la créature peut le lancer, autant de fois qu'elle peut s'activer, en payant à chaque fois ses coûts (mana et coûts additionnels). Le sort est perdu si elle quitte le plateau.
+- 🫂 **Esprit de corps** — Gagne +1 ATK ou +1 PV au hasard par autre créature de même clan avec Esprit de corps que vous avez déjà jouée depuis votre main.
 
 ## Sort uniquement (9)
 
@@ -95,6 +97,9 @@
 
 ## Mixtes — créature et sort (18)
 
+- 🌙 **Présage**
+  - Créature : Révèle 3 cartes du dessus du deck dans le désordre ; désignez celle qui était au sommet pour la prendre en main, puis le deck est remélangé.
+  - Sort : idem, sur le deck du lanceur.
 - ☠️ **Poison**
   - Créature : Les unités blessées perdent 1 PV par tour.
   - Sort : Les unités blessées perdent 1 PV par tour.

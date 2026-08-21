@@ -389,6 +389,10 @@
         "label": "Discipline +X/+Y",
         "desc": "If every creature you control has a cost of the same parity as its own, permanently gains +X ATK and +Y HP."
       },
+      "esprit_de_corps": {
+        "label": "Esprit de Corps",
+        "desc": "Randomly gains +1 ATK or +1 HP for each creature {clan_de} with Esprit de Corps you have already played."
+      },
       "impact": {
         "label": "Impact X",
         "desc": "Deal X damage to a target (creature or hero, either side)."
@@ -420,6 +424,14 @@
       "creuser": {
         "label": "Dig X",
         "desc": "Look at the bottom X cards of your deck; place one of them on top."
+      },
+      "presage": {
+        "label": "Portent",
+        "desc": "Reveals the top 3 cards in random order; name the topmost to take it in hand, then shuffle the deck."
+      },
+      "apprentissage": {
+        "label": "Learning",
+        "desc": "Removes a spell from your hand and memorises it: the creature can cast it by paying its costs."
       },
       "retour_differe": {
         "label": "Delayed Return",
@@ -610,6 +622,10 @@
       "creuser": {
         "label": "Dig X",
         "desc": "Look at the bottom X cards of your deck; place one of them on top"
+      },
+      "presage": {
+        "label": "Portent",
+        "desc": "Reveals the top 3 cards in random order; name the topmost to take it in hand, then shuffle the deck."
       },
       "retour_differe": {
         "label": "Delayed Return",
@@ -1274,7 +1290,8 @@
       "rm_scope_clan": " of clan {v}",
       "rm_scope_all": "",
       "scope_target": "to an allied unit",
-      "scope_all": "to all your units"
+      "scope_all": "to all your units",
+      "edc_compte": "Randomly gains +1 ATK or +1 HP {n} times (once per creature {clan_de} with Esprit de Corps already played)."
     },
     "sets": {
       "1": "Base Set"
@@ -2143,7 +2160,13 @@
     "mode_suffix_death": " · to the death",
     "mode_suffix_tap": " · tap",
     "mode_suffix_return": " · return to hand",
-    "mode_suffix_end_of_turn": " · end of turn"
+    "mode_suffix_end_of_turn": " · end of turn",
+    "presage_title": "🌙 Portent",
+    "presage_subtitle": "Which one is the top card of your deck?",
+    "presage_hit": "Well seen — it joins your hand.",
+    "presage_miss": "Missed. The right card is in green.",
+    "apprentissage_title": "📖 Learning",
+    "apprentissage_subtitle": "Which spell should the creature memorise?"
   },
   "tutorial": {
     "page_eyebrow": "Master the Art of the Duel",

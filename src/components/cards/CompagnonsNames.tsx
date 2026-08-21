@@ -19,14 +19,24 @@ import { overlayRect } from "@/lib/fx/overlayMotion";
 import type { Card } from "@/lib/game/types";
 
 interface Props {
-  /** Ids des cartes liées, tels que la capacité les porte. */
+  /** Ids des cartes liées, tels que la capacité les porte (Compagnons). */
   ids?: number[];
+  /** Cartes DÉJÀ résolues — Apprentissage garde le sort mémorisé dans l'état de
+   *  la partie, il n'y a donc rien à aller chercher. Passer par `ids` ferait
+   *  une requête inutile, et pire : un sort mémorisé peut être un exemplaire
+   *  précis, que son seul id ne suffirait pas à distinguer. */
+  cards?: Card[];
   /** Échelle du bloc hôte, pour que les pastilles suivent la taille du verso. */
   scale?: number;
+  /** Emoji de la pastille — 🐾 pour les compagnons, 📖 pour un sort appris. */
+  icon?: string;
 }
 
-export default function CompagnonsNames({ ids, scale = 1 }: Props) {
-  const cartes = useLinkedCards(ids);
+export default function CompagnonsNames({ ids, cards, scale = 1, icon = "🐾" }: Props) {
+  // Le hook est appelé inconditionnellement (règle des hooks) ; sans `ids` il
+  // renvoie une liste vide et ne déclenche aucune requête.
+  const resolues = useLinkedCards(ids);
+  const cartes = cards?.length ? cards : resolues;
   const { localizeName } = useCardText();
   const [survolee, setSurvolee] = useState<Card | null>(null);
   const [ancre, setAncre] = useState<{ x: number; y: number } | null>(null);
@@ -68,7 +78,7 @@ export default function CompagnonsNames({ ids, scale = 1 }: Props) {
             cursor: "help",
           }}
         >
-          <span aria-hidden="true">🐾</span>
+          <span aria-hidden="true">{icon}</span>
           {localizeName(c)}
         </span>
       ))}

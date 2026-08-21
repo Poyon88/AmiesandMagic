@@ -949,6 +949,42 @@ export const ABILITIES: Record<string, AbilityDef> = {
       params: ["attack", "health"], needsTarget: true, targetType: "friendly_creature",
     },
   },
+  // Esprit de corps : récompense l'accumulation de porteurs d'un MÊME CLAN au
+  // fil de la partie. À chaque déclenchement, la créature gagne un point par
+  // AUTRE créature Esprit de corps du même clan que son contrôleur a posée
+  // depuis la main — chaque point tiré au hasard entre +1 ATK et +1 PV.
+  //
+  // Trois voisines existent, aucune ne fait cela : Loyauté compte les alliés de
+  // même RACE en jeu, Fierté du clan est une AURA de clan, Commandement une
+  // aura de faction. Toutes lisent le PLATEAU COURANT. Esprit de corps lit un
+  // HISTORIQUE de partie (PlayerState.espritDeCorpsPlayed) : le compteur ne
+  // redescend jamais, et tuer les porteurs ne le réduit pas.
+  //
+  // Pas de X paramétrable (arbitré avec l'auteur) : le pas est figé à +1, la
+  // montée en puissance vient du NOMBRE de porteurs joués. Le libellé ne
+  // contient donc pas « X/Y » et la capacité n'entre ni dans XY_ABILITY_IDS ni
+  // dans STAT_PAIR_KEYWORDS — rien à ajouter dans CardEditor.
+  //
+  // Comme Discipline, ce n'est PAS une aura : le gain est lu et figé au
+  // déclenchement. Sa place est donc dans CURATED_MULTIMODE_IDS, pas dans
+  // AUTOMATIC_ABILITY_IDS ni dans recalculateAuras.
+  //
+  // Créature uniquement : « créatures jouées » n'a pas de sens porté par un
+  // sort, qui n'a ni instance sur le plateau ni déclencheur autre que sa
+  // résolution.
+  esprit_de_corps: {
+    id: "esprit_de_corps", label: "Esprit de corps", symbol: "🫂",
+    desc: "Gagne +1 ATK ou +1 PV au hasard par créature {clan_de} avec Esprit de corps déjà jouée.",
+    applicable_to: ["creature"],
+    creature: {
+      // Non scalable : la valeur vient du nombre de porteurs, pas d'un X. Le
+      // coût de base reste modeste — la première posée ne gagne rien du tout,
+      // et la capacité n'a de valeur que dans un deck mono-clan qui l'empile.
+      // À réajuster après essai en partie.
+      cost: 4, costPerX: 0, se: 2.0, minTier: 1, scalable: false, zone: "Terrain",
+      desc: "Gagne +1 ATK ou +1 PV au hasard par créature {clan_de} avec Esprit de corps déjà jouée.",
+    },
+  },
   affaiblissement: {
     id: "affaiblissement", label: "Affaiblissement -X/-Y", symbol: "🔻",
     desc: "Donne -X ATK et -Y PV à une créature ennemie ciblée",
@@ -1004,6 +1040,65 @@ export const ABILITIES: Record<string, AbilityDef> = {
     spell: {
       desc: "Regardez les X cartes du dessous de votre deck ; placez-en une sur le dessus",
       params: ["amount"], needsTarget: false,
+    },
+  },
+  // PRÉSAGE : révèle les 3 premières cartes du deck DANS LE DÉSORDRE ; le joueur
+  // désigne celle qu'il croit être réellement au sommet. S'il vise juste, elle
+  // part dans sa main. Puis tout retourne au deck, qui est remélangé en entier.
+  //
+  // Ce n'est PAS une loterie, et c'est tout le dessein : l'affichage mélangé ne
+  // dit rien, mais le joueur sait ce qu'il a préparé. Une Divination jouée juste
+  // avant a remonté une carte CHOISIE sur le dessus, un Creuser en a ramené une
+  // du fond — il la reconnaît alors parmi les trois et gagne à coup sûr. Présage
+  // est la carte de récompense des decks qui manipulent leur pioche : 1 chance
+  // sur 3 sans préparation, une certitude avec.
+  //
+  // Le remélange final ne contredit pas cet objectif : il a lieu APRÈS que
+  // Présage ait pris sa carte. Ce qu'il empêche, c'est d'enchaîner une seconde
+  // préparation derrière — et il efface une Divination posée pour le tour
+  // suivant. C'est le prix du pouvoir, assumé par l'auteur.
+  //
+  // Pas de paramètre X : « 3 » est figé, le libellé ne porte donc pas de suffixe
+  // et la capacité n'entre pas dans XY_ABILITY_IDS.
+  presage: {
+    id: "presage", label: "Présage", symbol: "🌙",
+    desc: "Révèle 3 cartes du dessus dans le désordre ; désignez celle du sommet pour la prendre en main, puis mélangez le deck.",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      // Repère de calibrage : Traque du destin, qui donne une carte À COUP SÛR,
+      // coûte 11 / se 3.0. Présage ne la donne qu'une fois sur trois sans
+      // préparation — mais à coup sûr avec. À réajuster après essai en partie.
+      cost: 7, costPerX: 0, se: 2.0, minTier: 1, scalable: false, zone: "Deck",
+    },
+    spell: {
+      desc: "Révèle 3 cartes du dessus dans le désordre ; désignez celle du sommet pour la prendre en main, puis mélangez le deck.",
+      params: [], needsTarget: false,
+    },
+  },
+  // APPRENTISSAGE : la créature retire un sort de la main et le MÉMORISE. Le
+  // sort devient un pouvoir activable — elle peut le relancer autant de fois
+  // qu'elle peut s'engager, en payant à chaque fois ses coûts (mana ET coûts
+  // additionnels). Coûts impayables ⇒ activation refusée.
+  //
+  // C'est la première capacité du jeu qui rend une carte RÉPÉTABLE, d'où trois
+  // garde-fous arbitrés avec l'auteur :
+  //   · un seul sort, définitif — les déclenchements suivants ne demandent rien ;
+  //   · le sort n'existe QUE tant que la créature est sur le plateau (mort,
+  //     retour en main, Silence ⇒ oubli). La tuer détruit donc DEUX cartes ;
+  //   · la pastille est publique : l'adversaire sait quoi tuer en priorité, ce
+  //     qui donne son sens au garde-fou précédent.
+  //
+  // Déclencheurs restreints aux modes « sur plateau » (CURATED_ONBOARD_ONLY_IDS) :
+  // apprendre en mourant ou depuis la main donnerait un pouvoir que la créature
+  // ne pourra jamais activer.
+  apprentissage: {
+    id: "apprentissage", label: "Apprentissage", symbol: "📖",
+    desc: "Retire un sort de votre main et le mémorise : la créature peut le lancer en payant ses coûts.",
+    applicable_to: ["creature"],
+    creature: {
+      // La plus chère du registre après Divination : rendre un sort répétable
+      // vaut plus qu'un effet ponctuel, si fort soit-il. À réajuster après essai.
+      cost: 12, costPerX: 0, se: 3.0, minTier: 2, scalable: false, zone: "Mixte",
     },
   },
   retour_differe: {
@@ -1444,7 +1539,7 @@ export function creatureEngineId(a: AbilityDef): string {
 export const CURATED_MULTIMODE_IDS: ReadonlySet<string> = new Set([
   "appel_du_clan", "combustion", "convocation", "convocations_multiples", "dedoublement", "douleur", "entrainement", "inspiration",
   "ombre_du_passe", "pillage", "prescience", "remontee", "renforcement_multiple",
-  "savant", "suprematie", "tempete", "vampirisme", "cataclysme", "renforcement", "discipline", "impact",
+  "savant", "suprematie", "tempete", "vampirisme", "cataclysme", "renforcement", "discipline", "esprit_de_corps", "impact",
   // Chantier « tous déclencheurs » : effets d'invocation rejoués depuis
   // mort / attaque / retour / fin de tour / activation.
   "concentration", "loyaute", "catalyse", "solidarite", "appel_supreme", "rassemblement",
@@ -1454,7 +1549,10 @@ export const CURATED_MULTIMODE_IDS: ReadonlySet<string> = new Set([
   "incineration", "creuser", "retour_differe", "devoration",
   // Effets « deck » : la cible est dans le deck du contrôleur, la source n'a
   // pas besoin d'être en jeu → tous les déclencheurs sont légitimes.
-  "fortifier", "preincanter", "compagnons",
+  "fortifier", "preincanter", "compagnons", "presage",
+  // Apprentissage : le sort mémorisé n'est activable que sur le plateau, d'où
+  // sa présence AUSSI dans CURATED_ONBOARD_ONLY_IDS juste en dessous.
+  "apprentissage",
   // Restreints aux déclencheurs « sur plateau » (cf. CURATED_ONBOARD_ONLY_IDS).
   "sacrifice", "permutation", "malediction", "mimique", "metamorphose",
   "contresort", "profanation", "heritage_du_cimetiere",
@@ -1468,6 +1566,9 @@ export const CURATED_MULTIMODE_IDS: ReadonlySet<string> = new Set([
 export const CURATED_ONBOARD_ONLY_IDS: ReadonlySet<string> = new Set([
   // Dévoration absorbe les stats de sa victime : la source doit être en jeu.
   "devoration",
+  // Apprentissage : le sort appris devient un pouvoir ACTIVABLE de la créature.
+  // L'apprendre en mourant ou depuis la main donnerait un pouvoir inutilisable.
+  "apprentissage",
   "sacrifice", "permutation", "malediction", "mimique", "metamorphose",
   "contresort", "profanation", "heritage_du_cimetiere",
 ]);

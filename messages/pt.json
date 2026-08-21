@@ -389,6 +389,10 @@
         "label": "Disciplina +X/+Y",
         "desc": "Se todas as suas criaturas em jogo tiverem um custo da mesma paridade que o dela, ganha +X ATK e +Y PV permanentemente."
       },
+      "esprit_de_corps": {
+        "label": "Espírito de corpo",
+        "desc": "Ganha +1 ATK ou +1 PV ao acaso por cada criatura {clan_de} com Espírito de corpo já jogada."
+      },
       "impact": {
         "label": "Impacto X",
         "desc": "Causa X de dano a um alvo escolhido (criatura ou herói, qualquer lado)."
@@ -420,6 +424,14 @@
       "creuser": {
         "label": "Escavar X",
         "desc": "Veja as X cartas do fundo do seu deck; coloque uma delas no topo."
+      },
+      "presage": {
+        "label": "Presságio",
+        "desc": "Revela 3 cartas do topo em desordem; aponte a mais alta para levá-la à mão e depois embaralhe o baralho."
+      },
+      "apprentissage": {
+        "label": "Aprendizagem",
+        "desc": "Retira um feitiço da sua mão e memoriza-o: a criatura pode lançá-lo pagando os seus custos."
       },
       "retour_differe": {
         "label": "Retorno Diferido",
@@ -610,6 +622,10 @@
       "creuser": {
         "label": "Escavar X",
         "desc": "Veja as X cartas do fundo do seu deck; coloque uma delas no topo"
+      },
+      "presage": {
+        "label": "Presságio",
+        "desc": "Revela 3 cartas do topo em desordem; aponte a mais alta para levá-la à mão e depois embaralhe o baralho."
       },
       "retour_differe": {
         "label": "Retorno Diferido",
@@ -1274,7 +1290,8 @@
       "rm_scope_clan": " do clã {v}",
       "rm_scope_all": "",
       "scope_target": "a uma unidade aliada",
-      "scope_all": "a todas as suas unidades"
+      "scope_all": "a todas as suas unidades",
+      "edc_compte": "Ganha {n} vezes +1 ATK ou +1 PV ao acaso (1 por cada criatura {clan_de} com Espírito de corpo já jogada)."
     },
     "sets": {
       "1": "Set Básico"
@@ -2143,7 +2160,13 @@
     "mode_suffix_death": " · até a morte",
     "mode_suffix_tap": " · tap",
     "mode_suffix_return": " · retorno à mão",
-    "mode_suffix_end_of_turn": " · fim do turno"
+    "mode_suffix_end_of_turn": " · fim do turno",
+    "presage_title": "🌙 Presságio",
+    "presage_subtitle": "Qual é a primeira carta do seu baralho?",
+    "presage_hit": "Bem visto — vai para a sua mão.",
+    "presage_miss": "Errou. A carta certa está em verde.",
+    "apprentissage_title": "📖 Aprendizagem",
+    "apprentissage_subtitle": "Que feitiço deve a criatura memorizar?"
   },
   "tutorial": {
     "page_eyebrow": "Aprenda a arte do duelo",

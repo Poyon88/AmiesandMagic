@@ -69,6 +69,13 @@ export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
   "Tempête X": ALL_MODES,
   "Cataclysme X": ALL_MODES,
   "Renforcement +X/+Y": ALL_MODES,
+  // Discipline et Esprit de corps sont des Renforcements conditionnés : le
+  // moteur les résout sur les 7 modes (CURATED_MULTIMODE_IDS), et c'est cette
+  // entrée — et elle seule — qui ouvre le picker de déclencheurs. Discipline
+  // avait été livrée sans, donc authorable à l'invocation UNIQUEMENT alors que
+  // le moteur savait déjà tout faire.
+  "Discipline +X/+Y": ALL_MODES,
+  "Esprit de corps": ALL_MODES,
   // Impact / Remontée à l'attaque : cible au hasard (pas de picker possible
   // dans le flux synchrone) ; les autres modes gardent leur picker différé.
   "Impact X": ALL_MODES,
@@ -83,6 +90,13 @@ export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
   // Effets « deck » (Fortifier / Préincanter) : la cible vit dans le deck du
   // contrôleur, aucun ciblage ni source en jeu requise → tous les déclencheurs.
   "Fortifier +X/+Y": ALL_MODES,
+  // Présage lit et remélange le deck du contrôleur : même famille, mêmes
+  // déclencheurs. Hors invocation et hors activation il désigne au hasard,
+  // comme Divination — aucune fenêtre de choix n'est ouvrable ailleurs.
+  "Présage": ALL_MODES,
+  // Apprentissage : le sort mémorisé est un pouvoir ACTIVABLE de la créature,
+  // qui doit donc être EN JEU. Ni mort, ni remontée en main, ni pioche.
+  "Apprentissage": ONBOARD_MODES,
   "Préincanter X": ALL_MODES,
   "Dédoublement": ALL_MODES,
   // Sélections : modale « 1 parmi 3 » sur le tour du contrôleur (picker

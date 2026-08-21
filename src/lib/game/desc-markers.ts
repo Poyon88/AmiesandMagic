@@ -22,6 +22,12 @@ export interface MarkerCtx {
   > | null;
   /** Instance : porte la race/clan CIBLÉS et la capacité conférée. */
   instance?: Pick<KeywordInstance, "race" | "clan" | "grantScope" | "grantAbilityId" | "y" | "costs" | "faction"> | null;
+  /** Esprit de corps : combien de points cette carte gagnerait si elle
+   *  déclenchait maintenant (cf. `espritDeCorpsPoints`). Le SEUL champ de ce
+   *  contexte qui dépende de l'état de la PARTIE et non de la carte — il n'est
+   *  donc renseigné que par les composants de jeu (plateau, main). Absent
+   *  (forge, collection, mulligan), la description reste sa forme générique. */
+  espritCount?: number | null;
   x?: number | null;
   y?: number | null;
   tokens?: TokenTemplate[];
@@ -74,6 +80,12 @@ export const MARKERS_FR: Record<string, string> = {
   "rm_scope_clan": " du clan {v}",
   "rm_scope_all": "",
   "scope_target": "à une unité alliée",
+  // Esprit de corps EN PARTIE : phrase entièrement recomposée (et non un
+  // fragment inséré), pour que le joueur lise le total sans avoir à le
+  // calculer. Composée dans describeKeyword, comme Convocations multiples :
+  // resolveMarkers ne fait qu'UNE passe, un {clan_de} renvoyé par un résolveur
+  // resterait littéral à l'écran.
+  "edc_compte": "Gagne {n} fois +1 ATK ou +1 PV au hasard (1 par créature {clan_de} avec Esprit de corps déjà jouée).",
   "scope_all": "à toutes vos unités",
 };
 

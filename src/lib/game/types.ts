@@ -82,6 +82,13 @@ export type Keyword =
   | "devoration"
   // Regarde les X cartes du dessous du deck, en remonte une
   | "creuser"
+  // Retire un sort de la main et le MÉMORISE : il devient un pouvoir activable
+  // de la créature, relançable en payant ses coûts. Perdu si elle quitte le jeu.
+  | "apprentissage"
+  // Révèle les 3 premières cartes du deck DANS LE DÉSORDRE ; le joueur désigne
+  // celle qu'il croit être au sommet et la gagne s'il vise juste, puis le deck
+  // entier est remélangé.
+  | "presage"
   // Place l'unité ciblée sous le deck de son propriétaire
   | "retour_differe"
   // Polymorphic — replace each spell in hand with a random higher-cost spell, discounted
@@ -101,6 +108,9 @@ export type Keyword =
   // Renforcement sous CONDITION de parité : le bonus ne tombe que si tous les
   // coûts RÉELS du plateau du déclencheur ont la même parité que le sien.
   | "discipline"
+  // +1 ATK ou +1 PV au HASARD, autant de fois qu'il y a d'AUTRES créatures
+  // Esprit de corps du même clan déjà posées depuis la main par le contrôleur.
+  | "esprit_de_corps"
   // Polymorphic — +X/+Y to all controller's creatures of a selected race/clan
   | "renforcement_multiple"
   // +X/+X aux créatures en main de la même faction que la source (multi-trigger)
@@ -181,6 +191,7 @@ export type SpellKeywordId =
   | "epargne"
   | "incineration"
   | "creuser"
+  | "presage"
   | "retour_differe"
   | "afflux"
   | "invocation_multiple"
@@ -850,6 +861,32 @@ export interface CardInstance {
    *  `forceAncetresHealthBonus`. Optionnel : les instances sérialisées avant
    *  l'ajout du champ n'en disposent pas (lire avec ?? 0). */
   pureteHealthBonus?: number;
+  /** Esprit de corps : cette instance a elle-même incrémenté
+   *  `PlayerState.espritDeCorpsPlayed` en étant posée depuis la main.
+   *
+   *  Elle s'exclut donc de son propre décompte, à TOUS ses déclencheurs. Sans
+   *  ce drapeau la règle se contredirait : à l'entrée en jeu la créature est
+   *  comptée après avoir lu le compteur (elle gagne 0 quand elle est la
+   *  première), mais un déclenchement plus tardif (mort, tap, fin de tour) lit
+   *  un compteur qui l'inclut déjà — la première gagnerait 1.
+   *
+   *  Optionnel : les instances sérialisées avant l'ajout du champ n'en
+   *  disposent pas (lire avec `?? false`). */
+  espritDeCorpsCounted?: boolean;
+  /** APPRENTISSAGE — le sort que cette créature a MÉMORISÉ.
+   *
+   *  On garde l'INSTANCE retirée de la main, pas une `Card` nue : elle porte
+   *  déjà un instanceId unique, et c'est ce qui permet de rejouer toute la
+   *  machinerie de coûts et de ciblage de `playCard` sans en dupliquer une
+   *  ligne (mêmes gardes de défausse, de repli, de sacrifice…).
+   *
+   *  ⚠️ Le sort n'existe QUE tant que la créature est sur le plateau : le champ
+   *  est effacé à l'entrée en jeu, à la mort, au retour en main et par le
+   *  Silence. Une instance au cimetière ou en main n'en porte jamais.
+   *
+   *  Vérité de jeu : hashé et snapshoté comme le reste de l'instance.
+   *  Optionnel — les snapshots d'avant l'ajout ne le portent pas. */
+  apprentissageSpell?: CardInstance;
   // Nécrophagie: permanent buff tracker
   necrophagieATKBonus: number;
   necrophagiePVBonus: number;
@@ -1031,6 +1068,29 @@ export interface PlayerState {
    *  piloté exclusivement par des actions journalisées, donc identique sur les
    *  deux clients. */
   epargne: number | null;
+  /** Esprit de corps : combien de créatures portant ce mot-clé ce joueur a-t-il
+   *  POSÉES DEPUIS LA MAIN depuis le début de la partie, par clan.
+   *
+   *  Clé = nom canonique FR du clan, tel que stocké dans `cards.clan` — le clan
+   *  n'est pas un enum (cf. `clan-profile.ts`).
+   *
+   *  C'est un compteur d'HISTORIQUE, pas un décompte de plateau : il ne
+   *  redescend jamais, une créature morte ou renvoyée en main reste comptée.
+   *  Aucune structure existante ne pouvait le porter — `graveyard` est une zone
+   *  MUTABLE (Exhumation, Rappel, Seconde vie la vident) et `spellHistory` ne
+   *  couvre que les sorts.
+   *
+   *  « Posée depuis la main » exclut délibérément tout ce qui est mis en jeu
+   *  gratuitement par un effet : Seconde vie (posée depuis le cimetière),
+   *  Invocation X, Appel du clan, Résurrection, Exhumation, tokens de
+   *  Convocation, Dédoublement. Le moteur distingue déjà « jouée » de « mise en
+   *  jeu » (cf. le mal d'invocation par défaut d'Appel du clan).
+   *
+   *  Entre dans le hash de synchro comme tout champ de PlayerState : piloté
+   *  exclusivement par `playCard`, donc identique sur les deux clients.
+   *  Optionnel : les snapshots `match_state` d'avant l'ajout ne le portent pas
+   *  (lire avec `?? 0`). */
+  espritDeCorpsPlayed?: Record<string, number>;
 }
 
 export type GamePhase = "mulligan" | "playing" | "finished";
@@ -1093,7 +1153,13 @@ export interface GameState {
   // Vidé par le store après planification ; exclu du hash d'état.
   sequentialHits?: Array<{
     targetInstanceId: string;
-    type: "damage" | "heal";
+    type: "damage" | "heal" | "buff";
+    /** Texte du popup pour ce point précis (ex. « +1 ⚔ », « +1 ❤ »). Utile aux
+     *  boosts, dont chaque point peut porter sur une stat différente : sans lui
+     *  deux popups « +1 » consécutifs ne diraient pas CE qui a été gagné.
+     *  Symboles plutôt que mots — ces libellés viennent du moteur, qui ne
+     *  connaît pas la langue du joueur. */
+    label?: string;
   }>;
   // Transient : chaque paquet de dégâts RÉELLEMENT appliqué à une créature
   // pendant l'action (après immunités / Bouclier / Résistance / Armure). Le
@@ -1281,6 +1347,17 @@ export interface PlayCardAction {
    *  premier. Transmis tel quel à l'adversaire pour que les deux moteurs
    *  reconstruisent le même deck. */
   topdeckInstanceIds?: string[];
+  /** APPRENTISSAGE — le sort n'est PAS joué depuis la main : il est lancé par la
+   *  créature qui l'a mémorisé, dont voici l'instanceId. Troisième source de
+   *  `playCard`, sur le modèle de `fromGraveyard` : seule la provenance change,
+   *  tout le flux de coûts, de ciblage et de résolution reste commun.
+   *  `cardInstanceId` porte alors l'instance du sort mémorisé. */
+  learnedFromInstanceId?: string;
+  /** APPRENTISSAGE — sort de la main désigné par le joueur au moment d'APPRENDRE
+   *  (à l'invocation). Un instanceId, et non un index : le champ
+   *  `divinationChoiceIndex` est déjà partagé par Divination, Creuser et
+   *  Présage, et une quatrième mécanique dessus deviendrait ambiguë. */
+  learnSpellInstanceId?: string;
 }
 
 export interface AttackAction {
@@ -1335,6 +1412,9 @@ export interface TapActivateAction {
    *  capacité Sélection (selection / selection_magique / renfort_royal). Le
    *  moteur la cherche dans factionCardPool / allSpellsPool et l'ajoute en main. */
   selectionCardId?: number;
+  /** APPRENTISSAGE au tap : sort de la main désigné par le joueur. Voir
+   *  `PlayCardAction.learnSpellInstanceId` pour le choix d'un instanceId. */
+  learnSpellInstanceId?: string;
   /** Index de la carte gardée sur le dessus quand le keyword tap est une
    *  Divination. Porté par l'action (et non tiré au sort) pour que les deux
    *  clients rejouent le même ordre de deck. */

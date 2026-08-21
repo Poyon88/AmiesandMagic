@@ -77,12 +77,18 @@ let currentPlayerId = "";
 // Accumulateur de déclencheurs interactifs créés pendant l'action en cours.
 // Vidé au début d'applyAction, rattaché au state retourné à la fin.
 let pendingTriggerSink: PendingTrigger[] = [];
-// Accumulateur des points de dégâts/soin SÉQUENTIELS (scatter, Tempête) émis un
-// à un pendant l'action en cours, dans l'ordre. Vidé au début d'applyAction,
-// rattaché à state.sequentialHits à la fin (indice d'animation, hors hash). On
-// passe par un sink module-level — comme pendingTriggerSink — pour éviter de
-// threader le state dans resolveComposedEffect et tous ses appelants.
-let sequentialHitsSink: Array<{ targetInstanceId: string; type: "damage" | "heal" }> = [];
+// Accumulateur des points SÉQUENTIELS (dégâts/soin du scatter et de Tempête,
+// BOOSTS d'Esprit de corps) émis un à un pendant l'action en cours, dans
+// l'ordre. Vidé au début d'applyAction, rattaché à state.sequentialHits à la fin
+// (indice d'animation, hors hash). On passe par un sink module-level — comme
+// pendingTriggerSink — pour éviter de threader le state dans
+// resolveComposedEffect et tous ses appelants.
+//
+// Le store ne sait séparer deux effets QUE par un diff d'états : N points
+// appliqués dans la même action se fondent donc en un seul popup agrégé. Ce
+// canal est la réponse — il porte chaque point individuellement, et le store
+// écarte l'agrégat pour les cibles qui y figurent.
+let sequentialHitsSink: Array<{ targetInstanceId: string; type: "damage" | "heal" | "buff"; label?: string }> = [];
 // Registre de TOUS les paquets de dégâts réellement appliqués à une créature
 // pendant l'action (après immunités, Bouclier, Résistance, Armure). Le store
 // diffe les PV pour animer les survivants, mais une créature TUÉE quitte le
@@ -490,7 +496,7 @@ function mergeComposedCapabilities(
  *  board. Mirrors `hasKwInMode(_, kw, undefined)` semantics. */
 /** Mots-clés « deck » dont l'ordre RELATIF à l'entrée en jeu change le résultat.
  *  Tous lisent ou remanient le deck du contrôleur. */
-const ON_PLAY_DECK_EFFECTS = ["divination", "creuser", "fortifier", "preincanter", "inspiration"] as const;
+const ON_PLAY_DECK_EFFECTS = ["divination", "creuser", "presage", "fortifier", "preincanter", "inspiration"] as const;
 type OnPlayDeckEffect = (typeof ON_PLAY_DECK_EFFECTS)[number];
 
 /** Ceux que porte cette carte, dans l'ordre COMPOSÉ PAR L'AUTEUR.
@@ -1664,6 +1670,12 @@ function stripBoostsToBase(inst: CardInstance): void {
 }
 
 function returnInstanceToPlay(inst: CardInstance): void {
+  // APPRENTISSAGE : quitter le plateau fait oublier. Effacé à TOUTE remise en
+  // jeu, quelle qu'en soit la voie (Remontée-mort, Cycle éternel, résurrection,
+  // Dédoublement…) — c'est la ceinture qui rend la règle vraie sans avoir à
+  // recenser chaque chemin de retour.
+  inst.apprentissageSpell = undefined;
+
   const { attack, health } = persistentStats(inst);
 
   // PV : base + bonus de PV permanents conservés, soin complet. L'aura de PV
@@ -2732,12 +2744,37 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
   // ce qui garantit que les déclencheurs se comportent « comme depuis la main »
   // sans les redéclarer.
   const fromGraveyard = action.fromGraveyard === true;
-  const zone = fromGraveyard ? player.graveyard : player.hand;
-  const cardIndex = zone.findIndex(c => c.instanceId === action.cardInstanceId);
-  if (cardIndex === -1) return state;
+  // APPRENTISSAGE — TROISIÈME provenance, sur le modèle de Seconde vie : le sort
+  // n'est ni en main ni au cimetière, il est mémorisé par une créature du
+  // plateau. Seule la SOURCE change ; tout le flux qui suit (coûts, ciblage,
+  // résolution) reste commun, ce qui garantit qu'un sort lancé par une créature
+  // se comporte exactement comme depuis la main.
+  const apprenante = action.learnedFromInstanceId
+    ? player.board.find(c => c.instanceId === action.learnedFromInstanceId)
+    : undefined;
+  if (action.learnedFromInstanceId && !apprenante) return state;
+  if (apprenante) {
+    // Gardes d'ACTIVATION, identiques à tapActivate — re-validées ici parce que
+    // le moteur rejoue l'action chez l'adversaire, sur un état qui peut avoir
+    // changé depuis l'envoi.
+    if (apprenante.tapped || apprenante.isParalyzed) return state;
+    if (apprenante.hasSummoningSickness && !hasKw(apprenante, "charge")) return state;
+    if (!apprenante.apprentissageSpell) return state;
+    if (apprenante.apprentissageSpell.instanceId !== action.cardInstanceId) return state;
+  }
 
-  const cardInstance = zone[cardIndex];
+  const zone = fromGraveyard ? player.graveyard : player.hand;
+  // Le sort mémorisé ne vit dans AUCUNE zone : `cardIndex` reste à -1 et le
+  // `splice` de retrait est sauté plus bas — c'est ce qui le rend répétable.
+  const cardIndex = apprenante ? -1 : zone.findIndex(c => c.instanceId === action.cardInstanceId);
+  if (!apprenante && cardIndex === -1) return state;
+
+  const cardInstance = apprenante ? apprenante.apprentissageSpell! : zone[cardIndex];
   const card = cardInstance.card;
+
+  // Un sort appris reste un SORT : la branche créature ci-dessous ne doit jamais
+  // être atteinte par ce chemin.
+  if (apprenante && card.card_type !== "spell") return state;
 
   // Depuis le cimetière : réservé aux CRÉATURES portant encore Seconde vie.
   // Re-validé ici parce que le moteur rejoue l'action chez l'adversaire.
@@ -2819,7 +2856,9 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
   }
   // Remove the played card from hand FIRST so it can never be its own discard
   // target and so hand-size checks downstream are accurate.
-  zone.splice(cardIndex, 1);
+  // Un sort MÉMORISÉ ne quitte rien : il reste sur sa créature, prêt à être
+  // relancé au prochain tour.
+  if (!apprenante) zone.splice(cardIndex, 1);
   // La créature ressuscitée PERD Seconde vie : sans ça elle retournerait au
   // cimetière avec sa capacité intacte et serait rejouable indéfiniment.
   if (fromGraveyard) {
@@ -2884,6 +2923,37 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     const pos = action.boardPosition ?? player.board.length;
     player.board.splice(pos, 0, cardInstance);
 
+    // APPRENTISSAGE — oubli à l'entrée en jeu. Le sort mémorisé n'existe QUE
+    // tant que la créature est sur le plateau : une créature renvoyée en main
+    // puis rejouée ne doit pas retrouver son ancien sort. Posé ICI, donc AVANT
+    // les déclencheurs d'invocation — sinon un Apprentissage en mode invocation
+    // effacerait ce qu'il vient d'apprendre.
+    cardInstance.apprentissageSpell = undefined;
+
+    // Esprit de corps : le compteur d'HISTORIQUE du contrôleur, par clan.
+    //
+    // Il s'incrémente à la POSE, quel que soit le déclencheur porté par la
+    // créature — une Esprit de corps « à la mort » grossit la troupe dès son
+    // arrivée, même si elle ne gagnera rien avant de mourir.
+    //
+    // `!fromGraveyard` est la garde qui matérialise « posée depuis la main » :
+    // Seconde vie pose depuis le cimetière et ne compte pas, pas plus
+    // qu'Invocation X, Appel du clan, Résurrection ou un token — aucun de ces
+    // chemins ne passe par ici.
+    //
+    // Le drapeau est posé AVANT le bloc de déclenchement d'entrée en jeu :
+    // `espritDeCorpsPoints` retranche la source d'elle-même, donc l'ordre entre
+    // l'incrément et la lecture n'est pas load-bearing — c'est justement ce que
+    // le drapeau achète.
+    if (!fromGraveyard && cardInstance.card.clan && hasKw(cardInstance, "esprit_de_corps")) {
+      const clan = cardInstance.card.clan;
+      player.espritDeCorpsPlayed = {
+        ...(player.espritDeCorpsPlayed ?? {}),
+        [clan]: (player.espritDeCorpsPlayed?.[clan] ?? 0) + 1,
+      };
+      cardInstance.espritDeCorpsCounted = true;
+    }
+
     // ── On-summon triggers ──
 
     // Douleur X: drawback — la créature inflige X dégâts à votre héros
@@ -2935,6 +3005,14 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
         }
         case "creuser":
           resolveCreuser(player, getKwX(cardInstance, "creuser", undefined, 1), action.divinationChoiceIndex);
+          break;
+        case "presage":
+          // Présage partage le picker de Divination, donc le même champ
+          // d'action. Sa place DANS cette passe ordonnée est load-bearing :
+          // c'est elle qui permet à un auteur de composer « Divination puis
+          // Présage » sur une même carte et d'être obéi — la combinaison qui
+          // justifie la capacité.
+          resolvePresage(player, action.divinationChoiceIndex);
           break;
         case "fortifier": {
           const fo = cardInstance.card.keyword_instances?.find(i => i.id === "fortifier" && !i.mode);
@@ -3073,6 +3151,22 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     if (hasKwOnPlay(cardInstance, "discipline")) {
       const { x, y } = disciplineValues(cardInstance, undefined);
       if (boardIsDisciplined(player, manaCost)) applyRenforcementSelf(cardInstance, x, y);
+    }
+
+    // Apprentissage (invocation) : la créature retire un sort de la main et le
+    // mémorise. Le joueur l'a désigné dans la modale ; sans désignation (client
+    // sans modale) rien n'est appris — mieux vaut ne rien faire que consommer
+    // une carte au hasard dans le dos du joueur.
+    if (hasKwOnPlay(cardInstance, "apprentissage")) {
+      resolveApprentissage(cardInstance, player, action.learnSpellInstanceId);
+    }
+
+    // Esprit de corps (invocation) : un point par AUTRE créature Esprit de
+    // corps du même clan déjà posée depuis la main, chacun tiré au hasard entre
+    // +1 ATK et +1 PV. La toute première posée ne gagne donc rien — elle vient
+    // de s'incrémenter elle-même juste au-dessus, et s'en retranche.
+    if (hasKwOnPlay(cardInstance, "esprit_de_corps")) {
+      resolveEspritDeCorps(cardInstance, player);
     }
 
     // Entrainement X (invocation) : +X/+X aux créatures en main de même faction.
@@ -3714,6 +3808,13 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     if (action.divinationChoiceIndex != null && targetMap["creuser_0"] == null) {
       targetMap["creuser_0"] = String(action.divinationChoiceIndex);
     }
+    // PRÉSAGE : même picker, même conversion, slot dédié. Un sort qui porterait
+    // À LA FOIS Creuser et Présage recevrait le même index dans les deux slots —
+    // limite héritée du champ unique `divinationChoiceIndex`, partagée avec
+    // Creuser, et sans conséquence tant qu'aucune carte ne cumule les deux.
+    if (action.divinationChoiceIndex != null && targetMap["presage_0"] == null) {
+      targetMap["presage_0"] = String(action.divinationChoiceIndex);
+    }
 
     // Track spell in history (exclude spells with "relancer" to prevent loops)
     const hasRelancer = card.spell_keywords?.some(kw => kw.id === "relancer") ?? false;
@@ -3734,7 +3835,14 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     settleSpellDeaths(ctx);
     // BOOMERANG : le sort repart dans le deck plutôt qu'au cimetière. Il n'y
     // transite JAMAIS — aucun effet de cimetière ne le voit passer.
-    if (spellHasBoomerang(card)) resolveBoomerang(player, cardInstance);
+    // Un sort MÉMORISÉ ne va jamais au cimetière — c'est tout le propos
+    // d'Apprentissage. Boomerang n'a pas davantage de sens ici : le sort n'a
+    // pas de deck où repartir.
+    if (apprenante) {
+      // L'instance courante peut être une COPIE (cloneStateForAction) : on
+      // engage la créature telle qu'elle vit dans le nouvel état.
+      apprenante.tapped = true;
+    } else if (spellHasBoomerang(card)) resolveBoomerang(player, cardInstance);
     else player.graveyard.push(cardInstance);
     recalculateAuras(player, opponent);
   }
@@ -4387,6 +4495,10 @@ function resolveSpellKeywords(
             // getCapabilities() reads — leaving it would let a backfilled
             // creature keep every curated AND composed ability through silence.
             target.card = { ...target.card, keywords: [], keyword_instances: null, capabilities: null };
+            // Apprentissage : la créature oublie son sort en même temps que ses
+            // pouvoirs. Sans cela, une créature qui réapprendrait la capacité
+            // (Mimique, Totem) verrait ressurgir un sort censé être oublié.
+            target.apprentissageSpell = undefined;
             target.hasDivineShield = false;
             target.contresortActive = false;
             target.isParalyzed = false;
@@ -4582,6 +4694,17 @@ function resolveSpellKeywords(
         const raw = ctx.targetMap["creuser_0"];
         const idx = raw != null ? parseInt(raw, 10) : 0;
         resolveCreuser(ctx.caster, kw.amount ?? 1, Number.isNaN(idx) ? 0 : idx);
+        break;
+      }
+      case "presage": {
+        // Slot absent ⇒ `undefined`, donc désignation AU HASARD. C'est le
+        // comportement voulu pour un sort RELANCÉ ou DÉCHAÎNÉ : personne n'est
+        // là pour désigner. Présage n'a donc pas besoin du pré-tirage que
+        // Sélection a dû se faire ajouter pour ne pas disparaître en silence —
+        // son repli est déjà le bon.
+        const rawP = ctx.targetMap["presage_0"];
+        const idxP = rawP != null ? parseInt(rawP, 10) : NaN;
+        resolvePresage(ctx.caster, Number.isNaN(idxP) ? undefined : idxP);
         break;
       }
       case "retour_differe": {
@@ -5717,6 +5840,51 @@ function resolveBoomerang(player: PlayerState, spell: CardInstance): void {
   player.deck.splice(idx, 0, spell);
 }
 
+// ─── APPRENTISSAGE ──────────────────────────────────────────────────────────
+
+/** Les sorts de la main, seuls candidats à l'apprentissage. Source UNIQUE du
+ *  picker côté client et du tirage au sort côté moteur : deux listes séparées
+ *  finiraient par diverger, et le joueur désignerait alors un sort que le
+ *  moteur ne connaît pas. */
+export function handSpellsFor(player: PlayerState): CardInstance[] {
+  return player.hand.filter(c => c.card.card_type === "spell");
+}
+
+/** APPRENTISSAGE — retire un sort de la main et le mémorise sur `source`.
+ *
+ *  `spellInstanceId` absent ⇒ personne n'a pu désigner (attaque, tour adverse) :
+ *  on tire au sort avec la RNG semée, comme Divination hors invocation.
+ *
+ *  ⚠️ CONTRAT RNG : aucune consommation quand il n'y a rien à apprendre (déjà un
+ *  sort mémorisé, ou aucun sort en main). Le golden engine-regression reste donc
+ *  immobile — sa bibliothèque synthétique ne porte pas la capacité. */
+function resolveApprentissage(
+  source: CardInstance,
+  owner: PlayerState,
+  spellInstanceId?: string,
+): void {
+  // Un seul sort, DÉFINITIF : un second déclenchement ne redemande rien.
+  if (source.apprentissageSpell) return;
+  const candidats = handSpellsFor(owner);
+  if (candidats.length === 0) return;
+  const choisi = (spellInstanceId
+    ? candidats.find(c => c.instanceId === spellInstanceId)
+    : undefined) ?? (spellInstanceId ? undefined : candidats[Math.floor(rng() * candidats.length)]);
+  // Désignation fournie mais introuvable (main désynchronisée, action forgée) :
+  // on ne se rabat PAS sur un tirage — cela consommerait un `rng()` chez un
+  // seul des deux clients et décalerait leurs flux pour le reste de la partie.
+  if (!choisi) return;
+  owner.hand = owner.hand.filter(c => c.instanceId !== choisi.instanceId);
+  source.apprentissageSpell = choisi;
+}
+
+/** Nombre de cartes que Présage révèle. Figé (arbitrage de l'auteur) : la montée
+ *  en puissance vient de la PRÉPARATION du deck, pas d'un paramètre.
+ *  Exporté : le store découpe la même tranche pour alimenter la modale, et les
+ *  deux découpes DOIVENT coïncider — l'index cliqué désigne sinon une autre
+ *  carte que celle que ce résolveur retire du deck. */
+export const PRESAGE_REVEAL_COUNT = 3;
+
 /** CREUSER X — regarde les X cartes du DESSOUS du deck et en remonte une sur le
  *  dessus ; les autres retournent au fond dans leur ordre initial.
  *
@@ -5733,6 +5901,39 @@ function resolveCreuser(player: PlayerState, x: number, choiceIndex: number | un
     if (i !== idx) player.deck.push(bottom[i]); // les autres repartent au fond
   }
   player.deck.unshift(chosen); // la carte choisie passe sur le dessus
+}
+
+/** PRÉSAGE — révèle les 3 premières cartes du deck ; le joueur en désigne une,
+ *  et si c'est bien celle qui était au SOMMET elle part dans sa main. Puis tout
+ *  retourne au deck, qui est remélangé en entier.
+ *
+ *  `choiceIndex` indexe le deck dans son ORDRE RÉEL. Le mélange que voit le
+ *  joueur est un habillage purement CLIENT : seul le contrôleur voit la modale,
+ *  et l'action diffusée ne porte que cet index réel. La permutation n'a donc
+ *  jamais besoin d'être partagée entre les deux clients — elle ne touche ni
+ *  `rngState`, ni le hash de synchro, ni ce résolveur.
+ *
+ *  `undefined` ⇒ personne n'a pu choisir (attaque, pioche, tour adverse) : on
+ *  désigne au hasard avec la RNG semée, comme Divination hors invocation.
+ *
+ *  ⚠️ CONTRAT RNG : deck vide ⇒ on sort AVANT toute consommation. Sinon le coût
+ *  est de `deck.length - 1` appels pour le mélange, plus 1 pour la désignation
+ *  automatique. Tout se passe dans applyAction, donc à l'identique des deux
+ *  côtés. */
+function resolvePresage(player: PlayerState, choiceIndex: number | undefined): void {
+  if (player.deck.length === 0) return;
+  const revealed = player.deck.splice(0, Math.min(PRESAGE_REVEAL_COUNT, player.deck.length));
+  const idx = choiceIndex != null
+    ? Math.min(Math.max(0, choiceIndex), revealed.length - 1)
+    : Math.floor(rng() * revealed.length);
+  // La carte du dessus est, par construction, celle d'indice 0 de la tranche.
+  // Main pleine : la carte reste dans le deck plutôt que de disparaître — même
+  // garde que Traque du destin.
+  if (idx === 0 && player.hand.length < MAX_HAND_SIZE) {
+    player.hand.push(revealed.shift()!);
+  }
+  player.deck.push(...revealed);
+  player.deck = shuffleArray(player.deck);
 }
 
 /** DÉVORATION — détruit l'unité ciblée ; la source absorbe définitivement son
@@ -5989,6 +6190,11 @@ function cleanDeadCreatures(player: PlayerState): CardInstance[] {
       // Stamp the death turn so on-play triggers like Instinct de meute
       // can ask "did any same-faction ally die during the current turn?".
       c.diedOnTurn = currentTurnNumber;
+      // APPRENTISSAGE : le sort mémorisé est PERDU avec elle. Effacé ici plutôt
+      // que laissé traîner sur l'instance du cimetière — sinon la carte y
+      // afficherait une pastille pour un sort qui n'existe plus, et un effet de
+      // remise en jeu le ressusciterait.
+      c.apprentissageSpell = undefined;
       dead.push(c);
     } else {
       alive.push(c);
@@ -6803,6 +7009,69 @@ function applyGloire(inst: CardInstance): void {
   inst.gloireStacks = (inst.gloireStacks ?? 0) + 1;
 }
 
+// ─── Esprit de corps : le compteur d'historique et le tirage ────────────────
+//
+// Esprit de corps est un Renforcement dont la TAILLE vient d'un compteur de
+// partie, et dont la RÉPARTITION vient du hasard. Deux fonctions, une pour
+// chaque moitié.
+
+/** Combien de points CETTE carte gagnerait si elle déclenchait maintenant.
+ *
+ *  Source unique du moteur ET de l'affichage (le « (2) » de la description est
+ *  ce même nombre) : les deux ne peuvent donc pas se contredire à l'écran.
+ *
+ *  La créature s'exclut de son propre décompte dès qu'elle a été comptée, ce
+ *  qui rend la règle identique à tous les déclencheurs : « une AUTRE créature
+ *  Esprit de corps du même clan déjà jouée ». En main, la carte n'est pas
+ *  encore comptée et affiche donc le total complet — exactement ce qu'elle
+ *  gagnera en arrivant. Sur le plateau elle affiche un de moins.
+ *
+ *  Sans clan, aucun point : le compteur est indexé PAR clan, et une créature
+ *  sans clan n'appartient à aucune troupe (même repli qu'Appel du clan). */
+export function espritDeCorpsPoints(
+  owner: PlayerState,
+  card: Pick<Card, "clan">,
+  inst?: Pick<CardInstance, "espritDeCorpsCounted"> | null,
+): number {
+  const clan = card.clan;
+  if (!clan) return 0;
+  const played = owner.espritDeCorpsPlayed?.[clan] ?? 0;
+  return Math.max(0, played - (inst?.espritDeCorpsCounted ? 1 : 0));
+}
+
+/** Résout Esprit de corps pour `source`, quel que soit le déclencheur.
+ *
+ *  Les points sont appliqués UN PAR UN, et chacun est annoncé au store via
+ *  `sequentialHitsSink`. Appliquer le total d'un coup donnerait exactement le
+ *  même état — mais le store ne sait découper une action que par un diff, et
+ *  n'aurait donc affiché qu'un seul popup « +3 » : le joueur ne verrait pas la
+ *  troupe se renforcer compteur par compteur, ni sur quelle stat chaque tirage
+ *  est tombé. C'est le même parti pris que les dégâts point par point du
+ *  scatter, qui utilisent le même canal.
+ *
+ *  No-op silencieux (et sans consommation de RNG) quand il n'y a aucun point à
+ *  distribuer — c'est le cas de la toute première créature posée.
+ *
+ *  ⚠️ CONTRAT RNG, load-bearing : EXACTEMENT `points` appels à `rng()`, sur tous
+ *  les chemins. Le flux aléatoire est partagé et fait partie de l'état répliqué
+ *  — un appel de plus d'un côté décale les deux clients pour tout le reste de la
+ *  partie. */
+function resolveEspritDeCorps(source: CardInstance, owner: PlayerState): void {
+  const points = espritDeCorpsPoints(owner, source.card, source);
+  if (points <= 0) return;
+  for (let i = 0; i < points; i++) {
+    const enAttaque = rng() < 0.5;
+    applyRenforcementSelf(source, enAttaque ? 1 : 0, enAttaque ? 0 : 1);
+    // Symboles et non mots : ces libellés viennent du moteur, qui ne connaît
+    // pas la langue du joueur.
+    sequentialHitsSink.push({
+      targetInstanceId: source.instanceId,
+      type: "buff",
+      label: enAttaque ? "+1 ⚔" : "+1 ❤",
+    });
+  }
+}
+
 // Renforcement multiple : +X/+Y permanent à toutes les créatures du contrôleur
 // de la race ou du clan ciblé (clan prioritaire). La source est exclue. Même
 // pattern de buff permanent que le sort "renforcement" (modifie card + stats).
@@ -6936,6 +7205,22 @@ function resolveCuratedKeywordEffect(
       if (boardIsDisciplined(owner, effectiveManaCost(source, owner))) {
         withComposedMode(inst?.mode, () => applyRenforcementSelf(source, x, y));
       }
+      return;
+    }
+    case "esprit_de_corps": {
+      // Mort / attaque / tap / retour / fin de tour / pioche / PV bas : même
+      // calcul qu'à l'invocation, lu à l'instant du déclenchement — le
+      // compteur a pu grossir depuis que la source est arrivée.
+      //
+      // Contrairement à Discipline et Renforcement, le mode « mort » n'est pas
+      // dégradé : le compteur est un historique du JOUEUR, pas une lecture du
+      // plateau, donc il reste exact même quand la source vient de le quitter.
+      // Le gain part en revanche au cimetière avec elle — comme ses voisines.
+      //
+      // En « fin de tour » le bonus retombe à CHAQUE tour, et grossit à mesure
+      // que d'autres porteurs sont joués : l'empilement est voulu, pas un
+      // oubli de garde-fou.
+      withComposedMode(inst?.mode, () => resolveEspritDeCorps(source, owner));
       return;
     }
     case "entrainement": {
@@ -7109,6 +7394,26 @@ function resolveCuratedKeywordEffect(
       // Modes curés : aucun picker possible (mort, attaque, tour adverse) — on
       // remonte la première carte révélée, choix par défaut assumé.
       resolveCreuser(owner, x, 0);
+      break;
+    }
+    case "apprentissage": {
+      // Fin de tour / attaque / PV bas : aucune fenêtre de choix n'est ouvrable,
+      // le sort appris est donc tiré au sort parmi ceux de la main — même parti
+      // pris que Divination. (Mort et retour en main ne sont pas proposés : la
+      // capacité est dans CURATED_ONBOARD_ONLY_IDS.)
+      resolveApprentissage(source, owner, undefined);
+      break;
+    }
+    case "presage": {
+      // Mort / attaque / retour / fin de tour / pioche / PV bas : aucune fenêtre
+      // de choix n'est ouvrable ici, la désignation part donc AU HASARD — même
+      // parti pris que Divination. Le joueur garde sa chance sur 3 mais perd la
+      // certitude que lui donnerait une préparation du deck.
+      //
+      // Le hasard plutôt que 0 (contrairement à Creuser juste au-dessus) :
+      // ici l'indice 0 est la BONNE réponse, un défaut à 0 ferait donc réussir
+      // Présage à tous les coups sans que personne n'ait rien deviné.
+      resolvePresage(owner, undefined);
       break;
     }
     case "retour_differe": {
@@ -7755,6 +8060,18 @@ export function tapActivate(state: GameState, action: TapActivateAction): GameSt
         if (i !== idxDiv) player.deck.push(topDiv[i]);
       }
     }
+  } else if (instance.id === "apprentissage") {
+    // Apprentissage AU TAP : le joueur désigne le sort. Sans cette branche le
+    // résolveur curé tirerait au hasard — inacceptable ici, la carte retirée de
+    // la main est un vrai choix stratégique.
+    resolveApprentissage(source, player, action.learnSpellInstanceId);
+  } else if (instance.id === "presage") {
+    // Présage AU TAP : même règle qu'à l'invocation — le joueur désigne. Sans
+    // cette branche le résolveur curé tirerait au hasard, ce qui priverait la
+    // capacité de son seul intérêt (reconnaître la carte qu'on vient de
+    // remonter). Index absent (client sans modale) → 0, donc désignation juste :
+    // déterministe, et rejouable à l'identique par le pair.
+    resolvePresage(player, action.divinationChoiceIndex ?? 0);
   } else if (instance.id === "selection" || instance.id === "selection_magique" || instance.id === "renfort_royal") {
     // Sélection au tap : la carte choisie (modale « 1 parmi 3 ») est ajoutée en
     // main. Lookup dans les deux pools comme pour l'invocation.
@@ -8702,6 +9019,51 @@ export function canPlayCard(state: GameState, cardInstanceId: string): boolean {
   return true;
 }
 
+/** APPRENTISSAGE — la créature peut-elle lancer son sort mémorisé MAINTENANT ?
+ *
+ *  Source UNIQUE du moteur (qui refuse l'action) et de l'interface (qui grise
+ *  le bouton) : un écart entre les deux laisserait une activation proposée puis
+ *  refusée en silence, indiscernable d'un pouvoir cassé.
+ *
+ *  Reprend `canPlayCard` avec DEUX différences, et elles comptent :
+ *    · les gardes d'ACTIVATION s'ajoutent (engagée, paralysée, mal d'invocation) ;
+ *    · le test défausse/repli perd son `-1`. Ce `-1` compte la carte jouée, qui
+ *      quitte la main — or un sort mémorisé n'y est pas. Le garder refuserait
+ *      un sort à « défausser 1 » alors qu'une carte attend en main. */
+export function creatureCanCastLearnedSpell(state: GameState, creatureInstanceId: string): boolean {
+  const player = state.players[state.currentPlayerIndex];
+  const source = player.board.find(c => c.instanceId === creatureInstanceId);
+  if (!source) return false;
+  if (source.tapped || source.isParalyzed) return false;
+  if (source.hasSummoningSickness && !hasKw(source, "charge")) return false;
+  const spell = source.apprentissageSpell;
+  if (!spell) return false;
+
+  if (effectiveManaCost(spell, player) > player.mana) return false;
+  const lifeCost = getLifeCost(spell.card);
+  if (lifeCost > 0 && player.hero.hp - lifeCost <= 0) return false;
+  // Sans le `-1` : le sort mémorisé ne puise pas dans la main.
+  if (player.hand.length < getDiscardCost(spell.card) + getTopdeckCost(spell.card)) return false;
+  if (player.board.length < getSacrificeCost(spell.card)) return false;
+  if (getExileCost(spell.card) > player.deck.length) return false;
+
+  // Même garde que pour un sort joué depuis la main : un sort qui ne trouve
+  // AUCUNE cible se consumerait dans le vide. Ici la conséquence serait pire —
+  // le joueur y perdrait le tour d'activation de sa créature.
+  const slots = getSpellTargetSlots(spell.card);
+  if (slots.length > 0 && slots.every(sl => getSpellTargets(state, spell.card, sl.type).length === 0)) {
+    return false;
+  }
+  return true;
+}
+
+/** APPRENTISSAGE — la carte doit-elle ouvrir le picker « quel sort apprendre ? »
+ *  à son entrée en jeu ? Gaté sur le mode on-play : un Apprentissage réglé en
+ *  fin de tour ou à l'attaque tire au sort à son déclenchement, sans modale. */
+export function creatureNeedsApprentissage(card: Card): boolean {
+  return card.card_type === "creature" && cardHasKwOnPlay(card, "apprentissage" as Keyword);
+}
+
 export function canAttack(state: GameState, attackerInstanceId: string): boolean {
   const player = state.players[state.currentPlayerIndex];
   const attacker = player.board.find(c => c.instanceId === attackerInstanceId);
@@ -9053,6 +9415,17 @@ export function getCreuserCards(player: PlayerState, x: number): CardInstance[] 
   if (x <= 0 || player.deck.length === 0) return [];
   const count = Math.min(x, player.deck.length);
   return player.deck.slice(player.deck.length - count);
+}
+
+/** PRÉSAGE — la carte doit-elle ouvrir le picker « désigne la carte du dessus »
+ *  à son entrée ? Vaut pour les CRÉATURES comme pour les SORTS, sur le modèle de
+ *  `cardNeedsCreuser`. Gaté sur le mode on-play : un Présage réglé en mort/tap
+ *  se résout au hasard à son déclenchement, sans modale. */
+export function cardNeedsPresage(card: Card): boolean {
+  if (card.card_type === "spell") {
+    return (card.spell_keywords ?? []).some(kw => kw.id === "presage");
+  }
+  return cardHasKwOnPlay(card, "presage" as Keyword);
 }
 
 export function creatureNeedsTraqueDuDestin(card: Card): boolean {

@@ -389,6 +389,10 @@
         "label": "Disziplin +X/+Y",
         "desc": "Wenn alle deine Kreaturen im Spiel Kosten derselben Parität wie ihre eigenen haben, erhält sie dauerhaft +X ATK und +Y LP."
       },
+      "esprit_de_corps": {
+        "label": "Korpsgeist",
+        "desc": "Erhält zufällig +1 ATK oder +1 LP für jede bereits gespielte Kreatur {clan_de} mit Korpsgeist."
+      },
       "impact": {
         "label": "Wucht X",
         "desc": "Fügt einem gezielten Ziel (Kreatur oder Held, beliebige Seite) X Schaden zu."
@@ -420,6 +424,14 @@
       "creuser": {
         "label": "Graben X",
         "desc": "Sieh dir die untersten X Karten deines Decks an; lege eine davon oben auf."
+      },
+      "presage": {
+        "label": "Vorzeichen",
+        "desc": "Deckt die obersten 3 Karten ungeordnet auf; benenne die oberste, um sie auf die Hand zu nehmen, dann mische das Deck."
+      },
+      "apprentissage": {
+        "label": "Lernen",
+        "desc": "Entfernt einen Zauber aus deiner Hand und merkt ihn sich: die Kreatur kann ihn gegen seine Kosten wirken."
       },
       "retour_differe": {
         "label": "Verzögerte Rückkehr",
@@ -610,6 +622,10 @@
       "creuser": {
         "label": "Graben X",
         "desc": "Sieh dir die untersten X Karten deines Decks an; lege eine davon oben auf"
+      },
+      "presage": {
+        "label": "Vorzeichen",
+        "desc": "Deckt die obersten 3 Karten ungeordnet auf; benenne die oberste, um sie auf die Hand zu nehmen, dann mische das Deck."
       },
       "retour_differe": {
         "label": "Verzögerte Rückkehr",
@@ -1274,7 +1290,8 @@
       "rm_scope_clan": " des Klans {v}",
       "rm_scope_all": "",
       "scope_target": "auf eine verbündete Einheit",
-      "scope_all": "auf alle deine Einheiten"
+      "scope_all": "auf alle deine Einheiten",
+      "edc_compte": "Erhält {n}-mal zufällig +1 ATK oder +1 LP (1 pro bereits gespielter Kreatur {clan_de} mit Korpsgeist)."
     },
     "sets": {
       "1": "Basis-Set"
@@ -2143,7 +2160,13 @@
     "mode_suffix_death": " · auf den Tod",
     "mode_suffix_tap": " · tap",
     "mode_suffix_return": " · zurück auf die Hand",
-    "mode_suffix_end_of_turn": " · Rundenende"
+    "mode_suffix_end_of_turn": " · Rundenende",
+    "presage_title": "🌙 Vorzeichen",
+    "presage_subtitle": "Welche ist die oberste Karte deines Decks?",
+    "presage_hit": "Gut erkannt — sie wandert auf deine Hand.",
+    "presage_miss": "Daneben. Die richtige Karte ist grün.",
+    "apprentissage_title": "📖 Lernen",
+    "apprentissage_subtitle": "Welchen Zauber soll die Kreatur lernen?"
   },
   "tutorial": {
     "page_eyebrow": "Lerne die Kunst des Duells",

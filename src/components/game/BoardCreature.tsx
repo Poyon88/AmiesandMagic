@@ -6,7 +6,7 @@ import Image from "next/image";
 import type { CardInstance, GameAction } from "@/lib/game/types";
 import { useGameStore, selectPowerTargetingColor } from "@/lib/store/gameStore";
 import { primaryThresholdGlow } from "@/lib/game/threshold-glow";
-import { tapKeywordNeedsTarget, getCreatureTapComposedUid } from "@/lib/game/engine";
+import { tapKeywordNeedsTarget, getCreatureTapComposedUid, espritDeCorpsPoints, creatureCanCastLearnedSpell } from "@/lib/game/engine";
 import { getTokenManaCost } from "@/lib/game/abilities";
 import { KEYWORD_SYMBOLS, xNumeral, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordBadgeValue, applyKeywordValueToLabel, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
 import KeywordIcon from "@/components/shared/KeywordIcon";
@@ -82,6 +82,16 @@ function BoardCreature({
     const owner = s.gameState.players.find(p => p.board.some(c => c.instanceId === creature.instanceId));
     return owner ? primaryThresholdGlow(creature.card, s.gameState, owner.id, creature.manaCostReduction ?? 0) : null;
   });
+  // Esprit de corps : combien de points cette créature gagnerait à son prochain
+  // déclenchement. Comme le halo de seuil, la lecture porte sur le CONTRÔLEUR
+  // de l'unité et non sur le joueur local — une Esprit de corps adverse affiche
+  // le compteur de son propre camp, ce qui rend lisible un compteur que rien
+  // d'autre ne montre.
+  const espritCount = useGameStore(s => {
+    if (!s.gameState) return null;
+    const owner = s.gameState.players.find(p => p.board.some(c => c.instanceId === creature.instanceId));
+    return owner ? espritDeCorpsPoints(owner, creature.card, creature) : null;
+  });
   const selectedSacrificeIds = useGameStore(s => s.selectedSacrificeIds);
   const toggleSacrificeSelection = useGameStore(s => s.toggleSacrificeSelection);
   const activateTap = useGameStore(s => s.activateTap);
@@ -107,6 +117,16 @@ function BoardCreature({
   // Effet composé activable (on_activation) — uid, ou null. Utilisé si aucun
   // keyword tap classique n'est présent.
   const tapComposedUid = getCreatureTapComposedUid(card);
+  // APPRENTISSAGE — troisième forme de pouvoir activable : lancer le sort
+  // mémorisé. Le prédicat moteur vérifie tout (engagement, mal d'invocation,
+  // mana, coûts additionnels, cible disponible) — c'est LUI qui fait autorité,
+  // et non une reconstitution locale qui finirait par diverger et laisserait un
+  // bouton actif sur une activation que le moteur refuse.
+  const peutLancerSortAppris = useGameStore((s) => {
+    if (!s.gameState || !creature.apprentissageSpell) return false;
+    return creatureCanCastLearnedSpell(s.gameState, creature.instanceId);
+  });
+  const activateLearnedSpell = useGameStore((s) => s.activateLearnedSpell);
   // Base eligibility (engine-level: own + turn + not animating + not
   // already tapped + no sickness + has a tap instance). The Activer
   // button additionally hides during any targeting flow; the
@@ -119,7 +139,7 @@ function BoardCreature({
     && !creature.tapped
     && !creature.isParalyzed
     && (!creature.hasSummoningSickness || card.keywords.includes("charge"))
-    && (tapInstanceIdx !== null || tapComposedUid !== null);
+    && (tapInstanceIdx !== null || tapComposedUid !== null || peutLancerSortAppris);
   const canActivateTap = baseEligibleForTap && targetingMode === "none";
   // Resolve token template image: instance cards spawned by the engine
   // carry token_id when they originate from a saved template; fall back to
@@ -351,6 +371,11 @@ function BoardCreature({
           if (!instance) return;
           if (tapKeywordNeedsTarget(instance.id)) return;
           onAction?.(activateTap(creature.instanceId, tapInstanceIdx));
+        } else if (peutLancerSortAppris) {
+          // Le sort appris ouvre lui-même ses fenêtres de coût et de ciblage
+          // s'il en a besoin — rien à filtrer ici, contrairement aux pouvoirs
+          // curés dont on doit écarter ceux qui réclament une cible.
+          onAction?.(activateLearnedSpell(creature.instanceId));
         } else if (tapComposedUid) {
           // activateTapComposed ouvre le sélecteur si une cible est requise.
           onAction?.(activateTapComposed(creature.instanceId, tapComposedUid));
@@ -428,12 +453,15 @@ function BoardCreature({
           targeting / cost-payment / animation flow is in progress.
           Rendered OUTSIDE the clip-wrapper below so its `top: -22`
           offset isn't clipped by `overflow: hidden`. */}
-      {canActivateTap && (tapInstanceIdx !== null || tapComposedUid !== null) && (
+      {canActivateTap && (tapInstanceIdx !== null || tapComposedUid !== null || peutLancerSortAppris) && (
         <button
           onClick={(e) => {
             e.stopPropagation();
             if (tapInstanceIdx !== null) onAction?.(activateTap(creature.instanceId, tapInstanceIdx));
             else if (tapComposedUid) onAction?.(activateTapComposed(creature.instanceId, tapComposedUid));
+            // Apprentissage en DERNIER : une créature qui porte un autre pouvoir
+            // activable garde le sien, le sort appris ne le confisque pas.
+            else if (peutLancerSortAppris) onAction?.(activateLearnedSpell(creature.instanceId));
           }}
           style={{
             position: "absolute",
@@ -876,7 +904,7 @@ function BoardCreature({
             {entries.map((entry, idx) => {
               const { kw, mode } = entry;
               const x = entry.x ?? grantedX[kw];
-              const ctx = { card, instance: entry.instance, x, tokens: tokenTemplates };
+              const ctx = { card, instance: entry.instance, x, tokens: tokenTemplates, espritCount };
               const label = vocab.keywordLabelFor(kw, ctx);
               // Plus d'annotation de déclencheur : la couleur transmet le moment.
               const displayLabel = applyKeywordValueToLabel(kw, label, x, entry.instance);
@@ -890,6 +918,14 @@ function BoardCreature({
                   {desc && <div style={{ fontSize: 7 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
                   {/* Compagnons : les cartes liées, nommées, avec leur verso au survol. */}
                   {kw === "compagnons" && <CompagnonsNames ids={entry.instance?.linkedCardIds} scale={d * 0.18} />}
+                  {/* Apprentissage : le sort MÉMORISÉ, nommé et survolable —
+                      même pastille que les compagnons. Rendu ici seulement :
+                      une créature en main ou dans un overlay n'en porte jamais
+                      (le sort est effacé à chaque entrée en jeu). Visible des
+                      DEUX joueurs : c'est devenu un pouvoir du plateau. */}
+                  {kw === "apprentissage" && creature.apprentissageSpell && (
+                    <CompagnonsNames cards={[creature.apprentissageSpell.card]} scale={d * 0.18} icon="📖" />
+                  )}
                 </div>
               </div>
               );

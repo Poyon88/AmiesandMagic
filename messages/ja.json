@@ -389,6 +389,10 @@
         "label": "規律 +X/+Y",
         "desc": "自分の場のクリーチャーすべてのコストが自身のコストと同じ偶奇であるなら、ATKを+X、HPを+Y永続的に得る。"
       },
+      "esprit_de_corps": {
+        "label": "団結心",
+        "desc": "すでに出した{clan_de}〈団結心〉クリーチャー1体につき、ATK+1かHP+1をランダムに得る。"
+      },
       "impact": {
         "label": "衝撃 X",
         "desc": "対象（クリーチャーまたはヒーロー、どちらの陣営でも可）にXダメージを与える。"
@@ -420,6 +424,14 @@
       "creuser": {
         "label": "発掘X",
         "desc": "デッキの一番下からX枚のカードを見て、その中の1枚を一番上に置く。"
+      },
+      "presage": {
+        "label": "前兆",
+        "desc": "デッキの上から3枚をランダムな順で公開。最も上の1枚を指名すると手札に加わる。その後デッキをシャッフルする。"
+      },
+      "apprentissage": {
+        "label": "習得",
+        "desc": "手札から呪文を1枚取り除いて記憶する。このクリーチャーはコストを支払ってそれを唱えられる。"
       },
       "retour_differe": {
         "label": "遅延帰還",
@@ -610,6 +622,10 @@
       "creuser": {
         "label": "発掘X",
         "desc": "デッキの一番下からX枚のカードを見て、その中の1枚を一番上に置く"
+      },
+      "presage": {
+        "label": "前兆",
+        "desc": "デッキの上から3枚をランダムな順で公開。最も上の1枚を指名すると手札に加わる。その後デッキをシャッフルする。"
       },
       "retour_differe": {
         "label": "遅延帰還",
@@ -1274,7 +1290,8 @@
       "rm_scope_clan": "{v}クランの",
       "rm_scope_all": "",
       "scope_target": "味方ユニット1体に",
-      "scope_all": "あなたの全ユニットに"
+      "scope_all": "あなたの全ユニットに",
+      "edc_compte": "ATK+1かHP+1をランダムに{n}回得る（すでに出した{clan_de}〈団結心〉クリーチャー1体につき1回）。"
     },
     "sets": {
       "1": "基本セット"
@@ -2143,7 +2160,13 @@
     "mode_suffix_death": " · 死亡時",
     "mode_suffix_tap": " · タップ",
     "mode_suffix_return": " · 手札に戻す",
-    "mode_suffix_end_of_turn": " · ターン終了時"
+    "mode_suffix_end_of_turn": " · ターン終了時",
+    "presage_title": "🌙 前兆",
+    "presage_subtitle": "デッキの一番上のカードはどれ？",
+    "presage_hit": "正解 — 手札に加わる。",
+    "presage_miss": "はずれ。正解は緑の枠のカード。",
+    "apprentissage_title": "📖 習得",
+    "apprentissage_subtitle": "どの呪文を記憶する？"
   },
   "tutorial": {
     "page_eyebrow": "決闘の極意を学べ",
