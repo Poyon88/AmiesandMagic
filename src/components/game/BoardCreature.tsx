@@ -6,7 +6,7 @@ import Image from "next/image";
 import type { CardInstance, GameAction } from "@/lib/game/types";
 import { useGameStore, selectPowerTargetingColor } from "@/lib/store/gameStore";
 import { primaryThresholdGlow } from "@/lib/game/threshold-glow";
-import { tapKeywordNeedsTarget, getCreatureTapComposedUid, espritDeCorpsPoints, creatureCanCastLearnedSpell } from "@/lib/game/engine";
+import { tapKeywordNeedsTarget, getCreatureTapComposedUid, espritDeCorpsPoints, creatureCanCastLearnedSpell, peutActiverPouvoir } from "@/lib/game/engine";
 import { getTokenManaCost } from "@/lib/game/abilities";
 import { KEYWORD_SYMBOLS, xNumeral, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordBadgeValue, applyKeywordValueToLabel, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
 import KeywordIcon from "@/components/shared/KeywordIcon";
@@ -133,12 +133,14 @@ function BoardCreature({
   // double-click shortcut intentionally ignores `targetingMode` so the
   // single-click that selects this creature as attacker doesn't block
   // the double-click from firing.
+  // Les conditions d'activation viennent du MOTEUR (`peutActiverPouvoir`), et
+  // non d'une reconstitution locale : celle-ci lisait `card.keywords` là où le
+  // moteur lit `hasKw`, qui voit aussi les capacités CONFÉRÉES — une Traque
+  // accordée en cours de partie n'était donc pas vue des deux côtés.
   const baseEligibleForTap = isOwn
     && isMyTurn
     && !isAnimating
-    && !creature.tapped
-    && !creature.isParalyzed
-    && (!creature.hasSummoningSickness || card.keywords.includes("charge"))
+    && peutActiverPouvoir(creature)
     && (tapInstanceIdx !== null || tapComposedUid !== null || peutLancerSortAppris);
   const canActivateTap = baseEligibleForTap && targetingMode === "none";
   // Resolve token template image: instance cards spawned by the engine

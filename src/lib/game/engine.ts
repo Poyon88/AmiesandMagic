@@ -429,6 +429,58 @@ function hasKwInMode(ci: CardInstance, kw: Keyword, mode: import("./types").Keyw
 
 function hasKwOnPlay(ci: CardInstance, kw: Keyword): boolean { return hasKwInMode(ci, kw, undefined); }
 
+// ─── CONTRAT D'ACTIVATION ───────────────────────────────────────────────────
+//
+// « La créature active un pouvoir » a un sens précis, et il vaut pour TOUS les
+// pouvoirs activables : mot-clé au tap, effet composé on_activation, et sort
+// appris (Apprentissage). Deux moitiés, ci-dessous : ce qui l'AUTORISE, et ce
+// qu'elle PAIE en le faisant.
+//
+// Ces règles vivaient en clair dans `tapActivate`, seul chemin d'activation du
+// jeu. Apprentissage en a ouvert un second, qui passe par `playCard` : la
+// révélation de l'Ombre y a été oubliée, et une créature tapie relançait son
+// sort tour après tour en restant intouchable. D'où cette extraction — une
+// règle ajoutée ici s'applique désormais aux deux chemins, et au prédicat
+// d'interface qui grise le bouton.
+
+/** La créature peut-elle activer un pouvoir, quel qu'il soit ?
+ *
+ *  Exporté : l'INTERFACE l'utilise pour décider d'afficher le bouton. Elle
+ *  refaisait ce test à la main, et pas tout à fait pareil — elle lisait
+ *  `card.keywords.includes("charge")` là où le moteur lit `hasKw`, qui voit
+ *  aussi les capacités conférées. Une Traque accordée en cours de partie
+ *  n'était donc pas vue des deux côtés. */
+export function peutActiverPouvoir(source: CardInstance): boolean {
+  if (source.tapped) return false;
+  // Paralysie : la créature est inerte pour tout le tour — elle ne peut ni
+  // attaquer ni activer son pouvoir. (Le gate hasSummoningSickness ne suffit
+  // pas : Traque le contourne, et la paralysie peut être appliquée après
+  // l'untap, pendant le tour même de la créature.)
+  if (source.isParalyzed) return false;
+  // Traque (charge) autorise le pouvoir activable dès l'invocation, même si
+  // Traque est gagnée en cours de tour (où hasSummoningSickness peut rester vrai).
+  if (source.hasSummoningSickness && !hasKw(source, "charge")) return false;
+  return true;
+}
+
+/** Ce qu'une activation coûte, systématiquement : la créature s'engage, et une
+ *  Ombre se révèle.
+ *
+ *  ⚠️ À n'appeler qu'une fois l'activation CERTAINE — après les gardes, et
+ *  avant l'effet. Une activation refusée ne doit rien révéler (sinon on rend
+ *  une Ombre attaquable sans qu'elle ait rien fait), et l'effet doit voir une
+ *  créature déjà révélée (il peut la cibler).
+ *
+ *  Les deux appelants mutent un état CLONÉ qu'ils jettent en cas de refus
+ *  tardif (coût impayable), donc appeler tôt reste sans conséquence. */
+function engagerPourActivation(source: CardInstance): void {
+  source.tapped = true;
+  // Ombre : activer son pouvoir révèle la créature, au même titre qu'attaquer.
+  // Le libellé du mot-clé dit « tant qu'elle n'a pas effectué une action
+  // (attaque OU capacité) ».
+  if (hasKw(source, "ombre")) source.ombreRevealed = true;
+}
+
 /** Merge two `keyword_instances` lists, deduping on (id, mode). Used by
  *  copy-keyword effects (Mimique, Héritage du cimetière) so that the
  *  copier inherits the source's tap-mode and death-mode triggers, not
@@ -2757,24 +2809,12 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // Gardes d'ACTIVATION, identiques à tapActivate — re-validées ici parce que
     // le moteur rejoue l'action chez l'adversaire, sur un état qui peut avoir
     // changé depuis l'envoi.
-    if (apprenante.tapped || apprenante.isParalyzed) return state;
-    if (apprenante.hasSummoningSickness && !hasKw(apprenante, "charge")) return state;
+    if (!peutActiverPouvoir(apprenante)) return state;
     if (!apprenante.apprentissageSpell) return state;
     if (apprenante.apprentissageSpell.instanceId !== action.cardInstanceId) return state;
-
-    // OMBRE : lancer le sort appris est une ACTIVATION, elle révèle donc la
-    // créature — le libellé du mot-clé dit « tant qu'elle n'a pas effectué une
-    // action (attaque OU capacité) ». Sans cette ligne, une Ombre relançait son
-    // sort tour après tour en restant intouchable : exactement le défaut déjà
-    // corrigé sur les pouvoirs au tap (cf. tapActivate), que ce chemin
-    // réintroduisait en passant par playCard au lieu de tapActivate.
-    //
-    // Posé APRÈS les gardes — une activation refusée ne doit rien révéler — et
-    // sur `newState`, qui est jeté si l'un des tests de coût plus bas échoue.
-    // La créature est engagée ici pour la même raison, et dans le même ordre
-    // que tapActivate : gardes, puis engagement, puis effet.
-    if (hasKw(apprenante, "ombre")) apprenante.ombreRevealed = true;
-    apprenante.tapped = true;
+    // Lancer un sort appris est une ACTIVATION comme une autre : même contrat
+    // que le tap, donc même engagement et même révélation de l'Ombre.
+    engagerPourActivation(apprenante);
   }
 
   const zone = fromGraveyard ? player.graveyard : player.hand;
@@ -8006,26 +8046,7 @@ export function tapActivate(state: GameState, action: TapActivateAction): GameSt
   const opponent = newState.players[newState.currentPlayerIndex === 0 ? 1 : 0];
   const source = player.board.find(c => c.instanceId === action.sourceInstanceId);
   if (!source) return state;
-  if (source.tapped) return state;
-  // Paralysie : la créature est inerte pour tout le tour — elle ne peut ni
-  // attaquer ni activer son pouvoir. (Le gate hasSummoningSickness plus bas
-  // ne suffit pas : Charge le contourne, et la paralysie peut être appliquée
-  // après l'untap, pendant le tour même de la créature.)
-  if (source.isParalyzed) return state;
-  // Traque (charge) autorise le pouvoir activable dès l'invocation, même si
-  // Traque est gagnée en cours de tour (où hasSummoningSickness peut rester vrai).
-  if (source.hasSummoningSickness && !hasKw(source, "charge")) return state;
-
-  // Ombre : activer son pouvoir révèle la créature, au même titre qu'attaquer.
-  // Le libellé du mot-clé dit « tant qu'elle n'a pas effectué une action
-  // (attaque OU capacité) » ; seule l'attaque révélait, si bien qu'une Ombre
-  // pouvait taper son pouvoir tour après tour en restant intouchable.
-  // Posé APRÈS les gardes (tapped / paralysie / mal d'invocation) et AVANT les
-  // deux branches d'activation : une activation refusée ne doit rien révéler,
-  // et les chemins composé comme curé doivent révéler pareillement.
-  if (hasKw(source, "ombre")) {
-    source.ombreRevealed = true;
-  }
+  if (!peutActiverPouvoir(source)) return state;
 
   // Effet composé activable (on_activation) — référencé par uid.
   if (action.composedUid) {
@@ -8033,7 +8054,7 @@ export function tapActivate(state: GameState, action: TapActivateAction): GameSt
       c => c.composed && c.trigger === "on_activation" && c.uid === action.composedUid,
     );
     if (!cap?.composed) return state;
-    source.tapped = true;
+    engagerPourActivation(source);
     let chosen: string[] | undefined;
     if (action.targetMap) {
       const multi: string[] = [];
@@ -8054,7 +8075,7 @@ export function tapActivate(state: GameState, action: TapActivateAction): GameSt
   const instance = instances[action.instanceIdx];
   if (!instance || instance.mode !== "tap") return state;
 
-  source.tapped = true;
+  engagerPourActivation(source);
   if (instance.id === "divination") {
     // Divination AU TAP : même règle qu'à l'invocation — le joueur garde la
     // carte de son choix sur le dessus, les autres passent dessous. Le
@@ -9046,8 +9067,7 @@ export function creatureCanCastLearnedSpell(state: GameState, creatureInstanceId
   const player = state.players[state.currentPlayerIndex];
   const source = player.board.find(c => c.instanceId === creatureInstanceId);
   if (!source) return false;
-  if (source.tapped || source.isParalyzed) return false;
-  if (source.hasSummoningSickness && !hasKw(source, "charge")) return false;
+  if (!peutActiverPouvoir(source)) return false;
   const spell = source.apprentissageSpell;
   if (!spell) return false;
 
