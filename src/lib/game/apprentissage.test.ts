@@ -386,3 +386,51 @@ describe("l'interface et le moteur disent la même chose", () => {
     expect(creatureCanCastLearnedSpell(s, s.players[0].board[0].instanceId)).toBe(true);
   });
 });
+
+describe("lancer le sort appris est une ACTIVATION", () => {
+  /** Une apprenante TAPIE dans l'Ombre, sort déjà mémorisé, prête à lancer. */
+  function tapie(mana = 10) {
+    const s = mkState();
+    const victime = mkInstance(mkCard({ name: "Victime", attack: 1, health: 20 }));
+    s.players[1].board.push(victime);
+    const src = mkInstance(mkCard({
+      name: "Chamanesse", mana_cost: 1, attack: 2, health: 4,
+      keywords: ["apprentissage", "ombre"] as never,
+      keyword_instances: [{ id: "apprentissage" }] as KeywordInstance[],
+    } as Partial<Card>));
+    src.apprentissageSpell = trait();
+    src.hasSummoningSickness = false;
+    s.players[0].board.push(src);
+    s.players[0].mana = mana;
+    return { s, src, cible: victime.instanceId };
+  }
+
+  it("elle RÉVÈLE l'Ombre — sinon elle relancerait son sort en restant intouchable", () => {
+    // Le mot-clé promet « tant qu'elle n'a pas effectué une action (attaque OU
+    // capacité) ». Le sort appris passe par playCard et non par tapActivate,
+    // qui est le seul endroit où la révélation était écrite : ce chemin
+    // réintroduisait le défaut déjà corrigé sur les pouvoirs au tap.
+    const { s, src, cible } = tapie();
+    expect(src.ombreRevealed).toBe(false);
+    const st = lancer(s, cible, "Chamanesse");
+    expect(st.players[0].board.find(c => c.card.name === "Chamanesse")!.ombreRevealed).toBe(true);
+  });
+
+  it("une activation REFUSÉE ne révèle rien", () => {
+    // Mana insuffisant : l'action est rejetée, l'état d'origine est rendu tel
+    // quel. Révéler une Ombre pour une activation qui n'a pas eu lieu la
+    // rendrait attaquable sans qu'elle ait rien fait.
+    const { s, cible } = tapie(1); // le Trait coûte 2
+    const st = lancer(s, cible, "Chamanesse");
+    expect(st).toBe(s);
+    expect(s.players[0].board[0].ombreRevealed).toBe(false);
+  });
+
+  it("elle s'engage, et ne peut donc pas relancer dans le même tour", () => {
+    const { s, cible } = tapie();
+    const st = lancer(s, cible, "Chamanesse");
+    const apres = st.players[0].board.find(c => c.card.name === "Chamanesse")!;
+    expect(apres.tapped).toBe(true);
+    expect(creatureCanCastLearnedSpell(st, apres.instanceId)).toBe(false);
+  });
+});

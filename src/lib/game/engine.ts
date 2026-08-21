@@ -2761,6 +2761,20 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     if (apprenante.hasSummoningSickness && !hasKw(apprenante, "charge")) return state;
     if (!apprenante.apprentissageSpell) return state;
     if (apprenante.apprentissageSpell.instanceId !== action.cardInstanceId) return state;
+
+    // OMBRE : lancer le sort appris est une ACTIVATION, elle révèle donc la
+    // créature — le libellé du mot-clé dit « tant qu'elle n'a pas effectué une
+    // action (attaque OU capacité) ». Sans cette ligne, une Ombre relançait son
+    // sort tour après tour en restant intouchable : exactement le défaut déjà
+    // corrigé sur les pouvoirs au tap (cf. tapActivate), que ce chemin
+    // réintroduisait en passant par playCard au lieu de tapActivate.
+    //
+    // Posé APRÈS les gardes — une activation refusée ne doit rien révéler — et
+    // sur `newState`, qui est jeté si l'un des tests de coût plus bas échoue.
+    // La créature est engagée ici pour la même raison, et dans le même ordre
+    // que tapActivate : gardes, puis engagement, puis effet.
+    if (hasKw(apprenante, "ombre")) apprenante.ombreRevealed = true;
+    apprenante.tapped = true;
   }
 
   const zone = fromGraveyard ? player.graveyard : player.hand;
@@ -3838,12 +3852,10 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // Un sort MÉMORISÉ ne va jamais au cimetière — c'est tout le propos
     // d'Apprentissage. Boomerang n'a pas davantage de sens ici : le sort n'a
     // pas de deck où repartir.
-    if (apprenante) {
-      // L'instance courante peut être une COPIE (cloneStateForAction) : on
-      // engage la créature telle qu'elle vit dans le nouvel état.
-      apprenante.tapped = true;
-    } else if (spellHasBoomerang(card)) resolveBoomerang(player, cardInstance);
-    else player.graveyard.push(cardInstance);
+    // (La créature a été engagée et révélée plus haut, avec les gardes
+    // d'activation — même ordre que tapActivate.)
+    if (!apprenante && spellHasBoomerang(card)) resolveBoomerang(player, cardInstance);
+    else if (!apprenante) player.graveyard.push(cardInstance);
     recalculateAuras(player, opponent);
   }
 
