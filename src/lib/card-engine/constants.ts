@@ -199,7 +199,15 @@ export const FACTIONS: Record<string, {
   // Élémentaires: one race "Élémentaire", four elemental clans). The
   // generator prefers a matching raceProfile, then a clanProfile, then the
   // faction-level weights.
-  clanProfiles?: Record<string, { statWeights: { atk: number; def: number }; likelyKeywords?: Record<string, number> }>;
+  //
+  // `statWeights` est OPTIONNEL : un clan qui héberge PLUSIEURS races ne peut
+  // pas leur imposer une statline commune sans effacer ce qui les distingue.
+  // L'omettre fait retomber la cascade sur le profil de RACE — ce que le
+  // commentaire du générateur annonçait déjà (« le profil de race comble »),
+  // mais que le choix d'objet entier rendait inatteignable tant que le clan
+  // déclarait les deux champs. Le profil de MOTS-CLÉS du clan, lui, cascade
+  // par mot-clé et reste pleinement en vigueur.
+  clanProfiles?: Record<string, { statWeights?: { atk: number; def: number }; likelyKeywords?: Record<string, number> }>;
   // Sous-races déterminées par le mana, par clan (cf. RaceBand). Consommé par
   // deriveRaceForClan (constants) et le générateur (race persistée).
   clanRaceBands?: Record<string, RaceBand[]>;
@@ -241,7 +249,7 @@ export const FACTIONS: Record<string, {
   Nains: {
     displayName: "Les Armées des Montagnes",
     color: "#b87333", accent: "#ff9f43", emoji: "⚒️", bg: "#2a1a0a", alignment: "bon",
-    races: ["Nains", "Golems", "Gnomes", "Machines", "Kobolds", "Géants"],
+    races: ["Nains", "Golems", "Gnomes", "Machines", "Kobolds", "Géants", "Mammouths"],
     // Un clan par race « peuple ». Les constructs (Golems, Machines) n'ont pas
     // de clan propre : déclarés `freeRaces`, ils sont accueillis par TOUS les
     // clans de la faction — même mécanisme que les Aigles Géants chez les Elfes.
@@ -250,6 +258,17 @@ export const FACTIONS: Record<string, {
       { names: ["La Guilde des Ingénieurs"], appliesTo: "Gnomes" },
       { names: ["Clan des Mille Tunnels"], appliesTo: "Kobolds" },
       { names: ["Clan des Premiers Géants"], appliesTo: "Géants" },
+      // Mammouths : SECONDE race du clan des Géants, et non une race libre.
+      // `appliesTo` ne prend qu'une race, d'où cette entrée jumelle qui répète
+      // le nom du clan — `getClanNamesForRace` et `getAllClanNames` dédoublonnent
+      // par Set, si bien que le clan reste unique côté joueur.
+      //
+      // Pourquoi ce rattachement plutôt qu'une race libre : les Mammouths ne
+      // sont pas des constructs d'atelier comme les Golems et les Machines,
+      // qu'on trouve partout dans la faction. Ce sont les bêtes des colosses
+      // des cimes, et elles n'ont rien à faire dans une forge naine ou un
+      // atelier gnome.
+      { names: ["Clan des Premiers Géants"], appliesTo: "Mammouths" },
     ],
     freeRaces: ["Golems", "Machines"],
     statWeights: { atk: 0.85, def: 1.40 },
@@ -270,11 +289,28 @@ export const FACTIONS: Record<string, {
       // Géants : profil repris tel quel des Mercenaires, qu'ils quittent. Aucun
       // de ses mots-clés ne figure dans les interdits de la faction.
       "Géants": { statWeights: { atk: 1.15, def: 1.30 }, likelyKeywords: { "Provocation": 0.65, "Résistance X": 0.60, "Armure": 0.55, "Indestructible": 0.45, "Terreur": 0.40, "Carnage X": 0.30 } },
+      // Mammouths : le CONTRE-POIDS des Géants dans leur propre clan. Les
+      // Géants tiennent le terrain (Provocation, Résistance, Indestructible) ;
+      // les Mammouths le traversent — plus d'attaque, moins de défense, et des
+      // mots-clés de percée plutôt que d'ancrage. Deux races d'un même clan qui
+      // se doubleraient n'apporteraient rien : celle-ci ouvre au clan le seul
+      // registre que sa faction, toute en blindage, ne joue jamais.
+      //
+      // Reste sous la moyenne d'attaque des factions offensives : c'est une
+      // charge lourde, pas un assassin. Aucun mot-clé interdit de la faction
+      // (Vol, Invisible, Esquive, Ombre, Traque, Pillage) n'est sollicité.
+      "Mammouths": { statWeights: { atk: 1.35, def: 1.10 }, likelyKeywords: { "Piétinement": 0.70, "Bravoure": 0.55, "Carnage X": 0.50, "Fureur": 0.45, "Terreur": 0.35, "Célérité": 0.30, "Armure": 0.30 } },
     },
     clanProfiles: {
       "La Forge Ardente": { statWeights: { atk: 1.15, def: 1.05 }, likelyKeywords: { "Combustion": 0.50, "Gloire +X/+Y": 0.50, "Fureur": 0.45, "Riposte X": 0.40, "Catalyse": 0.40, "Bravoure": 0.35 } },
       "Clan des Mille Tunnels": { statWeights: { atk: 0.95, def: 0.90 }, likelyKeywords: { "Rassemblement X": 0.60, "Solidarité X": 0.55, "Instinct de meute X": 0.50, "Convocation X": 0.45, "Bravoure": 0.35, "Combustion": 0.30 } },
-      "Clan des Premiers Géants": { statWeights: { atk: 1.15, def: 1.35 }, likelyKeywords: { "Provocation": 0.65, "Résistance X": 0.60, "Armure": 0.55, "Ancré": 0.45, "Indestructible": 0.40, "Terreur": 0.35 } },
+      // SANS statWeights, et c'est délibéré : ce clan héberge DEUX races aux
+      // corps opposés — les Géants qui tiennent le terrain, les Mammouths qui
+      // le traversent. Une statline de clan les aurait ramenés au même gabarit,
+      // et la seconde race n'aurait plus été qu'un habillage. Chacune pilote
+      // donc ses propres poids ; les mots-clés du clan, eux, s'appliquent aux
+      // deux (c'est là que vit l'identité commune du clan).
+      "Clan des Premiers Géants": { likelyKeywords: { "Provocation": 0.65, "Résistance X": 0.60, "Armure": 0.55, "Ancré": 0.45, "Indestructible": 0.40, "Terreur": 0.35 } },
       "La Guilde des Ingénieurs": { statWeights: { atk: 0.80, def: 1.00 }, likelyKeywords: { "Convocation X": 0.55, "Catalyse": 0.50, "Divination": 0.45, "Tactique X": 0.40, "Inspiration X": 0.40, "Contresort": 0.35, "Riposte X": 0.30 } },
     },
   },

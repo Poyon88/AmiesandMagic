@@ -949,7 +949,8 @@
       "Gobelins": "Goblins",
       "Trolls": "Trolls",
       "Wargs": "Wargs",
-      "Guerriers du Chaos": "Guerreiros do Caos"
+      "Guerriers du Chaos": "Guerreiros do Caos",
+      "Mammouths": "Mamutes"
     },
     "alignments": {
       "bon": "Bom",
@@ -1208,6 +1209,11 @@
         "def": "o Guerreiro do Caos",
         "bare": "Guerreiro do Caos",
         "de": "do Guerreiro do Caos"
+      },
+      "Mammouths": {
+        "def": "o Mamute",
+        "bare": "Mamute",
+        "de": "do Mamute"
       }
     },
     "clans_forms": {
@@ -2042,7 +2048,10 @@
     "card_added": "« {name} » adicionada!",
     "unknown_error": "Erro desconhecido",
     "illustration_generated": "Ilustração gerada ({model})",
-    "import_error": "Erro de importação"
+    "import_error": "Erro de importação",
+    "eveil_label": "DESPERTAR",
+    "eveil_cost_hint": "DESPERTAR: a carta pode ser posta em despertar EM VEZ de ser jogada. Sai da mão com este número de pontos; o jogador paga 1 por mana em cada um dos seus turnos, e no último ponto entra em jogo como se viesse da mão. Substitui o custo de mana, não se soma a ele. Não redutível.",
+    "eveil_cost_title": "Pode ser posta em despertar por {count, plural, one {# ponto} other {# pontos}}, pagos a 1 mana por turno — em vez do custo de mana"
   },
   "game": {
     "error_not_authenticated": "Não autenticado",
@@ -2166,7 +2175,26 @@
     "presage_hit": "Bem visto — vai para a sua mão.",
     "presage_miss": "Errou. A carta certa está em verde.",
     "apprentissage_title": "📖 Aprendizagem",
-    "apprentissage_subtitle": "Que feitiço deve a criatura memorizar?"
+    "apprentissage_subtitle": "Que feitiço deve a criatura memorizar?",
+    "zone_eveil": "Despertar",
+    "zone_eveil_yours": "O seu despertar",
+    "zone_eveil_opponent": "Despertar do adversário",
+    "eveil_hint": "Pague 1 mana por clique. No último ponto, a carta entra em jogo como se viesse da sua mão.",
+    "eveil_remaining": "{count, plural, one {# ponto restante} other {# pontos restantes}}",
+    "eveil_next_point": "O próximo ponto custa 1 mana.",
+    "eveil_next_arrives": "Último ponto: a carta entra em jogo.",
+    "eveil_play_now": "Colocar em jogo",
+    "eveil_blocked_mana": "Mana insuficiente.",
+    "eveil_blocked_board_plein": "O seu campo está cheio.",
+    "eveil_blocked_vie": "Pontos de vida insuficientes para o seu custo.",
+    "eveil_blocked_main": "Cartas na mão insuficientes para os seus custos adicionais.",
+    "eveil_blocked_plateau": "Criaturas insuficientes para sacrificar.",
+    "eveil_blocked_deck": "Cartas insuficientes para exilar no seu baralho.",
+    "eveil_blocked_sans_cible": "Nenhum alvo válido para este feitiço.",
+    "eveil_suspend": "Pôr em despertar ({count, plural, one {# ponto} other {# pontos}})",
+    "eveil_pay_n": "{count, plural, one {Pagar #} other {Pagar #}}",
+    "eveil_max": "máx {count}",
+    "eveil_max_hint": "O último ponto é a entrada em jogo: paga-se à parte, junto com a escolha dos alvos."
   },
   "tutorial": {
     "page_eyebrow": "Aprenda a arte do duelo",

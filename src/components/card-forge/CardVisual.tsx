@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { REPLI_TEINTE, REPLI_GLYPHE } from "@/lib/game/repli-theme";
+import { EVEIL_TEINTE, EVEIL_GLYPHE } from "@/lib/game/eveil-theme";
 import ExileGlyph from "@/components/cards/ExileGlyph";
 import { useTranslations } from 'next-intl';
 import { FACTIONS, RARITY_MAP } from '@/lib/card-engine/constants';
@@ -179,6 +180,7 @@ interface CardData {
   sacrificeCost?: number;
   exileCost?: number;
   topdeckCost?: number;
+  eveilCost?: number;
 }
 
 // ─── COMPONENT ───────────────────────────────────────────────────────────────
@@ -434,6 +436,22 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                 {REPLI_GLYPHE}
               </span>
               {card!.topdeckCost}
+            </div>
+          ) : null}
+          {card!.eveilCost && card!.eveilCost > 0 ? (
+            <div title={t('eveil_cost_title', { count: card!.eveilCost })} style={{
+              width: 28 * s, height: 28 * s, borderRadius: "50%",
+              background: "radial-gradient(circle,#3d2a10,#1c1206)",
+              border: `${2 * s}px solid ${EVEIL_TEINTE}`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 13 * s, color: "#ffe0b0", fontWeight: 700,
+              boxShadow: `0 0 8px ${EVEIL_TEINTE}66`,
+              position: "relative",
+            }}>
+              <span style={{ position: "absolute", top: -3 * s, right: -3 * s, lineHeight: 1, fontSize: 12 * s, filter: "drop-shadow(0 0 2px #000)" }}>
+                {EVEIL_GLYPHE}
+              </span>
+              {card!.eveilCost}
             </div>
           ) : null}
         </div>

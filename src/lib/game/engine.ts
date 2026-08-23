@@ -28,6 +28,8 @@ import type {
   PendingTrigger,
   ResolvePendingTriggerAction,
   SpendEpargneAction,
+  SuspendEveilAction,
+  PayEveilAction,
   StackFrame,
   FormatCode,
 } from "./types";
@@ -44,6 +46,7 @@ import {
   MAX_BOARD_SIZE,
   MAX_MANA,
   MAX_EPARGNE,
+  MAX_EVEIL,
   SEUIL_DECK_THRESHOLD,
   LOW_HP_TRIGGER_THRESHOLD,
 } from "./constants";
@@ -126,6 +129,13 @@ let exileCostSink: Array<{ ownerId: string; count: number }> = [];
 // repliée n'est jamais révélée, et l'animation ne montre qu'un dos.
 // Vidé au début d'applyAction, rattaché à state.topdeckCostEvents ; hors hash.
 let topdeckCostSink: Array<{ ownerId: string; count: number }> = [];
+// ÉVEIL : mouvements de la zone d'éveil (mise en éveil, point versé, arrivée).
+// Sans cet indice, une carte quitterait la main pour ressurgir plusieurs tours
+// plus tard sur le plateau sans que rien ne relie les deux — et l'adversaire ne
+// verrait qu'un compteur bouger dans un coin. La carte est transmise telle
+// quelle : l'éveil est PUBLIC, il n'y a rien à cacher.
+// Vidé au début d'applyAction, rattaché à state.eveilEvents ; hors hash.
+let eveilSink: Array<{ ownerId: string; kind: "suspend" | "pay" | "arrive"; card: Card; remaining: number }> = [];
 // Effets « DECK » silencieux (Préincanter, Fortifier) : ils préparent une carte
 // DANS le deck, donc rien à l'écran ne montrait qu'ils avaient agi — ni au
 // joueur, ni à l'adversaire. Indice d'animation : un badge s'élève de la pile de
@@ -616,6 +626,15 @@ export function getExileCost(card: Card): number {
 /** REPLI : cartes de la main replacées sur le dessus du deck du joueur. */
 export function getTopdeckCost(card: Card): number {
   return Math.max(0, card.topdeck_cost ?? 0);
+}
+/** ÉVEIL : points à verser, un par mana, pour faire venir la carte.
+ *
+ *  Seul coût ALTERNATIF de la famille — il remplace le mana au lieu de s'y
+ *  ajouter. Incompressible comme ses voisins : il ne passe jamais par
+ *  `effectiveManaCost`, donc ni Canalisation, ni Entraide, ni Concentration ne
+ *  le voient. 0 ⇒ la carte ne peut pas être mise en éveil. */
+export function getEveilCost(card: Card): number {
+  return Math.max(0, card.eveil_cost ?? 0);
 }
 
 // Add a keyword to a creature at runtime (e.g. spell granting Bouclier
@@ -2817,13 +2836,38 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     engagerPourActivation(apprenante);
   }
 
+  // ÉVEIL — QUATRIÈME provenance. La carte attend dans `player.eveil` ; cette
+  // action verse son DERNIER point et la fait entrer en jeu d'un seul geste.
+  //
+  // La garde `remaining !== 1` est ce qui rend l'ensemble cohérent : tous les
+  // points précédents passent par `pay_eveil`, qui ne joue rien. Le seul
+  // paiement capable d'échouer est donc celui-ci — et il échoue en bloc, sans
+  // rien prélever, parce qu'on retourne l'état d'ORIGINE (`state`) et non le
+  // clone muté. C'est très exactement la règle voulue : quand l'arrivée est
+  // impossible, le dernier point n'est pas payé et la carte reste en éveil.
+  const fromEveil = action.fromEveil === true;
+  const eveilEntry = fromEveil
+    ? (player.eveil ?? []).find(e => e.instance.instanceId === action.cardInstanceId)
+    : undefined;
+  if (fromEveil && (!eveilEntry || eveilEntry.remaining !== 1)) return state;
+  // Deux provenances exclusives : une carte en éveil n'est ni au cimetière ni
+  // mémorisée par une créature.
+  if (fromEveil && (fromGraveyard || apprenante)) return state;
+
   const zone = fromGraveyard ? player.graveyard : player.hand;
   // Le sort mémorisé ne vit dans AUCUNE zone : `cardIndex` reste à -1 et le
   // `splice` de retrait est sauté plus bas — c'est ce qui le rend répétable.
-  const cardIndex = apprenante ? -1 : zone.findIndex(c => c.instanceId === action.cardInstanceId);
-  if (!apprenante && cardIndex === -1) return state;
+  // Une carte en éveil vit dans `player.eveil`, qui n'est pas un tableau
+  // d'instances : elle est retirée par son propre chemin, plus bas.
+  const horsZone = Boolean(apprenante) || fromEveil;
+  const cardIndex = horsZone ? -1 : zone.findIndex(c => c.instanceId === action.cardInstanceId);
+  if (!horsZone && cardIndex === -1) return state;
 
-  const cardInstance = apprenante ? apprenante.apprentissageSpell! : zone[cardIndex];
+  const cardInstance = apprenante
+    ? apprenante.apprentissageSpell!
+    : eveilEntry
+      ? eveilEntry.instance
+      : zone[cardIndex];
   const card = cardInstance.card;
 
   // Un sort appris reste un SORT : la branche créature ci-dessous ne doit jamais
@@ -2848,9 +2892,14 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
   // free to re-cast.
   // Depuis le cimetière, le coût est celui de Seconde vie — les réductions de
   // coût de main (Canalisation, Entraide, Concentration) ne s'y appliquent pas.
-  const manaCost = fromGraveyard
-    ? getKwX(cardInstance, "seconde_vie", undefined, 1)
-    : effectiveManaCost(cardInstance, player);
+  // Depuis l'éveil, le coût est de 1 : c'est le DERNIER point, tout le reste a
+  // déjà été versé tour après tour. Le coût en mana imprimé de la carte n'entre
+  // jamais en jeu par ce chemin — l'éveil le remplace, il ne s'y ajoute pas.
+  const manaCost = fromEveil
+    ? 1
+    : fromGraveyard
+      ? getKwX(cardInstance, "seconde_vie", undefined, 1)
+      : effectiveManaCost(cardInstance, player);
 
   if (manaCost > player.mana) return state;
 
@@ -2912,7 +2961,13 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
   // target and so hand-size checks downstream are accurate.
   // Un sort MÉMORISÉ ne quitte rien : il reste sur sa créature, prêt à être
   // relancé au prochain tour.
-  if (!apprenante) zone.splice(cardIndex, 1);
+  if (!horsZone) zone.splice(cardIndex, 1);
+  // ÉVEIL : l'entrée quitte la zone. Le `push` de l'événement n'a lieu qu'ici,
+  // donc après toutes les gardes — une arrivée refusée n'anime rien.
+  if (eveilEntry) {
+    player.eveil = (player.eveil ?? []).filter(e => e !== eveilEntry);
+    eveilSink.push({ ownerId: player.id, kind: "arrive", card: cardInstance.card, remaining: 0 });
+  }
   // La créature ressuscitée PERD Seconde vie : sans ça elle retournerait au
   // cimetière avec sa capacité intacte et serait rejouable indéfiniment.
   if (fromGraveyard) {
@@ -8179,6 +8234,93 @@ export function spendEpargne(state: GameState, action: SpendEpargneAction): Game
   return newState;
 }
 
+/** ÉVEIL — mise en éveil : la carte quitte la MAIN pour la zone d'éveil, avec
+ *  autant de points que son `eveil_cost`.
+ *
+ *  Ne coûte AUCUN mana, volontairement : ce que le joueur engage ici, c'est la
+ *  carte (elle devient injouable normalement tant qu'elle est en éveil) et une
+ *  place sous le plafond `MAX_EVEIL`. Faire payer l'entrée en plus reviendrait
+ *  à taxer deux fois la même décision.
+ *
+ *  Aucune vérification d'arrivée à ce stade — c'est tout l'intérêt du
+ *  mécanisme : on met en éveil une carte qu'on ne peut PAS jouer aujourd'hui.
+ *  Le plateau plein, les cibles absentes et les coûts additionnels sont
+ *  l'affaire du dernier point (cf. `canArriveFromEveil`). */
+export function suspendEveil(state: GameState, action: SuspendEveilAction): GameState {
+  const player = state.players[state.currentPlayerIndex];
+  if ((player.eveil ?? []).length >= MAX_EVEIL) return state;
+  const carte = player.hand.find(c => c.instanceId === action.cardInstanceId);
+  if (!carte) return state;
+  const cout = getEveilCost(carte.card);
+  if (cout < 1) return state;
+
+  const pool = state.factionCardPool;
+  const allPool = state.allSpellsPool;
+  const newState = cloneStateForAction(state);
+  newState.factionCardPool = pool;
+  newState.allSpellsPool = allPool;
+
+  const me = newState.players[newState.currentPlayerIndex];
+  const idx = me.hand.findIndex(c => c.instanceId === action.cardInstanceId);
+  if (idx === -1) return state;
+  const [instance] = me.hand.splice(idx, 1);
+  me.eveil = [...(me.eveil ?? []), { instance, remaining: cout }];
+  eveilSink.push({ ownerId: me.id, kind: "suspend", card: instance.card, remaining: cout });
+  newState.lastAction = action;
+  return newState;
+}
+
+/** ÉVEIL — plus gros versement possible EN UNE FOIS sur cette carte.
+ *
+ *  Deux plafonds, et le second est structurel : le mana disponible, et
+ *  `remaining - 1`. Un versement ne peut jamais achever l'éveil, parce que le
+ *  dernier point est aussi l'entrée en jeu — le moment où le joueur désigne
+ *  les cibles, la place sur le plateau et les coûts additionnels. Le fondre
+ *  dans un versement en gros lui retirerait ces choix.
+ *
+ *  Renvoie 0 quand rien ne peut être versé (plus de mana, ou il ne reste
+ *  justement que le dernier point). Source UNIQUE : le moteur borne l'action
+ *  avec, l'interface borne son sélecteur avec. */
+export function maxEveilPayment(state: GameState, cardInstanceId: string): number {
+  const player = state.players[state.currentPlayerIndex];
+  const entree = (player.eveil ?? []).find(e => e.instance.instanceId === cardInstanceId);
+  if (!entree) return 0;
+  return Math.max(0, Math.min(player.mana, entree.remaining - 1));
+}
+
+/** ÉVEIL — versement de N points (N mana), N valant 1 par défaut.
+ *
+ *  Ne descend jamais à 0 : le dernier point passe par `playCard` avec
+ *  `fromEveil`, parce qu'il fait aussi entrer la carte en jeu. La borne
+ *  `amount <= remaining - 1` ici est donc la moitié d'un couple — l'autre
+ *  moitié est la garde `remaining !== 1` de `playCard`. Ensemble, elles rendent
+ *  impossible l'état « en éveil à zéro point », qui aurait demandé ses propres
+ *  règles.
+ *
+ *  Le versement est TOUT OU RIEN : un montant trop grand est refusé, jamais
+ *  écrêté en silence. Écrêter reviendrait à payer autre chose que ce que le
+ *  joueur a demandé — et sur une ressource qu'il ne récupère pas. */
+export function payEveil(state: GameState, action: PayEveilAction): GameState {
+  const montant = action.amount ?? 1;
+  if (!Number.isInteger(montant) || montant < 1) return state;
+  if (montant > maxEveilPayment(state, action.cardInstanceId)) return state;
+
+  const pool = state.factionCardPool;
+  const allPool = state.allSpellsPool;
+  const newState = cloneStateForAction(state);
+  newState.factionCardPool = pool;
+  newState.allSpellsPool = allPool;
+
+  const me = newState.players[newState.currentPlayerIndex];
+  const cible = (me.eveil ?? []).find(e => e.instance.instanceId === action.cardInstanceId);
+  if (!cible) return state;
+  me.mana -= montant;
+  cible.remaining -= montant;
+  eveilSink.push({ ownerId: me.id, kind: "pay", card: cible.instance.card, remaining: cible.remaining });
+  newState.lastAction = action;
+  return newState;
+}
+
 export function resolvePendingTrigger(state: GameState, action: ResolvePendingTriggerAction): GameState {
   const pool = state.factionCardPool;
   const allPool = state.allSpellsPool;
@@ -8827,6 +8969,7 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   abilitySfxSink = [];
   exileCostSink = [];
   topdeckCostSink = [];
+  eveilSink = [];
   animationCheckpointSink = [];
   currentActionState = null;
   deckEffectSink = [];
@@ -8858,6 +9001,8 @@ export function applyAction(state: GameState, action: GameAction): GameState {
     case "concede": result = concede(state, action); break;
     case "resolve_pending_trigger": result = resolvePendingTrigger(state, action); break;
     case "spend_epargne": result = spendEpargne(state, action); break;
+    case "suspend_eveil": result = suspendEveil(state, action); break;
+    case "pay_eveil": result = payEveil(state, action); break;
     case "auto_resolve_pending_triggers": result = autoResolvePendingTriggers(state); break;
     default: result = state;
   }
@@ -8922,6 +9067,11 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   // Rattache le repli payé pendant l'action (dos de carte qui file vers le deck).
   if (topdeckCostSink.length > 0 && result !== state) {
     result.topdeckCostEvents = [...(result.topdeckCostEvents ?? []), ...topdeckCostSink];
+  }
+  // Rattache les mouvements d'éveil (carte qui file vers la pile, point versé,
+  // arrivée en jeu).
+  if (eveilSink.length > 0 && result !== state) {
+    result.eveilEvents = [...(result.eveilEvents ?? []), ...eveilSink];
   }
   // Rattache les effets « deck » silencieux (badge sur la pile).
   if (deckEffectSink.length > 0 && result !== state) {
@@ -9087,6 +9237,81 @@ export function creatureCanCastLearnedSpell(state: GameState, creatureInstanceId
     return false;
   }
   return true;
+}
+
+/** ÉVEIL — la carte peut-elle être mise en éveil MAINTENANT ?
+ *
+ *  Source UNIQUE du moteur (qui refuse l'action) et de l'interface (qui grise
+ *  la pastille) : un écart laisserait une pastille cliquable dont le clic ne
+ *  ferait rien, indiscernable d'un bouton cassé. */
+export function canSuspendToEveil(state: GameState, cardInstanceId: string): boolean {
+  const player = state.players[state.currentPlayerIndex];
+  if ((player.eveil ?? []).length >= MAX_EVEIL) return false;
+  const carte = player.hand.find(c => c.instanceId === cardInstanceId);
+  if (!carte) return false;
+  return getEveilCost(carte.card) >= 1;
+}
+
+/** ÉVEIL — pourquoi le DERNIER point ne peut-il pas être versé ?
+ *
+ *  Renvoie `null` quand l'arrivée est possible, sinon une raison stable que
+ *  l'interface traduit. Pendant de `canPlayCard` pour une carte en éveil, et
+ *  source UNIQUE des deux côtés : le moteur refuse `playCard` sur les mêmes
+ *  critères, et l'écran doit pouvoir DIRE pourquoi le bouton est gris — un
+ *  refus muet sur la dernière marche, après plusieurs tours d'attente, serait
+ *  la pire des frustrations.
+ *
+ *  Deux différences avec `canPlayCard`, et elles comptent :
+ *    · le coût en mana n'est pas celui de la carte mais 1, le dernier point ;
+ *    · le test défausse/repli perd son `-1`. Ce `-1` compte la carte jouée, qui
+ *      quitte la main — or une carte en éveil n'y est pas. Le garder refuserait
+ *      « défausser 1 » alors qu'une carte attend justement en main. (Même piège
+ *      que `creatureCanCastLearnedSpell`.) */
+export type EveilBlocage =
+  | "mana"
+  | "board_plein"
+  | "vie"
+  | "main"
+  | "plateau"
+  | "deck"
+  | "sans_cible";
+
+export function eveilArrivalBlocker(state: GameState, cardInstanceId: string): EveilBlocage | null {
+  const player = state.players[state.currentPlayerIndex];
+  const entree = (player.eveil ?? []).find(e => e.instance.instanceId === cardInstanceId);
+  if (!entree || entree.remaining !== 1) return "mana";
+  const card = entree.instance.card;
+
+  if (player.mana < 1) return "mana";
+  const lifeCost = getLifeCost(card);
+  if (lifeCost > 0 && player.hero.hp - lifeCost <= 0) return "vie";
+  // Sans le `-1` : la carte en éveil ne puise pas dans la main.
+  if (player.hand.length < getDiscardCost(card) + getTopdeckCost(card)) return "main";
+  const sacrificeCost = getSacrificeCost(card);
+  if (player.board.length < sacrificeCost) return "plateau";
+  if (getExileCost(card) > player.deck.length) return "deck";
+  if (card.card_type === "creature"
+    && player.board.length - sacrificeCost + 1 > MAX_BOARD_SIZE) return "board_plein";
+  if (card.card_type === "spell") {
+    const slots = getSpellTargetSlots(card);
+    if (slots.length > 0 && slots.every(sl => getSpellTargets(state, card, sl.type).length === 0)) {
+      return "sans_cible";
+    }
+  }
+  return null;
+}
+
+/** ÉVEIL — le joueur peut-il verser un point sur cette carte maintenant ?
+ *
+ *  Couvre les DEUX cas d'un seul appel, parce que l'interface n'a qu'un bouton :
+ *  un point intermédiaire ne demande que du mana, le dernier exige que
+ *  l'arrivée soit possible. */
+export function canPayEveil(state: GameState, cardInstanceId: string): boolean {
+  const player = state.players[state.currentPlayerIndex];
+  const entree = (player.eveil ?? []).find(e => e.instance.instanceId === cardInstanceId);
+  if (!entree) return false;
+  if (entree.remaining > 1) return maxEveilPayment(state, cardInstanceId) >= 1;
+  return eveilArrivalBlocker(state, cardInstanceId) === null;
 }
 
 /** APPRENTISSAGE — la carte doit-elle ouvrir le picker « quel sort apprendre ? »

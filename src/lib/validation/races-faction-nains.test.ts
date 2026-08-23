@@ -199,3 +199,105 @@ describe("race Géants — transfert depuis les Mercenaires", () => {
     expect(validateFactionClan("Nains", "Clan des Premiers Géants").ok).toBe(true);
   });
 });
+
+// ─── Mammouths : la SECONDE race du clan des Géants ─────────────────────────
+//
+// Premier clan de la faction à héberger DEUX races. Ce qui est verrouillé ici,
+// c'est qu'elles restent distinctes : même clan, mêmes mots-clés d'identité,
+// mais des corps opposés — les Géants tiennent le terrain, les Mammouths le
+// traversent. Deux races d'un même clan qui généreraient les mêmes stats
+// n'auraient été qu'un habillage.
+describe("race Mammouths — rattachement", () => {
+  it("appartient aux Armées des Montagnes, et à elles seules", () => {
+    expect(FACTIONS.Nains.races).toContain("Mammouths");
+    const autres = Object.entries(FACTIONS)
+      .filter(([id, f]) => id !== "Nains" && f.races.includes("Mammouths"))
+      .map(([id]) => id);
+    expect(autres).toEqual([]);
+  });
+
+  it("est acceptée par la validation, et refusée ailleurs", () => {
+    expect(validateRace("Mammouths", "Nains")).toEqual({ ok: true, race: "Mammouths" });
+    expect(validateRace("Mammouths", null)).toEqual({ ok: true, race: "Mammouths" });
+    expect(validateRace("Mammouths", "Elfes").ok).toBe(false);
+  });
+
+  it("relève du clan des Géants, et de lui seul", () => {
+    expect(getClanNamesForRace("Nains", "Mammouths")).toEqual(["Clan des Premiers Géants"]);
+  });
+
+  it("n'est PAS une race libre : elle n'a rien à faire dans une forge naine", () => {
+    expect(FACTIONS.Nains.freeRaces ?? []).not.toContain("Mammouths");
+    expect(getClanNamesForRace("Nains", "Mammouths")).not.toEqual(getAllClanNames("Nains"));
+  });
+
+  it("n'introduit AUCUN clan supplémentaire malgré son entrée `appliesTo` jumelle", () => {
+    // Deux groupes `clans` portent le même nom (un par race). `getAllClanNames`
+    // dédoublonne : le joueur ne doit jamais voir « Clan des Premiers Géants »
+    // deux fois dans une liste déroulante.
+    expect(getAllClanNames("Nains")).toHaveLength(4);
+    expect(validateFactionClan("Nains", "Clan des Premiers Géants").ok).toBe(true);
+  });
+
+  it("partage exactement le même clan que les Géants", () => {
+    expect(getClanNamesForRace("Nains", "Mammouths"))
+      .toEqual(getClanNamesForRace("Nains", "Géants"));
+  });
+});
+
+describe("race Mammouths — profil « charge lourde »", () => {
+  const mam = () => FACTIONS.Nains.raceProfiles!["Mammouths"]!;
+  const gea = () => FACTIONS.Nains.raceProfiles!["Géants"]!;
+
+  it("frappe plus fort et encaisse moins que les Géants", () => {
+    expect(mam().statWeights!.atk!).toBeGreaterThan(gea().statWeights!.atk!);
+    expect(mam().statWeights!.def!).toBeLessThan(gea().statWeights!.def!);
+  });
+
+  it("joue la percée là où les Géants jouent l'ancrage", () => {
+    const kws = Object.keys(mam().likelyKeywords ?? {});
+    expect(kws).toContain("Piétinement");
+    expect(kws).toContain("Carnage X");
+    // Ancré immobilise : c'est l'exact contraire d'une charge.
+    expect(kws).not.toContain("Ancré");
+    expect(kws).not.toContain("Provocation");
+  });
+
+  it("ne sollicite aucun mot-clé interdit de la faction", () => {
+    const interdits = new Set(FACTIONS.Nains.forbiddenKeywords ?? []);
+    expect(Object.keys(mam().likelyKeywords ?? {}).filter((k) => interdits.has(k))).toEqual([]);
+  });
+
+  it("dispose de ses formes grammaticales françaises", () => {
+    expect(RACE_FORMS_FR["Mammouths"]).toEqual({
+      def: "le Mammouth", bare: "Mammouth", de: "du Mammouth",
+    });
+  });
+});
+
+describe("clan des Premiers Géants — il CÈDE ses stats à ses races", () => {
+  // La cascade du générateur est `clanStatW ?? raceStatW ?? faction` : un choix
+  // d'objet ENTIER, pas champ par champ. Tant que ce clan déclarait des
+  // `statWeights`, ses deux races recevaient le même gabarit et le profil des
+  // Mammouths était mort-né — sans le moindre avertissement. L'omission est donc
+  // load-bearing : la remettre reviendrait à annuler la race en silence.
+  it("ne déclare AUCUN statWeights", () => {
+    expect(FACTIONS.Nains.clanProfiles?.["Clan des Premiers Géants"]?.statWeights).toBeUndefined();
+  });
+
+  it("garde en revanche son profil de mots-clés, commun aux deux races", () => {
+    const kws = FACTIONS.Nains.clanProfiles?.["Clan des Premiers Géants"]?.likelyKeywords ?? {};
+    expect(Object.keys(kws).length).toBeGreaterThan(0);
+    expect(kws["Provocation"]).toBeGreaterThan(0);
+  });
+
+  it("est le SEUL clan du jeu à céder ses stats — les autres restent inchangés", () => {
+    const sansStats: string[] = [];
+    for (const [fid, f] of Object.entries(FACTIONS)) {
+      for (const [clan, prof] of Object.entries(f.clanProfiles ?? {})) {
+        if (!prof.statWeights) sansStats.push(`${fid}/${clan}`);
+      }
+    }
+    expect(sansStats).toEqual(["Nains/Clan des Premiers Géants"]);
+  });
+});

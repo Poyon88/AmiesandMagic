@@ -7,7 +7,7 @@ import { MAX_HAND_SIZE, MAX_BOARD_SIZE, TURN_TIMER_SECONDS, CHOICE_TIMER_SECONDS
 import { secondeVieCost } from "@/lib/game/engine";
 import { useGameStore, selectPowerTargetingColor } from "@/lib/store/gameStore";
 import { useTranslations } from "next-intl";
-import { canPlayCard, canAttack, canUseHeroPower, effectiveManaCost, getSpellTargets, getValidTargets, heroPowerNeedsTarget, isIncinerationSlot, creatureTargetsIncinerationCamp } from "@/lib/game/engine";
+import { canPlayCard, canSuspendToEveil, canAttack, canUseHeroPower, effectiveManaCost, getSpellTargets, getValidTargets, heroPowerNeedsTarget, isIncinerationSlot, creatureTargetsIncinerationCamp } from "@/lib/game/engine";
 import HeroPortrait from "./HeroPortrait";
 import Hero3DViewer from "./Hero3DViewer";
 import HeroPowerButton from "./HeroPowerButton";
@@ -17,6 +17,8 @@ import ManaBar from "./ManaBar";
 import BoardCreature from "./BoardCreature";
 import HandCard from "./HandCard";
 import GraveyardOverlay from "./GraveyardOverlay";
+import EveilOverlay from "./EveilOverlay";
+import { EVEIL_TEINTE, EVEIL_GLYPHE } from "@/lib/game/eveil-theme";
 import DivinationOverlay from "./DivinationOverlay";
 import SelectionOverlay from "./SelectionOverlay";
 import TactiqueKeywordOverlay from "./TactiqueKeywordOverlay";
@@ -112,6 +114,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     dispatchAction,
     playCardDirect,
     selectCardInHand,
+    suspendToEveil,
     selectAttacker,
     selectTarget,
     clearSelection,
@@ -164,6 +167,9 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
   const [graveyardView, setGraveyardView] = useState<
     "my" | "opponent" | null
   >(null);
+  // ÉVEIL — quel camp est déplié. Même forme que `graveyardView` : la zone est
+  // publique, on peut donc consulter celle de l'adversaire (en lecture seule).
+  const [eveilView, setEveilView] = useState<"my" | "opponent" | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [dropIndex, setDropIndex] = useState<number | null>(null);
   const [hoveredTargetId, setHoveredTargetId] = useState<string | null>(null);
@@ -1158,6 +1164,17 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             <span className="text-lg">📚</span>
             <span className="text-[10px]">{opponent.deck.length}</span>
           </div>
+          {(opponent.eveil?.length ?? 0) > 0 && (
+            <button
+              onClick={() => setEveilView("opponent")}
+              className="flex flex-col items-center transition-colors"
+              style={{ color: EVEIL_TEINTE }}
+              title={t("zone_eveil_opponent")}
+            >
+              <span className="text-lg">{EVEIL_GLYPHE}</span>
+              <span className="text-[10px]">{opponent.eveil!.length}</span>
+            </button>
+          )}
         </div>
         )}
 
@@ -1175,6 +1192,8 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
               emptyGraveyardImageUrl={boardGraveyardImageUrl}
               isOpponent={true}
               onGraveyardClick={() => cliquerPileCimetiere("opponent")}
+              eveil={opponent.eveil}
+              onEveilClick={() => setEveilView("opponent")}
             />
           </div>
         )}
@@ -1323,6 +1342,20 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             <span className="text-lg">📚</span>
             <span className="text-[10px]">{myPlayer.deck.length}</span>
           </div>
+          {/* ÉVEIL — la disposition compacte n'a pas de tuiles, mais la zone
+              doit rester atteignable : sans ce bouton, une carte mise en éveil
+              y serait injoignable pour toujours. */}
+          {(myPlayer.eveil?.length ?? 0) > 0 && (
+            <button
+              onClick={() => setEveilView("my")}
+              className="flex flex-col items-center transition-colors"
+              style={{ color: EVEIL_TEINTE }}
+              title={t("zone_eveil_yours")}
+            >
+              <span className="text-lg">{EVEIL_GLYPHE}</span>
+              <span className="text-[10px]">{myPlayer.eveil!.length}</span>
+            </button>
+          )}
         </div>
         )}
 
@@ -1336,6 +1369,8 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
               emptyGraveyardImageUrl={boardGraveyardImageUrl}
               isOpponent={false}
               onGraveyardClick={() => cliquerPileCimetiere("my")}
+              eveil={myPlayer.eveil}
+              onEveilClick={() => setEveilView("my")}
             />
           </div>
         )}
@@ -1514,6 +1549,16 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
                     const action = selectCardInHand(cardInstance.instanceId);
                     broadcast(action);
                   }}
+                  // ÉVEIL — la pastille n'est passée QUE si la mise en éveil est
+                  // réellement possible (carte à coût d'éveil, plafond non
+                  // atteint, notre tour). Un bouton qui ne fait rien serait
+                  // indiscernable d'un bouton cassé, et `HandCard` s'appuie sur
+                  // sa seule PRÉSENCE pour décider de l'afficher.
+                  onSuspendEveil={
+                    myTurn && canSuspendToEveil(gameState, cardInstance.instanceId)
+                      ? () => broadcast(suspendToEveil(cardInstance.instanceId))
+                      : undefined
+                  }
                 />
               </div>
             );
@@ -1546,6 +1591,17 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             setLocalMulliganRevealDone(true);
             onMulliganRevealDone?.();
           }}
+        />
+      )}
+      {eveilView && targetingMode === "none" && (
+        <EveilOverlay
+          entries={(eveilView === "my" ? myPlayer.eveil : opponent.eveil) ?? []}
+          title={eveilView === "my" ? t("zone_eveil_yours") : t("zone_eveil_opponent")}
+          // On ne paie que sa PROPRE zone, et seulement à son tour : verser du
+          // mana est un coup, pas une consultation.
+          payable={eveilView === "my" && myTurn}
+          onClose={() => setEveilView(null)}
+          onAction={(action) => { if (action) broadcast(action); }}
         />
       )}
       {graveyardView && targetingMode !== "graveyard" && (

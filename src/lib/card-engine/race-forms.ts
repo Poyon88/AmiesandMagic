@@ -60,6 +60,7 @@ export const RACE_FORMS_FR: Record<string, Inflected> = {
   // afficherait « vos Élémentaire ».
   "Élémentaire": { def: "l'Élémentaire", bare: "Élémentaire", de: "de l'Élémentaire", pl: "Élémentaires" },
   "Géants": { def: "le Géant", bare: "Géant", de: "du Géant" },
+  "Mammouths": { def: "le Mammouth", bare: "Mammouth", de: "du Mammouth" },
   "Ogres": { def: "l'Ogre", bare: "Ogre", de: "de l'Ogre" },
   "Dragons": { def: "le Dragon", bare: "Dragon", de: "du Dragon" },
   // Élision devant la voyelle : « l'Éléphant », « de l'Éléphant ».

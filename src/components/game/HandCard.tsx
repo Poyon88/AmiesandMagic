@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useMemo, memo } from "react";
 import { createPortal } from "react-dom";
+import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import type { CardInstance } from "@/lib/game/types";
@@ -25,12 +26,17 @@ import { SPRINGS } from "@/lib/fx/overlayMotion";
 import { useCardText } from "./CardTextProvider";
 import { useVocab } from "@/i18n/useVocab";
 import CompagnonsNames from "@/components/cards/CompagnonsNames";
+import { EVEIL_TEINTE, EVEIL_GLYPHE } from "@/lib/game/eveil-theme";
 
 interface HandCardProps {
   cardInstance: CardInstance;
   canPlay: boolean;
   isSelected?: boolean;
   onClick?: () => void;
+  /** ÉVEIL — clic sur la pastille de mise en éveil. Prop séparée d'`onClick`
+   *  parce que la carte a désormais DEUX gestes distincts : la jouer, ou la
+   *  mettre en éveil. Absente ⇒ la pastille n'est pas rendue. */
+  onSuspendEveil?: () => void;
   // Boost récent sur cette carte EN MAIN (ex. Entrainement) → flash doré +
   // halo (mêmes couleurs que BoardCreature). "empower" (violet) réservé si un
   // jour un buff de capacité vise la main ; sinon "buff" (or).
@@ -42,9 +48,11 @@ function HandCard({
   canPlay,
   isSelected = false,
   onClick,
+  onSuspendEveil,
   boost = null,
 }: HandCardProps) {
   const card = cardInstance.card;
+  const t = useTranslations("game");
   const { localizeName, localizeFlavor } = useCardText();
   const vocab = useVocab();
   const gameState = useGameStore(s => s.gameState);
@@ -582,6 +590,38 @@ function HandCard({
         {/* Cost badges (mana + life + discard + sacrifice) */}
         <CostBadges card={card} size={22} effectiveManaCost={effectiveManaCost} isCostReduced={isCostReduced} />
 
+        {/* ÉVEIL — le SECOND geste de la carte.
+            Cliquer la carte la joue normalement ; cliquer cette pastille la met
+            en éveil. Un bouton explicite plutôt qu'un appui long : l'appui long
+            sert déjà à l'aperçu, et un geste caché rendrait la moitié du
+            mécanisme introuvable. Rendue seulement quand la mise en éveil est
+            réellement possible (`onSuspendEveil` n'est passée que dans ce cas),
+            pour qu'aucun clic ne reste sans effet. */}
+        {onSuspendEveil && !isCostPaymentMode && (
+          <button
+            type="button"
+            title={t('eveil_suspend', { count: card.eveil_cost ?? 0 })}
+            onClick={(e) => {
+              // Sans cet arrêt, le clic remonterait au conteneur et JOUERAIT la
+              // carte — soit exactement l'inverse de ce qu'on demande.
+              e.stopPropagation();
+              onSuspendEveil();
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
+            style={{
+              position: "absolute", top: 3, right: 3, zIndex: 6,
+              width: 20, height: 20, borderRadius: 5,
+              background: "radial-gradient(circle, #3d2a10, #1c1206)",
+              border: `1.5px solid ${EVEIL_TEINTE}`,
+              color: EVEIL_TEINTE, fontSize: 11, lineHeight: 1,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              cursor: "pointer", padding: 0,
+              boxShadow: `0 0 8px ${EVEIL_TEINTE}77`,
+            }}
+          >{EVEIL_GLYPHE}</button>
+        )}
+
         {/* Name — top bar (nom en haut, taille réduite de 30% : 10 → 7). Centré
             avec padding horizontal pour dégager le badge de coût (coin) et les
             indicateurs de coin. Gradient descendant pour la lisibilité. */}
@@ -960,6 +1000,12 @@ function propsEqual(a: HandCardProps, b: HandCardProps): boolean {
     a.cardInstance === b.cardInstance &&
     a.canPlay === b.canPlay &&
     a.isSelected === b.isSelected &&
+    // `onSuspendEveil` n'est pas comparée par identité (arrow inline, comme
+    // `onClick`) mais par PRÉSENCE : c'est elle qui décide si la pastille
+    // d'éveil est rendue. La comparer par identité rendrait à chaque frame ;
+    // ne pas la comparer du tout figerait la pastille quand le plafond
+    // `MAX_EVEIL` se remplit ou se libère.
+    Boolean(a.onSuspendEveil) === Boolean(b.onSuspendEveil) &&
     a.boost === b.boost
   );
 }

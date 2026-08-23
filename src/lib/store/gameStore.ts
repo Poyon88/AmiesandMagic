@@ -34,6 +34,9 @@ import {
   cardNeedsPresage,
   PRESAGE_REVEAL_COUNT,
   creatureCanCastLearnedSpell,
+  canSuspendToEveil,
+  canPayEveil,
+  maxEveilPayment,
   creatureNeedsApprentissage,
   handSpellsFor,
   chantBonusForSpell,
@@ -132,7 +135,20 @@ function carteJouable(player: PlayerState, instanceId: string | null | undefined
   for (const creature of player.board) {
     if (creature.apprentissageSpell?.instanceId === instanceId) return creature.apprentissageSpell;
   }
+  // ÉVEIL — troisième source. Une carte en éveil n'est plus en main, mais tout
+  // le flux client (pickers de coûts, ciblage, envoi) doit continuer de la
+  // trouver : c'est ce point de résolution unique qui a évité de rouvrir la
+  // quinzaine de `hand.find` remplacés lors d'Apprentissage.
+  const enEveil = (player.eveil ?? []).find((e) => e.instance.instanceId === instanceId);
+  if (enEveil) return enEveil.instance;
   return undefined;
+}
+
+/** ÉVEIL — l'entrée correspondante, si la carte attend dans la zone d'éveil.
+ *  Sert à estampiller l'action sortante de `fromEveil`. */
+function entreeEnEveil(player: PlayerState, instanceId: string | null | undefined) {
+  if (!instanceId) return undefined;
+  return (player.eveil ?? []).find((e) => e.instance.instanceId === instanceId);
 }
 
 /** La créature qui a mémorisé ce sort, s'il en est un. Sert à estampiller
@@ -308,6 +324,22 @@ export interface TopdeckCostEvent {
   isLocal: boolean;
   /** Dos de carte de ce deck : c'est ce qu'on voit filer vers la pile. */
   cardBackUrl: string | null;
+  timestamp: number;
+}
+
+/** ÉVEIL — un mouvement de la zone d'éveil, à signaler à l'écran.
+ *
+ *  Contrairement au repli, la CARTE est transportée : l'éveil est public, des
+ *  deux côtés. Sans ce signal, une carte quitterait la main pour ressurgir
+ *  plusieurs tours plus tard sur le plateau, et l'adversaire ne verrait qu'un
+ *  compteur bouger dans un coin de l'écran. */
+export interface EveilEvent {
+  kind: "suspend" | "pay" | "arrive";
+  card: Card;
+  /** Points restants après le mouvement (0 à l'arrivée). */
+  remaining: number;
+  /** Zone d'éveil du joueur LOCAL ou de l'adversaire — décide de la tuile visée. */
+  isLocal: boolean;
   timestamp: number;
 }
 
@@ -532,9 +564,11 @@ interface GameStore {
   compagnonsEvent: CycleEternelEvent | null;
   exileCostEvent: ExileCostEvent | null;
   topdeckCostEvent: TopdeckCostEvent | null;
+  eveilEvent: EveilEvent | null;
   deckEffectEvent: DeckEffectEvent | null;
   clearExileCostEvent: () => void;
   clearTopdeckCostEvent: () => void;
+  clearEveilEvent: () => void;
   clearDeckEffectEvent: () => void;
   tempeteEvent: TempeteEvent | null;
   powerArrowEvent: PowerArrowEvent | null;
@@ -599,6 +633,13 @@ interface GameStore {
   dispatchAction: (action: GameAction) => GameAction | null;
   playCardDirect: (instanceId: string, boardPosition?: number) => GameAction | null;
   selectCardInHand: (instanceId: string) => GameAction | null;
+  /** ÉVEIL — met une carte de la MAIN en éveil (0 mana, une place sous le
+   *  plafond). */
+  suspendToEveil: (instanceId: string) => GameAction | null;
+  /** ÉVEIL — verse `amount` points sur une carte en éveil (1 par défaut). Le
+   *  dernier point est une entrée en jeu : il repart par le flux de jeu normal,
+   *  pickers compris, et `amount` y est sans objet. */
+  payEveilPoint: (instanceId: string, amount?: number) => GameAction | null;
   selectAttacker: (instanceId: string) => void;
   selectTarget: (targetId: string) => GameAction | null;
   clearSelection: () => void;
@@ -1470,6 +1511,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   compagnonsEvent: null,
   exileCostEvent: null,
   topdeckCostEvent: null,
+  eveilEvent: null,
   deckEffectEvent: null,
   tempeteEvent: null,
   powerArrowEvent: null,
@@ -1597,6 +1639,18 @@ export const useGameStore = create<GameStore>((set, get) => {
         action.cardInstanceId,
       );
       if (source) action = { ...action, learnedFromInstanceId: source.instanceId };
+    }
+
+    // ÉVEIL — même point de passage unique : une carte qui attend dans la zone
+    // d'éveil n'est ni en main ni au cimetière, et l'action doit le dire. Sans
+    // cet estampillage, le moteur la chercherait en main et refuserait l'action
+    // en silence — après plusieurs tours d'attente, le pire des échecs muets.
+    if (action.type === "play_card" && !action.fromEveil && !action.fromGraveyard) {
+      const enEveil = entreeEnEveil(
+        gameState.players[gameState.currentPlayerIndex],
+        action.cardInstanceId,
+      );
+      if (enEveil) action = { ...action, fromEveil: true };
     }
 
     if (action.type === "play_card") {
@@ -2016,6 +2070,24 @@ export const useGameStore = create<GameStore>((set, get) => {
         count: topdeckTotal,
         isLocal: topdeckIsLocal,
         cardBackUrl: topdeckIsLocal ? get().myCardBackUrl : get().opponentCardBackUrl,
+        timestamp: Date.now(),
+      }
+      : null;
+
+    // ÉVEIL — mouvements de la zone d'éveil pendant l'action. On ne garde que le
+    // DERNIER : une action n'en produit jamais plus d'un (mise en éveil, point
+    // versé, ou arrivée), et le tableau n'existe que parce que le moteur pousse
+    // dans un sink comme partout ailleurs. Liste transitoire vidée après
+    // extraction (exclue du hash).
+    const rawEveil = newState.eveilEvents ?? [];
+    if (newState.eveilEvents) newState.eveilEvents = undefined;
+    const dernierEveil = rawEveil[rawEveil.length - 1];
+    const eveilEvent: EveilEvent | null = dernierEveil
+      ? {
+        kind: dernierEveil.kind,
+        card: dernierEveil.card,
+        remaining: dernierEveil.remaining,
+        isLocal: dernierEveil.ownerId === localPlayerId,
         timestamp: Date.now(),
       }
       : null;
@@ -2646,7 +2718,11 @@ export const useGameStore = create<GameStore>((set, get) => {
     // une mort (hasDeaths) — mais Compagnons ne bouge QUE le deck : sur une
     // créature vanille, aucun des autres drapeaux ne lève, l'action prenait le
     // chemin rapide et les phases — donc l'animation — n'existaient jamais.
-    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!powerArrowEvent || !!manaReductionEvent || !!epargneGainEvent || !!exileCostEvent || !!topdeckCostEvent || !!deckEffectEvent || !!cycleEvent || !!compagnonsEvent || drawTriggerSpells.length > 0;
+    // `eveilEvent` est du même bois, et pour la même raison : mettre une carte
+    // en éveil ou y verser un point ne fait grossir aucune zone visible — la main
+    // RÉTRÉCIT, ce que `drawnCardIds` ne regarde pas. Sans ce drapeau, le seul
+    // mouvement du mécanisme n'aurait jamais d'animation.
+    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!powerArrowEvent || !!manaReductionEvent || !!epargneGainEvent || !!exileCostEvent || !!topdeckCostEvent || !!deckEffectEvent || !!cycleEvent || !!compagnonsEvent || !!eveilEvent || drawTriggerSpells.length > 0;
 
     // Deep clone helper — factionCardPool / allSpellsPool carry non-serialisable refs, keep them aside.
     const cloneState = (state: GameState): GameState => {
@@ -3204,6 +3280,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       // que celle qu'on paie ne parte. Pas de son dédié — le geste est discret,
       // là où l'exil déchire.
       if (topdeckCostEvent) set({ topdeckCostEvent });
+      if (eveilEvent) set({ eveilEvent });
       if (exileCostEvent) {
         set({ exileCostEvent });
         // Son propre à la carte, repli sur le son global `exile_cost` — même
@@ -3278,7 +3355,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     }
     // Phase 0 (Cost discard) — runs before the overlay so the discarded
     // card reads as a paid prerequisite, not a consequence of the spell.
-    if (costDiscardEvent || exileCostEvent || topdeckCostEvent) {
+    if (costDiscardEvent || exileCostEvent || topdeckCostEvent || eveilEvent) {
       if (cursor === 0) phaseCostDiscard();
       else setTimeout(phaseCostDiscard, cursor);
       cursor += COST_DISCARD_MS;
@@ -3424,9 +3501,13 @@ export const useGameStore = create<GameStore>((set, get) => {
     const joueurCourant = gameState.players[gameState.currentPlayerIndex];
     // Même dérogation qu'au-dessus pour un sort MÉMORISÉ.
     const apprenanteDirecte = apprenanteDuSort(joueurCourant, instanceId);
+    // Même dérogation pour une carte en ÉVEIL (cf. selectCardInHand).
+    const enEveilDirect = entreeEnEveil(joueurCourant, instanceId);
     if (apprenanteDirecte
       ? !creatureCanCastLearnedSpell(gameState, apprenanteDirecte.instanceId)
-      : !canPlayCard(gameState, instanceId)) return null;
+      : enEveilDirect
+        ? !canPayEveil(gameState, instanceId)
+        : !canPlayCard(gameState, instanceId)) return null;
 
     const player = gameState.players[gameState.currentPlayerIndex];
     const card = carteJouable(player, instanceId);
@@ -3636,6 +3717,33 @@ export const useGameStore = create<GameStore>((set, get) => {
     });
   },
 
+  suspendToEveil: (instanceId) => {
+    const { gameState } = get();
+    if (!gameState) return null;
+    if (!canSuspendToEveil(gameState, instanceId)) return null;
+    return get().dispatchAction({ type: "suspend_eveil", cardInstanceId: instanceId });
+  },
+
+  payEveilPoint: (instanceId, amount = 1) => {
+    const { gameState } = get();
+    if (!gameState) return null;
+    const player = gameState.players[gameState.currentPlayerIndex];
+    const entree = (player.eveil ?? []).find(e => e.instance.instanceId === instanceId);
+    if (!entree) return null;
+    if (!canPayEveil(gameState, instanceId)) return null;
+    // DERNIER point : ce n'est plus un versement, c'est une entrée en jeu. On
+    // délègue à `selectCardInHand` — exactement ce qu'a fait Apprentissage avec
+    // `activateLearnedSpell` : toute la chaîne coûts additionnels → pickers de
+    // ciblage → envoi de l'action est réutilisée telle quelle, et `carteJouable`
+    // sait désormais trouver la carte dans la zone d'éveil.
+    if (entree.remaining === 1) return get().selectCardInHand(instanceId);
+    // Montant borné par la MÊME source que le moteur : un bouton qui demanderait
+    // plus que le maximum serait refusé en silence.
+    const montant = Math.min(amount, maxEveilPayment(gameState, instanceId));
+    if (montant < 1) return null;
+    return get().dispatchAction({ type: "pay_eveil", cardInstanceId: instanceId, amount: montant });
+  },
+
   selectCardInHand: (instanceId) => {
     const { gameState } = get();
     if (!gameState) return null;
@@ -3648,9 +3756,15 @@ export const useGameStore = create<GameStore>((set, get) => {
     // déclarerait donc injouable. Son pendant vérifie les mêmes coûts PLUS les
     // gardes d'activation de la créature (engagée, paralysée, mal d'invocation).
     const apprenanteIci = apprenanteDuSort(player, instanceId);
+    // ÉVEIL : la carte n'est pas en main non plus, `canPlayCard` la déclarerait
+    // injouable. Son pendant vérifie le DERNIER point (1 mana) et la
+    // faisabilité de l'arrivée — plateau, cibles, coûts additionnels.
+    const enEveilIci = entreeEnEveil(player, instanceId);
     if (apprenanteIci
       ? !creatureCanCastLearnedSpell(gameState, apprenanteIci.instanceId)
-      : !canPlayCard(gameState, instanceId)) return null;
+      : enEveilIci
+        ? !canPayEveil(gameState, instanceId)
+        : !canPlayCard(gameState, instanceId)) return null;
 
     // Alternative-cost gating — see playCardDirect for the same pattern.
     {
@@ -4618,6 +4732,10 @@ export const useGameStore = create<GameStore>((set, get) => {
 
   clearTopdeckCostEvent: () => {
     set({ topdeckCostEvent: null });
+  },
+
+  clearEveilEvent: () => {
+    set({ eveilEvent: null });
   },
 
   clearExileCostEvent: () => {

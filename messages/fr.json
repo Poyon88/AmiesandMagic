@@ -393,6 +393,14 @@
         "label": "Esprit de corps",
         "desc": "Gagne +1 ATK ou +1 PV au hasard par créature {clan_de} avec Esprit de corps déjà jouée."
       },
+      "presage": {
+        "label": "Présage",
+        "desc": "Révèle 3 cartes du dessus dans le désordre ; désignez celle du sommet pour la prendre en main, puis mélangez le deck."
+      },
+      "apprentissage": {
+        "label": "Apprentissage",
+        "desc": "Retire un sort de votre main et le mémorise : la créature peut le lancer en payant ses coûts."
+      },
       "impact": {
         "label": "Impact X",
         "desc": "Inflige X dégâts à une cible ciblée (créature ou héros, n'importe quel bord)."
@@ -424,14 +432,6 @@
       "creuser": {
         "label": "Creuser X",
         "desc": "Regardez les X cartes du dessous de votre deck ; placez-en une sur le dessus."
-      },
-      "presage": {
-        "label": "Présage",
-        "desc": "Révèle 3 cartes du dessus dans le désordre ; désignez celle du sommet pour la prendre en main, puis mélangez le deck."
-      },
-      "apprentissage": {
-        "label": "Apprentissage",
-        "desc": "Retire un sort de votre main et le mémorise : la créature peut le lancer en payant ses coûts."
       },
       "retour_differe": {
         "label": "Retour différé",
@@ -911,6 +911,7 @@
       "Machines": "Machines",
       "Kobolds": "Kobolds",
       "Géants": "Géants",
+      "Mammouths": "Mammouths",
       "Humains": "Humains",
       "Esprits": "Esprits",
       "Griffons": "Griffons",
@@ -1093,6 +1094,11 @@
         "def": "le Géant",
         "bare": "Géant",
         "de": "du Géant"
+      },
+      "Mammouths": {
+        "def": "le Mammouth",
+        "bare": "Mammouth",
+        "de": "du Mammouth"
       },
       "Ogres": {
         "def": "l'Ogre",
@@ -1290,8 +1296,8 @@
       "rm_scope_clan": " du clan {v}",
       "rm_scope_all": "",
       "scope_target": "à une unité alliée",
-      "scope_all": "à toutes vos unités",
-      "edc_compte": "Gagne {n} fois +1 ATK ou +1 PV au hasard (1 par créature {clan_de} avec Esprit de corps déjà jouée)."
+      "edc_compte": "Gagne {n} fois +1 ATK ou +1 PV au hasard (1 par créature {clan_de} avec Esprit de corps déjà jouée).",
+      "scope_all": "à toutes vos unités"
     },
     "sets": {
       "1": "Set de Base"
@@ -2042,7 +2048,10 @@
     "card_added": "« {name} » ajoutée !",
     "unknown_error": "Erreur inconnue",
     "illustration_generated": "Illustration générée ({model})",
-    "import_error": "Erreur d'import"
+    "import_error": "Erreur d'import",
+    "eveil_label": "ÉVEIL",
+    "eveil_cost_hint": "ÉVEIL : la carte peut être mise en éveil AU LIEU d'être jouée. Elle quitte la main avec ce nombre de points ; le joueur en paie 1 par mana à chacun de ses tours, et au dernier point elle entre en jeu comme depuis la main. Remplace le coût en mana, ne s'y ajoute pas. Non réductible.",
+    "eveil_cost_title": "Peut être mise en éveil pour {count, plural, one {# point} other {# points}}, payés 1 mana par tour — au lieu du coût en mana"
   },
   "game": {
     "error_not_authenticated": "Non authentifié",
@@ -2166,7 +2175,26 @@
     "presage_hit": "Bien vu — elle rejoint votre main.",
     "presage_miss": "Raté. La bonne carte est en vert.",
     "apprentissage_title": "📖 Apprentissage",
-    "apprentissage_subtitle": "Quel sort la créature doit-elle mémoriser ?"
+    "apprentissage_subtitle": "Quel sort la créature doit-elle mémoriser ?",
+    "zone_eveil": "Éveil",
+    "zone_eveil_yours": "Votre éveil",
+    "zone_eveil_opponent": "Éveil adverse",
+    "eveil_hint": "Versez 1 mana par clic. Au dernier point, la carte entre en jeu comme si elle venait de votre main.",
+    "eveil_remaining": "{count, plural, one {# point restant} other {# points restants}}",
+    "eveil_next_point": "Le prochain point coûte 1 mana.",
+    "eveil_next_arrives": "Dernier point : la carte entre en jeu.",
+    "eveil_play_now": "Faire entrer en jeu",
+    "eveil_blocked_mana": "Pas assez de mana.",
+    "eveil_blocked_board_plein": "Votre plateau est plein.",
+    "eveil_blocked_vie": "Vous n'avez pas assez de points de vie pour son coût.",
+    "eveil_blocked_main": "Pas assez de cartes en main pour ses coûts additionnels.",
+    "eveil_blocked_plateau": "Pas assez de créatures à sacrifier.",
+    "eveil_blocked_deck": "Pas assez de cartes à exiler dans votre deck.",
+    "eveil_blocked_sans_cible": "Aucune cible valide pour ce sort.",
+    "eveil_suspend": "Mettre en éveil ({count, plural, one {# point} other {# points}})",
+    "eveil_pay_n": "{count, plural, one {Payer #} other {Payer #}}",
+    "eveil_max": "max {count}",
+    "eveil_max_hint": "Le dernier point est l'entrée en jeu : il se paie à part, avec le choix des cibles."
   },
   "tutorial": {
     "page_eyebrow": "Apprends l'art du duel",

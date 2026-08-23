@@ -949,7 +949,8 @@
       "Gobelins": "Goblin",
       "Trolls": "Troll",
       "Wargs": "Warg",
-      "Guerriers du Chaos": "Guerrieri del Caos"
+      "Guerriers du Chaos": "Guerrieri del Caos",
+      "Mammouths": "Mammut"
     },
     "alignments": {
       "bon": "Buono",
@@ -1208,6 +1209,11 @@
         "def": "il Guerriero del Caos",
         "bare": "Guerriero del Caos",
         "de": "del Guerriero del Caos"
+      },
+      "Mammouths": {
+        "def": "il Mammut",
+        "bare": "Mammut",
+        "de": "del Mammut"
       }
     },
     "clans_forms": {
@@ -2042,7 +2048,10 @@
     "card_added": "« {name} » aggiunta!",
     "unknown_error": "Errore sconosciuto",
     "illustration_generated": "Illustrazione generata ({model})",
-    "import_error": "Errore di importazione"
+    "import_error": "Errore di importazione",
+    "eveil_label": "RISVEGLIO",
+    "eveil_cost_hint": "RISVEGLIO: la carta può essere messa in risveglio INVECE di essere giocata. Lascia la mano con questo numero di punti; il giocatore ne paga 1 per mana in ogni suo turno, e all'ultimo punto entra in gioco come dalla mano. Sostituisce il costo in mana, non vi si aggiunge. Non riducibile.",
+    "eveil_cost_title": "Può essere messa in risveglio per {count, plural, one {# punto} other {# punti}}, pagati 1 mana per turno — invece del costo in mana"
   },
   "game": {
     "error_not_authenticated": "Non autenticato",
@@ -2166,7 +2175,26 @@
     "presage_hit": "Ben visto: va nella tua mano.",
     "presage_miss": "Sbagliato. La carta giusta è in verde.",
     "apprentissage_title": "📖 Apprendimento",
-    "apprentissage_subtitle": "Quale magia deve memorizzare la creatura?"
+    "apprentissage_subtitle": "Quale magia deve memorizzare la creatura?",
+    "zone_eveil": "Risveglio",
+    "zone_eveil_yours": "Il tuo risveglio",
+    "zone_eveil_opponent": "Risveglio avversario",
+    "eveil_hint": "Paga 1 mana per clic. All'ultimo punto, la carta entra in gioco come se venisse dalla tua mano.",
+    "eveil_remaining": "{count, plural, one {# punto rimasto} other {# punti rimasti}}",
+    "eveil_next_point": "Il prossimo punto costa 1 mana.",
+    "eveil_next_arrives": "Ultimo punto: la carta entra in gioco.",
+    "eveil_play_now": "Fai entrare in gioco",
+    "eveil_blocked_mana": "Mana insufficiente.",
+    "eveil_blocked_board_plein": "Il tuo campo è pieno.",
+    "eveil_blocked_vie": "Punti vita insufficienti per il suo costo.",
+    "eveil_blocked_main": "Carte in mano insufficienti per i suoi costi aggiuntivi.",
+    "eveil_blocked_plateau": "Creature insufficienti da sacrificare.",
+    "eveil_blocked_deck": "Carte insufficienti da esiliare nel tuo mazzo.",
+    "eveil_blocked_sans_cible": "Nessun bersaglio valido per questa magia.",
+    "eveil_suspend": "Metti in risveglio ({count, plural, one {# punto} other {# punti}})",
+    "eveil_pay_n": "{count, plural, one {Paga #} other {Paga #}}",
+    "eveil_max": "max {count}",
+    "eveil_max_hint": "L'ultimo punto è l'entrata in gioco: si paga a parte, insieme alla scelta dei bersagli."
   },
   "tutorial": {
     "page_eyebrow": "Impara l'arte del duello",

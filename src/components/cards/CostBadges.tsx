@@ -3,6 +3,7 @@
 import type { Card } from "@/lib/game/types";
 import ExileGlyph from "./ExileGlyph";
 import { REPLI_TEINTE, REPLI_GLYPHE } from "@/lib/game/repli-theme";
+import { EVEIL_TEINTE, EVEIL_GLYPHE } from "@/lib/game/eveil-theme";
 
 interface Props {
   card: Card;
@@ -25,6 +26,7 @@ export default function CostBadges({ card, size = 22, effectiveManaCost, isCostR
   const sacrificeCost = card.sacrifice_cost ?? 0;
   const exileCost = card.exile_cost ?? 0;
   const topdeckCost = card.topdeck_cost ?? 0;
+  const eveilCost = card.eveil_cost ?? 0;
 
   const showMana = manaCost > 0;
   const showLife = lifeCost > 0;
@@ -32,10 +34,13 @@ export default function CostBadges({ card, size = 22, effectiveManaCost, isCostR
   const showSacrifice = sacrificeCost > 0;
   const showExile = exileCost > 0;
   const showTopdeck = topdeckCost > 0;
+  // Seule pastille ALTERNATIVE de la rangée : elle ne s'ajoute pas au mana, elle
+  // le remplace. D'où sa place en BOUT de rangée et sa teinte à part.
+  const showEveil = eveilCost > 0;
 
   // Edge case: a card declares no costs at all (rare — e.g. "0-cost token").
   // Still render the mana 0 pip so the slot doesn't look empty.
-  const renderEmpty = !showMana && !showLife && !showDiscard && !showSacrifice && !showExile && !showTopdeck;
+  const renderEmpty = !showMana && !showLife && !showDiscard && !showSacrifice && !showExile && !showTopdeck && !showEveil;
 
   const fontSize = Math.round(size * 0.6);
   const glyphSize = Math.round(size * 0.5);
@@ -149,6 +154,27 @@ export default function CostBadges({ card, size = 22, effectiveManaCost, isCostR
             filter: "drop-shadow(0 0 2px #000)",
           }}>{REPLI_GLYPHE}</span>
           {topdeckCost}
+        </div>
+      )}
+      {showEveil && (
+        <div title={`Peut être mise en éveil pour ${eveilCost} point${eveilCost > 1 ? "s" : ""} — payés 1 mana par tour, AU LIEU du coût en mana`} style={{
+          // Ambre d'aube : la seule famille que les six autres pastilles
+          // n'occupaient pas (cf. eveil-theme). La distinction de couleur porte
+          // une distinction de règle — « OU », et non « ET ».
+          width: size * 0.85, height: size, borderRadius: size * 0.18,
+          background: "radial-gradient(circle, #3d2a10, #1c1206)",
+          outline: `2px solid ${EVEIL_TEINTE}`,
+          fontSize, color: "#ffe0b0", fontWeight: 700,
+          lineHeight: `${size}px`, textAlign: "center",
+          boxShadow: `0 0 6px ${EVEIL_TEINTE}66`,
+          position: "relative",
+        }}>
+          <span style={{
+            position: "absolute", top: -size * 0.08, right: -size * 0.1,
+            fontSize: glyphSize, lineHeight: 1,
+            filter: "drop-shadow(0 0 2px #000)",
+          }}>{EVEIL_GLYPHE}</span>
+          {eveilCost}
         </div>
       )}
     </div>

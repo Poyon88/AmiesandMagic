@@ -3,11 +3,12 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import type { CardInstance } from "@/lib/game/types";
+import type { CardInstance, EveilEntry } from "@/lib/game/types";
 import GameCard from "@/components/cards/GameCard";
 import { getTokenManaCost } from "@/lib/game/abilities";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
 import { useCardText } from "./CardTextProvider";
+import { EVEIL_TEINTE, EVEIL_GLYPHE } from "@/lib/game/eveil-theme";
 
 interface Props {
   deckCount: number;
@@ -17,6 +18,12 @@ interface Props {
   emptyGraveyardImageUrl: string | null;
   isOpponent: boolean;
   onGraveyardClick: () => void;
+  /** ÉVEIL — cartes en attente de ce camp. La zone est PUBLIQUE : la tuile est
+   *  rendue des deux côtés, avec la même information. Vide ⇒ pas de tuile, pour
+   *  ne pas encombrer le plateau d'un emplacement que la plupart des parties
+   *  n'utiliseront pas. */
+  eveil?: EveilEntry[];
+  onEveilClick?: () => void;
 }
 
 // Width is matched to the opponent hand-back tile (`w-32` = 128px) — that
@@ -35,6 +42,8 @@ export default function ArenaDeckGraveyardCluster({
   emptyGraveyardImageUrl,
   isOpponent,
   onGraveyardClick,
+  eveil,
+  onEveilClick,
 }: Props) {
   const topCard = graveyard.length > 0 ? graveyard[graveyard.length - 1].card : null;
 
@@ -48,6 +57,116 @@ export default function ArenaDeckGraveyardCluster({
         isOpponent={isOpponent}
         onClick={onGraveyardClick}
       />
+      {(eveil?.length ?? 0) > 0 && (
+        <EveilTile entries={eveil!} isOpponent={isOpponent} onClick={onEveilClick} />
+      )}
+    </div>
+  );
+}
+
+interface EveilTileProps {
+  entries: EveilEntry[];
+  isOpponent: boolean;
+  onClick?: () => void;
+}
+
+/** La pile des cartes en ÉVEIL, troisième tuile de l'amas.
+ *
+ *  Montre la carte du DESSUS face visible et, en pastille, le nombre de points
+ *  qu'il reste à lui verser — pas le nombre de cartes comme ses deux voisines.
+ *  C'est le chiffre qui compte : « dans combien de mana arrive-t-elle ». Le
+ *  nombre de cartes se lit à l'épaisseur de la pile, et se détaille dans la
+ *  modale. */
+function EveilTile({ entries, isOpponent, onClick }: EveilTileProps) {
+  const t = useTranslations("game");
+  const { localizeName } = useCardText();
+  const dessus = entries[0];
+  const restant = dessus.remaining;
+  const pileShadow = buildPileShadow(entries.length, `rgba(${242}, ${160}, ${60}, 0.3)`);
+
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClick?.();
+        }
+      }}
+      data-no-global-click-sfx="true"
+      title={isOpponent ? t("zone_eveil_opponent") : t("zone_eveil_yours")}
+      className="relative w-32 aspect-[5/7] cursor-pointer"
+      style={LONG_PRESS_RESET_STYLE}
+    >
+      <div className="relative w-full h-full rounded-lg overflow-hidden" style={{ boxShadow: pileShadow }}>
+        {dessus.instance.card.image_url ? (
+          <Image
+            src={dessus.instance.card.image_url}
+            alt={dessus.instance.card.name}
+            fill
+            sizes="256px"
+            className="object-cover"
+            quality={75}
+            draggable={false}
+          />
+        ) : (
+          <div
+            className="absolute inset-0 flex items-center justify-center"
+            style={{
+              background: `radial-gradient(circle at center, rgba(242, 160, 60, 0.25), transparent 70%)`,
+              fontSize: 50, opacity: 0.6,
+            }}
+          >{EVEIL_GLYPHE}</div>
+        )}
+      </div>
+      <div
+        aria-hidden
+        className="absolute inset-0 rounded-lg pointer-events-none"
+        style={{ border: `2px solid ${EVEIL_TEINTE}99`, boxShadow: `0 0 10px ${EVEIL_TEINTE}44` }}
+      />
+      <TopLabel label={t("zone_eveil")} isOpponent={isOpponent} />
+      <div
+        className="absolute left-0 right-0 bottom-0 text-center pointer-events-none overflow-hidden"
+        style={{
+          padding: "22px 5px 6px",
+          background: "linear-gradient(0deg, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.55) 55%, transparent 100%)",
+          borderBottomLeftRadius: 8, borderBottomRightRadius: 8,
+          fontFamily: "'Cinzel', serif", fontSize: 11, color: "#f0e6d2",
+          textShadow: "0 1px 2px rgba(0,0,0,0.95)",
+        }}
+      >
+        {localizeName(dessus.instance.card)}
+      </div>
+      {/* Points RESTANTS, et non nombre de cartes : c'est la seule chose que
+          les deux joueurs ont besoin de lire d'un coup d'œil. */}
+      <div
+        className="absolute -bottom-2 -right-2 flex items-center justify-center"
+        style={{
+          minWidth: 34, height: 34, padding: "0 8px", borderRadius: 999,
+          background: "rgba(0, 0, 0, 0.92)",
+          border: `2px solid ${EVEIL_TEINTE}`,
+          boxShadow: `0 2px 6px rgba(0,0,0,0.7), 0 0 10px ${EVEIL_TEINTE}55`,
+          fontFamily: "'Cinzel', serif", fontSize: 16, fontWeight: 800,
+          color: "#ffe0b0", textShadow: "0 1px 2px rgba(0,0,0,0.9)",
+          gap: 2,
+        }}
+      >
+        {EVEIL_GLYPHE}{restant}
+      </div>
+      {entries.length > 1 && (
+        <div
+          className="absolute -top-2 -left-2 flex items-center justify-center"
+          style={{
+            minWidth: 26, height: 26, borderRadius: 999,
+            background: "rgba(0,0,0,0.92)",
+            border: `2px solid ${EVEIL_TEINTE}88`,
+            fontFamily: "'Cinzel', serif", fontSize: 13, fontWeight: 800,
+            color: "#ffe0b0",
+          }}
+        >{entries.length}</div>
+      )}
     </div>
   );
 }

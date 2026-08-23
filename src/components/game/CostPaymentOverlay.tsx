@@ -32,7 +32,12 @@ export default function CostPaymentOverlay({ onConfirmedAction }: Props) {
   if (targetingMode !== "cost_payment" || !pendingCostCard) return null;
 
   const player = gameState?.players[gameState.currentPlayerIndex];
-  const card = player?.hand.find(c => c.instanceId === pendingCostCard.instanceId);
+  // La carte n'est pas forcément EN MAIN : une carte payée par l'ÉVEIL arrive
+  // depuis sa propre zone. Sans ce repli, le bandeau annonçait « cette carte »
+  // au lieu de son nom — au moment précis où le joueur doit décider ce qu'il
+  // défausse pour elle.
+  const card = player?.hand.find(c => c.instanceId === pendingCostCard.instanceId)
+    ?? (player?.eveil ?? []).find(e => e.instance.instanceId === pendingCostCard.instanceId)?.instance;
   const cardName = card ? localizeName(card.card) : t('cost_default_card_name');
 
   const discardOk = selectedDiscardIds.length === pendingCostCard.discardNeeded;

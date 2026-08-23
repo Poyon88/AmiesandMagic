@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import ExileGlyph from "@/components/cards/ExileGlyph";
 import { REPLI_TEINTE, REPLI_GLYPHE } from "@/lib/game/repli-theme";
+import { EVEIL_TEINTE, EVEIL_GLYPHE } from "@/lib/game/eveil-theme";
 import { SELECTABLE_IMAGE_MODELS } from "@/lib/ai/image-models";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
@@ -172,6 +173,7 @@ interface ForgeCard {
   /** EXIL : cartes retirées du dessus du deck pour jouer la carte. */
   exileCost?: number;
   topdeckCost?: number;
+  eveilCost?: number;
   // Effets composés (modèle hybride) — pour l'aperçu CardVisual.
   capabilities?: Capability[] | null;
 }
@@ -1705,6 +1707,7 @@ export default function CardForge() {
   const [manualSacrificeCost, setManualSacrificeCost] = useState(0);
   const [manualExileCost, setManualExileCost] = useState(0);
   const [manualTopdeckCost, setManualTopdeckCost] = useState(0);
+  const [manualEveilCost, setManualEveilCost] = useState(0);
   const [manualAbility, setManualAbility] = useState("");
   const [manualFlavorText, setManualFlavorText] = useState("");
   const [manualIllustrationPrompt, setManualIllustrationPrompt] = useState("");
@@ -1882,6 +1885,7 @@ export default function CardForge() {
     sacrificeCost: manualSacrificeCost || undefined,
     exileCost: manualExileCost || undefined,
     topdeckCost: manualTopdeckCost || undefined,
+    eveilCost: manualEveilCost || undefined,
   };
 
   // All races from all factions
@@ -2196,7 +2200,7 @@ export default function CardForge() {
     setManualIllustrationPrompt(""); setManualExtraContext(""); setManualKeywords([]); setKeywordXValues({}); setKeywordModes({}); setCard(null);
     setEditedPrompt(null); setSaveResult(null);
     setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setAfY(1); setRfY(1); setGlY(1); setDcY(1); setFdaY(1); setRmRace(""); setRmClan(""); setAsRace(""); setConferAbilityId(""); setConferX(1); setConferY(1); setDeclenchementTriggers([]); setComposedCaps([]);
-    setManualLifeCost(0); setManualDiscardCost(0); setManualSacrificeCost(0); setManualExileCost(0); setManualTopdeckCost(0);
+    setManualLifeCost(0); setManualDiscardCost(0); setManualSacrificeCost(0); setManualExileCost(0); setManualTopdeckCost(0); setManualEveilCost(0);
     setCardImages(prev => Object.fromEntries(Object.entries(prev).filter(([k]) => k !== "manual_preview")));
   }, []);
 
@@ -2376,6 +2380,7 @@ export default function CardForge() {
     setManualSacrificeCost(0);
     setManualExileCost(0);
     setManualTopdeckCost(0);
+    setManualEveilCost(0);
     // Mots-clés et leur paramétrage
     setManualKeywords([]);
     setKeywordXValues({});
@@ -2587,6 +2592,7 @@ export default function CardForge() {
             sacrifice_cost: forgeCard.sacrificeCost ?? 0,
             exile_cost: forgeCard.exileCost ?? 0,
             topdeck_cost: forgeCard.topdeckCost ?? 0,
+            eveil_cost: forgeCard.eveilCost ?? 0,
           },
           imageBase64,
           imageMimeType,
@@ -3339,6 +3345,16 @@ export default function CardForge() {
                       <label style={{ fontSize: 8, color: REPLI_TEINTE, letterSpacing: 1 }} title={tf('topdeck_cost_hint')}>{REPLI_GLYPHE} {tf('topdeck_label')}</label>
                       <input type="number" min={0} max={5} value={manualTopdeckCost} onChange={e => setManualTopdeckCost(Math.max(0, Math.min(5, parseInt(e.target.value) || 0)))}
                         style={{ width: "100%", padding: "5px 4px", borderRadius: 6, border: `1px solid ${REPLI_TEINTE}44`, background: "#fff", color: "#2b7f99", fontFamily: "'Cinzel',serif", fontSize: 14, textAlign: "center", marginTop: 3 }}
+                      />
+                    </div>
+                    <div>
+                      {/* ÉVEIL — le seul de la grille qui ne s'AJOUTE pas au
+                          mana : il le REMPLACE. Plafonné à 10 comme le mana,
+                          et non à 5 comme les coûts de main : c'est un coût de
+                          mana étalé dans le temps, pas une ponction de zone. */}
+                      <label style={{ fontSize: 8, color: EVEIL_TEINTE, letterSpacing: 1 }} title={tf('eveil_cost_hint')}>{EVEIL_GLYPHE} {tf('eveil_label')}</label>
+                      <input type="number" min={0} max={10} value={manualEveilCost} onChange={e => setManualEveilCost(Math.max(0, Math.min(10, parseInt(e.target.value) || 0)))}
+                        style={{ width: "100%", padding: "5px 4px", borderRadius: 6, border: `1px solid ${EVEIL_TEINTE}44`, background: "#fff", color: "#a86a1e", fontFamily: "'Cinzel',serif", fontSize: 14, textAlign: "center", marginTop: 3 }}
                       />
                     </div>
                   </div>

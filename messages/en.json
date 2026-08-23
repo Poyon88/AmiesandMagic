@@ -949,7 +949,8 @@
       "Gobelins": "Goblins",
       "Trolls": "Trolls",
       "Wargs": "Wargs",
-      "Guerriers du Chaos": "Chaos Warriors"
+      "Guerriers du Chaos": "Chaos Warriors",
+      "Mammouths": "Mammoths"
     },
     "alignments": {
       "bon": "Good",
@@ -1208,6 +1209,11 @@
         "def": "the Chaos Warrior",
         "bare": "Chaos Warrior",
         "de": "of the Chaos Warrior"
+      },
+      "Mammouths": {
+        "def": "the Mammoth",
+        "bare": "Mammoth",
+        "de": "of the Mammoth"
       }
     },
     "clans_forms": {
@@ -2042,7 +2048,10 @@
     "card_added": "\"{name}\" added!",
     "unknown_error": "Unknown error",
     "illustration_generated": "Illustration generated ({model})",
-    "import_error": "Import error"
+    "import_error": "Import error",
+    "eveil_label": "AWAKEN",
+    "eveil_cost_hint": "AWAKENING: the card can be set to awaken INSTEAD of being cast. It leaves the hand with this many points; the player pays 1 per mana on each of their turns, and on the last point it enters play as if cast from hand. Replaces the mana cost, does not add to it. Not reducible.",
+    "eveil_cost_title": "Can be set to awaken for {count, plural, one {# point} other {# points}}, paid 1 mana per turn — instead of the mana cost"
   },
   "game": {
     "error_not_authenticated": "Not authenticated",
@@ -2166,7 +2175,26 @@
     "presage_hit": "Well seen — it joins your hand.",
     "presage_miss": "Missed. The right card is in green.",
     "apprentissage_title": "📖 Learning",
-    "apprentissage_subtitle": "Which spell should the creature memorise?"
+    "apprentissage_subtitle": "Which spell should the creature memorise?",
+    "zone_eveil": "Awakening",
+    "zone_eveil_yours": "Your awakening",
+    "zone_eveil_opponent": "Opponent's awakening",
+    "eveil_hint": "Pay 1 mana per click. On the last point, the card enters play as if cast from your hand.",
+    "eveil_remaining": "{count, plural, one {# point left} other {# points left}}",
+    "eveil_next_point": "The next point costs 1 mana.",
+    "eveil_next_arrives": "Last point: the card enters play.",
+    "eveil_play_now": "Bring into play",
+    "eveil_blocked_mana": "Not enough mana.",
+    "eveil_blocked_board_plein": "Your board is full.",
+    "eveil_blocked_vie": "Not enough health to pay its cost.",
+    "eveil_blocked_main": "Not enough cards in hand for its additional costs.",
+    "eveil_blocked_plateau": "Not enough creatures to sacrifice.",
+    "eveil_blocked_deck": "Not enough cards to exile from your deck.",
+    "eveil_blocked_sans_cible": "No valid target for this spell.",
+    "eveil_suspend": "Set to awaken ({count, plural, one {# point} other {# points}})",
+    "eveil_pay_n": "{count, plural, one {Pay #} other {Pay #}}",
+    "eveil_max": "max {count}",
+    "eveil_max_hint": "The last point is the card entering play: it is paid separately, along with target selection."
   },
   "tutorial": {
     "page_eyebrow": "Master the Art of the Duel",

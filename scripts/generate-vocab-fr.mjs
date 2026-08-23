@@ -145,7 +145,15 @@ try {
 // Préserve les codes de set/format déjà présents (seeds manuels).
 vocab.sets = { ...(fr.vocab?.sets ?? {}), ...vocab.sets };
 vocab.formats = { ...(fr.vocab?.formats ?? {}), ...vocab.formats };
-fr.vocab = vocab;
+// Préserve les SOUS-NAMESPACES de vocab que ce script ne produit PAS.
+//
+// `fr.vocab = vocab` écrasait tout le namespace, si bien que toute famille
+// ajoutée à la main après la dernière mise à jour de ce script disparaissait en
+// silence à la première régénération — c'est arrivé à `vocab.triggers` (les 9
+// libellés de déclencheurs), perdus sans un mot dans la sortie. Le spread ne
+// garde que les familles absentes de `vocab` : celles que le script produit
+// sont bien remplacées, donc une entrée retirée de la source disparaît toujours.
+fr.vocab = { ...(fr.vocab ?? {}), ...vocab };
 fs.writeFileSync(FR_PATH, JSON.stringify(fr, null, 2) + "\n");
 
 const counts = {

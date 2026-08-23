@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { REPLI_TEINTE, REPLI_GLYPHE } from "@/lib/game/repli-theme";
+import { EVEIL_TEINTE, EVEIL_GLYPHE } from "@/lib/game/eveil-theme";
 import ExileGlyph from "@/components/cards/ExileGlyph";
 import Image from "next/image";
 import GameCard from "@/components/cards/GameCard";
@@ -65,6 +66,7 @@ interface DbCard {
   sacrifice_cost: number | null;
   exile_cost: number | null;
   topdeck_cost: number | null;
+  eveil_cost: number | null;
   capabilities: Capability[] | null;
 }
 
@@ -376,6 +378,7 @@ export default function CardEditor() {
       sacrifice_cost: card.sacrifice_cost ?? 0,
       exile_cost: card.exile_cost ?? 0,
       topdeck_cost: card.topdeck_cost ?? 0,
+      eveil_cost: card.eveil_cost ?? 0,
     });
     setNewImageFile(null);
     setNewImagePreview(null);
@@ -604,6 +607,7 @@ export default function CardEditor() {
         sacrifice_cost: (editFields.sacrifice_cost as number) || 0,
         exile_cost: (editFields.exile_cost as number) || 0,
         topdeck_cost: (editFields.topdeck_cost as number) || 0,
+        eveil_cost: (editFields.eveil_cost as number) || 0,
       };
 
       const body: Record<string, unknown> = { card: cardData, updateId: selectedCard.id, composed_capabilities: composedCaps };
@@ -1089,6 +1093,13 @@ export default function CardEditor() {
               <div style={{ flex: 1 }}>
                 <div style={S.label} title="REPLI : nombre de cartes que le joueur replace de sa main sur le DESSUS de son deck (elles ne vont pas au cimetière — il les repiochera). Coût de tempo, non réductible.">Coût <span style={{ color: REPLI_TEINTE }}>{REPLI_GLYPHE}</span> Repli</div>
                 <input type="number" min={0} max={5} value={(editFields.topdeck_cost as number) ?? 0} onChange={e => updateField("topdeck_cost", parseInt(e.target.value) || 0)} style={S.input} />
+              </div>
+              <div style={{ flex: 1 }}>
+                {/* Le seul coût ALTERNATIF de la rangée : il REMPLACE le coût en
+                    mana au lieu de s'y ajouter. Plafond plus haut que ses
+                    voisins (10, comme le mana) — c'est un coût de mana étalé. */}
+                <div style={S.label} title="ÉVEIL : la carte peut être mise en éveil AU LIEU d'être jouée. Elle quitte la main avec ce nombre de points ; le joueur en paie 1 par mana à chacun de ses tours, et au dernier point elle entre en jeu comme depuis la main. Remplace le coût en mana, ne s'y ajoute pas. Non réductible.">Coût <span style={{ color: EVEIL_TEINTE }}>{EVEIL_GLYPHE}</span> Éveil</div>
+                <input type="number" min={0} max={10} value={(editFields.eveil_cost as number) ?? 0} onChange={e => updateField("eveil_cost", parseInt(e.target.value) || 0)} style={S.input} />
               </div>
             </div>
 

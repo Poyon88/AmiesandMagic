@@ -47,6 +47,12 @@ const COUVERTURE: Record<GameAction["type"], Couverture> = {
   mulligan: "sans dégâts",
   spend_epargne: "sans dégâts",
   concede: "sans dégâts",
+  // Éveil : mettre en éveil déplace une carte de la main vers une zone hors du
+  // jeu, verser un point ne fait que dépenser du mana. Le seul moment où une
+  // carte en éveil peut tuer, c'est son ARRIVÉE — et celle-ci passe par
+  // `play_card` (avec `fromEveil`), déjà classée « létal » plus haut.
+  suspend_eveil: "sans dégâts",
+  pay_eveil: "sans dégâts",
 };
 
 // ─── Outillage ──────────────────────────────────────────────────────────────

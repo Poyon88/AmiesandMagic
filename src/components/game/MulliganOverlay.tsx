@@ -18,6 +18,9 @@ import useCoarsePointer from "@/hooks/useCoarsePointer";
 import { useCardText } from "./CardTextProvider";
 import { useVocab } from "@/i18n/useVocab";
 import CompagnonsNames from "@/components/cards/CompagnonsNames";
+import CostBadges from "@/components/cards/CostBadges";
+import { REPLI_TEINTE, REPLI_GLYPHE } from "@/lib/game/repli-theme";
+import { EVEIL_TEINTE, EVEIL_GLYPHE } from "@/lib/game/eveil-theme";
 
 function playStandardSfx(eventType: string) {
   if (typeof window === "undefined") return;
@@ -171,17 +174,6 @@ function MulliganCard({
         </div>
       )}
 
-      {/* Mana orb */}
-      <div style={{
-        position: "absolute", top: 8, left: 8, zIndex: 2,
-        width: 28, height: 28, borderRadius: "50%",
-        background: "radial-gradient(circle, #1a3a6a, #0d1f3c)",
-        border: "2px solid #74b9ff",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: 14, color: "#74b9ff", fontWeight: 700,
-        boxShadow: "0 0 8px #74b9ff55",
-      }}>{card.mana_cost}</div>
-
       {/* Name — top bar (ocre, jusqu'à 3 lignes, ombre) ; padding gauche pour
           dégager l'orbe de mana. Taille alignée sur l'échelle iPad (* d). Clamp
           à 3 lignes pour afficher en entier les noms longs (ex. « Gardien de
@@ -196,6 +188,18 @@ function MulliganCard({
         fontFamily: "'Cinzel', serif",
         textShadow: "0 1px 2px #000, 0 0 3px #000, 0 0 5px #000",
       }}>{localizeName(card)}</div>
+
+      {/* Rangée de coûts — le MÊME composant que la main, le plateau et les
+          overlays. Une orbe de mana faite main vivait ici, et elle ne montrait
+          QUE le mana : les six autres coûts (vie, défausse, sacrifice, exil,
+          repli, éveil) étaient invisibles au mulligan, précisément à l'écran où
+          l'on décide quoi garder. Une carte à coût d'éveil y paraissait
+          injouable à 10 mana.
+
+          Rendue APRÈS la barre de nom, et non avant comme ailleurs : le
+          dégradé du bandeau est presque opaque en haut et ternirait les
+          pastilles. L'ordre du DOM tranche, les deux étant au même z-index. */}
+      <CostBadges card={card} size={28} />
 
       {/* Bottom bar */}
       <div style={{
@@ -441,6 +445,15 @@ function MulliganCard({
           fontSize: 9 * d, color: "#555",
         }}>
           <span>{"💧"} {card.mana_cost}</span>
+          {/* Les coûts non nuls, en toutes lettres. Le recto porte les
+              pastilles ; ce verso est là pour qui veut le détail, et il ne
+              pouvait pas rester muet sur ce qu'une carte réclame vraiment. */}
+          {(card.life_cost ?? 0) > 0 && <span style={{ color: "#e74c3c" }}>{"♥"} {card.life_cost}</span>}
+          {(card.discard_cost ?? 0) > 0 && <span>{"🃏"} {card.discard_cost}</span>}
+          {(card.sacrifice_cost ?? 0) > 0 && <span style={{ color: "#a060a0" }}>{"☠"} {card.sacrifice_cost}</span>}
+          {(card.exile_cost ?? 0) > 0 && <span style={{ color: "#7f8fa6" }}>{"⌦"} {card.exile_cost}</span>}
+          {(card.topdeck_cost ?? 0) > 0 && <span style={{ color: REPLI_TEINTE }}>{REPLI_GLYPHE} {card.topdeck_cost}</span>}
+          {(card.eveil_cost ?? 0) > 0 && <span style={{ color: EVEIL_TEINTE }}>{EVEIL_GLYPHE} {card.eveil_cost}</span>}
           {isCreature && <><span style={{ color: "#e74c3c" }}>{"⚔"} {card.attack}</span><span style={{ color: "#f1c40f" }}>{"❤"} {card.health}</span></>}
         </div>
       </div>

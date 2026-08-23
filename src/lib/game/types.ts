@@ -707,6 +707,21 @@ export interface Card {
    *  tempo (la main rétrécit tout de suite, et la prochaine pioche est déjà
    *  dépensée). La carte repliée n'est jamais révélée à l'adversaire. */
   topdeck_cost?: number | null;
+  /** ÉVEIL : coût ALTERNATIF au coût en mana, payé en PLUSIEURS TOURS.
+   *
+   *  Seul de sa famille : les cinq champs ci-dessus sont des coûts ADDITIONNELS
+   *  (ils s'ajoutent au mana), celui-ci le REMPLACE. Jouer une carte pour son
+   *  coût d'éveil, c'est la retirer du jeu avec ce nombre de points, puis y
+   *  verser du mana tour après tour ; au dernier point elle entre en jeu comme
+   *  si elle venait de la main. Ce n'est donc pas une remise : c'est du TEMPS
+   *  échangé contre du mana immédiat.
+   *
+   *  Incompressible, comme les coûts additionnels : ni Canalisation, ni
+   *  Entraide, ni Concentration, ni Chant n'y touchent — seul `mana_cost` est
+   *  réductible.
+   *
+   *  Null/0 = pas d'éveil, la carte ne se joue que normalement. */
+  eveil_cost?: number | null;
 }
 
 /** Frontière temporelle À L'INTÉRIEUR d'une action, pour l'animation seule.
@@ -1091,6 +1106,30 @@ export interface PlayerState {
    *  Optionnel : les snapshots `match_state` d'avant l'ajout ne le portent pas
    *  (lire avec `?? 0`). */
   espritDeCorpsPlayed?: Record<string, number>;
+  /** ÉVEIL : les cartes que ce joueur paie en plusieurs tours.
+   *
+   *  C'est une ZONE à part entière, la première depuis le cimetière. Ni la main
+   *  (l'adversaire les voit, et aucune défausse ne les atteint), ni le plateau
+   *  (elles n'ont ni stats ni capacités actives), ni le deck : elles sont
+   *  RETIRÉES DU JEU, et rien ne peut les cibler — c'est ce qui rend l'attente
+   *  sûre, donc le pari jouable.
+   *
+   *  Plafonnée à `MAX_EVEIL`. Optionnel : les snapshots `match_state` d'avant
+   *  l'ajout ne la portent pas (lire avec `?? []`). Vérité de jeu durable —
+   *  hashée comme le reste de PlayerState, mutée uniquement sous applyAction. */
+  eveil?: EveilEntry[];
+}
+
+/** Une carte en attente d'éveil, avec ce qu'il reste à payer. */
+export interface EveilEntry {
+  instance: CardInstance;
+  /** Points d'éveil restants. TOUJOURS ≥ 1 : le dernier point et l'entrée en
+   *  jeu sont une seule et même action (cf. `playCard` / `fromEveil`), si bien
+   *  qu'une carte ne séjourne jamais ici à zéro. Sans cette invariante il
+   *  faudrait des règles pour un état « payée mais pas jouée » — notamment
+   *  quand l'arrivée est impossible (plateau plein, sort sans cible), cas que
+   *  le refus du DERNIER paiement traite déjà. */
+  remaining: number;
 }
 
 export type GamePhase = "mulligan" | "playing" | "finished";
@@ -1212,6 +1251,20 @@ export interface GameState {
     ownerId: string;
     count: number;
   }>;
+  // Transient : mouvements de la zone d'ÉVEIL pendant l'action. Sans cet
+  // indice, une carte disparaîtrait de la main pour réapparaître plusieurs
+  // tours plus tard sur le plateau, sans que rien ne relie les deux —
+  // l'adversaire, surtout, ne verrait qu'un compteur bouger dans un coin.
+  // `suspend` = main → éveil, `pay` = un point versé, `arrive` = éveil → jeu.
+  // La carte est transmise : l'éveil est PUBLIC, il n'y a rien à cacher.
+  // Vidé par le store après planification ; exclu du hash d'état.
+  eveilEvents?: Array<{
+    ownerId: string;
+    kind: "suspend" | "pay" | "arrive";
+    card: Card;
+    /** Points restants APRÈS le mouvement (0 sur `arrive`). */
+    remaining: number;
+  }>;
   // Transient : effets « deck » SILENCIEUX ayant réellement modifié une carte du
   // deck (Préincanter, Fortifier). Ces capacités préparent une carte que personne
   // ne voit : sans cet indice, rien à l'écran ne disait qu'elles avaient agi.
@@ -1325,6 +1378,17 @@ export interface PlayCardAction {
    *  alternatif, et non depuis la main. Le moteur re-valide qu'il s'agit bien
    *  d'une créature portant encore la capacité. */
   fromGraveyard?: boolean;
+  /** ÉVEIL — QUATRIÈME provenance : la carte n'est ni en main, ni au cimetière,
+   *  ni mémorisée par une créature ; elle attend dans la zone d'éveil du joueur
+   *  avec exactement UN point restant. Cette action paie ce dernier point ET
+   *  fait entrer la carte en jeu, en un seul geste indivisible.
+   *
+   *  Pourquoi indivisible : l'arrivée peut être impossible (plateau plein, sort
+   *  sans cible valide, coût additionnel impayable). Les séparer laisserait la
+   *  carte à zéro point sans pouvoir arriver — un état limbo qu'il faudrait
+   *  régir à part. Ici, il suffit de refuser l'action : la carte reste en éveil
+   *  avec son dernier point, et le joueur retentera plus tard. */
+  fromEveil?: boolean;
   cardInstanceId: string;
   targetInstanceId?: string;
   targetMap?: Record<string, string>;  // multi-target: slot -> instanceId
@@ -1467,7 +1531,31 @@ export interface SpendEpargneAction {
   selectionCardId: number;
 }
 
-export type GameAction = PlayCardAction | AttackAction | EndTurnAction | MulliganAction | HeroPowerAction | TapActivateAction | ConcedeAction | ResolvePendingTriggerAction | AutoResolvePendingTriggersAction | SpendEpargneAction;
+/** ÉVEIL — mise en éveil : la carte quitte la MAIN pour la zone d'éveil, avec
+ *  autant de points que son `eveil_cost`. Ne coûte aucun mana : ce qu'on engage
+ *  ici, c'est la carte elle-même et une place sous le plafond `MAX_EVEIL`. */
+export interface SuspendEveilAction {
+  type: "suspend_eveil";
+  cardInstanceId: string;
+}
+
+/** ÉVEIL — versement de N points (N mana). N'est légale que tant qu'il reste
+ *  STRICTEMENT plus d'un point APRÈS le versement : le dernier passe par
+ *  `play_card` avec `fromEveil`, parce qu'il fait aussi entrer la carte en jeu.
+ *
+ *  Un versement ne peut donc jamais dépasser `remaining - 1`. Ce n'est pas une
+ *  limite arbitraire : le dernier point est le moment où l'on choisit les
+ *  cibles du sort, la place sur le plateau et les coûts additionnels. Le
+ *  fondre dans un versement en gros priverait le joueur de ces choix. */
+export interface PayEveilAction {
+  type: "pay_eveil";
+  cardInstanceId: string;
+  /** Nombre de points versés. Absent ⇒ 1, pour que les actions journalisées
+   *  d'avant l'ajout se rejouent à l'identique. */
+  amount?: number;
+}
+
+export type GameAction = PlayCardAction | AttackAction | EndTurnAction | MulliganAction | HeroPowerAction | TapActivateAction | ConcedeAction | ResolvePendingTriggerAction | AutoResolvePendingTriggersAction | SpendEpargneAction | SuspendEveilAction | PayEveilAction;
 
 /** Déclencheur interactif en attente : le contrôleur doit choisir une cible
  *  avant que le jeu ne continue. Porté par l'état pour rester déterministe et

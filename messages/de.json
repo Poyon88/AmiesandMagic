@@ -949,7 +949,8 @@
       "Gobelins": "Goblins",
       "Trolls": "Trolle",
       "Wargs": "Wargs",
-      "Guerriers du Chaos": "Chaoskämpfer"
+      "Guerriers du Chaos": "Chaoskämpfer",
+      "Mammouths": "Mammuts"
     },
     "alignments": {
       "bon": "Gut",
@@ -1208,6 +1209,11 @@
         "def": "der Chaoskrieger",
         "bare": "Chaoskrieger",
         "de": "des Chaoskriegers"
+      },
+      "Mammouths": {
+        "def": "das Mammut",
+        "bare": "Mammut",
+        "de": "des Mammuts"
       }
     },
     "clans_forms": {
@@ -2042,7 +2048,10 @@
     "card_added": "„{name}\" hinzugefügt!",
     "unknown_error": "Unbekannter Fehler",
     "illustration_generated": "Illustration generiert ({model})",
-    "import_error": "Importfehler"
+    "import_error": "Importfehler",
+    "eveil_label": "ERWACHEN",
+    "eveil_cost_hint": "ERWACHEN: Die Karte kann erwachen gelassen werden, ANSTATT gespielt zu werden. Sie verlässt die Hand mit dieser Anzahl Punkte; der Spieler zahlt 1 pro Mana in jedem seiner Züge, und beim letzten Punkt kommt sie ins Spiel, als käme sie aus der Hand. Ersetzt die Manakosten, kommt nicht hinzu. Nicht reduzierbar.",
+    "eveil_cost_title": "Kann für {count, plural, one {# Punkt} other {# Punkte}} erwachen gelassen werden, je 1 Mana pro Zug — anstelle der Manakosten"
   },
   "game": {
     "error_not_authenticated": "Nicht authentifiziert",
@@ -2166,7 +2175,26 @@
     "presage_hit": "Gut erkannt — sie wandert auf deine Hand.",
     "presage_miss": "Daneben. Die richtige Karte ist grün.",
     "apprentissage_title": "📖 Lernen",
-    "apprentissage_subtitle": "Welchen Zauber soll die Kreatur lernen?"
+    "apprentissage_subtitle": "Welchen Zauber soll die Kreatur lernen?",
+    "zone_eveil": "Erwachen",
+    "zone_eveil_yours": "Dein Erwachen",
+    "zone_eveil_opponent": "Erwachen des Gegners",
+    "eveil_hint": "Zahle 1 Mana pro Klick. Beim letzten Punkt kommt die Karte ins Spiel, als käme sie aus deiner Hand.",
+    "eveil_remaining": "{count, plural, one {# Punkt übrig} other {# Punkte übrig}}",
+    "eveil_next_point": "Der nächste Punkt kostet 1 Mana.",
+    "eveil_next_arrives": "Letzter Punkt: Die Karte kommt ins Spiel.",
+    "eveil_play_now": "Ins Spiel bringen",
+    "eveil_blocked_mana": "Nicht genug Mana.",
+    "eveil_blocked_board_plein": "Dein Spielfeld ist voll.",
+    "eveil_blocked_vie": "Nicht genug Leben für ihre Kosten.",
+    "eveil_blocked_main": "Nicht genug Handkarten für ihre Zusatzkosten.",
+    "eveil_blocked_plateau": "Nicht genug Kreaturen zum Opfern.",
+    "eveil_blocked_deck": "Nicht genug Karten zum Verbannen in deinem Deck.",
+    "eveil_blocked_sans_cible": "Kein gültiges Ziel für diesen Zauber.",
+    "eveil_suspend": "Erwachen lassen ({count, plural, one {# Punkt} other {# Punkte}})",
+    "eveil_pay_n": "{count, plural, one {# zahlen} other {# zahlen}}",
+    "eveil_max": "max {count}",
+    "eveil_max_hint": "Der letzte Punkt ist das Ins-Spiel-Kommen: Er wird separat gezahlt, zusammen mit der Zielwahl."
   },
   "tutorial": {
     "page_eyebrow": "Lerne die Kunst des Duells",

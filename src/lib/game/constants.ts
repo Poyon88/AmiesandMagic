@@ -53,6 +53,14 @@ export const STARTING_MANA = 0;
 /** Plafond du compteur d'Épargne. Le surplus est écrêté en silence : une
  *  Épargne 3 sur un compteur à 7 le porte à 8, pas à 10. */
 export const MAX_EPARGNE = 8;
+/** Nombre maximal de cartes qu'un joueur peut tenir en ÉVEIL simultanément.
+ *
+ *  Sans plafond, un joueur pourrait vider sa main dans la zone d'éveil et s'en
+ *  servir de coffre-fort : les cartes y sont intouchables, et il les
+ *  ressortirait au rythme de son mana. Trois, c'est assez pour tramer un plan
+ *  sur plusieurs tours, et assez peu pour que la tuile reste lisible à l'écran
+ *  des deux côtés. */
+export const MAX_EVEIL = 3;
 /** Seuil de deck des capacités « Seuil » : elles s'activent quand le deck du
  *  contrôleur tombe à CE NOMBRE de cartes ou moins. Partagé par Seuil
  *  Sacrificiel (créature) et Seuil de colère (sort) — une seule valeur à

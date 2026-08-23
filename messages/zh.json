@@ -949,7 +949,8 @@
       "Gobelins": "哥布林",
       "Trolls": "巨魔",
       "Wargs": "座狼",
-      "Guerriers du Chaos": "混沌战士"
+      "Guerriers du Chaos": "混沌战士",
+      "Mammouths": "猛犸象"
     },
     "alignments": {
       "bon": "善良",
@@ -1208,6 +1209,11 @@
         "def": "混沌战士",
         "bare": "混沌战士",
         "de": "混沌战士"
+      },
+      "Mammouths": {
+        "def": "猛犸象",
+        "bare": "猛犸象",
+        "de": "猛犸象的"
       }
     },
     "clans_forms": {
@@ -2042,7 +2048,10 @@
     "card_added": "「{name}」已添加！",
     "unknown_error": "未知错误",
     "illustration_generated": "插图已生成（{model}）",
-    "import_error": "导入错误"
+    "import_error": "导入错误",
+    "eveil_label": "觉醒",
+    "eveil_cost_hint": "觉醒：此牌可以置入觉醒而非使用。它带着这些点数离开手牌；玩家在自己的每个回合支付1点法力减少1点，支付最后一点时它如同从手上使用一般进场。取代法力费用，而非叠加。不可减少。",
+    "eveil_cost_title": "可以用{count, plural, other {#点}}置入觉醒，每回合支付1点法力 — 而非法力费用"
   },
   "game": {
     "error_not_authenticated": "未登录",
@@ -2166,7 +2175,26 @@
     "presage_hit": "猜中了 —— 它进入你的手牌。",
     "presage_miss": "没猜中。正确的牌是绿框那张。",
     "apprentissage_title": "📖 研习",
-    "apprentissage_subtitle": "这个生物要记住哪张法术？"
+    "apprentissage_subtitle": "这个生物要记住哪张法术？",
+    "zone_eveil": "觉醒",
+    "zone_eveil_yours": "你的觉醒",
+    "zone_eveil_opponent": "对手的觉醒",
+    "eveil_hint": "每次点击支付1点法力。支付最后一点时，此牌如同从你手上使用一般进场。",
+    "eveil_remaining": "{count, plural, other {剩余#点}}",
+    "eveil_next_point": "下一点需要1点法力。",
+    "eveil_next_arrives": "最后一点：此牌进场。",
+    "eveil_play_now": "使其进场",
+    "eveil_blocked_mana": "法力不足。",
+    "eveil_blocked_board_plein": "你的战场已满。",
+    "eveil_blocked_vie": "生命值不足以支付其费用。",
+    "eveil_blocked_main": "手牌不足以支付其附加费用。",
+    "eveil_blocked_plateau": "可供牺牲的生物不足。",
+    "eveil_blocked_deck": "牌库中可放逐的牌不足。",
+    "eveil_blocked_sans_cible": "此法术没有合法的目标。",
+    "eveil_suspend": "置入觉醒（{count, plural, other {#点}}）",
+    "eveil_pay_n": "{count, plural, other {支付#}}",
+    "eveil_max": "最多{count}",
+    "eveil_max_hint": "最后一点就是进场本身：它单独支付，并同时选择目标。"
   },
   "tutorial": {
     "page_eyebrow": "学习决斗之道",

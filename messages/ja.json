@@ -949,7 +949,8 @@
       "Gobelins": "ゴブリン",
       "Trolls": "トロル",
       "Wargs": "ワーグ",
-      "Guerriers du Chaos": "カオスの戦士"
+      "Guerriers du Chaos": "カオスの戦士",
+      "Mammouths": "マンモス"
     },
     "alignments": {
       "bon": "善",
@@ -1208,6 +1209,11 @@
         "def": "カオス戦士",
         "bare": "カオス戦士",
         "de": "カオス戦士の"
+      },
+      "Mammouths": {
+        "def": "マンモス",
+        "bare": "マンモス",
+        "de": "マンモス"
       }
     },
     "clans_forms": {
@@ -2042,7 +2048,10 @@
     "card_added": "「{name}」を追加しました！",
     "unknown_error": "不明なエラー",
     "illustration_generated": "イラストを生成しました（{model}）",
-    "import_error": "インポートエラー"
+    "import_error": "インポートエラー",
+    "eveil_label": "覚醒",
+    "eveil_cost_hint": "覚醒：このカードは唱える代わりに覚醒させることができます。この点数を持って手札を離れ、プレイヤーは自分のターンごとにマナ1で1点ずつ支払い、最後の1点で手札から唱えたのと同じように場に出ます。マナ・コストに加算されるのではなく、置き換えます。軽減不可。",
+    "eveil_cost_title": "{count, plural, other {#点}}で覚醒させられます。毎ターンマナ1ずつ支払い ― マナ・コストの代わりに"
   },
   "game": {
     "error_not_authenticated": "未認証",
@@ -2166,7 +2175,26 @@
     "presage_hit": "正解 — 手札に加わる。",
     "presage_miss": "はずれ。正解は緑の枠のカード。",
     "apprentissage_title": "📖 習得",
-    "apprentissage_subtitle": "どの呪文を記憶する？"
+    "apprentissage_subtitle": "どの呪文を記憶する？",
+    "zone_eveil": "覚醒",
+    "zone_eveil_yours": "自分の覚醒",
+    "zone_eveil_opponent": "相手の覚醒",
+    "eveil_hint": "クリックごとにマナを1支払います。最後の1点で、手札から唱えたのと同じようにカードが場に出ます。",
+    "eveil_remaining": "{count, plural, other {残り#点}}",
+    "eveil_next_point": "次の1点にはマナが1必要です。",
+    "eveil_next_arrives": "最後の1点：カードが場に出ます。",
+    "eveil_play_now": "場に出す",
+    "eveil_blocked_mana": "マナが足りません。",
+    "eveil_blocked_board_plein": "自分の場が満杯です。",
+    "eveil_blocked_vie": "そのコストを払うライフが足りません。",
+    "eveil_blocked_main": "追加コストに必要な手札が足りません。",
+    "eveil_blocked_plateau": "生け贄に捧げるクリーチャーが足りません。",
+    "eveil_blocked_deck": "デッキに追放できるカードが足りません。",
+    "eveil_blocked_sans_cible": "この呪文の対象がありません。",
+    "eveil_suspend": "覚醒させる（{count, plural, other {#点}}）",
+    "eveil_pay_n": "{count, plural, other {#支払う}}",
+    "eveil_max": "最大{count}",
+    "eveil_max_hint": "最後の1点は場に出ることそのものです。対象の選択とあわせて、別に支払います。"
   },
   "tutorial": {
     "page_eyebrow": "決闘の極意を学べ",
