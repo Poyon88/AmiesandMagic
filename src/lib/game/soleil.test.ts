@@ -221,3 +221,44 @@ describe("Soleil X — la description", () => {
     expect((desc.match(/4/g) ?? []).length).toBe(1);
   });
 });
+
+// ─── Effets composés +X/+Y ──────────────────────────────────────────────────
+
+describe("Soleil X — un buff COMPOSÉ gagne ses DEUX moitiés", () => {
+  /** Créature Soleil 1 portant un buff composé sur elle-même à l'entrée. */
+  function poulain(magnitude: { x?: number; y?: number }) {
+    return mkInstance(mkCard({
+      name: "Poulain", attack: 1, health: 1,
+      keywords: ["soleil"] as never,
+      keyword_instances: [{ id: "soleil", x: 1 } as KeywordInstance],
+      capabilities: [
+        { uid: "cw_0", trigger: "automatic", abilityId: "soleil", effectKind: "immediate", params: { x: 1 } },
+        {
+          uid: "cx_0", trigger: "on_play", abilityId: "_composed", effectKind: "immediate",
+          composed: {
+            content: "buff", magnitude,
+            target: { entity: "self", count: 1, side: "ally", location: "board", designation: "automatic" },
+          },
+        },
+      ],
+    } as Parameters<typeof mkCard>[0]));
+  }
+
+  it("amplitude complète {x:0,y:0} : +1 ATK ET +1 PV", () => {
+    const { s } = table(0);
+    const st = jouer(s, poulain({ x: 0, y: 0 }));
+    const u = st.players[0].board.find(c => c.card.name === "Poulain")!;
+    expect([u.currentAttack, u.currentHealth]).toEqual([2, 2]);
+  });
+
+  it("amplitude amputée de son `y` : la défense reste au sec — d'où fillXYMagnitude", () => {
+    // Le défaut d'origine, figé ici : l'éditeur affichait « Y 0 » sans jamais
+    // écrire le champ, et un champ absent ne naît pas au bonus (règle voulue,
+    // cf. stampTempoBonus). Le garde-fou est au contrat de sortie de la route
+    // de sauvegarde, pas dans le moteur — ce test dit pourquoi il doit y être.
+    const { s } = table(0);
+    const st = jouer(s, poulain({ x: 0 }));
+    const u = st.players[0].board.find(c => c.card.name === "Poulain")!;
+    expect([u.currentAttack, u.currentHealth]).toEqual([2, 1]);
+  });
+});
