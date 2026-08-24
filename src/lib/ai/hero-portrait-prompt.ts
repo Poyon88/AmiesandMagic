@@ -152,6 +152,8 @@ export const GRANULAR_RACE_DESCRIPTORS: Record<string, string> = {
     'A humanoid kobold chieftain — small wiry bipedal figure, scaled skin, short snout with sharp teeth, stubby horns swept back, large lantern-bright eyes adapted to the dark, scavenged mismatched armour and a crude forged blade.',
   'Guerriers du Chaos':
     'A towering chaos warrior — hulking silhouette in blackened spiked plate armor, corrupted glowing runes, grim helm with burning eyes, aura of dread.',
+  'Nagas':
+    'A humanoid naga temple guardian — human torso and arms rising from a long coiling serpent body, fanned cobra hood behind the head, jewelled iridescent scales, calm ophidian eyes, Khmer temple gold ornaments.',
 };
 
 // Physical features per race. Kept short so it doesn't drown the faction layer.

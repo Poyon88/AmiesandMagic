@@ -455,6 +455,58 @@ export const ABILITIES: Record<string, AbilityDef> = {
     },
     spell: { params: ["amount"], needsTarget: false },
   },
+  // Lune : le second amplificateur du jeu, et le pendant TEMPOREL de Chant.
+  // Chant adosse la puissance au PLATEAU (une chanteuse en jeu) ; Lune l'adosse
+  // au RYTHME DU TOUR — la carte n'est pas la première jouée.
+  //
+  // Les deux faces sont ici SYMÉTRIQUES, contrairement à Chant : la créature ne
+  // sert pas à habiliter autre chose, c'est elle-même qu'elle renforce. D'où le
+  // X des deux côtés, et aucun override de libellé.
+  lune: {
+    id: "lune", label: "Lune X", symbol: "🌙",
+    // UN SEUL « X » dans la phrase : getSpellKeywordDesc fait un
+    // `replace(/X/g, valeur)` GLOBAL (leçon de Chant, dont la rédaction
+    // « tous les X … augmentés de X » affichait « tous les 2 … augmentés de 2 »).
+    desc: "À partir de la deuxième carte jouée dans le tour, toutes les valeurs de cette carte sont augmentées de X.",
+    applicable_to: ["creature", "spell"],
+    // Calibrage de DÉPART, à réajuster après essai. Repères : Chant coûte 6 sans
+    // X côté créature (il habilite toute une main de sorts), Résistance 5/+3
+    // pour une seule valeur. Lune est conditionnelle mais touche TOUTES les
+    // valeurs de sa carte à la fois — d'où le même socle que Résistance, à
+    // condition remplie.
+    creature: {
+      cost: 5, costPerX: 3, se: 1.0, minTier: 1, scalable: true, zone: "Terrain",
+      // ≤ 120 caractères une fois le X substitué (contrat vérifié par
+      // keyword-display.test.ts), et un SEUL « X » comme côté sort.
+      desc: "À partir de la deuxième carte jouée dans le tour, toutes ses valeurs sont augmentées de X — définitivement.",
+    },
+    spell: { params: ["amount"], needsTarget: false },
+  },
+  // Soleil : le MIROIR de Lune, et son complément exact. Là où Lune récompense
+  // la mise en place, Soleil récompense l'ouverture franche — le bonus ne tombe
+  // que si la carte est la PREMIÈRE jouée du tour.
+  //
+  // Les deux conditions s'excluant, une carte peut porter les deux sans garde :
+  // elle sera renforcée quoi qu'il arrive, mais jamais deux fois, et le montant
+  // dépendra du moment où on la joue. C'est une écriture voulue, pas un trou.
+  soleil: {
+    id: "soleil", label: "Soleil X", symbol: "☀️",
+    // UN SEUL « X » dans la phrase (cf. Lune et Chant : replace global).
+    desc: "Si c'est la première carte jouée dans le tour, toutes les valeurs de cette carte sont augmentées de X.",
+    applicable_to: ["creature", "spell"],
+    // Même prix que Lune, décidé avec l'auteur : les deux capacités sont des
+    // miroirs, chacune satisfaite par un simple choix d'ordre. L'asymétrie
+    // existe mais se compense — Soleil est presque acquis aux tours 1-2, où l'on
+    // ne joue qu'une carte ; Lune l'est en fin de partie, où l'on en joue
+    // plusieurs. À réajuster ENSEMBLE après essai.
+    creature: {
+      cost: 5, costPerX: 3, se: 1.0, minTier: 1, scalable: true, zone: "Terrain",
+      // ≤ 120 caractères une fois le X substitué (contrat vérifié par
+      // keyword-display.test.ts), et un SEUL « X » comme côté sort.
+      desc: "Si c'est la première carte jouée dans le tour, toutes ses valeurs sont augmentées de X — définitivement.",
+    },
+    spell: { params: ["amount"], needsTarget: false },
+  },
   paralysie: {
     id: "paralysie", label: "Paralysie", symbol: "⛓️",
     desc: "Les unités qu'elle blesse ne peuvent ni attaquer ni activer de capacité jusqu'à la fin de leur prochain tour.",
@@ -1665,6 +1717,11 @@ export const AUTOMATIC_ABILITY_IDS: ReadonlySet<string> = new Set([
   // se résout. Sa place ici la rend aussi authorable sur un token, ce qui est
   // voulu : un token chanteur habilite les sorts comme n'importe quelle unité.
   "chant",
+  // Lune et Soleil : même classification, pour une raison voisine. Elles n'ont
+  // aucun déclencheur propre — c'est `playCard` qui les lit à la pose, une fois,
+  // puis grave leur bonus dans les valeurs de la carte. Rien ne se déclenche
+  // ensuite.
+  "lune", "soleil",
   // Passifs de combat / statiques
   "premiere_frappe", "double_attaque", "esquive", "armure",
   "resistance", "precision", "indestructible", "transcendance", "invisible",

@@ -488,6 +488,14 @@
       "compagnons": {
         "label": "Companions",
         "desc": "Shuffles its companions (linked cards, chosen at creation) into your deck, then reshuffles the deck. Once only."
+      },
+      "lune": {
+        "label": "Moon X",
+        "desc": "From the second card played in the turn, all its values are increased by X — permanently."
+      },
+      "soleil": {
+        "label": "Sun X",
+        "desc": "If this is the first card played in the turn, all its values are increased by X — permanently."
       }
     },
     "spell_keywords": {
@@ -690,6 +698,14 @@
       "compagnons": {
         "label": "Companions",
         "desc": "Shuffles its companions (linked cards, chosen at creation) into your deck, then reshuffles the deck. Once only."
+      },
+      "lune": {
+        "label": "Moon X",
+        "desc": "From the second card played in the turn, all values of this card are increased by X."
+      },
+      "soleil": {
+        "label": "Sun X",
+        "desc": "If this is the first card played in the turn, all values of this card are increased by X."
       }
     },
     "composed": {
@@ -822,7 +838,7 @@
       },
       "EmpireDuMilieu": {
         "displayName": "The Middle Empire",
-        "description": "Strategy and control: discipline, formations, mysticism, and stealth."
+        "description": "Strategy and control: discipline, formations, mysticism, stealth, and the naga guardians of the temples."
       },
       "RoyaumesDuSoleil": {
         "displayName": "The Sun Kingdoms",
@@ -950,7 +966,8 @@
       "Trolls": "Trolls",
       "Wargs": "Wargs",
       "Guerriers du Chaos": "Chaos Warriors",
-      "Mammouths": "Mammoths"
+      "Mammouths": "Mammoths",
+      "Nagas": "Nagas"
     },
     "alignments": {
       "bon": "Good",
@@ -1214,6 +1231,11 @@
         "def": "the Mammoth",
         "bare": "Mammoth",
         "de": "of the Mammoth"
+      },
+      "Nagas": {
+        "def": "the Naga",
+        "bare": "Naga",
+        "de": "of the Naga"
       }
     },
     "clans_forms": {

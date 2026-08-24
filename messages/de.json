@@ -488,6 +488,14 @@
       "compagnons": {
         "label": "Gefährten",
         "desc": "Mischt seine Gefährten (verknüpfte Karten, bei der Erstellung gewählt) in dein Deck und mischt es danach erneut. Nur einmal."
+      },
+      "lune": {
+        "label": "Mond X",
+        "desc": "Ab der zweiten im Zug gespielten Karte werden alle ihre Werte um X erhöht — dauerhaft."
+      },
+      "soleil": {
+        "label": "Sonne X",
+        "desc": "Wenn dies die erste im Zug gespielte Karte ist, werden alle ihre Werte um X erhöht — dauerhaft."
       }
     },
     "spell_keywords": {
@@ -690,6 +698,14 @@
       "compagnons": {
         "label": "Gefährten",
         "desc": "Mischt seine Gefährten (verknüpfte Karten, bei der Erstellung gewählt) in dein Deck und mischt es danach erneut. Nur einmal."
+      },
+      "lune": {
+        "label": "Mond X",
+        "desc": "Ab der zweiten im Zug gespielten Karte werden alle Werte dieser Karte um X erhöht."
+      },
+      "soleil": {
+        "label": "Sonne X",
+        "desc": "Wenn dies die erste im Zug gespielte Karte ist, werden alle Werte dieser Karte um X erhöht."
       }
     },
     "composed": {
@@ -822,7 +838,7 @@
       },
       "EmpireDuMilieu": {
         "displayName": "Das Mittlere Kaiserreich",
-        "description": "Strategie und Kontrolle: Disziplin, Formationen, Mystizismus und Heimlichkeit."
+        "description": "Strategie und Kontrolle: Disziplin, Formationen, Mystizismus, Heimlichkeit und die Naga-Wächter der Tempel."
       },
       "RoyaumesDuSoleil": {
         "displayName": "Die Sonnenreiche",
@@ -950,7 +966,8 @@
       "Trolls": "Trolle",
       "Wargs": "Wargs",
       "Guerriers du Chaos": "Chaoskämpfer",
-      "Mammouths": "Mammuts"
+      "Mammouths": "Mammuts",
+      "Nagas": "Nagas"
     },
     "alignments": {
       "bon": "Gut",
@@ -1214,6 +1231,11 @@
         "def": "das Mammut",
         "bare": "Mammut",
         "de": "des Mammuts"
+      },
+      "Nagas": {
+        "def": "der Naga",
+        "bare": "Naga",
+        "de": "des Naga"
       }
     },
     "clans_forms": {

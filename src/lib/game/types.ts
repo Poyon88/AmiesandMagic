@@ -63,6 +63,15 @@ export type Keyword =
   // côté SORT bonus X sur toutes les amplitudes si le lanceur contrôle une
   // créature portant Chant.
   | "chant"
+  // Conditionnel de TEMPO, second amplificateur du jeu après Chant : à partir de
+  // la DEUXIÈME carte jouée dans le tour, toutes les valeurs X/Y de la carte
+  // porteuse gagnent X. Côté sort le bonus est un instantané de résolution ;
+  // côté créature il est GRAVÉ à l'entrée en jeu et vaut pour toute sa vie.
+  | "lune"
+  // Le miroir exact de Lune : le bonus ne tombe QUE si la carte est la PREMIÈRE
+  // jouée du tour. Les deux conditions s'excluant, une carte peut porter les
+  // deux — une seule tombera.
+  | "soleil"
   // Drawback — self-damage on ETB / cast
   | "douleur"
   // Drawback — self ATK reduced by opponent's hand size (dynamic aura)
@@ -223,6 +232,8 @@ export type SpellKeywordId =
   | "cataclysme"
   | "affaiblissement"
   | "chant"
+  | "lune"
+  | "soleil"
   | "dechainement"
   | "compagnons";
 
@@ -841,6 +852,29 @@ export interface CardInstance {
    *  Optionnel : les snapshots `match_state` d'avant la refonte ne le portent
    *  pas, tout lecteur doit donc faire `?? 0`. */
   gloireStacks?: number;
+  /** TEMPO (Lune, Soleil) : bonus DÉJÀ gravé dans la copie de carte que porte
+   *  cette instance.
+   *
+   *  Un bonus de tempo ne peut pas vivre dans un drapeau de module comme celui
+   *  de Chant : côté créature il dure toute la vie de l'unité. Il est donc
+   *  écrit dans les valeurs elles-mêmes (`stampTempoBonus`), et ce champ garde
+   *  la trace de ce qui a été écrit.
+   *
+   *  UN SEUL champ pour les deux capacités, et c'est suffisant : leurs
+   *  conditions s'excluent, une carte n'en reçoit jamais qu'un à la fois.
+   *
+   *  C'est ce qui rend la pose IDEMPOTENTE, et le retour en arrière possible :
+   *  chaque pose applique la DIFFÉRENCE `nouveauBonus - tempoApplied`. Une unité
+   *  renvoyée en main puis rejouée à un moment du tour où sa condition n'est
+   *  plus remplie (en PREMIER pour une Lune, en DEUXIÈME pour un Soleil) reçoit
+   *  ainsi une différence négative et retrouve exactement ses valeurs
+   *  d'origine — sans qu'on ait à
+   *  conserver une carte de référence, laquelle entrerait en conflit avec les
+   *  autres réécritures de `card` (Seconde vie retire son propre mot-clé).
+   *
+   *  Optionnel : les instances sérialisées avant l'ajout du champ ne le portent
+   *  pas (lire avec `?? 0`). */
+  tempoApplied?: number;
   targetsAttackedThisTurn: string[];
   // Esquive: auto-dodge first attack each turn (reset at turn start)
   esquiveUsedThisTurn: boolean;
@@ -1106,6 +1140,27 @@ export interface PlayerState {
    *  Optionnel : les snapshots `match_state` d'avant l'ajout ne le portent pas
    *  (lire avec `?? 0`). */
   espritDeCorpsPlayed?: Record<string, number>;
+  /** TEMPO (Lune, Soleil) : combien de cartes ce joueur a-t-il JOUÉES depuis le
+   *  début de SON tour. Remis à zéro par `startTurn` pour le joueur qui entre.
+   *  Lune se déclenche quand ce compteur est non nul, Soleil quand il est nul.
+   *
+   *  « Jouée » = tout ce qui passe par `playCard` et dont le joueur paie le
+   *  coût : depuis la main, depuis le cimetière (Seconde vie), l'arrivée d'une
+   *  carte en Éveil, un sort lancé par Apprentissage. En sont exclus, comme
+   *  pour Esprit de corps, tout ce qu'un effet met en jeu gratuitement (jetons,
+   *  Invocation X, Appel du clan, Résurrection, Exhumation, Dédoublement) et
+   *  les sorts RELANCÉS (Relancer X, Déchainement) — aucun de ces chemins ne
+   *  passe par `playCard`.
+   *
+   *  La carte en cours ne se compte pas elle-même : `playCard` LIT le compteur
+   *  avant de l'incrémenter, si bien que « première carte du tour » désigne bien
+   *  celle qu'on est en train de jouer.
+   *
+   *  Entre dans le hash de synchro comme tout champ de `PlayerState` : piloté
+   *  exclusivement par `playCard` et `startTurn`, donc identique sur les deux
+   *  clients. Optionnel : les snapshots `match_state` d'avant l'ajout ne le
+   *  portent pas (lire avec `?? 0`). */
+  cardsPlayedThisTurn?: number;
   /** ÉVEIL : les cartes que ce joueur paie en plusieurs tours.
    *
    *  C'est une ZONE à part entière, la première depuis le cimetière. Ni la main

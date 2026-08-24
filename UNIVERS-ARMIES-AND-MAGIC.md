@@ -94,9 +94,9 @@ Chaque faction a un **nom de code interne** (utilisé en base et dans le moteur,
 - **Pouvoirs interdits** : Poison, Corruption, Maléfice, Pacte de sang, Nécrophagie.
 
 ### 3.4 🏯 Empire du Milieu — code interne `EmpireDuMilieu` — *Neutre* *(nouvelle)*
-- **Races** : Humains
-- **Clans** : **Les Hordes des Steppes** (Mongols), **L'Empire de Jade** (Chine antique), **Les Lames de l'Ombre** (Japon féodal — samouraïs & ninjas), **Les Défenseurs d'Ivoire** (Khmer/Angkor — éléphants de guerre) — profils distincts en §5.2
-- **Philosophie** : Stratégie et contrôle. Discipline, formations, mysticisme et furtivité — la faction qui joue au tour d'avance. Poids stats faction (ombrelle) : légèrement défensif (0.95 / 1.10).
+- **Races** : Humains · **Nagas** *(nouvelle race — profil en §4)*
+- **Clans** : **Les Hordes des Steppes** (Mongols), **L'Empire de Jade** (Chine antique), **Les Lames de l'Ombre** (Japon féodal — samouraïs & ninjas), **Les Défenseurs d'Ivoire** (Khmer/Angkor — éléphants de guerre) — profils distincts en §5.2. Les quatre clans restent ouverts aux **Humains** ; les **Nagas** n'ouvrent que **Les Défenseurs d'Ivoire**, qui devient le second clan du jeu à héberger deux races. La faction n'a donc plus de clan transversal (`appliesTo: "all"`) : sans race choisie, le sélecteur de clan reste vide.
+- **Philosophie** : Stratégie et contrôle. Discipline, formations, mysticisme et furtivité — la faction qui joue au tour d'avance. Les nagas, serpents gardiens des temples d'Angkor, en sont le versant sacré : là où les éléphants enfoncent les lignes, eux veillent, esquivent et contre-lancent. Poids stats faction (ombrelle) : légèrement défensif (0.95 / 1.10).
 - **Pouvoirs privilégiés (ombrelle)** : Tactique X (0.50), Divination (0.45), Contresort (0.40), Provocation (0.40), Première Frappe (0.40), Augure (0.35), Convocation X (0.35), Célérité (0.30), Traque (0.30).
 - **Pouvoirs interdits** : Poison, Corruption, Maléfice, Pacte de sang, Nécrophagie.
 - **Migration** : les anciennes cartes du clan **Orientaux** (ex-faction Humains) basculent vers **Les Lames de l'Ombre**.
@@ -169,6 +169,9 @@ Certaines factions différencient leurs races par un profil de pouvoirs propre (
 | Mercenaires | **Fauves** | 1.20 / 0.95 | Traque (0.65), Esquive (0.55), Première Frappe (0.50), Précision (0.45), Bravoure (0.40), Gloire +X/+Y (0.35), Raid (0.30), Invisible (0.25) |
 | Légions du Chaos | **Démons** | 1.35 / 0.80 | Fureur (0.65), Sacrifice (0.55), Terreur (0.50), Persécution X (0.45), Ombre (0.45), Carnage X (0.40), Vol (0.30) |
 | Légions du Chaos | **Araignées Géantes** | 1.10 / 0.90 | Poison (0.75), Esquive (0.50), Invisible (0.45) |
+| Empire du Milieu | **Nagas** | *corps du clan (1.15 / 1.15)* | Contresort (0.55), Régénération (0.55), Esquive (0.50), Divination (0.50), Canalisation (0.45), Augure (0.40), Liaison de vie (0.35), Prescience X (0.30) |
+
+> **Nagas** : seule race du tableau sans gabarit propre. La cascade du générateur choisit un OBJET ENTIER (`statWeights` du clan, sinon ceux de la race, sinon ceux de la faction) : leur clan déclarant les siens, un gabarit posé sur la race serait resté sans effet. Le partage du corps 1.15/1.15 est donc assumé, et c'est la table de pouvoirs — qui, elle, se comble pouvoir par pouvoir — qui porte la différence. Le Clan des Premiers Géants avait tranché l'inverse en cédant ses stats à ses deux races ; ici les céder aurait renvoyé les Humains d'Ivoire à l'ombrelle de faction.
 
 > Les races non listées (Elfes « de base », Nains « de base », Gnomes, Hobbits, **Humains** — commun aux 3 factions humaines, les 8 races Hommes-Bêtes, Squelettes/Zombies/Spectres/Vampires/Lich/Banshees, Orcs/Gobelins/Trolls/Wargs, Elfes Corrompus, Guerriers du Chaos) **héritent du profil de leur clan** (§5) ou, à défaut, de leur faction (§3).
 
@@ -205,7 +208,7 @@ Certaines factions différencient leurs races par un profil de pouvoirs propre (
 | 🐎 **Les Hordes des Steppes** | Mongols | 1.15/0.90 | Harcèlement mobile | Célérité (0.55), Traque (0.55), Raid (0.50), Première Frappe (0.45), Persécution X (0.40), Pillage X (0.35) |
 | 🐉 **L'Empire de Jade** | Chine antique | 0.90/1.20 | Contrôle et stratégie | Tactique X (0.55), Divination (0.50), Contresort (0.45), Provocation (0.45), Commandement (0.40), Convocation X (0.40), Augure (0.35) |
 | 🥷 **Les Lames de l'Ombre** | Japon (samouraïs/ninjas) | 1.20/0.80 | Tempo furtif, remontée | Ombre (0.60), Invisible (0.55), Traque (0.55), Esquive (0.50), Célérité (0.45), Première Frappe (0.45), Précision (0.40), Remontée (0.35) |
-| 🐘 **Les Défenseurs d'Ivoire** | Khmer / Angkor | 1.15/1.15 | Colosses tank-trample | Piétinement (0.60), Provocation (0.55), Armure (0.50), Résistance X (0.50), Bravoure (0.40), Riposte X (0.40), Commandement (0.35), Indestructible (0.25) |
+| 🐘 **Les Défenseurs d'Ivoire** *(Humains + Nagas)* | Khmer / Angkor | 1.15/1.15 | Colosses tank-trample | Piétinement (0.60), Provocation (0.55), Armure (0.50), Résistance X (0.50), Bravoure (0.40), Riposte X (0.40), Commandement (0.35), Indestructible (0.25) |
 
 **☀️ Royaumes du Soleil**
 

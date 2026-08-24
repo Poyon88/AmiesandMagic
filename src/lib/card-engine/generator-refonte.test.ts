@@ -12,6 +12,7 @@ import {
   getRacesForClan,
 } from "./constants";
 import { generateCardStats } from "./generator";
+import { RACE_FORMS_FR } from "./race-forms";
 
 const ALIGNMENTS = new Set(["bon", "neutre", "maléfique", "spéciale"]);
 const KEYWORD_KEYS = new Set(Object.keys(KEYWORDS));
@@ -201,5 +202,112 @@ describe("race Esprits — rattachement au Royaume des Masques et aux Fils du Vo
     expect(clanKws["Convocation X"]).toBeGreaterThan(0);
     expect(raceKws["Convocation X"]).toBeUndefined(); // pas de doublon concurrent
     expect(raceKws["Invisible"]).toBeGreaterThan(0);
+  });
+});
+
+// ─── Race « Nagas » (Empire du Milieu) ──────────────────────────────────────
+// Les serpents gardiens des temples khmers, rattachés aux SEULS Défenseurs
+// d'Ivoire — le second clan du jeu à héberger deux races. Ce qui distingue ce
+// cas des Mammouths : ici le clan GARDE ses statWeights, si bien que la race ne
+// pèse que sur les mots-clés. Ces tests verrouillent les deux faits, et surtout
+// la contrepartie du rattachement — les trois autres clans restent fermés.
+describe("race Nagas — rattachement aux seuls Défenseurs d'Ivoire", () => {
+  it("les Nagas n'ouvrent que leur clan", () => {
+    expect(getClanNamesForRace("EmpireDuMilieu", "Nagas")).toEqual([
+      "Les Défenseurs d'Ivoire",
+    ]);
+  });
+
+  it("les Humains de la faction gardent bien leurs quatre clans", () => {
+    // Le passage de `appliesTo: "all"` à `appliesTo: "Humains"` ne doit rien
+    // retirer à la race historique de la faction.
+    expect(getClanNamesForRace("EmpireDuMilieu", "Humains")).toEqual([
+      "Les Hordes des Steppes",
+      "L'Empire de Jade",
+      "Les Lames de l'Ombre",
+      "Les Défenseurs d'Ivoire",
+    ]);
+  });
+
+  it("le clan accueille les deux races, les trois autres restent humains", () => {
+    expect(getRacesForClan("Les Défenseurs d'Ivoire").sort()).toEqual(["Humains", "Nagas"]);
+    // La contrepartie du rattachement : ouvrir la race ne l'ouvre pas partout.
+    expect(getRacesForClan("Les Hordes des Steppes")).toEqual(["Humains"]);
+    expect(getRacesForClan("L'Empire de Jade")).toEqual(["Humains"]);
+    expect(getRacesForClan("Les Lames de l'Ombre")).toEqual(["Humains"]);
+  });
+
+  it("la faction ne déclare plus AUCUN groupe transversal", () => {
+    // C'est ce qui rend le rattachement effectif : un seul `appliesTo: "all"`
+    // résiduel rouvrirait les quatre clans aux Nagas, en silence.
+    const groupes = FACTIONS["EmpireDuMilieu"].clans ?? [];
+    expect(groupes.filter((g) => g.appliesTo === "all")).toEqual([]);
+  });
+
+  it("la race est rattachée sans ambiguïté à sa faction", () => {
+    // « Humains » est déclarée par plusieurs factions ; « Nagas » par une seule.
+    expect(getFactionForRace("Nagas")).toBe("EmpireDuMilieu");
+  });
+});
+
+describe("race Nagas — profil « gardiens des temples »", () => {
+  const def = () => FACTIONS["EmpireDuMilieu"];
+  const nagas = () => def().raceProfiles?.["Nagas"] ?? {};
+  const ivoire = () => def().clanProfiles?.["Les Défenseurs d'Ivoire"] ?? {};
+
+  it("ne déclare AUCUN statWeights — le clan garde les siens", () => {
+    // La cascade est `clanStatW ?? raceStatW` : un choix d'objet ENTIER. Le clan
+    // déclarant les siens, tout gabarit posé sur la race serait mort-né sans le
+    // moindre avertissement (leçon des Mammouths). L'omission le DIT.
+    expect(nagas().statWeights).toBeUndefined();
+    expect(ivoire().statWeights).toEqual({ atk: 1.15, def: 1.15 });
+  });
+
+  it("joue le registre que le clan ne joue jamais", () => {
+    const kws = Object.keys(nagas().likelyKeywords ?? {});
+    expect(kws).toContain("Contresort");
+    expect(kws).toContain("Régénération");
+    expect(kws).toContain("Esquive");
+    // Le clan enfonce et tient ; la race ne double aucun de ces registres.
+    expect(kws).not.toContain("Piétinement");
+    expect(kws).not.toContain("Provocation");
+    expect(kws).not.toContain("Armure");
+  });
+
+  it("n'entre en concurrence sur AUCUN mot-clé du clan", () => {
+    // Le clan gagne mot-clé par mot-clé : un doublon serait une ligne morte.
+    const duClan = new Set(Object.keys(ivoire().likelyKeywords ?? {}));
+    expect(Object.keys(nagas().likelyKeywords ?? {}).filter((k) => duClan.has(k))).toEqual([]);
+  });
+
+  it("dépasse l'ombrelle de faction là où il la recoupe", () => {
+    // Même raison : un poids égal à celui de la faction n'ajouterait rien.
+    const faction = def().likelyKeywords;
+    for (const [kw, poids] of Object.entries(nagas().likelyKeywords ?? {})) {
+      if (faction[kw] !== undefined) expect(poids, kw).toBeGreaterThan(faction[kw]);
+    }
+  });
+
+  it("ne sollicite aucun mot-clé interdit de la faction", () => {
+    // Poison, l'évidence pour un serpent, en fait partie : la magie des eaux en
+    // tient lieu.
+    const interdits = new Set(def().forbiddenKeywords);
+    expect(interdits.has("Poison")).toBe(true);
+    expect(Object.keys(nagas().likelyKeywords ?? {}).filter((k) => interdits.has(k))).toEqual([]);
+  });
+
+  it("la génération renvoie bien la race et le corps du clan", () => {
+    const carte = generateCardStats("EmpireDuMilieu", "Unité", "Commune", 4, "Nagas", "Les Défenseurs d'Ivoire");
+    expect(carte.race).toBe("Nagas");
+    // Même gabarit que les Humains du clan : c'est l'arbitrage assumé.
+    const humain = generateCardStats("EmpireDuMilieu", "Unité", "Commune", 4, "Humains", "Les Défenseurs d'Ivoire");
+    expect(carte.attack! + carte.defense!).toBeGreaterThan(0);
+    expect(humain.attack! + humain.defense!).toBeGreaterThan(0);
+  });
+
+  it("dispose de ses formes grammaticales françaises", () => {
+    expect(RACE_FORMS_FR["Nagas"]).toEqual({
+      def: "le Naga", bare: "Naga", de: "du Naga",
+    });
   });
 });

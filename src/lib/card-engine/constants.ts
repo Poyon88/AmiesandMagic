@@ -193,7 +193,12 @@ export const FACTIONS: Record<string, {
   forbiddenKeywords: string[];
   description: string;
   subType?: FactionSubType;
-  raceProfiles?: Record<string, { statWeights: { atk: number; def: number }; likelyKeywords?: Record<string, number> }>;
+  // `statWeights` y est OPTIONNEL, pour la raison exacte qui l'a rendu optionnel
+  // sur les clans : la cascade choisit un OBJET ENTIER (`clanStatW ?? raceStatW`).
+  // Une race logée dans un clan qui déclare les siens ne peut donc pas peser sur
+  // les stats — poser un gabarit ici le rendrait mort-né sans le moindre
+  // avertissement. L'omettre est la façon de le DIRE (cf. les Nagas).
+  raceProfiles?: Record<string, { statWeights?: { atk: number; def: number }; likelyKeywords?: Record<string, number> }>;
   // Per-clan tuning, same shape as raceProfiles. Used by factions whose
   // playstyle differentiation lives on the clan rather than the race (the
   // Élémentaires: one race "Élémentaire", four elemental clans). The
@@ -317,17 +322,62 @@ export const FACTIONS: Record<string, {
   EmpireDuMilieu: {
     displayName: "L'Empire du Milieu",
     color: "#a83232", accent: "#e8b923", emoji: "🏯", bg: "#1a0d0a", alignment: "neutre",
-    races: ["Humains"],
-    clans: [{ names: ["Les Hordes des Steppes", "L'Empire de Jade", "Les Lames de l'Ombre", "Les Défenseurs d'Ivoire"], appliesTo: "all" }],
+    races: ["Humains", "Nagas"],
+    // Deux groupes plutôt qu'un seul « all » : les quatre clans restent ouverts
+    // aux Humains, tandis que les Nagas n'ouvrent que les Défenseurs d'Ivoire —
+    // les trois autres clans leur restent fermés. Même patron que les Esprits
+    // des Royaumes du Soleil.
+    //
+    // Le groupe transversal DEVAIT disparaître : `appliesTo: "all"` se résout
+    // sur `faction.races`, si bien que déclarer la race sans toucher aux clans
+    // l'aurait ouverte aux quatre d'un coup. Conséquence voulue, la même que
+    // dans les Royaumes du Soleil : sans race choisie, le sélecteur de clan de
+    // cette faction reste vide jusqu'à ce qu'on en désigne une.
+    clans: [
+      { names: ["Les Hordes des Steppes", "L'Empire de Jade", "Les Lames de l'Ombre", "Les Défenseurs d'Ivoire"], appliesTo: "Humains" },
+      { names: ["Les Défenseurs d'Ivoire"], appliesTo: "Nagas" },
+    ],
     statWeights: { atk: 0.95, def: 1.10 },
     guaranteedKeywords: [],
     likelyKeywords: { "Tactique X": 0.50, "Divination": 0.45, "Contresort": 0.40, "Provocation": 0.40, "Première Frappe": 0.40, "Augure": 0.35, "Convocation X": 0.35, "Célérité": 0.30, "Traque": 0.30 },
     forbiddenKeywords: ["Poison", "Corruption", "Maléfice", "Pacte de sang", "Nécrophagie"],
-    description: "Stratégie et contrôle : discipline, formations, mysticisme et furtivité.",
+    description: "Stratégie et contrôle : discipline, formations, mysticisme, furtivité et les gardiens naga des temples.",
+    raceProfiles: {
+      // Nagas : les serpents gardiens des temples khmers, seconde race des
+      // Défenseurs d'Ivoire — deuxième clan du jeu à en héberger deux, après le
+      // Clan des Premiers Géants.
+      //
+      // SANS statWeights, et c'est délibéré : le clan déclare les siens, et la
+      // cascade `clanStatW ?? raceStatW` choisit un objet ENTIER. Un gabarit posé
+      // ici serait donc mort-né en silence (leçon des Mammouths, qui avaient
+      // exigé que LEUR clan cède les siens). Ce clan les garde : les céder aurait
+      // rendu leur statline aux Humains d'Ivoire, qui n'ont pas de profil de race
+      // — ils seraient retombés sur l'ombrelle de faction (0.95/1.10), et leur
+      // donner ce profil aurait déplacé du même coup toutes les cartes de la
+      // faction SANS clan. Les Nagas partagent donc le corps équilibré du clan
+      // (1.15/1.15) et se distinguent par les MOTS-CLÉS, qui cascadent eux mot
+      // par mot et comblent tout ce que le clan ne dit pas.
+      //
+      // Le registre est précisément celui que le clan ne joue jamais : les
+      // éléphants enfoncent et tiennent (Piétinement, Provocation, Armure,
+      // Résistance) ; les nagas veillent, esquivent et contre-lancent. Aucun
+      // mot-clé de cette table ne figure dans celle du clan — sinon le clan
+      // gagnerait et la race n'ajouterait rien. Poison, l'évidence pour un
+      // serpent, est INTERDIT dans cette faction : la magie des eaux en tient
+      // lieu. Les poids dépassent ceux de l'ombrelle de faction là où ils la
+      // recoupent (Divination 0.50 contre 0.45, Contresort 0.55 contre 0.40),
+      // sans quoi la ligne serait inerte.
+      "Nagas": { likelyKeywords: { "Contresort": 0.55, "Régénération": 0.55, "Esquive": 0.50, "Divination": 0.50, "Canalisation": 0.45, "Augure": 0.40, "Liaison de vie": 0.35, "Prescience X": 0.30 } },
+    },
     clanProfiles: {
       "Les Hordes des Steppes": { statWeights: { atk: 1.15, def: 0.90 }, likelyKeywords: { "Célérité": 0.55, "Traque": 0.55, "Raid": 0.50, "Première Frappe": 0.45, "Persécution X": 0.40, "Pillage X": 0.35 } },
       "L'Empire de Jade": { statWeights: { atk: 0.90, def: 1.20 }, likelyKeywords: { "Tactique X": 0.55, "Divination": 0.50, "Contresort": 0.45, "Provocation": 0.45, "Commandement": 0.40, "Convocation X": 0.40, "Augure": 0.35 } },
       "Les Lames de l'Ombre": { statWeights: { atk: 1.20, def: 0.80 }, likelyKeywords: { "Ombre": 0.60, "Invisible": 0.55, "Traque": 0.55, "Esquive": 0.50, "Célérité": 0.45, "Première Frappe": 0.45, "Précision": 0.40, "Remontée": 0.35 } },
+      // GARDE ses statWeights, à l'inverse du Clan des Premiers Géants : ce clan
+      // héberge lui aussi deux races (Humains, Nagas), mais les céder ici aurait
+      // fait retomber les Humains sur l'ombrelle de faction — voir le profil des
+      // Nagas ci-dessus, où l'arbitrage est détaillé. Les deux races partagent
+      // donc ce corps, et se séparent par les mots-clés.
       "Les Défenseurs d'Ivoire": { statWeights: { atk: 1.15, def: 1.15 }, likelyKeywords: { "Piétinement": 0.60, "Provocation": 0.55, "Armure": 0.50, "Résistance X": 0.50, "Bravoure": 0.40, "Riposte X": 0.40, "Commandement": 0.35, "Indestructible": 0.25 } },
     },
   },

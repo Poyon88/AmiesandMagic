@@ -488,6 +488,14 @@
       "compagnons": {
         "label": "同伴",
         "desc": "将其同伴（创建时指定的关联卡牌）洗入你的牌组，然后重洗牌组。仅一次。"
+      },
+      "lune": {
+        "label": "月 X",
+        "desc": "当它不是本回合打出的第一张牌时，其所有数值永久提升X点。"
+      },
+      "soleil": {
+        "label": "太阳 X",
+        "desc": "当它是本回合打出的第一张牌时，其所有数值永久提升X点。"
       }
     },
     "spell_keywords": {
@@ -690,6 +698,14 @@
       "compagnons": {
         "label": "同伴",
         "desc": "将其同伴（创建时指定的关联卡牌）洗入你的牌组，然后重洗牌组。仅一次。"
+      },
+      "lune": {
+        "label": "月 X",
+        "desc": "当它不是本回合打出的第一张牌时，此牌的所有数值提升X点。"
+      },
+      "soleil": {
+        "label": "太阳 X",
+        "desc": "当它是本回合打出的第一张牌时，此牌的所有数值提升X点。"
       }
     },
     "composed": {
@@ -822,7 +838,7 @@
       },
       "EmpireDuMilieu": {
         "displayName": "中央帝国",
-        "description": "谋略与掌控：纪律、阵型、神秘主义与潜行。"
+        "description": "谋略与掌控：纪律、阵型、神秘主义、潜行，以及守护神庙的那伽。"
       },
       "RoyaumesDuSoleil": {
         "displayName": "太阳王国",
@@ -950,7 +966,8 @@
       "Trolls": "巨魔",
       "Wargs": "座狼",
       "Guerriers du Chaos": "混沌战士",
-      "Mammouths": "猛犸象"
+      "Mammouths": "猛犸象",
+      "Nagas": "那伽"
     },
     "alignments": {
       "bon": "善良",
@@ -1214,6 +1231,11 @@
         "def": "猛犸象",
         "bare": "猛犸象",
         "de": "猛犸象的"
+      },
+      "Nagas": {
+        "def": "那伽",
+        "bare": "那伽",
+        "de": "那伽的"
       }
     },
     "clans_forms": {

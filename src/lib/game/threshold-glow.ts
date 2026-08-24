@@ -14,7 +14,7 @@
 import type { Card, GameState, PlayerState } from "./types";
 import { getCapabilities } from "./capability-adapter";
 import { SEUIL_DECK_THRESHOLD } from "./constants";
-import { FORCE_ANCETRES_GRAVEYARD_THRESHOLD, boardHasChanter, boardIsDisciplined, effectiveManaCost } from "./engine";
+import { FORCE_ANCETRES_GRAVEYARD_THRESHOLD, boardHasChanter, boardIsDisciplined, effectiveManaCost, tempoConditionMet } from "./engine";
 
 export interface ThresholdGlow {
   /** Id de l'ability du registre — sert de clé de rendu. */
@@ -56,6 +56,12 @@ const GLOW_PALETTE: ReadonlyArray<{
   { abilityId: "discipline", rgb: "70, 118, 190", label: "Discipline", benefitsOn: "both" },                       // bleu acier (rang tenu)
   { abilityId: "seuil_colere", rgb: "232, 122, 24", label: "Seuil de colère", benefitsOn: "spell" },              // orange braise
   { abilityId: "chant", rgb: "23, 182, 196", label: "Chant", benefitsOn: "spell" },                               // cyan — teinte déjà associée à Chant
+  // Les deux amplificateurs de TEMPO : premières capacités dont la condition ne
+  // dépend ni du plateau ni d'une zone, mais du RYTHME du tour. Elles sont
+  // exactement complémentaires — à tout instant, l'une des deux luit et l'autre
+  // non —, d'où deux teintes franchement opposées.
+  { abilityId: "lune", rgb: "148, 163, 214", label: "Lune", benefitsOn: "both" },                                 // bleu nuit argenté
+  { abilityId: "soleil", rgb: "240, 196, 76", label: "Soleil", benefitsOn: "both" },                              // or chaud
 ];
 
 /** La condition de CHAQUE capacité, évaluée sur le contrôleur de la carte.
@@ -96,6 +102,11 @@ function conditionMet(
     // comparaison, exactement comme au déclenchement (cf. boardIsDisciplined).
     case "discipline":
       return boardIsDisciplined(owner, effectiveManaCost({ card, manaCostReduction }, owner));
+    // Prédicats du moteur, réutilisés tels quels : le compteur du tour, lu avant
+    // que la carte considérée soit jouée — exactement ce que fera `playCard`.
+    case "lune":
+    case "soleil":
+      return tempoConditionMet(abilityId, owner);
     default:
       return false;
   }

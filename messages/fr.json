@@ -93,6 +93,14 @@
         "label": "Chant",
         "desc": "Vos sorts avec Chant sont renforcés tant que cette unité est en jeu."
       },
+      "lune": {
+        "label": "Lune X",
+        "desc": "À partir de la deuxième carte jouée dans le tour, toutes ses valeurs sont augmentées de X — définitivement."
+      },
+      "soleil": {
+        "label": "Soleil X",
+        "desc": "Si c'est la première carte jouée dans le tour, toutes ses valeurs sont augmentées de X — définitivement."
+      },
       "rappel": {
         "label": "Rappel",
         "desc": "Remettez une carte ciblée de votre cimetière dans votre main."
@@ -519,6 +527,14 @@
         "label": "Chant X",
         "desc": "Si vous contrôlez une créature avec Chant, toutes les valeurs de ce sort sont augmentées de X."
       },
+      "lune": {
+        "label": "Lune X",
+        "desc": "À partir de la deuxième carte jouée dans le tour, toutes les valeurs de cette carte sont augmentées de X."
+      },
+      "soleil": {
+        "label": "Soleil X",
+        "desc": "Si c'est la première carte jouée dans le tour, toutes les valeurs de cette carte sont augmentées de X."
+      },
       "corruption": {
         "label": "Corruption",
         "desc": "Convertit l'unité ennemie ciblée à votre camp jusqu'à la fin du tour ; elle gagne Traque."
@@ -822,7 +838,7 @@
       },
       "EmpireDuMilieu": {
         "displayName": "L'Empire du Milieu",
-        "description": "Stratégie et contrôle : discipline, formations, mysticisme et furtivité."
+        "description": "Stratégie et contrôle : discipline, formations, mysticisme, furtivité et les gardiens naga des temples."
       },
       "RoyaumesDuSoleil": {
         "displayName": "Les Royaumes du Soleil",
@@ -913,6 +929,7 @@
       "Géants": "Géants",
       "Mammouths": "Mammouths",
       "Humains": "Humains",
+      "Nagas": "Nagas",
       "Esprits": "Esprits",
       "Griffons": "Griffons",
       "Faucons": "Faucons",
@@ -1018,6 +1035,11 @@
         "def": "l'Esprit",
         "bare": "Esprit",
         "de": "de l'Esprit"
+      },
+      "Nagas": {
+        "def": "le Naga",
+        "bare": "Naga",
+        "de": "du Naga"
       },
       "Griffons": {
         "def": "le Griffon",

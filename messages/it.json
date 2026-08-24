@@ -488,6 +488,14 @@
       "compagnons": {
         "label": "Compagni",
         "desc": "Mescola i suoi compagni (carte collegate, scelte alla creazione) nel tuo mazzo, poi rimescola il mazzo. Una sola volta."
+      },
+      "lune": {
+        "label": "Luna X",
+        "desc": "Dalla seconda carta giocata nel turno, tutti i suoi valori sono aumentati di X — in modo permanente."
+      },
+      "soleil": {
+        "label": "Sole X",
+        "desc": "Se è la prima carta giocata nel turno, tutti i suoi valori sono aumentati di X — in modo permanente."
       }
     },
     "spell_keywords": {
@@ -690,6 +698,14 @@
       "compagnons": {
         "label": "Compagni",
         "desc": "Mescola i suoi compagni (carte collegate, scelte alla creazione) nel tuo mazzo, poi rimescola il mazzo. Una sola volta."
+      },
+      "lune": {
+        "label": "Luna X",
+        "desc": "Dalla seconda carta giocata nel turno, tutti i valori di questa carta sono aumentati di X."
+      },
+      "soleil": {
+        "label": "Sole X",
+        "desc": "Se è la prima carta giocata nel turno, tutti i valori di questa carta sono aumentati di X."
       }
     },
     "composed": {
@@ -822,7 +838,7 @@
       },
       "EmpireDuMilieu": {
         "displayName": "L'Impero di Mezzo",
-        "description": "Strategia e controllo: disciplina, formazioni, misticismo e furtività."
+        "description": "Strategia e controllo: disciplina, formazioni, misticismo, furtività e i guardiani naga dei templi."
       },
       "RoyaumesDuSoleil": {
         "displayName": "I Regni del Sole",
@@ -950,7 +966,8 @@
       "Trolls": "Troll",
       "Wargs": "Warg",
       "Guerriers du Chaos": "Guerrieri del Caos",
-      "Mammouths": "Mammut"
+      "Mammouths": "Mammut",
+      "Nagas": "Naga"
     },
     "alignments": {
       "bon": "Buono",
@@ -1214,6 +1231,11 @@
         "def": "il Mammut",
         "bare": "Mammut",
         "de": "del Mammut"
+      },
+      "Nagas": {
+        "def": "il Naga",
+        "bare": "Naga",
+        "de": "del Naga"
       }
     },
     "clans_forms": {

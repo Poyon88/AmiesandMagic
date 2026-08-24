@@ -38,7 +38,7 @@ import { SPELL_KEYWORDS } from "./spell-keywords";
 import { getEntraideReduction, getTokenManaCost, isCreatureKwShadowedBySpell, XY_ABILITY_IDS } from "./abilities";
 import { isManaSpark, MANA_SPARK_FALLBACK } from "./mana-spark";
 import { getCapabilities } from "./capability-adapter";
-import { parseXValuesFromEffectText } from "./keyword-labels";
+import { KEYWORD_LABELS, parseXValuesFromEffectText } from "./keyword-labels";
 import {
   HERO_MAX_HP,
   startingHandSizeFor,
@@ -318,7 +318,7 @@ function cardWrathAmount(card: Card): number {
 // (Douleur = auto-dégâts, Invocation = coût EXACT, Sélection/Exhumation =
 // plafond de coût, Déchainement = nombre et coût des sorts tirés). Choix du
 // concepteur, pris en connaissance de cause. Le repli tient dans un `Set` d'ids
-// exclus consulté par `chanted` — aucune migration, aucune carte à retoucher.
+// exclus consulté par `boosted` — aucune migration, aucune carte à retoucher.
 let chantBonus = 0;
 function withChant<T>(x: number, fn: () => T): T {
   const prev = chantBonus;
@@ -346,17 +346,81 @@ export function chantBonusForSpell(state: GameState, card: Card): number {
   const caster = state.players[state.currentPlayerIndex];
   return boardHasChanter(caster) ? cardChantAmount(card) : 0;
 }
-/** Applique le bonus de Chant à une amplitude du sort en cours.
+
+// ── Amplificateurs de TEMPO (Lune X, Soleil X), face SORT ───────────────────
+//
+// Deux capacités jumelles, adossées au RYTHME DU TOUR plutôt qu'au plateau
+// (Chant) : Lune ne tombe qu'à partir de la deuxième carte jouée, Soleil
+// seulement sur la première. Une seule mécanique les sert — elles ne diffèrent
+// que par le prédicat ci-dessous, et l'ajout d'un troisième amplificateur de
+// tempo tiendrait dans une ligne de cette table.
+//
+// Les conditions sont MUTUELLEMENT EXCLUSIVES par construction : une carte peut
+// porter les deux, une seule tombera. C'est ce qui rend inutile toute garde à
+// l'écriture des cartes — et ce que verrouille `soleil.test.ts`.
+//
+// La face CRÉATURE ne passe PAS par le drapeau : son bonus doit durer toute la
+// vie de l'unité, or un drapeau de module ne survit pas à la résolution. Elle
+// est traitée par `stampTempoBonus`, qui grave le bonus dans les valeurs.
+const TEMPO_CONDITIONS: Record<string, (p: PlayerState) => boolean> = {
+  // Pas la première carte du tour.
+  lune: (p) => (p.cardsPlayedThisTurn ?? 0) > 0,
+  // La première, et elle seule.
+  soleil: (p) => (p.cardsPlayedThisTurn ?? 0) === 0,
+};
+
+let tempoBonus = 0;
+function withTempo<T>(x: number, fn: () => T): T {
+  const prev = tempoBonus;
+  tempoBonus = x;
+  try { return fn(); } finally { tempoBonus = prev; }
+}
+/** X de l'amplificateur `id` porté par cette carte, 0 si elle ne l'a pas. */
+function cardTempoAmount(card: Card, id: string): number {
+  const cap = getCapabilities(card).find(c => c.abilityId === id);
+  return Math.max(0, cap?.params?.x ?? 0);
+}
+/** La condition de l'amplificateur `id` est-elle remplie pour ce joueur ?
+ *
+ *  La carte en cours ne se compte jamais elle-même : `playCard` lit ce prédicat
+ *  AVANT d'incrémenter le compteur du tour. */
+export function tempoConditionMet(id: string, p: PlayerState): boolean {
+  return TEMPO_CONDITIONS[id]?.(p) ?? false;
+}
+/** Bonus de tempo d'une carte AVANT qu'elle soit jouée, calculé depuis l'état
+ *  seul — jumeau de `chantBonusForSpell`, et pour la même raison : les PICKERS
+ *  s'ouvrent hors résolution, donc hors drapeau, et doivent proposer exactement
+ *  ce que la résolution acceptera.
+ *
+ *  SOMME des amplificateurs actifs, et non le bonus d'un id choisi : c'est ce
+ *  qui fait qu'une carte portant Lune ET Soleil reçoit exactement l'un des deux
+ *  selon le moment, sans une ligne de code dédiée. */
+export function tempoBonusForCard(state: GameState, card: Card): number {
+  const joueur = state.players[state.currentPlayerIndex];
+  let total = 0;
+  for (const id of Object.keys(TEMPO_CONDITIONS)) {
+    if (tempoConditionMet(id, joueur)) total += cardTempoAmount(card, id);
+  }
+  return total;
+}
+
+/** TOUS les amplificateurs. Chacun s'exclut lui-même ET les autres : sur une
+ *  carte qui en porte plusieurs, aucun ne majore le X d'un autre, et leurs
+ *  bonus s'additionnent sur tout le reste. Sans cette exclusion croisée, le
+ *  résultat dépendrait de l'ordre d'application — un piège qu'il faudrait figer
+ *  par une règle écrite plutôt que par le code. */
+const AMPLIFIER_IDS: ReadonlySet<string> = new Set(["chant", ...Object.keys(TEMPO_CONDITIONS)]);
+
+/** Applique les bonus d'amplification (Chant + tempo) à une amplitude du sort en
+ *  cours.
  *
  *  `undefined` reste `undefined` : un champ absent (le Y d'un mot-clé qui n'en
- *  a pas) ne doit pas naître à `chantBonus`, sinon on inventerait une valeur là
- *  où le résolveur attend un repli.
- *
- *  Chant s'exclut lui-même : son X EST le bonus, l'auto-référence n'aurait
- *  aucun sens. */
-function chanted(abilityId: string, value: number | undefined): number | undefined {
-  if (chantBonus <= 0 || value == null || abilityId === "chant") return value;
-  return value + chantBonus;
+ *  a pas) ne doit pas naître au bonus, sinon on inventerait une valeur là où le
+ *  résolveur attend un repli. */
+function boosted(abilityId: string, value: number | undefined): number | undefined {
+  const bonus = chantBonus + tempoBonus;
+  if (bonus <= 0 || value == null || AMPLIFIER_IDS.has(abilityId)) return value;
+  return value + bonus;
 }
 
 /** La carte (sort) porte-t-elle Touché mortel ? Lu via le modèle unifié pour
@@ -772,7 +836,7 @@ function applyGrantCapability(
   // Chant majore l'amplitude de la capacité CONFÉRÉE (Conférer → Gloire +2/+1).
   // Ce résolveur n'est appelé que depuis la phase 3 d'un sort : le drapeau ne
   // peut donc pas fuir vers un don de créature.
-  const params = grantParamsFor(cap.abilityId, chanted(cap.abilityId, cap.params?.x), chanted(cap.abilityId, cap.params?.y));
+  const params = grantParamsFor(cap.abilityId, boosted(cap.abilityId, cap.params?.x), boosted(cap.abilityId, cap.params?.y));
   if (scope === "all_allies") {
     for (const ally of owner.board) applyGrantedKeyword(ally, cap.abilityId, params, true);
     return;
@@ -1071,7 +1135,7 @@ function resolveComposedEffect(
   // du `withChant`, si bien qu'un râle d'agonie déclenché par les dégâts du
   // sort résout ses propres effets composés drapeau posé. Sans ce test, la
   // capacité d'une créature tuée par le sort serait boostée elle aussi.
-  const chantX = opts?.trigger === "spell_resolution" ? chantBonus : 0;
+  const chantX = opts?.trigger === "spell_resolution" ? chantBonus + tempoBonus : 0;
   const x = (composed.magnitude?.x ?? 0) + (composed.magnitude?.x != null ? chantX : 0);
   const y = (composed.magnitude?.y ?? 0) + (composed.magnitude?.y != null ? chantX : 0);
 
@@ -1571,16 +1635,130 @@ function resetTurnStateForNewController(inst: CardInstance): void {
 function stampKeywordXValues(inst: CardInstance): void {
   const parsed = parseXValuesFromEffectText(inst.card.effect_text);
   const mana = inst.card.mana_cost;
+  // TEMPO : le bonus est déjà gravé dans les DEUX premières sources (sidecar et
+  // texte). Il ne l'est pas dans la TROISIÈME, qui ne dérive que du coût en
+  // mana — d'où ce rattrapage, sans quoi une Riposte sans valeur saisie serait
+  // la seule à ne pas profiter de Lune ou de Soleil, et sans le moindre signe.
+  //
+  // Ce helper est rejoué après les dons d'entrée en jeu (cf. playCard) : il doit
+  // rendre le même résultat qu'au premier passage, ce que garantit la lecture de
+  // `tempoApplied` plutôt qu'un incrément.
+  const primeTempo = inst.tempoApplied ?? 0;
   const xOf = (id: Keyword, fallback: number): number => {
     const fromSidecar = inst.card.keyword_instances?.find(k => k.id === id)?.x;
     if (fromSidecar != null) return fromSidecar;
-    return parsed[id] || fallback;
+    return parsed[id] || fallback + primeTempo;
   };
   if (hasKw(inst, "persecution")) inst.persecutionX = xOf("persecution", Math.max(1, Math.floor(mana / 3)));
   if (hasKw(inst, "riposte")) inst.riposteX = xOf("riposte", Math.max(1, Math.floor(mana / 3)));
   if (hasKw(inst, "carnage")) inst.carnageX = xOf("carnage", Math.max(1, Math.floor(mana / 2)));
   if (hasKw(inst, "sacrifice_demoniaque")) inst.sacrificeDemoniaqueX = xOf("sacrifice_demoniaque", Math.max(1, Math.floor(mana / 3)));
   if (hasKw(inst, "heritage")) inst.heritageX = xOf("heritage", Math.max(1, Math.floor(mana / 3)));
+}
+
+// ── Amplificateurs de tempo, face CRÉATURE ──────────────────────────────────
+//
+// Le bonus d'une créature dure toute sa vie : aucun drapeau de module ne peut le
+// porter. On le GRAVE donc dans les valeurs de la carte que tient l'instance —
+// une copie qui n'appartient qu'à elle, comme le fait déjà Seconde vie quand
+// elle retire son propre mot-clé. La mémoïsation de `getCapabilities` est une
+// WeakMap sur l'objet `card` : une nouvelle identité suffit à tout re-dériver.
+//
+// Pourquoi graver plutôt qu'intercepter : le X d'une créature se lit par TROIS
+// canaux qui ne se recouvrent pas — `getCapabilities` (params et magnitudes
+// composées), le sidecar `keyword_instances`, et le bloc `[Riposte 2]` de
+// `effect_text` (24 sites `parseXValuesFromEffectText` dans ce fichier). Aucun
+// point de passage unique n'existe ; la carte elle-même EST ce point.
+//
+// On applique une DIFFÉRENCE et non le bonus brut. `tempoApplied` retient ce qui
+// a déjà été écrit, si bien qu'une unité renvoyée en main puis rejouée à un
+// moment où sa condition n'est plus remplie — en PREMIER pour une Lune, en
+// DEUXIÈME pour un Soleil — reçoit une différence négative et retrouve
+// exactement ses valeurs d'origine. Conserver une carte de référence aurait été
+// plus simple à lire, mais serait entré en conflit avec les autres réécritures
+// de `card` (Seconde vie y retire son propre mot-clé).
+
+/** Réécrit le bloc `[Libellé N, …]` de fin d'`effect_text` en majorant chaque
+ *  valeur de `delta`. Les amplificateurs sont sautés (cf. AMPLIFIER_IDS).
+ *
+ *  Le format est celui que lit `parseXValuesFromEffectText` : libellé de forge
+ *  (le label du registre SANS son « X ») puis un entier. Le bloc n'est jamais
+ *  montré au joueur — `cleanEffectText` le retire à l'affichage. */
+function shiftEffectTextX(effectText: string | null | undefined, delta: number): string | null | undefined {
+  if (!effectText || delta === 0) return effectText;
+  const match = effectText.match(/\[([^\]]+)\]/);
+  if (!match) return effectText;
+  const parts = match[1].split(",").map((part) => {
+    const trimmed = part.trim();
+    const lastSpace = trimmed.lastIndexOf(" ");
+    if (lastSpace <= 0) return trimmed;
+    const forgeName = trimmed.slice(0, lastSpace);
+    const val = parseInt(trimmed.slice(lastSpace + 1));
+    if (isNaN(val)) return trimmed;
+    const entry = Object.entries(KEYWORD_LABELS).find(([, label]) => label === `${forgeName} X`);
+    if (!entry || AMPLIFIER_IDS.has(entry[0])) return trimmed;
+    return `${forgeName} ${val + delta}`;
+  });
+  return effectText.replace(match[0], `[${parts.join(", ")}]`);
+}
+
+/** Grave (ou retire) le bonus de tempo sur l'instance : quatre structures de la
+ *  carte, puis les X figés à la naissance de l'instance. Idempotent — appeler
+ *  deux fois de suite avec le même bonus ne l'applique qu'une fois. */
+function stampTempoBonus(inst: CardInstance, bonus: number): void {
+  const delta = bonus - (inst.tempoApplied ?? 0);
+  if (delta === 0) return;
+  const carte = inst.card;
+  const decale = (v: number | undefined): number | undefined => (v == null ? v : v + delta);
+  const decaleCouts = (c: number[] | undefined): number[] | undefined =>
+    c == null ? c : c.map((v) => v + delta);
+
+  inst.card = {
+    ...carte,
+    // 1. Sidecar : lu tel quel par une douzaine de résolveurs, et source des X
+    //    figés ci-dessous.
+    keyword_instances: carte.keyword_instances?.map((k) =>
+      AMPLIFIER_IDS.has(k.id) ? k : { ...k, x: decale(k.x), y: decale(k.y), costs: decaleCouts(k.costs) },
+    ),
+    // 2. Modèle unifié, quand la carte est backfillée (il prime alors sur le
+    //    sidecar dans `getCapabilities`), magnitudes composées comprises.
+    capabilities: carte.capabilities?.map((c) =>
+      AMPLIFIER_IDS.has(c.abilityId)
+        ? c
+        : {
+          ...c,
+          params: c.params
+            ? {
+              ...c.params,
+              x: decale(c.params.x), y: decale(c.params.y),
+              attack: decale(c.params.attack), health: decale(c.params.health),
+            }
+            : c.params,
+          costs: decaleCouts(c.costs),
+          // `x` et `y` restent OPTIONNELS : un champ absent ne doit pas naître
+          // au bonus (même règle que `boosted` côté sort), sans quoi on
+          // inventerait une magnitude là où le résolveur attend son repli.
+          composed: c.composed?.magnitude
+            ? { ...c.composed, magnitude: { ...c.composed.magnitude, x: decale(c.composed.magnitude.x), y: decale(c.composed.magnitude.y) } }
+            : c.composed,
+        },
+    ),
+    // 3. Une créature peut porter des effets de sort (mots-clés conférés,
+    //    invocations) : ils ont leurs propres porteurs d'amplitude.
+    spell_keywords: carte.spell_keywords?.map((k) =>
+      AMPLIFIER_IDS.has(k.id)
+        ? k
+        : { ...k, amount: decale(k.amount), attack: decale(k.attack), health: decale(k.health), costs: decaleCouts(k.costs) },
+    ) ?? null,
+    // 4. Le repli textuel, seul canal de la moitié des résolveurs de créature
+    //    (Douleur, Inspiration, Résistance, Impact…).
+    effect_text: shiftEffectTextX(carte.effect_text, delta) ?? carte.effect_text,
+  };
+  inst.tempoApplied = bonus;
+  // Les X figés à la naissance (Riposte, Carnage, Persécution, Sacrifice
+  // démoniaque, Héritage) sont recalculés depuis la carte fraîchement gravée :
+  // ils héritent du bonus sans une ligne de plus.
+  stampKeywordXValues(inst);
 }
 
 function createCardInstance(card: Card): CardInstance {
@@ -1653,7 +1831,12 @@ function createCardInstance(card: Card): CardInstance {
 // porte lui aussi le mot-clé mais n'est jamais repassé par un flux de
 // déclenchement dans la même résolution → pas de duplication récursive.
 function makeDedoublementClone(source: CardInstance): CardInstance {
-  return createCardInstance({ ...source.card });
+  const clone = createCardInstance({ ...source.card });
+  // La carte copiée porte déjà le bonus de tempo de la source, le cas échéant :
+  // sans reprendre `tempoApplied`, une pose ultérieure du clone (bounce puis
+  // rejeu) calculerait sa différence depuis zéro et majorerait une seconde fois.
+  clone.tempoApplied = source.tempoApplied;
+  return clone;
 }
 
 // Prépare une instance EXISTANTE à ré-entrer en jeu (depuis la main après un
@@ -2280,6 +2463,13 @@ export function startTurn(state: GameState): GameState {
 
   if (player.maxMana < MAX_MANA) player.maxMana++;
   player.mana = player.maxMana;
+
+  // TEMPO : le compteur de cartes jouées repart de zéro pour le joueur qui
+  // entre. Sa première carte du tour est donc toujours une carte de Soleil et
+  // jamais une carte de Lune, quel que soit ce qu'il a joué au tour précédent. Celui de l'adversaire est laissé
+  // tel quel : il sera remis à zéro à SON tour, et personne ne le lit entre
+  // temps (seul le joueur actif peut jouer une carte).
+  player.cardsPlayedThisTurn = 0;
 
   // Qui était DÉJÀ en jeu au lever du tour.
   //
@@ -2946,6 +3136,19 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     if (!player.board.find(c => c.instanceId === id)) return state;
   }
 
+  // TEMPO (Lune, Soleil) — la condition se lit AVANT l'incrément : la carte en
+  // cours ne se compte jamais elle-même. Lune tombe donc à partir de la DEUXIÈME
+  // carte du tour, Soleil sur la PREMIÈRE. La valeur est figée ici et non relue
+  // plus bas, pour que la face sort et la face créature parlent du même instant.
+  //
+  // C'est une SOMME sur les amplificateurs actifs, mais les deux conditions
+  // s'excluent : une carte portant Lune ET Soleil en reçoit exactement un.
+  const tempoAmount = tempoBonusForCard(newState, card);
+  // Incrément au POINT DE NON-RETOUR. Les gardes qui suivent (plateau plein,
+  // sort sans cible…) rendent l'état d'ORIGINE et non ce clone : une carte
+  // refusée ne compte donc pas.
+  player.cardsPlayedThisTurn = (player.cardsPlayedThisTurn ?? 0) + 1;
+
   player.mana -= manaCost;
   // Pay life cost directly — armor protects from damage, not voluntary
   // self-payment. Coherent with canPlayCard's `hp - life_cost > 0` check.
@@ -3031,6 +3234,16 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     cardInstance.tapped = false;
     const pos = action.boardPosition ?? player.board.length;
     player.board.splice(pos, 0, cardInstance);
+
+    // TEMPO — gravé ICI, donc AVANT tout déclencheur d'entrée en jeu : Douleur,
+    // Inspiration, Divination & Cie doivent déjà lire les valeurs majorées.
+    //
+    // L'appel est INCONDITIONNEL, et c'est ce qui fait la moitié de la règle :
+    // posée en premier, une unité qui garde le bonus d'une vie antérieure
+    // (renvoyée en main, puis rejouée) reçoit ici une différence négative et
+    // retrouve ses valeurs d'origine. `stampTempoBonus` sort tout seul quand il
+    // n'y a rien à changer.
+    stampTempoBonus(cardInstance, tempoAmount);
 
     // APPRENTISSAGE — oubli à l'entrée en jeu. Le sort mémorisé n'existe QUE
     // tant que la créature est sur le plateau : une créature renvoyée en main
@@ -3938,7 +4151,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // `manaCost` = ce que ce sort vient RÉELLEMENT de coûter (Concentration
     // gravée sur l'instance comprise). Discipline en lit la parité, et
     // l'instance n'est plus atteignable une fois la résolution commencée.
-    const ctx = resolveSpellCard(newState, player, opponent, card, targetMap, action.targetInstanceId, manaCost);
+    const ctx = resolveSpellCard(newState, player, opponent, card, targetMap, action.targetInstanceId, manaCost, tempoAmount);
 
     // Morts causées par les phases 2/3, les composés et le repli legacy.
     settleSpellDeaths(ctx);
@@ -4273,14 +4486,15 @@ function castSpellWithRandomTargets(
 function spellResolutionInstances(card: Card): SpellKeywordInstance[] {
   return getCapabilities(card)
     .filter((c) => c.trigger === "spell_resolution" && c.effectKind === "immediate")
-    // `chanted` : Chant X majore ici les trois porteurs d'amplitude. Les couples
+    // `boosted` : Chant et les amplificateurs de tempo majorent ici les trois
+    // porteurs d'amplitude. Les couples
     // X/Y ne passent pas tous par les mêmes champs — Renforcement utilise
     // (attack, health), Déchainement (amount, health) — d'où les trois.
     .map((c) => ({
       id: c.abilityId as SpellKeywordInstance["id"],
-      amount: chanted(c.abilityId, c.params?.x),
-      attack: chanted(c.abilityId, c.params?.attack),
-      health: chanted(c.abilityId, c.params?.health),
+      amount: boosted(c.abilityId, c.params?.x),
+      attack: boosted(c.abilityId, c.params?.attack),
+      health: boosted(c.abilityId, c.params?.health),
       race: c.race,
       clan: c.clan,
       token_id: c.tokenId ?? null,
@@ -4315,6 +4529,11 @@ function resolveSpellCard(
   // sur le coût qu'ils auraient depuis la main (Canalisation comprise, car elle
   // se lit sur le plateau et non sur l'instance).
   realManaCost?: number,
+  // TEMPO : bonus déjà décidé par `playCard`, qui a lu le compteur AVANT de
+  // l'incrémenter — la carte en cours ne peut donc pas se compter elle-même.
+  // Absent sur les sorts relancés / déchaînés : ceux-là ne sont pas « joués »,
+  // ils ne reçoivent aucun bonus (et n'incrémentent pas le compteur non plus).
+  tempoAmount = 0,
 ): SpellResolutionContext {
   const ctx: SpellResolutionContext = {
     state, caster, opponent, card, targetMap, results: {},
@@ -4334,6 +4553,10 @@ function resolveSpellCard(
   // sort relancé sans Chant n'hérite donc de rien.
   const chant = boardHasChanter(caster) ? cardChantAmount(card) : 0;
   withChant(chant, () =>
+  // Tempo (Lune, Soleil) : même instantané, posé pour les mêmes raisons — et
+  // ré-entrant de la même façon, si bien qu'un sort imbriqué n'hérite jamais du
+  // bonus de celui qui l'a lancé.
+  withTempo(tempoAmount, () =>
   withWrathThreshold(wrath, () =>
   withLethalSpell(cardHasLethalTouch(card), () => {
     // Phase 1 — mots-clés de sort (règlent leurs morts effet par effet).
@@ -4369,7 +4592,7 @@ function resolveSpellCard(
     }
 
     recalculateAuras(caster, opponent);
-  })));
+  }))));
   return ctx;
 }
 
@@ -4703,7 +4926,7 @@ function resolveSpellKeywords(
       }
       case "invocations_multiples": {
         // Une Invocation par coût listé (les coûts vivent sur l'instance de sort).
-        resolveMultipleInvocations(ctx.caster, ctx.card, ctx.state.factionCardPool, ctx.state.formatCode ?? null, chantBonus);
+        resolveMultipleInvocations(ctx.caster, ctx.card, ctx.state.factionCardPool, ctx.state.formatCode ?? null, chantBonus + tempoBonus);
         break;
       }
       case "compagnons": {
@@ -5092,12 +5315,12 @@ function resolveAtomicEffect(ctx: SpellResolutionContext, rawEffect: AtomicEffec
   // Chant majore les amplitudes ici plutôt qu'au fil des ~20 `case` : une copie
   // boostée en tête, et tout le corps en dessous reste inchangé. Ce chemin
   // n'est atteint que depuis la phase 2 d'un sort, jamais par une créature.
-  const effect: AtomicEffect = chantBonus > 0
+  const effect: AtomicEffect = chantBonus + tempoBonus > 0
     ? {
       ...rawEffect,
-      amount: chanted(rawEffect.type, rawEffect.amount),
-      attack: chanted(rawEffect.type, rawEffect.attack),
-      health: chanted(rawEffect.type, rawEffect.health),
+      amount: boosted(rawEffect.type, rawEffect.amount),
+      attack: boosted(rawEffect.type, rawEffect.attack),
+      health: boosted(rawEffect.type, rawEffect.health),
     }
     : rawEffect;
   const targetId = effect.target_slot ? ctx.targetMap[effect.target_slot] : undefined;
@@ -9957,10 +10180,12 @@ function resolveMultipleInvocations(
   sourceCard: Card,
   pool: Card[] | undefined,
   formatCode: FormatCode | null,
-  // Bonus de Chant, passé EXPLICITEMENT par le chemin sort. On ne lit pas
-  // `chantBonus` ici : ce résolveur sert aussi les créatures (entrée en jeu,
-  // râle d'agonie…), qui peuvent se résoudre PENDANT un sort — elles
-  // hériteraient alors d'un bonus qui ne les concerne pas.
+  // Bonus d'amplification (Chant + tempo), passé EXPLICITEMENT par le chemin
+  // sort. On ne lit pas les drapeaux ici : ce résolveur sert aussi les créatures
+  // (entrée en jeu, râle d'agonie…), qui peuvent se résoudre PENDANT un sort —
+  // elles hériteraient alors d'un bonus qui ne les concerne pas. La face
+  // créature du tempo n'en a de toute façon pas besoin : son bonus est déjà gravé
+  // dans les `costs[]` de sa propre carte.
   costBonus = 0,
 ): void {
   const { costs, race, faction } = invocationSetupOf(sourceCard, costBonus);
@@ -10377,7 +10602,7 @@ export function getSpellGraveyardTargets(state: GameState, card: Card, slotIndex
     // Plafond de coût = X du mot-clé + bonus de Chant. Le moteur applique déjà
     // le bonus (via spellResolutionInstances) : sans le même calcul ici, le
     // picker proposait strictement moins que ce que la résolution acceptait.
-    const maxCost = (kw.amount ?? 1) + chantBonusForSpell(state, card);
+    const maxCost = (kw.amount ?? 1) + chantBonusForSpell(state, card) + tempoBonusForCard(state, card);
     return player.graveyard
       .filter(c => c.card.card_type === "creature" && c.card.mana_cost <= maxCost)
       .map(c => c.instanceId);
@@ -10394,9 +10619,10 @@ export function getComposedGraveyardTargets(state: GameState, card: Card, capUid
   const player = state.players[state.currentPlayerIndex];
   const cap = getCapabilities(card).find(c => c.uid === capUid && c.composed);
   // Même plafond que la résolution, bonus de Chant compris (cf.
-  // chantBonusForSpell) — sinon le picker et le moteur ne s'accordent pas.
+  // chantBonusForSpell / tempoBonusForCard) — sinon le picker et le moteur ne
+  // s'accordent pas.
   const x = (cap?.composed?.magnitude?.x ?? 0)
-    + (card.card_type === "spell" ? chantBonusForSpell(state, card) : 0);
+    + (card.card_type === "spell" ? chantBonusForSpell(state, card) + tempoBonusForCard(state, card) : 0);
   return player.graveyard
     .filter(c => c.card.card_type === "creature" && c.card.mana_cost <= x)
     .map(c => c.instanceId);

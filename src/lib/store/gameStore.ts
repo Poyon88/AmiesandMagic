@@ -40,6 +40,7 @@ import {
   creatureNeedsApprentissage,
   handSpellsFor,
   chantBonusForSpell,
+  tempoBonusForCard,
   creatureNeedsTraqueDuDestin,
   getTraqueDuDestinX,
   creatureNeedsSelection,
@@ -1346,8 +1347,11 @@ export const useGameStore = create<GameStore>((set, get) => {
     const tryOpen = (kwId: string, getter: (x: number) => Card[]): boolean => {
       const found = cardInst.card.spell_keywords!.find(k => k.id === kwId);
       if (!found) return false;
-      // Plafond de coût de l'offre = X + bonus de Chant, comme à la résolution.
-      const x = (found.amount ?? 0) + chantBonusForSpell(gs, cardInst.card);
+      // Plafond de coût de l'offre = X + bonus d'amplification (Chant, tempo),
+      // comme à la résolution.
+      const x = (found.amount ?? 0)
+        + chantBonusForSpell(gs, cardInst.card)
+        + tempoBonusForCard(gs, cardInst.card);
       const choices = getter(x);
       if (choices.length === 0) return false;
       set({
@@ -1399,9 +1403,10 @@ export const useGameStore = create<GameStore>((set, get) => {
       return true;
     }
     if (!cardNeedsCreuser(cardInst.card)) return false;
-    // Même plafond qu'à la résolution : X + bonus de Chant.
+    // Même plafond qu'à la résolution : X + bonus d'amplification.
     const x = ((cardInst.card.spell_keywords ?? []).find(k => k.id === "creuser")?.amount ?? 1)
-      + chantBonusForSpell(gs, cardInst.card);
+      + chantBonusForSpell(gs, cardInst.card)
+      + tempoBonusForCard(gs, cardInst.card);
     const deckCards = getCreuserCards(player, x);
     if (deckCards.length === 0) return false;
     set({
@@ -3589,10 +3594,14 @@ export const useGameStore = create<GameStore>((set, get) => {
     // CREUSER X : même picker que Divination, mais alimenté par le FOND du deck.
     if (card && cardNeedsCreuser(card.card)) {
       const xVals = parseXValuesFromEffectText(card.card.effect_text);
-      const x = card.card.card_type === "spell"
+      const x = (card.card.card_type === "spell"
         ? ((card.card.spell_keywords ?? []).find(kw => kw.id === "creuser")?.amount ?? 1)
           + chantBonusForSpell(gameState, card.card)
-        : (xVals["creuser"] ?? 1);
+        : (xVals["creuser"] ?? 1))
+        // Lune et Soleil valent sur les DEUX faces. La carte n'est pas encore
+        // jouée, donc le compteur n'est pas encore incrémenté : ce que ce picker
+        // calcule est exactement ce que la résolution appliquera.
+        + tempoBonusForCard(gameState, card.card);
       const deckCards = getCreuserCards(player, x);
       if (deckCards.length > 0) {
         set({
@@ -3825,10 +3834,14 @@ export const useGameStore = create<GameStore>((set, get) => {
     const creuserApresCiblage = card.card.card_type === "spell" && needsTarget(card.card);
     if (card && cardNeedsCreuser(card.card) && !creuserApresCiblage) {
       const xVals = parseXValuesFromEffectText(card.card.effect_text);
-      const x = card.card.card_type === "spell"
+      const x = (card.card.card_type === "spell"
         ? ((card.card.spell_keywords ?? []).find(kw => kw.id === "creuser")?.amount ?? 1)
           + chantBonusForSpell(gameState, card.card)
-        : (xVals["creuser"] ?? 1);
+        : (xVals["creuser"] ?? 1))
+        // Lune et Soleil valent sur les DEUX faces. La carte n'est pas encore
+        // jouée, donc le compteur n'est pas encore incrémenté : ce que ce picker
+        // calcule est exactement ce que la résolution appliquera.
+        + tempoBonusForCard(gameState, card.card);
       const deckCards = getCreuserCards(player, x);
       if (deckCards.length > 0) {
         set({

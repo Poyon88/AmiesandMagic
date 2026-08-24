@@ -488,6 +488,14 @@
       "compagnons": {
         "label": "Companheiros",
         "desc": "Baralha os seus companheiros (cartas ligadas, escolhidas na criação) no seu deck e depois volta a baralhá-lo. Apenas uma vez."
+      },
+      "lune": {
+        "label": "Lua X",
+        "desc": "A partir da segunda carta jogada no turno, todos os seus valores aumentam em X — de forma permanente."
+      },
+      "soleil": {
+        "label": "Sol X",
+        "desc": "Se for a primeira carta jogada no turno, todos os seus valores aumentam em X — de forma permanente."
       }
     },
     "spell_keywords": {
@@ -690,6 +698,14 @@
       "compagnons": {
         "label": "Companheiros",
         "desc": "Baralha os seus companheiros (cartas ligadas, escolhidas na criação) no seu deck e depois volta a baralhá-lo. Apenas uma vez."
+      },
+      "lune": {
+        "label": "Lua X",
+        "desc": "A partir da segunda carta jogada no turno, todos os valores desta carta aumentam em X."
+      },
+      "soleil": {
+        "label": "Sol X",
+        "desc": "Se for a primeira carta jogada no turno, todos os valores desta carta aumentam em X."
       }
     },
     "composed": {
@@ -822,7 +838,7 @@
       },
       "EmpireDuMilieu": {
         "displayName": "O Império do Meio",
-        "description": "Estratégia e controle: disciplina, formações, misticismo e furtividade."
+        "description": "Estratégia e controle: disciplina, formações, misticismo, furtividade e os guardiões naga dos templos."
       },
       "RoyaumesDuSoleil": {
         "displayName": "Os Reinos do Sol",
@@ -950,7 +966,8 @@
       "Trolls": "Trolls",
       "Wargs": "Wargs",
       "Guerriers du Chaos": "Guerreiros do Caos",
-      "Mammouths": "Mamutes"
+      "Mammouths": "Mamutes",
+      "Nagas": "Nagas"
     },
     "alignments": {
       "bon": "Bom",
@@ -1214,6 +1231,11 @@
         "def": "o Mamute",
         "bare": "Mamute",
         "de": "do Mamute"
+      },
+      "Nagas": {
+        "def": "o Naga",
+        "bare": "Naga",
+        "de": "do Naga"
       }
     },
     "clans_forms": {

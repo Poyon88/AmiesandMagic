@@ -92,6 +92,8 @@ export async function POST(request: Request) {
     "Gnomes": "small tinker gnome with goggles, bushy beard, leather apron, clockwork gadgets and mechanical contraptions",
     // Légions du Chaos (Garde Noire)
     "Guerriers du Chaos": "towering chaos warrior in blackened spiked plate armor, corrupted heavy weapon, malevolent glowing runes, imposing and grim",
+    // Empire du Milieu (Défenseurs d'Ivoire)
+    "Nagas": "serpent temple guardian, human torso rising from a long coiling snake body, fanned cobra hood, jewelled iridescent scales, Khmer gold ornaments, serene and watchful",
   };
   // For factions whose visual identity lives on the clan (Élémentaires: race
   // "Élémentaire", clan = element), prefer the clan-keyed descriptor.
@@ -238,6 +240,7 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
           "Démons": ["demon", "démon"],
           "Gnomes": ["gnome", "tinker", "tinkerer"],
           "Guerriers du Chaos": ["chaos warrior", "chaos knight", "guerrier du chaos"],
+          "Nagas": ["naga", "serpent guardian", "snake-bodied"],
         };
         // Get all wrong terms: other races in the faction, plus — for clan-tuned
         // factions (Élémentaires) — the sibling clans' terms so a Feu card doesn't

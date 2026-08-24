@@ -2053,6 +2053,7 @@ export default function CardForge() {
       "Démons": "a demonic creature with horns, bat-like wings, cloven hooves, infernal flames",
       "Gnomes": "a small tinker gnome with goggles, a bushy beard, leather apron, mechanical gadgets and clockwork contraptions",
       "Guerriers du Chaos": "a towering chaos warrior in blackened spiked plate armor, corrupted heavy weapon, malevolent glowing runes, imposing and grim",
+      "Nagas": "a serpent temple guardian, human torso rising from a long coiling snake body, fanned cobra hood, jewelled iridescent scales, Khmer gold ornaments",
     };
     const visual = tokenVisualDescriptions[tokenRace] || `a ${tokenRace} creature`;
     const nameHint = tokenName ? ` named "${tokenName}"` : '';
