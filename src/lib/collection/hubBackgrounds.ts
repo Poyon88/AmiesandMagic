@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { RARITIES } from "@/lib/card-engine/constants";
+import { fetchAllRows } from "@/lib/supabase/fetchAllRows";
 
 /**
  * Per-category image pools for the "Ma collection" hub tiles. Each pool holds
@@ -72,7 +73,11 @@ export async function getHubBgCandidates(
     boardsRes,
     boardPrintsRes,
   ] = await Promise.all([
-    supabase.from("cards").select("id, rarity, image_url, set_id"),
+    // Paginé : sinon le fond du hub tire au sort dans un catalogue tronqué.
+    fetchAllRows(
+      (from, to) => supabase.from("cards").select("id, rarity, image_url, set_id").order("id").range(from, to),
+      { label: "Lecture du catalogue" },
+    ).then((data) => ({ data })),
     supabase.from("user_collections").select("card_id").eq("user_id", userId),
     supabase.from("card_prints").select("card_id").eq("owner_id", userId),
     supabase.from("heroes").select("id, rarity, thumbnail_url").eq("is_active", true).eq("rarity", "Commune"),

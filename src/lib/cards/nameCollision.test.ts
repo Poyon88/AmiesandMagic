@@ -2,10 +2,34 @@ import { describe, it, expect } from "vitest";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { normalizeCardName, findNameCollision } from "./nameCollision";
 
-// Faux client : seule `from("cards").select("id, name")` est exercée.
-function fakeSupabase(rows: { id: number; name: string | null }[]) {
+/** Faux client : `from("cards").select("id, name").order(…).range(from, to)`.
+ *  Il PLAFONNE volontairement chaque réponse à `maxRows`, comme PostgREST : un
+ *  double qui rendrait tout d'un coup ne pourrait pas voir la régression que
+ *  cette pagination corrige. */
+function fakeSupabase(rows: { id: number; name: string | null }[], maxRows = 1000) {
   return {
-    from: () => ({ select: async () => ({ data: rows }) }),
+    from: () => ({
+      select: () => ({
+        order: () => ({
+          range: async (from: number, to: number) => ({
+            data: rows.slice(from, Math.min(to + 1, from + maxRows)),
+            error: null,
+          }),
+        }),
+      }),
+    }),
+  } as unknown as SupabaseClient;
+}
+
+function failingSupabase(message: string) {
+  return {
+    from: () => ({
+      select: () => ({
+        order: () => ({
+          range: async () => ({ data: null, error: { message } }),
+        }),
+      }),
+    }),
   } as unknown as SupabaseClient;
 }
 
@@ -48,5 +72,26 @@ describe("findNameCollision", () => {
 
   it("ignore un nom vide plutôt que de collisionner avec une ligne à nom nul", async () => {
     expect(await findNameCollision(fakeSupabase(ROWS), "   ")).toBeNull();
+  });
+
+  it("voit une carte située AU-DELÀ du plafond de 1 000 lignes", async () => {
+    const many = Array.from({ length: 1500 }, (_, i) => ({ id: i + 1, name: `Carte ${i + 1}` }));
+    many[1014] = { id: 1015, name: "Refus du Destin" };
+    expect(await findNameCollision(fakeSupabase(many), "refus du destin")).toEqual({
+      id: 1015,
+      name: "Refus du Destin",
+    });
+  });
+
+  it("pagine encore correctement si le serveur plafonne PLUS BAS que la page", async () => {
+    const many = Array.from({ length: 2600 }, (_, i) => ({ id: i + 1, name: `Carte ${i + 1}` }));
+    many[2400] = { id: 2401, name: "Dernière Sentinelle" };
+    expect(await findNameCollision(fakeSupabase(many, 500), "dernière sentinelle")).toMatchObject({
+      id: 2401,
+    });
+  });
+
+  it("jette au lieu de répondre « nom libre » quand la lecture échoue", async () => {
+    await expect(findNameCollision(failingSupabase("boom"), "Iron Golem")).rejects.toThrow(/boom/);
   });
 });

@@ -6,6 +6,8 @@ import { getLocale } from "next-intl/server";
 import CollectionView from "@/components/cards/CollectionView";
 import { localizeCardsInPlace } from "@/lib/cards/localizeCard";
 import { normalizeLocale } from "@/i18n/config";
+import { fetchAllRows } from "@/lib/supabase/fetchAllRows";
+import type { Card } from "@/lib/game/types";
 
 export const dynamic = "force-dynamic";
 
@@ -18,11 +20,15 @@ export default async function CollectionPage() {
   if (!user) redirect("/login");
 
   const [{ data: cards }, { data: sets }, { data: formats }, { data: profile }, { data: userCollection }, { data: ownedPrints }] = await Promise.all([
-    supabase
-      .from("cards")
-      .select("*")
-      .order("mana_cost")
-      .order("name"),
+    // Catalogue PAGINÉ : au-delà de 1 000 cartes, un `select` nu en perd une
+    // partie au hasard et le joueur voit sa collection amputée sans erreur.
+    // L'`id` final donne l'ordre TOTAL qu'exige la pagination (`mana_cost` et
+    // `name` ne départagent pas les ex æquo).
+    fetchAllRows<Card>(
+      (from, to) =>
+        supabase.from("cards").select("*").order("mana_cost").order("name").order("id").range(from, to),
+      { label: "Lecture du catalogue" },
+    ).then((data) => ({ data })),
     supabase
       .from("sets")
       .select("*")

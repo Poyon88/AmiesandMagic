@@ -1,5 +1,6 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { didPlayerStart } from "@/lib/game/first-player";
+import { fetchAllRows } from '@/lib/supabase/fetchAllRows';
 
 export type Period = '7d' | '30d' | '90d' | 'all';
 
@@ -57,35 +58,55 @@ export interface HeroRow {
   thumbnail_url?: string | null;
 }
 
+/** Toutes les lectures de ce module sont PAGINÉES. Sans `.range()`, PostgREST
+ *  s'arrête à 1 000 lignes : le module d'Équilibrage rendait alors des
+ *  pourcentages parfaitement crédibles calculés sur une fraction arbitraire des
+ *  parties — le pire des modes de panne, puisque rien ne paraît cassé.
+ *  `match_deck_snapshots` est la plus exposée : elle grossit à chaque partie
+ *  jouée, deux lignes par match. */
 export async function fetchSnapshots(
   supabase: SupabaseClient,
   period: Period
 ): Promise<DeckSnapshot[]> {
   const start = periodStart(period);
-  let q = supabase.from('match_deck_snapshots').select('*');
-  if (start) q = q.gte('created_at', start);
-  const { data, error } = await q;
-  if (error) throw new Error(error.message);
-  return (data ?? []) as DeckSnapshot[];
+  const rows = await fetchAllRows<DeckSnapshot>(
+    (from, to) => {
+      let q = supabase.from('match_deck_snapshots').select('*');
+      if (start) q = q.gte('created_at', start);
+      return q.order('id').range(from, to);
+    },
+    { label: 'Lecture des instantanés de parties' },
+  );
+  return rows;
 }
 
 export async function fetchCards(supabase: SupabaseClient): Promise<Map<number, CardRow>> {
-  const { data, error } = await supabase
-    .from('cards')
-    .select('id, name, faction, race, clan, keywords, spell_keywords, image_url');
-  if (error) throw new Error(error.message);
+  const rows = await fetchAllRows<CardRow>(
+    (from, to) =>
+      supabase
+        .from('cards')
+        .select('id, name, faction, race, clan, keywords, spell_keywords, image_url')
+        .order('id')
+        .range(from, to),
+    { label: 'Lecture du catalogue' },
+  );
   const map = new Map<number, CardRow>();
-  for (const c of (data ?? []) as CardRow[]) map.set(c.id, c);
+  for (const c of rows) map.set(c.id, c);
   return map;
 }
 
 export async function fetchHeroes(supabase: SupabaseClient): Promise<Map<string, HeroRow>> {
-  const { data, error } = await supabase
-    .from('heroes')
-    .select('id, name, faction, race, clan, thumbnail_url');
-  if (error) throw new Error(error.message);
+  const rows = await fetchAllRows<HeroRow>(
+    (from, to) =>
+      supabase
+        .from('heroes')
+        .select('id, name, faction, race, clan, thumbnail_url')
+        .order('id')
+        .range(from, to),
+    { label: 'Lecture des héros' },
+  );
   const map = new Map<string, HeroRow>();
-  for (const h of (data ?? []) as HeroRow[]) map.set(h.id, h);
+  for (const h of rows) map.set(h.id, h);
   return map;
 }
 

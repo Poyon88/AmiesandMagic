@@ -6,6 +6,8 @@ import { getLocale } from "next-intl/server";
 import DeckBuilder from "@/components/deck/DeckBuilder";
 import { localizeCardsInPlace } from "@/lib/cards/localizeCard";
 import { normalizeLocale } from "@/i18n/config";
+import { fetchAllRows } from "@/lib/supabase/fetchAllRows";
+import type { Card } from "@/lib/game/types";
 
 export const dynamic = "force-dynamic";
 
@@ -23,11 +25,15 @@ export default async function DeckBuilderPage({
 
   // Fetch all cards, heroes, sets, formats, profile, collection, and boards
   const [{ data: cards }, { data: heroes }, { data: sets }, { data: formats }, { data: profile }, { data: userCollection }, { data: ownedPrints }, { data: allBoards }, { data: ownedBoardPrints }, { data: allCardBacks }, { data: ownedCardBackPrints }] = await Promise.all([
-    supabase
-      .from("cards")
-      .select("*")
-      .order("mana_cost")
-      .order("name"),
+    // Catalogue PAGINÉ : au-delà de 1 000 cartes, un `select` nu en perd une
+    // partie au hasard et le joueur voit sa collection amputée sans erreur.
+    // L'`id` final donne l'ordre TOTAL qu'exige la pagination (`mana_cost` et
+    // `name` ne départagent pas les ex æquo).
+    fetchAllRows<Card>(
+      (from, to) =>
+        supabase.from("cards").select("*").order("mana_cost").order("name").order("id").range(from, to),
+      { label: "Lecture du catalogue" },
+    ).then((data) => ({ data })),
     supabase
       .from("heroes")
       .select("*")
