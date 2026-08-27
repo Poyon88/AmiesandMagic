@@ -94,6 +94,11 @@ export async function POST(request: Request) {
     "Guerriers du Chaos": "towering chaos warrior in blackened spiked plate armor, corrupted heavy weapon, malevolent glowing runes, imposing and grim",
     // Empire du Milieu (Défenseurs d'Ivoire)
     "Nagas": "serpent temple guardian, human torso rising from a long coiling snake body, fanned cobra hood, jewelled iridescent scales, Khmer gold ornaments, serene and watchful",
+    // Nécropole (Cour Écarlate)
+    "Homuncules de Sang": "small alchemical homunculus grown from blood, translucent crimson flesh over a fragile skeletal frame, glass tubes and stitched seams, malformed and pitiful, dripping",
+    "Gargouilles": "winged stone gargoyle perched on a gothic cornice, cracked grey granite hide, curled horns, folded leathery stone wings, clawed talons, blank glowing eyes",
+    "Dhampirs": "half-vampire hunter, pale human features with faint fangs, dark leather duster and buckled straps, silvered blades, cold restrained stare",
+    "Chiroptères": "gaunt humanoid bat, huge outstretched membrane wings, oversized ears and flattened snout, dark fur, clinging upside down, swarm of smaller bats behind",
   };
   // For factions whose visual identity lives on the clan (Élémentaires: race
   // "Élémentaire", clan = element), prefer the clan-keyed descriptor.
@@ -241,6 +246,10 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
           "Gnomes": ["gnome", "tinker", "tinkerer"],
           "Guerriers du Chaos": ["chaos warrior", "chaos knight", "guerrier du chaos"],
           "Nagas": ["naga", "serpent guardian", "snake-bodied"],
+          "Homuncules de Sang": ["homunculus", "homoncule", "homuncule"],
+          "Gargouilles": ["gargoyle", "gargouille", "stone sentinel"],
+          "Dhampirs": ["dhampir", "half-vampire"],
+          "Chiroptères": ["bat", "chiropteran", "chauve-souris"],
         };
         // Get all wrong terms: other races in the faction, plus — for clan-tuned
         // factions (Élémentaires) — the sibling clans' terms so a Feu card doesn't

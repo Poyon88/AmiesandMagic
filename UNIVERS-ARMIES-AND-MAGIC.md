@@ -130,9 +130,9 @@ Chaque faction a un **nom de code interne** (utilisé en base et dans le moteur,
 - **Pouvoirs interdits** : Commandement, Loyauté, Domination, Corruption.
 
 ### 3.9 💀 Morts-Vivants — « La Nécropole » — *Maléfique*
-- **Races** : Squelettes · Zombies · Spectres · Vampires · Lich · Banshees
-- **Clans** : **Les Rangs Silencieux** (Squelettes + Zombies), **Le Voile Hurlant** (Spectres + Banshees), **La Cour Écarlate** (Vampires), **Le Cénacle Nécromant** (Liches) — profils distincts en §5.6
-- **Philosophie** : Insatiables et corrompus. Résurrection, drain de vie, exploitation du cimetière. Quatre voies : la nuée qui revient sans cesse, les intangibles qui terrorisent, les prédateurs qui drainent, les nécromanciens qui recyclent. Poids stats faction (ombrelle) : légèrement offensif (1.05 / 0.95).
+- **Races** : Squelettes · Zombies · Spectres · Vampires · Lich · Banshees · **Homuncules de Sang** · **Gargouilles** · **Dhampirs** · **Chiroptères** *(quatre nouvelles races — profils en §4)*
+- **Clans** : **Les Rangs Silencieux** (Squelettes + Zombies), **Le Voile Hurlant** (Spectres + Banshees), **La Cour Écarlate** (Vampires + Homuncules de Sang + Gargouilles + Dhampirs + Chiroptères — **le clan le plus peuplé du jeu**), **Le Cénacle Nécromant** (Liches) — profils distincts en §5.6
+- **Philosophie** : Insatiables et corrompus. Résurrection, drain de vie, exploitation du cimetière. Quatre voies : la nuée qui revient sans cesse, les intangibles qui terrorisent, la cour du sang sous toutes ses formes, les nécromanciens qui recyclent. Poids stats faction (ombrelle) : légèrement offensif (1.05 / 0.95).
 - **Pouvoirs privilégiés (ombrelle)** : Poison (0.65), Drain de vie (0.60), Nécrophagie (0.55), Terreur (0.55), Rappel (0.55), Exhumation X (0.55), Maléfice (0.50), Ombre du passé (0.50), Profanation X (0.50), Vampirisme X (0.50), Régénération (0.45), Héritage du cimetière (0.45), Résurrection (0.40), Pacte de sang (0.40), Convocation X (0.40), Liaison de vie (0.35), Corruption (0.30), Domination (0.30), Vol (0.15).
 - **Pouvoirs interdits** : Loyauté, Commandement, Bouclier, Bénédiction, Bravoure.
 
@@ -170,10 +170,17 @@ Certaines factions différencient leurs races par un profil de pouvoirs propre (
 | Légions du Chaos | **Démons** | 1.35 / 0.80 | Fureur (0.65), Sacrifice (0.55), Terreur (0.50), Persécution X (0.45), Ombre (0.45), Carnage X (0.40), Vol (0.30) |
 | Légions du Chaos | **Araignées Géantes** | 1.10 / 0.90 | Poison (0.75), Esquive (0.50), Invisible (0.45) |
 | Empire du Milieu | **Nagas** | *corps du clan (1.15 / 1.15)* | Contresort (0.55), Régénération (0.55), Esquive (0.50), Divination (0.50), Canalisation (0.45), Augure (0.40), Liaison de vie (0.35), Prescience X (0.30) |
+| Nécropole | **Vampires** *(Cour Écarlate)* | 1.25 / 0.90 | Célérité (0.45), Régénération (0.45), Terreur (0.35), Vol (0.30) |
+| Nécropole | **Homuncules de Sang** *(Cour Écarlate)* | 1.10 / 0.80 | Sacrifice (0.55), Douleur X (0.50), Catalyse (0.45), Liaison de vie (0.45), Solidarité X (0.40), Corruption (0.35) |
+| Nécropole | **Gargouilles** *(Cour Écarlate)* | 0.95 / 1.35 | Armure (0.65), Ancré (0.55), Provocation (0.55), Résistance X (0.50), Riposte X (0.45), Vol (0.40), Indestructible (0.25) |
+| Nécropole | **Dhampirs** *(Cour Écarlate)* | 1.20 / 1.00 | Traque (0.60), Première Frappe (0.55), Précision (0.50), Sang mêlé (0.50), Esquive (0.45), Double Attaque (0.35) |
+| Nécropole | **Chiroptères** *(Cour Écarlate)* | 1.15 / 0.70 | **Vol garanti** (0.90), Esquive (0.55), Traque (0.50), Convocation X (0.50), Instinct de meute X (0.45), Célérité (0.40) |
+
+> **La Cour Écarlate** (2026-08-27) : le clan est passé de une à **cinq** races et a **cédé ses `statWeights`** — l'arbitrage du Clan des Premiers Géants, pas celui des Nagas. Chaque race porte donc son corps, les Vampires reprenant à l'identique le 1.25/0.90 que le clan portait. Sa table de pouvoirs a été **ramenée au noyau du sang** (Drain de vie 0.60, Vampirisme X 0.55, Pacte de sang 0.40) : tout ce qui n'appartenait qu'aux Vampires est redescendu sur leur profil de race. Sans ce dégraissage, le poids de clan — qui gagne pouvoir par pouvoir — aurait plafonné le Vol des Chiroptères et des Gargouilles à 0.30. Le **Chiroptère** rejoint Dragons, Aigles Géants, Griffons et Faucons dans la liste des races à **Vol garanti** ; la Gargouille, perchée plutôt que volante, en reste au tirage.
 
 > **Nagas** : seule race du tableau sans gabarit propre. La cascade du générateur choisit un OBJET ENTIER (`statWeights` du clan, sinon ceux de la race, sinon ceux de la faction) : leur clan déclarant les siens, un gabarit posé sur la race serait resté sans effet. Le partage du corps 1.15/1.15 est donc assumé, et c'est la table de pouvoirs — qui, elle, se comble pouvoir par pouvoir — qui porte la différence. Le Clan des Premiers Géants avait tranché l'inverse en cédant ses stats à ses deux races ; ici les céder aurait renvoyé les Humains d'Ivoire à l'ombrelle de faction.
 
-> Les races non listées (Elfes « de base », Nains « de base », Gnomes, Hobbits, **Humains** — commun aux 3 factions humaines, les 8 races Hommes-Bêtes, Squelettes/Zombies/Spectres/Vampires/Lich/Banshees, Orcs/Gobelins/Trolls/Wargs, Elfes Corrompus, Guerriers du Chaos) **héritent du profil de leur clan** (§5) ou, à défaut, de leur faction (§3).
+> Les races non listées (Elfes « de base », Nains « de base », Gnomes, Hobbits, **Humains** — commun aux 3 factions humaines, les 8 races Hommes-Bêtes, Squelettes/Zombies/Spectres/Lich/Banshees, Orcs/Gobelins/Trolls/Wargs, Elfes Corrompus, Guerriers du Chaos) **héritent du profil de leur clan** (§5) ou, à défaut, de leur faction (§3).
 
 ---
 
@@ -259,7 +266,7 @@ Certaines factions différencient leurs races par un profil de pouvoirs propre (
 |---|---|---|---|---|
 | ⚰️ **Les Rangs Silencieux** | Squelettes + Zombies | 1.00/0.90 | Nuée increvable, recyclage | Nécrophagie (0.55), Exhumation X (0.55), Rappel (0.50), Convocation X (0.50), Poison (0.40), Sacrifice (0.35), Pacte de sang (0.35) |
 | 👻 **Le Voile Hurlant** | Spectres + Banshees | 1.05/0.75 | Intangibles, terreur | Terreur (0.60), Ombre (0.55), Invisible (0.50), Esquive (0.50), Maléfice (0.45), Malédiction (0.40), Paralysie (0.35) |
-| 🦇 **La Cour Écarlate** | Vampires | 1.25/0.90 | Prédateurs, drain agressif | Drain de vie (0.60), Vampirisme X (0.55), Célérité (0.45), Régénération (0.45), Pacte de sang (0.40), Terreur (0.35), Vol (0.30) |
+| 🦇 **La Cour Écarlate** | Vampires + Homuncules de Sang + Gargouilles + Dhampirs + Chiroptères | *corps de chaque race (§4)* | La cour du sang, cinq corps pour un même appétit | Drain de vie (0.60), Vampirisme X (0.55), Pacte de sang (0.40) |
 | 📿 **Le Cénacle Nécromant** | Liches | 0.85/1.00 | Nécromanciens, magie du cimetière | Héritage du cimetière (0.55), Résurrection (0.50), Ombre du passé (0.50), Savant (0.45), Canalisation (0.45), Domination (0.40), Divination (0.35) |
 
 ### 5.7 Les Légions du Chaos (profils distincts)

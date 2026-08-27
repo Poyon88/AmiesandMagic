@@ -958,6 +958,10 @@
       "Vampires": "ヴァンパイア",
       "Lich": "リッチ",
       "Banshees": "バンシー",
+      "Homuncules de Sang": "血のホムンクルス",
+      "Gargouilles": "ガーゴイル",
+      "Dhampirs": "ダンピール",
+      "Chiroptères": "翼手族",
       "Elfes Corrompus": "堕落したエルフ",
       "Araignées Géantes": "巨大蜘蛛",
       "Démons": "デーモン",
@@ -1186,6 +1190,26 @@
         "def": "バンシー",
         "bare": "バンシー",
         "de": "バンシーの"
+      },
+      "Homuncules de Sang": {
+        "def": "血のホムンクルス",
+        "bare": "血のホムンクルス",
+        "de": "血のホムンクルスの"
+      },
+      "Gargouilles": {
+        "def": "ガーゴイル",
+        "bare": "ガーゴイル",
+        "de": "ガーゴイルの"
+      },
+      "Dhampirs": {
+        "def": "ダンピール",
+        "bare": "ダンピール",
+        "de": "ダンピールの"
+      },
+      "Chiroptères": {
+        "def": "翼手族",
+        "bare": "翼手族",
+        "de": "翼手族の"
       },
       "Elfes Corrompus": {
         "def": "堕落したエルフ",

@@ -113,9 +113,11 @@ export function generateCardStats(factionId: string, type: string, rarityId: str
   const FREQUENT_CHANCE = 0.40;
 
   if (isUnit) {
-    // Dragons, Aigles Géants, Griffons et Faucons : Vol toujours garanti. Le
-    // clan Air (anciennement la race "Air/Tempête") conserve ce Vol garanti.
-    if (effectiveRace === "Dragons" || effectiveRace === "Aigles Géants" || effectiveRace === "Griffons" || effectiveRace === "Faucons" || clanId === "Le Souffle des Cimes") {
+    // Dragons, Aigles Géants, Griffons, Faucons et Chiroptères : Vol toujours
+    // garanti. Le clan Air (anciennement la race "Air/Tempête") conserve ce Vol
+    // garanti. Les Gargouilles, elles, en restent au tirage (0.40) : une
+    // gargouille perchée reste une gargouille.
+    if (effectiveRace === "Dragons" || effectiveRace === "Aigles Géants" || effectiveRace === "Griffons" || effectiveRace === "Faucons" || effectiveRace === "Chiroptères" || clanId === "Le Souffle des Cimes") {
       keywords.push("Vol");
     }
 

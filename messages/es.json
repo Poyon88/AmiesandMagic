@@ -958,6 +958,10 @@
       "Vampires": "Vampiros",
       "Lich": "Lich",
       "Banshees": "Banshees",
+      "Homuncules de Sang": "Homúnculos de Sangre",
+      "Gargouilles": "Gárgolas",
+      "Dhampirs": "Dhampiros",
+      "Chiroptères": "Quirópteros",
       "Elfes Corrompus": "Elfos Corruptos",
       "Araignées Géantes": "Arañas Gigantes",
       "Démons": "Demonios",
@@ -1186,6 +1190,26 @@
         "def": "la Banshee",
         "bare": "Banshee",
         "de": "de la Banshee"
+      },
+      "Homuncules de Sang": {
+        "def": "el Homúnculo de Sangre",
+        "bare": "Homúnculo de Sangre",
+        "de": "del Homúnculo de Sangre"
+      },
+      "Gargouilles": {
+        "def": "la Gárgola",
+        "bare": "Gárgola",
+        "de": "de la Gárgola"
+      },
+      "Dhampirs": {
+        "def": "el Dhampiro",
+        "bare": "Dhampiro",
+        "de": "del Dhampiro"
+      },
+      "Chiroptères": {
+        "def": "el Quiróptero",
+        "bare": "Quiróptero",
+        "de": "del Quiróptero"
       },
       "Elfes Corrompus": {
         "def": "el Elfo Corrupto",

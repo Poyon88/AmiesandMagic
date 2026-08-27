@@ -958,6 +958,10 @@
       "Vampires": "吸血鬼",
       "Lich": "巫妖",
       "Banshees": "女妖",
+      "Homuncules de Sang": "血之人造人",
+      "Gargouilles": "石像鬼",
+      "Dhampirs": "半吸血鬼",
+      "Chiroptères": "翼手族",
       "Elfes Corrompus": "堕落精灵",
       "Araignées Géantes": "巨型蜘蛛",
       "Démons": "恶魔",
@@ -1186,6 +1190,26 @@
         "def": "女妖",
         "bare": "女妖",
         "de": "女妖"
+      },
+      "Homuncules de Sang": {
+        "def": "血之人造人",
+        "bare": "血之人造人",
+        "de": "血之人造人"
+      },
+      "Gargouilles": {
+        "def": "石像鬼",
+        "bare": "石像鬼",
+        "de": "石像鬼"
+      },
+      "Dhampirs": {
+        "def": "半吸血鬼",
+        "bare": "半吸血鬼",
+        "de": "半吸血鬼"
+      },
+      "Chiroptères": {
+        "def": "翼手族",
+        "bare": "翼手族",
+        "de": "翼手族的"
       },
       "Elfes Corrompus": {
         "def": "堕落精灵",

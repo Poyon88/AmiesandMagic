@@ -958,6 +958,10 @@
       "Vampires": "Vampire",
       "Lich": "Lich",
       "Banshees": "Banshees",
+      "Homuncules de Sang": "Bluthomunkuli",
+      "Gargouilles": "Gargoyles",
+      "Dhampirs": "Dhampire",
+      "Chiroptères": "Chiropteren",
       "Elfes Corrompus": "Verderbte Elfen",
       "Araignées Géantes": "Riesenspinnen",
       "Démons": "Dämonen",
@@ -1186,6 +1190,26 @@
         "def": "die Banshee",
         "bare": "Banshee",
         "de": "der Banshee"
+      },
+      "Homuncules de Sang": {
+        "def": "der Bluthomunkulus",
+        "bare": "Bluthomunkulus",
+        "de": "des Bluthomunkulus"
+      },
+      "Gargouilles": {
+        "def": "der Gargoyle",
+        "bare": "Gargoyle",
+        "de": "des Gargoyles"
+      },
+      "Dhampirs": {
+        "def": "der Dhampir",
+        "bare": "Dhampir",
+        "de": "des Dhampirs"
+      },
+      "Chiroptères": {
+        "def": "der Chiroptere",
+        "bare": "Chiroptere",
+        "de": "des Chiropteren"
       },
       "Elfes Corrompus": {
         "def": "der Verdorbene Elf",

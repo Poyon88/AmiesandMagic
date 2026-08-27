@@ -154,6 +154,14 @@ export const GRANULAR_RACE_DESCRIPTORS: Record<string, string> = {
     'A towering chaos warrior — hulking silhouette in blackened spiked plate armor, corrupted glowing runes, grim helm with burning eyes, aura of dread.',
   'Nagas':
     'A humanoid naga temple guardian — human torso and arms rising from a long coiling serpent body, fanned cobra hood behind the head, jewelled iridescent scales, calm ophidian eyes, Khmer temple gold ornaments.',
+  'Homuncules de Sang':
+    'A humanoid blood homunculus — bipedal but undersized and malformed, translucent crimson flesh over a fragile skeletal frame, stitched seams and alchemical glass tubing, pale unblinking eyes, grown rather than born.',
+  'Gargouilles':
+    'A humanoid stone gargoyle — bipedal granite figure, cracked grey hide, curled horns swept back from the brow, leathery stone wings folded behind the shoulders, clawed talons, blank glowing eyes.',
+  'Dhampirs':
+    'A humanoid dhampir hunter — human silhouette, pale skin with faint fangs, dark leather duster and buckled straps, silvered blade at the hip, cold restrained stare, neither living nor undead.',
+  'Chiroptères':
+    'A humanoid bat — gaunt bipedal figure, huge membrane wings folded like a cloak, oversized ears and a flattened snout, dark fur, small keen eyes, clawed thumbs at the wing joints.',
 };
 
 // Physical features per race. Kept short so it doesn't drown the faction layer.

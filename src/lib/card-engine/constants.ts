@@ -518,13 +518,17 @@ export const FACTIONS: Record<string, {
   "Morts-Vivants": {
     displayName: "La Nécropole",
     color: "#6c3483", accent: "#a29bfe", emoji: "💀", bg: "#1a0a2a", alignment: "maléfique",
-    races: ["Squelettes", "Zombies", "Spectres", "Vampires", "Lich", "Banshees"],
+    races: ["Squelettes", "Zombies", "Spectres", "Vampires", "Lich", "Banshees", "Homuncules de Sang", "Gargouilles", "Dhampirs", "Chiroptères"],
     clans: [
       { names: ["Les Rangs Silencieux"], appliesTo: "Squelettes" },
       { names: ["Les Rangs Silencieux"], appliesTo: "Zombies" },
       { names: ["Le Voile Hurlant"], appliesTo: "Spectres" },
       { names: ["Le Voile Hurlant"], appliesTo: "Banshees" },
       { names: ["La Cour Écarlate"], appliesTo: "Vampires" },
+      { names: ["La Cour Écarlate"], appliesTo: "Homuncules de Sang" },
+      { names: ["La Cour Écarlate"], appliesTo: "Gargouilles" },
+      { names: ["La Cour Écarlate"], appliesTo: "Dhampirs" },
+      { names: ["La Cour Écarlate"], appliesTo: "Chiroptères" },
       { names: ["Le Cénacle Nécromant"], appliesTo: "Lich" },
     ],
     statWeights: { atk: 1.05, def: 0.95 },
@@ -532,10 +536,29 @@ export const FACTIONS: Record<string, {
     likelyKeywords: { "Poison": 0.65, "Drain de vie": 0.60, "Nécrophagie": 0.55, "Terreur": 0.55, "Rappel": 0.55, "Exhumation X": 0.55, "Maléfice": 0.50, "Ombre du passé": 0.50, "Profanation X": 0.50, "Vampirisme X": 0.50, "Régénération": 0.45, "Héritage du cimetière": 0.45, "Résurrection": 0.40, "Pacte de sang": 0.40, "Convocation X": 0.40, "Liaison de vie": 0.35, "Corruption": 0.30, "Domination": 0.30, "Vol": 0.15 },
     forbiddenKeywords: ["Loyauté", "Commandement", "Bouclier", "Bénédiction", "Bravoure"],
     description: "Insatiables et corrompus : résurrection, drain de vie et magie du cimetière.",
+    // La Cour Écarlate héberge CINQ races (le clan le plus peuplé du jeu) : elle
+    // a donc cédé ses `statWeights` (cf. le Clan des Premiers Géants), et sa
+    // table de mots-clés a été ramenée au NOYAU commun aux cinq — le sang. Tout
+    // ce qui n'appartenait qu'aux Vampires (Célérité, Régénération, Terreur,
+    // Vol) est redescendu sur leur profil de race, à l'identique : sans quoi le
+    // clan aurait plafonné le Vol des Chiroptères et des Gargouilles à 0.30, le
+    // poids de clan gagnant mot-clé par mot-clé.
+    raceProfiles: {
+      // Vampires : reprise EXACTE des lignes retirées du clan, pour que la
+      // génération d'un Vampire de la Cour Écarlate reste identique au bit près.
+      "Vampires": { statWeights: { atk: 1.25, def: 0.90 }, likelyKeywords: { "Célérité": 0.45, "Régénération": 0.45, "Terreur": 0.35, "Vol": 0.30 } },
+      "Homuncules de Sang": { statWeights: { atk: 1.10, def: 0.80 }, likelyKeywords: { "Sacrifice": 0.55, "Douleur X": 0.50, "Catalyse": 0.45, "Liaison de vie": 0.45, "Solidarité X": 0.40, "Corruption": 0.35 } },
+      "Gargouilles": { statWeights: { atk: 0.95, def: 1.35 }, likelyKeywords: { "Armure": 0.65, "Ancré": 0.55, "Provocation": 0.55, "Résistance X": 0.50, "Riposte X": 0.45, "Vol": 0.40, "Indestructible": 0.25 } },
+      "Dhampirs": { statWeights: { atk: 1.20, def: 1.00 }, likelyKeywords: { "Traque": 0.60, "Première Frappe": 0.55, "Précision": 0.50, "Sang mêlé": 0.50, "Esquive": 0.45, "Double Attaque": 0.35 } },
+      "Chiroptères": { statWeights: { atk: 1.15, def: 0.70 }, likelyKeywords: { "Vol": 0.90, "Esquive": 0.55, "Traque": 0.50, "Convocation X": 0.50, "Instinct de meute X": 0.45, "Célérité": 0.40 } },
+    },
     clanProfiles: {
       "Les Rangs Silencieux": { statWeights: { atk: 1.00, def: 0.90 }, likelyKeywords: { "Nécrophagie": 0.55, "Exhumation X": 0.55, "Rappel": 0.50, "Convocation X": 0.50, "Poison": 0.40, "Sacrifice": 0.35, "Pacte de sang": 0.35 } },
       "Le Voile Hurlant": { statWeights: { atk: 1.05, def: 0.75 }, likelyKeywords: { "Terreur": 0.60, "Ombre": 0.55, "Invisible": 0.50, "Esquive": 0.50, "Maléfice": 0.45, "Malédiction": 0.40, "Paralysie": 0.35 } },
-      "La Cour Écarlate": { statWeights: { atk: 1.25, def: 0.90 }, likelyKeywords: { "Drain de vie": 0.60, "Vampirisme X": 0.55, "Célérité": 0.45, "Régénération": 0.45, "Pacte de sang": 0.40, "Terreur": 0.35, "Vol": 0.30 } },
+      // Pas de `statWeights` : chacune de ses cinq races porte le sien (cf. le
+      // commentaire ci-dessus). Ne PAS les remettre — la cascade choisit un
+      // objet entier et les quatre nouvelles races redeviendraient mort-nées.
+      "La Cour Écarlate": { likelyKeywords: { "Drain de vie": 0.60, "Vampirisme X": 0.55, "Pacte de sang": 0.40 } },
       "Le Cénacle Nécromant": { statWeights: { atk: 0.85, def: 1.00 }, likelyKeywords: { "Héritage du cimetière": 0.55, "Résurrection": 0.50, "Ombre du passé": 0.50, "Savant": 0.45, "Canalisation": 0.45, "Domination": 0.40, "Divination": 0.35 } },
     },
   },
