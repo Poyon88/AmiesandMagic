@@ -954,6 +954,7 @@
       "Éléphants": "Elefantes",
       "Squelettes": "Esqueletos",
       "Zombies": "Zumbis",
+      "Ghoules": "Carniçais",
       "Spectres": "Espectros",
       "Vampires": "Vampiros",
       "Lich": "Lich",
@@ -1170,6 +1171,11 @@
         "def": "o Zumbi",
         "bare": "Zumbi",
         "de": "do Zumbi"
+      },
+      "Ghoules": {
+        "def": "o Carniçal",
+        "bare": "Carniçal",
+        "de": "do Carniçal"
       },
       "Spectres": {
         "def": "o Espectro",

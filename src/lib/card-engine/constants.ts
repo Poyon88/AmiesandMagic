@@ -518,10 +518,11 @@ export const FACTIONS: Record<string, {
   "Morts-Vivants": {
     displayName: "La Nécropole",
     color: "#6c3483", accent: "#a29bfe", emoji: "💀", bg: "#1a0a2a", alignment: "maléfique",
-    races: ["Squelettes", "Zombies", "Spectres", "Vampires", "Lich", "Banshees", "Homuncules de Sang", "Gargouilles", "Dhampirs", "Chiroptères"],
+    races: ["Squelettes", "Zombies", "Ghoules", "Spectres", "Vampires", "Lich", "Banshees", "Homuncules de Sang", "Gargouilles", "Dhampirs", "Chiroptères"],
     clans: [
       { names: ["Les Rangs Silencieux"], appliesTo: "Squelettes" },
       { names: ["Les Rangs Silencieux"], appliesTo: "Zombies" },
+      { names: ["Les Rangs Silencieux"], appliesTo: "Ghoules" },
       { names: ["Le Voile Hurlant"], appliesTo: "Spectres" },
       { names: ["Le Voile Hurlant"], appliesTo: "Banshees" },
       { names: ["La Cour Écarlate"], appliesTo: "Vampires" },
@@ -544,6 +545,15 @@ export const FACTIONS: Record<string, {
     // clan aurait plafonné le Vol des Chiroptères et des Gargouilles à 0.30, le
     // poids de clan gagnant mot-clé par mot-clé.
     raceProfiles: {
+      // Ghoules : AUCUN `statWeights`, et c'est l'arbitrage inverse de celui de
+      // la Cour Écarlate juste en dessous — celui des Nagas. Les Rangs Silencieux
+      // déclarent les leurs (1.00/0.90) : un gabarit posé ici serait mort-né, la
+      // cascade choisissant un objet entier. Le corps est donc partagé avec les
+      // Squelettes et les Zombies, et c'est la table de pouvoirs — qui, elle, se
+      // comble pouvoir par pouvoir — qui porte la différence. Nécrophagie, la
+      // signature évidente de la goule, est déjà le premier poids du clan : elle
+      // lui vient de là, et la re-déclarer ici en ferait une ligne morte.
+      "Ghoules": { likelyKeywords: { "Célérité": 0.55, "Paralysie": 0.50, "Dévoration": 0.45, "Fureur": 0.45, "Traque": 0.40, "Persécution X": 0.35, "Carnage X": 0.30 } },
       // Vampires : reprise EXACTE des lignes retirées du clan, pour que la
       // génération d'un Vampire de la Cour Écarlate reste identique au bit près.
       "Vampires": { statWeights: { atk: 1.25, def: 0.90 }, likelyKeywords: { "Célérité": 0.45, "Régénération": 0.45, "Terreur": 0.35, "Vol": 0.30 } },

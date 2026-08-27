@@ -954,6 +954,7 @@
       "Éléphants": "Elefanti",
       "Squelettes": "Scheletri",
       "Zombies": "Zombie",
+      "Ghoules": "Ghoul",
       "Spectres": "Spettri",
       "Vampires": "Vampiri",
       "Lich": "Lich",
@@ -1170,6 +1171,11 @@
         "def": "lo Zombie",
         "bare": "Zombie",
         "de": "dello Zombie"
+      },
+      "Ghoules": {
+        "def": "il Ghoul",
+        "bare": "Ghoul",
+        "de": "del Ghoul"
       },
       "Spectres": {
         "def": "lo Spettro",

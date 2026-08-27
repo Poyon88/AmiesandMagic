@@ -954,6 +954,7 @@
       "Éléphants": "Elefantes",
       "Squelettes": "Esqueletos",
       "Zombies": "Zombis",
+      "Ghoules": "Gules",
       "Spectres": "Espectros",
       "Vampires": "Vampiros",
       "Lich": "Lich",
@@ -1170,6 +1171,11 @@
         "def": "el Zombi",
         "bare": "Zombi",
         "de": "del Zombi"
+      },
+      "Ghoules": {
+        "def": "el Gul",
+        "bare": "Gul",
+        "de": "del Gul"
       },
       "Spectres": {
         "def": "el Espectro",

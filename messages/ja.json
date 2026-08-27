@@ -954,6 +954,7 @@
       "Éléphants": "エレファント",
       "Squelettes": "スケルトン",
       "Zombies": "ゾンビ",
+      "Ghoules": "グール",
       "Spectres": "スペクター",
       "Vampires": "ヴァンパイア",
       "Lich": "リッチ",
@@ -1170,6 +1171,11 @@
         "def": "ゾンビ",
         "bare": "ゾンビ",
         "de": "ゾンビ"
+      },
+      "Ghoules": {
+        "def": "グール",
+        "bare": "グール",
+        "de": "グールの"
       },
       "Spectres": {
         "def": "スペクター",

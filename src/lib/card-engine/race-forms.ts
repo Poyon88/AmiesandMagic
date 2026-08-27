@@ -75,6 +75,7 @@ export const RACE_FORMS_FR: Record<string, Inflected> = {
   "Fauves": { def: "le Fauve", bare: "Fauve", de: "du Fauve" },
   "Squelettes": { def: "le Squelette", bare: "Squelette", de: "du Squelette" },
   "Zombies": { def: "le Zombie", bare: "Zombie", de: "du Zombie" },
+  "Ghoules": { def: "la Ghoule", bare: "Ghoule", de: "de la Ghoule" },
   "Spectres": { def: "le Spectre", bare: "Spectre", de: "du Spectre" },
   "Vampires": { def: "le Vampire", bare: "Vampire", de: "du Vampire" },
   "Lich": { def: "la Liche", bare: "Liche", de: "de la Liche" },

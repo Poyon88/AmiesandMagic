@@ -2054,6 +2054,7 @@ export default function CardForge() {
       "Gnomes": "a small tinker gnome with goggles, a bushy beard, leather apron, mechanical gadgets and clockwork contraptions",
       "Guerriers du Chaos": "a towering chaos warrior in blackened spiked plate armor, corrupted heavy weapon, malevolent glowing runes, imposing and grim",
       "Nagas": "a serpent temple guardian, human torso rising from a long coiling snake body, fanned cobra hood, jewelled iridescent scales, Khmer gold ornaments",
+      "Ghoules": "a hunched flesh-eating ghoul, grey mottled skin over a gaunt frame, long clawed fingers, distended jaw, sunken eyes, crouched low",
       "Homuncules de Sang": "a small alchemical homunculus grown from blood, translucent crimson flesh over a fragile skeletal frame, glass tubes and stitched seams, malformed and dripping",
       "Gargouilles": "a winged stone gargoyle, cracked grey granite hide, curled horns, folded leathery stone wings, clawed talons, blank glowing eyes",
       "Dhampirs": "a half-vampire hunter, pale human features with faint fangs, dark leather duster and buckled straps, silvered blades, cold restrained stare",

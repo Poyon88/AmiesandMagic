@@ -399,7 +399,7 @@ const CLAN_BLURBS: Record<string, string> = {
   "La Vague Sans Fin": "L'eau : régénération, drain de vie et paralysie, la victoire par l'usure.",
   "Le Souffle des Cimes": "L'air : vol, célérité et esquive, insaisissable.",
   // La Nécropole
-  "Les Rangs Silencieux": "La piétaille sans fin : nécrophagie, exhumation et rappel du cimetière.",
+  "Les Rangs Silencieux": "La piétaille sans fin — squelettes, zombies et ghoules : nécrophagie, exhumation et rappel du cimetière.",
   "Le Voile Hurlant": "Spectres et banshees : terreur, ombre et maléfices.",
   "La Cour Écarlate": "La cour du sang : vampires, dhampirs, gargouilles, chiroptères et homuncules — drain de vie et vampirisme.",
   "Le Cénacle Nécromant": "Les maîtres de la mort : résurrection, héritage du cimetière et savoir interdit.",

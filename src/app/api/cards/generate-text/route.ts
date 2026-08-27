@@ -94,6 +94,8 @@ export async function POST(request: Request) {
     "Guerriers du Chaos": "towering chaos warrior in blackened spiked plate armor, corrupted heavy weapon, malevolent glowing runes, imposing and grim",
     // Empire du Milieu (Défenseurs d'Ivoire)
     "Nagas": "serpent temple guardian, human torso rising from a long coiling snake body, fanned cobra hood, jewelled iridescent scales, Khmer gold ornaments, serene and watchful",
+    // Nécropole (Rangs Silencieux)
+    "Ghoules": "hunched flesh-eating ghoul, grey mottled skin stretched over a gaunt frame, long clawed fingers, jaw distended too wide, sunken eyes, crouched low over gnawed bones",
     // Nécropole (Cour Écarlate)
     "Homuncules de Sang": "small alchemical homunculus grown from blood, translucent crimson flesh over a fragile skeletal frame, glass tubes and stitched seams, malformed and pitiful, dripping",
     "Gargouilles": "winged stone gargoyle perched on a gothic cornice, cracked grey granite hide, curled horns, folded leathery stone wings, clawed talons, blank glowing eyes",
@@ -246,6 +248,7 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
           "Gnomes": ["gnome", "tinker", "tinkerer"],
           "Guerriers du Chaos": ["chaos warrior", "chaos knight", "guerrier du chaos"],
           "Nagas": ["naga", "serpent guardian", "snake-bodied"],
+          "Ghoules": ["ghoul", "goule", "ghoule"],
           "Homuncules de Sang": ["homunculus", "homoncule", "homuncule"],
           "Gargouilles": ["gargoyle", "gargouille", "stone sentinel"],
           "Dhampirs": ["dhampir", "half-vampire"],

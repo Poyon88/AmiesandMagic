@@ -954,6 +954,7 @@
       "Éléphants": "大象",
       "Squelettes": "骷髅",
       "Zombies": "僵尸",
+      "Ghoules": "食尸鬼",
       "Spectres": "幽灵",
       "Vampires": "吸血鬼",
       "Lich": "巫妖",
@@ -1170,6 +1171,11 @@
         "def": "僵尸",
         "bare": "僵尸",
         "de": "僵尸的"
+      },
+      "Ghoules": {
+        "def": "食尸鬼",
+        "bare": "食尸鬼",
+        "de": "食尸鬼"
       },
       "Spectres": {
         "def": "幽灵",

@@ -154,6 +154,8 @@ export const GRANULAR_RACE_DESCRIPTORS: Record<string, string> = {
     'A towering chaos warrior — hulking silhouette in blackened spiked plate armor, corrupted glowing runes, grim helm with burning eyes, aura of dread.',
   'Nagas':
     'A humanoid naga temple guardian — human torso and arms rising from a long coiling serpent body, fanned cobra hood behind the head, jewelled iridescent scales, calm ophidian eyes, Khmer temple gold ornaments.',
+  'Ghoules':
+    'A humanoid ghoul — bipedal but hunched and predatory, grey mottled skin stretched over a gaunt frame, elongated clawed fingers, a jaw that opens too wide, sunken luminous eyes, ravenous rather than mindless.',
   'Homuncules de Sang':
     'A humanoid blood homunculus — bipedal but undersized and malformed, translucent crimson flesh over a fragile skeletal frame, stitched seams and alchemical glass tubing, pale unblinking eyes, grown rather than born.',
   'Gargouilles':
