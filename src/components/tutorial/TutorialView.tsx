@@ -402,7 +402,7 @@ const CLAN_BLURBS: Record<string, string> = {
   "Les Rangs Silencieux": "La piétaille sans fin — squelettes, zombies et ghoules : nécrophagie, exhumation et rappel du cimetière.",
   "Le Voile Hurlant": "Spectres et banshees : terreur, ombre et maléfices.",
   "La Cour Écarlate": "La cour du sang : vampires, dhampirs, gargouilles, chiroptères et homuncules — drain de vie et vampirisme.",
-  "Le Cénacle Nécromant": "Les maîtres de la mort : résurrection, héritage du cimetière et savoir interdit.",
+  "Le Cénacle Nécromant": "Les maîtres de la mort — liches, momies, chimères nécrotiques et vermines : résurrection, héritage du cimetière et savoir interdit.",
   // Les Légions du Chaos
   "Les Cohortes Sanglantes": "La horde organisée : traque, entrainement et gloire au fil des combats.",
   "Les Princes des Abîmes": "La cour démoniaque : fureur, sacrifice et terreur, à tout prix.",

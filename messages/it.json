@@ -963,6 +963,9 @@
       "Gargouilles": "Gargoyle",
       "Dhampirs": "Dhampiri",
       "Chiroptères": "Chirotteri",
+      "Momies": "Mummie",
+      "Chimères nécrotiques": "Chimere Necrotiche",
+      "Vermines mortuaires": "Vermine Mortuarie",
       "Elfes Corrompus": "Elfi Corrotti",
       "Araignées Géantes": "Ragni Giganti",
       "Démons": "Demoni",
@@ -1216,6 +1219,21 @@
         "def": "il Chirottero",
         "bare": "Chirottero",
         "de": "del Chirottero"
+      },
+      "Momies": {
+        "def": "la Mummia",
+        "bare": "Mummia",
+        "de": "della Mummia"
+      },
+      "Chimères nécrotiques": {
+        "def": "la Chimera Necrotica",
+        "bare": "Chimera Necrotica",
+        "de": "della Chimera Necrotica"
+      },
+      "Vermines mortuaires": {
+        "def": "la Vermina Mortuaria",
+        "bare": "Vermina Mortuaria",
+        "de": "della Vermina Mortuaria"
       },
       "Elfes Corrompus": {
         "def": "l'Elfo Corrotto",

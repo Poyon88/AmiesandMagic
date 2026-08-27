@@ -518,7 +518,7 @@ export const FACTIONS: Record<string, {
   "Morts-Vivants": {
     displayName: "La Nécropole",
     color: "#6c3483", accent: "#a29bfe", emoji: "💀", bg: "#1a0a2a", alignment: "maléfique",
-    races: ["Squelettes", "Zombies", "Ghoules", "Spectres", "Vampires", "Lich", "Banshees", "Homuncules de Sang", "Gargouilles", "Dhampirs", "Chiroptères"],
+    races: ["Squelettes", "Zombies", "Ghoules", "Spectres", "Vampires", "Lich", "Banshees", "Homuncules de Sang", "Gargouilles", "Dhampirs", "Chiroptères", "Momies", "Chimères nécrotiques", "Vermines mortuaires"],
     clans: [
       { names: ["Les Rangs Silencieux"], appliesTo: "Squelettes" },
       { names: ["Les Rangs Silencieux"], appliesTo: "Zombies" },
@@ -531,6 +531,9 @@ export const FACTIONS: Record<string, {
       { names: ["La Cour Écarlate"], appliesTo: "Dhampirs" },
       { names: ["La Cour Écarlate"], appliesTo: "Chiroptères" },
       { names: ["Le Cénacle Nécromant"], appliesTo: "Lich" },
+      { names: ["Le Cénacle Nécromant"], appliesTo: "Momies" },
+      { names: ["Le Cénacle Nécromant"], appliesTo: "Chimères nécrotiques" },
+      { names: ["Le Cénacle Nécromant"], appliesTo: "Vermines mortuaires" },
     ],
     statWeights: { atk: 1.05, def: 0.95 },
     guaranteedKeywords: [],
@@ -561,6 +564,27 @@ export const FACTIONS: Record<string, {
       "Gargouilles": { statWeights: { atk: 0.95, def: 1.35 }, likelyKeywords: { "Armure": 0.65, "Ancré": 0.55, "Provocation": 0.55, "Résistance X": 0.50, "Riposte X": 0.45, "Vol": 0.40, "Indestructible": 0.25 } },
       "Dhampirs": { statWeights: { atk: 1.20, def: 1.00 }, likelyKeywords: { "Traque": 0.60, "Première Frappe": 0.55, "Précision": 0.50, "Sang mêlé": 0.50, "Esquive": 0.45, "Double Attaque": 0.35 } },
       "Chiroptères": { statWeights: { atk: 1.15, def: 0.70 }, likelyKeywords: { "Vol": 0.90, "Esquive": 0.55, "Traque": 0.50, "Convocation X": 0.50, "Instinct de meute X": 0.45, "Célérité": 0.40 } },
+      // Lich : reprise EXACTE de ce que le Cénacle a cédé, pour qu'une liche du
+      // clan se génère à l'identique. Seule dérive assumée, la même que pour les
+      // Vampires : une liche SANS clan quitte l'ombrelle de faction (1.05/0.95)
+      // pour son vrai corps de nécromancienne.
+      "Lich": { statWeights: { atk: 0.85, def: 1.00 }, likelyKeywords: { "Savant": 0.45, "Canalisation": 0.45, "Divination": 0.35 } },
+      // Momies : le corps le plus dur de la Nécropole après la gargouille, mais
+      // sans ses ailes — elle avance et ne tombe pas. Malédiction, absente de
+      // l'ombrelle qui ne connaît que Maléfice, porte le tombeau violé.
+      // Paralysie lui irait, mais elle reste RÉSERVÉE à la Ghoule : c'est un des
+      // trois verbes qui la distinguent (courir, figer, dévorer), et un test le
+      // verrouille pour toute la Nécropole.
+      "Momies": { statWeights: { atk: 0.90, def: 1.25 }, likelyKeywords: { "Armure": 0.60, "Malédiction": 0.55, "Résistance X": 0.50, "Provocation": 0.45, "Ancré": 0.45, "Indestructible": 0.30 } },
+      // Chimères nécrotiques : cousues de plusieurs cadavres, donc le seul gros
+      // frappeur du clan. Régénération monte à 0.55 pour DÉPASSER l'ombrelle
+      // (0.45), sans quoi la ligne ne dirait rien. Sang mêlé est le seul clin
+      // d'œil littéral du lot : elle gagne à ce que la table soit dépareillée.
+      "Chimères nécrotiques": { statWeights: { atk: 1.30, def: 1.05 }, likelyKeywords: { "Fureur": 0.60, "Régénération": 0.55, "Double Attaque": 0.50, "Carnage X": 0.45, "Persécution X": 0.40, "Sang mêlé": 0.35 } },
+      // Vermines mortuaires : la nuée. Corps le plus fragile du clan, et trois
+      // poids qui doivent DÉPASSER l'ombrelle pour exister — Poison (0.65),
+      // Nécrophagie (0.55) et Convocation X (0.40) y figurent déjà.
+      "Vermines mortuaires": { statWeights: { atk: 0.95, def: 0.70 }, likelyKeywords: { "Poison": 0.70, "Instinct de meute X": 0.65, "Nécrophagie": 0.60, "Convocation X": 0.55, "Célérité": 0.45, "Esquive": 0.45, "Traque": 0.35 } },
     },
     clanProfiles: {
       "Les Rangs Silencieux": { statWeights: { atk: 1.00, def: 0.90 }, likelyKeywords: { "Nécrophagie": 0.55, "Exhumation X": 0.55, "Rappel": 0.50, "Convocation X": 0.50, "Poison": 0.40, "Sacrifice": 0.35, "Pacte de sang": 0.35 } },
@@ -569,7 +593,17 @@ export const FACTIONS: Record<string, {
       // commentaire ci-dessus). Ne PAS les remettre — la cascade choisit un
       // objet entier et les quatre nouvelles races redeviendraient mort-nées.
       "La Cour Écarlate": { likelyKeywords: { "Drain de vie": 0.60, "Vampirisme X": 0.55, "Pacte de sang": 0.40 } },
-      "Le Cénacle Nécromant": { statWeights: { atk: 0.85, def: 1.00 }, likelyKeywords: { "Héritage du cimetière": 0.55, "Résurrection": 0.50, "Ombre du passé": 0.50, "Savant": 0.45, "Canalisation": 0.45, "Domination": 0.40, "Divination": 0.35 } },
+      // Le Cénacle passe de UNE à QUATRE races et cède à son tour ses
+      // `statWeights` (troisième clan du jeu à le faire, après le Clan des
+      // Premiers Géants et La Cour Écarlate) : une momie, une chimère et une
+      // vermine ne peuvent pas partager le corps d'une liche. Le critère des
+      // Ghoules — « les races en place ont-elles un profil ? » — se règle ici en
+      // DONNANT un profil à Lich, recopié au bit près depuis cette ligne.
+      // Sa table est ramenée au noyau NÉCROMANTIQUE commun aux quatre ; ce qui
+      // n'appartenait qu'à la liche (Savant, Canalisation, Divination) est
+      // redescendu sur son profil de race, à l'identique — sans quoi le clan
+      // ferait de la vermine une érudite, le poids de clan gagnant mot par mot.
+      "Le Cénacle Nécromant": { likelyKeywords: { "Héritage du cimetière": 0.55, "Résurrection": 0.50, "Ombre du passé": 0.50, "Domination": 0.40 } },
     },
   },
   "Elfes Noirs": {

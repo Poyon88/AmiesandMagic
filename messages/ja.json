@@ -963,6 +963,9 @@
       "Gargouilles": "ガーゴイル",
       "Dhampirs": "ダンピール",
       "Chiroptères": "翼手族",
+      "Momies": "ミイラ",
+      "Chimères nécrotiques": "ネクロティック・キマイラ",
+      "Vermines mortuaires": "屍肉の害虫",
       "Elfes Corrompus": "堕落したエルフ",
       "Araignées Géantes": "巨大蜘蛛",
       "Démons": "デーモン",
@@ -1216,6 +1219,21 @@
         "def": "翼手族",
         "bare": "翼手族",
         "de": "翼手族の"
+      },
+      "Momies": {
+        "def": "ミイラ",
+        "bare": "ミイラ",
+        "de": "ミイラの"
+      },
+      "Chimères nécrotiques": {
+        "def": "ネクロティック・キマイラ",
+        "bare": "ネクロティック・キマイラ",
+        "de": "ネクロティック・キマイラの"
+      },
+      "Vermines mortuaires": {
+        "def": "屍肉の害虫",
+        "bare": "屍肉の害虫",
+        "de": "屍肉の害虫の"
       },
       "Elfes Corrompus": {
         "def": "堕落したエルフ",

@@ -963,6 +963,9 @@
       "Gargouilles": "Gargoyles",
       "Dhampirs": "Dhampirs",
       "Chiroptères": "Chiropterans",
+      "Momies": "Mummies",
+      "Chimères nécrotiques": "Necrotic Chimeras",
+      "Vermines mortuaires": "Charnel Vermin",
       "Elfes Corrompus": "Corrupted Elves",
       "Araignées Géantes": "Giant Spiders",
       "Démons": "Demons",
@@ -1216,6 +1219,21 @@
         "def": "the Chiropteran",
         "bare": "Chiropteran",
         "de": "of the Chiropteran"
+      },
+      "Momies": {
+        "def": "the Mummy",
+        "bare": "Mummy",
+        "de": "of the Mummy"
+      },
+      "Chimères nécrotiques": {
+        "def": "the Necrotic Chimera",
+        "bare": "Necrotic Chimera",
+        "de": "of the Necrotic Chimera"
+      },
+      "Vermines mortuaires": {
+        "def": "the Charnel Vermin",
+        "bare": "Charnel Vermin",
+        "de": "of the Charnel Vermin"
       },
       "Elfes Corrompus": {
         "def": "the Corrupted Elf",

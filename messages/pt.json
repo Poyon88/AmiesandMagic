@@ -963,6 +963,9 @@
       "Gargouilles": "Gárgulas",
       "Dhampirs": "Dhampiros",
       "Chiroptères": "Quirópteros",
+      "Momies": "Múmias",
+      "Chimères nécrotiques": "Quimeras Necróticas",
+      "Vermines mortuaires": "Vermes Mortuários",
       "Elfes Corrompus": "Elfos Corrompidos",
       "Araignées Géantes": "Aranhas Gigantes",
       "Démons": "Demônios",
@@ -1216,6 +1219,21 @@
         "def": "o Quiróptero",
         "bare": "Quiróptero",
         "de": "do Quiróptero"
+      },
+      "Momies": {
+        "def": "a Múmia",
+        "bare": "Múmia",
+        "de": "da Múmia"
+      },
+      "Chimères nécrotiques": {
+        "def": "a Quimera Necrótica",
+        "bare": "Quimera Necrótica",
+        "de": "da Quimera Necrótica"
+      },
+      "Vermines mortuaires": {
+        "def": "o Verme Mortuário",
+        "bare": "Verme Mortuário",
+        "de": "do Verme Mortuário"
       },
       "Elfes Corrompus": {
         "def": "o Elfo Corrompido",

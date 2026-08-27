@@ -963,6 +963,9 @@
       "Gargouilles": "Gargoyles",
       "Dhampirs": "Dhampire",
       "Chiroptères": "Chiropteren",
+      "Momies": "Mumien",
+      "Chimères nécrotiques": "Nekrotische Chimären",
+      "Vermines mortuaires": "Leichenungeziefer",
       "Elfes Corrompus": "Verderbte Elfen",
       "Araignées Géantes": "Riesenspinnen",
       "Démons": "Dämonen",
@@ -1216,6 +1219,21 @@
         "def": "der Chiroptere",
         "bare": "Chiroptere",
         "de": "des Chiropteren"
+      },
+      "Momies": {
+        "def": "die Mumie",
+        "bare": "Mumie",
+        "de": "der Mumie"
+      },
+      "Chimères nécrotiques": {
+        "def": "die Nekrotische Chimäre",
+        "bare": "Nekrotische Chimäre",
+        "de": "der Nekrotischen Chimäre"
+      },
+      "Vermines mortuaires": {
+        "def": "das Leichenungeziefer",
+        "bare": "Leichenungeziefer",
+        "de": "des Leichenungeziefers"
       },
       "Elfes Corrompus": {
         "def": "der Verdorbene Elf",

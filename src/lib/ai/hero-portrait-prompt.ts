@@ -164,6 +164,12 @@ export const GRANULAR_RACE_DESCRIPTORS: Record<string, string> = {
     'A humanoid dhampir hunter — human silhouette, pale skin with faint fangs, dark leather duster and buckled straps, silvered blade at the hip, cold restrained stare, neither living nor undead.',
   'Chiroptères':
     'A humanoid bat — gaunt bipedal figure, huge membrane wings folded like a cloak, oversized ears and a flattened snout, dark fur, small keen eyes, clawed thumbs at the wing joints.',
+  'Momies':
+    'A humanoid mummy — upright and bipedal, wrapped head to foot in blackened funerary linen, gilded death mask and jewelled pectoral across the chest, desiccated limbs, empty sockets lit from within, regal rather than shambling.',
+  'Chimères nécrotiques':
+    'A humanoid necrotic chimera — broad bipedal frame stitched from several corpses, mismatched animal heads set on one bloated torso, crude iron sutures, exposed ribs and mottled dead flesh, hulking and asymmetrical.',
+  'Vermines mortuaires':
+    'A humanoid vermin swarm — a roughly man-shaped figure held together by teeming grave rats and carrion beetles, matted fur and glossy chitin in place of skin, countless red pinprick eyes, a silhouette that constantly crawls and reforms.',
 };
 
 // Physical features per race. Kept short so it doesn't drown the faction layer.

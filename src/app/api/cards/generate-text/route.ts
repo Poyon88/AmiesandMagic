@@ -101,6 +101,10 @@ export async function POST(request: Request) {
     "Gargouilles": "winged stone gargoyle perched on a gothic cornice, cracked grey granite hide, curled horns, folded leathery stone wings, clawed talons, blank glowing eyes",
     "Dhampirs": "half-vampire hunter, pale human features with faint fangs, dark leather duster and buckled straps, silvered blades, cold restrained stare",
     "Chiroptères": "gaunt humanoid bat, huge outstretched membrane wings, oversized ears and flattened snout, dark fur, clinging upside down, swarm of smaller bats behind",
+    // Nécropole (Cénacle Nécromant)
+    "Momies": "bandaged undead mummy, ancient linen wrappings blackened with resin and grave dust, gilded funerary mask and jewelled pectoral, dry withered limbs, hollow sockets lit from within, slow and inexorable",
+    "Chimères nécrotiques": "necrotic chimera stitched from several corpses, mismatched animal heads on one bloated carcass, crude iron sutures and exposed ribs, mottled dead flesh, ichor dripping from the seams, hulking and brutal",
+    "Vermines mortuaires": "seething swarm of charnel vermin, grave rats and carrion beetles pouring from a burst coffin, matted fur and glossy chitin, countless red pinprick eyes, a single writhing mass rather than one creature",
   };
   // For factions whose visual identity lives on the clan (Élémentaires: race
   // "Élémentaire", clan = element), prefer the clan-keyed descriptor.
@@ -253,6 +257,9 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
           "Gargouilles": ["gargoyle", "gargouille", "stone sentinel"],
           "Dhampirs": ["dhampir", "half-vampire"],
           "Chiroptères": ["bat", "chiropteran", "chauve-souris"],
+          "Momies": ["mummy", "momie", "bandaged undead"],
+          "Chimères nécrotiques": ["chimera", "chimère", "stitched abomination"],
+          "Vermines mortuaires": ["vermin", "vermine", "swarm", "rats"],
         };
         // Get all wrong terms: other races in the faction, plus — for clan-tuned
         // factions (Élémentaires) — the sibling clans' terms so a Feu card doesn't

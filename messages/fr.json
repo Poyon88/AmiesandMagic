@@ -965,6 +965,9 @@
       "Gargouilles": "Gargouilles",
       "Dhampirs": "Dhampirs",
       "Chiroptères": "Chiroptères",
+      "Momies": "Momies",
+      "Chimères nécrotiques": "Chimères nécrotiques",
+      "Vermines mortuaires": "Vermines mortuaires",
       "Elfes Corrompus": "Elfes Corrompus",
       "Araignées Géantes": "Araignées Géantes",
       "Démons": "Démons",
@@ -1226,6 +1229,21 @@
         "def": "le Chiroptère",
         "bare": "Chiroptère",
         "de": "du Chiroptère"
+      },
+      "Momies": {
+        "def": "la Momie",
+        "bare": "Momie",
+        "de": "de la Momie"
+      },
+      "Chimères nécrotiques": {
+        "def": "la Chimère nécrotique",
+        "bare": "Chimère nécrotique",
+        "de": "de la Chimère nécrotique"
+      },
+      "Vermines mortuaires": {
+        "def": "la Vermine mortuaire",
+        "bare": "Vermine mortuaire",
+        "de": "de la Vermine mortuaire"
       },
       "Elfes Corrompus": {
         "def": "l'Elfe Corrompu",

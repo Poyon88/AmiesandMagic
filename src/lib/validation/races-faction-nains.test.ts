@@ -291,11 +291,12 @@ describe("clan des Premiers Géants — il CÈDE ses stats à ses races", () => 
     expect(kws["Provocation"]).toBeGreaterThan(0);
   });
 
-  it("les clans qui cèdent leurs stats sont EXACTEMENT les deux clans multi-races", () => {
+  it("les clans qui cèdent leurs stats sont EXACTEMENT les trois clans multi-races", () => {
     // Liste close, volontairement : y ajouter un clan sans lui donner des races
     // qui portent chacune leur gabarit revient à le renvoyer à l'ombrelle de
     // faction. La Cour Écarlate a rejoint la liste le 2026-08-27, en passant de
-    // une à cinq races.
+    // une à cinq races ; Le Cénacle Nécromant le même jour, en passant de une à
+    // quatre — et en DONNANT au passage un profil à Lich, qui n'en avait pas.
     const sansStats: string[] = [];
     for (const [fid, f] of Object.entries(FACTIONS)) {
       for (const [clan, prof] of Object.entries(f.clanProfiles ?? {})) {
@@ -303,7 +304,11 @@ describe("clan des Premiers Géants — il CÈDE ses stats à ses races", () => 
       }
     }
     expect(sansStats.sort()).toEqual(
-      ["Morts-Vivants/La Cour Écarlate", "Nains/Clan des Premiers Géants"].sort(),
+      [
+        "Morts-Vivants/La Cour Écarlate",
+        "Morts-Vivants/Le Cénacle Nécromant",
+        "Nains/Clan des Premiers Géants",
+      ].sort(),
     );
   });
 });

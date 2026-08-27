@@ -2059,6 +2059,9 @@ export default function CardForge() {
       "Gargouilles": "a winged stone gargoyle, cracked grey granite hide, curled horns, folded leathery stone wings, clawed talons, blank glowing eyes",
       "Dhampirs": "a half-vampire hunter, pale human features with faint fangs, dark leather duster and buckled straps, silvered blades, cold restrained stare",
       "Chiroptères": "a gaunt humanoid bat, huge outstretched membrane wings, oversized ears and flattened snout, dark fur, clinging upside down",
+      "Momies": "a bandaged undead mummy, blackened linen wrappings and grave dust, gilded funerary mask and jewelled pectoral, withered limbs, hollow sockets lit from within",
+      "Chimères nécrotiques": "a necrotic chimera stitched from several corpses, mismatched animal heads on one bloated carcass, iron sutures and exposed ribs, ichor dripping from the seams",
+      "Vermines mortuaires": "a seething swarm of charnel vermin, grave rats and carrion beetles pouring from a burst coffin, matted fur and glossy chitin, countless pinprick eyes",
     };
     const visual = tokenVisualDescriptions[tokenRace] || `a ${tokenRace} creature`;
     const nameHint = tokenName ? ` named "${tokenName}"` : '';
