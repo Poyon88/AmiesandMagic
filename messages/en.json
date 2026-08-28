@@ -966,6 +966,9 @@
       "Momies": "Mummies",
       "Chimères nécrotiques": "Necrotic Chimeras",
       "Vermines mortuaires": "Charnel Vermin",
+      "Poltergeists": "Poltergeists",
+      "Dullahans": "Dullahans",
+      "Sluaghs": "Sluaghs",
       "Elfes Corrompus": "Corrupted Elves",
       "Araignées Géantes": "Giant Spiders",
       "Démons": "Demons",
@@ -1234,6 +1237,21 @@
         "def": "the Charnel Vermin",
         "bare": "Charnel Vermin",
         "de": "of the Charnel Vermin"
+      },
+      "Poltergeists": {
+        "def": "the Poltergeist",
+        "bare": "Poltergeist",
+        "de": "of the Poltergeist"
+      },
+      "Dullahans": {
+        "def": "the Dullahan",
+        "bare": "Dullahan",
+        "de": "of the Dullahan"
+      },
+      "Sluaghs": {
+        "def": "the Sluagh",
+        "bare": "Sluagh",
+        "de": "of the Sluagh"
       },
       "Elfes Corrompus": {
         "def": "the Corrupted Elf",

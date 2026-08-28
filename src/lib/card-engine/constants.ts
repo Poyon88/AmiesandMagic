@@ -518,13 +518,16 @@ export const FACTIONS: Record<string, {
   "Morts-Vivants": {
     displayName: "La Nécropole",
     color: "#6c3483", accent: "#a29bfe", emoji: "💀", bg: "#1a0a2a", alignment: "maléfique",
-    races: ["Squelettes", "Zombies", "Ghoules", "Spectres", "Vampires", "Lich", "Banshees", "Homuncules de Sang", "Gargouilles", "Dhampirs", "Chiroptères", "Momies", "Chimères nécrotiques", "Vermines mortuaires"],
+    races: ["Squelettes", "Zombies", "Ghoules", "Spectres", "Vampires", "Lich", "Banshees", "Homuncules de Sang", "Gargouilles", "Dhampirs", "Chiroptères", "Momies", "Chimères nécrotiques", "Vermines mortuaires", "Poltergeists", "Dullahans", "Sluaghs"],
     clans: [
       { names: ["Les Rangs Silencieux"], appliesTo: "Squelettes" },
       { names: ["Les Rangs Silencieux"], appliesTo: "Zombies" },
       { names: ["Les Rangs Silencieux"], appliesTo: "Ghoules" },
       { names: ["Le Voile Hurlant"], appliesTo: "Spectres" },
       { names: ["Le Voile Hurlant"], appliesTo: "Banshees" },
+      { names: ["Le Voile Hurlant"], appliesTo: "Poltergeists" },
+      { names: ["Le Voile Hurlant"], appliesTo: "Dullahans" },
+      { names: ["Le Voile Hurlant"], appliesTo: "Sluaghs" },
       { names: ["La Cour Écarlate"], appliesTo: "Vampires" },
       { names: ["La Cour Écarlate"], appliesTo: "Homuncules de Sang" },
       { names: ["La Cour Écarlate"], appliesTo: "Gargouilles" },
@@ -585,10 +588,41 @@ export const FACTIONS: Record<string, {
       // poids qui doivent DÉPASSER l'ombrelle pour exister — Poison (0.65),
       // Nécrophagie (0.55) et Convocation X (0.40) y figurent déjà.
       "Vermines mortuaires": { statWeights: { atk: 0.95, def: 0.70 }, likelyKeywords: { "Poison": 0.70, "Instinct de meute X": 0.65, "Nécrophagie": 0.60, "Convocation X": 0.55, "Célérité": 0.45, "Esquive": 0.45, "Traque": 0.35 } },
+      // Spectres et Banshees : reprise EXACTE de ce que Le Voile Hurlant a cédé —
+      // gabarit ET paquet incorporel. Les deux tables sont volontairement
+      // identiques : elles ne font que rendre explicite ce que les deux races
+      // héritaient déjà du clan. Les différencier est possible désormais, mais
+      // c'est un autre sujet que l'arrivée des trois nouvelles.
+      "Spectres": { statWeights: { atk: 1.05, def: 0.75 }, likelyKeywords: { "Ombre": 0.55, "Invisible": 0.50, "Esquive": 0.50 } },
+      "Banshees": { statWeights: { atk: 1.05, def: 0.75 }, likelyKeywords: { "Ombre": 0.55, "Invisible": 0.50, "Esquive": 0.50 } },
+      // Poltergeists : il ne combat pas, il harcèle — le corps le plus faible du
+      // clan, et un registre d'objets projetés (Douleur X, Pillage X, Carnage X)
+      // qu'aucune autre race de la Nécropole ne joue.
+      "Poltergeists": { statWeights: { atk: 0.90, def: 0.70 }, likelyKeywords: { "Douleur X": 0.55, "Invisible": 0.55, "Esquive": 0.50, "Pillage X": 0.45, "Ombre": 0.40, "Carnage X": 0.35 } },
+      // Dullahans : le seul corps solide du clan, et la raison du don. Son
+      // registre est celui de l'exécuteur monté — il n'a délibérément NI Ombre NI
+      // Invisible : on le voit venir, c'est tout l'effroi.
+      "Dullahans": { statWeights: { atk: 1.35, def: 0.85 }, likelyKeywords: { "Touché mortel": 0.60, "Première Frappe": 0.55, "Célérité": 0.50, "Précision": 0.45, "Raid": 0.40, "Persécution X": 0.35 } },
+      // Sluaghs : la horde volante des morts sans repos. Trois poids doivent
+      // DÉPASSER l'ombrelle pour exister — Vol (0.15), Rappel (0.55) et
+      // Convocation X (0.40) y figurent déjà.
+      "Sluaghs": { statWeights: { atk: 1.10, def: 0.65 }, likelyKeywords: { "Vol": 0.80, "Instinct de meute X": 0.60, "Rappel": 0.60, "Convocation X": 0.55, "Esquive": 0.45, "Ombre": 0.35 } },
     },
     clanProfiles: {
       "Les Rangs Silencieux": { statWeights: { atk: 1.00, def: 0.90 }, likelyKeywords: { "Nécrophagie": 0.55, "Exhumation X": 0.55, "Rappel": 0.50, "Convocation X": 0.50, "Poison": 0.40, "Sacrifice": 0.35, "Pacte de sang": 0.35 } },
-      "Le Voile Hurlant": { statWeights: { atk: 1.05, def: 0.75 }, likelyKeywords: { "Terreur": 0.60, "Ombre": 0.55, "Invisible": 0.50, "Esquive": 0.50, "Maléfice": 0.45, "Malédiction": 0.40, "Paralysie": 0.35 } },
+      // Le Voile Hurlant passe de DEUX à CINQ races et cède ses `statWeights`
+      // (quatrième clan du jeu). Le Dullahan est la raison : cavalier décapiteur,
+      // c'est le seul corps SOLIDE d'un clan d'intangibles, et 1.05/0.75 en
+      // aurait fait un feu follet. Spectres et Banshees reçoivent donc chacun une
+      // copie exacte du gabarit cédé (cf. Lich et les Vampires).
+      // Dégraissage PARTIEL, et c'est délibéré : seul le paquet INCORPOREL
+      // (Ombre, Invisible, Esquive) redescend sur les races, parce qu'un cavalier
+      // sans tête n'est ni invisible ni insaisissable. Terreur, Maléfice,
+      // Malédiction et Paralysie RESTENT au clan : ce sont les quatre traits du
+      // présage de mort, que le Dullahan porte autant que la Banshee. Garder
+      // Paralysie ici évite en prime de la faire apparaître dans un profil de
+      // RACE, où un test la réserve à la Ghoule pour toute la Nécropole.
+      "Le Voile Hurlant": { likelyKeywords: { "Terreur": 0.60, "Maléfice": 0.45, "Malédiction": 0.40, "Paralysie": 0.35 } },
       // Pas de `statWeights` : chacune de ses cinq races porte le sien (cf. le
       // commentaire ci-dessus). Ne PAS les remettre — la cascade choisit un
       // objet entier et les quatre nouvelles races redeviendraient mort-nées.

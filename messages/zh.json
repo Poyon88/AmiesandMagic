@@ -966,6 +966,9 @@
       "Momies": "木乃伊",
       "Chimères nécrotiques": "腐尸奇美拉",
       "Vermines mortuaires": "尸骸害虫",
+      "Poltergeists": "喧噪鬼",
+      "Dullahans": "无头骑士",
+      "Sluaghs": "亡魂群",
       "Elfes Corrompus": "堕落精灵",
       "Araignées Géantes": "巨型蜘蛛",
       "Démons": "恶魔",
@@ -1234,6 +1237,21 @@
         "def": "尸骸害虫",
         "bare": "尸骸害虫",
         "de": "尸骸害虫"
+      },
+      "Poltergeists": {
+        "def": "喧噪鬼",
+        "bare": "喧噪鬼",
+        "de": "喧噪鬼"
+      },
+      "Dullahans": {
+        "def": "无头骑士",
+        "bare": "无头骑士",
+        "de": "无头骑士"
+      },
+      "Sluaghs": {
+        "def": "亡魂群",
+        "bare": "亡魂群",
+        "de": "亡魂群"
       },
       "Elfes Corrompus": {
         "def": "堕落精灵",

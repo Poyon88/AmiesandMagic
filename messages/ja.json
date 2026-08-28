@@ -966,6 +966,9 @@
       "Momies": "ミイラ",
       "Chimères nécrotiques": "ネクロティック・キマイラ",
       "Vermines mortuaires": "屍肉の害虫",
+      "Poltergeists": "ポルターガイスト",
+      "Dullahans": "デュラハン",
+      "Sluaghs": "スルーア",
       "Elfes Corrompus": "堕落したエルフ",
       "Araignées Géantes": "巨大蜘蛛",
       "Démons": "デーモン",
@@ -1234,6 +1237,21 @@
         "def": "屍肉の害虫",
         "bare": "屍肉の害虫",
         "de": "屍肉の害虫の"
+      },
+      "Poltergeists": {
+        "def": "ポルターガイスト",
+        "bare": "ポルターガイスト",
+        "de": "ポルターガイストの"
+      },
+      "Dullahans": {
+        "def": "デュラハン",
+        "bare": "デュラハン",
+        "de": "デュラハンの"
+      },
+      "Sluaghs": {
+        "def": "スルーア",
+        "bare": "スルーア",
+        "de": "スルーアの"
       },
       "Elfes Corrompus": {
         "def": "堕落したエルフ",

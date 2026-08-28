@@ -966,6 +966,9 @@
       "Momies": "Mumien",
       "Chimères nécrotiques": "Nekrotische Chimären",
       "Vermines mortuaires": "Leichenungeziefer",
+      "Poltergeists": "Poltergeister",
+      "Dullahans": "Dullahans",
+      "Sluaghs": "Sluaghs",
       "Elfes Corrompus": "Verderbte Elfen",
       "Araignées Géantes": "Riesenspinnen",
       "Démons": "Dämonen",
@@ -1234,6 +1237,21 @@
         "def": "das Leichenungeziefer",
         "bare": "Leichenungeziefer",
         "de": "des Leichenungeziefers"
+      },
+      "Poltergeists": {
+        "def": "der Poltergeist",
+        "bare": "Poltergeist",
+        "de": "des Poltergeists"
+      },
+      "Dullahans": {
+        "def": "der Dullahan",
+        "bare": "Dullahan",
+        "de": "des Dullahans"
+      },
+      "Sluaghs": {
+        "def": "der Sluagh",
+        "bare": "Sluagh",
+        "de": "des Sluaghs"
       },
       "Elfes Corrompus": {
         "def": "der Verdorbene Elf",

@@ -966,6 +966,9 @@
       "Momies": "Mummie",
       "Chimères nécrotiques": "Chimere Necrotiche",
       "Vermines mortuaires": "Vermine Mortuarie",
+      "Poltergeists": "Poltergeist",
+      "Dullahans": "Dullahan",
+      "Sluaghs": "Sluagh",
       "Elfes Corrompus": "Elfi Corrotti",
       "Araignées Géantes": "Ragni Giganti",
       "Démons": "Demoni",
@@ -1234,6 +1237,21 @@
         "def": "la Vermina Mortuaria",
         "bare": "Vermina Mortuaria",
         "de": "della Vermina Mortuaria"
+      },
+      "Poltergeists": {
+        "def": "il Poltergeist",
+        "bare": "Poltergeist",
+        "de": "del Poltergeist"
+      },
+      "Dullahans": {
+        "def": "il Dullahan",
+        "bare": "Dullahan",
+        "de": "del Dullahan"
+      },
+      "Sluaghs": {
+        "def": "lo Sluagh",
+        "bare": "Sluagh",
+        "de": "dello Sluagh"
       },
       "Elfes Corrompus": {
         "def": "l'Elfo Corrotto",

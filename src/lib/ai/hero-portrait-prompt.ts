@@ -170,6 +170,12 @@ export const GRANULAR_RACE_DESCRIPTORS: Record<string, string> = {
     'A humanoid necrotic chimera — broad bipedal frame stitched from several corpses, mismatched animal heads set on one bloated torso, crude iron sutures, exposed ribs and mottled dead flesh, hulking and asymmetrical.',
   'Vermines mortuaires':
     'A humanoid vermin swarm — a roughly man-shaped figure held together by teeming grave rats and carrion beetles, matted fur and glossy chitin in place of skin, countless red pinprick eyes, a silhouette that constantly crawls and reforms.',
+  'Poltergeists':
+    'A humanoid poltergeist — a man-shaped smear of translucent force, features half-forming and dissolving, hurled objects orbiting the silhouette and frozen mid-flight, cold blue glow, never quite solid.',
+  'Dullahans':
+    'A headless dullahan — upright armoured rider\'s silhouette in black plate, the neck a clean stump, its own severed grinning head carried under one arm and lit from within by green corpse-light, a whip of human spine coiled at the hip.',
+  'Sluaghs':
+    'A humanoid sluagh — gaunt winged spirit, ragged membranous wings swept back like a tattered cloak, hollow wailing face, long clawed hands, the shapes of lesser souls trailing in its wake.',
 };
 
 // Physical features per race. Kept short so it doesn't drown the faction layer.

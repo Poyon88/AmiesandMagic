@@ -105,6 +105,10 @@ export async function POST(request: Request) {
     "Momies": "bandaged undead mummy, ancient linen wrappings blackened with resin and grave dust, gilded funerary mask and jewelled pectoral, dry withered limbs, hollow sockets lit from within, slow and inexorable",
     "Chimères nécrotiques": "necrotic chimera stitched from several corpses, mismatched animal heads on one bloated carcass, crude iron sutures and exposed ribs, mottled dead flesh, ichor dripping from the seams, hulking and brutal",
     "Vermines mortuaires": "seething swarm of charnel vermin, grave rats and carrion beetles pouring from a burst coffin, matted fur and glossy chitin, countless red pinprick eyes, a single writhing mass rather than one creature",
+    // Nécropole (Voile Hurlant)
+    "Poltergeists": "poltergeist manifestation, a half-seen twisted face forming in a whirl of hurled furniture and shattered crockery, translucent grasping limbs, objects frozen mid-flight, cold blue glow, no solid body",
+    "Dullahans": "headless horseman dullahan, black plate armour on a rotting skeletal steed, severed grinning head carried under one arm, whip of human spine, green corpse-light in the eyes of the held head",
+    "Sluaghs": "sluagh host of the restless dead, a dense flock of gaunt winged spirits pouring across a night sky, ragged membranous wings and clawed hands, hollow wailing faces, a single dark tide of souls",
   };
   // For factions whose visual identity lives on the clan (Élémentaires: race
   // "Élémentaire", clan = element), prefer the clan-keyed descriptor.
@@ -260,6 +264,9 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
           "Momies": ["mummy", "momie", "bandaged undead"],
           "Chimères nécrotiques": ["chimera", "chimère", "stitched abomination"],
           "Vermines mortuaires": ["vermin", "vermine", "swarm", "rats"],
+          "Poltergeists": ["poltergeist", "esprit frappeur"],
+          "Dullahans": ["dullahan", "headless horseman", "cavalier sans tête"],
+          "Sluaghs": ["sluagh", "host of the dead", "spirit flock"],
         };
         // Get all wrong terms: other races in the faction, plus — for clan-tuned
         // factions (Élémentaires) — the sibling clans' terms so a Feu card doesn't
