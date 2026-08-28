@@ -1,6 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import AuctionManager from "@/components/admin/AuctionManager";
+import { fetchAllRows } from "@/lib/supabase/fetchAllRows";
+
+type AuctionCard = React.ComponentProps<typeof AuctionManager>["cards"][number];
 
 export const metadata = { title: "Enchères — Admin | Armies & Magic" };
 
@@ -12,11 +15,20 @@ export default async function AdminAuctionsPage() {
 
   if (!user) redirect("/login");
 
-  const { data: cards } = await supabase
-    .from("cards")
-    .select("id, name, rarity, faction, card_type, mana_cost")
-    .neq("rarity", "Commune")
-    .order("name");
+  // Paginé par précaution : 59 lignes aujourd'hui (les non-Communes), donc sous
+  // le plafond — mais c'est le même `select` de table filtrée que les trois
+  // autres, et le jour où il le franchit rien ne le dirait.
+  const cards = await fetchAllRows<AuctionCard>(
+    (from, to) =>
+      supabase
+        .from("cards")
+        .select("id, name, rarity, faction, card_type, mana_cost")
+        .neq("rarity", "Commune")
+        .order("name")
+        .order("id")
+        .range(from, to),
+    { label: "Lecture du catalogue (enchères)" },
+  );
 
   // Fetch first unassigned print for each card
   const { data: availablePrints } = await supabase

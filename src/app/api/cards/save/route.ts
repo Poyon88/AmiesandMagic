@@ -9,6 +9,7 @@ import type { Capability, Card } from '@/lib/game/types';
 import { requireAdmin } from '@/lib/admin/requireAdmin';
 import { upsertCardTranslations } from '@/lib/cards/cardTranslations';
 import { findNameCollision } from '@/lib/cards/nameCollision';
+import { fetchAllRows } from '@/lib/supabase/fetchAllRows';
 import { fillXYMagnitude } from '@/lib/cards/composedMagnitude';
 
 // Planifie (hors du chemin de réponse, via `after`) la (re)traduction nom +
@@ -89,13 +90,24 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
 
   const supabaseAdmin = getAdminClient();
-  const { data, error } = await supabaseAdmin
-    .from('cards')
-    .select('id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, keywords, keyword_instances, spell_keywords, spell_effects, capabilities, image_url, illustration_prompt, faction, race, clan, rarity, card_alignment, convocation_token_id, convocation_tokens, lycanthropie_token_id, entraide_race, set_id, card_year, card_month, sfx_play_url, sfx_death_url, sfx_exile_url, life_cost, discard_cost, sacrifice_cost, exile_cost, topdeck_cost, eveil_cost, discoverable')
-    .order('name');
+  const COLONNES = 'id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, keywords, keyword_instances, spell_keywords, spell_effects, capabilities, image_url, illustration_prompt, faction, race, clan, rarity, card_alignment, convocation_token_id, convocation_tokens, lycanthropie_token_id, entraide_race, set_id, card_year, card_month, sfx_play_url, sfx_death_url, sfx_exile_url, life_cost, discard_cost, sacrifice_cost, exile_cost, topdeck_cost, eveil_cost, discoverable';
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(data);
+  // Lecture PAGINÉE : c'est la liste que charge l'éditeur de cartes. Sans
+  // `.range()`, PostgREST plafonnait la réponse à 1 000 lignes sur les 1 713 de
+  // la table — 713 cartes simplement absentes de l'éditeur, sans erreur ni
+  // signe (« Soleil vivant », id 1742, en était). `name` seul ne départage pas
+  // les homonymes : l'ordre total exige `id` en dernier, sans quoi deux pages
+  // peuvent se recouvrir ou sauter une ligne.
+  try {
+    const data = await fetchAllRows(
+      (from, to) =>
+        supabaseAdmin.from('cards').select(COLONNES).order('name').order('id').range(from, to),
+      { label: 'Lecture du catalogue (éditeur)' },
+    );
+    return NextResponse.json(data);
+  } catch (e) {
+    return NextResponse.json({ error: (e as Error).message }, { status: 500 });
+  }
 }
 
 export async function POST(request: Request) {

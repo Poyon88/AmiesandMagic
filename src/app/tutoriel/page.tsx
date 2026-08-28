@@ -1,6 +1,16 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import TutorialView, { type ClanVisual } from "@/components/tutorial/TutorialView";
+import { fetchAllRows } from "@/lib/supabase/fetchAllRows";
+
+type CarteVitrine = {
+  id: number;
+  name: string;
+  clan: string | null;
+  faction: string | null;
+  rarity: string | null;
+  image_url: string | null;
+};
 
 export const metadata = { title: "Comment jouer | Armies & Magic" };
 
@@ -25,10 +35,18 @@ export default async function TutorielPage() {
     supabase.from("wallets").select("balance").eq("user_id", user.id).single(),
     // Vitrines de l'onglet « Factions & clans ». On ne remonte que les colonnes
     // d'affichage : cette page illustre, elle ne joue pas.
-    supabase
-      .from("cards")
-      .select("id, name, clan, faction, rarity, image_url")
-      .not("image_url", "is", null),
+    // Paginé : 1 711 cartes illustrées, PostgREST en rendait 1 000 — des clans
+    // entiers pouvaient rester sans vitrine sans que rien ne le signale.
+    fetchAllRows<CarteVitrine>(
+      (from, to) =>
+        supabase
+          .from("cards")
+          .select("id, name, clan, faction, rarity, image_url")
+          .not("image_url", "is", null)
+          .order("id")
+          .range(from, to),
+      { label: "Lecture des cartes illustrées (tutoriel)" },
+    ).then((data) => ({ data })),
   ]);
 
   // Une vitrine par clan, plus quelques-unes par faction (utiles aux factions
