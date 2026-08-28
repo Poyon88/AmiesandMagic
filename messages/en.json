@@ -975,6 +975,9 @@
       "Cristallins": "Crystallines",
       "Troglodytes": "Troglodytes",
       "Bêtes Chtoniennes": "Chthonic Beasts",
+      "Salamandres": "Salamanders",
+      "Sylphes": "Sylphs",
+      "Néphélides": "Nephelids",
       "Elfes Corrompus": "Corrupted Elves",
       "Araignées Géantes": "Giant Spiders",
       "Démons": "Demons",
@@ -1288,6 +1291,21 @@
         "def": "the Chthonic Beast",
         "bare": "Chthonic Beast",
         "de": "of the Chthonic Beast"
+      },
+      "Salamandres": {
+        "def": "the Salamander",
+        "bare": "Salamander",
+        "de": "of the Salamander"
+      },
+      "Sylphes": {
+        "def": "the Sylph",
+        "bare": "Sylph",
+        "de": "of the Sylph"
+      },
+      "Néphélides": {
+        "def": "the Nephelid",
+        "bare": "Nephelid",
+        "de": "of the Nephelid"
       },
       "Elfes Corrompus": {
         "def": "the Corrupted Elf",

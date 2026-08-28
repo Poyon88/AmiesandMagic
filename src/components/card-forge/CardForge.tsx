@@ -2071,6 +2071,9 @@ export default function CardForge() {
       "Cristallins": "a crystalline elemental, humanoid figure grown from faceted quartz and geode shards, light refracting through a translucent body, glowing core within the chest",
       "Troglodytes": "a subterranean troglodyte, pale hairless cave dweller with oversized lidless eyes and elongated fingers, stooped from low tunnels, stone-tipped spear",
       "Bêtes Chtoniennes": "a chthonic beast erupting from bedrock, vast burrowing horror of segmented stone-plated chitin, circular maw ringed with grinding teeth, blind and eyeless",
+      "Salamandres": "a fire salamander elemental, sinuous lizard with black scaled hide cracked open by veins of molten orange, flames along the spine and tail, smoke curling from the nostrils",
+      "Sylphes": "a sylph air spirit, slender translucent figure barely condensed out of moving air, hair and veils drawn into visible wind currents, edges dissolving into breeze",
+      "Néphélides": "a nephelid cloud nymph, figure formed of dense storm cloud, lightning flickering inside the vapour, rain falling from her trailing lower body, eyes like breaks of clear sky",
     };
     const visual = tokenVisualDescriptions[tokenRace] || `a ${tokenRace} creature`;
     const nameHint = tokenName ? ` named "${tokenName}"` : '';

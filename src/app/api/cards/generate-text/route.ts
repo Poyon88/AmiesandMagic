@@ -117,6 +117,11 @@ export async function POST(request: Request) {
     "Cristallins": "crystalline elemental, humanoid figure grown from faceted quartz and geode shards, light refracting through a translucent body, jagged mineral spurs at the shoulders, glowing core visible within the chest",
     "Troglodytes": "subterranean troglodyte, pale hairless cave dweller with oversized lidless eyes and elongated grasping fingers, stooped from low tunnels, stone-tipped spear, clinging to a cavern wall",
     "Bêtes Chtoniennes": "chthonic beast erupting from bedrock, vast burrowing horror of segmented stone-plated chitin, circular maw ringed with grinding teeth, blind and eyeless, showering earth and rubble",
+    // Primordiaux (La Colère des Flammes)
+    "Salamandres": "fire salamander elemental, sinuous lizard whose black scaled hide is cracked open by veins of molten orange, flames guttering along the spine and tail, clawed feet leaving scorch marks, smoke curling from the nostrils",
+    // Primordiaux (Le Souffle des Cimes)
+    "Sylphes": "sylph air spirit, slender translucent figure barely condensed out of moving air, hair and trailing veils drawn into visible wind currents, weightless mid-turn, edges dissolving into breeze",
+    "Néphélides": "nephelid cloud nymph, figure formed of dense storm cloud with a humanoid silhouette, lightning flickering inside the vapour, rain falling from her trailing lower body, eyes like breaks of clear sky",
   };
   // For factions whose visual identity lives on the clan (Élémentaires: race
   // "Élémentaire", clan = element), prefer the clan-keyed descriptor.
@@ -281,6 +286,9 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
           "Cristallins": ["crystalline", "cristallin", "crystal being"],
           "Troglodytes": ["troglodyte", "cave dweller"],
           "Bêtes Chtoniennes": ["chthonic", "chtonien", "burrowing horror"],
+          "Salamandres": ["salamander", "salamandre", "fire lizard"],
+          "Sylphes": ["sylph", "sylphe", "air spirit"],
+          "Néphélides": ["nephelid", "néphélide", "cloud nymph"],
         };
         // Get all wrong terms: other races in the faction, plus — for clan-tuned
         // factions (Élémentaires) — the sibling clans' terms so a Feu card doesn't

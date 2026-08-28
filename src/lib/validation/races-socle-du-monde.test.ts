@@ -50,9 +50,14 @@ describe("rattachement des trois races de terre", () => {
     }
   });
 
-  it("le feu et l'air restent sur la seule race historique", () => {
+  it("le feu et l'air ne reçoivent aucune race de terre", () => {
+    // Formulé en « aucune FUITE » et non en liste close : la première rédaction
+    // affirmait que ces deux clans n'avaient qu'« Élémentaire », et elle a cassé
+    // dès l'arrivée des Salamandres dans le feu. Même erreur que celle déjà
+    // corrigée dans races-vague-sans-fin.test.ts.
     for (const c of ["La Colère des Flammes", "Le Souffle des Cimes"]) {
-      expect(getRacesForClan(c), c).toEqual(["Élémentaire"]);
+      for (const r of NOUVELLES) expect(getRacesForClan(c), `${c} / ${r}`).not.toContain(r);
+      expect(getRacesForClan(c), c).toContain("Élémentaire");
     }
   });
 

@@ -975,6 +975,9 @@
       "Cristallins": "Cristalinos",
       "Troglodytes": "Trogloditas",
       "Bêtes Chtoniennes": "Bestias Ctónicas",
+      "Salamandres": "Salamandras",
+      "Sylphes": "Silfos",
+      "Néphélides": "Nefélides",
       "Elfes Corrompus": "Elfos Corruptos",
       "Araignées Géantes": "Arañas Gigantes",
       "Démons": "Demonios",
@@ -1288,6 +1291,21 @@
         "def": "la Bestia Ctónica",
         "bare": "Bestia Ctónica",
         "de": "de la Bestia Ctónica"
+      },
+      "Salamandres": {
+        "def": "la Salamandra",
+        "bare": "Salamandra",
+        "de": "de la Salamandra"
+      },
+      "Sylphes": {
+        "def": "el Silfo",
+        "bare": "Silfo",
+        "de": "del Silfo"
+      },
+      "Néphélides": {
+        "def": "la Nefélide",
+        "bare": "Nefélide",
+        "de": "de la Nefélide"
       },
       "Elfes Corrompus": {
         "def": "el Elfo Corrupto",

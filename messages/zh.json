@@ -975,6 +975,9 @@
       "Cristallins": "晶化体",
       "Troglodytes": "穴居者",
       "Bêtes Chtoniennes": "地渊巨兽",
+      "Salamandres": "火蜥蜴",
+      "Sylphes": "气精",
+      "Néphélides": "云女",
       "Elfes Corrompus": "堕落精灵",
       "Araignées Géantes": "巨型蜘蛛",
       "Démons": "恶魔",
@@ -1288,6 +1291,21 @@
         "def": "地渊巨兽",
         "bare": "地渊巨兽",
         "de": "地渊巨兽"
+      },
+      "Salamandres": {
+        "def": "火蜥蜴",
+        "bare": "火蜥蜴",
+        "de": "火蜥蜴"
+      },
+      "Sylphes": {
+        "def": "气精",
+        "bare": "气精",
+        "de": "气精"
+      },
+      "Néphélides": {
+        "def": "云女",
+        "bare": "云女",
+        "de": "云女"
       },
       "Elfes Corrompus": {
         "def": "堕落精灵",

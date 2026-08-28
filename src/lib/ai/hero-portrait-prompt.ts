@@ -188,6 +188,12 @@ export const GRANULAR_RACE_DESCRIPTORS: Record<string, string> = {
     'A humanoid troglodyte — pale hairless cave dweller, oversized lidless eyes adapted to the dark, elongated grasping fingers, a frame stooped from a life in low tunnels, stone-tipped spear in hand.',
   'Bêtes Chtoniennes':
     'A humanoid chthonic beast — towering bipedal horror of the deep earth, segmented stone-plated chitin, a circular maw ringed with grinding teeth in place of a face, blind and eyeless, dust and rubble falling from its plates.',
+  'Salamandres':
+    'A humanoid salamander — lithe bipedal fire lizard, black scaled hide split by veins of molten orange, a crest of guttering flame along the skull and spine, long counterweight tail, clawed hands, smoke curling from the nostrils.',
+  'Sylphes':
+    'A humanoid sylph — slender bipedal air spirit barely condensed out of moving air, translucent limbs, hair and trailing veils drawn into visible wind currents, weightless stance, silhouette dissolving into breeze at the edges.',
+  'Néphélides':
+    'A humanoid nephelid — cloud nymph with a clear humanoid silhouette formed of dense storm vapour, lightning flickering within the body, rain falling from a trailing lower half, eyes like breaks of clear sky.',
 };
 
 // Physical features per race. Kept short so it doesn't drown the faction layer.

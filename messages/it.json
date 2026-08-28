@@ -975,6 +975,9 @@
       "Cristallins": "Cristallini",
       "Troglodytes": "Trogloditi",
       "Bêtes Chtoniennes": "Bestie Ctonie",
+      "Salamandres": "Salamandre",
+      "Sylphes": "Silfi",
+      "Néphélides": "Nefelidi",
       "Elfes Corrompus": "Elfi Corrotti",
       "Araignées Géantes": "Ragni Giganti",
       "Démons": "Demoni",
@@ -1288,6 +1291,21 @@
         "def": "la Bestia Ctonia",
         "bare": "Bestia Ctonia",
         "de": "della Bestia Ctonia"
+      },
+      "Salamandres": {
+        "def": "la Salamandra",
+        "bare": "Salamandra",
+        "de": "della Salamandra"
+      },
+      "Sylphes": {
+        "def": "il Silfo",
+        "bare": "Silfo",
+        "de": "del Silfo"
+      },
+      "Néphélides": {
+        "def": "la Nefelide",
+        "bare": "Nefelide",
+        "de": "della Nefelide"
       },
       "Elfes Corrompus": {
         "def": "l'Elfo Corrotto",

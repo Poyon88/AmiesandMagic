@@ -476,7 +476,7 @@ export const FACTIONS: Record<string, {
   "Élémentaires": {
     displayName: "Les Primordiaux",
     color: "#E67E22", accent: "#F39C12", emoji: "🌀", bg: "#1a1008", alignment: "neutre",
-    races: ["Élémentaire", "Ondins", "Sirènes", "Léviathans", "Cristallins", "Troglodytes", "Bêtes Chtoniennes"],
+    races: ["Élémentaire", "Ondins", "Sirènes", "Léviathans", "Cristallins", "Troglodytes", "Bêtes Chtoniennes", "Salamandres", "Sylphes", "Néphélides"],
     // Groupe transversal SCINDÉ le 2026-08-28 : tant qu'il portait `appliesTo:
     // "all"`, `getRacesForClan` rendait TOUTES les races de la faction pour
     // CHAQUE clan — les trois races d'eau se seraient ouvertes au feu, à la terre
@@ -492,6 +492,9 @@ export const FACTIONS: Record<string, {
       { names: ["Le Socle du Monde"], appliesTo: "Cristallins" },
       { names: ["Le Socle du Monde"], appliesTo: "Troglodytes" },
       { names: ["Le Socle du Monde"], appliesTo: "Bêtes Chtoniennes" },
+      { names: ["La Colère des Flammes"], appliesTo: "Salamandres" },
+      { names: ["Le Souffle des Cimes"], appliesTo: "Sylphes" },
+      { names: ["Le Souffle des Cimes"], appliesTo: "Néphélides" },
     ],
     statWeights: { atk: 1.10, def: 1.10 },
     guaranteedKeywords: [],
@@ -541,6 +544,26 @@ export const FACTIONS: Record<string, {
       // Bêtes Chtoniennes : ce qui remonte de la roche. Fureur (0.40) et Carnage X
       // (0.30) doivent dépasser l'ombrelle.
       "Bêtes Chtoniennes": { likelyKeywords: { "Piétinement": 0.60, "Fureur": 0.55, "Terreur": 0.50, "Convocation X": 0.50, "Carnage X": 0.45, "Persécution X": 0.35 } },
+      // Salamandres : même règle encore une fois — La Colère des Flammes héberge
+      // « Élémentaire », donc elle garde son corps 1.40/0.75 et la race n'en
+      // déclare aucun. Son registre est celui de ce qui SURVIT au feu là où le
+      // clan est celui de ce qui brûle : elle repousse, elle file, et elle brûle
+      // qui la saisit. Régénération (0.35) et Esquive (0.35) doivent dépasser
+      // l'ombrelle de faction pour valoir quelque chose.
+      "Salamandres": { likelyKeywords: { "Régénération": 0.55, "Célérité": 0.50, "Esquive": 0.45, "Riposte X": 0.40, "Première Frappe": 0.35, "Traque": 0.30 } },
+      // Le Souffle des Cimes complète les quatre éléments, sur la même règle : il
+      // héberge « Élémentaire », donc il garde son corps 1.15/0.85.
+      // À NOTER : le générateur accorde le Vol GARANTI à tout ce qui porte ce clan
+      // (`clanId === "Le Souffle des Cimes"`), donc les deux races volent sans
+      // rien déclarer. Poser "Vol" dans leurs tables serait doublement mort — le
+      // clan le porte déjà à 0.80, et la garantie court-circuite le tirage.
+      // Sylphes : l'esprit de l'air, insaisissable et farceur — il se dérobe et
+      // il échange. Permutation (0.30), Mimique (0.30) et Métamorphose (0.35)
+      // doivent dépasser l'ombrelle.
+      "Sylphes": { likelyKeywords: { "Invisible": 0.55, "Permutation": 0.50, "Mimique": 0.45, "Métamorphose": 0.40, "Contresort": 0.35, "Précision": 0.30 } },
+      // Néphélides : les nymphes des nuées — l'orage, pas la brise. Canalisation
+      // (0.45) et Régénération (0.35) doivent dépasser l'ombrelle.
+      "Néphélides": { likelyKeywords: { "Paralysie": 0.55, "Canalisation": 0.55, "Douleur X": 0.50, "Régénération": 0.40, "Malédiction": 0.40, "Bénédiction": 0.35 } },
     },
     clanProfiles: {
       "La Colère des Flammes": { statWeights: { atk: 1.40, def: 0.75 }, likelyKeywords: { "Fureur": 0.70, "Souffle de feu X": 0.60, "Gloire +X/+Y": 0.50, "Sacrifice": 0.35, "Combustion": 0.50, "Carnage X": 0.40 } },
