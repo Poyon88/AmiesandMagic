@@ -969,6 +969,12 @@
       "Poltergeists": "Poltergeist",
       "Dullahans": "Dullahan",
       "Sluaghs": "Sluagh",
+      "Ondins": "Ondini",
+      "Sirènes": "Sirene",
+      "Léviathans": "Leviatani",
+      "Cristallins": "Cristallini",
+      "Troglodytes": "Trogloditi",
+      "Bêtes Chtoniennes": "Bestie Ctonie",
       "Elfes Corrompus": "Elfi Corrotti",
       "Araignées Géantes": "Ragni Giganti",
       "Démons": "Demoni",
@@ -1252,6 +1258,36 @@
         "def": "lo Sluagh",
         "bare": "Sluagh",
         "de": "dello Sluagh"
+      },
+      "Ondins": {
+        "def": "l'Ondino",
+        "bare": "Ondino",
+        "de": "dell'Ondino"
+      },
+      "Sirènes": {
+        "def": "la Sirena",
+        "bare": "Sirena",
+        "de": "della Sirena"
+      },
+      "Léviathans": {
+        "def": "il Leviatano",
+        "bare": "Leviatano",
+        "de": "del Leviatano"
+      },
+      "Cristallins": {
+        "def": "il Cristallino",
+        "bare": "Cristallino",
+        "de": "del Cristallino"
+      },
+      "Troglodytes": {
+        "def": "il Troglodita",
+        "bare": "Troglodita",
+        "de": "del Troglodita"
+      },
+      "Bêtes Chtoniennes": {
+        "def": "la Bestia Ctonia",
+        "bare": "Bestia Ctonia",
+        "de": "della Bestia Ctonia"
       },
       "Elfes Corrompus": {
         "def": "l'Elfo Corrotto",

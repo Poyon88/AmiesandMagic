@@ -2065,6 +2065,12 @@ export default function CardForge() {
       "Poltergeists": "a poltergeist manifestation, a half-seen twisted face in a whirl of hurled furniture and shattered crockery, translucent grasping limbs, cold blue glow, no solid body",
       "Dullahans": "a headless horseman dullahan in black plate armour on a rotting skeletal steed, severed grinning head carried under one arm, whip of human spine, green corpse-light",
       "Sluaghs": "a sluagh host of the restless dead, a dense flock of gaunt winged spirits, ragged membranous wings and clawed hands, hollow wailing faces, a dark tide of souls",
+      "Ondins": "an undine reef warrior, blue-green scaled humanoid with finned forearms and a crested head, coral-plated armour, long barbed trident, water streaming from the shoulders",
+      "Sirènes": "a siren enchantress, humanoid torso above a long iridescent fish tail, wet flowing hair strung with pearls, webbed hands raised mid-song, hypnotic pale eyes",
+      "Léviathans": "a colossal leviathan of the abyss, immense serpentine sea beast breaching, barnacle-crusted armoured hide, cavernous toothed maw, ridged dorsal fins",
+      "Cristallins": "a crystalline elemental, humanoid figure grown from faceted quartz and geode shards, light refracting through a translucent body, glowing core within the chest",
+      "Troglodytes": "a subterranean troglodyte, pale hairless cave dweller with oversized lidless eyes and elongated fingers, stooped from low tunnels, stone-tipped spear",
+      "Bêtes Chtoniennes": "a chthonic beast erupting from bedrock, vast burrowing horror of segmented stone-plated chitin, circular maw ringed with grinding teeth, blind and eyeless",
     };
     const visual = tokenVisualDescriptions[tokenRace] || `a ${tokenRace} creature`;
     const nameHint = tokenName ? ` named "${tokenName}"` : '';

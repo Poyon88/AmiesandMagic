@@ -395,8 +395,8 @@ const CLAN_BLURBS: Record<string, string> = {
   "La Harde Sauvage": "La charge des sabots : célérité, raid et piétinement.",
   // Les Primordiaux
   "La Colère des Flammes": "Le feu pur : la plus forte attaque du jeu, la plus faible défense.",
-  "Le Socle du Monde": "La terre : provocation, armure et ancrage — le mur des Primordiaux.",
-  "La Vague Sans Fin": "L'eau : régénération, drain de vie et paralysie, la victoire par l'usure.",
+  "Le Socle du Monde": "La terre — élémentaires, cristallins, troglodytes et bêtes chtoniennes : provocation, armure et immobilité, le mur qui ne cède pas.",
+  "La Vague Sans Fin": "L'eau — élémentaires, ondins, sirènes et léviathans : régénération, drain de vie et paralysie, la victoire par l'usure.",
   "Le Souffle des Cimes": "L'air : vol, célérité et esquive, insaisissable.",
   // La Nécropole
   "Les Rangs Silencieux": "La piétaille sans fin — squelettes, zombies et ghoules : nécrophagie, exhumation et rappel du cimetière.",

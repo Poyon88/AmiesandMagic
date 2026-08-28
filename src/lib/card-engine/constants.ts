@@ -476,8 +476,23 @@ export const FACTIONS: Record<string, {
   "Élémentaires": {
     displayName: "Les Primordiaux",
     color: "#E67E22", accent: "#F39C12", emoji: "🌀", bg: "#1a1008", alignment: "neutre",
-    races: ["Élémentaire"],
-    clans: [{ names: ["La Colère des Flammes", "Le Socle du Monde", "La Vague Sans Fin", "Le Souffle des Cimes"], appliesTo: "all" }],
+    races: ["Élémentaire", "Ondins", "Sirènes", "Léviathans", "Cristallins", "Troglodytes", "Bêtes Chtoniennes"],
+    // Groupe transversal SCINDÉ le 2026-08-28 : tant qu'il portait `appliesTo:
+    // "all"`, `getRacesForClan` rendait TOUTES les races de la faction pour
+    // CHAQUE clan — les trois races d'eau se seraient ouvertes au feu, à la terre
+    // et à l'air en silence (le piège des Nagas). « Élémentaire » garde ses quatre
+    // clans, les trois nouvelles n'ouvrent que l'eau. Contrepartie assumée et
+    // identique à l'Empire du Milieu : sans race choisie, le sélecteur de clan de
+    // cette faction reste vide.
+    clans: [
+      { names: ["La Colère des Flammes", "Le Socle du Monde", "La Vague Sans Fin", "Le Souffle des Cimes"], appliesTo: "Élémentaire" },
+      { names: ["La Vague Sans Fin"], appliesTo: "Ondins" },
+      { names: ["La Vague Sans Fin"], appliesTo: "Sirènes" },
+      { names: ["La Vague Sans Fin"], appliesTo: "Léviathans" },
+      { names: ["Le Socle du Monde"], appliesTo: "Cristallins" },
+      { names: ["Le Socle du Monde"], appliesTo: "Troglodytes" },
+      { names: ["Le Socle du Monde"], appliesTo: "Bêtes Chtoniennes" },
+    ],
     statWeights: { atk: 1.10, def: 1.10 },
     guaranteedKeywords: [],
     likelyKeywords: { "Fureur": 0.40, "Résistance X": 0.40, "Régénération": 0.35, "Esquive": 0.35,
@@ -487,6 +502,46 @@ export const FACTIONS: Record<string, {
     // The four elements are now clans of the single race "Élémentaire";
     // their distinct playstyles live in clanProfiles (consumed by the
     // generator). "Le Souffle des Cimes" was formerly the race "Air/Tempête".
+    //
+    // ARBITRAGE INVERSE des trois lots de la Nécropole : La Vague Sans Fin GARDE
+    // ses `statWeights`, et les trois races d'eau n'en déclarent aucun.
+    //
+    // La raison est plus forte que le critère des Ghoules, et elle est propre à
+    // cette faction : « Élémentaire » appartient aux QUATRE clans, donc son corps
+    // dépend légitimement du clan choisi. Un profil de race ne sait pas exprimer
+    // ça — il vaudrait pour les quatre à la fois. Céder aurait donc cassé quelque
+    // chose des deux côtés : donner 0.90/1.10 à « Élémentaire » aurait attribué le
+    // corps de l'EAU à un élémentaire SANS clan (aujourd'hui 1.10/1.10), et ne
+    // rien lui donner aurait renvoyé l'élémentaire d'eau à cette même ombrelle.
+    //
+    // RÈGLE À RETENIR : une race partagée par plusieurs clans ne peut pas porter
+    // de gabarit, donc un clan qui l'héberge ne peut jamais céder le sien.
+    //
+    // Le Léviathan n'y perd rien : `statTotal` vient du mana et de la rareté
+    // (`mana*2+1`), les poids ne décident que du PARTAGE ATK/DEF. À 0.90/1.10 il
+    // reste un colosse, simplement tourné vers l'encaissement.
+    raceProfiles: {
+      // Ondins : la phalange du récif — il tient la ligne et rend les coups.
+      "Ondins": { likelyKeywords: { "Provocation": 0.55, "Première Frappe": 0.50, "Armure": 0.45, "Riposte X": 0.45, "Solidarité X": 0.40, "Précision": 0.35 } },
+      // Sirènes : le chant qui commande. Canalisation monte à 0.55 pour DÉPASSER
+      // l'ombrelle (0.45), sans quoi la ligne ne dirait rien.
+      "Sirènes": { likelyKeywords: { "Domination": 0.60, "Canalisation": 0.55, "Malédiction": 0.50, "Contresort": 0.45, "Augure": 0.40, "Ombre": 0.30 } },
+      // Léviathans : le colosse des abysses. Fureur (0.40) et Carnage X (0.30)
+      // doivent eux aussi dépasser l'ombrelle.
+      "Léviathans": { likelyKeywords: { "Piétinement": 0.60, "Terreur": 0.55, "Dévoration": 0.50, "Fureur": 0.50, "Carnage X": 0.40, "Indestructible": 0.35 } },
+      // Le Socle du Monde suit la MÊME règle que l'Eau, et pour la même raison :
+      // il héberge « Élémentaire », donc il ne peut pas céder ses `statWeights`.
+      // Les trois races partagent son corps 0.85/1.50 et se séparent aux pouvoirs.
+      // Cristallins : le conduit et le miroir — Canalisation monte à 0.55 et
+      // Permutation à 0.40 pour DÉPASSER l'ombrelle (0.45 et 0.30).
+      "Cristallins": { likelyKeywords: { "Canalisation": 0.55, "Contresort": 0.50, "Précision": 0.45, "Permutation": 0.40, "Première Frappe": 0.35, "Bénédiction": 0.30 } },
+      // Troglodytes : ils vivent SOUS le monde — Creuser X lit le dessous du deck,
+      // ce qu'aucune autre race du jeu ne fait.
+      "Troglodytes": { likelyKeywords: { "Creuser X": 0.60, "Traque": 0.55, "Ombre": 0.50, "Invisible": 0.45, "Instinct de meute X": 0.40, "Célérité": 0.30 } },
+      // Bêtes Chtoniennes : ce qui remonte de la roche. Fureur (0.40) et Carnage X
+      // (0.30) doivent dépasser l'ombrelle.
+      "Bêtes Chtoniennes": { likelyKeywords: { "Piétinement": 0.60, "Fureur": 0.55, "Terreur": 0.50, "Convocation X": 0.50, "Carnage X": 0.45, "Persécution X": 0.35 } },
+    },
     clanProfiles: {
       "La Colère des Flammes": { statWeights: { atk: 1.40, def: 0.75 }, likelyKeywords: { "Fureur": 0.70, "Souffle de feu X": 0.60, "Gloire +X/+Y": 0.50, "Sacrifice": 0.35, "Combustion": 0.50, "Carnage X": 0.40 } },
       "Le Socle du Monde": { statWeights: { atk: 0.85, def: 1.50 }, likelyKeywords: { "Provocation": 0.70, "Armure": 0.65, "Ancré": 0.60, "Résistance X": 0.55, "Indestructible": 0.30, "Riposte X": 0.45 } },

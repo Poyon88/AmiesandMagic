@@ -969,6 +969,12 @@
       "Poltergeists": "喧噪鬼",
       "Dullahans": "无头骑士",
       "Sluaghs": "亡魂群",
+      "Ondins": "水精灵",
+      "Sirènes": "塞壬",
+      "Léviathans": "利维坦",
+      "Cristallins": "晶化体",
+      "Troglodytes": "穴居者",
+      "Bêtes Chtoniennes": "地渊巨兽",
       "Elfes Corrompus": "堕落精灵",
       "Araignées Géantes": "巨型蜘蛛",
       "Démons": "恶魔",
@@ -1252,6 +1258,36 @@
         "def": "亡魂群",
         "bare": "亡魂群",
         "de": "亡魂群"
+      },
+      "Ondins": {
+        "def": "水精灵",
+        "bare": "水精灵",
+        "de": "水精灵"
+      },
+      "Sirènes": {
+        "def": "塞壬",
+        "bare": "塞壬",
+        "de": "塞壬"
+      },
+      "Léviathans": {
+        "def": "利维坦",
+        "bare": "利维坦",
+        "de": "利维坦"
+      },
+      "Cristallins": {
+        "def": "晶化体",
+        "bare": "晶化体",
+        "de": "晶化体"
+      },
+      "Troglodytes": {
+        "def": "穴居者",
+        "bare": "穴居者",
+        "de": "穴居者"
+      },
+      "Bêtes Chtoniennes": {
+        "def": "地渊巨兽",
+        "bare": "地渊巨兽",
+        "de": "地渊巨兽"
       },
       "Elfes Corrompus": {
         "def": "堕落精灵",

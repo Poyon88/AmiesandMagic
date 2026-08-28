@@ -96,6 +96,8 @@ Chaque faction a un **nom de code interne** (utilisé en base et dans le moteur,
 ### 3.4 🏯 Empire du Milieu — code interne `EmpireDuMilieu` — *Neutre* *(nouvelle)*
 - **Races** : Humains · **Nagas** *(nouvelle race — profil en §4)*
 - **Clans** : **Les Hordes des Steppes** (Mongols), **L'Empire de Jade** (Chine antique), **Les Lames de l'Ombre** (Japon féodal — samouraïs & ninjas), **Les Défenseurs d'Ivoire** (Khmer/Angkor — éléphants de guerre) — profils distincts en §5.2. Les quatre clans restent ouverts aux **Humains** ; les **Nagas** n'ouvrent que **Les Défenseurs d'Ivoire**, qui devient le second clan du jeu à héberger deux races. La faction n'a donc plus de clan transversal (`appliesTo: "all"`) : sans race choisie, le sélecteur de clan reste vide.
+
+> **Le Socle du Monde** (2026-08-28) : trois races de terre — **Cristallins**, **Troglodytes**, **Bêtes Chtoniennes** — sur exactement le même arbitrage que l'Eau, et pour la même raison : le clan héberge « Élémentaire », donc il ne peut pas céder ses `statWeights`. Les trois partagent son corps **0.85/1.50** — le plus défensif du jeu — et se séparent aux pouvoirs. Le **Troglodyte** est la seule race du jeu à jouer **Creuser X**, qui lit le *dessous* du deck. Le groupe transversal ayant déjà été scindé pour l'Eau, ce lot n'a eu qu'à ajouter trois rattachements.
 - **Philosophie** : Stratégie et contrôle. Discipline, formations, mysticisme et furtivité — la faction qui joue au tour d'avance. Les nagas, serpents gardiens des temples d'Angkor, en sont le versant sacré : là où les éléphants enfoncent les lignes, eux veillent, esquivent et contre-lancent. Poids stats faction (ombrelle) : légèrement défensif (0.95 / 1.10).
 - **Pouvoirs privilégiés (ombrelle)** : Tactique X (0.50), Divination (0.45), Contresort (0.40), Provocation (0.40), Première Frappe (0.40), Augure (0.35), Convocation X (0.35), Célérité (0.30), Traque (0.30).
 - **Pouvoirs interdits** : Poison, Corruption, Maléfice, Pacte de sang, Nécrophagie.
@@ -116,8 +118,8 @@ Chaque faction a un **nom de code interne** (utilisé en base et dans le moteur,
 - **Pouvoirs interdits** : Armure, Commandement, Invisible, Ancré, Canalisation, Contresort.
 
 ### 3.7 🌀 Élémentaires — « Les Primordiaux » — *Neutre*
-- **Race** : Élémentaire (unique)
-- **Clans** : **La Colère des Flammes** (Feu) · **Le Socle du Monde** (Terre) · **La Vague Sans Fin** (Eau) · **Le Souffle des Cimes** (Air) — clans à style de combat distinct (voir §5.1).
+- **Races** : Élémentaire · **Ondins** · **Sirènes** · **Léviathans** *(Eau)* · **Cristallins** · **Troglodytes** · **Bêtes Chtoniennes** *(Terre)* — *six nouvelles races, profils en §4*
+- **Clans** : **La Colère des Flammes** (Feu) · **Le Socle du Monde** (Terre — Élémentaire + Cristallins + Troglodytes + Bêtes Chtoniennes) · **La Vague Sans Fin** (Eau — Élémentaire + Ondins + Sirènes + Léviathans) · **Le Souffle des Cimes** (Air) — clans à style de combat distinct (voir §5.1).
 - **Philosophie** : Forces primordiales de la nature. Chaque élément a son propre style. Poids stats : équilibré (1.10 / 1.10).
 - **Pouvoirs privilégiés (niveau faction)** : Canalisation (0.45), Fureur (0.40), Résistance X (0.40), Métamorphose (0.35), Régénération (0.35), Esquive (0.35), Permutation (0.30), Mimique (0.30), Carnage X (0.30).
 - **Pouvoirs interdits** : Loyauté, Commandement, Bouclier, Pillage X.
@@ -185,6 +187,12 @@ Certaines factions différencient leurs races par un profil de pouvoirs propre (
 | Nécropole | **Poltergeists** *(Voile Hurlant)* | 0.90 / 0.70 | Douleur X (0.55), Invisible (0.55), Esquive (0.50), Pillage X (0.45), Ombre (0.40), Carnage X (0.35) |
 | Nécropole | **Dullahans** *(Voile Hurlant)* | 1.35 / 0.85 | Touché mortel (0.60), Première Frappe (0.55), Célérité (0.50), Précision (0.45), Raid (0.40), Persécution X (0.35) |
 | Nécropole | **Sluaghs** *(Voile Hurlant)* | 1.10 / 0.65 | Vol (0.80), Instinct de meute X (0.60), Rappel (0.60), Convocation X (0.55), Esquive (0.45), Ombre (0.35) |
+| Primordiaux | **Ondins** *(Vague Sans Fin)* | *corps du clan (0.90 / 1.10)* | Provocation (0.55), Première Frappe (0.50), Armure (0.45), Riposte X (0.45), Solidarité X (0.40), Précision (0.35) |
+| Primordiaux | **Sirènes** *(Vague Sans Fin)* | *corps du clan (0.90 / 1.10)* | Domination (0.60), Canalisation (0.55), Malédiction (0.50), Contresort (0.45), Augure (0.40), Ombre (0.30) |
+| Primordiaux | **Léviathans** *(Vague Sans Fin)* | *corps du clan (0.90 / 1.10)* | Piétinement (0.60), Terreur (0.55), Dévoration (0.50), Fureur (0.50), Carnage X (0.40), Indestructible (0.35) |
+| Primordiaux | **Cristallins** *(Socle du Monde)* | *corps du clan (0.85 / 1.50)* | Canalisation (0.55), Contresort (0.50), Précision (0.45), Permutation (0.40), Première Frappe (0.35), Bénédiction (0.30) |
+| Primordiaux | **Troglodytes** *(Socle du Monde)* | *corps du clan (0.85 / 1.50)* | Creuser X (0.60), Traque (0.55), Ombre (0.50), Invisible (0.45), Instinct de meute X (0.40), Célérité (0.30) |
+| Primordiaux | **Bêtes Chtoniennes** *(Socle du Monde)* | *corps du clan (0.85 / 1.50)* | Piétinement (0.60), Fureur (0.55), Terreur (0.50), Convocation X (0.50), Carnage X (0.45), Persécution X (0.35) |
 
 > **La Cour Écarlate** (2026-08-27) : le clan est passé de une à **cinq** races et a **cédé ses `statWeights`** — l'arbitrage du Clan des Premiers Géants, pas celui des Nagas. Chaque race porte donc son corps, les Vampires reprenant à l'identique le 1.25/0.90 que le clan portait. Sa table de pouvoirs a été **ramenée au noyau du sang** (Drain de vie 0.60, Vampirisme X 0.55, Pacte de sang 0.40) : tout ce qui n'appartenait qu'aux Vampires est redescendu sur leur profil de race. Sans ce dégraissage, le poids de clan — qui gagne pouvoir par pouvoir — aurait plafonné le Vol des Chiroptères et des Gargouilles à 0.30. Le **Chiroptère** rejoint Dragons, Aigles Géants, Griffons et Faucons dans la liste des races à **Vol garanti** ; la Gargouille, perchée plutôt que volante, en reste au tirage.
 
@@ -211,6 +219,8 @@ Certaines factions différencient leurs races par un profil de pouvoirs propre (
 | 🔥 **La Colère des Flammes** *(Feu)* | 1.40 / 0.75 | Fureur (0.70), Souffle de feu X (0.60), Gloire +X/+Y (0.50), Combustion (0.50), Carnage X (0.40), Sacrifice (0.35) |
 | 🪨 **Le Socle du Monde** *(Terre)* | 0.85 / 1.50 | Provocation (0.70), Armure (0.65), Ancré (0.60), Résistance X (0.55), Riposte X (0.45), Indestructible (0.30) |
 | 💧 **La Vague Sans Fin** *(Eau)* | 0.90 / 1.10 | Régénération (0.65), Drain de vie (0.55), Paralysie (0.50), Esquive (0.50), Résistance X (0.40), Bénédiction (0.35) |
+
+> **La Vague Sans Fin** (2026-08-28) : trois races d'eau ajoutées — **Ondins**, **Sirènes**, **Léviathans**. **Arbitrage INVERSE des trois lots de la Nécropole : le clan GARDE ses `statWeights`**, et pour une raison plus forte que le critère des Ghoules. « Élémentaire » appartient aux **quatre** clans, donc son corps dépend légitimement du clan choisi — un profil de race ne sait pas l'exprimer, il vaudrait pour les quatre. Céder aurait cassé quelque chose des deux côtés : donner 0.90/1.10 à « Élémentaire » aurait attribué le corps de l'**eau** à un élémentaire **sans clan** (aujourd'hui 1.10/1.10), et ne rien lui donner aurait renvoyé l'élémentaire d'eau à cette même ombrelle. **Règle générale : une race partagée par plusieurs clans ne peut pas porter de gabarit, donc un clan qui l'héberge ne peut jamais céder le sien.** Le Léviathan n'y perd rien : `statTotal` vient du mana et de la rareté (`mana*2+1`), les poids ne décident que du **partage** ATK/DEF — à 0.90/1.10 il reste un colosse, tourné vers l'encaissement. Le groupe transversal `appliesTo: "all"` a par ailleurs dû être **scindé** (piège des Nagas) ; contrepartie assumée : sans race choisie, le sélecteur de clan de cette faction reste vide.
 | 🌬️ **Le Souffle des Cimes** *(Air)* | 1.15 / 0.85 | Vol (0.80), Traque (0.65), Célérité (0.50), Esquive (0.45), Première Frappe (0.40), Augure (0.35) |
 
 ### 5.2 Factions humaines (profils distincts)

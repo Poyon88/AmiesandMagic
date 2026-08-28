@@ -109,6 +109,14 @@ export async function POST(request: Request) {
     "Poltergeists": "poltergeist manifestation, a half-seen twisted face forming in a whirl of hurled furniture and shattered crockery, translucent grasping limbs, objects frozen mid-flight, cold blue glow, no solid body",
     "Dullahans": "headless horseman dullahan, black plate armour on a rotting skeletal steed, severed grinning head carried under one arm, whip of human spine, green corpse-light in the eyes of the held head",
     "Sluaghs": "sluagh host of the restless dead, a dense flock of gaunt winged spirits pouring across a night sky, ragged membranous wings and clawed hands, hollow wailing faces, a single dark tide of souls",
+    // Primordiaux (La Vague Sans Fin)
+    "Ondins": "undine reef warrior, blue-green scaled humanoid with finned forearms and a crested head, coral-plated armour, long barbed trident, calm luminous eyes, water streaming from the shoulders",
+    "Sirènes": "siren enchantress, humanoid torso above a long iridescent fish tail, wet flowing hair strung with pearls, webbed hands raised mid-song, hypnotic pale eyes, faint sound-ripples in the water around her",
+    "Léviathans": "colossal leviathan of the abyss, immense serpentine sea beast breaching, barnacle-crusted armoured hide, rows of jagged teeth in a cavernous maw, ridged dorsal fins, dwarfing the waves around it",
+    // Primordiaux (Le Socle du Monde)
+    "Cristallins": "crystalline elemental, humanoid figure grown from faceted quartz and geode shards, light refracting through a translucent body, jagged mineral spurs at the shoulders, glowing core visible within the chest",
+    "Troglodytes": "subterranean troglodyte, pale hairless cave dweller with oversized lidless eyes and elongated grasping fingers, stooped from low tunnels, stone-tipped spear, clinging to a cavern wall",
+    "Bêtes Chtoniennes": "chthonic beast erupting from bedrock, vast burrowing horror of segmented stone-plated chitin, circular maw ringed with grinding teeth, blind and eyeless, showering earth and rubble",
   };
   // For factions whose visual identity lives on the clan (Élémentaires: race
   // "Élémentaire", clan = element), prefer the clan-keyed descriptor.
@@ -267,6 +275,12 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
           "Poltergeists": ["poltergeist", "esprit frappeur"],
           "Dullahans": ["dullahan", "headless horseman", "cavalier sans tête"],
           "Sluaghs": ["sluagh", "host of the dead", "spirit flock"],
+          "Ondins": ["undine", "ondin", "merfolk"],
+          "Sirènes": ["siren", "sirène", "mermaid"],
+          "Léviathans": ["leviathan", "léviathan", "sea monster"],
+          "Cristallins": ["crystalline", "cristallin", "crystal being"],
+          "Troglodytes": ["troglodyte", "cave dweller"],
+          "Bêtes Chtoniennes": ["chthonic", "chtonien", "burrowing horror"],
         };
         // Get all wrong terms: other races in the faction, plus — for clan-tuned
         // factions (Élémentaires) — the sibling clans' terms so a Feu card doesn't

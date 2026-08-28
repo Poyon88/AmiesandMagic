@@ -969,6 +969,12 @@
       "Poltergeists": "Poltergeister",
       "Dullahans": "Dullahans",
       "Sluaghs": "Sluaghs",
+      "Ondins": "Undinen",
+      "Sirènes": "Sirenen",
+      "Léviathans": "Leviathane",
+      "Cristallins": "Kristalline",
+      "Troglodytes": "Troglodyten",
+      "Bêtes Chtoniennes": "Chthonische Bestien",
       "Elfes Corrompus": "Verderbte Elfen",
       "Araignées Géantes": "Riesenspinnen",
       "Démons": "Dämonen",
@@ -1252,6 +1258,36 @@
         "def": "der Sluagh",
         "bare": "Sluagh",
         "de": "des Sluaghs"
+      },
+      "Ondins": {
+        "def": "der Undin",
+        "bare": "Undin",
+        "de": "des Undins"
+      },
+      "Sirènes": {
+        "def": "die Sirene",
+        "bare": "Sirene",
+        "de": "der Sirene"
+      },
+      "Léviathans": {
+        "def": "der Leviathan",
+        "bare": "Leviathan",
+        "de": "des Leviathans"
+      },
+      "Cristallins": {
+        "def": "der Kristalline",
+        "bare": "Kristalline",
+        "de": "des Kristallinen"
+      },
+      "Troglodytes": {
+        "def": "der Troglodyt",
+        "bare": "Troglodyt",
+        "de": "des Troglodyten"
+      },
+      "Bêtes Chtoniennes": {
+        "def": "die Chthonische Bestie",
+        "bare": "Chthonische Bestie",
+        "de": "der Chthonischen Bestie"
       },
       "Elfes Corrompus": {
         "def": "der Verdorbene Elf",

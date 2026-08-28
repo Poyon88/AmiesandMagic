@@ -176,6 +176,18 @@ export const GRANULAR_RACE_DESCRIPTORS: Record<string, string> = {
     'A headless dullahan — upright armoured rider\'s silhouette in black plate, the neck a clean stump, its own severed grinning head carried under one arm and lit from within by green corpse-light, a whip of human spine coiled at the hip.',
   'Sluaghs':
     'A humanoid sluagh — gaunt winged spirit, ragged membranous wings swept back like a tattered cloak, hollow wailing face, long clawed hands, the shapes of lesser souls trailing in its wake.',
+  'Ondins':
+    'A humanoid undine — bipedal reef warrior, blue-green scaled skin, finned forearms and a crested ridge along the skull, coral-plated armour over the shoulders, calm luminous eyes, water running constantly from the body.',
+  'Sirènes':
+    'A siren — humanoid torso and arms above a long iridescent fish tail, wet flowing hair strung with pearls and small shells, webbed hands, hypnotic pale eyes, caught mid-song.',
+  'Léviathans':
+    'A humanoid leviathan — towering bipedal abyssal beast, barnacle-crusted armoured hide, ridged dorsal fins running down the back, a cavernous maw of jagged teeth, small cold eyes set deep, immense at any scale.',
+  'Cristallins':
+    'A humanoid crystalline — bipedal figure grown from faceted quartz and geode shards, light refracting through a translucent body, jagged mineral spurs along the shoulders and forearms, a glowing core visible within the chest.',
+  'Troglodytes':
+    'A humanoid troglodyte — pale hairless cave dweller, oversized lidless eyes adapted to the dark, elongated grasping fingers, a frame stooped from a life in low tunnels, stone-tipped spear in hand.',
+  'Bêtes Chtoniennes':
+    'A humanoid chthonic beast — towering bipedal horror of the deep earth, segmented stone-plated chitin, a circular maw ringed with grinding teeth in place of a face, blind and eyeless, dust and rubble falling from its plates.',
 };
 
 // Physical features per race. Kept short so it doesn't drown the faction layer.

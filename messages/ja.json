@@ -969,6 +969,12 @@
       "Poltergeists": "ポルターガイスト",
       "Dullahans": "デュラハン",
       "Sluaghs": "スルーア",
+      "Ondins": "ウンディーネ",
+      "Sirènes": "セイレーン",
+      "Léviathans": "リヴァイアサン",
+      "Cristallins": "クリスタリン",
+      "Troglodytes": "トログロダイト",
+      "Bêtes Chtoniennes": "地底の獣",
       "Elfes Corrompus": "堕落したエルフ",
       "Araignées Géantes": "巨大蜘蛛",
       "Démons": "デーモン",
@@ -1252,6 +1258,36 @@
         "def": "スルーア",
         "bare": "スルーア",
         "de": "スルーアの"
+      },
+      "Ondins": {
+        "def": "ウンディーネ",
+        "bare": "ウンディーネ",
+        "de": "ウンディーネの"
+      },
+      "Sirènes": {
+        "def": "セイレーン",
+        "bare": "セイレーン",
+        "de": "セイレーンの"
+      },
+      "Léviathans": {
+        "def": "リヴァイアサン",
+        "bare": "リヴァイアサン",
+        "de": "リヴァイアサンの"
+      },
+      "Cristallins": {
+        "def": "クリスタリン",
+        "bare": "クリスタリン",
+        "de": "クリスタリンの"
+      },
+      "Troglodytes": {
+        "def": "トログロダイト",
+        "bare": "トログロダイト",
+        "de": "トログロダイトの"
+      },
+      "Bêtes Chtoniennes": {
+        "def": "地底の獣",
+        "bare": "地底の獣",
+        "de": "地底の獣の"
       },
       "Elfes Corrompus": {
         "def": "堕落したエルフ",
