@@ -2167,6 +2167,8 @@
     "all_random": "Alle Parameter zufällig",
     "launch": "Starten",
     "budget_system_reference": "BUDGETSYSTEM – REFERENZ",
+    "cost_credit": "{points} Pkt. durch Zusatzkosten zurückgegeben",
+    "cost_credit_title": "Kosten zusätzlich zum Mana benachteiligen die Karte und finanzieren so den Rest. Erwachen ist ausgenommen — als alternative Kosten ersetzt es Mana.",
     "panel_mana_rarity": "SELTENHEITSVERTEILUNG NACH MANAKOSTEN (BULK-MODUS)",
     "mana_th": "Mana",
     "panel_rarity_multipliers": "MULTIPLIKATOREN NACH SELTENHEIT",

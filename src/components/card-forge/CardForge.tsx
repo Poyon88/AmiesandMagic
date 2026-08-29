@@ -9,9 +9,11 @@ import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import { generateCardStats, pickRarity, buildId } from "@/lib/card-engine/generator";
-import { RARITIES, FACTIONS, TYPES, KEYWORDS, CREATURE_LABEL_TO_ENGINE_ID, RARITY_WEIGHTS_BY_MANA, RARITY_MAP, ALIGNMENTS, CURATED_KEYWORD_MODES, getClanNamesForRace, getFactionForRace, getFactionDisplayName } from "@/lib/card-engine/constants";
+import { additionalCostPoints, RARITIES, FACTIONS, TYPES, KEYWORDS, CREATURE_LABEL_TO_ENGINE_ID, RARITY_WEIGHTS_BY_MANA, RARITY_MAP, ALIGNMENTS, CURATED_KEYWORD_MODES, getClanNamesForRace, getFactionForRace, getFactionDisplayName } from "@/lib/card-engine/constants";
 import CardVisual, { KEYWORD_SYMBOLS } from "./CardVisual";
 import ComposedEffectsEditor from "./ComposedEffectsEditor";
+import BalanceEditor from "./BalanceEditor";
+import { applyBalanceOverrides, loadBalanceOverrides } from "@/lib/card-engine/balance";
 import CostListEditor from "./CostListEditor";
 import LinkedCardsPicker, { invalidateLinkedCardsCatalog } from "./LinkedCardsPicker";
 import KeywordIcon from "@/components/shared/KeywordIcon";
@@ -1825,6 +1827,18 @@ export default function CardForge() {
   const manualBudgetTotal = Math.round(manualMana * 10 * (RARITY_MAP[rarity]?.multiplier ?? 1));
   const manualBudgetUsed = Math.round(
     (type === "Unité" ? (manualAttack * 5 + manualDefense * 4) : manualPower * 5)
+    // COÛTS ADDITIONNELS : ils RENDENT des points (somme négative). Un coût payé
+    // en plus du mana dessert son porteur et finance donc le reste de la carte,
+    // comme le font déjà Douleur X et Pauvreté X. L'éveil en est exclu : coût
+    // ALTERNATIF, il remplace le mana et déplace le budget entier au lieu de le
+    // réduire — cf. ADDITIONAL_COST_POINTS.
+    + additionalCostPoints({
+      lifeCost: manualLifeCost,
+      discardCost: manualDiscardCost,
+      sacrificeCost: manualSacrificeCost,
+      exileCost: manualExileCost,
+      topdeckCost: manualTopdeckCost,
+    })
     + manualKeywords.reduce((sum, kw) => {
       const kwDef = KEYWORDS[kw];
       if (!kwDef) return sum;
@@ -1835,6 +1849,12 @@ export default function CardForge() {
       return sum + kwDef.cost + kwDef.costPerX * Math.max(0, x - 1);
     }, 0)
   );
+  // Crédit rendu par les coûts additionnels, isolé pour l'afficher : sans lui la
+  // jauge reculerait sans qu'on sache pourquoi.
+  const manualCostCredit = additionalCostPoints({
+    lifeCost: manualLifeCost, discardCost: manualDiscardCost, sacrificeCost: manualSacrificeCost,
+    exileCost: manualExileCost, topdeckCost: manualTopdeckCost,
+  });
   const budgetRatio = manualBudgetTotal > 0 ? manualBudgetUsed / manualBudgetTotal : 0;
   const budgetColor = budgetRatio <= 0.85 ? "#27ae60" : budgetRatio <= 1.0 ? "#f39c12" : "#e74c3c";
 
@@ -1949,6 +1969,12 @@ export default function CardForge() {
   }, []);
 
   useEffect(() => { loadSets(); }, [loadSets]);
+
+  // BARÈME : réappliquer les surcharges mémorisées DÈS L'OUVERTURE de la forge,
+  // et pas seulement à l'ouverture de l'onglet Budget. Sans cela, composer une
+  // carte sans être passé par le barème donnait une jauge calculée sur les
+  // valeurs d'origine — silencieusement fausse.
+  useEffect(() => { applyBalanceOverrides(loadBalanceOverrides()); }, []);
   // Without this, the Convocation X / Convocations multiples / Lycanthropie X
   // token cascade pickers in the manual forge would have nothing to offer
   // until the admin first opens the Tokens tab and saved something — the
@@ -2844,7 +2870,10 @@ export default function CardForge() {
           <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
 
             {/* Controls */}
-            <div style={{ width: 235, minHeight: 0, padding: "16px 13px", borderRight: "1px solid #e8e8e8", background: "#fafafa", display: "flex", flexDirection: "column", gap: 16, overflowY: "auto" }}>
+            {/* `flexShrink: 0` ici AUSSI : sans lui, une fenêtre étroite
+                rétrécirait les deux colonnes latérales à parts égales, alors que
+                c'est le centre qui a de la place à céder. */}
+            <div style={{ width: 235, flexShrink: 0, minHeight: 0, padding: "16px 13px", borderRight: "1px solid #e8e8e8", background: "#fafafa", display: "flex", flexDirection: "column", gap: 16, overflowY: "auto" }}>
               <Sec title={tf('section_faction')}>
                 {Object.entries(FACTIONS).map(([f, fc]) => (
                   <button key={f} onClick={() => setFaction(f)} style={{
@@ -3257,7 +3286,13 @@ export default function CardForge() {
             </div>
 
             {/* Right panel: History or Edit Form */}
-            <div style={{ width: 240, minHeight: 0, padding: "14px 10px", borderLeft: "1px solid #e8e8e8", background: "#fafafa", overflowY: "auto" }}>
+            {/* Colonne de droite ÉLARGIE (240 → 360) : elle porte la grille
+                mana/ATK/DEF et la longue liste de mots-clés, qui se retrouvaient
+                rognés. `flexShrink: 0` la protège — sans lui, la colonne cède la
+                première quand la fenêtre se resserre, et on retombe sur le
+                problème. Le centre est en `flex: 1` : c'est donc lui qui rend la
+                place, ce qu'il avait de reste (la carte y flottait dans le vide). */}
+            <div style={{ width: 360, flexShrink: 0, minHeight: 0, padding: "14px 10px", borderLeft: "1px solid #e8e8e8", background: "#fafafa", overflowY: "auto" }}>
 
               {forgeMode === "auto" && !card && (
                 <>
@@ -3635,6 +3670,14 @@ export default function CardForge() {
                     </div>
                     <span style={{ color: budgetColor, fontWeight: 700, fontFamily: "'Cinzel',serif" }}>{manualBudgetUsed}/{manualBudgetTotal}</span>
                   </div>
+                  {manualCostCredit < 0 && (
+                    <div
+                      style={{ fontSize: 8, color: "#27ae60", marginTop: -2 }}
+                      title={tf('cost_credit_title')}
+                    >
+                      {tf('cost_credit', { points: manualCostCredit })}
+                    </div>
+                  )}
 
                   {/* Capacités */}
                   <div style={{ position: "relative" }}>
@@ -6090,7 +6133,13 @@ export default function CardForge() {
         {tab === "budget" && (
           <div style={{ flex: 1, padding: 22, overflowY: "auto" }}>
             <div style={{ maxWidth: 820, display: "flex", flexDirection: "column", gap: 18 }}>
-              <div style={{ fontSize: 8, color: "#aaa", letterSpacing: 2 }}>{tf('budget_system_reference')}</div>
+              {/* Le BARÈME complet, consultable et réglable. Placé ici plutôt que
+                  dans un onglet de plus : cet onglet est déjà celui du modèle de
+                  coût, et séparer la référence de son réglage obligerait à faire
+                  l'aller-retour à chaque essai. */}
+              <BalanceEditor />
+
+              <div style={{ fontSize: 8, color: "#aaa", letterSpacing: 2, marginTop: 10 }}>{tf('budget_system_reference')}</div>
 
               {/* Mana-Rarity distribution */}
               <Panel title={tf('panel_mana_rarity')}>

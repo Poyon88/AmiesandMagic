@@ -2167,6 +2167,8 @@
     "all_random": "Todos los parámetros aleatorios",
     "launch": "Iniciar",
     "budget_system_reference": "SISTEMA DE PRESUPUESTO — REFERENCIA",
+    "cost_credit": "{points} pts devueltos por los costes adicionales",
+    "cost_credit_title": "Un coste pagado además del maná perjudica a la carta: financia el resto. El despertar queda excluido — coste alternativo, sustituye al maná.",
     "panel_mana_rarity": "DISTRIBUCIÓN DE RAREZA POR COSTE DE MANÁ (MODO BULK)",
     "mana_th": "Maná",
     "panel_rarity_multipliers": "MULTIPLICADORES POR RAREZA",

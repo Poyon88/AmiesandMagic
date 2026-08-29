@@ -2167,6 +2167,8 @@
     "all_random": "Tutti i parametri casuali",
     "launch": "Avvia",
     "budget_system_reference": "SISTEMA DI BUDGET — RIFERIMENTO",
+    "cost_credit": "{points} pt restituiti dai costi aggiuntivi",
+    "cost_credit_title": "Un costo pagato oltre al mana penalizza la carta: finanzia il resto. Il risveglio è escluso — costo alternativo, sostituisce il mana.",
     "panel_mana_rarity": "DISTRIBUZIONE RARITÀ PER COSTO DI MANA (MODALITÀ BULK)",
     "mana_th": "Mana",
     "panel_rarity_multipliers": "MOLTIPLICATORI PER RARITÀ",

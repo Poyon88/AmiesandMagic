@@ -2167,6 +2167,8 @@
     "all_random": "全部随机",
     "launch": "启动",
     "budget_system_reference": "费用体系 — 参考",
+    "cost_credit": "附加代价返还 {points} 点",
+    "cost_credit_title": "在法力之外支付的代价对卡牌不利，因此可用于抵扣其余部分。觉醒除外——它是替代代价，取代法力。",
     "panel_mana_rarity": "法力费用稀有度分布（批量模式）",
     "mana_th": "法力",
     "panel_rarity_multipliers": "稀有度倍率",

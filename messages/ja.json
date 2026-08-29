@@ -2167,6 +2167,8 @@
     "all_random": "全パラメータランダム",
     "launch": "開始",
     "budget_system_reference": "バジェットシステム — 参照",
+    "cost_credit": "追加コストにより {points} ポイント還元",
+    "cost_credit_title": "マナに加えて支払うコストはカードを不利にするため、残りを賄う。覚醒は対象外——代替コストであり、マナを置き換える。",
     "panel_mana_rarity": "マナコスト別レアリティ分布（バルクモード）",
     "mana_th": "マナ",
     "panel_rarity_multipliers": "レアリティ別倍率",

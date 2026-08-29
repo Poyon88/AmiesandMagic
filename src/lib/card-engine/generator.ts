@@ -1,6 +1,6 @@
 import {
   RARITIES, RARITY_MAP, KEYWORDS, FACTIONS, deriveRaceForClan,
-  STAT_COST, MANA_BUDGET_BASE,
+  STAT_COST, BUDGET,
   MANA_WEIGHTS, MANA_WEIGHTS_BY_RARITY, RARITY_WEIGHTS_BY_MANA,
   RARITY_WEIGHTS_GLOBAL,
 } from './constants';
@@ -53,7 +53,7 @@ export function pickRarity() {
 
 function computeBudget(mana: number, rarityId: string) {
   const r = RARITY_MAP[rarityId];
-  const base = mana * MANA_BUDGET_BASE * r.multiplier;
+  const base = mana * BUDGET.base * r.multiplier;
   const variance = base * 0.10;
   return Math.round(randFloat(base - variance, base + variance));
 }

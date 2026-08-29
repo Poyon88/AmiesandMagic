@@ -1015,6 +1015,67 @@ export function getEffectiveAlignment(
 
 // 1 SE ≈ 4.5 pts · ATK légèrement plus chère (valeur tempo)
 export const STAT_COST = { atk: 5, def: 4 };
+
+/** COÛTS ADDITIONNELS — points RENDUS au budget de la carte.
+ *
+ *  Un coût additionnel se paie EN PLUS du mana : il dessert son porteur, donc il
+ *  finance le reste de la carte. Même logique que Douleur X (−3) et Pauvreté X
+ *  (−8), les deux seules capacités à coût négatif du registre.
+ *
+ *  Deux valeurs sont ANCRÉES sur une capacité existante, au point près :
+ *   · `life`    −3  ⇒ Douleur X vaut exactement −3 par dégât à votre héros.
+ *   · `discard` −5  ⇒ Inspiration X et Pillage X valent tous deux +5 par carte
+ *                     (piocher, ou faire défausser l'adversaire) ; défausser
+ *                     soi-même est la même quantité, de l'autre côté.
+ *
+ *  Trois sont EXTRAPOLÉES — cohérentes entre elles, mais rien dans le moteur ne
+ *  les confirme :
+ *   · `topdeck`  −3 ⇒ la carte n'est pas perdue, elle repart sur le dessus du
+ *                     deck : seul le tempo est payé, d'où moins qu'une défausse.
+ *   · `exile`    −2 ⇒ perte sèche mais AVEUGLE (cartes du deck, non choisies,
+ *                     peut-être jamais vues) : moins qu'une carte en main.
+ *   · `sacrifice` −12 ⇒ le plus lourd : une unité DÉJÀ en jeu, avec le tempo
+ *                     qu'elle a coûté. Suppose qu'on sacrifie le moins cher de
+ *                     ses alliés, pas une créature au prix de ses stats.
+ *
+ *  L'ÉVEIL est volontairement ABSENT. C'est un coût ALTERNATIF : il remplace le
+ *  mana au lieu de s'y ajouter, or c'est le mana qui fixe le budget
+ *  (`mana × MANA_BUDGET_BASE × multiplicateur`). Il déplace donc la formule
+ *  entière ; lui donner une valeur négative le compterait deux fois. */
+export const ADDITIONAL_COST_POINTS: {
+  life: number; discard: number; sacrifice: number; exile: number; topdeck: number;
+} = {
+  life: -3,
+  discard: -5,
+  sacrifice: -12,
+  exile: -2,
+  topdeck: -3,
+};
+
+/** Total des points rendus par les coûts additionnels d'une carte. Toujours ≤ 0.
+ *  Les valeurs absentes ou nulles ne comptent pas ; l'éveil est ignoré (cf.
+ *  ADDITIONAL_COST_POINTS). */
+export function additionalCostPoints(c: {
+  lifeCost?: number | null;
+  discardCost?: number | null;
+  sacrificeCost?: number | null;
+  exileCost?: number | null;
+  topdeckCost?: number | null;
+}): number {
+  const total = (c.lifeCost ?? 0) * ADDITIONAL_COST_POINTS.life
+    + (c.discardCost ?? 0) * ADDITIONAL_COST_POINTS.discard
+    + (c.sacrificeCost ?? 0) * ADDITIONAL_COST_POINTS.sacrifice
+    + (c.exileCost ?? 0) * ADDITIONAL_COST_POINTS.exile
+    + (c.topdeckCost ?? 0) * ADDITIONAL_COST_POINTS.topdeck;
+  // `0 * -3` vaut −0 en JavaScript, et une carte SANS coût additionnel aurait
+  // affiché « −0 » dans la jauge. `|| 0` le ramène à zéro positif.
+  return total || 0;
+}
+/** Base du budget : `mana × BASE × multiplicateur de rareté`.
+ *  Objet et non nombre nu : le barème de la forge peut le surcharger à chaud
+ *  (cf. `balance.ts`), ce qu'une constante primitive interdirait. */
+export const BUDGET = { base: 10 };
+/** @deprecated Lire `BUDGET.base`, seul champ que le barème peut surcharger. */
 export const MANA_BUDGET_BASE = 10;
 
 // Distribution pondérée du mana — courbe en cloche penchée vers le bas

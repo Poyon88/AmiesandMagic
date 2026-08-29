@@ -2167,6 +2167,8 @@
     "all_random": "Todos os parâmetros aleatórios",
     "launch": "Iniciar",
     "budget_system_reference": "SISTEMA DE ORÇAMENTO — REFERÊNCIA",
+    "cost_credit": "{points} pts devolvidos pelos custos adicionais",
+    "cost_credit_title": "Um custo pago além do mana prejudica a carta: financia o resto. O despertar está excluído — custo alternativo, substitui o mana.",
     "panel_mana_rarity": "DISTRIBUIÇÃO DE RARIDADE POR CUSTO DE MANA (MODO BULK)",
     "mana_th": "Mana",
     "panel_rarity_multipliers": "MULTIPLICADORES POR RARIDADE",

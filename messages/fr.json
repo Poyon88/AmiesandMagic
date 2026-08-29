@@ -2167,6 +2167,8 @@
     "all_random": "Tous paramètres aléatoires",
     "launch": "Lancer",
     "budget_system_reference": "SYSTÈME DE BUDGET — RÉFÉRENCE",
+    "cost_credit": "{points} pts rendus par les coûts additionnels",
+    "cost_credit_title": "Un coût payé en plus du mana dessert la carte : il finance le reste. L'éveil est exclu — coût alternatif, il remplace le mana.",
     "panel_mana_rarity": "DISTRIBUTION RARETÉ PAR COÛT DE MANA (MODE BULK)",
     "mana_th": "Mana",
     "panel_rarity_multipliers": "MULTIPLICATEURS PAR RARETÉ",

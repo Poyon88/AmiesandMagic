@@ -2167,6 +2167,8 @@
     "all_random": "All Random Parameters",
     "launch": "Launch",
     "budget_system_reference": "BUDGET SYSTEM — REFERENCE",
+    "cost_credit": "{points} pts returned by additional costs",
+    "cost_credit_title": "A cost paid on top of mana works against the card, so it funds the rest. Awakening is excluded — an alternative cost, it replaces mana.",
     "panel_mana_rarity": "RARITY DISTRIBUTION BY MANA COST (BULK MODE)",
     "mana_th": "Mana",
     "panel_rarity_multipliers": "MULTIPLIERS BY RARITY",
