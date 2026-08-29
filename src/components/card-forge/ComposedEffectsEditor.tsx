@@ -286,6 +286,70 @@ export default function ComposedEffectsEditor({
               <span style={labelStyle}>{tr('label_trigger')}</span>
               {sel(cap.trigger, triggers, (v) => patchCap(idx, { trigger: v }))}
 
+              {/* EMBLÈME — l'effet n'est pas joué maintenant : il est DÉPOSÉ sur
+                  un joueur et survit à cette carte. Un emblème composé se résout
+                  à chaque fin de tour de son porteur. */}
+              <span style={labelStyle}>{tr('label_emblem')}</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                <label style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, cursor: "pointer" }}>
+                  <input
+                    type="checkbox"
+                    checked={cap.effectKind === "emblem"}
+                    onChange={(e) => patchCap(idx, {
+                      effectKind: e.target.checked ? "emblem" : "immediate",
+                      ...(e.target.checked ? {} : { side: undefined }),
+                    })}
+                  />
+                  {tr('emblem_permanent')}
+                </label>
+                {cap.effectKind === "emblem" && (
+                  <>
+                    <label style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12 }}>
+                      {tr('label_emblem_side')}
+                      <select
+                        value={cap.side ?? "self"}
+                        onChange={(e) => patchCap(idx, { side: e.target.value as "self" | "opponent" })}
+                        style={{ fontSize: 12, padding: "2px 4px" }}
+                      >
+                        <option value="self">{tr('emblem_side_self')}</option>
+                        <option value="opponent">{tr('emblem_side_opponent')}</option>
+                      </select>
+                    </label>
+                    {/* Vide ou 0 ⇒ PERMANENT. Le champ n'est pas un compteur
+                        obligatoire : la permanence reste le défaut. */}
+                    <label style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12 }}>
+                      {tr('label_emblem_duration')}
+                      <input
+                        type="number"
+                        min={0}
+                        value={cap.duration ?? ""}
+                        placeholder="∞"
+                        onChange={(e) => {
+                          const n = parseInt(e.target.value, 10);
+                          patchCap(idx, { duration: Number.isFinite(n) && n > 0 ? n : undefined });
+                        }}
+                        style={{ fontSize: 12, padding: "2px 4px", width: 56 }}
+                      />
+                      <span style={{ fontSize: 11, color: "#8a6d3b" }}>
+                        {cap.duration ? tr('emblem_duration_turns') : tr('emblem_duration_permanent')}
+                      </span>
+                    </label>
+                  </>
+                )}
+              </div>
+              {/* Un déclencheur RÉPÉTITIF empile un emblème de plus à chaque
+                  occurrence — et un emblème composé à N piles se résout N fois.
+                  C'est jouable, mais il faut l'avoir voulu. */}
+              {cap.effectKind === "emblem"
+                && (cap.trigger === "on_attack" || cap.trigger === "on_end_of_turn") && (
+                <>
+                  <span />
+                  <span style={{ fontSize: 11, color: "#b9770e", fontStyle: "italic" }}>
+                    {tr('emblem_repeat_warning')}
+                  </span>
+                </>
+              )}
+
               <span style={labelStyle}>{tr('label_content')}</span>
               {sel(eff.content, COMPOSED_CONTENTS.map((o) => ({ v: o.v, l: tr(`content_${o.v}`) })), (v) => {
                 const m = COMPOSED_CONTENTS.find((c) => c.v === v)!;

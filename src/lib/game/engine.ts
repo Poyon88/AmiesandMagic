@@ -482,9 +482,14 @@ function capTriggerForMode(mode: import("./types").KeywordMode | undefined): imp
 }
 
 /** Présence de l'ability quel que soit le déclencheur (remplace l'ancien
- *  `card.keywords.includes`). */
+ *  `card.keywords.includes`).
+ *
+ *  Les EMBLÈMES sont exclus : une carte qui POSE un emblème de Terreur ne
+ *  possède pas Terreur, elle la confère au joueur. Sans cette exclusion, un
+ *  semeur d'emblème comptait comme une unité Terreur de son propre camp (et un
+ *  porteur d'emblème de Vol se serait mis à voler). */
 function hasKw(ci: CardInstance, kw: Keyword): boolean {
-  return getCapabilities(ci.card).some(c => c.abilityId === kw);
+  return getCapabilities(ci.card).some(c => c.abilityId === kw && c.effectKind !== "emblem");
 }
 
 /** Présence de l'ability sous un déclencheur donné. Ne concerne en pratique que
@@ -498,7 +503,7 @@ function isHiddenShadow(c: CardInstance): boolean {
 
 function hasKwInMode(ci: CardInstance, kw: Keyword, mode: import("./types").KeywordMode | undefined): boolean {
   const trigger = capTriggerForMode(mode);
-  return getCapabilities(ci.card).some(c => c.abilityId === kw && c.trigger === trigger);
+  return getCapabilities(ci.card).some(c => c.abilityId === kw && c.trigger === trigger && c.effectKind !== "emblem");
 }
 
 function hasKwOnPlay(ci: CardInstance, kw: Keyword): boolean { return hasKwInMode(ci, kw, undefined); }
@@ -1099,6 +1104,11 @@ export function endOfTurnTriggerTargets(state: GameState, trigger: import("./typ
   const controller = state.players.find(p => p.id === trigger.controllerId);
   const other = state.players.find(p => p.id !== trigger.controllerId);
   if (!controller || !other) return [];
+  // EMBLÈME : pas de source en jeu, la spec vient de l'emblème lui-même.
+  if (trigger.emblemIndex != null) {
+    const spec = (controller.emblems ?? [])[trigger.emblemIndex]?.composed?.target;
+    return spec ? composedTargetIds(spec, controller, other) : [];
+  }
   const source = controller.board.find(c => c.instanceId === trigger.sourceInstanceId);
   if (!source) return [];
   const cap = getCapabilities(source.card).find(c => c.uid === trigger.capUid && c.composed);
@@ -1452,8 +1462,11 @@ function runComposedCapsForCard(
   targetMap?: Record<string, string>,
   fallbackTargetId?: string,
 ): void {
+  // Les emblèmes de ce déclencheur se posent AVANT les effets composés : une
+  // aura d'emblème doit être en place quand l'effet qui la suit s'évalue.
+  placeEmblemsForTrigger(card, trigger, owner, opponent);
   for (const cap of getCapabilities(card)) {
-    if (!cap.composed || cap.trigger !== trigger) continue;
+    if (!composeExecutable(cap) || cap.trigger !== trigger) continue;
     // no-op pour les effets sur mesure (`_composed`), qui n'ont pas d'ability
     // nommée — cf. noteAbilitySfx.
     noteAbilitySfx(cap.abilityId, trigger);
@@ -2080,7 +2093,8 @@ export function initializeGame(
 
   const makePlayer = (id: string, hand: CardInstance[], deck: CardInstance[], hero?: HeroDefinition | null): PlayerState => ({
     id,
-    hero: { hp: HERO_MAX_HP, maxHp: HERO_MAX_HP, armor: 0, heroDefinition: hero ?? null, heroPowerUsedThisTurn: false, heroPowerActivationsUsed: 0, activeAuras: [] },
+    hero: { hp: HERO_MAX_HP, maxHp: HERO_MAX_HP, armor: 0, heroDefinition: hero ?? null, heroPowerUsedThisTurn: false, heroPowerActivationsUsed: 0 },
+    emblems: [],
     mana: 0, maxMana: 0,
     hand, board: [], deck, graveyard: [],
     spellHistory: [],
@@ -2192,6 +2206,92 @@ function seuilSacrificielValues(inst: CardInstance): { x: number; y: number } {
   return { x: Math.max(0, x), y: Math.max(0, y) };
 }
 
+/** Pose un EMBLÈME sur un joueur, ou empile une pose supplémentaire du même.
+ *
+ *  Point d'entrée UNIQUE : pouvoir de héros (mode aura) comme capacité de carte
+ *  (`effectKind: "emblem"`) passent par ici, pour que l'empilement et
+ *  l'identité aient la même règle partout.
+ *
+ *  Deux emblèmes sont « le même » s'ils portent le même `abilityId` avec les
+ *  mêmes paramètres, ou le même effet composé. La comparaison du composé se
+ *  fait sur sa forme sérialisée : ce sont des données pures, sans référence ni
+ *  cycle, et c'est ce qui permet à deux poses successives de la même carte de
+ *  s'empiler au lieu de garnir la liste de doublons.
+ *
+ *  Le camp n'est PAS un champ de l'emblème : `target` est le joueur chez qui on
+ *  range, donc celui que l'emblème affecte. */
+function placeEmblem(target: PlayerState, emblem: import("./types").Emblem): void {
+  if (!target.emblems) target.emblems = [];
+  const memeComposé = (a?: import("./types").ComposedEffect, b?: import("./types").ComposedEffect) =>
+    JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
+  const existant = target.emblems.find(e =>
+    e.abilityId === emblem.abilityId
+    && JSON.stringify(e.params ?? null) === JSON.stringify(emblem.params ?? null)
+    && memeComposé(e.composed, emblem.composed)
+    // La durée RESTANTE fait partie de l'identité : fusionner un emblème à 1
+    // tour avec un autre à 3 en ferait expirer un trop tôt et l'autre trop tard.
+    && e.duration === emblem.duration);
+  if (existant) {
+    existant.stacks += emblem.stacks;
+    return;
+  }
+  target.emblems.push({ ...emblem });
+}
+
+/** Une capacité composée est-elle EXÉCUTABLE en ligne ?
+ *
+ *  Non si c'est un EMBLÈME : son `composed` n'est pas un effet à jouer
+ *  maintenant, c'est la charge utile qu'on dépose sur le joueur et qui se
+ *  résoudra en fin de tour. Sans ce garde-fou, tout emblème composé s'exécutait
+ *  DEUX fois — une à la pose par la pile composée, une en fin de tour. */
+const composeExecutable = (c: import("./types").Capability): boolean =>
+  !!c.composed && c.effectKind !== "emblem";
+
+/** Pose les EMBLÈMES qu'une carte déclare pour un déclencheur donné.
+ *
+ *  Volontairement SÉPARÉ de la pile d'effets composés : poser un emblème est
+ *  une écriture immédiate et sans cible (on ajoute une entrée à une liste), qui
+ *  n'a donc rien à négocier avec le ciblage, l'ordre LIFO ni les pauses. Le
+ *  faire passer par la pile n'apporterait que des façons de se tromper.
+ *
+ *  `side: "opponent"` range l'emblème chez l'adversaire — et comme le camp est
+ *  implicite, il agira sur SON plateau. C'est toute la malédiction. */
+function placeEmblemsForTrigger(
+  card: Card,
+  trigger: import("./types").CapabilityTrigger,
+  owner: PlayerState,
+  opponent: PlayerState,
+): void {
+  for (const cap of getCapabilities(card)) {
+    if (cap.effectKind !== "emblem" || cap.trigger !== trigger) continue;
+    const cible = cap.side === "opponent" ? opponent : owner;
+    // Un emblème porte SOIT un composé, SOIT une capacité du registre.
+    // Une durée de 0 ou négative n'a pas de sens : on la traite comme absente
+    // (permanent) plutôt que de poser un emblème mort-né.
+    const duree = cap.duration != null && cap.duration > 0 ? { duration: cap.duration } : {};
+    if (cap.composed) {
+      placeEmblem(cible, { composed: cap.composed, stacks: 1, ...duree, sourceCardId: card.id, sourceName: card.name });
+      continue;
+    }
+    // `params` n'est garni que s'il porte quelque chose : un objet de champs
+    // `undefined` ne se compare pas comme son absence, et deux poses de la même
+    // carte cesseraient de s'empiler.
+    const params: import("./types").Emblem["params"] = {};
+    if (cap.params?.x != null) params.amount = cap.params.x;
+    if (cap.params?.y != null) params.amountY = cap.params.y;
+    if (cap.params?.attack != null) params.attack = cap.params.attack;
+    if (cap.params?.health != null) params.health = cap.params.health;
+    placeEmblem(cible, {
+      abilityId: cap.abilityId,
+      ...(Object.keys(params).length ? { params } : {}),
+      stacks: 1,
+      ...duree,
+      sourceCardId: card.id,
+      sourceName: card.name,
+    });
+  }
+}
+
 export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
   // Reset ATK to base + permanent bonuses (not auras)
   for (const c of player.board) {
@@ -2219,12 +2319,13 @@ export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
 
   // Loyauté: permanent on-summon bonus — NOT recalculated here (handled in playCard)
 
-  // Hero aura stack counts (mode 3 of HeroPowerEffect V2). Folded into the
-  // creature-based aura logic below so a hero "Commandement" with N stacks
-  // behaves like N invisible Commandement units of the hero's faction.
+  // EMBLÈMES de registre. Fondus dans la logique d'aura de plateau ci-dessous :
+  // un "Commandement" à N piles se comporte comme N unités Commandement
+  // invisibles du côté de son PORTEUR. Le camp est implicite — un emblème rangé
+  // chez l'adversaire agit donc sur SON plateau, ce qui fait la malédiction.
   const heroAuraStacks = (p: PlayerState, kwId: string): number =>
-    (p.hero.activeAuras ?? [])
-      .filter(a => a.keywordId === kwId)
+    (p.emblems ?? [])
+      .filter(a => a.abilityId === kwId)
       .reduce((s, a) => s + a.stacks, 0);
   const playerCommandementStacks = heroAuraStacks(player, "commandement");
   const opponentCommandementStacks = heroAuraStacks(opponent, "commandement");
@@ -2291,18 +2392,41 @@ export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
   // Charge, …) to every friendly creature of the hero's owner. Numeric auras
   // already handled above (commandement, terreur). Keywords with no aura
   // semantics (Impact, Inspiration, …) are silently ignored.
+  // Purge des dons d'EMBLÈME du passage PRÉCÉDENT, avant de les reposer depuis
+  // les emblèmes actuels. C'est ce qui rend le don réversible : un emblème
+  // expiré cesse d'être réappliqué ici, et son mot-clé s'en va avec lui.
   for (const p of [player, opponent]) {
-    for (const aura of p.hero.activeAuras ?? []) {
-      if (aura.keywordId === "commandement" || aura.keywordId === "terreur") continue;
+    for (const c of p.board) {
+      if (!c.emblemGrantedKeywords?.length) continue;
+      const aRetirer = new Set(c.emblemGrantedKeywords);
+      c.card = {
+        ...c.card,
+        keywords: (c.card.keywords as unknown as string[]).filter(k => !aRetirer.has(k)) as unknown as Keyword[],
+      };
+      c.emblemGrantedKeywords = [];
+    }
+  }
+
+  for (const p of [player, opponent]) {
+    for (const aura of p.emblems ?? []) {
+      // Les emblèmes COMPOSÉS ne sont pas des états passifs : ils se résolvent
+      // en fin de tour (buildEndOfTurnQueue), pas ici.
+      if (!aura.abilityId) continue;
+      if (aura.abilityId === "commandement" || aura.abilityId === "terreur") continue;
       // Même règle d'amplitude que les autres dons : sans elle, une aura de
       // Gloire accordait +1/+1 quelles que soient les valeurs du pouvoir.
-      const params = grantParamsFor(aura.keywordId, aura.params?.amount, aura.params?.amountY);
+      const params = grantParamsFor(aura.abilityId, aura.params?.amount, aura.params?.amountY);
       for (const ally of p.board) {
         // PAS de réarmement ici : cette boucle retourne à chaque
         // recalculateAuras. Réarmer une Ombre y renverrait l'unité dans
         // l'ombre juste après son attaque, pour toujours (cf.
         // rearmGrantedKeyword).
-        applyGrantedKeyword(ally, aura.keywordId, params);
+        // On ne trace QUE ce que l'emblème ajoute réellement : si la créature
+        // portait déjà le mot-clé (natif, ou don d'un sort), il ne nous
+        // appartient pas et ne doit pas être purgé au tour suivant.
+        const deja = (ally.card.keywords as unknown as string[]).includes(aura.abilityId);
+        applyGrantedKeyword(ally, aura.abilityId, params);
+        if (!deja) (ally.emblemGrantedKeywords ??= []).push(aura.abilityId);
       }
     }
   }
@@ -2675,7 +2799,7 @@ let drawTriggerDepth = 0;
 function triggerOnDraw(ci: CardInstance, owner: PlayerState): void {
   if (drawTriggerDepth >= MAX_DRAW_TRIGGER_DEPTH) return;
   const insts = (ci.card.keyword_instances ?? []).filter(k => k.mode === "draw");
-  const composedCaps = getCapabilities(ci.card).some(c => c.composed && c.trigger === "on_draw");
+  const composedCaps = getCapabilities(ci.card).some(c => composeExecutable(c) && c.trigger === "on_draw");
   if (insts.length === 0 && !composedCaps) return;
 
   const opponent = currentBoardPlayers.find(p => p !== owner);
@@ -2774,6 +2898,16 @@ export function endTurn(state: GameState): GameState {
   // et reprend — automatiques suivants compris — après la résolution du joueur.
   // Cf. advanceEndOfTurn / resolvePendingTrigger.
   newState.endOfTurnQueue = buildEndOfTurnQueue(newState.players[newState.currentPlayerIndex]);
+  // Emblèmes posés PAR un déclencheur de fin de tour. APRÈS la construction de
+  // la file, délibérément : un emblème composé posé maintenant ne doit se
+  // résoudre qu'au tour suivant, sinon il agirait dans la file qui vient de le
+  // créer — et un emblème qui se pose chaque fin de tour se résoudrait dès sa
+  // pose, en cascade.
+  {
+    const sortant = newState.players[newState.currentPlayerIndex];
+    const entrant = newState.players[newState.currentPlayerIndex === 0 ? 1 : 0];
+    for (const c of sortant.board) placeEmblemsForTrigger(c.card, "on_end_of_turn", sortant, entrant);
+  }
   return advanceEndOfTurn(newState);
 }
 
@@ -2788,11 +2922,19 @@ function buildEndOfTurnQueue(outgoing: PlayerState): import("./types").EndOfTurn
       if (inst.mode === "end_of_turn") steps.push({ sourceInstanceId: creature.instanceId, curated: inst });
     }
     for (const cap of getCapabilities(creature.card)) {
-      if (cap.composed && cap.trigger === "on_end_of_turn") {
+      if (composeExecutable(cap) && cap.trigger === "on_end_of_turn") {
         steps.push({ sourceInstanceId: creature.instanceId, capUid: cap.uid });
       }
     }
   }
+  // EMBLÈMES composés, APRÈS toutes les créatures : le plateau parle d'abord,
+  // les effets permanents ensuite. Une pile de N résout l'effet N fois.
+  (outgoing.emblems ?? []).forEach((emblem, i) => {
+    if (!emblem.composed) return;
+    for (let n = 0; n < emblem.stacks; n++) {
+      steps.push({ sourceInstanceId: "", emblemIndex: i });
+    }
+  });
   return steps;
 }
 
@@ -2811,6 +2953,38 @@ function advanceEndOfTurn(newState: GameState): GameState {
 
   while (queue.length > 0) {
     const step = queue[0];
+
+    // EMBLÈME composé : traité AVANT la garde « source absente » ci-dessous, et
+    // c'est le point délicat de tout ce lot. Un emblème n'a pas de source en
+    // jeu — sa source est morte, ou c'était un sort. Laisser le pas franchir
+    // cette garde le ferait écarter à tous les coups, en silence.
+    if (step.emblemIndex != null) {
+      queue.shift();
+      const emblem = (outgoing.emblems ?? [])[step.emblemIndex];
+      if (!emblem?.composed) continue;
+      // Cible « au choix » non-self : même pause que pour une créature. L'id du
+      // déclencheur porte l'indice de l'emblème, seule identité stable dont on
+      // dispose sans source en jeu.
+      if (emblem.composed.target?.designation === "choice" && emblem.composed.target?.entity !== "self") {
+        const trig: import("./types").PendingTrigger = {
+          id: `emblem_${step.emblemIndex}#eot`,
+          controllerId: outgoing.id,
+          sourceInstanceId: null,
+          emblemIndex: step.emblemIndex,
+        };
+        if (endOfTurnTriggerTargets(newState, trig).length > 0) {
+          (newState.pendingTriggers ??= []).push(trig);
+          newState.endTurnPending = true;
+          return newState; // PAUSE
+        }
+        continue; // aucune cible éligible → no-op
+      }
+      withComposedMode("end_of_turn", () =>
+        resolveComposedEffect(emblem.composed!, null, outgoing, opponent, undefined, false,
+          { trigger: "on_end_of_turn" }));
+      continue;
+    }
+
     const creature = outgoing.board.find(c => c.instanceId === step.sourceInstanceId);
     // Source partie du plateau entre pause et reprise → on saute ses effets.
     if (!creature) { queue.shift(); continue; }
@@ -2957,6 +3131,22 @@ function finalizeEndOfTurn(newState: GameState): GameState {
 // « fin de tour » interactifs. `newState` est déjà cloné par l'appelant.
 function finishEndTurn(newState: GameState): GameState {
   newState.endTurnPending = false;
+
+  // EMBLÈMES ÉPHÉMÈRES du joueur sortant : on décompte ICI, et pas dans
+  // finalizeEndOfTurn — celui-ci est ré-entré tant qu'un choix reste en attente,
+  // et décompterait deux fois. finishEndTurn est le point de bascule UNIQUE.
+  //
+  // Le décompte a lieu APRÈS la file de fin de tour, donc après que l'emblème
+  // s'est résolu : un emblème à 1 agit une dernière fois avant de disparaître.
+  {
+    const sortant = newState.players[newState.currentPlayerIndex];
+    if (sortant.emblems?.length) {
+      for (const e of sortant.emblems) {
+        if (e.duration != null) e.duration -= 1;
+      }
+      sortant.emblems = sortant.emblems.filter(e => e.duration == null || e.duration > 0);
+    }
+  }
   // Expire one-turn statuses on the OUTGOING player's creatures: they were
   // visible (icon + statut row) during the player's whole turn so the
   // user understood why a paralyzed creature couldn't act, and we now
@@ -4078,6 +4268,10 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     for (const cap of getCapabilities(cardInstance.card)) {
       if (cap.trigger === "on_play" && !cap.composed) noteAbilitySfx(cap.abilityId, "on_play");
     }
+
+    // Emblèmes posés à l'entrée en jeu. Hors de la pile composée ci-dessous :
+    // la pose est immédiate et sans cible.
+    placeEmblemsForTrigger(cardInstance.card, "on_play", player, opponent);
 
     // Effets composés à l'entrée en jeu (modèle hybride) → pile LIFO. Un effet
     // poussé pendant la résolution (ex. mort déclenchée par un dégât on_play) se
@@ -5589,7 +5783,7 @@ export function getSpellTargetSlots(card: Card): SpellTargetSlot[] {
   // zones suivront). Les désignations "hasard"/"toutes" ne réclament aucun slot.
   for (const cap of getCapabilities(card)) {
     const t = cap.composed?.target;
-    if (!cap.composed || cap.trigger !== "spell_resolution" || !t) continue;
+    if (!composeExecutable(cap) || cap.trigger !== "spell_resolution" || !t) continue;
     if (t.designation !== "choice" || typeof t.count !== "number") continue; // "all"/hasard → pas de slot
     const type = composedSlotType(t);
     if (!type) continue;
@@ -6892,7 +7086,7 @@ function buildComposedFrames(
   const baseTag = opts?.originTag ?? `${sourceId}#${trigger}`;
   let seq = 0;
   for (const cap of getCapabilities(card)) {
-    if (!cap.composed || cap.trigger !== trigger) continue;
+    if (!composeExecutable(cap) || cap.trigger !== trigger) continue;
     // Chemin pile LIFO : mêmes capacités, autre mécanique d'exécution.
     noteAbilitySfx(cap.abilityId, trigger);
     let chosen: string[] | undefined;
@@ -6955,9 +7149,10 @@ function checkLowHpTriggers(state: GameState, depth = 0): void {
     for (const ci of p.board) {
       if (ci.lowHpTriggerFired) continue;
       const insts = (ci.card.keyword_instances ?? []).filter(k => k.mode === "low_hp");
-      const hasComposed = getCapabilities(ci.card).some(c => c.composed && c.trigger === "on_low_hp");
+      const hasComposed = getCapabilities(ci.card).some(c => composeExecutable(c) && c.trigger === "on_low_hp");
       if (insts.length === 0 && !hasComposed) continue;
       ci.lowHpTriggerFired = true; // AVANT résolution (anti ré-entrance)
+      placeEmblemsForTrigger(ci.card, "on_low_hp", p, state.players[state.players[0] === p ? 1 : 0]);
       frames.push(...buildComposedFrames(ci.card, "on_low_hp", ci, p.id, undefined, undefined, { depth }));
       // Mots-clés curés en mode "low_hp" : une frame par instance.
       // resolveCuratedKeywordEffect (via resolveFrame) gère bruitage et
@@ -8326,10 +8521,13 @@ export function tapActivate(state: GameState, action: TapActivateAction): GameSt
   if (!source) return state;
   if (!peutActiverPouvoir(source)) return state;
 
+  // Emblèmes posés à l'activation.
+  placeEmblemsForTrigger(source.card, "on_activation", player, opponent);
+
   // Effet composé activable (on_activation) — référencé par uid.
   if (action.composedUid) {
     const cap = getCapabilities(source.card).find(
-      c => c.composed && c.trigger === "on_activation" && c.uid === action.composedUid,
+      c => composeExecutable(c) && c.trigger === "on_activation" && c.uid === action.composedUid,
     );
     if (!cap?.composed) return state;
     engagerPourActivation(source);
@@ -8606,7 +8804,23 @@ function applyOnePendingTrigger(
   const controller = newState.players.find(p => p.id === trigger.controllerId);
   const other = newState.players.find(p => p.id !== trigger.controllerId);
 
-  if (trigger.capUid) {
+  // EMBLÈME composé « au choix » : même résolution qu'une capacité de créature,
+  // mais l'effet se lit sur l'emblème et la source est nulle — il n'y en a plus.
+  if (trigger.emblemIndex != null) {
+    if (controller && other) {
+      const emblem = (controller.emblems ?? [])[trigger.emblemIndex];
+      if (emblem?.composed) {
+        withComposedMode("end_of_turn", () =>
+          resolveComposedEffect(emblem.composed!, null, controller, other,
+            pendingChoiceIds(choice), false,
+            { trigger: "on_end_of_turn", noSuspend: true }));
+        const deadC = cleanDeadCreatures(controller);
+        const deadO = cleanDeadCreatures(other);
+        processDeathTriggers(deadC, controller, other);
+        processDeathTriggers(deadO, other, controller);
+      }
+    }
+  } else if (trigger.capUid) {
     // Variante « fin de tour » : résout l'effet composé sur la cible choisie.
     if (controller && other) {
       const source = controller.board.find(c => c.instanceId === trigger.sourceInstanceId);
@@ -9012,19 +9226,15 @@ export function useHeroPower(state: GameState, action: HeroPowerAction): GameSta
     }
 
     case "aura": {
-      // Mode 3 : record / increment a stack on the hero's active-auras list.
-      // recalculateAuras (called below) reads this list and applies effects.
-      if (!player.hero.activeAuras) player.hero.activeAuras = [];
-      const existing = player.hero.activeAuras.find(a => a.keywordId === effect.keywordId);
-      if (existing) {
-        existing.stacks += 1;
-      } else {
-        player.hero.activeAuras.push({
-          keywordId: effect.keywordId,
-          params: effect.params,
-          stacks: 1,
-        });
-      }
+      // Mode 3 : le pouvoir de héros pose un EMBLÈME sur son joueur. Depuis
+      // l'ouverture du concept aux cartes, c'est un producteur d'emblème parmi
+      // d'autres — même empilement, même stockage (cf. placeEmblem).
+      placeEmblem(player, {
+        abilityId: effect.keywordId,
+        params: effect.params,
+        stacks: 1,
+        sourceName: player.hero.heroDefinition?.powerName,
+      });
       break;
     }
 
@@ -9623,7 +9833,7 @@ const CREATURE_TARGETING_KEYWORDS: Keyword[] = [
 function firstOnPlayComposedChoiceCap(card: Card): import("./types").Capability | undefined {
   return getCapabilities(card).find((c) => {
     const t = c.composed?.target;
-    return !!c.composed && c.trigger === "on_play" && !!t
+    return composeExecutable(c) && c.trigger === "on_play" && !!t
       && t.designation === "choice" && typeof t.count === "number" && t.count >= 1
       && (t.entity === "unit" || t.entity === "both") && t.location === "board";
   });
@@ -9636,7 +9846,7 @@ function firstOnPlayComposedChoiceCap(card: Card): import("./types").Capability 
 function firstOnPlayComposedGraveyardChoiceCap(card: Card): import("./types").Capability | undefined {
   return getCapabilities(card).find((c) => {
     const t = c.composed?.target;
-    return !!c.composed && c.trigger === "on_play" && !!t
+    return composeExecutable(c) && c.trigger === "on_play" && !!t
       && t.designation === "choice" && typeof t.count === "number" && t.count >= 1
       && t.entity === "unit" && t.location === "graveyard" && t.side === "ally";
   });
@@ -9659,7 +9869,7 @@ export function getCreatureComposedGraveyardChoice(card: Card): { uid: string; c
 /** uid du premier effet composé activable (on_activation) d'une créature, ou null. */
 export function getCreatureTapComposedUid(card: Card): string | null {
   if (card.card_type !== "creature") return null;
-  const cap = getCapabilities(card).find(c => c.composed && c.trigger === "on_activation");
+  const cap = getCapabilities(card).find(c => composeExecutable(c) && c.trigger === "on_activation");
   return cap?.uid ?? null;
 }
 
@@ -9669,7 +9879,7 @@ export function getCreatureTapComposedUid(card: Card): string | null {
 export function getComposedTapTargets(state: GameState, card: Card, uid: string): string[] | null {
   const player = state.players[state.currentPlayerIndex];
   const opponent = state.players[state.currentPlayerIndex === 0 ? 1 : 0];
-  const cap = getCapabilities(card).find(c => c.uid === uid && c.composed && c.trigger === "on_activation");
+  const cap = getCapabilities(card).find(c => c.uid === uid && composeExecutable(c) && c.trigger === "on_activation");
   const t = cap?.composed?.target;
   if (!t || t.designation !== "choice" || (t.entity !== "unit" && t.entity !== "both") || t.location !== "board" || t.count !== 1) return null;
   return composedChoiceTargetIds(t, player, opponent, false); // effet composé de créature (tap)
@@ -9702,7 +9912,7 @@ export function creatureNeedsTarget(card: Card): boolean {
 /** True if the card carries any on_attack composed cap — the engine fires it
  *  before combat and the store animates it as a first wave. */
 export function hasOnAttackComposed(card: Card): boolean {
-  return getCapabilities(card).some((c) => !!c.composed && c.trigger === "on_attack");
+  return getCapabilities(card).some((c) => composeExecutable(c) && c.trigger === "on_attack");
 }
 
 /** First on_attack composed cap whose target is player-chosen (designation

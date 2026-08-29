@@ -123,7 +123,7 @@ describe("les AURAS ne réarment pas", () => {
     const rodeur = mkInstance(mkCard({ name: "Rôdeur", attack: 2, health: 2, keywords: ["ombre"] as never }));
     rodeur.ombreRevealed = true;
     s.players[0].board.push(rodeur);
-    s.players[0].hero.activeAuras = [{ keywordId: "ombre" }] as never;
+    s.players[0].emblems = [{ abilityId: "ombre", stacks: 1 }] as never;
     // Une action quelconque déclenche recalculateAuras.
     s.players[0].hand.push(mkInstance(mkCard({ name: "Babiole", card_type: "spell", attack: null, health: null })));
 

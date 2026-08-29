@@ -383,8 +383,10 @@ export type CapabilityTrigger =
   | "automatic"
   | "spell_resolution";
 
-/** Type d'effet : effet immédiat, ou conférer une capacité à une unité. */
-export type CapabilityEffectKind = "immediate" | "grant";
+/** Type d'effet : effet immédiat, capacité conférée à une unité, ou EMBLÈME —
+ *  effet permanent posé sur un JOUEUR, qui survit à la disparition de la carte
+ *  qui l'a créé. C'est cette survie qui distingue l'emblème d'une aura. */
+export type CapabilityEffectKind = "immediate" | "grant" | "emblem";
 
 /** Un slot de cible que la capacité demande au joueur de sélectionner. */
 export interface CapabilityTargetSlot {
@@ -435,6 +437,13 @@ export interface Capability {
   /** Mot-clé "compagnons" uniquement : ids des cartes liées mélangées dans le
    *  deck du contrôleur (cf. KeywordInstance.linkedCardIds). */
   linkedCardIds?: number[];
+  /** EMBLÈME uniquement (`effectKind: "emblem"`) : chez QUEL joueur l'emblème
+   *  est rangé — et donc, puisque le camp est implicite, sur quel plateau il
+   *  agit. `opponent` fait une malédiction. Défaut : `self`. */
+  side?: "self" | "opponent";
+  /** EMBLÈME uniquement : durée de vie en tours de son porteur. Absent ⇒
+   *  permanent (cf. `Emblem.duration`). */
+  duration?: number;
 }
 
 // ─── Capacités composables (modèle hybride) ─────────────────────────────────
@@ -993,6 +1002,15 @@ export interface CardInstance {
   // avec leur valeur X. Lu en fallback par le résolveur combat et le rendu
   // du badge quand le keyword n'est pas inscrit dans card.effect_text.
   grantedKeywordX: Record<string, number>;
+  /** Mots-clés que les EMBLÈMES de registre ont ajoutés à cette instance au
+   *  dernier passage de `recalculateAuras`.
+   *
+   *  `applyGrantedKeyword` écrit dans `card.keywords` et ne retire JAMAIS rien :
+   *  tant que les emblèmes étaient éternels (pouvoirs de héros), personne ne
+   *  s'en apercevait. Dès qu'un emblème expire, son don doit partir avec lui,
+   *  d'où cette trace — on ne purge que ce qu'on a soi-même posé, sans toucher
+   *  aux mots-clés natifs de la carte ni aux dons ponctuels d'un sort. */
+  emblemGrantedKeywords?: string[];
   // Second paramètre (Y = PV) des mots-clés accordés qui portent un couple
   // X/Y — Gloire +X/+Y aujourd'hui. Optionnel : les mots-clés à simple X
   // n'en produisent jamais, et les instances sérialisées antérieures restent
@@ -1066,13 +1084,41 @@ export interface HeroDefinition {
   powerSfxUrl?: string | null;
 }
 
-// One active aura instance on a hero, set when mode === "aura" is activated.
-// Stacks accumulate as the player pays the cost again (when usage limit
-// allows): same keywordId / params, just incremented count.
-export interface HeroActiveAura {
-  keywordId: string;
+/** EMBLÈME — effet permanent porté par un JOUEUR, et non par une carte.
+ *
+ *  Né du `mode: "aura"` des pouvoirs de héros, il est désormais posable par
+ *  n'importe quelle carte via `effectKind: "emblem"`. Ce qui le définit : il
+ *  **survit à la disparition de sa source** (créature morte, sort résolu) et
+ *  dure toute la partie ; il n'est effacé qu'au démarrage.
+ *
+ *  Le camp est IMPLICITE : l'emblème est rangé chez le joueur qu'il AFFECTE.
+ *  C'est ce qui rend la malédiction gratuite — `recalculateAuras` applique déjà
+ *  une aura au plateau de son porteur.
+ *
+ *  `abilityId` et `composed` sont EXCLUSIFS l'un de l'autre. */
+export interface Emblem {
+  /** Capacité du registre ABILITIES (Commandement, Terreur, Vol…). */
+  abilityId?: string;
   params?: { amount?: number; amountY?: number; attack?: number; health?: number };
+  /** Emblème COMPOSÉ : résolu à chaque fin de tour de son porteur, en queue de
+   *  `endOfTurnQueue`. Les autres cadences viendront dans un second lot. */
+  composed?: ComposedEffect;
+  /** Poses cumulées du MÊME emblème. Un emblème composé à N piles se résout N
+   *  fois ; un emblème de registre compte pour N exemplaires. */
   stacks: number;
+  /** ÉPHÉMÈRE : nombre de fins de tour de son PORTEUR qu'il lui reste à vivre.
+   *  Décrémenté une fois par tour, APRÈS s'être résolu — un emblème à 1 agit
+   *  donc une dernière fois avant de disparaître. Absent ⇒ PERMANENT, le
+   *  comportement d'origine et celui des pouvoirs de héros.
+   *
+   *  Conséquence sur le cumul : deux emblèmes identiques ne fusionnent que si
+   *  leur durée RESTANTE coïncide. Sans cela, une pose au tour 3 relancerait
+   *  celle du tour 1, ou expirerait avec elle — dans les deux cas une des deux
+   *  poses serait faussée. */
+  duration?: number;
+  /** Pour l'infobulle : d'où il vient, une fois la source disparue. */
+  sourceCardId?: number;
+  sourceName?: string;
 }
 
 export interface HeroState {
@@ -1084,14 +1130,16 @@ export interface HeroState {
   // Total activations this game across all 3 modes — used to enforce
   // powerUsageLimit on the hero definition.
   heroPowerActivationsUsed: number;
-  // Persistent auras active on this hero (mode 3). Cleared at game start
-  // (= deck shuffle / mulligan), preserved across turns.
-  activeAuras: HeroActiveAura[];
 }
 
 export interface PlayerState {
   id: string;
   hero: HeroState;
+  /** Emblèmes actifs de CE joueur — posés par son héros, ses cartes, ou par une
+   *  carte adverse (malédiction). Effacés au démarrage, conservés d'un tour à
+   *  l'autre. Portés par le joueur et non par le héros : un sort n'a pas de
+   *  héros pour source. */
+  emblems: Emblem[];
   mana: number;
   maxMana: number;
   hand: CardInstance[];
@@ -1621,14 +1669,25 @@ export type GameAction = PlayCardAction | AttackAction | EndTurnAction | Mulliga
  *  composée on_end_of_turn (par uid). Données 100% sérialisables → survit au
  *  clone/hash/resync (les références vives sont re-résolues via l'instanceId). */
 export interface EndOfTurnStep {
+  /** Vide pour un pas d'EMBLÈME : un emblème n'a pas de source en jeu — c'est
+   *  précisément ce qui le définit. */
   sourceInstanceId: string;
   /** Mot-clé curé en mode end_of_turn (l'instance complète : id, x, race…). */
   curated?: KeywordInstance;
   /** uid d'une capacité composée on_end_of_turn de la carte source. */
   capUid?: string;
+  /** EMBLÈME composé : indice dans `PlayerState.emblems` du joueur sortant.
+   *  Un pas d'emblème échappe au filtre « source absente ou morte » qui écarte
+   *  les pas de créature — sans quoi tout emblème serait silencieusement sauté,
+   *  sa source étant justement partie. */
+  emblemIndex?: number;
 }
 
 export interface PendingTrigger {
+  /** EMBLÈME composé en attente d'un choix de cible : indice dans
+   *  `PlayerState.emblems` du contrôleur. Présent ⇒ `sourceInstanceId` est null,
+   *  l'emblème n'ayant par nature aucune source en jeu. */
+  emblemIndex?: number;
   id: string;                       // déterministe (= sourceInstanceId, +uid pour les caps)
   kw?: Keyword;                     // ex. "remontee" (variante mot-clé) ; absent pour les caps
   controllerId: string;            // joueur qui choisit (toujours le joueur actif ici)

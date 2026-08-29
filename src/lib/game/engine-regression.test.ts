@@ -321,8 +321,10 @@ function compactPlayer(p: PlayerState) {
       armor: p.hero.armor,
       heroPowerUsedThisTurn: p.hero.heroPowerUsedThisTurn,
       heroPowerActivationsUsed: p.hero.heroPowerActivationsUsed,
-      activeAuras: p.hero.activeAuras,
     },
+    // Les emblèmes ont quitté le héros pour le JOUEUR : un sort n'a pas de
+    // héros pour source.
+    emblems: p.emblems,
     handCount: p.hand.length,
     hand: p.hand.map((c) => c.card.name),
     deckCount: p.deck.length,

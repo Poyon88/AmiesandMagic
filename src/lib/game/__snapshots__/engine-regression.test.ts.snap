@@ -14,6 +14,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 48,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [],
             "hand": [
@@ -24,7 +25,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 4,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -39,6 +39,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 48,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [],
             "hand": [
@@ -50,7 +51,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 5,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -77,6 +77,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 48,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [],
             "hand": [
@@ -87,7 +88,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 4,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -102,6 +102,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 47,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [],
             "hand": [
@@ -114,7 +115,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 6,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -141,6 +141,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 48,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [],
             "hand": [
@@ -151,7 +152,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 4,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -166,6 +166,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 47,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -179,7 +180,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 5,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -206,6 +206,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 48,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [],
             "hand": [
@@ -216,7 +217,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 4,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -276,6 +276,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 47,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -288,7 +289,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 4,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -315,6 +315,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 47,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [],
             "hand": [
@@ -326,7 +327,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 5,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -386,6 +386,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 47,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -398,7 +399,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 4,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -425,6 +425,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 47,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -437,7 +438,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 4,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -497,6 +497,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 47,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -509,7 +510,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 4,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -536,6 +536,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 47,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -548,7 +549,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 4,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -608,6 +608,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 46,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -621,7 +622,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 5,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -648,6 +648,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 47,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -660,7 +661,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 4,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -720,6 +720,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 46,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -733,7 +734,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 4,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -760,6 +760,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 47,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -772,7 +773,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 4,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -832,6 +832,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 46,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -845,7 +846,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 4,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -872,6 +872,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 46,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -885,7 +886,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 5,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -945,6 +945,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 46,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -958,7 +959,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 4,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -1030,6 +1030,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 46,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -1042,7 +1043,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 4,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -1102,6 +1102,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 46,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -1115,7 +1116,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 4,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -1187,6 +1187,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 46,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -1199,7 +1200,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 4,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -1259,6 +1259,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 45,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -1273,7 +1274,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 5,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -1345,6 +1345,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 46,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -1357,7 +1358,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 4,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -1461,6 +1461,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 45,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -1474,7 +1475,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 4,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -1501,6 +1501,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 46,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -1514,7 +1515,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 4,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -1618,6 +1618,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 45,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -1631,7 +1632,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 4,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -1658,6 +1658,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 45,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -1672,7 +1673,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 5,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -1776,6 +1776,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 45,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -1789,7 +1790,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 4,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -1861,6 +1861,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 45,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -1874,7 +1875,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 4,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -1978,6 +1978,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 45,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -1991,7 +1992,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 4,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -2063,6 +2063,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 45,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -2076,7 +2077,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 4,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -2180,6 +2180,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 44,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -2194,7 +2195,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 5,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -2266,6 +2266,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 45,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -2279,7 +2280,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 4,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -2427,6 +2427,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 44,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -2440,7 +2441,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 4,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -2467,6 +2467,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 45,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -2481,7 +2482,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 4,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -2629,6 +2629,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 44,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -2642,7 +2643,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 4,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -2669,6 +2669,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 45,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -2683,7 +2684,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 4,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -2831,6 +2831,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 44,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -2844,7 +2845,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 4,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -2871,6 +2871,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 44,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -2886,7 +2887,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 5,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -3034,6 +3034,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 44,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -3047,7 +3048,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 4,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -3119,6 +3119,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 44,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -3133,7 +3134,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 4,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -3281,6 +3281,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 44,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -3294,7 +3295,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 4,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -3366,6 +3366,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 44,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -3380,7 +3381,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 3,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -3528,6 +3528,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 44,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -3541,7 +3542,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 4,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -3613,6 +3613,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 44,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -3627,7 +3628,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 3,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -3775,6 +3775,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 43,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -3789,7 +3790,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 5,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -3861,6 +3861,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 44,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -3875,7 +3876,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 3,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -4067,6 +4067,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 43,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -4080,7 +4081,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 4,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -4152,6 +4152,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 44,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -4166,7 +4167,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 3,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -4358,6 +4358,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 43,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -4371,7 +4372,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 3,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -4443,6 +4443,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 44,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -4457,7 +4458,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 3,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -4649,6 +4649,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 43,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -4662,7 +4663,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 3,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -4689,6 +4689,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 44,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -4704,7 +4705,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 3,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -4896,6 +4896,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 43,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -4909,7 +4910,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 3,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -4936,6 +4936,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 44,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -4951,7 +4952,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 3,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -5143,6 +5143,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 43,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -5156,7 +5157,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 3,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -5183,6 +5183,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 43,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -5199,7 +5200,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 4,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -5391,6 +5391,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 43,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -5404,7 +5405,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 3,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -5476,6 +5476,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 43,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -5491,7 +5492,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 3,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -5683,6 +5683,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 43,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -5696,7 +5697,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 3,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -5769,6 +5769,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 43,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -5784,7 +5785,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 2,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -5976,6 +5976,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 43,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -5989,7 +5990,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 3,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -6062,6 +6062,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 43,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -6077,7 +6078,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 2,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -6269,6 +6269,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 42,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -6283,7 +6284,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 4,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -6356,6 +6356,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 43,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -6371,7 +6372,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 2,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -6607,6 +6607,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 42,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -6620,7 +6621,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 3,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -6647,6 +6647,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 43,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -6663,7 +6664,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 2,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -6811,6 +6811,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 42,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -6826,7 +6827,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 2,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -6853,6 +6853,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 43,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -6869,7 +6870,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 2,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -7017,6 +7017,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 42,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -7032,7 +7033,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 2,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -7059,6 +7059,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 43,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -7075,7 +7076,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 2,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -7223,6 +7223,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 42,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -7238,7 +7239,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 2,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -7265,6 +7265,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 43,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -7281,7 +7282,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 2,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -7429,6 +7429,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 42,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -7444,7 +7445,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 2,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -7471,6 +7471,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 42,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -7488,7 +7489,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 3,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -7636,6 +7636,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 42,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -7651,7 +7652,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 2,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -7723,6 +7723,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 42,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -7739,7 +7740,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 2,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -7887,6 +7887,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 42,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -7902,7 +7903,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 2,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -7974,6 +7974,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 42,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -7990,7 +7991,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 1,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -8094,6 +8094,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 42,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -8110,7 +8111,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 2,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -8183,6 +8183,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 42,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -8198,7 +8199,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -8302,6 +8302,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 42,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -8318,7 +8319,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 2,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -8391,6 +8391,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 42,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -8406,7 +8407,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -8510,6 +8510,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 41,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -8527,7 +8528,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 3,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -8600,6 +8600,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 42,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -8615,7 +8616,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -8763,6 +8763,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 41,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -8779,7 +8780,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 2,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -8852,6 +8852,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 42,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -8867,7 +8868,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -9059,6 +9059,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 41,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -9074,7 +9075,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 1,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -9101,6 +9101,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 42,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -9117,7 +9118,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -9221,6 +9221,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 41,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -9238,7 +9239,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 1,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -9265,6 +9265,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 41,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -9283,7 +9284,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 1,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -9387,6 +9387,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 41,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -9404,7 +9405,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 1,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -9431,6 +9431,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 41,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -9448,7 +9449,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -9463,6 +9463,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 41,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -9482,7 +9483,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 1,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -9509,6 +9509,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 41,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -9526,7 +9527,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -9541,6 +9541,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 40,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -9561,7 +9562,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 2,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -9588,6 +9588,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 41,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -9605,7 +9606,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -9665,6 +9665,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 40,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -9684,7 +9685,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 1,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -9711,6 +9711,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 41,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -9728,7 +9729,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -9832,6 +9832,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 40,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -9849,7 +9850,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -9876,6 +9876,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 40,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -9895,7 +9896,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 1,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -9999,6 +9999,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 40,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -10016,7 +10017,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -10088,6 +10088,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 40,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -10105,7 +10106,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -10209,6 +10209,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 40,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -10226,7 +10227,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -10298,6 +10298,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 40,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -10315,7 +10316,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -10419,6 +10419,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 39,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -10438,7 +10439,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 1,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -10510,6 +10510,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 40,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -10527,7 +10528,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -10631,6 +10631,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 39,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -10649,7 +10650,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -10676,6 +10676,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 40,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -10694,7 +10695,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -10798,6 +10798,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 39,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -10816,7 +10817,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -10843,6 +10843,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 40,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -10861,7 +10862,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -10965,6 +10965,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 39,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -10983,7 +10984,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -11010,6 +11010,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 40,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -11028,7 +11029,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -11132,6 +11132,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 39,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -11150,7 +11151,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -11177,6 +11177,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 39,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -11197,7 +11198,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 1,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -11301,6 +11301,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 39,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -11319,7 +11320,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -11346,6 +11346,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 39,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -11365,7 +11366,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -11425,6 +11425,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 39,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -11444,7 +11445,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -11471,6 +11471,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 39,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -11490,7 +11491,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -11550,6 +11550,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 38,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -11571,7 +11572,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 1,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -11598,6 +11598,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 39,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -11617,7 +11618,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -11721,6 +11721,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 38,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -11740,7 +11741,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -11767,6 +11767,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 39,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -11786,7 +11787,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -11890,6 +11890,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 38,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -11909,7 +11910,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -11936,6 +11936,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 39,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -11955,7 +11956,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -12059,6 +12059,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 38,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -12078,7 +12079,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -12105,6 +12105,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 38,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -12126,7 +12127,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 1,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -12230,6 +12230,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 38,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -12249,7 +12250,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -12321,6 +12321,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 38,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -12340,7 +12341,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -12444,6 +12444,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 38,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -12463,7 +12464,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -12490,6 +12490,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 38,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -12510,7 +12511,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -12570,6 +12570,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 38,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -12590,7 +12591,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -12617,6 +12617,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 38,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -12637,7 +12638,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -12697,6 +12697,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 37,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -12719,7 +12720,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 1,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -12746,6 +12746,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 38,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -12766,7 +12767,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -12870,6 +12870,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 37,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -12890,7 +12891,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -12917,6 +12917,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 38,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -12937,7 +12938,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -13041,6 +13041,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 37,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -13061,7 +13062,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -13088,6 +13088,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 37,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -13110,7 +13111,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 1,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -13214,6 +13214,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 37,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -13234,7 +13235,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -13306,6 +13306,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 37,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -13326,7 +13327,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -13430,6 +13430,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 37,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -13450,7 +13451,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -13522,6 +13522,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 37,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -13542,7 +13543,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -13646,6 +13646,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 36,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -13668,7 +13669,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 1,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -13740,6 +13740,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 37,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -13760,7 +13761,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -13906,6 +13906,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 36,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -13926,7 +13927,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -13953,6 +13953,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 37,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -13974,7 +13975,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -14120,6 +14120,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 36,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -14140,7 +14141,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -14167,6 +14167,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 37,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -14188,7 +14189,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -14334,6 +14334,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 36,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -14354,7 +14355,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -14381,6 +14381,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 36,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -14404,7 +14405,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 1,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -14550,6 +14550,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 36,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -14570,7 +14571,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -14642,6 +14642,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 36,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -14663,7 +14664,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -14809,6 +14809,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 36,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -14829,7 +14830,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -14901,6 +14901,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 36,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -14922,7 +14923,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -15068,6 +15068,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 35,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -15090,7 +15091,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 1,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -15162,6 +15162,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 36,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -15183,7 +15184,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -15373,6 +15373,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 34,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -15395,7 +15396,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             ],
             "handCount": 1,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -15467,6 +15467,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 36,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -15488,7 +15489,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -15722,6 +15722,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 34,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -15742,7 +15743,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -15769,6 +15769,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 36,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -15791,7 +15792,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -16025,6 +16025,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 34,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -16045,7 +16046,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -16072,6 +16072,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 36,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -16094,7 +16095,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -16328,6 +16328,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 34,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -16348,7 +16349,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -16375,6 +16375,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
           {
             "board": [],
             "deckCount": 36,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Foudre",
@@ -16397,7 +16398,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
@@ -16631,6 +16631,7 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
               },
             ],
             "deckCount": 34,
+            "emblems": [],
             "fatigueDamage": 0,
             "graveyard": [
               "Etincelle de Mana",
@@ -16651,7 +16652,6 @@ exports[`moteur — non-régression (iso-comportement) > partie scriptée déter
             "hand": [],
             "handCount": 0,
             "hero": {
-              "activeAuras": [],
               "armor": 0,
               "heroPowerActivationsUsed": 0,
               "heroPowerUsedThisTurn": false,
