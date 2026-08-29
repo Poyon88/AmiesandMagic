@@ -918,6 +918,10 @@
     "races": {
       "Elfes": "エルフ",
       "Fées": "妖精",
+      "Farfadets": "ファルファデ",
+      "Korrigans": "コリガン",
+      "Faunes": "ファウヌス",
+      "Dryades": "ドリュアス",
       "Aigles Géants": "大鷲",
       "Hobbits": "ホビット",
       "Hommes-Arbres": "樹人",
@@ -1005,6 +1009,26 @@
         "def": "妖精",
         "bare": "妖精",
         "de": "妖精"
+      },
+      "Farfadets": {
+        "def": "ファルファデ",
+        "bare": "ファルファデ",
+        "de": "ファルファデの"
+      },
+      "Korrigans": {
+        "def": "コリガン",
+        "bare": "コリガン",
+        "de": "コリガンの"
+      },
+      "Faunes": {
+        "def": "ファウヌス",
+        "bare": "ファウヌス",
+        "de": "ファウヌスの"
+      },
+      "Dryades": {
+        "def": "ドリュアス",
+        "bare": "ドリュアス",
+        "de": "ドリュアスの"
       },
       "Aigles Géants": {
         "def": "巨大鷲",

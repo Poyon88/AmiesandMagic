@@ -220,11 +220,15 @@ export const FACTIONS: Record<string, {
   Elfes: {
     displayName: "L'Alliance Céleste",
     color: "#3a7d44", accent: "#55efc4", emoji: "🌿", bg: "#0a1f0a", alignment: "bon",
-    races: ["Elfes", "Fées", "Aigles Géants", "Hobbits", "Hommes-Arbres"],
+    races: ["Elfes", "Fées", "Aigles Géants", "Hobbits", "Hommes-Arbres", "Farfadets", "Korrigans", "Faunes", "Dryades"],
     freeRaces: ["Aigles Géants"],
     clans: [
       { names: ["Les Sylvains", "Les Hauts-Elfes"], appliesTo: "Elfes" },
       { names: ["La Forêt d'Émeraude"], appliesTo: "Fées" },
+      { names: ["La Forêt d'Émeraude"], appliesTo: "Farfadets" },
+      { names: ["La Forêt d'Émeraude"], appliesTo: "Korrigans" },
+      { names: ["La Forêt d'Émeraude"], appliesTo: "Faunes" },
+      { names: ["La Forêt d'Émeraude"], appliesTo: "Dryades" },
       { names: ["La Combe Verte"], appliesTo: "Hobbits" },
       { names: ["La Combe Verte"], appliesTo: "Hommes-Arbres" },
     ],
@@ -237,11 +241,42 @@ export const FACTIONS: Record<string, {
       "Aigles Géants": { statWeights: { atk: 1.20, def: 0.70 }, likelyKeywords: { "Vol": 0.90, "Traque": 0.60, "Première Frappe": 0.50, "Augure": 0.40 } },
       "Fées": { statWeights: { atk: 0.75, def: 0.65 }, likelyKeywords: { "Vol": 0.85, "Invisible": 0.70, "Esquive": 0.65, "Augure": 0.55, "Divination": 0.50, "Canalisation": 0.60, "Drain de vie": 0.45, "Contresort": 0.40, "Héritage X": 0.35 } },
       "Hommes-Arbres": { statWeights: { atk: 0.90, def: 1.50 }, likelyKeywords: { "Provocation": 0.60, "Ancré": 0.55, "Régénération": 0.40, "Riposte X": 0.35 } },
+      // Farfadets : la chance et le tour joué — il se dérobe plus qu'il ne
+      // frappe, d'où une part d'attaque sous les 50 %.
+      // Esquive (0.50) et Traque (0.50)
+      // doivent DÉPASSER l'ombrelle pour valoir quelque chose. Pillage X, le
+      // registre évident du voleur d'or, est INTERDIT dans cette faction :
+      // Richesse X en tient lieu.
+      "Farfadets": { statWeights: { atk: 0.80, def: 0.85 }, likelyKeywords: { "Esquive": 0.60, "Mimique": 0.55, "Traque": 0.55, "Richesse X": 0.50, "Permutation": 0.45, "Métamorphose": 0.35 } },
+      // Korrigans : le petit peuple qui s'entête. Seul corps DÉFENSIF du clan —
+      // il ne fuit pas, il rend les coups et maudit.
+      "Korrigans": { statWeights: { atk: 0.80, def: 0.95 }, likelyKeywords: { "Malédiction": 0.55, "Paralysie": 0.50, "Riposte X": 0.45, "Provocation": 0.45, "Résistance X": 0.40, "Ancré": 0.35 } },
+      // Faunes : le seul FRAPPEUR du clan, et la musique. Ratios choisis avec
+      // soin : `statWeights` ne décide que du PARTAGE atk/déf, jamais de la
+      // taille. Un 1.10/0.95 « gros » donnait 53,7 % d'attaque, soit MOINS que
+      // le farfadet — un satyre qui cognait moins fort qu'un lutin. 1.20/0.80
+      // met la part à 60 %, et c'est là que se lit la brute.
+      // Inspiration X porte la flûte ; Piétinement, les sabots.
+      "Faunes": { statWeights: { atk: 1.20, def: 0.80 }, likelyKeywords: { "Célérité": 0.55, "Inspiration X": 0.50, "Piétinement": 0.50, "Fureur": 0.50, "Bravoure": 0.45, "Solidarité X": 0.35 } },
+      // Dryades : l'arbre plutôt que l'esprit — corps le plus DÉFENSIF du clan
+      // (part d'attaque 41,7 %, sous le korrigan), et registre de croissance et
+      // de lien. Armure, la lecture évidente de l'écorce, est INTERDITE dans
+      // cette faction : Ancré et Régénération en tiennent lieu.
+      "Dryades": { statWeights: { atk: 0.75, def: 1.05 }, likelyKeywords: { "Régénération": 0.60, "Bénédiction": 0.50, "Liaison de vie": 0.45, "Solidarité X": 0.40, "Ancré": 0.35, "Provocation": 0.30 } },
     },
     clanProfiles: {
       "Les Sylvains": { statWeights: { atk: 1.15, def: 0.80 }, likelyKeywords: { "Traque": 0.55, "Esquive": 0.55, "Invisible": 0.45, "Première Frappe": 0.45, "Précision": 0.45, "Combustion": 0.30 } },
       "Les Hauts-Elfes": { statWeights: { atk: 0.95, def: 0.90 }, likelyKeywords: { "Canalisation": 0.55, "Divination": 0.50, "Contresort": 0.45, "Augure": 0.45, "Prescience X": 0.40, "Précision": 0.35, "Suprématie": 0.35 } },
-      "La Forêt d'Émeraude": { statWeights: { atk: 0.75, def: 0.75 }, likelyKeywords: { "Vol": 0.85, "Invisible": 0.60, "Canalisation": 0.55, "Divination": 0.50, "Augure": 0.50, "Drain de vie": 0.40, "Contresort": 0.40 } },
+      // Le clan passe de UNE à QUATRE races et CÈDE ses `statWeights`. Le
+      // critère des Ghoules est satisfait sans rien avoir à inventer : les Fées
+      // déclarent DÉJÀ leur propre gabarit (0.75/0.65), jusqu'ici mort-né dans
+      // ce clan puisque la cascade choisit un objet entier. Le céder le rend
+      // enfin effectif — c'est la seule dérive du lot, et elle va dans le sens
+      // de ce que ce profil disait déjà.
+      //
+      // Le FAUNE est la raison du don : un satyre à sabots n'est pas un lutin,
+      // et 0.75/0.75 en aurait fait un feu follet de plus.
+      "La Forêt d'Émeraude": { likelyKeywords: { "Vol": 0.85, "Invisible": 0.60, "Canalisation": 0.55, "Divination": 0.50, "Augure": 0.50, "Drain de vie": 0.40, "Contresort": 0.40 } },
       "La Combe Verte": { statWeights: { atk: 0.85, def: 1.05 }, likelyKeywords: { "Esquive": 0.55, "Loyauté": 0.55, "Bravoure": 0.45, "Invisible": 0.40, "Bénédiction": 0.40, "Régénération": 0.35, "Ancré": 0.35, "Provocation": 0.35, "Résistance X": 0.35 } },
     },
     clanRaceBands: {

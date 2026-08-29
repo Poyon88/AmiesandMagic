@@ -366,7 +366,7 @@ const CLAN_BLURBS: Record<string, string> = {
   // L'Alliance Céleste
   "Les Sylvains": "Embuscade et précision : ils frappent les premiers, esquivent et restent introuvables.",
   "Les Hauts-Elfes": "Les mages du savoir : canalisation, divination et contresorts pour dicter le rythme.",
-  "La Forêt d'Émeraude": "Les fées : fragiles mais insaisissables, elles volent et manipulent la magie.",
+  "La Forêt d'Émeraude": "Le petit peuple — fées, farfadets, korrigans, faunes et dryades : fragiles mais insaisissables, ils volent et manipulent la magie.",
   "La Combe Verte": "Hobbits et Hommes-Arbres : loyauté, bénédictions et une ténacité qui use l'adversaire.",
   // Les Armées des Montagnes
   "La Forge Ardente": "Le feu du métal : combustion, fureur et ripostes qui punissent chaque coup reçu.",

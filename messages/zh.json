@@ -918,6 +918,10 @@
     "races": {
       "Elfes": "精灵",
       "Fées": "仙灵",
+      "Farfadets": "小妖精",
+      "Korrigans": "科里根",
+      "Faunes": "法翁",
+      "Dryades": "树精",
       "Aigles Géants": "巨鹰",
       "Hobbits": "霍比特人",
       "Hommes-Arbres": "树人",
@@ -1005,6 +1009,26 @@
         "def": "妖精",
         "bare": "妖精",
         "de": "妖精的"
+      },
+      "Farfadets": {
+        "def": "小妖精",
+        "bare": "小妖精",
+        "de": "小妖精"
+      },
+      "Korrigans": {
+        "def": "科里根",
+        "bare": "科里根",
+        "de": "科里根"
+      },
+      "Faunes": {
+        "def": "法翁",
+        "bare": "法翁",
+        "de": "法翁"
+      },
+      "Dryades": {
+        "def": "树精",
+        "bare": "树精",
+        "de": "树精"
       },
       "Aigles Géants": {
         "def": "巨鹰",

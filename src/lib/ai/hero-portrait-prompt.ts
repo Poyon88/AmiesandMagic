@@ -61,6 +61,14 @@ export const GRANULAR_RACE_DESCRIPTORS: Record<string, string> = {
     'A humanoid anthropomorphic giant eagle warrior — clearly bipedal humanoid silhouette, eagle-shaped feathered head with sharp golden eyes and beak, broad feathered shoulders, folded wings visible behind, talon-tipped hands.',
   'Fées':
     'A humanoid faerie warrior with iridescent butterfly or dragonfly wings tucked behind the shoulders, delicate elven features, glowing skin, intricate filigree clothing.',
+  'Farfadets':
+    'A humanoid leprechaun — small and wiry, weathered red-cheeked face under a wide green felt hat, buckled shoes and a worn waistcoat, clay pipe clenched in the teeth, a sly knowing grin and gold glinting at the belt.',
+  'Korrigans':
+    'A humanoid korrigan — stunted and squat, gnarled bark-like skin, oversized pointed ears, tangled mossy hair strung with small dolmen charms, stubborn set to the jaw, moonlight caught in deep-set eyes.',
+  'Faunes':
+    'A humanoid faun — human torso and arms above shaggy goat legs ending in cloven hooves, curling ram horns, pointed ears, ivy woven into the hair, reed panpipes held at the chest.',
+  'Dryades':
+    'A humanoid dryad — feminine tree spirit, skin of smooth living bark streaked with sap, hair of leaves and blossom, slender rooted limbs, calm green eyes, bearing herself with the unhurried patience of an old oak.',
   // Nains faction
   'Nains':
     'A humanoid dwarf, stocky and broad-shouldered, weathered face, thick braided beard adorned with metal rings, deep-set piercing eyes.',

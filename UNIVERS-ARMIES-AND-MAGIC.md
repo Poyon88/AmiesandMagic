@@ -73,8 +73,8 @@ Chaque faction a un **nom de code interne** (utilisé en base et dans le moteur,
 > **Note refonte** : tous les clans ont désormais un **profil distinct** ; les pouvoirs « niveau faction » ci-dessous servent d'**ombrelle / pool de repli**, et l'essentiel de l'identité de jeu vient du **profil de clan** (§5). En cas de conflit, le profil de clan prime (y compris pour élargir un pouvoir interdit — cf. Ancré/Provocation chez les Elfes, Provocation/Régénération dans les Légions du Chaos).
 
 ### 3.1 🌿 Elfes — « L'Alliance Céleste » — *Bon*
-- **Races** : Elfes · Fées · **Aigles Géants** (race libre, disponible dans tous les clans) · **Hobbits** · **Hommes-Arbres**
-- **Clans** : Les Sylvains, Les Hauts-Elfes (Elfes) · La Forêt d'Émeraude (Fées) · La Combe Verte (Hobbits + Hommes-Arbres) — profils distincts en §5.3
+- **Races** : Elfes · Fées · **Aigles Géants** (race libre, disponible dans tous les clans) · **Hobbits** · **Hommes-Arbres** · **Farfadets** · **Korrigans** · **Faunes** · **Dryades** *(quatre nouvelles races du petit peuple — profils en §4)*
+- **Clans** : Les Sylvains, Les Hauts-Elfes (Elfes) · La Forêt d'Émeraude (Fées + Farfadets + Korrigans + Faunes + Dryades) · La Combe Verte (Hobbits + Hommes-Arbres) — profils distincts en §5.3
 - **Philosophie** : L'alliance du bon peuple des bois — elfes agiles et furtifs, fées mages, et désormais les hobbits rusés et leurs colosses Hommes-Arbres. Poids stats faction (ombrelle) : 1.05 / 0.85.
 - **Pouvoirs privilégiés (ombrelle)** : Traque (0.50), Esquive (0.50), Précision (0.45), Divination (0.45), Augure (0.40), Canalisation (0.40), Invisible (0.40), Contresort (0.35), Première Frappe (0.35), Loyauté (0.35), Bénédiction (0.30), Vol (0.20).
 - **Pouvoirs interdits** : Armure, Gloire +X/+Y, Nécrophagie, Pillage X, Carnage X. *(Ancré et Provocation, autrefois interdits, sont désormais autorisés pour accueillir les Hommes-Arbres.)*
@@ -160,6 +160,12 @@ Certaines factions différencient leurs races par un profil de pouvoirs propre (
 |---|---|---|---|
 | Elfes | **Aigles Géants** *(race libre)* | 1.20 / 0.70 | Vol (0.90), Traque (0.60), Première Frappe (0.50), Augure (0.40) |
 | Elfes | **Fées** | 0.75 / 0.65 | Vol (0.85), Invisible (0.70), Esquive (0.65), Canalisation (0.60), Augure (0.55), Divination (0.50), Drain de vie (0.45), Contresort (0.40), Héritage X (0.35) |
+| Elfes | **Farfadets** *(Forêt d'Émeraude)* | 0.80 / 0.85 | Esquive (0.60), Mimique (0.55), Traque (0.55), Richesse X (0.50), Permutation (0.45), Métamorphose (0.35) |
+| Elfes | **Korrigans** *(Forêt d'Émeraude)* | 0.80 / 0.95 | Malédiction (0.55), Paralysie (0.50), Riposte X (0.45), Provocation (0.45), Résistance X (0.40), Ancré (0.35) |
+| Elfes | **Faunes** *(Forêt d'Émeraude)* | 1.20 / 0.80 | Célérité (0.55), Inspiration X (0.50), Piétinement (0.50), Fureur (0.50), Bravoure (0.45), Solidarité X (0.35) |
+| Elfes | **Dryades** *(Forêt d'Émeraude)* | 0.75 / 1.05 | Régénération (0.60), Bénédiction (0.50), Liaison de vie (0.45), Solidarité X (0.40), Ancré (0.35), Provocation (0.30) |
+
+> **La Forêt d'Émeraude** (2026-08-29) : trois races du petit peuple — **Farfadets**, **Korrigans**, **Faunes** — et le clan **cède ses `statWeights`**. Le critère des Ghoules était satisfait sans rien inventer : les **Fées déclaraient déjà** leur gabarit (0.75/0.65), jusque-là **mort-né** dans ce clan puisque la cascade choisit un objet entier. Le don le rend enfin effectif — seule dérive du lot, et elle va dans le sens de ce que ce profil disait déjà. Le **Faune** est la raison du don : un satyre à sabots n'est pas un lutin, et 0.75/0.75 en aurait fait un feu follet de plus. À noter, **Pillage X est INTERDIT dans cette faction** — le registre évident du farfadet voleur d'or passe donc par **Richesse X**. Piège rencontré et corrigé en chemin : `statWeights` ne décide que du **partage** atk/déf, jamais de la taille — un Faune écrit 1.10/0.95 donnait 53,7 % d'attaque, soit **moins** que le Farfadet à 0.85/0.70 (54,8 %). Les ratios ont été refaits pour que la part d'attaque se lise : Faune 60 % > Fée 53,6 % > Farfadet 48,5 % > Korrigan 45,7 % > **Dryade 41,7 %**. La **Dryade**, ajoutée dans la foulée, porte le corps le plus défensif du clan ; **Armure**, la lecture évidente de son écorce, est elle aussi **interdite dans cette faction** — Ancré et Régénération en tiennent lieu.
 | Elfes | **Hommes-Arbres** | 0.90 / 1.50 | Provocation (0.60), Ancré (0.55), Régénération (0.40), Riposte X (0.35) |
 | Nains | **Golems** | 0.90 / 1.60 | Ancré (0.80), Armure (0.75), Provocation (0.60), Riposte X (0.45), Indestructible (0.30) |
 | Royaumes Libres | **Griffons** | 1.25 / 1.00 | Vol (0.90 — garanti par le générateur), Première Frappe (0.50), Bravoure (0.45), Loyauté (0.40), Célérité (0.35) |
@@ -265,7 +271,7 @@ Certaines factions différencient leurs races par un profil de pouvoirs propre (
 |---|---|---|---|---|
 | 🌳 **Les Sylvains** | Elfes | 1.15/0.80 | Escarmoucheurs furtifs des bois | Traque (0.55), Esquive (0.55), Invisible (0.45), Première Frappe (0.45), Précision (0.45), Combustion (0.30) |
 | 📖 **Les Hauts-Elfes** | Elfes | 0.95/0.90 | Mages arcaniques, contrôle | Canalisation (0.55), Divination (0.50), Contresort (0.45), Augure (0.45), Prescience X (0.40), Précision (0.35), Suprématie (0.35) |
-| 🧚 **La Forêt d'Émeraude** | Fées | 0.75/0.75 | Fées volantes, soutien | Vol (0.85), Invisible (0.60), Canalisation (0.55), Divination (0.50), Augure (0.50), Drain de vie (0.40), Contresort (0.40) |
+| 🧚 **La Forêt d'Émeraude** | Fées + Farfadets + Korrigans + Faunes + Dryades | *corps de chaque race (§4)* | Le petit peuple | Vol (0.85), Invisible (0.60), Canalisation (0.55), Divination (0.50), Augure (0.50), Drain de vie (0.40), Contresort (0.40) |
 | 🍃 **La Combe Verte** | Hobbits + Hommes-Arbres | 0.85/1.05 | Rusés insaisissables + colosses (≥6 mana → Hommes-Arbres) | Esquive (0.55), Loyauté (0.55), Bravoure (0.45), Invisible (0.40), Bénédiction (0.40), Régénération (0.35), Ancré (0.35), Provocation (0.35), Résistance X (0.35) |
 
 > **Aigles Géants** = race libre : peut apparaître dans n'importe quel clan elfe (profil de race §4).

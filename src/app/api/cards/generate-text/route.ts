@@ -40,6 +40,11 @@ export async function POST(request: Request) {
     "Elfes": "tall, slender elven figure with pointed ears, elegant features, flowing hair, light armor with nature motifs",
     "Aigles Géants": "massive giant eagle with piercing eyes, powerful wingspan, golden-brown plumage, talons like swords",
     "Fées": "tiny luminous fairy with translucent butterfly/dragonfly wings, glowing aura, ethereal and delicate",
+    // Alliance Céleste (La Forêt d'Émeraude)
+    "Farfadets": "small mischievous leprechaun, weathered red-cheeked face under a wide green felt hat, buckled shoes and a worn waistcoat, clay pipe, gold coins spilling from a hidden pouch, sly knowing grin",
+    "Korrigans": "stunted korrigan sprite of Breton legend, gnarled bark-like skin and oversized ears, tangled mossy hair strung with dolmen charms, squat and stubborn, crouched on a standing stone under moonlight",
+    "Faunes": "woodland faun, human torso above shaggy goat legs and cloven hooves, curling ram horns, pointed ears, reed panpipes at the lips, ivy in the hair, mid-dance in a sunlit glade",
+    "Dryades": "woodland dryad, feminine figure whose skin is smooth living bark streaked with sap, hair of leaves and blossom shifting with the season, roots trailing from the feet into the soil, serene and unhurried, half-emerged from an ancient oak",
     // Nains
     "Nains": "stout dwarven warrior with thick beard, heavy plate armor, runes engraved on equipment, stocky and muscular",
     "Golems": "massive stone or metal construct, glowing runes carved into body, hulking and mechanical, no organic features",
@@ -227,6 +232,10 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
           "Elfes": ["elf", "elven", "elfe"],
           "Aigles Géants": ["eagle", "aigle"],
           "Fées": ["fairy", "faerie", "fée"],
+          "Farfadets": ["leprechaun", "farfadet", "sprite"],
+          "Korrigans": ["korrigan", "breton sprite"],
+          "Faunes": ["faun", "faune", "satyr"],
+          "Dryades": ["dryad", "dryade", "tree nymph"],
           "Nains": ["dwarf", "dwarven", "nain"],
           "Golems": ["golem"],
           "Machines": ["automaton", "automata", "clockwork", "machine", "mechanism", "construct"],

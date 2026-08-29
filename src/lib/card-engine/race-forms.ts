@@ -33,6 +33,10 @@ export interface Inflected {
 export const RACE_FORMS_FR: Record<string, Inflected> = {
   "Elfes": { def: "l'Elfe", bare: "Elfe", de: "de l'Elfe" },
   "Fées": { def: "la Fée", bare: "Fée", de: "de la Fée" },
+  "Farfadets": { def: "le Farfadet", bare: "Farfadet", de: "du Farfadet" },
+  "Korrigans": { def: "le Korrigan", bare: "Korrigan", de: "du Korrigan" },
+  "Faunes": { def: "le Faune", bare: "Faune", de: "du Faune" },
+  "Dryades": { def: "la Dryade", bare: "Dryade", de: "de la Dryade" },
   "Aigles Géants": { def: "l'Aigle Géant", bare: "Aigle Géant", de: "de l'Aigle Géant" },
   "Hobbits": { def: "le Hobbit", bare: "Hobbit", de: "du Hobbit" },
   "Hommes-Arbres": { def: "l'Homme-Arbre", bare: "Homme-Arbre", de: "de l'Homme-Arbre" },

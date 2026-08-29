@@ -918,6 +918,10 @@
     "races": {
       "Elfes": "Elfos",
       "Fées": "Hadas",
+      "Farfadets": "Trasgos",
+      "Korrigans": "Korrigans",
+      "Faunes": "Faunos",
+      "Dryades": "Dríades",
       "Aigles Géants": "Águilas Gigantes",
       "Hobbits": "Hobbits",
       "Hommes-Arbres": "Hombres-Árbol",
@@ -1005,6 +1009,26 @@
         "def": "el Hada",
         "bare": "Hada",
         "de": "del Hada"
+      },
+      "Farfadets": {
+        "def": "el Trasgo",
+        "bare": "Trasgo",
+        "de": "del Trasgo"
+      },
+      "Korrigans": {
+        "def": "el Korrigan",
+        "bare": "Korrigan",
+        "de": "del Korrigan"
+      },
+      "Faunes": {
+        "def": "el Fauno",
+        "bare": "Fauno",
+        "de": "del Fauno"
+      },
+      "Dryades": {
+        "def": "la Dríade",
+        "bare": "Dríade",
+        "de": "de la Dríade"
       },
       "Aigles Géants": {
         "def": "el Águila Gigante",

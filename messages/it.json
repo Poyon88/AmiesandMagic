@@ -918,6 +918,10 @@
     "races": {
       "Elfes": "Elfi",
       "Fées": "Fate",
+      "Farfadets": "Folletti",
+      "Korrigans": "Korrigan",
+      "Faunes": "Fauni",
+      "Dryades": "Driadi",
       "Aigles Géants": "Aquile Giganti",
       "Hobbits": "Hobbit",
       "Hommes-Arbres": "Uomini-Albero",
@@ -1005,6 +1009,26 @@
         "def": "la Fata",
         "bare": "Fata",
         "de": "della Fata"
+      },
+      "Farfadets": {
+        "def": "il Folletto",
+        "bare": "Folletto",
+        "de": "del Folletto"
+      },
+      "Korrigans": {
+        "def": "il Korrigan",
+        "bare": "Korrigan",
+        "de": "del Korrigan"
+      },
+      "Faunes": {
+        "def": "il Fauno",
+        "bare": "Fauno",
+        "de": "del Fauno"
+      },
+      "Dryades": {
+        "def": "la Driade",
+        "bare": "Driade",
+        "de": "della Driade"
       },
       "Aigles Géants": {
         "def": "l'Aquila Gigante",

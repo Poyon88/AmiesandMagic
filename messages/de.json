@@ -918,6 +918,10 @@
     "races": {
       "Elfes": "Elfen",
       "Fées": "Feen",
+      "Farfadets": "Kobolde",
+      "Korrigans": "Korriganen",
+      "Faunes": "Faune",
+      "Dryades": "Dryaden",
       "Aigles Géants": "Riesenadler",
       "Hobbits": "Hobbits",
       "Hommes-Arbres": "Baummenschen",
@@ -1005,6 +1009,26 @@
         "def": "die Fee",
         "bare": "Fee",
         "de": "der Fee"
+      },
+      "Farfadets": {
+        "def": "der Kobold",
+        "bare": "Kobold",
+        "de": "des Kobolds"
+      },
+      "Korrigans": {
+        "def": "der Korrigan",
+        "bare": "Korrigan",
+        "de": "des Korrigans"
+      },
+      "Faunes": {
+        "def": "der Faun",
+        "bare": "Faun",
+        "de": "des Fauns"
+      },
+      "Dryades": {
+        "def": "die Dryade",
+        "bare": "Dryade",
+        "de": "der Dryade"
       },
       "Aigles Géants": {
         "def": "der Riesenadler",

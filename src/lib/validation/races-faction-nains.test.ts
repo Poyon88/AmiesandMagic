@@ -291,7 +291,7 @@ describe("clan des Premiers Géants — il CÈDE ses stats à ses races", () => 
     expect(kws["Provocation"]).toBeGreaterThan(0);
   });
 
-  it("les clans qui cèdent leurs stats sont EXACTEMENT les quatre clans multi-races", () => {
+  it("les clans qui cèdent leurs stats sont EXACTEMENT les cinq clans multi-races", () => {
     // Liste close, volontairement : y ajouter un clan sans lui donner des races
     // qui portent chacune leur gabarit revient à le renvoyer à l'ombrelle de
     // faction. La Cour Écarlate a rejoint la liste le 2026-08-27, en passant de
@@ -299,7 +299,9 @@ describe("clan des Premiers Géants — il CÈDE ses stats à ses races", () => 
     // quatre — et en DONNANT au passage un profil à Lich, qui n'en avait pas.
     // Le Voile Hurlant a suivi, en passant de deux à cinq : c'est le Dullahan,
     // seul corps solide d'un clan d'intangibles, qui a rendu le partage
-    // impossible.
+    // impossible. Puis La Forêt d'Émeraude le 2026-08-29, pour le Faune — avec
+    // cette particularité que le critère y était satisfait d'avance : les Fées
+    // déclaraient DÉJÀ leur gabarit, jusque-là mort-né dans le clan.
     const sansStats: string[] = [];
     for (const [fid, f] of Object.entries(FACTIONS)) {
       for (const [clan, prof] of Object.entries(f.clanProfiles ?? {})) {
@@ -311,6 +313,7 @@ describe("clan des Premiers Géants — il CÈDE ses stats à ses races", () => 
         "Morts-Vivants/La Cour Écarlate",
         "Morts-Vivants/Le Cénacle Nécromant",
         "Morts-Vivants/Le Voile Hurlant",
+        "Elfes/La Forêt d'Émeraude",
         "Nains/Clan des Premiers Géants",
       ].sort(),
     );
