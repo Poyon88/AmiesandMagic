@@ -1801,6 +1801,7 @@
     "label_trigger": "DÉCLENCHEUR",
     "label_emblem": "EMBLÈME",
     "emblem_permanent": "Effet permanent posé sur un joueur",
+    "emblem_trigger_note": "posé à l'arrivée de la carte ; le déclencheur dit à quoi il réagit ensuite",
     "label_emblem_side": "chez",
     "emblem_side_self": "mon camp",
     "emblem_side_opponent": "l'adversaire",

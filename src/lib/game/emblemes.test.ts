@@ -51,8 +51,8 @@ function etat() {
   return s;
 }
 
-describe("pose — n'importe quel déclencheur peut créer un emblème", () => {
-  it("à l'entrée en jeu", () => {
+describe("pose — à l'ARRIVÉE de la carte, quel que soit le déclencheur", () => {
+  it("une créature pose ses emblèmes en entrant en jeu", () => {
     const s = etat();
     const c = mkInstance(mkCard({ name: "Porteur", mana_cost: 1, capabilities: [emblemeRegistre("on_play", "vol")] }));
     s.players[0].hand.push(c);
@@ -63,23 +63,24 @@ describe("pose — n'importe quel déclencheur peut créer un emblème", () => {
     expect(next.players[0].emblems[0]).toMatchObject({ abilityId: "vol", stacks: 1, sourceName: "Porteur" });
   });
 
-  it("à la mort — la créature LÈGUE son emblème", () => {
+  it("le déclencheur est CONSERVÉ sur l'emblème — il dit à quoi il réagira", () => {
+    // Le point de bascule du modèle : `trigger` ne dit plus QUAND POSER (c'est
+    // toujours à l'arrivée) mais à quoi l'emblème réagira, pour le reste de la
+    // partie.
     const s = etat();
-    const c = mkInstance(mkCard({ name: "Légataire", attack: 1, health: 1, capabilities: [emblemeRegistre("on_death", "vol")] }));
-    s.players[0].board.push(c);
-    const tueur = mkInstance(mkCard({ name: "Tueur", attack: 9, health: 9 }));
-    tueur.hasSummoningSickness = false;
-    s.players[1].board.push(tueur);
+    const c = mkInstance(mkCard({
+      name: "Guetteur", mana_cost: 1,
+      capabilities: [emblemeCompose("on_death", DEGATS_AU_HASARD)],
+    }));
+    s.players[0].hand.push(c);
 
-    let st = applyAction(s, { type: "end_turn" });
-    st = applyAction(st, { type: "attack", attackerInstanceId: tueur.instanceId, targetInstanceId: c.instanceId } as never);
+    const st = applyAction(s, { type: "play_card", cardInstanceId: c.instanceId } as never);
 
-    expect(st.players[0].board).toHaveLength(0);        // elle est bien morte
-    expect(st.players[0].emblems).toHaveLength(1);      // son emblème reste
-    expect(st.players[0].emblems[0].abilityId).toBe("vol");
+    expect(st.players[0].emblems).toHaveLength(1);
+    expect(st.players[0].emblems[0].trigger).toBe("on_death");
   });
 
-  it("à la résolution d'un SORT — qui n'a pourtant aucune source en jeu", () => {
+  it("un sort pose les siens à sa résolution, sans source en jeu", () => {
     const s = etat();
     const sort = mkInstance(mkCard({
       name: "Décret", card_type: "spell", mana_cost: 1, attack: null, health: null,
@@ -163,7 +164,7 @@ describe("cumul", () => {
 describe("emblème COMPOSÉ — résolu en fin de tour", () => {
   it("se résout à chaque fin de tour de son porteur", () => {
     const s = etat();
-    const c = mkInstance(mkCard({ name: "Rituel", mana_cost: 1, capabilities: [emblemeCompose("on_play", DEGATS_AU_HASARD)] }));
+    const c = mkInstance(mkCard({ name: "Rituel", mana_cost: 1, capabilities: [emblemeCompose("on_end_of_turn", DEGATS_AU_HASARD)] }));
     s.players[0].hand.push(c);
     const cible = mkInstance(mkCard({ name: "Cible", attack: 1, health: 9 }));
     s.players[1].board.push(cible);
@@ -177,8 +178,8 @@ describe("emblème COMPOSÉ — résolu en fin de tour", () => {
 
   it("N piles ⇒ l'effet se résout N fois", () => {
     const s = etat();
-    const a = mkInstance(mkCard({ name: "A", mana_cost: 1, capabilities: [emblemeCompose("on_play", DEGATS_AU_HASARD)] }));
-    const b = mkInstance(mkCard({ name: "B", mana_cost: 1, capabilities: [emblemeCompose("on_play", DEGATS_AU_HASARD)] }));
+    const a = mkInstance(mkCard({ name: "A", mana_cost: 1, capabilities: [emblemeCompose("on_end_of_turn", DEGATS_AU_HASARD)] }));
+    const b = mkInstance(mkCard({ name: "B", mana_cost: 1, capabilities: [emblemeCompose("on_end_of_turn", DEGATS_AU_HASARD)] }));
     s.players[0].hand.push(a, b);
     s.players[1].board.push(mkInstance(mkCard({ name: "Cible", attack: 1, health: 20 })));
 
@@ -197,7 +198,7 @@ describe("emblème COMPOSÉ — résolu en fin de tour", () => {
     const s = etat();
     const sort = mkInstance(mkCard({
       name: "Décret", card_type: "spell", mana_cost: 1, attack: null, health: null,
-      capabilities: [emblemeCompose("spell_resolution", DEGATS_AU_HASARD)],
+      capabilities: [emblemeCompose("on_end_of_turn", DEGATS_AU_HASARD)],
     }));
     s.players[0].hand.push(sort);
     s.players[1].board.push(mkInstance(mkCard({ name: "Cible", attack: 1, health: 9 })));
@@ -213,7 +214,7 @@ describe("emblème COMPOSÉ — résolu en fin de tour", () => {
     const s = etat();
     const sort = mkInstance(mkCard({
       name: "Décret", card_type: "spell", mana_cost: 1, attack: null, health: null,
-      capabilities: [emblemeCompose("spell_resolution", DEGATS_AU_CHOIX)],
+      capabilities: [emblemeCompose("on_end_of_turn", DEGATS_AU_CHOIX)],
     }));
     s.players[0].hand.push(sort);
     const c1 = mkInstance(mkCard({ name: "C1", attack: 1, health: 9 }));
@@ -310,7 +311,7 @@ describe("emblèmes ÉPHÉMÈRES — durée en tours", () => {
     const s = etat();
     const c = mkInstance(mkCard({
       name: "Dernier souffle", mana_cost: 1,
-      capabilities: [{ ...emblemeCompose("on_play", DEGATS_AU_HASARD), duration: 1 }],
+      capabilities: [{ ...emblemeCompose("on_end_of_turn", DEGATS_AU_HASARD), duration: 1 }],
     }));
     s.players[0].hand.push(c);
     s.players[1].board.push(mkInstance(mkCard({ name: "Cible", attack: 1, health: 9 })));
@@ -410,5 +411,103 @@ describe("réversibilité du don d'emblème", () => {
 
     expect(st.players[0].emblems).toHaveLength(0);
     expect(st.players[0].board.find(x => x.card.name === "Volant")!.card.keywords).toContain("vol");
+  });
+});
+
+describe("cadences PERMANENTES — l'emblème réagit, tour après tour", () => {
+  /** Emblème posé par un sort, avec la cadence voulue. Le sort disparaît ; seul
+   *  l'emblème reste, ce qui isole bien ce qu'on mesure. */
+  const poseParSort = (cadence: Capability["trigger"]) => {
+    const s = etat();
+    const sort = mkInstance(mkCard({
+      name: "Décret", card_type: "spell", mana_cost: 1, attack: null, health: null,
+      capabilities: [{ ...emblemeCompose(cadence, DEGATS_AU_HASARD), trigger: cadence }],
+    } as never));
+    s.players[0].hand.push(sort);
+    const cible = mkInstance(mkCard({ name: "Cible", attack: 1, health: 40 }));
+    s.players[1].board.push(cible);
+    const st = applyAction(s, { type: "play_card", cardInstanceId: sort.instanceId } as never);
+    expect(st.players[0].emblems).toHaveLength(1);
+    return { st, cibleId: cible.instanceId };
+  };
+  const pv = (st: ReturnType<typeof mkState>, id: string) =>
+    st.players[1].board.find((c) => c.instanceId === id)!.currentHealth;
+
+  it("« à l'entrée en jeu » parle quand une créature du porteur arrive", () => {
+    const { st, cibleId } = poseParSort("on_play");
+    expect(pv(st, cibleId)).toBe(40); // rien à la pose du sort
+
+    const creature = mkInstance(mkCard({ name: "Arrivante", mana_cost: 1 }));
+    st.players[0].hand.push(creature);
+    const apres = applyAction(st, { type: "play_card", cardInstanceId: creature.instanceId } as never);
+    expect(pv(apres, cibleId)).toBe(38);
+  });
+
+  it("« à l'attaque » parle à chaque attaque du porteur", () => {
+    const { st, cibleId } = poseParSort("on_attack");
+    const attaquant = mkInstance(mkCard({ name: "Assaillant", attack: 1, health: 9 }));
+    attaquant.hasSummoningSickness = false;
+    st.players[0].board.push(attaquant);
+
+    const apres = applyAction(st, {
+      type: "attack", attackerInstanceId: attaquant.instanceId, targetInstanceId: "enemy_hero",
+    } as never);
+    expect(pv(apres, cibleId)).toBe(38);
+  });
+
+  it("« à la mort » parle quand une créature du porteur meurt", () => {
+    const { st, cibleId } = poseParSort("on_death");
+    const fragile = mkInstance(mkCard({ name: "Fragile", attack: 1, health: 1 }));
+    st.players[0].board.push(fragile);
+    const tueur = mkInstance(mkCard({ name: "Tueur", attack: 9, health: 9 }));
+    tueur.hasSummoningSickness = false;
+    st.players[1].board.push(tueur);
+
+    let apres = applyAction(st, { type: "end_turn" });
+    apres = applyAction(apres, {
+      type: "attack", attackerInstanceId: tueur.instanceId, targetInstanceId: fragile.instanceId,
+    } as never);
+    expect(apres.players[0].board.some((c) => c.card.name === "Fragile")).toBe(false);
+    expect(pv(apres, cibleId)).toBe(38);
+  });
+
+  it("« sous 15 PV » parle UNE fois, au franchissement", () => {
+    // Verrou à un coup au niveau du JOUEUR : sans lui, l'emblème reparlerait à
+    // chaque action tant que le héros reste sous le seuil.
+    const { st, cibleId } = poseParSort("on_low_hp");
+    expect(pv(st, cibleId)).toBe(40);
+
+    st.players[0].hero.hp = 10;
+    let apres = applyAction(st, { type: "end_turn" });
+    expect(pv(apres, cibleId)).toBe(38);
+    expect(apres.players[0].lowHpEmblemsFired).toBe(true);
+
+    apres = applyAction(apres, { type: "end_turn" });
+    apres = applyAction(apres, { type: "end_turn" });
+    expect(pv(apres, cibleId)).toBe(38); // toujours 38 : il n'a parlé qu'une fois
+  });
+
+  it("une cadence ne parle PAS sur un autre événement", () => {
+    // Le défaut trouvé en écrivant ces tests : buildEndOfTurnQueue empilait
+    // TOUS les emblèmes composés sans regarder leur cadence, si bien qu'un
+    // emblème « à l'entrée en jeu » parlait aussi à chaque fin de tour.
+    const { st, cibleId } = poseParSort("on_play");
+    const apres = applyAction(st, { type: "end_turn" });
+    expect(pv(apres, cibleId)).toBe(40);
+  });
+
+  it("une créature qui arrive ne réveille pas SON PROPRE emblème", () => {
+    const s = etat();
+    const c = mkInstance(mkCard({
+      name: "Arrivante", mana_cost: 1,
+      capabilities: [{ ...emblemeCompose("on_play", DEGATS_AU_HASARD), trigger: "on_play" }],
+    } as never));
+    s.players[0].hand.push(c);
+    const cible = mkInstance(mkCard({ name: "Cible", attack: 1, health: 40 }));
+    s.players[1].board.push(cible);
+
+    const st = applyAction(s, { type: "play_card", cardInstanceId: c.instanceId } as never);
+    expect(st.players[0].emblems).toHaveLength(1);
+    expect(pv(st, cible.instanceId)).toBe(40);
   });
 });

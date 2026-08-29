@@ -1106,6 +1106,19 @@ export interface Emblem {
   /** Poses cumulées du MÊME emblème. Un emblème composé à N piles se résout N
    *  fois ; un emblème de registre compte pour N exemplaires. */
   stacks: number;
+  /** Condition de DÉCLENCHEMENT permanente : l'emblème parle chaque fois que
+   *  cet événement se produit chez SON PORTEUR (une de ses créatures attaque,
+   *  meurt, revient en main, s'active, entre en jeu ; ou sa fin de tour ; ou son
+   *  héros passe sous le seuil). Absent ⇒ `on_end_of_turn`.
+   *
+   *  À NE PAS CONFONDRE avec le déclencheur d'une capacité ordinaire, qui dit
+   *  quand l'effet se produit UNE fois. Ici l'emblème est déjà posé — il est
+   *  posé à l'arrivée de la carte — et ce champ dit à quoi il RÉAGIT, pour le
+   *  reste de la partie.
+   *
+   *  Sans objet pour un emblème de REGISTRE (`abilityId`) : celui-là est une
+   *  aura permanente, il n'a rien à déclencher. */
+  trigger?: CapabilityTrigger;
   /** ÉPHÉMÈRE : nombre de fins de tour de son PORTEUR qu'il lui reste à vivre.
    *  Décrémenté une fois par tour, APRÈS s'être résolu — un emblème à 1 agit
    *  donc une dernière fois avant de disparaître. Absent ⇒ PERMANENT, le
@@ -1135,6 +1148,12 @@ export interface HeroState {
 export interface PlayerState {
   id: string;
   hero: HeroState;
+  /** Seuil de PV déjà franchi : les emblèmes de cadence « sous 15 PV » ont
+   *  parlé. Verrou à UN COUP, jamais réarmé — même resoigné au-dessus du seuil,
+   *  le joueur ne les redéclenche pas. Même doctrine que
+   *  `CardInstance.lowHpTriggerFired`, mais au niveau du JOUEUR : un emblème n'a
+   *  pas de créature porteuse où poser son drapeau. */
+  lowHpEmblemsFired?: boolean;
   /** Emblèmes actifs de CE joueur — posés par son héros, ses cartes, ou par une
    *  carte adverse (malédiction). Effacés au démarrage, conservés d'un tour à
    *  l'autre. Portés par le joueur et non par le héros : un sort n'a pas de

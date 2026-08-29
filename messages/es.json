@@ -1801,6 +1801,7 @@
     "label_trigger": "ACTIVADOR",
     "label_emblem": "EMBLEMA",
     "emblem_permanent": "Efecto permanente colocado sobre un jugador",
+    "emblem_trigger_note": "colocado al llegar la carta; el disparador indica a qué reacciona después",
     "label_emblem_side": "en",
     "emblem_side_self": "mi bando",
     "emblem_side_opponent": "el oponente",

@@ -284,7 +284,15 @@ export default function ComposedEffectsEditor({
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "6px 12px", alignItems: "center" }}>
               <span style={labelStyle}>{tr('label_trigger')}</span>
-              {sel(cap.trigger, triggers, (v) => patchCap(idx, { trigger: v }))}
+              {/* Pour un EMBLÈME, le déclencheur ne dit pas quand poser (c'est
+                  toujours à l'arrivée de la carte) mais à quoi il RÉAGIRA, pour
+                  le reste de la partie. La PIOCHE en est écartée : elle n'a pas
+                  de sens comme cadence permanente, et le moteur l'ignore. */}
+              {sel(
+                cap.trigger,
+                cap.effectKind === "emblem" ? triggers.filter((t) => t.v !== "on_draw") : triggers,
+                (v) => patchCap(idx, { trigger: v }),
+              )}
 
               {/* EMBLÈME — l'effet n'est pas joué maintenant : il est DÉPOSÉ sur
                   un joueur et survit à cette carte. Un emblème composé se résout
@@ -302,6 +310,11 @@ export default function ComposedEffectsEditor({
                   />
                   {tr('emblem_permanent')}
                 </label>
+                {cap.effectKind === "emblem" && (
+                  <span style={{ fontSize: 11, color: "#8a6d3b", fontStyle: "italic" }}>
+                    {tr('emblem_trigger_note')}
+                  </span>
+                )}
                 {cap.effectKind === "emblem" && (
                   <>
                     <label style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12 }}>

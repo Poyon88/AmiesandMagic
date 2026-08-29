@@ -1801,6 +1801,7 @@
     "label_trigger": "トリガー",
     "label_emblem": "エンブレム",
     "emblem_permanent": "プレイヤーに置かれる永続効果",
+    "emblem_trigger_note": "カードの登場時に置かれる。トリガーはその後に反応する対象を示す",
     "label_emblem_side": "対象",
     "emblem_side_self": "自分",
     "emblem_side_opponent": "相手",

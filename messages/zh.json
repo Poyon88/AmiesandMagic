@@ -1801,6 +1801,7 @@
     "label_trigger": "触发条件",
     "label_emblem": "纹章",
     "emblem_permanent": "置于玩家身上的永久效果",
+    "emblem_trigger_note": "在卡牌进场时放置；触发器决定其之后响应的事件",
     "label_emblem_side": "归属",
     "emblem_side_self": "我方",
     "emblem_side_opponent": "对手",

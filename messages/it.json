@@ -1801,6 +1801,7 @@
     "label_trigger": "INNESCO",
     "label_emblem": "EMBLEMA",
     "emblem_permanent": "Effetto permanente posto su un giocatore",
+    "emblem_trigger_note": "posto all'arrivo della carta; l'innesco dice a cosa reagisce in seguito",
     "label_emblem_side": "su",
     "emblem_side_self": "il mio schieramento",
     "emblem_side_opponent": "l'avversario",

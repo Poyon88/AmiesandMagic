@@ -1462,9 +1462,14 @@ function runComposedCapsForCard(
   targetMap?: Record<string, string>,
   fallbackTargetId?: string,
 ): void {
-  // Les emblèmes de ce déclencheur se posent AVANT les effets composés : une
-  // aura d'emblème doit être en place quand l'effet qui la suit s'évalue.
-  placeEmblemsForTrigger(card, trigger, owner, opponent);
+  // Un SORT pose ici ses emblèmes, à sa résolution.
+  //
+  // Le DÉCLENCHEMENT, lui, n'est délibérément PAS ici : cette fonction n'est pas
+  // toujours appelée (l'attaque la conditionne à `hasOnAttackComposed`), et un
+  // emblème est un guetteur du JOUEUR — il ne doit rien devoir aux capacités de
+  // la carte qui agit. Chaque événement a donc son propre point d'accroche,
+  // inconditionnel.
+  if (trigger === "spell_resolution") placeEmblemsForCard(card, owner, opponent);
   for (const cap of getCapabilities(card)) {
     if (!composeExecutable(cap) || cap.trigger !== trigger) continue;
     // no-op pour les effets sur mesure (`_composed`), qui n'ont pas d'ability
@@ -2256,21 +2261,24 @@ const composeExecutable = (c: import("./types").Capability): boolean =>
  *
  *  `side: "opponent"` range l'emblème chez l'adversaire — et comme le camp est
  *  implicite, il agira sur SON plateau. C'est toute la malédiction. */
-function placeEmblemsForTrigger(
+function placeEmblemsForCard(
   card: Card,
-  trigger: import("./types").CapabilityTrigger,
   owner: PlayerState,
   opponent: PlayerState,
 ): void {
   for (const cap of getCapabilities(card)) {
-    if (cap.effectKind !== "emblem" || cap.trigger !== trigger) continue;
+    if (cap.effectKind !== "emblem") continue;
     const cible = cap.side === "opponent" ? opponent : owner;
     // Un emblème porte SOIT un composé, SOIT une capacité du registre.
     // Une durée de 0 ou négative n'a pas de sens : on la traite comme absente
     // (permanent) plutôt que de poser un emblème mort-né.
     const duree = cap.duration != null && cap.duration > 0 ? { duration: cap.duration } : {};
+    // Le déclencheur de la capacité NE dit PAS quand poser — la pose a lieu à
+    // l'arrivée de la carte — mais à quoi l'emblème RÉAGIRA, pour le reste de
+    // la partie. Il voyage donc avec lui.
+    const quand = { trigger: cap.trigger };
     if (cap.composed) {
-      placeEmblem(cible, { composed: cap.composed, stacks: 1, ...duree, sourceCardId: card.id, sourceName: card.name });
+      placeEmblem(cible, { composed: cap.composed, stacks: 1, ...quand, ...duree, sourceCardId: card.id, sourceName: card.name });
       continue;
     }
     // `params` n'est garni que s'il porte quelque chose : un objet de champs
@@ -2285,10 +2293,41 @@ function placeEmblemsForTrigger(
       abilityId: cap.abilityId,
       ...(Object.keys(params).length ? { params } : {}),
       stacks: 1,
+      ...quand,
       ...duree,
       sourceCardId: card.id,
       sourceName: card.name,
     });
+  }
+}
+
+/** Fait PARLER les emblèmes composés d'un joueur pour un événement donné.
+ *
+ *  L'emblème surveille les créatures de SON PORTEUR : une malédiction rangée
+ *  chez l'adversaire réagit donc à SES créatures, ce qui est précisément ce qui
+ *  en fait une malédiction. Même règle que le camp implicite.
+ *
+ *  La fin de tour n'entre PAS ici : elle passe par `endOfTurnQueue`, seul chemin
+ *  capable de mettre le tour en pause sur un choix de cible. Les autres
+ *  cadences se résolvent sans suspendre — on ne peut pas interrompre une
+ *  attaque ou une mort pour ouvrir une modale.
+ *
+ *  Sans effet sur les emblèmes de REGISTRE : ceux-là sont des auras permanentes
+ *  appliquées par `recalculateAuras`, ils n'ont rien à déclencher. */
+function fireEmblemsForEvent(
+  evenement: import("./types").CapabilityTrigger,
+  porteur: PlayerState,
+  autre: PlayerState,
+): void {
+  if (evenement === "on_end_of_turn") return;
+  for (const emblem of porteur.emblems ?? []) {
+    if (!emblem.composed) continue;
+    if ((emblem.trigger ?? "on_end_of_turn") !== evenement) continue;
+    for (let n = 0; n < emblem.stacks; n++) {
+      withComposedMode(triggerToKeywordMode(evenement), () =>
+        resolveComposedEffect(emblem.composed!, null, porteur, autre, undefined, false,
+          { trigger: evenement, noSuspend: true }));
+    }
   }
 }
 
@@ -2898,16 +2937,9 @@ export function endTurn(state: GameState): GameState {
   // et reprend — automatiques suivants compris — après la résolution du joueur.
   // Cf. advanceEndOfTurn / resolvePendingTrigger.
   newState.endOfTurnQueue = buildEndOfTurnQueue(newState.players[newState.currentPlayerIndex]);
-  // Emblèmes posés PAR un déclencheur de fin de tour. APRÈS la construction de
-  // la file, délibérément : un emblème composé posé maintenant ne doit se
-  // résoudre qu'au tour suivant, sinon il agirait dans la file qui vient de le
-  // créer — et un emblème qui se pose chaque fin de tour se résoudrait dès sa
-  // pose, en cascade.
-  {
-    const sortant = newState.players[newState.currentPlayerIndex];
-    const entrant = newState.players[newState.currentPlayerIndex === 0 ? 1 : 0];
-    for (const c of sortant.board) placeEmblemsForTrigger(c.card, "on_end_of_turn", sortant, entrant);
-  }
+  // Les emblèmes de cadence « fin de tour » sont déjà dans la file ci-dessus
+  // (buildEndOfTurnQueue) : c'est le seul chemin capable de mettre le tour en
+  // PAUSE sur un choix de cible, d'où son traitement à part.
   return advanceEndOfTurn(newState);
 }
 
@@ -2931,6 +2963,10 @@ function buildEndOfTurnQueue(outgoing: PlayerState): import("./types").EndOfTurn
   // les effets permanents ensuite. Une pile de N résout l'effet N fois.
   (outgoing.emblems ?? []).forEach((emblem, i) => {
     if (!emblem.composed) return;
+    // SEULS les emblèmes de cadence « fin de tour » entrent dans la file. Sans
+    // ce filtre, un emblème qui guette l'entrée en jeu parlait AUSSI à chaque
+    // fin de tour — deux fois plutôt qu'une, et sur le mauvais événement.
+    if ((emblem.trigger ?? "on_end_of_turn") !== "on_end_of_turn") return;
     for (let n = 0; n < emblem.stacks; n++) {
       steps.push({ sourceInstanceId: "", emblemIndex: i });
     }
@@ -4269,9 +4305,12 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       if (cap.trigger === "on_play" && !cap.composed) noteAbilitySfx(cap.abilityId, "on_play");
     }
 
-    // Emblèmes posés à l'entrée en jeu. Hors de la pile composée ci-dessous :
-    // la pose est immédiate et sans cible.
-    placeEmblemsForTrigger(cardInstance.card, "on_play", player, opponent);
+    // EMBLÈMES. On DÉCLENCHE d'abord ceux déjà en place — une créature qui
+    // arrive ne doit pas réveiller son propre emblème pour sa propre arrivée —
+    // puis on pose les siens. Hors de la pile composée : la pose est immédiate
+    // et sans cible.
+    fireEmblemsForEvent("on_play", player, opponent);
+    placeEmblemsForCard(cardInstance.card, player, opponent);
 
     // Effets composés à l'entrée en jeu (modèle hybride) → pile LIFO. Un effet
     // poussé pendant la résolution (ex. mort déclenchée par un dégât on_play) se
@@ -5883,6 +5922,11 @@ export function attack(state: GameState, action: AttackAction): GameState {
   // (post-pouvoir / pré-combat) pour la 1re vague d'animation du store — APRÈS
   // les deux, sinon un buff curé tomberait dans la vague de combat et son popup
   // s'animerait EN MÊME TEMPS QUE / APRÈS les dégâts au lieu d'avant.
+  // Emblèmes qui guettent l'attaque. HORS du `if` ci-dessous, qui ne parle que
+  // des capacités de L'ATTAQUANT : un emblème est un guetteur du joueur, il doit
+  // parler même quand l'attaquant n'a aucun pouvoir d'attaque.
+  fireEmblemsForEvent("on_attack", player, opponent);
+
   const hasCuratedAttack = (attacker.card.keyword_instances ?? []).some(i => i.mode === "attack");
   if (hasOnAttackComposed(attacker.card) || hasCuratedAttack) {
     // Pouvoirs composés "à l'attaque". Les cibles choisies voyagent dans
@@ -6742,7 +6786,8 @@ function triggerReturnToHand(ci: CardInstance, owner: PlayerState, opponent: Pla
       resolveCuratedKeywordEffect(inst.id, inst.x ?? 1, ci, owner, opponent, undefined, inst);
     }
   }
-  // Effets composés au retour en main (modèle hybride).
+  // Emblèmes qui guettent le retour en main, puis effets composés de la carte.
+  fireEmblemsForEvent("on_return", owner, opponent);
   runComposedCapsForCard(ci.card, "on_return", ci, owner, opponent);
 
   // Règle générale : si un effet de retour (ex. auto-debuff d'Ombre
@@ -7145,6 +7190,16 @@ function checkLowHpTriggers(state: GameState, depth = 0): void {
   for (const p of state.players) {
     // Héros mort : checkWinCondition tranche, pas de « dernier souffle » à 0 PV.
     if (p.hero.hp <= 0 || p.hero.hp >= LOW_HP_TRIGGER_THRESHOLD) continue;
+
+    // EMBLÈMES « sous 15 PV » : ils parlent UNE fois, au franchissement, et
+    // n'ont rien à voir avec les créatures. L'appel était d'abord dans la
+    // boucle ci-dessous, donc conditionné à ce qu'une créature porte elle aussi
+    // une capacité low_hp — un emblème n'aurait presque jamais parlé.
+    if (!p.lowHpEmblemsFired) {
+      p.lowHpEmblemsFired = true;
+      fireEmblemsForEvent("on_low_hp", p, state.players[state.players[0] === p ? 1 : 0]);
+    }
+
     const frames: StackFrame[] = [];
     for (const ci of p.board) {
       if (ci.lowHpTriggerFired) continue;
@@ -7152,7 +7207,6 @@ function checkLowHpTriggers(state: GameState, depth = 0): void {
       const hasComposed = getCapabilities(ci.card).some(c => composeExecutable(c) && c.trigger === "on_low_hp");
       if (insts.length === 0 && !hasComposed) continue;
       ci.lowHpTriggerFired = true; // AVANT résolution (anti ré-entrance)
-      placeEmblemsForTrigger(ci.card, "on_low_hp", p, state.players[state.players[0] === p ? 1 : 0]);
       frames.push(...buildComposedFrames(ci.card, "on_low_hp", ci, p.id, undefined, undefined, { depth }));
       // Mots-clés curés en mode "low_hp" : une frame par instance.
       // resolveCuratedKeywordEffect (via resolveFrame) gère bruitage et
@@ -7412,6 +7466,9 @@ function resolveCreatureDeath(c: CardInstance, owner: PlayerState, enemy: Player
  *  passent (dead, owner, enemy) — l'ancien 4e paramètre `depth` disparaît). */
 function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: PlayerState): void {
   if (dead.length === 0) return;
+  // Emblèmes qui guettent la mort : une fois par dépouille, quelles que soient
+  // les capacités de la défunte.
+  for (let i = 0; i < dead.length; i++) fireEmblemsForEvent("on_death", owner, enemy);
   // FRONTIÈRE DE MORT. Les dépouilles ont déjà quitté le plateau
   // (cleanDeadCreatures), aucun râle n'a encore résolu : c'est exactement
   // l'instant que l'écran doit montrer entre l'animation de mort et les dégâts
@@ -8521,8 +8578,8 @@ export function tapActivate(state: GameState, action: TapActivateAction): GameSt
   if (!source) return state;
   if (!peutActiverPouvoir(source)) return state;
 
-  // Emblèmes posés à l'activation.
-  placeEmblemsForTrigger(source.card, "on_activation", player, opponent);
+  // Un pouvoir activé fait parler les emblèmes qui guettent l'activation.
+  fireEmblemsForEvent("on_activation", player, opponent);
 
   // Effet composé activable (on_activation) — référencé par uid.
   if (action.composedUid) {

@@ -1801,6 +1801,7 @@
     "label_trigger": "TRIGGER",
     "label_emblem": "EMBLEM",
     "emblem_permanent": "Permanent effect placed on a player",
+    "emblem_trigger_note": "placed when the card arrives; the trigger says what it reacts to afterwards",
     "label_emblem_side": "on",
     "emblem_side_self": "my side",
     "emblem_side_opponent": "the opponent",

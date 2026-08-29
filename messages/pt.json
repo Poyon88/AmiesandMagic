@@ -1801,6 +1801,7 @@
     "label_trigger": "GATILHO",
     "label_emblem": "EMBLEMA",
     "emblem_permanent": "Efeito permanente colocado sobre um jogador",
+    "emblem_trigger_note": "colocado à chegada da carta; o gatilho diz ao que reage em seguida",
     "label_emblem_side": "em",
     "emblem_side_self": "o meu lado",
     "emblem_side_opponent": "o oponente",

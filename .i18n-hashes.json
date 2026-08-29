@@ -13731,5 +13731,12 @@
   "zh:vocab.races.Dryades": "11zj4kx",
   "zh:vocab.races_forms.Dryades.def": "1qn8for",
   "zh:vocab.races_forms.Dryades.bare": "1ci6jzy",
-  "zh:vocab.races_forms.Dryades.de": "1194gs4"
+  "zh:vocab.races_forms.Dryades.de": "1194gs4",
+  "en:forge.emblem_trigger_note": "1u3e74d",
+  "es:forge.emblem_trigger_note": "1u3e74d",
+  "de:forge.emblem_trigger_note": "1u3e74d",
+  "it:forge.emblem_trigger_note": "1u3e74d",
+  "pt:forge.emblem_trigger_note": "1u3e74d",
+  "ja:forge.emblem_trigger_note": "1u3e74d",
+  "zh:forge.emblem_trigger_note": "1u3e74d"
 }

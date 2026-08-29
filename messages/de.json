@@ -1801,6 +1801,7 @@
     "label_trigger": "AUSLÖSER",
     "label_emblem": "EMBLEM",
     "emblem_permanent": "Dauerhafter Effekt auf einem Spieler",
+    "emblem_trigger_note": "beim Erscheinen der Karte gesetzt; der Auslöser sagt, worauf es danach reagiert",
     "label_emblem_side": "bei",
     "emblem_side_self": "meiner Seite",
     "emblem_side_opponent": "dem Gegner",
