@@ -53,6 +53,7 @@ import { KEYWORD_SYMBOLS as keywordSymbols, cleanEffectText, buildKeywordDisplay
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, getSpellKeywordBadgeValue } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import KeywordIcon from "@/components/shared/KeywordIcon";
+import { titleFontScale } from "@/lib/game/card-title";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { composedCapsOf, composedIcon, composedTriggerMode, composedValueText } from "@/lib/game/composed-display";
 import ComposedMarker from "@/components/cards/ComposedMarker";
@@ -331,12 +332,19 @@ export default function GameCard({
         position: "absolute", top: 0, left: 0, right: 0, zIndex: 2,
         padding: `${4 * s}px ${42 * s}px ${8 * s}px`,
         background: "linear-gradient(180deg, #0d0d1add 0%, #0d0d1a88 45%, transparent 78%)",
-        fontSize: 13 * so * CARD_STAT_MULT, color: "#d8b25a", fontWeight: 700, textAlign: "center",
-        overflow: "hidden", textOverflow: "ellipsis", lineHeight: 1.15,
-        display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 2,
-        fontFamily: "'Cinzel', serif",
-        textShadow: "0 1px 2px #000, 0 0 3px #000, 0 0 5px #000",
-      }}>{localizeName(card)}</div>
+      }}>
+        {/* La boîte tronquée ne porte AUCUN padding : `overflow: hidden` découpe
+            au bord de la BOÎTE, pas du contenu, si bien qu'un padding bas
+            laissait passer le haut de la troisième ligne sous le « … ». */}
+        <div style={{
+          fontSize: 13 * so * CARD_STAT_MULT * titleFontScale(localizeName(card)),
+          color: "#d8b25a", fontWeight: 700, textAlign: "center",
+          overflow: "hidden", textOverflow: "ellipsis", lineHeight: 1.15,
+          display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 2,
+          fontFamily: "'Cinzel', serif",
+          textShadow: "0 1px 2px #000, 0 0 3px #000, 0 0 5px #000",
+        }}>{localizeName(card)}</div>
+      </div>
 
       {/* ── Bottom bar: keywords + stats ── */}
       <div style={{

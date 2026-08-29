@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { titleFontScale } from "@/lib/game/card-title";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import type { CardInstance, EveilEntry } from "@/lib/game/types";
@@ -423,7 +424,7 @@ function GraveyardTile({ topCard, emptyImageUrl, count, isOpponent, onClick }: G
           <div
             style={{
               fontFamily: "'Cinzel', serif",
-              fontSize: 12,
+              fontSize: 12 * titleFontScale(localizeName(topCard)),
               fontWeight: 700,
               color: "#d8b25a",
               textShadow: "0 1px 2px #000, 0 0 3px #000, 0 0 5px #000",

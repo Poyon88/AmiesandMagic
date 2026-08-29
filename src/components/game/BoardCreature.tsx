@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, memo } from "react";
+import { titleFontScale } from "@/lib/game/card-title";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import type { CardInstance, GameAction } from "@/lib/game/types";
@@ -589,12 +590,19 @@ function BoardCreature({
         position: "absolute", top: 0, left: 0, right: 0, zIndex: 2,
         padding: "3px 18px 6px",
         background: "linear-gradient(180deg, #0d0d1add 0%, #0d0d1a88 45%, transparent 78%)",
-        fontSize: 7 * d, color: "#d8b25a", fontWeight: 700, textAlign: "center",
-        overflow: "hidden", textOverflow: "ellipsis", lineHeight: 1.15,
-        display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 2,
-        fontFamily: "'Cinzel', serif",
-        textShadow: "0 1px 2px #000, 0 0 3px #000, 0 0 5px #000",
-      }}>{localizeName(card)}</div>
+      }}>
+        {/* La boîte tronquée ne porte AUCUN padding : `overflow: hidden`
+            découpe au bord de la BOÎTE, pas du contenu — un padding bas
+            laissait passer le haut de la ligne suivante sous le « … ». */}
+        <div style={{
+          fontSize: (7 * d) * titleFontScale(localizeName(card)),
+          color: "#d8b25a", fontWeight: 700, textAlign: "center",
+          overflow: "hidden", textOverflow: "ellipsis", lineHeight: 1.15,
+          display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 2,
+          fontFamily: "'Cinzel', serif",
+          textShadow: "0 1px 2px #000, 0 0 3px #000, 0 0 5px #000",
+        }}>{localizeName(card)}</div>
+      </div>
 
       {/* Poison indicator (shifted below the mana orb) */}
       {creature.isPoisoned && (

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { titleFontScale } from "@/lib/game/card-title";
 import Image from "next/image";
 import type { CardInstance } from "@/lib/game/types";
 import { KEYWORD_SYMBOLS, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordBadgeValue, applyKeywordValueToLabel, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
@@ -182,12 +183,19 @@ function MulliganCard({
         position: "absolute", top: 0, left: 0, right: 0, zIndex: 2,
         padding: "6px 34px 8px",
         background: "linear-gradient(180deg, #0d0d1aee 0%, #0d0d1abb 55%, transparent 85%)",
-        fontSize: 12 * d, color: "#d8b25a", fontWeight: 700, textAlign: "center",
-        overflow: "hidden", textOverflow: "ellipsis", lineHeight: 1.15,
-        display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 3,
-        fontFamily: "'Cinzel', serif",
-        textShadow: "0 1px 2px #000, 0 0 3px #000, 0 0 5px #000",
-      }}>{localizeName(card)}</div>
+      }}>
+        {/* La boîte tronquée ne porte AUCUN padding : `overflow: hidden`
+            découpe au bord de la BOÎTE, pas du contenu — un padding bas
+            laissait passer le haut de la ligne suivante sous le « … ». */}
+        <div style={{
+          fontSize: (12 * d) * titleFontScale(localizeName(card), { maxLines: 3 }),
+          color: "#d8b25a", fontWeight: 700, textAlign: "center",
+          overflow: "hidden", textOverflow: "ellipsis", lineHeight: 1.15,
+          display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 3,
+          fontFamily: "'Cinzel', serif",
+          textShadow: "0 1px 2px #000, 0 0 3px #000, 0 0 5px #000",
+        }}>{localizeName(card)}</div>
+      </div>
 
       {/* Rangée de coûts — le MÊME composant que la main, le plateau et les
           overlays. Une orbe de mana faite main vivait ici, et elle ne montrait

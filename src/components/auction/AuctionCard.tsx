@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { titleFontScale } from "@/lib/game/card-title";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type { AuctionWithDetails } from "@/lib/auction/types";
@@ -153,7 +154,9 @@ export default function AuctionCard({ auction }: AuctionCardProps) {
               à la même hauteur sur toute la rangée : sans cette réserve, un nom
               qui passe à la ligne décale tout ce qui suit. */}
           <div style={{
-            fontSize: 13, color: "#e0e0e0", fontWeight: 600,
+            // La réserve de deux lignes est en `em` : elle suit donc la
+            // réduction, et la rangée reste alignée quelle que soit l'échelle.
+            fontSize: 13 * titleFontScale(itemName), color: "#e0e0e0", fontWeight: 600,
             minHeight: "2.6em", lineHeight: 1.3,
             display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 2,
             overflow: "hidden",
