@@ -105,12 +105,17 @@ describe("le clan GARDE ses stats — et il ne peut pas faire autrement", () => 
   });
 
   it("les quatre races d'eau partagent le corps du clan", () => {
+      // Mesuré à 10 manas et sur 200 tirages, PAS à 5 sur 80 : le générateur
+      // écrête la dispersion (`maxRatio` 2.5), et sur un petit total de stats
+      // cet écrêtage comprime l'écart voulu sous le bruit — ces comparaisons
+      // devenaient instables (deux d'entre elles ont échoué au hasard des
+      // exécutions). Plus le total est grand, plus le ratio s'exprime.
     const moy = (race: string, champ: "attack" | "defense") => {
       let t = 0;
-      for (let i = 0; i < 80; i++) {
-        t += generateCardStats("Élémentaires", "Unité", "Rare", 5, race, "La Vague Sans Fin")[champ] ?? 0;
+      for (let i = 0; i < 200; i++) {
+        t += generateCardStats("Élémentaires", "Unité", "Rare", 10, race, "La Vague Sans Fin")[champ] ?? 0;
       }
-      return t / 80;
+      return t / 200;
     };
     const base = moy("Élémentaire", "attack") + moy("Élémentaire", "defense");
     for (const r of NOUVELLES) {

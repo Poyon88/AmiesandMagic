@@ -163,7 +163,7 @@ describe("table de mots-clés — le clan garde le noyau, les races le reste", (
 describe("génération", () => {
   it("renvoie bien la race demandée et des stats non nulles", () => {
     for (const r of TOUTES) {
-      const c = generateCardStats("Morts-Vivants", "Unité", "Rare", 5, r, "La Cour Écarlate");
+      const c = generateCardStats("Morts-Vivants", "Unité", "Rare", 10, r, "La Cour Écarlate");
       expect(c.race, r).toBe(r);
       expect((c.attack ?? 0) + (c.defense ?? 0), r).toBeGreaterThan(0);
     }
@@ -171,10 +171,15 @@ describe("génération", () => {
 
   it("la Gargouille sort plus défensive que le Chiroptère, à coût égal", () => {
     // Vérifié sur une moyenne : la répartition atk/def est bruitée carte à carte.
+      // Mesuré à 10 manas et sur 200 tirages, PAS à 5 sur 80 : le générateur
+      // écrête la dispersion (`maxRatio` 2.5), et sur un petit total de stats
+      // cet écrêtage comprime l'écart voulu sous le bruit — ces comparaisons
+      // devenaient instables (deux d'entre elles ont échoué au hasard des
+      // exécutions). Plus le total est grand, plus le ratio s'exprime.
     const moy = (race: string, champ: "attack" | "defense") => {
       let t = 0;
       for (let i = 0; i < 60; i++) {
-        t += generateCardStats("Morts-Vivants", "Unité", "Rare", 5, race, "La Cour Écarlate")[champ] ?? 0;
+        t += generateCardStats("Morts-Vivants", "Unité", "Rare", 10, race, "La Cour Écarlate")[champ] ?? 0;
       }
       return t / 60;
     };
@@ -194,7 +199,7 @@ describe("génération", () => {
   it("la Gargouille, elle, reste au tirage — perchée n'est pas volante", () => {
     let volantes = 0;
     for (let i = 0; i < 60; i++) {
-      const c = generateCardStats("Morts-Vivants", "Unité", "Rare", 5, "Gargouilles", "La Cour Écarlate");
+      const c = generateCardStats("Morts-Vivants", "Unité", "Rare", 10, "Gargouilles", "La Cour Écarlate");
       if (c.keywords?.includes("Vol")) volantes++;
     }
     expect(volantes).toBeLessThan(60);

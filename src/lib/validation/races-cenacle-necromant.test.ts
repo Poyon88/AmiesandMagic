@@ -104,12 +104,17 @@ describe("le clan CÈDE ses stats — chaque race porte son corps", () => {
   });
 
   it("la génération sépare bien les corps", () => {
+      // Mesuré à 10 manas et sur 200 tirages, PAS à 5 sur 80 : le générateur
+      // écrête la dispersion (`maxRatio` 2.5), et sur un petit total de stats
+      // cet écrêtage comprime l'écart voulu sous le bruit — ces comparaisons
+      // devenaient instables (deux d'entre elles ont échoué au hasard des
+      // exécutions). Plus le total est grand, plus le ratio s'exprime.
     const moy = (race: string, champ: "attack" | "defense") => {
       let t = 0;
-      for (let i = 0; i < 80; i++) {
-        t += generateCardStats("Morts-Vivants", "Unité", "Rare", 5, race, "Le Cénacle Nécromant")[champ] ?? 0;
+      for (let i = 0; i < 200; i++) {
+        t += generateCardStats("Morts-Vivants", "Unité", "Rare", 10, race, "Le Cénacle Nécromant")[champ] ?? 0;
       }
-      return t / 80;
+      return t / 200;
     };
     expect(moy("Chimères nécrotiques", "attack")).toBeGreaterThan(moy("Momies", "attack"));
     expect(moy("Momies", "defense")).toBeGreaterThan(moy("Vermines mortuaires", "defense"));

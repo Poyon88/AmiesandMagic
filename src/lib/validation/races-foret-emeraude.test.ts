@@ -113,12 +113,17 @@ describe("le clan CÈDE ses stats — et les Fées y gagnent leur propre corps",
   });
 
   it("la génération sépare bien les corps", () => {
+    // Mesuré à 10 manas, PAS à 5 : le générateur écrête la dispersion
+    // (`maxRatio` 2.5), et sur un petit total de stats cet écrêtage rogne les
+    // hauts tirages du Faune au point de comprimer l'écart sous le bruit — le
+    // test devenait instable. Plus le total est grand, plus le ratio voulu
+    // s'exprime.
     const moy = (race: string, champ: "attack" | "defense") => {
       let t = 0;
-      for (let i = 0; i < 80; i++) {
-        t += generateCardStats("Elfes", "Unité", "Rare", 5, race, "La Forêt d'Émeraude")[champ] ?? 0;
+      for (let i = 0; i < 200; i++) {
+        t += generateCardStats("Elfes", "Unité", "Rare", 10, race, "La Forêt d'Émeraude")[champ] ?? 0;
       }
-      return t / 80;
+      return t / 200;
     };
     expect(moy("Faunes", "attack")).toBeGreaterThan(moy("Farfadets", "attack"));
     expect(moy("Korrigans", "defense")).toBeGreaterThan(moy("Faunes", "defense"));

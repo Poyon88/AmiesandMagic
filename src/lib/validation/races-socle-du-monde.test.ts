@@ -100,12 +100,17 @@ describe("le clan GARDE ses stats — même règle que l'Eau", () => {
   });
 
   it("les quatre races de terre partagent le corps du clan", () => {
+      // Mesuré à 10 manas et sur 200 tirages, PAS à 5 sur 80 : le générateur
+      // écrête la dispersion (`maxRatio` 2.5), et sur un petit total de stats
+      // cet écrêtage comprime l'écart voulu sous le bruit — ces comparaisons
+      // devenaient instables (deux d'entre elles ont échoué au hasard des
+      // exécutions). Plus le total est grand, plus le ratio s'exprime.
     const moy = (race: string, champ: "attack" | "defense") => {
       let t = 0;
-      for (let i = 0; i < 80; i++) {
-        t += generateCardStats("Élémentaires", "Unité", "Rare", 5, race, "Le Socle du Monde")[champ] ?? 0;
+      for (let i = 0; i < 200; i++) {
+        t += generateCardStats("Élémentaires", "Unité", "Rare", 10, race, "Le Socle du Monde")[champ] ?? 0;
       }
-      return t / 80;
+      return t / 200;
     };
     const base = moy("Élémentaire", "attack") + moy("Élémentaire", "defense");
     for (const r of NOUVELLES) {
@@ -116,10 +121,10 @@ describe("le clan GARDE ses stats — même règle que l'Eau", () => {
   it("la terre encaisse plus que l'eau", () => {
     const moyDef = (clanId: string) => {
       let t = 0;
-      for (let i = 0; i < 80; i++) {
-        t += generateCardStats("Élémentaires", "Unité", "Rare", 5, "Élémentaire", clanId).defense ?? 0;
+      for (let i = 0; i < 200; i++) {
+        t += generateCardStats("Élémentaires", "Unité", "Rare", 10, "Élémentaire", clanId).defense ?? 0;
       }
-      return t / 80;
+      return t / 200;
     };
     expect(moyDef("Le Socle du Monde")).toBeGreaterThan(moyDef("La Vague Sans Fin"));
   });

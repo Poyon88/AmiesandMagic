@@ -66,12 +66,17 @@ describe("le clan GARDE ses stats — la race n'en déclare aucune", () => {
   });
 
   it("les trois races partagent le même corps — c'est l'arbitrage assumé", () => {
+      // Mesuré à 10 manas et sur 200 tirages, PAS à 5 sur 80 : le générateur
+      // écrête la dispersion (`maxRatio` 2.5), et sur un petit total de stats
+      // cet écrêtage comprime l'écart voulu sous le bruit — ces comparaisons
+      // devenaient instables (deux d'entre elles ont échoué au hasard des
+      // exécutions). Plus le total est grand, plus le ratio s'exprime.
     const moy = (race: string, champ: "attack" | "defense") => {
       let t = 0;
-      for (let i = 0; i < 80; i++) {
-        t += generateCardStats("Morts-Vivants", "Unité", "Rare", 5, race, "Les Rangs Silencieux")[champ] ?? 0;
+      for (let i = 0; i < 200; i++) {
+        t += generateCardStats("Morts-Vivants", "Unité", "Rare", 10, race, "Les Rangs Silencieux")[champ] ?? 0;
       }
-      return t / 80;
+      return t / 200;
     };
     const zom = moy("Zombies", "attack") + moy("Zombies", "defense");
     const gho = moy("Ghoules", "attack") + moy("Ghoules", "defense");
