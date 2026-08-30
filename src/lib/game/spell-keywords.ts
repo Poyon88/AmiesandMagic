@@ -33,7 +33,7 @@ function cfrag(t: SafeT | undefined, key: string, fallback: string, params?: Rec
 }
 
 // Nom localisé d'un token (vocab.tokens.{id}), repli sur le nom FR du template.
-function tokenName(tmpl: TokenTemplate | null | undefined, t?: SafeT): string {
+export function tokenName(tmpl: TokenTemplate | null | undefined, t?: SafeT): string {
   if (!tmpl) return "Token";
   return (tmpl.id != null ? t?.(`vocab.tokens.${tmpl.id}`) : undefined) ?? tmpl.name;
 }

@@ -8,6 +8,8 @@
 //
 // Le nom reste dans le texte ; le reste part dans une pastille qui montre le
 // VERSO du token au survol — exactement ce que font déjà les Compagnons.
+import { tokenName } from "./spell-keywords";
+import type { SafeT } from "@/i18n/config";
 import type { Card, ConvocationTokenDef, TokenTemplate } from "./types";
 import type { ComposedEffect } from "./types";
 
@@ -113,7 +115,11 @@ export function tokenCardsForComposed(
 
 /** Nom AFFICHÉ d'un token d'aperçu. Passé au composant de pastilles pour qu'il
  *  n'aille pas chercher une traduction de CARTE avec un id de TOKEN — les deux
- *  tables ont leurs propres séquences, la collision est certaine. */
-export function tokenPreviewName(c: Card, t?: (k: string) => string | undefined): string {
-  return t?.(`vocab.tokens.${c.id}`) ?? c.name;
+ *  tables ont leurs propres séquences, la collision est certaine.
+ *
+ *  Délègue à `tokenName`, la règle que suivent déjà les descriptions : une
+ *  deuxième implémentation du même nom finirait par en diverger. `id`/`name`
+ *  suffisent — c'est tout ce que ce helper lit. */
+export function tokenPreviewName(c: Card, t?: SafeT): string {
+  return tokenName({ id: c.id, name: c.name } as TokenTemplate, t);
 }

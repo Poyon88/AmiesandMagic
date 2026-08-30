@@ -6,7 +6,9 @@
 // décrire. Le verso, lui, les montre comme ceux de n'importe quelle créature.
 import { describe, expect, it } from "vitest";
 import { formatConvocationToken, formatConvocationTokens } from "./spell-keywords";
-import { tokenCardsForComposed, tokenCardsForKeyword, tokenTemplateToCard } from "./token-preview";
+import { tokenCardsForComposed, tokenCardsForKeyword, tokenPreviewName, tokenTemplateToCard } from "./token-preview";
+import fs from "node:fs";
+import path from "node:path";
 import type { Capability, Card, TokenTemplate } from "./types";
 
 const ARCHER: TokenTemplate = {
@@ -114,5 +116,46 @@ describe("effet composé summon_token", () => {
   it("ignore tout autre contenu", () => {
     expect(tokenCardsForComposed({ content: "deal_damage", tokenId: 12 } as never, REGISTRE)).toEqual([]);
     expect(tokenCardsForComposed(undefined, REGISTRE)).toEqual([]);
+  });
+});
+
+describe("nom affiché de la pastille", () => {
+  it("prend la traduction quand elle existe", () => {
+    const c = tokenTemplateToCard(ARCHER);
+    expect(tokenPreviewName(c, (k) => (k === "vocab.tokens.9" ? "Sylvan Archer" : undefined)))
+      .toBe("Sylvan Archer");
+  });
+
+  it("RETOMBE sur le nom du template quand la clé est absente", () => {
+    // Le bug vu à l'écran : la pastille affichait « vocab.tokens.47 ».
+    // `t.raw` de next-intl ne LÈVE pas sur une clé absente — il rend le chemin
+    // de la clé. Un SafeT qui ne teste pas `t.has` d'abord peint donc la clé.
+    const c = tokenTemplateToCard(ARCHER);
+    expect(tokenPreviewName(c, () => undefined)).toBe("Archer Sylvain");
+    expect(tokenPreviewName(c)).toBe("Archer Sylvain");
+  });
+});
+
+describe("câblage du SafeT", () => {
+  const lire = (f: string) => fs.readFileSync(path.join(process.cwd(), f), "utf8");
+
+  it("les composants passent par useSafeT, jamais par un try/catch sur t.raw", () => {
+    // Reconstruire la règle à la main est précisément ce qui a produit la clé
+    // brute à l'écran : `t.has` n'est pas décoratif, il est la règle.
+    const src = lire("src/components/cards/TokenNames.tsx");
+    expect(src).toContain("useSafeT");
+    // Le composant ne doit pas tenir de traducteur à lui : c'est en s'en
+    // procurant un et en bricolant la règle autour qu'on a peint la clé brute.
+    // (On cherche l'APPEL, pas la mention — le commentaire du fichier explique
+    // justement pourquoi `t.raw` seul ne suffit pas.)
+    expect(src).not.toMatch(/useTranslations\(/);
+    expect(src).not.toMatch(/\bt\.raw\(/);
+  });
+
+  it("useVocab construit son SafeT au même endroit", () => {
+    const src = lire("src/i18n/useVocab.ts");
+    expect(src).toContain("export function useSafeT");
+    // Une seule occurrence de `t.has` : la règle ne vit qu'à un seul endroit.
+    expect(src.match(/t\.has\(/g) ?? []).toHaveLength(1);
   });
 });

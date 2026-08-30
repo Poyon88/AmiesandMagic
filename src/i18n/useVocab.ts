@@ -102,19 +102,27 @@ function labelWithRaces(base: string, raceIds: string[], safe: SafeT): string {
   return `${base} (${shown.join(", ")}${ellipsis})`;
 }
 
-export function useVocab(): Vocab {
+/** SafeT : ne renvoie une valeur que si la clé EXISTE (sinon undefined → repli
+ *  FR côté helper). Évite tout warning MISSING_MESSAGE.
+ *
+ *  `t.has` est indispensable et non décoratif : sur une clé absente, `t.raw`
+ *  ne lève PAS — il rend le chemin de la clé. Un appelant qui se contenterait
+ *  d'un try/catch afficherait donc « vocab.tokens.47 » à l'écran, ce qui est
+ *  exactement arrivé aux pastilles de tokens.
+ *
+ *  On utilise `t.raw` (pas `t`) : les gabarits de vocabulaire portent des
+ *  marqueurs littéraux « {x} », « {y} », « {amount} » que les helpers
+ *  substituent EUX-MÊMES (frag / .replace). Passer par `t()` déclencherait le
+ *  formatage ICU de next-intl, qui lève FORMATTING_ERROR sur ces variables non
+ *  fournies. `t.raw` renvoie la chaîne brute, sans interprétation ICU. Aucun
+ *  message `vocab.*` n'utilise de plural/select, donc c'est sans risque.
+ *
+ *  Exporté : tout composant qui appelle un helper à SafeT doit passer PAR ICI
+ *  plutôt que de reconstruire la règle — la reconstruire est ce qui a produit
+ *  le bug ci-dessus. */
+export function useSafeT(): SafeT {
   const t = useTranslations();
-
-  // SafeT : ne renvoie une valeur que si la clé existe (sinon undefined →
-  // fallback FR côté helper). Évite tout warning MISSING_MESSAGE.
-  //
-  // On utilise `t.raw` (pas `t`) : les gabarits de vocabulaire portent des
-  // marqueurs littéraux « {x} », « {y} », « {amount} » que les helpers
-  // substituent EUX-MÊMES (frag / .replace). Passer par `t()` déclencherait le
-  // formatage ICU de next-intl, qui lève FORMATTING_ERROR sur ces variables non
-  // fournies. `t.raw` renvoie la chaîne brute, sans interprétation ICU. Aucun
-  // message `vocab.*` n'utilise de plural/select, donc c'est sans risque.
-  const safe: SafeT = useCallback(
+  return useCallback(
     (key: string) => {
       if (!t.has(key)) return undefined;
       const raw = t.raw(key);
@@ -122,6 +130,10 @@ export function useVocab(): Vocab {
     },
     [t],
   );
+}
+
+export function useVocab(): Vocab {
+  const safe = useSafeT();
 
   return useMemo(
     () => ({
