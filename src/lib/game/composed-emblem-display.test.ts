@@ -78,6 +78,15 @@ describe("badge", () => {
   it("rend le badge de déclencheur habituel hors emblème", () => {
     expect(composedBadge(emb({ effectKind: "immediate" }))?.label).toBe("Entrée");
   });
+
+  it("NE DIT RIEN pour une capacité composée permanente", () => {
+    // Le mot « Permanent » n'appartient plus qu'aux emblèmes, où il qualifie une
+    // durée de vie réelle. Sur une capacité passive il se lisait comme le même
+    // qualificatif, pour une mécanique tout autre.
+    expect(composedBadge(emb({ effectKind: "immediate", trigger: "automatic" }))).toBeNull();
+    // L'EMBLÈME, lui, continue de s'annoncer.
+    expect(composedBadge(emb({ trigger: "automatic" }))?.label).toBe("Emblème");
+  });
 });
 
 describe("cadence isolée — la bande d'emblèmes en jeu", () => {

@@ -8,6 +8,12 @@
 // Le piège de ce lot : le mot ne peut PAS être déduit du mode d'affichage tel
 // quel. Huit capacités « à la mort » sont stockées sans mode — leur icône reste
 // neutre exprès — et auraient été annoncées « Permanent ».
+//
+// SUITE : « Permanent » a ensuite été retiré du dos des cartes. Il s'y lisait
+// comme un qualificatif de DURÉE, le registre exact des emblèmes — lesquels
+// disent « Emblème (permanent) » pour tout autre chose : un effet posé sur un
+// joueur, qui survit à la carte. Le passif reste signalé par son icône blanche.
+// Le helper générique, lui, garde le mot pour la vitrine des clans.
 import { describe, expect, it } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
@@ -36,9 +42,21 @@ describe("Le mot du déclencheur", () => {
     expect(LOW_HP_TRIGGER_THRESHOLD).toBe(15);
   });
 
-  it("dit « Permanent » pour un passif", () => {
-    expect(keywordTriggerLabel("armure")).toBe("Permanent");
-    expect(keywordTriggerLabel("terreur")).toBe("Permanent");
+  it("NE DIT RIEN pour un passif — le mot appartient aux emblèmes", () => {
+    // « Raid (Permanent) » se lisait comme un qualificatif de durée, le registre
+    // même des emblèmes — qui disent « Emblème (permanent) » et désignent tout
+    // autre chose : un effet posé sur un joueur, qui survit à la carte.
+    //
+    // Rien n'est perdu : l'icône BLANCHE non teintée dit déjà le passif.
+    expect(keywordTriggerLabel("armure")).toBeNull();
+    expect(keywordTriggerLabel("terreur")).toBeNull();
+  });
+
+  it("le helper GÉNÉRIQUE, lui, garde son « Permanent »", () => {
+    // La vitrine des clans s'en sert pour distinguer un profil dominant
+    // permanent d'une ÉGALITÉ entre déclencheurs (cf. clan-signature). Les deux
+    // y sont blancs : le mot est le seul écart, le retirer les confondrait.
+    expect(triggerBadge(undefined)).toEqual({ label: "Permanent", color: "#fff" });
   });
 
   it("dit « Entrée » pour un effet d'arrivée simple", () => {
@@ -178,7 +196,10 @@ describe("Câblage", () => {
     for (const f of AVEC_COMPOSES) expect(lire(f), f).toContain("vocab.composedBadge(cap)");
   });
 
-  it("les passifs restent nombreux — la parenthèse n'est pas anecdotique", () => {
+  it("les passifs sont nombreux — le silence sur eux n'est pas anecdotique", () => {
+    // Plus de quarante capacités ont perdu leur « (Permanent) ». Si ce compte
+    // s'effondrait, c'est que la taxonomie a bougé et que le mot est réapparu
+    // ailleurs — ou qu'il manque là où il devrait être.
     expect(AUTOMATIC_ABILITY_IDS.size).toBeGreaterThan(30);
   });
 });

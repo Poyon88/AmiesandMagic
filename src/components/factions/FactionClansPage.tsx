@@ -821,8 +821,12 @@ function Signature({
   couleur: string;
 }) {
   const vocab = useVocab();
-  // Le mot du déclencheur, comme au dos des cartes — sauf en cas d'ÉGALITÉ, où
-  // il n'y a rien à affirmer.
+  // Le mot du déclencheur — sauf en cas d'ÉGALITÉ, où il n'y a rien à affirmer.
+  //
+  // Ici, et ICI SEULEMENT, « Permanent » s'affiche encore : le dos des cartes ne
+  // le dit plus (il s'y confondait avec la permanence d'un emblème), mais cette
+  // vitrine en a besoin pour séparer un profil dominant permanent d'une égalité
+  // entre déclencheurs. Les deux sont blancs — le mot est le seul écart.
   const badge = (e: SignatureEntry) =>
     e.dominant === null ? null : vocab.triggerBadge(modeDe(e));
 

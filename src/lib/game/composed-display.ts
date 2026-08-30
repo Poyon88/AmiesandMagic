@@ -308,7 +308,13 @@ export function composedTriggerMode(cap: Capability): KeywordMode | undefined {
  *  description porte la cadence en toutes lettres. */
 export function composedBadge(cap: Capability, t?: SafeT): TriggerBadge | null {
   const mode = composedTriggerMode(cap);
-  if (cap.effectKind !== "emblem") return triggerBadge(mode, t);
+  if (cap.effectKind !== "emblem") {
+    // Pas de « Permanent » au dos d'une carte : même raison que pour les
+    // mots-clés (cf. keywordTriggerBadge). Le mot appartient désormais aux seuls
+    // EMBLÈMES, où il qualifie une durée de vie réelle.
+    if (mode === undefined) return null;
+    return triggerBadge(mode, t);
+  }
   return {
     label: frag(t, "emblem.badge"),
     // Même teinte que le déclencheur auquel il réagit : le code couleur du jeu

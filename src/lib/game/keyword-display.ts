@@ -82,13 +82,29 @@ export function triggerBadge(mode: KeywordMode | undefined, t?: SafeT): TriggerB
   };
 }
 
-/** Badge d'un mot-clé de créature. */
+/** Badge d'un mot-clé de créature, tel qu'il s'annonce AU DOS D'UNE CARTE.
+ *
+ *  Le PERMANENT ne s'y annonce plus. « Raid (Permanent) » se lisait comme un
+ *  qualificatif de durée, exactement le registre des emblèmes — qui, eux,
+ *  disent « Emblème (permanent) » et désignent tout autre chose : un effet posé
+ *  sur un joueur, qui survit à la carte. Deux mécaniques distinctes portant le
+ *  même mot au même endroit, c'était un contresens installé.
+ *
+ *  Rien n'est perdu : un passif est déjà signalé par son icône BLANCHE, non
+ *  teintée, et par l'absence de tout autre déclencheur. Le mot ne disait que ce
+ *  que la couleur dit déjà.
+ *
+ *  `triggerBadge` garde son « Permanent » : la vitrine des clans s'en sert pour
+ *  distinguer un profil dominant permanent d'une ÉGALITÉ entre déclencheurs, où
+ *  il n'y a rien à affirmer. Les deux y sont blancs — le mot est le seul écart. */
 export function keywordTriggerBadge(
   kw: Keyword,
   inst?: KeywordInstance,
   t?: SafeT,
 ): TriggerBadge | null {
-  return triggerBadge(keywordTriggerMode(kw, inst), t);
+  const mode = keywordTriggerMode(kw, inst);
+  if (mode === undefined) return null;
+  return triggerBadge(mode, t);
 }
 
 /** Le mot seul, sans sa couleur. Conservé pour les appels qui n'affichent pas. */
