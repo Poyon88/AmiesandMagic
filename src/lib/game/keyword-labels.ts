@@ -318,6 +318,11 @@ export const ALL_KEYWORDS: Keyword[] = [
   "liaison_de_vie", "ombre", "sacrifice", "malefice",
   "indestructible", "regeneration", "corruption",
   "carnage", "heritage", "mimique", "metamorphose", "tactique",
+  // Dédoublement : la FORGE le proposait depuis toujours, l'ÉDITION non. Écart
+  // sans justification — la capacité ne porte aucune donnée annexe que
+  // l'éditeur ne saurait saisir, contrairement à Conférer qui exige de choisir
+  // l'ability conférée. Les deux onglets sont désormais alignés.
+  "dedoublement",
   "exhumation", "heritage_du_cimetiere",
   "traque_du_destin", "sang_mele", "fierte_du_clan", "solidarite", "lycanthropie", "entraide",
   "cycle_eternel", "martyr", "instinct_de_meute", "totem", "appel_du_clan", "appel_supreme", "rassemblement",

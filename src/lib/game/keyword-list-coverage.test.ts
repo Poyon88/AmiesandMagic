@@ -25,10 +25,6 @@ const EXCLUSIONS_ASSUMEES: Record<string, string> = {
   // ne sait pas encore saisir — il n'écrit que `grantScope`. L'exposer poserait
   // un Conférer sans capacité, donc inerte, sans que rien ne le dise.
   conferer: "sélecteur d'ability conféré absent de l'éditeur",
-  // Absent de l'éditeur alors que la FORGE le propose : écart antérieur à
-  // Chant, laissé tel quel faute de demande. Aucune donnée annexe ne le
-  // justifie — candidat évident si l'on veut aligner les deux onglets.
-  dedoublement: "écart Forge/Édition préexistant, non tranché",
 };
 
 describe("ALL_KEYWORDS couvre le registre des capacités créature", () => {
