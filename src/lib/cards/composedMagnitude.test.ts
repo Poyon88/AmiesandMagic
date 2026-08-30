@@ -33,3 +33,18 @@ describe("fillXYMagnitude", () => {
     expect(fillXYMagnitude(plain)).toBe(plain);
   });
 });
+
+describe("drapeaux d'amplitude aléatoire", () => {
+  it("SURVIVENT au remplissage +X/+Y", () => {
+    // Le piège : cette fonction reconstruisait `magnitude` à partir des seuls
+    // x/y. La case « ? » cochée dans l'éditeur revenait décochée après
+    // sauvegarde, sans erreur — le mot-clé partait en base amputé de son sens.
+    const out = fillXYMagnitude(cap({ content: "buff", magnitude: { x: 3, y: 2, randomX: true } }));
+    expect(out.composed!.magnitude).toEqual({ x: 3, y: 2, randomX: true });
+  });
+
+  it("remplit toujours la moitié absente", () => {
+    const out = fillXYMagnitude(cap({ content: "buff", magnitude: { x: 3, randomY: true } }));
+    expect(out.composed!.magnitude).toEqual({ x: 3, y: 0, randomY: true });
+  });
+});

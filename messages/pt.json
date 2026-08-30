@@ -1849,6 +1849,8 @@
     "pool_any": "Indiferente",
     "pool_hint": "Filtros cumulativos, além das regras básicas (Comum, custo ≤ X, alinhamento da carta).",
     "label_magnitude": "MAGNITUDE",
+    "random_hint": "Sorteado ao acaso entre 1 e {max}, uma só vez, na resolução.",
+    "random_needs_ceiling": "É necessário um teto de pelo menos 2 para sortear.",
     "label_granted_ability": "HABILIDADE CONCEDIDA",
     "label_grant_trigger": "GATILHO DA CONCESSÃO",
     "label_token": "TOKEN",

@@ -1202,8 +1202,15 @@ function resolveComposedEffect(
   // sort résout ses propres effets composés drapeau posé. Sans ce test, la
   // capacité d'une créature tuée par le sort serait boostée elle aussi.
   const chantX = opts?.trigger === "spell_resolution" ? chantBonus + tempoBonus : 0;
-  const x = (composed.magnitude?.x ?? 0) + (composed.magnitude?.x != null ? chantX : 0);
-  const y = (composed.magnitude?.y ?? 0) + (composed.magnitude?.y != null ? chantX : 0);
+  // Filet pour les chemins qui ne passent pas par la pile — emblèmes,
+  // activations directes. Sans effet sur ce qui en vient : les drapeaux y ont
+  // déjà été retirés (cf. figerAmplitudeAleatoire, idempotent).
+  //
+  // Le Chant s'ajoute APRÈS le tirage, et non au plafond : il renforce le
+  // résultat obtenu, comme il renforce une valeur fixe.
+  const mag = figerAmplitudeAleatoire(composed).magnitude;
+  const x = (mag?.x ?? 0) + (mag?.x != null ? chantX : 0);
+  const y = (mag?.y ?? 0) + (mag?.y != null ? chantX : 0);
 
   // Effets sur le contrôleur (sans ciblage d'entité)
   switch (composed.content) {
@@ -7202,6 +7209,38 @@ function drainStack(state: GameState, opts?: { fizzleUnresolvedChoices?: boolean
  *  `${uid}#${i}` multi, `${uid}` simple) mais produit des frames de pile au lieu
  *  de résoudre inline. `sourceIdOverride` permet à Déclenchement de rejouer
  *  l'effet d'un allié avec une autre source. */
+/** Fige une amplitude ALÉATOIRE en un nombre concret : `randomX` tire entre 1
+ *  et le plafond saisi, et les drapeaux disparaissent.
+ *
+ *  IDEMPOTENT — c'est tout l'intérêt. L'effet est figé une première fois quand
+ *  il entre dans la pile (`buildComposedFrames`), pour que le SÉLECTEUR de
+ *  cibles et la résolution voient le même nombre : le pool d'une Exhumation
+ *  dépend de X, et deux tirages en donneraient deux, ce que le commentaire de
+ *  `getComposedGraveyardTargets` interdit explicitement. Rappelé ensuite à la
+ *  résolution pour les chemins qui n'empilent RIEN (emblèmes, activations), il
+ *  ne retire alors plus aucun drapeau et rend l'objet inchangé.
+ *
+ *  Tire via `rng()`, la graine portée par l'état de partie : les deux clients
+ *  obtiennent la même valeur. Un `Math.random` ici désynchroniserait la partie.
+ *
+ *  Plancher à 1 : un plafond nul ou négatif n'a rien d'aléatoire, on rend la
+ *  valeur telle quelle plutôt que de tirer dans le vide. */
+function figerAmplitudeAleatoire(composed: import("./types").ComposedEffect): import("./types").ComposedEffect {
+  const m = composed.magnitude;
+  if (!m?.randomX && !m?.randomY) return composed;
+  const tirer = (plafond: number | undefined): number | undefined => {
+    if (plafond == null || plafond < 1) return plafond;
+    return 1 + Math.floor(rng() * plafond);
+  };
+  return {
+    ...composed,
+    magnitude: {
+      x: m.randomX ? tirer(m.x) : m.x,
+      y: m.randomY ? tirer(m.y) : m.y,
+    },
+  };
+}
+
 function buildComposedFrames(
   card: Card,
   trigger: import("./types").CapabilityTrigger,
@@ -7233,7 +7272,10 @@ function buildComposedFrames(
       ownerId,
       sourceInstanceId: sourceId,
       trigger,
-      composed: cap.composed,
+      // Figé ICI, et non à la résolution : la frame peut se suspendre sur un
+      // choix de cible dont le pool dépend de X (Exhumation). Le sélecteur lit
+      // ce snapshot, la résolution aussi — un seul nombre pour les deux.
+      composed: figerAmplitudeAleatoire(cap.composed!),
       capUid: cap.uid,
       chosenTargetIds: chosen,
       valueMode: opts?.valueMode,
@@ -10970,10 +11012,17 @@ export function getSpellGraveyardTargets(state: GameState, card: Card, slotIndex
 export function getComposedGraveyardTargets(state: GameState, card: Card, capUid: string): string[] {
   const player = state.players[state.currentPlayerIndex];
   const cap = getCapabilities(card).find(c => c.uid === capUid && c.composed);
+  // La FRAME SUSPENDUE fait autorité quand elle existe : c'est là qu'une
+  // amplitude aléatoire a été figée en un nombre concret (cf.
+  // figerAmplitudeAleatoire). Relire la carte rendrait le PLAFOND et ouvrirait
+  // un pool plus large que ce que la résolution acceptera — exactement le
+  // désaccord picker/moteur que cette fonction existe pour éviter.
+  const frame = state.effectStack?.find(f => f.awaitingChoice && f.capUid === capUid && f.composed);
+  const composed = frame?.composed ?? cap?.composed;
   // Même plafond que la résolution, bonus de Chant compris (cf.
   // chantBonusForSpell / tempoBonusForCard) — sinon le picker et le moteur ne
   // s'accordent pas.
-  const x = (cap?.composed?.magnitude?.x ?? 0)
+  const x = (composed?.magnitude?.x ?? 0)
     + (card.card_type === "spell" ? chantBonusForSpell(state, card) + tempoBonusForCard(state, card) : 0);
   return player.graveyard
     .filter(c => c.card.card_type === "creature" && c.card.mana_cost <= x)

@@ -1849,6 +1849,8 @@
     "pool_any": "Indiferente",
     "pool_hint": "Filtros acumulativos, además de las reglas básicas (Común, coste ≤ X, alineación de la carta).",
     "label_magnitude": "MAGNITUD",
+    "random_hint": "Sorteado al azar entre 1 y {max}, una sola vez, al resolverse.",
+    "random_needs_ceiling": "Se necesita un tope de al menos 2 para sortear.",
     "label_granted_ability": "HABILIDAD OTORGADA",
     "label_grant_trigger": "DISPARADOR DEL OTORGAMIENTO",
     "label_token": "TOKEN",

@@ -1849,6 +1849,8 @@
     "pool_any": "Any",
     "pool_hint": "Cumulative filters, in addition to the base rules (Common, cost ≤ X, card alignment).",
     "label_magnitude": "MAGNITUDE",
+    "random_hint": "Randomly drawn between 1 and {max}, once, on resolution.",
+    "random_needs_ceiling": "A ceiling of at least 2 is needed to draw at random.",
     "label_granted_ability": "GRANTED ABILITY",
     "label_grant_trigger": "GRANT TRIGGER",
     "label_token": "TOKEN",

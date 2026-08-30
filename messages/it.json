@@ -1849,6 +1849,8 @@
     "pool_any": "Indifferente",
     "pool_hint": "Filtri cumulativi, in aggiunta alle regole base (Comune, costo ≤ X, allineamento della carta).",
     "label_magnitude": "AMPIEZZA",
+    "random_hint": "Estratto a caso tra 1 e {max}, una sola volta, alla risoluzione.",
+    "random_needs_ceiling": "Serve un tetto di almeno 2 per estrarre a caso.",
     "label_granted_ability": "ABILITÀ CONFERITA",
     "label_grant_trigger": "INNESCO DEL CONFERIMENTO",
     "label_token": "TOKEN",

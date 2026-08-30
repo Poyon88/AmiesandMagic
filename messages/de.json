@@ -1849,6 +1849,8 @@
     "pool_any": "Beliebig",
     "pool_hint": "Kumulative Filter, zusätzlich zu den Grundregeln (Gewöhnlich, Kosten ≤ X, Gesinnung der Karte).",
     "label_magnitude": "STÄRKE",
+    "random_hint": "Zufällig zwischen 1 und {max} gezogen, einmalig bei der Auflösung.",
+    "random_needs_ceiling": "Für einen Zufallswurf ist eine Obergrenze von mindestens 2 nötig.",
     "label_granted_ability": "VERLIEHENE FÄHIGKEIT",
     "label_grant_trigger": "AUSLÖSER DER VERLEIHUNG",
     "label_token": "TOKEN",

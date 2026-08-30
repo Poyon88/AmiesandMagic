@@ -539,8 +539,14 @@ export interface TargetSpec {
 
 export interface ComposedEffect {
   content: ComposedEffectContent;
-  /** Amplitude : `x` (montant générique), `y` (PV pour buff/debuff +X/+Y). */
-  magnitude?: { x?: number; y?: number };
+  /** Amplitude : `x` (montant générique), `y` (PV pour buff/debuff +X/+Y).
+   *
+   *  `randomX` / `randomY` : la valeur est TIRÉE AU HASARD entre 1 et le nombre
+   *  saisi, qui devient donc un PLAFOND. Le tirage a lieu une seule fois, au
+   *  moment où l'effet entre dans la pile — jamais deux fois, sans quoi le
+   *  sélecteur de cibles et la résolution verraient deux nombres différents
+   *  (cf. `getComposedGraveyardTargets`, dont le pool dépend de X). */
+  magnitude?: { x?: number; y?: number; randomX?: boolean; randomY?: boolean };
   /** Spécification de cibles. Absent ⇒ effet sur le contrôleur (pioche, mana…). */
   target?: TargetSpec;
   /** content === "grant_keyword" : id de l'ability conférée. */

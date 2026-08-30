@@ -1849,6 +1849,8 @@
     "pool_any": "Indifférent",
     "pool_hint": "Filtres cumulatifs, en plus des règles de base (Commune, coût ≤ X, alignement de la carte).",
     "label_magnitude": "AMPLITUDE",
+    "random_hint": "Tiré au hasard entre 1 et {max}, une seule fois à la résolution.",
+    "random_needs_ceiling": "Un plafond d'au moins 2 est nécessaire pour tirer au hasard.",
     "label_granted_ability": "CAPACITÉ CONFÉRÉE",
     "label_grant_trigger": "DÉCLENCHEUR DU DON",
     "label_token": "TOKEN",

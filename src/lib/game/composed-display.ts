@@ -77,6 +77,7 @@ export const COMPOSED_FR: Record<string, string> = {
   "grant_when.on_attack": ", qui se déclenchera quand elle attaque",
   "grant_when.on_draw": ", qui se déclenchera à sa pioche",
   "grant_when.on_low_hp": ", qui se déclenchera sous 15 PV",
+  "content.random_range": "1 à {max}",
   "content.ability_generic": "une capacité",
   "content.draw_cards_one": "piochez {x} carte",
   "content.draw_cards_many": "piochez {x} cartes",
@@ -383,22 +384,35 @@ function describePoolFilter(eff: ComposedEffect, t?: SafeT): string {
   return parts.join("");
 }
 
+/** L'amplitude TELLE QU'ELLE S'AFFICHE. Une valeur aléatoire se lit « 1 à 4 » :
+ *  le nombre saisi est un plafond, pas le montant. Sans ça, la carte annonçait
+ *  « inflige 4 dégâts » pour un effet qui peut n'en infliger qu'un.
+ *
+ *  Rendue en CHAÎNE, tandis que les appelants gardent le nombre pour choisir le
+ *  singulier ou le pluriel — « 1 à 4 dégâts » s'accorde sur le plafond. */
+function amplitudeAffichee(v: number, aleatoire: boolean | undefined, t?: SafeT): string | number {
+  return aleatoire && v > 1 ? frag(t, "content.random_range", { max: v }) : v;
+}
+
+
 function describeContent(eff: ComposedEffect, tokens: TokenTemplate[] | undefined, t?: SafeT): string {
   const x = eff.magnitude?.x ?? 0;
+  const xAff = amplitudeAffichee(x, eff.magnitude?.randomX, t);
   const y = eff.magnitude?.y ?? 0;
+  const yAff = amplitudeAffichee(y, eff.magnitude?.randomY, t);
   switch (eff.content) {
-    case "deal_damage": return frag(t, x > 1 ? "content.deal_damage_many" : "content.deal_damage_one", { x });
-    case "heal": return frag(t, "content.heal", { x });
-    case "buff": return frag(t, "content.buff", { x, y });
-    case "debuff": return frag(t, "content.debuff", { x, y });
+    case "deal_damage": return frag(t, x > 1 ? "content.deal_damage_many" : "content.deal_damage_one", { x: xAff });
+    case "heal": return frag(t, "content.heal", { x: xAff });
+    case "buff": return frag(t, "content.buff", { x: xAff, y: yAff });
+    case "debuff": return frag(t, "content.debuff", { x: xAff, y: yAff });
     case "destroy": return frag(t, "content.destroy");
     case "bounce": return frag(t, "content.bounce");
     case "paralyze": return frag(t, "content.paralyze");
     case "poison": return frag(t, "content.poison");
     case "grant_keyword": return frag(t, "content.grant_keyword", { ability: grantedAbilityLabel(eff, x, y, t) })
       + describeGrantTrigger(eff, t);
-    case "draw_cards": return frag(t, x > 1 ? "content.draw_cards_many" : "content.draw_cards_one", { x });
-    case "discard": return frag(t, x > 1 ? "content.discard_many" : "content.discard_one", { x });
+    case "draw_cards": return frag(t, x > 1 ? "content.draw_cards_many" : "content.draw_cards_one", { x: xAff });
+    case "discard": return frag(t, x > 1 ? "content.discard_many" : "content.discard_one", { x: xAff });
     case "summon_token": {
       // NOM SEUL. Les stats du token — et depuis peu ses effets composés, qu'une
       // phrase ne saurait de toute façon pas dire — vivent dans la pastille qui
@@ -408,11 +422,11 @@ function describeContent(eff: ComposedEffect, tokens: TokenTemplate[] | undefine
       const label = tok
         ? ((tok.id != null ? t?.(`vocab.tokens.${tok.id}`) : undefined) ?? tok.name)
         : frag(t, x > 1 ? "content.token_many" : "content.token_one");
-      return frag(t, x > 1 ? "content.summon_many" : "content.summon_one", { x, token: label });
+      return frag(t, x > 1 ? "content.summon_many" : "content.summon_one", { x: xAff, token: label });
     }
-    case "gain_mana": return frag(t, "content.gain_mana", { x });
-    case "epargne": return frag(t, "content.epargne", { x });
-    case "incineration": return frag(t, "content.incineration", { x });
+    case "gain_mana": return frag(t, "content.gain_mana", { x: xAff });
+    case "epargne": return frag(t, "content.epargne", { x: xAff });
+    case "incineration": return frag(t, "content.incineration", { x: xAff });
     // Verbes transitifs directs : « Dévore une unité ennemie », sans préposition.
     case "devoration": return frag(t, "content.devoration");
     case "retour_differe": return frag(t, "content.retour_differe");
@@ -427,7 +441,7 @@ function describeContent(eff: ComposedEffect, tokens: TokenTemplate[] | undefine
     case "selection":
     case "selection_magique":
     case "renfort_royal":
-      return frag(t, `content.${eff.content}`, { x, filter: describePoolFilter(eff, t) });
+      return frag(t, `content.${eff.content}`, { x: xAff, filter: describePoolFilter(eff, t) });
     default: return String(eff.content);
   }
 }
@@ -436,12 +450,14 @@ function describeContent(eff: ComposedEffect, tokens: TokenTemplate[] | undefine
 // null si le contenu n'en a pas : on retombe alors sur « contenu + à elle-même ».
 function describeSelfContent(eff: ComposedEffect, t?: SafeT): string | null {
   const x = eff.magnitude?.x ?? 0;
+  const xAff = amplitudeAffichee(x, eff.magnitude?.randomX, t);
   const y = eff.magnitude?.y ?? 0;
+  const yAff = amplitudeAffichee(y, eff.magnitude?.randomY, t);
   switch (eff.content) {
-    case "deal_damage": return frag(t, x > 1 ? "self.deal_damage_many" : "self.deal_damage_one", { x });
-    case "heal": return frag(t, "self.heal", { x });
-    case "buff": return frag(t, "self.buff", { x, y });
-    case "debuff": return frag(t, "self.debuff", { x, y });
+    case "deal_damage": return frag(t, x > 1 ? "self.deal_damage_many" : "self.deal_damage_one", { x: xAff });
+    case "heal": return frag(t, "self.heal", { x: xAff });
+    case "buff": return frag(t, "self.buff", { x: xAff, y: yAff });
+    case "debuff": return frag(t, "self.debuff", { x: xAff, y: yAff });
     case "destroy": return frag(t, "self.destroy");
     case "bounce": return frag(t, "self.bounce");
     case "paralyze": return frag(t, "self.paralyze");
@@ -503,6 +519,7 @@ function describeScatter(eff: ComposedEffect, t?: SafeT): string | null {
   if (!tg || tg.designation !== "scatter") return null;
   if (eff.content !== "deal_damage" && eff.content !== "heal") return null;
   const x = eff.magnitude?.x ?? 0;
+  const xAff = amplitudeAffichee(x, eff.magnitude?.randomX, t);
   const action = eff.content === "deal_damage" ? frag(t, "scatter.action_damage") : frag(t, "scatter.action_heal");
   const unit = eff.content === "deal_damage" ? frag(t, "scatter.unit_damage") : frag(t, "scatter.unit_heal");
   const side = sideAdj(t, tg.side, false);
@@ -511,7 +528,7 @@ function describeScatter(eff: ComposedEffect, t?: SafeT): string | null {
   const targetTxt = tg.entity === "both"
     ? frag(t, "scatter.target_both", { side })
     : frag(t, "scatter.target_unit", { side });
-  return [`${action} ${frag(t, "scatter.times", { x, unit })}`, targetTxt, mtxt && `(${mtxt})`].filter(Boolean).join(" ");
+  return [`${action} ${frag(t, "scatter.times", { x: xAff, unit })}`, targetTxt, mtxt && `(${mtxt})`].filter(Boolean).join(" ");
 }
 
 /** En-tête d'un EMBLÈME : ce qu'il est, chez qui il est rangé, combien de temps

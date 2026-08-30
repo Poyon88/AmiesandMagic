@@ -158,6 +158,41 @@ export default function ComposedEffectsEditor({
     // Un sort qui agit à la pioche passe donc forcément par un effet composé.
     : [{ v: "spell_resolution", l: tr('trigger_spell_resolution') }, { v: "on_draw", l: tr('trigger_on_draw') }];
 
+  /** Case « ? » d'une amplitude : le nombre saisi devient un PLAFOND, et la
+   *  valeur est tirée entre 1 et lui.
+   *
+   *  Un plafond < 2 n'a rien à tirer — « entre 1 et 1 » est une constante — donc
+   *  la case est désactivée plutôt que d'offrir un aléatoire qui n'en est pas. */
+  const caseAlea = (
+    idx: number,
+    eff: ComposedEffect,
+    champ: "randomX" | "randomY",
+    plafond: number,
+  ) => {
+    const inerte = plafond < 2;
+    return (
+      <label
+        title={inerte ? tr('random_needs_ceiling') : tr('random_hint', { max: plafond })}
+        style={{
+          display: "inline-flex", alignItems: "center", gap: 3, fontSize: 9,
+          color: inerte ? "#ccc" : eff.magnitude?.[champ] ? "#b3541e" : "#666",
+          cursor: inerte ? "default" : "pointer",
+          fontWeight: eff.magnitude?.[champ] ? 700 : 400,
+        }}
+      >
+        <input
+          type="checkbox"
+          disabled={inerte}
+          checked={!!eff.magnitude?.[champ] && !inerte}
+          onChange={(e) => patchEffect(idx, { magnitude: { ...eff.magnitude, [champ]: e.target.checked } })}
+        />
+        ?
+      </label>
+    );
+  };
+  const aleaX = (idx: number, eff: ComposedEffect) => caseAlea(idx, eff, "randomX", eff.magnitude?.x ?? 0);
+  const aleaY = (idx: number, eff: ComposedEffect) => caseAlea(idx, eff, "randomY", eff.magnitude?.y ?? 0);
+
   const addComposed = () => onChange([...value, {
     uid: `c_${Math.random().toString(36).slice(2, 9)}`,
     // Un token n'a pas d'entrée en jeu : son premier déclencheur proposé est le
@@ -426,9 +461,13 @@ export default function ComposedEffectsEditor({
               })}
 
               <span style={labelStyle}>{tr('label_magnitude')}</span>
-              <span style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
+              <span style={{ display: "inline-flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                 <label style={{ fontSize: 9, color: "#666" }}>X {numInput(eff.magnitude?.x ?? 0, (n) => patchEffect(idx, { magnitude: { ...eff.magnitude, x: n } }))}</label>
+                {/* « ? » — la valeur saisie devient un PLAFOND et le nombre est
+                    tiré entre 1 et lui, une seule fois, à la résolution. */}
+                {aleaX(idx, eff)}
                 {showY && <label style={{ fontSize: 9, color: "#666" }}>Y {numInput(eff.magnitude?.y ?? 0, (n) => patchEffect(idx, { magnitude: { ...eff.magnitude, y: n } }))}</label>}
+                {showY && aleaY(idx, eff)}
               </span>
 
               {eff.content === "grant_keyword" && (() => {

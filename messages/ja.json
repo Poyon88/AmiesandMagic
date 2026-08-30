@@ -1849,6 +1849,8 @@
     "pool_any": "指定なし",
     "pool_hint": "基本ルール（コモン、コスト≤X、カードの属性）に加え、フィルターは累積して適用されます。",
     "label_magnitude": "強度",
+    "random_hint": "解決時に1〜{max}の範囲で1回だけランダムに決定されます。",
+    "random_needs_ceiling": "ランダム決定には2以上の上限が必要です。",
     "label_granted_ability": "付与する能力",
     "label_grant_trigger": "付与の発動条件",
     "label_token": "トークン",

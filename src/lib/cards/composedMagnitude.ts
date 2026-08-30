@@ -26,7 +26,11 @@ export function fillXYMagnitude(c: Capability): Capability {
     ...c,
     composed: {
       ...composed,
-      magnitude: { x: composed.magnitude?.x ?? 0, y: composed.magnitude?.y ?? 0 },
+      // Spread AVANT les deux moitiés : `magnitude` porte aussi les drapeaux
+      // d'amplitude ALÉATOIRE (`randomX` / `randomY`). Reconstruire l'objet à
+      // partir des seuls x/y les jetait en silence — la case « ? » cochée dans
+      // l'éditeur revenait décochée après sauvegarde, sans la moindre erreur.
+      magnitude: { ...composed.magnitude, x: composed.magnitude?.x ?? 0, y: composed.magnitude?.y ?? 0 },
     },
   };
 }
