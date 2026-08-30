@@ -8,7 +8,7 @@
 // créature, à n'importe quel déclencheur.
 import { describe, expect, it } from "vitest";
 import { applyAction } from "./engine";
-import { describeComposedCap } from "./composed-display";
+import { composedIcon, composedKeywordName, describeComposedCap } from "./composed-display";
 import { mkCard, mkInstance, mkState } from "./test-harness";
 import type { Capability, CardInstance, ComposedPoolFilter, GameState } from "./types";
 
@@ -112,5 +112,24 @@ describe("texte de carte", () => {
   it("s'accorde avec une amplitude ALÉATOIRE", () => {
     const c = { ...cap(4), composed: { content: "appel", magnitude: { x: 4, randomX: true } } } as unknown as Capability;
     expect(describeComposedCap(c)).toContain("1 à 4");
+  });
+});
+
+describe("icône sur la carte", () => {
+  const cap = {
+    uid: "u", trigger: "spell_resolution", effectKind: "immediate", abilityId: "_composed",
+    composed: { content: "appel", magnitude: { x: 2 }, pool: { race: "Elfes" } },
+  } as unknown as Capability;
+
+  it("emprunte l'icône et le nom d'« Appel du clan »", () => {
+    // Sans entrée dédiée, le contenu tombait sur le repli générique « ✦ », qui
+    // ne dit rien de ce que l'effet fait — la carte n'affichait qu'une étoile.
+    expect(composedIcon(cap)).toEqual({ symbol: "📯", keyword: "appel_du_clan" });
+    expect(composedKeywordName(cap)).toBe("Appel du clan");
+  });
+
+  it("n'est PAS le repli générique", () => {
+    expect(composedIcon(cap).symbol).not.toBe("✦");
+    expect(composedIcon(cap).keyword).not.toBe("");
   });
 });

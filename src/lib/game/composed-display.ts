@@ -261,6 +261,12 @@ export function composedIcon(cap: Capability): { symbol: string; keyword: string
     case "selection": return { symbol: KEYWORD_SYMBOLS.selection, keyword: "selection" };
     case "selection_magique": return { symbol: KEYWORD_SYMBOLS.selection_magique, keyword: "selection_magique" };
     case "renfort_royal": return { symbol: KEYWORD_SYMBOLS.renfort_royal, keyword: "renfort_royal" };
+    // L'APPEL emprunte l'icône et le nom d'« Appel du clan », le mot-clé le plus
+    // proche : c'est le même geste de jeu — sortir une unité du deck et la poser
+    // en jeu — à ceci près que la cible se déclare au lieu d'être héritée.
+    // Sans cette entrée, la carte tombait sur le repli « ✦ » générique, qui ne
+    // dit rien de ce que l'effet fait.
+    case "appel": return { symbol: KEYWORD_SYMBOLS.appel_du_clan, keyword: "appel_du_clan" };
     default: return { symbol: "✦", keyword: "" };
   }
 }
