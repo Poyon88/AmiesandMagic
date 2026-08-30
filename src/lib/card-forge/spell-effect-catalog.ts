@@ -75,9 +75,24 @@ export const GRANT_ENTRY: SpellEffectCatalogEntry = {
   preset: { content: "grant_keyword", target: board({ side: "ally" }) },
 };
 
+/** Entrée « Appel » générique. Autonome comme « Conférer », et pour la même
+ *  raison : elle ne correspond à AUCUN mot-clé de sort existant.
+ *
+ *  Le mot-clé « Appel du clan X » reste dans la liste, mais il vise le clan de
+ *  SA PROPRE carte (`ctx.card.clan`) — un sort sans clan n'appelle donc rien, et
+ *  un sort elfe ne peut pas appeler un nain. Cette entrée-ci déclare sa cible :
+ *  race, faction, clan ou mot-clé porté, cumulables, réglés dans la ligne.
+ *
+ *  Sans elle, le contenu composé « appel » n'était atteignable qu'en ajoutant
+ *  une autre ligne puis en changeant son CONTENU — possible, mais introuvable. */
+export const APPEL_ENTRY: SpellEffectCatalogEntry = {
+  kind: "composed", id: "appel", label: "Appel depuis le deck (ciblé)", symbol: "📯",
+  preset: { content: "appel", magnitude: { x: 1 } },
+};
+
 /** Catalogue complet, dans l'ordre d'affichage du sélecteur d'ajout. */
 export function buildSpellEffectCatalog(allSpellKeywordIds: SpellKeywordId[]): SpellEffectCatalogEntry[] {
-  const entries: SpellEffectCatalogEntry[] = [GRANT_ENTRY];
+  const entries: SpellEffectCatalogEntry[] = [GRANT_ENTRY, APPEL_ENTRY];
   for (const id of allSpellKeywordIds) {
     const label = SPELL_KEYWORD_LABELS[id] ?? id;
     const symbol = SPELL_KEYWORD_SYMBOLS[id] ?? "✦";

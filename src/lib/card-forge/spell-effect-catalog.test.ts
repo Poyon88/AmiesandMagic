@@ -13,6 +13,7 @@ const CONTENTS = new Set([
   "deal_damage", "heal", "buff", "debuff", "draw_cards", "discard", "summon_token",
   "gain_mana", "destroy", "bounce", "paralyze", "grant_keyword", "exhumation",
   "selection", "selection_magique", "renfort_royal", "poison", "invocation", "epargne", "incineration", "devoration", "retour_differe",
+  "appel",
 ]);
 
 const catalog = buildSpellEffectCatalog(ALL_SPELL_KEYWORDS);
@@ -74,5 +75,36 @@ describe("catalogue d'effets de sort", () => {
       expect(text.length, `${entry.id} : phrase vide`).toBeGreaterThan(1);
       expect(text, `${entry.id} : contenu brut non traduit`).not.toContain(entry.kind === "composed" ? "undefined" : "");
     }
+  });
+});
+
+describe("entrée « Appel depuis le deck »", () => {
+  const cat = buildSpellEffectCatalog([...ALL_SPELL_KEYWORDS]);
+  const appel = cat.find((e) => e.id === "appel");
+
+  it("figure dans le catalogue — sinon elle est INTROUVABLE sur un sort", () => {
+    // Le contenu composé existait déjà, mais la liste « + Effet » d'un sort se
+    // construit à partir des MOTS-CLÉS DE SORT : un contenu sans mot-clé
+    // équivalent n'y apparaît pas, et n'était atteignable qu'en ajoutant une
+    // autre ligne puis en changeant son CONTENU.
+    expect(appel).toBeDefined();
+    expect(appel!.kind).toBe("composed");
+  });
+
+  it("pose un effet composé `appel`, prêt à être filtré", () => {
+    expect(instantiatePreset(appel!)).toEqual({ content: "appel", magnitude: { x: 1 } });
+  });
+
+  it("ne remplace PAS le mot-clé « Appel du clan », qui reste proposé", () => {
+    // Les deux coexistent parce qu'ils ne font pas la même chose : le mot-clé
+    // hérite du clan de sa carte, l'entrée composée déclare sa cible.
+    expect(cat.some((e) => e.id === "appel_du_clan")).toBe(true);
+  });
+
+  it("chaque ajout est INDÉPENDANT — pas d'objet partagé entre deux lignes", () => {
+    const a = instantiatePreset(appel!);
+    const b = instantiatePreset(appel!);
+    a.magnitude!.x = 9;
+    expect(b.magnitude!.x).toBe(1);
   });
 });
