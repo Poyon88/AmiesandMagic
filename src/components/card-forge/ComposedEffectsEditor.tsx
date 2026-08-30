@@ -373,9 +373,15 @@ export default function ComposedEffectsEditor({
 
               {/* EMBLÈME — l'effet n'est pas joué maintenant : il est DÉPOSÉ sur
                   un joueur et survit à cette carte. Un emblème composé se résout
-                  à chaque fin de tour de son porteur. */}
-              <span style={labelStyle}>{tr('label_emblem')}</span>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                  à chaque fin de tour de son porteur.
+
+                  MASQUÉ SUR UN JETON : les emblèmes sont posés par
+                  `placeEmblemsForCard`, appelé à l'entrée d'une CRÉATURE et à la
+                  résolution d'un SORT. Un jeton ne passe ni par l'un ni par
+                  l'autre — l'emblème n'y serait jamais posé, comme « à l'entrée »
+                  n'y part jamais. Autant ne pas proposer la case. */}
+              {!pourToken && <span style={labelStyle}>{tr('label_emblem')}</span>}
+              {!pourToken && <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                 <label style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, cursor: "pointer" }}>
                   <input
                     type="checkbox"
@@ -426,7 +432,7 @@ export default function ComposedEffectsEditor({
                     </label>
                   </>
                 )}
-              </div>
+              </div>}
               {/* Un déclencheur RÉPÉTITIF empile un emblème de plus à chaque
                   occurrence — et un emblème composé à N piles se résout N fois.
                   C'est jouable, mais il faut l'avoir voulu. */}

@@ -10,7 +10,7 @@ import { requireAdmin } from '@/lib/admin/requireAdmin';
 import { upsertCardTranslations } from '@/lib/cards/cardTranslations';
 import { findNameCollision } from '@/lib/cards/nameCollision';
 import { fetchAllRows } from '@/lib/supabase/fetchAllRows';
-import { fillXYMagnitude } from '@/lib/cards/composedMagnitude';
+import { sanitizeComposed } from '@/lib/cards/composedCapabilities';
 
 // Planifie (hors du chemin de réponse, via `after`) la (re)traduction nom +
 // ambiance d'une carte vers les 5 langues. i18n : seuls nom/ambiance sont
@@ -26,17 +26,6 @@ function scheduleCardTranslation(
       console.error('[card-save] translation scheduling failed:', err);
     }
   });
-}
-
-/** Normalise les capacités composées reçues du client : ne garde que celles
- *  portant un effet `composed`, réassigne des uid stables (préfixe `cx_`)
- *  pour éviter toute collision avec les uid dérivés du legacy (sk_/grant_/cw_),
- *  et complète les amplitudes +X/+Y partielles. */
-function sanitizeComposed(input: unknown): Capability[] {
-  if (!Array.isArray(input)) return [];
-  return (input as Capability[])
-    .filter((c) => c && typeof c === 'object' && c.composed)
-    .map((c, i) => fillXYMagnitude({ ...c, uid: `cx_${i}`, effectKind: 'immediate' as const, abilityId: c.abilityId || '_composed' }));
 }
 
 // Champs dont dépend le modèle de capacités unifié : si l'un d'eux change, la

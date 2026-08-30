@@ -22,6 +22,16 @@ function normaliserCapacites(
   if (!Array.isArray(input)) return { error: 'capabilities doit être un tableau' };
 
   const composees = (input as Capability[]).filter((c) => c && typeof c === 'object' && c.composed);
+
+  // Les EMBLÈMES sont posés par `placeEmblemsForCard`, appelé à l'entrée d'une
+  // CRÉATURE et à la résolution d'un SORT. Un jeton ne passe ni par l'un ni par
+  // l'autre : l'emblème ne serait jamais posé. Refusé plutôt que rabattu en
+  // silence sur un effet ordinaire — c'est ce rabattement muet, côté cartes, qui
+  // a rendu TOUS les emblèmes inopérants sans que rien ne le signale.
+  if (composees.some((c) => c.effectKind === 'emblem')) {
+    return { error: "Un jeton ne peut pas poser d'emblème : il n'entre pas en jeu par une pose et n'est pas un sort, donc l'emblème ne serait jamais déposé." };
+  }
+
   const muettes = composees.filter((c) => !isTokenFiringTrigger(c.trigger));
   if (muettes.length) {
     const quoi = [...new Set(muettes.map((c) => c.trigger))].join(', ');
