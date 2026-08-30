@@ -1578,8 +1578,24 @@ export default function CardEditor() {
                       </div>
                     );
                   })}
+                  {/* ANCIEN FORMAT. Ce bloc s'appelait « EFFETS COMPOSABLES
+                      (avancé) » — à une lettre d'« Effets composés », l'éditeur
+                      STRUCTURÉ qui vit plus bas et qui est, lui, le chemin
+                      normal. Deux noms quasi identiques pour deux champs dont
+                      un seul compte : la confusion était garantie, et elle a eu
+                      lieu. Le titre dit maintenant ce que le champ EST.
+
+                      `spell_effects` n'est plus lu que par le chemin de
+                      Relancer, pour retrouver des cibles au hasard sur d'anciennes
+                      cartes (cf. engine.ts, « for composable effects / legacy »).
+                      Conservé en écriture pour ne pas rendre ces cartes-là
+                      inéditables. */}
                   <details style={{ marginTop: 8 }}>
-                    <summary style={{ fontSize: 8, color: "#666", letterSpacing: 1, cursor: "pointer" }}>EFFETS COMPOSABLES (avancé)</summary>
+                    <summary style={{ fontSize: 8, color: "#999", letterSpacing: 1, cursor: "pointer" }}>ANCIEN FORMAT JSON (obsolète)</summary>
+                    <div style={{ fontSize: 8, color: "#a08a5b", marginTop: 4, lineHeight: 1.5 }}>
+                      Obsolète : le moteur ne le lit plus que pour Relancer sur d&apos;anciennes cartes.
+                      Pour composer un effet, utilisez « Effet composé » plus bas.
+                    </div>
                     <textarea
                       defaultValue={editFields.spell_effects ? JSON.stringify(editFields.spell_effects, null, 2) : ""}
                       placeholder='{"targets":[{"slot":"target_0","type":"enemy_creature"}],"effects":[{"type":"deal_damage","target_slot":"target_0","amount":2}]}'
