@@ -37,7 +37,7 @@ import { getFormatFilterByCode } from "./format-legality";
 import { SPELL_KEYWORDS } from "./spell-keywords";
 import { DEATH_NATURE_IDS, getEntraideReduction, getTokenManaCost, isCreatureKwShadowedBySpell, XY_ABILITY_IDS } from "./abilities";
 import { isManaSpark, MANA_SPARK_FALLBACK } from "./mana-spark";
-import { getCapabilities, modeForCreatureTrigger } from "./capability-adapter";
+import { getCapabilities, isEmblemCadence, modeForCreatureTrigger } from "./capability-adapter";
 import { KEYWORD_LABELS, parseXValuesFromEffectText } from "./keyword-labels";
 import {
   HERO_MAX_HP,
@@ -2392,7 +2392,15 @@ function placeEmblemsForCard(
     // Le déclencheur de la capacité NE dit PAS quand poser — la pose a lieu à
     // l'arrivée de la carte — mais à quoi l'emblème RÉAGIRA, pour le reste de
     // la partie. Il voyage donc avec lui.
-    const quand = { trigger: cap.trigger };
+    //
+    // FILET : une cadence à laquelle aucun emblème ne répond (`spell_resolution`,
+    // la pioche) est ramenée au défaut plutôt que stockée telle quelle. Elle ne
+    // peut venir que d'un défaut d'édition — l'éditeur ne proposait que
+    // `spell_resolution` sur un sort — et la conserver poserait un emblème
+    // définitivement muet, sans que rien ne le signale. Le repli vaut aussi pour
+    // les cartes DÉJÀ enregistrées avec la cadence morte : elles se remettent à
+    // parler sans qu'il faille les rouvrir.
+    const quand = { trigger: isEmblemCadence(cap.trigger) ? cap.trigger : undefined };
     if (cap.composed) {
       placeEmblem(cible, { composed: cap.composed, stacks: 1, ...quand, ...duree, sourceCardId: card.id, sourceName: card.name });
       continue;

@@ -12,7 +12,7 @@ import KeywordIcon from "@/components/shared/KeywordIcon";
 import CostListEditor from "./CostListEditor";
 import LinkedCardsPicker from "./LinkedCardsPicker";
 import { ABILITIES, creatureEngineId, getCapabilityTriggers, XY_ABILITY_IDS } from "@/lib/game/abilities";
-import { isTokenFiringTrigger } from "@/lib/game/capability-adapter";
+import { DEFAULT_EMBLEM_CADENCE, isEmblemCadence, isTokenFiringTrigger } from "@/lib/game/capability-adapter";
 import { ALL_SPELL_KEYWORDS, SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
 import { buildSpellEffectCatalog, instantiatePreset } from "@/lib/card-forge/spell-effect-catalog";
 import { FACTIONS, getFactionDisplayName } from "@/lib/card-engine/constants";
@@ -367,7 +367,14 @@ export default function ComposedEffectsEditor({
                   de sens comme cadence permanente, et le moteur l'ignore. */}
               {sel(
                 cap.trigger,
-                cap.effectKind === "emblem" ? triggers.filter((t) => t.v !== "on_draw") : triggers,
+                // Pour un EMBLÈME, la liste ne dépend pas du type de la carte :
+                // le déclencheur ne dit pas quand la carte agit, mais à quoi
+                // l'emblème réagira chez son porteur — et ce sont des événements
+                // de CRÉATURE, qu'il ait été posé par un sort ou par une unité.
+                //
+                // C'était le défaut : sur un sort, la liste se réduisait au seul
+                // `spell_resolution`, auquel aucun emblème ne répond jamais.
+                cap.effectKind === "emblem" ? triggersUnite.filter((t) => isEmblemCadence(t.v)) : triggers,
                 (v) => patchCap(idx, { trigger: v }),
               )}
 
@@ -388,6 +395,12 @@ export default function ComposedEffectsEditor({
                     checked={cap.effectKind === "emblem"}
                     onChange={(e) => patchCap(idx, {
                       effectKind: e.target.checked ? "emblem" : "immediate",
+                      // Devenir un emblème peut rendre le déclencheur courant
+                      // invalide — `spell_resolution` sur un sort, typiquement.
+                      // Le laisser tel quel produisait un emblème muet.
+                      ...(e.target.checked && !isEmblemCadence(cap.trigger)
+                        ? { trigger: DEFAULT_EMBLEM_CADENCE }
+                        : {}),
                       ...(e.target.checked ? {} : { side: undefined }),
                     })}
                   />

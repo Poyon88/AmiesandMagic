@@ -101,6 +101,29 @@ export function isTokenFiringTrigger(trigger: CapabilityTrigger): boolean {
   return mode != null && TOKEN_FIRING_MODES.has(mode);
 }
 
+/** Cadences auxquelles un EMBLÈME peut réagir.
+ *
+ *  Un emblème est posé à l'arrivée de sa carte ; son `trigger` ne dit donc pas
+ *  QUAND poser, mais à quoi il réagira ensuite, chez son porteur. Ce sont les
+ *  événements que `fireEmblemsForEvent` fait parler — plus la fin de tour, qui
+ *  passe par `endOfTurnQueue` (seul chemin capable de suspendre sur un choix).
+ *
+ *  `spell_resolution` n'en fait PAS partie, et c'est le cœur du défaut réparé :
+ *  l'éditeur ne proposait que lui sur un sort, si bien qu'un emblème de sort
+ *  était stocké avec une cadence à laquelle rien ne répond jamais. La pioche non
+ *  plus : elle n'a pas de sens comme cadence permanente. */
+const EMBLEM_CADENCES: ReadonlySet<CapabilityTrigger> = new Set<CapabilityTrigger>([
+  "on_play", "on_death", "on_attack", "on_return", "on_activation", "on_low_hp", "on_end_of_turn",
+]);
+
+export function isEmblemCadence(trigger: CapabilityTrigger | undefined): boolean {
+  return trigger != null && EMBLEM_CADENCES.has(trigger);
+}
+
+/** Cadence par défaut d'un emblème : la fin de tour, comme le lit le moteur
+ *  quand `Emblem.trigger` est absent. */
+export const DEFAULT_EMBLEM_CADENCE: CapabilityTrigger = "on_end_of_turn";
+
 /** Liste d'instances effective d'une créature, reproduisant la sémantique de
  *  `hasKwInMode` : on part des `keyword_instances` quand elles existent et on
  *  synthétise une instance on-play pour chaque `keywords[]` non représenté
