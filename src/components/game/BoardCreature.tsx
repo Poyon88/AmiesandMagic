@@ -960,7 +960,7 @@ function BoardCreature({
                     <ComposedMarker mode={cmode} size={6} />
                   </span>
                   <div>
-                    {nm && <div style={{ fontSize: 8 * d, color: keywordModeColor(cmode) ?? "#fff", fontWeight: 600 }}>{nm}{(() => { const d = vocab.triggerBadge(cmode); return d ? <span style={{ color: d.color }}> ({d.label})</span> : null; })()}</div>}
+                    {nm && <div style={{ fontSize: 8 * d, color: keywordModeColor(cmode) ?? "#fff", fontWeight: 600 }}>{nm}{(() => { const d = vocab.composedBadge(cap); return d ? <span style={{ color: d.color }}> ({d.label})</span> : null; })()}</div>}
                     <div style={{ fontSize: 7 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{vocab.composedDesc(cap, tokenTemplates)}</div>
                   </div>
                 </div>

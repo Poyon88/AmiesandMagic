@@ -1115,7 +1115,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
                 : undefined
             }
           />
-          <EmblemStrip emblems={opponent.emblems} align="left" />
+          <EmblemStrip emblems={opponent.emblems} align="left" porteur="opponent" />
           <ManaBar current={opponent.mana} max={opponent.maxMana} epargne={opponent.epargne} side="theirs" />
         </div>
         )}
@@ -1146,7 +1146,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             />
             {/* Mana orbs sit directly under the 3D hero so they read as
                 "next to the HP number" rendered inside the canvas. */}
-            <EmblemStrip emblems={opponent.emblems} align="left" />
+            <EmblemStrip emblems={opponent.emblems} align="left" porteur="opponent" />
             <ManaBar current={opponent.mana} max={opponent.maxMana} epargne={opponent.epargne} side="theirs" />
           </div>
         )}
@@ -1413,7 +1413,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
           {/* Le pouvoir héroïque tactile est rendu dans la colonne END TURN
               (bord droit, zone dégagée) pour ne pas être recouvert par une main
               pleine — cf. ce bloc plus bas. */}
-          <EmblemStrip emblems={myPlayer.emblems} align="right" />
+          <EmblemStrip emblems={myPlayer.emblems} align="right" porteur="self" />
           <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} epargne={myPlayer.epargne} canSpendEpargne={canSpendEpargne} onSpendEpargne={handleSpendEpargne} side="mine" />
         </div>
         )}
@@ -1448,7 +1448,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
                 droit dégagé) afin de ne pas être recouvert par une main pleine. */}
             {/* Mana orbs directly under the 3D hero, next to the HP number
                 rendered inside the canvas. */}
-            <EmblemStrip emblems={myPlayer.emblems} align="right" />
+            <EmblemStrip emblems={myPlayer.emblems} align="right" porteur="self" />
             <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} epargne={myPlayer.epargne} canSpendEpargne={canSpendEpargne} onSpendEpargne={handleSpendEpargne} side="mine" />
           </div>
         )}

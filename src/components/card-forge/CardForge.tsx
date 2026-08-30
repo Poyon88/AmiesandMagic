@@ -276,6 +276,10 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   const [tokenSaving, setTokenSaving] = useState(false);
   const [tokenEditId, setTokenEditId] = useState<number | null>(null);
   const [tokenKeywords, setTokenKeywords] = useState<string[]>([]);
+  // Effets COMPOSÉS du token, même structure que ceux d'une carte. Le token
+  // n'ayant pas d'entrée en jeu, l'éditeur reçoit `pourToken` et retire « à
+  // l'entrée » de ses déclencheurs.
+  const [tokenComposed, setTokenComposed] = useState<Capability[]>([]);
   // X / Y par LIBELLÉ forge des capacités scalables du token (le Y ne concerne
   // que les capacités à couple, cf. XY_ABILITY_IDS). Persistés en
   // `keyword_instances` sur le template — sans eux, le moteur retombe sur un
@@ -2222,6 +2226,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
           health: tokenHealth,
           keywords: gameKws,
           keyword_instances: tokenKeywordInstances.length > 0 ? tokenKeywordInstances : null,
+          capabilities: tokenComposed,
           imageBase64: imgB64,
           imageMimeType: imgMime,
           updateId: tokenEditId || undefined,
@@ -2229,7 +2234,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
       });
       await readApiResponse(res, tf('server_error'));
       setTokenRace(""); setTokenFaction(""); setTokenClan(""); setTokenName(""); setTokenKeywords([]);
-      setTokenXValues({}); setTokenYValues({}); setTokenModes({});
+      setTokenXValues({}); setTokenYValues({}); setTokenModes({}); setTokenComposed([]);
       setTokenAttack(1); setTokenHealth(1);
       setTokenImageBase64(null); setTokenImageMime(null);
       setTokenImagePreview(null); setTokenEditId(null); setTokenPrompt("");
@@ -2240,7 +2245,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     } finally {
       setTokenSaving(false);
     }
-  }, [tokenRace, tokenFaction, tokenClan, tokenName, tokenAttack, tokenHealth, tokenKeywords, tokenXValues, tokenYValues, tokenModes, tokenImageBase64, tokenImageMime, tokenEditId, loadTokenTemplates]);
+  }, [tokenRace, tokenFaction, tokenClan, tokenName, tokenAttack, tokenHealth, tokenKeywords, tokenXValues, tokenYValues, tokenModes, tokenComposed, tokenImageBase64, tokenImageMime, tokenEditId, loadTokenTemplates]);
 
   const deleteTokenTemplate = useCallback(async (id: number) => {
     try {
@@ -4921,6 +4926,29 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                   </div>
                 )}
 
+                {/* EFFETS COMPOSÉS — le même éditeur que les cartes.
+                    Un jeton ne pouvait porter que des mots-clés du registre :
+                    tout ce que l'éditeur composé sait exprimer lui était fermé,
+                    et il ne pouvait donc jamais faire autre chose que ce qu'un
+                    mot-clé existant nommait déjà.
+                    `pourToken` retire « à l'entrée » : un jeton n'entre pas en
+                    jeu par une pose, l'effet y serait muet. */}
+                <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid #eee" }}>
+                  <div style={{ fontSize: 8, color: "#8a6d3b", letterSpacing: 1.5, fontWeight: 700, marginBottom: 4 }}>
+                    ✨ {tf('composed_effects_heading')}
+                  </div>
+                  <p style={{ fontSize: 9, color: "#aaa", margin: "0 0 8px", lineHeight: 1.5 }}>
+                    {tf('token_composed_hint')}
+                  </p>
+                  <ComposedEffectsEditor
+                    value={tokenComposed}
+                    onChange={setTokenComposed}
+                    isUnit
+                    pourToken
+                    tokenTemplates={tokenTemplates}
+                  />
+                </div>
+
                 {/* Actions */}
                 <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
                   <button onClick={saveTokenTemplate} disabled={!tokenRace || !tokenName || tokenSaving}
@@ -4928,7 +4956,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                     {tokenSaving ? tf('saving') : tokenEditId ? tf('update') : tf('create2')}
                   </button>
                   {tokenEditId && (
-                    <button onClick={() => { setTokenEditId(null); setTokenRace(""); setTokenFaction(""); setTokenName(""); setTokenImageBase64(null); setTokenImageMime(null); setTokenImagePreview(null); setTokenPrompt(""); }}
+                    <button onClick={() => { setTokenEditId(null); setTokenRace(""); setTokenFaction(""); setTokenName(""); setTokenComposed([]); setTokenImageBase64(null); setTokenImageMime(null); setTokenImagePreview(null); setTokenPrompt(""); }}
                       style={{ padding: "6px 16px", borderRadius: 6, border: "1px solid #ddd", background: "#fff", color: "#888", fontSize: 10, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>
                       {tf('cancel')}
                     </button>
@@ -4971,6 +4999,14 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                           /
                           <span style={{ color: "#f1c40f" }}>{t.health}</span>
                         </div>
+                        {/* Repère des effets composés : sans lui, deux templates
+                            de mêmes stats sont indiscernables dans la grille,
+                            et il faut ouvrir chacun pour savoir lequel agit. */}
+                        {(t.capabilities?.filter(c => !!c.composed).length ?? 0) > 0 && (
+                          <div style={{ fontSize: 9, color: "#8a6d3b", marginTop: 3 }}>
+                            ✨ {t.capabilities!.filter(c => !!c.composed).length} {tf('composed_effects_heading').toLowerCase()}
+                          </div>
+                        )}
                         <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
                           <button onClick={() => { setTokenEditId(t.id); setTokenRace(t.race); setTokenFaction(t.faction ?? ""); setTokenClan(t.clan ?? ""); setTokenName(t.name); setTokenAttack(t.attack ?? 1); setTokenHealth(t.health ?? 1); setTokenKeywords(t.keywords?.map(k => GAME_TO_FORGE_KEYWORD[k] || k) ?? []);
                             // Rechargement des X/Y : keyword_instances est keyé
@@ -4986,6 +5022,10 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                               }
                               setTokenXValues(xs); setTokenYValues(ys); setTokenModes(ms);
                             }
+                            // Effets composés : seuls ceux qui en portent un.
+                            // Les capacités dérivées des mots-clés ont déjà leur
+                            // propre grille juste au-dessus.
+                            setTokenComposed((t.capabilities ?? []).filter(c => !!c.composed));
                             setTokenImagePreview(t.image_url); setTokenImageBase64(null); setTokenImageMime(null); setTokenPrompt(""); }}
                             style={{ fontSize: 8, padding: "2px 8px", borderRadius: 4, border: "1px solid #ddd", background: "#fff", color: "#666", cursor: "pointer", fontFamily: "'Cinzel',serif" }}>
                             {tf('edit')}

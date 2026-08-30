@@ -162,14 +162,20 @@ describe("Câblage", () => {
     for (const f of ["src/components/game/CardPreview.tsx", "src/components/card-forge/CardVisual.tsx"]) {
       expect(lire(f)).not.toContain("keywordTrigger");
       expect(lire(f)).not.toContain("vocab.triggerBadge(");
+      expect(lire(f)).not.toContain("vocab.composedBadge(");
     }
   });
 
   const AVEC_COMPOSES = RENDERERS.filter((f) => lire(f).includes("vocab.composedName(cap)"));
 
   it("les blocs d'effets COMPOSÉS sont couverts eux aussi", () => {
+    // `composedBadge(cap)` et non `triggerBadge(cmode)` : un EMBLÈME doit
+    // s'annoncer « Emblème » et non « Entrée ». Rien ne se produit à l'arrivée
+    // de la carte — l'emblème y est seulement POSÉ, et parlera aux entrées
+    // suivantes. Le mode seul ne pouvait pas porter cette distinction, il fallait
+    // la capacité entière.
     expect(AVEC_COMPOSES.length).toBe(4); // tous sauf SpellCastOverlay, qui n'en a pas
-    for (const f of AVEC_COMPOSES) expect(lire(f), f).toContain("vocab.triggerBadge(cmode)");
+    for (const f of AVEC_COMPOSES) expect(lire(f), f).toContain("vocab.composedBadge(cap)");
   });
 
   it("les passifs restent nombreux — la parenthèse n'est pas anecdotique", () => {

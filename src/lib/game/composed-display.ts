@@ -6,9 +6,11 @@
 // SafeT optionnel) avec repli FR intégré (COMPOSED_FR = source unique, aussi
 // graine du générateur vocab). Sans traducteur (store, tests) → FR.
 
-import { ABILITIES, creatureEngineId, XY_ABILITY_IDS } from "./abilities";
+import { ABILITIES, creatureEngineId, getCapabilityTriggers, XY_ABILITY_IDS } from "./abilities";
 import { xNumeral, keywordModeColor, KEYWORD_LABELS, KEYWORD_SYMBOLS, applyKeywordValueToLabel } from "./keyword-labels";
-import type { Capability, ComposedEffect, Keyword, KeywordMode, TargetSpec, TokenTemplate } from "./types";
+import type { Capability, CapabilityTrigger, ComposedEffect, Keyword, KeywordMode, TargetSpec, TokenTemplate } from "./types";
+import { LOW_HP_TRIGGER_THRESHOLD } from "./constants";
+import { triggerBadge, type TriggerBadge } from "./keyword-display";
 import type { SafeT } from "@/i18n/config";
 
 // ─── fragments FR (source unique : repli runtime + graine vocab.composed) ────
@@ -32,6 +34,49 @@ export const COMPOSED_FR: Record<string, string> = {
   "content.paralyze": "paralyse",
   "content.poison": "empoisonne",
   "content.grant_keyword": "confère {ability}",
+
+  // ─── EMBLÈME ─────────────────────────────────────────────────────────────
+  // Un emblème n'est PAS un effet ponctuel : il est posé à l'arrivée de la
+  // carte et réagit à un événement pour le reste de la partie. Sans ces
+  // fragments, « Soigne 2 PV à toutes les unités alliées » se lisait comme un
+  // soin d'entrée en jeu — rien ne disait qu'il subsiste, ni chez qui, ni à
+  // quoi il réagit. Le seul réglage qui change ce que voit le joueur était tu.
+  // Deux clés pour le même mot français, à dessein : le badge est peint dans un
+  // espace contraint (créature au plateau, carte en main) et pourra vouloir une
+  // forme courte là où l'en-tête de phrase reste en toutes lettres.
+  "emblem.badge": "Emblème",
+  "emblem.self": "Emblème",
+  "emblem.opponent": "Emblème posé chez l'adversaire",
+  "emblem.permanent": " (permanent)",
+  "emblem.turns_one": " ({n} tour)",
+  "emblem.turns_many": " ({n} tours)",
+  "emblem.owner_self": "vos",
+  "emblem.owner_opponent": "ses",
+  "emblem.hero_self": "votre héros",
+  "emblem.hero_opponent": "son héros",
+  "emblem.turn_self": "votre",
+  "emblem.turn_opponent": "son",
+  // Clauses NUES : la ponctuation appartient aux appelants. L'en-tête de carte
+  // les enchâsse (« Emblème (permanent). … : soigne 2 PV »), la bande
+  // d'emblèmes les affiche seules sur leur ligne.
+  "emblem.when.on_play": "chaque fois qu'une de {owner} créatures entre en jeu",
+  "emblem.when.on_death": "chaque fois qu'une de {owner} créatures meurt",
+  "emblem.when.on_attack": "chaque fois qu'une de {owner} créatures attaque",
+  "emblem.when.on_return": "chaque fois qu'une de {owner} créatures revient en main",
+  "emblem.when.on_activation": "chaque fois qu'une de {owner} créatures s'active",
+  "emblem.when.on_low_hp": "chaque fois que {hero} passe sous {n} PV",
+  "emblem.when.on_end_of_turn": "à la fin de {turn} tour",
+  // QUAND la capacité conférée se déclenchera chez sa nouvelle porteuse. Sans
+  // ce fragment, « confère Tempête 3 » ne disait pas si elle part à la mort, à
+  // l'attaque ou en fin de tour — le texte de carte taisait le seul réglage qui
+  // change ce que le joueur va voir.
+  "grant_when.on_death": ", qui se déclenchera à sa mort",
+  "grant_when.on_activation": ", qui se déclenchera à son activation",
+  "grant_when.on_return": ", qui se déclenchera à son retour en main",
+  "grant_when.on_end_of_turn": ", qui se déclenchera à la fin du tour",
+  "grant_when.on_attack": ", qui se déclenchera quand elle attaque",
+  "grant_when.on_draw": ", qui se déclenchera à sa pioche",
+  "grant_when.on_low_hp": ", qui se déclenchera sous 15 PV",
   "content.ability_generic": "une capacité",
   "content.draw_cards_one": "piochez {x} carte",
   "content.draw_cards_many": "piochez {x} cartes",
@@ -254,6 +299,24 @@ export function composedTriggerMode(cap: Capability): KeywordMode | undefined {
   }
 }
 
+/** Le mot annoncé après le nom d'un pouvoir composé, et sa couleur.
+ *
+ *  Pour un EMBLÈME, « (Entrée) » était trompeur : il donnait à lire un soin
+ *  d'arrivée en jeu, alors que rien ne se produit à ce moment-là — l'emblème est
+ *  simplement POSÉ, et parlera à chaque entrée suivante. Le mot dit donc ce que
+ *  la capacité EST ; la couleur continue de dire à quoi elle réagit, et la
+ *  description porte la cadence en toutes lettres. */
+export function composedBadge(cap: Capability, t?: SafeT): TriggerBadge | null {
+  const mode = composedTriggerMode(cap);
+  if (cap.effectKind !== "emblem") return triggerBadge(mode, t);
+  return {
+    label: frag(t, "emblem.badge"),
+    // Même teinte que le déclencheur auquel il réagit : le code couleur du jeu
+    // reste lisible d'un coup d'œil, seul le mot change.
+    color: keywordModeColor(mode) ?? "#fff",
+  };
+}
+
 /** Couleur du marqueur ✦ d'un effet composé, selon le déclencheur (arrivée &
  *  sort=jaune, mort=rouge, tap=orange, retour=bleu, attaque=magenta…). BLANC
  *  seulement par défaut (passif automatic) : dans ce mode l'icône n'est
@@ -276,6 +339,19 @@ function grantedAbilityLabel(eff: ComposedEffect, x: number, y: number, t?: Safe
   const engineId = grantedEngineId(eff);
   if (!engineId || (x <= 0 && y <= 0)) return label;
   return applyKeywordValueToLabel(engineId, label, x, { id: engineId, y });
+}
+
+/** « , qui se déclenchera à sa mort » — le moment où la capacité conférée
+ *  partira chez sa nouvelle porteuse.
+ *
+ *  Tu, volontairement, quand la capacité n'a PAS le choix : une passive se lit à
+ *  sa seule présence, un râle d'agonie ne part qu'à la mort. Le préciser
+ *  alourdirait toutes les cartes existantes pour ne rien apprendre. */
+function describeGrantTrigger(eff: ComposedEffect, t?: SafeT): string {
+  const id = grantedEngineId(eff);
+  if (!eff.grantTrigger || !id) return "";
+  if (getCapabilityTriggers("creature", id).length <= 1) return "";
+  return frag(t, `grant_when.${eff.grantTrigger}`);
 }
 
 /** Restriction de pool d'une Sélection composée, en fragment accolable au
@@ -313,7 +389,8 @@ function describeContent(eff: ComposedEffect, tokens: TokenTemplate[] | undefine
     case "bounce": return frag(t, "content.bounce");
     case "paralyze": return frag(t, "content.paralyze");
     case "poison": return frag(t, "content.poison");
-    case "grant_keyword": return frag(t, "content.grant_keyword", { ability: grantedAbilityLabel(eff, x, y, t) });
+    case "grant_keyword": return frag(t, "content.grant_keyword", { ability: grantedAbilityLabel(eff, x, y, t) })
+      + describeGrantTrigger(eff, t);
     case "draw_cards": return frag(t, x > 1 ? "content.draw_cards_many" : "content.draw_cards_one", { x });
     case "discard": return frag(t, x > 1 ? "content.discard_many" : "content.discard_one", { x });
     case "summon_token": {
@@ -429,6 +506,53 @@ function describeScatter(eff: ComposedEffect, t?: SafeT): string | null {
   return [`${action} ${frag(t, "scatter.times", { x, unit })}`, targetTxt, mtxt && `(${mtxt})`].filter(Boolean).join(" ");
 }
 
+/** En-tête d'un EMBLÈME : ce qu'il est, chez qui il est rangé, combien de temps
+ *  il vit, et à quoi il réagit — « Emblème (permanent). Chaque fois qu'une de vos
+ *  créatures entre en jeu : ».
+ *
+ *  Rien de tout cela ne se lisait sur la carte. La description d'un emblème était
+ *  celle de son effet seul, indiscernable d'un effet d'entrée en jeu ponctuel :
+ *  ni sa PERSISTANCE, ni son camp, ni sa cadence n'apparaissaient. Un effet
+ *  permanent que le texte ne nomme pas est une surprise, pas une mécanique —
+ *  c'est le raisonnement qui a fait naître la bande d'emblèmes en jeu.
+ *
+ *  "" pour une capacité ordinaire : l'assemblage habituel est inchangé. */
+export function emblemCadence(
+  trigger: CapabilityTrigger | undefined,
+  porteur: "self" | "opponent",
+  t?: SafeT,
+): string {
+  // L'emblème surveille les créatures de SON PORTEUR : rangé chez l'adversaire,
+  // il réagit donc aux SIENNES. C'est ce qui en fait une malédiction, et le
+  // possessif est le seul endroit du texte où ça se voit — d'où le paramètre,
+  // plutôt qu'un « vos » écrit d'office.
+  //
+  // `trigger` absent ⇒ fin de tour, la valeur que lit `fireEmblemsForEvent`.
+  const chezAdversaire = porteur === "opponent";
+  const clause = frag(t, `emblem.when.${trigger ?? "on_end_of_turn"}`, {
+    owner: frag(t, chezAdversaire ? "emblem.owner_opponent" : "emblem.owner_self"),
+    hero: frag(t, chezAdversaire ? "emblem.hero_opponent" : "emblem.hero_self"),
+    turn: frag(t, chezAdversaire ? "emblem.turn_opponent" : "emblem.turn_self"),
+    n: LOW_HP_TRIGGER_THRESHOLD,
+  });
+  return clause.charAt(0).toUpperCase() + clause.slice(1);
+}
+
+function describeEmblemLead(cap: Capability, t?: SafeT): string {
+  if (cap.effectKind !== "emblem") return "";
+  const chezAdversaire = cap.side === "opponent";
+
+  const quoi = frag(t, chezAdversaire ? "emblem.opponent" : "emblem.self");
+  // Une durée absente (ou nulle, que le moteur traite comme absente) = permanent.
+  const duree = cap.duration != null && cap.duration > 0
+    ? frag(t, cap.duration === 1 ? "emblem.turns_one" : "emblem.turns_many", { n: cap.duration })
+    : frag(t, "emblem.permanent");
+
+  const quand = emblemCadence(cap.trigger, chezAdversaire ? "opponent" : "self", t);
+
+  return `${quoi}${duree}. ${quand} : `;
+}
+
 /** Phrase décrivant un effet composé (générateur paramétrique). Passer `tokens`
  *  (templates) pour nommer/chiffrer les tokens d'un effet summon_token, et `t`
  *  (SafeT) pour la localisation (repli FR sinon). */
@@ -452,7 +576,13 @@ export function describeComposedCap(cap: Capability, tokens?: TokenTemplate[], t
       describeContent(eff, tokens, t),
       skipTarget ? "" : describeTarget(eff.target, t, DIRECT_OBJECT_CONTENT.has(eff.content)),
     ].filter(Boolean).join(" ");
-  return body.charAt(0).toUpperCase() + body.slice(1) + ".";
+  const lead = describeEmblemLead(cap, t);
+  // Sous un en-tête d'emblème, le corps est une SUBORDONNÉE (« … entre en jeu :
+  // soigne 2 PV ») : la capitale irait au milieu de la phrase.
+  const phrase = lead
+    ? lead + body
+    : body.charAt(0).toUpperCase() + body.slice(1);
+  return phrase + ".";
 }
 
 /** Capacités composées portées par une carte (pour les renderers). */

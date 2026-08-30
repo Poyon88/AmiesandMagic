@@ -35,9 +35,9 @@ import type {
 } from "./types";
 import { getFormatFilterByCode } from "./format-legality";
 import { SPELL_KEYWORDS } from "./spell-keywords";
-import { getEntraideReduction, getTokenManaCost, isCreatureKwShadowedBySpell, XY_ABILITY_IDS } from "./abilities";
+import { DEATH_NATURE_IDS, getEntraideReduction, getTokenManaCost, isCreatureKwShadowedBySpell, XY_ABILITY_IDS } from "./abilities";
 import { isManaSpark, MANA_SPARK_FALLBACK } from "./mana-spark";
-import { getCapabilities } from "./capability-adapter";
+import { getCapabilities, modeForCreatureTrigger } from "./capability-adapter";
 import { KEYWORD_LABELS, parseXValuesFromEffectText } from "./keyword-labels";
 import {
   HERO_MAX_HP,
@@ -769,6 +769,9 @@ function applyGrantedKeyword(
   // capacités à usage. Les auras laissent ce drapeau à faux (cf.
   // rearmGrantedKeyword).
   rearm = false,
+  // Déclencheur que la capacité prendra SUR SA NOUVELLE PORTEUSE. Absent ⇒
+  // comportement historique : le mot-clé seul, donc son mode par défaut.
+  trigger?: import("./types").CapabilityTrigger,
 ) {
   const list = creature.card.keywords as string[];
   if (!list.includes(kwId)) {
@@ -790,6 +793,51 @@ function applyGrantedKeyword(
     creature.hasSummoningSickness = false;
   }
   if (rearm) rearmGrantedKeyword(creature, kwId);
+  // CAPACITÉ CURÉE CONFÉRÉE — poser son instance dans le sidecar.
+  //
+  // C'est le geste qui ouvre le don au-delà des passives. Tous les chemins
+  // curés du moteur lisent `card.keyword_instances` filtré par `mode` (pioche,
+  // fin de tour, attaque, retour, bas PV, mort, activation) : sans instance, une
+  // Tempête conférée n'a aucun mode, retombe sur l'entrée en jeu — déjà passée
+  // pour une créature sur le plateau — et reste inerte SANS RIEN SIGNALER.
+  //
+  // Les RÂLES D'AGONIE en sont exclus à dessein : leur bloc câblé les résout
+  // déjà par `hasKw` à la mort. Leur poser un `mode: "death"` les ferait
+  // résoudre une seconde fois par la boucle `customDeathInstances`. On leur pose
+  // donc une instance SANS mode, qui ne sert qu'à porter leur X (cf. plus bas).
+  //
+  // Les PASSIVES n'en ont pas besoin non plus : elles se lisent à la simple
+  // présence du mot-clé, et leur X passe déjà par `grantedKeywordX`.
+  const modeConfere = trigger ? modeForCreatureTrigger(trigger) : undefined;
+  const porteRale = DEATH_NATURE_IDS.has(kwId);
+  if (modeConfere || porteRale) {
+    const dejaPosee = (creature.card.keyword_instances ?? []).some(
+      (k) => (k.id as unknown as string) === kwId && k.mode === (porteRale ? undefined : modeConfere),
+    );
+    if (!dejaPosee) {
+      const instance = {
+        id: kwId as unknown as Keyword,
+        ...(porteRale ? {} : { mode: modeConfere }),
+        ...(typeof params?.amount === "number" ? { x: params.amount } : {}),
+        ...(typeof params?.amountY === "number" ? { y: params.amountY } : {}),
+      };
+      creature.card = {
+        ...creature.card,
+        keyword_instances: [...(creature.card.keyword_instances ?? []), instance],
+      };
+    }
+  }
+  // Re-graver les X FIGÉS sur l'instance. Ces cinq-là sont posés à la NAISSANCE
+  // de l'instance et leurs résolveurs exigent `> 0` : un Carnage conféré gardait
+  // donc `carnageX = 0` et son râle ne partait jamais, en silence. Le helper est
+  // conçu idempotent (il lit `tempoApplied` au lieu d'incrémenter), donc le
+  // rejouer ne double aucun bonus — et il lit le sidecar en PREMIER, si bien que
+  // l'instance posée juste au-dessus fournit la valeur voulue.
+  //
+  // Restreint aux cinq concernées : `applyGrantedKeyword` est aussi le chemin des
+  // AURAS, rejouées à chaque `recalculateAuras`, et le helper reparse
+  // `effect_text` à chaque appel. Un don de Vol n'a rien à y graver.
+  if (X_FIGE_SUR_INSTANCE.has(kwId)) stampKeywordXValues(creature);
   // Mémoriser le X du keyword accordé (Résistance 2, Persécution 3, …) pour
   // que les résolveurs et le badge UI le retrouvent — le `card.effect_text`
   // n'est pas réécrit avec la notation [Keyword X] côté hero power.
@@ -1008,7 +1056,15 @@ function applyComposedToUnit(
       break;
     case "grant_keyword":
       if (composed.grantAbilityId) {
-        applyGrantedKeyword(u, composed.grantAbilityId, grantParamsFor(composed.grantAbilityId, x, y), true);
+        // `grantTrigger` dit QUAND la capacité conférée se déclenchera chez sa
+        // nouvelle porteuse. C'est lui qui rend conférable autre chose qu'une
+        // passive : sans lui, une capacité curée gardait son mode par défaut
+        // (entrée en jeu), déjà passé pour une créature en jeu.
+        applyGrantedKeyword(
+          u, composed.grantAbilityId,
+          grantParamsFor(composed.grantAbilityId, x, y), true,
+          composed.grantTrigger,
+        );
       }
       break;
     default: break;
@@ -1650,6 +1706,13 @@ function resetTurnStateForNewController(inst: CardInstance): void {
  *  Carnage X gardait carnageX = 0 et son râle ne partait pas, quelle que soit
  *  la valeur saisie dans la forge. La formule de repli n'aurait de toute façon
  *  rien donné : elle dérive du coût en mana, nul sur un jeton. */
+/** Les capacités dont `stampKeywordXValues` grave la valeur sur l'instance.
+ *  Miroir exact des cinq lignes du helper — tenir les deux d'accord, sans quoi
+ *  une capacité conférée retrouverait son X à zéro. */
+const X_FIGE_SUR_INSTANCE: ReadonlySet<string> = new Set([
+  "persecution", "riposte", "carnage", "sacrifice_demoniaque", "heritage",
+]);
+
 function stampKeywordXValues(inst: CardInstance): void {
   const parsed = parseXValuesFromEffectText(inst.card.effect_text);
   const mana = inst.card.mana_cost;
@@ -1665,6 +1728,17 @@ function stampKeywordXValues(inst: CardInstance): void {
   const xOf = (id: Keyword, fallback: number): number => {
     const fromSidecar = inst.card.keyword_instances?.find(k => k.id === id)?.x;
     if (fromSidecar != null) return fromSidecar;
+    // Valeur CONFÉRÉE, en deuxième source. Sans elle, un don de Persécution ou
+    // de Riposte — pourtant conférables de longue date — retombait sur la
+    // formule dérivée du mana, quand il ne restait pas carrément à zéro : leurs
+    // résolveurs ne lisent que `inst.<kw>X`, sans repli sur `grantedKeywordX`
+    // (contrairement à Sacrifice démoniaque, seul à l'avoir en ligne).
+    //
+    // APRÈS le sidecar, jamais avant : la valeur écrite par l'auteur sur la
+    // carte reste souveraine, et aucune carte existante ne change de
+    // comportement. Le don ne tranche que là où rien n'était posé.
+    const fromGrant = inst.grantedKeywordX[id];
+    if (fromGrant != null) return fromGrant;
     return parsed[id] || fallback + primeTempo;
   };
   if (hasKw(inst, "persecution")) inst.persecutionX = xOf("persecution", Math.max(1, Math.floor(mana / 3)));
@@ -2043,6 +2117,17 @@ function applyTokenTemplate(tokenCard: Card, tmpl: TokenTemplate | null): Card {
     keyword_instances: tmpl.keyword_instances?.length
       ? tmpl.keyword_instances
       : tokenCard.keyword_instances,
+    // Effets COMPOSÉS du template. Même règle que le sidecar : recopiés
+    // seulement s'ils portent quelque chose, pour ne pas écraser par `null` ce
+    // que l'appelant aurait déjà posé.
+    //
+    // `getCapabilities` privilégie `capabilities` quand la colonne existe, MAIS
+    // fusionne les `keywords` absents de la liste — un token qui porte les deux
+    // garde donc ses mots-clés du registre en plus de ses effets composés, sans
+    // que rien n'ait à les réconcilier ici.
+    capabilities: tmpl.capabilities?.length
+      ? tmpl.capabilities
+      : tokenCard.capabilities,
     race: tmpl.race,
     // Faction explicite du template prioritaire ; sinon on conserve celle déjà
     // posée par l'appelant (déduite de la race via getFactionForRace, avec repli

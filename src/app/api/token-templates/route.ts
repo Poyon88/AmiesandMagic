@@ -3,6 +3,40 @@ import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { requireAdmin } from '@/lib/admin/requireAdmin';
+import { fillXYMagnitude } from '@/lib/cards/composedMagnitude';
+import { isTokenFiringTrigger } from '@/lib/game/capability-adapter';
+import type { Capability } from '@/lib/game/types';
+
+/** Normalise les capacités COMPOSÉES d'un token. Miroir de `sanitizeComposed`
+ *  côté cartes (uid stables préfixés `cx_`, amplitudes +X/+Y complétées), à une
+ *  vérification près qui n'existe que pour les jetons.
+ *
+ *  Rend `{ error }` au lieu d'écarter en silence : un token n'entre jamais en
+ *  jeu par `playCard`, donc une capacité « à l'entrée » y serait définitivement
+ *  muette. La retirer sans rien dire rendrait la sauvegarde réussie et l'effet
+ *  absent — précisément la panne invisible qu'on passe son temps à traquer. */
+function normaliserCapacites(
+  input: unknown,
+): { caps: Capability[] } | { error: string } {
+  if (input == null) return { caps: [] };
+  if (!Array.isArray(input)) return { error: 'capabilities doit être un tableau' };
+
+  const composees = (input as Capability[]).filter((c) => c && typeof c === 'object' && c.composed);
+  const muettes = composees.filter((c) => !isTokenFiringTrigger(c.trigger));
+  if (muettes.length) {
+    const quoi = [...new Set(muettes.map((c) => c.trigger))].join(', ');
+    return {
+      error: `Un jeton n'entre pas en jeu par une pose : le déclencheur « ${quoi} » n'y partirait jamais. `
+        + 'Choisissez la mort, l\'activation, le retour, la fin de tour, l\'attaque ou les bas PV.',
+    };
+  }
+
+  return {
+    caps: composees.map((c, i) =>
+      fillXYMagnitude({ ...c, uid: `cx_${i}`, effectKind: 'immediate' as const, abilityId: c.abilityId || '_composed' }),
+    ),
+  };
+}
 
 async function getAuthUser() {
   const cookieStore = await cookies();
@@ -48,8 +82,11 @@ export async function POST(request: Request) {
   const supabase = auth.supabase;
 
   try {
-    const { race, clan, faction, name, attack, health, keywords, keyword_instances, imageBase64, imageMimeType, updateId } = await request.json();
+    const { race, clan, faction, name, attack, health, keywords, keyword_instances, capabilities, imageBase64, imageMimeType, updateId } = await request.json();
     if (!race || !name) return NextResponse.json({ error: 'Race et nom requis' }, { status: 400 });
+
+    const capsNorm = normaliserCapacites(capabilities);
+    if ('error' in capsNorm) return NextResponse.json({ error: capsNorm.error }, { status: 400 });
     const atk = typeof attack === 'number' && attack >= 0 ? Math.floor(attack) : 1;
     const hp = typeof health === 'number' && health >= 1 ? Math.floor(health) : 1;
 
@@ -85,6 +122,10 @@ export async function POST(request: Request) {
               !!k && typeof k === 'object' && typeof (k as { id?: unknown }).id === 'string',
           ).length ? keyword_instances : null)
         : null,
+      // Effets composés. Écrits MÊME à null, pour la même raison que le
+      // sidecar : retirer le dernier effet d'un token doit l'effacer en base,
+      // sinon le template garderait un effet fantôme absent du formulaire.
+      capabilities: capsNorm.caps.length ? capsNorm.caps : null,
     };
     if (image_url) templateData.image_url = image_url;
 

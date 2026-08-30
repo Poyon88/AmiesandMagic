@@ -6,7 +6,7 @@ import type { Keyword, KeywordInstance, KeywordMode, SpellKeywordInstance, Card,
 import { getKeywordDisplayLabel, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
 import { getSpellKeywordLabel, getSpellKeywordDesc, formatConvocationTokens, formatConvocationToken, convocationPrefix } from "@/lib/game/spell-keywords";
 import { describeKeyword, describeKeywordLabel, keywordScopeNote, keywordTriggerBadge, triggerBadge, type TriggerBadge, type KeywordDescCtx } from "@/lib/game/keyword-display";
-import { composedKeywordName, describeComposedCap } from "@/lib/game/composed-display";
+import { composedBadge, composedKeywordName, describeComposedCap } from "@/lib/game/composed-display";
 import {
   getAlignmentLabel,
   getClanName,
@@ -42,6 +42,10 @@ export interface Vocab {
   keywordTrigger: (kw: Keyword, inst?: KeywordInstance) => TriggerBadge | null;
   /** Badge d'un mode de déclencheur — effets composés, signatures de clan… */
   triggerBadge: (mode: KeywordMode | undefined) => TriggerBadge | null;
+  /** Badge d'un effet COMPOSÉ : dit « Emblème » quand c'en est un, sinon le
+   *  déclencheur. Passer la capacité et non son mode — l'emblème ne se déduit
+   *  pas d'un mode. */
+  composedBadge: (cap: Capability) => TriggerBadge | null;
   // Mots-clés de SORT (registre distinct). Label/desc localisés avec
   // substitution X/Y/amount ; fallback FR intégré.
   spellKeywordLabel: (kw: SpellKeywordInstance) => string;
@@ -131,6 +135,7 @@ export function useVocab(): Vocab {
       keywordTrigger: (kw: Keyword, inst?: KeywordInstance) =>
         keywordTriggerBadge(kw, inst, safe),
       triggerBadge: (mode: KeywordMode | undefined) => triggerBadge(mode, safe),
+      composedBadge: (cap: Capability) => composedBadge(cap, safe),
       spellKeywordLabel: (kw: SpellKeywordInstance) =>
         getSpellKeywordLabel(kw, safe),
       spellKeywordDesc: (

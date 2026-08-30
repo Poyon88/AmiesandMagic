@@ -336,6 +336,14 @@ export interface TokenTemplate {
    *  Optionnel : les templates créés avant la colonne n'en ont pas — leurs
    *  mots-clés gardent alors leur déclencheur naturel et un X par défaut. */
   keyword_instances?: KeywordInstance[] | null;
+  /** Effets COMPOSÉS du token — même contrat que `cards.capabilities`. Recopiés
+   *  sur la carte de l'instance invoquée (cf. applyTokenTemplate), où
+   *  `getCapabilities` les lit comme ceux de n'importe quelle créature.
+   *
+   *  Le déclencheur `on_play` y est SANS EFFET : un token n'entre jamais en jeu
+   *  par `playCard`. L'éditeur ne le propose pas (cf. TOKEN_FIRING_MODES), et
+   *  une capacité composée qui le porterait resterait muette. */
+  capabilities?: Capability[] | null;
 }
 
 // --- Multi-target system ---
@@ -537,6 +545,17 @@ export interface ComposedEffect {
   target?: TargetSpec;
   /** content === "grant_keyword" : id de l'ability conférée. */
   grantAbilityId?: string;
+  /** content === "grant_keyword" : déclencheur que la capacité conférée portera
+   *  SUR SON NOUVEAU PORTEUR — « conférer Tempête X, qui partira à sa mort ».
+   *
+   *  Sans lui, une capacité curée conférée retombait sur son mode par défaut
+   *  (entrée en jeu) alors que la cible est DÉJÀ en jeu : elle ne se déclenchait
+   *  jamais. C'est ce qui limitait le don aux seules capacités passives.
+   *
+   *  Absent ⇒ déclencheur naturel de la capacité (`triggerForCreatureMode` avec
+   *  un mode indéfini) : `automatic` pour les passives, `on_death` pour les
+   *  râles d'agonie. Ignoré par celles qui n'ont qu'un seul déclencheur possible. */
+  grantTrigger?: CapabilityTrigger;
   /** content === "summon_token" : token à invoquer. */
   tokenId?: number | null;
   /** content === "selection" / "renfort_royal" : restriction du POOL de cartes

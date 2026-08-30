@@ -18,6 +18,7 @@ import {
   CURATED_MULTIMODE_IDS,
   DEATH_NATURE_IDS,
   SPELL_KEYWORDS,
+  TOKEN_FIRING_MODES,
   isCreatureKwShadowedBySpell,
 } from "./abilities";
 import { orderedKeywordSlots, parseXValuesFromEffectText } from "./keyword-labels";
@@ -57,6 +58,47 @@ function triggerForCreatureMode(id: string, mode: KeywordMode | undefined): Capa
   if (DEATH_NATURE_IDS.has(id)) return "on_death";
   if (AUTOMATIC_ABILITY_IDS.has(id)) return "automatic";
   return "on_play";
+}
+
+/** Inverse de `triggerForCreatureMode` : le `mode` de `keyword_instances` qui
+ *  produit ce déclencheur.
+ *
+ *  Nécessaire parce que les DEUX représentations font autorité à des endroits
+ *  différents. La forge et le modèle Capability parlent en déclencheurs
+ *  (`on_death`, `on_attack`…), mais TOUS les chemins curés du moteur lisent
+ *  `card.keyword_instances` filtré par `mode` — la pioche, la fin de tour,
+ *  l'attaque, le retour, les bas PV, la mort, l'activation. Conférer une
+ *  capacité curée sans poser son instance revient donc à ne rien conférer.
+ *
+ *  `undefined` pour `on_play` (mode absent = entrée en jeu, par convention) et
+ *  pour les déclencheurs qui n'ont pas de mode : `automatic` se lit à la simple
+ *  présence du mot-clé, `spell_resolution` n'appartient pas à une créature. */
+export function modeForCreatureTrigger(trigger: CapabilityTrigger): KeywordMode | undefined {
+  switch (trigger) {
+    case "on_death": return "death";
+    case "on_activation": return "tap";
+    case "on_return": return "return";
+    case "on_end_of_turn": return "end_of_turn";
+    case "on_attack": return "attack";
+    case "on_draw": return "draw";
+    case "on_low_hp": return "low_hp";
+    default: return undefined;
+  }
+}
+
+/** Ce déclencheur peut-il PARTIR sur un jeton ?
+ *
+ *  Un token n'entre jamais en jeu par `playCard` : « à l'entrée » n'y sera
+ *  jamais joué, et une capacité qui le porte est muette. Même mur que les
+ *  mots-clés curés du registre (cf. `tokenRequiresMode`), appliqué aux effets
+ *  composés.
+ *
+ *  DÉRIVÉ de `TOKEN_FIRING_MODES` plutôt que saisi en double : les deux listes
+ *  disent la même chose dans deux vocabulaires, et les tenir à la main
+ *  garantissait qu'elles divergeraient. */
+export function isTokenFiringTrigger(trigger: CapabilityTrigger): boolean {
+  const mode = modeForCreatureTrigger(trigger);
+  return mode != null && TOKEN_FIRING_MODES.has(mode);
 }
 
 /** Liste d'instances effective d'une créature, reproduisant la sémantique de

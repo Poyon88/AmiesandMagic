@@ -3,7 +3,7 @@
 import { useState } from "react";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { KEYWORD_SYMBOLS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
-import { describeComposedCap } from "@/lib/game/composed-display";
+import { describeComposedCap, emblemCadence } from "@/lib/game/composed-display";
 import type { Capability, Emblem } from "@/lib/game/types";
 
 /** Bande des EMBLÈMES d'un joueur, sous son portrait.
@@ -17,9 +17,19 @@ import type { Capability, Emblem } from "@/lib/game/types";
 export default function EmblemStrip({
   emblems,
   align = "left",
+  porteur,
 }: {
   emblems: Emblem[] | undefined;
   align?: "left" | "right";
+  /** À QUI cette bande appartient. Sert au possessif de la cadence : un emblème
+   *  surveille les créatures de son porteur, donc « vos créatures » sur la
+   *  vôtre et « ses créatures » sur celle d'en face.
+   *
+   *  Prop explicite plutôt que déduite d'`align` : les deux corrèlent
+   *  aujourd'hui (gauche = adversaire), mais faire porter le sens à une valeur
+   *  de mise en page, c'est se garantir qu'un jour où l'on retourne le plateau,
+   *  la bande annoncera les créatures du mauvais camp sans que rien ne bronche. */
+  porteur: "self" | "opponent";
 }) {
   const [survole, setSurvole] = useState<number | null>(null);
   if (!emblems?.length) return null;
@@ -96,6 +106,14 @@ export default function EmblemStrip({
                 }}
               >
                 <div style={{ fontWeight: 800, color: "#d4a800" }}>{libelle}</div>
+                {/* CADENCE — à quoi l'emblème réagit, pour le reste de la partie.
+                    La bande disait déjà ce qu'il FAIT et combien de temps il
+                    vit, jamais QUAND il parle : un emblème qui se déclenche à
+                    chaque mort était indiscernable d'un emblème de fin de tour,
+                    alors que c'est ce qui décide s'il faut échanger maintenant.
+                    Réservé aux emblèmes COMPOSÉS : ceux du registre sont des
+                    auras permanentes, elles n'ont rien à déclencher. */}
+                {e.composed && <div>{emblemCadence(e.trigger, porteur)}</div>}
                 {e.stacks > 1 && <div>{e.stacks} exemplaires</div>}
                 <div style={{ color: e.duration != null && e.duration <= 1 ? "#e08a3c" : undefined }}>
                   {e.duration == null

@@ -11,7 +11,8 @@ import RaceClanPicker from "@/components/admin/RaceClanPicker";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import CostListEditor from "./CostListEditor";
 import LinkedCardsPicker from "./LinkedCardsPicker";
-import { ABILITIES, creatureEngineId, XY_ABILITY_IDS } from "@/lib/game/abilities";
+import { ABILITIES, creatureEngineId, getCapabilityTriggers, XY_ABILITY_IDS } from "@/lib/game/abilities";
+import { isTokenFiringTrigger } from "@/lib/game/capability-adapter";
 import { ALL_SPELL_KEYWORDS, SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
 import { buildSpellEffectCatalog, instantiatePreset } from "@/lib/card-forge/spell-effect-catalog";
 import { FACTIONS, getFactionDisplayName } from "@/lib/card-engine/constants";
@@ -82,10 +83,36 @@ const POOL_KEYWORDS = Object.values(ABILITIES)
   .map((a) => ({ id: creatureEngineId(a), label: a.creature?.label ?? a.label }))
   .sort((a, b) => a.label.localeCompare(b.label, "fr"));
 
+// TOUTES les capacités de créature, et non les seules `grantable`.
+//
+// `triggers.grantable` vaut `automatic` : il ne retenait que les passives, au
+// motif qu'elles seules se confèrent « de façon permanente ». La limite venait en
+// réalité du CANAL du don — le mot-clé seul, sans mode — et non des capacités
+// elles-mêmes. Depuis que le don transporte un déclencheur (`grantTrigger` →
+// `keyword_instances.mode`), une Tempête ou une Divination conférées se
+// déclenchent aussi bien qu'une Armure.
+//
+// `grantable` reste inchangé et continue de servir le don porté par un SORT
+// (effectKind "grant"), qui lui n'a pas de déclencheur à transporter.
 const GRANTABLE = Object.values(ABILITIES)
-  .filter((a) => a.triggers?.grantable && a.applicable_to.includes("creature"))
+  .filter((a) => a.applicable_to.includes("creature"))
   .map((a) => ({ id: creatureEngineId(a), label: a.creature?.label ?? a.label }))
   .sort((a, b) => a.label.localeCompare(b.label, "fr"));
+
+/** Déclencheurs qu'une capacité peut prendre une fois CONFÉRÉE.
+ *
+ *  `on_play` est retiré : la cible d'un don est déjà en jeu, donc son entrée est
+ *  passée. Le laisser offrirait une option qui ne se déclenche jamais — le défaut
+ *  même qu'on répare. Une liste vide ou à un seul élément ⇒ la capacité n'a pas
+ *  de choix à faire (passive, ou râle d'agonie qui ne part qu'à la mort). */
+function grantTriggerOptions(abilityId: string): CapabilityTrigger[] {
+  return getCapabilityTriggers("creature", abilityId).filter((t) => t !== "on_play" && t !== "automatic");
+}
+
+/** Déclencheur proposé par défaut pour une capacité fraîchement choisie. */
+function defaultGrantTrigger(abilityId: string): CapabilityTrigger | undefined {
+  return grantTriggerOptions(abilityId)[0];
+}
 
 const DEFAULT_TARGET: TargetSpec = { entity: "unit", count: 1, side: "enemy", location: "board", designation: "choice" };
 
@@ -96,7 +123,7 @@ const SPELL_CATALOG = buildSpellEffectCatalog(ALL_SPELL_KEYWORDS);
 
 export default function ComposedEffectsEditor({
   value, onChange, isUnit, tokenTemplates, singleEffect = false,
-  curated, onCuratedChange,
+  pourToken = false, curated, onCuratedChange,
 }: {
   value: Capability[];
   onChange: (v: Capability[]) => void;
@@ -105,6 +132,11 @@ export default function ComposedEffectsEditor({
   // Un seul effet composé édité (ex. pouvoir de héros) : masque ajout/suppression
   // pour garantir le contrat « un seul ComposedEffect » sans perte silencieuse.
   singleEffect?: boolean;
+  // TOKEN : retire « à l'entrée » des déclencheurs. Un jeton n'entre jamais en
+  // jeu par `playCard` — une capacité composée on-play y serait définitivement
+  // muette, exactement comme les mots-clés curés que `tokenRequiresMode` force
+  // déjà à choisir un mode.
+  pourToken?: boolean;
   // SORT : mécaniques curées (spell_keywords) éditées dans la MÊME liste que les
   // effets composés. Absent ⇒ éditeur composé seul (créature, pouvoir de héros).
   curated?: SpellKeywordInstance[];
@@ -113,8 +145,12 @@ export default function ComposedEffectsEditor({
   const tr = useTranslations("forge");
   // Liste unifiée active seulement si l'appelant fournit le couple curated/onCuratedChange.
   const unified = !!curated && !!onCuratedChange && !singleEffect;
+  const triggersUnite: { v: CapabilityTrigger; l: string }[] = [{ v: "on_play", l: tr('trigger_on_play') }, { v: "on_death", l: tr('trigger_on_death') }, { v: "on_return", l: tr('trigger_on_return') }, { v: "on_activation", l: tr('trigger_on_activation') }, { v: "on_attack", l: tr('trigger_on_attack') }, { v: "on_end_of_turn", l: tr('trigger_on_end_of_turn') }, { v: "on_draw", l: tr('trigger_on_draw') }, { v: "on_low_hp", l: tr('trigger_on_low_hp') }];
   const triggers: { v: CapabilityTrigger; l: string }[] = isUnit
-    ? [{ v: "on_play", l: tr('trigger_on_play') }, { v: "on_death", l: tr('trigger_on_death') }, { v: "on_return", l: tr('trigger_on_return') }, { v: "on_activation", l: tr('trigger_on_activation') }, { v: "on_attack", l: tr('trigger_on_attack') }, { v: "on_end_of_turn", l: tr('trigger_on_end_of_turn') }, { v: "on_draw", l: tr('trigger_on_draw') }, { v: "on_low_hp", l: tr('trigger_on_low_hp') }]
+    // Filtré par la MÊME règle que le moteur (`isTokenFiringTrigger`, dérivée de
+    // TOKEN_FIRING_MODES) plutôt que par une liste tenue ici : deux listes qui
+    // disent la même chose finissent toujours par diverger.
+    ? (pourToken ? triggersUnite.filter((t) => isTokenFiringTrigger(t.v)) : triggersUnite)
     // Un SORT n'a que deux moments possibles : sa résolution (quand on le lance)
     // et sa PIOCHE. Le mode « draw » des mots-clés ne lui est pas ouvert — sur un
     // sort, `keyword_instances` décrit les capacités CONFÉRÉES à une cible, un
@@ -123,7 +159,10 @@ export default function ComposedEffectsEditor({
     : [{ v: "spell_resolution", l: tr('trigger_spell_resolution') }, { v: "on_draw", l: tr('trigger_on_draw') }];
 
   const addComposed = () => onChange([...value, {
-    uid: `c_${Math.random().toString(36).slice(2, 9)}`, trigger: isUnit ? "on_play" : "spell_resolution",
+    uid: `c_${Math.random().toString(36).slice(2, 9)}`,
+    // Un token n'a pas d'entrée en jeu : son premier déclencheur proposé est le
+    // premier qui parte réellement chez lui.
+    trigger: isUnit ? (pourToken ? triggers[0]?.v ?? "on_death" : "on_play") : "spell_resolution",
     effectKind: "immediate", abilityId: "_composed",
     composed: { content: "deal_damage", magnitude: { x: 1 }, target: { ...DEFAULT_TARGET } },
   }]);
@@ -377,6 +416,9 @@ export default function ComposedEffectsEditor({
                 patchEffect(idx, {
                   content: v, target: nextTarget,
                   grantAbilityId: v === "grant_keyword" ? (eff.grantAbilityId ?? GRANTABLE[0]?.id) : undefined,
+                  grantTrigger: v === "grant_keyword"
+                    ? (eff.grantTrigger ?? defaultGrantTrigger(eff.grantAbilityId ?? GRANTABLE[0]?.id ?? ""))
+                    : undefined,
                   // Le filtre de pool ne survit pas à un changement vers un
                   // contenu qui n'en a pas (sinon champ fantôme en base).
                   pool: POOL_CONTENTS.has(v) ? eff.pool : undefined,
@@ -389,19 +431,39 @@ export default function ComposedEffectsEditor({
                 {showY && <label style={{ fontSize: 9, color: "#666" }}>Y {numInput(eff.magnitude?.y ?? 0, (n) => patchEffect(idx, { magnitude: { ...eff.magnitude, y: n } }))}</label>}
               </span>
 
-              {eff.content === "grant_keyword" && (
-                <>
-                  <span style={labelStyle}>{tr('label_granted_ability')}</span>
-                  {sel(eff.grantAbilityId ?? GRANTABLE[0]?.id ?? "", GRANTABLE.map((g) => ({ v: g.id, l: g.label })), (v) => patchEffect(idx, {
-                    grantAbilityId: v,
-                    // Capacité à couple X/Y : amorcer Y à 1 (repli du moteur)
-                    // plutôt que 0, sinon la Gloire conférée n'accorde aucun PV.
-                    magnitude: XY_ABILITY_IDS.has(v) && eff.magnitude?.y == null
-                      ? { ...eff.magnitude, y: 1 }
-                      : eff.magnitude,
-                  }))}
-                </>
-              )}
+              {eff.content === "grant_keyword" && (() => {
+                const grantId = eff.grantAbilityId ?? GRANTABLE[0]?.id ?? "";
+                const optionsDecl = grantTriggerOptions(grantId);
+                return (
+                  <>
+                    <span style={labelStyle}>{tr('label_granted_ability')}</span>
+                    {sel(grantId, GRANTABLE.map((g) => ({ v: g.id, l: g.label })), (v) => patchEffect(idx, {
+                      grantAbilityId: v,
+                      // Capacité à couple X/Y : amorcer Y à 1 (repli du moteur)
+                      // plutôt que 0, sinon la Gloire conférée n'accorde aucun PV.
+                      magnitude: XY_ABILITY_IDS.has(v) && eff.magnitude?.y == null
+                        ? { ...eff.magnitude, y: 1 }
+                        : eff.magnitude,
+                      // Le déclencheur suit la capacité : garder celui de la
+                      // précédente le rendrait incohérent en silence (une Armure
+                      // « à la mort », un râle « à l'attaque »).
+                      grantTrigger: grantTriggerOptions(v).includes(eff.grantTrigger as CapabilityTrigger)
+                        ? eff.grantTrigger
+                        : defaultGrantTrigger(v),
+                    }))}
+                    {optionsDecl.length > 1 && (
+                      <>
+                        <span style={labelStyle}>{tr('label_grant_trigger')}</span>
+                        {sel(
+                          eff.grantTrigger ?? optionsDecl[0],
+                          optionsDecl.map((t) => ({ v: t, l: triggers.find((x) => x.v === t)?.l ?? t })),
+                          (v) => patchEffect(idx, { grantTrigger: v as CapabilityTrigger }),
+                        )}
+                      </>
+                    )}
+                  </>
+                );
+              })()}
               {eff.content === "summon_token" && (
                 <>
                   <span style={labelStyle}>{tr('label_token')}</span>
