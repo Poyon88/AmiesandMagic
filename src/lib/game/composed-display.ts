@@ -78,6 +78,9 @@ export const COMPOSED_FR: Record<string, string> = {
   "grant_when.on_draw": ", qui se déclenchera à sa pioche",
   "grant_when.on_low_hp": ", qui se déclenchera sous 15 PV",
   "content.random_range": "1 à {max}",
+  // « met en jeu la 1re unité de votre deck de coût ≤ 2 » (+ filtre de pool
+  // accolé par describePoolFilter : « de race Elfes », « portant Traque »…).
+  "content.appel": "met en jeu la 1re unité de votre deck de coût ≤ {x}",
   "content.ability_generic": "une capacité",
   "content.draw_cards_one": "piochez {x} carte",
   "content.draw_cards_many": "piochez {x} cartes",
@@ -411,6 +414,7 @@ function describeContent(eff: ComposedEffect, tokens: TokenTemplate[] | undefine
     case "poison": return frag(t, "content.poison");
     case "grant_keyword": return frag(t, "content.grant_keyword", { ability: grantedAbilityLabel(eff, x, y, t) })
       + describeGrantTrigger(eff, t);
+    case "appel": return frag(t, "content.appel", { x: xAff }) + describePoolFilter(eff, t);
     case "draw_cards": return frag(t, x > 1 ? "content.draw_cards_many" : "content.draw_cards_one", { x: xAff });
     case "discard": return frag(t, x > 1 ? "content.discard_many" : "content.discard_one", { x: xAff });
     case "summon_token": {

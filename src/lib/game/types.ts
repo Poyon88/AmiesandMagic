@@ -473,6 +473,12 @@ export type ComposedEffectContent =
   | "bounce"
   | "paralyze"
   | "grant_keyword"
+  // APPEL : met en jeu gratuitement, depuis le DECK du contrôleur, la première
+  // unité de coût ≤ X qui satisfait le filtre de pool (race / faction / clan /
+  // mot-clé porté). Généralise « Appel du clan », dont le résolveur curé ne sait
+  // viser que le clan de sa PROPRE carte : ici la cible se déclare, ce qui rend
+  // possible « un sort qui appelle une unité d'une autre race ».
+  | "appel"
   // ÉTAT empoisonné posé sur la cible (−1 PV à chaque fin de tour), à distinguer
   // du DON du mot-clé Poison via grant_keyword (qui, lui, rend la cible
   // empoisonneuse). C'est l'équivalent composé du mot-clé de sort `poison`.

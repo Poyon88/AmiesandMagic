@@ -1219,6 +1219,30 @@ function resolveComposedEffect(
     // Épargne : alimente le compteur du contrôleur. Aucune cible, donc aucun
     // besoin de `source` — un sort comme une créature y accèdent pareillement.
     case "epargne": addEpargne(owner, x); return;
+    // APPEL — met en jeu gratuitement la 1re unité du DECK de coût ≤ X qui
+    // satisfait le filtre de pool.
+    //
+    // Généralise le mot-clé « Appel du clan », dont le résolveur curé ne sait
+    // viser que le clan de sa propre carte (`ctx.card.clan`) : ici la cible se
+    // DÉCLARE, ce qui autorise enfin « appelle une unité Elfe » sur une carte
+    // qui n'est pas elfe.
+    //
+    // Mêmes garde-fous que le chemin curé : rien si le plateau est plein, et la
+    // Traque de l'appelée est respectée — sans quoi une unité mise en jeu
+    // gratuitement attaquerait le tour même, ce qu'aucun appel ne permet.
+    case "appel": {
+      if (owner.board.length >= MAX_BOARD_SIZE) return;
+      const idx = owner.deck.findIndex(c =>
+        c.card.card_type === "creature"
+        && c.card.mana_cost <= x
+        && matchesPoolFilter(c.card, composed.pool));
+      if (idx < 0) return;
+      const [appelee] = owner.deck.splice(idx, 1);
+      const inst = createCardInstance(appelee.card);
+      inst.hasSummoningSickness = !hasKw(inst, "charge");
+      owner.board.push(inst);
+      return;
+    }
     // Incinération. Deux écritures possibles, et la désignation prime :
     //   • cible AU CHOIX dans un cimetière (« recyclez 4 cartes au choix ») →
     //     ce sont EXACTEMENT les cartes cliquées qui repartent sous le deck ;

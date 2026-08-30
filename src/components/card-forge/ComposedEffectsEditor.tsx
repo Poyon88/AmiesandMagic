@@ -29,6 +29,9 @@ const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" |
   // État empoisonné subi (−1 PV/fin de tour) ≠ don du mot-clé Poison.
   { v: "poison", l: "Empoisonner", target: "unit" },
   { v: "grant_keyword", l: "Conférer une capacité", target: "unit" },
+  // Aucune cible en jeu : l'appelée se cherche dans le DECK, via le filtre de
+  // pool ci-dessous (POOL_CONTENTS).
+  { v: "appel", l: "Appel depuis le deck", target: "none" },
   { v: "draw_cards", l: "Piocher", target: "none" },
   { v: "discard", l: "Défausser (adversaire)", target: "none" },
   { v: "summon_token", l: "Invoquer un token", target: "none" },
@@ -49,7 +52,7 @@ const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" |
 /** Contenus paramétrés par un filtre de pool (race / faction / clan / mot-clé).
  *  Pour eux, X est un PLAFOND DE COÛT des cartes révélées (comme exhumation),
  *  pas une amplitude. */
-const POOL_CONTENTS = new Set<ComposedEffectContent>(["invocation", "selection", "selection_magique", "renfort_royal"]);
+const POOL_CONTENTS = new Set<ComposedEffectContent>(["invocation", "selection", "selection_magique", "renfort_royal", "appel"]);
 
 /** Contenus incompatibles avec la répartition au hasard, malgré un bloc de
  *  cibles à l'écran : Exhumation puise dans le CIMETIÈRE (le tirage n'accepte
