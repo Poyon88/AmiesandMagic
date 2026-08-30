@@ -9024,6 +9024,29 @@ export function resolvePendingTrigger(state: GameState, action: ResolvePendingTr
     selectionCardId: action.selectionCardId,
   });
 
+  // BALAYAGE DES MORTS. Un choix tranché peut TUER — un Impact de fin de tour
+  // désigné sur une créature à 1 PV, une Remontée qui renvoie, un effet composé
+  // ciblé. Rien ne le faisait ici : l'effet s'appliquait, les PV tombaient à 0,
+  // et la dépouille restait sur le plateau jusqu'à ce qu'une action SUIVANTE
+  // (jouer une carte, attaquer) la balaie au passage. C'est le « cadavre qui ne
+  // disparaît pas » vu en partie.
+  //
+  // Le cas se produit surtout hors file de fin de tour : les mots-clés curés
+  // interactifs (Impact, Remontée) déposent leur déclencheur SANS suspendre la
+  // file, si bien que `finalizeEndOfTurn` — le seul autre balayeur — passe
+  // AVANT que les dégâts n'aient eu lieu.
+  //
+  // `processDeathTriggers` et non un simple retrait : les râles d'agonie de la
+  // victime doivent partir, et c'est lui qui pose la frontière d'animation.
+  {
+    const j0 = newState.players[0];
+    const j1 = newState.players[1];
+    const morts0 = cleanDeadCreatures(j0);
+    const morts1 = cleanDeadCreatures(j1);
+    processDeathTriggers(morts0, j0, j1);
+    processDeathTriggers(morts1, j1, j0);
+  }
+
   recalculateAuras(newState.players[0], newState.players[1]);
   newState.lastAction = action;
   checkWinCondition(newState);
@@ -9197,6 +9220,17 @@ export function autoResolvePendingTriggers(state: GameState): GameState {
         }
       }
       applyOnePendingTrigger(st, trigger, choice);
+    }
+    // Même balayage que la résolution MANUELLE (cf. resolvePendingTrigger) : un
+    // choix tranché au hasard tue tout aussi bien qu'un choix du joueur, et la
+    // dépouille resterait sur le plateau jusqu'à l'action suivante.
+    {
+      const j0 = st.players[0];
+      const j1 = st.players[1];
+      const morts0 = cleanDeadCreatures(j0);
+      const morts1 = cleanDeadCreatures(j1);
+      processDeathTriggers(morts0, j0, j1);
+      processDeathTriggers(morts1, j1, j0);
     }
     recalculateAuras(st.players[0], st.players[1]);
     checkWinCondition(st);
