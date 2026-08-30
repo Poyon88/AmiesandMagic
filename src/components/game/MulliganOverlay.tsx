@@ -19,6 +19,8 @@ import useCoarsePointer from "@/hooks/useCoarsePointer";
 import { useCardText } from "./CardTextProvider";
 import { useVocab } from "@/i18n/useVocab";
 import CompagnonsNames from "@/components/cards/CompagnonsNames";
+import TokenNames from "@/components/cards/TokenNames";
+import { tokenCardsForKeyword, tokenCardsForComposed } from "@/lib/game/token-preview";
 import CostBadges from "@/components/cards/CostBadges";
 import { REPLI_TEINTE, REPLI_GLYPHE } from "@/lib/game/repli-theme";
 import { EVEIL_TEINTE, EVEIL_GLYPHE } from "@/lib/game/eveil-theme";
@@ -375,6 +377,8 @@ function MulliganCard({
                   {desc && <div style={{ fontSize: 8 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
                   {/* Compagnons : les cartes liées, nommées, avec leur verso au survol. */}
                   {kw === "compagnons" && <CompagnonsNames ids={entry.instance?.linkedCardIds} scale={d * 0.2} />}
+                  {/* Tokens créés : leur nom seul dans la phrase, leur VERSO au survol. */}
+                  <TokenNames cards={tokenCardsForKeyword(kw, card, tokenTemplates, x)} scale={d * 0.2} />
                 </div>
               </div>
               );
@@ -401,6 +405,7 @@ function MulliganCard({
                     <div style={{ fontSize: 8 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>
                     {/* Compagnons (sort) : les cartes liées, nommées. */}
                     {spellKw.id === "compagnons" && <CompagnonsNames ids={spellKw.linkedCardIds} scale={d * 0.2} />}
+                  <TokenNames cards={tokenCardsForKeyword(spellKw.id, card, tokenTemplates)} scale={d * 0.2} />
                   </div>
                 </div>
               );
@@ -421,6 +426,7 @@ function MulliganCard({
                   <div>
                     {nm && <div style={{ fontSize: 10 * d, color: keywordModeColor(cmode) ?? "#fff", fontWeight: 600 }}>{nm}{(() => { const d = vocab.composedBadge(cap); return d ? <span style={{ color: d.color }}> ({d.label})</span> : null; })()}</div>}
                     <div style={{ fontSize: 8 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{vocab.composedDesc(cap, tokenTemplates)}</div>
+                    <TokenNames cards={tokenCardsForComposed(cap.composed, tokenTemplates)} scale={d * 0.2} />
                   </div>
                 </div>
               );

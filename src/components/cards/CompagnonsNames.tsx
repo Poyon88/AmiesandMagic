@@ -28,11 +28,18 @@ interface Props {
   cards?: Card[];
   /** Échelle du bloc hôte, pour que les pastilles suivent la taille du verso. */
   scale?: number;
-  /** Emoji de la pastille — 🐾 pour les compagnons, 📖 pour un sort appris. */
+  /** Emoji de la pastille — 🐾 pour les compagnons, 📖 pour un sort appris,
+   *  ⚔️ pour un token créé. */
   icon?: string;
+  /** Nom affiché. Par défaut la traduction de CARTE (`localizeName`).
+   *
+   *  Les TOKENS doivent le fournir : ils vivent dans leur propre table, avec sa
+   *  propre séquence d'ids. Chercher la traduction d'une carte avec un id de
+   *  token trouverait, au mieux, le nom d'une carte sans rapport. */
+  nameOf?: (c: Card) => string;
 }
 
-export default function CompagnonsNames({ ids, cards, scale = 1, icon = "🐾" }: Props) {
+export default function CompagnonsNames({ ids, cards, scale = 1, icon = "🐾", nameOf }: Props) {
   // Le hook est appelé inconditionnellement (règle des hooks) ; sans `ids` il
   // renvoie une liste vide et ne déclenche aucune requête.
   const resolues = useLinkedCards(ids);
@@ -79,7 +86,7 @@ export default function CompagnonsNames({ ids, cards, scale = 1, icon = "🐾" }
           }}
         >
           <span aria-hidden="true">{icon}</span>
-          {localizeName(c)}
+          {nameOf ? nameOf(c) : localizeName(c)}
         </span>
       ))}
 

@@ -50,13 +50,6 @@ function tokenKeywordLabel(id: string, t?: SafeT): string {
   return (localized ?? fallback).replace(/ X$/, "");
 }
 
-// Parenthesised keyword blurb for a single resolved token template, e.g.
-// " (Raid, Poison)". Empty string when the token has no keywords.
-function tokenKeywordSuffix(tmpl?: TokenTemplate | null, t?: SafeT): string {
-  const kws = (tmpl?.keywords ?? []).map((k) => tokenKeywordLabel(k, t));
-  return kws.length ? cfrag(t, "game.convocation_keywords", ` (${kws.join(", ")})`, { keywords: kws.join(", ") }) : "";
-}
-
 // Renders the convocation_tokens array as a human-readable string. Groups
 // identical entries (same token + same effective stats + same keywords) so the
 // reader sees "2 tokens Goblins des Marais 1/1 et un token Orc 2/2" rather than
@@ -86,13 +79,19 @@ export function formatConvocationTokens(
     else groups.set(key, { count: 1, name, atk, hp, keywords });
   }
 
-  const parts = Array.from(groups.values()).map((g) => {
-    const kwSuffix = g.keywords ? cfrag(t, "game.convocation_keywords", ` (${g.keywords})`, { keywords: g.keywords }) : "";
-    const base = g.count > 1
-      ? cfrag(t, "game.convocation_token_many", `${g.count} tokens ${g.name} ${g.atk}/${g.hp}`, { count: g.count, token: g.name, atk: g.atk, hp: g.hp })
-      : cfrag(t, "game.convocation_token_one", `un token ${g.name} ${g.atk}/${g.hp}`, { token: g.name, atk: g.atk, hp: g.hp });
-    return base + kwSuffix;
-  });
+  // NOM SEUL. Stats et mots-clés du token vivent désormais dans la pastille qui
+  // suit la phrase, et qui montre son verso au survol : la ligne restait lisible
+  // tant qu'un token n'avait que des stats, mais depuis qu'il accepte des effets
+  // COMPOSÉS, aucune phrase ne peut plus le décrire.
+  //
+  // Clés `_named` distinctes et non les anciennes vidées de leurs paramètres :
+  // les huit locales portent `{atk}`/`{hp}` dans leurs traductions, et cesser de
+  // les passer aurait affiché les accolades en clair partout sauf en français.
+  const parts = Array.from(groups.values()).map((g) => (
+    g.count > 1
+      ? cfrag(t, "game.convocation_token_many_named", `${g.count} tokens ${g.name}`, { count: g.count, token: g.name })
+      : cfrag(t, "game.convocation_token_one_named", `un token ${g.name}`, { token: g.name })
+  ));
 
   if (parts.length === 1) return parts[0];
   // "a et b" / "a, b et c" — le dernier segment est joint par « et » localisé.
@@ -114,10 +113,9 @@ export function formatConvocationToken(
 ): string | null {
   const tmpl = tokenId != null ? registry?.find((r) => r.id === tokenId) ?? null : null;
   if (!tmpl) return null;
-  const atk = statOverride != null && statOverride > 0 ? statOverride : tmpl.attack;
-  const hp = statOverride != null && statOverride > 0 ? statOverride : tmpl.health;
   const name = tokenName(tmpl, t);
-  return cfrag(t, "game.convocation_token_one", `un token ${name} ${atk}/${hp}`, { token: name, atk, hp }) + tokenKeywordSuffix(tmpl, t);
+  // Nom seul : le verso du token est à un survol de là (cf. token-preview).
+  return cfrag(t, "game.convocation_token_one_named", `un token ${name}`, { token: name });
 }
 
 // Phrase de convocation (« Crée un token X 1/1 »). Helper PUR — vit ici et non
@@ -180,7 +178,7 @@ export function getSpellKeywordDesc(
     const tmpl = tokens?.find((tk) => tk.id === card.convocation_token_id);
     if (tmpl) {
       const name = tokenName(tmpl, t);
-      desc = cfrag(t, "game.convocation_create_one", `Crée un ${name} ${tmpl.attack}/${tmpl.health}`, { token: name, atk: tmpl.attack, hp: tmpl.health }) + tokenKeywordSuffix(tmpl, t);
+      desc = cfrag(t, "game.convocation_create_one_named", `Crée un token ${name}`, { token: name });
     }
   }
 

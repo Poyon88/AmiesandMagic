@@ -112,21 +112,25 @@ describe("describeKeyword — convocations (non-régression)", () => {
     { id: 7, name: "Gobelin", attack: 1, health: 1, keywords: [] },
   ] as unknown as TokenTemplate[];
 
-  it("résout le token configuré", () => {
+  // La phrase ne porte plus que le NOM. Les stats — et les effets composés,
+  // qu'aucune phrase ne saurait dire — vivent dans la pastille qui la suit et
+  // montre le verso du token au survol (cf. token-preview.test.ts, qui vérifie
+  // que la surcharge X/X y arrive bien).
+  it("résout le token configuré, et le NOMME", () => {
     const d = describeKeyword("convocation_simple", {
       card: card({ convocation_token_id: 7 }),
       tokens,
     });
-    expect(d).toBe("Crée un token Gobelin 1/1.");
+    expect(d).toBe("Crée un token Gobelin.");
   });
 
-  it("Convocation X force les stats du token à X/X", () => {
+  it("Convocation X nomme le token — sa valeur X part dans l'aperçu", () => {
     const d = describeKeyword("convocation", {
       card: card({ convocation_token_id: 7 }),
       tokens,
       x: 3,
     });
-    expect(d).toBe("Crée un token Gobelin 3/3.");
+    expect(d).toBe("Crée un token Gobelin.");
   });
 
   it("compose la liste des convocations multiples", () => {
@@ -134,7 +138,9 @@ describe("describeKeyword — convocations (non-régression)", () => {
       card: card({ convocation_tokens: [{ token_id: 7 }, { token_id: 7 }] }),
       tokens,
     });
-    expect(d).toContain("2 tokens Gobelin 1/1");
+    expect(d).toContain("2 tokens Gobelin");
+    // Le point de la bascule : plus aucune stat dans la phrase.
+    expect(d).not.toMatch(/\d+\/\d+/);
   });
 });
 

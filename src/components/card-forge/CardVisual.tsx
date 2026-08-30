@@ -12,6 +12,8 @@ import { isCreatureKwShadowedBySpell, CREATURE_LABEL_TO_ENGINE_ID } from '@/lib/
 import { useVocab } from '@/i18n/useVocab';
 import { KEYWORD_LABELS, keywordModeColor, isStatPairKeyword, TEXT_CONTRAST_HALO } from '@/lib/game/keyword-labels';
 import { composedCapsOf, composedIcon, composedKeywordName, composedTriggerMode, composedValueText, describeComposedCap } from '@/lib/game/composed-display';
+import TokenNames from '@/components/cards/TokenNames';
+import { tokenCardsForKeyword, tokenCardsForComposed } from '@/lib/game/token-preview';
 import ComposedMarker from '@/components/cards/ComposedMarker';
 import type { Capability } from '@/lib/game/types';
 import type { SpellKeywordInstance, TokenTemplate } from '@/lib/game/types';
@@ -215,6 +217,15 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
   // Libellé + description d'un mot-clé de l'aperçu, via le MÊME chemin que le
   // jeu (describeKeyword) : la forge lisait KEYWORDS[kw].desc en dur, sans
   // localisation, avec quatre blocs FR codés en dur et dupliqués deux fois.
+  // Les trois champs de la carte que `token-preview` interroge, dans la forme
+  // qu'il attend. La carte de la FORGE est un objet d'édition (camelCase), pas
+  // une ligne de la table — même geste que le `fakeCard` déjà présent plus haut.
+  const sourceTokens = () => ({
+    convocation_token_id: card?.convocationTokenId,
+    convocation_tokens: card?.convocationTokens,
+    lycanthropie_token_id: card?.lycanthropieTokenId,
+  }) as unknown as import("@/lib/game/types").Card;
+
   const forgeKeyword = (kw: string) => {
     const id = forgeKeywordId(kw);
     const xVal = card?.keywordXValues?.[kw];
@@ -688,6 +699,8 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                   <div>
                     <div style={{ fontSize: 14 * s, color: detailScope === "all_allies" ? "#27ae60" : fac.accent, fontWeight: 700 }}>{displayName}{detailNote}</div>
                     <div style={{ fontSize: 12 * s, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{displayDesc}</div>
+                    {/* Tokens créés : leur nom seul dans la phrase, leur VERSO au survol. */}
+                    <TokenNames cards={tokenCardsForKeyword(forgeKeywordId(kw), sourceTokens(), tokens, card!.keywordXValues?.[kw])} scale={s} />
                   </div>
                 </div>
               );
@@ -766,6 +779,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                   <div>
                     {nm && <div style={{ fontSize: 14 * s, color: keywordModeColor(cmode) ?? "#fff", fontWeight: 700 }}>{nm}</div>}
                     <div style={{ fontSize: 12 * s, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{describeComposedCap(cap, tokens)}</div>
+                    <TokenNames cards={tokenCardsForComposed(cap.composed, tokens)} scale={s} />
                   </div>
                 </div>
               );

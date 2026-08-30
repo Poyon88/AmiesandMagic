@@ -24,6 +24,8 @@ import KeywordIcon from "@/components/shared/KeywordIcon";
 import { getFactionDisplayName } from "@/lib/card-engine/constants";
 import { useVocab } from "@/i18n/useVocab";
 import CompagnonsNames from "@/components/cards/CompagnonsNames";
+import TokenNames from "@/components/cards/TokenNames";
+import { tokenCardsForKeyword, tokenCardsForComposed } from "@/lib/game/token-preview";
 
 interface SpellCastOverlayProps {
   event: SpellCastEvent | null;
@@ -340,6 +342,8 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
                             )}
                             {/* Compagnons : cartes liées nommées, verso au survol. */}
                             {kw === "compagnons" && <CompagnonsNames ids={entry.instance?.linkedCardIds} scale={0.95} />}
+                  {/* Tokens créés : leur nom seul dans la phrase, leur VERSO au survol. */}
+                  <TokenNames cards={tokenCardsForKeyword(kw, card, tokenTemplates, x)} scale={0.95} />
                           </div>
                         </div>
                       );
@@ -366,6 +370,7 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
                             </div>
                             {/* Compagnons (sort) : les cartes liées, nommées. */}
                             {spellKw.id === "compagnons" && <CompagnonsNames ids={spellKw.linkedCardIds} scale={0.95} />}
+                  <TokenNames cards={tokenCardsForKeyword(spellKw.id, card, tokenTemplates)} scale={0.95} />
                           </div>
                         </div>
                       );

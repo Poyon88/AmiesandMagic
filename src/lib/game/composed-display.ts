@@ -394,12 +394,14 @@ function describeContent(eff: ComposedEffect, tokens: TokenTemplate[] | undefine
     case "draw_cards": return frag(t, x > 1 ? "content.draw_cards_many" : "content.draw_cards_one", { x });
     case "discard": return frag(t, x > 1 ? "content.discard_many" : "content.discard_one", { x });
     case "summon_token": {
-      // Resolve the token template (when available) so the description names the
-      // token and shows its stats — e.g. "invoque 2 Token Hommes-Loups (2/2)".
-      // Falls back to the generic "token(s)" wording if no template is passed.
+      // NOM SEUL. Les stats du token — et depuis peu ses effets composés, qu'une
+      // phrase ne saurait de toute façon pas dire — vivent dans la pastille qui
+      // suit, laquelle montre son verso au survol.
+      // Repli sur « token(s) » générique quand aucun template n'est fourni.
       const tok = eff.tokenId != null ? tokens?.find((tk) => tk.id === eff.tokenId) : undefined;
-      const tokLabel = tok ? ((tok.id != null ? t?.(`vocab.tokens.${tok.id}`) : undefined) ?? tok.name) : "";
-      const label = tok ? `${tokLabel} (${tok.attack}/${tok.health})` : frag(t, x > 1 ? "content.token_many" : "content.token_one");
+      const label = tok
+        ? ((tok.id != null ? t?.(`vocab.tokens.${tok.id}`) : undefined) ?? tok.name)
+        : frag(t, x > 1 ? "content.token_many" : "content.token_one");
       return frag(t, x > 1 ? "content.summon_many" : "content.summon_one", { x, token: label });
     }
     case "gain_mana": return frag(t, "content.gain_mana", { x });

@@ -22,6 +22,8 @@ import { SPRINGS } from "@/lib/fx/overlayMotion";
 import { useCardText } from "./CardTextProvider";
 import { useVocab } from "@/i18n/useVocab";
 import CompagnonsNames from "@/components/cards/CompagnonsNames";
+import TokenNames from "@/components/cards/TokenNames";
+import { tokenCardsForKeyword, tokenCardsForComposed } from "@/lib/game/token-preview";
 
 interface BoardCreatureProps {
   creature: CardInstance;
@@ -928,6 +930,8 @@ function BoardCreature({
                   {desc && <div style={{ fontSize: 7 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
                   {/* Compagnons : les cartes liées, nommées, avec leur verso au survol. */}
                   {kw === "compagnons" && <CompagnonsNames ids={entry.instance?.linkedCardIds} scale={d * 0.18} />}
+                  {/* Tokens créés : leur nom seul dans la phrase, leur VERSO au survol. */}
+                  <TokenNames cards={tokenCardsForKeyword(kw, card, tokenTemplates, x)} scale={d * 0.18} />
                   {/* Apprentissage : le sort MÉMORISÉ, nommé et survolable —
                       même pastille que les compagnons. Rendu ici seulement :
                       une créature en main ou dans un overlay n'en porte jamais
@@ -962,6 +966,7 @@ function BoardCreature({
                   <div>
                     {nm && <div style={{ fontSize: 8 * d, color: keywordModeColor(cmode) ?? "#fff", fontWeight: 600 }}>{nm}{(() => { const d = vocab.composedBadge(cap); return d ? <span style={{ color: d.color }}> ({d.label})</span> : null; })()}</div>}
                     <div style={{ fontSize: 7 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{vocab.composedDesc(cap, tokenTemplates)}</div>
+                    <TokenNames cards={tokenCardsForComposed(cap.composed, tokenTemplates)} scale={d * 0.18} />
                   </div>
                 </div>
               );
