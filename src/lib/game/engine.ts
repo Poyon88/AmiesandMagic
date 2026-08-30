@@ -4368,7 +4368,15 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
         const alive = opponent.board.filter((u) => u.currentHealth > 0);
         if (alive.length === 0) break;
         const target = alive[Math.floor(rng() * alive.length)];
-        dealDamageToCreature(target, 1, false, true, player.hero);
+        // SOURCE = la créature, pas le héros. C'est ELLE qui porte Tempête, et
+        // c'est d'elle que dépendent les effets liés à l'auteur des dégâts —
+        // Touché mortel en tête, dont la garde exige une instance (`"instanceId"
+        // in source`) et qu'un héros ne franchissait jamais. Une unité « Touché
+        // mortel + Tempête » ne tuait donc rien à son entrée.
+        //
+        // Le chemin de REJEU (mort / activation / retour) passait déjà la
+        // créature : c'est l'entrée en jeu qui était l'exception.
+        dealDamageToCreature(target, 1, false, true, cardInstance);
         sequentialHitsSink.push({ targetInstanceId: target.instanceId, type: "damage" });
       }
     }
@@ -4378,7 +4386,8 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     if (hasKwOnPlay(cardInstance, "cataclysme")) {
       const x = getKwX(cardInstance, "cataclysme", undefined, Math.max(1, Math.floor(cardInstance.card.mana_cost / 3)));
       for (const c of [...opponent.board, ...player.board]) {
-        dealDamageToCreature(c, x, false, true, player.hero, false);
+        // Même correction que Tempête ci-dessus : la source est la créature.
+        dealDamageToCreature(c, x, false, true, cardInstance, false);
         sequentialHitsSink.push({ targetInstanceId: c.instanceId, type: "damage" });
       }
     }
