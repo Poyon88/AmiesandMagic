@@ -1,21 +1,31 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { KEYWORDS } from "@/lib/game/abilities";
 import { STAT_COST, ADDITIONAL_COST_POINTS, BUDGET, RARITIES } from "@/lib/card-engine/constants";
 import {
-  applyBalanceOverrides, balanceDefaults, countBalanceChanges,
-  loadBalanceOverrides, saveBalanceOverrides, type BalanceOverrides,
+  applyBalanceOverrides, balanceDefaults, clearBrowserOverrides, countBalanceChanges,
+  getBalanceOverrides, loadBrowserOverrides, mergeBalanceOverrides,
+  saveBalanceOverridesToDb, type BalanceOverrides,
 } from "@/lib/card-engine/balance";
 
 /** BARÈME — le modèle de coût complet, consultable et réglable.
  *
- *  Les écarts sont mémorisés dans le navigateur et réappliqués au chargement.
- *  Rien n'est envoyé en base : c'est un banc d'essai personnel, pas un réglage
- *  partagé — et « Rétablir » rend les valeurs compilées, à la valeur près.
+ *  Les écarts sont enregistrés EN BASE (`balance_overrides`, ligne unique) et
+ *  réappliqués à chaque ouverture de la forge, sur n'importe quelle machine. Un
+ *  seul barème existe : le régler, c'est le régler pour tout le monde.
+ *
+ *  « Rétablir » rend les valeurs compilées, à la valeur près.
  *
  *  Sans effet sur les parties en cours : ces coûts ne servent qu'à CRÉER des
  *  cartes (jauge d'auteur, générateur), jamais à en jouer une. */
+
+/** Délai avant écriture. Chaque frappe dans un champ nombre déclenche un
+ *  `onChange` : sans ce répit, régler « 12 » enverrait deux requêtes, dont une
+ *  qui publierait « 1 » comme barème du jeu le temps d'un aller-retour. */
+const REPIT_MS = 600;
+
+type EtatSauvegarde = "repos" | "encours" | "ok" | "erreur";
 
 const ZONES = ["Terrain", "Mixte", "Cimetière", "Main", "Deck", "Race", "Clan"] as const;
 const RARETES = ["Commune", "Peu Commune", "Rare", "Épique", "Légendaire"];
@@ -60,22 +70,61 @@ export default function BalanceEditor() {
   const [ov, setOv] = useState<BalanceOverrides>({});
   const [filtre, setFiltre] = useState("");
   const [pret, setPret] = useState(false);
+  const [etat, setEtat] = useState<EtatSauvegarde>("repos");
+  const [erreur, setErreur] = useState("");
+  const [reprise, setReprise] = useState<BalanceOverrides | null>(null);
   const d = balanceDefaults();
 
-  // Au montage : relire le navigateur et APPLIQUER, pour que la jauge et le
-  // générateur voient les mêmes valeurs que ce tableau dès la première seconde.
+  // Le barème appliqué vient du SERVEUR, via la forge qui l'a reçu en prop et
+  // appliqué avant son premier rendu. Ce tableau ne le recharge pas : il le lit,
+  // pour montrer exactement les valeurs sur lesquelles la jauge calcule déjà.
   useEffect(() => {
-    const stocke = loadBalanceOverrides();
-    applyBalanceOverrides(stocke);
-    setOv(stocke);
+    setOv(getBalanceOverrides());
+    // Réglages laissés dans CE navigateur par l'ancienne version, qui stockait
+    // en local. Ils sont autrement inatteignables — c'est le seul écran d'où on
+    // peut encore les récupérer.
+    const local = loadBrowserOverrides();
+    if (countBalanceChanges(local) > 0) setReprise(local);
     setPret(true);
   }, []);
 
-  const maj = (suite: BalanceOverrides) => {
+  const enAttente = useRef<BalanceOverrides | null>(null);
+  const minuteur = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const envoyer = useCallback(async () => {
+    const suite = enAttente.current;
+    if (!suite) return;
+    enAttente.current = null;
+    setEtat("encours");
+    try {
+      await saveBalanceOverridesToDb(suite);
+      setEtat("ok");
+      setErreur("");
+    } catch (e) {
+      // Dire l'échec, et ne surtout pas le taire : croire un réglage enregistré
+      // alors qu'il ne l'est pas est précisément le défaut qu'on répare ici.
+      setEtat("erreur");
+      setErreur(e instanceof Error ? e.message : "Enregistrement impossible");
+    }
+  }, []);
+
+  const maj = useCallback((suite: BalanceOverrides) => {
     setOv(suite);
     applyBalanceOverrides(suite);
-    saveBalanceOverrides(suite);
-  };
+    enAttente.current = suite;
+    setEtat("encours");
+    if (minuteur.current) clearTimeout(minuteur.current);
+    minuteur.current = setTimeout(envoyer, REPIT_MS);
+  }, [envoyer]);
+
+  // Quitter l'onglet Budget démonte ce composant. Sans cette purge, le dernier
+  // réglage — celui qui n'a pas encore atteint la fin du répit — serait perdu
+  // au moment précis où l'auteur va vérifier son effet sur la jauge.
+  useEffect(() => () => {
+    if (minuteur.current) clearTimeout(minuteur.current);
+    void envoyer();
+  }, [envoyer]);
+
   const majKw = (label: string, champ: "cost" | "costPerX", n: number) =>
     maj({ ...ov, keywords: { ...ov.keywords, [label]: { ...ov.keywords?.[label], [champ]: n } } });
 
@@ -100,6 +149,20 @@ export default function BalanceEditor() {
             {ecarts} valeur{ecarts > 1 ? "s" : ""} modifiée{ecarts > 1 ? "s" : ""}
           </span>
         )}
+        {etat !== "repos" && (
+          <span
+            title={etat === "erreur" ? erreur : undefined}
+            style={{
+              fontSize: 10, fontWeight: 700, maxWidth: 320,
+              overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+              color: etat === "erreur" ? "#c0392b" : etat === "ok" ? "#27ae60" : "#999",
+            }}
+          >
+            {etat === "encours" && "Enregistrement…"}
+            {etat === "ok" && "✓ Enregistré"}
+            {etat === "erreur" && `⚠ Non enregistré — ${erreur}`}
+          </span>
+        )}
         <button
           onClick={() => maj({})}
           disabled={ecarts === 0}
@@ -114,11 +177,44 @@ export default function BalanceEditor() {
       </div>
 
       <p style={{ fontSize: 10, color: "#888", margin: 0, maxWidth: 700, lineHeight: 1.6 }}>
-        Les valeurs modifiées sont mémorisées dans <b>ce navigateur</b> et se superposent aux
-        constantes du moteur : la jauge de la forge et le générateur automatique les prennent en
-        compte immédiatement. Rien n&apos;est envoyé en base, et les parties en cours ne sont pas
-        touchées — ces coûts servent à créer des cartes, jamais à en jouer.
+        Les valeurs modifiées sont enregistrées <b>en base</b> et se superposent aux constantes du
+        moteur : la jauge de la forge et le générateur automatique les prennent en compte
+        immédiatement, sur toutes les machines. Il n&apos;existe qu&apos;<b>un seul barème</b> —
+        le régler, c&apos;est le régler pour tout le monde. Les parties en cours ne sont pas
+        touchées : ces coûts servent à créer des cartes, jamais à en jouer.
       </p>
+
+      {reprise && (
+        <div style={{
+          background: "#fff6ef", border: "1px solid #e8c9b0", borderRadius: 8,
+          padding: "12px 16px", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap",
+        }}>
+          <span style={{ fontSize: 10, color: "#8a5330", lineHeight: 1.6, flex: 1, minWidth: 260 }}>
+            Ce navigateur garde <b>{countBalanceChanges(reprise)} réglage
+            {countBalanceChanges(reprise) > 1 ? "s" : ""}</b> de l&apos;époque où le barème était
+            stocké en local. Les reprendre les publiera en base ; ils remplaceront les valeurs
+            partagées qu&apos;ils touchent, et laisseront les autres intactes.
+          </span>
+          <button
+            onClick={() => { maj(mergeBalanceOverrides(ov, reprise)); clearBrowserOverrides(); setReprise(null); }}
+            style={{
+              padding: "5px 12px", borderRadius: 6, fontSize: 10, fontFamily: "'Cinzel',serif",
+              border: "1px solid #b3541e", background: "#b3541e", color: "#fff", cursor: "pointer",
+            }}
+          >
+            Reprendre
+          </button>
+          <button
+            onClick={() => { clearBrowserOverrides(); setReprise(null); }}
+            style={{
+              padding: "5px 12px", borderRadius: 6, fontSize: 10, fontFamily: "'Cinzel',serif",
+              border: "1px solid #d9c3b2", background: "#fff", color: "#8a5330", cursor: "pointer",
+            }}
+          >
+            Oublier
+          </button>
+        </div>
+      )}
 
       <div style={{ background: "#fff", border: "1px solid #e0e0e0", borderRadius: 8, padding: 18 }}>
         <div style={{ ...ETIQ, marginBottom: 12 }}>BUDGET — mana × base × multiplicateur de rareté</div>

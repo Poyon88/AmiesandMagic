@@ -1,9 +1,15 @@
-// BARÈME MODIFIABLE — surcharge locale du modèle de coût.
+// BARÈME MODIFIABLE — surcharge PARTAGÉE du modèle de coût.
 //
 // Les coûts vivent dans des constantes compilées (`KEYWORDS`, `STAT_COST`,
-// `ADDITIONAL_COST_POINTS`, `BUDGET`, `RARITIES`). L'onglet Barème de la forge
-// permet de les régler sans redéploiement : les écarts sont mémorisés dans le
-// navigateur et RÉAPPLIQUÉS au chargement, par-dessus les valeurs d'origine.
+// `ADDITIONAL_COST_POINTS`, `BUDGET`, `RARITIES`). L'onglet Budget de la forge
+// permet de les régler sans redéploiement : les écarts sont enregistrés EN BASE
+// (`balance_overrides`, ligne unique) et réappliqués par-dessus les valeurs
+// d'origine à chaque ouverture de la forge, sur n'importe quelle machine.
+//
+// Ils vivaient auparavant dans le `localStorage`, qui est cloisonné par ORIGINE :
+// un coût réglé sur localhost restait invisible sur le serveur dev. Le stockage
+// navigateur ne sert plus qu'à RÉCUPÉRER ces anciens réglages (cf. plus bas) ;
+// il n'est plus jamais écrit, pour qu'il n'existe qu'une seule source de vérité.
 //
 // Pourquoi muter les objets en place plutôt qu'exposer des accesseurs : les
 // consommateurs (jauge de la forge, générateur, panneaux d'aide) lisent déjà ces
@@ -13,7 +19,7 @@
 // AUCUN RISQUE DE DÉSYNCHRONISATION : ces coûts ne servent qu'à CRÉER des cartes
 // (jauge d'auteur, générateur automatique). Le moteur de jeu ne les lit jamais
 // en partie — les stats d'une carte sont figées à sa création. Une surcharge
-// locale ne peut donc pas faire diverger deux clients.
+// ne peut donc pas faire diverger deux clients.
 import { KEYWORDS } from "@/lib/game/abilities";
 import { STAT_COST, ADDITIONAL_COST_POINTS, BUDGET, RARITIES } from "./constants";
 
@@ -27,7 +33,9 @@ export interface BalanceOverrides {
   rarityMultipliers?: Record<string, number>;
 }
 
-const CLE = "am.balance.overrides.v1";
+/** Ancienne clé de stockage navigateur. Conservée en LECTURE seule, pour offrir
+ *  de reprendre un barème réglé avant le passage en base. */
+const CLE_NAVIGATEUR = "am.balance.overrides.v1";
 
 /** Valeurs d'ORIGINE, capturées au chargement du module, avant toute surcharge.
  *  C'est ce qui rend « rétablir » exact plutôt qu'approximatif. */
@@ -43,6 +51,19 @@ const DEFAUTS = {
 
 export function balanceDefaults() {
   return DEFAUTS;
+}
+
+/** Le barème actuellement APPLIQUÉ aux constantes.
+ *
+ *  Il est tenu ici parce que deux composants distincts en ont besoin : la forge
+ *  l'applique à l'ouverture (depuis le serveur), l'éditeur de barème l'affiche
+ *  et l'édite. Le faire descendre en props obligerait à traverser un composant
+ *  de six mille lignes ; le relire depuis les constantes muté serait ambigu (une
+ *  valeur égale au défaut n'est pas la même chose qu'une valeur non surchargée). */
+let courant: BalanceOverrides = {};
+
+export function getBalanceOverrides(): BalanceOverrides {
+  return courant;
 }
 
 /** Remet TOUT à l'origine, puis applique les écarts fournis. Repartir des
@@ -64,6 +85,7 @@ export function applyBalanceOverrides(ov: BalanceOverrides): void {
   for (const r of RARITIES) {
     r.multiplier = ov.rarityMultipliers?.[r.id] ?? DEFAUTS.rarityMultipliers[r.id];
   }
+  courant = ov;
 }
 
 /** Nombre de valeurs qui s'écartent RÉELLEMENT de l'origine. Une surcharge qui
@@ -89,27 +111,142 @@ export function countBalanceChanges(ov: BalanceOverrides): number {
   return n;
 }
 
-/** Lecture du stockage local. Toute erreur rend un barème VIDE : un stockage
- *  illisible (autre onglet, navigation privée, quota) doit rendre les valeurs
- *  d'origine, jamais faire planter la forge. */
-export function loadBalanceOverrides(): BalanceOverrides {
-  if (typeof window === "undefined") return {};
+const estNombre = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v);
+
+/** Ne garde d'un objet quelconque que ce qui est un barème valide : clés
+ *  connues, nombres finis. Tout le reste est écarté SANS erreur.
+ *
+ *  Appelé aux deux frontières — ce que la route reçoit du navigateur, et ce que
+ *  le serveur relit de la base. Un JSONB est une porte ouverte : une clé
+ *  inventée ou un `NaN` glissé là traverserait sinon jusqu'à `Math.round` et
+ *  ferait afficher une jauge « NaN/NaN » sans que rien ne signale d'où ça vient.
+ *  Écarter une capacité inconnue est délibéré aussi : renommer un mot-clé ne
+ *  doit pas laisser une entrée morte grossir le barème à chaque écriture. */
+export function sanitizeBalanceOverrides(brut: unknown): BalanceOverrides {
+  if (!brut || typeof brut !== "object" || Array.isArray(brut)) return {};
+  const src = brut as Record<string, unknown>;
+  const out: BalanceOverrides = {};
+
+  const kwSrc = src.keywords;
+  if (kwSrc && typeof kwSrc === "object" && !Array.isArray(kwSrc)) {
+    const kw: NonNullable<BalanceOverrides["keywords"]> = {};
+    for (const [label, v] of Object.entries(kwSrc as Record<string, unknown>)) {
+      if (!DEFAUTS.keywords[label] || !v || typeof v !== "object") continue;
+      const { cost, costPerX } = v as Record<string, unknown>;
+      const entree: { cost?: number; costPerX?: number } = {};
+      if (estNombre(cost)) entree.cost = cost;
+      if (estNombre(costPerX)) entree.costPerX = costPerX;
+      if (Object.keys(entree).length) kw[label] = entree;
+    }
+    if (Object.keys(kw).length) out.keywords = kw;
+  }
+
+  const statSrc = src.stat as Record<string, unknown> | undefined;
+  if (statSrc && typeof statSrc === "object") {
+    const stat: NonNullable<BalanceOverrides["stat"]> = {};
+    if (estNombre(statSrc.atk)) stat.atk = statSrc.atk;
+    if (estNombre(statSrc.def)) stat.def = statSrc.def;
+    if (Object.keys(stat).length) out.stat = stat;
+  }
+
+  const addSrc = src.additional as Record<string, unknown> | undefined;
+  if (addSrc && typeof addSrc === "object") {
+    const add: NonNullable<BalanceOverrides["additional"]> = {};
+    for (const k of Object.keys(DEFAUTS.additional) as (keyof typeof ADDITIONAL_COST_POINTS)[]) {
+      if (estNombre(addSrc[k])) add[k] = addSrc[k] as number;
+    }
+    if (Object.keys(add).length) out.additional = add;
+  }
+
+  if (estNombre(src.budgetBase)) out.budgetBase = src.budgetBase;
+
+  const rarSrc = src.rarityMultipliers as Record<string, unknown> | undefined;
+  if (rarSrc && typeof rarSrc === "object") {
+    const rar: Record<string, number> = {};
+    for (const id of Object.keys(DEFAUTS.rarityMultipliers)) {
+      if (estNombre(rarSrc[id])) rar[id] = rarSrc[id] as number;
+    }
+    if (Object.keys(rar).length) out.rarityMultipliers = rar;
+  }
+
+  return out;
+}
+
+/** Superpose `ajout` à `base`, valeur par valeur. Sert à REPRENDRE un barème
+ *  laissé dans un navigateur sans écraser ce qui est déjà en base : un réglage
+ *  local remplace son homologue partagé, mais ne fait pas disparaître un réglage
+ *  partagé qu'il ne mentionne pas.
+ *
+ *  Fusion au niveau de la FEUILLE, et non de l'objet : deux barèmes qui touchent
+ *  chacun un champ différent d'une même capacité doivent survivre tous les deux. */
+export function mergeBalanceOverrides(base: BalanceOverrides, ajout: BalanceOverrides): BalanceOverrides {
+  const keywords = { ...base.keywords };
+  for (const [label, v] of Object.entries(ajout.keywords ?? {})) {
+    keywords[label] = { ...keywords[label], ...v };
+  }
+  return {
+    ...(Object.keys(keywords).length ? { keywords } : {}),
+    ...((base.stat || ajout.stat) ? { stat: { ...base.stat, ...ajout.stat } } : {}),
+    ...((base.additional || ajout.additional) ? { additional: { ...base.additional, ...ajout.additional } } : {}),
+    ...(ajout.budgetBase ?? base.budgetBase) != null
+      ? { budgetBase: ajout.budgetBase ?? base.budgetBase }
+      : {},
+    ...((base.rarityMultipliers || ajout.rarityMultipliers)
+      ? { rarityMultipliers: { ...base.rarityMultipliers, ...ajout.rarityMultipliers } }
+      : {}),
+  };
+}
+
+/** Barème enregistré en base. Toute erreur — réseau, session expirée, table
+ *  absente parce que la migration n'est pas passée — rend un barème VIDE : la
+ *  forge doit s'ouvrir sur les valeurs d'origine, jamais refuser de s'ouvrir. */
+export async function fetchBalanceOverrides(): Promise<BalanceOverrides> {
   try {
-    const brut = window.localStorage.getItem(CLE);
-    if (!brut) return {};
-    const o = JSON.parse(brut) as BalanceOverrides;
-    return o && typeof o === "object" ? o : {};
+    const res = await fetch("/api/balance");
+    if (!res.ok) return {};
+    const body = (await res.json()) as { overrides?: unknown };
+    return sanitizeBalanceOverrides(body?.overrides);
   } catch {
     return {};
   }
 }
 
-export function saveBalanceOverrides(ov: BalanceOverrides): void {
+/** Écrit le barème en base. Rend l'erreur au lieu de la taire : contrairement à
+ *  la lecture, un enregistrement qui échoue en silence ferait croire à l'auteur
+ *  que son réglage est parti — c'est exactement le défaut qu'on répare ici. */
+export async function saveBalanceOverridesToDb(ov: BalanceOverrides): Promise<void> {
+  const res = await fetch("/api/balance", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ overrides: ov }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: string } | null;
+    throw new Error(body?.error || `Enregistrement refusé (${res.status})`);
+  }
+}
+
+/** Barème laissé dans CE navigateur par l'ancienne version. Lecture seule : il
+ *  n'est plus jamais écrit. Sert à proposer de reprendre des réglages faits
+ *  avant le passage en base, qui seraient sinon inatteignables. */
+export function loadBrowserOverrides(): BalanceOverrides {
+  if (typeof window === "undefined") return {};
+  try {
+    const brut = window.localStorage.getItem(CLE_NAVIGATEUR);
+    if (!brut) return {};
+    return sanitizeBalanceOverrides(JSON.parse(brut));
+  } catch {
+    return {};
+  }
+}
+
+/** Oublie le barème local, une fois repris en base. Sans cela la proposition de
+ *  reprise reviendrait à chaque ouverture, indéfiniment. */
+export function clearBrowserOverrides(): void {
   if (typeof window === "undefined") return;
   try {
-    if (countBalanceChanges(ov) === 0) window.localStorage.removeItem(CLE);
-    else window.localStorage.setItem(CLE, JSON.stringify(ov));
+    window.localStorage.removeItem(CLE_NAVIGATEUR);
   } catch {
-    /* stockage indisponible : la surcharge vaut pour la session, sans plus. */
+    /* stockage indisponible : la proposition réapparaîtra, sans gravité. */
   }
 }

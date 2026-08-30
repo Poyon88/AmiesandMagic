@@ -13,7 +13,7 @@ import { additionalCostPoints, RARITIES, FACTIONS, TYPES, KEYWORDS, CREATURE_LAB
 import CardVisual, { KEYWORD_SYMBOLS } from "./CardVisual";
 import ComposedEffectsEditor from "./ComposedEffectsEditor";
 import BalanceEditor from "./BalanceEditor";
-import { applyBalanceOverrides, loadBalanceOverrides } from "@/lib/card-engine/balance";
+import { applyBalanceOverrides, type BalanceOverrides } from "@/lib/card-engine/balance";
 import CostListEditor from "./CostListEditor";
 import LinkedCardsPicker, { invalidateLinkedCardsCatalog } from "./LinkedCardsPicker";
 import KeywordIcon from "@/components/shared/KeywordIcon";
@@ -237,7 +237,20 @@ function isCoupleXYGenerique(label: string): boolean {
 
 // ─── MAIN COMPONENT ──────────────────────────────────────────────────────────
 
-export default function CardForge() {
+export default function CardForge({ initialBalance = {} }: { initialBalance?: BalanceOverrides }) {
+  // BARÈME : appliqué DÈS LE PREMIER RENDU, pas dans un effet.
+  //
+  // La jauge de budget et le générateur lisent les constantes de coût pendant le
+  // rendu (cf. `manualBudgetTotal` plus bas). Un `useEffect` s'exécute APRÈS ce
+  // rendu : la forge affichait donc une première passe calculée sur les valeurs
+  // d'origine. L'initialiseur d'un `useState` court, lui, avant que le corps du
+  // composant n'atteigne le moindre calcul de budget.
+  //
+  // Muter des constantes partagées pendant un rendu se tolère ici parce que
+  // l'opération est idempotente et remet tout à plat à chaque appel : la
+  // rejouer (mode strict, rendu concurrent) redonne exactement le même état.
+  useState(() => { applyBalanceOverrides(initialBalance); return initialBalance; });
+
   const tf = useTranslations("forge");
   const [faction, setFaction] = useState("Elfes");
   const [race, setRace] = useState("");
@@ -1970,11 +1983,6 @@ export default function CardForge() {
 
   useEffect(() => { loadSets(); }, [loadSets]);
 
-  // BARÈME : réappliquer les surcharges mémorisées DÈS L'OUVERTURE de la forge,
-  // et pas seulement à l'ouverture de l'onglet Budget. Sans cela, composer une
-  // carte sans être passé par le barème donnait une jauge calculée sur les
-  // valeurs d'origine — silencieusement fausse.
-  useEffect(() => { applyBalanceOverrides(loadBalanceOverrides()); }, []);
   // Without this, the Convocation X / Convocations multiples / Lycanthropie X
   // token cascade pickers in the manual forge would have nothing to offer
   // until the admin first opens the Tokens tab and saved something — the

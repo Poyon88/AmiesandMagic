@@ -3,8 +3,9 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { KEYWORDS } from "@/lib/game/abilities";
 import { STAT_COST, ADDITIONAL_COST_POINTS, BUDGET, RARITIES, RARITY_MAP } from "./constants";
 import {
-  applyBalanceOverrides, balanceDefaults, countBalanceChanges,
-  loadBalanceOverrides, saveBalanceOverrides,
+  applyBalanceOverrides, balanceDefaults, clearBrowserOverrides, countBalanceChanges,
+  getBalanceOverrides, loadBrowserOverrides, mergeBalanceOverrides,
+  sanitizeBalanceOverrides,
 } from "./balance";
 import { generateCardStats } from "./generator";
 
@@ -68,38 +69,129 @@ describe("comptage des écarts", () => {
   });
 });
 
-describe("stockage", () => {
-  const memoire: Record<string, string> = {};
-  const faux = {
-    getItem: (k: string) => memoire[k] ?? null,
-    setItem: (k: string, v: string) => { memoire[k] = v; },
-    removeItem: (k: string) => { delete memoire[k]; },
-  };
-  it("relit ce qu'il a écrit", () => {
-    vi.stubGlobal("window", { localStorage: faux });
-    saveBalanceOverrides({ stat: { atk: 7 } });
-    expect(loadBalanceOverrides()).toEqual({ stat: { atk: 7 } });
+describe("assainissement", () => {
+  const d = balanceDefaults();
+
+  it("garde ce qui est connu et fini", () => {
+    const ov = {
+      keywords: { "Provocation": { cost: 4, costPerX: 2 } },
+      stat: { atk: 3, def: 2 }, additional: { life: -1 },
+      budgetBase: 11, rarityMultipliers: { "Rare": 1.5 },
+    };
+    expect(sanitizeBalanceOverrides(ov)).toEqual(ov);
+  });
+
+  it("ÉCARTE une capacité qui n'existe plus", () => {
+    // Sinon renommer un mot-clé laisserait une entrée morte que chaque
+    // enregistrement recopierait, indéfiniment.
+    expect(sanitizeBalanceOverrides({
+      keywords: { "Capacité Fantôme": { cost: 3 }, "Provocation": { cost: 4 } },
+    })).toEqual({ keywords: { "Provocation": { cost: 4 } } });
+  });
+
+  it("ÉCARTE tout ce qui n'est pas un nombre fini", () => {
+    // Le vrai danger : NaN et Infinity traversent JSON.parse et arrivent
+    // jusqu'à la jauge, qui affiche alors « NaN/NaN » sans dire pourquoi.
+    expect(sanitizeBalanceOverrides({
+      stat: { atk: NaN, def: "3" }, budgetBase: Infinity,
+      keywords: { "Provocation": { cost: null } },
+    })).toEqual({});
+  });
+
+  it("ÉCARTE les clés inventées, sans rien perdre des autres", () => {
+    expect(sanitizeBalanceOverrides({
+      additional: { life: -1, inventé: 9 },
+      rarityMultipliers: { "Rare": 2, "Mythique": 5 },
+      napoleon: 1,
+    })).toEqual({ additional: { life: -1 }, rarityMultipliers: { "Rare": 2 } });
+  });
+
+  it("rend un barème VIDE pour tout ce qui n'est pas un objet", () => {
+    for (const brut of [null, undefined, 3, "x", [], [{ cost: 1 }]]) {
+      expect(sanitizeBalanceOverrides(brut), String(brut)).toEqual({});
+    }
+  });
+
+  it("survit à ce que la base peut rendre : un barème vierge", () => {
+    expect(sanitizeBalanceOverrides({})).toEqual({});
+    // Et un barème assaini reste applicable tel quel.
+    expect(() => applyBalanceOverrides(sanitizeBalanceOverrides({ stat: { atk: d.stat.atk } }))).not.toThrow();
+  });
+});
+
+describe("barème appliqué", () => {
+  it("se relit après application — l'éditeur lit ce que la forge a posé", () => {
+    const ov = { stat: { atk: 7 } };
+    applyBalanceOverrides(ov);
+    expect(getBalanceOverrides()).toEqual(ov);
+    applyBalanceOverrides({});
+    expect(getBalanceOverrides()).toEqual({});
+  });
+});
+
+describe("fusion", () => {
+  it("superpose valeur par valeur, sans effacer ce qui n'est pas mentionné", () => {
+    const fusion = mergeBalanceOverrides(
+      { stat: { atk: 3, def: 2 }, budgetBase: 11, keywords: { "Provocation": { cost: 4 } } },
+      { stat: { atk: 9 }, keywords: { "Vol": { cost: 5 } } },
+    );
+    expect(fusion.stat).toEqual({ atk: 9, def: 2 });   // def survit
+    expect(fusion.budgetBase).toBe(11);                 // non mentionné, gardé
+    expect(fusion.keywords).toEqual({ "Provocation": { cost: 4 }, "Vol": { cost: 5 } });
+  });
+
+  it("fusionne DANS une capacité : cost et costPerX peuvent venir de deux barèmes", () => {
+    // Le piège d'un `...` naïf : l'entrée entrante remplacerait l'objet complet
+    // et emporterait le costPerX que l'autre barème était seul à porter.
+    const fusion = mergeBalanceOverrides(
+      { keywords: { "Provocation": { costPerX: 2 } } },
+      { keywords: { "Provocation": { cost: 6 } } },
+    );
+    expect(fusion.keywords?.["Provocation"]).toEqual({ costPerX: 2, cost: 6 });
+  });
+
+  it("laisse un barème vide intact des deux côtés", () => {
+    expect(mergeBalanceOverrides({}, {})).toEqual({});
+    expect(mergeBalanceOverrides({}, { budgetBase: 12 })).toEqual({ budgetBase: 12 });
+  });
+});
+
+describe("reprise du navigateur", () => {
+  const CLE = "am.balance.overrides.v1";
+  const faireStockage = (contenu: Record<string, string>) => ({
+    getItem: (k: string) => contenu[k] ?? null,
+    setItem: (k: string, v: string) => { contenu[k] = v; },
+    removeItem: (k: string) => { delete contenu[k]; },
+  });
+
+  it("relit le barème laissé par l'ancienne version, assaini", () => {
+    vi.stubGlobal("window", {
+      localStorage: faireStockage({
+        [CLE]: JSON.stringify({ stat: { atk: 7 }, "Capacité Fantôme": { cost: 1 } }),
+      }),
+    });
+    expect(loadBrowserOverrides()).toEqual({ stat: { atk: 7 } });
     vi.unstubAllGlobals();
   });
 
-  it("EFFACE l'entrée quand plus rien ne s'écarte de l'origine", () => {
-    // Sinon un barème « rétabli » laisserait une entrée morte que la prochaine
-    // session relirait comme une surcharge.
-    vi.stubGlobal("window", { localStorage: faux });
-    saveBalanceOverrides({ stat: { atk: 7 } });
-    saveBalanceOverrides({ stat: { atk: balanceDefaults().stat.atk } });
-    expect(loadBalanceOverrides()).toEqual({});
+  it("OUBLIE le barème local une fois repris", () => {
+    // Sans effacement, la proposition de reprise reviendrait à chaque ouverture
+    // de l'onglet, alors que les valeurs sont déjà en base.
+    const contenu: Record<string, string> = { [CLE]: JSON.stringify({ stat: { atk: 7 } }) };
+    vi.stubGlobal("window", { localStorage: faireStockage(contenu) });
+    clearBrowserOverrides();
+    expect(loadBrowserOverrides()).toEqual({});
     vi.unstubAllGlobals();
   });
 
   it("rend un barème VIDE si le stockage est illisible", () => {
     vi.stubGlobal("window", { localStorage: { getItem: () => "{ pas du json" } });
-    expect(loadBalanceOverrides()).toEqual({});
+    expect(loadBrowserOverrides()).toEqual({});
     vi.unstubAllGlobals();
   });
 
   it("ne fait rien côté serveur, où window n'existe pas", () => {
-    expect(loadBalanceOverrides()).toEqual({});
-    expect(() => saveBalanceOverrides({ stat: { atk: 7 } })).not.toThrow();
+    expect(loadBrowserOverrides()).toEqual({});
+    expect(() => clearBrowserOverrides()).not.toThrow();
   });
 });
