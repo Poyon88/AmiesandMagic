@@ -10,6 +10,7 @@ import { ABILITIES, creatureEngineId, getCapabilityTriggers, XY_ABILITY_IDS } fr
 import { xNumeral, keywordModeColor, KEYWORD_LABELS, KEYWORD_SYMBOLS, applyKeywordValueToLabel } from "./keyword-labels";
 import type { Capability, CapabilityTrigger, ComposedEffect, Keyword, KeywordMode, TargetSpec, TokenTemplate } from "./types";
 import { LOW_HP_TRIGGER_THRESHOLD } from "./constants";
+import { getClanName, getFactionDisplayName, getRaceName } from "@/lib/card-engine/constants";
 import { triggerBadge, type TriggerBadge } from "./keyword-display";
 import type { SafeT } from "@/i18n/config";
 
@@ -372,15 +373,26 @@ function describeGrantTrigger(eff: ComposedEffect, t?: SafeT): string {
 
 /** Restriction de pool d'une Sélection composée, en fragment accolable au
  *  contenu (« de race Hommes-Bêtes portant Traque »). "" si aucun filtre.
- *  Race / faction / clan sont des libellés de données (déjà en FR canonique,
- *  comme l'appartenance d'un TargetSpec) ; seul le mot-clé est localisé. */
+ *  Tous les libellés passent par leur helper d'affichage. Pour la FACTION c'est
+ *  indispensable et non cosmétique : son id reste stable en code et en base
+ *  (« Elfes ») mais n'est pas ce que le joueur lit (« L'Alliance Céleste »).
+ *  Race et clan ont un id identique à leur libellé FR — rien ne bouge en
+ *  français, les autres langues cessent de recevoir la valeur brute. */
 function describePoolFilter(eff: ComposedEffect, t?: SafeT): string {
   const p = eff.pool;
   if (!p) return "";
   const parts: string[] = [];
-  if (p.race) parts.push(frag(t, "pool.race", { v: p.race }));
-  if (p.faction) parts.push(frag(t, "pool.faction", { v: p.faction }));
-  if (p.clan) parts.push(frag(t, "pool.clan", { v: p.clan }));
+  // La FACTION passe par son nom d'affichage, et c'est le point : son id reste
+  // stable en code et en base (« Elfes ») mais n'est PAS ce que le joueur lit
+  // (« L'Alliance Céleste »). La carte annonçait donc « de la faction Elfes »
+  // juste au-dessus de son propre bandeau « L'Alliance Céleste ».
+  //
+  // Race et clan y passent aussi : leur id EST leur libellé en français, donc
+  // rien ne change en FR, mais les sept autres langues cessent de recevoir la
+  // valeur brute là où un `vocab.races.*` / `vocab.clans.*` existe.
+  if (p.race) parts.push(frag(t, "pool.race", { v: getRaceName(p.race, t) }));
+  if (p.faction) parts.push(frag(t, "pool.faction", { v: getFactionDisplayName(p.faction, t) }));
+  if (p.clan) parts.push(frag(t, "pool.clan", { v: getClanName(p.clan, t) }));
   if (p.keywordId) {
     const id = p.keywordId;
     const a = ABILITIES[id] ?? Object.values(ABILITIES).find((d) => creatureEngineId(d) === id);
@@ -512,7 +524,15 @@ function describeTarget(t: TargetSpec | undefined, tr?: SafeT, direct = false): 
     : frag(tr, `${p}.count_n`, { n: t.count });
   const sideTxt = sideAdj(tr, t.side, many);
   const memb = t.membership;
-  const mtxt = memb ? [...(memb.race ?? []), ...(memb.clan ?? []), ...(memb.faction ?? [])].join("/") : "";
+  // Même règle que le filtre de pool : la faction se lit par son nom
+  // d'affichage, pas par son id.
+  const mtxt = memb
+    ? [
+        ...(memb.race ?? []).map((v) => getRaceName(v, tr)),
+        ...(memb.clan ?? []).map((v) => getClanName(v, tr)),
+        ...(memb.faction ?? []).map((v) => getFactionDisplayName(v, tr)),
+      ].join("/")
+    : "";
   const locTxt = t.location === "hand" ? frag(tr, "target.loc_hand") : t.location === "deck" ? frag(tr, "target.loc_deck") : t.location === "graveyard" ? frag(tr, "target.loc_graveyard") : "";
   const desTxt = t.designation === "random" || t.designation === "scatter" ? frag(tr, "target.des_random")
     : t.designation === "automatic" ? (t.count !== "all" ? frag(tr, "target.des_automatic") : "")
@@ -534,7 +554,15 @@ function describeScatter(eff: ComposedEffect, t?: SafeT): string | null {
   const unit = eff.content === "deal_damage" ? frag(t, "scatter.unit_damage") : frag(t, "scatter.unit_heal");
   const side = sideAdj(t, tg.side, false);
   const memb = tg.membership;
-  const mtxt = memb ? [...(memb.race ?? []), ...(memb.clan ?? []), ...(memb.faction ?? [])].join("/") : "";
+  // Même règle que le filtre de pool : la faction se lit par son nom
+  // d'affichage, pas par son id. (Ici le traducteur s'appelle `t`.)
+  const mtxt = memb
+    ? [
+        ...(memb.race ?? []).map((v) => getRaceName(v, t)),
+        ...(memb.clan ?? []).map((v) => getClanName(v, t)),
+        ...(memb.faction ?? []).map((v) => getFactionDisplayName(v, t)),
+      ].join("/")
+    : "";
   const targetTxt = tg.entity === "both"
     ? frag(t, "scatter.target_both", { side })
     : frag(t, "scatter.target_unit", { side });

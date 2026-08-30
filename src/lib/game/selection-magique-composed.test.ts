@@ -58,9 +58,13 @@ describe("Sélection magique — description", () => {
     expect(describeComposedCap(cap())).not.toBe("selection_magique");
   });
 
-  it("reprend le filtre de pool dans le texte", () => {
+  it("reprend le filtre de pool dans le texte, sous le NOM de la faction", () => {
+    // « Nains » est l'id, stable en code et en base ; le joueur lit « Les Armées
+    // des Montagnes ». Imprimer l'id faisait dire à une carte « de la faction
+    // Nains » juste au-dessus de son propre bandeau de faction.
     const txt = describeComposedCap(cap({ pool: { faction: "Nains" } }));
-    expect(txt).toContain("Nains");
+    expect(txt).toContain("Les Armées des Montagnes");
+    expect(txt).not.toContain("faction Nains");
   });
 });
 
