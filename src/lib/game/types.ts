@@ -1137,6 +1137,15 @@ export interface Emblem {
   /** Poses cumulées du MÊME emblème. Un emblème composé à N piles se résout N
    *  fois ; un emblème de registre compte pour N exemplaires. */
   stacks: number;
+  /** Faction et alignement de la carte qui a POSÉ l'emblème.
+   *
+   *  Les contenus qui piochent dans la COLLECTION (Sélection, Sélection magique,
+   *  Renfort Royal, Invocation) construisent leur pool à partir de ces deux
+   *  champs. Un emblème n'a plus sa carte sous la main — c'était un sort, parti
+   *  au cimetière — et sa Sélection abandonnait donc en silence, faute de source.
+   *  On les fige à la pose, seul moment où la carte est encore là. */
+  sourceFaction?: string | null;
+  sourceAlignment?: string | null;
   /** Condition de DÉCLENCHEMENT permanente : l'emblème parle chaque fois que
    *  cet événement se produit chez SON PORTEUR (une de ses créatures attaque,
    *  meurt, revient en main, s'active, entre en jeu ; ou sa fin de tour ; ou son

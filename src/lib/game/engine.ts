@@ -1194,6 +1194,13 @@ function resolveComposedEffect(
      *  SORT est joué avec `source: null` (il n'a pas d'unité sur le plateau),
      *  d'où ce canal séparé. */
     sourceCard?: Card;
+    /** EMBLÈME : son rang dans `player.emblems`. Troisième provenance SANS
+     *  instance source, après le sort et le pouvoir de héros — et elle butait
+     *  sur la même garde. Sert à deux choses : autoriser la modale malgré
+     *  l'absence de source, et donner au déclencheur une identité stable, seule
+     *  dont on dispose quand la carte d'origine est au cimetière depuis
+     *  longtemps. */
+    emblemIndex?: number;
   },
 ): void {
   // Chant : le bonus ne vaut QUE pour les effets du sort lui-même. La garde sur
@@ -1388,7 +1395,7 @@ function resolveComposedEffect(
       // à arriver sans source ; le trigger n'a de toute façon besoin que du
       // contrôleur (cf. la branche `selectionType` d'applyOnePendingTrigger, qui
       // ne lit jamais sourceInstanceId).
-      const interactive = (!!source || opts?.trigger === "spell_resolution")
+      const interactive = (!!source || opts?.trigger === "spell_resolution" || opts?.emblemIndex != null)
         && owner.id === currentPlayerId
         && opts?.trigger !== "on_attack"
         && !opts?.noSuspend;
@@ -1400,7 +1407,9 @@ function resolveComposedEffect(
         // côté sort : deux Sélections d'une même carte doivent produire DEUX
         // déclencheurs distincts, donc deux modales successives.
         pendingTriggerSink.push({
-          id: `${source?.instanceId ?? `spell_${selCard.id}`}#${opts?.capUid ?? composed.content}`,
+          id: opts?.emblemIndex != null
+            ? `emblem_${opts.emblemIndex}#${composed.content}`
+            : `${source?.instanceId ?? `spell_${selCard.id}`}#${opts?.capUid ?? composed.content}`,
           controllerId: owner.id,
           sourceInstanceId: source?.instanceId ?? null,
           selectionType: composed.content,
@@ -2401,8 +2410,12 @@ function placeEmblemsForCard(
     // les cartes DÉJÀ enregistrées avec la cadence morte : elles se remettent à
     // parler sans qu'il faille les rouvrir.
     const quand = { trigger: isEmblemCadence(cap.trigger) ? cap.trigger : undefined };
+    // Provenance figée à la pose : c'est le dernier instant où la carte est
+    // encore là. Sans elle, une Sélection portée par un emblème abandonne en
+    // silence (cf. `selCard` dans resolveComposedEffect).
+    const provenance = { sourceFaction: card.faction ?? null, sourceAlignment: card.card_alignment ?? null };
     if (cap.composed) {
-      placeEmblem(cible, { composed: cap.composed, stacks: 1, ...quand, ...duree, sourceCardId: card.id, sourceName: card.name });
+      placeEmblem(cible, { composed: cap.composed, stacks: 1, ...quand, ...duree, ...provenance, sourceCardId: card.id, sourceName: card.name });
       continue;
     }
     // `params` n'est garni que s'il porte quelque chose : un objet de champs
@@ -3139,9 +3152,33 @@ function advanceEndOfTurn(newState: GameState): GameState {
         }
         continue; // aucune cible éligible → no-op
       }
+      // `sourceCard` et `emblemIndex` : sans eux, une Sélection portée par un
+      // emblème abandonnait en silence (source absente → `selCard` indéfini),
+      // et, ce mur franchi, retombait sur le tirage aléatoire faute d'être
+      // reconnue comme provenance interactive. Même défaut, et même correctif,
+      // que pour les sorts — troisième provenance sans instance source.
+      const avant = pendingTriggerSink.length;
       withComposedMode("end_of_turn", () =>
         resolveComposedEffect(emblem.composed!, null, outgoing, opponent, undefined, false,
-          { trigger: "on_end_of_turn" }));
+          {
+            trigger: "on_end_of_turn",
+            emblemIndex: step.emblemIndex!,
+            sourceCard: {
+              faction: emblem.sourceFaction ?? null,
+              card_alignment: emblem.sourceAlignment ?? null,
+              id: emblem.sourceCardId ?? -1,
+            } as Card,
+          }));
+      // La Sélection ne SUSPEND pas d'elle-même : elle dépose son déclencheur
+      // dans le puits et rend la main. Sans cette pause, la file continuait de
+      // se vider et le tour basculait par-dessus une modale jamais montrée.
+      // Les cibles « au choix » plus haut, elles, mettent la pause elles-mêmes —
+      // d'où ce second point de suspension, pour les contenus qui puisent dans
+      // la COLLECTION et n'ont donc pas de TargetSpec.
+      if (pendingTriggerSink.length > avant) {
+        newState.endTurnPending = true;
+        return newState; // PAUSE
+      }
       continue;
     }
 
