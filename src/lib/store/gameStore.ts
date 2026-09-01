@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { GameState, GameAction, Card, CardInstance, DamageEvent, DeathFxEvent, HeroDefinition, KeywordMode, PlayerState, SpellTargetSlot, TokenTemplate } from "@/lib/game/types";
+import type { Capability, GameState, GameAction, Card, CardInstance, DamageEvent, DeathFxEvent, HeroDefinition, KeywordMode, PlayerState, SpellTargetSlot, TokenTemplate } from "@/lib/game/types";
 import { useAudioStore } from "./audioStore";
 import SfxEngine from "@/lib/audio/SfxEngine";
 import { playAttackLunge } from "@/lib/game/animations";
@@ -189,7 +189,15 @@ function pendingTriggerOverlay(
   }
   // Variante « fin de tour » (effet composé) vs mot-clé curé différé
   // (Remontée, Impact, et tous les curés ciblés du chantier multi-déclencheurs).
-  const isEndOfTurn = !!t.capUid;
+  // Un choix de fin de tour a DEUX provenances : une capacité composée portée
+  // par une créature (`capUid`), ou un EMBLÈME (`emblemIndex`). L'emblème n'a ni
+  // capUid ni kw — sa source est partie, c'est ce qui le définit — si bien que
+  // le seul test de `capUid` renvoyait `none` pour tout emblème « au choix » :
+  // le moteur suspendait bien le tour (endTurnPending, cf. advanceEndOfTurn)
+  // mais aucun sélecteur ne s'ouvrait, et le joueur restait devant un tour figé
+  // jusqu'au repli automatique du chrono.
+  const isEmblem = t.emblemIndex != null;
+  const isEndOfTurn = !!t.capUid || isEmblem;
   if (!isEndOfTurn && !t.kw) return none;
   const controller = gs!.players.find(p => p.id === t.controllerId);
   const other = gs!.players.find(p => p.id !== t.controllerId);
@@ -213,20 +221,31 @@ function pendingTriggerOverlay(
     mimique: "🪞 Mimique — choisissez l'unité dont copier les capacités",
     metamorphose: "🦎 Métamorphose — choisissez l'unité à copier entièrement",
   };
+  // Capacité composée à l'origine du choix, quelle que soit sa provenance. Un
+  // `Emblem` n'est pas une `Capability`, mais composedChoicePrompt/composedIcon
+  // ne lisent que `.composed` : une enveloppe minimale suffit, et évite de
+  // dupliquer un second rendu de libellé pour les emblèmes.
+  const capEnCours: Capability | undefined = !isEndOfTurn ? undefined
+    : isEmblem
+      ? (() => {
+        const composed = (controller.emblems ?? [])[t.emblemIndex!]?.composed;
+        return composed
+          ? { uid: "", trigger: "on_end_of_turn", effectKind: "emblem", abilityId: "_composed", composed } as Capability
+          : undefined;
+      })()
+      : (() => {
+        const source = controller.board.find(c => c.instanceId === t.sourceInstanceId);
+        return source ? getCapabilities(source.card).find(c => c.uid === t.capUid && c.composed) : undefined;
+      })();
+
   let prompt = (t.kw && KW_PROMPTS[t.kw]) || "🎯 Choisissez une cible";
-  if (isEndOfTurn) {
-    const source = controller.board.find(c => c.instanceId === t.sourceInstanceId);
-    const cap = source ? getCapabilities(source.card).find(c => c.uid === t.capUid && c.composed) : undefined;
-    prompt = cap ? composedChoicePrompt(cap) : "🎯 Choisissez une cible";
-  }
+  if (isEndOfTurn) prompt = capEnCours ? composedChoicePrompt(capEnCours) : "🎯 Choisissez une cible";
   // Nombre de cibles à désigner. `count` du TargetSpec, écrêté au nombre de
   // cibles réellement disponibles — sinon un effet « 4 cartes » sur un cimetière
   // qui n'en compte que 2 attendrait indéfiniment un 3e clic impossible.
   let needed = 1;
   if (isEndOfTurn) {
-    const source = controller.board.find(c => c.instanceId === t.sourceInstanceId);
-    const cap = source ? getCapabilities(source.card).find(c => c.uid === t.capUid && c.composed) : undefined;
-    const count = cap?.composed?.target?.count;
+    const count = capEnCours?.composed?.target?.count;
     if (count === "all") needed = targets.length;
     else if (typeof count === "number") needed = Math.max(1, count);
   }

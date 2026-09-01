@@ -3279,7 +3279,13 @@ function triggerIsResolvable(state: GameState, trigger: import("./types").Pendin
     ]);
     return (trigger.selectionOptionIds ?? []).some(id => ids.has(id));
   }
-  if (trigger.capUid) return endOfTurnTriggerTargets(state, trigger).length > 0;
+  // `emblemIndex` autant que `capUid` : un EMBLÈME « au choix » de fin de tour
+  // ne porte ni l'un ni l'autre des autres marqueurs (pas de capUid, pas de kw,
+  // pas de source en jeu). Sans ce test il tombait dans le repli « rien à
+  // demander au joueur » plus bas et se faisait PURGER — l'effet disparaissait
+  // en silence, alors que `endOfTurnTriggerTargets` sait très bien lui bâtir un
+  // pool (cf. sa branche emblemIndex).
+  if (trigger.capUid || trigger.emblemIndex != null) return endOfTurnTriggerTargets(state, trigger).length > 0;
   if (trigger.kw) {
     const controller = state.players.find(p => p.id === trigger.controllerId);
     const other = state.players.find(p => p.id !== trigger.controllerId);
@@ -9213,7 +9219,11 @@ export function autoResolvePendingTriggers(state: GameState): GameState {
       if (trigger.selectionType) {
         const opts = trigger.selectionOptionIds ?? [];
         if (opts.length > 0) choice = { selectionCardId: opts[Math.floor(rng() * opts.length)] };
-      } else if (trigger.capUid) {
+      } else if (trigger.capUid || trigger.emblemIndex != null) {
+        // Même pool pour les deux provenances. Un emblème laissé sans choix
+        // retombait sur `pool.slice(0, n)` dans selectComposedTargets, c'est-à-
+        // dire toujours la première unité du plateau : un repli AUTOMATIQUE
+        // déguisé en tirage, et une divergence potentielle avec le client.
         const targets = endOfTurnTriggerTargets(st, trigger);
         if (targets.length > 0) choice = { targetInstanceId: targets[Math.floor(rng() * targets.length)] };
       } else if (trigger.kw) {
