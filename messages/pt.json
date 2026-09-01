@@ -802,7 +802,8 @@
         "loc_graveyard": "do cemitério",
         "des_random": "aleatoriamente",
         "des_automatic": "automaticamente",
-        "des_choice": "à escolha"
+        "des_choice": "à escolha",
+        "max_cost": "de custo {n} ou menos"
       },
       "scatter": {
         "action_damage": "causa",
@@ -1874,6 +1875,8 @@
     "location_deck": "Deck",
     "location_graveyard": "Cemitério",
     "label_membership": "PERTENCIMENTO",
+    "label_max_cost": "CUSTO MÁX.",
+    "max_cost_any": "— Indiferente —",
     "label_designation": "DESIGNAÇÃO",
     "designation_choice": "À escolha",
     "designation_random": "Aleatório",

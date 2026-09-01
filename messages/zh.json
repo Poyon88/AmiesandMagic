@@ -802,7 +802,8 @@
         "loc_graveyard": "墓地中",
         "des_random": "随机",
         "des_automatic": "自动",
-        "des_choice": "自选"
+        "des_choice": "自选",
+        "max_cost": "费用{n}或更低的"
       },
       "scatter": {
         "action_damage": "造成",
@@ -1874,6 +1875,8 @@
     "location_deck": "牌库",
     "location_graveyard": "墓地",
     "label_membership": "归属",
+    "label_max_cost": "最高费用",
+    "max_cost_any": "— 不限 —",
     "label_designation": "指定方式",
     "designation_choice": "自选",
     "designation_random": "随机",

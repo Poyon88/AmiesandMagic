@@ -160,6 +160,7 @@ export const COMPOSED_FR: Record<string, string> = {
   "target.des_random": "au hasard",
   "target.des_automatic": "automatiquement",
   "target.des_choice": "au choix",
+  "target.max_cost": "de coût {n} ou moins",
 
   "scatter.action_damage": "inflige",
   "scatter.action_heal": "rend",
@@ -537,7 +538,10 @@ function describeTarget(t: TargetSpec | undefined, tr?: SafeT, direct = false): 
   const desTxt = t.designation === "random" || t.designation === "scatter" ? frag(tr, "target.des_random")
     : t.designation === "automatic" ? (t.count !== "all" ? frag(tr, "target.des_automatic") : "")
     : (t.count !== "all" ? frag(tr, "target.des_choice") : "");
-  return [count, sideTxt, mtxt && `(${mtxt})`, locTxt, desTxt].filter(Boolean).join(" ");
+  // Un plafond de 0 se lit « de coût 0 ou moins » : il doit s'écrire comme les
+  // autres, d'où le test sur `undefined` (cf. TargetSpec.maxCost).
+  const costTxt = t.maxCost != null ? frag(tr, "target.max_cost", { n: t.maxCost }) : "";
+  return [count, sideTxt, mtxt && `(${mtxt})`, costTxt, locTxt, desTxt].filter(Boolean).join(" ");
 }
 
 /** Répartition point par point (designation "scatter") : décrit les X points
@@ -566,7 +570,8 @@ function describeScatter(eff: ComposedEffect, t?: SafeT): string | null {
   const targetTxt = tg.entity === "both"
     ? frag(t, "scatter.target_both", { side })
     : frag(t, "scatter.target_unit", { side });
-  return [`${action} ${frag(t, "scatter.times", { x: xAff, unit })}`, targetTxt, mtxt && `(${mtxt})`].filter(Boolean).join(" ");
+  const costTxt = tg.maxCost != null ? frag(t, "target.max_cost", { n: tg.maxCost }) : "";
+  return [`${action} ${frag(t, "scatter.times", { x: xAff, unit })}`, targetTxt, mtxt && `(${mtxt})`, costTxt].filter(Boolean).join(" ");
 }
 
 /** En-tête d'un EMBLÈME : ce qu'il est, chez qui il est rangé, combien de temps

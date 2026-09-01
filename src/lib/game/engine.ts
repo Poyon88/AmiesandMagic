@@ -937,6 +937,13 @@ function composedTargetPool(
       (!!m.race?.length && m.race.includes(c.card.race ?? "")) ||
       (!!m.clan?.length && m.clan.includes(c.card.clan ?? "")));
   }
+  // Plafond de COÛT, cumulatif avec l'appartenance (ET logique). Testé sur
+  // `undefined` et non sur la fausseté : `maxCost: 0` est un filtre légitime
+  // (« seulement les jetons à coût nul »), qu'un `if (spec.maxCost)` jetterait.
+  if (spec.maxCost != null) {
+    const plafond = spec.maxCost;
+    pool = pool.filter((c) => (c.card.mana_cost ?? 0) <= plafond);
+  }
   return pool;
 }
 
@@ -11017,6 +11024,39 @@ export function creatureTargetsIncinerationCamp(card: Card): boolean {
   return card.card_type === "creature" && cardHasKwOnPlay(card, "incineration");
 }
 
+/** Restreint les cibles d'un créneau `${uid}#${i}` (effet COMPOSÉ porté par un
+ *  sort) au pool réellement accepté par la résolution.
+ *
+ *  `composedSlotType` ne sait traduire un `TargetSpec` qu'en type de créneau
+ *  grossier (« créature ennemie »…) : les filtres du bloc CIBLES — appartenance
+ *  et plafond de coût — s'y perdaient. Le picker proposait donc des cibles que
+ *  `selectComposedTargets` refusait ensuite (il valide les ids désignés contre
+ *  son propre pool), et l'effet fizzlait EN SILENCE au clic. C'est ce désaccord
+ *  picker/moteur que cette fonction ferme, comme `getComposedGraveyardTargets`
+ *  le fait déjà pour le plafond de coût d'une Exhumation.
+ *
+ *  Sans filtre déclaré, on rend la liste telle quelle : aucun créneau non
+ *  restreint ne change de comportement. */
+function restreindreCreneauCompose(
+  state: GameState,
+  card: Card,
+  slot: SpellTargetSlot,
+  base: string[],
+): string[] {
+  const m = /^(.+)#\d+$/.exec(slot.slot);
+  if (!m) return base;
+  const t = getCapabilities(card).find((c) => c.uid === m[1] && c.composed)?.composed?.target;
+  if (!t) return base;
+  const memb = t.membership;
+  const restreint = t.maxCost != null
+    || !!(memb && (memb.faction?.length || memb.race?.length || memb.clan?.length));
+  if (!restreint) return base;
+  const player = state.players[state.currentPlayerIndex];
+  const opponent = state.players[state.currentPlayerIndex === 0 ? 1 : 0];
+  const admis = new Set(composedChoiceTargetIds(t, player, opponent, true));
+  return base.filter((id) => admis.has(id));
+}
+
 /** Cibles valides d'un CRÉNEAU de sort.
  *
  *  Identique à `getSpellTargets` pour le type du créneau, PLUS les cartes des
@@ -11025,7 +11065,7 @@ export function creatureTargetsIncinerationCamp(card: Card): boolean {
  *  naturel (cf. `incinerationVictim`, qui en déduit le camp). Les héros et les
  *  unités restent proposés — les deux gestes mènent au même résultat. */
 export function getSpellSlotTargets(state: GameState, card: Card, slot: SpellTargetSlot): string[] {
-  const base = getSpellTargets(state, card, slot.type);
+  const base = restreindreCreneauCompose(state, card, slot, getSpellTargets(state, card, slot.type));
   if (!isIncinerationSlot(card, slot)) return base;
   const player = state.players[state.currentPlayerIndex];
   const opponent = state.players[state.currentPlayerIndex === 0 ? 1 : 0];

@@ -508,8 +508,9 @@ export type ComposedEffectContent =
   | "selection_magique"
   | "renfort_royal";
 
-/** Spécification de cibles d'un effet composé. Les filtres par caractéristiques
- *  (coût/ATK/déf/rareté) et par capacités possédées sont prévus pour la v2. */
+/** Spécification de cibles d'un effet composé. Le filtre de COÛT est en place
+ *  (`maxCost`) ; les filtres par ATK/déf/rareté et par capacités possédées
+ *  restent prévus pour la v2. */
 export interface TargetSpec {
   /** Type de cible. "hero" = le héros du bord visé ; "both" = héros + unités ;
    *  "self" = la créature source elle-même (déterministe : ni bord, ni nombre,
@@ -521,6 +522,19 @@ export interface TargetSpec {
   side: "ally" | "enemy" | "any";
   /** Appartenance (choix multiples possibles, OU logique entre listes). */
   membership?: { faction?: string[]; race?: string[]; clan?: string[] };
+  /** Coût maximum de la carte visée : ne gardent le pool que les cartes dont le
+   *  `mana_cost` IMPRIMÉ est ≤ à cette valeur. Cumulatif avec `membership` (ET
+   *  logique), et sans effet sur les héros — un héros n'a pas de coût.
+   *
+   *  Coût IMPRIMÉ et non coût payé : une fois en jeu, une unité n'a plus de coût
+   *  courant (les remises de Concentration/Tempo vivent sur l'instance au moment
+   *  où on la joue, pas après). C'est aussi le coût que lit déjà le plafond
+   *  d'Exhumation, donc la même notion partout.
+   *
+   *  Absent ⇒ aucun plafond. `0` est une valeur LÉGITIME (ne garder que les
+   *  jetons à coût nul) : la distinction se fait sur `undefined`, jamais sur la
+   *  fausseté du nombre. */
+  maxCost?: number;
   /** Zone où chercher les cibles. */
   location: "board" | "hand" | "deck" | "graveyard";
   /** Désignation :

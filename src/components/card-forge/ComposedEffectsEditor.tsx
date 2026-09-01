@@ -16,6 +16,7 @@ import { DEFAULT_EMBLEM_CADENCE, isEmblemCadence, isTokenFiringTrigger } from "@
 import { ALL_SPELL_KEYWORDS, SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
 import { buildSpellEffectCatalog, instantiatePreset } from "@/lib/card-forge/spell-effect-catalog";
 import { FACTIONS, getFactionDisplayName } from "@/lib/card-engine/constants";
+import { MAX_MANA } from "@/lib/game/constants";
 import type { Capability, ComposedEffect, ComposedEffectContent, ComposedPoolFilter, CapabilityTrigger, SpellKeywordId, SpellKeywordInstance, TargetSpec, TokenTemplate } from "@/lib/game/types";
 
 const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" | "unit" | "unit_or_hero"; xy?: boolean }[] = [
@@ -118,6 +119,12 @@ function defaultGrantTrigger(abilityId: string): CapabilityTrigger | undefined {
 }
 
 const DEFAULT_TARGET: TargetSpec = { entity: "unit", count: 1, side: "enemy", location: "board", designation: "choice" };
+
+/** Valeurs proposées au plafond de coût des cibles : jusqu'au mana maximum d'un
+ *  tour (`MAX_MANA`), la borne au-delà de laquelle le filtre ne retirerait plus
+ *  rien. Dérivé de la constante plutôt que écrit en dur — deux listes qui disent
+ *  la même chose finissent toujours par diverger. */
+const MAX_COST_OPTIONS = Array.from({ length: MAX_MANA + 1 }, (_, n) => n);
 
 const cardBorder = "1px solid #e3d9c0";
 const labelStyle = { fontSize: 8, color: "#999", letterSpacing: 1, fontWeight: 700 } as const;
@@ -631,6 +638,16 @@ export default function ComposedEffectsEditor({
                         clan={t.membership?.clan?.[0] ?? ""}
                         onChange={(r, c) => patchTarget(idx, { membership: (r || c) ? { ...(r ? { race: [r] } : {}), ...(c ? { clan: [c] } : {}) } : undefined })}
                       />
+
+                      {/* Plafond de coût, cumulatif avec l'appartenance. L'option
+                          vide vaut « aucun plafond » et se distingue de 0, qui est
+                          un filtre réel (les seules cartes à coût nul). */}
+                      <span style={labelStyle}>{tr('label_max_cost')}</span>
+                      {sel(
+                        t.maxCost != null ? String(t.maxCost) : "",
+                        [{ v: "", l: tr('max_cost_any') }, ...MAX_COST_OPTIONS.map((n) => ({ v: String(n), l: `≤ ${n}` }))],
+                        (v) => patchTarget(idx, { maxCost: v === "" ? undefined : Number(v) }),
+                      )}
 
                       <span style={labelStyle}>{tr('label_designation')}</span>
                       {sel(

@@ -802,7 +802,8 @@
         "loc_graveyard": "from the graveyard",
         "des_random": "at random",
         "des_automatic": "automatically",
-        "des_choice": "of your choice"
+        "des_choice": "of your choice",
+        "max_cost": "costing {n} or less"
       },
       "scatter": {
         "action_damage": "deals",
@@ -1874,6 +1875,8 @@
     "location_deck": "Deck",
     "location_graveyard": "Graveyard",
     "label_membership": "MEMBERSHIP",
+    "label_max_cost": "MAX COST",
+    "max_cost_any": "— Any —",
     "label_designation": "DESIGNATION",
     "designation_choice": "Player's choice",
     "designation_random": "Random",

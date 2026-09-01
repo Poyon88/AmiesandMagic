@@ -802,7 +802,8 @@
         "loc_graveyard": "del cementerio",
         "des_random": "al azar",
         "des_automatic": "automáticamente",
-        "des_choice": "a elegir"
+        "des_choice": "a elegir",
+        "max_cost": "de coste {n} o menos"
       },
       "scatter": {
         "action_damage": "inflige",
@@ -1874,6 +1875,8 @@
     "location_deck": "Mazo",
     "location_graveyard": "Cementerio",
     "label_membership": "PERTENENCIA",
+    "label_max_cost": "COSTE MÁX.",
+    "max_cost_any": "— Indiferente —",
     "label_designation": "DESIGNACIÓN",
     "designation_choice": "A elegir",
     "designation_random": "Al azar",

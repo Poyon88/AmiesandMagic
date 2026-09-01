@@ -802,7 +802,8 @@
         "loc_graveyard": "aus dem Friedhof",
         "des_random": "zufällig",
         "des_automatic": "automatisch",
-        "des_choice": "nach Wahl"
+        "des_choice": "nach Wahl",
+        "max_cost": "mit Kosten {n} oder weniger"
       },
       "scatter": {
         "action_damage": "verursacht",
@@ -1874,6 +1875,8 @@
     "location_deck": "Deck",
     "location_graveyard": "Friedhof",
     "label_membership": "ZUGEHÖRIGKEIT",
+    "label_max_cost": "MAX. KOSTEN",
+    "max_cost_any": "— Beliebig —",
     "label_designation": "AUSWAHL",
     "designation_choice": "Nach Wahl",
     "designation_random": "Zufällig",

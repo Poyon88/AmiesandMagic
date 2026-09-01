@@ -802,7 +802,8 @@
         "loc_graveyard": "墓地の",
         "des_random": "ランダムに",
         "des_automatic": "自動的に",
-        "des_choice": "任意に"
+        "des_choice": "任意に",
+        "max_cost": "コスト{n}以下の"
       },
       "scatter": {
         "action_damage": "与える",
@@ -1874,6 +1875,8 @@
     "location_deck": "デッキ",
     "location_graveyard": "墓地",
     "label_membership": "所属",
+    "label_max_cost": "最大コスト",
+    "max_cost_any": "— 指定なし —",
     "label_designation": "指定",
     "designation_choice": "任意選択",
     "designation_random": "ランダム",
