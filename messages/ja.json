@@ -2281,6 +2281,8 @@
     "graveyard_select_prompt": "墓地からカードを選んでください",
     "graveyard_hint_touch": "カードをタップして拡大・もう一度タップで説明表示",
     "graveyard_hint_hover": "カードにカーソルを合わせて拡大・右クリックでイラスト／説明を切替",
+    "seconde_vie_hint": "セカンドライフ：対象のクリーチャーをダブルクリックしてください。",
+    "seconde_vie_blocked_turn": "あなたのターンではありません。",
     "graveyard_empty": "墓地にカードはありません",
     "cost_default_card_name": "カード",
     "cost_pay_title": "{name} のコストを支払う",

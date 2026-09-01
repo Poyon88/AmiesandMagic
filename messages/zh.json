@@ -2281,6 +2281,8 @@
     "graveyard_select_prompt": "从墓地选择一张牌",
     "graveyard_hint_touch": "点击卡牌放大 · 再次点击查看描述",
     "graveyard_hint_hover": "悬停卡牌放大 · 右键切换图片／描述",
+    "seconde_vie_hint": "第二生命：双击符合条件的随从。",
+    "seconde_vie_blocked_turn": "现在不是你的回合。",
     "graveyard_empty": "墓地中没有卡牌",
     "cost_default_card_name": "卡牌",
     "cost_pay_title": "支付 {name} 的费用",

@@ -2281,6 +2281,8 @@
     "graveyard_select_prompt": "Choose a card from the graveyard",
     "graveyard_hint_touch": "Tap a card to zoom · tap again to view description",
     "graveyard_hint_hover": "Hover over a card to zoom · right-click to toggle image / description",
+    "seconde_vie_hint": "Second Life: double-click an eligible creature.",
+    "seconde_vie_blocked_turn": "It is not your turn.",
     "graveyard_empty": "No cards in the graveyard",
     "cost_default_card_name": "card",
     "cost_pay_title": "Pay the costs of {name}",

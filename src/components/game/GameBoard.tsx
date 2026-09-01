@@ -760,6 +760,21 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
         .map((c) => c.instanceId)
     : [];
 
+  // Pourquoi une Seconde vie n'est-elle pas jouable ? Le filtre ci-dessus est
+  // muet : une créature inéligible s'affiche comme les autres et le double-clic
+  // ne fait rien. On formule donc la raison, en ne parlant QUE si le cimetière
+  // contient au moins une créature à Seconde vie — sinon il n'y a rien à dire.
+  const secondeVieNotice = (() => {
+    const candidates = myPlayer.graveyard.filter(
+      (c) => c.card.card_type === "creature" && c.card.keywords.includes("seconde_vie"),
+    );
+    if (candidates.length === 0) return null;
+    if (secondeViePlayableIds.length > 0) return t("seconde_vie_hint");
+    if (!myTurn) return t("seconde_vie_blocked_turn");
+    if (myPlayer.board.length >= MAX_BOARD_SIZE) return t("eveil_blocked_board_plein");
+    return t("eveil_blocked_mana");
+  })();
+
   // « (2/3) » quand une carte enchaîne PLUSIEURS choix de cimetière (ex. les
   // trois Exhumations de Légion des Damnés). Sans ce repère, les pickers
   // successifs sont indiscernables et on croit avoir mal cliqué. Muet sur un
@@ -1672,6 +1687,11 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
                 }
               : graveyardView === "my" ? handlePlayFromGraveyard : undefined
           }
+          // Seule la Seconde vie JOUE une carte : elle exige donc le double-clic,
+          // comme en main. L'Incinération, elle, DÉSIGNE un camp et reste au
+          // simple clic.
+          selectOnDoubleClick={!incinerationSlotActive && graveyardView === "my"}
+          notice={!incinerationSlotActive && graveyardView === "my" ? secondeVieNotice : null}
         />
       )}
       {/* Déclencheur en attente dont les cibles vivent dans un CIMETIÈRE (ex.

@@ -31,6 +31,24 @@ interface GraveyardOverlayProps {
    *  candidates encore libres. */
   highlightedInstanceIds?: string[];
   onSelectCard?: (instanceId: string) => void;
+  /** JOUER une carte depuis le cimetière (Seconde vie) exige un DOUBLE-clic,
+   *  comme en main : c'est un déclenchement irréversible, pas une désignation.
+   *
+   *  Sans ça, le double-clic auquel le joueur est désormais habitué lançait
+   *  DEUX poses. Les deux séquences d'animation se chevauchaient et le dernier
+   *  instantané programmé pouvait être un état intermédiaire de la première —
+   *  coût payé, créature pas encore posée.
+   *
+   *  Les autres usages de cette modale (Incinération, déclencheur en attente,
+   *  Remontée) restent au simple clic : ils DÉSIGNENT une cible. */
+  selectOnDoubleClick?: boolean;
+  /** Ligne d'explication affichée sous le titre : soit le geste attendu, soit la
+   *  RAISON pour laquelle rien n'est jouable ici.
+   *
+   *  Sans elle, une Seconde vie inéligible se présentait exactement comme une
+   *  Seconde vie éligible, et le double-clic ne faisait rien — un refus
+   *  totalement muet, impossible à distinguer d'une panne. */
+  notice?: string | null;
 }
 
 export default function GraveyardOverlay({
@@ -40,6 +58,8 @@ export default function GraveyardOverlay({
   selectableInstanceIds,
   highlightedInstanceIds,
   onSelectCard,
+  selectOnDoubleClick: exigeDoubleClic = false,
+  notice,
 }: GraveyardOverlayProps) {
   const t = useTranslations("game");
   // Mode sélection : il faut des ids sélectionnables qui désignent réellement une
@@ -52,6 +72,9 @@ export default function GraveyardOverlay({
   // Touch devices have neither hover (to open the preview) nor right-click (to
   // flip to the description). On a coarse pointer we drive everything from tap.
   const coarse = useCoarsePointer();
+  // Le double-clic n'a pas de sens sur un écran tactile : l'exiger y rendrait la
+  // Seconde vie injouable. Le tap y reste donc le geste, comme avant.
+  const selectOnDoubleClick = exigeDoubleClic && !coarse;
 
   // Hovered card → drives the floating preview. The preview is rendered in
   // position: fixed at viewport scope so the modal's overflow-y-auto doesn't
@@ -117,6 +140,13 @@ export default function GraveyardOverlay({
           </div>
         )}
 
+        {/* Explication du mode Seconde vie (geste attendu, ou raison du refus). */}
+        {notice && (
+          <div className="px-4 pt-3 text-xs text-center text-am-gold/80">
+            {notice}
+          </div>
+        )}
+
         {/* Hint — adapt to the input modality (skip in selection mode). */}
         {!isSelectionMode && cards.length > 0 && (
           <div className="px-4 pt-3 text-xs text-foreground/40 text-center">
@@ -148,14 +178,21 @@ export default function GraveyardOverlay({
                       // image side (less surprising than a sticky toggle).
                       setDetailsForId((curr) => (curr === id ? null : curr));
                     }}
+                    onDoubleClick={(e) => {
+                      e.stopPropagation();
+                      if (selectOnDoubleClick && isSelectable && onSelectCard) onSelectCard(id);
+                    }}
                     onClick={(e) => {
                       // Ne pas laisser le panneau refermer l'aperçu que ce tap
                       // vient d'ouvrir.
                       e.stopPropagation();
-                      if (isSelectable && onSelectCard) {
+                      if (isSelectable && onSelectCard && !selectOnDoubleClick) {
                         onSelectCard(id);
                         return;
                       }
+                      // En mode double-clic, le simple clic ne fait rien de plus
+                      // que l'aperçu ci-dessous : il ne doit surtout pas jouer.
+                      if (isSelectable && selectOnDoubleClick) return;
                       // Touch: no hover/right-click, so tap cycles through
                       // image preview → description → closed for this card.
                       if (coarse && !isSelectionMode) {

@@ -2281,6 +2281,8 @@
     "graveyard_select_prompt": "Choisissez une carte du cimetière",
     "graveyard_hint_touch": "Touche une carte pour zoomer · touche encore pour voir la description",
     "graveyard_hint_hover": "Survole une carte pour zoomer · clic droit pour basculer image / description",
+    "seconde_vie_hint": "Seconde vie : double-cliquez une créature éligible.",
+    "seconde_vie_blocked_turn": "Ce n'est pas votre tour.",
     "graveyard_empty": "Aucune carte dans le cimetière",
     "cost_default_card_name": "carte",
     "cost_pay_title": "Payez les coûts de {name}",

@@ -2281,6 +2281,8 @@
     "graveyard_select_prompt": "Elige una carta del cementerio",
     "graveyard_hint_touch": "Toca una carta para ampliar · toca de nuevo para ver la descripción",
     "graveyard_hint_hover": "Pasa el cursor sobre una carta para ampliar · clic derecho para alternar imagen / descripción",
+    "seconde_vie_hint": "Segunda vida: haz doble clic en una criatura elegible.",
+    "seconde_vie_blocked_turn": "No es tu turno.",
     "graveyard_empty": "No hay cartas en el cementerio",
     "cost_default_card_name": "carta",
     "cost_pay_title": "Paga los costes de {name}",

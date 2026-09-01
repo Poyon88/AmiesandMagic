@@ -2281,6 +2281,8 @@
     "graveyard_select_prompt": "Wähle eine Karte aus dem Friedhof",
     "graveyard_hint_touch": "Karte antippen zum Zoomen · erneut tippen für die Beschreibung",
     "graveyard_hint_hover": "Karte überfahren zum Zoomen · Rechtsklick für Bild / Beschreibung",
+    "seconde_vie_hint": "Zweites Leben: Doppelklicke eine geeignete Kreatur.",
+    "seconde_vie_blocked_turn": "Du bist nicht am Zug.",
     "graveyard_empty": "Keine Karten im Friedhof",
     "cost_default_card_name": "Karte",
     "cost_pay_title": "Bezahle die Kosten von {name}",
