@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { Capability, GameState, GameAction, Card, CardInstance, DamageEvent, DeathFxEvent, HeroDefinition, KeywordMode, PlayerState, SpellTargetSlot, TokenTemplate } from "@/lib/game/types";
+import type { DeckPickerKeyword } from "@/lib/game/engine";
 import { useAudioStore } from "./audioStore";
 import SfxEngine from "@/lib/audio/SfxEngine";
 import { playAttackLunge } from "@/lib/game/animations";
@@ -28,10 +29,7 @@ import {
   getComposedTapTargets,
   creatureNeedsGraveyardTarget,
   getGraveyardTargets,
-  creatureNeedsDivination,
-  cardNeedsCreuser,
-  getCreuserCards,
-  cardNeedsPresage,
+  onPlayDeckPickers,
   PRESAGE_REVEAL_COUNT,
   creatureCanCastLearnedSpell,
   canSuspendToEveil,
@@ -86,6 +84,28 @@ function presagePickerState(
     [ordre[i], ordre[j]] = [ordre[j], ordre[i]];
   }
   return { divinationCards: ordre.map((i) => reelles[i]), deckPickerOrder: ordre };
+}
+
+/** Payload de modale pour UN mot-clé de deck, ou null si ce mot-clé n'a rien à
+ *  montrer (deck trop court).
+ *
+ *  `deck` est passé explicitement, et jamais relu depuis l'état : entre deux
+ *  maillons d'un enchaînement, le Repli a pu remettre des cartes sur le dessus
+ *  (cf. `deckApresRepli`) et c'est ce deck-là que le mot-clé suivant révélera. */
+function deckPickerState(
+  kw: DeckPickerKeyword,
+  deck: CardInstance[],
+  creuserX: number,
+): { divinationCards: CardInstance[]; deckPickerOrder: number[] | null } | null {
+  if (kw === "presage") return presagePickerState(deck);
+  // Creuser puise au FOND du deck, Divination sur le DESSUS. Même modale, même
+  // sens de lecture pour le joueur : la première carte montrée est celle que
+  // le moteur lira en premier.
+  const cartes = kw === "creuser"
+    ? (creuserX > 0 ? deck.slice(Math.max(0, deck.length - creuserX)) : [])
+    : deck.slice(0, Math.min(3, deck.length));
+  if (cartes.length === 0) return null;
+  return { divinationCards: cartes, deckPickerOrder: null };
 }
 
 /** Cadence des points SÉQUENTIELS, par type.
@@ -529,6 +549,18 @@ interface GameStore {
    *  pas une carte du deck. Porte l'instanceId de la créature qui apprend ;
    *  `null` = usage habituel (Divination, Creuser, Traque, Présage). */
   learnPickerFor: string | null;
+  /** À QUEL mot-clé de deck appartient la modale actuellement ouverte.
+   *
+   *  Quatre mécaniques partagent cette modale ; tant qu'une carte n'en portait
+   *  qu'une, savoir laquelle était inutile. Une carte qui en porte DEUX
+   *  (« Veilleuse des Étoiles » : Divination puis Présage) doit en revanche
+   *  ranger chaque réponse sous le bon mot-clé avant d'ouvrir la suivante.
+   *  `null` = modale ouverte pour autre chose (Traque du destin, Apprentissage),
+   *  qui n'entre pas dans l'enchaînement. */
+  deckPickerKeyword: DeckPickerKeyword | null;
+  /** Réponses déjà données pour la carte en cours de pose, par mot-clé. Vidé à
+   *  chaque nouvelle pose ; part dans l'action sous `deckChoiceIndices`. */
+  collectedDeckChoices: Partial<Record<DeckPickerKeyword, number>>;
   selectionCards: Card[];
   tactiqueAvailableKeywords: string[];
   tactiqueMaxSelections: number;
@@ -1412,31 +1444,65 @@ export const useGameStore = create<GameStore>((set, get) => {
     const player = gs.players[gs.currentPlayerIndex];
     const cardInst = carteJouable(player, instanceId);
     if (!cardInst || cardInst.card.card_type !== "spell") return false;
-    // PRÉSAGE sur un sort : même modale, mais alimentée par le DESSUS du deck
-    // et dans le désordre. Testé avant Creuser — un sort ne porte jamais les
-    // deux (le champ d'action unique ne saurait pas les départager).
-    if (cardNeedsPresage(cardInst.card)) {
-      const picker = presagePickerState(player.deck);
-      if (!picker) return false;
-      set({ targetingMode: "divination", ...picker, validTargets: [], collectedTargetMap: carriedMap });
+    // Les cibles déjà collectées voyagent avec la modale : un sort qui porte une
+    // cible ET un mot-clé de deck se résout dans cet ordre, et sans ce report la
+    // cible serait perdue (bug « Corde tendue »).
+    return openNextDeckPicker(gs, cardInst.card, instanceId, player.deck, { carriedMap });
+  };
+
+  /** X de Creuser — même calcul qu'à la résolution (amplification comprise),
+   *  sans quoi la modale montrerait un autre nombre de cartes que le moteur. */
+  const creuserXFor = (gs: GameState, card: Card): number => {
+    const base = card.card_type === "spell"
+      ? ((card.spell_keywords ?? []).find(kw => kw.id === "creuser")?.amount ?? 1)
+        + chantBonusForSpell(gs, card)
+      // Lune et Soleil valent sur les DEUX faces. La carte n'est pas encore
+      // jouée, donc le compteur n'est pas encore incrémenté : ce que ce picker
+      // calcule est exactement ce que la résolution appliquera.
+      : (parseXValuesFromEffectText(card.effect_text)["creuser"] ?? 1);
+    return base + tempoBonusForCard(gs, card);
+  };
+
+  /** Ouvre la PROCHAINE modale de deck de la carte, dans l'ORDRE D'AUTEUR (le
+   *  même que celui où le moteur résoudra), en sautant celles dont la réponse
+   *  est déjà collectée. Renvoie false quand il n'en reste plus : l'appelant
+   *  peut alors poursuivre son propre enchaînement, puis dispatcher.
+   *
+   *  Un seul point d'ouverture pour les trois mécaniques, là où trois blocs
+   *  recopiés testaient Présage avant Divination dans un ordre écrit en dur :
+   *  une carte portant les deux n'ouvrait donc jamais que la modale de Présage,
+   *  et Divination consommait en silence la réponse de sa voisine.
+   *
+   *  `deck` est passé explicitement : entre deux maillons, le Repli a pu
+   *  remettre des cartes sur le dessus, et ce sont celles-là qu'il faut montrer. */
+  const openNextDeckPicker = (
+    gs: GameState,
+    card: Card,
+    instanceId: string,
+    deck: CardInstance[],
+    extra: { boardPosition?: number | null; carriedMap?: Record<string, string> } = {},
+  ): boolean => {
+    const deja = get().collectedDeckChoices;
+    for (const kw of onPlayDeckPickers(card)) {
+      if (deja[kw] != null) continue;
+      const picker = deckPickerState(kw, deck, kw === "creuser" ? creuserXFor(gs, card) : 0);
+      // Rien à montrer (deck trop court) : on n'ouvre pas de modale vide, le
+      // moteur retombera sur son repli déterministe.
+      if (!picker) continue;
+      set({
+        selectedCardInstanceId: instanceId,
+        selectedAttackerInstanceId: null,
+        validTargets: [],
+        targetingMode: "divination",
+        ...picker,
+        learnPickerFor: null,
+        deckPickerKeyword: kw,
+        ...(extra.carriedMap ? { collectedTargetMap: extra.carriedMap } : {}),
+        ...(extra.boardPosition !== undefined ? { pendingBoardPosition: extra.boardPosition } : {}),
+      });
       return true;
     }
-    if (!cardNeedsCreuser(cardInst.card)) return false;
-    // Même plafond qu'à la résolution : X + bonus d'amplification.
-    const x = ((cardInst.card.spell_keywords ?? []).find(k => k.id === "creuser")?.amount ?? 1)
-      + chantBonusForSpell(gs, cardInst.card)
-      + tempoBonusForCard(gs, cardInst.card);
-    const deckCards = getCreuserCards(player, x);
-    if (deckCards.length === 0) return false;
-    set({
-      targetingMode: "divination",
-      divinationCards: deckCards,
-      deckPickerOrder: null,
-      learnPickerFor: null,
-      validTargets: [],
-      collectedTargetMap: carriedMap,
-    });
-    return true;
+    return false;
   };
 
   // Creature counterpart of openSelectionPickerIfNeeded. After the user
@@ -1506,6 +1572,8 @@ export const useGameStore = create<GameStore>((set, get) => {
   divinationCards: [],
   deckPickerOrder: null,
   learnPickerFor: null,
+  deckPickerKeyword: null,
+  collectedDeckChoices: {},
   selectionCards: [],
   tactiqueAvailableKeywords: [],
   tactiqueMaxSelections: 0,
@@ -3522,6 +3590,10 @@ export const useGameStore = create<GameStore>((set, get) => {
   playCardDirect: (instanceId, boardPosition) => {
     const { gameState } = get();
     if (!gameState) return null;
+    // Table des réponses de deck REMISE À ZÉRO : une pose abandonnée en cours
+    // de modale (annulation, carte injouable) laisserait sinon ses choix en
+    // place, et la pose suivante croirait avoir déjà répondu.
+    set({ collectedDeckChoices: {}, deckPickerKeyword: null });
     const joueurCourant = gameState.players[gameState.currentPlayerIndex];
     // Même dérogation qu'au-dessus pour un sort MÉMORISÉ.
     const apprenanteDirecte = apprenanteDuSort(joueurCourant, instanceId);
@@ -3610,63 +3682,11 @@ export const useGameStore = create<GameStore>((set, get) => {
       }
     }
 
-    // CREUSER X : même picker que Divination, mais alimenté par le FOND du deck.
-    if (card && cardNeedsCreuser(card.card)) {
-      const xVals = parseXValuesFromEffectText(card.card.effect_text);
-      const x = (card.card.card_type === "spell"
-        ? ((card.card.spell_keywords ?? []).find(kw => kw.id === "creuser")?.amount ?? 1)
-          + chantBonusForSpell(gameState, card.card)
-        : (xVals["creuser"] ?? 1))
-        // Lune et Soleil valent sur les DEUX faces. La carte n'est pas encore
-        // jouée, donc le compteur n'est pas encore incrémenté : ce que ce picker
-        // calcule est exactement ce que la résolution appliquera.
-        + tempoBonusForCard(gameState, card.card);
-      const deckCards = getCreuserCards(player, x);
-      if (deckCards.length > 0) {
-        set({
-          selectedCardInstanceId: instanceId,
-          selectedAttackerInstanceId: null,
-          validTargets: [],
-          targetingMode: "divination",
-          divinationCards: deckCards,
-          deckPickerOrder: null,
-        learnPickerFor: null,
-          pendingBoardPosition: boardPosition ?? null,
-        });
-        return null;
-      }
-    }
-
-    if (card && cardNeedsPresage(card.card)) {
-      const picker = presagePickerState(player.deck);
-      if (picker) {
-        set({
-          selectedCardInstanceId: instanceId,
-          selectedAttackerInstanceId: null,
-          validTargets: [],
-          targetingMode: "divination",
-          ...picker,
-          pendingBoardPosition: boardPosition ?? null,
-        });
-        return null;
-      }
-    }
-
-    if (card && creatureNeedsDivination(card.card)) {
-      const deckCards = player.deck.slice(0, Math.min(3, player.deck.length));
-      if (deckCards.length > 0) {
-        set({
-          selectedCardInstanceId: instanceId,
-          selectedAttackerInstanceId: null,
-          validTargets: [],
-          targetingMode: "divination",
-          divinationCards: deckCards,
-          deckPickerOrder: null,
-        learnPickerFor: null,
-          pendingBoardPosition: boardPosition ?? null,
-        });
-        return null;
-      }
+    // MODALES DE DECK (Divination / Creuser / Présage), dans l'ordre d'auteur.
+    if (card && openNextDeckPicker(gameState, card.card, instanceId, player.deck, {
+      boardPosition: boardPosition ?? null,
+    })) {
+      return null;
     }
 
     if (card && creatureNeedsTraqueDuDestin(card.card)) {
@@ -3842,39 +3862,19 @@ export const useGameStore = create<GameStore>((set, get) => {
       }
     }
 
-    // CREUSER X : même picker que Divination, mais alimenté par le FOND du deck.
+    // MODALES DE DECK, dans l'ordre d'auteur.
     //
-    // Sauf sur un SORT qui réclame AUSSI une cible : ouvrir ce picker d'abord
+    // Sauf sur un SORT qui réclame AUSSI une cible : ouvrir ces modales d'abord
     // court-circuitait la collecte de cible, et l'autre effet partait sans la
     // sienne — « Corde tendue » (Impact 2 + Creuser 3) ne proposait jamais de
     // cibler son Impact, qui ne faisait donc rien, en silence. Dans ce cas la
-    // cible est collectée par le bloc de ciblage plus bas, puis ce même picker
-    // est ouvert depuis `selectTarget` via `openDeckPickerIfNeeded`.
-    const creuserApresCiblage = card.card.card_type === "spell" && needsTarget(card.card);
-    if (card && cardNeedsCreuser(card.card) && !creuserApresCiblage) {
-      const xVals = parseXValuesFromEffectText(card.card.effect_text);
-      const x = (card.card.card_type === "spell"
-        ? ((card.card.spell_keywords ?? []).find(kw => kw.id === "creuser")?.amount ?? 1)
-          + chantBonusForSpell(gameState, card.card)
-        : (xVals["creuser"] ?? 1))
-        // Lune et Soleil valent sur les DEUX faces. La carte n'est pas encore
-        // jouée, donc le compteur n'est pas encore incrémenté : ce que ce picker
-        // calcule est exactement ce que la résolution appliquera.
-        + tempoBonusForCard(gameState, card.card);
-      const deckCards = getCreuserCards(player, x);
-      if (deckCards.length > 0) {
-        set({
-          selectedCardInstanceId: instanceId,
-          selectedAttackerInstanceId: null,
-          validTargets: [],
-          targetingMode: "divination",
-          divinationCards: deckCards,
-          deckPickerOrder: null,
-        learnPickerFor: null,
-          pendingBoardPosition: null,
-        });
-        return null;
-      }
+    // cible est collectée par le bloc de ciblage plus bas, puis ces mêmes
+    // modales sont ouvertes depuis `selectTarget` via `openDeckPickerIfNeeded`.
+    const deckApresCiblage = card.card.card_type === "spell" && needsTarget(card.card);
+    if (!deckApresCiblage && openNextDeckPicker(gameState, card.card, instanceId, player.deck, {
+      boardPosition: null,
+    })) {
+      return null;
     }
 
     // APPRENTISSAGE : la modale sert ici à choisir un sort de la MAIN à
@@ -3896,44 +3896,6 @@ export const useGameStore = create<GameStore>((set, get) => {
         return null;
       }
       // Aucun sort en main : on pose la créature sans rien apprendre.
-    }
-
-    // PRÉSAGE : même modale que Divination, mais dans le DÉSORDRE. Sur un sort
-    // qui réclame aussi une cible, on laisse le bloc de ciblage passer d'abord
-    // et la modale est rouverte par `openDeckPickerIfNeeded` — même précaution
-    // que Creuser (bug « Corde tendue »).
-    const presageApresCiblage = card.card.card_type === "spell" && needsTarget(card.card);
-    if (cardNeedsPresage(card.card) && !presageApresCiblage) {
-      const picker = presagePickerState(player.deck);
-      if (picker) {
-        set({
-          selectedCardInstanceId: instanceId,
-          selectedAttackerInstanceId: null,
-          validTargets: [],
-          targetingMode: "divination",
-          ...picker,
-          pendingBoardPosition: null,
-        });
-        return null;
-      }
-    }
-
-    // Check if creature needs divination
-    if (card.card.card_type === "creature" && creatureNeedsDivination(card.card)) {
-      const deckCards = player.deck.slice(0, Math.min(3, player.deck.length));
-      if (deckCards.length > 0) {
-        set({
-          selectedCardInstanceId: instanceId,
-          selectedAttackerInstanceId: null,
-          validTargets: [],
-          targetingMode: "divination",
-          divinationCards: deckCards,
-          deckPickerOrder: null,
-        learnPickerFor: null,
-          pendingBoardPosition: null,
-        });
-        return null;
-      }
     }
 
     // Check if creature needs Traque du destin pick (reuses the divination
@@ -4545,6 +4507,27 @@ export const useGameStore = create<GameStore>((set, get) => {
     } else if (targetingMode === "divination" && selectedCardInstanceId) {
       const { pendingBoardPosition, gameState: gs } = get();
       const choiceIndex = indexReelDuPicker(parseInt(targetId) || 0, get().deckPickerOrder);
+      const sortAppris = get().learnPickerFor
+        ? get().divinationCards[parseInt(targetId) || 0]?.instanceId
+        : undefined;
+
+      // La réponse est rangée sous SON mot-clé, puis on regarde si la carte en
+      // pose une autre. Une carte qui porte Divination ET Présage doit poser ses
+      // deux questions ; sans cet enchaînement, une seule modale s'ouvrait et le
+      // second effet réutilisait la réponse de la première.
+      const kwCourant = get().deckPickerKeyword;
+      const choix = kwCourant
+        ? { ...get().collectedDeckChoices, [kwCourant]: choiceIndex }
+        : get().collectedDeckChoices;
+      if (kwCourant) set({ collectedDeckChoices: choix });
+
+      const carteJouee = gs ? carteJouable(gs.players[gs.currentPlayerIndex], selectedCardInstanceId) : null;
+      if (gs && kwCourant && carteJouee && openNextDeckPicker(
+        gs, carteJouee.card, selectedCardInstanceId, gs.players[gs.currentPlayerIndex].deck,
+      )) {
+        return null;
+      }
+
       // Chain into a creature-side selection picker if applicable.
       if (gs && openCreaturePickerIfNeeded(gs, selectedCardInstanceId, {
         divinationChoiceIndex: choiceIndex,
@@ -4557,13 +4540,14 @@ export const useGameStore = create<GameStore>((set, get) => {
       // DERNIER, et sans ce report la cible collectée juste avant serait perdue —
       // l'effet ciblé repartait à vide.
       const carte = get().collectedTargetMap;
-      const sortAppris = get().learnPickerFor
-        ? get().divinationCards[parseInt(targetId) || 0]?.instanceId
-        : undefined;
       return get().dispatchAction({
         type: "play_card",
         cardInstanceId: selectedCardInstanceId,
+        // Champ historique conservé : il reste le seul rempli quand la carte n'a
+        // qu'un mot-clé de deck, et c'est lui que relisent les actions déjà
+        // journalisées (rejeu, resync).
         divinationChoiceIndex: choiceIndex,
+        ...(Object.keys(choix).length > 0 ? { deckChoiceIndices: choix } : {}),
         ...(sortAppris ? { learnSpellInstanceId: sortAppris } : {}),
         ...(Object.keys(carte).length > 0 ? { targetMap: carte } : {}),
         boardPosition: pendingBoardPosition ?? undefined,
@@ -4722,6 +4706,8 @@ export const useGameStore = create<GameStore>((set, get) => {
       divinationCards: [],
       deckPickerOrder: null,
       learnPickerFor: null,
+      deckPickerKeyword: null,
+      collectedDeckChoices: {},
       tactiqueAvailableKeywords: [],
       tactiqueMaxSelections: 0,
       pendingTargetInstanceId: null,
@@ -4934,38 +4920,15 @@ export const useGameStore = create<GameStore>((set, get) => {
         return null;
       }
     }
-    if (cardNeedsPresage(card.card)) {
-      // `deckApresRepli` et non `player.deck` : le Repli vient de remettre des
-      // cartes sur le DESSUS, et ce sont celles-là que Présage révélera.
-      const picker = presagePickerState(deckApresRepli);
-      if (picker) {
-        set({
-          selectedCardInstanceId: instanceId,
-          selectedAttackerInstanceId: null,
-          validTargets: [],
-          targetingMode: "divination",
-          ...picker,
-          pendingBoardPosition: boardPosition,
-        });
-        return null;
-      }
+    // MODALES DE DECK, dans l'ordre d'auteur. `deckApresRepli` et non
+    // `player.deck` : le Repli vient de remettre des cartes sur le DESSUS, et
+    // ce sont celles-là que ces mots-clés révéleront.
+    if (openNextDeckPicker(gameState, card.card, instanceId, deckApresRepli, {
+      boardPosition,
+    })) {
+      return null;
     }
-    if (creatureNeedsDivination(card.card)) {
-      const deckCards = deckApresRepli.slice(0, Math.min(3, deckApresRepli.length));
-      if (deckCards.length > 0) {
-        set({
-          selectedCardInstanceId: instanceId,
-          selectedAttackerInstanceId: null,
-          validTargets: [],
-          targetingMode: "divination",
-          divinationCards: deckCards,
-          deckPickerOrder: null,
-        learnPickerFor: null,
-          pendingBoardPosition: boardPosition,
-        });
-        return null;
-      }
-    }
+
     if (creatureNeedsTraqueDuDestin(card.card)) {
       const x = getTraqueDuDestinX(card.card);
       const deckCards = deckApresRepli.slice(0, Math.min(x, deckApresRepli.length));

@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useRef, memo } from "react";
+import { useState, useRef, memo, useMemo } from "react";
 import { titleFontScale } from "@/lib/game/card-title";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import type { CardInstance, GameAction } from "@/lib/game/types";
+import type { CardInstance, GameAction, Keyword } from "@/lib/game/types";
 import { useGameStore, selectPowerTargetingColor } from "@/lib/store/gameStore";
 import { primaryThresholdGlow } from "@/lib/game/threshold-glow";
 import { tapKeywordNeedsTarget, getCreatureTapComposedUid, espritDeCorpsPoints, creatureCanCastLearnedSpell, peutActiverPouvoir } from "@/lib/game/engine";
@@ -51,6 +51,59 @@ interface BoardCreatureProps {
   onAction?: (action: GameAction | null) => void;
 }
 
+/** Pastille d'état de coin.
+ *
+ *  Une seule implémentation pour tous les états du plateau, et surtout un seul
+ *  endroit où le symbole est choisi : il vient de KEYWORD_SYMBOLS via
+ *  KeywordIcon, exactement comme la liste de capacités de la carte. Une icône
+ *  posée en base (override PNG du store keywordIcon) remplace donc l'emoji ici
+ *  comme partout ailleurs, sans repasser par ce fichier — c'était le défaut des
+ *  pastilles précédentes, dont l'emoji était écrit en dur et divergeait
+ *  silencieusement de l'icône du pouvoir.
+ *
+ *  `mode` est volontairement laissé vide : la teinte de mode dit le DÉCLENCHEUR
+ *  d'une capacité (pose, mort, attaque…), ce qui n'a pas de sens pour un état
+ *  courant. C'est l'anneau qui porte la couleur de l'état.
+ *
+ *  `size: 9` → 16 px pour une icône image (KeywordIcon rend à size × 1.8) dans
+ *  une boîte de 18, soit un pixel de respiration sous l'anneau. */
+function StatusPip({
+  keyword, color, top, side, title, dimmed = false, barred = false,
+}: {
+  keyword: Keyword;
+  color: string;
+  top: number;
+  side: "left" | "right";
+  title?: string;
+  /** État CONSOMMÉ : gris, éteint. */
+  dimmed?: boolean;
+  /** Barre oblique — l'opacité seule se lit mal sur les illustrations claires. */
+  barred?: boolean;
+}) {
+  return (
+    <div
+      title={title}
+      style={{
+        position: "absolute", top, [side]: 4, zIndex: 3,
+        width: 18, height: 18, borderRadius: "50%",
+        background: `${color}33`,
+        border: `1px solid ${color}${dimmed ? "55" : "88"}`,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        opacity: dimmed ? 0.55 : 1,
+        filter: dimmed ? "grayscale(1)" : undefined,
+      }}
+    >
+      <KeywordIcon symbol={KEYWORD_SYMBOLS[keyword]} keyword={keyword} size={9} />
+      {barred && (
+        <span style={{
+          position: "absolute", left: 2, right: 2, top: "50%",
+          height: 1, background: color, transform: "rotate(-45deg)",
+        }} />
+      )}
+    </div>
+  );
+}
+
 function BoardCreature({
   creature,
   isOwn,
@@ -80,6 +133,15 @@ function BoardCreature({
   // Halo des capacités à SEUIL. La condition porte sur le CONTRÔLEUR de l'unité,
   // pas sur le joueur local : une créature adverse à seuil actif doit luire pour
   // les deux joueurs, avec le deck et le cimetière de son propre camp.
+  // Ombre portée par l'unité, quelle que soit sa provenance : mot-clé de la
+  // carte, instance de mot-clé, ou don au runtime (applyGrantedKeyword pousse
+  // dans `card.keywords`). On passe par la même autorité d'affichage que le
+  // reste du composant plutôt que par `card.keywords` seul, qui manque les
+  // capacités portées uniquement par `keyword_instances`.
+  const hasOmbre = useMemo(
+    () => buildKeywordDisplayEntries(card).some(e => e.kw === ("ombre" as Keyword)),
+    [card],
+  );
   const thresholdGlow = useGameStore(s => {
     if (!s.gameState) return null;
     const owner = s.gameState.players.find(p => p.board.some(c => c.instanceId === creature.instanceId));
@@ -608,24 +670,12 @@ function BoardCreature({
 
       {/* Poison indicator (shifted below the mana orb) */}
       {creature.isPoisoned && (
-        <div style={{
-          position: "absolute", top: 14, left: 4, zIndex: 3,
-          width: 18, height: 18, borderRadius: "50%",
-          background: "#22c55e33", border: "1px solid #22c55e88",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 10,
-        }}>☠️</div>
+        <StatusPip keyword={"poison" as Keyword} color="#22c55e" top={14} side="left" title="Empoisonné" />
       )}
 
       {/* Divine Shield indicator */}
       {creature.hasDivineShield && (
-        <div style={{
-          position: "absolute", top: 4, right: 4, zIndex: 3,
-          width: 18, height: 18, borderRadius: "50%",
-          background: "#f1c40f33", border: "1px solid #f1c40f88",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 10,
-        }}>🔰</div>
+        <StatusPip keyword={"divine_shield" as Keyword} color="#f1c40f" top={4} side="right" title="Bouclier divin" />
       )}
 
       {/* Paralyzed overlay */}
@@ -641,28 +691,58 @@ function BoardCreature({
       {/* Paralyzed indicator (stacked below the mana orb, then below poison
           when poison is also active) */}
       {creature.isParalyzed && (
-        <div style={{
-          position: "absolute", top: creature.isPoisoned ? 36 : 14, left: 4, zIndex: 3,
-          width: 18, height: 18, borderRadius: "50%",
-          background: "#8b5cf633", border: "1px solid #8b5cf688",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 10,
-        }}>⛓️</div>
+        <StatusPip
+          keyword={"paralysie" as Keyword}
+          color="#8b5cf6"
+          top={creature.isPoisoned ? 36 : 14}
+          side="left"
+          title="Paralysé"
+        />
       )}
 
       {/* Contresort active indicator */}
       {creature.contresortActive && (
-        <div style={{
-          position: "absolute", top: creature.hasDivineShield ? 26 : 4, right: 4, zIndex: 3,
-          width: 18, height: 18, borderRadius: "50%",
-          background: "#3b82f633", border: "1px solid #3b82f688",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 10,
-        }}>🚫</div>
+        <StatusPip
+          keyword={"contresort" as Keyword}
+          color="#3b82f6"
+          top={creature.hasDivineShield ? 26 : 4}
+          side="right"
+          title="Contresort prêt"
+        />
       )}
 
+      {/* Ombre — pastille à DEUX états.
+
+          Le voile ci-dessous ne sait dire qu'une chose : « tapie ». Quand il
+          disparaît, plus rien ne distingue une unité qui a DÉPENSÉ son Ombre
+          d'une unité qui n'en a jamais porté — c'est le trou que comble cette
+          pastille, qui reste en place après la révélation, éteinte et barrée.
+
+          Un marqueur permanent plutôt qu'un simple popup de transition parce
+          que la révélation est DÉFINITIVE tant que l'unité est en jeu : elle ne
+          se réarme qu'au retour en jeu (engine.ts, `ombreRevealed = false`) ou
+          par un don ponctuel (rearmGrantedKeyword). Contrairement à Esquive,
+          rien ne la rend au changement de tour.
+
+          Empilée sous le bouclier et le contresort, qui occupent déjà la
+          colonne de droite au même pas de 22 px. */}
+      {hasOmbre && (() => {
+        const revele = !!creature.ombreRevealed;
+        return (
+          <StatusPip
+            keyword={"ombre" as Keyword}
+            color={revele ? "#6b7280" : "#818cf8"}
+            top={4 + 22 * ((creature.hasDivineShield ? 1 : 0) + (creature.contresortActive ? 1 : 0))}
+            side="right"
+            title={revele ? "Ombre dissipée — l'unité s'est révélée" : "Ombre — intargetable tant qu'elle n'a pas agi"}
+            dimmed={revele}
+            barred={revele}
+          />
+        );
+      })()}
+
       {/* Ombre (stealth) indicator */}
-      {card.keywords.includes("ombre" as import("@/lib/game/types").Keyword) && !creature.ombreRevealed && (
+      {hasOmbre && !creature.ombreRevealed && (
         <div style={{
           position: "absolute", inset: 0, zIndex: 1,
           background: "rgba(30, 30, 60, 0.25)",
@@ -868,22 +948,36 @@ function BoardCreature({
         {/* Statuts actifs — runtime flags that aren't on the card itself.
             Only renders when at least one is active so it doesn't take up
             vertical space on plain creatures. Mirrors the corner pips
-            (poison ☠️, paralysie ⛓️, bouclier 🔰, contresort 🚫, mal
-            d'invocation 💤, fureur 💢, gloire 🏅, ombre 🌑) so the
-            right-click view is the single source of truth for what's
-            currently affecting the creature. */}
+            (poison, paralysie, bouclier, contresort, fureur, gloire, ombre)
+            so the right-click view is the single source of truth for what's
+            currently affecting the creature.
+
+            Les symboles ne sont plus listés ici : chaque statut est l'état d'un
+            POUVOIR et emprunte son icône, si bien qu'en changer une se fait en
+            base et non dans ce commentaire. Seul le mal d'invocation reste un
+            emoji en dur (💤) — ce n'est pas un pouvoir, il n'a pas d'icône. */}
         {(() => {
-          const statuses: { emoji: string; label: string; color: string }[] = [];
-          if (creature.isPoisoned) statuses.push({ emoji: "☠️", label: "Empoisonné", color: "#22c55e" });
-          if (creature.isParalyzed) statuses.push({ emoji: "⛓️", label: "Paralysé", color: "#8b5cf6" });
-          if (creature.hasDivineShield) statuses.push({ emoji: "🔰", label: "Bouclier divin", color: "#f1c40f" });
-          if (creature.contresortActive) statuses.push({ emoji: "🚫", label: "Contresort prêt", color: "#3b82f6" });
-          if (creature.fureurActive) statuses.push({ emoji: "💢", label: "Fureur", color: "#f97316" });
+          // Le symbole n'est plus écrit en dur : chaque statut nomme le POUVOIR
+          // dont il est l'état, et KeywordIcon en tire l'icône — override PNG de
+          // la base s'il y en a une, emoji de KEYWORD_SYMBOLS sinon. Même source
+          // que les pastilles de coin et que la liste de capacités ci-dessous,
+          // donc plus de divergence possible entre les trois surfaces.
+          const statuses: { kw: Keyword; label: string; color: string }[] = [];
+          if (creature.isPoisoned) statuses.push({ kw: "poison" as Keyword, label: "Empoisonné", color: "#22c55e" });
+          if (creature.isParalyzed) statuses.push({ kw: "paralysie" as Keyword, label: "Paralysé", color: "#8b5cf6" });
+          if (creature.hasDivineShield) statuses.push({ kw: "divine_shield" as Keyword, label: "Bouclier divin", color: "#f1c40f" });
+          if (creature.contresortActive) statuses.push({ kw: "contresort" as Keyword, label: "Contresort prêt", color: "#3b82f6" });
+          if (creature.fureurActive) statuses.push({ kw: "fureur" as Keyword, label: "Fureur", color: "#f97316" });
           if ((creature.gloireStacks ?? 0) > 0) {
-            statuses.push({ emoji: "🏅", label: `Gloire ×${creature.gloireStacks}`, color: "#d4a800" });
+            statuses.push({ kw: "gloire" as Keyword, label: `Gloire ×${creature.gloireStacks}`, color: "#d4a800" });
           }
-          if (card.keywords.includes("ombre" as import("@/lib/game/types").Keyword) && !creature.ombreRevealed) {
-            statuses.push({ emoji: "🌑", label: "Ombre (furtif)", color: "#6b7280" });
+          // Deux états, comme la pastille de coin : le bloc STATUTS reste la
+          // source unique de vérité sur ce qui affecte l'unité, et « Ombre déjà
+          // dépensée » est une information qui vaut jusqu'à la fin de la partie.
+          if (hasOmbre) {
+            statuses.push(creature.ombreRevealed
+              ? { kw: "ombre" as Keyword, label: "Ombre dissipée", color: "#6b7280" }
+              : { kw: "ombre" as Keyword, label: "Ombre (furtif)", color: "#818cf8" });
           }
           if (statuses.length === 0) return null;
           return (
@@ -898,7 +992,9 @@ function BoardCreature({
               </div>
               {statuses.map(s => (
                 <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 8 * d, color: s.color, fontFamily: "'Crimson Text',serif" }}>
-                  <span style={{ fontSize: 9 * d }}>{s.emoji}</span>
+                  <span style={{ flexShrink: 0, display: "inline-flex" }}>
+                    <KeywordIcon symbol={KEYWORD_SYMBOLS[s.kw]} keyword={s.kw} size={9 * d} />
+                  </span>
                   <span>{s.label}</span>
                 </div>
               ))}

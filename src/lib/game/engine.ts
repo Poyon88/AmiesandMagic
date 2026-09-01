@@ -657,6 +657,44 @@ function onPlayDeckEffectsInOrder(card: Card): OnPlayDeckEffect[] {
   });
 }
 
+/** Mots-clés de deck qui réclament un CHOIX du joueur. `fortifier`,
+ *  `preincanter` et `inspiration` n'en réclament aucun : ils se résolvent seuls. */
+export type DeckPickerKeyword = "divination" | "creuser" | "presage";
+const DECK_PICKER_KEYWORDS: DeckPickerKeyword[] = ["divination", "creuser", "presage"];
+
+/** Ceux que cette carte ouvre à l'entrée en jeu, DANS L'ORDRE D'AUTEUR — le
+ *  même que celui où le moteur les résoudra. L'interface s'en sert pour
+ *  enchaîner les modales : une carte qui porte Divination puis Présage doit
+ *  poser les deux questions, dans cet ordre. */
+export function onPlayDeckPickers(card: Card): DeckPickerKeyword[] {
+  // Un SORT porte ces mécaniques dans `spell_keywords` et non dans des
+  // capabilities `on_play` — même distinction que `cardNeedsCreuser` /
+  // `cardNeedsPresage`. L'ordre du tableau est celui de l'auteur.
+  if (card.card_type === "spell") {
+    const vus = new Set<string>();
+    const ordre: DeckPickerKeyword[] = [];
+    for (const kw of card.spell_keywords ?? []) {
+      if ((DECK_PICKER_KEYWORDS as string[]).includes(kw.id) && !vus.has(kw.id)) {
+        vus.add(kw.id);
+        ordre.push(kw.id as DeckPickerKeyword);
+      }
+    }
+    return ordre;
+  }
+  return onPlayDeckEffectsInOrder(card)
+    .filter((kw): kw is DeckPickerKeyword => (DECK_PICKER_KEYWORDS as string[]).includes(kw));
+}
+
+/** Index choisi pour CE mot-clé. Replie sur le champ unique historique, seul
+ *  rempli par les cartes qui ne portent qu'un mot-clé de deck (et par toutes
+ *  les actions journalisées avant l'existence de `deckChoiceIndices`). */
+function deckChoiceFor(
+  action: { deckChoiceIndices?: Partial<Record<DeckPickerKeyword, number>>; divinationChoiceIndex?: number },
+  kw: DeckPickerKeyword,
+): number | undefined {
+  return action.deckChoiceIndices?.[kw] ?? action.divinationChoiceIndex;
+}
+
 function cardHasKwOnPlay(card: Card, kw: Keyword): boolean {
   // getCapabilities réaligne désormais les triggers périmés des capabilities[]
   // backfillées sur le mode autoritaire de keyword_instances (cf. adapter), donc
@@ -668,12 +706,21 @@ function cardHasKwOnPlay(card: Card, kw: Keyword): boolean {
  *  KeywordInstance.x field when present, else falls back to bracket
  *  notation parsed from effect_text (legacy storage). Returns
  *  `defaultX` when neither source has a value. */
-function getKwX(ci: CardInstance, kw: Keyword, mode: import("./types").KeywordMode | undefined, defaultX: number): number {
+function getCardKwX(card: Card, kw: Keyword, mode: import("./types").KeywordMode | undefined, defaultX: number): number {
   // L'adaptateur a déjà intégré le repli [Keyword X] de effect_text dans
   // params.x (pour le mode par défaut), donc une simple lecture suffit.
   const trigger = capTriggerForMode(mode);
-  const cap = getCapabilities(ci.card).find(c => c.abilityId === kw && c.trigger === trigger);
+  const cap = getCapabilities(card).find(c => c.abilityId === kw && c.trigger === trigger);
   return cap?.params?.x ?? defaultX;
+}
+
+/** Variante instance. Les deux formes existent parce que les fournisseurs de
+ *  CIBLES travaillent sur une `Card` (la carte est encore en main, aucune
+ *  instance en jeu) tandis que les résolveurs tiennent une `CardInstance` :
+ *  sans la variante carte, un site de ciblage retombe sur une dérivation
+ *  maison et se désaligne du résolveur. */
+function getKwX(ci: CardInstance, kw: Keyword, mode: import("./types").KeywordMode | undefined, defaultX: number): number {
+  return getCardKwX(ci.card, kw, mode, defaultX);
 }
 
 // Alternative cost helpers — collapse null/undefined/0 to 0 so call sites can
@@ -930,12 +977,21 @@ function composedTargetPool(
   if (spec.location === "board") {
     pool = pool.filter((c) => c.currentHealth > 0);
   }
+  // APPARTENANCE — deux niveaux, et il faut les distinguer :
+  //   • DANS une catégorie, les valeurs sont alternatives (race Elfes OU Nains) ;
+  //   • ENTRE catégories, elles se CUMULENT (race Elfes ET clan Les Sylvains).
+  // Une catégorie absente ou vide ne filtre rien.
+  //
+  // C'était un OU à tous les étages : « Brume des Sous-Bois » (Elfes + Les
+  // Sylvains) conférait Esquive aux Aigles Géants, qui ne sont Sylvains que par
+  // le clan. Croiser deux catégories était donc impossible — ajouter un critère
+  // ÉLARGISSAIT le pool au lieu de le restreindre.
   const m = spec.membership;
   if (m && (m.faction?.length || m.race?.length || m.clan?.length)) {
     pool = pool.filter((c) =>
-      (!!m.faction?.length && m.faction.includes(c.card.faction ?? "")) ||
-      (!!m.race?.length && m.race.includes(c.card.race ?? "")) ||
-      (!!m.clan?.length && m.clan.includes(c.card.clan ?? "")));
+      (!m.faction?.length || m.faction.includes(c.card.faction ?? "")) &&
+      (!m.race?.length || m.race.includes(c.card.race ?? "")) &&
+      (!m.clan?.length || m.clan.includes(c.card.clan ?? "")));
   }
   // Plafond de COÛT, cumulatif avec l'appartenance (ET logique). Testé sur
   // `undefined` et non sur la fausseté : `maxCost: 0` est un filtre légitime
@@ -2372,6 +2428,15 @@ function placeEmblem(target: PlayerState, emblem: import("./types").Emblem): voi
     existant.stacks += emblem.stacks;
     return;
   }
+  // TOUJOURS en fin de tableau : l'ordre de `emblems` EST la chronologie de
+  // pose, et c'est lui qui ordonne les emblèmes dans la file de fin de tour
+  // (cf. buildEndOfTurnQueue, règle 2). Une insertion en tête ou un tri
+  // inverserait des effets sans qu'aucun autre site ne s'en aperçoive.
+  //
+  // À noter : un ré-empilement (branche `existant` ci-dessus) hérite de la
+  // position de l'ANCIEN. Deux poses du même emblème se résolvent donc à la
+  // place de la première, même si un autre emblème a été posé entre-temps —
+  // c'est le prix assumé de l'empilement.
   target.emblems.push({ ...emblem });
 }
 
@@ -3087,10 +3152,21 @@ export function endTurn(state: GameState): GameState {
   return advanceEndOfTurn(newState);
 }
 
-/** Construit la file ORDONNÉE des effets « fin de tour » du joueur sortant, dans
- *  l'ordre strict du plateau (gauche→droite), et pour chaque créature : d'abord
- *  ses mots-clés curés en mode end_of_turn (ordre du tableau), puis ses capacités
- *  composées on_end_of_turn (ordre de getCapabilities). */
+/** Construit la file ORDONNÉE des effets « fin de tour » du joueur sortant.
+ *
+ *  L'ordre est un CONTRAT, verrouillé par end-of-turn-creature-emblem-order.test.ts :
+ *
+ *   1. toutes les CRÉATURES d'abord, dans l'ordre strict du plateau
+ *      (gauche→droite) ; pour chacune, ses mots-clés curés en mode end_of_turn
+ *      (ordre du tableau) puis ses capacités composées on_end_of_turn (ordre de
+ *      getCapabilities) ;
+ *   2. les EMBLÈMES ensuite, dans l'ordre de `player.emblems` — c'est-à-dire
+ *      l'ordre CHRONOLOGIQUE de première pose, que `placeEmblem` garantit en
+ *      n'ajoutant qu'en fin de tableau. Une pile de N résout l'effet N fois
+ *      d'affilée, avant de passer à l'emblème suivant.
+ *
+ *  Les deux règles ne tiennent qu'à l'ordre des boucles ci-dessous et à celui du
+ *  tableau `emblems` : ni tri, ni insertion en tête ici ou dans placeEmblem. */
 function buildEndOfTurnQueue(outgoing: PlayerState): import("./types").EndOfTurnStep[] {
   const steps: import("./types").EndOfTurnStep[] = [];
   for (const creature of outgoing.board) {
@@ -3718,7 +3794,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
           if (player.deck.length === 0) break;
           const count = Math.min(3, player.deck.length);
           const top3 = player.deck.splice(0, count);
-          const chosenIdx = Math.min(action.divinationChoiceIndex ?? 0, top3.length - 1);
+          const chosenIdx = Math.min(deckChoiceFor(action, "divination") ?? 0, top3.length - 1);
           player.deck.unshift(top3[chosenIdx]); // la carte choisie sur le dessus
           for (let i = 0; i < top3.length; i++) {
             if (i !== chosenIdx) player.deck.push(top3[i]); // les autres au fond
@@ -3726,7 +3802,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
           break;
         }
         case "creuser":
-          resolveCreuser(player, getKwX(cardInstance, "creuser", undefined, 1), action.divinationChoiceIndex);
+          resolveCreuser(player, getKwX(cardInstance, "creuser", undefined, 1), deckChoiceFor(action, "creuser"));
           break;
         case "presage":
           // Présage partage le picker de Divination, donc le même champ
@@ -3734,7 +3810,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
           // c'est elle qui permet à un auteur de composer « Divination puis
           // Présage » sur une même carte et d'être obéi — la combinaison qui
           // justifie la capacité.
-          resolvePresage(player, action.divinationChoiceIndex);
+          resolvePresage(player, deckChoiceFor(action, "presage"));
           break;
         case "fortifier": {
           const fo = cardInstance.card.keyword_instances?.find(i => i.id === "fortifier" && !i.mode);
@@ -4211,7 +4287,11 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
 
     // Exhumation X: ressuscite une unité du cimetière (mana ≤ X)
     if (hasKwOnPlay(cardInstance, "exhumation")) {
-      const x = Math.max(1, cardInstance.card.mana_cost - 1);
+      // X DÉCLARÉ d'abord. La dérivation `coût - 1` n'est qu'un repli pour les
+      // cartes anciennes qui ne déclarent aucune valeur : l'appliquer d'office
+      // faisait ignorer le X de la carte, si bien qu'une « Exhumation 2 » posée
+      // sur une créature à 6 mana ranimait en réalité jusqu'à 5.
+      const x = getKwX(cardInstance, "exhumation", undefined, Math.max(1, cardInstance.card.mana_cost - 1));
       const resurrectable = player.graveyard.filter(c => c.card.card_type === "creature" && c.card.mana_cost <= x);
       if (resurrectable.length > 0 && player.board.length < MAX_BOARD_SIZE) {
         const target = (action.graveyardTargetInstanceId
@@ -4543,15 +4623,16 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // renvoie donc un `divinationChoiceIndex`. On le convertit ici dans le slot
     // que lit la forme SORT, pour que les deux formes partagent un seul chemin
     // d'interface au lieu d'en maintenir deux.
-    if (action.divinationChoiceIndex != null && targetMap["creuser_0"] == null) {
-      targetMap["creuser_0"] = String(action.divinationChoiceIndex);
+    const creuserIdx = deckChoiceFor(action, "creuser");
+    if (creuserIdx != null && targetMap["creuser_0"] == null) {
+      targetMap["creuser_0"] = String(creuserIdx);
     }
-    // PRÉSAGE : même picker, même conversion, slot dédié. Un sort qui porterait
-    // À LA FOIS Creuser et Présage recevrait le même index dans les deux slots —
-    // limite héritée du champ unique `divinationChoiceIndex`, partagée avec
-    // Creuser, et sans conséquence tant qu'aucune carte ne cumule les deux.
-    if (action.divinationChoiceIndex != null && targetMap["presage_0"] == null) {
-      targetMap["presage_0"] = String(action.divinationChoiceIndex);
+    // PRÉSAGE : même picker, même conversion, slot dédié. Chacun lit désormais
+    // SON index (deckChoiceIndices) : un sort portant à la fois Creuser et
+    // Présage ne reçoit plus deux fois le même nombre.
+    const presageIdx = deckChoiceFor(action, "presage");
+    if (presageIdx != null && targetMap["presage_0"] == null) {
+      targetMap["presage_0"] = String(presageIdx);
     }
 
     // Track spell in history (exclude spells with "relancer" to prevent loops)
@@ -8484,7 +8565,10 @@ function resolveCuratedKeywordEffect(
       // Ressuscite une unité du cimetière (coût ≤ X) au hasard — la source est
       // toujours EXCLUE (sinon une Exhumation-mort à X élevé se ressusciterait
       // elle-même en boucle à chaque mort).
-      const xE = inst?.x ?? Math.max(1, source.card.mana_cost - 1);
+      // `inst.x` d'abord, puis le X déclaré dans les capabilities : une capacité
+      // portée uniquement par `capabilities` (sans keyword_instances) tombait
+      // sinon sur la dérivation `coût - 1`, même défaut que le chemin d'entrée.
+      const xE = inst?.x ?? getCardKwX(source.card, "exhumation", inst?.mode, Math.max(1, source.card.mana_cost - 1));
       const resurrectable = owner.graveyard.filter(c => c.instanceId !== source.instanceId && c.card.card_type === "creature" && c.card.mana_cost <= xE);
       if (resurrectable.length === 0 || owner.board.length >= MAX_BOARD_SIZE) return;
       const targetE = resurrectable[Math.floor(rng() * resurrectable.length)];
@@ -10380,7 +10464,10 @@ export function getGraveyardTargets(state: GameState, card: Card): string[] {
       return player.graveyard.filter(c => c.card.card_type === "creature").map(c => c.instanceId);
     }
     if (kw === "exhumation") {
-      const x = Math.max(1, card.mana_cost - 1);
+      // Même plafond que la résolution (cf. hasKwOnPlay "exhumation") : un écart
+      // ici proposerait au cimetière des créatures que le moteur refusera, ou
+      // — comme c'était le cas — en proposerait de trop chères.
+      const x = getCardKwX(card, "exhumation", undefined, Math.max(1, card.mana_cost - 1));
       return player.graveyard.filter(c => c.card.card_type === "creature" && c.card.mana_cost <= x).map(c => c.instanceId);
     }
   }

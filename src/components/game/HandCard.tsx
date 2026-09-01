@@ -10,7 +10,6 @@ import type { CardInstance } from "@/lib/game/types";
 import { useGameStore } from "@/lib/store/gameStore";
 import { primaryThresholdGlow } from "@/lib/game/threshold-glow";
 import { REPLI_TEINTE } from "@/lib/game/repli-theme";
-import type { DragEvent } from "react";
 import { KEYWORD_SYMBOLS, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordBadgeValue, applyKeywordValueToLabel, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, getSpellKeywordBadgeValue } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell, getTokenManaCost } from "@/lib/game/abilities";
@@ -173,21 +172,111 @@ function HandCard({
   const lastTapWasTouch = useRef(false);
   const ARM_TIMEOUT_MS = 5000;
 
-  function handleDragStart(e: DragEvent<HTMLDivElement>) {
-    if (!canPlay) {
-      e.preventDefault();
-      return;
-    }
-    setIsDragging(true);
-    setIsHovered(false);
-    e.dataTransfer.setData("cardInstanceId", cardInstance.instanceId);
-    e.dataTransfer.setData("cardType", card.card_type);
-    e.dataTransfer.effectAllowed = "move";
-  }
+  // ── GLISSER SOURIS, piloté par les évènements POINTEUR ────────────────────
+  //
+  // Le glisser natif HTML5 est abandonné pour les cartes de main. Sur Firefox,
+  // il annonçait `dragstart` puis abandonnait la session : plus aucun
+  // `dragover`, aucun `dragend`, et un `mouseup` délivré à la page — signe
+  // qu'aucune session n'avait pris. Les créatures, qui ne se posent QUE par
+  // glisser, en devenaient injouables. Douze montages pilotés dans un vrai
+  // Firefox (image cross-origin chargée, `zoom`, `transform: scale`, nœud source
+  // remplacé, `draggable` retiré en cours de route…) n'ont pas permis d'isoler
+  // la cause : plutôt que de continuer à chercher, on cesse de dépendre d'un
+  // mécanisme que le navigateur peut refuser sans motif observable.
+  //
+  // Ce chemin n'invente rien : il rejoue le glisser manuel DÉJÀ écrit pour le
+  // tactile — même seuil, même fantôme, mêmes évènements `hand-touch-move` /
+  // `hand-touch-drop` / `hand-touch-end`, que GameBoard écoute déjà pour
+  // l'aperçu de dépôt et pour la pose. Le tactile garde ses propres
+  // gestionnaires ; les évènements pointeur y feraient double emploi, d'où le
+  // filtre sur `pointerType`.
+  const pointerDragRef = useRef(false);
+  const pointerIdRef = useRef<number | null>(null);
+  const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
+  const detachePointeurRef = useRef<(() => void) | null>(null);
 
-  function handleDragEnd() {
-    setIsDragging(false);
-  }
+  // Mouvements et relâchement écoutés sur WINDOW, et non sur la carte.
+  //
+  // Première tentative : `setPointerCapture` sur la carte. Mauvaise idée — si la
+  // capture échoue (elle peut, sans lever d'erreur exploitable), les mouvements
+  // cessent d'arriver dès que le curseur quitte la carte : le fantôme se fige à
+  // mi-chemin et le relâchement n'atteint jamais le plateau. Observé sur Chrome.
+  //
+  // Écouter la fenêtre ne peut pas échouer : les évènements y remontent toujours,
+  // quels que soient le re-rendu de la carte, son changement de positionnement au
+  // survol, ou l'élément survolé.
+  // Démontage de sûreté : la carte QUITTE LA MAIN dès qu'elle est jouée, donc
+  // en plein glisser. Sans ce nettoyage, ses écouteurs de fenêtre survivraient à
+  // son démontage et continueraient d'émettre des évènements de glisser pour une
+  // carte qui n'est plus là.
+  useEffect(() => () => { detachePointeurRef.current?.(); }, []);
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (e.pointerType !== "mouse" || e.button !== 0 || !canPlay) return;
+    pointerStartRef.current = { x: e.clientX, y: e.clientY };
+    pointerDragRef.current = false;
+    pointerIdRef.current = e.pointerId;
+
+    const surMouvement = (ev: PointerEvent) => {
+      if (ev.pointerId !== pointerIdRef.current || !pointerStartRef.current) return;
+      if (!pointerDragRef.current) {
+        const dx = ev.clientX - pointerStartRef.current.x;
+        const dy = ev.clientY - pointerStartRef.current.y;
+        if (dx * dx + dy * dy <= TOUCH_DRAG_THRESHOLD * TOUCH_DRAG_THRESHOLD) return;
+        pointerDragRef.current = true;
+        setIsDragging(true);
+        setIsHovered(false);
+        setShowDetails(false);
+      }
+      setTouchGhostPos({ x: ev.clientX, y: ev.clientY });
+      window.dispatchEvent(new CustomEvent("hand-touch-move", {
+        detail: { clientX: ev.clientX, cardType: card.card_type },
+      }));
+    };
+
+    const terminer = (ev: PointerEvent, depose: boolean) => {
+      if (ev.pointerId !== pointerIdRef.current) return;
+      detachePointeurRef.current?.();
+      const glissait = pointerDragRef.current;
+      pointerDragRef.current = false;
+      pointerStartRef.current = null;
+      pointerIdRef.current = null;
+      if (!glissait) return;
+      setIsDragging(false);
+      setTouchGhostPos(null);
+
+      // Le fantôme est en `pointerEvents: "none"` : elementFromPoint rend donc
+      // ce qui se trouve DESSOUS, et non le fantôme lui-même.
+      const sous = depose ? document.elementFromPoint(ev.clientX, ev.clientY) : null;
+      if (sous?.closest('[data-droptarget="my-board"]')) {
+        window.dispatchEvent(new CustomEvent("hand-touch-drop", {
+          detail: {
+            cardInstanceId: cardInstance.instanceId,
+            cardType: card.card_type,
+            clientX: ev.clientX,
+          },
+        }));
+      } else {
+        window.dispatchEvent(new CustomEvent("hand-touch-end"));
+      }
+    };
+
+    const surRelache = (ev: PointerEvent) => terminer(ev, true);
+    const surAnnule = (ev: PointerEvent) => terminer(ev, false);
+
+    // Un glisser déjà en cours (double appui, évènement manqué) est démonté avant
+    // d'en armer un autre : deux jeux d'écouteurs se marcheraient dessus.
+    detachePointeurRef.current?.();
+    window.addEventListener("pointermove", surMouvement);
+    window.addEventListener("pointerup", surRelache);
+    window.addEventListener("pointercancel", surAnnule);
+    detachePointeurRef.current = () => {
+      window.removeEventListener("pointermove", surMouvement);
+      window.removeEventListener("pointerup", surRelache);
+      window.removeEventListener("pointercancel", surAnnule);
+      detachePointeurRef.current = null;
+    };
+  };
 
   const isZoomed = !isDragging && isHovered && !isSelected;
   const showOverlay = isZoomed && showDetails;
@@ -428,9 +517,11 @@ function HandCard({
       />
       <div
         ref={cardRef}
-        draggable={canPlay}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
+        // Glisser natif DÉSACTIVÉ : le laisser actif ferait démarrer une session
+        // HTML5 concurrente, qui volerait les évènements pointeur à l'instant
+        // précis où le glisser commence.
+        draggable={false}
+        onPointerDown={handlePointerDown}
         onMouseEnter={() => {
           // iPad/Safari fire a synthetic mouseenter on tap (hover emulation)
           // but never a matching mouseleave, so a hover-opened overlay would
@@ -487,9 +578,33 @@ function HandCard({
           }
           if (isCostPaymentMode) {
             if (!isPendingCostSource) payerParClic();
-          } else if (canPlay) {
-            onClick?.();
+            return;
           }
+          // Le simple clic NE JOUE PLUS la carte : il faut un double-clic
+          // (cf. onDoubleClick). Un clic isolé ne fait donc plus que ce qui
+          // précède — consommer un appui long, refermer la description, ou
+          // désigner une carte en mode paiement de coût.
+        }}
+        onDoubleClick={() => {
+          // DOUBLE-CLIC = jouer la carte, sorts comme créatures.
+          //
+          // Une carte de main est une grande cible qu'on survole en permanence :
+          // au simple clic, le geste le plus banal de l'interface était aussi le
+          // plus irréversible.
+          //
+          // Le paiement de coût reste au simple clic : c'est une DÉSIGNATION et
+          // non un déclenchement, et l'exiger en double gênerait la sélection de
+          // plusieurs cartes.
+          //
+          // Pointeur grossier exclu : le tactile a déjà ses gestes propres — le
+          // double-tap armé des sorts (armForCast) et le glisser pour les
+          // créatures — que ce gestionnaire doublerait.
+          if (coarse) return;
+          if (longPress.consume()) return;
+          if (pointerDragRef.current) return;
+          if (isCostPaymentMode) return;
+          if (!canPlay) return;
+          onClick?.();
         }}
         style={{
           ...LONG_PRESS_RESET_STYLE,
@@ -571,6 +686,13 @@ function HandCard({
               // Base brightness lift to match the brightened board (see
               // BoardCreature) — raw card art reads too dark otherwise.
               style={{ filter: "brightness(1.05)" }}
+              // Une <img> est NATIVEMENT draggable, et Firefox lui donne la
+              // priorité sur son ancêtre (mesuré : `dragstart` y a pour cible
+              // l'IMG, là où Chromium prend la carte — la règle
+              // `-webkit-user-drag: none` de globals.css ne vaut que pour
+              // WebKit/Blink). Une session HTML5 démarrée ici volerait les
+              // évènements pointeur dont dépend désormais le glisser.
+              draggable={false}
               // Served directly from the Supabase CDN — card-art sources are
               // already small webp (≤800px) so the Next optimizer only added
               // dev-time queueing that left cards blank when many loaded at once.

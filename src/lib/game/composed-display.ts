@@ -501,6 +501,30 @@ function sideAdj(t: SafeT | undefined, side: string | undefined, many: boolean):
 // préposition. Les autres (« inflige … à », « octroie … à ») gardent « à ».
 const DIRECT_OBJECT_CONTENT = new Set(["destroy", "bounce", "paralyze", "poison"]);
 
+/** Libellé d'une appartenance de cible.
+ *
+ *  Reflète la sémantique du filtre (cf. TargetSpec.membership) : les valeurs
+ *  d'une même catégorie sont ALTERNATIVES et se lisent « / », les catégories se
+ *  CUMULENT et se lisent « + ». Tout joindre par « / », comme avant, annonçait
+ *  un pool plus large que celui réellement visé.
+ *
+ *  Le « + » évite d'ajouter une conjonction à traduire dans les huit locales,
+ *  et se lit de la même façon partout. */
+function membershipLabel(
+  memb: { faction?: string[]; race?: string[]; clan?: string[] } | undefined,
+  tr: SafeT | undefined,
+): string {
+  if (!memb) return "";
+  // Faction lue par son nom d'AFFICHAGE, pas par son id — même règle que le
+  // filtre de pool.
+  const categories = [
+    (memb.race ?? []).map((v) => getRaceName(v, tr)),
+    (memb.clan ?? []).map((v) => getClanName(v, tr)),
+    (memb.faction ?? []).map((v) => getFactionDisplayName(v, tr)),
+  ];
+  return categories.filter((c) => c.length > 0).map((c) => c.join("/")).join(" + ");
+}
+
 function describeTarget(t: TargetSpec | undefined, tr?: SafeT, direct = false): string {
   if (!t) return "";
   // `p` sélectionne le jeu de fragments : avec ou sans préposition.
@@ -524,16 +548,7 @@ function describeTarget(t: TargetSpec | undefined, tr?: SafeT, direct = false): 
     : t.count === 1 ? frag(tr, `${p}.count_one`)
     : frag(tr, `${p}.count_n`, { n: t.count });
   const sideTxt = sideAdj(tr, t.side, many);
-  const memb = t.membership;
-  // Même règle que le filtre de pool : la faction se lit par son nom
-  // d'affichage, pas par son id.
-  const mtxt = memb
-    ? [
-        ...(memb.race ?? []).map((v) => getRaceName(v, tr)),
-        ...(memb.clan ?? []).map((v) => getClanName(v, tr)),
-        ...(memb.faction ?? []).map((v) => getFactionDisplayName(v, tr)),
-      ].join("/")
-    : "";
+  const mtxt = membershipLabel(t.membership, tr);
   const locTxt = t.location === "hand" ? frag(tr, "target.loc_hand") : t.location === "deck" ? frag(tr, "target.loc_deck") : t.location === "graveyard" ? frag(tr, "target.loc_graveyard") : "";
   const desTxt = t.designation === "random" || t.designation === "scatter" ? frag(tr, "target.des_random")
     : t.designation === "automatic" ? (t.count !== "all" ? frag(tr, "target.des_automatic") : "")
@@ -557,16 +572,7 @@ function describeScatter(eff: ComposedEffect, t?: SafeT): string | null {
   const action = eff.content === "deal_damage" ? frag(t, "scatter.action_damage") : frag(t, "scatter.action_heal");
   const unit = eff.content === "deal_damage" ? frag(t, "scatter.unit_damage") : frag(t, "scatter.unit_heal");
   const side = sideAdj(t, tg.side, false);
-  const memb = tg.membership;
-  // Même règle que le filtre de pool : la faction se lit par son nom
-  // d'affichage, pas par son id. (Ici le traducteur s'appelle `t`.)
-  const mtxt = memb
-    ? [
-        ...(memb.race ?? []).map((v) => getRaceName(v, t)),
-        ...(memb.clan ?? []).map((v) => getClanName(v, t)),
-        ...(memb.faction ?? []).map((v) => getFactionDisplayName(v, t)),
-      ].join("/")
-    : "";
+  const mtxt = membershipLabel(tg.membership, t);
   const targetTxt = tg.entity === "both"
     ? frag(t, "scatter.target_both", { side })
     : frag(t, "scatter.target_unit", { side });

@@ -520,7 +520,10 @@ export interface TargetSpec {
   count: number | "all";
   /** Bord visé. */
   side: "ally" | "enemy" | "any";
-  /** Appartenance (choix multiples possibles, OU logique entre listes). */
+  /** Appartenance, à DEUX niveaux :
+   *   • dans une même liste, les valeurs sont ALTERNATIVES (race Elfes OU Nains) ;
+   *   • entre les listes, elles se CUMULENT (race Elfes ET clan Les Sylvains).
+   *  Une liste absente ou vide ne filtre rien. Cumulatif aussi avec `maxCost`. */
   membership?: { faction?: string[]; race?: string[]; clan?: string[] };
   /** Coût maximum de la carte visée : ne gardent le pool que les cartes dont le
    *  `mana_cost` IMPRIMÉ est ≤ à cette valeur. Cumulatif avec `membership` (ET
@@ -1571,6 +1574,19 @@ export interface PlayCardAction {
   boardPosition?: number;
   graveyardTargetInstanceId?: string;
   divinationChoiceIndex?: number;
+  /** Index de choix PAR mot-clé de deck, quand la carte en porte PLUSIEURS à
+   *  l'entrée en jeu (« Veilleuse des Étoiles » : Divination puis Présage).
+   *
+   *  `divinationChoiceIndex` est un champ UNIQUE, partagé par Divination,
+   *  Creuser et Présage. Tant qu'il était seul, deux mots-clés de deck sur la
+   *  même carte lisaient forcément le même nombre : le joueur n'était consulté
+   *  qu'une fois et le second effet consommait en silence le choix du premier.
+   *  Cette table donne à chacun le sien, dans l'ordre composé par l'auteur.
+   *
+   *  `divinationChoiceIndex` reste le REPLI : les cartes à un seul mot-clé de
+   *  deck continuent de ne remplir que lui, et les actions déjà journalisées
+   *  (rejeu, resync) se relisent à l'identique. */
+  deckChoiceIndices?: Partial<Record<"divination" | "creuser" | "presage", number>>;
   tactiqueKeywords?: Keyword[];
   convocationRace?: string;  // chosen race for token
   selectionCardId?: number;  // chosen card ID from faction pool
@@ -1659,6 +1675,19 @@ export interface TapActivateAction {
    *  Divination. Porté par l'action (et non tiré au sort) pour que les deux
    *  clients rejouent le même ordre de deck. */
   divinationChoiceIndex?: number;
+  /** Index de choix PAR mot-clé de deck, quand la carte en porte PLUSIEURS à
+   *  l'entrée en jeu (« Veilleuse des Étoiles » : Divination puis Présage).
+   *
+   *  `divinationChoiceIndex` est un champ UNIQUE, partagé par Divination,
+   *  Creuser et Présage. Tant qu'il était seul, deux mots-clés de deck sur la
+   *  même carte lisaient forcément le même nombre : le joueur n'était consulté
+   *  qu'une fois et le second effet consommait en silence le choix du premier.
+   *  Cette table donne à chacun le sien, dans l'ordre composé par l'auteur.
+   *
+   *  `divinationChoiceIndex` reste le REPLI : les cartes à un seul mot-clé de
+   *  deck continuent de ne remplir que lui, et les actions déjà journalisées
+   *  (rejeu, resync) se relisent à l'identique. */
+  deckChoiceIndices?: Partial<Record<"divination" | "creuser" | "presage", number>>;
 }
 
 export interface ConcedeAction {

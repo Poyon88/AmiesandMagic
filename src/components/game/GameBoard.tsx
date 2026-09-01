@@ -581,9 +581,12 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     setDropIndex(null);
   }, []);
 
-  // Touch-drag bridge — HandCard's manual touch drag emits these CustomEvents
-  // because HTML5 drag events don't fire on touch devices. The drop visual
-  // (isDragOver / dropIndex) and the action dispatch mirror the HTML5 path.
+  // Pont du glisser MANUEL — HandCard émet ces CustomEvents pour le tactile
+  // (où les évènements HTML5 n'existent pas) ET, désormais, pour la SOURIS : le
+  // glisser natif a été abandonné côté main, Firefox pouvant abandonner sa
+  // session sans motif observable. Ce pont est donc le chemin normal des deux
+  // pointeurs, plus un cas particulier. L'aperçu de dépôt (isDragOver /
+  // dropIndex) et la pose sont identiques à ce que faisait le chemin HTML5.
   useEffect(() => {
     const onMove = (e: Event) => {
       const ev = e as CustomEvent<{ clientX: number; cardType: string }>;
@@ -1245,6 +1248,10 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
         {/* ============= PLAYER BOARD (creatures + drop zone) ============= */}
         <div
           data-droptarget="my-board"
+          // Gestionnaires HTML5 conservés en repli : plus aucune carte de main
+          // ne démarre de glisser natif (cf. HandCard), mais l'attribut
+          // data-droptarget reste l'ancre que le glisser au pointeur interroge
+          // via elementFromPoint.
           onDrop={handleDropOnBoard}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
@@ -1550,7 +1557,33 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
                     selectedCardInstanceId === cardInstance.instanceId
                   }
                   onClick={() => {
-                    if (cardInstance.card.card_type === "creature") return;
+                    // REPLI AU CLIC pour les créatures.
+                    //
+                    // Une créature se pose normalement par glisser-déposer :
+                    // c'est le seul geste qui laisse CHOISIR sa position sur le
+                    // plateau, et le clic était donc volontairement inerte. Mais
+                    // « inerte » veut dire qu'une panne du glisser rend les
+                    // créatures TOTALEMENT injouables, sans recours — constaté
+                    // sur Firefox, où le glisser démarre et où ni `drop` ni
+                    // `dragend` ne reviennent.
+                    //
+                    // Le clic les pose donc en BOUT de plateau : c'est déjà ce
+                    // que fait un dépôt sans index (`idx ?? undefined` dans
+                    // handleDropOnBoard), donc aucun comportement nouveau à
+                    // apprendre côté moteur. Le glisser reste le geste normal,
+                    // celui-ci n'est qu'un filet.
+                    //
+                    // C'est HandCard qui décide du GESTE : ce rappel n'est
+                    // atteint que par un double-clic (pointeur fin) ou par le
+                    // second tap armé d'un sort (tactile). Une créature n'y
+                    // arrive donc jamais depuis un écran tactile, où le glisser
+                    // reste son geste propre — inutile de re-tester `coarse`
+                    // ici, deux endroits qui énoncent la même règle finissent
+                    // toujours par diverger.
+                    if (cardInstance.card.card_type === "creature") {
+                      broadcast(playCardDirect(cardInstance.instanceId));
+                      return;
+                    }
                     const action = selectCardInHand(cardInstance.instanceId);
                     broadcast(action);
                   }}
@@ -1767,7 +1800,16 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
       {/* Déclencheur interactif en attente (Remontée mort/retour, ou effet
           composé de fin de tour). Le message reflète l'effet réel. */}
       {targetingMode === "pending_trigger" && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-blue-900/90 border border-blue-400 rounded-lg px-6 py-3 text-center backdrop-blur-sm">
+        <div
+          // ChoiceTimerBadge occupe EXACTEMENT le même point d'ancrage (fixed,
+          // haut, centré) et passe devant : le libellé de l'effet en attente se
+          // retrouvait tronqué en son milieu. On descend donc le bandeau sous le
+          // chrono quand celui-ci est affiché, plutôt que de déplacer le chrono,
+          // qui sert aussi aux modales de choix où sa place est acquise.
+          className={`fixed left-1/2 -translate-x-1/2 z-50 bg-blue-900/90 border border-blue-400 rounded-lg px-6 py-3 text-center backdrop-blur-sm ${
+            choiceTimer ? "top-[72px]" : "top-4"
+          }`}
+        >
           <p className="text-white font-bold">{pendingTriggerPrompt ?? "🎯 Choisissez une cible"}</p>
         </div>
       )}
