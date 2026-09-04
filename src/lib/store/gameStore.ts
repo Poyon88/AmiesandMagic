@@ -684,7 +684,14 @@ interface GameStore {
   // Game actions
   dispatchAction: (action: GameAction) => GameAction | null;
   playCardDirect: (instanceId: string, boardPosition?: number) => GameAction | null;
-  selectCardInHand: (instanceId: string) => GameAction | null;
+  /** Sélectionne une carte de la main et ouvre ce qu'elle réclame (paiement de
+   *  coût, ciblage, modale de deck…). Sans rien à réclamer, elle est JOUÉE.
+   *
+   *  `ciblageSeulement` coupe cette dernière branche : chaque feuille qui
+   *  lancerait la carte renvoie `null` au lieu de la jouer. C'est ce qui rend le
+   *  SIMPLE clic sûr sur un sort à cible — il ne peut qu'ouvrir le ciblage,
+   *  jamais lancer. Le double-clic, lui, appelle sans le drapeau. */
+  selectCardInHand: (instanceId: string, opts?: { ciblageSeulement?: boolean }) => GameAction | null;
   /** ÉVEIL — met une carte de la MAIN en éveil (0 mana, une place sous le
    *  plafond). */
   suspendToEveil: (instanceId: string) => GameAction | null;
@@ -3792,9 +3799,20 @@ export const useGameStore = create<GameStore>((set, get) => {
     return get().dispatchAction({ type: "pay_eveil", cardInstanceId: instanceId, amount: montant });
   },
 
-  selectCardInHand: (instanceId) => {
+  selectCardInHand: (instanceId, opts) => {
     const { gameState } = get();
     if (!gameState) return null;
+
+    // Toutes les feuilles « rien à réclamer, on joue » passent par ici. Sous
+    // `ciblageSeulement`, elles s'arrêtent : le simple clic d'un sort à cible
+    // ne doit JAMAIS lancer, y compris dans les cas où la cascade retombe sur
+    // un lancer direct (aucun slot sélectionnable, plus aucune cible éligible).
+    // Un seul point de sortie plutôt qu'un test à chaque feuille : c'est ce qui
+    // garantit qu'une feuille ajoutée plus tard ne rouvre pas le trou.
+    const jouerMaintenant = (): GameAction | null =>
+      opts?.ciblageSeulement
+        ? null
+        : get().dispatchAction({ type: "play_card", cardInstanceId: instanceId });
 
     const player = gameState.players[gameState.currentPlayerIndex];
     const card = carteJouable(player, instanceId);
@@ -3988,7 +4006,7 @@ export const useGameStore = create<GameStore>((set, get) => {
 
       if (selectableSlots.length === 0) {
         // No player selection needed — play directly
-        return get().dispatchAction({ type: "play_card", cardInstanceId: instanceId });
+        return jouerMaintenant();
       }
 
       const firstSlot = selectableSlots[0];
@@ -4033,7 +4051,7 @@ export const useGameStore = create<GameStore>((set, get) => {
             return null;
           }
           // Aucune créature éligible → joue sans effet.
-          return get().dispatchAction({ type: "play_card", cardInstanceId: instanceId });
+          return jouerMaintenant();
         }
         const kwIndex = parseInt(firstSlot.slot.replace("kw_", ""));
         const gravTargets = getSpellGraveyardTargets(gameState, card.card, kwIndex);
@@ -4050,7 +4068,7 @@ export const useGameStore = create<GameStore>((set, get) => {
           return null;
         }
         // No valid graveyard targets — play without effect
-        return get().dispatchAction({ type: "play_card", cardInstanceId: instanceId });
+        return jouerMaintenant();
       }
 
       const targets = getSpellSlotTargets(gameState, card.card, firstSlot);
@@ -4061,7 +4079,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       // « Annuler le ciblage ». Même repli que les branches cimetière
       // ci-dessus : la carte se joue, les effets sans cible se résolvent.
       if (targets.length === 0) {
-        return get().dispatchAction({ type: "play_card", cardInstanceId: instanceId });
+        return jouerMaintenant();
       }
 
       if (selectableSlots.length === 1) {
@@ -4148,10 +4166,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     }
 
     // Play immediately (no targeting needed)
-    return get().dispatchAction({
-      type: "play_card",
-      cardInstanceId: instanceId,
-    });
+    return jouerMaintenant();
   },
 
   selectAttacker: (instanceId) => {

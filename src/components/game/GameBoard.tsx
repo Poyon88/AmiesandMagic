@@ -7,7 +7,7 @@ import { MAX_HAND_SIZE, MAX_BOARD_SIZE, TURN_TIMER_SECONDS, CHOICE_TIMER_SECONDS
 import { secondeVieCost } from "@/lib/game/engine";
 import { useGameStore, selectPowerTargetingColor } from "@/lib/store/gameStore";
 import { useTranslations } from "next-intl";
-import { canPlayCard, canSuspendToEveil, canAttack, canUseHeroPower, effectiveManaCost, getSpellTargets, getValidTargets, heroPowerNeedsTarget, isIncinerationSlot, creatureTargetsIncinerationCamp } from "@/lib/game/engine";
+import { canPlayCard, canSuspendToEveil, canAttack, canUseHeroPower, effectiveManaCost, getSpellTargets, getValidTargets, heroPowerNeedsTarget, isIncinerationSlot, creatureTargetsIncinerationCamp, needsTarget } from "@/lib/game/engine";
 import HeroPortrait from "./HeroPortrait";
 import EmblemStrip from "./EmblemStrip";
 import Hero3DViewer from "./Hero3DViewer";
@@ -1602,6 +1602,25 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
                     const action = selectCardInHand(cardInstance.instanceId);
                     broadcast(action);
                   }}
+                  // SORT À CIBLE — le simple clic ouvre le ciblage au lieu de
+                  // ne rien faire. Passée UNIQUEMENT dans ce cas : sur une
+                  // créature ou un sort sans cible, un clic isolé reste inerte
+                  // et seul le double-clic joue.
+                  //
+                  // `ciblageSeulement` est la ceinture : `needsTarget` dit que
+                  // la carte RÉCLAME une cible, pas qu'il en existe une. Quand
+                  // il n'en reste aucune d'éligible, la cascade du store retombe
+                  // sur un lancer direct — que ce drapeau interdit. Le clic ne
+                  // fait alors rien, et le double-clic joue le sort comme avant.
+                  onSelectForTargeting={
+                    playable && cardInstance.card.card_type === "spell"
+                      && needsTarget(cardInstance.card)
+                      ? () => {
+                          const action = selectCardInHand(cardInstance.instanceId, { ciblageSeulement: true });
+                          if (action) broadcast(action);
+                        }
+                      : undefined
+                  }
                   // ÉVEIL — la pastille n'est passée QUE si la mise en éveil est
                   // réellement possible (carte à coût d'éveil, plafond non
                   // atteint, notre tour). Un bouton qui ne fait rien serait

@@ -35,6 +35,19 @@ interface HandCardProps {
   canPlay: boolean;
   isSelected?: boolean;
   onClick?: () => void;
+  /** SORT À CIBLE — ouvre le ciblage au SIMPLE clic.
+   *
+   *  Jouer une carte demande un double-clic (cf. `onDoubleClick`) parce que
+   *  c'est irréversible. Armer un ciblage ne l'est pas : le sort ne part qu'au
+   *  clic SUIVANT, sur la cible, et le ciblage s'annule entre-temps. C'est donc
+   *  une DÉSIGNATION, exactement comme le paiement de coût — qui est déjà au
+   *  simple clic pour la même raison.
+   *
+   *  N'est passée que par les sorts qui réclament réellement une cible, et le
+   *  store est appelé en `ciblageSeulement` : ce clic ne peut pas se muer en
+   *  lancer, même quand la cascade de ciblage retombe sur un lancer direct
+   *  (aucun slot sélectionnable, plus aucune cible éligible). */
+  onSelectForTargeting?: () => void;
   /** ÉVEIL — clic sur la pastille de mise en éveil. Prop séparée d'`onClick`
    *  parce que la carte a désormais DEUX gestes distincts : la jouer, ou la
    *  mettre en éveil. Absente ⇒ la pastille n'est pas rendue. */
@@ -50,6 +63,7 @@ function HandCard({
   canPlay,
   isSelected = false,
   onClick,
+  onSelectForTargeting,
   onSuspendEveil,
   boost = null,
 }: HandCardProps) {
@@ -578,6 +592,15 @@ function HandCard({
           }
           if (isCostPaymentMode) {
             if (!isPendingCostSource) payerParClic();
+            return;
+          }
+          // SORT À CIBLE : le simple clic ouvre le ciblage (cf. la prop). Placé
+          // APRÈS le paiement de coût, qui garde la priorité — pendant un
+          // créneau de paiement, une carte de main est une monnaie, pas un sort.
+          // Hors de portée du tactile : la branche double-tap des sorts, plus
+          // haut, a déjà rendu la main pour ce cas.
+          if (onSelectForTargeting) {
+            onSelectForTargeting();
             return;
           }
           // Le simple clic NE JOUE PLUS la carte : il faut un double-clic
