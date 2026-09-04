@@ -12,12 +12,21 @@ const noms = (l: CardInstance[]) => l.map((c) => c.card.name);
 
 // ── 1. SECONDE VIE ─────────────────────────────────────────────────────────
 
+// Une créature au cimetière y est arrivée MORTE : `currentHealth <= 0` et
+// `diedOnTurn` gravé par cleanDeadCreatures. Le harnais, lui, fabrique une
+// instance neuve et intacte — et c'est précisément ce décalage qui a laissé
+// passer le défaut : la Seconde vie posait la créature avec ses 0 PV, le
+// balayage de fin d'invocation la renvoyait aussitôt au cimetière, et tous les
+// tests passaient. On enterre donc pour de bon.
 function creatureSecondeVie(x: number, extra: Record<string, unknown> = {}): CardInstance {
-  return mkInstance(mkCard({
+  const c = mkInstance(mkCard({
     name: "Revenante", mana_cost: 7, attack: 3, health: 3,
     keywords: ["seconde_vie"], keyword_instances: [{ id: "seconde_vie", x }] as never,
     effect_text: `[Seconde vie ${x}]`, ...extra,
   }));
+  c.currentHealth = 0;
+  c.diedOnTurn = 1;
+  return c;
 }
 
 describe("Seconde vie — jouer depuis le cimetière", () => {
@@ -32,6 +41,20 @@ describe("Seconde vie — jouer depuis le cimetière", () => {
     expect(noms(next.players[0].board)).toContain("Revenante");
     expect(noms(next.players[0].graveyard)).not.toContain("Revenante");
     expect(next.players[0].mana).toBe(1); // 3 − 2
+  });
+
+  it("revient en jeu VIVANTE, avec ses PV restaurés", () => {
+    const s = mkState();
+    const c = creatureSecondeVie(2); // 3/3, morte à 0 PV au cimetière
+    s.players[0].graveyard.push(c);
+    s.players[0].mana = 3;
+
+    const next = applyAction(s, { type: "play_card", cardInstanceId: c.instanceId, fromGraveyard: true });
+    const en_jeu = next.players[0].board.find((x) => x.card.name === "Revenante");
+
+    expect(en_jeu).toBeDefined();
+    expect(en_jeu!.currentHealth).toBe(3);
+    expect(en_jeu!.diedOnTurn).toBeNull();
   });
 
   it("la créature PERD Seconde vie une fois ressuscitée", () => {

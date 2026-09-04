@@ -3701,6 +3701,23 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
   if (card.card_type === "creature") {
     if (player.board.length >= MAX_BOARD_SIZE) return state;
 
+    // SECONDE VIE — l'instance arrive du CIMETIÈRE, donc dans l'état où elle y
+    // est tombée : `currentHealth <= 0` et `diedOnTurn` gravé par
+    // cleanDeadCreatures. Posée telle quelle, elle était immédiatement rebalayée
+    // par le `settleDeaths` de fin d'invocation, quelques lignes plus bas —
+    // mana débité, cimetière inchangé, aucune créature en jeu. Un échec d'autant
+    // plus illisible que rien ne le distingue d'un refus du moteur.
+    //
+    // `returnInstanceToPlay` est le point de remise en jeu COMMUN à tous les
+    // autres chemins de retour (Rappel, Exhumation, Remontée-mort, Cycle
+    // éternel, Résurrection…) : il restaure PV et ATK depuis les stats
+    // persistantes, purge les états de tour et efface la marque de mort. Seconde
+    // vie était le seul retour du cimetière à ne pas y passer.
+    //
+    // Gardé sur `fromGraveyard` : depuis la main comme depuis l'éveil, la carte
+    // n'a jamais été en jeu et n'a donc aucun état de mort à défaire.
+    if (fromGraveyard) returnInstanceToPlay(cardInstance);
+
     cardInstance.hasSummoningSickness = !card.keywords.includes("charge");
     cardInstance.hasAttacked = false;
     cardInstance.attacksRemaining = maxAttacksFor(cardInstance);
