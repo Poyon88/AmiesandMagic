@@ -409,6 +409,10 @@
         "label": "Risparmio X",
         "desc": "Aggiunge X al tuo contatore Risparmio (massimo 8)."
       },
+      "foi": {
+        "label": "Fede X",
+        "desc": "Aggiunge X alla tua Fede (max 10). Spesa: scopri 1 di 3 carte del mazzo con costo ≤ Fede; solo quel costo è sottratto."
+      },
       "seconde_vie": {
         "label": "Seconda vita X",
         "desc": "Può essere giocata dal vostro cimitero per X mana. Perde quindi Seconda vita."
@@ -643,6 +647,10 @@
         "label": "Risparmio X",
         "desc": "Aggiunge X al tuo contatore Risparmio (massimo 8)"
       },
+      "foi": {
+        "label": "Fede X",
+        "desc": "Aggiunge X alla tua Fede (max 10). Spesa: scopri 1 di 3 carte del mazzo con costo ≤ Fede; solo quel costo è sottratto"
+      },
       "inspiration": {
         "label": "Ispirazione X",
         "desc": "Pesca X carte"
@@ -746,6 +754,7 @@
         "exhum_upto": "fino a {n} creature",
         "invocation": "evoca una creatura casuale di costo {x}{filter}",
         "epargne": "aggiunge {x} al tuo contatore Risparmio",
+        "foi": "aggiunge {x} al tuo contatore di Fede",
         "incineration": "rimette {x} carte dal cimitero bersaglio sotto il suo deck",
         "devoration": "divora",
         "retour_differe": "mette sotto il deck del proprietario",
@@ -2362,6 +2371,8 @@
     "presage_miss": "Sbagliato. La carta giusta è in verde.",
     "apprentissage_title": "📖 Apprendimento",
     "apprentissage_subtitle": "Quale magia deve memorizzare la creatura?",
+    "foi_title": "✨ Fede",
+    "foi_subtitle": "Scegli una carta da aggiungere alla tua mano. Il suo costo viene sottratto dalla tua Fede; il resto è conservato.",
     "zone_eveil": "Risveglio",
     "zone_eveil_yours": "Il tuo risveglio",
     "zone_eveil_opponent": "Risveglio avversario",

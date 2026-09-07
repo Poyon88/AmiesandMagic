@@ -409,6 +409,10 @@
         "label": "Thrift X",
         "desc": "Adds X to your Thrift counter (max 8)."
       },
+      "foi": {
+        "label": "Faith X",
+        "desc": "Adds X to your Faith (max 10). Spend: discover 1 of 3 deck cards costing ≤ Faith; only that cost is deducted."
+      },
       "seconde_vie": {
         "label": "Second Life X",
         "desc": "Can be played from your graveyard for X mana. It then loses Second Life."
@@ -643,6 +647,10 @@
         "label": "Thrift X",
         "desc": "Adds X to your Thrift counter (max 8)"
       },
+      "foi": {
+        "label": "Faith X",
+        "desc": "Adds X to your Faith (max 10). Spend: discover 1 of 3 deck cards costing ≤ Faith; only that cost is deducted"
+      },
       "inspiration": {
         "label": "Inspiration X",
         "desc": "Draw X cards."
@@ -746,6 +754,7 @@
         "exhum_upto": "up to {n} creatures",
         "invocation": "summons a random creature with cost {x}{filter}",
         "epargne": "adds {x} to your Thrift counter",
+        "foi": "adds {x} to your Faith counter",
         "incineration": "puts {x} cards from the targeted graveyard back under its deck",
         "devoration": "devours",
         "retour_differe": "places under its owner's deck",
@@ -2362,6 +2371,8 @@
     "presage_miss": "Missed. The right card is in green.",
     "apprentissage_title": "📖 Learning",
     "apprentissage_subtitle": "Which spell should the creature memorise?",
+    "foi_title": "✨ Faith",
+    "foi_subtitle": "Choose a card to put in your hand. Its cost is deducted from your Faith; the rest is kept.",
     "zone_eveil": "Awakening",
     "zone_eveil_yours": "Your awakening",
     "zone_eveil_opponent": "Opponent's awakening",

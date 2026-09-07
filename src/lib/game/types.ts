@@ -83,6 +83,9 @@ export type Keyword =
   // Polymorphic — draw X cards
   | "inspiration"
   | "epargne"
+  // Alimente le compteur de Foi (plafond MAX_FOI) ; se dépense en découvrant
+  // 1 carte parmi 3 du DECK de coût ≤ Foi, seul ce coût étant défalqué.
+  | "foi"
   // Jouable depuis le cimetière pour un coût alternatif
   | "seconde_vie"
   // Recycle X cartes d'un cimetière sous le deck de son propriétaire
@@ -198,6 +201,7 @@ export type SpellKeywordId =
   | "invocations_multiples"
   | "inspiration"
   | "epargne"
+  | "foi"
   | "incineration"
   | "creuser"
   | "presage"
@@ -493,6 +497,9 @@ export type ComposedEffectContent =
   // Alimente le compteur d'Épargne du contrôleur (plafond MAX_EPARGNE). Aucune
   // cible : `magnitude.x` porte le montant ajouté.
   | "epargne"
+  // Alimente le compteur de Foi du contrôleur (plafond MAX_FOI). Même contrat
+  // que `epargne` : aucune cible, `magnitude.x` porte le montant.
+  | "foi"
   // Recycle X cartes du cimetière du camp VISÉ sous son deck. Le camp vient de
   // `target.side` (aucune unité n'est touchée individuellement).
   | "incineration"
@@ -1241,6 +1248,13 @@ export interface PlayerState {
    *  piloté exclusivement par des actions journalisées, donc identique sur les
    *  deux clients. */
   epargne: number | null;
+  /** Compteur de Foi, plafonné à MAX_FOI. Mêmes conventions que `epargne`
+   *  (`null` = jamais déclenchée ⇒ masqué ; ne redevient jamais `null`).
+   *
+   *  Différence de DÉPENSE : la Foi ne se vide pas d'un coup. On découvre une
+   *  carte de son DECK de coût ≤ Foi, et seul ce coût est retiré — le reste
+   *  est conservé pour une découverte ultérieure. */
+  foi: number | null;
   /** Esprit de corps : combien de créatures portant ce mot-clé ce joueur a-t-il
    *  POSÉES DEPUIS LA MAIN depuis le début de la partie, par clan.
    *
@@ -1736,6 +1750,20 @@ export interface SpendEpargneAction {
   selectionCardId: number;
 }
 
+/** Dépense du compteur de FOI : le joueur a désigné une carte parmi les 3 que
+ *  `getFoiOffer` a révélées de son deck.
+ *
+ *  Comme pour l'Épargne, une seule action porte tout le choix et le joueur
+ *  concerné est `players[currentPlayerIndex]`. L'offre est recalculée par le
+ *  moteur (tirage semé sur l'état) : la carte doit en faire partie, sinon la
+ *  demande est ignorée. */
+export interface SpendFoiAction {
+  type: "spend_foi";
+  /** Instance de DECK choisie (et non un id de carte : le deck peut contenir
+   *  plusieurs exemplaires de la même carte). */
+  cardInstanceId: string;
+}
+
 /** ÉVEIL — mise en éveil : la carte quitte la MAIN pour la zone d'éveil, avec
  *  autant de points que son `eveil_cost`. Ne coûte aucun mana : ce qu'on engage
  *  ici, c'est la carte elle-même et une place sous le plafond `MAX_EVEIL`. */
@@ -1760,7 +1788,7 @@ export interface PayEveilAction {
   amount?: number;
 }
 
-export type GameAction = PlayCardAction | AttackAction | EndTurnAction | MulliganAction | HeroPowerAction | TapActivateAction | ConcedeAction | ResolvePendingTriggerAction | AutoResolvePendingTriggersAction | SpendEpargneAction | SuspendEveilAction | PayEveilAction;
+export type GameAction = PlayCardAction | AttackAction | EndTurnAction | MulliganAction | HeroPowerAction | TapActivateAction | ConcedeAction | ResolvePendingTriggerAction | AutoResolvePendingTriggersAction | SpendEpargneAction | SpendFoiAction | SuspendEveilAction | PayEveilAction;
 
 /** Déclencheur interactif en attente : le contrôleur doit choisir une cible
  *  avant que le jeu ne continue. Porté par l'état pour rester déterministe et

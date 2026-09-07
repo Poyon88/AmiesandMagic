@@ -409,6 +409,10 @@
         "label": "Poupança X",
         "desc": "Adiciona X ao seu contador de Poupança (máximo 8)."
       },
+      "foi": {
+        "label": "Fé X",
+        "desc": "Adiciona X à sua Fé (máx. 10). Gasto: descubra 1 de 3 cartas do baralho com custo ≤ Fé; só esse custo é deduzido."
+      },
       "seconde_vie": {
         "label": "Segunda Vida X",
         "desc": "Pode ser jogada do seu cemitério por X de mana. Ela perde então Segunda Vida."
@@ -643,6 +647,10 @@
         "label": "Poupança X",
         "desc": "Adiciona X ao seu contador de Poupança (máximo 8)"
       },
+      "foi": {
+        "label": "Fé X",
+        "desc": "Adiciona X à sua Fé (máx. 10). Gasto: descubra 1 de 3 cartas do baralho com custo ≤ Fé; só esse custo é deduzido"
+      },
       "inspiration": {
         "label": "Inspiração X",
         "desc": "Compre X cartas"
@@ -746,6 +754,7 @@
         "exhum_upto": "até {n} criaturas",
         "invocation": "invoca uma criatura aleatória de custo {x}{filter}",
         "epargne": "adiciona {x} ao seu contador de Poupança",
+        "foi": "adiciona {x} ao seu contador de Fé",
         "incineration": "devolve {x} cartas do cemitério alvo para debaixo do deck",
         "devoration": "devora",
         "retour_differe": "coloca debaixo do deck de seu dono",
@@ -2362,6 +2371,8 @@
     "presage_miss": "Errou. A carta certa está em verde.",
     "apprentissage_title": "📖 Aprendizagem",
     "apprentissage_subtitle": "Que feitiço deve a criatura memorizar?",
+    "foi_title": "✨ Fé",
+    "foi_subtitle": "Escolha uma carta para a sua mão. O seu custo é deduzido da sua Fé; o resto é conservado.",
     "zone_eveil": "Despertar",
     "zone_eveil_yours": "O seu despertar",
     "zone_eveil_opponent": "Despertar do adversário",

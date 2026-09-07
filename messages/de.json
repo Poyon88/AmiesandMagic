@@ -409,6 +409,10 @@
         "label": "Sparen X",
         "desc": "Fügt X zu deinem Sparzähler hinzu (maximal 8)."
       },
+      "foi": {
+        "label": "Glaube X",
+        "desc": "Gibt dir X Glaube (max. 10). Ausgabe: entdecke 1 von 3 Deckkarten mit Kosten ≤ Glaube; nur diese Kosten werden abgezogen."
+      },
       "seconde_vie": {
         "label": "Zweites Leben X",
         "desc": "Kann für X Mana aus deinem Friedhof gespielt werden. Sie verliert danach Zweites Leben."
@@ -643,6 +647,10 @@
         "label": "Sparen X",
         "desc": "Fügt X zu deinem Sparzähler hinzu (maximal 8)"
       },
+      "foi": {
+        "label": "Glaube X",
+        "desc": "Gibt dir X Glaube (max. 10). Ausgabe: entdecke 1 von 3 Deckkarten mit Kosten ≤ Glaube; nur diese Kosten werden abgezogen"
+      },
       "inspiration": {
         "label": "Inspiration X",
         "desc": "Ziehe X Karten."
@@ -746,6 +754,7 @@
         "exhum_upto": "bis zu {n} Kreaturen",
         "invocation": "beschwört eine zufällige Kreatur mit Kosten {x}{filter}",
         "epargne": "fügt {x} zu deinem Sparzähler hinzu",
+        "foi": "fügt deinem Glaubenszähler {x} hinzu",
         "incineration": "legt {x} Karten des anvisierten Friedhofs unter dessen Deck",
         "devoration": "verschlingt",
         "retour_differe": "legt unter das Deck ihres Besitzers",
@@ -2362,6 +2371,8 @@
     "presage_miss": "Daneben. Die richtige Karte ist grün.",
     "apprentissage_title": "📖 Lernen",
     "apprentissage_subtitle": "Welchen Zauber soll die Kreatur lernen?",
+    "foi_title": "✨ Glaube",
+    "foi_subtitle": "Wähle eine Karte für deine Hand. Ihre Kosten werden von deinem Glauben abgezogen; der Rest bleibt erhalten.",
     "zone_eveil": "Erwachen",
     "zone_eveil_yours": "Dein Erwachen",
     "zone_eveil_opponent": "Erwachen des Gegners",

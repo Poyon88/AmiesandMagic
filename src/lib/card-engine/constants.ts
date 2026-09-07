@@ -110,6 +110,8 @@ export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
   // Épargne alimente un compteur : aucun ciblage, aucune source en jeu requise
   // → tous les déclencheurs sont ouverts.
   "Épargne X": ALL_MODES,
+  // Foi : même contrat que l'Épargne (compteur du contrôleur, sans cible).
+  "Foi X": ALL_MODES,
   "Incinération X": ALL_MODES,
   "Creuser X": ALL_MODES,
   "Retour différé": ALL_MODES,
@@ -477,7 +479,9 @@ export const FACTIONS: Record<string, {
     },
     clanProfiles: {
       "Le Royaume du Nord": { statWeights: { atk: 1.15, def: 0.90 }, likelyKeywords: { "Gloire +X/+Y": 0.55, "Bravoure": 0.50, "Raid": 0.50, "Première Frappe": 0.45, "Célérité": 0.40, "Pillage X": 0.35, "Combustion": 0.30, "Commandement": 0.30 } },
-      "L'Ordre de l'Aube": { statWeights: { atk: 0.90, def: 1.20 }, likelyKeywords: { "Bouclier": 0.60, "Bénédiction": 0.55, "Provocation": 0.50, "Résistance X": 0.50, "Première Frappe": 0.40, "Commandement": 0.40, "Bravoure": 0.35 } },
+      // Foi X en tête : c'est la signature du clan (compteur dépensé en
+      // découvertes dans le deck).
+      "L'Ordre de l'Aube": { statWeights: { atk: 0.90, def: 1.20 }, likelyKeywords: { "Foi X": 0.65, "Bouclier": 0.60, "Bénédiction": 0.55, "Provocation": 0.50, "Résistance X": 0.50, "Première Frappe": 0.40, "Commandement": 0.40, "Bravoure": 0.35 } },
       "Les Guerrières du Vent": { statWeights: { atk: 1.15, def: 0.85 }, likelyKeywords: { "Précision": 0.55, "Esquive": 0.55, "Traque": 0.50, "Première Frappe": 0.45, "Célérité": 0.45, "Bravoure": 0.40 } },
       "La Sublime Porte": { statWeights: { atk: 1.10, def: 1.05 }, likelyKeywords: { "Commandement": 0.60, "Première Frappe": 0.50, "Combustion": 0.50, "Précision": 0.45, "Bravoure": 0.45, "Tactique X": 0.40, "Bouclier": 0.35 } },
     },

@@ -43,6 +43,7 @@ import {
   getTraqueDuDestinX,
   creatureNeedsSelection,
   getSelectionCards,
+  getFoiOffer,
   creatureNeedsRenfortRoyal,
   getRenfortRoyalCards,
   creatureNeedsMagicalSelection,
@@ -409,6 +410,13 @@ export interface EpargneGainEvent {
   timestamp: number;
 }
 
+/** Gain de compteur de Foi à animer : même contrat que EpargneGainEvent, sur
+ *  l'autre compteur. */
+export interface FoiGainEvent {
+  bySide: Partial<Record<"mine" | "theirs", number>>;
+  timestamp: number;
+}
+
 export interface HeroPowerCastEvent {
   // Purely an FX payload (not part of hashed GameState). heroId lets the
   // overlay localise name / power via useHeroText at render time.
@@ -523,6 +531,9 @@ interface GameStore {
   /** Le picker « 1 parmi 3 » ouvert est celui du compteur d'Épargne : le
    *  dispatch à venir est un `spend_epargne`, pas un play_card. */
   pendingEpargneSelection: boolean;
+  /** La modale de deck ouverte (mode `divination`) est celle du compteur de
+   *  Foi : le dispatch à venir est un `spend_foi`. */
+  pendingFoiSelection: boolean;
   pendingBoardPosition: number | null;
   /** Instance dont les sons d'ENTRÉE EN JEU ont déjà été joués au moment de
    *  l'aperçu (créature posée, picker de capacité ouvert). Le dispatch qui suit
@@ -626,6 +637,7 @@ interface GameStore {
   powerArrowEvent: PowerArrowEvent | null;
   manaReductionEvent: ManaReductionEvent | null;
   epargneGainEvent: EpargneGainEvent | null;
+  foiGainEvent: FoiGainEvent | null;
   heroPowerCastEvent: HeroPowerCastEvent | null;
   graveyardAffectEvent: GraveyardAffectEvent | null;
   discardFromHandEvent: DiscardFromHandEvent | null;
@@ -713,6 +725,7 @@ interface GameStore {
   clearPowerArrowEvent: () => void;
   clearManaReductionEvent: () => void;
   clearEpargneGainEvent: () => void;
+  clearFoiGainEvent: () => void;
   clearHeroPowerCastEvent: () => void;
   clearGraveyardAffectEvent: () => void;
   clearDiscardFromHandEvent: () => void;
@@ -725,6 +738,9 @@ interface GameStore {
   /** Clic sur le compteur d'Épargne : ouvre le picker. Renvoie toujours null
    *  (rien n'est diffusé tant que le joueur n'a pas choisi). */
   openEpargnePicker: () => GameAction | null;
+  /** Clic sur le compteur de Foi : ouvre la modale de deck (3 cartes de coût
+   *  ≤ Foi). Renvoie toujours null, comme openEpargnePicker. */
+  openFoiPicker: () => GameAction | null;
   /** APPRENTISSAGE — lance le sort mémorisé par cette créature (coûts et
    *  ciblage passent par la chaîne habituelle des sorts). */
   activateLearnedSpell: (creatureInstanceId: string) => GameAction | null;
@@ -1571,6 +1587,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   selectedTopdeckIds: [],
   pendingHeroPowerSelection: false,
   pendingEpargneSelection: false,
+  pendingFoiSelection: false,
   pendingBoardPosition: null,
   sfxPreAnnouncedInstanceId: null,
   markOnPlaySfxAnnounced: (instanceId) => set({ sfxPreAnnouncedInstanceId: instanceId }),
@@ -1616,6 +1633,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   powerArrowEvent: null,
   manaReductionEvent: null,
   epargneGainEvent: null,
+  foiGainEvent: null,
   heroPowerCastEvent: null,
   graveyardAffectEvent: null,
   discardFromHandEvent: null,
@@ -1699,6 +1717,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         powerArrowEvent: null,
         manaReductionEvent: null,
         epargneGainEvent: null,
+  foiGainEvent: null,
       });
       return action;
     }
@@ -2527,6 +2546,20 @@ export const useGameStore = create<GameStore>((set, get) => {
       }
     }
 
+    // Foi : même DIFF d'état que l'Épargne, sur son propre compteur.
+    let foiGainEvent: FoiGainEvent | null = null;
+    {
+      const bySide: Partial<Record<"mine" | "theirs", number>> = {};
+      for (let i = 0; i < 2; i++) {
+        const delta = (newState.players[i].foi ?? 0) - (gameState.players[i].foi ?? 0);
+        if (delta > 0) bySide[newState.players[i].id === localPlayerId ? "mine" : "theirs"] = delta;
+      }
+      if (Object.keys(bySide).length > 0) {
+        foiGainEvent = { bySide, timestamp: Date.now() };
+        if (!sfxEvents.some(e => e.type === "buff")) sfxEvents.push({ type: "buff" });
+      }
+    }
+
     // Historique latéral : construit ICI, une fois toutes les dérivations faites
     // (sort + relances, pouvoir de héros, combat, pouvoirs déclenchés, morts) et
     // AVANT que les champs d'overlay ne soient planifiés puis vidés.
@@ -2821,7 +2854,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     // en éveil ou y verser un point ne fait grossir aucune zone visible — la main
     // RÉTRÉCIT, ce que `drawnCardIds` ne regarde pas. Sans ce drapeau, le seul
     // mouvement du mécanisme n'aurait jamais d'animation.
-    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!powerArrowEvent || !!manaReductionEvent || !!epargneGainEvent || !!exileCostEvent || !!topdeckCostEvent || !!deckEffectEvent || !!cycleEvent || !!compagnonsEvent || !!eveilEvent || drawTriggerSpells.length > 0;
+    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!powerArrowEvent || !!manaReductionEvent || !!epargneGainEvent || !!foiGainEvent || !!exileCostEvent || !!topdeckCostEvent || !!deckEffectEvent || !!cycleEvent || !!compagnonsEvent || !!eveilEvent || drawTriggerSpells.length > 0;
 
     // Deep clone helper — factionCardPool / allSpellsPool carry non-serialisable refs, keep them aside.
     const cloneState = (state: GameState): GameState => {
@@ -2963,6 +2996,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         selectedTopdeckIds: [],
         pendingHeroPowerSelection: false,
   pendingEpargneSelection: false,
+  pendingFoiSelection: false,
         pendingTapSourceId: null,
         pendingTapInstanceIdx: null,
         pendingTapComposedUid: null,
@@ -2993,6 +3027,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       selectedTopdeckIds: [],
       pendingHeroPowerSelection: false,
   pendingEpargneSelection: false,
+  pendingFoiSelection: false,
       pendingTapSourceId: null,
       pendingTapInstanceIdx: null,
       pendingTapComposedUid: null,
@@ -3329,6 +3364,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         // être planifiée inconditionnellement, et un gain d'Épargne ne tue
         // personne (une Épargne « fin de tour » n'aurait rien animé du tout).
         ...(epargneGainEvent ? { epargneGainEvent } : {}),
+        ...(foiGainEvent ? { foiGainEvent } : {}),
       });
       playSfxBatch(impactSfx);
     };
@@ -4502,6 +4538,12 @@ export const useGameStore = create<GameStore>((set, get) => {
         graveyardTargetInstanceId: targetId,
         boardPosition: pendingBoardPosition ?? undefined,
       });
+    } else if (targetingMode === "divination" && get().pendingFoiSelection) {
+      // Modale de FOI : la position cliquée désigne une instance de l'offre ;
+      // le moteur recalcule l'offre, re-valide et défalque le coût.
+      const inst = get().divinationCards[parseInt(targetId) || 0];
+      if (!inst) return null;
+      return get().dispatchAction({ type: "spend_foi", cardInstanceId: inst.instanceId });
     } else if (targetingMode === "divination" && get().pendingTapSourceId !== null && get().pendingTapInstanceIdx !== null) {
       // Divination déclenchée par un TAP : le choix part avec l'action, il n'y
       // a pas de carte en cours de pose. Branche placée AVANT celle du jeu de
@@ -4744,6 +4786,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       selectedTopdeckIds: [],
       pendingHeroPowerSelection: false,
   pendingEpargneSelection: false,
+  pendingFoiSelection: false,
     });
   },
 
@@ -4797,6 +4840,10 @@ export const useGameStore = create<GameStore>((set, get) => {
 
   clearEpargneGainEvent: () => {
     set({ epargneGainEvent: null });
+  },
+
+  clearFoiGainEvent: () => {
+    set({ foiGainEvent: null });
   },
 
   clearDeathEvents: () => {
@@ -5109,6 +5156,38 @@ export const useGameStore = create<GameStore>((set, get) => {
     return null;
   },
 
+  openFoiPicker: () => {
+    const { gameState, targetingMode, isAnimating } = get();
+    if (!gameState || isAnimating) return null;
+    // Anti-réentrance : une modale de choix déjà ouverte (Sélection ou deck) ne
+    // doit pas être réarmée — un second clic recalculerait l'offre.
+    if (targetingMode === "selection" || targetingMode === "divination") return null;
+    if (!get().isMyTurn()) return null;
+
+    const me = gameState.players[gameState.currentPlayerIndex];
+    if ((me.foi ?? 0) < 1) return null;
+    if (me.hand.length >= MAX_HAND_SIZE) return null;
+
+    // L'offre vient du moteur (tirage semé sur l'état) : c'est la MÊME que
+    // celle qu'il recalculera pour valider le choix.
+    const offre = getFoiOffer(gameState);
+    // Aucune carte abordable dans le deck : le clic ne fait rien, la Foi reste.
+    if (offre.length === 0) return null;
+
+    set({
+      selectedCardInstanceId: null,
+      selectedAttackerInstanceId: null,
+      validTargets: [],
+      targetingMode: "divination",
+      divinationCards: offre,
+      deckPickerOrder: null,
+      learnPickerFor: null,
+      pendingFoiSelection: true,
+      pendingBoardPosition: null,
+    });
+    return null;
+  },
+
   activateHeroPower: () => {
     const { gameState } = get();
     if (!gameState) return null;
@@ -5261,6 +5340,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         pendingTapInstanceIdx: instanceIdx,
         pendingHeroPowerSelection: false,
   pendingEpargneSelection: false,
+  pendingFoiSelection: false,
         pendingTriggerId: null,
       });
       return null;

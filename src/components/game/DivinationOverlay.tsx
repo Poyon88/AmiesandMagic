@@ -27,6 +27,9 @@ export default function DivinationOverlay({ cards, onChoose, onCancel }: Divinat
   // APPRENTISSAGE — la même modale sert à choisir un sort de la MAIN à
   // mémoriser. Le drapeau du store la distingue des pickers de deck.
   const isApprentissage = useGameStore((s) => s.learnPickerFor !== null);
+  // FOI — découverte d'une carte du deck de coût ≤ compteur. Pas d'annulation :
+  // refermer reviendrait à regarder 3 cartes du deck gratuitement.
+  const isFoi = useGameStore((s) => s.pendingFoiSelection);
   // Position AFFICHÉE de la carte qui était réellement au sommet du deck.
   const bonneReponse = deckPickerOrder ? deckPickerOrder.indexOf(0) : -1;
   const [choix, setChoix] = useState<number | null>(null);
@@ -43,12 +46,16 @@ export default function DivinationOverlay({ cards, onChoose, onCancel }: Divinat
     }
     return false;
   });
-  const title = isApprentissage
+  const title = isFoi
+    ? t('foi_title')
+    : isApprentissage
     ? t('apprentissage_title')
     : isPresage
       ? t('presage_title')
       : isTraqueDuDestin ? t('divination_traque_title') : t('divination_title');
-  const subtitle = isApprentissage
+  const subtitle = isFoi
+    ? t('foi_subtitle')
+    : isApprentissage
     ? t('apprentissage_subtitle')
     : isPresage
     ? (choix === null
@@ -115,7 +122,7 @@ export default function DivinationOverlay({ cards, onChoose, onCancel }: Divinat
             reviendrait à regarder les 3 cartes gratuitement puis à rejouer,
             exactement le « scouting » que la règle anti-annulation de Sélection
             interdit déjà. */}
-        {!isPresage && <button
+        {!isPresage && !isFoi && <button
           onClick={onCancel}
           style={{
             padding: "8px 24px", borderRadius: 8,

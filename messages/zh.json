@@ -409,6 +409,10 @@
         "label": "储蓄 X",
         "desc": "为你的储蓄计数器增加X点（上限8点）。"
       },
+      "foi": {
+        "label": "信仰 X",
+        "desc": "信仰+X（上限10）。消耗：从牌库费用≤信仰的3张牌中发现1张，只扣除该牌费用."
+      },
       "seconde_vie": {
         "label": "二次生命 X",
         "desc": "可从你的墓地中支付X点法力值打出。此后失去二次生命。"
@@ -643,6 +647,10 @@
         "label": "储蓄 X",
         "desc": "为你的储蓄计数器增加X点（上限8点）"
       },
+      "foi": {
+        "label": "信仰 X",
+        "desc": "信仰+X（上限10）。消耗：从牌库费用≤信仰的3张牌中发现1张，只扣除该牌费用"
+      },
       "inspiration": {
         "label": "启示 X",
         "desc": "抽 X 张牌"
@@ -746,6 +754,7 @@
         "exhum_upto": "至多 {n} 个生物",
         "invocation": "召唤一个费用为{x}{filter}的随机生物",
         "epargne": "为你的储蓄计数器增加{x}点",
+        "foi": "为你的信仰计数器增加{x}点",
         "incineration": "将目标墓地中的{x}张卡牌放回其牌库底",
         "devoration": "吞噬",
         "retour_differe": "放到其拥有者牌库底",
@@ -2362,6 +2371,8 @@
     "presage_miss": "没猜中。正确的牌是绿框那张。",
     "apprentissage_title": "📖 研习",
     "apprentissage_subtitle": "这个生物要记住哪张法术？",
+    "foi_title": "✨ 信仰",
+    "foi_subtitle": "选择一张牌加入手牌。其费用将从你的信仰中扣除，其余保留。",
     "zone_eveil": "觉醒",
     "zone_eveil_yours": "你的觉醒",
     "zone_eveil_opponent": "对手的觉醒",

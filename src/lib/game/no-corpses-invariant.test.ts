@@ -46,6 +46,8 @@ const COUVERTURE: Record<GameAction["type"], Couverture> = {
   // cartes, l'Épargne ajoute une carte en main, la concession termine la partie.
   mulligan: "sans dégâts",
   spend_epargne: "sans dégâts",
+  // La Foi déplace une carte du deck vers la main : personne ne perd de PV.
+  spend_foi: "sans dégâts",
   concede: "sans dégâts",
   // Éveil : mettre en éveil déplace une carte de la main vers une zone hors du
   // jeu, verser un point ne fait que dépenser du mana. Le seul moment où une

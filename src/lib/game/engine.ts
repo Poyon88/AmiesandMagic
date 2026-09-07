@@ -28,6 +28,7 @@ import type {
   PendingTrigger,
   ResolvePendingTriggerAction,
   SpendEpargneAction,
+  SpendFoiAction,
   SuspendEveilAction,
   PayEveilAction,
   StackFrame,
@@ -46,6 +47,7 @@ import {
   MAX_BOARD_SIZE,
   MAX_MANA,
   MAX_EPARGNE,
+  MAX_FOI,
   MAX_EVEIL,
   SEUIL_DECK_THRESHOLD,
   LOW_HP_TRIGGER_THRESHOLD,
@@ -1289,6 +1291,7 @@ function resolveComposedEffect(
     // Épargne : alimente le compteur du contrôleur. Aucune cible, donc aucun
     // besoin de `source` — un sort comme une créature y accèdent pareillement.
     case "epargne": addEpargne(owner, x); return;
+    case "foi": addFoi(owner, x); return;
     // APPEL — met en jeu gratuitement la 1re unité du DECK de coût ≤ X qui
     // satisfait le filtre de pool.
     //
@@ -2293,8 +2296,9 @@ export function initializeGame(
     spellHistory: [],
     fatigueDamage: 0,
     ownedLimitedCardIds: [],
-    // null = Épargne jamais déclenchée ⇒ compteur masqué (cf. PlayerState).
+    // null = Épargne / Foi jamais déclenchée ⇒ compteur masqué (cf. PlayerState).
     epargne: null,
+    foi: null,
   });
 
   return {
@@ -3869,6 +3873,11 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // resolveCuratedKeywordEffect — ce bloc ne couvre QUE l'entrée en jeu.
     if (hasKwOnPlay(cardInstance, "epargne")) {
       addEpargne(player, getKwX(cardInstance, "epargne", undefined, 1));
+    }
+
+    // Foi X : même contrat que l'Épargne, compteur distinct.
+    if (hasKwOnPlay(cardInstance, "foi")) {
+      addFoi(player, getKwX(cardInstance, "foi", undefined, 1));
     }
 
     // Concentration X: remplace chaque sort en main par un sort aléatoire
@@ -5528,6 +5537,10 @@ function resolveSpellKeywords(
         addEpargne(ctx.caster, kw.amount ?? 1);
         break;
       }
+      case "foi": {
+        addFoi(ctx.caster, kw.amount ?? 1);
+        break;
+      }
       case "incineration": {
         resolveIncineration(incinerationVictim(targetId, ctx.caster, ctx.opponent), kw.amount ?? 1);
         break;
@@ -6840,6 +6853,13 @@ function resolveDevoration(
 function addEpargne(player: PlayerState, x: number): void {
   if (x <= 0) return;
   player.epargne = Math.min(MAX_EPARGNE, (player.epargne ?? 0) + x);
+}
+
+/** Alimente le compteur de Foi, écrêté à MAX_FOI. Mêmes règles d'apparition et
+ *  d'unicité d'entrée que `addEpargne` — les deux compteurs sont indépendants. */
+function addFoi(player: PlayerState, x: number): void {
+  if (x <= 0) return;
+  player.foi = Math.min(MAX_FOI, (player.foi ?? 0) + x);
 }
 
 /** Retrouve le contrôleur d'une instance dans l'état en cours de mutation.
@@ -8328,6 +8348,10 @@ function resolveCuratedKeywordEffect(
       addEpargne(owner, x);
       break;
     }
+    case "foi": {
+      addFoi(owner, x);
+      break;
+    }
     case "pillage": {
       for (let i = 0; i < x && opponent.hand.length > 0; i++) {
         discardFromHand(opponent, Math.floor(rng() * opponent.hand.length), [owner, opponent]);
@@ -9027,6 +9051,84 @@ export function spendEpargne(state: GameState, action: SpendEpargneAction): Game
   const me = newState.players[newState.currentPlayerIndex];
   me.hand.push(createCardInstance(card));
   me.epargne = 0; // reste à 0 (visible), ne redevient jamais null.
+  newState.lastAction = action;
+  return newState;
+}
+
+/** Coût qu'une DÉCOUVERTE par la Foi retire du compteur : le coût imprimé de
+ *  la carte. Une carte du deck ne porte aucune remise (Concentration ne grave
+ *  ses réductions que sur les sorts de la MAIN), et les remises de plateau
+ *  (Canalisation, Entraide) s'appliquent au moment de JOUER la carte, pas de
+ *  la découvrir. */
+function foiCostOf(inst: CardInstance): number {
+  return Math.max(0, inst.card.mana_cost);
+}
+
+/** OFFRE de la Foi : jusqu'à 3 cartes du DECK du joueur courant, de coût ≤ Foi.
+ *
+ *  Tirage semé sur l'état visible, comme `getSelectionCards` : les deux clients
+ *  calculent la même offre sans toucher à la RNG partagée, et le moteur peut la
+ *  RECALCULER au rejeu pour vérifier que la carte réclamée en faisait partie.
+ *  Le sel (+4242) la distingue d'une Sélection ouverte sur le même état.
+ *
+ *  Vide dès que le compteur est < 1 : un compteur à 0 ne découvre rien, même
+ *  une carte gratuite — sinon un deck plein de 0 se viderait en main sans
+ *  jamais rien payer. */
+export function getFoiOffer(state: GameState): CardInstance[] {
+  const player = state.players[state.currentPlayerIndex];
+  const foi = player.foi ?? 0;
+  if (foi < 1) return [];
+  const eligibles = player.deck.filter(c => foiCostOf(c) <= foi);
+  if (eligibles.length === 0) return [];
+
+  const entropy = player.hand.length * 7 + player.board.length * 13 + player.deck.length * 3 + player.graveyard.length * 17 + player.mana * 11;
+  let hash = state.turnNumber * 1000 + state.currentPlayerIndex * 100 + entropy + 4242;
+  const pseudoRng = () => {
+    hash = (hash * 16807 + 12345) & 0x7fffffff;
+    return (hash & 0xfffffff) / 0x10000000;
+  };
+  const melange = [...eligibles];
+  for (let i = melange.length - 1; i > 0; i--) {
+    const j = Math.floor(pseudoRng() * (i + 1));
+    [melange[i], melange[j]] = [melange[j], melange[i]];
+  }
+  return melange.slice(0, Math.min(SELECTION_OFFER_COUNT, melange.length));
+}
+
+/** Dépense du compteur de FOI : la carte désignée quitte le deck pour la main,
+ *  et SEUL son coût est défalqué — le reste du compteur est conservé.
+ *
+ *  Mêmes principes que `spendEpargne` : tout est re-validé ici parce que la
+ *  fonction rejoue aussi chez l'adversaire, et chaque refus renvoie `state`
+ *  inchangé (la Foi n'est jamais consommée sans contrepartie). La garde
+ *  décisive est l'appartenance à l'offre recalculée : elle couvre à la fois
+ *  « la carte est dans mon deck » et « son coût tient dans mon compteur ».
+ *
+ *  La carte est POUSSÉE en main sans passer par `drawCard` : c'est une
+ *  découverte, pas une pioche — les effets « à la pioche » ne s'y déclenchent
+ *  pas, et l'ordre du reste du deck n'est pas touché. */
+export function spendFoi(state: GameState, action: SpendFoiAction): GameState {
+  const player = state.players[state.currentPlayerIndex];
+  const foi = player.foi ?? 0;
+  if (foi < 1) return state;
+  // Main pleine : refus AVANT de consommer, comme pour l'Épargne.
+  if (player.hand.length >= MAX_HAND_SIZE) return state;
+
+  const choisie = getFoiOffer(state).find(c => c.instanceId === action.cardInstanceId);
+  if (!choisie) return state;
+  const cout = foiCostOf(choisie);
+  if (cout > foi) return state;
+
+  const newState = cloneStateForAction(state);
+  newState.factionCardPool = state.factionCardPool;
+  newState.allSpellsPool = state.allSpellsPool;
+
+  const me = newState.players[newState.currentPlayerIndex];
+  const idx = me.deck.findIndex(c => c.instanceId === choisie.instanceId);
+  if (idx < 0) return state;
+  const [inst] = me.deck.splice(idx, 1);
+  me.hand.push(inst);
+  me.foi = foi - cout; // peut rester > 0 ; ne redevient jamais null.
   newState.lastAction = action;
   return newState;
 }
@@ -9848,6 +9950,7 @@ export function applyAction(state: GameState, action: GameAction): GameState {
     case "concede": result = concede(state, action); break;
     case "resolve_pending_trigger": result = resolvePendingTrigger(state, action); break;
     case "spend_epargne": result = spendEpargne(state, action); break;
+    case "spend_foi": result = spendFoi(state, action); break;
     case "suspend_eveil": result = suspendEveil(state, action); break;
     case "pay_eveil": result = payEveil(state, action); break;
     case "auto_resolve_pending_triggers": result = autoResolvePendingTriggers(state); break;

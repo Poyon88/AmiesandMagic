@@ -10,6 +10,9 @@ import GoldCoin from "@/components/shared/GoldCoin";
 interface Props {
   event: EpargneGainEvent | null;
   onComplete: () => void;
+  /** Quel compteur a bougé : pilote l'ancre DOM (`data-<kind>-badge`) et
+   *  l'icône du « +N ». Le mouvement est le même pour les deux. */
+  kind?: "epargne" | "foi";
 }
 
 const DURATION_MS = 1500;
@@ -19,9 +22,9 @@ const DURATION_MS = 1500;
  *  premier qui a une surface réelle, sinon le popup atterrirait dans le coin
  *  haut-gauche. `overlayRect` (et non getBoundingClientRect) car le plateau est
  *  sous un `zoom` CSS que Safari ne répercute pas sur les coordonnées. */
-function epargneBadgeAnchor(side: "mine" | "theirs"): { x: number; y: number } | null {
+function epargneBadgeAnchor(kind: "epargne" | "foi", side: "mine" | "theirs"): { x: number; y: number } | null {
   if (typeof document === "undefined") return null;
-  const els = document.querySelectorAll(`[data-epargne-badge="${side}"]`);
+  const els = document.querySelectorAll(`[data-${kind}-badge="${side}"]`);
   for (const el of Array.from(els)) {
     const r = overlayRect(el);
     if (r.width > 0 && r.height > 0) return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
@@ -39,7 +42,7 @@ interface Popup {
 // onde dorée sur le badge. Sans ce repère, une Épargne « fin de tour » créditait
 // le compteur en silence, hors du regard du joueur (qui suit le plateau, pas la
 // barre de mana) : le gain passait complètement inaperçu.
-export default function EpargneGainOverlay({ event, onComplete }: Props) {
+export default function EpargneGainOverlay({ event, onComplete, kind = "epargne" }: Props) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
@@ -48,7 +51,7 @@ export default function EpargneGainOverlay({ event, onComplete }: Props) {
     if (!event) return null;
     const out: Popup[] = [];
     for (const [side, amount] of Object.entries(event.bySide) as ["mine" | "theirs", number][]) {
-      const pos = epargneBadgeAnchor(side);
+      const pos = epargneBadgeAnchor(kind, side);
       if (pos) out.push({ key: `${event.timestamp}-${side}`, pos, amount });
     }
     return out;
@@ -98,7 +101,7 @@ export default function EpargneGainOverlay({ event, onComplete }: Props) {
                   whiteSpace: "nowrap",
                 }}
               >
-                +{p.amount} <GoldCoin size={16} />
+                +{p.amount} {kind === "foi" ? "✨" : <GoldCoin size={16} />}
               </span>
             </motion.div>
           </div>

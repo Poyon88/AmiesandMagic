@@ -409,6 +409,10 @@
         "label": "Ahorro X",
         "desc": "Añade X a tu contador de Ahorro (máximo 8)."
       },
+      "foi": {
+        "label": "Fe X",
+        "desc": "Añade X a tu Fe (máx. 10). Gasto: descubre 1 de 3 cartas de tu mazo con coste ≤ Fe; solo se descuenta ese coste."
+      },
       "seconde_vie": {
         "label": "Segunda vida X",
         "desc": "Puede jugarse desde tu cementerio por X de maná. Entonces pierde Segunda vida."
@@ -643,6 +647,10 @@
         "label": "Ahorro X",
         "desc": "Añade X a tu contador de Ahorro (máximo 8)"
       },
+      "foi": {
+        "label": "Fe X",
+        "desc": "Añade X a tu Fe (máx. 10). Gasto: descubre 1 de 3 cartas de tu mazo con coste ≤ Fe; solo se descuenta ese coste"
+      },
       "inspiration": {
         "label": "Inspiración X",
         "desc": "Roba X cartas"
@@ -746,6 +754,7 @@
         "exhum_upto": "hasta {n} criaturas",
         "invocation": "invoca una criatura aleatoria de coste {x}{filter}",
         "epargne": "añade {x} a tu contador de Ahorro",
+        "foi": "añade {x} a tu contador de Fe",
         "incineration": "devuelve {x} cartas del cementerio objetivo bajo su mazo",
         "devoration": "devora",
         "retour_differe": "coloca bajo el mazo de su propietario",
@@ -2362,6 +2371,8 @@
     "presage_miss": "Fallaste. La carta correcta está en verde.",
     "apprentissage_title": "📖 Aprendizaje",
     "apprentissage_subtitle": "¿Qué hechizo debe memorizar la criatura?",
+    "foi_title": "✨ Fe",
+    "foi_subtitle": "Elige una carta para ponerla en tu mano. Su coste se descuenta de tu Fe; el resto se conserva.",
     "zone_eveil": "Despertar",
     "zone_eveil_yours": "Tu despertar",
     "zone_eveil_opponent": "Despertar rival",

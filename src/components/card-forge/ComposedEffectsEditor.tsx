@@ -42,6 +42,7 @@ const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" |
   // d'où target "none" — le bloc « Pool » ci-dessous les paramètre.
   { v: "invocation", l: "Invocation (créature aléatoire)", target: "none" },
   { v: "epargne", l: "Épargne (compteur)", target: "none" },
+  { v: "foi", l: "Foi (compteur)", target: "none" },
   { v: "incineration", l: "Incinération (recycler un cimetière)", target: "unit_or_hero" },
   { v: "devoration", l: "Dévoration (détruire et absorber)", target: "unit" },
   { v: "retour_differe", l: "Retour différé (sous le deck)", target: "unit" },

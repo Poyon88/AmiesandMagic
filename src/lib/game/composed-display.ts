@@ -99,6 +99,7 @@ export const COMPOSED_FR: Record<string, string> = {
   // Sélection composée : {filter} porte la restriction de pool (vide si aucune).
   "content.invocation": "invoque une créature aléatoire de coût {x}{filter}",
   "content.epargne": "ajoute {x} à votre compteur d'Épargne",
+  "content.foi": "ajoute {x} à votre compteur de Foi",
   "content.incineration": "remet {x} cartes du cimetière visé sous son deck",
   "content.devoration": "dévore",
   "content.retour_differe": "place sous le deck de son propriétaire",
@@ -257,6 +258,7 @@ export function composedIcon(cap: Capability): { symbol: string; keyword: string
     // Mêmes symboles que les mots-clés curés homonymes (source unique).
     case "invocation": return { symbol: KEYWORD_SYMBOLS.invocation, keyword: "invocation" };
     case "epargne": return { symbol: KEYWORD_SYMBOLS.epargne, keyword: "epargne" };
+    case "foi": return { symbol: KEYWORD_SYMBOLS.foi, keyword: "foi" };
     case "incineration": return { symbol: KEYWORD_SYMBOLS.incineration, keyword: "incineration" };
     case "devoration": return { symbol: KEYWORD_SYMBOLS.devoration, keyword: "devoration" };
     case "retour_differe": return { symbol: KEYWORD_SYMBOLS.retour_differe, keyword: "retour_differe" };
@@ -449,6 +451,7 @@ function describeContent(eff: ComposedEffect, tokens: TokenTemplate[] | undefine
     }
     case "gain_mana": return frag(t, "content.gain_mana", { x: xAff });
     case "epargne": return frag(t, "content.epargne", { x: xAff });
+    case "foi": return frag(t, "content.foi", { x: xAff });
     case "incineration": return frag(t, "content.incineration", { x: xAff });
     // Verbes transitifs directs : « Dévore une unité ennemie », sans préposition.
     case "devoration": return frag(t, "content.devoration");

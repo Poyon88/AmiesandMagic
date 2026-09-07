@@ -53,6 +53,9 @@ export const STARTING_MANA = 0;
 /** Plafond du compteur d'Épargne. Le surplus est écrêté en silence : une
  *  Épargne 3 sur un compteur à 7 le porte à 8, pas à 10. */
 export const MAX_EPARGNE = 8;
+/** Plafond du compteur de Foi (signature de l'Ordre de l'Aube). Même règle
+ *  d'écrêtage silencieux que l'Épargne. */
+export const MAX_FOI = 10;
 /** Nombre maximal de cartes qu'un joueur peut tenir en ÉVEIL simultanément.
  *
  *  Sans plafond, un joueur pourrait vider sa main dans la zone d'éveil et s'en

@@ -154,12 +154,15 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     clearManaReductionEvent,
     epargneGainEvent,
     clearEpargneGainEvent,
+    foiGainEvent,
+    clearFoiGainEvent,
     isAnimating,
     spellTargetSlots,
     currentTargetSlotIndex,
     confirmMulligan,
     activateHeroPower,
     openEpargnePicker,
+    openFoiPicker,
     isMyTurn,
     getMyPlayerState,
     getOpponentPlayerState,
@@ -460,6 +463,11 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     broadcast(openEpargnePicker());
   }, [openEpargnePicker, broadcast]);
 
+  // Foi : même mécanique, modale de deck.
+  const handleSpendFoi = useCallback(() => {
+    broadcast(openFoiPicker());
+  }, [openFoiPicker, broadcast]);
+
   // Touch devices: the portrait double-tap (non-targeted powers) is unreliable
   // and creatures/hand cards can overlap the small portrait disc, so coarse-
   // pointer players get an explicit, single-tap HeroPowerButton. It lives in the
@@ -745,6 +753,9 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
   // la place en main. Le moteur re-valide tout : ceci n'est que l'affordance.
   const canSpendEpargne = myTurn
     && (myPlayer.epargne ?? 0) >= 1
+    && myPlayer.hand.length < MAX_HAND_SIZE;
+  const canSpendFoi = myTurn
+    && (myPlayer.foi ?? 0) >= 1
     && myPlayer.hand.length < MAX_HAND_SIZE;
 
   // SECONDE VIE : créatures de MON cimetière jouables maintenant (mon tour,
@@ -1134,7 +1145,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             }
           />
           <EmblemStrip emblems={opponent.emblems} align="left" porteur="opponent" />
-          <ManaBar current={opponent.mana} max={opponent.maxMana} epargne={opponent.epargne} side="theirs" />
+          <ManaBar current={opponent.mana} max={opponent.maxMana} epargne={opponent.epargne} foi={opponent.foi} side="theirs" />
         </div>
         )}
 
@@ -1165,7 +1176,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             {/* Mana orbs sit directly under the 3D hero so they read as
                 "next to the HP number" rendered inside the canvas. */}
             <EmblemStrip emblems={opponent.emblems} align="left" porteur="opponent" />
-            <ManaBar current={opponent.mana} max={opponent.maxMana} epargne={opponent.epargne} side="theirs" />
+            <ManaBar current={opponent.mana} max={opponent.maxMana} epargne={opponent.epargne} foi={opponent.foi} side="theirs" />
           </div>
         )}
 
@@ -1436,7 +1447,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
               (bord droit, zone dégagée) pour ne pas être recouvert par une main
               pleine — cf. ce bloc plus bas. */}
           <EmblemStrip emblems={myPlayer.emblems} align="right" porteur="self" />
-          <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} epargne={myPlayer.epargne} canSpendEpargne={canSpendEpargne} onSpendEpargne={handleSpendEpargne} side="mine" />
+          <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} epargne={myPlayer.epargne} canSpendEpargne={canSpendEpargne} onSpendEpargne={handleSpendEpargne} foi={myPlayer.foi} canSpendFoi={canSpendFoi} onSpendFoi={handleSpendFoi} side="mine" />
         </div>
         )}
 
@@ -1471,7 +1482,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             {/* Mana orbs directly under the 3D hero, next to the HP number
                 rendered inside the canvas. */}
             <EmblemStrip emblems={myPlayer.emblems} align="right" porteur="self" />
-            <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} epargne={myPlayer.epargne} canSpendEpargne={canSpendEpargne} onSpendEpargne={handleSpendEpargne} side="mine" />
+            <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} epargne={myPlayer.epargne} canSpendEpargne={canSpendEpargne} onSpendEpargne={handleSpendEpargne} foi={myPlayer.foi} canSpendFoi={canSpendFoi} onSpendFoi={handleSpendFoi} side="mine" />
           </div>
         )}
 
@@ -1872,6 +1883,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
       <ManaReductionOverlay event={manaReductionEvent} onComplete={clearManaReductionEvent} />
       <DeckEffectOverlay event={deckEffectEvent} onComplete={clearDeckEffectEvent} />
       <EpargneGainOverlay event={epargneGainEvent} onComplete={clearEpargneGainEvent} />
+      <EpargneGainOverlay kind="foi" event={foiGainEvent} onComplete={clearFoiGainEvent} />
 
       {/* Targeting arrow overlay */}
       <TargetingArrow

@@ -1179,6 +1179,19 @@ export const ABILITIES: Record<string, AbilityDef> = {
       params: ["amount"], needsTarget: false,
     },
   },
+  foi: {
+    id: "foi", label: "Foi X", symbol: "✨",
+    desc: "Ajoute X à votre Foi (max. 10). Dépense : découvrez 1 carte parmi 3 du deck de coût ≤ Foi, seul ce coût est retiré.",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      cost: 7, costPerX: 4, se: 2.0, minTier: 1, scalable: true, zone: "Terrain",
+      desc: "Ajoute X à votre Foi (max. 10). Dépense : découvrez 1 carte parmi 3 du deck de coût ≤ Foi, seul ce coût est retiré.",
+    },
+    spell: {
+      desc: "Ajoute X à votre Foi (max. 10). Dépense : découvrez 1 carte parmi 3 du deck de coût ≤ Foi, seul ce coût est retiré",
+      params: ["amount"], needsTarget: false,
+    },
+  },
   inspiration: {
     id: "inspiration", label: "Inspiration X", symbol: "📖",
     desc: "Piochez X cartes.",
@@ -1597,7 +1610,7 @@ export const CURATED_MULTIMODE_IDS: ReadonlySet<string> = new Set([
   "concentration", "loyaute", "catalyse", "solidarite", "appel_supreme", "rassemblement",
   "instinct_de_meute", "convocation_simple", "invocation", "invocations_multiples", "domination", "corruption", "exhumation",
   "rappel", "divination", "traque_du_destin", "selection", "selection_magique", "renfort_royal",
-  "affaiblissement", "benediction", "tactique", "epargne",
+  "affaiblissement", "benediction", "tactique", "epargne", "foi",
   "incineration", "creuser", "retour_differe", "devoration",
   // Effets « deck » : la cible est dans le deck du contrôleur, la source n'a
   // pas besoin d'être en jeu → tous les déclencheurs sont légitimes.

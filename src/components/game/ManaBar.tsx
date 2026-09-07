@@ -23,10 +23,16 @@ interface ManaBarProps {
    *  montée en double (variantes de gabarit) : l'overlay retient celle qui est
    *  réellement visible. */
   side?: "mine" | "theirs";
+  /** Compteur de Foi — mêmes conventions que `epargne` (null = masqué). */
+  foi?: number | null;
+  /** Foi dépensable MAINTENANT (mon tour, compteur ≥ 1, place en main). */
+  canSpendFoi?: boolean;
+  onSpendFoi?: () => void;
 }
 
 export default function ManaBar({
   current, max, reserved = 0, epargne = null, canSpendEpargne = false, onSpendEpargne, side,
+  foi = null, canSpendFoi = false, onSpendFoi,
 }: ManaBarProps) {
   const held = Math.max(0, Math.min(reserved, current));
   const available = current - held;
@@ -79,6 +85,31 @@ export default function ManaBar({
         >
           <span className="absolute inset-0 -rotate-45 flex items-center justify-center text-[13px] font-bold text-am-gold-bright leading-none">
             {epargne}
+          </span>
+        </button>
+      )}
+      {foi !== null && (
+        // Même losange que l'Épargne, en teinte d'aube (blanc doré) pour que
+        // les deux compteurs ne se confondent pas côte à côte.
+        <button
+          type="button"
+          data-foi-badge={side}
+          onClick={canSpendFoi ? onSpendFoi : undefined}
+          disabled={!canSpendFoi}
+          aria-label={`Foi : ${foi}`}
+          title={
+            canSpendFoi
+              ? `Foi ${foi} — découvrir 1 carte parmi 3 de votre deck (coût ≤ ${foi})`
+              : `Foi ${foi}`
+          }
+          className={`relative w-7 h-7 rotate-45 rounded-[6px] border-2 transition-all ${
+            canSpendFoi
+              ? "border-amber-100 bg-amber-50/30 cursor-pointer hover:scale-110 shadow-[0_0_8px_#fde68a]"
+              : "border-amber-100/50 bg-amber-50/10 cursor-default opacity-70"
+          }`}
+        >
+          <span className="absolute inset-0 -rotate-45 flex items-center justify-center text-[13px] font-bold text-amber-50 leading-none">
+            {foi}
           </span>
         </button>
       )}
