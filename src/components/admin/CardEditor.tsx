@@ -6,9 +6,10 @@ import { EVEIL_TEINTE, EVEIL_GLYPHE } from "@/lib/game/eveil-theme";
 import ExileGlyph from "@/components/cards/ExileGlyph";
 import Image from "next/image";
 import GameCard from "@/components/cards/GameCard";
-import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
+import { ALL_KEYWORDS, KEYWORD_LABELS, KEYWORD_SYMBOLS } from "@/lib/game/keyword-labels";
 import { KEYWORDS as KEYWORD_DEFS, FACTIONS, getFactionDisplayName, getAllClanNames, getEffectiveAlignment, CURATED_KEYWORD_MODES, getAssignableRaces } from "@/lib/card-engine/constants";
 import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS } from "@/lib/game/spell-keywords";
+import KeywordIcon from "@/components/shared/KeywordIcon";
 import { SEUIL_DECK_THRESHOLD } from "@/lib/game/constants";
 import type { Card, Capability, Keyword, KeywordInstance, KeywordMode, SpellKeywordInstance, SpellComposableEffects, CardSet, TokenTemplate } from "@/lib/game/types";
 import ComposedEffectsEditor from "@/components/card-forge/ComposedEffectsEditor";
@@ -82,6 +83,25 @@ const S = {
 
 const RARITIES = ["Commune", "Peu Commune", "Rare", "Épique", "Légendaire"];
 const SORTED_KEYWORDS = [...ALL_KEYWORDS].sort((a, b) => KEYWORD_LABELS[a].localeCompare(KEYWORD_LABELS[b], "fr"));
+/** Capacités de sort dans l'ordre alphabétique FRANÇAIS de leur libellé
+ *  (l'ordre du registre est celui de leur création, illisible à 50 entrées). */
+const SORTED_SPELL_KEYWORDS = [...ALL_SPELL_KEYWORDS].sort((a, b) =>
+  (SPELL_KEYWORD_LABELS[a] ?? a).localeCompare(SPELL_KEYWORD_LABELS[b] ?? b, "fr"));
+
+/** Icône du jeu d'une capacité (override en base sous `iconKey`, emoji du
+ *  registre à défaut), sur fond sombre : les PNG du jeu sont blancs et
+ *  disparaîtraient sur le fond clair de l'éditeur. `iconKey` = id moteur pour
+ *  une capacité de créature, `spell_<id>` pour une capacité de sort. */
+function KwIcon({ iconKey, symbol, size = 16 }: { iconKey: string; symbol: string; size?: number }) {
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: size, height: size, borderRadius: 4, background: "#2a2a3a", verticalAlign: "middle", marginRight: 4, flexShrink: 0, overflow: "hidden" }}>
+      <KeywordIcon symbol={symbol || "✦"} size={Math.round(size * 0.62)} keyword={iconKey} fill />
+    </span>
+  );
+}
+function SpellKwIcon({ id, symbol, size }: { id: string; symbol: string; size?: number }) {
+  return <KwIcon iconKey={`spell_${id}`} symbol={symbol} size={size} />;
+}
 
 /** Options du FILTRE « Mot-clé… » : union des mécaniques de créature et de
  *  sort. `SORTED_KEYWORDS` ne couvre que les premières, si bien que les
@@ -1246,9 +1266,9 @@ export default function CardEditor() {
                         border: `1px solid ${active ? activeColor : "#e0e0e0"}`,
                         background: active ? activeColor : "#fafafa",
                         color: active ? "#fff" : "#888",
-                        cursor: "pointer",
+                        cursor: "pointer", display: "inline-flex", alignItems: "center",
                       }}>
-                        {label}
+                        <KwIcon iconKey={kw} symbol={KEYWORD_SYMBOLS[kw]} />{label}
                       </button>
                       {hoveredKw === kw && KEYWORD_DEFS[label]?.desc && (
                         <div style={{
@@ -1490,7 +1510,7 @@ export default function CardEditor() {
                 <div style={{ marginBottom: 8, padding: 8, borderRadius: 6, border: "1px solid #9b59b633", background: "#f9f0ff" }}>
                   <div style={{ ...S.label, color: "#9b59b6" }}>Capacités de sort ({spellKws.length})</div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginTop: 4 }}>
-                    {ALL_SPELL_KEYWORDS.map(kwId => {
+                    {SORTED_SPELL_KEYWORDS.map(kwId => {
                       const def = SPELL_KEYWORDS[kwId];
                       const active = spellKws.some(k => k.id === kwId);
                       return (
@@ -1512,8 +1532,9 @@ export default function CardEditor() {
                             background: active ? "#9b59b622" : "#fff",
                             border: `1px solid ${active ? "#9b59b6" : "#e0e0e0"}`,
                             color: active ? "#9b59b6" : "#888",
+                            display: "inline-flex", alignItems: "center",
                           }}
-                        >{def.symbol} {def.label.replace(" X", "").replace(" +X/+Y", "")}</button>
+                        ><SpellKwIcon id={kwId} symbol={def.symbol} />{def.label.replace(" X", "").replace(" +X/+Y", "")}</button>
                       );
                     })}
                   </div>
@@ -1523,8 +1544,8 @@ export default function CardEditor() {
                     if (!hasParams) return null;
                     return (
                       <div key={`${kw.id}-${idx}`} style={{ display: "flex", gap: 6, marginTop: 5, alignItems: "center", flexWrap: "wrap" }}>
-                        <span style={{ fontSize: 9, color: "#9b59b6", fontWeight: 700, minWidth: 70 }}>
-                          {def.symbol} {SPELL_KEYWORD_LABELS[kw.id].replace(" X", "").replace(" +X/+Y", "")}
+                        <span style={{ fontSize: 9, color: "#9b59b6", fontWeight: 700, minWidth: 70, display: "inline-flex", alignItems: "center" }}>
+                          <SpellKwIcon id={kw.id} symbol={def.symbol} />{SPELL_KEYWORD_LABELS[kw.id].replace(" X", "").replace(" +X/+Y", "")}
                         </span>
                         {def.params.includes("amount") && (
                           <div>
