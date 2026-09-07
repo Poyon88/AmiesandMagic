@@ -11,6 +11,7 @@ import RaceClanPicker from "@/components/admin/RaceClanPicker";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import CostListEditor from "./CostListEditor";
 import LinkedCardsPicker from "./LinkedCardsPicker";
+import SpellEffectPicker from "./SpellEffectPicker";
 import { ABILITIES, creatureEngineId, getCapabilityTriggers, XY_ABILITY_IDS } from "@/lib/game/abilities";
 import { DEFAULT_EMBLEM_CADENCE, isEmblemCadence, isTokenFiringTrigger } from "@/lib/game/capability-adapter";
 import { ALL_SPELL_KEYWORDS, SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
@@ -687,20 +688,15 @@ export default function ComposedEffectsEditor({
       {unified ? (
         <div style={{ marginTop: 6, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
           <span style={{ fontSize: 11, color: "#666" }}>{tr('add_effect')}</span>
-          <select value="" onChange={(e) => { addFromCatalog(e.target.value); e.currentTarget.value = ""; }}
-            style={{ padding: "4px 10px", borderRadius: 5, border: cardBorder, fontSize: 11, fontFamily: "'Cinzel',serif", background: "#fff", maxWidth: 320 }}>
-            <option value="">{tr('spell_effect_dash')}</option>
-            <optgroup label={tr('group_composed')}>
-              {SPELL_CATALOG.filter((e) => e.kind === "composed").map((e) => (
-                <option key={e.id} value={e.id}>{e.symbol} {e.label}</option>
-              ))}
-            </optgroup>
-            <optgroup label={tr('group_curated')}>
-              {SPELL_CATALOG.filter((e) => e.kind === "curated" && !curatedRows.some((k) => k.id === e.id)).map((e) => (
-                <option key={e.id} value={e.id}>{e.symbol} {e.label}</option>
-              ))}
-            </optgroup>
-          </select>
+          <SpellEffectPicker
+            placeholder={tr('spell_effect_dash')}
+            border={cardBorder}
+            onPick={addFromCatalog}
+            groups={[
+              { label: tr('group_composed'), entries: SPELL_CATALOG.filter((e) => e.kind === "composed") },
+              { label: tr('group_curated'), entries: SPELL_CATALOG.filter((e) => e.kind === "curated" && !curatedRows.some((k) => k.id === e.id)) },
+            ]}
+          />
         </div>
       ) : !singleEffect && (
         <button onClick={addComposed} style={{ marginTop: 4, padding: "5px 12px", borderRadius: 6, border: "1px dashed #b8a36a", background: "#fffdf6", color: "#8a6d3b", fontSize: 11, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>{tr('add_composed_effect')}</button>
