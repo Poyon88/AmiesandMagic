@@ -1493,17 +1493,6 @@
       "classique-etendu": "Classic · Extended",
       "classique-standard": "Classic · Standard"
     },
-    "triggers": {
-      "permanent": "Permanent",
-      "entry": "Entry",
-      "attack": "Attack",
-      "death": "Death",
-      "return": "Return",
-      "tap": "Tap",
-      "end_of_turn": "End of turn",
-      "draw": "Draw",
-      "low_hp": "Below {n} HP"
-    },
     "singulier": {
       "label": "Singular",
       "help": "Triggers {timing} if your starting deck contained no duplicate cards.",
@@ -1519,6 +1508,17 @@
         "low_hp": "below {n} HP",
         "spell": "on spell resolution"
       }
+    },
+    "triggers": {
+      "permanent": "Permanent",
+      "entry": "Entry",
+      "attack": "Attack",
+      "death": "Death",
+      "return": "Return",
+      "tap": "Tap",
+      "end_of_turn": "End of turn",
+      "draw": "Draw",
+      "low_hp": "Below {n} HP"
     }
   },
   "home": {
@@ -1835,6 +1835,8 @@
     "token_composed_hint": "A token doesn't enter play by being played: \"on entry\" would never trigger for it, so it isn't offered.",
     "remove": "Remove",
     "label_trigger": "TRIGGER",
+    "singulier_toggle": "Singular",
+    "singulier_toggle_title": "Singular condition: this ability only triggers if the player's starting deck contains no duplicate cards.",
     "label_emblem": "EMBLEM",
     "emblem_permanent": "Permanent effect placed on a player",
     "emblem_trigger_note": "placed when the card arrives; the trigger says what it reacts to afterwards",
@@ -2270,9 +2272,7 @@
     "import_error": "Import error",
     "eveil_label": "AWAKENING",
     "eveil_cost_hint": "AWAKENING: the card can be put into awakening INSTEAD of being played. It leaves the hand with this many points; the player pays 1 per mana each of their turns, and on the last point it enters play as if from the hand. Replaces the mana cost, does not add to it. Not reducible.",
-    "eveil_cost_title": "Can be put into awakening for {count, plural, one {# point} other {# points}}, paid 1 mana per turn — instead of the mana cost",
-    "singulier_toggle": "Singular",
-    "singulier_toggle_title": "Singular condition: this ability only triggers if the player's starting deck contains no duplicate cards."
+    "eveil_cost_title": "Can be put into awakening for {count, plural, one {# point} other {# points}}, paid 1 mana per turn — instead of the mana cost"
   },
   "game": {
     "error_not_authenticated": "Not authenticated",
@@ -2442,7 +2442,7 @@
     "combat_title": "Combat",
     "combat_see_full_list": "The full ability list is at the bottom of the page.",
     "hero_title": "Hero & Hero Power",
-    "alt_costs_title": "Alternative Costs",
+    "alt_costs_title": "Additional Costs and Awakening",
     "deck_title": "Building a Deck",
     "tcg_numbers_title": "Key Numbers",
     "stat_hero_hp": "Hero HP",
@@ -2459,7 +2459,9 @@
     "search_placeholder": "Search for an ability…",
     "creature_abilities_group": "Creature Abilities ({count})",
     "spell_abilities_group": "Spell Abilities ({count})",
-    "no_ability_match": "No ability matches \"{query}\"."
+    "no_ability_match": "No ability matches \"{query}\".",
+    "counters_title": "Counters: Savings, Faith and Conquest",
+    "singulier_title": "Singular: the Bonus for Decks Without Duplicates"
   },
   "deck": {
     "alignment_incompatible": "Good and Evil alignments are incompatible",
@@ -2467,6 +2469,9 @@
     "max_capability_current": "Max {max} \"{label}\" abilities (currently {count})",
     "card_not_owned": "Card not owned",
     "deck_full": "Deck full",
+    "singleton_yes": "Singleton deck ✓",
+    "singleton_no": "Singleton deck ✗",
+    "singleton_hint": "A singleton deck contains no duplicate cards: abilities marked Singleton only trigger under this condition. This is not a deckbuilding rule.",
     "unique_copy": "Unique copy",
     "max_three_copies": "Max 3 copies",
     "alignment_conflict": "Alignment conflict",
@@ -2585,10 +2590,7 @@
     "locked_hint": "Commons from other factions will become accessible via the full unlock offer.",
     "unplayable_badge": "{count} missing card(s)",
     "unplayable_reason": "This deck contains cards from faction(s) you no longer own: {factions}. It remains intact — reacquire the faction to play it again.",
-    "unplayable_rebuy": "Get it in the shop",
-    "singleton_yes": "Singleton deck ✓",
-    "singleton_no": "Singleton deck ✗",
-    "singleton_hint": "A singleton deck contains no duplicate cards: abilities marked Singleton only trigger under this condition. This is not a deckbuilding rule."
+    "unplayable_rebuy": "Get it in the shop"
   },
   "cardBacks": {
     "eyebrow": "Show your style",

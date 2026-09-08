@@ -1493,17 +1493,6 @@
       "classique-etendu": "Classico · Esteso",
       "classique-standard": "Classico · Standard"
     },
-    "triggers": {
-      "permanent": "Permanente",
-      "entry": "Entrata",
-      "attack": "Attacco",
-      "death": "Morte",
-      "return": "Ritorno",
-      "tap": "Attivabile",
-      "end_of_turn": "Fine turno",
-      "draw": "Pescata",
-      "low_hp": "Sotto {n} PV"
-    },
     "singulier": {
       "label": "Singolare",
       "help": "Si attiva {timing} se il vostro mazzo di partenza non conteneva alcuna carta doppia.",
@@ -1519,6 +1508,17 @@
         "low_hp": "sotto {n} PV",
         "spell": "alla risoluzione dell'incantesimo"
       }
+    },
+    "triggers": {
+      "permanent": "Permanente",
+      "entry": "Entrata",
+      "attack": "Attacco",
+      "death": "Morte",
+      "return": "Ritorno",
+      "tap": "Attivabile",
+      "end_of_turn": "Fine turno",
+      "draw": "Pescata",
+      "low_hp": "Sotto {n} PV"
     }
   },
   "home": {
@@ -1835,6 +1835,8 @@
     "token_composed_hint": "Un segnalino non entra in gioco tramite una posa: \"all'entrata\" non si attiverebbe mai e quindi non viene proposto.",
     "remove": "Rimuovi",
     "label_trigger": "INNESCO",
+    "singulier_toggle": "Singolare",
+    "singulier_toggle_title": "Condizione Singolare: questa capacità si attiva solo se il mazzo di partenza del giocatore non contiene alcuna carta doppia.",
     "label_emblem": "EMBLEMA",
     "emblem_permanent": "Effetto permanente posto su un giocatore",
     "emblem_trigger_note": "posto all'arrivo della carta; l'innesco dice a cosa reagisce in seguito",
@@ -2270,9 +2272,7 @@
     "import_error": "Errore di importazione",
     "eveil_label": "RISVEGLIO",
     "eveil_cost_hint": "RISVEGLIO: la carta può essere messa in risveglio INVECE di essere giocata. Lascia la mano con questo numero di punti; il giocatore ne paga 1 per mana a ogni suo turno, e all'ultimo punto entra in gioco come dalla mano. Sostituisce il costo in mana, non si aggiunge. Non riducibile.",
-    "eveil_cost_title": "Può essere messa in risveglio per {count, plural, one {# punto} other {# punti}}, pagati 1 mana a turno — invece del costo in mana",
-    "singulier_toggle": "Singolare",
-    "singulier_toggle_title": "Condizione Singolare: questa capacità si attiva solo se il mazzo di partenza del giocatore non contiene alcuna carta doppia."
+    "eveil_cost_title": "Può essere messa in risveglio per {count, plural, one {# punto} other {# punti}}, pagati 1 mana a turno — invece del costo in mana"
   },
   "game": {
     "error_not_authenticated": "Non autenticato",
@@ -2442,7 +2442,7 @@
     "combat_title": "Il combattimento",
     "combat_see_full_list": "L'elenco completo delle abilità è in fondo alla pagina.",
     "hero_title": "L'eroe e il suo potere",
-    "alt_costs_title": "I costi alternativi",
+    "alt_costs_title": "I costi aggiuntivi e il risveglio",
     "deck_title": "Costruire un mazzo",
     "tcg_numbers_title": "I numeri chiave",
     "stat_hero_hp": "PV dell'eroe",
@@ -2459,7 +2459,9 @@
     "search_placeholder": "Cerca un'abilità…",
     "creature_abilities_group": "Abilità creature ({count})",
     "spell_abilities_group": "Abilità incantesimi ({count})",
-    "no_ability_match": "Nessuna abilità corrisponde a « {query} »."
+    "no_ability_match": "Nessuna abilità corrisponde a « {query} ».",
+    "counters_title": "I contatori: Risparmio, Fede e Conquista",
+    "singulier_title": "Singolare: il bonus per i mazzi senza doppioni"
   },
   "deck": {
     "alignment_incompatible": "Allineamento Buono e Malvagio incompatibili",
@@ -2467,6 +2469,9 @@
     "max_capability_current": "Max {max} capacità « {label} » (attualmente {count})",
     "card_not_owned": "Carta non posseduta",
     "deck_full": "Mazzo pieno",
+    "singleton_yes": "Deck singolo ✓",
+    "singleton_no": "Mazzo singolo ✗",
+    "singleton_hint": "Un mazzo singolo non contiene alcuna carta doppia: le abilità contrassegnate come Singolo si attivano solo a questa condizione. Non è una regola di costruzione.",
     "unique_copy": "Copia unica",
     "max_three_copies": "Max 3 copie",
     "alignment_conflict": "Conflitto di allineamento",
@@ -2585,10 +2590,7 @@
     "locked_hint": "Le comuni delle altre fazioni saranno accessibili tramite l'offerta di sblocco completo.",
     "unplayable_badge": "{count} carta/e mancante/i",
     "unplayable_reason": "Questo mazzo contiene carte di fazione/i che non possiedi più: {factions}. Rimane intatto — recupera la fazione per rigiocarlo.",
-    "unplayable_rebuy": "Recupera nel negozio",
-    "singleton_yes": "Deck singolo ✓",
-    "singleton_no": "Mazzo singolo ✗",
-    "singleton_hint": "Un mazzo singolo non contiene alcuna carta doppia: le abilità contrassegnate come Singolo si attivano solo a questa condizione. Non è una regola di costruzione."
+    "unplayable_rebuy": "Recupera nel negozio"
   },
   "cardBacks": {
     "eyebrow": "Mostra il tuo stile",

@@ -1493,17 +1493,6 @@
       "classique-etendu": "Clássico · Estendido",
       "classique-standard": "Clássico · Standard"
     },
-    "triggers": {
-      "permanent": "Permanente",
-      "entry": "Entrada",
-      "attack": "Ataque",
-      "death": "Morte",
-      "return": "Retorno",
-      "tap": "Ativável",
-      "end_of_turn": "Fim de turno",
-      "draw": "Compra",
-      "low_hp": "Abaixo de {n} PV"
-    },
     "singulier": {
       "label": "Singular",
       "help": "Ativa-se {timing} se o seu deck inicial não contiver nenhuma carta duplicada.",
@@ -1519,6 +1508,17 @@
         "low_hp": "abaixo de {n} PV",
         "spell": "à resolução da magia"
       }
+    },
+    "triggers": {
+      "permanent": "Permanente",
+      "entry": "Entrada",
+      "attack": "Ataque",
+      "death": "Morte",
+      "return": "Retorno",
+      "tap": "Ativável",
+      "end_of_turn": "Fim de turno",
+      "draw": "Compra",
+      "low_hp": "Abaixo de {n} PV"
     }
   },
   "home": {
@@ -1835,6 +1835,8 @@
     "token_composed_hint": "Um token não entra em jogo por uma jogada: \"à entrada\" nunca seria acionado e, por isso, não é proposto.",
     "remove": "Remover",
     "label_trigger": "GATILHO",
+    "singulier_toggle": "Singular",
+    "singulier_toggle_title": "Condição Singular: esta habilidade só se ativa se o deck inicial do jogador não contiver nenhuma carta duplicada.",
     "label_emblem": "EMBLEMA",
     "emblem_permanent": "Efeito permanente colocado sobre um jogador",
     "emblem_trigger_note": "colocado à chegada da carta; o gatilho diz ao que reage em seguida",
@@ -2270,9 +2272,7 @@
     "import_error": "Erro de importação",
     "eveil_label": "DESPERTAR",
     "eveil_cost_hint": "DESPERTAR: a carta pode ser colocada em despertar EM VEZ de ser jogada. Ela sai da mão com este número de pontos; o jogador paga 1 mana por ponto a cada turno, e no último ponto ela entra em jogo como se viesse da mão. Substitui o custo em mana, não se soma a ele. Não redutível.",
-    "eveil_cost_title": "Pode ser colocada em despertar por {count, plural, one {# ponto} other {# pontos}}, pagos 1 mana por turno — em vez do custo em mana",
-    "singulier_toggle": "Singular",
-    "singulier_toggle_title": "Condição Singular: esta habilidade só se ativa se o deck inicial do jogador não contiver nenhuma carta duplicada."
+    "eveil_cost_title": "Pode ser colocada em despertar por {count, plural, one {# ponto} other {# pontos}}, pagos 1 mana por turno — em vez do custo em mana"
   },
   "game": {
     "error_not_authenticated": "Não autenticado",
@@ -2442,7 +2442,7 @@
     "combat_title": "O combate",
     "combat_see_full_list": "A lista completa de habilidades está no final da página.",
     "hero_title": "O herói e seu poder",
-    "alt_costs_title": "Os custos alternativos",
+    "alt_costs_title": "Custos adicionais e o despertar",
     "deck_title": "Construir um deck",
     "tcg_numbers_title": "Os números-chave",
     "stat_hero_hp": "PV do herói",
@@ -2459,7 +2459,9 @@
     "search_placeholder": "Buscar uma habilidade…",
     "creature_abilities_group": "Habilidades de criatura ({count})",
     "spell_abilities_group": "Habilidades de magia ({count})",
-    "no_ability_match": "Nenhuma habilidade corresponde a «{query}»."
+    "no_ability_match": "Nenhuma habilidade corresponde a «{query}».",
+    "counters_title": "Os contadores: Poupança, Fé e Conquista",
+    "singulier_title": "Singular: o bônus para decks sem cartas repetidas"
   },
   "deck": {
     "alignment_incompatible": "Alinhamentos Bom e Maléfico incompatíveis",
@@ -2467,6 +2469,9 @@
     "max_capability_current": "Máx {max} capacidades « {label} » (atualmente {count})",
     "card_not_owned": "Carta não possuída",
     "deck_full": "Deck cheio",
+    "singleton_yes": "Deck singular ✓",
+    "singleton_no": "Deck Singular ✗",
+    "singleton_hint": "Um deck singular não contém nenhuma carta duplicada: as habilidades marcadas como Singular só são ativadas nessa condição. Isso não é uma regra de construção.",
     "unique_copy": "Exemplar único",
     "max_three_copies": "Máx 3 cópias",
     "alignment_conflict": "Conflito de alinhamento",
@@ -2585,10 +2590,7 @@
     "locked_hint": "As cartas comuns das outras facções ficarão acessíveis através da oferta de desbloqueio completo.",
     "unplayable_badge": "{count} carta(s) faltando",
     "unplayable_reason": "Este deck contém cartas de facção(ões) que você não possui mais: {factions}. Ele permanece intacto — recupere a facção para jogá-lo novamente.",
-    "unplayable_rebuy": "Resgatar na loja",
-    "singleton_yes": "Deck singular ✓",
-    "singleton_no": "Deck Singular ✗",
-    "singleton_hint": "Um deck singular não contém nenhuma carta duplicada: as habilidades marcadas como Singular só são ativadas nessa condição. Isso não é uma regra de construção."
+    "unplayable_rebuy": "Resgatar na loja"
   },
   "cardBacks": {
     "eyebrow": "Mostre seu estilo",

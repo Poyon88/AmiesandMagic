@@ -1493,17 +1493,6 @@
       "classique-etendu": "经典·扩展",
       "classique-standard": "经典·标准"
     },
-    "triggers": {
-      "permanent": "永久",
-      "entry": "进场",
-      "attack": "攻击",
-      "death": "死亡",
-      "return": "回场",
-      "tap": "可激活",
-      "end_of_turn": "回合结束",
-      "draw": "抽牌",
-      "low_hp": "生命值低于{n}点"
-    },
     "singulier": {
       "label": "独特",
       "help": "若你的起始牌库中没有重复卡牌，则{timing}触发。",
@@ -1519,6 +1508,17 @@
         "low_hp": "生命值低于{n}点时",
         "spell": "法术结算时"
       }
+    },
+    "triggers": {
+      "permanent": "永久",
+      "entry": "进场",
+      "attack": "攻击",
+      "death": "死亡",
+      "return": "回场",
+      "tap": "可激活",
+      "end_of_turn": "回合结束",
+      "draw": "抽牌",
+      "low_hp": "生命值低于{n}点"
     }
   },
   "home": {
@@ -1835,6 +1835,8 @@
     "token_composed_hint": "衍生物并非通过打出而进场：“进场时”条件对其永远不会触发，因此不予提供。",
     "remove": "删除",
     "label_trigger": "触发条件",
+    "singulier_toggle": "唯一",
+    "singulier_toggle_title": "唯一条件：仅当玩家起始牌组中没有重复卡牌时，此能力才会触发。",
     "label_emblem": "纹章",
     "emblem_permanent": "置于玩家身上的永久效果",
     "emblem_trigger_note": "在卡牌进场时放置；触发器决定其之后响应的事件",
@@ -2270,9 +2272,7 @@
     "import_error": "导入错误",
     "eveil_label": "觉醒",
     "eveil_cost_hint": "觉醒：这张卡可以选择进入觉醒状态，而不是直接打出。它带着这个点数离开手牌；玩家每回合支付1点法力值消耗1点，在最后一点时如同从手牌打出般进入战场。此花费取代法力值费用，而非叠加。不可减免。",
-    "eveil_cost_title": "可花费{count, plural, one {# 点} other {# 点}}进入觉醒状态，每回合支付1点法力值——以代替法力值费用",
-    "singulier_toggle": "唯一",
-    "singulier_toggle_title": "唯一条件：仅当玩家起始牌组中没有重复卡牌时，此能力才会触发。"
+    "eveil_cost_title": "可花费{count, plural, one {# 点} other {# 点}}进入觉醒状态，每回合支付1点法力值——以代替法力值费用"
   },
   "game": {
     "error_not_authenticated": "未登录",
@@ -2442,7 +2442,7 @@
     "combat_title": "战斗",
     "combat_see_full_list": "完整技能列表见页面底部。",
     "hero_title": "英雄与英雄技能",
-    "alt_costs_title": "替代费用",
+    "alt_costs_title": "附加费用与觉醒",
     "deck_title": "构建牌组",
     "tcg_numbers_title": "关键数据",
     "stat_hero_hp": "英雄生命值",
@@ -2459,7 +2459,9 @@
     "search_placeholder": "搜索技能…",
     "creature_abilities_group": "随从技能（{count}）",
     "spell_abilities_group": "法术技能（{count}）",
-    "no_ability_match": "没有与「{query}」匹配的技能。"
+    "no_ability_match": "没有与「{query}」匹配的技能。",
+    "counters_title": "计数器：储蓄、信仰与征服",
+    "singulier_title": "唯一：无重复卡组的加成"
   },
   "deck": {
     "alignment_incompatible": "善良与邪恶阵营不可兼容",
@@ -2467,6 +2469,9 @@
     "max_capability_current": "最多 {max} 张「{label}」能力牌（当前 {count}）",
     "card_not_owned": "未拥有此牌",
     "deck_full": "牌组已满",
+    "singleton_yes": "单卡组 ✓",
+    "singleton_no": "单卡牌组 ✗",
+    "singleton_hint": "单卡牌组中不包含任何重复卡牌：标记为「唯一」的技能只有在此条件下才会触发。这并非组卡规则。",
     "unique_copy": "限单张",
     "max_three_copies": "最多 3 张",
     "alignment_conflict": "阵营冲突",
@@ -2585,10 +2590,7 @@
     "locked_hint": "其他阵营的普通卡将可通过完整解锁礼包获取。",
     "unplayable_badge": "缺少 {count} 张卡牌",
     "unplayable_reason": "此卡组包含你已不再拥有的阵营卡牌：{factions}。卡组保持完整——重新获得该阵营即可继续使用。",
-    "unplayable_rebuy": "前往商店购买",
-    "singleton_yes": "单卡组 ✓",
-    "singleton_no": "单卡牌组 ✗",
-    "singleton_hint": "单卡牌组中不包含任何重复卡牌：标记为「唯一」的技能只有在此条件下才会触发。这并非组卡规则。"
+    "unplayable_rebuy": "前往商店购买"
   },
   "cardBacks": {
     "eyebrow": "展示你的风格",

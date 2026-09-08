@@ -1493,17 +1493,6 @@
       "classique-etendu": "Klassisch · Erweitert",
       "classique-standard": "Klassisch · Standard"
     },
-    "triggers": {
-      "permanent": "Permanent",
-      "entry": "Eintritt",
-      "attack": "Angriff",
-      "death": "Tod",
-      "return": "Rückkehr",
-      "tap": "Aktivierbar",
-      "end_of_turn": "Rundenende",
-      "draw": "Ziehen",
-      "low_hp": "Unter {n} LP"
-    },
     "singulier": {
       "label": "Einzigartig",
       "help": "Wird {timing} ausgelöst, wenn dein Startdeck keine doppelten Karten enthielt.",
@@ -1519,6 +1508,17 @@
         "low_hp": "unter {n} LP",
         "spell": "bei der Auflösung des Zaubers"
       }
+    },
+    "triggers": {
+      "permanent": "Permanent",
+      "entry": "Eintritt",
+      "attack": "Angriff",
+      "death": "Tod",
+      "return": "Rückkehr",
+      "tap": "Aktivierbar",
+      "end_of_turn": "Rundenende",
+      "draw": "Ziehen",
+      "low_hp": "Unter {n} LP"
     }
   },
   "home": {
@@ -1835,6 +1835,8 @@
     "token_composed_hint": "Ein Marker kommt nicht durch das Ausspielen ins Spiel: „beim Eintritt\" würde hier niemals ausgelöst und wird daher nicht angeboten.",
     "remove": "Entfernen",
     "label_trigger": "AUSLÖSER",
+    "singulier_toggle": "Singulär",
+    "singulier_toggle_title": "Bedingung Singulär: Diese Fähigkeit wird nur ausgelöst, wenn das Startdeck des Spielers keine doppelten Karten enthält.",
     "label_emblem": "EMBLEM",
     "emblem_permanent": "Dauerhafter Effekt auf einem Spieler",
     "emblem_trigger_note": "beim Erscheinen der Karte gesetzt; der Auslöser sagt, worauf es danach reagiert",
@@ -2270,9 +2272,7 @@
     "import_error": "Importfehler",
     "eveil_label": "ERWACHEN",
     "eveil_cost_hint": "ERWACHEN: Die Karte kann ins Erwachen versetzt werden, ANSTATT gespielt zu werden. Sie verlässt die Hand mit dieser Anzahl Punkte; der Spieler zahlt pro Zug 1 Mana pro Punkt, und beim letzten Punkt kommt sie ins Spiel, als käme sie aus der Hand. Ersetzt die Manakosten, statt sie zu ergänzen. Nicht reduzierbar.",
-    "eveil_cost_title": "Kann für {count, plural, one {# Punkt} other {# Punkte}} ins Erwachen versetzt werden, zahlbar mit 1 Mana pro Zug — anstelle der Manakosten",
-    "singulier_toggle": "Singulär",
-    "singulier_toggle_title": "Bedingung Singulär: Diese Fähigkeit wird nur ausgelöst, wenn das Startdeck des Spielers keine doppelten Karten enthält."
+    "eveil_cost_title": "Kann für {count, plural, one {# Punkt} other {# Punkte}} ins Erwachen versetzt werden, zahlbar mit 1 Mana pro Zug — anstelle der Manakosten"
   },
   "game": {
     "error_not_authenticated": "Nicht authentifiziert",
@@ -2442,7 +2442,7 @@
     "combat_title": "Der Kampf",
     "combat_see_full_list": "Die vollständige Fähigkeitenliste befindet sich am Seitenende.",
     "hero_title": "Der Held und seine Fähigkeit",
-    "alt_costs_title": "Alternative Kosten",
+    "alt_costs_title": "Zusätzliche Kosten und das Erwachen",
     "deck_title": "Ein Deck bauen",
     "tcg_numbers_title": "Die wichtigsten Zahlen",
     "stat_hero_hp": "LP des Helden",
@@ -2459,7 +2459,9 @@
     "search_placeholder": "Fähigkeit suchen…",
     "creature_abilities_group": "Kreaturfähigkeiten ({count})",
     "spell_abilities_group": "Zauberfähigkeiten ({count})",
-    "no_ability_match": "Keine Fähigkeit entspricht „{query}\"."
+    "no_ability_match": "Keine Fähigkeit entspricht „{query}\".",
+    "counters_title": "Die Zähler: Ersparnis, Glaube und Eroberung",
+    "singulier_title": "Singulär: Der Bonus für Decks ohne Duplikate"
   },
   "deck": {
     "alignment_incompatible": "Gutes und böses Alignment nicht kompatibel",
@@ -2467,6 +2469,9 @@
     "max_capability_current": "Max. {max} Fähigkeiten „{label}\" (aktuell {count})",
     "card_not_owned": "Karte nicht im Besitz",
     "deck_full": "Deck voll",
+    "singleton_yes": "Singulär-Deck ✓",
+    "singleton_no": "Singleton-Deck ✗",
+    "singleton_hint": "Ein Singleton-Deck enthält keine doppelten Karten: Fähigkeiten mit der Kennzeichnung „Singulär“ werden nur unter dieser Bedingung ausgelöst. Dies ist keine Deckbau-Regel.",
     "unique_copy": "Einmaliges Exemplar",
     "max_three_copies": "Max. 3 Kopien",
     "alignment_conflict": "Alignment-Konflikt",
@@ -2585,10 +2590,7 @@
     "locked_hint": "Die gewöhnlichen Karten anderer Fraktionen werden über das Komplett-Freischaltangebot zugänglich sein.",
     "unplayable_badge": "{count} fehlende Karte(n)",
     "unplayable_reason": "Dieses Deck enthält Karten aus Fraktion(en), die du nicht mehr besitzt: {factions}. Es bleibt unverändert – hol dir die Fraktion zurück, um es wieder zu spielen.",
-    "unplayable_rebuy": "Im Shop zurückholen",
-    "singleton_yes": "Singulär-Deck ✓",
-    "singleton_no": "Singleton-Deck ✗",
-    "singleton_hint": "Ein Singleton-Deck enthält keine doppelten Karten: Fähigkeiten mit der Kennzeichnung „Singulär“ werden nur unter dieser Bedingung ausgelöst. Dies ist keine Deckbau-Regel."
+    "unplayable_rebuy": "Im Shop zurückholen"
   },
   "cardBacks": {
     "eyebrow": "Zeig deinen Stil",

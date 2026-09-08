@@ -1493,17 +1493,6 @@
       "classique-etendu": "Clásico · Extendido",
       "classique-standard": "Clásico · Estándar"
     },
-    "triggers": {
-      "permanent": "Permanente",
-      "entry": "Entrada",
-      "attack": "Ataque",
-      "death": "Muerte",
-      "return": "Retorno",
-      "tap": "Activable",
-      "end_of_turn": "Fin de turno",
-      "draw": "Robo",
-      "low_hp": "Con menos de {n} PV"
-    },
     "singulier": {
       "label": "Singular",
       "help": "Se activa {timing} si tu mazo inicial no contenía ninguna carta duplicada.",
@@ -1519,6 +1508,17 @@
         "low_hp": "con menos de {n} PV",
         "spell": "a la resolución del hechizo"
       }
+    },
+    "triggers": {
+      "permanent": "Permanente",
+      "entry": "Entrada",
+      "attack": "Ataque",
+      "death": "Muerte",
+      "return": "Retorno",
+      "tap": "Activable",
+      "end_of_turn": "Fin de turno",
+      "draw": "Robo",
+      "low_hp": "Con menos de {n} PV"
     }
   },
   "home": {
@@ -1835,6 +1835,8 @@
     "token_composed_hint": "Un token no entra en juego mediante una jugada: «al entrar» nunca se activaría ahí, por lo que no se propone.",
     "remove": "Eliminar",
     "label_trigger": "ACTIVADOR",
+    "singulier_toggle": "Singular",
+    "singulier_toggle_title": "Condición Singular: esta habilidad solo se activa si el mazo inicial del jugador no contiene ninguna carta duplicada.",
     "label_emblem": "EMBLEMA",
     "emblem_permanent": "Efecto permanente colocado sobre un jugador",
     "emblem_trigger_note": "colocado al llegar la carta; el disparador indica a qué reacciona después",
@@ -2270,9 +2272,7 @@
     "import_error": "Error de importación",
     "eveil_label": "DESPERTAR",
     "eveil_cost_hint": "DESPERTAR: la carta puede ponerse en despertar EN LUGAR de jugarse. Sale de la mano con este número de puntos; el jugador paga 1 maná por cada uno de sus turnos, y en el último punto entra en juego como si viniera de la mano. Sustituye el coste en maná, no se suma a él. No reducible.",
-    "eveil_cost_title": "Puede ponerse en despertar por {count, plural, one {# punto} other {# puntos}}, pagados a 1 maná por turno — en lugar del coste en maná",
-    "singulier_toggle": "Singular",
-    "singulier_toggle_title": "Condición Singular: esta habilidad solo se activa si el mazo inicial del jugador no contiene ninguna carta duplicada."
+    "eveil_cost_title": "Puede ponerse en despertar por {count, plural, one {# punto} other {# puntos}}, pagados a 1 maná por turno — en lugar del coste en maná"
   },
   "game": {
     "error_not_authenticated": "No autenticado",
@@ -2442,7 +2442,7 @@
     "combat_title": "El combate",
     "combat_see_full_list": "La lista completa de habilidades está al pie de página.",
     "hero_title": "El héroe y su poder",
-    "alt_costs_title": "Los costes alternativos",
+    "alt_costs_title": "Los costes adicionales y el despertar",
     "deck_title": "Construir un mazo",
     "tcg_numbers_title": "Las cifras clave",
     "stat_hero_hp": "PV del héroe",
@@ -2459,7 +2459,9 @@
     "search_placeholder": "Buscar una habilidad…",
     "creature_abilities_group": "Habilidades de criatura ({count})",
     "spell_abilities_group": "Habilidades de hechizo ({count})",
-    "no_ability_match": "Ninguna habilidad coincide con «{query}»."
+    "no_ability_match": "Ninguna habilidad coincide con «{query}».",
+    "counters_title": "Los contadores: Ahorro, Fe y Conquista",
+    "singulier_title": "Singular: la prima a los mazos sin duplicados"
   },
   "deck": {
     "alignment_incompatible": "Alineamientos Bueno y Maléfico incompatibles",
@@ -2467,6 +2469,9 @@
     "max_capability_current": "Máx {max} capacidades « {label} » (actualmente {count})",
     "card_not_owned": "Carta no poseída",
     "deck_full": "Mazo lleno",
+    "singleton_yes": "Mazo singular ✓",
+    "singleton_no": "Deck singular ✗",
+    "singleton_hint": "Un deck singular no contiene ninguna carta duplicada: las habilidades marcadas como Singular solo se activan bajo esa condición. No es una regla de construcción.",
     "unique_copy": "Ejemplar único",
     "max_three_copies": "Máx 3 copias",
     "alignment_conflict": "Conflicto de alineamiento",
@@ -2585,10 +2590,7 @@
     "locked_hint": "Las comunes de las demás facciones estarán disponibles mediante la oferta de desbloqueo completo.",
     "unplayable_badge": "{count} carta(s) faltante(s)",
     "unplayable_reason": "Este deck contiene cartas de facción(es) que ya no posees: {factions}. Permanece intacto: recupera la facción para volver a jugarlo.",
-    "unplayable_rebuy": "Recuperar en la tienda",
-    "singleton_yes": "Mazo singular ✓",
-    "singleton_no": "Deck singular ✗",
-    "singleton_hint": "Un deck singular no contiene ninguna carta duplicada: las habilidades marcadas como Singular solo se activan bajo esa condición. No es una regla de construcción."
+    "unplayable_rebuy": "Recuperar en la tienda"
   },
   "cardBacks": {
     "eyebrow": "Muestra tu estilo",

@@ -1493,17 +1493,6 @@
       "classique-etendu": "クラシック・エクステンデッド",
       "classique-standard": "クラシック・スタンダード"
     },
-    "triggers": {
-      "permanent": "常在",
-      "entry": "登場時",
-      "attack": "攻撃時",
-      "death": "死亡時",
-      "return": "復帰時",
-      "tap": "起動可能",
-      "end_of_turn": "ターン終了時",
-      "draw": "ドロー時",
-      "low_hp": "HP{n}以下"
-    },
     "singulier": {
       "label": "唯一",
       "help": "開始時のデッキに重複するカードが一切なかった場合、{timing}に発動する。",
@@ -1519,6 +1508,17 @@
         "low_hp": "HPが{n}以下のとき",
         "spell": "呪文解決時"
       }
+    },
+    "triggers": {
+      "permanent": "常在",
+      "entry": "登場時",
+      "attack": "攻撃時",
+      "death": "死亡時",
+      "return": "復帰時",
+      "tap": "起動可能",
+      "end_of_turn": "ターン終了時",
+      "draw": "ドロー時",
+      "low_hp": "HP{n}以下"
     }
   },
   "home": {
@@ -1835,6 +1835,8 @@
     "token_composed_hint": "トークンは配置によって場に出ないため、「登場時」は決して発動せず、選択肢として表示されません。",
     "remove": "削除",
     "label_trigger": "トリガー",
+    "singulier_toggle": "シングル",
+    "singulier_toggle_title": "シングル条件:このアビリティは、プレイヤーの初期デッキに重複するカードが一枚もない場合にのみ発動する。",
     "label_emblem": "エンブレム",
     "emblem_permanent": "プレイヤーに置かれる永続効果",
     "emblem_trigger_note": "カードの登場時に置かれる。トリガーはその後に反応する対象を示す",
@@ -2270,9 +2272,7 @@
     "import_error": "インポートエラー",
     "eveil_label": "覚醒",
     "eveil_cost_hint": "覚醒：プレイする代わりに、覚醒状態にすることができます。カードはこのポイント数を持って手札を離れ、プレイヤーは自分の各ターンにマナ1につき1ポイントを支払い、最後のポイントで手札からと同様に場に出ます。マナコストの代わりであり、加算はされません。軽減不可。",
-    "eveil_cost_title": "{count, plural, one {#ポイント} other {#ポイント}}で覚醒状態にできる（ターンごとにマナ1で1ポイント支払い）――マナコストの代わりに",
-    "singulier_toggle": "シングル",
-    "singulier_toggle_title": "シングル条件:このアビリティは、プレイヤーの初期デッキに重複するカードが一枚もない場合にのみ発動する。"
+    "eveil_cost_title": "{count, plural, one {#ポイント} other {#ポイント}}で覚醒状態にできる（ターンごとにマナ1で1ポイント支払い）――マナコストの代わりに"
   },
   "game": {
     "error_not_authenticated": "未認証",
@@ -2442,7 +2442,7 @@
     "combat_title": "戦闘",
     "combat_see_full_list": "能力の完全なリストはページ下部にあります。",
     "hero_title": "ヒーローとその能力",
-    "alt_costs_title": "代替コスト",
+    "alt_costs_title": "追加コストと覚醒",
     "deck_title": "デッキを構築する",
     "tcg_numbers_title": "主要な数値",
     "stat_hero_hp": "ヒーローのHP",
@@ -2459,7 +2459,9 @@
     "search_placeholder": "能力を検索…",
     "creature_abilities_group": "クリーチャー能力（{count}）",
     "spell_abilities_group": "スペル能力（{count}）",
-    "no_ability_match": "「{query}」に一致する能力はありません。"
+    "no_ability_match": "「{query}」に一致する能力はありません。",
+    "counters_title": "カウンター：節約、信仰、征服",
+    "singulier_title": "シングルトン：重複なしデッキの特典"
   },
   "deck": {
     "alignment_incompatible": "善と悪のアライメントは共存できません",
@@ -2467,6 +2469,9 @@
     "max_capability_current": "「{label}」能力は最大{max}枚（現在{count}枚）",
     "card_not_owned": "未所持のカード",
     "deck_full": "デッキ満杯",
+    "singleton_yes": "シングルトンデッキ ✓",
+    "singleton_no": "シングルトンデッキ ✗",
+    "singleton_hint": "シングルトンデッキには同名カードが1枚も重複しません。「シングルトン」と記された能力は、この条件下でのみ発動します。これは構築ルールではありません。",
     "unique_copy": "ユニーク（1枚のみ）",
     "max_three_copies": "最大3枚まで",
     "alignment_conflict": "アライメント競合",
@@ -2585,10 +2590,7 @@
     "locked_hint": "他の勢力のコモンカードは、フル解放パッケージにより入手可能になります。",
     "unplayable_badge": "{count}枚のカードが不足",
     "unplayable_reason": "このデッキには、もう所持していないファクション（{factions}）のカードが含まれています。デッキ自体はそのまま保持されます — 再びプレイするにはファクションを再入手してください。",
-    "unplayable_rebuy": "ショップで入手する",
-    "singleton_yes": "シングルトンデッキ ✓",
-    "singleton_no": "シングルトンデッキ ✗",
-    "singleton_hint": "シングルトンデッキには同名カードが1枚も重複しません。「シングルトン」と記された能力は、この条件下でのみ発動します。これは構築ルールではありません。"
+    "unplayable_rebuy": "ショップで入手する"
   },
   "cardBacks": {
     "eyebrow": "スタイルを見せよう",

@@ -26,6 +26,10 @@ import {
   STARTING_MANA,
   MAX_SAME_CAPABILITY,
   CAPABILITY_LIMIT_OVERRIDES,
+  MAX_EPARGNE,
+  MAX_FOI,
+  MAX_CONQUETE,
+  MAX_EVEIL,
 } from "@/lib/game/constants";
 
 // ── Design tokens (Arcane War-Codex design system) ────────────────────────────
@@ -231,9 +235,15 @@ function BeginnerGuide() {
       <Section title={tt('spells_title')}>
         <P>
           Un sort produit un effet immédiat puis part au <Hi>cimetière</Hi>. Certains sorts nécessitent une
-          <Hi> cible</Hi> (une créature, un héros…). Nouveauté : un sort peut aussi <Hi>conférer une capacité de
+          <Hi> cible</Hi> (une créature, un héros…). Un sort peut aussi <Hi>conférer une capacité de
           créature</Hi> — à une créature ciblée (icône <span className="text-am-ink">blanche</span>) ou à
           toutes vos unités alliées (icône <span className="text-am-jade">verte</span>).
+        </P>
+        <P>
+          Certaines cartes, sorts comme créatures, posent un <Hi>emblème</Hi> : un effet permanent attaché à un
+          <Hi> joueur</Hi> et non à une carte. Il survit à la disparition de sa source (créature morte, sort
+          résolu) et se réveille à chaque cadence choisie — entrée en jeu, attaque, mort, fin de tour… — chez le
+          joueur qu'il affecte, jusqu'à la fin de la partie ou de sa durée.
         </P>
       </Section>
 
@@ -262,9 +272,49 @@ function BeginnerGuide() {
 
       <Section title={tt('alt_costs_title')}>
         <P>
-          Certaines cartes puissantes coûtent, <Hi>en plus du mana</Hi> : des <Hi>points de vie</Hi> de votre héros,
-          la <Hi>défausse</Hi> de cartes de votre main, ou le <Hi>sacrifice</Hi> de créatures alliées. Ces coûts
-          s'additionnent au coût en mana et ne sont pas réductibles.
+          Certaines cartes puissantes coûtent, <Hi>en plus du mana</Hi>, une ressource que vous engagez au moment de
+          les jouer. Ces coûts s'additionnent au coût en mana, se cumulent entre eux sur une même carte, et ne sont
+          <Hi> jamais réductibles</Hi> : ni Canalisation, ni Entraide, ni Concentration ne les voient.
+        </P>
+        <Bullets items={[
+          <><Hi>Points de vie</Hi> : votre héros paie de sa vie. Impossible si cela le tuerait.</>,
+          <><Hi>Défausse</Hi> : vous jetez au cimetière N autres cartes de votre main, que vous désignez.</>,
+          <><Hi>Sacrifice</Hi> : vous détruisez N créatures alliées de votre choix — leurs râles d'agonie se déclenchent.</>,
+          <><Hi>Exil</Hi> : N cartes sont retirées du <Hi>dessus de votre deck</Hi>, définitivement. Un prix payé sur votre avenir.</>,
+          <><Hi>Repli</Hi> : vous replacez N cartes de votre main <Hi>sur le dessus de votre deck</Hi>, dans l'ordre que vous choisissez — la dernière posée sera la première repiochée. Un coût de tempo, pas de cartes : vous les reverrez.</>,
+        ]} />
+        <P>
+          L'<Hi>éveil</Hi> est à part : c'est le seul coût <Hi>alternatif</Hi>, qui <Hi>remplace</Hi> le mana au lieu
+          de s'y ajouter. Une carte à coût d'éveil peut être mise en éveil depuis votre main, gratuitement, dans une
+          zone dédiée ; à chacun de vos tours, vous y versez autant de points que vous le souhaitez, <Hi>un point par
+          mana</Hi>. Le dernier point la fait entrer en jeu. Vous ne pouvez tenir que <Hi>{MAX_EVEIL} cartes</Hi> en
+          éveil à la fois — la zone n'est pas un coffre-fort.
+        </P>
+      </Section>
+
+      <Section title={tt('counters_title')}>
+        <P>
+          Trois capacités alimentent des <Hi>compteurs</Hi> personnels, affichés à côté de votre mana. Ils ne se
+          dépensent pas en mana : chacun ouvre, d'un clic sur le compteur, une <Hi>découverte</Hi> — vous voyez trois
+          cartes et en prenez une en main.
+        </P>
+        <Bullets items={[
+          <><Hi>Épargne</Hi> (maximum {MAX_EPARGNE}) : dépensez tout le compteur pour choisir 1 carte parmi 3 tirées au hasard dans le jeu, de coût inférieur ou égal à votre Épargne. Le compteur repart à 0.</>,
+          <><Hi>Foi</Hi> (maximum {MAX_FOI}) : choisissez 1 carte parmi 3 tirées de <Hi>votre propre deck</Hi>, de coût inférieur ou égal à votre Foi. Seul le coût de la carte prise est retiré, le reste est conservé pour une prochaine découverte.</>,
+          <><Hi>Conquête</Hi> (palier {MAX_CONQUETE}) : quand le compteur atteint {MAX_CONQUETE}, choisissez 1 carte parmi 3 tirées du <Hi>deck adverse</Hi>. Elle est à vous pour le reste de la partie, jouable sans contrainte de faction, et l'adversaire ne la piochera jamais. Le compteur repart à 0 et disparaît tant qu'il est vide.</>,
+        ]} />
+      </Section>
+
+      <Section title={tt('singulier_title')}>
+        <P>
+          Certaines capacités portent la condition <Hi>Singulier</Hi>, reconnaissable à son icône bicolore
+          (<span style={{ color: "#0D9488" }}>turquoise</span> d'un côté, couleur du déclencheur de l'autre). Elles
+          ne se déclenchent que si votre <Hi>deck de départ</Hi> ne contenait <Hi>aucune carte en double</Hi>. Cet
+          état est fixé au lancement du duel et ne bouge plus : les cartes conquises, générées ou copiées en cours
+          de partie n'y changent rien, et une carte gagnée en partie profite de votre état, pas de celui de son
+          ancien propriétaire. Aucune règle de construction ne l'impose — c'est une prime pour qui renonce aux
+          exemplaires multiples. Le deckbuilder vous indique si votre deck est singulier, et votre adversaire ne
+          découvre le vôtre qu'à la première capacité Singulier qu'il vous voit jouer.
         </P>
       </Section>
 
@@ -280,6 +330,7 @@ function BeginnerGuide() {
             (Vol excepté{DEROGATIONS_PLAFOND && <> ; <Hi>{DEROGATIONS_PLAFOND}</Hi></>}) : impossible d'empiler
             cinquante fois le même effet.</>,
           <>On ne mélange pas une faction <Hi>Bonne</Hi> et une faction <Hi>Maléfique</Hi> dans le même deck.</>,
+          <>Un deck <Hi>sans aucun doublon</Hi> est dit <Hi>singulier</Hi> : il active les capacités Singulier. Facultatif, mais récompensé.</>,
         ]} />
         <P>
           Deux <Hi>formats</Hi> encadrent enfin ce que vous pouvez jouer. Le mode <Hi>Classique</Hi> n'autorise que les
@@ -342,7 +393,9 @@ function TcgGuide() {
       <Section title={tt('tcg_hero_spells_title')}>
         <Bullets items={[
           <>Pouvoir de héros : <Hi>1× / tour</Hi>, coût en mana. 3 modes : conférer un mot-clé, déclencher un effet de sort, ou activer une <Hi>aura</Hi> empilable.</>,
-          <>Coûts alternatifs (cumulatifs, non réductibles) : <Hi>PV</Hi>, <Hi>défausse</Hi>, <Hi>sacrifice</Hi>.</>,
+          <>Coûts additionnels (cumulatifs, non réductibles) : <Hi>PV</Hi>, <Hi>défausse</Hi>, <Hi>sacrifice</Hi>, <Hi>exil</Hi> (dessus du deck), <Hi>repli</Hi> (main → dessus du deck, ordre choisi). <Hi>Éveil</Hi> = coût alternatif au mana, 1 point / mana / tour, {MAX_EVEIL} cartes en éveil max.</>,
+          <>Compteurs (clic = découverte 1 parmi 3) : <Hi>Épargne</Hi> (≤ {MAX_EPARGNE}, vidée, cartes du jeu de coût ≤ compteur), <Hi>Foi</Hi> (≤ {MAX_FOI}, cartes de SON deck, seul le coût pris est défalqué), <Hi>Conquête</Hi> (palier {MAX_CONQUETE}, carte du deck ADVERSE volée pour la partie).</>,
+          <><Hi>Singulier</Hi> : condition sur une capacité — active seulement si le deck de départ n'a aucun doublon (figé au lancement). <Hi>Emblème</Hi> : effet permanent posé sur un joueur, survit à sa source.</>,
           <>Réductions de coût : <Hi>Canalisation</Hi> (sorts, selon le terrain), <Hi>Entraide</Hi> (selon alliés de même race).</>,
           <>Un sort peut <Hi>conférer une capacité de créature</Hi> : à la cible (blanc) ou à tous les alliés (vert).</>,
         ]} />
